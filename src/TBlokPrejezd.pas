@@ -1,0 +1,524 @@
+unit TBlokPrejezd;
+
+// definice a obsluha technologickeho bloku Prejezd
+
+interface
+
+uses IniFiles, TBlok, TechnologieJC, SysUtils, Menus, TOblsRizeni,
+     Classes, RPConst, TechnologieMTB, IdContext;
+
+type
+ TBlkPrjMTBInputs = record
+  Zavreno:Byte;
+  Otevreno:Byte;
+  Vystraha:Byte;
+  Anulace:Byte;
+ end;
+
+ TBlkPrjMTBOutputs = record
+  Zavrit:Byte;
+  NOtevrit:Byte;
+  Vyluka:Byte;
+ end;
+
+ TBlkPrjSettings = record
+  MTB:Byte;
+  MTBInputs:TBlkPrjMTBInputs;
+  MTBOutputs:TBlkPrjMTBOutputs;
+ end;
+
+ TBlkPrjBasicStav = (disabled = -5, none = -1, otevreno = 0, vystraha = 1, uzavreno = 2, anulace = 3);
+
+ TBlkPrjStav = record
+  basicStav: TBlkPrjBasicStav;
+  stit,vyl:string;
+  PC_NOT, PC_UZ: boolean;                           // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
+  zaver:Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
+  uzavStart:TDateTime;
+ end;
+
+ TBlkPrejezd = class(TBlk)
+  const
+   //defaultni stav
+   _def_prj_stav:TBlkPrjStav = (
+    basicStav : disabled;
+    stit : '';
+    vyl : '';
+    PC_NOT : false;
+    PC_UZ : false;
+    zaver: 0;
+   );
+
+
+   _UZ_UPOZ_MIN = 4;      // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
+
+  private
+   PrjSettings:TBlkPrjSettings;
+   PrjStav:TBlkPrjStav;
+   ORsRef:TORsRef;    // reference na oblasti rizeni - databaze OR, ve kterych se prejezd nachazi
+
+    procedure SetStit(stit:string);
+    procedure SetVyl(vyl:string);
+
+    function UpdateInputs():TBlkPrjBasicStav;
+    procedure UpdateOutputs();
+
+    procedure SetNOT(state:boolean);
+    procedure SetUZ(state:boolean);
+
+    procedure SetZaver(zaver:boolean);
+    function GetZaver():boolean;
+
+    procedure MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuZNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
+
+    procedure MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+
+  public
+    constructor Create(index:Integer);
+    destructor Destroy(); override;
+
+    //load/save data
+    procedure LoadData(ini_tech:TMemIniFile;const section:string; ini_rel,ini_stat:TMemIniFile); override;
+    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
+    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+
+    //enable or disable symbol on relief
+    procedure Enable(); override;
+    procedure Disable(); override;
+
+    //update states
+    procedure Update(); override;
+
+    //----- vyhybka own functions -----
+
+    function GetSettings():TBlkPrjSettings;
+    procedure SetSettings(data:TBlkPrjSettings);
+
+    property Stav:TBlkPrjStav read PrjStav;
+
+    property NOtevreni:boolean read PrjStav.PC_NOT write SetNOT;
+    property UZ:boolean read PrjStav.PC_UZ write SetUZ;
+
+    property Stitek:string read PrjStav.Stit write SetStit;
+    property Vyluka:string read PrjStav.Vyl write SetVyl;
+
+    property OblsRizeni:TORsRef read ORsRef;
+
+    property Zaver:boolean read GetZaver write SetZaver;
+
+    //GUI:
+
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
+    procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights);
+    procedure PanelZUZCallBack(Sender:TIdContext; success:boolean);
+    procedure PanelZNOTCallBack(Sender:TIdContext; success:boolean);
+ end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+implementation
+
+uses TBloky, TOblRizeni, GetSystems, Main, TJCDatabase, TCPServerOR;
+
+constructor TBlkPrejezd.Create(index:Integer);
+begin
+ inherited Create(index);
+
+ Self.GlobalSettings.typ := _BLK_PREJEZD;
+ Self.PrjStav := Self._def_prj_stav;
+end;//ctor
+
+destructor TBlkPrejezd.Destroy();
+begin
+ inherited Destroy();
+end;//dtor
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
+var str:TStrings;
+    i:Integer;
+begin
+ inherited LoadData(ini_tech, section, ini_rel, ini_stat);
+
+ Self.PrjStav.Stit := '';
+ Self.PrjStav.Vyl  := '';
+
+ Self.PrjSettings.MTB := ini_tech.ReadInteger(section, 'MTB', 0);
+
+ Self.PrjSettings.MTBInputs.Zavreno   := ini_tech.ReadInteger(section, 'MTBIz', 0);
+ Self.PrjSettings.MTBInputs.Otevreno  := ini_tech.ReadInteger(section, 'MTBIo', 0);
+ Self.PrjSettings.MTBInputs.Vystraha  := ini_tech.ReadInteger(section, 'MTBIv', 0);
+ Self.PrjSettings.MTBInputs.Anulace   := ini_tech.ReadInteger(section, 'MTBa', 0);
+
+ Self.PrjSettings.MTBOutputs.Zavrit   := ini_tech.ReadInteger(section, 'MTBOz', 0);
+ Self.PrjSettings.MTBOutputs.NOtevrit := ini_tech.ReadInteger(section, 'MTBOnot', 0);
+ Self.PrjSettings.MTBOutputs.Vyluka   := ini_tech.ReadInteger(section, 'MTBOvyl', 0);
+
+ Self.PrjStav.stit := ini_stat.ReadString(section, 'stit', '');
+
+ if (ini_rel <> nil) then
+  begin
+   //parsing *.spnl
+   str := TStringList.Create();
+
+   ExtractStrings([';'],[],PChar(ini_rel.ReadString('PRJ',IntToStr(Self.GlobalSettings.id),'')), str);
+   if (str.Count > 0) then
+     Self.ORsRef := ORs.ParseORs(str[0]);
+
+   str.Free();
+  end else begin
+    Self.ORsRef.Cnt := 0;
+  end;
+
+ for i := 0 to Self.ORsRef.Cnt-1 do
+  Self.ORsRef.ORs[i].MTBAdd(Self.PrjSettings.MTB);
+end;//procedure
+
+procedure TBlkPrejezd.SaveData(ini_tech:TMemIniFile;const section:string);
+begin
+ inherited SaveData(ini_tech, section);
+
+ ini_tech.WriteInteger(section, 'MTB', Self.PrjSettings.MTB);
+
+ ini_tech.WriteInteger(section, 'MTBIz', Self.PrjSettings.MTBInputs.Zavreno);
+ ini_tech.WriteInteger(section, 'MTBIo', Self.PrjSettings.MTBInputs.Otevreno);
+ ini_tech.WriteInteger(section, 'MTBIv', Self.PrjSettings.MTBInputs.Vystraha);
+ ini_tech.WriteInteger(section, 'MTBa', Self.PrjSettings.MTBInputs.Anulace);
+
+ ini_tech.WriteInteger(section, 'MTBOz', Self.PrjSettings.MTBOutputs.Zavrit);
+ ini_tech.WriteInteger(section, 'MTBOnot', Self.PrjSettings.MTBOutputs.NOtevrit);
+ ini_tech.WriteInteger(section, 'MTBOvyl', Self.PrjSettings.MTBOutputs.Vyluka);
+end;//procedure
+
+procedure TBlkPrejezd.SaveStatus(ini_stat:TMemIniFile;const section:string);
+begin
+ ini_stat.WriteString(section, 'stit', Self.PrjStav.stit);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.Enable();
+begin
+ if (not MTB.IsModule(Self.PrjSettings.MTB)) then
+  Exit();
+
+ Self.PrjStav.basicStav := TBlkPrjBasicStav.none;
+ Self.Change();
+end;//procedure
+
+procedure TBlkPrejezd.Disable();
+begin
+ Self.PrjStav.basicStav := disabled;
+ Self.Change();
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.Update();
+var new_stav:TBlkPrjBasicStav;
+    i:Integer;
+begin
+ if (not (GetFunctions.GetSystemStart())) then Exit;
+
+ if (not MTB.IsModule(Self.PrjSettings.MTB)) then
+  begin
+   if (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled) then
+    begin
+     Self.PrjStav.basicStav := TBlkPrjBasicStav.disabled;
+     JCDb.RusJC(Self);
+     Self.Change();
+    end;
+   Exit();
+  end;
+
+ new_stav := Self.UpdateInputs();
+
+ if (Self.PrjStav.basicStav <> new_stav) then
+  begin
+   // kontrola necekaneho otevreni prejezdu, pokud je v JC
+   // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
+   if ((Self.Zaver) and (Self.PrjStav.basicStav = TBlkPrjBasicStav.uzavreno)) then
+    begin
+     for i := 0 to Self.OblsRizeni.Cnt-1 do
+      Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta dohledu na pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+     JCDb.RusJC(Self);
+    end;
+
+   if (new_stav = none) then
+    begin
+     for i := 0 to Self.OblsRizeni.Cnt-1 do
+      Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Porucha pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+    end;
+
+   Self.PrjStav.basicStav := new_stav;
+   Self.Change();
+  end;
+
+ // kontrola prilis dlouho uzavreneho prejezdu
+ if ((Self.Zaver) or (Self.PrjStav.PC_UZ)) then
+  begin
+   if (Now > Self.PrjStav.uzavStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
+    begin
+     for i := 0 to Self.OblsRizeni.Cnt-1 do
+      Self.OblsRizeni.ORs[i].BlkWriteError(Self, Self.GlobalSettings.name+' otevøen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
+     Self.PrjStav.uzavStart := now;
+    end;
+  end;
+
+ inherited Update();
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkPrejezd.UpdateInputs():TBlkPrjBasicStav;
+var tmpInputs: record
+      Zavreno:Boolean;
+      Otevreno:Boolean;
+      Vystraha:Boolean;
+      Anulace:Boolean;
+    end;
+begin
+ // get data from mtb
+ if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno) = 1)  then tmpInputs.Zavreno  := true else tmpInputs.Zavreno  := false;
+ if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Otevreno) = 1) then tmpInputs.Otevreno := true else tmpInputs.Otevreno := false;
+ if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Vystraha) = 1) then tmpInputs.Vystraha := true else tmpInputs.Vystraha := false;
+ if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Anulace) = 1)  then tmpInputs.Anulace  := true else tmpInputs.Anulace  := false;
+
+ if (tmpInputs.Zavreno)  then Exit(TBlkPrjBasicStav.uzavreno);
+ if (tmpInputs.Vystraha) then Exit(TBlkPrjBasicStav.vystraha);
+ if (tmpInputs.Anulace)  then Exit(TBlkPrjBasicStav.anulace);
+ if (tmpInputs.Otevreno) then Exit(TBlkPrjBasicStav.otevreno);
+
+ // without data
+ Result := none;
+end;//function
+
+procedure TBlkPrejezd.UpdateOutputs();
+begin
+ if ((Self.PrjStav.PC_UZ) or (Self.Zaver)) then
+  begin
+   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 1);
+  end else begin
+   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 0);
+  end;
+
+ if (Self.PrjStav.PC_NOT) then
+  begin
+   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 1);
+  end else begin
+   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 0);
+  end;
+
+ if (Self.PrjStav.vyl <> '') then
+  begin
+   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 1);
+  end else begin
+   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 0);
+  end;
+
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkPrejezd.GetSettings():TBlkPrjSettings;
+begin
+ Result := Self.PrjSettings;
+end;//function
+
+procedure TBlkPrejezd.SetSettings(data:TBlkPrjSettings);
+begin
+ Self.PrjSettings := data;
+ Self.Change();
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.SetStit(stit:string);
+begin
+ Self.PrjStav.stit := Stit;
+ Self.Change();
+end;//procedure
+
+procedure TBlkPrejezd.SetVyl(vyl:string);
+begin
+ Self.PrjStav.vyl := vyl;
+ Self.Change();
+ Self.UpdateOutputs();
+end;//procedure
+
+procedure TBlkPrejezd.SetNOT(state:boolean);
+begin
+ if ((Self.Zaver) and (state)) then Exit();
+
+ Self.PrjStav.PC_NOT := state;
+ Self.Change();
+ Self.UpdateOutputs();
+end;//procedure
+
+procedure TBlkPrejezd.SetUZ(state:boolean);
+begin
+ if (state) then Self.PrjStav.uzavStart := now;
+
+ Self.PrjStav.PC_UZ := state;
+ Self.Change();
+ Self.UpdateOutputs();
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+//gui: menu
+//dynamicke funkce
+
+procedure TBlkPrejezd.MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.UZ := true;
+end;
+
+procedure TBlkPrejezd.MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ ORTCPServer.Potvr(SenderPnl, Self.PanelZUZCallBack, (SenderOR as TOR), 'Zrušení uzavøení pøejezdu', TBlky.GetBlksList(Self), nil);
+end;
+
+procedure TBlkPrejezd.MenuNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ ORTCPServer.Potvr(SenderPnl, Self.PanelZNOTCallBack, (SenderOR as TOR), 'Nouzové otevøení pøejezdu', TBlky.GetBlksList(Self), nil);
+end;
+
+procedure TBlkPrejezd.MenuZNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.NOtevreni := false;
+end;
+
+procedure TBlkPrejezd.MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
+end;
+
+procedure TBlkPrejezd.MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.PrjStav.zaver := 0;
+ Self.UpdateOutputs();
+ Self.Change();
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+//vytvoreni menu pro potreby konkretniho bloku:
+procedure TBlkPrejezd.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
+var menu:string;
+begin
+ menu := '$'+Self.GlobalSettings.name+',-,';
+
+ if (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled) then
+  begin
+   if (not Self.PrjStav.PC_NOT) then
+    begin
+     if (Self.PrjStav.PC_UZ) then
+       menu := menu + '!ZUZ,'
+      else
+       menu := menu + 'UZ,';
+    end;
+
+   if (not Self.Zaver) then
+    begin
+     if (((Self.PrjStav.basicStav = TBlkPrjBasicStav.uzavreno) or (Self.PrjStav.basicStav = TBlkPrjBasicStav.vystraha) or (Self.PrjStav.PC_NOT)) and (not Self.PrjStav.PC_UZ)) then
+      begin
+       if (Self.PrjStav.PC_NOT) then
+         menu := menu + 'NOT<,'
+        else
+         menu := menu + '!NOT>,';
+      end;
+    end;
+  end;//if not zaver
+
+ menu := menu + 'STIT,';
+
+ if (rights >= TORControlRights.superuser) then
+  begin
+   menu := menu + '-,';
+   if (Self.Zaver) then menu := menu + '*NUZ>,';
+  end;
+
+ ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights);
+begin
+ if (Self.Stav.basicStav <> TBlkPrjBasicStav.disabled) then
+   Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+//toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
+procedure TBlkPrejezd.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+begin
+ if (Self.Stav.basicStav = TBlkPrjBasicStav.disabled) then Exit();
+
+ if (item = 'UZ')   then Self.MenuUZClick  (SenderPnl, SenderOR);
+ if (item = 'ZUZ')  then Self.MenuZUZClick (SenderPnl, SenderOR);
+ if (item = 'NOT>') then Self.MenuNOTClick (SenderPnl, SenderOR);
+ if (item = 'NOT<') then Self.MenuZNOTClick(SenderPnl, SenderOR);
+ if (item = 'STIT') then Self.MenuSTITClick (SenderPnl, SenderOR);
+ if (item = 'NUZ>') then Self.MenuAdminNUZClick (SenderPnl, SenderOR);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+//zavola se pri uspesnem zvladnuti potvrzovaci sekvence
+procedure TBlkPrejezd.PanelZNOTCallBack(Sender:TIdContext; success:boolean);
+begin
+ if (not success) then Exit();
+ Self.Notevreni := true;
+end;//procedure
+
+procedure TBlkPrejezd.PanelZUZCallBack(Sender:TIdContext; success:boolean);
+begin
+ if (success) then Self.UZ := false; 
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.SetZaver(zaver:boolean);
+begin
+ if (zaver) then
+  begin
+   Inc(Self.PrjStav.zaver);
+
+   if (Self.PrjStav.zaver = 1) then
+    begin
+     // prvni udeleni zaveru
+     Self.PrjStav.uzavStart := now;
+     Self.SetNOT(false);
+
+     Self.UpdateOutputs();
+     Self.Change();
+    end;
+  end else begin
+   Dec(Self.PrjStav.zaver);
+
+   if (Self.PrjStav.zaver <= 0) then
+    begin
+     // posledni odstraneni zaveru
+     Self.UpdateOutputs();
+     Self.Change();
+    end;
+  end;
+end;//procedure
+
+function TBlkPrejezd.GetZaver():boolean;
+begin
+ Result := (Self.PrjStav.zaver > 0);
+end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+end.//unit
+

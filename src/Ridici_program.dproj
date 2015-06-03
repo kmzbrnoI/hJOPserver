@@ -1,0 +1,281 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{3843E8C1-425E-4564-AD11-0A95B3B00280}</ProjectGuid>
+			<MainSource>Ridici_program.dpr</MainSource>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+			<ProjectVersion>12.0</ProjectVersion>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_DependencyCheckOutputName>..\output\Ridici_program.exe</DCC_DependencyCheckOutputName>
+			<DCC_ImageBase>00400000</DCC_ImageBase>
+			<DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls</DCC_UsePackage>
+			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
+			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
+			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
+			<DCC_RangeChecking>true</DCC_RangeChecking>
+			<DCC_Platform>x86</DCC_Platform>
+			<DCC_K>false</DCC_K>
+			<DCC_F>false</DCC_F>
+			<DCC_N>true</DCC_N>
+			<DCC_DcpOutput>..\outunit\</DCC_DcpOutput>
+			<DCC_S>false</DCC_S>
+			<DCC_E>false</DCC_E>
+			<DebugSourcePath>D:\Users\Vlak\MTB\MTB_knihovna\;$(DebugSourcePath)</DebugSourcePath>
+			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
+			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+			<DCC_DcuOutput>..\outunit\</DCC_DcuOutput>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="Ridici_program.dpr">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<DCCReference Include="RPConst.pas"/>
+			<DCCReference Include="Tester.pas">
+				<Form>F_Tester</Form>
+			</DCCReference>
+			<DCCReference Include="Main.pas">
+				<Form>F_Main</Form>
+			</DCCReference>
+			<DCCReference Include="Settings.pas">
+				<Form>F_Options</Form>
+			</DCCReference>
+			<DCCReference Include="Licence.pas">
+				<Form>F_Licence</Form>
+			</DCCReference>
+			<DCCReference Include="Nastaveni_Casu.pas">
+				<Form>F_ModCasSet</Form>
+			</DCCReference>
+			<DCCReference Include="Regulator.pas">
+				<Form>F_DigiReg</Form>
+			</DCCReference>
+			<DCCReference Include="Splash.pas">
+				<Form>F_splash</Form>
+			</DCCReference>
+			<DCCReference Include="About.pas">
+				<Form>F_About</Form>
+			</DCCReference>
+			<DCCReference Include="ACEdit.pas">
+				<Form>F_AutRezEdit</Form>
+			</DCCReference>
+			<DCCReference Include="BlkPrejezd.pas">
+				<Form>F_BlkPrejezd</Form>
+			</DCCReference>
+			<DCCReference Include="Verze.pas"/>
+			<DCCReference Include="LoginPozadi.pas">
+				<Form>F_Pozadi</Form>
+			</DCCReference>
+			<DCCReference Include="ZesilovacEdit.pas">
+				<Form>F_ZesilovacEdit</Form>
+			</DCCReference>
+			<DCCReference Include="BlkTrat.pas">
+				<Form>F_BlkTrat</Form>
+			</DCCReference>
+			<DCCReference Include="HVEdit.pas">
+				<Form>F_HVEdit</Form>
+			</DCCReference>
+			<DCCReference Include="SystemInfo.pas">
+				<Form>F_SystemInfo</Form>
+			</DCCReference>
+			<DCCReference Include="BlkUsek.pas">
+				<Form>F_BlkUsek</Form>
+			</DCCReference>
+			<DCCReference Include="BlkVyhybka.pas">
+				<Form>F_BlkVyhybka</Form>
+			</DCCReference>
+			<DCCReference Include="BlkIR.pas">
+				<Form>F_BlkIR</Form>
+			</DCCReference>
+			<DCCReference Include="TBlokPrejezd.pas">
+				<Form>F_BlkSCom</Form>
+			</DCCReference>
+			<DCCReference Include="BlkNew.pas">
+				<Form>F_BlkNew</Form>
+			</DCCReference>
+			<DCCReference Include="AdminForm.pas">
+				<Form>F_Admin</Form>
+			</DCCReference>
+			<DCCReference Include="NoRegRun.pas">
+				<Form>F_NoRegRun</Form>
+			</DCCReference>
+			<DCCReference Include="VCEdit.pas">
+				<Form>F_JCEdit</Form>
+			</DCCReference>
+			<DCCReference Include="RychlostiEdit.pas">
+				<Form>F_RychlostiEdit</Form>
+			</DCCReference>
+			<DCCReference Include="SystemAutoStart.pas">
+				<Form>F_AutoStartSystems</Form>
+			</DCCReference>
+			<DCCReference Include="BlkUsekSysVars.pas">
+				<Form>F_BlkUsek_tech</Form>
+			</DCCReference>
+			<DCCReference Include="GetSystems.pas"/>
+			<DCCReference Include="Prevody.pas"/>
+			<DCCReference Include="TechnologieMTB.pas"/>
+			<DCCReference Include="TechnologieJC.pas"/>
+			<DCCReference Include="FileSystem.pas"/>
+			<DCCReference Include="Console.pas">
+				<Form>F_Console</Form>
+			</DCCReference>
+			<DCCReference Include="Trakce.pas"/>
+			<DCCReference Include="XpressNET.pas"/>
+			<DCCReference Include="TrakceGUI.pas"/>
+			<DCCReference Include="Outputdriver.pas"/>
+			<DCCReference Include="TBlok.pas"/>
+			<DCCReference Include="TBloky.pas"/>
+			<DCCReference Include="TBlokVyhybka.pas"/>
+			<DCCReference Include="TBlokUsek.pas"/>
+			<DCCReference Include="TBlokIR.pas"/>
+			<DCCReference Include="TBlokSCom.pas"/>
+			<DCCReference Include="TOblsRizeni.pas"/>
+			<DCCReference Include="TOblRizeni.pas"/>
+			<DCCReference Include="Booster.pas"/>
+			<DCCReference Include="BoosterDb.pas"/>
+			<DCCReference Include="BlkVyhybkaSysVars.pas">
+				<Form>F_BlkVyh_tech</Form>
+			</DCCReference>
+			<DCCReference Include="AC.pas"/>
+			<DCCReference Include="SnadnSpusteni.pas"/>
+			<DCCReference Include="BlkSCom.pas"/>
+			<DCCReference Include="TJCDatabase.pas"/>
+			<DCCReference Include="THVDatabase.pas"/>
+			<DCCReference Include="THnaciVozidlo.pas"/>
+			<DCCReference Include="Logging.pas"/>
+			<DCCReference Include="TCPServerOR.pas"/>
+			<DCCReference Include="DataMTB.pas"/>
+			<DCCReference Include="DataHV.pas"/>
+			<DCCReference Include="DataJC.pas"/>
+			<DCCReference Include="DataAC.pas"/>
+			<DCCReference Include="DataBloky.pas"/>
+			<DCCReference Include="DataZesilovac.pas"/>
+			<DCCReference Include="DataORs.pas"/>
+			<DCCReference Include="TBlokTrat.pas"/>
+			<DCCReference Include="TBlokUvazka.pas"/>
+			<DCCReference Include="Souprava.pas"/>
+			<DCCReference Include="SprDb.pas"/>
+			<DCCReference Include="DataSpr.pas"/>
+			<DCCReference Include="User.pas"/>
+			<DCCReference Include="UserDb.pas"/>
+			<DCCReference Include="DataUsers.pas"/>
+			<DCCReference Include="UserEdit.pas">
+				<Form>F_UserEdit</Form>
+			</DCCReference>
+			<DCCReference Include="Zasobnik.pas"/>
+			<DCCReference Include="UPO.pas"/>
+			<DCCReference Include="BlkTratSysVars.pas">
+				<Form>F_BlkTrat_tech</Form>
+			</DCCReference>
+			<DCCReference Include="ModelovyCas.pas"/>
+			<DCCReference Include="BlkSComEvent.pas">
+				<Form>F_BlkSComEvent</Form>
+			</DCCReference>
+			<DCCReference Include="CloseTabSheet.pas"/>
+			<DCCReference Include="TBlokZamek.pas"/>
+			<DCCReference Include="BlkZamek.pas">
+				<Form>F_BlkZamek</Form>
+			</DCCReference>
+			<DCCReference Include="TMultiJCDatabase.pas"/>
+			<DCCReference Include="TechnologieMultiJC.pas"/>
+			<DCCReference Include="DataMultiJC.pas"/>
+			<DCCReference Include="HVPomEdit.pas">
+				<Form>F_HV_Pom</Form>
+			</DCCReference>
+			<DCCReference Include="MJCEdit.pas">
+				<Form>F_MJCEdit</Form>
+			</DCCReference>
+			<DCCReference Include="ACDatabase.pas"/>
+			<DCCReference Include="ownStrUtils.pas"/>
+			<DCCReference Include="TBlokRozp.pas"/>
+			<DCCReference Include="BlkRozp.pas">
+				<Form>F_BlkRozp</Form>
+			</DCCReference>
+			<DCCReference Include="RegulatorTCP.pas"/>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<PropertyGroup>
+			<PreBuildEvent><![CDATA[rm $(PROJECTDIR)/../outunit/*]]></PreBuildEvent>
+		</PropertyGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Source>
+						<Source Name="MainSource">Ridici_program.dpr</Source>
+					</Source>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+						<Parameters Name="DebugSourceDirs">C:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;D:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
+						<VersionInfo Name="MajorVer">4</VersionInfo>
+						<VersionInfo Name="MinorVer">3</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">36</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1029</VersionInfo>
+						<VersionInfo Name="CodePage">1250</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
+						<VersionInfoKeys Name="FileDescription">Rídící program verze 4</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.3.0.36</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName">Ridici_program</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2014</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename">Ridici_program.exe</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductName">Ridici program</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments">Urceno pro KMZ-Brno I</VersionInfoKeys>
+					</VersionInfoKeys>
+					<Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDS)\bin\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+					</Excluded_Packages>
+				</Delphi.Personality>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+	</Project>
