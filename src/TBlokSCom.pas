@@ -763,7 +763,12 @@ begin
 
  case (Button) of
   right,F2 : Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
-  left     : if (not Self.SComSettings.zamknuto) then Self.MenuVCStartClick(SenderPnl, SenderOR);
+  left     : begin
+    if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then
+      Self.ShowPanelMenu(SenderPnl, SenderOR, rights)
+    else
+      if (not Self.SComSettings.zamknuto) then Self.MenuVCStartClick(SenderPnl, SenderOR);
+  end;
   middle   : if (not Self.SComSettings.zamknuto) then Self.MenuPCStartClick(SenderPnl, SenderOR);
  end;//case
 end;//procedure
