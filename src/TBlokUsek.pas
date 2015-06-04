@@ -429,7 +429,7 @@ begin
         if (Self.Souprava > -1) then
          Soupravy.soupravy[Self.Souprava].rychlost := 0;
 
-        Self.Change();
+        Self.Change(true);
        end;
       Exit();
     end;

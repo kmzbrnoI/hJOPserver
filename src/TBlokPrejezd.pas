@@ -232,7 +232,7 @@ begin
     begin
      Self.PrjStav.basicStav := TBlkPrjBasicStav.disabled;
      JCDb.RusJC(Self);
-     Self.Change();
+     Self.Change(true);
     end;
    Exit();
   end;
