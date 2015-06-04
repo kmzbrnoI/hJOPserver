@@ -1235,20 +1235,24 @@ begin
 
  try
    Soupravy.StopAllSpr();
- finally
-   Self.LogStatus('Všechny soupravy zastaveny');
+ except
+   Application.MessageBox('Vyjimka pri zastavovani souprav, reknete to Honzovi', 'Vyjimka', MB_OK OR MB_ICONWARNING);
+   writeLog('StolAllSpr ERROR !!', WR_ERROR, 0);
  end;
+ Self.LogStatus('Všechny soupravy zastaveny');
 
  Application.ProcessMessages();
 
  try
    ORs.DisconnectPanels();
- finally
-
+ except
+   Application.MessageBox('Vyjimka pri odpojovani panelu, reknete to Honzovi', 'Vyjimka', MB_OK OR MB_ICONWARNING);
+   writeLog('DisconnectPanels ERROR !!', WR_ERROR, 0);
  end;
+
  Self.A_PanelServer_StopExecute(nil);
 
- JCDB.RusAllJC();
+ JCDb.RusAllJC();
  Blky.Disable();
  Blky.Reset();
 end;

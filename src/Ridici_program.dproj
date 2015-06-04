@@ -249,7 +249,7 @@
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">36</VersionInfo>
+						<VersionInfo Name="Build">38</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -261,7 +261,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Rídící program verze 4</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.3.0.36</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.3.0.38</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">Ridici_program</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2014</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
