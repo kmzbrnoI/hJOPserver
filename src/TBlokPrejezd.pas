@@ -426,7 +426,7 @@ begin
 
    if (not Self.Zaver) then
     begin
-     if (((Self.PrjStav.basicStav = TBlkPrjBasicStav.uzavreno) or (Self.PrjStav.basicStav = TBlkPrjBasicStav.vystraha) or (Self.PrjStav.PC_NOT)) and (not Self.PrjStav.PC_UZ)) then
+     if (not Self.PrjStav.PC_UZ) then
       begin
        if (Self.PrjStav.PC_NOT) then
          menu := menu + 'NOT<,'
