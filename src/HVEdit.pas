@@ -180,6 +180,12 @@ var data:THVData;
     Exit;
    end;
 
+  ORs.GetORByIndex(Self.CB_OR.ItemIndex, OblR);
+  if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.souprava > -1) and (Self.OpenHV.Stav.stanice <> OblR)) then
+    if (Application.MessageBox('Mìníte stanici HV, které je na soupravì, opravdu pokraèovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
+      Exit();
+
+
   // samotne ukladani dat
   data.Nazev      := E_Nazev.Text;
   data.Majitel    := E_Majitel.Text;
