@@ -63,11 +63,18 @@ begin
 end;
 
 procedure TF_UserEdit.CB_RightsChange(Sender: TObject);
+var i:Integer;
 begin
- if (Self.LV_ORs.Selected = nil) then Exit();
- Self.OpenUser.SetRights(Self.LV_ORs.Selected.Caption, TORControlRights(Self.CB_Rights.ItemIndex));
- Self.LV_ORs.Selected.SubItems.Strings[1] := ORRightsToString(TORControlRights(Self.CB_Rights.ItemIndex));
- TORControlRights(Self.LV_ORs.Selected.Data^) := TORControlRights(Self.CB_Rights.ItemIndex);
+ for i := 0 to Self.LV_ORs.Items.Count-1 do
+  begin
+   if (Self.LV_ORs.Items[i].Selected) then
+    begin
+     Self.OpenUser.SetRights(Self.LV_ORs.Items[i].Caption, TORControlRights(Self.CB_Rights.ItemIndex));
+     Self.LV_ORs.Items[i].SubItems.Strings[1] := ORRightsToString(TORControlRights(Self.CB_Rights.ItemIndex));
+     TORControlRights(Self.LV_ORs.Items[i].Data^) := TORControlRights(Self.CB_Rights.ItemIndex);
+    end;
+  end;
+
  Self.LV_ORs.Repaint();
 end;
 
@@ -83,19 +90,43 @@ end;
 
 procedure TF_UserEdit.LV_ORsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
-var rights:TORControlRights;
+var rights, rights2:TORControlRights;
+    i:Integer;
 begin
- if (Self.LV_ORs.Selected = nil) then
+ if (Self.LV_ORs.SelCount = 0) then
   begin
+   // 0 vybranych polozek
    Self.CB_Rights.ItemIndex := -1;
    Self.CB_Rights.Enabled   := false;
   end else begin
-   Self.CB_Rights.Enabled   := true;
+   Self.CB_Rights.Enabled := true;
+   if (Self.LV_ORs.SelCount = 1) then
+    begin
+     // 1 vybrana polozka
+     if (Self.OpenUser.OblR.TryGetValue(Self.LV_ORs.Selected.Caption, rights)) then
+      Self.CB_Rights.ItemIndex := Integer(rights)
+     else
+      Self.CB_Rights.ItemIndex := -1;
+    end else begin
+     // vic vybranych polozek -> pokud jsou opravenni stejna, vyplnime, jinak -1
 
-   if (Self.OpenUser.OblR.TryGetValue(Self.LV_ORs.Selected.Caption, rights)) then
-    Self.CB_Rights.ItemIndex := Integer(rights)
-   else
-    Self.CB_Rights.ItemIndex := -1;
+     for i := 0 to Self.LV_ORs.Items.Count-1 do
+       if (Self.LV_ORs.Items[i].Selected) then
+         Self.OpenUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights);
+
+     for i := 0 to Self.LV_ORs.Items.Count-1 do
+       if (Self.LV_ORs.Items[i].Selected) then
+        begin
+         Self.OpenUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights2);
+         if (rights2 <> rights) then
+          begin
+           Self.CB_Rights.ItemIndex := -1;
+           Exit();
+          end;
+        end;
+
+     Self.CB_Rights.ItemHeight := Integer(rights);
+    end;// else SelCount > 1
   end;//else Selected = nil
 end;
 
