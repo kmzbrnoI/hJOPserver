@@ -195,6 +195,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Height = 22
     MaxValue = 0
     MinValue = 0
+    ReadOnly = True
     TabOrder = 5
     Value = 0
   end
@@ -251,5 +252,14 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     MinValue = 0
     TabOrder = 8
     Value = 0
+  end
+  object B_CancelRedukce: TButton
+    Left = 176
+    Top = 155
+    Width = 107
+    Height = 25
+    Caption = 'Zrusit refukci menu'
+    TabOrder = 9
+    OnClick = B_CancelRedukceClick
   end
 end

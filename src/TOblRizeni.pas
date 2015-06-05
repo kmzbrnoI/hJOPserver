@@ -11,7 +11,7 @@ interface
 
 uses Types, IniFiles, SysUtils, Classes, RPConst, Graphics, Menus,
       IdContext, TechnologieMTB, StrUtils, Souprava, ComCtrls, Forms,
-      Generics.Collections, Zasobnik, User;
+      Generics.Collections, Zasobnik, User, Messages, Windows;
 
 const
   _MAX_OSV = 8;
@@ -1152,8 +1152,15 @@ begin
  try
   if (Self.ORStav.spr_new) then
    Soupravy.AddSprFromPanel(spr, Self.ORStav.spr_usek, Self)
-  else
-   Self.ORStav.spr_edit.UpdateSprFromPanel(spr, Self.ORStav.spr_usek, Self);
+  else begin
+   // kontrola jestli je souparva porad na useku
+   if ((Self.ORStav.spr_usek as TBlkUsek).Souprava = Self.ORStav.spr_edit.index) then
+     Self.ORStav.spr_edit.UpdateSprFromPanel(spr, Self.ORStav.spr_usek, Self)
+   else begin
+     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava již není na úseku');
+     Exit();
+   end;
+  end;
  except
   on E: Exception do
    begin
@@ -1378,8 +1385,6 @@ procedure TOR.DisconnectPanels();
 var i:Integer;
     index:Integer;
 begin
- Self.stack.ClearStack();
-
  for i := Self.Connected.Count-1 downto 0 do
   begin
    Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Odpojení systémù');
@@ -1388,6 +1393,12 @@ begin
    ORTCPServer.GUIRefreshLine(index);
  end;
 
+ // DEBUG
+ try
+   Self.stack.ClearStack();
+ except
+   Application.MessageBox('ClerStack exception, prosim nahlasit Honzovi', '', MB_OK OR MB_ICONWARNING);
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -130,6 +130,7 @@ type
     //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
+    procedure Reset(); override;
 
     //update states
     procedure Update(); override;
@@ -266,6 +267,12 @@ begin
  Self.VyhStav.poloha := disabled;
  Self.RemoveAllReduction(Self.VyhStav.redukuji);
  Self.Change();
+end;//procedure
+
+procedure TBlkVyhybka.Reset();
+begin
+ Self.RemoveAllReduction(Self.VyhStav.redukuji);
+ Self.VyhStav.redukce_menu := 0;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

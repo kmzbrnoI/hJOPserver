@@ -24,10 +24,12 @@ type
     CB_Stav_Plus: TComboBox;
     CB_Stav_Minus: TComboBox;
     SE_Zaver: TSpinEdit;
+    B_CancelRedukce: TButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure B_UpdateClick(Sender: TObject);
+    procedure B_CancelRedukceClick(Sender: TObject);
   private
     OpenBlk:TBlkVyhybka;
 
@@ -54,7 +56,14 @@ uses TBlokUsek, Prevody;
 procedure TF_BlkVyh_tech.B_ApplyClick(Sender: TObject);
 begin
  Self.myApply();
+ Self.myUpdate();
 end;//procedure
+
+procedure TF_BlkVyh_tech.B_CancelRedukceClick(Sender: TObject);
+begin
+ Self.OpenBlk.ZrusRedukciMenu();
+ Self.myUpdate();
+end;
 
 procedure TF_BlkVyh_tech.B_UpdateClick(Sender: TObject);
 begin
@@ -94,6 +103,8 @@ begin
 
  Self.CB_Locked.ItemIndex     := PrevodySoustav.BoolToInt(Self.OpenBlk.Stav.locked);
  Self.SE_Redukce.Value        := Self.OpenBlk.Stav.redukce_menu;
+
+ Self.B_CancelRedukce.Enabled := Self.OpenBlk.redukce_menu;
 end;//procedure
 
 procedure TF_BlkVyh_tech.myApply();

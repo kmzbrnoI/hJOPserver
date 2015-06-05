@@ -236,8 +236,12 @@ begin
    begin
     // pridat prvek do db a zredukovat
 
+    // pozor: poradi je dulezite !! nejdriv pridat prvek do DB a pak redukovat (projevuje se pri staveni JC se spojkou)
+
     Blky.GetBlkByID(blk_id, Blk);
     if (Blk = nil) then Exit();
+
+    db[i] := blk_id;
 
     case (Blk.GetGlobalSettings().typ) of
      _BLK_VYH     : (Blk as TBlkVyhybka).RedukujMenu();
@@ -245,8 +249,7 @@ begin
      _BLK_SCOM    : (Blk as TBlkSCom).RedukujMenu();
     end;
 
-    db[i] := blk_id;
-    Exit;
+    Exit();
    end;
 end;//procedure
 
@@ -260,8 +263,12 @@ begin
    begin
     // smazat prvek z db a zrusit redukci
 
+    // POZOR: poradi je dulezite; njeprve smazat z DB, pak zrusit redukci
+
     Blky.GetBlkByID(db[i], Blk);
     if (Blk = nil) then Exit();
+
+    db[i] := -1;
 
     case (Blk.GetGlobalSettings().typ) of
      _BLK_VYH     : (Blk as TBlkVyhybka).ZrusRedukciMenu();
@@ -272,7 +279,6 @@ begin
      _BLK_ZAMEK   : (Blk as TBlkZamek).Zaver := false;
     end;
 
-    db[i] := -1;
    end;
 end;//procedure
 

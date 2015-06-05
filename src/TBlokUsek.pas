@@ -499,6 +499,10 @@ begin
    Self.Change();
   end;
 
+ // reseni zruseni PRESUN soupravy, ktera jede
+ if ((Self.VlakPresun) and ((Self.Souprava = -1) or ((Self.Souprava > -1) and (Soupravy.soupravy[Self.Souprava].rychlost > 0)))) then
+   Self.VlakPresun := false;
+
  inherited Update();
 end;//procedure
 
@@ -815,8 +819,16 @@ end;//procedure
 procedure TBlkUsek.MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
 var Blk:TBlk;
 begin
+ if (Self.Souprava = -1) then Exit();
+
  if (new_state) then
   begin
+   if (Soupravy.soupravy[Self.Souprava].stanice <> SenderOR) then
+    begin
+     ORTCPServer.SendInfoMsg(SenderPnl, 'Loko se nenachází ve vaši oblasti øízení');
+     Exit();
+    end;
+
    Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
    if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := false;   
    Self.VlakPresun := true;
@@ -887,7 +899,7 @@ begin
 
    if (Self.VlakPresun) then
     menu := menu + 'PØESUÒ vlak<,'
-   else if (Soupravy.soupravy[Self.UsekStav.Spr].rychlost = 0) then
+   else if ((Soupravy.soupravy[Self.UsekStav.Spr].rychlost = 0) and (Soupravy.soupravy[Self.UsekStav.Spr].stanice = SenderOR)) then
      menu := menu + 'PØESUÒ vlak>,';
 
    if (Soupravy.soupravy[Self.UsekStav.Spr].ukradeno) then

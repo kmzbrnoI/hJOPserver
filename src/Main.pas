@@ -1233,12 +1233,7 @@ begin
  Self.LogStatus('Vypínám systémy...');
  SystemData.Status := stopping;
 
- try
-   Soupravy.StopAllSpr();
- except
-   Application.MessageBox('Vyjimka pri zastavovani souprav, reknete to Honzovi', 'Vyjimka', MB_OK OR MB_ICONWARNING);
-   writeLog('StolAllSpr ERROR !!', WR_ERROR, 0);
- end;
+ Soupravy.StopAllSpr();
  Self.LogStatus('Všechny soupravy zastaveny');
 
  Application.ProcessMessages();

@@ -1498,6 +1498,8 @@ var i,j:Integer;
 // je volana, pokud behem staveni dojde k vyjimce
 // napriklad pri kontrole obsazenosti useku v JC apod.
 procedure TJC.CancelStaveni(reason: string = ''; stack_remove:boolean = false);
+var i:Integer;
+    Blk:TBlk;
 begin
  if (reason <> '') then
   begin
@@ -1510,6 +1512,14 @@ begin
       ORTCPServer.PotvrClose(Self.fstaveni.SenderPnl, reason);
     end   
  end;//case Self.Krok
+
+ // staveci zavery jsou zruseny, ostatni zavery zustavaji (lze je vyNUZovat)
+ for i := 0 to Self.data.Useky.Count-1 do
+  begin
+   Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
+   if ((Blk as TBlkUsek).Zaver = TJCType.staveni) then
+      (Blk as TBlkUsek).Zaver := no;
+  end;
 
  Self.Krok := 0;
  Self.fstaveni.nc := false;
@@ -2151,7 +2161,7 @@ procedure TJC.UpdateTimeOut();
 var i:Integer;
     Blk:TBlk;
 begin
- // na zouzovou cestu se nevztahuje timeout
+ // na nouzovou cestu se nevztahuje timeout
  if (not Self.Staveni) then Exit;
 
  if (Now > Self.fstaveni.TimeOut) then
