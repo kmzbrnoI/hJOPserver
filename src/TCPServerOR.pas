@@ -476,7 +476,7 @@ procedure TORTCPServer.OnTcpServerDisconnect(AContext: TIdContext);
 var i:Integer;
 begin
  // vymazeme klienta ze vsech oblasti rizeni
- for i := 0 to (AContext.Data as TTCPORsRef).ORsCnt-1 do
+ for i := (AContext.Data as TTCPORsRef).ORsCnt-1 downto 0 do
   (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
 
  // vymazeme klienta z databaze klientu
@@ -1029,7 +1029,7 @@ begin
  try
    AContext.Connection.IOHandler.WriteLn(str);
  except
-   Exit();
+
  end;
 end;//procedure
 
