@@ -1380,6 +1380,10 @@ var i,j:Integer;
             if (((Blk as TBlkTrat).uvazkaB as TBlkUvazka).OblsRizeni.ORs[0] = (Navestidlo as TBlkSCom).OblsRizeni.ORs[i]) then
                ((Blk as TBlkTrat).uvazkaB as TBlkUvazka).nouzZaver := true;
          end;
+
+        // pokud v trati neni zavedena blokova podminka, zavedeme ji
+        if (((Blk as TBlkTrat).Smer = Self.data.TratSmer) and (not (Blk as TBlkTrat).BP)) then
+          (Blk as TBlkTrat).BP := true;
        end;
 
       // nastavit vyhybky do pozadovanych poloh:
@@ -1473,14 +1477,33 @@ var i,j:Integer;
        end;
 
       // presun soupravy z useku pred navestidlem do posledniho useku JC
-      Blky.GetBlkByID((Navestidlo as TBlkSCom).UsekID, Blk);
+
+      // Presun probehne za techto podminek:
+      //  a) Bud privolavame dos stanice = na dopravni kolej
+      //  b) Nebo privolavame do trate, ktera MUSI byt ve spravnem smeru a MUSI v ni byt zavedena blokova podminka
+
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
-      if (((Blk as TBlkUsek).Souprava > -1) and ((Blk2 as TBlkUsek).Souprava = -1) and ((Blk2 as TBlkUsek).InTrat = -1) and ((Blk2 as TBlkUsek).Stav.stanicni_kolej)) then
+
+      Blky.GetBlkByID((Navestidlo as TBlkSCom).UsekID, Blk);
+      if ((Blk2 as TBlkUsek).InTrat > -1) then
+        Blky.GetBlkByID((Blk2 as TBlkUsek).InTrat, Trat)
+      else
+        Trat := nil;
+
+      if (((Blk as TBlkUsek).Souprava > -1) and ((Blk2 as TBlkUsek).Souprava = -1) and
+           (((Blk2 as TBlkUsek).InTrat = -1) and ((Blk2 as TBlkUsek).Stav.stanicni_kolej) or
+           (((Blk2 as TBlkUsek).InTrat = Self.data.Trat) and ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)))) then
        begin
         if ((Blk as TBlkUsek).InTrat > -1) then
          begin
           Blky.GetBlkByID((Blk as TBlkUsek).InTrat, trat);
           (Trat as TBlkTrat).RemoveSpr((Blk as TBlkUsek).Souprava);
+         end;
+        if (Trat <> nil) then
+         begin
+          (Trat as TBlkTrat).AddSpr((Blk as TBlkUsek).Souprava);
+          (Blk2 as TBlkUsek).Zaver := TJCType.nouz;
+          (Trat as TBlkTrat).Change();
          end;
 
         (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
