@@ -673,9 +673,14 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVyhybka.Unlock();
+var spojka:TBlk;
 begin
- MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
- MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
+ Blky.GetBlkByID(Self.VyhSettings.spojka, spojka);
+ if ((spojka = nil) or ((((spojka as TBlkVyhybka).Zaver = TJCType.no) or ((spojka as TBlkVyhybka).Zaver = TJCType.staveni)) and (not (spojka as TBlkVyhybka).vyhZaver) and (not (spojka as TBlkVyhybka).Stav.locked))) then
+  begin
+   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
+   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
+  end;
 
  Self.VyhStav.locked := false;
 
@@ -909,7 +914,7 @@ begin
   end;
 
  if ((Self.Zaver = TJCType.no) and (not Self.vyhZaver) and (Self.VyhStav.locked) and (Self.VyhStav.redukce_menu = 0) and
-    ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen))) then
+   ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen))) then
   begin
    Self.Unlock();
    changed := true;
