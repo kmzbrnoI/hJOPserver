@@ -764,7 +764,7 @@ begin
  case (Button) of
   right,F2 : Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
   left     : begin
-    if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then
+    if (((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) then
       Self.ShowPanelMenu(SenderPnl, SenderOR, rights)
     else
       if (not Self.SComSettings.zamknuto) then Self.MenuVCStartClick(SenderPnl, SenderOR);
