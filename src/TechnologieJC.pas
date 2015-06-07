@@ -2547,7 +2547,7 @@ begin
  if (not Self.staveni) then Exit();
 
  ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepøestavena '+(Sender as TBlkVyhybka).GetGlobalSettings.name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
- Self.CancelStaveni();
+ Self.CancelStaveni('', true);
  Self.RusJC();
 end;//procedure
 
