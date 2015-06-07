@@ -628,13 +628,13 @@ begin
   end;
 
  Self.UsekStav.zkrat := state;
- Self.Change();
+ Self.Change(true);
 end;//procedure
 
 procedure TBlkUsek.SetZesNap(state:boolean);
 begin
  Self.UsekStav.napajeni := state;
- Self.Change();
+ Self.Change(true);
 end;//procedure
 
 procedure TBlkUsek.SetVlakPresun(presun:boolean);
