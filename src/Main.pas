@@ -1238,12 +1238,7 @@ begin
 
  Application.ProcessMessages();
 
- try
-   ORs.DisconnectPanels();
- except
-   Application.MessageBox('Vyjimka pri odpojovani panelu, reknete to Honzovi', 'Vyjimka', MB_OK OR MB_ICONWARNING);
-   writeLog('DisconnectPanels ERROR !!', WR_ERROR, 0);
- end;
+ ORs.DisconnectPanels();
 
  Self.A_PanelServer_StopExecute(nil);
 
