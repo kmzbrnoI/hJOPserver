@@ -628,7 +628,7 @@ begin
  for i := 0 to Self.Connected.Count-1 do
   begin
    if (Self.Connected[i].Rights < TORControlRights.read) then continue;
-   if ((specificClient <> nil) and (Self.Connected[i].Panel <> specificClient)) then continue;   
+   if ((specificClient <> nil) and (Self.Connected[i].Panel <> specificClient)) then continue;
 
    ORTCPServer.SendLn(Self.Connected[i].Panel, msg);
 
@@ -1393,12 +1393,7 @@ begin
    ORTCPServer.GUIRefreshLine(index);
  end;
 
- // DEBUG
- try
-   Self.stack.ClearStack();
- except
-   Application.MessageBox('ClerStack exception, prosim nahlasit Honzovi', '', MB_OK OR MB_ICONWARNING);
- end;
+ Self.stack.ClearStack();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
