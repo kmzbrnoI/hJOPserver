@@ -814,7 +814,8 @@ begin
    Exit();
   end;
 
- if ((((Self.DNjc = nil) or (Self.DNjc.RozpadBlok > 0)) and (Self.Navest <> 8)) or ((SenderOR as TOR).stack.volba = VZ)) then
+ if (((((Self.DNjc = nil) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) or (Self.DNjc.RozpadBlok > 0)) and (Self.Navest <> 8))
+    or ((SenderOR as TOR).stack.volba = VZ) or (Self.SComStav.ZacatekVolba <> TBlkSCOmVolba.none)) then
   begin
     case (Self.SComStav.ZacatekVolba) of
      TBlkSCOmVolba.VC : menu := menu + 'VC<,';
@@ -825,9 +826,9 @@ begin
       if (Self.SComRel.SymbolType <> 1) then
         menu := menu + 'VC>,!PN>,';
        menu := menu + 'PC>,';
-    end;
+    end;// else ZacatekVOlba <> none ...
 
-   menu := menu + '-,';
+    menu := menu + '-,';
   end;
 
  if (Self.Navest > 0) then
