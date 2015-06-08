@@ -502,8 +502,6 @@ var cmd:integer;
         JC := JCDb.GetJCByIndex(params[0]);
         writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Staveni JC '+JC.Nazev, WR_AUTREZ);
 
-        //to-do: pridat jizdni cestu do bufferu
-        //JCProcedure.AddVCToBuffer(AutRezimy[AC].Kroky[AutRezimy[AC].Krok].Params.Data[0]);
         if (not JC.postaveno) then
          begin
           Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
