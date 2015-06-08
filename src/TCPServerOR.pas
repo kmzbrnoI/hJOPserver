@@ -1025,7 +1025,7 @@ end;//procedure
 
 procedure TORTCPServer.SendLn(AContext:TIDContext; str:string);
 begin
- // vyvolani vyjimky -> spojeni neocekavane preruseno -> melo by zavolat OnDisconnect
+ // vyvolani vyjimky -> spojeni neocekavane preruseno -> melo by zavolat OnDisconnect (automaticky)
  try
    AContext.Connection.IOHandler.WriteLn(str);
  except
@@ -1035,7 +1035,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 // gui metody
-// zajituji konukaci s F_PanelsStatus
+// zajistuji komunikaci s F_PanelsStatus
 
 procedure TORTCPServer.GUIInitTable();
 var i, j:Integer;
@@ -1173,7 +1173,7 @@ begin
     begin
      Self.SendLn(AContext, '-;UPO-CLOSE');
      (AContext.Data as TTCPORsRef).UPO_ref := nil;
-     (AContext.Data as TTCPORsRef).UPO_Esc := nil;
+     (AContext.Data as TTCPORsRef).UPO_OK  := nil;
      (AContext.Data as TTCPORsRef).UPO_Esc := nil;
     end;
  except
