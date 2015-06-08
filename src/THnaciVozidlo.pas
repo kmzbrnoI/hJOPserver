@@ -617,7 +617,6 @@ end;//procedure
 // timto prikazem je lokomotive zapinano / vypinano rucni rizeni
 procedure THV.SetRuc(state:boolean);
 begin
- // to-do: send ruc message to regulators
  if (Self.Stav.ruc = state) then Exit(); 
  Self.Stav.ruc := state;
 
