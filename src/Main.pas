@@ -418,7 +418,6 @@ type
     procedure OnMTBErrStop(errValue: word; errAddr: byte; errMsg:string);
 
     // centrala events:
-    procedure OnCentralaNapajeniChange(Sender:TObject; state:boolean);
     procedure OnCentralaDCCChange(Sender:TObject; state:boolean);
     procedure OnDCCGoError(Sender:TObject; Data:Pointer);
     procedure OnDCCStopError(Sender:TObject; Data:Pointer);
@@ -2128,11 +2127,6 @@ procedure TF_Main.PM_ConsoleClick(Sender: TObject);
 
 ////////////////////////////////////////////////////////////////////////////////
 //centrala events:
-
-procedure TF_Main.OnCentralaNapajeniChange(Sender:TObject; state:boolean);
-begin
- //to-do
-end;
 
 procedure TF_Main.OnCentralaDCCChange(Sender:TObject; state:boolean);
 begin
