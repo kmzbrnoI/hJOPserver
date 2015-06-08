@@ -786,7 +786,7 @@ begin
 
  writelog('Traù '+Self.GlobalSettings.name+ ' : souprava '+Soupravy.soupravy[spr].nazev+' : stanice zmÏnÏna na '+(Soupravy.soupravy[spr].stanice as TOR).Name, WR_SPRPREDAT);
 
- //to-do: zmena smeru soupravy a OR hancich vozidel + sipek LS
+ //to-do: zmena smeru soupravy a OR hancich vozidel + sipek LS pokud maji stanice jiny lichy smer
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
