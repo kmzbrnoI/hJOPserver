@@ -21,14 +21,15 @@ type
 
   //////////////////////////////////////////////////////////////
 
-  TMTBAddr = record //toto se pouziva pro identifikaci desky a portu VSUDE v technologii
-   board:Byte;
-   port:Byte;
+  //toto se pouziva pro identifikaci desky a portu VSUDE v technologii
+  TMTBAddr = record                                     // jedna fyzicke MTB spojeni
+   board:Byte;                                              // cislo desky
+   port:Byte;                                               // cislo portu
   end;
 
-  TMTBBoard=record                                      //MTB deska
+  TMTBBoard=record                                      // jedna MTB deska
     StavVyst:TMTBBoardOutputs;                              // stavy vystupu
-    needed:boolean;
+    needed:boolean;                                         // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
   end;
 
   //////////////////////////////////////////////////////////////
@@ -37,24 +38,25 @@ type
   //     1 - mtb.dll
   //     2 - simulator.dll
 
+  // Technologie MTB
   TMTB=class
    public const
-     _MAX_MTB = 192;
+     _MAX_MTB = 192;                                        // maximalni pocet MTB desek
 
    private
-     Desky:array [0.._MAX_MTB-1] of TMTBBoard;     // pole je indexovano MTB adresami
+     Desky:array [0.._MAX_MTB-1] of TMTBBoard;              // MTB desky, pole je indexovano MTB adresami
 
-     OD:TOutputdriver;                        //pro komunikaci s MTB - Michalova knihovna
+     OD:TOutputdriver;                                      // refenrece na knihovnu pro komunikaci s MTB - Michalova knihovna
 
-     alib:string;                                       //aktualni knihovna
-     aStart,aOpenned:boolean;
-     afilename:string;
+     alib:string;                                           // aktualni pouzivana knihovna
+     aStart,aOpenned:boolean;                               // flag zapnute komunikace a otevreneho zarizeni
+     afilename:string;                                      // filename ke konfiguracnimu souboru
 
-     DllVersion:string;
-     DriverVersion:string;
-     DeviceVersion:string;                             //verze firmware v MTB-USB
+     DllVersion:string;                                     // verze DLL knihovny
+     DriverVersion:string;                                  // verze MTB driveru v DLL knihovne
+     DeviceVersion:string;                                  // verze firmware v MTB-USB
 
-     fGeneralError:boolean;
+     fGeneralError:boolean;                                 // flag oznamujici nastani "MTB general IO error" -- te nejhorsi veci na svete
 
      //events to the main program
      FOnOpen:TMainEvent;
@@ -66,8 +68,8 @@ type
      FOnOpenErr:TErrEvent;
      FOnCloseErr:TErrEvent;
 
-      function LibPossible(Lib:string):boolean;
-      function GetLib:byte;
+      function LibPossible(Lib:string):boolean;             // jestli je mozne nacist danou knihovnu (zadava se filaname)
+      function GetLib():byte;                               // vrati index aktualne nactene knihovny
 
       //events from libraly
       procedure DllBeforeOpen(Sender:TObject);
@@ -82,20 +84,20 @@ type
 
       procedure DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string);
 
-      function GetMTBCount():Byte;
+      function GetMTBCount():Byte;                          // vrati pocet nalezenych MTB desek
 
    public
       constructor Create();
       destructor Destroy; override;
 
-      function Open():Byte;
-      function Close():Byte;
+      function Open():Byte;                                 // otevre MTB zarizeni a naskenuje moduly
+      function Close():Byte;                                // zapne komunikaci
 
-      function LoadLib(NewLib:string;Must:Boolean=false):Byte;          //nacist Lib
-      function Go(ShowForm:boolean = true):Byte;           //spustit komunikaci MTB
-      function Stop:Byte;                                  //zastavit komunikaci MTB
-      procedure InputSim;
-      procedure SoupravaUsekSim;
+      function LoadLib(NewLib:string;Must:Boolean=false):Byte; // nacte MTB knihovnu
+      function Go(ShowForm:boolean = true):Byte;           // spusti komunikaci MTB
+      function Stop:Byte;                                  // zastavi komunikaci MTB
+      procedure InputSim;                                  // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
+      procedure SoupravaUsekSim;                           // nastavit MTB vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
 
       procedure SetOutput(MtbAdr:integer;vystup:integer;state:integer);
       procedure SetInput(MtbAdr:integer;vstup:integer;state:integer);
