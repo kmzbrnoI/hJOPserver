@@ -54,13 +54,10 @@ type
     procedure MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAVOnClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuBPOnClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuBPOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
     procedure PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
     procedure PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
-    procedure PanelPotvrSekvBPOff(Sender:TIdContext; success:boolean);
 
     procedure SetZadost(zadost:boolean);
 
@@ -304,15 +301,6 @@ begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR, 'Zrušení nouzového závìru', TBlky.GetBlksList(Self), nil);
 end;//procedure
 
-procedure TBlkUvazka.MenuBPOnClick(SenderPnl:TIdContext; SenderOR:TObject);
-begin
- (Self.parent as TBlkTrat).BP := true;
-end;//procedure
-
-procedure TBlkUvazka.MenuBPOffClick(SenderPnl:TIdContext; SenderOR:TObject);
-begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvBPOff, SenderOR as TOR, 'Zrušení blokové podmínky', TBlky.GetBlksList(Self), nil);
-end;//procedure
 
 procedure TBlkUvazka.PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
 begin
@@ -327,11 +315,6 @@ end;//procedure
 procedure TBlkUvazka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
 begin
  if (success) then Self.nouzZaver := false;
-end;//procedure
-
-procedure TBlkUvazka.PanelPotvrSekvBPOff(Sender:TIdContext; success:boolean);
-begin
- (Self.parent as TBlkTrat).BP := false;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -382,6 +365,7 @@ begin
            menu := menu + 'UTS,OTS,';
         end;
       end;// else IsFirstUvazka
+     menu := menu + '-,';
     end;// case TTratZZ.souhlas
 
     TTratZZ.bezsouhas:begin
@@ -419,12 +403,11 @@ begin
            menu := menu + 'UTS,OTS,';
         end;
       end;// else IsFirstUvazka
+     menu := menu + '-,';
     end;
 
    end;//case
   end;//if not obsazeno and not zaver
-
- menu := menu + '-,';
 
  if (Self.nouzZaver) then
    menu := menu + '!ZAV<,'
@@ -449,27 +432,6 @@ begin
  else
   if ((not (Self.parent as TBlkTrat).ZAK) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).Obsazeno)) then
    menu := menu + 'ZAK>,';
-
- if ((not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver)) then
-  begin
-   if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
-    begin
-     if (((Self.parent as TBlkTrat).Smer = TTratSmer.AtoB) or ((Self.parent as TBlkTrat).Smer = TTratSmer.zadny)) then
-      begin
-       if ((Self.parent as TBlkTrat).BP) then
-        menu := menu + '!BP<,'
-       else
-        menu := menu + 'BP>,';
-      end;
-    end else begin
-     if (((Self.parent as TBlkTrat).Smer = TTratSmer.BtoA) or ((Self.parent as TBlkTrat).Smer = TTratSmer.zadny)) then
-       if ((Self.parent as TBlkTrat).BP) then
-        menu := menu + '!BP<,'
-       else
-        menu := menu + 'BP>,';
-    end;// else isFirstUvazka
-  end;
-
 
  menu := menu + 'STIT,';
 
@@ -498,8 +460,6 @@ begin
  if (item = 'RBP')  then Self.MenuRBPClick(SenderPnl, SenderOR);
  if (item = 'ZAV>') then Self.MenuZAVOnClick(SenderPnl, SenderOR);
  if (item = 'ZAV<') then Self.MenuZAVOffClick(SenderPnl, SenderOR);
- if (item = 'BP>')  then Self.MenuBPOnClick(SenderPnl, SenderOR);
- if (item = 'BP<')  then Self.MenuBPOffClick(SenderPnl, SenderOR);
 end;//procedure
 
 ///////////////////////////////////////////////////////////////////////////////
