@@ -131,6 +131,8 @@ type
     procedure MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
     procedure MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
 
+    procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
+
     procedure MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
 
@@ -401,14 +403,15 @@ begin
 
  if (Self.frozen) then
   begin
-   if (((TrkSystem.status <> Ttrk_status.TS_ON) or (not Self.ZesNapajeni)) and (Self.ZesZkrat)) then
+   if (((TrkSystem.status <> Ttrk_status.TS_ON) or (not Self.ZesNapajeni) or (Now < TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0))) and (Self.ZesZkrat)) then
     begin
      Self.UsekStav.zkrat := false;
      for i := 0 to Self.ORsRef.Cnt-1 do
        Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt - 1;
-     Self.Change();
+     Self.Change(true);
     end;
-   if ((TrkSystem.status = Ttrk_status.TS_ON) and (not Self.ZesZkrat) and (Self.ZesNapajeni)) then Self.UnFreeze();
+   if ((TrkSystem.status = Ttrk_status.TS_ON) and (not Self.ZesZkrat) and (Self.ZesNapajeni) and
+       (Now > TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0))) then Self.UnFreeze();
    Exit();
   end;
 
@@ -616,6 +619,12 @@ begin
  if (Self.frozen) then
    Self.last_zes_zkrat := state;
 
+ if ((state) and (not Self.frozen) and ((TrkSystem.status <> Ttrk_status.TS_ON) or (not Self.ZesNapajeni) or (Now < TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0)))) then
+  begin
+   Self.Freeze();
+   Exit();
+  end;
+
  if (state) then
   begin
    // do OR oznamime, ze nastal zkrat, pak se prehraje zvuk v klientech...
@@ -711,8 +720,15 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+var menu:string;
 begin
  if (Self.Souprava > -1) then
+   ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR, 'Smazání soupravy '+Soupravy.soupravy[Self.Souprava].nazev, TBlky.GetBlksList(Self), nil);
+end;//procedure
+
+procedure TBlkUsek.PotvrDeleteLok(Sender:TIdContext; success:boolean);
+begin
+ if ((success) and (Self.Souprava > -1)) then
   begin
    Self.UsekStav.VlakPresun := false;
    Soupravy.RemoveSpr(Self.Souprava);
