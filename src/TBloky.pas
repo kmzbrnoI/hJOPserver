@@ -662,12 +662,8 @@ procedure TBlky.SetDCC(state:boolean);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
-  begin
-   if (state) then
-     Self.Data[i].UnFreeze()
-   else
+   if (not state) then
      Self.Data[i].Freeze();
-  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
