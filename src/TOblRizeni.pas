@@ -918,7 +918,7 @@ begin
   if ((HVDb.HVozidla[addr] <> nil) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
     HVDb.HVozidla[addr].UpdateRuc(false);
 
- if (Self.ORStav.ZkratBlkCnt > 0) then
+ if (Self.ORStav.ZkratBlkCnt > 2) then
   ORTCPServer.PlaySound(Sender, _SND_PRETIZENI, 1000);
 end;//procedure
 
@@ -1360,7 +1360,7 @@ var i:Integer;
 begin
  if (new < 0) then Exit(); 
 
- if ((new > 0) and (Self.ORStav.ZkratBlkCnt = 0)) then
+ if ((new > 2) and (Self.ORStav.ZkratBlkCnt = 2)) then
   begin
    // V OR nastal zkrat -> prehrat zvuk
    for i := 0 to Self.Connected.Count-1 do
@@ -1368,7 +1368,7 @@ begin
      ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_PRETIZENI, 1000);
   end;
 
- if ((new = 0) and (Self.ORStav.ZkratBlkCnt > 0)) then
+ if ((new <= 2) and (Self.ORStav.ZkratBlkCnt = 2)) then
   begin
    // zkrat skoncil -> vypnout zvuk
    for i := 0 to Self.Connected.Count-1 do
