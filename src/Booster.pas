@@ -57,7 +57,7 @@ type
 
 implementation
 
-uses GetSystems;
+uses GetSystems, Main;
 
 //file format:
 //  ini file
@@ -163,20 +163,12 @@ begin
  //if not a power, not a overload
  if (not Self.NapajeniOld) then Exit(false);
 
- case (MTB.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port)) of
-  1:Result := true;
- else
-  Result := false;
- end;
+ Result := (MTB.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port) = 1);
 end;//function
 
 function TBooster.GetNapajeni():boolean;
 begin
- case (MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port)) of
-  1:Result := false;
- else
-  Result := true;
- end;
+ Result := (MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port) = 0);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////

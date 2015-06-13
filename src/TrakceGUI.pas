@@ -223,6 +223,7 @@ type
      //     odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
      //     vsak do OR1 (tomu prijde napriklad OK, ci error callback)
 
+    DCCGoTime:TDateTime;
 
      constructor Create(TrkSystem:Ttrk_system; LogObj:TListView; loglevel:Integer = _DEF_LOGLEVEL; logfile:boolean = true; logtable:boolean = true);
      destructor Destroy(); override;
@@ -349,6 +350,7 @@ begin
  Self.CPortData.FlowControl := _DEF_FLOWCONTROL;
 
  Self.turnoff_callback := nil;
+ Self.DCCGoTime := Now;
 
  Self.WriteLog(2, 'BEGIN loglevel='+IntToStr(Self.loglevel));
 end;//ctor
@@ -1388,6 +1390,7 @@ end;//procedure
 
 procedure TTrkGUI.OnTrackStatusChange(Sender: TObject);
 begin
+ if (Self.Trakce.TrackStatus = Ttrk_status.TS_ON) then Self.DCCGoTime := Now;
  F_Main.OnCentralaDCCChange(Self, Self.Trakce.TrackStatus = Ttrk_status.TS_ON);
 end;//procedure
 
