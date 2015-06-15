@@ -363,13 +363,13 @@ object F_BlkTrat: TF_BlkTrat
     object Label7: TLabel
       Left = 17
       Top = 100
-      Width = 153
+      Width = 68
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Typ zabezpe'#269'ovac'#237'ho za'#345#237'zen'#237' :'
+      Caption = 'Typ zab. za'#345'. :'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -416,9 +416,9 @@ object F_BlkTrat: TF_BlkTrat
       TabOrder = 0
     end
     object CB_Trat_Speed: TComboBox
-      Left = 174
+      Left = 104
       Top = 75
-      Width = 146
+      Width = 216
       Height = 21
       Margins.Left = 2
       Margins.Top = 2
@@ -550,9 +550,9 @@ object F_BlkTrat: TF_BlkTrat
       end
     end
     object CB_Trat_ZabZar: TComboBox
-      Left = 174
+      Left = 104
       Top = 99
-      Width = 146
+      Width = 216
       Height = 21
       Margins.Left = 2
       Margins.Top = 2
@@ -568,9 +568,9 @@ object F_BlkTrat: TF_BlkTrat
       ParentFont = False
       TabOrder = 3
       Items.Strings = (
-        'tra'#357'ov'#253' souhlas'
-        'bezsouhlasov'#253' stav'
-        'nab'#237'dka')
+        'pouze souhlasov'#253' stav'
+        'bezsouhlasov'#253' stav bez nab'#237'dky'
+        'bezsouhlasov'#253' stav s nab'#237'dkou')
     end
   end
 end
