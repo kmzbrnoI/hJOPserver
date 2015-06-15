@@ -720,7 +720,6 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var menu:string;
 begin
  if (Self.Souprava > -1) then
    ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR, 'Smazání soupravy '+Soupravy.soupravy[Self.Souprava].nazev, TBlky.GetBlksList(Self), nil);
