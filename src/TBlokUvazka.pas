@@ -84,6 +84,9 @@ type
     function GetSettings():TBlkUvazkaSettings;
     procedure SetSettings(data:TBlkUvazkaSettings);
 
+    procedure UdelSouhlas();
+    function CanZTS():boolean;
+
     property Stitek:string read UvazkaStav.Stit write SetUvazkaStit;
     property ZAK:boolean read UvazkaStav.ZAK write SetUvazkaZAK;
     property enabled:boolean read UvazkaStav.enabled;
@@ -106,7 +109,7 @@ type
 implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
-    TJCDatabase, Main, TCPServerOR, TBlokTrat;
+    TJCDatabase, Main, TCPServerOR, TBlokTrat, Zasobnik;
 
 constructor TBlkUvazka.Create(index:Integer);
 begin
@@ -238,7 +241,10 @@ end;
 
 procedure TBlkUvazka.MenuZTSOnClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.zadost := true;
+ case ((SenderOR as TOR).stack.volba) of
+  TORStackVolba.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
+  TORStackVolba.PV : Self.zadost := true;
+ end;
 end;//procedure
 
 procedure TBlkUvazka.MenuZTSOffClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -248,6 +254,16 @@ end;//procedure
 
 procedure TBlkUvazka.MenuUTSClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
+ case ((SenderOR as TOR).stack.volba) of
+  TORStackVolba.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
+  TORStackVolba.PV : Self.UdelSouhlas();
+ end;
+end;//procedure
+
+procedure TBlkUvazka.UdelSouhlas();
+begin
+ if (not (Self.parent as TBlkTrat).Zadost) then Exit();
+
  case ((Self.parent as TBlkTrat).smer) of
   TTratSmer.AtoB : (Self.parent as TBlkTrat).smer := TTratSmer.BtoA;
   TTratSmer.BtoA : (Self.parent as TBlkTrat).smer := TTratSmer.AtoB;
@@ -260,7 +276,7 @@ begin
  end;
 
  Self.zadost := false;
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuOTSClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -325,89 +341,88 @@ var menu:string;
 begin
  menu := '$'+Self.GlobalSettings.name+',-,';
 
- if ((not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) then
-  begin
-   // pokud je trat volna a neni na ni zaver
-   // tratovy zabezpecovaci system
-   case ((Self.parent as TBlkTrat).GetSettings().zabzar) of
-    TTratZZ.souhlas:begin
-     if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
-      begin
-       // prvni uvazka
-       if (((Self.parent as TBlkTrat).Smer = TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).RBPCan)) then
-        begin
-         // smer B->A
-         if ((Self.parent as TBlkTrat).Zadost) then
-           menu := menu + 'ZTS<,'
-         else
-          if (not (Self.parent as TBlkTrat).nouzZaver) then
-           menu := menu + 'ZTS>,'
-        end else begin
-         // smer A->B
-         if ((Self.parent as TBlkTrat).Zadost) then
-           menu := menu + 'UTS,';
-        end;
+ // tratovy zabezpecovaci system
+ case ((Self.parent as TBlkTrat).GetSettings().zabzar) of
+  TTratZZ.souhlas:begin
 
-      end else begin
-       // druha uvazka
+   if ((not Self.zadost) and ((Self.parent as TBlkTrat).Zadost)) then
+     menu := menu + 'UTS,';
 
-       if ((Self.parent as TBlkTrat).Smer = TTratSmer.AtoB) then
-        begin
-         // smer A->B
-         if (((Self.parent as TBlkTrat).Zadost) and (not (Self.parent as TBlkTrat).RBPCan)) then
-           menu := menu + 'ZTS<,'
-         else
-          if (not (Self.parent as TBlkTrat).nouzZaver) then
-           menu := menu + 'ZTS>,'
-        end else begin
-         // smer B->A
-         if ((Self.parent as TBlkTrat).Zadost) then
-           menu := menu + 'UTS,OTS,';
-        end;
-      end;// else IsFirstUvazka
-     menu := menu + '-,';
-    end;// case TTratZZ.souhlas
+   if ((Self.parent as TBlkTrat).Zadost) then
+     menu := menu + 'ZTS<,';
 
-    TTratZZ.bezsouhas:begin
-    end;
+   if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
+    begin
+     // prvni uvazka
 
-    TTratZZ.nabidka:begin
-     if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
-      begin
-       // prvni uvazka
+     if (((not Self.zadost) and ((Self.parent as TBlkTrat).Smer = TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost) and
+          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
+          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+       menu := menu + 'ZTS>,';
 
-       if (Self.zadost) then
-        begin
-         menu := menu + 'ZTS<,';
-        end else begin
-         // not Self.zadost
-         if (((Self.parent as TBlkTrat).Smer <> TTratSmer.AtoB) and (not (Self.parent as TBlkTrat).Zadost) and (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver)) then
-           menu := menu + 'ZTS>,';
+    end else begin
+     // druha uvazka
 
-         if ((Self.parent as TBlkTrat).Zadost) then
-           menu := menu + 'UTS,OTS,';
-        end;
+     if (((not Self.zadost) and ((Self.parent as TBlkTrat).Smer = TTratSmer.AtoB) and (not (Self.parent as TBlkTrat).Zadost) and
+          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
+          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+       menu := menu + 'ZTS>,';
 
-      end else begin
-       // druha uvazka
+    end;// else IsFirstUvazka
 
-       if (Self.zadost) then
-        begin
-         menu := menu + 'ZTS<,';
-        end else begin
-         // not Self.zadost
-         if (((Self.parent as TBlkTrat).Smer <> TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost) and (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver)) then
-           menu := menu + 'ZTS>,';
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not (Self.parent as TBlkTrat).Zadost)) then
+     menu := menu + 'UTS,';
 
-         if ((Self.parent as TBlkTrat).Zadost) then
-           menu := menu + 'UTS,OTS,';
-        end;
-      end;// else IsFirstUvazka
-     menu := menu + '-,';
-    end;
+   if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
+     menu := menu + 'OTS,';
 
-   end;//case
-  end;//if not obsazeno and not zaver
+   menu := menu + '-,';
+  end;// case TTratZZ.souhlas
+
+  TTratZZ.bezsouhas:begin
+  end;
+
+  TTratZZ.nabidka:begin
+
+   if ((not Self.zadost) and ((Self.parent as TBlkTrat).Zadost)) then
+     menu := menu + 'UTS,';
+
+   if (Self.zadost) then
+     menu := menu + 'ZTS<,';
+
+   if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
+    begin
+     // prvni uvazka
+
+     if (((not Self.zadost) and((Self.parent as TBlkTrat).Smer <> TTratSmer.AtoB) and (not (Self.parent as TBlkTrat).Zadost) and
+          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
+          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+       menu := menu + 'ZTS>,';
+
+    end else begin
+     // druha uvazka
+
+     if (((not Self.zadost) and ((Self.parent as TBlkTrat).Smer <> TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost) and
+          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
+          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+       menu := menu + 'ZTS>,';
+
+    end;// else IsFirstUvazka
+
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not (Self.parent as TBlkTrat).Zadost)) then
+     menu := menu + 'UTS,';
+
+   if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
+     menu := menu + 'OTS,';
+
+   menu := menu + '-,';
+  end;
+
+ end;//case
 
  if (Self.nouzZaver) then
    menu := menu + '!ZAV<,'
@@ -490,6 +505,23 @@ begin
  Self.UvazkaStav.nouzZaver := nouz;
  Self.Change();
 end;//procedure
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Takto zasobnik zjistuje, jestli muze zacit zadost:
+function TBlkUvazka.CanZTS():boolean;
+begin
+ if (((Self.parent as TBlkTrat).Obsazeno) or ((Self.parent as TBlkTrat).Zaver) or
+    ((Self.parent as TBlkTrat).ZAK) or ((Self.parent as TBlkTrat).nouzZaver) or
+    ((Self.parent as TBlkTrat).RBPCan) or ((Self.parent as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas)) then Exit(false);
+
+ if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
+  begin
+   Result := ((not Self.zadost) and ((Self.parent as TBlkTrat).Smer <> TTratSmer.AtoB) and (not (Self.parent as TBlkTrat).Zadost));
+  end else begin
+   Result := ((not Self.zadost) and ((Self.parent as TBlkTrat).Smer <> TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost));
+  end;
+end;//function
 
 end.//unit
 
