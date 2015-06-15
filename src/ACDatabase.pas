@@ -165,7 +165,7 @@ end;//function
 
 function TACDb.RemoveAC(index:Cardinal):Integer;
 begin
- if (index >= Self.ACs.Count) then Exit(1);
+ if (Integer(index) >= Self.ACs.Count) then Exit(1);
  Self.ACs[index].Free();
  Self.ACs.Delete(index);
  ACTableData.RemoveAC(index);
