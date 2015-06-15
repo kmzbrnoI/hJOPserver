@@ -890,7 +890,7 @@ begin
      if (Assigned(podminky[i].blok)) then
       begin
        try
-         str := str + '('+(podminky[i].blok as TBlk).GetGlobalSettings.name + '|' + podminky[i].podminka + ')';
+         str := str + '{'+(podminky[i].blok as TBlk).GetGlobalSettings.name + '|' + podminky[i].podminka + '}';
        except
 
        end;
@@ -961,7 +961,7 @@ begin
     begin
      if (items[i][j].str = '') then break;
 
-     str := str + '(';
+     str := str + '{';
 
      case (items[i][j].align) of
       taLeftJustify  : str := str + 'L|';
@@ -973,7 +973,7 @@ begin
       str := str + PrevodySoustav.ColorToStr(items[i][j].fg) + '|';
      if (items[i][j].bg <> clNone) then
       str := str + PrevodySoustav.ColorToStr(items[i][j].bg) + '|';
-     str := str + items[i][j].str + ')';
+     str := str + items[i][j].str + '}';
     end;//for j
    str := str + ']';
   end;//for i

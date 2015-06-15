@@ -1522,7 +1522,7 @@ begin
 
  str := Self.id + ';OSV;';
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   str := str + '(' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(MTB.GetOutputs(Self.ORProp.Osvetleni[i].board)[Self.ORProp.Osvetleni[i].port]) + ')';
+   str := str + '{' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(MTB.GetOutputs(Self.ORProp.Osvetleni[i].board)[Self.ORProp.Osvetleni[i].port]) + '}';
  ORTCPServer.SendLn(Sender, str);
 end;//procedure
 
@@ -1559,7 +1559,7 @@ begin
  Result := '';
  for i := 0 to _MAX_SPR-1 do
    if ((Assigned(Soupravy.soupravy[i])) and (Soupravy.soupravy[i].stanice = Self)) then
-    Result := Result + '(' + Soupravy.soupravy[i].GetPanelString() + ')';
+    Result := Result + '{' + Soupravy.soupravy[i].GetPanelString() + '}';
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

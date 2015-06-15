@@ -220,7 +220,7 @@ var i:Integer;
 begin
  str := '-;OR-LIST;';
  for i := 0 to Self.ORsDatabase.Cnt-1 do
-   str := str + '(' + Self.ORsDatabase.Data[i].id + ',' + Self.ORsDatabase.Data[i].Name + ')';
+   str := str + '{' + Self.ORsDatabase.Data[i].id + ',' + Self.ORsDatabase.Data[i].Name + '}';
 
  ORTCPServer.SendLn(Context, str);
 end;//procedure
