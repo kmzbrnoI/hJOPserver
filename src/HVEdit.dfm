@@ -505,6 +505,7 @@ object F_HVEdit: TF_HVEdit
       item
         Caption = 'Data'
       end>
+    ReadOnly = True
     RowSelect = True
     SortType = stData
     TabOrder = 12
