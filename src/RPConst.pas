@@ -12,9 +12,7 @@ const
  _SB_INT      = 2;
  _SB_POZICE   = 3;
  _SB_SBERNICE = 4;
- _SB_SERVER   = 5;
- _SB_KLIENT   = 6;
- _SB_PROC     = 7;
+ _SB_PROC     = 5;
 
  _CONSOLE_V   = '1.5';
  _VERSION_PR  = '';
