@@ -517,7 +517,7 @@ begin
  data := AContext.Connection.IOHandler.ReadLn();
 
  Self.parsed.Clear();
- ExtractStrings([';'], [], PChar(data), Self.parsed);
+ ExtractStringsEx([';'], [#13, #10], data, Self.parsed);
 
  try
    // zakladni rozdeleni parsovani - na data, ktera jsou obecna a na data pro konkretni oblast rizeni
@@ -766,7 +766,11 @@ begin
    (AContext.Data as TTCPORsRef).ORs[i].PanelHVList(AContext)
 
  else if (parsed[1] = 'SPR-CHANGE') then
-   (AContext.Data as TTCPORsRef).ORs[i].PanelSprChange(AContext, RightStr(Self.data, Length(Self.data)-Length(parsed[1])-Length(parsed[0])-2 ))
+  begin
+   parsed.Delete(0);
+   parsed.Delete(0);
+   (AContext.Data as TTCPORsRef).ORs[i].PanelSprChange(AContext, parsed);
+  end
 
  else if (parsed[1] = 'LOK-MOVE-OR') then
    (AContext.Data as TTCPORsRef).ORs[i].PanelMoveLok(AContext, StrToInt(parsed[2]), parsed[3])
@@ -890,7 +894,7 @@ begin
      if (Assigned(podminky[i].blok)) then
       begin
        try
-         str := str + '{'+(podminky[i].blok as TBlk).GetGlobalSettings.name + '|' + podminky[i].podminka + '}';
+         str := str + '['+(podminky[i].blok as TBlk).GetGlobalSettings.name + '|' + podminky[i].podminka + ']';
        except
 
        end;
@@ -961,7 +965,7 @@ begin
     begin
      if (items[i][j].str = '') then break;
 
-     str := str + '{';
+     str := str + '[';
 
      case (items[i][j].align) of
       taLeftJustify  : str := str + 'L|';
@@ -973,7 +977,7 @@ begin
       str := str + PrevodySoustav.ColorToStr(items[i][j].fg) + '|';
      if (items[i][j].bg <> clNone) then
       str := str + PrevodySoustav.ColorToStr(items[i][j].bg) + '|';
-     str := str + items[i][j].str + '}';
+     str := str + items[i][j].str + ']';
     end;//for j
    str := str + ']';
   end;//for i

@@ -49,6 +49,10 @@ object F_Licence: TF_Licence
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Licence'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object L_Lic4: TLabel
         Left = 8
         Top = 8
@@ -108,6 +112,10 @@ object F_Licence: TF_Licence
       Margins.Bottom = 2
       Caption = 'Multilicence'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object L_Lic1: TLabel
         Left = 8
         Top = 8
@@ -216,6 +224,10 @@ object F_Licence: TF_Licence
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object L_Lic5: TLabel
         Left = 8
         Top = 8

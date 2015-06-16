@@ -42,7 +42,7 @@ type
     filefront:Integer;
 
     procedure LoadFromFile(ini:TMemIniFile; const section:string);
-    procedure LoadFromPanelStr(str:string; Usek:TObject; OblR:TObject);
+    procedure LoadFromPanelStr(spr:TStrings; Usek:TObject; OblR:TObject);
 
     procedure ReleaseAllLoko();
 
@@ -60,14 +60,14 @@ type
     changed:boolean;
 
     constructor Create(ini:TMemIniFile; const section:string; index:Integer); overload;
-    constructor Create(panelStr:string; Usek:TObject; index:Integer; OblR:TObject); overload;
+    constructor Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject); overload;
     destructor Destroy(); override;
 
     procedure SaveToFile(ini:TMemIniFile; const section:string);
 
     function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
 
-    procedure UpdateSprFromPanel(str:string; Usek:TObject; OblR:TObject);
+    procedure UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject);
 
     procedure SetRychlostSmer(speed:Integer; dir:THVStanoviste);
 
@@ -109,7 +109,7 @@ begin
  Self.LoadFromFile(ini, section);
 end;//ctor
 
-constructor TSouprava.Create(panelStr:string; Usek:TObject; index:Integer; OblR:TObject);
+constructor TSouprava.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject);
 begin
  inherited Create();
  Self.findex := index;
@@ -197,7 +197,7 @@ end;//procedure
 function TSouprava.GetPanelString():string;
 var i:Integer;
 begin
- Result := Self.data.nazev + ';' + IntToStr(Self.data.pocet_vozu) + ';' + Self.data.poznamka + ';';
+ Result := Self.data.nazev + ';' + IntToStr(Self.data.pocet_vozu) + ';{' + Self.data.poznamka + '};';
 
  if (Self.data.smer_L) then
   Result := Result + '1'
@@ -209,33 +209,32 @@ begin
  else
   Result := Result + '0';
 
- Result := Result + ';' + IntToStr(Self.data.delka) + ';' + Self.data.typ + ';';
+ Result := Result + ';' + IntToStr(Self.data.delka) + ';' + Self.data.typ + ';{';
 
  for i := 0 to Self.data.HV.cnt-1 do
-  Result := Result + '[' + HVDb.HVozidla[Self.data.HV.HVs[i]].GetPanelLokString() + ']';
+  Result := Result + '[{' + HVDb.HVozidla[Self.data.HV.HVs[i]].GetPanelLokString(false) + '}]';
+ Result := Result + '}';
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;delka;typ;hnaci vozidla
-// format hnaciho vozidla: nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce
-procedure TSouprava.LoadFromPanelStr(str:string; Usek:TObject; OblR:TObject);
-var data,hvs,hv:TStrings;
+// format hnaciho vozidla:  nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce
+procedure TSouprava.LoadFromPanelStr(spr:TStrings; Usek:TObject; OblR:TObject);
+var hvs,hv:TStrings;
     i,j,timeout:Integer;
     old:TSoupravaHV;
     Func:TFunkce;
 begin
- data := TStringList.Create();
  hvs  := TStringList.Create();
  hv   := TStringList.Create();
- ExtractStringsEx([';'], str, data);
 
  // zkontrolujeme, jestli nejaka souprava s timto cislem uz nahodou neexistuje
  for i := 0 to _MAX_SPR-1 do
   begin
    if (soupravy.soupravy[i] = nil) then continue;
 
-   if ((Soupravy.soupravy[i].nazev = data[0]) and (Soupravy.soupravy[i] <> Self)) then
+   if ((Soupravy.soupravy[i].nazev = spr[0]) and (Soupravy.soupravy[i] <> Self)) then
     begin
      if (Soupravy.soupravy[i].stanice <> nil) then
        raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' již existuje v OØ '+(Soupravy.soupravy[i].stanice as TOR).Name)
@@ -246,25 +245,25 @@ begin
     end;
   end;
 
- Self.data.nazev := data[0];
- Self.data.pocet_vozu := StrToInt(data[1]);
- Self.data.poznamka := data[2];
- if (data[3][1] = '1') then
+ Self.data.nazev := spr[0];
+ Self.data.pocet_vozu := StrToInt(spr[1]);
+ Self.data.poznamka := spr[2];
+ if (spr[3][1] = '1') then
    Self.data.smer_L := true
  else
    Self.data.smer_L := false;
- if (data[3][2] = '1') then
+ if (spr[3][2] = '1') then
    Self.data.smer_S := true
  else
    Self.data.smer_S := false;
 
- Self.data.delka := StrToInt(data[4]);
- Self.data.typ   := data[5];
+ Self.data.delka := StrToInt(spr[4]);
+ Self.data.typ   := spr[5];
 
  Self.data.OblRizeni := OblR;
  Self.data.front     := Usek;
 
- ExtractStrings(['[', ']'], [], PChar(data[6]), hvs);
+ ExtractStringsEx([']'], ['['], spr[6], hvs);
 
  // nejprve si zapamtujeme stara hnaci vozidla na souprave, abychom pak vedeli rozdil
  old.cnt := Self.data.HV.cnt;
@@ -276,7 +275,7 @@ begin
  for i := 0 to Self.data.HV.cnt-1 do
   begin
    hv.Clear();
-   ExtractStringsEx(['|'], hvs[i], hv);
+   ExtractStringsEx(['|'], [], hvs[i], hv);
    Self.data.HV.HVs[i] := StrToInt(hv[4]);
 
    if (not Assigned(HVDb.HVozidla[Self.data.HV.HVs[i]])) then
@@ -343,7 +342,6 @@ begin
  Self.UvolV(old, Self.data.HV);
  Self.SetRychlostSmer(Self.rychlost, Self.smer);
 
- data.Free();
  hvs.Free();
  hv.Free();
 
@@ -354,9 +352,9 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.UpdateSprFromPanel(str:string; Usek:TObject; OblR:TObject);
+procedure TSouprava.UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject);
 begin
- Self.LoadFromPanelStr(str, Usek, OblR);
+ Self.LoadFromPanelStr(spr, Usek, OblR);
  (Usek as TBlkUsek).Change();
 
  if ((Usek as TBlkUsek).SComJCRef <> nil) then

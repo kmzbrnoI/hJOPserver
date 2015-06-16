@@ -363,7 +363,7 @@ object F_Main: TF_Main
         BiDiMode = bdLeftToRight
         ParentBiDiMode = False
         Text = 'log'
-        Width = 465
+        Width = 700
       end
       item
         Alignment = taCenter
@@ -385,13 +385,6 @@ object F_Main: TF_Main
       item
         Text = 'Rychlost sbernice : x ms'
         Width = 150
-      end
-      item
-        Width = 150
-      end
-      item
-        Alignment = taCenter
-        Width = 110
       end
       item
         Text = 'CPU'
@@ -735,10 +728,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Bloky: TListView
         Left = 0
         Top = 40
@@ -1002,10 +991,6 @@ object F_Main: TF_Main
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_HV: TListView
         Left = 0
         Top = 40
@@ -1216,10 +1201,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Soupravy'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Soupravy: TListView
         Left = 0
         Top = 40
@@ -1384,10 +1365,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Oblasti '#345#237'zen'#237
       ImageIndex = 16
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stanice: TListView
         Left = 0
         Top = 40
@@ -1506,10 +1483,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Zesilova'#269'e'
       ImageIndex = 20
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
@@ -1736,10 +1709,6 @@ object F_Main: TF_Main
       Caption = 'AC'
       ParentShowHint = False
       ShowHint = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_AC_Db: TListView
         Left = 0
         Top = 40
@@ -2094,10 +2063,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'#233
       ImageIndex = 23
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Users: TListView
         Left = 0
         Top = 40
@@ -2250,10 +2215,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav MTB'
       ImageIndex = -1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stav_MTB: TListView
         Left = 0
         Top = 0
@@ -2326,10 +2287,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'J'#237'zdn'#237' cesty'
       ImageIndex = 24
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_VC_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -2584,10 +2541,6 @@ object F_Main: TF_Main
     object TS_MultiJC: TTabSheet
       Caption = 'Slo'#382'en'#233' j'#237'zdn'#237' cesty'
       ImageIndex = 12
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 0
@@ -2724,10 +2677,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Prim'#225'rn'#237' LOG'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log: TListView
         Left = 0
         Top = 24
@@ -2806,10 +2755,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'LOG komunikace s centr'#225'lou'
       ImageIndex = 14
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log_lnet: TListView
         Left = 0
         Top = 24
@@ -2890,7 +2835,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 2
           OnChange = CB_centrala_loglevelChange
           Items.Strings = (
@@ -3062,32 +3007,11 @@ object F_Main: TF_Main
     end
     object M_Reset: TMenuItem
       Caption = 'Reset'
-      object PM_RExtVyst: TMenuItem
-        Bitmap.Data = {
-          EE000000424DEE0000000000000076000000280000000F0000000F0000000100
-          0400000000007800000000000000000000001000000000000000000000000000
-          8000008000000080800080000000800080008080000080808000C0C0C0000000
-          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00898880888988
-          8080989808089898080098980808989808008988808889888080888888888888
-          8880888888888888888089888088898880808988808889888080898880888988
-          8080898880888988808089888088898880808988808889888080898880888988
-          808089888088898880808988808889888080}
-        Caption = 'Vynulovat v'#253'stupy na existuj'#237'c'#237'ch MTB'
-        Enabled = False
-        ImageIndex = 28
-        OnClick = PM_RExtVystClick
-      end
       object PM_ResetV: TMenuItem
         Caption = 'Prestavit vyh'#253'bky do z'#225'kladn'#237' polohy'
         Enabled = False
         ImageIndex = 27
         OnClick = PM_ResetVClick
-      end
-      object PM_Reset: TMenuItem
-        Caption = 'Reset programu'
-        ImageIndex = 34
-        ShortCut = 119
-        OnClick = PM_ResetClick
       end
     end
     object M_Dalsi: TMenuItem
@@ -3180,7 +3104,7 @@ object F_Main: TF_Main
     Left = 1032
     Top = 456
     Bitmap = {
-      494C010101004801580214000E00FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010101004801680214000E00FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000000E00000001002000000000008011
       00000000000000000000000000000000000000000000FFFFFF00F7FFFF00F7FF
       FF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FF
@@ -3336,7 +3260,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010135005C016C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010135005C017C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       0000000000000000000000000000000000000000000010108C0010108C001010
       8C00000000000000000000000000000000000000000000000000000000000000
@@ -5202,7 +5126,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010C007802A8021000100000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010C007802B8021000100000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -5743,7 +5667,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C010106004801580210000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C010106004801680210000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -6089,7 +6013,7 @@ object F_Main: TF_Main
     Left = 1224
     Top = 456
     Bitmap = {
-      494C010164006001700208000C0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C010164006001800208000C0000000000FF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000020000000380100000100200000000000009C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -167,7 +167,7 @@ begin
    //parsing *.spnl
    str := TStringList.Create();
 
-   ExtractStrings([';'],[],PChar(ini_rel.ReadString('PRJ',IntToStr(Self.GlobalSettings.id),'')), str);
+   ExtractStringsEx([';'], [], ini_rel.ReadString('PRJ', IntToStr(Self.GlobalSettings.id), ''), str);
    if (str.Count > 0) then
      Self.ORsRef := ORs.ParseORs(str[0]);
 

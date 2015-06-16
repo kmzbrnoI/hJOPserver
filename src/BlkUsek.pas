@@ -309,12 +309,12 @@ var glob:TBlkSettings;
    begin
     settings.Zastavka.IR_lichy  := Blky.GetBlkID(Self.CB_ZastIRData[Self.CB_Zast_IR_lichy.ItemIndex]);
     settings.Zastavka.IR_sudy   := Blky.GetBlkID(Self.CB_ZastIRData[Self.CB_Zast_IR_sudy.ItemIndex]);
-    ExtractStrings([','], [' '], PChar(Self.E_Zast_Spr.Text), settings.Zastavka.soupravy);
+    ExtractStringsEx([','], [' '], Self.E_Zast_Spr.Text, settings.Zastavka.soupravy);
     settings.Zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
     try
       settings.Zastavka.delay   := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)), StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
-      Application.MessageBox('Nesprávnì zadný èas èekání v zastávce', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Nesprávnì zadaný èas èekání v zastávce', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
    end else begin

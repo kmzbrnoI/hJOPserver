@@ -28,7 +28,7 @@ type
       function LoadData(const filename:string):Byte;
       function SaveData(const filename:string):Byte;
 
-      procedure AddSprFromPanel(spr:string; usek:TObject; OblR:TObject);
+      procedure AddSprFromPanel(spr:TStrings; usek:TObject; OblR:TObject);
       procedure RemoveSpr(index:Integer);
 
       function GetSprNameByIndex(index:Integer):string;
@@ -169,7 +169,7 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.AddSprFromPanel(spr:string; Usek:TObject; OblR:TObject);
+procedure TSprDb.AddSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject);
 var i:Integer;
 begin
  for i := 0 to _MAX_SPR-1 do

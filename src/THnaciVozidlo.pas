@@ -117,7 +117,7 @@ type
      procedure RemoveStats();                          // smaz statistiky najeto
 
      function PredejStanici(st:TOR):Integer;           // predej HV jine stanici
-     function GetPanelLokString():string;              // vrati HV ve standardnim formatu pro klienta
+     function GetPanelLokString(pom:boolean = true):string; // vrati HV ve standardnim formatu pro klienta
      procedure UpdateRuc(send_remove:boolean = true);  // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
      procedure RemoveRegulator(conn:TIDContext);       // smaze regulator -- klienta
      function IsReg(conn:TIdContext):boolean;          // je na tomto HV tento regulator ?
@@ -240,7 +240,7 @@ begin
 
   try
     // na prvnim radku jsou obecna data
-    ExtractStringsEx([';'], Radek[0], pole_dat);
+    ExtractStringsEx([';'], [], Radek[0], pole_dat);
 
     if (Pole_dat.Count < 16) then Exit(1);
 
@@ -276,7 +276,7 @@ begin
     if (radek[1] <> '') then
      begin
       pole_dat.Clear();
-      ExtractStringsEx([';'], Radek[1], pole_dat);
+      ExtractStringsEx([';'], [], Radek[1], pole_dat);
       for i := 0 to _HV_FUNC_MAX do
        if (i < pole_dat.Count) then
         Self.Stav.funkce[i] := PrevodySoustav.StrToBool(pole_dat[i])
@@ -368,8 +368,8 @@ begin
   line :=
     Self.Data.Nazev+';'+
     Self.Data.Majitel+';'+
-    Self.Data.Oznaceni+';'+
-    Self.Data.Poznamka+';'+
+    Self.Data.Oznaceni+';{'+
+    Self.Data.Poznamka+'};'+
     IntToStr(Self.adresa)+';'+
     IntToStr(Integer(Self.Data.Trida))+';';
 
@@ -430,13 +430,14 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.GetPanelLokString():string;
+function THV.GetPanelLokString(pom:boolean = true):string;
 var i:Integer;
     func:TFunkce;
+    pomCV:THVPOMCv;
 begin
- // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce|rychlost_stupne|rychlost_kmph|smer|
+ // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce|rychlost_stupne|rychlost_kmph|smer|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
  // souprava je bud cislo soupravy, nebo znak '-'
- Result := Self.Data.Nazev + '|' + Self.Data.Majitel + '|' + Self.Data.Oznaceni + '|' + Self.Data.Poznamka + '|' +
+ Result := Self.Data.Nazev + '|' + Self.Data.Majitel + '|' + Self.Data.Oznaceni + '|{' + Self.Data.Poznamka + '}|' +
            IntToStr(Self.adresa) + '|' + IntToStr(Integer(Self.Data.Trida)) + '|';
 
  if (Self.Stav.souprava > -1) then
@@ -457,7 +458,21 @@ begin
   end;
 
  Result := Result + '|' + IntToStr(Self.Slot.speed) + '|' +
-           IntToStr(TrkSystem.GetStepSpeed(Self.Slot.speed)) + '|' + IntToStr(Self.Slot.smer);
+           IntToStr(TrkSystem.GetStepSpeed(Self.Slot.speed)) + '|' + IntToStr(Self.Slot.smer) + '|';
+
+ if (pom) then
+  begin
+   // cv-take
+   Result := Result + '{';
+   for pomCV in Self.Data.POMtake do
+     Result := Result + '[{' + IntToStr(POMcv.cv) + '|' + IntToStr(POMcv.data) + '}]';
+   Result := Result + '}|{';
+
+   // cv-release
+   for pomCV in Self.Data.POMrelease do
+     Result := Result + '[{' + IntToStr(POMcv.cv) + '|' + IntToStr(POMcv.data) + '}]';
+   Result := Result + '}|';
+  end;// if pom
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -479,14 +494,18 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|-|stanovisteA|funkce
+// format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|-|stanovisteA|funkce|||{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
 // na miste znaku - obvykle byva souprava, pri nacitani hnaciho vozidla tuto polozku nemenime -> je tam pomlcka
 procedure THV.UpdateFromPanelString(data:string);
-var str:TStrings;
+var str, str2, str3:TStrings;
     i:Integer;
+    pomCv:THVPomCv;
+    tmp:string;
 begin
  str := TStringList.Create();
- ExtractStringsEx(['|'], data, str);
+ str2 := TStringList.Create();
+ str3 := TStringList.Create();
+ ExtractStringsEx(['|'], [], data, str);
 
  try
   Self.Data.Nazev       := str[0];
@@ -504,6 +523,35 @@ begin
      '1' : Self.Stav.funkce[i] := true;
     end;
    end;
+
+  if (str.Count >= 12) then
+   begin
+     // pom-take
+     str2.Clear();
+     Self.Data.POMtake.Clear();
+     ExtractStringsEx([']'] , ['['], str[12], str2);
+     for tmp in str2 do
+      begin
+       str3.Clear();
+       ExtractStringsEx(['|'] , [], tmp, str3);
+       pomCV.cv   := StrToInt(str3[0]);
+       pomCV.data := StrToInt(str3[1]);
+       Self.Data.POMtake.Add(pomCV);
+      end;
+
+     // pom-release
+     str2.Clear();
+     Self.Data.POMrelease.Clear();
+     ExtractStringsEx([']'] , ['['], str[13], str2);
+     for tmp in str2 do
+      begin
+       str3.Clear();
+       ExtractStringsEx(['|'] , [], tmp, str3);
+       pomCV.cv   := StrToInt(str3[0]);
+       pomCV.data := StrToInt(str3[1]);
+       Self.Data.POMrelease.Add(pomCV);
+      end;
+   end;
  except
   on e:Exception do
    begin
@@ -518,6 +566,8 @@ begin
    Blky.ChangeSprToTrat(Self.Stav.souprava);
 
  str.Free();
+ str2.Free();
+ str3.Free();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -149,7 +149,7 @@ var M_Vysvetlivky:TMemo;
   M_Vysvetlivky.Lines.LoadFromFile(LicFile);
 
   PoleDat.Clear;
-  ExtractStringsEx([';'],M_Vysvetlivky.Text,PoleDat);
+  ExtractStringsEx([';'], [], M_Vysvetlivky.Text, PoleDat);
 
   PrazdnaPolozka := false;
   for cyklus := 0 to 5 do
@@ -181,7 +181,7 @@ var M_Vysvetlivky:TMemo;
   //nacitani jmena zacatek
   Buffer := '';
   BufferStr.Clear;
-  ExtractStringsEx(['-'],PoleDat[0],BufferStr);
+  ExtractStringsEx(['-'], [], PoleDat[0], BufferStr);
   for cyklus := 0 to BufferStr.Count-1 do
    begin
     Buffer := Buffer + chr(StrToInt(BufferStr[cyklus]));
@@ -191,7 +191,7 @@ var M_Vysvetlivky:TMemo;
   //nacitani prijmeni zacatek
   Buffer := '';
   BufferStr.Clear;
-  ExtractStringsEx(['-'],PoleDat[1],BufferStr);
+  ExtractStringsEx(['-'], [], PoleDat[1], BufferStr);
   for cyklus := 0 to BufferStr.Count-1 do
    begin
     Buffer := Buffer + chr(StrToInt(BufferStr[cyklus]));
@@ -201,7 +201,7 @@ var M_Vysvetlivky:TMemo;
   //nacitani spolecnosti zacatek
   Buffer := '';
   BufferStr.Clear;
-  ExtractStringsEx(['-'],PoleDat[2],BufferStr);
+  ExtractStringsEx(['-'], [], PoleDat[2], BufferStr);
   for cyklus := 0 to BufferStr.Count-1 do
    begin
     Buffer := Buffer + chr(StrToInt(BufferStr[cyklus]));

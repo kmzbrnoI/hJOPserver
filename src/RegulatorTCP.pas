@@ -522,9 +522,9 @@ begin
    // odpoved na pozadavek o autorizaci rizeni hnaciho vozidla
    // kdyz loko prebirame, je odesilana automaticky
    if (HV.ruc) then
-     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;total;'+HV.GetPanelLokString())
+     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;total;{'+HV.GetPanelLokString(false)+'}')
    else
-     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;ok;'+HV.GetPanelLokString());
+     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;ok;{'+HV.GetPanelLokString(false)+'}');
   end;
 end;//procedure
 

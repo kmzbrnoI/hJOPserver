@@ -23,7 +23,6 @@ type
     PM_Nastaveni: TMenuItem;
     M_Reset: TMenuItem;
     PM_ResetV: TMenuItem;
-    PM_Reset: TMenuItem;
     AE_1: TApplicationEvents;
     SB1: TStatusBar;
     N1: TMenuItem;
@@ -51,7 +50,6 @@ type
     N5: TMenuItem;
     T_konflikty: TTimer;
     PM_system_reset: TMenuItem;
-    PM_RExtVyst: TMenuItem;
     P_Pozadi: TPanel;
     P_Date: TPanel;
     P_Time: TPanel;
@@ -246,9 +244,7 @@ type
     MI_Disconnect: TMenuItem;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
-    procedure PM_RAllVystClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
-    procedure PM_ResetClick(Sender: TObject);
     procedure PM_lib_MTBClick(Sender: TObject);
     procedure PM_lib_SimClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -260,7 +256,6 @@ type
     procedure T_functionTimer(Sender: TObject);
     procedure T_konfliktyTimer(Sender: TObject);
     procedure PM_system_resetClick(Sender: TObject);
-    procedure PM_RExtVystClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure L_DateDblClick(Sender: TObject);
     procedure PM_MTBDriver_AboutClick(Sender: TObject);
@@ -436,9 +431,7 @@ type
  end;
 
  TReset=class                                       //procedury pro resetovani programu
-  procedure ResetProgramu;                           //celkovy reset programu
   procedure ZakladniPolohaVyhybek;                   //zakladni poloha vyhybek
-  procedure VynulovatVystupy(central:boolean);       //vynulovat vystupy
  end;
 
 TStav=record                                        //stav systemu
@@ -478,7 +471,7 @@ var
   AutSpusteniPocitadlo:Byte;               //pocitani v timeru do automatickeho spusteni komunikace
   NUZClose:Boolean;
 
-  procedure ExtractStringsEx(Separators: TSysCharSet; Content: string; Strings: TStrings);
+  procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
 
 implementation
 
@@ -579,11 +572,6 @@ begin
   end;
 end;
 
-procedure TF_Main.PM_RAllVystClick(Sender: TObject);                             //vynulovani vystupu
- begin
-  ResetData.VynulovatVystupy(true);
- end;
-
 procedure TF_Main.Timer1Timer(Sender: TObject);                                  //hlavni timer
  begin
   try
@@ -628,15 +616,6 @@ begin
    end;
   end;//if
 end;//procedure
-
-procedure TF_Main.PM_ResetClick(Sender: TObject);                                //reset programu
- begin
-  beep;
-  if (Application.Messagebox('Opravdu chcete vyresetovat program?','Reset programu',MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES) then
-   begin
-    ResetData.ResetProgramu;
-   end;
- end;
 
 procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);//konec krizkem
  begin
@@ -978,7 +957,6 @@ begin
     A_MTB_Stop.Enabled   := true;
 
     PM_Tester.Enabled    := true;
-    PM_RExtVyst.Enabled  := true;
     PM_ResetV.Enabled    := true;
 
     SB1.Panels.Items[_SB_MTB].Text := 'MTB started';
@@ -1027,7 +1005,6 @@ begin
     A_MTB_Stop.Enabled    := false;
     A_MTB_Close.Enabled   := true;
 
-    PM_RExtVyst.Enabled   := false;
     PM_ResetV.Enabled     := false;
     PM_Tester.Enabled     := false;
 
@@ -1498,22 +1475,6 @@ begin
   end;
 end;//procedure
 
-//centralni reset programu
-procedure TReset.ResetProgramu;
- begin
-   writelog('Probiha resetování programu...', WR_MESSAGE);
-
-   //nastaveni kurzoru na normalni a jeho zobrazeni
-   Screen.Cursor := crDefault;
-   ShowCursor(true);
-   writelog('Kurzor zobrazen a nastaven na normální', WR_MESSAGE);
-
-   //detekce postavenych VC a ruseni
-   JCDB.RusAllJC();
-
-   writelog('Vyresetován program', WR_MESSAGE);
- end;//procedure
-
 procedure TReset.ZakladniPolohaVyhybek;
 var i:Integer;
     Blk:TBlk;
@@ -1525,12 +1486,6 @@ var i:Integer;
     (Blk as TBlkVyhybka).SetPoloha(plus);
    end;//for cyklus
   writelog('Vyhýbky pøestaveny do základní polohy', WR_MESSAGE);
- end;//procedure
-
-procedure TReset.VynulovatVystupy;
- begin
-  MTB.NullOutputs;
-  writelog('Vynulovány existující výstupy', WR_MESSAGE);
  end;//procedure
 
 procedure TF_Main.PM_SB1Click(Sender: TObject);
@@ -1664,11 +1619,6 @@ begin
  Self.A_System_StopExecute(Self);
 end;
 
-procedure TF_Main.PM_RExtVystClick(Sender: TObject);
-begin
- ResetData.VynulovatVystupy(false);
-end;
-
 function TLogData.CreateLogDirectories:boolean;
  begin
   Result := true;
@@ -1733,7 +1683,7 @@ procedure TF_Main.RepaintObjects;
  begin
   SB1.Top:=F_Main.ClientWidth-SB1.Width;
   SB1.Panels.Items[0].Width:=F_Main.ClientWidth-SB1.Panels.Items[1].Width-SB1.Panels.Items[2].Width-
-  SB1.Panels.Items[3].Width-SB1.Panels.Items[4].Width-SB1.Panels.Items[5].Width-SB1.Panels.Items[6].Width-SB1.Panels.Items[7].Width;
+  SB1.Panels.Items[3].Width-SB1.Panels.Items[4].Width-SB1.Panels.Items[5].Width;
   P_Zrychleni.Left:=F_Main.ClientWidth-P_Zrychleni.Width-5;
   P_Time_modelovy.Left:=P_Zrychleni.Left-P_Time_modelovy.Width-5;
   P_Time.Left:=P_Time_modelovy.Left-P_Time.Width-5;
@@ -2168,27 +2118,46 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+// Vlastni parsovani stringu predevsim pro TCP komunikaci.
+// Toto parsovani oproti systemovemu ExtractStrings oddeluje i pradzne stringy.
+// Navic cokoliv ve znacich "{" a "}" je povazovano jako plaintext bez oddelnovacu.
+// Tyto znaky mohou by i zanorene.
+// Napr. text: ahoj;ja;jsem;{Honza;Horazek}
+//    vrati: ["ahoj", "ja", "jsem", "Honza;Horacek"]
 
-procedure ExtractStringsEx(Separators: TSysCharSet; Content: string; Strings: TStrings);
+procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
 var i: word;
     s: string;
+    plain_cnt:Integer;
  begin
   s := '';
-  if (Length(Content) = 0) then
-   begin
-    Exit;
-   end;
+  plain_cnt := 0;
+  if (Length(Content) = 0) then Exit();
+
   for i := 1 to Length(Content) do
    begin
-    if (CharInSet(Content[i], Separators)) then
+    if (Content[i] = '{') then
      begin
-      Strings.Add(s);
-      s := '';
-     end else begin
-      s := s + Content[i];
-     end;
+      if (plain_cnt > 0) then s := s + Content[i];
+      Inc(plain_cnt);
+     end
+    else if ((Content[i] = '}') and (plain_cnt > 0)) then
+     begin
+      Dec(plain_cnt);
+      if (plain_cnt > 0) then s := s + Content[i];
+     end
+    else begin
+      if ((CharInSet(Content[i], Separators)) and (plain_cnt = 0)) then
+       begin
+        Strings.Add(s);
+        s := '';
+       end else
+        if (not CharInSet(Content[i], Ignore) or (plain_cnt > 0)) then
+          s := s + Content[i];
+    end;// else Content[i]
    end;
-  Strings.Add(s);
+
+  if (s <> '') then Strings.Add(s);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

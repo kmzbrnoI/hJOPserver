@@ -1054,10 +1054,10 @@ begin
      // to je dobre tehdy, kdyz je loko prebirano z centraly
      if (HVDb.HVozidla[addr].ruc) then
        for reg in HVDb.HVozidla[addr].Stav.regulators do
-         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;total;'+HVDb.HVozidla[addr].GetPanelLokString())
+         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;total;{'+HVDb.HVozidla[addr].GetPanelLokString(false)+'}')
      else
        for reg in HVDb.HVozidla[addr].Stav.regulators do
-         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;ok;'+HVDb.HVozidla[addr].GetPanelLokString());
+         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;ok;{'+HVDb.HVozidla[addr].GetPanelLokString(false)+'}');
 
      // nastavit funkce tak, jak je chci ja
      Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFuncOK, data2);

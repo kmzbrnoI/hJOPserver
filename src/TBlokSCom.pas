@@ -391,7 +391,7 @@ function TBlkSCom.ParseEvent(str:string):TBlkSComSprEvent;
 var sl:TStrings;
 begin
  sl := TStringList.Create();
- ExtractStringsEx(['|'], str, sl);
+ ExtractStringsEx(['|'], [], str, sl);
 
  Result.spr_typ := TStringList.Create();
  Result.delka.min := -1;

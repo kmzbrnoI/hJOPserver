@@ -441,7 +441,7 @@ begin
 
  str := '';
  for i := 0 to Self.stack.Count-1 do
-  str := str + '{' + IntToStr(Self.stack[i].id) + '|' + Self.GetStackString(Self.stack[i]) + '}';
+  str := str + '[' + IntToStr(Self.stack[i].id) + '|' + Self.GetStackString(Self.stack[i]) + ']';
  ORTCPServer.SendLn(connection, (Self.OblR as TOR).id+';ZAS;LIST;'+first_enabled+';'+str);
 end;//procedure
 
@@ -450,7 +450,7 @@ var i:Integer;
 begin
  Result := '';
  for i := 0 to Self.stack.Count-1 do
-   Result := Result + '{' + IntToStr(Self.stack[i].id) + '|' + Self.GetStackString(Self.stack[i]) + '}';
+   Result := Result + '[' + IntToStr(Self.stack[i].id) + '|' + Self.GetStackString(Self.stack[i]) + ']';
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

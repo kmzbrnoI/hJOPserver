@@ -177,7 +177,7 @@ type
       procedure PanelNUZCancel(Sender:TIdContext);
       procedure PanelMessage(Sender:TIdContext; recepient:string; msg:string);
       procedure PanelHVList(Sender:TIdContext);
-      procedure PanelSprChange(Sender:TIdContext; spr:string);
+      procedure PanelSprChange(Sender:TIdContext; spr:TStrings);
       procedure PanelMoveLok(Sender:TIdContext; lok_addr:word; new_or:string);
       procedure PanelZAS(Sender:TIdContext; str:TStrings);
       procedure PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
@@ -1128,17 +1128,18 @@ begin
    Exit;
   end;
 
- str := Self.id + ';HV-LIST;';
+ str := Self.id + ';HV-LIST;{';
  for addr := 0 to _MAX_ADDR-1 do
    if ((Assigned(HVDb.HVozidla[addr])) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
-    str := str + '[' + HVDb.HVozidla[addr].GetPanelLokString() + ']';
+    str := str + '[{' + HVDb.HVozidla[addr].GetPanelLokString(true) + '}]';
+ str := str + '}';
  ORTCPServer.SendLn(Sender, str);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla
-procedure TOR.PanelSprChange(Sender:TIdContext; spr:string);
+procedure TOR.PanelSprChange(Sender:TIdContext; spr:TStrings);
 begin
  if ((not Self.ORStav.spr_new) and (Self.ORStav.spr_edit = nil)) then Exit(); 
 
@@ -1522,7 +1523,7 @@ begin
 
  str := Self.id + ';OSV;';
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   str := str + '{' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(MTB.GetOutputs(Self.ORProp.Osvetleni[i].board)[Self.ORProp.Osvetleni[i].port]) + '}';
+   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(MTB.GetOutputs(Self.ORProp.Osvetleni[i].board)[Self.ORProp.Osvetleni[i].port]) + ']';
  ORTCPServer.SendLn(Sender, str);
 end;//procedure
 
@@ -1556,10 +1557,11 @@ begin
    Exit('');
   end;
 
- Result := '';
+ Result := '{';
  for i := 0 to _MAX_SPR-1 do
    if ((Assigned(Soupravy.soupravy[i])) and (Soupravy.soupravy[i].stanice = Self)) then
-    Result := Result + '{' + Soupravy.soupravy[i].GetPanelString() + '}';
+    Result := Result + '[{' + Soupravy.soupravy[i].GetPanelString() + '}]';
+ Result := Result + '}';
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1647,7 +1649,7 @@ begin
  data := nil;
  try
    data := TStringList.Create();
-   ExtractStringsEx(['|'], str, data);
+   ExtractStringsEx(['|'], [], str, data);
    addr := StrToInt(data[4]);
    data.Free();
    if (HVDb.HVozidla[addr] = nil) then
@@ -1752,7 +1754,7 @@ begin
    // parsing loko
    try
      data := TStringList.Create();
-     ExtractStrings(['|'], [], PChar(str[3]), data);
+     ExtractStringsEx(['|'], [], str[3], data);
 
      // zkontrolujeme vsechna LOKO
      for i := 0 to data.Count-1 do
@@ -1811,7 +1813,7 @@ begin
       end;
 
      data := TStringList.Create();
-     ExtractStrings(['|'], [], PChar(str[3]), data);
+     ExtractStringsEx(['|'], [], str[3], data);
 
      // zkontrolujeme vsechna LOKO
      for i := 0 to data.Count-1 do
@@ -1870,7 +1872,7 @@ begin
    Self.ORStav.reg_please := nil;
   end
 
-//  or;LOK-REQ;U-PLEASE;blk_id              - zadost o vydani seznamu hnaciho vozidel na danem useku
+//  or;LOK-REQ;U-PLEASE;blk_id              - zadost o vydani seznamu hnacich vozidel na danem useku
 //  mozne odpovedi:
 //    or;LOK-REQ;U-OK;[hv1][hv2]...           - seznamu hnacich vozidel v danem useku
 //    or;LOK-REQ;U-ERR;info                   - chyba odpoved na pozadavek na seznam loko v danem useku
@@ -1892,12 +1894,13 @@ begin
       end;
 
      // generujeme zpravu s tokeny
-     line := Self.id+';LOK-REQ;U-OK;';
+     line := Self.id+';LOK-REQ;U-OK;{';
      for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]];
-       line := line + '[' + HV.GetPanelLokString() + ']';
+       line := line + '[{' + HV.GetPanelLokString(false) + '}]';
       end;//for i
+     line := line + '}';
      ORTCPServer.SendLn(Sender, line);
 
    except
