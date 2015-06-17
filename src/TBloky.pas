@@ -34,6 +34,8 @@ type
 
     function GetCount():Integer;
 
+    function FindPlaceForNewBlk(id:Integer):Integer;
+
   public
     constructor Create();
     destructor Destroy(); override;
@@ -207,7 +209,7 @@ end;//procedure
 //load all blocks from file
 function TBlky.LoadFromFile(const tech_filename,rel_filename,stat_filename:string):Integer;
 var ini_tech,ini_rel,ini_stat:TMemIniFile;
-    i, index:Integer;
+    i:Integer;
     Blk:TBlk;
     str:TStrings;
 begin
@@ -261,11 +263,7 @@ begin
    Blk.LoadData(ini_tech, str[i], ini_rel, ini_stat);
    Blk.OnChange := Self.BlkChange;
 
-   // najdeme spravne misto pro novy bloky
-   index := 0;
-   while ((index < Self.data.Count) and (Self.data[index].GetGlobalSettings().id < Blk.GetGlobalSettings().id)) do Inc(index);
-
-   Self.data.Insert(index, Blk);
+   Self.data.Insert(Self.FindPlaceForNewBlk(Blk.GetGlobalSettings().id), Blk);
   end;//for i
 
  FreeAndNil(ini_tech);
@@ -327,7 +325,7 @@ end;//procedure
 //add 1 block
 function TBlky.Add(typ:Integer; glob:TBlkSettings):TBlk;
 var Blk:TBlk;
-    i, index:Integer;
+    index:Integer;
 begin
  // kontrola existence bloku stejneho ID
  if (Self.IsBlok(glob.id)) then Exit(nil);
@@ -348,13 +346,10 @@ begin
 
  Blk.SetGlobalSettings(glob);
 
- // najdeme spravne misto pro novy bloky
- i := 0;
- while ((i < Self.data.Count) and (Self.data[i].GetGlobalSettings().id < glob.id)) do Inc(i);
-
  Blk.OnChange := Self.BlkChange;
- Self.data.Insert(i, blk);
- BlokyTableData.BlkAdd(i);
+ index := Self.FindPlaceForNewBlk(glob.id);
+ Self.data.Insert(index, blk);
+ BlokyTableData.BlkAdd(index);
  Result := Blk;
 end;//function
 
@@ -920,6 +915,31 @@ begin
    if ((Self.data[i].GetGlobalSettings().typ = _BLK_TRAT) and (Self.data[i] as TBlkTrat).IsSpr(spr, true)) then
      Self.data[i].Change();
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+// najde index pro novy blok
+function TBlky.FindPlaceForNewBlk(id:Integer):Integer;
+var left, right, mid:Integer;
+begin
+ left  := 0;
+ mid   := 0;
+ right := Self.data.Count-1;
+
+ // je potreba osetrit specialni pripad pridani na konec:
+ if ((right >= 0) and (id > Self.data[right].GetGlobalSettings().id)) then Exit(Self.data.Count);
+
+ while (left <= right) do
+  begin
+   mid := (left + right) div 2;
+
+   if (Self.data[mid].GetGlobalSettings().id > id) then
+     right := mid - 1
+   else
+     left := mid + 1;
+  end;
+ Result := mid;
+end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
