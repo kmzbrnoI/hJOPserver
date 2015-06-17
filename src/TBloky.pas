@@ -152,10 +152,7 @@ var blkset:TBlkSettings;
     i:Integer;
 begin
  case ((Sender as TBlk).GetGlobalSettings.typ) of
-  _BLK_VYH:begin
-   obl_rizeni := (Sender as TBlkVyhybka).OblsRizeni;
-  end;//_BLK_VYH
-
+  _BLK_VYH     : obl_rizeni := (Sender as TBlkVyhybka).OblsRizeni;
   _BLK_USEK:begin
    obl_rizeni := (Sender as TBlkUsek).OblsRizeni;
 
@@ -168,33 +165,13 @@ begin
          Self.Data[i].Change();
   end;//_BLK_USEK
 
-  _BLK_IR:begin
-   obl_rizeni.Cnt := 0;
-  end;//_BLK_IR
-
-  _BLK_SCOM:begin
-   obl_rizeni := (Sender as TBlkSCom).OblsRizeni;
-  end;//_BLK_VYH
-
-  _BLK_PREJEZD:begin
-   obl_rizeni := (Sender as TBlkPrejezd).OblsRizeni;
-  end;//_BLK_VYH
-
-  _BLK_TRAT:begin
-    obl_rizeni.Cnt := 0;
-  end;
-
-  _BLK_UVAZKA:begin
-   obl_rizeni := (Sender as TBlkUvazka).OblsRizeni;
-  end;
-
-  _BLK_ZAMEK:begin
-   obl_rizeni := (Sender as TBlkZamek).OblsRizeni;
-  end;
-
-  _BLK_ROZP:begin
-   obl_rizeni := (Sender as TBlkRozp).OblsRizeni;
-  end;
+  _BLK_IR      : obl_rizeni.Cnt := 0;
+  _BLK_SCOM    : obl_rizeni := (Sender as TBlkSCom).OblsRizeni;
+  _BLK_PREJEZD : obl_rizeni := (Sender as TBlkPrejezd).OblsRizeni;
+  _BLK_TRAT    : obl_rizeni.Cnt := 0;
+  _BLK_UVAZKA  : obl_rizeni := (Sender as TBlkUvazka).OblsRizeni;
+  _BLK_ZAMEK   : obl_rizeni := (Sender as TBlkZamek).OblsRizeni;
+  _BLK_ROZP    : obl_rizeni := (Sender as TBlkRozp).OblsRizeni;
 
  else
   Exit();
@@ -229,6 +206,7 @@ begin
  except
    ini_rel := nil;
    writelog('Nacitam bloky: nelze otevrit soubor s reliefy', WR_DATA);
+   Exit(2);
  end;
 
  try
@@ -236,6 +214,7 @@ begin
  except
    ini_stat := nil;
    writelog('Nacitam bloky: nelze otevrit soubor se stavy bloku', WR_DATA);
+   Exit(3);
  end;
 
  //all data will be rewrited
@@ -287,6 +266,7 @@ begin
    ini := TMemIniFile.Create(tech_filename);
  except
    writelog('Ukladam bloky: nelze otevrit vystupni soubor', WR_ERROR);
+   Exit();
  end;
 
  for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveData(ini, IntToStr(i));
@@ -310,6 +290,7 @@ begin
    ini := TMemIniFile.Create(stat_filename);
  except
    writelog('Ukladam stavy bloky: nelze otevrit vystupni soubor', WR_ERROR);
+   Exit();
  end;
 
  for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveStatus(ini, IntToStr(i));
