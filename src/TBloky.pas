@@ -9,6 +9,9 @@ unit TBloky;
 //  - tridu TBlky vytvari main
 //  - event OnChange je odesilan do prislusnych oblasti rizeni a tam se zpracovava dal (odesila se jednotlivym panelum)
 
+// Update ve verzi 4.3.7:
+//  Bloky jsou serazeny podle ID a vyhledava se v nich binarne.
+
 interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
@@ -39,10 +42,6 @@ type
     function LoadFromFile(const tech_filename,rel_filename,stat_filename:string):Integer;
     procedure SaveToFile(const tech_filename:string);
     procedure SaveStatToFile(const stat_filename:string);
-
-    //moving in array
-    function MoveUp(index:Integer):Integer;
-    function MoveDown(index:Integer):Integer;
 
     function Add(typ:Integer; glob:TBlkSettings):TBlk;
     function Delete(index:Integer):Integer;
@@ -75,7 +74,7 @@ type
     //kontroluje, zda-li blok s timto ID uz nahadou existuje
     //pri hledani vynechava blok s indexem index
     //true = existuje, false = neexistuje
-    function CheckID(id,index:Integer):boolean;
+    function IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
 
     procedure SetZesZkrat(zesil:Integer;state:boolean);       //pokud je na zesilovaci zmenen zkrat
     procedure SetZesNapajeni(zesil:Integer;state:boolean);    //pokud je na zesilovaci zmeneno napajeni
@@ -208,7 +207,7 @@ end;//procedure
 //load all blocks from file
 function TBlky.LoadFromFile(const tech_filename,rel_filename,stat_filename:string):Integer;
 var ini_tech,ini_rel,ini_stat:TMemIniFile;
-    i:Integer;
+    i, index:Integer;
     Blk:TBlk;
     str:TStrings;
 begin
@@ -261,7 +260,12 @@ begin
 
    Blk.LoadData(ini_tech, str[i], ini_rel, ini_stat);
    Blk.OnChange := Self.BlkChange;
-   Self.data.Add(Blk);
+
+   // najdeme spravne misto pro novy bloky
+   index := 0;
+   while ((index < Self.data.Count) and (Self.data[index].GetGlobalSettings().id < Blk.GetGlobalSettings().id)) do Inc(index);
+
+   Self.data.Insert(index, Blk);
   end;//for i
 
  FreeAndNil(ini_tech);
@@ -320,48 +324,14 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//move block 1 element up in array (fro higher index to lower)
-function TBlky.MoveUp(index:Integer):Integer;
-var tmp:TBlk;
-begin
- if (index < 1) then Exit(1);
- if (index >= Self.Data.Count) then Exit(2);
-
- tmp := Self.data[index-1];
- Self.data[index-1] := Self.data[index];
- Self.data[index] := tmp;
-
- BlokyTableData.BlkChange(index-1);
- BlokyTableData.BlkChange(index);
- BlokyTableData.UpdateTable();
-
- Result := 0;
-end;//function
-
-//move block 1 element down in array (from lower index to higer index)
-function TBlky.MoveDown(index:Integer):Integer;
-var tmp:TBlk;
-begin
- if (index < 0) then Exit(1);
- if (index >= (Self.Data.Count-1)) then Exit(2);
-
- tmp := Self.data[index+1];
- Self.data[index+1] := Self.data[index];
- Self.data[index] := tmp;
-
- BlokyTableData.BlkChange(index+1);
- BlokyTableData.BlkChange(index);
- BlokyTableData.UpdateTable();
-
- Result := 0;
-end;//function
-
-////////////////////////////////////////////////////////////////////////////////
-
 //add 1 block
 function TBlky.Add(typ:Integer; glob:TBlkSettings):TBlk;
 var Blk:TBlk;
+    i, index:Integer;
 begin
+ // kontrola existence bloku stejneho ID
+ if (Self.IsBlok(glob.id)) then Exit(nil);
+
  case (typ) of
   _BLK_VYH      : Blk := TBlkVyhybka.Create(Self.Data.Count);
   _BLK_USEK     : Blk := TBlkUsek.Create(Self.Data.Count);
@@ -378,13 +348,17 @@ begin
 
  Blk.SetGlobalSettings(glob);
 
+ // najdeme spravne misto pro novy bloky
+ i := 0;
+ while ((i < Self.data.Count) and (Self.data[i].GetGlobalSettings().id < glob.id)) do Inc(i);
+
  Blk.OnChange := Self.BlkChange;
- Self.data.Add(blk);
- BlokyTableData.BlkAdd();
+ Self.data.Insert(i, blk);
+ BlokyTableData.BlkAdd(i);
  Result := Blk;
 end;//function
 
-//delete 1 block
+//Smazat blok z databaze
 function TBlky.Delete(index:Integer):Integer;
 var tmp, blk:TBlk;
 begin
@@ -483,13 +457,24 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+// Hledame blok se zadanym ID v seznamu bloku pomoci binarniho vyhledavani.
 
 function TBlky.GetBlkIndex(id:Integer):Integer;
-var i:Integer;
+var left, right, mid:Integer;
 begin
- for i := 0 to Self.Data.Count-1 do
-   if (Self.Data[i].GetGlobalSettings().id = id) then
-     Exit(i);
+ left  := 0;
+ right := Self.data.Count-1;
+
+ while (left <= right) do
+  begin
+   mid := (left + right) div 2;
+   if (Self.data[mid].GetGlobalSettings().id = id) then Exit(mid);
+
+   if (Self.data[mid].GetGlobalSettings().id > id) then
+     right := mid - 1
+   else
+     left := mid + 1;
+  end;
  Result := -1;
 end;//procedure
 
@@ -550,16 +535,14 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//kontroluje, zda-li blok s timto ID uz nahadou existuje
+//kontroluje, zda-li blok s timto ID uz nahodou existuje
 //pri hledani vynechava blok s indexem index
 //true = existuje, false = neexistuje
-function TBlky.CheckID(id,index:Integer):boolean;
-var i:Integer;
+function TBlky.IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
+var index:Integer;
 begin
- for i := 0 to Self.Data.Count-1 do
-   if ((i <> index) and (Self.Data[i].GetGlobalSettings.id = id)) then
-     Exit(true);
- Result := false;
+ index := Self.GetBlkIndex(id);
+ Result := ((index <> -1) and (index <> ignore_index));
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////

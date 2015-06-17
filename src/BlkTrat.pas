@@ -254,17 +254,17 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     Application.MessageBox('ID bloku se nesmi rovnat nule !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.CheckID(Self.SE_Trat_ID.Value, trat)) then
+  if (Blky.IsBlok(Self.SE_Trat_ID.Value, trat)) then
    begin
     Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.CheckID(Self.SE_UA_id.Value, uvazkaA)) then
+  if (Blky.IsBlok(Self.SE_UA_id.Value, uvazkaA)) then
    begin
     Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.CheckID(Self.SE_UB_id.Value,  uvazkaB)) then
+  if (Blky.IsBlok(Self.SE_UB_id.Value,  uvazkaB)) then
    begin
     Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;

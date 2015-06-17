@@ -728,6 +728,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Bloky: TListView
         Left = 0
         Top = 40
@@ -923,7 +927,6 @@ object F_Main: TF_Main
               8880888888000888888088888800088888808808880008880880880088000880
               0880880008000800088088800000000088808888000000088880888880000088
               888088888800088888808888888888888880}
-            OnClick = SB_Blk_UpClick
           end
           object SB_Blk_Down: TSpeedButton
             Left = 35
@@ -944,7 +947,6 @@ object F_Main: TF_Main
               8880880008000800088088008800088008808888880008888880888888000888
               8880888888000888888088888800088888808888880008888880888888000888
               888088888800088888808888888888888880}
-            OnClick = SB_Blk_DownClick
           end
         end
         object P_Blk_Dataload: TPanel
@@ -991,6 +993,10 @@ object F_Main: TF_Main
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_HV: TListView
         Left = 0
         Top = 40
@@ -1201,6 +1207,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Soupravy'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Soupravy: TListView
         Left = 0
         Top = 40
@@ -1365,6 +1375,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Oblasti '#345#237'zen'#237
       ImageIndex = 16
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Stanice: TListView
         Left = 0
         Top = 40
@@ -1483,6 +1497,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Zesilova'#269'e'
       ImageIndex = 20
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
@@ -1709,6 +1727,10 @@ object F_Main: TF_Main
       Caption = 'AC'
       ParentShowHint = False
       ShowHint = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_AC_Db: TListView
         Left = 0
         Top = 40
@@ -2063,6 +2085,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'#233
       ImageIndex = 23
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Users: TListView
         Left = 0
         Top = 40
@@ -2215,6 +2241,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav MTB'
       ImageIndex = -1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Stav_MTB: TListView
         Left = 0
         Top = 0
@@ -2287,6 +2317,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'J'#237'zdn'#237' cesty'
       ImageIndex = 24
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object P_VC_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -2541,6 +2575,10 @@ object F_Main: TF_Main
     object TS_MultiJC: TTabSheet
       Caption = 'Slo'#382'en'#233' j'#237'zdn'#237' cesty'
       ImageIndex = 12
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 0
@@ -2677,6 +2715,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Prim'#225'rn'#237' LOG'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_log: TListView
         Left = 0
         Top = 24
@@ -3104,7 +3146,7 @@ object F_Main: TF_Main
     Left = 1032
     Top = 456
     Bitmap = {
-      494C010101004801680214000E00FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101010048016C0214000E00FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000000E00000001002000000000008011
       00000000000000000000000000000000000000000000FFFFFF00F7FFFF00F7FF
       FF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FFFF00F7FF
@@ -3260,7 +3302,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010135005C017C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010135005C01800210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       0000000000000000000000000000000000000000000010108C0010108C001010
       8C00000000000000000000000000000000000000000000000000000000000000
@@ -5126,7 +5168,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010C007802B8021000100000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010C007802BC021000100000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -5667,7 +5709,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C010106004801680210000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C0101060048016C0210000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -6013,7 +6055,7 @@ object F_Main: TF_Main
     Left = 1224
     Top = 456
     Bitmap = {
-      494C010164006001800208000C0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C010164006001840208000C0000000000FF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000020000000380100000100200000000000009C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

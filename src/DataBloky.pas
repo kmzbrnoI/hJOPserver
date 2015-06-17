@@ -23,7 +23,7 @@ type
       procedure BlkChange(line:Integer);
 
       procedure BlkRemove(line:Integer);
-      procedure BlkAdd();
+      procedure BlkAdd(index:Integer);
 
       constructor Create(LV:TListView);
   end;
@@ -347,17 +347,17 @@ begin
  Self.UpdateTable();
 end;//procedure
 
-procedure TBlokyTableData.BlkAdd();
+procedure TBlokyTableData.BlkAdd(index:Integer);
 var LI:TListItem;
     j:Integer;
 begin
  SetLength(changed, Length(changed)+1);
 
- LI := Self.LV.Items.Add;
+ LI := Self.LV.Items.Insert(index);
  LI.Caption := '---';
  for j := 0 to Self.LV.Columns.Count-2 do
    LI.SubItems.Add('---');
- Self.UpdateLine(Self.LV.Items.Count-1);
+ Self.UpdateLine(index);
 
  F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.Cnt);
 end;//procedure

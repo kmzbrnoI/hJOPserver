@@ -374,7 +374,7 @@ begin
  for i := 0 to Self.podm.Count-1 do
   begin
    Blky.GetBlkByID(Self.podm[i].usekID, Blk);
-   if (Integer((Blk as TBlkUsek).Stav.Stav) <> Self.podm[i].stav) then Exit(false);
+   if ((Blk = nil) or (Integer((Blk as TBlkUsek).Stav.Stav) <> Self.podm[i].stav)) then Exit(false);
   end;
  Result := true;
 end;//function

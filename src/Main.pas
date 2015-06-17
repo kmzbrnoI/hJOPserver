@@ -304,8 +304,6 @@ type
     procedure LV_BlokyChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure B_BlkDeleteClick(Sender: TObject);
-    procedure SB_Blk_UpClick(Sender: TObject);
-    procedure SB_Blk_DownClick(Sender: TObject);
     procedure B_VC_AddClick(Sender: TObject);
     procedure LV_JCDblClick(Sender: TObject);
     procedure B_VC_deleteClick(Sender: TObject);
@@ -1876,28 +1874,6 @@ begin
    ACDb.ACs[Self.LV_AC_Db.ItemIndex].Stop();
    Self.LV_AC_DbChange(Self.LV_AC_Db, Self.LV_AC_Db.Selected, TItemChange.ctText);
   end;
-end;
-
-procedure TF_Main.SB_Blk_DownClick(Sender: TObject);
-begin
-  if (Self.LV_Bloky.Selected = nil) then Exit;
-
-  Blky.MoveDown(Self.LV_Bloky.ItemIndex);
-
-  BlokyTableData.UpdateTable;
-  LV_Bloky.ItemIndex := LV_Bloky.ItemIndex + 1;
-  LV_Bloky.SetFocus;
-end;
-
-procedure TF_Main.SB_Blk_UpClick(Sender: TObject);
-begin
-  if (Self.LV_Bloky.Selected = nil) then Exit;
-
-  Blky.MoveUp(Self.LV_Bloky.ItemIndex);
-
-  BlokyTableData.UpdateTable;
-  LV_Bloky.ItemIndex := LV_Bloky.ItemIndex - 1;
-  LV_Bloky.SetFocus;
 end;
 
 procedure TF_Main.SB_Cesty_DownClick(Sender: TObject);
