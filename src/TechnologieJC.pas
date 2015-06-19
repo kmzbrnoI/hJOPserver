@@ -2385,7 +2385,7 @@ begin
 
 
  case (Bariera.typ) of
-  _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_SCOM_NOT_USEK,
+  _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_SCOM_NOT_USEK, _JCB_BLOK_NOT_EXIST,
   _JCB_USEK_OBSAZENO, _JCB_USEK_ZAVER, _JCB_USEK_SOUPRAVA,
   _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_ZAMCENA, _JCB_VYHYBKA_NOUZ_ZAVER,
   _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA,
@@ -2397,7 +2397,7 @@ begin
     if (Assigned(Bariera.blok)) then
       Result[2] := GetUPOLine(Bariera.blok.GetGlobalSettings().name)
     else
-      Result[2] := GetUPOLine('ID' + IntToStr(bariera.param));
+      Result[2] := GetUPOLine('ID ' + IntToStr(bariera.param));
   end;
  end;//case
 
