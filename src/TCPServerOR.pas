@@ -953,19 +953,19 @@ var str:string;
     i, j:Integer;
 begin
  if (critical) then
-  str := '-;UPO-CRIT;'
+  str := '-;UPO-CRIT;{'
  else
-  str := '-;UPO;';
+  str := '-;UPO;{';
 
  for i := 0 to items.Count-1 do
   begin
-   str := str + '[';
+   str := str + '[{';
 
    for j := 0 to 2 do
     begin
      if (items[i][j].str = '') then break;
 
-     str := str + '[';
+     str := str + '[{';
 
      case (items[i][j].align) of
       taLeftJustify  : str := str + 'L|';
@@ -977,10 +977,11 @@ begin
       str := str + PrevodySoustav.ColorToStr(items[i][j].fg) + '|';
      if (items[i][j].bg <> clNone) then
       str := str + PrevodySoustav.ColorToStr(items[i][j].bg) + '|';
-     str := str + items[i][j].str + ']';
+     str := str + items[i][j].str + '}]';
     end;//for j
-   str := str + ']';
+   str := str + '}]';
   end;//for i
+ str := str + '}';
 
  try
    (AContext.Data as TTCPORsRef).UPO_OK  := callbackOK;
