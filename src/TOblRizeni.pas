@@ -1406,7 +1406,7 @@ begin
  for i := 0 to Self.Connected.Count-1 do
    if (Self.Connected[i].Rights >= TORControlRights.write) then
     begin
-     ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id + ';MSG;' + Sender.id + ';'+msg);
+     ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id + ';MSG;' + Sender.id + ';{'+msg+'}');
      Result := 0;
     end;
 end;//procedure
