@@ -978,7 +978,20 @@ end;//function
 procedure TTrkGUI.PrevzitAll();
 var i:Integer;
     data:Pointer;
+    k_prevzeti:Integer;
 begin
+ k_prevzeti := 0;
+ for i := 0 to _MAX_ADDR-1 do
+  begin
+   if (HVDb.HVozidla[i] = nil) then continue;
+   if ((HVDb.HVozidla[i].Slot.Prevzato) and (HVDb.HVozidla[i].Slot.pom = pc)) then continue;
+   if (HVDb.HVozidla[i].Stav.souprava > -1) then Inc(k_prevzeti);
+  end;
+
+ F_Main.G_Loko_Prevzato.MaxValue  := k_prevzeti;
+ F_Main.G_Loko_Prevzato.Progress  := 0;
+ F_Main.G_Loko_Prevzato.ForeColor := clBlue;
+
  for i := 0 to _MAX_ADDR-1 do
   begin
    if (HVDb.HVozidla[i] = nil) then continue;
@@ -1001,7 +1014,19 @@ end;//procedure
 procedure TTrkGUI.OdhlasitAll();
 var i:Integer;
     data:Pointer;
+    k_odhlaseni:Integer;
 begin
+ k_odhlaseni := 0;
+ for i := 0 to _MAX_ADDR-1 do
+  begin
+   if (HVDb.HVozidla[i] = nil) then continue;
+   if (HVDb.HVozidla[i].Slot.Prevzato) then Inc(k_odhlaseni);
+  end;
+
+ F_Main.G_Loko_Prevzato.MaxValue  := k_odhlaseni;
+ F_Main.G_Loko_Prevzato.Progress  := F_Main.G_Loko_Prevzato.MaxValue;
+ F_Main.G_Loko_Prevzato.ForeColor := clBlue;
+
  for i := 0 to _MAX_ADDR-1 do
   begin
    if (HVDb.HVozidla[i] = nil) then continue;
@@ -1048,7 +1073,14 @@ begin
      HVDb.HVozidla[addr].UpdateRuc();
 
      GetMem(data2, sizeof(TPrevzitCallback));
-     TPrevzitCallback(data2^) := TPrevzitCallback(data^);
+     if (data <> nil) then
+      begin
+       TPrevzitCallback(data2^) := TPrevzitCallback(data^);
+      end else begin
+       TPrevzitCallback(data2^).addr := addr;
+       TPrevzitCallback(data2^).callback_ok  := TTrakce.GenerateCallback(nil);
+       TPrevzitCallback(data2^).callback_err := TTrakce.GenerateCallback(nil);
+      end;
 
      // odesleme do regulatoru info o uspesne autorizaci
      // to je dobre tehdy, kdyz je loko prebirano z centraly
@@ -1177,6 +1209,9 @@ end;//procedure
 procedure TTrkGUI.PrebiraniUpdateOK(Sender:TObject; Data:Pointer);
 var i:Integer;
 begin
+ F_Main.G_Loko_Prevzato.Progress := F_Main.G_Loko_Prevzato.Progress + 1;
+ F_Main.G_Loko_Prevzato.ForeColor := clBlue;
+
  for i := Integer(data^) to _MAX_ADDR-1 do
   begin
    if ((HVDb.HVozidla[i] = nil) or ((HVDb.HVozidla[i].Slot.Prevzato) and ((HVDb.HVozidla[i].Slot.pom = released) or (HVDb.HVozidla[i].Slot.pom = pc)))) then continue;
@@ -1202,6 +1237,8 @@ begin
  Self.WriteLog(1, 'ERR: LOKO '+ IntToStr(Integer(data^)) + ' se nepodaøilo pøevzít');
  F_Main.LogStatus('LOKO: loko '+ IntToStr(Integer(data^)) + ' se nepodaøilo pøevzít');
 
+ F_Main.G_Loko_Prevzato.ForeColor := clRed;
+
  F_Main.S_lok_prevzato.Brush.Color  := clRed; 
  F_Main.A_All_Loko_Prevzit.Enabled  := true;
  
@@ -1222,6 +1259,9 @@ end;//procedure
 procedure TTrkGUI.OdhlasovaniUpdateOK(Sender:TObject; Data:Pointer);
 var i:Integer;
 begin
+ F_Main.G_Loko_Prevzato.Progress := F_Main.G_Loko_Prevzato.Progress - 1;
+ F_Main.G_Loko_Prevzato.ForeColor := clBlue;
+
  // loko odhlaseno -> najdeme dalsi k odhlaseni a naprogramujeme POM
  for i := Integer(data^) to _MAX_ADDR-1 do
   begin
@@ -1248,6 +1288,7 @@ begin
  // pokud behem odhlasovani loko nastane chyba, nahlasime ji, ale loko povazujeme za odhlasene
  Self.WriteLog(1, 'WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodaøilo odhlásit');
  F_Main.LogStatus('WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodaøilo odhlásit');
+ F_Main.G_Loko_Prevzato.ForeColor := clRed;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato := false;
  Self.OdhlasovaniUpdateOK(Self, data);
 end;//procedure
@@ -1330,6 +1371,9 @@ begin
  F_Main.A_All_Loko_Prevzit.Enabled  := false;
  F_Main.A_All_Loko_Odhlasit.Enabled := true;
 
+ F_Main.G_Loko_Prevzato.Progress  := HVDb.cnt;
+ F_Main.G_Loko_Prevzato.ForeColor := clLime;
+
  if (SystemData.Status = starting) then
    F_Main.A_PanelServer_StartExecute(nil);
 end;//procedure
@@ -1340,6 +1384,9 @@ begin
 
  F_Main.A_All_Loko_Prevzit.Enabled  := true;
  F_Main.A_All_Loko_Odhlasit.Enabled := false;
+
+ F_Main.G_Loko_Prevzato.Progress  := 0;
+ F_Main.G_Loko_Prevzato.ForeColor := clBlue;
 
  if (SystemData.Status = stopping) then
    F_Main.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
@@ -1741,8 +1788,8 @@ end;//procedure
 procedure TTrkGUI.PrevzatoFuncErr(Sender:TObject; Data:Pointer);
 begin
  // loko prevzato, ale funkce se nepodarilo nastavit -> error callback
- Self.WriteLog(1, 'WARN: LOKO '+ IntToStr(Integer(data^)) + ' se nepodaøilo nastavit funkce');
- F_Main.LogStatus('WARN: loko '+ IntToStr(Integer(data^)) + ' se nepodaøilo nastavit funkce');
+ Self.WriteLog(1, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaøilo nastavit funkce');
+ F_Main.LogStatus('WARN: loko '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaøilo nastavit funkce');
  Self.PrevzatoFuncOK(Self, data);
 end;//procedure
 

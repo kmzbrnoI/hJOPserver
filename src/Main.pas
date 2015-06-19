@@ -242,6 +242,7 @@ type
     SB_AC_Repeat: TSpeedButton;
     PM_Clients: TPopupMenu;
     MI_Disconnect: TMenuItem;
+    G_Loko_Prevzato: TGauge;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
