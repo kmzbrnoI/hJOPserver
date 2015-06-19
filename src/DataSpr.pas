@@ -131,7 +131,7 @@ var spr:TSoupravaData;
     Self.LV.Items.Item[line].SubItems.Strings[4] := '';
 
   if (spr.smer_S) then
-    Self.LV.Items.Item[line].SubItems.Strings[4] := Self.LV.Items.Item[line].SubItems.Strings[3] + 'S';
+    Self.LV.Items.Item[line].SubItems.Strings[4] := Self.LV.Items.Item[line].SubItems.Strings[4] + 'S';
 
   Self.LV.Items.Item[line].SubItems.Strings[5] := IntToStr(spr.pocet_vozu);
 
