@@ -1,9 +1,9 @@
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     HHHHH            H
 //H                                                        H      H      H    H   H    H    H          H H
-//H   Název : Øídící program verze 4.0.0.1                 H      H      H   H     H   H     H        H   H
+//H   Název : Øídící program                               H      H      H   H     H   H     H        H   H
 //H   Jméno tvùrce : Jan Horáèek                           H      HHHHHHHH   H     H   H    H        H     H
-//H   Autorská práva : Jan Horáèek 2008-2014               H      H      H   H     H   HHHHH        HHHHHHHHH
-//H   Datum poslední editace : 01. 09. 2014                H      H      H   H     H   H HH        H         H
+//H   Autorská práva : Jan Horáèek 2008-2015               H      H      H   H     H   HHHHH        HHHHHHHHH
+//H                                                        H      H      H   H     H   H HH        H         H
 //H                                                        H      H      H    H   H    H   HH     H           H
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     H     HH   H           H
 //Zaèátek tvorby : záøí 2008
@@ -182,3 +182,4 @@ uses
 //23.08.2010 - 32 863 radku
 //13.03.2011 - 35 496 radku
 //06.05.2014 - 30 037 radku
+//19.06.2015 - 28 211 radku
