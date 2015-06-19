@@ -514,9 +514,9 @@ begin
  if (Self.fUPOenabled = enabled) then Exit();
 
  if (enabled) then
-  (Self.OblR as TOR).BroadcastData(';ZAS;UPO;1')
+  (Self.OblR as TOR).BroadcastData('ZAS;UPO;1')
  else
-  (Self.OblR as TOR).BroadcastData(';ZAS;UPO;0');
+  (Self.OblR as TOR).BroadcastData('ZAS;UPO;0');
 
  Self.fUPOenabled := enabled;
 end;//procedure
