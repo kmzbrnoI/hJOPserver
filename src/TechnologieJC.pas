@@ -1310,7 +1310,7 @@ var i,j:Integer;
 
         // tahleta situace opravdu muze nastat:
         if ((((Blk as TBlkTrat).Smer <> Self.fproperties.TratSmer) and (((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or ((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka) or (((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((Blk as TBlkTrat).nouzZaver))))
-          or ((Blk as TBlkTrat).Obsazeno) or ((Blk as TBlkTrat).ZAK)) then
+          or ((Blk as TBlkTrat).Obsazeno) or ((Blk as TBlkTrat).ZAK) or ((Blk as TBlkTrat).Zaver)) then
          begin
           ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba trati '+Blk.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
           writelog('Krok 14 : Trat '+Blk.GetGlobalSettings().name+' nesplnuje podminky pro postaveni JC !', WR_VC);
