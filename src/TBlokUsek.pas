@@ -132,6 +132,7 @@ type
     procedure MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
 
     procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
+    procedure PotvrUvolLok(Sender:TIdContext; success:boolean);
 
     procedure MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -734,15 +735,23 @@ begin
   end;
 end;//procedure
 
-procedure TBlkUsek.MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.PotvrUvolLok(Sender:TIdContext; success:boolean);
 begin
+ if (not success) then Exit();
+
  if (Blky.GetBlkWithSpr(Self.Souprava).Count = 1) then
   begin
    Soupravy.RemoveSpr(Self.Souprava);
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava odstranìna');
+   ORTCPServer.SendInfoMsg(Sender, 'Souprava odstranìna');
   end else begin
    Self.Souprava := -1;
   end;
+end;//procedure
+
+procedure TBlkUsek.MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ if (Self.Souprava > -1) then
+   ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TOR, 'Uvolnìní soupravy '+Soupravy.soupravy[Self.Souprava].nazev+' z bloku', TBlky.GetBlksList(Self), nil);
 end;//procedure
 
 procedure TBlkUsek.MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
