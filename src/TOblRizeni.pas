@@ -904,8 +904,10 @@ end;//procedure
 //ziskani stavu vsech bloku v panelu
 procedure TOR.PanelFirstGet(Sender:TIdContext);
 var addr:Integer;
+    rights:TORControlRights;
 begin
- if (Integer(Self.PnlDGetRights(Sender)) < _R_read) then
+ rights := Self.PnlDGetRights(Sender);
+ if (rights < read) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit;
@@ -918,7 +920,7 @@ begin
   if ((HVDb.HVozidla[addr] <> nil) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
     HVDb.HVozidla[addr].UpdateRuc(false);
 
- if (Self.ORStav.ZkratBlkCnt > 2) then
+ if ((Self.ORStav.ZkratBlkCnt > 2) and (rights > read)) then
   ORTCPServer.PlaySound(Sender, _SND_PRETIZENI, 1000);
 end;//procedure
 
@@ -1365,7 +1367,7 @@ begin
   begin
    // V OR nastal zkrat -> prehrat zvuk
    for i := 0 to Self.Connected.Count-1 do
-    if (Self.Connected[i].Rights > TORCOntrolRights.null) then
+    if (Self.Connected[i].Rights > TORCOntrolRights.read) then
      ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_PRETIZENI, 1000);
   end;
 
@@ -1373,7 +1375,7 @@ begin
   begin
    // zkrat skoncil -> vypnout zvuk
    for i := 0 to Self.Connected.Count-1 do
-    if (Self.Connected[i].Rights > TORCOntrolRights.null) then
+    if (Self.Connected[i].Rights > TORCOntrolRights.read) then
      ORTCPServer.DeleteSound(Self.Connected[i].Panel, _SND_PRETIZENI);
   end;
 
