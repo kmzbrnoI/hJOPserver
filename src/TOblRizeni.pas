@@ -61,11 +61,13 @@ type
   NUZblkCnt:Integer;        // kolik bloku ma zaplych NUZ
   NUZmerCasuID:Integer;
   ZkratBlkCnt:Integer;
+  ZadostBlkCnt:Integer;     // pocet uvazek, na ktere je zadost o tratovy souhlas (kvuli prehravani zvuku)
 
   spr_new:boolean;
   spr_edit:TSouprava;
   spr_usek:TObject;         // TBlkUsek
   dk_click_callback:TBlkCallback;
+
 
   reg_please:TIdCOntext;    // zde je ulozen regulator, ktery danou oblast rizeni zada o prideleni lokomotivy
  end;
@@ -115,11 +117,17 @@ type
 
       procedure SetNUZBlkCnt(new:Integer);
       procedure SetZkratBlkCnt(new:Integer);
+      procedure SetZadostBlkCnt(new:Integer);
 
       procedure MTBClear();
       procedure MTBUpdate();
 
       procedure SendStatus(panel:TIdContext);
+
+      // tyto funkce jsou volany pri zmene opravenni mezi cteni a zapisem
+      // primarni cil = v techto funkcich resit zapinani a vypinani zvuku v panelu
+      procedure AuthReadToWrite(panel:TIdContext);
+      procedure AuthWriteToRead(panel:TIdContext);
 
     public
 
@@ -202,6 +210,7 @@ type
       property NUZtimer:Boolean read ORStav.NUZtimer write ORStav.NUZtimer;
       property NUZblkCnt:Integer read ORStav.NUZblkCnt write SetNUZBlkCnt;
       property ZKratBlkCnt:Integer read ORStav.ZKratBlkCnt write SetZkratBlkCnt;
+      property ZadostBlkCnt:Integer read ORStav.ZadostBlkCnt write SetZadostBlkCnt;
       property reg_please:TIdContext read ORStav.reg_please;
 
       //--- komunikace s panely konec ---
@@ -801,19 +810,21 @@ var i:Integer;
     msg:string;
     panel:TORPanel;
     user:TUser;
+    last_rights:TORControlRights;
 begin
  // panel se chce odpojit -> vyradit z databaze
  if (rights = TORControlRights.null) then
   begin
    Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Úspìšnì autorizováno - odpojen');
    ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
+   if (Self.PnlDGetRights(Sender) >= write) then Self.AuthWriteToRead(Sender);
    if (Self.PnlDGetIndex(Sender) > -1) then Self.PnlDRemove(Sender);
    Exit();
   end;
 
  // tady mame zaruceno, ze panel chce zadat o neco vic, nez null
 
-
+ // -> zjistime uzivatele
  user := UsrDb.GetUser(username);
 
  // kontrola existence uzivatele
@@ -837,6 +848,9 @@ begin
   end else begin
    UserRights := user.GetRights(Self.id);
   end;
+
+ // do last_rights si ulozime posledni opravneni panelu
+ last_rights := Self.PnlDGetRights(Sender);
 
  if (UserRights < rights) then
   begin
@@ -899,6 +913,9 @@ begin
  UsrDb.LoginUser(username);
  Self.ORAuthoriseResponse(Sender, rights, msg);
  ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
+
+ if ((rights > read) and (last_rights <= read)) then Self.AuthReadToWrite(Sender);
+ if ((rights < write) and (last_rights >= write)) then Self.AuthWriteToRead(Sender);
 end;//procedure
 
 //ziskani stavu vsech bloku v panelu
@@ -919,9 +936,6 @@ begin
  for addr := 0 to _MAX_ADDR-1 do
   if ((HVDb.HVozidla[addr] <> nil) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
     HVDb.HVozidla[addr].UpdateRuc(false);
-
- if ((Self.ORStav.ZkratBlkCnt > 2) and (rights > read)) then
-  ORTCPServer.PlaySound(Sender, _SND_PRETIZENI, 1000);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1380,6 +1394,32 @@ begin
   end;
 
  Self.ORStav.ZkratBlkCnt := new;
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.SetZadostBlkCnt(new:Integer);
+var i:Integer;
+begin
+ if (new < 0) then Exit();
+
+ if ((new > 0) and (Self.ZadostBlkCnt = 0)) then
+  begin
+   // nastala zadost -> prehrat zvuk
+   for i := 0 to Self.Connected.Count-1 do
+    if (Self.Connected[i].Rights > TORCOntrolRights.read) then
+     ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_TRAT_ZADOST, 500);
+  end;
+
+ if ((new = 0) and (Self.ZadostBlkCnt > 0)) then
+  begin
+   // skocnila zadost -> vypnout zvuk
+   for i := 0 to Self.Connected.Count-1 do
+    if (Self.Connected[i].Rights > TORCOntrolRights.read) then
+     ORTCPServer.DeleteSound(Self.Connected[i].Panel, _SND_TRAT_ZADOST);
+  end;
+
+ Self.ORStav.ZadostBlkCnt := new;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2035,6 +2075,20 @@ begin
  Self.ORStav.reg_please := nil;
  //format: or;LOK-REQ;CANCEL;
  Self.BroadcastData('LOK-REQ;CANCEL;');
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.AuthReadToWrite(panel:TIdContext);
+begin
+ if (Self.ZkratBlkCnt > 2) then ORTCPServer.PlaySound(panel, _SND_PRETIZENI, 1000);
+ if (Self.ZadostBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TRAT_ZADOST, 500);
+end;//procedure
+
+procedure TOR.AuthWriteToRead(panel:TIdContext);
+begin
+ if (Self.ZkratBlkCnt > 2) then ORTCPServer.DeleteSound(panel, _SND_PRETIZENI);
+ if (Self.ZadostBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TRAT_ZADOST);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

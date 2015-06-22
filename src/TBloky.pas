@@ -493,19 +493,6 @@ begin
        obl_rizeni.ORs[j].BlkChange(Self.data[i], conn);
        break;
       end;
-
-   // tady resime zapnuti zvukoveho signalu zadosti o tratovy souhlas
-   if (Self.Data[i].GetGlobalSettings.typ = _BLK_UVAZKA) then
-    begin
-     if ((not (Self.Data[i] as TBlkUvazka).zadost) and (((Self.Data[i] as TBlkUvazka).parent as TBlkTrat).Zadost)) then
-       for j := 0 to obl_rizeni.Cnt-1 do
-         if (obl_rizeni.ORs[j].id = OblRizeni_id) then
-          begin
-           obl_rizeni.ORs[j].BlkPlaySound(Self.Data[i], TORControlRights.write, _SND_TRAT_ZADOST, 500);
-           break;
-          end;
-    end;//if (Self.Data[i].GetGlobalSettings.typ = _BLK_UVAZKA)
-
   end;//for i
 end;//procedure
 

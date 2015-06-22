@@ -104,6 +104,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
+    procedure Reset(); override;
 
     //update states
     procedure Update(); override;
@@ -260,6 +261,15 @@ begin
  Self.Change();
 end;//procedure
 
+procedure TBlkTrat.Reset();
+begin
+ Self.Zaver  := false;
+ Self.Zadost := false;
+ Self.TratStav.soupravy.cnt := 0;
+ Self.SprPredict := -1;
+ Self.BP := false;
+end;//procedure
+
 ////////////////////////////////////////////////////////////////////////////////
 
 //update all local variables
@@ -372,6 +382,8 @@ procedure TBlkTrat.SetTratZadost(Zadost:boolean);
 var uvazka:TBlkUvazka;
     i:Integer;
 begin
+ if (Self.Zadost = Zadost) then Exit(); 
+
  // tady se resi prehravani zvuku
  uvazka := nil;
  if ((Self.fuvazkaA as TBlkUvazka).zadost) then uvazka := (Self.fuvazkaB as TBlkUvazka)
@@ -382,10 +394,10 @@ begin
    if (Zadost) then
     begin
      for i := 0 to uvazka.OblsRizeni.Cnt-1 do
-      uvazka.OblsRizeni.ORs[i].BlkPlaySound(Self, TORControlRights.write, _SND_TRAT_ZADOST, 500);
+      uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt + 1;
     end else begin
      for i := 0 to uvazka.OblsRizeni.Cnt-1 do
-      uvazka.OblsRizeni.ORs[i].BlkRemoveSound(Self, _SND_TRAT_ZADOST);
+      uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt - 1;
     end;
   end;
 
