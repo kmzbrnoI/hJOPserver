@@ -1551,7 +1551,7 @@ function TOR.PanelGetSprs(Sender:TIdCOntext):string;
 var i:Integer;
 begin
  //kontrola opravneni klienta
- if (Self.PnlDGetRights(Sender) < write) then
+ if (Self.PnlDGetRights(Sender) < read) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit('');
