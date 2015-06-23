@@ -57,8 +57,10 @@ type
    Poznamka:String;                                    // poznamka k HV
    Trida:THVClass;                                     // trida hnaciho vozidla - parni, diesel, motor, elektro
 
-   POMtake : TList<THVPomCV>;                          // seznam POM pri prevzeti do automatu
-   POMrelease : TList<THVPomCV>;                       // seznam POM pri uvolneni to rucniho rizeni
+   POMtake:TList<THVPomCV>;                            // seznam POM pri prevzeti do automatu
+   POMrelease:TList<THVPomCV>;                         // seznam POM pri uvolneni to rucniho rizeni
+
+   funcVyznam:array[0.._HV_FUNC_MAX] of string;        // seznam popisu funkci hnaciho vozidla
   end;
 
   THVNajeto = record                                // kolik bloku a metru hnaciho vozidlo najelo (vedeme si statistiky)
@@ -295,6 +297,18 @@ begin
       end;//if data2.Count >= 2
     end;//for i
 
+   // vyznamy funkci:
+   str := ini.ReadString(section, 'func_vyznam', '');
+   strs.Clear();
+   ExtractStringsEx([';'], [], str, strs);
+   for i := 0 to _HV_FUNC_MAX do
+    begin
+     if (i < strs.Count) then
+       Self.Data.funcVyznam[i] := strs[i]
+      else
+       Self.Data.funcVyznam[i] := '';
+    end;//for i
+
   except
    strs.Free();
    strs2.Free();
@@ -352,11 +366,17 @@ begin
     str := str + '(' + IntToStr(Self.Data.POMtake[i].cv) + ',' + IntToStr(Self.Data.POMtake[i].data) + ')';
    ini.WriteString(addr, 'pom_take', str);
 
-   // 4. radek: POM pri uvolneni
+   // POM pri uvolneni
    str := '';
    for i := 0 to Self.Data.POMrelease.Count-1 do
     str := str + '(' + IntToStr(Self.Data.POMrelease[i].cv) + ',' + IntToStr(Self.Data.POMrelease[i].data) + ')';
    ini.WriteString(addr, 'pom_release', str);
+
+   // vyznam funkci
+   str := '';
+   for i := 0 to _HV_FUNC_MAX do
+     str := str + Self.Data.funcVyznam[i] + ';';
+   ini.WriteString(addr, 'func_vyznam', str);
 
  except
    ini.UpdateFile();
@@ -502,6 +522,7 @@ begin
        Self.Data.POMrelease.Add(pomCV);
       end;
    end;
+
  except
   on e:Exception do
    begin
