@@ -32,12 +32,14 @@ unit THnaciVozidlo;
 interface
 
 uses Trakce, TBlok, Classes, StrUtils, SysUtils, TOblRizeni, RPConst,
-      Generics.Collections, IdContext;
+      Generics.Collections, IdContext, IniFiles;
 
 const
   _HV_FUNC_MAX       = 12;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
   _TOKEN_TIMEOUT_MIN = 3;    // delka platnosti tokenu pro autorizaci hnaciho vozidla v minutach
   _TOKEN_LEN         = 24;   // delka autorizacniho tokenu pro prevzeti hnaciho vozidla
+
+  _LOK_VERSION_SAVE = '2.0';
 
 type
   // trida hnaciho vozidla
@@ -94,7 +96,8 @@ type
 
      fadresa:Word;                                     // adresa je read-only !
 
-     function LoadFromFile(const filename:string):Byte;// nacte data ze souboru
+     procedure LoadFromIni(ini:TMemIniFile; section:string);
+                                                       // nacte data ze souboru
      procedure SetRuc(state:boolean);                  // nastavi rucni rizeni
 
    public
@@ -105,12 +108,12 @@ type
     Slot:TSlot;                                        // slot HV (viz trakcni tridy)
     changed:boolean;                                   // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
 
-     constructor Create(const filename:string); overload;
+     constructor Create(ini:TMemIniFile; section:string); overload;
      constructor Create(adresa:Word; data:THVData; stav:THVStav); overload;
      constructor Create(panel_str:string; Sender:TOR); overload;
      destructor Destroy(); override;
 
-     function SaveToFile(const filename:string):Byte;
+     procedure SaveToFile(const filename:string);
 
      procedure UpdateFromPanelString(data:string);     // nacteni informaci o HV z klienta
 
@@ -140,7 +143,7 @@ uses Main, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, Regulator, TBloky,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor THV.Create(const filename:string);
+constructor THV.Create(ini:TMemIniFile; section:string);
 begin
  inherited Create();
 
@@ -153,8 +156,12 @@ begin
  Self.data.POMtake    := TList<THVPomCV>.Create;
  Self.data.POMrelease := TList<THVPomCV>.Create;
 
- if (Self.LoadFromFile(filename) <> 0) then
-   raise Exception.Create('Chyba pri nacitani souboru');
+ try
+   Self.LoadFromIni(ini, section);
+ except
+   on E:Exception do
+     raise Exception.Create('Chyba pri nacitani sekce '+section+' - '+E.Message);
+ end;
 end;//ctor
 
 constructor THV.Create(adresa:Word; data:THVData; stav:THVStav);
@@ -203,219 +210,162 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.LoadFromFile(const filename:string):Byte;
-const
-    _RADEK_CNT = 4;
-var Soubor:TextFile;
-    radek:array [0.._RADEK_CNT-1] of string;
-    Pole_dat, data2:TStrings;
+procedure THV.LoadFromIni(ini:TMemIniFile; section:string);
+var strs, strs2:TStrings;
     i:Integer;
     stanice:Integer;
     pomCV:THVPomCV;
+    str:string;
+    addr:Integer;
 begin
-  try
-    AssignFile(Soubor, filename);
-    Reset(Soubor);
-    for i := 0 to _RADEK_CNT-1 do radek[i] := '';
-    i := 0;
-    while ((not Eof(Soubor)) and (i < _RADEK_CNT)) do
-     begin
-      Readln(Soubor, Radek[i]);
-      Inc(i);
-     end;
-  except
-    Result := 3;
-    try
-      CloseFile(Soubor);
-    except
-
-    end;
-    Exit;
-  end;
-
-  CloseFile(Soubor);
-
-  Pole_dat := TStringList.Create;
-  data2    := TStringList.Create;
+  strs  := TStringList.Create();
+  strs2 := TStringList.Create();
 
   try
-    // na prvnim radku jsou obecna data
-    ExtractStringsEx([';'], [], Radek[0], pole_dat);
+   addr := StrToInt(section);
+   if ((addr < 0) or (addr > 9999)) then raise Exception.Create('Adresa loko mimo rozsah');
+   Self.fadresa := addr;
 
-    if (Pole_dat.Count < 16) then Exit(1);
+   Self.Data.Nazev    := ini.ReadString(section, 'nazev', section);
+   Self.Data.Majitel  := ini.ReadString(section, 'majitel', '');
+   Self.Data.Oznaceni := ini.ReadString(section, 'oznaceni', section);
+   Self.Data.Poznamka := ini.ReadString(section, 'poznamka', '');
+   Self.Data.Trida    := THVClass(ini.ReadInteger(section, 'trida', 0));
 
-    Self.Data.Nazev    := Pole_dat[0];
-    Self.Data.Majitel  := Pole_dat[1];
-    Self.Data.Oznaceni := Pole_dat[2];
-    Self.Data.Poznamka := Pole_dat[3];
+   stanice := ORs.GetORIndex(ini.ReadString(section, 'stanice', ''));
+   if (stanice <> -1) then
+    ORs.GetORByIndex(stanice, Self.Stav.stanice)
+   else
+    ORs.GetORByIndex(HVDb.default_or, Self.Stav.stanice);
 
-    Self.fadresa       := StrToInt(Pole_dat[4]);
-    Self.Data.Trida    := THVClass(StrToInt(Pole_dat[5]));
+   Self.Stav.najeto_vpred.Metru := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
+   Self.Stav.najeto_vpred.Bloku := ini.ReadInteger(section, 'najeto_vpred_bloku', 0);
 
-    stanice := ORs.GetORIndex(Pole_dat[6]);
-    if (stanice <> -1) then
-     ORs.GetORByIndex(stanice, Self.Stav.stanice)
-    else
-     ORs.GetORByIndex(HVDb.default_or, Self.Stav.stanice);
+   Self.Stav.najeto_vzad.Metru := ini.ReadFloat(section, 'najeto_vzad_metru', 0);
+   Self.Stav.najeto_vzad.Bloku := ini.ReadInteger(section, 'najeto_vzad_bloku', 0);
 
-//    if (Pole_dat[7] = '1') then
-//      HV.Provoz := true else HV.Provoz := false;
+   Self.Stav.StanovisteA := THVStanoviste(ini.ReadInteger(section, 'stanoviste_a', 0));
 
-//    HV.Paliva.Nafta := StrToInt(Pole_dat[8]);
-//    HV.Paliva.Uhli  := StrToInt(Pole_dat[9]);
-//    HV.Paliva.Voda  := StrToInt(Pole_dat[10]);
+   // stav funkci
+   str := ini.ReadString(section, 'stav_funkci', '');
+   for i := 0 to _HV_FUNC_MAX do
+     Self.Stav.funkce[i] := ((i < Length(str)) and PrevodySoustav.StrToBool(str[i+1]));
 
-    Self.Stav.najeto_vpred.Metru  := StrToFloatDef(Pole_Dat[11], 0);
-    Self.Stav.najeto_vpred.Bloku  := StrToInt(Pole_dat[12]);
-    Self.Stav.najeto_vzad.Metru   := StrToFloatDef(Pole_Dat[13], 0);
-    Self.Stav.najeto_vzad.Bloku   := StrToInt(Pole_dat[14]);
-
-    Self.Stav.StanovisteA := THVStanoviste(StrToInt(Pole_Dat[15]));
-
-    // na 2. radku jsou stavy funkci
-    if (radek[1] <> '') then
-     begin
-      pole_dat.Clear();
-      ExtractStringsEx([';'], [], Radek[1], pole_dat);
-      for i := 0 to _HV_FUNC_MAX do
-       if (i < pole_dat.Count) then
-        Self.Stav.funkce[i] := PrevodySoustav.StrToBool(pole_dat[i])
-       else
-        Self.Stav.funkce[i] := false;
-     end else begin
-      for i := 0 to _HV_FUNC_MAX do Self.Stav.funkce[i] := false;
-     end;
-
-     // na 3. radku je POM pri prebirani : (cv,data)(cv,data)(...)...
-     Self.Data.POMtake.Clear();
-     if (radek[2] <> '') then
+   // POM pri prebirani : (cv,data)(cv,data)(...)...
+   str := ini.ReadString(section, 'pom_take', '');
+   Self.Data.POMtake.Clear();
+   strs.Clear();
+   ExtractStringsEx([')'], ['('], str, strs);
+   for i := 0 to strs.Count-1 do
+    begin
+     strs2.Clear();
+     ExtractStringsEx([','], [], strs[i], strs2);
+     if (strs2.Count >= 2) then
       begin
-       pole_dat.Clear();
-       ExtractStrings(['(', ')'], [], PChar(Radek[2]), pole_dat);
+       try
+         pomCV.cv   := StrToInt(strs2[0]);
+         if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then continue;
+         pomCV.data := StrToInt(strs2[1]);
+         Self.Data.POMtake.Add(pomCV);
+       except
+         continue;
+       end;// except
+      end;//if data2.Count >= 2
+    end;//for i
 
-       for i := 0 to pole_dat.Count-1 do
-        begin
-         data2.Clear();
-         ExtractStrings([','], [], PChar(pole_dat[i]), data2);
-         if (data2.Count >= 2) then
-          begin
-           try
-             pomCV.cv   := StrToInt(data2[0]);
-             if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then continue;             
-             pomCV.data := StrToInt(data2[1]);
-             Self.Data.POMtake.Add(pomCV);
-           except
-             continue;
-           end;// except
-          end;//if data2.Count >= 2
-        end;//for i
-      end;// if radek[2] <> ''
-
-     // na 4. radku je POM pri uvolneni : (cv,data)(cv,data)(...)...
-     Self.Data.POMrelease.Clear();
-     if (radek[3] <> '') then
+   // POM pri uvolneni : (cv,data)(cv,data)(...)...
+   str := ini.ReadString(section, 'pom_release', '');
+   Self.Data.POMrelease.Clear();
+   strs.Clear();
+   ExtractStringsEx([')'], ['('], str, strs);
+   for i := 0 to strs.Count-1 do
+    begin
+     strs2.Clear();
+     ExtractStringsEx([','], [], strs[i], strs2);
+     if (strs2.Count >= 2) then
       begin
-       pole_dat.Clear();
-       ExtractStrings(['(', ')'], [], PChar(Radek[3]), pole_dat);
-
-       for i := 0 to pole_dat.Count-1 do
-        begin
-         data2.Clear();
-         ExtractStrings([','], [], PChar(pole_dat[i]), data2);
-         if (data2.Count >= 2) then
-          begin
-           try
-             pomCV.cv   := StrToInt(data2[0]);
-             if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then continue;
-             pomCV.data := StrToInt(data2[1]);
-             Self.Data.POMrelease.Add(pomCV);
-           except
-             continue;
-           end;// except
-          end;//if data2.Count >= 2
-        end;//for i
-      end;// if radek[2] <> ''
+       try
+         pomCV.cv   := StrToInt(strs2[0]);
+         if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then continue;
+         pomCV.data := StrToInt(strs2[1]);
+         Self.Data.POMrelease.Add(pomCV);
+       except
+         continue;
+       end;// except
+      end;//if data2.Count >= 2
+    end;//for i
 
   except
-   Pole_dat.Free();
-   data2.Free();
-   Exit(2);
+   strs.Free();
+   strs2.Free();
+   raise;
   end;
 
- Pole_dat.Free();
- data2.Free();
- Result := 0;
+ strs.Free();
+ strs2.Free();
 end;//procedure
 
-function THV.SaveToFile(const filename:string):Byte;
-var Soubor:TextFile;
-    line:string;
+procedure THV.SaveToFile(const filename:string);
+var ini:TMemIniFile;
+    addr, str:string;
     i:Integer;
 begin
-  try
-    AssignFile(Soubor, filename);
-    Rewrite(Soubor);
-  except
-    try
-      CloseFile(Soubor);
-    except
+ ini := TMemIniFile.Create(filename);
 
-    end;
-    Exit(1);
-  end;
+ try
+   ini.WriteString('global', 'version', _LOK_VERSION_SAVE);
 
-  // prvni radek = obecna data
-  line :=
-    Self.Data.Nazev+';'+
-    Self.Data.Majitel+';'+
-    Self.Data.Oznaceni+';{'+
-    Self.Data.Poznamka+'};'+
-    IntToStr(Self.adresa)+';'+
-    IntToStr(Integer(Self.Data.Trida))+';';
+   addr := IntToStr(Self.adresa);
+   ini.WriteString(addr, 'nazev', Self.Data.Nazev);
+   ini.WriteString(addr, 'majitel', Self.Data.Majitel);
+   ini.WriteString(addr, 'oznaceni', Self.Data.Oznaceni);
+   ini.WriteString(addr, 'poznamka', Self.Data.Poznamka);
+   ini.WriteInteger(addr, 'trida', Integer(Self.Data.Trida));
 
-  if (Self.Stav.stanice <> nil) then
-    line := line + Self.Stav.stanice.id+';'
-  else
-    line := line + ';';
-
-  line := line +
-    {prov+}';'+
-    {IntToStr(HV.Paliva.Nafta)+}';'+
-    {IntToStr(HV.Paliva.Uhli)+}';'+
-    {IntToStr(HV.Paliva.Voda)+}';'+
-    FloatToStr(Self.Stav.najeto_vpred.Metru)+';'+
-    IntToStr(Self.Stav.najeto_vpred.Bloku)+';'+
-    FloatToStr(Self.Stav.najeto_vzad.Metru)+';'+
-    IntToStr(Self.Stav.najeto_vzad.Bloku)+';'+
-    IntToStr(Integer(Self.Stav.StanovisteA))+';';
-
- WriteLn(Soubor, line);
-
- // druhy radek = stavy funkci
- line := '';
- for i := 0 to _HV_FUNC_MAX do
-  begin
-   if (Self.Stav.funkce[i]) then
-     line := line + '1;'
+   if (Self.Stav.stanice <> nil) then
+     ini.WriteString(addr, 'stanice', Self.Stav.stanice.id)
    else
-     line := line + '0;';
-  end;
- WriteLn(Soubor, line);
+     ini.WriteString(addr, 'stanice', '');
 
- // 3. radek: POM pri prebirani
- line := '';
- for i := 0 to Self.Data.POMtake.Count-1 do
-  line := line + '(' + IntToStr(Self.Data.POMtake[i].cv) + ',' + IntToStr(Self.Data.POMtake[i].data) + ')';
- WriteLn(Soubor, line);
+   ini.WriteFloat(addr, 'najeto_vpred_metru', Self.Stav.najeto_vpred.Metru);
+   ini.WriteInteger(addr, 'najeto_vpred_bloku', Self.Stav.najeto_vpred.Bloku);
 
- // 4. radek: POM pri uvolneni
- line := '';
- for i := 0 to Self.Data.POMrelease.Count-1 do
-  line := line + '(' + IntToStr(Self.Data.POMrelease[i].cv) + ',' + IntToStr(Self.Data.POMrelease[i].data) + ')';
- WriteLn(Soubor, line);
+   ini.WriteFloat(addr, 'najeto_vzad_metru', Self.Stav.najeto_vzad.Metru);
+   ini.WriteInteger(addr, 'najeto_vzad_bloku', Self.Stav.najeto_vzad.Bloku);
 
- CloseFile(Soubor);
- Result := 0;
+   ini.WriteInteger(addr, 'stanoviste_a', Integer(Self.Stav.StanovisteA));
+
+   // stav funkci
+   str := '';
+   for i := 0 to _HV_FUNC_MAX do
+    begin
+     if (Self.Stav.funkce[i]) then
+       str := str + '1'
+     else
+       str := str + '0';
+    end;
+   ini.WriteString(addr, 'stav_funkci', str);
+
+   // POM pri prebirani
+   str := '';
+   for i := 0 to Self.Data.POMtake.Count-1 do
+    str := str + '(' + IntToStr(Self.Data.POMtake[i].cv) + ',' + IntToStr(Self.Data.POMtake[i].data) + ')';
+   ini.WriteString(addr, 'pom_take', str);
+
+   // 4. radek: POM pri uvolneni
+   str := '';
+   for i := 0 to Self.Data.POMrelease.Count-1 do
+    str := str + '(' + IntToStr(Self.Data.POMrelease[i].cv) + ',' + IntToStr(Self.Data.POMrelease[i].data) + ')';
+   ini.WriteString(addr, 'pom_release', str);
+
+ except
+   ini.UpdateFile();
+   ini.Free();
+   raise;
+ end;
+
+ ini.UpdateFile();
+ ini.Free();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

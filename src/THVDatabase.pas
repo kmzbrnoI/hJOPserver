@@ -10,11 +10,12 @@ unit THVDatabase;
 
 interface
 
-uses SysUtils, THnaciVozidlo, Classes, RPCOnst, IdContext;
+uses SysUtils, THnaciVozidlo, Classes, RPCOnst, IdContext, IniFiles;
 
 const
  _MAX_ADDR = 10000;
  _DEFAULT_OR = 0;
+ _FILE_SUFFIX = '.2lok';
 
 type
 
@@ -100,22 +101,51 @@ end;//procedure
 
 procedure THVDb.LoadFile(filename:string);
 var aHV:THV;
+    ini:TMemIniFile;
+    sections:TStrings;
+    sect:string;
 begin
+
  try
-  aHV := THV.Create(filename);
+   ini := TMemIniFile.Create(filename);
+   sections := TStringList.Create();
+   ini.ReadSections(sections);
+
+   // sem prijde kontrola verze souboru
+
+   for sect in sections do
+    begin
+     if (sect = 'global') then continue;
+
+     // nacteni jedne loko
+     try
+       aHV := THV.Create(ini, sect);
+     except
+       on E:Exception do
+         writelog('Chyba pri nacitani souboru loko : '+filename + ', sekce '+sect+' : '+E.Message, WR_ERROR);
+     end;
+
+     if (aHV = nil) then continue;     
+
+     if (Self.HVs[aHV.adresa] <> nil) then
+      begin
+       writelog('Loko s adresou '+filename+' jiz existuje !', WR_ERROR);
+       FreeAndNil(aHv);
+      end else begin
+       Self.HVs[aHV.adresa] := aHV;
+      end;
+    end;//for sect in sections
  except
-   writelog('Soubor loko se nepodarilo nacist : '+filename, WR_ERROR);
-   Exit;
+  on E:Exception do
+   begin
+    writelog('Chyba pri nacitani souboru loko '+filename+' : '+E.Message, WR_ERROR);
+    if (ini <> nil) then ini.Free();
+    if (sections <> nil) then sections.Free();
+   end;
  end;
 
- if (Self.HVs[aHV.adresa] <> nil) then
-  begin
-   writelog('Loko s adresou '+filename+' jiz existuje !', WR_ERROR);
-   FreeAndNil(aHv);
-   Exit;
-  end;
-
- Self.HVs[aHV.adresa] := aHV;
+ ini.Free();
+ sections.Free();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,9 +158,9 @@ var SR:TSearchRec;
 
   Self.Clear();
 
-  // prohledavani adresare a nacitani soubor *.lok
+  // prohledavani adresare a nacitani soubor *.2lok
   // najdeme prvni soubor
-  if (FindFirst(dirname+'\*.lok', faAnyFile, SR) = 0) then
+  if (FindFirst(dirname+'\*'+_FILE_SUFFIX, faAnyFile, SR) = 0) then
    begin
     if ((SR.Attr AND faDirectory) = 0) then
       Self.LoadFile(dirname+'\'+SR.Name);
@@ -152,15 +182,18 @@ var SR:TSearchRec;
 end;//procedure
 
 procedure THVDb.SaveToDir(const dirname:string);
-var i, ret:Integer;
+var i:Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
   begin
    if (Self.HVs[i] <> nil) then
     begin
-     ret := Self.HVs[i].SaveToFile(dirname+'\L_'+IntToStr(i)+'.lok');
-     if (ret <> 0) then
-      writelog('Chyba pri ukladani loko '+IntToStr(i)+' : chyba '+IntToStr(ret), WR_ERROR);
+     try
+       Self.HVs[i].SaveToFile(dirname+'\L_'+IntToStr(i)+_FILE_SUFFIX);
+     except
+       on E:Exception do
+        writelog('Vyjimka pri ukladani loko '+IntToStr(i)+' : '+E.Message, WR_ERROR);
+     end;
     end;//if <> nil
   end;//for i
 end;//procedure
@@ -291,7 +324,7 @@ begin
  FreeAndNil(Self.HVs[addr]);
 
  // smazat soubor
- DeleteFile('lok\L_'+IntToStr(addr)+'.lok');
+ DeleteFile('lok\L_'+IntToStr(addr)+_FILE_SUFFIX);
 
  // ------- update indexu: ------
 
