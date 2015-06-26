@@ -53,6 +53,13 @@ var return:Byte;
  begin
   DateTimeToString(OPData.xDate, 'dd.mm.yyyy', Now);
 
+  try
+    if (not DirectoryExists('data')) then
+      CreateDir('data');
+  except
+    writelog('Nelze vytvorit slozku data', WR_DATA, 1);
+  end;
+
   F_Splash.AddStav('Naèítám konfiguraci');
   read := ini_lib.ReadString('NacteniDat','Konfigurace', 'data\Konfigurace.ini');
   Konfigurace.LoadCfgFromFile(read);
