@@ -132,7 +132,8 @@ end;//procedure
 
 procedure TUser.SetPasswd(passwd:string);
 begin
- Self.fpasswd := TUser.GenerateHash(passwd);
+ // heslo je 2x zahashovane
+ Self.fpasswd := TUser.GenerateHash(TUser.GenerateHash(passwd));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
