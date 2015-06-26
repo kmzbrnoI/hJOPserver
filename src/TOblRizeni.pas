@@ -1147,7 +1147,7 @@ begin
  str := Self.id + ';HV-LIST;{';
  for addr := 0 to _MAX_ADDR-1 do
    if ((Assigned(HVDb.HVozidla[addr])) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
-    str := str + '[{' + HVDb.HVozidla[addr].GetPanelLokString(true) + '}]';
+    str := str + '[{' + HVDb.HVozidla[addr].GetPanelLokString(full) + '}]';
  str := str + '}';
  ORTCPServer.SendLn(Sender, str);
 end;//procedure
@@ -1940,7 +1940,7 @@ begin
      for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]];
-       line := line + '[{' + HV.GetPanelLokString(false) + '}]';
+       line := line + '[{' + HV.GetPanelLokString() + '}]';
       end;//for i
      line := line + '}';
      ORTCPServer.SendLn(Sender, line);

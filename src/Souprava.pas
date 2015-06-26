@@ -212,7 +212,7 @@ begin
  Result := Result + ';' + IntToStr(Self.data.delka) + ';' + Self.data.typ + ';{';
 
  for i := 0 to Self.data.HV.cnt-1 do
-  Result := Result + '[{' + HVDb.HVozidla[Self.data.HV.HVs[i]].GetPanelLokString(false) + '}]';
+  Result := Result + '[{' + HVDb.HVozidla[Self.data.HV.HVs[i]].GetPanelLokString() + '}]';
  Result := Result + '}';
 end;//function
 
