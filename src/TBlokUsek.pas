@@ -484,7 +484,7 @@ begin
    if (Self.UsekStav.Spr <> -1) then
     begin
      // souprava
-     if (Self.UsekStav.Stav = uvolneno) then
+     if ((Self.UsekStav.Stav = uvolneno) and (Self.UsekStav.StavOld = obsazeno)) then
       begin
        Self.UsekStav.spr_vypadek      := true;
        Self.UsekStav.spr_vypadek_time := 0;
