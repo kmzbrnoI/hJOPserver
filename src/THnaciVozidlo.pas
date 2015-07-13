@@ -553,6 +553,7 @@ begin
   if (str.Count > 14) then
    begin
     // vyznam funkci
+    str2.Clear();
     ExtractStringsEx([';'], [], str[14], str2);
     for i := 0 to _HV_FUNC_MAX do
       if (i < str2.Count) then
