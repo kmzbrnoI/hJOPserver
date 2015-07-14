@@ -379,7 +379,12 @@ begin
    // vyznam funkci
    str := '';
    for i := 0 to _HV_FUNC_MAX do
-     str := str + Self.Data.funcVyznam[i] + ';';
+    begin
+     if (Self.Data.funcVyznam[i] <> '') then
+       str := str + '{' + Self.Data.funcVyznam[i] + '};'
+     else
+       str := str + ';';
+    end;
    ini.WriteString(addr, 'func_vyznam', str);
 
  except
