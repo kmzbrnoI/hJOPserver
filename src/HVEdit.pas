@@ -247,6 +247,9 @@ var data:THVData;
        Exit;
       end;
    end else begin
+     // vyznamy funkci jednoduse zkopirujeme
+     data.funcVyznam := Self.OpenHV.Data.funcVyznam;
+
      // update HV
      Self.OpenHV.data := data;
 
