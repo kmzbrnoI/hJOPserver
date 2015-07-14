@@ -87,7 +87,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Centrala
+    ActivePage = TS_Options
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -156,7 +156,7 @@ object F_Options: TF_Options
           Left = 8
           Top = 64
           Width = 329
-          Height = 321
+          Height = 345
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
@@ -213,30 +213,9 @@ object F_Options: TF_Options
             Margins.Bottom = 2
             Caption = ' Po startu programu '
             TabOrder = 1
-            object CHB_F_Automat: TCheckBox
-              Left = 8
-              Top = 16
-              Width = 297
-              Height = 17
-              Hint = 'Zobrazov'#225'n'#237' okna automatick'#253'ch re'#382'imu po spu'#353'ten'#237' programu'
-              Margins.Left = 2
-              Margins.Top = 2
-              Margins.Right = 2
-              Margins.Bottom = 2
-              Caption = 'Zobrazit okno automatick'#253'ch re'#382'im'#367
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clBlack
-              Font.Height = -11
-              Font.Name = 'MS Sans Serif'
-              Font.Style = []
-              ParentFont = False
-              ParentShowHint = False
-              ShowHint = True
-              TabOrder = 0
-            end
             object CHB_povolit_spusteni: TCheckBox
-              Left = 8
-              Top = 33
+              Left = 14
+              Top = 19
               Width = 297
               Height = 17
               Margins.Left = 2
@@ -244,7 +223,7 @@ object F_Options: TF_Options
               Margins.Right = 2
               Margins.Bottom = 2
               Caption = 'Automaticky spustit systemy'
-              TabOrder = 1
+              TabOrder = 0
             end
           end
           object GB_Autosave: TGroupBox
@@ -1446,7 +1425,7 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             ComProperty = cpPort
-            Text = 'COM3'
+            Text = 'COM1'
             Style = csDropDownList
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack

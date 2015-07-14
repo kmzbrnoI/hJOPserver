@@ -88,7 +88,6 @@ type
     GB_Log: TGroupBox;
     CHB_Log_console: TCheckBox;
     GB_OnStart: TGroupBox;
-    CHB_F_Automat: TCheckBox;
     CHB_povolit_spusteni: TCheckBox;
     L_ModCas_5: TLabel;
     CB_ModCasPretaceni: TComboBox;

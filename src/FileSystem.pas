@@ -228,9 +228,6 @@ var str:string;
    F_Options.CHB_povolit_spusteni.Checked   := ini.ReadBool('SystemCfg','AutSpusteni',false);
    if (F_Options.CHB_povolit_spusteni.Checked) then F_Main.KomunikacePocitani := 1;
 
-   //nacteni zobrazeni oken po spusteni
-   F_Options.CHB_F_Automat.Checked := ini_lib.ReadBool('Data','Show F_automat',true);
-
    //nacitani modeloveho casu
    ModCas.LoadData(Konfigurace.ini);
 
@@ -271,7 +268,6 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
   ini.WriteBool('Centrala', 'logfile', TrkSystem.logfile);
 
   ini_lib.WriteBool('Log','Log_console',F_Options.CHB_Log_console.Checked);
-  ini_lib.WriteBool('Data','Show F_automat',F_Options.CHB_F_Automat.Checked);
   ini.WriteInteger('AdminData','FormLeft',F_Admin.Left);
   ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
 
