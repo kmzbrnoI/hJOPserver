@@ -105,6 +105,8 @@ var aHV:THV;
     sections:TStrings;
     sect:string;
 begin
+ ini      := nil;
+ sections := nil;
 
  try
    ini := TMemIniFile.Create(filename);
