@@ -104,7 +104,8 @@ uses
   ownStrUtils in 'ownStrUtils.pas',
   TBlokRozp in 'TBlokRozp.pas',
   BlkRozp in 'BlkRozp.pas' {F_BlkRozp},
-  RegulatorTCP in 'RegulatorTCP.pas';
+  RegulatorTCP in 'RegulatorTCP.pas',
+  fFuncsSet in 'fFuncsSet.pas' {F_FuncsSet};
 
 {$R *.res}
 
@@ -131,6 +132,7 @@ uses
   Application.CreateForm(TF_BlkSComEvent, F_BlkSComEvent);
   Application.CreateForm(TF_HV_Pom, F_HV_Pom);
   Application.CreateForm(TF_MJCEdit, F_MJCEdit);
+  Application.CreateForm(TF_FuncsSet, F_FuncsSet);
   F_Splash.AddStav('Vytváøím hlavní okno');
   F_Main.CreateSystem;
   F_Splash.AddStav('Vytváøím vedlejší okna');
