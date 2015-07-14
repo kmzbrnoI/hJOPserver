@@ -46,6 +46,14 @@ type
     callback_ok, callback_err:TCommandCallback;       // globalni callbacky
   end;
 
+  // pri hromadnem nastavovani funkci dle vyznamu (napr. vypnout vsechna "svetla") se do callbacku predavaji tato data
+  TFuncsCallback = record
+    addr:Word;                                        // adresa lokomotivy
+    vyznam:string;                                    // vyznam funkce, kterou nastavujeme
+    state:boolean;                                    // novy stav funkce
+    callback_ok, callback_err:TCommandCallback;       // globalni callbacky
+  end;
+
   // reprezenatce jedne funkci sady
   TFuncCBSada = record
     func:array[0..4] of boolean;                      // funkce v sade
@@ -211,6 +219,9 @@ type
      procedure GotLIVersionOK(Sender:TObject; Data:Pointer);
      procedure GotLIVersionErr(Sender:TObject; Data:Pointer);
 
+     procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
+     procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
+
    public
 
      // Pozn.
@@ -241,6 +252,7 @@ type
                                                                     // nastaveni rychlosti daneho HV, rychlost se zadava primo ve stupnich
      function LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false):Byte;
                                                                     // nastaveni funkce HV; force nastavi vsechny funkce v parametru bez ohledu na rozdilnost od aktualniho stavu
+     procedure LoksSetFunc(vyznam:string; state:boolean);           // nastavi funkci s danym vyznamem u vsech prevzatych hnacich vozidel na hodnotu state
      function LokGetSpSteps(HV:THV):Byte;                           // vysle pozadavek na zjisteni informaci o lokomotive
      function EmergencyStop():Byte;                                 // nouzove zastaveni vsech lokomotiv, ktere centrala zna (centrala, nikoliv pocitac!)
      function EmergencyStopLoko(Sender:TObject; HV:THV):Byte;       // nouzove zastaveni konkretniho HV
@@ -315,7 +327,7 @@ implementation
 
 uses Main, Settings, RPConst, XpressNET, TechnologieMTB, Regulator,
     GetSystems, THVDatabase, AdminForm, DataHV,
-    Prevody, TBloky, RegulatorTCP, TCPServerOR;
+    Prevody, TBloky, RegulatorTCP, TCPServerOR, fFuncsSet;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -668,6 +680,41 @@ begin
  Result := 0;
 end;//function
 
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.LoksSetFunc(vyznam:string; state:boolean);
+var addr, i:Integer;
+    cb:Pointer;
+begin
+ for addr := 0 to _MAX_ADDR-1 do
+  begin
+   if ((HVDb.HVozidla[addr] = nil) or (not HVDb.HVozidla[addr].Slot.prevzato)) then continue;
+
+   for i := 0 to _HV_FUNC_MAX do
+    if ((HVDb.HVozidla[addr].Data.funcVyznam[i] = vyznam) and (HVDb.HVozidla[addr].Slot.funkce[i] <> state)) then
+      begin
+       HVDb.HVozidla[addr].Stav.funkce[i] := state;
+
+       GetMem(cb, sizeof(TFuncsCallback));
+       TFuncsCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
+       TFuncsCallback(cb^).callback_err := Self.Trakce.callback_err;
+       TFuncsCallback(cb^).addr         := addr;
+       TFuncsCallback(cb^).vyznam       := vyznam;
+       TFuncsCallback(cb^).state        := state;
+
+       Self.callback_ok  := TTrakce.GenerateCallback(Self.LoksSetFuncOK, cb);
+       Self.callback_err := TTrakce.GenerateCallback(Self.LoksSetFuncErr, cb);
+       Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+
+       Exit();
+      end;//if vyznam = vyznam
+  end;//for i
+
+ if (Assigned(Self.Trakce.callback_ok.callback)) then Self.Trakce.callback_ok.callback(Self, Self.Trakce.callback_ok.data);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
 function TTrkGUI.LoadSpeedTable(filename:string;var LVRych:TListView):Byte;
 var i, j:Integer;
     LI:TListItem;
@@ -755,6 +802,7 @@ begin
 
  F_Main.A_DCC_Go.Enabled   := true;
  F_Main.A_DCC_Stop.Enabled := true;
+ F_Main.A_FuncsSet.Enabled := true;
 
  Application.ProcessMessages();
 
@@ -819,6 +867,9 @@ begin
  F_Main.S_Intellibox_go.Brush.Color := clGray;
  F_Main.A_DCC_Go.Enabled   := false;
  F_Main.A_DCC_Stop.Enabled := false;
+ F_Main.A_FuncsSet.Enabled := false;
+ if (F_FuncsSet.Showing) then F_FuncsSet.Close();
+ 
 
  for addr := 0 to _MAX_ADDR-1 do
   if (HVDb.HVozidla[addr] <> nil) then HVDb.HVozidla[addr].Slot.pom := TPomStatus.released;  
@@ -1791,6 +1842,41 @@ begin
  Self.WriteLog(1, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaøilo nastavit funkce');
  F_Main.LogStatus('WARN: loko '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaøilo nastavit funkce');
  Self.PrevzatoFuncOK(Self, data);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+// callbacky hromadneho nastavovani funkci dle vyznamu:
+//    napr. zapni "zvuk" vsech hnacich vozidel
+
+procedure TTrkGUI.LoksSetFuncOK(Sender:TObject; Data:Pointer);
+var addr, i:Integer;
+begin
+ for addr := TFuncsCallback(data^).addr+1 to _MAX_ADDR-1 do
+  begin
+   if ((HVDb.HVozidla[addr] = nil) or (not HVDb.HVozidla[addr].Slot.prevzato)) then continue;
+
+   for i := 0 to _HV_FUNC_MAX do
+    if ((HVDb.HVozidla[addr].Data.funcVyznam[i] = TFuncsCallback(data^).vyznam) and (HVDb.HVozidla[addr].Slot.funkce[i] <> TFuncsCallback(data^).state)) then
+      begin
+       HVDb.HVozidla[addr].Stav.funkce[i] := TFuncsCallback(data^).state;
+       TFuncsCallback(data^).addr := addr;
+
+       Self.callback_ok  := TTrakce.GenerateCallback(Self.LoksSetFuncOK, data);
+       Self.callback_err := TTrakce.GenerateCallback(Self.LoksSetFuncErr, data);
+       Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+
+       Exit();
+      end;//if vyznam = vyznam
+  end;//for i
+
+ if (Assigned(TFuncsCallback(data^).callback_ok.callback)) then TFuncsCallback(data^).callback_ok.callback(Self, TFuncsCallback(data^).callback_ok.data);
+ FreeMem(data);
+end;//procedure
+
+procedure TTrkGUI.LoksSetFuncErr(Sender:TObject; Data:Pointer);
+begin
+ // sem lze pridat oznameni chyby
+ Self.LoksSetFuncOK(Sender, Data);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

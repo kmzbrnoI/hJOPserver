@@ -243,6 +243,9 @@ type
     PM_Clients: TPopupMenu;
     MI_Disconnect: TMenuItem;
     G_Loko_Prevzato: TGauge;
+    N10: TMenuItem;
+    PM_FuncsSet: TMenuItem;
+    A_FuncsSet: TAction;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -373,6 +376,7 @@ type
     procedure PM_ClientsPopup(Sender: TObject);
     procedure MI_DisconnectClick(Sender: TObject);
     procedure GB_Connected_PanelsClick(Sender: TObject);
+    procedure A_FuncsSetExecute(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -490,7 +494,7 @@ uses Tester, Settings, Nastaveni_Casu, Splash,
      TBLokUvazka, SprDb, DataSpr, DataUsers, UserEdit, UserDb,
      BlkVyhybkaSysVars, BlkTratSysVars, TBlokTrat, ModelovyCas, BlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, MJCEdit, ACDatabase,
-     TBlokRozp, BlkRozp;
+     TBlokRozp, BlkRozp, fFuncsSet;
 
 {$R *.dfm}
 
@@ -706,6 +710,11 @@ begin
     Application.MessageBox(PChar('Chyba pri DCC STOP: chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
     Self.LogStatus('DCC: STOP: ERR '+IntToStr(return));
    end;
+end;
+
+procedure TF_Main.A_FuncsSetExecute(Sender: TObject);
+begin
+ F_FuncsSet.Show();
 end;//procedure
 
 procedure TF_Main.OnDCCGoError(Sender:TObject; Data:Pointer);
