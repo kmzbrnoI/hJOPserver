@@ -123,7 +123,7 @@ type
 
 implementation
 
-uses TBloky, TOblRizeni, GetSystems, Main, TJCDatabase, TCPServerOR;
+uses TBloky, TOblRizeni, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin

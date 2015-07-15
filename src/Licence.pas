@@ -60,7 +60,8 @@ var
 
 implementation
 
-uses Main,About,Verze,RPConst, NoRegRun, LoginPozadi, Settings, Logging;
+uses ownStrUtils, About, Verze, RPConst, NoRegRun, LoginPozadi, Settings,
+     Logging, Main;
 
 {$R *.dfm}
 

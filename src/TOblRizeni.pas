@@ -228,7 +228,7 @@ uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, Main,
      TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek,
-     Regulator, TBlokRozp, RegulatorTCP;
+     Regulator, TBlokRozp, RegulatorTCP, ownStrUtils;
 
 constructor TOR.Create(index:Integer);
 begin

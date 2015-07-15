@@ -95,9 +95,9 @@ type
 
 implementation
 
-uses THVDatabase, Logging, Main, THnaciVozidlo, SprDb, TBlokUsek, DataSpr,
+uses THVDatabase, Logging, ownStrUtils, THnaciVozidlo, SprDb, TBlokUsek, DataSpr,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlok, TBlokSCom,
-      Regulator, Trakce;
+      Regulator, Trakce, Main;
 
 ////////////////////////////////////////////////////////////////////////////////
 

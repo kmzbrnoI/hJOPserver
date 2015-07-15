@@ -144,8 +144,8 @@ type
 
 implementation
 
-uses Main, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, Regulator, TBloky,
-      RegulatorTCP;
+uses ownStrUtils, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, Regulator, TBloky,
+      RegulatorTCP, Main;
 
 ////////////////////////////////////////////////////////////////////////////////
 

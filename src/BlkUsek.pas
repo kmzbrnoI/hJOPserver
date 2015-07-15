@@ -77,7 +77,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky;
+uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky, ownStrUtils;
 
 {$R *.dfm}
 

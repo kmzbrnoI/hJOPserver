@@ -210,7 +210,7 @@ type
 implementation
 
 uses TechnologieMTB, TBloky, TOblRizeni, TBlokUsek, TJCDatabase, TCPServerOR,
-      GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, Main;
+      GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils;
 
 constructor TBlkSCom.Create(index:Integer);
 begin
