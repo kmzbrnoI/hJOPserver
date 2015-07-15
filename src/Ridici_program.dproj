@@ -216,6 +216,7 @@
 			<DCCReference Include="fFuncsSet.pas">
 				<Form>F_FuncsSet</Form>
 			</DCCReference>
+			<DCCReference Include="FunkceVyznam.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -252,7 +253,7 @@
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">10</VersionInfo>
-						<VersionInfo Name="Build">1</VersionInfo>
+						<VersionInfo Name="Build">7</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -264,7 +265,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Rídící program verze 4</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.3.10.1</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.3.10.7</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">Ridici_program</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2014</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>

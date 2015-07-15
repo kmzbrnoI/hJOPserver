@@ -45,7 +45,7 @@ uses Settings, Splash, AdminForm, GetSystems, Prevody,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, BoosterDb,
      Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
-     DataBloky, ACDatabase;
+     DataBloky, ACDatabase, FunkceVyznam;
 
 procedure TData.CompleteLoadFromFile;
 var return:Byte;
@@ -243,6 +243,9 @@ var str:string;
    if (data.autosave) then
      Data.autosave_next := Now + Data.autosave_period;
 
+   // nacteni vyznamu funkci
+   FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
+
    writelog('Konfigurace naètena',WR_DATA);
  end;//procedure
 
@@ -278,6 +281,9 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
   // autosave
   ini.WriteBool('autosave', 'enabled', Data.autosave);
   ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Data.autosave_period));
+
+  // ulozeni vyznamu funkci
+  ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
 
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;

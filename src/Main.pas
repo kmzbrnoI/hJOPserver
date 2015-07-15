@@ -246,6 +246,11 @@ type
     N10: TMenuItem;
     PM_FuncsSet: TMenuItem;
     A_FuncsSet: TAction;
+    TS_FuncsVyznam: TTabSheet;
+    M_funcsVyznam: TMemo;
+    P_funcsVyznamBg: TPanel;
+    B_Change: TButton;
+    CHB_LoadChanges: TCheckBox;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -340,8 +345,6 @@ type
     procedure LV_SoupravyDblClick(Sender: TObject);
     procedure LB_LogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect;
       State: TOwnerDrawState);
-    procedure ComPort1Exception(Sender: TObject; TComException: TComExceptions;
-      ComportMessage: string; WinError: Int64; WinMessage: string);
     procedure B_User_AddClick(Sender: TObject);
     procedure LV_UsersChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
@@ -375,15 +378,15 @@ type
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure PM_ClientsPopup(Sender: TObject);
     procedure MI_DisconnectClick(Sender: TObject);
-    procedure GB_Connected_PanelsClick(Sender: TObject);
     procedure A_FuncsSetExecute(Sender: TObject);
+    procedure B_ChangeClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
 
     procedure UpdateCallMethod();
-
     procedure LoadACKroky();
+    procedure OnFuncsVyznamChange(Sender:TObject);
 
   public
     KomunikacePocitani:Shortint;
@@ -474,8 +477,6 @@ var
   AutSpusteniPocitadlo:Byte;               //pocitani v timeru do automatickeho spusteni komunikace
   NUZClose:Boolean;
 
-  procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
-
 implementation
 
 //deklarace ostatnich unit
@@ -494,7 +495,7 @@ uses Tester, Settings, Nastaveni_Casu, Splash,
      TBLokUvazka, SprDb, DataSpr, DataUsers, UserEdit, UserDb,
      BlkVyhybkaSysVars, BlkTratSysVars, TBlokTrat, ModelovyCas, BlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, MJCEdit, ACDatabase,
-     TBlokRozp, BlkRozp, fFuncsSet;
+     TBlokRozp, BlkRozp, fFuncsSet, FunkceVyznam;
 
 {$R *.dfm}
 
@@ -1200,6 +1201,13 @@ begin
 
   ini_lib.WriteBool('Log','main-file', Self.CHB_Mainlog_File.Checked);
   ini_lib.WriteBool('Log','main-table', Self.CHB_Mainlog_Table.Checked);
+
+  Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text));
+  ModCas.SaveData(Konfigurace.ini);
+  Konfigurace.ini.WriteBool('SystemCfg', 'FirstStart', false);
+  Konfigurace.ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
+  Konfigurace.ini.UpdateFile();
+  Konfigurace.ini.Free();
 end;
 
 procedure TF_Main.A_System_StartExecute(Sender: TObject);      //system start
@@ -1322,6 +1330,29 @@ var pozice,return:Integer;
      end;
    end;//if MesageBox
 end;
+
+// ulozeni zmen fyznamu funkci z Mema do struktury programu
+procedure TF_Main.B_ChangeClick(Sender: TObject);
+var data:string;
+    i:Integer;
+begin
+ data := '';
+ for i := 0 to Self.M_funcsVyznam.Lines.Count-1 do
+   if (Self.M_funcsVyznam.Lines[i] <> '') then
+     data := data + '{' + Self.M_funcsVyznam.Lines[i] + '};';
+ FuncsFyznam.ParseWholeList(data);
+ ORTCPServer.BroadcastFuncsVyznam();
+end;
+
+procedure TF_Main.OnFuncsVyznamChange(Sender:TObject);
+var i:Integer;
+begin
+ if (not Self.CHB_LoadChanges.Checked) then Exit();
+ Self.M_funcsVyznam.Clear();
+ for i := 0 to FuncsFyznam.Items.Count-1 do
+   Self.M_funcsVyznam.Lines.Add(FuncsFyznam.Items[i]);
+ F_FuncsSet.UpdateFuncsList(FuncsFyznam.Items);
+end;//procedure
 
 procedure TF_Main.B_CS_Ver_UpdateClick(Sender: TObject);
 begin
@@ -1570,12 +1601,7 @@ procedure TF_Main.FreeVars;
 
   ORs.Free();
   Blky.Free();
- end;procedure TF_Main.GB_Connected_PanelsClick(Sender: TObject);
-begin
-
-end;
-
-//procedure
+ end;
 
 procedure TF_Main.CB_centrala_loglevelChange(Sender: TObject);
 begin
@@ -1603,23 +1629,8 @@ procedure TF_Main.CloseForm;
 
   Self.A_SaveStavExecute(Self);
 
-  Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName),F_Options.E_dataload.Text));
-  ModCas.SaveData(Konfigurace.ini);
-  Konfigurace.ini.WriteBool('SystemCfg', 'FirstStart', false);
-  Konfigurace.ini.UpdateFile;
-  Konfigurace.ini.Free;
-
-  FreeVars;
+  FreeVars();
  end;
-
-procedure TF_Main.ComPort1Exception(Sender: TObject;
-  TComException: TComExceptions; ComportMessage: string; WinError: Int64;
-  WinMessage: string);
-begin
-
-end;
-
-//procedure
 
 procedure TF_Main.PM_system_resetClick(Sender: TObject);
 begin
@@ -2007,6 +2018,8 @@ procedure TF_Main.CreateSystem;
   MTB.OnErrStart := Self.OnMTBErrStart;
   MTB.OnErrStop  := Self.OnMTBErrStop;
 
+  FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
+
   F_Main.Caption := 'Øídící program         v'+NactiVerzi(Application.ExeName)+_VERSION_PR+' (build '+GetLastBuildDate+')';
   F_Main.SB1.Panels.Items[_SB_MTB].Text := 'MTB close';
   RepaintObjects;
@@ -2102,49 +2115,6 @@ begin
   end;//else state
 
 end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-// Vlastni parsovani stringu predevsim pro TCP komunikaci.
-// Toto parsovani oproti systemovemu ExtractStrings oddeluje i pradzne stringy.
-// Navic cokoliv ve znacich "{" a "}" je povazovano jako plaintext bez oddelnovacu.
-// Tyto znaky mohou by i zanorene.
-// Napr. text: ahoj;ja;jsem;{Honza;Horazek}
-//    vrati: ["ahoj", "ja", "jsem", "Honza;Horacek"]
-
-procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
-var i: word;
-    s: string;
-    plain_cnt:Integer;
- begin
-  s := '';
-  plain_cnt := 0;
-  if (Length(Content) = 0) then Exit();
-
-  for i := 1 to Length(Content) do
-   begin
-    if (Content[i] = '{') then
-     begin
-      if (plain_cnt > 0) then s := s + Content[i];
-      Inc(plain_cnt);
-     end
-    else if ((Content[i] = '}') and (plain_cnt > 0)) then
-     begin
-      Dec(plain_cnt);
-      if (plain_cnt > 0) then s := s + Content[i];
-     end
-    else begin
-      if ((CharInSet(Content[i], Separators)) and (plain_cnt = 0)) then
-       begin
-        Strings.Add(s);
-        s := '';
-       end else
-        if (not CharInSet(Content[i], Ignore) or (plain_cnt > 0)) then
-          s := s + Content[i];
-    end;// else Content[i]
-   end;
-
-  if (s <> '') then Strings.Add(s);
-end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2655,5 +2625,7 @@ begin
    if (AC.kroky[i].command = 6) then LI.SubItems.Add('Kontrola stavu navestidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+'; navest:'+IntToStr(AC.kroky[i].Params[1]));
   end;//for i
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

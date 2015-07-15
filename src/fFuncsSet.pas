@@ -19,7 +19,7 @@ type
   private
      procedure FuncsSetOK(Sender:TObject; Data:Pointer);
   public
-    { Public declarations }
+     procedure UpdateFuncsList(items:TStrings);
   end;
 
 var
@@ -79,6 +79,14 @@ end;
 procedure TF_FuncsSet.FormShow(Sender: TObject);
 begin
  if (Self.L_Status.Caption = 'Funkce nastaveny') then Self.L_Status.Caption := '';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_FuncsSet.UpdateFuncsList(items:TStrings);
+begin
+ Self.CB_Vyznam.Clear();
+ Self.CB_Vyznam.Items.AddStrings(items);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

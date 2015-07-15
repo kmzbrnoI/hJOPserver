@@ -31,8 +31,8 @@ type
     regulator:boolean;      // true pokud klient autorizoval rizeni pres regulator
     regulator_user:TUser;
     regulator_zadost:TOR;
-
     index:Integer;
+    funcsVyznamReq:boolean;
 
     procedure Escape();
 
@@ -98,6 +98,7 @@ type
 
      procedure BroadcastBottomError(err:string; tech:string);
      procedure BroadcastData(data:string);
+     procedure BroadcastFuncsVyznam();
 
      procedure SendLn(AContext:TIDContext; str:string);
 
@@ -202,6 +203,9 @@ implementation
 //  or;LOK-REQ;LOK;addr1|addr2|...          - lokomotivy pro rucni rizeni na zaklde PLEASE regulatoru vybrany
 //  or;LOK-REQ;DENY;                        - odmitnuti pozadavku na rucni rizeni
 
+//  -;F-VYZN-ADD;{{vyznam1};{vyznam2};...}  - pridani novych vyznamu funkci
+//  -;F-VYZN-GET;                           - pozadavek na ziskani vyznamu funkci (odpoved F-VYZN-LIST)
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// SERVER -> KLIENT ///////////////////////////////////
@@ -301,6 +305,8 @@ implementation
 //  or;LOK-REQ;ERR;comment                  - seznam loko na rucni rizeni odmitnut serverem
 //  or;LOK-REQ;CANCEL;                      - zruseni pozadavku na prevzeti loko na rucni rizeni
 
+//  -;F-VYZN-LIST;{{vyznam1};{vyznam2};...} - odeslani seznamu vyznamu funkci
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -323,7 +329,7 @@ implementation
 
 uses Main, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, Souprava,
-      TBlokZamek, Trakce, RegulatorTCP;
+      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -709,7 +715,20 @@ begin
   end
 
  else if (parsed[1] = 'LOK') then
-   TCPRegulator.Parse(AContext, parsed);
+   TCPRegulator.Parse(AContext, parsed)
+
+ else if (parsed[1] = 'F-VYZN-GET') then
+  begin
+   (AContext.Data as TTCPORsRef).funcsVyznamReq := true;
+   Self.SendLn(AContext, '-;F-VYZN-LIST;{'+ FuncsFyznam.GetFuncsVyznam() +'}');
+  end
+
+ else if (parsed[1] = 'F-VYZN-ADD') then
+  begin
+   FuncsFyznam.ParseNewItems(parsed[2]);
+   Self.BroadcastFuncsVyznam();
+  end;
+
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1164,6 +1183,8 @@ begin
  Self.UPO_Esc     := nil;
  Self.UPO_ref     := nil;
 
+ Self.funcsVyznamReq := false;
+
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[6] := '';
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[7] := '';
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[8] := '';
@@ -1193,6 +1214,18 @@ var i:Integer;
 begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if (Assigned(Self.clients[i])) then
+    Self.SendLn(Self.clients[i].conn, data);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TORTCPServer.BroadcastFuncsVyznam();
+var i:Integer;
+    data:string;
+begin
+ data := '-;F-VYZN-LIST;{'+FuncsFyznam.GetFuncsVyznam()+'}';
+ for i := 0 to _MAX_OR_CLIENTS-1 do
+  if ((Assigned(Self.clients[i])) and ((Self.clients[i].conn.Data as TTCPORsRef).funcsVyznamReq)) then
     Self.SendLn(Self.clients[i].conn, data);
 end;//procedure
 

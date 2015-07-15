@@ -105,7 +105,8 @@ uses
   TBlokRozp in 'TBlokRozp.pas',
   BlkRozp in 'BlkRozp.pas' {F_BlkRozp},
   RegulatorTCP in 'RegulatorTCP.pas',
-  fFuncsSet in 'fFuncsSet.pas' {F_FuncsSet};
+  fFuncsSet in 'fFuncsSet.pas' {F_FuncsSet},
+  FunkceVyznam in 'FunkceVyznam.pas';
 
 {$R *.res}
 
