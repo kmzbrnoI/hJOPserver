@@ -384,7 +384,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = 'Tento program je ur'#269'en pro '#345#237'zen'#237' modelov'#253'ch koleji'#353#357'.'
+    Caption = 'JOP server pro '#345#237'zen'#237' modelov'#253'ch koleji'#353#357
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -395,7 +395,7 @@ object F_About: TF_About
   end
   object ST_about2: TStaticText
     Left = 1
-    Top = 36
+    Top = 37
     Width = 560
     Height = 25
     Margins.Left = 2
@@ -416,9 +416,9 @@ object F_About: TF_About
     TabOrder = 1
   end
   object ST_about3: TStaticText
-    Left = 208
+    Left = 192
     Top = 59
-    Width = 145
+    Width = 177
     Height = 17
     Cursor = crHandPoint
     Margins.Left = 2
@@ -427,7 +427,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = 'jan.horacek@seznam.cz '
+    Caption = 'jan.horacek@kmz-brno.cz'
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
