@@ -1,6 +1,6 @@
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     HHHHH            H
 //H                                                        H      H      H    H   H    H    H          H H
-//H   Název : Øídící program                               H      H      H   H     H   H     H        H   H
+//H   Název : hJOPserver                                   H      H      H   H     H   H     H        H   H
 //H   Jméno tvùrce : Jan Horáèek                           H      HHHHHHHH   H     H   H    H        H     H
 //H   Autorská práva : Jan Horáèek 2008-2015               H      H      H   H     H   HHHHH        HHHHHHHHH
 //H                                                        H      H      H   H     H   H HH        H         H
@@ -8,7 +8,7 @@
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     H     HH   H           H
 //Zaèátek tvorby : záøí 2008
 
-program Ridici_program;
+program hJOPserver;
 
 uses
   Forms,
@@ -117,13 +117,12 @@ uses
   // povolena je jen jedna instance RP
   if (ZkontrolujSpusteno) then
    begin
-    Application.MessageBox('Øídící program již spuštìn, povolena pouze jedna instance', 'Již spuštìn', MB_ICONWARNING OR MB_OK);
+    Application.MessageBox('hJOPserver již spuštìn, povolena pouze jedna instance', 'Již spuštìn', MB_ICONWARNING OR MB_OK);
     halt(0);
    end;
 
   Application.Initialize;
-  Application.Title := 'Øídící program';
-
+  Application.Title := 'hJOPserver';
   Application.CreateForm(TF_Main, F_Main);
   Application.CreateForm(TF_Splash, F_Splash);
   Application.CreateForm(TF_Console, F_Console);

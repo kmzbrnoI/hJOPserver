@@ -1,7 +1,7 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
 			<ProjectGuid>{3843E8C1-425E-4564-AD11-0A95B3B00280}</ProjectGuid>
-			<MainSource>Ridici_program.dpr</MainSource>
+			<MainSource>hJOPserver.dpr</MainSource>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<ProjectVersion>12.0</ProjectVersion>
@@ -20,7 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_DependencyCheckOutputName>..\output\Ridici_program.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\output\hJOPserver.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls</DCC_UsePackage>
 			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
@@ -49,7 +49,7 @@
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="Ridici_program.dpr">
+			<DelphiCompile Include="hJOPserver.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="RPConst.pas"/>
@@ -240,7 +240,7 @@
 			<BorlandProject>
 				<Delphi.Personality>
 					<Source>
-						<Source Name="MainSource">Ridici_program.dpr</Source>
+						<Source Name="MainSource">hJOPserver.dpr</Source>
 					</Source>
 					<Parameters>
 						<Parameters Name="UseLauncher">False</Parameters>
@@ -265,15 +265,15 @@
 					</VersionInfo>
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
-						<VersionInfoKeys Name="FileDescription">Rídící program verze 4</VersionInfoKeys>
+						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
 						<VersionInfoKeys Name="FileVersion">4.3.11.0</VersionInfoKeys>
-						<VersionInfoKeys Name="InternalName">Ridici_program</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2014</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2015</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
-						<VersionInfoKeys Name="OriginalFilename">Ridici_program.exe</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductName">Ridici program</VersionInfoKeys>
+						<VersionInfoKeys Name="OriginalFilename">hJOPserver.exe</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
-						<VersionInfoKeys Name="Comments">Urceno pro KMZ-Brno I</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
 					<Excluded_Packages>
 						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>

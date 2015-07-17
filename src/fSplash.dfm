@@ -444,7 +444,7 @@ object F_splash: TF_splash
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = #344#237'd'#237'c'#237' program'
+    Caption = 'hJOPserver'
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clBlack
     Font.Height = -32

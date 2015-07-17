@@ -3,7 +3,7 @@ object F_About: TF_About
   Top = 49
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'O programu R'#237'd'#237'c'#237' program'
+  Caption = 'O programu hJOPserver'
   ClientHeight = 361
   ClientWidth = 568
   Color = clWhite

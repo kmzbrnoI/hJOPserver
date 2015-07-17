@@ -628,7 +628,7 @@ procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);//konec
     beep;
     if (CloseMessage) then
      begin
-      if Application.Messagebox('Opravdu chcete ukonèit program?','Øídící program',MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES then
+      if Application.Messagebox('Opravdu chcete ukonèit program?','hJOPserver', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES then
        begin
         CanClose := true;
        end else begin                                           //pokud se klikne na Cancel
@@ -1920,13 +1920,13 @@ procedure TF_Main.OnStart;
   Vytizeni.DrawCPUGauge;
 
   writelog('Naètena knihovna '+ IntToStr(MTB.lib),WR_MTB);
-  writelog('Spuštìn øídící program v'+NactiVerzi(application.ExeName)+_VERSION_PR,0,0);
+  writelog('Spuštìn hJOPserver v'+NactiVerzi(application.ExeName)+_VERSION_PR,0,0);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
 
   if (ShowErrorMessage) then
    begin
     writelog('! Program detekoval posledni nouzove ukonceni', WR_MESSAGE);
-//    Application.Messagebox('Program byl naposledy pravdìpodobnì ukonèen násilím, komunikaèní deska MTB-USB bude mít problémy s komunikací s MTB'+_NET_END+'Vypnìte program, vypojte a opìtovnì zapojte USB drát vedoucí z poèítaèe do desky MTB-USB a znovu program spuste','Øídící program',MB_OK OR MB_ICONWARNING OR MB_DEFBUTTON1);
+//    Application.Messagebox('Program byl naposledy pravdìpodobnì ukonèen násilím, komunikaèní deska MTB-USB bude mít problémy s komunikací s MTB'+_NET_END+'Vypnìte program, vypojte a opìtovnì zapojte USB drát vedoucí z poèítaèe do desky MTB-USB a znovu program spuste', 'hJOPserver', MB_OK OR MB_ICONWARNING OR MB_DEFBUTTON1);
     ShowErrorMessage := false;
    end;
 
@@ -2020,7 +2020,7 @@ procedure TF_Main.CreateSystem;
 
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 
-  F_Main.Caption := 'Øídící program         v'+NactiVerzi(Application.ExeName)+_VERSION_PR+' (build '+GetLastBuildDate+')';
+  F_Main.Caption := 'hJOPserver         v'+NactiVerzi(Application.ExeName)+_VERSION_PR+' (build '+GetLastBuildDate+')';
   F_Main.SB1.Panels.Items[_SB_MTB].Text := 'MTB close';
   RepaintObjects;
  end;//procedure

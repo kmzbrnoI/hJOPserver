@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // OutputDriver.pas
-// Ridici Program
+// hJOPserver
 // TOutputDriver class definition
 // (c) Jan Horacek, Michal Petrilak
 // jan.horacek@kmz-brno.cz, engineercz@gmail.com
