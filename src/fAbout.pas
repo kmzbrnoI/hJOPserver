@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, jpeg, ExtCtrls, StdCtrls, fMain, ShellAPI;
+  Dialogs, jpeg, ExtCtrls, StdCtrls, fMain, ShellAPI, pngimage;
 
 type
   TF_About = class(TForm)
@@ -30,6 +30,7 @@ type
     L_RegCompany: TLabel;
     Label6: TLabel;
     L_VMTBDriver: TLabel;
+    I_AppIcon: TImage;
     procedure FormShow(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure ST_about5Click(Sender: TObject);
