@@ -31,7 +31,7 @@ var
 implementation
 
 uses TBlokUsek, TBlokVyhybka, TMultiJCDatabase, TechnologieMultiJC,
-     TBlok, TBloky, Main, TBlokSCom, TJCDatabase;
+     TBlok, TBloky, fMain, TBlokSCom, TJCDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 

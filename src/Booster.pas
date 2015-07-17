@@ -57,7 +57,7 @@ type
 
 implementation
 
-uses GetSystems, Main;
+uses GetSystems, fMain;
 
 //file format:
 //  ini file

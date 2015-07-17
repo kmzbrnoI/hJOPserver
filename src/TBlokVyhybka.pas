@@ -179,7 +179,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, TechnologieMTB, Main, TOblRizeni, TJCDatabase,
+uses TBloky, GetSystems, TechnologieMTB, fMain, TOblRizeni, TJCDatabase,
       TCPServerOR, TBlokZamek;
 
 constructor TBlkVyhybka.Create(index:Integer);

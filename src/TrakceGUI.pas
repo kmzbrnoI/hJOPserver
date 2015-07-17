@@ -325,8 +325,8 @@ type
 
 implementation
 
-uses Main, Settings, RPConst, XpressNET, TechnologieMTB, Regulator,
-    GetSystems, THVDatabase, AdminForm, DataHV,
+uses fMain, fSettings, RPConst, XpressNET, TechnologieMTB, fRegulator,
+    GetSystems, THVDatabase, fAdminForm, DataHV,
     Prevody, TBloky, RegulatorTCP, TCPServerOR, fFuncsSet;
 
 ////////////////////////////////////////////////////////////////////////////////

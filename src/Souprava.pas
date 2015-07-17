@@ -97,7 +97,7 @@ implementation
 
 uses THVDatabase, Logging, ownStrUtils, THnaciVozidlo, SprDb, TBlokUsek, DataSpr,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlok, TBlokSCom,
-      Regulator, Trakce, Main;
+      fRegulator, Trakce, fMain;
 
 ////////////////////////////////////////////////////////////////////////////////
 

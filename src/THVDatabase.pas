@@ -64,7 +64,7 @@ var
 
 implementation
 
-uses Settings, Logging, Main, DataHV, TOblRizeni;
+uses fSettings, Logging, fMain, DataHV, TOblRizeni;
 
 ////////////////////////////////////////////////////////////////////////////////
 

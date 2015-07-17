@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, IniFiles, ComCtrls, ExtCtrls, StdCtrls,Mask, Gauges, StrUtils, Registry, Licence, Grids, jpeg, ShellAPI,
-  Main, RPConst, Trakce, TrakceGUI, XpressNET, CPort, AC, TJCDatabase;
+  Dialogs, Menus, IniFiles, ComCtrls, ExtCtrls, StdCtrls,Mask, Gauges, StrUtils, Registry, fLicence, Grids, jpeg, ShellAPI,
+  fMain, RPConst, Trakce, TrakceGUI, XpressNET, CPort, AC, TJCDatabase;
 
 type
 
@@ -40,8 +40,8 @@ var
 
 implementation
 
-uses Settings, Splash, AdminForm, GetSystems, Prevody,
-     TechnologieMTB, Verze, HVEdit, TechnologieJC, Console, TOblsRizeni, TBloky,
+uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
+     TechnologieMTB, Verze, fHVEdit, TechnologieJC, fConsole, TOblsRizeni, TBloky,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, BoosterDb,
      Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,

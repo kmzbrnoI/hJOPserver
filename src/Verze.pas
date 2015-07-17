@@ -6,7 +6,7 @@ uses  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Outputdriver, ExtCtrls, StdCtrls, Menus, ImgList, Buttons,
   ComCtrls,inifiles, ActnList, AppEvnts, Mask, ScktComp,ToolWin,jpeg,
   Spin, ExtDlgs, Grids, Gauges, Registry,
-  StrUtils, Licence, DateUtils, mmsystem;
+  StrUtils, fLicence, DateUtils, mmsystem;
 
  function NactiVerzi(const FileName: string): string;//cteni verze z nastaveni
  function GetZkrVersion(const FileName: string):String;
@@ -20,7 +20,7 @@ var MyMsg:Cardinal;
 
 implementation
 
-uses Main;
+uses fMain;
 
 function NactiVerzi(const FileName: string): string;//cteni verze z nastaveni
 var

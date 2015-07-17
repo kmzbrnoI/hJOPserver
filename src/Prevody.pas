@@ -23,7 +23,7 @@ var
  
 implementation
 
-uses Main;
+uses fMain;
 
 function TPrevody.DecToBin(Cislo:Integer;Mista:Integer): string;
 var s: string;

@@ -5,7 +5,7 @@ unit AC;
 
 interface
 
-uses Classes, Main, IniFiles, SysUtils, RPCOnst, TBlok, TechnologieJC, TBloky,
+uses Classes, fMain, IniFiles, SysUtils, RPCOnst, TBlok, TechnologieJC, TBloky,
      TBlokUsek, ComCtrls, Prevody, Windows, Generics.Collections,
      ownStrUtils, StrUtils, IdContext;
 
@@ -90,7 +90,7 @@ type
 
 implementation
 
-uses Settings, GetSystems, TJCDatabase, Logging,
+uses fSettings, GetSystems, TJCDatabase, Logging,
       TOblRizeni, TOblsRizeni, TBlokSCom, TBlokTrat;
 
 ////////////////////////////////////////////////////////////////////////////////

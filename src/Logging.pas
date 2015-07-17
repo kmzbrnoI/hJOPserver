@@ -31,7 +31,7 @@ var
 
 implementation
 
-uses Settings, Main, GetSystems, RPConst;
+uses fSettings, fMain, GetSystems, RPConst;
 
 ////////////////////////////////////////////////////////////////////////////////
 

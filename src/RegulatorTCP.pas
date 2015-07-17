@@ -48,7 +48,7 @@ var
 implementation
 
 uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb,
-     Souprava, Regulator, TrakceGUI, Main, Prevody, TOblRizeni, TOblsRizeni;
+     Souprava, fRegulator, TrakceGUI, fMain, Prevody, TOblRizeni, TOblsRizeni;
 
 ////////////////////////////////////////////////////////////////////////////////
 

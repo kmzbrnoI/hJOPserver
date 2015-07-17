@@ -101,7 +101,7 @@ type
 implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
-    TJCDatabase, Main, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, TBlokVyhybka;
 
 constructor TBlkZamek.Create(index:Integer);

@@ -112,7 +112,7 @@ var
 
 implementation
 
-uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, Main, TBlokPrejezd,
+uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
       TBlokZamek,
       TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieMTB, DataBloky,
       SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp;

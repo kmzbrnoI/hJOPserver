@@ -28,7 +28,7 @@ var
 
 implementation
 
-uses SprDb, Souprava, THVDatabase, TOblsRizeni, TOblRizeni, Main, RPConst,
+uses SprDb, Souprava, THVDatabase, TOblsRizeni, TOblRizeni, fMain, RPConst,
        TBloky, TBlok;
 
 ////////////////////////////////////////////////////////////////////////////////

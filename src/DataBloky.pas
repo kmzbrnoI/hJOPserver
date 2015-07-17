@@ -34,7 +34,7 @@ var
 implementation
 
 uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokSCom, TBlokIR, TBlokPrejezd,
-      Main, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp;
+      fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp;
 
 ////////////////////////////////////////////////////////////////////////////////
 

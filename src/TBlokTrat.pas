@@ -148,7 +148,7 @@ type
 implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
-    TJCDatabase, Main, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase;
+    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase;
 
 constructor TBlkTrat.Create(index:Integer);
 begin

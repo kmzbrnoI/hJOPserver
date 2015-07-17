@@ -19,8 +19,8 @@ var
 
 implementation
 
-uses Main, RPConst,
-     AdminForm, TechnologieMTB, Settings, TBLoky, TOblsRizeni, Logging,
+uses fMain, RPConst,
+     fAdminForm, TechnologieMTB, fSettings, TBLoky, TOblsRizeni, Logging,
      TCPServerOR;
 
 

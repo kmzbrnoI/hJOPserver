@@ -224,11 +224,11 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, Main,
+uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain,
      TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek,
-     Regulator, TBlokRozp, RegulatorTCP, ownStrUtils;
+     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils;
 
 constructor TOR.Create(index:Integer);
 begin

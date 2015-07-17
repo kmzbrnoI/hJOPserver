@@ -109,7 +109,7 @@ type
 implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
-    TJCDatabase, Main, TCPServerOR, TBlokTrat, Zasobnik;
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik;
 
 constructor TBlkUvazka.Create(index:Integer);
 begin

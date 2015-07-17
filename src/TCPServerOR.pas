@@ -327,7 +327,7 @@ implementation
 // barva se prenasi jako 3 text, ktery obsahuje 3 sestnactkova cisla = napr. FFAAFF
 //  poradi barev: RED, GREEN, BLUE
 
-uses Main, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
+uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, Souprava,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam;
 

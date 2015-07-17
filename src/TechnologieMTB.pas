@@ -153,8 +153,8 @@ var
 
 implementation
 
-uses Main, Settings, RPConst, LoginPozadi, SystemInfo, AdminForm,
-     GetSystems, Splash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
+uses fMain, fSettings, RPConst, fLoginPozadi, fSystemInfo, fAdminForm,
+     GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
      TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
      TOblsRizeni, Logging, TCPServerOR, SprDb;
 

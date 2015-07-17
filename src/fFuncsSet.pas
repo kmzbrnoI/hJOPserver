@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses Main, Trakce;
+uses fMain, Trakce;
 
 {$R *.dfm}
 

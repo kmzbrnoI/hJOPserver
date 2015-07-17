@@ -57,7 +57,7 @@ var BoostersDb:TBoosterDb;
 
 implementation
 
-uses TBloky, Main, Trakce;
+uses TBloky, fMain, Trakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 

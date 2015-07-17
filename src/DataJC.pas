@@ -29,7 +29,7 @@ var
 
 implementation
 
-uses TBlokUsek, TBlokVyhybka, TJCDatabase, TechnologieJC, TBlok, TBloky, Main,
+uses TBlokUsek, TBlokVyhybka, TJCDatabase, TechnologieJC, TBlok, TBloky, fMain,
      TBlokSCom;
 
 ////////////////////////////////////////////////////////////////////////////////

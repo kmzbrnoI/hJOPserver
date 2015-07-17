@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, Buttons, ComCtrls, Main, RPConst, TBloky, TBlok,
+  Dialogs, Menus, Buttons, ComCtrls, fMain, RPConst, TBloky, TBlok,
   IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO;
 
 const
@@ -231,7 +231,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, Settings,
+uses GetSystems, TechnologieMTB, fSettings,
      TBlokSCom, TBlokUsek, TBlokVyhybka, TOblsRizeni, TOblRizeni,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, SprDb,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek;
