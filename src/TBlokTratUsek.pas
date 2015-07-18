@@ -62,6 +62,12 @@ type
     procedure ZastRunTrain();
     procedure ZastStopTrain();
 
+    procedure MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
+    procedure MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+
+    procedure SetUsekSpr(spr:Integer);
+    function GetUsekSpr:Integer;
+
   public
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -80,8 +86,10 @@ type
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
 
     property TUStav:TBlkTUStav read fTUStav;
+    property Souprava:Integer read GetUsekSpr write SetUsekSpr;
 
  end;//TBlkUsek
 
@@ -189,6 +197,8 @@ end;
 //update all local variables
 procedure TBlkTU.Update();
 begin
+ inherited;
+
  if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.Souprava > -1) and (Self.TUSettings.Zastavka.enabled)) then
    Self.ZastUpdate();
 end;
@@ -244,15 +254,15 @@ end;//procedure
 
 function TBlkTU.GetZastIRLichy():TBlk;
 begin
- if (((Self.fZastIRLichy = nil) and (Self.UsekSettings.Zastavka.IR_lichy <> -1)) or ((Self.fZastIRLichy <> nil) <> (Self.fZastIRLichy.GetGlobalSettings.id <> Self.UsekSettings.Zastavka.IR_lichy))) then
-   Blky.GetBlkByID(Self.UsekSettings.Zastavka.IR_lichy, Self.fZastIRLichy);
+ if (((Self.fZastIRLichy = nil) and (Self.TUSettings.Zastavka.IR_lichy <> -1)) or ((Self.fZastIRLichy <> nil) <> (Self.fZastIRLichy.GetGlobalSettings.id <> Self.TUSettings.Zastavka.IR_lichy))) then
+   Blky.GetBlkByID(Self.TUSettings.Zastavka.IR_lichy, Self.fZastIRLichy);
  Result := Self.fZastIRLichy;
 end;//function
 
 function TBlkTU.GetZastIRSudy():TBlk;
 begin
- if (((Self.fZastIRSudy = nil) and (Self.UsekSettings.Zastavka.IR_sudy <> -1)) or ((Self.fZastIRSudy <> nil) and (Self.fZastIRSudy.GetGlobalSettings.id <> Self.UsekSettings.Zastavka.IR_sudy))) then
-   Blky.GetBlkByID(Self.UsekSettings.Zastavka.IR_sudy, Self.fZastIRSudy);
+ if (((Self.fZastIRSudy = nil) and (Self.TUSettings.Zastavka.IR_sudy <> -1)) or ((Self.fZastIRSudy <> nil) and (Self.fZastIRSudy.GetGlobalSettings.id <> Self.TUSettings.Zastavka.IR_sudy))) then
+   Blky.GetBlkByID(Self.TUSettings.Zastavka.IR_sudy, Self.fZastIRSudy);
  Result := Self.fZastIRSudy;
 end;//function
 
@@ -262,7 +272,7 @@ end;//function
 procedure TBlkTU.ZastStopTrain();
 begin
  Self.fTUStav.zast_stopped  := true;
- Self.fTUStav.zast_run_time := Now+Self.UsekSettings.Zastavka.delay;
+ Self.fTUStav.zast_run_time := Now+Self.TUSettings.Zastavka.delay;
 
  try
    Self.fTUStav.zast_rych := Soupravy.soupravy[Self.Souprava].rychlost;
@@ -295,7 +305,7 @@ begin
  Result := inherited;
 
  // zastavka
- if ((Self.UsekSettings.Zastavka.enabled) and (Self.InTrat > -1)) then
+ if ((Self.TUSettings.Zastavka.enabled) and (Self.InTrat > -1)) then
   begin
    Result := Result + '-,';
    if (not Self.TUStav.zast_stopped) then
@@ -340,6 +350,49 @@ procedure TBlkTU.SetUSettings(data:TBlkUsekSettings);
 begin
  inherited SetSettings(data);
 end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.SetUsekSpr(spr:Integer);
+begin
+ inherited;
+ if (spr = -1) then
+  begin
+   Self.fTUStav.zast_stopped := false;
+   Self.fTUStav.zast_passed  := false;
+  end;
+end;
+
+function TBlkTU.GetUsekSpr:Integer;
+begin
+ Result := Self.Stav.Spr;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
+begin
+ if (not Self.TUStav.zast_stopped) then
+   Self.fTUStav.zast_enabled := new_state;
+end;//procedure
+
+procedure TBlkTU.MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ if (Self.TUStav.zast_stopped) then
+   Self.ZastRunTrain();
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+begin
+ if (Self.Stav.Stav <= TUsekStav.none) then Exit();
+
+ if (item = 'JEÏ vlak')   then Self.MenuJEDLokClick(SenderPnl, SenderOR)
+ else if (item = 'ZAST>') then Self.MenuZastClick(SenderPnl, SenderOR, true)
+ else if (item = 'ZAST<') then Self.MenuZastClick(SenderPnl, SenderOR, false)
+ else inherited;
+end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
