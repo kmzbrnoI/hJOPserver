@@ -251,6 +251,9 @@ begin
  FreeAndNil(ini_stat);
  FreeAndNil(str);
 
+ for i := 0 to Self.data.Count-1 do
+   Self.data[i].AfterLoad(); 
+
  writelog('Nacteno bloku: '+IntToStr(Self.Cnt), WR_DATA);
  Result := 0;
 end;//function
@@ -769,14 +772,14 @@ begin
      // zjistime posledni usek jizdni cesty
      Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Usek);
 
-     if ((Usek as TBlkUsek).InTrat > -1) then
+     if ((Usek.GetGlobalSettings().typ = _BLK_TU) and ((Usek as TBlkTU).InTrat > -1)) then
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
-       Blky.GetBlkByID((Usek as TBlkUsek).InTrat, Trat);
+       Blky.GetBlkByID((Usek as TBlkTU).InTrat, Trat);
        (Trat as TBlkTrat).SprPredict := spr;
 
        case ((Trat as TBlkTrat).Smer) of
-        TTratSmer.AtoB : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[Length((Trat as TBlkTrat).GetSettings().Useky)-1], Usek);
+        TTratSmer.AtoB : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[(Trat as TBlkTrat).GetSettings().Useky.Count-1], Usek);
         TTratSmer.BtoA : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[0], Usek);
        end;//case
       end;

@@ -108,6 +108,7 @@ type
    procedure Enable(); virtual; abstract;
    procedure Disable(); virtual;
    procedure Reset(); virtual;
+   procedure AfterLoad(); virtual;    // AfterLoad je volano po nacteni vsech dat, slouzi napriklad pro vytvoreni tratFlagu
 
    //update states
    procedure Update(); virtual;
@@ -411,6 +412,13 @@ begin
 end;
 
 procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlk.AfterLoad();
 begin
 
 end;
