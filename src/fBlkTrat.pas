@@ -299,6 +299,8 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
   glob_uvB.id   := Self.SE_UB_id.Value;
   glob_uvB.typ  := _BLK_UVAZKA;
 
+  TratSettings.Useky := TList<Integer>.Create();
+
   if (NewBlk) then
    begin
     Self.Trat := Blky.Add(_BLK_TRAT, glob_trat) as TBlkTrat;
@@ -307,7 +309,6 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
       Application.MessageBox('Nepodarilo se pridat blok traù !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
-    TratSettings.Useky := TList<Integer>.Create();
 
     Self.UvazkaA  := Blky.Add(_BLK_UVAZKA, glob_uvA) as TBlkUvazka;
     if (Self.UvazkaA = nil) then
@@ -327,13 +328,10 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     glob_uvA.poznamka  := Self.UvazkaA.GetGlobalSettings().poznamka;
     glob_uvB.poznamka  := Self.UvazkaB.GetGlobalSettings().poznamka;
 
-    TratSettings.Useky := Self.Trat.GetSettings().Useky;
-
     Self.Trat.SetGlobalSettings(glob_trat);
     Self.UvazkaA.SetGlobalSettings(glob_uvA);
     Self.UvazkaB.SetGlobalSettings(glob_uvB);
    end;
-
 
   TratSettings.uvazkaA  := Self.SE_UA_id.Value;
   TratSettings.uvazkaB  := Self.SE_UB_id.Value;
