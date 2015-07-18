@@ -9,15 +9,16 @@ uses IniFiles, TechnologieMTB, SysUtils, RPConst, TOblsRizeni,
 
 const
  //typy bloku
- _BLK_VYH     = 0;
- _BLK_USEK    = 1;
- _BLK_IR      = 2;
- _BLK_SCOM    = 3;
- _BLK_PREJEZD = 4;
- _BLK_TRAT    = 5;
- _BLK_UVAZKA  = 6;
- _BLK_ZAMEK   = 7;
- _BLK_ROZP    = 8;
+ _BLK_VYH     = 0;            // vyhybka
+ _BLK_USEK    = 1;            // usek
+ _BLK_IR      = 2;            // IR cidlo
+ _BLK_SCOM    = 3;            // navestidlo
+ _BLK_PREJEZD = 4;            // prejezd
+ _BLK_TRAT    = 5;            // trat
+ _BLK_UVAZKA  = 6;            // uvazka
+ _BLK_ZAMEK   = 7;            // vyhybkovy zamek
+ _BLK_ROZP    = 8;            // rozpojovac
+ _BLK_TU      = 9;            // tratovy usek
 
  //if the block is disbled, this is is its state
  _BLK_DISABLED = -5;
