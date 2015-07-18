@@ -107,7 +107,8 @@ uses
   RegulatorTCP in 'RegulatorTCP.pas',
   fFuncsSet in 'fFuncsSet.pas' {F_FuncsSet},
   FunkceVyznam in 'FunkceVyznam.pas',
-  TBlokTratUsek in 'TBlokTratUsek.pas';
+  TBlokTratUsek in 'TBlokTratUsek.pas',
+  fBlkTU in 'fBlkTU.pas' {F_BlkTU};
 
 {$R *.res}
 
@@ -145,36 +146,34 @@ uses
   Application.CreateForm(TF_BlkSCom, F_BlkSCom);
   Application.CreateForm(TF_BlkNew, F_BlkNew);
   Application.CreateForm(TF_BlkPrejezd, F_BlkPrejezd);
+  Application.CreateForm(TF_BlkTU, F_BlkTU);
   Application.CreateForm(TF_NoRegRun, F_NoRegRun);
   Application.CreateForm(TF_AutoStartSystems, F_AutoStartSystems);
   Application.CreateForm(TF_BlkUsek_tech, F_BlkUsek_tech);
-  //creatovani zakladnich oken
-    Application.CreateForm(TF_Pozadi, F_Pozadi);
-    Application.CreateForm(TF_SystemInfo, F_SystemInfo);
-    Application.CreateForm(TF_Admin, F_Admin);
-    Application.CreateForm(TF_Options, F_Options);
-    F_Splash.AddStav('Vytváøím vedlejší okna');    
-    Application.CreateForm(TF_Tester, F_Tester);
-    //creatovani editacnich oken
-    Application.CreateForm(TF_ZesilovacEdit, F_ZesilovacEdit);
-    Application.CreateForm(TF_BlkTrat, F_BlkTrat);
-    Application.CreateForm(TF_BlkZamek, F_BlkZamek);
-    Application.CreateForm(TF_BlkRozp, F_BlkRozp);
-    Application.CreateForm(TF_HVEdit, F_HVEdit);
-    Application.CreateForm(TF_AutRezEdit, F_AutRezEdit);
-    //cretovani oken okolo prihlasovani
-    //creatovani dalsich oken
-    Application.CreateForm(TF_Licence, F_Licence);
-    Application.CreateForm(TF_ModCasSet, F_ModCasSet);
-    Application.CreateForm(TF_About, F_About);
-    F_Main.OnStart;
-    F_splash.Close;
+  Application.CreateForm(TF_Pozadi, F_Pozadi);
+  Application.CreateForm(TF_SystemInfo, F_SystemInfo);
+  Application.CreateForm(TF_Admin, F_Admin);
+  Application.CreateForm(TF_Options, F_Options);
+  F_Splash.AddStav('Vytváøím vedlejší okna');
+  Application.CreateForm(TF_Tester, F_Tester);
+  Application.CreateForm(TF_ZesilovacEdit, F_ZesilovacEdit);
+  Application.CreateForm(TF_BlkTrat, F_BlkTrat);
+  Application.CreateForm(TF_BlkZamek, F_BlkZamek);
+  Application.CreateForm(TF_BlkRozp, F_BlkRozp);
+  Application.CreateForm(TF_HVEdit, F_HVEdit);
+  Application.CreateForm(TF_AutRezEdit, F_AutRezEdit);
+  Application.CreateForm(TF_Licence, F_Licence);
+  Application.CreateForm(TF_ModCasSet, F_ModCasSet);
+  Application.CreateForm(TF_About, F_About);
+  F_Main.OnStart;
+  F_splash.Close;
 
-    F_Main.LogStatus('Program spuštìn');
+  F_Main.LogStatus('Program spuštìn');
 
-    Application.Run;
-    //zniceni Mutexu pri ukonceni
-    if (Mutex <> 0) then CloseHandle(Mutex);
+  Application.Run;
+
+  //zniceni Mutexu pri ukonceni
+  if (Mutex <> 0) then CloseHandle(Mutex);
  end.
 //08.06.2009 -  9 649 radku
 //03.07.2009 - 13 006 radku

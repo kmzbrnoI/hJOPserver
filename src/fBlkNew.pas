@@ -25,7 +25,7 @@ var
 implementation
 
 uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkSCom, fMain, fSettings,
-      TBloky, fBlkPrejezd, fBlkTrat, fBlkZamek, fBlkRozp;
+      TBloky, fBlkPrejezd, fBlkTrat, fBlkZamek, fBlkRozp, fBlkTU;
 
 {$R *.dfm}
 
@@ -33,7 +33,7 @@ procedure TF_BlkNew.OpenForm;
  begin
   F_BlkNew.RG_NewTyp.ItemIndex := -1;
   F_BlkNew.ShowModal;
- end;//procedure
+ end;
 
 procedure TF_BlkNew.B_SaveClick(Sender: TObject);
  begin
@@ -54,6 +54,7 @@ procedure TF_BlkNew.B_SaveClick(Sender: TObject);
    5 : F_BlkTrat.NewBlkCreate;
    6 : F_BlkZamek.NewBlkCreate;
    7 : F_BlkRozp.NewBlkCreate;
+   8 : F_BlkTU.NewBlkCreate;
   end;//case
  end;//procedure
 

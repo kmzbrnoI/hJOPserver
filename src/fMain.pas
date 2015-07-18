@@ -490,7 +490,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
-     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam;
+     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU;
 
 {$R *.dfm}
 
@@ -2354,7 +2354,7 @@ var Blk:TBlk;
    end;//_BLK_VYH
 
   //////////////////////
-   _BLK_USEK:begin
+   _BLK_USEK, _BLK_TU:begin
     case ((Blk as TBlkUsek).Obsazeno) of
      TUsekStav.disabled : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
      TUsekStav.none     : LV_Bloky.Canvas.Brush.Color := $E0FFEE;
@@ -2449,6 +2449,7 @@ var Blk:TBlk;
    _BLK_TRAT, _BLK_UVAZKA : F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_ZAMEK   : F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_ROZP    : F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
+   _BLK_TU      : F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
   end;//case
 end;
 
