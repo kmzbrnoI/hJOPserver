@@ -1,7 +1,10 @@
 unit TBlokTrat;
 
 // definice a obsluha technologickeho bloku Trat
-// tento blok by se ve skutecnosti na panelu nemel vyskytnout - slouzi pouze jako rodin dou uvazek
+// tento blok by se ve skutecnosti na panelu nemel vyskytnout - slouzi pouze jako rodic dvou uvazek
+
+// U bloku trati je zajisteno, ze existuji a jsou typu TBlkTU
+// Bloky, ktere tomuto nevyhovuji, jsou po startu odstraneny.
 
 interface
 
@@ -517,15 +520,15 @@ begin
    if (found < 0) then
     begin
      Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-     if ((Blk as TBlkUsek).Zaver = TJCType.nouz) then
+     if ((Blk as TBlkTU).Zaver = TJCType.nouz) then
        found := i;
     end;
 
    if (found > -1) then
     begin
-     (Blk as TBlkUsek).Zaver := TJCType.no;
-     if ((Blk as TBlkUsek).Souprava > -1) then
-      (Blk as TBlkUsek).Souprava := -1;
+     (Blk as TBlkTU).Zaver := TJCType.no;
+     if ((Blk as TBlkTU).Souprava > -1) then
+      (Blk as TBlkTU).Souprava := -1;
     end;
   end;//for i
 
@@ -560,7 +563,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if (((Blk as TBlkUsek).Zaver = TJCType.nouz) and ((Blk as TBlkUsek).Stav.Stav = TUsekStav.uvolneno)) then
+   if (((Blk as TBlkTU).Zaver = TJCType.nouz) and ((Blk as TBlkTU).Stav.Stav = TUsekStav.uvolneno)) then
     Exit(true);
   end;//for i
  Exit(false);
@@ -588,29 +591,29 @@ begin
    if (i = 0) then old := new;
 
    // dalsi blok obsazen -> predani soupravy do tohoto bloku
-   if ((i = Self.TratStav.BP.next) and ((new as TBlkUsek).Obsazeno = TUsekStav.obsazeno)) then
+   if ((i = Self.TratStav.BP.next) and ((new as TBlkTU).Obsazeno = TUsekStav.obsazeno)) then
     begin
      if (old <> new) then   // u prvniho bloku nemame odkud priradit - priradi se tam od jizdni cesty
-       (new as TBlkUsek).Souprava := (old as TBlkUsek).Souprava;
+       (new as TBlkTU).Souprava := (old as TBlkTU).Souprava;
 
      // tato podminka musi byt na stejne urovni, jako podminka predchozi pro pripad, kdy ma trat pouze jeden usek
-     if ((new as TBlkUsek).Souprava > -1) then
+     if ((new as TBlkTU).Souprava > -1) then
       begin
-       (new as TBlkUsek).zpomalovani_ready := true;
-       Soupravy.soupravy[(new as TBlkUsek).Souprava].front := new;
+       (new as TBlkTU).zpomalovani_ready := true;
+       Soupravy.soupravy[(new as TBlkTU).Souprava].front := new;
 
        if (i = Self.TratSettings.Useky.Count-1) then
         begin
          // souprava vstoupila do posledniho bloku trati
          // zmena stanic soupravy a hnacich vozidel v ni
-         Self.SprChangeOR((new as TBlkUsek).Souprava);
+         Self.SprChangeOR((new as TBlkTU).Souprava);
 
          // je nutne zmenit smer soupravy?
          if (((Assigned(Self.navLichy)) and (Assigned(Self.navSudy))) and
          ((Self.navLichy as TBlkSCom).Smer = (Self.navSudy as TBlkSCom).Smer)) then
           begin
            // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
-           Soupravy.soupravy[(new as TBlkUsek).Souprava].ChangeSmer();
+           Soupravy.soupravy[(new as TBlkTU).Souprava].ChangeSmer();
           end;
         end;
       end;
@@ -619,15 +622,15 @@ begin
 
    // mazani soupravy vzadu
    // podminka (Self.BP.next > Self.BP.last) ma vyznam pri reseni uvolneni prvniho useku trati
-   if ((i = Self.TratStav.BP.last) and ((new as TBlkUsek).Obsazeno = TUsekStav.uvolneno)) then
+   if ((i = Self.TratStav.BP.last) and ((new as TBlkTU).Obsazeno = TUsekStav.uvolneno)) then
     begin
      if (Self.TratStav.BP.next > Self.TratStav.BP.last+1) then
       begin
        // blok nekde uvnitr dlohe trati
-       (new as TBlkUsek).Souprava := -1;
+       (new as TBlkTU).Souprava := -1;
        Inc(Self.TratStav.BP.last);
       end else begin
-       if ((i = Self.TratSettings.Useky.Count-1) and ((new as TBlkUsek).Souprava = -1)) then
+       if ((i = Self.TratSettings.Useky.Count-1) and ((new as TBlkTU).Souprava = -1)) then
         begin
          // blok na konci trati: tady mus byt zaroven splneno to, ze v nem neni souprava - soupravu si odstrani jizdni cesta
          // takto se kontroluje vypadek soupravy v poslendim bloku jizdni cesty
@@ -642,17 +645,17 @@ begin
         ((i = Self.TratStav.BP.last) and (Self.TratStav.BP.last = Self.TratStav.BP.next-1))) then
      begin
       // blok uprostred uvolnen
-      if ((new as TBlkUsek).Obsazeno = TUsekStav.uvolneno) then
-         if ((new as TBlkUsek).Zaver <> TJCType.nouz) then
+      if ((new as TBlkTU).Obsazeno = TUsekStav.uvolneno) then
+         if ((new as TBlkTU).Zaver <> TJCType.nouz) then
           begin
-           (new as TBlkUsek).Zaver := TJCType.nouz;
+           (new as TBlkTU).Zaver := TJCType.nouz;
            Self.Change();
           end;
       // blok uprostred obsazen
-      if ((new as TBlkUsek).Obsazeno = TUsekStav.obsazeno) then
-         if ((new as TBlkUsek).Zaver = TJCType.nouz) then
+      if ((new as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
+         if ((new as TBlkTU).Zaver = TJCType.nouz) then
           begin
-           (new as TBlkUsek).Zaver := TJCType.no;
+           (new as TBlkTU).Zaver := TJCType.no;
            Self.Change();
           end;
      end;
@@ -669,7 +672,7 @@ begin
     TTratSmer.BtoA: Blky.GetBlkByID(Self.TratSettings.Useky[0], new);
    end;//case
 
-  (new as TBlkUsek).Zaver := TJCType.no;
+  (new as TBlkTU).Zaver := TJCType.no;
 
    if (((Self.TratSettings.zabzar = TTratZZ.bezsouhas) or (Self.TratSettings.zabzar = TTratZZ.nabidka)) and
     (not Self.Zaver) and (not Self.nouzZaver) and (not Self.Obsazeno)) then
@@ -847,7 +850,7 @@ begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
    if (Blk = nil) then continue;
    if (Blk.GetGlobalSettings().typ <> _BLK_USEK) then continue;
-   if ((Blk as TBlkUsek).Obsazeno = TUsekStav.obsazeno) then
+   if ((Blk as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
     begin
      JCDb.RusJC(Self);
      Exit();
@@ -932,7 +935,11 @@ begin
  for i := Self.TratSettings.Useky.Count-1 downto 0 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then Self.TratSettings.Useky.Delete(i);
+   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then
+    begin
+     writelog('Trat '+Self.GetGlobalSettings().name+' obsahuje referenci na TU ID '+IntToStr(Self.TratSettings.Useky[i])+', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', WR_ERROR);
+     Self.TratSettings.Useky.Delete(i);
+    end;
   end;
 end;
 

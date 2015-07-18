@@ -47,7 +47,7 @@ type
     procedure SaveStatToFile(const stat_filename:string);
 
     function Add(typ:Integer; glob:TBlkSettings):TBlk;
-    function Delete(index:Integer):Integer;
+    procedure Delete(index:Integer);
 
     function GetBlkByIndex(index:integer;var Blk:TBlk):Integer;
     function SetBlk(index:integer;data:TBlk):Integer;
@@ -252,7 +252,7 @@ begin
  FreeAndNil(str);
 
  for i := 0 to Self.data.Count-1 do
-   Self.data[i].AfterLoad(); 
+   Self.data[i].AfterLoad();
 
  writelog('Nacteno bloku: '+IntToStr(Self.Cnt), WR_DATA);
  Result := 0;
@@ -344,14 +344,16 @@ begin
 end;//function
 
 //Smazat blok z databaze
-function TBlky.Delete(index:Integer):Integer;
+procedure TBlky.Delete(index:Integer);
 var tmp, blk:TBlk;
     i:Integer;
 begin
- if (index < 0) then Exit(2);
- if (index >= Self.Data.Count) then Exit(1);
-
+ if (index < 0) then raise Exception.Create('Index podtekl seznam bloku');
+ if (index >= Self.Data.Count) then raise Exception.Create('Index pretekl seznam bloku');
  tmp := Self.data[index];
+ if ((tmp.GetGlobalSettings().typ = _BLK_TU) and ((tmp as TBlkTU).InTrat > -1)) then
+   raise Exception.Create('Tento blok je zaveden jako tratovy usek v trati ID '+IntToStr((tmp as TBlkTU).InTrat));
+
  Self.data.Delete(index);
 
  // aktulizujeme indexy bloku (dekrementujeme)
@@ -373,8 +375,6 @@ begin
 
  FreeAndNil(tmp);
  BlokyTableData.BlkRemove(index);
-
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////

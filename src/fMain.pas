@@ -1311,19 +1311,19 @@ begin
 end;
 
 procedure TF_Main.B_BlkDeleteClick(Sender: TObject);
-var pozice,return:Integer;
+var pozice:Integer;
  begin
   Pozice := LV_Bloky.ItemIndex;
 
   Beep;
   if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blky.GetBlkIndexName(pozice)+'?'),'Mazání bloku', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
    begin
-    return := Blky.Delete(pozice);
-    if (return <> 0) then
-     begin
-      Application.MessageBox(PChar('Pri mazani se vyskytla chyba - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+      Blky.Delete(pozice);
+    except
+      on E:Exception do
+        Application.MessageBox(PChar('Chyba:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+    end;
    end;//if MesageBox
 end;
 
