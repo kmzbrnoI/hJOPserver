@@ -636,17 +636,8 @@ begin
    if ((AContext.Data as TTCPORsRef).menu = nil) then Exit();
    blk := (AContext.Data as TTCPORsRef).menu;
    (AContext.Data as TTCPORsRef).menu := nil;       // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
-
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[6] := '';
-
-   case (blk.GetGlobalSettings().typ) of
-    _BLK_USEK    : (blk as TBlkUsek).PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
-    _BLK_VYH     : (blk as TBlkVyhybka).PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
-    _BLK_SCOM    : (blk as TBlkSCom).PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
-    _BLK_UVAZKA  : (blk as TBlkUvazka).PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
-    _BLK_PREJEZD : (blk as TBlkPrejezd).PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
-    _BLK_ZAMEK   : (blk as TBlkZamek).PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
-   end;//case
+   blk.PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
   end
 
  else if (parsed[1] = 'ESCAPE') then
