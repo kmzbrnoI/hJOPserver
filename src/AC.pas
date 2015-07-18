@@ -277,7 +277,7 @@ var Blk:TBlk;
           end;
 
           Blky.GetBlkByID(krok.Params[0], Blk);
-          if ((not Assigned(Blk)) or (Blk.GetGlobalSettings().typ <> _BLK_USEK)) then
+          if ((not Assigned(Blk)) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
             raise Exception.Create('Nevalidni blok - '+lines[i]);
 
           Self.kroky.Add(krok);
