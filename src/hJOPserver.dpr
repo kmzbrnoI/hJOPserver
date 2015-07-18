@@ -112,11 +112,10 @@ uses
 
 {$R *.res}
 
-//Hlavni inicializace - vsechno ma svuj rad - nemenit
  begin
   DecimalSeparator := '.';
 
-  // povolena je jen jedna instance RP
+  // povolena je jen jedna instance
   if (ZkontrolujSpusteno) then
    begin
     Application.MessageBox('hJOPserver již spuštìn, povolena pouze jedna instance', 'Již spuštìn', MB_ICONWARNING OR MB_OK);
