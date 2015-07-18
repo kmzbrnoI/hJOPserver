@@ -514,7 +514,7 @@ begin
     SetLength(jcs, 1);
     jcs[0] := JCDb.FindPostavenaJCWithPrj(Blk.GetGlobalSettings().id);
   end;
-  _BLK_USEK: begin
+  _BLK_USEK, _BLK_TU: begin
     SetLength(jcs, 1);
     jcs[0] := JCDb.FindPostavenaJCWithUsek(Blk.GetGlobalSettings().id);
   end;

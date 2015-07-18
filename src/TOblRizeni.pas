@@ -412,7 +412,7 @@ begin
       end;
 
      // usekum v trati se nezobrazuje zaver
-     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and (((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and ((Sender as TBlkTU).InTrat = -1) or ((Sender as TBlkUsek).Zaver = nouz))) then
+     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and (((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK) or ((Sender as TBlkUsek).Zaver = nouz))) then
       begin
        case ((Sender as TBlkUsek).Zaver) of
         vlak   : fg := clLime;
@@ -1855,7 +1855,7 @@ begin
   begin
    try
      Blky.GetBlkByID(StrToInt(str[3]), Blk);
-     if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_USEK)) then
+     if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
       begin
        ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatný blok');
        Exit();

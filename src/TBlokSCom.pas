@@ -552,7 +552,7 @@ begin
  if (Self.SComStav.Navest = 0) then
   begin
    Blky.GetBlkByID(Self.UsekID, Blk);
-   if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_USEK)) then
+   if ((Blk <> nil) and ((Blk.GetGlobalSettings().typ = _BLK_USEK) or (Blk.GetGlobalSettings().typ = _BLK_TU))) then
     (Blk as TBlkUsek).SComJCRef := nil;
   end;
 
@@ -667,7 +667,7 @@ begin
  JC := Self.DNjc;
 
  Blky.GetBlkByID(Self.SComRel.UsekID, Blk);
- if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_USEK)) then
+ if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
    (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
@@ -954,7 +954,7 @@ var Usek, SCom:TBlk;
 begin
  Blky.GetBlkByID(Self.UsekID, Usek);
  if (Self.SComRel.SymbolType = 1) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
- if ((Usek = nil) or (Usek.GetGlobalSettings().typ <> _BLK_USEK)) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
+ if ((Usek = nil) or ((Usek.GetGlobalSettings().typ <> _BLK_USEK) and (Usek.GetGlobalSettings().typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
  if ((Usek as TBlkUsek).Souprava = -1) then Exit();     // pokud na useku prede mnou neni souprava, koncim funkci
  spr := Soupravy.soupravy[(Usek as TBlkUsek).Souprava];
  if (spr.front <> Usek) then Exit();                    // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
@@ -1110,7 +1110,7 @@ begin
   TBlkSComSignal.disabled: Exit(false);
   TBlkSComSignal.usek: begin
     Blky.GetBlkByID(data.usekid, Blk);
-    if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_USEK)) then Exit(true);
+    if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then Exit(true);
     (Blk as TBlkUsek).GetObsazeno(obsz);
     if (obsz[data.usekpart] = TUsekStav.obsazeno) then
      Exit(true);

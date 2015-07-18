@@ -310,7 +310,8 @@ begin
      _BLK_PREJEZD : (Blk as TBlkPrejezd).Zaver := false;
      _BLK_SCOM    : (Blk as TBlkSCom).ZrusRedukciMenu();
      _BLK_TRAT    : (Blk as TBlkTrat).Zaver := false;
-     _BLK_USEK    : (Blk as TBlkUsek).Zaver := TJCType.no;
+     _BLK_USEK, _BLK_TU :
+                    (Blk as TBlkUsek).Zaver := TJCType.no;
      _BLK_ZAMEK   : (Blk as TBlkZamek).Zaver := false;
     end;
 

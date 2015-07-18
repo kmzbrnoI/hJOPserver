@@ -319,7 +319,7 @@ var tmpBlk:TBlk;
 begin
  return := Blky.GetBlkByID(Self.VyhRel.UsekID,tmpBlk);
  if (return < 0) then Exit(TUsekStav.none);
- if (tmpBlk.GetGlobalSettings().typ <> _BLK_USEK) then Exit(TUsekStav.none);
+ if ((tmpBlk.GetGlobalSettings().typ <> _BLK_USEK) and (tmpBlk.GetGlobalSettings().typ <> _BLK_TU)) then Exit(TUsekStav.none);
 
  Result := (tmpBlk as TBlkUsek).Obsazeno;
 end;//function

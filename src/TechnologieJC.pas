@@ -369,7 +369,7 @@ begin
       Exit;
      end;//if
 
-    if (Blk.GetGlobalSettings().typ <> _BLK_USEK) then
+    if ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Useky[i]));
       Exit;
@@ -430,7 +430,7 @@ begin
      end;
 
     // kontrola typu oteviraciho bloku
-    if (blk2.GetGlobalSettings().typ <> _BLK_USEK) then
+    if ((blk2.GetGlobalSettings().typ <> _BLK_USEK) and (blk2.GetGlobalSettings().typ <> _BLK_TU)) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].oteviraci));
       Exit;
@@ -444,7 +444,7 @@ begin
         Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
         Exit;
        end;
-      if (blk2.GetGlobalSettings.typ <> _BLK_USEK) then
+      if ((blk2.GetGlobalSettings.typ <> _BLK_USEK) and (blk2.GetGlobalSettings.typ <> _BLK_TU)) then
        begin
         Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
         Exit;
@@ -1087,7 +1087,7 @@ var i,j:Integer;
         // pridani zruseni redukce
         Blky.GetBlkByID(Self.fproperties.Odvraty[i].ref_blk, Blk);
         case (Blk.GetGlobalSettings().typ) of
-          _BLK_USEK: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Odvraty[i].Blok);
+          _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Odvraty[i].Blok);
         end;
 
         // nastaveni odvratu
@@ -1100,7 +1100,7 @@ var i,j:Integer;
        begin
         Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].ref_blk, Blk);
         case (Blk.GetGlobalSettings().typ) of
-          _BLK_USEK: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.podminky.zamky[i].Blok);
+          _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.podminky.zamky[i].Blok);
         end;
 
         // nastaveni zaveru zamku
@@ -1153,7 +1153,7 @@ var i,j:Integer;
              writelog('Krok 12 : scom '+Blk.GetGlobalSettings().name+' - redukuji menu', WR_VC);
              Blky.GetBlkByID(Self.fproperties.Prisl[i].ref_blk, Blk);
              case (Blk.GetGlobalSettings().typ) of
-               _BLK_USEK: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prisl[i].Blok);
+               _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prisl[i].Blok);
              end;
            end;// _BLK_SCOM
          end;//case
@@ -1178,7 +1178,7 @@ var i,j:Integer;
            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
            Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, Blk);
            case (Blk.GetGlobalSettings().typ) of
-             _BLK_USEK: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[i].Prejezd);
+             _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[i].Prejezd);
            end;
 
            uzavren := true;
@@ -1196,7 +1196,7 @@ var i,j:Integer;
                // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
                Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, Blk);
                case (Blk.GetGlobalSettings().typ) of
-                 _BLK_USEK: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[i].Prejezd);
+                 _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[i].Prejezd);
                end;
 
                uzavren := true;
@@ -1594,7 +1594,7 @@ begin
  for i := 0 to Self.data.vb.Count-1 do
   begin
    Blky.GetBlkByID(Self.data.vb[i], Blk);
-   if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_USEK)) then
+   if ((Blk <> nil) and ((Blk.GetGlobalSettings().typ = _BLK_USEK) or (Blk.GetGlobalSettings().typ = _BLK_TU))) then
      (Blk as TBLkUsek).KonecJC := TJCType.no;
   end; 
 end;
@@ -2327,7 +2327,7 @@ begin
  // prejezd se taky prikazem AddToReductionDb automaticky uzavre
  Blky.GetBlkByID(Self.fproperties.Prejezdy[data].oteviraci, Blk);
  case (Blk.GetGlobalSettings().typ) of
-   _BLK_USEK: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[data].Prejezd);
+   _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[data].Prejezd);
  end;
 
  writelog('JC '+Self.nazev+': obsazen '+(Sender as TBlkUsek).GetGlobalSettings().name+' - uzaviram prejezd '+Blk.GetGlobalSettings().name, WR_VC, 0);

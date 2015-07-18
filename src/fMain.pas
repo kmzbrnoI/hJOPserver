@@ -1762,7 +1762,8 @@ var Blk:TBlk;
 
   case (Blk.GetGlobalSettings.typ) of
    _BLK_VYH     : F_BlkVyh_tech.OpenForm(Blk as TBlkVyhybka);
-   _BLK_USEK    : F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
+   _BLK_USEK, _BLK_TU :
+                  F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
    _BLK_IR      : ;
    _BLK_SCOM    : ;
    _BLK_PREJEZD : ;

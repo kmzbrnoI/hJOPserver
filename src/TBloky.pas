@@ -566,7 +566,7 @@ var i,j:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (Self.Data[i].GetGlobalSettings.typ <> _BLK_USEK) then continue;
+   if ((Self.Data[i].GetGlobalSettings.typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings.typ <> _BLK_TU)) then continue;
 
    orindex := -1;
    for j := 0 to (Self.Data[i] as TBlkUsek).OblsRizeni.Cnt-1 do
@@ -587,7 +587,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) then continue;
+   if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
 
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesil) then
      (Self.Data[i] as TBlkUsek).ZesZkrat := state;
@@ -600,7 +600,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) then continue;
+   if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
 
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesil) then
      (Self.Data[i] as TBlkUsek).ZesNapajeni := state;
@@ -727,7 +727,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) then
+   if ((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) or (Self.Data[i].GetGlobalSettings().typ = _BLK_TU)) then
     begin
      if ((Self.Data[i] as TBlkUsek).Souprava = spr)   then (Self.Data[i] as TBlkUsek).Souprava := -1;
      if ((Self.Data[i] as TBlkUsek).SprPredict = spr) then (Self.Data[i] as TBlkUsek).SprPredict := -1;
@@ -743,7 +743,7 @@ var i:Integer;
 begin
  Result := TList<TObject>.Create();
  for i := 0 to Self.Data.Count-1 do
-   if ((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) and ((Self.Data[i] as TBlkUsek).Souprava = spr)) then
+   if (((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) or (Self.Data[i].GetGlobalSettings().typ = _BLK_TU)) and ((Self.Data[i] as TBlkUsek).Souprava = spr)) then
      Result.Add(Self.Data[i]);
 end;//function
 

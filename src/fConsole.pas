@@ -181,7 +181,7 @@ begin
        end;
 
       case (Blk.GetGlobalSettings().typ) of
-       _BLK_USEK:begin
+       _BLK_USEK, _BLK_TU: begin
          (Blk as TBlkUsek).Zaver := TJCType.no;
          M_console.Lines.Add('InCommandRP265\>Zrusen zaver useku '+Blk.GetGlobalSettings().name);
        end;

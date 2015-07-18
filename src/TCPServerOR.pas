@@ -590,11 +590,11 @@ begin
 
    if ((AContext.Data as TTCPORsRef).stitek = nil) then Exit();
    case ((AContext.Data as TTCPORsRef).stitek.GetGlobalSettings().typ) of
-    _BLK_USEK   : ((AContext.Data as TTCPORsRef).stitek as TBlkUsek).Stitek := tmp;
-    _BLK_VYH    : ((AContext.Data as TTCPORsRef).stitek as TBlkVyhybka).Stitek := tmp;
-    _BLK_UVAZKA :((AContext.Data as TTCPORsRef).stitek as TBlkUvazka).Stitek := tmp;
-    _BLK_PREJEZD:((AContext.Data as TTCPORsRef).stitek as TBlkPrejezd).Stitek := tmp;
-    _BLK_ZAMEK  :((AContext.Data as TTCPORsRef).stitek as TBlkZamek).Stitek := tmp;
+    _BLK_USEK, _BLK_TU : ((AContext.Data as TTCPORsRef).stitek as TBlkUsek).Stitek := tmp;
+    _BLK_VYH           : ((AContext.Data as TTCPORsRef).stitek as TBlkVyhybka).Stitek := tmp;
+    _BLK_UVAZKA        : ((AContext.Data as TTCPORsRef).stitek as TBlkUvazka).Stitek := tmp;
+    _BLK_PREJEZD       : ((AContext.Data as TTCPORsRef).stitek as TBlkPrejezd).Stitek := tmp;
+    _BLK_ZAMEK         : ((AContext.Data as TTCPORsRef).stitek as TBlkZamek).Stitek := tmp;
    end;//case
    (AContext.Data as TTCPORsRef).stitek := nil;
   end
@@ -610,8 +610,8 @@ begin
 
    if ((AContext.Data as TTCPORsRef).vyluka = nil) then Exit();
    case ((AContext.Data as TTCPORsRef).vyluka.GetGlobalSettings().typ) of
-    _BLK_USEK : ((AContext.Data as TTCPORsRef).vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
-    _BLK_VYH  : ((AContext.Data as TTCPORsRef).vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
+    _BLK_USEK, _BLK_TU : ((AContext.Data as TTCPORsRef).vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
+    _BLK_VYH           : ((AContext.Data as TTCPORsRef).vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
    end;//case
    (AContext.Data as TTCPORsRef).vyluka := nil;
   end
