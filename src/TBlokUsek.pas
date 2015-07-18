@@ -74,7 +74,6 @@ type
     procedure SetUsekZaver(Zaver:TJCType);
     procedure SetUsekStit(stit:string);
     procedure SetUsekVyl(vyl:string); overload;
-    procedure SetUsekSpr(spr:Integer); virtual;
     procedure SetSprPredict(sprcesta:Integer);
     procedure SetKonecJC(konecjc:TJCType);
     procedure SetZesZkrat(state:boolean);
@@ -106,8 +105,8 @@ type
 
     procedure MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
     function MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
-
     function PresunLok(SenderPnl:TIdContext; SenderOR:TObject):boolean;
+    procedure SetUsekSpr(spr:Integer); virtual;
 
   public
 
@@ -964,7 +963,8 @@ begin
  Self.Souprava := (Blk as TBlkUsek).Souprava;
 
  // mazani supravy z trati
- if (((Blk as TBlkTU).InTrat > -1) and ((Self.GetGlobalSettings().typ = _BLK_USEK) or ((Blk as TBlkTU).InTrat <> TBlkTU(Self).InTrat))) then
+ if ((Blk.GetGlobalSettings().typ = _BLK_TU) and ((Blk as TBlkTU).InTrat > -1)
+     and ((Self.GetGlobalSettings().typ = _BLK_USEK) or ((Blk as TBlkTU).InTrat <> TBlkTU(Self).InTrat))) then
   begin
    Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
    if ((Trat <> nil) and (Trat.GetGlobalSettings().typ = _BLK_TRAT)) then

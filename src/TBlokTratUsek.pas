@@ -66,7 +66,7 @@ type
     procedure MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
     procedure MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    procedure SetUsekSpr(spr:Integer);
+    procedure SetUsekSpr(spr:Integer); override;
     function GetUsekSpr:Integer;
 
     property zastIRlichy:TBlk read GetZastIRLichy;
