@@ -113,9 +113,9 @@ var
 implementation
 
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
-      TBlokZamek,
-      TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieMTB, DataBloky,
-      SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp;
+      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieMTB,
+      DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
+      TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -151,9 +151,8 @@ var blkset:TBlkSettings;
     obl_rizeni:TORsRef;
     i:Integer;
 begin
- case ((Sender as TBlk).GetGlobalSettings.typ) of
-  _BLK_VYH     : obl_rizeni := (Sender as TBlkVyhybka).OblsRizeni;
-  _BLK_USEK:begin
+ if ((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK) then
+  begin
    obl_rizeni := (Sender as TBlkUsek).OblsRizeni;
 
    // pri jakekoliv zmene useku dojde k Change() na vyhybce
@@ -165,20 +164,11 @@ begin
          Self.Data[i].Change();
   end;//_BLK_USEK
 
-  _BLK_IR      : obl_rizeni.Cnt := 0;
-  _BLK_SCOM    : obl_rizeni := (Sender as TBlkSCom).OblsRizeni;
-  _BLK_PREJEZD : obl_rizeni := (Sender as TBlkPrejezd).OblsRizeni;
-  _BLK_TRAT    : obl_rizeni.Cnt := 0;
-  _BLK_UVAZKA  : obl_rizeni := (Sender as TBlkUvazka).OblsRizeni;
-  _BLK_ZAMEK   : obl_rizeni := (Sender as TBlkZamek).OblsRizeni;
-  _BLK_ROZP    : obl_rizeni := (Sender as TBlkRozp).OblsRizeni;
-
- else
-  Exit();
- end;
-
  //zavolame OnChange vsech OR daneho bloku
- for i := 0 to obl_rizeni.Cnt-1 do obl_rizeni.ORs[i].BlkChange(Sender);
+ obl_rizeni := (Sender as TBlk).OblsRizeni;
+ if (obl_rizeni.Cnt > 0) then
+   for i := 0 to obl_rizeni.Cnt-1 do
+     obl_rizeni.ORs[i].BlkChange(Sender);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -235,6 +225,8 @@ begin
     _BLK_UVAZKA   : Blk := TBlkUvazka.Create(i);
     _BLK_ZAMEK    : Blk := TBlkZamek.Create(i);
     _BLK_ROZP     : Blk := TBlkRozp.Create(i);
+    _BLK_TU       : Blk := TBlkTU.Create(i);
+
    else//case
     continue;
    end;
@@ -321,6 +313,7 @@ begin
   _BLK_UVAZKA   : Blk := TBlkUvazka.Create(Self.Data.Count);
   _BLK_ZAMEK    : Blk := TBlkZamek.Create(Self.Data.Count);
   _BLK_ROZP     : Blk := TBlkRozp.Create(Self.Data.Count);
+  _BLK_TU       : Blk := TBlkTU.Create(Self.Data.Count);
  else//case
   Exit(nil);
  end;
@@ -474,17 +467,7 @@ begin
  for i := 0 to Self.Data.Count-1 do
   begin
    //ziskame vsechny oblasti rizeni prislusnych bloku
-   case (Self.Data[i].GetGlobalSettings.typ) of
-    _BLK_VYH      : obl_rizeni := (Self.Data[i] as TBlkVyhybka).OblsRizeni;    // bloky vyhybka preskakujeme: odeslou se automaticky v ramci useku
-    _BLK_USEK     : obl_rizeni := (Self.Data[i] as TBlkUsek).OblsRizeni;
-    _BLK_IR       : obl_rizeni.Cnt := 0;
-    _BLK_SCOM     : obl_rizeni := (Self.Data[i] as TBlkSCom).OblsRizeni;
-    _BLK_PREJEZD  : obl_rizeni := (Self.Data[i] as TBlkPrejezd).OblsRizeni;
-    _BLK_TRAT     : obl_rizeni.Cnt := 0;
-    _BLK_UVAZKA   : obl_rizeni := (Self.Data[i] as TBlkUvazka).OblsRizeni;
-    _BLK_ZAMEK    : obl_rizeni := (Self.Data[i] as TBlkZamek).OblsRizeni;
-    _BLK_ROZP     : obl_rizeni := (Self.Data[i] as TBlkRozp).OblsRizeni;
-   else continue; end;
+   obl_rizeni := Self.Data[i].OblsRizeni;
 
    //tyto OR porovname na "OblRizeni:PTOR"
    for j := 0 to obl_rizeni.Cnt-1 do
@@ -665,23 +648,11 @@ var cyklus,i,j:Integer;
     if (Assigned(OblRizeniID)) then
      begin
       Priradit := false;
-
-      case (glob.typ) of
-       _BLK_VYH  : Obl_r := (Blk as TBlkVyhybka).OblsRizeni;
-       _BLK_USEK : Obl_r := (Blk as TBlkUsek).OblsRizeni;
-       _BLK_SCOM : Obl_r := (Blk as TBlkSCom).OblsRizeni;
-       _BLK_IR   : begin
-                    Obl_r.Cnt := 0;
-                    Priradit := true;
-                   end;
-       _BLK_PREJEZD : Obl_r := (Blk as TBlkPrejezd).OblsRizeni;
-       _BLK_ZAMEK   : Obl_r := (Blk as TBlkZamek).OblsRizeni;
-       _BLK_ROZP    : Obl_r := (Blk as TBlkRozp).OblsRizeni;
-      end;//case typ
+      Obl_r := Blk.OblsRizeni;
 
       if ((glob.typ = _BLK_TRAT) or (glob.typ = _BLK_IR)) then
          priradit := true
-      else  begin
+      else begin
         for i := 0 to Length(OblRizeniID)-1 do
          begin
           if (Obl_r.Cnt = 0) then priradit := true;

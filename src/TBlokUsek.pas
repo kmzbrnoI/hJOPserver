@@ -122,8 +122,6 @@ type
     procedure MenuRUCLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
-    function MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
-    procedure MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuNUZStartClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuNUZStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
@@ -135,7 +133,6 @@ type
     procedure MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    function PresunLok(SenderPnl:TIdContext; SenderOR:TObject):boolean;
     procedure ORVylukaNull(Sender:TIdContext; success:boolean);
 
     function GetZastIRLichy():TBlk;
@@ -149,6 +146,11 @@ type
 
   protected
    UsekSettings:TBlkUsekSettings;
+
+    procedure MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
+    function MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
+
+    function PresunLok(SenderPnl:TIdContext; SenderOR:TObject):boolean;
 
   public
 
