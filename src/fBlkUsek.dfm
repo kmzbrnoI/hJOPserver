@@ -4,8 +4,8 @@ object F_BlkUsek: TF_BlkUsek
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (usek)'
-  ClientHeight = 382
-  ClientWidth = 601
+  ClientHeight = 369
+  ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -121,8 +121,8 @@ object F_BlkUsek: TF_BlkUsek
     ParentFont = False
   end
   object B_OK: TButton
-    Left = 519
-    Top = 350
+    Left = 238
+    Top = 336
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -135,8 +135,8 @@ object F_BlkUsek: TF_BlkUsek
     OnClick = B_OKClick
   end
   object B_Storno: TButton
-    Left = 440
-    Top = 350
+    Left = 159
+    Top = 336
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -555,184 +555,7 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
-  end
-  object GB_Zastavka: TGroupBox
-    Left = 324
-    Top = 8
-    Width = 268
-    Height = 259
-    Caption = ' Zast'#225'vka '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 9
-    object Label5: TLabel
-      Left = 16
-      Top = 40
-      Width = 190
-      Height = 13
-      Caption = 'Pro tyto typy souprav (odd'#283'lujte '#269#225'rkou):'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label6: TLabel
-      Left = 16
-      Top = 88
-      Width = 148
-      Height = 13
-      Caption = 'Maxim'#225'ln'#237' d'#233'lka soupravy (cm):'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label7: TLabel
-      Left = 16
-      Top = 120
-      Width = 150
-      Height = 13
-      Caption = #268'as '#269'ek'#225'n'#237' v zast'#225'vce (mm:ss):'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label8: TLabel
-      Left = 16
-      Top = 152
-      Width = 154
-      Height = 13
-      Caption = 'IR pro zastaven'#237' v lich'#233'm sm'#283'ru:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label9: TLabel
-      Left = 16
-      Top = 197
-      Width = 155
-      Height = 13
-      Caption = 'IR pro zastaven'#237' v sud'#233'm sm'#283'ru:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
-    object CHB_Zastavka: TCheckBox
-      Left = 16
-      Top = 17
-      Width = 241
-      Height = 17
-      Caption = 'V '#250'seku se nach'#225'z'#237' zast'#225'vka osobn'#237' dopravy'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      OnClick = CHB_ZastavkaClick
-    end
-    object E_Zast_Spr: TEdit
-      Left = 16
-      Top = 59
-      Width = 233
-      Height = 21
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 1
-      Text = 'E_Zast_Spr'
-    end
-    object SE_Zast_DelkaSpr: TSpinEdit
-      Left = 184
-      Top = 89
-      Width = 65
-      Height = 22
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      MaxValue = 0
-      MinValue = 0
-      ParentFont = False
-      TabOrder = 2
-      Value = 0
-    end
-    object ME_Zast_Delay: TMaskEdit
-      Left = 184
-      Top = 121
-      Width = 65
-      Height = 21
-      Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      EditMask = '!90:00;1;_'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      MaxLength = 5
-      ParentFont = False
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 3
-      Text = '00:00'
-    end
-    object CB_Zast_IR_lichy: TComboBox
-      Left = 16
-      Top = 171
-      Width = 233
-      Height = 21
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 0
-      ParentFont = False
-      TabOrder = 4
-    end
-    object CB_Zast_IR_sudy: TComboBox
-      Left = 16
-      Top = 216
-      Width = 233
-      Height = 21
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 0
-      ParentFont = False
-      TabOrder = 5
-    end
   end
 end

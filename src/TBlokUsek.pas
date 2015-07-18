@@ -10,23 +10,12 @@ uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
 
-
- TBlkUsekZastavka = record  // zastavka na useku
-  enabled:boolean;
-  IR_lichy:Integer;
-  IR_sudy:Integer;
-  soupravy:TStrings;
-  max_delka:Integer;
-  delay:TTime;
- end;
-
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
   MTBAddrs:TMTBAddrs;
   Lenght:double;          //delka useku v metrech
   SmcUsek:boolean;        //specialni pripad: usek ve smycce
   Zesil:Integer;          //index v poli zesilovacu
-  Zastavka:TBlkUsekZastavka;
  end;
 
  TUsekStavAr = array[0..3] of TUsekStav;
@@ -56,13 +45,6 @@ type
   spr_vypadek:boolean;      // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
   spr_vypadek_time:Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
                             // pro reseni timeoutu jsou tyto 2 promenne
-
-  // ! zastavky funguji jen v trati
-  zast_stopped:boolean;     // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
-  zast_run_time:TDateTime;  // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
-  zast_rych:Integer;        // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
-  zast_enabled:boolean;     // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
-  zast_passed:boolean;      // atdy je ulozeno true, pokud souprava zastavku jiz projela
  end;
 
  TBlkUsek = class(TBlk)
@@ -84,29 +66,17 @@ type
     inTrat:-1;
     stanicni_kolej : false;
     zpomalovani_ready : false;
-    zast_stopped : false;
-    zast_enabled : true;
-   );
-
-   _def_usek_zastavka:TBlkUsekZastavka = (
-    enabled : false;
-    IR_lichy : -1;
-    IR_sudy : -1;
-    soupravy : nil;
-    max_delka : 0;
    );
 
   private
    UsekStav:TBlkUsekStav;
    last_zes_zkrat:boolean;  //poziva se na pamatovani posledniho stavu zkratu zesilovace pri vypnuti DCC
 
-   fZastIRLichy, fZastIRSudy : TBlk;
-
     procedure SetUsekNUZ(nuz:boolean);
     procedure SetUsekZaver(Zaver:TJCType);
     procedure SetUsekStit(stit:string);
     procedure SetUsekVyl(vyl:string); overload;
-    procedure SetUsekSpr(spr:Integer);
+    procedure SetUsekSpr(spr:Integer); virtual;
     procedure SetSprPredict(sprcesta:Integer);
     procedure SetKonecJC(konecjc:TJCType);
     procedure SetZesZkrat(state:boolean);
@@ -118,14 +88,12 @@ type
     procedure MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRUCLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuNUZStartClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuNUZStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
-    procedure MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
 
     procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
     procedure PotvrUvolLok(Sender:TIdContext; success:boolean);
@@ -134,15 +102,6 @@ type
     procedure MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure ORVylukaNull(Sender:TIdContext; success:boolean);
-
-    function GetZastIRLichy():TBlk;
-    function GetZastIRSudy():TBlk;
-
-    property zastIRlichy:TBlk read GetZastIRLichy;
-    property zastIRsudy:TBlk read GetZastIRSudy;
-    procedure ZastUpdate();
-    procedure ZastRunTrain();
-    procedure ZastStopTrain();
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -208,7 +167,7 @@ type
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure ShowPanelSpr(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
@@ -216,9 +175,6 @@ type
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
-
-// format dat zastavky v souboru bloku: zast=IR_lichy|IR_sudy|max_delka_soupravy|delay_time|spr1;spr2;...
-//  pokud je zast prazdny string, zastavka je disabled
 
 implementation
 
@@ -236,14 +192,10 @@ begin
 
  Self.EventsOnObsaz := TChangeEvents.Create();
  Self.EventsOnUvol  := TChangeEvents.Create();
-
- Self.fZastIRLichy := nil;
- Self.fZastIRSUdy  := nil;
 end;//ctor
 
 destructor TBlkUsek.Destroy();
 begin
- Self.UsekSettings.Zastavka.soupravy.Free();
  Self.EventsOnObsaz.Free();
  Self.EventsOnUvol.Free();
  inherited Destroy();
@@ -267,26 +219,6 @@ begin
 
  str := TStringList.Create();
  ExtractStrings(['|'],[],PChar(ini_tech.ReadString(section, 'zast', '')), str);
-
- // nacitani zastavky
- if (Assigned(Self.UsekSettings.Zastavka.soupravy)) then Self.UsekSettings.Zastavka.soupravy.Free();
- Self.UsekSettings.Zastavka := _def_usek_zastavka;
- Self.UsekSettings.Zastavka.soupravy := TStringList.Create();
-
- if (str.Count > 0) then
-  begin
-   try
-    Self.UsekSettings.Zastavka.enabled   := true;
-    Self.UsekSettings.Zastavka.IR_lichy  := StrToInt(str[0]);
-    Self.UsekSettings.Zastavka.IR_sudy   := StrToInt(str[1]);
-    Self.UsekSettings.Zastavka.max_delka := StrToInt(str[2]);
-    Self.UsekSettings.Zastavka.delay     := StrToTime(str[3]);
-    Self.UsekSettings.Zastavka.soupravy.Clear();
-    ExtractStrings([';'],[],PChar(str[4]), Self.UsekSettings.Zastavka.soupravy);
-   except
-    Self.UsekSettings.Zastavka := _def_usek_zastavka;
-   end;
-  end;
 
  if (ini_rel <> nil) then
   begin
@@ -314,8 +246,6 @@ begin
 end;//procedure
 
 procedure TBlkUsek.SaveData(ini_tech:TMemIniFile;const section:string);
-var str:string;
-    i:Integer;
 begin
  inherited SaveData(ini_tech,section);
 
@@ -323,22 +253,6 @@ begin
  ini_tech.WriteFloat(section,'delka', Self.UsekSettings.Lenght);
  ini_tech.WriteInteger(section,'zesil', Self.UsekSettings.Zesil);
  ini_tech.WriteBool(section, 'smc', Self.UsekSettings.SmcUsek);
-
- // ukladani zastavky
- if (Self.UsekSettings.Zastavka.enabled) then
-  begin
-   with (Self.UsekSettings.Zastavka) do
-    begin
-     str := IntToStr(IR_lichy) + '|' + IntToStr(IR_sudy) + '|' + IntToStr(max_delka) + '|' + TimeToStr(delay) + '|';
-     for i := 0 to soupravy.Count-1 do
-      str := str + soupravy[i] + ';'; 
-    end;
-
-   ini_tech.WriteString(section, 'zast', str);
-  end else begin
-   ini_tech.WriteString(section, 'zast', '');
-  end;
-
 end;//procedure
 
 procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -393,9 +307,6 @@ procedure TBlkUsek.Update();
 var i:Integer;
     Blk:TBlk;
 begin
- if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.Souprava > -1) and (Self.UsekSettings.Zastavka.enabled)) then
-   Self.ZastUpdate();
-
  if (((Self.ZesZkrat) or (not Self.ZesNapajeni)) and (not Self.frozen)) then
   begin
 //   if (TrkSystem.status <> Ttrk_status.TS_ON) then Self.ZesZkrat := false;
@@ -596,8 +507,6 @@ begin
  else begin
   Self.UsekStav.vlakPresun        := false;
   Self.UsekStav.zpomalovani_ready := false;
-  Self.UsekStav.zast_stopped      := false;
-  Self.UsekStav.zast_passed       := false;
  end;
 
  Self.Change();
@@ -686,9 +595,6 @@ end;//function
 
 procedure TBlkUsek.SetSettings(data:TBlkUsekSettings);
 begin
- if (Self.UsekSettings.Zastavka.soupravy <> data.Zastavka.soupravy) then
-  Self.UsekSettings.Zastavka.soupravy.Free();
-
  Self.UsekSettings := data;
  Self.Change();
 end;
@@ -862,18 +768,6 @@ begin
   end;
 end;//procedure
 
-procedure TBlkUsek.MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
-begin
- if (not Self.UsekStav.zast_stopped) then
-   Self.UsekStav.zast_enabled := new_state;
-end;//procedure
-
-procedure TBlkUsek.MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-begin
- if (Self.UsekStav.zast_stopped) then
-   Self.ZastRunTrain();
-end;//procedure
-
 procedure TBlkUsek.MenuRUClokClick(SenderPnl:TIdContext; SenderOR:TObject);
 var i:Integer;
     str:string;
@@ -955,23 +849,6 @@ begin
     Result := Result + 'VB,';
   end;
 
- // zastavka
- if ((Self.UsekSettings.Zastavka.enabled) and (Self.InTrat > -1)) then
-  begin
-   Result := Result + '-,';
-   if (not Self.UsekStav.zast_stopped) then
-    begin
-     // pokud neni v zastavce zastavena souprava, lze zastavku vypinat a zapinat
-     case (Self.UsekStav.zast_enabled) of
-      false : Result := Result + 'ZAST>,';
-      true  : Result := Result + 'ZAST<,';
-     end;//case
-    end else begin
-     // pokud v zastavce osuprava stoji, lze ji rozjet
-     Result := Result + 'JEÏ vlak';
-    end;
-  end;
-
  // pokud mame knihovnu simulator, muzeme ridit stav useku
  //  DEBUG nastroj
  if (MTB.lib = 2) then
@@ -1037,25 +914,22 @@ procedure TBlkUsek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:s
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
- if (item = 'NOVÝ vlak')    then Self.MenuNewLokClick(SenderPnl, SenderOR);
- if (item = 'EDIT vlak')    then Self.MenuEditLokClick(SenderPnl, SenderOR);
- if (item = 'ZRUŠ vlak')    then Self.MenuDeleteLokClick(SenderPnl, SenderOR);
- if (item = 'UVOL vlak')    then Self.MenuUVOLLokClick(SenderPnl, SenderOR);
- if (item = 'VEZMI vlak')   then Self.MenuVEZMILokClick(SenderPnl, SenderOR);
- if (item = 'PØESUÒ vlak>') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true);
- if (item = 'PØESUÒ vlak<') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false);
- if (item = 'JEÏ vlak')     then Self.MenuJEDLokClick(SenderPnl, SenderOR);
- if (item = 'RUÈ vlak')     then Self.MenuRUCLokClick(SenderPnl, SenderOR);
- if (item = 'STIT')         then Self.MenuStitClick(SenderPnl, SenderOR);
- if (item = 'VYL')          then Self.MenuVylClick(SenderPnl, SenderOR);
- if (item = 'KC')           then Self.MenuKCClick(SenderPnl, SenderOR);
- if (item = 'VB')           then Self.MenuVBClick(SenderPnl, SenderOR);
- if (item = 'NUZ>')         then Self.MenuNUZStartClick(SenderPnl, SenderOR);
- if (item = 'NUZ<')         then Self.MenuNUZStopClick(SenderPnl, SenderOR);
- if (item = 'ZAST>')        then Self.MenuZastClick(SenderPnl, SenderOR, true);
- if (item = 'ZAST<')        then Self.MenuZastClick(SenderPnl, SenderOR, false);
- if (item = 'OBSAZ')        then Self.MenuObsazClick(SenderPnl, SenderOR);
- if (item = 'UVOL')         then Self.MenuUvolClick(SenderPnl, SenderOR);
+ if (item = 'NOVÝ vlak')         then Self.MenuNewLokClick(SenderPnl, SenderOR)
+ else if (item = 'EDIT vlak')    then Self.MenuEditLokClick(SenderPnl, SenderOR)
+ else if (item = 'ZRUŠ vlak')    then Self.MenuDeleteLokClick(SenderPnl, SenderOR)
+ else if (item = 'UVOL vlak')    then Self.MenuUVOLLokClick(SenderPnl, SenderOR)
+ else if (item = 'VEZMI vlak')   then Self.MenuVEZMILokClick(SenderPnl, SenderOR)
+ else if (item = 'PØESUÒ vlak>') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true)
+ else if (item = 'PØESUÒ vlak<') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false)
+ else if (item = 'RUÈ vlak')     then Self.MenuRUCLokClick(SenderPnl, SenderOR)
+ else if (item = 'STIT')         then Self.MenuStitClick(SenderPnl, SenderOR)
+ else if (item = 'VYL')          then Self.MenuVylClick(SenderPnl, SenderOR)
+ else if (item = 'KC')           then Self.MenuKCClick(SenderPnl, SenderOR)
+ else if (item = 'VB')           then Self.MenuVBClick(SenderPnl, SenderOR)
+ else if (item = 'NUZ>')         then Self.MenuNUZStartClick(SenderPnl, SenderOR)
+ else if (item = 'NUZ<')         then Self.MenuNUZStopClick(SenderPnl, SenderOR)
+ else if (item = 'OBSAZ')        then Self.MenuObsazClick(SenderPnl, SenderOR)
+ else if (item = 'UVOL')         then Self.MenuUvolClick(SenderPnl, SenderOR);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1116,101 +990,6 @@ begin
 
  Result := true;
 end;//function
-
-////////////////////////////////////////////////////////////////////////////////
-// zastavky:
-
-function TBlkUsek.GetZastIRLichy():TBlk;
-begin
- if (((Self.fZastIRLichy = nil) and (Self.UsekSettings.Zastavka.IR_lichy <> -1)) or ((Self.fZastIRLichy <> nil) <> (Self.fZastIRLichy.GetGlobalSettings.id <> Self.UsekSettings.Zastavka.IR_lichy))) then
-   Blky.GetBlkByID(Self.UsekSettings.Zastavka.IR_lichy, Self.fZastIRLichy);
- Result := Self.fZastIRLichy;
-end;//function
-
-function TBlkUsek.GetZastIRSudy():TBlk;
-begin
- if (((Self.fZastIRSudy = nil) and (Self.UsekSettings.Zastavka.IR_sudy <> -1)) or ((Self.fZastIRSudy <> nil) and (Self.fZastIRSudy.GetGlobalSettings.id <> Self.UsekSettings.Zastavka.IR_sudy))) then
-   Blky.GetBlkByID(Self.UsekSettings.Zastavka.IR_sudy, Self.fZastIRSudy);
- Result := Self.fZastIRSudy;
-end;//function
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkUsek.ZastUpdate();
-var i:Integer;
-    found:boolean;
-begin
- if (not Self.UsekStav.zast_stopped) then
-  begin
-   // cekam na obsazeni IR
-   if ((not Self.UsekStav.zast_enabled) or (Self.UsekStav.zast_passed) or
-      (Soupravy.soupravy[Self.Souprava].delka > Self.UsekSettings.Zastavka.max_delka) or (Soupravy.soupravy[Self.Souprava].front <> self)) then Exit();
-
-   // kontrola typu soupravy:
-   found := false;
-   for i := 0 to Self.UsekSettings.Zastavka.soupravy.Count-1 do
-    begin
-     if (Self.UsekSettings.Zastavka.soupravy[i] = Soupravy.soupravy[Self.Souprava].typ) then
-      begin
-       found := true;
-       break;
-      end;
-    end;
-
-   if (not found) then Exit();
-
-   case (Soupravy.soupravy[Self.Souprava].smer) of
-    THVSTanoviste.lichy : if ((Assigned(Self.zastIRlichy)) and ((Self.zastIRlichy as TBlkIR).Stav = TIRStav.obsazeno)) then
-                              Self.ZastStopTrain();
-    THVSTanoviste.sudy  : if ((Assigned(Self.zastIRsudy)) and ((Self.zastIRsudy as TBlkIR).Stav = TIRStav.obsazeno)) then
-                              Self.ZastStopTrain();
-   end;//case
-  end else begin
-   // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
-   //  pokud se souprava rozjede, koncim zastavku
-   if (Soupravy.soupravy[Self.Souprava].rychlost <> 0) then
-    begin
-     Self.UsekStav.zast_stopped := false;
-     Self.Change();  // change je dulezite volat kvuli menu
-    end;
-
-   // cekam na timeout na rozjeti vlaku
-   if (Now > Self.UsekStav.zast_run_time) then
-    Self.ZastRunTrain();
-  end;
-end;//procedure
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkUsek.ZastStopTrain();
-begin
- Self.UsekStav.zast_stopped  := true;
- Self.UsekStav.zast_run_time := Now+Self.UsekSettings.Zastavka.delay;
-
- try
-   Self.UsekStav.zast_rych := Soupravy.soupravy[Self.Souprava].rychlost;
-   Soupravy.soupravy[Self.Souprava].rychlost := 0;
- except
-
- end;
-
- Self.Change();     // change je dulezite volat kvuli menu
-end;//procedure
-
-procedure TBlkUsek.ZastRunTrain();
-begin
- Self.UsekStav.zast_stopped := false;
- Self.UsekStav.zast_passed  := true;
-
- try
-   Soupravy.soupravy[Self.Souprava].rychlost := Self.UsekStav.zast_rych;
- except
-
- end;
-
- Self.Change();     // change je dulezite volat kvuli menu
-end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 

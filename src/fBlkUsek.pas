@@ -40,29 +40,15 @@ type
     CHB_D4: TCheckBox;
     SE_Board4: TSpinEdit;
     SE_Port4: TSpinEdit;
-    GB_Zastavka: TGroupBox;
-    CHB_Zastavka: TCheckBox;
-    Label5: TLabel;
-    E_Zast_Spr: TEdit;
-    Label6: TLabel;
-    SE_Zast_DelkaSpr: TSpinEdit;
-    Label7: TLabel;
-    ME_Zast_Delay: TMaskEdit;
-    Label8: TLabel;
-    CB_Zast_IR_lichy: TComboBox;
-    CB_Zast_IR_sudy: TComboBox;
-    Label9: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure E_DelkaKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D1Click(Sender: TObject);
-    procedure CHB_ZastavkaClick(Sender: TObject);
   private
    NewBlk:Boolean;
    Blk:TBlkUsek;
    OpenIndex:Integer;
-   CB_ZastIRData:TArSmallI;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
@@ -120,9 +106,6 @@ procedure TF_BlkUsek.NewBlkOpenForm;
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D1Click(Self.CHB_D1);
-
-  Self.CHB_Zastavka.Checked := false;
-  Self.CHB_ZastavkaClick(Self);
 
   F_BlkUsek.Caption     := 'Editace noveho bloku';
  end;//procedure
@@ -189,8 +172,6 @@ var glob:TBlkSettings;
   E_Delka.Text := FloatToStr(settings.Lenght);
   CHB_SmycBlok.Checked := settings.SmcUsek;
 
-  Self.CHB_Zastavka.Checked := settings.Zastavka.enabled;
-  Self.CHB_ZastavkaClick(Self);
 
   F_BlkUsek.Caption := 'Edititace dat bloku '+glob.name+' (Usek)';
  end;//procedure
@@ -241,22 +222,6 @@ var glob:TBlkSettings;
     Exit;
    end;
 
-  if (CHB_Zastavka.Checked) then
-   begin
-    if (CB_Zast_IR_lichy.ItemIndex = -1) then
-     begin
-      Application.MessageBox('Vyberte lichý IR zastávky !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
-    if (CB_Zast_IR_sudy.ItemIndex = -1) then
-     begin
-      Application.MessageBox('Vyberte sudý IR zastávky !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
-   end;
-
-
-
   glob.name := E_Nazev.Text;
   glob.id   := SE_ID.Value;
   glob.typ  := _BLK_USEK;
@@ -301,26 +266,6 @@ var glob:TBlkSettings;
   settings.Lenght  := StrToFloatDef(Self.E_Delka.Text,0);
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;
   settings.Zesil   := Self.CB_Zesil.ItemIndex;
-
-  settings.Zastavka.enabled  := Self.CHB_Zastavka.Checked;
-  settings.Zastavka.soupravy := TStringList.Create();
-
-  if (Self.CHB_Zastavka.Checked) then
-   begin
-    settings.Zastavka.IR_lichy  := Blky.GetBlkID(Self.CB_ZastIRData[Self.CB_Zast_IR_lichy.ItemIndex]);
-    settings.Zastavka.IR_sudy   := Blky.GetBlkID(Self.CB_ZastIRData[Self.CB_Zast_IR_sudy.ItemIndex]);
-    ExtractStringsEx([','], [' '], Self.E_Zast_Spr.Text, settings.Zastavka.soupravy);
-    settings.Zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
-    try
-      settings.Zastavka.delay   := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)), StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
-    except
-      Application.MessageBox('Nesprávnì zadaný èas èekání v zastávce', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit();
-    end;
-   end else begin
-    settings.Zastavka.IR_lichy := -1;
-    settings.Zastavka.IR_sudy  := -1;
-   end;
 
   Self.Blk.SetSettings(settings);
 
@@ -390,50 +335,5 @@ procedure TF_BlkUsek.CHB_D1Click(Sender: TObject);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_BlkUsek.CHB_ZastavkaClick(Sender: TObject);
-var i:Integer;
-    zast:TBlkUsekZastavka;
-begin
- if (Self.CHB_Zastavka.Checked) then
-  begin
-   Self.E_Zast_Spr.Enabled       := true;
-   Self.SE_Zast_DelkaSpr.Enabled := true;
-   Self.ME_Zast_Delay.Enabled    := true;
-   Self.CB_Zast_IR_lichy.Enabled := true;
-   Self.CB_Zast_IR_sudy.Enabled  := true;
-
-   if (Assigned(Self.Blk)) then
-    begin
-     zast := Self.Blk.GetSettings.Zastavka;
-     Self.E_Zast_Spr.Text := '';
-
-     if (Assigned(zast.soupravy)) then
-       for i := 0 to zast.soupravy.Count-1 do
-         Self.E_Zast_Spr.Text := Self.E_Zast_Spr.Text + zast.soupravy[i] + ', ';
-
-     Self.SE_Zast_DelkaSpr.Value     := zast.max_delka;
-     Self.ME_Zast_Delay.Text         := FormatDateTime('nn:ss', zast.delay);
-
-     Blky.NactiBlokyDoObjektu(Self.CB_Zast_IR_lichy, nil, nil, nil, _BLK_IR, zast.IR_lichy);
-     Blky.NactiBlokyDoObjektu(Self.CB_Zast_IR_sudy , @CB_ZastIRData, nil, nil, _BLK_IR, zast.IR_sudy);
-    end;
-  end else begin
-   Self.E_Zast_Spr.Enabled       := false;
-   Self.SE_Zast_DelkaSpr.Enabled := false;
-   Self.ME_Zast_Delay.Enabled    := false;
-   Self.CB_Zast_IR_lichy.Enabled := false;
-   Self.CB_Zast_IR_sudy.Enabled  := false;
-  end;
-
- if ((not Self.CHB_Zastavka.Checked) or (not Assigned(Self.Blk))) then
-  begin
-   Self.E_Zast_Spr.Text            := '';
-   Self.SE_Zast_DelkaSpr.Value     := 0;
-   Self.ME_Zast_Delay.Text         := '00:00';
-   Self.CB_Zast_IR_lichy.ItemIndex := -1;
-   Self.CB_Zast_IR_sudy.ItemIndex  := -1;
-  end;
-end;//procedure
 
 end.//unit
