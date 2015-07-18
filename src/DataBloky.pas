@@ -25,6 +25,8 @@ type
       procedure BlkRemove(line:Integer);
       procedure BlkAdd(index:Integer);
 
+      procedure BlkMove(source, target:Integer);
+
       constructor Create(LV:TListView);
   end;
 
@@ -358,6 +360,22 @@ begin
  Self.UpdateLine(index);
 
  F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.Cnt);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlokyTableData.BlkMove(source, target:Integer);
+var LI:TListItem;
+begin
+ LI := Self.LV.Items.Insert(target);
+ if (source > target) then
+  begin
+   LI.Assign(Self.LV.Items[source+1]);
+   Self.LV.Items.Delete(source+1);
+  end else begin
+   LI.Assign(Self.LV.Items[source]);
+   Self.LV.Items.Delete(source);
+  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

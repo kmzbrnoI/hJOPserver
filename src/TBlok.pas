@@ -61,6 +61,13 @@ type
  TChangeEvents = TList<TChangeEvent>;
 
  TBlk = class(TObject)
+  private const
+    _def_glob_settings:TBlkSettings = (
+      name: '';
+      id: -1;
+      typ: 0;
+      poznamka: '';
+    );
   private
    changed:boolean;
 
@@ -142,9 +149,10 @@ uses TBloky, TBlokVyhybka, TBlokPrejezd, TBlokSCom, TBlokTrat, TBlokUsek,
 constructor TBlk.Create(index:Integer);
 begin
  inherited Create();
- Self.ftable_index := index;
- Self.ffrozen      := false;
- Self.ORsRef.Cnt   := 0;
+ Self.GlobalSettings := _def_glob_settings;
+ Self.ftable_index   := index;
+ Self.ffrozen        := false;
+ Self.ORsRef.Cnt     := 0;
 end;//ctor
 
 destructor TBlk.Destroy();
@@ -155,8 +163,16 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlk.SetGlobalSettings(data:TBlkSettings);
+var id_changed:boolean;
 begin
+ id_changed := ((Self.GlobalSettings.id <> data.id) and (Self.GlobalSettings.id <> -1));
  Self.GlobalSettings := data;
+ if (id_Changed) then
+  begin
+   // sem se skoci, pokud je potreba preskladat bloky, protoze doslo ke zmene ID
+   // pri vytvareni novych bloku se sem neskace
+   Blky.BlkIDChanged(Self.table_index);
+  end;
 end;//procedure
 
 function TBlk.GetGlobalSettings():TBlkSettings;
@@ -396,6 +412,7 @@ end;
 
 procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
 begin
+
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

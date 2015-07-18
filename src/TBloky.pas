@@ -15,7 +15,7 @@ unit TBloky;
 interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
-      RPConst, Generics.Collections, Classes, IdContext;
+      RPConst, Generics.Collections, Classes, IdContext, IBUtils;
 
 type
 
@@ -35,6 +35,7 @@ type
     function GetCount():Integer;
 
     function FindPlaceForNewBlk(id:Integer):Integer;
+    procedure UpdateBlkIndexes();             // aktualizuje indexy vsech bloku, pouziva se pri nacitani dat
 
   public
     constructor Create();
@@ -99,6 +100,10 @@ type
     // zavola Change vsech trati, ktere obsahuji danou soupravu
     // pouziva se pri zmene vlastnosti soupravy -> musi se aktualizovat seznam LOKO v trati
     procedure ChangeSprToTrat(spr:Integer);
+
+    // volano pri zmene ID bloku na indexu \index
+    // -> je potreba zmenit poradi bloku
+    procedure BlkIDChanged(index:Integer);
 
     class function GetBlksList(first:TObject = nil; second:TObject = nil; third:TObject = nil):TBlksList;
 
@@ -173,7 +178,9 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//load all blocks from file
+// load all blocks from file
+// Pri vytvareni dostavaji vsechny bloky table_index -1, pak je hromadne
+//  oindexujeme metodou UpdateBlkIndexes
 function TBlky.LoadFromFile(const tech_filename,rel_filename,stat_filename:string):Integer;
 var ini_tech,ini_rel,ini_stat:TMemIniFile;
     i:Integer;
@@ -216,16 +223,16 @@ begin
  for i := 0 to str.Count-1 do
   begin
    case (ini_tech.ReadInteger(str[i], 'typ', -1)) of
-    _BLK_VYH      : Blk := TBlkVyhybka.Create(i);
-    _BLK_USEK     : Blk := TBlkUsek.Create(i);
-    _BLK_IR       : Blk := TBlkIR.Create(i);
-    _BLK_SCOM     : Blk := TBlkSCom.Create(i);
-    _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(i);
-    _BLK_TRAT     : Blk := TBlkTrat.Create(i);
-    _BLK_UVAZKA   : Blk := TBlkUvazka.Create(i);
-    _BLK_ZAMEK    : Blk := TBlkZamek.Create(i);
-    _BLK_ROZP     : Blk := TBlkRozp.Create(i);
-    _BLK_TU       : Blk := TBlkTU.Create(i);
+    _BLK_VYH      : Blk := TBlkVyhybka.Create(-1);
+    _BLK_USEK     : Blk := TBlkUsek.Create(-1);
+    _BLK_IR       : Blk := TBlkIR.Create(-1);
+    _BLK_SCOM     : Blk := TBlkSCom.Create(-1);
+    _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(-1);
+    _BLK_TRAT     : Blk := TBlkTrat.Create(-1);
+    _BLK_UVAZKA   : Blk := TBlkUvazka.Create(-1);
+    _BLK_ZAMEK    : Blk := TBlkZamek.Create(-1);
+    _BLK_ROZP     : Blk := TBlkRozp.Create(-1);
+    _BLK_TU       : Blk := TBlkTU.Create(-1);
 
    else//case
     continue;
@@ -236,6 +243,8 @@ begin
 
    Self.data.Insert(Self.FindPlaceForNewBlk(Blk.GetGlobalSettings().id), Blk);
   end;//for i
+
+ Self.UpdateBlkIndexes();
 
  FreeAndNil(ini_tech);
  FreeAndNil(ini_rel);
@@ -298,44 +307,53 @@ end;//procedure
 //add 1 block
 function TBlky.Add(typ:Integer; glob:TBlkSettings):TBlk;
 var Blk:TBlk;
-    index:Integer;
+    i, index:Integer;
 begin
  // kontrola existence bloku stejneho ID
  if (Self.IsBlok(glob.id)) then Exit(nil);
 
+ index := Self.FindPlaceForNewBlk(glob.id);
+
  case (typ) of
-  _BLK_VYH      : Blk := TBlkVyhybka.Create(Self.Data.Count);
-  _BLK_USEK     : Blk := TBlkUsek.Create(Self.Data.Count);
-  _BLK_IR       : Blk := TBlkIR.Create(Self.Data.Count);
-  _BLK_SCOM     : Blk := TBlkSCom.Create(Self.Data.Count);
-  _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(Self.Data.Count);
-  _BLK_TRAT     : Blk := TBlkTrat.Create(Self.Data.Count);
-  _BLK_UVAZKA   : Blk := TBlkUvazka.Create(Self.Data.Count);
-  _BLK_ZAMEK    : Blk := TBlkZamek.Create(Self.Data.Count);
-  _BLK_ROZP     : Blk := TBlkRozp.Create(Self.Data.Count);
-  _BLK_TU       : Blk := TBlkTU.Create(Self.Data.Count);
+  _BLK_VYH      : Blk := TBlkVyhybka.Create(index);
+  _BLK_USEK     : Blk := TBlkUsek.Create(index);
+  _BLK_IR       : Blk := TBlkIR.Create(index);
+  _BLK_SCOM     : Blk := TBlkSCom.Create(index);
+  _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(index);
+  _BLK_TRAT     : Blk := TBlkTrat.Create(index);
+  _BLK_UVAZKA   : Blk := TBlkUvazka.Create(index);
+  _BLK_ZAMEK    : Blk := TBlkZamek.Create(index);
+  _BLK_ROZP     : Blk := TBlkRozp.Create(index);
+  _BLK_TU       : Blk := TBlkTU.Create(index);
  else//case
   Exit(nil);
  end;
 
  Blk.SetGlobalSettings(glob);
-
  Blk.OnChange := Self.BlkChange;
- index := Self.FindPlaceForNewBlk(glob.id);
  Self.data.Insert(index, blk);
  BlokyTableData.BlkAdd(index);
  Result := Blk;
+
+ // indexy prislusnych bloku na konci seznamu posuneme o 1 nahoru
+ for i := index+1 to Self.data.Count-1 do
+   Self.data[i].table_index := Self.data[i].table_index + 1;
 end;//function
 
 //Smazat blok z databaze
 function TBlky.Delete(index:Integer):Integer;
 var tmp, blk:TBlk;
+    i:Integer;
 begin
- if (index < 0) then Exit(2); 
+ if (index < 0) then Exit(2);
  if (index >= Self.Data.Count) then Exit(1);
 
  tmp := Self.data[index];
  Self.data.Delete(index);
+
+ // aktulizujeme indexy bloku (dekrementujeme)
+ for i := index to Self.data.Count-1 do
+   Self.data[i].table_index := Self.data[i].table_index - 1;
 
  // pokud mazeme trat, je potreba smazat i uvazky
  if (tmp.GetGlobalSettings().typ = _BLK_TRAT) then
@@ -872,6 +890,8 @@ begin
   begin
    mid := (left + right) div 2;
 
+   // specialni pripad, kdy uz se blok anchazi v databazi, vyuziva se pri kontrole zmeny pozice bloku pri uprave ID:
+   if (Self.data[mid].GetGlobalSettings().id = id) then Exit(mid);
    if (Self.data[mid].GetGlobalSettings().id > id) then
      right := mid - 1
    else
@@ -879,6 +899,42 @@ begin
   end;
  Result := mid;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.UpdateBlkIndexes();
+var i:Integer;
+begin
+ for i := 0 to Self.data.Count-1 do
+  Self.data[i].table_index := i; 
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.BlkIDChanged(index:Integer);
+var new_index, min_index, i:Integer;
+begin
+ new_index := FindPlaceForNewBlk(Self.data[index].GetGlobalSettings().id);
+ if (index = new_index) then Exit();  // pozice bloku se nemeni -> koncime
+
+ // provedeme prehozeni bloku na jinou pozici
+ Self.data.Insert(new_index, Self.data[index]);
+ if (new_index < index) then
+  begin
+   Self.data.Delete(index+1)
+  end else begin
+   Self.data.Delete(index);
+  end;
+
+ // od nejmensiho prohazovaneho indexu aktualizujeme indexy
+ // aktualizjeme dokud indexy nesedi
+ min_index := Min(new_index, index);
+ for i := min_index to Self.data.Count-1 do
+   if (Self.data[i].table_index = i) then break
+   else Self.data[i].table_index := i;
+
+ BlokyTableData.BlkMove(index, new_index);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
