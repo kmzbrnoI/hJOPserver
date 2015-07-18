@@ -55,7 +55,7 @@ type
 
     //----- SCom own functions -----
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
 
     function GetSettings():TBlkRozpSettings;

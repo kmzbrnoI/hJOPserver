@@ -108,10 +108,10 @@ type
     property Zaver:boolean read GetZaver write SetZaver;
 
     //GUI:
-
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
+
     procedure PanelZUZCallBack(Sender:TIdContext; success:boolean);
     procedure PanelZNOTCallBack(Sender:TIdContext; success:boolean);
  end;

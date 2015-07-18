@@ -96,8 +96,7 @@ type
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
-
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
  end;//class TBlkUsek
@@ -460,16 +459,16 @@ end;//procedure
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkUvazka.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
 begin
- if (item = 'ZTS>') then Self.MenuZTSOnClick(SenderPnl, SenderOR);
- if (item = 'ZTS<') then Self.MenuZTSOffClick(SenderPnl, SenderOR);
- if (item = 'UTS')  then Self.MenuUTSClick(SenderPnl, SenderOR);
- if (item = 'OTS')  then Self.MenuOTSClick(SenderPnl, SenderOR);
- if (item = 'ZAK>') then Self.MenuZAKOnClick(SenderPnl, SenderOR);
- if (item = 'ZAK<') then Self.MenuZAKOffClick(SenderPnl, SenderOR);
- if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR);
- if (item = 'RBP')  then Self.MenuRBPClick(SenderPnl, SenderOR);
- if (item = 'ZAV>') then Self.MenuZAVOnClick(SenderPnl, SenderOR);
- if (item = 'ZAV<') then Self.MenuZAVOffClick(SenderPnl, SenderOR);
+ if      (item = 'ZTS>') then Self.MenuZTSOnClick(SenderPnl, SenderOR)
+ else if (item = 'ZTS<') then Self.MenuZTSOffClick(SenderPnl, SenderOR)
+ else if (item = 'UTS')  then Self.MenuUTSClick(SenderPnl, SenderOR)
+ else if (item = 'OTS')  then Self.MenuOTSClick(SenderPnl, SenderOR)
+ else if (item = 'ZAK>') then Self.MenuZAKOnClick(SenderPnl, SenderOR)
+ else if (item = 'ZAK<') then Self.MenuZAKOffClick(SenderPnl, SenderOR)
+ else if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
+ else if (item = 'RBP')  then Self.MenuRBPClick(SenderPnl, SenderOR)
+ else if (item = 'ZAV>') then Self.MenuZAVOnClick(SenderPnl, SenderOR)
+ else if (item = 'ZAV<') then Self.MenuZAVOffClick(SenderPnl, SenderOR);
 end;//procedure
 
 ///////////////////////////////////////////////////////////////////////////////

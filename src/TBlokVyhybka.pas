@@ -166,7 +166,7 @@ type
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
 
@@ -844,15 +844,15 @@ procedure TBlkVyhybka.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; ite
 begin
  if (Self.Stav.poloha <= TVyhPoloha.disabled) then Exit();
 
- if (item = 'S+')   then Self.MenuPlusClick(SenderPnl, SenderOR);
- if (item = 'S-')   then Self.MenuMinusClick(SenderPnl, SenderOR);
- if (item = 'NS+')  then Self.MenuNSPlusClick(SenderPnl, SenderOR);
- if (item = 'NS-')  then Self.MenuNSMinusClick(SenderPnl, SenderOR);
- if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR);
- if (item = 'VYL')  then Self.MenuVylClick(SenderPnl, SenderOR);
- if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR);
- if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR);
- if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
+ if (item = 'S+')        then Self.MenuPlusClick(SenderPnl, SenderOR)
+ else if (item = 'S-')   then Self.MenuMinusClick(SenderPnl, SenderOR)
+ else if (item = 'NS+')  then Self.MenuNSPlusClick(SenderPnl, SenderOR)
+ else if (item = 'NS-')  then Self.MenuNSMinusClick(SenderPnl, SenderOR)
+ else if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
+ else if (item = 'VYL')  then Self.MenuVylClick(SenderPnl, SenderOR)
+ else if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR)
+ else if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR)
+ else if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

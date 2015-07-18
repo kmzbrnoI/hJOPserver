@@ -180,7 +180,7 @@ type
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
 
@@ -776,21 +776,21 @@ procedure TBlkSCom.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:s
 begin
  if (Self.SComStav.Navest = -1) then Exit();
 
- if (item = 'VC>')  then Self.MenuVCStartClick(SenderPnl, SenderOR);
- if (item = 'VC<')  then Self.MenuVCStopClick (SenderPnl, SenderOR);
- if (item = 'PC>')  then Self.MenuPCStartClick(SenderPnl, SenderOR);
- if (item = 'PC<')  then Self.MenuPCStopClick (SenderPnl, SenderOR);
- if (item = 'STUJ') then Self.MenuSTUJClick   (SenderPnl, SenderOR);
- if (item = 'DN')   then Self.MenuDNClick     (SenderPnl, SenderOR);
- if (item = 'RC')   then Self.MenuRCClick     (SenderPnl, SenderOR);
- if (item = 'AB>')  then Self.MenuABStartClick(SenderPnl, SenderOR);
- if (item = 'AB<')  then Self.MenuABStopClick (SenderPnl, SenderOR);
- if (item = 'ZAM>') then Self.MenuLockClick   (SenderPnl, SenderOR);
- if (item = 'ZAM<') then Self.MenuUnlockClick (SenderPnl, SenderOR);
- if (item = 'PN>')  then Self.MenuPNStartClick(SenderPnl, SenderOR);
- if (item = 'PN<')  then Self.MenuPNStopClick (SenderPnl, SenderOR);
- if (item = 'PPN')  then Self.MenuPPNClick    (SenderPnl, SenderOR);
- if (item = 'RNZ')  then Self.MenuRNZClick    (SenderPnl, SenderOR);
+ if      (item = 'VC>')  then Self.MenuVCStartClick(SenderPnl, SenderOR)
+ else if (item = 'VC<')  then Self.MenuVCStopClick (SenderPnl, SenderOR)
+ else if (item = 'PC>')  then Self.MenuPCStartClick(SenderPnl, SenderOR)
+ else if (item = 'PC<')  then Self.MenuPCStopClick (SenderPnl, SenderOR)
+ else if (item = 'STUJ') then Self.MenuSTUJClick   (SenderPnl, SenderOR)
+ else if (item = 'DN')   then Self.MenuDNClick     (SenderPnl, SenderOR)
+ else if (item = 'RC')   then Self.MenuRCClick     (SenderPnl, SenderOR)
+ else if (item = 'AB>')  then Self.MenuABStartClick(SenderPnl, SenderOR)
+ else if (item = 'AB<')  then Self.MenuABStopClick (SenderPnl, SenderOR)
+ else if (item = 'ZAM>') then Self.MenuLockClick   (SenderPnl, SenderOR)
+ else if (item = 'ZAM<') then Self.MenuUnlockClick (SenderPnl, SenderOR)
+ else if (item = 'PN>')  then Self.MenuPNStartClick(SenderPnl, SenderOR)
+ else if (item = 'PN<')  then Self.MenuPNStopClick (SenderPnl, SenderOR)
+ else if (item = 'PPN')  then Self.MenuPPNClick    (SenderPnl, SenderOR)
+ else if (item = 'RNZ')  then Self.MenuRNZClick    (SenderPnl, SenderOR);
 
  if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
 end;//procedure

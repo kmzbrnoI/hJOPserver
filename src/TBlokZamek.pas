@@ -87,8 +87,7 @@ type
     property porucha:boolean read ZamekStav.porucha write SetPorucha;
 
     //GUI:
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
-
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
  end;//class TBlkUsek
@@ -260,11 +259,11 @@ procedure TBlkZamek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:
 begin
  if (not Self.Stav.enabled) then Exit();
 
- if (item = 'UK')   then Self.MenuUKClick(SenderPnl, SenderOR);
- if (item = 'ZUK')  then Self.MenuZUKClick(SenderPnl, SenderOR);
- if (item = 'STIT') then Self.MenuSTITClick(SenderPnl, SenderOR);
- if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR);
- if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR);
+ if      (item = 'UK')   then Self.MenuUKClick(SenderPnl, SenderOR)
+ else if (item = 'ZUK')  then Self.MenuZUKClick(SenderPnl, SenderOR)
+ else if (item = 'STIT') then Self.MenuSTITClick(SenderPnl, SenderOR)
+ else if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR)
+ else if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

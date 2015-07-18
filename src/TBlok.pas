@@ -119,6 +119,8 @@ type
    //   jinak je doporuceno ji vubec neimplementovat
    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); virtual;
 
+   procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); virtual;
+
    class procedure AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class procedure RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class function CreateCHangeEvent(func:TChangeEventFunc; data:Integer = 0):TChangeEvent;
@@ -219,6 +221,8 @@ begin
    if (Assigned(Self.FOnChange)) then Self.FOnChange(Self);
   end else
    Self.changed := true;
+
+ BlokyTableData.BlkChange(Self.table_index);
 end;//procedure
 
 procedure TBlk.Freeze();
@@ -388,6 +392,10 @@ end;//function
 procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
 begin
 
+end;
+
+procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
