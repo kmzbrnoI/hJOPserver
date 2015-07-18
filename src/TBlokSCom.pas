@@ -88,7 +88,6 @@ type
    SComSettings:TBlkSComSettings;
    SComStav:TBlkSComStav;
    SComRel:TBlkSComRel;
-   ORsRef:TORsRef;    //ve kterych OR se blok nachazi
 
     procedure ParseEvents(str:string);
     function ParseEvent(str:string):TBlkSComSprEvent;
@@ -179,14 +178,11 @@ type
     property DNjc:TJC read SComStav.dn_jc_ref write SComStav.dn_jc_ref;
     property privol:TJC read SComStav.privol_ref write SComStav.privol_ref;
 
-    property OblsRizeni:TORsRef read ORsRef;
-
     //GUI:
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
-    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-
-    procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights);
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
+    procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
 
  end;//class TBlkSCom
 
@@ -762,10 +758,10 @@ begin
  if (Self.SComStav.Navest = -1) then Exit();
 
  case (Button) of
-  right,F2 : Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+  right,F2 : ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   left     : begin
     if (((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) then
-      Self.ShowPanelMenu(SenderPnl, SenderOR, rights)
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
       if (not Self.SComSettings.zamknuto) then Self.MenuVCStartClick(SenderPnl, SenderOR);
   end;
@@ -802,79 +798,72 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro konkretni s-com:
-procedure TBlkSCom.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-var menu:string;
+function TBlkSCom.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
- menu := '$'+Self.GlobalSettings.name+',-,';
+ Result := inherited;
 
  // pokud je navestidlo trvale zamkle, neumoznime zadne volby
- if (Self.SComSettings.zamknuto) then
-  begin
-   ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
-   Exit();
-  end;
+ if (Self.SComSettings.zamknuto) then Exit();
 
  if (((((Self.DNjc = nil) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) or (Self.DNjc.RozpadBlok > 0)) and (Self.Navest <> 8))
     or ((SenderOR as TOR).stack.volba = VZ) or (Self.SComStav.ZacatekVolba <> TBlkSCOmVolba.none)) then
   begin
     case (Self.SComStav.ZacatekVolba) of
-     TBlkSCOmVolba.VC : menu := menu + 'VC<,';
-     TBlkSCOmVolba.PC : menu := menu + 'PC<,';
-     TBlkSCOmVolba.NC : menu := menu + 'PN<,';
+     TBlkSCOmVolba.VC : Result := Result + 'VC<,';
+     TBlkSCOmVolba.PC : Result := Result + 'PC<,';
+     TBlkSCOmVolba.NC : Result := Result + 'PN<,';
     else
       //2 = VC, 3= PC
       if (Self.SComRel.SymbolType <> 1) then
-        menu := menu + 'VC>,!PN>,';
-       menu := menu + 'PC>,';
+        Result := Result + 'VC>,!PN>,';
+       Result := Result + 'PC>,';
     end;// else ZacatekVOlba <> none ...
 
-    menu := menu + '-,';
+    Result := Result + '-,';
   end;
 
  if (Self.Navest > 0) then
-   menu := menu + 'STUJ,';
+   Result := Result + 'STUJ,';
 
  if (Self.Navest = 8) then
-   menu := menu + '!PPN,';
+   Result := Result + '!PPN,';
 
  if (Self.DNjc <> nil) then
   begin
    // bud je cesta primo postavena, nebo je zrusena, ale podminky jsou vyhovujici pro DN
    // plati jen pro postavenou JC
    if ((not Self.ZAM) and (Self.Navest = 0) and (Self.DNjc.CanDN())) then
-     menu := menu + 'DN,';
+     Result := Result + 'DN,';
 
    if ((Self.Navest > 0) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1)) then
     begin
-     menu := menu + 'RC,';
+     Result := Result + 'RC,';
 
      // AB lze jen u vlakove cesty
      if (Self.DNjc.data.TypCesty = TJCType.vlak) then
       begin
        if (Self.SComStav.AB) then
-         menu := menu + 'AB<,'
+         Result := Result + 'AB<,'
         else
-         menu := menu + 'AB>,'
+         Result := Result + 'AB>,'
       end;
     end;
  end;
 
  //7=ZAM
  if (Self.SComStav.ZAM) then
-   menu := menu + 'ZAM<,'
+   Result := Result + 'ZAM<,'
   else
-   menu := menu + 'ZAM>,';
+   Result := Result + 'ZAM>,';
 
  if ((Self.Navest <> 8) and (Self.privol <> nil)) then
-  menu := menu + '!RNZ,';
+  Result := Result + '!RNZ,';
 
  if (rights >= TORControlRights.superuser) then
   begin
-   menu := menu + '-,';
-   if (Self.SComStav.redukce_menu > 0) then menu := menu + '*ZRUŠ REDUKCI,';
+   Result := Result + '-,';
+   if (Self.SComStav.redukce_menu > 0) then Result := Result + '*ZRUŠ REDUKCI,';
   end;
-
- ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

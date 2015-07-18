@@ -55,7 +55,6 @@ type
   private
    PrjSettings:TBlkPrjSettings;
    PrjStav:TBlkPrjStav;
-   ORsRef:TORsRef;    // reference na oblasti rizeni - databaze OR, ve kterych se prejezd nachazi
 
     procedure SetStit(stit:string);
     procedure SetVyl(vyl:string);
@@ -106,15 +105,13 @@ type
     property Stitek:string read PrjStav.Stit write SetStit;
     property Vyluka:string read PrjStav.Vyl write SetVyl;
 
-    property OblsRizeni:TORsRef read ORsRef;
-
     property Zaver:boolean read GetZaver write SetZaver;
 
     //GUI:
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
-    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-    procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights);
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
+    procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
     procedure PanelZUZCallBack(Sender:TIdContext; success:boolean);
     procedure PanelZNOTCallBack(Sender:TIdContext; success:boolean);
  end;
@@ -409,19 +406,18 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-procedure TBlkPrejezd.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-var menu:string;
+function TBlkPrejezd.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
- menu := '$'+Self.GlobalSettings.name+',-,';
+ Result := inherited;
 
  if (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled) then
   begin
    if (not Self.PrjStav.PC_NOT) then
     begin
      if (Self.PrjStav.PC_UZ) then
-       menu := menu + '!ZUZ,'
+       Result := Result + '!ZUZ,'
       else
-       menu := menu + 'UZ,';
+       Result := Result + 'UZ,';
     end;
 
    if (not Self.Zaver) then
@@ -429,22 +425,20 @@ begin
      if (not Self.PrjStav.PC_UZ) then
       begin
        if (Self.PrjStav.PC_NOT) then
-         menu := menu + 'NOT<,'
+         Result := Result + 'NOT<,'
         else
-         menu := menu + '!NOT>,';
+         Result := Result + '!NOT>,';
       end;
     end;
   end;//if not zaver
 
- menu := menu + 'STIT,';
+ Result := Result + 'STIT,';
 
  if (rights >= TORControlRights.superuser) then
   begin
-   menu := menu + '-,';
-   if (Self.Zaver) then menu := menu + '*NUZ>,';
+   Result := Result + '-,';
+   if (Self.Zaver) then Result := Result + '*NUZ>,';
   end;
-
- ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -452,7 +446,7 @@ end;//procedure
 procedure TBlkPrejezd.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights);
 begin
  if (Self.Stav.basicStav <> TBlkPrjBasicStav.disabled) then
-   Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

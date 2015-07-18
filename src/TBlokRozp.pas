@@ -33,7 +33,6 @@ type
   private
    RozpSettings:TBlkRozpSettings;
    RozpStav:TBlkRozpStav;
-   ORsRef:TORsRef;    //ve kterych OR se blok nachazi
 
    procedure SetStatus(status:TRozpStatus);
    procedure UpdateOutput();
@@ -57,16 +56,13 @@ type
     //----- SCom own functions -----
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
-
-    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
 
     function GetSettings():TBlkRozpSettings;
     procedure SetSettings(data:TBlkRozpSettings);
 
     property stav:TBlkRozpStav read RozpStav;
     property status:TRozpStatus read RozpStav.status write SetStatus;
-    property OblsRizeni:TORsRef read ORsRef;
 
  end;//class TBlkRozp
 
@@ -173,17 +169,6 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//vytvoreni menu pro potreby konkretniho bloku:
-procedure TBlkRozp.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-var menu:string;
-begin
- menu := '$'+Self.GlobalSettings.name+',-,';
-
- ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
-end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-
 procedure TBlkRozp.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
 begin
  if (Self.status = TRozpStatus.disabled) then Exit();
@@ -228,8 +213,6 @@ end;//procedure
 procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
 begin
  if (Self.status = TRozpStatus.disabled) then Exit();
-
-// if (item = 'XY')    then Self.XY(SenderPnl, SenderOR);
 end;//procedure
 
 procedure TBlkRozp.SetStatus(status:TRozpStatus);

@@ -34,7 +34,6 @@ type
   private
    UvazkaSettings:TBlkUvazkaSettings;
    UvazkaStav:TBlkUvazkaStav;
-   ORsRef:TORsRef;    //ve kterych OR se blok nachazi
    fparent:TBlk;
    fzadost:boolean;
 
@@ -91,7 +90,6 @@ type
     property ZAK:boolean read UvazkaStav.ZAK write SetUvazkaZAK;
     property enabled:boolean read UvazkaStav.enabled;
 
-    property OblsRizeni:TORsRef read ORsRef;
     property parent:TBlk read GetParent;
     property zadost:boolean read fzadost write SetZadost;
     property nouzZaver:boolean read UvazkaStav.nouzZaver write SetNouzZaver;
@@ -100,8 +98,8 @@ type
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
 
-    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -336,20 +334,19 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-procedure TBlkUvazka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-var menu:string;
+function TBlkUvazka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
- menu := '$'+Self.GlobalSettings.name+',-,';
+ Result := inherited;
 
  // tratovy zabezpecovaci system
  case ((Self.parent as TBlkTrat).GetSettings().zabzar) of
   TTratZZ.souhlas:begin
 
    if ((not Self.zadost) and ((Self.parent as TBlkTrat).Zadost)) then
-     menu := menu + 'UTS,';
+     Result := Result + 'UTS,';
 
    if ((Self.parent as TBlkTrat).Zadost) then
-     menu := menu + 'ZTS<,';
+     Result := Result + 'ZTS<,';
 
    if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
     begin
@@ -359,7 +356,7 @@ begin
           (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
           (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
-       menu := menu + 'ZTS>,';
+       Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
@@ -368,17 +365,17 @@ begin
           (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
           (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
-       menu := menu + 'ZTS>,';
+       Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
    if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not (Self.parent as TBlkTrat).Zadost)) then
-     menu := menu + 'UTS,';
+     Result := Result + 'UTS,';
 
    if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
-     menu := menu + 'OTS,';
+     Result := Result + 'OTS,';
 
-   menu := menu + '-,';
+   Result := Result + '-,';
   end;// case TTratZZ.souhlas
 
   TTratZZ.bezsouhas:begin
@@ -387,10 +384,10 @@ begin
   TTratZZ.nabidka:begin
 
    if ((not Self.zadost) and ((Self.parent as TBlkTrat).Zadost)) then
-     menu := menu + 'UTS,';
+     Result := Result + 'UTS,';
 
    if (Self.zadost) then
-     menu := menu + 'ZTS<,';
+     Result := Result + 'ZTS<,';
 
    if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
     begin
@@ -400,7 +397,7 @@ begin
           (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
           (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
-       menu := menu + 'ZTS>,';
+       Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
@@ -409,25 +406,25 @@ begin
           (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
           (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
-       menu := menu + 'ZTS>,';
+       Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
    if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not (Self.parent as TBlkTrat).Zadost)) then
-     menu := menu + 'UTS,';
+     Result := Result + 'UTS,';
 
    if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
-     menu := menu + 'OTS,';
+     Result := Result + 'OTS,';
 
-   menu := menu + '-,';
+   Result := Result + '-,';
   end;
 
  end;//case
 
  if (Self.nouzZaver) then
-   menu := menu + '!ZAV<,'
+   Result := Result + '!ZAV<,'
  else
-   menu := menu + 'ZAV>,';
+   Result := Result + 'ZAV>,';
 
  if ((Self.parent as TBlkTrat).RBPCan) then
   begin
@@ -435,29 +432,27 @@ begin
     begin
      // prvni uvazka
      if (((Self.parent as TBlkTrat).Smer = TTratSmer.AtoB) or ((Self.parent as TBlkTrat).Smer = TTratSmer.zadny)) then
-       menu := menu + '!RBP,';
+       Result := Result + '!RBP,';
     end else begin
      if (((Self.parent as TBlkTrat).Smer = TTratSmer.BtoA) or ((Self.parent as TBlkTrat).Smer = TTratSmer.zadny)) then
-       menu := menu + '!RBP,';
+       Result := Result + '!RBP,';
     end;
   end;
 
  if (Self.ZAK) then
-  menu := menu + '!ZAK<,'
+  Result := Result + '!ZAK<,'
  else
   if ((not (Self.parent as TBlkTrat).ZAK) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).Obsazeno)) then
-   menu := menu + 'ZAK>,';
+   Result := Result + 'ZAK>,';
 
- menu := menu + 'STIT,';
-
- ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
+ Result := Result + 'STIT,';
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUvazka.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
 begin
- Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+ ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

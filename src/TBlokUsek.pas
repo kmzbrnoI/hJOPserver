@@ -97,9 +97,7 @@ type
    );
 
   private
-   UsekSettings:TBlkUsekSettings;
    UsekStav:TBlkUsekStav;
-   ORsRef:TORsRef;    //ve kterych OR se blok nachazi
    last_zes_zkrat:boolean;  //poziva se na pamatovani posledniho stavu zkratu zesilovace pri vypnuti DCC
 
    fZastIRLichy, fZastIRSudy : TBlk;
@@ -148,6 +146,9 @@ type
     procedure ZastUpdate();
     procedure ZastRunTrain();
     procedure ZastStopTrain();
+
+  protected
+   UsekSettings:TBlkUsekSettings;
 
   public
 
@@ -203,15 +204,13 @@ type
 
     property InTrat:Integer read UsekStav.InTrat write UsekStav.InTrat;
 
-    property OblsRizeni:TORsRef read ORsRef;
-
     //GUI:
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
 
-    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure ShowPanelSpr(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -905,70 +904,69 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-procedure TBlkUsek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
+function TBlkUsek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 var Blk:TBlk;
-    menu:string;
     i:Integer;
 begin
- menu := '$'+Self.GlobalSettings.name+',-,';
+ Result := inherited;
 
  if (Self.UsekStav.Spr > -1) then
   begin
    if (Self.UsekStav.stanicni_kolej) then
-    menu := menu + 'EDIT vlak,ZRUŠ vlak,';
-   menu := menu + 'UVOL vlak,';
+    Result := Result + 'EDIT vlak,ZRUŠ vlak,';
+   Result := Result + 'UVOL vlak,';
 
    if (Soupravy.soupravy[Self.Souprava].sdata.HV.cnt > 0) then
-    menu := menu + 'RUÈ vlak,';
+    Result := Result + 'RUÈ vlak,';
 
    if (Self.VlakPresun) then
-    menu := menu + 'PØESUÒ vlak<,'
+    Result := Result + 'PØESUÒ vlak<,'
    else if ((Soupravy.soupravy[Self.UsekStav.Spr].rychlost = 0) and (Soupravy.soupravy[Self.UsekStav.Spr].stanice = SenderOR)) then
-     menu := menu + 'PØESUÒ vlak>,';
+     Result := Result + 'PØESUÒ vlak>,';
 
    if (Soupravy.soupravy[Self.UsekStav.Spr].ukradeno) then
-     menu := menu + 'VEZMI vlak,';
+     Result := Result + 'VEZMI vlak,';
 
-   menu := menu + '-,';
+   Result := Result + '-,';
   end else begin
    if ((Self.UsekStav.stanicni_kolej) and (Self.UsekStav.Stav = TUsekStav.obsazeno)) then
-     menu := menu + 'NOVÝ vlak,-,';
+     Result := Result + 'NOVÝ vlak,-,';
   end;
 
- menu := menu + 'STIT,VYL,';
+ Result := Result + 'STIT,VYL,';
 
  if (((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TJCType.staveni)
     and (Self.InTrat = -1) and (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) then
   begin
    if (Self.UsekStav.NUZ) then
-     menu := menu + '-,NUZ<,'
+     Result := Result + '-,NUZ<,'
     else
-     menu := menu + '-,NUZ>,';
+     Result := Result + '-,NUZ>,';
   end;
 
  //11 = KC
  Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then
   begin
-   menu := menu + '-,KC,';
+   Result := Result + '-,KC,';
    if (not (SenderOR as TOR).vb.Contains(Self)) then
-    menu := menu + 'VB,';
+    Result := Result + 'VB,';
   end;
 
  // zastavka
  if ((Self.UsekSettings.Zastavka.enabled) and (Self.InTrat > -1)) then
   begin
-   menu := menu + '-,';
+   Result := Result + '-,';
    if (not Self.UsekStav.zast_stopped) then
     begin
      // pokud neni v zastavce zastavena souprava, lze zastavku vypinat a zapinat
      case (Self.UsekStav.zast_enabled) of
-      false : menu := menu + 'ZAST>,';
-      true  : menu := menu + 'ZAST<,';
+      false : Result := Result + 'ZAST>,';
+      true  : Result := Result + 'ZAST<,';
      end;//case
     end else begin
      // pokud v zastavce osuprava stoji, lze ji rozjet
-     menu := menu + 'JEÏ vlak';
+     Result := Result + 'JEÏ vlak';
     end;
   end;
 
@@ -976,24 +974,22 @@ begin
  //  DEBUG nastroj
  if (MTB.lib = 2) then
   begin
-   menu := menu + '-,';
+   Result := Result + '-,';
 
    for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
     if (Self.UsekStav.StavAr[i] = TUsekStav.uvolneno) then
      begin
-      menu := menu + '*OBSAZ,';
+      Result := Result + '*OBSAZ,';
       break;
      end;
 
    for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
     if (Self.UsekStav.StavAr[i] = TUsekStav.obsazeno) then
      begin
-      menu := menu + '*UVOL,';
+      Result := Result + '*UVOL,';
       break;
      end;
   end;//if MTB.lib = 2
-
- ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1023,10 +1019,10 @@ begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
  case (Button) of
-  right,F2: Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+  right,F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   left    : if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
               if (not Self.PresunLok(SenderPnl, SenderOR)) then
-                Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+                ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   middle  : Self.MenuVBClick(SenderPnl, SenderOR);
   F3: Self.ShowPanelSpr(SenderPnl, SenderOR, rights);
  end;
@@ -1159,7 +1155,7 @@ begin
       end;
     end;
 
-   if (not found) then Exit();   
+   if (not found) then Exit();
 
    case (Soupravy.soupravy[Self.Souprava].smer) of
     THVSTanoviste.lichy : if ((Assigned(Self.zastIRlichy)) and ((Self.zastIRlichy as TBlkIR).Stav = TIRStav.obsazeno)) then

@@ -103,19 +103,18 @@ var j:integer;
   Self.LV.Items.Item[line].Caption             := glob.name;
   Self.LV.Items.Item[line].SubItems.Strings[1] := IntToStr(glob.id);
 
+  str := '';
+  if (Blk.OblsRizeni.Cnt > 1) then
+    for j := 0 to Blk.OblsRizeni.Cnt-2 do str := str + Blk.OblsRizeni.ORs[j].Name+', ';
+  if (Blk.OblsRizeni.Cnt > 0) then
+    str := str + Blk.OblsRizeni.ORs[Blk.OblsRizeni.Cnt-1].Name;
+  Self.LV.Items.Item[line].SubItems.Strings[4] := str;
+
   case (glob.typ) of
    _BLK_VYH:begin
       Self.LV.Items.Item[line].ImageIndex := 0;
       s_vyh := (Blk as TBlkVyhybka).GetSettings();
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Vyhýbka';
-
-      str := '';
-      if ((Blk as TBlkVyhybka).OblsRizeni.Cnt > 1) then
-        for j := 0 to (Blk as TBlkVyhybka).OblsRizeni.Cnt-2 do str := str + (Blk as TBlkVyhybka).OblsRizeni.ORs[j].Name+', ';
-      if ((Blk as TBlkVyhybka).OblsRizeni.Cnt > 0) then
-        str := str + (Blk as TBlkVyhybka).OblsRizeni.ORs[(Blk as TBlkVyhybka).OblsRizeni.Cnt-1].Name;
-
-      Self.LV.Items.Item[line].SubItems.Strings[4] := str;
 
       case ((Blk as TBlkVyhybka).Poloha) of
        TVyhPoloha.disabled:Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
@@ -134,13 +133,6 @@ var j:integer;
    _BLK_USEK:begin
       Self.LV.Items.Item[line].ImageIndex := 1;
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Úsek';
-
-      str := '';
-      if ((Blk as TBlkUsek).OblsRizeni.Cnt > 1) then
-        for j := 0 to (Blk as TBlkUsek).OblsRizeni.Cnt-2 do str := str + (Blk as TBlkUsek).OblsRizeni.ORs[j].Name+', ';
-      if ((Blk as TBlkUsek).OblsRizeni.Cnt > 0) then
-        str := str + (Blk as TBlkUsek).OblsRizeni.ORs[(Blk as TBlkUsek).OblsRizeni.Cnt-1].Name;
-      Self.LV.Items.Item[line].SubItems.Strings[4] := str;
 
       if ((Blk as TBlkUsek).Souprava > -1) then Self.LV.Items.Item[line].SubItems.Strings[2] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).Souprava) else
             Self.LV.Items.Item[line].SubItems.Strings[2] := '--#--';
@@ -185,13 +177,6 @@ var j:integer;
       s_scom := (Blk as TBlkSCom).GetSettings();
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'S-com';
 
-      str := '';
-      if ((Blk as TBlkSCom).OblsRizeni.Cnt > 1) then
-        for j := 0 to (Blk as TBlkSCom).OblsRizeni.Cnt-2 do str := str + (Blk as TBlkSCom).OblsRizeni.ORs[j].Name+', ';
-      if ((Blk as TBlkSCom).OblsRizeni.Cnt > 0) then
-        str := str + (Blk as TBlkSCom).OblsRizeni.ORs[(Blk as TBlkSCom).OblsRizeni.Cnt-1].Name;
-      Self.LV.Items.Item[line].SubItems.Strings[4] := str;
-
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 
       Self.LV.Items.Item[line].SubItems.Strings[3] := TBlkScom.NavestToString((Blk as TBlkSCom).Navest);
@@ -205,13 +190,6 @@ var j:integer;
    _BLK_PREJEZD:begin
       Self.LV.Items.Item[line].ImageIndex := 7;
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Pøejezd';
-
-      str := '';
-      if ((Blk as TBlkPrejezd).OblsRizeni.Cnt > 1) then
-        for j := 0 to (Blk as TBlkPrejezd).OblsRizeni.Cnt-2 do str := str + (Blk as TBlkPrejezd).OblsRizeni.ORs[j].Name+', ';
-      if ((Blk as TBlkPrejezd).OblsRizeni.Cnt > 0) then
-        str := str + (Blk as TBlkPrejezd).OblsRizeni.ORs[(Blk as TBlkPrejezd).OblsRizeni.Cnt-1].Name;
-      Self.LV.Items.Item[line].SubItems.Strings[4] := str;
 
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 
@@ -234,8 +212,6 @@ var j:integer;
    _BLK_TRAT:begin
       Self.LV.Items.Item[line].ImageIndex := 8;
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Tra';
-
-      Self.LV.Items.Item[line].SubItems.Strings[4] := '';
 
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 
@@ -274,13 +250,6 @@ var j:integer;
       Self.LV.Items.Item[line].ImageIndex := 9;
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Úvazka';
 
-      str := '';
-      if ((Blk as TBlkUvazka).OblsRizeni.Cnt > 1) then
-        for j := 0 to (Blk as TBlkUvazka).OblsRizeni.Cnt-2 do str := str + (Blk as TBlkUvazka).OblsRizeni.ORs[j].Name+', ';
-      if ((Blk as TBlkUvazka).OblsRizeni.Cnt > 0) then
-        str := str + (Blk as TBlkUvazka).OblsRizeni.ORs[(Blk as TBlkUvazka).OblsRizeni.Cnt-1].Name;
-      Self.LV.Items.Item[line].SubItems.Strings[4] := str;
-
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 
       if ((Blk as TBlkUvazka).enabled) then
@@ -297,13 +266,6 @@ var j:integer;
    _BLK_ZAMEK:begin
       Self.LV.Items.Item[line].ImageIndex := 10;
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Zámek';
-
-      str := '';
-      if ((Blk as TBlkZamek).OblsRizeni.Cnt > 1) then
-        for j := 0 to (Blk as TBlkZamek).OblsRizeni.Cnt-2 do str := str + (Blk as TBlkZamek).OblsRizeni.ORs[j].Name+', ';
-      if ((Blk as TBlkZamek).OblsRizeni.Cnt > 0) then
-        str := str + (Blk as TBlkZamek).OblsRizeni.ORs[(Blk as TBlkZamek).OblsRizeni.Cnt-1].Name;
-      Self.LV.Items.Item[line].SubItems.Strings[4] := str;
 
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 
@@ -325,13 +287,6 @@ var j:integer;
    _BLK_ROZP:begin
       Self.LV.Items.Item[line].ImageIndex := 11;
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Rozpojovaè';
-
-      str := '';
-      if ((Blk as TBlkRozp).OblsRizeni.Cnt > 1) then
-        for j := 0 to (Blk as TBlkRozp).OblsRizeni.Cnt-2 do str := str + (Blk as TBlkRozp).OblsRizeni.ORs[j].Name+', ';
-      if ((Blk as TBlkRozp).OblsRizeni.Cnt > 0) then
-        str := str + (Blk as TBlkRozp).OblsRizeni.ORs[(Blk as TBlkRozp).OblsRizeni.Cnt-1].Name;
-      Self.LV.Items.Item[line].SubItems.Strings[4] := str;
 
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 

@@ -4,7 +4,8 @@ unit TBlok;
 
 interface
 
-uses IniFiles, TechnologieMTB, SysUtils, RPConst, TOblsRizeni, Generics.Collections;
+uses IniFiles, TechnologieMTB, SysUtils, RPConst, TOblsRizeni,
+      Generics.Collections, IdContext;
 
 const
  //typy bloku
@@ -64,9 +65,10 @@ type
 
   protected
    GlobalSettings:TBlkSettings;
-   FOnChange:TOnBlkChange;  //childs can call the event
+   FOnChange:TOnBlkChange;  // childs can call the event
    ftable_index:Integer;
    ffrozen:boolean;
+   ORsRef:TORsRef;          // ve kterych OR se blok nachazi
 
    //loading and saving MTB
    class function LoadMTB(ini:TMemIniFile;section:string):TMTBAddrs;
@@ -107,6 +109,15 @@ type
    procedure Freeze(); virtual;
    procedure UnFreeze(); virtual;
 
+   // zobrazuje menu, vraci string urcujici menu
+   // kazdy blok ma sve zakladni menu, ktere obsahuje pouze hlavicku s jeho nazvem a oddelovac
+   function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; virtual;
+
+   // panel click je virtualni metoda, ktera v zakladu prazdna
+   // u bloku, kde je zadouci osetrovat kliknuti na panel, je doporuceno ji pretizit,
+   //   jinak je doporuceno ji vubec neimplementovat
+   procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); virtual;
+
    class procedure AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class procedure RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class function CreateCHangeEvent(func:TChangeEventFunc; data:Integer = 0):TChangeEvent;
@@ -115,6 +126,7 @@ type
    property OnChange:TOnBlkChange read FOnChange write FOnChange;
    property table_index:Integer read ftable_index write ftable_index;
    property frozen:boolean read ffrozen;
+   property OblsRizeni:TORsRef read ORsRef;
  end;
 
 implementation
@@ -129,6 +141,7 @@ begin
  inherited Create();
  Self.ftable_index := index;
  Self.ffrozen      := false;
+ Self.ORsRef.Cnt   := 0;
 end;//ctor
 
 destructor TBlk.Destroy();
@@ -361,6 +374,20 @@ begin
    Self.changed := false;
   end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+// zobrazuje menu, vraci string urcujici menu
+// kazdy blok ma sve zakladni menu, ktere obsahuje pouze hlavicku s jeho nazvem a oddelovac
+function TBlk.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+begin
+ Result := '$'+Self.GlobalSettings.name+',-,';
+end;//function
+
+procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+begin
+
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

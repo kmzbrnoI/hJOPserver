@@ -66,7 +66,6 @@ type
    VyhSettings:TBlkVyhSettings;
    VyhStav:TBlkVyhStav;
    VyhRel:TBlkVyhybkaRel;
-   ORsRef:TORsRef;    //ve kterych OR se blok nachazi
 
    NullOutput:record
      enabled:boolean;
@@ -165,13 +164,11 @@ type
     property StaveniPlus:Boolean read VyhStav.staveni_plus write VyhStav.staveni_plus;
     property StaveniMinus:Boolean read VyhStav.staveni_minus write VyhStav.staveni_minus;
 
-    property OblsRizeni:TORsRef read ORsRef;
-
     //GUI:
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
-    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
 
  end;
 
@@ -787,11 +784,10 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-procedure TBlkVyhybka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-var menu:string;
-    spojka:TBlk;
+function TBlkVyhybka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+var spojka:TBlk;
 begin
- menu := '$'+Self.GlobalSettings.name+',-,';
+ Result := inherited;
 
  Blky.GetBlkByID(Self.VyhSettings.spojka, spojka);
 
@@ -803,33 +799,31 @@ begin
 
    if ((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and ((spojka as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno))) then
     begin
-     if (Self.VyhStav.poloha = plus) then menu := menu + '!NS-,';
-     if (Self.VyhStav.poloha = minus) then menu := menu + '!NS+,';
+     if (Self.VyhStav.poloha = plus) then Result := Result + '!NS-,';
+     if (Self.VyhStav.poloha = minus) then Result := Result + '!NS+,';
      if ((Self.VyhStav.poloha = both) or (Self.VyhStav.poloha = none)) then
-      menu := menu + '!NS+,!NS-,-,';
+      Result := Result + '!NS+,!NS-,-,';
     end else begin
-     if (Self.VyhStav.poloha = plus) then menu := menu + 'S-,';
-     if (Self.VyhStav.poloha = minus) then menu := menu + 'S+,';
+     if (Self.VyhStav.poloha = plus) then Result := Result + 'S-,';
+     if (Self.VyhStav.poloha = minus) then Result := Result + 'S+,';
      if ((Self.VyhStav.poloha = both) or (Self.VyhStav.poloha = none)) then
-      menu := menu + 'S+,S-,-,';
+      Result := Result + 'S+,S-,-,';
     end;
   end;
 
- menu := menu + 'STIT,VYL,';
+ Result := Result + 'STIT,VYL,';
 
  if (Self.vyhZaver) then
-  menu := menu + '!ZAV<,'
+  Result := Result + '!ZAV<,'
  else
   if ((Self.Poloha = TVyhPoloha.plus) or (Self.Poloha = TVyhPoloha.minus)) then
-    menu := menu + 'ZAV>,';
+    Result := Result + 'ZAV>,';
 
  if (rights >= TORControlRights.superuser) then
   begin
-   menu := menu + '-,';
-   if (Self.redukce_menu) then menu := menu + '*ZRUŠ REDUKCI,';
+   Result := Result + '-,';
+   if (Self.redukce_menu) then Result := Result + '*ZRUŠ REDUKCI,';
   end;
-
- ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -839,7 +833,7 @@ begin
  if (Self.Stav.poloha <= TVyhPoloha.disabled) then Exit();
 
  case (Button) of
-  right, left, F2: Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+  right, left, F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end;//case
 end;//procedure
 

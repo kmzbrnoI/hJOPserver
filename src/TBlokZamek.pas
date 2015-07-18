@@ -35,7 +35,6 @@ type
 
   private
    ZamekStav:TBlkZamekStav;
-   ORsRef:TORsRef;          // ve kterych OR se blok nachazi
    last_zaver:boolean;      // tady je ulozena posledni hodnota zaveru (aby mohlo byt rozponano, kdy volat Change)
 
     procedure MenuUKClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -87,13 +86,11 @@ type
     property klicUvolnen:boolean read ZamekStav.klicUvolnen write SetKlicUvolnen;
     property porucha:boolean read ZamekStav.porucha write SetPorucha;
 
-    property OblsRizeni:TORsRef read ORsRef;
-
     //GUI:
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
 
-    procedure ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -229,26 +226,23 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-procedure TBlkZamek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
-var menu:string;
+function TBlkZamek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
- menu := '$'+Self.GlobalSettings.name+',-,';
+ Result := inherited;
 
  if ((Self.Stav.klicUvolnen) and (Self.IsRightPoloha())) then
-   menu := menu + 'ZUK,';
+   Result := Result + 'ZUK,';
 
  if ((not Self.Zaver) and (not Self.nouzZaver)) then
    if (not Self.Stav.klicUvolnen) then
-     menu := menu + 'UK,';
+     Result := Result + 'UK,';
 
  if (Self.nouzZaver) then
-   menu := menu + '!ZAV<,'
+   Result := Result + '!ZAV<,'
  else
-   menu := menu + 'ZAV>,';
+   Result := Result + 'ZAV>,';
 
- menu := menu + 'STIT,';
-
- ORTCPServer.Menu(SenderPnl, Self, SenderOR as TOR, menu);
+ Result := Result + 'STIT,';
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +250,7 @@ end;//procedure
 procedure TBlkZamek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights);
 begin
  if (Self.Stav.enabled) then
-   Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

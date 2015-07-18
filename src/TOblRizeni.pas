@@ -643,16 +643,7 @@ begin
 
    // aktualizace menu
    if ((Self.Connected[i].Panel.Data as TTCPORsRef).menu = Sender) then
-    begin
-     case (blk_glob.typ) of
-      _BLK_VYH     : (Sender as TBlkVyhybka).ShowPanelMenu(Self.Connected[i].Panel, Self, Self.Connected[i].Rights);
-      _BLK_USEK    : (Sender as TBlkUsek   ).ShowPanelMenu(Self.Connected[i].Panel, Self, Self.Connected[i].Rights);
-      _BLK_SCOM    : (Sender as TBlkSCom   ).ShowPanelMenu(Self.Connected[i].Panel, Self, Self.Connected[i].Rights);
-      _BLK_PREJEZD : (Sender as TBlkPrejezd).ShowPanelMenu(Self.Connected[i].Panel, Self, Self.Connected[i].Rights);
-      _BLK_UVAZKA  : (Sender as TBlkUvazka ).ShowPanelMenu(Self.Connected[i].Panel, Self, Self.Connected[i].Rights);
-      _BLK_ZAMEK   : (Sender as TBlkZamek  ).ShowPanelMenu(Self.Connected[i].Panel, Self, Self.Connected[i].Rights);
-     end;//case
-    end;
+     ORTCPServer.Menu(Self.Connected[i].Panel, (Sender as TBlk), Self, (Sender as TBlk).ShowPanelMenu(Self.Connected[i].Panel, Self, Self.Connected[i].Rights));
 
   end;//for i
 
@@ -959,72 +950,12 @@ begin
  // musime provest kontrolu, jestli OR ma povoleno menit blok
  // tj. jestli ma technologicky blok toto OR
 
- case (Blk.GetGlobalSettings().typ) of
-  _BLK_VYH     : begin
-      for i := 0 to (Blk as TBlkVyhybka).OblsRizeni.Cnt-1 do
-        if ((Blk as TBlkVyhybka).OblsRizeni.ORs[i] = Self) then
-         begin
-          (Blk as TBlkVyhybka).PanelClick(Sender, Self, Button, rights);
-          Exit;
-         end;
+ for i := 0 to Blk.OblsRizeni.Cnt-1 do
+   if ((Blk as TBlkVyhybka).OblsRizeni.ORs[i] = Self) then
+    begin
+     Blk.PanelClick(Sender, Self, Button, rights);
+     Exit;
     end;
-
-  _BLK_USEK    : begin
-      for i := 0 to (Blk as TBlkUsek).OblsRizeni.Cnt-1 do
-        if ((Blk as TBlkUsek).OblsRizeni.ORs[i] = Self) then
-         begin
-          (Blk as TBlkUsek).PanelClick(Sender, Self, Button, rights);
-          Exit;
-         end;
-   end;
-
-  _BLK_SCOM    : begin
-      for i := 0 to (Blk as TBlkSCom).OblsRizeni.Cnt-1 do
-        if ((Blk as TBlkSCom).OblsRizeni.ORs[i] = Self) then
-         begin
-          (Blk as TBlkSCom).PanelClick(Sender, Self, Button, rights);
-          Exit;
-         end;
-   end;
-
-  _BLK_PREJEZD : begin
-      for i := 0 to (Blk as TBlkPrejezd).OblsRizeni.Cnt-1 do
-        if ((Blk as TBlkPrejezd).OblsRizeni.ORs[i] = Self) then
-         begin
-          (Blk as TBlkPrejezd).PanelClick(Sender, Self, Button, rights);
-          Exit;
-         end;
-  end;
-
-  _BLK_UVAZKA : begin
-      for i := 0 to (Blk as TBlkUvazka).OblsRizeni.Cnt-1 do
-        if ((Blk as TBlkUvazka).OblsRizeni.ORs[i] = Self) then
-         begin
-          (Blk as TBlkUvazka).PanelClick(Sender, Self, Button, rights);
-          Exit;
-         end;
-
-  end;
-
-  _BLK_ZAMEK : begin
-      for i := 0 to (Blk as TBlkZamek).OblsRizeni.Cnt-1 do
-        if ((Blk as TBlkZamek).OblsRizeni.ORs[i] = Self) then
-         begin
-          (Blk as TBlkZamek).PanelClick(Sender, Self, Button, rights);
-          Exit;
-         end;
-  end;
-
-  _BLK_ROZP : begin
-      for i := 0 to (Blk as TBlkRozp).OblsRizeni.Cnt-1 do
-        if ((Blk as TBlkRozp).OblsRizeni.ORs[i] = Self) then
-         begin
-          (Blk as TBlkRozp).PanelClick(Sender, Self, Button, rights);
-          Exit;
-         end;
-  end;
-
- end;//case
 
  ORTCPServer.SendInfoMsg(Sender, 'Nemáte oprávnìní mìnit tento blok');
 end;//procedure
