@@ -69,6 +69,9 @@ type
     function GetSettings():TBlkTUSettings; overload;
     procedure SetSettings(data:TBlkTUSettings); overload;
 
+    function GetUSettings():TBlkUsekSettings;
+    procedure SetUSettings(data:TBlkUsekSettings);
+
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
@@ -96,7 +99,7 @@ constructor TBlkTU.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_USEK;
+ Self.GlobalSettings.typ := _BLK_TU;
  Self.fTUStav := _def_tu_stav;
 
  Self.fZastIRLichy := nil;
@@ -324,6 +327,18 @@ begin
   middle  : Self.MenuVBClick(SenderPnl, SenderOR);
   F3: Self.ShowPanelSpr(SenderPnl, SenderOR, rights);
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTU.GetUSettings():TBlkUsekSettings;
+begin
+ Result := inherited GetSettings();
+end;
+
+procedure TBlkTU.SetUSettings(data:TBlkUsekSettings);
+begin
+ inherited SetSettings(data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
