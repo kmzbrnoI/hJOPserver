@@ -3493,7 +3493,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_FuncsVyznam
+    ActivePage = TS_Bloky
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3989,59 +3989,6 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-          end
-        end
-        object P_Blk_Posun: TPanel
-          Left = 1112
-          Top = 4
-          Width = 65
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 3
-          object SB_Blk_Up: TSpeedButton
-            Left = 8
-            Top = 5
-            Width = 23
-            Height = 22
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Enabled = False
-            Glyph.Data = {
-              EE000000424DEE0000000000000076000000280000000F0000000F0000000100
-              0400000000007800000000000000000000001000000000000000000000000000
-              8000008000000080800080000000800080008080000080808000C0C0C0000000
-              FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00888888888888
-              8880888888000888888088888800088888808888880008888880888888000888
-              8880888888000888888088888800088888808808880008880880880088000880
-              0880880008000800088088800000000088808888000000088880888880000088
-              888088888800088888808888888888888880}
-          end
-          object SB_Blk_Down: TSpeedButton
-            Left = 35
-            Top = 5
-            Width = 23
-            Height = 22
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Enabled = False
-            Glyph.Data = {
-              EE000000424DEE0000000000000076000000280000000F0000000F0000000100
-              0400000000007800000000000000000000001000000000000000000000000000
-              8000008000000080800080000000800080008080000080808000C0C0C0000000
-              FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00888888888888
-              8880888888000888888088888000008888808888000000088880888000000000
-              8880880008000800088088008800088008808888880008888880888888000888
-              8880888888000888888088888800088888808888880008888880888888000888
-              888088888800088888808888888888888880}
           end
         end
         object P_Blk_Dataload: TPanel

@@ -107,9 +107,6 @@ type
     B_BlkDelete: TButton;
     P_Blk_Ostatni: TPanel;
     L_BlkPocet: TLabel;
-    P_Blk_Posun: TPanel;
-    SB_Blk_Up: TSpeedButton;
-    SB_Blk_Down: TSpeedButton;
     P_Blk_Dataload: TPanel;
     E_dataload_block: TEdit;
     TS_HV: TTabSheet;
@@ -1713,9 +1710,8 @@ procedure TF_Main.RepaintObjects;
  P_HV_Tlac.Left       := (PC_1.Width div 2)-(P_HV_Tlac.Width div 2);
 
  P_Zes_Vysvetlivky.Left := PC_1.Width - P_Zes_Vysvetlivky.Width-15;
- P_Blk_Posun.Left       := PC_1.Width - P_Blk_Posun.Width-15;
  P_Cesty_Posun.Left     := PC_1.Width - P_Cesty_Posun.Width-15;
- P_Blk_Ostatni.Left     := P_Blk_Posun.Left - P_Blk_Ostatni.Width - 5;
+ P_Blk_Ostatni.Left     := PC_1.Width - P_Blk_Ostatni.Width - 15;
 end;//procedure
 
 procedure TF_Main.FormResize(Sender: TObject);
@@ -2337,26 +2333,7 @@ end;
 procedure TF_Main.LV_BlokyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
-  if (LV_Bloky.Selected <> nil) then
-   begin
-    B_BlkDelete.Enabled := true;
-    if (LV_Bloky.ItemIndex = 0) then
-     begin
-      SB_Blk_Up.Enabled := false;
-     end else begin
-      SB_Blk_Up.Enabled := true;
-     end;
-    if (LV_Bloky.ItemIndex = LV_Bloky.Items.Count-1) then
-     begin
-      SB_Blk_Down.Enabled := false;
-     end else begin
-      SB_Blk_Down.Enabled := true;
-     end;
-   end else begin
-    B_BlkDelete.Enabled := false;
-    SB_Blk_Up.Enabled   := false;
-    SB_Blk_Down.Enabled := false;
-   end;
+  B_BlkDelete.Enabled := (LV_Bloky.Selected <> nil);
 end;
 
 procedure TF_Main.LV_BlokyCustomDrawItem(Sender: TCustomListView;
