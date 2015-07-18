@@ -301,6 +301,28 @@ var j:integer;
       Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
    end;//_BLK_ROZP
 
+ /////////////////////////////////////////////////////
+   _BLK_TU:begin
+      Self.LV.Items.Item[line].ImageIndex := 2;
+      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Traový úsek';
+
+      if ((Blk as TBlkUsek).Souprava > -1) then Self.LV.Items.Item[line].SubItems.Strings[2] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).Souprava) else
+            Self.LV.Items.Item[line].SubItems.Strings[2] := '--#--';
+
+      case ((Blk as TBlkUsek).Obsazeno) of
+        TUsekStav.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
+        TUsekStav.none     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'none';
+        TUsekStav.uvolneno : Self.LV.Items.Item[line].SubItems.Strings[3] := '---';
+        TUsekStav.obsazeno : Self.LV.Items.Item[line].SubItems.Strings[3] := '+++';
+      end;//case obsazeno
+
+      Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkUsek).Stitek;
+      Self.LV.Items.Item[line].SubItems.Strings[6] := (Blk as TBlkUsek).Vyluka;
+
+      if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items.Item[line].SubItems.Strings[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
+        Self.LV.Items.Item[line].SubItems.Strings[7] := '--#--';
+   end;//_BLK_ROZP
+
   end;//case BLOK_TYPE
 
 
