@@ -5,7 +5,7 @@ unit TBlokUvazka;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
-     RPConst, IdContext;
+     RPConst, IdContext, StrUtils;
 
 type
 
@@ -374,7 +374,8 @@ begin
    if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
      Result := Result + 'OTS,';
 
-   Result := Result + '-,';
+   if (RightStr(Result, 2) <> '-,') then
+     Result := Result + '-,';
   end;// case TTratZZ.souhlas
 
   TTratZZ.bezsouhas:begin
@@ -415,7 +416,8 @@ begin
    if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
      Result := Result + 'OTS,';
 
-   Result := Result + '-,';
+   if (RightStr(Result, 2) <> '-,') then
+     Result := Result + '-,';
   end;
 
  end;//case
