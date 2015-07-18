@@ -6,7 +6,7 @@ unit TBlokTrat;
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
-     RPConst, IdContext;
+     RPConst, IdContext, Generics.Collections;
 
 const
   _MAX_TRAT_SPR = 4;
@@ -24,7 +24,7 @@ type
  TBlkTratSettings = record
   uvazkaA, uvazkaB:Integer; // reference na ID bloku
   zabzar:TTratZZ;
-  Useky:TArSmallI;          // reference na ID bloku
+  Useky:TList<integer>;     // reference na ID bloku v trati
   rychlost:Integer;         // v km/h
  end;
 
@@ -61,11 +61,11 @@ type
    fuvazkaA, fuvazkaB: TBlk;    // tady si ukladam reference na skutecne bloky, ktere si vytvarim az pri prvnim pristu k uvazce z Settings
    fNavLichy, fNavSudy: TBlk;
 
-   procedure CreateTratFlag();
-   procedure RemoveTratFlag();
+    procedure CreateTratFlag();
+    procedure RemoveTratFlag();
 
-   function GetUvazkaA():TBlk;
-   function GetUvazkaB():TBlk;
+    function GetUvazkaA():TBlk;
+    function GetUvazkaB():TBlk;
 
     function GetObsazeno():boolean;
     function GetZAK():boolean;
@@ -89,6 +89,8 @@ type
     function GetNavLichy():TBlk;
     function GetNavSudy():TBlk;
 
+    procedure CheckTUExist();
+
     // vrati hranicni navestidla
     property navLichy:TBlk read GetNavLichy;
     property navSudy:TBlk read GetNavSudy;
@@ -105,9 +107,9 @@ type
     procedure Enable(); override;
     procedure Disable(); override;
     procedure Reset(); override;
+    procedure AfterLoad(); override;
 
     //update states
-    procedure Update(); override;
     procedure Change(now:boolean = false); override;
     procedure ChangeFromUv(Sender:TBlk);
     procedure ChangeUseky();
@@ -141,14 +143,15 @@ type
     property SprPredict:Integer read TratStav.SprPredict write SetSprPredict;
 
     //GUI:
- end;//class TBlkUsek
+ end;//class TBlkTrat
 
 ////////////////////////////////////////////////////////////////////////////////
 
 implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
-    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase;
+    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase,
+    TBlokTratUsek;
 
 constructor TBlkTrat.Create(index:Integer);
 begin
@@ -162,10 +165,13 @@ begin
 
  Self.fNavLichy := nil;
  Self.fNavSudy  := nil;
+
+ Self.TratSettings.Useky := TList<Integer>.Create();
 end;//ctor
 
 destructor TBlkTrat.Destroy();
 begin
+ Self.TratSettings.Useky.Free();
  inherited Destroy();
 end;//dtor
 
@@ -204,12 +210,16 @@ begin
 
  str := TStringList.Create();
  ExtractStrings([';', ','], [], PChar(ini_tech.ReadString(section, 'useky', '')), str);
- SetLength(Self.TratSettings.Useky, str.Count);
+ Self.TratSettings.Useky.Clear();
  for i := 0 to str.Count-1 do
-  Self.TratSettings.Useky[i] := StrToInt(str[i]);
- str.Free();
+  begin
+   try
+    Self.TratSettings.Useky.Add(StrToInt(str[i]));
+   except
 
- Self.CreateTratFlag();
+   end;
+  end;//for i
+ str.Free();
 end;//procedure
 
 procedure TBlkTrat.SaveData(ini_tech:TMemIniFile;const section:string);
@@ -224,7 +234,7 @@ begin
  ini_tech.WriteInteger(section, 'rychlost', Self.TratSettings.rychlost);
 
  str := '';
- for i := 0 to Length(Self.TratSettings.Useky)-1 do
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
   str := str + IntToStr(Self.TratSettings.Useky[i]) + ',';
  ini_tech.WriteString(section, 'useky', str)
 end;//procedure
@@ -248,7 +258,6 @@ end;//procedure
 procedure TBlkTrat.Enable();
 begin
  Self.TratStav.smer := Self.file_smer;
- Self.CreateTratFlag();   // nutne
  Self.Change();
 end;//procedure
 
@@ -272,10 +281,10 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//update all local variables
-procedure TBlkTrat.Update();
+procedure TBlkTrat.AfterLoad();
 begin
-
+ Self.CheckTUExist();
+ Self.CreateTratFlag();
 end;//procedure
 
 // change je vyvolano i pri zmene obsazenosti jakehokoliv useku v trati
@@ -319,7 +328,7 @@ procedure TBlkTrat.ChangeUseky();
 var i:Integer;
     Blk:TBlk;
 begin
- for i := 0 to Length(Self.TratSettings.Useky)-1 do
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
    if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_USEK)) then
@@ -333,12 +342,11 @@ function TBlkTrat.GetObsazeno():boolean;
 var i:Integer;
     Blk:TBlk;
 begin
- for i := 0 to Length(Self.TratSettings.Useky)-1 do
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if (Blk = nil) then continue;
-   if (Blk.GetGlobalSettings().typ <> _BLK_USEK) then continue;
-   if ((Blk as TBlkUsek).Obsazeno = TUsekStav.obsazeno) then
+   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   if ((Blk as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
     Exit(true);
   end;
 
@@ -424,7 +432,13 @@ end;//function
 procedure TBlkTrat.SetSettings(data:TBlkTratSettings);
 begin
  Self.RemoveTratFlag();
+ if (data.Useky <> Self.TratSettings.Useky) then
+   Self.TratSettings.Useky.Free();
+
  Self.TratSettings := data;
+
+ if (not Assigned(data.Useky)) then data.Useky := TList<Integer>.Create();
+ Self.CheckTUExist();
  Self.CreateTratFlag();
 
  // zrusim uvazku, aby se prepocitala
@@ -436,16 +450,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// vsem blokum, ktere jsou u me v trati priradim, ze jsou skutecne v trati
+// vsem blokum, ktere jsou u me v trati, priradim, ze jsou skutecne v trati
 procedure TBlkTrat.CreateTratFlag();
 var i:Integer;
     Blk:TBlk;
 begin
- for i := 0 to Length(Self.TratSettings.Useky)-1 do
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_USEK)) then continue;
-   (Blk as TBlkUsek).InTrat := Self.GlobalSettings.id;
+   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   (Blk as TBlkTU).InTrat := Self.GlobalSettings.id;
   end;
 end;//procedure
 
@@ -455,11 +469,11 @@ procedure TBlkTrat.RemoveTratFlag();
 var i:Integer;
     Blk:TBlk;
 begin
- for i := 0 to Length(Self.TratSettings.Useky)-1 do
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_USEK)) then continue;
-   (Blk as TBlkUsek).InTrat := -1;
+   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   (Blk as TBlkTU).InTrat := -1;
   end;
 end;//procedure
 
@@ -498,7 +512,7 @@ var i:Integer;
     found:Integer;
 begin
  found := -1;
- for i := Length(Self.TratSettings.Useky)-1 downto 0 do
+ for i := Self.TratSettings.Useky.Count-1 downto 0 do
   begin
    if (found < 0) then
     begin
@@ -543,7 +557,7 @@ function TBlkTrat.GetRBP():boolean;
 var i:Integer;
     Blk:TBlk;
 begin
- for i := 0 to Length(Self.TratSettings.Useky)-1 do
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
    if (((Blk as TBlkUsek).Zaver = TJCType.nouz) and ((Blk as TBlkUsek).Stav.Stav = TUsekStav.uvolneno)) then
@@ -562,12 +576,12 @@ begin
  if ((Self.Smer <> TTratSmer.AtoB) and (Self.Smer <> TTratSmer.BtoA)) then Exit();
 
  old := nil;
- for i := 0 to Length(Self.TratSettings.Useky)-1 do
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    // podle smeru trati postupne vybirame bloky
    case (Self.Smer) of
     TTratSmer.AtoB: Blky.GetBlkByID(Self.TratSettings.Useky[i], new);
-    TTratSmer.BtoA: Blky.GetBlkByID(Self.TratSettings.Useky[Length(Self.TratSettings.Useky)-i-1], new);
+    TTratSmer.BtoA: Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-i-1], new);
    end;//case
 
    if ((new = nil) or (new.GetGlobalSettings().typ <> _BLK_USEK)) then continue;
@@ -585,7 +599,7 @@ begin
        (new as TBlkUsek).zpomalovani_ready := true;
        Soupravy.soupravy[(new as TBlkUsek).Souprava].front := new;
 
-       if (i = Length(Self.TratSettings.Useky)-1) then
+       if (i = Self.TratSettings.Useky.Count-1) then
         begin
          // souprava vstoupila do posledniho bloku trati
          // zmena stanic soupravy a hnacich vozidel v ni
@@ -613,7 +627,7 @@ begin
        (new as TBlkUsek).Souprava := -1;
        Inc(Self.TratStav.BP.last);
       end else begin
-       if ((i = Length(Self.TratSettings.Useky)-1) and ((new as TBlkUsek).Souprava = -1)) then
+       if ((i = Self.TratSettings.Useky.Count-1) and ((new as TBlkUsek).Souprava = -1)) then
         begin
          // blok na konci trati: tady mus byt zaroven splneno to, ze v nem neni souprava - soupravu si odstrani jizdni cesta
          // takto se kontroluje vypadek soupravy v poslendim bloku jizdni cesty
@@ -647,11 +661,11 @@ begin
   end;//for i
 
  // souprava vyjela z trati
- if (Self.TratStav.BP.last >= Length(Self.TratSettings.Useky)) then
+ if (Self.TratStav.BP.last >= Self.TratSettings.Useky.Count) then
   begin
    // zrusime potencialni nouzovy zaver na bloku na kraji trati
    case (Self.Smer) of
-    TTratSmer.AtoB: Blky.GetBlkByID(Self.TratSettings.Useky[Length(Self.TratSettings.Useky)-1], new);
+    TTratSmer.AtoB: Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1], new);
     TTratSmer.BtoA: Blky.GetBlkByID(Self.TratSettings.Useky[0], new);
    end;//case
 
@@ -817,12 +831,12 @@ begin
  case (Self.Smer) of
   TTratSmer.AtoB:begin
    start := 1;
-   fin   := Length(Self.TratSettings.Useky)-1;
+   fin   := Self.TratSettings.Useky.Count-1;
   end;
 
   TTratSmer.BtoA:begin
    start := 0;
-   fin   := Length(Self.TratSettings.Useky)-2;
+   fin   := Self.TratSettings.Useky.Count-2;
   end;
  end;//case
 
@@ -908,6 +922,19 @@ begin
 
  Result := false;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTrat.CheckTUExist();
+var i:Integer;
+    Blk:TBlk;
+begin
+ for i := Self.TratSettings.Useky.Count-1 downto 0 do
+  begin
+   Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
+   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then Self.TratSettings.Useky.Delete(i);
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

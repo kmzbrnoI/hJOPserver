@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ComCtrls, RPConst, TBlokTrat, TBlokUvazka;
+  Dialogs, StdCtrls, Spin, ComCtrls, RPConst, TBlokTrat, TBlokUvazka,
+  Generics.Collections;
 
 type
   TF_BlkTrat = class(TForm)
@@ -118,7 +119,7 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.CB_Trat_Speed.ItemIndex  := -1;
   Self.CB_Trat_ZabZar.ItemIndex := -1;
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, _BLK_USEK, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, _BLK_TU, -1);
 
   Self.Caption := 'Editace noveho bloku';
  end;//procedure
@@ -129,6 +130,7 @@ var glob:TBlkSettings;
     i:Integer;
     obls:TArstr;
     LI:TListItem;
+    vypust:TArSmallI;
  begin
   glob := Self.Trat.GetGlobalSettings();
   Self.E_Trat_Name.Text := glob.name;
@@ -149,12 +151,14 @@ var glob:TBlkSettings;
   SetLength(obls, Self.UvazkaA.OblsRizeni.Cnt + Self.UvazkaB.OblsRizeni.Cnt);
   for i := 0 to Self.UvazkaA.OblsRizeni.Cnt-1 do obls[i] := Self.UvazkaA.OblsRizeni.ORs[i].id;
   for i := 0 to Self.UvazkaB.OblsRizeni.Cnt-1 do obls[i+Self.UvazkaA.OblsRizeni.Cnt] := Self.UvazkaB.OblsRizeni.ORs[i].id;
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @settings.Useky, obls, _BLK_USEK, -1);
+  SetLength(vypust, settings.Useky.Count);
+  for i := 0 to settings.Useky.Count-1 do vypust[i] := settings.Useky[i];
+  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, _BLK_TU, -1);
 
   Self.CB_Trat_Speed.ItemIndex  := (settings.rychlost div 10)-2;
   Self.CB_Trat_ZabZar.ItemIndex := Integer(settings.zabzar);
 
-  for i := 0 to Length(settings.Useky)-1 do
+  for i := 0 to settings.Useky.Count-1 do
    begin
     LI := Self.LV_Useky.Items.Add;
     LI.Caption := IntToStr(settings.Useky[i]);
@@ -204,7 +208,7 @@ begin
    for i := 0 to Self.UvazkaB.OblsRizeni.Cnt-1 do obls[i+Self.UvazkaA.OblsRizeni.Cnt] := Self.UvazkaB.OblsRizeni.ORs[i].id;
   end;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_USEK, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_TU, -1);
 end;
 
 procedure TF_BlkTrat.B_Blk_DeleteClick(Sender: TObject);
@@ -223,7 +227,7 @@ begin
  for i := 0 to Self.UvazkaA.OblsRizeni.Cnt-1 do obls[i] := Self.UvazkaA.OblsRizeni.ORs[i].id;
  for i := 0 to Self.UvazkaB.OblsRizeni.Cnt-1 do obls[i+Self.UvazkaA.OblsRizeni.Cnt] := Self.UvazkaB.OblsRizeni.ORs[i].id;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_USEK, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_TU, -1);
 end;
 
 procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
@@ -297,12 +301,13 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
 
   if (NewBlk) then
    begin
-    Self.Trat     := Blky.Add(_BLK_TRAT, glob_trat) as TBlkTrat;
+    Self.Trat := Blky.Add(_BLK_TRAT, glob_trat) as TBlkTrat;
     if (Self.Trat = nil) then
      begin
       Application.MessageBox('Nepodarilo se pridat blok traù !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
+    TratSettings.Useky := TList<Integer>.Create();
 
     Self.UvazkaA  := Blky.Add(_BLK_UVAZKA, glob_uvA) as TBlkUvazka;
     if (Self.UvazkaA = nil) then
@@ -322,6 +327,8 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     glob_uvA.poznamka  := Self.UvazkaA.GetGlobalSettings().poznamka;
     glob_uvB.poznamka  := Self.UvazkaB.GetGlobalSettings().poznamka;
 
+    TratSettings.Useky := Self.Trat.GetSettings().Useky;
+
     Self.Trat.SetGlobalSettings(glob_trat);
     Self.UvazkaA.SetGlobalSettings(glob_uvA);
     Self.UvazkaB.SetGlobalSettings(glob_uvB);
@@ -333,9 +340,9 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
   TratSettings.zabzar   := TTratZZ(Self.CB_Trat_ZabZar.ItemIndex);
   TratSettings.rychlost := (Self.CB_Trat_Speed.ItemIndex + 2) * 10;
 
-  SetLength(TratSettings.Useky, Self.LV_Useky.Items.Count);
+  TratSettings.Useky.Clear();
   for i := 0 to Self.LV_Useky.Items.Count-1 do
-   TratSettings.Useky[i] := StrToInt(Self.LV_Useky.Items.Item[i].Caption);
+   TratSettings.Useky.Add(StrToInt(Self.LV_Useky.Items.Item[i].Caption));
   Self.Trat.SetSettings(TratSettings);
 
   UvazkaSettings.parent := Self.SE_Trat_ID.Value;

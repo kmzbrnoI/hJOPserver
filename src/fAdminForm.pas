@@ -295,7 +295,7 @@ begin
    // zrusit obsazeni posledniho useku
    case (trat.Smer) of
     TTratSmer.AtoB: Blky.GetBlkByID(TratSet.Useky[Trat.stav.BP.last], Usek);
-    TTratSmer.BtoA: Blky.GetBlkByID(TratSet.Useky[Length(TratSet.Useky)-Trat.stav.BP.last-1], Usek);
+    TTratSmer.BtoA: Blky.GetBlkByID(TratSet.Useky[TratSet.Useky.Count-Trat.stav.BP.last-1], Usek);
    end;//case
 
    UsekSet := (Usek as TBlkUsek).GetSettings();
@@ -303,7 +303,7 @@ begin
     MTB.SetInput(UsekSet.MTBAddrs.data[i].board, UsekSet.MTBAddrs.data[i].port, 0);
 
   end else begin
-   if (Trat.stav.BP.next >= Length(TratSet.Useky)) then Exit();
+   if (Trat.stav.BP.next >= TratSet.Useky.Count) then Exit();
 
    // obsadit dalsi usek
    case (trat.Smer) of
