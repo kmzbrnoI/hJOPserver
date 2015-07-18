@@ -10,20 +10,19 @@ uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, RPConst;
 
 type
  TBlkTUZastavka = record  // zastavka na useku
-  enabled:boolean;
-  IR_lichy:Integer;
-  IR_sudy:Integer;
-  soupravy:TStrings;
-  max_delka:Integer;
-  delay:TTime;
+  enabled:boolean;          // existuje v useku zastavka?
+  IR_lichy:Integer;         // odkaz na zastavovaci IR v lichem smeru
+  IR_sudy:Integer;          // odkaz na zastavovaci IR v sudem smeru
+  soupravy:TStrings;        // typy souprav, pro ktere je zastavka
+  max_delka:Integer;        // maximalni delka soupravy pro zastaveni v zastavce
+  delay:TTime;              // cas cekani v zastavce
  end;
 
  TBlkTUSettings = record
    zastavka:TBlkTUZastavka;
  end;
 
- TBlkTUStav = record
-
+ TBlkTUStav = record      // stav tratoveho useku
   zast_stopped:boolean;     // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
   zast_run_time:TDateTime;  // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
   zast_rych:Integer;        // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
@@ -32,6 +31,7 @@ type
  end;
 
 
+ // technologicky blok Tratoveho useku
  TBlkTU = class(TBlkUsek)
   private const
    _def_tu_stav:TBlkTUStav = (
@@ -56,8 +56,6 @@ type
     function GetZastIRLichy():TBlk;
     function GetZastIRSudy():TBlk;
 
-    property zastIRlichy:TBlk read GetZastIRLichy;
-    property zastIRsudy:TBlk read GetZastIRSudy;
     procedure ZastUpdate();
     procedure ZastRunTrain();
     procedure ZastStopTrain();
@@ -67,6 +65,9 @@ type
 
     procedure SetUsekSpr(spr:Integer);
     function GetUsekSpr:Integer;
+
+    property zastIRlichy:TBlk read GetZastIRLichy;
+    property zastIRsudy:TBlk read GetZastIRSudy;
 
   public
     constructor Create(index:Integer);
