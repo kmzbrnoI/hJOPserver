@@ -375,6 +375,7 @@ type
     procedure MI_DisconnectClick(Sender: TObject);
     procedure A_FuncsSetExecute(Sender: TObject);
     procedure B_ChangeClick(Sender: TObject);
+    procedure LV_BlokyKeyPress(Sender: TObject; var Key: Char);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -2453,7 +2454,10 @@ var Blk:TBlk;
   end;//case
 end;
 
-//procedure
+procedure TF_Main.LV_BlokyKeyPress(Sender: TObject; var Key: Char);
+begin
+ if (Key = #13) then Self.LV_BlokyDblClick(LV_Bloky);
+end;
 
 procedure TF_Main.LV_ClientsCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);

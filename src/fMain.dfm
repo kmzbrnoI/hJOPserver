@@ -3895,6 +3895,7 @@ object F_Main: TF_Main
         OnChange = LV_BlokyChange
         OnCustomDrawItem = LV_BlokyCustomDrawItem
         OnDblClick = LV_BlokyDblClick
+        OnKeyPress = LV_BlokyKeyPress
       end
       object P_BlkPozadi: TPanel
         Left = 0
