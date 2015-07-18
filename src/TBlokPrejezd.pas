@@ -74,6 +74,9 @@ type
     procedure MenuZNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
 
+    // DEBUG volby:
+    procedure MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
 
   public
@@ -396,6 +399,16 @@ begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
 end;
 
+procedure TBlkPrejezd.MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 1);
+end;
+
+procedure TBlkPrejezd.MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 0);
+end;
+
 procedure TBlkPrejezd.MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.PrjStav.zaver := 0;
@@ -434,6 +447,17 @@ begin
 
  Result := Result + 'STIT,';
 
+ // pokud mame knihovnu simulator, muzeme ridit stav useku
+ //  DEBUG nastroj
+ if (MTB.lib = 2) then
+  begin
+   Result := Result + '-,';
+   if ((Self.Stav.basicStav = TBlkPrjBasicStav.uzavreno) or (Self.Stav.basicStav = TBlkPrjBasicStav.vystraha)) then
+     Result := Result + '*ZAVRENO<'
+   else
+     Result := Result + '*ZAVRENO>';
+  end;//if MTB.lib = 2
+
  if (rights >= TORControlRights.superuser) then
   begin
    Result := Result + '-,';
@@ -456,12 +480,14 @@ procedure TBlkPrejezd.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; ite
 begin
  if (Self.Stav.basicStav = TBlkPrjBasicStav.disabled) then Exit();
 
- if (item = 'UZ')   then Self.MenuUZClick  (SenderPnl, SenderOR);
- if (item = 'ZUZ')  then Self.MenuZUZClick (SenderPnl, SenderOR);
- if (item = 'NOT>') then Self.MenuNOTClick (SenderPnl, SenderOR);
- if (item = 'NOT<') then Self.MenuZNOTClick(SenderPnl, SenderOR);
- if (item = 'STIT') then Self.MenuSTITClick (SenderPnl, SenderOR);
- if (item = 'NUZ>') then Self.MenuAdminNUZClick (SenderPnl, SenderOR);
+ if      (item = 'UZ')       then Self.MenuUZClick  (SenderPnl, SenderOR)
+ else if (item = 'ZUZ')      then Self.MenuZUZClick (SenderPnl, SenderOR)
+ else if (item = 'NOT>')     then Self.MenuNOTClick (SenderPnl, SenderOR)
+ else if (item = 'NOT<')     then Self.MenuZNOTClick(SenderPnl, SenderOR)
+ else if (item = 'STIT')     then Self.MenuSTITClick (SenderPnl, SenderOR)
+ else if (item = 'NUZ>')     then Self.MenuAdminNUZClick(SenderPnl, SenderOR)
+ else if (item = 'ZAVRENO>') then Self.MenuAdminZAVRENOStartClick(SenderPnl, SenderOR)
+ else if (item = 'ZAVRENO<') then Self.MenuAdminZAVRENOStopClick(SenderPnl, SenderOR);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
