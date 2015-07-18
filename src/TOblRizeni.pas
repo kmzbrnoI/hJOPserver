@@ -228,7 +228,7 @@ uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain,
      TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek,
-     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils;
+     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek;
 
 constructor TOR.Create(index:Integer);
 begin
@@ -342,6 +342,7 @@ begin
 
  fg := clFuchsia;
  bg := clBlack;
+ if (blk_glob.typ = _BLK_TU) then blk_glob.typ := _BLK_USEK; 
  msg := Self.id+';CHANGE;'+IntToStr(blk_glob.typ)+';'+IntToStr(blk_glob.id)+';';
 
  case (blk_glob.typ) of
@@ -402,16 +403,16 @@ begin
       TUsekStav.obsazeno : fg := clRed;
      end;//case
 
-     if ((fg = $A0A0A0) and ((Sender as TBlkUsek).InTrat > -1)) then
+     if ((fg = $A0A0A0) and ((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and ((Sender as TBlkTU).InTrat > -1)) then
       begin
-       Blky.GetBlkByID((Sender as TBlkUsek).InTrat, Blk);
+       Blky.GetBlkByID((Sender as TBlkTU).InTrat, Blk);
        if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_TRAT)) then
          if ((Blk as TBlkTrat).ZAK) then
           fg := clBlue;
       end;
 
      // usekum v trati se nezobrazuje zaver
-     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and (((Sender as TBlkUsek).InTrat = -1) or ((Sender as TBlkUsek).Zaver = nouz))) then
+     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and (((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and ((Sender as TBlkTU).InTrat = -1) or ((Sender as TBlkUsek).Zaver = nouz))) then
       begin
        case ((Sender as TBlkUsek).Zaver) of
         vlak   : fg := clLime;
@@ -951,7 +952,7 @@ begin
  // tj. jestli ma technologicky blok toto OR
 
  for i := 0 to Blk.OblsRizeni.Cnt-1 do
-   if ((Blk as TBlkVyhybka).OblsRizeni.ORs[i] = Self) then
+   if (Blk.OblsRizeni.ORs[i] = Self) then
     begin
      Blk.PanelClick(Sender, Self, Button, rights);
      Exit;

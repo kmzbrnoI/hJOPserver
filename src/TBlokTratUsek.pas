@@ -23,6 +23,8 @@ type
  end;
 
  TBlkTUStav = record      // stav tratoveho useku
+  inTrat:Integer;           // tady je ulozeno id bloku trati, v jake se blok nachazi; pokud se nenachazi v trati -> -1
+
   zast_stopped:boolean;     // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
   zast_run_time:TDateTime;  // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
   zast_rych:Integer;        // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
@@ -35,6 +37,7 @@ type
  TBlkTU = class(TBlkUsek)
   private const
    _def_tu_stav:TBlkTUStav = (
+    inTrat: -1;
     zast_stopped : false;
     zast_enabled : true;
    );
@@ -76,9 +79,6 @@ type
     function GetSettings():TBlkTUSettings; overload;
     procedure SetSettings(data:TBlkTUSettings); overload;
 
-    function GetUSettings():TBlkUsekSettings;
-    procedure SetUSettings(data:TBlkUsekSettings);
-
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
@@ -91,6 +91,7 @@ type
 
     property TUStav:TBlkTUStav read fTUStav;
     property Souprava:Integer read GetUsekSpr write SetUsekSpr;
+    property InTrat:Integer read fTUStav.InTrat write fTUStav.InTrat;
 
  end;//TBlkUsek
 
@@ -338,18 +339,6 @@ begin
   middle  : Self.MenuVBClick(SenderPnl, SenderOR);
   F3: Self.ShowPanelSpr(SenderPnl, SenderOR, rights);
  end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TBlkTU.GetUSettings():TBlkUsekSettings;
-begin
- Result := inherited GetSettings();
-end;
-
-procedure TBlkTU.SetUSettings(data:TBlkUsekSettings);
-begin
- inherited SetSettings(data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

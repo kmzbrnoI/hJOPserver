@@ -34,7 +34,6 @@ type
   zkrat:boolean;            // zkrat zesilovace
   napajeni:boolean;         // napajeni zesilovace
   redukuji:TReduction;      // zde si ukladam, koho redukuji; ukladaji se id; jakmile se z meho bloku uvolni zaver, vse odredukuji
-  inTrat:Integer;           // tady je ulozeno id bloku trati, v jake se blok nachazi; pokud se nenachazi v trati -> -1
   stanicni_kolej:boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
   vlakPresun:boolean;       // pokud je vlak na teto koleji oznacen pro presun do jine koelje, je zde true
 
@@ -63,7 +62,6 @@ type
     SprPredict : -1;
     zkrat : false;
     napajeni : true;
-    inTrat:-1;
     stanicni_kolej : false;
     zpomalovani_ready : false;
    );
@@ -163,8 +161,6 @@ type
     property VlakPresun:boolean read UsekStav.vlakPresun write SetVlakPresun;
     property zpomalovani_ready:boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
 
-    property InTrat:Integer read UsekStav.InTrat write UsekStav.InTrat;
-
     //GUI:
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
@@ -180,7 +176,7 @@ implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
-    TBlokIR, Trakce, THnaciVozidlo;
+    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -377,7 +373,7 @@ begin
      Self.UsekStav.spr_vypadek := false;
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
-     if ((Self.InTrat > -1) or (Self.UsekStav.stanicni_kolej)) then
+     if ((Self.GetGlobalSettings().typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
        for i := 0 to Self.OblsRizeni.Cnt-1 do
          Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.GetGlobalSettings().name, 'TECHNOLOGIE');
      if (Self.UsekStav.Zaver <> TJCType.no) then Self.UsekStav.Zaver := nouz;
@@ -404,9 +400,9 @@ begin
     end;//if Spr <> -1
 
    // pokud je navaznost na trat, chceme ji informaovat o tom, ze se neco zmenilo
-   if (Self.InTrat > -1) then
+   if (Self.GetGlobalSettings().typ = _BLK_TU) then
     begin
-     BLky.GetBlkByID(Self.InTrat, Blk);
+     Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
      if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_TRAT)) then
        (Blk as TBlkTrat).Change();
     end;
@@ -832,7 +828,7 @@ begin
  Result := Result + 'STIT,VYL,';
 
  if (((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TJCType.staveni)
-    and (Self.InTrat = -1) and (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) then
+    and (Self.GetGlobalSettings().typ = _BLK_USEK) and (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) then
   begin
    if (Self.UsekStav.NUZ) then
      Result := Result + '-,NUZ<,'
@@ -968,9 +964,9 @@ begin
  Self.Souprava := (Blk as TBlkUsek).Souprava;
 
  // mazani supravy z trati
- if (((Blk as TBlkUsek).InTrat > -1) and ((Blk as TBlkUsek).InTrat <> Self.InTrat)) then
+ if (((Blk as TBlkTU).InTrat > -1) and ((Self.GetGlobalSettings().typ = _BLK_USEK) or ((Blk as TBlkTU).InTrat <> TBlkTU(Self).InTrat))) then
   begin
-   Blky.GetBlkByID((Blk as TBlkUsek).InTrat, Trat);
+   Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
    if ((Trat <> nil) and (Trat.GetGlobalSettings().typ = _BLK_TRAT)) then
     (Trat as TBLkTrat).RemoveSpr((Blk as TBlkUsek).Souprava);
   end;

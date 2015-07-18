@@ -150,7 +150,7 @@ var glob:TBlkSettings;
   if (Assigned(Self.Blk)) then
    begin
     TUsettings := Self.Blk.GetSettings();
-    Usettings  := Self.Blk.GetUSettings();
+    Usettings  := TBlkUsek(Self.Blk).GetSettings();
    end;
 
   Self.CHB_D1.Checked := false;
@@ -327,7 +327,7 @@ var glob:TBlkSettings;
    end;
 
   Self.Blk.SetSettings(TUsettings);
-  Self.Blk.SetUSettings(settings);
+  (Self.Blk as TBlkUsek).SetSettings(settings);
 
   Self.Close;
   Self.Blk.Change();
