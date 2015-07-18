@@ -308,7 +308,7 @@ begin
    // obsadit dalsi usek
    case (trat.Smer) of
     TTratSmer.AtoB: Blky.GetBlkByID(TratSet.Useky[Trat.stav.BP.next], Usek);
-    TTratSmer.BtoA: Blky.GetBlkByID(TratSet.Useky[Length(TratSet.Useky)-Trat.stav.BP.next-1], Usek);
+    TTratSmer.BtoA: Blky.GetBlkByID(TratSet.Useky[TratSet.Useky.Count-Trat.stav.BP.next-1], Usek);
    end;//case
 
    UsekSet := (Usek as TBlkUsek).GetSettings();
