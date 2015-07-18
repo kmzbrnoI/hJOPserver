@@ -277,9 +277,7 @@ procedure TBlkTrat.Reset();
 begin
  Self.Zaver  := false;
  Self.Zadost := false;
- Self.TratStav.soupravy.cnt := 0;
  Self.SprPredict := -1;
- Self.BP := false;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -334,7 +332,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_USEK)) then
+   if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_TU)) then
     Blk.Change();
   end;
 end;//procedure
@@ -587,7 +585,7 @@ begin
     TTratSmer.BtoA: Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-i-1], new);
    end;//case
 
-   if ((new = nil) or (new.GetGlobalSettings().typ <> _BLK_USEK)) then continue;
+   if ((new = nil) or (new.GetGlobalSettings().typ <> _BLK_TU)) then continue;
    if (i = 0) then old := new;
 
    // dalsi blok obsazen -> predani soupravy do tohoto bloku
@@ -849,7 +847,7 @@ begin
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
    if (Blk = nil) then continue;
-   if (Blk.GetGlobalSettings().typ <> _BLK_USEK) then continue;
+   if (Blk.GetGlobalSettings().typ <> _BLK_TU) then continue;
    if ((Blk as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
     begin
      JCDb.RusJC(Self);
