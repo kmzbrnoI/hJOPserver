@@ -55,7 +55,6 @@ type
     P_Time: TPanel;
     P_Time_modelovy: TPanel;
     P_Zrychleni: TPanel;
-    IL_Zpravy: TImageList;
     PM_MTBDriver_About: TMenuItem;
     IL_Menu: TImageList;
     SPD_Save: TSavePictureDialog;
@@ -84,7 +83,6 @@ type
     A_DCC_Stop: TAction;
     A_System_Start: TAction;
     A_System_Stop: TAction;
-    IL_Ostatni: TImageList;
     A_Trk_Connect: TAction;
     A_Trk_Disconnect: TAction;
     A_All_Loko_Prevzit: TAction;
