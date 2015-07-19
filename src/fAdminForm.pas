@@ -277,19 +277,20 @@ begin
   begin
    Blky.GetBlkByIndex(i, Blk);
    if (Blk.GetGlobalSettings().typ <> _BLK_TRAT) then continue;
-   if (((Blk as TBlkTrat).stav.BP.next > -1) and ((Blk as TBlkTrat).Obsazeno)) then
+   if (((Blk as TBlkTrat).BP) and ((Blk as TBlkTrat).Obsazeno)) then
      Self.UpdateTrat(Blk as TBlkTrat);
   end;
 end;//procedure
 
 procedure TTratSimulator.UpdateTrat(Trat:TBlkTrat);
-var Usek:TBlk;
+{var Usek:TBlk;
     TratSet:TBlkTratSettings;
     UsekSet:TBlkUsekSettings;
-    i:Integer;
+    i:Integer;}
 begin
- TratSet := Trat.GetSettings();
+{ TratSet := Trat.GetSettings();
 
+ // to-do: simulator trati
  if (Trat.stav.BP.next-Trat.stav.BP.last >= 2) then
   begin
    // zrusit obsazeni posledniho useku
@@ -314,7 +315,7 @@ begin
    UsekSet := (Usek as TBlkUsek).GetSettings();
    if (UsekSet.MTBAddrs.Count > 0) then
     MTB.SetInput(UsekSet.MTBAddrs.data[0].board, UsekSet.MTBAddrs.data[0].port, 1);
-  end;
+  end;       }
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

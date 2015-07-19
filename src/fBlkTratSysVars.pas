@@ -104,8 +104,6 @@ begin
  Self.CB_Zadost.ItemIndex := PrevodySoustav.BoolToInt(trat.Zadost);
 
  Self.SE_Souprava.Value   := trat.SprPredict;
- Self.SE_BP_next.Value    := trat.stav.BP.next;
- Self.SE_BP_last.Value    := trat.stav.BP.last;
 
  Self.E_Soupravy.Text := '';
  for i := 0 to trat.stav.soupravy.cnt-1 do

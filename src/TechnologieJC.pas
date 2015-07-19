@@ -1479,33 +1479,36 @@ var i,j:Integer;
       // presun soupravy z useku pred navestidlem do posledniho useku JC
 
       // Presun probehne za techto podminek:
-      //  a) Bud privolavame dos stanice = na dopravni kolej
+      //  a) Bud privolavame do stanice = na dopravni kolej
       //  b) Nebo privolavame do trate, ktera MUSI byt ve spravnem smeru a MUSI v ni byt zavedena blokova podminka
 
+      Blky.GetBlkByID((Navestidlo as TBlkSCom).UsekID, Blk);
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
 
-      // navazuje jizdni cesta do trati?
-      Blky.GetBlkByID((Navestidlo as TBlkSCom).UsekID, Blk);
+      // a)
+      if ((Blk2.GetGlobalSettings().typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
+         (Blk.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
+       begin
+        Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
+        (Trat as TBlkTrat).RemoveSpr((Blk as TBlkUsek).Souprava);
+
+        (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
+        (Blk as TBlkUsek).Souprava := -1;
+       end;
+
+      // b)
       if ((Blk2.GetGlobalSettings().typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat > -1)) then
         Blky.GetBlkByID((Blk2 as TBlkTU).InTrat, Trat)
       else
         Trat := nil;
 
-      if (((Blk as TBlkUsek).Souprava > -1) and ((Blk2 as TBlkUsek).Souprava = -1) and (Blk2.GetGlobalSettings().typ = _BLK_TU) and
-           (((Blk2 as TBlkTU).InTrat = -1) and ((Blk2 as TBlkUsek).Stav.stanicni_kolej) or
-           (((Blk2 as TBlkTU).InTrat = Self.data.Trat) and ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)))) then
+      if ((Trat <> nil) and ((Blk as TBlkUsek).Souprava > -1) and ((Blk2 as TBlkUsek).Souprava = -1) and
+          (Blk2.GetGlobalSettings().typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat = Self.data.Trat) and
+          ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
        begin
-        if (Trat <> nil) then
-         begin
-          (Trat as TBlkTrat).AddSpr((Blk as TBlkUsek).Souprava);
-          (Blk2 as TBlkUsek).Zaver := TJCType.nouz;
-          (Trat as TBlkTrat).Change();
-         end;
-        if ((Blk.GetGlobalSettings().typ = _BLK_TU) and ((Blk as TBlkTU).InTrat > -1)) then
-         begin
-          Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
-          (Trat as TBlkTrat).RemoveSpr((Blk as TBlkUsek).Souprava);
-         end;
+        (Trat as TBlkTrat).AddSpr((Blk as TBlkUsek).Souprava);
+        (Blk2 as TBlkUsek).Zaver := TJCType.nouz;
+        (Trat as TBlkTrat).Change();
 
         (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
         (Blk as TBlkUsek).Souprava := -1;
@@ -1805,13 +1808,6 @@ begin
      begin
       (Usek as TBlkUsek).Souprava := -1;
       writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
-
-      // pokud je blok v trati, smazeme z soupravu z trati a zrusime zaver bloku
-      if ((Usek.GetGlobalSettings().typ = _BLK_TU) and ((Usek as TBlkTU).InTrat > -1)) then
-       begin
-        Blky.GetBlkByID((Usek as TBlkTU).InTrat, Blk);
-        (Blk as TBlkTrat).Change();
-       end;
      end;
    end;
   

@@ -300,7 +300,6 @@ end;//procedure
 //update all local variables
 procedure TBlkUsek.Update();
 var i:Integer;
-    Blk:TBlk;
 begin
  if (((Self.ZesZkrat) or (not Self.ZesNapajeni)) and (not Self.frozen)) then
   begin
@@ -397,14 +396,6 @@ begin
        Self.UsekStav.spr_vypadek_time := 0;
       end;
     end;//if Spr <> -1
-
-   // pokud je navaznost na trat, chceme ji informaovat o tom, ze se neco zmenilo
-   if (Self.GetGlobalSettings().typ = _BLK_TU) then
-    begin
-     Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
-     if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_TRAT)) then
-       (Blk as TBlkTrat).Change();
-    end;
 
    Self.UsekStav.StavOld := Self.UsekStav.Stav;
    Self.Change();

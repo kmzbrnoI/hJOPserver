@@ -39,10 +39,7 @@ type
   soupravy:TTratSpr;
   SprPredict:Integer;
 
-  BP : record
-   next:Integer;                // blok, do ktereho se souprava chysta vjet (prvni neobsazeny)
-   last:Integer;                // blok, ktery se souprava chysta opustit (posledni obsazeny)
-  end;//BP
+  BP:boolean;
  end;
 
  TBlkTrat = class(TBlk)
@@ -80,23 +77,16 @@ type
     procedure SetTratZadost(Zadost:boolean);
     procedure SetSprPredict(Spr:Integer);
 
-    procedure UpdateBP();
     procedure UpdateBezsouhlasSmer();
     procedure CheckJC();
 
-    function GetBP():Boolean;
     procedure SetBP(state:boolean);
-
-    procedure SprChangeOR(spr:Integer);
 
     function GetNavLichy():TBlk;
     function GetNavSudy():TBlk;
 
     procedure CheckTUExist();
-
-    // vrati hranicni navestidla
-    property navLichy:TBlk read GetNavLichy;
-    property navSudy:TBlk read GetNavSudy;
+    procedure InitTUs();
 
   public
     constructor Create(index:Integer);
@@ -123,13 +113,15 @@ type
     procedure SetSettings(data:TBlkTratSettings);
 
     function IsFirstUvazka(uv:TBlk):boolean;
-    procedure RBP();
+//    procedure RBP();
+    procedure SprChangeOR(spr:Integer);
 
     procedure AddSpr(spr:Integer);
     function GetSprList(separator:Char; hvs:boolean = true):string;
     procedure RemoveSpr(spr:Integer);
 
     function IsSpr(spr:Integer; predict:boolean = true):boolean;    // je souprava v trati? (vcetne predict)
+    function IsSprInAnyTU(spr:Integer):boolean;
 
     property uvazkaA:TBlk read GetUvazkaA;
     property uvazkaB:TBlk read GetUvazkaB;
@@ -142,10 +134,13 @@ type
     property ZAK:boolean read GetZAK;
     property nouzZaver:boolean read GetNouzZaver;
     property Zadost:boolean read TratStav.zadost write SetTratZadost;
-    property BP:boolean read GetBP write SetBP;   // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty
+    property BP:boolean read TratStav.BP write SetBP;   // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty
     property SprPredict:Integer read TratStav.SprPredict write SetSprPredict;
 
-    //GUI:
+    // vrati hranicni navestidla
+    property navLichy:TBlk read GetNavLichy;
+    property navSudy:TBlk read GetNavSudy;
+
  end;//class TBlkTrat
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -194,8 +189,7 @@ begin
 
  Self.file_smer := TTratSmer(ini_stat.ReadInteger(section, 'smer', 1));
 
- Self.TratStav.BP.last := ini_stat.ReadInteger(section, 'BPlast', -1);
- Self.TratStav.BP.next := ini_stat.ReadInteger(section, 'BPnext', -1);
+ Self.TratStav.BP := ini_stat.ReadBool(section, 'BP', false);
 
  data := TStringList.Create();
  ExtractStrings([',', ';'], [], PChar(ini_stat.ReadString(section, 'spr', '')), data);
@@ -247,8 +241,7 @@ var i:Integer;
     str:string;
 begin
  ini_stat.WriteInteger(section, 'smer', Integer(Self.file_smer));
- ini_stat.WriteInteger(section, 'BPlast', Self.TratStav.BP.last);
- ini_stat.WriteInteger(section, 'BPnext', Self.TratStav.BP.next);
+ ini_stat.WriteBool(section, 'BP', Self.TratStav.BP);
 
  str := '';
  for i := 0 to Self.TratStav.soupravy.cnt-1 do
@@ -260,6 +253,7 @@ end;//procedure
 
 procedure TBlkTrat.Enable();
 begin
+ Self.InitTUs();
  Self.TratStav.smer := Self.file_smer;
  Self.Change();
 end;//procedure
@@ -297,7 +291,6 @@ begin
    Self.Zadost := false;
 
  // zachovat poradi volani techto dvou funkci !
- Self.UpdateBP();
  Self.UpdateBezsouhlasSmer();
  Self.CheckJC();
 
@@ -318,7 +311,6 @@ begin
    Self.Zadost := false;
 
  // zachovat poradi volani techto dvou funkci !
- Self.UpdateBP();
  Self.UpdateBezsouhlasSmer();
  Self.CheckJC();
 end;//procedure
@@ -371,6 +363,9 @@ begin
 
  // zrusime blokovou podminku
  Self.BP := false;
+
+ // DEBUG: zavedem blokovou podminku
+// Self.BP := ((smer = TTratSmer.AtoB) or (smer = TTratSmer.BtoA)); // DEBUG
 
  Self.Change();
 end;//procedure
@@ -506,54 +501,6 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// RBP probiha tak, ze pokud najdeme blok v nouzovem zaveru, vsem od nej k vysilajici stanici zrusime soupravy a zavery
-procedure TBlkTrat.RBP();
-var i:Integer;
-    Blk:TBlk;
-    found:Integer;
-begin
- found := -1;
- for i := Self.TratSettings.Useky.Count-1 downto 0 do
-  begin
-   if (found < 0) then
-    begin
-     Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-     if ((Blk as TBlkTU).Zaver = TJCType.nouz) then
-       found := i;
-    end;
-
-   if (found > -1) then
-    begin
-     (Blk as TBlkTU).Zaver := TJCType.no;
-     if ((Blk as TBlkTU).Souprava > -1) then
-      (Blk as TBlkTU).Souprava := -1;
-    end;
-  end;//for i
-
- if (Self.TratStav.BP.last = Self.TratStav.BP.next-1) then
-  begin
-   // RBP probehlo na celou soupravu -> zrusit BP a smazat soupravu
-   Self.TratStav.BP.next := -1;
-   Self.TratStav.BP.last := -1;
-
-   if (Self.TratStav.soupravy.cnt > 0) then
-    begin
-     if (Blky.GetBlkWithSpr(Self.TratStav.soupravy.data[0]).Count = 0) then
-       Soupravy.RemoveSpr(Self.TratStav.soupravy.data[0])
-     else
-       Self.RemoveSpr(Self.TratStav.soupravy.data[0]);
-    end;
-  end else begin
-   // RBP probehlo uprostred, nebo na konci useku trati -> kaslu na konec -> posunu konec
-   Self.TratStav.BP.last := found+1;
-  end;
-
- if ((not Self.Obsazeno) and ((Self.TratSettings.zabzar = TTratZZ.bezsouhas) or (Self.TratSettings.zabzar = TTratZZ.nabidka))) then
-  Self.Smer := TTratSmer.zadny;
-
- Self.Change();
-end;//procedure
-
 function TBlkTrat.GetRBP():boolean;
 var i:Integer;
     Blk:TBlk;
@@ -569,125 +516,6 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// aktualizace blokove podminky - projizdeni soupravy jednotlivymi bloky trati
-procedure TBlkTrat.UpdateBP();
-var i:Integer;
-    new, old:TBlk;
-begin
- if ((Self.Smer <> TTratSmer.AtoB) and (Self.Smer <> TTratSmer.BtoA)) then Exit();
-
- old := nil;
- for i := 0 to Self.TratSettings.Useky.Count-1 do
-  begin
-   // podle smeru trati postupne vybirame bloky
-   case (Self.Smer) of
-    TTratSmer.AtoB: Blky.GetBlkByID(Self.TratSettings.Useky[i], new);
-    TTratSmer.BtoA: Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-i-1], new);
-   end;//case
-
-   if ((new = nil) or (new.GetGlobalSettings().typ <> _BLK_TU)) then continue;
-   if (i = 0) then old := new;
-
-   // dalsi blok obsazen -> predani soupravy do tohoto bloku
-   if ((i = Self.TratStav.BP.next) and ((new as TBlkTU).Obsazeno = TUsekStav.obsazeno)) then
-    begin
-     if (old <> new) then   // u prvniho bloku nemame odkud priradit - priradi se tam od jizdni cesty
-       (new as TBlkTU).Souprava := (old as TBlkTU).Souprava;
-
-     // tato podminka musi byt na stejne urovni, jako podminka predchozi pro pripad, kdy ma trat pouze jeden usek
-     if ((new as TBlkTU).Souprava > -1) then
-      begin
-       (new as TBlkTU).zpomalovani_ready := true;
-       Soupravy.soupravy[(new as TBlkTU).Souprava].front := new;
-
-       if (i = Self.TratSettings.Useky.Count-1) then
-        begin
-         // souprava vstoupila do posledniho bloku trati
-         // zmena stanic soupravy a hnacich vozidel v ni
-         Self.SprChangeOR((new as TBlkTU).Souprava);
-
-         // je nutne zmenit smer soupravy?
-         if (((Assigned(Self.navLichy)) and (Assigned(Self.navSudy))) and
-         ((Self.navLichy as TBlkSCom).Smer = (Self.navSudy as TBlkSCom).Smer)) then
-          begin
-           // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
-           Soupravy.soupravy[(new as TBlkTU).Souprava].ChangeSmer();
-          end;
-        end;
-      end;
-     Inc(Self.TratStav.BP.next);
-    end;
-
-   // mazani soupravy vzadu
-   // podminka (Self.BP.next > Self.BP.last) ma vyznam pri reseni uvolneni prvniho useku trati
-   if ((i = Self.TratStav.BP.last) and ((new as TBlkTU).Obsazeno = TUsekStav.uvolneno)) then
-    begin
-     if (Self.TratStav.BP.next > Self.TratStav.BP.last+1) then
-      begin
-       // blok nekde uvnitr dlohe trati
-       (new as TBlkTU).Souprava := -1;
-       Inc(Self.TratStav.BP.last);
-      end else begin
-       if ((i = Self.TratSettings.Useky.Count-1) and ((new as TBlkTU).Souprava = -1)) then
-        begin
-         // blok na konci trati: tady mus byt zaroven splneno to, ze v nem neni souprava - soupravu si odstrani jizdni cesta
-         // takto se kontroluje vypadek soupravy v poslendim bloku jizdni cesty
-         Inc(Self.TratStav.BP.last);
-        end;
-      end;//else
-
-    end;
-
-    // prvni cast overuje vypadek prostredniho useku, posledni cast overuje vypadek samostatneho (posledniho) useku
-    if (((i > Self.TratStav.BP.last) and (i < Self.TratStav.BP.next)) or
-        ((i = Self.TratStav.BP.last) and (Self.TratStav.BP.last = Self.TratStav.BP.next-1))) then
-     begin
-      // blok uprostred uvolnen
-      if ((new as TBlkTU).Obsazeno = TUsekStav.uvolneno) then
-         if ((new as TBlkTU).Zaver <> TJCType.nouz) then
-          begin
-           (new as TBlkTU).Zaver := TJCType.nouz;
-           Self.Change();
-          end;
-      // blok uprostred obsazen
-      if ((new as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
-         if ((new as TBlkTU).Zaver = TJCType.nouz) then
-          begin
-           (new as TBlkTU).Zaver := TJCType.no;
-           Self.Change();
-          end;
-     end;
-
-   old := new;
-  end;//for i
-
- // souprava vyjela z trati
- if (Self.TratStav.BP.last >= Self.TratSettings.Useky.Count) then
-  begin
-   // zrusime potencialni nouzovy zaver na bloku na kraji trati
-   case (Self.Smer) of
-    TTratSmer.AtoB: Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1], new);
-    TTratSmer.BtoA: Blky.GetBlkByID(Self.TratSettings.Useky[0], new);
-   end;//case
-
-  (new as TBlkTU).Zaver := TJCType.no;
-
-   if (((Self.TratSettings.zabzar = TTratZZ.bezsouhas) or (Self.TratSettings.zabzar = TTratZZ.nabidka)) and
-    (not Self.Zaver) and (not Self.nouzZaver) and (not Self.Obsazeno)) then
-    Self.Smer := TTratSmer.zadny;
-
-   // zrusime blokovou podminku
-   Self.BP := false;
-
-   // souprava opustila trat svym koncem -> smazat soupravu z trati
-   if (Self.TratStav.soupravy.cnt > 0) then
-     Self.RemoveSpr(Self.TratStav.soupravy.data[0]);
-  end;
-
-end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-
 // resi, ze pokud je trat odobsazena, tak se smer vrati do bezsouhlaseho
 // tohleto tady opravdu musi byt - predavani souprav v BP tuto funkci nenahrazuje !
 // jedine tato funkce totiz resi pad zmeru trati v pripade zruseni jizdni cesty vedouci na ni
@@ -699,22 +527,26 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
-
-function TBlkTrat.GetBP():Boolean;
-begin
- if ((Self.TratStav.BP.next > -1) or (Self.TratStav.BP.last > -1)) then
-  Result := true else Result := false;
-end;//function
+// zavedeni / zruseni blokove podminky
+// zavest blokovou podminky lze vzdy, zrusit ji lze jen tehdy, kdyz
+//  na zadnem tratovem useku neni blokova podminka
 
 procedure TBlkTrat.SetBP(state:boolean);
+var i:Integer;
+    Blk:TBlk;
 begin
+ if (Self.BP = state) then Exit();
+
  if (state) then
   begin
-   Self.TratStav.BP.next := 0;
-   Self.TratStav.BP.last := 0;
+   Self.TratStav.BP := true;
   end else begin
-   Self.TratStav.BP.next := -1;
-   Self.TratStav.BP.last := -1;
+   for i := 0 to Self.TratSettings.Useky.Count-1 do
+    begin
+     Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
+     if (TBlkTU(Blk).bpInBlk) then Exit();
+    end;
+   Self.TratStav.BP := false;
   end;
 end;//procedure
 
@@ -947,6 +779,48 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.IsSprInAnyTU(spr:Integer):boolean;
+var i:Integer;
+    Blk:TBlk;
+begin
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
+  begin
+   Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
+   if (TBlkTU(Blk).Souprava = spr) then Exit(true);
+  end;
+ Result := false;
+end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+// vytvoreni navaznosti mezi tratovymi useky a sekcemi tratovych useku
+
+procedure TBlkTrat.InitTUs();
+var i:Integer;
+    Blk:TBlk;
+    lTU, sTU:TBlk;
+begin
+ lTU := nil;
+ Blky.GetBlkByID(Self.TratSettings.Useky[0], Blk);
+ if (Self.TratSettings.Useky.Count > 1) then
+   Blky.GetBlkByID(Self.TratSettings.Useky[1], sTU)
+ else
+   sTU := nil;
+
+ for i := 0 to Self.TratSettings.Useky.Count-2 do
+  begin
+   TBlkTU(Blk).lTU := TBlkTU(lTU);
+   TBlkTU(Blk).sTU := TBlkTU(sTU);
+   lTU := Blk;
+   Blk := sTU;
+   if (i < Self.TratSettings.Useky.Count-2) then
+     Blky.GetBlkByID(Self.TratSettings.Useky[i+2], sTU);
+  end;
+
+ // posledni TU:
+ TBlkTU(Blk).lTU := TBlkTU(lTU);
+ TBlkTU(Blk).sTU := nil;
+end;
 
 end.//unit
 

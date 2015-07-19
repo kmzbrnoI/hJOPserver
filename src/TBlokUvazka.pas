@@ -50,11 +50,9 @@ type
     procedure MenuZAKOnClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAKOffClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAVOnClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    procedure PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
     procedure PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
     procedure PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
 
@@ -299,11 +297,6 @@ begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.UvazkaStav.Stit);
 end;//procedure
 
-procedure TBlkUvazka.MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
-begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR, 'Zrušení poruchy úplné blokové podmínky', TBlky.GetBlksList(Self), nil);
-end;//procedure
-
 procedure TBlkUvazka.MenuZAVOnClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.nouzZaver := true;
@@ -318,11 +311,6 @@ end;//procedure
 procedure TBlkUvazka.PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
 begin
  if (success) then Self.ZAK := false;
-end;//procedure
-
-procedure TBlkUvazka.PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
-begin
- if (success) then (Self.parent as TBlkTrat).RBP();
 end;//procedure
 
 procedure TBlkUvazka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
@@ -427,19 +415,6 @@ begin
  else
    Result := Result + 'ZAV>,';
 
- if ((Self.parent as TBlkTrat).RBPCan) then
-  begin
-   if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
-    begin
-     // prvni uvazka
-     if (((Self.parent as TBlkTrat).Smer = TTratSmer.AtoB) or ((Self.parent as TBlkTrat).Smer = TTratSmer.zadny)) then
-       Result := Result + '!RBP,';
-    end else begin
-     if (((Self.parent as TBlkTrat).Smer = TTratSmer.BtoA) or ((Self.parent as TBlkTrat).Smer = TTratSmer.zadny)) then
-       Result := Result + '!RBP,';
-    end;
-  end;
-
  if (Self.ZAK) then
   Result := Result + '!ZAK<,'
  else
@@ -468,7 +443,6 @@ begin
  else if (item = 'ZAK>') then Self.MenuZAKOnClick(SenderPnl, SenderOR)
  else if (item = 'ZAK<') then Self.MenuZAKOffClick(SenderPnl, SenderOR)
  else if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
- else if (item = 'RBP')  then Self.MenuRBPClick(SenderPnl, SenderOR)
  else if (item = 'ZAV>') then Self.MenuZAVOnClick(SenderPnl, SenderOR)
  else if (item = 'ZAV<') then Self.MenuZAVOffClick(SenderPnl, SenderOR);
 end;//procedure
