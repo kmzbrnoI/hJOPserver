@@ -4,7 +4,7 @@ object F_BlkTU: TF_BlkTU
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 382
+  ClientHeight = 421
   ClientWidth = 601
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -87,7 +87,7 @@ object F_BlkTU: TF_BlkTU
     ParentFont = False
   end
   object Label1: TLabel
-    Left = 7
+    Left = 8
     Top = 157
     Width = 49
     Height = 13
@@ -120,9 +120,26 @@ object F_BlkTU: TF_BlkTU
     Font.Style = []
     ParentFont = False
   end
+  object L_Trat3: TLabel
+    Left = 8
+    Top = 207
+    Width = 74
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'Rychlost v T'#218' :'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
   object B_OK: TButton
     Left = 519
-    Top = 350
+    Top = 390
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -136,7 +153,7 @@ object F_BlkTU: TF_BlkTU
   end
   object B_Storno: TButton
     Left = 440
-    Top = 350
+    Top = 390
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -150,7 +167,7 @@ object F_BlkTU: TF_BlkTU
   object SE_ID: TSpinEdit
     Left = 119
     Top = 40
-    Width = 192
+    Width = 193
     Height = 22
     Margins.Left = 2
     Margins.Top = 2
@@ -175,7 +192,7 @@ object F_BlkTU: TF_BlkTU
   end
   object GB_MTB: TGroupBox
     Left = 7
-    Top = 203
+    Top = 237
     Width = 305
     Height = 129
     Margins.Left = 2
@@ -507,7 +524,7 @@ object F_BlkTU: TF_BlkTU
   object E_Delka: TEdit
     Left = 119
     Top = 128
-    Width = 192
+    Width = 193
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -520,7 +537,7 @@ object F_BlkTU: TF_BlkTU
   object LB_Stanice: TListBox
     Left = 119
     Top = 72
-    Width = 192
+    Width = 193
     Height = 46
     Margins.Left = 2
     Margins.Top = 2
@@ -735,5 +752,92 @@ object F_BlkTU: TF_BlkTU
     Font.Style = []
     ParentFont = False
     TabOrder = 9
+  end
+  object GB_Autoblok: TGroupBox
+    Left = 324
+    Top = 273
+    Width = 268
+    Height = 112
+    Caption = ' Autoblok '
+    TabOrder = 10
+    object Label10: TLabel
+      Left = 16
+      Top = 16
+      Width = 196
+      Height = 13
+      Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v lich'#233'm sm'#283'ru:'
+    end
+    object Label11: TLabel
+      Left = 16
+      Top = 64
+      Width = 197
+      Height = 13
+      Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v sud'#233'm sm'#283'ru:'
+    end
+    object CHB_NavL: TCheckBox
+      Left = 232
+      Top = 16
+      Width = 17
+      Height = 17
+      TabOrder = 0
+      OnClick = CHB_NavLClick
+    end
+    object CB_NavL: TComboBox
+      Left = 16
+      Top = 35
+      Width = 233
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 1
+    end
+    object CHB_NavS: TCheckBox
+      Left = 232
+      Top = 64
+      Width = 17
+      Height = 17
+      TabOrder = 2
+      OnClick = CHB_NavSClick
+    end
+    object CB_NavS: TComboBox
+      Left = 16
+      Top = 83
+      Width = 233
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 3
+    end
+  end
+  object CB_Speed: TComboBox
+    Left = 119
+    Top = 207
+    Width = 194
+    Height = 21
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Style = csDropDownList
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ItemHeight = 13
+    ParentFont = False
+    TabOrder = 11
+    Items.Strings = (
+      '20 km/h'
+      '30 km/h'
+      '40 km/h'
+      '50 km/h'
+      '60 km/h'
+      '70 km/h'
+      '80 km/h'
+      '90 km/h'
+      '100 km/h'
+      '110 km/h'
+      '120 km/h')
   end
 end

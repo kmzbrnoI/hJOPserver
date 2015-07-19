@@ -53,17 +53,30 @@ type
     Label9: TLabel;
     CHB_SmycBlok: TCheckBox;
     L_Usek33: TLabel;
+    GB_Autoblok: TGroupBox;
+    Label10: TLabel;
+    CHB_NavL: TCheckBox;
+    CB_NavL: TComboBox;
+    Label11: TLabel;
+    CHB_NavS: TCheckBox;
+    CB_NavS: TComboBox;
+    L_Trat3: TLabel;
+    CB_Speed: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure E_DelkaKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D1Click(Sender: TObject);
     procedure CHB_ZastavkaClick(Sender: TObject);
+    procedure CHB_NavLClick(Sender: TObject);
+    procedure CHB_NavSClick(Sender: TObject);
   private
    NewBlk:Boolean;
    Blk:TBlkTU;
    OpenIndex:Integer;
    CB_ZastIRData:TArSmallI;
+   CB_NavData:TArSmallI;
+   CB_NavLindex, CB_NavSindex: Integer;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
@@ -127,6 +140,13 @@ procedure TF_BlkTU.NewBlkOpenForm;
 
   Self.CHB_Zastavka.Checked := false;
   Self.CHB_ZastavkaClick(Self);
+
+  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, _BLK_SCOM, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, _BLK_SCOM, -1);
+  Self.CB_NavLindex := -1;
+  Self.CB_NavSindex := -1;
+
+  Self.CB_Speed.ItemIndex := -1;
 
   Self.Caption := 'Editace noveho tratoveho useku';
  end;//procedure
@@ -197,6 +217,18 @@ var glob:TBlkSettings;
   Self.CHB_Zastavka.Checked := TUsettings.Zastavka.enabled;
   Self.CHB_ZastavkaClick(Self);
 
+  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, _BLK_SCOM, TUsettings.navLid);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, _BLK_SCOM, TUsettings.navSid);
+  Self.CB_NavLindex := Self.CB_NavL.ItemIndex;
+  Self.CB_NavSindex := Self.CB_NavS.ItemIndex;
+
+  Self.CHB_NavL.Checked := (TUsettings.navLid <> -1);
+  Self.CHB_NavS.Checked := (TUsettings.navSid <> -1);
+  Self.CHB_NavLClick(CHB_NavL);
+  Self.CHB_NavSClick(CHB_NavS);
+
+  Self.CB_Speed.ItemIndex := (TUsettings.rychlost div 10)-2;
+
   Self.Caption := 'Edititace dat bloku '+glob.name+' (tratovy usek)';
  end;//procedure
 
@@ -244,6 +276,21 @@ var glob:TBlkSettings;
   if (E_Delka.Text = '0') then
    begin
     Application.MessageBox('Delka useku nemuze byt nulova !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+  if (Self.CB_Speed.ItemIndex < 0) then
+   begin
+    Application.MessageBox('Vyberte rychlost v tratovem useku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+  if ((Self.CHB_NavL.Checked) and (Self.CB_NavL.ItemIndex = -1)) then
+   begin
+    Application.MessageBox('Vyberte navestidlo kryjici usek v lichem smeru !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+  if ((Self.CHB_NavS.Checked) and (Self.CB_NavS.ItemIndex = -1)) then
+   begin
+    Application.MessageBox('Vyberte navestidlo kryjici usek v sudem smeru !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -308,6 +355,18 @@ var glob:TBlkSettings;
 
   TUsettings.Zastavka.enabled  := Self.CHB_Zastavka.Checked;
   TUsettings.Zastavka.soupravy := TStringList.Create();
+
+  TUSettings.rychlost := (Self.CB_Speed.ItemIndex + 2) * 10;
+
+  if (Self.CHB_NavL.Checked) then
+    TUsettings.navLid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])
+  else
+    TUsettings.navLid := -1;
+
+  if (Self.CHB_NavS.Checked) then
+    TUsettings.navSid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavS.ItemIndex])
+  else
+    TUsettings.navSid := -1;
 
   if (Self.CHB_Zastavka.Checked) then
    begin
@@ -393,6 +452,24 @@ procedure TF_BlkTU.CHB_D1Click(Sender: TObject);
    end;
 
  end;
+
+procedure TF_BlkTU.CHB_NavLClick(Sender: TObject);
+begin
+ Self.CB_NavL.Enabled := Self.CHB_NavL.Checked;
+ if (not Self.CHB_NavL.Checked) then
+   Self.CB_NavL.ItemIndex := -1
+ else
+   Self.CB_NavL.ItemIndex := Self.CB_NavLindex;
+end;
+
+procedure TF_BlkTU.CHB_NavSClick(Sender: TObject);
+begin
+ Self.CB_NavS.Enabled := Self.CHB_NavS.Checked;
+ if (not Self.CHB_NavS.Checked) then
+   Self.CB_NavS.ItemIndex := -1
+ else
+   Self.CB_NavS.ItemIndex := Self.CB_NavSindex;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

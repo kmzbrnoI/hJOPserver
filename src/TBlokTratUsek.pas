@@ -20,6 +20,8 @@ type
 
  TBlkTUSettings = record
    zastavka:TBlkTUZastavka;
+   navLid,navSid:Integer;
+   rychlost:Integer;
  end;
 
  TBlkTUStav = record      // stav tratoveho useku
@@ -129,6 +131,11 @@ var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
+ Self.TUSettings.navLid := ini_tech.ReadInteger(section, 'navL', -1);
+ Self.TUSettings.navSid := ini_tech.ReadInteger(section, 'navS', -1);
+
+ Self.TUSettings.rychlost := ini_tech.ReadInteger(section, 'rychlost', -1);
+
  str := TStringList.Create();
  ExtractStrings(['|'],[], PChar(ini_tech.ReadString(section, 'zast', '')), str);
 
@@ -160,6 +167,11 @@ var str:string;
     i:Integer;
 begin
  inherited SaveData(ini_tech, section);
+
+ ini_tech.WriteInteger(section, 'navL', Self.TUSettings.navLid);
+ ini_tech.WriteInteger(section, 'navS', Self.TUSettings.navSid);
+
+ ini_tech.WriteInteger(section, 'rychlost', Self.TUSettings.rychlost);
 
  // ukladani zastavky
  if (Self.TUsettings.Zastavka.enabled) then
