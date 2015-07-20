@@ -31,6 +31,18 @@ Jak to funguje:
    soupravy do TU. To z toho duvodu, ze souprava mohla zastavit pred navestidlem
    (takovou soupravu nechceme rozjizdet).
    sprRychUpdateIter
+ - Pozor na rozdil mezi sectObsazeno a sectReady, sectReady zahrnuje i poruchu
+ blokove podminky a tak je pro vetsinu pripadu vhodnejsi.
+ - Blokovou podminku rusi TU, nikoliv trat.
+
+--------------------------------------------------------------------------------
+Format dat zastavky v souboru bloku:
+  zast=IR_lichy|IR_sudy|max_delka_soupravy|delay_time|spr1;spr2;...
+  pokud je zast prazdny string, zastavka je disabled
+}
+
+{
+ TODO: zastavka na stejny IR, jako navestidlo autobloku
 }
 
 interface
@@ -39,46 +51,49 @@ uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, RPConst,
       Generics.Collections;
 
 type
- TBlkTUZastavka = record  // zastavka na useku
-  enabled:boolean;          // existuje v useku zastavka?
-  IR_lichy:Integer;         // odkaz na zastavovaci IR v lichem smeru
-  IR_sudy:Integer;          // odkaz na zastavovaci IR v sudem smeru
-  soupravy:TStrings;        // typy souprav, pro ktere je zastavka
-  max_delka:Integer;        // maximalni delka soupravy pro zastaveni v zastavce
-  delay:TTime;              // cas cekani v zastavce
+ TBlkTUZastavka = record                                                        // zastavka na TU
+  enabled:boolean;                                                                // existuje v useku zastavka?
+  IR_lichy:Integer;                                                               // odkaz na zastavovaci IR v lichem smeru
+  IR_sudy:Integer;                                                                // odkaz na zastavovaci IR v sudem smeru
+  soupravy:TStrings;                                                              // typy souprav, pro ktere je zastavka
+  max_delka:Integer;                                                              // maximalni delka soupravy pro zastaveni v zastavce
+  delay:TTime;                                                                    // cas cekani v zastavce
  end;
 
- TBlkTUSettings = record
-   zastavka:TBlkTUZastavka;
-   navLid,navSid:Integer;
-   rychlost:Integer;
+ TBlkTUSettings = record                                                        // nastaveni TU
+   zastavka:TBlkTUZastavka;                                                       // odkaz na zastavku
+   navLid,navSid:Integer;                                                         // odkaz na kryci navestidlo TU v lichem smeru a kryci navestidlo v sudem smeru
+                                                                                  // obsahuje id bloku navestidla, pokud neni TU kryty v danem smeru, obsahuje -1
+                                                                                  // vyuzivano pro autoblok
+   rychlost:Integer;                                                              // rychlost v tratovem useku
  end;
 
- TBlkTUStav = record      // stav tratoveho useku
-  inTrat:Integer;           // tady je ulozeno id bloku trati, v jake se blok nachazi; pokud se nenachazi v trati -> -1
+ TBlkTUStav = record                                                            // stav tratoveho useku
+  inTrat:Integer;                                                                 // tady je ulozeno id bloku trati, v jake se blok nachazi; pokud se nenachazi v trati -> -1
 
-  zast_stopped:boolean;     // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
-  zast_run_time:TDateTime;  // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
-  zast_rych:Integer;        // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
-  zast_enabled:boolean;     // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
-  zast_passed:boolean;      // atdy je ulozeno true, pokud souprava zastavku jiz projela
+  zast_stopped:boolean;                                                           // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
+  zast_run_time:TDateTime;                                                        // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
+  zast_rych:Integer;                                                              // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
+  zast_enabled:boolean;                                                           // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
+  zast_passed:boolean;                                                            // atdy je ulozeno true, pokud souprava zastavku jiz projela
 
-  bpInBlk:boolean;
-  sprRychUpdateIter:Integer;
+  bpInBlk:boolean;                                                                // jestli je v useku zavedena blokova podminka
+                                                                                  // bpInBlk = kontroluji obsazeni bloku, pri uvolneni useku bez predani dale vyhlasit poruchu BP
+  sprRychUpdateIter:Integer;                                                      // pocet zbyvajicich iteraci do nastaveni rychlost soupravy
  end;
 
 
  // technologicky blok Tratoveho useku
  TBlkTU = class(TBlkUsek)
   private const
-   _def_tu_stav:TBlkTUStav = (
+   _def_tu_stav:TBlkTUStav = (                                                  // zakladni stav TU
     inTrat: -1;
     zast_stopped : false;
     zast_enabled : true;
     sprRychUpdateIter : 0;
    );
 
-   _def_tu_zastavka:TBlkTUZastavka = (
+   _def_tu_zastavka:TBlkTUZastavka = (                                          // zakladni stav zastavky
     enabled : false;
     IR_lichy : -1;
     IR_sudy : -1;
@@ -90,56 +105,59 @@ type
    TUSettings:TBlkTUSettings;
    fTUStav:TBlkTUStav;
 
-   fZastIRLichy, fZastIRSudy,
-   fNavKryci, fTrat : TBlk;
+   fZastIRLichy, fZastIRSudy,                                                   // odkaz na IR zastavky v lichem a sudem smeru
+   fNavKryci, fTrat : TBlk;                                                     // odkaz na kryci navestidla v lichem a sudem smeru
+                                                                                // pro pristup k temto blokum pouzivat property bez f, toto jsou pouze pomocne promenne!
 
-    function GetZastIRLichy():TBlk;
-    function GetZastIRSudy():TBlk;
+    function GetZastIRLichy():TBlk;                                             // vrati ZastIRLichy, vyuzito u property \ZastIRLichy
+    function GetZastIRSudy():TBlk;                                              // vrati ZastIRSudy, vyuzito u property \ZastIRSudy
 
-    procedure ZastUpdate();
-    procedure ZastRunTrain();
-    procedure ZastStopTrain();
+    procedure ZastUpdate();                                                     // technologie zastavky (rizeni zastavovani z rozjizdeni vlaku)
+    procedure ZastRunTrain();                                                   // zastavit vlak v zastavce
+    procedure ZastStopTrain();                                                  // rozjet vlak ze zastavky
 
+    // kliky v menu TU:
     procedure MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
     procedure MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    function GetUsekSpr:Integer;
+    function GetUsekSpr:Integer;                                                // vrati soupravu na TU, vyuzito u property \Souprava
 
-    procedure UpdateBP();
+    procedure UpdateBP();                                                       // technologie blokove podminky, resi veskere predavani souprav mezi TU a sekcemi TU
 
-    function GetTrat():TBlk;
-    function GetNavKryci():TBlk;
-    function GetTratReady():boolean;
-    function GetPrevTU():TBlkTU;
-    function GetNextTU():TBlkTU;
-    function GetSectObsazeno():TUsekStav;
-    function GetSectMaster():TBlkTU;
-    function GetNextNav():TBlk;
-    function GetSectReady():boolean;
+    function GetTrat():TBlk;                                                    // vrati blok trati, ve kterem je TU, viz property \Trat
+    function GetNavKryci():TBlk;                                                // vrati kryci navestidlo TU, jinak nil (pokud blok neni v aktualnim smeru trati kryty zadnym navestidlem)
+    function GetTratReady():boolean;                                            // vrati, jestli je trat zpusobila prace: jestli existuje a ma smer AtoB nebo BtoA, viz property \tratSmer
+    function GetPrevTU():TBlkTU;                                                // vrati predchozi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \prevTU
+    function GetNextTU():TBlkTU;                                                // vrati dalsi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \nextTU
+    function GetSectObsazeno():TUsekStav;                                       // vrati stav obsazeni cele sekce, mozne volat pouze u Section Masteru
+                                                                                // POZOR: tato metoda, resp property \sectObsazeno by mela byt pouzivana VELMI OPATRNE, casto je vhodnejsi property \sectReady, ktera zahrnuje i poruchu BP
+    function GetSectMaster():TBlkTU;                                            // vrati sectMaster kazdeho TU, pokud je TU sam sobe sectMaster, obsahuje referenci na self, viz property \sectMaster
+    function GetNextNav():TBlk;                                                 // vrati dalsi navestidlo v trati, v krajnim pripade az hranicni navestidlo cele trati podle aktualniho smeru trati, viz property \nextNav
+    function GetSectReady():boolean;                                            // vrati, zda-li je sekce pripravena pro vjezd vlaku do ni, viz property \sectReady, mozne volat pouze u sectMaster
 
-    procedure PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
+    procedure PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);            // callback potvrzovaci sekvence RBP
 
-    procedure UpdateNavest();
-    procedure UpdateSprRych();
+    procedure UpdateNavest();                                                   // aktualizuje navest krycich navestidel
+    procedure UpdateSprRych();                                                  // aktualizuje rychlost soupravy v TU (pocita s \sprRychUpdateIter)
 
-    procedure SetRychUpdate(state:boolean);
-    function GetRychUpdate:boolean;
+    procedure SetRychUpdate(state:boolean);                                     // nastavi \sprRychUpdateIter
+    function GetRychUpdate:boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
 
-    property zastIRlichy:TBlk read GetZastIRLichy;
-    property zastIRsudy:TBlk read GetZastIRSudy;
+    property zastIRlichy:TBlk read GetZastIRLichy;                              // IR zastavky v lichem smeru
+    property zastIRsudy:TBlk read GetZastIRSudy;                                // IR zastavky v sudem smeru
 
   protected
-    procedure SetUsekSpr(spr:Integer); override;
+    procedure SetUsekSpr(spr:Integer); override;                                // nastaven soupravy useku, kvuli warningum kompilatoru presunuto do protected (v bazove tride je protected)
 
   public
-   lTU, sTU: TBlkTU;
+   lTU, sTU: TBlkTU;                                                            // reference na tratovy usek blize zacatku trati (lTU) a TU blize konci trati (sTU), tyto refence nastavuje trat pri inicializaci, nebo zmene konfigurace trati
 
-   lsectMaster:TBlkTU;
-   lsectUseky:TList<TBlkTU>;
+   lsectMaster:TBlkTU;                                                          // sectMaster pro lichy smer trati
+   lsectUseky:TList<TBlkTU>;                                                    // pokud jsem sectMaster, zde jsou ulozeny useky me sekce v lichem smeru; pokud nejsem sectMaster, je tento senzam prazdny
 
-   ssectMaster:TBlkTU;
-   ssectUseky:TList<TBlkTU>;
+   ssectMaster:TBlkTU;                                                          // sectMaster pro sudy smer trati
+   ssectUseky:TList<TBlkTU>;                                                    // pokud jsem sectMaster, zde jsou ulozeny useky me sekce v sudem smeru; pokud nejsem sectMaster, je tento senzam prazdny
 
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -154,17 +172,19 @@ type
 
     procedure Update(); override;
     procedure Change(now:boolean = false); override;
-    procedure ChangeFromTrat();
+    procedure ChangeFromTrat();                                                 // aktualizace TU z trati, vola se zejemna pri zmene smeru a jeho ucel je nastavit navestidla autobloku podle smeru trati
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
 
-    procedure CreateSComRefs();
-    procedure RemoveTURefs();
+    procedure CreateSComRefs();                                                 // navestidlum autobloku nastavi UsekPred a smer
+    procedure RemoveTURefs();                                                   // zrusi UsekPred navetidlum autobloku
 
-    procedure UvolnenoZJC();
+    procedure UvolnenoZJC();                                                    // obsah useku (ne nutne souprava!) byl prevzat z krajniho useku trati jizdni cestou
+                                                                                // tato metoda ma smysl pouze pro krajni TU trati a resi radne odstraneni obsahu useku z trati
 
+    // pro vyznam properties viz hlavicky getteru a setteru
     property TUStav:TBlkTUStav read fTUStav;
     property Souprava:Integer read GetUsekSpr write SetUsekSpr;
     property InTrat:Integer read fTUStav.InTrat write fTUStav.InTrat;
@@ -174,13 +194,13 @@ type
     property rychUpdate:boolean read GetRychUpdate write SetRychUpdate;
 
     property Trat:TBlk read GetTrat;
-    property navKryci:TBlk read GetNavKryci;                // vraci navestidlo, ktere momentalne kryje TU, v zavislosti na smeru (pokud TU neni kryty navestidlem, vraci nil)
+    property navKryci:TBlk read GetNavKryci;
     property tratReady:boolean read GetTratReady;
 
     property prevTU:TBlkTU read GetPrevTU;
     property nextTU:TBlkTU read GetNextTU;
     property sectMaster:TBlkTU read GetSectMaster;
-    property nextNav:TBlk read GetNextNav;                  // vraci dalsi navestidlo, pokud ma strat smer, vzdy neco vrati (pokud nenajde navestidlo autobloku, vrati hranicni navestidlo trati)
+    property nextNav:TBlk read GetNextNav;
 
  end;//TBlkUsek
 
@@ -189,9 +209,6 @@ implementation
 
 uses SprDb, TBloky, TBlokIR, TCPServerOR, TOblRizeni, TBlokTrat, TBlokSCom,
       TJCDatabase;
-
-// format dat zastavky v souboru bloku: zast=IR_lichy|IR_sudy|max_delka_soupravy|delay_time|spr1;spr2;...
-//  pokud je zast prazdny string, zastavka je disabled
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -222,6 +239,7 @@ begin
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
+// nacte konfiguracni data ze souboru
 
 procedure TBlkTU.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 var str:TStrings;
@@ -260,6 +278,7 @@ begin
  str.Free();
 end;//procedure
 
+// ulozi konfiguracni data do souboru
 procedure TBlkTU.SaveData(ini_tech:TMemIniFile;const section:string);
 var str:string;
     i:Integer;
@@ -288,6 +307,7 @@ begin
 
 end;//procedure
 
+// ulozi stavova data do souboru
 procedure TBlkTU.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  inherited;
@@ -295,6 +315,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+// operace s nastavenim TU
 
 function TBlkTU.GetSettings():TBlkTUSettings;
 begin
@@ -324,10 +345,13 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+// zmena stavu bloku
 
 procedure TBlkTU.Change(now:boolean = false);
 begin
  inherited;
+
+ // aktualizovat predavani blokove podminky
  Self.UpdateBP();
 
  // UpdateNavest musi byt volano i u non-master bloku, zajistuje totiz i zhasinani
