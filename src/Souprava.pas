@@ -97,7 +97,7 @@ implementation
 
 uses THVDatabase, Logging, ownStrUtils, THnaciVozidlo, SprDb, TBlokUsek, DataSpr,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlok, TBlokSCom,
-      fRegulator, Trakce, fMain;
+      fRegulator, Trakce, fMain, TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -429,6 +429,9 @@ procedure TSouprava.SetRychlostSmer(speed:Integer; dir:THVStanoviste);
 var i:Integer;
     smer:Integer;
 begin
+ if ((TBlk(Self.front).GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
+   TBlkTU(Self.front).rychUpdate := false;
+
  for i := 0 to Self.data.HV.cnt-1 do
   begin
    if (HVDb.HVozidla[Self.data.HV.HVs[i]].ruc) then

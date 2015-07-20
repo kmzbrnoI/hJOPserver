@@ -28,6 +28,7 @@ type
 
    ffstatus:string;
    ffile:string;
+   fenabled:boolean;
 
     procedure DestroyBlocks();
     procedure BlkChange(Sender:TObject);
@@ -110,6 +111,7 @@ type
     property Cnt:Integer read GetCount;
     property fstatus:string read ffstatus;
     property blky_file:string read ffile;
+    property enabled:boolean read fenabled;
  end;//class TBlky
 
 var
@@ -127,7 +129,8 @@ uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
 constructor TBlky.Create();
 begin
  inherited Create();
- Self.Data := TList<TBlk>.Create();
+ Self.Data     := TList<TBlk>.Create();
+ Self.fenabled := false;
 end;//ctor
 
 destructor TBlky.Destroy();
@@ -402,6 +405,7 @@ procedure TBlky.Enable();
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do Self.Data[i].Enable();
+ Self.fenabled := true;
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
 end;//procedure
@@ -411,6 +415,7 @@ procedure TBlky.Disable();
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do Self.Data[i].Disable();
+ Self.fenabled := false;
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
 end;//procedure
@@ -758,13 +763,14 @@ var Usek:TBlk;
 begin
  try
    // zjistime soupravu pres navestidlem
-   Blky.GetBlkByID((Nav as TBlkSCom).UsekID, Usek);
+   Usek := (Nav as TBlkSCom).UsekPred;
    if ((Nav as TBlkSCom).Navest > 0) then
      if (((Usek as TBlkUsek).Souprava > -1) and (Soupravy.soupravy[(Usek as TBlkUsek).Souprava].smer = (Nav as TBlkSCom).Smer)) then
       spr := (Usek as TBlkUsek).Souprava else spr := (Usek as TBlkUsek).SprPredict
    else
      spr := -1;
    JC := (Nav as TBlkSCom).DNjc;
+   if ((JC <> nil) and (JC.stav.RozpadBlok > 0)) then Exit();
 
    // predpovidame, dokud existuji jizdni cesty
    while ((JC <> nil) and (JC.data.TypCesty = TJCType.vlak)) do
@@ -778,13 +784,16 @@ begin
        Blky.GetBlkByID((Usek as TBlkTU).InTrat, Trat);
        (Trat as TBlkTrat).SprPredict := spr;
 
+       // v trati jsou jiz soupravy -> konec predpovidani
+       if (TBlkTrat(Trat).stav.soupravy.cnt > 0) then Exit();
+
        case ((Trat as TBlkTrat).Smer) of
         TTratSmer.AtoB : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[(Trat as TBlkTrat).GetSettings().Useky.Count-1], Usek);
         TTratSmer.BtoA : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[0], Usek);
        end;//case
       end;
 
-     // do useku vloziem predpovidnou soupravu
+     // do useku vlozime predpovidnou soupravu
      (Usek as TBlkUsek).SprPredict := spr;
 
      // zjistime, jeslti je nejake nevastidlo u tohoto useku postaveno na volno

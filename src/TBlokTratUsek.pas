@@ -14,19 +14,23 @@ Jak to funguje:
  - Sekce jsou smerove zavisle.
  - Sekce jakozto takova neni reprezntovana zadnou specialni tridou,
    je reprezentovana TU, ktery je kryty navestidlem. Takovy TU se nazyva
-   "Section Master"
+   "Section Master" \property sectMaster
  - Prvni TU trati v danem smeru je pro tyto ucely vzdy povazovan za Section
    Master (tedy je povazovan za kryty navestidlem).
  - Kazdy TU ma odkaz na sveho Section Master.
  - Kady Section Master ma odkaz na vsechny TU, ktere spadaji do jeho sekce.
  - Nastavovani kryciho navestidla sekce je zodpovednost pouze Section Master.
  - Kazdy TU ma odkaz na vedlejsi TU (sTU, lTU), lTU vzdy bliz zacatku trati.
-
- - Nastavovani vazeb TU probiha pri Enable() trati, ktera vsechny zavisloti
-   nastavi. Behem provozu neni mozne menit useky v trati.
- - Pri Disable() dojde ke zruseni vsech vazeb a vymazani navaznosti TU.
- - prevTU a nextTU jsou zavisle podle smeru trati
- - navPrev, navNext
+ - prevTU a nextTU jsou vedlejsi tratove useky v zavislosti na aktualnim
+   smeru trati.
+ - Nastavovani vazeb TU probiha po nacteni config souboru a pri jakekoliv
+   zmene trati. Behem provozu neni doporuceno menit trate.
+ - navKryci je odkaz na kryci navestidlo tratoveho useku podle aktualniho
+   smeru trati.
+ - Rychlost soupravy v trati se meni az za 2 iterace Update od vkroceni
+   soupravy do TU. To z toho duvodu, ze souprava mohla zastavit pred navestidlem
+   (takovou soupravu nechceme rozjizdet).
+   sprRychUpdateIter
 }
 
 interface
@@ -60,6 +64,7 @@ type
   zast_passed:boolean;      // atdy je ulozeno true, pokud souprava zastavku jiz projela
 
   bpInBlk:boolean;
+  sprRychUpdateIter:Integer;
  end;
 
 
@@ -70,6 +75,7 @@ type
     inTrat: -1;
     zast_stopped : false;
     zast_enabled : true;
+    sprRychUpdateIter : 0;
    );
 
    _def_tu_zastavka:TBlkTUZastavka = (
@@ -85,7 +91,7 @@ type
    fTUStav:TBlkTUStav;
 
    fZastIRLichy, fZastIRSudy,
-   fNavPrev, fNavNext, fTrat : TBlk;
+   fNavKryci, fTrat : TBlk;
 
     function GetZastIRLichy():TBlk;
     function GetZastIRSudy():TBlk;
@@ -98,34 +104,42 @@ type
     procedure MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    procedure SetUsekSpr(spr:Integer); override;
     function GetUsekSpr:Integer;
 
     procedure UpdateBP();
 
     function GetTrat():TBlk;
-    function GetNavPrev():TBlk;
-    function GetNavNext():TBlk;
+    function GetNavKryci():TBlk;
     function GetTratReady():boolean;
     function GetPrevTU():TBlkTU;
     function GetNextTU():TBlkTU;
+    function GetSectObsazeno():TUsekStav;
+    function GetSectMaster():TBlkTU;
+    function GetNextNav():TBlk;
+    function GetSectReady():boolean;
 
     procedure PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
+
+    procedure UpdateNavest();
+    procedure UpdateSprRych();
+
+    procedure SetRychUpdate(state:boolean);
+    function GetRychUpdate:boolean;
 
     property zastIRlichy:TBlk read GetZastIRLichy;
     property zastIRsudy:TBlk read GetZastIRSudy;
 
-    property Trat:TBlk read GetTrat;
-    property navPrev:TBlk read GetNavPrev;
-    property navNext:TBlk read GetNavNext;
-    property tratReady:boolean read GetTratReady;
-
-    property prevTU:TBlkTU read GetPrevTU;
-    property nextTU:TBlkTU read GetNextTU;
+  protected
+    procedure SetUsekSpr(spr:Integer); override;
 
   public
-   lTU, sTU, sectMaster: TBlkTU;
-   sectUseky:TList<TBlkTU>;
+   lTU, sTU: TBlkTU;
+
+   lsectMaster:TBlkTU;
+   lsectUseky:TList<TBlkTU>;
+
+   ssectMaster:TBlkTU;
+   ssectUseky:TList<TBlkTU>;
 
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -133,30 +147,48 @@ type
     function GetSettings():TBlkTUSettings; overload;
     procedure SetSettings(data:TBlkTUSettings); overload;
 
-    procedure Disable(); override;
-
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
+    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
 
     procedure Update(); override;
     procedure Change(now:boolean = false); override;
+    procedure ChangeFromTrat();
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
 
+    procedure CreateSComRefs();
+    procedure RemoveTURefs();
+
+    procedure UvolnenoZJC();
+
     property TUStav:TBlkTUStav read fTUStav;
     property Souprava:Integer read GetUsekSpr write SetUsekSpr;
     property InTrat:Integer read fTUStav.InTrat write fTUStav.InTrat;
     property bpInBlk:boolean read fTUStav.bpInBlk write fTUStav.bpInBlk;
+    property sectObsazeno:TUsekStav read GetSectObsazeno;
+    property sectReady:boolean read GetSectReady;
+    property rychUpdate:boolean read GetRychUpdate write SetRychUpdate;
+
+    property Trat:TBlk read GetTrat;
+    property navKryci:TBlk read GetNavKryci;                // vraci navestidlo, ktere momentalne kryje TU, v zavislosti na smeru (pokud TU neni kryty navestidlem, vraci nil)
+    property tratReady:boolean read GetTratReady;
+
+    property prevTU:TBlkTU read GetPrevTU;
+    property nextTU:TBlkTU read GetNextTU;
+    property sectMaster:TBlkTU read GetSectMaster;
+    property nextNav:TBlk read GetNextNav;                  // vraci dalsi navestidlo, pokud ma strat smer, vzdy neco vrati (pokud nenajde navestidlo autobloku, vrati hranicni navestidlo trati)
 
  end;//TBlkUsek
 
 
 implementation
 
-uses SprDb, TBloky, TBlokIR, TCPServerOR, TOblRizeni, TBlokTrat, TBlokSCom;
+uses SprDb, TBloky, TBlokIR, TCPServerOR, TOblRizeni, TBlokTrat, TBlokSCom,
+      TJCDatabase;
 
 // format dat zastavky v souboru bloku: zast=IR_lichy|IR_sudy|max_delka_soupravy|delay_time|spr1;spr2;...
 //  pokud je zast prazdny string, zastavka je disabled
@@ -173,16 +205,18 @@ begin
  Self.fZastIRLichy := nil;
  Self.fZastIRSUdy  := nil;
  Self.fTrat        := nil;
- Self.fNavPrev     := nil;
- Self.fNavNext     := nil;
- Self.sectMaster   := nil;
- Self.sectUseky    := TList<TBlkTU>.Create();
+ Self.fNavKryci    := nil;
+ Self.lsectMaster  := nil;
+ Self.lsectUseky   := TList<TBlkTU>.Create();
+ Self.ssectMaster  := nil;
+ Self.ssectUseky   := TList<TBlkTU>.Create();
  Self.bpInBlk      := false;
 end;//ctor
 
 destructor TBlkTU.Destroy();
 begin
- Self.sectUseky.Free();
+ Self.lsectUseky.Free();
+ Self.ssectUseky.Free();
  Self.TUSettings.Zastavka.soupravy.Free();
  inherited Destroy();
 end;//dtor
@@ -198,6 +232,7 @@ begin
  Self.TUSettings.navSid := ini_tech.ReadInteger(section, 'navS', -1);
 
  Self.TUSettings.rychlost := ini_tech.ReadInteger(section, 'rychlost', -1);
+ Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
  str := TStringList.Create();
  ExtractStrings(['|'],[], PChar(ini_tech.ReadString(section, 'zast', '')), str);
@@ -253,6 +288,12 @@ begin
 
 end;//procedure
 
+procedure TBlkTU.SaveStatus(ini_stat:TMemIniFile;const section:string);
+begin
+ inherited;
+ ini_stat.WriteBool(section, 'bpInBlk', Self.bpInBlk);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkTU.GetSettings():TBlkTUSettings;
@@ -278,6 +319,8 @@ begin
 
  if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.Souprava > -1) and (Self.TUSettings.Zastavka.enabled)) then
    Self.ZastUpdate();
+
+ Self.UpdateSprRych();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +329,22 @@ procedure TBlkTU.Change(now:boolean = false);
 begin
  inherited;
  Self.UpdateBP();
- if (Self.Trat <> nil) then Self.Trat.Change(); 
+
+ // UpdateNavest musi byt volano i u non-master bloku, zajistuje totiz i zhasinani
+ //  navestidel v druhem smeru (v druhem smeru muzou byt sectMaster uplne jinak)
+ Self.UpdateNavest();
+
+ if (Self.Trat <> nil) then
+  begin
+   Self.Trat.Change();
+
+   // propagace zmen k masterTU sekce:
+   if ((Self.sectMaster <> nil) and (Self.sectMaster <> Self)) then Self.sectMaster.Change();
+
+   // propagace zmen do vedlejsi sekce (napriklad kvuli navesti)
+   if ((Self.sectMaster = Self) and (Self.prevTU <> nil) and
+       (Self.prevTU.sectMaster <> nil)) then Self.prevTU.sectMaster.Change();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -408,7 +466,7 @@ begin
     end;
   end;
 
- if (Self.Zaver = TJCType.nouz) then
+ if ((Self.Zaver = TJCType.nouz) and (Self.Souprava > -1)) then
    Result := Result + '!RBP,';
 end;
 
@@ -444,20 +502,16 @@ begin
    Self.fTUStav.zast_passed  := false;
 
    // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
-   if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsSprInAnyTU(old_spr))) then
+   if (Self.Trat <> nil) then
     begin
      trat := TBlkTrat(Self.Trat);
 
-     // souprava uz neni v trati -> uvolnit
-     TBlkTrat(Self.Trat).RemoveSpr(old_spr);
+     // souprava vyjela z trate -> odstranit z trate
+     if (not trat.IsSprInAnyTU(old_spr)) then
+       trat.RemoveSpr(old_spr);
 
-     // zrusime potencialni nouzovy zaver
-     Self.bpInBlk := false;
-     Self.Zaver   := TJCType.no;
-
-     // pokud je trat uplne volna, zrusime blokovou podminku
-     if (not trat.Obsazeno) then trat.BP := false;
-     trat.Change();
+     // zavolame uvolneni posledniho TU z jizdni cesty
+     Self.UvolnenoZJC();
     end;
   end;
 end;
@@ -488,18 +542,21 @@ end;
 
 procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
 var old_spr:Integer;
+    blks:TList<TObject>;
 begin
  if (success) then
   begin
+   old_spr := Self.Souprava;
    Self.bpInBlk := false;
    Self.Zaver   := TJCType.no;
    if (Self.Souprava > -1) then
     begin
-     old_spr := Self.Souprava;
      Self.Souprava := -1;
-     if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsSprInAnyTU(old_spr))) then
-        TBlkTrat(Self.Trat).RemoveSpr(old_spr);
+     blks := Blky.GetBlkWithSpr(old_spr);
+     if (blks.Count = 0) then Soupravy.RemoveSpr(old_spr);
+     blks.Free();
     end;
+
    if (Self.Trat <> nil) then Self.Trat.Change();
   end;
 end;//procedure
@@ -528,7 +585,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetNavPrev():TBlk;
+function TBlkTU.GetNavKryci():TBlk;
 var navPrevID:Integer;
 begin
  if ((Self.Trat = nil) or ((TBlkTrat(Self.Trat).Smer <> TTratSmer.AtoB) and (TBlkTrat(Self.Trat).Smer <> TTratSmer.BtoA))) then Exit(nil);
@@ -540,26 +597,9 @@ begin
   navPrevID := -1;
  end;
 
- if (((Self.fNavPrev = nil) and (navPrevID <> -1)) or ((Self.fNavPrev <> nil) and (Self.fNavPrev.GetGlobalSettings.id <> navPrevID))) then
-   Blky.GetBlkByID(navPrevID, Self.fNavPrev);
- Result := Self.fNavPrev;
-end;
-
-function TBlkTU.GetNavNext():TBlk;
-var navNextID:Integer;
-begin
- if (not Self.tratReady) then Exit(nil);
-
- case (TBlkTrat(Self.Trat).Smer) of
-   TTratSmer.AtoB : navNextID := Self.TUSettings.navSid;
-   TTratSmer.BtoA : navNextID := Self.TUSettings.navLid;
- else
-  navNextID := -1;
- end;
-
- if (((Self.fNavNext = nil) and (navNextID <> -1)) or ((Self.fNavNext <> nil) and (Self.fNavNext.GetGlobalSettings.id <> navNextID))) then
-   Blky.GetBlkByID(navNextID, Self.fNavNext);
- Result := Self.fNavNext;
+ if (((Self.fNavKryci = nil) and (navPrevID <> -1)) or ((Self.fNavKryci <> nil) and (Self.fNavKryci.GetGlobalSettings.id <> navPrevID))) then
+   Blky.GetBlkByID(navPrevID, Self.fNavKryci);
+ Result := Self.fNavKryci;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -597,30 +637,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.Disable();
-begin
- inherited;
-
- Self.lTU        := nil;
- Self.sTU        := nil;
- Self.sectMaster := nil;
- Self.sectUseky.Clear();
- Self.bpInBlk    := false;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
 procedure TBlkTU.UpdateBP();
 begin
  if ((not Self.tratReady) or (not TBlkTrat(Self.Trat).BP)) then Exit();
 
  if ((Self.prevTU = nil) and (Self.Obsazeno = TUsekStav.obsazeno)) then
+  begin
    // nastala aktivace blokove podminky prvniho bloku trati
    Self.bpInBlk := true;
+  end;
 
  // predavani soupravy z predchoziho TU do meho TU
  if ((Self.prevTU <> nil) and (Self.Obsazeno = TUsekStav.obsazeno) and
-     (Self.prevTU.Obsazeno = TUsekStav.obsazeno)) then
+     (Self.prevTU.Obsazeno = TUsekStav.obsazeno) and
+     ((Self.navKryci = nil) or (TBlkSCom(Self.navKryci).Navest > 0))) then
   begin
    // nastala aktivace blokove podminky
    Self.bpInBlk := true;
@@ -628,9 +658,10 @@ begin
    if ((Self.Souprava = -1) and (Self.prevTU.Souprava > -1)) then
     begin
      // mezi useky je potreba predat soupravu
+     Soupravy.soupravy[Self.prevTU.Souprava].front := Self;
      Self.Souprava := Self.prevTU.Souprava;
      Self.zpomalovani_ready := true;
-     Soupravy.soupravy[Self.Souprava].front := Self;
+     Self.rychUpdate := true;
 
      if (Self.nextTU = nil) then
       begin
@@ -670,11 +701,286 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+function TBlkTU.GetSectObsazeno():TUsekStav;
+var blk:TBlkTU;
+    sectUseky:TList<TBlkTU>;
+begin
+ if (Self.Trat = nil) then Exit(TusekStav.none);
+ if (Self.Obsazeno <= TUsekStav.none) then Exit(TUsekStav.Obsazeno);
+
+ // pozadavek na obsazenost sekce muze prijit i kdyz trat nema smer,
+ //  typicky kdyz se stavi JC do bezsouhlasove trati s automatickou
+ //  zmenou souhlasu
+ // -> pro krajni useky trti vracime obsazenost prvni sekce
+
+ case (TBlkTrat(Self.Trat).Smer) of
+  TTratSmer.AtoB : sectUseky := Self.lsectUseky;
+  TTratSmer.BtoA : sectUseky := Self.ssectUseky;
+  TTratSmer.zadny : begin
+         if (Self.sTU = nil) then
+          sectUseky := Self.ssectUseky
+         else begin
+           if (Self.lTU = nil) then
+            sectUseky := Self.lsectUseky
+           else
+            Exit(TUsekStav.none);
+         end;
+  end;
+ else
+  Exit(TUsekStav.none);
+ end;
+
+ for blk in sectUseky do
+  if (blk.Obsazeno <> TUsekStav.uvolneno) then Exit(blk.Obsazeno);
+ Exit(TUsekStav.uvolneno);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TBlkTU.GetSectMaster():TBlkTU;
+begin
+ if (Self.Trat = nil) then Exit(nil);
+ case (TBlkTrat(Self.Trat).Smer) of
+  TTratSmer.AtoB : Result := Self.lsectMaster;
+  TTratSmer.BtoA : Result := Self.ssectMaster;
+ else
+  Result := nil;
+ end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
+// vrati dalsi navestidlo v trati (pokud ma trat smer)
+// pokud neni dalsi navestidlo autobloku, vrati hranicni navestidlo trati
+
+function TBlkTU.GetNextNav():TBlk;
+var blk:TBLkTU;
+begin
+ if (Self.Trat = nil) or (TBlkTrat(Self.Trat).smer = TTratSmer.zadny) then Exit(nil);
+
+ blk := Self;
+ while ((blk <> nil) and (blk.sectMaster <> nil)) do
+   blk := blk.nextTU;
+
+ if (blk <> nil) then
+   Exit(blk.navKryci)
+ else begin
+  case (TBlkTrat(Self.Trat).Smer) of
+    TTratSmer.AtoB : Exit(TBlkTrat(Self.Trat).navSudy);
+    TTratSmer.BtoA : Exit(TBlkTrat(Self.Trat).navLichy);
+  end;
+ end;
+
+ Result := nil;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.CreateSComRefs();
+var Blk:TBlk;
+begin
+ Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
+ if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (Self.lTU <> nil)) then
+  begin
+   TBlkSCom(Blk).UsekID := Self.lTU.GetGlobalSettings.id;
+   TBlkSCom(Blk).Smer   := THVStanoviste.lichy;
+  end;
+
+ Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
+ if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (Self.sTU <> nil)) then
+  begin
+   TBlkSCom(Blk).UsekID := Self.sTU.GetGlobalSettings.id;
+   TBlkSCom(Blk).Smer   := THVStanoviste.sudy;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.RemoveTURefs();
+var Blk:TBlk;
+begin
+ Self.lTU         := nil;
+ Self.sTU         := nil;
+ Self.lsectMaster := nil;
+ Self.lsectUseky.Clear();
+ Self.ssectMaster := nil;
+ Self.ssectUseky.Clear();
+ Self.bpInBlk     := false;
+ Self.InTrat      := -1;
+
+ Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
+ if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
+ Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
+ if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Tato metoda nastavuje kryci navestidlo sekce a zaroven kontroluje
+// zruseni navesti do trati v pripade nahleho obsazeni prvni sekce trati.
+
+procedure TBlkTU.UpdateNavest();
+var
+    Blk:TBlk;
+begin
+ // kontrola zruseni navesti jizdni cesty pri obsazeni sekce trati:
+ // tato metoda je volana vzdy pouze u sectMastera (tj. krajniho bloku sekce)
+ if (Self.Trat = nil) then Exit();
+
+ // NASTAVOVANI NAVESTI AUTOBLOKU:
+
+ // nejprve zhasneme navestidla v nespravnem smeru
+ case (TBlkTrat(Self.Trat).Smer) of
+   TTratSmer.AtoB  : begin
+    if (Self.TUSettings.navSid > -1) then
+     begin
+      Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
+      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+     end;
+   end;
+
+   TTratSmer.BtoA  : begin
+    if (Self.TUSettings.navLid > -1) then
+     begin
+      Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
+      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+     end;
+   end;
+
+   TTratSmer.zadny : begin
+    if (Self.TUSettings.navSid > -1) then
+     begin
+      Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
+      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+     end;
+    if (Self.TUSettings.navLid > -1) then
+     begin
+      Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
+      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+     end;
+    Exit();
+   end;
+  end;//case
+
+ // zrusit jizdni cestu muzeme pouze u sekce na kraji trati (v trati se rusi
+ //   navest autobloku)
+ if ((Self.prevTU = nil) and (Self.sectObsazeno = TUsekStav.obsazeno)
+     and (TBlkTrat(Self.Trat).Zaver)) then
+   JCDb.RusJC(Self);
+
+  // nastavime kryci navestidlo
+  if (Self.navKryci <> nil) then
+   begin
+    if (not Self.sectReady) then
+     begin
+      // sekce obsazena -> navetidlo na STUJ
+      TBlkSCom(Self.navKryci).Navest := 0
+     end else begin
+      // sekce uvolnena -> hledame dalsi navestidlo
+      if ((Self.nextNav = nil) or (TBlkSCom(Self.nextNav).Navest = 0)) then
+        TBlkSCom(Self.navKryci).Navest := 2
+      else
+        TBlkSCom(Self.navKryci).Navest := 1;
+     end;
+   end;
+
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.ChangeFromTrat();
+begin
+ Self.UpdateNavest();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.UpdateSprRych();
+begin
+ if (Self.fTUStav.sprRychUpdateIter > 0) then
+  begin
+   Dec(Self.fTUStav.sprRychUpdateIter);
+   if (Self.fTUStav.sprRychUpdateIter = 0) then
+    begin
+     if ((Self.Souprava > -1) and (Self.zpomalovani_ready) and
+        (Soupravy.soupravy[Self.Souprava].rychlost > 0) and
+        (Soupravy.soupravy[Self.Souprava].rychlost <> Self.TUSettings.rychlost)) then
+       Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.rychlost;
+    end;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTU.GetRychUpdate:boolean;
+begin
+ Result := (Self.fTUStav.sprRychUpdateIter > 0);
+end;
+
+procedure TBlkTU.SetRychUpdate(state:boolean);
+begin
+ if ((state) and (Self.fTUStav.sprRychUpdateIter = 0)) then Self.fTUStav.sprRychUpdateIter := 2;
+ if ((not state) and (Self.fTUStav.sprRychUpdateIter > 0)) then Self.fTUStav.sprRychUpdateIter := 0;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.UvolnenoZJC();
+var trat:TBlkTrat;
+begin
+ Self.fTUStav.zast_stopped := false;
+ Self.fTUStav.zast_passed  := false;
+
+ if (Self.Trat = nil) then Exit();
+ trat := TBlkTrat(Self.Trat);
+
+ // zrusime potencialni nouzovy zaver
+ Self.bpInBlk := false;
+ Self.Zaver   := TJCType.no;
+
+ if (((trat.GetSettings().zabzar = TTratZZ.nabidka))
+     and (not trat.Zaver) and (not trat.Obsazeno) and (not trat.RBPCan) and (Trat.stav.soupravy.cnt = 0) and (not trat.nouzZaver)) then
+  trat.Smer := TTratSmer.zadny;
+
+ // pokud je trat uplne volna, zrusime blokovou podminku
+ if (not trat.Obsazeno) then trat.BP := false;
+ trat.UpdateSprPredict();
+ trat.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// komtrola volnosti sekce pro prijezd soupravy: musi byt splneno
+//  1) zadny usek sekce neni obsazen
+//  2) vsechny useky sekce jsou bez soupravy
+
+function TBlkTU.GetSectReady():boolean;
+var blk:TBlkTU;
+    sectUseky:TList<TBlkTU>;
+begin
+ if ((Self.Trat = nil) or (Self.Obsazeno <= TUsekStav.none)) then Exit(false);
+
+ case (TBlkTrat(Self.Trat).Smer) of
+  TTratSmer.AtoB : sectUseky := Self.lsectUseky;
+  TTratSmer.BtoA : sectUseky := Self.ssectUseky;
+  TTratSmer.zadny : begin
+         if (Self.sTU = nil) then
+          sectUseky := Self.ssectUseky
+         else begin
+           if (Self.lTU = nil) then
+            sectUseky := Self.lsectUseky
+           else
+            Exit(false);
+         end;
+  end;
+ else
+  Exit(false);
+ end;
+
+ { zaver u prvniho bloku trati nekontrolujeme, protoze tuto metodu vyuziva JC
+   pri staveni, ktera na prvni usek dava nouzovy zaver pri staveni }
+ for blk in sectUseky do
+   if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.Souprava > -1)
+    or ((blk.Zaver <> TJCType.no) and (blk.prevTU <> nil))) then Exit(false);
+ Result := true;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

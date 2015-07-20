@@ -49,11 +49,9 @@ type
   TF_Admin = class(TForm)
     B_InputSim: TButton;
     B_Save: TButton;
-    CHB_SimIntellibox: TCheckBox;
     CHB_SimInput: TCheckBox;
     CHB_SimSoupravaUsek: TCheckBox;
     CHB_SystemStart: TCheckBox;
-    B_DCC: TButton;
     CHB_JC_Simulator: TCheckBox;
     CHB_Trat_Sim: TCheckBox;
     CHB_SimVyhybky: TCheckBox;
@@ -79,7 +77,7 @@ implementation
 
 uses fMain, RPConst, TechnologieMTB, FileSystem, fSettings, Trakce,
      Logging, THVDatabase, TJCDatabase, TBlok, TBlokUsek,
-    TBloky, TBlokSCom, GetSystems, TBlokVyhybka;
+    TBloky, TBlokSCom, GetSystems, TBlokVyhybka, TBlokTratUsek, SprDb;
 
 {$R *.dfm}
 
@@ -88,7 +86,6 @@ procedure TF_Admin.LoadData();
   Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
 
   CHB_SimInput.Checked          := Konfigurace.ini.ReadBool('AdminData', 'InputSim', false);
-  CHB_SimIntellibox.Checked     := Konfigurace.ini.ReadBool('AdminData', 'IntelliboxSim', false);
   CHB_SimSoupravaUsek.Checked   := Konfigurace.ini.ReadBool('AdminData', 'SoupravaUsekSim', false);
   CHB_SystemStart.Checked       := Konfigurace.ini.ReadBool('AdminData', 'SystemStart', false);
   CHB_JC_Simulator.Checked      := Konfigurace.ini.ReadBool('AdminData', 'JCsim', false);
@@ -110,7 +107,6 @@ procedure TF_Admin.SaveData();
   Konfigurace.ini.WriteInteger('AdminData','FormLeft',F_Admin.Left);
   Konfigurace.ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
   Konfigurace.ini.WriteBool('AdminData','InputSim',CHB_SimInput.Checked);
-  Konfigurace.ini.WriteBool('AdminData','IntelliboxSim',CHB_SimIntellibox.Checked);
   Konfigurace.ini.WriteBool('AdminData','SoupravaUsekSim',CHB_SimSoupravaUsek.Checked);
   Konfigurace.ini.WriteBool('AdminData','SystemStart',CHB_SystemStart.Checked);
   Konfigurace.ini.WriteBool('AdminData', 'JCsim', CHB_JC_Simulator.Checked);
@@ -277,45 +273,43 @@ begin
   begin
    Blky.GetBlkByIndex(i, Blk);
    if (Blk.GetGlobalSettings().typ <> _BLK_TRAT) then continue;
-   if (((Blk as TBlkTrat).BP) and ((Blk as TBlkTrat).Obsazeno)) then
+   if (((Blk as TBlkTrat).BP) and ((Blk as TBlkTrat).Obsazeno) and
+       ((TBlkTrat(Blk).Smer = TTratSmer.AtoB) or (TBlkTrat(Blk).Smer = TTratSmer.BtoA))) then
      Self.UpdateTrat(Blk as TBlkTrat);
   end;
 end;//procedure
 
 procedure TTratSimulator.UpdateTrat(Trat:TBlkTrat);
-{var Usek:TBlk;
+var TU:TBlkTU;
     TratSet:TBlkTratSettings;
-    UsekSet:TBlkUsekSettings;
-    i:Integer;}
+    i:Integer;
 begin
-{ TratSet := Trat.GetSettings();
+ TratSet := Trat.GetSettings();
 
- // to-do: simulator trati
- if (Trat.stav.BP.next-Trat.stav.BP.last >= 2) then
+ // mazani soupravy vzadu
+ for i := 0 to TratSet.Useky.Count-1 do
   begin
-   // zrusit obsazeni posledniho useku
-   case (trat.Smer) of
-    TTratSmer.AtoB: Blky.GetBlkByID(TratSet.Useky[Trat.stav.BP.last], Usek);
-    TTratSmer.BtoA: Blky.GetBlkByID(TratSet.Useky[TratSet.Useky.Count-Trat.stav.BP.last-1], Usek);
-   end;//case
+   Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
+   if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
+       (TU.prevTU.Souprava = TU.Souprava)) then
+    begin
+     MTB.SetInput(TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].port, 0);
+     Exit();
+    end;
+  end;//for i
 
-   UsekSet := (Usek as TBlkUsek).GetSettings();
-   for i := 0 to UsekSet.MTBAddrs.Count-1 do
-    MTB.SetInput(UsekSet.MTBAddrs.data[i].board, UsekSet.MTBAddrs.data[i].port, 0);
-
-  end else begin
-   if (Trat.stav.BP.next >= TratSet.Useky.Count) then Exit();
-
-   // obsadit dalsi usek
-   case (trat.Smer) of
-    TTratSmer.AtoB: Blky.GetBlkByID(TratSet.Useky[Trat.stav.BP.next], Usek);
-    TTratSmer.BtoA: Blky.GetBlkByID(TratSet.Useky[TratSet.Useky.Count-Trat.stav.BP.next-1], Usek);
-   end;//case
-
-   UsekSet := (Usek as TBlkUsek).GetSettings();
-   if (UsekSet.MTBAddrs.Count > 0) then
-    MTB.SetInput(UsekSet.MTBAddrs.data[0].board, UsekSet.MTBAddrs.data[0].port, 1);
-  end;       }
+ // predavani soupravy dopredu
+ for i := 0 to TratSet.Useky.Count-1 do
+  begin
+   Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
+   if ((TU.Obsazeno = TUsekStav.obsazeno) and (TU.bpInBlk) and (TU.nextTU <> nil) and
+       (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
+      ((TU.nextTU.navKryci = nil) or (TBlkSCom(TU.nextTU.navKryci).Navest > 0))) then
+    begin
+     MTB.SetInput(TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].port, 1);
+     Exit();
+    end;
+  end;//for i
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

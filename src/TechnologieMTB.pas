@@ -294,7 +294,7 @@ begin
     begin
      Blky.GetBlkByIndex(cyklus,Blk);
      if (Blk.GetGlobalSettings.typ = _BLK_VYH) then
-       OD.SetInput(0,(Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].board,(Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].port,1);
+       OD.SetInput(0,(Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].board, (Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].port,1);
      if (Blk.GetGlobalSettings.typ = _BLK_PREJEZD) then
        OD.SetInput(0,(Blk as TBlkPrejezd).GetSettings().MTB, (Blk as TBlkPrejezd).GetSettings().MTBInputs.Otevreno, 1);
      if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU)) and ((Blk as TBlkUsek).Souprava > -1)) then

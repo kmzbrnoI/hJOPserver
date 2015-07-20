@@ -55,7 +55,7 @@ object F_BlkTrat: TF_BlkTrat
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' '#218'vazka A '
+    Caption = ' '#218'vazka bl'#237#382'e po'#269#237'tku trati  '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -173,14 +173,14 @@ object F_BlkTrat: TF_BlkTrat
   end
   object GB_UvazkaB: TGroupBox
     Left = 360
-    Top = 163
+    Top = 159
     Width = 337
     Height = 144
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' '#218'vazka B '
+    Caption = ' '#218'vazka bl'#237#382'e konci trati  '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -343,26 +343,9 @@ object F_BlkTrat: TF_BlkTrat
       Font.Style = []
       ParentFont = False
     end
-    object L_Trat3: TLabel
-      Left = 18
-      Top = 75
-      Width = 76
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Rychlost v trati :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
     object Label7: TLabel
       Left = 17
-      Top = 100
+      Top = 76
       Width = 68
       Height = 13
       Margins.Left = 2
@@ -415,54 +398,23 @@ object F_BlkTrat: TF_BlkTrat
       ParentFont = False
       TabOrder = 0
     end
-    object CB_Trat_Speed: TComboBox
-      Left = 104
-      Top = 75
-      Width = 216
-      Height = 21
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 13
-      ParentFont = False
-      TabOrder = 2
-      Items.Strings = (
-        '20 km/h'
-        '30 km/h'
-        '40 km/h'
-        '50 km/h'
-        '60 km/h'
-        '70 km/h'
-        '80 km/h'
-        '90 km/h'
-        '100 km/h'
-        '110 km/h'
-        '120 km/h')
-    end
     object GB_TratBlk: TGroupBox
       Left = 16
-      Top = 124
+      Top = 100
       Width = 306
-      Height = 245
+      Height = 269
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = ' Tra'#357'ov'#233' bloky (od '#250'vazky A k '#250'vazce B) '
+      Caption = ' Tra'#357'ov'#233' bloky (ve sm'#283'ru trati) '
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 4
+      TabOrder = 3
       object B_Blk_Delete: TButton
         Left = 113
         Top = 21
@@ -472,14 +424,14 @@ object F_BlkTrat: TF_BlkTrat
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Smazat blok'
+        Caption = 'Smazat T'#218
         Enabled = False
         TabOrder = 1
         OnClick = B_Blk_DeleteClick
       end
       object GB_NewBlk: TGroupBox
         Left = 2
-        Top = 193
+        Top = 217
         Width = 302
         Height = 50
         Margins.Left = 2
@@ -487,18 +439,19 @@ object F_BlkTrat: TF_BlkTrat
         Margins.Right = 2
         Margins.Bottom = 2
         Align = alBottom
-        Caption = ' Pridat nov'#253' blok '
+        Caption = ' P'#345'idat nov'#253' tra'#357'ov'#253' '#250'sek  '
         TabOrder = 0
+        ExplicitTop = 193
         object B_blk_Add: TButton
           Left = 216
-          Top = 16
+          Top = 14
           Width = 75
           Height = 25
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = 'Pridat blok'
+          Caption = 'P'#345'idat T'#218
           TabOrder = 1
           OnClick = B_blk_AddClick
         end
@@ -517,16 +470,16 @@ object F_BlkTrat: TF_BlkTrat
           Font.Height = -11
           Font.Name = 'MS Sans Serif'
           Font.Style = []
-          ItemHeight = 0
+          ItemHeight = 13
           ParentFont = False
           TabOrder = 0
         end
       end
       object LV_Useky: TListView
         Left = 2
-        Top = 54
+        Top = 55
         Width = 302
-        Height = 139
+        Height = 162
         Align = alBottom
         Columns = <
           item
@@ -551,7 +504,7 @@ object F_BlkTrat: TF_BlkTrat
     end
     object CB_Trat_ZabZar: TComboBox
       Left = 104
-      Top = 99
+      Top = 75
       Width = 216
       Height = 21
       Margins.Left = 2
@@ -566,7 +519,7 @@ object F_BlkTrat: TF_BlkTrat
       Font.Style = []
       ItemHeight = 13
       ParentFont = False
-      TabOrder = 3
+      TabOrder = 2
       Items.Strings = (
         'pouze souhlasov'#253' stav'
         'bezsouhlasov'#253' stav bez nab'#237'dky'

@@ -941,6 +941,8 @@ begin
 
  Self.A_PanelServer_Start.Enabled := false;
  Self.A_PanelServer_Stop.Enabled  := true;
+
+ if (not Blky.enabled) then Blky.Enable();
 end;
 
 procedure TF_Main.A_PanelServer_StopExecute(Sender: TObject);
@@ -972,7 +974,8 @@ begin
   Self.LogStatus('MTB: komunikace spuštìna');
   F_Main.S_MTB_Start.Brush.Color     := clLime;
 
-  Blky.Enable();
+  if (F_Admin.CHB_SystemStart.Checked) then
+    Blky.Enable();
 
   // aktualizace ovladaich prvku AC
   if (F_Main.LV_AC_Db.Selected <> nil) then
@@ -988,9 +991,9 @@ begin
    begin
     // debug mod
     JCDB.RusAllJC();
-    Blky.Disable();
     ORs.DisconnectPanels();
    end;//if AdminVstup
+  if (Blky.enabled) then Blky.Disable();
 
   ModCas.started := false;
 
@@ -1545,8 +1548,8 @@ begin
     begin
      if (F_Main.PC_1.ActivePage = F_Main.TS_Aut_Rezimy) then ACTableData.UpdateTable();
      if ((F_Main.PC_1.ActivePage = F_Main.TS_Stav_MTB) and (MTB.Start)) then MTBTableData.UpdateTable();
-     if ((F_Main.PC_1.ActivePage = F_Main.TS_Bloky) and (MTB.Start)) then BlokyTableData.UpdateTable();
-     if ((F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) and (MTB.Start)) then SprTableData.UpdateTable();
+     if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then BlokyTableData.UpdateTable();
+     if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then SprTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then F_Main.LV_Zesilovace.Repaint;
      if (F_Main.PC_1.ActivePage = F_Main.TS_HV) then HVTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_VC) then JCTableData.UpdateTable();

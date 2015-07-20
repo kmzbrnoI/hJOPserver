@@ -45,16 +45,16 @@ object F_Admin: TF_Admin
     TabOrder = 1
     OnClick = B_SaveClick
   end
-  object CHB_SimIntellibox: TCheckBox
+  object CHB_SimInput: TCheckBox
     Left = 8
     Top = 40
-    Width = 177
+    Width = 65
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Simulovat zpetne vazby DCC'
+    Caption = 'InputSim'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11
@@ -63,27 +63,9 @@ object F_Admin: TF_Admin
     ParentFont = False
     TabOrder = 2
   end
-  object CHB_SimInput: TCheckBox
-    Left = 8
-    Top = 56
-    Width = 189
-    Height = 17
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Simulovat zakladni zpetne vazby'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 3
-  end
   object CHB_SimSoupravaUsek: TCheckBox
     Left = 8
-    Top = 72
+    Top = 56
     Width = 201
     Height = 17
     Margins.Left = 2
@@ -97,11 +79,11 @@ object F_Admin: TF_Admin
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 4
+    TabOrder = 3
   end
   object CHB_SystemStart: TCheckBox
     Left = 8
-    Top = 89
+    Top = 73
     Width = 233
     Height = 17
     Margins.Left = 2
@@ -115,23 +97,11 @@ object F_Admin: TF_Admin
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 5
-  end
-  object B_DCC: TButton
-    Left = 88
-    Top = 8
-    Width = 74
-    Height = 27
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'DCC change'
-    TabOrder = 6
+    TabOrder = 4
   end
   object CHB_JC_Simulator: TCheckBox
     Left = 8
-    Top = 106
+    Top = 90
     Width = 75
     Height = 17
     Margins.Left = 2
@@ -145,12 +115,12 @@ object F_Admin: TF_Admin
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 5
     OnClick = CHB_JC_SimulatorClick
   end
   object CHB_Trat_Sim: TCheckBox
     Left = 8
-    Top = 124
+    Top = 107
     Width = 97
     Height = 17
     Margins.Left = 2
@@ -164,11 +134,11 @@ object F_Admin: TF_Admin
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 8
+    TabOrder = 6
     OnClick = CHB_Trat_SimClick
   end
   object CHB_SimVyhybky: TCheckBox
-    Left = 136
+    Left = 8
     Top = 124
     Width = 145
     Height = 17
@@ -183,7 +153,7 @@ object F_Admin: TF_Admin
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 9
+    TabOrder = 7
     OnClick = CHB_SimVyhybkyClick
   end
 end

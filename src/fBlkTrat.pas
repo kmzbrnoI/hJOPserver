@@ -18,8 +18,6 @@ type
     E_Trat_Name: TEdit;
     L_P02: TLabel;
     L_SCom02: TLabel;
-    L_Trat3: TLabel;
-    CB_Trat_Speed: TComboBox;
     GB_TratBlk: TGroupBox;
     B_Blk_Delete: TButton;
     GB_NewBlk: TGroupBox;
@@ -116,7 +114,6 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.SE_UA_id.Value    := 0;
   Self.SE_UB_id.Value    := 0;
 
-  Self.CB_Trat_Speed.ItemIndex  := -1;
   Self.CB_Trat_ZabZar.ItemIndex := -1;
 
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, _BLK_TU, -1);
@@ -155,7 +152,6 @@ var glob:TBlkSettings;
   for i := 0 to settings.Useky.Count-1 do vypust[i] := settings.Useky[i];
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, _BLK_TU, -1);
 
-  Self.CB_Trat_Speed.ItemIndex  := (settings.rychlost div 10)-2;
   Self.CB_Trat_ZabZar.ItemIndex := Integer(settings.zabzar);
 
   for i := 0 to settings.Useky.Count-1 do
@@ -273,11 +269,6 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Self.CB_Trat_Speed.ItemIndex < 0) then
-   begin
-    Application.MessageBox('Vyberte rcyhlost v trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
   if (Self.CB_Trat_ZabZar.ItemIndex < 0) then
    begin
     Application.MessageBox('Vyberte typ zabezpeèovacího zaøízení trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
@@ -336,7 +327,6 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
   TratSettings.uvazkaA  := Self.SE_UA_id.Value;
   TratSettings.uvazkaB  := Self.SE_UB_id.Value;
   TratSettings.zabzar   := TTratZZ(Self.CB_Trat_ZabZar.ItemIndex);
-  TratSettings.rychlost := (Self.CB_Trat_Speed.ItemIndex + 2) * 10;
 
   TratSettings.Useky.Clear();
   for i := 0 to Self.LV_Useky.Items.Count-1 do

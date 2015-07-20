@@ -89,6 +89,8 @@ type
    SComStav:TBlkSComStav;
    SComRel:TBlkSComRel;
 
+   fUsekPred:TBlk;
+
     procedure ParseEvents(str:string);
     function ParseEvent(str:string):TBlkSComSprEvent;
     function ParseSprTypes(str:string):TStrings;
@@ -129,9 +131,13 @@ type
     procedure PrivokDKPotvrSekv(Sender:TIdContext; success:boolean);
     procedure RNZPotvrSekv(Sender:TIdContext; success:boolean);
 
+    procedure SetUsekPredID(new_id:Integer);
+
     class function IsRychEvent(data:TBlkSComRychEvent):boolean;
     function IsZastavEvent():Integer;
     function IsZpomalEvent():Integer;
+
+    function GetUsekPred():TBlk;
 
   public
     constructor Create(index:Integer);
@@ -150,6 +156,7 @@ type
 
     //update states
     procedure Update(); override;
+    procedure Change(now:boolean = false); override;
 
     procedure JCZrusNavest();   // zahrnuje cas na pad navesti
 
@@ -166,8 +173,8 @@ type
     class function NavestToString(navest:Integer):string;
 
     property SymbolType:Byte read SComRel.SymbolType;
-    property UsekID:Integer read SComRel.UsekID;
-    property Smer:THVStanoviste read SComRel.smer;
+    property UsekID:Integer read SComRel.UsekID write SetUsekPredID;
+    property Smer:THVStanoviste read SComRel.smer write SComRel.smer;
 
     //stavovae promenne
     property Navest:Integer read SComStav.Navest write SetNavest;
@@ -177,6 +184,7 @@ type
     property Lichy:THVStanoviste read SComRel.Smer;
     property DNjc:TJC read SComStav.dn_jc_ref write SComStav.dn_jc_ref;
     property privol:TJC read SComStav.privol_ref write SComStav.privol_ref;
+    property UsekPred:TBlk read GetUsekPred;
 
     //GUI:
 
@@ -206,7 +214,8 @@ type
 implementation
 
 uses TechnologieMTB, TBloky, TOblRizeni, TBlokUsek, TJCDatabase, TCPServerOR,
-      GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils;
+      GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
+      TBlokTratUsek;
 
 constructor TBlkSCom.Create(index:Integer);
 begin
@@ -215,6 +224,7 @@ begin
  Self.GlobalSettings.typ := _BLK_SCOM;
  Self.SComStav := Self._def_scom_stav;
  Self.SComSettings.events := TList<TBlkSComSprEvent>.Create();
+ Self.fUsekPred := nil;
 end;//ctor
 
 destructor TBlkSCom.Destroy();
@@ -338,8 +348,20 @@ begin
     end;
   end;
 
- inherited Update();
+ inherited;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.Change(now:boolean = false);
+begin
+ // zmenu navesti propagujeme do prilehle trati, kde by mohlo dojit ke zmene
+ // navesti autobloku
+ if ((Self.UsekPred <> nil) and (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
+   Self.UsekPred.Change();
+
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -517,8 +539,7 @@ end;//function
 //nastavovani stavovych promennych:
 
 procedure TBlkSCom.SetNavest(navest:Integer);
-var Blk:TBlk;
-    i:Integer;
+var i:Integer;
 begin
  if ((Self.SComStav.Navest < 0) or (Self.SComSettings.zamknuto)) then Exit();
 
@@ -551,9 +572,8 @@ begin
 
  if (Self.SComStav.Navest = 0) then
   begin
-   Blky.GetBlkByID(Self.UsekID, Blk);
-   if ((Blk <> nil) and ((Blk.GetGlobalSettings().typ = _BLK_USEK) or (Blk.GetGlobalSettings().typ = _BLK_TU))) then
-    (Blk as TBlkUsek).SComJCRef := nil;
+   if ((Self.UsekPred <> nil) and ((Self.UsekPred.GetGlobalSettings().typ = _BLK_USEK) or (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU))) then
+    (Self.UsekPred as TBlkUsek).SComJCRef := nil;
   end;
 
  Self.UpdateRychlostSpr(true);
@@ -666,7 +686,7 @@ begin
 
  JC := Self.DNjc;
 
- Blky.GetBlkByID(Self.SComRel.UsekID, Blk);
+ Blk := Self.UsekPred;
  if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
@@ -952,7 +972,7 @@ var Usek, SCom:TBlk;
     spr:TSouprava;
     zpomal:Integer;
 begin
- Blky.GetBlkByID(Self.UsekID, Usek);
+ Usek := Self.UsekPred;
  if (Self.SComRel.SymbolType = 1) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
  if ((Usek = nil) or ((Usek.GetGlobalSettings().typ <> _BLK_USEK) and (Usek.GetGlobalSettings().typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
  if ((Usek as TBlkUsek).Souprava = -1) then Exit();     // pokud na useku prede mnou neni souprava, koncim funkci
@@ -1011,14 +1031,24 @@ begin
           end;
         end;
       end else begin
-       // neni postaveno -> zastavit loko
+       // neni povolovaci navest -> zastavit LOKO
        if ((spr.smer = Self.SComRel.smer) and (spr.rychlost <> 0)) then
          spr.SetRychlostSmer(0, Self.SComRel.smer);
       end;
     end else begin
-     // neni JC -> zastavit loko
-     if ((spr.smer = Self.SComRel.smer) and (spr.rychlost <> 0)) then
-       spr.SetRychlostSmer(0, Self.SComRel.smer);
+     // nenalezena jizdni cesta -> muze se jedna o navestidlo v autobloku
+     if (spr.smer = Self.SComRel.smer) then
+      begin
+       if ((Self.IsPovolovaciNavest()) and (not Self.SComStav.padani) and
+           (Self.UsekPred.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
+        begin
+         if (spr.rychlost <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
+           spr.SetRychlostSmer(TBlkTU(Self.UsekPred).GetSettings.rychlost, Self.SComRel.smer)
+        end else begin
+         if (spr.rychlost <> 0) then
+           spr.SetRychlostSmer(0, Self.SComRel.smer);
+        end;
+      end;
     end;
   end;
 
@@ -1034,7 +1064,7 @@ var i, j:Integer;
 begin
  if (Self.SComSettings.events.Count = 0) then Exit(-1);
 
- Blky.GetBlkByID(Self.UsekID, Usek);
+ Usek := Self.UsekPred;
  if ((Usek as TBlkUsek).Souprava < 0) then
   begin
    // na bloku neni zadana souprava
@@ -1070,7 +1100,7 @@ var i, j:Integer;
 begin
  if (Self.SComSettings.events.Count = 0) then Exit(-1);
 
- Blky.GetBlkByID(Self.UsekID, Usek);
+ Usek := Self.UsekPred;
  if ((Usek as TBlkUsek).Souprava < 0) then
   begin
    // na bloku neni zadana souprava
@@ -1197,6 +1227,33 @@ begin
    Self.Change();
   end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.SetUsekPredID(new_id:Integer);
+var i:Integer;
+    ev:TBlkSComSprEvent;
+begin
+ if (Self.SComRel.UsekID = new_id) then Exit();
+ Self.SComRel.UsekID := new_id;
+
+ for i := 0 to Self.SComSettings.events.Count-1 do
+  begin
+   ev := Self.SComSettings.events[i];
+   ev.zastaveni.usekid := Self.SComRel.UsekID;
+   ev.zpomaleni.usekid := Self.SComRel.UsekID;
+   Self.SComSettings.events[i] := ev;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkSCom.GetUsekPred():TBlk;
+begin
+ if (((Self.fUsekPred = nil) and (Self.UsekID <> -1)) or ((Self.fUsekPred <> nil) and (Self.UsekID <> Self.fUsekPred.GetGlobalSettings.id))) then
+   Blky.GetBlkByID(Self.UsekID, Self.fUsekPred);
+ Result := Self.fUsekPred;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -284,7 +284,7 @@ begin
  Self.UsekStav.SprPredict := -1;
  Self.UsekStav.KonecJC    := TJCType.no;
  Self.UsekStav.zpomalovani_ready := false;
- Self.ZesZkrat            := false;
+ Self.UsekStav.zkrat      := false;
  for i := 0 to 3 do Self.UsekStav.StavAr[i] := disabled;
  Self.RemoveAllReduction(Self.UsekStav.redukuji);
  Self.Change();
@@ -952,16 +952,6 @@ begin
   end;
 
  Self.Souprava := (Blk as TBlkUsek).Souprava;
-
- // mazani supravy z trati
- if ((Blk.GetGlobalSettings().typ = _BLK_TU) and ((Blk as TBlkTU).InTrat > -1)
-     and ((Self.GetGlobalSettings().typ = _BLK_USEK) or ((Blk as TBlkTU).InTrat <> TBlkTU(Self).InTrat))) then
-  begin
-   Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
-   if ((Trat <> nil) and (Trat.GetGlobalSettings().typ = _BLK_TRAT)) then
-    (Trat as TBLkTrat).RemoveSpr((Blk as TBlkUsek).Souprava);
-  end;
-
  (Blk as TBlkUsek).Souprava := -1;
 
  ORTCPServer.SendInfoMsg(SenderPnl, 'Loko '+Soupravy.GetSprNameByIndex(Self.Souprava)+' pøesunuta na '+Self.GlobalSettings.name);
