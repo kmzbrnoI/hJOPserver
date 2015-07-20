@@ -122,6 +122,8 @@ type
     procedure MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
 
+    // DEBUG menu:
+    procedure MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:boolean);
     procedure MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure UpdatePadani();
@@ -771,6 +773,20 @@ begin
  Self.Change();
 end;//procedure
 
+procedure TBlkSCom.MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:boolean);
+var Blk:TBlk;
+begin
+ if (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir) then
+  begin
+   Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.irid, Blk);
+   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit();
+   if (enabled) then
+     MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 1)
+   else
+     MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 0);
+  end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSCom.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights);
@@ -810,7 +826,9 @@ begin
  else if (item = 'PN>')  then Self.MenuPNStartClick(SenderPnl, SenderOR)
  else if (item = 'PN<')  then Self.MenuPNStopClick (SenderPnl, SenderOR)
  else if (item = 'PPN')  then Self.MenuPPNClick    (SenderPnl, SenderOR)
- else if (item = 'RNZ')  then Self.MenuRNZClick    (SenderPnl, SenderOR);
+ else if (item = 'RNZ')  then Self.MenuRNZClick    (SenderPnl, SenderOR)
+ else if (item = 'IR>')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, true)
+ else if (item = 'IR<')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, false);
 
  if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
 end;//procedure
@@ -819,6 +837,7 @@ end;//procedure
 
 //vytvoreni menu pro konkretni s-com:
 function TBlkSCom.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+var Blk:TBlk;
 begin
  Result := inherited;
 
@@ -880,9 +899,23 @@ begin
   Result := Result + '!RNZ,';
 
  if (rights >= TORControlRights.superuser) then
+   if (Self.SComStav.redukce_menu > 0) then
+     Result := Result + '-,*ZRUŠ REDUKCI,';
+
+ // DEBUG: jednoduche nastaveni IR pri simulator.dll
+ if (MTB.lib = 2) then
   begin
-   Result := Result + '-,';
-   if (Self.SComStav.redukce_menu > 0) then Result := Result + '*ZRUŠ REDUKCI,';
+   if (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir) then
+    begin
+     Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.irid, Blk);
+     if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_IR)) then
+      begin
+       case (TBlkIR(Blk).Stav) of
+         TIRStav.uvolneno : Result := Result + '-,*IR>,';
+         TIRStav.obsazeno : Result := Result + '-,*IR<,';
+       end;//case
+      end;
+    end;
   end;
 end;//procedure
 
