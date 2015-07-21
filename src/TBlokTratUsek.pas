@@ -805,15 +805,17 @@ begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
  if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (Self.lTU <> nil)) then
   begin
-   TBlkSCom(Blk).UsekID := Self.lTU.GetGlobalSettings.id;
-   TBlkSCom(Blk).Smer   := THVStanoviste.lichy;
+   TBlkSCom(Blk).UsekID   := Self.lTU.GetGlobalSettings.id;
+   TBlkSCom(Blk).Smer     := THVStanoviste.lichy;
+   TBlkSCom(Blk).autoblok := true;
   end;
 
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
  if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (Self.sTU <> nil)) then
   begin
-   TBlkSCom(Blk).UsekID := Self.sTU.GetGlobalSettings.id;
-   TBlkSCom(Blk).Smer   := THVStanoviste.sudy;
+   TBlkSCom(Blk).UsekID   := Self.sTU.GetGlobalSettings.id;
+   TBlkSCom(Blk).Smer     := THVStanoviste.sudy;
+   TBlkSCom(Blk).autoblok := true;
   end;
 end;
 
@@ -890,21 +892,21 @@ begin
      and (TBlkTrat(Self.Trat).Zaver)) then
    JCDb.RusJC(Self);
 
-  // nastavime kryci navestidlo
-  if (Self.navKryci <> nil) then
-   begin
-    if (not Self.sectReady) then
-     begin
-      // sekce obsazena -> navetidlo na STUJ
-      TBlkSCom(Self.navKryci).Navest := 0
-     end else begin
-      // sekce uvolnena -> hledame dalsi navestidlo
-      if ((Self.nextNav = nil) or (TBlkSCom(Self.nextNav).Navest = 0)) then
-        TBlkSCom(Self.navKryci).Navest := 2
-      else
-        TBlkSCom(Self.navKryci).Navest := 1;
-     end;
-   end;
+ // nastavime kryci navestidlo
+ if ((Self.navKryci <> nil) and (not TBlkSCom(Self.navKryci).ZAM)) then
+  begin
+   if (not Self.sectReady) then
+    begin
+     // sekce obsazena -> navetidlo na STUJ
+     TBlkSCom(Self.navKryci).Navest := 0
+    end else begin
+     // sekce uvolnena -> hledame dalsi navestidlo
+     if ((Self.nextNav = nil) or (TBlkSCom(Self.nextNav).Navest = 0)) then
+       TBlkSCom(Self.navKryci).Navest := 2
+     else
+       TBlkSCom(Self.navKryci).Navest := 1;
+    end;
+  end;
 
 end;//procedure
 

@@ -57,6 +57,7 @@ type
 
   privol_start:TDateTime;                        // start privolavaci navesti (privolavacka sviti pouze omezeny cas a pak se vypne)
   privol_timer_id:Integer;                       // id timeru ukonceni privolavacky v panelu, ze ktreho byla JC postavena
+  autoblok:boolean;
  end;
 
  // vlastnosti navestidla ziskane ze souboru .spnl (od reliefu, resp. z Mergeru)
@@ -78,6 +79,7 @@ type
      dn_jc_ref : nil;
      privol_ref : nil;
      privol_timer_id : 0;
+     autoblok : false;
    );
 
    // privolavaci navest sviti jednu minitu a 30 sekund
@@ -187,6 +189,7 @@ type
     property DNjc:TJC read SComStav.dn_jc_ref write SComStav.dn_jc_ref;
     property privol:TJC read SComStav.privol_ref write SComStav.privol_ref;
     property UsekPred:TBlk read GetUsekPred;
+    property autoblok:boolean read SComStav.autoblok write SComStav.autoblok;
 
     //GUI:
 
@@ -217,7 +220,7 @@ implementation
 
 uses TechnologieMTB, TBloky, TOblRizeni, TBlokUsek, TJCDatabase, TCPServerOR,
       GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
-      TBlokTratUsek;
+      TBlokTratUsek, TBlokTrat;
 
 constructor TBlkSCom.Create(index:Integer);
 begin
@@ -621,6 +624,12 @@ begin
    Blky.SprPrediction(Self);
   end;//if Self.DNjc <> nil
 
+ if ((Self.UsekPred <> nil) and (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU)) then
+  begin
+   if (TBlkTU(Self.UsekPred).nextTU <> nil) then TBlkTU(Self.UsekPred).nextTU.Change();
+   if (TBlkTU(Self.UsekPred).Trat <> nil) then TBlkTrat(TBlkTU(Self.UsekPred).Trat).UpdateSprPredict();
+  end;
+
  Self.Change();
 end;//procedure
 
@@ -799,9 +808,9 @@ begin
     if (((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) then
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
-      if (not Self.SComSettings.zamknuto) then Self.MenuVCStartClick(SenderPnl, SenderOR);
+      if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
   end;
-  middle   : if (not Self.SComSettings.zamknuto) then Self.MenuPCStartClick(SenderPnl, SenderOR);
+  middle   : if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
  end;//case
 end;//procedure
 
@@ -844,8 +853,9 @@ begin
  // pokud je navestidlo trvale zamkle, neumoznime zadne volby
  if (Self.SComSettings.zamknuto) then Exit();
 
- if (((((Self.DNjc = nil) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) or (Self.DNjc.RozpadBlok > 0)) and (Self.Navest <> 8))
-    or ((SenderOR as TOR).stack.volba = VZ) or (Self.SComStav.ZacatekVolba <> TBlkSCOmVolba.none)) then
+ if ((((((Self.DNjc = nil) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) or (Self.DNjc.RozpadBlok > 0)) and (Self.Navest <> 8))
+    or ((SenderOR as TOR).stack.volba = VZ) or (Self.SComStav.ZacatekVolba <> TBlkSCOmVolba.none)) and
+    (not Self.autoblok)) then
   begin
     case (Self.SComStav.ZacatekVolba) of
      TBlkSCOmVolba.VC : Result := Result + 'VC<,';
@@ -861,7 +871,7 @@ begin
     Result := Result + '-,';
   end;
 
- if (Self.Navest > 0) then
+ if ((Self.Navest > 0) and (not Self.autoblok)) then
    Result := Result + 'STUJ,';
 
  if (Self.Navest = 8) then
@@ -1277,6 +1287,8 @@ begin
    ev.zpomaleni.usekid := Self.SComRel.UsekID;
    Self.SComSettings.events[i] := ev;
   end;
+
+ if (new_id = -1) then Self.autoblok := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

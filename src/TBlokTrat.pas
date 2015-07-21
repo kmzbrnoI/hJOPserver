@@ -862,6 +862,7 @@ begin
        for i := Self.TratSettings.Useky.Count-2 downto 0 do
         begin
          Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(Blk));
+         if ((Blk.navKryci <> nil) and (TBlkSCom(Blk.navKryci).Navest = 0)) then break;         
          if (Blk.Souprava > -1) then
           begin
            last.SprPredict := Blk.Souprava;
@@ -885,6 +886,7 @@ begin
        for i := 1 to Self.TratSettings.Useky.Count-1 do
         begin
          Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(Blk));
+         if ((Blk.navKryci <> nil) and (TBlkSCom(Blk.navKryci).Navest = 0)) then break;
          if (Blk.Souprava > -1) then
           begin
            last.SprPredict := Blk.Souprava;

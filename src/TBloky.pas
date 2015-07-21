@@ -786,11 +786,15 @@ begin
 
        // v trati jsou jiz soupravy -> konec predpovidani
        if (TBlkTrat(Trat).stav.soupravy.cnt > 0) then Exit();
+       TBlkTrat(Trat).UpdateSprPredict();
 
        case ((Trat as TBlkTrat).Smer) of
         TTratSmer.AtoB : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[(Trat as TBlkTrat).GetSettings().Useky.Count-1], Usek);
         TTratSmer.BtoA : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[0], Usek);
        end;//case
+
+       // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
+       if (TBlkUsek(Usek).SprPredict <> spr) then Exit();
       end;
 
      // do useku vlozime predpovidnou soupravu
