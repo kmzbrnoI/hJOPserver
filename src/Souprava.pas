@@ -40,6 +40,7 @@ type
     data:TSoupravaData;
     findex:Integer;
     filefront:Integer;
+    speedBuffer:PInt;                                                           // pokud tento ukazatel neni nil, rychlsot je nastavovana do promenne, na kterou ukazuje a ne primo souprave; to se hodi napriklad v zastavce v TU
 
     procedure LoadFromFile(ini:TMemIniFile; const section:string);
     procedure LoadFromPanelStr(spr:TStrings; Usek:TObject; OblR:TObject);
@@ -66,16 +67,12 @@ type
     procedure SaveToFile(ini:TMemIniFile; const section:string);
 
     function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
-
     procedure UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject);
-
     procedure SetRychlostSmer(speed:Integer; dir:THVStanoviste);
-
     procedure VezmiVlak();
-
     procedure UpdateFront();
-
     procedure ChangeSmer();
+    procedure SetSpeedBuffer(speedBuffer:PInt);
 
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
@@ -104,6 +101,7 @@ uses THVDatabase, Logging, ownStrUtils, THnaciVozidlo, SprDb, TBlokUsek, DataSpr
 constructor TSouprava.Create(ini:TMemIniFile; const section:string; index:Integer);
 begin
  inherited Create();
+ Self.speedBuffer := nil;
  Self.changed := false;
  Self.findex := index;
  Self.LoadFromFile(ini, section);
@@ -112,6 +110,7 @@ end;//ctor
 constructor TSouprava.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject);
 begin
  inherited Create();
+ Self.speedBuffer := nil;
  Self.findex := index;
  Self.LoadFromPanelStr(panelStr, Usek, OblR);
 end;//ctor
@@ -432,6 +431,14 @@ begin
  if ((TBlk(Self.front).GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
    TBlkTU(Self.front).rychUpdate := false;
 
+ Self.data.smer := dir;
+ if (Self.speedBuffer = nil) then
+   Self.data.rychlost := speed
+ else begin
+   Self.speedBuffer^ := speed;
+   Exit();
+ end;
+
  for i := 0 to Self.data.HV.cnt-1 do
   begin
    if (HVDb.HVozidla[Self.data.HV.HVs[i]].ruc) then
@@ -448,9 +455,6 @@ begin
    else
     writelog('LOKO ' + IntToStr(Self.data.HV.HVs[i]) + ' ukradena, nenastavuji rychlost', WR_MESSAGE, 0);
   end;
-
- Self.data.rychlost := speed;
- Self.data.smer     := dir;
 
  if ((speed > 0) and (Assigned(Self.front)) and ((Self.front as TBlkUsek).VlakPresun)) then
   (Self.front as TBlkUsek).VlakPresun := false;
@@ -595,6 +599,13 @@ begin
  if (Self.front <> nil) then
    (Self.front as TBlkUsek).Change();  // kvuli sipce
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSouprava.SetSpeedBuffer(speedBuffer:PInt);
+begin
+ Self.speedBuffer := speedBuffer;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

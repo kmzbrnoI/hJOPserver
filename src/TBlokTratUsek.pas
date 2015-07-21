@@ -41,20 +41,31 @@ Format dat zastavky v souboru bloku:
   pokud je zast prazdny string, zastavka je disabled
 }
 
-{
- TODO: zastavka na stejny IR, jako navestidlo autobloku
-}
-
 interface
 
 uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, RPConst,
       Generics.Collections;
 
 type
+ TBlkTUSignal = (disabled = -1, usek = 0, ir = 1);                              // typ zastavkoveho eventu
+
+ TBlkTUZastEvent = record
+  signal:TBlkTUSignal;                                                          // je zastavovaci udalost IR, nebo usek
+  usekpart:Integer;                                                               // id useku a index jeho casti
+  irid:Integer;                                                                   // id bloku IR
+  speed:Integer;                                                                  // zpomalovaci rychlost z km/h (40, 50, 60...)
+  stav:boolean;                                                                   // zastavovaci stav (false = uvolneno, true = obsazeno)
+ end;
+
+ TBlkTUZastEvents = record                                                      // cidla zastavky v jednom smeru
+  zastaveni: TBlkTUZastEvent;                                                     // zastavovaci cidlo
+  zpomaleni: TBlkTUZastEvent;                                                     // zpomalovaci cidlo
+ end;
+
  TBlkTUZastavka = record                                                        // zastavka na TU
   enabled:boolean;                                                                // existuje v useku zastavka?
-  IR_lichy:Integer;                                                               // odkaz na zastavovaci IR v lichem smeru
-  IR_sudy:Integer;                                                                // odkaz na zastavovaci IR v sudem smeru
+  ev_lichy:TBlkTUZastEvents;                                                      // odkaz na zastavovaci a zpomalovaci event v lichem smeru
+  ev_sudy:TBlkTUZastEvents;                                                       // odkaz na zastavovaci a zpomalovaci event v sudem smeru
   soupravy:TStrings;                                                              // typy souprav, pro ktere je zastavka
   max_delka:Integer;                                                              // maximalni delka soupravy pro zastaveni v zastavce
   delay:TTime;                                                                    // cas cekani v zastavce
@@ -75,7 +86,8 @@ type
   zast_run_time:TDateTime;                                                        // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
   zast_rych:Integer;                                                              // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
   zast_enabled:boolean;                                                           // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
-  zast_passed:boolean;                                                            // atdy je ulozeno true, pokud souprava zastavku jiz projela
+  zast_passed:boolean;                                                            // tady je ulozeno true, pokud souprava zastavku jiz projela
+  zast_zpom_ready:boolean;                                                        // jestli je TU pripraveny ke zpomalovani soupravy v zastavce
 
   bpInBlk:boolean;                                                                // jestli je v useku zavedena blokova podminka
                                                                                   // bpInBlk = kontroluji obsazeni bloku, pri uvolneni useku bez predani dale vyhlasit poruchu BP
@@ -90,13 +102,12 @@ type
     inTrat: -1;
     zast_stopped : false;
     zast_enabled : true;
+    zast_zpom_ready : false;
     sprRychUpdateIter : 0;
    );
 
    _def_tu_zastavka:TBlkTUZastavka = (                                          // zakladni stav zastavky
     enabled : false;
-    IR_lichy : -1;
-    IR_sudy : -1;
     soupravy : nil;
     max_delka : 0;
    );
@@ -105,12 +116,8 @@ type
    TUSettings:TBlkTUSettings;
    fTUStav:TBlkTUStav;
 
-   fZastIRLichy, fZastIRSudy,                                                   // odkaz na IR zastavky v lichem a sudem smeru
    fNavKryci, fTrat : TBlk;                                                     // odkaz na kryci navestidla v lichem a sudem smeru
                                                                                 // pro pristup k temto blokum pouzivat property bez f, toto jsou pouze pomocne promenne!
-
-    function GetZastIRLichy():TBlk;                                             // vrati ZastIRLichy, vyuzito u property \ZastIRLichy
-    function GetZastIRSudy():TBlk;                                              // vrati ZastIRSudy, vyuzito u property \ZastIRSudy
 
     procedure ZastUpdate();                                                     // technologie zastavky (rizeni zastavovani z rozjizdeni vlaku)
     procedure ZastRunTrain();                                                   // zastavit vlak v zastavce
@@ -144,8 +151,10 @@ type
     procedure SetRychUpdate(state:boolean);                                     // nastavi \sprRychUpdateIter
     function GetRychUpdate:boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
 
-    property zastIRlichy:TBlk read GetZastIRLichy;                              // IR zastavky v lichem smeru
-    property zastIRsudy:TBlk read GetZastIRSudy;                                // IR zastavky v sudem smeru
+    function ParseZastEvent(str:string):TBlkTUZastEvent;                        // nacteni eventu zastavky ze souboru
+    function GetZastEventString(data:TBlkTUZastEvent):string;                   // vygenerovani stringu eventu zastavky pro ulozeni do souboru
+
+    function IsEvent(data:TBlkTUZastEvent):boolean;                             // nastal zastavkovy event?
 
   protected
     procedure SetUsekSpr(spr:Integer); override;                                // nastaven soupravy useku, kvuli warningum kompilatoru presunuto do protected (v bazove tride je protected)
@@ -208,7 +217,7 @@ type
 implementation
 
 uses SprDb, TBloky, TBlokIR, TCPServerOR, TOblRizeni, TBlokTrat, TBlokSCom,
-      TJCDatabase;
+      TJCDatabase, Prevody;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -219,8 +228,6 @@ begin
  Self.GlobalSettings.typ := _BLK_TU;
  Self.fTUStav := _def_tu_stav;
 
- Self.fZastIRLichy := nil;
- Self.fZastIRSUdy  := nil;
  Self.fTrat        := nil;
  Self.fNavKryci    := nil;
  Self.lsectMaster  := nil;
@@ -242,7 +249,6 @@ end;//dtor
 // nacte konfiguracni data ze souboru
 
 procedure TBlkTU.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -252,30 +258,35 @@ begin
  Self.TUSettings.rychlost := ini_tech.ReadInteger(section, 'rychlost', -1);
  Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
- str := TStringList.Create();
- ExtractStrings(['|'],[], PChar(ini_tech.ReadString(section, 'zast', '')), str);
-
  // nacitani zastavky
  if (Assigned(Self.TUSettings.Zastavka.soupravy)) then Self.TUSettings.Zastavka.soupravy.Free();
  Self.TUSettings.Zastavka := _def_tu_zastavka;
  Self.TUSettings.Zastavka.soupravy := TStringList.Create();
 
- if (str.Count > 0) then
+ Self.TUsettings.Zastavka.enabled := ini_tech.ReadBool(section, 'zast_enabled', false);
+ if (Self.TUsettings.Zastavka.enabled) then
   begin
    try
-    Self.TUsettings.Zastavka.enabled   := true;
-    Self.TUsettings.Zastavka.IR_lichy  := StrToInt(str[0]);
-    Self.TUsettings.Zastavka.IR_sudy   := StrToInt(str[1]);
-    Self.TUsettings.Zastavka.max_delka := StrToInt(str[2]);
-    Self.TUsettings.Zastavka.delay     := StrToTime(str[3]);
-    Self.TUsettings.Zastavka.soupravy.Clear();
-    ExtractStrings([';'],[],PChar(str[4]), Self.TUsettings.Zastavka.soupravy);
+     Self.TUsettings.Zastavka.ev_lichy.zastaveni  := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_lichy_zast', ''));
+     Self.TUsettings.Zastavka.ev_lichy.zpomaleni  := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_lichy_zpom', ''));
+     Self.TUsettings.Zastavka.ev_sudy.zastaveni   := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_sudy_zast', ''));
+     Self.TUsettings.Zastavka.ev_sudy.zpomaleni   := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_sudy_zpom', ''));
+
+     Self.TUsettings.Zastavka.max_delka := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
+     Self.TUsettings.Zastavka.delay     := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
+
+     Self.TUsettings.Zastavka.soupravy.Clear();
+     ExtractStrings([';'],[],PChar(ini_tech.ReadString(section, 'zast_soupravy', '')), Self.TUsettings.Zastavka.soupravy);
    except
-    Self.TUsettings.Zastavka := _def_tu_zastavka;
+     Self.TUsettings.Zastavka.enabled := false;
    end;
+  end else begin
+   Self.TUsettings.Zastavka.ev_lichy.zastaveni.signal := TBlkTUSignal.disabled;
+   Self.TUsettings.Zastavka.ev_lichy.zpomaleni.signal := TBlkTUSignal.disabled;
+   Self.TUsettings.Zastavka.ev_sudy.zastaveni.signal  := TBlkTUSignal.disabled;
+   Self.TUsettings.Zastavka.ev_sudy.zpomaleni.signal  := TBlkTUSignal.disabled;
   end;
 
- str.Free();
 end;//procedure
 
 // ulozi konfiguracni data do souboru
@@ -291,18 +302,21 @@ begin
  ini_tech.WriteInteger(section, 'rychlost', Self.TUSettings.rychlost);
 
  // ukladani zastavky
+ ini_tech.WriteBool(section, 'zast_enabled', Self.TUsettings.Zastavka.enabled);
  if (Self.TUsettings.Zastavka.enabled) then
   begin
-   with (Self.TUsettings.Zastavka) do
-    begin
-     str := IntToStr(IR_lichy) + '|' + IntToStr(IR_sudy) + '|' + IntToStr(max_delka) + '|' + TimeToStr(delay) + '|';
-     for i := 0 to soupravy.Count-1 do
-      str := str + soupravy[i] + ';';
-    end;
+   ini_tech.WriteString(section, 'zast_ev_lichy_zast', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_lichy.zastaveni));
+   ini_tech.WriteString(section, 'zast_ev_lichy_zpom', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_lichy.zpomaleni));
+   ini_tech.WriteString(section, 'zast_ev_sudy_zast', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_sudy.zastaveni));
+   ini_tech.WriteString(section, 'zast_ev_sudy_zpom', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_sudy.zpomaleni));
 
-   ini_tech.WriteString(section, 'zast', str);
-  end else begin
-   ini_tech.WriteString(section, 'zast', '');
+   ini_tech.WriteInteger(section, 'zast_max_delka', Self.TUsettings.Zastavka.max_delka);
+   ini_tech.WriteString(section, 'zast_delay', TimeToStr(Self.TUsettings.Zastavka.delay));
+
+   str := '';
+   for i := 0 to Self.TUsettings.Zastavka.soupravy.Count-1 do
+    str := str + Self.TUsettings.Zastavka.soupravy[i] + ';';
+   ini_tech.WriteString(section, 'zast_soupravy', str);
   end;
 
 end;//procedure
@@ -397,11 +411,38 @@ begin
 
    if (not found) then Exit();
 
+   // zpomalovani pred zastavkou:
+   if (Self.fTUStav.zast_zpom_ready) then
+    begin
+     case (Soupravy.soupravy[Self.Souprava].smer) of
+      THVSTanoviste.lichy : if ((Soupravy.soupravy[Self.Souprava].rychlost > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and (Self.IsEvent(Self.TUSettings.zastavka.ev_lichy.zpomaleni))) then
+                             begin
+                              Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
+                              Self.fTUStav.zast_zpom_ready := false;
+                              Self.rychUpdate := false;
+                             end;
+      THVSTanoviste.sudy  : if ((Soupravy.soupravy[Self.Souprava].rychlost > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and (Self.IsEvent(Self.TUSettings.zastavka.ev_sudy.zpomaleni))) then
+                             begin
+                              Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
+                              Self.fTUStav.zast_zpom_ready := false;
+                              Self.rychUpdate := false;
+                             end;
+     end;//case
+    end;
+
+
+   // zastavovani v zastavce
    case (Soupravy.soupravy[Self.Souprava].smer) of
-    THVSTanoviste.lichy : if ((Assigned(Self.zastIRlichy)) and ((Self.zastIRlichy as TBlkIR).Stav = TIRStav.obsazeno)) then
-                              Self.ZastStopTrain();
-    THVSTanoviste.sudy  : if ((Assigned(Self.zastIRsudy)) and ((Self.zastIRsudy as TBlkIR).Stav = TIRStav.obsazeno)) then
-                              Self.ZastStopTrain();
+    THVSTanoviste.lichy : if (Self.IsEvent(Self.TUSettings.zastavka.ev_lichy.zastaveni)) then
+                           begin
+                            Self.ZastStopTrain();
+                            Self.rychUpdate := false;
+                           end;
+    THVSTanoviste.sudy  : if (Self.IsEvent(Self.TUSettings.zastavka.ev_sudy.zastaveni)) then
+                           begin
+                            Self.ZastStopTrain();
+                            Self.rychUpdate := false;
+                           end;
    end;//case
   end else begin
    // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
@@ -419,24 +460,6 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
-// zastavky:
-
-function TBlkTU.GetZastIRLichy():TBlk;
-begin
- if (((Self.fZastIRLichy = nil) and (Self.TUSettings.Zastavka.IR_lichy <> -1)) or ((Self.fZastIRLichy <> nil) and (Self.fZastIRLichy.GetGlobalSettings.id <> Self.TUSettings.Zastavka.IR_lichy))) then
-   Blky.GetBlkByID(Self.TUSettings.Zastavka.IR_lichy, Self.fZastIRLichy);
- Result := Self.fZastIRLichy;
-end;//function
-
-function TBlkTU.GetZastIRSudy():TBlk;
-begin
- if (((Self.fZastIRSudy = nil) and (Self.TUSettings.Zastavka.IR_sudy <> -1)) or ((Self.fZastIRSudy <> nil) and (Self.fZastIRSudy.GetGlobalSettings.id <> Self.TUSettings.Zastavka.IR_sudy))) then
-   Blky.GetBlkByID(Self.TUSettings.Zastavka.IR_sudy, Self.fZastIRSudy);
- Result := Self.fZastIRSudy;
-end;//function
-
-
-////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.ZastStopTrain();
 begin
@@ -446,6 +469,7 @@ begin
  try
    Self.fTUStav.zast_rych := Soupravy.soupravy[Self.Souprava].rychlost;
    Soupravy.soupravy[Self.Souprava].rychlost := 0;
+   Soupravy.soupravy[Self.Souprava].SetSpeedBuffer(@Self.fTUStav.zast_rych);
  except
 
  end;
@@ -459,6 +483,7 @@ begin
  Self.fTUStav.zast_passed  := true;
 
  try
+   Soupravy.soupravy[Self.Souprava].SetSpeedBuffer(nil);
    Soupravy.soupravy[Self.Souprava].rychlost := Self.TUStav.zast_rych;
  except
 
@@ -522,8 +547,16 @@ begin
 
  if (spr = -1) then
   begin
-   Self.fTUStav.zast_stopped := false;
-   Self.fTUStav.zast_passed  := false;
+   if (Self.fTUStav.zast_stopped) then
+    begin
+     // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
+     // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
+     Soupravy.soupravy[old_spr].SetSpeedBuffer(nil);
+     Self.fTUStav.zast_stopped := false;
+    end;
+
+   Self.fTUStav.zast_passed     := false;
+   Self.fTUStav.zast_zpom_ready := false;
 
    // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
    if (Self.Trat <> nil) then
@@ -537,6 +570,8 @@ begin
      // zavolame uvolneni posledniho TU z jizdni cesty
      Self.UvolnenoZJC();
     end;
+  end else begin
+   if ((Self.TUSettings.zastavka.enabled) and (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
   end;
 end;
 
@@ -1006,6 +1041,96 @@ begin
    if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.Souprava > -1)
     or ((blk.Zaver <> TJCType.no) and (blk.prevTU <> nil))) then Exit(false);
  Result := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+//ziskavani zpomalovacich a zastavovaich dat ze souboru (parsing dat)
+//format RychEvent data: textove ulozeny 1 radek, kde jsou data oddelena ";"
+// : typ_zastaveni(0=usek;1=ir);signal_true_false;
+//    pro usek nasleduje: usekpart;speed;
+//    pro ir nasleduje: irid;speed;
+//    pokud zastavovaci event neni definovan, na vstupu je prazdny string
+function TBlkTU.ParseZastEvent(str:string):TBlkTUZastEvent;
+var data:TStrings;
+begin
+ data := TStringList.Create();
+
+ ExtractStrings([';'], [], PChar(str), data);
+
+ Result.usekpart := -1;
+ Result.irid     := -1;
+ Result.speed    := 0;
+ if (length(str) = 0) then
+  begin
+   Result.signal := TBlkTUSignal.disabled;
+   Exit();
+  end;
+
+ try
+   Result.stav := PrevodySoustav.IntToBool(StrToInt(data[1]));
+
+   Result.signal := TBlkTUSignal(StrToInt(data[0]));
+   case (Result.signal) of
+    usek: Result.usekpart := StrToInt(data[2]);
+    ir  : Result.irid     := StrToInt(data[2]);
+   end;//case
+
+  if (data.Count > 3) then
+    Result.speed := StrToInt(data[3])
+  else
+    Result.speed := 0;
+ except
+  Result.signal := TBlkTUSIgnal.disabled;
+ end;
+
+ data.Free();
+end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTU.GetZastEventString(data:TBlkTUZastEvent):string;
+begin
+ if (data.signal = TBlkTUSignal.disabled) then Exit('');
+
+ case (data.signal) of
+  TBlkTUSignal.usek : Result := '0;';
+  TBlkTUSignal.ir   : Result := '1;';
+ end;
+ if (data.stav) then
+   Result := Result + '1;'
+ else
+   Result := Result + '0;';
+
+ case (data.signal) of
+  TBlkTUSignal.usek : Result := Result + IntToStr(data.usekpart) + ';';
+  TBlkTUSignal.ir   : Result := Result + IntToStr(data.irid) + ';';
+ end;
+ Result := Result + IntToStr(data.speed);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTU.IsEvent(data:TBlkTUZastEvent):boolean;
+var Blk:TBlk;
+    obsz:TUsekStavAr;
+begin
+ case (data.signal) of
+  TBlkTUSignal.disabled: Exit(false);
+
+  TBlkTUSignal.usek: begin
+    Self.GetObsazeno(obsz);
+    Result := (((obsz[data.usekpart] = TUsekStav.obsazeno) and (data.stav)) or
+               ((obsz[data.usekpart] = TUsekStav.uvolneno) and (not data.stav)));
+  end;
+
+  TBlkTUSignal.IR:begin
+    Blky.GetBlkByID(data.irid, Blk);
+    if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit(true);
+    Result := (((TBlkIR(Blk).Stav = TIrStav.obsazeno) and (data.stav)) or
+               ((TBlkIR(Blk).Stav = TIrStav.uvolneno) and (not data.stav)));
+  end;
+ end;//case
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

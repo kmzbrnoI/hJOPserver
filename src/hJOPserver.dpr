@@ -108,7 +108,8 @@ uses
   fFuncsSet in 'fFuncsSet.pas' {F_FuncsSet},
   FunkceVyznam in 'FunkceVyznam.pas',
   TBlokTratUsek in 'TBlokTratUsek.pas',
-  fBlkTU in 'fBlkTU.pas' {F_BlkTU};
+  fBlkTU in 'fBlkTU.pas' {F_BlkTU},
+  fBlkTUZastEvent in 'fBlkTUZastEvent.pas' {F_BlkTUZastEvent};
 
 {$R *.res}
 
@@ -134,6 +135,7 @@ uses
   Application.CreateForm(TF_HV_Pom, F_HV_Pom);
   Application.CreateForm(TF_MJCEdit, F_MJCEdit);
   Application.CreateForm(TF_FuncsSet, F_FuncsSet);
+  Application.CreateForm(TF_BlkTUZastEvent, F_BlkTUZastEvent);
   F_Splash.AddStav('Vytváøím hlavní okno');
   F_Main.CreateSystem;
   F_Splash.AddStav('Vytváøím vedlejší okna');

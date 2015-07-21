@@ -4,8 +4,8 @@ object F_BlkTU: TF_BlkTU
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 421
-  ClientWidth = 601
+  ClientHeight = 529
+  ClientWidth = 624
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,6 +16,8 @@ object F_BlkTU: TF_BlkTU
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object L_Usek02: TLabel
@@ -138,8 +140,8 @@ object F_BlkTU: TF_BlkTU
     ParentFont = False
   end
   object B_OK: TButton
-    Left = 519
-    Top = 390
+    Left = 7
+    Top = 497
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -152,8 +154,8 @@ object F_BlkTU: TF_BlkTU
     OnClick = B_OKClick
   end
   object B_Storno: TButton
-    Left = 440
-    Top = 390
+    Left = 95
+    Top = 497
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -562,8 +564,8 @@ object F_BlkTU: TF_BlkTU
   object GB_Zastavka: TGroupBox
     Left = 324
     Top = 8
-    Width = 268
-    Height = 259
+    Width = 293
+    Height = 513
     Caption = ' Zast'#225'vka '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -611,32 +613,6 @@ object F_BlkTU: TF_BlkTU
       Font.Style = []
       ParentFont = False
     end
-    object Label8: TLabel
-      Left = 16
-      Top = 152
-      Width = 154
-      Height = 13
-      Caption = 'IR pro zastaven'#237' v lich'#233'm sm'#283'ru:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label9: TLabel
-      Left = 16
-      Top = 197
-      Width = 155
-      Height = 13
-      Caption = 'IR pro zastaven'#237' v sud'#233'm sm'#283'ru:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-    end
     object CHB_Zastavka: TCheckBox
       Left = 16
       Top = 17
@@ -655,7 +631,7 @@ object F_BlkTU: TF_BlkTU
     object E_Zast_Spr: TEdit
       Left = 16
       Top = 59
-      Width = 233
+      Width = 265
       Height = 21
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -667,8 +643,8 @@ object F_BlkTU: TF_BlkTU
       Text = 'E_Zast_Spr'
     end
     object SE_Zast_DelkaSpr: TSpinEdit
-      Left = 184
-      Top = 89
+      Left = 216
+      Top = 88
       Width = 65
       Height = 22
       Font.Charset = DEFAULT_CHARSET
@@ -683,8 +659,8 @@ object F_BlkTU: TF_BlkTU
       Value = 0
     end
     object ME_Zast_Delay: TMaskEdit
-      Left = 184
-      Top = 121
+      Left = 216
+      Top = 120
       Width = 65
       Height = 21
       Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
@@ -705,35 +681,24 @@ object F_BlkTU: TF_BlkTU
       TabOrder = 3
       Text = '00:00'
     end
-    object CB_Zast_IR_lichy: TComboBox
-      Left = 16
-      Top = 171
-      Width = 233
-      Height = 21
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 13
-      ParentFont = False
+    object PC_Zastavka: TPageControl
+      Left = 3
+      Top = 139
+      Width = 286
+      Height = 371
+      ActivePage = TS_Zast_lichy
       TabOrder = 4
-    end
-    object CB_Zast_IR_sudy: TComboBox
-      Left = 16
-      Top = 216
-      Width = 233
-      Height = 21
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 13
-      ParentFont = False
-      TabOrder = 5
+      object TS_Zast_lichy: TTabSheet
+        Caption = 'Lich'#253' sm'#283'r'
+        ExplicitHeight = 329
+      end
+      object TS_Zast_sudy: TTabSheet
+        Caption = 'Sud'#253' sm'#283'r'
+        ImageIndex = 1
+        ExplicitLeft = 40
+        ExplicitWidth = 210
+        ExplicitHeight = 165
+      end
     end
   end
   object CHB_SmycBlok: TCheckBox
@@ -754,9 +719,9 @@ object F_BlkTU: TF_BlkTU
     TabOrder = 9
   end
   object GB_Autoblok: TGroupBox
-    Left = 324
-    Top = 273
-    Width = 268
+    Left = 8
+    Top = 371
+    Width = 304
     Height = 112
     Caption = ' Autoblok '
     TabOrder = 10
@@ -775,8 +740,8 @@ object F_BlkTU: TF_BlkTU
       Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v sud'#233'm sm'#283'ru:'
     end
     object CHB_NavL: TCheckBox
-      Left = 232
-      Top = 16
+      Left = 279
+      Top = 14
       Width = 17
       Height = 17
       TabOrder = 0
@@ -785,15 +750,15 @@ object F_BlkTU: TF_BlkTU
     object CB_NavL: TComboBox
       Left = 16
       Top = 35
-      Width = 233
+      Width = 280
       Height = 21
       Style = csDropDownList
       ItemHeight = 13
       TabOrder = 1
     end
     object CHB_NavS: TCheckBox
-      Left = 232
-      Top = 64
+      Left = 279
+      Top = 62
       Width = 17
       Height = 17
       TabOrder = 2
@@ -802,7 +767,7 @@ object F_BlkTU: TF_BlkTU
     object CB_NavS: TComboBox
       Left = 16
       Top = 83
-      Width = 233
+      Width = 280
       Height = 21
       Style = csDropDownList
       ItemHeight = 13

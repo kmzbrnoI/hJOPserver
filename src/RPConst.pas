@@ -52,6 +52,8 @@ type
 
  PTObject = ^TObject;
 
+ PInt = ^Integer;
+
  TArSmallI = array of Integer;
  TArStr = array of string;
  PTArSmallI = ^TArSmallI;

@@ -293,9 +293,9 @@ end;//procedure
 
 procedure TBlkSCom.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
 
- Self.SaveMTB(ini_tech,section,Self.SComSettings.MTBAddrs);
+ Self.SaveMTB(ini_tech,section, Self.SComSettings.MTBAddrs);
  ini_tech.WriteString(section, 'ev', Self.GetEvents());
  ini_tech.WriteInteger(section, 'OutType', Integer(Self.SComSettings.OutputType));
  ini_tech.WriteInteger(section, 'zpoz', Self.SComSettings.ZpozdeniPadu);
@@ -581,6 +581,12 @@ begin
     (Self.UsekPred as TBlkUsek).SComJCRef := nil;
   end;
 
+ if (Self.autoblok) then
+  begin
+   if (TBlkTU(Self.UsekPred).nextTU <> nil) then TBlkTU(Self.UsekPred).nextTU.Change();
+   if (TBlkTU(Self.UsekPred).Trat <> nil) then TBlkTrat(TBlkTU(Self.UsekPred).Trat).UpdateSprPredict();
+  end;
+
  Self.UpdateRychlostSpr(true);
  Self.Change();
 end;//procedure
@@ -623,12 +629,6 @@ begin
     end;
    Blky.SprPrediction(Self);
   end;//if Self.DNjc <> nil
-
- if ((Self.UsekPred <> nil) and (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU)) then
-  begin
-   if (TBlkTU(Self.UsekPred).nextTU <> nil) then TBlkTU(Self.UsekPred).nextTU.Change();
-   if (TBlkTU(Self.UsekPred).Trat <> nil) then TBlkTrat(TBlkTU(Self.UsekPred).Trat).UpdateSprPredict();
-  end;
 
  Self.Change();
 end;//procedure

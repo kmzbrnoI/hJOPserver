@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, fSettings,
   fBlkUsekSysVars, TBloky, TBlok, TBlokTratUsek, RPConst, Mask, StrUtils,
-  TBlokUsek;
+  TBlokUsek, fBlkTUZastEvent;
 
 type
   TF_BlkTU = class(TForm)
@@ -47,10 +47,6 @@ type
     SE_Zast_DelkaSpr: TSpinEdit;
     Label7: TLabel;
     ME_Zast_Delay: TMaskEdit;
-    Label8: TLabel;
-    CB_Zast_IR_lichy: TComboBox;
-    CB_Zast_IR_sudy: TComboBox;
-    Label9: TLabel;
     CHB_SmycBlok: TCheckBox;
     L_Usek33: TLabel;
     GB_Autoblok: TGroupBox;
@@ -62,6 +58,9 @@ type
     CB_NavS: TComboBox;
     L_Trat3: TLabel;
     CB_Speed: TComboBox;
+    PC_Zastavka: TPageControl;
+    TS_Zast_lichy: TTabSheet;
+    TS_Zast_sudy: TTabSheet;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure E_DelkaKeyPress(Sender: TObject; var Key: Char);
@@ -70,6 +69,8 @@ type
     procedure CHB_ZastavkaClick(Sender: TObject);
     procedure CHB_NavLClick(Sender: TObject);
     procedure CHB_NavSClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
    NewBlk:Boolean;
    Blk:TBlkTU;
@@ -77,6 +78,7 @@ type
    CB_ZastIRData:TArSmallI;
    CB_NavData:TArSmallI;
    CB_NavLindex, CB_NavSindex: Integer;
+   zastLichy, zastSudy: TF_BlkTUZastEvent;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
@@ -91,7 +93,8 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky, ownStrUtils;
+uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky, ownStrUtils,
+      TOblsRizeni;
 
 {$R *.dfm}
 
@@ -107,7 +110,7 @@ procedure TF_BlkTU.OpenForm(BlokIndex:Integer);
     NormalOpenForm;
    end;//else NewBlk
   Self.ShowModal;
- end;//procedure
+ end;
 
 procedure TF_BlkTU.NewBlkCreate;
  begin
@@ -116,6 +119,7 @@ procedure TF_BlkTU.NewBlkCreate;
  end;//procedure
 
 procedure TF_BlkTU.NewBlkOpenForm;
+var zastEvents:TBlkTUZastevents;
  begin
   E_Nazev.Text               := '';
   SE_ID.Value                := 0;
@@ -147,6 +151,11 @@ procedure TF_BlkTU.NewBlkOpenForm;
   Self.CB_NavSindex := -1;
 
   Self.CB_Speed.ItemIndex := -1;
+
+  zastEvents.zastaveni.signal := TBlkTUSignal.disabled;
+  zastEvents.zpomaleni.signal := TBlkTUSignal.disabled;
+  Self.zastLichy.OpenForm(zastEvents);
+  Self.zastSudy.OpenForm(zastEvents);
 
   Self.Caption := 'Editace noveho tratoveho useku';
  end;//procedure
@@ -229,6 +238,9 @@ var glob:TBlkSettings;
 
   Self.CB_Speed.ItemIndex := (TUsettings.rychlost div 10)-2;
 
+  Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
+  Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
+
   Self.Caption := 'Edititace dat bloku '+glob.name+' (tratovy usek)';
  end;//procedure
 
@@ -252,6 +264,7 @@ procedure TF_BlkTU.B_OKClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkUsekSettings;
     TUsettings:TBlkTUSettings;
+    str:string;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -296,14 +309,17 @@ var glob:TBlkSettings;
 
   if (CHB_Zastavka.Checked) then
    begin
-    if (CB_Zast_IR_lichy.ItemIndex = -1) then
+    str := Self.zastLichy.Check();
+    if (str <> '') then
      begin
-      Application.MessageBox('Vyberte lichý IR zastávky !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Zastavovaci udalost zastavky v lichem smeru: '+#13#10+str),'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
-    if (CB_Zast_IR_sudy.ItemIndex = -1) then
+
+    str := Self.zastLichy.Check();
+    if (str <> '') then
      begin
-      Application.MessageBox('Vyberte sudý IR zastávky !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Zastavovaci udalost zastavky v sudem smeru: '+#13#10+str),'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end;
@@ -370,8 +386,8 @@ var glob:TBlkSettings;
 
   if (Self.CHB_Zastavka.Checked) then
    begin
-    TUsettings.Zastavka.IR_lichy  := Blky.GetBlkID(Self.CB_ZastIRData[Self.CB_Zast_IR_lichy.ItemIndex]);
-    TUsettings.Zastavka.IR_sudy   := Blky.GetBlkID(Self.CB_ZastIRData[Self.CB_Zast_IR_sudy.ItemIndex]);
+    TUsettings.Zastavka.ev_lichy  := Self.zastLichy.GetEvent();
+    TUsettings.Zastavka.ev_sudy   := Self.zastSudy.GetEvent();
     ExtractStringsEx([','], [' '], Self.E_Zast_Spr.Text, TUsettings.Zastavka.soupravy);
     TUsettings.Zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
     try
@@ -380,9 +396,6 @@ var glob:TBlkSettings;
       Application.MessageBox('Nesprávnì zadaný èas èekání v zastávce', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
-   end else begin
-    TUsettings.Zastavka.IR_lichy := -1;
-    TUsettings.Zastavka.IR_sudy  := -1;
    end;
 
   Self.Blk.SetSettings(TUsettings);
@@ -408,7 +421,24 @@ procedure TF_BlkTU.FormClose(Sender: TObject; var Action: TCloseAction);
   OpenIndex  := -1;
   NewBlk     := false;
   BlokyTableData.UpdateTable();
- end;//procedure
+ end;
+
+procedure TF_BlkTU.FormCreate(Sender: TObject);
+begin
+ Self.zastLichy := TF_BlkTUZastEvent.Create(Self.TS_Zast_lichy);
+ Self.zastLichy.Parent := Self.TS_Zast_lichy;
+ Self.zastLichy.Show();
+
+ Self.zastSudy := TF_BlkTUZastEvent.Create(Self.TS_Zast_lichy);
+ Self.zastSudy.Parent := Self.TS_Zast_sudy;
+ Self.zastSudy.Show();
+end;
+
+procedure TF_BlkTU.FormDestroy(Sender: TObject);
+begin
+ Self.zastLichy.Free();
+ Self.zastSudy.Free();
+end;
 
 procedure TF_BlkTU.CHB_D1Click(Sender: TObject);
  begin
@@ -482,8 +512,7 @@ begin
    Self.E_Zast_Spr.Enabled       := true;
    Self.SE_Zast_DelkaSpr.Enabled := true;
    Self.ME_Zast_Delay.Enabled    := true;
-   Self.CB_Zast_IR_lichy.Enabled := true;
-   Self.CB_Zast_IR_sudy.Enabled  := true;
+   Self.PC_Zastavka.Enabled      := true;
 
    if (Assigned(Self.Blk)) then
     begin
@@ -497,15 +526,12 @@ begin
      Self.SE_Zast_DelkaSpr.Value     := zast.max_delka;
      Self.ME_Zast_Delay.Text         := FormatDateTime('nn:ss', zast.delay);
 
-     Blky.NactiBlokyDoObjektu(Self.CB_Zast_IR_lichy, nil, nil, nil, _BLK_IR, zast.IR_lichy);
-     Blky.NactiBlokyDoObjektu(Self.CB_Zast_IR_sudy , @CB_ZastIRData, nil, nil, _BLK_IR, zast.IR_sudy);
     end;
   end else begin
    Self.E_Zast_Spr.Enabled       := false;
    Self.SE_Zast_DelkaSpr.Enabled := false;
    Self.ME_Zast_Delay.Enabled    := false;
-   Self.CB_Zast_IR_lichy.Enabled := false;
-   Self.CB_Zast_IR_sudy.Enabled  := false;
+   Self.PC_Zastavka.Enabled      := false;
   end;
 
  if ((not Self.CHB_Zastavka.Checked) or (not Assigned(Self.Blk))) then
@@ -513,8 +539,7 @@ begin
    Self.E_Zast_Spr.Text            := '';
    Self.SE_Zast_DelkaSpr.Value     := 0;
    Self.ME_Zast_Delay.Text         := '00:00';
-   Self.CB_Zast_IR_lichy.ItemIndex := -1;
-   Self.CB_Zast_IR_sudy.ItemIndex  := -1;
+   Self.PC_Zastavka.Enabled        := false;
   end;
 end;//procedure
 
