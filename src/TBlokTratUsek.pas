@@ -897,7 +897,7 @@ begin
     if (Self.TUSettings.navSid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
      end;
    end;
 
@@ -905,7 +905,7 @@ begin
     if (Self.TUSettings.navLid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
      end;
    end;
 
@@ -913,12 +913,12 @@ begin
     if (Self.TUSettings.navSid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
      end;
     if (Self.TUSettings.navLid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if (Blk <> nil) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
      end;
     Exit();
    end;
@@ -931,7 +931,8 @@ begin
    JCDb.RusJC(Self);
 
  // nastavime kryci navestidlo
- if ((Self.navKryci <> nil) and (not TBlkSCom(Self.navKryci).ZAM)) then
+ if ((Self.navKryci <> nil) and (not TBlkSCom(Self.navKryci).ZAM) and
+     (TBlkSCom(Self.navKryci).Navest >= 0)) then
   begin
    if (not Self.sectReady) then
     begin
@@ -941,7 +942,7 @@ begin
      // sekce uvolnena -> hledame dalsi navestidlo
      if ((Self.nextNav = nil) or (TBlkSCom(Self.nextNav).Navest = 0)) then
        TBlkSCom(Self.navKryci).Navest := 2
-     else
+      else
        TBlkSCom(Self.navKryci).Navest := 1;
     end;
   end;
