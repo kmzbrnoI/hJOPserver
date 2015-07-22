@@ -572,6 +572,17 @@ begin
     end;
   end else begin
    if ((Self.TUSettings.zastavka.enabled) and (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
+
+   // zmena smeru soupravy nastava vzdy v 1. bloku trati (nejblize zacatku)
+   if (((Assigned(TBlkTrat(Self.Trat).navLichy)) and (Assigned(TBlkTrat(Self.Trat).navSudy))) and
+       (TBlkSCom(TBlkTrat(Self.Trat).navLichy).Smer = TBlkSCom(TBlkTrat(Self.Trat).navSudy).Smer) and
+       (Self.Trat <> nil) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0) and
+       (Self.GetGlobalSettings.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
+    begin
+     // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
+     Soupravy.soupravy[Self.Souprava].ChangeSmer();
+    end;
+
   end;
 end;
 
@@ -727,14 +738,6 @@ begin
        // souprava vstoupila do posledniho bloku trati
        // zmena stanic soupravy a hnacich vozidel v ni
        TBlkTrat(Self.Trat).SprChangeOR(Self.Souprava);
-
-       // je nutne zmenit smer soupravy?
-       if (((Assigned(TBlkTrat(Self.Trat).navLichy)) and (Assigned(TBlkTrat(Self.Trat).navSudy))) and
-           (TBlkSCom(TBlkTrat(Self.Trat).navLichy).Smer = TBlkSCom(TBlkTrat(Self.Trat).navSudy).Smer)) then
-        begin
-         // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
-         Soupravy.soupravy[Self.Souprava].ChangeSmer();
-        end;
       end;
     end;//if predavam soupravu
   end;
