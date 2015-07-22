@@ -1423,7 +1423,7 @@ begin
 
  if ((Self.OR_MTB.last_failture_time + EncodeTime(0, 0, 0, 500)) < Now) then
   begin
-   str := 'Výpadek MTB modulù ';
+   str := 'Výpadek MTB modulu ';
    for i := 0 to MTB._MAX_MTB do
     if (Self.OR_MTB.MTBs[i].failed) then
      begin
