@@ -942,7 +942,7 @@ begin
  Self.A_PanelServer_Start.Enabled := false;
  Self.A_PanelServer_Stop.Enabled  := true;
 
- if (not Blky.enabled) then Blky.Enable();
+ if ((SystemData.Status = starting) and (not Blky.enabled)) then Blky.Enable();
 end;
 
 procedure TF_Main.A_PanelServer_StopExecute(Sender: TObject);

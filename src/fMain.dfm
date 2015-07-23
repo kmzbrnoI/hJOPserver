@@ -3505,10 +3505,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav technologie'
       ImageIndex = 15
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GB_Connected_Panels: TGroupBox
         Left = 16
         Top = 206
@@ -3831,10 +3827,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Bloky: TListView
         Left = 0
         Top = 40
@@ -4044,10 +4036,6 @@ object F_Main: TF_Main
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_HV: TListView
         Left = 0
         Top = 40
@@ -4422,10 +4410,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Oblasti '#345#237'zen'#237
       ImageIndex = 16
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stanice: TListView
         Left = 0
         Top = 40
@@ -4544,10 +4528,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Zesilova'#269'e'
       ImageIndex = 20
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
@@ -4774,10 +4754,6 @@ object F_Main: TF_Main
       Caption = 'AC'
       ParentShowHint = False
       ShowHint = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_AC_Db: TListView
         Left = 0
         Top = 40
@@ -5132,10 +5108,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'#233
       ImageIndex = 23
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Users: TListView
         Left = 0
         Top = 40
@@ -5288,10 +5260,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav MTB'
       ImageIndex = -1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stav_MTB: TListView
         Left = 0
         Top = 0
@@ -5364,10 +5332,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'J'#237'zdn'#237' cesty'
       ImageIndex = 24
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_VC_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -5622,10 +5586,6 @@ object F_Main: TF_Main
     object TS_MultiJC: TTabSheet
       Caption = 'Slo'#382'en'#233' j'#237'zdn'#237' cesty'
       ImageIndex = 12
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 0
@@ -5758,10 +5718,6 @@ object F_Main: TF_Main
     object TS_FuncsVyznam: TTabSheet
       Caption = 'V'#253'znamy funkc'#237
       ImageIndex = 13
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object M_funcsVyznam: TMemo
         Left = 0
         Top = 40
@@ -5807,10 +5763,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Prim'#225'rn'#237' LOG'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log: TListView
         Left = 0
         Top = 24
@@ -5889,10 +5841,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'LOG komunikace s centr'#225'lou'
       ImageIndex = 14
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log_lnet: TListView
         Left = 0
         Top = 24
@@ -5973,7 +5921,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 2
           OnChange = CB_centrala_loglevelChange
           Items.Strings = (
@@ -6087,12 +6035,12 @@ object F_Main: TF_Main
       object MI_Libs: TMenuItem
         Caption = 'Knihovny'
         object PM_lib_Simulator: TMenuItem
-          Caption = 'Nacist knihovnu Simulator'
+          Caption = 'Na'#269#237'st knihovnu Simulator'
           ImageIndex = 13
           OnClick = PM_lib_SimClick
         end
         object PM_lib_MTB: TMenuItem
-          Caption = 'Nacist knihovnu MTB'
+          Caption = 'Na'#269#237'st knihovnu MTB'
           ImageIndex = 12
           OnClick = PM_lib_MTBClick
         end
@@ -6152,7 +6100,7 @@ object F_Main: TF_Main
     object M_Reset: TMenuItem
       Caption = 'Reset'
       object PM_ResetV: TMenuItem
-        Caption = 'Prestavit vyh'#253'bky do z'#225'kladn'#237' polohy'
+        Caption = 'Prestavit v'#253'hybky do z'#225'kladn'#237' polohy'
         Enabled = False
         ImageIndex = 27
         OnClick = PM_ResetVClick
@@ -6196,7 +6144,7 @@ object F_Main: TF_Main
       end
     end
     object M_Help: TMenuItem
-      Caption = 'N'#225'poveda'
+      Caption = 'N'#225'pov'#283'da'
       object PM_Help_RP: TMenuItem
         Caption = 'O programu'
         ImageIndex = 15
