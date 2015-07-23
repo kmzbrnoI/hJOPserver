@@ -1931,8 +1931,7 @@ procedure TF_Main.OnStart;
 
   if (not CloseMessage) then F_Main.Close;
 
-  F_splash.PB_Prubeh.Position := 0;
-
+  F_splash.PB_Prubeh.Position := F_splash.PB_Prubeh.Max;
   F_Splash.AddStav('Temer spusteno...');
 
   BlokyTableData.LoadTable();
