@@ -1061,12 +1061,16 @@ begin
    str := '';
    for i := 0 to MTB._MAX_MTB-1 do
     if ((MTB.GetNeeded(i)) and (not MTB.IsModule(i))) then
-     str := str + IntToStr(i) + ', ';
+     begin
+      if (Length(str) > 0) then str := str + ', ';
+      str := str + IntToStr(i);
+     end;
    if (str <> '') then
     begin
      writelog('Chybí MTB moduly '+str, WR_MTB, 1);
-     Self.LogStatus('Chybí MTB moduly '+str);
-{     if (Application.MessageBox(PChar('Chybí MTB moduly '+str+#13#10+'Chcete pokraèovat?'), 'Varování', MB_YESNO OR MB_ICONWARNING) = mrNo) then
+     Self.LogStatus('WARN: Chybí MTB moduly '+str);
+{    // chybeni MTB modulu pouze zalogovano, preskakujeme
+     if (Application.MessageBox(PChar('Chybí MTB moduly '+str+#13#10+'Chcete pokraèovat?'), 'Varování', MB_YESNO OR MB_ICONWARNING) = mrNo) then
       begin
        Self.LogStatus('Chybí MTB moduly - storno');
        SystemData.Status := null;
@@ -1211,6 +1215,7 @@ end;
 
 procedure TF_Main.A_System_StartExecute(Sender: TObject);      //system start
 begin
+ Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
  Self.LogStatus('Zapínám systémy...');
  SystemData.Status := starting;
  Self.A_System_Start.Enabled := false;
@@ -1221,6 +1226,7 @@ procedure TF_Main.A_System_StopExecute(Sender: TObject);       //system stop
 begin
  Self.A_System_Stop.Enabled := false;
 
+ Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
  Self.LogStatus('Vypínám systémy...');
  SystemData.Status := stopping;
 
@@ -1777,23 +1783,29 @@ end;
 
 procedure TF_Main.LB_LogDblClick(Sender: TObject);
 begin
- Self.LB_Log.Clear();
+ if (Application.MessageBox('Smazat obsah seznamu?', 'Smazat?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+   Self.LB_Log.Clear();
 end;
 
 procedure TF_Main.LB_LogDrawItem(Control: TWinControl; Index: Integer;
   Rect: TRect; State: TOwnerDrawState);
 begin
-  if (LeftStr(Self.LB_Log.Items[Index], 3) = 'ERR') then
+ with Control as TListBox do
   begin
-    Self.LB_Log.Canvas.Brush.Color := $AAAAFF;
-    Self.LB_Log.Canvas.Font.Color := clWhite;
-  end else begin
-    Self.LB_Log.Canvas.Brush.Color := Self.LB_Log.Color;
-    Self.LB_Log.Canvas.Font.Color := Self.LB_Log.Font.Color;
-  end;
+   if (Copy(Items[Index], 12, 3) = 'ERR') then begin
+      Canvas.Brush.Color := $AAAAFF;
+      Canvas.Font.Color := clWhite;
+   end else if (Copy(Items[Index], 12, 4) = 'WARN') then begin
+      Canvas.Brush.Color := $AAFFFF;
+      Canvas.Font.Color := clBlack;
+   end else begin
+      Canvas.Brush.Color := Color;
+      Canvas.Font.Color := Font.Color;
+   end;
 
-  Self.LB_Log.Canvas.FillRect(Rect);
-  Self.LB_Log.Canvas.TextRect(Rect, Rect.Left + 2, Rect.Top + 2, Self.LB_Log.Items[Index]);
+     Canvas.FillRect(Rect);
+     Canvas.TextRect(Rect, Rect.Left + 2, Rect.Top, Items[Index]);
+  end;
 end;
 
 procedure TF_Main.LoadIniLibData;
