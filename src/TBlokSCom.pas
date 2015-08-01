@@ -1085,9 +1085,19 @@ begin
        if ((Self.IsPovolovaciNavest()) and (not Self.SComStav.padani) and
            (Self.UsekPred.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
         begin
-         if (spr.rychlost <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
-           spr.SetRychlostSmer(TBlkTU(Self.UsekPred).GetSettings.rychlost, Self.SComRel.smer)
+         // je povolavaci navest -> je zelena, nebo zluta?
+         if (Self.Navest = 1) then
+          begin
+           // zelena -> rychlost dalsiho useku
+           if (spr.rychlost <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
+             spr.SetRychlostSmer(TBlkTU(Self.UsekPred).GetSettings.rychlost, Self.SComRel.smer)
+          end else begin
+           // vystraha -> 40 km/h
+           if (spr.rychlost <> 40) then
+             spr.SetRychlostSmer(40, Self.SComRel.smer)
+          end;
         end else begin
+         //  neni povolovaci navest -> zastavit
          if (spr.rychlost <> 0) then
            spr.SetRychlostSmer(0, Self.SComRel.smer);
         end;
