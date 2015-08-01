@@ -2,9 +2,11 @@ unit TechnologieMTB;
 
 // technologie MTB
 
-// pricip:
-//  - na zacatku vytvorime tridy pro vsechna existujici MTB
-//  - po otevreni MTB zjistime, ktere desky jsou skutecne dostupne a ktere ne
+{
+ Pricip:
+  - na zacatku vytvorime tridy pro vsechna existujici MTB
+  - po otevreni MTB zjistime, ktere desky jsou skutecne dostupne a ktere ne
+}
 
 interface
 
@@ -13,9 +15,7 @@ uses
   Dialogs, Menus, IniFiles, OutputDriver, Generics.Collections;
 
 type
-  //events from libs
-  TMainEvent = procedure() of object;
-  TErrEvent = procedure(errValue: word; errAddr: byte; errMsg:string) of object;
+  TErrEvent = procedure(Sender:TObject; errValue: word; errAddr: byte; errMsg:string) of object;
   TMTBReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
   TMTBBoardChangeEvent = procedure (Sender:TObject; board:byte) of object;
 
@@ -67,10 +67,10 @@ type
      fGeneralError:boolean;                                 // flag oznamujici nastani "MTB general IO error" -- te nejhorsi veci na svete
 
      //events to the main program
-     FOnOpen:TMainEvent;
-     FOnClose:TMainEvent;
-     FOnStart:TMainEvent;
-     FOnStop:TMainEvent;
+     FOnOpen:TNotifyEvent;
+     FOnClose:TNotifyEvent;
+     FOnStart:TNotifyEvent;
+     FOnStop:TNotifyEvent;
      FOnStartErr:TErrEvent;
      FOnStopErr:TErrEvent;
      FOnOpenErr:TErrEvent;
@@ -112,6 +112,7 @@ type
       procedure SetOutput(MtbAdr:integer;vystup:integer;state:integer);
       procedure SetInput(MtbAdr:integer;vstup:integer;state:integer);
       function GetInput(MtbAdr:integer;vstup:integer):integer;
+      function GetOutput(MtbAdr:integer; port:integer):integer;
       function GetModuleFirmware(MtbAdr:integer):string;
       function GetOutputs(MtbAdr:integer):TMTBBoardOutputs;
 
@@ -152,10 +153,10 @@ type
       property generalError:boolean read fGeneralError;
 
       //events
-      property OnOpen:TMainEvent read FOnOpen write FOnOpen;
-      property OnClose:TMainEvent read FOnClose write FOnClose;
-      property OnStart:TMainEvent read FOnStart write FOnStart;
-      property OnStop:TMainEvent read FOnStop write FOnStop;
+      property OnOpen:TNotifyEvent read FOnOpen write FOnOpen;
+      property OnClose:TNotifyEvent read FOnClose write FOnClose;
+      property OnStart:TNotifyEvent read FOnStart write FOnStart;
+      property OnStop:TNotifyEvent read FOnStop write FOnStop;
 
       property OnErrOpen:TErrEvent read FOnOpenErr write FOnOpenErr;
       property OnErrClose:TErrEvent read FOnCloseErr write FOnCloseErr;
@@ -444,6 +445,20 @@ begin
   end;
 end;//function
 
+function TMTB.GetOutput(MtbAdr:integer; port:integer):integer;
+begin
+ if ((MtbAdr < 256) and (MtbAdr >= 0)) then
+  begin
+   try
+     Result := MTBdrv.GetOutput(MtbAdr, port);
+   except
+     Result := -1;
+   end;
+  end else begin
+   Result := -1;
+  end;
+end;
+
 procedure TMTB.SetInput(MtbAdr:integer;vstup:integer;state:integer);
 begin
  try
@@ -513,7 +528,7 @@ end;//rprocedure
 procedure TMTB.DllAfterOpen(Sender:TObject);
 begin
  Self.aOpenned := true;
- if (Assigned(Self.FOnOpen)) then Self.FOnOpen();
+ if (Assigned(Self.OnOpen)) then Self.OnOpen(Self);
 end;//procdure
 
 procedure TMTB.DllBeforeClose(Sender:TObject);
@@ -525,7 +540,7 @@ procedure TMTB.DllAfterClose(Sender:TObject);
 begin
  Self.fGeneralError := false;
  Self.aOpenned := false;
- if (Assigned(Self.FOnClose)) then Self.FOnClose();
+ if (Assigned(Self.OnClose)) then Self.OnClose(Self);
 end;//procdure
 
 procedure TMTB.DllBeforeStart(Sender:TObject);
@@ -536,7 +551,7 @@ end;//procdure
 procedure TMTB.DllAfterStart(Sender:TObject);
 begin
  Self.aStart := true;
- if (Assigned(Self.FOnStart)) then Self.FOnStart();
+ if (Assigned(Self.OnStart)) then Self.OnStart(Self);
 end;//procdure
 
 procedure TMTB.DllBeforeStop(Sender:TObject);
@@ -547,7 +562,7 @@ end;//procdure
 procedure TMTB.DllAfterStop(Sender:TObject);
 begin
  Self.aStart := false;
- if (Assigned(Self.FOnStop)) then Self.FOnStop();
+ if (Assigned(Self.OnStop)) then Self.OnStop(Self);
 end;//procdure
 
 procedure TMTB.DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string);
@@ -558,10 +573,10 @@ begin
   begin
    //errors on main board (MTB-USB)
    case (errValue) of
-    1,2,3    : if (Assigned(Self.OnErrOpen)) then Self.OnErrOpen(errValue, errAddr, errMsg);
-    11       : if (Assigned(Self.OnErrClose)) then Self.OnErrClose(errValue, errAddr, errMsg);
-    21,22,25 : if (Assigned(Self.OnErrStart)) then Self.OnErrStart(errValue, errAddr, errMsg);
-    31       : if (Assigned(Self.OnErrStop)) then Self.OnErrStop(errValue, errAddr, errMsg);
+    1,2,3    : if (Assigned(Self.OnErrOpen)) then Self.OnErrOpen(Self, errValue, errAddr, errMsg);
+    11       : if (Assigned(Self.OnErrClose)) then Self.OnErrClose(Self, errValue, errAddr, errMsg);
+    21,22,25 : if (Assigned(Self.OnErrStart)) then Self.OnErrStart(Self, errValue, errAddr, errMsg);
+    31       : if (Assigned(Self.OnErrStop)) then Self.OnErrStop(Self, errValue, errAddr, errMsg);
     301..306,4: begin
       // general IO error
       F_Main.A_System_Start.Enabled := true;
@@ -586,12 +601,12 @@ end;//procedure
 
 procedure TMTB.DllOnInputChanged(Sender:TObject; module:byte);
 begin
-
+ asm nop; end;
 end;
 
 procedure TMTB.DllOnOutputChanged(Sender:TObject; module:byte);
 begin
-
+ asm nop; end;
 end;
 
 //----- events from dll end -----

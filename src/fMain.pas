@@ -405,14 +405,14 @@ type
     procedure DisableRemoveButtons();
 
     // MTB events:
-    procedure OnMTBStart();
-    procedure OnMTBStop();
-    procedure OnMTBOpen();
-    procedure OnMTBClose();
-    procedure OnMTBErrOpen(errValue: word; errAddr: byte; errMsg:string);
-    procedure OnMTBErrClose(errValue: word; errAddr: byte; errMsg:string);
-    procedure OnMTBErrStart(errValue: word; errAddr: byte; errMsg:string);
-    procedure OnMTBErrStop(errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBStart(Sender:TObject);
+    procedure OnMTBStop(Sender:TObject);
+    procedure OnMTBOpen(Sender:TObject);
+    procedure OnMTBClose(Sender:TObject);
+    procedure OnMTBErrOpen(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBErrClose(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBErrStart(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBErrStop(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
     procedure OnMTBReady(Sender:TObject; ready:boolean);
 
     // centrala events:
@@ -943,7 +943,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //--- events from MTB lib begin ---
-procedure TF_Main.OnMTBStart();
+procedure TF_Main.OnMTBStart(Sender:TObject);
 begin
   with (F_Main) do
    begin
@@ -972,7 +972,7 @@ begin
    Self.A_Trk_ConnectExecute(nil);
 end;//procedure
 
-procedure TF_Main.OnMTBStop();
+procedure TF_Main.OnMTBStop(Sender:TObject);
 begin
   if (F_Admin.CHB_SystemStart.Checked) then
    begin
@@ -1019,7 +1019,7 @@ begin
    Self.A_MTB_CloseExecute(nil);
 end;//procedure
 
-procedure TF_Main.OnMTBOpen();
+procedure TF_Main.OnMTBOpen(Sender:TObject);
 var i:Integer;
     str:string;
 begin
@@ -1070,7 +1070,7 @@ begin
   end;
 end;//procedure
 
-procedure TF_Main.OnMTBClose();
+procedure TF_Main.OnMTBClose(Sender:TObject);
 begin
  Self.A_MTB_Go.Enabled    := false;
  Self.A_MTB_Stop.Enabled  := false;
@@ -1095,7 +1095,7 @@ begin
  MTBTableData.UpdateTable();
 end;//procedure
 
-procedure TF_Main.OnMTBErrOpen(errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrOpen(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
 begin
  Self.A_MTB_Go.Enabled    := false;
  Self.A_MTB_Stop.Enabled  := false;
@@ -1114,7 +1114,7 @@ begin
  writelog('----- MTB OPEN DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----', WR_ERROR, 21);
 end;//procedure
 
-procedure TF_Main.OnMTBErrClose(errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrClose(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
 begin
  Self.A_MTB_Go.Enabled    := false;
  Self.A_MTB_Stop.Enabled  := false;
@@ -1131,7 +1131,7 @@ begin
  writelog('----- MTB CLOSE MTB DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----', WR_ERROR, 21);
 end;//procedure
 
-procedure TF_Main.OnMTBErrStart(errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrStart(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
 begin
   with (F_Main) do
    begin
@@ -1156,7 +1156,7 @@ begin
   writelog('----- MTB START DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
 end;//procedure
 
-procedure TF_Main.OnMTBErrStop(errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrStop(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
 begin
   with (F_Main) do
    begin

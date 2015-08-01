@@ -26,44 +26,49 @@ uses
   SysUtils, Classes, Windows;
 
 type
-  // Event prototypes definitions
+  // prototypy funkci volanych do knihovny :
   TODFunc = function(): integer; stdcall;
   TODFuncStr = function(): string; stdcall;
   TODModuleStr = function(board:integer): string; stdcall;
-
-  // Library functions definition
   TODSetOutput = function(board, output: integer; state: Integer): integer; stdcall;
   TODGetInput  = function(board, input: integer): integer; stdcall;
+  TODGetOutput = function(board, port: integer): integer; stdcall;
   TODSetInput  = function(board, input: integer; State:integer): integer; stdcall;
   TODModuleExists = function(board:integer):boolean; stdcall;
   TODSetModuleName = function(board:Integer;Name:string):Integer; stdcall;
   TODSetBusSpeed = function(Speed:Integer): integer; stdcall;
   TODSetScanInterval = function(Interval:integer):Integer; stdcall;
 
-
+  // prototypy eventu z TMTBIFace do rodice:
   TDllErrEvent = procedure (Sender: TObject; errValue: word; errAddr: byte; errMsg:string) of object;
   TDllModuleChanedEvent = procedure (Sender:TObject; module:byte) of object;
 
+  // prototypy callback funkci z knihivny do TMTBIFace:
   TStdNotifyEvent = procedure (Sender: TObject) of object; stdcall;
   TStdDllErrEvent = procedure (Sender: TObject; errValue: word; errAddr: byte; errMsg:string) of object; stdcall;
   TStdDllModuleChanedEvent = procedure (Sender:TObject; module:byte) of object; stdcall;
 
-  // Setting events
+  // prototypy setteru (funkci naastavujicich callback funkce) z TMTBIFace do dll knihovny:
   TSetDllNotifyEvent = procedure(func:TStdNotifyEvent); stdcall;
   TSetDllErrEvent = function(func:TStdDllErrEvent):Integer; stdcall;
   TSetDllEventChange = procedure (func:TStdDllModuleChanedEvent); stdcall;
 
+  // vlastni vyjimky:
   EFuncNotAssigned = class(Exception);
 
-  // TOuputDriver class
+  //////////////////////////////////////////////////////////////////////////
+
+  // Trida TMTBIFace
   TMTBIFace = class(TComponent)
   private
-    FLibname: string;
-    FLib: Cardinal;
+    FLibname: string;                                                           // cesta k souboru knihovny
+    FLib: Cardinal;                                                             // handle knihovny
 
+    // funkce volane z TMTBIFace do knihovny:
     FFuncOnUnload: TODFunc;
     FFuncSetOutput: TODSetOutput;
     FFuncGetInput: TODGetInput;
+    FFuncGetOutput: TODGetOutput;
     FFuncSetInput: TODSetInput;
     FFuncGetInfo: TODFunc;
     FFuncShowConfigDialog: TODFunc;
@@ -84,7 +89,7 @@ type
     FFuncClose: TODFunc;
     FFuncGetModuleFirmware: TODModuleStr;
 
-    // events to the parent :
+    // eventy z TMTBIFace do rodice:
     FTBeforeOpen: TNotifyEvent;
     FTAfterOpen: TNotifyEvent;
     FTBeforeClose: TNotifyEvent;
@@ -101,7 +106,7 @@ type
 
      procedure SetLibName(s: string);
 
-     // events (callbacks) from dll:
+     // eventy z dll do TMTBIFace:
      procedure OnLibBeforeOpen(Sender:TObject); stdcall;
      procedure OnLibAfterOpen(Sender:TObject); stdcall;
      procedure OnLibBeforeClose(Sender:TObject); stdcall;
@@ -119,37 +124,38 @@ type
 
   public
 
-    procedure Open();
-    procedure Close();
+    procedure Open();                                                           // otevrit zarizeni
+    procedure Close();                                                          // uzavrit zarizeni
 
-    procedure Start();
-    procedure Stop();
+    procedure Start();                                                          // spustit komunikaci
+    procedure Stop();                                                           // zastavit komunikaci
 
-    procedure SetOutput(Board, Output: Integer; state: Integer);
-    function GetInput(Board, Input: Integer): Integer;
-    procedure SetInput(Board, Input: Integer; State : integer);
+    procedure SetOutput(Board, Output: Integer; state: Integer);                // nastavit vystupni port
+    function GetInput(Board, Input: Integer): Integer;                          // vratit hodnotu na vstupnim portu
+    procedure SetInput(Board, Input: Integer; State : integer);                 // nastavit vstupni port (pro debug ucely)
+    function GetOutput(Board, Port:Integer):Integer;                            // ziskani stavu vystupu
 
-    procedure ShowConfigDialog();
-    procedure HideConfigDialog();
-    procedure ShowAboutDialog();
+    procedure ShowConfigDialog();                                               // zobrazit konfiguracni dialog knihovny
+    procedure HideConfigDialog();                                               // skryt konfiguracni dialog knihovny
+    procedure ShowAboutDialog();                                                // zobrazit about dialog knihvny
 
-    function GetLibVersion():string;
-    function GetDeviceVersion():string;
-    function GetDriverVersion():string;
+    function GetLibVersion():string;                                            // vrati verzi knihovny
+    function GetDeviceVersion():string;                                         // vrati verzi FW v MTB-USB desce
+    function GetDriverVersion():string;                                         // vrati verzi MTBdrv drivery v knihovne
 
-    function GetModuleName(Module:Integer):string;
-    procedure SetModuleName(Module:Integer; Name:string);
+    function GetModuleName(Module:Integer):string;                              // vrati jmeno modulu
+    procedure SetModuleName(Module:Integer; Name:string);                       // nastavi jmeno modulu
 
-    function GetModuleExists(Module:Integer):boolean;
-    function GetModuleType(Module:Integer):string;
-    function GetModuleFirmware(Module:integer):String;
+    function GetModuleExists(Module:Integer):boolean;                           // vrati jestli modul existuje
+    function GetModuleType(Module:Integer):string;                              // vrati typ modulu
+    function GetModuleFirmware(Module:integer):String;                          // vrati verzi FW v modulu
 
-    procedure SetBusSpeed(Speed:Integer);
-    procedure SetScanInterval(Interval:integer);
+    procedure SetBusSpeed(Speed:Integer);                                       // nastavi rychlost sbernice, mozno volat pouze pri zastavene komunikaci
+    procedure SetScanInterval(Interval:integer);                                // nastavi ScanInterval sbernice
 
-    procedure LoadLib();
+    procedure LoadLib();                                                        // nacte knihovnu
 
-    //events to the program
+    // eventy z TMTBIFace do rodice:
     property OnBeforeOpen:TNotifyEvent read FTbeforeOpen write FTBeforeOpen;
     property OnAfterOpen:TNotifyEvent read FTAfterOpen write FTAfterOpen;
     property OnBeforeClose:TNotifyEvent read FTbeforeClose write FTBeforeClose;
@@ -200,8 +206,8 @@ procedure TMTBIFace.SetLibName(s: string);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
+// eventy z dll knihovny:
 
-//----- events from dll begin -----
 procedure TMTBIFace.OnLibBeforeOpen(Sender:TObject); stdcall;
  begin
   if (Assigned(Self.OnBeforeOpen)) then Self.OnBeforeOpen(Self);
@@ -257,9 +263,8 @@ procedure TMTBIFace.OnLibOutputChanged(Sender: TObject; board:byte); stdcall;
   if (Assigned(Self.OnOutputChanged)) then Self.OnOutputChanged(Self, board);
  end;
 
-//----- events from dll end -----
-
 ////////////////////////////////////////////////////////////////////////////////
+// nacist dll knihovnu
 
 procedure TMTBIFace.LoadLib();
 var setterNotify: TSetDllNotifyEvent;
@@ -270,32 +275,29 @@ var setterNotify: TSetDllNotifyEvent;
   if (FLib = 0) then
     raise Exception.Create('Library not loaded');
 
-  FFuncOnUnload := GetProcAddress(FLib, 'onunload');
-  FFuncSetOutput := GetProcAddress(FLib, 'setoutput');
-  FFuncSetInput := GetProcAddress(FLib, 'setinput');
-  FFuncGetInput := GetProcAddress(FLib, 'getinput');
-  FFuncGetInfo := GetProcAddress(FLib, 'getinfo');
-  FFuncShowConfigDialog := GetProcAddress(FLib, 'showconfigdialog');
-  FFuncHideConfigDialog := GetProcAddress(FLib, 'hideconfigdialog');
-  FFuncShowAboutDialog := GetProcAddress(FLib, 'showaboutdialog');
-  FFuncStart := GetProcAddress(FLib, 'start');
-  FFuncStop := GetProcAddress(FLib, 'stop');
-  FFuncGetLibVersion := GetProcAddress(FLib, 'getlibversion');
-  FFuncGetDeviceVersion := GetProcAddress(FLib, 'getdeviceversion');
-  FFuncGetDriverVersion := GetProcAddress(FLib,'getdriverversion');
-  FFuncGetModuleFirmware := GetProcAddress(FLib,'getmodulefirmware');
-  FFuncModuleExists := GetProcAddress(FLib, 'getmoduleexists');
-  FFuncGetModuleType := GetProcAddress(FLib, 'getmoduletype');
-  FFuncGetModuleName :=  GetProcAddress(FLib, 'getmodulename');
-  FFuncSetModuleName := GetProcAddress(FLib, 'setmodulename');
-  FFuncSetBusSpeed := GetProcAddress(FLib, 'setmtbspeed');
-  FFuncSetScanInterval := GetProcAddress(FLib, 'settimerinterval');
-  FFuncOpen := GetProcAddress(FLib, 'open');
-  FFuncClose := GetProcAddress(FLib, 'close');
-
-  setterNotify        := nil;
-  setterModuleChanged := nil;
-  setterErr           := nil;
+  FFuncOnUnload           := GetProcAddress(FLib, 'onunload');
+  FFuncSetOutput          := GetProcAddress(FLib, 'setoutput');
+  FFuncSetInput           := GetProcAddress(FLib, 'setinput');
+  FFuncGetInput           := GetProcAddress(FLib, 'getinput');
+  FFuncGetOutput          := GetProcAddress(FLib, 'getoutput');
+  FFuncGetInfo            := GetProcAddress(FLib, 'getinfo');
+  FFuncShowConfigDialog   := GetProcAddress(FLib, 'showconfigdialog');
+  FFuncHideConfigDialog   := GetProcAddress(FLib, 'hideconfigdialog');
+  FFuncShowAboutDialog    := GetProcAddress(FLib, 'showaboutdialog');
+  FFuncStart              := GetProcAddress(FLib, 'start');
+  FFuncStop               := GetProcAddress(FLib, 'stop');
+  FFuncGetLibVersion      := GetProcAddress(FLib, 'getlibversion');
+  FFuncGetDeviceVersion   := GetProcAddress(FLib, 'getdeviceversion');
+  FFuncGetDriverVersion   := GetProcAddress(FLib,'getdriverversion');
+  FFuncGetModuleFirmware  := GetProcAddress(FLib,'getmodulefirmware');
+  FFuncModuleExists       := GetProcAddress(FLib, 'getmoduleexists');
+  FFuncGetModuleType      := GetProcAddress(FLib, 'getmoduletype');
+  FFuncGetModuleName      := GetProcAddress(FLib, 'getmodulename');
+  FFuncSetModuleName      := GetProcAddress(FLib, 'setmodulename');
+  FFuncSetBusSpeed        := GetProcAddress(FLib, 'setmtbspeed');
+  FFuncSetScanInterval    := GetProcAddress(FLib, 'settimerinterval');
+  FFuncOpen               := GetProcAddress(FLib, 'open');
+  FFuncClose              := GetProcAddress(FLib, 'close');
 
   // assign events:
   setterNotify := GetProcAddress(FLib, 'setbeforeopen');
@@ -324,6 +326,9 @@ var setterNotify: TSetDllNotifyEvent;
   @setterModuleChanged := GetProcAddress(FLib, 'setonoutputchange');
   if (Assigned(setterModuleChanged)) then setterModuleChanged(OnLibOutputChanged);
  end;
+
+////////////////////////////////////////////////////////////////////////////////
+// metody volane do knihovny:
 
 procedure TMTBIFace.ShowAboutDialog();
  begin
@@ -372,6 +377,14 @@ procedure TMTBIFace.SetInput(Board, Input: Integer; state: Integer);
   else
     raise EFuncNotAssigned.Create('FFuncSetInput not assigned');
  end;
+
+function TMTBIFace.GetOutput(Board, Port:Integer):Integer;
+begin
+  if (Assigned(FFuncGetOutput)) then
+    Result := FFuncGetOutput(Board, Port)
+  else
+    raise EFuncNotAssigned.Create('FFuncGetOutput not assigned');
+end;
 
 function TMTBIFace.GetLibVersion():String;
  begin
@@ -484,6 +497,8 @@ procedure TMTBIFace.SetScanInterval(Interval:integer);
   else
     raise EFuncNotAssigned.Create('FFuncSetScanInterval not assigned');
  end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 procedure Register;
  begin
