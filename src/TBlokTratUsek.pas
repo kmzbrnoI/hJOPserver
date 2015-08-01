@@ -1134,7 +1134,9 @@ begin
     Result := (((TBlkIR(Blk).Stav = TIrStav.obsazeno) and (data.stav)) or
                ((TBlkIR(Blk).Stav = TIrStav.uvolneno) and (not data.stav)));
   end;
- end;//case
+ else
+  Result := false;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

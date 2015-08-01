@@ -413,6 +413,7 @@ type
     procedure OnMTBErrClose(errValue: word; errAddr: byte; errMsg:string);
     procedure OnMTBErrStart(errValue: word; errAddr: byte; errMsg:string);
     procedure OnMTBErrStop(errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBReady(Sender:TObject; ready:boolean);
 
     // centrala events:
     procedure OnCentralaDCCChange(Sender:TObject; state:boolean);
@@ -504,7 +505,16 @@ procedure TF_Main.PM_lib_MTBClick(Sender: TObject);                             
  begin
   Screen.Cursor := crHourGlass;
   writelog('MTB -> mtb.dll', WR_MTB);
-  MTB.LoadLib('mtb.dll');
+  try
+    MTB.LoadLib('mtb.dll');
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar('Nelze naèíst knihovnu mtb.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
+      writelog('Nelze naèíst knihovnu mtb.dll: '+E.Message, WR_ERROR);
+      Exit();
+     end;
+  end;
   Self.LogStatus('MTB: naèteno mtb.dll');
   Screen.Cursor := crDefault;
  end;
@@ -513,7 +523,16 @@ procedure TF_Main.PM_lib_SimClick(Sender: TObject);                             
  begin
   Screen.Cursor := crHourGlass;
   writelog('MTB -> simulator.dll', WR_MTB);
-  MTB.LoadLib('simulator.dll');
+  try
+    MTB.LoadLib('simulator.dll');
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar('Nelze naèíst knihovnu simulator.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
+      writelog('Nelze naèíst knihovnu simulator.dll: '+E.Message, WR_ERROR);
+      Exit();
+     end;
+  end;
   Self.LogStatus('MTB: naèteno simulator.dll');
   Screen.Cursor := crDefault;
  end;
@@ -745,8 +764,6 @@ begin
 end;
 
 procedure TF_Main.A_MTB_CloseExecute(Sender: TObject);
-var return:byte;
-    err:string;
 begin
  if ((SystemData.Status = stopping) and (not MTB.Openned)) then
   begin
@@ -768,27 +785,19 @@ begin
    SB1.Panels.Items[_SB_MTB].Text := 'MTB closing...';
   end;//with F_Main do
 
- return := MTB.Close();
- if ((return <> 0)) then
-  begin
-   writelog('----- MTB CLOSE FAIL - return='+IntToStr(return)+' -----',WR_ERROR,21);
-
-   case (return) of
-    1: err := 'mtb již uzavøeno';
-    2: err := 'spuštìna komunikace s MTB';
-   else
-    err := 'neznámá chyba';
-   end;
-
-   Self.LogStatus('MTB: CLOSE FAIL - '+err);
-   Application.MessageBox(PChar('Chyba pøi uzavírání MTB - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
-   Exit;
-  end;
+ try
+   MTB.Close();
+ except
+   on E:Exception do
+    begin
+     writelog('----- MTB CLOSE FAIL - '+E.Message+' -----',WR_ERROR,21);
+     Self.LogStatus('MTB: CLOSE FAIL - '+E.Message);
+     Application.MessageBox(PChar('Chyba pøi uzavírání MTB - '+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
+    end;
+ end;
 end;
 
 procedure TF_Main.A_MTB_GoExecute(Sender: TObject);
-var return:Byte;
-    err:string;
 begin
  if ((SystemData.Status = starting) and (MTB.Start)) then
   begin
@@ -816,32 +825,24 @@ begin
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
 
- return := MTB.Go;
- if (return > 0) then
-  begin
-   writelog('----- MTB START FAIL - return='+IntToStr(return)+' -----',WR_ERROR,21);
-
-   case (return) of
-    1: err := 'není pøipojeno k MTB';
-    2: err := 'již pøipojeno k MTB';
-   else
-    err := 'neznámá chyba';
-   end;
-
-   Self.LogStatus('MTB: START FAIL - '+err);
-   if (SystemData.Status = starting) then
+  try
+    MTB.Go();
+  except
+   on E:Exception do
     begin
-     SystemData.Status := TSystemStatus.null;
-     Self.A_System_Start.Enabled := true;
+     writelog('----- MTB START FAIL - '+E.Message+' -----',WR_ERROR,21);
+     Self.LogStatus('MTB: START FAIL - '+E.Message);
+     if (SystemData.Status = starting) then
+      begin
+       SystemData.Status := TSystemStatus.null;
+       Self.A_System_Start.Enabled := true;
+      end;
+     Application.MessageBox(PChar('Chyba pri zapinani komunikace'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
     end;
-   Application.MessageBox(PChar('Chyba pri zapinani komunikace - chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
-   Exit;
   end;
 end;
 
 procedure TF_Main.A_MTB_OpenExecute(Sender: TObject);
-var return:Byte;
-    err:string;
 begin
  if ((SystemData.Status = starting) and (MTB.Openned)) then
   begin
@@ -862,33 +863,24 @@ begin
 
  writelog('----- MTB OPENING -----',WR_MTB);
 
- return := MTB.Open();
- if ((return > 0) and (return < 128)) then
-  begin
-   writelog('----- MTB OPEN FAIL - return='+IntToStr(return)+' -----',WR_ERROR,21);
-
-   case (return) of
-    1: err := 'mtb již otevøeno';
-    2: err := 'MTB komunikace zapnuta';
-   else
-    err := 'neznámá chyba';
+ try
+   MTB.Open();
+ except
+  on E:Exception do
+   begin
+    writelog('----- MTB OPEN FAIL - '+E.Message+' -----',WR_ERROR,21);
+    Self.LogStatus('MTB: OPEN FAIL - '+E.Message);
+    if (SystemData.Status = starting) then
+     begin
+      SystemData.Status := TSystemStatus.null;
+      Self.A_System_Start.Enabled := true;
+     end;
+    Application.MessageBox(PChar('Chyba pri otevírání MTB'+#13#10+E.Message),'Chyba', MB_OK OR MB_ICONERROR);
    end;
-
-   Self.LogStatus('MTB: OPEN FAIL - '+err);
-   if (SystemData.Status = starting) then
-    begin
-     SystemData.Status := TSystemStatus.null;
-     Self.A_System_Start.Enabled := true;
-    end;
-   Application.MessageBox(PChar('Chyba pri otevírání MTB - chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
-   Exit;
-  end;
-
+ end;
 end;//procedure
 
 procedure TF_Main.A_MTB_StopExecute(Sender: TObject);
-var return:byte;
-    err:string;
 begin
  ACDb.StopAllACs();
 
@@ -910,20 +902,15 @@ begin
    SB1.Panels.Items[_SB_MTB].Text := 'MTB stopping...';
   end;//with F_Main do
 
- return := MTB.Stop;
- if (return > 0) then
-  begin
-   writelog('----- MTB STOP FAIL - return='+IntToStr(return)+' -----', WR_ERROR, 21);
-
-   case (return) of
-    1: err := 'komunikace již zastavena';
-   else
-    err := 'neznámá chyba';
-   end;
-
-   Self.LogStatus('MTB: STOP ERR - '+err);
-   Application.MessageBox(PChar('Chyba pri vypinani komunikace - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
-   Exit;
+  try
+    MTB.Stop();
+  except
+   on E:Exception do
+    begin
+     writelog('----- MTB STOP FAIL - '+E.Message+' -----', WR_ERROR, 21);
+     Self.LogStatus('MTB: STOP ERR - '+E.Message);
+     Application.MessageBox(PChar('Chyba pri vypinani komunikace'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
+    end;
   end;
 end;
 
@@ -1190,6 +1177,22 @@ begin
   writelog('----- MTB STOP DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
 end;//procedure
 
+procedure TF_Main.OnMTBReady(Sender:TObject; ready:boolean);
+begin
+ if (ready) then
+  begin
+   Self.A_MTB_Open.Enabled  := (not MTB.Openned);
+   Self.A_MTB_Close.Enabled := MTB.Openned;
+   Self.A_MTB_Go.Enabled    := (MTB.Openned) and (not MTB.Start);
+   Self.A_MTB_Stop.Enabled  := MTB.Start;
+  end else begin
+   Self.A_MTB_Open.Enabled  := false;
+   Self.A_MTB_Close.Enabled := false;
+   Self.A_MTB_Go.Enabled    := false;
+   Self.A_MTB_Stop.Enabled  := false;
+  end;
+end;
+
 //--- events from MTB lib end ---
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1216,6 +1219,14 @@ end;
 procedure TF_Main.A_System_StartExecute(Sender: TObject);      //system start
 begin
  Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
+
+ if (not MTB.ready) then
+  begin
+   Application.MessageBox(PChar('Systém nelze spustit, MTB není pøipraveno k zapnutí systému'+#13#10+'Možné pøíèiny:'+#13#10+' - nenaètena validní knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+   Self.LogStatus('ERR: Systém nelze spustit, MTB není pøipraveno k zapnutí systému');
+   Exit();
+  end;
+
  Self.LogStatus('Zapínám systémy...');
  SystemData.Status := starting;
  Self.A_System_Start.Enabled := false;
@@ -1930,7 +1941,6 @@ procedure TF_Main.OnStart;
  begin
   Vytizeni.DrawCPUGauge;
 
-  writelog('Naètena knihovna '+ IntToStr(MTB.lib),WR_MTB);
   writelog('Spuštìn hJOPserver v'+NactiVerzi(application.ExeName)+_VERSION_PR,0,0);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
 
@@ -2027,6 +2037,8 @@ procedure TF_Main.CreateSystem;
   MTB.OnErrClose := Self.OnMTBErrClose;
   MTB.OnErrStart := Self.OnMTBErrStart;
   MTB.OnErrStop  := Self.OnMTBErrStop;
+
+  MTB.OnReady    := Self.ONMTBReady;
 
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 

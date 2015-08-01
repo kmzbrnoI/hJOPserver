@@ -75,7 +75,6 @@ type
    NewBlk:Boolean;
    Blk:TBlkTU;
    OpenIndex:Integer;
-   CB_ZastIRData:TArSmallI;
    CB_NavData:TArSmallI;
    CB_NavLindex, CB_NavSindex: Integer;
    zastLichy, zastSudy: TF_BlkTUZastEvent;

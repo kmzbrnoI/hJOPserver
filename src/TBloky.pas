@@ -223,6 +223,7 @@ begin
  str := TStringList.Create();
  ini_tech.ReadSections(str);
 
+ Blk := nil;
  for i := 0 to str.Count-1 do
   begin
    case (ini_tech.ReadInteger(str[i], 'typ', -1)) of

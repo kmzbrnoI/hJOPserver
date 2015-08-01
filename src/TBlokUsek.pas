@@ -837,7 +837,7 @@ begin
 
  // pokud mame knihovnu simulator, muzeme ridit stav useku
  //  DEBUG nastroj
- if (MTB.lib = 2) then
+ if (MTB.lib = 'simulator.dll') then
   begin
    Result := Result + '-,';
 
@@ -929,7 +929,7 @@ end;//procedure
 
 // vraci true, pokud loko opravdu presunuto
 function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject):boolean;
-var Blk, Trat:TBlk;
+var Blk:TBlk;
 begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
  if (Blk = nil) then Exit(false);

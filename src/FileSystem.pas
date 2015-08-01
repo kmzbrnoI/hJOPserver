@@ -48,8 +48,7 @@ uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
      DataBloky, ACDatabase, FunkceVyznam;
 
 procedure TData.CompleteLoadFromFile;
-var return:Byte;
-    read,read2:string;
+var read,read2:string;
  begin
   DateTimeToString(OPData.xDate, 'dd.mm.yyyy', Now);
 
@@ -80,13 +79,7 @@ var return:Byte;
   F_Splash.AddStav('Naèítám MTB');
   writelog('Nacitam MTB...',WR_DATA);
   read := ini_lib.ReadString('NacteniDat','MTBData', 'data\MTB.ini');
-  return := MTB.LoadFromFile(read);
-
-  if (return <> 0) then  //overeni chyby pri nacitani
-   begin
-    writelog('MTB LOAD ERROR : '+IntToStr(return),WR_DATA);
-    Application.MessageBox(PChar('Chyba pri nacitani MTB - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
-   end;
+  MTB.LoadFromFile(read);
   writelog('MTB nacteno',WR_DATA);
 
   F_Splash.AddStav('Naèítám soupravy');

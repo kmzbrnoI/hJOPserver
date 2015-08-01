@@ -913,7 +913,7 @@ begin
      Result := Result + '-,*ZRUŠ REDUKCI,';
 
  // DEBUG: jednoduche nastaveni IR pri simulator.dll
- if (MTB.lib = 2) then
+ if (MTB.lib = 'simulator.dll') then
   begin
    if (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir) then
     begin
