@@ -27,6 +27,7 @@ uses
 
 type
   // prototypy funkci volanych do knihovny :
+  TODProc = procedure(); stdcall;
   TODFunc = function(): integer; stdcall;
   TODFuncStr = function(): string; stdcall;
   TODModuleStr = function(board:integer): string; stdcall;
@@ -50,7 +51,7 @@ type
 
   // prototypy setteru (funkci naastavujicich callback funkce) z TMTBIFace do dll knihovny:
   TSetDllNotifyEvent = procedure(func:TStdNotifyEvent); stdcall;
-  TSetDllErrEvent = function(func:TStdDllErrEvent):Integer; stdcall;
+  TSetDllErrEvent = procedure(func:TStdDllErrEvent); stdcall;
   TSetDllEventChange = procedure (func:TStdDllModuleChanedEvent); stdcall;
 
   // vlastni vyjimky:
@@ -65,17 +66,16 @@ type
     FLib: Cardinal;                                                             // handle knihovny
 
     // funkce volane z TMTBIFace do knihovny:
-    FFuncOnUnload: TODFunc;
+    FFuncOnUnload: TODProc;
     FFuncSetOutput: TODSetOutput;
     FFuncGetInput: TODGetInput;
     FFuncGetOutput: TODGetOutput;
     FFuncSetInput: TODSetInput;
-    FFuncGetInfo: TODFunc;
-    FFuncShowConfigDialog: TODFunc;
-    FFuncHideConfigDialog: TODFunc;
-    FFuncShowAboutDialog: TODFunc;
-    FFuncStart: TODFunc;
-    FFuncStop: TODFunc;
+    FFuncShowConfigDialog: TODProc;
+    FFuncHideConfigDialog: TODProc;
+    FFuncShowAboutDialog: TODProc;
+    FFuncStart: TODProc;
+    FFuncStop: TODProc;
     FFuncGetLibVersion: TODFuncStr;
     FFuncGetDeviceVersion: TODFuncStr;
     FFuncGetDriverVersion: TODFuncStr;
@@ -85,8 +85,8 @@ type
     FFuncGetModuleName: TODModuleStr;
     FFuncSetModuleName: TODSetModuleName;
     FFuncSetScanInterval: TODSetScanInterval;
-    FFuncOpen: TODFunc;
-    FFuncClose: TODFunc;
+    FFuncOpen: TODProc;
+    FFuncClose: TODProc;
     FFuncGetModuleFirmware: TODModuleStr;
 
     // eventy z TMTBIFace do rodice:
@@ -280,7 +280,6 @@ var setterNotify: TSetDllNotifyEvent;
   FFuncSetInput           := GetProcAddress(FLib, 'setinput');
   FFuncGetInput           := GetProcAddress(FLib, 'getinput');
   FFuncGetOutput          := GetProcAddress(FLib, 'getoutput');
-  FFuncGetInfo            := GetProcAddress(FLib, 'getinfo');
   FFuncShowConfigDialog   := GetProcAddress(FLib, 'showconfigdialog');
   FFuncHideConfigDialog   := GetProcAddress(FLib, 'hideconfigdialog');
   FFuncShowAboutDialog    := GetProcAddress(FLib, 'showaboutdialog');
