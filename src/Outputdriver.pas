@@ -45,14 +45,14 @@ type
   TDllModuleChanedEvent = procedure (Sender:TObject; module:byte) of object;
 
   // prototypy callback funkci z knihivny do TMTBIFace:
-  TStdNotifyEvent = procedure (Sender: TObject) of object; stdcall;
-  TStdDllErrEvent = procedure (Sender: TObject; errValue: word; errAddr: byte; errMsg:string) of object; stdcall;
-  TStdDllModuleChanedEvent = procedure (Sender:TObject; module:byte) of object; stdcall;
+  TStdNotifyEvent = procedure (Sender: TObject; data:Pointer); stdcall;
+  TStdDllErrEvent = procedure (Sender: TObject; data:Pointer; errValue: word; errAddr: byte; errMsg:string); stdcall;
+  TStdDllModuleChanedEvent = procedure (Sender:TObject; data:Pointer; module:byte); stdcall;
 
   // prototypy setteru (funkci naastavujicich callback funkce) z TMTBIFace do dll knihovny:
-  TSetDllNotifyEvent = procedure(func:TStdNotifyEvent); stdcall;
-  TSetDllErrEvent = procedure(func:TStdDllErrEvent); stdcall;
-  TSetDllEventChange = procedure (func:TStdDllModuleChanedEvent); stdcall;
+  TSetDllNotifyEvent = procedure(func:TStdNotifyEvent; data:Pointer); stdcall;
+  TSetDllErrEvent = procedure(func:TStdDllErrEvent; data:Pointer); stdcall;
+  TSetDllEventChange = procedure (func:TStdDllModuleChanedEvent; data:Pointer); stdcall;
 
   // vlastni vyjimky:
   EFuncNotAssigned = class(Exception);
@@ -105,19 +105,6 @@ type
     FTOutputChanged:TDllModuleChanedEvent;
 
      procedure SetLibName(s: string);
-
-     // eventy z dll do TMTBIFace:
-     procedure OnLibBeforeOpen(Sender:TObject); stdcall;
-     procedure OnLibAfterOpen(Sender:TObject); stdcall;
-     procedure OnLibBeforeClose(Sender:TObject); stdcall;
-     procedure OnLibAfterClose(Sender:TObject); stdcall;
-     procedure OnLibBeforeStart(Sender:TObject); stdcall;
-     procedure OnLibAfterStart(Sender:TObject); stdcall;
-     procedure OnLibBeforeStop(Sender:TObject); stdcall;
-     procedure OnLibAfterStop(Sender:TObject); stdcall;
-     procedure OnLibError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string); stdcall;
-     procedure OnLibInputChanged(Sender: TObject; board:byte); stdcall;
-     procedure OnLibOutputChanged(Sender: TObject; board:byte); stdcall;
 
   protected
     { Protected declarations }
@@ -208,59 +195,59 @@ procedure TMTBIFace.SetLibName(s: string);
 ////////////////////////////////////////////////////////////////////////////////
 // eventy z dll knihovny:
 
-procedure TMTBIFace.OnLibBeforeOpen(Sender:TObject); stdcall;
+procedure OnLibBeforeOpen(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnBeforeOpen)) then Self.OnBeforeOpen(Self);
+  if (Assigned(TMTBIFace(data).OnBeforeOpen)) then TMTBIFace(data).OnBeforeOpen(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibAfterOpen(Sender:TObject); stdcall;
+procedure OnLibAfterOpen(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnAfterOpen)) then Self.OnAfterOpen(Self);
+  if (Assigned(TMTBIFace(data).OnAfterOpen)) then TMTBIFace(data).OnAfterOpen(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibBeforeClose(Sender:TObject); stdcall;
+procedure OnLibBeforeClose(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnBeforeClose)) then Self.OnBeforeClose(Self);
+  if (Assigned(TMTBIFace(data).OnBeforeClose)) then TMTBIFace(data).OnBeforeClose(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibAfterClose(Sender:TObject); stdcall;
+procedure OnLibAfterClose(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnAfterClose)) then Self.OnAfterClose(Self);
+  if (Assigned(TMTBIFace(data).OnAfterClose)) then TMTBIFace(data).OnAfterClose(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibBeforeStart(Sender:TObject); stdcall;
+procedure OnLibBeforeStart(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnBeforeStart)) then Self.OnBeforeStart(Self);
+  if (Assigned(TMTBIFace(data).OnBeforeStart)) then TMTBIFace(data).OnBeforeStart(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibAfterStart(Sender:TObject); stdcall;
+procedure OnLibAfterStart(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnAfterStart)) then Self.OnAfterStart(Self);
+  if (Assigned(TMTBIFace(data).OnAfterStart)) then TMTBIFace(data).OnAfterStart(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibBeforeStop(Sender:TObject); stdcall;
+procedure OnLibBeforeStop(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnBeforeStop)) then Self.OnBeforeStop(Self);
+  if (Assigned(TMTBIFace(data).OnBeforeStop)) then TMTBIFace(data).OnBeforeStop(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibAfterStop(Sender:TObject); stdcall;
+procedure OnLibAfterStop(Sender:TObject; data:Pointer); stdcall;
  begin
-  if (Assigned(Self.OnAfterStop)) then Self.OnAfterStop(Self);
+  if (Assigned(TMTBIFace(data).OnAfterStop)) then TMTBIFace(data).OnAfterStop(TMTBIFace(data));
  end;
 
-procedure TMTBIFace.OnLibError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string); stdcall;
+procedure OnLibError(Sender: TObject; data:Pointer; errValue: word; errAddr: byte; errMsg:string); stdcall;
  begin
-  if (Assigned(Self.OnError)) then Self.OnLibError(Self, errValue, errAddr, errMsg);
+  if (Assigned(TMTBIFace(data).OnError)) then TMTBIFace(data).OnError(TMTBIFace(data), errValue, errAddr, errMsg);
  end;
 
-procedure TMTBIFace.OnLibInputChanged(Sender: TObject; board:byte); stdcall;
+procedure OnLibInputChanged(Sender: TObject; data:Pointer; board:byte); stdcall;
  begin
-  if (Assigned(Self.OnInputChanged)) then Self.OnInputChanged(Self, board);
+  if (Assigned(TMTBIFace(data).OnInputChanged)) then TMTBIFace(data).OnInputChanged(TMTBIFace(data), board);
  end;
 
-procedure TMTBIFace.OnLibOutputChanged(Sender: TObject; board:byte); stdcall;
+procedure OnLibOutputChanged(Sender: TObject; data:Pointer; board:byte); stdcall;
  begin
-  if (Assigned(Self.OnOutputChanged)) then Self.OnOutputChanged(Self, board);
+  if (Assigned(TMTBIFace(data).OnOutputChanged)) then TMTBIFace(data).OnOutputChanged(TMTBIFace(data), board);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -287,8 +274,8 @@ var setterNotify: TSetDllNotifyEvent;
   FFuncStop               := GetProcAddress(FLib, 'stop');
   FFuncGetLibVersion      := GetProcAddress(FLib, 'getlibversion');
   FFuncGetDeviceVersion   := GetProcAddress(FLib, 'getdeviceversion');
-  FFuncGetDriverVersion   := GetProcAddress(FLib,'getdriverversion');
-  FFuncGetModuleFirmware  := GetProcAddress(FLib,'getmodulefirmware');
+  FFuncGetDriverVersion   := GetProcAddress(FLib, 'getdriverversion');
+  FFuncGetModuleFirmware  := GetProcAddress(FLib, 'getmodulefirmware');
   FFuncModuleExists       := GetProcAddress(FLib, 'getmoduleexists');
   FFuncGetModuleType      := GetProcAddress(FLib, 'getmoduletype');
   FFuncGetModuleName      := GetProcAddress(FLib, 'getmodulename');
@@ -300,30 +287,30 @@ var setterNotify: TSetDllNotifyEvent;
 
   // assign events:
   setterNotify := GetProcAddress(FLib, 'setbeforeopen');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeOpen);
+  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeOpen, self);
   @setterNotify := GetProcAddress(FLib, 'setafteropen');
-  if (Assigned(setterNotify)) then setterNotify(OnLibAfterOpen);
+  if (Assigned(setterNotify)) then setterNotify(OnLibAfterOpen, self);
   @setterNotify := GetProcAddress(FLib, 'setbeforeclose');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeClose);
+  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeClose, self);
   @setterNotify := GetProcAddress(FLib, 'setafterclose');
-  if (Assigned(setterNotify)) then setterNotify(OnLibAfterClose);
+  if (Assigned(setterNotify)) then setterNotify(OnLibAfterClose, self);
 
   @setterNotify := GetProcAddress(FLib, 'setbeforestart');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeStart);
+  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeStart, self);
   @setterNotify := GetProcAddress(FLib, 'setafterstart');
-  if (Assigned(setterNotify)) then setterNotify(OnLibAfterStart);
+  if (Assigned(setterNotify)) then setterNotify(OnLibAfterStart, self);
   @setterNotify := GetProcAddress(FLib, 'setbeforestop');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeStop);
+  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeStop, self);
   @setterNotify := GetProcAddress(FLib, 'setafterstop');
-  if (Assigned(setterNotify)) then setterNotify(OnLibafterStop);
+  if (Assigned(setterNotify)) then setterNotify(OnLibafterStop, self);
 
   @setterErr := GetProcAddress(FLib, 'setonerror');
-  if (Assigned(setterErr)) then setterErr(OnLibError);
+  if (Assigned(setterErr)) then setterErr(OnLibError, self);
 
   @setterModuleChanged := GetProcAddress(FLib, 'setoninputchange');
-  if (Assigned(setterModuleChanged)) then setterModuleChanged(OnLibInputChanged);
+  if (Assigned(setterModuleChanged)) then setterModuleChanged(OnLibInputChanged, self);
   @setterModuleChanged := GetProcAddress(FLib, 'setonoutputchange');
-  if (Assigned(setterModuleChanged)) then setterModuleChanged(OnLibOutputChanged);
+  if (Assigned(setterModuleChanged)) then setterModuleChanged(OnLibOutputChanged, self);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
