@@ -137,6 +137,7 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 destructor TXpressNET.Destroy();
 begin
+ Self.timer_history.Free();
  if (Assigned(Self.send_history)) then
    FreeAndNil(Self.send_history);
 
