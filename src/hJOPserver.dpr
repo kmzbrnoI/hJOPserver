@@ -109,7 +109,8 @@ uses
   FunkceVyznam in 'FunkceVyznam.pas',
   TBlokTratUsek in 'TBlokTratUsek.pas',
   fBlkTU in 'fBlkTU.pas' {F_BlkTU},
-  fBlkTUZastEvent in 'fBlkTUZastEvent.pas' {F_BlkTUZastEvent};
+  fBlkTUZastEvent in 'fBlkTUZastEvent.pas' {F_BlkTUZastEvent},
+  MTBdebugger in 'MTBdebugger.pas';
 
 {$R *.res}
 

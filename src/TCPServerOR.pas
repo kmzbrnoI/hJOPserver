@@ -329,7 +329,7 @@ implementation
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, Souprava,
-      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam;
+      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, MTBdebugger;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -500,6 +500,9 @@ begin
     FreeAndNil(Self.clients[i]);
     break;
    end;
+
+  // vymazeme klienta z MTB debuggeru
+  MTBd.RemoveClient(AContext);
 
   // aktualizujeme radek v tabulce klientu ve F_Main
   if (Self.tcpServer.Active) then
@@ -718,7 +721,10 @@ begin
   begin
    FuncsFyznam.ParseNewItems(parsed[2]);
    Self.BroadcastFuncsVyznam();
-  end;
+  end
+
+ else if (parsed[1] = 'MTBd') then
+   MTBd.Parse(AContext, parsed);
 
 end;//procedure
 

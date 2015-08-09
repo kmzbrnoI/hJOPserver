@@ -492,7 +492,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
-     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU;
+     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger;
 
 {$R *.dfm}
 
@@ -607,6 +607,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);                                 
     BoostersDb.Update();
     ORs.Update();
     UpdateCallMethod();
+    MTBd.Update();
   except
    on E: Exception do
     begin
@@ -1109,7 +1110,7 @@ begin
 
  SystemData.Status := null;
 
- Self.LogStatus('MTB: ERR: chyba pøi otevírání');
+ Self.LogStatus('ERR: MTB: '+errMsg);
  SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
 
  Application.MessageBox(PChar('Pri otevírání MTB nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)), 'Chyba', MB_OK OR MB_ICONERROR);
@@ -1126,7 +1127,7 @@ begin
 
  SystemData.Status := null;
 
- Self.LogStatus('MTB: ERR: chyba pøi uzavírání');
+ Self.LogStatus('ERR: MTB: '+errMsg);
  SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
 
  Application.MessageBox(PChar('Pri uzavírání MTB nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)),'Chyba',MB_OK OR MB_ICONERROR);
@@ -1152,7 +1153,7 @@ begin
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
 
-  Self.LogStatus('MTB: ERR: chyba pøi starování komunikace');
+  Self.LogStatus('ERR: MTB: '+errMsg);
 
   Application.MessageBox(PChar('Pri zapínání komunikace nastala chyba:'+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)), 'Chyba', MB_OK OR MB_ICONERROR);
   writelog('----- MTB START DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
@@ -1173,7 +1174,7 @@ begin
   F_Main.A_MTB_Open.Enabled  := true;
   F_Main.A_MTB_Close.Enabled := true;
 
-  Self.LogStatus('MTB: ERR: chyba pøi vypínání komunikace');
+  Self.LogStatus('ERR: MTB: '+errMsg);
 
   Application.MessageBox(PChar('Pri vypínání komunikace nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)),'Chyba',MB_OK OR MB_ICONERROR);
   writelog('----- MTB STOP DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
@@ -1641,9 +1642,12 @@ procedure TF_Main.CloseForm;
   WriteLog('Probíhá ukonèování Øídícího programu',WR_MESSAGE);
   WriteLog('###############################################',WR_MESSAGE);
 
-  Self.Timer1.Enabled      := false;
-  Self.T_function.Enabled  := false;
-  self.T_konflikty.Enabled := false;
+  Self.Timer1.Enabled         := false;
+  Self.T_function.Enabled     := false;
+  self.T_konflikty.Enabled    := false;
+  JCSimulator.timer.Enabled   := false;
+  TratSimulator.timer.Enabled := false;
+  VyhSimulator.timer.Enabled  := false;
 
   Self.A_SaveStavExecute(Self);
 
