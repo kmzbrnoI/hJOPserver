@@ -510,6 +510,7 @@ procedure TF_Main.PM_lib_MTBClick(Sender: TObject);                             
   except
     on E:Exception do
      begin
+      Screen.Cursor := crDefault;
       Application.MessageBox(PChar('Nelze naèíst knihovnu mtb.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
       writelog('Nelze naèíst knihovnu mtb.dll: '+E.Message, WR_ERROR);
       Exit();
@@ -528,6 +529,7 @@ procedure TF_Main.PM_lib_SimClick(Sender: TObject);                             
   except
     on E:Exception do
      begin
+      Screen.Cursor := crDefault;
       Application.MessageBox(PChar('Nelze naèíst knihovnu simulator.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
       writelog('Nelze naèíst knihovnu simulator.dll: '+E.Message, WR_ERROR);
       Exit();
