@@ -110,7 +110,9 @@ uses
   TBlokTratUsek in 'TBlokTratUsek.pas',
   fBlkTU in 'fBlkTU.pas' {F_BlkTU},
   fBlkTUZastEvent in 'fBlkTUZastEvent.pas' {F_BlkTUZastEvent},
-  MTBdebugger in 'MTBdebugger.pas';
+  MTBdebugger in 'MTBdebugger.pas',
+  UDPdiscover in 'UDPdiscover.pas',
+  USock in 'USock.pas';
 
 {$R *.res}
 

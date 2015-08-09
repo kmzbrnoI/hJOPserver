@@ -223,6 +223,8 @@
 				<Form>F_BlkTUZastEvent</Form>
 			</DCCReference>
 			<DCCReference Include="MTBdebugger.pas"/>
+			<DCCReference Include="UDPdiscover.pas"/>
+			<DCCReference Include="USock.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -258,8 +260,8 @@
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">3</VersionInfo>
-						<VersionInfo Name="Release">14</VersionInfo>
-						<VersionInfo Name="Build">48</VersionInfo>
+						<VersionInfo Name="Release">15</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -271,7 +273,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.3.14.48</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.3.15.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2015</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>

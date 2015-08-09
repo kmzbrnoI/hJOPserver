@@ -45,7 +45,7 @@ uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, BoosterDb,
      Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
-     DataBloky, ACDatabase, FunkceVyznam;
+     DataBloky, ACDatabase, FunkceVyznam, UDPDiscover;
 
 procedure TData.CompleteLoadFromFile;
 var read,read2:string;
@@ -239,7 +239,12 @@ var str:string;
    // nacteni vyznamu funkci
    FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
 
-   writelog('Konfigurace naètena',WR_DATA);
+   // nacteni UDP discovery
+   UDPdisc := TUDPDiscover.Create(_DISC_DEFAULT_PORT,
+        ini.ReadString('PanelServer', 'nazev', ''),
+        ini.ReadString('PanelServer', 'popis', ''));
+
+   writelog('Konfigurace naètena', WR_DATA);
  end;//procedure
 
 procedure TKonfigurace.SaveCfgToFile(IniSave:string);
@@ -268,6 +273,8 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
   ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
 
   ini.WriteInteger('PanelServer', 'port', ORTCPServer.port);
+  ini.WriteString('PanelServer', 'nazev', UDPdisc.name);
+  ini.WriteString('PanelServer', 'popis', UDPdisc.description);
 
   SS.SaveData(Konfigurace.ini);
 

@@ -329,7 +329,8 @@ implementation
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, Souprava,
-      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, MTBdebugger;
+      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, MTBdebugger,
+      UDPDiscover;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -390,13 +391,18 @@ begin
  try
   Self.tcpServer.Active := true;
  except
-  F_Main.S_Server.Brush.Color := clRed;
-  F_Main.LogStatus('Panel server: chyba pøi inicializaci komponenty');
-  Exit(2);
+  on E:Exception do
+   begin
+    F_Main.S_Server.Brush.Color := clRed;
+    F_Main.LogStatus('ERR: Panel server: chyba pøi startování serveru : '+E.Message);
+    Exit(2);
+   end;
  end;
 
  F_Main.S_Server.Brush.Color := clLime;
  F_Main.LogStatus('Panel server: spuštìn');
+
+ UDPdisc.SendDiscover();
 
  if (SystemData.Status = starting) then
   begin
@@ -434,6 +440,8 @@ begin
 
  F_Main.LogStatus('Panel server: zastaven');
  F_Main.S_Server.Brush.Color := clRed;
+
+ UDPdisc.SendDiscover();
 
  if (SystemData.Status = stopping) then
    TrkSystem.TurnOffFunctions(F_Main.A_All_Loko_OdhlasitExecute);
