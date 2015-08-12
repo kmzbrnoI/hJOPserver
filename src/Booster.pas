@@ -1,6 +1,8 @@
 unit Booster;
 
-//unit, that defines booter (for example SPAX) as a class
+{
+  Definice a obsluha technologie zesilovace (napr. SPAX).
+}
 
 interface
 
@@ -59,15 +61,16 @@ implementation
 
 uses GetSystems, fMain;
 
-//file format:
-//  ini file
-//  [B0, B1, ... Bn]
-//    name
-//    class
-//    zkr_mtb
-//    zkr_port
-//    nap_mtb
-//    nap_port
+{
+  Format datoveho souboru: .ini soubor, kazdy SPAX ma svou sekci
+  [B0, B1, ... Bn]
+    name
+    class
+    zkr_mtb
+    zkr_port
+    nap_mtb
+    nap_port
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -168,7 +171,7 @@ end;//function
 
 function TBooster.GetNapajeni():boolean;
 begin
- Result := (MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port) = 0);
+ Result := (MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port) <> 1);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
