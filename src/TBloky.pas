@@ -86,7 +86,7 @@ type
 
     procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
 
-    procedure NactiBlokyDoObjektu(CB:TComboBox;Polozky:PTArSmallI;Vypust:PTArSmallI;OblRizeniID:TArStr;BlokTyp:byte;BlokID:Integer);
+    procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArSmallI; Vypust:PTArSmallI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
 
     procedure RemoveSpr(spr:Integer);
     procedure SprPrediction(Nav:TBlk);
@@ -652,7 +652,7 @@ var cyklus,i:Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox;Polozky:PTArSmallI;Vypust:PTArSmallI;OblRizeniID:TArStr;BlokTyp:byte;BlokID:Integer);
+procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArSmallI; Vypust:PTArSmallI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
 var cyklus,i,j:Integer;
     Priradit:Boolean;
     Pocet:Integer;
@@ -670,7 +670,7 @@ var cyklus,i,j:Integer;
     Blky.GetBlkByIndex(cyklus,Blk);
     glob := Blk.GetGlobalSettings();
 
-    if (glob.typ <> BlokTyp) then continue;
+    if ((glob.typ <> BlokTyp) and (glob.typ <> BlokTyp2)) then continue;
 
     if (Assigned(OblRizeniID)) then
      begin

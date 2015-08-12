@@ -365,7 +365,7 @@ begin
     // nyni oznamime nekriticke bariery ktere nemaji upozorneni
     for i := 0 to bariery.Count-1 do
      begin
-      if (not TJC.WarningBariera(bariery[i].typ)) then
+      if (not JC.WarningBariera(bariery[i].typ)) then
        begin
         // tyto bariery nelze rozkliknout pomoci UPO
         Self.hint := bariery[i].blok.GetGlobalSettings().name;

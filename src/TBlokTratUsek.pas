@@ -155,6 +155,7 @@ type
     function GetZastEventString(data:TBlkTUZastEvent):string;                   // vygenerovani stringu eventu zastavky pro ulozeni do souboru
 
     function IsEvent(data:TBlkTUZastEvent):boolean;                             // nastal zastavkovy event?
+    function GetReady():boolean;                                                // jestli je usek pripraveny na vjeti soupravy
 
   protected
     procedure SetUsekSpr(spr:Integer); override;                                // nastaven soupravy useku, kvuli warningum kompilatoru presunuto do protected (v bazove tride je protected)
@@ -210,6 +211,7 @@ type
     property nextTU:TBlkTU read GetNextTU;
     property sectMaster:TBlkTU read GetSectMaster;
     property nextNav:TBlk read GetNextNav;
+    property ready:boolean read GetReady;
 
  end;//TBlkUsek
 
@@ -1137,6 +1139,14 @@ begin
  else
   Result := false;
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTU.GetReady():boolean;
+begin
+ Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (Self.Souprava = -1)
+  and ((Self.Zaver = TJCType.no) or (Self.prevTU = nil)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

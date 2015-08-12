@@ -566,15 +566,20 @@ begin
   _BLK_UVAZKA:begin
    //vytvoreni dat
 
-   if ((Sender as TBlkUvazka).Stitek <> '') then bg := clTeal
-   else bg := clBlack;
+   if (((Sender as TBlkUvazka).parent as TBlkTrat).Smer = TTratSmer.disabled) then
+    begin
+     fg := clBlack;
+     bg := clFuchsia;
+    end else begin
+     if ((Sender as TBlkUvazka).Stitek <> '') then bg := clTeal
+     else bg := clBlack;
 
-   if (((Sender as TBlkUvazka).parent as TBlkTrat).ZAK) then fg := clRed
-   else if (((Sender as TBlkUvazka).parent as TBlkTrat).RBPCan) then fg := clRed
-   else if (((Sender as TBlkUvazka).parent as TBlkTrat).Zaver) then fg := clBlue
-   else if (((Sender as TBlkUvazka).parent as TBlkTrat).nouzZaver) then fg := clAqua
-   else if (((Sender as TBlkUvazka).parent as TBlkTrat).Obsazeno) then fg := clBlue
-   else fg := $A0A0A0;
+     if (((Sender as TBlkUvazka).parent as TBlkTrat).RBPCan) then fg := clRed
+     else if (((Sender as TBlkUvazka).parent as TBlkTrat).Zaver) then fg := clBlue
+     else if (((Sender as TBlkUvazka).parent as TBlkTrat).nouzZaver) then fg := clAqua
+     else if (((Sender as TBlkUvazka).parent as TBlkTrat).Obsazeno) then fg := clBlue
+     else fg := $A0A0A0;
+    end;
 
    msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
    msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
@@ -585,8 +590,8 @@ begin
 
    // smer trati
    case (((Sender as TBlkUvazka).parent as TBlkTrat).Smer) of
-    TTratSmer.disabled : msg := msg + '-5;';
-    TTratSmer.zadny    : msg := msg + '0;';
+    TTratSmer.disabled, TTratSmer.zadny
+                       : msg := msg + '0;';
     TTratSmer.AtoB     : msg := msg + '1;';
     TTratSmer.BtoA     : msg := msg + '2;';
    end;//case

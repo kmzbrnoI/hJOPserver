@@ -104,7 +104,7 @@ type
 implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik;
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
 constructor TBlkUvazka.Create(index:Integer);
 begin
@@ -322,6 +322,7 @@ end;//procedure
 
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkUvazka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+var Blk, Blk2:TBlk;
 begin
  Result := inherited;
 
@@ -416,8 +417,14 @@ begin
    Result := Result + 'ZAV>,';
 
  if (Self.ZAK) then
-  Result := Result + '!ZAK<,'
- else
+  begin
+   // zruseni ZAK je podmineno tim, ze na krajnich usecich trati nejsou zavery
+   // to zajistuje, ze njelze zrusit ZAK u trati, do ktere je postaven PMD
+   Blky.GetBlkByID(TBlkTrat(Self.parent).GetSettings().Useky[0], Blk);
+   Blky.GetBlkByID(TBlkTrat(Self.parent).GetSettings().Useky[TBlkTrat(Self.parent).GetSettings().Useky.Count-1], Blk2);
+   if ((Blk <> nil) and (Blk2 <> nil) and (TBlkUsek(Blk).Zaver = TJCType.no) and (TBlkUsek(Blk2).Zaver = TJCType.no)) then
+     Result := Result + '!ZAK<,'
+  end else
   if ((not (Self.parent as TBlkTrat).ZAK) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).Obsazeno)) then
    Result := Result + 'ZAK>,';
 
@@ -428,6 +435,7 @@ end;//procedure
 
 procedure TBlkUvazka.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
 begin
+ if (TBlkTrat(Self.parent).Smer < TTratSmer.zadny) then Exit();
  ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;//procedure
 

@@ -85,6 +85,8 @@ type
     procedure InitTUs();
     procedure ResetTUs();
 
+    function GetReady():boolean;
+
   public
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -139,6 +141,8 @@ type
     // vrati hranicni navestidla
     property navLichy:TBlk read GetNavLichy;
     property navSudy:TBlk read GetNavSudy;
+
+    property ready:boolean read GetReady;
 
  end;//class TBlkTrat
 
@@ -485,8 +489,10 @@ end;//function
 // jedine tato funkce totiz resi pad zmeru trati v pripade zruseni jizdni cesty vedouci na ni
 procedure TBlkTrat.UpdateBezsouhlasSmer();
 begin
- if (((Self.GetSettings().zabzar = TTratZZ.bezsouhas))
-     and (not Self.Zaver) and (not Self.Obsazeno) and ((Self.Smer = TTratSmer.AtoB) or (Self.Smer = TTratSmer.BtoA)) and (not Self.RBPCan) and (Self.TratStav.soupravy.cnt = 0) and (not Self.nouzZaver)) then
+ if (((Self.GetSettings().zabzar = TTratZZ.bezsouhas)) and
+     (not Self.Zaver) and (not Self.Obsazeno) and (not Self.ZAK) and
+     ((Self.Smer = TTratSmer.AtoB) or (Self.Smer = TTratSmer.BtoA)) and
+     (not Self.RBPCan) and (Self.TratStav.soupravy.cnt = 0) and (not Self.nouzZaver)) then
   Self.Smer := TTratSmer.zadny;
 end;//procedure
 
@@ -911,6 +917,21 @@ begin
        Blky.SprPrediction(Self.navLichy);
   end;
  end;//case
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.GetReady():boolean;
+var i:Integer;
+    Blk:TBlk;
+begin
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
+  begin
+   Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
+   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then Exit(false);
+   if (not TBlkTU(Blk).ready) then Exit(false);
+  end;
+ Result := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

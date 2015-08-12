@@ -919,6 +919,8 @@ end;
 
 procedure TF_Main.A_PanelServer_StartExecute(Sender: TObject);
 begin
+ if ((SystemData.Status = starting) and (not Blky.enabled)) then Blky.Enable();
+
  try
    ORTCPServer.Start();
  except
@@ -931,8 +933,6 @@ begin
 
  Self.A_PanelServer_Start.Enabled := false;
  Self.A_PanelServer_Stop.Enabled  := true;
-
- if ((SystemData.Status = starting) and (not Blky.enabled)) then Blky.Enable();
 end;
 
 procedure TF_Main.A_PanelServer_StopExecute(Sender: TObject);

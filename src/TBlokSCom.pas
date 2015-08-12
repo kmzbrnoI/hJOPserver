@@ -928,7 +928,7 @@ begin
  // DEBUG: jednoduche nastaveni IR pri simulator.dll
  if (MTB.lib = 'simulator.dll') then
   begin
-   if (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir) then
+   if ((Self.SComSettings.events.Count > 0) and (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir)) then
     begin
      Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.irid, Blk);
      if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_IR)) then

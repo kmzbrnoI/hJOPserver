@@ -263,7 +263,7 @@ var LI:TListItem;
     Useky[i] := Self.Useky[i];
 
   Self.MakeObls(obls);
-  Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, 1, -1);
+  Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
  end;//procedure
@@ -424,7 +424,7 @@ var Pozice,i:Integer;
     for i := 0 to Self.Useky.Count-1 do
       Useky[i] := Self.Useky[i];
 
-    Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, 1, -1);
+    Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
    end;//if MessageBox
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
@@ -507,7 +507,7 @@ var Vypustit:TArSmallI;
     for i := 0 to Self.Useky.Count-1 do
       Useky[i] := Self.Useky[i];
 
-    Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, 1, -1);
+    Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
 
     SetLength(Vypustit,0);
     for cyklus := 0 to Self.Vyhybky.Count-1 do
