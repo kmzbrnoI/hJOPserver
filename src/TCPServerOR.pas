@@ -34,7 +34,7 @@ type
     index:Integer;
     funcsVyznamReq:boolean;
 
-    procedure Escape();
+    procedure Escape(AContext: TIdContext);
 
   end;
 
@@ -120,212 +120,223 @@ var
 
 implementation
 
-// jak funguje komunikace ze strany serveru:
-//  1) klient se pripoji, vyvola se event OnConnect
-//  2) klient se zaradi do databaze clients[], kde se mu vybere prvni volne misto a vytvori objekt TORTCPClient
-//    do conn se prida connection a AContext a do AContext.data se vytvori prazdny TTCPORsRef (neobsahuje zadne oblasti rizeni)
-//  3) event AExecute prijima data
-//  4) probehne handshake, AExecute vzdy najde spojeni a ulozi do nej status = opened
-//  5) klient posle zadost o autorizaci oblasti rizeni, program najde prislusne OR a pozada je o autorizaci
-//     server OR zaroven preda TIdTCPConnection, s kterym si OR uz budou nakladat samy (posilat tam data)
-//  6) veskera data urcena pro konkretni oblasti rizeni budou sice prijimana a AExecute, ale na zakldade ACotetext.data jim bude vyhledana oblast rizeni a tato data poslana na zpracovani tam
-//  7) globalni data - nejsou urceny pro konkretni oblast rizeni - ale budou zpracovavana zde - server si tedy musi napriklat pamatovat, jakemu bloku klient prave edituje STITEK
-//     tohleto si pamatuje SERVER, nikoliv oblast rizeni
+{
+ Jak funguje komunikace ze strany serveru:
+  1) klient se pripoji, vyvola se event OnConnect
+  2) klient se zaradi do databaze clients[], kde se mu vybere prvni volne misto a vytvori objekt TORTCPClient
+    do conn se prida connection a AContext a do AContext.data se vytvori prazdny TTCPORsRef (neobsahuje zadne oblasti rizeni)
+  3) event AExecute prijima data
+  4) probehne handshake, AExecute vzdy najde spojeni a ulozi do nej status = opened
+  5) klient posle zadost o autorizaci oblasti rizeni, program najde prislusne OR a pozada je o autorizaci
+     server OR zaroven preda TIdTCPConnection, s kterym si OR uz budou nakladat samy (posilat tam data)
+  6) veskera data urcena pro konkretni oblasti rizeni budou sice prijimana a AExecute, ale na zakldade ACotetext.data jim bude vyhledana oblast rizeni a tato data poslana na zpracovani tam
+  7) globalni data - nejsou urceny pro konkretni oblast rizeni - ale budou zpracovavana zde - server si tedy musi napriklat pamatovat, jakemu bloku klient prave edituje STITEK
+     tohleto si pamatuje SERVER, nikoliv oblast rizeni
 
-//  10) pri uzavreni spojeni od klienta je do or v AContext.data zavolan Disconnect; OR si klienta smazou z databaze
-//  11) co se tyce odpojeni klientu, tak server podporuje jen DisconnectAll(), kde odpoji vsechny na zaklade databaze, coz vyvola krok 10
+  10) pri uzavreni spojeni od klienta je do or v AContext.data zavolan Disconnect; OR si klienta smazou z databaze
+  11) co se tyce odpojeni klientu, tak server podporuje jen DisconnectAll(), kde odpoji vsechny na zaklade databaze, coz vyvola krok 10
 
-// specifikace komunikacnho protkolu:
-//  jedna se o retezec, ve kterem jsou jednotliva data oddelena strednikem
-//  prvni parametr je vzdy id oblasti rizeni, popr. '-' pokud se jedna o rezijni prikaz
-// prikazy:
+}
+{
+ Specifikace komunikacnho protkolu:
+  jedna se o retezec, ve kterem jsou jednotliva data oddelena strednikem
+  prvni parametr je vzdy id oblasti rizeni, popr. '-' pokud se jedna o rezijni prikaz
+
+ PRIKAZY:
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// KLIENT -> SERVER ///////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-//  -;HELLO;verze;                          - handshake a specifikace komunikacniho protokolu
-//  -;ESCAPE;                               - stisknuti tlacitka ESC
-//  -;STIT;stitek                           - nastaveni stitku
-//  -;VYL;vyluka                            - nastaveni vyluky
-//  -;PS;stav                               - odhlaska na potvrzovaci sekvenci
-//  -;MENUCLICK;text                        - uzivatel kliknul na polozku v menu s textem text
-//  -;UPO;OK                                - vsechna upozorneni schvalena
-//  -;UPO;ESC                               - upozorneni neschvalena
-//  -;MOD-CAS;START;                        - zapnuti modeloveho casu
-//  -;MOD-CAS;STOP;                         - vypnuti modleoveho casu
-//  -;MOD-CAS;TIME;time;nasobic             - nastaveni modeloveho casu
-//  -;DCC;GO                                - central start
-//  -;DCC;STOP                              - central stop
-//  -;SPR-LIST;                             - pozadavek na zsikani seznamu souprav v mych oblastech rizeni
-//  -;SPR-REMOVE;spr_name                   - pozadavek na smazani soupravy s cislem spr_name
-//  or;NUZ;stav                             - 1 = zapnout NUZ, 0 = vypnout NUZ
-//  or;GET-ALL;                             - pozadavek na zjisteni stavu vsech bloku v prislusne OR
-//  or;CLICK;block_id;button                - klik na blok na panelu
-//                                            stav = ['ok', 'cancel']
-//  or;AUTH;opravneni;username;password     - pozadavek o autorizaci
-//  or;MSG:recepient;msg                    - zprava pro recepient od or
-//  -;OR-LIST;                              - pozadavek na ziskani seznamu OR
-//  or;HV-LIST;                             - pozadavek na ziskani seznamu hnacich vozidel v dane stanici
-//  or;SPR-CHANGE;vlastosti soupravy dle definice zpravy v TSouprava (format: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla)
-//  or;LOK-MOVE-OR;lok_addr;or_id           - presun soupravy do jine oblasti rizeni
-//
-//  -;LOK;G;AUTH;username;passwd            - pozadavek na autorizaci uzivatele
-//  -;LOK;G:PLEASE;or_id;comment            - pozadavek na rizeni loko z dane oblasti rizeni
-//  -;LOK;G:CANCEL;                         - zruseni pozadavku o loko
+  -;HELLO;verze;                                                                handshake a specifikace komunikacniho protokolu
+  -;ESCAPE;                                                                     stisknuti tlacitka ESC
+  -;STIT;stitek                                                                 nastaveni stitku
+  -;VYL;vyluka                                                                  nastaveni vyluky
+  -;PS;stav                                                                     odpoved na potvrzovaci sekvenci
+  -;MENUCLICK;text                                                              uzivatel kliknul na polozku v menu s textem text
+  -;UPO;OK                                                                      vsechna upozorneni schvalena
+  -;UPO;ESC                                                                     upozorneni neschvalena
+  -;MOD-CAS;START;                                                              zapnuti modeloveho casu
+  -;MOD-CAS;STOP;                                                               vypnuti modleoveho casu
+  -;MOD-CAS;TIME;time;nasobic                                                   nastaveni modeloveho casu
+  -;DCC;GO                                                                      central start
+  -;DCC;STOP                                                                    central stop
+  -;SPR-LIST;                                                                   pozadavek na zsikani seznamu souprav v mych oblastech rizeni
+  -;SPR-REMOVE;spr_name                                                         pozadavek na smazani soupravy s cislem spr_name
+  -;OR-LIST;                                                                    pozadavek na ziskani seznamu OR
 
-//  -:LOK;addr;PLEASE;token                 - zadost o rizeni konkretni lokomotivy; token neni potreba pripojovat v pripade, kdy loko uz mame autorizovane a bylo nam ukradeno napriklad mysi
-//  -;LOK;addr;RELEASE                      - uvolneni lokomotivy z rizeni regulatoru
-//  -;LOK;addr;SP;sp_km/h                   - nastaveni rychlosti lokomotivy
-//  -;LOK;addr;SPD;sp_km/h;dir ()           - nastaveni rychlosti a smeru lokomotivy
-//  -;LOK;addr;D;dir ()                     - nastaveni smeru lokomotivy
-//  -;LOK;addr;F;F_left-F_right;states      - nastaveni funkci lokomotivy
-//    napr.; or;LOK;F;0-4;00010 nastavi F3 a ostatni F vypne
-//  -;LOK;addr;STOP;                        - nouzove zastaveni
-//  -;LOK;addr;TOTAL;[0,1]                  - nastaveni totalniho rizeni hnaciho vozidla
+  -;LOK;G;AUTH;username;passwd                                                  pozadavek na autorizaci uzivatele regulatoru
+  -;LOK;G:PLEASE;or_id;comment                                                  pozadavek na rizeni loko z dane oblasti rizeni
+  -;LOK;G:CANCEL;                                                               zruseni pozadavku o loko
 
-//  or;OSV;SET;code;stav [0,1]              - nastaveni stavu osvetleni
-//  or;OSV;GET;                             - ziskani stavu vsech osvetleni
+  -:LOK;addr;PLEASE;token                                                       zadost o rizeni konkretni lokomotivy; token neni potreba pripojovat v pripade, kdy loko uz mame autorizovane a bylo nam ukradeno napriklad mysi
+  -;LOK;addr;RELEASE                                                            uvolneni lokomotivy z rizeni regulatoru
+  -;LOK;addr;SP;sp_km/h                                                         nastaveni rychlosti lokomotivy
+  -;LOK;addr;SPD;sp_km/h;dir ()                                                 nastaveni rychlosti a smeru lokomotivy
+  -;LOK;addr;D;dir ()                                                           nastaveni smeru lokomotivy
+  -;LOK;addr;F;F_left-F_right;states                                            nastaveni funkci lokomotivy
+                                                                                  napr.; or;LOK;F;0-4;00010 nastavi F3 a ostatni F vypne
+  -;LOK;addr;STOP;                                                              nouzove zastaveni
+  -;LOK;addr;TOTAL;[0,1]                                                        nastaveni totalniho rizeni hnaciho vozidla
 
-//  or;HV;ADD;data                          - pridani hnaciho vozidla
-//  or;HV;REMOVE;addr                       - smazani hnaciho vozdila
-//  or;HV;EDIT;data                         - editace hnaciho vozidla
+  -;MTBd;                                                                       MTB debugger, viz MTBdebugger.pas
 
-//  or;ZAS;VZ                               - volba do zasobniku
-//  or;ZAS;PV                               - prima volba
-//  or;ZAS;EZ;[0,1]                         - zapnuti/vypnuti editace zasobniku
-//  or;ZAS;RM;id                            - smazani cesty [id] ze zasobniku
-//  or;ZAS;UPO                              - uzivatel klikl na UPO
+  or;NUZ;stav                                                                   1 = zapnout NUZ, 0 = vypnout NUZ
+  or;GET-ALL;                                                                   pozadavek na zjisteni stavu vsech bloku v prislusne OR
+  or;CLICK;block_id;button                                                      klik na blok na panelu
+  or;AUTH;opravneni;username;password                                           pozadavek o autorizaci
+  or;MSG:recepient;msg                                                          zprava pro recepient od or
+  or;HV-LIST;                                                                   pozadavek na ziskani seznamu hnacich vozidel v dane stanici
+  or;SPR-CHANGE;vlastosti soupravy dle definice zpravy v TSouprava
+      (format: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla)            zmena soupravy
+  or;LOK-MOVE-OR;lok_addr;or_id                                                 presun soupravy do jine oblasti rizeni
 
-//  or;DK-CLICK;[L,M,R]                     - klik na dopravni kancelar prislusnym tlacitkem mysi
+  or;OSV;SET;code;stav [0,1]                                                    nastaveni stavu osvetleni
+  or;OSV;GET;                                                                   ziskani stavu vsech osvetleni
 
-//  or;LOK-REQ;PLEASE;addr1|addr2|...       - zadost o vydani tokenu
-//  or;LOK-REQ;U-PLEASE;blk_id              - zadost o vydani seznamu hnacich vozidel na danem useku
-//  or;LOK-REQ;LOK;addr1|addr2|...          - lokomotivy pro rucni rizeni na zaklde PLEASE regulatoru vybrany
-//  or;LOK-REQ;DENY;                        - odmitnuti pozadavku na rucni rizeni
+  or;HV;ADD;data                                                                pridani hnaciho vozidla
+  or;HV;REMOVE;addr                                                             smazani hnaciho vozdila
+  or;HV;EDIT;data                                                               editace hnaciho vozidla
 
-//  -;F-VYZN-ADD;{{vyznam1};{vyznam2};...}  - pridani novych vyznamu funkci
-//  -;F-VYZN-GET;                           - pozadavek na ziskani vyznamu funkci (odpoved F-VYZN-LIST)
+  or;ZAS;VZ                                                                     volba do zasobniku
+  or;ZAS;PV                                                                     prima volba
+  or;ZAS;EZ;[0,1]                                                               zapnuti/vypnuti editace zasobniku
+  or;ZAS;RM;id                                                                  smazani jizdni cesty [id] ze zasobniku
+  or;ZAS;UPO                                                                    uzivatel klikl na UPO v zasobniku
+
+  or;DK-CLICK;[L,M,R]                                                           klik na dopravni kancelar prislusnym tlacitkem mysi
+
+  or;LOK-REQ;PLEASE;addr1|addr2|...                                             zadost o vydani tokenu
+  or;LOK-REQ;U-PLEASE;blk_id                                                    zadost o vydani seznamu hnacich vozidel na danem useku
+  or;LOK-REQ;LOK;addr1|addr2|...                                                lokomotivy pro rucni rizeni na zaklde PLEASE regulatoru vybrany
+  or;LOK-REQ;DENY;                                                              odmitnuti pozadavku na rucni rizeni
+
+  -;F-VYZN-ADD;vyznam1;vyznam2;...                                              pridani novych vyznamu funkci
+  -;F-VYZN-GET;                                                                 pozadavek na ziskani vyznamu funkci (odpoved F-VYZN-LIST)
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// SERVER -> KLIENT ///////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-//  -;HELLO;verze;                          - handshake a specifikace komunikacniho protokolu
-//  -;STIT;blk_name;stitek;                 - pozadavek na zobrazeni vstupu pro stitek
-//  -;VYL;blk_name;vyluka;                  - pozadavek na zobrazeni vstupu pro vyluku
-//  -;PS;stanice;udalost;sender1|sender2|...;(blok1_name|blok1_podminka)(blok2_name|blok2_podminka)(...)...
-//                                          - pozadavek na zobrazeni potvrzovaci sekvence
-//  -;PS-CLOSE;[duvod]                      - zruseni potvrzovaci sekvence; duvod je nepovinny
-//  -;MENU;prikaz1,prikaz2,...              - pozadavek na zobrazeni MENU
-//  -;INFOMSG;msg                           - zobrazeni informacni zpravy
-//  -;BOTTOMERR;err;stanice;technologie     - zobrazeni spodni chyby
-//  -;SND;PLAY;code;[delay (ms)]            - prehravani zvuku, delay je nepovinny, pokud neni uveden, je zvuk prehran jen jednou
-//  -;SND;STOP;code                         - zastaveni prehravani zvuku
-//  -;OR-LIST;(or1id,or1name)(or2id, ...    - zaslani seznamu vsech oblasti rizeni
-//  -;UPO-CLOSE;                            - zavrit upozorneni
-//  -;UPO;[item1][item2]                    - upozorneni
-//  -;UPO-CRIT;[item1][item2]               - kriticke upozorneni - nelze porkacovat dale
-//      format [item_x]:
-//          (radek1)(radek2)(radek3)          LRM je zarovnani, fg je barva popredi radku, bg je barva pozadi radku a text je text na radku
-//        radek_x: [L,R,M]|fg|bg|text         barvy na dalsich radcich nemusi byt vyplnene, pak prebiraji tu barvu, jako radek predchozi
-//  -;INFO-TIMER;id;time_min;time_sec;message  - zobrazit odpocet
-//  -;INFO-TIMER-RM;id;                     - smazat odpocet
-//  -;MOD-CAS;running;nasobic;cas;                  - oznameni o stavu modeloveho casu - aktualni modelovy cas a jestli bezi
-//  -;DCC;GO                                - DCC zapnuto
-//  -;DCC;STOP                              - DCC vypnuto
-//  -;DCC;DISABLED                          - neni mozno zmenit stav DCC z tohoto klienta
-//  -;SPR-LIST;(spr1)(spr2)(...)            - odeslani seznamu souprav ve vsech oblastech rizeni
-//  or;AUTH;rights;comment;                 - odpoved na pozadavek o autorizaci
-//  or;MENU;items
-//                                             pokud je prikaz '-', vypisuje se oddelovac
-//                                             pokud je prvni znak #, pole je disabled
-//                                             pokud je prvni znak $, pole je vycentrovane a povazovane na nadpis
-//  or;CAS;START;id;delka_sekundy;          - pridani mereni casu, id je vzdy unikatni unsigned int, ktery obvykle zacina od 0
-//  or;CAS;STOP;id;                         - smazani mereni casu
-//  or;CHANGE;typ_blk;tech_blk_id;barva_popredi;barva_pozadi;blikani; dalsi argumenty u konkretnich typu bloku:
-//    typ_blk = cislo podle typu bloku na serveru
-//      usek : konec_jc;ramecek_color;[souprava;barva_soupravy;sipkaLsipkaS] -  posledni 3 argumenty jsou nepovinne, pokud je ramecek_color string '-', ramecek se nezobrazuje
-//      vyhybka : poloha (cislo odpovidajici poloze na serveru - [disabled = -5, none = -1, plus = 0, minus = 1, both = 2])
-//      navestidlo: ab (false = 0, true = 1)
-//      prejezd: stav (otevreno = 0, vystraha = 1, uzavreno = 2, anulace = 3)
-//      uvazka: smer (-5 = disabled, 0 = bez smeru, 1 = zakladni, 2 = opacny); soupravy - cisla souprav oddelene carkou (pokid cislo zacina znakem $, ma byt barevne odliseno barvou - predpovidana souprava)
-//         prvni souprava je vzdy ta, ktere do trati prisla prvni
-//      zamek: zadne dalsi argumenty
-//  or;NUZ;stav                             - stav in [0, 1, 2] - jestli probiha NUZ na DK - fakticky rika, jeslti ma DK blikat
-//                                            0 = zadne bloky v NUZ, neblikat
-//                                            1 = bloky v NUZ, blikat, nabidnout NUZ>
-//                                            2 = probiha NUZ, neblika, nabidnout NUZ<
-//  or;MSG:sender;msg                       - zprava pro or od sender
-//  or;MSG-ERR;sender;err                   - chyba pri odesilani zpravy
-//  or;HV-LIST;[HV1][HV2]                   - odeslani seznamu hnacich vozidel dane stanice
-//  or;SPR-NEW;
-//  or;SPR-EDIT;vlastosti soupravy dle definice zpravy v TSouprava (format: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla)
-//  or;SPR-EDIT-ERR;err                     - chyba pri ukladani supravy po editaci
-//  or;SPR-EDIT-ACK;                        - editace soupravy probehla uspesne
+  -;HELLO;verze;                                                                handshake a specifikace komunikacniho protokolu
+  -;STIT;blk_name;stitek;                                                       pozadavek na zobrazeni vstupu pro stitek
+  -;VYL;blk_name;vyluka;                                                        pozadavek na zobrazeni vstupu pro vyluku
+  -;PS;stanice;udalost;sender1|sender2|...;(blok1_name|blok1_podminka)
+      (blok2_name|blok2_podminka)(...)...                                       pozadavek na zobrazeni potvrzovaci sekvence
+  -;PS-CLOSE;[duvod]                                                            zruseni potvrzovaci sekvence; duvod je nepovinny
+  -;MENU;prikaz1,prikaz2,...                                                    pozadavek na zobrazeni MENU
+  -;INFOMSG;msg                                                                 zobrazeni notifikace pro dispecera
+  -;BOTTOMERR;err;stanice;technologie                                           zobrazeni technologicke chyby
+  -;SND;PLAY;code;[delay (ms)]                                                  prehravani zvuku, delay je nepovinny, pokud neni uveden, je zvuk prehran jen jednou
+  -;SND;STOP;code                                                               zastaveni prehravani zvuku
+  -;OR-LIST;(or1id,or1name)(or2id, ...                                          seznam vsech oblasti rizeni
+  -;UPO-CLOSE;                                                                  zavrit upozorneni
+  -;UPO;[item1][item2]                                                          otevrit upozorneni
+  -;UPO-CRIT;[item1][item2]                                                     kriticke upozorneni - nelze porkacovat dale
+      format [item_x]:
+          (radek1)(radek2)(radek3)                                                LRM je zarovnani, fg je barva popredi radku, bg je barva pozadi radku a text je text na radku
+        radek_x: [L,R,M]|fg|bg|text                                               barvy na dalsich radcich nemusi byt vyplnene, pak prebiraji tu barvu, jako radek predchozi
+  -;INFO-TIMER;id;time_min;time_sec;message                                     zobrazit odpocet
+  -;INFO-TIMER-RM;id;                                                           smazat odpocet
+  -;MOD-CAS;running;nasobic;cas;                                                oznameni o stavu modeloveho casu - aktualni modelovy cas a jestli bezi
+  -;DCC;GO                                                                      DCC zapnuto
+  -;DCC;STOP                                                                    DCC vypnuto
+  -;DCC;DISABLED                                                                neni mozno zmenit stav DCC z tohoto klienta
+  -;SPR-LIST;(spr1)(spr2)(...)                                                  odeslani seznamu souprav ve vsech oblastech rizeni daneho panelu
+  or;AUTH;rights;comment;                                                       odpoved na pozadavek o autorizaci
+  or;MENU;items
+                                                                                  pokud je polozka '-', vypisuje se oddelovac
+                                                                                  pokud je prvni znak polozky #, pole je disabled
+                                                                                  pokud je prvni znak polozky $, pole je vycentrovane a povazovane na nadpis
+  or;CAS;START;id;delka_sekundy;                                                pridani mereni casu, id je vzdy unikatni unsigned int, ktery obvykle zacina od 0
+  or;CAS;STOP;id;                                                               smazani mereni casu
+  or;CHANGE;typ_blk;tech_blk_id;barva_popredi;barva_pozadi;blikani;dalsi argumenty u konkretnich typu bloku:
+    typ_blk = cislo podle typu bloku na serveru
+      usek : konec_jc;ramecek_color;[souprava;barva_soupravy;sipkaLsipkaS] -  posledni 3 argumenty jsou nepovinne, pokud je ramecek_color string '-', ramecek se nezobrazuje
+      vyhybka : poloha (cislo odpovidajici poloze na serveru - [disabled = -5, none = -1, plus = 0, minus = 1, both = 2])
+      navestidlo: ab (false = 0, true = 1)
+      prejezd: stav (otevreno = 0, vystraha = 1, uzavreno = 2, anulace = 3)
+      uvazka: smer (-5 = disabled, 0 = bez smeru, 1 = zakladni, 2 = opacny); soupravy - cisla souprav oddelene carkou (pokid cislo zacina znakem $, ma byt barevne odliseno barvou - predpovidana souprava)
+         prvni souprava je vzdy ta, ktere do trati prisla prvni
+      zamek: zadne dalsi argumenty
+  or;NUZ;stav                                                                   stav in [0, 1, 2] - jestli probiha NUZ na DK - fakticky rika, jeslti ma DK blikat
+                                                                                  0 = zadne bloky v NUZ, neblikat
+                                                                                  1 = bloky v NUZ, blikat, nabidnout NUZ>
+                                                                                  2 = probiha NUZ, neblika, nabidnout NUZ<
+  or;MSG:sender;msg                                                             zprava pro or od sender
+  or;MSG-ERR;sender;err                                                         chyba pri odesilani zpravy
+  or;HV-LIST;[HV1][HV2]                                                         odeslani seznamu hnacich vozidel dane stanice
+  or;SPR-NEW;
+  or;SPR-EDIT;vlastosti soupravy dle definice zpravy v TSouprava
+    (format: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla)              zobrazeni editacniho okna soupravu
+  or;SPR-EDIT-ERR;err                                                           chyba pri ukladani supravy po editaci
+  or;SPR-EDIT-ACK;                                                              editace soupravy probehla uspesne
 
-//  -;OR-LIST;(or1id,or1name)(or2id, ...    - zaslani seznamu vsech oblasti rizeni
+  -;OR-LIST;(or1id,or1name)(or2id, ...                                          zaslani seznamu vsech oblasti rizeni
 
-//  -;LOK;G:PLEASE-RESP;[ok, err];info      - odpoved na zadost o lokomotivu z reliefu; v info je pripadna chybova zprava
-//  -;LOK;G;AUTH;[ok,not,total];info        - navratove hlaseni o autorizaci
-//  -;LOK;addr;AUTH;[ok,not,stolen,release];info;hv_data  - odpoved na pozadavek o autorizaci rizeni hnaciho vozidla (odesilano take jako informace o zruseni ovladani hnacicho vozidla)
-//                                        info je string
-//                                        hv_data jsou pripojovana k prikazu v pripade, ze doslo uspesne k autorizaci; jedna se o PanelString hnaciho vozdila obsahujici vsechny informace
-//  -;LOK;addr;F;F_left-F_right;states      - informace o stavu funkci lokomotivy
-//    napr.; or;LOK;0-4;00010 informuje, ze je zaple F3 a F0, F1, F2 a F4 jsou vyple
-//  -;LOK;addr;SPD;sp_km/h;sp_stupne;dir    - informace o zmene rychlosti (ci smeru) lokomotivy
-//  -;LOK;addr;RESP;[ok, err];info;speed_kmph
-//                                          - odpoved na prikaz;  speed_kmph je nepovinny argument; info zpravidla obsahuje rozepsani chyby, pokud je odpoved "ok", info je prazdne
-//  -;LOK;addr;TOTAL;[0,1]                  - zmena rucniho rizeni lokomotivy
+  -;LOK;G:PLEASE-RESP;[ok, err];info                                            odpoved na zadost o lokomotivu z reliefu; v info je pripadna chybova zprava
+  -;LOK;G;AUTH;[ok,not,total];info                                              navratove hlaseni o autorizaci
+  -;LOK;addr;AUTH;[ok,not,stolen,release];info;hv_data                          odpoved na pozadavek o autorizaci rizeni hnaciho vozidla (odesilano take jako informace o zruseni ovladani hnacicho vozidla)
+                                                                                  info je string
+                                                                                  hv_data jsou pripojovana k prikazu v pripade, ze doslo uspesne k autorizaci; jedna se o PanelString hnaciho vozdila obsahujici vsechny informace
+  -;LOK;addr;F;F_left-F_right;states                                            informace o stavu funkci lokomotivy
+                                                                                  napr.; or;LOK;0-4;00010 informuje, ze je zaple F3 a F0, F1, F2 a F4 jsou vyple
+  -;LOK;addr;SPD;sp_km/h;sp_stupne;dir                                          informace o zmene rychlosti (ci smeru) lokomotivy
+  -;LOK;addr;RESP;[ok, err];info;speed_kmph                                     odpoved na prikaz;  speed_kmph je nepovinny argument; info zpravidla obsahuje rozepsani chyby, pokud je odpoved "ok", info je prazdne
+  -;LOK;addr;TOTAL;[0,1]                                                        zmena rucniho rizeni lokomotivy
 
-//  or;OSV;(code;stav)(code;srav) ...       - informace o stavu osvetleni (stav = [0,1])
+  -;MTBd;                                                                       MTB debugger, viz MTBdebugger.pas
 
-//  or;ZAS;VZ                               - volba do zasobniku
-//  or;ZAS;PV                               - prima volba
-//  or;ZAS;LIST;first-enabled[0,1];(id1|name1)(id2|name2) ... - seznam jizdnich cest v zasobniku
-//  or;ZAS;FIRST;first-enabled[0,1]         - jestli je mozno prvni prvek mazat
-//  or;ZAS;INDEX;index                      - oznameni indexu zasobniku
-//  or;ZAS;RM;id                            - smazani cesty [id] ze zasobniku
-//  or;ZAS;ADD;id|name                      - pridani cesty [id, name] do zasobniku
-//  or;ZAS;RM;id                            - oznameni o smazani cesty ze zasobniku
-//  or;ZAS;HINT;hint                        - zmena informacni zpravy vedle zasobniku
-//  or;ZAS;UPO;[0,1]                        - 1 pokud je UPO klikaci, 0 pokud ne
+  -;F-VYZN-LIST;vyznam1;vyznam2;...                                             odeslani seznamu vyznamu funkci
 
-//  or;DK-CLICK;[0, 1]                      - informuje server o kliku na DK misto toho, aby zobrazil menu
+  or;OSV;(code;stav)(code;srav) ...                                             informace o stavu osvetleni (stav = [0,1])
 
-//  or;RUC;addr;text                        - informace o rucnim rizeni hnaciho vozdila addr; text se zobrazi jako string v panelu
-//  or;RUC-RM;addr                          - smazani informace o rucnim rizeni hnaciho vozidla
+  or;ZAS;VZ                                                                     volba do zasobniku
+  or;ZAS;PV                                                                     prima volba
+  or;ZAS;LIST;first-enabled[0,1];(id1|name1)(id2|name2) ...                     seznam jizdnich cest v zasobniku
+  or;ZAS;FIRST;first-enabled[0,1]                                               jestli je mozno prvni prvek mazat
+  or;ZAS;INDEX;index                                                            oznameni indexu zasobniku
+  or;ZAS;RM;id                                                                  smazani cesty [id] ze zasobniku
+  or;ZAS;ADD;id|name                                                            pridani cesty [id, name] do zasobniku
+  or;ZAS;RM;id                                                                  oznameni o smazani cesty ze zasobniku
+  or;ZAS;HINT;hint                                                              zmena informacni zpravy vedle zasobniku
+  or;ZAS;UPO;[0,1]                                                              1 pokud je UPO klikaci, 0 pokud ne
 
-//  or;LOK-TOKEN;OK;[addr|token][addr|token]- odpovìï na žádost o token, je posílano také pøi RUÈ loko
-//  or;LOK-TOKEN;ERR;comment                - chybova odpoved na zadost o token
-//  or;LOK-REQ;REQ;username;firstname;lastname;comment
-//                                          - pozadavek na prevzeti loko na rucni rizeni
-//  or;LOK-REQ;U-OK;[hv1][hv2]...           - seznamu hnacich vozidel v danem useku
-//  or;LOK-REQ;U-ERR;info                   - chyba odpoved na pozadavek na seznam loko v danem useku
-//  or;LOK-REQ;OK                           - seznam loko na rucni rizeni schvalen serverem
-//  or;LOK-REQ;ERR;comment                  - seznam loko na rucni rizeni odmitnut serverem
-//  or;LOK-REQ;CANCEL;                      - zruseni pozadavku na prevzeti loko na rucni rizeni
+  or;DK-CLICK;[0, 1]                                                            nastavuje, kam posilat info o kliku na DK, 0 = klientoi, 1 = na server
 
-//  -;F-VYZN-LIST;{{vyznam1};{vyznam2};...} - odeslani seznamu vyznamu funkci
+  or;RUC;addr;text                                                              informace o rucnim rizeni hnaciho vozdila addr; text se zobrazi jako string v panelu
+  or;RUC-RM;addr                                                                smazani informace o rucnim rizeni hnaciho vozidla
+
+  or;LOK-TOKEN;OK;[addr|token][addr|token]                                      odpovìï na žádost o token, je posílano také pøi RUÈ loko
+  or;LOK-TOKEN;ERR;comment                                                      chybova odpoved na zadost o token
+  or;LOK-REQ;REQ;username;firstname;lastname;comment                            pozadavek na prevzeti loko na rucni rizeni
+  or;LOK-REQ;U-OK;[hv1][hv2]...                                                 seznamu hnacich vozidel v danem useku
+  or;LOK-REQ;U-ERR;info                                                         chyba odpoved na pozadavek na seznam loko v danem useku
+  or;LOK-REQ;OK                                                                 seznam loko na rucni rizeni schvalen serverem
+  or;LOK-REQ;ERR;comment                                                        seznam loko na rucni rizeni odmitnut serverem
+  or;LOK-REQ;CANCEL;                                                            zruseni pozadavku na prevzeti loko na rucni rizeni
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// navazani komunikace:
-//  1) klient se pripoji
-//  2) klient posle hanshake
-//  3) klient vycka na odpoved na handshake
-//  4) klient vysila pozadavek na autorizaci oblasti rizeni
-//  5) po klientovi muze byt vyzadovano heslo
-//  5) klient bud dostane, nebo nedostae pristup k prislusnym OR
+{
+ Navazani komunikace:
+  1) klient se pripoji
+  2) klient posle hanshake
+  3) klient vycka na odpoved na handshake
+  4) klient vysila pozadavek na autorizaci oblasti rizeni
+  5) po klientovi muze byt vyzadovano heslo
+  5) klient bud dostane, nebo nedostae pristup k prislusnym OR
 
-//  username a heslo se zadava vzdy jen jedno
-//   autorizace pro OR ale prichazi samostatne - pokud jsou na panelu 2 OR, tak uzivatel klidne muze dostat autorizaci jen pro jedno z nich
+  username a heslo se zadava vzdy jen jedno
+   autorizace pro OR ale prichazi samostatne - pokud jsou na panelu 2 OR, tak uzivatel klidne muze dostat autorizaci jen pro jedno z nich
 
-// rights:
-//  (null = 0, read = 1, write = 2, superuser = 3); prenasi se pouze cislo
+ rights:
+  (null = 0, read = 1, write = 2, superuser = 3); prenasi se pouze cislo
 
-// barva se prenasi jako 3 text, ktery obsahuje 3 sestnactkova cisla = napr. FFAAFF
-//  poradi barev: RED, GREEN, BLUE
+ barva se prenasi jako 3 text, ktery obsahuje 3 sestnactkova cisla = napr. FFAAFF
+  poradi barev: RED, GREEN, BLUE
+}
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, Souprava,
@@ -475,7 +486,7 @@ begin
  ORsref.ORsCnt      := 0;
  ORsref.index  := i;
  ORsref.regulator_zadost := nil;
- ORsref.Escape();
+ ORsref.Escape(AContext);
 
  Self.clients[i]           := TORTCPClient.Create();
  Self.clients[i].conn      := AContext;
@@ -653,10 +664,7 @@ begin
 
  else if (parsed[1] = 'ESCAPE') then
   begin
-   (AContext.Data as TTCPORsRef).Escape();
-
-   for i := 0 to (AContext.Data as TTCPORsRef).ORsCnt-1 do
-    (AContext.Data as TTCPORsRef).ORs[i].PanelEscape(AContext);
+   (AContext.Data as TTCPORsRef).Escape(AContext);
   end
 
  else if (parsed[1] = 'OR-LIST') then
@@ -821,13 +829,7 @@ begin
   (AContext.Data as TTCPORsRef).ORs[i].PanelZAS(AContext, parsed)
 
  else if (parsed[1] = 'DK-CLICK') then
-  begin
-   case (parsed[2][1]) of
-     'L' : (AContext.Data as TTCPORsRef).ORs[i].PanelDKClick(AContext, TPanelButton.left);
-     'M' : (AContext.Data as TTCPORsRef).ORs[i].PanelDKClick(AContext, TPanelButton.middle);
-     'R' : (AContext.Data as TTCPORsRef).ORs[i].PanelDKClick(AContext, TPanelButton.right);
-   end;
-  end
+  (AContext.Data as TTCPORsRef).ORs[i].PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
 
  else if (parsed[1] = 'LOK-REQ') then
   (AContext.Data as TTCPORsRef).ORs[i].PanelLokoReq(AContext, parsed);
@@ -1177,8 +1179,13 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.Escape();
+procedure TTCPORsRef.Escape(AContext: TIdContext);
+var i:Integer;
 begin
+ if ((Self.stitek = nil) and (Self.vyluka = nil) and (not Assigned(Self.potvr)) and (Self.menu = nil) and (not Assigned(Self.UPO_OK))) then
+   for i := 0 to Self.ORsCnt-1 do
+     Self.ORs[i].PanelEscape(AContext);
+
  Self.stitek      := nil;
  Self.vyluka      := nil;
  Self.potvr       := nil;

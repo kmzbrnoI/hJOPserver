@@ -123,6 +123,7 @@ type
     procedure MenuPNStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     // DEBUG menu:
     procedure MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:boolean);
@@ -776,6 +777,17 @@ begin
    ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závìrù po nouzoé cestì', TBlky.GetBlksList(Self), Self.privol.GetRNZ());
 end;//procedure
 
+procedure TBlkSCom.MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
+var i:Integer;
+begin
+ if (Self.ZacatekVolba = TBlkSComVolba.NC) then
+  begin
+   for i := 0 to Self.OblsRizeni.Cnt-1 do
+    Self.OblsRizeni.ORs[i].ORDKClickClient();
+   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti', TBLky.GetBlksList(Self), nil);
+  end;
+end;
+
 procedure TBlkSCom.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.SComStav.redukce_menu := 0;
@@ -837,7 +849,8 @@ begin
  else if (item = 'PPN')  then Self.MenuPPNClick    (SenderPnl, SenderOR)
  else if (item = 'RNZ')  then Self.MenuRNZClick    (SenderPnl, SenderOR)
  else if (item = 'IR>')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, true)
- else if (item = 'IR<')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, false);
+ else if (item = 'IR<')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, false)
+ else if (item = 'KC')   then Self.MenuKCDKClick   (SenderPnl, SenderOR);
 
  if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
 end;//procedure
@@ -1251,8 +1264,10 @@ begin
   begin
    for i := 0 to Self.OblsRizeni.Cnt-1 do
     Self.OblsRizeni.ORs[i].ORDKClickClient();
-
    ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti', TBLky.GetBlksList(Self), nil);
+  end else begin
+   if ((Button = TPanelButton.F2) or (Button = TPanelButton.right)) then
+     ORTCPServer.Menu(SenderPnl, Self, TOR(SenderOR), '$'+TOR(SenderOR).Name + ',-,' + 'KC');
   end;
 end;//procedure
 

@@ -1689,10 +1689,7 @@ end;//procedure
 procedure TOR.PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
 begin
  if (Assigned(Self.ORStav.dk_click_callback)) then
-  begin
    Self.ORStav.dk_click_callback(SenderPnl, Self, Button);
-   Self.ORDKClickClient();
-  end;
 end;//procedure
 
 // Tato procedura parsuje "LOK-REQ" z panelu.
