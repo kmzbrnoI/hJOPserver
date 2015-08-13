@@ -857,8 +857,7 @@ procedure TBlkTrat.UpdateSprPredict();
 var Blk, last:TBlkTU;
     i:Integer;
 begin
- if (((Self.Smer <> TTratSmer.AtoB) and (Self.Smer <> TTratSmer.BtoA))
-     or (Self.TratSettings.Useky.Count < 2)) then Exit();
+ if ((Self.Smer <> TTratSmer.AtoB) and (Self.Smer <> TTratSmer.BtoA)) then Exit();
 
  case (Self.Smer) of
   TTratSmer.AtoB: begin
