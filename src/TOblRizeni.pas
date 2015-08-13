@@ -1469,9 +1469,6 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////////////////
-
 procedure TOR.PanelZAS(Sender:TIdContext; str:TStrings);
 begin
  //kontrola opravneni klienta
@@ -1483,8 +1480,6 @@ begin
 
  Self.stack.ParseCommand(Sender, str);
 end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1502,7 +1497,7 @@ begin
 
  str := Self.id + ';OSV;';
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(MTB.GetOutputs(Self.ORProp.Osvetleni[i].board)[Self.ORProp.Osvetleni[i].port]) + ']';
+   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(MTB.GetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port)) + ']';
  ORTCPServer.SendLn(Sender, str);
 end;//procedure
 

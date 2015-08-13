@@ -19,8 +19,6 @@ type
   TMTBReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
   TMTBBoardChangeEvent = procedure (Sender:TObject; board:byte) of object;
 
-  TMTBBoardOutputs = array[0..15] of Shortint;
-
   //////////////////////////////////////////////////////////////
 
   //toto se pouziva pro identifikaci desky a portu VSUDE v technologii
@@ -30,7 +28,6 @@ type
   end;
 
   TMTBBoard = class                                                               // jedna MTB deska
-    StavVyst:TMTBBoardOutputs;                                                    // stavy vystupu
     needed:boolean;                                                               // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
     inputChangedEv:TList<TMTBBoardChangeEvent>;
     outputChangedEv:TList<TMTBBoardChangeEvent>;
@@ -40,10 +37,6 @@ type
   end;
 
   //////////////////////////////////////////////////////////////
-
-  //lib: 0 - neznama
-  //     1 - mtb.dll
-  //     2 - simulator.dll
 
   // Technologie MTB
   TMTB=class
@@ -114,7 +107,6 @@ type
       function GetInput(MtbAdr:integer;vstup:integer):integer;
       function GetOutput(MtbAdr:integer; port:integer):integer;
       function GetModuleFirmware(MtbAdr:integer):string;
-      function GetOutputs(MtbAdr:integer):TMTBBoardOutputs;
 
       procedure SetNeeded(MtbAdr:Integer; state:boolean = true);
       function GetNeeded(MtbAdr:Integer):boolean;
@@ -289,12 +281,8 @@ procedure TMTB.Stop();
 
 procedure TMTB.SetOutput(MtbAdr:integer;vystup:integer;state:integer);
  begin
-  if (MTB.aStart) then
+  if (Self.Start) then
    begin
-    // pokud ma uz vystup tento stav, nenastavuji ho...
-    if (Self.Desky[MtbAdr].StavVyst[vystup] = state) then Exit;
-      Self.Desky[MtbAdr].StavVyst[vystup] := state;
-
     try
       MTBdrv.SetOutput(MtbAdr, vystup, state); //nastaveni fyzickeho vystupu
     except
@@ -475,11 +463,6 @@ begin
  except
    Result := '-';
  end;
-end;//function
-
-function TMTB.GetOutputs(MtbAdr:integer):TMTBBoardOutputs;
-begin
- Result := Self.Desky[MtbAdr].StavVyst;
 end;//function
 
 procedure TMTB.ShowCfgDialog;

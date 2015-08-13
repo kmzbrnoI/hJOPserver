@@ -68,7 +68,7 @@ end;//procedure
 
 procedure TMTBTableData.UpdateLine(board:integer);
 var i,j:integer;
-    outputs:TMTBBoardOutputs;
+    output:Integer;
  begin
   i := board;
 
@@ -95,15 +95,15 @@ var i,j:integer;
         Self.LV.Items.Item[i].SubItems.Strings[3] := '';
         Self.LV.Items.Item[i].SubItems.Strings[4] := '';
 
-        outputs := MTB.GetOutputs(board);
         for j := 0 to 15 do
          begin
           Self.LV.Items.Item[i].SubItems.Strings[3] := Self.LV.Items.Item[i].SubItems.Strings[3]+IntToStr(MTB.GetInput(board, j));
 
-          if (outputs[j] > 1) then
+          output := MTB.GetOutput(board, j);
+          if (output > 1) then
             Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[4]+'S'
           else
-            Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[4]+IntToStr(outputs[j]);
+            Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[4]+IntToStr(output);
 
           if (j = 7) then
            begin

@@ -89,12 +89,10 @@ var cyklus:Integer;
 
 procedure TF_Tester.UpdateOut;
 var cyklus:Integer;
-    outputs:TMTBBoardOutputs;
  begin
-  outputs := MTB.GetOutputs(MTBAddr);
   for cyklus := 0 to 15 do
    begin
-    if (outputs[cyklus] = 1) then
+    if (MTB.GetOutput(MTBAddr, cyklus) > 0) then
      begin
       SOutput[cyklus].Brush.Color := clLime;
      end else begin
