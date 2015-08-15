@@ -28,9 +28,6 @@ TTCPRegulator = class
 
   public
 
-    constructor Create();
-    destructor Destroy(); override;
-
     procedure Parse(Sender:TIdContext; parsed:TStrings);
 
     procedure LokUpdateFunc(HV:THV; exclude:TObject = nil);
@@ -40,6 +37,7 @@ TTCPRegulator = class
 
     procedure LokToRegulator(Regulator:TIDContext; HV:THV);
     procedure RegDisconnect(reg:TIdContext);
+
 end;
 
 var
@@ -50,23 +48,13 @@ implementation
 uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb,
      Souprava, fRegulator, TrakceGUI, fMain, Prevody, TOblRizeni, TOblsRizeni;
 
-////////////////////////////////////////////////////////////////////////////////
-
-constructor TTCPRegulator.Create();
-begin
- inherited Create();
-end;//ctor
-
-destructor TTCPRegulator.Destroy();
-begin
- inherited Destroy();
-end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;"
 
 procedure TTCPRegulator.Parse(Sender:TIdContext; parsed:TStrings);
 begin
+ parsed[2] := UpperCase(parsed[2]);
  if (parsed[2] = 'G') then
   Self.ParseGlobal(Sender, parsed)
  else
@@ -80,6 +68,8 @@ procedure TTCPRegulator.ParseGlobal(Sender:TIdContext; parsed:TStrings);
 var user:TUser;
     OblR:TOR;
 begin
+ parsed[3] := UpperCase(parsed[3]);
+
  if (parsed[3] = 'AUTH') then
   begin
    // pozadavek na autorizaci klienta
@@ -114,7 +104,7 @@ begin
    end;
   end;
 
- // kontrola autorizace (dali priakzy jsou podmineny existujicim pristupem)
+ // kontrola autorizace (dalsi prikazy jsou podmineny existujicim pristupem)
  if (not (Sender.Data as TTCPORsRef).regulator) then Exit();
 
  // regulator zacina zadost o lokomotivu ze stanice
@@ -160,7 +150,7 @@ begin
 
    (Sender.Data as TTCPORsRef).regulator_zadost.LokoCancel(Sender);
    (Sender.Data as TTCPORsRef).regulator_zadost := nil;
-   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Žádost zrušena');
+   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok;Žádost zrušena');
   end;
 end;//procedure
 

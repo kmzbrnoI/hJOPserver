@@ -130,6 +130,8 @@ end;//dtor
 procedure TORStack.ParseCommand(SenderPnl:TIdContext; data:TStrings);
 begin
  try
+   data[2] := UpperCase(data[2]);
+
    if (data[2] = 'VZ') then
     Self.ORCmdVZ(SenderPnl)
    else if (data[2] = 'PV') then

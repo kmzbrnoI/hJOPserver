@@ -147,6 +147,8 @@ end;
 procedure TMTBd.Parse(Sender:TIdContext; parsed:TStrings);
 var i:Integer;
 begin
+ parsed[2] := UpperCase(parsed[2]);
+
  if (parsed[2] = 'AUTH') then
   begin
    Self.ParseAuth(Sender, parsed);
