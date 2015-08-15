@@ -9,7 +9,7 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, RPConst,
       TechnologieJC, IdContext, Generics.Collections;
 
 type
- TBlkSComVolba = (none = 0, VC = 1, PC = 2, NC = 3);
+ TBlkSComVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
  TBlkSComOutputType = (scom = 0, binary = 1);
  TBlkSComSignal = (disabled = -1, usek = 0, ir = 1);
 
@@ -121,6 +121,8 @@ type
     procedure MenuUnlockClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPNStartClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPNStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuPPStartClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuPPStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -745,6 +747,8 @@ begin
  Self.ZAM := false;
 end;//procedure
 
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TBlkSCom.MenuPNStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
     i:Integer;
@@ -766,6 +770,26 @@ begin
  Self.ZacatekVolba := TBLkSComVolba.none;
 end;//procedure
 
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.MenuPPStartClick(SenderPnl:TIdContext; SenderOR:TObject);
+var Blk:TBlk;
+begin
+ if ((SenderOR as TOR).stack.volba = PV) then
+   if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then Exit;
+
+ Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
+ if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
+ Self.ZacatekVolba := TBlkSComVolba.PP;
+end;//procedure
+
+procedure TBlkSCom.MenuPPStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.ZacatekVolba := TBLkSComVolba.none;
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TBlkSCom.MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Prodloužení doby pøivolávací návìsti', TBlky.GetBlksList(Self), nil);
@@ -774,7 +798,7 @@ end;//procedure
 procedure TBlkSCom.MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  if (Assigned(Self.privol)) then
-   ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závìrù po nouzoé cestì', TBlky.GetBlksList(Self), Self.privol.GetRNZ());
+   ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závìrù po nouzové cestì', TBlky.GetBlksList(Self), Self.privol.GetRNZ());
 end;//procedure
 
 procedure TBlkSCom.MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -846,6 +870,8 @@ begin
  else if (item = 'ZAM<') then Self.MenuUnlockClick (SenderPnl, SenderOR)
  else if (item = 'PN>')  then Self.MenuPNStartClick(SenderPnl, SenderOR)
  else if (item = 'PN<')  then Self.MenuPNStopClick (SenderPnl, SenderOR)
+ else if (item = 'PP>')  then Self.MenuPPStartClick(SenderPnl, SenderOR)
+ else if (item = 'PP<')  then Self.MenuPPStopClick (SenderPnl, SenderOR)
  else if (item = 'PPN')  then Self.MenuPPNClick    (SenderPnl, SenderOR)
  else if (item = 'RNZ')  then Self.MenuRNZClick    (SenderPnl, SenderOR)
  else if (item = 'IR>')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, true)
@@ -874,11 +900,12 @@ begin
      TBlkSCOmVolba.VC : Result := Result + 'VC<,';
      TBlkSCOmVolba.PC : Result := Result + 'PC<,';
      TBlkSCOmVolba.NC : Result := Result + 'PN<,';
+     TBlkSCOmVolba.PP : Result := Result + 'PP<,';
     else
       //2 = VC, 3= PC
       if (Self.SComRel.SymbolType <> 1) then
         Result := Result + 'VC>,!PN>,';
-       Result := Result + 'PC>,';
+       Result := Result + 'PC>,PP>,';
     end;// else ZacatekVOlba <> none ...
 
     Result := Result + '-,';

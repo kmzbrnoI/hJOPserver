@@ -690,7 +690,8 @@ begin
  case ((Blk as TBlkSCom).ZacatekVolba) of
   TBLkSComVolba.VC : Self.UsekStav.KonecJC := TJCType.vlak;
   TBLkSComVolba.PC : Self.UsekStav.KonecJC := TJCType.posun;
-  TBLkSComVolba.NC : Self.UsekStav.KonecJC := TJCType.nouz;
+  TBLkSComVolba.NC, TBLkSComVolba.PP
+                   : Self.UsekStav.KonecJC := TJCType.nouz;
  end;//case
 
  JCDb.StavJC(Blk, Self, SenderPnl, SenderOR);

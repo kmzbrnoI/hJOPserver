@@ -213,7 +213,8 @@ begin
    if (Blk <> EndBlk) then continue;
 
    if ((Integer((StartBlk as TBlkSCom).ZacatekVolba) = Integer(Self.JCs[i].data.TypCesty)) or
-      (((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) and (Self.JCs[i].data.TypCesty = TJCType.vlak))) then
+      (((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) and (Self.JCs[i].data.TypCesty = TJCType.vlak)) or
+      (((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.PP) and (Self.JCs[i].data.TypCesty = TJCType.posun))) then
     begin
      // nasli jsme jizdni cestu, kterou hledame
 
@@ -230,7 +231,7 @@ begin
 
      if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) then
       begin
-       (SenderOR as TOR).stack.AddJC(Self.JCs[i], SenderPnl, ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC));
+       (SenderOR as TOR).stack.AddJC(Self.JCs[i], SenderPnl, ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) or ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.PP));
 
        // zrusime zacatek, konec a variantni body
        (StartBlk as TBlkSCom).ZacatekVolba := TBlkSComVOlba.none;
@@ -238,7 +239,7 @@ begin
        (SenderOR as TOR).ClearVb();
       end else begin
        (SenderOR as TOR).vb.Clear();            // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
-       Self.JCs[i].StavJC(SenderPnl, SenderOR, nil, ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC));
+       Self.JCs[i].StavJC(SenderPnl, SenderOR, nil, ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) or ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.PP));
       end;
 
 

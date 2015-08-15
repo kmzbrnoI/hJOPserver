@@ -516,7 +516,8 @@ begin
       TBlkSComVolba.none : bg := clBlack;
       TBlkSComVolba.VC   : bg := clGreen;
       TBlkSComVolba.PC   : bg := clWhite;
-      TBlkSComVolba.NC   : bg := clTeal;
+      TBlkSComVolba.NC,
+      TBlkSComVolba.PP   : bg := clTeal;
      end;//case
     end;//else Navest = -1
 
