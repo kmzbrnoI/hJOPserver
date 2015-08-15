@@ -715,6 +715,7 @@ begin
     begin
      writelog('Trat '+Self.GetGlobalSettings().name+' obsahuje referenci na TU ID '+IntToStr(Self.TratSettings.Useky[i])+', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', WR_ERROR);
      Self.TratSettings.Useky.Delete(i);
+     continue;
     end;
    if (((Blk as TBlkTU).InTrat <> -1) and ((Blk as TBlkTU).InTrat <> Self.GetGlobalSettings().id)) then
     begin
