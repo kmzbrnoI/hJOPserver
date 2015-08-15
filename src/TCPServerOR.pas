@@ -111,6 +111,8 @@ type
 
      function GetClient(index:Integer):TORTCPClient;
 
+     procedure DisconnectRegulatorUser(user:TUser);
+
       property openned:boolean read IsOpenned;
       property port:Word read fport write fport;
   end;//TPanelTCPClient
@@ -547,6 +549,8 @@ begin
  Self.parsed.Clear();
  ExtractStringsEx([';'], [#13, #10], data, Self.parsed);
 
+ if (Self.parsed.Count > 1) then Self.parsed[1] := UpperCase(Self.parsed[1]); 
+
  try
    // zakladni rozdeleni parsovani - na data, ktera jsou obecna a na data pro konkretni oblast rizeni
    if (Self.parsed[0] = '-') then
@@ -575,7 +579,7 @@ begin
  if (i = _MAX_OR_CLIENTS) then Exit();
 
  // parse handhake
- if (Self.parsed[1] = 'HELLO') then
+ if (parsed[1] = 'HELLO') then
   begin
    // tady muze prijit kontrola verze protokolu - je to ulozeno v Self.parsed[2]
    Self.clients[i].status := TPanelConnectionStatus.opened;
@@ -739,7 +743,7 @@ begin
    Self.BroadcastFuncsVyznam();
   end
 
- else if (parsed[1] = 'MTBd') then
+ else if (parsed[1] = 'MTBD') then
    MTBd.Parse(AContext, parsed);
 
 end;//procedure
@@ -1285,6 +1289,20 @@ begin
  else
    Result := nil;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TORTCPServer.DisconnectRegulatorUser(user:TUser);
+var i:Integer;
+begin
+ for i := _MAX_OR_CLIENTS-1 downto 0 do
+   if ((Self.clients[i] <> nil) and (TTCPORsRef(Self.clients[i].conn.Data).regulator) and
+       (TTCPORsRef(Self.clients[i].conn.Data).regulator_user = user)) then
+    begin
+     Self.SendLn(Self.clients[i].conn, '-;LOK;G;AUTH;not;Zrušeno oprávnìní regulátor');
+     TTCPORsRef(Self.clients[i].conn.Data).regulator := false;
+    end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
