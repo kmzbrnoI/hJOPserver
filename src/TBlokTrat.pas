@@ -1,10 +1,12 @@
 unit TBlokTrat;
 
-// definice a obsluha technologickeho bloku Trat
-// tento blok by se ve skutecnosti na panelu nemel vyskytnout - slouzi pouze jako rodic dvou uvazek
+{
+ Definice a obsluha technologickeho bloku Trat
+ tento blok by se ve skutecnosti na panelu nemel vyskytnout - slouzi pouze jako rodic dvou uvazek
 
-// U bloku trati je zajisteno, ze existuji a jsou typu TBlkTU
-// Bloky, ktere tomuto nevyhovuji, jsou po startu odstraneny.
+ U bloku trati je zajisteno, ze existuji a jsou typu TBlkTU
+ Bloky, ktere tomuto nevyhovuji, jsou po startu odstraneny.
+}
 
 interface
 
@@ -12,16 +14,11 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
      RPConst, IdContext, Generics.Collections;
 
 const
-  _MAX_TRAT_SPR = 4;
+  _MAX_TRAT_SPR = 6;
 
 type
- TTratZZ  = (souhlas = 0, bezsouhas = 1, nabidka = 2);   // typ tratoveho zabezpecovaciho zarizeni
- TTratSmer = (disabled = -1, zadny = 0, AtoB = 1, BtoA = 2);
-
- TTratSpr = record
-  data:array [0.._MAX_TRAT_SPR] of Integer;
-  cnt:Integer;
- end;
+ TTratZZ  = (souhlas = 0, bezsouhas = 1, nabidka = 2);                          // typ tratoveho zabezpecovaciho zarizeni
+ TTratSmer = (disabled = -1, zadny = 0, AtoB = 1, BtoA = 2);                    // mozne smery trati; disabled = cely blok trati je disabled
 
  //technologicka nastaveni trati
  TBlkTratSettings = record
@@ -35,7 +32,7 @@ type
   zaver:boolean;
   smer:TTratSmer;
   zadost:boolean;
-  soupravy:TTratSpr;
+  soupravy:TList<Integer>;
   SprPredict:Integer;
 
   BP:boolean;
@@ -156,7 +153,7 @@ uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
 
 constructor TBlkTrat.Create(index:Integer);
 begin
- inherited Create(index);
+ inherited;
 
  Self.GlobalSettings.typ := _BLK_TRAT;
  Self.TratStav := _def_trat_stav;
@@ -168,12 +165,14 @@ begin
  Self.fNavSudy  := nil;
 
  Self.TratSettings.Useky := TList<Integer>.Create();
+ Self.TratStav.soupravy  := TList<Integer>.Create();
 end;//ctor
 
 destructor TBlkTrat.Destroy();
 begin
+ Self.TratStav.soupravy.Free();
  Self.TratSettings.Useky.Free();
- inherited Destroy();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +181,7 @@ procedure TBlkTrat.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,in
 var str:TStrings;
     i:Integer;
     data:TStrings;
+    index:Integer;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -195,15 +195,11 @@ begin
 
  data := TStringList.Create();
  ExtractStrings([',', ';'], [], PChar(ini_stat.ReadString(section, 'spr', '')), data);
- Self.TratStav.soupravy.cnt := data.Count;
+ Self.TratStav.soupravy.Clear();
  for i := 0 to data.Count-1 do
   begin
-   Self.TratStav.soupravy.data[i] := Soupravy.GetSprIndexByName(data[i]);
-   if (Self.TratStav.soupravy.data[i] < 0) then
-    begin
-     Self.TratStav.soupravy.cnt := 0;
-     break;
-    end;
+   index := Soupravy.GetSprIndexByName(data[i]);
+   if (index > -1) then Self.TratStav.soupravy.Add(index);
   end;
  data.Free();
 
@@ -245,8 +241,8 @@ begin
  ini_stat.WriteBool(section, 'BP', Self.TratStav.BP);
 
  str := '';
- for i := 0 to Self.TratStav.soupravy.cnt-1 do
-   str := str + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy.data[i]) + ';';
+ for i := 0 to Self.TratStav.soupravy.Count-1 do
+   str := str + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy[i]) + ';';
  ini_stat.WriteString(section, 'spr', str);
 end;//procedure
 
@@ -492,7 +488,7 @@ begin
  if (((Self.GetSettings().zabzar = TTratZZ.bezsouhas)) and
      (not Self.Zaver) and (not Self.Obsazeno) and (not Self.ZAK) and
      ((Self.Smer = TTratSmer.AtoB) or (Self.Smer = TTratSmer.BtoA)) and
-     (not Self.RBPCan) and (Self.TratStav.soupravy.cnt = 0) and (not Self.nouzZaver)) then
+     (not Self.RBPCan) and (Self.TratStav.soupravy.Count = 0) and (not Self.nouzZaver)) then
   Self.Smer := TTratSmer.zadny;
 end;//procedure
 
@@ -524,10 +520,9 @@ end;//procedure
 
 procedure TBlkTrat.AddSpr(spr:Integer);
 begin
- if (Self.TratStav.soupravy.cnt >= _MAX_TRAT_SPR) then Exit();
+ if (Self.TratStav.soupravy.Count >= _MAX_TRAT_SPR) then Exit();
 
- Self.TratStav.soupravy.data[Self.TratStav.soupravy.cnt] := spr;
- Inc(Self.TratStav.soupravy.cnt);
+ Self.TratStav.soupravy.Add(spr);
  Self.SprPredict := -1;
 
  writelog('Tra '+Self.GlobalSettings.name+ ' : pøidána souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
@@ -536,23 +531,9 @@ begin
 end;//procedure
 
 procedure TBlkTrat.RemoveSpr(spr:Integer);
-var i, spri:Integer;
 begin
- spri := -1;
- for i := 0 to Self.TratStav.soupravy.cnt-1 do
-   if (Self.TratStav.soupravy.data[i] = spr) then
-    begin
-     spri := i;
-     break;
-    end;
- if (spri = -1) then Exit();
-
- for i := spri to Self.TratStav.soupravy.cnt-2 do
-  Self.TratStav.soupravy.data[i] := Self.TratStav.soupravy.data[i+1];
-
- Dec(Self.TratStav.soupravy.cnt);
+ Self.TratStav.soupravy.Remove(spr);
  writelog('Tra '+Self.GlobalSettings.name+ ' : smazána souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
-
  Self.Change();
 end;//procedure
 
@@ -563,14 +544,14 @@ var i, j:Integer;
 begin
  Result := '';
 
- for i := 0 to Self.TratStav.soupravy.cnt-1 do
+ for i := 0 to Self.TratStav.soupravy.Count-1 do
   begin
-   Result := Result + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy.data[i]);
+   Result := Result + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy[i]);
    if (hvs) then
     begin
      Result := Result + '|';
-     for j := 0 to Soupravy.soupravy[Self.TratStav.soupravy.data[i]].sdata.HV.cnt-1 do
-       Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.TratStav.soupravy.data[i]].sdata.HV.HVs[j]].Data.Nazev + '|';
+     for j := 0 to Soupravy.soupravy[Self.TratStav.soupravy[i]].sdata.HV.cnt-1 do
+       Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.TratStav.soupravy[i]].sdata.HV.HVs[j]].Data.Nazev + '|';
     end;
    Result := Result + separator;
   end;
@@ -690,16 +671,8 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkTrat.IsSpr(spr:Integer; predict:boolean = true):boolean;
-var i:Integer;
 begin
- for i := 0 to Self.TratStav.soupravy.cnt-1 do
-   if (Self.TratStav.soupravy.data[i] = spr) then
-     Exit(true);
-
- if ((predict) and (Self.TratStav.SprPredict = spr)) then
-   Exit(true);
-
- Result := false;
+ Result := ((Self.TratStav.soupravy.IndexOf(spr) > -1) or ((predict) and (Self.TratStav.SprPredict = spr)));
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////

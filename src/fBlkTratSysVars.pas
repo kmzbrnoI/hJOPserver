@@ -106,8 +106,8 @@ begin
  Self.SE_Souprava.Value   := trat.SprPredict;
 
  Self.E_Soupravy.Text := '';
- for i := 0 to trat.stav.soupravy.cnt-1 do
-   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(trat.stav.soupravy.data[i])+',';
+ for i := 0 to trat.stav.soupravy.Count-1 do
+   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(trat.stav.soupravy[i])+',';
 end;//procedure
 
 procedure TF_BlkTrat_tech.Save();

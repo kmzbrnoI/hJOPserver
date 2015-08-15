@@ -786,7 +786,7 @@ begin
        (Trat as TBlkTrat).SprPredict := spr;
 
        // v trati jsou jiz soupravy -> konec predpovidani
-       if (TBlkTrat(Trat).stav.soupravy.cnt > 0) then Exit();
+       if (TBlkTrat(Trat).stav.soupravy.Count > 0) then Exit();
        TBlkTrat(Trat).UpdateSprPredict();
 
        case ((Trat as TBlkTrat).Smer) of

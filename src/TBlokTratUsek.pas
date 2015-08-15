@@ -1004,7 +1004,7 @@ begin
  Self.Zaver   := TJCType.no;
 
  if (((trat.GetSettings().zabzar = TTratZZ.nabidka))
-     and (not trat.Zaver) and (not trat.Obsazeno) and (not trat.RBPCan) and (Trat.stav.soupravy.cnt = 0) and (not trat.nouzZaver)) then
+     and (not trat.Zaver) and (not trat.Obsazeno) and (not trat.RBPCan) and (Trat.stav.soupravy.Count = 0) and (not trat.nouzZaver)) then
   trat.Smer := TTratSmer.zadny;
 
  // pokud je trat uplne volna, zrusime blokovou podminku
