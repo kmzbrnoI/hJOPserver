@@ -41,7 +41,7 @@ type
       property regulator:boolean read freg write SetReg;
 
       class function ComparePasswd(plain:string; hash:string):boolean;      // true if ok, false if not same
-      class function GenerateHash(plain:string):string;
+      class function GenerateHash(plain:AnsiString):string;
   end;//class TUser
 
 implementation
@@ -133,7 +133,7 @@ end;//procedure
 procedure TUser.SetPasswd(passwd:string);
 begin
  // heslo je 2x zahashovane
- Self.fpasswd := TUser.GenerateHash(TUser.GenerateHash(passwd));
+ Self.fpasswd := TUser.GenerateHash(AnsiString(TUser.GenerateHash(AnsiString(passwd))));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,13 +153,13 @@ end;//function
 
 class function TUser.ComparePasswd(plain:string; hash:string):boolean;
 begin
- if (hash = TUser.GenerateHash(plain)) then
+ if (hash = TUser.GenerateHash(AnsiString(plain))) then
   Result := true
  else
   Result := false;
 end;//function
 
-class function TUser.GenerateHash(plain:string):string;
+class function TUser.GenerateHash(plain:AnsiString):string;
 var hash: TDCP_sha256;
     Digest: array[0..31] of byte;  // RipeMD-160 produces a 160bit digest (20bytes)
     i:Integer;
@@ -167,12 +167,13 @@ begin
  hash := TDCP_sha256.Create(nil);
  hash.Init();
  hash.UpdateStr(plain);
- hash.Final(Digest);
+ hash.Final(digest);
  hash.Free();
 
  Result := '';
- for i:= 0 to 31 do
-   Result := Result + IntToHex(Digest[i],2);
+ for i := 0 to 31 do
+   Result := Result + IntToHex(Digest[i], 2);
+ Result := LowerCase(Result);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
