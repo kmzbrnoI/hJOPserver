@@ -1,28 +1,42 @@
 unit User;
 
+{
+  Trida TUser reprezentuje jednoho uzivatele.
+
+  Uzivatel se typicky vyznacuje
+   - id (unikatni identifikacni string, napr. "root"),
+   - krestnim jmenem a prijmenim,
+   - flagy opravnujici ho k jednotlivym cinnostem (napr. \root, \regulator),
+   - seznamem oblasti rizeni, ke kterym ma pristup, vcetne nejvyssi pristuppove
+     urovne u kazde oblasti rizeni, kterou je schopen autorizovat.
+
+  Uzivatel muze dostat ban, v takovem pripad je okamzite odpojen ze serveru
+  a neni mu umoznen dalsi pristup.
+}
+
 interface
 
 uses IniFiles, Generics.Collections, RPConst, DCPsha256, SysUtils, Classes;
 
 type
-  TUser = class
+  TUser = class                                                                 // trida reprezentujici uzivatele
    private
-    fpasswd:string;
-    fban:boolean;
-    freg:boolean;
+    fpasswd:string;                                                             // heslo - hash SHA256
+    fban:boolean;                                                               // flag urcujici ban uzivate
+    freg:boolean;                                                               // flag urcijici moznost autorizovat regulator
 
-      procedure SetPasswd(passwd:string);
-      procedure SetBan(state:boolean);
-      procedure SetReg(state:boolean);
+      procedure SetPasswd(passwd:string);                                       // nastavi heslo, viz \passwd
+      procedure SetBan(state:boolean);                                          // nastavi ban, viz \ban
+      procedure SetReg(state:boolean);                                          // nastavi regulator, viz \regulator
 
    public
 
-    id:string;
-    firstname:string;
-    lastname:string;
-    root:boolean;
-    OblR: TDictionary<string, TORControlRights>;
-    lastlogin:TDateTime;
+    id:string;                                                                  // unikatni ID
+    firstname:string;                                                           // krestni jmeno
+    lastname:string;                                                            // prijmeni
+    root:boolean;                                                               // flag opravneni root
+    OblR: TDictionary<string, TORControlRights>;                                // seznam oblasti rizeni vcetne opravneni
+    lastlogin:TDateTime;                                                        // cas posledniho loginu
 
 
       constructor Create(); overload;
@@ -33,20 +47,20 @@ type
       procedure SaveData(ini:TMemIniFile; section:string);
       procedure SaveStat(ini:TMemIniFile; section:string);
 
-      function GetRights(OblR:string):TORCOntrolRights;
-      procedure SetRights(OblR:string; rights:TORControlRights);
+      function GetRights(OblR:string):TORCOntrolRights;                         // vrati opravneni k dane oblasti rizeni
+      procedure SetRights(OblR:string; rights:TORControlRights);                // nastavi opravneni dane oblasti rizeni
 
       property password:string read fpasswd write SetPasswd;
       property ban:boolean read fban write SetBan;
       property regulator:boolean read freg write SetReg;
 
-      class function ComparePasswd(plain:string; hash:string):boolean;      // true if ok, false if not same
-      class function GenerateHash(plain:AnsiString):string;
+      class function ComparePasswd(plain:string; hash:string):boolean;          // kontroluje shodu hesel; true poku hesla sedi, jinak false
+      class function GenerateHash(plain:AnsiString):string;                     // generuje hash hesla
   end;//class TUser
 
 implementation
 
-uses TOblsRizeni, TOblRizeni;
+uses TOblsRizeni, TOblRizeni, TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +96,11 @@ begin
  Self.root      := ini.ReadBool(section, 'root', false);
  Self.firstname := ini.ReadString(section, 'fname', '');
  Self.lastname  := ini.ReadString(section, 'lname', '');
- Self.lastlogin := StrToDateTime(ini.ReadString(section, 'lastlogin', ''));
+ try
+   Self.lastlogin := StrToDateTime(ini.ReadString(section, 'lastlogin', ''));
+ except
+   Self.lastlogin := 0;
+ end;
  Self.fban      := ini.ReadBool(section, 'ban', false);
  Self.freg      := ini.ReadBool(section, 'reg', false);
 
@@ -153,10 +171,7 @@ end;//function
 
 class function TUser.ComparePasswd(plain:string; hash:string):boolean;
 begin
- if (hash = TUser.GenerateHash(AnsiString(plain))) then
-  Result := true
- else
-  Result := false;
+ Result := (hash = TUser.GenerateHash(AnsiString(plain)));
 end;//function
 
 class function TUser.GenerateHash(plain:AnsiString):string;
@@ -211,10 +226,7 @@ procedure TUser.SetReg(state:boolean);
 begin
  if (Self.freg = state) then Exit();
  Self.freg := state;
- if (Self.freg) then
-  begin
-   // odpojit vsechny regulatory uzivatele
-  end;
+ if (not Self.freg) then ORTCPServer.DisconnectRegulatorUser(self);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
