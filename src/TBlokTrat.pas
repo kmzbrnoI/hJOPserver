@@ -22,20 +22,19 @@ type
 
  //technologicka nastaveni trati
  TBlkTratSettings = record
-  uvazkaA, uvazkaB:Integer; // reference na ID bloku
-  zabzar:TTratZZ;
-  Useky:TList<integer>;     // reference na ID bloku v trati
+  uvazkaA, uvazkaB:Integer;                                                     // reference na ID bloku trati
+  zabzar:TTratZZ;                                                               // typ tratoveho zabezpecovaciho zarizeni
+  Useky:TList<integer>;                                                         // reference na ID bloku v trati
  end;
 
  //aktualni stav trati
  TBlkTratStav = record
-  zaver:boolean;
-  smer:TTratSmer;
-  zadost:boolean;
-  soupravy:TList<Integer>;
-  SprPredict:Integer;
-
-  BP:boolean;
+  zaver:boolean;                                                                // aktualni stav zaveru na trati
+  smer:TTratSmer;                                                               // aktualni smer trati, reprezentuje i enabled bloku
+  zadost:boolean;                                                               // flag probihajici zadosti, zadost vzdy probiha proti aktualnimu smeru trati
+  soupravy:TList<Integer>;                                                      // seznam souprav v trati (seznam indexu souprav)
+  SprPredict:Integer;                                                           // index predpovidane soupravy do trate, pokud neni souprava predpovidana je -1
+  BP:boolean;                                                                   // jestli je v trati zavedena blokova podminka
  end;
 
  TBlkTrat = class(TBlk)
@@ -54,9 +53,9 @@ type
 
    file_smer:TTratSmer;
 
-   fuvazkaA, fuvazkaB: TBlk;    // tady si ukladam reference na skutecne bloky, ktere si vytvarim az pri prvnim pristupu k uvazce z Settings
-   fNavLichy, fNavSudy: TBlk;
-
+   fuvazkaA, fuvazkaB: TBlk;                                                    // tady si ukladame reference na skutecne bloky, ktere si vytvarime az pri prvnim pristupu k uvazce pres \uvazkaA a \uvazkaB
+   fNavLichy, fNavSudy: TBlk;                                                   // analogicky funguji krajni navestidla trati, viz \navLichy a \navSudy
+                                                                                // fNavLichy je navestidlo u stanice blize pocatku trati, fNavSudy navestidlo u stanice blize konce trati
 
     function GetUvazkaA():TBlk;
     function GetUvazkaB():TBlk;
@@ -71,18 +70,18 @@ type
     procedure SetTratZadost(Zadost:boolean);
     procedure SetSprPredict(Spr:Integer);
 
-    procedure UpdateBezsouhlasSmer();
+    procedure UpdateBezsouhlasSmer();                                           // resi padani smeru trati v pripade bezsouhlsove trati
 
     procedure SetBP(state:boolean);
 
     function GetNavLichy():TBlk;
     function GetNavSudy():TBlk;
 
-    procedure CheckTUExist();
-    procedure InitTUs();
-    procedure ResetTUs();
+    procedure CheckTUExist();                                                   // zkontroluje existenci vsech bloku, ktere maji v trati byt; nevalidni bloky z trati smaze a provede o tom zapis do LOGu
+    procedure InitTUs();                                                        // inicializuje tratove useky - oznami jim, ze jsou v trati a provede mnoho dalsich veci, viz telo metody
+    procedure ResetTUs();                                                       // resetuje stav tratoveho useku; tratovy usek zapomene, ze je v nejake trati a stane se neutralnim tratovym usekem, ktery nic nevi
 
-    function GetReady():boolean;
+    function GetReady():boolean;                                                // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd soupravy, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
 
   public
     constructor Create(index:Integer);
@@ -115,31 +114,31 @@ type
     function GetSprList(separator:Char; hvs:boolean = true):string;
     procedure RemoveSpr(spr:Integer);
 
-    function IsSpr(spr:Integer; predict:boolean = true):boolean;    // je souprava v trati? (vcetne predict)
+    function IsSpr(spr:Integer; predict:boolean = true):boolean;
     function IsSprInAnyTU(spr:Integer):boolean;
 
     procedure CallChangeToTU();
     procedure UpdateSprPredict();
 
-    property uvazkaA:TBlk read GetUvazkaA;
-    property uvazkaB:TBlk read GetUvazkaB;
-    property RBPCan:boolean read GetRBP;
+    property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
+    property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
+    property RBPCan:boolean read GetRBP;                                        // vraci, jestli v trati doslo k poruse uplne blokove podminky, resp. jesli je mozno ji zrusit
 
-    property stav:TBlkTratStav read TratStav;
-    property Obsazeno:boolean read GetObsazeno;
-    property Smer:TTratSmer read TratStav.smer write SetTratSmer;
-    property Zaver:boolean read TratStav.zaver write SetTratZaver;
-    property ZAK:boolean read GetZAK;
-    property nouzZaver:boolean read GetNouzZaver;
-    property Zadost:boolean read TratStav.zadost write SetTratZadost;
-    property BP:boolean read TratStav.BP write SetBP;   // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty
-    property SprPredict:Integer read TratStav.SprPredict write SetSprPredict;
+    property stav:TBlkTratStav read TratStav;                                   // kompletni stav trati
+    property Obsazeno:boolean read GetObsazeno;                                 // flag obsazenosti trati
+    property Smer:TTratSmer read TratStav.smer write SetTratSmer;               // aktualni smer trati, reprezentuje i enabled celeho bloku
+    property Zaver:boolean read TratStav.zaver write SetTratZaver;              // flag klasickeho zaveru trati (typicky od vlakove cesty)
+    property ZAK:boolean read GetZAK;                                           // flag zakazu odjezdu do trati
+    property nouzZaver:boolean read GetNouzZaver;                               // flag nouzoveho zaveru trati
+    property Zadost:boolean read TratStav.zadost write SetTratZadost;           // flag probihajici zadosti o tratovy souhlas
+    property BP:boolean read TratStav.BP write SetBP;                           // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty, rusi se pri uvolneni posledni soupravy z trati
+    property SprPredict:Integer read TratStav.SprPredict write SetSprPredict;   // predpovidana souprava do trati, odkaz na index soupravy
 
     // vrati hranicni navestidla
-    property navLichy:TBlk read GetNavLichy;
-    property navSudy:TBlk read GetNavSudy;
+    property navLichy:TBlk read GetNavLichy;                                    // hranicni navestidlo trati blize zacatku trati
+    property navSudy:TBlk read GetNavSudy;                                      // hranicni navestidlo trati blize konci trati
 
-    property ready:boolean read GetReady;
+    property ready:boolean read GetReady;                                       // jsou vsechny tratove useky "ready"? typicky se pouziva jako flag moznosti zmeny smeru trati
 
  end;//class TBlkTrat
 

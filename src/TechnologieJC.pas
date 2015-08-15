@@ -1,5 +1,41 @@
 unit TechnologieJC;
 
+{
+  Kompletni technologie jizdni cest.
+
+  Tento soubor implmenetuje tridu TJC, ktera reprezentuje jednu jizdni cestu.
+  Jizdni cesta se stara o vse od udrzovani vsech jejich udaju, kterymi je dana
+  v zaverove tabulce, pres jeji staveni, kontrolu podminek, zobrazovani
+  potvrzovacich sekvenci pri staveni az po spravne ruseni jizdni cesty.
+}
+
+{
+  Co je to BARIERA JIZDNI CESTY?
+  > Bariera jizdni cesty je prekazka branici jejimu postaveni, ktere se lze
+  > zbavit napr. jen pouhym potvrzenim (napr. jizdni cesta pres blok se stitkem),
+  > potvrzenim pres potvrzovaci sekvenci, nebo se ji nelze zbavit vubec a jizdni
+  > cestu jendnoduse nelze postavit.
+
+  Technologie jizdnch cest rozeznava nekolik druhu berier:
+   1) KRITICKE BARIERY
+      jsou takove bariery, ktere dispecer nemuze odstranit (v ceste napriklad
+      chybi tecnologicky blok).
+      > Kriticka bariera se pozna tak, ze \CriticalBariera vrati true.
+   2) STANDARDNI BARIERY
+      jsou takove bariery, ktere se odstrani "samy" - napriklad usek pod
+      zaverem, obsazney usek.
+      > Standardni bariera typicky neni kriticka, ani neni varovna, tudiz
+      > se pozna tak, ze nesplnuje podminky kriticke ani varovne bariery.
+   3) VAROVNE BARIERY
+      jsou takove bariery, ktere primo nebrani jizdni ceste ve staveni, ale je
+      potreba si je uvedmit a potvrdit je (napr. na useku je stitek, ci vyluka).
+      Tyto bariery je vzdy nutne potvrdit upozorneni v levem dolnim rohu panelu,
+      nektere z nich mohou vyzadovat i potvrzeni potvrzovaci sekvenci.
+      > Varovna bariera se pozna tak, ze \WarningBariera vrati true
+      > Bariera nutna potvrzeni potvrzovaci sekvenci se pozna tak, ze
+      >  \PotvrSekvBariera vrati true.
+}
+
 interface
 
 uses
@@ -8,79 +44,98 @@ uses
   IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO;
 
 const
-  _JC_TIMEOUT_SEC = 20;
-  _NC_TIMEOUT_MIN = 1;
+  _JC_TIMEOUT_SEC = 20;                                                         // timeout pro staveni jizdni cesty (vlakove i posunove v sekundach)
+  _NC_TIMEOUT_MIN = 1;                                                          // timeout pro staveni nouzove cesty (vlakove i posunove) v minutach
 
 type
-  // bariery ve staveni jizdni cesty:
+
+  // jedna bariera ve staveni jizdni cesty:
   TJCBariera = record
-   typ:Integer;
-   blok:TBlk;
-   param:Integer;
+   typ:Integer;                                                                 // typ bariery, odkazuje na konstanty _JCB_*, viz nize
+   blok:TBlk;                                                                   // blok, na ktery se bariera vztahuje; nektere bariery nemusi byt prirazeny bloku, platnost tohoto parametru je potreba overit pro kazdou barieru samostatne
+   param:Integer;                                                               // parametr bariery, typicky napr. ID bloku, ktery neexistuje; v takovem pripade samozrejme nemuze existovat \blok
   end;
-  TJCBariery = TList<TJCBariera>;
+  TJCBariery = TList<TJCBariera>;                                               // seznam barier; typicky seznam barie branici staveni jizdni cesty
 
+  // zaver vyhybky v jizdni ceste
   TJCVyhZaver=record
-   Blok:Integer;
-   Poloha:TVyhPoloha;
+   Blok:Integer;                                                                // odkaz na blok (ID bloku)
+   Poloha:TVyhPoloha;                                                           // chtena poloha vyhybky
   end;
 
+  // zaver odvratove vyhybky v jizdni ceste
   TJCOdvratZaver=record
-   Blok:Integer;
-   Poloha:TVyhPoloha;
-   ref_blk:Integer;
+   Blok:Integer;                                                                // odkaz na blok (ID bloku)
+   Poloha:TVyhPoloha;                                                           // chtena poloha vyhybky
+   ref_blk:Integer;                                                             // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
+  // bloky prislusenstvi v jizdni ceste, typicky naspr. protismerna navestidla
+  // na techto blocich se zavadi redukce
   TJCPrislZaver=record
-   Blok:Integer;
-   ref_blk:Integer;
+   Blok:Integer;                                                                // odkaz na blok ID
+   ref_blk:Integer;                                                             // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde ke zruseni redukce \Blok
   end;
 
+  // prejezd v jizdni ceste
   TJCPrjZaver=record
-   Prejezd:Integer;
-   uzaviraci:TArSmallI;    // uzaviraci bloky prejezdu
-   oteviraci:Integer;      // oteviraci blok prejezdu
+   Prejezd:Integer;                                                             // odkaz na ID bloku prejezdu
+   uzaviraci:TList<Integer>;                                                    // uzaviraci bloky (ID) prejezdu
+   oteviraci:Integer;                                                           // oteviraci blok (ID) prejezdu
   end;
 
-  TJCZamZaver = record
-   Blok:Integer;
-   ref_blk:Integer;
+  // zamek v jizdni ceste
+  TJCZamZaver=record
+   Blok:Integer;                                                                // odkaz na ID bloku
+   ref_blk:Integer;                                                             // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde ke zruseni redukce \Blok
   end;
 
+  ///////////////////////////////////////////////////////////////////////////
+
+  // staveni jizdni cesty:
+  //    staveni jizdni cesty probiha krokove, viz \UpdateStaveni
   TJCStaveni = record
-   Krok:Integer;
-   TimeOut:TDateTime;
-   SenderOR:TObject;
-   SenderPnl:TIdContext;
-   RozpadBlok,RozpadRuseniBlok:Integer;     // -5 = cesta neni postavena, -2 = navestidlo na STUJ, -1 = usek pred navestidlem, 0..n = useky JC
-   from_stack:TObject;
-   nc:boolean;                              // pokud stavime nouzovou cestu
-   ncBariery:TJCBariery;                    // baeriery do potvrzovaci sekvence pri staveni nouzove cesty
-   ncBarieryCntLast:Integer;
+   Krok:Integer;                                                                // aktualni krok staveni jizdni cesty
+   TimeOut:TDateTime;                                                           // cas, pri jehoz prekroceni dojde k timeoutu JC
+   SenderOR:TObject;                                                            // oblast rizeni, ktera vyvolala staveni JC, do teto OR jsou typicky odesilany notifikacni a chybove hlasky (napr. upozorneni vlevo dole panelu, potvrzovaci sekvence)
+   SenderPnl:TIdContext;                                                        // konkretni panel, kery vyvolal staveni JC
+   RozpadBlok,                                                                  // index useku, na ktery ma vkrocit souprava
+   RozpadRuseniBlok:Integer;                                                    // index useku, ze ktereho ma vystoupit souprava
+                                                                                  // index je index v seznamu useku, tedy napr. 0 =  0. usek v jizdni ceste
+                                                                                  // -5 = cesta neni postavena, -2 = navestidlo na STUJ, -1 = usek pred navestidlem, 0..n = useky JC
+   from_stack:TObject;                                                          // odkaz na zasobnik, ze ktereho proehlo staveni JC
+   nc:boolean;                                                                  // flag staveni nouzove cesty (vlakovou i posunovou)
+   ncBariery:TJCBariery;                                                        // aktualni seznam barier pro potvrzovaci sekvenci pri staveni nouzove cesty
+   ncBarieryCntLast:Integer;                                                    // posledni pocet barier ve staveni nouzove cesty
   end;
 
+  // vlastnosti jizdni cesty nemenici se se stavem:
   TJCprop = record
-   Nazev:string;
-   NavestidloBlok:Integer;
-   TypCesty:TJCType;
-   DalsiNNavaznost:Integer;
-   DalsiNNavaznostTyp:Byte;
-
+   Nazev:string;                                                                // nazev JC
+   NavestidloBlok:Integer;                                                      // ID navestidla, od ktereho JC zacina
+   TypCesty:TJCType;                                                            // typ JC (vlakova, posunova)
+   DalsiNNavaznost:Integer;                                                     // ID bloku dalsiho navestidla
+   DalsiNNavaznostTyp:Byte;                                                     // typ dalsi navaznosti
+                                                                                  // 0 = navaznost do trati
+                                                                                  // 1 = navaznost neexistuje
+                                                                                  // 2 = blok navestidla, blok ID je pak ulozeno v \DalsiNNavaznost
    Vyhybky  : TList<TJCVyhZaver>;
    Useky    : TList<Integer>;
    Odvraty  : TList<TJCOdvratZaver>;
    Prisl    : TList<TJCPrislZaver>;
    Prejezdy : TList<TJCPrjZaver>;
-   podminky : record
-    vyhybky  : TList<TJCVyhZaver>;
-    zamky    : TList<TJCZamZaver>;
+   podminky : record                                                            // dalsi podminky jizdni cesty, ktere ale nejsou nastavovany, ale pouze kontrolovany
+    vyhybky  : TList<TJCVyhZaver>;                                                // konkretni vyhybky v konkretnich polohach
+    zamky    : TList<TJCZamZaver>;                                                // konkretni zamky musi byt uzamcene
    end;
-   vb:TList<Integer>;  // variantni body - odkaz na ID bloku
+   vb:TList<Integer>;                                                           // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
 
-   Trat:Integer;
-   TratSmer:TtratSmer;
-   RychlostNoDalsiN,RychlostDalsiN:Byte;
+   Trat:Integer;                                                                // ID trati, na kterou JC navazuje; pokud JC nenavazuje na trat, je \Trat = -1
+   TratSmer:TtratSmer;                                                          // pozadovany smer navazujici trate
+   RychlostNoDalsiN,RychlostDalsiN:Byte;                                        // rychlost v JC pri dalsim navestidle navestici NEdovolujici navest, rychlost v JC pri dalsim navestidle navesticim dovolujici navest
   end;
+
+  ///////////////////////////////////////////////////////////////////////////
 
   TJC=class
    public const
@@ -147,48 +202,45 @@ type
       procedure RusZacatekJC();
       procedure RusKonecJC();
       procedure RusVBJC();
-      procedure PredejDataDalsimuBloku();       //predani dat dalsimu bloku v poradi
-      procedure CheckSmyckaBlok(blk:TBlk);
+      procedure PredejDataDalsimuBloku();                                       // predani dat dalsimu useku v jizdni ceste
+      procedure CheckSmyckaBlok(blk:TBlk);                                      // kontroluje zmenu smeru soupravy a hnacich vozidel pri vkroceni do smyckove bloku, tato kontrola probiha pouze pri vkroceni do posledniho bloku JC
 
       function GetStaveni():boolean;
       function GetPostaveno():boolean;
 
-      procedure PS_vylCallback(Sender:TIdContext; success:boolean);
-      procedure UPO_OKCallback(Sender:TObject);
-      procedure UPO_EscCallback(Sender:TObject);
-      procedure NC_PS_Callback(Sender:TIdContext; success:boolean);
+      procedure PS_vylCallback(Sender:TIdContext; success:boolean);             // callback potvrzovaci sekvence na vyluku
+      procedure UPO_OKCallback(Sender:TObject);                                 // callback potvrzeni upozorneni
+      procedure UPO_EscCallback(Sender:TObject);                                // callback zamitnuti upozorneni
+      procedure NC_PS_Callback(Sender:TIdContext; success:boolean);             // callback potvrzovaci sekvence nouzove cesty
 
-      procedure UsekClosePrj(Sender:TObject; data:integer);
+      procedure UsekClosePrj(Sender:TObject; data:integer);                     // zavre prejezd pri vkroceni na dany usek, odkaz na tuto metodu je posilan usekum, ktere ji pri obsazeni vyvolaji
 
       procedure SetRozpadBlok(RozpadBlok:Integer);
       procedure SetRozpadRuseniBlok(RozpadRuseniBlok:Integer);
       procedure SetKrok(Krok:Integer);
       procedure CritBarieraEsc(Sender:TObject);
 
+      // callbacky ne/nastevni polohy vyhybek:
       procedure VyhNeprestavenaJCPC(Sender:TObject);
       procedure VyhNeprestavenaNC(Sender:TObject);
       procedure VyhPrestavenaNC(Sender:TObject);
 
-      procedure KontrolaPodminekVCPC(var bariery:TList<TJCBariera>);
-      procedure KontrolaPodminekNC(var bariery:TList<TJCBariera>);
+      procedure KontrolaPodminekVCPC(var bariery:TList<TJCBariera>);            // kontrola podminek vlakovych a posunovych cest
+      procedure KontrolaPodminekNC(var bariery:TList<TJCBariera>);              // kontrola podminek nouzovych cest
       procedure PodminkyNCStaveni(var bariery:TList<TJCBariera>);
 
-      function BarieryNCToPotvr(bariery:TJCBariery):TPSPodminky;
+      function BarieryNCToPotvr(bariery:TJCBariery):TPSPodminky;                // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
 
    public
 
-     changed:boolean;
+     changed:boolean;                                                           // JC zmenana -> akualizuje se v tabulce ve F_Main
 
-     // tehnologicke jizdnch cest rozeznava nekolik druhu berier pro postaveni jizdnich cest
-     //   1) kriticke bariery jsou takove bariery, ktere dispecer nemuze odstranit (v ceste napriklad chybi tecnologicky blok)
-     //   2) standartni bariery jsou takove bariery, ktere se odstrani "samy" - napriklad usek pod zaverem, obsazney usek
-     //   3) varovne bariery jsou takove bariery, kteer primo nebrani jizdni ceste ve staveni, ale je potreba si je uvedmit a potvrdit je (napr. na useku je stitek, ci vyluka)
-     // pak jsou tu bariery, ktere je potreba potvrdit jeste potvrzovaci sekvenci
       class function JCBariera(typ:Integer; Blok:TBlk = nil; param:Integer = 0):TJCBariera;
-      function JCBarieraToMessage(Bariera:TJCBariera):TUPOItem;
-      class function CriticalBariera(typ:Integer):boolean;
-      class function PotvrSekvBariera(typ:Integer):boolean;
-      function WarningBariera(typ:Integer):boolean;
+                                                                                // jednoduche genreovani berier jako navratove funkce teto funkce
+      function JCBarieraToMessage(Bariera:TJCBariera):TUPOItem;                 // prevod bariery na spravu upozorneni vlevo dole
+      class function CriticalBariera(typ:Integer):boolean;                      // je bariera kriticka?
+      class function PotvrSekvBariera(typ:Integer):boolean;                     // je bariera hodna potvrzovaci sekvence?
+      function WarningBariera(typ:Integer):boolean;                             // je bariera hodna zobrazeni upozorneni?
 
       class function PotvrSekvBarieraToReason(typ:Integer):string;
 
@@ -196,22 +248,24 @@ type
       constructor Create(data:TJCprop); overload;
       destructor Destroy(); override;
 
-      procedure NastavSCom();                   //nastavi pozadovanu navest pri postaveni JC
-      procedure RusJC();                        //rusi vlakovou cestu
-      procedure RusJCWithoutBlk();              //rusi vlakovou cestu
-      procedure UsekyRusJC();
+      procedure NastavSCom();                                                   // nastavi pozadovanu navest pri postaveni JC
+      procedure RusJC();                                                        // rusi vlakovou cestu
+      procedure RusJCWithoutBlk();                                              // rusi vlakovou cestu bez zruseni zaveru useku
+      procedure UsekyRusJC();                                                   // kontroluje projizdeni soupravy useky a rusi jejich zavery
 
-      procedure UpdateStaveni();
-      procedure UpdateTimeOut();
-      procedure CancelStaveni(reason:string = ''; stack_remove:boolean = false);
+      procedure UpdateStaveni();                                                // prubezne stavi JC, meni kroky
+      procedure UpdateTimeOut();                                                // kontroluje TimeOut staveni JC
+      procedure CancelStaveni(reason:string = ''; stack_remove:boolean = false);// zrusi staveni a oduvodneni zaloguje a zobrazi dispecerovi
 
       function LoadData(ini:TMemIniFile; section:string):Byte;
       procedure SaveData(ini:TMemIniFile; section:string);
 
-      procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject; from_stack:TObject = nil; nc:boolean = false);
+      procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject;                  // pozadavek o postaveni jizdni cesty
+          from_stack:TObject = nil; nc:boolean = false);
 
-      function CanDN():boolean;   // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
-      procedure DN();             // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
+
+      function CanDN():boolean;                                                 // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
+      procedure DN();                                                           // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
       procedure STUJ();
       procedure RNZ();
 
@@ -223,7 +277,7 @@ type
       property stav:TJCStaveni read fstaveni;
       property staveni:boolean read GetStaveni;
       property nazev:string read fproperties.Nazev;
-      property postaveno:boolean read GetPostaveno;   // true pokud je posatvena navest
+      property postaveno:boolean read GetPostaveno;                             // true pokud je postavena navest
 
       property RozpadBlok:Integer read fstaveni.RozpadBlok write SetRozpadBlok;
       property RozpadRuseniBlok:Integer read fstaveni.RozpadRuseniBlok write SetRozpadRuseniBlok;
@@ -277,6 +331,7 @@ begin
 end;//ctor
 
 destructor TJC.Destroy();
+var i:Integer;
 begin
  if (Assigned(Self.fstaveni.ncBariery)) then FreeAndNil(Self.fstaveni.ncBariery);
  if (Assigned(Self.fproperties.podminky.vyhybky)) then FreeAndNil(Self.fproperties.podminky.vyhybky);
@@ -287,9 +342,10 @@ begin
  if (Assigned(Self.fproperties.Useky))    then Self.fproperties.Useky.Free();
  if (Assigned(Self.fproperties.Odvraty))  then Self.fproperties.Odvraty.Free();
  if (Assigned(Self.fproperties.Prisl))    then Self.fproperties.Prisl.Free();
+ for i := 0 to Self.fproperties.Prejezdy.Count-1 do Self.fproperties.Prejezdy[i].uzaviraci.Free();
  if (Assigned(Self.fproperties.Prejezdy)) then Self.fproperties.Prejezdy.Free();
 
- inherited Destroy();
+ inherited;
 end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -438,7 +494,7 @@ begin
      end;
 
     // kontrola existence uzaviracich bloku a jejich typu
-    for j := 0 to Length(Self.fproperties.Prejezdy[i].uzaviraci)-1 do
+    for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
      begin
       if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], blk2) <> 0) then
        begin
@@ -1216,7 +1272,7 @@ var i,j:Integer;
           end else begin
 
            // vlakova cesta:
-           for j := 0 to Length(Self.fproperties.Prejezdy[i].uzaviraci)-1 do
+           for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
             begin
              Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], Blk2);
              if ((Blk2 as TBlkUsek).Obsazeno = TusekStav.obsazeno) then
@@ -1242,7 +1298,7 @@ var i,j:Integer;
            ev.data := i;
 
            // prejezd neuzaviram -> pridam pozadavek na zavreni pri obsazeni do vsech aktivacnich useku
-           for j := 0 to Length(Self.fproperties.Prejezdy[i].uzaviraci)-1 do
+           for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
             begin
              Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], Blk2);
              (Blk2 as TBlkUsek).AddChangeEvent((Blk2 as TBlkUsek).EventsOnObsaz, ev);
@@ -2122,10 +2178,9 @@ begin
    try
      prj.Prejezd   := StrToInt(sl2[0]);
      prj.oteviraci := StrToInt(sl2[1]);
-
-     SetLength(prj.uzaviraci, sl2.Count-2);
+     prj.uzaviraci := TList<Integer>.Create();
      for j := 2 to sl2.Count-1 do
-       prj.uzaviraci[j-2] := StrToInt(sl2[j]);
+       prj.uzaviraci.Add(StrToInt(sl2[j]));
 
      Self.fproperties.Prejezdy.Add(prj);
    except
@@ -2227,7 +2282,7 @@ begin
  for i := 0 to Self.fproperties.Prejezdy.Count-1 do
   begin
    line := line + '(' + IntToStr(Self.fproperties.Prejezdy[i].Prejezd) + ',' + IntToStr(Self.fproperties.Prejezdy[i].oteviraci)+ ',';
-   for j := 0 to Length(Self.fproperties.Prejezdy[i].uzaviraci)-1 do
+   for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
     line := line + IntToStr(Self.fproperties.Prejezdy[i].uzaviraci[j]) + ',';
    line[Length(line)] := ')';
   end;
@@ -2412,7 +2467,7 @@ begin
  func.func := Self.UsekClosePrj;
  func.data := data;
 
- for i := 0 to Length(Self.fproperties.Prejezdy[data].uzaviraci)-1 do
+ for i := 0 to Self.fproperties.Prejezdy[data].uzaviraci.Count-1 do
   begin
    Blky.GetBlkByID(Self.fproperties.Prejezdy[data].uzaviraci[i], Blk);
    (Blk as TBlkUsek).RemoveChangeEvent((Blk as TBlkUsek).EventsOnObsaz, func);
