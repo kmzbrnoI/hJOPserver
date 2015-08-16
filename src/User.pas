@@ -134,7 +134,7 @@ begin
  ini.WriteBool(section, 'reg', Self.regulator);
 
  str := '';
- for i := 0 to ORs.ORcnt-1 do
+ for i := 0 to ORs.Count-1 do
    if (Self.OblR.TryGetValue(ORs.GetORIdByIndex(i), rights)) then
      str := str + '(' + ORs.GetORIdByIndex(i) + ';' + IntToStr(Integer(rights)) + ')';
 

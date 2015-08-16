@@ -1,5 +1,9 @@
 unit TechnologieMultiJC;
 
+{
+  Technologie slozenych jizdnich cest.
+}
+
 interface
 
 uses

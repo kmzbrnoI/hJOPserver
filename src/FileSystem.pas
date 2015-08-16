@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, IniFiles, ComCtrls, ExtCtrls, StdCtrls,Mask, Gauges, StrUtils, Registry, fLicence, Grids, jpeg, ShellAPI,
+  Dialogs, Menus, IniFiles, ComCtrls, ExtCtrls, StdCtrls, StrUtils,
   fMain, RPConst, Trakce, TrakceGUI, XpressNET, CPort, AC, TJCDatabase;
 
 type

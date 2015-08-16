@@ -1,11 +1,14 @@
 unit TOblRizeni;
 
-//tato unita se stara o rizeni Oblasti rizeni (tedy stanic)
-//OR slouzi jako prostrednik mezi technologickymi bloky (technologii) a panely (zobrazenim)
+{
+  Tato unita se stara o rizeni Oblasti rizeni (OR, tedy stanic).
+  OR slouzi jako prostrednik mezi technologickymi bloky (technologii) a
+  panely (zobrazenim).
 
-// blok vola metodu primo do prislusne oblasti rizeni, kde jsou data v pripade,
-//  ze patri konkretni OR, rovnou odeslane do soketu
-//   neni tedy vyuzivano ORTCPServer
+  Blok vola metodu primo do prislusne oblasti rizeni, kde jsou data v pripade,
+  ze patri konkretni OR, rovnou odeslane do soketu
+  neni tedy vyuzivano ORTCPServer
+}
 
 interface
 
@@ -14,104 +17,100 @@ uses Types, IniFiles, SysUtils, Classes, RPConst, Graphics, Menus,
       Generics.Collections, Zasobnik, User, Messages, Windows;
 
 const
-  _MAX_OSV = 8;
-  _MAX_CON_PNL = 16;
-
-  _POTVR_SEKV_BLOK     = 0;
-  _POTVR_SEKV_CALLBACK = 3;
+  _MAX_CON_PNL = 16;                                                            // maximalni poce tpripojenych panelu k jedne oblasti rizeni
 
 type
   //1 osvetleni
   TOsv = record
-   board:Byte;
-   port:Byte;
-   name:string;  //max 5 znaku
+   board:Byte;                                                                  // MTB deska osvetleni
+   port:Byte;                                                                   // MTB port osvetleni
+   name:string;                                                                 // popis osvetleni, max 5 znaku
   end;
 
  //primarni vlastnosti kazde OR
  TORProp = record
-  Name:string;
-  ShortName:string;
-  id:string;
-  Osvetleni:TList<TOsv>;
+  Name:string;                                                                  // plne jemno oblati rizeni (napr. "Klobouky u Brna")
+  ShortName:string;                                                             // zkratka oblasti rizeni (napr. "Klb"), nemusi byt unikatni
+  id:string;                                                                    // unikatni ID oblasti rizeni (napr. "Klb")
+  Osvetleni:TList<TOsv>;                                                        // seznam osvetleni OR
  end;
 
- TMericCallback = procedure () of object;
- TPSCallback = procedure (Relief:TObject; Panel:TObject; success:boolean) of object;
- TBlkCallback = procedure (SenderPnl:TIDContext; SenderOR:TObject; Button:TPanelButton) of object;
+ TPSCallback = procedure (Relief:TObject; Panel:TObject;                        // callback potvrzovaci sekvence
+                          success:boolean) of object;
+ TBlkCallback = procedure (SenderPnl:TIDContext; SenderOR:TObject;              // callback kliku na dopravni kacelar
+                           Button:TPanelButton) of object;
 
+ // jedno mereni casu
  TMereniCasu = record
-  Start:TDateTime;
-  Length:TDateTime;
-  callback:TMericCallback;
-  id:Integer;
+  Start:TDateTime;                                                              // cas startu mereni
+  Length:TDateTime;                                                             // delka mereni
+  callback:TNotifyEvent;                                                        // callback pri uplynuti mereni casu
+  id:Integer;                                                                   // id mereni casu (vyuzivano pro komunikaci s pamely)
  end;
 
  //databaze pripojenych panelu
  //kazda OR si pamatuje, jake panely jsou k ni pripojeny a s temito panely komunikuje
  // toto je 1 prvek databaze pripojenych panelu
  TORPanel = record
-  Panel:TIdContext;                                 // zde je ulozeno spojeni na klienta
-  Rights:TORControlRights;
-  user:string;
+  Panel:TIdContext;                                                             // spojeni na klienta
+  Rights:TORControlRights;                                                      // pristupova prava k OR
+  user:string;                                                                  // id uzivatele, ktery se k OR logoval
  end;
 
+ // stav OR
  TORStav = record
-  NUZtimer:boolean;         // rika, jestli uz probiha potvrzovaci sekvence NUZ
-  NUZblkCnt:Integer;        // kolik bloku ma zaplych NUZ
-  NUZmerCasuID:Integer;
-  ZkratBlkCnt:Integer;
-  ZadostBlkCnt:Integer;     // pocet uvazek, na ktere je zadost o tratovy souhlas (kvuli prehravani zvuku)
-
-  spr_new:boolean;
-  spr_edit:TSouprava;
-  spr_usek:TObject;         // TBlkUsek
-  dk_click_callback:TBlkCallback;
-
-
-  reg_please:TIdCOntext;    // zde je ulozen regulator, ktery danou oblast rizeni zada o prideleni lokomotivy
+  NUZtimer:boolean;                                                             // probiha ruseni useku NUZ?
+  NUZblkCnt:Integer;                                                            // kolik bloku ma zaplych NUZ (ruseni jeste neprobiha)
+  NUZmerCasuID:Integer;                                                         // ID mereni casu NUZ
+  ZkratBlkCnt:Integer;                                                          // kolik bloku je ve zkratu (vyuzivano pro prehravani zvuku)
+  ZadostBlkCnt:Integer;                                                         // pocet uvazek, na ktere je zadost o tratovy souhlas (kvuli prehravani zvuku)
+  dk_click_callback:TBlkCallback;                                               // callback kliku na dopravni kancelar
+  reg_please:TIdCOntext;                                                        // zde je ulozen regulator, ktery danou oblast rizeni zada o prideleni lokomotivy
  end;
 
+ // jedno MTB oblasti rizeni
  TORMTB = record
-  present:boolean;
-  failed:boolean;
+  present:boolean;                                                              // jestli je MTB v OR pritomno
+  failed:boolean;                                                               // jestli MTB v OR selhalo (nekomunikuje)
  end;
 
+ // seznam MTB v OR
  TORMTBs = record
-  MTBs: array [0..TMTB._MAX_MTB] of TORMTB;
-  failture:boolean;
-  last_failture_time:TDateTime;
+  MTBs: array [0..TMTB._MAX_MTB] of TORMTB;                                     // seznam MTB v OR, staticky mapovano kde index je adresa MTB
+  failture:boolean;                                                             // jestli doslo k selhani jakohokoliv MTB v OR
+  last_failture_time:TDateTime;                                                 // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani MTB pro dispecera)
  end;
 
-  PTOR = ^TOR;
+ /////////////////////////////////////////////////////////////////////////////
+
   TOR = class
     private const
       //chybove hlasky komunikace
       _COM_ACCESS_DENIED = 'Pøístup odepøen';
 
       //levely opravneni
-      _R_no        = 0;
-      _R_read      = 1;
-      _R_write     = 2;
-      _R_superuser = 3;
+      _R_no        = 0;                                                         // zadne opravneni
+      _R_read      = 1;                                                         // opravneni ke cteni stavu bloku
+      _R_write     = 2;                                                         // opravneni k nastavovani bloku
+      _R_superuser = 3;                                                         // opravneni superuser, neboli "root"
 
     private
-      findex:Integer;
-      ORProp:TORProp;
-      ORStav:TORStav;
+      findex:Integer;                                                           // index OR v tabulce oblasti rizeni
+      ORProp:TORProp;                                                           // vlastnosti OR
+      ORStav:TORStav;                                                           // stav OR
 
-      MereniCasu:TList<TMereniCasu>;
+      MereniCasu:TList<TMereniCasu>;                                            // seznam mereni casu bezicich v OR
 
-      OR_MTB:TORMTBs;
+      OR_MTB:TORMTBs;                                                           // seznam MTB pritomnych v OR, seznam vsech MTB asociovanych s bloky pritomnych v teto OR
 
-      //funkce pro praci s databazi pripojenych panelu
+      // prace s databazi pripojenych panelu:
       function PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string):Byte;
       function PnlDRemove(Panel:TIdContext):Byte;
       function PnlDGetRights(Panel:TIdContext):TORControlRights;
       function PnlDGetIndex(Panel:TIdContext):Integer;
 
-      procedure NUZTimeOut();
-      procedure NUZ_PS(Sender:TIdContext; success:boolean); // callback z NUZ pro DK
+      procedure NUZTimeOut(Sender:TObject);                                     // callback ubehnuti mereni casu pro ruseni nouzovych zaveru bloku
+      procedure NUZ_PS(Sender:TIdContext; success:boolean);                     // callback potvrzovaci sekvence NUZ
 
       procedure ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string);
 
@@ -119,10 +118,10 @@ type
       procedure SetZkratBlkCnt(new:Integer);
       procedure SetZadostBlkCnt(new:Integer);
 
-      procedure MTBClear();
-      procedure MTBUpdate();
+      procedure MTBClear();                                                     // nastavi vsem MTB, ze nejsou v OR
+      procedure MTBUpdate();                                                    // posila souhrnne zpravy panelu o vypadku MTB modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
 
-      procedure SendStatus(panel:TIdContext);
+      procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
 
       // tyto funkce jsou volany pri zmene opravenni mezi cteni a zapisem
       // primarni cil = v techto funkcich resit zapinani a vypinani zvuku v panelu
@@ -131,46 +130,47 @@ type
 
     public
 
-      stack:TORStack;
-      changed:boolean;
-      vb:TList<TObject>;        // seznam variantnich bodu, ktere jsou aktualne "naklikle"; zde je ulozen seznam bloku
-      Connected:TList<TORPanel>;
+      stack:TORStack;                                                           // zasobnik povelu
+      changed:boolean;                                                          // jestli doslo ke zmene OR - true znamena aktualizaci tabulky
+      vb:TList<TObject>;                                                        // seznam variantnich bodu, ktere jsou aktualne "naklikle"; zde je ulozen seznam bloku
+      Connected:TList<TORPanel>;                                                // seznam pripojenych panelu
 
       constructor Create(index:Integer);
       destructor Destroy(); override;
 
       function LoadData(str:string):Byte;
 
-      procedure RemoveClient(Panel:TIdContext);
+      procedure RemoveClient(Panel:TIdContext);                                 // smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
 
-      procedure Update();     // pravidelna aktualizace - zatim na mereni casu
-      procedure DisconnectPanels();
+      procedure Update();                                                       // pravidelna aktualizace stavu OR - napr. mereni casu
+      procedure DisconnectPanels();                                             // vyhodi vsechny autorizovane panely z teto OR
 
-      function AddMereniCasu(callback:TMericCallback; len:TDateTime):Byte;      // vraci id mereni
-      procedure StopMereniCasu(id:Integer);
+      function AddMereniCasu(callback:TNotifyEvent; len:TDateTime):Byte;        // prida mereni casu; vrati ID mereni
+      procedure StopMereniCasu(id:Integer);                                     // zastavi mereni casu s danym ID
 
-      procedure MTBAdd(addr:integer);
-      procedure MTBFail(addr:integer);
+      procedure MTBAdd(addr:integer);                                           // prida MTB do OR
+      procedure MTBFail(addr:integer);                                          // informuje OR o vypadku MTB
 
-      procedure UpdateLine(LI:TListItem);
+      procedure UpdateLine(LI:TListItem);                                       // aktualizuje zaznam v tabulce oblasti rizeni ve F_Main
 
-      procedure BroadcastData(data:string; min_rights:TORControlRights = read);
-      procedure BroadcastGlobalData(data:string; min_rights:TORControlRights = read);
+      procedure BroadcastData(data:string; min_rights:TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem oblaati rizeni
+      procedure BroadcastGlobalData(data:string; min_rights:TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem "-"
 
-      procedure ClearVb();
+      procedure ClearVb();                                                      // smaze aktualni varientni body
 
       //--- komunikace s technologickymi bloky ---
-      procedure BlkChange(Sender:TObject; specificClient:TIDContext = nil);   // pokdu odesilame data pouze jednomu specifickemu klientovi -- pri GET-ALL
-      procedure BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights; sound:Integer; delay_ms:Integer = -1);
-      procedure BlkRemoveSound(Sender:TObject; sound:Integer);
-      procedure BlkWriteError(Sender:TObject; error:string; system:string);      // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
-      procedure BlkNewSpr(Sender:TObject; Panel:TIdContext);
-      procedure BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TSouprava);
+      procedure BlkChange(Sender:TObject; specificClient:TIDContext = nil);     // doslo ke zmene bloku v OR, je potreba propagovat zmenu do panelu
+      procedure BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights;       // prehraje zvuk
+          sound:Integer; delay_ms:Integer = -1);
+      procedure BlkRemoveSound(Sender:TObject; sound:Integer);                  // zrusi prehravani zvuku
+      procedure BlkWriteError(Sender:TObject; error:string; system:string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
+      procedure BlkNewSpr(Sender:TObject; Panel:TIdContext);                    // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
+      procedure BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TSouprava);// posle do panelu pozadavek na otevreni dialogu editace soupravy
 
-      function ORSendMsg(Sender:TOR; msg:string):Byte;
+      function ORSendMsg(Sender:TOR; msg:string):Byte;                          // odesle zpravu OR (od jine OR)
 
-      procedure ORDKClickServer(callback:TBlkCallback);
-      procedure ORDKClickClient();
+      procedure ORDKClickServer(callback:TBlkCallback);                         // klik na DK probehne na server
+      procedure ORDKClickClient();                                              // klik na DK probehne na klieta
 
       // volany pri zadosti o poskytnuti loko pro regulator:
       function LokoPlease(Sender:TIDContext; user:TUser; comment:string):Integer;
@@ -240,9 +240,6 @@ begin
  Self.Connected        := TList<TORPanel>.Create();
  Self.MTBClear();
 
- Self.ORStav.spr_new  := false;
- Self.ORStav.spr_edit := nil;
- Self.ORStav.spr_usek := nil;
  Self.ORStav.dk_click_callback := nil;
  Self.ORStav.reg_please := nil;
 
@@ -683,16 +680,16 @@ end;//procedure
 
 procedure TOR.BlkNewSpr(Sender:TObject; Panel:TIdContext);
 begin
- Self.ORStav.spr_new  := true;
- Self.ORStav.spr_usek := Sender;
+ TTCPORsRef(Panel.Data).spr_new  := true;
+ TTCPORsRef(Panel.Data).spr_usek := Sender;
  ORTCPServer.SendLn(Panel, Self.id+';SPR-NEW;');
 end;//procedure
 
 procedure TOR.BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TSouprava);
 begin
- Self.ORStav.spr_new  := false;
- Self.ORStav.spr_edit := Souprava;
- Self.ORStav.spr_usek := Sender;
+ TTCPORsRef(Panel.Data).spr_new  := false;
+ TTCPORsRef(Panel.Data).spr_edit := Souprava;
+ TTCPORsRef(Panel.Data).spr_usek := Sender;
 
  ORTCPServer.SendLn(Panel, Self.id+';'+'SPR-EDIT;'+Souprava.GetPanelString());
 end;//procedure
@@ -980,8 +977,6 @@ begin
    Exit;
   end;
 
- Self.ORStav.spr_new  := false;
- Self.ORStav.spr_edit := nil;
  Self.ORDKClickClient();
 
  if (Self.vb.Count > 0) then
@@ -1095,7 +1090,7 @@ end;//procedure
 // format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla
 procedure TOR.PanelSprChange(Sender:TIdContext; spr:TStrings);
 begin
- if ((not Self.ORStav.spr_new) and (Self.ORStav.spr_edit = nil)) then Exit(); 
+ if ((not TTCPORsRef(Sender.Data).spr_new) and (TTCPORsRef(Sender.Data).spr_edit = nil)) then Exit();
 
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -1105,12 +1100,12 @@ begin
   end;
 
  try
-  if (Self.ORStav.spr_new) then
-   Soupravy.AddSprFromPanel(spr, Self.ORStav.spr_usek, Self)
+  if (TTCPORsRef(Sender.Data).spr_new) then
+   Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
   else begin
    // kontrola jestli je souparva porad na useku
-   if ((Self.ORStav.spr_usek as TBlkUsek).Souprava = Self.ORStav.spr_edit.index) then
-     Self.ORStav.spr_edit.UpdateSprFromPanel(spr, Self.ORStav.spr_usek, Self)
+   if ((TTCPORsRef(Sender.Data).spr_usek as TBlkUsek).Souprava = TTCPORsRef(Sender.Data).spr_edit.index) then
+     TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
    else begin
      ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava již není na úseku');
      Exit();
@@ -1124,9 +1119,9 @@ begin
    end;
  end;
 
- Self.ORStav.spr_new  := false;
- Self.ORStav.spr_edit := nil;
- Self.ORStav.spr_usek := nil;
+ TTCPORsRef(Sender.Data).spr_new  := false;
+ TTCPORsRef(Sender.Data).spr_edit := nil;
+ TTCPORsRef(Sender.Data).spr_usek := nil;
 
  ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ACK;');
 end;//procedure
@@ -1185,7 +1180,7 @@ begin
    if (Now >= (Self.MereniCasu[i].Start + Self.MereniCasu[i].Length)) then
     begin
      if (Assigned(Self.MereniCasu[i].callback)) then
-       Self.MereniCasu[i].callback();
+       Self.MereniCasu[i].callback(Self);
      Self.MereniCasu.Delete(i);
      break;
     end;
@@ -1193,7 +1188,7 @@ begin
 end;//procedure
 
 // vraci id pridaneho mereni
-function TOR.AddMereniCasu(callback:TMericCallback; len:TDateTime):Byte;
+function TOR.AddMereniCasu(callback:TNotifyEvent; len:TDateTime):Byte;
 var id:Integer;
     mc:TMereniCasu;
 begin
@@ -1228,7 +1223,7 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 // zavola se, az probehne meerni casu:
-procedure TOR.NUZTimeOut();
+procedure TOR.NUZTimeOut(Sender:TObject);
 begin
  Blky.NUZ(Self.id);
  Self.ORStav.NUZtimer := false;

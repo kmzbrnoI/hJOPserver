@@ -1,12 +1,14 @@
 unit THVDatabase;
 
-// databaze hnacich vozidel
+{
+  Trida THVDb je databaze hnacich vozidel.
 
-// k principu indexovaci tabulky:
-//  kazde HV ulozene vpoli adres ma svuj index
-// index se pocita pro existujici HV od nejnizsi adresy po nejvyssi
-// slouzi ke snadmenu pristupu v tabulkach
-// umoznuje jednoduse pripradit index (radek), pokud znamen adresu
+  K principu indexovaci tabulky:
+    kazde HV ulozene vpoli adres ma svuj index
+   index se pocita pro existujici HV od nejnizsi adresy po nejvyssi
+   slouzi ke snadmenu pristupu v tabulkach
+   umoznuje jednoduse pripradit index (radek), pokud znamen adresu
+}
 
 interface
 

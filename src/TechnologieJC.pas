@@ -249,7 +249,7 @@ type
       destructor Destroy(); override;
 
       procedure NastavSCom();                                                   // nastavi pozadovanu navest pri postaveni JC
-      procedure RusJC();                                                        // rusi vlakovou cestu
+      procedure RusJC(Sender:TObject = nil);                                    // rusi vlakovou cestu
       procedure RusJCWithoutBlk();                                              // rusi vlakovou cestu bez zruseni zaveru useku
       procedure UsekyRusJC();                                                   // kontroluje projizdeni soupravy useky a rusi jejich zavery
 
@@ -1726,7 +1726,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //ruseni jizdni cesty
-procedure TJC.RusJC();
+procedure TJC.RusJC(Sender:TObject = nil);
 var cyklus:Integer;
     Blk, Nav:TBlk;
  begin

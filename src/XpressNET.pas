@@ -415,8 +415,6 @@ begin
       for i := 1 to 4 do if ((msg.data[3] shr (i-1)) and $1 = 1) then Slot.funkce[i] := true else Slot.funkce[i] := false;
       for i := 5 to 12 do if ((msg.data[4] shr (i-5)) and $1 = 1) then Slot.funkce[i] := true else Slot.funkce[i] := false;
 
-      for i := 13 to 15 do Slot.funkce[i] := false;
-
       case (Slot.maxsp) of
        14: begin
             Slot.speed := (msg.data[2] AND $0F);

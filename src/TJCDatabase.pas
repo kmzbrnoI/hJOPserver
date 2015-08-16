@@ -1,5 +1,9 @@
 unit TJCDatabase;
 
+{
+  TJCDb je databaze jizdnich cest.
+}
+
 interface
 
 uses TechnologieJC, TBlok, IniFiles, RPConst, SysUtils, Windows, IdContext,
@@ -277,7 +281,7 @@ begin
  if (Self.JCs[index].postaveno) then
    Exit(2);
 
- for i := 0 to ORs.ORcnt-1 do
+ for i := 0 to ORs.Count-1 do
   begin
    ORs.GetORByIndex(i, OblR);
    if (OblR.stack.IsJCInStack(Self.JCs[index])) then

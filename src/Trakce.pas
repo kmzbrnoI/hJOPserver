@@ -1,27 +1,33 @@
 unit Trakce;
 
-//trida TTrakce sjednocuje tridy TXpressNET a TLocoNet do sebe
-//jeji funkce je umozneni jednotne komunikace s trakcnim systemem nezavisle na tom, o jaky se jedna
+{
+  Trida TTrakce sjednocuje tridy TXpressNET a TLocoNet do sebe.
+  Jeji funkce je umozneni jednotne komunikace s trakcnim systemem nezavisle
+  na tom, o jaky trakcni system se jedna.
+}
 
 interface
 
 uses
   SysUtils, Classes, CPort;
 
+const
+  _HV_FUNC_MAX       = 12;                                                      // maximalni funkcni cislo; funkce zacinaji na cisle 0
+
 type
-  Ttrk_status = (
+  Ttrk_status = (                                                               // stav centraly
     TS_UNKNOWN = -1,
     TS_OFF = 0,
     TS_ON = 1,
     TS_SERVICE = 2
   );
 
-  Ttrk_system = (
+  Ttrk_system = (                                                               // typ komunikacniho protokolu
     TRS_LocoNET   = 0,
     TRS_XpressNET = 1
   );
 
-  TConnect_code = (
+  TConnect_code = (                                                             // stav pristupu k lokomotive
     TC_Connected = 0,
     TC_Disconnected = 1,
     TC_Unavailable = 2,
@@ -35,41 +41,29 @@ type
     data:Pointer;
   end;
 
-  TFunkce = array[0..15] of boolean;
+  TFunkce = array[0.._HV_FUNC_MAX] of boolean;
 
   TPomStatus = (released = 0, pc = 1, progr = 2, error = 3);
 
-  TSlot=record                                         //data slotu (dalsi vysvetleni v manualu k loconetu a xpressnetu)
-   adresa:word;
-   smer:ShortInt;        // 0,1
-   speed:byte;
-   maxsp:Integer;        // 28,128, ...
-   funkce:TFunkce;       // F0-F12
-   stolen:boolean;       // ukaradeno jinym ovladacem
-   prevzato:boolean;     // jestli loko ridim ja
-
-   ID:Byte;
-   status:byte;
-   track:byte;
-   fred:word;
-   FredID:Integer;
-   SmerITData:Byte;
-   SND:byte;
-   SS2:byte;
-   FREDLastSlotID:Integer;
-
-   com_err:boolean;     // jestli nastala chyba v komunikaci
-
-   pom:TPomStatus;
+  TSlot=record                                                                  //data slotu (dalsi vysvetleni v manualu k loconetu a xpressnetu)
+   adresa:word;                                                                 // adresa LOKO
+   smer:ShortInt;                                                               // aktualni smer: [0,1]
+   speed:byte;                                                                  // aktualni jizdni stupen
+   maxsp:Integer;                                                               // maximalni jizdni stupen (28, 128, ...)
+   funkce:TFunkce;                                                              // stav funkci
+   stolen:boolean;                                                              // jestli je loko ukradeno jinym ovladacem
+   prevzato:boolean;                                                            // jestli loko ridim ja
+   com_err:boolean;                                                             // jestli nastala chyba v komunikaci
+   pom:TPomStatus;                                                              // stav POMu (jaky je posedni naprogramovany POM)
   end;
 
-  TCSVersion = record
+  TCSVersion = record                                                           // verze centraly
     major:byte;
     minor:byte;
     id:byte;
   end;
 
-  TLIVersion = record
+  TLIVersion = record                                                           // verze FW v LI
     hw_major:byte;
     hw_minor:byte;
     sw_major:byte;
@@ -100,7 +94,7 @@ type
 
      FFtrk_status: Ttrk_status;
 
-      procedure WriteLog(lvl:Integer; msg:string);          //will be called from child
+      procedure WriteLog(lvl:Integer; msg:string);
       procedure WriteSpInfo(Slot:TSlot);
       procedure WriteFInfo(addr:Integer; func:TFunkce);
       procedure ConnectChange(addr:Integer; code:TConnect_code; data:Pointer);
@@ -173,15 +167,13 @@ uses XpressNET;
 
 constructor TTrakce.Create();
 begin
- inherited Create;
-// Self.ComPort.CPort := TComPort.Create(nil);
+ inherited;
  Self.FFtrk_status := Ttrk_status.TS_UNKNOWN;
 end;//ctor
 
 destructor TTrakce.Destroy();
 begin
-// FreeAndNil(Self.ComPort.CPort);
- inherited Destroy;
+ inherited;
 end;//dtor
 
 procedure TTrakce.WriteLog(lvl:Integer; msg: string);

@@ -1,11 +1,14 @@
 unit TrakceGUI;
 
-// Trida TTrkGUI vytvari pomyslne 'graficke rozhrani' tridy TTrakce pro zbytek programu.
-// Ve skutecnosti se nejedna o GUI, ale o funkce tridy TTrakce upravene tak, aby sly v programu pouzit co nejsnaze.
+{
+ Trida TTrkGUI vytvari pomyslne 'graficke rozhrani' tridy TTrakce pro zbytek
+ programu. Ve skutecnosti se nejedna o GUI, ale o funkce tridy TTrakce upravene
+ tak, aby sly v programu pouzit co nejsnaze.
 
-// Zapouzdreni abstraktni tridy TTrakce, resp. konkretni tridy TXPressNet (ktera ji dedi)
-//    spociva v implemenatci callbackovych funkci v tride TTrkGUI, ktera
-//    napriklad chyby promita primo do realneho GUI aplikace.
+ Zapouzdreni abstraktni tridy TTrakce, resp. konkretni tridy TXPressNet (ktera
+ ji dedi) spociva v implemenatci callbackovych funkci v tride TTrkGUI, ktera
+ napriklad chyby promita primo do realneho GUI aplikace.
+}
 
 interface
 
@@ -19,122 +22,120 @@ const
 
 type
   TLogEvent = procedure(Sender:TObject; lvl:Integer; msg:string; var handled:boolean) of object;
-
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TSlot; var handled:boolean) of object;
   TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
 
   // pri programovani POMu se do callbacku predavaji tato data
   TPOMCallback = record
-    addr:Word;                                        // adresa programovane lokomotivy
-    list:TList<THVPomCV>;                             // kompletni nemenny seznam CV k programovani
-    index:Integer;                                    // index prave progamovaneho CV
-    callback_ok, callback_err:TCommandCallback;       // callbacky pri kompletnim ukonceni programovani, resp. vyskytu chyby v libovolnem kroku
-    new:TPomStatus;                                   // status, jaky ma nabyt POM hnaciho vozidla po ukonceni programovaani (zpravidla PC, nebo RELEASED)
-                                                      // pokud dojde pri programovani POMu k chybe, je do HV.Slot.pom ulozeno TPomStatus.error
+    addr:Word;                                                                  // adresa programovane lokomotivy
+    list:TList<THVPomCV>;                                                       // kompletni nemenny seznam CV k programovani
+    index:Integer;                                                              // index prave progamovaneho CV
+    callback_ok, callback_err:TCommandCallback;                                 // callbacky pri kompletnim ukonceni programovani, resp. vyskytu chyby v libovolnem kroku
+    new:TPomStatus;                                                             // status, jaky ma nabyt POM hnaciho vozidla po ukonceni programovaani (zpravidla PC, nebo RELEASED)
+                                                                                // pokud dojde pri programovani POMu k chybe, je do HV.Slot.pom ulozeno TPomStatus.error
   end;
 
-  // pri prebirani lokomotivy se do callbacku jednotlivych cinnosti ukladaji tato data
-  //  prebirani lokomotivy =
-  //    1) prevzit loko z centraly
-  //    2) nastavit funkce na pozadovane hodnoty
-  //    3) naprogarmovat POM
-  //    4} zavolat OK callback
-  //      - Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
-  //      - Chyba pri nastavovani funkci je oznamena pouze jako WARNING (error callback neni volan).
+  {
+   Pri prebirani lokomotivy se do callbacku jednotlivych cinnosti ukladaji tato data:
+    prebirani lokomotivy =
+      1) prevzit loko z centraly
+      2) nastavit funkce na pozadovane hodnoty
+      3) naprogarmovat POM
+      4) zavolat OK callback
+        - Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
+        - Chyba pri nastavovani funkci je oznamena pouze jako WARNING (error callback neni volan).
+  }
   TPrevzitCallback = record
-    addr:Word;                                        // adreas lokomotivy
-    callback_ok, callback_err:TCommandCallback;       // globalni callbacky
+    addr:Word;                                                                  // adresa lokomotivy
+    callback_ok, callback_err:TCommandCallback;                                 // globalni callbacky
   end;
 
   // pri hromadnem nastavovani funkci dle vyznamu (napr. vypnout vsechna "svetla") se do callbacku predavaji tato data
   TFuncsCallback = record
-    addr:Word;                                        // adresa lokomotivy
-    vyznam:string;                                    // vyznam funkce, kterou nastavujeme
-    state:boolean;                                    // novy stav funkce
-    callback_ok, callback_err:TCommandCallback;       // globalni callbacky
+    addr:Word;                                                                  // adresa lokomotivy
+    vyznam:string;                                                              // vyznam funkce, kterou nastavujeme
+    state:boolean;                                                              // novy stav funkce
+    callback_ok, callback_err:TCommandCallback;                                 // globalni callbacky
   end;
 
   // reprezenatce jedne funkci sady
   TFuncCBSada = record
-    func:array[0..4] of boolean;                      // funkce v sade
-    index:Integer;                                    // index sady (pro xpressnet: 0:F0-F4, 1:F5-F8, 2:F9-12)
+    func:array[0..4] of boolean;                                                // funkce v sade
+    index:Integer;                                                              // index sady (pro xpressnet: 0:F0-F4, 1:F5-F8, 2:F9-12)
   end;
 
   // pri programovani funkci si udrzuji nasledujici data (v callback datech jednotlivych procesu)
   TFuncCallback = record
-    addr:Word;                                        // adresa lokomotivy
-    callback_ok, callback_err:TCommandCallback;       // globalni callbacky
-    sady:TList<TFuncCBSada>;                          // seznam jednotlivych sad, kazda sada obsahuje funkce k naprogramovani
+    addr:Word;                                                                  // adresa lokomotivy
+    callback_ok, callback_err:TCommandCallback;                                 // globalni callbacky
+    sady:TList<TFuncCBSada>;                                                    // seznam jednotlivych sad, kazda sada obsahuje funkce k naprogramovani
   end;
 
   // ------- trida TTrkGUI --------
   TTrkGUI = class
    private const
-     _DEF_LOGLEVEL = 2;                                    // default loglevel
+     _DEF_LOGLEVEL = 2;                                                         // default loglevel
 
-     _DEF_BAUDRATE    = br9600;                            // default serial baudrate
-     _DEF_STOPBITS    = sbOneStopBit;                      // default serial stopbits
-     _DEF_DATABITS    = dbEight;                           // default serial databits
-     _DEF_FLOWCONTROL = fcHardware;                        // default serial flow control
+     _DEF_BAUDRATE    = br9600;                                                 // default serial baudrate
+     _DEF_STOPBITS    = sbOneStopBit;                                           // default serial stopbits
+     _DEF_DATABITS    = dbEight;                                                // default serial databits
+     _DEF_FLOWCONTROL = fcHardware;                                             // default serial flow control
 
    private
-     Trakce:TTrakce;                                       // reference na tridu TTrakce
-                                                           //   Ttrakce je abstarktni, zde se ve skutecnosti nachazi konkretni trida protokolu (zatim jen TXpressNET, v pripade potreby napriklad i TLocoNET)
-     LogObj:TListView;                                     // Logovaci objekt - obvykle obsahuje refenreci na logovaci tabulku ve F_Main (je inicializovano v kontruktoru)
+     Trakce:TTrakce;                                                            // reference na tridu TTrakce
+                                                                                //   Ttrakce je abstarktni, zde se ve skutecnosti nachazi konkretni trida protokolu (zatim jen TXpressNET, v pripade potreby napriklad i TLocoNET)
+     LogObj:TListView;                                                          // Logovaci objekt - obvykle obsahuje refenreci na logovaci tabulku ve F_Main (je inicializovano v kontruktoru)
 
-     fTrkSystem:Ttrk_system;                               // aktualni trakcni system; koresponduje se vytvorenou instanci v .Trakce
+     fTrkSystem:Ttrk_system;                                                    // aktualni trakcni system; koresponduje se vytvorenou instanci v .Trakce
 
-     SpeedTable:array [0.._MAX_SPEED] of Integer;          // rychlostni tabulka
-                                                           //   index = jizdni stupen, .SpeedTable[index] = rychlost v km/h
-                                                           //   napr. SpeedTable[15] = 40 <-> rychlostni stupen 15: 40 km/h
+     SpeedTable:array [0.._MAX_SPEED] of Integer;                               // rychlostni tabulka
+                                                                                //   index = jizdni stupen, .SpeedTable[index] = rychlost v km/h
+                                                                                //   napr. SpeedTable[15] = 40 <-> rychlostni stupen 15: 40 km/h
 
-     turnoff_callback:TNotifyEvent;                        // callback volany po prikazu TurnOff
-                                                           //   Prikaz TurnOff zapina F0 a vypina vsechny vyssi funkce
-                                                           //   pouziva se pri vypinani systemu (pro vypnuti otravnych zvuku zvukovych dekoderu)
+     turnoff_callback:TNotifyEvent;                                             // callback volany po prikazu TurnOff
+                                                                                //   Prikaz TurnOff zapina F0 a vypina vsechny vyssi funkce
+                                                                                //   pouziva se pri vypinani systemu (pro vypnuti otravnych zvuku zvukovych dekoderu)
 
      //events definition
-     FOnLog: TLogEvent;                                    // log event
+     FOnLog: TLogEvent;                                                         // log event
      FONGetSpInfo : TGetSpInfoEvent;
      FONGetFInfo  : TGetFInfoEvent;
 
-     floglevel: Byte;                                      // log level
-     flogfile : boolean;                                   // logovat do souboru ?
-     flogtable: boolean;                                   // logovat do tabulky (.LogObj) ?
-     finitok  : boolean;                                   // je true, pokud po otevreni seriaku centrala zakomujikovala (tj. odpovedela na prikaz)
-                                                           // pri .Open se nastavuje na false
+     floglevel: Byte;                                                           // log level
+     flogfile : boolean;                                                        // logovat do souboru ?
+     flogtable: boolean;                                                        // logovat do tabulky (.LogObj) ?
+     finitok  : boolean;                                                        // je true, pokud po otevreni seriaku centrala zakomujikovala (tj. odpovedela na prikaz)
+                                                                                // pri .Open se nastavuje na false
+     {
+      Info: Samotna komponenta serioveho portu je ulozena v .Trakce.ComPort.CPort.
+      Tato komponenta je pri uzavrenem seriaku znicena.
+      Pred otevrenim je volna konstruktor, po uzavreni destruktor!
+     }
 
-
-     // Info: Samotna komponenta serioveho portu je ulozena v .Trakce.ComPort.CPort.
-     // Tato komponenta je pri uzavrenem seriaku znicena.
-     // Pred otevrenim je volna konstruktor, po uzavreni destruktor!
-
-     CPortData : record                                    // data pro nastaveni serioveho portu
-      br:TBaudRate;                                           // baudrate
-      com:string;                                             // com port ve formatu "COM1", "COM8" ...
-      sb:TStopBits;                                           // stop bits
-      db:TDataBits;                                           // data bits
+     CPortData : record                                                         // data pro nastaveni serioveho portu
+      br:TBaudRate;                                                             // baudrate
+      com:string;                                                               // com port ve formatu "COM1", "COM8" ...
+      sb:TStopBits;                                                             // stop bits
+      db:TDataBits;                                                             // data bits
       FlowControl:TFlowControl;
      end;
 
-     function GetOpenned():boolean;                        // je seriak otevreny ?
+     function GetOpenned():boolean;                                             // je seriak otevreny ?
 
-     procedure TrkLog(Sender:TObject; lvl:Integer; msg:string);
-                                                           // logovaci event z .Trakce
-     procedure WriteLog(lvl:Integer; msg:string);          // zaloguje data (at uz do souboru, ci do tabulky)
+     procedure TrkLog(Sender:TObject; lvl:Integer; msg:string);                 // logovaci event z .Trakce
+     procedure WriteLog(lvl:Integer; msg:string);                               // zaloguje data (at uz do souboru, ci do tabulky)
 
      // eventy serioveho portu:
      procedure OnComError(Sender: TObject; Errors: TComErrors);
      procedure OnComException(Sender: TObject;
-  TComException: TComExceptions; ComportMessage: string; WinError: Int64;
-  WinMessage: string);
-     procedure OnComWriteError(Sender:TObject);            // tento event je volan z .Trakce pri vyvolani vyjimky pri zapisu do ComPortu
-                                                           // to nastava napriklad, pokud ComPort najednou zmizi z pocitace (nekdo odpoji USB)
-
-     function GettSpeed(kmph:Integer):Integer;             // vrati rchlostni stupen pri zadane rychlosti v km/h
-
-     procedure GetSpInfo(Sender: TObject; Slot:TSlot);     // event z TTrakce volany pri zjisteni iformacich o lokomotive
-     procedure WriteSpInfo(Slot:TSlot);                    // je volano kdykoliv pri aktualizaci dat slotu
-                                                           // ulozi slot k lokomotive
+        TComException: TComExceptions; ComportMessage: string; WinError: Int64;
+        WinMessage: string);
+     procedure OnComWriteError(Sender:TObject);                                 // tento event je volan z .Trakce pri vyvolani vyjimky pri zapisu do ComPortu
+                                                                                // to nastava napriklad, pokud ComPort najednou zmizi z pocitace (nekdo odpoji USB)
+     function GettSpeed(kmph:Integer):Integer;                                  // vrati rchlostni stupen pri zadane rychlosti v km/h
+     procedure GetSpInfo(Sender: TObject; Slot:TSlot);                          // event z TTrakce volany pri zjisteni iformacich o lokomotive
+     procedure WriteSpInfo(Slot:TSlot);                                         // je volano kdykoliv pri aktualizaci dat slotu
+                                                                                // ulozi slot k lokomotive
 
      // eventy z komponenty seriaku:
      procedure BeforeOpen(Sender:TObject);
@@ -142,13 +143,13 @@ type
      procedure BeforeClose(Sender:TObject);
      procedure AfterClose(Sender:TObject);
 
-     procedure ConnectChange(Sender: TObject; addr:Integer; code:TConnect_code; data:Pointer);
-                                                           // event volany z .Trace pri zmene majitele lokomotivy (loko prevzato, ukradeno, nedostupne, ...)
-     procedure LokComErr(Sender:TObject; addr:Integer);    // event oznamujici chybu komunikace s danou lokomotivou (je volan paralelne s error callback eventem, ale jen pro urcite prikazy - pro prikazy tykajici se rizeni konkretni lokomotivy).
-     procedure LokComOK(Sender:TObject; addr:Integer);     // event potvrzujici komunikaci s danym HV (je volan pokazde, pokud centrala odpovi na prikaz o nasatveni dat HV)
-                                                           // je protipol predchoziho eventu
+     procedure ConnectChange(Sender: TObject; addr:Integer; code:TConnect_code;
+        data:Pointer);                                                          // event volany z .Trace pri zmene majitele lokomotivy (loko prevzato, ukradeno, nedostupne, ...)
+     procedure LokComErr(Sender:TObject; addr:Integer);                         // event oznamujici chybu komunikace s danou lokomotivou (je volan paralelne s error callback eventem, ale jen pro urcite prikazy - pro prikazy tykajici se rizeni konkretni lokomotivy).
+     procedure LokComOK(Sender:TObject; addr:Integer);                          // event potvrzujici komunikaci s danym HV (je volan pokazde, pokud centrala odpovi na prikaz o nasatveni dat HV)
+                                                                                // je protipol predchoziho eventu
 
-     procedure SetLogLevel(level:Byte);                    // nastavit loglevel
+     procedure SetLogLevel(level:Byte);                                         // nastavit loglevel
 
      // eventy z .Trakce pri zapinani systemu (tj. odpoved na priklad GET-STATUS)
      procedure InitStatErr(Sender:TObject; Data:Pointer);
@@ -165,24 +166,24 @@ type
      procedure SetCallbackOK(callback_ok:TCommandCallback);     
 
      // eventy z komunikace s centralou pri prebirani a odhlasovani HV (tj. prebirani a odhlasovani VSECH LOKO)
-     procedure PrebiraniUpdateOK(Sender:TObject; Data:Pointer);     // loko uspesne prevzato
-     procedure PrebiraniUpdateErr(Sender:TObject; Data:Pointer);    // prevzeti se nazdarilo (napr. centrala neodpovedela na prikaz o prevzeti, na POM ...)
-     procedure OdhlasovaniUpdateOK(Sender:TObject; Data:Pointer);   // loko uspesne uvolneno
-     procedure OdhlasovaniUpdateErr(Sender:TObject; Data:Pointer);  // uvolneni loko se nezdarilo (napr. centrala nedopovedela na POM, ...)
+     procedure PrebiraniUpdateOK(Sender:TObject; Data:Pointer);                 // loko uspesne prevzato
+     procedure PrebiraniUpdateErr(Sender:TObject; Data:Pointer);                // prevzeti se nazdarilo (napr. centrala neodpovedela na prikaz o prevzeti, na POM ...)
+     procedure OdhlasovaniUpdateOK(Sender:TObject; Data:Pointer);               // loko uspesne uvolneno
+     procedure OdhlasovaniUpdateErr(Sender:TObject; Data:Pointer);              // uvolneni loko se nezdarilo (napr. centrala nedopovedela na POM, ...)
 
      // eventy spojene s jednotlivymi fazemi prebirani HV
-     procedure PrevzatoErr(Sender:TObject; Data:Pointer);           // centala nedopovedela na prikaz o prevzeti
-                                                                    // (to, ze centrala odpovedela, ale HV neni dostupne, je signalizovano eventem .ConnectChange)
-     procedure PrevzatoPOMOK(Sender:TObject; Data:Pointer);         // POM vsech CV uspesne dokoncen
-     procedure PrevzatoPOMErr(Sender:TObject; Data:Pointer);        // centrala neodpovedela na POM
-     procedure PrevzatoFuncOK(Sender:TObject; Data:Pointer);        // nasatvovani vsech funkci uspesne dokonceno
-     procedure PrevzatoFuncErr(Sender:TObject; Data:Pointer);       // centrala neodpovedela na prikaz o nastaveni funkci
+     procedure PrevzatoErr(Sender:TObject; Data:Pointer);                       // centala nedopovedela na prikaz o prevzeti
+                                                                                // (to, ze centrala odpovedela, ale HV neni dostupne, je signalizovano eventem .ConnectChange)
+     procedure PrevzatoPOMOK(Sender:TObject; Data:Pointer);                     // POM vsech CV uspesne dokoncen
+     procedure PrevzatoPOMErr(Sender:TObject; Data:Pointer);                    // centrala neodpovedela na POM
+     procedure PrevzatoFuncOK(Sender:TObject; Data:Pointer);                    // nastavovani vsech funkci uspesne dokonceno
+     procedure PrevzatoFuncErr(Sender:TObject; Data:Pointer);                   // centrala neodpovedela na prikaz o nastaveni funkci
 
      // eventy spojene s jedntlivymi fazemi odhlasovani loko:
-     procedure OdhlasenoOK(Sender:TObject; Data:Pointer);           // loko odhlaseno centrala odpovedela na prikaz o uvolneni
-     procedure OdhlasenoErr(Sender:TObject; Data:Pointer);          // centrala neodpovedela na prikaz o uvolneni
-     procedure OdhlasenoPOMOK(Sender:TObject; Data:Pointer);        // kompletni Release POM hotov
-     procedure OdhlasenoPOMErr(Sender:TObject; Data:Pointer);       // centrala neodpovedela na Release POM
+     procedure OdhlasenoOK(Sender:TObject; Data:Pointer);                       // loko odhlaseno centrala odpovedela na prikaz o uvolneni
+     procedure OdhlasenoErr(Sender:TObject; Data:Pointer);                      // centrala neodpovedela na prikaz o uvolneni
+     procedure OdhlasenoPOMOK(Sender:TObject; Data:Pointer);                    // kompletni Release POM hotov
+     procedure OdhlasenoPOMErr(Sender:TObject; Data:Pointer);                   // centrala neodpovedela na Release POM
 
      // callbacky spojene s nastavovanim funkci:
      // Funkce nastavujeme po jednotlivych sadach.
@@ -190,18 +191,18 @@ type
      procedure FuncOK(Sender:TObject; Data:Pointer);
      procedure FuncErr(Sender:TObject; Data:Pointer);
 
-     procedure AllPrevzato();                                       // je volana, pokud jsou vsechny loko prevzaty (primarni vyuziti = interakce s GUI)
-     procedure AllOdhlaseno();                                      // je volana, pokud jsou vsechny loko odhlaseny (primarni vyuziti = interakce s GUI)
+     procedure AllPrevzato();                                                   // je volana, pokud jsou vsechny loko prevzaty (primarni vyuziti = interakce s GUI)
+     procedure AllOdhlaseno();                                                  // je volana, pokud jsou vsechny loko odhlaseny (primarni vyuziti = interakce s GUI)
 
-     procedure OnTrackStatusChange(Sender: TObject);                // event volany z .Trakce pri zmene TrackStatus (napr. CENTRAL-STOP, SERVICE, ...)
-                                                                    // novy status je k dispozici v .Trakce.TrackStatus
+     procedure OnTrackStatusChange(Sender: TObject);                            // event volany z .Trakce pri zmene TrackStatus (napr. CENTRAL-STOP, SERVICE, ...)
+                                                                                // novy status je k dispozici v .Trakce.TrackStatus
 
-     function GetTrkStatus():Ttrk_status;                           // zjistit TrackStatus s .Trakce
+     function GetTrkStatus():Ttrk_status;                                       // zjistit TrackStatus s .Trakce
 
-     procedure TurnOffFunctions_cmdOK(Sender:TObject; Data:Pointer);// OK callback pro prikaz TurnOff
+     procedure TurnOffFunctions_cmdOK(Sender:TObject; Data:Pointer);            // OK callback pro prikaz TurnOff
 
-     procedure GotCSVersion(Sender:TObject; version:TCSVersion);    // Callback z .Trakce volany pri prichodu prikazu informujicim o verzi v FW v centrale
-     procedure GotLIVersion(Sender:TObject; version:TLIVersion);    // Callback z .Trakce volany pri prichodu prikazu informujicim o verzi v LI
+     procedure GotCSVersion(Sender:TObject; version:TCSVersion);                // Callback z .Trakce volany pri prichodu prikazu informujicim o verzi v FW v centrale
+     procedure GotLIVersion(Sender:TObject; version:TLIVersion);                // Callback z .Trakce volany pri prichodu prikazu informujicim o verzi v LI
 
      // eventy spojene se zapisem jednotlivych POM:
      procedure POMCvWroteOK(Sender:TObject; Data:Pointer);
@@ -224,15 +225,17 @@ type
 
    public
 
-     // Pozn.
-     //   Vsechny funkce spojene s nastavovanim dat HV maji parametr Sender
-     //   kam je vhodne dat bud konkretni regulator, nebo OR v pripade
-     //     regulatoru klienta.
-     //   Informace o zmene dat HV je pak volana do vsech systemu mimo Senderu.
-     //   Tedy napriklad, pokud je loko otevrene v 5 regulatorech a jeste na serveru
-     //     a dojde ke zmene rychlosti v OR1, je infroamce o zmene rychlosti
-     //     odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
-     //     vsak do OR1 (tomu prijde napriklad OK, ci error callback)
+     {
+      Pozn.
+        Vsechny funkce spojene s nastavovanim dat HV maji parametr Sender
+        kam je vhodne dat bud konkretni regulator, nebo OR v pripade
+          regulatoru klienta.
+        Informace o zmene dat HV je pak volana do vsech systemu mimo Senderu.
+        Tedy napriklad, pokud je loko otevrene v 5 regulatorech a jeste na serveru
+          a dojde ke zmene rychlosti v OR1, je infroamce o zmene rychlosti
+          odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
+          vsak do OR1 (tomu prijde napriklad OK, ci error callback)
+    }
 
     DCCGoTime:TDateTime;
 
@@ -244,45 +247,44 @@ type
      function Close:Byte;
 
      // zakladni prikazy do centraly:
-     function CentralStart():Byte;                                  // TRACK ON
-     function CentralStop():Byte;                                   // TRACK OFF
+     function CentralStart():Byte;                                              // TRACK ON
+     function CentralStop():Byte;                                               // TRACK OFF
      function LokSetSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;
-                                                                    // nastaveni rychlosti daneho HV, rychlost v km/h
+                                                                                // nastaveni rychlosti daneho HV, rychlost v km/h
      function LokSetDirectSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;
-                                                                    // nastaveni rychlosti daneho HV, rychlost se zadava primo ve stupnich
+                                                                                // nastaveni rychlosti daneho HV, rychlost se zadava primo ve stupnich
      function LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false):Byte;
-                                                                    // nastaveni funkce HV; force nastavi vsechny funkce v parametru bez ohledu na rozdilnost od aktualniho stavu
-     procedure LoksSetFunc(vyznam:string; state:boolean);           // nastavi funkci s danym vyznamem u vsech prevzatych hnacich vozidel na hodnotu state
-     function LokGetSpSteps(HV:THV):Byte;                           // vysle pozadavek na zjisteni informaci o lokomotive
-     function EmergencyStop():Byte;                                 // nouzove zastaveni vsech lokomotiv, ktere centrala zna (centrala, nikoliv pocitac!)
-     function EmergencyStopLoko(Sender:TObject; HV:THV):Byte;       // nouzove zastaveni konkretniho HV
-     function EmergencyStopAddr(addr:Integer):Byte;                 // nouzove zastaveni konkretni adresy lokmotivy
+                                                                                // nastaveni funkce HV; force nastavi vsechny funkce v parametru bez ohledu na rozdilnost od aktualniho stavu
+     procedure LoksSetFunc(vyznam:string; state:boolean);                       // nastavi funkci s danym vyznamem u vsech prevzatych hnacich vozidel na hodnotu state
+     function LokGetSpSteps(HV:THV):Byte;                                       // vysle pozadavek na zjisteni informaci o lokomotive
+     function EmergencyStop():Byte;                                             // nouzove zastaveni vsech lokomotiv, ktere centrala zna (centrala, nikoliv pocitac!)
+     function EmergencyStopLoko(Sender:TObject; HV:THV):Byte;                   // nouzove zastaveni konkretniho HV
+     function EmergencyStopAddr(addr:Integer):Byte;                             // nouzove zastaveni konkretni adresy lokmotivy
 
-     procedure GetCSVersion();                                      // zjistit verzi FW v centrale
-     procedure GetLIVersion();                                      // zjistit verzi SW a HW LI
+     procedure GetCSVersion();                                                  // zjistit verzi FW v centrale
+     procedure GetLIVersion();                                                  // zjistit verzi SW a HW LI
 
-     procedure InitSystems();                                       // odesle centrale povel TRACK-STATUS a doufa v odpoved
-                                                                    // je volano pri pripojeni k centrale jako overeni funkcni komunikace
+     procedure InitSystems();                                                   // odesle centrale povel TRACK-STATUS a doufa v odpoved
+                                                                                // je volano pri pripojeni k centrale jako overeni funkcni komunikace
 
      // nacitani a ukladani rychlostni tabulky z a do souboru
      function LoadSpeedTable(filename:string;var LVRych:TListView):Byte;
      procedure SaveSpeedTable(filename:string);
 
-     function GetStepSpeed(step:byte):Integer;                      // vraci rychlosti prislusneho jizdniho stupne
-     function SetSpetSpeed(step:byte;sp:Integer):Byte;              // nastavi rychlost prislusneho jizdniho stupne
+     function GetStepSpeed(step:byte):Integer;                                  // vraci rychlosti prislusneho jizdniho stupne
+     function SetSpetSpeed(step:byte;sp:Integer):Byte;                          // nastavi rychlost prislusneho jizdniho stupne
 
-     function PrevzitLoko(HV:THV):Byte;                             // prevzit dane HV (tj. z centraly, nastavit funkce, POM)
-     function OdhlasitLoko(HV:THV):Byte;                            // uvolnit loko (tj. RELEASE POM, odhlasit)
+     function PrevzitLoko(HV:THV):Byte;                                         // prevzit dane HV (tj. z centraly, nastavit funkce, POM)
+     function OdhlasitLoko(HV:THV):Byte;                                        // uvolnit loko (tj. RELEASE POM, odhlasit)
 
-     function POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte):Integer;
-                                                                    // zapsat 1 CV POMem, v praxi nevyuzivano
+     function POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte):Integer;   // zapsat 1 CV POMem, v praxi nevyuzivano
      procedure POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus);
-                                                                    // zapsat seznam CV POMem
+                                                                                // zapsat seznam CV POMem
 
-     procedure PrevzitAll();                                        // prevzit vsechna HV na soupravach
-     procedure OdhlasitAll();                                       // odhlasit vsechna prevzata HV
+     procedure PrevzitAll();                                                    // prevzit vsechna HV na soupravach
+     procedure OdhlasitAll();                                                   // odhlasit vsechna prevzata HV
 
-     procedure TurnOffFunctions(callback:TNotifyEvent);             // vypnout funkce vyssi, nez F0; F0 zapnout
+     procedure TurnOffFunctions(callback:TNotifyEvent);                         // vypnout funkce vyssi, nez F0; F0 zapnout
 
      // aktualni data serioveho portu
      property BaudRate:TBaudRate read CPortData.br write CPortData.br;
@@ -291,22 +293,23 @@ type
      property DataBits:TDataBits read CPortData.db write CPortData.db;
      property FlowControl:TFlowCOntrol read CPortData.FlowControl write CPortData.FlowControl;
 
-     property openned:boolean read GetOpenned;                      // otevreny seriovy port
-     property TrkSystem:Ttrk_system read fTrkSystem;                // aktualni TrkSystem (XpressNET, LocoNET, ...)
-     property isInitOk:boolean read finitok;                        // komunikuje cetrala?, resp. odpovedel na prikaz STATUS
-     property status:Ttrk_status read GetTrkStatus;                 // aktualni STATUS centraly
+     property openned:boolean read GetOpenned;                                  // otevreny seriovy port
+     property TrkSystem:Ttrk_system read fTrkSystem;                            // aktualni TrkSystem (XpressNET, LocoNET, ...)
+     property isInitOk:boolean read finitok;                                    // komunikuje cetrala?, resp. odpovedel na prikaz STATUS
+     property status:Ttrk_status read GetTrkStatus;                             // aktualni STATUS centraly
 
-     // dulezite !
-     //  pri volani libovolne funkce (i zvnejsku) je mozne do techto properties
-     //  nastavit Callback eventy, ktere budou zavolany pri vykonani prikazu.
-     //  V praxi:
-     //   .callback_err := TTrakce.GenerateCallback(Self.chyba)
-     //   .callback_ok  := TTrakce.GenerateCallback(Self.uspech)
-     //   .SetRych(...)
-     //  Vzdy je zavolan prave jeden z callbacku !
-     //   OK callback je volan kdyz centrala odpovi na prikaz "OK",
-     //   Error callback je volany, kdyz centrala odpovi chybou,
-     //     nebo na prikaz opakovane neodpovi.
+     { !!! DULEZITE:
+       pri volani libovolne funkce (i zvnejsku) je mozne do techto properties
+       nastavit Callback eventy, ktere budou zavolany pri vykonani prikazu.
+       V praxi:
+        .callback_err := TTrakce.GenerateCallback(Self.chyba)
+        .callback_ok  := TTrakce.GenerateCallback(Self.uspech)
+        .SetRych(...)
+       Vzdy je zavolan prave jeden z callbacku !
+        OK callback je volan kdyz centrala odpovi na prikaz "OK",
+        Error callback je volany, kdyz centrala odpovi chybou,
+          nebo na prikaz opakovane neodpovi.
+     }
      property callback_err:TCommandCallback write SetCallbackErr;
      property callback_ok:TCommandCallback write SetCallbackOK;
 
@@ -621,7 +624,7 @@ begin
 
  for i := 0 to 2 do sady_change[i] := false;
 
- for i := 0 to 15 do
+ for i := 0 to _HV_FUNC_MAX do
   begin
    if ((funkce[i] <> HV.Slot.funkce[i]) or (force)) then
     begin

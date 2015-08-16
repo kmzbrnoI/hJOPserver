@@ -1,15 +1,19 @@
 unit TCPServerOR;
 
+{
+  TCP server pro komunikaci s panely, regulatory a obecne se vsemi klienty.
+}
+
 interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal,
      Classes, StrUtils, RPConst, Graphics, Windows, TOblRizeni,
      IdContext, TBlok, Prevody, ComCtrls, IdSync, TBloky, UPO,
-     User;
+     User, Souprava;
 
 const
-  _PANEL_DEFAULT_PORT = 5896;
-  _MAX_OR_CLIENTS = 32;
+  _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
+  _MAX_OR_CLIENTS = 32;                                                         // maximalni pocet klientu
 
 type
   TPSCallback = procedure (Sender:TIdContext; success:boolean) of object;
@@ -18,29 +22,34 @@ type
 
   // tady je ulozeno jedno fyzicke spojeni s panelem (obsahuje oblasti rizeni, otevrene okynko stitku, menu, ...)
   TTCPORsRef = class
-    ORs:array [0.._MAX_ORREF-1] of TOR;
-    ORsCnt:Integer;
+    ORs:array [0.._MAX_ORREF-1] of TOR;                                         // reference na OR
+    ORsCnt:Integer;                                                             // pocet referenci na OR
 
-    stitek:TBlk;
-    vyluka:TBlk;
-    potvr:TPSCallback;
-    menu:TBlk;
-    menu_or:TOR;
-    UPO_OK, UPO_Esc:TNotifyEvent;
-    UPO_ref:TObject;
-    regulator:boolean;      // true pokud klient autorizoval rizeni pres regulator
-    regulator_user:TUser;
-    regulator_zadost:TOR;
-    index:Integer;
-    funcsVyznamReq:boolean;
+    stitek:TBlk;                                                                // blok, na kterema kutalne probiha zmena stitku
+    vyluka:TBlk;                                                                // blok, na kterem aktualne probiha zmena vyluky
+    potvr:TPSCallback;                                                          // callback probihajici potvrzovaci sekvence
+    menu:TBlk;                                                                  // blok, kteremu odeslat callback kliku na polozku v menu
+    menu_or:TOR;                                                                // OR, ze ktere bylo vyvolano menu
+    UPO_OK, UPO_Esc:TNotifyEvent;                                               // callbacky manipulace s upozornenim vlevo dole
+    UPO_ref:TObject;                                                            //
+    regulator:boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
+    regulator_user:TUser;                                                       // uzivatel, ktery autorizoval regulator
+    regulator_zadost:TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
+    index:Integer;                                                              // index spojeni v tabulce ve F_Main
+    funcsVyznamReq:boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
 
-    procedure Escape(AContext: TIdContext);
+    spr_new:boolean;                                                            // jestli v panelu probiha zadavani nove soupravy
+    spr_edit:TSouprava;                                                         // souprava, kterou panel edituje
+    spr_usek:TObject;                                                           // usek, na kterem panel edituje soupravu (TBlkUsek)
+
+    procedure Escape(AContext: TIdContext);                                     // volano pri stisku Escape v panelu
 
   end;
 
+  // jeden klient:
   TORTCPClient = class
-    conn:TIdContext;
-    status:TPanelConnectionStatus;
+    conn:TIdContext;                                                            // fyzicke spojeni
+    status:TPanelConnectionStatus;                                              // stav spojeni
     // v conn.data je ulozen objekt typu TTCPORsRef, kde jsou ulozeny oblasti rizeni, ktere dany panel ma autorizovane
   end;
 
@@ -49,37 +58,37 @@ type
     _PROTOCOL_VERSION = '1.0';
 
    private
-    clients:array[0.._MAX_OR_CLIENTS] of TORTCPClient;      // databaze klientu
-    tcpServer: TIdTCPServer;
-    parsed: TStrings;
-    data:string;
-    fport:Word;
-    DCCStopped:TIdContext;                   // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
-                                             // vsechny panely maji standartne moznost vypnout DCC
-                                             // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
-                                             // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
+    clients:array[0.._MAX_OR_CLIENTS] of TORTCPClient;                          // databaze klientu
+    tcpServer: TIdTCPServer;                                                    // object serveru
+    parsed: TStrings;                                                           // naparsovana data, implementovano jako globalni promenna pro zrychleni
+    data:string;                                                                // prijata data v plain-text forme
+    fport:Word;                                                                 // aktualni port serveru
+    DCCStopped:TIdContext;                                                      // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
+                                                                                // vsechny panely maji standartne moznost vypnout DCC
+                                                                                // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
+                                                                                // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
 
-     procedure OnTcpServerConnect(AContext: TIdContext);
-     procedure OnTcpServerDisconnect(AContext: TIdContext);
-     procedure OnTcpServerExecute(AContext: TIdContext);
+     procedure OnTcpServerConnect(AContext: TIdContext);                        // event pripojeni klienta z TIdTCPServer
+     procedure OnTcpServerDisconnect(AContext: TIdContext);                     // event odpojeni klienta z TIdTCPServer
+     procedure OnTcpServerExecute(AContext: TIdContext);                        // event akce klienta z TIdTCPServer
 
-     procedure ParseGlobal(AContext: TIdContext);
-     procedure ParseOR(AContext: TIdContext);
-     procedure Auth(AContext: TIdContext);
+     procedure ParseGlobal(AContext: TIdContext);                               // parsinag dat s globalnim prefixem: "-;"
+     procedure ParseOR(AContext: TIdContext);                                   // parsing dat s prefixem konkretni oblasti rizeni
+     procedure Auth(AContext: TIdContext);                                      // pozadavek na autorizaci OR, data se ziskavaji z \parsed
 
-     function IsOpenned():boolean;
+     function IsOpenned():boolean;                                              // je server zapnut?
 
-     procedure OnDCCCmdErr(Sender:TObject; Data:Pointer);
+     procedure OnDCCCmdErr(Sender:TObject; Data:Pointer);                       // event chyby komunikace s lokomotivou v automatu
 
    public
 
      constructor Create();
      destructor Destroy(); override;
 
-     function Start(port:Word):Integer; overload;
-     function Start():Integer; overload;
-     function Stop():Integer;
-     procedure DisconnectClient(conn:TIdContext);
+     function Start(port:Word):Integer; overload;                               // spustit server
+     function Start():Integer; overload;                                        // spustit server
+     function Stop():Integer;                                                   // zastavit server
+     procedure DisconnectClient(conn:TIdContext);                               // odpojit konkretniho klienta
 
      // volani funkci do panelu, ktere neprislusi OR, ale jednotlivym panelum
      procedure SendInfoMsg(AContext:TIdContext; msg:string);
@@ -341,7 +350,7 @@ implementation
 }
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
-      TBlokPrejezd, Logging, ModelovyCas, SprDb, Souprava,
+      TBlokPrejezd, Logging, ModelovyCas, SprDb,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, MTBdebugger,
       UDPDiscover;
 
@@ -1198,6 +1207,10 @@ begin
  Self.UPO_OK      := nil;
  Self.UPO_Esc     := nil;
  Self.UPO_ref     := nil;
+
+ Self.spr_new     := false;
+ Self.spr_edit    := nil;
+ Self.spr_usek    := nil;
 
  Self.funcsVyznamReq := false;
 

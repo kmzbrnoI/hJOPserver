@@ -42,7 +42,7 @@ var LI:TListItem;
 begin
  Self.LV.Clear;
 
- for i := 0 to ORs.ORcnt-1 do
+ for i := 0 to ORs.Count-1 do
   begin
    LI := Self.LV.Items.Add;
    LI.Caption := IntToStr(i);
@@ -59,7 +59,7 @@ procedure TORsTableData.UpdateTable(force:boolean = false);
 var i:Integer;
     OblR:TOR;
 begin
- for i := 0 to ORs.ORcnt-1 do
+ for i := 0 to ORs.Count-1 do
   begin
    ORs.GetORByIndex(i, OblR);
    if ((OblR.changed) or (force)) then

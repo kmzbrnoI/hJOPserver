@@ -1,8 +1,8 @@
 unit TechnologieMTB;
 
-// technologie MTB
-
 {
+ Technologie MTB
+
  Pricip:
   - na zacatku vytvorime tridy pro vsechna existujici MTB
   - po otevreni MTB zjistime, ktere desky jsou skutecne dostupne a ktere ne

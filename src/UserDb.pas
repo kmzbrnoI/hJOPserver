@@ -1,5 +1,10 @@
 unit UserDb;
 
+{
+  Trida TUsrDb udrzuje seznam uzivatelu a resi veskere operace s touto
+  databazi.
+}
+
 interface
 
 uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows, RPConst;
@@ -7,11 +12,11 @@ uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows, RPConst;
 type
   TUsrDb = class
    private
-    Users: TList<TUser>;
-    ffilename:string;
+    Users: TList<TUser>;                                                        // seznam uzivatelu
+    ffilename:string;                                                           // jmeno ini souboru s daty uzivatelu, ze ktereho jsme naposled nacitali data
 
-      procedure FreeUsers();
-      function GetCount():Integer;
+      procedure FreeUsers();                                                    // znici vsechny uzivatele
+      function GetCount():Integer;                                              // vrati pocet uzivatelu
 
    public
 
@@ -21,16 +26,17 @@ type
      procedure LoadFile(const filename:string);
      procedure SaveFile(const filename:string);
 
-     function GetRights(user:string; passwd:string; OblR:string):TORCOntrolRights;
-     procedure LoginUser(username:string);
+     function GetRights(user:string; passwd:string; OblR:string):               // vrati prava uzivatele \user s heslem \passwd pro oblast rizeni \OblR
+                TORCOntrolRights;
+     procedure LoginUser(username:string);                                      // zaloguje prihlaseni uzivatele (ulozi datum a cas posledniho prihlaseni)
 
      procedure AddUser(User:TUser);
      procedure RemoveUser(index:Integer);
 
-     function GetUser(index:Integer):TUser; overload;
-     function Getuser(id:string):TUser; overload;
-     property count:Integer read GetCount;
-     property filename:string read ffilename;
+     function GetUser(index:Integer):TUser; overload;                           // vrati uzivatele podle jeho indexu v senzamu univatelu
+     function Getuser(id:string):TUser; overload;                               // vrati uzivatele podle jeho ID
+     property count:Integer read GetCount;                                      // vrati pocet uzivatelu
+     property filename:string read ffilename;                                   // vrati jsmeno souboru, ze ktereho byly uzivatele necteni
 
   end;//class TUserDb
 

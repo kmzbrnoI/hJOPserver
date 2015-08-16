@@ -256,7 +256,7 @@ var LI:TListItem;
 begin
  Self.LV_ORs.Clear();
 
- for i := 0 to ORs.ORcnt-1 do
+ for i := 0 to ORs.Count-1 do
   begin
    LI := Self.LV_ORs.Items.Add;
    LI.Caption := ORs.GetORIdByIndex(i);
