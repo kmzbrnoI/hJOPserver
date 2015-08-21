@@ -259,6 +259,7 @@ var data:THVData;
      stav.StanovisteA := THVStanoviste(CB_Orientace.ItemIndex);
      Self.OpenHV.Stav := stav;
      Self.OpenHV.PredejStanici(OblR);
+     Self.OpenHV.UpdateAllRegulators();
 
      HVTableData.UpdateLine(OpenHV);
 

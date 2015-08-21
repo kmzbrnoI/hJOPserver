@@ -135,6 +135,7 @@ type
      function IsToken(str:string):boolean;             // overeni tokenu
      procedure RemoveToken(token:string);              // smazani tokenu
      procedure UpdateTokenTimeout();                   // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
+     procedure UpdateAllRegulators();
 
      property adresa:Word read fadresa;                // adresa HV
      property ruc:boolean read Stav.ruc write SetRuc;  // rucni rizeni HV
@@ -586,6 +587,9 @@ begin
  str.Free();
  str2.Free();
  str3.Free();
+
+ // aktulizace LOKO v regulatorech
+ Self.UpdateAllRegulators();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -731,6 +735,15 @@ begin
      Exit(true);
  Result := false;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.UpdateAllRegulators();
+var regulator:THVRegulator;
+begin
+ for regulator in Self.Stav.regulators do
+   TCPRegulator.LokToRegulator(regulator.conn, Self);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
