@@ -171,7 +171,7 @@ end;//function
 
 class function TUser.ComparePasswd(plain:string; hash:string):boolean;
 begin
- Result := (hash = TUser.GenerateHash(AnsiString(plain)));
+ Result := (hash = TUser.GenerateHash(AnsiString(LowerCase(plain))));
 end;//function
 
 class function TUser.GenerateHash(plain:AnsiString):string;
