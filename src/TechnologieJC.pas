@@ -2462,6 +2462,7 @@ begin
    _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[data].Prejezd);
  end;
 
+ Blky.GetBlkByID(Self.fproperties.Prejezdy[data].Prejezd, Blk);
  writelog('JC '+Self.nazev+': obsazen '+(Sender as TBlkUsek).GetGlobalSettings().name+' - uzaviram prejezd '+Blk.GetGlobalSettings().name, WR_VC, 0);
 
  func.func := Self.UsekClosePrj;
