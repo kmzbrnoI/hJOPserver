@@ -4,7 +4,7 @@ unit BoosterDb;
 
 interface
 
-uses Booster, IniFiles, Classes, SysUtils, Windows;
+uses Booster, IniFiles, Classes, SysUtils, Windows, RPConst;
 
 const
   _MAX_B = 32;
@@ -29,8 +29,8 @@ type
       procedure ClearDb();
 
       //events from TBooster; those events direct call blk methods
-      procedure OnZkratChange(Sender:TObject;state:boolean);
-      procedure OnNapajeniChange(Sender:TObject;state:boolean);
+      procedure OnZkratChange(Sender:TObject; state:TBoosterSignal);
+      procedure OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
 
       function FindInDb(booster:TBooster):Integer;          //returns index
 
@@ -197,7 +197,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBoosterDb.OnZkratChange(Sender:TObject;state:boolean);
+procedure TBoosterDb.OnZkratChange(Sender:TObject; state:TBoosterSignal);
 var index:Integer;
 begin
  index := Self.FindInDb(Sender as TBooster);
@@ -205,7 +205,7 @@ begin
  Blky.SetZesZkrat(index, state);
 end;//procedure
 
-procedure TBoosterDb.OnNapajeniChange(Sender:TObject;state:boolean);
+procedure TBoosterDb.OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
 var index:Integer;
 begin
  index := Self.FindInDb(Sender as TBooster);
@@ -242,7 +242,7 @@ begin
  zkrat := false;
  for i := 0 to Self.data.cnt-1 do
   begin
-   if (Self.data.data[i].zkrat) then
+   if (Self.data.data[i].zkrat = TBoosterSignal.error) then
     begin
      zkrat := true;
      Break;

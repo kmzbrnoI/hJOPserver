@@ -6,12 +6,12 @@ unit Booster;
 
 interface
 
-uses IniFiles, TechnologieMTB, SysUtils;
+uses IniFiles, TechnologieMTB, SysUtils, RPConst;
 
 type
- TBoosterChangeEvent = procedure (Sender:TObject;state:boolean) of object;
-
  TBoosterClass = (undefinned = -1, default = 0, SPAX = 1);
+
+ TBoosterChangeEvent = procedure (Sender:TObject; state:TBoosterSignal) of object;
 
  TBoosterSettings = record
    bclass:TBoosterClass;                              //booster class
@@ -26,14 +26,15 @@ type
   private
    Settings:TBoosterSettings;
 
-   ZkratOld,NapajeniOld:boolean;                      //old states (used to calling events)
+   ZkratOld,NapajeniOld:TBoosterSignal;                      //old states (used to calling events)
 
    //events
    FOnNapajeniChange : TBoosterChangeEvent;
    FOnZkratChange    : TBoosterChangeEvent;
 
-    function GetZkrat():boolean;
-    function GetNapajeni():boolean;
+    function GetZkrat():TBoosterSignal;
+    function GetNapajeni():TBoosterSignal;
+    function GetDefined():boolean;
 
   public
 
@@ -46,8 +47,9 @@ type
     procedure LoadDataFromFile(var ini:TMemIniFile;const section:string);
     procedure SaveDataToFile(var ini:TMemIniFile;const section:string);
 
-    property zkrat:boolean read GetZkrat;
-    property napajeni:boolean read GetNapajeni;
+    property zkrat:TBoosterSignal read GetZkrat;
+    property napajeni:TBoosterSignal read GetNapajeni;
+    property defined:boolean read GetDefined;
 
     property bSettings:TBoosterSettings read settings write settings;
 
@@ -77,13 +79,16 @@ uses GetSystems, fMain;
 //ctor
 constructor TBooster.Create();
 begin
- inherited Create;
+ inherited;
+
+ Self.ZkratOld    := TBoosterSignal.undef;
+ Self.NapajeniOld := TBoosterSignal.undef;
 end;//ctor
 
 //ctor
 constructor TBooster.Create(var ini:TMemIniFile;const section:string);
 begin
- inherited Create;
+ Self.Create();
 
  Self.LoadDataFromFile(ini,section);
 end;//ctor
@@ -91,30 +96,21 @@ end;//ctor
 //dtor
 destructor TBooster.Destroy();
 begin
- inherited Destroy;
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBooster.Update();
-var state:boolean;
+var state:TBoosterSignal;
 begin
- if (not GetFunctions.GetSystemStart()) then
-  begin
-   Self.ZkratOld := false;
-   Exit();
-  end;
-
  //update napajeni
  state := Self.GetNapajeni();
  if (state <> Self.NapajeniOld) then
   begin
-   if (Assigned(Self.FOnNapajeniChange)) then Self.FOnNapajeniChange(Self,state);
+   if (Assigned(Self.FOnNapajeniChange)) then Self.FOnNapajeniChange(Self, state);
    Self.NapajeniOld := state;
   end;
-
- //if not napajeni, zkrat is not updated
- if (not Self.NapajeniOld) then Exit;
 
  //update zkrat
  state := Self.GetZkrat();
@@ -161,18 +157,39 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 //gets data from MTB
 
-function TBooster.GetZkrat():boolean;
+function TBooster.GetZkrat():TBoosterSignal;
+var val:Integer;
 begin
  //if not a power, not a overload
- if (not Self.NapajeniOld) then Exit(false);
+ if (Self.napajeni = TBoosterSignal.error) then Exit(TBoosterSignal.undef);
 
- Result := (MTB.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port) = 1);
+ val := MTB.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port);
+ if (val < 0) then
+   Result := TBoosterSignal.undef
+ else if (val > 0) then
+   Result := TBoosterSignal.error
+ else
+   Result := TBoosterSignal.ok;
 end;//function
 
-function TBooster.GetNapajeni():boolean;
+function TBooster.GetNapajeni():TBoosterSignal;
+var val:Integer;
 begin
- Result := (MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port) <> 1);
+ val := MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port);
+ if (val < 0) then
+   Result := TBoosterSignal.undef
+ else if (val > 0) then
+   Result := TBoosterSignal.error
+ else
+   Result := TBoosterSignal.ok;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBooster.GetDefined():boolean;
+begin
+ Result := ((MTB.IsModule(Self.Settings.MTB.Zkrat.board)) and (MTB.IsModule(Self.Settings.MTB.Napajeni.board)));
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

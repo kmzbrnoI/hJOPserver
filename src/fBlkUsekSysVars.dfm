@@ -331,8 +331,9 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     ParentFont = False
     TabOrder = 6
     Items.Strings = (
-      'Ne'
-      'Ano')
+      'Undef'
+      'Ano'
+      'Ne')
   end
   object CB_Zes_Napajeni: TComboBox
     Left = 176
@@ -353,7 +354,8 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     ParentFont = False
     TabOrder = 7
     Items.Strings = (
-      'Ne'
-      'Ano')
+      'Undef'
+      'Ano'
+      'Ne')
   end
 end

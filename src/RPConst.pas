@@ -54,6 +54,8 @@ type
 
  PInt = ^Integer;
 
+ TBoosterSignal = (undef = -1, error = 0, ok = 1);
+
  TArSmallI = array of Integer;
  TArStr = array of string;
  PTArSmallI = ^TArSmallI;

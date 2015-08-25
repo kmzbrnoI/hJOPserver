@@ -423,8 +423,9 @@ begin
      if ((Sender as TBlkUsek).Stitek <> '') then bg := clTeal;
      if ((Sender as TBlkUsek).Vyluka <> '') then bg := clOlive;
 
-     if ((Sender as TBlkUsek).ZesZkrat)        then bg := clFuchsia;
-     if (not (Sender as TBlkUsek).ZesNapajeni) then bg := clBlue;
+     if ((Sender as TBlkUsek).ZesZkrat = TBoosterSignal.error) then bg := clFuchsia;
+     if (((Sender as TBlkUsek).ZesNapajeni <> TBoosterSignal.ok) or
+        ((Sender as TBlkUsek).ZesZkrat = TBoosterSignal.undef)) then bg := clBlue;
 
      msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
 

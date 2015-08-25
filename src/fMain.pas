@@ -492,7 +492,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
-     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger;
+     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster;
 
 {$R *.dfm}
 
@@ -2549,21 +2549,21 @@ end;
 procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if (not MTB.Start) then
+ if ((not MTB.Start) or (not BoostersDb.GetBooster(Item.Index).defined)) then
   begin
    LV_Zesilovace.Canvas.Brush.Color := $CCCCCC;
   end else begin
-   if (BoostersDb.GetBooster(Item.Index).napajeni) then
+   if (BoostersDb.GetBooster(Item.Index).napajeni = TBoosterSignal.ok) then
     begin
-     if (not BoostersDb.GetBooster(Item.Index).Zkrat) then
+     if (BoostersDb.GetBooster(Item.Index).Zkrat = TBoosterSignal.ok) then
       begin
        LV_Zesilovace.Canvas.Brush.Color := $AAFFAA;
       end else begin
        LV_Zesilovace.Canvas.Brush.Color := $AAAAFF;
       end;
-    end else begin//if Napajeni
+    end else begin
      LV_Zesilovace.Canvas.Brush.Color := $FFAAAA;
-    end;//if Napajeni else
+    end;
   end;//if not Zarizeni.Start
 end;
 

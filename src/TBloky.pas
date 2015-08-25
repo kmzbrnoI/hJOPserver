@@ -80,8 +80,8 @@ type
     //true = existuje, false = neexistuje
     function IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
 
-    procedure SetZesZkrat(zesil:Integer;state:boolean);       //pokud je na zesilovaci zmenen zkrat
-    procedure SetZesNapajeni(zesil:Integer;state:boolean);    //pokud je na zesilovaci zmeneno napajeni
+    procedure SetZesZkrat(zesil:Integer;state:TBoosterSignal);       //pokud je na zesilovaci zmenen zkrat
+    procedure SetZesNapajeni(zesil:Integer;state:TBoosterSignal);    //pokud je na zesilovaci zmeneno napajeni
     procedure SetDCC(state:boolean);                          //vola se pri zmene stavu DCC (zapnuto X vypnuto)
 
     procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
@@ -588,7 +588,7 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 //pokud je na zesilovaci zmenen zkrat
-procedure TBlky.SetZesZkrat(zesil:Integer;state:boolean);
+procedure TBlky.SetZesZkrat(zesil:Integer; state:TBoosterSignal);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
@@ -601,7 +601,7 @@ begin
 end;//procedure
 
 //pokud je na zesilovaci zmeneno napajeni
-procedure TBlky.SetZesNapajeni(zesil:Integer;state:boolean);
+procedure TBlky.SetZesNapajeni(zesil:Integer; state:TBoosterSignal);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do

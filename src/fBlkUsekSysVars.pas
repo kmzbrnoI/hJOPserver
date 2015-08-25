@@ -58,15 +58,8 @@ procedure TF_BlkUsek_tech.LoadPrmnFromProgram;
    true  : CB_NUZ.ItemIndex := 1;
   end;
 
-  case (Self.Blk.ZesZkrat) of
-   false : CB_Zes_Zkrat.ItemIndex := 0;
-   true  : CB_Zes_Zkrat.ItemIndex := 1;
-  end;
-
-  case (Self.Blk.ZesNapajeni) of
-   false : CB_Zes_Napajeni.ItemIndex := 0;
-   true  : CB_Zes_Napajeni.ItemIndex := 1;
-  end;
+  CB_Zes_Zkrat.ItemIndex    := Integer(Self.Blk.ZesZkrat)+1;
+  CB_Zes_Napajeni.ItemIndex := Integer(Self.Blk.ZesNapajeni)+1;
 
   case (Self.Blk.NUZ) of
    false : CB_NUZ.ItemIndex := 0;
@@ -95,8 +88,8 @@ var Blk:TBlk;
   Self.Blk.SprPredict  := SE_Souprava_Predict.Value;
   Blky.GetBlkByID(Self.SE_SComJCRef.Value, Blk);
   Self.Blk.SComJCRef   := Blk;
-  Self.Blk.ZesZkrat    := PrevodySoustav.IntToBool(CB_Zes_Zkrat.ItemIndex);
-  Self.Blk.ZesNapajeni := PrevodySoustav.IntToBool(CB_Zes_Napajeni.ItemIndex);
+  Self.Blk.ZesZkrat    := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
+  Self.Blk.ZesNapajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
   Self.Blk.Vyluka      := M_Vyluka.Text;
   Self.Blk.Stitek      := M_Stitek.Text;
  end;//procedure

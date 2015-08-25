@@ -31,8 +31,8 @@ type
   SComJCRef:TBlk;           // zde je ulozeno, podle jakeho navestidla se odjizdi z tohoto bloku; pokud je postabeno vice navetidel, zde je ulozeno posledni, na kterem probehla volba
   Spr:Integer;              // default -1, jinak array index
   SprPredict:Integer;       // souprava, ktera je na tomto bloku predpovidana
-  zkrat:boolean;            // zkrat zesilovace
-  napajeni:boolean;         // napajeni zesilovace
+  zkrat:TBoosterSignal;     // zkrat zesilovace
+  napajeni:TBoosterSignal;  // napajeni zesilovace
   redukuji:TReduction;      // zde si ukladam, koho redukuji; ukladaji se id; jakmile se z meho bloku uvolni zaver, vse odredukuji
   stanicni_kolej:boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
   vlakPresun:boolean;       // pokud je vlak na teto koleji oznacen pro presun do jine koelje, je zde true
@@ -60,15 +60,15 @@ type
     SComJCRef : nil;
     Spr : -1;
     SprPredict : -1;
-    zkrat : false;
-    napajeni : true;
+    zkrat : TBoosterSignal.undef;
+    napajeni : TBoosterSignal.undef;
     stanicni_kolej : false;
     zpomalovani_ready : false;
    );
 
   private
    UsekStav:TBlkUsekStav;
-   last_zes_zkrat:boolean;  //poziva se na pamatovani posledniho stavu zkratu zesilovace pri vypnuti DCC
+   last_zes_zkrat:TBoosterSignal;  //poziva se na pamatovani posledniho stavu zkratu zesilovace pri vypnuti DCC
 
     procedure SetUsekNUZ(nuz:boolean);
     procedure SetUsekZaver(Zaver:TJCType);
@@ -76,8 +76,8 @@ type
     procedure SetUsekVyl(vyl:string); overload;
     procedure SetSprPredict(sprcesta:Integer);
     procedure SetKonecJC(konecjc:TJCType);
-    procedure SetZesZkrat(state:boolean);
-    procedure SetZesNap(state:boolean);
+    procedure SetZesZkrat(state:TBoosterSignal);
+    procedure SetZesNap(state:TBoosterSignal);
     procedure SetVlakPresun(presun:boolean);
 
     procedure MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -155,8 +155,8 @@ type
     property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
     property KonecJC:TJCType read UsekStav.KonecJC write SetKonecJC;
     property SComJCRef:TBlk read UsekStav.SComJCRef write UsekStav.SComJCRef;
-    property ZesZkrat:boolean read UsekStav.Zkrat write SetZesZkrat;
-    property ZesNapajeni:boolean read UsekStav.Napajeni write SetZesNap;
+    property ZesZkrat:TBoosterSignal read UsekStav.Zkrat write SetZesZkrat;
+    property ZesNapajeni:TBoosterSignal read UsekStav.Napajeni write SetZesNap;
     property VlakPresun:boolean read UsekStav.vlakPresun write SetVlakPresun;
     property zpomalovani_ready:boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
 
@@ -284,7 +284,8 @@ begin
  Self.UsekStav.SprPredict := -1;
  Self.UsekStav.KonecJC    := TJCType.no;
  Self.UsekStav.zpomalovani_ready := false;
- Self.UsekStav.zkrat      := false;
+ Self.UsekStav.zkrat      := TBoosterSignal.undef;
+ Self.UsekStav.napajeni   := TBoosterSignal.undef;
  for i := 0 to 3 do Self.UsekStav.StavAr[i] := disabled;
  Self.RemoveAllReduction(Self.UsekStav.redukuji);
  Self.Change();
@@ -301,7 +302,7 @@ end;//procedure
 procedure TBlkUsek.Update();
 var i:Integer;
 begin
- if (((Self.ZesZkrat) or (not Self.ZesNapajeni)) and (not Self.frozen)) then
+ if (((Self.ZesZkrat = TBoosterSignal.error) or (Self.ZesNapajeni = TBoosterSignal.error)) and (not Self.frozen)) then
   begin
 //   if (TrkSystem.status <> Ttrk_status.TS_ON) then Self.ZesZkrat := false;
    Self.Freeze();
@@ -310,14 +311,16 @@ begin
 
  if (Self.frozen) then
   begin
-   if (((TrkSystem.status <> Ttrk_status.TS_ON) or (not Self.ZesNapajeni) or (Now < TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0))) and (Self.ZesZkrat)) then
+   if (((TrkSystem.status <> Ttrk_status.TS_ON) or (Self.ZesNapajeni = TBoosterSignal.error)
+        or (Now < TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0)))
+       and (Self.ZesZkrat = TBoosterSignal.error)) then
     begin
-     Self.UsekStav.zkrat := false;
+     Self.UsekStav.zkrat := TBoosterSignal.ok;
      for i := 0 to Self.ORsRef.Cnt-1 do
        Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt - 1;
      Self.Change(true);
     end;
-   if ((TrkSystem.status = Ttrk_status.TS_ON) and (not Self.ZesZkrat) and (Self.ZesNapajeni) and
+   if ((TrkSystem.status = Ttrk_status.TS_ON) and (Self.ZesZkrat <> TBoosterSignal.error) and (Self.ZesNapajeni <> TBoosterSignal.error) and
        (Now > TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0))) then Self.UnFreeze();
    Exit();
   end;
@@ -510,34 +513,37 @@ begin
  Self.Change();
 end;//procedure
 
-procedure TBlkUsek.SetZesZkrat(state:boolean);
+procedure TBlkUsek.SetZesZkrat(state:TBoosterSignal);
 var i:Integer;
 begin
  if (Self.frozen) then
    Self.last_zes_zkrat := state;
 
- if ((state) and (not Self.frozen) and ((TrkSystem.status <> Ttrk_status.TS_ON) or (not Self.ZesNapajeni) or (Now < TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0)))) then
+ if ((state = TBoosterSignal.error) and (not Self.frozen) and
+     ((TrkSystem.status <> Ttrk_status.TS_ON) or (Self.ZesNapajeni = TBoosterSignal.error) or
+      (Now < TrkSystem.DCCGoTime+EncodeTime(0, 0, 1, 0)))) then
   begin
    Self.Freeze();
    Exit();
   end;
 
- if (state) then
+ if (state = TBoosterSignal.error) then
   begin
    // do OR oznamime, ze nastal zkrat, pak se prehraje zvuk v klientech...
    if (Self.frozen) then Exit();
    for i := 0 to Self.ORsRef.Cnt-1 do
     Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt + 1;
   end else begin
-   for i := 0 to Self.ORsRef.Cnt-1 do
-    Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt - 1;
+   if (Self.UsekStav.zkrat = TBoosterSignal.error) then
+     for i := 0 to Self.ORsRef.Cnt-1 do
+      Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt - 1;
   end;
 
  Self.UsekStav.zkrat := state;
  Self.Change(true);
 end;//procedure
 
-procedure TBlkUsek.SetZesNap(state:boolean);
+procedure TBlkUsek.SetZesNap(state:TBoosterSignal);
 begin
  Self.UsekStav.napajeni := state;
  Self.Change(true);
