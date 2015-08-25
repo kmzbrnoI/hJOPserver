@@ -20,6 +20,9 @@ unit MTBdebugger;
   - Kazdy klient muze ovladat 0..n MTB desek.
   - O desku se zada prikazem "PLEASE", uvoluje se prikazem "RELEASE".
   - Pri odpojeni klienta je vymazan jeho TMTBdClient zaznam.
+  - INFO kazde desky jsou nasledujici informace:
+      adresa|nazev|typ|existence|verze_fw
+      (veskera data jsou stringy, existence je [0,1])
 }
 
 interface
@@ -59,7 +62,7 @@ type
 
   //////////////////////////////////////////////////////////////////////////
 
-  // TMTBd shruzuje jednotlive MTBd klienty
+  // TMTBd sdruzuje jednotlive MTBd klienty
   TMTBd = class
     private
       clients:TList<TMTBdClient>;                                               // seznam autorizovanych klientu
@@ -74,6 +77,9 @@ type
        procedure RemoveClient(conn:TIDContext);                                 // smazani MTBd klienta z databaze
        procedure RemoveAllClients();                                            // smazani vsech MTBd klientu
        procedure Update();                                                      // propagace stavu MTB k MTBd klientum
+
+       class function GetMTBInfo(board:byte):string;                            // vraci INFO string
+
   end;
 
 var
@@ -90,6 +96,7 @@ implementation
     -;MTBd;MODULE;addr;CHANGE;I;stav_vstupu                                     zmena stavu vstupu MTB modulu \addr
     -;MTBd;MODULE;addr;CHANGE;O;stav_vystupu                                    zmena stavu vystupu MTB modulu \addr
     -;MTBd;ERR;error_message                                                    chybova zprava
+    -;MTBd;INFO;board1, board2, ...                                             INFO o modulu (modulech)
 
   @ klient -> server
     -;MTBd;AUTH;username;hashed_password                                        zadost o povoleni MTB debugger, je nutne se prihlasit rootem
@@ -97,6 +104,8 @@ implementation
     -;MTBd;RELEASE;addr                                                         uvolneni MTB modulu \addr
     -;MTBd;SETOUT;addr;port;stav                                                nastaveni vystupu \port MTB modulu \addr na stav \stav
     -;MTBd;UPDATE;addr;                                                         pozadavek na zaslani aktualniho stavu vsech portu MTB \addr
+    -;MTBd;LIST;                                                                zadost o info vsech existujicich MTB
+    -;MTBd;INFO;addr                                                            zadost o info konkretniho MTB
 
   # stav_vstupu, stav_vystupu: 15 cisel oddelenych "|"
     napr. 0;0;0;0;0;0;0;0;0;0;0;0;0;0;0 je MTB se vsemi vystupy v logicke nule
@@ -316,8 +325,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMTBdClient.Parse(parsed:TStrings);
-var addr, index:Integer;
+var addr, index, i:Integer;
     module:TMTBdModule;
+    str:string;
 begin
  if (parsed[2] = 'PLEASE') then begin
   try
@@ -384,7 +394,33 @@ begin
    end else begin
     ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;ERR;Modul není autorizován');
    end;
+
+ end else if (parsed[2] = 'INFO') then begin
+   ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;INFO;{{'+TMTBd.GetMTBInfo(StrToInt(parsed[3]))+'}}');
+
+ end else if (parsed[2] = 'LIST') then begin
+   str := '';
+   for i := 0 to TMTB._MAX_MTB-1 do
+     if ((MTB.IsModule(i)) or (MTB.GetNeeded(i))) then
+        str := str + '{' + TMTBd.GetMTBInfo(i) + '}';
+   ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;INFO;{'+str+'}');
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TMTBd.GetMTBInfo(board:byte):string;
+begin
+ Result := IntToStr(board) + '|' +
+           MTB.GetNameMTB(board) + '|' +
+           MTB.GetTypeStrMTB(board) + '|';
+
+ case (MTB.IsModule(board)) of
+  false : Result := Result + '0|';
+  true  : Result := Result + '1|';
+ end;
+
+ Result := Result + MTB.GetModuleFirmware(board);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
