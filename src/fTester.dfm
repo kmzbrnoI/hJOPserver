@@ -91,7 +91,7 @@ object F_Tester: TF_Tester
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 1
     OnChange = CB_MtbAdrChange
   end

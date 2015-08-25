@@ -88,16 +88,17 @@ var cyklus:Integer;
  end;//procedure
 
 procedure TF_Tester.UpdateOut;
-var cyklus:Integer;
+var cyklus, val:Integer;
  begin
   for cyklus := 0 to 15 do
    begin
-    if (MTB.GetOutput(MTBAddr, cyklus) > 0) then
-     begin
+    val := MTB.GetOutput(MTBAddr, cyklus);
+    if (val < 0) then
+      SOutput[cyklus].Brush.Color := clGray
+    else if (val = 0) then
+      SOutput[cyklus].Brush.Color := clRed
+    else
       SOutput[cyklus].Brush.Color := clLime;
-     end else begin
-      SOutput[cyklus].Brush.Color := clRed;
-     end;
    end;//for cyklus
  end;//procedure
 
@@ -130,12 +131,12 @@ var cyklus:Integer;
        end;//if (InputState <> LastState)
      end;//if F_Tester.CHB_LogZmeny.Checked
 
-    if (InputState = 1) then
-     begin
+    if (InputState < 0) then
+      SInput[cyklus].Brush.Color := clGray
+    else if (InputState = 0) then
+      SInput[cyklus].Brush.Color := clRed
+    else
       SInput[cyklus].Brush.Color := clLime;
-     end else begin
-      SInput[cyklus].Brush.Color := clRed;
-     end;
    end;//for cyklus
  end;//procedure
 
