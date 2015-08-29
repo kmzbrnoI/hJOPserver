@@ -172,12 +172,13 @@ procedure TF_DigiReg.B_PrevzitLokoClick(Sender: TObject);
 begin
  TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
  TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
- if (TrkSystem.PrevzitLoko(Self.OpenHV) <> 0) then
-  begin
-   Application.MessageBox('Pøevzetí HV se nezdaøilo !', 'Chyba', MB_OK OR MB_ICONWARNING);
-   Exit;
-  end;
- end;//procedure
+ try
+  TrkSystem.PrevzitLoko(Self.OpenHV);
+ except
+  on E:Exception do
+    Application.MessageBox(PChar('Pøevzetí HV se nezdaøilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
+end;//procedure
 
 procedure TF_DigiReg.B_IdleClick(Sender: TObject);
 begin
@@ -189,11 +190,15 @@ procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
  begin
   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
-  if (TrkSystem.OdhlasitLoko(Self.OpenHV) <> 0) then
-   begin
-    Application.MessageBox('Operace se nezdaøila !', 'Chyba', MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
+  try
+   TrkSystem.OdhlasitLoko(Self.OpenHV);
+  except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Odhlášení HV se nezdaøilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+     Exit();
+    end;
+  end;
 
   Self.SetElemntsState(false);
   Self.UpdateElements();

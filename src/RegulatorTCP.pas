@@ -414,7 +414,7 @@ var i:Integer;
     func:string;
 begin
  func := '';
- for i := 0 to 12 do
+ for i := 0 to _HV_FUNC_MAX do
   case (HV.Slot.funkce[i]) of
    false : func := func + '0';
    true  : func := func + '1';
@@ -422,7 +422,7 @@ begin
 
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';F;0-12;'+func+';');
+     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
 end;//procedure
 
 //  or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
@@ -491,7 +491,12 @@ begin
  if (not HV.Slot.prevzato) then
   begin
    // ne -> prevzit loko
-   TrkSystem.PrevzitLoko(HV);
+   try
+     TrkSystem.PrevzitLoko(HV);
+   except
+     on E:Exception do
+       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;Pøevzetí z centrály se nezdaøilo :'+E.Message);
+   end;
 
    // timeout 3000ms = 3s
    timeout := 0;

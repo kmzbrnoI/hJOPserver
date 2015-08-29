@@ -35,7 +35,7 @@ uses Trakce, TBlok, Classes, StrUtils, SysUtils, TOblRizeni, RPConst,
       Generics.Collections, IdContext, IniFiles;
 
 const
-  _HV_FUNC_MAX       = 12;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
+  _HV_FUNC_MAX       = 28;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
   _TOKEN_TIMEOUT_MIN = 3;    // delka platnosti tokenu pro autorizaci hnaciho vozidla v minutach
   _TOKEN_LEN         = 24;   // delka autorizacniho tokenu pro prevzeti hnaciho vozidla
 

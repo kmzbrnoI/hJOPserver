@@ -141,7 +141,7 @@ type
     function SetSettings(data:TBlkVyhSettings):Byte;
 
     function SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false; callback_ok:TNotifyEvent = nil; callback_err:TNotifyEvent = nil):Integer;
-    procedure SetVyhVyl(Sender:TIDCOntext; vyl:string); overload;
+    procedure SetVyhVyl(Sender:TIDContext; vyl:string); overload;
 
     procedure RedukujMenu();
     procedure ZrusRedukciMenu();

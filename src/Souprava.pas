@@ -4,7 +4,7 @@ unit Souprava;
 
 interface
 
-uses IniFiles, RPConst, SysUtils, Classes, Forms;
+uses IniFiles, RPConst, SysUtils, Classes, Forms, IBUtils;
 
 const
   _MAX_SPR_HV = 4;
@@ -224,6 +224,7 @@ var hvs,hv:TStrings;
     i,j,timeout:Integer;
     old:TSoupravaHV;
     Func:TFunkce;
+    max_func:Integer;
 begin
  hvs  := TStringList.Create();
  hv   := TStringList.Create();
@@ -301,14 +302,17 @@ begin
 
    if ((not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.prevzato) or (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.stolen)) then
     begin
-     TrkSystem.PrevzitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
-
      // pripravit funkce:
-     for j := 0 to 12 do
-       if (hv[8][j+1] = '1') then
-         HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.funkce[j] := true
-        else
-         HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.funkce[j] := false;
+     max_func := Min(Length(hv[8]), _HV_FUNC_MAX);
+     for j := 0 to max_func do
+       HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.funkce[j] := (hv[8][j+1] = '1');
+
+     try
+       TrkSystem.PrevzitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
+     except
+       on E:Exception do
+         raise Exception.Create('PrevzitLoko exception : '+E.Message);
+     end;
 
      timeout := 0;
      while (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.Prevzato) do
@@ -325,11 +329,12 @@ begin
       end;//while
     end else begin
      // nastavit funkce
-     for j := 0 to 12 do
-       if (hv[8][j+1] = '1') then
-         Func[j] := true
-        else
-         Func[j] := false;
+     for j := 0 to _HV_FUNC_MAX do
+       if (j < Length(hv[8])) then
+         Func[j] := (hv[8][j+1] = '1')
+       else
+         Func[j] := HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.funkce[j];
+
      TrkSystem.LokSetFunc(Self, HVDb.HVozidla[Self.data.HV.HVs[i]], Func);
     end;
 
@@ -506,7 +511,12 @@ begin
   begin
    if (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.stolen) then
     begin
-     TrkSystem.PrevzitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
+     try
+       TrkSystem.PrevzitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
+     except
+       on E:Exception do
+         raise Exception.Create('PrevzitLoko exception : '+E.Message);
+     end;
      taken := true;
 
      timeout := 0;

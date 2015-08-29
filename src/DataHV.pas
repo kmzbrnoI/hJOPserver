@@ -125,10 +125,10 @@ var line:Integer;
    sudy  : Self.LV.Items.Item[line].SubItems.Strings[5] := 'sudý';
   end;//case
 
-  Self.LV.Items.Item[line].SubItems.Strings[16]  := Format('%5.2f',[stav.najeto_vpred.Metru]);
-  Self.LV.Items.Item[line].SubItems.Strings[17]  := IntToStr(stav.najeto_vpred.Bloku);
-  Self.LV.Items.Item[line].SubItems.Strings[18]  := Format('%5.2f',[stav.najeto_vzad.Metru]);
-  Self.LV.Items.Item[line].SubItems.Strings[19]  := IntToStr(stav.najeto_vzad.Bloku);
+  Self.LV.Items.Item[line].SubItems.Strings[18]  := Format('%5.2f',[stav.najeto_vpred.Metru]);
+  Self.LV.Items.Item[line].SubItems.Strings[19]  := IntToStr(stav.najeto_vpred.Bloku);
+  Self.LV.Items.Item[line].SubItems.Strings[20]  := Format('%5.2f',[stav.najeto_vzad.Metru]);
+  Self.LV.Items.Item[line].SubItems.Strings[21]  := IntToStr(stav.najeto_vzad.Bloku);
 
   if (stav.stanice <> nil) then
     Self.LV.Items.Item[line].SubItems.Strings[6] := stav.stanice.Name
@@ -136,15 +136,15 @@ var line:Integer;
     Self.LV.Items.Item[line].SubItems.Strings[6] := '';
 
   if (stav.souprava > -1) then
-    Self.LV.Items.Item[line].SubItems.Strings[15] := Soupravy.GetSprNameByIndex(stav.souprava)
+    Self.LV.Items.Item[line].SubItems.Strings[17] := Soupravy.GetSprNameByIndex(stav.souprava)
   else
-    Self.LV.Items.Item[line].SubItems.Strings[15] := '-';
+    Self.LV.Items.Item[line].SubItems.Strings[17] := '-';
 
   case (slot.pom) of
-   TPomStatus.progr    : Self.LV.Items.Item[line].SubItems.Strings[14] := 'progr';
-   TPomStatus.error    : Self.LV.Items.Item[line].SubItems.Strings[14] := 'error';
-   TPomStatus.pc       : Self.LV.Items.Item[line].SubItems.Strings[14] := 'automat';
-   TPomStatus.released : Self.LV.Items.Item[line].SubItems.Strings[14] := 'ruèní';
+   TPomStatus.progr    : Self.LV.Items.Item[line].SubItems.Strings[16] := 'progr';
+   TPomStatus.error    : Self.LV.Items.Item[line].SubItems.Strings[16] := 'error';
+   TPomStatus.pc       : Self.LV.Items.Item[line].SubItems.Strings[16] := 'automat';
+   TPomStatus.released : Self.LV.Items.Item[line].SubItems.Strings[16] := 'ruèní';
   end;//case
 
  if (not HV.Slot.Prevzato) then
@@ -156,11 +156,13 @@ var line:Integer;
    Self.LV.Items.Item[line].SubItems.Strings[10]  := '????';
    Self.LV.Items.Item[line].SubItems.Strings[11]  := '????';
    Self.LV.Items.Item[line].SubItems.Strings[12]  := '????';
+   Self.LV.Items.Item[line].SubItems.Strings[13]  := '???? ????';
+   Self.LV.Items.Item[line].SubItems.Strings[14]  := '???? ????';
 
    if (slot.stolen) then
-     Self.LV.Items.Item[line].SubItems.Strings[13] := 'ukradeno'
+     Self.LV.Items.Item[line].SubItems.Strings[15] := 'ukradeno'
    else
-     Self.LV.Items.Item[line].SubItems.Strings[13] := '---';
+     Self.LV.Items.Item[line].SubItems.Strings[15] := '---';
   end else begin
    // prevzato
 
@@ -180,10 +182,26 @@ var line:Integer;
    for i := 9 to 12 do str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
    Self.LV.Items.Item[line].SubItems.Strings[12] := str;
 
+   str := '';
+   for i := 13 to 20 do
+    begin
+     str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
+     if (i = 16) then str := str + ' ';
+    end;
+   Self.LV.Items.Item[line].SubItems.Strings[13] := str;
+
+   str := '';
+   for i := 21 to 28 do
+    begin
+     str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
+     if (i = 24) then str := str + ' ';
+    end;
+   Self.LV.Items.Item[line].SubItems.Strings[14] := str;
+
    if (slot.com_err) then
-     Self.LV.Items.Item[line].SubItems.Strings[13] := 'COM ERROR!'
+     Self.LV.Items.Item[line].SubItems.Strings[15] := 'COM ERROR!'
    else
-     Self.LV.Items.Item[line].SubItems.Strings[13] := 'PC';
+     Self.LV.Items.Item[line].SubItems.Strings[15] := 'PC';
   end;//else not prevzato
 
  end;//procedure

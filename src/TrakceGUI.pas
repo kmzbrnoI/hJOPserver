@@ -25,6 +25,8 @@ type
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TSlot; var handled:boolean) of object;
   TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
 
+  ENotOpenned = class(Exception);
+
   // pri programovani POMu se do callbacku predavaji tato data
   TPOMCallback = record
     addr:Word;                                                                  // adresa programovane lokomotivy
@@ -60,7 +62,7 @@ type
 
   // reprezenatce jedne funkci sady
   TFuncCBSada = record
-    func:array[0..4] of boolean;                                                // funkce v sade
+    func:array[0..15] of boolean;                                               // funkce v sade
     index:Integer;                                                              // index sady (pro xpressnet: 0:F0-F4, 1:F5-F8, 2:F9-12)
   end;
 
@@ -98,8 +100,6 @@ type
 
      //events definition
      FOnLog: TLogEvent;                                                         // log event
-     FONGetSpInfo : TGetSpInfoEvent;
-     FONGetFInfo  : TGetFInfoEvent;
 
      floglevel: Byte;                                                           // log level
      flogfile : boolean;                                                        // logovat do souboru ?
@@ -133,9 +133,6 @@ type
      procedure OnComWriteError(Sender:TObject);                                 // tento event je volan z .Trakce pri vyvolani vyjimky pri zapisu do ComPortu
                                                                                 // to nastava napriklad, pokud ComPort najednou zmizi z pocitace (nekdo odpoji USB)
      function GettSpeed(kmph:Integer):Integer;                                  // vrati rchlostni stupen pri zadane rychlosti v km/h
-     procedure GetSpInfo(Sender: TObject; Slot:TSlot);                          // event z TTrakce volany pri zjisteni iformacich o lokomotive
-     procedure WriteSpInfo(Slot:TSlot);                                         // je volano kdykoliv pri aktualizaci dat slotu
-                                                                                // ulozi slot k lokomotive
 
      // eventy z komponenty seriaku:
      procedure BeforeOpen(Sender:TObject);
@@ -174,8 +171,8 @@ type
      // eventy spojene s jednotlivymi fazemi prebirani HV
      procedure PrevzatoErr(Sender:TObject; Data:Pointer);                       // centala nedopovedela na prikaz o prevzeti
                                                                                 // (to, ze centrala odpovedela, ale HV neni dostupne, je signalizovano eventem .ConnectChange)
+     procedure PrevzatoFunc1328OK(Sender:TObject; Data:Pointer);                // funkce 13-28 byly uspesne nacteny
      procedure PrevzatoPOMOK(Sender:TObject; Data:Pointer);                     // POM vsech CV uspesne dokoncen
-     procedure PrevzatoPOMErr(Sender:TObject; Data:Pointer);                    // centrala neodpovedela na POM
      procedure PrevzatoFuncOK(Sender:TObject; Data:Pointer);                    // nastavovani vsech funkci uspesne dokonceno
      procedure PrevzatoFuncErr(Sender:TObject; Data:Pointer);                   // centrala neodpovedela na prikaz o nastaveni funkci
 
@@ -274,8 +271,8 @@ type
      function GetStepSpeed(step:byte):Integer;                                  // vraci rychlosti prislusneho jizdniho stupne
      function SetSpetSpeed(step:byte;sp:Integer):Byte;                          // nastavi rychlost prislusneho jizdniho stupne
 
-     function PrevzitLoko(HV:THV):Byte;                                         // prevzit dane HV (tj. z centraly, nastavit funkce, POM)
-     function OdhlasitLoko(HV:THV):Byte;                                        // uvolnit loko (tj. RELEASE POM, odhlasit)
+     procedure PrevzitLoko(HV:THV);                                             // prevzit dane HV (tj. z centraly, nastavit funkce, POM)
+     procedure OdhlasitLoko(HV:THV);                                            // uvolnit loko (tj. RELEASE POM, odhlasit)
 
      function POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte):Integer;   // zapsat 1 CV POMem, v praxi nevyuzivano
      procedure POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus);
@@ -315,8 +312,6 @@ type
 
      // vnejsi eventy:
      property OnLog: TLogEvent read FOnLog write FOnLog;
-     property OnGetSpInfo: TGetSpInfoEvent read FONGetSpInfo write FONGetSpInfo;
-     property OnGetFInfo: TGetFInfoEvent read FONGetFInfo write FONGetFInfo;
      property loglevel: Byte read floglevel write SetLogLevel;
      property logfile:boolean read flogfile write flogfile;
      property logtable:boolean read flogtable write flogtable;
@@ -350,7 +345,6 @@ begin
  Self.fTrkSystem := TrkSystem;
 
  Self.Trakce.OnLog                := Self.TrkLog;
- Self.Trakce.OnGetSpInfo          := Self.GetSpInfo;
  Self.Trakce.OnConnectChange      := Self.ConnectChange;
  Self.Trakce.OnLokComError        := Self.LokComErr;
  Self.Trakce.OnLokComOK           := Self.LokComOK;
@@ -614,24 +608,30 @@ end;//function
 //  vypocteme sady a samotne funkce nechame nastavit TTrkGUI.FuncOK(...)
 //  jednotlive sady se pak nastavuji postupne (po prijeti OK callbacku)
 function TTrkGUI.LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false):Byte;
+const
+    _SADY_CNT = 5;
+
 var i:Cardinal;
-    sady_change:array [0..2] of boolean;
+    sady_change:array [0.._SADY_CNT-1] of boolean;
     fc:Pointer;
     sada:TFuncCBSada;
+
 begin
  if (not Self.openned) then Exit(1);
  if (HV = nil) then Exit(2);
 
- for i := 0 to 2 do sady_change[i] := false;
+ for i := 0 to _SADY_CNT-1 do sady_change[i] := false;
 
  for i := 0 to _HV_FUNC_MAX do
   begin
    if ((funkce[i] <> HV.Slot.funkce[i]) or (force)) then
     begin
      case i of
-      0..4  : sady_change[0] := true;
-      5..8  : sady_change[1] := true;
-      9..12 : sady_change[2] := true;
+      0..4   : sady_change[0] := true;
+      5..8   : sady_change[1] := true;
+      9..12  : sady_change[2] := true;
+      13..20 : sady_change[3] := true;
+      21..28 : sady_change[4] := true;
      end;//case
      HV.Slot.funkce[i] := funkce[i];
      HV.Stav.funkce[i] := funkce[i];
@@ -665,8 +665,20 @@ begin
    for i := 0 to 3 do sada.func[i] := funkce[i+9];
    TFuncCallback(fc^).sady.Add(sada);
   end;
+ if (sady_change[3]) then
+  begin
+   sada.index := 3;
+   for i := 0 to 7 do sada.func[i] := funkce[i+13];
+   TFuncCallback(fc^).sady.Add(sada);
+  end;
+ if (sady_change[4]) then
+  begin
+   sada.index := 4;
+   for i := 0 to 7 do sada.func[i] := funkce[i+21];
+   TFuncCallback(fc^).sady.Add(sada);
+  end;
 
- if ((sady_change[0]) or (sady_change[1]) or (sady_change[2])) then
+ if ((sady_change[0]) or (sady_change[1]) or (sady_change[2]) or (sady_change[3]) or (sady_change[4])) then
   begin
    HV.Slot.funkce := funkce;
    TCPRegulator.LokUpdateFunc(HV, Sender);
@@ -911,7 +923,7 @@ begin
  if (addr > 9999) then Exit(3);
 
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP LOKO '+IntToStr(addr));
- Self.Trakce.EmergencyStopLoko(addr);
+ Self.Trakce.LokEmergencyStop(addr);
 
  Result := 0;
 end;//function
@@ -922,7 +934,7 @@ begin
  if (HV = nil) then Exit(2);
 
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP HV '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
- Self.Trakce.EmergencyStopLoko(HV.Adresa);
+ Self.Trakce.LokEmergencyStop(HV.Adresa);
 
  HV.Slot.speed := 0;
 
@@ -939,47 +951,24 @@ begin
  if (HV = nil) then Exit(2);
 
  Self.TrkLog(self,2,'PUT: GET HV INFO '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
- Self.Trakce.GetLocomotiveInfo(HV.Adresa);
+ Self.Trakce.LokGetInfo(HV.Adresa);
 
  Result := 0;
 end;//function
 
-procedure TTrkGUI.GetSpInfo(Sender: TObject; Slot:TSlot);
-var handled:boolean;
-begin
- handled := false;
- if (Assigned(Self.FONGetSpInfo)) then Self.FONGetSpInfo(Self, Slot, handled);
- if (not handled) then Self.WriteSpInfo(Slot);
-end;//function
-
-//vola se kdykoliv pri aktualizaci dat slotu
-//i pokud prijde zvenku
-procedure TTrkGUI.WriteSpInfo(Slot:TSlot);
-begin
- if (HVDb.HVozidla[Slot.adresa] = nil) then
-  begin
-   Self.TrkLog(self,2,'GET LOCO DATA: loko DOES NOT EXIST ('+IntToSTr(Slot.adresa)+')');
-   Exit;
-  end;
-
- HVDb.HVozidla[Slot.adresa].Slot := Slot;
- Self.TrkLog(self,2,'GET LOCO DATA: loko '+HVDb.HVozidla[Slot.adresa].data.Nazev+' ('+IntToSTr(Slot.adresa)+')');
-
- TCPRegulator.LokUpdateSpeed(HVDb.HVozidla[Slot.adresa]);
- TCPRegulator.LokUpdateFunc(HVDb.HVozidla[Slot.adresa]);
- RegCollector.UpdateElements(nil, HVDb.HVozidla[Slot.adresa].Slot.adresa);
- HVDb.HVozidla[Slot.adresa].changed := true;
-end;//procedure
-
 ////////////////////////////////////////////////////////////////////////////////
 
 // prevzit loko do kontroly systemu:
-//  pri prebirani LOKO si ulozime vnejsi callbacky, abychom mohli na prevzeti aplikovat valstni callbacky
+//  pri prebirani LOKO si ulozime vnejsi callbacky, abychom mohli na prevzeti aplikovat vlastni callbacky
 //  tyto callbacky pak zajisti nastaveni POM podle toho, jestli je loko otevrene v nejakem regulatoru
-function TTrkGUI.PrevzitLoko(HV:THV):Byte;
+procedure TTrkGUI.PrevzitLoko(HV:THV);
 var cb:Pointer;
 begin
- if (not Self.openned) then Exit(1);
+ if (not Self.openned) then
+  begin
+   Self.WriteLog(1, 'ERR: COM not openned');
+   raise ENotOpenned.Create('COM not openned');
+  end;
 
  Self.TrkLog(self, 2, 'PUT: LOK-2-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
 
@@ -991,24 +980,27 @@ begin
  if (not HV.Slot.prevzato) then
   begin
    // ok callback neni potreba, protoze se vola ConnectChange
-   Self.callback_ok  := TTrakce.GenerateCallback(nil, cb);    // cb tu ale presto musi byt (je potreba v COnnectChange)
+   Self.callback_ok  := TTrakce.GenerateCallback(nil, cb);    // cb tu ale presto musi byt (je potreba v ConnectChange)
    Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, cb);
-   Result := Self.Trakce.Lok2MyControl(HV.Adresa);
+   Self.Trakce.Lok2MyControl(HV.Adresa);
   end else begin
    Self.callback_err := TTrakce.GenerateCallback(nil);
    Self.callback_ok  := TTrakce.GenerateCallback(nil);
    Self.ConnectChange(Self, HV.adresa, Tconnect_code.TC_Connected, cb);
-   Result := 0;
   end;
 end;//function
 
 // odhlasovani loko =
 //    1) POM release
 //    2) odhlasit loko
-function TTrkGUI.OdhlasitLoko(HV:THV):Byte;
+procedure TTrkGUI.OdhlasitLoko(HV:THV);
 var cb:Pointer;
 begin
- if (not Self.openned) then Exit(1);
+ if (not Self.openned) then
+  begin
+   Self.WriteLog(1, 'ERR: COM not openned');
+   raise ENotOpenned.Create('COM not openned');
+  end;
 
  Self.TrkLog(self, 2, 'PUT: LOK-FROM-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
 
@@ -1024,7 +1016,6 @@ begin
  HV.Stav.ruc := false;
 
  Self.POMWriteCVs(Self, HV, HV.Data.POMrelease, TPomStatus.released);
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1056,7 +1047,11 @@ begin
      Integer(data^) := i;
      Self.callback_err := TTrakce.GenerateCallback(Self.PrebiraniUpdateErr, data);
      Self.callback_ok  := TTrakce.GenerateCallback(Self.PrebiraniUpdateOK, data);
-     Self.PrevzitLoko(HVDb.HVozidla[i]);
+     try
+       Self.PrevzitLoko(HVDb.HVozidla[i]);
+     except
+       Self.PrebiraniUpdateErr(self, data);
+     end;
      Exit();
     end;
   end;
@@ -1114,27 +1109,24 @@ begin
  case (code) of
    TConnect_code.TC_Connected:begin
 
-     HVDb.HVozidla[addr].Slot.pom := progr;
-
-     // loko prevzato
+     // 1) aktualizace slotu
+     HVDb.HVozidla[addr].Slot := Self.Trakce.Slot;
      HVDb.HVozidla[addr].Slot.Prevzato := true;
      HVDb.HVozidla[addr].Slot.stolen   := false;
+     Self.TrkLog(self,2,'GET LOCO DATA: loko '+HVDb.HVozidla[addr].data.Nazev+' ('+IntToSTr(addr)+')');
+     HVDb.HVozidla[addr].changed := true;
 
+     // 2) priprava POM (POM zatim neprogramujeme, jen si pripravime flag)
+     HVDb.HVozidla[addr].Slot.pom := progr;
+
+     // 3) pokracujeme v prebirani, dalsi faze je ziskani stavu funkci 13-28
+
+     // 4) aktualni stav zpropagujeme do celeho programu
      if (HVDb.HVozidla[addr].Stav.souprava > -1) then
        Blky.ChangeUsekWithSpr(HVDb.HVozidla[addr].Stav.souprava);
 
      RegCollector.ConnectChange(addr);
      HVDb.HVozidla[addr].UpdateRuc();
-
-     GetMem(data2, sizeof(TPrevzitCallback));
-     if (data <> nil) then
-      begin
-       TPrevzitCallback(data2^) := TPrevzitCallback(data^);
-      end else begin
-       TPrevzitCallback(data2^).addr := addr;
-       TPrevzitCallback(data2^).callback_ok  := TTrakce.GenerateCallback(nil);
-       TPrevzitCallback(data2^).callback_err := TTrakce.GenerateCallback(nil);
-      end;
 
      // odesleme do regulatoru info o uspesne autorizaci
      // to je dobre tehdy, kdyz je loko prebirano z centraly
@@ -1145,13 +1137,24 @@ begin
        for reg in HVDb.HVozidla[addr].Stav.regulators do
          ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;ok;{'+HVDb.HVozidla[addr].GetPanelLokString()+'}');
 
-     // nastavit funkce tak, jak je chci ja
-     Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFuncOK, data2);
-     Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoFuncErr, data2);
-     Self.LokSetFunc(nil, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+     if (data <> nil) then
+      begin
+       data2 := data;
+      end else begin
+       GetMem(data2, sizeof(TPrevzitCallback));
+       TPrevzitCallback(data2^).addr := addr;
+       TPrevzitCallback(data2^).callback_ok  := TTrakce.GenerateCallback(nil);
+       TPrevzitCallback(data2^).callback_err := TTrakce.GenerateCallback(nil);
+      end;
+
+     // 5) nacteme stav funkci 13-28
+     Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFunc1328OK, data2);
+     Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, data2);
+     Self.Trakce.LokGetFunctions(addr, 13);
    end;//TC_Connected
 
    TConnect_code.TC_Unavailable:begin
+     // tato funkce neni na XpressNETu podporovana, proto neni dodelana
      RegCollector.ConnectChange(addr);
    end;
 
@@ -1274,7 +1277,11 @@ begin
      Integer(data^) := i;
      Self.callback_err := TTrakce.GenerateCallback(Self.PrebiraniUpdateErr, data);
      Self.callback_ok  := TTrakce.GenerateCallback(Self.PrebiraniUpdateOK, data);
-     Self.PrevzitLoko(HVDb.HVozidla[i]);
+     try
+       Self.PrevzitLoko(HVDb.HVozidla[i]);
+     except
+       Self.PrebiraniUpdateErr(self, data);
+     end;
      Exit();
     end;
   end;
@@ -1366,13 +1373,20 @@ begin
  FreeMem(data);
 end;//procedure
 
-procedure TTrkGUI.PrevzatoPOMErr(Sender:TObject; Data:Pointer);
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.PrevzatoFunc1328OK(Sender:TObject; Data:Pointer);
+var i:Integer;
 begin
- // loko prevzato, ale POM se nepodarilo nastavit -> error callback
- if (Assigned(TPrevzitCallback(data^).callback_err.callback)) then
-  TPrevzitCallback(data^).callback_err.callback(Self, TPrevzitCallback(data^).callback_err.data);
- FreeMem(data);
-end;//procedure
+ // nacetli jsme stav funkci 13-28 -> stav ulozime do slotu
+ for i := 13 to 28 do
+   HVDb.HVozidla[TPrevzitCallback(data^).addr].Slot.funkce[i] := Self.Trakce.Slot.funkce[i];
+
+ //nastavime funkce tak, jak je chceme my
+ Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFuncOK, data);
+ Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoFuncErr, data);
+ Self.LokSetFunc(nil, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.funkce);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // callback funkce pri odhlasovani hnaciho vozidla a pri programovani POM pri odhlasovani:
@@ -1400,7 +1414,6 @@ begin
   begin
    HVDb.HVozidla[TPrevzitCallback(data^).addr].changed := true;
    RegCollector.ConnectChange(TPrevzitCallback(data^).addr);
-//   HVDb.HVozidla[TPrevzitCallback(data^).addr].UpdateRuc(); resi se pri RUC
   end;
 
  Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasenoOK, data);
@@ -1793,6 +1806,23 @@ begin
        func := 0;
        for i := 0 to 3 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
     end;
+
+    3: begin
+       for i := 0 to 7 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
+       Self.TrkLog(self, 2, 'PUT: LOK FUNC 13-20: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
+
+       func := 0;
+       for i := 0 to 7 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
+    end;
+
+    4: begin
+       for i := 0 to 7 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
+       Self.TrkLog(self, 2, 'PUT: LOK FUNC 21-28: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
+
+       func := 0;
+       for i := 0 to 7 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
+    end;
+
    else
     // neznama sada -> konec
     TFuncCallback(data^).sady.Free();
@@ -1825,7 +1855,7 @@ procedure TTrkGUI.PrevzatoFuncOK(Sender:TObject; Data:Pointer);
 begin
  // HV prevzato a funkce nastaveny -> nastavit POM
  Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoPOMOK, data);
- Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoPOMErr, data);
+ Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, data);
 
  if ((RegCollector.IsLoko(HVDb.HVozidla[TPrevzitCallback(data^).addr])) or (HVDb.HVozidla[TPrevzitCallback(data^).addr].ruc)) then
   begin

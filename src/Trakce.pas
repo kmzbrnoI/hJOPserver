@@ -12,7 +12,7 @@ uses
   SysUtils, Classes, CPort;
 
 const
-  _HV_FUNC_MAX       = 12;                                                      // maximalni funkcni cislo; funkce zacinaji na cisle 0
+  _HV_FUNC_MAX       = 28;                                                      // maximalni funkcni cislo; funkce zacinaji na cisle 0
 
 type
   Ttrk_status = (                                                               // stav centraly
@@ -35,6 +35,7 @@ type
   );
 
   TCommandFuncCallback = procedure (Sender:TObject; Data:Pointer) of object;
+  EInvalidAddress = class(Exception);
 
   TCommandCallback = record
     callback:TCommandFuncCallback;
@@ -71,8 +72,6 @@ type
   end;
 
   TLogEvent = procedure(Sender:TObject; lvl:Integer; msg:string) of object;
-  TGetSpInfoEvent = procedure(Sender: TObject; Slot:TSlot) of object;
-  TGetFInfoEvent = procedure(Sender: TObject; addr:Integer; func:TFunkce) of object;
   TConnectChangeInfo = procedure(Sender: TObject; addr:Integer; code:TConnect_code; data:Pointer) of object;
   TLokComEvent = procedure (Sender:TObject; addr:Integer) of object;
   TGeneralEvent = procedure(Sender: TObject) of object;
@@ -95,8 +94,6 @@ type
      FFtrk_status: Ttrk_status;
 
       procedure WriteLog(lvl:Integer; msg:string);
-      procedure WriteSpInfo(Slot:TSlot);
-      procedure WriteFInfo(addr:Integer; func:TFunkce);
       procedure ConnectChange(addr:Integer; code:TConnect_code; data:Pointer);
       procedure LokComError(addr:Integer);
       procedure LokComOK(addr:Integer);
@@ -110,8 +107,6 @@ type
 
     private
      FOnLog: TLogEvent;
-     FONGetSpInfo : TGetSpInfoEvent;
-     FONGetFInfo : TGetFInfoEvent;
      FOnConnectChange: TConnectChangeInfo;
      FOnLokComError : TLokComEvent;
      FOnLokComOK    : TLokComEvent;
@@ -121,6 +116,8 @@ type
      callback_err:TCommandCallback;
      callback_ok:TCommandCallback;
 
+     Slot:TSlot;
+
      ComPort:record
        CPort:TComPort;
      end;
@@ -128,13 +125,14 @@ type
       constructor Create();
       destructor Destroy(); override;
 
-      function LokSetSpeed(Address:Integer; speed:Integer; dir:Integer):Byte; virtual; abstract;
-      function LokSetFunc(Address:Integer; sada:Byte; stav:Byte):Byte; virtual; abstract;
+      procedure LokSetSpeed(Address:Integer; speed:Integer; dir:Integer); virtual; abstract;
+      procedure LokSetFunc(Address:Integer; sada:Byte; stav:Byte); virtual; abstract;
+      procedure LokGetFunctions(Address:Integer; startFunc:Integer); virtual; abstract;
       procedure EmergencyStop(); virtual; abstract;
-      procedure EmergencyStopLoko(addr:Integer); virtual; abstract;
-      function GetLocomotiveInfo(Address:Integer):Byte; virtual; abstract;
-      function Lok2MyControl(Address:Integer):Byte; virtual; abstract;          // po volani teto funkce musi byt do slotu umistena data (resp. pred zavolanim eventu OnConnectChange)! MUSI!
-      function LokFromMyControl(Address:Integer):Byte; virtual; abstract;
+      procedure LokEmergencyStop(addr:Integer); virtual; abstract;
+      procedure LokGetInfo(Address:Integer); virtual; abstract;
+      procedure Lok2MyControl(Address:Integer); virtual; abstract;          // po volani teto funkce musi byt do slotu umistena data (resp. pred zavolanim eventu OnConnectChange)! MUSI!
+      procedure LokFromMyControl(Address:Integer); virtual; abstract;
       procedure GetCSVersion(callback:TCSVersionEvent); virtual;
       procedure GetLIVersion(callback:TLIVersionEvent); virtual;
 
@@ -151,8 +149,6 @@ type
 
       //events
       property OnLog: TLogEvent read FOnLog write FOnLog;
-      property OnGetSpInfo: TGetSpInfoEvent read FONGetSpInfo write FONGetSpInfo;
-      property OnGetFInfo: TGetFInfoEvent read FONGetFInfo write FONGetFInfo;
       property OnConnectChange: TConnectChangeInfo read FOnConnectChange write FOnConnectChange;
       property OnLokComError: TLokComEvent read FOnLokComError write FOnLokComError;
       property OnLokComOK: TLokComEvent read FOnLokComOK write FOnLokComOK;
@@ -179,16 +175,6 @@ end;//dtor
 procedure TTrakce.WriteLog(lvl:Integer; msg: string);
 begin
  if (Assigned(Self.FOnLog)) then Self.FOnLog(Self, lvl, msg);
-end;//procedure
-
-procedure TTrakce.WriteSpInfo(Slot:TSlot);
-begin
- if (Assigned(Self.FOnGetSpInfo)) then Self.FONGetSpInfo(self, Slot);
-end;//procedure
-
-procedure TTrakce.WriteFInfo(addr:Integer; func:TFunkce);
-begin
- if (Assigned(Self.FOnGetFInfo)) then Self.FONGetFInfo(self, addr, func);
 end;//procedure
 
 procedure TTrakce.ConnectChange(addr:Integer; code:TConnect_code; data:Pointer);

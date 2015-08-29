@@ -2519,11 +2519,11 @@ end;
 procedure TF_Main.LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem;
   State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if (Item.SubItems.Count > 13) then
+ if (Item.SubItems.Count > 15) then
   begin
-   if ((Item.SubItems.Strings[13] = 'COM ERROR!') or (Item.SubItems.Strings[14] = 'error')) then (Sender as TCustomListView).Canvas.Brush.Color := $AAAAFF;
-   if (Item.SubItems.Strings[13] = 'PC') then (Sender as TCustomListView).Canvas.Brush.Color := $AAFFAA;
-   if ((Item.SubItems.Strings[13] = 'ukradeno') or (Item.SubItems.Strings[14] = 'progr')) then (Sender as TCustomListView).Canvas.Brush.Color := $AAFFFF;
+   if ((Item.SubItems.Strings[15] = 'COM ERROR!') or (Item.SubItems.Strings[16] = 'error')) then (Sender as TCustomListView).Canvas.Brush.Color := $AAAAFF;
+   if (Item.SubItems.Strings[15] = 'PC') then (Sender as TCustomListView).Canvas.Brush.Color := $AAFFAA;
+   if ((Item.SubItems.Strings[15] = 'ukradeno') or (Item.SubItems.Strings[16] = 'progr')) then (Sender as TCustomListView).Canvas.Brush.Color := $AAFFFF;
   end;
 end;
 

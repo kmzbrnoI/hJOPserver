@@ -18,24 +18,28 @@ type
   end;
 
   Tcmd = (
-    XB_TRK_OFF,
-    XB_TRK_ON,
-    XB_TRK_STATUS,
-    XB_TRK_CS_VERSION,
-    XB_TRK_LI_VERSION,
-    XB_LOK_SET_SPD,
-    XB_LOK_SET_FUNC_0_4,
-    XB_LOK_SET_FUNC_5_8,
-    XB_LOK_SET_FUNC_9_12,
-    XB_LOK_SET_FUNC_13_20,
-    XB_LOK_SET_FUNC_21_28,
-    XB_LOK_GET_SPD,
-    XB_LOK_GET_FUNC,
-    XB_LOK_GET_FUNC_13_28,
-    XB_LOK_STOP,
-    XB_STOP_ALL,
-    XB_TRK_FINDLOK,
-    XB_POM_WRITEBYTE
+    XB_TRK_OFF = 10,
+    XB_TRK_ON  = 11,
+    XB_TRK_STATUS = 12,
+    XB_TRK_CS_VERSION = 13,
+    XB_TRK_LI_VERSION = 14,
+    XB_LOK_SET_SPD = 15,
+
+    XB_LOK_SET_FUNC_0_4 = 20,
+    XB_LOK_SET_FUNC_5_8 = 21,
+    XB_LOK_SET_FUNC_9_12 = 22,
+    XB_LOK_SET_FUNC_13_20 = 23,
+    XB_LOK_SET_FUNC_21_28 = 24,
+
+    XB_LOK_SET_LOCK_13_20 = 34,
+
+    XB_LOK_GET_INFO = 50,
+    XB_LOK_GET_FUNC = 51,
+    XB_LOK_GET_FUNC_13_28 = 52,
+    XB_LOK_STOP = 53,
+    XB_STOP_ALL = 54,
+    XB_TRK_FINDLOK = 55,
+    XB_POM_WRITEBYTE = 56
   );
 
 
@@ -57,29 +61,6 @@ type
     _TIMEOUT_MSEC = 200;
     _SEND_MAX     = 8;
 
-   public
-
-     constructor Create();
-     destructor Destroy(); override;
-
-     procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;
-     function LokSetSpeed(Address:Integer; speed:Integer; dir:Integer):Byte; override;
-     function LokSetFunc(Address:Integer; sada:Byte; stav:Byte):Byte; override;
-     function GetLocomotiveInfo(Address:Integer):Byte; override;
-     function Lok2MyControl(Address:Integer):Byte; override;
-     function LokFromMyControl(Address:Integer):Byte; override;
-     procedure GetTrackStatus(); override;
-     procedure GetCSVersion(callback:TCSVersionEvent); override;
-     procedure GetLIVersion(callback:TLIVersionEvent); override;
-     procedure POMWriteCV(Address:Integer; cv:Word; data:byte); override;
-
-
-     procedure EmergencyStop(); override;
-     procedure EmergencyStopLoko(addr:Integer); override;
-
-     procedure AfterOpen(); override;
-     procedure BeforeClose(); override;
-
    private
     Fbuf_in: TBuffer;
     Fbuf_in_time: TDateTime;
@@ -92,6 +73,7 @@ type
 
     function LokAddrEncode(addr: Integer): Word;
     function LokAddrDecode(ah, al: byte): Integer;
+    function LokAddrToBuf(addr: Integer):ShortString;
 
     procedure DataReceive(Sender: TObject; Count: Integer);
     procedure ParseMsg(msg: TBuffer);
@@ -102,17 +84,43 @@ type
 
     function CreateBuf(str:ShortString):TBuffer;
 
-    procedure CheckLoading(Slot:TSlot);
+    procedure CheckLoading();
 
     procedure OnTimer_history(Sender:TObject);
     procedure hist_send(index:Integer);
     procedure hist_ok();
     procedure hist_err();
+   public
 
-    //events
-    property OnParseMsg: TParseMsgEvent read FOnParseMsg write FOnParseMsg;
+     constructor Create();
+     destructor Destroy(); override;
+
+     procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;
+
+     procedure LokEmergencyStop(addr:Integer); override;
+     procedure LokSetSpeed(Address:Integer; speed:Integer; dir:Integer); override;
+     procedure LokSetFunc(Address:Integer; sada:Byte; stav:Byte); override;
+     procedure LokGetInfo(Address:Integer); override;
+     procedure Lok2MyControl(Address:Integer); override;
+     procedure LokFromMyControl(Address:Integer); override;
+     procedure LokGetFunctions(Address:Integer; startFunc:Integer); override;
+
+     procedure GetTrackStatus(); override;
+     procedure GetCSVersion(callback:TCSVersionEvent); override;
+     procedure GetLIVersion(callback:TLIVersionEvent); override;
+     procedure POMWriteCV(Address:Integer; cv:Word; data:byte); override;
+
+
+     procedure EmergencyStop(); override;
+
+     procedure AfterOpen(); override;
+     procedure BeforeClose(); override;
+
+     //events
+     property OnParseMsg: TParseMsgEvent read FOnParseMsg write FOnParseMsg;
 
    protected
+
   end;
 
 implementation
@@ -152,6 +160,13 @@ begin
    end else begin
     Result := addr;
   end;
+end;
+
+function TXpressNET.LokAddrToBuf(addr: Integer):ShortString;
+var encoded:Word;
+begin
+  encoded := Self.LokAddrEncode(addr);
+  Result := AnsiChar(Hi(encoded)) + AnsiChar(Lo(encoded));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -236,7 +251,6 @@ procedure TXpressNET.ParseMsg(msg: TBuffer);
 var
   i: integer;
   s: string;
-  Slot:TSlot;
   cs_version: TCSVersion;
   li_version: TLIVersion;
 begin
@@ -377,78 +391,96 @@ begin
         end;
         $50:begin
           // function status response
-          Self.WriteLog(4, 'GET: FUNCTION STATUS F0-F12 - not supported');
+          Self.WriteLog(4, 'GET: FUNCTION STATUS F0-F12');
+
+          Slot.funkce[0] := (((msg.data[3] shr 4) AND $01) = 1);
+          for i := 0 to 3 do Slot.funkce[1+i] := (((msg.data[2] shr i) AND $01) = 1);
+          for i := 0 to 7 do Slot.funkce[5+i] := (((msg.data[3] shr i) AND $01) = 1);
+
+          Self.hist_ok();
+        end;
+        $52:begin
+              // functon status F13-F28 response
+              Self.WriteLog(4, 'GET: FUNCTION STATUS F13-F28');
+
+              for i := 0 to 7 do Slot.funkce[13+i] := (((msg.data[2] shr i) AND $01) = 1);
+              for i := 0 to 7 do Slot.funkce[21+i] := (((msg.data[3] shr i) AND $01) = 1);
+
+              Self.hist_ok();
         end;
 
-        $52:begin
-          // functon status F13-F28 response
-          Self.WriteLog(4, 'GET: FUNCTION STATUS F13-F28 - not supported');
-        end;
         else Self.WriteLog(4,'GET: function not supported in program');
       end;
     end;
 
-    $E4:begin  // get lok speed info
-      if (Self.Get.sp_addr = -1) then
-        Exit;
+    $E4:begin
+      case (msg.data[1]) of
+        $00..$0F: begin
+              // lok response info
 
-      Slot.adresa := Self.Get.sp_addr;
+              if (Self.Get.sp_addr = -1) then
+                Exit;
 
-      //pocet jizdnich kroku
-      case (msg.data[1] and $7) of
-        0: Slot.maxsp :=  14;
-        1: Slot.maxsp :=  27;
-        2: Slot.maxsp :=  28;
-        4: Slot.maxsp := 128;
-      end;//case
+              Slot.adresa := Self.Get.sp_addr;
 
-      Self.WriteLog(4, 'GET: LOKO STATUS, '+IntToStr(Slot.maxsp)+' speed steps');
+              //pocet jizdnich kroku
+              case (msg.data[1] and $7) of
+                0: Slot.maxsp :=  14;
+                1: Slot.maxsp :=  27;
+                2: Slot.maxsp :=  28;
+                4: Slot.maxsp := 128;
+              end;//case
 
-      if ((msg.data[1] shr 3) and $1 = 1) then Slot.stolen := true else Slot.stolen := false;
+              Self.WriteLog(4, 'GET: LOKO STATUS, '+IntToStr(Slot.maxsp)+' speed steps');
 
-      case ((msg.data[2] shr 7) and $1) of
-       0: Slot.smer := 1;
-       1: Slot.smer := 0;
+              if ((msg.data[1] shr 3) and $1 = 1) then Slot.stolen := true else Slot.stolen := false;
+
+              case ((msg.data[2] shr 7) and $1) of
+               0: Slot.smer := 1;
+               1: Slot.smer := 0;
+              end;
+
+              Slot.funkce[0] := ((msg.data[3] shr 4) and $1 = 1);
+              for i := 1 to 4 do Slot.funkce[i] := ((msg.data[3] shr (i-1)) and $1 = 1);
+              for i := 5 to 12 do Slot.funkce[i] := ((msg.data[4] shr (i-5)) and $1 = 1);
+              for i := 13 to _HV_FUNC_MAX do Slot.funkce[i] := false;
+        
+
+              case (Slot.maxsp) of
+               14: begin
+                    Slot.speed := (msg.data[2] AND $0F);
+                    if (Slot.speed = 1) then Slot.speed := 0;
+                    Slot.speed := (Slot.speed * 2);               // normovani rychlosti (28/14)=2
+               end;
+
+               27, 28: begin
+                    Slot.speed := ((msg.data[2] AND $0F) shl 1) OR ((msg.data[2] AND $10) shr 4);
+                    if ((Slot.speed >= 1) and (Slot.speed <= 3)) then Slot.speed := 0;
+                    if (Slot.speed >= 4) then Slot.speed := Slot.speed-3;
+               end;
+
+               128:begin
+                    Slot.speed := (msg.data[2] AND $7F);
+                    if (Slot.speed = 1) then Slot.speed := 0;
+                    Slot.speed := Round(Slot.speed * (28/128));   // normovani rychlosti
+               end;
+
+               else
+                Self.WriteLog(4, 'GET: '+IntToStr(Slot.maxsp)+' speed steps - not supported');
+                Exit;
+              end;// case speed steps
+
+              Slot.maxsp := 28;   // rychlost normujeme
+
+              // prevezmeme loko tim, ze ji nastavime rychlost
+              Self.LokSetSpeed(Slot.adresa, Slot.speed, Slot.smer);
+
+              Self.hist_ok();
+
+              Self.Get.sp_addr := -1;
+              Self.CheckLoading();
+        end;//case 0..4
       end;
-
-      if ((msg.data[3] shr 4) and $1 = 1) then Slot.funkce[0] := true else Slot.funkce[0] := false;
-      for i := 1 to 4 do if ((msg.data[3] shr (i-1)) and $1 = 1) then Slot.funkce[i] := true else Slot.funkce[i] := false;
-      for i := 5 to 12 do if ((msg.data[4] shr (i-5)) and $1 = 1) then Slot.funkce[i] := true else Slot.funkce[i] := false;
-
-      case (Slot.maxsp) of
-       14: begin
-            Slot.speed := (msg.data[2] AND $0F);
-            if (Slot.speed = 1) then Slot.speed := 0;
-            Slot.speed := (Slot.speed * 2);               // normovani rychlosti (28/14)=2
-       end;
-
-       27, 28: begin
-            Slot.speed := ((msg.data[2] AND $0F) shl 1) OR ((msg.data[2] AND $10) shr 4);
-            if ((Slot.speed >= 1) and (Slot.speed <= 3)) then Slot.speed := 0;
-            if (Slot.speed >= 4) then Slot.speed := Slot.speed-3;
-       end;
-
-       128:begin
-            Slot.speed := (msg.data[2] AND $7F);
-            if (Slot.speed = 1) then Slot.speed := 0;
-            Slot.speed := Round(Slot.speed * (28/128));   // normovani rychlosti
-       end;
-
-       else
-        Self.WriteLog(4, 'GET: '+IntToStr(Slot.maxsp)+' speed steps - not supported');
-        Exit;
-      end;// case speed steps
-
-      Slot.maxsp := 28;   // rychlost normujeme
-      Self.WriteSpInfo(Slot);
-
-      // prevezmeme loko tim, ze ji nastavime rychlost
-      Self.LokSetSpeed(Slot.adresa, Slot.speed, Slot.smer);
-
-      Self.Get.sp_addr := -1;
-      Self.CheckLoading(Slot);
-
-      Self.hist_ok();
     end;//acse $E4
 
     $E5:begin  // multitrack
@@ -555,110 +587,34 @@ begin
       Send(buf);
     end;
 
-    XB_LOK_SET_FUNC_0_4: begin // addr, func
+    XB_LOK_SET_FUNC_0_4, XB_LOK_SET_FUNC_5_8, XB_LOK_SET_FUNC_9_12: begin
       buf.Count := 5;
       i := LokAddrEncode(p1);
       buf.data[0] := $E4;
-      buf.data[1] := $20;
+      buf.data[1] := $20 + (Integer(cmd) - Integer(XB_LOK_SET_FUNC_0_4));
       buf.data[2] := Hi(i);
       buf.data[3] := Lo(i);
       buf.data[4] := (p2 AND $1F);
       Send(buf);
     end;
 
-    XB_LOK_SET_FUNC_5_8: begin // addr, func
+    XB_LOK_SET_FUNC_13_20, XB_LOK_SET_FUNC_21_28: begin // addr, func
       buf.Count := 5;
       i := LokAddrEncode(p1);
       buf.data[0] := $E4;
-      buf.data[1] := $21;
-      buf.data[2] := Hi(i);
-      buf.data[3] := Lo(i);
-      buf.data[4] := (p2 AND $0F);
-      Send(buf);
-    end;
-
-    XB_LOK_SET_FUNC_9_12: begin // addr, func
-      buf.Count := 5;
-      i := LokAddrEncode(p1);
-      buf.data[0] := $E4;
-      buf.data[1] := $22;
-      buf.data[2] := Hi(i);
-      buf.data[3] := Lo(i);
-      buf.data[4] := (p2 AND $0F);
-      Send(buf);
-    end;
-
-    XB_LOK_SET_FUNC_13_20: begin // addr, func
-      buf.Count := 5;
-      i := LokAddrEncode(p1);
-      buf.data[0] := $E4;
-      buf.data[1] := $23;
+      buf.data[1] := $23 + 5*(Integer(cmd) - Integer(XB_LOK_SET_FUNC_13_20));
       buf.data[2] := Hi(i);
       buf.data[3] := Lo(i);
       buf.data[4] := p2;
       Send(buf);
     end;
 
-    XB_LOK_SET_FUNC_21_28: begin // addr, func
-      buf.Count := 5;
-      i := LokAddrEncode(p1);
-      buf.data[0] := $E4;
-      buf.data[1] := $28;
-      buf.data[2] := Hi(i);
-      buf.data[3] := Lo(i);
-      buf.data[4] := p2;
-      Send(buf);
-    end;
-
-    XB_LOK_GET_SPD: begin
-      buf.Count := 4;
-      buf.data[0] := $E3;
-      buf.data[1] := $00;
-      i := LokAddrEncode(p1);
-      buf.data[2] := Hi(i);
-      buf.data[3] := Lo(i);
-      Send(buf);
-    end;
-
-    XB_LOK_GET_FUNC: begin
-      buf.Count := 4;
-      buf.data[0] := $E3;
-      buf.data[1] := $07;
-      i := LokAddrEncode(p1);
-      buf.data[2] := Hi(i);
-      buf.data[3] := Lo(i);
-      Send(buf);
-    end;
-
-    XB_LOK_GET_FUNC_13_28: begin
-      buf.Count := 4;
-      buf.data[0] := $E3;
-      buf.data[1] := $08;
-      i := LokAddrEncode(p1);
-      buf.data[2] := Hi(i);
-      buf.data[3] := Lo(i);
-      Send(buf);
-    end;
-
-    XB_TRK_FINDLOK: begin
-      buf.Count := 4;
-      buf.data[0] := $E3;
-      buf.data[1] := $05;
-      buf.data[2] := p1;
-      buf.data[3] := p2;
-      Send(buf);
-    end;
-
-    XB_STOP_ALL:Send(CreateBuf(#$80+#$80));
-
-    XB_LOK_STOP:begin
-      buf.Count := 3;
-      i := LokAddrEncode(p1);
-      buf.data[0] := $92;
-      buf.data[1] := Hi(i);
-      buf.data[2] := Lo(i);
-      Send(buf);
-    end;//XB_LOK_STOP
+    XB_LOK_GET_INFO       : Send(CreateBuf(#$E3 + #$00 + LokAddrToBuf(p1)));
+    XB_LOK_GET_FUNC       : Send(CreateBuf(#$E3 + #$07 + LokAddrToBuf(p1)));
+    XB_LOK_GET_FUNC_13_28 : Send(CreateBuf(#$E3 + #$09 + LokAddrToBuf(p1)));
+    XB_TRK_FINDLOK        : Send(CreateBuf(#$E3 + AnsiChar(#$05) + AnsiChar(byte(p1)) + AnsiChar(byte(p2))));
+    XB_STOP_ALL           : Send(CreateBuf(#$80 + #$80));
+    XB_LOK_STOP           : Send(CreateBuf(#$92 + LokAddrToBuf(p1)));
 
     XB_POM_WRITEBYTE:begin
       i := LokAddrEncode(p1);
@@ -673,28 +629,28 @@ begin
       Send(buf);
     end;
 
+    XB_LOK_SET_LOCK_13_20 : Send(CreateBuf(#$E4 + #$27 + LokAddrToBuf(p1) + AnsiChar(byte(p2))));
+
   end;//case
 end;//procedure
 
 
 ////////////////////////////////////////////////////////////////////////////////
-function TXpressNET.LokSetSpeed(Address: Integer; speed: Integer; dir: Integer):Byte;
+procedure TXpressNET.LokSetSpeed(Address: Integer; speed: Integer; dir: Integer);
 begin
- if (Address > 9999) then Exit(1);
- if (Address < 0) then Exit(2);
+ if ((Address < 0) or (Address > 9999)) then
+    raise EInvalidAddress.Create('Invalid address');
 
  if (dir = 0) then dir := -1;
  SendCommand(XB_LOK_SET_SPD , Address, speed, dir, 0);
-
- Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-function TXpressNET.LokSetFunc(Address:Integer; sada:Byte; stav:Byte):Byte;
+procedure TXpressNET.LokSetFunc(Address:Integer; sada:Byte; stav:Byte);
 var func:Byte;
 begin
- if (Address > 9999) then Exit(1);
- if (Address < 0) then Exit(2);
+ if ((Address < 0) or (Address > 9999)) then
+    raise EInvalidAddress.Create('Invalid address');
 
  case (sada) of
   0:begin
@@ -719,8 +675,6 @@ begin
      SendCommand(XB_LOK_SET_FUNC_21_28, Address, func);
     end;//case 2
  end;//case
-
- Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -748,40 +702,42 @@ begin
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
-procedure TXpressNET.EmergencyStopLoko(addr:Integer);
+procedure TXpressNET.LokEmergencyStop(addr:Integer);
 begin
  Self.SendCommand(XB_LOK_STOP, addr);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
-function TXpressNET.GetLocomotiveInfo(Address:Integer):Byte;
+procedure TXpressNET.LokGetInfo(Address:Integer);
 begin
- if (Address > 9999) then Exit(1);
- if (Address < 0) then Exit(2);
+ if ((Address < 0) or (Address > 9999)) then
+    raise EInvalidAddress.Create('Invalid address');
 
  Self.Get.sp_addr := Address;
- Self.SendCommand(XB_LOK_GET_SPD, Address);
-
- Result := 0;
+ Self.SendCommand(XB_LOK_GET_INFO, Address);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 //timto prevezmu vozidlo - tady se vpodstate nic nedeje, jen ven reknu, ze si
 //HV muzou vzit
-function TXpressNET.Lok2MyControl(Address:Integer):Byte;
+procedure TXpressNET.Lok2MyControl(Address:Integer);
 begin
+ if ((Address < 0) or (Address > 9999)) then
+    raise EInvalidAddress.Create('Invalid address');
+
  //zeptame se na informace o lokomotive
  //tato fce se postara, ze po prichodu dat dojde k zavolani eventu ConnectChange
 
  Self.loading_addr := Address;
- Self.GetLocomotiveInfo(Address);
-
- Result := 0;
+ Self.LokGetInfo(Address);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
-function TXpressNET.LokFromMyControl(Address:Integer):Byte;
+procedure TXpressNET.LokFromMyControl(Address:Integer);
 begin
+ if ((Address < 0) or (Address > 9999)) then
+    raise EInvalidAddress.Create('Invalid address');
+
  //zavolame rovnou callback
  Self.ConnectChange(Address, TConnect_code.TC_Disconnected, Self.callback_ok.data);
 
@@ -790,8 +746,6 @@ begin
 
  Self.callback_err.callback := nil;
  Self.callback_ok.callback  := nil;
-
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -800,7 +754,7 @@ end;//function
 // pokud o ni zadam, volam event
 // u XpressNetu je jasne, ze kdyz mi prijdou data, tak je masinka moje
 // callback je zde vlastne jen pro osetreni neodpovezeni centraly
-procedure TXpressNET.CheckLoading(Slot:TSlot);
+procedure TXpressNET.CheckLoading();
 begin
  if (Self.loading_addr = Slot.adresa) then
   begin
@@ -845,7 +799,7 @@ begin
     // tyto prikazy informuji system o primem vypadku lokomotivy
     XB_LOK_SET_SPD, XB_LOK_SET_FUNC_0_4, XB_LOK_SET_FUNC_5_8, XB_LOK_SET_FUNC_9_12,
     XB_LOK_SET_FUNC_13_20, XB_LOK_SET_FUNC_21_28,
-    XB_LOK_GET_SPD, XB_LOK_GET_FUNC, XB_POM_WRITEBYTE : begin
+    XB_LOK_GET_INFO, XB_LOK_GET_FUNC, XB_POM_WRITEBYTE : begin
       Self.LokComError(data.params[0]);
     end;
    end;//case
@@ -880,7 +834,7 @@ begin
     // tyto prikazy informuji system o primem vypadku lokomotivy
     XB_LOK_SET_SPD, XB_LOK_SET_FUNC_0_4, XB_LOK_SET_FUNC_5_8, XB_LOK_SET_FUNC_9_12,
     XB_LOK_SET_FUNC_13_20, XB_LOK_SET_FUNC_21_28,
-    XB_LOK_GET_SPD, XB_LOK_GET_FUNC, XB_POM_WRITEBYTE : begin
+    XB_LOK_GET_INFO, XB_LOK_GET_FUNC, XB_POM_WRITEBYTE : begin
 Self.LokComOK(data.params[0]);
     end;
    end;//case
@@ -951,6 +905,23 @@ procedure TXpressNET.BeforeClose();
 begin
  Self.send_history.Clear();
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TXpressNET.LokGetFunctions(Address:Integer; startFunc:Integer);
+begin
+ case (startFunc) of
+  0:  begin
+       Self.WriteLog(4, 'PUT: GET-FUNC 0..12');
+       Self.SendCommand(XB_LOK_GET_FUNC, Address);
+      end;
+
+  13: begin
+       Self.WriteLog(4, 'PUT: GET-FUNC 13..28');
+       Self.SendCommand(XB_LOK_GET_FUNC_13_28, Address);
+      end;
+ end;//case
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
