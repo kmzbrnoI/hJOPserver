@@ -32,7 +32,7 @@ unit THnaciVozidlo;
 interface
 
 uses Trakce, TBlok, Classes, StrUtils, SysUtils, TOblRizeni, RPConst,
-      Generics.Collections, IdContext, IniFiles;
+      Generics.Collections, IdContext, IniFiles, IBUtils;
 
 const
   _HV_FUNC_MAX       = 28;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
@@ -501,6 +501,7 @@ var str, str2, str3:TStrings;
     i:Integer;
     pomCv:THVPomCv;
     tmp:string;
+    funcCnt:Integer;
 begin
  str := TStringList.Create();
  str2 := TStringList.Create();
@@ -516,13 +517,9 @@ begin
   Self.Data.Trida       := THVClass(StrToInt(str[5]));
   Self.Stav.StanovisteA := THVStanoviste(StrToInt(str[7]));
 
-  for i := 0 to Length(str[8])-1 do
-   begin
-    case (str[8][i+1]) of
-     '0' : Self.Stav.funkce[i] := false;
-     '1' : Self.Stav.funkce[i] := true;
-    end;
-   end;
+  funcCnt := Min(Length(str[8]), _HV_FUNC_MAX);
+  for i := 0 to funcCnt-1 do
+    Self.Stav.funkce[i] := (str[8][i+1] = '1');
 
   if (str.Count > 12) then
    begin
