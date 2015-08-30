@@ -80,8 +80,9 @@ type
     //true = existuje, false = neexistuje
     function IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
 
-    procedure SetZesZkrat(zesil:Integer;state:TBoosterSignal);       //pokud je na zesilovaci zmenen zkrat
-    procedure SetZesNapajeni(zesil:Integer;state:TBoosterSignal);    //pokud je na zesilovaci zmeneno napajeni
+    procedure SetZesZkrat(zesil:Integer;state:TBoosterSignal);                  // pokud je na zesilovaci zmenen zkrat
+    procedure SetZesNapajeni(zesil:Integer;state:TBoosterSignal);               // pokud je na zesilovaci zmeneno napajeni
+    procedure SetZesDCC(zesil:Integer;state:TBoosterSignal);                    // pokud je zmenen stav privodniho DCC pred zesilovacem
     procedure SetDCC(state:boolean);                          //vola se pri zmene stavu DCC (zapnuto X vypnuto)
 
     procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
@@ -613,13 +614,26 @@ begin
   end;//for i
 end;//procedure
 
-//vola se pri zmene stavu DCC
+//pokud je na zesilovaci zmeneno napajeni
+procedure TBlky.SetZesDCC(zesil:Integer; state:TBoosterSignal);
+var i:Integer;
+begin
+ for i := 0 to Self.Data.Count-1 do
+  begin
+   if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
+
+   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesil) then
+     (Self.Data[i] as TBlkUsek).ZesDCC := state;
+  end;//for i
+end;//procedure
+
+//vola se pri zmene stavu DCC z centraly
 procedure TBlky.SetDCC(state:boolean);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
-   if (not state) then
-     Self.Data[i].Freeze();
+   if ((Self.data[i].GetGlobalSettings.typ = _BLK_USEK) or (Self.data[i].GetGlobalSettings.typ = _BLK_TU)) then
+     TBlkUsek(Self.data[i]).CentralaDCC := state;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

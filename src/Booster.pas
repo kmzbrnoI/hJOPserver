@@ -14,11 +14,12 @@ type
  TBoosterChangeEvent = procedure (Sender:TObject; state:TBoosterSignal) of object;
 
  TBoosterSettings = record
-   bclass:TBoosterClass;                              //booster class
-   Name:string;                                       //booster name
-   MTB:record                                         //MTB inputs
-    Zkrat:TMTBAddr;                                     //overload input
-    Napajeni:TMTBAddr;                                  //power input
+   bclass:TBoosterClass;                                                        // booster class (spax, bz100)
+   Name:string;                                                                 // booster name
+   MTB:record                                                                   // MTB inputs
+    Zkrat:TMTBAddr;                                                             // overload input
+    Napajeni:TMTBAddr;                                                          // power input
+    DCC:TMTBAddr;                                                               // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
    end;
  end;//TBoosterSettings
 
@@ -26,15 +27,19 @@ type
   private
    Settings:TBoosterSettings;
 
-   ZkratOld,NapajeniOld:TBoosterSignal;                      //old states (used to calling events)
+   ZkratOld, NapajeniOld, DCCOld:TBoosterSignal;                                // old states (used to call events)
 
    //events
    FOnNapajeniChange : TBoosterChangeEvent;
    FOnZkratChange    : TBoosterChangeEvent;
+   FOnDCCChange      : TBoosterChangeEvent;
 
     function GetZkrat():TBoosterSignal;
     function GetNapajeni():TBoosterSignal;
+    function GetDCC():TBoosterSignal;
+
     function GetDefined():boolean;
+    function GetDCCDetection():boolean;
 
   public
 
@@ -49,12 +54,16 @@ type
 
     property zkrat:TBoosterSignal read GetZkrat;
     property napajeni:TBoosterSignal read GetNapajeni;
+    property DCC:TBoosterSignal read GetDCC;
+
     property defined:boolean read GetDefined;
+    property isDCCdetection:boolean read GetDCCDetection;
 
     property bSettings:TBoosterSettings read settings write settings;
 
     property OnNapajeniChange:TBoosterChangeEvent read FOnNapajeniChange write FOnNapajeniChange;
     property OnZkratChange:TBoosterChangeEvent read FOnZkratChange write FOnZkratChange;
+    property OnDCCChange:TBoosterChangeEvent read FOnDCCChange write FONDCCChange;
 
     class function GetBClassString(b_type:TBoosterClass):string;          //get booster name as a string
  end;//TBooster
@@ -72,6 +81,8 @@ uses GetSystems, fMain;
     zkr_port
     nap_mtb
     nap_port
+    dcc_mtb
+    dcc_port
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +94,7 @@ begin
 
  Self.ZkratOld    := TBoosterSignal.undef;
  Self.NapajeniOld := TBoosterSignal.undef;
+ Self.DCCOld      := TBoosterSignal.undef;
 end;//ctor
 
 //ctor
@@ -104,11 +116,19 @@ end;//dtor
 procedure TBooster.Update();
 var state:TBoosterSignal;
 begin
+ //update DCC
+ state := Self.GetDCC();
+ if (state <> Self.DCCOld) then
+  begin
+   if (Assigned(Self.OnDCCChange)) then Self.OnDCCChange(Self, state);
+   Self.DCCOld := state;
+  end;
+
  //update napajeni
  state := Self.GetNapajeni();
  if (state <> Self.NapajeniOld) then
   begin
-   if (Assigned(Self.FOnNapajeniChange)) then Self.FOnNapajeniChange(Self, state);
+   if (Assigned(Self.OnNapajeniChange)) then Self.OnNapajeniChange(Self, state);
    Self.NapajeniOld := state;
   end;
 
@@ -116,7 +136,7 @@ begin
  state := Self.GetZkrat();
  if (state <> Self.ZkratOld) then
   begin
-   if (Assigned(Self.FOnZkratChange)) then Self.FOnZkratChange(Self, state);
+   if (Assigned(Self.OnZkratChange)) then Self.OnZkratChange(Self, state);
    Self.ZkratOld := state;
   end;
 end;//procedure
@@ -135,6 +155,9 @@ begin
  Self.Settings.MTB.Napajeni.board  := ini.ReadInteger(section,'nap_mtb',0);
  Self.Settings.MTB.Napajeni.port   := ini.ReadInteger(section,'nap_port',0);
 
+ Self.Settings.MTB.DCC.board  := ini.ReadInteger(section,'dcc_mtb',0);
+ Self.Settings.MTB.DCC.port   := ini.ReadInteger(section,'dcc_port',0);
+
  MTB.SetNeeded(Self.Settings.MTB.Napajeni.board);
  MTB.SetNeeded(Self.Settings.MTB.Zkrat.board);
 end;//procedure
@@ -142,14 +165,17 @@ end;//procedure
 //save data to the file
 procedure TBooster.SaveDataToFile(var ini:TMemIniFile;const section:string);
 begin
- ini.WriteString(section,'name',Self.Settings.Name);
- ini.WriteInteger(section,'class',Integer(Self.Settings.bclass));
+ ini.WriteString(section, 'name', Self.Settings.Name);
+ ini.WriteInteger(section, 'class', Integer(Self.Settings.bclass));
 
- ini.WriteInteger(section,'zkr_mtb',Self.Settings.MTB.Zkrat.board);
- ini.WriteInteger(section,'zkr_port',Self.Settings.MTB.Zkrat.port);
+ ini.WriteInteger(section, 'zkr_mtb', Self.Settings.MTB.Zkrat.board);
+ ini.WriteInteger(section, 'zkr_port', Self.Settings.MTB.Zkrat.port);
 
- ini.WriteInteger(section,'nap_mtb',Self.Settings.MTB.Napajeni.board);
- ini.WriteInteger(section,'nap_port',Self.Settings.MTB.Napajeni.port);
+ ini.WriteInteger(section, 'nap_mtb', Self.Settings.MTB.Napajeni.board);
+ ini.WriteInteger(section, 'nap_port', Self.Settings.MTB.Napajeni.port);
+
+ ini.WriteInteger(section, 'dcc_mtb', Self.Settings.MTB.DCC.board);
+ ini.WriteInteger(section, 'dcc_port', Self.Settings.MTB.DCC.port);
 
  ini.UpdateFile();
 end;//procedure
@@ -184,6 +210,21 @@ begin
    Result := TBoosterSignal.ok;
 end;//function
 
+function TBooster.GetDCC():TBoosterSignal;
+var val:Integer;
+begin
+ // DCC nemusi byt detekovano (to se pozna tak, ze MTB board = 0)
+ if (Self.Settings.MTB.DCC.board = 0) then Exit(TBoosterSignal.undef);
+
+ val := MTB.GetInput(Self.Settings.MTB.DCC.board, Self.Settings.MTB.DCC.port);
+ if (val < 0) then
+   Result := TBoosterSignal.undef
+ else if (val > 0) then
+   Result := TBoosterSignal.error
+ else
+   Result := TBoosterSignal.ok;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBooster.GetDefined():boolean;
@@ -193,10 +234,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TBooster.GetDCCDetection():boolean;
+begin
+ Result := (Self.Settings.MTB.DCC.board > 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 class function TBooster.GetBClassString(b_type:TBoosterClass):string;
 begin
  case (b_type) of
-  TBoosterClass.SPAX : Result := 'SPAX KMŽ Brno I';
+  TBoosterClass.SPAX : Result := 'SPAX';
  else
   Result := '';
  end;

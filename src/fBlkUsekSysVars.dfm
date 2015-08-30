@@ -167,6 +167,19 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Height = 13
     Caption = 'Zesilova'#269' nap'#225'jen'#237':'
   end
+  object Label4: TLabel
+    Left = 304
+    Top = 160
+    Width = 25
+    Height = 13
+    Caption = 'DCC:'
+  end
+  object S_DCC: TShape
+    Left = 342
+    Top = 160
+    Width = 65
+    Height = 16
+  end
   object CB_KonecVC: TComboBox
     Left = 176
     Top = 56
@@ -355,7 +368,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     TabOrder = 7
     Items.Strings = (
       'Undef'
-      'Ano'
-      'Ne')
+      'Ne'
+      'Ano')
   end
 end

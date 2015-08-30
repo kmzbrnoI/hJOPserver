@@ -31,6 +31,7 @@ type
       //events from TBooster; those events direct call blk methods
       procedure OnZkratChange(Sender:TObject; state:TBoosterSignal);
       procedure OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
+      procedure OnDCCChange(Sender:TObject; state:TBoosterSignal);
 
       function FindInDb(booster:TBooster):Integer;          //returns index
 
@@ -106,6 +107,7 @@ begin
 
    Self.data.data[i].OnNapajeniChange := Self.OnNapajeniChange;
    Self.data.data[i].OnZkratChange    := Self.OnZkratChange;
+   Self.data.data[i].OnDCCChange      := Self.OnDCCChange;
 
    Self.data.cnt := Self.data.cnt + 1;
   end;//for i
@@ -153,6 +155,7 @@ begin
 
  Self.data.data[Self.data.cnt].OnNapajeniChange := Self.OnNapajeniChange;
  Self.data.data[Self.data.cnt].OnZkratChange    := Self.OnZkratChange;
+ Self.data.data[Self.data.cnt].OnDCCChange      := Self.OnDCCChange;
 
  Self.data.cnt := Self.data.cnt + 1;
 
@@ -211,6 +214,14 @@ begin
  index := Self.FindInDb(Sender as TBooster);
  if (index < 0) then Exit;
  Blky.SetZesNapajeni(index, state);
+end;//procedure
+
+procedure TBoosterDb.OnDCCChange(Sender:TObject; state:TBoosterSignal);
+var index:Integer;
+begin
+ index := Self.FindInDb(Sender as TBooster);
+ if (index < 0) then Exit;
+ Blky.SetZesDCC(index, state);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

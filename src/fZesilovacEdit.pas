@@ -23,9 +23,16 @@ type
     B_Storno: TButton;
     SE_Zkrat_MTB: TSpinEdit;
     SE_Napajeni_MTB: TSpinEdit;
+    GB_DCC: TGroupBox;
+    Label1: TLabel;
+    Label2: TLabel;
+    SE_DCC_port: TSpinEdit;
+    SE_DCC_MTB: TSpinEdit;
+    CHB_DCC: TCheckBox;
     procedure B_SaveClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure CHB_DCCClick(Sender: TObject);
   private
     open_booster:TBooster;
 
@@ -89,6 +96,15 @@ begin
  settings.MTB.Zkrat.port      := SE_Zkrat_Port.Value;
  settings.MTB.Napajeni.port   := SE_Napajeni_Port.Value;
 
+ if (Self.CHB_DCC.Checked) then
+  begin
+   Settings.MTB.DCC.board := Self.SE_DCC_MTB.Value;
+   Settings.MTB.DCC.port  := Self.SE_DCC_port.Value;
+  end else begin
+   Settings.MTB.DCC.board := 0;
+   Settings.MTB.DCC.port  := 0;
+  end;
+
  Self.open_booster.bSettings := settings;
 
  ZesTableData.LoadToTable();
@@ -99,7 +115,13 @@ end;//procedure
 procedure TF_ZesilovacEdit.B_StornoClick(Sender: TObject);
  begin
   F_ZesilovacEdit.Close;
- end;//procedure
+ end;
+
+procedure TF_ZesilovacEdit.CHB_DCCClick(Sender: TObject);
+begin
+ Self.SE_DCC_MTB.Enabled  := Self.CHB_DCC.Checked;
+ Self.SE_DCC_port.Enabled := Self.CHB_DCC.Checked;
+end;
 
 procedure TF_ZesilovacEdit.NewZes;
  begin
@@ -136,6 +158,12 @@ var bSettings:TBoosterSettings;
 
   Self.SE_Napajeni_MTB.Value := bSettings.MTB.Napajeni.board;
   Self.SE_Zkrat_MTB.Value    := bSettings.MTB.Zkrat.board;
+
+  Self.SE_DCC_MTB.Value      := bSettings.MTB.DCC.board;
+  Self.SE_DCC_port.Value     := bSettings.MTB.DCC.port;
+
+  Self.CHB_DCC.Checked := open_booster.isDCCdetection;
+  Self.CHB_DCCClick(Self.CHB_DCC);
 
   F_ZesilovacEdit.Caption := 'Zesilovaè : '+bSettings.Name;
  end;//procedure

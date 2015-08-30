@@ -30,6 +30,8 @@ type
     Label7: TLabel;
     CB_Zes_Zkrat: TComboBox;
     CB_Zes_Napajeni: TComboBox;
+    Label4: TLabel;
+    S_DCC: TShape;
     procedure B_ObnovitClick(Sender: TObject);
     procedure B_SaveDataClick(Sender: TObject);
   private
@@ -76,6 +78,11 @@ procedure TF_BlkUsek_tech.LoadPrmnFromProgram;
 
   M_Stitek.Text               := Blk.Stitek;
   M_Vyluka.Text               := Blk.Vyluka;
+
+  case (Self.Blk.DCC) of
+    false: Self.S_DCC.Brush.Color := clRed;
+    true : Self.S_DCC.Brush.Color := clLime;
+  end;
  end;//procedure
 
 procedure TF_BlkUsek_tech.SavePrmnToProgram;
