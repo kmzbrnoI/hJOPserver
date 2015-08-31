@@ -70,6 +70,7 @@ type
 
     send_history: TList<TXpressNETHistoryPacket>;
     timer_history:TTimer;
+    buf:TBuffer;
 
     function LokAddrEncode(addr: Integer): Word;
     function LokAddrDecode(ah, al: byte): Integer;
@@ -539,7 +540,6 @@ end;//procedure
 procedure TXpressNET.SendCommand(cmd: Tcmd; p1:Integer = 0; p2:Integer = 0; p3: Integer = 0; sent_times:Integer = 0);
 var
   i: Integer;
-  buf:TBuffer;
   log:TXpressNETHistoryPacket;
 begin
   // zalogovat data pro timeout

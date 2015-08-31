@@ -54,6 +54,7 @@ type
    funkce:TFunkce;                                                              // stav funkci
    stolen:boolean;                                                              // jestli je loko ukradeno jinym ovladacem
    prevzato:boolean;                                                            // jestli loko ridim ja
+   prevzato_full:boolean;                                                       // jestli loko ridim ja a jestli uz byly nastaveny vsechny veci, ktere se pri prebirani maji nastavit
    com_err:boolean;                                                             // jestli nastala chyba v komunikaci
    pom:TPomStatus;                                                              // stav POMu (jaky je posedni naprogramovany POM)
   end;

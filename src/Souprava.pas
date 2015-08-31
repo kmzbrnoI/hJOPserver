@@ -315,18 +315,19 @@ begin
      end;
 
      timeout := 0;
-     while (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.Prevzato) do
+     while (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.prevzato_full) do
       begin
        Sleep(1);
        timeout := timeout + 1;
        Application.ProcessMessages;
 
-       if (timeout > 1000) then  //timeout 1 sec
+       if (timeout > 1000) then  //timeout 1 sec na kazde hnaci vozidlo
         begin
          raise Exception.Create('Loko '+ IntToStr(Self.data.HV.HVs[i]) +' nepøevzato');
          Exit();
         end;
       end;//while
+
     end else begin
      // nastavit funkce
      for j := 0 to _HV_FUNC_MAX do

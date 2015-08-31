@@ -971,6 +971,7 @@ begin
   end;
 
  Self.TrkLog(self, 2, 'PUT: LOK-2-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
+ HV.Slot.prevzato_full := false;
 
  GetMem(cb, sizeof(TPrevzitCallback));
  TPrevzitCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
@@ -1111,6 +1112,7 @@ begin
 
      // 1) aktualizace slotu
      HVDb.HVozidla[addr].Slot := Self.Trakce.Slot;
+     HVDb.HVozidla[addr].Slot.prevzato_full := false;
      HVDb.HVozidla[addr].Slot.Prevzato := true;
      HVDb.HVozidla[addr].Slot.stolen   := false;
      Self.TrkLog(self,2,'GET LOCO DATA: loko '+HVDb.HVozidla[addr].data.Nazev+' ('+IntToSTr(addr)+')');
@@ -1351,6 +1353,7 @@ begin
  F_Main.LogStatus('WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodaøilo odhlásit');
  F_Main.G_Loko_Prevzato.ForeColor := clRed;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato := false;
+ HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false;
  Self.OdhlasovaniUpdateOK(Self, data);
 end;//procedure
 
@@ -1367,6 +1370,9 @@ end;//procedure
 
 procedure TTrkGUI.PrevzatoPOMOK(Sender:TObject; Data:Pointer);
 begin
+ // HV konecne kompletne prevzato
+ HVDb.HVozidla[TPrevzitCallback(data^).addr].Slot.prevzato_full := true;
+
  // volame OK callback
  if (Assigned(TPrevzitCallback(data^).callback_ok.callback)) then
    TPrevzitCallback(data^).callback_ok.callback(Self, TPrevzitCallback(data^).callback_ok.data);
@@ -1724,7 +1730,8 @@ end;//procedure
 
 procedure TTrkGUI.NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
 begin
- HVDb.HVozidla[Integer(data^)].Slot.prevzato := false;
+ HVDb.HVozidla[Integer(data^)].Slot.prevzato      := false;
+ HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
