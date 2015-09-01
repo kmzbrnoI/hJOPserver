@@ -453,20 +453,23 @@ begin
 
  if (not Self.tcpServer.Active) then Exit(1);
 
- F_Main.LogStatus('Panel server: zastavování...');
+ F_Main.LogStatus('Panel server: vypínám...');
  F_Main.S_Server.Brush.Color := clGray;
 
  Self.tcpServer.Active := false;
 
  ORTCPServer.GUIRefreshTable();
 
- F_Main.LogStatus('Panel server: zastaven');
  F_Main.S_Server.Brush.Color := clRed;
 
  UDPdisc.SendDiscover();
 
+ F_Main.LogStatus('Vypínám všechny zvuky...');
  if (SystemData.Status = stopping) then
-   TrkSystem.TurnOffFunctions(F_Main.A_All_Loko_OdhlasitExecute);
+  begin
+   TrkSystem.LoksSetFunc('zvuk', false);
+   F_Main.A_All_Loko_OdhlasitExecute(self);
+  end;
 
  Result := 0;
 end;//function

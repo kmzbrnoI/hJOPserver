@@ -447,6 +447,8 @@ begin
 
  for i := 0 to Self.data.HV.cnt-1 do
   begin
+   if (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.prevzato) then continue;
+   
    if (HVDb.HVozidla[Self.data.HV.HVs[i]].ruc) then
     begin      // pokud je loko prevzato na rucni rizeni, ignoruji ho
       writelog('LOKO ' + IntToStr(Self.data.HV.HVs[i]) + ' v ruèním regulátoru, nenastavuji rychlost', WR_MESSAGE, 0);

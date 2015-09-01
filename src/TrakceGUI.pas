@@ -488,7 +488,7 @@ var LV_Log:TListItem;
   if (lvl > Self.floglevel) then Exit;
 
   DateTimeToString(xDate, 'yy_mm_dd', Now);
-  DateTimeToString(xTime, 'hh:mm:ss', Now);
+  DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
 
   if (Self.LogObj.Items.Count > 500) then
     Self.LogObj.Clear();

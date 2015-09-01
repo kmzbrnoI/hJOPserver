@@ -1244,11 +1244,12 @@ begin
  Self.LogStatus('Vypínám systémy...');
  SystemData.Status := stopping;
 
+ Self.LogStatus('Zastavuji všechny soupravy...');
  Soupravy.StopAllSpr();
- Self.LogStatus('Všechny soupravy zastaveny');
 
  Application.ProcessMessages();
 
+ Self.LogStatus('Odpojuji panely...');
  ORs.DisconnectPanels();
 
  Self.A_PanelServer_StopExecute(nil);

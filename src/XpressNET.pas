@@ -9,7 +9,7 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, CPort, Trakce, Math, Generics.Collections,
-  ExtCtrls;
+  ExtCtrls, Forms;
 
 type
   TBuffer = record
@@ -59,7 +59,7 @@ type
     _MAX_HISTORY  = 1024;
     _HIST_CHECK_INTERVAL = 100;
     _TIMEOUT_MSEC = 200;
-    _SEND_MAX     = 8;
+    _SEND_MAX     = 3;
 
    private
     Fbuf_in: TBuffer;
@@ -501,6 +501,7 @@ var
   x: byte;
   i: integer;
   log:string;
+  asp: PAsync;
 begin
   if ((not Assigned(Self.ComPort.CPort)) or (not Self.ComPort.CPort.Connected)) then
    begin
@@ -525,7 +526,13 @@ begin
   Self.WriteLog(4, 'PUT: '+log);
 
   try
-    Self.ComPort.CPort.Write(buf.data, buf.Count);
+    InitAsync(asp);
+    Self.ComPort.CPort.WriteAsync(buf.data, buf.Count, asp);
+    while (not Self.ComPort.CPort.IsAsyncCompleted(asp)) do
+     begin
+      Application.ProcessMessages();
+      Sleep(1);
+     end;
   except
    on E : Exception do
     begin
@@ -534,6 +541,7 @@ begin
     end;
   end;
 
+ DoneAsync(asp);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -542,7 +550,7 @@ var
   i: Integer;
   log:TXpressNETHistoryPacket;
 begin
-  // zalogovat data pro timeout
+  // zalogovat data pro timeout (zbytek logovani se provadi dole - az po odeslani dat, muze se totiz cekat na CTS)
   if (Self.send_history.Count < _MAX_HISTORY) then
    begin
     log.cmd := cmd;
@@ -550,10 +558,8 @@ begin
     log.params[1] := p2;
     log.params[2] := p3;
     log.sent      := sent_times;
-    log.time      := Now;
     log.callback_err := Self.callback_err;
     log.callback_ok  := Self.callback_ok;
-    Self.send_history.Add(log);
    end;//if
 
   Self.callback_err.callback := nil;
@@ -632,6 +638,12 @@ begin
     XB_LOK_SET_LOCK_13_20 : Send(CreateBuf(#$E4 + #$27 + LokAddrToBuf(p1) + AnsiChar(byte(p2))));
 
   end;//case
+
+  if (Self.send_history.Count < _MAX_HISTORY) then
+   begin
+    log.time := Now;
+    Self.send_history.Add(log);
+   end;//if
 end;//procedure
 
 
@@ -788,7 +800,7 @@ end;//procedure
 procedure TXpressNET.hist_send(index:Integer);
 var data:TXpressNETHistoryPacket;
 begin
- if (Self.send_history[index].sent > _SEND_MAX) then
+ if (Self.send_history[index].sent >= (_SEND_MAX-1)) then
   begin
    // prekrocen timeout
    data := Self.send_history[index];
