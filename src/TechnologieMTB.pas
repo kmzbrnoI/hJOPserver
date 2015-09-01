@@ -168,7 +168,7 @@ implementation
 uses fMain, fSettings, RPConst, fLoginPozadi, fSystemInfo, fAdminForm,
      GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
      TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
-     TOblsRizeni, Logging, TCPServerOR, SprDb;
+     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB;
 
 constructor TMTB.Create();
 var i:Integer;
@@ -588,6 +588,7 @@ begin
  for i := Self.Desky[module].inputChangedEv.Count-1 downto 0 do
    if (Assigned(Self.Desky[module].inputChangedEv[i])) then Self.Desky[module].inputChangedEv[i](Self, module)
      else Self.Desky[module].inputChangedEv.Delete(i);
+ MTBTableData.UpdateLine(module);
 end;
 
 procedure TMTB.DllOnOutputChanged(Sender:TObject; module:byte);
@@ -596,6 +597,7 @@ begin
  for i := Self.Desky[module].outputChangedEv.Count-1 downto 0 do
    if (Assigned(Self.Desky[module].outputChangedEv[i])) then Self.Desky[module].outputChangedEv[i](Self, module)
      else Self.Desky[module].outputChangedEv.Delete(i);
+ MTBTableData.UpdateLine(module);
 end;
 
 //----- events from dll end -----

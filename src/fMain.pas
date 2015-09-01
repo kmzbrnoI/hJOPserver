@@ -963,6 +963,7 @@ begin
 
   Self.LogStatus('MTB: komunikace spuštìna');
   F_Main.S_MTB_Start.Brush.Color     := clLime;
+  MTBTableData.UpdateTable();
 
   if (F_Admin.CHB_SystemStart.Checked) then
     Blky.Enable();
@@ -1568,7 +1569,6 @@ begin
    if (Self.Showing) then
     begin
      if (F_Main.PC_1.ActivePage = F_Main.TS_Aut_Rezimy) then ACTableData.UpdateTable();
-     if ((F_Main.PC_1.ActivePage = F_Main.TS_Stav_MTB) and (MTB.Start)) then MTBTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then BlokyTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then SprTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then F_Main.LV_Zesilovace.Repaint;

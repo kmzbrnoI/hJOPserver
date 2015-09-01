@@ -108,7 +108,7 @@ var i,j:integer;
           if (j = 7) then
            begin
             Self.LV.Items.Item[i].SubItems.Strings[3] := Self.LV.Items.Item[i].SubItems.Strings[3] + ' ';
-            Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[3] + ' ';
+            Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[4] + ' ';
            end;//if
          end;//for
        end else begin
