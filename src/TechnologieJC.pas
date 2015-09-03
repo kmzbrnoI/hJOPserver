@@ -1771,7 +1771,7 @@ var Nav:TBlk;
 //RozpadBlok = blok index, kam by mela souprava vjet
 //RozpadRuseniBlok = blok index, kde je posledni detekovany vagon soupravy
 procedure TJC.UsekyRusJC();
-var Nav,Blk,Usek:TBlk;
+var Nav,Blk,Usek,DalsiUsek:TBlk;
     i:Integer;
 begin
 // if (Self.RozpadBlok <= -5) then Exit();   overeno pri volani
@@ -1893,8 +1893,13 @@ begin
    begin
     //ziskani dotazovaneho useku
     Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadRuseniBlok], Usek);
+    if (Self.RozpadRuseniBlok+1 < Self.fproperties.Useky.Count) then
+      Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadRuseniBlok+1], DalsiUsek)
+    else
+      DalsiUsek := nil;
 
-    if (((Usek as TBlkUsek).Zaver = TJCType.nouz) and ((Usek as TBlkUsek).Obsazeno = uvolneno)) then
+    if (((Usek as TBlkUsek).Zaver = TJCType.nouz) and ((Usek as TBlkUsek).Obsazeno = uvolneno) and
+        ((DalsiUsek = nil) or (TBlkUsek(DalsiUsek).Obsazeno = TUsekStav.obsazeno))) then
      begin
       // cesta se rozpada...
 
