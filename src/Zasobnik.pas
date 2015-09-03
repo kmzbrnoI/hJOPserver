@@ -346,6 +346,8 @@ begin
   begin
    Self.hint := '';
    Exit();
+  end else begin
+   if (Self.volba = TORStackVolba.PV) then Exit();
   end;
 
   bariery := JC.KontrolaPodminek(cmd.nouz);
@@ -405,7 +407,7 @@ begin
  Self.UPOenabled := false;
  Self.hint := (uv as TBlk).GetGlobalSettings.name;
 
- if (uv.CanZTS()) then
+ if ((Self.volba = TORStackVolba.VZ) and (uv.CanZTS())) then
   begin
    uv.zadost := true;
    Self.RemoveFromStack(0);
@@ -420,7 +422,8 @@ begin
  Self.UPOenabled := false;
  Self.hint := (uv as TBlk).GetGlobalSettings.name;
 
- if ((not uv.zadost) and ((uv.parent as TBlkTrat).Zadost)) then
+ if ((Self.volba = TORStackVolba.VZ) and
+     (not uv.zadost) and ((uv.parent as TBlkTrat).Zadost)) then
   begin
    uv.UdelSouhlas();
    Self.RemoveFromStack(0);
