@@ -2305,7 +2305,8 @@ end;//procedure
 
 procedure TF_Main.LogStatus(str:string);
 begin
- Self.LB_Log.Items.Insert(0, FormatDateTime('hh:nn:ss', Now)+ ' : ' + str);
+ if (Assigned(Self.LB_Log)) then
+   Self.LB_Log.Items.Insert(0, FormatDateTime('hh:nn:ss', Now)+ ' : ' + str);
  writeLog(str, WR_SYSTEM, 0);
 end;
 

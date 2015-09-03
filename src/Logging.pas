@@ -1,6 +1,6 @@
 unit Logging;
 
-// tato unita zjiatuje logovani
+// tato unita zajistuje logovani
 
 interface
 

@@ -135,7 +135,7 @@ var M_Vysvetlivky:TMemo;
     Buffer:String;
     PrazdnaPolozka:Boolean;
  begin
-  writelog('Naèítám zdroj registrace - '+LicFile,WR_DATA);
+  writelog('Naèítám zdroj registrace - '+ExtractRelativePath(ExtractFilePath(Application.ExeName), LicFile), WR_DATA);
 
   if (not FileExists(LicFile)) then
    begin

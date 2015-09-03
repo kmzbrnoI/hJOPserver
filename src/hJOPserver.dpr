@@ -112,11 +112,14 @@ uses
   fBlkTUZastEvent in 'fBlkTUZastEvent.pas' {F_BlkTUZastEvent},
   MTBdebugger in 'MTBdebugger.pas',
   UDPdiscover in 'UDPdiscover.pas',
-  USock in 'USock.pas';
+  USock in 'USock.pas',
+  appEv in 'appEv.pas';
 
 {$R *.res}
 
  begin
+  Application.OnException := AppEvents.OnAppException;
+
   DecimalSeparator := '.';
 
   // povolena je jen jedna instance
@@ -189,3 +192,4 @@ uses
 //13.03.2011 - 35 496 radku
 //06.05.2014 - 30 037 radku
 //19.06.2015 - 28 211 radku
+

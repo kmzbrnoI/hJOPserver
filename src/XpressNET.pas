@@ -391,7 +391,7 @@ begin
           Self.ConnectChange(Slot.adresa, TConnect_code.TC_Stolen, nil);
         end;
         $50:begin
-          // function status response
+          // function F0-F12 status response
           Self.WriteLog(4, 'GET: FUNCTION STATUS F0-F12');
 
           Slot.funkce[0] := (((msg.data[3] shr 4) AND $01) = 1);
@@ -401,13 +401,13 @@ begin
           Self.hist_ok();
         end;
         $52:begin
-              // functon status F13-F28 response
-              Self.WriteLog(4, 'GET: FUNCTION STATUS F13-F28');
+          // functon F13-F28 status response
+          Self.WriteLog(4, 'GET: FUNCTION STATUS F13-F28');
 
-              for i := 0 to 7 do Slot.funkce[13+i] := (((msg.data[2] shr i) AND $01) = 1);
-              for i := 0 to 7 do Slot.funkce[21+i] := (((msg.data[3] shr i) AND $01) = 1);
+          for i := 0 to 7 do Slot.funkce[13+i] := (((msg.data[2] shr i) AND $01) = 1);
+          for i := 0 to 7 do Slot.funkce[21+i] := (((msg.data[3] shr i) AND $01) = 1);
 
-              Self.hist_ok();
+          Self.hist_ok();
         end;
 
         else Self.WriteLog(4,'GET: function not supported in program');

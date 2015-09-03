@@ -225,6 +225,7 @@
 			<DCCReference Include="MTBdebugger.pas"/>
 			<DCCReference Include="UDPdiscover.pas"/>
 			<DCCReference Include="USock.pas"/>
+			<DCCReference Include="appEv.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
