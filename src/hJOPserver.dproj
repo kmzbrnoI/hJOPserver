@@ -226,6 +226,7 @@
 			<DCCReference Include="UDPdiscover.pas"/>
 			<DCCReference Include="USock.pas"/>
 			<DCCReference Include="appEv.pas"/>
+			<DCCReference Include="SystemCriticalU.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

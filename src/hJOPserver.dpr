@@ -113,7 +113,8 @@ uses
   MTBdebugger in 'MTBdebugger.pas',
   UDPdiscover in 'UDPdiscover.pas',
   USock in 'USock.pas',
-  appEv in 'appEv.pas';
+  appEv in 'appEv.pas',
+  SystemCriticalU in 'SystemCriticalU.pas';
 
 {$R *.res}
 
@@ -176,6 +177,7 @@ uses
   F_splash.Close;
 
   F_Main.LogStatus('Program spuštìn');
+  SystemCritical.IsCritical := true;
 
   Application.Run;
 

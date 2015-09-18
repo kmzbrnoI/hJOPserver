@@ -24,9 +24,9 @@ uses Logging, fMain;
 procedure TAppEvents.OnAppException(Sender: TObject; E: Exception);
 begin
  try
-   writeLog('ERR: APP MAIN EXCEPTION : '+E.ToString, WR_ERROR);
+   writeLog('APP MAIN EXCEPTION : '+E.ToString, WR_ERROR);
    if (Assigned(F_Main)) then
-     F_Main.LogStatus('!! APP MAIN EXCEPTION : '+E.Message);
+     F_Main.LogStatus('ERR: !! APP MAIN EXCEPTION : '+E.Message);
  except
 
  end;

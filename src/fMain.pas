@@ -384,6 +384,8 @@ type
     procedure LoadACKroky();
     procedure OnFuncsVyznamChange(Sender:TObject);
 
+    procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
+
   public
     KomunikacePocitani:Shortint;
 
@@ -663,30 +665,62 @@ procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);//konec
 
 procedure TF_Main.AE_1Message(var Msg: tagMSG;              //vse co jde do programu - klavesy, kliknuti...
   var Handled: Boolean);
-var ahandled:boolean;
 begin
- if Msg.Message = MyMsg then
+ if (Msg.Message = MyMsg) then
   begin
    Application.Restore;
    SetForeGroundWindow(F_Main.Handle);
    Handled := true;
   end;
 
- if (msg.message = WM_KeyDown) and (not F_ModCasSet.Showing) then                          //pokud je stisknuta klavesa
-  begin
-   ahandled := false;
-   RegCollector.KeyPress(msg.wParam, ahandled);
-   if (ahandled) then Exit;
+ // STISK KLAVESY
+ case (msg.message) of
+   WM_KEYDOWN: begin
+       Handled := false;
+       RegCollector.KeyPress(msg.wParam, Handled);
+       if (Handled) then Exit;
 
-   case  msg.wParam of                                     //case moznosti stisknutych klaves
-     VK_F9:MTB.HideCfgDialog();
-     VK_ESCAPE:if (F_About.Showing) then F_About.Close;
-     VK_F4:begin
-       // zobrazeni debug okna
-       F_Admin.Show();
+       case (msg.wParam) of
+         VK_F9:MTB.HideCfgDialog();
+         VK_ESCAPE:if (F_About.Showing) then F_About.Close;
+         VK_F4:begin
+           // zobrazeni debug okna
+           F_Admin.Show();
+           Handled := true;
+         end;
+        end;//case
+   end;
+
+   WM_POWERBROADCAST: begin
+
+   end;
+ end;
+end;//procedure
+
+procedure TF_Main.WMPowerBroadcast(var Msg: TMessage);
+begin
+ case (msg.WParam) of
+    PBT_APMQUERYSUSPEND: begin
+       msg.Result := BROADCAST_QUERY_DENY;
      end;
-    end;//case
-  end;//if
+
+    PBT_APMSUSPEND: begin
+       // windows is going to sleep -> disconnect all devices
+       if (TrkSystem.openned) then
+        begin
+         try
+           TrkSystem.EmergencyStop();
+           TrkSystem.FastResetLoko();
+           TrkSystem.Close(true);
+         except
+
+         end;
+        end;
+       if (MTB.Start) then MTB.Stop();
+       if (MTB.Openned) then MTB.Close();
+     end;
+
+ end;//case
 end;//procedure
 
 procedure TF_Main.A_All_Loko_OdhlasitExecute(Sender: TObject);
