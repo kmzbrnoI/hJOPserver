@@ -208,14 +208,14 @@ begin
   begin
    if (Self.JCs[i].data.JCs.Count < 2) then continue;
 
-   JC := JCDb.GetJCByIndex(Self.JCs[i].data.JCs[0]);
+   JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[0]);
    if (JC = nil) then continue;
 
    Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
    if (Blk <> StartBlk) then continue;
 
    // posledni blok musi byt poseldni blok posledni jizdni cesty
-   JC := JCDb.GetJCByIndex(Self.JCs[i].data.JCs[Self.JCs[i].data.JCs.Count-1]);
+   JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[Self.JCs[i].data.JCs.Count-1]);
    Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Blk);
    if (Blk <> EndBlk) then continue;
 
@@ -226,7 +226,7 @@ begin
      if (Self.JCs[i].data.vb[j] <> ((SenderOR as TOR).vb[j] as TBlk).GetGlobalSettings().id) then flag := false;
    if (not flag) then continue;
 
-   JC := JCDb.GetJCByIndex(Self.JCs[i].data.JCs[0]);
+   JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[0]);
    if ((Integer((StartBlk as TBlkSCom).ZacatekVolba) = Integer(JC.data.TypCesty)) or
       (((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) and (JC.data.TypCesty = TJCType.vlak))) then
     begin
@@ -234,7 +234,7 @@ begin
 
      // kontrola existence vsech jizdnich cest v dane slozene jizdni ceste
      for j := 0 to Self.JCs[i].data.JCs.Count-1 do
-      if (JCDb.GetJCByIndex(Self.JCs[i].data.JCs[j]) = nil) then Exit(false);
+      if (JCDb.GetJCByID(Self.JCs[i].data.JCs[j]) = nil) then Exit(false);
 
      if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) then
       begin
@@ -245,8 +245,9 @@ begin
        (StartBlk as TBlkSCom).ZacatekVolba := TBlkSComVOlba.none;
        (EndBlk as TBlkUsek).KonecJC        := TJCType.no;
        (SenderOR as TOR).ClearVb();
-      end else
+      end else begin
        Self.JCs[i].StavJC(SenderPnl, SenderOR);
+      end;
 
      Exit(true);
     end;

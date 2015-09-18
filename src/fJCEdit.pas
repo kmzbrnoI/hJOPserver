@@ -46,6 +46,8 @@ type
     CB_TratBlok: TComboBox;
     Label2: TLabel;
     CB_TratSmer: TComboBox;
+    Label3: TLabel;
+    SE_ID: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_NewZaverAddClick(Sender: TObject);
     procedure B_NewUsekClick(Sender: TObject);
@@ -110,6 +112,7 @@ procedure TF_JCEdit.NewVCOpenForm;
 
   // reset JC data:
   Self.JCData.Trat := -1;
+  Self.JCData.id   := -1;
 
   Self.JCData.Vyhybky  := nil;
   Self.JCData.Useky    := nil;
@@ -124,6 +127,7 @@ procedure TF_JCEdit.NewVCOpenForm;
   Self.Vyhybky.Clear();
 
   E_VCNazev.Text                  := '';
+  SE_ID.Value                     := JCDb.GetJCByIndex(JCDb.Count-1).id + 1;
   Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, _BLK_SCOM, -1);
 
   CB_TypCesty.ItemIndex           := -1;
@@ -149,6 +153,7 @@ var cyklus:Integer;
   CB_NavestidloChange(Self);
 
   E_VCNazev.Text := JCData.Nazev;
+  SE_ID.Value    := JCData.id;
 
   CB_TypCesty.ItemIndex           := Integer(JCData.TypCesty)-1;
   CB_Rychlost_DalsiN.ItemIndex    := JCData.RychlostDalsiN;
@@ -308,11 +313,16 @@ procedure TF_JCEdit.NewVCCreate;
 
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
 var JC:TJC;
-    return, i:Integer;
+    i:Integer;
  begin
   if (E_VCNazev.Text = '') then
    begin
     Application.MessageBox('Vyplnte nazev vlakove cesty !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+  if (JCDb.IsJC(Self.SE_ID.Value, Self.OpenIndex)) then
+   begin
+    Application.MessageBox('JC s tímto ID již existuje !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (CB_Navestidlo.ItemIndex = -1) then
@@ -353,6 +363,7 @@ var JC:TJC;
 
   //samotne ukladani dat
   JCData.Nazev             := E_VCNazev.Text;
+  JCData.id                := SE_ID.Value;
   JCData.NavestidloBlok    := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
   JCData.TypCesty          := TJCType(CB_TypCesty.ItemIndex+1);
 
@@ -388,19 +399,22 @@ var JC:TJC;
   if (OpenIndex < 0) then
    begin
     // nova JC
-    return := JCDb.AddJC(Self.JCData);
-
-    if (return <> 0) then
-     begin
-      Application.MessageBox(PCHar('Pøidávání JC skonèilo s chybou '+IntToStr(return)), 'Chyba', MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+     JC := JCDb.AddJC(Self.JCData);
+     if (JC = nil) then raise Exception.Create('JC nevytvoøena');
+    except
+     on E:Exception do
+      begin
+       Application.MessageBox(PChar('Pøidávání JC skonèilo s chybou'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+       Exit;
+      end;
+    end;
 
    end else begin
     // update existujici JC
     JC := JCDb.GetJCByIndex(OpenIndex);
-    JC.data     := Self.JCData;
-    JCTableData.UpdateLine(OpenIndex);
+    JC.data  := Self.JCData;
+    JCTableData.UpdateLine(JC.index);
    end;
 
   Self.Close;

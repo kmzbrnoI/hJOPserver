@@ -366,16 +366,13 @@ end;//procedure
 
 procedure TBlokyTableData.BlkMove(source, target:Integer);
 var LI:TListItem;
+    i:Integer;
 begin
+ Self.LV.Items.Delete(source);
  LI := Self.LV.Items.Insert(target);
- if (source > target) then
-  begin
-   LI.Assign(Self.LV.Items[source+1]);
-   Self.LV.Items.Delete(source+1);
-  end else begin
-   LI.Assign(Self.LV.Items[source]);
-   Self.LV.Items.Delete(source);
-  end;
+ for i := 0 to Self.LV.Columns.Count-2 do
+  LI.SubItems.Add('');
+ Self.UpdateLine(target);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

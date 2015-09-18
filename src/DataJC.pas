@@ -18,8 +18,9 @@ type
 
       procedure UpdateLine(line:Integer);
 
-      procedure AddJC();
+      procedure AddJC(index:Integer);
       procedure RemoveJC(index:Integer);
+      procedure MoveJC(source, target:Integer);
 
       constructor Create(LV:TListView);
   end;
@@ -95,7 +96,7 @@ begin
  JCData := JC.data;
  JC.changed := false;
 
- Self.LV.Items.Item[line].Caption := IntToStr(line);
+ Self.LV.Items.Item[line].Caption := IntToStr(JCData.id);
  Self.LV.Items.Item[line].SubItems.Strings[0] := JCData.Nazev;
  Self.LV.Items.Item[line].SubItems.Strings[4] := Blky.GetBlkName(JCData.NavestidloBlok);
 
@@ -191,21 +192,34 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCTableData.AddJC();
+procedure TJCTableData.AddJC(index:Integer);
 var LI:TListItem;
     j:Integer;
 begin
- LI := Self.LV.Items.Add;
+ LI := Self.LV.Items.Insert(index);
  LI.Caption := IntToStr(Self.LV.Items.Count);
  for j := 0 to Self.LV.Columns.Count-2 do
   LI.SubItems.Add('');
 
- Self.UpdateLine(Self.LV.Items.Count-1);
+ Self.UpdateLine(index);
 end;//procedure
 
 procedure TJCTableData.RemoveJC(index:Integer);
 begin
  Self.LV.Items.Delete(index);
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJCTableData.MoveJC(source, target:Integer);
+var LI:TListItem;
+    i:Integer;
+begin
+ Self.LV.Items.Delete(source);
+ LI := Self.LV.Items.Insert(target);
+ for i := 0 to Self.LV.Columns.Count-2 do
+  LI.SubItems.Add('');
+ Self.UpdateLine(target);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

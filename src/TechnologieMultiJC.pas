@@ -147,6 +147,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJC.UpdateStaveni();
+var JC:TJC;
 begin
  if (Self.staveno.postaveno) then
   begin
@@ -159,8 +160,13 @@ begin
      Self.RusStaveni();
     end else begin
      // vsechny cesty nepostaveny -> stavime dalsi cestu
-     Self.staveno := JCDb.GetJCByIndex(Self.fproperties.JCs[Self.fstaveni.JCIndex]);
-     Self.staveno.StavJC(Self.fstaveni.SenderPnl, Self.fstaveni.SenderOR);
+     JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fstaveni.JCIndex]);
+     if (JC = nil) then
+       Self.RusStaveni()
+      else begin
+       Self.staveno := JC;
+       Self.staveno.StavJC(Self.fstaveni.SenderPnl, Self.fstaveni.SenderOR);
+      end;
      Self.changed := true;
     end;
   end else begin
@@ -175,12 +181,17 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject);
+var i:Integer;
 begin
+ for i := 0 to Self.fproperties.JCs.Count-1 do
+   if (JCDb.GetJCByID(Self.fproperties.JCs[i]) = nil) then
+     raise Exception.Create('JC ve slozene jizdni ceste neexistuje');
+
  Self.fstaveni.SenderOR  := SenderOR;
  Self.fstaveni.SenderPnl := SenderPnl;
 
  Self.fstaveni.JCIndex   := 0;
- Self.staveno := JCDb.GetJCByIndex(Self.fproperties.JCs[Self.fstaveni.JCIndex]);
+ Self.staveno := JCDb.GetJCByID(Self.fproperties.JCs[Self.fstaveni.JCIndex]);
  Self.staveno.StavJC(SenderPnl, SenderOR);
 
  (SenderOR as TOR).vb.Clear();
@@ -199,12 +210,12 @@ begin
  Self.staveno          := nil;
 
  // zrusime zacatek staveni na navestidle
- JC := JCDb.GetJCByIndex(Self.fproperties.JCs[0]);
+ JC := JCDb.GetJCByID(Self.fproperties.JCs[0]);
  Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
  (Blk as TBLkSCom).ZacatekVolba := TBlkSCOmVolba.none;
 
  // zrusime konec staveni na poslednim useku posledni JC
- JC := JCDb.GetJCByIndex(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);
+ JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);
  Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Blk);
  (Blk as TBLkUsek).KonecJC := TJCType.no;
 

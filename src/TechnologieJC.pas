@@ -112,6 +112,7 @@ type
   // vlastnosti jizdni cesty nemenici se se stavem:
   TJCprop = record
    Nazev:string;                                                                // nazev JC
+   id:Integer;                                                                  // id jizdni cesty
    NavestidloBlok:Integer;                                                      // ID navestidla, od ktereho JC zacina
    TypCesty:TJCType;                                                            // typ JC (vlakova, posunova)
    DalsiNNavaznost:Integer;                                                     // ID bloku dalsiho navestidla
@@ -199,6 +200,8 @@ type
      fproperties: TJCprop;
      fstaveni:TJCStaveni;
 
+      procedure SetProperties(prop:TJCProp);
+
       procedure RusZacatekJC();
       procedure RusKonecJC();
       procedure RusVBJC();
@@ -233,6 +236,7 @@ type
 
    public
 
+     index:Integer;                                                             // index v tabulce jizdni cest ve F_Main
      changed:boolean;                                                           // JC zmenana -> akualizuje se v tabulce ve F_Main
 
       class function JCBariera(typ:Integer; Blok:TBlk = nil; param:Integer = 0):TJCBariera;
@@ -273,11 +277,12 @@ type
 
       function GetRNZ():TPSPodminky;
 
-      property data:TJCprop read fproperties write fproperties;
+      property data:TJCprop read fproperties write SetProperties;
       property stav:TJCStaveni read fstaveni;
       property staveni:boolean read GetStaveni;
       property nazev:string read fproperties.Nazev;
       property postaveno:boolean read GetPostaveno;                             // true pokud je postavena navest
+      property id:Integer read fproperties.id write fproperties.id;
 
       property RozpadBlok:Integer read fstaveni.RozpadBlok write SetRozpadBlok;
       property RozpadRuseniBlok:Integer read fstaveni.RozpadRuseniBlok write SetRozpadRuseniBlok;
@@ -295,8 +300,9 @@ uses GetSystems, TechnologieMTB, fSettings,
 
 constructor TJC.Create();
 begin
- inherited Create();
+ inherited;
 
+ Self.fproperties.id := -1;
  Self.changed  := true;
  Self.fstaveni := _def_jc_staveni;
  Self.fstaveni.ncBariery := TList<TJCBariera>.Create();
@@ -2094,7 +2100,8 @@ var sl,sl2:TStrings;
     prj:TJCPrjZaver;
     zam:TJCZamZaver;
 begin
- Self.fproperties.Nazev               := ini.ReadString (section, 'Nazev', section);
+ Self.fproperties.Nazev               := ini.ReadString(section, 'Nazev', section);
+ Self.fproperties.id                  := ini.ReadInteger(section, 'id', Self.index);
  Self.fproperties.NavestidloBlok      := ini.ReadInteger(section, 'Nav', -1);
  Self.fproperties.TypCesty            := TJCType(ini.ReadInteger(section, 'Typ', -1));
  Self.fproperties.DalsiNNavaznost     := ini.ReadInteger(section, 'DalsiN', 0);
@@ -2249,6 +2256,7 @@ var line:string;
     i,j:Integer;
 begin
  ini.WriteString (section, 'Nazev', Self.fproperties.Nazev);
+ ini.WriteInteger(section, 'id', Self.fproperties.id);
  ini.WriteInteger(section, 'Nav', Self.fproperties.NavestidloBlok);
  ini.WriteInteger(section, 'Typ', Integer(Self.fproperties.TypCesty));
  ini.WriteInteger(section, 'DalsiN', Self.fproperties.DalsiNNavaznost);
@@ -3011,6 +3019,21 @@ begin
    if ((blk as TBlkZamek).nouzZaver) then Result.Add(GetPSPodminka(blk, 'Rušení NZ'));
   end;//for i
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.SetProperties(prop:TJCProp);
+var id_changed:boolean;
+begin
+ id_changed := ((Self.id <> prop.id) and (Self.id <> -1));
+ Self.fproperties := prop;
+ if (id_Changed) then
+  begin
+   // sem se skoci, pokud je potreba preskladat JC, protoze doslo ke zmene ID
+   // pri vytvareni novych JC se sem neskace
+   JCDb.JCIDChanged(Self.index);
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

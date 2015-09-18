@@ -499,7 +499,7 @@ var cmd:integer;
     _AC_CMDTYPE_JC: begin
       if (Self.subkrok = 0) then
        begin
-        JC := JCDb.GetJCByIndex(params[0]);
+        JC := JCDb.GetJCByID(params[0]);
         writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Staveni JC '+JC.Nazev, WR_AUTREZ);
 
         if (not JC.postaveno) then
@@ -523,7 +523,7 @@ var cmd:integer;
        end;
 
       if (Self.subkrok = 1) then
-        if (JCDb.GetJCByIndex(params[0]).Postaveno) then Self.NextStep();
+        if (JCDb.GetJCByID(params[0]).Postaveno) then Self.NextStep();
      end;//if _AC_CMDTYPE_JC
 
   ///////////////////////////////////////
@@ -589,11 +589,11 @@ var cmd:integer;
   ///////////////////////////////////////
 
     _AC_CMDTYPE_NAV: begin
-      Blky.GetBlkByID(JCDb.GetJCByIndex(params[0]).data.NavestidloBlok , Blk);
+      Blky.GetBlkByID(JCDb.GetJCByID(params[0]).data.NavestidloBlok , Blk);
 
       if (Self.subkrok = 0) then
        begin
-        writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Kontrola navesti JC '+JCDb.GetJCByIndex(params[0]).Nazev, WR_AUTREZ);
+        writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Kontrola navesti JC '+JCDb.GetJCByID(params[0]).Nazev, WR_AUTREZ);
         Self.subkrok := 1;
        end;
 

@@ -74,7 +74,6 @@ object F_MJCEdit: TF_MJCEdit
     Top = 33
     Width = 329
     Height = 250
-    Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -122,7 +121,7 @@ object F_MJCEdit: TF_MJCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 0
+        ItemHeight = 13
         ParentFont = False
         TabOrder = 0
       end
@@ -188,7 +187,6 @@ object F_MJCEdit: TF_MJCEdit
     Top = 33
     Width = 329
     Height = 250
-    Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -236,7 +234,7 @@ object F_MJCEdit: TF_MJCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 0
+        ItemHeight = 13
         ParentFont = False
         TabOrder = 0
       end

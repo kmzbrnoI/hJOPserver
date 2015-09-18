@@ -46,7 +46,7 @@ type
      vb:TList<Integer>;
 
      CB_VB_indexes:TArSmallI;
-     CB_JC_indexes:TArSmallI;
+     CB_JC_ids:TArSmallI;
 
     procedure UpdateJCCb();
     procedure UpdateVBCb();
@@ -139,7 +139,7 @@ begin
 
  for i := 0 to Self.openMJC.data.JCs.Count-1 do
   begin
-   JC := JCDb.GetJCByIndex(Self.openMJC.data.JCs[i]);
+   JC := JCDb.GetJCByID(Self.openMJC.data.JCs[i]);
    if (JC = nil) then continue;
    LI := Self.LV_JCs.Items.Add;
    LI.Caption := JC.nazev;
@@ -182,14 +182,16 @@ end;//procedure
 procedure TF_MJCEdit.UpdateJCCb();
 var i, j:Integer;
     inList:Boolean;
+    JC:TJC;
 begin
- SetLength(CB_JC_indexes, JCDb.Count);    // velikost pole trochu prezeneme, ale to nevadi
+ SetLength(CB_JC_ids, JCDb.Count);    // velikost pole trochu prezeneme, ale to nevadi
  Self.CB_JC_Add.Clear();
  for i := 0 to JCDb.Count-1 do
   begin
+   JC := JCDb.GetJCByIndex(i);
    inList := false;
    for j := 0 to Self.JCs.Count-1 do
-     if (i = Self.JCs[j]) then
+     if (JC.id = Self.JCs[j]) then
       begin
        inList := true;
        break;
@@ -197,8 +199,8 @@ begin
 
    if (inList) then continue;
 
-   Self.CB_JC_Add.Items.Add(JCDb.GetJCByIndex(i).nazev);
-   Self.CB_JC_indexes[Self.CB_JC_Add.Items.Count-1] := i;
+   Self.CB_JC_Add.Items.Add(JC.nazev);
+   Self.CB_JC_ids[Self.CB_JC_Add.Items.Count-1] := JC.id;
   end;
 end;//procedure
 
@@ -224,7 +226,7 @@ begin
  if (Self.JCs.Count < 1) then obls := nil
  else begin
    try
-     Blky.GetBlkByID(JCDb.GetJCByIndex(Self.JCs[0]).data.NavestidloBlok, Blk);
+     Blky.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok, Blk);
 
      if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_SCOM)) then
       begin
@@ -247,9 +249,9 @@ procedure TF_MJCEdit.B_JC_AddClick(Sender: TObject);
 var LI:TListItem;
 begin
  if (Self.CB_JC_Add.ItemIndex < 0) then Exit();
- Self.JCs.Add(Self.CB_JC_indexes[Self.CB_JC_Add.ItemIndex]);
+ Self.JCs.Add(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]);
  LI := Self.LV_JCs.Items.Add;
- LI.Caption := JCDb.GetJCByIndex(Self.CB_JC_indexes[Self.CB_JC_Add.ItemIndex]).nazev;
+ LI.Caption := JCDb.GetJCByID(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]).nazev;
  Self.UpdateJCCb();
  if (Self.JCs.Count = 1) then
   begin
@@ -261,8 +263,8 @@ begin
  // doplneni nazvu JC:
  if (Self.CHB_AutoName.Checked) then
   begin
-   Self.E_VCNazev.Text := Blky.GetBlkName(JCDb.GetJCByIndex(Self.JCs[0]).data.NavestidloBlok) + ' > '+
-   Blky.GetBlkName(JCDb.GetJCByIndex(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByIndex(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1]);
+   Self.E_VCNazev.Text := Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
+   Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1]);
   end;
 end;
 
@@ -344,8 +346,8 @@ begin
    if (Self.CHB_AutoName.Checked) then
     begin
      if (Self.JCs.Count > 0) then
-       Self.E_VCNazev.Text := Blky.GetBlkName(JCDb.GetJCByIndex(Self.JCs[0]).data.NavestidloBlok) + ' > '+
-       Blky.GetBlkName(JCDb.GetJCByIndex(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByIndex(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1])
+       Self.E_VCNazev.Text := Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
+       Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1])
       else
        Self.E_VCNazev.Text := '';
     end;

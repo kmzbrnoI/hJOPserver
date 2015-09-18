@@ -104,7 +104,12 @@ begin
  // jednotlive jizdni cesty
  str := '';
  for i := 0 to mJCData.JCs.Count-1 do
-  str := str + '(' + JCDb.GetJCByIndex(mJCData.JCs[i]).nazev + '), ';
+  begin
+   if (JCDb.GetJCByID(mJCData.JCs[i]) <> nil) then
+     str := str + '(' + JCDb.GetJCByID(mJCData.JCs[i]).nazev + '), '
+   else
+     str := str + '(neexistujici JC), ';
+  end;
  Self.LV.Items.Item[line].SubItems.Strings[2] := str;
 
  // variantni body

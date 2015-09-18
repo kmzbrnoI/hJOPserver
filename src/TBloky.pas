@@ -907,28 +907,14 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 // najde index pro novy blok
+// casova narocnost: linearni
 function TBlky.FindPlaceForNewBlk(id:Integer):Integer;
-var left, right, mid:Integer;
+var i:Integer;
 begin
- left  := 0;
- mid   := 0;
- right := Self.data.Count-1;
-
- // je potreba osetrit specialni pripad pridani na konec:
- if ((right >= 0) and (id > Self.data[right].GetGlobalSettings().id)) then Exit(Self.data.Count);
-
- while (left <= right) do
-  begin
-   mid := (left + right) div 2;
-
-   // specialni pripad, kdy uz se blok anchazi v databazi, vyuziva se pri kontrole zmeny pozice bloku pri uprave ID:
-   if (Self.data[mid].GetGlobalSettings().id = id) then Exit(mid);
-   if (Self.data[mid].GetGlobalSettings().id > id) then
-     right := mid - 1
-   else
-     left := mid + 1;
-  end;
- Result := mid;
+ i := Self.data.Count-1;
+ while ((i >= 0) and (Self.data[i].GetGlobalSettings().id > id)) do
+   i := i - 1;
+ Result := i+1;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -944,18 +930,14 @@ end;
 
 procedure TBlky.BlkIDChanged(index:Integer);
 var new_index, min_index, i:Integer;
+    tmp:TBlk;
 begin
- new_index := FindPlaceForNewBlk(Self.data[index].GetGlobalSettings().id);
- if (index = new_index) then Exit();  // pozice bloku se nemeni -> koncime
+ tmp := Self.data[index];
+ Self.data.Delete(index);
+ new_index := FindPlaceForNewBlk(tmp.GetGlobalSettings().id);
 
- // provedeme prehozeni bloku na jinou pozici
- Self.data.Insert(new_index, Self.data[index]);
- if (new_index < index) then
-  begin
-   Self.data.Delete(index+1)
-  end else begin
-   Self.data.Delete(index);
-  end;
+ Self.data.Insert(new_index, tmp);
+ if (index = new_index) then Exit();  // pozice bloku se nemeni -> koncime
 
  // od nejmensiho prohazovaneho indexu aktualizujeme indexy
  // aktualizjeme dokud indexy nesedi

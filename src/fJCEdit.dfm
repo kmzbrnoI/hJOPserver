@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editace vlakove cesty [nazev]'
-  ClientHeight = 450
+  ClientHeight = 472
   ClientWidth = 617
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -37,8 +37,8 @@ object F_JCEdit: TF_JCEdit
     ParentFont = False
   end
   object L_VC_02: TLabel
-    Left = 9
-    Top = 39
+    Left = 8
+    Top = 65
     Width = 56
     Height = 13
     Margins.Left = 2
@@ -54,8 +54,8 @@ object F_JCEdit: TF_JCEdit
     ParentFont = False
   end
   object L_VC_11: TLabel
-    Left = 9
-    Top = 71
+    Left = 8
+    Top = 97
     Width = 52
     Height = 13
     Margins.Left = 2
@@ -71,8 +71,8 @@ object F_JCEdit: TF_JCEdit
     ParentFont = False
   end
   object L_VC_07: TLabel
-    Left = 9
-    Top = 103
+    Left = 8
+    Top = 129
     Width = 81
     Height = 13
     Margins.Left = 2
@@ -88,8 +88,8 @@ object F_JCEdit: TF_JCEdit
     ParentFont = False
   end
   object L_VC_10: TLabel
-    Left = 8
-    Top = 133
+    Left = 7
+    Top = 159
     Width = 157
     Height = 13
     Margins.Left = 2
@@ -105,8 +105,8 @@ object F_JCEdit: TF_JCEdit
     ParentFont = False
   end
   object L_VC_12: TLabel
-    Left = 8
-    Top = 165
+    Left = 7
+    Top = 191
     Width = 166
     Height = 13
     Margins.Left = 2
@@ -120,6 +120,13 @@ object F_JCEdit: TF_JCEdit
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
+  end
+  object Label3: TLabel
+    Left = 8
+    Top = 34
+    Width = 14
+    Height = 13
+    Caption = 'ID:'
   end
   object E_VCNazev: TEdit
     Left = 136
@@ -149,7 +156,7 @@ object F_JCEdit: TF_JCEdit
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 8
     object LV_Zavery: TListView
       Left = 2
       Top = 48
@@ -308,8 +315,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object GB_Useky: TGroupBox
-    Left = 9
-    Top = 190
+    Left = 8
+    Top = 216
     Width = 329
     Height = 250
     Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
@@ -326,7 +333,7 @@ object F_JCEdit: TF_JCEdit
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 6
+    TabOrder = 7
     object CHB_NewBlok: TGroupBox
       Left = 2
       Top = 195
@@ -439,8 +446,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object B_Save: TButton
-    Left = 537
-    Top = 415
+    Left = 535
+    Top = 440
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -448,12 +455,13 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
-    TabOrder = 9
+    Default = True
+    TabOrder = 10
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 456
-    Top = 415
+    Left = 454
+    Top = 440
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -461,26 +469,12 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 10
+    TabOrder = 11
     OnClick = B_StornoClick
   end
   object CB_Navestidlo: TComboBox
-    Left = 137
-    Top = 39
-    Width = 201
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    ItemHeight = 13
-    TabOrder = 1
-    OnChange = CB_NavestidloChange
-  end
-  object CB_TypCesty: TComboBox
-    Left = 137
-    Top = 71
+    Left = 136
+    Top = 65
     Width = 201
     Height = 21
     Margins.Left = 2
@@ -490,14 +484,11 @@ object F_JCEdit: TF_JCEdit
     Style = csDropDownList
     ItemHeight = 13
     TabOrder = 2
-    OnChange = CB_TypCestyChange
-    Items.Strings = (
-      'Vlakova cesta'
-      'Posunova cesta')
+    OnChange = CB_NavestidloChange
   end
-  object CB_DalsiNNavaznost: TComboBox
-    Left = 137
-    Top = 103
+  object CB_TypCesty: TComboBox
+    Left = 136
+    Top = 97
     Width = 201
     Height = 21
     Margins.Left = 2
@@ -507,10 +498,27 @@ object F_JCEdit: TF_JCEdit
     Style = csDropDownList
     ItemHeight = 13
     TabOrder = 3
+    OnChange = CB_TypCestyChange
+    Items.Strings = (
+      'Vlakova cesta'
+      'Posunova cesta')
+  end
+  object CB_DalsiNNavaznost: TComboBox
+    Left = 136
+    Top = 129
+    Width = 201
+    Height = 21
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Style = csDropDownList
+    ItemHeight = 13
+    TabOrder = 4
   end
   object CB_Rychlost_DalsiN: TComboBox
-    Left = 192
-    Top = 165
+    Left = 191
+    Top = 191
     Width = 145
     Height = 21
     Margins.Left = 2
@@ -519,7 +527,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Style = csDropDownList
     ItemHeight = 13
-    TabOrder = 5
+    TabOrder = 6
     Items.Strings = (
       '0 km/h'
       '10 km/h'
@@ -534,8 +542,8 @@ object F_JCEdit: TF_JCEdit
       '100 km/h')
   end
   object CB_Rychlost_NoDalsiN: TComboBox
-    Left = 192
-    Top = 133
+    Left = 191
+    Top = 159
     Width = 145
     Height = 21
     Margins.Left = 2
@@ -544,7 +552,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Style = csDropDownList
     ItemHeight = 13
-    TabOrder = 4
+    TabOrder = 5
     Items.Strings = (
       '0 km/h'
       '10 km/h'
@@ -572,7 +580,7 @@ object F_JCEdit: TF_JCEdit
     Font.Style = []
     ParentFont = False
     State = cbChecked
-    TabOrder = 11
+    TabOrder = 12
   end
   object GB_trat: TGroupBox
     Left = 347
@@ -580,7 +588,7 @@ object F_JCEdit: TF_JCEdit
     Width = 262
     Height = 105
     Caption = ' N'#225'vaznost na tra'#357' '
-    TabOrder = 8
+    TabOrder = 9
     object Label1: TLabel
       Left = 24
       Top = 40
@@ -625,5 +633,16 @@ object F_JCEdit: TF_JCEdit
         'A --> B'
         'B --> A')
     end
+  end
+  object SE_ID: TSpinEdit
+    Left = 136
+    Top = 36
+    Width = 201
+    Height = 22
+    MaxLength = 65536
+    MaxValue = 0
+    MinValue = 0
+    TabOrder = 1
+    Value = 0
   end
 end

@@ -161,9 +161,6 @@ type
     P_VC_Pozadi: TPanel;
     P_VC_Dataload: TPanel;
     E_Dataload_JC: TEdit;
-    P_Cesty_Posun: TPanel;
-    SB_Cesty_Up: TSpeedButton;
-    SB_Cesty_Down: TSpeedButton;
     LV_JC: TListView;
     TS_log: TTabSheet;
     LV_log: TListView;
@@ -319,8 +316,6 @@ type
       Change: TItemChange);
     procedure LV_JCChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
-    procedure SB_Cesty_UpClick(Sender: TObject);
-    procedure SB_Cesty_DownClick(Sender: TObject);
     procedure MI_Save_configClick(Sender: TObject);
     procedure LB_LogDblClick(Sender: TObject);
     procedure LV_SoupravyChange(Sender: TObject; Item: TListItem;
@@ -376,6 +371,11 @@ type
     procedure A_FuncsSetExecute(Sender: TObject);
     procedure B_ChangeClick(Sender: TObject);
     procedure LV_BlokyKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_JCKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_UsersKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_HVKeyPress(Sender: TObject; var Key: Char);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -1469,25 +1469,16 @@ begin
 end;
 
 procedure TF_Main.B_VC_deleteClick(Sender: TObject);
-var return:integer;
- begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat jízdní cestu '+JCDb.GetJCByIndex(LV_JC.ItemIndex).nazev+' ?'),'Mazání jízdní cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
-   begin
-    return := JCDb.RemoveJC(LV_JC.ItemIndex);
-
-    if (return <> 0) then
-     begin
-      case (return) of
-        1 : Application.MessageBox('Nelze smazat JC - JC neexistuje', 'Chyba', MB_OK OR MB_ICONERROR);
-        2 : Application.MessageBox('Nelze smazat JC - JC postavena', 'Chyba', MB_OK OR MB_ICONERROR);
-        3 : Application.MessageBox('Nelze smazat JC - JC je v zásobníku', 'Chyba', MB_OK OR MB_ICONERROR);
-      else
-       Application.MessageBox(PChar('Mazání JC skonèilo s chybou '+IntToStr(return)), 'Chyba', MB_OK OR MB_ICONERROR);
-      end;
-
-      Exit;
-     end;//if return <> 0
-   end;//if MessageBox
+begin
+ if (Application.MessageBox(PChar('Opravdu chcete smazat jízdní cestu '+JCDb.GetJCByIndex(LV_JC.ItemIndex).nazev+' ?'),'Mazání jízdní cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+  begin
+   try
+     JCDb.RemoveJC(LV_JC.ItemIndex);
+   except
+     on E:Exception do
+       Application.MessageBox(PChar('Nelze smazat JC'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+   end;
+  end;
 end;
 
 procedure TF_Main.B_zes_addClick(Sender: TObject);
@@ -1738,7 +1729,6 @@ procedure TF_Main.RepaintObjects;
  P_HV_Tlac.Left       := (PC_1.Width div 2)-(P_HV_Tlac.Width div 2);
 
  P_Zes_Vysvetlivky.Left := PC_1.Width - P_Zes_Vysvetlivky.Width-15;
- P_Cesty_Posun.Left     := PC_1.Width - P_Cesty_Posun.Width-15;
  P_Blk_Ostatni.Left     := PC_1.Width - P_Blk_Ostatni.Width - 15;
 end;//procedure
 
@@ -1924,24 +1914,6 @@ begin
    ACDb.ACs[Self.LV_AC_Db.ItemIndex].Stop();
    Self.LV_AC_DbChange(Self.LV_AC_Db, Self.LV_AC_Db.Selected, TItemChange.ctText);
   end;
-end;
-
-procedure TF_Main.SB_Cesty_DownClick(Sender: TObject);
-begin
-  JCDb.SwitchJC(Self.LV_JC.ItemIndex, Self.LV_JC.ItemIndex+1);
-  JCTableData.UpdateLine(Self.LV_JC.ItemIndex);
-  JCTableData.UpdateLine(Self.LV_JC.ItemIndex+1);
-  LV_JC.ItemIndex := LV_JC.ItemIndex + 1;
-  LV_JC.SetFocus;
-end;
-
-procedure TF_Main.SB_Cesty_UpClick(Sender: TObject);
-begin
-  JCDb.SwitchJC(Self.LV_JC.ItemIndex, Self.LV_JC.ItemIndex-1);
-  JCTableData.UpdateLine(Self.LV_JC.ItemIndex);
-  JCTableData.UpdateLine(Self.LV_JC.ItemIndex-1);
-  LV_JC.ItemIndex := LV_JC.ItemIndex - 1;
-  LV_JC.SetFocus;
 end;
 
 procedure TF_Main.OnStart;
@@ -2153,18 +2125,6 @@ begin
   if (LV_JC.Selected <> nil) then
    begin
     B_VC_delete.Enabled := true;
-    if (LV_JC.ItemIndex = 0) then
-     begin
-      SB_Cesty_Up.Enabled := false;
-     end else begin
-      SB_Cesty_Up.Enabled := true;
-     end;
-    if (LV_JC.ItemIndex = LV_JC.Items.Count-1) then
-     begin
-      SB_Cesty_Down.Enabled := false;
-     end else begin
-      SB_Cesty_Down.Enabled := true;
-     end;
 
     if (JCDb.GetJCByIndex(LV_JC.ItemIndex).staveni) then
       B_JC_Reset.Enabled := true
@@ -2172,8 +2132,6 @@ begin
       B_JC_Reset.Enabled := false;
    end else begin
     B_VC_delete.Enabled   := false;
-    SB_Cesty_Up.Enabled   := false;
-    SB_Cesty_Down.Enabled := false;
     B_JC_Reset.Enabled    := false;
    end;
 end;
@@ -2194,6 +2152,11 @@ procedure TF_Main.LV_JCDblClick(Sender: TObject);
 begin
   if (LV_JC.Selected <> nil) then
     F_JCEdit.OpenForm(LV_JC.ItemIndex);
+end;
+
+procedure TF_Main.LV_JCKeyPress(Sender: TObject; var Key: Char);
+begin
+ if (Key = #13) then Self.LV_JCDblClick(LV_Bloky);
 end;
 
 procedure TF_Main.LV_logCustomDrawItem(Sender: TCustomListView; Item: TListItem;
@@ -2247,6 +2210,11 @@ begin
    F_MJCEdit.OpenForm(MultiJCDb.GetJCByIndex(Self.LV_MultiJC.ItemIndex));
 end;
 
+procedure TF_Main.LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
+begin
+ if (Key = #13) then Self.LV_MultiJCDblClick(LV_Bloky);
+end;
+
 procedure TF_Main.LV_SoupravyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
@@ -2288,6 +2256,11 @@ procedure TF_Main.LV_UsersDblClick(Sender: TObject);
 begin
  if (Self.LV_Users.Selected <> nil) then
   F_UserEdit.OpenForm(UsrDB.GetUser(Self.LV_Users.ItemIndex));
+end;
+
+procedure TF_Main.LV_UsersKeyPress(Sender: TObject; var Key: Char);
+begin
+ if (Key = #13) then Self.LV_UsersDblClick(LV_Bloky);
 end;
 
 procedure TF_Main.LV_ZesilovaceChange(Sender: TObject; Item: TListItem;
@@ -2548,6 +2521,11 @@ begin
   end;
 end;
 
+procedure TF_Main.LV_HVKeyPress(Sender: TObject; var Key: Char);
+begin
+ if (Key = #13) then Self.LV_HVDblClick(LV_Bloky);
+end;
+
 procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
@@ -2575,7 +2553,10 @@ begin
    F_ZesilovacEdit.OpenForm(BoostersDb.GetBooster(LV_Zesilovace.ItemIndex));
 end;
 
-//procedure
+procedure TF_Main.LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
+begin
+ if (Key = #13) then Self.LV_ZesilovaceDblClick(LV_Bloky);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2631,7 +2612,7 @@ begin
    LI.Caption := IntToStr(i+1);
 
    if (AC.kroky[i].command = 0) then LI.SubItems.Add('----- Ukonceni AC -----');
-   if (AC.kroky[i].command = 1) then LI.SubItems.Add('Vlakova cesta '+JCDb.GetJCByIndex(AC.kroky[i].Params[0]).Nazev);
+   if (AC.kroky[i].command = 1) then LI.SubItems.Add('Vlakova cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
    if ((AC.kroky[i].command = 2) and (AC.kroky[i].Params[1] = 1)) then LI.SubItems.Add('Cekani na obsazeni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
    if ((AC.kroky[i].command = 2) and (AC.kroky[i].Params[1] = 0)) then LI.SubItems.Add('Cekani na uvolneni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
    if (AC.kroky[i].command = 3) then LI.SubItems.Add('Zmena osvetleni ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));

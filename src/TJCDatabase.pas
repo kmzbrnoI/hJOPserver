@@ -7,9 +7,11 @@ unit TJCDatabase;
 interface
 
 uses TechnologieJC, TBlok, IniFiles, RPConst, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes;
+      Generics.Collections, Classes, IBUtils;
 
 type
+  EJCIdAlreadyExists = class(Exception);
+
   TJCDb = class
    private
     JCs:TList<TJC>;
@@ -18,6 +20,7 @@ type
 
      procedure Clear();
      function GetCount():Word;
+     function FindPlaceForNewJC(id:Integer):Integer;
 
    public
 
@@ -26,17 +29,21 @@ type
 
      function LoadData(const filename:string):Byte;
      function SaveData(const filename:string):Byte;
+     procedure UpdateJCIndexes();
 
-     function GetJCByIndex(index:Integer):TJC;
      procedure Update();
      procedure StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject);
-     function SwitchJC(index1:Word; index2:Word):Byte;
 
-     function AddJC(JCdata:TJCprop):Integer;
-     function RemoveJC(index:Integer):Integer;
+     function AddJC(JCdata:TJCprop):TJC;
+     procedure RemoveJC(index:Integer);
+
+     function GetJCByIndex(index:Integer):TJC;
+     function GetJCIndex(id:Integer):Integer;
+     function GetJCByID(id:integer):TJC;
 
      // najde JC, ktera je postavena, ci prave stavena !
      function FindJC(NavestidloBlokID:Integer;Staveni:Boolean = false):Integer;
+     function IsJC(id:Integer; ignore_index:Integer = -1):boolean;
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
      function FindPostavenaJCWithVyhybka(vyh_id:Integer):TArSmallI;
@@ -52,6 +59,10 @@ type
 
      procedure RusAllJC();
      procedure RusJC(Blk:TBlk);     // rusi cestu, ve ktere je zadany blok
+
+     // volano pri zmene ID JC na indexu \index
+     // -> je potreba zmenit poradi JC
+     procedure JCIDChanged(index:Integer);
 
      property Count:Word read GetCount;
      property filename:string read ffilename;
@@ -105,16 +116,24 @@ begin
    Exit(1);
  end;
 
- Self.Clear();
+ Self.JCs.Clear();
  sections := TStringList.Create();
  ini.ReadSections(sections);
 
  for i := 0 to sections.Count-1 do
   begin
    JC := TJC.Create();
-   JC.LoadData(ini, sections[i]);
-   Self.JCs.Add(JC);
+   try
+     JC.index := i;
+     JC.LoadData(ini, sections[i]);
+     Self.JCs.Insert(Self.FindPlaceForNewJC(JC.id), JC);
+   except
+     writelog('JC '+JC.nazev+' se nepodaøilo naèíst', WR_ERROR);
+     JC.Free();
+   end;
   end;//for i
+
+ Self.UpdateJCIndexes();
 
  ini.Free;
  sections.Free();
@@ -137,7 +156,7 @@ begin
  end;
 
  for i := 0 to Self.JCs.Count-1 do
-   Self.JCs[i].SaveData(ini, 'JC'+IntToStr(i));
+   Self.JCs[i].SaveData(ini, IntToStr(Self.JCs[i].id));
 
  ini.UpdateFile();
  ini.Free();
@@ -262,52 +281,53 @@ begin
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.AddJC(JCdata:TJCprop):Integer;
+function TJCDb.AddJC(JCdata:TJCprop):TJC;
 var JC:TJC;
+    index:Integer;
+    i:Integer;
 begin
+ // kontrola existence JC stejneho ID
+ if (Self.IsJC(JCData.id)) then
+   raise EJCIdAlreadyExists.Create('ID jízdní cesty '+IntToStr(JCData.id)+' již použito');
+
+ index := Self.FindPlaceForNewJC(JCData.id);
  JC := TJC.Create(JCData);
- Self.JCs.Add(JC);
- JCTableData.AddJC();
- Result := 0;
+ JC.index := index;
+ Self.JCs.Insert(index, JC);
+
+ // indexy prislusnych JC na konci seznamu posuneme o 1 nahoru
+ for i := index+1 to Self.JCs.Count-1 do
+   Self.JCs[i].index := Self.JCs[i].index + 1;
+
+ JCTableData.AddJC(index);
+ Result := JC;
 end;//function
 
-function TJCDb.RemoveJC(index:Integer):Integer;
+procedure TJCDb.RemoveJC(index:Integer);
 var i:Integer;
     OblR:TOR;
+    tmp:TJC;
 begin
- if ((index < 0) or (index >= Self.JCs.Count)) then
-   Exit(1);
+ if (index < 0) then raise Exception.Create('Index podtekl seznam JC');
+ if (index >= Self.JCs.Count) then raise Exception.Create('Index pretekl seznam JC');
+ if (Self.JCs[index].postaveno) then raise Exception.Create('JC postavena, nelze smazat');
 
- if (Self.JCs[index].postaveno) then
-   Exit(2);
-
+ tmp := Self.JCs[index];
  for i := 0 to ORs.Count-1 do
   begin
    ORs.GetORByIndex(i, OblR);
-   if (OblR.stack.IsJCInStack(Self.JCs[index])) then
-    Exit(3);
+   if (OblR.stack.IsJCInStack(tmp)) then
+     raise Exception.Create('JC v zasobniku OR '+OblR.id);
   end;
 
- Self.JCs[index].Free();
  Self.JCs.Delete(index);
 
+ // aktulizujeme indexy JC (dekrementujeme)
+ for i := index to Self.JCs.Count-1 do
+   Self.JCs[i].index := Self.JCs[i].index - 1;
+
+ FreeAndNil(tmp);
  JCTableData.RemoveJC(index);
- Result := 0;
-end;//function
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TJCDb.SwitchJC(index1:Word; index2:Word):Byte;
-var tmp:TJC;
-begin
- if ((index1 >= Self.JCs.Count) or (index2 >= Self.JCs.Count)) then
-   Exit(1);
-
- tmp := Self.JCs[index1];
- Self.JCs[index1] := Self.JCs[index2];
- Self.JCs[index2] := tmp;
-
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -560,6 +580,92 @@ function TJCDb.GetCount():Word;
 begin
  Result := Self.JCs.Count;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+// najde index pro novou jizdni cestu
+function TJCDb.FindPlaceForNewJC(id:Integer):Integer;
+var i:Integer;
+begin
+ i := Self.JCs.Count-1;
+ while ((i >= 0) and (Self.JCs[i].id > id)) do
+   i := i - 1;
+ Result := i+1;
+end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJCDb.IsJC(id:Integer; ignore_index:Integer = -1):boolean;
+var index:Integer;
+begin
+ index := Self.GetJCIndex(id);
+ Result := ((index <> -1) and (index <> ignore_index));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Hledame JC se zadanym ID v seznamu bloku pomoci binarniho vyhledavani.
+
+function TJCDb.GetJCIndex(id:Integer):Integer;
+var left, right, mid:Integer;
+begin
+ left  := 0;
+ right := Self.JCs.Count-1;
+
+ while (left <= right) do
+  begin
+   mid := (left + right) div 2;
+   if (Self.JCs[mid].id = id) then Exit(mid);
+
+   if (Self.JCs[mid].id > id) then
+     right := mid - 1
+   else
+     left := mid + 1;
+  end;
+ Result := -1;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJCDb.GetJCByID(id:integer):TJC;
+var index:Integer;
+begin
+ Result := nil;
+ index := Self.GetJCIndex(id);
+ if (index > -1) then Result := Self.JCs[index];
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJCDb.JCIDChanged(index:Integer);
+var new_index, min_index, i:Integer;
+    tmp:TJC;
+begin
+ tmp := Self.JCs[index];
+ Self.JCs.Delete(index);
+ new_index := FindPlaceForNewJC(tmp.id);
+
+ // provedeme prehozeni bloku na jinou pozici
+ Self.JCs.Insert(new_index, tmp);
+ if (index = new_index) then Exit();
+
+ // od nejmensiho prohazovaneho indexu aktualizujeme indexy
+ // aktualizjeme dokud indexy nesedi
+ min_index := Min(new_index, index);
+ for i := min_index to Self.JCs.Count-1 do
+   if (Self.JCs[i].index = i) then break
+   else Self.JCs[i].index := i;
+
+ JCTableData.MoveJC(index, new_index);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJCDb.UpdateJCIndexes();
+var i:Integer;
+begin
+ for i := 0 to Self.JCs.Count-1 do
+  Self.JCs[i].index := i;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
