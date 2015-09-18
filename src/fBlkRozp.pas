@@ -67,7 +67,7 @@ procedure TF_BlkRozp.OpenForm(BlokIndex:Integer);
 procedure TF_BlkRozp.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
-  SE_ID.Value           := 0;
+  SE_ID.Value           := Blky.GetBlkID(Blky.Cnt-1)+1;
   Self.SE_MTB.Value     := 1;
   Self.SE_Port.Value    := 0;
 

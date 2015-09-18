@@ -121,7 +121,7 @@ procedure TF_BlkTU.NewBlkOpenForm;
 var zastEvents:TBlkTUZastevents;
  begin
   E_Nazev.Text               := '';
-  SE_ID.Value                := 0;
+  SE_ID.Value                := Blky.GetBlkID(Blky.Cnt-1)+1;
   E_Delka.Text               := '0';
   CHB_SmycBlok.Checked       := false;
   Self.CB_Zesil.ItemIndex    := -1;

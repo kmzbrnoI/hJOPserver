@@ -60,7 +60,7 @@ procedure TF_BlkZamek.OpenForm(BlokIndex:Integer);
 procedure TF_BlkZamek.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
-  SE_ID.Value           := 0;
+  SE_ID.Value           := Blky.GetBlkID(Blky.Cnt-1)+1;
 
   Self.Caption       := 'Editovat data noveho bloku';
  end;//procedure

@@ -181,7 +181,7 @@ var glob:TBlkSettings;
 procedure TF_BlkPrejezd.NewOpenForm;
  begin
   E_prj_Nazev.Text          := '';
-  SE_ID.Value               := 0;
+  SE_ID.Value               := Blky.GetBlkID(Blky.Cnt-1)+1;
   SE_vyst_open.Value        := 0;
   SE_vyst_close.Value       := 0;
   SE_vyst_vyluka.Value      := 0;

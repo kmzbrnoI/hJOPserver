@@ -100,7 +100,7 @@ procedure TF_BlkSCom.OpenForm(BlokIndex:Integer);
 procedure TF_BlkSCom.NewBlkOpenForm();
  begin
   E_Nazev.Text             := '';
-  SE_ID.Value              := 0;
+  SE_ID.Value              := Blky.GetBlkID(Blky.Cnt-1)+1;
   SE_MTBMTB.Value          := 1;
   SE_MTBPort.Value         := 0;
   SE_Delay.Value           := 0;
