@@ -1063,8 +1063,10 @@ begin
     end;
   end;
 
- F_Main.LogStatus('Loko: žádné loko k pøevzetí'); 
- Self.AllPrevzato(); 
+ F_Main.LogStatus('Loko: žádné loko k pøevzetí');
+ F_Main.G_Loko_Prevzato.MaxValue := 1;
+ F_Main.G_Loko_Prevzato.Progress := 1;
+ Self.AllPrevzato();
 end;//procedure
 
 procedure TTrkGUI.OdhlasitAll();
@@ -1097,7 +1099,9 @@ begin
     end;
   end;
 
- F_Main.LogStatus('Loko: žádné loko k odhlášení'); 
+ F_Main.LogStatus('Loko: žádné loko k odhlášení');
+ F_Main.G_Loko_Prevzato.MaxValue := 1;
+ F_Main.G_Loko_Prevzato.Progress := 0;
  Self.AllOdhlaseno();
 end;//procedure
 

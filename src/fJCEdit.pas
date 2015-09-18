@@ -127,7 +127,10 @@ procedure TF_JCEdit.NewVCOpenForm;
   Self.Vyhybky.Clear();
 
   E_VCNazev.Text                  := '';
-  SE_ID.Value                     := JCDb.GetJCByIndex(JCDb.Count-1).id + 1;
+  if (JCDb.Count > 0) then
+    SE_ID.Value := JCDb.GetJCByIndex(JCDb.Count-1).id + 1
+  else
+    SE_ID.Value := 1;
   Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, _BLK_SCOM, -1);
 
   CB_TypCesty.ItemIndex           := -1;

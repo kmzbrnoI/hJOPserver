@@ -726,6 +726,8 @@ begin
  //    a jaky TU je vedle enho v sudem smeru (bliz konci trati).
  //    Krajni TU maji referenci na dalsi TU "nil".
 
+ if (Self.TratSettings.Useky.Count = 0) then Exit(); 
+
  lTU := nil;
  Blky.GetBlkByID(Self.TratSettings.Useky[0], TBlk(blk));
  if (Self.TratSettings.Useky.Count > 1) then
@@ -858,7 +860,7 @@ begin
         end;
 
        if ((last.SprPredict = -1) and (Self.SprPredict > -1)) then last.SprPredict := Self.SprPredict;
-       Blky.SprPrediction(Self.navSudy);
+       if (Self.navSudy <> nil) then Blky.SprPrediction(Self.navSudy);
   end;
 
   TTratSmer.BtoA: begin
@@ -886,7 +888,7 @@ begin
         end;
 
        if ((last.SprPredict = -1) and (Self.SprPredict > -1)) then last.SprPredict := Self.SprPredict;
-       Blky.SprPrediction(Self.navLichy);
+       if (Self.navLichy <> nil) then Blky.SprPrediction(Self.navLichy);
   end;
  end;//case
 end;

@@ -641,7 +641,11 @@ end;//procedure
 procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var ci:TCloseInfo;
  begin
-  if (NUZClose) then CanClose := true;
+  if (NUZClose) then
+   begin
+    CanClose := true;
+    Exit();
+   end;
   ci := GetFunctions.CanClose();
   if (Integer(ci) > 0) then CanClose := false;
 
