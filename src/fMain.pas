@@ -23,7 +23,6 @@ type
     PM_Nastaveni: TMenuItem;
     M_Reset: TMenuItem;
     PM_ResetV: TMenuItem;
-    AE_1: TApplicationEvents;
     SB1: TStatusBar;
     N1: TMenuItem;
     M_Dalsi: TMenuItem;
@@ -243,6 +242,7 @@ type
     P_funcsVyznamBg: TPanel;
     B_Change: TButton;
     CHB_LoadChanges: TCheckBox;
+    AE_Main: TApplicationEvents;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -385,6 +385,8 @@ type
     procedure OnFuncsVyznamChange(Sender:TObject);
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
+    procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
+    procedure WMEndSession(var Msg: TWMEndSession); message WM_ENDSESSION;
 
   public
     KomunikacePocitani:Shortint;
@@ -466,7 +468,7 @@ var
   SystemData:TSystem;
   TrkSystem:TTrkGUI;
 
-  ini_lib:TMemInifile;                        //inicializace souboru inidata.ini
+  ini_lib:TMemInifile;                     //inicializace souboru inidata.ini
   SWMode:TColor;                           //SWMode - blikani Shapu - jakou barvou - clGray + SWMode
   Log:boolean;                             //jestli se vypisuje do SB1
   ShowErrorMessage:boolean;                //jestli se ma napsat error s nactenim dat, prime zobrazeni zprav od klienta
@@ -495,6 +497,9 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
      TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster;
+
+function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
+function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
 
 {$R *.dfm}
 
@@ -642,30 +647,71 @@ begin
 end;//procedure
 
 procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);//konec krizkem
+var ci:TCloseInfo;
  begin
-  if (GetFunctions.GetQueryClose) then
-   begin                                                 //pokud je mozno ukoncit program
-    beep;
-    if (CloseMessage) then
-     begin
-      if Application.Messagebox('Opravdu chcete ukonèit program?','hJOPserver', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES then
+  if (NUZClose) then CanClose := true;
+  ci := GetFunctions.CanClose();
+  if (Integer(ci) > 0) then CanClose := false;
+
+  case (ci) of
+    TCloseInfo.ci_system_changing : begin
+      writelog('Pokus o zavøení okna pøi zapínání nebo vypínání systémù', WR_ERROR);
+      Application.MessageBox(PChar('Technologie právì zapíná nebo vypíná systémy, aplikaci nelze momentálnì zavøít.'+
+              #13#10+'Nouzové ukonèení programu lze provést spuštìním pøíkazu "app-exit" v konzoli')
+              , 'Nelze ukonèit program', MB_OK OR MB_ICONWARNING);
+    end;
+
+    TCloseInfo.ci_system_started : begin
+      writelog('Pokus o zavøení okna bez ukonèení komunikace se systémy', WR_ERROR);
+      if (Application.MessageBox('Program není odpojen od systémù, odpojit od systémù?',
+        'Nelze ukonèit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+          F_Main.A_System_StopExecute(Self);
+    end;
+
+    TCloseInfo.ci_mtb : begin
+      writelog('Pokus o zavøení okna bez uzavøení MTB', WR_ERROR);
+      if (Application.MessageBox('Program není odpojen od MTB, odpojit?',
+          'Nelze ukonèit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
        begin
-        CanClose := true;
-       end else begin                                           //pokud se klikne na Cancel
-        CanClose := false;
+        if (MTB.Start) then MTB.Stop()
+        else if (MTB.Openned) then MTB.Close();
        end;
-     end else begin//CloseMessage
-      CloseMessage := true;
-      CanClose     := true;
-     end;//else CloseMessage
-   end else begin//if GetQueryClose
-    CanClose := false;
-   end;//else GetQueryClose
+    end;
+
+    TCloseInfo.ci_server : begin
+      writelog('Pokus o zavøení okna bez vypnutí panel serveru', WR_ERROR);
+      if (Application.MessageBox('PanelServer stále bìží, vypnout?',
+          'Nelze ukonèit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+       ORTCPServer.Stop();
+    end;
+
+    TCloseInfo.ci_trakce : begin
+      writelog('Pokus o zavøení okna bez odpojení od centrály', WR_ERROR);
+      if (Application.MessageBox('Program není odpojen od centrály, odpojit?',
+          'Nelze ukonèit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+        TrkSystem.Close();
+    end;
+
+    TCloseInfo.ci_yes : begin
+      if (CloseMessage) then
+       begin
+        CanClose := (Application.Messagebox('Opravdu chcete ukonèit program?', 'hJOPserver',
+            MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES);
+       end else begin//CloseMessage
+        CloseMessage := true;
+        CanClose     := true;
+       end;//else CloseMessage
+    end;
+
+  end;//case
  end;//procedure
 
-procedure TF_Main.AE_1Message(var Msg: tagMSG;              //vse co jde do programu - klavesy, kliknuti...
-  var Handled: Boolean);
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.AE_1Message(var Msg: tagMSG; var Handled: Boolean);
 begin
+ Handled := false;
+
  if (Msg.Message = MyMsg) then
   begin
    Application.Restore;
@@ -690,10 +736,6 @@ begin
          end;
         end;//case
    end;
-
-   WM_POWERBROADCAST: begin
-
-   end;
  end;
 end;//procedure
 
@@ -708,6 +750,7 @@ begin
        // windows is going to sleep -> disconnect all devices
        if (TrkSystem.openned) then
         begin
+         ORTCPServer.Stop();
          try
            TrkSystem.EmergencyStop();
            TrkSystem.FastResetLoko();
@@ -722,6 +765,50 @@ begin
 
  end;//case
 end;//procedure
+
+procedure TF_Main.WMQueryEndSession(var Msg: TWMQueryEndSession);
+begin
+ if (GetFunctions.CanClose() <> ci_yes) then
+  begin
+   // disallow Windows from shutting down
+   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
+   ShutdownBlockReasonCreate(Application.MainForm.Handle, 'hJOPserver není odpojen od systémù');
+   Msg.Result := 0;
+ end else begin
+   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
+   Msg.Result := 1;
+   CloseMessage := false;
+   NUZClose     := true;
+ end;
+ inherited;
+end;
+
+procedure TF_Main.WMEndSession(var Msg: TWMEndSession);
+begin
+ if (Msg.EndSession = True) then
+  begin
+   if (TrkSystem.openned) then
+    begin
+     ORTCPServer.Stop();
+     try
+       TrkSystem.EmergencyStop();
+       TrkSystem.FastResetLoko();
+       TrkSystem.Close(true);
+     except
+
+     end;
+    end;
+   if (MTB.Start) then MTB.Stop();
+   if (MTB.Openned) then MTB.Close();
+
+   CloseMessage := false;
+   NUZClose     := true;
+   F_Main.Close();
+  end;
+ inherited;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.A_All_Loko_OdhlasitExecute(Sender: TObject);
 begin
