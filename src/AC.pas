@@ -10,6 +10,7 @@ uses Classes, fMain, IniFiles, SysUtils, RPCOnst, TBlok, TechnologieJC, TBloky,
      ownStrUtils, StrUtils, IdContext;
 
 const
+  _AC_CMDTYPE_END   = 0;
   _AC_CMDTYPE_JC    = 1;
   _AC_CMDTYPE_USEK  = 2;
   _AC_CMDTYPE_OSV   = 3;

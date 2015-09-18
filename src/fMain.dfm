@@ -3151,6 +3151,7 @@ object F_Main: TF_Main
     Color = clGray
     ParentBackground = False
     TabOrder = 0
+    ExplicitTop = -4
     object P_Date: TPanel
       Left = 888
       Top = 4
@@ -3493,7 +3494,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_VC
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2

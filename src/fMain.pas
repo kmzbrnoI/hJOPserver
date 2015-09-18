@@ -391,22 +391,22 @@ type
   public
     KomunikacePocitani:Shortint;
 
-    procedure CreateSystem;                          // vola se po spusteni programu az uz jsou vsechna okna vytvorena
-    procedure CreateClasses;                         //vytvori objekty
-    procedure FreeVars;                              //pri CloseQuery provede na vsechny mnou defunovane classy *.Free
-    procedure SetStartVars;                          //nastaveni promennych po startu na pocatecni hodnoty
+    procedure CreateSystem;                                                     // inicializace SW
+    procedure CreateClasses;                                                    // vytvoreni objektu
+    procedure FreeVars;                                                         // zniceni objektu
+    procedure SetStartVars;                                                     // inicializace promennych
 
-    procedure CloseForm;                             //pri zavirani Formu1
-    procedure RepaintObjects;                        //Nastavi pozice objektu na rozmery okna
-    procedure LoadIniLibData;                        //nacte ini_lib data
-    procedure DetekujAutSpusteniSystemu;             //detekuje aut. spusteni systemu po zapnuti programu
-    procedure OnStart;                               //to, co se provede po startu
-    procedure SaveFormPosition;
+    procedure CloseForm;                                                        // ukonceni aplikace
+    procedure RepaintObjects;                                                   // prekresleni objektu podle rozmeru okna
+    procedure LoadIniLibData;                                                   // nacteni ini_lib dat
+    procedure DetekujAutSpusteniSystemu;                                        // detekuje aut. spusteni systemu po zapnuti programu
+    procedure OnStart;                                                          // spusti se pri startu SW
+    procedure SaveFormPosition;                                                 // ulozi pozici a stav F_Main
 
-    procedure VypisDatumCas;                         //vypise datum + aukualni cas
+    procedure VypisDatumCas;                                                    // aktualizuje datum a cas ve F_Main
 
-    procedure LogStatus(str:string);
-    procedure DisableRemoveButtons();
+    procedure LogStatus(str:string);                                            // vypise info do LB_Log
+    procedure DisableRemoveButtons();                                           // znemozni pouziti mazacich tlacitek, typicky se vola po startu systemu
 
     // MTB events:
     procedure OnMTBStart(Sender:TObject);
@@ -427,56 +427,48 @@ type
     procedure SetCallMethod(Method:TNotifyEvent);
   end;//public
 
- TVytizeni=class                                    //vytizeni procesoru programem
-  Gauge:TGauge;
-  GraphPos:Integer;                                  //pozice v grafu procesoru
-  LPa,LPb,LPc:Int64;                                 //cteni procesoru
-  Nejvice,Nejmene:Double;
-   procedure DetekujVytizeniProcesoru;               //vykresluje skutecne vytizeni procesoru
-   procedure DrawCPUGauge;
-   procedure ResizeCPUGauge;
+ TVytizeni=class                                                                // vytizeni procesoru programem
+  Gauge:TGauge;                                                                   // objekt ve F_Main, co ktereho se kresli vytizeni
+  GraphPos:Integer;                                                               // pozice v grafu procesoru
+  LPa,LPb,LPc:Int64;                                                              // cteni procesoru
+   procedure DetekujVytizeniProcesoru;                                            // vykresli vytizeni procesoru
+   procedure DrawCPUGauge;                                                        // vytvori objekt Gauge a umisti ho na spravne misto
+   procedure ResizeCPUGauge;                                                      // meni pozici Gauge pri zmene velikosti okna
  end;
 
- TReset=class                                       //procedury pro resetovani programu
-  procedure ZakladniPolohaVyhybek;                   //zakladni poloha vyhybek
+ TReset=class                                                                   // reset SW
+   procedure ZakladniPolohaVyhybek;                                                // prestavit vyhybky do zakladni polohy
  end;
 
-TStav=record                                        //stav systemu
- xTime:string;                                       //aktualni cas
- xDate:string;                                       //aktualni datum
-end;
+ TStav=record                                                                   //stav systemu
+  xTime:string;                                                                   // aktualni cas
+  xDate:string;                                                                   // aktualni datum
+ end;
 
 TLogData=class
-  function CreateLogDirectories:boolean;           //vytvori slozky, od kterych se ukladaji soubory log
+  function CreateLogDirectories:boolean;                                        // vytvori slozky, od kterych se ukladaji soubory log
 end;
 
-TSystemStatus = (null, starting, stopping);
-
+TSystemStatus = (null, starting, stopping);                                     // stav startovani / vypinani systemu
 TSystem=class
-  Status:TSystemStatus;
+  Status:TSystemStatus;                                                         // aktualni stav systemu
  end;
 
 var
   F_Main: TF_Main;
 
-  ResetData:TReset;                        //Moznosti resetu
-  Modelovy_cas:TTime;                      //modelovy cas
-  registr:TRegistry;                       //zapis do registru po spusteni
-  LogData:TLogData;                        //data o zapisu do LOGu
-  OPData:TStav;                            //data o datumu a casu - operacni data
-  Vytizeni:TVytizeni;                      //data o vytizeni procesoru (+programem)
-  SystemData:TSystem;
-  TrkSystem:TTrkGUI;
+  ResetData:TReset;                                                             // reset
+  LogData:TLogData;                                                             // logovani
+  OPData:TStav;                                                                 // aktualni datum a cas
+  Vytizeni:TVytizeni;                                                           // zobrazeni vytizceni procesoru
+  SystemData:TSystem;                                                           // zapinani / vypinani systemu
+  TrkSystem:TTrkGUI;                                                            // trakce
 
-  ini_lib:TMemInifile;                     //inicializace souboru inidata.ini
-  SWMode:TColor;                           //SWMode - blikani Shapu - jakou barvou - clGray + SWMode
-  Log:boolean;                             //jestli se vypisuje do SB1
-  ShowErrorMessage:boolean;                //jestli se ma napsat error s nactenim dat, prime zobrazeni zprav od klienta
+  ini_lib:TMemInifile;                                                          // objekt pro pristup k ini_lib souboru
+  Log:boolean;                                                                  // flag logovani do tabulky ve F_Main
 
-  CloseMessage:Boolean;                    //jestli se ma program pri ukonceni ptat, jestli opravdu ukoncit
-  AutRezLabel:array[0..127] of TLabel;     //pole objektu typu TLabel pro zobrazovani podminek o automatickych rezimech
-  AutSpusteniPocitadlo:Byte;               //pocitani v timeru do automatickeho spusteni komunikace
-  NUZClose:Boolean;
+  CloseMessage:Boolean;                                                         // flag ptain se uzivatele na ukonceni SW
+  NUZClose:Boolean;                                                             // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
 
 implementation
 
@@ -503,12 +495,12 @@ function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
 
 {$R *.dfm}
 
-procedure TF_Main.FormCreate(Sender: TObject);              //po spusteni
+procedure TF_Main.FormCreate(Sender: TObject);
  begin
   //vse presunuto do Form1.CreateSystem kvuli splash oknu
  end;//procedure
 
-procedure TF_Main.PM_lib_MTBClick(Sender: TObject);                              //generace lib MTB.dll
+procedure TF_Main.PM_lib_MTBClick(Sender: TObject);
  begin
   Screen.Cursor := crHourGlass;
   writelog('MTB -> mtb.dll', WR_MTB);
@@ -527,7 +519,7 @@ procedure TF_Main.PM_lib_MTBClick(Sender: TObject);                             
   Screen.Cursor := crDefault;
  end;
 
-procedure TF_Main.PM_lib_SimClick(Sender: TObject);                              //generace lib Simulator.dll
+procedure TF_Main.PM_lib_SimClick(Sender: TObject);
  begin
   Screen.Cursor := crHourGlass;
   writelog('MTB -> simulator.dll', WR_MTB);
@@ -546,7 +538,7 @@ procedure TF_Main.PM_lib_SimClick(Sender: TObject);                             
   Screen.Cursor := crDefault;
  end;
 
-procedure TF_Main.PM_TesterClick(Sender: TObject);                               //tester
+procedure TF_Main.PM_TesterClick(Sender: TObject);
  begin
   F_Tester.Show;
  end;
@@ -561,7 +553,7 @@ begin
  F_ModCasSet.OpenForm();
 end;
 
-procedure TF_Main.PM_NastaveniClick(Sender: TObject);                            //zobrazeni nastaveni
+procedure TF_Main.PM_NastaveniClick(Sender: TObject);
  begin
   F_Options.Show;
  end;
@@ -600,7 +592,7 @@ begin
   end;
 end;
 
-procedure TF_Main.Timer1Timer(Sender: TObject);                                  //hlavni timer
+procedure TF_Main.Timer1Timer(Sender: TObject);
  begin
   try
     ACDb.Update();
@@ -624,7 +616,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);                                 
   end;
  end;//procedure
 
-procedure TF_Main.PM_ResetVClick(Sender: TObject);                               //zakladni poloha vyhybek
+procedure TF_Main.PM_ResetVClick(Sender: TObject);
  begin
   ResetData.ZakladniPolohaVyhybek;
  end;
@@ -646,7 +638,7 @@ begin
   end;//if
 end;//procedure
 
-procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);//konec krizkem
+procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var ci:TCloseInfo;
  begin
   if (NUZClose) then CanClose := true;
@@ -942,12 +934,6 @@ begin
   F_Main.S_MTB_Start.Brush.Color   := clBlue;
 
   writelog('----- MTB STARTING -----',WR_MTB);
-
-  //ulozeni hodnoty pro pripad padu - informace o padu pri pristim spusteni
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
-  Konfigurace.ini.WriteInteger('SystemCfg','RunError',1);
-  Konfigurace.ini.UpdateFile;
-  Konfigurace.ini.Free;
 
   try
     MTB.Go();
@@ -1752,7 +1738,7 @@ end;
 
 procedure TF_Main.CloseForm;
  begin
-  WriteLog('ProbÌh· ukonËov·nÌ ÿÌdÌcÌho programu',WR_MESSAGE);
+  WriteLog('ProbÌh· ukonËov·nÌ hJOPserver',WR_MESSAGE);
   WriteLog('###############################################',WR_MESSAGE);
 
   Self.Timer1.Enabled         := false;
@@ -1790,13 +1776,6 @@ function TLogData.CreateLogDirectories:boolean;
       raise Exception.Create('Nelze vytvo¯it sloûku log\program');
       Result := false;
      end;
-
-{  if not DirectoryExists('log\net') then
-    if not CreateDir('log\net') then
-     begin
-      writelog('Nelze vytvo¯it sloûku log\net', WR_ERROR);
-      Result := false;
-     end;}
 
   if not DirectoryExists('log\lnet') then
     if not CreateDir('log\lnet') then
@@ -1945,14 +1924,12 @@ procedure TF_Main.LoadIniLibData;
 
 procedure TF_Main.SetStartVars;
  begin
-  SWMode                  := clRed;
-  CloseMessage            := true;
+  CloseMessage := true;
  end;//procedure
 
 procedure TVytizeni.DetekujVytizeniProcesoru;
  begin
   CollectCPUData;
-
   Vytizeni.Gauge.Progress := Round(GetCPUUsage(GetCPUCount-1)*100);
  end;
 
@@ -2043,13 +2020,6 @@ procedure TF_Main.OnStart;
 
   writelog('SpuötÏn hJOPserver v'+NactiVerzi(application.ExeName)+_VERSION_PR,0,0);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
-
-  if (ShowErrorMessage) then
-   begin
-    writelog('! Program detekoval posledni nouzove ukonceni', WR_MESSAGE);
-//    Application.Messagebox('Program byl naposledy pravdÏpodobnÏ ukonËen n·silÌm, komunikaËnÌ deska MTB-USB bude mÌt problÈmy s komunikacÌ s MTB'+_NET_END+'VypnÏte program, vypojte a opÏtovnÏ zapojte USB dr·t vedoucÌ z poËÌtaËe do desky MTB-USB a znovu program spusùte', 'hJOPserver', MB_OK OR MB_ICONWARNING OR MB_DEFBUTTON1);
-    ShowErrorMessage := false;
-   end;
 
   if (not CloseMessage) then F_Main.Close;
 
@@ -2732,14 +2702,14 @@ begin
    LI := Self.LV_AC_Kroky.Items.Add;
    LI.Caption := IntToStr(i+1);
 
-   if (AC.kroky[i].command = 0) then LI.SubItems.Add('----- Ukonceni AC -----');
-   if (AC.kroky[i].command = 1) then LI.SubItems.Add('Vlakova cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
-   if ((AC.kroky[i].command = 2) and (AC.kroky[i].Params[1] = 1)) then LI.SubItems.Add('Cekani na obsazeni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if ((AC.kroky[i].command = 2) and (AC.kroky[i].Params[1] = 0)) then LI.SubItems.Add('Cekani na uvolneni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if (AC.kroky[i].command = 3) then LI.SubItems.Add('Zmena osvetleni ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));
-   if (AC.kroky[i].command = 4) then LI.SubItems.Add('Nastaveni smeru trati '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if (AC.kroky[i].command = 5) then LI.SubItems.Add('Cekani '+IntToStr(AC.kroky[i].Params[0])+' sekund');
-   if (AC.kroky[i].command = 6) then LI.SubItems.Add('Kontrola stavu navestidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+'; navest:'+IntToStr(AC.kroky[i].Params[1]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_END) then LI.SubItems.Add('----- Ukonceni AC -----');
+   if  (AC.kroky[i].command = _AC_CMDTYPE_JC) then LI.SubItems.Add('Vlakova cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
+   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 1)) then LI.SubItems.Add('Cekani na obsazeni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 0)) then LI.SubItems.Add('Cekani na uvolneni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_OSV) then LI.SubItems.Add('Zmena osvetleni ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_TRAT) then LI.SubItems.Add('Nastaveni smeru trati '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_DELAY) then LI.SubItems.Add('Cekani '+IntToStr(AC.kroky[i].Params[0])+' sekund');
+   if  (AC.kroky[i].command = _AC_CMDTYPE_NAV) then LI.SubItems.Add('Kontrola stavu navestidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+'; navest:'+IntToStr(AC.kroky[i].Params[1]));
   end;//for i
 end;//procedure
 

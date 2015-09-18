@@ -1,7 +1,7 @@
 unit TechnologieJC;
 
 {
-  Kompletni technologie jizdni cest.
+  Kompletni technologie jizdnich cest.
 
   Tento soubor implmenetuje tridu TJC, ktera reprezentuje jednu jizdni cestu.
   Jizdni cesta se stara o vse od udrzovani vsech jejich udaju, kterymi je dana
@@ -1905,7 +1905,8 @@ begin
       DalsiUsek := nil;
 
     if (((Usek as TBlkUsek).Zaver = TJCType.nouz) and ((Usek as TBlkUsek).Obsazeno = uvolneno) and
-        ((DalsiUsek = nil) or (TBlkUsek(DalsiUsek).Obsazeno = TUsekStav.obsazeno))) then
+        ((DalsiUsek = nil) or (TBlkUsek(DalsiUsek).Obsazeno = TUsekStav.obsazeno) or
+        (TBlkUsek(DalsiUsek).GetSettings.MTBAddrs.Count = 0))) then
      begin
       // cesta se rozpada...
 

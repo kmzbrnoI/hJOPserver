@@ -199,7 +199,6 @@ var str:string;
    F_Options.CHB_Log_console.Checked := ini_lib.ReadBool('Log','Log_console',true);
 
    //zjisteni, jestli byl naposled program ukoncen nasilim
-   if ini.ReadInteger('SystemCfg', 'RunError',0) = 1 then ShowErrorMessage := true else ShowErrorMessage := false;
    Konfigurace.ini.WriteInteger('SystemCfg','RunError',0);
    Konfigurace.ini.UpdateFile;
 
