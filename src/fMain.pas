@@ -488,7 +488,8 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
-     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster;
+     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster,
+     AppEv;
 
 function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
 function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
@@ -611,7 +612,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);
    on E: Exception do
     begin
      if (not log_err_flag) then
-       writelog('Main timer exception : '+E.Message, WR_ERROR);
+       AppEvents.LogException(E, 'Main timer exception');
     end;
   end;
  end;//procedure
@@ -1686,7 +1687,7 @@ begin
    on E: Exception do
     begin
      if (not log_err_flag) then
-       writelog('Function timer exception : '+E.Message, WR_ERROR);
+       AppEvents.LogException(E, 'Function timer exception');
     end;
   end;
 end;//procedure

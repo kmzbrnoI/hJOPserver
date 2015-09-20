@@ -123,7 +123,7 @@ implementation
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
       TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieMTB,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
-      TBlokTratUsek;
+      TBlokTratUsek, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -447,7 +447,7 @@ begin
     on E:Exception do
      begin
       if (not log_err_flag) then
-       writeLog('Blok '+Self.Data[i].GetGlobalSettings().name + ' update error : '+E.Message, WR_ERROR);
+       AppEvents.LogException(E, 'Blok '+Self.Data[i].GetGlobalSettings().name + ' update error');
      end;
    end;
   end;

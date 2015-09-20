@@ -4,7 +4,7 @@ unit Logging;
 
 interface
 
-uses ComCtrls, SysUtils, Graphics, Windows;
+uses ComCtrls, SysUtils, Graphics, Windows, Classes;
 
 const
    //konstanty pro writelog
@@ -24,7 +24,8 @@ const
    WR_TRAT        = 16;
 
 
-procedure writeLog(Text:string;Typ:integer;ErrorID:integer = 0);//zapis do logu i do nabidky v nastaveni, log soubor...
+procedure writeLog(Text:string;Typ:integer;ErrorID:integer = 0); overload;
+procedure writeLog(Text:TStrings; Typ:integer; ErrorID:integer = 0); overload;
 
 var
   log_err_flag:boolean;              // pokud je posledni log chyba, je zde true, jinak je zde false
@@ -81,13 +82,14 @@ function GetWriteLogTyp(Typ:Integer):string;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure WriteLog(Text:string;Typ:integer;ErrorID:integer = 0);   //writelog
+procedure intWriteLog(Text:string; Typ:integer; ErrorID:integer = 0; multiline:boolean = false);
 var LV:TListItem;
     f:TextFile;
     xTime,xDate:string;
  begin
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss', Now);
+  if (multiline) then xTime := '';
 
   if (typ = WR_ERROR) then
    log_err_flag := true
@@ -112,8 +114,11 @@ var LV:TListItem;
         LV.SubItems.Add('X');
        end;
      end;//if mainlog.Checked
-    F_Main.SB1.Panels.Items[_SB_LOG].Text:=text;
-    Log := true;
+    if (not multiline) then
+     begin
+      F_Main.SB1.Panels.Items[_SB_LOG].Text:=text;
+      Log := true;
+     end;
   except
 
   end;
@@ -128,7 +133,6 @@ var LV:TListItem;
         Rewrite(f);
 
       writeln(f, xtime+';'+GetWriteLogTyp(Typ)+';'+InttoStr(ErrorID)+';'+Text+';'+ColorToString(GetLogColor(Typ, ErrorID))+';');
-
       CloseFile(f);
      end;
   except
@@ -136,5 +140,24 @@ var LV:TListItem;
   end;
 
  end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure writeLog(Text:string; Typ:integer; ErrorID:integer = 0); overload;
+begin
+ intWriteLog(Text, Typ, ErrorID, false);
+end;
+
+procedure writeLog(Text:TStrings; Typ:integer; ErrorID:integer = 0); overload;
+var i:Integer;
+begin
+ if (Text.Count = 0) then Exit();
+
+ intWriteLog(Text[0], Typ, ErrorID, false);
+ for i := 1 to Text.Count-1 do
+   intWriteLog(' -> '+Text[i], Typ, ErrorID, true);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

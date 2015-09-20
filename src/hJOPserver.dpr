@@ -8,6 +8,7 @@
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     H     HH   H           H
 //Zaèátek tvorby : záøí 2008
 
+// JCL_DEBUG_EXPERT_INSERTJDBG ON
 program hJOPserver;
 
 uses
