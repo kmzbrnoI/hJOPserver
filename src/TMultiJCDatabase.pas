@@ -240,7 +240,7 @@ begin
       begin
        // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
        for j := 0 to Self.JCs[i].data.JCs.Count-1 do
-         (SenderOR as TOR).stack.AddJC(JCDb.GetJCByIndex(Self.JCs[i].data.JCs[j]), SenderPnl, false);
+         (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(Self.JCs[i].data.JCs[j]), SenderPnl, false);
 
        (StartBlk as TBlkSCom).ZacatekVolba := TBlkSComVOlba.none;
        (EndBlk as TBlkUsek).KonecJC        := TJCType.no;
