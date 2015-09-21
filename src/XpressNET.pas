@@ -12,11 +12,14 @@ uses
   ExtCtrls, Forms;
 
 type
+  // zprava
+  //  maximalni delka pro rychlost omezena na astronomickou hodnotu 256 bytu
   TBuffer = record
    data:array [0..255] of Byte;
    Count:Integer;
   end;
 
+  // mozne prikazy z PC do centraly:
   Tcmd = (
     XB_TRK_OFF = 10,
     XB_TRK_ON  = 11,
@@ -43,15 +46,16 @@ type
   );
 
 
-  TParseMsgEvent = procedure(Sender: TObject; msg: TBuffer; var Handled: boolean) of object;
+  TParseMsgEvent = procedure(Sender: TObject; msg: TBuffer;
+                              var Handled: boolean) of object;
 
-  TXpressNETHistoryPacket = record
-   cmd: Tcmd;
-   params:array [0..2] of Integer;
-   time:TDateTime;
-   sent:Integer;
-   callback_err:TCommandCallback;
-   callback_ok:TCommandCallback;
+  TXpressNETHistoryPacket = record                                              // prvek vystupniho bufferu
+   cmd: Tcmd;                                                                     // prikaz
+   params:array [0..2] of Integer;                                                // parametry prikazu
+   time:TDateTime;                                                                // cas odeslani
+   sent:Integer;                                                                  // kolikrat odeslan
+   callback_err:TCommandCallback;                                                 // chybovy callback
+   callback_ok:TCommandCallback;                                                  // ok callback
   end;
 
   TXpressNET = class(TTrakce)
@@ -64,59 +68,63 @@ type
                                                                                 //  tzn. jedna zprava je pred prohlasenim za neodeslatelnou odeslana prave trikrat (poprve a pote 2x opakovane)
 
    private
-    Fbuf_in: TBuffer;                                                           // vstupni buffer
+    Fbuf_in: TBuffer;                                                           // vstupni buffer (data z centraly do PC)
 
-    FOnParseMsg: TParseMsgEvent;
-    loading_addr:Word;                  //aktualni adresa lokomotivy, ktera se nacita
+    FOnParseMsg: TParseMsgEvent;                                                // event volany pri prijeti kompletni zpravy
+    loading_addr:Word;                                                          // aktualni adresa lokomotivy, ktera se prebira
+                                                                                // POZOR: v jeden okamzik lze prebirat nejvyse jednu lokomotivu
 
-    send_history: TList<TXpressNETHistoryPacket>;
-    timer_history:TTimer;
-    buf:TBuffer;
+    send_history: TList<TXpressNETHistoryPacket>;                               // vystupni buffer (data z PC do centraly)
+    timer_history:TTimer;                                                       // timer starajici se o vystupni buffer
+    buf:TBuffer;                                                                // lokalni buffer pro vytvareni zprav, vypicke uziti pri vytvareni zpravy k odeslani
 
-    function LokAddrEncode(addr: Integer): Word;
-    function LokAddrDecode(ah, al: byte): Integer;
-    function LokAddrToBuf(addr: Integer):ShortString;
+    function LokAddrEncode(addr: Integer): Word; inline;                        // ctyrmistna adresa lokomotivy do dvou bytu
+    function LokAddrDecode(ah, al: byte): Integer; inline;                      // ctyrmistna adresa lokomotivy ze dvou bajtu do klasickeho cisla
+    function LokAddrToBuf(addr: Integer): ShortString;                          // adresa to bufferu
 
-    procedure DataReceive(Sender: TObject; Count: Integer);
-    procedure ParseMsg(msg: TBuffer);
-    procedure ParseMsgTry(msg: TBuffer);
+    procedure DataReceive(Sender: TObject; Count: Integer);                     // event z objektu ComPortu o prijeti dat
+    procedure ParseMsg(msg: TBuffer);                                           // lokalni parsing kompletni zpravy
+    procedure ParseMsgTry(msg: TBuffer);                                        // rozhodunti o parsovatku zpravy (bud lokalni, nebo externi)
 
-    procedure Send(buf: TBuffer);
-    procedure SendCommand(cmd: Tcmd; p1:Integer = 0; p2:Integer = 0; p3: Integer = 0; sent_times:Integer = 0);
+    procedure Send(buf: TBuffer);                                               // odesli prikaz do centraly
+    procedure SendCommand(cmd: Tcmd; p1:Integer = 0; p2:Integer = 0;            // odesli konkretni prikaz dle terminologie XpressNETu do centraly
+                          p3: Integer = 0; sent_times:Integer = 0);
 
-    function CreateBuf(str:ShortString):TBuffer;
+    function CreateBuf(str:ShortString):TBuffer;                                // vytvor vystupni buffer na zaklde stringu (pouziva se pro jednoduche vytvareni zprav)
 
-    procedure CheckLoading();
+    procedure CheckLoading();                                                   // zkontroluj, jestli prave ten nacita lokomotiva
 
-    procedure OnTimer_history(Sender:TObject);
-    procedure hist_send(index:Integer);
-    procedure hist_ok();
-    procedure hist_err();
+    procedure OnTimer_history(Sender:TObject);                                  // tick timer_history
+    procedure hist_send(index:Integer);                                         // odesli data z historie (= vystupniho bufferu) na indexu \index
+    procedure hist_ok();                                                        // na prvni data z vystupniho vufferu prisla odpoved, smaz data z bufferu
+    procedure hist_err();                                                       // na pravni data z vystupniho bufferu neprisla odpoved, odesli data znova
    public
 
      constructor Create();
      destructor Destroy(); override;
 
-     procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;
+     procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;            // nastav stav centraly: ON, OFF, PROGR
 
-     procedure LokEmergencyStop(addr:Integer); override;
-     procedure LokSetSpeed(Address:Integer; speed:Integer; dir:Integer); override;
-     procedure LokSetFunc(Address:Integer; sada:Byte; stav:Byte); override;
-     procedure LokGetInfo(Address:Integer); override;
-     procedure Lok2MyControl(Address:Integer); override;
-     procedure LokFromMyControl(Address:Integer); override;
-     procedure LokGetFunctions(Address:Integer; startFunc:Integer); override;
+     procedure LokEmergencyStop(addr:Integer); override;                        // nouzove zastav lokomotivu
+     procedure LokSetSpeed(Address:Integer; speed:Integer;                      // nastav rychlost lokomotivy
+                           dir:Integer); override;
+     procedure LokSetFunc(Address:Integer; sada:Byte; stav:Byte); override;     // nastav funkcni sadu \sada do stavu \stav (po bitech)
+     procedure LokGetInfo(Address:Integer); override;                           // zjisti informace o lokomotive \Address
+     procedure Lok2MyControl(Address:Integer); override;                        // prevezmi lokomotivu \Address
+     procedure LokFromMyControl(Address:Integer); override;                     // uvolni lokomotivu \Address
+     procedure LokGetFunctions(Address:Integer; startFunc:Integer); override;   // zjisti stav funkci lokomotivy \Address od funkce \startFunc
+                                                                                //  \startFunc je typicky 0 anebo 13
 
-     procedure GetTrackStatus(); override;
-     procedure GetCSVersion(callback:TCSVersionEvent); override;
-     procedure GetLIVersion(callback:TLIVersionEvent); override;
-     procedure POMWriteCV(Address:Integer; cv:Word; data:byte); override;
+     procedure GetTrackStatus(); override;                                      // zjisti stav trakce z centraly
+     procedure GetCSVersion(callback:TCSVersionEvent); override;                // zjisti verzi FW hlavniho procesoru v centrale
+     procedure GetLIVersion(callback:TLIVersionEvent); override;                // zjisti verzi FW LI
+     procedure POMWriteCV(Address:Integer; cv:Word; data:byte); override;       // zapis CV \cv na hodnotu \data POMem
 
 
-     procedure EmergencyStop(); override;
+     procedure EmergencyStop(); override;                                       // nouzove zastav vsechny lokomotivy
 
-     procedure AfterOpen(); override;
-     procedure BeforeClose(); override;
+     procedure AfterOpen(); override;                                           // event po otevreni komunikace
+     procedure BeforeClose(); override;                                         // event pred zavrenim komunikace
 
      //events
      property OnParseMsg: TParseMsgEvent read FOnParseMsg write FOnParseMsg;
