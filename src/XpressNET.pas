@@ -56,14 +56,15 @@ type
 
   TXpressNET = class(TTrakce)
    private const
-    _MAX_HISTORY  = 1024;
-    _HIST_CHECK_INTERVAL = 100;
-    _TIMEOUT_MSEC = 200;
-    _SEND_MAX     = 3;
+    _MAX_HISTORY  = 1024;                                                       // maximalni velikost vystupniho bufferu
+    _HIST_CHECK_INTERVAL = 100;                                                 // perioda v ms, po ketre dochazi ke kontrole vystupniho bufferu
+    _TIMEOUT_MSEC = 400;                                                        // timeout odpovedi na zpravu
+                                                                                // TENTO TIMEOUT NEZKRACOVAT !! Pri timeoutu 200 ms delalo velke potize na starsich NanoX.
+    _SEND_MAX     = 3;                                                          // Pocet odeslani prikazu do prohlaseni za neodeslatelny
+                                                                                //  tzn. jedna zprava je pred prohlasenim za neodeslatelnou odeslana prave trikrat (poprve a pote 2x opakovane)
 
    private
-    Fbuf_in: TBuffer;
-    Fbuf_in_time: TDateTime;
+    Fbuf_in: TBuffer;                                                           // vstupni buffer
 
     FOnParseMsg: TParseMsgEvent;
     loading_addr:Word;                  //aktualni adresa lokomotivy, ktera se nacita
@@ -194,8 +195,6 @@ begin
   s := 'BUF: ';
   for i := 0 to Fbuf_in.Count-1 do s := s + IntToHex(Fbuf_in.data[i],2)+' ';
   WriteLog(5, s);
-
-  Fbuf_in_time := Time;
 
   ok := true;
   while (ok) do
