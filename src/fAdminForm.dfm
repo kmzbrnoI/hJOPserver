@@ -156,12 +156,4 @@ object F_Admin: TF_Admin
     TabOrder = 7
     OnClick = CHB_SimVyhybkyClick
   end
-  object Button1: TButton
-    Left = 304
-    Top = 72
-    Width = 75
-    Height = 25
-    Caption = 'Button1'
-    TabOrder = 8
-  end
 end

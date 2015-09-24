@@ -55,7 +55,6 @@ type
     CHB_JC_Simulator: TCheckBox;
     CHB_Trat_Sim: TCheckBox;
     CHB_SimVyhybky: TCheckBox;
-    Button1: TButton;
     procedure B_SaveClick(Sender: TObject);
     procedure B_InputSimClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
