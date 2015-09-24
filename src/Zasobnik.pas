@@ -103,7 +103,7 @@ type
 implementation
 
 uses TOblRizeni, TCPServerOR, Logging, TechnologieJC, TBlok, TBloky,
-      TBlokUvazka, TBlokTrat;
+      TBlokUvazka, TBlokTrat, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -326,7 +326,7 @@ begin
  except
   on e:Exception do
    begin
-    writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - update exception '+e.Message+'; mažu pøíkaz ze zásobníku', WR_ERROR);
+    AppEvents.LogException(E, 'Zásobník OØ '+(Self.OblR as TOR).id+' - update exception, mažu pøíkaz ze zásobníku');
     Self.RemoveFromStack(0);
    end;
  end;
