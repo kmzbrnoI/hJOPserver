@@ -91,6 +91,7 @@ type
 
   bpInBlk:boolean;                                                                // jestli je v useku zavedena blokova podminka
                                                                                   // bpInBlk = kontroluji obsazeni bloku, pri uvolneni useku bez predani dale vyhlasit poruchu BP
+  poruchaBP:boolean;                                                              // jestli nastala porucha blokove podminky
   sprRychUpdateIter:Integer;                                                      // pocet zbyvajicich iteraci do nastaveni rychlost soupravy
  end;
 
@@ -103,6 +104,7 @@ type
     zast_stopped : false;
     zast_enabled : true;
     zast_zpom_ready : false;
+    poruchaBP : false;
     sprRychUpdateIter : 0;
    );
 
@@ -157,6 +159,8 @@ type
     function IsEvent(data:TBlkTUZastEvent):boolean;                             // nastal zastavkovy event?
     function GetReady():boolean;                                                // jestli je usek pripraveny na vjeti soupravy
 
+    procedure SetPoruchaBP(state:boolean);                                      // nastavi stav poruchy blokove podminky
+
   protected
     procedure SetUsekSpr(spr:Integer); override;                                // nastaven soupravy useku, kvuli warningum kompilatoru presunuto do protected (v bazove tride je protected)
 
@@ -179,6 +183,9 @@ type
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
     procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+
+    procedure Enable(); override;
+    procedure Disable(); override;
 
     procedure Update(); override;
     procedure Change(now:boolean = false); override;
@@ -212,6 +219,7 @@ type
     property sectMaster:TBlkTU read GetSectMaster;
     property nextNav:TBlk read GetNextNav;
     property ready:boolean read GetReady;
+    property poruchaBP:boolean read fTUStav.poruchaBP write SetPoruchaBP;
 
  end;//TBlkUsek
 
@@ -345,6 +353,20 @@ begin
 
  Self.TUSettings := data;
  Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.Enable();
+begin
+ inherited;
+ Self.fTUStav.poruchaBP := false;
+end;
+
+procedure TBlkTU.Disable();
+begin
+ Self.fTUStav.poruchaBP := false;
+ inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -517,7 +539,7 @@ begin
     end;
   end;
 
- if ((Self.Zaver = TJCType.nouz) and (Self.Souprava > -1)) then
+ if (Self.poruchaBP) then
    Result := Result + '!RBP,';
 end;
 
@@ -619,8 +641,8 @@ begin
  if (success) then
   begin
    old_spr := Self.Souprava;
-   Self.bpInBlk := false;
-   Self.Zaver   := TJCType.no;
+   Self.bpInBlk   := false;
+   Self.poruchaBP := false;
    if (Self.Souprava > -1) then
     begin
      Self.Souprava := -1;
@@ -754,12 +776,12 @@ begin
   end;
 
  // kontrola poruchy blokove podminky
- if ((Self.bpInBlk)) then
+ if (Self.bpInBlk) then
   begin
-   if ((Self.Obsazeno = TUsekStav.uvolneno) and (Self.Zaver = TJCType.no)) then
-     Self.Zaver := TJCType.nouz;
-   if ((Self.Obsazeno = TUsekStav.obsazeno) and (Self.Zaver = TJCType.nouz)) then
-     Self.Zaver := TJCType.no;
+   if ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.poruchaBP) and (Self.Zaver = TJCType.no)) then
+     Self.poruchaBP := true;
+   if ((Self.Obsazeno = TUsekStav.obsazeno) and (Self.poruchaBP)) then
+     Self.poruchaBP := false;
   end;
 end;
 
@@ -999,9 +1021,9 @@ begin
  if (Self.Trat = nil) then Exit();
  trat := TBlkTrat(Self.Trat);
 
- // zrusime potencialni nouzovy zaver
- Self.bpInBlk := false;
- Self.Zaver   := TJCType.no;
+ // zrusime potencialni poruchu blokove podminky a blokovou podminku
+ Self.bpInBlk   := false;
+ Self.poruchaBP := false;
 
  if (((trat.GetSettings().zabzar = TTratZZ.nabidka))
      and (not trat.Zaver) and (not trat.Obsazeno) and (not trat.RBPCan) and (Trat.stav.soupravy.Count = 0) and (not trat.nouzZaver)) then
@@ -1009,6 +1031,7 @@ begin
 
  // pokud je trat uplne volna, zrusime blokovou podminku
  if (not trat.Obsazeno) then trat.BP := false;
+
  trat.UpdateSprPredict();
  trat.Change();
 end;
@@ -1045,7 +1068,7 @@ begin
    pri staveni, ktera na prvni usek dava nouzovy zaver pri staveni }
  for blk in sectUseky do
    if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.Souprava > -1)
-    or ((blk.Zaver <> TJCType.no) and (blk.prevTU <> nil))) then Exit(false);
+    or (blk.poruchaBP)) then Exit(false);
  Result := true;
 end;
 
@@ -1146,7 +1169,18 @@ end;
 function TBlkTU.GetReady():boolean;
 begin
  Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (Self.Souprava = -1)
-  and ((Self.Zaver = TJCType.no) or (Self.prevTU = nil)));
+  and (not Self.poruchaBP));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.SetPoruchaBP(state:boolean);
+begin
+ if (Self.poruchaBP <> state) then
+  begin
+   Self.fTUStav.poruchaBP := state;
+   Self.Change();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

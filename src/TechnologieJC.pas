@@ -1615,11 +1615,15 @@ var i,j:Integer;
         if ((Blk2.GetGlobalSettings().typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
            (Blk.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
          begin
-          Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
-          (Trat as TBlkTrat).RemoveSpr((Blk as TBlkUsek).Souprava);
+          if (TBlkUsek(Blk).Souprava > -1) then
+           begin
+            Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
+            (Trat as TBlkTrat).RemoveSpr((Blk as TBlkUsek).Souprava);
 
-          (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
-          (Blk as TBlkUsek).Souprava := -1;
+            (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
+            (Blk as TBlkUsek).Souprava := -1;
+           end;
+          if (TBlkTU(Blk).bpInBlk) then TBlkTU(Blk).UvolnenoZJC();
          end;
 
         // b)
@@ -1946,14 +1950,14 @@ begin
     Usek := (Nav as TBlkSCom).UsekPred;
     if ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) then
      begin
-      if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
-        TBlkTU(Usek).UvolnenoZJC();
-
       if ((Usek as TBlkUsek).Souprava > -1) then
        begin
        (Usek as TBlkUsek).Souprava := -1;
        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
        end;
+
+      if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
+        TBlkTU(Usek).UvolnenoZJC();
      end;
    end;
   

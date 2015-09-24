@@ -2,7 +2,8 @@ unit TBlokTrat;
 
 {
  Definice a obsluha technologickeho bloku Trat
- tento blok by se ve skutecnosti na panelu nemel vyskytnout - slouzi pouze jako rodic dvou uvazek
+ tento blok by se ve skutecnosti na panelu nemel vyskytnout - slouzi pouze jako
+ rodic dvou uvazek.
 
  U bloku trati je zajisteno, ze existuji a jsou typu TBlkTU
  Bloky, ktere tomuto nevyhovuji, jsou po startu odstraneny.
@@ -470,9 +471,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if (((Blk as TBlkTU).Zaver = TJCType.nouz) and ((Blk as TBlkTU).Stav.Stav = TUsekStav.uvolneno) and
-       (TBlkTU(Blk).Souprava > -1)) then
-    Exit(true);
+   if (TBlkTU(Blk).poruchaBP) then Exit(true);
   end;//for i
  Exit(false);
 end;//function
@@ -531,9 +530,12 @@ end;//procedure
 
 procedure TBlkTrat.RemoveSpr(spr:Integer);
 begin
- Self.TratStav.soupravy.Remove(spr);
- writelog('Traù '+Self.GlobalSettings.name+ ' : smaz·na souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
- Self.Change();
+ if (Self.TratStav.soupravy.Contains(spr)) then
+  begin
+   Self.TratStav.soupravy.Remove(spr);
+   writelog('Traù '+Self.GlobalSettings.name+ ' : smaz·na souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
+   Self.Change();
+  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -591,8 +593,6 @@ begin
 
  //to-do: zmena smeru soupravy a OR hancich vozidel + sipek LS pokud maji stanice jiny lichy smer
 end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 

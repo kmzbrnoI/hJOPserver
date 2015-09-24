@@ -409,7 +409,7 @@ begin
       end;
 
      // usekum v trati se nezobrazuje zaver
-     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and (((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK) or ((Sender as TBlkUsek).Zaver = nouz))) then
+     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and ((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK)) then
       begin
        case ((Sender as TBlkUsek).Zaver) of
         vlak   : fg := clLime;
@@ -417,6 +417,8 @@ begin
         nouz   : fg := clAqua;
        end;//case
       end;
+
+     if (((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Sender).poruchaBP)) then fg := clAqua;
 
      msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
 
