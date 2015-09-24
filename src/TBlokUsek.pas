@@ -282,6 +282,7 @@ begin
  Self.UsekStav.Stav    := none;
  Self.UsekStav.StavOld := none;
  for i := 0 to 3 do Self.UsekStav.StavAr[i] := none;
+ Self.UsekStav.DCC     := true;
  Self.Update();
  //change event will be called in Update();
 end;//procedure
