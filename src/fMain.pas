@@ -2270,8 +2270,10 @@ begin
   1:(Sender as TCustomListView).Canvas.Brush.Color := $AAAAFF;
   2:begin
      (Sender as TCustomListView).Canvas.Brush.Color := $EEEEEE;
-     if (LeftStr(Item.SubItems.Strings[1],3) = 'GET') then (Sender as TCustomListView).Canvas.Brush.Color := $FFD0D0;
-     if (LeftStr(Item.SubItems.Strings[1],3) = 'PUT') then (Sender as TCustomListView).Canvas.Brush.Color := $D0FFD0;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then (Sender as TCustomListView).Canvas.Brush.Color := $FFD0D0;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then (Sender as TCustomListView).Canvas.Brush.Color := $D0FFD0;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'ERR') then (Sender as TCustomListView).Canvas.Brush.Color := $AAAAFF;
+     if (LeftStr(Item.SubItems.Strings[1], 4) = 'WARN') then (Sender as TCustomListView).Canvas.Brush.Color := $AAFFFF;
     end;//case 2
   3:(Sender as TCustomListView).Canvas.Brush.Color := clWhite;
  end;//case

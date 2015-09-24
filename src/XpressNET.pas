@@ -854,12 +854,14 @@ begin
     XB_LOK_SET_SPD, XB_LOK_SET_FUNC_0_4, XB_LOK_SET_FUNC_5_8, XB_LOK_SET_FUNC_9_12,
     XB_LOK_SET_FUNC_13_20, XB_LOK_SET_FUNC_21_28,
     XB_LOK_GET_INFO, XB_LOK_GET_FUNC, XB_POM_WRITEBYTE : begin
-Self.LokComOK(data.params[0]);
+      Self.LokComOK(data.params[0]);
     end;
    end;//case
 
    if (Assigned(data.callback_ok.callback)) then
      data.callback_ok.callback(Self, data.callback_ok.data);
+  end else begin
+   WriteLog(2, 'WARN: HISTORY BUFFER UNDERFLOW (hist_ok)');
   end;
 end;//procedure
 
@@ -875,6 +877,8 @@ begin
 
    if (Self.send_history.Count = 0) then Self.WriteLog(5, 'BUF TIMEOUT REMOVE');
    if (Assigned(data.callback_err.callback)) then data.callback_err.callback(Self, data.callback_err.data);
+  end else begin
+   WriteLog(2, 'WARN: HISTORY BUFFER UNDERFLOW (hist_err)');
   end;
 end;//procedure
 
