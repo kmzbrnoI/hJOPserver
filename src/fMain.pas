@@ -491,8 +491,8 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster,
      AppEv;
 
-function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
-function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
+//function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
+//function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
 
 {$R *.dfm}
 
@@ -768,11 +768,11 @@ begin
  if (GetFunctions.CanClose() <> ci_yes) then
   begin
    // disallow Windows from shutting down
-   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
-   ShutdownBlockReasonCreate(Application.MainForm.Handle, 'hJOPserver není odpojen od systémù');
+//   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
+//   ShutdownBlockReasonCreate(Application.MainForm.Handle, 'hJOPserver není odpojen od systémù');
    Msg.Result := 0;
  end else begin
-   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
+//   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
    Msg.Result := 1;
    CloseMessage := false;
    NUZClose     := true;
@@ -2377,7 +2377,10 @@ end;//procedure
 procedure TF_Main.LogStatus(str:string);
 begin
  if (Assigned(Self.LB_Log)) then
+  begin
+   if (Self.LB_Log.Items.Count > 100) then Self.LB_Log.Clear();   
    Self.LB_Log.Items.Insert(0, FormatDateTime('hh:nn:ss', Now)+ ' : ' + str);
+  end;
  writeLog(str, WR_SYSTEM, 0);
 end;
 
