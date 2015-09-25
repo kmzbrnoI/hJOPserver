@@ -120,8 +120,6 @@ type
       FlowControl:TFlowControl;
      end;
 
-     force_close:boolean;
-
      function GetOpenned():boolean;                                             // je seriak otevreny ?
 
      procedure TrkLog(Sender:TObject; lvl:Integer; msg:string);                 // logovaci event z .Trakce
@@ -141,6 +139,8 @@ type
      procedure AfterOpen(Sender:TObject);
      procedure BeforeClose(Sender:TObject);
      procedure AfterClose(Sender:TObject);
+
+     procedure NouzReleaseLoko();
 
      procedure ConnectChange(Sender: TObject; addr:Integer; code:TConnect_code;
         data:Pointer);                                                          // event volany z .Trace pri zmene majitele lokomotivy (loko prevzato, ukradeno, nedostupne, ...)
@@ -439,6 +439,7 @@ begin
 end;//function
 
 function TTrkGUI.Close(force:boolean = false):Byte;
+var i:Integer;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
@@ -454,7 +455,12 @@ begin
    Exit(0);
   end;
 
- Self.force_close := force;
+ for i := 0 to _MAX_ADDR-1 do
+   if (HVDb.HVozidla[i] <> nil) then
+     HVDb.HVozidla[i].Slot.stolen := false;
+
+ if (not force) then Self.NouzReleaseLoko();
+ 
  try
   Self.Trakce.ComPort.CPort.Close();
  except
@@ -830,8 +836,6 @@ begin
 end;//procedure
 
 procedure TTrkGUI.BeforeClose(Sender:TObject);
-var i:Integer;
-    data:Pointer;
 begin
  F_Main.A_Trk_Connect.Enabled       := false;
  F_Main.A_Trk_Disconnect.Enabled    := false;
@@ -839,30 +843,6 @@ begin
  F_Main.LogStatus('Centrála: odpojování...');
  F_Main.S_Intellibox_connect.Brush.Color := clBlue;
  Application.ProcessMessages();
-
- if (not Self.force_close) then
-  begin
-   GetMem(data, sizeof(integer));
-   for i := 0 to _MAX_ADDR-1 do
-    begin
-     if (HVDb.HVozidla[i] = nil) then continue;
-
-     HVDb.HVozidla[i].Slot.stolen := false;
-     if (HVDb.HVozidla[i].Slot.prevzato) then
-      begin
-       Integer(data^) := i;
-       Self.callback_err := TTrakce.GenerateCallback(Self.NouzReleaseCallbackErr, data);
-       Self.OdhlasitLoko(HVDb.HVozidla[i]);
-      end;
-     while (HVDb.HVozidla[i].Slot.prevzato) do
-      begin
-       sleep(1);
-       Application.ProcessMessages;
-      end;
-    end;
-   FreeMem(data);
-  end;//if not Self.force_close
-
  Self.Trakce.BeforeClose();   // smaze buffer historie
 end;//procedure
 
@@ -1019,7 +999,7 @@ begin
  Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasenoPOMOK, cb);
  Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasenoPOMErr, cb);
 
- // neastavovat HV.ruc, POM si tady delame sami !!
+ // nenastavovat HV.ruc, POM si tady delame sami !!
  HV.Stav.ruc := false;
 
  Self.POMWriteCVs(Self, HV, HV.Data.POMrelease, TPomStatus.released);
@@ -1944,6 +1924,36 @@ begin
     end;
   end;//for i
  Self.AllOdhlaseno();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.NouzReleaseLoko();
+var i:Integer;
+    data:Pointer;
+begin
+ GetMem(data, sizeof(integer));
+ for i := 0 to _MAX_ADDR-1 do
+  begin
+   if (HVDb.HVozidla[i] = nil) then continue;
+
+   try
+     if (HVDb.HVozidla[i].Slot.prevzato) then
+      begin
+       Integer(data^) := i;
+       Self.callback_err := TTrakce.GenerateCallback(Self.NouzReleaseCallbackErr, data);
+       Self.OdhlasitLoko(HVDb.HVozidla[i]);
+      end;
+     while (HVDb.HVozidla[i].Slot.prevzato) do
+      begin
+       sleep(1);
+       Application.ProcessMessages;
+      end;
+   except
+
+   end;
+  end;
+ FreeMem(data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
