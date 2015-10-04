@@ -829,23 +829,26 @@ begin
  // kontrola existence uzivatele
  if (not Assigned(user)) then
   begin
-   Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Uživatel '+username+' neexistuje !');
-   Exit();
-  end;
+   UserRights := TORControlRights.null;
+   msg := 'Uživatel '+username+' neexistuje !';
+  end else
 
  // kontrola BANu uzivatele
  if (user.ban) then
   begin
-   Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Uživatel '+user.id+' má BAN !');
-   Exit();
-  end;
+   UserRights := TORControlRights.null;
+   msg := 'Uživatel '+user.id+' má BAN !';
+  end else
 
  // kontrola opravneni uzivatele pro tento panel
  if (not TUser.ComparePasswd(password, user.password)) then
   begin
    UserRights := TORControlRights.null;
+   msg := 'Neplatné heslo !';
   end else begin
    UserRights := user.GetRights(Self.id);
+   if (UserRights < rights) then
+     msg := 'K této OØ nemáte oprávnìní';
   end;
 
  // do last_rights si ulozime posledni opravneni panelu
@@ -853,7 +856,7 @@ begin
 
  if (UserRights < rights) then
   begin
-   Self.ORAuthoriseResponse(Sender, UserRights, 'Pøipojení OØ '+Self.id+' neuatorizováno !');
+   Self.ORAuthoriseResponse(Sender, UserRights, Self.id + ' : '+msg);
    if (UserRights > TORControlRights.null) then
      Self.PnlDAdd(Sender, UserRights, username)
    else
@@ -886,7 +889,7 @@ begin
       begin
        // pokud se pripojuje stejny uzivatel, prevezme rizeni z jiz pripojene OR
        //  jiny uzivatel rizeni prevzit nemuze
-       // technologie pripojovani zarucuje, ze pripojeny dispecer muze byt jen jeden
+       // -> technologie pripojovani zarucuje, ze pripojeny dispecer muze byt jen jeden
        if (Self.Connected[i].user = username) then
         begin
          panel := Self.Connected[i];
