@@ -425,6 +425,7 @@ type
     procedure OnDCCStopError(Sender:TObject; Data:Pointer);
 
     procedure SetCallMethod(Method:TNotifyEvent);
+    procedure OnSoundDisabled(Sender:TObject; Data:Pointer);
   end;//public
 
  TVytizeni=class                                                                // vytizeni procesoru programem
@@ -2724,6 +2725,13 @@ begin
    if  (AC.kroky[i].command = _AC_CMDTYPE_NAV) then LI.SubItems.Add('Kontrola stavu navestidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+'; navest:'+IntToStr(AC.kroky[i].Params[1]));
   end;//for i
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.OnSoundDisabled(Sender:TObject; Data:Pointer);
+begin
+ Self.A_All_Loko_OdhlasitExecute(Self);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

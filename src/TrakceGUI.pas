@@ -1197,7 +1197,7 @@ end;//procedure
 
 procedure TTrkGUI.InitStatErr(Sender:TObject; Data:Pointer);
 begin
- F_Main.LogStatus('Centrála: neodpovìdìla na pøíkaz STATUS, zkouším pøíkaz STOP...');
+ F_Main.LogStatus('WARN: Centrála: neodpovìdìla na pøíkaz STATUS, zkouším pøíkaz STOP...');
 
  Self.callback_err := TTrakce.GenerateCallback(Self.InitStopErr);
  Self.callback_ok  := TTrakce.GenerateCallback(Self.InitStopOK);
@@ -1218,7 +1218,7 @@ end;//procedure
 procedure TTrkGUI.InitStopErr(Sender:TObject; Data:Pointer);
 begin
  Self.finitok := false;
- F_Main.LogStatus('Centrála: neodpovìdìla na pøíkaz STOP !');
+ F_Main.LogStatus('ERR: Centrála: neodpovìdìla na pøíkaz STOP !');
  SystemData.Status := TSystemStatus.null;
  F_Main.A_System_Start.Enabled := true;
  F_Main.A_System_Stop.Enabled := true;
