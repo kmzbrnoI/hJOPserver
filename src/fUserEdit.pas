@@ -53,7 +53,7 @@ implementation
 
 {$R *.dfm}
 
-uses UserDb, DataUsers, TOblsRizeni, TOblRizeni;
+uses UserDb, DataUsers, TOblsRizeni, TOblRizeni, fMain;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -134,10 +134,10 @@ procedure TF_UserEdit.LV_ORsCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
  case TORCOntrolRights(Item.Data^) of
-  null      : Self.LV_ORs.Canvas.Brush.Color := clWhite;
-  read      : Self.LV_ORs.Canvas.Brush.Color := $FFFFAA;
-  write     : Self.LV_ORs.Canvas.Brush.Color := $AAFFFF;
-  superuser : Self.LV_ORs.Canvas.Brush.Color := $AAAAFF;
+  TORCOntrolRights.null      : Self.LV_ORs.Canvas.Brush.Color := clWhite;
+  TORCOntrolRights.read      : Self.LV_ORs.Canvas.Brush.Color := $FFFFAA;
+  TORCOntrolRights.write     : Self.LV_ORs.Canvas.Brush.Color := $AAFFFF;
+  TORCOntrolRights.superuser : Self.LV_ORs.Canvas.Brush.Color := $AAAAFF;
  end;//case
 end;
 
@@ -173,6 +173,7 @@ begin
  Self.E_LastName.Text   := '';
  Self.CHB_root.Checked  := false;
  Self.CHB_Ban.Checked   := false;
+ Self.CHB_Reg.Checked   := true;
 
  Self.E_Password1.Text  := '';
  Self.E_Password2.Text  := '';
@@ -185,6 +186,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_UserEdit.B_ApplyClick(Sender: TObject);
+var index:Integer;
 begin
  if (Length(Self.E_UserName.Text) < 3) then
   begin
@@ -243,6 +245,13 @@ begin
    UsersTableData.UpdateTable();
   end;
 
+ index := UsrDB.IndexOf(Self.OpenUser.id);
+ if (index > -1) then
+  begin
+   F_Main.LV_Users.Items[index].Selected := true;
+   F_Main.LV_Users.Items[index].Focused  := true;
+  end;
+
  Self.Close();
 end;//procedure
 
@@ -263,7 +272,7 @@ begin
    LI.SubItems.Add(ORs.GetORNameByIndex(i));
 
    if (not Self.OpenUser.OblR.TryGetValue(LI.Caption, rights)) then
-    rights := null;
+    rights := TORCOntrolRights.null;
    LI.SubItems.Add(ORRightsToString(rights));
 
    GetMem(data, 3);

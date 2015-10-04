@@ -7,7 +7,8 @@ unit UserDb;
 
 interface
 
-uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows, RPConst;
+uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows, RPConst,
+     Generics.Defaults;
 
 type
   TUsrDb = class
@@ -33,8 +34,11 @@ type
      procedure AddUser(User:TUser);
      procedure RemoveUser(index:Integer);
 
+     procedure Sort();
+     function IndexOf(id:string):Integer;
+
      function GetUser(index:Integer):TUser; overload;                           // vrati uzivatele podle jeho indexu v senzamu univatelu
-     function Getuser(id:string):TUser; overload;                               // vrati uzivatele podle jeho ID
+     function GetUser(id:string):TUser; overload;
      property count:Integer read GetCount;                                      // vrati pocet uzivatelu
      property filename:string read ffilename;                                   // vrati jsmeno souboru, ze ktereho byly uzivatele necteni
 
@@ -124,6 +128,8 @@ begin
  str.Free();
  ini.Free();
 
+ Self.Users.Sort(TComparer<TUser>.Construct(TUser.comparer));
+
  writelog('Nacteno ' + IntToStr(Self.Users.Count) + ' uzivatelu', WR_USERS);
 end;//procedure
 
@@ -179,6 +185,7 @@ begin
 
  Self.Users.Add(User);
  UsersTableData.AddUser();
+ Self.Sort();
 end;//procedure
 
 procedure TUsrDb.RemoveUser(index:Integer);
@@ -213,12 +220,11 @@ begin
  Result := Self.Users.Items[index];
 end;//function
 
-function TUsrDb.Getuser(id:string):TUser;
-var i:Integer;
+function TUsrDb.GetUser(id:string):TUser;
+var index:Integer;
 begin
- for i := 0 to Self.Users.Count-1 do
-  if (Self.Users[i].id = id) then Exit(Self.Users[i]);
- Exit(nil); 
+ index := Self.IndexOf(id);
+ if (index = -1) then Exit(nil) else Result := Self.Users[index];
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -234,6 +240,35 @@ begin
     Exit();
    end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TUsrDb.Sort();
+begin
+ Self.Users.Sort(TComparer<TUser>.Construct(TUser.comparer));
+ UsersTableData.UpdateTable();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TUsrDb.IndexOf(id:string):Integer;
+var left, right, mid: Integer;
+begin
+ left  := 0;
+ right := Self.Users.Count-1;
+
+ while (left <= right) do
+  begin
+   mid := (left + right) div 2;
+   if (Self.Users[mid].id = id) then Exit(mid);
+
+   if (AnsiCompareStr(id, Self.Users[mid].id) < 0) then
+     right := mid - 1
+   else
+     left := mid + 1;
+  end;
+ Result := -1;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

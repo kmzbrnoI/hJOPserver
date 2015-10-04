@@ -45,7 +45,7 @@ uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, BoosterDb,
      Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
-     DataBloky, ACDatabase, FunkceVyznam, UDPDiscover;
+     DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv;
 
 procedure TData.CompleteLoadFromFile;
 var read,read2:string;
@@ -61,16 +61,31 @@ var read,read2:string;
 
   F_Splash.AddStav('Naèítám konfiguraci');
   read := ini_lib.ReadString('NacteniDat','Konfigurace', 'data\Konfigurace.ini');
-  Konfigurace.LoadCfgFromFile(read);
+  try
+    Konfigurace.LoadCfgFromFile(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
 
   F_Splash.AddStav('Naèítám uživatele');
   read := ini_lib.ReadString('NacteniDat','users', 'data\users.ini');
-  UsrDB.LoadFile(read);
+  try
+    UsrDB.LoadFile(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, E.Message);
+  end;
   F_Main.E_Dataload_Users.Text := read;
 
   F_Splash.AddStav('Naèítám stanice (soubor *.spnl)');
   read := ini_lib.ReadString('NacteniDat','spnl', 'data\stanice.spnl');
-  ORs.LoadData(read);
+  try
+    ORs.LoadData(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
   F_Main.E_dataload_spnl.Text := read;
 
   F_Splash.AddStav('Naèítám hnací vozidla');
@@ -79,19 +94,34 @@ var read,read2:string;
   F_Splash.AddStav('Naèítám MTB');
   writelog('Nacitam MTB...',WR_DATA);
   read := ini_lib.ReadString('NacteniDat','MTBData', 'data\MTB.ini');
-  MTB.LoadFromFile(read);
+  try
+    MTB.LoadFromFile(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
   writelog('MTB nacteno',WR_DATA);
 
   F_Splash.AddStav('Naèítám soupravy');
   read := ini_lib.ReadString('NacteniDat','soupravy', 'data\soupravy.ini');
-  Soupravy.LoadData(read);
+  try
+    Soupravy.LoadData(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
   F_Main.E_dataload_soupr.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), read);
 
   //nacitani bloku
   F_Splash.AddStav('Naèítám databázi blokù');
   read := ini_lib.ReadString('NacteniDat', 'Bloky', 'data\bloky.ini');
   read2 := ini_lib.ReadString('NacteniDat', 'Bloky_stat', 'data\bloky_stat.ini');
-  Blky.LoadFromFile(read, F_Main.E_dataload_spnl.Text, read2);
+  try
+    Blky.LoadFromFile(read, F_Main.E_dataload_spnl.Text, read2);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
   F_Main.E_dataload_block.Text := read;
   BlokyTableData := TBlokyTableData.Create(F_Main.LV_Bloky);
 
@@ -99,30 +129,60 @@ var read,read2:string;
 
   F_Splash.AddStav('Naèítám databázi zesilovaèù');
   read := ini_lib.ReadString('NacteniDat','Zesilovace', 'data\Zesilovace.ini');
-  BoostersDb.LoadFromFile(read);
+  try
+    BoostersDb.LoadFromFile(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
   F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
 
   F_Splash.AddStav('Naèítám databázi jizdních cest');
   read := ini_lib.ReadString('NacteniDat','JC', 'data\JC.ini');
-  JCDb.LoadData(read);
+  try
+    JCDb.LoadData(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
 
   F_Splash.AddStav('Naèítám databázi složených jizdních cest');
   read := ini_lib.ReadString('NacteniDat', 'mJC', 'data\mJC.ini');
-  MultiJCDb.LoadData(read);
+  try
+    MultiJCDb.LoadData(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
   F_Main.E_Dataload_multiJC.Text := MultiJCDb.filename;
 
   F_Splash.AddStav('Naèítám databázi automatických režimù');
   read := ini_lib.ReadString('NacteniDat','AutRezimy', 'data\AutRezimy.ini');
-  ACDb.LoadFromFile(read);
+  try
+    ACDb.LoadFromFile(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
   F_Main.E_dataload_AutRez.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
 
   F_Splash.AddStav('Naèítám databázi FormData');
   read := ini_lib.ReadString('NacteniDat','FormData', 'data\FormData.ini');
-  FormData.LoadFormData(read);
+  try
+    FormData.LoadFormData(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
 
   F_Splash.AddStav('Naèítám vedlejší databáze');
   TrkSystem.LoadSpeedTable('data\Rychlosti.csv',F_Options.LV_DigiRych);
-  F_Admin.LoadData;
+  try
+    F_Admin.LoadData;
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
  end;//procedure
 
 procedure TData.CompleteSaveToFile;

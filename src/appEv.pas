@@ -13,7 +13,7 @@ type
       destructor Destroy(); override;
 
       procedure OnAppException(Sender: TObject; E: Exception);
-      procedure LogException(E:Exception; prefix:string);
+      procedure LogException(E:Exception; prefix:string = '');
   end;
 
 var
@@ -46,18 +46,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TAppEvents.LogException(E:Exception; prefix:string);
+procedure TAppEvents.LogException(E:Exception; prefix:string = '');
 var i:Integer;
 begin
  try
   Self.str.Clear();
-  Self.str.Add(prefix + ' ' + E.Message);
-  i := 0;
-  while (GetLocationInfo(JclLastExceptStackList.Items[i].CallerAddr).LineNumber <> 0) do
-   begin
-    Self.str.Add(GetLocationInfoStr(JclLastExceptStackList.Items[i].CallerAddr));
-    Inc(i);
-   end;
+  if (prefix <> '') then
+    Self.str.Add(prefix + ' ' + E.Message)
+  else
+    Self.str.Add(E.Message);
+
+  for i := 0 to JclLastExceptStackList.Count-1 do
+    if (GetLocationInfo(JclLastExceptStackList.Items[i].CallerAddr).LineNumber <> 0) then
+      Self.str.Add(GetLocationInfoStr(JclLastExceptStackList.Items[i].CallerAddr));
   writeLog(Self.str, WR_ERROR);
  except
 

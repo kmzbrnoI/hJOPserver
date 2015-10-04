@@ -16,7 +16,8 @@ unit User;
 
 interface
 
-uses IniFiles, Generics.Collections, RPConst, DCPsha256, SysUtils, Classes;
+uses IniFiles, Generics.Collections, RPConst, DCPsha256, SysUtils, Classes,
+     Generics.Defaults;
 
 type
   TUser = class                                                                 // trida reprezentujici uzivatele
@@ -24,20 +25,23 @@ type
     fpasswd:string;                                                             // heslo - hash SHA256
     fban:boolean;                                                               // flag urcujici ban uzivate
     freg:boolean;                                                               // flag urcijici moznost autorizovat regulator
+    fid:string;                                                                 // unikatni id
 
       procedure SetPasswd(passwd:string);                                       // nastavi heslo, viz \passwd
       procedure SetBan(state:boolean);                                          // nastavi ban, viz \ban
       procedure SetReg(state:boolean);                                          // nastavi regulator, viz \regulator
 
+      procedure SetId(new:string);
+
    public
 
-    id:string;                                                                  // unikatni ID
     firstname:string;                                                           // krestni jmeno
     lastname:string;                                                            // prijmeni
     root:boolean;                                                               // flag opravneni root
     OblR: TDictionary<string, TORControlRights>;                                // seznam oblasti rizeni vcetne opravneni
     lastlogin:TDateTime;                                                        // cas posledniho loginu
 
+    class var comparer: TComparison<TUser>;
 
       constructor Create(); overload;
       constructor Create(ini:TMemIniFile; section:string); overload;
@@ -50,6 +54,7 @@ type
       function GetRights(OblR:string):TORCOntrolRights;                         // vrati opravneni k dane oblasti rizeni
       procedure SetRights(OblR:string; rights:TORControlRights);                // nastavi opravneni dane oblasti rizeni
 
+      property id:string read fid write SetId;
       property password:string read fpasswd write SetPasswd;
       property ban:boolean read fban write SetBan;
       property regulator:boolean read freg write SetReg;
@@ -60,7 +65,7 @@ type
 
 implementation
 
-uses TOblsRizeni, TOblRizeni, TCPServerOR;
+uses TOblsRizeni, TOblRizeni, TCPServerOR, UserDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,7 +96,7 @@ var i:Integer;
 begin
  Self.OblR.Clear();
 
- Self.id        := section;
+ Self.fid       := section;
  Self.fpasswd   := ini.ReadString(section, 'passwd', '');
  Self.root      := ini.ReadBool(section, 'root', false);
  Self.firstname := ini.ReadString(section, 'fname', '');
@@ -230,5 +235,25 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure TUser.SetId(new:string);
+begin
+ if (Self.id <> new) then
+  begin
+   Self.fid := new;
+   UsrDB.Sort();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+initialization
+ TUser.comparer :=
+    function (const Left, Right: TUser): Integer
+      begin
+        Result := AnsiCompareStr(Left.id, Right.id);
+      end;
+
+finalization
 
 end.//unit
