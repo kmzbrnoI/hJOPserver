@@ -36,9 +36,6 @@ Jak to funguje:
  - Blokovou podminku rusi TU, nikoliv trat.
 
 --------------------------------------------------------------------------------
-Format dat zastavky v souboru bloku:
-  zast=IR_lichy|IR_sudy|max_delka_soupravy|delay_time|spr1;spr2;...
-  pokud je zast prazdny string, zastavka je disabled
 }
 
 interface
