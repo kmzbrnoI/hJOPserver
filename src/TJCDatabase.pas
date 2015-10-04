@@ -177,6 +177,9 @@ begin
    try
      if (Self.JCs[i].stav.RozpadBlok > -5) then
        Self.JCs[i].UsekyRusJC();
+     if (Self.JCs[i].stav.RozpadBlok = -6) then
+       Self.JCs[i].UsekyRusNC();
+
 
      if (Self.JCs[i].Staveni) then
       begin

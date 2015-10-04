@@ -102,7 +102,7 @@ type
    RozpadBlok,                                                                  // index useku, na ktery ma vkrocit souprava
    RozpadRuseniBlok:Integer;                                                    // index useku, ze ktereho ma vystoupit souprava
                                                                                   // index je index v seznamu useku, tedy napr. 0 =  0. usek v jizdni ceste
-                                                                                  // -5 = cesta neni postavena, -2 = navestidlo na STUJ, -1 = usek pred navestidlem, 0..n = useky JC
+                                                                                  // -6 = postavena nouzova cesta, -5 = cesta neni postavena, -2 = navestidlo na STUJ, -1 = usek pred navestidlem, 0..n = useky JC
    from_stack:TObject;                                                          // odkaz na zasobnik, ze ktereho proehlo staveni JC
    nc:boolean;                                                                  // flag staveni nouzove cesty (vlakovou i posunovou)
    ncBariery:TJCBariery;                                                        // aktualni seznam barier pro potvrzovaci sekvenci pri staveni nouzove cesty
@@ -256,6 +256,7 @@ type
       procedure RusJC(Sender:TObject = nil);                                    // rusi vlakovou cestu
       procedure RusJCWithoutBlk();                                              // rusi vlakovou cestu bez zruseni zaveru useku
       procedure UsekyRusJC();                                                   // kontroluje projizdeni soupravy useky a rusi jejich zavery
+      procedure UsekyRusNC();                                                   // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
 
       procedure UpdateStaveni();                                                // prubezne stavi JC, meni kroky
       procedure UpdateTimeOut();                                                // kontroluje TimeOut staveni JC
@@ -1613,7 +1614,7 @@ var i,j:Integer;
 
         // a)
         if ((Blk2.GetGlobalSettings().typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
-           (Blk.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
+           (Blk.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1) and (TBlkUsek(Blk2).Souprava = -1)) then
          begin
           if (TBlkUsek(Blk).Souprava > -1) then
            begin
@@ -1623,7 +1624,7 @@ var i,j:Integer;
             (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
             (Blk as TBlkUsek).Souprava := -1;
            end;
-          if (TBlkTU(Blk).bpInBlk) then TBlkTU(Blk).UvolnenoZJC();
+          Self.fstaveni.RozpadBlok := -6;
          end;
 
         // b)
@@ -1998,6 +1999,24 @@ begin
      end;
    end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.UsekyRusNC();
+var TU, first : TBlkUsek;
+    nav : TBlkSCom;
+begin
+ Blky.GetBlkByID(Self.fproperties.NavestidloBlok, TBlk(nav));
+ TU := TBlkTU((nav as TBlkSCom).UsekPred);
+ Blky.GetBlkByID(Self.fproperties.Useky[0], TBlk(first));
+
+ if ((first.Obsazeno = TUsekStav.obsazeno) and (TU.Obsazeno = TUsekStav.uvolneno)
+    and (TU.Souprava = -1)) then
+  begin
+   if (TBlkTU(TU).bpInBlk) then
+     TBlkTU(TU).UvolnenoZJC();
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

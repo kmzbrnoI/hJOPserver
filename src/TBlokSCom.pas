@@ -582,6 +582,9 @@ begin
   begin
    if ((Self.UsekPred <> nil) and ((Self.UsekPred.GetGlobalSettings().typ = _BLK_USEK) or (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU))) then
     (Self.UsekPred as TBlkUsek).SComJCRef := nil;
+
+   // ruseni nouzove jizdni cesty
+   if (Assigned(Self.privol)) then Self.privol.RusJCWithoutBlk();
   end;
 
  if (Self.autoblok) then
@@ -892,7 +895,7 @@ begin
  // pokud je navestidlo trvale zamkle, neumoznime zadne volby
  if (Self.SComSettings.zamknuto) then Exit();
 
- if ((((((Self.DNjc = nil) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) or (Self.DNjc.RozpadBlok > 0)) and (Self.Navest <> 8))
+ if ((((((Self.DNjc = nil) or (Self.DNjc.RozpadBlok > 0)) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) and (Self.Navest <> 8))
     or ((SenderOR as TOR).stack.volba = VZ) or (Self.SComStav.ZacatekVolba <> TBlkSCOmVolba.none)) and
     (not Self.autoblok)) then
   begin

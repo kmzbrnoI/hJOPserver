@@ -607,6 +607,9 @@ begin
      Soupravy.soupravy[Self.Souprava].ChangeSmer();
     end;
 
+   // kontrola zmeny OR trati, ve ktere jen jeden blok
+   if ((Self.prevTU = nil) and (Self.nextTU = nil)) then
+     TBlkTrat(Self.Trat).SprChangeOR(Self.Souprava);
   end;
 end;
 

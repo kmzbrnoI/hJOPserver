@@ -2239,6 +2239,8 @@ begin
   begin
    if (Item.SubItems.Strings[3] <> '0') then
      Self.LV_JC.Canvas.Brush.Color := $AAFFFF
+   else if (Item.SubItems.Strings[1] = '-6') then
+     Self.LV_JC.Canvas.Brush.Color := clAqua
    else if (Item.SubItems.Strings[1] <> '-5') then
      Self.LV_JC.Canvas.Brush.Color := $AAFFAA;
   end;
