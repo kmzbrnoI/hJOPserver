@@ -131,7 +131,7 @@ type
     function GetDriverVersion():string;                                         // vrati verzi MTBdrv drivery v knihovne
 
     function GetModuleName(Module:Integer):string;                              // vrati jmeno modulu
-    procedure SetModuleName(Module:Integer; Name:string);                       // nastavi jmeno modulu
+    procedure SetModuleName(Module:Integer; aName:string);                      // nastavi jmeno modulu
 
     function GetModuleExists(Module:Integer):boolean;                           // vrati jestli modul existuje
     function GetModuleType(Module:Integer):string;                              // vrati typ modulu
@@ -171,7 +171,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TMTBIFace.Create;
+constructor TMTBIFace.Create(AOwner: TComponent);
  begin
   inherited;
  end;
@@ -262,55 +262,55 @@ var setterNotify: TSetDllNotifyEvent;
   if (FLib = 0) then
     raise Exception.Create('Library not loaded');
 
-  FFuncOnUnload           := GetProcAddress(FLib, 'onunload');
-  FFuncSetOutput          := GetProcAddress(FLib, 'setoutput');
-  FFuncSetInput           := GetProcAddress(FLib, 'setinput');
-  FFuncGetInput           := GetProcAddress(FLib, 'getinput');
-  FFuncGetOutput          := GetProcAddress(FLib, 'getoutput');
-  FFuncShowConfigDialog   := GetProcAddress(FLib, 'showconfigdialog');
-  FFuncHideConfigDialog   := GetProcAddress(FLib, 'hideconfigdialog');
-  FFuncShowAboutDialog    := GetProcAddress(FLib, 'showaboutdialog');
-  FFuncStart              := GetProcAddress(FLib, 'start');
-  FFuncStop               := GetProcAddress(FLib, 'stop');
-  FFuncGetLibVersion      := GetProcAddress(FLib, 'getlibversion');
-  FFuncGetDeviceVersion   := GetProcAddress(FLib, 'getdeviceversion');
-  FFuncGetDriverVersion   := GetProcAddress(FLib, 'getdriverversion');
-  FFuncGetModuleFirmware  := GetProcAddress(FLib, 'getmodulefirmware');
-  FFuncModuleExists       := GetProcAddress(FLib, 'getmoduleexists');
-  FFuncGetModuleType      := GetProcAddress(FLib, 'getmoduletype');
-  FFuncGetModuleName      := GetProcAddress(FLib, 'getmodulename');
-  FFuncSetModuleName      := GetProcAddress(FLib, 'setmodulename');
-  FFuncSetBusSpeed        := GetProcAddress(FLib, 'setmtbspeed');
-  FFuncSetScanInterval    := GetProcAddress(FLib, 'settimerinterval');
-  FFuncOpen               := GetProcAddress(FLib, 'open');
-  FFuncClose              := GetProcAddress(FLib, 'close');
+  FFuncOnUnload           := TODProc(GetProcAddress(FLib, 'onunload'));
+  FFuncSetOutput          := TODSetOutput(GetProcAddress(FLib, 'setoutput'));
+  FFuncSetInput           := TODSetInput(GetProcAddress(FLib, 'setinput'));
+  FFuncGetInput           := TODGetInput(GetProcAddress(FLib, 'getinput'));
+  FFuncGetOutput          := TODGetOutput(GetProcAddress(FLib, 'getoutput'));
+  FFuncShowConfigDialog   := TODProc(GetProcAddress(FLib, 'showconfigdialog'));
+  FFuncHideConfigDialog   := TODProc(GetProcAddress(FLib, 'hideconfigdialog'));
+  FFuncShowAboutDialog    := TODProc(GetProcAddress(FLib, 'showaboutdialog'));
+  FFuncStart              := TODProc(GetProcAddress(FLib, 'start'));
+  FFuncStop               := TODProc(GetProcAddress(FLib, 'stop'));
+  FFuncGetLibVersion      := TODFuncStr(GetProcAddress(FLib, 'getlibversion'));
+  FFuncGetDeviceVersion   := TODFuncStr(GetProcAddress(FLib, 'getdeviceversion'));
+  FFuncGetDriverVersion   := TODFuncStr(GetProcAddress(FLib, 'getdriverversion'));
+  FFuncGetModuleFirmware  := TODModuleStr(GetProcAddress(FLib, 'getmodulefirmware'));
+  FFuncModuleExists       := TODModuleExists(GetProcAddress(FLib, 'getmoduleexists'));
+  FFuncGetModuleType      := TODModuleStr(GetProcAddress(FLib, 'getmoduletype'));
+  FFuncGetModuleName      := TODModuleStr(GetProcAddress(FLib, 'getmodulename'));
+  FFuncSetModuleName      := TODSetModuleName(GetProcAddress(FLib, 'setmodulename'));
+  FFuncSetBusSpeed        := TODSetBusSpeed(GetProcAddress(FLib, 'setmtbspeed'));
+  FFuncSetScanInterval    := TODSetScanInterval(GetProcAddress(FLib, 'settimerinterval'));
+  FFuncOpen               := TODProc(GetProcAddress(FLib, 'open'));
+  FFuncClose              := TODProc(GetProcAddress(FLib, 'close'));
 
   // assign events:
-  setterNotify := GetProcAddress(FLib, 'setbeforeopen');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeOpen, self);
-  @setterNotify := GetProcAddress(FLib, 'setafteropen');
-  if (Assigned(setterNotify)) then setterNotify(OnLibAfterOpen, self);
-  @setterNotify := GetProcAddress(FLib, 'setbeforeclose');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeClose, self);
-  @setterNotify := GetProcAddress(FLib, 'setafterclose');
-  if (Assigned(setterNotify)) then setterNotify(OnLibAfterClose, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setbeforeopen'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibBeforeOpen, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setafteropen'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibAfterOpen, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setbeforeclose'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibBeforeClose, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setafterclose'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibAfterClose, self);
 
-  @setterNotify := GetProcAddress(FLib, 'setbeforestart');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeStart, self);
-  @setterNotify := GetProcAddress(FLib, 'setafterstart');
-  if (Assigned(setterNotify)) then setterNotify(OnLibAfterStart, self);
-  @setterNotify := GetProcAddress(FLib, 'setbeforestop');
-  if (Assigned(setterNotify)) then setterNotify(OnLibBeforeStop, self);
-  @setterNotify := GetProcAddress(FLib, 'setafterstop');
-  if (Assigned(setterNotify)) then setterNotify(OnLibafterStop, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setbeforestart'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibBeforeStart, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setafterstart'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibAfterStart, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setbeforestop'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibBeforeStop, self);
+  setterNotify := TSetDllNotifyEvent(GetProcAddress(FLib, 'setafterstop'));
+  if (Assigned(setterNotify)) then setterNotify(@OnLibafterStop, self);
 
-  @setterErr := GetProcAddress(FLib, 'setonerror');
-  if (Assigned(setterErr)) then setterErr(OnLibError, self);
+  setterErr := TSetDllErrEvent(GetProcAddress(FLib, 'setonerror'));
+  if (Assigned(setterErr)) then setterErr(@OnLibError, self);
 
-  @setterModuleChanged := GetProcAddress(FLib, 'setoninputchange');
-  if (Assigned(setterModuleChanged)) then setterModuleChanged(OnLibInputChanged, self);
-  @setterModuleChanged := GetProcAddress(FLib, 'setonoutputchange');
-  if (Assigned(setterModuleChanged)) then setterModuleChanged(OnLibOutputChanged, self);
+  setterModuleChanged := TSetDllEventChange(GetProcAddress(FLib, 'setoninputchange'));
+  if (Assigned(setterModuleChanged)) then setterModuleChanged(@OnLibInputChanged, self);
+  setterModuleChanged := TSetDllEventChange(GetProcAddress(FLib, 'setonoutputchange'));
+  if (Assigned(setterModuleChanged)) then setterModuleChanged(@OnLibOutputChanged, self);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -420,10 +420,10 @@ function TMTBIFace.GetModuleName(Module:Integer):string;
     raise EFuncNotAssigned.Create('FFuncGetModuleName not assigned');
  end;
 
-procedure TMTBIFace.SetModuleName(Module:Integer;Name:string);
+procedure TMTBIFace.SetModuleName(Module:Integer; aName:string);
  begin
   if (Assigned(FFuncSetModuleName)) then
-    FFuncSetModuleName(Module, Name)
+    FFuncSetModuleName(Module, aName)
   else
     raise EFuncNotAssigned.Create('FFuncSetModuleName not assigned');
  end;
