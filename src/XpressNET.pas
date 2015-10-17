@@ -66,9 +66,11 @@ type
                                                                                 // TENTO TIMEOUT NEZKRACOVAT !! Pri timeoutu 200 ms delalo velke potize na starsich NanoX.
     _SEND_MAX     = 3;                                                          // Pocet odeslani prikazu do prohlaseni za neodeslatelny
                                                                                 //  tzn. jedna zprava je pred prohlasenim za neodeslatelnou odeslana prave trikrat (poprve a pote 2x opakovane)
-
+    _BUF_IN_TIMEOUT_MS = 300;                                                   // timeout vstupniho bufferu v ms (po uplynuti timeoutu dojde k vymazani bufferu) - DULEZITY SAMOOPRAVNY MECHANISMUS!
+                                                                                // pro spravnou funkcnost musi byt < _TIMEOUT_MSEC
    private
     Fbuf_in: TBuffer;                                                           // vstupni buffer (data z centraly do PC)
+    Fbuf_in_timeout:TDateTime;
 
     FOnParseMsg: TParseMsgEvent;                                                // event volany pri prijeti kompletni zpravy
     loading_addr:Word;                                                          // aktualni adresa lokomotivy, ktera se prebira
@@ -98,6 +100,9 @@ type
     procedure hist_send(index:Integer);                                         // odesli data z historie (= vystupniho bufferu) na indexu \index
     procedure hist_ok();                                                        // na prvni data z vystupniho vufferu prisla odpoved, smaz data z bufferu
     procedure hist_err();                                                       // na pravni data z vystupniho bufferu neprisla odpoved, odesli data znova
+
+    procedure CheckFbufInTimeout();
+
    public
 
      constructor Create();
@@ -195,10 +200,14 @@ var
   Buf:array [0..255] of Byte;
   s:string;
 begin
+  // check timeout
+  Self.CheckFbufInTimeout();
+
   Self.ComPort.CPort.Read(buf, Count);
 
   for i := 0 to Count-1 do Fbuf_in.data[Fbuf_in.Count+i] := Buf[i];
   Fbuf_in.Count := Fbuf_in.Count + Count;
+  Fbuf_in_timeout := Now + EncodeTime(0, 0, _BUF_IN_TIMEOUT_MS div 1000, _BUF_IN_TIMEOUT_MS mod 1000);
 
   s := 'BUF: ';
   for i := 0 to Fbuf_in.Count-1 do s := s + IntToHex(Fbuf_in.data[i],2)+' ';
@@ -572,6 +581,12 @@ begin
   Self.callback_err.callback := nil;
   Self.callback_ok.callback  := nil;
 
+  if (Self.send_history.Count < _MAX_HISTORY) then
+   begin
+    log.time := Now;
+    Self.send_history.Add(log);
+   end;
+
   case (cmd) of
     XB_TRK_OFF:    Send(CreateBuf(#$21+#$80));
     XB_TRK_ON:     Send(CreateBuf(#$21+#$81));
@@ -645,12 +660,6 @@ begin
     XB_LOK_SET_LOCK_13_20 : Send(CreateBuf(#$E4 + #$27 + LokAddrToBuf(p1) + AnsiChar(byte(p2))));
 
   end;//case
-
-  if (Self.send_history.Count < _MAX_HISTORY) then
-   begin
-    log.time := Now;
-    Self.send_history.Add(log);
-   end;//if
 end;//procedure
 
 
@@ -944,6 +953,17 @@ begin
        Self.SendCommand(XB_LOK_GET_FUNC_13_28, Address);
       end;
  end;//case
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TXpressNET.CheckFbufInTimeout();
+begin
+ if ((Self.Fbuf_in_timeout < Now) and (Self.Fbuf_in.Count > 0)) then
+  begin
+   WriteLog(1, 'INPUT BUFFER TIMEOUT, removing buffer');
+   Self.Fbuf_in.Count := 0;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
