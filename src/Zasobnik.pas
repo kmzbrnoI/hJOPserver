@@ -342,12 +342,10 @@ var JC:TJC;
 begin
  JC := (cmd.JC as TJC);
 
- if (JC.staveni) then
+ if ((JC.staveni) or (Self.volba = TORStackVolba.PV)) then
   begin
    Self.hint := '';
    Exit();
-  end else begin
-   if (Self.volba = TORStackVolba.PV) then Exit();
   end;
 
   bariery := JC.KontrolaPodminek(cmd.nouz);
