@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom;
+uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,8 +85,11 @@ begin
  try
    ini := TMemIniFile.Create(filename);
  except
-   writelog('Nacitam soupravy: nelze otevrit soubor souprav', WR_ERROR);
-   Exit(1);
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Nacitam soupravy: nelze otevrit soubor souprav');
+     Exit(1);
+    end;
  end;
 
  sections := TStringList.Create();
@@ -118,8 +121,11 @@ begin
    DeleteFile(PChar(filename));
    ini := TMemIniFile.Create(filename);
  except
-   writelog('Ukladam soupravy: nelze otevrit soubor souprav', WR_ERROR);
-   Exit(1);
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Ukladam soupravy: nelze otevrit soubor souprav');
+     Exit(1);
+    end;
  end;
 
  for i := 0 to _MAX_SPR-1 do

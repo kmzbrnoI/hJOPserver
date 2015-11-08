@@ -49,7 +49,7 @@ var
 
 implementation
 
-uses Logging, DataUsers, TOblsRizeni, TOblRizeni;
+uses Logging, DataUsers, TOblsRizeni, TOblRizeni, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -107,8 +107,11 @@ begin
  try
    ini := TMemIniFile.Create(filename);
  except
-   writelog('Pri nacitani uzivatelu nastala chyba - nelze inicializaovat ini objekt', WR_ERROR);
-   Exit();
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Pri nacitani uzivatelu nastala chyba - nelze inicializaovat ini objekt');
+     Exit();
+    end;
  end;
 
  str := TStringList.Create();
@@ -121,7 +124,7 @@ begin
     Self.Users.Add(User);
    except
     on E : Exception do
-      writelog('Chyba pri nacitani uzivatele '+str[i]+ ' : '+e.Message, WR_ERROR);
+      AppEvents.LogException(E, 'Chyba pri nacitani uzivatele '+str[i]);
    end;
   end;//for i
 
@@ -143,8 +146,11 @@ begin
    DeleteFile(PChar(filename));
    ini := TMemIniFile.Create(filename);
  except
-   writelog('Pri ukladani uzivatelu nastala chyba - nelze inicializaovat ini objekt', WR_ERROR);
-   Exit();
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Pri ukladani uzivatelu nastala chyba - nelze inicializaovat ini objekt');
+     Exit();
+    end;
  end;
 
  for i := 0 to Self.Users.Count-1 do

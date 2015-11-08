@@ -66,7 +66,7 @@ var
 
 implementation
 
-uses fSettings, Logging, fMain, DataHV, TOblRizeni;
+uses fSettings, Logging, fMain, DataHV, TOblRizeni, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -126,7 +126,7 @@ begin
        aHV := THV.Create(ini, sect);
      except
        on E:Exception do
-         writelog('Chyba pri nacitani souboru loko : '+filename + ', sekce '+sect+' : '+E.Message, WR_ERROR);
+         AppEvents.LogException(E, 'Chyba pri nacitani souboru loko : '+filename + ', sekce '+sect);
      end;
 
      if (aHV = nil) then continue;     
@@ -142,7 +142,7 @@ begin
  except
   on E:Exception do
    begin
-    writelog('Chyba pri nacitani souboru loko '+filename+' : '+E.Message, WR_ERROR);
+    AppEvents.LogException(E, 'Chyba pri nacitani souboru loko '+filename);
     if (ini <> nil) then ini.Free();
     if (sections <> nil) then sections.Free();
    end;
@@ -196,7 +196,7 @@ begin
        Self.HVs[i].SaveToFile(dirname+'\L_'+IntToStr(i)+_FILE_SUFFIX);
      except
        on E:Exception do
-        writelog('Vyjimka pri ukladani loko '+IntToStr(i)+' : '+E.Message, WR_ERROR);
+        AppEvents.LogException(E, 'Vyjimka pri ukladani loko '+IntToStr(i));
      end;
     end;//if <> nil
   end;//for i

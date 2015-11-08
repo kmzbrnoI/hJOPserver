@@ -198,24 +198,33 @@ begin
  try
    ini_tech := TMemIniFile.Create(tech_filename);
  except
-   writelog('Nacitam bloky: nelze otevrit soubor bloku', WR_ERROR);
-   Exit(1);
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Nacitam bloky: nelze otevrit soubor bloku');
+     Exit(1);
+    end;
  end;
 
  try
    ini_rel  := TMemIniFile.Create(rel_filename);
  except
-   ini_rel := nil;
-   writelog('Nacitam bloky: nelze otevrit soubor s reliefy', WR_DATA);
-   Exit(2);
+   on E:Exception do
+    begin
+     ini_rel := nil;
+     AppEvents.LogException(E, 'Nacitam bloky: nelze otevrit soubor s reliefy');
+     Exit(2);
+    end;
  end;
 
  try
    ini_stat  := TMemIniFile.Create(stat_filename);
  except
-   ini_stat := nil;
-   writelog('Nacitam bloky: nelze otevrit soubor se stavy bloku', WR_DATA);
-   Exit(3);
+   on E:Exception do
+    begin
+     ini_stat := nil;
+     AppEvents.LogException(E, 'Nacitam bloky: nelze otevrit soubor se stavy bloku');
+     Exit(3);
+    end;
  end;
 
  //all data will be rewrited
@@ -274,8 +283,11 @@ begin
    DeleteFile(PChar(tech_filename));  //all data will be rewrited
    ini := TMemIniFile.Create(tech_filename);
  except
-   writelog('Ukladam bloky: nelze otevrit vystupni soubor', WR_ERROR);
-   Exit();
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Ukladam bloky: nelze otevrit vystupni soubor');
+     Exit();
+    end;
  end;
 
  for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveData(ini, IntToStr(i));
@@ -298,8 +310,11 @@ begin
    DeleteFile(PChar(stat_filename));  //all data will be rewrited
    ini := TMemIniFile.Create(stat_filename);
  except
-   writelog('Ukladam stavy bloky: nelze otevrit vystupni soubor', WR_ERROR);
-   Exit();
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Ukladam stavy bloky: nelze otevrit vystupni soubor');
+     Exit();
+    end;
  end;
 
  for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveStatus(ini, IntToStr(i));
@@ -823,10 +838,13 @@ begin
       JC := (Nav as TBlkSCom).DNjc;
     end;//while
  except
-  if (Usek <> nil) then
-    writelog('Vyjímka pøi pøedpovídání soupravy - Usek '+Usek.GetGlobalSettings.name, WR_ERROR)
-  else
-    writelog('Vyjímka pøi pøedpovídání soupravy', WR_ERROR);
+  on E:Exception do
+   begin
+    if (Usek <> nil) then
+      AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy - Usek '+Usek.GetGlobalSettings.name)
+    else
+      AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy');
+   end;
  end;
 end;//procedure
 

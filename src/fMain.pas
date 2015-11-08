@@ -513,7 +513,7 @@ procedure TF_Main.PM_lib_MTBClick(Sender: TObject);
      begin
       Screen.Cursor := crDefault;
       Application.MessageBox(PChar('Nelze naèíst knihovnu mtb.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
-      writelog('Nelze naèíst knihovnu mtb.dll: '+E.Message, WR_ERROR);
+      AppEvents.LogException(E, 'Nelze naèíst knihovnu mtb.dll');
       Exit();
      end;
   end;
@@ -532,7 +532,7 @@ procedure TF_Main.PM_lib_SimClick(Sender: TObject);
      begin
       Screen.Cursor := crDefault;
       Application.MessageBox(PChar('Nelze naèíst knihovnu simulator.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
-      writelog('Nelze naèíst knihovnu simulator.dll: '+E.Message, WR_ERROR);
+      AppEvents.LogException(E, 'Nelze naèíst knihovnu simulator.dll');
       Exit();
      end;
   end;
@@ -912,7 +912,7 @@ begin
  except
    on E:Exception do
     begin
-     writelog('----- MTB CLOSE FAIL - '+E.Message+' -----',WR_ERROR,21);
+     AppEvents.LogException(E, '----- MTB CLOSE FAIL -----');
      Self.LogStatus('MTB: CLOSE FAIL - '+E.Message);
      Application.MessageBox(PChar('Chyba pøi uzavírání MTB - '+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
     end;
@@ -946,7 +946,7 @@ begin
   except
    on E:Exception do
     begin
-     writelog('----- MTB START FAIL - '+E.Message+' -----',WR_ERROR,21);
+     AppEvents.LogException(E, '----- MTB START FAIL -----');
      Self.LogStatus('MTB: START FAIL - '+E.Message);
      if (SystemData.Status = starting) then
       begin
@@ -984,7 +984,7 @@ begin
  except
   on E:Exception do
    begin
-    writelog('----- MTB OPEN FAIL - '+E.Message+' -----',WR_ERROR,21);
+    AppEvents.LogException(E, '----- MTB OPEN FAIL -----');
     Self.LogStatus('MTB: OPEN FAIL - '+E.Message);
     if (SystemData.Status = starting) then
      begin
@@ -1023,7 +1023,7 @@ begin
   except
    on E:Exception do
     begin
-     writelog('----- MTB STOP FAIL - '+E.Message+' -----', WR_ERROR, 21);
+     AppEvents.LogException(E, '----- MTB STOP FAIL -----');
      Self.LogStatus('MTB: STOP ERR - '+E.Message);
      Application.MessageBox(PChar('Chyba pri vypinani komunikace'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
     end;
@@ -2097,7 +2097,7 @@ procedure TF_Main.CreateSystem;
     LogData.CreateLogDirectories;
   except
     on e:Exception do
-      writelog(e.Message, WR_ERROR);
+      AppEvents.LogException(E);
   end;
 
   QueryPerformanceFrequency(Vytizeni.LPc);

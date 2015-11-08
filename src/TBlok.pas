@@ -143,7 +143,7 @@ type
 implementation
 
 uses TBloky, TBlokVyhybka, TBlokPrejezd, TBlokSCom, TBlokTrat, TBlokUsek,
-      DataBloky, TBlokZamek;
+      DataBloky, TBlokZamek, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -349,7 +349,14 @@ var i:Integer;
 begin
  for i := 0 to events.Count-1 do
   if (Assigned(events[i].func)) then
-    events[i].func(Self, events[i].data);
+   begin
+    try
+      events[i].func(Self, events[i].data);
+    except
+      on E:Exception do
+         AppEvents.LogException(E, 'CallChengeEvents exception : '+E.Message);
+    end;
+   end;
  events.Clear();
 end;//procedure
 

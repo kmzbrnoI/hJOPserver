@@ -191,39 +191,120 @@ var return:Integer;
   ini_lib.EraseSection('NacteniDat');
   WriteLog('Probiha kompletni ukladani dat',WR_DATA);
 
-  Blky.SaveToFile(F_Main.E_dataload_block.Text);
+  try
+    Blky.SaveToFile(F_Main.E_dataload_block.Text);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
 
-  return := MTB.SaveToFile(MTB.filename);
-  if (return <> 0) then  //overeni chyby pri nacitani
-   begin
-    writelog('MTB SAVE ERROR : '+IntToStr(return),WR_DATA);
-    Application.MessageBox(PChar('Chyba pri ukladani MTB - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
-   end else begin
-    writelog('MTB SAVE OK',WR_DATA);
-   end;//else return <> 0
+  try
+    return := MTB.SaveToFile(MTB.filename);
+    if (return <> 0) then  //overeni chyby pri nacitani
+     begin
+      writelog('MTB SAVE ERROR : '+IntToStr(return),WR_DATA);
+      Application.MessageBox(PChar('Chyba pri ukladani MTB - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
+     end else begin
+      writelog('MTB SAVE OK',WR_DATA);
+     end;//else return <> 0
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
 
-  Konfigurace.SaveCfgToFile(F_Options.E_dataload.Text);
-  ACDb.SaveToFile(ACDb.filename);
-  BoostersDb.SaveToFile(F_Main.E_dataload_zes.Text);
-  JCDb.SaveData(JCDb.filename);
-  MultiJCDb.SaveData(MultiJCDb.filename);
-  Soupravy.SaveData(F_Main.E_dataload_soupr.Text);
-  FormData.SaveFormData(FormData.aFile);
-  UsrDB.SaveFile(F_Main.E_Dataload_Users.Text);
-  HVDb.SaveToDir('lok');
-  TrkSystem.SaveSpeedTable(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data/Rychlosti.csv');
-  F_Admin.SaveData;
+  try
+    Konfigurace.SaveCfgToFile(F_Options.E_dataload.Text);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    ACDb.SaveToFile(ACDb.filename);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    BoostersDb.SaveToFile(F_Main.E_dataload_zes.Text);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    JCDb.SaveData(JCDb.filename);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    MultiJCDb.SaveData(MultiJCDb.filename);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    Soupravy.SaveData(F_Main.E_dataload_soupr.Text);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    FormData.SaveFormData(FormData.aFile);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    UsrDB.SaveFile(F_Main.E_Dataload_Users.Text);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    HVDb.SaveToDir('lok');
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    TrkSystem.SaveSpeedTable(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data/Rychlosti.csv');
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    F_Admin.SaveData;
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
   WriteLog('Kompletni ukladani dat dokonceno',WR_DATA);
 
-  ini_lib.WriteString('NacteniDat', 'spnl', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_spnl.Text));
-  ini_lib.WriteString('NacteniDat', 'Bloky', ExtractRelativePath(ExtractFilePath(Application.ExeName), Blky.blky_file));
-  ini_lib.WriteString('NacteniDat', 'Bloky_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), Blky.fstatus));
-  ini_lib.WriteString('NacteniDat', 'MTBData', ExtractRelativePath(ExtractFilePath(Application.ExeName), MTB.filename));
-  ini_lib.WriteString('NacteniDat', 'Zesilovace', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_zes.Text));
-  ini_lib.WriteString('NacteniDat', 'JC', ExtractRelativePath(ExtractFilePath(Application.ExeName), JCDb.filename));
-  ini_lib.WriteString('NacteniDat', 'mJC', ExtractRelativePath(ExtractFilePath(Application.ExeName), MultiJCDb.filename));
-  ini_lib.WriteString('NacteniDat', 'soupravy', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_soupr.Text));
-  ini_lib.WriteString('NacteniDat', 'users', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_Dataload_Users.Text));
+  try
+    ini_lib.WriteString('NacteniDat', 'spnl', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_spnl.Text));
+    ini_lib.WriteString('NacteniDat', 'Bloky', ExtractRelativePath(ExtractFilePath(Application.ExeName), Blky.blky_file));
+    ini_lib.WriteString('NacteniDat', 'Bloky_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), Blky.fstatus));
+    ini_lib.WriteString('NacteniDat', 'MTBData', ExtractRelativePath(ExtractFilePath(Application.ExeName), MTB.filename));
+    ini_lib.WriteString('NacteniDat', 'Zesilovace', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_zes.Text));
+    ini_lib.WriteString('NacteniDat', 'JC', ExtractRelativePath(ExtractFilePath(Application.ExeName), JCDb.filename));
+    ini_lib.WriteString('NacteniDat', 'mJC', ExtractRelativePath(ExtractFilePath(Application.ExeName), MultiJCDb.filename));
+    ini_lib.WriteString('NacteniDat', 'soupravy', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_soupr.Text));
+    ini_lib.WriteString('NacteniDat', 'users', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_Dataload_Users.Text));
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -424,7 +505,7 @@ begin
      F_Main.A_SaveStavExecute(Self);
    except
      on E:Exception do
-       writelog('Vyjimka pri ukladani stavu kolejiste - '+E.Message, WR_ERROR);
+       AppEvents.LogException(E, 'Vyjimka pri ukladani stavu kolejiste');
    end;
    Self.autosave_next := Now + Self.autosave_period;
   end;

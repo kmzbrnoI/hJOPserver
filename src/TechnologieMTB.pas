@@ -168,7 +168,7 @@ implementation
 uses fMain, fSettings, RPConst, fLoginPozadi, fSystemInfo, fAdminForm,
      GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
      TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
-     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB;
+     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv;
 
 constructor TMTB.Create();
 var i:Integer;
@@ -387,7 +387,7 @@ var ini:TMemIniFile;
     Self.LoadLib(lib, true); //nacteni knihovny
   except
     on E:Exception do
-      writelog('Nelze naèíst knihovnu '+lib+': '+E.Message, WR_ERROR);
+      AppEvents.LogException(E, 'Nelze naèíst knihovnu '+lib);
   end;
 
   ini.Free();

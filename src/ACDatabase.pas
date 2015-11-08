@@ -37,7 +37,7 @@ var
 
 implementation
 
-uses Logging, DataAC, fMain;
+uses Logging, DataAC, fMain, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -74,8 +74,11 @@ begin
  try
    ini := TMemIniFile.Create(filename);
  except
-   writelog('Nelze nacist databazi AC - nelze otevrit soubor - '+filename, WR_ERROR);
-   Exit();
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Nelze nacist databazi AC - nelze otevrit soubor - '+filename);
+     Exit();
+    end;
  end;
 
  sections := TStringList.Create();
@@ -90,7 +93,7 @@ begin
    except
      on E:Exception do
       begin
-       writelog('Chyba pri nacitani souboru AC - '+krk_file+' : '+E.Message, WR_ERROR);
+       AppEvents.LogException(E, 'Chyba pri nacitani souboru AC - '+krk_file);
        if (Assigned(AC)) then AC.Free();
        continue;
       end;
@@ -116,8 +119,11 @@ begin
  try
    ini := TMemIniFile.Create(filename);
  except
-   writelog('Nelze ulozit databazi AC - nelze otevrit soubor - '+filename, WR_ERROR);
-   Exit();
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Nelze ulozit databazi AC - nelze otevrit soubor - '+filename);
+     Exit();
+    end;
  end;
 
  ini.Clear();
@@ -141,8 +147,11 @@ begin
  try
    ini := TMemIniFile.Create(Self.filename);
  except
-   writelog('Nelze ulozit statistiky AC - nelze otevrit soubor - '+filename, WR_ERROR);
-   Exit();
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Nelze ulozit statistiky AC - nelze otevrit soubor - '+filename);
+     Exit();
+    end;
  end;
 
  for i := 0 to Self.ACs.Count-1 do

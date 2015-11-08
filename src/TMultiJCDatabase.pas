@@ -51,7 +51,7 @@ var
 implementation
 
 uses Logging, GetSystems, TBloky, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
-      DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase;
+      DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TMultiJCDb
@@ -104,7 +104,7 @@ begin
      on e:Exception do
       begin
        mJC.Free();
-       writelog('Chyba pøi naèítání složené JC '+mJC.Nazev+' : '+e.Message, WR_ERROR);
+       AppEvents.LogException(E, 'Chyba pøi naèítání složené JC '+mJC.Nazev);
        continue;
       end;
    end;
@@ -172,7 +172,7 @@ begin
     on E:Exception do
      begin
       if (not log_err_flag) then
-       writeLog('JC '+Self.JCs[i].nazev + ' update error : '+E.Message+' ; rusim staveni', WR_ERROR);
+        AppEvents.LogException(E, 'JC '+Self.JCs[i].nazev + ' update error, rusim staveni');
       Self.JCs[i].RusStaveni();
      end;
    end;//except

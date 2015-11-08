@@ -76,7 +76,7 @@ var
 implementation
 
 uses Logging, GetSystems, TBloky, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
-      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase;
+      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TJCDb
@@ -128,8 +128,11 @@ begin
      JC.LoadData(ini, sections[i]);
      Self.JCs.Insert(Self.FindPlaceForNewJC(JC.id), JC);
    except
-     writelog('JC '+JC.nazev+' se nepodaøilo naèíst', WR_ERROR);
-     JC.Free();
+     on E:Exception do
+      begin
+       AppEvents.LogException(E, 'JC '+JC.nazev+' se nepodaøilo naèíst');
+       JC.Free();
+      end;
    end;
   end;//for i
 
@@ -190,7 +193,7 @@ begin
     on E:Exception do
      begin
       if (not log_err_flag) then
-       writeLog('JC '+Self.JCs[i].nazev + ' update error : '+E.Message+' ; rusim staveni', WR_ERROR);
+       AppEvents.LogException(E, 'JC '+Self.JCs[i].nazev + ' update error');
       if (Self.JCs[i].staveni) then
         Self.JCs[i].CancelStaveni('Vyjímka', true)
       else
