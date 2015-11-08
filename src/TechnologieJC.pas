@@ -819,12 +819,13 @@ begin
    flag := false;
 
    // kontrola rucniho rizeni lokomotiv
-   for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.cnt-1 do
-     if (HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].Slot.stolen) then
-      begin
-       bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]));
-       flag := true;
-      end;
+   if (Self.fproperties.TypCesty = TJCType.vlak) then
+     for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.cnt-1 do
+       if (HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].Slot.stolen) then
+        begin
+         bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]));
+         flag := true;
+        end;
 
    // pokud jsou jen nektere lokomotivy rizene rucne
    if (flag) then
