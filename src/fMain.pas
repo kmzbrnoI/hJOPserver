@@ -425,7 +425,7 @@ type
     procedure OnDCCStopError(Sender:TObject; Data:Pointer);
 
     procedure SetCallMethod(Method:TNotifyEvent);
-    procedure OnSoundDisabled(Sender:TObject; Data:Pointer);
+    procedure OnSoundDisabled(Sender:TObject);
   end;//public
 
  TVytizeni=class                                                                // vytizeni procesoru programem
@@ -2728,7 +2728,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.OnSoundDisabled(Sender:TObject; Data:Pointer);
+procedure TF_Main.OnSoundDisabled(Sender:TObject);
 begin
  Self.A_All_Loko_OdhlasitExecute(Self);
 end;

@@ -1520,35 +1520,44 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// tato funkce je volana pri vypnuti systemu / vypne u vsech hnacich vozidel funkce
-//   vyssi, nez F0
-// funkce, ktere vypla, si ale zapamatuje jako zaple pro pristi nabeh systemu
+// tato funkce je volana pri vypnuti systemu / vypne u vsech hnacich vozidel zvuk
+// zvuk si ale zapamatuje jako zaply pro pristi nabeh systemu
 procedure TTrkGUI.TurnOffFunctions(callback:TNotifyEvent);
-var i:Integer;
+var i, j:Integer;
+    func:Integer;
+    newfuncs:TFunkce;
     addr:Pointer;
 begin
  if (Assigned(Self.turnoff_callback)) then Exit();
  Self.turnoff_callback := callback;
 
- F_Main.LogStatus('Vypínám funkce hnacích vozidel...');
+ F_Main.LogStatus('Vypínám zvuky hnacích vozidel...');
  Application.ProcessMessages();
 
  for i := 0 to _MAX_ADDR-1 do
   begin
    if ((HVDb.HVozidla[i] <> nil) and (HVDb.HVozidla[i].Slot.prevzato) and (not HVDb.HVozidla[i].Slot.stolen)) then
     begin
+     func := -1;
+     for j := 0 to _HV_FUNC_MAX do
+      if ((HVDb.HVozidla[i].Data.funcVyznam[j] = 'zvuk') and (HVDb.HVozidla[i].Slot.funkce[j])) then
+       begin
+        func := j;
+        break;
+       end;
+     if (func = -1) then continue;
+
      GetMem(addr, 3);
      Integer(addr^) := i;
 
-     Self.TrkLog(self, 2, 'PUT: LOK FUNC 0-4:'+HVDb.HVozidla[i].data.Nazev+' ('+IntToStr(i)+') : 10000');
-     Self.Trakce.LokSetFunc(i, 0, 1);
-     Self.TrkLog(self, 2, 'PUT: LOK FUNC 5-8:'+HVDb.HVozidla[i].data.Nazev+' ('+IntToStr(i)+') : 0000');
-     Self.Trakce.LokSetFunc(i, 1, 0);
+     newfuncs := HVDb.HVozidla[i].Stav.funkce;
+     newfuncs[func] := false;
 
-     Self.TrkLog(self, 2, 'PUT: LOK FUNC 9-12:'+HVDb.HVozidla[i].data.Nazev+' ('+IntToStr(i)+') : 0000');
      Self.callback_err := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
      Self.callback_ok  := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
-     Self.Trakce.LokSetFunc(i, 2, 0);
+
+     Self.LokSetFunc(Self, HVDb.HVozidla[i], newfuncs);
+     HVDb.HVozidla[i].Stav.funkce[func] := true;
 
      Exit();
     end;
@@ -1565,30 +1574,40 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrkGUI.TurnOffFunctions_cmdOK(Sender:TObject; Data:Pointer);
-var i:Integer;
+var i, j:Integer;
+    func:Integer;
+    newfuncs:TFunkce;
 begin
  for i := Integer(data^)+1 to _MAX_ADDR-1 do
   begin
    if ((HVDb.HVozidla[i] <> nil) and (HVDb.HVozidla[i].Slot.prevzato) and (not HVDb.HVozidla[i].Slot.stolen)) then
     begin
+     func := -1;
+     for j := 0 to _HV_FUNC_MAX do
+      if ((HVDb.HVozidla[i].Data.funcVyznam[j] = 'zvuk') and (HVDb.HVozidla[i].Slot.funkce[j])) then
+       begin
+        func := j;
+        break;
+       end;
+     if (func = -1) then continue;
+
      Integer(data^) := i;
 
-     Self.TrkLog(self, 2, 'PUT: LOK FUNC 0-4:'+HVDb.HVozidla[i].data.Nazev+' ('+IntToStr(i)+') : 10000');
-     Self.Trakce.LokSetFunc(i, 0, 1);
-     Self.TrkLog(self, 2, 'PUT: LOK FUNC 5-8:'+HVDb.HVozidla[i].data.Nazev+' ('+IntToStr(i)+') : 0000');
-     Self.Trakce.LokSetFunc(i, 1, 0);
+     newfuncs := HVDb.HVozidla[i].Stav.funkce;
+     newfuncs[func] := false;
 
-     Self.TrkLog(self, 2, 'PUT: LOK FUNC 9-12:'+HVDb.HVozidla[i].data.Nazev+' ('+IntToStr(i)+') : 0000');
      Self.callback_err := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, data);
      Self.callback_ok  := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, data);
-     Self.Trakce.LokSetFunc(i, 2, 0);
+
+     Self.LokSetFunc(Self, HVDb.HVozidla[i], newfuncs);
+     HVDb.HVozidla[i].Stav.funkce[func] := true;
 
      Exit();
     end;
   end;//for i
 
  // no further loco
- F_Main.LogStatus('Vyšší funkce všech hnacích vozidel vypnuty');
+ F_Main.LogStatus('Zvuky všech hnacích vozidel vypnuty');
  Application.ProcessMessages();
 
  FreeMem(data);

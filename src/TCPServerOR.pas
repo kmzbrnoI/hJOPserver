@@ -447,10 +447,7 @@ function TORTCPServer.Stop():Integer;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
-   F_Main.LogStatus('Vypínám všechny zvuky...');
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(F_Main.OnSoundDisabled);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(F_Main.OnSoundDisabled);
-   TrkSystem.LoksSetFunc('zvuk', false);
+   TrkSystem.TurnOffFunctions(F_Main.OnSoundDisabled);
    Exit(0);
   end;
 
@@ -468,12 +465,7 @@ begin
  UDPdisc.SendDiscover();
 
  if (SystemData.Status = stopping) then
-  begin
-   F_Main.LogStatus('Vypínám všechny zvuky...');
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(F_Main.OnSoundDisabled);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(F_Main.OnSoundDisabled);
-   TrkSystem.LoksSetFunc('zvuk', false);
-  end;
+   TrkSystem.TurnOffFunctions(F_Main.OnSoundDisabled);
 
  Result := 0;
 end;//function
