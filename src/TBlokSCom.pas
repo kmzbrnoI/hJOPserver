@@ -551,14 +551,16 @@ var i:Integer;
 begin
  if ((Self.SComStav.Navest < 0) or (Self.SComSettings.zamknuto)) then Exit();
 
- if (Navest = 8) then
+ if ((navest = 8) or (navest = 0)) then
   begin
    if (Self.SComStav.privol_timer_id > 0) then
      for i := 0 to Self.ORsRef.Cnt-1 do
        Self.ORsRef.ORs[i].BroadcastGlobalData('INFO-TIMER-RM;'+IntToStr(Self.SComStav.privol_timer_id));
    Self.SComStav.privol_timer_id := 0;
-   Self.SComStav.privol_start := Now;
   end;
+
+  if (navest = 8) then
+   Self.SComStav.privol_start := Now;
 
  if (Self.SComStav.Navest = navest) then Exit();
 
