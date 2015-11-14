@@ -331,7 +331,7 @@ end;//procedure
 // ulozi stavova data do souboru
 procedure TBlkTU.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
- inherited;
+ inherited SaveStatus(ini_stat, section);
  ini_stat.WriteBool(section, 'bpInBlk', Self.bpInBlk);
 end;
 

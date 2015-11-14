@@ -1316,21 +1316,49 @@ end;
 
 procedure TF_Main.A_SaveStavExecute(Sender: TObject);
 begin
-  Blky.SaveStatToFile(Blky.fstatus);
-  HVDb.SaveToDir('lok');    // tady se ulozi predevsim stavy funkci
-  Soupravy.SaveData(F_Main.E_dataload_soupr.Text);
-  F_Main.SaveFormPosition;
-  FormData.SaveFormData(FormData.aFile);
+  try
+    Blky.SaveStatToFile(Blky.fstatus);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Blky.SaveStatToFile');
+  end;
+
+  try
+    HVDb.SaveToDir('lok');    // tady se ulozi predevsim stavy funkci
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'HvDb.SaveToDir');
+  end;
+
+  try
+    Soupravy.SaveData(F_Main.E_dataload_soupr.Text);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Soupravy.SaveData');
+  end;
+
+  try
+    F_Main.SaveFormPosition;
+    FormData.SaveFormData(FormData.aFile);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Save form position');
+  end;
 
   ini_lib.WriteBool('Log','main-file', Self.CHB_Mainlog_File.Checked);
   ini_lib.WriteBool('Log','main-table', Self.CHB_Mainlog_Table.Checked);
 
-  Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text));
-  ModCas.SaveData(Konfigurace.ini);
-  Konfigurace.ini.WriteBool('SystemCfg', 'FirstStart', false);
-  Konfigurace.ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
-  Konfigurace.ini.UpdateFile();
-  Konfigurace.ini.Free();
+  try
+    Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text));
+    ModCas.SaveData(Konfigurace.ini);
+    Konfigurace.ini.WriteBool('SystemCfg', 'FirstStart', false);
+    Konfigurace.ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
+    Konfigurace.ini.UpdateFile();
+    Konfigurace.ini.Free();
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Save cfg');
+  end;
 end;
 
 procedure TF_Main.A_System_StartExecute(Sender: TObject);      //system start

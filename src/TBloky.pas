@@ -307,17 +307,28 @@ begin
  writelog('Ukladam stavy bloku...', WR_DATA);
 
  try
-   DeleteFile(PChar(stat_filename));  //all data will be rewrited
+   DeleteFile(PChar(stat_filename));
    ini := TMemIniFile.Create(stat_filename);
  except
    on E:Exception do
     begin
-     AppEvents.LogException(E, 'Ukladam stavy bloky: nelze otevrit vystupni soubor');
+     AppEvents.LogException(E, 'Ukladam stavy bloku: nelze otevrit vystupni soubor');
      Exit();
     end;
  end;
 
- for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveStatus(ini, IntToStr(i));
+ for i := 0 to Self.Data.Count-1 do
+  begin
+   try
+     Self.Data[i].SaveStatus(ini, IntToStr(i));
+   except
+     on E:Exception do
+       AppEvents.LogException(E, 'Save blok '+Self.data[i].GetGlobalSettings().name);
+   end;
+
+   // DEBUG
+   ini.UpdateFile();
+  end;
 
  ini.UpdateFile();
  FreeAndNil(ini);

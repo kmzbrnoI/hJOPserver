@@ -99,7 +99,6 @@ begin
  try
    Self.UDPserver := TIdUDPServer.Create(nil);
    Self.UDPserver.OnUDPRead := Self.OnUDPServerRead;
-   Self.UpdateBindings();
    Self.SendDiscover();
  except
    on E:Exception do
@@ -149,6 +148,8 @@ end;
 procedure TUDPDiscover.SendDisc(ABinding: TIdSocketHandle; port:Word);
 var msg:string;
 begin
+ if (ABinding.IP = '0.0.0.0') then Exit();
+
  msg := 'hJOP;' + _DISC_PROTOCOL_VERSION + ';server;' + Self.name + ';' +
         ABinding.IP + ';' + IntToStr(ORTCPServer.port) + ';';
 
