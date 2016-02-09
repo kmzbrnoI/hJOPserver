@@ -33,6 +33,8 @@ type
 
       procedure SetId(new:string);
 
+      function GetFullName():string;                                            // varti jsmeno uzivatele ve formatu: first_name [mezera] lastname
+
    public
 
     firstname:string;                                                           // krestni jmeno
@@ -58,6 +60,7 @@ type
       property password:string read fpasswd write SetPasswd;
       property ban:boolean read fban write SetBan;
       property regulator:boolean read freg write SetReg;
+      property fullName:string read GetFullName;
 
       class function ComparePasswd(plain:string; hash:string):boolean;          // kontroluje shodu hesel; true poku hesla sedi, jinak false
       class function GenerateHash(plain:AnsiString):string;                     // generuje hash hesla
@@ -246,6 +249,14 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TUser.GetFullName():string;
+begin
+ Result := Self.firstname + ' ' + Self.lastname;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 initialization
  TUser.comparer :=

@@ -62,7 +62,7 @@ type
    private const
     _MAX_HISTORY  = 1024;                                                       // maximalni velikost vystupniho bufferu
     _HIST_CHECK_INTERVAL = 100;                                                 // perioda v ms, po ketre dochazi ke kontrole vystupniho bufferu
-    _TIMEOUT_MSEC = 400;                                                        // timeout odpovedi na zpravu
+    _TIMEOUT_MSEC = 500;                                                        // timeout odpovedi na zpravu
                                                                                 // TENTO TIMEOUT NEZKRACOVAT !! Pri timeoutu 200 ms delalo velke potize na starsich NanoX.
     _SEND_MAX     = 3;                                                          // Pocet odeslani prikazu do prohlaseni za neodeslatelny
                                                                                 //  tzn. jedna zprava je pred prohlasenim za neodeslatelnou odeslana prave trikrat (poprve a pote 2x opakovane)
@@ -544,15 +544,20 @@ begin
   try
     InitAsync(asp);
     Self.ComPort.CPort.WriteAsync(buf.data, buf.Count, asp);
+    i := 0;
     while (not Self.ComPort.CPort.IsAsyncCompleted(asp)) do
      begin
       Application.ProcessMessages();
       Sleep(1);
+      // DEBUG
+      if (i mod 100 = 0) then Self.WriteLog(2, 'WRITING DATA');
      end;
   except
    on E : Exception do
     begin
      Self.WriteLog(1, 'PUT ERR: com object error : '+E.Message);
+     Self.WriteLog(1, 'REMOVING HISTORY');
+     while (Self.send_history.Count > 0) do Self.hist_err();
      if (Assigned(Self.FOnComError)) then Self.FOnComError(Self);
     end;
   end;

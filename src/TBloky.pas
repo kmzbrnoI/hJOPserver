@@ -290,7 +290,7 @@ begin
     end;
  end;
 
- for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveData(ini, IntToStr(i));
+ for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveData(ini, IntToStr(Self.data[i].GetGlobalSettings().id));
 
  ini.UpdateFile();
  FreeAndNil(ini);
@@ -320,7 +320,7 @@ begin
  for i := 0 to Self.Data.Count-1 do
   begin
    try
-     Self.Data[i].SaveStatus(ini, IntToStr(i));
+     Self.Data[i].SaveStatus(ini, IntToStr(Self.data[i].GetGlobalSettings().id));
    except
      on E:Exception do
        AppEvents.LogException(E, 'Save blok '+Self.data[i].GetGlobalSettings().name);

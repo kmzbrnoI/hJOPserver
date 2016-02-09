@@ -457,7 +457,10 @@ begin
 
  for i := 0 to _MAX_ADDR-1 do
    if (HVDb.HVozidla[i] <> nil) then
-     HVDb.HVozidla[i].Slot.stolen := false;
+    begin
+     HVDb.HVozidla[i].Slot.stolen   := false;
+     HVDb.HVozidla[i].Slot.prevzato := false;
+    end;
 
  if (not force) then Self.NouzReleaseLoko();
  
@@ -842,6 +845,8 @@ begin
  F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
  F_Main.LogStatus('Centrála: odpojování...');
  F_Main.S_Intellibox_connect.Brush.Color := clBlue;
+ F_Main.G_Loko_Prevzato.Progress := 0;
+ F_Main.S_lok_prevzato.Brush.Color := clRed;
  Application.ProcessMessages();
  Self.Trakce.BeforeClose();   // smaze buffer historie
 end;//procedure
@@ -1515,7 +1520,7 @@ end;//function
 
 procedure TTrkGUI.OnComWriteError(Sender:TObject);
 begin
- if (Self.openned) then Self.Close();
+ if (Self.openned) then Self.Close(true);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -116,7 +116,7 @@ var glob:TBlkSettings;
      end;
    end else begin
     glob.poznamka := Self.Blk.GetGlobalSettings().poznamka;
-    Self.Blk.SetSettings(settings);
+    Self.Blk.SetGlobalSettings(glob);
    end;
 
 
@@ -131,7 +131,7 @@ var glob:TBlkSettings;
   settings.MTBInputs.Vystraha  := SE_vst_vystraha.Value;
   settings.MTBInputs.Anulace   := SE_vst_anulace.Value;
 
-  Self.Blk.SetGlobalSettings(glob);
+  Self.Blk.SetSettings(settings);
 
   Self.Close;
   Self.Blk.Change();

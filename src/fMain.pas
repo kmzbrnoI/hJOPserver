@@ -1317,7 +1317,12 @@ end;
 procedure TF_Main.A_SaveStavExecute(Sender: TObject);
 begin
   try
-    Blky.SaveStatToFile(Blky.fstatus);
+    // ukladani stavu bloku: ulozime do docasneho souboru a az pak prepiseme stavajici konfigurak
+    Blky.SaveStatToFile(Blky.fstatus+'_');
+
+    DeleteFile(Blky.fstatus);
+    MoveFile(PChar(Blky.fstatus+'_'), PChar(Blky.fstatus));
+    DeleteFile(Blky.fstatus+'_');
   except
     on E:Exception do
       AppEvents.LogException(E, 'Blky.SaveStatToFile');
@@ -1331,7 +1336,11 @@ begin
   end;
 
   try
-    Soupravy.SaveData(F_Main.E_dataload_soupr.Text);
+    Soupravy.SaveData(F_Main.E_dataload_soupr.Text+'_');
+
+    DeleteFile(F_Main.E_dataload_soupr.Text);
+    MoveFile(PChar(F_Main.E_dataload_soupr.Text+'_'), PChar(F_Main.E_dataload_soupr.Text));
+    DeleteFile(F_Main.E_dataload_soupr.Text+'_');
   except
     on E:Exception do
       AppEvents.LogException(E, 'Soupravy.SaveData');
@@ -1732,7 +1741,13 @@ end;//procedure
 
 procedure TF_Main.FreeVars;
  begin
-  MTB.Free;
+  try
+    MTB.Free;
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'MTB.Free');
+  end;
+
   ResetData.Free;
 
   if (Assigned(TrkSystem)) then FreeAndNil(TrkSystem);
@@ -1772,8 +1787,7 @@ end;
 
 procedure TF_Main.CloseForm;
  begin
-  WriteLog('Probíhá ukonèování hJOPserver',WR_MESSAGE);
-  WriteLog('###############################################',WR_MESSAGE);
+  WriteLog('########## Probíhá ukonèování hJOPserver ##########',WR_MESSAGE);
 
   Self.Timer1.Enabled         := false;
   Self.T_function.Enabled     := false;
@@ -1784,7 +1798,13 @@ procedure TF_Main.CloseForm;
 
   Self.A_SaveStavExecute(Self);
 
-  FreeVars();
+  try
+    FreeVars();
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'FreeVars');
+  end;
+  WriteLog('###############################################',WR_MESSAGE);
  end;
 
 procedure TF_Main.PM_system_resetClick(Sender: TObject);

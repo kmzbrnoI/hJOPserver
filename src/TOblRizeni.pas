@@ -112,7 +112,7 @@ type
       procedure NUZTimeOut(Sender:TObject);                                     // callback ubehnuti mereni casu pro ruseni nouzovych zaveru bloku
       procedure NUZ_PS(Sender:TIdContext; success:boolean);                     // callback potvrzovaci sekvence NUZ
 
-      procedure ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string);
+      procedure ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string; username:string);
 
       procedure SetNUZBlkCnt(new:Integer);
       procedure SetZkratBlkCnt(new:Integer);
@@ -814,7 +814,7 @@ begin
  // panel se chce odpojit -> vyradit z databaze
  if (rights = TORControlRights.null) then
   begin
-   Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Úspìšnì autorizováno - odpojen');
+   Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Úspìšnì autorizováno - odpojen', '');
    ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
    if (Self.PnlDGetRights(Sender) >= write) then Self.AuthWriteToRead(Sender);
    if (Self.PnlDGetIndex(Sender) > -1) then Self.PnlDRemove(Sender);
@@ -856,11 +856,14 @@ begin
 
  if (UserRights < rights) then
   begin
-   Self.ORAuthoriseResponse(Sender, UserRights, Self.id + ' : '+msg);
    if (UserRights > TORControlRights.null) then
-     Self.PnlDAdd(Sender, UserRights, username)
-   else
+    begin
+     Self.PnlDAdd(Sender, UserRights, username);
+     Self.ORAuthoriseResponse(Sender, UserRights, Self.id + ' : '+msg, user.fullName)
+    end else begin
      Self.PnlDRemove(Sender);
+     Self.ORAuthoriseResponse(Sender, UserRights, Self.id + ' : '+msg, '')
+    end;
 
    ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
    Exit;
@@ -871,7 +874,7 @@ begin
   begin
    // superuser muze autorizovat zapis i pri vyplych systemech
    Self.PnlDAdd(Sender, TORControlRights.read, username);
-   Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat zápis pøi vyplých systémech !');
+   Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat zápis pøi vyplých systémech !', user.fullName);
    ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
    Exit;
   end;
@@ -895,7 +898,7 @@ begin
          panel := Self.Connected[i];
          panel.Rights := TORCOntrolRights.read;
          Self.Connected[i] := panel;
-         Self.ORAuthoriseResponse(panel.Panel, panel.Rights, 'Pøevzetí øízení');
+         Self.ORAuthoriseResponse(panel.Panel, panel.Rights, 'Pøevzetí øízení', user.fullName);
         end else begin
          rights := TORControlRights.read;
          msg := 'Panel již pøipojen !';
@@ -908,12 +911,12 @@ begin
  if (Self.PnlDAdd(Sender, rights, username) <> 0) then
   begin
    ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
-   Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Pøipojeno maximum OØ, nelze autorizovat další !');
+   Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Pøipojeno maximum OØ, nelze autorizovat další !', '');
    Exit;
   end;
 
  UsrDb.LoginUser(username);
- Self.ORAuthoriseResponse(Sender, rights, msg);
+ Self.ORAuthoriseResponse(Sender, rights, msg, user.fullName);
  ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
 
  if ((rights > read) and (last_rights <= read)) then Self.AuthReadToWrite(Sender);
@@ -1279,9 +1282,9 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string);
+procedure TOR.ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string; username:string);
 begin
- ORTCPServer.SendLn(Panel, Self.id+';AUTH;'+IntToStr(Integer(Rights))+';'+msg+';');
+ ORTCPServer.SendLn(Panel, Self.id+';AUTH;'+IntToStr(Integer(Rights))+';'+msg+';'+username);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1370,7 +1373,7 @@ var i:Integer;
 begin
  for i := Self.Connected.Count-1 downto 0 do
   begin
-   Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Odpojení systémù');
+   Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Odpojení systémù', '');
    index := (Self.Connected[i].Panel.Data as TTCPORsRef).index;
    Self.PnlDRemove(Self.Connected[i].Panel);
    ORTCPServer.GUIRefreshLine(index);
@@ -1960,7 +1963,7 @@ begin
     begin
      if (user.ban) then rights := TORControlRights.null;
      Self.PnlDAdd(Self.Connected[i].Panel, rights, user.id);
-     Self.ORAuthoriseResponse(Self.Connected[i].Panel, rights, 'Snížena oprávnìní uživatele');
+     Self.ORAuthoriseResponse(Self.Connected[i].Panel, rights, 'Snížena oprávnìní uživatele', '');
     end;
   end;//for i
 end;//procedure
@@ -1974,7 +1977,7 @@ begin
   begin
    if (Self.Connected[i].user = userid) then
     begin
-     Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Uživatel smazán');
+     Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Uživatel smazán', '');
      Self.PnlDRemove(Self.Connected[i].Panel);
     end;
   end;//for i

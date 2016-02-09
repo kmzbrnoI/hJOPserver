@@ -253,7 +253,7 @@ implementation
   -;DCC;STOP                                                                    DCC vypnuto
   -;DCC;DISABLED                                                                neni mozno zmenit stav DCC z tohoto klienta
   -;SPR-LIST;(spr1)(spr2)(...)                                                  odeslani seznamu souprav ve vsech oblastech rizeni daneho panelu
-  or;AUTH;rights;comment;                                                       odpoved na pozadavek o autorizaci
+  or;AUTH;rights;comment;username                                               odpoved na pozadavek o autorizaci
   or;MENU;items
                                                                                   pokud je polozka '-', vypisuje se oddelovac
                                                                                   pokud je prvni znak polozky #, pole je disabled

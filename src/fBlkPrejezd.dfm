@@ -164,7 +164,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Margins.Bottom = 2
       Caption = 'Modul:'
       Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
+      Font.Color = clBlack
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
