@@ -453,7 +453,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = #169' Jan Hor'#225#269'ek 2008 - 2015'
+    Caption = #169' Jan Hor'#225#269'ek 2008 - 2016'
     Color = clWhite
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clBlack
