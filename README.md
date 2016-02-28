@@ -11,3 +11,4 @@ Main technological hJOP server.
 
 - [ComPort](https://sourceforge.net/projects/comport/) 4.1
 - [dcpcrypt2](http://www.cityinthesky.co.uk/opensource/dcpcrypt/)
+- [JEDI Code Library](http://wiki.delphi-jedi.org/index.php?title=JEDI_Code_Library)
