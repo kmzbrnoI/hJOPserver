@@ -23,6 +23,7 @@ type
 
    private
      ORsDatabase:TList<TOR>;                                                    // databaze oblasti rizeni
+     fstat_filename:string;
 
      procedure FreeORs();                                                       // zniceni a vymazani vsech OR
      function GetORCnt():Integer;                                               // vrati pocet OR
@@ -31,7 +32,9 @@ type
       constructor Create();
       destructor Destroy(); override;
 
-      function LoadData(const filename:string):Byte;
+      procedure LoadData(const filename:string; const stat_filename:string);
+      procedure SaveStatus(const filename:string);
+
       function GetORIndex(const id:string):Integer;
       function ParseORs(str:string):TORsRef;                                    // parsuje seznam oblasti rizeni
       procedure MTBFail(addr:integer);                                          // je vyvolano pri vypadku MTB modulu, resi zobrazeni chyby do panelu v OR
@@ -46,7 +49,10 @@ type
 
       procedure FillCB(CB:TComboBox; selected:TOR);                             // naplni ComboBox seznamem oblasti rizeni
 
+      procedure InitOsv();
+
       property Count:Integer read GetORCnt;                                     // vrati seznam oblasti rizeni
+      property status_filename:string read fstat_filename;
   end;//TORs
 
 var
@@ -54,7 +60,7 @@ var
 
 implementation
 
-uses Prevody, Logging, TCPServerOR, THVDatabase;
+uses Prevody, Logging, TCPServerOR, THVDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -74,22 +80,21 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 //nacitani OR a vytvareni vsech OR
-function TORs.LoadData(const filename:string):Byte;
-var ini:TMemIniFile;
+procedure TORs.LoadData(const filename:string; const stat_filename:string);
+var ini, ini_stat:TMemIniFile;
     oblasti:TStrings;
     i:Integer;
     OblR:TOR;
 begin
- if (not FileExists(filename)) then
-  begin
-   writelog('Soubor se stanicemi neexistuje - '+filename,WR_ERROR);
-   Exit(1);
-  end;
-
  writelog('Naèítám stanice - '+filename,WR_DATA);
+
+ if (not FileExists(filename)) then
+   raise Exception.Create('Soubor se stanicemi neexistuje - '+filename);
 
  Self.ORsDatabase.Clear();
  ini := TMemIniFile.Create(filename);
+ ini_stat := TMemIniFile.Create(stat_filename);
+ Self.fstat_filename := stat_filename;
  oblasti := TStringList.Create();
 
  ini.ReadSection(_SECT_OR, oblasti);
@@ -97,15 +102,48 @@ begin
  for i := 0 to oblasti.Count-1 do
   begin
    OblR := TOR.Create(i);
-   if (OblR.LoadData(ini.ReadString(_SECT_OR, oblasti[i], '')) = 0) then Self.ORsDatabase.Add(OblR);
+   try
+     OblR.LoadData(ini.ReadString(_SECT_OR, oblasti[i], ''));
+     OblR.LoadStat(ini_stat, OblR.id);
+     Self.ORsDatabase.Add(OblR);
+   except
+     on E:Exception do
+      begin
+       AppEvents.LogException(E, 'Nacitam oblast rizeni ' + IntToStr(i));
+       OblR.Free();
+      end;
+   end;
   end;//for i
 
  oblasti.Free();
  ini.Free();
- Result := 0;
+ ini_stat.Free();
 
  writelog('Naèteno '+IntToStr(Self.ORsDatabase.Count)+' stanic',WR_DATA);
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+// ukladani stavu vsech oblasti rizeni
+
+procedure TORs.SaveStatus(const filename:string);
+var ini:TMemIniFile;
+    oblr:TOR;
+begin
+ ini := TMemIniFile.Create(filename);
+
+ for oblr in Self.ORsDatabase do
+  begin
+   try
+     oblr.SaveStat(ini, oblr.id);
+   except
+     on E:Exception do
+       AppEvents.LogException(E, 'Ukladani stavu OR ' + oblr.id);
+   end;
+  end;
+
+ ini.UpdateFile();
+ ini.Free();
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -242,6 +280,14 @@ end;//procedure
 function TORs.GetORCnt():Integer;
 begin
  Result := Self.ORsDatabase.Count;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TORs.InitOsv();
+var oblr:TOR;
+begin
+ for oblr in Self.ORsDatabase do oblr.InitOsv();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

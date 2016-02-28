@@ -25,6 +25,8 @@ type
    board:Byte;                                                                  // MTB deska osvetleni
    port:Byte;                                                                   // MTB port osvetleni
    name:string;                                                                 // popis osvetleni, max 5 znaku
+
+   default_state:boolean;                                                       // vychozi stav osvetleni - toto je ukladano do souboru a nacitano ze souboru
   end;
 
  //primarni vlastnosti kazde OR
@@ -123,6 +125,8 @@ type
 
       procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
 
+      function PanelGetOsv(index:Integer):boolean;                              // vrati stav osvetleni
+
       // tyto funkce jsou volany pri zmene opravenni mezi cteni a zapisem
       // primarni cil = v techto funkcich resit zapinani a vypinani zvuku v panelu
       procedure AuthReadToWrite(panel:TIdContext);
@@ -138,7 +142,9 @@ type
       constructor Create(index:Integer);
       destructor Destroy(); override;
 
-      function LoadData(str:string):Byte;
+      procedure LoadData(str:string);
+      procedure LoadStat(ini:TMemIniFile; section:string);
+      procedure SaveStat(ini:TMemIniFile; section:string);
 
       procedure RemoveClient(Panel:TIdContext);                                 // smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
 
@@ -175,6 +181,8 @@ type
       // volany pri zadosti o poskytnuti loko pro regulator:
       function LokoPlease(Sender:TIDContext; user:TUser; comment:string):Integer;
       procedure LokoCancel(Sender:TIdContext);
+
+      procedure InitOsv();
 
       //--- komunikace s panely zacatek: ---
       procedure PanelAuthorise(Sender:TIdContext; rights:TORControlRights; username:string; password:string);
@@ -265,7 +273,7 @@ end;//dtor
 //nacitani dat OR
 //na kazdem radku je ulozena jedna oblast rizeni ve formatu:
 //  nazev;nazev_zkratka;id;(osv_mtb|osv_port|osv_name)(osv_mtb|...)...;;
-function TOR.LoadData(str:string):Byte;
+procedure TOR.LoadData(str:string);
 var data_main,data_osv,data_osv2:TStrings;
     j:Integer;
     Osv:TOsv;
@@ -277,10 +285,7 @@ begin
  ExtractStrings([';'],[],PChar(str), data_main);
 
  if (data_main.Count < 3) then
-  begin
-   Result := 2;
-   Exit;
-  end;
+   raise Exception.Create('Mene nez 3 parametry v popisu oblasti rizeni');
 
  Self.ORProp.Name       := data_main[0];
  Self.ORProp.ShortName  := data_main[1];
@@ -298,6 +303,7 @@ begin
      ExtractStrings(['|'], [], PChar(data_osv[j]), data_osv2);
 
      try
+       Osv.default_state := false;
        Osv.board := StrToInt(data_osv2[0]);
        Osv.port  := StrToInt(data_osv2[1]);
        Osv.name  := data_osv2[2];
@@ -311,8 +317,33 @@ begin
  FreeAndNil(data_main);
  FreeAndNil(data_osv);
  FreeAndNil(data_osv2);
- Result := 0;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+// nacitani or_stat.ini souboru
+// musi byt volano po LoadData
+procedure TOR.LoadStat(ini:TMemIniFile; section:string);
+var osv:TOsv;
+    i:Integer;
+begin
+ // nacteme stav osvetleni
+ for i := 0 to Self.ORProp.Osvetleni.Count-1 do
+  begin
+   osv := Self.ORProp.Osvetleni[i];
+   osv.default_state := ini.ReadBool(section, osv.name, false);
+   Self.ORProp.Osvetleni[i] := osv;
+  end;
+end;
+
+// ukladani or_stat.ini souboru
+procedure TOR.SaveStat(ini:TMemIniFile; section:string);
+var i:Integer;
+begin
+ // zapiseme stav osvetleni
+ for i := 0 to Self.ORProp.Osvetleni.Count-1 do
+   ini.WriteBool(section, Self.ORProp.Osvetleni[i].name, Self.ORProp.Osvetleni[i].default_state);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1489,13 +1520,24 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// vrati stav jednoho osvetleni
+function TOR.PanelGetOsv(index:Integer):boolean;
+begin
+ if ((index < 0) or (index >= Self.ORProp.Osvetleni.Count)) then Exit(false);
+
+ if (MTB.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1) then
+   Result := true
+ else
+   Result := false;
+end;
+
 //  or;OSV;(code;stav)(code;srav) ...        - informace o stavu osvetleni (stav = [0,1])
 procedure TOR.PanelSendOsv(Sender:TIdContext);
 var i:Integer;
     str:string;
 begin
  //kontrola opravneni klienta
- if (Self.PnlDGetRights(Sender) < write) then
+ if (Self.PnlDGetRights(Sender) < read) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit;
@@ -1503,12 +1545,13 @@ begin
 
  str := Self.id + ';OSV;';
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(MTB.GetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port)) + ']';
+   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(PrevodySoustav.BoolToInt(Self.PanelGetOsv(i))) + ']';
  ORTCPServer.SendLn(Sender, str);
 end;//procedure
 
 procedure TOR.PanelSetOsv(Sender:TIdCOntext; id:string; state:boolean);
 var i:Integer;
+    osv:TOsv;
 begin
  //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
@@ -1518,12 +1561,24 @@ begin
   end;
 
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-  if (Self.ORProp.Osvetleni.Items[i].name = id) then
+  if (Self.ORProp.Osvetleni[i].name = id) then
    begin
-    MTB.SetOutput(Self.ORProp.Osvetleni.Items[i].board, Self.ORProp.Osvetleni.Items[i].port, PrevodySoustav.BoolToInt(state));
+    MTB.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, PrevodySoustav.BoolToInt(state));
+    osv := Self.ORProp.Osvetleni[i];
+    osv.default_state := state;
+    Self.ORProp.Osvetleni[i] := osv;
     Exit();
    end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.InitOsv();
+var osv:TOsv;
+begin
+ for osv in Self.ORProp.Osvetleni do
+   MTB.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

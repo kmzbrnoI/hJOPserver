@@ -79,9 +79,10 @@ var read,read2:string;
   F_Main.E_Dataload_Users.Text := read;
 
   F_Splash.AddStav('Naèítám stanice (soubor *.spnl)');
-  read := ini_lib.ReadString('NacteniDat','spnl', 'data\stanice.spnl');
+  read  := ini_lib.ReadString('NacteniDat', 'spnl', 'data\stanice.spnl');
+  read2 := ini_lib.ReadString('NacteniDat', 'or_stat', 'data\or_stat.ini');
   try
-    ORs.LoadData(read);
+    ORs.LoadData(read, read2);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -301,6 +302,7 @@ var return:Integer;
     ini_lib.WriteString('NacteniDat', 'mJC', ExtractRelativePath(ExtractFilePath(Application.ExeName), MultiJCDb.filename));
     ini_lib.WriteString('NacteniDat', 'soupravy', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_soupr.Text));
     ini_lib.WriteString('NacteniDat', 'users', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_Dataload_Users.Text));
+    ini_lib.WriteString('NacteniDat', 'or_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), ORs.status_filename));
   except
     on E:Exception do
       AppEvents.LogException(E);

@@ -1085,6 +1085,9 @@ begin
   if (F_Main.LV_AC_Db.Selected <> nil) then
     F_Main.LV_AC_DbChange(F_Main.LV_AC_Db, F_Main.LV_AC_Db.Selected, TItemChange.ctText);
 
+  // inicialziace osvetleni
+  ORs.InitOsv();
+
   if (SystemData.Status = starting) then
    Self.A_Trk_ConnectExecute(nil);
 end;//procedure
@@ -1352,6 +1355,13 @@ begin
   except
     on E:Exception do
       AppEvents.LogException(E, 'Save form position');
+  end;
+
+  try
+    ORs.SaveStatus(ORs.status_filename);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Save OR status');
   end;
 
   ini_lib.WriteBool('Log','main-file', Self.CHB_Mainlog_File.Checked);
