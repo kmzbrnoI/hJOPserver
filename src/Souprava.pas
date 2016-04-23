@@ -409,10 +409,14 @@ begin
    if (Assigned(HVDb.HVozidla[Self.data.HV.HVs[i]])) then
     begin
      HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.souprava := -1;
-     TrkSystem.LokSetDirectSpeed(Self, HVDb.HVozidla[Self.data.HV.HVs[i]], 0);
 
-     if (HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.regulators.Count = 0) and (not RegCollector.IsLoko(HVDb.HVozidla[Self.data.HV.HVs[i]])) then
-       TrkSystem.OdhlasitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
+     if (TrkSystem.openned) then
+      begin
+       // lokomotivu fyzicky odhlasujeme jen pokud jsme pripojeni k centrale
+       TrkSystem.LokSetDirectSpeed(Self, HVDb.HVozidla[Self.data.HV.HVs[i]], 0);
+       if (HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.regulators.Count = 0) and (not RegCollector.IsLoko(HVDb.HVozidla[Self.data.HV.HVs[i]])) then
+         TrkSystem.OdhlasitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
+      end;
     end;
   end;
 end;//procedure
