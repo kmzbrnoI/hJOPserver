@@ -124,6 +124,7 @@ type
      procedure UpdateFromPanelString(data:string);     // nacteni informaci o HV z klienta
 
      procedure RemoveStats();                          // smaz statistiky najeto
+     function ExportStats():string;                    // export najetych statistik hnaciho vozidla
 
      function PredejStanici(st:TOR):Integer;           // predej HV jine stanici
      function GetPanelLokString(mode:TLokStringMode = normal):string; // vrati HV ve standardnim formatu pro klienta
@@ -407,6 +408,15 @@ begin
  Self.Stav.najeto_vzad.Metru  := 0;
  Self.Stav.najeto_vzad.Bloku  := 0;
 end;//procedure
+
+// format vystupnich dat: adresa;nazev;majitel;najeto_metru_vpres;majeto_bloku_vpred;najeto_metru_vzad;najeto_bloku_vzad
+function THV.ExportStats():string;
+begin
+ Result := IntToStr(Self.adresa) + ';' + Self.Data.Nazev + ';' +
+           Self.Data.Majitel + ';' + Format('%5.2f',[Self.Stav.najeto_vpred.Metru]) + ';' +
+           IntToStr(Self.Stav.najeto_vpred.Bloku) + ';' + Format('%5.2f',[Self.Stav.najeto_vzad.Metru]) + ';' +
+           IntToStr(Self.Stav.najeto_vzad.Bloku);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

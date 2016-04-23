@@ -3493,7 +3493,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Soupravy
+    ActivePage = TS_HV
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -4146,6 +4146,7 @@ object F_Main: TF_Main
         OnCustomDrawItem = LV_HVCustomDrawItem
         OnDblClick = LV_HVDblClick
         OnKeyPress = LV_HVKeyPress
+        ExplicitLeft = -376
       end
       object P_HV_Pozadi: TPanel
         Left = 0
@@ -4160,6 +4161,8 @@ object F_Main: TF_Main
         BevelOuter = bvNone
         Color = clGray
         TabOrder = 1
+        ExplicitLeft = 56
+        ExplicitTop = -4
         object P_HV_Tlac: TPanel
           Left = 504
           Top = 4
@@ -4213,9 +4216,9 @@ object F_Main: TF_Main
           end
         end
         object P_HV_Dataload: TPanel
-          Left = 8
+          Left = 16
           Top = 4
-          Width = 212
+          Width = 217
           Height = 32
           Margins.Left = 2
           Margins.Top = 2
@@ -4243,6 +4246,37 @@ object F_Main: TF_Main
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
+          end
+        end
+        object P_HV_Stats: TPanel
+          Left = 1024
+          Top = 3
+          Width = 257
+          Height = 32
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          BevelOuter = bvNone
+          Color = clWhite
+          TabOrder = 2
+          object B_HVStats_Clear: TButton
+            Left = 130
+            Top = 3
+            Width = 116
+            Height = 25
+            Caption = 'Smazat statistiky'
+            TabOrder = 0
+            OnClick = B_ClearStatsClick
+          end
+          object B_HVStats_Export: TButton
+            Left = 8
+            Top = 3
+            Width = 116
+            Height = 25
+            Caption = 'Exportovat statistiky'
+            TabOrder = 1
+            OnClick = B_HVStats_ExportClick
           end
         end
       end
@@ -8942,6 +8976,12 @@ object F_Main: TF_Main
   object AE_Main: TApplicationEvents
     OnMessage = AE_1Message
     Left = 872
+    Top = 456
+  end
+  object SD_HV_Stats: TSaveDialog
+    Filter = 'Hodnoty odd'#283'len'#233' st'#345'edn'#237'kem (*.csv)|*.csv'
+    Title = 'Vyberte um'#237'st'#283'n'#237' souboru pro export statistik'
+    Left = 168
     Top = 456
   end
 end

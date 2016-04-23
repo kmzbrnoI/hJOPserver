@@ -53,6 +53,9 @@ type
 
      procedure RemoveRegulator(conn:TIDContext);
 
+     procedure ClearAllStatistics();
+     procedure ExportStatistics(filename:string);
+
      procedure UpdateTokenTimeout();
 
      property cnt:Word read GetCnt;              // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
@@ -394,6 +397,36 @@ begin
    if (Assigned(self.HVs[i])) then
      Self.HVs[i].UpdateTokenTimeout();
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THVDb.ClearAllStatistics();
+var i:Integer;
+begin
+ for i := 0 to _MAX_ADDR-1 do
+   if (Assigned(self.HVs[i])) then
+     Self.HVs[i].RemoveStats();
+ HVTableData.reload := true;
+ HVTableData.UpdateTable();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THVDb.ExportStatistics(filename:string);
+var f:TextFile;
+    i:Integer;
+begin
+  AssignFile(f, filename);
+  Rewrite(f);
+
+  WriteLn(f, 'adresa;nazev;majitel;najeto_metru_vpred;majeto_bloku_vpred;najeto_metru_vzad;najeto_bloku_vzad');
+
+  for i := 0 to _MAX_ADDR-1 do
+    if (Assigned(self.HVs[i])) then
+      WriteLn(f, Self.HVs[i].ExportStats());
+
+  CloseFile(f);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

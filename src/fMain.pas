@@ -243,6 +243,10 @@ type
     B_Change: TButton;
     CHB_LoadChanges: TCheckBox;
     AE_Main: TApplicationEvents;
+    P_HV_Stats: TPanel;
+    B_HVStats_Clear: TButton;
+    B_HVStats_Export: TButton;
+    SD_HV_Stats: TSaveDialog;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -376,6 +380,8 @@ type
     procedure LV_UsersKeyPress(Sender: TObject; var Key: Char);
     procedure LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
     procedure LV_HVKeyPress(Sender: TObject; var Key: Char);
+    procedure B_ClearStatsClick(Sender: TObject);
+    procedure B_HVStats_ExportClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -1525,6 +1531,12 @@ begin
  ORTCPServer.BroadcastFuncsVyznam();
 end;
 
+procedure TF_Main.B_ClearStatsClick(Sender: TObject);
+begin
+ if (Application.MessageBox('Opravdu smazat najeté bloky a kilometry všech hnacích vozidel?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+   HVDb.ClearAllStatistics();
+end;
+
 procedure TF_Main.OnFuncsVyznamChange(Sender:TObject);
 var i:Integer;
 begin
@@ -1539,6 +1551,24 @@ procedure TF_Main.B_CS_Ver_UpdateClick(Sender: TObject);
 begin
  TrkSystem.GetCSVersion();
  TrkSystem.GetLIVersion();
+end;
+
+procedure TF_Main.B_HVStats_ExportClick(Sender: TObject);
+var fn:string;
+begin
+ if (Self.SD_HV_Stats.Execute(Self.Handle)) then
+  begin
+   try
+    if (RightStr(Self.SD_HV_Stats.FileName, 4) <> '.csv') then
+      fn := Self.SD_HV_Stats.FileName + '.csv'
+    else
+      fn := Self.SD_HV_Stats.FileName;
+    HVDb.ExportStatistics(fn);
+   except
+    on E:Exception do
+      Application.MessageBox(PChar('Nelze exporotvat'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+   end;
+  end;
 end;
 
 procedure TF_Main.B_HV_AddClick(Sender: TObject);
@@ -1893,6 +1923,7 @@ procedure TF_Main.RepaintObjects;
  P_HV_Tlac.Left       := (PC_1.Width div 2)-(P_HV_Tlac.Width div 2);
 
  P_Zes_Vysvetlivky.Left := PC_1.Width - P_Zes_Vysvetlivky.Width-15;
+ P_HV_Stats.Left        := PC_1.Width - P_HV_Stats.Width-15;
  P_Blk_Ostatni.Left     := PC_1.Width - P_Blk_Ostatni.Width - 15;
 end;//procedure
 
