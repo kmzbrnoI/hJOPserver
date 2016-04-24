@@ -890,10 +890,10 @@ begin
    if (UserRights > TORControlRights.null) then
     begin
      Self.PnlDAdd(Sender, UserRights, username);
-     Self.ORAuthoriseResponse(Sender, UserRights, Self.id + ' : '+msg, user.fullName)
+     Self.ORAuthoriseResponse(Sender, UserRights, msg, user.fullName)
     end else begin
      Self.PnlDRemove(Sender);
-     Self.ORAuthoriseResponse(Sender, UserRights, Self.id + ' : '+msg, '')
+     Self.ORAuthoriseResponse(Sender, UserRights, msg, '')
     end;
 
    ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
