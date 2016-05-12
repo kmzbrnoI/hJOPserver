@@ -592,6 +592,10 @@ begin
   if (Self.VyhSettings.MTBAddrs.Count < 4) then Exit(2);
   if ((new <> plus) and (new <> minus)) then Exit(3);
 
+ // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
+ // k zacykleni pri staveni spojek.
+ Self.UpdatePoloha();
+
   if (new <> Self.VyhStav.poloha) then
    begin
     // vstupni podminky se kontroluji jen pro pripad, kdy chceme vyhybku opravdu prestavit
