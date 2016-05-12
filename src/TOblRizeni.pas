@@ -744,9 +744,10 @@ begin
   begin
    if (Self.Connected[i].Panel = Panel) then
     begin
-     //pokud uz je zaznam v databazi, dame do databaze atualni nastavovana prava (vyuzivano pri DP)
+     // pokud uz je zaznam v databazi, pouze upravime tento zaznam
      pnl := Self.Connected[i];
      pnl.Rights := rights;
+     pnl.user   := user;
      Self.Connected[i] := pnl;
      Exit;
     end;
