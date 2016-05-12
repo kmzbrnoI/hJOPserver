@@ -661,6 +661,7 @@ begin
 
  if (Self.VyhSettings.spojka > -1) then
   begin
+   // pokud se jedna o spojku, volame SetPoloha i na spojku
    Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
    if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_VYH) and
    (((Blk as TBlkVyhybka).Stav.staveni_plus <> Self.VyhStav.staveni_plus) or ((Blk as TBlkVyhybka).Stav.staveni_minus <> Self.VyhStav.staveni_minus))) then
