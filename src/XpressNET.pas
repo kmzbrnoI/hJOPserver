@@ -218,6 +218,7 @@ begin
    begin
     if (Fbuf_in.Count >= 1) then
      begin
+      // msg_len is without last (xor) byte
       msg_len := (Fbuf_in.data[0] AND $0F) + 1;
       if ((msg_len+1) <= Fbuf_in.Count) then
        begin
@@ -234,7 +235,7 @@ begin
           Fbuf_in.Count := tmp;
 
           // remove parsed message from buffer
-          for i := 0 to msg_len+1 do Fbuf_in.data[i] := Fbuf_in.data[i+msg_len+1];
+          for i := 0 to Fbuf_in.Count-msg_len-2 do Fbuf_in.data[i] := Fbuf_in.data[i+msg_len+1];
           Fbuf_in.Count := Fbuf_in.Count - msg_len - 1;
 
           s := 'BUF: ';
@@ -338,12 +339,12 @@ begin
         end;
 
         $80: begin
-          Self.WriteLog(1, 'GET ERR: transfer'+s);
+          Self.WriteLog(1, 'GET ERR: transfer ('+s+')');
           if (Self.send_history.Count > 0) then
             Self.hist_send(0);    // odpoved chybou - odesleme data znovu
         end;
         $81: begin
-          Self.WriteLog(1, 'GET ERR: busy'+s);
+          Self.WriteLog(1, 'GET ERR: busy ('+s+')');
           if (Self.send_history.Count > 0) then
             Self.hist_send(0);    // odpoved chybou - odesleme data znovu
         end;
@@ -512,6 +513,7 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.Send(buf : TBuffer);
 var
   x: byte;
