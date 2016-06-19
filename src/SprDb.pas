@@ -4,7 +4,7 @@ unit SprDb;
 
 interface
 
-uses SysUtils, Souprava, IniFiles, Classes, Windows;
+uses SysUtils, Souprava, IniFiles, Classes, Windows, Forms;
 
 const
   _MAX_SPR = 128;
@@ -226,12 +226,17 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Tato funkce predpoklada vysokou zatez sbernice do centraly ->
+// schvalne ceka.
 procedure TSprDb.StopAllSpr();
 var i:Integer;
 begin
  for i := 0 to _MAX_SPR-1 do
-  if (Self.soupravy[i] <> nil) then
+  if ((Self.soupravy[i] <> nil) and (Self.soupravy[i].rychlost <> 0)) then
+   begin
     Self.soupravy[i].rychlost := 0;
+    Sleep(3);
+   end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

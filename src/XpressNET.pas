@@ -280,18 +280,18 @@ begin
   case (msg.data[0]) of
     $01: begin
       case (msg.data[1]) of
-       $01: Self.WriteLog(1, 'GET ERR: Error occurred between the interfaces and the PC');
-       $02: Self.WriteLog(1, 'GET ERR: Error occurred between the interfaces and the command station');
+       $01: Self.WriteLog(1, 'ERR: GET: Error occurred between the interfaces and the PC');
+       $02: Self.WriteLog(1, 'ERR: GET: Error occurred between the interfaces and the command station');
        $03: begin
-          Self.WriteLog(1, 'GET ERR: Unknown communication error');      // probably send data again ?
+          Self.WriteLog(1, 'ERR: GET: Unknown communication error');      // probably send data again ?
 //          if (Self.send_history.Count > 0) then Self.hist_send(0);    // odpoved chybou - data radsi neodesilame hned - pockame na timeout
        end;
        $04: begin
           Self.WriteLog(2, 'GET: OK');
           Self.hist_ok();
        end;
-       $05: Self.WriteLog(2, 'GET: The Command Station is no longer providing the LI100 a timeslot for communication');
-       $06: Self.WriteLog(1, 'GET ERR: Buffer overflow in the LI100');
+       $05: Self.WriteLog(2, 'ERR: GET: The Command Station is no longer providing the LI100 a timeslot for communication');
+       $06: Self.WriteLog(1, 'ERR: GET: Buffer overflow in the LI100');
       end;//case
     end;
 
@@ -339,18 +339,18 @@ begin
         end;
 
         $80: begin
-          Self.WriteLog(1, 'GET ERR: transfer ('+s+')');
+          Self.WriteLog(1, 'ERR: GET: transfer ('+s+')');
           if (Self.send_history.Count > 0) then
             Self.hist_send(0);    // odpoved chybou - odesleme data znovu
         end;
         $81: begin
-          Self.WriteLog(1, 'GET ERR: busy ('+s+')');
-          if (Self.send_history.Count > 0) then
-            Self.hist_send(0);    // odpoved chybou - odesleme data znovu
+          Self.WriteLog(2, 'WARN: GET: busy ('+s+')');
+          // data NEODESILAME hend znovu!
+          // centrala je vytizena -> pockame nejaky ten cas a az pak posleme data znovu
         end;
 
         $82: begin
-          Self.WriteLog(1, 'GET ERR: instruction not supported by command station');
+          Self.WriteLog(1, 'ERR: GET: instruction not supported by command station');
           Self.hist_err();      // -> call error
         end;
       end;//case msg.data[1]
@@ -514,6 +514,8 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Tato funkce funguje jako blokujici.
+// Z funkce je vyskoceno ven az po odeslani dat (nebo vyjimce).
 procedure TXpressNET.Send(buf : TBuffer);
 var
   x: byte;
@@ -546,13 +548,10 @@ begin
   try
     InitAsync(asp);
     Self.ComPort.CPort.WriteAsync(buf.data, buf.Count, asp);
-    i := 0;
     while (not Self.ComPort.CPort.IsAsyncCompleted(asp)) do
      begin
       Application.ProcessMessages();
       Sleep(1);
-      // DEBUG
-      if (i mod 100 = 0) then Self.WriteLog(2, 'WRITING DATA');
      end;
   except
    on E : Exception do
