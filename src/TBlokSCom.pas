@@ -653,7 +653,11 @@ begin
    if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then Exit;
 
  Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
- if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
+ if (Blk <> nil) then
+  begin
+   (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
+   TOR(SenderOR).ClearVb(); // smazeme dosavadni seznam variantnich bodu
+  end;
  Self.ZacatekVolba := TBlkSComVolba.VC;
 end;//procedure
 
