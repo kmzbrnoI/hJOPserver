@@ -5,7 +5,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Zesilovac [zesilovac]'
-  ClientHeight = 417
+  ClientHeight = 441
   ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,8 +19,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
   PixelsPerInch = 96
   TextHeight = 13
   object L_Nazev: TLabel
-    Left = 8
-    Top = 8
+    Left = 9
+    Top = 32
     Width = 37
     Height = 13
     Margins.Left = 2
@@ -35,9 +35,26 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Font.Style = []
     ParentFont = False
   end
+  object Label3: TLabel
+    Left = 10
+    Top = 7
+    Width = 17
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'ID :'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
   object E_Nazev: TEdit
-    Left = 96
-    Top = 8
+    Left = 97
+    Top = 32
     Width = 177
     Height = 21
     Margins.Left = 2
@@ -45,11 +62,11 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     MaxLength = 32
-    TabOrder = 0
+    TabOrder = 1
   end
   object RG_Typ: TRadioGroup
-    Left = 8
-    Top = 40
+    Left = 9
+    Top = 64
     Width = 265
     Height = 65
     Margins.Left = 2
@@ -65,11 +82,11 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Items.Strings = (
       'SPAX')
     ParentFont = False
-    TabOrder = 1
+    TabOrder = 2
   end
   object B_Save: TButton
-    Left = 207
-    Top = 386
+    Left = 208
+    Top = 410
     Width = 67
     Height = 25
     Margins.Left = 2
@@ -78,12 +95,12 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_SaveClick
   end
   object GB_Zkrat: TGroupBox
-    Left = 8
-    Top = 112
+    Left = 9
+    Top = 136
     Width = 265
     Height = 81
     Margins.Left = 2
@@ -97,7 +114,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 3
     object L_Zkrat_Port: TLabel
       Left = 8
       Top = 44
@@ -162,8 +179,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     end
   end
   object GB_Napajeni: TGroupBox
-    Left = 8
-    Top = 200
+    Left = 9
+    Top = 224
     Width = 265
     Height = 81
     Margins.Left = 2
@@ -177,7 +194,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 4
     object L_Napajeni_Port: TLabel
       Left = 8
       Top = 44
@@ -242,8 +259,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     end
   end
   object B_Storno: TButton
-    Left = 127
-    Top = 386
+    Left = 128
+    Top = 410
     Width = 67
     Height = 25
     Margins.Left = 2
@@ -251,12 +268,12 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_StornoClick
   end
   object GB_DCC: TGroupBox
-    Left = 9
-    Top = 288
+    Left = 10
+    Top = 312
     Width = 265
     Height = 94
     Margins.Left = 2
@@ -270,7 +287,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 6
+    TabOrder = 7
     object Label1: TLabel
       Left = 7
       Top = 59
@@ -342,5 +359,17 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       TabOrder = 2
       OnClick = CHB_DCCClick
     end
+  end
+  object E_ID: TEdit
+    Left = 97
+    Top = 7
+    Width = 177
+    Height = 21
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    MaxLength = 32
+    TabOrder = 0
   end
 end

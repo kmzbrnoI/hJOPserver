@@ -4,85 +4,84 @@ unit BoosterDb;
 
 interface
 
-uses Booster, IniFiles, Classes, SysUtils, Windows, RPConst;
-
-const
-  _MAX_B = 32;
+uses Booster, IniFiles, Classes, SysUtils, Windows, RPConst, Generics.Collections,
+      Generics.Defaults;
 
 type
-  TBDatabase = record
-    data:array [0.._MAX_B-1] of TBooster;
-    cnt:Integer;
-  end;
-
   TBoosterDb = class
    private const
     _BEEP_INTERVAL = 1;                                //in seconds
 
    private
-     data:TBDatabase;
+     db:TDictionary<string, TBooster>;
+     sortedKeys:TList<TBooster>;
 
      Beep:record                                        //beep on overload
        NextBeep:TDateTime;                                //time of next beep
      end;
-
-      procedure ClearDb();
 
       //events from TBooster; those events direct call blk methods
       procedure OnZkratChange(Sender:TObject; state:TBoosterSignal);
       procedure OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
       procedure OnDCCChange(Sender:TObject; state:TBoosterSignal);
 
-      function FindInDb(booster:TBooster):Integer;          //returns index
-
       procedure ControlBeep();
+
+      function GetCount():Integer;
+      function GetItem(key:string):TBooster;
+
    public
+
       constructor Create(inifilename:string = '');
       destructor Destroy(); override;
 
-      //db operatons
-      function AddBooster(data:TBooster):Byte;
-      function RemoveBooster(index:Integer):Byte;
-      function GetBooster(index:Integer):TBooster;
+      procedure Add(new:TBooster);
+      procedure Remove(id:string);
 
-      //files
       procedure LoadFromFile(inifilename:string);
       procedure SaveToFile(inifilename:string);
 
-      procedure Update();                                   //update all boosters
+      procedure Update();
+      procedure SyncStructures();
 
-      property BoosterCnt:Integer read data.cnt;
+      function ContainsKey(key:string; ignore:TBooster = nil):boolean;
+
+      property Items[index : string] : TBooster read GetItem; default;
+      property Count : integer read GetCount;
+      property sorted : TList<TBooster> read sortedKeys;
+
   end;//TBoosterDb
 
-var BoostersDb:TBoosterDb;
+var Boosters:TBoosterDb;
 
 implementation
 
-uses TBloky, fMain, Trakce;
+uses TBloky, fMain, Trakce, appEv, logging;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //booster ini file format:
 //  ini file
-//  [B0, B1, ... Bn]
+//  [id1] ... [id2] ... [id3] ...
 
-//ctor
 constructor TBoosterDb.Create(inifilename:string = '');
 begin
- inherited Create;
-
- Self.data.cnt := 0;
-
+ inherited Create();
+ Self.db := TDictionary<string, TBooster>.Create();
+ Self.sortedKeys := TList<TBooster>.Create(TComparer<TBooster>.Construct(
+  function(const b1, b2:TBooster):Integer
+  begin
+    Result := SysUtils.CompareText(b1.id, b2.id);
+  end));
  if (inifilename <> '') then Self.LoadFromFile(inifilename);
-end;//ctor
+end;
 
-//dtor
 destructor TBoosterDb.Destroy();
 begin
- Self.ClearDb();
-
- inherited Destroy;
-end;//dtor
+ Self.db.Free();
+ Self.sortedKeys.Free();
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //files
@@ -90,110 +89,114 @@ end;//dtor
 //reads all sections
 procedure TBoosterDb.LoadFromFile(inifilename:string);
 var ini:TMemIniFile;
-    i:Integer;
     sections:TStrings;
+    id:string;
+    booster:TBooster;
 begin
- Self.ClearDb();
- ini := TMemIniFile.Create(inifilename);
+ writelog('Naèítám zesilovaèe: '+inifilename, WR_DATA);
+
+ Self.db.Clear();
+ try
+   ini := TMemIniFile.Create(inifilename);
+ except
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Naèítám zesilovaèe: nelze otevrit soubor bloku');
+     Exit();
+    end;
+ end;
  sections := TStringList.Create();
 
  ini.ReadSections(sections);
 
- if (sections.Count > _MAX_B) then Exit;
-
- for i := 0 to sections.Count-1 do
+ for id in Sections do
   begin
-   Self.data.data[i] := TBooster.Create(ini,sections[i]);
+   if (id = '') then
+    begin
+     writelog('WARNING: prázdný primární klíè zesilovaèe - pøeskakuji', WR_ERROR);
+     continue;
+    end;
+   if (Self.db.ContainsKey(id)) then
+    begin
+     writelog('WARNING: duplicita primárního klíèe zesilovaèe ('+id+') - pøeskakuji', WR_ERROR);
+     continue;
+    end;
 
-   Self.data.data[i].OnNapajeniChange := Self.OnNapajeniChange;
-   Self.data.data[i].OnZkratChange    := Self.OnZkratChange;
-   Self.data.data[i].OnDCCChange      := Self.OnDCCChange;
+   booster := TBooster.Create(ini, id);
 
-   Self.data.cnt := Self.data.cnt + 1;
+   booster.OnNapajeniChange := Self.OnNapajeniChange;
+   booster.OnZkratChange    := Self.OnZkratChange;
+   booster.OnDCCChange      := Self.OnDCCChange;
+
+   Self.db.AddOrSetValue(id, booster);
+
+   Self.sortedKeys.Add(booster);
   end;//for i
+
+ Self.sortedKeys.Sort();
 
  ini.Free();
  sections.Free();
+
+ writelog('Naèteno '+IntToStr(Self.Count)+' zesilovaèù', WR_DATA);
 end;//procedure
 
 procedure TBoosterDb.SaveToFile(inifilename:string);
 var ini:TMemIniFile;
-    i:Integer;
+    booster:TBooster;
 begin
- DeleteFile(PChar(inifilename));
- ini := TMemIniFile.Create(inifilename);
+ writelog('Ukládám zesilovaèe...', WR_DATA);
 
- for i := 0 to Self.data.cnt-1 do
-  begin
-   Self.data.data[i].SaveDataToFile(ini,'B'+IntToStr(i));
-  end;//for i
+ try
+   DeleteFile(PChar(inifilename));
+   ini := TMemIniFile.Create(inifilename);
+ except
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Ukladam zesilovace: nelze otevrit vystupni soubor');
+     Exit();
+    end;
+ end;
+
+ for booster in Self.db.Values do
+   booster.SaveDataToFile(ini, booster.id);
 
  ini.UpdateFile();
  ini.Free();
-end;//procedure
 
-////////////////////////////////////////////////////////////////////////////////
-
-//clear db
-procedure TBoosterDb.ClearDb();
-var i:Integer;
-begin
- for i := 0 to Self.data.cnt-1 do
-   FreeAndNil(Self.data.data[i]);
-
- Self.data.cnt := 0;
+ writelog('Uloženo zesilovaèù: '+IntToStr(Self.Count), WR_DATA);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 //db operations
 
-function TBoosterDb.AddBooster(data:TBooster):Byte;
+procedure TBoosterDb.Add(new:TBooster);
 begin
- if (Self.data.cnt >= _MAX_B) then Exit(1);
+ Self.db.Add(new.id, new);
 
- Self.data.data[Self.data.cnt] := data;
+ new.OnNapajeniChange := Self.OnNapajeniChange;
+ new.OnZkratChange    := Self.OnZkratChange;
+ new.OnDCCChange      := Self.OnDCCChange;
 
- Self.data.data[Self.data.cnt].OnNapajeniChange := Self.OnNapajeniChange;
- Self.data.data[Self.data.cnt].OnZkratChange    := Self.OnZkratChange;
- Self.data.data[Self.data.cnt].OnDCCChange      := Self.OnDCCChange;
-
- Self.data.cnt := Self.data.cnt + 1;
-
- Result := 0;
+ Self.sortedKeys.Add(new);
+ Self.sortedKeys.Sort();
 end;//function
 
-function TBoosterDb.RemoveBooster(index:Integer):Byte;
-var i:Integer;
+procedure TBoosterDb.Remove(id:string);
 begin
- if ((index < 0) or (index >= Self.data.cnt)) then Exit(1);
-
- FreeAndNil(Self.data.data[index]);
- for i := index to Self.data.cnt-2 do
-   Self.data.data[i] := Self.data.data[i+1];
-
- Self.data.cnt := Self.data.cnt - 1;
-
- Result := 0;
-end;//function
-
-function TBoosterDb.GetBooster(index:Integer):TBooster;
-begin
- if ((index < 0) or (index >= Self.data.cnt)) then
+ if (Self.db.ContainsKey(id)) then
   begin
-   Result := nil;
-   Exit;
+   Self.sortedKeys.Remove(Self.db[id]);
+   Self.db.Remove(id);
   end;
-
- Result := Self.data.data[index];
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBoosterDb.Update();
-var i:Integer;
+var booster:TBooster;
 begin
- for i := 0 to Self.data.cnt-1 do
-   Self.data.data[i].Update();
+ for booster in Self.db.Values do booster.Update();
 
  Self.ControlBeep();
 end;//procedure
@@ -201,59 +204,33 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBoosterDb.OnZkratChange(Sender:TObject; state:TBoosterSignal);
-var index:Integer;
 begin
- index := Self.FindInDb(Sender as TBooster);
- if (index < 0) then Exit;
- Blky.SetZesZkrat(index, state);
+ Blky.SetZesZkrat(TBooster(Sender).id, state);
 end;//procedure
 
 procedure TBoosterDb.OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
-var index:Integer;
 begin
- index := Self.FindInDb(Sender as TBooster);
- if (index < 0) then Exit;
- Blky.SetZesNapajeni(index, state);
+ Blky.SetZesNapajeni(TBooster(Sender).id, state);
 end;//procedure
 
 procedure TBoosterDb.OnDCCChange(Sender:TObject; state:TBoosterSignal);
-var index:Integer;
 begin
- index := Self.FindInDb(Sender as TBooster);
- if (index < 0) then Exit;
- Blky.SetZesDCC(index, state);
+ Blky.SetZesDCC(TBooster(Sender).id, state);
 end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TBoosterDb.FindInDb(booster:TBooster):Integer;
-var i:Integer;
-begin
- for i := 0 to Self.data.cnt-1 do
-  begin
-   if (Self.data.data[i] = booster) then
-    begin
-     Result := i;
-     Exit;
-    end;
-  end;//for i
-
- Result := -1;
-end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //controls beeping
 procedure TBoosterDb.ControlBeep();
-var i:Integer;
-    zkrat:boolean;
+var zkrat:boolean;
+    booster:TBooster;
 begin
  if (TrkSystem.status <> TS_ON) then Exit;
 
  zkrat := false;
- for i := 0 to Self.data.cnt-1 do
+ for booster in Self.db.Values do
   begin
-   if (Self.data.data[i].zkrat = TBoosterSignal.error) then
+   if (booster.zkrat = TBoosterSignal.error) then
     begin
      zkrat := true;
      Break;
@@ -263,11 +240,50 @@ begin
  if (not zkrat) then Exit;
 
  if (Self.Beep.NextBeep < Now) then
-  begin
    Self.Beep.NextBeep := Now+EncodeTime(0,0,Self._BEEP_INTERVAL,0);
-//   SoundsPlay.PlayNowSound(10);
-  end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBoosterDb.GetCount():Integer;
+begin
+ Result := Self.db.Count;
+end;
+
+function TBoosterDb.GetItem(key:string):TBooster;
+begin
+ if (Self.db.ContainsKey(key)) then
+   Result := Self.db.Items[key]
+ else
+   Result := nil;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBoosterDb.SyncStructures();
+var id:string;
+begin
+ for id in Self.db.Keys do
+  begin
+   if (Self.db[id].id <> id) then
+    begin
+     Self.db.AddOrSetValue(Self.db[id].id, Self.db[id]);
+     Self.db.Remove(id);
+    end;
+  end;
+
+ Self.sortedKeys.Sort();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBoosterDb.ContainsKey(key:string; ignore:TBooster = nil):boolean;
+begin
+ if (Self.db.ContainsKey(key)) then
+   Result := (ignore <> Self[key])
+  else
+   Result := false;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

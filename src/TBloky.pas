@@ -80,9 +80,9 @@ type
     //true = existuje, false = neexistuje
     function IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
 
-    procedure SetZesZkrat(zesil:Integer;state:TBoosterSignal);                  // pokud je na zesilovaci zmenen zkrat
-    procedure SetZesNapajeni(zesil:Integer;state:TBoosterSignal);               // pokud je na zesilovaci zmeneno napajeni
-    procedure SetZesDCC(zesil:Integer;state:TBoosterSignal);                    // pokud je zmenen stav privodniho DCC pred zesilovacem
+    procedure SetZesZkrat(zesilID:string; state:TBoosterSignal);                // pokud je na zesilovaci zmenen zkrat
+    procedure SetZesNapajeni(zesilID:string; state:TBoosterSignal);             // pokud je na zesilovaci zmeneno napajeni
+    procedure SetZesDCC(zesilID:string; state:TBoosterSignal);                  // pokud je zmenen stav privodniho DCC pred zesilovacem
     procedure SetDCC(state:boolean);                          //vola se pri zmene stavu DCC (zapnuto X vypnuto)
 
     procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
@@ -615,40 +615,40 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 //pokud je na zesilovaci zmenen zkrat
-procedure TBlky.SetZesZkrat(zesil:Integer; state:TBoosterSignal);
+procedure TBlky.SetZesZkrat(zesilID:string; state:TBoosterSignal);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
    if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
 
-   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesil) then
+   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesZkrat := state;
   end;//for i
 end;//procedure
 
 //pokud je na zesilovaci zmeneno napajeni
-procedure TBlky.SetZesNapajeni(zesil:Integer; state:TBoosterSignal);
+procedure TBlky.SetZesNapajeni(zesilID:string; state:TBoosterSignal);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
    if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
 
-   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesil) then
+   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesNapajeni := state;
   end;//for i
 end;//procedure
 
 //pokud je na zesilovaci zmeneno napajeni
-procedure TBlky.SetZesDCC(zesil:Integer; state:TBoosterSignal);
+procedure TBlky.SetZesDCC(zesilID:string; state:TBoosterSignal);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
    if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
 
-   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesil) then
+   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesDCC := state;
   end;//for i
 end;//procedure

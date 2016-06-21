@@ -611,7 +611,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);
     ModCas.Update();
     JCDb.Update();
     MultiJCDb.Update();
-    BoostersDb.Update();
+    Boosters.Update();
     ORs.Update();
     UpdateCallMethod();
     MTBd.Update();
@@ -1677,24 +1677,16 @@ begin
 end;
 
 procedure TF_Main.B_zes_deleteClick(Sender: TObject);
-var pozice,return:integer;
+var pozice:integer;
 begin
  Pozice := LV_Zesilovace.ItemIndex;
  Beep;
- if Application.MessageBox(PChar('Opravdu chcete smazat zesilovac '+BoostersDb.GetBooster(pozice).bSettings.Name+'?'),'Mazání zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+ if Application.MessageBox(PChar('Opravdu chcete smazat zesilovac '+Boosters.sorted[Pozice].name+'?'),'Mazání zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
   begin
-   return := BoostersDb.RemoveBooster(pozice);
-   if (return <> 0) then
-    begin
-     Application.MessageBox(PChar('Chyba pri mazani zesilovace - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONSTOP);
-     Exit;
-    end;
-
+   Boosters.Remove(Boosters.sorted[Pozice].id);
    LV_Zesilovace.Items.Delete(Pozice);
   end;//if MessageBox
 end;
-
-//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1804,7 +1796,7 @@ procedure TF_Main.FreeVars;
   ini_lib.UpdateFile;
   FreeAndNil(ini_lib);
 
-  BoostersDb.Free;
+  Boosters.Free;
 
   ORs.Free();
   Blky.Free();
@@ -1890,7 +1882,7 @@ procedure TF_Main.CreateClasses;
   SystemData     := TSystem.Create;
   GetFunctions   := TGetFunctions.Create;
   PrevodySoustav := TPrevody.Create;
-  BoostersDb     := TBoosterDb.Create();
+  Boosters       := TBoosterDb.Create();
 
   ACTableData    := TACTableData.Create(Self.LV_AC_Db);
   JCTableData    := TJCTableData.Create(Self.LV_JC);
@@ -2725,13 +2717,13 @@ end;
 procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((not MTB.Start) or (not BoostersDb.GetBooster(Item.Index).defined)) then
+ if ((not MTB.Start) or (not Boosters.sorted[Item.Index].defined)) then
   begin
    LV_Zesilovace.Canvas.Brush.Color := $CCCCCC;
   end else begin
-   if (BoostersDb.GetBooster(Item.Index).napajeni = TBoosterSignal.ok) then
+   if (Boosters.sorted[Item.Index].napajeni = TBoosterSignal.ok) then
     begin
-     if (BoostersDb.GetBooster(Item.Index).Zkrat = TBoosterSignal.ok) then
+     if (Boosters.sorted[Item.Index].Zkrat = TBoosterSignal.ok) then
       begin
        LV_Zesilovace.Canvas.Brush.Color := $AAFFAA;
       end else begin
@@ -2746,7 +2738,7 @@ end;
 procedure TF_Main.LV_ZesilovaceDblClick(Sender: TObject);
 begin
  if (LV_Zesilovace.Selected <> nil) then
-   F_ZesilovacEdit.OpenForm(BoostersDb.GetBooster(LV_Zesilovace.ItemIndex));
+   F_ZesilovacEdit.OpenForm(Boosters.sorted[LV_Zesilovace.ItemIndex]);
 end;
 
 procedure TF_Main.LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);

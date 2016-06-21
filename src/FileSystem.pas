@@ -103,6 +103,16 @@ var read,read2:string;
   end;
   writelog('MTB nacteno',WR_DATA);
 
+  F_Splash.AddStav('Naèítám databázi zesilovaèù');
+  read := ini_lib.ReadString('NacteniDat','Zesilovace', 'data\Zesilovace.ini');
+  try
+    Boosters.LoadFromFile(read);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+  F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
+
   F_Splash.AddStav('Naèítám soupravy');
   read := ini_lib.ReadString('NacteniDat','soupravy', 'data\soupravy.ini');
   try
@@ -127,16 +137,6 @@ var read,read2:string;
   BlokyTableData := TBlokyTableData.Create(F_Main.LV_Bloky);
 
   Soupravy.UpdateFront();
-
-  F_Splash.AddStav('Naèítám databázi zesilovaèù');
-  read := ini_lib.ReadString('NacteniDat','Zesilovace', 'data\Zesilovace.ini');
-  try
-    BoostersDb.LoadFromFile(read);
-  except
-    on E:Exception do
-      AppEvents.LogException(E);
-  end;
-  F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
 
   F_Splash.AddStav('Naèítám databázi jizdních cest');
   read := ini_lib.ReadString('NacteniDat','JC', 'data\JC.ini');
@@ -228,7 +228,7 @@ var return:Integer;
   end;
 
   try
-    BoostersDb.SaveToFile(F_Main.E_dataload_zes.Text);
+    Boosters.SaveToFile(F_Main.E_dataload_zes.Text);
   except
     on E:Exception do
       AppEvents.LogException(E);

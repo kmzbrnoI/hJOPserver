@@ -36,24 +36,18 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TZesTableData.LoadToTable();
-var i:Integer;
-    LI:TListItem;
-    cnt:Integer;
-    bstr:TBooster;
+var LI:TListItem;
+    booster:TBooster;
 begin
  Self.LV.Clear();
 
- cnt := BoostersDb.BoosterCnt;
-
- for i := 0 to cnt-1 do
+ for booster in Boosters.sorted do
   begin
    LI := Self.LV.Items.Add;
 
-   bstr := BoostersDb.GetBooster(i);
-
-   LI.Caption := IntToStr(i);
-   LI.SubItems.Add(bstr.bSettings.Name);
-   LI.SubItems.Add(TBooster.GetBClassString(bstr.bSettings.bclass));
+   LI.Caption := booster.id;
+   LI.SubItems.Add(booster.name);
+   LI.SubItems.Add(TBooster.GetBClassString(booster.bSettings.bclass));
   end;//for i
 end;//procedure
 

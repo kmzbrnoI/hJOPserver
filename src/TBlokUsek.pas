@@ -15,7 +15,7 @@ type
   MTBAddrs:TMTBAddrs;
   Lenght:double;          //delka useku v metrech
   SmcUsek:boolean;        //specialni pripad: usek ve smycce
-  Zesil:Integer;          //index v poli zesilovacu
+  Zesil:string;           //id zesilovace
  end;
 
  TUsekStavAr = array[0..3] of TUsekStav;
@@ -218,8 +218,11 @@ begin
 
  Self.UsekSettings.MTBAddrs := Self.LoadMTB(ini_tech, section);
  Self.UsekSettings.Lenght   := ini_tech.ReadFloat(section,'delka',0);
- Self.UsekSettings.Zesil    := ini_tech.ReadInteger(section,'zesil',-1);
+ Self.UsekSettings.Zesil    := ini_tech.ReadString(section,'zesil','');
  Self.UsekSettings.SmcUsek  := ini_tech.ReadBool(section, 'smc', false);
+
+ if (Boosters[Self.UsekSettings.Zesil] = nil) then
+   writelog('WARNING: Blok '+Self.GetGlobalSettings.name + ' ('+IntToStr(Self.GetGlobalSettings.id)+') nemá návaznost na validní zesilovaè', WR_ERROR);
 
  Self.UsekStav.Stit         := ini_stat.ReadString(section, 'stit', '');
  Self.UsekStav.Vyl          := ini_stat.ReadString(section, 'vyl' , '');
@@ -259,7 +262,7 @@ begin
 
  Self.SaveMTB(ini_tech, section, Self.UsekSettings.MTBAddrs);
  ini_tech.WriteFloat(section,'delka', Self.UsekSettings.Lenght);
- ini_tech.WriteInteger(section,'zesil', Self.UsekSettings.Zesil);
+ ini_tech.WriteString(section,'zesil', Self.UsekSettings.Zesil);
  ini_tech.WriteBool(section, 'smc', Self.UsekSettings.SmcUsek);
 end;//procedure
 
@@ -577,7 +580,7 @@ end;
 procedure TBlkUsek.SetCentralaDCC(state:boolean);
 var booster:TBooster;
 begin
- booster := BoostersDb.GetBooster(Self.UsekSettings.Zesil);
+ booster := Boosters[Self.UsekSettings.Zesil];
  if ((booster = nil) or (not booster.isDCCdetection) or (booster.DCC = TBoosterSignal.undef)) then
    Self.SetDCC(TrkSystem.status = Ttrk_status.TS_ON);
 end;

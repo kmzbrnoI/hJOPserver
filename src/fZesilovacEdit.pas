@@ -29,6 +29,8 @@ type
     SE_DCC_port: TSpinEdit;
     SE_DCC_MTB: TSpinEdit;
     CHB_DCC: TCheckBox;
+    E_ID: TEdit;
+    Label3: TLabel;
     procedure B_SaveClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -75,21 +77,31 @@ begin
    Application.MessageBox('Vyplnte nazev zesilovace','Nelze ulozit data',MB_OK OR MB_ICONSTOP);
    Exit;
   end;
+ if (E_ID.Text = '') then
+  begin
+   Application.MessageBox('Vyplnte id zesilovace','Nelze ulozit data',MB_OK OR MB_ICONSTOP);
+   Exit;
+  end;
  if (Self.RG_Typ.ItemIndex < 0) then
   begin
    Application.MessageBox('Vyberte typ zesilovace','Nelze ulozit data',MB_OK OR MB_ICONSTOP);
    Exit;
   end;
-
+ if (Boosters.ContainsKey(E_ID.Text, Self.open_booster)) then
+  begin
+   Application.MessageBox('Zesilovaè s tímto ID již existuje!','Nelze ulozit data',MB_OK OR MB_ICONSTOP);
+   Exit;
+  end;
 
  if (Self.open_booster = nil) then
   begin
    Self.open_booster := TBooster.Create;
-   BoostersDb.AddBooster(Self.open_booster);
+   Boosters.Add(Self.open_booster);
   end;
 
  settings.Name   := E_Nazev.Text;
  settings.bclass := TBoosterClass(RG_Typ.ItemIndex+1);
+ settings.id     := E_ID.Text;
 
  settings.MTB.Zkrat.board     := Self.SE_Zkrat_MTB.Value;
  settings.MTB.Napajeni.board  := Self.SE_Napajeni_MTB.Value;
@@ -107,6 +119,7 @@ begin
 
  Self.open_booster.bSettings := settings;
 
+ Boosters.SyncStructures();
  ZesTableData.LoadToTable();
 
  Self.Close;
@@ -146,6 +159,7 @@ var bSettings:TBoosterSettings;
  begin
   bSettings := open_booster.bSettings;
 
+  E_ID.Text        := bSettings.id;
   E_Nazev.Text     := bSettings.Name;
   RG_Typ.ItemIndex := Integer(bSettings.bclass)-1;
 
@@ -171,6 +185,7 @@ var bSettings:TBoosterSettings;
 procedure TF_ZesilovacEdit.NewOpenForm;
 var IgnoraceMTB:TArSmallI;
  begin
+  E_ID.Text         := '';
   E_Nazev.Text      := '';
   RG_Typ.ItemIndex  := -1;
 

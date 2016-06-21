@@ -21,6 +21,7 @@ type
     Napajeni:TMTBAddr;                                                          // power input
     DCC:TMTBAddr;                                                               // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
    end;
+   id:string;
  end;//TBoosterSettings
 
  TBooster = class
@@ -61,6 +62,10 @@ type
 
     property bSettings:TBoosterSettings read settings write settings;
 
+    property id:string read Settings.id;
+    property name:string read Settings.name;
+    property bclass:TBoosterClass read Settings.bclass;
+
     property OnNapajeniChange:TBoosterChangeEvent read FOnNapajeniChange write FOnNapajeniChange;
     property OnZkratChange:TBoosterChangeEvent read FOnZkratChange write FOnZkratChange;
     property OnDCCChange:TBoosterChangeEvent read FOnDCCChange write FONDCCChange;
@@ -74,7 +79,7 @@ uses GetSystems, fMain;
 
 {
   Format datoveho souboru: .ini soubor, kazdy SPAX ma svou sekci
-  [B0, B1, ... Bn]
+  [id]
     name
     class
     zkr_mtb
@@ -146,6 +151,7 @@ end;//procedure
 //load data from the file
 procedure TBooster.LoadDataFromFile(var ini:TMemIniFile;const section:string);
 begin
+ Self.Settings.id     := section;
  Self.Settings.Name   := ini.ReadString(section,'name','booster');
  Self.Settings.bclass := TBoosterClass(ini.ReadInteger(section,'class',0));
 

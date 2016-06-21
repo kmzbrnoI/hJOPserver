@@ -168,7 +168,7 @@ implementation
 uses fMain, fSettings, RPConst, fLoginPozadi, fSystemInfo, fAdminForm,
      GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
      TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
-     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv;
+     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster;
 
 constructor TMTB.Create();
 var i:Integer;
@@ -294,6 +294,7 @@ procedure TMTB.SetOutput(MtbAdr:integer;vystup:integer;state:integer);
 procedure TMTB.InputSim;
 var cyklus:integer;
     Blk:TBlk;
+    booster:TBooster;
 begin
  if (MTB.alib = 'simulator.dll') then
   begin
@@ -310,10 +311,10 @@ begin
     end;//for cyklus
 
    //defaultni stav zesilovacu
-   for cyklus := 0 to BoostersDb.BoosterCnt-1 do
+   for booster in Boosters.sorted do
     begin
-     Self.SetInput(BoostersDb.GetBooster(cyklus).bSettings.MTB.Napajeni.board,BoostersDb.GetBooster(cyklus).bSettings.MTB.Napajeni.port,0);
-     Self.SetInput(BoostersDb.GetBooster(cyklus).bSettings.MTB.Zkrat.board,BoostersDb.GetBooster(cyklus).bSettings.MTB.Zkrat.port,0);
+     Self.SetInput(booster.bSettings.MTB.Napajeni.board, booster.bSettings.MTB.Napajeni.port, 0);
+     Self.SetInput(booster.bSettings.MTB.Zkrat.board, booster.bSettings.MTB.Zkrat.port, 0);
     end;
   end;//if alib <> MTB.dll
 end;//procedure

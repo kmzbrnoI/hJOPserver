@@ -93,7 +93,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky, ownStrUtils,
-      TOblsRizeni;
+      TOblsRizeni, Booster;
 
 {$R *.dfm}
 
@@ -218,7 +218,16 @@ var glob:TBlkSettings;
   Self.SE_Port4.Value  := Usettings.MTBAddrs.data[3].port;
   Self.SE_Board4.Value := Usettings.MTBAddrs.data[3].board;
 
-  Self.CB_Zesil.ItemIndex := Usettings.Zesil;
+  Self.CB_Zesil.ItemIndex := -1;
+  for i := 0 to Boosters.sorted.Count-1 do
+   begin
+    if (Boosters.sorted[i].id = Usettings.Zesil) then
+     begin
+      Self.CB_Zesil.ItemIndex := i;
+      break;
+     end;
+   end;
+
   E_Delka.Text := FloatToStr(Usettings.Lenght);
   CHB_SmycBlok.Checked := Usettings.SmcUsek;
 
@@ -244,14 +253,14 @@ var glob:TBlkSettings;
  end;//procedure
 
 procedure TF_BlkTU.HlavniOpenForm;
-var i:Integer;
+var booster:TBooster;
  begin
   Self.LB_Stanice.Clear();
   Self.ActiveControl := B_OK;
 
   //nacteni zesilovacu
   Self.CB_Zesil.Clear();
-  for i := 0 to BoostersDb.BoosterCnt-1 do Self.CB_Zesil.Items.Add((BoostersDb.GetBooster(i)).bSettings.Name);
+  for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
  end;//procedure
 
 procedure TF_BlkTU.B_StornoClick(Sender: TObject);
@@ -366,7 +375,7 @@ var glob:TBlkSettings;
 
   settings.Lenght  := StrToFloatDef(Self.E_Delka.Text,0);
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;
-  settings.Zesil   := Self.CB_Zesil.ItemIndex;
+  settings.Zesil   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
 
   TUsettings.Zastavka.enabled  := Self.CHB_Zastavka.Checked;
   TUsettings.Zastavka.soupravy := TStringList.Create();
