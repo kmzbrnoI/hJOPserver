@@ -1916,15 +1916,18 @@ procedure TF_Main.RepaintObjects;
   P_Time.Left:=P_Time_modelovy.Left-P_Time.Width-5;
   P_Date.Left:=P_Time.Left-P_Date.Width-5;
 
- P_Soupravy_Tlc.Left  := (PC_1.Width div 2)-(P_Soupravy_Tlc.Width div 2);
- P_Zes_Tlc.Left       := (PC_1.Width div 2)-(P_Zes_Tlc.Width div 2);
- P_Users_Tlc.Left     := (PC_1.Width div 2)-(P_Users_Tlc.Width div 2);
- P_BlkTlc.Left        := (PC_1.Width div 2)-(P_BlkTlc.Width div 2);
- P_HV_Tlac.Left       := (PC_1.Width div 2)-(P_HV_Tlac.Width div 2);
+  P_Soupravy_Tlc.Left  := (PC_1.Width div 2)-(P_Soupravy_Tlc.Width div 2);
+  P_Zes_Tlc.Left       := (PC_1.Width div 2)-(P_Zes_Tlc.Width div 2);
+  P_Users_Tlc.Left     := (PC_1.Width div 2)-(P_Users_Tlc.Width div 2);
+  P_BlkTlc.Left        := (PC_1.Width div 2)-(P_BlkTlc.Width div 2);
+  P_HV_Tlac.Left       := (PC_1.Width div 2)-(P_HV_Tlac.Width div 2);
 
- P_Zes_Vysvetlivky.Left := PC_1.Width - P_Zes_Vysvetlivky.Width-15;
- P_HV_Stats.Left        := PC_1.Width - P_HV_Stats.Width-15;
- P_Blk_Ostatni.Left     := PC_1.Width - P_Blk_Ostatni.Width - 15;
+  P_Zes_Vysvetlivky.Left := PC_1.Width - P_Zes_Vysvetlivky.Width-15;
+  P_HV_Stats.Left        := PC_1.Width - P_HV_Stats.Width-15;
+  P_Blk_Ostatni.Left     := PC_1.Width - P_Blk_Ostatni.Width - 15;
+
+  GB_Centrala.Top := TS_Technologie.ClientHeight - GB_Centrala.Height - 10;
+  GB_Connected_Panels.Height := GB_Centrala.Top - GB_Connected_Panels.Top - 10;
 end;//procedure
 
 procedure TF_Main.FormResize(Sender: TObject);
