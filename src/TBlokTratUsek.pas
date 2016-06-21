@@ -224,7 +224,7 @@ type
 implementation
 
 uses SprDb, TBloky, TBlokIR, TCPServerOR, TOblRizeni, TBlokTrat, TBlokSCom,
-      TJCDatabase, Prevody;
+      TJCDatabase, Prevody, logging;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -264,6 +264,9 @@ begin
 
  Self.TUSettings.rychlost := ini_tech.ReadInteger(section, 'rychlost', -1);
  Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
+
+ if (Self.TUSettings.rychlost < 10) then
+   writelog('WARNING: traový úsek '+Self.GetGlobalSettings.name + ' ('+IntToStr(Self.GetGlobalSettings.id)+') nemá korektnì zadanou traovou rychlost', WR_ERROR);
 
  // nacitani zastavky
  if (Assigned(Self.TUSettings.Zastavka.soupravy)) then Self.TUSettings.Zastavka.soupravy.Free();

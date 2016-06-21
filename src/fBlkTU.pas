@@ -244,7 +244,10 @@ var glob:TBlkSettings;
   Self.CHB_NavLClick(CHB_NavL);
   Self.CHB_NavSClick(CHB_NavS);
 
-  Self.CB_Speed.ItemIndex := (TUsettings.rychlost div 10)-2;
+  if (TUsettings.rychlost >= 20) then
+    Self.CB_Speed.ItemIndex := (TUsettings.rychlost div 10)-2
+  else
+    Self.CB_Speed.ItemIndex := -1;
 
   Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
   Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
