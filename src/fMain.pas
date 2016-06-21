@@ -2286,7 +2286,7 @@ begin
    ORTCPServer.DCCStart();
   end else begin
 
-   ORTCPServer.BroadcastBottomError('Výpadek signálu DCC !', 'TECHNOLOGIE');
+   ORs.BroadcastBottomError('Výpadek signálu DCC !', 'TECHNOLOGIE', TORControlRights.write);
 
    //neni DCC
    F_Main.S_Intellibox_go.Brush.Color  := clRed;

@@ -1060,8 +1060,8 @@ procedure TORTCPServer.BroadcastBottomError(err:string; tech:string);
 var i:Integer;
 begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
-  if (Assigned(Self.clients[i])) then
-    Self.BottomError(Self.clients[i].conn, err, '-', tech);
+   if (Assigned(Self.clients[i])) then
+     Self.BottomError(Self.clients[i].conn, err, '-', tech);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
