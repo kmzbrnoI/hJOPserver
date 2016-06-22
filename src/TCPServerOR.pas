@@ -189,6 +189,8 @@ implementation
   -;LOK;addr;STOP;                                                              nouzove zastaveni
   -;LOK;addr;TOTAL;[0,1]                                                        nastaveni totalniho rizeni hnaciho vozidla
 
+  -;LOK;addr:ASK                                                                tazani se na existenci HV s adresou \addr; pokud existuje, chci o nem vedet data
+
   -;MTBd;                                                                       MTB debugger, viz MTBdebugger.pas
 
   or;NUZ;stav                                                                   1 = zapnout NUZ, 0 = vypnout NUZ
@@ -294,6 +296,9 @@ implementation
   -;LOK;addr;SPD;sp_km/h;sp_stupne;dir                                          informace o zmene rychlosti (ci smeru) lokomotivy
   -;LOK;addr;RESP;[ok, err];info;speed_kmph                                     odpoved na prikaz;  speed_kmph je nepovinny argument; info zpravidla obsahuje rozepsani chyby, pokud je odpoved "ok", info je prazdne
   -;LOK;addr;TOTAL;[0,1]                                                        zmena rucniho rizeni lokomotivy
+
+  -;LOK;addr:FOUND;lok-string                                                   odpoved na existenci hnaciho vozidla s adresou addr
+  -;LOK;addr;NOT-FOUND
 
   -;MTBd;                                                                       MTB debugger, viz MTBdebugger.pas
 

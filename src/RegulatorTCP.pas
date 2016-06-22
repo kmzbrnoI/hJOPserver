@@ -164,18 +164,19 @@ var HV:THV;
     Func:TFunkce;
     LokResponseData:Pointer;
 begin
-//  -:LOK;addr;PLEASE;token               - zadost o rizeni konkertni lokomotivy; token neni potreba pripojovat v pripade, kdy loko uz mame autorizovane a bylo nam ukradeno napriklad mysi
-//  -;LOK;addr;RELEASE                    - uvolneni lokomotivy z rizeni regulatoru
-//  -;LOK;addr;SP;sp_km/h                 - nastaveni rychlosti lokomotivy
-//  -;LOK;addr;SPD;sp_km/h;dir ()         - nastaveni rychlosti a smeru lokomotivy
-//  -;LOK;addr;D;dir ()                   - nastaveni smeru lokomotivy
-//  -;LOK;addr;F;F_left-F_right;states    - nastaveni funkci lokomotivy
-//    napr.; or;LOK;F;0-4;00010 nastavi F3 a ostatni F vypne
-//  -;LOK;addr;STOP;                      - nouzove zastaveni
-//  -;LOK;addr;TOTAL;[0,1]                - nastaveni totalniho rizeni hnaciho vozidla
-
- // kontrola opravneni
- if (not (Sender.Data as TTCPORsRef).regulator) then Exit();
+{
+ Prikazy od klienta:
+  -:LOK;addr;PLEASE;token               - zadost o rizeni konkertni lokomotivy; token neni potreba pripojovat v pripade, kdy loko uz mame autorizovane a bylo nam ukradeno napriklad mysi
+  -;LOK;addr;RELEASE                    - uvolneni lokomotivy z rizeni regulatoru
+  -;LOK;addr;SP;sp_km/h                 - nastaveni rychlosti lokomotivy
+  -;LOK;addr;SPD;sp_km/h;dir ()         - nastaveni rychlosti a smeru lokomotivy
+  -;LOK;addr;D;dir ()                   - nastaveni smeru lokomotivy
+  -;LOK;addr;F;F_left-F_right;states    - nastaveni funkci lokomotivy
+    napr.; or;LOK;F;0-4;00010 nastavi F3 a ostatni F vypne
+  -;LOK;addr;STOP;                      - nouzove zastaveni
+  -;LOK;addr;TOTAL;[0,1]                - nastaveni totalniho rizeni hnaciho vozidla
+  -;LOK;addr:ASK                        - tazani se na existenci HV s adresou \addr; pokud existuje, chci o nem vedet data
+}
 
  parsed[3] := UpperCase(parsed[3]);
 
@@ -186,12 +187,27 @@ begin
    Exit();
  end;
 
+ if (parsed[3] = 'ASK') then
+  begin
+   // dotaz na existenci hnaciho vozidla
+   if (HV <> nil) then
+    begin
+      ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';FOUND;{'+HV.GetPanelLokString()+'}');
+    end else begin
+      ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';NOT-FOUND');
+    end;
+
+   Exit();
+  end;
+
  if (not Assigned(HV)) then
   begin
    Self.ClientError(Sender, 'Loko neexistuje');
    Exit();
   end;
 
+ // kontrola opravneni
+ if (not (Sender.Data as TTCPORsRef).regulator) then Exit();
 
  if (parsed[3] = 'RELEASE') then
   begin
