@@ -99,7 +99,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Options
+    ActivePage = TS_Centrala
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -572,10 +572,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Snadn'#233' spu'#353'ten'#237
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_SS: TPanel
         Left = 0
         Top = 0
@@ -642,7 +638,7 @@ object F_Options: TF_Options
           Font.Height = -11
           Font.Name = 'MS Sans Serif'
           Font.Style = []
-          ItemHeight = 0
+          ItemHeight = 13
           ParentFont = False
           TabOrder = 0
         end
@@ -1196,10 +1192,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Rychlosti'
       ImageIndex = 25
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_DigiRych: TListView
         Left = 0
         Top = 0
@@ -1236,19 +1228,15 @@ object F_Options: TF_Options
     object TS_Centrala: TTabSheet
       Caption = 'Centr'#225'la'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GB_Centrala: TGroupBox
         Left = 522
-        Top = 80
+        Top = 96
         Width = 303
-        Height = 288
+        Height = 265
         TabOrder = 0
         object B_Save: TButton
           Left = 205
-          Top = 254
+          Top = 227
           Width = 80
           Height = 24
           Margins.Left = 2
@@ -1264,7 +1252,7 @@ object F_Options: TF_Options
           Left = 19
           Top = 21
           Width = 267
-          Height = 219
+          Height = 196
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
@@ -1332,20 +1320,9 @@ object F_Options: TF_Options
             Margins.Bottom = 2
             Caption = 'Port:'
           end
-          object Label8: TLabel
-            Left = 13
-            Top = 161
-            Width = 43
-            Height = 13
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Loglevel:'
-          end
           object Label2: TLabel
             Left = 13
-            Top = 189
+            Top = 164
             Width = 58
             Height = 13
             Caption = #344#237'zen'#237' toku:'
@@ -1366,7 +1343,7 @@ object F_Options: TF_Options
             Font.Height = -9
             Font.Name = 'MS Sans Serif'
             Font.Style = []
-            ItemHeight = 0
+            ItemHeight = 13
             ParentFont = False
             TabOrder = 0
             Items.Strings = (
@@ -1461,34 +1438,18 @@ object F_Options: TF_Options
             ParentFont = False
             TabOrder = 4
           end
-          object SE_LogLevel: TSpinEdit
-            Left = 103
-            Top = 161
-            Width = 150
-            Height = 22
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -9
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            MaxValue = 10
-            MinValue = 0
-            ParentFont = False
-            TabOrder = 5
-            Value = 0
-          end
           object B_PortRefresh: TButton
             Left = 50
             Top = 136
             Width = 49
             Height = 17
             Caption = 'Refresh'
-            TabOrder = 6
+            TabOrder = 5
             OnClick = B_PortRefreshClick
           end
           object CCB_FC: TComComboBox
             Left = 103
-            Top = 189
+            Top = 164
             Width = 150
             Height = 21
             ComProperty = cpFlowControl
@@ -1496,7 +1457,7 @@ object F_Options: TF_Options
             Style = csDropDownList
             ItemHeight = 13
             ItemIndex = 0
-            TabOrder = 7
+            TabOrder = 6
           end
         end
       end

@@ -27,6 +27,8 @@ type
 
   ENotOpenned = class(Exception);
 
+  TTrkLogLevel = (tllNo = 0, tllErrors = 1, tllCommands = 2, tllData = 3, tllChanges = 4, tllDetail = 5);
+
   // pri programovani POMu se do callbacku predavaji tato data
   TPOMCallback = record
     addr:Word;                                                                  // adresa programovane lokomotivy
@@ -76,7 +78,7 @@ type
   // ------- trida TTrkGUI --------
   TTrkGUI = class
    private const
-     _DEF_LOGLEVEL = 2;                                                         // default loglevel
+     _DEF_LOGLEVEL = TTrkLogLevel.tllCommands;                                  // default loglevel
 
      _DEF_BAUDRATE    = br9600;                                                 // default serial baudrate
      _DEF_STOPBITS    = sbOneStopBit;                                           // default serial stopbits
@@ -101,9 +103,8 @@ type
      //events definition
      FOnLog: TLogEvent;                                                         // log event
 
-     floglevel: Byte;                                                           // log level
-     flogfile : boolean;                                                        // logovat do souboru ?
-     flogtable: boolean;                                                        // logovat do tabulky (.LogObj) ?
+     flogfile : TTrkLogLevel;                                                   // loglevel souboru
+     flogtable: TTrkLogLevel;                                                   // loglevel tabulky
      finitok  : boolean;                                                        // je true, pokud po otevreni seriaku centrala zakomujikovala (tj. odpovedela na prikaz)
                                                                                 // pri .Open se nastavuje na false
      {
@@ -147,8 +148,6 @@ type
      procedure LokComErr(Sender:TObject; addr:Integer);                         // event oznamujici chybu komunikace s danou lokomotivou (je volan paralelne s error callback eventem, ale jen pro urcite prikazy - pro prikazy tykajici se rizeni konkretni lokomotivy).
      procedure LokComOK(Sender:TObject; addr:Integer);                          // event potvrzujici komunikaci s danym HV (je volan pokazde, pokud centrala odpovi na prikaz o nasatveni dat HV)
                                                                                 // je protipol predchoziho eventu
-
-     procedure SetLogLevel(level:Byte);                                         // nastavit loglevel
 
      // eventy z .Trakce pri zapinani systemu (tj. odpoved na priklad GET-STATUS)
      procedure InitStatErr(Sender:TObject; Data:Pointer);
@@ -222,6 +221,9 @@ type
      procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
      procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
 
+     procedure SetLoglevelFile(ll:TTrkLogLevel);
+     procedure SetLoglevelTable(ll:TTrkLogLevel);
+
    public
 
      {
@@ -238,7 +240,7 @@ type
 
     DCCGoTime:TDateTime;
 
-     constructor Create(TrkSystem:Ttrk_system; LogObj:TListView; loglevel:Integer = _DEF_LOGLEVEL; logfile:boolean = true; logtable:boolean = true);
+     constructor Create(TrkSystem:Ttrk_system; LogObj:TListView; loglevel_file:TTrkLogLevel = _DEF_LOGLEVEL; loglevel_table: TTrkLogLevel = _DEF_LOGLEVEL);
      destructor Destroy(); override;
 
      // otevrit a zavrit spojeni s centralou:
@@ -286,6 +288,8 @@ type
 
      procedure TurnOffFunctions(callback:TNotifyEvent);                         // vypnout funkce vyssi, nez F0; F0 zapnout
 
+     class function LogLevelToString(ll:TTrkLogLevel):string;                   // rewrite loglevel to human-reada ble format
+
      // aktualni data serioveho portu
      property BaudRate:TBaudRate read CPortData.br write CPortData.br;
      property COM:string read CPortData.com write CPortData.com;
@@ -315,9 +319,8 @@ type
 
      // vnejsi eventy:
      property OnLog: TLogEvent read FOnLog write FOnLog;
-     property loglevel: Byte read floglevel write SetLogLevel;
-     property logfile:boolean read flogfile write flogfile;
-     property logtable:boolean read flogtable write flogtable;
+     property logfile:TTrkLogLevel read flogfile write SetLoglevelFile;
+     property logtable:TTrkLogLevel read flogtable write SetLoglevelTable;
 
    protected
   end;//TTrkGUI
@@ -332,7 +335,7 @@ uses fMain, fSettings, RPConst, XpressNET, TechnologieMTB, fRegulator,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTrkGUI.Create(TrkSystem:Ttrk_system; LogObj:TListView; loglevel:Integer = _DEF_LOGLEVEL; logfile:boolean = true; logtable:boolean = true);
+constructor TTrkGUI.Create(TrkSystem:Ttrk_system; LogObj:TListView; loglevel_file:TTrkLogLevel = _DEF_LOGLEVEL; loglevel_table: TTrkLogLevel = _DEF_LOGLEVEL);
 begin
  inherited Create;
 
@@ -341,9 +344,8 @@ begin
   TRS_XpressNET : Self.Trakce := TXpressNET.Create();
  end;//case
 
- Self.floglevel := loglevel;
- Self.flogfile  := logfile;
- Self.flogtable := logtable;
+ Self.flogfile  := loglevel_file;
+ Self.flogtable := loglevel_table;
 
  Self.fTrkSystem := TrkSystem;
 
@@ -364,7 +366,7 @@ begin
  Self.turnoff_callback := nil;
  Self.DCCGoTime := Now;
 
- Self.WriteLog(2, 'BEGIN loglevel='+IntToStr(Self.loglevel));
+ Self.WriteLog(2, 'BEGIN loglevel_file='+LogLevelToString(loglevel_file)+', loglevel_table='+LogLevelToString(loglevel_table));
 end;//ctor
 
 destructor TTrkGUI.Destroy();
@@ -498,7 +500,7 @@ var LV_Log:TListItem;
     f:TextFile;
     xDate, xTime:string;
  begin
-  if (lvl > Self.floglevel) then Exit;
+  if ((lvl > Integer(Self.logfile)) and (lvl > Integer(Self.logtable))) then Exit;
 
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
@@ -506,7 +508,7 @@ var LV_Log:TListItem;
   if (Self.LogObj.Items.Count > 500) then
     Self.LogObj.Clear();
 
-  if (Self.logtable) then
+  if (lvl <= Integer(Self.logtable)) then
    begin
     try
       LV_Log := Self.LogObj.Items.Insert(0);
@@ -518,7 +520,7 @@ var LV_Log:TListItem;
     end;
    end;//if Self.logtable
 
-  if (Self.logfile) then
+  if (lvl <= Integer(Self.logfile)) then
    begin
     try
       AssignFile(f, 'log\lnet\'+xDate+'.log');
@@ -1183,11 +1185,17 @@ begin
  HVDb.HVozidla[addr].changed := true;
 end;//procedure
 
-procedure TTrkGUI.SetLogLevel(level:Byte);
+procedure TTrkGUI.SetLoglevelFile(ll:TTrkLogLevel);
 begin
- Self.floglevel := level;
- Self.WriteLog(2, 'NEW loglevel = '+IntToStr(level));
-end;//procedure
+ Self.flogfile := ll;
+ Self.WriteLog(2, 'NEW loglevel_file = '+LogLevelToString(ll));
+end;
+
+procedure TTrkGUI.SetLoglevelTable(ll:TTrkLogLevel);
+begin
+ Self.flogtable := ll;
+ Self.WriteLog(2, 'NEW loglevel_table = '+LogLevelToString(ll));
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1978,6 +1986,22 @@ begin
    end;
   end;
  FreeMem(data);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TTrkGUI.LogLevelToString(ll:TTrkLogLevel):string;
+begin
+ case ll of
+   TTrkLogLevel.tllNo       : Result := 'žádné zprávy';
+   TTrkLogLevel.tllErrors   : Result := 'chyby';
+   TTrkLogLevel.tllCommands : Result := 'pøíkazy';
+   TTrkLogLevel.tllData     : Result := 'data';
+   TTrkLogLevel.tllChanges  : Result := 'zmìny stavù';
+   TTrkLogLevel.tllDetail   : Result := 'podrobné informace';
+ else
+   Result := 'neznámý';
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

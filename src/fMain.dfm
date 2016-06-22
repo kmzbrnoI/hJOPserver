@@ -3493,7 +3493,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_MultiJC
+    ActivePage = TS_Intellibox
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5879,39 +5879,45 @@ object F_Main: TF_Main
         ParentBackground = False
         TabOrder = 1
         object Label2: TLabel
-          Left = 299
-          Top = 3
-          Width = 43
+          Left = 11
+          Top = 1
+          Width = 78
           Height = 13
-          Caption = 'Loglevel:'
+          Caption = 'Loglevel soubor:'
         end
-        object CHB_centrala_table: TCheckBox
-          Left = 140
-          Top = 2
-          Width = 122
-          Height = 17
-          Caption = 'Logovat do tabulky'
-          TabOrder = 0
-          OnClick = CHB_centrala_tableClick
+        object Label7: TLabel
+          Left = 288
+          Top = 1
+          Width = 81
+          Height = 13
+          Caption = 'Loglevel tabulka:'
         end
-        object CHB_centrala_file: TCheckBox
-          Left = 8
-          Top = 2
-          Width = 126
-          Height = 17
-          Caption = 'Logovat do souboru'
-          TabOrder = 1
-          OnClick = CHB_centrala_fileClick
-        end
-        object CB_centrala_loglevel: TComboBox
-          Left = 351
+        object CB_centrala_loglevel_file: TComboBox
+          Left = 103
           Top = 1
           Width = 145
           Height = 21
           Style = csDropDownList
           ItemHeight = 13
-          TabOrder = 2
-          OnChange = CB_centrala_loglevelChange
+          TabOrder = 0
+          OnChange = CB_centrala_loglevel_fileChange
+          Items.Strings = (
+            '0 - '#382#225'dn'#233' zpr'#225'vy'
+            '1 - chyby'
+            '2 - p'#345#237'kazy'
+            '3 - data'
+            '4 - zm'#283'na stav'#367
+            '5 - podrobn'#233' informace')
+        end
+        object CB_centrala_loglevel_table: TComboBox
+          Left = 380
+          Top = 1
+          Width = 145
+          Height = 21
+          Style = csDropDownList
+          ItemHeight = 13
+          TabOrder = 1
+          OnChange = CB_centrala_loglevel_tableChange
           Items.Strings = (
             '0 - '#382#225'dn'#233' zpr'#225'vy'
             '1 - chyby'
@@ -6177,7 +6183,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403440310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403480310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8043,7 +8049,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010C00280358031000100000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010C0028035C031000100000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -8584,7 +8590,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802080310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D8020C0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

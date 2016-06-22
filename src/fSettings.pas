@@ -109,13 +109,11 @@ type
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
-    Label8: TLabel;
     CB_TrackSystem: TComboBox;
     CCB_BaudRate: TComComboBox;
     CCB_DataBits: TComComboBox;
     CCB_StopBits: TComComboBox;
     CCB_Port: TComComboBox;
-    SE_LogLevel: TSpinEdit;
     B_PortRefresh: TButton;
     GB_Autosave: TGroupBox;
     CHB_Autosave: TCheckBox;
@@ -546,8 +544,6 @@ begin
   Self.CCB_StopBits.ItemIndex  := Integer(TrkSystem.StopBits);
   Self.CCB_FC.ItemIndex        := Integer(TrkSystem.FlowControl);
   Self.CCB_Port.Text           := TrkSystem.COM;
-
-  Self.SE_LogLevel.Value       := TrkSystem.loglevel;
 end;//procedure
 
 procedure TF_Options.UlozCentralaData();
@@ -558,8 +554,6 @@ begin
  TrkSystem.StopBits    := TStopBits(Self.CCB_StopBits.ItemIndex);
  TrkSystem.FlowControl := TFlowControl(Self.CCB_FC.ItemIndex);
  TrkSystem.COM         := Self.CCB_Port.Text;
-
- TrkSystem.loglevel := Self.SE_LogLevel.Value;
 end;
 ////////////////////////////////////////////////////////////////////////////////
 

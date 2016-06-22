@@ -192,10 +192,8 @@ type
     CHB_Mainlog_File: TCheckBox;
     CHB_mainlog_table: TCheckBox;
     Panel3: TPanel;
-    CHB_centrala_table: TCheckBox;
-    CHB_centrala_file: TCheckBox;
     Label2: TLabel;
-    CB_centrala_loglevel: TComboBox;
+    CB_centrala_loglevel_file: TComboBox;
     N9: TMenuItem;
     PM_SaveLayout: TMenuItem;
     A_SaveStav: TAction;
@@ -247,6 +245,8 @@ type
     B_HVStats_Clear: TButton;
     B_HVStats_Export: TButton;
     SD_HV_Stats: TSaveDialog;
+    CB_centrala_loglevel_table: TComboBox;
+    Label7: TLabel;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -333,9 +333,7 @@ type
     procedure PM_HVPopup(Sender: TObject);
     procedure LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem;
       State: TCustomDrawState; var DefaultDraw: Boolean);
-    procedure CB_centrala_loglevelChange(Sender: TObject);
-    procedure CHB_centrala_tableClick(Sender: TObject);
-    procedure CHB_centrala_fileClick(Sender: TObject);
+    procedure CB_centrala_loglevel_fileChange(Sender: TObject);
     procedure LV_SoupravyDblClick(Sender: TObject);
     procedure LB_LogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect;
       State: TOwnerDrawState);
@@ -382,6 +380,7 @@ type
     procedure LV_HVKeyPress(Sender: TObject; var Key: Char);
     procedure B_ClearStatsClick(Sender: TObject);
     procedure B_HVStats_ExportClick(Sender: TObject);
+    procedure CB_centrala_loglevel_tableChange(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -1802,19 +1801,14 @@ procedure TF_Main.FreeVars;
   Blky.Free();
  end;
 
-procedure TF_Main.CB_centrala_loglevelChange(Sender: TObject);
+procedure TF_Main.CB_centrala_loglevel_fileChange(Sender: TObject);
 begin
- TrkSystem.loglevel := Self.CB_centrala_loglevel.ItemIndex;
+ TrkSystem.logfile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex);
 end;
 
-procedure TF_Main.CHB_centrala_fileClick(Sender: TObject);
+procedure TF_Main.CB_centrala_loglevel_tableChange(Sender: TObject);
 begin
- TrkSystem.logfile := Self.CHB_centrala_file.Checked;
-end;
-
-procedure TF_Main.CHB_centrala_tableClick(Sender: TObject);
-begin
- TrkSystem.logtable := Self.CHB_centrala_table.Checked;
+ TrkSystem.logtable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
 end;
 
 procedure TF_Main.CloseForm;

@@ -345,7 +345,7 @@ var str:string;
    Konfigurace.ini.WriteInteger('SystemCfg','RunError',0);
    Konfigurace.ini.UpdateFile;
 
-   TrkSystem := TTrkGUI.Create(Ttrk_system.TRS_XpressNET, F_Main.LV_log_lnet, ini.ReadInteger('Centrala', 'loglevel', 2), ini.ReadBool('Centrala', 'logfile', true), ini.ReadBool('Centrala', 'logtable', true));
+   TrkSystem := TTrkGUI.Create(Ttrk_system.TRS_XpressNET, F_Main.LV_log_lnet, TTrkLogLevel(ini.ReadInteger('Centrala', 'logfile', 2)), TTrkLogLevel(ini.ReadInteger('Centrala', 'logtable', 2)));
 
    TrkSystem.BaudRate := TBaudRate(ini.ReadInteger('Centrala','BaudRate',0));
    TrkSystem.StopBits := TStopBits(ini.ReadInteger('Centrala','StopBits',0));
@@ -353,9 +353,8 @@ var str:string;
    TrkSystem.FlowControl := TFlowControl(ini.ReadInteger('Centrala', 'FlowControl', 0));
    TrkSystem.COM := ini.ReadString('Centrala','COM','COM1');
 
-   F_Main.CB_centrala_loglevel.ItemIndex := TrkSystem.loglevel;
-   F_Main.CHB_centrala_table.Checked     := TrkSystem.logtable;
-   F_Main.CHB_centrala_file.Checked      := TrkSystem.logfile;
+   F_Main.CB_centrala_loglevel_file.ItemIndex  := Integer(TrkSystem.logfile);
+   F_Main.CB_centrala_loglevel_table.ItemIndex := Integer(TrkSystem.logtable);
 
    //nactitani dalsich dat
    F_Options.LB_Timer.ItemIndex             := ini.ReadInteger('SystemCfg','TimerInterval',1);
@@ -406,9 +405,8 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
   ini.WriteInteger('Centrala','FlowControl', Integer(TrkSystem.FlowControl));
   ini.Writestring('Centrala','COM', TrkSystem.COM);
 
-  ini.WriteInteger('Centrala', 'loglevel', TrkSystem.loglevel);
-  ini.WriteBool('Centrala', 'logtable', TrkSystem.logtable);
-  ini.WriteBool('Centrala', 'logfile', TrkSystem.logfile);
+  ini.WriteInteger('Centrala', 'logtable', Integer(TrkSystem.logtable));
+  ini.WriteInteger('Centrala', 'logfile', Integer(TrkSystem.logfile));
 
   ini_lib.WriteBool('Log','Log_console',F_Options.CHB_Log_console.Checked);
   ini.WriteInteger('AdminData','FormLeft',F_Admin.Left);
