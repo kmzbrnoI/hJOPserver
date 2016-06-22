@@ -40,7 +40,7 @@ type
     SE_Board4: TSpinEdit;
     SE_Port4: TSpinEdit;
     GB_Zastavka: TGroupBox;
-    CHB_Zastavka: TCheckBox;
+    CHB_Zastavka_Lichy: TCheckBox;
     Label5: TLabel;
     E_Zast_Spr: TEdit;
     Label6: TLabel;
@@ -61,12 +61,13 @@ type
     PC_Zastavka: TPageControl;
     TS_Zast_lichy: TTabSheet;
     TS_Zast_sudy: TTabSheet;
+    CHB_Zastavka_Sudy: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure E_DelkaKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D1Click(Sender: TObject);
-    procedure CHB_ZastavkaClick(Sender: TObject);
+    procedure CHB_Zastavka_LichyClick(Sender: TObject);
     procedure CHB_NavLClick(Sender: TObject);
     procedure CHB_NavSClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -141,8 +142,9 @@ var zastEvents:TBlkTUZastevents;
   Self.CHB_D2.Checked := false;
   Self.CHB_D1Click(Self.CHB_D2);
 
-  Self.CHB_Zastavka.Checked := false;
-  Self.CHB_ZastavkaClick(Self);
+  Self.CHB_Zastavka_Lichy.Checked := false;
+  Self.CHB_Zastavka_Sudy.Checked := false;
+  Self.CHB_Zastavka_LichyClick(Self);
 
   Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, _BLK_SCOM, -1);
   Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, _BLK_SCOM, -1);
@@ -231,8 +233,9 @@ var glob:TBlkSettings;
   E_Delka.Text := FloatToStr(Usettings.Lenght);
   CHB_SmycBlok.Checked := Usettings.SmcUsek;
 
-  Self.CHB_Zastavka.Checked := TUsettings.Zastavka.enabled;
-  Self.CHB_ZastavkaClick(Self);
+  Self.CHB_Zastavka_Lichy.Checked := TUsettings.Zastavka.ev_lichy.enabled;
+  Self.CHB_Zastavka_Sudy.Checked  := TUsettings.Zastavka.ev_sudy.enabled;
+  Self.CHB_Zastavka_LichyClick(Self);
 
   Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, _BLK_SCOM, TUsettings.navLid);
   Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, _BLK_SCOM, TUsettings.navSid);
@@ -318,7 +321,7 @@ var glob:TBlkSettings;
     Exit;
    end;
 
-  if (CHB_Zastavka.Checked) then
+  if (CHB_Zastavka_Lichy.Checked) then
    begin
     str := Self.zastLichy.Check();
     if (str <> '') then
@@ -326,8 +329,11 @@ var glob:TBlkSettings;
       Application.MessageBox(PChar('Zastavovaci udalost zastavky v lichem smeru: '+#13#10+str),'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
+   end;
 
-    str := Self.zastLichy.Check();
+  if (CHB_Zastavka_Sudy.Checked) then
+   begin
+    str := Self.zastSudy.Check();
     if (str <> '') then
      begin
       Application.MessageBox(PChar('Zastavovaci udalost zastavky v sudem smeru: '+#13#10+str),'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
@@ -380,8 +386,8 @@ var glob:TBlkSettings;
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;
   settings.Zesil   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
 
-  TUsettings.Zastavka.enabled  := Self.CHB_Zastavka.Checked;
-  TUsettings.Zastavka.soupravy := TStringList.Create();
+  TUsettings.Zastavka.ev_lichy.enabled  := Self.CHB_Zastavka_Lichy.Checked;
+  TUsettings.Zastavka.ev_sudy.enabled   := Self.CHB_Zastavka_Sudy.Checked;
 
   TUSettings.rychlost := (Self.CB_Speed.ItemIndex + 2) * 10;
 
@@ -395,19 +401,28 @@ var glob:TBlkSettings;
   else
     TUsettings.navSid := -1;
 
-  if (Self.CHB_Zastavka.Checked) then
+  if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
    begin
-    TUsettings.Zastavka.ev_lichy  := Self.zastLichy.GetEvent();
-    TUsettings.Zastavka.ev_sudy   := Self.zastSudy.GetEvent();
+    TUsettings.zastavka.soupravy := TStringList.Create();
     ExtractStringsEx([','], [' '], Self.E_Zast_Spr.Text, TUsettings.Zastavka.soupravy);
     TUsettings.Zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
     try
       TUsettings.Zastavka.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)), StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
+      TUsettings.zastavka.soupravy.Free();
       Application.MessageBox('Nesprávnì zadaný èas èekání v zastávce', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
    end;
+
+  if (Self.CHB_Zastavka_Lichy.Checked) then
+    TUsettings.Zastavka.ev_lichy := Self.zastLichy.GetEvent();
+
+  if (Self.CHB_Zastavka_Sudy.Checked) then
+    TUsettings.Zastavka.ev_sudy := Self.zastSudy.GetEvent();
+
+  TUsettings.Zastavka.ev_lichy.enabled := Self.CHB_Zastavka_Lichy.Checked;
+  TUsettings.Zastavka.ev_sudy.enabled  := Self.CHB_Zastavka_Sudy.Checked;
 
   Self.Blk.SetSettings(TUsettings);
   (Self.Blk as TBlkUsek).SetSettings(settings);
@@ -514,11 +529,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkTU.CHB_ZastavkaClick(Sender: TObject);
+procedure TF_BlkTU.CHB_Zastavka_LichyClick(Sender: TObject);
 var i:Integer;
     zast:TBlkTUZastavka;
 begin
- if (Self.CHB_Zastavka.Checked) then
+ if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
   begin
    Self.E_Zast_Spr.Enabled       := true;
    Self.SE_Zast_DelkaSpr.Enabled := true;
@@ -536,7 +551,6 @@ begin
 
      Self.SE_Zast_DelkaSpr.Value     := zast.max_delka;
      Self.ME_Zast_Delay.Text         := FormatDateTime('nn:ss', zast.delay);
-
     end;
   end else begin
    Self.E_Zast_Spr.Enabled       := false;
@@ -545,13 +559,17 @@ begin
    Self.PC_Zastavka.Enabled      := false;
   end;
 
- if ((not Self.CHB_Zastavka.Checked) or (not Assigned(Self.Blk))) then
+ Self.TS_Zast_lichy.TabVisible := Self.CHB_Zastavka_Lichy.Checked;
+ Self.TS_Zast_sudy.TabVisible  := Self.CHB_Zastavka_Sudy.Checked;
+
+ if (((not Self.CHB_Zastavka_Lichy.Checked) and ((not Self.CHB_Zastavka_Sudy.Checked))) or (not Assigned(Self.Blk))) then
   begin
    Self.E_Zast_Spr.Text            := '';
    Self.SE_Zast_DelkaSpr.Value     := 0;
    Self.ME_Zast_Delay.Text         := '00:00';
    Self.PC_Zastavka.Enabled        := false;
   end;
-end;//procedure
+end;
+
 
 end.//unit

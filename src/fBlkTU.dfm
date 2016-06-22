@@ -558,7 +558,7 @@ object F_BlkTU: TF_BlkTU
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object GB_Zastavka: TGroupBox
@@ -613,12 +613,12 @@ object F_BlkTU: TF_BlkTU
       Font.Style = []
       ParentFont = False
     end
-    object CHB_Zastavka: TCheckBox
+    object CHB_Zastavka_Lichy: TCheckBox
       Left = 16
       Top = 17
-      Width = 241
+      Width = 113
       Height = 17
-      Caption = 'V '#250'seku se nach'#225'z'#237' zast'#225'vka osobn'#237' dopravy'
+      Caption = 'Zast'#225'vka lich'#253' sm'#283'r'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -626,7 +626,7 @@ object F_BlkTU: TF_BlkTU
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      OnClick = CHB_ZastavkaClick
+      OnClick = CHB_Zastavka_LichyClick
     end
     object E_Zast_Spr: TEdit
       Left = 16
@@ -690,19 +690,26 @@ object F_BlkTU: TF_BlkTU
       TabOrder = 4
       object TS_Zast_lichy: TTabSheet
         Caption = 'Lich'#253' sm'#283'r'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 329
       end
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
-        ExplicitLeft = 40
-        ExplicitTop = 0
-        ExplicitWidth = 210
-        ExplicitHeight = 165
       end
+    end
+    object CHB_Zastavka_Sudy: TCheckBox
+      Left = 152
+      Top = 17
+      Width = 113
+      Height = 17
+      Caption = 'Zast'#225'vka sud'#253' sm'#283'r'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 5
+      OnClick = CHB_Zastavka_LichyClick
     end
   end
   object CHB_SmycBlok: TCheckBox
@@ -757,7 +764,7 @@ object F_BlkTU: TF_BlkTU
       Width = 280
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CHB_NavS: TCheckBox
@@ -774,7 +781,7 @@ object F_BlkTU: TF_BlkTU
       Width = 280
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 3
     end
   end

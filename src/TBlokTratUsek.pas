@@ -55,12 +55,12 @@ type
  end;
 
  TBlkTUZastEvents = record                                                      // cidla zastavky v jednom smeru
+  enabled: boolean;                                                               // jestli je zastavka v danem smeru povolena
   zastaveni: TBlkTUZastEvent;                                                     // zastavovaci cidlo
   zpomaleni: TBlkTUZastEvent;                                                     // zpomalovaci cidlo
  end;
 
  TBlkTUZastavka = record                                                        // zastavka na TU
-  enabled:boolean;                                                                // existuje v useku zastavka?
   ev_lichy:TBlkTUZastEvents;                                                      // odkaz na zastavovaci a zpomalovaci event v lichem smeru
   ev_sudy:TBlkTUZastEvents;                                                       // odkaz na zastavovaci a zpomalovaci event v sudem smeru
   soupravy:TStrings;                                                              // typy souprav, pro ktere je zastavka
@@ -106,7 +106,6 @@ type
    );
 
    _def_tu_zastavka:TBlkTUZastavka = (                                          // zakladni stav zastavky
-    enabled : false;
     soupravy : nil;
     max_delka : 0;
    );
@@ -256,6 +255,7 @@ end;//dtor
 // nacte konfiguracni data ze souboru
 
 procedure TBlkTU.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+var zastLichy, zastSudy:string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -273,30 +273,46 @@ begin
  Self.TUSettings.Zastavka := _def_tu_zastavka;
  Self.TUSettings.Zastavka.soupravy := TStringList.Create();
 
- Self.TUsettings.Zastavka.enabled := ini_tech.ReadBool(section, 'zast_enabled', false);
- if (Self.TUsettings.Zastavka.enabled) then
+ zastLichy := ini_tech.ReadString(section, 'zast_ev_lichy_zast', '');
+ Self.TUsettings.Zastavka.ev_lichy.enabled  := (zastLichy <> '');
+
+ zastSudy := ini_tech.ReadString(section, 'zast_ev_sudy_zast', '');
+ Self.TUsettings.Zastavka.ev_sudy.enabled  := (zastSudy <> '');
+
+ Self.TUsettings.Zastavka.max_delka := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
+ Self.TUsettings.Zastavka.delay     := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
+
+ Self.TUsettings.Zastavka.soupravy.Clear();
+ ExtractStrings([';'],[],PChar(ini_tech.ReadString(section, 'zast_soupravy', '')), Self.TUsettings.Zastavka.soupravy);
+
+ // zastavka v lichem smeru
+ if (Self.TUsettings.Zastavka.ev_lichy.enabled) then
   begin
    try
-     Self.TUsettings.Zastavka.ev_lichy.zastaveni  := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_lichy_zast', ''));
+     Self.TUsettings.Zastavka.ev_lichy.zastaveni  := Self.ParseZastEvent(zastLichy);
      Self.TUsettings.Zastavka.ev_lichy.zpomaleni  := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_lichy_zpom', ''));
-     Self.TUsettings.Zastavka.ev_sudy.zastaveni   := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_sudy_zast', ''));
-     Self.TUsettings.Zastavka.ev_sudy.zpomaleni   := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_sudy_zpom', ''));
-
-     Self.TUsettings.Zastavka.max_delka := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
-     Self.TUsettings.Zastavka.delay     := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
-
-     Self.TUsettings.Zastavka.soupravy.Clear();
-     ExtractStrings([';'],[],PChar(ini_tech.ReadString(section, 'zast_soupravy', '')), Self.TUsettings.Zastavka.soupravy);
    except
-     Self.TUsettings.Zastavka.enabled := false;
+     Self.TUsettings.Zastavka.ev_lichy.enabled := false;
    end;
   end else begin
    Self.TUsettings.Zastavka.ev_lichy.zastaveni.signal := TBlkTUSignal.disabled;
    Self.TUsettings.Zastavka.ev_lichy.zpomaleni.signal := TBlkTUSignal.disabled;
-   Self.TUsettings.Zastavka.ev_sudy.zastaveni.signal  := TBlkTUSignal.disabled;
-   Self.TUsettings.Zastavka.ev_sudy.zpomaleni.signal  := TBlkTUSignal.disabled;
   end;
 
+ // zastavka v sudem smeru
+ if (Self.TUsettings.Zastavka.ev_sudy.enabled) then
+  begin
+   try
+     Self.TUsettings.Zastavka.ev_sudy.zastaveni   := Self.ParseZastEvent(zastSudy);
+     Self.TUsettings.Zastavka.ev_sudy.zpomaleni   := Self.ParseZastEvent(ini_tech.ReadString(section, 'zast_ev_sudy_zpom', ''));
+   except
+     Self.TUsettings.Zastavka.ev_sudy.enabled := false;
+   end;
+  end else begin
+   Self.TUsettings.Zastavka.ev_sudy.zastaveni.signal  := TBlkTUSignal.disabled;
+   Self.TUsettings.Zastavka.ev_sudy.zpomaleni.signal  := TBlkTUSignal.disabled;
+
+  end;
 end;//procedure
 
 // ulozi konfiguracni data do souboru
@@ -312,14 +328,24 @@ begin
  ini_tech.WriteInteger(section, 'rychlost', Self.TUSettings.rychlost);
 
  // ukladani zastavky
- ini_tech.WriteBool(section, 'zast_enabled', Self.TUsettings.Zastavka.enabled);
- if (Self.TUsettings.Zastavka.enabled) then
+ if (Self.TUsettings.Zastavka.ev_lichy.enabled) then
   begin
    ini_tech.WriteString(section, 'zast_ev_lichy_zast', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_lichy.zastaveni));
    ini_tech.WriteString(section, 'zast_ev_lichy_zpom', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_lichy.zpomaleni));
+  end else begin
+   ini_tech.WriteString(section, 'zast_ev_lichy_zast', '');
+  end;
+
+ if (Self.TUsettings.Zastavka.ev_sudy.enabled) then
+  begin
    ini_tech.WriteString(section, 'zast_ev_sudy_zast', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_sudy.zastaveni));
    ini_tech.WriteString(section, 'zast_ev_sudy_zpom', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_sudy.zpomaleni));
+  end else begin
+   ini_tech.WriteString(section, 'zast_ev_sudy_zast', '');
+  end;
 
+ if ((Self.TUsettings.Zastavka.ev_lichy.enabled) or ((Self.TUsettings.Zastavka.ev_sudy.enabled))) then
+  begin
    ini_tech.WriteInteger(section, 'zast_max_delka', Self.TUsettings.Zastavka.max_delka);
    ini_tech.WriteString(section, 'zast_delay', TimeToStr(Self.TUsettings.Zastavka.delay));
 
@@ -328,7 +354,6 @@ begin
     str := str + Self.TUsettings.Zastavka.soupravy[i] + ';';
    ini_tech.WriteString(section, 'zast_soupravy', str);
   end;
-
 end;//procedure
 
 // ulozi stavova data do souboru
@@ -376,7 +401,8 @@ procedure TBlkTU.Update();
 begin
  inherited;
 
- if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.Souprava > -1) and (Self.TUSettings.Zastavka.enabled)) then
+ if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.Souprava > -1) and
+     ((Self.TUSettings.Zastavka.ev_lichy.enabled) or (Self.TUSettings.Zastavka.ev_sudy.enabled))) then
    Self.ZastUpdate();
 
  Self.UpdateSprRych();
@@ -421,6 +447,10 @@ begin
    // cekam na obsazeni IR
    if ((not Self.TUStav.zast_enabled) or (Self.TUStav.zast_passed) or
       (Soupravy.soupravy[Self.Souprava].delka > Self.TUSettings.Zastavka.max_delka) or (Soupravy.soupravy[Self.Souprava].front <> self)) then Exit();
+
+   // kontrola spravneho smeru
+   if (((Soupravy.soupravy[Self.Souprava].smer = THVSTanoviste.lichy) and (not Self.TUSettings.zastavka.ev_lichy.enabled)) or
+       ((Soupravy.soupravy[Self.Souprava].smer = THVSTanoviste.sudy) and (not Self.TUSettings.zastavka.ev_sudy.enabled))) then Exit();
 
    // kontrola typu soupravy:
    found := false;
@@ -523,7 +553,8 @@ begin
  Result := inherited;
 
  // zastavka
- if ((Self.TUSettings.Zastavka.enabled) and (Self.InTrat > -1)) then
+ if ((Self.InTrat > -1) and
+     ((Self.TUSettings.Zastavka.ev_lichy.enabled) or (Self.TUSettings.Zastavka.ev_sudy.enabled))) then
   begin
    Result := Result + '-,';
    if (not Self.TUStav.zast_stopped) then
@@ -595,7 +626,8 @@ begin
      Self.UvolnenoZJC();
     end;
   end else begin
-   if ((Self.TUSettings.zastavka.enabled) and (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
+   if (((Self.TUSettings.zastavka.ev_lichy.enabled) or (Self.TUSettings.zastavka.ev_sudy.enabled)) and
+       (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
 
    // zmena smeru soupravy nastava vzdy v 1. bloku trati (nejblize zacatku)
    if (((Assigned(TBlkTrat(Self.Trat).navLichy)) and (Assigned(TBlkTrat(Self.Trat).navSudy))) and
