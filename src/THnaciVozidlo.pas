@@ -426,7 +426,7 @@ var i:Integer;
     pomCV:THVPOMCv;
 begin
  // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce|rychlost_stupne|
- //   rychlost_kmph|smer|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
+ //   rychlost_kmph|smer|or_id|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
  //   {vyznam-F0;vyznam-F1;...}|
 
  // souprava je bud cislo soupravy, nebo znak '-'
@@ -451,7 +451,8 @@ begin
   end;
 
  Result := Result + '|' + IntToStr(Self.Slot.speed) + '|' +
-           IntToStr(TrkSystem.GetStepSpeed(Self.Slot.speed)) + '|' + IntToStr(Self.Slot.smer) + '|';
+           IntToStr(TrkSystem.GetStepSpeed(Self.Slot.speed)) + '|' +
+           IntToStr(Self.Slot.smer) + '|' + Self.Stav.stanice.id + '|';
 
  if (mode = TLokStringMode.full) then
   begin
@@ -503,7 +504,7 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|-|stanovisteA|funkce|rychlost_stupne|
-//   rychlost_kmph|smer|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
+//   rychlost_kmph|smer|orid|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
 //   {vyznam-F0;vyznam-F1;...}|
 // na miste znaku - obvykle byva souprava, pri nacitani hnaciho vozidla tuto polozku nemenime -> je tam pomlcka
 procedure THV.UpdateFromPanelString(data:string);
@@ -531,12 +532,12 @@ begin
   for i := 0 to funcCnt-1 do
     Self.Stav.funkce[i] := (str[8][i+1] = '1');
 
-  if (str.Count > 12) then
+  if (str.Count > 13) then
    begin
      // pom-take
      str2.Clear();
      Self.Data.POMtake.Clear();
-     ExtractStringsEx([']'] , ['['], str[12], str2);
+     ExtractStringsEx([']'] , ['['], str[13], str2);
      for tmp in str2 do
       begin
        str3.Clear();
@@ -547,12 +548,12 @@ begin
       end;
    end;
 
-  if (str.Count > 13) then
+  if (str.Count > 14) then
    begin
      // pom-release
      str2.Clear();
      Self.Data.POMrelease.Clear();
-     ExtractStringsEx([']'] , ['['], str[13], str2);
+     ExtractStringsEx([']'] , ['['], str[14], str2);
      for tmp in str2 do
       begin
        str3.Clear();
@@ -563,11 +564,11 @@ begin
       end;
    end;
 
-  if (str.Count > 14) then
+  if (str.Count > 15) then
    begin
     // vyznam funkci
     str2.Clear();
-    ExtractStringsEx([';'], [], str[14], str2);
+    ExtractStringsEx([';'], [], str[15], str2);
     for i := 0 to _HV_FUNC_MAX do
       if (i < str2.Count) then
        Self.Data.funcVyznam[i] := str2[i]
