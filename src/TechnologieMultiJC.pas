@@ -22,7 +22,10 @@ type
    Nazev:string;
    JCs:TList<Integer>;
    vb:TList<Integer>;
+   id:Integer;
   end;
+
+  EInvalidID = class(Exception);
 
   TMultiJC=class
 
@@ -51,7 +54,7 @@ type
       procedure UpdateStaveni();
 
       procedure LoadData(ini:TMemIniFile; section:string);
-      procedure SaveData(ini:TMemIniFile; section:string);
+      procedure SaveData(ini:TMemIniFile);
 
       procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject);
       procedure RusStaveni();
@@ -61,6 +64,7 @@ type
       property stav:TMultiJCStaveni read fstaveni;
       property Nazev:string read fproperties.Nazev;
       property staveni:boolean read GetStaveni;
+      property id:Integer read fproperties.id;
   end;
 
 implementation
@@ -109,6 +113,13 @@ procedure TMultiJC.LoadData(ini:TMemIniFile; section:string);
 var sl:TStrings;
     i:Integer;
 begin
+ try
+   Self.fproperties.id    := StrToInt(section);
+ except
+   on E:EConvertError do
+     raise EInvalidID.Create('Neplatné id mJC : '+section);
+ end;
+
  Self.fproperties.Nazev := ini.ReadString (section, 'Nazev', section);
 
  Self.fproperties.JCs.Clear();
@@ -127,10 +138,13 @@ begin
    Self.fproperties.vb.Add(StrToInt(sl[i]));
 end;//procedure
 
-procedure TMultiJC.SaveData(ini:TMemIniFile; section:string);
+procedure TMultiJC.SaveData(ini:TMemIniFile);
 var i:Integer;
     str:string;
+    section:string;
 begin
+ section := IntToStr(Self.id);
+
  ini.WriteString(section, 'Nazev', Self.fproperties.Nazev);
 
  str := '';

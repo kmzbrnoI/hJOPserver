@@ -1626,7 +1626,7 @@ end;
 
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
 begin
- if ((Self.LV_MultiJC.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat složenou jízdní cestu '+MultiJCDb.GetJCByIndex(Self.LV_MultiJC.ItemIndex).Nazev), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
+ if ((Self.LV_MultiJC.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat složenou jízdní cestu '+MultiJCDb[Self.LV_MultiJC.ItemIndex].Nazev), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
    MultiJCDb.Remove(Self.LV_MultiJC.ItemIndex);
 end;
 
@@ -2392,7 +2392,7 @@ end;
 procedure TF_Main.LV_MultiJCDblClick(Sender: TObject);
 begin
  if (Self.LV_MultiJC.Selected <> nil) then
-   F_MJCEdit.OpenForm(MultiJCDb.GetJCByIndex(Self.LV_MultiJC.ItemIndex));
+   F_MJCEdit.OpenForm(MultiJCDb[Self.LV_MultiJC.ItemIndex]);
 end;
 
 procedure TF_Main.LV_MultiJCKeyPress(Sender: TObject; var Key: Char);

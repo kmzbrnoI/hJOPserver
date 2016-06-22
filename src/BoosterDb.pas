@@ -8,6 +8,8 @@ uses Booster, IniFiles, Classes, SysUtils, Windows, RPConst, Generics.Collection
       Generics.Defaults;
 
 type
+  BoosterExistsException = class(Exception);
+
   TBoosterDb = class
    private const
     _BEEP_INTERVAL = 1;                                //in seconds
@@ -27,6 +29,7 @@ type
 
       procedure ControlBeep();
 
+      procedure Clear();
       function GetCount():Integer;
       function GetItem(key:string):TBooster;
 
@@ -95,7 +98,8 @@ var ini:TMemIniFile;
 begin
  writelog('Naèítám zesilovaèe: '+inifilename, WR_DATA);
 
- Self.db.Clear();
+ Self.Clear();
+
  try
    ini := TMemIniFile.Create(inifilename);
  except
@@ -122,15 +126,26 @@ begin
      continue;
     end;
 
-   booster := TBooster.Create(ini, id);
+   booster := nil;
 
-   booster.OnNapajeniChange := Self.OnNapajeniChange;
-   booster.OnZkratChange    := Self.OnZkratChange;
-   booster.OnDCCChange      := Self.OnDCCChange;
+   try
+     booster := TBooster.Create(ini, id);
 
-   Self.db.AddOrSetValue(id, booster);
+     booster.OnNapajeniChange := Self.OnNapajeniChange;
+     booster.OnZkratChange    := Self.OnZkratChange;
+     booster.OnDCCChange      := Self.OnDCCChange;
 
-   Self.sortedKeys.Add(booster);
+     Self.db.AddOrSetValue(id, booster);
+
+     Self.sortedKeys.Add(booster);
+   except
+     on e:Exception do
+      begin
+       if (Assigned(booster)) then booster.Free();
+       AppEvents.LogException(E, 'Chyba pøi zeilovaèe '+id);
+       continue;
+      end;
+   end;
   end;//for i
 
  Self.sortedKeys.Sort();
@@ -172,6 +187,9 @@ end;//procedure
 
 procedure TBoosterDb.Add(new:TBooster);
 begin
+ if (Self.db.ContainsKey(new.id)) then
+   raise BoosterExistsException.Create('Zesilovaè s ID '+new.id+' již existuje');
+
  Self.db.Add(new.id, new);
 
  new.OnNapajeniChange := Self.OnNapajeniChange;
@@ -283,6 +301,16 @@ begin
    Result := (ignore <> Self[key])
   else
    Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBoosterDb.Clear();
+var booster:TBooster;
+begin
+ for booster in Self.db.Values do booster.Free();
+ Self.db.Clear();
+ Self.sortedKeys.Clear();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

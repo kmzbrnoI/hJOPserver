@@ -96,7 +96,15 @@ begin
  if (Self.open_booster = nil) then
   begin
    Self.open_booster := TBooster.Create;
-   Boosters.Add(Self.open_booster);
+   try
+     Boosters.Add(Self.open_booster);
+   except
+     on E:Exception do
+      begin
+       Application.MessageBox(PChar(e.Message), 'Chyba pøi vytváøení zesilovaèe', MB_OK OR MB_ICONERROR);
+       Exit();
+      end;
+   end;
   end;
 
  settings.Name   := E_Nazev.Text;

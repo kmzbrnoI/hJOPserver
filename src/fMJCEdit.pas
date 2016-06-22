@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, TechnologieMultiJC, Generics.Collections,
-  RPConst;
+  RPConst, Spin;
 
 type
   TF_MJCEdit = class(TForm)
@@ -26,6 +26,8 @@ type
     B_VB_Remove: TButton;
     B_Save: TButton;
     B_Storno: TButton;
+    Label1: TLabel;
+    SE_ID: TSpinEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -135,7 +137,8 @@ var i:Integer;
     JC:TJC;
     Blk:TBlk;
 begin
- Self.E_VCNazev.Text       := Self.openMJC.Nazev;
+ Self.SE_ID.Value    := Self.openMJC.id;
+ Self.E_VCNazev.Text := Self.openMJC.Nazev;
 
  for i := 0 to Self.openMJC.data.JCs.Count-1 do
   begin
@@ -166,6 +169,7 @@ end;//procedure
 
 procedure TF_MJCEdit.NewOpenForm();
 begin
+ Self.SE_ID.Value       := MultiJCDb.Items[MultiJCDb.Count-1].id + 1;
  Self.B_VB_New.Enabled  := false;
  Self.CB_VB_New.Enabled := false;
 
@@ -291,7 +295,8 @@ end;
 
 procedure TF_MJCEdit.B_SaveClick(Sender: TObject);
 var data:TMultiJCProp;
-    i:Integer;
+    i, prevIndex:Integer;
+    check:TMultiJC;
 begin
  if (Self.JCs.Count < 2) then
   begin
@@ -303,19 +308,37 @@ begin
    Application.MessageBox('Vyplòte název složené JC', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
+ check := MultiJCDb.GetJCByID(Self.SE_ID.Value);
+ if ((check <> nil) and (check <> Self.openMJC)) then
+  begin
+   Application.MessageBox('Složená jízdní cesta s tímto ID již existuje', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+   Exit();
+  end;
 
+ data.id    := Self.SE_ID.Value;
  data.Nazev := Self.E_VCNazev.Text;
- data.JCs   := nil;          // dulezite pro pridavani JC
- data.vb    := nil;
 
  if (Self.openMJC = nil) then
   begin
-   Self.openMJC := MultiJCDb.Add(data);
-   if (Self.openMJC = nil) then
-    begin
-     Application.MessageBox('Nepodaøilo se pøidat složenou JC', 'Chyba', MB_OK OR MB_ICONWARNING);
-     Exit();
-    end;
+   data.JCs   := nil;          // dulezite pro pridavani JC
+   data.vb    := nil;
+
+   try
+     Self.openMJC := MultiJCDb.Add(data);
+   except
+     on E:Exception do
+      begin
+       Application.MessageBox(PChar('Nepodaøilo se pøidat složenou JC'+#13#10+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+       Exit();
+      end;
+   end;
+  end else begin
+   data.JCs := Self.openMJC.data.JCs;          // dulezite pro pridavani JC
+   data.vb  := Self.openMJC.data.vb;
+
+   prevIndex := MultiJCDb.GetJCIndexByID(Self.openMJC.id);
+   Self.openMJC.data := data;
+   MultiJCDb.IDChanged(prevIndex);
   end;
 
  Self.openMJC.data.JCs.Clear();
@@ -365,6 +388,7 @@ begin
    Self.UpdateVBCb();
   end;
 end;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

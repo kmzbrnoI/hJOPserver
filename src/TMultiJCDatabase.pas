@@ -8,39 +8,43 @@ unit TMultiJCDatabase;
 interface
 
 uses TechnologieMultiJC, TBlok, IniFiles, RPConst, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes;
+      Generics.Collections, Classes, Generics.Defaults, Math;
 
 type
-  TMultiJCDb = class
-   private const
-    _MAX_JC = 255;
+  MutiJCExistsException = class(Exception);
 
+  TMultiJCDb = class
    private
-    JCs:TList<TMultiJC>;
+    JCs:TList<TMultiJC>;                                                        // seznam slozenych jizdnich cest serazeny podle jejich id vzestupne
 
     ffilename:string;
 
      procedure Clear();
      function GetJCCnt():Word;
+     function GetItem(index:Integer):TMultiJC;
 
    public
 
      constructor Create();
      destructor Destroy(); override;
 
-     function LoadData(const filename:string):Byte;
-     function SaveData(const filename:string):Byte;
+     procedure LoadData(const filename:string);
+     procedure SaveData(const filename:string);
 
      procedure Update();
-     function GetJCByIndex(index:Integer):TMultiJC;
+     function GetJCByID(id:Integer):TMultiJC;
+     function GetJCIndexByID(id:Integer):Integer;
 
      function StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject):boolean;   // vraci true, pokud nasel prislusnou cestu
 
      function Add(data:TMultiJCProp):TMultiJC;
      procedure Remove(index:Integer);
+     procedure IDChanged(previousIndex:Integer);
 
-     property Count:Word read GetJCCnt;
      property filename:string read ffilename;
+
+     property Items[index : Integer] : TMultiJC read GetItem; default;
+     property Count:Word read GetJCCnt;
 
   end;
 
@@ -62,7 +66,11 @@ uses Logging, GetSystems, TBloky, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
 constructor TMultiJCDb.Create();
 begin
  inherited Create();
- Self.JCs := TList<TMultiJC>.Create();
+ Self.JCs := TList<TMultiJC>.Create(TComparer<TMultiJC>.Construct(
+  function(const mJC1, mJC2:TMultiJC):Integer
+  begin
+    Result := CompareValue(mJC1.id, mJC2.id);
+  end));
 end;//ctor
 
 destructor TMultiJCDb.Destroy();
@@ -75,7 +83,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 // load data from ini file
-function TMultiJCDb.LoadData(const filename:string):Byte;
+procedure TMultiJCDb.LoadData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
     mJC:TMultiJC;
@@ -88,7 +96,11 @@ begin
  try
    ini := TMemIniFile.Create(filename);
  except
-   Exit(1);
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Nacitam slozene JC: nelze otevrit soubor s reliefy');
+     Exit();
+    end;
  end;
 
  Self.Clear();
@@ -108,19 +120,36 @@ begin
        continue;
       end;
    end;
+
+   // pridavame klice do seznamu v poradi jako v souboru
    Self.JCs.Add(mJC);
   end;//for i
 
+ // a seznam seradime
+ Self.JCs.Sort();
+
+ // zkontrolujeme duplicity
+ i := 0;
+ while (i < Self.JCs.Count-1) do
+  begin
+   if (Self.JCs[i].id = Self.JCs[i+1].id) then
+    begin
+     writelog('WARNING: duplicita primárního klíèe mJC ('+IntToStr(Self.JCs[i].id)+') - pøeskakuji', WR_ERROR);
+     Self.JCs.Delete(i+1);
+    end;
+   Inc(i);
+  end;
+
+
  ini.Free;
  sections.Free();
- Result := 0;
  writelog('Naèteno '+IntToStr(Self.JCs.Count)+' složených JC', WR_DATA);
 
  MultiJCTableData.LoadToTable();
 end;//function
 
 // save data to ini file:
-function TMultiJCDb.SaveData(const filename:string):Byte;
+procedure TMultiJCDb.SaveData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
 begin
@@ -130,31 +159,54 @@ begin
    DeleteFile(PChar(filename));
    ini := TMemIniFile.Create(filename);
  except
-   Exit(1);
+   on E:Exception do
+    begin
+     AppEvents.LogException(E, 'Ukladam slozene JC: nelze otevrit soubor s reliefy');
+     Exit();
+    end;
  end;
 
  for i := 0 to Self.JCs.Count-1 do
-   Self.JCs[i].SaveData(ini, 'JC'+IntToStr(i));
+   Self.JCs[i].SaveData(ini);
 
  ini.UpdateFile();
  ini.Free();
- Result := 0;
 
  writelog('Složené JC uloženy', WR_DATA);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
+// Vyhledavame slozenou JC binarnim vyhledavanim.
 
-function TMultiJCDb.GetJCByIndex(index:Integer):TMultiJC;
+function TMultiJCDb.GetJCIndexByID(id:Integer):Integer;
+var left, right, mid:Integer;
 begin
- if ((index < 0) or (index >= Self.JCs.Count)) then
+ left := 0;
+ right := Self.JCs.Count-1;
+
+ while (left <= right) do
   begin
-   Result := nil;
-   Exit;
+   mid := (left + right) div 2;
+   if (Self.JCs[mid].id = id) then Exit(mid);
+
+   if (Self.JCs[mid].id > id) then
+     right := mid - 1
+   else
+     left := mid + 1;
   end;
 
- Result := Self.JCs[index];
+ Result := -1;
 end;//function
+
+function TMultiJCDb.GetJCByID(id:Integer):TMultiJC;
+var index:Integer;
+begin
+ index := Self.GetJCIndexByID(id);
+ if (index < 0) then
+   Result := nil
+ else
+   Result := Self.JCs[index];
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -260,11 +312,19 @@ end;//procedure
 
 function TMultiJCDb.Add(data:TMultiJCProp):TMultiJC;
 var mJC:TMultiJC;
+    pos:Integer;
 begin
+ if (Self.GetJCByID(data.id) <> nil) then
+   raise MutiJCExistsException.Create('Složená JC s ID '+IntToStr(data.id)+' již existuje');
+
+ // linearne vyhledame pozici pro novou slozenou JC
+ pos := 0;
+ while ((pos < Self.JCs.Count) and (data.id > Self.JCs[pos].id)) do Inc(pos);
+
  mJC := TMultiJC.Create(data);
- Self.JCs.Add(mJC);
+ Self.JCs.Insert(pos, mJC);
+ MultiJCTableData.AddJC(pos);
  Result := mJC;
- MultiJCTableData.AddJC;
 end;//procedure
 
 procedure TMultiJCDb.Remove(index:Integer);
@@ -275,6 +335,37 @@ begin
    MultiJCTableData.RemoveJC(index);
   end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TMultiJCDb.GetItem(index:Integer):TMultiJC;
+begin
+ if ((index < 0) or (index >= Self.JCs.Count)) then
+   Result := nil
+ else
+   Result := Self.JCs[index];
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJCDb.IDChanged(previousIndex:Integer);
+var pos:Integer;
+    tmp:TMultiJC;
+begin
+ tmp := Self.JCs[previousIndex];
+ if (((previousIndex = 0) or (Self.JCs[previousIndex-1].id <= Self.JCs[previousIndex].id)) and
+    ((previousIndex = Self.JCs.Count-1) or (Self.JCs[previousIndex].id <= Self.JCs[previousIndex+1].id))) then Exit();
+
+ Self.JCs.Delete(previousIndex);
+ MultiJCTableData.RemoveJC(previousIndex);
+
+ // linearne vyhledame pozici pro novou slozenou JC
+ pos := 0;
+ while ((pos < Self.JCs.Count) and (tmp.id > Self.JCs[pos].id)) do Inc(pos);
+
+ Self.JCs.Insert(pos, tmp);
+ MultiJCTableData.AddJC(pos);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

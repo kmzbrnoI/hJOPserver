@@ -3,7 +3,7 @@ object F_MJCEdit: TF_MJCEdit
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Editovat slo'#382'enou j'#237'zdn'#237' cestu [...]'
-  ClientHeight = 324
+  ClientHeight = 345
   ClientWidth = 689
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object F_MJCEdit: TF_MJCEdit
   TextHeight = 13
   object L_VC_01: TLabel
     Left = 7
-    Top = 7
+    Top = 31
     Width = 65
     Height = 13
     Margins.Left = 2
@@ -35,9 +35,26 @@ object F_MJCEdit: TF_MJCEdit
     Font.Style = []
     ParentFont = False
   end
+  object Label1: TLabel
+    Left = 7
+    Top = 6
+    Width = 17
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'ID :'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
   object CHB_AutoName: TCheckBox
     Left = 88
-    Top = 8
+    Top = 32
     Width = 43
     Height = 17
     Caption = 'auto'
@@ -49,11 +66,11 @@ object F_MJCEdit: TF_MJCEdit
     Font.Style = []
     ParentFont = False
     State = cbChecked
-    TabOrder = 1
+    TabOrder = 2
   end
   object E_VCNazev: TEdit
     Left = 136
-    Top = 8
+    Top = 32
     Width = 540
     Height = 21
     Margins.Left = 2
@@ -67,11 +84,11 @@ object F_MJCEdit: TF_MJCEdit
     Font.Style = []
     MaxLength = 32
     ParentFont = False
-    TabOrder = 0
+    TabOrder = 1
   end
   object GB_JCs: TGroupBox
     Left = 7
-    Top = 33
+    Top = 57
     Width = 329
     Height = 250
     Margins.Left = 2
@@ -87,7 +104,7 @@ object F_MJCEdit: TF_MJCEdit
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 2
+    TabOrder = 3
     object GB_JC_New: TGroupBox
       Left = 2
       Top = 195
@@ -184,7 +201,7 @@ object F_MJCEdit: TF_MJCEdit
   end
   object GB_VB: TGroupBox
     Left = 349
-    Top = 33
+    Top = 57
     Width = 329
     Height = 250
     Margins.Left = 2
@@ -200,7 +217,7 @@ object F_MJCEdit: TF_MJCEdit
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 3
+    TabOrder = 4
     object GroupBox2: TGroupBox
       Left = 2
       Top = 195
@@ -297,20 +314,30 @@ object F_MJCEdit: TF_MJCEdit
   end
   object B_Save: TButton
     Left = 601
-    Top = 288
+    Top = 312
     Width = 75
     Height = 25
     Caption = 'Pou'#382#237't'
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
     Left = 520
-    Top = 288
+    Top = 312
     Width = 75
     Height = 25
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_StornoClick
+  end
+  object SE_ID: TSpinEdit
+    Left = 137
+    Top = 5
+    Width = 539
+    Height = 22
+    MaxValue = 0
+    MinValue = 0
+    TabOrder = 0
+    Value = 0
   end
 end

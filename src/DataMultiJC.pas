@@ -19,7 +19,7 @@ type
 
       procedure UpdateLine(line:Integer);
 
-      procedure AddJC();
+      procedure AddJC(pos:Integer);
       procedure RemoveJC(index:Integer);
 
       constructor Create(LV:TListView);
@@ -71,7 +71,7 @@ var i:Integer;
 begin
  repaint := false;
  for i := 0 to MultiJCDb.Count-1 do
-   if (MultiJCDb.GetJCByIndex(i).changed) then
+   if (MultiJCDb[i].changed) then
     begin
      repaint := true;
      try
@@ -91,11 +91,11 @@ var mJCData:TMultiJCprop;
     i:Integer;
     str:string;
 begin
- mJC     := MultiJCDb.GetJCByIndex(line);
+ mJC     := MultiJCDb[line];
  mJCData := mJC.data;
  mJC.changed := false;
 
- Self.LV.Items.Item[line].Caption := IntToStr(line);
+ Self.LV.Items.Item[line].Caption := IntToStr(mJCData.id);
  Self.LV.Items.Item[line].SubItems.Strings[0] := mJCData.Nazev;
 
  // krok ( = aktualne stavena JC)
@@ -121,16 +121,16 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJCTableData.AddJC();
+procedure TMultiJCTableData.AddJC(pos:Integer);
 var LI:TListItem;
     j:Integer;
 begin
- LI := Self.LV.Items.Add;
+ LI := Self.LV.Items.Insert(pos);
  LI.Caption := IntToStr(Self.LV.Items.Count);
  for j := 0 to Self.LV.Columns.Count-2 do
   LI.SubItems.Add('');
 
- Self.UpdateLine(Self.LV.Items.Count-1);
+ Self.UpdateLine(pos);
 end;//procedure
 
 procedure TMultiJCTableData.RemoveJC(index:Integer);
