@@ -2,7 +2,7 @@
 //H                                                        H      H      H    H   H    H    H          H H
 //H   Název : hJOPserver                                   H      H      H   H     H   H     H        H   H
 //H   Jméno tvùrce : Jan Horáèek                           H      HHHHHHHH   H     H   H    H        H     H
-//H   Autorská práva : Jan Horáèek 2008-2015               H      H      H   H     H   HHHHH        HHHHHHHHH
+//H   Autorská práva : Jan Horáèek 2008-2016               H      H      H   H     H   HHHHH        HHHHHHHHH
 //H                                                        H      H      H   H     H   H HH        H         H
 //H                                                        H      H      H    H   H    H   HH     H           H
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     H     HH   H           H
@@ -197,4 +197,4 @@ uses
 //13.03.2011 - 35 496 radku
 //06.05.2014 - 30 037 radku
 //19.06.2015 - 28 211 radku
-
+//23.06.2016 - 31 931 radku
