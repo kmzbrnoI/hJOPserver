@@ -737,8 +737,12 @@ begin
  else if (parsed[1] = 'SPR-REMOVE') then
   begin
    i := Soupravy.GetSprIndexByName(parsed[2]);
-   if (i < 0) then Exit();
-   (Soupravy.soupravy[i].stanice as TOR).PanelRemoveSpr(AContext, i);
+   if (i >= 0) then (Soupravy.soupravy[i].stanice as TOR).PanelRemoveSpr(AContext, i);
+
+   tmp := '';
+   for i := 0 to (AContext.Data as TTCPORsRef).ORsCnt-1 do
+    tmp := tmp + (AContext.Data as TTCPORsRef).ORs[i].PanelGetSprs(AContext);
+   Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
 
  else if (parsed[1] = 'LOK') then

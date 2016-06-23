@@ -1618,7 +1618,6 @@ begin
   begin
    Soupravy.RemoveSpr(spr_index);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava smazána');
-   ORTCPServer.SendLn(Sender, '-;SPR-LIST;'+Self.PanelGetSprs(Sender));
    Exit();
   end;
 end;//procedure
