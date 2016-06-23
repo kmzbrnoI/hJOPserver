@@ -500,7 +500,10 @@ begin
       end else begin
 
        if ((Sender as TBlkUsek).SprPredict > -1) then
+        begin
          msg := msg + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SprPredict)+';'+PrevodySoustav.ColorToStr(fg)+';00;';
+         msg := msg + PrevodySoustav.ColorToStr(bg);
+        end;
       end;// else Souprava > -1
     end;
 
