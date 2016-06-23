@@ -122,6 +122,8 @@ uses
  begin
   Application.OnException := AppEvents.OnAppException;
 
+  SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
   DecimalSeparator := '.';
 
   // povolena je jen jedna instance
