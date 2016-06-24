@@ -4,7 +4,7 @@ object F_BlkNew: TF_BlkNew
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Nov'#253' blok'
-  ClientHeight = 217
+  ClientHeight = 241
   ClientWidth = 162
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,7 +21,7 @@ object F_BlkNew: TF_BlkNew
     Left = 7
     Top = 7
     Width = 145
-    Height = 174
+    Height = 198
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -41,13 +41,14 @@ object F_BlkNew: TF_BlkNew
       'Tra'#357
       'Z'#225'mek'
       'Rozpojova'#269
-      'Tra'#357'ov'#253' '#250'sek')
+      'Tra'#357'ov'#253' '#250'sek'
+      'Logick'#253' v'#253'stup')
     ParentFont = False
     TabOrder = 0
   end
   object B_Save: TButton
     Left = 80
-    Top = 185
+    Top = 209
     Width = 75
     Height = 25
     Margins.Left = 2

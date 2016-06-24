@@ -495,7 +495,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
      TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster,
-     AppEv;
+     AppEv, fBlkVystup, TBlokVystup;
 
 //function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
 //function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
@@ -2622,6 +2622,14 @@ var Blk:TBlk;
     end;
    end;
 
+  //////////////////////
+  _BLK_VYSTUP:begin
+    case ((Blk as TBlkVystup).enabled) of
+      false : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
+      true  : LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+    end;
+  end;
+
   end;//case
 end;
 
@@ -2641,6 +2649,7 @@ var Blk:TBlk;
    _BLK_ZAMEK   : F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_ROZP    : F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_TU      : F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
+   _BLK_VYSTUP  : F_BlkVystup.OpenForm(Self.LV_Bloky.ItemIndex);
   end;//case
 end;
 

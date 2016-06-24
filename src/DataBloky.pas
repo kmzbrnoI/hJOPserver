@@ -36,7 +36,7 @@ var
 implementation
 
 uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokSCom, TBlokIR, TBlokPrejezd,
-      fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp;
+      fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp, TBlokVystup;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -323,9 +323,27 @@ var j:integer;
 
       if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items.Item[line].SubItems.Strings[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
         Self.LV.Items.Item[line].SubItems.Strings[7] := '--#--';
-   end;//_BLK_ROZP
+   end;//_BLK_TU
 
-  end;//case BLOK_TYPE
+ /////////////////////////////////////////////////////
+   _BLK_VYSTUP:begin
+      Self.LV.Items.Item[line].ImageIndex := 12;
+      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Logický výstup';
+
+      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+
+      case ((Blk as TBlkVystup).enabled) of
+        false : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
+        true  : Self.LV.Items.Item[line].SubItems.Strings[3] := 'enabled';
+      end;//case obsazeno
+
+      Self.LV.Items.Item[line].SubItems.Strings[4] := '---';
+      Self.LV.Items.Item[line].SubItems.Strings[5] := '---';
+      Self.LV.Items.Item[line].SubItems.Strings[6] := '---';
+      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+   end;//_BLK_TU
+
+  end;//case BLOK_VYSTUP
 
 
  end;//procedure

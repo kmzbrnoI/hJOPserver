@@ -19,6 +19,7 @@ const
  _BLK_ZAMEK   = 7;            // vyhybkovy zamek
  _BLK_ROZP    = 8;            // rozpojovac
  _BLK_TU      = 9;            // tratovy usek
+ _BLK_VYSTUP  = 10;           // logicky vystup
 
  //if the block is disbled, this is is its state
  _BLK_DISABLED = -5;

@@ -115,7 +115,9 @@ uses
   UDPdiscover in 'UDPdiscover.pas',
   USock in 'USock.pas',
   appEv in 'appEv.pas',
-  SystemCriticalU in 'SystemCriticalU.pas';
+  SystemCriticalU in 'SystemCriticalU.pas',
+  TBlokVystup in 'TBlokVystup.pas',
+  fBlkVystup in 'fBlkVystup.pas' {F_BlkVystup};
 
 {$R *.res}
 
@@ -158,6 +160,7 @@ uses
   Application.CreateForm(TF_BlkNew, F_BlkNew);
   Application.CreateForm(TF_BlkPrejezd, F_BlkPrejezd);
   Application.CreateForm(TF_BlkTU, F_BlkTU);
+  Application.CreateForm(TF_BlkVystup, F_BlkVystup);
   Application.CreateForm(TF_NoRegRun, F_NoRegRun);
   Application.CreateForm(TF_AutoStartSystems, F_AutoStartSystems);
   Application.CreateForm(TF_BlkUsek_tech, F_BlkUsek_tech);
