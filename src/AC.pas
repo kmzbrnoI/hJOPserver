@@ -487,7 +487,7 @@ var cmd:integer;
 
   if (Self.krok = (Self.kroky.Count+1)) then
    begin
-    if (Self.wait < Now) then
+    if ((Self.wait < Now) and (Self.ready)) then
      begin
       Self.krok := 0;
       writelog('AC '+Self.name + ' : opakuji', WR_AUTREZ);

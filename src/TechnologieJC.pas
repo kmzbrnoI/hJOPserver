@@ -1934,7 +1934,7 @@ begin
           (Usek as TBlkUsek).Souprava := -1;
          end;
 
-        // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tams toji vagony), ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
+        // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony), ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
         Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadRuseniBlok], Blk);
         Usek := (Nav as TBlkSCom).UsekPred;
         if ((Self.RozpadRuseniBlok = 1) and ((Usek as TBlkUsek).Souprava > -1) and ((Usek as TBlkUsek).Souprava = (Blk as TBlkUsek).Souprava)) then
