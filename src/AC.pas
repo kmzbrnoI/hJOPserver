@@ -188,8 +188,9 @@ var Blk:TBlk;
       while (i < lines.Count) do
        begin
         if (lines[i] = '') then
-         lines.Delete(i);
-        Inc(i);
+         lines.Delete(i)
+        else
+         Inc(i);
        end;
 
 
@@ -258,7 +259,7 @@ var Blk:TBlk;
             raise Exception.Create('Nevalidni format parametru - '+lines[i]);
           end;
 
-          if (krok.Params[0] >= JCDb.Count) then  raise Exception.Create('JC neexistuje - '+lines[i]);
+          if (JCDb.GetJCByID(krok.Params[0]) = nil) then  raise Exception.Create('JC neexistuje - '+lines[i]);
 
           Self.kroky.Add(krok);
          end else
