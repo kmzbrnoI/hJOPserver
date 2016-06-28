@@ -58,6 +58,7 @@ type
 
       procedure UpdateKrok();
       procedure NextStep(); inline;
+      function GetPaused():boolean;
 
     public
       name:string;
@@ -86,13 +87,14 @@ type
       property krk_filename:string read fkrk_filename write fkrk_filename;
       property ready:boolean read GetReady;
       property running:boolean read frunning;
+      property paused:boolean read getPaused;
       property ACKrok:Integer read krok;
   end;
 
 implementation
 
 uses fSettings, GetSystems, TJCDatabase, Logging,
-      TOblRizeni, TOblsRizeni, TBlokSCom, TBlokTrat;
+      TOblRizeni, TOblsRizeni, TBlokSCom, TBlokTrat, Zasobnik;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -406,7 +408,6 @@ begin
  if (Self.krok > -1) then
   begin
    Self.frunning := true;
-   if (Self.krok < 0) then Self.krok := 0;   
    writelog('AC '+Self.name+ ' : RESUME', WR_AUTREZ);
   end else begin
    if (not Self.ready) then
@@ -425,7 +426,6 @@ end;//procedure
 
 procedure TAC.Stop();
 begin
- if (not Self.running) then Exit();
  Self.frunning  := false;
  Self.krok      := -1;
  Self.repeating := false;
@@ -441,6 +441,11 @@ begin
  Self.frunning := false;
  writelog('AC '+Self.name+ ' : PAUSE', WR_AUTREZ);
 end;//procedure
+
+function TAC.GetPaused():boolean;
+begin
+ Result := ((not Self.running) and (Self.krok > -1));
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // aktualizace prubehu AC:
@@ -518,7 +523,11 @@ var cmd:integer;
            panel := nil;
 
           // stavit JC
-          JC.StavJC(panel, OblR);
+          if (OblR.stack.volba = TORStackVolba.VZ) then
+            OblR.stack.AddJC(JC, panel, false)
+          else
+            JC.StavJC(panel, OblR);
+
          end;
 
         Self.subkrok := 1;

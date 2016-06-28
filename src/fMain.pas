@@ -2078,15 +2078,9 @@ begin
 end;
 
 procedure TF_Main.SB_AC_RepeatClick(Sender: TObject);
-var new:boolean;
 begin
  if (Self.LV_AC_Db.Selected <> nil) then
-  begin
-   new := not Self.SB_AC_Repeat.Down;
-   Self.SB_AC_Repeat.Down := new;
-   Self.SB_AC_Repeat.AllowAllUp := not new;
    ACDb.ACs[Self.LV_AC_Db.ItemIndex].repeating := Self.SB_AC_Repeat.Down;
-  end;
 end;
 
 procedure TF_Main.SB_AC_StopClick(Sender: TObject);
@@ -2479,7 +2473,7 @@ begin
      Self.SB_AC_Repeat.Enabled := true;
      Self.SB_AC_Repeat.Down    := ACDb.ACs[Self.LV_AC_Db.ItemIndex].repeating;
     end else begin
-     Self.SB_AC_Play.Enabled   := ACDb.ACs[Self.LV_AC_Db.ItemIndex].ready;
+     Self.SB_AC_Play.Enabled   := ACDb.ACs[Self.LV_AC_Db.ItemIndex].ready or ACDb.ACs[Self.LV_AC_Db.ItemIndex].paused;
      Self.SB_AC_Stop.Enabled   := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
      Self.SB_AC_Pause.Enabled  := false;
      Self.SB_AC_Repeat.Enabled := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);

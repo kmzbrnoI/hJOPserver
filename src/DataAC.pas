@@ -70,6 +70,8 @@ begin
 
    if (AC.running) then
      Self.LV.Items.Item[i].SubItems.Strings[1] := 'running'
+   else if (AC.paused) then
+     Self.LV.Items.Item[i].SubItems.Strings[1] := 'paused'
    else if (AC.ready) then
      Self.LV.Items.Item[i].SubItems.Strings[1] := 'ready'
    else

@@ -20,10 +20,10 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_DependencyCheckOutputName>..\output\hJOPserver.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\..\..\KMZ\vystavy\Nedvedice\2016\hJOP\hJOPserver\hJOPserver.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls</DCC_UsePackage>
-			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
+			<DCC_ExeOutput>..\..\..\KMZ\vystavy\Nedvedice\2016\hJOP\hJOPserver\</DCC_ExeOutput>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
 			<DCC_RangeChecking>true</DCC_RangeChecking>
