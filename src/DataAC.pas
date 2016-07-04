@@ -69,13 +69,13 @@ begin
    Self.LV.Items.Item[i].SubItems.Strings[0] := AC.name;
 
    if (AC.running) then
-     Self.LV.Items.Item[i].SubItems.Strings[1] := 'running'
+     Self.LV.Items.Item[i].SubItems.Strings[1] := 'spuštìn'
    else if (AC.paused) then
-     Self.LV.Items.Item[i].SubItems.Strings[1] := 'paused'
+     Self.LV.Items.Item[i].SubItems.Strings[1] := 'pozastaven'
    else if (AC.ready) then
-     Self.LV.Items.Item[i].SubItems.Strings[1] := 'ready'
+     Self.LV.Items.Item[i].SubItems.Strings[1] := 'pøipraven'
    else
-     Self.LV.Items.Item[i].SubItems.Strings[1] := 'not ready';
+     Self.LV.Items.Item[i].SubItems.Strings[1] := 'nepøipraven';
 
    Self.LV.Items.Item[i].SubItems.Strings[2] := AC.krk_filename;
   end;//for i
