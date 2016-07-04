@@ -412,6 +412,7 @@ type
 
     procedure LogStatus(str:string);                                            // vypise info do LB_Log
     procedure DisableRemoveButtons();                                           // znemozni pouziti mazacich tlacitek, typicky se vola po startu systemu
+    procedure UpdateACButtons();
 
     // MTB events:
     procedure OnMTBStart(Sender:TObject);
@@ -1740,7 +1741,11 @@ begin
    // update tables
    if (Self.Showing) then
     begin
-     if (F_Main.PC_1.ActivePage = F_Main.TS_Aut_Rezimy) then ACTableData.UpdateTable();
+     if (F_Main.PC_1.ActivePage = F_Main.TS_Aut_Rezimy) then
+      begin
+       ACTableData.UpdateTable();
+       Self.UpdateACButtons();
+      end;
      if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then BlokyTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then SprTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then F_Main.LV_Zesilovace.Repaint;
@@ -2462,30 +2467,7 @@ end;
 procedure TF_Main.LV_AC_DbChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
- if (LV_AC_Db.Selected <> nil) then
-  begin
-   B_AutRezim_delete.Enabled := not (ACDb.ACs[Self.LV_AC_Db.ItemIndex].running);
-   if (ACDb.ACs[Self.LV_AC_Db.ItemIndex].running) then
-    begin
-     Self.SB_AC_Play.Enabled   := not ACDb.ACs[Self.LV_AC_Db.ItemIndex].running;
-     Self.SB_AC_Stop.Enabled   := true;
-     Self.SB_AC_Pause.Enabled  := ACDb.ACs[Self.LV_AC_Db.ItemIndex].running;
-     Self.SB_AC_Repeat.Enabled := true;
-     Self.SB_AC_Repeat.Down    := ACDb.ACs[Self.LV_AC_Db.ItemIndex].repeating;
-    end else begin
-     Self.SB_AC_Play.Enabled   := ACDb.ACs[Self.LV_AC_Db.ItemIndex].ready or ACDb.ACs[Self.LV_AC_Db.ItemIndex].paused;
-     Self.SB_AC_Stop.Enabled   := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
-     Self.SB_AC_Pause.Enabled  := false;
-     Self.SB_AC_Repeat.Enabled := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
-    end;
-  end else begin
-   B_AutRezim_delete.Enabled := false;
-   Self.SB_AC_Play.Enabled   := false;
-   Self.SB_AC_Stop.Enabled   := false;
-   Self.SB_AC_Pause.Enabled  := false;
-   Self.SB_AC_Repeat.Enabled := false;
-  end;
-
+ Self.UpdateACButtons();
  Self.LoadACKroky();
 end;
 
@@ -2812,6 +2794,35 @@ end;//procedure
 procedure TF_Main.OnSoundDisabled(Sender:TObject);
 begin
  Self.A_All_Loko_OdhlasitExecute(Self);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.UpdateACButtons();
+begin
+ if (LV_AC_Db.Selected <> nil) then
+  begin
+   B_AutRezim_delete.Enabled := not (ACDb.ACs[Self.LV_AC_Db.ItemIndex].running);
+   if (ACDb.ACs[Self.LV_AC_Db.ItemIndex].running) then
+    begin
+     Self.SB_AC_Play.Enabled   := not ACDb.ACs[Self.LV_AC_Db.ItemIndex].running;
+     Self.SB_AC_Stop.Enabled   := true;
+     Self.SB_AC_Pause.Enabled  := ACDb.ACs[Self.LV_AC_Db.ItemIndex].running;
+     Self.SB_AC_Repeat.Enabled := true;
+     Self.SB_AC_Repeat.Down    := ACDb.ACs[Self.LV_AC_Db.ItemIndex].repeating;
+    end else begin
+     Self.SB_AC_Play.Enabled   := ACDb.ACs[Self.LV_AC_Db.ItemIndex].ready or ACDb.ACs[Self.LV_AC_Db.ItemIndex].paused;
+     Self.SB_AC_Stop.Enabled   := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
+     Self.SB_AC_Pause.Enabled  := false;
+     Self.SB_AC_Repeat.Enabled := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
+    end;
+  end else begin
+   B_AutRezim_delete.Enabled := false;
+   Self.SB_AC_Play.Enabled   := false;
+   Self.SB_AC_Stop.Enabled   := false;
+   Self.SB_AC_Pause.Enabled  := false;
+   Self.SB_AC_Repeat.Enabled := false;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -432,7 +432,7 @@ begin
  writelog('AC '+Self.name+ ' : STOP', WR_AUTREZ);
  Inc(Self.stat_end);
  F_Main.LV_AC_Kroky.Repaint();
- F_Main.LV_AC_DbChange(F_Main.LV_AC_Db, F_Main.LV_AC_Db.Selected, TItemChange.ctText);
+ F_Main.UpdateACButtons();
 end;//procedure
 
 procedure TAC.Pause();
