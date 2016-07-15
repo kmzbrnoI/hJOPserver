@@ -711,7 +711,13 @@ begin
    // loko je vyjmuto z rucniho rizeni
 
    if (Self.Stav.souprava > -1) then
-    Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
+    begin
+     // POM automatu
+     if (Self.Slot.pom <> TPomStatus.pc) then
+       TrkSystem.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc);
+
+     Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
+    end;
 
    if (Self.Stav.souprava < 0) then
     begin
@@ -720,9 +726,6 @@ begin
        TrkSystem.OdhlasitLoko(Self);
     end;
 
-   // POM automatu
-   if (Self.Slot.pom <> TPomStatus.pc) then
-     TrkSystem.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc);
   end;
 
  if (RegCollector.IsLoko(Self)) then

@@ -1009,7 +1009,10 @@ begin
  // nenastavovat HV.ruc, POM si tady delame sami !!
  HV.Stav.ruc := false;
 
- Self.POMWriteCVs(Self, HV, HV.Data.POMrelease, TPomStatus.released);
+ if (HV.Slot.pom <> TPomStatus.released) then
+   Self.POMWriteCVs(Self, HV, HV.Data.POMrelease, TPomStatus.released)
+ else
+   Self.OdhlasenoPOMOK(Self, cb);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
