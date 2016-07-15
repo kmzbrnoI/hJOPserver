@@ -449,6 +449,8 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 function TORTCPServer.Stop():Integer;
+var iA:integer;
+    Context: TidContext;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
@@ -460,6 +462,23 @@ begin
 
  F_Main.LogStatus('Panel server: vypínám...');
  F_Main.S_Server.Brush.Color := clGray;
+
+ with Self.tcpServer.Contexts.LockList do
+    try
+       for iA := Count - 1 downto 0 do
+       begin
+          Context := Items[iA];
+          if Context = nil then
+             Continue;
+          Context.Connection.IOHandler.WriteBufferClear;
+          Context.Connection.IOHandler.InputBuffer.Clear;
+          Context.Connection.IOHandler.Close;
+          if Context.Connection.Connected then
+             Context.Connection.Disconnect;
+       end;
+    finally
+       Self.tcpServer.Contexts.UnlockList;
+    end;
 
  Self.tcpServer.Active := false;
 
