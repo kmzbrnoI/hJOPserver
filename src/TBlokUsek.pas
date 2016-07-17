@@ -93,6 +93,7 @@ type
     procedure MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRUCLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuMAUSLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuNUZStartClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -827,6 +828,22 @@ begin
  ORTCPServer.SendLn(SenderPnl, str);
 end;//procedure
 
+procedure TBlkUsek.MenuMAUSlokClick(SenderPnl:TIdContext; SenderOR:TObject);
+var i:Integer;
+    str:string;
+    HV:THV;
+begin
+ str := (SenderOR as TOR).id + ';MAUS;{';
+ for i := 0 to Soupravy.soupravy[Self.Souprava].sdata.HV.cnt-1 do
+  begin
+   HV := HVDb.HVozidla[Soupravy.soupravy[Self.Souprava].sdata.HV.HVs[i]];
+   str := str + IntToStr(HV.adresa) + '|';
+  end;//for i
+ str := str + '}';
+
+ ORTCPServer.SendLn(SenderPnl, str);
+end;//procedure
+
 procedure TBlkUsek.MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
 var i:Integer;
 begin
@@ -857,7 +874,10 @@ begin
    Result := Result + 'UVOL vlak,';
 
    if (Soupravy.soupravy[Self.Souprava].sdata.HV.cnt > 0) then
-    Result := Result + 'RUÈ vlak,';
+    begin
+     Result := Result + 'RUÈ vlak,';
+     if (TTCPORsRef(SenderPnl.Data).maus) then Result := Result + 'MAUS vlak,';
+    end;
 
    if (Self.VlakPresun) then
     Result := Result + 'PØESUÒ vlak<,'
@@ -966,6 +986,7 @@ begin
  else if (item = 'PØESUÒ vlak>') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true)
  else if (item = 'PØESUÒ vlak<') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false)
  else if (item = 'RUÈ vlak')     then Self.MenuRUCLokClick(SenderPnl, SenderOR)
+ else if (item = 'MAUS vlak')    then Self.MenuMAUSLokClick(SenderPnl, SenderOR)
  else if (item = 'STIT')         then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'VYL')          then Self.MenuVylClick(SenderPnl, SenderOR)
  else if (item = 'KC')           then Self.MenuKCClick(SenderPnl, SenderOR)

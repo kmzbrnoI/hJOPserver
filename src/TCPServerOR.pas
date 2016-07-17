@@ -37,6 +37,7 @@ type
     regulator_zadost:TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
     index:Integer;                                                              // index spojeni v tabulce ve F_Main
     funcsVyznamReq:boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
+    maus:boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
 
     spr_new:boolean;                                                            // jestli v panelu probiha zadavani nove soupravy
     spr_edit:TSouprava;                                                         // souprava, kterou panel edituje
@@ -226,6 +227,8 @@ implementation
   -;F-VYZN-ADD;vyznam1;vyznam2;...                                              pridani novych vyznamu funkci
   -;F-VYZN-GET;                                                                 pozadavek na ziskani vyznamu funkci (odpoved F-VYZN-LIST)
 
+  -;MAUS;[0/1]                                                                  k panelu je/neni pripojen uLI-daemon pripraveny prijimat adresy
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// SERVER -> KLIENT ///////////////////////////////////
@@ -330,6 +333,8 @@ implementation
   or;LOK-REQ;OK                                                                 seznam loko na rucni rizeni schvalen serverem
   or;LOK-REQ;ERR;comment                                                        seznam loko na rucni rizeni odmitnut serverem
   or;LOK-REQ;CANCEL;                                                            zruseni pozadavku na prevzeti loko na rucni rizeni
+
+  or;MAUS;[addr1|addr2|...]                                                     pozadavek na prevzeti lokomotiv addr1..addrn do rucniho rizeni multiMaus (uLI-daemon)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -780,7 +785,16 @@ begin
   end
 
  else if (parsed[1] = 'MTBD') then
-   MTBd.Parse(AContext, parsed);
+   MTBd.Parse(AContext, parsed)
+
+ else if (parsed[1] = 'MAUS') then
+  begin
+   TTCPORsRef(AContext.Data).maus := (parsed[2] = '1');
+   if ((Assigned(TTCPORsRef(AContext.Data).menu)) and
+       ((TTCPORsRef(AContext.Data).menu.GetGlobalSettings.typ = _BLK_USEK) or
+        (TTCPORsRef(AContext.Data).menu.GetGlobalSettings.typ = _BLK_TU))) then
+     TTCPORsRef(AContext.Data).menu.Change();
+  end;
 
 end;//procedure
 
