@@ -67,22 +67,17 @@ end;//procedure
 
 procedure TMultiJCTableData.UpdateTable();
 var i:Integer;
-    repaint:boolean;
 begin
- repaint := false;
  for i := 0 to MultiJCDb.Count-1 do
    if (MultiJCDb[i].changed) then
     begin
-     repaint := true;
      try
        Self.UpdateLine(i);
+       Self.LV.UpdateItems(i, i);
      except
 
      end;
     end;
-
- if (repaint) then
-  Self.LV.Repaint();
 end;//procedure
 
 procedure TMultiJCTableData.UpdateLine(line:Integer);

@@ -71,22 +71,18 @@ end;//procedure
 
 procedure TBlokyTableData.UpdateTable();
 var i:Integer;
-    achanged:boolean;
 begin
   F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.Cnt);
 
-  achanged := false;
   for i := 0 to Blky.Cnt-1 do
    if ((Self.changed[i]) or (Self.reload)) then
     begin
      Self.UpdateLine(i);
      Self.changed[i] := false;
-     achanged := true;
+     Self.LV.UpdateItems(i, i);
     end;
 
   Self.reload := false;
-  if (achanged) then
-    Self.LV.Repaint();
 end;//procedyre
 
 procedure TBlokyTableData.UpdateLine(line:Integer);

@@ -63,29 +63,23 @@ var i, j:integer;
 
 procedure TSprTableData.UpdateTable();
 var i:Integer;
-    repaint:boolean;
 begin
- repaint := false;
-
  for i := 0 to _MAX_SPR-1 do
   begin
    if (Self.reload) then
     begin
      Self.UpdateLine(i);
-     repaint := true;
+     Self.LV.UpdateItems(i, i);
     end else begin
      if ((Assigned(Soupravy.soupravy[i])) and (Soupravy.soupravy[i].changed)) then
       begin
        Self.UpdateLine(i);
-       repaint := true;
+       Self.LV.UpdateItems(i, i);
       end;
     end;
   end;
 
  Self.reload := false;
-
- if (repaint) then
-   Self.LV.Repaint();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

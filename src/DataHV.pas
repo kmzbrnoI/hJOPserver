@@ -70,22 +70,18 @@ end;//procedure
 
 procedure THVTableData.UpdateTable();
 var i:Integer;
-    repaint:boolean;
 begin
- repaint := false;
  for i := 0 to _MAX_ADDR-1 do
   begin
    if (not Assigned(HVDb.HVozidla[i])) then continue;
    if ((HVDb.HVozidla[i].changed) or (Self.reload)) then
     begin
      Self.UpdateLine(HVDb.HVozidla[i]);
-     repaint := true;
+     Self.LV.UpdateItems(HVDb.HVozidla[i].index, HVDb.HVozidla[i].index);
     end;
   end;//for i
 
  Self.reload := false;
- if (repaint) then
-   Self.LV.Repaint();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
