@@ -5,7 +5,7 @@ unit TBlok;
 interface
 
 uses IniFiles, TechnologieMTB, SysUtils, RPConst, TOblsRizeni,
-      Generics.Collections, IdContext;
+      Generics.Collections, IdContext, JsonDataObjects;
 
 const
  //typy bloku
@@ -130,9 +130,17 @@ type
 
    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); virtual;
 
+   // Tyto procedury vraci json objekt do \json, z dedicich bloku
+   // je nutno volat inherited.
+   procedure GetPtData(var json:TJsonObject; includeState:boolean); virtual;
+   procedure GetPtState(var json:TJsonObject); virtual; abstract;
+
    class procedure AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class procedure RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class function CreateCHangeEvent(func:TChangeEventFunc; data:Integer = 0):TChangeEvent;
+
+   class function BlkTypeToStr(typ:Byte):string;
+   class procedure MTBtoJSON(const addrs:TMTBAddrs; var json:TJsonObject);
 
    //if some local variable is changed, this event is called to the program
    property OnChange:TOnBlkChange read FOnChange write FOnChange;
@@ -430,6 +438,44 @@ end;
 procedure TBlk.AfterLoad();
 begin
 
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlk.GetPtData(var json:TJsonObject; includeState:boolean);
+var i:Integer;
+begin
+ json['nazev'] := Self.GlobalSettings.name;
+ json['id']    := Self.GlobalSettings.id;
+ json['typ']   := TBlk.BlkTypeToStr(Self.GlobalSettings.typ);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TBlk.BlkTypeToStr(typ:Byte):string;
+begin
+ case (typ) of
+  _BLK_VYH     : Result := 'vyhybka';
+  _BLK_USEK    : Result := 'usek';
+  _BLK_IR      : Result := 'ir';
+  _BLK_SCOM    : Result := 'scom';
+  _BLK_PREJEZD : Result := 'prejezd';
+  _BLK_TRAT    : Result := 'trat';
+  _BLK_UVAZKA  : Result := 'uvazka';
+  _BLK_ZAMEK   : Result := 'zamek';
+  _BLK_ROZP    : Result := 'rozpojovac';
+  _BLK_TU      : Result := 'tratUsek';
+  _BLK_VYSTUP  : Result := 'vystup';
+ else
+  Result := 'neznamy';
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class procedure TBlk.MTBtoJSON(const addrs:TMTBAddrs; var json:TJsonObject);
+begin
+ // TODO
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
