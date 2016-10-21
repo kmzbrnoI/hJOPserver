@@ -7,7 +7,7 @@ unit TBlokVyhybka;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, SysUtils, TBlokUsek, Menus, TOblsRizeni,
-     Classes, RPConst, IdContext, Generics.Collections;
+     Classes, RPConst, IdContext, Generics.Collections, JsonDataObjects;
 
 type
  TBlkVyhSettings = record
@@ -169,6 +169,13 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
+
+    //PT:
+
+    procedure GetPtData(var json:TJsonObject; includeState:boolean); override;
+    procedure GetPtState(var json:TJsonObject); override;
+
+    class function PolohaToStr(poloha:TVyhPoloha):string;
 
  end;
 
@@ -1002,6 +1009,51 @@ begin
   (Self.Poloha <> Self.VyhSettings.zamekPoloha) and (not (Self.zamek as TBlkZamek).porucha)) then
    (Self.zamek as TBlkZamek).porucha := true;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+// PT:
+
+procedure TBlkVyhybka.GetPtData(var json:TJsonObject; includeState:boolean);
+var state:TJsonObject;
+begin
+ inherited;
+
+ // TODO: MTB
+
+ json['spojka']       := Self.VyhSettings.spojka;
+ json['zamek']        := Self.VyhSettings.zamek;
+ json['usek']         := Self.VyhRel.UsekID;
+ json['zamekPoloha']  := PolohaToStr(Self.VyhSettings.zamekPoloha);
+
+ if (includeState) then
+  begin
+   state := TJsonObject.Create();
+   Self.GetPtState(state);
+   json['blokStav'] := state;
+  end;
+end;
+
+procedure TBlkVyhybka.GetPtState(var json:TJsonObject);
+begin
+ json['poloha'] := PolohaToStr(Self.Poloha);
+ json['stitek'] := Self.Stitek;
+ json['vyluka'] := Self.Vyluka;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TBlkVyhybka.PolohaToStr(poloha:TVyhPoloha):string;
+begin
+ case (poloha) of
+  TVyhPoloha.plus     : Result := '+';
+  TVyhPoloha.minus    : Result := '-';
+  TVyhPoloha.disabled : Result := 'vypnuto';
+  TVyhPoloha.none     : Result := 'zadna';
+  TVyhPoloha.both     : Result := 'obe';
+ else
+  Result := '';
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
