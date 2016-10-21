@@ -119,7 +119,9 @@ uses
   TBlokVystup in 'TBlokVystup.pas',
   fBlkVystup in 'fBlkVystup.pas' {F_BlkVystup},
   TCPServerPT in 'TCPServerPT.pas',
-  JsonDataObjects in '..\lib\JsonDataObjects\Source\JsonDataObjects.pas';
+  JsonDataObjects in '..\lib\JsonDataObjects\Source\JsonDataObjects.pas',
+  PTEndpoint in 'PTEndpoint.pas',
+  PTEndpointBlok in 'PTEndpointBlok.pas';
 
 {$R *.res}
 

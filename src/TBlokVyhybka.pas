@@ -172,8 +172,8 @@ type
 
     //PT:
 
-    procedure GetPtData(var json:TJsonObject; includeState:boolean); override;
-    procedure GetPtState(var json:TJsonObject); override;
+    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
+    procedure GetPtState(json:TJsonObject); override;
 
     class function PolohaToStr(poloha:TVyhPoloha):string;
 
@@ -1013,31 +1013,31 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 // PT:
 
-procedure TBlkVyhybka.GetPtData(var json:TJsonObject; includeState:boolean);
-var state:TJsonObject;
+procedure TBlkVyhybka.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
  // TODO: MTB
 
- json['spojka']       := Self.VyhSettings.spojka;
- json['zamek']        := Self.VyhSettings.zamek;
- json['usek']         := Self.VyhRel.UsekID;
- json['zamekPoloha']  := PolohaToStr(Self.VyhSettings.zamekPoloha);
+ json['usek'] := Self.VyhRel.UsekID;
+
+ if (Self.VyhSettings.spojka > -1) then
+   json['spojka'] := Self.VyhSettings.spojka;
+ if (Self.VyhSettings.zamek > -1) then
+  begin
+   json['zamek'] := Self.VyhSettings.zamek;
+   json['zamekPoloha'] := PolohaToStr(Self.VyhSettings.zamekPoloha);
+  end;
 
  if (includeState) then
-  begin
-   state := TJsonObject.Create();
-   Self.GetPtState(state);
-   json['blokStav'] := state;
-  end;
+   Self.GetPtState(json['blokStav']);
 end;
 
-procedure TBlkVyhybka.GetPtState(var json:TJsonObject);
+procedure TBlkVyhybka.GetPtState(json:TJsonObject);
 begin
  json['poloha'] := PolohaToStr(Self.Poloha);
- json['stitek'] := Self.Stitek;
- json['vyluka'] := Self.Vyluka;
+ if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
+ if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -132,8 +132,8 @@ type
 
    // Tyto procedury vraci json objekt do \json, z dedicich bloku
    // je nutno volat inherited.
-   procedure GetPtData(var json:TJsonObject; includeState:boolean); virtual;
-   procedure GetPtState(var json:TJsonObject); virtual; abstract;
+   procedure GetPtData(json:TJsonObject; includeState:boolean); virtual;
+   procedure GetPtState(json:TJsonObject); virtual;
 
    class procedure AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class procedure RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
@@ -425,29 +425,33 @@ end;//function
 
 procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
 begin
-
+ // This function should be empty.
 end;
 
 procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
 begin
-
+ // This function should be empty.
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlk.AfterLoad();
 begin
-
+ // This function should be empty.
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlk.GetPtData(var json:TJsonObject; includeState:boolean);
-var i:Integer;
+procedure TBlk.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  json['nazev'] := Self.GlobalSettings.name;
  json['id']    := Self.GlobalSettings.id;
  json['typ']   := TBlk.BlkTypeToStr(Self.GlobalSettings.typ);
+end;
+
+procedure TBlk.GetPtState(json:TJsonObject);
+begin
+ // This function should be empty.
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

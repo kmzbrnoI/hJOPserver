@@ -5,15 +5,29 @@ unit TCPServerPT;
 
   PTserver implementuje rozhrani definovane v
   https://github.com/kmzbrnoI/hJOPserver/wiki/ptServer.
+
+  Jak to funguje?
+   - Pokud chces vytvorit vlastni endpoint, instanciuj TPTEndpoint do sve
+     odvizene tridy a zarad svou tridu do seznamu endpointu v konstruktoru tridy
+     TPtServer.
+   - Pri prichodu http pozadavku se postupne prochazi ednpointy, endpoint, ktery
+     odpovi na EndpointMatch true, je vybran, pruchod je zastaven a endpoint
+     zacne zpracovavat data.
+   - POST pozadavky se VZDY parsuji jako json objekt.
+   - POST content-type by mel byt application/json, pokud neni, je pozadavek
+     odmitnut.
 }
 
 interface
 
-uses SysUtils, Classes, Graphics,
-     IdHttpServer, IdSocketHandle, IdContext, IdCustomHTTPServer, IdComponent;
+uses SysUtils, Classes, Graphics, PTEndpoint, Generics.Collections,
+     IdHttpServer, IdSocketHandle, IdContext, IdCustomHTTPServer, IdComponent,
+     JsonDataObjects;
 
 const
   _PT_DEFAULT_PORT = 5823;
+  _PT_MAX_CONNECTIONS = 10;
+  _PT_COMPACT_RESPONSE = false;
 
 type
 
@@ -21,6 +35,9 @@ type
 
   TPtServer = class
    private
+    // seznam endpointu PTserveru, PTserver instanciuje vsechny endpointy v konstruktoru
+    enpoints: TList<TPTEndpoint>;
+
     httpServer: TIdHTTPServer;
 
     // http server events
@@ -29,6 +46,9 @@ type
     procedure httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo; AException: Exception);
     procedure httpException(AContext: TIdContext; AException: Exception);
+
+    procedure httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+      var respJson:TJsonObject);
 
     procedure httpAfterBind(Sender:TObject);
     procedure httpStatus(ASender: TObject; const AStatus: TIdStatus;
@@ -47,6 +67,8 @@ type
      procedure Start();
      procedure Stop();
 
+     class function ErrorToJson(httpCode:string; title:string; detail:string = ''):TJsonObject;
+
       property openned:boolean read IsOpenned;
       property port:Word read GetPort write SetPort;
   end;
@@ -56,7 +78,7 @@ var
 
 implementation
 
-uses Logging, appEv, fMain;
+uses Logging, appEv, fMain, PTEndpointBlok;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -73,6 +95,9 @@ begin
 
  Self.httpServer := TIdHTTPServer.Create(nil);
  Self.httpServer.Bindings := bindings;
+ Self.httpServer.MaxConnections := _PT_MAX_CONNECTIONS;
+ Self.httpServer.KeepAlive := true;
+ Self.httpServer.ServerSoftware := 'PTserver';
 
  // bind events
  Self.httpServer.OnCommandGet   := Self.httpGet;
@@ -82,14 +107,24 @@ begin
 
  Self.httpServer.OnAfterBind    := Self.httpAfterBind;
  Self.httpServer.OnStatus       := Self.httpStatus;
+
+ // endpoints
+ Self.enpoints := TList<TPTEndpoint>.Create();
+
+ // sem doplnit seznam vsech endpointu:
+ Self.enpoints.Add(TPTEndpointBlok.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
+var i:Integer;
 begin
  try
+   for i := 0 to Self.enpoints.Count-1 do
+     Self.enpoints[i].Free();
+   Self.enpoints.Free();
    if (Self.httpServer.Active) then
     Self.httpServer.Active := false;
-   FreeAndNil(Self.httpServer);
+   Self.httpServer.Free();
  except
 
  end;
@@ -138,8 +173,63 @@ end;
 
 procedure TPtServer.httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   AResponseInfo: TIdHTTPResponseInfo);
+var reqJson, respJson, errJson:TJsonObject;
+    endpoint:TPTEndpoint;
+    found:boolean;
 begin
- WriteLog('GET:'+ARequestInfo.Document, WR_PT);
+ try
+   respJson := TJsonObject.Create();
+
+   try
+     // vybereme vhodny endpoint
+     found := false;
+     for endpoint in Self.enpoints do
+      begin
+       if (endpoint.EndpointMatch(ARequestInfo.Document)) then
+        begin
+         found := true;
+         case (ARequestInfo.CommandType) of
+          hcGET: endpoint.OnGET(AContext, ARequestInfo, respJson);
+          hcPOST: begin
+             reqJson := TJsonObject.ParseFromStream(ARequestInfo.PostStream, TEncoding.UTF8) as TJsonObject;
+             endpoint.OnPOST(AContext, ARequestInfo, respJson, reqJson);
+             reqJson.Free();
+          end;
+         end;//end
+         break;
+        end;
+      end;
+
+     // zadny endpoint nenzalezen -> sink
+     if (not found) then
+       Self.httpSinkEndpoint(AContext, ARequestInfo, respJson);
+
+     // vytvoreni odpovedi
+     AResponseInfo.ContentType := 'application/json; charset=utf-8';
+     AResponseInfo.ContentStream := TStringStream.Create();
+     AResponseInfo.FreeContentStream := true;
+     respJson.SaveToStream(AResponseInfo.ContentStream, _PT_COMPACT_RESPONSE, TEncoding.UTF8);
+
+   except
+    on Eorig:Exception do
+     begin
+      errJson := TJsonObject.Create();
+      try
+        errJson['status'] := '500';
+        errJson['title']  := 'Request exception';
+        errJson['detail'] := Eorig.Message;
+        respJson.A['errors'].Add(errJson);
+        respJson.SaveToStream(AResponseInfo.ContentStream, _PT_COMPACT_RESPONSE, TEncoding.UTF8);
+      except
+        AResponseInfo.ContentText := '{"errors":["title":"Server general error"]}';
+      end;
+      errJson.Free();
+     end;
+   end;
+ finally
+   respJson.Free();
+ end;
+
 end;
 
 procedure TPtServer.httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -193,8 +283,23 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+// Tento virtualni endpoint je volan pokud nenajdeme zadny jiny vhodny endpoint.
+
+procedure TPtServer.httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+  var respJson:TJsonObject);
+begin
+ respJson.A['errors'].Add(TPtServer.ErrorToJson('404', 'Neznamy endpoint'));
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+class function TPtServer.ErrorToJson(httpCode:string; title:string; detail:string = ''):TJsonObject;
+begin
+ Result := TJsonObject.Create();
+ Result['code']  := httpCode;
+ Result['title'] := title;
+ if (detail <> '') then Result['detail'] := detail;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
