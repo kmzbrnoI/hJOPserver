@@ -22,6 +22,7 @@ const
    WR_USERS       = 12;
    WR_STACK       = 13;
    WR_TRAT        = 16;
+   WR_PT          = 17;
 
 
 procedure writeLog(Text:string;Typ:integer;ErrorID:integer = 0); overload;
@@ -53,6 +54,7 @@ function GetLogColor(LogTyp:Integer; ErrorID:Integer):TColor;
    WR_SPRPREDAT  : Result := RGB($AA,$FF,$AA);
    WR_USERS      : Result := RGB($F0,$F0,$C0);
    WR_TRAT       : Result := clHotLight;
+   WR_PT         : Result := RGB($F0,$FF,$F0);
   else//case
    Result := clWhite;
   end;//else case
@@ -75,6 +77,7 @@ function GetWriteLogTyp(Typ:Integer):string;
    WR_USERS:     Result := 'UûivatelÈ';
    WR_TRAT:      Result := 'Traù';
    WR_STACK:     Result := 'Z·sobnÌk JC';
+   WR_PT:        Result := 'PT server';
   else//case
    Result := 'Nezn·m˝ typ';
   end;//else case

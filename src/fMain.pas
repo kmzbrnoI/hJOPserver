@@ -247,6 +247,13 @@ type
     SD_HV_Stats: TSaveDialog;
     CB_centrala_loglevel_table: TComboBox;
     Label7: TLabel;
+    S_PTServer: TShape;
+    L_PTServer: TLabel;
+    MI_PT: TMenuItem;
+    MI_Start: TMenuItem;
+    MI_Stop: TMenuItem;
+    A_PT_Start: TAction;
+    A_PT_Stop: TAction;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -381,6 +388,8 @@ type
     procedure B_ClearStatsClick(Sender: TObject);
     procedure B_HVStats_ExportClick(Sender: TObject);
     procedure CB_centrala_loglevel_tableChange(Sender: TObject);
+    procedure A_PT_StartExecute(Sender: TObject);
+    procedure A_PT_StopExecute(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -496,7 +505,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
      TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster,
-     AppEv, fBlkVystup, TBlokVystup;
+     AppEv, fBlkVystup, TBlokVystup, TCPServerPT;
 
 //function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
 //function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
@@ -1062,6 +1071,26 @@ begin
  Self.A_PanelServer_Stop.Enabled  := false;
 end;
 
+procedure TF_Main.A_PT_StartExecute(Sender: TObject);
+begin
+ try
+   PtServer.Start();
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Nelze nastartovat PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
+end;
+
+procedure TF_Main.A_PT_StopExecute(Sender: TObject);
+begin
+ try
+   PtServer.Stop();
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Nelze zastavit PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 //--- events from MTB lib begin ---
@@ -1420,6 +1449,7 @@ begin
  ORs.DisconnectPanels();
 
  Self.A_PanelServer_StopExecute(nil);
+ if (PtServer.openned) then Self.A_PT_StopExecute(nil);
 
  JCDb.RusAllJC();
  Blky.Disable();

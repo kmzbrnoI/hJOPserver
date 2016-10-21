@@ -232,6 +232,7 @@
 			<DCCReference Include="fBlkVystup.pas">
 				<Form>F_BlkVystup</Form>
 			</DCCReference>
+			<DCCReference Include="TCPServerPT.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

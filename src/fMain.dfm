@@ -3493,7 +3493,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Aut_Rezimy
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3685,13 +3685,13 @@ object F_Main: TF_Main
           Tag = 5
           Left = 40
           Top = 140
-          Width = 31
+          Width = 59
           Height = 13
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = 'Server'
+          Caption = 'Panel server'
         end
         object S_lok_prevzato: TShape
           Left = 16
@@ -3724,6 +3724,31 @@ object F_Main: TF_Main
           ForeColor = clBlue
           MaxValue = 10
           Progress = 0
+        end
+        object S_PTServer: TShape
+          Left = 16
+          Top = 157
+          Width = 17
+          Height = 9
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Brush.Color = clRed
+          Visible = False
+        end
+        object L_PTServer: TLabel
+          Tag = 5
+          Left = 40
+          Top = 157
+          Width = 46
+          Height = 13
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Caption = 'PT server'
+          Visible = False
         end
       end
       object GroupBox1: TGroupBox
@@ -6125,6 +6150,15 @@ object F_Main: TF_Main
         Action = A_SaveStav
       end
     end
+    object MI_PT: TMenuItem
+      Caption = 'PT server'
+      object MI_Start: TMenuItem
+        Action = A_PT_Start
+      end
+      object MI_Stop: TMenuItem
+        Action = A_PT_Stop
+      end
+    end
     object M_Zobrazeni: TMenuItem
       Caption = 'Zobrazen'#237
       object PM_SB1: TMenuItem
@@ -6184,7 +6218,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403500310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403580310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8050,7 +8084,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D002803C8031000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D002803D0031000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8591,7 +8625,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802140310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D8021C0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -8934,6 +8968,16 @@ object F_Main: TF_Main
       Caption = 'Nastavit funkci dle v'#253'znamu'
       Enabled = False
       OnExecute = A_FuncsSetExecute
+    end
+    object A_PT_Start: TAction
+      Caption = 'Start'
+      ShortCut = 16464
+      OnExecute = A_PT_StartExecute
+    end
+    object A_PT_Stop: TAction
+      Caption = 'Stop'
+      Enabled = False
+      OnExecute = A_PT_StopExecute
     end
   end
   object PM_HV: TPopupMenu

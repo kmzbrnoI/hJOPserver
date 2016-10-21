@@ -117,7 +117,8 @@ uses
   appEv in 'appEv.pas',
   SystemCriticalU in 'SystemCriticalU.pas',
   TBlokVystup in 'TBlokVystup.pas',
-  fBlkVystup in 'fBlkVystup.pas' {F_BlkVystup};
+  fBlkVystup in 'fBlkVystup.pas' {F_BlkVystup},
+  TCPServerPT in 'TCPServerPT.pas';
 
 {$R *.res}
 
