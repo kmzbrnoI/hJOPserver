@@ -118,7 +118,8 @@ uses
   SystemCriticalU in 'SystemCriticalU.pas',
   TBlokVystup in 'TBlokVystup.pas',
   fBlkVystup in 'fBlkVystup.pas' {F_BlkVystup},
-  TCPServerPT in 'TCPServerPT.pas';
+  TCPServerPT in 'TCPServerPT.pas',
+  JsonDataObjects in '..\lib\JsonDataObjects\Source\JsonDataObjects.pas';
 
 {$R *.res}
 

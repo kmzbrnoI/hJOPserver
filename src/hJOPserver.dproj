@@ -233,6 +233,7 @@
 				<Form>F_BlkVystup</Form>
 			</DCCReference>
 			<DCCReference Include="TCPServerPT.pas"/>
+			<DCCReference Include="..\lib\JsonDataObjects\Source\JsonDataObjects.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

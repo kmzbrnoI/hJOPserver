@@ -7,6 +7,10 @@ Main technological hJOP server.
 - Author: Jan Horacek (c) 2008-2016
 - For: Microsoft Windows OS
 
+## Notes
+
+* Do not forget to load submodules.
+
 ## Special components & libraries
 
 - [ComPort](https://sourceforge.net/projects/comport/) 4.1
