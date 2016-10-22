@@ -4,7 +4,7 @@ unit TBlokIR;
 
 interface
 
-uses IniFiles,TBlok;
+uses IniFiles, TBlok, JsonDataObjects;
 
 type
  TIRStav = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -50,6 +50,11 @@ type
 
     function GetSettings():TBlkIRSettings;
     procedure SetSettings(data:TBlkIRSettings);
+
+    //PT:
+
+    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
+    procedure GetPtState(json:TJsonObject); override;
 
     property Stav:TIRStav read IRStav.Stav;
  end;//class TBlkIR
@@ -138,6 +143,25 @@ begin
  Self.IRSettings := data;
  Self.Change();
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkIR.GetPtData(json:TJsonObject; includeState:boolean);
+begin
+ // TODO: MTB
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkIR.GetPtState(json:TJsonObject);
+begin
+ case (Self.Stav) of
+  TIRStav.disabled : json['stav'] := 'vypnuto';
+  TIRStav.none     : json['stav'] := 'zadny';
+  TIRStav.uvolneno : json['stav'] := 'uvolneno';
+  TIRStav.obsazeno : json['stav'] := 'obsazeno';
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
