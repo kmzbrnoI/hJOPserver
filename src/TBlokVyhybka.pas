@@ -174,6 +174,7 @@ type
 
     procedure GetPtData(json:TJsonObject; includeState:boolean); override;
     procedure GetPtState(json:TJsonObject); override;
+    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
     class function PolohaToStr(poloha:TVyhPoloha):string;
 
@@ -184,7 +185,7 @@ type
 implementation
 
 uses TBloky, GetSystems, TechnologieMTB, fMain, TOblRizeni, TJCDatabase,
-      TCPServerOR, TBlokZamek;
+      TCPServerOR, TBlokZamek, PTUtils;
 
 constructor TBlkVyhybka.Create(index:Integer);
 begin
@@ -1038,6 +1039,33 @@ begin
  json['poloha'] := PolohaToStr(Self.Poloha);
  if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
  if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
+end;
+
+procedure TBlkVyhybka.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+begin
+ if (reqJson.Contains('poloha')) then
+  begin
+   if ((Self.Zaver > TJCType.no) or (Self.vyhZaver)) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit vyhybku pod zaverem');
+     inherited;
+     Exit();
+    end;
+   if (Self.Obsazeno = TUsekStav.obsazeno) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit obsazenou vyhybku');
+     inherited;
+     Exit();
+    end;
+
+   // nastaveni polohy vyhybky
+   if (reqJson.S['poloha'] = '+') then
+     Self.SetPoloha(TVyhPoloha.plus)
+   else if (reqJson.S['poloha'] = '-') then
+     Self.SetPoloha(TVyhPoloha.minus);
+  end;
+
+ inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

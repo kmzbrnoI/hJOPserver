@@ -17,6 +17,8 @@ type
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject); override;
+      procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject); override;
 
       function EndpointMatch(path:string):boolean; override;
 
@@ -67,6 +69,48 @@ begin
  finally
    re.Free();
    params.Free();
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TPTEndpointBlokStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+  var respJson:TJsonObject; const reqJson:TJsonObject);
+var re: TJclRegEx;
+    blokId:Integer;
+    Blk:TBlk;
+begin
+ re := TJclRegEx.Create();
+ try
+   re.Compile('\d+', false);
+   re.Match(ARequestInfo.Document);
+
+   try
+     blokId := StrToInt(re.Captures[0]);
+   except
+     on EConvertError do
+      begin
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku', re.Captures[0] + ' neni validni id bloku');
+       Exit();
+      end;
+   end;
+
+   if (not Blky.IsBlok(blokId)) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
+     Exit();
+    end;
+
+   if (not reqJson.Contains('blokStav')) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce blokStav');
+     Exit();
+    end;
+
+   Blky.GetBlkByID(blokId, Blk);
+   Blk.PostPtState(reqJson['blokStav'], respJson);
+ finally
+   re.Free();
  end;
 end;
 
