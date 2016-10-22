@@ -12,7 +12,7 @@ unit THVDatabase;
 
 interface
 
-uses SysUtils, THnaciVozidlo, Classes, IdContext, IniFiles;
+uses SysUtils, THnaciVozidlo, Classes, IdContext, IniFiles, Windows;
 
 const
  _MAX_ADDR = 10000;
@@ -177,7 +177,7 @@ var SR:TSearchRec;
       if ((SR.Attr AND faDirectory) = 0) then
         Self.LoadFile(dirname+'\'+SR.Name);
 
-    FindClose(SR);
+    SysUtils.FindClose(SR);
     writelog('Naèteno '+IntToStr(Self.cnt)+' hnacich vozidel',WR_DATA);
    end else begin
     writelog('Nenacteno zadne hnaci vozidlo',WR_DATA);
@@ -331,7 +331,7 @@ begin
  FreeAndNil(Self.HVs[addr]);
 
  // smazat soubor
- DeleteFile('lok\L_'+IntToStr(addr)+_FILE_SUFFIX);
+ SysUtils.DeleteFile('lok\L_'+IntToStr(addr)+_FILE_SUFFIX);
 
  // ------- update indexu: ------
 

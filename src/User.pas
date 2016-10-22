@@ -17,7 +17,7 @@ unit User;
 interface
 
 uses IniFiles, Generics.Collections, DCPsha256, SysUtils, Classes,
-     Generics.Defaults, TOblRizeni;
+     Generics.Defaults, TOblRizeni, Windows;
 
 type
   TUser = class                                                                 // trida reprezentujici uzivatele
