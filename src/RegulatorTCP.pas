@@ -105,7 +105,11 @@ begin
   end;
 
  // kontrola autorizace (dalsi prikazy jsou podmineny existujicim pristupem)
- if (not (Sender.Data as TTCPORsRef).regulator) then Exit();
+ if (not (Sender.Data as TTCPORsRef).regulator) then
+  begin
+   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Uživatel neuatorizován!');
+   Exit();
+  end;
 
  // regulator zacina zadost o lokomotivu ze stanice
  //   -;LOK;G:PLEASE;or_id;comment            - pozadavek na rizeni loko z dane oblasti rizeni
