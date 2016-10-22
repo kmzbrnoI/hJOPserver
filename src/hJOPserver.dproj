@@ -115,9 +115,6 @@
 			<DCCReference Include="fAdminForm.pas">
 				<Form>F_Admin</Form>
 			</DCCReference>
-			<DCCReference Include="fNoRegRun.pas">
-				<Form>F_NoRegRun</Form>
-			</DCCReference>
 			<DCCReference Include="fJCEdit.pas">
 				<Form>F_JCEdit</Form>
 			</DCCReference>
@@ -241,6 +238,7 @@
 			<DCCReference Include="PTEndpointLoks.pas"/>
 			<DCCReference Include="PTEndpointBlokStav.pas"/>
 			<DCCReference Include="PTEndpointLokStav.pas"/>
+			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

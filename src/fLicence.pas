@@ -60,7 +60,7 @@ var
 
 implementation
 
-uses ownStrUtils, fAbout, Verze, fNoRegRun, fLoginPozadi, fSettings,
+uses ownStrUtils, fAbout, Verze, fLoginPozadi, fSettings,
      Logging, fMain;
 
 {$R *.dfm}
@@ -106,7 +106,6 @@ procedure TF_Licence.ZkontrolujStartLic;
   if not (Lic.Prijato) then
    begin
     F_Main.Caption := F_Main.Caption +' - NOT REGISTERED';
-    F_NoRegRun.CheckStartLic;
    end else begin
     if (Lic.Company = 'nil') then
      begin

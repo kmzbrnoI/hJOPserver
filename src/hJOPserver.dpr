@@ -37,7 +37,6 @@ uses
   TBlokPrejezd in 'TBlokPrejezd.pas',
   fBlkNew in 'fBlkNew.pas' {F_BlkNew},
   fAdminForm in 'fAdminForm.pas' {F_Admin},
-  fNoRegRun in 'fNoRegRun.pas' {F_NoRegRun},
   fJCEdit in 'fJCEdit.pas' {F_JCEdit},
   fRychlostiEdit in 'fRychlostiEdit.pas' {F_RychlostiEdit},
   fSystemAutoStart in 'fSystemAutoStart.pas' {F_AutoStartSystems},
@@ -170,7 +169,6 @@ uses
   Application.CreateForm(TF_BlkPrejezd, F_BlkPrejezd);
   Application.CreateForm(TF_BlkTU, F_BlkTU);
   Application.CreateForm(TF_BlkVystup, F_BlkVystup);
-  Application.CreateForm(TF_NoRegRun, F_NoRegRun);
   Application.CreateForm(TF_AutoStartSystems, F_AutoStartSystems);
   Application.CreateForm(TF_BlkUsek_tech, F_BlkUsek_tech);
   Application.CreateForm(TF_Pozadi, F_Pozadi);
