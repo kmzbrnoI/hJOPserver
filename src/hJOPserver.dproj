@@ -241,6 +241,7 @@
 			<DCCReference Include="PTEndpointLok.pas"/>
 			<DCCReference Include="PTEndpointLoks.pas"/>
 			<DCCReference Include="PTEndpointBlokStav.pas"/>
+			<DCCReference Include="PTEndpointLokStav.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

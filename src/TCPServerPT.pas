@@ -78,7 +78,7 @@ implementation
 
 uses Logging, appEv, fMain,
       PTEndpointBlok, PTEndpointBloky, PTEndpointBlokStav,
-      PTEndpointLok, PTEndpointLoks;
+      PTEndpointLok, PTEndpointLoks, PTEndpointLokStav;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -117,6 +117,7 @@ begin
  Self.enpoints.Add(TPTEndpointBlokStav.Create());
  Self.enpoints.Add(TPTEndpointLok.Create());
  Self.enpoints.Add(TPTEndpointLoks.Create());
+ Self.enpoints.Add(TPTEndpointLokStav.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();

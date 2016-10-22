@@ -126,7 +126,8 @@ uses
   PTUtils in 'PTUtils.pas',
   PTEndpointLok in 'PTEndpointLok.pas',
   PTEndpointLoks in 'PTEndpointLoks.pas',
-  PTEndpointBlokStav in 'PTEndpointBlokStav.pas';
+  PTEndpointBlokStav in 'PTEndpointBlokStav.pas',
+  PTEndpointLokStav in 'PTEndpointLokStav.pas';
 
 {$R *.res}
 
