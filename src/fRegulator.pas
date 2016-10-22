@@ -205,7 +205,6 @@ procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
  end;//procedure
 
 procedure TF_DigiReg.FormCreate(Sender: TObject);
-var i:Integer;
  begin
   Self.OpenHV := nil;
  end;
