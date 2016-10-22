@@ -1,7 +1,7 @@
-unit PTEndpointBloky;
+unit PTEndpointLoks;
 
 {
-  Endpoint PTserveru /blok/.
+  Endpoint PTserveru /loks.
 }
 
 interface
@@ -10,9 +10,9 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
      Generics.Collections;
 
 type
-  TPTEndpointBloky = class(TPTEndpoint)
+  TPTEndpointLoks = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/bloky/?$';
+      _ENDPOINT_MATCH_REGEX = '^/loks/?$';
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -24,37 +24,35 @@ type
 
 implementation
 
-uses JclPCRE, TBloky, PTUtils, TOblRizeni, TOblsRizeni, TBlok;
+uses JclPCRE, PTUtils, THvDatabase, THnaciVozidlo, Prevody;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPTEndpointBloky.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+procedure TPTEndpointLoks.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
 var params:TDictionary<string, string>;
-    stanice:TOR;
-    typ:Integer;
+    addr:Word;
+    aktivni:Integer;
 begin
- stanice := nil;
- typ := -1;
+ aktivni := 0;
  params := TDictionary<string, string>.Create();
 
  try
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
-   if (params.ContainsKey('stanice')) then
+   if (params.ContainsKey('aktivni')) then
+     aktivni := PrevodySoustav.BoolToInt(PTUtils.HttpParamToBool(params['aktivni'])) + 1;
+
+   for addr := 0 to _MAX_ADDR-1 do
     begin
-     stanice := ORs.GetORById(params['stanice']);
-     if (stanice = nil) then
+     if (HVDb.HVozidla[addr] <> nil) then
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Oblast rizeni neexistuje', 'Oblast rizeni '+params['stanice']+' neexistuje');
-       Exit();
+       if ((aktivni = 0) or
+          ((aktivni = 1) and (not HVdb.HVozidla[addr].Slot.prevzato)) or
+          ((aktivni = 2) and (HVdb.HVozidla[addr].Slot.prevzato))) then
+         HVDb.HVozidla[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('stav') and PTUtils.HttpParamToBool(params['stav']));
       end;
     end;
-
-   if (params.ContainsKey('typ')) then
-     typ := TBlk.BlkTypeFromStr(params['typ']);
-
-   Blky.GetPtData(respJson, params.ContainsKey('stav') and PTUtils.HttpParamToBool(params['stav']), stanice, typ);
  finally
    params.Free();
  end;
@@ -62,7 +60,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointBloky.EndpointMatch(path:string):boolean;
+function TPTEndpointLoks.EndpointMatch(path:string):boolean;
 var re: TJclRegEx;
 begin
  re := TJclRegEx.Create();

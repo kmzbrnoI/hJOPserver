@@ -77,7 +77,8 @@ var
 implementation
 
 uses Logging, appEv, fMain,
-      PTEndpointBlok, PTEndpointBloky, PTEndpointLok;
+      PTEndpointBlok, PTEndpointBloky,
+      PTEndpointLok, PTEndpointLoks;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -114,6 +115,7 @@ begin
  Self.enpoints.Add(TPTEndpointBlok.Create());
  Self.enpoints.Add(TPTEndpointBloky.Create());
  Self.enpoints.Add(TPTEndpointLok.Create());
+ Self.enpoints.Add(TPTEndpointLoks.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
