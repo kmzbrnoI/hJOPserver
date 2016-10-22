@@ -205,6 +205,7 @@ procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
  end;//procedure
 
 procedure TF_DigiReg.FormCreate(Sender: TObject);
+var i:Integer;
  begin
   Self.OpenHV := nil;
  end;
@@ -408,14 +409,14 @@ constructor TRegulatorCollector.Create();
 var i:Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
-   Self.forms.data[i] := TF_DigiReg.Create(Application);
+   Self.forms.data[i] := TF_DigiReg.Create(nil);
 end;//ctor
 
 destructor TRegulatorCollector.Destroy();
 var i:Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
-   if (Assigned(Self.forms.data[i].CHB_svetla)) then
+   if (Assigned(Self.forms.data[i])) then
      FreeAndNil(Self.forms.data[i]);
 end;//dtor
 
