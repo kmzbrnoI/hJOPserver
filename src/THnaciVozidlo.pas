@@ -764,7 +764,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THV.GetPtData(json:TJsonObject; includeState:boolean);
-var i:Integer;
+var i, lastFunction:Integer;
 begin
  json['adresa']   := Self.adresa;
  json['nazev']    := Self.Data.Nazev;
@@ -779,7 +779,11 @@ begin
   THVClass.elektro : json['trida'] := 'elektro';
  end;
 
- for i := 0 to _HV_FUNC_MAX do
+ lastFunction := _HV_FUNC_MAX;
+ while ((Self.Data.funcVyznam[lastFunction] = '') and (lastFunction >= 0)) do
+   Dec(lastFunction);
+
+ for i := 0 to lastFunction do
    json.A['vyznamFunkci'].Add(Self.Data.funcVyznam[i]);
 
  if (includeState) then
