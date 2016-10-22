@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Spin, Outputdriver, inifiles, Menus, ComCtrls, TabNotBk,
-  ExtCtrls, Mask, Gauges, StrUtils, Registry, fLicence, Grids, jpeg, ShellAPI,
+  ExtCtrls, Mask, Gauges, StrUtils, Registry, Grids, jpeg, ShellAPI,
   ShlObj, ToolWin, winsock, Buttons, IdBaseComponent,
   IdComponent, IdIPWatch, fMain, CPort, CPortCtl, AC, THnaciVozidlo,
   TechnologieMTB;

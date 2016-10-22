@@ -542,86 +542,17 @@ object F_About: TF_About
     TabOrder = 5
     OnClick = B_OKClick
   end
-  object GB_Registrace: TGroupBox
-    Left = 286
-    Top = 132
-    Width = 275
-    Height = 96
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = ' Registrace '
-    TabOrder = 6
-    object Label4: TLabel
-      Left = 8
-      Top = 20
-      Width = 41
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'U'#382'ivatel:'
-    end
-    object Label5: TLabel
-      Left = 8
-      Top = 36
-      Width = 56
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Spole'#269'nost:'
-    end
-    object L_RegUser: TLabel
-      Left = 85
-      Top = 18
-      Width = 54
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'L_RegUser'
-    end
-    object L_RegCompany: TLabel
-      Left = 85
-      Top = 36
-      Width = 76
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'L_RegCompany'
-    end
-    object B_Registrace: TButton
-      Left = 8
-      Top = 54
-      Width = 83
-      Height = 28
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'P'#345'eregistrovat'
-      TabOrder = 0
-      OnClick = B_RegistraceClick
-    end
-  end
   object GB_Info: TGroupBox
-    Left = 7
-    Top = 132
-    Width = 274
+    Left = 111
+    Top = 135
+    Width = 330
     Height = 96
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Verze '
-    TabOrder = 7
+    TabOrder = 6
     object Label1: TLabel
       Left = 8
       Top = 18
@@ -656,7 +587,7 @@ object F_About: TF_About
       Caption = 'Verze FW v MTB-USB:'
     end
     object L_VApp: TLabel
-      Left = 130
+      Left = 154
       Top = 18
       Width = 38
       Height = 13
@@ -667,7 +598,7 @@ object F_About: TF_About
       Caption = 'L_VApp'
     end
     object L_VMTBLib: TLabel
-      Left = 130
+      Left = 154
       Top = 36
       Width = 56
       Height = 13
@@ -678,7 +609,7 @@ object F_About: TF_About
       Caption = 'L_VMTBLib'
     end
     object L_VMTBUSB: TLabel
-      Left = 130
+      Left = 154
       Top = 72
       Width = 64
       Height = 13
@@ -700,7 +631,7 @@ object F_About: TF_About
       Caption = 'Verze MTB driveru:'
     end
     object L_VMTBDriver: TLabel
-      Left = 130
+      Left = 154
       Top = 54
       Width = 70
       Height = 13

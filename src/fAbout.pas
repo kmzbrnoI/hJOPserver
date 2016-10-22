@@ -14,9 +14,7 @@ type
     ST_about4: TStaticText;
     ST_about5: TStaticText;
     B_OK: TButton;
-    GB_Registrace: TGroupBox;
     I_Horasystems: TImage;
-    B_Registrace: TButton;
     GB_Info: TGroupBox;
     Label1: TLabel;
     Label2: TLabel;
@@ -24,10 +22,6 @@ type
     L_VApp: TLabel;
     L_VMTBLib: TLabel;
     L_VMTBUSB: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    L_RegUser: TLabel;
-    L_RegCompany: TLabel;
     Label6: TLabel;
     L_VMTBDriver: TLabel;
     I_AppIcon: TImage;
@@ -48,7 +42,7 @@ var
 
 implementation
 
-uses fLicence, Verze, fLoginPozadi, TechnologieMTB, Logging;
+uses Verze, fLoginPozadi, TechnologieMTB, Logging;
 
 {$R *.dfm}
 
@@ -62,15 +56,6 @@ procedure TF_About.FormShow(Sender: TObject);
   Self.L_VMTBLib.Caption    := MTB.LibV;
   Self.L_VMTBDriver.Caption := MTB.DriverV;
   Self.L_VMTBUSB.Caption    := MTB.DeviceV;
-
-  if (Lic.Prijato) then
-   begin
-    Self.L_RegUser.Caption := Lic.UserJmeno+' '+Lic.UserPrijmeni;
-    if (Lic.Company = 'nil') then Self.L_RegCompany.Caption := '' else Self.L_RegCompany.Caption := Lic.Company;
-   end else begin
-    Self.L_RegUser.Caption    := 'Nezaregistrováno';
-    Self.L_RegCompany.Caption := 'Nezaregistrováno';
-   end;
  end;//procedure
 
 procedure TF_About.B_OKClick(Sender: TObject);
@@ -102,7 +87,6 @@ procedure TF_About.ST_about3Click(Sender: TObject);
 procedure TF_About.B_RegistraceClick(Sender: TObject);
  begin
   F_About.Close;
-  F_Licence.OpenFormPrereg;
  end;//procedure
 
 end.//unit

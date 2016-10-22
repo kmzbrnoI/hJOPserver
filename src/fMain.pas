@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Outputdriver, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls,
   inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage,
-  ExtDlgs,  Gauges, Registry, StrUtils, fLicence, mmsystem, Grids, Spin, ValEdit,
+  ExtDlgs,  Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
   DateUtils, ShellApi, ActiveX, ShlObj, ComObj,
   TrakceGUI, Trakce, BoosterDb, CPort;
 
@@ -1826,8 +1826,6 @@ procedure TF_Main.FreeVars;
 
   if (Assigned(TrkSystem)) then FreeAndNil(TrkSystem);
 
-  Lic.Free;
-
   Vytizeni.Free;
   LogData.Free;
 
@@ -1913,7 +1911,6 @@ procedure TF_Main.CreateClasses;
   ini_lib        := TMeminifile.Create('inidata.ini');
   MTB            := TMTB.Create();
   ResetData      := TReset.Create;
-  Lic            := TLicence.Create;
   Vytizeni       := TVytizeni.Create;
   LogData        := TLogData.Create;
   SystemData     := TSystem.Create;
@@ -2158,7 +2155,6 @@ procedure TF_Main.OnStart;
   ORTCPServer.GUIInitTable();
 
   F_Main.Visible := true;
-  F_Licence.ZkontrolujStartLic;
 
   F_Main.Timer1.Enabled := true;
   F_Main.T_function.Enabled := true;

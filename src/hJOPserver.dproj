@@ -62,9 +62,6 @@
 			<DCCReference Include="fSettings.pas">
 				<Form>F_Options</Form>
 			</DCCReference>
-			<DCCReference Include="fLicence.pas">
-				<Form>F_Licence</Form>
-			</DCCReference>
 			<DCCReference Include="fNastaveni_Casu.pas">
 				<Form>F_ModCasSet</Form>
 			</DCCReference>

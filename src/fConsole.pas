@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Outputdriver, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls,
   inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage,
-  ExtDlgs,  Gauges, Registry, StrUtils, fLicence, mmsystem, Grids, Spin, ValEdit,
+  ExtDlgs,  Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
   DateUtils, ShellApi, ActiveX, ShlObj, ComObj;
 
 const
@@ -81,12 +81,6 @@ begin
     end;
 
    if (pole_dat[0] = 'clear') then PM_DeleteConsoleClick(Self);
-
-   if (pole_dat[0] = 'lic-accept') then
-    begin
-     Lic.Prijato := true;
-     M_console.Lines.Add('InCommandRP167\>Licence prijimuta');
-    end;
 
    if (pole_dat[0] = 'getobj') and (pole_dat.Count = 2) then
     begin

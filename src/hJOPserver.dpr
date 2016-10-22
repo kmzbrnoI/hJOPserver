@@ -18,7 +18,6 @@ uses
   fTester in 'fTester.pas' {F_Tester},
   fMain in 'fMain.pas' {F_Main},
   fSettings in 'fSettings.pas' {F_Options},
-  fLicence in 'fLicence.pas' {F_Licence},
   fNastaveni_Casu in 'fNastaveni_Casu.pas' {F_ModCasSet},
   fRegulator in 'fRegulator.pas' {F_DigiReg},
   fSplash in 'fSplash.pas' {F_splash},
@@ -183,7 +182,6 @@ uses
   Application.CreateForm(TF_BlkRozp, F_BlkRozp);
   Application.CreateForm(TF_HVEdit, F_HVEdit);
   Application.CreateForm(TF_AutRezEdit, F_AutRezEdit);
-  Application.CreateForm(TF_Licence, F_Licence);
   Application.CreateForm(TF_ModCasSet, F_ModCasSet);
   Application.CreateForm(TF_About, F_About);
   F_Main.OnStart;
