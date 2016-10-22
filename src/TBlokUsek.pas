@@ -1058,6 +1058,7 @@ end;//function
 
 procedure TBlkUsek.GetPtData(json:TJsonObject; includeState:boolean);
 begin
+ inherited;
 
  // TODO: MTB
 

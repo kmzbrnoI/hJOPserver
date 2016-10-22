@@ -148,6 +148,8 @@ end;//procedure
 
 procedure TBlkIR.GetPtData(json:TJsonObject; includeState:boolean);
 begin
+ inherited;
+
  // TODO: MTB
  if (includeState) then
    Self.GetPtState(json['blokStav']);
