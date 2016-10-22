@@ -29,6 +29,7 @@ const
   _PT_MAX_CONNECTIONS = 10;
   _PT_COMPACT_RESPONSE = false;
   _PT_CONTENT_TYPE = 'application/json';
+  _PT_DESCRIPTION = 'ptServer v1.0.0';
 
 type
 
@@ -98,7 +99,7 @@ begin
  Self.httpServer.Bindings := bindings;
  Self.httpServer.MaxConnections := _PT_MAX_CONNECTIONS;
  Self.httpServer.KeepAlive := true;
- Self.httpServer.ServerSoftware := 'PTserver';
+ Self.httpServer.ServerSoftware := _PT_DESCRIPTION;
 
  // bind events
  Self.httpServer.OnCommandGet   := Self.httpGet;
