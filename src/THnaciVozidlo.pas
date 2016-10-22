@@ -141,6 +141,7 @@ type
      //PT:
      procedure GetPtData(json:TJsonObject; includeState:boolean);
      procedure GetPtState(json:TJsonObject);
+     procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
 
      property adresa:Word read fadresa;                // adresa HV
      property ruc:boolean read Stav.ruc write SetRuc;  // rucni rizeni HV
@@ -151,7 +152,7 @@ type
 implementation
 
 uses ownStrUtils, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
-      RegulatorTCP, fMain;
+      RegulatorTCP, fMain, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -787,13 +788,16 @@ end;
 
 procedure THV.GetPtState(json:TJsonObject);
 var i:Integer;
+    stavFunkci:string;
 begin
  json['rychlostStupne'] := Self.Slot.speed;
  json['rychlostKmph']   := TrkSystem.GetStepSpeed(Self.Slot.speed);
  json['smer']           := Self.Slot.smer;
 
+ stavFunkci := '';
  for i := 0 to _HV_FUNC_MAX do
-   json.A['stavFunkci'].Add(Self.Slot.funkce[i]);
+   stavFunkci := stavFunkci + IntToStr(PrevodySoustav.BoolToInt(Self.Slot.funkce[i]));
+ json['stavFunkci'] := stavFunkci;
 
  case (Self.Stav.StanovisteA) of
   THVStanoviste.lichy : json['stanovisteA'] := 'L';
@@ -805,6 +809,67 @@ begin
 
  json.O['najetoVzad'].F['metru'] := Self.Stav.najeto_vzad.Metru;
  json.O['najetoVzad'].I['bloku'] := Self.Stav.najeto_vzad.Bloku;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+var speed, dir, i:Integer;
+    noveFunkce:TFunkce;
+begin
+ dir := 0;
+
+ if ((not Self.Slot.prevzato) or (Self.Slot.stolen)) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Loko neprevzato');
+   Exit();
+  end;
+
+ if (reqJson.Contains('smer')) then
+  begin
+   dir := StrToInt(reqJson['smer']);
+   if (dir < 0) then dir := 0;
+   if (dir > 1) then dir := 1;   
+  end;
+
+ if (reqJson.Contains('rychlostStupne')) then
+  begin
+   speed := StrToInt(reqJson['rychlostStupne']);
+   if (speed > 28) then speed := 28;
+   if (speed < 0) then speed := 0;
+
+   if (reqJson.Contains('smer')) then
+    begin
+     TrkSystem.LokSetDirectSpeed(Self, Self, speed, dir);
+    end else
+     TrkSystem.LokSetDirectSpeed(Self, Self, speed, Self.Slot.smer);
+  end else if (reqJson.Contains('rychlostKmph')) then
+  begin
+   speed := StrToInt(reqJson['rychlostKmph']);
+
+   if (reqJson.Contains('smer')) then
+    begin
+     TrkSystem.LokSetSpeed(Self, Self, speed, dir);
+    end else
+     TrkSystem.LokSetSpeed(Self, Self, speed, Self.Slot.smer);
+  end else if (reqJson.Contains('smer')) then
+  begin
+   TrkSystem.LokSetDirectSpeed(Self, Self, Self.Slot.speed, dir);
+  end;
+
+ if (reqJson.Contains('stavFunkci')) then
+  begin
+   for i := 0 to _HV_FUNC_MAX do
+    begin
+     if (i < Length(reqJson.S['stavFunkci'])) then
+       noveFunkce[i] := PrevodySoustav.StrToBool(reqJson.S['stavFunkci'][i+1])
+     else
+       noveFunkce[i] := Self.Slot.funkce[i];
+    end;
+   TrkSystem.LokSetFunc(Self, Self, noveFunkce);
+  end;
+
+ Self.GetPtState(respJson.O['lokStav']);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

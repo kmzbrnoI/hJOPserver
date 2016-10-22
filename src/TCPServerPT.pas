@@ -205,6 +205,14 @@ begin
               end;
 
              reqJson := TJsonObject.ParseFromStream(ARequestInfo.PostStream, TEncoding.UTF8) as TJsonObject;
+
+             if (reqJson = nil) then
+              begin
+               PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad request', 'Navalidni JSON objekt v pozadavku');
+               found := true;
+               break;
+              end;
+
              case (ARequestInfo.CommandType) of
                hcPOST: endpoint.OnPOST(AContext, ARequestInfo, respJson, reqJson);
                hcPUT : endpoint.OnPUT(AContext, ARequestInfo, respJson, reqJson);

@@ -17,6 +17,8 @@ type
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject); override;
+      procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject); override;
 
       function EndpointMatch(path:string):boolean; override;
 
@@ -62,6 +64,51 @@ begin
     end;
 
    HVDb.HVozidla[lokoAddr].GetPtState(respJson.O['lokStav']);
+ finally
+   re.Free();
+   params.Free();
+ end;
+end;
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TPTEndpointLokStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+  var respJson:TJsonObject; const reqJson:TJsonObject);
+var re: TJclRegEx;
+    lokoAddr:Word;
+    params:TDictionary<string, string>;
+begin
+ re := TJclRegEx.Create();
+ params := TDictionary<string, string>.Create();
+
+ try
+   re.Compile('\d+', false);
+   re.Match(ARequestInfo.Document);
+
+   PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
+
+   try
+     lokoAddr := StrToInt(re.Captures[0]);
+   except
+     on EConvertError do
+      begin
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy', re.Captures[0] + ' neni validni adresa lokmotivy');
+       Exit();
+      end;
+   end;
+
+   if ((lokoAddr > 9999) or (HVDb.HVozidla[lokoAddr] = nil)) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje', 'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     Exit();
+    end;
+
+   if (not reqJson.Contains('lokStav')) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce lokStav');
+     Exit();
+    end;
+
+   HVDb.HVozidla[lokoAddr].PostPtState(reqJson['lokStav'], respJson);
  finally
    re.Free();
    params.Free();
