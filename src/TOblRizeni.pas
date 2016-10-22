@@ -1881,6 +1881,11 @@ begin
      // kontrola OK -> odesleme panelu zpravu o tom, ze je vse OK
      ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;OK;');
 
+     // vsem ostatnim panelum jeste posleme, ze doslo ke zruseni zadosti
+     for i := 0 to Self.Connected.Count-1 do
+       if ((Self.Connected[i].Rights >= TORControlRights.read) and (Self.Connected[i].Panel <> Sender)) then
+        ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id+';LOK-REQ;CANCEL;');
+
      // lokomotivy priradime regulatoru
      for i := 0 to data.Count-1 do
       begin
