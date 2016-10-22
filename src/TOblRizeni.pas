@@ -12,14 +12,33 @@ unit TOblRizeni;
 
 interface
 
-uses Types, IniFiles, SysUtils, Classes, RPConst, Graphics, Menus,
-      IdContext, TechnologieMTB, StrUtils, Souprava, ComCtrls, Forms,
-      Generics.Collections, Zasobnik, User, Messages, Windows;
+uses Types, IniFiles, SysUtils, Classes, Graphics, Menus,
+      IdContext, TechnologieMTB, StrUtils, ComCtrls, Forms,
+      Generics.Collections, Zasobnik, Messages, Windows;
 
 const
   _MAX_CON_PNL = 16;                                                            // maximalni poce tpripojenych panelu k jedne oblasti rizeni
+  _MAX_ORREF = 16;
+
+  // zvuky - musi korespondovat se zvuky klienta
+  _SND_TRAT_ZADOST = 4;
+  _SND_POTVR_SEKV  = 8;
+  _SND_CHYBA       = 10;
+  _SND_PRETIZENI   = 7;
+  _SND_ZPRAVA      = 9;
 
 type
+  TORControlRights = (null = 0, read = 1, write = 2, superuser = 3);
+  TPanelButton = (left = 0, middle = 1, right = 2, F2 = 3, F3 = 4);
+
+  // podminky potvrzovaci sekvence
+  TPSPodminka = record
+   blok:TObject;
+   podminka:string;
+  end;
+
+  TPSPodminky = TList<TPSPodminka>;
+
   //1 osvetleni
   TOsv = record
    board:Byte;                                                                  // MTB deska osvetleni
@@ -171,7 +190,7 @@ type
       procedure BlkRemoveSound(Sender:TObject; sound:Integer);                  // zrusi prehravani zvuku
       procedure BlkWriteError(Sender:TObject; error:string; system:string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
       procedure BlkNewSpr(Sender:TObject; Panel:TIdContext);                    // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
-      procedure BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TSouprava);// posle do panelu pozadavek na otevreni dialogu editace soupravy
+      procedure BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TObject);// posle do panelu pozadavek na otevreni dialogu editace soupravy
 
       function ORSendMsg(Sender:TOR; msg:string):Byte;                          // odesle zpravu OR (od jine OR)
 
@@ -179,7 +198,7 @@ type
       procedure ORDKClickClient();                                              // klik na DK probehne na klieta
 
       // volany pri zadosti o poskytnuti loko pro regulator:
-      function LokoPlease(Sender:TIDContext; user:TUser; comment:string):Integer;
+      function LokoPlease(Sender:TIDContext; user:TObject; comment:string):Integer;
       procedure LokoCancel(Sender:TIdContext);
 
       procedure InitOsv();
@@ -212,8 +231,12 @@ type
       function GetORPanel(conn:TIdContext; var ORPanel:TORPanel):Integer;
       class function GetRightsString(rights:TORControlRights):string;
 
-      procedure UserUpdateRights(user:TUser);
+      procedure UserUpdateRights(user:TObject);
       procedure UserDelete(userid:string);
+
+      class function ORRightsToString(rights:TORControlRights):string;
+      class function GetPSPodminka(blok:TObject; podminka:string):TPSPodminka;
+      class function GetPSPodminky(podm:TPSPodminka):TPSPodminky;
 
       property NUZtimer:Boolean read ORStav.NUZtimer write ORStav.NUZtimer;
       property NUZblkCnt:Integer read ORStav.NUZblkCnt write SetNUZBlkCnt;
@@ -232,11 +255,11 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain,
+uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain, Booster,
      TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
-     Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek,
-     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek;
+     Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User,
+     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava;
 
 constructor TOR.Create(index:Integer);
 begin
@@ -723,13 +746,13 @@ begin
  ORTCPServer.SendLn(Panel, Self.id+';SPR-NEW;');
 end;//procedure
 
-procedure TOR.BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TSouprava);
+procedure TOR.BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TObject);
 begin
  TTCPORsRef(Panel.Data).spr_new  := false;
- TTCPORsRef(Panel.Data).spr_edit := Souprava;
+ TTCPORsRef(Panel.Data).spr_edit := TSouprava(Souprava);
  TTCPORsRef(Panel.Data).spr_usek := Sender;
 
- ORTCPServer.SendLn(Panel, Self.id+';'+'SPR-EDIT;'+Souprava.GetPanelString());
+ ORTCPServer.SendLn(Panel, Self.id+';'+'SPR-EDIT;'+TSouprava(Souprava).GetPanelString());
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1026,7 +1049,7 @@ begin
 
  if (Self.vb.Count > 0) then
   begin
-   (Self.vb[Self.vb.Count-1] as TBlkUsek).KonecJC := TJCType.no;
+   (Self.vb[Self.vb.Count-1] as TBlkUsek).KonecJC := TZaver.no;
    Self.vb.Delete(Self.vb.Count-1);
   end else begin
    Blk := Blky.GetBlkSComZacatekVolba(Self.id);
@@ -1042,7 +1065,7 @@ end;//procedure
 procedure TOR.PanelNUZ(Sender:TIdContext);
 var i,j:Integer;
     Blk:TBlk;
-    podminky:TList<RPConst.TPSPodminka>;
+    podminky:TList<TPSPodminka>;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -1051,7 +1074,7 @@ begin
    Exit;
   end;
 
- podminky := TList<RPConst.TPSPodminka>.Create();
+ podminky := TList<TPSPodminka>.Create();
  // zjisteni jmen bloku:
  for i := 0 to Blky.Cnt-1 do
   begin
@@ -1979,7 +2002,7 @@ procedure TOR.ClearVb();
 var i:Integer;
 begin
  for i := 0 to Self.vb.Count-1 do
-  (Self.vb[i] as TBlkUsek).KonecJC := TJCType.no;
+  (Self.vb[i] as TBlkUsek).KonecJC := TZaver.no;
  Self.vb.Clear();
 end;//procedure
 
@@ -2014,18 +2037,18 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 // je volano v pripade, ze dojde ke zmene opravenni za behu programu
-procedure TOR.UserUpdateRights(user:TUser);
+procedure TOR.UserUpdateRights(user:TObject);
 var i:Integer;
     rights:TORControlRights;
 begin
  for i := 0 to Self.Connected.Count-1 do
   begin
    // je pripojeny uzivatel s vyssimi opravevnimi, nez jsou mu pridelena?
-   rights := user.GetRights(Self.id);
-   if ((Self.Connected[i].user = user.id) and ((Self.Connected[i].Rights > rights) or (user.ban))) then
+   rights := TUser(user).GetRights(Self.id);
+   if ((Self.Connected[i].user = TUser(user).id) and ((Self.Connected[i].Rights > rights) or (TUser(user).ban))) then
     begin
-     if (user.ban) then rights := TORControlRights.null;
-     Self.PnlDAdd(Self.Connected[i].Panel, rights, user.id);
+     if (TUser(user).ban) then rights := TORControlRights.null;
+     Self.PnlDAdd(Self.Connected[i].Panel, rights, TUser(user).id);
      Self.ORAuthoriseResponse(Self.Connected[i].Panel, rights, 'Snížena oprávnìní uživatele', '');
     end;
   end;//for i
@@ -2050,16 +2073,16 @@ end;//procedure
 
 // vraci 1 pokud zadost jiz probiha
 // vraci 0 pokud prikaz probehl vporadku
-function TOR.LokoPlease(Sender:TIDContext; user:TUser; comment:string):Integer;
+function TOR.LokoPlease(Sender:TIDContext; user:TObject; comment:string):Integer;
 var str:string;
 begin
  if (Self.ORStav.reg_please <> nil) then Exit(1);
  Self.ORStav.reg_please := Sender;
 
  //format: or;LOK-REQ;REQ;username;firstname;lastname;comment
- str := 'LOK-REQ;REQ;'+user.id+';';
- if (user.firstname <> '') then str := str + user.firstname + ';' else str := str + '-;';
- if (user.lastname <> '') then str := str + user.lastname + ';' else str := str + '-;';
+ str := 'LOK-REQ;REQ;'+TUser(user).id+';';
+ if (TUser(user).firstname <> '') then str := str + TUser(user).firstname + ';' else str := str + '-;';
+ if (TUser(user).lastname <> '') then str := str + TUser(user).lastname + ';' else str := str + '-;';
  if (comment <> '') then str := str + comment + ';' else str := str + '-;';
 
  Self.BroadcastData(str);
@@ -2088,6 +2111,34 @@ begin
  if (Self.ZkratBlkCnt > 2) then ORTCPServer.DeleteSound(panel, _SND_PRETIZENI);
  if (Self.ZadostBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TRAT_ZADOST);
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TOR.ORRightsToString(rights:TORControlRights):string;
+begin
+ case (rights) of
+  null      : Result := 'žádná oprávnìní';
+  read      : Result := 'oprávnìní ke ètení';
+  write     : Result := 'oprávnìní k zápisu';
+  superuser : Result := 'superuser';
+ else
+  Result := '';
+ end;
+end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TOR.GetPSPodminka(blok:TObject; podminka:string):TPSPodminka;
+begin
+ Result.blok     := blok;
+ Result.podminka := podminka;
+end;//function
+
+class function TOR.GetPSPodminky(podm:TPSPodminka):TPSPodminky;
+begin
+ Result := TList<TPSPodminka>.Create();
+ Result.Add(podm);
+end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -7,7 +7,7 @@ unit TMultiJCDatabase;
 
 interface
 
-uses TechnologieMultiJC, TBlok, IniFiles, RPConst, SysUtils, Windows, IdContext,
+uses TechnologieMultiJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
       Generics.Collections, Classes, Generics.Defaults, Math;
 
 type
@@ -295,7 +295,7 @@ begin
          (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(Self.JCs[i].data.JCs[j]), SenderPnl, false);
 
        (StartBlk as TBlkSCom).ZacatekVolba := TBlkSComVOlba.none;
-       (EndBlk as TBlkUsek).KonecJC        := TJCType.no;
+       (EndBlk as TBlkUsek).KonecJC        := TZaver.no;
        (SenderOR as TOR).ClearVb();
       end else begin
        Self.JCs[i].StavJC(SenderPnl, SenderOR);

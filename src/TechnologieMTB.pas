@@ -165,7 +165,7 @@ var
 
 implementation
 
-uses fMain, fSettings, RPConst, fLoginPozadi, fSystemInfo, fAdminForm,
+uses fMain, fSettings, fLoginPozadi, fSystemInfo, fAdminForm,
      GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
      TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
      TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster;

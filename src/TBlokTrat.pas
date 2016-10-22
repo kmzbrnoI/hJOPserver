@@ -12,7 +12,7 @@ unit TBlokTrat;
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
-     RPConst, IdContext, Generics.Collections;
+     IdContext, Generics.Collections;
 
 const
   _MAX_TRAT_SPR = 6;

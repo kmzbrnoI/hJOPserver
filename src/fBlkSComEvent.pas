@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, TBlokSCom, TBlok, RPConst, TOblRizeni, TOblsRizeni;
+  Dialogs, StdCtrls, Spin, TBlokSCom, TBlok, TOblRizeni, TOblsRizeni,
+  TBloky;
 
 type
   TF_BlkSComEvent = class(TForm)
@@ -37,7 +38,7 @@ type
     procedure CHB_ZpomalitClick(Sender: TObject);
   private
    openevent:TBlkSComSprEvent;
-   CB_IR:TArSmallI;
+   CB_IR:TArI;
    obls:TArstr;
    first:boolean;
 
@@ -55,7 +56,7 @@ var
 
 implementation
 
-uses TBlokUsek, TBloky;
+uses TBlokUsek;
 
 {$R *.dfm}
 

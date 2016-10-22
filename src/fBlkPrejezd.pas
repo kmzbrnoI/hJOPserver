@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Spin, StdCtrls, TBlokPrejezd, RPConst;
+  Dialogs, ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky;
 
 type
   TF_BlkPrejezd = class(TForm)
@@ -60,7 +60,7 @@ var
 implementation
 
 uses GetSystems, TechnologieMTB, fSettings, TOblsRizeni, TOblRizeni,
-      TBloky, TBlok, FileSystem, DataBloky;
+     TBlok, FileSystem, DataBloky;
 
 {$R *.dfm}
 

@@ -31,7 +31,7 @@ unit THnaciVozidlo;
 
 interface
 
-uses Trakce, TBlok, Classes, StrUtils, SysUtils, TOblRizeni, RPConst,
+uses Trakce, TBlok, Classes, StrUtils, SysUtils, TOblRizeni,
       Generics.Collections, IdContext, IniFiles, IBUtils, JsonDataObjects;
 
 const
@@ -42,6 +42,9 @@ const
   _LOK_VERSION_SAVE = '2.0';
 
 type
+  // v jakem smeru se nachazi stanoviste A
+  THVStanoviste = (lichy = 0, sudy = 1);
+
   // trida hnaciho vozidla
   THVClass = (parni = 0, diesel = 1, motor = 2, elektro = 3);
 

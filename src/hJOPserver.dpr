@@ -15,7 +15,6 @@ uses
   Forms,
   Windows,
   SysUtils,
-  RPConst in 'RPConst.pas',
   fTester in 'fTester.pas' {F_Tester},
   fMain in 'fMain.pas' {F_Main},
   fSettings in 'fSettings.pas' {F_Options},

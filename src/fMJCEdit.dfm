@@ -138,7 +138,7 @@ object F_MJCEdit: TF_MJCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 13
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 0
       end
@@ -251,7 +251,7 @@ object F_MJCEdit: TF_MJCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 13
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 0
       end

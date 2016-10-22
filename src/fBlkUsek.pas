@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, fSettings,
-  fBlkUsekSysVars, TBloky, TBlok, TBlokUsek, RPConst, Mask, StrUtils;
+  fBlkUsekSysVars, TBloky, TBlok, TBlokUsek, Mask, StrUtils;
 
 type
   TF_BlkUsek = class(TForm)

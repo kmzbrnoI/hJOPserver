@@ -28,8 +28,8 @@ var
 
 implementation
 
-uses SprDb, Souprava, THVDatabase, TOblsRizeni, TOblRizeni, fMain, RPConst,
-       TBloky, TBlok;
+uses SprDb, Souprava, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
+       TBloky, TBlok, THnaciVozidlo;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -132,8 +132,8 @@ var spr:TSoupravaData;
   Self.LV.Items.Item[line].SubItems.Strings[6] := IntToStr(spr.rychlost) + ' km/h';
 
   case (spr.smer) of
-   lichy: Self.LV.Items.Item[line].SubItems.Strings[7] := 'lichý';
-   sudy : Self.LV.Items.Item[line].SubItems.Strings[7] := 'sudý';
+   THVStanoviste.lichy: Self.LV.Items.Item[line].SubItems.Strings[7] := 'lichý';
+   THVStanoviste.sudy : Self.LV.Items.Item[line].SubItems.Strings[7] := 'sudý';
   end;
 
   try

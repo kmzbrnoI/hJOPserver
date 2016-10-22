@@ -5,7 +5,7 @@ unit TBlokPrejezd;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, SysUtils, Menus, TOblsRizeni,
-     Classes, RPConst, TechnologieMTB, IdContext;
+     Classes, TechnologieMTB, IdContext, TOblRizeni;
 
 type
  TBlkPrjMTBInputs = record
@@ -123,7 +123,7 @@ type
 
 implementation
 
-uses TBloky, TOblRizeni, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR;
+uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin

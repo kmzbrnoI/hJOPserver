@@ -4,8 +4,8 @@ unit TBlok;
 
 interface
 
-uses IniFiles, TechnologieMTB, SysUtils, RPConst, TOblsRizeni,
-      Generics.Collections, IdContext, JsonDataObjects;
+uses IniFiles, TechnologieMTB, SysUtils, TOblsRizeni,
+      Generics.Collections, IdContext, JsonDataObjects, TOblRizeni;
 
 const
  //typy bloku
@@ -30,6 +30,8 @@ const
 
 type
  ETypeNotFound = class(Exception);
+
+ TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4);
 
  //spolecne recordy:
  TMTBAddrs = record
@@ -326,7 +328,7 @@ begin
      _BLK_SCOM    : (Blk as TBlkSCom).ZrusRedukciMenu();
      _BLK_TRAT    : (Blk as TBlkTrat).Zaver := false;
      _BLK_USEK, _BLK_TU :
-                    (Blk as TBlkUsek).Zaver := TJCType.no;
+                    (Blk as TBlkUsek).Zaver := TZaver.no;
      _BLK_ZAMEK   : (Blk as TBlkZamek).Zaver := false;
     end;
 

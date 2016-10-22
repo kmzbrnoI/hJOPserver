@@ -70,7 +70,7 @@ var
 implementation
 
 uses fMain, FileSystem, fSettings, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
-      RPConst, fHVPomEdit, TBloky;
+      fHVPomEdit, TBloky;
 
 {$R *.dfm}
 

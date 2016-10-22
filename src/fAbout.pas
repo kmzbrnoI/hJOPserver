@@ -48,7 +48,7 @@ var
 
 implementation
 
-uses fLicence, Verze, RPConst, fLoginPozadi, TechnologieMTB, Logging;
+uses fLicence, Verze, fLoginPozadi, TechnologieMTB, Logging;
 
 {$R *.dfm}
 

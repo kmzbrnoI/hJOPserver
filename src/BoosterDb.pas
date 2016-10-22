@@ -4,7 +4,7 @@ unit BoosterDb;
 
 interface
 
-uses Booster, IniFiles, Classes, SysUtils, Windows, RPConst, Generics.Collections,
+uses Booster, IniFiles, Classes, SysUtils, Windows, Generics.Collections,
       Generics.Defaults;
 
 type

@@ -12,7 +12,7 @@ unit THVDatabase;
 
 interface
 
-uses SysUtils, THnaciVozidlo, Classes, RPCOnst, IdContext, IniFiles;
+uses SysUtils, THnaciVozidlo, Classes, IdContext, IniFiles;
 
 const
  _MAX_ADDR = 10000;

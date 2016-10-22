@@ -4,7 +4,7 @@ unit DataZesilovac;
 
 interface
 
-uses ComCtrls, SysUtils, RPConst;
+uses ComCtrls, SysUtils;
 
 type
   TZesTableData=class

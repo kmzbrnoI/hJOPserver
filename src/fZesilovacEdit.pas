@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, fMain, Booster, RPConst;
+  Dialogs, StdCtrls, ExtCtrls, Spin, fMain, Booster;
 
 type
   TF_ZesilovacEdit = class(TForm)
@@ -51,7 +51,8 @@ var
 
 implementation
 
-uses GetSystems, fSettings, TechnologieMTB, BoosterDb, FileSystem, DataZesilovac;
+uses GetSystems, fSettings, TechnologieMTB, BoosterDb, FileSystem, DataZesilovac,
+    TBloky;
 
 {$R *.dfm}
 
@@ -163,7 +164,7 @@ procedure TF_ZesilovacEdit.HlavniOpenForm;
 
 procedure TF_ZesilovacEdit.NormalOpenForm;
 var bSettings:TBoosterSettings;
-    IgnoraceMTB:TArSmallI;
+    IgnoraceMTB:TArI;
  begin
   bSettings := open_booster.bSettings;
 
@@ -191,7 +192,7 @@ var bSettings:TBoosterSettings;
  end;//procedure
 
 procedure TF_ZesilovacEdit.NewOpenForm;
-var IgnoraceMTB:TArSmallI;
+var IgnoraceMTB:TArI;
  begin
   E_ID.Text         := '';
   E_Nazev.Text      := '';

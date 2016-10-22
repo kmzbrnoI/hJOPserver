@@ -6,10 +6,13 @@ unit TBlokVyhybka;
 
 interface
 
-uses IniFiles, TBlok, TechnologieJC, SysUtils, TBlokUsek, Menus, TOblsRizeni,
-     Classes, RPConst, IdContext, Generics.Collections, JsonDataObjects;
+uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
+     Classes, IdContext, Generics.Collections, JsonDataObjects,
+     TOblRizeni;
 
 type
+ TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
+
  TBlkVyhSettings = record
   MTBAddrs:TMTBAddrs;     // poradi(0..3): vst+,vst-,vyst+,vyst-
   spojka:Integer;         // reference na id vyhybky ve spojce
@@ -75,7 +78,7 @@ type
    fzamek:TBlk;
    fparent:TBlk;
 
-    function GetZaver():TJCType;
+    function GetZaver():TZaver;
     function GetNUZ():boolean;
     function GetObsazeno():TUsekStav;
 
@@ -152,7 +155,7 @@ type
 
     property Poloha:TVyhPoloha read VyhStav.poloha;
     property NUZ:boolean read GetNUZ;
-    property Zaver:TJCType read GetZaver;
+    property Zaver:TZaver read GetZaver;
     property Obsazeno:TUsekStav read GetObsazeno;
     property Stitek:string read VyhStav.Stit write SetVyhStit;
     property Vyluka:string read VyhStav.Vyl write SetVyhVyl;
@@ -184,7 +187,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, TechnologieMTB, fMain, TOblRizeni, TJCDatabase,
+uses TBloky, GetSystems, TechnologieMTB, fMain, TJCDatabase,
       TCPServerOR, TBlokZamek, PTUtils;
 
 constructor TBlkVyhybka.Create(index:Integer);
@@ -300,14 +303,14 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetZaver():TJCType;
+function TBlkVyhybka.GetZaver():TZaver;
 begin
  if (((Self.fparent = nil) and (Self.VyhRel.UsekID <> -1)) or ((Self.fparent.GetGlobalSettings.id <> Self.VyhRel.UsekID))) then
    Blky.GetBlkByID(Self.VyhRel.UsekID, Self.fparent);
  if (Self.fparent <> nil) then
    Result := (Self.fparent as TBlkUsek).Zaver
  else
-   Result := TJCType.no;
+   Result := TZaver.no;
 end;//function
 
 function TBlkVyhybka.GetNUZ():boolean;
@@ -468,7 +471,7 @@ var iplus,iminus, i:Integer;           //state of inputs
     if ((Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and ((Integer(Self.Zaver) > 0) or (Self.vyhZaver) or
       ((Self.redukce_menu) and (not Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus)) or
       ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
-     and (Self.Zaver <> TJCType.staveni)) then
+     and (Self.Zaver <> TZaver.staveni)) then
      begin
       for i := 0 to Self.OblsRizeni.Cnt-1 do
         Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
@@ -499,10 +502,10 @@ var iplus,iminus, i:Integer;           //state of inputs
     if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and (iminus <> 1)) then
      begin
       // sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze +
-      // TJCType.staveni je specialni druh zaveru, ktery neumoznuje zmenu stavu vyhybky uzivatelem, ale zaroven nekrici, pokud se zmeni skutecny stav
+      // TZaver.staveni je specialni druh zaveru, ktery neumoznuje zmenu stavu vyhybky uzivatelem, ale zaroven nekrici, pokud se zmeni skutecny stav
       // pouziva se pri staveni JC: vyhybky nechame prestavit, usekum (resp. vyhybkam) ukamzite delime tento zaver a cekame na koncove polohy
 
-      if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TJCType.staveni)) or
+      if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TZaver.staveni)) or
           ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> plus))) then
        begin
         for i := 0 to Self.OblsRizeni.Cnt-1 do
@@ -537,7 +540,7 @@ var iplus,iminus, i:Integer;           //state of inputs
      begin
       //sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze -
       // redukce menu se tady nekontroluje, protoze vyhybka se z koncove polohy musi vzdy dostat do nepolohy
-      if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TJCType.staveni)) or
+      if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TZaver.staveni)) or
           ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> minus))) then
        begin
         for i := 0 to Self.OblsRizeni.Cnt-1 do
@@ -556,7 +559,7 @@ var iplus,iminus, i:Integer;           //state of inputs
     Self.VyhStav.poloha := both;
 
     if (((((Integer(Self.Zaver) > 0) or (Self.vyhZaver) or ((Self.redukce_menu) and (not Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus)))
-      and (Self.Zaver <> TJCType.staveni)) or ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
+      and (Self.Zaver <> TZaver.staveni)) or ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
          and (Self.VyhStav.polohaOld <> both)) then
      begin
       for i := 0 to Self.OblsRizeni.Cnt-1 do
@@ -611,8 +614,8 @@ begin
 
     // pokud se nerovna moje poloha, nerovna se i poloha spojky -> obsazenost na spojce apod. je problem
     Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-    if ((Integer(Self.Zaver) > 0) and (Self.Zaver <> TJCType.staveni) or (Self.vyhZaver) or
-        ((Blk <> nil) and ((Integer((Blk as TBlkVyhybka).Zaver) > 0) and ((Blk as TBlkVyhybka).Zaver <> TJCType.staveni) or ((Blk as TBlkVyhybka).vyhZaver)))) then
+    if ((Integer(Self.Zaver) > 0) and (Self.Zaver <> TZaver.staveni) or (Self.vyhZaver) or
+        ((Blk <> nil) and ((Integer((Blk as TBlkVyhybka).Zaver) > 0) and ((Blk as TBlkVyhybka).Zaver <> TZaver.staveni) or ((Blk as TBlkVyhybka).vyhZaver)))) then
      begin
       for i := 0 to Self.OblsRizeni.Cnt-1 do
         Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - pod závìrem', 'TECHNOLOGIE');
@@ -686,7 +689,7 @@ procedure TBlkVyhybka.Unlock();
 var spojka:TBlk;
 begin
  Blky.GetBlkByID(Self.VyhSettings.spojka, spojka);
- if ((spojka = nil) or ((((spojka as TBlkVyhybka).Zaver = TJCType.no) or ((spojka as TBlkVyhybka).Zaver = TJCType.staveni)) and (not (spojka as TBlkVyhybka).vyhZaver) and (not (spojka as TBlkVyhybka).Stav.locked))) then
+ if ((spojka = nil) or ((((spojka as TBlkVyhybka).Zaver = TZaver.no) or ((spojka as TBlkVyhybka).Zaver = TZaver.staveni)) and (not (spojka as TBlkVyhybka).vyhZaver) and (not (spojka as TBlkVyhybka).Stav.locked))) then
   begin
    MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
    MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
@@ -740,7 +743,7 @@ begin
 
  Blky.GetBlkByID(Self.UsekID, Blk);
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvNSPlus, (SenderOR as TOR), 'Nouzové stavìní do polohy plus',
-                    TBlky.GetBlksList(Self), GetPSPodminky(GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+                    TBlky.GetBlksList(Self), TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkVyhybka.MenuNSMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -751,7 +754,7 @@ begin
 
  Blky.GetBlkByID(Self.UsekID, Blk);
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvNSMinus, (SenderOR as TOR), 'Nouzové stavìní do polohy mínus',
-                    TBlky.GetBlksList(Self), GetPSPodminky(GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+                    TBlky.GetBlksList(Self), TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkVyhybka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -804,9 +807,9 @@ begin
 
  Blky.GetBlkByID(Self.VyhSettings.spojka, spojka);
 
- if ((Self.Zaver = TJCType.no) and (not Self.vyhZaver) and (not Self.redukce_menu) and
+ if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (not Self.redukce_menu) and
     ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen)) and
-  ((spojka = nil) or (((spojka as TBlkVyhybka).Zaver = TJCType.no) and (not (spojka as TBlkVyhybka).vyhZaver)))) then
+  ((spojka = nil) or (((spojka as TBlkVyhybka).Zaver = TZaver.no) and (not (spojka as TBlkVyhybka).vyhZaver)))) then
   begin
    // na vyhybce neni zaver a menu neni redukovane
 
@@ -889,7 +892,7 @@ var changed:boolean;
 begin
  changed := false;
 
- if (not Self.VyhStav.locked) and ((Self.VyhStav.redukce_menu > 0) or (Self.Zaver <> TJCType.no) or (Self.vyhZaver) or
+ if (not Self.VyhStav.locked) and ((Self.VyhStav.redukce_menu > 0) or (Self.Zaver <> TZaver.no) or (Self.vyhZaver) or
   ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen))) then
   begin
    // pokud je vyhybka redukovana, nebo je na ni zaver a je v koncove poloze a neni zamkla, zamkneme ji
@@ -908,7 +911,7 @@ begin
   if (Self.VyhSettings.spojka > -1) then
   begin
    // pokud je na vyhybce spojka
-   if ((Self.Zaver <> TJCType.no) or (Self.vyhZaver)) then
+   if ((Self.Zaver <> TZaver.no) or (Self.vyhZaver)) then
     begin
      // zaver
      if (not Self.IsReduction(Self.VyhStav.redukuji, Self.VyhSettings.spojka)) then
@@ -920,7 +923,7 @@ begin
     end;
   end;
 
- if ((Self.Zaver = TJCType.no) and (not Self.vyhZaver) and (Self.VyhStav.locked) and (Self.VyhStav.redukce_menu = 0) and
+ if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (Self.VyhStav.locked) and (Self.VyhStav.redukce_menu = 0) and
    ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen))) then
   begin
    Self.Unlock();
@@ -1045,7 +1048,7 @@ procedure TBlkVyhybka.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
  if (reqJson.Contains('poloha')) then
   begin
-   if ((Self.Zaver > TJCType.no) or (Self.vyhZaver)) then
+   if ((Self.Zaver > TZaver.no) or (Self.vyhZaver)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit vyhybku pod zaverem');
      inherited;

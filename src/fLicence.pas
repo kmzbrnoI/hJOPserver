@@ -60,7 +60,7 @@ var
 
 implementation
 
-uses ownStrUtils, fAbout, Verze, RPConst, fNoRegRun, fLoginPozadi, fSettings,
+uses ownStrUtils, fAbout, Verze, fNoRegRun, fLoginPozadi, fSettings,
      Logging, fMain;
 
 {$R *.dfm}
@@ -314,7 +314,7 @@ procedure TF_Licence.B_MutiApplyClick(Sender: TObject);
   SaveLicFile(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\Reg.cac');//525-959-261-565
   F_Licence.Close;
   F_Main.SetFocus;
-  F_Main.Caption:='hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+_VERSION_PR+')'+' - Registered to '+lic.Company;
+  F_Main.Caption:='hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')'+' - Registered to '+lic.Company;
  end;//procedure
 
 procedure TF_Licence.B_UzApplyClick(Sender: TObject);
@@ -336,7 +336,7 @@ procedure TF_Licence.B_UzApplyClick(Sender: TObject);
   SaveLicFile(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\Reg.cac');//525-959-261-565
   F_Licence.Close;
   F_Main.SetFocus;
-  F_Main.Caption:='hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+_VERSION_PR+')'+' - Registered to '+lic.UserJmeno+' '+lic.UserPrijmeni;
+  F_Main.Caption:='hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')'+' - Registered to '+lic.UserJmeno+' '+lic.UserPrijmeni;
  end;//procedure
 
 procedure TF_Licence.OpenFormPrereg;

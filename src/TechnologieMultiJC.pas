@@ -8,7 +8,7 @@ interface
 
 uses
   IniFiles, TechnologieJC, Generics.Collections, TBloky, IdContext, SysUtils,
-  Classes, RPConst;
+  Classes;
 
 type
 
@@ -231,13 +231,13 @@ begin
  // zrusime konec staveni na poslednim useku posledni JC
  JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);
  Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Blk);
- (Blk as TBLkUsek).KonecJC := TJCType.no;
+ (Blk as TBLkUsek).KonecJC := TZaver.no;
 
  // zrusime konec staveni na vsech variantnich bodech
  for i := 0 to Self.fproperties.vb.Count-1 do
   begin
    Blky.GetBlkByID(Self.fproperties.vb[i], Blk);
-   (Blk as TBlkUsek).KonecJC := TJCType.no;
+   (Blk as TBlkUsek).KonecJC := TZaver.no;
   end;
 
  Self.changed := true;

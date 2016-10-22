@@ -6,7 +6,7 @@ unit Zasobnik;
 
 interface
 
-uses Generics.Collections, Classes, IdContext, SysUtils, UPO, RPConst;
+uses Generics.Collections, Classes, IdContext, SysUtils, UPO;
 
 type
   TORStackVolba = (PV = 0, VZ = 1);

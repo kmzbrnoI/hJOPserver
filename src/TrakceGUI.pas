@@ -329,7 +329,7 @@ type
 
 implementation
 
-uses fMain, fSettings, RPConst, XpressNET, TechnologieMTB, fRegulator,
+uses fMain, fSettings, XpressNET, TechnologieMTB, fRegulator,
     GetSystems, THVDatabase, fAdminForm, DataHV,
     Prevody, TBloky, RegulatorTCP, TCPServerOR, fFuncsSet;
 

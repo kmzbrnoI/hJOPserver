@@ -16,8 +16,8 @@ unit User;
 
 interface
 
-uses IniFiles, Generics.Collections, RPConst, DCPsha256, SysUtils, Classes,
-     Generics.Defaults;
+uses IniFiles, Generics.Collections, DCPsha256, SysUtils, Classes,
+     Generics.Defaults, TOblRizeni;
 
 type
   TUser = class                                                                 // trida reprezentujici uzivatele
@@ -68,7 +68,7 @@ type
 
 implementation
 
-uses TOblsRizeni, TOblRizeni, TCPServerOR, UserDb;
+uses TOblsRizeni, TCPServerOR, UserDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 

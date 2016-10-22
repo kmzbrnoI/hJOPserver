@@ -15,10 +15,13 @@ unit TBloky;
 interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
-      RPConst, Generics.Collections, Classes, IdContext, IBUtils,
-      JsonDataObjects;
+       Generics.Collections, Classes, IdContext, IBUtils,
+      JsonDataObjects, Booster;
 
 type
+ TArI  = array of Integer;
+ PTArI = ^TArI;
+ TArStr = array of string;
 
  TBlksList = TList<TObject>;
 
@@ -88,7 +91,7 @@ type
 
     procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
 
-    procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArSmallI; Vypust:PTArSmallI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
+    procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
 
     procedure RemoveSpr(spr:Integer);
     procedure SprPrediction(Nav:TBlk);
@@ -687,7 +690,7 @@ var cyklus,i:Integer;
            begin
             if (Self.GetBlkWithSpr((Self.Data[cyklus] as TBlkUsek).Souprava).Count = 1) then
               Soupravy.RemoveSpr((Self.Data[cyklus] as TBlkUsek).Souprava);
-            (Self.Data[cyklus] as TBlkUsek).Zaver    := TJCType.no;
+            (Self.Data[cyklus] as TBlkUsek).Zaver    := TZaver.no;
             (Self.Data[cyklus] as TBlkUsek).Souprava := -1;
            end;
          end else
@@ -698,7 +701,7 @@ var cyklus,i:Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArSmallI; Vypust:PTArSmallI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
+procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
 var cyklus,i,j:Integer;
     Priradit:Boolean;
     Pocet:Integer;

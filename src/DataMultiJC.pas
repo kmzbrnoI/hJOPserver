@@ -5,7 +5,7 @@ unit DataMultiJC;
 
 interface
 
-uses ComCtrls, SysUtils, RPConst;
+uses ComCtrls, SysUtils;
 
 type
   TMultiJCTableData=class

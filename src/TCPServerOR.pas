@@ -7,7 +7,7 @@ unit TCPServerOR;
 interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal,
-     Classes, StrUtils, RPConst, Graphics, Windows, TOblRizeni,
+     Classes, StrUtils, Graphics, Windows, TOblRizeni,
      IdContext, TBlok, Prevody, ComCtrls, IdSync, TBloky, UPO,
      User, Souprava;
 

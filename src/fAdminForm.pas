@@ -75,7 +75,7 @@ var
 
 implementation
 
-uses fMain, RPConst, TechnologieMTB, FileSystem, fSettings, Trakce,
+uses fMain, TechnologieMTB, FileSystem, fSettings, Trakce,
      Logging, THVDatabase, TJCDatabase, TBlok, TBlokUsek,
     TBloky, TBlokSCom, GetSystems, TBlokVyhybka, TBlokTratUsek, SprDb;
 

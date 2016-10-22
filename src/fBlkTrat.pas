@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ComCtrls, RPConst, TBlokTrat, TBlokUvazka,
-  Generics.Collections;
+  Dialogs, StdCtrls, Spin, ComCtrls, TBlokTrat, TBlokUvazka,
+  Generics.Collections, TBloky;
 
 type
   TF_BlkTrat = class(TForm)
@@ -51,7 +51,7 @@ type
    UvazkaA:TBlkUvazka;
    UvazkaB:TBlkUvazka;
    OpenIndex:Integer;
-   CB_NewTratBlokData:TArSmallI;
+   CB_NewTratBlokData:TArI;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
@@ -66,7 +66,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky, TBloky, TBlok;
+uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky, TBlok;
 
 {$R *.dfm}
 
@@ -127,7 +127,7 @@ var glob:TBlkSettings;
     i:Integer;
     obls:TArstr;
     LI:TListItem;
-    vypust:TArSmallI;
+    vypust:TArI;
  begin
   glob := Self.Trat.GetGlobalSettings();
   Self.E_Trat_Name.Text := glob.name;
@@ -185,7 +185,7 @@ end;
 
 procedure TF_BlkTrat.B_blk_AddClick(Sender: TObject);
 var LI:TListItem;
-    useky_vypust:TArSmallI;
+    useky_vypust:TArI;
     obls:TArStr;
     i:Integer;
 begin
@@ -208,7 +208,7 @@ begin
 end;
 
 procedure TF_BlkTrat.B_Blk_DeleteClick(Sender: TObject);
-var useky_vypust:TArSmallI;
+var useky_vypust:TArI;
     obls:TArStr;
     i:Integer;
 begin

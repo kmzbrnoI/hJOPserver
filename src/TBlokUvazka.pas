@@ -5,7 +5,7 @@ unit TBlokUvazka;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
-     RPConst, IdContext, StrUtils;
+     IdContext, StrUtils, TOblRizeni;
 
 type
 
@@ -103,7 +103,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
+uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
 constructor TBlkUvazka.Create(index:Integer);
@@ -422,7 +422,7 @@ begin
    // to zajistuje, ze njelze zrusit ZAK u trati, do ktere je postaven PMD
    Blky.GetBlkByID(TBlkTrat(Self.parent).GetSettings().Useky[0], Blk);
    Blky.GetBlkByID(TBlkTrat(Self.parent).GetSettings().Useky[TBlkTrat(Self.parent).GetSettings().Useky.Count-1], Blk2);
-   if ((Blk <> nil) and (Blk2 <> nil) and (TBlkUsek(Blk).Zaver = TJCType.no) and (TBlkUsek(Blk2).Zaver = TJCType.no)) then
+   if ((Blk <> nil) and (Blk2 <> nil) and (TBlkUsek(Blk).Zaver = TZaver.no) and (TBlkUsek(Blk2).Zaver = TZaver.no)) then
      Result := Result + '!ZAK<,'
   end else
   if ((not (Self.parent as TBlkTrat).ZAK) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).Obsazeno)) then

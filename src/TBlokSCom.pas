@@ -5,8 +5,9 @@ unit TBlokSCom;
 
 interface
 
-uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, RPConst,
-      TechnologieJC, IdContext, Generics.Collections;
+uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
+      TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
+      TOblRizeni;
 
 type
  TBlkSComVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -221,7 +222,7 @@ type
 
 implementation
 
-uses TechnologieMTB, TBloky, TOblRizeni, TBlokUsek, TJCDatabase, TCPServerOR,
+uses TechnologieMTB, TBloky, TBlokUsek, TJCDatabase, TCPServerOR,
       GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
       TBlokTratUsek, TBlokTrat;
 

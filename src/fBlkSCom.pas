@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokSCom, RpConst,
+  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokSCom,
   fBlkSComEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
-  StrUtils;
+  StrUtils, TBloky;
 
 type
   TF_BlkSCom = class(TForm)
@@ -76,7 +76,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, TBlok, TBloky,
+uses GetSystems, FileSystem, TechnologieMTB, TBlok,
       TBLokUsek, DataBloky, fSettings, TBlokPrejezd;
 
 {$R *.dfm}

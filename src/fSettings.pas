@@ -8,7 +8,7 @@ uses
   ExtCtrls, Mask, Gauges, StrUtils, Registry, fLicence, Grids, jpeg, ShellAPI,
   ShlObj, ToolWin, winsock, Buttons, IdBaseComponent,
   IdComponent, IdIPWatch, fMain, CPort, CPortCtl, AC, THnaciVozidlo,
-  TechnologieMTB, RPCOnst;
+  TechnologieMTB;
 
 type
 
@@ -285,7 +285,7 @@ begin
 end;
 
 procedure TF_Options.NactiSSDoObjektu();
-var IgnoraceMTB:TArSmallI;
+var IgnoraceMTB:TArI;
     i:Integer;
     data:TSSData;
  begin
@@ -446,7 +446,7 @@ procedure TF_Options.B_SS_SaveClick(Sender: TObject);
  end;//procedure
 
 procedure TF_Options.NactiModCasDoObjektu;
-var IgnoraceMTB:TArSmallI;
+var IgnoraceMTB:TArI;
  begin
   SetLength(IgnoraceMTB,2);
   IgnoraceMTB[0] := 3;

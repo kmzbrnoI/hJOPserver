@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses fSettings, fMain, Prevody, fBlkUsek, TechnologieJC, RPConst, SprDb;
+uses fSettings, fMain, Prevody, fBlkUsek, TechnologieJC, SprDb, Booster;
 
 {$R *.dfm}
 
@@ -88,9 +88,9 @@ procedure TF_BlkUsek_tech.LoadPrmnFromProgram;
 procedure TF_BlkUsek_tech.SavePrmnToProgram;
 var Blk:TBlk;
  begin
-  Self.Blk.Zaver       := TJCType(CB_Zaver.ItemIndex);
+  Self.Blk.Zaver       := TZaver(CB_Zaver.ItemIndex);
   Self.Blk.NUZ         := PrevodySoustav.IntToBool(CB_NUZ.ItemIndex);
-  Self.Blk.KonecJC     := TJCType(CB_KonecVC.ItemIndex);
+  Self.Blk.KonecJC     := TZaver(CB_KonecVC.ItemIndex);
   Self.Blk.Souprava    := SE_Souprava.Value;
   Self.Blk.SprPredict  := SE_Souprava_Predict.Value;
   Blky.GetBlkByID(Self.SE_SComJCRef.Value, Blk);

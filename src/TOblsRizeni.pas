@@ -6,7 +6,7 @@ unit TOblsRizeni;
 
 interface
 
-uses TOblRizeni, IniFiles, SysUtils, Classes, RPConst, COmCtrls, IdContext,
+uses TOblRizeni, IniFiles, SysUtils, Classes, COmCtrls, IdContext,
       StdCtrls, Generics.Collections;
 
 type

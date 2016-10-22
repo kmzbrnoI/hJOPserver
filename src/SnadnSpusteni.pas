@@ -46,7 +46,7 @@ var
 implementation
 
 uses GetSystems, TBlok, AC, TechnologieMTB, fMain, TBloky,
-     RPConst, Logging, ACDatabase, Prevody;
+     Logging, ACDatabase, Prevody;
 
 ////////////////////////////////////////////////////////////////////////////////
 

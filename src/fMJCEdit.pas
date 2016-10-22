@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, TechnologieMultiJC, Generics.Collections,
-  RPConst, Spin;
+  Spin, TBloky;
 
 type
   TF_MJCEdit = class(TForm)
@@ -47,8 +47,8 @@ type
      JCs:TList<Integer>;
      vb:TList<Integer>;
 
-     CB_VB_indexes:TArSmallI;
-     CB_JC_ids:TArSmallI;
+     CB_VB_indexes:TArI;
+     CB_JC_ids:TArI;
 
     procedure UpdateJCCb();
     procedure UpdateVBCb();
@@ -69,7 +69,7 @@ implementation
 
 {$R *.dfm}
 
-uses TJCDatabase, TechnologieJC, TBlok, TBlokUsek, TBloky,
+uses TJCDatabase, TechnologieJC, TBlok, TBlokUsek,
       TBlokSCom, TMultiJCDatabase, DataMultiJC;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ end;//procedure
 
 procedure TF_MJCEdit.UpdateVBCb();
 var obls:TArStr;
-    Vypustit:TArSmallI;
+    Vypustit:TArI;
     i:Integer;
 begin
  SetLength(Vypustit, Self.vb.Count);

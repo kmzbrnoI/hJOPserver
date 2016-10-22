@@ -4,7 +4,7 @@ unit Souprava;
 
 interface
 
-uses IniFiles, RPConst, SysUtils, Classes, Forms, IBUtils;
+uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo;
 
 const
   _MAX_SPR_HV = 4;
@@ -40,7 +40,7 @@ type
     data:TSoupravaData;
     findex:Integer;
     filefront:Integer;
-    speedBuffer:PInt;                                                           // pokud tento ukazatel neni nil, rychlsot je nastavovana do promenne, na kterou ukazuje a ne primo souprave; to se hodi napriklad v zastavce v TU
+    speedBuffer:PInteger;                                                       // pokud tento ukazatel neni nil, rychlost je nastavovana do promenne, na kterou ukazuje a ne primo souprave; to se hodi napriklad v zastavce v TU
 
     procedure LoadFromFile(ini:TMemIniFile; const section:string);
     procedure LoadFromPanelStr(spr:TStrings; Usek:TObject; OblR:TObject);
@@ -72,7 +72,7 @@ type
     procedure VezmiVlak();
     procedure UpdateFront();
     procedure ChangeSmer();
-    procedure SetSpeedBuffer(speedBuffer:PInt);
+    procedure SetSpeedBuffer(speedBuffer:PInteger);
 
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
@@ -92,7 +92,7 @@ type
 
 implementation
 
-uses THVDatabase, Logging, ownStrUtils, THnaciVozidlo, SprDb, TBlokUsek, DataSpr,
+uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlok, TBlokSCom,
       fRegulator, Trakce, fMain, TBlokTratUsek;
 
@@ -619,7 +619,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetSpeedBuffer(speedBuffer:PInt);
+procedure TSouprava.SetSpeedBuffer(speedBuffer:PInteger);
 begin
  Self.speedBuffer := speedBuffer;
 end;

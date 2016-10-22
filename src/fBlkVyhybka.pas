@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Spin, StdCtrls, ExtCtrls, fMain, fBlkUsek, TBlokVyhybka, RPConst;
+  Dialogs, Spin, StdCtrls, ExtCtrls, fMain, fBlkUsek, TBlokVyhybka,
+  TBloky;
 
 type
   TF_BlkVyhybka = class(TForm)
@@ -48,8 +49,8 @@ type
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
    NewBlk:Boolean;
-   CB_SpojkaData:TArSmallI;
-   CB_ZamekData:TArSmallI;
+   CB_SpojkaData:TArI;
+   CB_ZamekData:TArI;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
@@ -64,8 +65,8 @@ var
 
 implementation
 
-uses Prevody, GetSystems, FileSystem, TechnologieMTB, TBlok,
-      TBloky, fBlkVyhybkaSysVars, DataBloky;
+uses Prevody, GetSystems, FileSystem, TechnologieMTB, TBlok, fBlkVyhybkaSysVars,
+    DataBloky;
 
 {$R *.dfm}
 
@@ -159,7 +160,7 @@ var glob:TBlkSettings;
  end;//procedure
 
 procedure TF_BlkVyhybka.HlavniOpenForm;
-var spojka_vypust:TArSmallI;
+var spojka_vypust:TArI;
     obls:TArStr;
     i:Integer;
  begin

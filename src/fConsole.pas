@@ -9,6 +9,9 @@ uses
   ExtDlgs,  Gauges, Registry, StrUtils, fLicence, mmsystem, Grids, Spin, ValEdit,
   DateUtils, ShellApi, ActiveX, ShlObj, ComObj;
 
+const
+ _CONSOLE_V = '1.5';
+
 type
   TF_Console = class(TForm)
     M_console: TMemo;
@@ -31,7 +34,7 @@ var
 
 implementation
 
-uses fMain, fSettings, RPConst, TechnologieMTB, GetSystems, Verze,
+uses fMain, fSettings, TechnologieMTB, GetSystems, Verze,
      Logging, TBlok, TBlokUsek, TBLokVyhybka, TBLoky;
 
 {$R *.dfm}
@@ -182,7 +185,7 @@ begin
 
       case (Blk.GetGlobalSettings().typ) of
        _BLK_USEK, _BLK_TU: begin
-         (Blk as TBlkUsek).Zaver := TJCType.no;
+         (Blk as TBlkUsek).Zaver := TZaver.no;
          M_console.Lines.Add('InCommandRP265\>Zrusen zaver useku '+Blk.GetGlobalSettings().name);
        end;
 

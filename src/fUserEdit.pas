@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, User, ComCtrls, RPConst;
+  Dialogs, StdCtrls, User, ComCtrls;
 
 type
   TF_UserEdit = class(TForm)
@@ -70,7 +70,7 @@ begin
    if (Self.LV_ORs.Items[i].Selected) then
     begin
      Self.OpenUser.SetRights(Self.LV_ORs.Items[i].Caption, TORControlRights(Self.CB_Rights.ItemIndex));
-     Self.LV_ORs.Items[i].SubItems.Strings[1] := ORRightsToString(TORControlRights(Self.CB_Rights.ItemIndex));
+     Self.LV_ORs.Items[i].SubItems.Strings[1] := TOR.ORRightsToString(TORControlRights(Self.CB_Rights.ItemIndex));
      TORControlRights(Self.LV_ORs.Items[i].Data^) := TORControlRights(Self.CB_Rights.ItemIndex);
     end;
   end;
@@ -273,7 +273,7 @@ begin
 
    if (not Self.OpenUser.OblR.TryGetValue(LI.Caption, rights)) then
     rights := TORCOntrolRights.null;
-   LI.SubItems.Add(ORRightsToString(rights));
+   LI.SubItems.Add(TOR.ORRightsToString(rights));
 
    GetMem(data, 3);
    TORControlRights(data^) := rights;

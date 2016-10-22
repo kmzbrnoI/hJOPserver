@@ -7,8 +7,16 @@ uses
   Dialogs, Outputdriver, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls,
   inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage,
   ExtDlgs,  Gauges, Registry, StrUtils, fLicence, mmsystem, Grids, Spin, ValEdit,
-  DateUtils, ShellApi, ActiveX, ShlObj, ComObj, RPConst,
+  DateUtils, ShellApi, ActiveX, ShlObj, ComObj,
   TrakceGUI, Trakce, BoosterDb, CPort;
+
+const
+ _SB_LOG      = 0;
+ _SB_MTB      = 1;
+ _SB_INT      = 2;
+ _SB_POZICE   = 3;
+ _SB_SBERNICE = 4;
+ _SB_PROC     = 5;
 
 type
 
@@ -2131,7 +2139,7 @@ procedure TF_Main.OnStart;
  begin
   Vytizeni.DrawCPUGauge;
 
-  writelog('Spuštìn hJOPserver v'+NactiVerzi(application.ExeName)+_VERSION_PR,0,0);
+  writelog('Spuštìn hJOPserver v'+NactiVerzi(application.ExeName),0,0);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
 
   if (not CloseMessage) then F_Main.Close;
@@ -2225,7 +2233,7 @@ procedure TF_Main.CreateSystem;
 
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 
-  F_Main.Caption := 'hJOPserver         v'+NactiVerzi(Application.ExeName)+_VERSION_PR+' (build '+GetLastBuildDate+')';
+  F_Main.Caption := 'hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
   F_Main.SB1.Panels.Items[_SB_MTB].Text := 'MTB close';
   RepaintObjects;
  end;//procedure

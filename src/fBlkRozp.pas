@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, TBlokRozp, RPConst;
+  Dialogs, ExtCtrls, StdCtrls, Spin, TBlokRozp;
 
 type
   TF_BlkRozp = class(TForm)

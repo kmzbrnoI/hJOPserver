@@ -5,7 +5,7 @@ unit TBlokRozp;
 interface
 
 uses IniFiles, TBlok, StrUtils, Classes, TOblsRizeni, SysUtils,
-      IdContext, RPConst;
+      IdContext, TOblRizeni;
 
 type
  TRozpStatus = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
@@ -70,7 +70,7 @@ type
 
 implementation
 
-uses TechnologieMTB, TCPServerOR, TOblRizeni;
+uses TechnologieMTB, TCPServerOR;
 
 constructor TBlkRozp.Create(index:Integer);
 begin

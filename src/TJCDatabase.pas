@@ -6,8 +6,8 @@ unit TJCDatabase;
 
 interface
 
-uses TechnologieJC, TBlok, IniFiles, RPConst, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, IBUtils;
+uses TechnologieJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
+      Generics.Collections, Classes, IBUtils, TBloky;
 
 type
   EJCIdAlreadyExists = class(Exception);
@@ -46,12 +46,12 @@ type
      function IsJC(id:Integer; ignore_index:Integer = -1):boolean;
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
-     function FindPostavenaJCWithVyhybka(vyh_id:Integer):TArSmallI;
+     function FindPostavenaJCWithVyhybka(vyh_id:Integer):TArI;
      function FindPostavenaJCWithUsek(usek_id:Integer):Integer;
-     function FindPostavenaJCWithPrisl(blk_id:Integer):TArSmallI;
+     function FindPostavenaJCWithPrisl(blk_id:Integer):TArI;
      function FindPostavenaJCWithPrj(blk_id:Integer):Integer;
      function FindPostavenaJCWithTrat(trat_id:Integer):Integer;
-     function FindPostavenaJCWithZamek(zam_id:Integer):TArSmallI;
+     function FindPostavenaJCWithZamek(zam_id:Integer):TArI;
 
      // jakmile dojde k postaveni cesty fJC, muze dojit k ovlivneni nejakeho navestidla pred ni
      // tato fce zajisti, ze k ovlivneni dojde
@@ -75,7 +75,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBloky, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
       DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -264,7 +264,7 @@ begin
 
        // zrusime zacatek, konec a variantni body
        (StartBlk as TBlkSCom).ZacatekVolba := TBlkSComVOlba.none;
-       (EndBlk as TBlkUsek).KonecJC        := TJCType.no;
+       (EndBlk as TBlkUsek).KonecJC        := TZaver.no;
        (SenderOR as TOR).ClearVb();
       end else begin
        (SenderOR as TOR).vb.Clear();            // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
@@ -280,7 +280,7 @@ begin
  if ((StartBlk as TBlkSCom).ZacatekVolba <> TBLkSComVolba.NC) then
    if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
 
- (EndBlk as TBlkUsek).KonecJC := TJCType.no;
+ (EndBlk as TBlkUsek).KonecJC := TZaver.no;
  ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závìrové tabulce');
  writelog('Nelze postavit JC -  nenalezena v zaverove tabulce',WR_VC);
  end;//procedure
@@ -361,7 +361,7 @@ var i:Integer;
 
 //vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
 // muze vracet vic jizdnich cest - jeden odvrat muze byt u vic aktualne postavenych JC
-function TJCDB.FindPostavenaJCWithVyhybka(vyh_id:Integer):TArSmallI;
+function TJCDB.FindPostavenaJCWithVyhybka(vyh_id:Integer):TArI;
 var i,j:Integer;
 begin
   SetLength(Result, 0);
@@ -419,7 +419,7 @@ begin
    end;//for i
 end;//function
 
-function TJCDB.FindPostavenaJCWithPrisl(blk_id:Integer):TArSmallI;
+function TJCDB.FindPostavenaJCWithPrisl(blk_id:Integer):TArI;
 var i,j:Integer;
 begin
   SetLength(Result, 0);
@@ -464,7 +464,7 @@ begin
  Exit(-1);
 end;//procedure
 
-function TJCDB.FindPostavenaJCWithZamek(zam_id:Integer):TArSmallI;
+function TJCDB.FindPostavenaJCWithZamek(zam_id:Integer):TArI;
 var i,j:Integer;
 begin
   SetLength(Result, 0);
@@ -536,7 +536,7 @@ end;//procedure
 // tusi cestu, ve ktere je zadany blok
 procedure TJCDb.RusJC(Blk:TBlk);
 var tmpblk:TBlk;
-    jcs:TArSmallI;
+    jcs:TArI;
     i, j:Integer;
 begin
  case (Blk.GetGlobalSettings().typ) of

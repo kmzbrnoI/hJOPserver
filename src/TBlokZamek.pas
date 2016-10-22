@@ -5,7 +5,7 @@ unit TBlokZamek;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
-     RPConst, IdContext, Generics.Collections;
+     IdContext, Generics.Collections, TOblRizeni;
 
 type
 
@@ -96,7 +96,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
+uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, TBlokVyhybka;
 

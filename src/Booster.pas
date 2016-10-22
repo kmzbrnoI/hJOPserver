@@ -6,9 +6,11 @@ unit Booster;
 
 interface
 
-uses IniFiles, TechnologieMTB, SysUtils, RPConst;
+uses IniFiles, TechnologieMTB, SysUtils;
 
 type
+ TBoosterSignal = (undef = -1, error = 0, ok = 1);
+
  TBoosterClass = (undefinned = -1, default = 0, SPAX = 1);
 
  TBoosterChangeEvent = procedure (Sender:TObject; state:TBoosterSignal) of object;

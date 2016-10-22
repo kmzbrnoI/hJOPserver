@@ -40,8 +40,8 @@ Jak to funguje:
 
 interface
 
-uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, RPConst,
-      Generics.Collections;
+uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext,
+      Generics.Collections, TOblRizeni;
 
 type
  TBlkTUSignal = (disabled = -1, usek = 0, ir = 1);                              // typ zastavkoveho eventu
@@ -222,8 +222,8 @@ type
 
 implementation
 
-uses SprDb, TBloky, TBlokIR, TCPServerOR, TOblRizeni, TBlokTrat, TBlokSCom,
-      TJCDatabase, Prevody, logging;
+uses SprDb, TBloky, TBlokIR, TCPServerOR, TBlokTrat, TBlokSCom,
+      TJCDatabase, Prevody, logging, THnaciVozidlo;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -813,7 +813,7 @@ begin
  // kontrola poruchy blokove podminky
  if (Self.bpInBlk) then
   begin
-   if ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.poruchaBP) and (Self.Zaver = TJCType.no)) then
+   if ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.poruchaBP) and (Self.Zaver = TZaver.no)) then
      Self.poruchaBP := true;
    if ((Self.Obsazeno = TUsekStav.obsazeno) and (Self.poruchaBP)) then
      Self.poruchaBP := false;

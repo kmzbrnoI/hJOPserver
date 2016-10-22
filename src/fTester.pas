@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Outputdriver, Menus, Spin, ExtCtrls, Buttons, ColorGrd,
-  ComCtrls, TabNotBk, Gauges, fMain, RPConst;
+  ComCtrls, TabNotBk, Gauges, fMain, TBloky;
 
 type
   TF_Tester = class(TForm)
@@ -36,7 +36,7 @@ type
 
   private
    MTBAddr:Smallint;
-   CB_MTBAdrData:TArSmallI;
+   CB_MTBAdrData:TArI;
    SInput:array [0..15] of TShape;
    SOutput:array [0..15] of TShape;   
 

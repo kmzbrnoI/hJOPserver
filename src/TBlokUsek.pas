@@ -4,8 +4,8 @@ unit TBlokUsek;
 
 interface
 
-uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
-     RPConst, IdContext, Generics.Collections, JsonDataObjects;
+uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster,
+     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -24,9 +24,9 @@ type
  TBlkUsekStav = record
   Stav,StavOld:TUsekStav;   // hlavnis tav useku a jeho predchozi hodnota (pouzivano v Update())
   StavAr:TUsekStavAr;       // obsazenost jednotlivych casti useku
-  Zaver:TJCType;            // zaver na bloku
+  Zaver:TZaver;             // zaver na bloku
   NUZ:boolean;              // nouzove uvolneni zaveru
-  KonecJC:TJCType;          // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
+  KonecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
   Stit,Vyl:string;          // stitek a vyluka
   SComJCRef:TBlk;           // zde je ulozeno, podle jakeho navestidla se odjizdi z tohoto bloku; pokud je postabeno vice navetidel, zde je ulozeno posledni, na kterem probehla volba
   Spr:Integer;              // default -1, jinak array index
@@ -75,11 +75,11 @@ type
    last_zes_zkrat:TBoosterSignal;  //poziva se na pamatovani posledniho stavu zkratu zesilovace pri vypnuti DCC
 
     procedure SetUsekNUZ(nuz:boolean);
-    procedure SetUsekZaver(Zaver:TJCType);
+    procedure SetUsekZaver(Zaver:TZaver);
     procedure SetUsekStit(stit:string);
     procedure SetUsekVyl(vyl:string); overload;
     procedure SetSprPredict(sprcesta:Integer);
-    procedure SetKonecJC(konecjc:TJCType);
+    procedure SetKonecJC(konecjc:TZaver);
     procedure SetVlakPresun(presun:boolean);
 
     procedure SetZesZkrat(state:TBoosterSignal);
@@ -158,12 +158,12 @@ type
 
     property Obsazeno:TUsekStav read UsekStav.Stav;
     property NUZ:boolean read UsekStav.NUZ write SetUsekNUZ;
-    property Zaver:TJCType read UsekStav.Zaver write SetUsekZaver;
+    property Zaver:TZaver read UsekStav.Zaver write SetUsekZaver;
     property Stitek:string read UsekStav.Stit write SetUsekStit;
     property Vyluka:string read UsekStav.Vyl write SetUsekVyl;
     property Souprava:Integer read UsekStav.Spr write SetUsekSpr;
     property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
-    property KonecJC:TJCType read UsekStav.KonecJC write SetKonecJC;
+    property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property SComJCRef:TBlk read UsekStav.SComJCRef write UsekStav.SComJCRef;
 
     property ZesZkrat:TBoosterSignal read UsekStav.Zkrat write SetZesZkrat;
@@ -194,9 +194,9 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, TBloky, TOblRizeni, TBlokSCom, Logging,
+uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
-    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, Booster;
+    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -307,7 +307,7 @@ begin
  Self.UsekStav.StavOld    := disabled;
  Self.UsekStav.NUZ        := false;
  Self.UsekStav.SprPredict := -1;
- Self.UsekStav.KonecJC    := TJCType.no;
+ Self.UsekStav.KonecJC    := TZaver.no;
  Self.UsekStav.zpomalovani_ready := false;
  Self.UsekStav.zkrat      := TBoosterSignal.undef;
  Self.UsekStav.napajeni   := TBoosterSignal.undef;
@@ -319,7 +319,7 @@ end;//procedure
 
 procedure TBlkUsek.Reset();
 begin
- Self.Zaver := TJCType.no;
+ Self.Zaver := TZaver.no;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -402,7 +402,7 @@ begin
      if ((Self.GetGlobalSettings().typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
        for i := 0 to Self.OblsRizeni.Cnt-1 do
          Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.GetGlobalSettings().name, 'TECHNOLOGIE');
-     if (Self.UsekStav.Zaver <> TJCType.no) then Self.UsekStav.Zaver := nouz;
+     if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := nouz;
     end;//if spr_vypadek_time > 3
   end;//if spr_vypadek
 
@@ -439,7 +439,7 @@ end;//procedure
 procedure TBlkUsek.Change(now:boolean = false);
 begin
  // pri zruseni zaveru zrusim redukci na vsech blocich, ktere mam ulozene
- if (Self.Zaver = TJCType.no) then
+ if (Self.Zaver = TZaver.no) then
    Self.RemoveAllReduction(Self.UsekStav.redukuji);
 
  inherited Change(now);
@@ -470,10 +470,10 @@ begin
  Self.Change();
 end;//procedure
 
-procedure TBlkUsek.SetUsekZaver(Zaver:TJCType);
-var old:TJCType;
+procedure TBlkUsek.SetUsekZaver(Zaver:TZaver);
+var old:TZaver;
 begin
- if ((Integer(Self.UsekStav.Zaver) > 0) and (Zaver = TJCType.no)) then
+ if ((Integer(Self.UsekStav.Zaver) > 0) and (Zaver = TZaver.no)) then
    Self.NUZ := false;
 
  old := Self.Zaver;
@@ -481,7 +481,7 @@ begin
  Self.UsekStav.SprPredict := -1;
 
  // staveci zavery se do panelu neposilaji, protoze jsou mi k nicemu
- if (Self.Zaver <> TJCType.staveni) or (old <> TJCType.no) then
+ if (Self.Zaver <> TZaver.staveni) or (old <> TZaver.no) then
    Self.Change();
 end;//procedure
 
@@ -532,7 +532,7 @@ begin
  Self.Change();
 end;//procedure
 
-procedure TBlkUsek.SetKonecJC(konecjc:TJCType);
+procedure TBlkUsek.SetKonecJC(konecjc:TZaver);
 begin
  Self.UsekStav.KonecJC := konecjc;
  Self.Change();
@@ -741,7 +741,7 @@ end;//procedure
 function TBlkUsek.MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
 var Blk:TBlk;
 begin
- if ((Self.UsekStav.KonecJC <> TJCType.no) and (not (SenderOR as TOR).vb.Contains(Self))) then
+ if ((Self.UsekStav.KonecJC <> TZaver.no) and (not (SenderOR as TOR).vb.Contains(Self))) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Probíhá volba');
    Exit(true);
@@ -753,10 +753,10 @@ begin
  if (Blk = nil) then Exit(false);
 
  case ((Blk as TBlkSCom).ZacatekVolba) of
-  TBLkSComVolba.VC : Self.UsekStav.KonecJC := TJCType.vlak;
-  TBLkSComVolba.PC : Self.UsekStav.KonecJC := TJCType.posun;
+  TBLkSComVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
+  TBLkSComVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
   TBLkSComVolba.NC, TBLkSComVolba.PP
-                   : Self.UsekStav.KonecJC := TJCType.nouz;
+                   : Self.UsekStav.KonecJC := TZaver.nouz;
  end;//case
 
  JCDb.StavJC(Blk, Self, SenderPnl, SenderOR);
@@ -768,7 +768,7 @@ end;//procedure
 procedure TBlkUsek.MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
 begin
- if (Self.UsekStav.KonecJC <> TJCType.no) then
+ if (Self.UsekStav.KonecJC <> TZaver.no) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Probíhá volba');
    Exit();
@@ -778,8 +778,8 @@ begin
  if (Blk = nil) then Exit();
 
  case ((Blk as TBlkSCom).ZacatekVolba) of
-  TBLkSComVolba.VC : Self.UsekStav.KonecJC := TJCType.vlak;
-  TBLkSComVolba.PC : Self.UsekStav.KonecJC := TJCType.posun;
+  TBLkSComVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
+  TBLkSComVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
  else
   Exit();     // nouzova cesta nemuze mit variantni body
  end;
@@ -902,7 +902,7 @@ begin
 
  Result := Result + 'STIT,VYL,';
 
- if (((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TJCType.staveni)
+ if (((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TZaver.staveni)
     and (Self.GetGlobalSettings().typ = _BLK_USEK) and (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) then
   begin
    if (Self.UsekStav.NUZ) then

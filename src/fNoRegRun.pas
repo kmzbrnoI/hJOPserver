@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses Logging, fLicence, fLoginPozadi, RPConst, fMain;
+uses Logging, fLicence, fLoginPozadi, fMain;
 
 {$R *.dfm}
 

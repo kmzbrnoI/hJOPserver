@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, TBlokTratUsek, RPConst, TOblsRizeni;
+  Dialogs, StdCtrls, ExtCtrls, TBlokTratUsek, TOblsRizeni, TBloky;
 
 type
   TF_BlkTUZastEvent = class(TForm)
@@ -34,7 +34,7 @@ type
     procedure RB_Zpom_UsekClick(Sender: TObject);
   private
    events:TBlkTUZastEvents;
-   CB_IR:TArSmallI;
+   CB_IR:TArI;
 
   public
      procedure OpenForm(events: TBlkTUZastEvents);
@@ -48,7 +48,7 @@ var
 
 implementation
 
-uses TBlok, TBlokIR, TBloky;
+uses TBlok, TBlokIR;
 
 {$R *.dfm}
 

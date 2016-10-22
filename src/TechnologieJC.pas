@@ -40,14 +40,16 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, Buttons, ComCtrls, fMain, RPConst, TBloky, TBlok,
-  IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO;
+  Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok,
+  IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO, TBlokVyhybka,
+  TOblRizeni;
 
 const
   _JC_TIMEOUT_SEC = 20;                                                         // timeout pro staveni jizdni cesty (vlakove i posunove v sekundach)
   _NC_TIMEOUT_MIN = 1;                                                          // timeout pro staveni nouzove cesty (vlakove i posunove) v minutach
 
 type
+  TJCType = (vlak = 1, posun = 2, nouz = 3);
 
   // jedna bariera ve staveni jizdni cesty:
   TJCBariera = record
@@ -293,7 +295,7 @@ type
 implementation
 
 uses GetSystems, TechnologieMTB, fSettings,
-     TBlokSCom, TBlokUsek, TBlokVyhybka, TOblsRizeni, TOblRizeni,
+     TBlokSCom, TBlokUsek, TOblsRizeni,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, SprDb,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;
 
@@ -648,7 +650,7 @@ begin
      end;//if
 
     // zaver
-    if ((Blk as TBlkUsek).Zaver <> TJCType.no) then
+    if ((Blk as TBlkUsek).Zaver <> TZaver.no) then
       bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
 
     // souprava
@@ -740,7 +742,7 @@ begin
 
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
      begin
-      if (((Blk as TBlkVyhybka).Zaver <> TJCType.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
+      if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
 
       if ((Blk as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
@@ -861,7 +863,7 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // zaver
-    if ((Blk as TBlkUsek).Zaver <> TJCType.no) then
+    if ((Blk as TBlkUsek).Zaver <> TZaver.no) then
       bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
 
     // vyluka
@@ -927,7 +929,7 @@ begin
 
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
      begin
-      if (((Blk as TBlkVyhybka).Zaver <> TJCType.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
+      if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
 
       if ((Blk as TBlkVyhybka).vyhZaver) then
@@ -1106,7 +1108,7 @@ begin
  for i := 0 to bariery.Count-1 do
   begin
    if (Self.PotvrSekvBariera(bariery[i].typ)) then
-     podm.Add(GetPSPodminka(bariery[i].blok, TJC.PotvrSekvBarieraToReason(bariery[i].typ)));
+     podm.Add(TOR.GetPSPodminka(bariery[i].blok, TJC.PotvrSekvBarieraToReason(bariery[i].typ)));
   end;//for i
 
  if (podm.Count > 0) then
@@ -1167,7 +1169,7 @@ var i,j:Integer;
       for i := 0 to Self.fproperties.Useky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-        (Blk as TBlkUsek).Zaver := TJCType.staveni;
+        (Blk as TBlkUsek).Zaver := TZaver.staveni;
        end;//for cyklus
 
       writelog('Krok 10 : vyhybky: zamykam do pozadovanych poloh', WR_VC);
@@ -1227,7 +1229,7 @@ var i,j:Integer;
       for i := 0 to Self.fproperties.Useky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-        (Blk as TBlkUsek).Zaver := TJCType.nouz;
+        (Blk as TBlkUsek).Zaver := TZaver.nouz;
        end;//for cyklus
 
       Self.Krok := 12;
@@ -1346,7 +1348,7 @@ var i,j:Integer;
       for i := 0 to Self.fproperties.Useky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-        (Blk as TBlkUsek).Zaver := aZaver;
+        (Blk as TBlkUsek).Zaver := TZaver(aZaver);
 
         // kontrola pritomnosti soupravy na usecich - toto je potreba delat pro dodatecne navesti
         if ((Self.fproperties.TypCesty = TJCType.vlak) and ((Blk as TBlkUsek).Souprava > -1)) then
@@ -1468,7 +1470,7 @@ var i,j:Integer;
       for i := 0 to Self.fproperties.Useky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-        (Blk as TBlkUsek).Zaver := TJCType.staveni;
+        (Blk as TBlkUsek).Zaver := TZaver.staveni;
        end;//for cyklus
 
       // nastavit nouzovy zaver uvazky
@@ -1578,7 +1580,7 @@ var i,j:Integer;
       for i := 0 to Self.fproperties.Useky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-        (Blk as TBlkUsek).Zaver := TJCType.no;
+        (Blk as TBlkUsek).Zaver := TZaver.no;
        end;//for cyklus
 
       Self.RusZacatekJC();
@@ -1639,7 +1641,7 @@ var i,j:Integer;
             ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
          begin
           (Trat as TBlkTrat).AddSpr((Blk as TBlkUsek).Souprava);
-          (Blk2 as TBlkUsek).Zaver := TJCType.nouz;
+          (Blk2 as TBlkUsek).Zaver := TZaver.nouz;
           (Trat as TBlkTrat).Change();
 
           (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
@@ -1677,7 +1679,7 @@ begin
  for i := 0 to Self.data.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-   if ((Blk as TBlkUsek).Zaver = TJCType.staveni) then
+   if ((Blk as TBlkUsek).Zaver = TZaver.staveni) then
       (Blk as TBlkUsek).Zaver := no;
   end;
 
@@ -1731,7 +1733,7 @@ begin
   begin
    Blky.GetBlkByID(Self.data.vb[i], Blk);
    if ((Blk <> nil) and ((Blk.GetGlobalSettings().typ = _BLK_USEK) or (Blk.GetGlobalSettings().typ = _BLK_TU))) then
-     (Blk as TBLkUsek).KonecJC := TJCType.no;
+     (Blk as TBLkUsek).KonecJC := TZaver.no;
   end; 
 end;
 
@@ -1819,7 +1821,7 @@ begin
      if (i = Self.RozpadBlok) then
       begin
        //pokud se tento usek rovna RozpadBloku
-       (Usek as TBlkUsek).Zaver := TJCType.nouz;
+       (Usek as TBlkUsek).Zaver := TZaver.nouz;
 
        if (Self.fproperties.TypCesty = TJCType.vlak) then
         begin
@@ -1881,14 +1883,14 @@ begin
 
          // v trati zaver nerusime, nesmime tam dat ani nouzovy, ani zadny zaver
          if ((i <> Self.fproperties.Useky.Count-1) or (Self.fproperties.Trat = -1)) then
-           (Usek as TBlkUsek).Zaver := nouz;
+           (Usek as TBlkUsek).Zaver := TZaver.nouz;
         end;
       end;
     end;
 
 
    // kontrola zruseni jizdni cesty vlivem vynuzovani bloku
-   if ((i = Self.RozpadBlok) and (((Usek as TBlkUsek).Zaver = TJCType.no))) then
+   if ((i = Self.RozpadBlok) and (((Usek as TBlkUsek).Zaver = TZaver.no))) then
     begin
      // pokud usek, na ktery se chystam vkrocit, nema zaver, je neco divne -> zrusit JC (predevsim kvuli predavani loko, ktere by mohlo narusit dalsi JC)
      Self.RusJCWithoutBlk();
@@ -1910,7 +1912,7 @@ begin
     else
       DalsiUsek := nil;
 
-    if (((Usek as TBlkUsek).Zaver = TJCType.nouz) and ((Usek as TBlkUsek).Obsazeno = uvolneno) and
+    if (((Usek as TBlkUsek).Zaver = TZaver.nouz) and ((Usek as TBlkUsek).Obsazeno = uvolneno) and
         ((DalsiUsek = nil) or (TBlkUsek(DalsiUsek).Obsazeno = TUsekStav.obsazeno) or
         (TBlkUsek(DalsiUsek).GetSettings.MTBAddrs.Count = 0))) then
      begin
@@ -2403,7 +2405,7 @@ begin
  for i := 0 to Self.fproperties.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-   if (((Blk as TBlkUsek).Zaver = TJCType.no) or ((Blk as TBlkUsek).Zaver = TJCType.staveni) or ((Blk as TBlkUsek).NUZ) or
+   if (((Blk as TBlkUsek).Zaver = TZaver.no) or ((Blk as TBlkUsek).Zaver = TZaver.staveni) or ((Blk as TBlkUsek).NUZ) or
       (((Blk as TBlkUsek).Obsazeno <> TUsekStav.uvolneno) and
        ((Self.fproperties.TypCesty = TJCType.vlak) or (i <> Self.fproperties.Useky.Count-1)))) then Exit(false);
   end;//for i
@@ -2955,7 +2957,7 @@ begin
    for i := 0 to Self.fproperties.Useky.Count-1 do
     begin
      Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-     (Blk as TBlkUsek).Zaver := TJCType.no;
+     (Blk as TBlkUsek).Zaver := TZaver.no;
     end;//for cyklus
   end;
 end;//procedure
@@ -2970,27 +2972,27 @@ begin
  for i := 0 to bariery.Count-1 do
   begin
    case (bariery[i].typ) of
-    _JCB_USEK_OBSAZENO           : Result.Add(GetPSPodminka(bariery[i].blok, 'Úsek obsazen'));
-    _JCB_USEK_SOUPRAVA           : Result.Add(GetPSPodminka(bariery[i].blok, 'Úsek obsahuje soupravu'));
+    _JCB_USEK_OBSAZENO           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Úsek obsazen'));
+    _JCB_USEK_SOUPRAVA           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Úsek obsahuje soupravu'));
 
-    _JCB_PREJEZD_NOUZOVE_OTEVREN : Result.Add(GetPSPodminka(bariery[i].blok, 'Nouzovì otevøen'));
-    _JCB_PREJEZD_PORUCHA         : Result.Add(GetPSPodminka(bariery[i].blok, 'Porucha'));
-    _JCB_PREJEZD_NEUZAVREN       : Result.Add(GetPSPodminka(bariery[i].blok, 'Neuzavøen'));
+    _JCB_PREJEZD_NOUZOVE_OTEVREN : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nouzovì otevøen'));
+    _JCB_PREJEZD_PORUCHA         : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Porucha'));
+    _JCB_PREJEZD_NEUZAVREN       : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Neuzavøen'));
 
-    _JCB_VYHYBKA_KONC_POLOHA     : Result.Add(GetPSPodminka(bariery[i].blok, 'Není správná poloha'));
-    _JCB_VYHYBKA_NOUZ_ZAVER      : Result.Add(GetPSPodminka(bariery[i].blok, 'Není zaveden nouzový závìr'));
-    _JCB_VYHYBKA_NESPAVNA_POLOHA : Result.Add(GetPSPodminka(bariery[i].blok, 'Není správná poloha'));
+    _JCB_VYHYBKA_KONC_POLOHA     : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Není správná poloha'));
+    _JCB_VYHYBKA_NOUZ_ZAVER      : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Není zaveden nouzový závìr'));
+    _JCB_VYHYBKA_NESPAVNA_POLOHA : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Není správná poloha'));
 
-    _JCB_TRAT_ZAK                : Result.Add(GetPSPodminka(bariery[i].blok, 'Zákaz odjezdu'));
-    _JCB_TRAT_NOT_ZAK            : Result.Add(GetPSPodminka(bariery[i].blok, 'Nezaveden zákaz odjezdu'));
-    _JCB_TRAT_ZAVER              : Result.Add(GetPSPodminka(bariery[i].blok, 'Závìr'));
-    _JCB_TRAT_OBSAZENO           : Result.Add(GetPSPodminka(bariery[i].blok, 'Obsazeno'));
-    _JCB_TRAT_ZADOST             : Result.Add(GetPSPodminka(bariery[i].blok, 'Probíhá žádost'));
-    _JCB_TRAT_NESOUHLAS          : Result.Add(GetPSPodminka(bariery[i].blok, 'Nesouhlas'));
-    _JCB_TRAT_NO_BP              : Result.Add(GetPSPodminka(bariery[i].blok, 'Bloková podmínka nezavedena'));
+    _JCB_TRAT_ZAK                : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Zákaz odjezdu'));
+    _JCB_TRAT_NOT_ZAK            : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nezaveden zákaz odjezdu'));
+    _JCB_TRAT_ZAVER              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Závìr'));
+    _JCB_TRAT_OBSAZENO           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Obsazeno'));
+    _JCB_TRAT_ZADOST             : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Probíhá žádost'));
+    _JCB_TRAT_NESOUHLAS          : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nesouhlas'));
+    _JCB_TRAT_NO_BP              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Bloková podmínka nezavedena'));
 
-    _JCB_ZAMEK_NEUZAMCEN         : Result.Add(GetPSPodminka(bariery[i].blok, 'Neuzamèen'));
-    _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(GetPSPodminka(bariery[i].blok, 'Není zaveden nouzový závìr'));
+    _JCB_ZAMEK_NEUZAMCEN         : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Neuzamèen'));
+    _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Není zaveden nouzový závìr'));
    end;//case bariera typ
   end;//for i
 end;//function
@@ -3030,18 +3032,18 @@ begin
  for i := 0 to Self.fproperties.Vyhybky.Count-1 do
   begin
    Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, blk);
-   if ((blk as TBlkVyhybka).vyhZaver) then Result.Add(GetPSPodminka(blk, 'Rušení NZ'));
+   if ((blk as TBlkVyhybka).vyhZaver) then Result.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
    if ((blk as TBlkVyhybka).GetSettings.spojka > -1) then
     begin
      Blky.GetBlkByID((blk as TBlkVyhybka).GetSettings.spojka, blk2);
-     if ((blk2 as TBlkVyhybka).vyhZaver) then Result.Add(GetPSPodminka(blk2, 'Rušení NZ'));
+     if ((blk2 as TBlkVyhybka).vyhZaver) then Result.Add(TOR.GetPSPodminka(blk2, 'Rušení NZ'));
     end;
   end;//for i
 
  for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
   begin
    Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, blk);
-   if ((blk as TBlkZamek).nouzZaver) then Result.Add(GetPSPodminka(blk, 'Rušení NZ'));
+   if ((blk as TBlkZamek).nouzZaver) then Result.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
   end;//for i
 end;//function
 

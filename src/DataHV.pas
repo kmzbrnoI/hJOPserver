@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses THvDatabase, Prevody, fMain, Trakce, SprDb, RPConst;
+uses THvDatabase, Prevody, fMain, Trakce, SprDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 

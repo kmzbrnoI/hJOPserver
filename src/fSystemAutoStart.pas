@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses fLoginPozadi, fMain, RPConst, Logging;
+uses fLoginPozadi, fMain, Logging;
 
 {$R *.dfm}
 

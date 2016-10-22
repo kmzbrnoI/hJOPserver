@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, Spin, TechnologieJC, RPConst,
-  Generics.Collections;
+  Dialogs, StdCtrls, ComCtrls, Spin, TechnologieJC,
+  Generics.Collections, TBloky;
 
 type
   TF_JCEdit = class(TForm)
@@ -67,11 +67,11 @@ type
   private
    OpenIndex:Integer;
    NewVC:Boolean;
-   CB_NavestidloPolozky:TArSmallI;
-   CB_DalsiNNavaznostPolozky:TArSmallI;
-   CB_NewUsekPolozky:TArSmallI;
-   CB_NewVyhybkaPolozky:TArSmallI;
-   CB_TratPolozky:TArSmallI;
+   CB_NavestidloPolozky:TArI;
+   CB_DalsiNNavaznostPolozky:TArI;
+   CB_NewUsekPolozky:TArI;
+   CB_NewVyhybkaPolozky:TArI;
+   CB_TratPolozky:TArI;
    JCData:TJCprop;
 
    Useky:TList<Integer>;
@@ -94,8 +94,8 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TBloky, TBlok, TOblsRizeni,
-      TBlokSCom, fSettings, TJCDatabase, DataJC, TBlokTrat;
+uses GetSystems, FileSystem, TBlok, TOblsRizeni,
+      TBlokSCom, fSettings, TJCDatabase, DataJC, TBlokTrat, TBlokVyhybka;
 
 {$R *.dfm}
 
@@ -208,7 +208,7 @@ procedure TF_JCEdit.HlavniOpenForm;
 
 procedure TF_JCEdit.B_NewZaverAddClick(Sender: TObject);
 var LI:TListItem;
-    Vypustit:TArSmallI;
+    Vypustit:TArI;
     cyklus:Integer;
     obls:TArStr;
     vyh:TJCVyhZaver;
@@ -251,7 +251,7 @@ var LI:TListItem;
 procedure TF_JCEdit.B_NewUsekClick(Sender: TObject);
 var LI:TListItem;
     obls:TArStr;
-    Useky:TArSmallI;
+    Useky:TArI;
     i:Integer;
  begin
   if (CB_NewUsek.ItemIndex = -1) then
@@ -426,7 +426,7 @@ var JC:TJC;
 procedure TF_JCEdit.B_ZaveryUseku_DeleteClick(Sender: TObject);
 var Pozice,i:Integer;
     obls:TArStr;
-    Useky:TArSmallI;
+    Useky:TArI;
  begin
   Pozice := LV_Useky.ItemIndex;
   Beep;
@@ -449,7 +449,7 @@ var Pozice,i:Integer;
 
 procedure TF_JCEdit.B_ZaveryVyhybek_DeleteClick(Sender: TObject);
 var cyklus,Pozice:Integer;
-    Vypustit:TArSmallI;
+    Vypustit:TArI;
     obls:TArStr;
  begin
   Pozice := LV_Zavery.ItemIndex;
@@ -497,10 +497,10 @@ procedure TF_JCEdit.LV_UsekyChange(Sender: TObject; Item: TListItem;
  end;//procedure
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
-var Vypustit:TArSmallI;
+var Vypustit:TArI;
     cyklus, i:Integer;
     obls:TArStr;
-    Useky:TArSmallI;
+    Useky:TArI;
  begin
   if (CB_Navestidlo.ItemIndex <> -1) then
    begin

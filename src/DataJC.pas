@@ -4,7 +4,7 @@ unit DataJC;
 
 interface
 
-uses ComCtrls, SysUtils, RPConst;
+uses ComCtrls, SysUtils;
 
 type
   TJCTableData=class

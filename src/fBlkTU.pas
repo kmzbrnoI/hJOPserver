@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, fSettings,
-  fBlkUsekSysVars, TBloky, TBlok, TBlokTratUsek, RPConst, Mask, StrUtils,
+  fBlkUsekSysVars, TBloky, TBlok, TBlokTratUsek, Mask, StrUtils,
   TBlokUsek, fBlkTUZastEvent;
 
 type
@@ -76,7 +76,7 @@ type
    NewBlk:Boolean;
    Blk:TBlkTU;
    OpenIndex:Integer;
-   CB_NavData:TArSmallI;
+   CB_NavData:TArI;
    CB_NavLindex, CB_NavSindex: Integer;
    zastLichy, zastSudy: TF_BlkTUZastEvent;
 

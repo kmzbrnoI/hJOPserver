@@ -7,8 +7,8 @@ unit UserDb;
 
 interface
 
-uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows, RPConst,
-     Generics.Defaults;
+uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows,
+     Generics.Defaults, TOblRizeni;
 
 type
   TUsrDb = class
@@ -49,7 +49,7 @@ var
 
 implementation
 
-uses Logging, DataUsers, TOblsRizeni, TOblRizeni, appEv;
+uses Logging, DataUsers, TOblsRizeni, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
