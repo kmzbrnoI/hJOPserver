@@ -5,7 +5,7 @@ unit TBlokUsek;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
-     RPConst, IdContext, Generics.Collections;
+     RPConst, IdContext, Generics.Collections, JsonDataObjects;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -54,6 +54,7 @@ type
    _def_usek_stav:TBlkUsekStav = (
     Stav : disabled;
     StavOld : disabled;
+    StavAr : (disabled, disabled, disabled, disabled);
     Zaver : no;
     NUZ : false;
     KonecJC : no;
@@ -181,6 +182,12 @@ type
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure ShowPanelSpr(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights);
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
+
+    //PT:
+
+    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
+    procedure GetPtState(json:TJsonObject); override;
+
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1046,6 +1053,49 @@ begin
 
  Result := true;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.GetPtData(json:TJsonObject; includeState:boolean);
+begin
+
+ // TODO: MTB
+
+ json['delka'] := Self.UsekSettings.Lenght;
+ if (Self.UsekSettings.SmcUsek) then json['smyckaUsek'] := Self.UsekSettings.SmcUsek;
+ json['zesilovac'] := Self.UsekSettings.Zesil;
+
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkUsek.GetPtState(json:TJsonObject);
+var i:Integer;
+begin
+ case (Self.Obsazeno) of
+  TUsekStav.disabled : json['stav'] := 'vypnuto';
+  TUsekStav.none     : json['stav'] := 'zadny';
+  TUsekStav.uvolneno : json['stav'] := 'uvolneno';
+  TUsekStav.obsazeno : json['stav'] := 'obsazeno';
+ end;
+
+ for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+  begin
+   case (Self.UsekStav.StavAr[i]) of
+    TUsekStav.disabled : json.A['sekce'].Add('vypnuto');
+    TUsekStav.none     : json.A['sekce'].Add('zadny');
+    TUsekStav.uvolneno : json.A['sekce'].Add('uvolneno');
+    TUsekStav.obsazeno : json.A['sekce'].Add('obsazeno');
+   end;
+  end;
+
+ json['napajeni'] := (Self.ZesNapajeni = TBoosterSignal.ok);
+ json['zkrat']    := (Self.ZesZkrat = TBoosterSignal.error);
+ json['dcc']      := Self.DCC;
+
+ if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
+ if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
