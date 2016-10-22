@@ -123,7 +123,8 @@ uses
   PTEndpoint in 'PTEndpoint.pas',
   PTEndpointBlok in 'PTEndpointBlok.pas',
   PTEndpointBloky in 'PTEndpointBloky.pas',
-  PTUtils in 'PTUtils.pas';
+  PTUtils in 'PTUtils.pas',
+  PTEndpointLok in 'PTEndpointLok.pas';
 
 {$R *.res}
 

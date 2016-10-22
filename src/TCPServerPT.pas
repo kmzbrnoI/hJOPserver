@@ -77,7 +77,7 @@ var
 implementation
 
 uses Logging, appEv, fMain,
-      PTEndpointBlok, PTEndpointBloky;
+      PTEndpointBlok, PTEndpointBloky, PTEndpointLok;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -113,6 +113,7 @@ begin
  // sem doplnit seznam vsech endpointu:
  Self.enpoints.Add(TPTEndpointBlok.Create());
  Self.enpoints.Add(TPTEndpointBloky.Create());
+ Self.enpoints.Add(TPTEndpointLok.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
@@ -173,7 +174,7 @@ end;
 
 procedure TPtServer.httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   AResponseInfo: TIdHTTPResponseInfo);
-var reqJson, respJson, errJson:TJsonObject;
+var reqJson, respJson:TJsonObject;
     endpoint:TPTEndpoint;
     found:boolean;
 begin

@@ -32,7 +32,7 @@ unit THnaciVozidlo;
 interface
 
 uses Trakce, TBlok, Classes, StrUtils, SysUtils, TOblRizeni, RPConst,
-      Generics.Collections, IdContext, IniFiles, IBUtils;
+      Generics.Collections, IdContext, IniFiles, IBUtils, JsonDataObjects;
 
 const
   _HV_FUNC_MAX       = 28;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
@@ -137,6 +137,10 @@ type
      procedure RemoveToken(token:string);              // smazani tokenu
      procedure UpdateTokenTimeout();                   // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
      procedure UpdateAllRegulators();
+
+     //PT:
+     procedure GetPtData(json:TJsonObject; includeState:boolean);
+     procedure GetPtState(json:TJsonObject);
 
      property adresa:Word read fadresa;                // adresa HV
      property ruc:boolean read Stav.ruc write SetRuc;  // rucni rizeni HV
@@ -754,6 +758,53 @@ var regulator:THVRegulator;
 begin
  for regulator in Self.Stav.regulators do
    TCPRegulator.LokToRegulator(regulator.conn, Self);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.GetPtData(json:TJsonObject; includeState:boolean);
+var i:Integer;
+begin
+ json['adresa']   := Self.adresa;
+ json['nazev']    := Self.Data.Nazev;
+ json['majitel']  := Self.Data.Majitel;
+ json['oznaceni'] := Self.Data.Oznaceni;
+ if (Self.Data.Poznamka <> '') then json['poznamka'] := Self.Data.Poznamka;
+
+ case (Self.Data.Trida) of
+  THVClass.parni   : json['trida'] := 'parni';
+  THVClass.diesel  : json['trida'] := 'diesel';
+  THVClass.motor   : json['trida'] := 'motor';
+  THVClass.elektro : json['trida'] := 'elektro';
+ end;
+
+ for i := 0 to _HV_FUNC_MAX do
+   json.A['vyznamFunkci'].Add(Self.Data.funcVyznam[i]);
+
+ if (includeState) then
+   Self.GetPtState(json['lokStav']);
+end;
+
+procedure THV.GetPtState(json:TJsonObject);
+var i:Integer;
+begin
+ json['rychlostStupne'] := Self.Slot.speed;
+ json['rychlostKmph']   := TrkSystem.GetStepSpeed(Self.Slot.speed);
+ json['smer']           := Self.Slot.smer;
+
+ for i := 0 to _HV_FUNC_MAX do
+   json.A['stavFunkci'].Add(Self.Slot.funkce[i]);
+
+ case (Self.Stav.StanovisteA) of
+  THVStanoviste.lichy : json['stanovisteA'] := 'L';
+  THVStanoviste.sudy  : json['stanovisteA'] := 'S';
+ end;
+
+ json.O['najetoVpred'].F['metru'] := Self.Stav.najeto_vpred.Metru;
+ json.O['najetoVpred'].I['bloku'] := Self.Stav.najeto_vpred.Bloku;
+
+ json.O['najetoVzad'].F['metru'] := Self.Stav.najeto_vzad.Metru;
+ json.O['najetoVzad'].I['bloku'] := Self.Stav.najeto_vzad.Bloku;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
