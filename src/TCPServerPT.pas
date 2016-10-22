@@ -28,6 +28,7 @@ const
   _PT_DEFAULT_PORT = 5823;
   _PT_MAX_CONNECTIONS = 10;
   _PT_COMPACT_RESPONSE = false;
+  _PT_CONTENT_TYPE = 'application/json';
 
 type
 
@@ -195,12 +196,25 @@ begin
          found := true;
          case (ARequestInfo.CommandType) of
           hcGET: endpoint.OnGET(AContext, ARequestInfo, respJson);
-          hcPOST: begin
+          hcPOST, hcPUT: begin
+             if (ARequestInfo.ContentType <> _PT_CONTENT_TYPE) then
+              begin
+               PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '406', 'Not acceptable', 'S timto content-type si neumim poradit');
+               found := true;
+               break;
+              end;
+
              reqJson := TJsonObject.ParseFromStream(ARequestInfo.PostStream, TEncoding.UTF8) as TJsonObject;
-             endpoint.OnPOST(AContext, ARequestInfo, respJson, reqJson);
+             case (ARequestInfo.CommandType) of
+               hcPOST: endpoint.OnPOST(AContext, ARequestInfo, respJson, reqJson);
+               hcPUT : endpoint.OnPUT(AContext, ARequestInfo, respJson, reqJson);
+             end;
              reqJson.Free();
           end;
-         end;//end
+         else
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
+          found := true;
+         end;
          break;
         end;
       end;
