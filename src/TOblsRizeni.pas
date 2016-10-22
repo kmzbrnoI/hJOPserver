@@ -42,6 +42,7 @@ type
       function GetORNameByIndex(index:Integer):string;
       function GetORIdByIndex(index:Integer):string;
       function GetORShortNameByIndex(index:Integer):string;
+      function GetORById(id:string):TOR;
 
       procedure Update();                                                       // aktualizuje stav OR
       procedure DisconnectPanels();                                             // odpoji vsechny panely dane OR
@@ -312,6 +313,17 @@ begin
    ORTCPServer.BottomError(client, err, '-', tech);
 
  clients.Free();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TORs.GetORById(id:string):TOR;
+var OblR:TOR;
+begin
+ for OblR in Self.ORsDatabase do
+   if (OblR.id = id) then
+     Exit(OblR);
+ Exit(nil);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

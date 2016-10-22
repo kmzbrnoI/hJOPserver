@@ -29,6 +29,8 @@ const
  _MAX_EVENTS    = 16;
 
 type
+ ETypeNotFound = class(Exception);
+
  //spolecne recordy:
  TMTBAddrs = record
   data:array[0.._BLK_MTBCNT-1] of TMTBAddr;
@@ -135,11 +137,14 @@ type
    procedure GetPtData(json:TJsonObject; includeState:boolean); virtual;
    procedure GetPtState(json:TJsonObject); virtual;
 
+   function IsInOR(OblR:TObject):boolean;
+
    class procedure AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class procedure RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
-   class function CreateCHangeEvent(func:TChangeEventFunc; data:Integer = 0):TChangeEvent;
+   class function CreateChangeEvent(func:TChangeEventFunc; data:Integer = 0):TChangeEvent;
 
    class function BlkTypeToStr(typ:Byte):string;
+   class function BlkTypeFromStr(typ:string):Byte;
    class procedure MTBtoJSON(const addrs:TMTBAddrs; var json:TJsonObject);
 
    //if some local variable is changed, this event is called to the program
@@ -480,6 +485,34 @@ end;
 class procedure TBlk.MTBtoJSON(const addrs:TMTBAddrs; var json:TJsonObject);
 begin
  // TODO
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlk.IsInOR(OblR:TObject):boolean;
+var i:Integer;
+begin
+ for i := 0 to Self.OblsRizeni.Cnt-1 do
+   if (Self.OblsRizeni.ORs[i] = OblR) then
+     Exit(true);
+ Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TBlk.BlkTypeFromStr(typ:string):Byte;
+begin
+ if (typ = 'vyhybka') or (typ = 'v˝hybka') then Result := _BLK_VYH
+ else if (typ = 'usek') or (typ = '˙sek') then Result := _BLK_USEK
+ else if (typ = 'ir') then Result := _BLK_IR
+ else if (typ = 'scom') then Result := _BLK_SCOM
+ else if (typ = 'prejezd') or (typ = 'p¯ejezd') then Result := _BLK_PREJEZD
+ else if (typ = 'trat') or (typ = 'traù') then Result := _BLK_TRAT
+ else if (typ = 'uvazka') or (typ = '˙vazka') then Result := _BLK_UVAZKA
+ else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovaË') then Result := _BLK_ROZP
+ else if (typ = 'tratUsek') or (typ = 'traù⁄sek') or (typ = 'tu') or (typ = 'TU') then Result := _BLK_TU
+ else if (typ = 'vystup') or (typ = 'v˝stup') then Result := _BLK_VYSTUP
+ else raise ETypeNotFound.Create('Blok typu '+typ+' neexistuje');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

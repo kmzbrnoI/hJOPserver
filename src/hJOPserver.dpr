@@ -121,7 +121,9 @@ uses
   TCPServerPT in 'TCPServerPT.pas',
   JsonDataObjects in '..\lib\JsonDataObjects\Source\JsonDataObjects.pas',
   PTEndpoint in 'PTEndpoint.pas',
-  PTEndpointBlok in 'PTEndpointBlok.pas';
+  PTEndpointBlok in 'PTEndpointBlok.pas',
+  PTEndpointBloky in 'PTEndpointBloky.pas',
+  PTUtils in 'PTUtils.pas';
 
 {$R *.res}
 

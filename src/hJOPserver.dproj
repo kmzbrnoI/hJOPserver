@@ -236,6 +236,8 @@
 			<DCCReference Include="..\lib\JsonDataObjects\Source\JsonDataObjects.pas"/>
 			<DCCReference Include="PTEndpoint.pas"/>
 			<DCCReference Include="PTEndpointBlok.pas"/>
+			<DCCReference Include="PTEndpointBloky.pas"/>
+			<DCCReference Include="PTUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

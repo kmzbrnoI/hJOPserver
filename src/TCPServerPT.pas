@@ -22,7 +22,7 @@ interface
 
 uses SysUtils, Classes, Graphics, PTEndpoint, Generics.Collections,
      IdHttpServer, IdSocketHandle, IdContext, IdCustomHTTPServer, IdComponent,
-     JsonDataObjects;
+     JsonDataObjects, PTUtils;
 
 const
   _PT_DEFAULT_PORT = 5823;
@@ -67,8 +67,6 @@ type
      procedure Start();
      procedure Stop();
 
-     class function ErrorToJson(httpCode:string; title:string; detail:string = ''):TJsonObject;
-
       property openned:boolean read IsOpenned;
       property port:Word read GetPort write SetPort;
   end;
@@ -78,7 +76,8 @@ var
 
 implementation
 
-uses Logging, appEv, fMain, PTEndpointBlok;
+uses Logging, appEv, fMain,
+      PTEndpointBlok, PTEndpointBloky;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -113,6 +112,7 @@ begin
 
  // sem doplnit seznam vsech endpointu:
  Self.enpoints.Add(TPTEndpointBlok.Create());
+ Self.enpoints.Add(TPTEndpointBloky.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
@@ -213,17 +213,15 @@ begin
    except
     on Eorig:Exception do
      begin
-      errJson := TJsonObject.Create();
       try
-        errJson['status'] := '500';
-        errJson['title']  := 'Request exception';
-        errJson['detail'] := Eorig.Message;
-        respJson.A['errors'].Add(errJson);
+        AResponseInfo.ContentType := 'application/json; charset=utf-8';
+        AResponseInfo.ContentStream := TStringStream.Create();
+        AResponseInfo.FreeContentStream := true;
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Request exception', Eorig.Message);
         respJson.SaveToStream(AResponseInfo.ContentStream, _PT_COMPACT_RESPONSE, TEncoding.UTF8);
       except
         AResponseInfo.ContentText := '{"errors":["title":"Server general error"]}';
       end;
-      errJson.Free();
      end;
    end;
  finally
@@ -288,18 +286,10 @@ end;
 procedure TPtServer.httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject);
 begin
- respJson.A['errors'].Add(TPtServer.ErrorToJson('404', 'Neznamy endpoint'));
+ PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Neznamy endpoint');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-class function TPtServer.ErrorToJson(httpCode:string; title:string; detail:string = ''):TJsonObject;
-begin
- Result := TJsonObject.Create();
- Result['code']  := httpCode;
- Result['title'] := title;
- if (detail <> '') then Result['detail'] := detail;
-end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

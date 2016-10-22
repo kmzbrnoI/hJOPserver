@@ -15,7 +15,8 @@ unit TBloky;
 interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
-      RPConst, Generics.Collections, Classes, IdContext, IBUtils;
+      RPConst, Generics.Collections, Classes, IdContext, IBUtils,
+      JsonDataObjects;
 
 type
 
@@ -109,6 +110,9 @@ type
 
     class function GetBlksList(first:TObject = nil; second:TObject = nil; third:TObject = nil):TBlksList;
 
+    // vrati vsechny bloky do JSON objektu PTserveru
+    procedure GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ:Integer = -1);
+
     property Cnt:Integer read GetCount;
     property fstatus:string read ffstatus;
     property blky_file:string read ffile;
@@ -123,7 +127,7 @@ implementation
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
       TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieMTB,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
-      TBlokTratUsek, appEv, TBlokVystup;
+      TBlokTratUsek, appEv, TBlokVystup, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -978,6 +982,27 @@ begin
    else Self.data[i].table_index := i;
 
  BlokyTableData.BlkMove(index, new_index);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ:Integer = -1);
+var Blk:TBlk;
+begin
+ for Blk in Self.data do
+  begin
+   try
+     if ((stanice <> nil) and (not Blk.IsInOR(stanice))) then continue;
+     if ((typ <> -1) and (Blk.GetGlobalSettings().typ <> typ)) then continue;
+
+     Blk.GetPtData(json.A['bloky'].AddObject, includeState);
+   except
+     on E:Exception do
+       PTUtils.PtErrorToJson(json.A['errors'].AddObject,
+        '500', 'Chyba pri nacitani bloku '+IntToStr(Blk.GetGlobalSettings.id)+' : '+Blk.GetGlobalSettings.name,
+        E.Message);
+   end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
