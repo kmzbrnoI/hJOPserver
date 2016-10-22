@@ -240,6 +240,7 @@
 			<DCCReference Include="PTUtils.pas"/>
 			<DCCReference Include="PTEndpointLok.pas"/>
 			<DCCReference Include="PTEndpointLoks.pas"/>
+			<DCCReference Include="PTEndpointBlokStav.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

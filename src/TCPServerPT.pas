@@ -77,7 +77,7 @@ var
 implementation
 
 uses Logging, appEv, fMain,
-      PTEndpointBlok, PTEndpointBloky,
+      PTEndpointBlok, PTEndpointBloky, PTEndpointBlokStav,
       PTEndpointLok, PTEndpointLoks;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +114,7 @@ begin
  // sem doplnit seznam vsech endpointu:
  Self.enpoints.Add(TPTEndpointBlok.Create());
  Self.enpoints.Add(TPTEndpointBloky.Create());
+ Self.enpoints.Add(TPTEndpointBlokStav.Create());
  Self.enpoints.Add(TPTEndpointLok.Create());
  Self.enpoints.Add(TPTEndpointLoks.Create());
 end;//ctor
