@@ -43,7 +43,7 @@ implementation
 uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
      TechnologieMTB, Verze, fHVEdit, TechnologieJC, fConsole, TOblsRizeni, TBloky,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, BoosterDb,
-     Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase,
+     Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase, TCPServerPT,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv;
 
@@ -369,6 +369,15 @@ var str:string;
 
    ORTCPServer.port := ini.ReadInteger('PanelServer', 'port', _PANEL_DEFAULT_PORT);
 
+   try
+     PtServer.port := ini.ReadInteger('PTServer', 'port', _PT_DEFAULT_PORT);
+   except
+     on E:EPTActive do
+       writeLog('PT ERR: '+E.Message, WR_PT);
+   end;
+
+   PtServer.compact := ini.ReadBool('PTServer', 'compact', _PT_COMPACT_RESPONSE);
+
    // autosave
 
    Data.autosave        := ini.ReadBool('autosave', 'enabled', true);
@@ -415,6 +424,9 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
   ini.WriteInteger('PanelServer', 'port', ORTCPServer.port);
   ini.WriteString('PanelServer', 'nazev', UDPdisc.name);
   ini.WriteString('PanelServer', 'popis', UDPdisc.description);
+
+  ini.WriteInteger('PTServer', 'port', PtServer.port);
+  ini.WriteBool('PTServer', 'compact', PtServer.compact);
 
   SS.SaveData(Konfigurace.ini);
 

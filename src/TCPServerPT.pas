@@ -42,6 +42,8 @@ type
 
     httpServer: TIdHTTPServer;
 
+    Fcompact:boolean;
+
     // http server events
     procedure httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
@@ -71,6 +73,7 @@ type
 
       property openned:boolean read IsOpenned;
       property port:Word read GetPort write SetPort;
+      property compact:boolean read Fcompact write Fcompact;
   end;
 
 var
@@ -89,6 +92,9 @@ var bindings:TIdSocketHandles;
     binding:TIdSocketHandle;
 begin
  inherited;
+
+ // initialize variables
+ Self.Fcompact := _PT_COMPACT_RESPONSE;
 
  // bind all addresses
  bindings := TIdSocketHandles.Create(nil);
@@ -236,7 +242,7 @@ begin
      AResponseInfo.ContentType := 'application/json; charset=utf-8';
      AResponseInfo.ContentStream := TStringStream.Create();
      AResponseInfo.FreeContentStream := true;
-     respJson.SaveToStream(AResponseInfo.ContentStream, _PT_COMPACT_RESPONSE, TEncoding.UTF8);
+     respJson.SaveToStream(AResponseInfo.ContentStream, Self.compact, TEncoding.UTF8);
 
    except
     on Eorig:Exception do
