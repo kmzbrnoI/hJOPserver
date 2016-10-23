@@ -148,7 +148,8 @@ type
 
    class function BlkTypeToStr(typ:Byte):string;
    class function BlkTypeFromStr(typ:string):Byte;
-   class procedure MTBtoJSON(const addrs:TMTBAddrs; var json:TJsonObject);
+   class procedure MTBstoJSON(const addrs:TMTBAddrs; json:TJsonArray);
+   class procedure MTBtoJSON(const addr:TMTBAddr; json:TJsonObject);
 
    //if some local variable is changed, this event is called to the program
    property OnChange:TOnBlkChange read FOnChange write FOnChange;
@@ -490,9 +491,22 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.MTBtoJSON(const addrs:TMTBAddrs; var json:TJsonObject);
+class procedure TBlk.MTBstoJSON(const addrs:TMTBAddrs; json:TJsonArray);
+var i:Integer;
+    newObj:TJsonObject;
 begin
- // TODO
+ for i := 0 to addrs.Count-1 do
+  begin
+   newObj := json.AddObject();
+   newObj['board'] := addrs.data[i].board;
+   newObj['port'] := addrs.data[i].port;
+  end;
+end;
+
+class procedure TBlk.MTBtoJSON(const addr:TMTBAddr; json:TJsonObject);
+begin
+ json['board'] := addr.board;
+ json['port'] := addr.port;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

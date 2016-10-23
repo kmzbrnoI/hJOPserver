@@ -1060,7 +1060,7 @@ procedure TBlkUsek.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- // TODO: MTB
+ TBlk.MTBstoJSON(Self.UsekSettings.MTBAddrs, json.A['mtb']);
 
  json['delka'] := Self.UsekSettings.Lenght;
  if (Self.UsekSettings.SmcUsek) then json['smyckaUsek'] := Self.UsekSettings.SmcUsek;

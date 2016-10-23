@@ -1021,7 +1021,10 @@ procedure TBlkVyhybka.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- // TODO: MTB
+ TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[0], json['mtb'].O['vstup+']);
+ TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[1], json['mtb'].O['vstup-']);
+ TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[2], json['mtb'].O['vystup+']);
+ TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[3], json['mtb'].O['vystup-']);
 
  json['usek'] := Self.VyhRel.UsekID;
 

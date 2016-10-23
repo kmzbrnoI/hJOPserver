@@ -150,7 +150,8 @@ procedure TBlkIR.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- // TODO: MTB
+ TBlk.MTBtoJSON(Self.IRSettings.MTBAddrs.data[0], json['mtb'].O['mtb']);
+
  if (includeState) then
    Self.GetPtState(json['blokStav']);
 end;
