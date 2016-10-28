@@ -783,7 +783,7 @@ begin
  end;
 
  lastFunction := _HV_FUNC_MAX;
- while ((Self.Data.funcVyznam[lastFunction] = '') and (lastFunction >= 0)) do
+ while ((lastFunction >= 0) and (Self.Data.funcVyznam[lastFunction] = '')) do
    Dec(lastFunction);
 
  for i := 0 to lastFunction do
