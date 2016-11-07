@@ -823,7 +823,8 @@ begin
    // kontrola rucniho rizeni lokomotiv
    if (Self.fproperties.TypCesty = TJCType.vlak) then
      for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.cnt-1 do
-       if (HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].Slot.stolen) then
+       if ((HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].Slot.stolen) or
+           (HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]));
          flag := true;
@@ -832,7 +833,8 @@ begin
    // pokud jsou jen nektere lokomotivy rizene rucne
    if (flag) then
      for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.cnt-1 do
-       if (not HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].Slot.stolen) then
+       if ((not HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].Slot.stolen) and
+           (not HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_NOT_ALL_RUC));
          break;
