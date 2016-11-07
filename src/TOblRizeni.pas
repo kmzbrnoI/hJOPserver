@@ -1805,8 +1805,8 @@ begin
 
  // zadost o vydani tokenu
  // odpovedi:
-  //  or;LOK-TOKEN;OK;[addr|token][addr|token]- odpovìï na žádost o token, je posílano také pøi RUÈ loko
-  //  or;LOK-TOKEN;ERR;comment                - chybova odpoved na zadost o token
+  //  or;LOK-TOKEN;OK;[addr|token][addr|token] - odpovìï na žádost o token, je posílano také pøi RUÈ loko
+  //  or;LOK-TOKEN;ERR;addr1|addr2...;comment  - chybova odpoved na zadost o token
  if (str[2] = 'PLEASE') then
   begin
    // parsing loko
@@ -1821,7 +1821,7 @@ begin
        // kontrola existence loko
        if (HV = nil) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;Loko '+data[i]+' neexistuje');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' neexistuje');
          Exit();
         end;
 
@@ -1829,14 +1829,14 @@ begin
        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
        if ((HV.Stav.stanice <> Self) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;Loko '+data[i]+' se nenachází ve stanici');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' se nenachází ve stanici');
          Exit();
         end;
 
        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
        if ((HV.Stav.regulators.Count > 0) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;Loko '+data[i]+' již otevøeno v regulátoru');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' již otevøeno v regulátoru');
          Exit();
         end;
       end;//for i

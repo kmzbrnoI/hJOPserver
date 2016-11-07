@@ -326,7 +326,7 @@ implementation
   or;RUC-RM;addr                                                                smazani informace o rucnim rizeni hnaciho vozidla
 
   or;LOK-TOKEN;OK;[addr|token][addr|token]                                      odpovìï na žádost o token, je posílano také pøi RUÈ loko
-  or;LOK-TOKEN;ERR;comment                                                      chybova odpoved na zadost o token
+  or;LOK-TOKEN;ERR;addr1|addr2...;comment                                                      chybova odpoved na zadost o token
   or;LOK-REQ;REQ;username;firstname;lastname;comment                            pozadavek na prevzeti loko na rucni rizeni
   or;LOK-REQ;U-OK;[hv1][hv2]...                                                 seznamu hnacich vozidel v danem useku
   or;LOK-REQ;U-ERR;info                                                         chyba odpoved na pozadavek na seznam loko v danem useku
