@@ -452,7 +452,6 @@ begin
 
  if (i = Self._MAX_FORMS) then Exit(1);
 
- Self.forms.data[i] := TF_DigiReg.Create(Application);
  Self.forms.data[i].OpenForm(HV);
 
  Result := 0;
