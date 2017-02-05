@@ -431,6 +431,7 @@ type
 
     // MTB events:
     procedure OnMTBStart(Sender:TObject);
+    procedure OnMTBScanned(Sender:TObject);
     procedure OnMTBStop(Sender:TObject);
     procedure OnMTBOpen(Sender:TObject);
     procedure OnMTBClose(Sender:TObject);
@@ -1147,9 +1148,17 @@ begin
 
   writelog('----- MTB START OK -----',WR_MTB);
 
-  Self.LogStatus('MTB: komunikace spuštìna');
-  F_Main.S_MTB_Start.Brush.Color     := clLime;
+  Self.LogStatus('MTB: komunikace spuštìna, èekám na první sken všech modulù...');
   MTBTableData.UpdateTable();
+end;//procedure
+
+procedure TF_Main.OnMTBScanned(Sender:TObject);
+begin
+  F_Main.S_MTB_Start.Brush.Color := clLime;
+  MTBTableData.UpdateTable();
+
+  writelog('----- MTB SCANNED -----',WR_MTB);
+  Self.LogStatus('MTB: moduly naskenovány');
 
   if (F_Admin.CHB_SystemStart.Checked) then
     Blky.Enable();
@@ -1163,7 +1172,7 @@ begin
 
   if (SystemData.Status = starting) then
    Self.A_Trk_ConnectExecute(nil);
-end;//procedure
+end;
 
 procedure TF_Main.OnMTBStop(Sender:TObject);
 begin
@@ -2261,6 +2270,7 @@ procedure TF_Main.CreateSystem;
   MTB.AfterClose := Self.OnMTBClose;
   MTB.AfterStart := Self.OnMTBStart;
   MTB.AfterStop  := Self.OnMTBStop;
+  MTB.OnScanned  := Self.OnMTBScanned;
 
   // TODO
 {  MTB.OnErrOpen  := Self.OnMTBErrOpen;
