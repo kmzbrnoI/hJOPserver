@@ -81,7 +81,7 @@ var cyklus:Integer;
 procedure TF_Tester.UpdateOut;
 var cyklus, val:Integer;
  begin
-  if ((not MTB.NoExStarted()) or (MTBAddr < 0)) then
+  if ((not MTB.NoExStarted()) or (MTBAddr < 0) or (MTB.IsModuleFailure(MTBAddr))) then
    begin
     for cyklus := 0 to 15 do
       SOutput[cyklus].Brush.Color := clGray;
@@ -116,7 +116,7 @@ var i:Integer;
     LastState:TRCSInputState;
     stateStr:string;
  begin
-  if ((not MTB.NoExStarted()) or (MTBAddr < 0)) then
+  if ((not MTB.NoExStarted()) or (MTBAddr < 0) or (MTB.IsModuleFailure(MTBAddr))) then
    begin
     for i := 0 to 15 do
       SInput[i].Brush.Color := clGray;
