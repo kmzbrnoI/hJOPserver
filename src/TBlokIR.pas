@@ -123,7 +123,7 @@ begin
 
  try
    state := MTB.GetInput(Self.IRSettings.MTBAddrs.data[0].board,Self.IRSettings.MTBAddrs.data[0].port)
- finally
+ except
    state := failure;
  end;
 

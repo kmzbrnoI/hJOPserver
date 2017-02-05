@@ -15,9 +15,7 @@ unit TechnologieMTB;
 
 interface
 
-uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, IniFiles, Generics.Collections, RCS;
+uses SysUtils, Classes, IniFiles, Generics.Collections, RCS;
 
 type
   TErrEvent = procedure(Sender:TObject; errValue: word; errAddr: byte; errMsg:string) of object;
@@ -54,10 +52,6 @@ type
      afilename:string;                                      // filename ke konfiguracnimu souboru
      aReady:boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
 
-     DllVersion:string;                                     // verze DLL knihovny
-     DriverVersion:string;                                  // verze MTB driveru v DLL knihovne
-     DeviceVersion:string;                                  // verze firmware v MTB-USB
-
      fGeneralError:boolean;                                 // flag oznamujici nastani "MTB general IO error" -- te nejhorsi veci na svete
 
      //events to the main program
@@ -70,8 +64,6 @@ type
       procedure DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string);
       procedure DllOnInputChanged(Sender:TObject; module:byte);
       procedure DllOnOutputChanged(Sender:TObject; module:byte);
-      procedure DllOnLog(Sender: TObject; logLevel:Integer; msg:string);
-      procedure DllOnScanned(Sender: TObject);
 
    public
       constructor Create();
@@ -84,25 +76,11 @@ type
 
       function NoExStarted():boolean;
 
-{      procedure SetOutput(module, port: Integer; state: Integer);
-      procedure SetInput(MtbAdr:integer;vstup:integer;state:integer);
-      function GetInput(MtbAdr:integer;vstup:integer):integer;
-      function GetOutput(MtbAdr:integer; port:integer):integer;
-      function GetModuleFirmware(MtbAdr:integer):string; }
-
       procedure SetNeeded(MtbAdr:Integer; state:boolean = true);
       function GetNeeded(MtbAdr:Integer):boolean;
 
       procedure LoadFromFile(FileName:string);
       function SaveToFile(FileName:string):Byte;
-
-{      function GetTypeIntMTB(addr:byte):Integer;
-      function GetTypeStrMTB(addr:byte):string;
-      function GetNameMTB(Addr:integer):string; }
-
-//      function IsModule(addr:Integer):Boolean;
-
-      procedure NullOutputs();
 
       procedure AddInputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
       procedure RemoveInputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
@@ -115,26 +93,20 @@ type
       //events
       property AfterClose:TNotifyEvent read fAfterClose write fAfterClose;
 
-{      property OnErrOpen:TErrEvent read FOnOpenErr write FOnOpenErr;
-      property OnErrClose:TErrEvent read FOnCloseErr write FOnCloseErr;
-      property OnErrStart:TErrEvent read FOnStartErr write FOnStartErr;
-      property OnErrStop:TErrEvent read FOnStopErr write FOnStopErr; }
-
       property OnReady:TMTBReadyEvent read fOnReady write fOnReady;
       property ready:boolean read aready;
       property filename:string read afilename;
   end;
 
 var
-  MTB:TMTB;                      //Zarizeni MTB
+  MTB:TMTB;
 
 
 implementation
 
-uses fMain, fLoginPozadi, fSystemInfo, fAdminForm,
-     GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
-     TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
-     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster, StrUtils;
+uses fMain, fAdminForm, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
+     TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd, RCSErrors, TOblsRizeni,
+     Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster, StrUtils;
 
 constructor TMTB.Create();
 var i:Integer;
@@ -148,14 +120,10 @@ begin
  Self.fGeneralError := false;
 
  //assign events
- TRCSIFace(Self).AfterClose := Self.DllAfterClose; // TODO: will this work?
+ TRCSIFace(Self).AfterClose := Self.DllAfterClose;
  TRCSIFace(Self).OnError    := Self.DllOnError;
-
-{ MTBdrv.OnInputChanged  := Self.DllOnInputChanged;
- MTBdrv.OnOutputChanged := Self.DllOnOutputChanged;
- MTBdrv.OnLog           := Self.DllOnLog;
- MTBdrv.OnScanned       := Self.DllOnScanned; }
- // TODO
+ TRCSIFace(Self).OnInputChanged  := Self.DllOnInputChanged;
+ TRCSIFace(Self).OnOutputChanged := Self.DllOnOutputChanged;
 end;
 
 destructor TMTB.Destroy();
@@ -287,61 +255,6 @@ begin
   Result := 0;
 end;
 
-procedure TMTB.NullOutputs();
-var i,j:Integer;
-begin
- for i := 0 to _MAX_MTB-1 do
-   if (Self.IsModule(i)) then
-     for j := 0 to 15 do MTB.SetOutput(i, j, 0);
-end;
-
-{procedure TMTB.SetInput(MtbAdr:integer;vstup:integer;state:integer);
-begin
- try
-//   MTBdrv.SetInput(MtbAdr, vstup, state);
- except
-
- end;
-end;//procedure
-
-function TMTB.GetModuleFirmware(MtbAdr:integer):string;
-begin
- try
-//   Result := MTBdrv.GetModuleFirmware(MtbAdr);
- except
-   Result := '-';
- end;
-end;//function
-
-procedure TMTB.ShowCfgDialog;
-begin
- try
-//   MTBdrv.ShowConfigDialog();
- except
-
- end;
-end;//procedure
-
-procedure TMTB.HideCfgDialog;
-begin
- try
-//   MTBdrv.HideConfigDialog();
- except
-
- end;
-end;//procedure     }
-
-{function TMTB.IsModule(addr:Integer):Boolean;
-begin
- try
-   Result := MTBdrv.GetModuleExists(addr);
- except
-   Result := false;
- end;
-end;//function      }
-
-//----- events from dll begin -----
-
 procedure TMTB.DllAfterClose(Sender:TObject);
 begin
  Self.fGeneralError := false;
@@ -356,11 +269,7 @@ begin
   begin
    //errors on main board (MTB-USB)
    case (errValue) of
-{    1,2,3    : if (Assigned(Self.OnErrOpen)) then Self.OnErrOpen(Self, errValue, errAddr, errMsg);
-    11       : if (Assigned(Self.OnErrClose)) then Self.OnErrClose(Self, errValue, errAddr, errMsg);
-    21,22,25 : if (Assigned(Self.OnErrStart)) then Self.OnErrStart(Self, errValue, errAddr, errMsg);
-    31       : if (Assigned(Self.OnErrStop)) then Self.OnErrStop(Self, errValue, errAddr, errMsg); } // TODO
-    301..306,4: begin
+    RCS_FT_EXCEPTION: begin
       // general IO error
       F_Main.A_System_Start.Enabled := true;
       F_Main.A_System_Stop.Enabled  := true;
@@ -376,8 +285,8 @@ begin
   end else begin
    // errors on MTB boards
    case (errValue) of
-    141: ORs.MTBFail(errAddr); // communication with module failed
-    142:; // communication with module restored, nothing should be here
+    RCS_MODULE_FAIL: ORs.MTBFail(errAddr); // communication with module failed
+    RCS_MODULE_RESTORED:; // communication with module restored, nothing should be here
    end;
   end;//
 end;//procedure
@@ -398,16 +307,6 @@ begin
    if (Assigned(Self.Desky[module].outputChangedEv[i])) then Self.Desky[module].outputChangedEv[i](Self, module)
      else Self.Desky[module].outputChangedEv.Delete(i);
  MTBTableData.UpdateLine(module);
-end;
-
-procedure TMTB.DllOnLog(Sender: TObject; logLevel:Integer; msg:string);
-begin
-
-end;
-
-procedure TMTB.DllOnScanned(Sender: TObject);
-begin
-
 end;
 
 //----- events from dll end -----
