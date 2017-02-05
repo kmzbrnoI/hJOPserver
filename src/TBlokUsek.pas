@@ -286,9 +286,13 @@ end;//procedure
 procedure TBlkUsek.Enable();
 var i:Integer;
 begin
- for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
-   if (not MTB.IsModule(Self.UsekSettings.MTBAddrs.data[i].board)) then
-    Exit();
+ try
+   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+     if (not MTB.IsModule(Self.UsekSettings.MTBAddrs.data[i].board)) then
+      Exit();
+ except
+   Exit();
+ end;
 
  Self.UsekStav.Stav    := none;
  Self.UsekStav.StavOld := none;
@@ -861,15 +865,23 @@ end;//procedure
 procedure TBlkUsek.MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
 var i:Integer;
 begin
- for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
-   MTB.SetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port, 1);
+ try
+   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+     MTB.SetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port, 1);
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
 end;//procedure
 
 procedure TBlkUsek.MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
 var i:Integer;
 begin
- for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
-   MTB.SetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port, 0);
+ try
+   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+     MTB.SetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port, 0);
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

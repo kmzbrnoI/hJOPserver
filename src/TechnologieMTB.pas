@@ -75,6 +75,7 @@ type
       procedure SoupravaUsekSim();                                              // nastavit MTB vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
 
       function NoExStarted():boolean;
+      function NoExOpened():boolean;
 
       procedure SetNeeded(MtbAdr:Integer; state:boolean = true);
       function GetNeeded(MtbAdr:Integer):boolean;
@@ -384,6 +385,15 @@ function TMTB.NoExStarted():boolean;
 begin
  try
    Result := Self.Started();
+ except
+   Result := false;
+ end;
+end;
+
+function TMTB.NoExOpened():boolean;
+begin
+ try
+   Result := Self.Opened();
  except
    Result := false;
  end;

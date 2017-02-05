@@ -462,12 +462,18 @@ var iplus,iminus: TRCSInputState;
     iminus := failure;
   end;
 
-  if ((iplus = failure) or (iminus = failure) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[2].board)) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[3].board))) then
-   begin
+  try
+    if ((iplus = failure) or (iminus = failure) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[2].board)) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[3].board))) then
+     begin
+      if (Self.Stav.poloha <> TVyhPoloha.disabled) then
+        Self.VyhStav.poloha := TVyhPoloha.disabled;
+      Exit();
+     end;
+  except
     if (Self.Stav.poloha <> TVyhPoloha.disabled) then
       Self.VyhStav.poloha := TVyhPoloha.disabled;
     Exit();
-   end;
+  end;
 
 
   if ((iplus = isOff) and (iminus = isOff)) then
@@ -644,8 +650,14 @@ begin
 
  if (new = plus) then
   begin
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board,Self.VyhSettings.MTBAddrs.data[2].port, 1);
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board,Self.VyhSettings.MTBAddrs.data[3].port, 0);
+   try
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board,Self.VyhSettings.MTBAddrs.data[2].port, 1);
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board,Self.VyhSettings.MTBAddrs.data[3].port, 0);
+   except
+     for i := 0 to Self.OblsRizeni.Cnt-1 do
+       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka MTB SetOutput', 'TECHNOLOGIE');
+     if (Assigned(callback_err)) then callback_err(self);
+   end;
 
    if (Self.VyhStav.poloha <> plus) then Self.VyhStav.staveni_plus := true;
    Self.VyhStav.staveni_minus := false;
@@ -655,8 +667,14 @@ begin
 
  if (new = minus) then
   begin
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 1);
+   try
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 1);
+   except
+     for i := 0 to Self.OblsRizeni.Cnt-1 do
+       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka MTB SetOutput', 'TECHNOLOGIE');
+     if (Assigned(callback_err)) then callback_err(self);
+   end;
 
    Self.VyhStav.staveni_plus  := false;
    if (Self.VyhStav.poloha <> minus) then Self.VyhStav.staveni_minus := true;
@@ -714,8 +732,13 @@ begin
 
  if (Now >= Self.NullOutput.NullOutputTime) then
   begin
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board,Self.VyhSettings.MTBAddrs.data[2].port,0);
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board,Self.VyhSettings.MTBAddrs.data[3].port,0);
+   try
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board,Self.VyhSettings.MTBAddrs.data[2].port,0);
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board,Self.VyhSettings.MTBAddrs.data[3].port,0);
+   except
+
+   end;
+
    Self.NullOutput.enabled := false;
    Self.Change();
   end;

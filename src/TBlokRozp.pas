@@ -229,10 +229,14 @@ end;//procedure
 
 procedure TBlkRozp.UpdateOutput();
 begin
- if (Self.status = TRozpStatus.active) then
-   MTB.SetOutput(Self.RozpSettings.MTBAddrs.data[0].board, Self.RozpSettings.MTBAddrs.data[0].port, 1)
- else
-   MTB.SetOutput(Self.RozpSettings.MTBAddrs.data[0].board, Self.RozpSettings.MTBAddrs.data[0].port, 0);
+ try
+   if (Self.status = TRozpStatus.active) then
+     MTB.SetOutput(Self.RozpSettings.MTBAddrs.data[0].board, Self.RozpSettings.MTBAddrs.data[0].port, 1)
+   else
+     MTB.SetOutput(Self.RozpSettings.MTBAddrs.data[0].board, Self.RozpSettings.MTBAddrs.data[0].port, 0);
+ except
+
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

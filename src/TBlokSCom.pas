@@ -315,8 +315,12 @@ end;//procedure
 
 procedure TBlkSCom.Enable();
 begin
- if (not MTB.IsModule(Self.SComSettings.MTBAddrs.data[0].board)) then
-  Exit();
+ try
+   if (not MTB.IsModule(Self.SComSettings.MTBAddrs.data[0].board)) then
+     Exit();
+ except
+   Exit();
+ end;
 
  Self.SComStav.Navest := 0;
  Self.Change();
@@ -568,18 +572,22 @@ begin
  Self.SComStav.Navest := navest;
 
  //reseni typu navestidla (scom/binary)
- if (Self.SComSettings.OutputType = scom) then
-  begin
-   //scom
-   MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,navest);
-  end else begin
-   //binary
-   case (navest) of
-    0,5,13,16..127:MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,0);
-   else//case (navest)
-    MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,1);
-   end;//else case 0,5,13,16..127
-  end;//else
+ try
+   if (Self.SComSettings.OutputType = scom) then
+    begin
+     //scom
+     MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,navest);
+    end else begin
+     //binary
+     case (navest) of
+      0,5,13,16..127:MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,0);
+     else//case (navest)
+      MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,1);
+     end;//else case 0,5,13,16..127
+    end;//else
+ except
+
+ end;
 
  if (Self.SComStav.Navest = 0) then
   begin
@@ -831,15 +839,19 @@ end;//procedure
 procedure TBlkSCom.MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:boolean);
 var Blk:TBlk;
 begin
- if (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir) then
-  begin
-   Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.irid, Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit();
-   if (enabled) then
-     MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 1)
-   else
-     MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 0);
-  end;
+ try
+   if (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir) then
+    begin
+     Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.irid, Blk);
+     if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit();
+     if (enabled) then
+       MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 1)
+     else
+       MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 0);
+    end;
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se nastavit stav IR èidla!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -205,8 +205,12 @@ end;//procedure
 
 procedure TBlkPrejezd.Enable();
 begin
- if (not MTB.IsModule(Self.PrjSettings.MTB)) then
-  Exit();
+ try
+   if (not MTB.IsModule(Self.PrjSettings.MTB)) then
+    Exit();
+ except
+   Exit();
+ end;
 
  Self.PrjStav.basicStav := TBlkPrjBasicStav.none;
  Self.Change();
@@ -223,10 +227,17 @@ end;//procedure
 procedure TBlkPrejezd.Update();
 var new_stav:TBlkPrjBasicStav;
     i:Integer;
+    available:boolean;
 begin
  if (not (GetFunctions.GetSystemStart())) then Exit;
 
- if (not MTB.IsModule(Self.PrjSettings.MTB)) then
+ try
+   available :=  MTB.IsModule(Self.PrjSettings.MTB);
+ except
+   available := false;
+ end;
+
+ if (not available) then
   begin
    if (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled) then
     begin
@@ -309,27 +320,30 @@ end;//function
 
 procedure TBlkPrejezd.UpdateOutputs();
 begin
- if ((Self.PrjStav.PC_UZ) or (Self.Zaver)) then
-  begin
-   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 1);
-  end else begin
-   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 0);
-  end;
+ try
+   if ((Self.PrjStav.PC_UZ) or (Self.Zaver)) then
+    begin
+     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 1);
+    end else begin
+     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 0);
+    end;
 
- if (Self.PrjStav.PC_NOT) then
-  begin
-   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 1);
-  end else begin
-   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 0);
-  end;
+   if (Self.PrjStav.PC_NOT) then
+    begin
+     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 1);
+    end else begin
+     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 0);
+    end;
 
- if (Self.PrjStav.vyl <> '') then
-  begin
-   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 1);
-  end else begin
-   MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 0);
-  end;
+   if (Self.PrjStav.vyl <> '') then
+    begin
+     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 1);
+    end else begin
+     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 0);
+    end;
+ except
 
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,12 +423,20 @@ end;
 
 procedure TBlkPrejezd.MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 1);
+ try
+   MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 1);
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
 end;
 
 procedure TBlkPrejezd.MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 0);
+ try
+   MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 0);
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
 end;
 
 procedure TBlkPrejezd.MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);

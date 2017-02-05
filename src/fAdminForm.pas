@@ -169,8 +169,13 @@ procedure TF_Admin.B_InputSimClick(Sender: TObject);
  begin
   if (LowerCase(MTB.Lib) = 'simulator.dll') then
    begin
-    MTB.InputSim();
-    writelog('Proveden InputSim',WR_MTB);
+    try
+      MTB.InputSim();
+      writelog('Proveden InputSim',WR_MTB);
+    except
+      on E:Exception do
+        Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+    end;
    end;
  end;//procedure
 
@@ -214,35 +219,38 @@ var i:Integer;
     Blk, Nav:TBlk;
     UsekSet:TBlkUsekSettings;
 begin
- if (JC.stav.RozpadRuseniBlok = 0) then
-  begin
-   Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-   Blky.GetBlkByID((Nav as TBlkSCom).UsekID, Blk);
-
-   if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.obsazeno) then
+ try
+   if (JC.stav.RozpadRuseniBlok = 0) then
     begin
+     Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
+     Blky.GetBlkByID((Nav as TBlkSCom).UsekID, Blk);
+
+     if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.obsazeno) then
+      begin
+       UsekSet := (Blk as TBlkUsek).GetSettings();
+       for i := 0 to UsekSet.MTBAddrs.Count-1 do
+        MTB.SetInput(UsekSet.MTBAddrs.data[i].board, UsekSet.MTBAddrs.data[i].port, 0);
+       Exit();
+      end;
+    end;//uvolnit usek pred navestidlem
+
+   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) and (JC.stav.RozpadRuseniBlok >= 0)) or (JC.stav.RozpadBlok = JC.data.Useky.Count)) then
+    begin
+     // uvolnit RozpadRuseniBlok
+     Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
      for i := 0 to UsekSet.MTBAddrs.Count-1 do
       MTB.SetInput(UsekSet.MTBAddrs.data[i].board, UsekSet.MTBAddrs.data[i].port, 0);
-     Exit();
-    end;
-  end;//uvolnit usek pred navestidlem
+    end else begin
+     // obsadit RopadBlok
+     Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
+     UsekSet := (Blk as TBlkUsek).GetSettings();
+     if (UsekSet.MTBAddrs.Count > 0) then
+      MTB.SetInput(UsekSet.MTBAddrs.data[0].board, UsekSet.MTBAddrs.data[0].port, 1);
+    end;//else
+ except
 
- if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) and (JC.stav.RozpadRuseniBlok >= 0)) or (JC.stav.RozpadBlok = JC.data.Useky.Count)) then
-  begin
-   // uvolnit RozpadRuseniBlok
-   Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
-   UsekSet := (Blk as TBlkUsek).GetSettings();
-   for i := 0 to UsekSet.MTBAddrs.Count-1 do
-    MTB.SetInput(UsekSet.MTBAddrs.data[i].board, UsekSet.MTBAddrs.data[i].port, 0);
-  end else begin
-   // obsadit RopadBlok
-   Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
-   UsekSet := (Blk as TBlkUsek).GetSettings();
-   if (UsekSet.MTBAddrs.Count > 0) then
-    MTB.SetInput(UsekSet.MTBAddrs.data[0].board, UsekSet.MTBAddrs.data[0].port, 1);
-  end;//else
-
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -287,32 +295,36 @@ var TU:TBlkTU;
     TratSet:TBlkTratSettings;
     i:Integer;
 begin
- TratSet := Trat.GetSettings();
+ try
+   TratSet := Trat.GetSettings();
 
- // mazani soupravy vzadu
- for i := 0 to TratSet.Useky.Count-1 do
-  begin
-   Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
-   if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
-       (TU.prevTU.Souprava = TU.Souprava)) then
+   // mazani soupravy vzadu
+   for i := 0 to TratSet.Useky.Count-1 do
     begin
-     MTB.SetInput(TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].port, 0);
-     Exit();
-    end;
-  end;//for i
+     Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
+     if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
+         (TU.prevTU.Souprava = TU.Souprava)) then
+      begin
+       MTB.SetInput(TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].port, 0);
+       Exit();
+      end;
+    end;//for i
 
- // predavani soupravy dopredu
- for i := 0 to TratSet.Useky.Count-1 do
-  begin
-   Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
-   if ((TU.Obsazeno = TUsekStav.obsazeno) and (TU.bpInBlk) and (TU.nextTU <> nil) and
-       (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
-      ((TU.nextTU.navKryci = nil) or (TBlkSCom(TU.nextTU.navKryci).Navest > 0))) then
+   // predavani soupravy dopredu
+   for i := 0 to TratSet.Useky.Count-1 do
     begin
-     MTB.SetInput(TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].port, 1);
-     Exit();
-    end;
-  end;//for i
+     Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
+     if ((TU.Obsazeno = TUsekStav.obsazeno) and (TU.bpInBlk) and (TU.nextTU <> nil) and
+         (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
+        ((TU.nextTU.navKryci = nil) or (TBlkSCom(TU.nextTU.navKryci).Navest > 0))) then
+      begin
+       MTB.SetInput(TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].port, 1);
+       Exit();
+      end;
+    end;//for i
+ except
+
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -340,35 +352,39 @@ procedure TVyhSimulator.OnTimer(Sender:TObject);
 var i:Integer;
     blk:TBlk;
 begin
- if (not GetFunctions.GetSystemStart()) then Exit;
+ try
+   if (not GetFunctions.GetSystemStart()) then Exit;
 
- for i := 0 to Blky.Cnt-1 do
-  begin
-   Blky.GetBlkByIndex(i, blk);
-   if (blk.GetGlobalSettings().typ <> _BLK_VYH) then continue;
-   if (((blk as TBlkVyhybka).StaveniPlus) or ((blk as TBlkVyhybka).StaveniMinus)) then
+   for i := 0 to Blky.Cnt-1 do
     begin
-     // po 1 sekunde nastavime vstup aktualni polohy na 0
-     if (((blk as TBlkVyhybka).Stav.poloha_real <> TVyhPoloha.none) and ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
+     Blky.GetBlkByIndex(i, blk);
+     if (blk.GetGlobalSettings().typ <> _BLK_VYH) then continue;
+     if (((blk as TBlkVyhybka).StaveniPlus) or ((blk as TBlkVyhybka).StaveniMinus)) then
       begin
-       if ((blk as TBlkVyhybka).StaveniPlus) then
-        MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].port, 0)
-       else
-        MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].port, 0);
-      end;//if koncova poloha
+       // po 1 sekunde nastavime vstup aktualni polohy na 0
+       if (((blk as TBlkVyhybka).Stav.poloha_real <> TVyhPoloha.none) and ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
+        begin
+         if ((blk as TBlkVyhybka).StaveniPlus) then
+          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].port, 0)
+         else
+          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].port, 0);
+        end;//if koncova poloha
 
-     // po 3 sekundach oznamime koncovou polohu
-     if ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 3, 0) < Now) then
-      begin
-       if ((blk as TBlkVyhybka).StaveniPlus) then
-        MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].port, 1)
-       else
-        MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].port, 1);
-      end;//if koncova poloha
+       // po 3 sekundach oznamime koncovou polohu
+       if ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 3, 0) < Now) then
+        begin
+         if ((blk as TBlkVyhybka).StaveniPlus) then
+          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].port, 1)
+         else
+          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].port, 1);
+        end;//if koncova poloha
 
-     Exit();
+       Exit();
+      end;
     end;
-  end;
+ except
+
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

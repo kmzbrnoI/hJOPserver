@@ -514,9 +514,6 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster,
      AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors;
 
-//function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
-//function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
-
 {$R *.dfm}
 
 procedure TF_Main.FormCreate(Sender: TObject);
@@ -941,7 +938,7 @@ end;
 
 procedure TF_Main.A_MTB_CloseExecute(Sender: TObject);
 begin
- if ((SystemData.Status = stopping) and (not MTB.Opened)) then
+ if ((SystemData.Status = stopping) and (not MTB.NoExOpened)) then
   begin
    Self.LogStatus('System: stop OK');
    SystemData.Status := null;
@@ -975,7 +972,7 @@ end;
 
 procedure TF_Main.A_MTB_GoExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (MTB.Started)) then
+ if ((SystemData.Status = starting) and (MTB.NoExStarted)) then
   begin
    Self.A_Trk_ConnectExecute(nil);
    Exit();
@@ -1015,7 +1012,7 @@ end;
 
 procedure TF_Main.A_MTB_OpenExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (MTB.Opened)) then
+ if ((SystemData.Status = starting) and (MTB.NoExOpened)) then
   begin
    Self.A_MTB_GoExecute(nil);
    Exit();
@@ -1050,7 +1047,7 @@ procedure TF_Main.A_MTB_StopExecute(Sender: TObject);
 begin
  ACDb.StopAllACs();
 
- if ((SystemData.Status = stopping) and (not MTB.Started)) then
+ if ((SystemData.Status = stopping) and (not MTB.NoExStarted)) then
   begin
    F_Main.A_MTB_CloseExecute(nil);
    Exit();
@@ -1256,14 +1253,6 @@ begin
     begin
      writelog('Chybí MTB moduly '+str, WR_MTB, 1);
      Self.LogStatus('WARN: Chybí MTB moduly '+str);
-{    // chybeni MTB modulu pouze zalogovano, preskakujeme
-     if (Application.MessageBox(PChar('Chybí MTB moduly '+str+#13#10+'Chcete pokraèovat?'), 'Varování', MB_YESNO OR MB_ICONWARNING) = mrNo) then
-      begin
-       Self.LogStatus('Chybí MTB moduly - storno');
-       SystemData.Status := null;
-       Exit();
-      end;
-     Self.LogStatus('Chybí MTB moduly - pokraèuji'); }
     end;
 
    Self.A_MTB_GoExecute(nil);
@@ -1393,8 +1382,13 @@ begin
  Self.A_MTB_Go.Enabled    := ready and opened and (not started);
  Self.A_MTB_Stop.Enabled  := ready and started;
 
- if ((ready) and (F_Admin.CHB_SimInput.Checked) and (LowerCase(MTB.Lib) = 'simulator.dll')) then
-   MTB.InputSim();
+ try
+   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (LowerCase(MTB.Lib) = 'simulator.dll')) then
+     MTB.InputSim();
+ except
+   on E:Exception do
+     writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
+ end;
 end;
 
 //--- events from MTB lib end ---
@@ -1857,12 +1851,7 @@ end;//procedure
 
 procedure TF_Main.FreeVars;
  begin
-  try
-    MTB.Free;
-  except
-    on E:Exception do
-      AppEvents.LogException(E, 'MTB.Free');
-  end;
+  MTB.Free;
 
   ResetData.Free;
 
@@ -2261,13 +2250,6 @@ procedure TF_Main.CreateSystem;
   MTB.AfterStart := Self.OnMTBStart;
   MTB.AfterStop  := Self.OnMTBStop;
   MTB.OnScanned  := Self.OnMTBScanned;
-
-  // TODO
-{  MTB.OnErrOpen  := Self.OnMTBErrOpen;
-  MTB.OnErrClose := Self.OnMTBErrClose;
-  MTB.OnErrStart := Self.OnMTBErrStart;
-  MTB.OnErrStop  := Self.OnMTBErrStop; }
-
   MTB.OnReady    := Self.ONMTBReady;
 
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;

@@ -187,7 +187,11 @@ var cyklus:Integer;
   if ((CB_MtbAdr.ItemIndex > -1) and (CB_MtbAdr.ItemIndex < Length(CB_MTBAdrData))) then
    begin
     MTBAddr := CB_MtbAdrData[CB_MtbAdr.ItemIndex];
-    if (MTB.IsModule(MTBAddr)) then Self.T_tester.Enabled := true else Self.T_tester.Enabled := false;
+    try
+      Self.T_tester.Enabled := MTB.IsModule(MTBAddr);
+    except
+     Self.T_tester.Enabled := false;
+    end;
    end;
  end;//procedure
 
@@ -263,18 +267,22 @@ var cyklus:Integer;
 procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
  begin
-  if (MTBAddr < 0) then Exit;
+  try
+    if (MTBAddr < 0) then Exit;
 
-  if ((Sender as TShape).Brush.Color = clRed) then
-   begin
-    MTB.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
-    (Sender as TShape).Brush.Color := clLime;
-   end else begin
-    MTB.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
-    (Sender as TShape).Brush.Color := clRed;
-   end;
+    if ((Sender as TShape).Brush.Color = clRed) then
+     begin
+      MTB.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
+      (Sender as TShape).Brush.Color := clLime;
+     end else begin
+      MTB.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
+      (Sender as TShape).Brush.Color := clRed;
+     end;
 
-  (Sender as TShape).Brush.Color := clYellow; 
+    (Sender as TShape).Brush.Color := clYellow;
+  except
+    // stav modulu se zaktualizuje sam
+  end;
  end;//procedure
 
 procedure TF_Tester.B_ClearClick(Sender: TObject);
@@ -289,7 +297,12 @@ begin
 
  for i := 0 to TMTB._MAX_MTB-1 do
   begin
-   if (not MTB.IsModule(i)) then continue;
+   try
+     if (not MTB.IsModule(i)) then continue;
+   except
+     continue;
+   end;
+
    Self.CB_MTBAdrData[Self.CB_MtbAdr.Items.Count] := i;
 
    try

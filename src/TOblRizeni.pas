@@ -1552,10 +1552,14 @@ function TOR.PanelGetOsv(index:Integer):boolean;
 begin
  if ((index < 0) or (index >= Self.ORProp.Osvetleni.Count)) then Exit(false);
 
- if (MTB.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1) then
-   Result := true
- else
+ try
+   if (MTB.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1) then
+     Result := true
+   else
+     Result := false;
+ except
    Result := false;
+ end;
 end;
 
 //  or;OSV;(code;stav)(code;srav) ...        - informace o stavu osvetleni (stav = [0,1])
@@ -1590,10 +1594,15 @@ begin
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
   if (Self.ORProp.Osvetleni[i].name = id) then
    begin
-    MTB.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, PrevodySoustav.BoolToInt(state));
-    osv := Self.ORProp.Osvetleni[i];
-    osv.default_state := state;
-    Self.ORProp.Osvetleni[i] := osv;
+    try
+      MTB.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, PrevodySoustav.BoolToInt(state));
+      osv := Self.ORProp.Osvetleni[i];
+      osv.default_state := state;
+      Self.ORProp.Osvetleni[i] := osv;
+    except
+
+    end;
+
     Exit();
    end;
 end;//procedure
@@ -1603,9 +1612,13 @@ end;//procedure
 procedure TOR.InitOsv();
 var osv:TOsv;
 begin
- for osv in Self.ORProp.Osvetleni do
-   if (MTB.IsModule(osv.board)) then
-     MTB.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
+ try
+   for osv in Self.ORProp.Osvetleni do
+     if (MTB.IsModule(osv.board)) then
+       MTB.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
+ except
+
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -98,7 +98,13 @@ var i:Integer;
 begin
  Self.VystupStav.enabled := true;
  for i := 0 to Self.VystupSettings.MTBAddrs.Count-1 do
-   MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 1);
+  begin
+   try
+     MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 1);
+   except
+
+   end;
+  end;
 end;//procedure
 
 procedure TBlkVystup.Disable();
@@ -106,7 +112,13 @@ var i:Integer;
 begin
  Self.VystupStav.enabled := false;
  for i := 0 to Self.VystupSettings.MTBAddrs.Count-1 do
-   MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 0);
+  begin
+   try
+     MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 0);
+   except
+
+   end;
+  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

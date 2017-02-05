@@ -49,8 +49,12 @@ end;
 
 function TGetFunctions.GetSystemStart:Boolean;
  begin
-  Result := (((TrkSystem.openned) and (MTB.ready) and (ORTCPServer.openned) and (MTB.NoExStarted))
-            or (MTB.ready and MTB.NoExStarted and F_Admin.CHB_SystemStart.Checked));
+  try
+    Result := (((TrkSystem.openned) and (MTB.ready) and (ORTCPServer.openned) and (MTB.NoExStarted))
+              or (MTB.ready and MTB.NoExStarted and F_Admin.CHB_SystemStart.Checked));
+  except
+    Result := false;
+  end;
  end;//function
 
 end.//uses
