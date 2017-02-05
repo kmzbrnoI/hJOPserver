@@ -1604,7 +1604,8 @@ procedure TOR.InitOsv();
 var osv:TOsv;
 begin
  for osv in Self.ORProp.Osvetleni do
-   MTB.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
+   if (MTB.IsModule(osv.board)) then
+     MTB.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

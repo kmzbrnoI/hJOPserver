@@ -205,7 +205,7 @@ begin
    Exit(TBoosterSignal.undef);
  end;
 
- if ((val = failure) or (val = notYetScanned)) then
+ if ((val = failure) or (val = notYetScanned) or (val = unavailable)) then
    Result := TBoosterSignal.undef
  else if (val = isOn) then
    Result := TBoosterSignal.error
@@ -224,7 +224,7 @@ begin
    Exit(TBoosterSignal.undef);
  end;
 
- if ((val = failure) or (val = notYetScanned)) then
+ if ((val = failure) or (val = notYetScanned) or (val = unavailable)) then
    Result := TBoosterSignal.undef
  else if (val = isOn) then
    Result := TBoosterSignal.error
@@ -245,7 +245,7 @@ begin
    Exit(TBoosterSignal.undef);
  end;
 
- if ((val = failure) or (val = notYetScanned)) then
+ if ((val = failure) or (val = notYetScanned) or (val = unavailable)) then
    Result := TBoosterSignal.undef
  else if (val = isOn) then
    Result := TBoosterSignal.error

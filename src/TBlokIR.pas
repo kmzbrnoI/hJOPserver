@@ -63,7 +63,7 @@ type
 
 implementation
 
-uses TechnologieMTB;
+uses TechnologieMTB, RCS;
 
 constructor TBlkIR.Create(index:Integer);
 begin
@@ -117,10 +117,22 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIR.Update();
+var state:TRCSInputState;
 begin
- if (Self.IRStav.Stav = disabled) then Exit; 
+ if (Self.IRStav.Stav = disabled) then Exit;
 
- Self.IRStav.Stav := TIRStav(MTB.GetInput(Self.IRSettings.MTBAddrs.data[0].board,Self.IRSettings.MTBAddrs.data[0].port));
+ try
+   state := MTB.GetInput(Self.IRSettings.MTBAddrs.data[0].board,Self.IRSettings.MTBAddrs.data[0].port)
+ finally
+   state := failure;
+ end;
+
+ case (state) of
+  isOff : Self.IRStav.Stav := TIRStav.uvolneno;
+  isOn : Self.IRStav.Stav := TIRStav.obsazeno;
+ else
+  Self.IRStav.Stav := TIRStav.disabled;
+ end;
 
  if (Self.IRStav.Stav <> Self.IRStav.StavOld) then
   begin
@@ -128,7 +140,7 @@ begin
    Self.IRStav.StavOld := Self.IRStav.Stav;
   end;
 
- inherited Update();
+ inherited;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

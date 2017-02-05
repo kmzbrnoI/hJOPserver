@@ -146,6 +146,7 @@ var j:integer;
               isOff         : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '0';
               failure       : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + 'X';
               notYetScanned : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '?';
+              unavailable   : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '-';
             end;
 
             output := MTB.GetOutput(board, j);
