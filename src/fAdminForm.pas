@@ -83,7 +83,7 @@ uses fMain, TechnologieMTB, FileSystem, fSettings, Trakce,
 
 procedure TF_Admin.LoadData();
  begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
+  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
 
   CHB_SimInput.Checked          := Konfigurace.ini.ReadBool('AdminData', 'InputSim', false);
   CHB_SimSoupravaUsek.Checked   := Konfigurace.ini.ReadBool('AdminData', 'SoupravaUsekSim', false);
@@ -103,7 +103,7 @@ procedure TF_Admin.LoadData();
 
 procedure TF_Admin.SaveData();
  begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
+  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
   Konfigurace.ini.WriteInteger('AdminData','FormLeft',F_Admin.Left);
   Konfigurace.ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
   Konfigurace.ini.WriteBool('AdminData','InputSim',CHB_SimInput.Checked);
@@ -157,7 +157,7 @@ end;
 
 procedure TF_Admin.FormShow(Sender: TObject);
 begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
+  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
 
   F_Admin.Left := Konfigurace.ini.ReadInteger('AdminData','FormLeft', F_Admin.Left);
   F_Admin.Top  := Konfigurace.ini.ReadInteger('AdminData','FormTop', F_Admin.Top);

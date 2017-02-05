@@ -315,7 +315,7 @@ procedure TKonfigurace.LoadCfgFromFile(IniLoad:string);
 var str:string;
  begin
    writelog('Naèítám konfiguraci - '+IniLoad,WR_DATA);
-   Konfigurace.ini := TMemIniFile.Create(IniLoad);
+   Konfigurace.ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
    F_Options.E_dataload.Text:=IniLoad;
 
    //zacatek nacitani dat do programu
@@ -400,7 +400,7 @@ var str:string;
 procedure TKonfigurace.SaveCfgToFile(IniSave:string);
  begin
   ini_lib.WriteString('NacteniDat','Konfigurace',IniSave); 
-  Konfigurace.ini := TMemIniFile.Create(IniSave);
+  Konfigurace.ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
 
   //ukladani modeloveho casu
   ModCas.SaveData(Konfigurace.ini);
@@ -451,7 +451,7 @@ var cyklus,cyklus2:Integer;
  begin
   writelog('Naèítám FormData - '+IniLoad,WR_DATA);
 
-  FormData.ini := TMemIniFile.Create(IniLoad);
+  FormData.ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
   FormData.aFile := IniLoad;
   Polozky := TStringList.Create;
 
@@ -490,7 +490,7 @@ procedure TFormData.SaveFormData(IniSave:String);
 var cyklus,cyklus2:Integer;
  begin
   DeleteFile(IniSave);
-  FormData.ini := TMemIniFile.Create(IniSave);
+  FormData.ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
 
   for cyklus := 0 to F_Options.ComponentCount-1 do
     if (F_Options.Components[cyklus].ClassType = TListView) then

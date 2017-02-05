@@ -203,7 +203,7 @@ begin
  Self.ffstatus := stat_filename;
 
  try
-   ini_tech := TMemIniFile.Create(tech_filename);
+   ini_tech := TMemIniFile.Create(tech_filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -213,7 +213,7 @@ begin
  end;
 
  try
-   ini_rel  := TMemIniFile.Create(rel_filename);
+   ini_rel  := TMemIniFile.Create(rel_filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -224,7 +224,7 @@ begin
  end;
 
  try
-   ini_stat  := TMemIniFile.Create(stat_filename);
+   ini_stat  := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -289,7 +289,7 @@ begin
 
  try
    DeleteFile(PChar(tech_filename));  //all data will be rewrited
-   ini := TMemIniFile.Create(tech_filename);
+   ini := TMemIniFile.Create(tech_filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -316,7 +316,7 @@ begin
 
  try
    DeleteFile(PChar(stat_filename));
-   ini := TMemIniFile.Create(stat_filename);
+   ini := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin

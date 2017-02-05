@@ -114,7 +114,7 @@ begin
  sections := nil;
 
  try
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
    sections := TStringList.Create();
    ini.ReadSections(sections);
 

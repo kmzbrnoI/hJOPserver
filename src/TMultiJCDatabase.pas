@@ -94,7 +94,7 @@ begin
  Self.ffilename := filename;
 
  try
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -157,7 +157,7 @@ begin
 
  try
    DeleteFile(PChar(filename));
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin

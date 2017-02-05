@@ -65,7 +65,7 @@ var ini:TMemIniFile;
 begin
  // ulozit statistiku uzivatelu
  try
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
    for i := 0 to Self.Users.Count-1 do
     Self.Users[i].SaveStat(ini, Self.Users[i].id);
@@ -105,7 +105,7 @@ begin
  writelog('Nacitam uzivatele...', WR_USERS);
 
  try
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -144,7 +144,7 @@ begin
 
  try
    DeleteFile(PChar(filename));
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin

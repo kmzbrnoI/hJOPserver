@@ -97,8 +97,8 @@ begin
    raise Exception.Create('Soubor se stanicemi neexistuje - '+filename);
 
  Self.ORsDatabase.Clear();
- ini := TMemIniFile.Create(filename);
- ini_stat := TMemIniFile.Create(stat_filename);
+ ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+ ini_stat := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
  Self.fstat_filename := stat_filename;
  oblasti := TStringList.Create();
 
@@ -134,7 +134,7 @@ procedure TORs.SaveStatus(const filename:string);
 var ini:TMemIniFile;
     oblr:TOR;
 begin
- ini := TMemIniFile.Create(filename);
+ ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
  for oblr in Self.ORsDatabase do
   begin

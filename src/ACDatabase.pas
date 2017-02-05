@@ -72,7 +72,7 @@ begin
  Self.ACs.Clear();
 
  try
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -117,7 +117,7 @@ var ini:TMemIniFile;
     i:Integer;
 begin
  try
-   ini := TMemIniFile.Create(filename);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -145,7 +145,7 @@ var ini:TMemIniFile;
 begin
  //save stat data
  try
-   ini := TMemIniFile.Create(Self.filename);
+   ini := TMemIniFile.Create(Self.filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin

@@ -1178,7 +1178,7 @@ begin
   ModCas.started := false;
 
   //vynulovani RunErroru
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
+  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
   Konfigurace.ini.WriteInteger('SystemCfg', 'RunError',0);
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
@@ -1334,7 +1334,7 @@ begin
   Self.A_System_Stop.Enabled := true;
 
   //defaultni hodnota padu
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
+  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
   Konfigurace.ini.WriteInteger('SystemCfg','RunError',0);
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
@@ -1446,7 +1446,7 @@ begin
   ini_lib.WriteBool('Log','main-table', Self.CHB_Mainlog_Table.Checked);
 
   try
-    Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text));
+    Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text), TEncoding.UTF8);
     ModCas.SaveData(Konfigurace.ini);
     Konfigurace.ini.WriteBool('SystemCfg', 'FirstStart', false);
     Konfigurace.ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
@@ -1939,7 +1939,7 @@ function TLogData.CreateLogDirectories:boolean;
 
 procedure TF_Main.CreateClasses;
  begin
-  ini_lib        := TMeminifile.Create('inidata.ini');
+  ini_lib        := TMeminifile.Create('inidata.ini', TEncoding.UTF8);
   MTB            := TMTB.Create();
   ResetData      := TReset.Create;
   Vytizeni       := TVytizeni.Create;
@@ -2206,7 +2206,7 @@ procedure TF_Main.FormClose(Sender: TObject; var Action: TCloseAction);
 
 procedure TF_Main.SaveFormPosition;
  begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
+  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
   case F_Main.WindowState of
    wsNormal   : Konfigurace.ini.WriteInteger('Application', 'WState',1);
    wsMaximized: Konfigurace.ini.WriteInteger('Application', 'WState',0);

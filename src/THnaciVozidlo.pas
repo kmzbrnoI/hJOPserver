@@ -338,7 +338,7 @@ var ini:TMemIniFile;
     addr, str:string;
     i:Integer;
 begin
- ini := TMemIniFile.Create(filename);
+ ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
  try
    ini.WriteString('global', 'version', _LOK_VERSION_SAVE);
