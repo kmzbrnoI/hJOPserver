@@ -1,3 +1,6 @@
 [submodule "lib/JsonDataObjects"]
 	path = lib/JsonDataObjects
 	url = https://github.com/ahausladen/JsonDataObjects
+[submodule "src/rcs"]
+	path = src/rcs
+	url = git@github.com:kmzbrnoI/rcs-delphi
