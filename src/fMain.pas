@@ -175,7 +175,7 @@ type
     LV_log_lnet: TListView;
     GB_Connected_Panels: TGroupBox;
     LV_Clients: TListView;
-    GB_technologie_3: TGroupBox;
+    GB_stav_technologie: TGroupBox;
     S_MTB_open: TShape;
     S_MTB_start: TShape;
     S_Intellibox_connect: TShape;
@@ -186,7 +186,7 @@ type
     L_StavS_3: TLabel;
     L_StavS_4: TLabel;
     L_StavS_6: TLabel;
-    GroupBox1: TGroupBox;
+    GB_Log: TGroupBox;
     LB_Log: TListBox;
     MI_File: TMenuItem;
     MI_Save_config: TMenuItem;
@@ -1954,6 +1954,10 @@ procedure TF_Main.RepaintObjects;
 
   GB_Centrala.Top := TS_Technologie.ClientHeight - GB_Centrala.Height - 10;
   GB_Connected_Panels.Height := GB_Centrala.Top - GB_Connected_Panels.Top - 10;
+
+  GB_Centrala.Width := TS_Technologie.ClientWidth - 2*GB_Centrala.Left;
+  GB_Connected_Panels.Width := TS_Technologie.ClientWidth - 2*GB_Connected_Panels.Left;
+  GB_Log.Width := TS_Technologie.Width - GB_Log.Left - GB_stav_technologie.Left;
 end;//procedure
 
 procedure TF_Main.FormResize(Sender: TObject);
