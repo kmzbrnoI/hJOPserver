@@ -527,6 +527,7 @@ procedure TF_Main.PM_lib_MTBClick(Sender: TObject);
   writelog('MTB -> mtb.dll', WR_MTB);
   try
     MTB.LoadLib('mtb.dll');
+    Self.LogStatus('MTB: naèteno mtb.dll');
   except
     on E:Exception do
      begin
@@ -536,7 +537,7 @@ procedure TF_Main.PM_lib_MTBClick(Sender: TObject);
       Exit();
      end;
   end;
-  Self.LogStatus('MTB: naèteno mtb.dll');
+  MTBTableData.UpdateTable();
   Screen.Cursor := crDefault;
  end;
 
@@ -546,6 +547,7 @@ procedure TF_Main.PM_lib_SimClick(Sender: TObject);
   writelog('MTB -> simulator.dll', WR_MTB);
   try
     MTB.LoadLib('simulator.dll');
+    Self.LogStatus('MTB: naèteno simulator.dll');
   except
     on E:Exception do
      begin
@@ -555,7 +557,7 @@ procedure TF_Main.PM_lib_SimClick(Sender: TObject);
       Exit();
      end;
   end;
-  Self.LogStatus('MTB: naèteno simulator.dll');
+  MTBTableData.UpdateTable();
   Screen.Cursor := crDefault;
  end;
 
