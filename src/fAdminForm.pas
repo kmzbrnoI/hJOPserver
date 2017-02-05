@@ -99,6 +99,14 @@ procedure TF_Admin.LoadData();
   if (Konfigurace.ini.ReadBool('AdminData','show', false)) then
     Self.Show();
 
+ try
+   if ((MTB.ready) and (Self.CHB_SimInput.Checked) and (LowerCase(MTB.Lib) = 'simulator.dll')) then
+     MTB.InputSim();
+ except
+   on E:Exception do
+     writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
+ end;
+
  end;//procedure
 
 procedure TF_Admin.SaveData();
