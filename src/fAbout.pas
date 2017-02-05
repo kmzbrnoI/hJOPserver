@@ -67,7 +67,10 @@ procedure TF_About.FormShow(Sender: TObject);
   end;
 
   try
-    Self.L_VMTBUSB.Caption := MTB.GetDeviceVersion();
+    if (MTB.Opened) then
+      Self.L_VMTBUSB.Caption := MTB.GetDeviceVersion()
+    else
+      Self.L_VMTBUSB.Caption := 'zaøízení uzavøeno';
   except
     on E:Exception do
      begin

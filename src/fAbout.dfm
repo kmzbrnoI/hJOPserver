@@ -453,7 +453,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = #169' Jan Hor'#225#269'ek 2008 - 2016'
+    Caption = #169' Jan Hor'#225#269'ek 2008'#8211'2017'
     Color = clWhite
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clBlack
@@ -567,13 +567,13 @@ object F_About: TF_About
     object Label2: TLabel
       Left = 8
       Top = 36
-      Width = 102
+      Width = 73
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Verze MTB knihovny:'
+      Caption = 'MTB knihovna:'
     end
     object Label3: TLabel
       Left = 8
