@@ -1943,7 +1943,7 @@ begin
  // relief odmitl zadost regulatoru o lokomotivu
  else if (str[2] = 'DENY') then
   begin
-   ORTCPServer.SendLn(Self.ORStav.reg_please, '-;LOK;G;PLEASE-RESP;ERR;Dispeèer odmítl žádost');
+   ORTCPServer.SendLn(Self.ORStav.reg_please, '-;LOK;G;PLEASE-RESP;err;Dispeèer odmítl žádost');
    Self.BroadcastData('LOK-REQ;CANCEL;');
    (Self.ORStav.reg_please.Data as TTCPORsRef).regulator_zadost := nil;
    Self.ORStav.reg_please := nil;
