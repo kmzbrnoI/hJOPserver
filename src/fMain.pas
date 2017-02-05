@@ -396,6 +396,8 @@ type
     procedure CB_centrala_loglevel_tableChange(Sender: TObject);
     procedure A_PT_StartExecute(Sender: TObject);
     procedure A_PT_StopExecute(Sender: TObject);
+    procedure LV_Stav_MTBCustomDrawItem(Sender: TCustomListView;
+      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -2480,6 +2482,15 @@ begin
   end else begin
    Self.B_RemoveStack.Enabled := false;
   end;
+end;
+
+procedure TF_Main.LV_Stav_MTBCustomDrawItem(Sender: TCustomListView;
+  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+begin
+ if ((Item.SubItems.Count > 5) and (Item.SubItems.Strings[5] = 'Fail')) then
+   Self.LV_Stav_MTB.Canvas.Brush.Color := $AAAAFF
+ else
+   Self.LV_Stav_MTB.Canvas.Brush.Color := $FFFFFF;
 end;
 
 procedure TF_Main.LV_UsersChange(Sender: TObject; Item: TListItem;

@@ -132,7 +132,7 @@ var j:integer;
   try
     if (MTB.Opened) then
      begin
-      if (MTB.IsModule(board)) then
+      if (MTB.IsModule(board) and (not MTB.IsModuleFailure(board))) then
        begin
         if (MTB.Started) then
          begin
@@ -172,7 +172,10 @@ var j:integer;
         // neexistuje
         LI.SubItems.Strings[3] := '-------- --------';
         LI.SubItems.Strings[4] := '-------- --------';
-        LI.SubItems.Strings[5] := 'Ne';
+        if (MTB.IsModuleFailure(board)) then
+          LI.SubItems.Strings[5] := 'Fail'
+        else
+          LI.SubItems.Strings[5] := 'Ne';
         LI.SubItems.Strings[6] := '-';
        end;
      end else begin
