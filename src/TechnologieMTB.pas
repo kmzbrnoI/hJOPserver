@@ -134,7 +134,7 @@ implementation
 uses fMain, fLoginPozadi, fSystemInfo, fAdminForm,
      GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
      TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
-     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster;
+     TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster, StrUtils;
 
 constructor TMTB.Create();
 var i:Integer;
@@ -171,31 +171,38 @@ begin
 end;
 
 procedure TMTB.LoadLib(NewLib:string; Must:Boolean=false);
+var str, tmp:string;
 begin
  if ((NewLib <> Self.Lib) or (Must)) then
   begin
    if (not FileExists(NewLib)) then
      raise Exception.Create('Library file not found, not loading');
 
-   try
-     TRCSIFace(Self).LoadLib(NewLib);
-   except
-     if (self.aReady) then
-      begin
-       Self.aReady := false;
-       if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
-      end;
-     raise;
-   end;
+   if (Self.ready) then
+    begin
+     Self.aReady := false;
+     if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
+    end;
+
+   TRCSIFace(Self).LoadLib(NewLib);
 
    writelog('Naètena knihovna '+ Self.lib, WR_MTB);
 
-{   if (not self.aReady) then
+   // kontrola bindnuti vsech eventu
+   if (Self.unbound.Contains('SetInput')) then
+     Self.unbound.Remove('SetInput');
+
+   if (Self.unbound.Count = 0) then
     begin
      Self.aReady := true;
      if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
-    end; }
-    // TODO: check events bound
+    end else begin
+     str := '';
+     for tmp in Self.unbound do
+       str := str + tmp + ', ';
+     str := LeftStr(str, Length(str)-2);
+     F_Main.LogStatus('ERR: RCS: nepodaøilo se svázat následující funce : ' + str);
+    end;
   end;
 end;
 

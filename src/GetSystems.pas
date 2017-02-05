@@ -37,7 +37,7 @@ begin
   if (ORTCPServer.openned) then Exit(TCloseInfo.ci_server);
 
   try
-    if (MTB.Opened) then Exit(TCloseInfo.ci_mtb);
+    if ((MTB.ready) and (MTB.Opened)) then Exit(TCloseInfo.ci_mtb);
   except
 
   end;

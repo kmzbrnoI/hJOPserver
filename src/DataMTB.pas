@@ -89,16 +89,20 @@ var j:integer;
    end;
 
   try
-    case (MTB.GetModuleType(board)) of
-     _RCS_MOD_MTB_UNI_ID    : LI.ImageIndex := 0;
-     _RCS_MOD_MTB_TTL_ID    : LI.ImageIndex := 1;
-     _RCS_MOD_MTB_TTLOUT_ID : LI.ImageIndex := 2;
-     _RCS_MOD_MTB_REGP_ID   : LI.ImageIndex := 3;
-     _RCS_MOD_MTB_POT_ID    : LI.ImageIndex := 4;
-     _RCS_MOD_MTB_UNIOUT_ID : LI.ImageIndex := 5;
-    else
-     Self.LV.Items.Item[board].ImageIndex := -1;
-    end;
+    if (MTB.IsModule(board)) then
+     begin
+      case (MTB.GetModuleType(board)) of
+       _RCS_MOD_MTB_UNI_ID    : LI.ImageIndex := 0;
+       _RCS_MOD_MTB_TTL_ID    : LI.ImageIndex := 1;
+       _RCS_MOD_MTB_TTLOUT_ID : LI.ImageIndex := 2;
+       _RCS_MOD_MTB_REGP_ID   : LI.ImageIndex := 3;
+       _RCS_MOD_MTB_POT_ID    : LI.ImageIndex := 4;
+       _RCS_MOD_MTB_UNIOUT_ID : LI.ImageIndex := 5;
+      else
+       Self.LV.Items.Item[board].ImageIndex := -1;
+      end;
+     end else
+       Self.LV.Items.Item[board].ImageIndex := -1;
   except
     Self.LV.Items.Item[board].ImageIndex := -1;
   end;
@@ -116,7 +120,10 @@ var j:integer;
   end;
 
   try
-    LI.SubItems.Strings[2] := MTB.ModuleTypeToStr(MTB.GetModuleType(board));
+    if (MTB.IsModule(board)) then
+      LI.SubItems.Strings[2] := MTB.ModuleTypeToStr(MTB.GetModuleType(board))
+    else
+      LI.SubItems.Strings[2] := '-';
   except
     on E:Exception do
       LI.SubItems.Strings[2] := E.Message;
