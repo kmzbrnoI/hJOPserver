@@ -170,6 +170,7 @@ var i:Integer;
 procedure TF_Tester.FormCreate(Sender: TObject);
  begin
   SetLength(Self.CB_MTBAdrData, TMTB._MAX_MTB);  // pole indexu vytvorime tak, aby bylo co nejvetsi
+  Self.MTBAddr := -1;
   Self.CreateSInput;
   Self.CreateSOutput;
  end;//procedure
