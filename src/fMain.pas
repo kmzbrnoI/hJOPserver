@@ -436,9 +436,9 @@ type
     procedure OnMTBOpen(Sender:TObject);
     procedure OnMTBClose(Sender:TObject);
     procedure OnMTBErrOpen(Sender:TObject; errMsg:string);
-    procedure OnMTBErrClose(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBErrClose(Sender:TObject; errMsg:string);
     procedure OnMTBErrStart(Sender:TObject; errMsg:string);
-    procedure OnMTBErrStop(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBErrStop(Sender:TObject; errMsg:string);
     procedure OnMTBReady(Sender:TObject; ready:boolean);
 
     // centrala events:
@@ -964,12 +964,12 @@ begin
  try
    MTB.Close();
  except
+   on E:ERCSNotOpened do
+     Self.OnMTBErrClose(Self, 'MTB není otevøeno, nelze jej proto zavøít!');
+   on E:ERCSScanningNotFinished do
+     Self.OnMTBErrClose(Self, 'MTB nelze uzavøít pøed sokonèneíms kenování modulù!');
    on E:Exception do
-    begin
-     AppEvents.LogException(E, '----- MTB CLOSE FAIL -----');
-     Self.LogStatus('MTB: CLOSE FAIL - '+E.Message);
-     Application.MessageBox(PChar('Chyba pøi uzavírání MTB - '+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
-    end;
+     Self.OnMTBErrClose(Self, 'Nastala kritická chyba : '+E.Message);
  end;
 end;
 
@@ -1071,12 +1071,10 @@ begin
   try
     MTB.Stop();
   except
+   on E:ERCSNotStarted do
+     Self.OnMTBErrStop(Self, 'MTB komunikace není spuštìna, nelze ji proto zastavit!');
    on E:Exception do
-    begin
-     AppEvents.LogException(E, '----- MTB STOP FAIL -----');
-     Self.LogStatus('MTB: STOP ERR - '+E.Message);
-     Application.MessageBox(PChar('Chyba pri vypinani komunikace'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
-    end;
+     Self.OnMTBErrStop(Self, 'Nastala kritická chyba : '+E.Message);
   end;
 end;
 
@@ -1316,21 +1314,21 @@ begin
  Application.MessageBox(PChar('Pøi otevírání MTB nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
-procedure TF_Main.OnMTBErrClose(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrClose(Sender:TObject; errMsg:string);
 begin
- Self.A_MTB_Go.Enabled    := false;
- Self.A_MTB_Stop.Enabled  := false;
- Self.A_MTB_Open.Enabled  := true;
+ A_MTB_Go.Enabled    := false;
+ A_MTB_Stop.Enabled  := false;
+ A_MTB_Open.Enabled  := true;
 
  F_Main.S_MTB_open.Brush.Color := clRed;
 
  SystemData.Status := null;
 
- Self.LogStatus('ERR: MTB: '+errMsg);
+ Self.LogStatus('ERR: MTB CLOSE FAIL: '+errMsg);
  SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
 
- Application.MessageBox(PChar('Pri uzavírání MTB nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)),'Chyba',MB_OK OR MB_ICONERROR);
- writelog('----- MTB CLOSE FAIL - '+errMsg+' - errValue='+IntToStr(errValue)+' -----', WR_ERROR, 21);
+ Application.MessageBox(PChar('Pøi uzavírání MTB nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
+ writelog('----- MTB CLOSE FAIL - '+errMsg+' -----', WR_ERROR, 21);
 end;//procedure
 
 procedure TF_Main.OnMTBErrStart(Sender:TObject; errMsg:string);
@@ -1358,25 +1356,21 @@ begin
   Application.MessageBox(PChar('Pøi zapínání komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
-procedure TF_Main.OnMTBErrStop(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrStop(Sender:TObject; errMsg:string);
 begin
-  with (F_Main) do
-   begin
-    A_MTB_Go.Enabled     := true;
-    SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
-   end;//with F_Main do
+  A_MTB_Open.Enabled := true;
+  A_MTB_Close.Enabled := true;
+  A_MTB_Go.Enabled := true;
+
+  SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
+  S_MTB_Start.Brush.Color := clRed;
 
   SystemData.Status := null;
 
-  F_Main.S_MTB_Start.Brush.Color   := clRed;
+  Self.LogStatus('ERR: MTB STOP FAIL: '+errMsg);
 
-  F_Main.A_MTB_Open.Enabled  := true;
-  F_Main.A_MTB_Close.Enabled := true;
-
-  Self.LogStatus('ERR: MTB: '+errMsg);
-
-  Application.MessageBox(PChar('Pri vypínání komunikace nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)),'Chyba',MB_OK OR MB_ICONERROR);
-  writelog('----- MTB STOP FAIL - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
+  Application.MessageBox(PChar('Pøi vypínání komunikace nastala chyba:'+#13#10+errMsg+#13#10), 'Chyba', MB_OK OR MB_ICONWARNING);
+  writelog('----- MTB STOP FAIL - '+errMsg+' -----', WR_ERROR, 21);
 end;//procedure
 
 procedure TF_Main.OnMTBReady(Sender:TObject; ready:boolean);
