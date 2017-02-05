@@ -61,11 +61,8 @@ uses TechnologieMTB, Logging, RCS;
 
 procedure TF_Tester.T_testerTimer(Sender: TObject);
  begin
-  if (MTBAddr <> -1) then
-   begin
-    UpdateOut;
-    UpdateIn;
-   end; 
+  UpdateOut;
+  UpdateIn;
  end;//procedure
 
 procedure TF_Tester.FormShow(Sender: TObject);
@@ -84,9 +81,21 @@ var cyklus:Integer;
 procedure TF_Tester.UpdateOut;
 var cyklus, val:Integer;
  begin
+  if ((not MTB.NoExStarted()) or (MTBAddr < 0)) then
+   begin
+    for cyklus := 0 to 15 do
+      SOutput[cyklus].Brush.Color := clGray;
+    Exit();
+   end;
+
   for cyklus := 0 to 15 do
    begin
-    val := MTB.GetOutput(MTBAddr, cyklus);
+    try
+      val := MTB.GetOutput(MTBAddr, cyklus);
+    except
+      val := -1;
+    end;
+
     if (val < 0) then
       SOutput[cyklus].Brush.Color := clGray
     else if (val = 0) then
@@ -107,6 +116,13 @@ var i:Integer;
     LastState:TRCSInputState;
     stateStr:string;
  begin
+  if ((not MTB.NoExStarted()) or (MTBAddr < 0)) then
+   begin
+    for i := 0 to 15 do
+      SInput[i].Brush.Color := clGray;
+    Exit();
+   end;
+
   for i := 0 to 15 do
    begin
     try
@@ -282,7 +298,7 @@ begin
    end;
   end;//for i
 
- Self.CB_MtbAdr.ItemIndex := 0;
+ Self.CB_MtbAdr.ItemIndex := -1;
  Self.CB_MtbAdrChange(self);
 end;//procedure
 

@@ -149,9 +149,9 @@ begin
 
  //assign events
  TRCSIFace(Self).AfterClose := Self.DllAfterClose; // TODO: will this work?
+ TRCSIFace(Self).OnError    := Self.DllOnError;
 
-{ MTBdrv.OnError         := Self.DllOnError;
- MTBdrv.OnInputChanged  := Self.DllOnInputChanged;
+{ MTBdrv.OnInputChanged  := Self.DllOnInputChanged;
  MTBdrv.OnOutputChanged := Self.DllOnOutputChanged;
  MTBdrv.OnLog           := Self.DllOnLog;
  MTBdrv.OnScanned       := Self.DllOnScanned; }
