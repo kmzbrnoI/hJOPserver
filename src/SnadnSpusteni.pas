@@ -97,6 +97,7 @@ var AC:TAC;
 
   AC := ACDb.ACs[Self.config.AutRezim];
 
+  if ((not MTB.IsModule(Self.config.MtbAdr)) or (MTB.IsModuleFailure(Self.config.MtbAdr))) then Exit();
 
   //vstupy:
 
