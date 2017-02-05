@@ -435,9 +435,9 @@ type
     procedure OnMTBStop(Sender:TObject);
     procedure OnMTBOpen(Sender:TObject);
     procedure OnMTBClose(Sender:TObject);
-    procedure OnMTBErrOpen(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBErrOpen(Sender:TObject; errMsg:string);
     procedure OnMTBErrClose(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
-    procedure OnMTBErrStart(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+    procedure OnMTBErrStart(Sender:TObject; errMsg:string);
     procedure OnMTBErrStop(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
     procedure OnMTBReady(Sender:TObject; ready:boolean);
 
@@ -512,7 +512,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
      TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster,
-     AppEv, fBlkVystup, TBlokVystup, TCPServerPT;
+     AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors;
 
 //function ShutdownBlockReasonCreate(hWnd: HWND; Reason: LPCWSTR): Bool; stdcall; external user32;
 //function ShutdownBlockReasonDestroy(hWnd: HWND): Bool; stdcall; external user32;
@@ -998,17 +998,18 @@ begin
   try
     MTB.Start();
   except
+   on E:ERCSAlreadyStarted do
+     Self.OnMTBErrStart(Self, 'Komunikace již probíhá!');
+   on E:ERCSFirmwareTooLow do
+     Self.OnMTBErrStart(Self, 'Firmware MTB-USB modulu je starší než v0.2.20, nelze se pøipojit k takto starému FW!');
+   on E:ERCSNoModules do
+     Self.OnMTBErrStart(Self, 'Na sbìrnici nebyl nalezen žádný MTB modul, nelze spustit komunikaci!');
+   on E:ERCSNotOpened do
+     Self.OnMTBErrStart(Self, 'Nepøipojeno k MTB-USB, pøipojte se nejdøíve k MTB-USB!');
+   on E:ERCSScanningNotFinished do
+     Self.OnMTBErrStart(Self, 'Neprobìhl sken modulù, vyèkejte na dokonèení skenu modulù!');
    on E:Exception do
-    begin
-     AppEvents.LogException(E, '----- MTB START FAIL -----');
-     Self.LogStatus('MTB: START FAIL - '+E.Message);
-     if (SystemData.Status = starting) then
-      begin
-       SystemData.Status := TSystemStatus.null;
-       Self.A_System_Start.Enabled := true;
-      end;
-     Application.MessageBox(PChar('Chyba pri zapinani komunikace'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
-    end;
+     Self.OnMTBErrStart(Self, 'Nastala kritická chyba : '+E.Message);
   end;
 end;
 
@@ -1036,17 +1037,12 @@ begin
  try
    MTB.Open();
  except
+  on E:ERCSAlreadyOpened do
+    Self.OnMTBErrOpen(Self, 'MTB je již otevøeno!');
+  on E:ERCSCannotOpenPort do
+    Self.OnMTBErrOpen(Self, 'Nepodaøilo se otevøít USB port, otevøete konfiguraèní okno MTB driveru a zkontrolujte, že je vybrán správný port!');
   on E:Exception do
-   begin
-    AppEvents.LogException(E, '----- MTB OPEN FAIL -----');
-    Self.LogStatus('MTB: OPEN FAIL - '+E.Message);
-    if (SystemData.Status = starting) then
-     begin
-      SystemData.Status := TSystemStatus.null;
-      Self.A_System_Start.Enabled := true;
-     end;
-    Application.MessageBox(PChar('Chyba pri otevírání MTB'+#13#10+E.Message),'Chyba', MB_OK OR MB_ICONERROR);
-   end;
+    Self.OnMTBErrOpen(Self, 'Nastala kritická chyba : '+E.Message);
  end;
 end;//procedure
 
@@ -1301,23 +1297,23 @@ begin
  MTBTableData.UpdateTable();
 end;//procedure
 
-procedure TF_Main.OnMTBErrOpen(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrOpen(Sender:TObject; errMsg:string);
 begin
  Self.A_MTB_Go.Enabled    := false;
  Self.A_MTB_Stop.Enabled  := false;
  Self.A_MTB_Open.Enabled  := true;
-
  Self.A_System_Start.Enabled := true;
 
  F_Main.S_MTB_open.Brush.Color := clRed;
 
- SystemData.Status := null;
+ SystemData.Status := TSystemStatus.null;
+ Self.A_System_Start.Enabled := true;
 
- Self.LogStatus('ERR: MTB: '+errMsg);
+ Self.LogStatus('ERR: MTB OPEN FAIL: '+errMsg);
+ writelog('----- MTB OPEN FAIL - '+errMsg+' -----', WR_ERROR, 21);
  SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
 
- Application.MessageBox(PChar('Pri otevírání MTB nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)), 'Chyba', MB_OK OR MB_ICONERROR);
- writelog('----- MTB OPEN DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----', WR_ERROR, 21);
+ Application.MessageBox(PChar('Pøi otevírání MTB nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
 procedure TF_Main.OnMTBErrClose(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
@@ -1334,21 +1330,21 @@ begin
  SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
 
  Application.MessageBox(PChar('Pri uzavírání MTB nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)),'Chyba',MB_OK OR MB_ICONERROR);
- writelog('----- MTB CLOSE MTB DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----', WR_ERROR, 21);
+ writelog('----- MTB CLOSE FAIL - '+errMsg+' - errValue='+IntToStr(errValue)+' -----', WR_ERROR, 21);
 end;//procedure
 
-procedure TF_Main.OnMTBErrStart(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
+procedure TF_Main.OnMTBErrStart(Sender:TObject; errMsg:string);
 begin
-  with (F_Main) do
-   begin
-    A_MTB_Go.Enabled     := true;
-    SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
-   end;//with F_Main do
+  A_MTB_Close.Enabled := true;
+  A_System_Start.Enabled := true;
+  A_MTB_Go.Enabled := true;
 
+  SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
+  S_MTB_Start.Brush.Color := clRed;
+
+  SystemData.Status := TSystemStatus.null;
   Self.A_System_Start.Enabled := true;
-  F_Main.S_MTB_Start.Brush.Color   := clRed;
-
-  SystemData.Status := null;
+  Self.A_System_Stop.Enabled := true;
 
   //defaultni hodnota padu
   Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text);
@@ -1356,10 +1352,10 @@ begin
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
 
-  Self.LogStatus('ERR: MTB: '+errMsg);
+  Self.LogStatus('ERR: MTB START FAIL: '+errMsg);
+  writelog('----- MTB START FAIL - '+errMsg+' -----',WR_ERROR,21);
 
-  Application.MessageBox(PChar('Pri zapínání komunikace nastala chyba:'+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)), 'Chyba', MB_OK OR MB_ICONERROR);
-  writelog('----- MTB START DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
+  Application.MessageBox(PChar('Pøi zapínání komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
 procedure TF_Main.OnMTBErrStop(Sender:TObject; errValue: word; errAddr: byte; errMsg:string);
@@ -1380,7 +1376,7 @@ begin
   Self.LogStatus('ERR: MTB: '+errMsg);
 
   Application.MessageBox(PChar('Pri vypínání komunikace nastala chyba '+#13#10+errMsg+#13#10+'Chybovy kod: '+IntToStr(errValue)+':'+IntToStr(errAddr)),'Chyba',MB_OK OR MB_ICONERROR);
-  writelog('----- MTB STOP DRIVER ERROR - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
+  writelog('----- MTB STOP FAIL - '+errMsg+' - errValue='+IntToStr(errValue)+' -----',WR_ERROR,21);
 end;//procedure
 
 procedure TF_Main.OnMTBReady(Sender:TObject; ready:boolean);
