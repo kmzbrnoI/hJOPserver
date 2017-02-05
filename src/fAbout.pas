@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Verze, fLoginPozadi, TechnologieMTB, Logging;
+uses Verze, fLoginPozadi, TechnologieMTB, Logging, appEv;
 
 {$R *.dfm}
 
@@ -53,9 +53,28 @@ procedure TF_About.FormShow(Sender: TObject);
   Self.ST_about3.Font.Color := clBlue;
 
   Self.L_VApp.Caption       := NactiVerzi(Application.ExeName)+' ('+GetLastBuildDate+' '+GetLastBuildTime+')';
-  Self.L_VMTBLib.Caption    := MTB.LibV;
-  Self.L_VMTBDriver.Caption := MTB.DriverV;
-  Self.L_VMTBUSB.Caption    := MTB.DeviceV;
+
+  Self.L_VMTBLib.Caption    := MTB.Lib;
+
+  try
+    Self.L_VMTBDriver.Caption := MTB.GetDllVersion();
+  except
+    on E:Exception do
+     begin
+      Self.L_VMTBDriver.Caption := 'nelze získat';
+      AppEvents.LogException(e, 'MTB.GetDllVersion');
+     end;
+  end;
+
+  try
+    Self.L_VMTBUSB.Caption := MTB.GetDeviceVersion();
+  except
+    on E:Exception do
+     begin
+      Self.L_VMTBUSB.Caption := 'nelze získat';
+      AppEvents.LogException(e, 'MTB.GetDeviceVersion');
+     end;
+  end;
  end;//procedure
 
 procedure TF_About.B_OKClick(Sender: TObject);

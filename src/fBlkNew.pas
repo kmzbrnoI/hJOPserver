@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, Outputdriver, inifiles, Menus, ComCtrls, TabNotBk,
+  Dialogs, StdCtrls, Spin, inifiles, Menus, ComCtrls, TabNotBk,
   ExtCtrls, Mask, Gauges, StrUtils, Registry, Grids, jpeg, ShellAPI,
   ShlObj, ToolWin, CPortCtl, CPort, winsock, Buttons;
 

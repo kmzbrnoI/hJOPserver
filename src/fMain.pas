@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Outputdriver, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls,
+  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls,
   inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage,
   ExtDlgs,  Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
   DateUtils, ShellApi, ActiveX, ShlObj, ComObj,
@@ -62,7 +62,6 @@ type
     P_Time: TPanel;
     P_Time_modelovy: TPanel;
     P_Zrychleni: TPanel;
-    PM_MTBDriver_About: TMenuItem;
     IL_Menu: TImageList;
     SPD_Save: TSavePictureDialog;
     PM_AllLokPrevzit: TMenuItem;
@@ -278,7 +277,6 @@ type
     procedure PM_system_resetClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure L_DateDblClick(Sender: TObject);
-    procedure PM_MTBDriver_AboutClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure PM_SaveFormPosClick(Sender: TObject);
@@ -694,8 +692,13 @@ var ci:TCloseInfo;
       if (Application.MessageBox('Program není odpojen od MTB, odpojit?',
           'Nelze ukonèit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
        begin
-        if (MTB.Start) then MTB.Stop()
-        else if (MTB.Openned) then MTB.Close();
+        try
+          if (MTB.Started) then MTB.Stop()
+          else if (MTB.Opened) then MTB.Close();
+        except
+          on E:Exception do
+            Application.MessageBox(PChar('Nastala výjimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+        end;
        end;
     end;
 
@@ -748,12 +751,21 @@ begin
        if (Handled) then Exit;
 
        case (msg.wParam) of
-         VK_F9:MTB.HideCfgDialog();
+         VK_F9:begin
+            try
+              MTB.HideConfigDialog();
+            except
+              on E:Exception do
+                Application.MessageBox(PChar('Nelze skrýt konfiguraèní dialog MTB : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+            end;
+         end;
+
          VK_ESCAPE:if (F_About.Showing) then F_About.Close;
+
          VK_F4:begin
-           // zobrazeni debug okna
-           F_Admin.Show();
-           Handled := true;
+            // zobrazeni debug okna
+            F_Admin.Show();
+            Handled := true;
          end;
         end;//case
    end;
@@ -780,8 +792,13 @@ begin
 
          end;
         end;
-       if (MTB.Start) then MTB.Stop();
-       if (MTB.Openned) then MTB.Close();
+
+       try
+         if (MTB.Started) then MTB.Stop();
+         if (MTB.Opened) then MTB.Close();
+       except
+
+       end;
      end;
 
  end;//case
@@ -819,8 +836,13 @@ begin
 
      end;
     end;
-   if (MTB.Start) then MTB.Stop();
-   if (MTB.Openned) then MTB.Close();
+
+   try
+     if (MTB.Started) then MTB.Stop();
+     if (MTB.Opened) then MTB.Close();
+   except
+
+   end;
 
    CloseMessage := false;
    NUZClose     := true;
@@ -904,13 +926,21 @@ end;//procedure
 
 procedure TF_Main.A_lib_cfgExecute(Sender: TObject);
 begin
- MTB.ShowCfgDialog();
+ try
+   MTB.ShowConfigDialog();
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Nelze zobrazit konfiguraèní dialog MTB : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+     Exit();
+    end;
+ end;
  writelog('Zobrazen ConfigDialog knihovny',WR_MTB);
 end;
 
 procedure TF_Main.A_MTB_CloseExecute(Sender: TObject);
 begin
- if ((SystemData.Status = stopping) and (not MTB.Openned)) then
+ if ((SystemData.Status = stopping) and (not MTB.Opened)) then
   begin
    Self.LogStatus('System: stop OK');
    SystemData.Status := null;
@@ -944,7 +974,7 @@ end;
 
 procedure TF_Main.A_MTB_GoExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (MTB.Start)) then
+ if ((SystemData.Status = starting) and (MTB.Started)) then
   begin
    Self.A_Trk_ConnectExecute(nil);
    Exit();
@@ -965,7 +995,7 @@ begin
   writelog('----- MTB STARTING -----',WR_MTB);
 
   try
-    MTB.Go();
+    MTB.Start();
   except
    on E:Exception do
     begin
@@ -983,7 +1013,7 @@ end;
 
 procedure TF_Main.A_MTB_OpenExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (MTB.Openned)) then
+ if ((SystemData.Status = starting) and (MTB.Opened)) then
   begin
    Self.A_MTB_GoExecute(nil);
    Exit();
@@ -1023,7 +1053,7 @@ procedure TF_Main.A_MTB_StopExecute(Sender: TObject);
 begin
  ACDb.StopAllACs();
 
- if ((SystemData.Status = stopping) and (not MTB.Start)) then
+ if ((SystemData.Status = stopping) and (not MTB.Started)) then
   begin
    F_Main.A_MTB_CloseExecute(nil);
    Exit();
@@ -1196,7 +1226,11 @@ begin
 
  MTBTableData.LoadToTable;
 
- writelog('----- MTB OPEN OK : '+IntToStr(MTB.count)+' modules -----', WR_MTB);
+ try
+   writelog('----- MTB OPEN OK : '+IntToStr(MTB.GetModuleCount)+' modules -----', WR_MTB);
+ except
+   writelog('----- MTB OPEN OK : unknown amount of modules -----', WR_MTB);
+ end;
 
  Self.LogStatus('MTB: otevøeno');
  SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
@@ -1341,19 +1375,27 @@ begin
 end;//procedure
 
 procedure TF_Main.OnMTBReady(Sender:TObject; ready:boolean);
+var started, opened: boolean;
 begin
- if (ready) then
-  begin
-   Self.A_MTB_Open.Enabled  := (not MTB.Openned);
-   Self.A_MTB_Close.Enabled := MTB.Openned;
-   Self.A_MTB_Go.Enabled    := (MTB.Openned) and (not MTB.Start);
-   Self.A_MTB_Stop.Enabled  := MTB.Start;
-  end else begin
-   Self.A_MTB_Open.Enabled  := false;
-   Self.A_MTB_Close.Enabled := false;
-   Self.A_MTB_Go.Enabled    := false;
-   Self.A_MTB_Stop.Enabled  := false;
-  end;
+ try
+   started := MTB.Started;
+   opened := MTB.Opened;
+ except
+   on E:Exception do
+    begin
+     started := false;
+     opened := false;
+     AppEvents.LogException(E, 'OnMTBReady');
+    end;
+ end;
+
+ Self.A_MTB_Open.Enabled  := ready and (not opened);
+ Self.A_MTB_Close.Enabled := ready and opened;
+ Self.A_MTB_Go.Enabled    := ready and opened and (not started);
+ Self.A_MTB_Stop.Enabled  := ready and started;
+
+ if ((ready) and (F_Admin.CHB_SimInput.Checked) and (LowerCase(MTB.Lib) = 'simulator.dll')) then
+   MTB.InputSim();
 end;
 
 //--- events from MTB lib end ---
@@ -2062,11 +2104,6 @@ procedure TVytizeni.DetekujVytizeniProcesoru;
   Vytizeni.Gauge.Progress := Round(GetCPUUsage(GetCPUCount-1)*100);
  end;
 
-procedure TF_Main.PM_MTBDriver_AboutClick(Sender: TObject);
- begin
-  MTB.ShowAboutDialog();
- end;//procedure
-
 procedure TF_Main.DetekujAutSpusteniSystemu;
  begin
   if (KomunikacePocitani <> 0) then
@@ -2219,16 +2256,17 @@ procedure TF_Main.CreateSystem;
   QueryPerformanceFrequency(Vytizeni.LPc);
   SetStartVars;
 
-  //assign events
-  MTB.OnOpen  := Self.OnMTBOpen;
-  MTB.OnClose := Self.OnMTBClose;
-  MTB.OnStart := Self.OnMTBStart;
-  MTB.OnStop  := Self.OnMTBStop;
+  // assign MTB events:
+  MTB.AfterOpen  := Self.OnMTBOpen;
+  MTB.AfterClose := Self.OnMTBClose;
+  MTB.AfterStart := Self.OnMTBStart;
+  MTB.AfterStop  := Self.OnMTBStop;
 
-  MTB.OnErrOpen  := Self.OnMTBErrOpen;
+  // TODO
+{  MTB.OnErrOpen  := Self.OnMTBErrOpen;
   MTB.OnErrClose := Self.OnMTBErrClose;
   MTB.OnErrStart := Self.OnMTBErrStart;
-  MTB.OnErrStop  := Self.OnMTBErrStop;
+  MTB.OnErrStop  := Self.OnMTBErrStop; }
 
   MTB.OnReady    := Self.ONMTBReady;
 
@@ -2735,7 +2773,7 @@ end;
 procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((not MTB.Start) or (not Boosters.sorted[Item.Index].defined)) then
+ if ((not MTB.NoExStarted()) or (not Boosters.sorted[Item.Index].defined)) then
   begin
    LV_Zesilovace.Canvas.Brush.Color := $CCCCCC;
   end else begin

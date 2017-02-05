@@ -115,7 +115,7 @@ implementation
     0..n = kod SCom navesti
 }
 
-uses TCPServerOR, UserDb, User;
+uses TCPServerOR, UserDb, User, RCSErrors;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -246,7 +246,17 @@ var i:Integer;
 begin
  str := '';
  for i := 0 to 15 do
-   str := str + IntToStr(MTB.GetOutput(addr, i)) + '|';
+  begin
+   try
+     str := str + IntToStr(MTB.GetOutput(addr, i)) + '|';
+   except
+     on E:Exception do
+      begin
+       ORTCPServer.SendLn(Self.conn, '-;MTBd;ERR;{' + E.Message+'}');
+       Exit();
+      end;
+   end;
+  end;
  ORTCPServer.SendLn(Self.conn, '-;MTBd;MODULE;'+IntToStr(addr)+';CHANGE;O;{'+str+'}');
 end;
 
@@ -256,7 +266,17 @@ var i:Integer;
 begin
  str := '';
  for i := 0 to 15 do
-   str := str + IntToStr(MTB.GetInput(addr, i)) + '|';
+  begin
+   try
+     str := str + IntToStr(Integer(MTB.GetInput(addr, i))) + '|';
+   except
+     on E:Exception do
+      begin
+       ORTCPServer.SendLn(Self.conn, '-;MTBd;ERR;{' + E.Message+'}');
+       Exit();
+      end;
+   end;
+  end;
  ORTCPServer.SendLn(Self.conn, '-;MTBd;MODULE;'+IntToStr(addr)+';CHANGE;I;{'+str+'}');
 end;
 
@@ -411,16 +431,43 @@ end;
 
 class function TMTBd.GetMTBInfo(board:byte):string;
 begin
- Result := IntToStr(board) + '|' +
-           MTB.GetNameMTB(board) + '|' +
-           MTB.GetTypeStrMTB(board) + '|';
+ Result := IntToStr(board) + '|';
 
- case (MTB.IsModule(board)) of
-  false : Result := Result + '0|';
-  true  : Result := Result + '1|';
+ try
+   Result := Result + MTB.GetModuleName(board) + '|';
+ except
+   on E:ERCSInvalidModuleAddr do
+     Result := Result + '-|';
+   on E:Exception do
+     Result := Result + 'Nelze ziskat nazev - vyjimka|';
  end;
 
- Result := Result + MTB.GetModuleFirmware(board);
+ try
+   Result := Result + IntToStr(MTB.GetModuleType(board)) + '|';
+ except
+   on E:ERCSInvalidModuleAddr do
+     Result := Result + '-|';
+   on E:Exception do
+     Result := Result + 'Nelze ziskat typ - vyjimka|';
+ end;
+
+ try
+   case (MTB.IsModule(board)) of
+    false : Result := Result + '0|';
+    true  : Result := Result + '1|';
+   end;
+ except
+   Result := Result + '0|';
+ end;
+
+ try
+   Result := Result + MTB.GetModuleFW(board);
+ except
+   on E:ERCSInvalidModuleAddr do
+     Result := Result + '-|';
+   on E:Exception do
+     Result := Result + 'Nelze ziskat FW - vyjimka|';
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -35,7 +35,12 @@ begin
   if (GetFunctions.GetSystemStart) then Exit(TCloseInfo.ci_system_started);
   if (TrkSystem.openned) then Exit(TCloseInfo.ci_trakce);
   if (ORTCPServer.openned) then Exit(TCloseInfo.ci_server);
-  if (MTB.Openned) then Exit(TCloseInfo.ci_mtb);
+
+  try
+    if (MTB.Opened) then Exit(TCloseInfo.ci_mtb);
+  except
+
+  end;
 
   Result := TCloseInfo.ci_yes;
 end;
@@ -44,7 +49,8 @@ end;
 
 function TGetFunctions.GetSystemStart:Boolean;
  begin
-  Result := (((TrkSystem.openned) and (ORTCPServer.openned) and (MTB.Start)) or (MTB.Start and F_Admin.CHB_SystemStart.Checked));
+  Result := (((TrkSystem.openned) and (MTB.ready) and (ORTCPServer.openned) and (MTB.NoExStarted))
+            or (MTB.ready and MTB.NoExStarted and F_Admin.CHB_SystemStart.Checked));
  end;//function
 
 end.//uses

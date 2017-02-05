@@ -188,7 +188,7 @@ type
 implementation
 
 uses TBloky, GetSystems, TechnologieMTB, fMain, TJCDatabase,
-      TCPServerOR, TBlokZamek, PTUtils;
+      TCPServerOR, TBlokZamek, PTUtils, RCS;
 
 constructor TBlkVyhybka.Create(index:Integer);
 begin
@@ -448,15 +448,21 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVyhybka.UpdatePoloha();
-var iplus,iminus, i:Integer;           //state of inputs
+var iplus,iminus: TRCSInputState;
+    i:Integer;
  begin
   if (Self.VyhSettings.MTBAddrs.Count < 4) then Exit();
 
   //MTBAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
-  iplus  := MTB.GetInput(Self.VyhSettings.MTBAddrs.data[0].board,Self.VyhSettings.MTBAddrs.data[0].port);
-  iminus := MTB.GetInput(Self.VyhSettings.MTBAddrs.data[1].board,Self.VyhSettings.MTBAddrs.data[1].port);
+  try
+    iplus  := MTB.GetInput(Self.VyhSettings.MTBAddrs.data[0].board,Self.VyhSettings.MTBAddrs.data[0].port);
+    iminus := MTB.GetInput(Self.VyhSettings.MTBAddrs.data[1].board,Self.VyhSettings.MTBAddrs.data[1].port);
+  except
+    iplus  := failure;
+    iminus := failure;
+  end;
 
-  if ((iplus < 0) or (iminus < 0) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[2].board)) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[3].board))) then
+  if ((iplus = failure) or (iminus = failure) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[2].board)) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[3].board))) then
    begin
     if (Self.Stav.poloha <> TVyhPoloha.disabled) then
       Self.VyhStav.poloha := TVyhPoloha.disabled;
@@ -464,7 +470,7 @@ var iplus,iminus, i:Integer;           //state of inputs
    end;
 
 
-  if ((iplus < 1) and (iminus < 1)) then
+  if ((iplus = isOff) and (iminus = isOff)) then
    begin
     Self.VyhStav.poloha := none;
 
@@ -481,7 +487,7 @@ var iplus,iminus, i:Integer;           //state of inputs
     Self.VyhStav.poloha_real := none;
    end;
 
-  if ((iplus = 1) and (iminus = 0)) then
+  if ((iplus = isOn) and (iminus = isOff)) then
    begin
     //je-li plus vstup 1
     if (Self.VyhStav.staveni_minus) then Exit;
@@ -499,7 +505,7 @@ var iplus,iminus, i:Integer;           //state of inputs
       Self.VyhStav.staveniErrCallback := nil;
      end;
 
-    if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and (iminus <> 1)) then
+    if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and (iminus <> isOn)) then
      begin
       // sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze +
       // TZaver.staveni je specialni druh zaveru, ktery neumoznuje zmenu stavu vyhybky uzivatelem, ale zaroven nekrici, pokud se zmeni skutecny stav
@@ -518,7 +524,7 @@ var iplus,iminus, i:Integer;           //state of inputs
     Self.VyhStav.poloha_real := plus;
    end;
 
-  if ((iminus = 1) and (iplus = 0)) then
+  if ((iminus = isOn) and (iplus = isOff)) then
    begin
     //je-li minus vstup 1
     if (Self.VyhStav.staveni_plus) then Exit;
@@ -536,7 +542,7 @@ var iplus,iminus, i:Integer;           //state of inputs
       Self.VyhStav.staveniErrCallback := nil;
      end;
 
-    if ((not Self.VyhStav.staveni_minus) and (Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and (iplus <> 1)) then
+    if ((not Self.VyhStav.staveni_minus) and (Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and (iplus <> isOn)) then
      begin
       //sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze -
       // redukce menu se tady nekontroluje, protoze vyhybka se z koncove polohy musi vzdy dostat do nepolohy
@@ -554,7 +560,7 @@ var iplus,iminus, i:Integer;           //state of inputs
    end;
 
   //2 polohy zaroven = deje se neco divneho
-  if ((iplus = 1) and (iminus = 1)) then
+  if ((iplus = isOn) and (iminus = isOn)) then
    begin
     Self.VyhStav.poloha := both;
 

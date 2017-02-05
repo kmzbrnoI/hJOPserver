@@ -46,7 +46,7 @@ var
 implementation
 
 uses GetSystems, TBlok, AC, TechnologieMTB, fMain, TBloky,
-     Logging, ACDatabase, Prevody;
+     Logging, ACDatabase, Prevody, RCS;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -100,55 +100,59 @@ var AC:TAC;
 
   //vstupy:
 
-  if ((Self.config.IN_Start > -1) and (not AC.running) and (AC.ready)
-    and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Start) > 0)) then
-      AC.Start();
+  try
+    if ((Self.config.IN_Start > -1) and (not AC.running) and (AC.ready)
+      and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Start) = isOn)) then
+        AC.Start();
 
-  if ((Self.config.IN_Pause > -1) and (AC.running)
-    and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Pause) > 0)) then
-      AC.Pause();
+    if ((Self.config.IN_Pause > -1) and (AC.running)
+      and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Pause) = isOn)) then
+        AC.Pause();
 
-  if ((Self.config.IN_Stop > -1) and (AC.running)
-    and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Stop) > 0)) then
-      AC.Stop();
+    if ((Self.config.IN_Stop > -1) and (AC.running)
+      and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Stop) = isOn)) then
+        AC.Stop();
 
-  if (Self.config.IN_Repeat > -1) then
-   begin
-    if (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Repeat) = 1) then
+    if (Self.config.IN_Repeat > -1) then
      begin
-      if (not Self.RepeatDown) then
+      if (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Repeat) = isOn) then
        begin
-        Self.RepeatDown := true;
-        AC.repeating := not AC.repeating;
-       end;//if not Self.config.RepeatDown
-     end else begin
-      if (Self.RepeatDown) then Self.RepeatDown := false;
+        if (not Self.RepeatDown) then
+         begin
+          Self.RepeatDown := true;
+          AC.repeating := not AC.repeating;
+         end;//if not Self.config.RepeatDown
+       end else begin
+        if (Self.RepeatDown) then Self.RepeatDown := false;
+       end;
+     end;//if IN_Repeat_Used
+
+    if ((Self.config.IN_Reset > -1) and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Reset) = isOn)) then
+     begin
+      // reset zatim neimplementovan
      end;
-   end;//if IN_Repeat_Used
-
-  if ((Self.config.IN_Reset > -1) and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Reset) > 0)) then
-   begin
-    // reset zatim neimplementovan
-   end;
 
 
-  // vystupy;
+    // vystupy;
 
-  if (Self.config.OUT_Ready > -1) then
-    MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.ready)));
+    if (Self.config.OUT_Ready > -1) then
+      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.ready)));
 
-  if (Self.config.OUT_Start > -1) then
-    MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
+    if (Self.config.OUT_Start > -1) then
+      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
 
-  if (Self.config.OUT_Pause > -1) then
-    MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (AC.ACKrok > -1)));
+    if (Self.config.OUT_Pause > -1) then
+      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (AC.ACKrok > -1)));
 
-  if (Self.config.OUT_Stop > -1) then
-    MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
+    if (Self.config.OUT_Stop > -1) then
+      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
 
-  if (Self.config.OUT_Repeat > -1) then
-    MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating));
+    if (Self.config.OUT_Repeat > -1) then
+      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating));
 
+  except
+
+  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

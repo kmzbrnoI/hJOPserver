@@ -123,7 +123,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR;
+uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin
@@ -285,10 +285,18 @@ var tmpInputs: record
     end;
 begin
  // get data from mtb
- if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno) = 1)  then tmpInputs.Zavreno  := true else tmpInputs.Zavreno  := false;
- if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Otevreno) = 1) then tmpInputs.Otevreno := true else tmpInputs.Otevreno := false;
- if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Vystraha) = 1) then tmpInputs.Vystraha := true else tmpInputs.Vystraha := false;
- if (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Anulace) = 1)  then tmpInputs.Anulace  := true else tmpInputs.Anulace  := false;
+ try
+   tmpInputs.Zavreno  := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno) = isOn);
+   tmpInputs.Otevreno := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Otevreno) = isOn);
+   tmpInputs.Vystraha := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Vystraha) = isOn);
+   tmpInputs.Anulace  := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Anulace) = isOn);
+ except
+   // prejezd prejde do poruchoveho stavu
+   tmpInputs.Zavreno  := false;
+   tmpInputs.Otevreno := false;
+   tmpInputs.Vystraha := false;
+   tmpInputs.Anulace  := false;
+ end;
 
  if (tmpInputs.Zavreno)  then Exit(TBlkPrjBasicStav.uzavreno);
  if (tmpInputs.Vystraha) then Exit(TBlkPrjBasicStav.vystraha);

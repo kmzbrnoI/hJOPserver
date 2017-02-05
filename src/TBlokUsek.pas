@@ -194,7 +194,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging,
+uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb;
 
@@ -327,6 +327,7 @@ end;//procedure
 //update all local variables
 procedure TBlkUsek.Update();
 var i:Integer;
+    state:TRCSInputState;
 begin
  if (((Self.ZesZkrat = TBoosterSignal.error) or (Self.ZesNapajeni = TBoosterSignal.error)) and (not Self.frozen)) then
   begin
@@ -352,10 +353,16 @@ begin
 
  for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
   begin
-   case (MTB.GetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port)) of
-    0 : Self.UsekStav.StavAr[i] := TUsekStav.uvolneno;
-    1 : Self.UsekStav.StavAr[i] := TUsekStav.obsazeno;
-    -2,-1:begin
+   try
+     state := MTB.GetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port);
+   except
+     state := failure;
+   end;
+
+   case (state) of
+    isOn  : Self.UsekStav.StavAr[i] := TUsekStav.uvolneno;
+    isOff : Self.UsekStav.StavAr[i] := TUsekStav.obsazeno;
+    failure, notYetScanned:begin
       // vypadek MTB, ci nespravny argument -> disable blok
       if (Self.UsekStav.Stav <> disabled) then
        begin

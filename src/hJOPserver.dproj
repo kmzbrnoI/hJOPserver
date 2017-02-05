@@ -135,7 +135,6 @@
 			<DCCReference Include="Trakce.pas"/>
 			<DCCReference Include="XpressNET.pas"/>
 			<DCCReference Include="TrakceGUI.pas"/>
-			<DCCReference Include="Outputdriver.pas"/>
 			<DCCReference Include="TBlok.pas"/>
 			<DCCReference Include="TBloky.pas"/>
 			<DCCReference Include="TBlokVyhybka.pas"/>
@@ -235,6 +234,8 @@
 			<DCCReference Include="PTEndpointLoks.pas"/>
 			<DCCReference Include="PTEndpointBlokStav.pas"/>
 			<DCCReference Include="PTEndpointLokStav.pas"/>
+			<DCCReference Include="rcs\RCS.pas"/>
+			<DCCReference Include="rcs\RCSErrors.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

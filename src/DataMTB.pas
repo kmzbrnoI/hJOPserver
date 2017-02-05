@@ -26,7 +26,7 @@ var
 
 implementation
 
-uses TechnologieMTB;
+uses TechnologieMTB, RCS, Prevody;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,71 +67,122 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMTBTableData.UpdateLine(board:integer);
-var i,j:integer;
+var j:integer;
     output:Integer;
+    LI:TListItem;
  begin
-  i := board;
+  LI := Self.LV.Items[board];
 
-  Self.LV.Items.Item[i].ImageIndex := MTB.GetTypeIntMTB(board);
-  Self.LV.Items.Item[i].Caption    := IntToStr(board);
+  Self.LV.Items.Item[board].Caption := IntToStr(board);
+
+  if (not MTB.ready) then
+   begin
+    LI.SubItems.Strings[0] := '';
+    LI.SubItems.Strings[1] := '';
+    LI.SubItems.Strings[2] := '';
+    LI.SubItems.Strings[3] := '-------- --------';
+    LI.SubItems.Strings[4] := '-------- --------';
+    LI.SubItems.Strings[5] := '-';
+    LI.SubItems.Strings[6] := '-';
+
+    Exit();
+   end;
+
+  try
+    case (MTB.GetModuleType(board)) of
+     _RCS_MOD_MTB_UNI_ID    : LI.ImageIndex := 0;
+     _RCS_MOD_MTB_TTL_ID    : LI.ImageIndex := 1;
+     _RCS_MOD_MTB_TTLOUT_ID : LI.ImageIndex := 2;
+     _RCS_MOD_MTB_REGP_ID   : LI.ImageIndex := 3;
+     _RCS_MOD_MTB_POT_ID    : LI.ImageIndex := 4;
+     _RCS_MOD_MTB_UNIOUT_ID : LI.ImageIndex := 5;
+    else
+     Self.LV.Items.Item[board].ImageIndex := -1;
+    end;
+  except
+    Self.LV.Items.Item[board].ImageIndex := -1;
+  end;
 
   if (MTB.GetNeeded(board)) then
-    Self.LV.Items.Item[i].SubItems.Strings[0] := 'X'
+    LI.SubItems.Strings[0] := 'X'
   else
-    Self.LV.Items.Item[i].SubItems.Strings[0] := '';
+    LI.SubItems.Strings[0] := '';
 
-  Self.LV.Items.Item[i].SubItems.Strings[1] := MTB.GetNameMTB(board);
-  Self.LV.Items.Item[i].SubItems.Strings[2] := MTB.GetTypeStrMTB(board);
+  try
+    LI.SubItems.Strings[1] := MTB.GetModuleName(board);
+  except
+    on E:Exception do
+      LI.SubItems.Strings[1] := E.Message;
+  end;
 
-  if (MTB.Openned) then
-   begin
-    // mtb openned
-    if (MTB.IsModule(board)) then
+  try
+    LI.SubItems.Strings[2] := MTB.ModuleTypeToStr(MTB.GetModuleType(board));
+  except
+    on E:Exception do
+      LI.SubItems.Strings[2] := E.Message;
+  end;
+
+  try
+    if (MTB.Opened) then
      begin
-      // existuje
-
-      if (MTB.Start) then
+      if (MTB.IsModule(board)) then
        begin
-        Self.LV.Items.Item[i].SubItems.Strings[3] := '';
-        Self.LV.Items.Item[i].SubItems.Strings[4] := '';
-
-        for j := 0 to 15 do
+        if (MTB.Started) then
          begin
-          Self.LV.Items.Item[i].SubItems.Strings[3] := Self.LV.Items.Item[i].SubItems.Strings[3]+IntToStr(MTB.GetInput(board, j));
+          LI.SubItems.Strings[3] := '';
+          LI.SubItems.Strings[4] := '';
 
-          output := MTB.GetOutput(board, j);
-          if (output > 1) then
-            Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[4]+'S'
-          else
-            Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[4]+IntToStr(output);
-
-          if (j = 7) then
+          for j := 0 to 15 do
            begin
-            Self.LV.Items.Item[i].SubItems.Strings[3] := Self.LV.Items.Item[i].SubItems.Strings[3] + ' ';
-            Self.LV.Items.Item[i].SubItems.Strings[4] := Self.LV.Items.Item[i].SubItems.Strings[4] + ' ';
-           end;//if
-         end;//for
-       end else begin
-        Self.LV.Items.Item[i].SubItems.Strings[3] := '-------- --------';
-        Self.LV.Items.Item[i].SubItems.Strings[4] := '-------- --------';
-       end;
+            case (MTB.GetInput(board, j)) of
+              isOn          : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '1';
+              isOff         : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '0';
+              failure       : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + 'X';
+              notYetScanned : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '?';
+            end;
 
-      Self.LV.Items.Item[i].SubItems.Strings[5] := 'Ano';
-      Self.LV.Items.Item[i].SubItems.Strings[6] := MTB.GetModuleFirmware(board);
+            output := MTB.GetOutput(board, j);
+            if (output > 1) then
+              LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+'S'
+            else
+              LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+IntToStr(output);
+
+            if (j = 7) then
+             begin
+              LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + ' ';
+              LI.SubItems.Strings[4] := LI.SubItems.Strings[4] + ' ';
+             end;//if
+           end;//for
+         end else begin
+          LI.SubItems.Strings[3] := '-------- --------';
+          LI.SubItems.Strings[4] := '-------- --------';
+         end;
+
+        LI.SubItems.Strings[5] := 'Ano';
+        LI.SubItems.Strings[6] := MTB.GetModuleFW(board);
+       end else begin
+        // neexistuje
+        LI.SubItems.Strings[3] := '-------- --------';
+        LI.SubItems.Strings[4] := '-------- --------';
+        LI.SubItems.Strings[5] := 'Ne';
+        LI.SubItems.Strings[6] := '-';
+       end;
      end else begin
-      // neexistuje
-      Self.LV.Items.Item[i].SubItems.Strings[3] := '-------- --------';
-      Self.LV.Items.Item[i].SubItems.Strings[4] := '-------- --------';
-      Self.LV.Items.Item[i].SubItems.Strings[5] := 'Ne';
-      Self.LV.Items.Item[i].SubItems.Strings[6] := '-';
+      // mtb closed
+      LI.SubItems.Strings[3] := '-------- --------';
+      LI.SubItems.Strings[4] := '-------- --------';
+      LI.SubItems.Strings[5] := '-';
+      LI.SubItems.Strings[6] := '-';
      end;
-   end else begin
-    // mtb closed
-    Self.LV.Items.Item[i].SubItems.Strings[3] := '-------- --------';
-    Self.LV.Items.Item[i].SubItems.Strings[4] := '-------- --------';
-    Self.LV.Items.Item[i].SubItems.Strings[5] := '-';
-    Self.LV.Items.Item[i].SubItems.Strings[6] := '-';
-   end;
+  except
+    on E:Exception do
+     begin
+      LI.SubItems.Strings[3] := 'Exception';
+      LI.SubItems.Strings[4] := E.Message;
+      LI.SubItems.Strings[5] := 'Ex';
+      LI.SubItems.Strings[6] := 'Ex';
+     end;
+  end;
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

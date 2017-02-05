@@ -167,8 +167,11 @@ end;//procedure
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
  begin
-  MTB.InputSim;
-  writelog('Proveden InputSim',WR_MTB);
+  if (LowerCase(MTB.Lib) = 'simulator.dll') then
+   begin
+    MTB.InputSim();
+    writelog('Proveden InputSim',WR_MTB);
+   end;
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,12 @@
 unit TechnologieMTB;
 
 {
- Technologie MTB
+ Technologie MTB: rozhrani pro pouzivani MTB.
+
+ Vsechny ostatni casti programu by mely volat metody tridy TMTB, ktera interaguje
+ s MTB. Trida TMTB v sob2 skryva interakci s TCSIFace. Trida TMTB pomerne <= TODO: tohle neni pravda
+ intenzivne interaguje s dalsimi technologickymi prvku hJOPserveru -- je tedy
+ nedilnou soucasti serveru.
 
  Pricip:
   - na zacatku vytvorime tridy pro vsechna existujici MTB
@@ -12,7 +17,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, IniFiles, OutputDriver, Generics.Collections;
+  Dialogs, Menus, IniFiles, Generics.Collections, RCS;
 
 type
   TErrEvent = procedure(Sender:TObject; errValue: word; errAddr: byte; errMsg:string) of object;
@@ -39,17 +44,13 @@ type
   //////////////////////////////////////////////////////////////
 
   // Technologie MTB
-  TMTB=class
+  TMTB = class(TRCSIFace)
    public const
      _MAX_MTB = 192;                                        // maximalni pocet MTB desek
 
    private
      Desky:array [0.._MAX_MTB-1] of TMTBBoard;              // MTB desky, pole je indexovano MTB adresami
 
-     MTBdrv:TMTBIFace;                                      // refenrece na knihovnu pro komunikaci s MTB - Michalova knihovna
-
-     alib:string;                                           // aktualni pouzivana knihovna
-     aStart,aOpenned:boolean;                               // flag zapnute komunikace a otevreneho zarizeni
      afilename:string;                                      // filename ke konfiguracnimu souboru
      aReady:boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
 
@@ -60,32 +61,17 @@ type
      fGeneralError:boolean;                                 // flag oznamujici nastani "MTB general IO error" -- te nejhorsi veci na svete
 
      //events to the main program
-     FOnOpen:TNotifyEvent;
-     FOnClose:TNotifyEvent;
-     FOnStart:TNotifyEvent;
-     FOnStop:TNotifyEvent;
-     FOnStartErr:TErrEvent;
-     FOnStopErr:TErrEvent;
-     FOnOpenErr:TErrEvent;
-     FOnCloseErr:TErrEvent;
-     FOnReady:TMTBReadyEvent;
+     fOnReady : TMTBReadyEvent;
+     fAfterClose : TNotifyEvent;
 
       //events from libraly
-      procedure DllBeforeOpen(Sender:TObject);
-      procedure DllAfterOpen(Sender:TObject);
-      procedure DllBeforeClose(Sender:TObject);
       procedure DllAfterClose(Sender:TObject);
-
-      procedure DllBeforeStart(Sender:TObject);
-      procedure DllAfterStart(Sender:TObject);
-      procedure DllBeforeStop(Sender:TObject);
-      procedure DllAfterStop(Sender:TObject);
 
       procedure DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string);
       procedure DllOnInputChanged(Sender:TObject; module:byte);
       procedure DllOnOutputChanged(Sender:TObject; module:byte);
-
-      function GetMTBCount():Byte;                                              // vrati pocet nalezenych MTB desek
+      procedure DllOnLog(Sender: TObject; logLevel:Integer; msg:string);
+      procedure DllOnScanned(Sender: TObject);
 
    public
       constructor Create();
@@ -93,36 +79,28 @@ type
 
       procedure LoadLib(NewLib:string;Must:Boolean=false);                      // nacte knihovnu
 
-      procedure Open();                                                         // otevre MTB zarizeni a naskenuje moduly
-      procedure Close();                                                        // zapne komunikaci
+      procedure InputSim();                                                     // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
+      procedure SoupravaUsekSim();                                              // nastavit MTB vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
 
-      procedure Go();                                                           // spusti komunikaci MTB
-      procedure Stop();                                                         // zastavi komunikaci MTB
+      function NoExStarted():boolean;
 
-      procedure InputSim;                                                       // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
-      procedure SoupravaUsekSim;                                                // nastavit MTB vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
-
-      procedure SetOutput(MtbAdr:integer;vystup:integer;state:integer);
+{      procedure SetOutput(module, port: Integer; state: Integer);
       procedure SetInput(MtbAdr:integer;vstup:integer;state:integer);
       function GetInput(MtbAdr:integer;vstup:integer):integer;
       function GetOutput(MtbAdr:integer; port:integer):integer;
-      function GetModuleFirmware(MtbAdr:integer):string;
+      function GetModuleFirmware(MtbAdr:integer):string; }
 
       procedure SetNeeded(MtbAdr:Integer; state:boolean = true);
       function GetNeeded(MtbAdr:Integer):boolean;
 
-      procedure ShowCfgDialog;
-      procedure HideCfgDialog;
-      procedure ShowAboutDialog;
-
       procedure LoadFromFile(FileName:string);
       function SaveToFile(FileName:string):Byte;
 
-      function GetTypeIntMTB(addr:byte):Integer;
+{      function GetTypeIntMTB(addr:byte):Integer;
       function GetTypeStrMTB(addr:byte):string;
-      function GetNameMTB(Addr:integer):string;
+      function GetNameMTB(Addr:integer):string; }
 
-      function IsModule(addr:Integer):Boolean;
+//      function IsModule(addr:Integer):Boolean;
 
       procedure NullOutputs();
 
@@ -132,31 +110,19 @@ type
       procedure AddOutputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
       procedure RemoveOutputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
 
-      property Start:boolean read aStart;
-      property filename:string read afilename;
-      property lib:string read alib;
-      property count:Byte read GetMtbCount;     // pouzivat jen zridka - trva dlouho !
-      property Openned:boolean read aOpenned;
-
-      property LibV:string read DllVersion;
-      property DriverV:string read DriverVersion;
-      property DeviceV:string read DeviceVersion;
-
       property generalError:boolean read fGeneralError;
 
       //events
-      property OnOpen:TNotifyEvent read FOnOpen write FOnOpen;
-      property OnClose:TNotifyEvent read FOnClose write FOnClose;
-      property OnStart:TNotifyEvent read FOnStart write FOnStart;
-      property OnStop:TNotifyEvent read FOnStop write FOnStop;
+      property AfterClose:TNotifyEvent read fAfterClose write fAfterClose;
 
-      property OnErrOpen:TErrEvent read FOnOpenErr write FOnOpenErr;
+{      property OnErrOpen:TErrEvent read FOnOpenErr write FOnOpenErr;
       property OnErrClose:TErrEvent read FOnCloseErr write FOnCloseErr;
       property OnErrStart:TErrEvent read FOnStartErr write FOnStartErr;
-      property OnErrStop:TErrEvent read FOnStopErr write FOnStopErr;
+      property OnErrStop:TErrEvent read FOnStopErr write FOnStopErr; }
 
-      property OnReady:TMTBReadyEvent read FOnReady write FOnReady;
+      property OnReady:TMTBReadyEvent read fOnReady write fOnReady;
       property ready:boolean read aready;
+      property filename:string read afilename;
   end;
 
 var
@@ -165,7 +131,7 @@ var
 
 implementation
 
-uses fMain, fSettings, fLoginPozadi, fSystemInfo, fAdminForm,
+uses fMain, fLoginPozadi, fSystemInfo, fAdminForm,
      GetSystems, fSplash, TechnologieJC, FileSystem, TBLoky, TBlok, TBlokVyhybka,
      TBlokUsek, TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd,
      TOblsRizeni, Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster;
@@ -178,202 +144,104 @@ begin
  for i := 0 to _MAX_MTB-1 do
    Self.Desky[i] := TMTBBoard.Create();
 
- Self.aOpenned := false;
- Self.aStart   := false;
- Self.aReady   := false;
+ Self.aReady := false;
  Self.fGeneralError := false;
 
- MTBdrv := TMTBIFace.Create(nil);
-end;//constructor
+ //assign events
+ TRCSIFace(Self).AfterClose := Self.DllAfterClose; // TODO: will this work?
+
+{ MTBdrv.OnError         := Self.DllOnError;
+ MTBdrv.OnInputChanged  := Self.DllOnInputChanged;
+ MTBdrv.OnOutputChanged := Self.DllOnOutputChanged;
+ MTBdrv.OnLog           := Self.DllOnLog;
+ MTBdrv.OnScanned       := Self.DllOnScanned; }
+ // TODO
+end;
 
 destructor TMTB.Destroy();
 var i:Integer;
 begin
  //ulozeni lib po zavreni
  Self.SaveToFile(Self.afilename);
- FreeAndNil(MTBdrv);
 
  for i := 0 to _MAX_MTB-1 do
    if (Assigned(Self.Desky[i])) then FreeAndNil(Self.Desky[i]);
 
  inherited;
-end;//destructor
+end;
 
-procedure TMTB.LoadLib(NewLib:string;Must:Boolean=false);
- begin
-  if (not FileExists(NewLib)) then raise Exception.Create('Library file not found, not loading');
+procedure TMTB.LoadLib(NewLib:string; Must:Boolean=false);
+begin
+ if ((NewLib <> Self.Lib) or (Must)) then
+  begin
+   if (not FileExists(NewLib)) then
+     raise Exception.Create('Library file not found, not loading');
 
-  if ((NewLib <> MTBdrv.Lib) or (Must)) then
-   begin
-    MTBdrv.Lib := NewLib;
-    Self.alib := LowerCase(NewLib);
-
-    try
-      MTBdrv.LoadLib();
-    except
-      if (self.aReady) then
-       begin
-        Self.aReady := false;
-        if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
-       end;
-      raise;
-    end;
-
-    try
-      Self.DllVersion := MTBdrv.GetLibVersion();
-    except
-      Self.DllVersion := 'neznámá';
-    end;
-
-    try
-      Self.DriverVersion := MTBdrv.GetDriverVersion();
-    except
-      Self.DriverVersion := 'neznámá';
-    end;
-
-    //assign events
-    MTBdrv.OnBeforeOpen    := Self.DllBeforeOpen;
-    MTBdrv.OnAfterOpen     := Self.DllAfterOpen;
-    MTBdrv.OnBeforeClose   := Self.DllBeforeClose;
-    MTBdrv.OnAfterClose    := Self.DllAfterClose;
-
-    MTBdrv.OnBeforeStart   := Self.DllBeforeStart;
-    MTBdrv.OnAfterStart    := Self.DllAfterStart;
-    MTBdrv.OnBeforeStop    := Self.DllBeforeStop;
-    MTBdrv.OnAfterStop     := Self.DllAfterStop;
-
-    MTBdrv.OnError         := Self.DllOnError;
-    MTBdrv.OnInputChanged  := Self.DllOnInputChanged;
-    MTBdrv.OnOutputChanged := Self.DllOnOutputChanged;
-
-    writelog('Naètena knihovna '+ Self.lib, WR_MTB);
-
-    if (not self.aReady) then
-     begin
-      Self.aReady := true;
-      if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
-     end;
+   try
+     TRCSIFace(Self).LoadLib(NewLib);
+   except
+     if (self.aReady) then
+      begin
+       Self.aReady := false;
+       if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
+      end;
+     raise;
    end;
- end;//function
 
-procedure TMTB.Open();
-begin
- if ((not Self.Start) and (not Self.Openned)) then MTBdrv.Open();
-end;//function
+   writelog('Naètena knihovna '+ Self.lib, WR_MTB);
 
-procedure TMTB.Close();
-begin
- if (Self.Start) then Exception.Create('MTB komunikace není zastavena');
- if (Self.Openned) then MTBdrv.Close();
- Self.fGeneralError := false;
-end;//function
+{   if (not self.aReady) then
+    begin
+     Self.aReady := true;
+     if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
+    end; }
+    // TODO: check events bound
+  end;
+end;
 
-procedure TMTB.Go();
- begin
-  if (not Self.aOpenned) then raise Exception.Create('MTB není otevøeno');
-  if (not Self.aStart) then MTBdrv.Start();
- end;//function
-
-procedure TMTB.Stop();
- begin
-  if (Self.Start) then MTBdrv.Stop();
- end;//function Stop
-
-procedure TMTB.SetOutput(MtbAdr:integer;vystup:integer;state:integer);
- begin
-  if (Self.Start) then
-   begin
-    try
-      MTBdrv.SetOutput(MtbAdr, vystup, state); //nastaveni fyzickeho vystupu
-    except
-
-    end;
-   end;//aStart
- end;//procedure
-
-procedure TMTB.InputSim;
-var cyklus:integer;
+procedure TMTB.InputSim();
+var i:integer;
     Blk:TBlk;
     booster:TBooster;
 begin
- if (MTB.alib = 'simulator.dll') then
+ //nastaveni vyhybek do +
+ for i := 0 to Blky.Cnt-1 do
   begin
-   //nastaveni vyhybek do +
-   for cyklus := 0 to Blky.Cnt-1 do
-    begin
-     Blky.GetBlkByIndex(cyklus,Blk);
-     if (Blk.GetGlobalSettings.typ = _BLK_VYH) then
-       Self.SetInput((Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].board, (Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].port,1);
-     if (Blk.GetGlobalSettings.typ = _BLK_PREJEZD) then
-       Self.SetInput((Blk as TBlkPrejezd).GetSettings().MTB, (Blk as TBlkPrejezd).GetSettings().MTBInputs.Otevreno, 1);
-     if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU)) and ((Blk as TBlkUsek).Souprava > -1)) then
-       Self.SetInput((Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].board, (Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].port, 1);
-    end;//for cyklus
+   Blky.GetBlkByIndex(i, Blk);
+   if (Blk.GetGlobalSettings.typ = _BLK_VYH) then
+     Self.SetInput((Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].board, (Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].port,1);
+   if (Blk.GetGlobalSettings.typ = _BLK_PREJEZD) then
+     Self.SetInput((Blk as TBlkPrejezd).GetSettings().MTB, (Blk as TBlkPrejezd).GetSettings().MTBInputs.Otevreno, 1);
+   if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU)) and ((Blk as TBlkUsek).Souprava > -1)) then
+     Self.SetInput((Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].board, (Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].port, 1);
+  end;//for cyklus
 
-   //defaultni stav zesilovacu
-   for booster in Boosters.sorted do
-    begin
-     Self.SetInput(booster.bSettings.MTB.Napajeni.board, booster.bSettings.MTB.Napajeni.port, 0);
-     Self.SetInput(booster.bSettings.MTB.Zkrat.board, booster.bSettings.MTB.Zkrat.port, 0);
-    end;
-  end;//if alib <> MTB.dll
+ //defaultni stav zesilovacu
+ for booster in Boosters.sorted do
+  begin
+   Self.SetInput(booster.bSettings.MTB.Napajeni.board, booster.bSettings.MTB.Napajeni.port, 0);
+   Self.SetInput(booster.bSettings.MTB.Zkrat.board, booster.bSettings.MTB.Zkrat.port, 0);
+  end;
 end;//procedure
 
 //simulace obaszeni useku, na kterem je souprava
 procedure TMTB.SoupravaUsekSim;
 var i:Integer;
     Blk:TBlk;
- begin
-  for i := 0 to Blky.Cnt-1 do
-   begin
-    Blky.GetBlkByIndex(i,Blk);
-    if ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
-    if ((Blk as TBlkUsek).Souprava > -1) then
-      Self.SetInput((Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].board,(Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].port,1);
-   end;//for cyklus
- end;//procedure
-
-function TMTB.GetTypeIntMTB(addr:byte):Integer;
-var typ:string;
- begin
-  typ := Self.GetTypeStrMTB(addr);
-
-  if (typ = 'MTB-UNI') then Exit(0);
-  if (typ = 'MTB-UNI out') then Exit(5);
-  if (typ = 'MTB-TTL') then Exit(1);
-  if (typ = 'MTB-TTL out') then Exit(2);
-  if (typ = 'MTB-REG puls') then Exit(3);
-  if (typ = 'MTB-POT') then Exit(4);
-
-  Exit(-1);
- end;//function
-
-function TMTB.GetTypeStrMTB(addr:byte):string;
- begin
-  if (Self.Openned) then
-   begin
-    try
-      Result := Self.MTBdrv.GetModuleType(addr)
-    except
-      Result := '---';
-    end;
-   end else
-     Result := 'modul neexistuje';
- end;//function
-
-function TMTB.GetNameMTB(Addr:integer):string;
- begin
-  try
-    Result := Self.MTBdrv.GetModuleName(addr);
-  except
-    Result := '---';
+begin
+ for i := 0 to Blky.Cnt-1 do
+  begin
+   Blky.GetBlkByIndex(i,Blk);
+   if ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   if ((Blk as TBlkUsek).Souprava > -1) then
+     Self.SetInput((Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].board,(Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].port,1);
   end;
- end;//function
+end;
 
 procedure TMTB.LoadFromFile(FileName:string);
 var ini:TMemIniFile;
     lib:string;
- begin
+begin
   Self.afilename := FileName;
 
   ini := nil;
@@ -385,18 +253,18 @@ var ini:TMemIniFile;
   end;
 
   try
-    Self.LoadLib(lib, true); //nacteni knihovny
+    Self.LoadLib(lib, true);
   except
     on E:Exception do
       AppEvents.LogException(E, 'Nelze naèíst knihovnu '+lib);
   end;
 
   ini.Free();
- end;
+end;
 
 function TMTB.SaveToFile(FileName:string):Byte;
 var ini:TMemIniFile;
- begin
+begin
   try
     DeleteFile(FileName);
     ini := TMemIniFile.Create(FileName);
@@ -404,13 +272,13 @@ var ini:TMemIniFile;
     Exit(1);
   end;
 
-  ini.WriteString('MTB', 'lib', Self.alib);
+  ini.WriteString('MTB', 'lib', Self.Lib);
 
   ini.UpdateFile();
   ini.Free();
 
   Result := 0;
- end;//procedure
+end;
 
 procedure TMTB.NullOutputs();
 var i,j:Integer;
@@ -418,40 +286,12 @@ begin
  for i := 0 to _MAX_MTB-1 do
    if (Self.IsModule(i)) then
      for j := 0 to 15 do MTB.SetOutput(i, j, 0);
-end;//procedure
-
-function TMTB.GetInput(MtbAdr:integer;vstup:integer):integer;
-begin
- if ((MtbAdr < 256) and (MtbAdr >= 0)) then
-  begin
-   try
-     Result := MTBdrv.GetInput(MtbAdr, vstup);
-   except
-     Result := -1;
-   end;
-  end else begin
-   Result := -1;
-  end;
-end;//function
-
-function TMTB.GetOutput(MtbAdr:integer; port:integer):integer;
-begin
- if ((MtbAdr < 256) and (MtbAdr >= 0)) then
-  begin
-   try
-     Result := MTBdrv.GetOutput(MtbAdr, port);
-   except
-     Result := -1;
-   end;
-  end else begin
-   Result := -1;
-  end;
 end;
 
-procedure TMTB.SetInput(MtbAdr:integer;vstup:integer;state:integer);
+{procedure TMTB.SetInput(MtbAdr:integer;vstup:integer;state:integer);
 begin
  try
-   MTBdrv.SetInput(MtbAdr, vstup, state);
+//   MTBdrv.SetInput(MtbAdr, vstup, state);
  except
 
  end;
@@ -460,7 +300,7 @@ end;//procedure
 function TMTB.GetModuleFirmware(MtbAdr:integer):string;
 begin
  try
-   Result := MTBdrv.GetModuleFirmware(MtbAdr);
+//   Result := MTBdrv.GetModuleFirmware(MtbAdr);
  except
    Result := '-';
  end;
@@ -469,7 +309,7 @@ end;//function
 procedure TMTB.ShowCfgDialog;
 begin
  try
-   MTBdrv.ShowConfigDialog();
+//   MTBdrv.ShowConfigDialog();
  except
 
  end;
@@ -478,75 +318,27 @@ end;//procedure
 procedure TMTB.HideCfgDialog;
 begin
  try
-   MTBdrv.HideConfigDialog();
+//   MTBdrv.HideConfigDialog();
  except
 
  end;
-end;//procedure
+end;//procedure     }
 
-procedure TMTB.ShowAboutDialog;
-begin
- try
-   MTBdrv.ShowAboutDialog();
- except
-
- end;
-end;//procedure
-
-function TMTB.IsModule(addr:Integer):Boolean;
+{function TMTB.IsModule(addr:Integer):Boolean;
 begin
  try
    Result := MTBdrv.GetModuleExists(addr);
  except
    Result := false;
  end;
-end;//function
+end;//function      }
 
 //----- events from dll begin -----
-
-procedure TMTB.DllBeforeOpen(Sender:TObject);
-begin
-
-end;//rprocedure
-
-procedure TMTB.DllAfterOpen(Sender:TObject);
-begin
- Self.aOpenned := true;
- if (Assigned(Self.OnOpen)) then Self.OnOpen(Self);
-end;//procdure
-
-procedure TMTB.DllBeforeClose(Sender:TObject);
-begin
-
-end;//procdure
 
 procedure TMTB.DllAfterClose(Sender:TObject);
 begin
  Self.fGeneralError := false;
- Self.aOpenned := false;
- if (Assigned(Self.OnClose)) then Self.OnClose(Self);
-end;//procdure
-
-procedure TMTB.DllBeforeStart(Sender:TObject);
-begin
-
-end;//procdure
-
-procedure TMTB.DllAfterStart(Sender:TObject);
-begin
- Self.aStart := true;
- if (Assigned(Self.OnStart)) then Self.OnStart(Self);
-end;//procdure
-
-procedure TMTB.DllBeforeStop(Sender:TObject);
-begin
-
-end;//procdure
-
-procedure TMTB.DllAfterStop(Sender:TObject);
-begin
- Self.aStart := false;
- if (Assigned(Self.OnStop)) then Self.OnStop(Self);
+ if (Assigned(Self.fAfterClose)) then Self.fAfterClose(Self);
 end;//procdure
 
 procedure TMTB.DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string);
@@ -557,10 +349,10 @@ begin
   begin
    //errors on main board (MTB-USB)
    case (errValue) of
-    1,2,3    : if (Assigned(Self.OnErrOpen)) then Self.OnErrOpen(Self, errValue, errAddr, errMsg);
+{    1,2,3    : if (Assigned(Self.OnErrOpen)) then Self.OnErrOpen(Self, errValue, errAddr, errMsg);
     11       : if (Assigned(Self.OnErrClose)) then Self.OnErrClose(Self, errValue, errAddr, errMsg);
     21,22,25 : if (Assigned(Self.OnErrStart)) then Self.OnErrStart(Self, errValue, errAddr, errMsg);
-    31       : if (Assigned(Self.OnErrStop)) then Self.OnErrStop(Self, errValue, errAddr, errMsg);
+    31       : if (Assigned(Self.OnErrStop)) then Self.OnErrStop(Self, errValue, errAddr, errMsg); } // TODO
     301..306,4: begin
       // general IO error
       F_Main.A_System_Start.Enabled := true;
@@ -601,17 +393,17 @@ begin
  MTBTableData.UpdateLine(module);
 end;
 
-//----- events from dll end -----
-
-function TMTB.GetMTBCount():Byte;
-var addr:Integer;
+procedure TMTB.DllOnLog(Sender: TObject; logLevel:Integer; msg:string);
 begin
- Result := 0;
- for addr := 0 to _MAX_MTB-1 do
-   if (Self.IsModule(addr)) then
-     Result := Result + 1;
-end;//function
 
+end;
+
+procedure TMTB.DllOnScanned(Sender: TObject);
+begin
+
+end;
+
+//----- events from dll end -----
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMTB.SetNeeded(MtbAdr:Integer; state:boolean = true);
@@ -678,6 +470,17 @@ begin
    if ((board >= 0) and (board < _MAX_MTB)) then
      Self.Desky[board].outputChangedEv.Remove(event);
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TMTB.NoExStarted():boolean;
+begin
+ try
+   Result := Self.Started();
+ except
+   Result := false;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, Outputdriver, inifiles, Menus, ComCtrls, TabNotBk,
+  Dialogs, StdCtrls, Spin, inifiles, Menus, ComCtrls, TabNotBk,
   ExtCtrls, Mask, Gauges, StrUtils, Registry, Grids, jpeg, ShellAPI,
   ShlObj, ToolWin, winsock, Buttons, IdBaseComponent,
   IdComponent, IdIPWatch, fMain, CPort, CPortCtl, AC, THnaciVozidlo,
@@ -184,9 +184,6 @@ begin
  Data.CompleteLoadFromFile;
  //Nastaveni PageIndexe na 0
  PC_1.ActivePageIndex:=0;
-
- if (F_Admin.CHB_SimInput.Checked) then
-   MTB.InputSim();
 end;
 
 procedure TF_Options.PM_log_deleteClick(Sender: TObject);

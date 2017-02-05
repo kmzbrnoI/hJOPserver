@@ -6044,11 +6044,6 @@ object F_Main: TF_Main
           B6FF00FFF900F9000000}
         Caption = 'Nastaven'#237
       end
-      object PM_MTBDriver_About: TMenuItem
-        Caption = 'O driveru'
-        ImageIndex = 43
-        OnClick = PM_MTBDriver_AboutClick
-      end
       object N2: TMenuItem
         Caption = '-'
       end

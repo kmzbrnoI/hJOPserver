@@ -77,7 +77,7 @@ type
 
 implementation
 
-uses GetSystems, fMain;
+uses GetSystems, fMain, RCS;
 
 {
   Format datoveho souboru: .ini soubor, kazdy SPAX ma svou sekci
@@ -192,42 +192,62 @@ end;//procedure
 //gets data from MTB
 
 function TBooster.GetZkrat():TBoosterSignal;
-var val:Integer;
+var val:TRCSInputState;
 begin
+ if ((not MTB.ready) or (not MTB.Started)) then Exit(TBoosterSignal.undef);
+
  //if not a power, not a overload
  if (Self.napajeni = TBoosterSignal.error) then Exit(TBoosterSignal.undef);
 
- val := MTB.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port);
- if (val < 0) then
+ try
+   val := MTB.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port);
+ except
+   Exit(TBoosterSignal.undef);
+ end;
+
+ if ((val = failure) or (val = notYetScanned)) then
    Result := TBoosterSignal.undef
- else if (val > 0) then
+ else if (val = isOn) then
    Result := TBoosterSignal.error
  else
    Result := TBoosterSignal.ok;
 end;//function
 
 function TBooster.GetNapajeni():TBoosterSignal;
-var val:Integer;
+var val:TRCSInputState;
 begin
- val := MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port);
- if (val < 0) then
+ if ((not MTB.ready) or (not MTB.Started)) then Exit(TBoosterSignal.undef);
+
+ try
+   val := MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port);
+ except
+   Exit(TBoosterSignal.undef);
+ end;
+
+ if ((val = failure) or (val = notYetScanned)) then
    Result := TBoosterSignal.undef
- else if (val > 0) then
+ else if (val = isOn) then
    Result := TBoosterSignal.error
  else
    Result := TBoosterSignal.ok;
 end;//function
 
 function TBooster.GetDCC():TBoosterSignal;
-var val:Integer;
+var val:TRCSInputState;
 begin
+ if ((not MTB.ready) or (not MTB.Started)) then Exit(TBoosterSignal.undef);
+
  // DCC nemusi byt detekovano (to se pozna tak, ze MTB board = 0)
  if (Self.Settings.MTB.DCC.board = 0) then Exit(TBoosterSignal.undef);
+ try
+   val := MTB.GetInput(Self.Settings.MTB.DCC.board, Self.Settings.MTB.DCC.port);
+ except
+   Exit(TBoosterSignal.undef);
+ end;
 
- val := MTB.GetInput(Self.Settings.MTB.DCC.board, Self.Settings.MTB.DCC.port);
- if (val < 0) then
+ if ((val = failure) or (val = notYetScanned)) then
    Result := TBoosterSignal.undef
- else if (val > 0) then
+ else if (val = isOn) then
    Result := TBoosterSignal.error
  else
    Result := TBoosterSignal.ok;

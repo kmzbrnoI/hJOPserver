@@ -49,7 +49,6 @@ uses
   Trakce in 'Trakce.pas',
   XpressNET in 'XpressNET.pas',
   TrakceGUI in 'TrakceGUI.pas',
-  Outputdriver in 'Outputdriver.pas',
   TBlok in 'TBlok.pas',
   TBloky in 'TBloky.pas',
   TBlokVyhybka in 'TBlokVyhybka.pas',
@@ -124,7 +123,9 @@ uses
   PTEndpointLok in 'PTEndpointLok.pas',
   PTEndpointLoks in 'PTEndpointLoks.pas',
   PTEndpointBlokStav in 'PTEndpointBlokStav.pas',
-  PTEndpointLokStav in 'PTEndpointLokStav.pas';
+  PTEndpointLokStav in 'PTEndpointLokStav.pas',
+  RCS in 'rcs\RCS.pas',
+  RCSErrors in 'rcs\RCSErrors.pas';
 
 {$R *.res}
 

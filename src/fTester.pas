@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Outputdriver, Menus, Spin, ExtCtrls, Buttons, ColorGrd,
+  Dialogs, StdCtrls, Menus, Spin, ExtCtrls, Buttons, ColorGrd,
   ComCtrls, TabNotBk, Gauges, fMain, TBloky;
 
 type
@@ -18,7 +18,6 @@ type
     LB_Changes: TListBox;
     B_Clear: TButton;
     GB_vystupy: TGroupBox;
-    procedure B_options_ODClick(Sender: TObject);
     procedure T_testerTimer(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure SE_OutMtbChange(Sender: TObject);
@@ -56,14 +55,9 @@ var
 
 implementation
 
-uses TechnologieMTB, Logging;
+uses TechnologieMTB, Logging, RCS;
 
 {$R *.dfm}
-
-procedure TF_Tester.B_options_ODClick(Sender: TObject);
- begin
-  MTB.ShowCfgDialog();
- end;
 
 procedure TF_Tester.T_testerTimer(Sender: TObject);
  begin
@@ -108,36 +102,53 @@ procedure TF_Tester.SE_OutMtbChange(Sender: TObject);
  end;//procedure
 
 procedure TF_Tester.UpdateIn;
-var cyklus:Integer;
-    InputState:Shortint;
-    LastState:Shortint;
+var i:Integer;
+    InputState:TRCSInputState;
+    LastState:TRCSInputState;
+    stateStr:string;
  begin
-  for cyklus := 0 to 15 do
+  for i := 0 to 15 do
    begin
-    InputState := MTB.GetInput(MTBAddr, cyklus);
+    try
+      InputState := MTB.GetInput(MTBAddr, i);
+    except
+      InputState := failure;
+    end;
 
     if (F_Tester.CHB_LogZmeny.Checked) then
      begin
-      case (SInput[cyklus].Brush.Color) of
-       clRed :LastState := 0;
-       clLime:LastState := 1;
-       clGray:LastState := -1;
-      else LastState := -1;  end;
+      case (SInput[i].Brush.Color) of
+       clRed :LastState := isOff;
+       clLime:LastState := isOn;
+       clGray:LastState := failure;
+       clSilver:LastState := notYetScanned;
+      else
+       LastState := failure;
+      end;
 
-      if ((InputState <> LastState) and (LastState <> -1)) then
+      if (InputState <> LastState) then
        begin
-        F_Tester.LB_Changes.Items.Add('Zmena:: MTB:'+Format('%3d' ,[MTBAddr])+', port: '+Format('%2d' ,[cyklus])+', state:'+Format('%1d' ,[InputState]));
+        case (InputState) of
+         isOff         : stateStr := '0';
+         isOn          : stateStr := '1';
+         failure       : stateStr := 'F';
+         notYetScanned : stateStr := '?';
+        end;
+
+        F_Tester.LB_Changes.Items.Add('Zmena:: MTB:'+Format('%3d' ,[MTBAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
         Beep;
        end;//if (InputState <> LastState)
      end;//if F_Tester.CHB_LogZmeny.Checked
 
-    if (InputState < 0) then
-      SInput[cyklus].Brush.Color := clGray
-    else if (InputState = 0) then
-      SInput[cyklus].Brush.Color := clRed
+    if (InputState = isOn) then
+      SInput[i].Brush.Color := clLime
+    else if (InputState = isOff) then
+      SInput[i].Brush.Color := clRed
+    else if (InputState = notYetScanned) then
+      SInput[i].Brush.Color := clSilver
     else
-      SInput[cyklus].Brush.Color := clLime;
-   end;//for cyklus
+      SInput[i].Brush.Color := clGray;
+   end;//for i
  end;//procedure
 
 procedure TF_Tester.FormCreate(Sender: TObject);
@@ -263,7 +274,12 @@ begin
   begin
    if (not MTB.IsModule(i)) then continue;
    Self.CB_MTBAdrData[Self.CB_MtbAdr.Items.Count] := i;
-   Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : ' + MTB.GetNameMTB(i));
+
+   try
+     Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : ' + MTB.GetModuleName(i));
+   except
+     Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : -');
+   end;
   end;//for i
 
  Self.CB_MtbAdr.ItemIndex := 0;

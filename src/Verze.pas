@@ -3,7 +3,7 @@ unit Verze;
 interface
 
 uses  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Outputdriver, ExtCtrls, StdCtrls, Menus, ImgList, Buttons,
+  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons,
   ComCtrls,inifiles, ActnList, AppEvnts, Mask, ScktComp,ToolWin,jpeg,
   Spin, ExtDlgs, Grids, Gauges, Registry,
   StrUtils, DateUtils, mmsystem;
