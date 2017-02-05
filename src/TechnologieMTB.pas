@@ -253,7 +253,7 @@ begin
 
   ini := nil;
   try
-    ini := TMemIniFile.Create(FileName);
+    ini := TMemIniFile.Create(FileName, TEncoding.UTF8);
     lib := ini.ReadString('MTB', 'lib', 'simulator.dll')
   except
     lib := 'simulator.dll';
@@ -274,7 +274,7 @@ var ini:TMemIniFile;
 begin
   try
     DeleteFile(FileName);
-    ini := TMemIniFile.Create(FileName);
+    ini := TMemIniFile.Create(FileName, TEncoding.UTF8);
   except
     Exit(1);
   end;
