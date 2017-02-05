@@ -9,7 +9,7 @@ interface
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal,
      Classes, StrUtils, Graphics, Windows, TOblRizeni,
      IdContext, TBlok, Prevody, ComCtrls, IdSync, TBloky, UPO,
-     User, Souprava;
+     User, Souprava, Generics.Collections, THnaciVozidlo;
 
 const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
@@ -32,9 +32,6 @@ type
     menu_or:TOR;                                                                // OR, ze ktere bylo vyvolano menu
     UPO_OK, UPO_Esc:TNotifyEvent;                                               // callbacky manipulace s upozornenim vlevo dole
     UPO_ref:TObject;                                                            //
-    regulator:boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
-    regulator_user:TUser;                                                       // uzivatel, ktery autorizoval regulator
-    regulator_zadost:TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
     index:Integer;                                                              // index spojeni v tabulce ve F_Main
     funcsVyznamReq:boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
     maus:boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
@@ -42,6 +39,14 @@ type
     spr_new:boolean;                                                            // jestli v panelu probiha zadavani nove soupravy
     spr_edit:TSouprava;                                                         // souprava, kterou panel edituje
     spr_usek:TObject;                                                           // usek, na kterem panel edituje soupravu (TBlkUsek)
+
+    regulator:boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
+    regulator_user:TUser;                                                       // uzivatel, ktery autorizoval regulator
+    regulator_zadost:TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
+    regulator_loks:TList<THV>;
+
+    constructor Create();
+    destructor Destroy(); override;
 
     procedure Escape(AContext: TIdContext);                                     // volano pri stisku Escape v panelu
 
@@ -1143,6 +1148,7 @@ procedure TORTCPServer.GUIRefreshLine(index:Integer);
 var i:Integer;
     str:string;
     ORPanel:TORPanel;
+    HV:THV;
 begin
  if (not Assigned(F_Main.LV_Clients.Items.Item[index])) then
   Exit;
@@ -1216,10 +1222,23 @@ begin
    if (not Assigned((Self.clients[index].conn.Data as TTCPORsRef).potvr)) then
     F_Main.LV_Clients.Items.Item[index].SubItems.Strings[8] := '';
 
-   if ((Self.clients[index].conn.Data as TTCPORsRef).regulator) then
-    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[10] := 'ano'
-   else
-    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[10] := 'ne';
+   if ((Self.clients[index].conn.Data as TTCPORsRef).regulator) then begin
+    if (Assigned((Self.clients[index].conn.Data as TTCPORsRef).regulator_user)) then
+      str := (Self.clients[index].conn.Data as TTCPORsRef).regulator_user.id
+    else
+      str := 'ano';
+
+    if ((Self.clients[index].conn.Data as TTCPORsRef).regulator_loks.Count > 0) then
+     begin
+      str := str + ': ';
+      for HV in (Self.clients[index].conn.Data as TTCPORsRef).regulator_loks do
+        str := str + IntToStr(HV.adresa) + ', ';
+      str := LeftStr(str, Length(str)-2);
+     end;
+
+    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[10] := str;
+   end else
+    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[10] := '';
 
  F_Main.LV_Clients.Repaint();
 end;//procedure
@@ -1230,6 +1249,20 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   Self.GUIRefreshLine(i); 
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+constructor TTCPORsRef.Create();
+begin
+ inherited;
+ Self.regulator_loks := TList<THV>.Create();
+end;
+
+destructor TTCPORsRef.Destroy();
+begin
+ Self.regulator_loks.Free();
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1354,7 +1387,7 @@ begin
        (TTCPORsRef(Self.clients[i].conn.Data).regulator_user = user)) then
     begin
      Self.SendLn(Self.clients[i].conn, '-;LOK;G;AUTH;not;Zrušeno oprávnìní regulátor');
-     TTCPORsRef(Self.clients[i].conn.Data).regulator := false;
+     TCPRegulator.RegDisconnect(Self.clients[i].conn);
     end;
 end;
 

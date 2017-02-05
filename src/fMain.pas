@@ -1629,7 +1629,8 @@ begin
     begin
      case (return) of
        1: Application.MessageBox('Operace se nezdaøila - HV neexistuje', 'Chyba', MB_OK OR MB_ICONWARNING);
-       2: Application.MessageBox(PCHar('Operace se nezdaøila - HV je pøiøazeno soupravì '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].Stav.souprava)), 'Chyba', MB_OK OR MB_ICONWARNING);
+       2: Application.MessageBox(PChar('Operace se nezdaøila - HV je pøiøazeno soupravì '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].Stav.souprava)), 'Chyba', MB_OK OR MB_ICONWARNING);
+       3: Application.MessageBox('Operace se nezdaøila - HV je pøevzato do øízení', 'Chyba', MB_OK OR MB_ICONWARNING);
      else
       Application.MessageBox(PChar('Operace se nezdaøila - chyba '+IntToStr(return)), 'Chyba', MB_OK OR MB_ICONWARNING);
      end;

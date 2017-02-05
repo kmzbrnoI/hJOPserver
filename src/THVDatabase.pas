@@ -326,6 +326,7 @@ begin
  // hv neexistuje
  if (Self.HVs[addr] = nil) then Exit(1);
  if (Self.HVs[addr].Stav.souprava > -1) then Exit(2);
+ if ((Self.HVs[addr].Slot.prevzato) or (Self.HVs[addr].Slot.stolen)) then Exit(3);
 
  index := Self.HVs[addr].index;
  FreeAndNil(Self.HVs[addr]);

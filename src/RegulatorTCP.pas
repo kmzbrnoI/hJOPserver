@@ -20,7 +20,7 @@ TTCPRegulator = class
     procedure ParseGlobal(Sender:TIdContext; parsed:TStrings);
     procedure ParseLoko(Sender:TIdContext; parsed:TStrings);
 
-    procedure ClientAuthorise(conn:TIdContext; state:boolean; comment:string='');
+    procedure ClientAuthorise(conn:TIdContext; state:boolean; user:TObject; comment:string='');
     procedure ClientError(conn:TIdContext; error:string);
 
     procedure PanelLOKResponseOK(Sender:TObject; Data:Pointer);
@@ -74,33 +74,38 @@ begin
   begin
    // pozadavek na autorizaci klienta
    try
+     if (parsed[4] = '') then
+      begin
+       Self.ClientAuthorise(Sender, false, nil, 'Uživatel odhlášen');
+       Exit();
+      end;
+
      user := UsrDb.GetUser(parsed[4]);
 
      // kontrola existence uzivatele
      if (not Assigned(user)) then
       begin
-       Self.ClientAuthorise(Sender, false, 'Uživatel '+parsed[4]+' neexistuje !');
+       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+parsed[4]+' neexistuje !');
        Exit();
       end;
 
      // kontrola BANu uzivatele
      if (user.ban) then
       begin
-       Self.ClientAuthorise(Sender, false, 'Uživatel '+user.id+' má BAN !');
+       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.id+' má BAN !');
        Exit();
       end;
 
      // kontrola hesla
      if (TUser.ComparePasswd(parsed[5], user.password)) then
       begin
-       Self.ClientAuthorise(Sender, true);
-       (Sender.Data as TTCPORsRef).regulator_user := user;
+       Self.ClientAuthorise(Sender, true, user);
       end else begin
-       Self.ClientAuthorise(Sender, false, 'Špatné heslo');
+       Self.ClientAuthorise(Sender, false, nil, 'Špatné heslo');
       end;
    except
     // error pri parsovani -> oznamime chybu
-    Self.ClientAuthorise(Sender, false, 'Neplatné argumenty');
+    Self.ClientAuthorise(Sender, false, nil, 'Neplatné argumenty');
    end;
   end;
 
@@ -217,7 +222,9 @@ begin
   begin
    // regulator ukoncuje rizeni LOKO
    HV.RemoveRegulator(Sender);
+   TTCPORsRef(Sender.Data).regulator_loks.Remove(HV);
    ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;release;Loko odhlášeno');
+   ORTCPServer.GUIRefreshLine(TTCPORsRef(Sender.Data).index);
    Exit();
   end;
 
@@ -372,20 +379,28 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 // je volano, pokud chceme rict klientovi, ze jsme mu zmenili stav autorizace
-procedure TTCPRegulator.ClientAuthorise(conn:TIdContext; state:boolean; comment:string='');
+procedure TTCPRegulator.ClientAuthorise(conn:TIdContext; state:boolean; user:TObject; comment:string='');
+var str:string;
 begin
  (conn.Data as TTCPORsRef).regulator := state;
+ (conn.Data as TTCPORsRef).regulator_user := TUser(user);
 
  if (state) then
   begin
-   F_Main.LV_Clients.Items.Item[(conn.Data as TTCPORsRef).index].SubItems.Strings[10] := 'ano';
+   if (Assigned(user)) then
+     str := TUser(user).id
+   else
+     str := 'ano';
+
+   F_Main.LV_Clients.Items.Item[(conn.Data as TTCPORsRef).index].SubItems.Strings[10] := str;
    ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;ok;'+comment)
   end else begin
    (conn.Data as TTCPORsRef).regulator_user := nil;
-   F_Main.LV_Clients.Items.Item[(conn.Data as TTCPORsRef).index].SubItems.Strings[10] := 'ne';
+   F_Main.LV_Clients.Items.Item[(conn.Data as TTCPORsRef).index].SubItems.Strings[10] := '';
    ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;not;'+comment);
 
    // odhlasime vsechny prihlasene regulatory
+   TTCPORsRef(conn.Data).regulator_loks.Clear();
    HVDb.RemoveRegulator(conn);
   end;
 end;//procedure
@@ -487,6 +502,7 @@ var pom:boolean;
     i:Integer;
     reg:THVRegulator;
     timeout:Integer;
+    tmpHV:THV;
 begin
  // je tento regulator uz v seznamu regulatoru?
  pom := false;
@@ -515,7 +531,10 @@ begin
      TrkSystem.PrevzitLoko(HV);
    except
      on E:Exception do
+      begin
        ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;Pøevzetí z centrály se nezdaøilo :'+E.Message);
+       HV.Stav.regulators.Remove(reg);
+      end;
    end;
 
    // timeout 3000ms = 3s
@@ -541,6 +560,25 @@ begin
    else
      ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;ok;{'+HV.GetPanelLokString()+'}');
   end;
+
+  // pridani loko do seznamu autorizovanych loko klientem
+
+  pom := false;
+  for tmpHV in TTCPORsRef(Regulator.Data).regulator_loks do
+   begin
+    if (tmpHV = HV) then
+     begin
+      pom := true;
+      break;
+     end;
+   end;
+
+  if (not pom) then
+   begin
+    // pridani nove loko do seznamu
+    TTCPORsRef(Regulator.Data).regulator_loks.Add(HV);
+    ORTCPServer.GUIRefreshLine(TTCPORsRef(Regulator.Data).index);
+   end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -552,6 +590,10 @@ begin
  for addr := 0 to _MAX_ADDR-1 do
    if ((HVDb.HVozidla[addr] <> nil) and (HVDb.HVozidla[addr].Stav.regulators.Count > 0)) then
      HVDb.HVozidla[addr].RemoveRegulator(reg);
+
+ TTCPORsRef(reg.Data).regulator := false;
+ TTCPORsRef(reg.Data).regulator_user := nil;
+ TTCPORsRef(reg.Data).regulator_loks.Clear();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

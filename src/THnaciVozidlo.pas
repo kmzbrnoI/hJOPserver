@@ -155,7 +155,7 @@ type
 implementation
 
 uses ownStrUtils, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
-      RegulatorTCP, fMain, PTUtils;
+      RegulatorTCP, fMain, PTUtils, TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 
