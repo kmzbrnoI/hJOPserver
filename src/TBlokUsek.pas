@@ -364,8 +364,8 @@ begin
    end;
 
    case (state) of
-    isOn  : Self.UsekStav.StavAr[i] := TUsekStav.uvolneno;
-    isOff : Self.UsekStav.StavAr[i] := TUsekStav.obsazeno;
+    isOn  : Self.UsekStav.StavAr[i] := TUsekStav.obsazeno;
+    isOff : Self.UsekStav.StavAr[i] := TUsekStav.uvolneno;
     failure, notYetScanned:begin
       // vypadek MTB, ci nespravny argument -> disable blok
       if (Self.UsekStav.Stav <> disabled) then
