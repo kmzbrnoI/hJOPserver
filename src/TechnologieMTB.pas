@@ -61,7 +61,7 @@ type
       //events from libraly
       procedure DllAfterClose(Sender:TObject);
 
-      procedure DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string);
+      procedure DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:PChar);
       procedure DllOnInputChanged(Sender:TObject; module:byte);
       procedure DllOnOutputChanged(Sender:TObject; module:byte);
 
@@ -262,9 +262,9 @@ begin
  if (Assigned(Self.fAfterClose)) then Self.fAfterClose(Self);
 end;//procdure
 
-procedure TMTB.DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:string);
+procedure TMTB.DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:PChar);
 begin
- writelog('MTB ERR: '+errMsg+' - val:'+IntToStr(errValue)+', board:'+IntToStr(errAddr), WR_MTB, 1);
+ writelog('MTB ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_MTB, 1);
 
  if (errAddr = 255) then
   begin
@@ -275,11 +275,6 @@ begin
       F_Main.A_System_Start.Enabled := true;
       F_Main.A_System_Stop.Enabled  := true;
       writelog('MTB FTDI Error - '+IntToStr(errValue), WR_ERROR, 0);
-      if (errValue = 4) then
-       begin
-        Blky.Disable();
-        Soupravy.StopAllSpr();
-       end;
       ORTCPServer.BroadcastBottomError('MTB FTDI error', 'TECHNOLOGIE');
     end;
    end;//case
