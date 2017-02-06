@@ -119,8 +119,6 @@ end;//procedure
 procedure TBlkIR.Update();
 var state:TRCSInputState;
 begin
- if (Self.IRStav.Stav = disabled) then Exit;
-
  try
    state := MTB.GetInput(Self.IRSettings.MTBAddrs.data[0].board,Self.IRSettings.MTBAddrs.data[0].port)
  except
