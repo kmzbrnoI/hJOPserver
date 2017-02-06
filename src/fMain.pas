@@ -1271,6 +1271,10 @@ begin
  Self.A_MTB_Open.Enabled  := true;
  Self.MI_Libs.Enabled     := true;
 
+ // may happen when MTB USB disconnects
+ if (Blky.enabled) then Blky.Disable();
+ Soupravy.StopAllSpr();
+
  F_Main.S_MTB_open.Brush.Color  := clRed;
  F_Main.S_MTB_start.Brush.Color := clRed;
 
