@@ -366,7 +366,7 @@ begin
    case (state) of
     isOn  : Self.UsekStav.StavAr[i] := TUsekStav.obsazeno;
     isOff : Self.UsekStav.StavAr[i] := TUsekStav.uvolneno;
-    failure, notYetScanned:begin
+    failure, notYetScanned, unavailable:begin
       // vypadek MTB, ci nespravny argument -> disable blok
       if (Self.UsekStav.Stav <> disabled) then
        begin
