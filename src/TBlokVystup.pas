@@ -100,7 +100,8 @@ begin
  for i := 0 to Self.VystupSettings.MTBAddrs.Count-1 do
   begin
    try
-     MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 1);
+     if ((MTB.Started) and (MTB.IsModule(Self.VystupSettings.MTBAddrs.data[i].board)) and (not MTB.IsModuleFailure(Self.VystupSettings.MTBAddrs.data[i].board))) then
+       MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 1);
    except
 
    end;
@@ -114,7 +115,8 @@ begin
  for i := 0 to Self.VystupSettings.MTBAddrs.Count-1 do
   begin
    try
-     MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 0);
+     if ((MTB.Started) and (MTB.IsModule(Self.VystupSettings.MTBAddrs.data[i].board)) and (not MTB.IsModuleFailure(Self.VystupSettings.MTBAddrs.data[i].board))) then
+       MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 0);
    except
 
    end;
