@@ -152,8 +152,11 @@ end;//procedure
 
 procedure TBlkZamek.Enable();
 begin
- Self.ZamekStav.enabled     := true;
- Self.ZamekStav.klicUvolnen := true;
+ Self.ZamekStav.enabled := true;
+
+ // nezamykat zamek tady
+ // zamek se zamyka v Disable(), tady se totiz muze stat, ze uz ho nejaka vyhybka
+ // nouzove odemkla (vyhybka, ktere Enable() se vola driv)
 
  inherited Change();
 end;//procedure
