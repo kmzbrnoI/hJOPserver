@@ -1271,7 +1271,8 @@ begin
  Self.A_MTB_Open.Enabled  := true;
  Self.MI_Libs.Enabled     := true;
 
- F_Main.S_MTB_open.Brush.Color := clRed;
+ F_Main.S_MTB_open.Brush.Color  := clRed;
+ F_Main.S_MTB_start.Brush.Color := clRed;
 
  writelog('----- MTB CLOSE OK -----',WR_MTB);
 
