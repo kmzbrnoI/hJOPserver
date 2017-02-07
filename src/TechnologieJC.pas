@@ -190,6 +190,8 @@ type
     _JCB_HV_RUC                  = 100;
     _JCB_HV_NOT_ALL_RUC          = 101;
 
+    _JCB_SPR_SMER                = 120;
+
 
    private const
     _def_jc_staveni : TJCStaveni = (
@@ -294,7 +296,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, fSettings,
+uses GetSystems, TechnologieMTB, fSettings, THnaciVozidlo,
      TBlokSCom, TBlokUsek, TOblsRizeni,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, SprDb,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;
@@ -839,6 +841,14 @@ begin
          bariery.Add(Self.JCBariera(_JCB_HV_NOT_ALL_RUC));
          break;
         end;
+
+   // kontrola smeru soupravy
+   if (Self.fproperties.TypCesty = TJCType.vlak) then
+    begin
+     if (((TBlkScom(Blk2).Smer = THVStanoviste.lichy) and (not Soupravy.soupravy[TBlkUsek(Blk).Souprava].sdata.smer_L)) or
+         ((TBlkScom(Blk2).Smer = THVStanoviste.sudy) and (not Soupravy.soupravy[TBlkUsek(Blk).Souprava].sdata.smer_S))) then
+       bariery.Add(Self.JCBariera(_JCB_SPR_SMER, nil, TBlkUsek(Blk).Souprava));
+    end;
 
   end;
 end;//procedure
@@ -2698,7 +2708,13 @@ begin
       else
         Result[2] := GetUPOLine('ID ' + IntToStr(bariera.param));
      end;
-  end
+  end;
+
+  _JCB_SPR_SMER : begin
+    Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
+    Result[1] := GetUPOLine('Jízda proti smìru soupravy');
+    Result[2] := GetUPOLine('Soprava ' + Soupravy.soupravy[Bariera.param].nazev);
+  end;
 
  else
   Result[0] := GetUPOLine('Neznámá bariéra ve stavìní JC', taCenter, clRed, clWhite);
@@ -2736,7 +2752,7 @@ begin
       end;
   end;
   _JCB_USEK_STITEK, _JCB_USEK_VYLUKA, _JCB_VYHYBKA_STITEK, _JCB_VYHYBKA_VYLUKA, _JCB_PREJEZD_STITEK,
-  _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC:
+  _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC, _JCB_SPR_SMER:
             Result := true;
  else
   Result := false;
