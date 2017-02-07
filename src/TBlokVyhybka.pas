@@ -715,8 +715,12 @@ begin
  Blky.GetBlkByID(Self.VyhSettings.spojka, spojka);
  if ((spojka = nil) or ((((spojka as TBlkVyhybka).Zaver = TZaver.no) or ((spojka as TBlkVyhybka).Zaver = TZaver.staveni)) and (not (spojka as TBlkVyhybka).vyhZaver) and (not (spojka as TBlkVyhybka).Stav.locked))) then
   begin
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
-   MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
+   try
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
+     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
+   except
+
+   end;
   end;
 
  Self.VyhStav.locked := false;
