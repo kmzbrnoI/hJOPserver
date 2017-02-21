@@ -333,9 +333,6 @@ begin
      on E:Exception do
        AppEvents.LogException(E, 'Save blok '+Self.data[i].GetGlobalSettings().name);
    end;
-
-   // DEBUG
-   ini.UpdateFile();
   end;
 
  ini.UpdateFile();
