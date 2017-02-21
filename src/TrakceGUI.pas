@@ -20,6 +20,40 @@ const
   // maximalni rychlost pro rychlostni tabulku
   _MAX_SPEED = 28;
 
+  // tato rychlostni tabulka je pouzita v pripade, kdy selze nacitani
+  // souboru s rychlostni tabulkou:
+  _DEFAULT_SPEED_TABLE : array [0.._MAX_SPEED] of Integer = (
+    0,
+    1,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    15,
+    17,
+    20,
+    22,
+    25,
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85,
+    90,
+    100,
+    110,
+    120
+  );
+
 type
   TLogEvent = procedure(Sender:TObject; lvl:Integer; msg:string; var handled:boolean) of object;
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TSlot; var handled:boolean) of object;
@@ -224,6 +258,8 @@ type
      procedure SetLoglevelFile(ll:TTrkLogLevel);
      procedure SetLoglevelTable(ll:TTrkLogLevel);
 
+     procedure LoadSpeedTableToTable(var LVRych:TListView);
+
    public
 
      {
@@ -269,7 +305,7 @@ type
                                                                                 // je volano pri pripojeni k centrale jako overeni funkcni komunikace
 
      // nacitani a ukladani rychlostni tabulky z a do souboru
-     function LoadSpeedTable(filename:string;var LVRych:TListView):Byte;
+     procedure LoadSpeedTable(filename:string;var LVRych:TListView);
      procedure SaveSpeedTable(filename:string);
 
      function GetStepSpeed(step:byte):Integer;                                  // vraci rychlosti prislusneho jizdniho stupne
@@ -745,39 +781,64 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrkGUI.LoadSpeedTable(filename:string;var LVRych:TListView):Byte;
+procedure TTrkGUI.LoadSpeedTable(filename:string;var LVRych:TListView);
 var i, j:Integer;
-    LI:TListItem;
     myFile:TextFile;
  begin
   try
     AssignFile(myFile, filename);
     Reset(myFile);
   except
-    Self.TrkLog(self,1,'Chyba pri nacitani souboru s rychlostmi - nepodarilo se pristoupit k souboru !');
-    Exit(1);
+    Self.TrkLog(self, 1, 'Chyba pri nacitani souboru s rychlostmi - nepodarilo se pristoupit k souboru! Pouzivam vychozi rychlostni tabulku.');
+
+    // nacteme vychozi rychlostni tabulku
+    for i := 0 to _MAX_SPEED do
+      Self.SpeedTable[i] := _DEFAULT_SPEED_TABLE[i];
+    Self.LoadSpeedTableToTable(LVRych);
+
+    Exit();
   end;
 
   for i := 0 to _MAX_SPEED do
    begin
     if (Eof(myFile)) then
      begin
-      Self.TrkLog(self,1,'Chyba pri nacitani souboru s rychlostmi - prilis malo radku');
+      Self.TrkLog(self, 1, 'Chyba pri nacitani souboru s rychlostmi - prilis malo radku! Doplnuji vychozi rychlostni tabulkou.');
       CloseFile(myFile);
-      for j := i to _MAX_SPEED do Self.SpeedTable[j] := 0;
-      Exit(2);
+      for j := i to _MAX_SPEED do
+        Self.SpeedTable[j] := _DEFAULT_SPEED_TABLE[j];
+      Self.LoadSpeedTableToTable(LVRych);
+      Exit();
      end else begin
-      ReadLn(myFile, Self.SpeedTable[i]);
+      try
+        ReadLn(myFile, Self.SpeedTable[i]);
+      except
+        on E:Exception do
+         begin
+          Self.TrkLog(self, 1, 'Soubor s rychlostmi, øádek ' + IntToStr(i+1) + ': ' + E.Message);
+          Self.SpeedTable[i] := _DEFAULT_SPEED_TABLE[i];
+         end;
+      end;
      end;
-
-    LI := LVRych.Items.Add;
-    LI.Caption := IntToStr(i);
-    LI.SubItems.Add(IntToStr(Self.SpeedTable[i])+' km/h');
    end;//while
 
   CloseFile(myFile);
-  Result := 0;
+  Self.LoadSpeedTableToTable(LVRych);
 end;//function
+
+procedure TTrkGUI.LoadSpeedTableToTable(var LVRych:TListView);
+var i:Integer;
+    LI:TListItem;
+begin
+ LVrych.Clear();
+
+ for i := 0 to _MAX_SPEED do
+  begin
+   LI := LVRych.Items.Add;
+   LI.Caption := IntToStr(i);
+   LI.SubItems.Add(IntToStr(Self.SpeedTable[i])+' km/h');
+  end;
+end;
 
 procedure TTrkGUI.SaveSpeedTable(filename:string);
 var i:Integer;
