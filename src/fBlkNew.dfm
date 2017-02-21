@@ -36,7 +36,7 @@ object F_BlkNew: TF_BlkNew
       'Vyh'#253'bka'
       #218'sek'
       'IR'
-      'S-Com'
+      'N'#225'v'#283'stidlo'
       'P'#345'ejezd'
       'Tra'#357
       'Z'#225'mek'

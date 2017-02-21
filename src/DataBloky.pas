@@ -173,7 +173,7 @@ var j:integer;
    _BLK_SCOM:begin
       Self.LV.Items.Item[line].ImageIndex := 5;
       s_scom := (Blk as TBlkSCom).GetSettings();
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'S-com';
+      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Návìstidlo';
 
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 

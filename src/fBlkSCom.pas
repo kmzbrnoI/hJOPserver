@@ -110,7 +110,7 @@ procedure TF_BlkSCom.NewBlkOpenForm();
   // prvni navstidlo nepridavame, protoze muze byt navestidlo cestove, ktere ho nepotrebuje
   //Self.BB_HV_AddClick(Self);
 
-  F_BlkSCom.Caption := 'Editovat data noveho bloku S-Com';
+  F_BlkSCom.Caption := 'Editovat data nového bloku návìstidlo';
  end;//procedure
 
 procedure TF_BlkSCom.NormalOpenForm;
@@ -159,7 +159,7 @@ var glob:TBlkSettings;
 
   Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkSCom).UsekID);
 
-  F_BlkSCom.Caption := 'Editovat data bloku '+glob.name+' (S-Com)';
+  F_BlkSCom.Caption := 'Editovat data bloku '+glob.name+' (návìstidlo)';
  end;//procedure
 
 procedure TF_BlkSCom.HlavniOpenForm();

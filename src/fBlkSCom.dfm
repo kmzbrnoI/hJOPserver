@@ -3,7 +3,7 @@ object F_BlkSCom: TF_BlkSCom
   Top = 168
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Editovat data bloku [blok] (S-Com)'
+  Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
   ClientHeight = 431
   ClientWidth = 617
   Color = clBtnFace
@@ -73,13 +73,13 @@ object F_BlkSCom: TF_BlkSCom
   object Label1: TLabel
     Left = 7
     Top = 131
-    Width = 111
+    Width = 112
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Usek pred navestidlem:'
+    Caption = #218'sek p'#345'ed n'#225'v'#283'stidlem:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -157,7 +157,7 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Ovl'#225'd'#225'n'#237' n'#225'vestidla '
+    Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
