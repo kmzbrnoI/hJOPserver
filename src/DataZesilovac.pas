@@ -10,10 +10,13 @@ type
   TZesTableData=class
     private
       LV:TListView;
+      changed:boolean;
 
     public
 
       procedure LoadToTable();
+      procedure UpdateTable();
+      procedure ZesChange();
 
       constructor Create(LV:TListView);
   end;
@@ -31,6 +34,7 @@ constructor TZesTableData.Create(LV:TListView);
 begin
  inherited Create();
  Self.LV := LV;
+ Self.changed := true;
 end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,6 +54,23 @@ begin
    LI.SubItems.Add(TBooster.GetBClassString(booster.bSettings.bclass));
   end;//for i
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TZesTableData.UpdateTable();
+begin
+ if (not Self.changed) then Exit();
+
+ Self.LV.Repaint();
+ Self.changed := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TZesTableData.ZesChange();
+begin
+ Self.changed := true;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

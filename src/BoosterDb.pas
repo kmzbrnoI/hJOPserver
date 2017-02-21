@@ -59,7 +59,7 @@ var Boosters:TBoosterDb;
 
 implementation
 
-uses TBloky, fMain, Trakce, appEv, logging;
+uses TBloky, fMain, Trakce, appEv, logging, DataZesilovac;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -153,6 +153,8 @@ begin
  ini.Free();
  sections.Free();
 
+ ZesTableData.LoadToTable();
+
  writelog('Naèteno '+IntToStr(Self.Count)+' zesilovaèù', WR_DATA);
 end;//procedure
 
@@ -224,16 +226,19 @@ end;//procedure
 procedure TBoosterDb.OnZkratChange(Sender:TObject; state:TBoosterSignal);
 begin
  Blky.SetZesZkrat(TBooster(Sender).id, state);
+ ZesTableData.ZesChange();
 end;//procedure
 
 procedure TBoosterDb.OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
 begin
  Blky.SetZesNapajeni(TBooster(Sender).id, state);
+ ZesTableData.ZesChange();
 end;//procedure
 
 procedure TBoosterDb.OnDCCChange(Sender:TObject; state:TBoosterSignal);
 begin
  Blky.SetZesDCC(TBooster(Sender).id, state);
+ ZesTableData.ZesChange();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

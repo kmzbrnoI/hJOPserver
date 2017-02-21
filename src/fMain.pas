@@ -602,7 +602,7 @@ begin
  if (PC_1.ActivePage = TS_MultiJC)    then MultiJCTableData.UpdateTable;
  if (PC_1.ActivePage = TS_Users)      then UsersTableData.UpdateTable;
  if (PC_1.ActivePage = TS_Bloky)      then BlokyTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Zesilovace) then ZesTableData.LoadToTable();
+ if (PC_1.ActivePage = TS_Zesilovace) then ZesTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Soupravy)   then SprTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Aut_Rezimy) then ACTAbleData.UpdateTable();
  if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
@@ -1833,7 +1833,7 @@ begin
       end;
      if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then BlokyTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then SprTableData.UpdateTable();
-     if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then F_Main.LV_Zesilovace.Repaint;
+     if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then ZesTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_HV) then HVTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_VC) then JCTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_MultiJC) then MultiJCTableData.UpdateTable();
