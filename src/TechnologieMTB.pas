@@ -170,7 +170,7 @@ begin
      for tmp in Self.unbound do
        str := str + tmp + ', ';
      str := LeftStr(str, Length(str)-2);
-     F_Main.LogStatus('ERR: RCS: nepodaøilo se svázat následující funce : ' + str);
+     F_Main.LogStatus('ERR: RCS: nepodaøilo se svázat následující funkce : ' + str);
     end;
   end;
 end;
@@ -232,7 +232,7 @@ begin
     Self.LoadLib(lib, true);
   except
     on E:Exception do
-      AppEvents.LogException(E, 'Nelze naèíst knihovnu '+lib);
+      writeLog('Nelze naèíst knihovnu '+lib+', ' + E.Message, WR_ERROR);
   end;
 
   ini.Free();
@@ -248,7 +248,8 @@ begin
     Exit(1);
   end;
 
-  ini.WriteString('MTB', 'lib', Self.Lib);
+  if (Self.Lib <> '') then
+    ini.WriteString('MTB', 'lib', Self.Lib);
 
   ini.UpdateFile();
   ini.Free();

@@ -9,6 +9,8 @@ uses
 
 type
 
+EFileNotFound = class(Exception);
+
 TData=class
  autosave:boolean;
  autosave_period:TTime;
@@ -52,13 +54,6 @@ var read,read2:string;
  begin
   DateTimeToString(OPData.xDate, 'dd.mm.yyyy', Now);
 
-  try
-    if (not DirectoryExists('data')) then
-      CreateDir('data');
-  except
-    writelog('Nelze vytvorit slozku data', WR_DATA, 1);
-  end;
-
   F_Splash.AddStav('Naèítám konfiguraci');
   read := ini_lib.ReadString('NacteniDat','Konfigurace', 'data\Konfigurace.ini');
   try
@@ -84,6 +79,8 @@ var read,read2:string;
   try
     ORs.LoadData(read, read2);
   except
+    on E:EFileNotFound do
+      writelog(E.Message, WR_ERROR);
     on E:Exception do
       AppEvents.LogException(E);
   end;
@@ -188,6 +185,7 @@ var read,read2:string;
 
 procedure TData.CompleteSaveToFile;
 var return:Integer;
+    tmpStr:string;
  begin
   ini_lib.EraseSection('NacteniDat');
   WriteLog('Probiha kompletni ukladani dat',WR_DATA);
@@ -302,7 +300,13 @@ var return:Integer;
     ini_lib.WriteString('NacteniDat', 'mJC', ExtractRelativePath(ExtractFilePath(Application.ExeName), MultiJCDb.filename));
     ini_lib.WriteString('NacteniDat', 'soupravy', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_soupr.Text));
     ini_lib.WriteString('NacteniDat', 'users', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_Dataload_Users.Text));
-    ini_lib.WriteString('NacteniDat', 'or_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), ORs.status_filename));
+
+    if (ORs.status_filename = '') then
+      tmpStr := 'data\or_stat.ini'
+    else
+      tmpStr := ORs.status_filename;
+
+    ini_lib.WriteString('NacteniDat', 'or_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), tmpStr));
   except
     on E:Exception do
       AppEvents.LogException(E);

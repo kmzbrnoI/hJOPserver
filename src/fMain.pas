@@ -18,6 +18,8 @@ const
  _SB_SBERNICE = 4;
  _SB_PROC     = 5;
 
+ _INIDATA_FN = 'inidata.ini';
+
 type
 
   TF_Main = class(TForm)
@@ -450,6 +452,9 @@ type
 
     procedure SetCallMethod(Method:TNotifyEvent);
     procedure OnSoundDisabled(Sender:TObject);
+
+    procedure CreateCfgDirs();
+
   end;//public
 
  TVytizeni=class                                                                // vytizeni procesoru programem
@@ -1457,7 +1462,6 @@ begin
   try
     Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text), TEncoding.UTF8);
     ModCas.SaveData(Konfigurace.ini);
-    Konfigurace.ini.WriteBool('SystemCfg', 'FirstStart', false);
     Konfigurace.ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
     Konfigurace.ini.UpdateFile();
     Konfigurace.ini.Free();
@@ -1946,9 +1950,20 @@ function TLogData.CreateLogDirectories:boolean;
      end;
  end;
 
+procedure TF_Main.CreateCfgDirs();
+begin
+ try
+   CreateDir('data');
+   CreateDir('lok');
+ except
+   on e:Exception do
+     AppEvents.LogException(E);
+ end;
+end;
+
 procedure TF_Main.CreateClasses;
  begin
-  ini_lib        := TMeminifile.Create('inidata.ini', TEncoding.UTF8);
+  ini_lib        := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
   MTB            := TMTB.Create();
   ResetData      := TReset.Create;
   Vytizeni       := TVytizeni.Create;
@@ -2236,6 +2251,9 @@ procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);
 procedure TF_Main.CreateSystem;
  begin
   Randomize;
+
+  if (not FileExists(_INIDATA_FN)) then
+    Self.CreateCfgDirs();
 
   F_splash.AddStav('Vytváøím datové struktury');
   CreateClasses;

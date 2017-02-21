@@ -65,7 +65,7 @@ var
 
 implementation
 
-uses Prevody, Logging, TCPServerOR, THVDatabase, appEv;
+uses Prevody, Logging, TCPServerOR, THVDatabase, appEv, FileSystem;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -94,7 +94,7 @@ begin
  writelog('Naèítám stanice - '+filename,WR_DATA);
 
  if (not FileExists(filename)) then
-   raise Exception.Create('Soubor se stanicemi neexistuje - '+filename);
+   raise EFileNotFound.Create('Soubor se stanicemi neexistuje - '+filename);
 
  Self.ORsDatabase.Clear();
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
