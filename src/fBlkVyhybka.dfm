@@ -415,18 +415,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
     ItemHeight = 13
     TabOrder = 2
   end
-  object B_Prop: TButton
-    Left = 11
-    Top = 421
-    Width = 109
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Tech. vlastnosti'
-    TabOrder = 8
-  end
   object CHB_Spojka: TCheckBox
     Left = 15
     Top = 125
@@ -448,7 +436,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Width = 194
     Height = 21
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object GroupBox1: TGroupBox
@@ -463,7 +451,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 9
+    TabOrder = 8
     object Label2: TLabel
       Left = 12
       Top = 46
@@ -492,7 +480,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
-      ItemHeight = 0
+      ItemHeight = 13
       ParentFont = False
       TabOrder = 0
     end

@@ -27,7 +27,6 @@ type
     B_Save: TButton;
     L_Usek03: TLabel;
     LB_Stanice: TListBox;
-    B_Prop: TButton;
     CHB_Spojka: TCheckBox;
     CB_Spojka: TComboBox;
     SE_VystPlusMTB: TSpinEdit;
