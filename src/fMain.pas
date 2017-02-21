@@ -1682,8 +1682,6 @@ begin
      else
       Application.MessageBox(PChar('Operace se nezdaøila - chyba '+IntToStr(return)), 'Chyba', MB_OK OR MB_ICONWARNING);
      end;
-
-     Exit;
     end;
   end;
 end;
@@ -1930,17 +1928,11 @@ function TLogData.CreateLogDirectories:boolean;
 
   if not DirectoryExists('log\') then
     if not CreateDir('log\') then
-     begin
       raise Exception.Create('Nelze vytvoøit složku log');
-      Result := false;
-     end;
 
   if not DirectoryExists('log\program') then
     if not CreateDir('log\program') then
-     begin
       raise Exception.Create('Nelze vytvoøit složku log\program');
-      Result := false;
-     end;
 
   if not DirectoryExists('log\lnet') then
     if not CreateDir('log\lnet') then
@@ -2482,10 +2474,7 @@ end;
 procedure TF_Main.LV_SoupravyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
- if ((Self.LV_Soupravy.Selected <> nil) and (Self.LV_Soupravy.Selected.Caption <> '')) then
-  Self.B_lok_delete.Enabled := true
- else
-  Self.B_lok_delete.Enabled := false;
+ Self.B_lok_delete.Enabled := (Self.LV_Soupravy.Selected <> nil) and (Self.LV_Soupravy.Selected.Caption <> '');
 end;
 
 procedure TF_Main.LV_SoupravyDblClick(Sender: TObject);
@@ -2519,10 +2508,7 @@ end;
 procedure TF_Main.LV_UsersChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
- if (Self.LV_Users.Selected <> nil) then
-  Self.B_User_Delete.Enabled := true
- else
-  Self.B_User_Delete.Enabled := false;
+ Self.B_User_Delete.Enabled := Self.LV_Users.Selected <> nil;
 end;
 
 procedure TF_Main.LV_UsersDblClick(Sender: TObject);
@@ -2539,12 +2525,7 @@ end;
 procedure TF_Main.LV_ZesilovaceChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
-  if (LV_Zesilovace.Selected <> nil) then
-   begin
-    B_zes_delete.Enabled := true;
-   end else begin
-    B_zes_delete.Enabled := false;
-   end;
+ B_zes_delete.Enabled := LV_Zesilovace.Selected <> nil;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2745,12 +2726,7 @@ end;
 procedure TF_Main.LV_HVChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
- if ((LV_HV.Selected <> nil) and (not TrkSystem.openned)) then
-  begin
-   B_HV_Delete.Enabled := true;
-  end else begin
-   B_HV_Delete.Enabled := false;
-  end;//else LV_HV.Selected <> nil
+ B_HV_Delete.Enabled := (LV_HV.Selected <> nil) and (not TrkSystem.openned);
 end;
 
 procedure TF_Main.LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem;
@@ -2849,7 +2825,7 @@ begin
   if (Assigned(Self.call_method)) then
    begin
     // toto poradi musi byt zachovano !
-    // volani eventu totiz muze zpuosbit Application.ProcessMessages
+    // volani eventu totiz muze zpusobit Application.ProcessMessages
     ev := Self.call_method;
     Self.call_method := nil;
     ev(self);
