@@ -153,6 +153,7 @@ begin
  Self.E_LastName.Text   := User.lastname;
  Self.CHB_root.Checked  := User.root;
  Self.CHB_Ban.Checked   := User.ban;
+ Self.CHB_Reg.Checked   := User.regulator;
 
  Self.E_Password1.Text  := 'heslo';
  Self.E_Password2.Text  := 'heslo';
@@ -229,6 +230,7 @@ begin
  Self.OpenUser.lastname  := Self.E_LastName.Text;
  Self.OpenUser.root      := Self.CHB_root.Checked;
  Self.OpenUser.ban       := Self.CHB_Ban.Checked;
+ Self.OpenUser.regulator := Self.CHB_Reg.Checked;
 
  if (new) then
   begin
