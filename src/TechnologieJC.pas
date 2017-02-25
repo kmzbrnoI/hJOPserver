@@ -2636,7 +2636,7 @@ begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkUsek).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 2) then
+    if (lines.Count > 1) then
       Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
     lines.Free();
   end;
@@ -2654,7 +2654,7 @@ begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkVyhybka).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 2) then
+    if (lines.Count > 1) then
       Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
     lines.Free();
   end;
@@ -2663,7 +2663,7 @@ begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkPrejezd).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 2) then
+    if (lines.Count > 1) then
       Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
     lines.Free();
   end;
