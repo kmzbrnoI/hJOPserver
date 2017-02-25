@@ -1653,7 +1653,7 @@ var i,j:Integer;
             ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
          begin
           (Trat as TBlkTrat).AddSpr((Blk as TBlkUsek).Souprava);
-          (Blk2 as TBlkUsek).Zaver := TZaver.nouz;
+          (Blk2 as TBlkTU).poruchaBP := true;
           (Trat as TBlkTrat).Change();
 
           (Blk2 as TBlkUsek).Souprava := (Blk as TBlkUsek).Souprava;
