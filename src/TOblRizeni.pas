@@ -556,7 +556,7 @@ begin
           end;
         end else begin
          if (((Sender as TBlkSCom).Navest <> 8) and ((Sender as TBlkSCom).privol <> nil)) then
-           fg := clYellow
+           fg := clTeal
          else
            fg := $A0A0A0;
         end;
