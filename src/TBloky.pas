@@ -116,6 +116,8 @@ type
     // vrati vsechny bloky do JSON objektu PTserveru
     procedure GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ:Integer = -1);
 
+    procedure NouzZaverZrusen(Sender:TBlk);
+
     property Cnt:Integer read GetCount;
     property fstatus:string read ffstatus;
     property blky_file:string read ffile;
@@ -1003,6 +1005,16 @@ begin
         E.Message);
    end;
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.NouzZaverZrusen(Sender:TBlk);
+var Blk:TBlk;
+begin
+ for Blk in Self.data do
+   if (Blk.GetGlobalSettings().typ = _BLK_SCOM) then
+     TBlkSCom(Blk).RemoveBlkFromRnz(Sender.GetGlobalSettings().id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

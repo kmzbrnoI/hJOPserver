@@ -276,11 +276,8 @@ type
       function CanDN():boolean;                                                 // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
       procedure DN();                                                           // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
       procedure STUJ();
-      procedure RNZ();
 
       function KontrolaPodminek(NC:boolean = false):TJCBariery;
-
-      function GetRNZ():TPSPodminky;
 
       property data:TJCprop read fproperties write SetProperties;
       property stav:TJCStaveni read fstaveni;
@@ -1509,12 +1506,12 @@ var i,j:Integer;
       for i := 0 to Self.fproperties.Vyhybky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
-        (Blk as TBlkVyhybka).SetPoloha(Self.fproperties.Vyhybky[i].Poloha, true, false, Self.VyhPrestavenaNC);
+        (Blk as TBlkVyhybka).SetPoloha(Self.fproperties.Vyhybky[i].Poloha, true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
        end;
       for i := 0 to Self.fproperties.Odvraty.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
-        (Blk as TBlkVyhybka).SetPoloha(Self.fproperties.Odvraty[i].Poloha, true, false, Self.VyhPrestavenaNC);
+        (Blk as TBlkVyhybka).SetPoloha(Self.fproperties.Odvraty[i].Poloha, true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
        end;
 
       writelog('Krok 100: prejezdy: uzaviram', WR_VC);
@@ -1529,6 +1526,7 @@ var i,j:Integer;
        begin
         Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, Blk);
         (Blk as TBlkZamek).nouzZaver := true;
+        TBlkSCom(Navestidlo).AddBlkToRnz(Blk.GetGlobalSettings().id, false);
        end;
 
       Self.fstaveni.ncBarieryCntLast := -1;   // tady je potreba mit cislo < 0
@@ -2805,12 +2803,25 @@ end;//procedure
 
 procedure TJC.VyhNeprestavenaNC(Sender:TObject);
 begin
-
+ Self.VyhPrestavenaNC(Sender);
 end;//procedure
 
 procedure TJC.VyhPrestavenaNC(Sender:TObject);
+var Navestidlo, spojka:TBlk;
 begin
- (Sender as TBlkVyhybka).vyhZaver := true;
+ if ((Self.fstaveni.Krok <> 100) and (Self.fstaveni.Krok <> 101)) then Exit();
+
+ TBlkVyhybka(Sender).vyhZaver := true;
+
+ Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Navestidlo);
+ TBlkSCom(Navestidlo).AddBlkToRnz(TBlk(Sender).GetGlobalSettings().id, false);
+
+ if (TBlkVyhybka(Sender).GetSettings().spojka > -1) then
+  begin
+   Blky.GetBlkByID(TBlkVyhybka(Sender).GetSettings().spojka, spojka);
+   TBlkVyhybka(spojka).vyhZaver := true;
+   TBlkSCom(Navestidlo).AddBlkToRnz(TBlkVyhybka(Sender).GetSettings().spojka, false);
+  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2972,6 +2983,10 @@ begin
   end else begin
    Self.CancelStaveni();
 
+   // aktualizace stavu navestidla (zobrazeni RNZ)
+   Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
+   Blk.Change();
+
    for i := 0 to Self.fproperties.Useky.Count-1 do
     begin
      Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
@@ -3012,56 +3027,6 @@ begin
     _JCB_ZAMEK_NEUZAMCEN         : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Neuzamèen'));
     _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Není zaveden nouzový závìr'));
    end;//case bariera typ
-  end;//for i
-end;//function
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TJC.RNZ();
-var i:Integer;
-    blk, blk2:TBlk;
-begin
- for i := 0 to Self.fproperties.Vyhybky.Count-1 do
-  begin
-   Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, blk);
-   if ((blk as TBlkVyhybka).vyhZaver) then (blk as TBlkVyhybka).vyhZaver := false;
-   if ((blk as TBlkVyhybka).GetSettings.spojka > -1) then
-    begin
-     Blky.GetBlkByID((blk as TBlkVyhybka).GetSettings.spojka, blk2);
-     if ((blk2 as TBlkVyhybka).vyhZaver) then (blk2 as TBlkVyhybka).vyhZaver := false;
-    end;
-  end;//for i
-
- for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
-  begin
-   Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, blk);
-   if ((blk as TBlkZamek).nouzZaver) then (blk as TBlkZamek).nouzZaver := false;
-  end;//for i
-end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TJC.GetRNZ():TPSPodminky;
-var i:Integer;
-    blk, blk2:TBlk;
-begin
- Result := TList<TPSPodminka>.Create();
-
- for i := 0 to Self.fproperties.Vyhybky.Count-1 do
-  begin
-   Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, blk);
-   if ((blk as TBlkVyhybka).vyhZaver) then Result.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
-   if ((blk as TBlkVyhybka).GetSettings.spojka > -1) then
-    begin
-     Blky.GetBlkByID((blk as TBlkVyhybka).GetSettings.spojka, blk2);
-     if ((blk2 as TBlkVyhybka).vyhZaver) then Result.Add(TOR.GetPSPodminka(blk2, 'Rušení NZ'));
-    end;
-  end;//for i
-
- for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
-  begin
-   Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, blk);
-   if ((blk as TBlkZamek).nouzZaver) then Result.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
   end;//for i
 end;//function
 

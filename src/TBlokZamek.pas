@@ -12,7 +12,7 @@ type
  TBlkZamekStav = record
   enabled:boolean;
   klicUvolnen:boolean;
-  nouzZaver:Integer;    // tady je ulozeny pocet bloku, ktere mi daly nouzovy zaver
+  nouzZaver:Cardinal;    // tady je ulozeny pocet bloku, ktere mi daly nouzovy zaver
   Zaver:Integer;        // tady je ulozeny pocet bloku, ktere mi daly zaver
   stit:string;
   porucha:boolean;
@@ -78,6 +78,7 @@ type
 
     //----- zamek own functions -----
 
+    procedure DecreaseNouzZaver(amount:Cardinal);
 
     property Stav:TBlkZamekStav read ZamekStav;
     property Zaver:boolean read GetZaver write SetZaver;
@@ -314,6 +315,7 @@ begin
        Self.CallChangeToVyh();
        inherited Change();
       end;
+     Blky.NouzZaverZrusen(Self);
     end;
   end;
 end;//procedure
@@ -386,7 +388,18 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+procedure TBlkZamek.DecreaseNouzZaver(amount:Cardinal);
+begin
+ if (Self.ZamekStav.nouzZaver = 0) then Exit();
+
+ if (amount > Self.ZamekStav.nouzZaver) then
+   Self.ZamekStav.nouzZaver := 0
+ else
+   Self.ZamekStav.nouzZaver := Self.ZamekStav.nouzZaver - amount;
+
+ if (not Self.nouzZaver) then
+   Self.Change();
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

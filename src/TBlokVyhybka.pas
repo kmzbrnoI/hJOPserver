@@ -30,7 +30,7 @@ type
   locked: boolean;                            // skutecny zamek na vystupu - jestli je MTB vystup zamknut
   redukce_menu:Integer;                       // redukovane menu = zamcena vyhybka; 0 = neredukovano, jinak pocet bloku, kolik redukuje
   redukuji:TReduction;                        // zde si ukladam, koho redukuji; ukladaji se id
-  vyhZaver:Integer;                           // pocet bloku, ktere na vyhybku udelily nouzovy zaver
+  vyhZaver:Cardinal;                          // pocet bloku, ktere na vyhybku udelily nouzovy zaver
 
   staveniErrCallback, staveniOKCallback:TNotifyEvent;     // callback eventy pro koncovou polohu vyhybky (resp. timeout prestavovani)
   staveniStart:TDateTime;                                 // cas zacatku prestavovani
@@ -150,6 +150,7 @@ type
     procedure ZrusRedukciMenu();
 
     procedure NullVyhZaver();
+    procedure DecreaseNouzZaver(amount:Cardinal);
 
     property Stav:TBlkVyhStav read VyhStav;
 
@@ -1005,13 +1006,18 @@ begin
    if (Self.VyhStav.vyhZaver = 1) then Self.Change();
   end else begin
    if (Self.Stav.vyhZaver > 0) then Dec(Self.VyhStav.vyhZaver);
-   if (Self.Stav.vyhZaver = 0) then Self.Change();   
+   if (Self.Stav.vyhZaver = 0) then
+    begin
+     Self.Change();
+     Blky.NouzZaverZrusen(Self);
+    end;
   end;
 end;//procedure
 
 procedure TBlkVyhybka.NullVyhZaver();
 begin
  Self.VyhStav.vyhZaver := 0;
+ Blky.NouzZaverZrusen(Self);
  Self.Change();
 end;//procedure
 
@@ -1120,6 +1126,24 @@ begin
  else
   Result := '';
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVyhybka.DecreaseNouzZaver(amount:Cardinal);
+begin
+ if (Self.VyhStav.vyhZaver = 0) then Exit();
+
+ if (amount > Self.VyhStav.vyhZaver) then
+   Self.VyhStav.vyhZaver := 0
+ else
+   Self.VyhStav.vyhZaver := Self.VyhStav.vyhZaver - amount;
+
+ if (not Self.vyhZaver) then
+  begin
+   Blky.NouzZaverZrusen(Self);
+   Self.Change();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

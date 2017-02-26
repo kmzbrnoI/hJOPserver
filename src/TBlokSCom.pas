@@ -59,6 +59,8 @@ type
   privol_start:TDateTime;                        // start privolavaci navesti (privolavacka sviti pouze omezeny cas a pak se vypne)
   privol_timer_id:Integer;                       // id timeru ukonceni privolavacky v panelu, ze ktreho byla JC postavena
   autoblok:boolean;
+
+  toRnz:TDictionary<Integer, Cardinal>;          // senzam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
  end;
 
  // vlastnosti navestidla ziskane ze souboru .spnl (od reliefu, resp. z Mergeru)
@@ -146,6 +148,7 @@ type
     function IsZpomalEvent():Integer;
 
     function GetUsekPred():TBlk;
+    function CanIDoRNZ():boolean;
 
   public
     constructor Create(index:Integer);
@@ -177,6 +180,8 @@ type
     procedure ZrusRedukciMenu();
 
     procedure UpdateRychlostSpr(force:boolean = false);
+    procedure AddBlkToRnz(blkId:Integer; change:boolean = true);
+    procedure RemoveBlkFromRnz(blkId:Integer);
 
     class function NavestToString(navest:Integer):string;
 
@@ -194,6 +199,7 @@ type
     property privol:TJC read SComStav.privol_ref write SComStav.privol_ref;
     property UsekPred:TBlk read GetUsekPred;
     property autoblok:boolean read SComStav.autoblok write SComStav.autoblok;
+    property canRNZ:boolean read CanIDoRNZ;
 
     //GUI:
 
@@ -224,7 +230,7 @@ implementation
 
 uses TechnologieMTB, TBloky, TBlokUsek, TJCDatabase, TCPServerOR,
       GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
-      TBlokTratUsek, TBlokTrat;
+      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek;
 
 constructor TBlkSCom.Create(index:Integer);
 begin
@@ -232,6 +238,7 @@ begin
 
  Self.GlobalSettings.typ := _BLK_SCOM;
  Self.SComStav := Self._def_scom_stav;
+ Self.SComStav.toRnz := TDictionary<Integer, Cardinal>.Create();
  Self.SComSettings.events := TList<TBlkSComSprEvent>.Create();
  Self.fUsekPred := nil;
 end;//ctor
@@ -239,6 +246,7 @@ end;//ctor
 destructor TBlkSCom.Destroy();
 var i:Integer;
 begin
+ Self.SComStav.toRnz.Clear();
  for i := 0 to Self.SComSettings.events.Count-1 do
    Self.SComSettings.events[i].spr_typ.Free();
  Self.SComSettings.events.Free();
@@ -323,6 +331,7 @@ begin
  end;
 
  Self.SComStav.Navest := 0;
+ Self.SComStav.toRnz.Clear();
  Self.Change();
 end;//procedure
 
@@ -332,6 +341,7 @@ begin
  Self.SComStav.ZacatekVolba := TBlkSComVolba.none;
  Self.SComStav.AB  := false;
  Self.SComStav.ZAM := false;
+ Self.SComStav.toRnz.Clear();
  Self.Change();
 end;//procedure
 
@@ -595,7 +605,11 @@ begin
     (Self.UsekPred as TBlkUsek).SComJCRef := nil;
 
    // ruseni nouzove jizdni cesty
-   if (Assigned(Self.privol)) then Self.privol.RusJCWithoutBlk();
+   if (Assigned(Self.privol)) then
+    begin
+     Self.privol.RusJCWithoutBlk();
+     Self.privol := nil;
+    end;
   end;
 
  if (Self.autoblok) then
@@ -814,9 +828,20 @@ begin
 end;//procedure
 
 procedure TBlkSCom.MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
+var podminky:TList<TPSPodminka>;
+    blkId:Integer;
+    blk:TBlk;
 begin
- if (Assigned(Self.privol)) then
-   ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závìrù po nouzové cestì', TBlky.GetBlksList(Self), Self.privol.GetRNZ());
+ podminky := TList<TPSPodminka>.Create();
+
+ for blkId in Self.SComStav.toRnz.Keys do
+  begin
+   Blky.GetBlkByID(blkId, Blk);
+   if (blk <> nil) then
+     podminky.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
+  end;
+
+ ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závìrù po nouzové cestì', TBlky.GetBlksList(Self), podminky);
 end;//procedure
 
 procedure TBlkSCom.MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -967,7 +992,7 @@ begin
   else
    Result := Result + 'ZAM>,';
 
- if ((Self.Navest <> 8) and (Self.privol <> nil)) then
+ if ((Self.Navest <> 8) and (Self.CanIDoRNZ)) then
   Result := Result + '!RNZ,';
 
  if (rights >= TORControlRights.superuser) then
@@ -1336,13 +1361,36 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSCom.RNZPotvrSekv(Sender:TIdContext; success:boolean);
+var blkId:Integer;
+    blk:TBlk;
+    toRNZ:TDictionary<Integer, Cardinal>;
 begin
- if ((success) and (Assigned(Self.privol))) then
+ if (not success) then Exit();
+
+ // nejdriv uvolnime toRNZ -- abychom jej nemazali v DecreaseNouzZaver
+ toRNZ := Self.SComStav.toRnz;
+ Self.SComStav.toRnz := TDictionary<Integer, Cardinal>.Create();
+
+ for blkId in toRNZ.Keys do
   begin
-   Self.privol.RNZ();
-   Self.privol := nil;
-   Self.Change();
+   Blky.GetBlkByID(blkId, blk);
+   if (blk = nil) then continue;   
+
+   case (blk.GetGlobalSettings().typ) of
+    _BLK_VYH: begin
+       if (TBlkVyhybka(blk).vyhZaver) then
+         TBlkVyhybka(blk).DecreaseNouzZaver(toRnz[blkId]);
+    end;
+
+    _BLK_ZAMEK: begin
+       if (TBlkZamek(blk).nouzZaver) then
+         TBlkZamek(blk).DecreaseNouzZaver(toRnz[blkId]);
+    end;
+   end;
   end;
+
+ toRNZ.Free();
+ Self.Change();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1372,6 +1420,39 @@ begin
  if (((Self.fUsekPred = nil) and (Self.UsekID <> -1)) or ((Self.fUsekPred <> nil) and (Self.UsekID <> Self.fUsekPred.GetGlobalSettings.id))) then
    Blky.GetBlkByID(Self.UsekID, Self.fUsekPred);
  Result := Self.fUsekPred;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.AddBlkToRnz(blkId:Integer; change:boolean = true);
+begin
+ if (Self.SComStav.toRnz.ContainsKey(blkId)) then
+   Self.SComStav.toRnz[blkId] := Self.SComStav.toRnz[blkId] + 1
+ else
+   Self.SComStav.toRnz.Add(blkId, 1);
+
+ if ((Self.SComStav.toRnz.Count = 1) and (Self.SComStav.toRnz[blkId] = 1) and
+     (change)) then
+   Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkSCom.CanIDoRNZ():boolean;
+begin
+ Result := Self.SComStav.toRnz.Count > 0;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.RemoveBlkFromRnz(blkId:Integer);
+begin
+ if (Self.SComStav.toRnz.ContainsKey(blkId)) then
+  begin
+   Self.SComStav.toRnz.Remove(blkId);
+   if (Self.SComStav.toRnz.Count = 0) then
+     Self.Change();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
