@@ -776,11 +776,14 @@ begin
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZAVER, blk, Self.fproperties.Trat));
     if ((blk as TBlkTrat).Zadost) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZADOST, blk, Self.fproperties.Trat));
-    if ((((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or ((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka) or (((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((blk as TBlkTrat).nouzZaver)))
-        and (Self.fproperties.TratSmer <> (blk as TBlkTrat).Smer)) then
-      bariery.Add(Self.JCBariera(_JCB_TRAT_NESOUHLAS, blk, Self.fproperties.Trat));
 
-    if (TBlkTrat(Blk).Smer = TTratSmer.zadny) then
+    if ((not TBlkTrat(blk).SameUserControlsBothUvazka()) or ((blk as TBlkTrat).nouzZaver)) then
+      if ((((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or ((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka) or
+          (((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((blk as TBlkTrat).nouzZaver)))
+          and (Self.fproperties.TratSmer <> (blk as TBlkTrat).Smer)) then
+        bariery.Add(Self.JCBariera(_JCB_TRAT_NESOUHLAS, blk, Self.fproperties.Trat));
+
+    if (Self.fproperties.TratSmer <> (blk as TBlkTrat).Smer) then
      begin
       // trat beze smeru, do ktere bud dle predchozi podminky povoleno vjet -> trat s automatickou zmenou souhlasu
       // -> kontrola volnosti vsech useku trati (protoze nastane zmena smeru)
@@ -1415,11 +1418,11 @@ var i,j:Integer;
         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
 
         // tahleta situace opravdu muze nastat:
-        if ((((Blk as TBlkTrat).Smer <> Self.fproperties.TratSmer) and
-            (((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or
-             ((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka) or
-             (((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and (((Blk as TBlkTrat).nouzZaver) or ((Blk as TBlkTrat).Smer <> TTratSmer.zadny)))))
-          or ((not TBlkTU(blk2).sectReady) and (Self.fproperties.TypCesty = TJCType.vlak)) or (((Blk as TBlkTrat).ZAK) and (Self.fproperties.TypCesty <> TJCType.posun))) then
+        if (( ((Blk as TBlkTrat).Smer <> Self.fproperties.TratSmer) and (((Blk as TBlkTrat).nouzZaver) or
+             ((((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or
+             ((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka)) and (not TBlkTrat(Blk).SameUserControlsBothUvazka())) or
+             (((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((Blk as TBlkTrat).Smer <> TTratSmer.zadny))) )
+          or ((not TBlkTU(blk2).sectReady) and (Self.fproperties.TypCesty = TJCType.vlak)) or (((Blk as TBlkTrat).ZAK) and (Self.fproperties.TypCesty <> TJCType.posun)) ) then
          begin
           ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba trati '+Blk.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
           writelog('Krok 14 : Trat '+Blk.GetGlobalSettings().name+' nesplnuje podminky pro postaveni JC !', WR_VC);

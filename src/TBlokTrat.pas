@@ -121,6 +121,9 @@ type
     procedure CallChangeToTU();
     procedure UpdateSprPredict();
 
+    function SameUserControlsBothUvazka():boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
+                                                                                // kdyz je true, do trati neni potreba zadat
+
     property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
     property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
     property RBPCan:boolean read GetRBP;                                        // vraci, jestli v trati doslo k poruse uplne blokove podminky, resp. jesli je mozno ji zrusit
@@ -906,6 +909,26 @@ begin
    if (not TBlkTU(Blk).ready) then Exit(false);
   end;
  Result := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Vraci true prave tehdy, pokud je trat na obou koncich rizena stejnym uzivatelem.
+// Mazerne nenavazujeme rizeni obou koncu na konkretniho uzivatele, napriklad
+// kvuli staveni ze zasobniku.
+
+function TBlkTrat.SameUserControlsBothUvazka():boolean;
+var first, second:TORPanel;
+begin
+ if ((not Assigned(Self.uvazkaA)) or (not Assigned(Self.uvazkaB))) then Exit(false);
+ if ((TBlkUvazka(Self.uvazkaA).OblsRizeni.Cnt <> 1) or (TBlkUvazka(Self.uvazkaB).OblsRizeni.Cnt <> 1)) then Exit(false);
+
+ for first in TBlkUvazka(Self.uvazkaA).OblsRizeni.ORs[0].Connected do
+   if (first.Rights >= TORControlRights.write) then
+     for second in TBlkUvazka(Self.uvazkaB).OblsRizeni.ORs[0].Connected do
+       if (first.user = second.user) then
+         Exit(true);
+
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
