@@ -548,6 +548,22 @@ begin
  for i := (AContext.Data as TTCPORsRef).ORsCnt-1 downto 0 do
   (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
 
+ // ukoncime probihajici potvrzovaci sekvenci
+ if (Assigned(TTCPORsRef(AContext.Data).potvr)) then
+  begin
+   TTCPORsRef(AContext.Data).potvr(AContext, false);
+   TTCPORsRef(AContext.Data).potvr := nil;
+  end;
+
+ // ukoncime pripadne UPO
+ if (Assigned(TTCPORsRef(AContext.Data).UPO_Esc)) then
+  begin
+   TTCPORsRef(AContext.Data).UPO_Esc(Self);
+   TTCPORsRef(AContext.Data).UPO_Esc := nil;
+   TTCPORsRef(AContext.Data).UPO_OK  := nil;
+   TTCPORsRef(AContext.Data).UPO_ref := nil;
+  end;
+
  // vymazeme klienta z databaze klientu
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if ((Assigned(Self.clients[i])) and (AContext = Self.clients[i].conn)) then
