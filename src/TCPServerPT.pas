@@ -20,7 +20,7 @@ unit TCPServerPT;
 
 interface
 
-uses SysUtils, Classes, Graphics, PTEndpoint, Generics.Collections,
+uses SysUtils, Classes, Graphics, PTEndpoint, Generics.Collections, SyncObjs,
      IdHttpServer, IdSocketHandle, IdContext, IdCustomHTTPServer, IdComponent,
      JsonDataObjects, PTUtils;
 
@@ -41,6 +41,7 @@ type
     enpoints: TList<TPTEndpoint>;
 
     httpServer: TIdHTTPServer;
+    readLock:TCriticalSection;
 
     Fcompact:boolean;
 
@@ -101,6 +102,8 @@ begin
  binding := bindings.Add();
  binding.SetBinding('0.0.0.0', _PT_DEFAULT_PORT);
 
+ Self.readLock := TCriticalSection.Create();
+
  Self.httpServer := TIdHTTPServer.Create(nil);
  Self.httpServer.Bindings := bindings;
  Self.httpServer.MaxConnections := _PT_MAX_CONNECTIONS;
@@ -138,6 +141,7 @@ begin
    if (Self.httpServer.Active) then
     Self.httpServer.Active := false;
    Self.httpServer.Free();
+   Self.readLock.Free();
  except
 
  end;
@@ -190,6 +194,8 @@ var reqJson, respJson:TJsonObject;
     endpoint:TPTEndpoint;
     found:boolean;
 begin
+ Self.readLock.Acquire();
+
  try
    respJson := TJsonObject.Create();
 
@@ -260,6 +266,7 @@ begin
    end;
  finally
    respJson.Free();
+   Self.readLock.Release();
  end;
 
 end;
