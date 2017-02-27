@@ -6,7 +6,7 @@ unit TCPServerOR;
 
 interface
 
-uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal,
+uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, TOblRizeni,
      IdContext, TBlok, Prevody, ComCtrls, IdSync, TBloky, UPO,
      User, Souprava, Generics.Collections, THnaciVozidlo;
@@ -74,6 +74,7 @@ type
                                                                                 // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
                                                                                 // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
     refreshQueue:array [0.._MAX_OR_CLIENTS-1] of Boolean;
+    readLock:TCriticalSection;
 
      procedure OnTcpServerConnect(AContext: TIdContext);                        // event pripojeni klienta z TIdTCPServer
      procedure OnTcpServerDisconnect(AContext: TIdContext);                     // event odpojeni klienta z TIdTCPServer
@@ -385,6 +386,7 @@ begin
   Self.clients[i] := nil;
 
  Self.parsed := TStringList.Create;
+ Self.readLock := TCriticalSection.Create();
 
  Self.tcpServer := TIdTCPServer.Create(nil);
  Self.tcpServer.OnConnect    := Self.OnTcpServerConnect;
@@ -404,6 +406,8 @@ begin
 
  if (Assigned(Self.parsed)) then
    FreeAndNil(Self.parsed);
+
+ Self.readLock.Free();
 
  inherited;
 end;//dtor
@@ -590,6 +594,13 @@ begin
   // vymazeme klienta z MTB debuggeru
   MTBd.RemoveClient(AContext);
 
+  // odpoji se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
+  if (Self.DCCStopped = AContext) then
+   begin
+    Self.DCCStopped := nil;
+    Self.BroadcastData('-;DCC;STOP');
+   end;
+
   // aktualizujeme radek v tabulce klientu ve F_Main
   if (Self.tcpServer.Active) then
     ORTCPServer.GUIQueueLineToRefresh(i);
@@ -609,25 +620,30 @@ begin
    Exit();
   end;
 
- //read data
- // data jsou schvalne globalni, aby se porad nevytvarela a nenicila dokola
- data := AContext.Connection.IOHandler.ReadLn();
-
- Self.parsed.Clear();
- ExtractStringsEx([';'], [#13, #10], data, Self.parsed);
-
- if (Self.parsed.Count > 1) then Self.parsed[1] := UpperCase(Self.parsed[1]); 
+ readLock.Acquire();
 
  try
-   // zakladni rozdeleni parsovani - na data, ktera jsou obecna a na data pro konkretni oblast rizeni
-   if (Self.parsed[0] = '-') then
-    Self.ParseGlobal(AContext)
-   else
-    Self.ParseOR(AContext);
- except
+   //read data
+   // data jsou schvalne globalni, aby se porad nevytvarela a nenicila dokola
+   data := AContext.Connection.IOHandler.ReadLn();
 
+   Self.parsed.Clear();
+   ExtractStringsEx([';'], [#13, #10], data, Self.parsed);
+
+   if (Self.parsed.Count > 1) then Self.parsed[1] := UpperCase(Self.parsed[1]);
+
+   try
+     // zakladni rozdeleni parsovani - na data, ktera jsou obecna a na data pro konkretni oblast rizeni
+     if (Self.parsed[0] = '-') then
+      Self.ParseGlobal(AContext)
+     else
+      Self.ParseOR(AContext);
+   except
+
+   end;
+ finally
+   readLock.Release();
  end;
-
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
