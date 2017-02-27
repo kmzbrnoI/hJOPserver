@@ -607,6 +607,7 @@ begin
  if (PC_1.ActivePage = TS_Aut_Rezimy) then ACTAbleData.UpdateTable();
  if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Stanice)    then ORsTableData.UpdateTable(true);
+ if (PC_1.ActivePage = TS_Technologie) then ORTCPServer.GUIRefreshTable(); 
 end;
 
 procedure TF_Main.PM_BlokyPopup(Sender: TObject);
@@ -1842,6 +1843,7 @@ begin
 
     HVDb.UpdateTokenTimeout();
     Data.UpdateAutosave();
+    ORTCPServer.GUIRefreshFromQueue();
   except
    on E: Exception do
     begin

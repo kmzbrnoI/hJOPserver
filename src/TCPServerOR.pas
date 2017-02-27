@@ -64,7 +64,7 @@ type
     _PROTOCOL_VERSION = '1.0';
 
    private
-    clients:array[0.._MAX_OR_CLIENTS] of TORTCPClient;                          // databaze klientu
+    clients:array[0.._MAX_OR_CLIENTS-1] of TORTCPClient;                        // databaze klientu
     tcpServer: TIdTCPServer;                                                    // object serveru
     parsed: TStrings;                                                           // naparsovana data, implementovano jako globalni promenna pro zrychleni
     data:string;                                                                // prijata data v plain-text forme
@@ -73,6 +73,7 @@ type
                                                                                 // vsechny panely maji standartne moznost vypnout DCC
                                                                                 // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
                                                                                 // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
+    refreshQueue:array [0.._MAX_OR_CLIENTS-1] of Boolean;
 
      procedure OnTcpServerConnect(AContext: TIdContext);                        // event pripojeni klienta z TIdTCPServer
      procedure OnTcpServerDisconnect(AContext: TIdContext);                     // event odpojeni klienta z TIdTCPServer
@@ -118,8 +119,10 @@ type
      procedure SendLn(AContext:TIDContext; str:string);
 
      procedure GUIInitTable();
-     procedure GUIRefreshLine(index:Integer);
+     procedure GUIRefreshLine(index:Integer; repaint:boolean = true);
+     procedure GUIQueueLineToRefresh(lineindex:Integer);
      procedure GUIRefreshTable();
+     procedure GUIRefreshFromQueue();
 
      procedure DCCStart();
      procedure DCCStop();
@@ -402,7 +405,7 @@ begin
  if (Assigned(Self.parsed)) then
    FreeAndNil(Self.parsed);
 
- inherited Destroy();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -511,6 +514,7 @@ procedure TORTCPServer.OnTcpServerConnect(AContext: TIdContext);
 var i:Integer;
     ORsref:TTCPORsRef;
 begin
+ Self.tcpServer.Contexts.LockList();
  AContext.Connection.IOHandler.DefStringEncoding := TIdEncoding.enUTF8;
 
  for i := 0 to _MAX_OR_CLIENTS-1 do
@@ -537,13 +541,16 @@ begin
  Self.clients[i].status    := TPanelConnectionStatus.handshake;
  Self.clients[i].conn.Data := ORsref;
 
- Self.GUIRefreshLine(i);
+ Self.GUIQueueLineToRefresh(i);
+ Self.tcpServer.Contexts.UnlockList();
 end;//procedure
 
 // Udalost vyvolana pri odpojeni klienta
 procedure TORTCPServer.OnTcpServerDisconnect(AContext: TIdContext);
 var i:Integer;
 begin
+ Self.tcpServer.Contexts.LockList();
+
  // vymazeme klienta ze vsech oblasti rizeni
  for i := (AContext.Data as TTCPORsRef).ORsCnt-1 downto 0 do
   (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
@@ -585,7 +592,9 @@ begin
 
   // aktualizujeme radek v tabulce klientu ve F_Main
   if (Self.tcpServer.Active) then
-    ORTCPServer.GUIRefreshLine(i);
+    ORTCPServer.GUIQueueLineToRefresh(i);
+
+ Self.tcpServer.Contexts.UnlockList();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -646,7 +655,7 @@ begin
    // oznamime verzi komunikacniho protokolu
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := Self.parsed[2];
 
-   ORTCPServer.GUIRefreshLine((AContext.Data as TTCPORsRef).index);
+   ORTCPServer.GUIQueueLineToRefresh((AContext.Data as TTCPORsRef).index);
    ModCas.SendTimeToPanel(AContext);
 
    if (TrkSystem.status = Ttrk_status.TS_ON) then
@@ -1160,7 +1169,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORTCPServer.GUIRefreshLine(index:Integer);
+procedure TORTCPServer.GUIRefreshLine(index:Integer; repaint:boolean = true);
 var i:Integer;
     str:string;
     ORPanel:TORPanel;
@@ -1256,15 +1265,34 @@ begin
    end else
     F_Main.LV_Clients.Items.Item[index].SubItems.Strings[10] := '';
 
- F_Main.LV_Clients.Repaint();
+ F_Main.LV_Clients.UpdateItems(index, index);
 end;//procedure
 
 procedure TORTCPServer.GUIRefreshTable();
 var i:Integer;
 begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
-  Self.GUIRefreshLine(i); 
+  Self.GUIRefreshLine(i, false);
+ F_Main.LV_Clients.Repaint();
 end;//procedure
+
+procedure TORTCPServer.GUIRefreshFromQueue();
+var i:Integer;
+begin
+ for i := 0 to _MAX_OR_CLIENTS-1 do
+  begin
+   if (Self.refreshQueue[i]) then
+    begin
+     Self.GUIRefreshLine(i);
+     Self.refreshQueue[i] := false;
+    end;
+  end;
+end;
+
+procedure TORTCPServer.GUIQueueLineToRefresh(lineindex:Integer);
+begin
+ Self.refreshQueue[lineindex] := true;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
