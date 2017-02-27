@@ -1839,11 +1839,11 @@ begin
      if (F_Main.PC_1.ActivePage = F_Main.TS_VC) then JCTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_MultiJC) then MultiJCTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Stanice) then ORsTableData.UpdateTable();
+     if (F_Main.PC_1.ActivePage = F_Main.TS_Technologie) then ORTCPServer.GUIRefreshFromQueue();
     end;
 
     HVDb.UpdateTokenTimeout();
     Data.UpdateAutosave();
-    ORTCPServer.GUIRefreshFromQueue();
   except
    on E: Exception do
     begin
