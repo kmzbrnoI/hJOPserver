@@ -681,8 +681,10 @@ begin
 
    if (TrkSystem.status = Ttrk_status.TS_ON) then
      Self.SendLn(AContext, '-;DCC;GO')
+   else if (Self.DCCStopped <> nil) then
+     Self.SendLn(AContext, '-;DCC;DISABLED')
    else
-     Self.SendLn(AContext, '-;DCC;DISABLED');
+     Self.SendLn(AContext, '-;DCC;STOP');
 
    Exit();
   end;
