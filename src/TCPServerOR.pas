@@ -10,13 +10,14 @@ unit TCPServerOR;
 interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
-     Classes, StrUtils, Graphics, Windows, TOblRizeni,
+     Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
      IdContext, TBlok, Prevody, ComCtrls, IdSync, TBloky, UPO,
      User, Souprava, Generics.Collections, THnaciVozidlo;
 
 const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
   _MAX_OR_CLIENTS = 32;                                                         // maximalni pocet klientu
+  _PING_TIMER_PERIOD_MS = 20000;
 
 type
   TPSCallback = procedure (Sender:TIdContext; success:boolean) of object;
@@ -78,6 +79,7 @@ type
                                                                                 // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
     refreshQueue:array [0.._MAX_OR_CLIENTS-1] of Boolean;
     readLock:TCriticalSection;
+    pingTimer:TTimer;
 
      procedure OnTcpServerConnect(AContext: TIdContext);                        // event pripojeni klienta z TIdTCPServer
      procedure OnTcpServerDisconnect(AContext: TIdContext);                     // event odpojeni klienta z TIdTCPServer
@@ -90,6 +92,7 @@ type
      function IsOpenned():boolean;                                              // je server zapnut?
 
      procedure OnDCCCmdErr(Sender:TObject; Data:Pointer);                       // event chyby komunikace s lokomotivou v automatu
+     procedure BroadcastPing(Sedner:TObject);
 
    public
 
@@ -164,6 +167,11 @@ begin
  Self.parsed := TStringList.Create;
  Self.readLock := TCriticalSection.Create();
 
+ Self.pingTimer := TTimer.Create(nil);
+ Self.pingTimer.Enabled := false;
+ Self.pingTimer.Interval := _PING_TIMER_PERIOD_MS;
+ Self.pingTimer.OnTimer := Self.BroadcastPing;
+
  Self.tcpServer := TIdTCPServer.Create(nil);
  Self.tcpServer.OnConnect    := Self.OnTcpServerConnect;
  Self.tcpServer.OnDisconnect := Self.OnTcpServerDisconnect;
@@ -174,18 +182,21 @@ end;//ctor
 
 destructor TORTCPServer.Destroy();
 begin
- if (Self.tcpServer.Active) then
-  Self.tcpServer.Active := false;
+ try
+   if (Self.tcpServer.Active) then
+    Self.tcpServer.Active := false;
 
- if (Assigned(Self.tcpServer)) then
-   FreeAndNil(Self.tcpServer);
+   if (Assigned(Self.tcpServer)) then
+     FreeAndNil(Self.tcpServer);
 
- if (Assigned(Self.parsed)) then
-   FreeAndNil(Self.parsed);
+   if (Assigned(Self.parsed)) then
+     FreeAndNil(Self.parsed);
 
- Self.readLock.Free();
-
- inherited;
+   Self.pingTimer.Free();
+   Self.readLock.Free();
+ finally
+   inherited;
+ end;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,6 +229,8 @@ begin
     Exit(2);
    end;
  end;
+
+ Self.pingTimer.Enabled := true;
 
  F_Main.S_Server.Brush.Color := clLime;
  F_Main.LogStatus('Panel server: spuštìn');
@@ -255,6 +268,8 @@ begin
 
  F_Main.LogStatus('Panel server: vypínám...');
  F_Main.S_Server.Brush.Color := clGray;
+
+ Self.pingTimer.Enabled := false;
 
  with Self.tcpServer.Contexts.LockList do
     try
@@ -1232,6 +1247,17 @@ begin
      Self.SendLn(Self.clients[i].conn, '-;LOK;G;AUTH;not;Zrušeno oprávnìní regulátor');
      TCPRegulator.RegDisconnect(Self.clients[i].conn);
     end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TORTCPServer.BroadcastPing(Sedner:TObject);
+begin
+ try
+   Self.BroadcastData('-;PING');
+ except
+
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
