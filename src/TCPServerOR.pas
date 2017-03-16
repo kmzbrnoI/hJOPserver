@@ -519,34 +519,37 @@ var i:Integer;
     ORsref:TTCPORsRef;
 begin
  Self.tcpServer.Contexts.LockList();
- AContext.Connection.IOHandler.DefStringEncoding := TIdEncoding.enUTF8;
+ try
+   AContext.Connection.IOHandler.DefStringEncoding := TIdEncoding.enUTF8;
 
- for i := 0 to _MAX_OR_CLIENTS-1 do
-  if (Self.clients[i] = nil) then
-   break;
+   for i := 0 to _MAX_OR_CLIENTS-1 do
+    if (Self.clients[i] = nil) then
+     break;
 
- // na serveru neni misto -> odpojit klienta
- if (i = _MAX_OR_CLIENTS) then
-  begin
-   // tady bych mohl napsat chybovou hlasku
-   Self.SendInfoMsg(AContext, 'Pøipojeno maximum klientù');
-   AContext.Connection.Disconnect();
-   Exit();
-  end;
+   // na serveru neni misto -> odpojit klienta
+   if (i = _MAX_OR_CLIENTS) then
+    begin
+     // tady bych mohl napsat chybovou hlasku
+     Self.SendInfoMsg(AContext, 'Pøipojeno maximum klientù');
+     AContext.Connection.Disconnect();
+     Exit();
+    end;
 
- ORsref             := TTCPORsRef.Create;
- ORsref.ORsCnt      := 0;
- ORsref.index  := i;
- ORsref.regulator_zadost := nil;
- ORsref.Escape(AContext);
+   ORsref             := TTCPORsRef.Create;
+   ORsref.ORsCnt      := 0;
+   ORsref.index  := i;
+   ORsref.regulator_zadost := nil;
+   ORsref.Escape(AContext);
 
- Self.clients[i]           := TORTCPClient.Create();
- Self.clients[i].conn      := AContext;
- Self.clients[i].status    := TPanelConnectionStatus.handshake;
- Self.clients[i].conn.Data := ORsref;
+   Self.clients[i]           := TORTCPClient.Create();
+   Self.clients[i].conn      := AContext;
+   Self.clients[i].status    := TPanelConnectionStatus.handshake;
+   Self.clients[i].conn.Data := ORsref;
 
- Self.GUIQueueLineToRefresh(i);
- Self.tcpServer.Contexts.UnlockList();
+   Self.GUIQueueLineToRefresh(i);
+ finally
+   Self.tcpServer.Contexts.UnlockList();
+ end;
 end;//procedure
 
 // Udalost vyvolana pri odpojeni klienta
@@ -555,57 +558,59 @@ var i:Integer;
 begin
  Self.tcpServer.Contexts.LockList();
 
- // vymazeme klienta ze vsech oblasti rizeni
- for i := (AContext.Data as TTCPORsRef).ORsCnt-1 downto 0 do
-  (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
+ try
+   // vymazeme klienta ze vsech oblasti rizeni
+   for i := (AContext.Data as TTCPORsRef).ORsCnt-1 downto 0 do
+    (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
 
- // ukoncime probihajici potvrzovaci sekvenci
- if (Assigned(TTCPORsRef(AContext.Data).potvr)) then
-  begin
-   TTCPORsRef(AContext.Data).potvr(AContext, false);
-   TTCPORsRef(AContext.Data).potvr := nil;
-  end;
+   // ukoncime probihajici potvrzovaci sekvenci
+   if (Assigned(TTCPORsRef(AContext.Data).potvr)) then
+    begin
+     TTCPORsRef(AContext.Data).potvr(AContext, false);
+     TTCPORsRef(AContext.Data).potvr := nil;
+    end;
 
- // ukoncime pripadne UPO
- if (Assigned(TTCPORsRef(AContext.Data).UPO_Esc)) then
-  begin
-   TTCPORsRef(AContext.Data).UPO_Esc(Self);
-   TTCPORsRef(AContext.Data).UPO_Esc := nil;
-   TTCPORsRef(AContext.Data).UPO_OK  := nil;
-   TTCPORsRef(AContext.Data).UPO_ref := nil;
-  end;
+   // ukoncime pripadne UPO
+   if (Assigned(TTCPORsRef(AContext.Data).UPO_Esc)) then
+    begin
+     TTCPORsRef(AContext.Data).UPO_Esc(Self);
+     TTCPORsRef(AContext.Data).UPO_Esc := nil;
+     TTCPORsRef(AContext.Data).UPO_OK  := nil;
+     TTCPORsRef(AContext.Data).UPO_ref := nil;
+    end;
 
- // vymazeme klienta z databaze klientu
- for i := 0 to _MAX_OR_CLIENTS-1 do
-  if ((Assigned(Self.clients[i])) and (AContext = Self.clients[i].conn)) then
-   begin
-    // zrusime pripadnou zadost o lokomotivu
-    if ((Self.clients[i].conn.Data as TTCPORsRef).regulator_zadost <> nil) then
-      (Self.clients[i].conn.Data as TTCPORsRef).regulator_zadost.LokoCancel(Self.clients[i].conn);
+   // vymazeme klienta z databaze klientu
+   for i := 0 to _MAX_OR_CLIENTS-1 do
+    if ((Assigned(Self.clients[i])) and (AContext = Self.clients[i].conn)) then
+     begin
+      // zrusime pripadnou zadost o lokomotivu
+      if ((Self.clients[i].conn.Data as TTCPORsRef).regulator_zadost <> nil) then
+        (Self.clients[i].conn.Data as TTCPORsRef).regulator_zadost.LokoCancel(Self.clients[i].conn);
 
-    // odpojeni vsech pripadne neodpojenych regulatoru
-    if ((Self.clients[i].conn.Data as TTCPORsRef).regulator) then
-      TCPRegulator.RegDisconnect(Self.clients[i].conn);
+      // odpojeni vsech pripadne neodpojenych regulatoru
+      if ((Self.clients[i].conn.Data as TTCPORsRef).regulator) then
+        TCPRegulator.RegDisconnect(Self.clients[i].conn);
 
-    FreeAndNil(Self.clients[i]);
-    break;
-   end;
+      FreeAndNil(Self.clients[i]);
+      break;
+     end;
 
-  // vymazeme klienta z MTB debuggeru
-  MTBd.RemoveClient(AContext);
+    // vymazeme klienta z MTB debuggeru
+    MTBd.RemoveClient(AContext);
 
-  // odpoji se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
-  if (Self.DCCStopped = AContext) then
-   begin
-    Self.DCCStopped := nil;
-    Self.BroadcastData('-;DCC;STOP');
-   end;
+    // odpoji se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
+    if (Self.DCCStopped = AContext) then
+     begin
+      Self.DCCStopped := nil;
+      Self.BroadcastData('-;DCC;STOP');
+     end;
 
-  // aktualizujeme radek v tabulce klientu ve F_Main
-  if (Self.tcpServer.Active) then
-    ORTCPServer.GUIQueueLineToRefresh(i);
-
- Self.tcpServer.Contexts.UnlockList();
+    // aktualizujeme radek v tabulce klientu ve F_Main
+    if (Self.tcpServer.Active) then
+      ORTCPServer.GUIQueueLineToRefresh(i);
+ finally
+   Self.tcpServer.Contexts.UnlockList();
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
