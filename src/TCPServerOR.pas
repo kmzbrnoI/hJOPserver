@@ -795,9 +795,9 @@ begin
     TrkSystem.CentralStart()
    end else if ((parsed[2] = 'STOP') and (TrkSystem.status = TS_ON)) then
     begin
+     Self.DCCStopped := AContext;
      TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCCmdErr, AContext);
      TrkSystem.CentralStop();
-     Self.DCCStopped := AContext;
     end;
   end
 
