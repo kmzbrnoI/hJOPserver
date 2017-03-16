@@ -96,6 +96,12 @@ begin
        Exit();
       end;
 
+     if (not user.regulator) then
+      begin
+       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.id+' nemá právo k øízení lokomotiv !');
+       Exit();
+      end;
+
      // kontrola hesla
      if (TUser.ComparePasswd(parsed[5], user.password)) then
       begin
