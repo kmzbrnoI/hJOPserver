@@ -604,7 +604,7 @@ begin
  if (PC_1.ActivePage = TS_Bloky)      then BlokyTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Zesilovace) then ZesTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Soupravy)   then SprTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Aut_Rezimy) then ACTAbleData.UpdateTable();
+ if (PC_1.ActivePage = TS_Aut_Rezimy) then ACTAbleData.UpdateTable(true);
  if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Stanice)    then ORsTableData.UpdateTable(true);
  if (PC_1.ActivePage = TS_Technologie) then ORTCPServer.GUIRefreshTable(); 

@@ -64,6 +64,7 @@ type
       name:string;
       opak_time:TTime;
       repeating:boolean;
+      changed:boolean;
 
       stat_run:Integer;
       stat_end:Integer;
@@ -102,6 +103,7 @@ constructor TAC.Create(krk_filename:string);
 begin
  inherited Create();
 
+ Self.changed  := false;
  Self.frunning := false;
  Self.krok     := -1;
  Self.kroky    := TList<TKrok>.Create();
@@ -389,6 +391,7 @@ procedure TAC.ClearStatistics();
 begin
  Self.stat_run := 0;
  Self.stat_end := 0;
+ Self.changed := true;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -421,6 +424,7 @@ begin
    end;
   end;
 
+ Self.changed := true;
  F_Main.LV_AC_Kroky.Repaint();
 end;//procedure
 
@@ -431,6 +435,7 @@ begin
  Self.repeating := false;
  writelog('AC '+Self.name+ ' : STOP', WR_AUTREZ);
  Inc(Self.stat_end);
+ Self.changed := true;
  F_Main.LV_AC_Kroky.Repaint();
  F_Main.UpdateACButtons();
 end;//procedure
@@ -439,6 +444,7 @@ procedure TAC.Pause();
 begin
  if (not Self.running) then Exit();
  Self.frunning := false;
+ Self.changed := true;
  writelog('AC '+Self.name+ ' : PAUSE', WR_AUTREZ);
 end;//procedure
 
@@ -482,6 +488,8 @@ var cmd:integer;
       writelog('AC '+Self.name + ' : cekam na opakovani...', WR_AUTREZ);
      end else
       Self.Stop();
+
+    Self.changed := true;
     Exit;
    end;
 
@@ -490,6 +498,7 @@ var cmd:integer;
     if ((Self.wait < Now) and (Self.ready)) then
      begin
       Self.krok := 0;
+      Self.changed := true;
       writelog('AC '+Self.name + ' : opakuji', WR_AUTREZ);
      end;
     Exit();

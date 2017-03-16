@@ -14,7 +14,7 @@ type
     public
 
       procedure LoadToTable();
-      procedure UpdateTable();
+      procedure UpdateTable(force:boolean = false);
 
       constructor Create(LV:TListView);
 
@@ -59,13 +59,22 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TACTableData.UpdateTable();
+procedure TACTableData.UpdateTable(force:boolean = false);
 var i:Integer;
     AC:TAC;
 begin
  for i := 0 to ACDb.ACs.Count-1 do
   begin
    AC := ACDb.ACs[i];
+
+   if ((Self.LV.Items.Item[i].SubItems.Strings[1] = 'nepøipraven') and (AC.ready)) then
+     Self.LV.Items.Item[i].SubItems.Strings[1] := 'pøipraven';
+   if ((Self.LV.Items.Item[i].SubItems.Strings[1] = 'pøipraven') and (not AC.ready)) then
+     Self.LV.Items.Item[i].SubItems.Strings[1] := 'nepøipraven';
+
+   if ((not AC.changed) and (not force)) then continue;
+
+   AC.changed := false;
    Self.LV.Items.Item[i].SubItems.Strings[0] := AC.name;
 
    if (AC.running) then
