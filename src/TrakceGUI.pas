@@ -207,6 +207,7 @@ type
      procedure PrevzatoErr(Sender:TObject; Data:Pointer);                       // centala nedopovedela na prikaz o prevzeti
                                                                                 // (to, ze centrala odpovedela, ale HV neni dostupne, je signalizovano eventem .ConnectChange)
      procedure PrevzatoFunc1328OK(Sender:TObject; Data:Pointer);                // funkce 13-28 byly uspesne nacteny
+     procedure PrevzatoSmerOK(Sender:TObject; Data:Pointer);                    // uspesne nastaven smer lokomotivy
      procedure PrevzatoPOMOK(Sender:TObject; Data:Pointer);                     // POM vsech CV uspesne dokoncen
      procedure PrevzatoFuncOK(Sender:TObject; Data:Pointer);                    // nastavovani vsech funkci uspesne dokonceno
      procedure PrevzatoFuncErr(Sender:TObject; Data:Pointer);                   // centrala neodpovedela na prikaz o nastaveni funkci
@@ -365,7 +366,7 @@ type
 
 implementation
 
-uses fMain, fSettings, XpressNET, TechnologieMTB, fRegulator,
+uses fMain, fSettings, XpressNET, TechnologieMTB, fRegulator, SprDb, Souprava,
     GetSystems, THVDatabase, fAdminForm, DataHV,
     Prevody, TBloky, RegulatorTCP, TCPServerOR, fFuncsSet;
 
@@ -1450,12 +1451,40 @@ end;//procedure
 
 procedure TTrkGUI.PrevzatoFunc1328OK(Sender:TObject; Data:Pointer);
 var i:Integer;
+    HV:THV;
+    smer:Integer;
 begin
+ HV := HVDb.HVozidla[TPrevzitCallback(data^).addr];
+
  // nacetli jsme stav funkci 13-28 -> stav ulozime do slotu
  for i := 13 to 28 do
-   HVDb.HVozidla[TPrevzitCallback(data^).addr].Slot.funkce[i] := Self.Trakce.Slot.funkce[i];
+   HV.Slot.funkce[i] := Self.Trakce.Slot.funkce[i];
 
- //nastavime funkce tak, jak je chceme my
+ // nastavime smer podle smeru soupravy
+ if (HV.Stav.souprava > -1) then
+  begin
+   // souprava ma zadany prave jeden smer
+   smer := (Integer(Soupravy[HV.Stav.souprava].smer) xor Integer(HV.Stav.StanovisteA));
+   if ((smer = HV.Slot.smer) and (HV.Slot.speed = 0)) then
+    begin
+     // smer ok
+     Self.PrevzatoSmerOK(Sender, Data);
+     Exit();
+    end else begin
+     // smer nok -> aktualizovat smer
+     Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoSmerOK, data);
+     Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, data);
+     Self.LokSetDirectSpeed(nil, HV, 0, smer);
+    end;
+  end else
+   Self.PrevzatoSmerOK(Sender, Data);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.PrevzatoSmerOK(Sender:TObject; Data:Pointer);
+begin
+ // nastavime funkce tak, jak je chceme my
  Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFuncOK, data);
  Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoFuncErr, data);
  Self.LokSetFunc(nil, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.funkce);

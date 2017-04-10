@@ -18,6 +18,7 @@ type
       procedure ClearSpr();
 
       function GetCount():Integer;
+      function GetItem(index:Integer):TSouprava;
 
    public
       soupravy:array [0.._MAX_SPR] of TSouprava;
@@ -38,6 +39,8 @@ type
       procedure StopAllSpr();
 
       property filename:string read ffilename;
+
+      property Items[index : integer] : TSouprava read GetItem; default;
       property count:Integer read GetCount;
 
   end;//TSprDb
@@ -238,6 +241,13 @@ begin
     Sleep(3);
    end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TSprDb.GetItem(index:Integer):TSouprava;
+begin
+ Result := Self.soupravy[index];
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

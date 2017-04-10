@@ -136,6 +136,7 @@ begin
  Self.data.delka      := ini.ReadInteger(section, 'delka', 0);
  Self.data.typ        := ini.ReadString(section, 'typ', '');
  Self.filefront       := ini.ReadInteger(section, 'front', -1);
+ Self.data.smer       := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
 
  ORs.GetORByIndex(ORs.GetORIndex(ini.ReadString(section, 'OR', '')), OblR);
  Self.data.OblRizeni := (OblR as TOR);
@@ -174,6 +175,7 @@ begin
  ini.WriteString(section, 'typ', Self.data.typ);
  ini.WriteBool(section, 'L', Self.data.smer_L);
  ini.WriteBool(section, 'S', Self.data.smer_S);
+ ini.WriteInteger(section, 'smer', Integer(Self.data.smer));
 
  if (Self.data.front <> nil) then
    ini.WriteInteger(section, 'front', (Self.data.front as TBlk).GetGlobalSettings().id)
