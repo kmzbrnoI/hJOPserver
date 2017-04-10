@@ -532,13 +532,25 @@ begin
 end;//procedure
 
 procedure TBlkTrat.RemoveSpr(spr:Integer);
+var toChange:boolean;
 begin
+ toChange := false;
+
+ if (Self.TratStav.SprPredict = spr) then
+  begin
+   Self.TratStav.SprPredict := -1;
+   toChange := true;
+  end;
+
  if (Self.TratStav.soupravy.Contains(spr)) then
   begin
    Self.TratStav.soupravy.Remove(spr);
    writelog('Traù '+Self.GlobalSettings.name+ ' : smaz·na souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
-   Self.Change();
+   toChange := true;
   end;
+
+ if (toChange) then
+   Self.Change(); 
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
