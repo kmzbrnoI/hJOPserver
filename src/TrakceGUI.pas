@@ -260,6 +260,7 @@ type
      procedure SetLoglevelTable(ll:TTrkLogLevel);
 
      procedure LoadSpeedTableToTable(var LVRych:TListView);
+     procedure UpdateSpeedDir(HV:THV; Sender:TObject; speed:boolean; dir:boolean);
 
    public
 
@@ -602,6 +603,8 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrkGUI.LokSetSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;    //rychlost se zadava v km/h
+var speedOld:Integer;
+    dirOld:Integer;
 begin
  if (not Self.openned) then Exit(1);
  if (HV = nil) then Exit(2);
@@ -610,25 +613,26 @@ begin
  if ((HV.Slot.speed = Self.GettSpeed(speed)) and (HV.Slot.Smer = dir)) then
   begin
    Self.TrkLog(self, 5, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' skmph; dir='+IntToStr(dir));
-   Result := 4;
-   Exit;
+   Exit(5);
   end;
 
  if (dir = -1) then dir := HV.Slot.Smer;
 
+ speedOld      := HV.Slot.speed;
+ dirOld        := HV.Slot.smer;
  HV.Slot.speed := Self.GettSpeed(speed);
  HV.Slot.Smer  := dir;
 
- TCPRegulator.LokUpdateSpeed(HV, Sender);
- RegCollector.UpdateElements(Sender, HV.Slot.adresa);
- HV.changed := true;
+ Self.UpdateSpeedDir(HV, Sender, speedOld <> HV.Slot.speed, dirOld <> HV.Slot.smer);
 
- Self.TrkLog(self,2,'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToSTr(speed)+' kmph = '+IntToSTr(Self.GettSpeed(speed))+' steps; dir='+IntToStr(dir));
+ Self.TrkLog(self,2,'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToSTr(speed)+' kmph = '+IntToStr(Self.GettSpeed(speed))+' steps; dir='+IntToStr(dir));
  Self.Trakce.LokSetSpeed(HV.Adresa,Self.GettSpeed(speed),dir);
  Result := 0;
 end;//function
 
 function TTrkGUI.LokSetDirectSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;    //rychlost se zadava v steps
+var speedOld:Integer;
+    dirOld:Integer;
 begin
  if (not Self.openned) then Exit(1);
  if (HV = nil) then Exit(2);
@@ -637,22 +641,20 @@ begin
  if ((HV.Slot.speed = speed) and (HV.Slot.Smer = dir)) then
   begin
    Self.TrkLog(self, 5, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
-   Exit(4);
+   Exit(5);
   end;
 
  if (dir = -1) then dir := HV.Slot.Smer;
 
+ speedOld      := HV.Slot.speed;
+ dirOld        := HV.Slot.smer;
  HV.Slot.speed := speed;
  HV.Slot.Smer  := dir;
 
- TCPRegulator.LokUpdateSpeed(HV, Sender);
- RegCollector.UpdateElements(Sender, HV.Slot.adresa);
- HV.changed := true;
+ Self.UpdateSpeedDir(HV, Sender, speedOld <> HV.Slot.speed, dirOld <> HV.Slot.smer);
 
  Self.TrkLog(self,2,'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
-
  Self.Trakce.LokSetSpeed(HV.Adresa,speed,dir);
-
  Result := 0;
 end;//function
 
@@ -993,9 +995,7 @@ begin
 
  HV.Slot.speed := 0;
 
- TCPRegulator.LokUpdateSpeed(HV);
- RegCollector.UpdateElements(Sender, HV.Slot.adresa);
- HV.changed := true;
+ Self.UpdateSpeedDir(HV, Sender, true, false);
 
  Result := 0;
 end;//fucnction
@@ -2097,6 +2097,19 @@ begin
  else
    Result := 'neznámý';
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.UpdateSpeedDir(HV:THV; Sender:TObject; speed:boolean; dir:boolean);
+begin
+ TCPRegulator.LokUpdateSpeed(HV, Sender);
+ RegCollector.UpdateElements(Sender, HV.Slot.adresa);
+ HV.changed := true;
+
+ if ((dir) and (HV.Stav.souprava > -1)) then
+   if (Sender <> Soupravy[HV.Stav.souprava]) then
+     Soupravy[HV.Stav.souprava].LokDirChanged();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

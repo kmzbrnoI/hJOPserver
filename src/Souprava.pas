@@ -73,6 +73,7 @@ type
     procedure UpdateFront();
     procedure ChangeSmer();
     procedure SetSpeedBuffer(speedBuffer:PInteger);
+    procedure LokDirChanged();
 
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
@@ -630,6 +631,34 @@ end;//procedure
 procedure TSouprava.SetSpeedBuffer(speedBuffer:PInteger);
 begin
  Self.speedBuffer := speedBuffer;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// V pripade, ze vsechna hnaci vozidla soupravy otocim do opacneho smeru,
+// nez je smer soupravy, otoci se i smer soupravy. To umoznuje otoceni smeru
+// soupravy z Rocomaus.
+// Tato zmena je umoznena jen tehdy pokud nema sipka jednoznacne urceny smer
+// a pokud souprava stoji.
+
+procedure TSouprava.LokDirChanged();
+var i:Integer;
+    dir:Integer;
+begin
+ if ((Self.rychlost <> 0) or (Self.data.smer_L xor Self.data.smer_S) or
+     (Self.data.HV.cnt = 0)) then
+   Exit();
+
+ dir := HVDb.HVozidla[Self.data.HV.HVs[0]].Slot.smer xor
+        Integer(HVDb.HVozidla[Self.data.HV.HVs[0]].Stav.StanovisteA);
+
+ if (dir = Integer(Self.smer)) then Exit();
+ for i := 1 to Self.data.HV.cnt-1 do
+   if (dir <> (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.smer xor
+              Integer(HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.StanovisteA))) then
+     Exit();
+
+ // vsechna hv nastavena do opacneho smeru -> zmenit smer soupravy
+ Self.smer := THVStanoviste(dir);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
