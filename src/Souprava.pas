@@ -227,6 +227,7 @@ var hvs,hv:TStrings;
     old:TSoupravaHV;
     Func:TFunkce;
     max_func:Integer;
+    smer:THVStanoviste;
 begin
  hvs  := TStringList.Create();
  hv   := TStringList.Create();
@@ -250,14 +251,8 @@ begin
  Self.data.nazev := spr[0];
  Self.data.pocet_vozu := StrToInt(spr[1]);
  Self.data.poznamka := spr[2];
- if (spr[3][1] = '1') then
-   Self.data.smer_L := true
- else
-   Self.data.smer_L := false;
- if (spr[3][2] = '1') then
-   Self.data.smer_S := true
- else
-   Self.data.smer_S := false;
+ Self.data.smer_L := (spr[3][1] = '1');
+ Self.data.smer_S := (spr[3][2] = '1');
 
  Self.data.delka := StrToInt(spr[4]);
  Self.data.typ   := spr[5];
@@ -347,7 +342,18 @@ begin
   end;
 
  Self.UvolV(old, Self.data.HV);
- Self.SetRychlostSmer(Self.rychlost, Self.smer);
+
+ if ((Self.rychlost = 0) and (Self.data.smer_L xor Self.data.smer_S)) then
+  begin
+    // vypocet smeru ze sipky
+    if (Self.data.smer_L) then
+      smer := THVStanoviste.lichy
+    else
+      smer := THVStanoviste.sudy;
+  end else
+    smer := Self.smer;
+
+ Self.SetRychlostSmer(Self.rychlost, smer);
 
  hvs.Free();
  hv.Free();

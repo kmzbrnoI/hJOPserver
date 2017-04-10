@@ -1171,7 +1171,7 @@ begin
   if (TTCPORsRef(Sender.Data).spr_new) then
    Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
   else begin
-   // kontrola jestli je souparva porad na useku
+   // kontrola jestli je souprava porad na useku
    if ((TTCPORsRef(Sender.Data).spr_usek as TBlkUsek).Souprava = TTCPORsRef(Sender.Data).spr_edit.index) then
      TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
    else begin

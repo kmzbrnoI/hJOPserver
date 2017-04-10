@@ -1460,8 +1460,10 @@ begin
  for i := 13 to 28 do
    HV.Slot.funkce[i] := Self.Trakce.Slot.funkce[i];
 
- // nastavime smer podle smeru soupravy
- if (HV.Stav.souprava > -1) then
+ // pokud ma souprava jasne dany smer, nastavime ho
+ // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
+ if ((HV.Stav.souprava > -1) and
+     (Soupravy[HV.Stav.souprava].sdata.smer_L xor Soupravy[HV.Stav.souprava].sdata.smer_S)) then
   begin
    // souprava ma zadany prave jeden smer
    smer := (Integer(Soupravy[HV.Stav.souprava].smer) xor Integer(HV.Stav.StanovisteA));

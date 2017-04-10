@@ -725,15 +725,11 @@ begin
        TrkSystem.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc);
 
      Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
-    end;
-
-   if (Self.Stav.souprava < 0) then
-    begin
+    end else begin
      // loko neni na souprave, ani v rucnim regulatoru -> odhlasit
      if ((Self.Stav.regulators.Count = 0) and (not RegCollector.IsLoko(Self))) then
        TrkSystem.OdhlasitLoko(Self);
     end;
-
   end;
 
  if (RegCollector.IsLoko(Self)) then
