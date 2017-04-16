@@ -744,7 +744,7 @@ procedure TF_Main.AE_1Message(var Msg: tagMSG; var Handled: Boolean);
 begin
  Handled := false;
 
- if (Msg.Message = MyMsg) then
+ if (Msg.Message = runningMsg) then
   begin
    Application.Restore;
    SetForeGroundWindow(F_Main.Handle);
