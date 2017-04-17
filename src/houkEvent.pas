@@ -73,6 +73,8 @@ begin
    Self.t_delay.OnTimer(Self);
    Self.t_delay.Free();
   end;
+
+ inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,10 +152,9 @@ begin
      for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
-       
-       if (not HV.funcDict.ContainsKey(Self.m_sound)) then
-         continue;
+       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
+           ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
+           (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
 
        func := HV.Stav.funkce;
        func[HV.funcDict[Self.m_sound]] := true;
@@ -172,9 +173,9 @@ begin
      for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
-       if (not HV.funcDict.ContainsKey(Self.m_sound)) then
-         continue;
+       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
+           ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
+           (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
 
        func := HV.Stav.funkce;
        func[HV.funcDict[Self.m_sound]] := true;
@@ -186,9 +187,9 @@ begin
      for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
-       if (not HV.funcDict.ContainsKey(Self.m_sound)) then
-         continue;
+       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
+           ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
+           (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
 
        func := HV.Stav.funkce;
        func[HV.funcDict[Self.m_sound]] := false;
@@ -215,10 +216,9 @@ begin
    for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
     begin
      HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-     if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
-
-     if (not HV.funcDict.ContainsKey(Self.m_sound)) then
-       continue;
+     if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
+         ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
+         (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
 
      func := HV.Stav.funkce;
      func[HV.funcDict[Self.m_sound]] := false;
