@@ -241,12 +241,16 @@ var i:Integer;
     str:string;
 begin
  ini_stat.WriteInteger(section, 'smer', Integer(Self.file_smer));
- ini_stat.WriteBool(section, 'BP', Self.TratStav.BP);
+
+ if (Self.TratStav.BP) then
+   ini_stat.WriteBool(section, 'BP', Self.TratStav.BP);
 
  str := '';
  for i := 0 to Self.TratStav.soupravy.Count-1 do
    str := str + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy[i]) + ';';
- ini_stat.WriteString(section, 'spr', str);
+
+ if (str <> '') then
+   ini_stat.WriteString(section, 'spr', str);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

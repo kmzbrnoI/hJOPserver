@@ -204,7 +204,7 @@ end;//function
 procedure TBlk.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 begin
  Self.GlobalSettings.name     := ini_tech.ReadString(section, 'nazev', '');
- Self.GlobalSettings.id       := ini_tech.ReadInteger(section, 'id', 0);
+ Self.GlobalSettings.id       := StrToInt(section);
  Self.GlobalSettings.typ      := ini_tech.ReadInteger(section, 'typ', -1);
  Self.GlobalSettings.poznamka := ini_tech.ReadString(section, 'pozn', '');
 end;//procedure
@@ -212,9 +212,10 @@ end;//procedure
 procedure TBlk.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  ini_tech.WriteString(section, 'nazev', Self.GlobalSettings.name);
- ini_tech.WriteInteger(section, 'id', Self.GlobalSettings.id);
  ini_tech.WriteInteger(section, 'typ', Self.GlobalSettings.typ);
- ini_tech.WriteString(section, 'pozn', Self.GlobalSettings.poznamka);
+
+ if (Self.GlobalSettings.poznamka <> '') then
+   ini_tech.WriteString(section, 'pozn', Self.GlobalSettings.poznamka);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -240,11 +241,13 @@ end;//function
 class procedure TBlk.SaveMTB(ini:TMemIniFile;section:string;data:TMTBAddrs);
 var i:Integer;
 begin
- ini.WriteInteger(section,'MTBcnt',data.Count);
+ if (data.Count > 0) then
+   ini.WriteInteger(section, 'MTBcnt', data.Count);
+
  for i := 0 to data.Count-1 do
   begin
-   ini.WriteInteger(section,'MTBb'+IntToStr(i),data.data[i].board);
-   ini.WriteInteger(section,'MTBp'+IntToStr(i),data.data[i].port);
+   ini.WriteInteger(section, 'MTBb'+IntToStr(i), data.data[i].board);
+   ini.WriteInteger(section, 'MTBp'+IntToStr(i), data.data[i].port);
   end;//for i
 end;//function
 

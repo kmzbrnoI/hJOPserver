@@ -157,7 +157,8 @@ end;//procedure
 
 procedure TBlkUvazka.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
- ini_stat.WriteString(section, 'stit', Self.UvazkaStav.Stit);
+ if (Self.UvazkaStav.stit <> '') then
+   ini_stat.WriteString(section, 'stit', Self.UvazkaStav.Stit);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

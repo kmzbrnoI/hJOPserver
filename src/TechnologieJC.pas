@@ -2304,32 +2304,40 @@ begin
  ini.WriteInteger(section, 'DalsiNTyp', Self.fproperties.DalsiNNavaznostTyp);
  ini.WriteInteger(section, 'RychDalsiN', Self.fproperties.RychlostDalsiN);
  ini.WriteInteger(section, 'RychNoDalsiN', Self.fproperties.RychlostNoDalsiN);
- ini.WriteInteger(section, 'Trat', Self.fproperties.Trat);
- ini.WriteInteger(section, 'TratSmer', Integer(Self.fproperties.TratSmer));
+
+ if (Self.fproperties.Trat > -1) then
+  begin
+   ini.WriteInteger(section, 'Trat', Self.fproperties.Trat);
+   ini.WriteInteger(section, 'TratSmer', Integer(Self.fproperties.TratSmer));
+  end;
 
  // useky
  line := '';
  for i := 0 to Self.fproperties.Useky.Count-1 do
    line := line + IntToStr(Self.fproperties.Useky[i]) + ',';
- ini.WriteString(section, 'useky', line);
+ if (line <> '') then
+   ini.WriteString(section, 'useky', line);
 
  // vyhybky
  line := '';
  for i := 0 to Self.fproperties.Vyhybky.Count-1 do
    line := line + '(' + IntToStr(Self.fproperties.Vyhybky[i].Blok) + ',' + IntToStr(Integer(Self.fproperties.Vyhybky[i].Poloha)) + ')';
- ini.WriteString(section, 'vyhybky', line);
+ if (line <> '') then
+   ini.WriteString(section, 'vyhybky', line);
 
  // odvraty
  line := '';
  for i := 0 to Self.fproperties.Odvraty.Count-1 do
    line := line + '(' + IntToStr(Self.fproperties.Odvraty[i].Blok) + ',' + IntToStr(Integer(Self.fproperties.Odvraty[i].Poloha)) + ',' + IntToStr(Self.fproperties.Odvraty[i].ref_blk)+ ')';
- ini.WriteString(section, 'odvraty', line);
+ if (line <> '') then
+   ini.WriteString(section, 'odvraty', line);
 
  // prislusenstvi
  line := '';
  for i := 0 to Self.fproperties.Prisl.Count-1 do
    line := line + '(' + IntToStr(Self.fproperties.Prisl[i].Blok) + ',' + IntToStr(Self.fproperties.Prisl[i].ref_blk)+ ')';
- ini.WriteString(section, 'prisl', line);
+ if (line <> '') then
+   ini.WriteString(section, 'prisl', line);
 
  // prejezdy
  line := '';
@@ -2340,25 +2348,29 @@ begin
     line := line + IntToStr(Self.fproperties.Prejezdy[i].uzaviraci[j]) + ',';
    line[Length(line)] := ')';
   end;
- ini.WriteString(section, 'prj', line);
+ if (line <> '') then
+   ini.WriteString(section, 'prj', line);
 
  // podminky vyhybky
  line := '';
  for i := 0 to Self.fproperties.podminky.vyhybky.Count-1 do
    line := line + '(' + IntToStr(Self.fproperties.podminky.vyhybky[i].Blok) + ',' + IntToStr(Integer(Self.fproperties.podminky.vyhybky[i].Poloha))+ ')';
- ini.WriteString(section, 'podm-vyh', line);
+ if (line <> '') then
+   ini.WriteString(section, 'podm-vyh', line);
 
  // podminky zamky
  line := '';
  for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
    line := line + '(' + IntToStr(Self.fproperties.podminky.zamky[i].Blok) + ';' + IntToStr(Self.fproperties.podminky.zamky[i].ref_blk) + ')';
- ini.WriteString(section, 'podm-zamky', line);
+ if (line <> '') then
+   ini.WriteString(section, 'podm-zamky', line);
 
  // variantni body
  line := '';
  for i := 0 to Self.fproperties.vb.Count-1 do
    line := line + IntToStr(Self.fproperties.vb[i]) + ';';
- ini.WriteString(section, 'vb', line);
+ if (line <> '') then
+   ini.WriteString(section, 'vb', line);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

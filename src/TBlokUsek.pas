@@ -276,9 +276,14 @@ end;//procedure
 
 procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
- ini_stat.WriteString (section, 'stit', Self.UsekStav.Stit);
- ini_stat.WriteString (section, 'vyl' , Self.UsekStav.Vyl);
- ini_stat.WriteString(section, 'spr' , Soupravy.GetSprNameByIndex(Self.UsekStav.Spr));
+ if (Self.UsekStav.Stit <> '') then
+   ini_stat.WriteString(section, 'stit', Self.UsekStav.Stit);
+
+ if (Self.UsekStav.Vyl <> '') then
+   ini_stat.WriteString(section, 'vyl' , Self.UsekStav.Vyl);
+
+ if (Self.UsekStav.Spr > -1) then
+   ini_stat.WriteString(section, 'spr' , Soupravy.GetSprNameByIndex(Self.UsekStav.Spr));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

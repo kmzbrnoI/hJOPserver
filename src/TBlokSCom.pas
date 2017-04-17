@@ -308,10 +308,17 @@ begin
  inherited SaveData(ini_tech, section);
 
  Self.SaveMTB(ini_tech,section, Self.SComSettings.MTBAddrs);
- ini_tech.WriteString(section, 'ev', Self.GetEvents());
+
+ if (Self.SComSettings.events.Count > 0) then
+   ini_tech.WriteString(section, 'ev', Self.GetEvents());
+
  ini_tech.WriteInteger(section, 'OutType', Integer(Self.SComSettings.OutputType));
- ini_tech.WriteInteger(section, 'zpoz', Self.SComSettings.ZpozdeniPadu);
- ini_tech.WriteBool(section, 'zamknuti', Self.SComSettings.zamknuto);
+
+ if (Self.SComSettings.ZpozdeniPadu > 0) then
+   ini_tech.WriteInteger(section, 'zpoz', Self.SComSettings.ZpozdeniPadu);
+
+ if (Self.SComSettings.zamknuto) then
+   ini_tech.WriteBool(section, 'zamknuti', Self.SComSettings.zamknuto);
 end;//procedure
 
 procedure TBlkSCom.SaveStatus(ini_stat:TMemIniFile;const section:string);

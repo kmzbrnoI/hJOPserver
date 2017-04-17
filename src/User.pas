@@ -142,19 +142,32 @@ begin
  Self.SaveStat(ini, section);
 
  ini.WriteString(section, 'passwd', Self.fpasswd);
- ini.WriteBool(section, 'root', Self.root);
- ini.WriteString(section, 'fname', Self.firstname);
- ini.WriteString(section, 'lname', Self.lastname);
- ini.WriteBool(section, 'ban', Self.ban);
- ini.WriteBool(section, 'reg', Self.regulator);
- ini.WriteString(section, 'salt', Self.fsalt);
+
+ if (Self.root) then
+   ini.WriteBool(section, 'root', Self.root);
+
+ if (Self.firstname <> '') then
+   ini.WriteString(section, 'fname', Self.firstname);
+
+ if (Self.lastname <> '') then
+   ini.WriteString(section, 'lname', Self.lastname);
+
+ if (Self.ban) then
+   ini.WriteBool(section, 'ban', Self.ban);
+
+ if (Self.regulator) then
+   ini.WriteBool(section, 'reg', Self.regulator);
+
+ if (self.salt <> '') then
+   ini.WriteString(section, 'salt', Self.fsalt);
 
  str := '';
  for i := 0 to ORs.Count-1 do
    if (Self.OblR.TryGetValue(ORs.GetORIdByIndex(i), rights)) then
      str := str + '(' + ORs.GetORIdByIndex(i) + ';' + IntToStr(Integer(rights)) + ')';
 
- ini.WriteString(section, 'ORs', str);
+ if (str <> '') then
+   ini.WriteString(section, 'ORs', str);
 end;//procedure
 
 procedure TUser.SaveStat(ini:TMemIniFile; section:string);

@@ -196,7 +196,7 @@ end;//procedure
 //  oindexujeme metodou UpdateBlkIndexes
 function TBlky.LoadFromFile(const tech_filename,rel_filename,stat_filename:string):Integer;
 var ini_tech,ini_rel,ini_stat:TMemIniFile;
-    i:Integer;
+    i, id:Integer;
     Blk:TBlk;
     str:TStrings;
 begin
@@ -245,27 +245,49 @@ begin
  Blk := nil;
  for i := 0 to str.Count-1 do
   begin
-   case (ini_tech.ReadInteger(str[i], 'typ', -1)) of
-    _BLK_VYH      : Blk := TBlkVyhybka.Create(-1);
-    _BLK_USEK     : Blk := TBlkUsek.Create(-1);
-    _BLK_IR       : Blk := TBlkIR.Create(-1);
-    _BLK_SCOM     : Blk := TBlkSCom.Create(-1);
-    _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(-1);
-    _BLK_TRAT     : Blk := TBlkTrat.Create(-1);
-    _BLK_UVAZKA   : Blk := TBlkUvazka.Create(-1);
-    _BLK_ZAMEK    : Blk := TBlkZamek.Create(-1);
-    _BLK_ROZP     : Blk := TBlkRozp.Create(-1);
-    _BLK_TU       : Blk := TBlkTU.Create(-1);
-    _BLK_VYSTUP   : Blk := TBlkVystup.Create(-1);
+   try
+     id := StrToIntDef(str[i], -1);
+     if (id < 0) then
+      begin
+       writelog('Nenacitam blok ' + str[i] + ' - id neni validni', WR_ERROR);
+       continue;
+      end;
 
-   else//case
-    continue;
+     if (Self.IsBlok(id)) then
+      begin
+       writelog('Nenacitam blok ' + str[i] + ' - blok s timto id jiz existuje', WR_ERROR);
+       continue;
+      end;
+
+     case (ini_tech.ReadInteger(str[i], 'typ', -1)) of
+      _BLK_VYH      : Blk := TBlkVyhybka.Create(-1);
+      _BLK_USEK     : Blk := TBlkUsek.Create(-1);
+      _BLK_IR       : Blk := TBlkIR.Create(-1);
+      _BLK_SCOM     : Blk := TBlkSCom.Create(-1);
+      _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(-1);
+      _BLK_TRAT     : Blk := TBlkTrat.Create(-1);
+      _BLK_UVAZKA   : Blk := TBlkUvazka.Create(-1);
+      _BLK_ZAMEK    : Blk := TBlkZamek.Create(-1);
+      _BLK_ROZP     : Blk := TBlkRozp.Create(-1);
+      _BLK_TU       : Blk := TBlkTU.Create(-1);
+      _BLK_VYSTUP   : Blk := TBlkVystup.Create(-1);
+
+     else//case
+       continue;
+     end;
+
+     Blk.LoadData(ini_tech, str[i], ini_rel, ini_stat);
+     Blk.OnChange := Self.BlkChange;
+
+     Self.data.Insert(Self.FindPlaceForNewBlk(Blk.GetGlobalSettings().id), Blk);
+     Blk := nil;
+   except
+    on E:Exception do
+     begin
+      if (Assigned(Blk)) then Blk.Free();
+      AppEvents.LogException(E, 'Nacitani bloku ' + str[i]);
+     end;
    end;
-
-   Blk.LoadData(ini_tech, str[i], ini_rel, ini_stat);
-   Blk.OnChange := Self.BlkChange;
-
-   Self.data.Insert(Self.FindPlaceForNewBlk(Blk.GetGlobalSettings().id), Blk);
   end;//for i
 
  Self.UpdateBlkIndexes();

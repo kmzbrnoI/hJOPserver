@@ -322,8 +322,11 @@ var str:string;
 begin
  inherited SaveData(ini_tech, section);
 
- ini_tech.WriteInteger(section, 'navL', Self.TUSettings.navLid);
- ini_tech.WriteInteger(section, 'navS', Self.TUSettings.navSid);
+ if (Self.TUSettings.navLid <> -1) then
+   ini_tech.WriteInteger(section, 'navL', Self.TUSettings.navLid);
+
+ if (Self.TUSettings.navSid <> -1) then
+   ini_tech.WriteInteger(section, 'navS', Self.TUSettings.navSid);
 
  ini_tech.WriteInteger(section, 'rychlost', Self.TUSettings.rychlost);
 
@@ -332,16 +335,12 @@ begin
   begin
    ini_tech.WriteString(section, 'zast_ev_lichy_zast', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_lichy.zastaveni));
    ini_tech.WriteString(section, 'zast_ev_lichy_zpom', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_lichy.zpomaleni));
-  end else begin
-   ini_tech.WriteString(section, 'zast_ev_lichy_zast', '');
   end;
 
  if (Self.TUsettings.Zastavka.ev_sudy.enabled) then
   begin
    ini_tech.WriteString(section, 'zast_ev_sudy_zast', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_sudy.zastaveni));
    ini_tech.WriteString(section, 'zast_ev_sudy_zpom', Self.GetZastEventString(Self.TUsettings.Zastavka.ev_sudy.zpomaleni));
-  end else begin
-   ini_tech.WriteString(section, 'zast_ev_sudy_zast', '');
   end;
 
  if ((Self.TUsettings.Zastavka.ev_lichy.enabled) or ((Self.TUsettings.Zastavka.ev_sudy.enabled))) then
@@ -360,7 +359,9 @@ end;//procedure
 procedure TBlkTU.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  inherited SaveStatus(ini_stat, section);
- ini_stat.WriteBool(section, 'bpInBlk', Self.bpInBlk);
+
+ if (Self.bpInBlk) then
+   ini_stat.WriteBool(section, 'bpInBlk', Self.bpInBlk);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

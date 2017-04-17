@@ -246,15 +246,24 @@ begin
  inherited SaveData(ini_tech,section);
 
  Self.SaveMTB(ini_tech,section,Self.VyhSettings.MTBAddrs);
- ini_tech.WriteInteger(section, 'spojka', Self.VyhSettings.spojka);
- ini_tech.WriteInteger(section, 'zamek', Self.VyhSettings.zamek);
- ini_tech.WriteInteger(section, 'zamek-pol', Integer(Self.VyhSettings.zamekPoloha));
+
+ if (Self.VyhSettings.spojka > -1) then
+   ini_tech.WriteInteger(section, 'spojka', Self.VyhSettings.spojka);
+
+ if (Self.VyhSettings.zamek > -1) then
+  begin
+   ini_tech.WriteInteger(section, 'zamek', Self.VyhSettings.zamek);
+   ini_tech.WriteInteger(section, 'zamek-pol', Integer(Self.VyhSettings.zamekPoloha));
+  end;
 end;//procedure
 
 procedure TBlkVyhybka.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
- ini_stat.WriteString(section, 'stit', Self.VyhStav.Stit);
- ini_stat.WriteString(section, 'vyl', Self.VyhStav.Vyl);
+ if (Self.VyhStav.stit <> '') then
+   ini_stat.WriteString(section, 'stit', Self.VyhStav.Stit);
+
+ if (Self.VyhStav.vyl <> '') then
+   ini_stat.WriteString(section, 'vyl', Self.VyhStav.Vyl);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -150,12 +150,14 @@ begin
  str := '';
  for i := 0 to Self.data.JCs.Count-1 do
    str := str + IntToStr(Self.data.JCs[i]) + ';';
- ini.WriteString(section, 'JCs', str);
+ if (str <> '') then
+   ini.WriteString(section, 'JCs', str);
 
  str := '';
  for i := 0 to Self.data.vb.Count-1 do
    str := str + IntToStr(Self.data.vb[i]) + ';';
- ini.WriteString(section, 'vb', str);
+ if (str <> '') then
+   ini.WriteString(section, 'vb', str);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

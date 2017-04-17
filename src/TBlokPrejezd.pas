@@ -198,7 +198,8 @@ end;//procedure
 
 procedure TBlkPrejezd.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
- ini_stat.WriteString(section, 'stit', Self.PrjStav.stit);
+ if (Self.PrjStav.stit <> '') then
+   ini_stat.WriteString(section, 'stit', Self.PrjStav.stit);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
