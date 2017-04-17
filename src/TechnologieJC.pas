@@ -2065,6 +2065,7 @@ procedure TJC.CheckSmyckaBlok(blk:TBlk);
 begin
  if (((Blk as TBlkUsek).GetSettings().SmcUsek) and ((Blk as TBlkUsek).Souprava > -1)) then
   begin
+   Soupravy.soupravy[(Blk as TBlkUsek).Souprava].InterChangeStanice(false);
    Soupravy.soupravy[(Blk as TBlkUsek).Souprava].ChangeSmer();
    writelog('Obsazen smyckovy usek '+Blk.GetGlobalSettings.name+ ' - menim smer loko v souprave '+Soupravy.soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
   end;//if

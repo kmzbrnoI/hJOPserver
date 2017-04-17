@@ -75,6 +75,7 @@ type
     procedure VezmiVlak();
     procedure UpdateFront();
     procedure ChangeSmer();
+    procedure InterChangeStanice(change_ev:Boolean = true);
     procedure SetSpeedBuffer(speedBuffer:PInteger);
     procedure LokDirChanged();
 
@@ -661,6 +662,20 @@ begin
  if (Self.front <> nil) then
    (Self.front as TBlkUsek).Change();  // kvuli sipce
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSouprava.InterChangeStanice(change_ev:Boolean = true);
+var tmp:TObject;
+begin
+ tmp := Self.data.vychoziOR;
+ Self.data.vychoziOR := Self.data.cilovaOR;
+ Self.data.cilovaOR := tmp;
+
+ Self.changed := true;
+ if ((Self.front <> nil) and (change_ev)) then
+   (Self.front as TBlkUsek).Change();
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
