@@ -277,6 +277,9 @@ var glob:TBlkSettings;
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;
   settings.Zesil   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
 
+  settings.houkEvL := Self.Blk.GetSettings().houkEvL;
+  settings.houkEvS := Self.Blk.GetSettings().houkEvS;
+
   Self.Blk.SetSettings(settings);
 
   F_BlkUsek.Close;

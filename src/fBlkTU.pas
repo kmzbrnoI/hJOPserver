@@ -424,6 +424,9 @@ var glob:TBlkSettings;
   TUsettings.Zastavka.ev_lichy.enabled := Self.CHB_Zastavka_Lichy.Checked;
   TUsettings.Zastavka.ev_sudy.enabled  := Self.CHB_Zastavka_Sudy.Checked;
 
+  settings.houkEvL := TBlkUsek(Self.Blk).GetSettings().houkEvL;
+  settings.houkEvS := TBlkUsek(Self.Blk).GetSettings().houkEvS;
+
   Self.Blk.SetSettings(TUsettings);
   (Self.Blk as TBlkUsek).SetSettings(settings);
 

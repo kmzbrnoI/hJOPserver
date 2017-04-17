@@ -5,10 +5,15 @@ unit TBlokUsek;
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster,
-     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni;
+     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, rrEvent;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
+
+ THoukEv = record
+  event: TRREv;
+  sound: string;
+ end;
 
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
@@ -16,6 +21,8 @@ type
   Lenght:double;          //delka useku v metrech
   SmcUsek:boolean;        //specialni pripad: usek ve smycce
   Zesil:string;           //id zesilovace
+  houkEvL:TList<THoukEv>;  //seznam houkacich udalosti pro lichy smer
+  houkEvS:TList<THoukEv>;  //seznam houkacich udalosti pro sudy smer
  end;
 
  TUsekStavAr = array[0..3] of TUsekStav;
@@ -109,6 +116,7 @@ type
 
     procedure ORVylukaNull(Sender:TIdContext; success:boolean);
 
+    procedure LoadHoukEventToList(list:TList<THoukEv>; ini_tech:TMemIniFile; section:string; prefix:string);
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -194,7 +202,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS,
+uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb;
 
@@ -208,10 +216,19 @@ begin
 
  Self.EventsOnObsaz := TChangeEvents.Create();
  Self.EventsOnUvol  := TChangeEvents.Create();
+
+ Self.UsekSettings.houkEvL := TList<THoukEv>.Create();
+ Self.UsekSettings.houkEvS := TList<THoukEv>.Create();
 end;//ctor
 
 destructor TBlkUsek.Destroy();
 begin
+ if (Assigned(Self.UsekSettings.houkEvL)) then
+   Self.UsekSettings.houkEvL.Free();
+
+ if (Assigned(Self.UsekSettings.houkEvS)) then
+   Self.UsekSettings.houkEvS.Free();
+
  Self.EventsOnObsaz.Free();
  Self.EventsOnUvol.Free();
  inherited Destroy();
@@ -230,14 +247,28 @@ begin
  Self.UsekSettings.SmcUsek  := ini_tech.ReadBool(section, 'smc', false);
 
  if (Boosters[Self.UsekSettings.Zesil] = nil) then
-   writelog('WARNING: Blok '+Self.GetGlobalSettings.name + ' ('+IntToStr(Self.GetGlobalSettings.id)+') nemá návaznost na validní zesilovaè', WR_ERROR);
+   writelog('WARNING: Blok '+Self.GetGlobalSettings.name + ' ('+IntToStr(Self.GetGlobalSettings.id)+
+            ') nemá návaznost na validní zesilovaè', WR_ERROR);
 
  Self.UsekStav.Stit         := ini_stat.ReadString(section, 'stit', '');
  Self.UsekStav.Vyl          := ini_stat.ReadString(section, 'vyl' , '');
  Self.UsekStav.Spr          := Soupravy.GetSprIndexByName(ini_stat.ReadString(section, 'spr' , ''));
 
  str := TStringList.Create();
- ExtractStrings(['|'],[],PChar(ini_tech.ReadString(section, 'zast', '')), str);
+
+ // houkaci udalosti
+ try
+   Self.LoadHoukEventToList(Self.UsekSettings.houkEvL, ini_tech, section, 'houkL');
+ except
+   writelog('Nepodaøilo se naèíst houkací události L bloku ' + Self.GetGlobalSettings.name, WR_ERROR);
+ end;
+
+ try
+   Self.LoadHoukEventToList(Self.UsekSettings.houkEvS, ini_tech, section, 'houkS');
+ except
+   writelog('Nepodaøilo se naèíst houkací události S bloku ' + Self.GetGlobalSettings.name, WR_ERROR);
+ end;
+
 
  if (ini_rel <> nil) then
   begin
@@ -265,13 +296,26 @@ begin
 end;//procedure
 
 procedure TBlkUsek.SaveData(ini_tech:TMemIniFile;const section:string);
+var i:Integer;
 begin
  inherited SaveData(ini_tech,section);
 
  Self.SaveMTB(ini_tech, section, Self.UsekSettings.MTBAddrs);
  ini_tech.WriteFloat(section,'delka', Self.UsekSettings.Lenght);
  ini_tech.WriteString(section,'zesil', Self.UsekSettings.Zesil);
- ini_tech.WriteBool(section, 'smc', Self.UsekSettings.SmcUsek);
+
+ if (Self.UsekSettings.SmcUsek) then
+   ini_tech.WriteBool(section, 'smc', Self.UsekSettings.SmcUsek);
+
+ if (Assigned(Self.UsekSettings.houkEvL)) then
+   for i := 0 to Self.UsekSettings.houkEvL.Count-1 do
+     ini_tech.WriteString(section, 'houkL'+IntToStr(i), '{' + Self.UsekSettings.houkEvL[i].event.GetDefStr()
+                            + '};' + Self.UsekSettings.houkEvL[i].sound);
+
+ if (Assigned(Self.UsekSettings.houkEvS)) then
+   for i := 0 to Self.UsekSettings.houkEvS.Count-1 do
+     ini_tech.WriteString(section, 'houkS'+IntToStr(i), '{' + Self.UsekSettings.houkEvS[i].event.GetDefStr()
+                            + '};' + Self.UsekSettings.houkEvS[i].sound);
 end;//procedure
 
 procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -662,6 +706,12 @@ end;//function
 
 procedure TBlkUsek.SetSettings(data:TBlkUsekSettings);
 begin
+ if (Self.UsekSettings.houkEvL <> data.houkEvL) then
+   Self.UsekSettings.houkEvL.Free();
+
+ if (Self.UsekSettings.houkEvS <> data.houkEvS) then
+   Self.UsekSettings.houkEvS.Free();
+
  Self.UsekSettings := data;
  Self.Change();
 end;
@@ -1120,6 +1170,39 @@ begin
 
  if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
  if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.LoadHoukEventToList(list:TList<THoukEv>; ini_tech:TMemIniFile; section:string; prefix:string);
+var i:Integer;
+    str:TStrings;
+    data:string;
+    houkEv:THoukEv;
+begin
+ str := TStringList.Create();
+
+ try
+   i := 0;
+   list.Clear();
+   data := ini_tech.ReadString(section, prefix+IntToStr(i), '');
+   while (data <> '') do
+    begin
+     str.Clear();
+     ExtractStringsEx([';'], [], data, str);
+     if (str.Count >= 2) then
+      begin
+       houkEv.sound := str[1];
+       houkEv.event := TRREv.Create(str[0]);
+       list.Add(houkEv);
+      end;
+
+     Inc(i);
+     data := ini_tech.ReadString(section, prefix+IntToStr(i), '');
+    end;
+ finally
+   str.Free();
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -125,7 +125,8 @@ uses
   PTEndpointBlokStav in 'PTEndpointBlokStav.pas',
   PTEndpointLokStav in 'PTEndpointLokStav.pas',
   RCS in 'rcs\RCS.pas',
-  RCSErrors in 'rcs\RCSErrors.pas';
+  RCSErrors in 'rcs\RCSErrors.pas',
+  rrEvent in 'rrEvent.pas';
 
 {$R *.res}
 
