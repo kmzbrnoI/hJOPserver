@@ -515,10 +515,10 @@ begin
            msg := msg + '0;';
         end;
 
-//        if (Soupravy.soupravy[(Sender as TBlkUsek).Souprava].ukradeno) then
-//         msg := msg + PrevodySoustav.ColorToStr(clYellow)
-//        else
-         msg := msg + PrevodySoustav.ColorToStr(bg);
+       if ((Soupravy[TBlkUsek(Sender).Souprava].cilovaOR = Self) and (bg = clBlack)) then
+         bg := clSilver;
+
+       msg := msg + PrevodySoustav.ColorToStr(bg);
 
       end else begin
 

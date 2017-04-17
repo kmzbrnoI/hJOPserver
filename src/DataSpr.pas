@@ -4,7 +4,7 @@ unit DataSpr;
 
 interface
 
-uses ComCtrls, SysUtils;
+uses ComCtrls, SysUtils, StrUtils;
 
 type
   TSprTableData=class
@@ -87,6 +87,7 @@ end;//procedure
 procedure TSprTableData.UpdateLine(line:integer);
 var spr:TSoupravaData;
     i:Integer;
+    str:string;
  begin
   if (not Assigned(Soupravy.soupravy[line])) then
    begin
@@ -112,11 +113,14 @@ var spr:TSoupravaData;
   else
    Self.LV.Items.Item[line].SubItems.Strings[1] := '-';
 
-  if ((spr.HV.cnt > 1) and (Assigned(HVDb.HVozidla[spr.HV.HVs[1]]))) then
-   Self.LV.Items.Item[line].SubItems.Strings[2] := IntToStr(HVDb.HVozidla[spr.HV.HVs[1]].adresa) + ' : ' +
-       HVDb.HVozidla[spr.HV.HVs[1]].Data.Nazev + ' ('+HVDb.HVozidla[spr.HV.HVs[1]].Data.Oznaceni+')'
+  str := '';
+  for i := 1 to spr.HV.cnt-1 do
+      str := str + IntToStr(spr.HV.HVs[i]) + ', ';
+
+  if (str <> '') then
+    Self.LV.Items.Item[line].SubItems.Strings[2] := LeftStr(str, Length(str)-2)
   else
-   Self.LV.Items.Item[line].SubItems.Strings[2] := '-';
+    Self.LV.Items.Item[line].SubItems.Strings[2] := '-';
 
   Self.LV.Items.Item[line].SubItems.Strings[3] := spr.poznamka;
   if (spr.smer_L) then
@@ -152,6 +156,16 @@ var spr:TSoupravaData;
 
   Self.LV.Items.Item[line].SubItems.Strings[10] := IntToStr(spr.delka);
   Self.LV.Items.Item[line].SubItems.Strings[11] := spr.typ;
+
+  if (spr.vychoziOR <> nil) then
+    Self.LV.Items.Item[line].SubItems.Strings[12] := TOR(spr.vychoziOR).Name
+  else
+    Self.LV.Items.Item[line].SubItems.Strings[12] := '-';
+
+  if (spr.cilovaOR <> nil) then
+    Self.LV.Items.Item[line].SubItems.Strings[13] := TOR(spr.cilovaOR).Name
+  else
+    Self.LV.Items.Item[line].SubItems.Strings[13] := '-';
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

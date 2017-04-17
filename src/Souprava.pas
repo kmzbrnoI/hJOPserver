@@ -33,6 +33,9 @@ type
    rychlost:Integer;
    smer:THVStanoviste;
    front:TObject;   // nejprednejsi blok, kde je souprava
+
+   vychoziOR:TObject;
+   cilovaOR:TObject;
   end;//TSoupravaData
 
   TSouprava = class
@@ -85,6 +88,8 @@ type
     property front:TObject read data.front write SetFront;
     property delka:Integer read data.delka;
     property typ:string read data.typ;
+    property vychoziOR:TObject read data.vychoziOR;
+    property cilovaOR:TObject read data.cilovaOR;
 
     // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
     class procedure UvolV(old:TSoupravaHV; new:TSoupravaHV);
@@ -127,7 +132,6 @@ end;//dtor
 procedure TSouprava.LoadFromFile(ini:TMemIniFile; const section:string);
 var i:Integer;
     data:TStrings;
-    OblR:TOR;
 begin
  Self.data.nazev      := ini.ReadString(section, 'nazev', section);
  Self.data.pocet_vozu := ini.ReadInteger(section, 'vozu', 0);
@@ -139,8 +143,9 @@ begin
  Self.filefront       := ini.ReadInteger(section, 'front', -1);
  Self.data.smer       := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
 
- ORs.GetORByIndex(ORs.GetORIndex(ini.ReadString(section, 'OR', '')), OblR);
- Self.data.OblRizeni := (OblR as TOR);
+ Self.data.vychoziOR  := ORs.GetORById(ini.ReadString(section, 'z', ''));
+ Self.data.cilovaOR   := ORs.GetORById(ini.ReadString(section, 'do', ''));
+ Self.data.OblRizeni  := ORs.GetORById(ini.ReadString(section, 'OR', ''));
 
  data := TStringList.Create();
  ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
@@ -171,12 +176,27 @@ var str:string;
 begin
  ini.WriteString(section, 'nazev', Self.data.nazev);
  ini.WriteInteger(section, 'vozu', Self.data.pocet_vozu);
- ini.WriteString(section, 'poznamka', Self.data.poznamka);
+
+ if (Self.data.poznamka <> '') then
+   ini.WriteString(section, 'poznamka', Self.data.poznamka)
+ else
+   ini.DeleteKey(section, 'poznamka');
+
  ini.WriteInteger(section, 'delka', Self.data.delka);
  ini.WriteString(section, 'typ', Self.data.typ);
  ini.WriteBool(section, 'L', Self.data.smer_L);
  ini.WriteBool(section, 'S', Self.data.smer_S);
  ini.WriteInteger(section, 'smer', Integer(Self.data.smer));
+
+ if (Self.data.vychoziOR <> nil) then
+   ini.WriteString(section, 'z', TOR(Self.data.vychoziOR).id)
+ else
+   ini.DeleteKey(section, 'z');
+
+ if (Self.data.cilovaOR <> nil) then
+   ini.WriteString(section, 'do', TOR(Self.data.cilovaOR).id)
+ else
+   ini.DeleteKey(section, 'do');
 
  if (Self.data.front <> nil) then
    ini.WriteInteger(section, 'front', (Self.data.front as TBlk).GetGlobalSettings().id)
@@ -184,7 +204,9 @@ begin
    ini.WriteInteger(section, 'front', -1);
 
  if (Self.data.OblRizeni <> nil) then
-   ini.WriteString(section, 'OR', (Self.data.OblRizeni as TOR).id);
+   ini.WriteString(section, 'OR', (Self.data.OblRizeni as TOR).id)
+ else
+   ini.DeleteKey(section, 'OR');
 
  str := '';
  for i := 0 to Self.data.HV.cnt-1 do
@@ -195,7 +217,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci string, kterym je definovana souprava, do panelu
-// format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;delka;typ;hnaci vozidla
+// format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;delka;typ;hnaci vozidla;vychozi stanice;cilova stanice
 function TSouprava.GetPanelString():string;
 var i:Integer;
 begin
@@ -215,12 +237,20 @@ begin
 
  for i := 0 to Self.data.HV.cnt-1 do
   Result := Result + '[{' + HVDb.HVozidla[Self.data.HV.HVs[i]].GetPanelLokString() + '}]';
- Result := Result + '}';
+ Result := Result + '};';
+
+ if (Self.vychoziOR <> nil) then
+   Result := Result + TOR(Self.vychoziOR).id;
+ Result := Result + ';';
+
+ if (Self.cilovaOR <> nil) then
+   Result := Result + TOR(Self.cilovaOR).id;
+ Result := Result + ';';
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;delka;typ;hnaci vozidla
+// format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;delka;typ;hnaci vozidla;vychozi stanice;cilova stanice
 // format hnaciho vozidla:  nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce
 procedure TSouprava.LoadFromPanelStr(spr:TStrings; Usek:TObject; OblR:TObject);
 var hvs,hv:TStrings;
@@ -249,6 +279,8 @@ begin
     end;
   end;
 
+ Self.changed := true;
+
  Self.data.nazev := spr[0];
  Self.data.pocet_vozu := StrToInt(spr[1]);
  Self.data.poznamka := spr[2];
@@ -260,6 +292,12 @@ begin
 
  Self.data.OblRizeni := OblR;
  Self.data.front     := Usek;
+
+ if (spr.Count > 7) then
+   Self.data.vychoziOR := ORs.GetORById(spr[7]);
+
+ if (spr.Count > 8) then
+   Self.data.cilovaOR := ORs.GetORById(spr[8]);
 
  ExtractStringsEx([']'], ['['], spr[6], hvs);
 
@@ -358,8 +396,6 @@ begin
 
  hvs.Free();
  hv.Free();
-
- Self.changed := true;
 
  Blky.ChangeSprToTrat(Self.index);
 end;//procedure
