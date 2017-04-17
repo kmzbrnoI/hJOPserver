@@ -92,6 +92,7 @@ var ini, ini_stat:TMemIniFile;
     OblR:TOR;
 begin
  writelog('Naèítám stanice - '+filename,WR_DATA);
+ Self.fstat_filename := stat_filename;
 
  if (not FileExists(filename)) then
    raise EFileNotFound.Create('Soubor se stanicemi neexistuje - '+filename);
@@ -99,7 +100,6 @@ begin
  Self.ORsDatabase.Clear();
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  ini_stat := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
- Self.fstat_filename := stat_filename;
  oblasti := TStringList.Create();
 
  ini.ReadSection(_SECT_OR, oblasti);
