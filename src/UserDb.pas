@@ -168,7 +168,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Users.Count-1 do
   if (Self.Users.Items[i].id = user) then
-    if (TUser.ComparePasswd(passwd, Self.Users.Items[i].password)) then   // password check
+    if (TUser.ComparePasswd(passwd, Self.Users.Items[i].password, Self.Users.Items[i].salt)) then   // password check
       Exit(Self.Users.Items[i].GetRights(OblR));
  Result := TORControlRights.null;
 end;//function

@@ -899,7 +899,7 @@ begin
   end else
 
  // kontrola opravneni uzivatele pro tento panel
- if (not TUser.ComparePasswd(password, user.password)) then
+ if (not TUser.ComparePasswd(password, user.password, user.salt)) then
   begin
    UserRights := TORControlRights.null;
    msg := 'Neplatné heslo !';

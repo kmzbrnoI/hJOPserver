@@ -103,7 +103,7 @@ begin
       end;
 
      // kontrola hesla
-     if (TUser.ComparePasswd(parsed[5], user.password)) then
+     if (TUser.ComparePasswd(parsed[5], user.password, user.salt)) then
       begin
        Self.ClientAuthorise(Sender, true, user);
       end else begin

@@ -19,6 +19,9 @@ interface
 uses IniFiles, Generics.Collections, DCPsha256, SysUtils, Classes,
      Generics.Defaults, TOblRizeni, Windows;
 
+const
+  _SALT_LEN = 24;
+
 type
   TUser = class                                                                 // trida reprezentujici uzivatele
    private
@@ -26,6 +29,7 @@ type
     fban:boolean;                                                               // flag urcujici ban uzivate
     freg:boolean;                                                               // flag urcijici moznost autorizovat regulator
     fid:string;                                                                 // unikatni id
+    fsalt:string;                                                               // sul hesla
 
       procedure SetPasswd(passwd:string);                                       // nastavi heslo, viz \passwd
       procedure SetBan(state:boolean);                                          // nastavi ban, viz \ban
@@ -34,6 +38,7 @@ type
       procedure SetId(new:string);
 
       function GetFullName():string;                                            // varti jsmeno uzivatele ve formatu: first_name [mezera] lastname
+      class function GenSalt():string;
 
    public
 
@@ -61,8 +66,9 @@ type
       property ban:boolean read fban write SetBan;
       property regulator:boolean read freg write SetReg;
       property fullName:string read GetFullName;
+      property salt:string read fsalt;
 
-      class function ComparePasswd(plain:string; hash:string):boolean;          // kontroluje shodu hesel; true poku hesla sedi, jinak false
+      class function ComparePasswd(plain:string; hash:string; salt:string):boolean; // kontroluje shodu hesel; true poku hesla sedi, jinak false
       class function GenerateHash(plain:AnsiString):string;                     // generuje hash hesla
   end;//class TUser
 
@@ -104,6 +110,7 @@ begin
  Self.root      := ini.ReadBool(section, 'root', false);
  Self.firstname := ini.ReadString(section, 'fname', '');
  Self.lastname  := ini.ReadString(section, 'lname', '');
+ Self.fsalt     := ini.ReadString(section, 'salt', '');
  try
    Self.lastlogin := StrToDateTime(ini.ReadString(section, 'lastlogin', ''));
  except
@@ -140,6 +147,7 @@ begin
  ini.WriteString(section, 'lname', Self.lastname);
  ini.WriteBool(section, 'ban', Self.ban);
  ini.WriteBool(section, 'reg', Self.regulator);
+ ini.WriteString(section, 'salt', Self.fsalt);
 
  str := '';
  for i := 0 to ORs.Count-1 do
@@ -159,7 +167,8 @@ end;//procedure
 procedure TUser.SetPasswd(passwd:string);
 begin
  // heslo je 2x zahashovane
- Self.fpasswd := TUser.GenerateHash(AnsiString(TUser.GenerateHash(AnsiString(passwd))));
+ Self.fsalt := Self.GenSalt();
+ Self.fpasswd := TUser.GenerateHash(AnsiString(TUser.GenerateHash(AnsiString(passwd)) + self.fsalt));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -177,9 +186,9 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TUser.ComparePasswd(plain:string; hash:string):boolean;
+class function TUser.ComparePasswd(plain:string; hash:string; salt:string):boolean;
 begin
- Result := (hash = TUser.GenerateHash(AnsiString(LowerCase(plain))));
+ Result := (hash = TUser.GenerateHash(AnsiString(LowerCase(plain + salt))));
 end;//function
 
 class function TUser.GenerateHash(plain:AnsiString):string;
@@ -257,6 +266,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+class function TUser.GenSalt():string;
+var all:string;
+    i, len:Integer;
+begin
+ all := 'abcdefghijklmnopqrstuvwxyz0123456789';
+ len := Length(all);
+
+ Result := '';
+ for i := 0 to _SALT_LEN-1 do
+   Result := Result + all[Random(len)+1];
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 initialization
  TUser.comparer :=

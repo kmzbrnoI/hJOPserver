@@ -192,7 +192,7 @@ begin
   end;
 
  // kontrola hesla uzivatele
- if (not TUser.ComparePasswd(parsed[4], user.password)) then
+ if (not TUser.ComparePasswd(parsed[4], user.password, user.salt)) then
   begin
    ORTCPServer.SendLn(Sender, '-;MTBd;AUTH;not;Neplatné heslo');
    Exit();
