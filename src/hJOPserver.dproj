@@ -237,6 +237,7 @@
 			<DCCReference Include="rcs\RCS.pas"/>
 			<DCCReference Include="rcs\RCSErrors.pas"/>
 			<DCCReference Include="rrEvent.pas"/>
+			<DCCReference Include="houkEvent.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

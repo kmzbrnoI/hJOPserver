@@ -4,16 +4,11 @@ unit TBlokUsek;
 
 interface
 
-uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster,
+uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
      IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, rrEvent;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
-
- THoukEv = record
-  event: TRREv;
-  sound: string;
- end;
 
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
@@ -53,6 +48,7 @@ type
   spr_vypadek_time:Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
                             // pro reseni timeoutu jsou tyto 2 promenne
   DCCGoTime:TDateTime;
+  currentHoukEv:Integer;
  end;
 
  TBlkUsek = class(TBlk)
@@ -75,6 +71,7 @@ type
     DCC : false;
     stanicni_kolej : false;
     zpomalovani_ready : false;
+    currentHoukEv : -1;
    );
 
   private
@@ -117,6 +114,11 @@ type
     procedure ORVylukaNull(Sender:TIdContext; success:boolean);
 
     procedure LoadHoukEventToList(list:TList<THoukEv>; ini_tech:TMemIniFile; section:string; prefix:string);
+    procedure CheckHoukEv();
+
+    function GetHoukList():TList<THoukEv>;
+    function GetHoukEvEnabled():boolean;
+    procedure SetHoukEvEnabled(state:boolean);
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -182,6 +184,7 @@ type
 
     property VlakPresun:boolean read UsekStav.vlakPresun write SetVlakPresun;
     property zpomalovani_ready:boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
+    property houk_ev_enabled:boolean read GetHoukEvEnabled write SetHoukEvEnabled;
 
     //GUI:
 
@@ -204,7 +207,7 @@ implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
-    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb;
+    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -308,14 +311,30 @@ begin
    ini_tech.WriteBool(section, 'smc', Self.UsekSettings.SmcUsek);
 
  if (Assigned(Self.UsekSettings.houkEvL)) then
+  begin
    for i := 0 to Self.UsekSettings.houkEvL.Count-1 do
-     ini_tech.WriteString(section, 'houkL'+IntToStr(i), '{' + Self.UsekSettings.houkEvL[i].event.GetDefStr()
-                            + '};' + Self.UsekSettings.houkEvL[i].sound);
+    begin
+     try
+       ini_tech.WriteString(section, 'houkL'+IntToStr(i), Self.UsekSettings.houkEvL[i].GetDefString());
+     except
+       on E:Exception do
+         AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.GetGlobalSettings().name);
+     end;
+    end;
+  end;
 
  if (Assigned(Self.UsekSettings.houkEvS)) then
+  begin
    for i := 0 to Self.UsekSettings.houkEvS.Count-1 do
-     ini_tech.WriteString(section, 'houkS'+IntToStr(i), '{' + Self.UsekSettings.houkEvS[i].event.GetDefStr()
-                            + '};' + Self.UsekSettings.houkEvS[i].sound);
+    begin
+     try
+       ini_tech.WriteString(section, 'houkS'+IntToStr(i), Self.UsekSettings.houkEvS[i].GetDefString());
+     except
+       on E:Exception do
+         AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.GetGlobalSettings().name);
+     end;
+    end;
+  end;
 end;//procedure
 
 procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -362,6 +381,7 @@ begin
  Self.UsekStav.SprPredict := -1;
  Self.UsekStav.KonecJC    := TZaver.no;
  Self.UsekStav.zpomalovani_ready := false;
+ Self.houk_ev_enabled     := false;
  Self.UsekStav.zkrat      := TBoosterSignal.undef;
  Self.UsekStav.napajeni   := TBoosterSignal.undef;
  Self.UsekStav.DCC        := false;
@@ -493,6 +513,10 @@ begin
  if ((Self.VlakPresun) and ((Self.Souprava = -1) or ((Self.Souprava > -1) and (Soupravy.soupravy[Self.Souprava].rychlost > 0)))) then
    Self.VlakPresun := false;
 
+ // pousteni houkani na houkaci udalosti
+ if (Self.UsekStav.currentHoukEv > -1) then
+   Self.CheckHoukEv();
+
  inherited Update();
 end;//procedure
 
@@ -581,6 +605,7 @@ begin
  else begin
   Self.UsekStav.vlakPresun        := false;
   Self.UsekStav.zpomalovani_ready := false;
+  Self.houk_ev_enabled            := false;
  end;
 
  Self.Change();
@@ -1176,33 +1201,105 @@ end;
 
 procedure TBlkUsek.LoadHoukEventToList(list:TList<THoukEv>; ini_tech:TMemIniFile; section:string; prefix:string);
 var i:Integer;
-    str:TStrings;
     data:string;
-    houkEv:THoukEv;
 begin
- str := TStringList.Create();
-
  try
    i := 0;
    list.Clear();
    data := ini_tech.ReadString(section, prefix+IntToStr(i), '');
    while (data <> '') do
     begin
-     str.Clear();
-     ExtractStringsEx([';'], [], data, str);
-     if (str.Count >= 2) then
-      begin
-       houkEv.sound := str[1];
-       houkEv.event := TRREv.Create(str[0]);
-       list.Add(houkEv);
-      end;
+     try
+       list.Add(THoukEv.Create(data));
+     except
+       writelog('Nepodarilo se nacist houkaci udalost ' + data + ' bloku ' +
+                  Self.GetGlobalSettings.name, WR_ERROR);
+       Exit();
+     end;
 
      Inc(i);
      data := ini_tech.ReadString(section, prefix+IntToStr(i), '');
     end;
- finally
-   str.Free();
+ except
+
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.CheckHoukEv();
+var list:TList<THoukEv>;
+begin
+ if (Self.UsekStav.currentHoukEv < 0) then Exit();
+
+ if (Self.Souprava < -1) then
+  begin
+   Self.houk_ev_enabled := false;
+   Exit();
+  end;
+
+ list := Self.GetHoukList();
+ if (list = nil) then
+  begin
+   Self.houk_ev_enabled := false;
+   Exit();
+  end;
+
+ if (Self.UsekStav.currentHoukEv >= list.Count) then
+  begin
+   Self.houk_ev_enabled := false;
+   Exit();
+  end;
+
+ // kontrola udalosti
+ if (list[Self.UsekStav.currentHoukEv].CheckTriggerred(Self)) then
+  begin
+   // udalost aktivovana, zpracovana a automaticky odregistrovana -> presun na dalsi udalost
+   Inc(Self.UsekStav.currentHoukEv);
+   if (Self.UsekStav.currentHoukEv >= list.Count) then
+     Self.houk_ev_enabled := false;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.GetHoukEvEnabled():boolean;
+begin
+ Result := (Self.UsekStav.currentHoukEv > -1);
+end;
+
+procedure TBlkUsek.SetHoukEvEnabled(state:boolean);
+var houkEv:THoukEv;
+begin
+ if (state) then
+  begin
+   if (Self.Souprava < 0) then Exit();
+   if (Self.GetHoukList().Count = 0) then Exit();
+
+   // aktivace prvni houkaci udalosti
+   Self.UsekStav.currentHoukEv := 0;
+   Self.GetHoukList()[0].Register();
+  end else begin
+   Self.UsekStav.currentHoukEv := -1;
+
+   for houkEv in Self.UsekSettings.houkEvL do
+     houkEv.Unregister();
+
+   for houkEv in Self.UsekSettings.houkEvS do
+     houkEv.Unregister();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.GetHoukList():TList<THoukEv>;
+begin
+ if (Self.Souprava < 0) then Exit(nil);
+
+ if (Soupravy[Self.Souprava].smer = THVStanoviste.lichy) then
+   Result := Self.UsekSettings.houkEvL
+ else
+   Result := Self.UsekSettings.houkEvS;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

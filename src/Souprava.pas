@@ -696,7 +696,7 @@ var i:Integer;
     dir:Integer;
 begin
  if ((Self.rychlost <> 0) or (Self.data.smer_L xor Self.data.smer_S) or
-     (Self.data.HV.cnt = 0)) then
+     (Self.data.HV.cnt = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
    Exit();
 
  dir := HVDb.HVozidla[Self.data.HV.HVs[0]].Slot.smer xor

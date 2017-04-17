@@ -2056,6 +2056,7 @@ var UsekActual,UsekDalsi,Nav:TBlk;
   (UsekDalsi as TBlkUsek).zpomalovani_ready := true;
   (UsekDalsi as TBlkUsek).Souprava := (UsekActual as TBlkUsek).Souprava;
   Soupravy.soupravy[(UsekDalsi as TBlkUsek).Souprava].front := UsekDalsi;
+  (UsekDalsi as TBlkUsek).houk_ev_enabled := true;
   writelog('JC '+Self.nazev+': predana souprava '+Soupravy.GetSprNameByIndex((UsekDalsi as TBlkUsek).Souprava)+' z bloku '+UsekActual.GetGlobalSettings().name+' do bloku '+UsekDalsi.GetGlobalSettings().name,WR_SPRPREDAT, 0);
 
   Self.CheckSmyckaBlok(UsekDalsi);

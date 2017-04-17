@@ -791,6 +791,7 @@ begin
      Soupravy.soupravy[Self.prevTU.Souprava].front := Self;
      Self.Souprava := Self.prevTU.Souprava;
      Self.zpomalovani_ready := true;
+     Self.houk_ev_enabled := true;
      Self.rychUpdate := true;
 
      if (Self.nextTU = nil) then

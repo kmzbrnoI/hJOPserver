@@ -1,0 +1,234 @@
+unit houkEvent;
+
+{
+  Trida THoukEv reprezentuje jednu houkaci udalost.
+
+  Definicni string:
+   "udalost;zvuk;typ_funkce"
+}
+
+interface
+
+uses rrEvent, Classes, SysUtils, ExtCtrls;
+
+type
+  THoukFuncType = (hftToggle = 0, hftOn = 1, hftOff = 2);
+
+  THoukEv = class
+   private
+    m_event: TRREv;
+    m_sound: string;
+    m_funcType: THoukFuncType;
+    t_delay: TTimer;
+    m_sprref: TObject;
+
+     procedure LoadFromDefString(data:string);
+     function IsEnabled():boolean;
+
+     procedure FireEvent(Souprava:TObject);
+
+     procedure ToggleOffOnTimer(Sender:TObject);
+
+   public
+
+     constructor Create(data:string);
+     destructor Destroy(); override;
+
+     function GetDefString():string;
+
+     procedure Register();
+     procedure Unregister();
+     function CheckTriggerred(Sender:TObject):boolean; // returns true when event triggerred
+
+     property enabled: boolean read IsEnabled;
+
+  end;
+
+implementation
+
+uses ownStrUtils, TrakceGUI, Souprava, TBlokUsek, SprDb, fMain, THnaciVozidlo,
+      Trakce, THVDatabase;
+
+////////////////////////////////////////////////////////////////////////////////
+
+constructor THoukEv.Create(data:string);
+begin
+ inherited Create();
+
+ Self.t_delay := nil;
+ Self.m_sprref := nil;
+
+ try
+   Self.LoadFromDefString(data);
+ except
+   if (Assigned(m_event)) then m_event.Free();
+   raise;
+ end;
+end;
+
+destructor THoukEv.Destroy();
+begin
+ if (Assigned(Self.t_delay)) then
+  begin
+   Self.t_delay.OnTimer(Self);
+   Self.t_delay.Free();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THoukEv.LoadFromDefString(data:string);
+var str:TStrings;
+begin
+ str := TStringList.Create();
+
+ try
+   ExtractStringsEx([';'], [], data, str);
+
+   m_event := TRREv.Create(str[0]);
+   m_sound := str[1];
+
+   try
+     m_funcType := THoukFuncType(StrToInt(str[2]));
+   except
+     m_funcType := hftToggle;
+   end;
+
+ finally
+   str.Free();
+ end;
+end;
+
+function THoukEv.GetDefString():string;
+begin
+ Result := '{' + Self.m_event.GetDefStr() + '};' + Self.m_sound + ';' +
+             IntToStr(Integer(Self.m_funcType));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THoukEv.Register();
+begin
+ m_event.Register();
+end;
+
+procedure THoukEv.Unregister();
+begin
+ m_event.Unregister();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THoukEv.CheckTriggerred(Sender:TObject):boolean;
+begin
+ if (Self.m_event.IsTriggerred(Sender, false)) then
+  begin
+   Self.m_event.Unregister();
+   if (TBlkUsek(Sender).Souprava >= 0) then
+     Self.FireEvent(Soupravy[TBlkUsek(Sender).Souprava]);
+   Result := true;
+  end else
+   Result := false
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THoukEv.IsEnabled():boolean;
+begin
+ Result := Self.m_event.enabled;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THoukEv.FireEvent(Souprava:TObject);
+var i:Integer;
+    HV:THV;
+    func:TFunkce;
+begin
+ case (Self.m_funcType) of
+   hftToggle: begin
+     for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
+      begin
+       HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
+       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
+       
+       if (not HV.funcDict.ContainsKey(Self.m_sound)) then
+         continue;
+
+       func := HV.Stav.funkce;
+       func[HV.funcDict[Self.m_sound]] := true;
+       TrkSystem.LokSetFunc(Self, HV, func);
+      end;
+
+     // turn the function off after 500 ms
+     Self.m_sprref := Souprava;
+     Self.t_delay := TTimer.Create(nil);
+     Self.t_delay.Interval := 500;
+     Self.t_delay.OnTimer := Self.ToggleOffOnTimer;
+     Self.t_delay.Enabled := true;
+   end;
+
+   hftOn: begin
+     for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
+      begin
+       HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
+       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
+       if (not HV.funcDict.ContainsKey(Self.m_sound)) then
+         continue;
+
+       func := HV.Stav.funkce;
+       func[HV.funcDict[Self.m_sound]] := true;
+       TrkSystem.LokSetFunc(Self, HV, func);
+      end;
+   end;
+
+   hftOff: begin
+     for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
+      begin
+       HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
+       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
+       if (not HV.funcDict.ContainsKey(Self.m_sound)) then
+         continue;
+
+       func := HV.Stav.funkce;
+       func[HV.funcDict[Self.m_sound]] := false;
+       TrkSystem.LokSetFunc(Self, HV, func);
+      end;
+   end;
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THoukEv.ToggleOffOnTimer(Sender:TObject);
+var i:Integer;
+    Souprava:TSouprava;
+    HV:THV;
+    func:TFunkce;
+begin
+ Self.t_delay.Free();
+
+ try
+   if (Self.m_sprref = nil) then Exit();
+   Souprava := TSouprava(m_sprref);
+
+   for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
+    begin
+     HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
+     if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen)) then continue;
+
+     if (not HV.funcDict.ContainsKey(Self.m_sound)) then
+       continue;
+
+     func := HV.Stav.funkce;
+     func[HV.funcDict[Self.m_sound]] := false;
+     TrkSystem.LokSetFunc(Self, HV, func);
+    end;
+ finally
+   Self.m_sprref := nil;
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+end.

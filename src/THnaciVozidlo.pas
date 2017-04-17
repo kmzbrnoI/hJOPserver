@@ -104,10 +104,12 @@ type
    private
 
      fadresa:Word;                                     // adresa je read-only !
+     m_funcDict:TDictionary<string, Integer>;          // mapovani vyznamu funkci na cisla funkci
 
      procedure LoadFromIni(ini:TMemIniFile; section:string);
                                                        // nacte data ze souboru
      procedure SetRuc(state:boolean);                  // nastavi rucni rizeni
+     procedure UpdateFuncDict();
 
    public
 
@@ -148,6 +150,7 @@ type
 
      property adresa:Word read fadresa;                // adresa HV
      property ruc:boolean read Stav.ruc write SetRuc;  // rucni rizeni HV
+     property funcDict:TDictionary<string, Integer> read m_funcDict;
 
   end;//THV
 
@@ -172,6 +175,8 @@ begin
  Self.data.POMtake    := TList<THVPomCV>.Create;
  Self.data.POMrelease := TList<THVPomCV>.Create;
 
+ Self.m_funcDict := TDictionary<string, Integer>.Create();
+
  try
    Self.LoadFromIni(ini, section);
  except
@@ -187,6 +192,9 @@ begin
  Self.fadresa := adresa;
  Self.Data    := data;
  Self.Stav    := stav;
+
+ Self.m_funcDict := TDictionary<string, Integer>.Create();
+ Self.UpdateFuncDict();
 
  if (not Assigned(Self.Data.POMtake))    then Self.data.POMtake    := TList<THVPomCV>.Create;
  if (not Assigned(Self.Data.POMrelease)) then Self.data.POMrelease := TList<THVPomCV>.Create;
@@ -322,6 +330,7 @@ begin
       else
        Self.Data.funcVyznam[i] := '';
     end;//for i
+   Self.UpdateFuncDict();
 
   except
    strs.Free();
@@ -586,6 +595,7 @@ begin
     for i := 0 to _HV_FUNC_MAX do
       Self.Data.funcVyznam[i] := '';
    end;
+   Self.UpdateFuncDict();
 
  except
   on e:Exception do
@@ -873,6 +883,17 @@ begin
   end;
 
  Self.GetPtState(respJson.O['lokStav']);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.UpdateFuncDict();
+var i:Integer;
+begin
+ Self.funcDict.Clear();
+ for i := 0 to _HV_FUNC_MAX do
+   if (Self.Data.funcVyznam[i] <> '') then
+     Self.funcDict.AddOrSetValue(Self.Data.funcVyznam[i], i);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
