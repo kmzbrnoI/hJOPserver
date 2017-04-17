@@ -9,8 +9,8 @@ unit rrEvent;
    - uplynuti urcite doby
 
   Definicni string udalosti:
-   - usek: "typ;part;state"
-   - IR: "typ;irid;state"
+   - usek: "typ;state;part"
+   - IR: "typ;state;irid"
    - cas: "typ;timeSec"
 }
 

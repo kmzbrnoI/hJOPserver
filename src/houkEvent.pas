@@ -4,7 +4,7 @@ unit houkEvent;
   Trida THoukEv reprezentuje jednu houkaci udalost.
 
   Definicni string:
-   "udalost;zvuk;typ_funkce"
+   "udalost;typ_funkce;zvuk;"
 }
 
 interface
@@ -12,7 +12,12 @@ interface
 uses rrEvent, Classes, SysUtils, ExtCtrls;
 
 type
-  THoukFuncType = (hftToggle = 0, hftOn = 1, hftOff = 2);
+  THoukFuncType = (
+    hftNothihg = 0,   // udalost nema zadny efekt, je jen prerekvizitou pro dalsi udalost
+    hftToggle = 1,    // udalost vypne a zapne urcity zvuk
+    hftOn = 2,        // udalost zapne zvuk a necha jej zaply
+    hftOff = 3        // udelat vypne zvuk a necha jej vyply
+  );
 
   THoukEv = class
    private
@@ -88,10 +93,14 @@ begin
    ExtractStringsEx([';'], [], data, str);
 
    m_event := TRREv.Create(str[0]);
-   m_sound := str[1];
+
+   if (str.Count > 1) then
+     m_sound := str[2]
+   else
+     m_sound := '';
 
    try
-     m_funcType := THoukFuncType(StrToInt(str[2]));
+     m_funcType := THoukFuncType(StrToInt(str[1]));
    except
      m_funcType := hftToggle;
    end;
@@ -103,8 +112,8 @@ end;
 
 function THoukEv.GetDefString():string;
 begin
- Result := '{' + Self.m_event.GetDefStr() + '};' + Self.m_sound + ';' +
-             IntToStr(Integer(Self.m_funcType));
+ Result := '{' + Self.m_event.GetDefStr() + '};' + IntToStr(Integer(Self.m_funcType)) +
+           ';' + Self.m_sound;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
