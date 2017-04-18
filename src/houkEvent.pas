@@ -79,6 +79,7 @@ begin
    Self.t_delay.Free();
   end;
 
+ Self.m_event.Free();
  inherited;
 end;
 

@@ -225,12 +225,21 @@ begin
 end;//ctor
 
 destructor TBlkUsek.Destroy();
+var houkEv:THoukEv;
 begin
  if (Assigned(Self.UsekSettings.houkEvL)) then
+  begin
+   for houkEv in Self.UsekSettings.houkEvL do
+     houkEv.Free();
    Self.UsekSettings.houkEvL.Free();
+  end;
 
  if (Assigned(Self.UsekSettings.houkEvS)) then
+  begin
+   for houkEv in Self.UsekSettings.houkEvS do
+     houkEv.Free();
    Self.UsekSettings.houkEvS.Free();
+  end;
 
  Self.EventsOnObsaz.Free();
  Self.EventsOnUvol.Free();
@@ -730,12 +739,21 @@ begin
 end;//function
 
 procedure TBlkUsek.SetSettings(data:TBlkUsekSettings);
+var houkEv:THoukEv;
 begin
  if (Self.UsekSettings.houkEvL <> data.houkEvL) then
+  begin
+   for houkEv in Self.UsekSettings.houkEvL do
+     houkEv.Free();
    Self.UsekSettings.houkEvL.Free();
+  end;
 
  if (Self.UsekSettings.houkEvS <> data.houkEvS) then
+  begin
+   for houkEv in Self.UsekSettings.houkEvS do
+     houkEv.Free();
    Self.UsekSettings.houkEvS.Free();
+  end;
 
  Self.UsekSettings := data;
  Self.Change();
