@@ -721,6 +721,8 @@ procedure TSouprava.ToggleHouk(desc:string);
 var i:Integer;
     HV:THV;
 begin
+ writelog('Souprava ' + Self.nazev + ' : aktivuji houkání ' + desc, WR_MESSAGE, 0);
+
  for i := 0 to Self.sdata.HV.cnt-1 do
   begin
    HV := HVDb.HVozidla[Self.sdata.HV.HVs[i]];
@@ -734,6 +736,11 @@ var i:Integer;
     HV:THV;
     func:TFunkce;
 begin
+ if (state) then
+   writelog('Souprava ' + Self.nazev + ' : aktivuji funkci ' + desc, WR_MESSAGE, 0)
+ else
+   writelog('Souprava ' + Self.nazev + ' : deaktivuji funkci ' + desc, WR_MESSAGE, 0);
+
  for i := 0 to Self.sdata.HV.cnt-1 do
   begin
    HV := HVDb.HVozidla[Self.sdata.HV.HVs[i]];
