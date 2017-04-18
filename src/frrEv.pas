@@ -1,5 +1,12 @@
 unit frrEv;
 
+{
+  Okno TF_RREv umoznuje definovat udalost ve smyslu tridy TRREv (Railroad event).
+  Toto male okynko se pouziva napriklad pri definici houkacich udalosti,
+  planovane vyuziti je take na zastavky a zastavovani a zpomalovani pred
+  navestidly.
+}
+
 interface
 
 uses

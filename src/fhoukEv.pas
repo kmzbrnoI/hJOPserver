@@ -1,5 +1,10 @@
 unit fhoukEv;
 
+{
+  TF_HoukEv je okno, ktere umoznuje definovat jednu houkaci udalost ve smyslu
+  tridy THoukEv.
+}
+
 interface
 
 uses

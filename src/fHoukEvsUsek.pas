@@ -1,5 +1,13 @@
 unit fHoukEvsUsek;
 
+{
+  Okno TF_HoukEvsUsek umoznuje editovat houkaci udalosti technologickeho
+  bloku usek.
+
+  Okno vyuziva 2 okna TF_HoukEvs, jedno na houkaci udalosti v lichem smeru
+  jizdy soupravy a druhe na udalosti v sudem smeru jizdy soupravy.
+}
+
 interface
 
 uses

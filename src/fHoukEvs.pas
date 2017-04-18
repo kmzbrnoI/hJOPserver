@@ -1,5 +1,10 @@
 unit fHoukEvs;
 
+{
+  TF_HoukEvs je okno, ktere umoznuje definovat libovolne mnozstvi houkacich
+  udalosti ve smysl tridy THoukEv v libovolne poradi.
+}
+
 interface
 
 uses
