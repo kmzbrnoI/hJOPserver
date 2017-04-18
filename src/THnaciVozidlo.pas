@@ -143,6 +143,8 @@ type
      procedure UpdateTokenTimeout();                   // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
      procedure UpdateAllRegulators();
 
+     function CanPlayHouk(sound:string):boolean;       // vraci true pokud je povoleno prehravani zvuku
+
      //PT:
      procedure GetPtData(json:TJsonObject; includeState:boolean);
      procedure GetPtState(json:TJsonObject);
@@ -894,6 +896,15 @@ begin
  for i := 0 to _HV_FUNC_MAX do
    if (Self.Data.funcVyznam[i] <> '') then
      Self.funcDict.AddOrSetValue(Self.Data.funcVyznam[i], i);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THV.CanPlayHouk(sound:string):boolean;
+begin
+ Result := ((Self.Stav.regulators.Count = 0) and (not Self.Slot.stolen) and
+           ((not Self.funcDict.ContainsKey('zvuk')) or (Self.Stav.funkce[Self.funcDict['zvuk']])) and
+           (Self.funcDict.ContainsKey(sound)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -152,11 +152,8 @@ begin
      for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
-           ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
-           (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
-
-       TrkSystem.LokFuncToggle(Self, HV, HV.funcDict[Self.m_sound]);
+       if (HV.CanPlayHouk(Self.m_sound)) then
+         TrkSystem.LokFuncToggle(Self, HV, HV.funcDict[Self.m_sound]);
       end;
    end;
 
@@ -164,13 +161,13 @@ begin
      for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
-           ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
-           (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
 
-       func := HV.Stav.funkce;
-       func[HV.funcDict[Self.m_sound]] := true;
-       TrkSystem.LokSetFunc(Self, HV, func);
+       if (HV.CanPlayHouk(Self.m_sound)) then
+        begin
+         func := HV.Stav.funkce;
+         func[HV.funcDict[Self.m_sound]] := true;
+         TrkSystem.LokSetFunc(Self, HV, func);
+        end;
       end;
    end;
 
@@ -178,13 +175,13 @@ begin
      for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
       begin
        HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-       if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
-           ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
-           (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
 
-       func := HV.Stav.funkce;
-       func[HV.funcDict[Self.m_sound]] := false;
-       TrkSystem.LokSetFunc(Self, HV, func);
+       if (HV.CanPlayHouk(Self.m_sound)) then
+        begin
+         func := HV.Stav.funkce;
+         func[HV.funcDict[Self.m_sound]] := false;
+         TrkSystem.LokSetFunc(Self, HV, func);
+        end;
       end;
    end;
  end;

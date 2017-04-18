@@ -433,6 +433,7 @@ begin
 
  end;
 
+ Self.FlushToggleQueue();
  FreeAndNil(Self.toggleQueue);
  FreeAndNil(Self.Trakce);
 
