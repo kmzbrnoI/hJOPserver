@@ -1275,7 +1275,9 @@ begin
    // udalost aktivovana, zpracovana a automaticky odregistrovana -> presun na dalsi udalost
    Inc(Self.UsekStav.currentHoukEv);
    if (Self.UsekStav.currentHoukEv >= list.Count) then
-     Self.houk_ev_enabled := false;
+     Self.houk_ev_enabled := false
+   else
+     list[Self.UsekStav.currentHoukEv].Register();
   end;
 end;
 
