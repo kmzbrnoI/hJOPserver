@@ -517,7 +517,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 4, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 1;
-        Soupravy.soupravy[Self.Souprava].ToggleHouk('píšalka vıpravèího');
+        Soupravy.soupravy[Self.Souprava].ToggleHouk('trubka vlakvedoucího');
        end;
     end;
 
