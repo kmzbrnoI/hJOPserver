@@ -2149,8 +2149,10 @@ begin
  HV.changed := true;
 
  if ((dir) and (HV.Stav.souprava > -1)) then
-   if (Sender <> Soupravy[HV.Stav.souprava]) then
+   if ((Sender <> Soupravy[HV.Stav.souprava]) and (Soupravy[HV.Stav.souprava] <> nil)) then
      Soupravy[HV.Stav.souprava].LokDirChanged();
+     // Soupravy[HV.Stav.souprava] <> nil muze nastat pri aktualizaci HV na souprave,
+     // coz se dede prave tady
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
