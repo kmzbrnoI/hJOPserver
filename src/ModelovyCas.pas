@@ -1,8 +1,15 @@
 unit ModelovyCas;
 
-// Tato unta se stara o modelovy cas.
-//  Modelovy cas je odesilan jako broadcast vsem panelum (nikoliv oblastem rizeni - viz specifikace Protokolu).
-//  Modelovy cas pocita server i klient separatne. Kazde 3 minuty odesle server informaci o aktualnim modelovem casu a tak provede synchonizaci casu serveru a klienta.
+{
+  Tato unta se stara o modelovy cas.
+
+  Modelovy cas je odesilan jako broadcast vsem panelum (nikoliv oblastem rizeni
+  - viz specifikace Protokolu).
+
+  Modelovy cas pocita server i klient separatne. Kazde 3 minuty odesle server
+  informaci o aktualnim modelovem casu a tak provede synchonizaci casu serveru
+  a klienta.
+}
 
 interface
 
@@ -39,9 +46,6 @@ type
    public
     MTBdata:TModCasMTB;
 
-     constructor Create();
-     destructor Destroy(); override;
-
      procedure LoadData(var ini:TMemIniFile);
      procedure SaveData(var ini:TMemIniFile);
 
@@ -61,18 +65,6 @@ var
 implementation
 
 uses TCPServerOR, fMain;
-
-////////////////////////////////////////////////////////////////////////////////
-
-constructor TModCas.Create();
-begin
- inherited Create();
-end;//ctor
-
-destructor TModCas.Destroy();
-begin
- inherited Destroy();
-end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 

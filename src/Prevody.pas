@@ -2,9 +2,7 @@ unit Prevody;
 
 interface
 
-uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StrUtils;
+uses Windows, SysUtils, Graphics, StrUtils;
 
 type
  TPrevody=class
@@ -22,8 +20,6 @@ var
  PrevodySoustav:TPrevody;
  
 implementation
-
-uses fMain;
 
 function TPrevody.DecToBin(Cislo:Integer;Mista:Integer): string;
 var s: string;

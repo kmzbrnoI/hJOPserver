@@ -1,6 +1,6 @@
 unit RegulatorTCP;
 
-// Trida TTCPRegulator se stara o komunikaci s regulatory -- kleinty.
+// Trida TTCPRegulator se stara o komunikaci s regulatory -- klienty.
 //  napr. regulator Jerry.
 
 interface

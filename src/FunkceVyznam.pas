@@ -1,5 +1,13 @@
 unit FunkceVyznam;
 
+{
+  Trida TFuncsVyznam, resp. jeji instance FuncsFyznam si udrzuje seznam vyznamu
+  funkci hnacich vozidel platnych pro cele kolejiste. Polozkami senzmau jsou
+  napriklad "houkaèka dlouhá", "trubka vlakvedoucího", ...
+
+  Vyznamy jsou udrzovany v jednoduchem senzamu "vyznamy".
+}
+
 interface
 
 uses Generics.Collections, Classes;
@@ -38,15 +46,14 @@ uses ownStrUtils;
 
 constructor TFuncsVyznam.Create();
 begin
- inherited Create();
-
+ inherited;
  Self.vyznamy := TStringList.Create();
 end;//ctor
 
 destructor TFuncsVyznam.Destroy();
 begin
  Self.vyznamy.Free();
- inherited Destroy();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,13 +70,15 @@ var sl:TStrings;
     str:string;
 begin
  sl := TStringList.Create();
- ExtractStringsEx([';'], [], data, sl);
+ try
+   ExtractStringsEx([';'], [], data, sl);
 
- for str in sl do
-  if ((Self.vyznamy.Count < _MAX_FUNCS_VYZNAM) and (Self.vyznamy.IndexOf(str) = -1)) then
-    Self.vyznamy.Add(str);
-
- sl.Free();
+   for str in sl do
+    if ((Self.vyznamy.Count < _MAX_FUNCS_VYZNAM) and (Self.vyznamy.IndexOf(str) = -1)) then
+      Self.vyznamy.Add(str);
+ finally
+   sl.Free();
+ end;
 
  if (Assigned(Self.OnChange)) then Self.OnChange(Self);
 end;//procedure
@@ -88,6 +97,7 @@ end;//function
 
 initialization
   FuncsFyznam := TFuncsVyznam.Create();
+
 finalization
   FuncsFyznam.Free();
 
