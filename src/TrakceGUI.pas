@@ -14,7 +14,7 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, CPort, Trakce, ComCtrls, Graphics, Forms, Windows,
-  THnaciVozidlo, Generics.Collections;
+  THnaciVozidlo, Generics.Collections, Contnrs;
 
 const
   // maximalni rychlost pro rychlostni tabulku
@@ -109,6 +109,13 @@ type
     sady:TList<TFuncCBSada>;                                                    // seznam jednotlivych sad, kazda sada obsahuje funkce k naprogramovani
   end;
 
+  // zaznam toggleQueue
+  THVFunc = record
+    HV:THV;
+    fIndex:Cardinal;
+    time:TDateTime;
+  end;
+
   // ------- trida TTrkGUI --------
   TTrkGUI = class
    private const
@@ -154,6 +161,8 @@ type
       db:TDataBits;                                                             // data bits
       FlowControl:TFlowControl;
      end;
+
+     toggleQueue:TQueue<THVFunc>;
 
      function GetOpenned():boolean;                                             // je seriak otevreny ?
 
@@ -262,6 +271,11 @@ type
      procedure LoadSpeedTableToTable(var LVRych:TListView);
      procedure UpdateSpeedDir(HV:THV; Sender:TObject; speed:boolean; dir:boolean);
 
+     procedure CheckToggleQueue();
+     procedure FlushToggleQueue();
+     procedure ProcessHVFunc(hvFunc:THVFunc);
+     class function HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVFunc;
+
    public
 
      {
@@ -294,6 +308,7 @@ type
                                                                                 // nastaveni rychlosti daneho HV, rychlost se zadava primo ve stupnich
      function LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false):Byte;
                                                                                 // nastaveni funkce HV; force nastavi vsechny funkce v parametru bez ohledu na rozdilnost od aktualniho stavu
+     function LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal):Byte;      // zapne a po 500 ms vypne konkretni funkci
      procedure LoksSetFunc(vyznam:string; state:boolean);                       // nastavi funkci s danym vyznamem u vsech prevzatych hnacich vozidel na hodnotu state
      function LokGetSpSteps(HV:THV):Byte;                                       // vysle pozadavek na zjisteni informaci o lokomotive
      function EmergencyStop():Byte;                                             // nouzove zastaveni vsech lokomotiv, ktere centrala zna (centrala, nikoliv pocitac!)
@@ -325,6 +340,7 @@ type
      procedure FastResetLoko();                                                 // resetuje lokomotivy do odhlaseneho stavu, rychly reset
 
      procedure TurnOffFunctions(callback:TNotifyEvent);                         // vypnout funkce vyssi, nez F0; F0 zapnout
+     procedure Update();
 
      class function LogLevelToString(ll:TTrkLogLevel):string;                   // rewrite loglevel to human-reada ble format
 
@@ -404,14 +420,23 @@ begin
  Self.turnoff_callback := nil;
  Self.DCCGoTime := Now;
 
+ Self.toggleQueue := TQueue<THVFunc>.Create();
+
  Self.WriteLog(2, 'BEGIN loglevel_file='+LogLevelToString(loglevel_file)+', loglevel_table='+LogLevelToString(loglevel_table));
 end;//ctor
 
 destructor TTrkGUI.Destroy();
 begin
- Self.WriteLog(2, 'END');
+ try
+   Self.WriteLog(2, 'END');
+ except
+
+ end;
+
+ FreeAndNil(Self.toggleQueue);
  FreeAndNil(Self.Trakce);
- inherited Destroy;
+
+ inherited;
 end;//dotr
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -748,6 +773,21 @@ begin
 
  Result := 0;
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrkGUI.LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal):Byte;
+var funkce:TFunkce;
+begin
+ if (HV = nil) then Exit(2);
+
+ funkce := HV.Slot.funkce;
+ funkce[fIndex] := true;
+ Result := Self.LokSetFunc(Sender, HV, funkce);
+
+ if (Result = 0) then
+   Self.toggleQueue.Enqueue(HVFunc(HV, fIndex, Now+EncodeTime(0, 0, 0, 500)));
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2110,6 +2150,48 @@ begin
  if ((dir) and (HV.Stav.souprava > -1)) then
    if (Sender <> Soupravy[HV.Stav.souprava]) then
      Soupravy[HV.Stav.souprava].LokDirChanged();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.CheckToggleQueue();
+begin
+ if (Self.toggleQueue.Count = 0) then Exit();
+
+ if (Now >= Self.toggleQueue.Peek.time) then
+   Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+end;
+
+procedure TTrkGUI.FlushToggleQueue();
+begin
+ while (Self.toggleQueue.Count > 0) do
+   Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+end;
+
+procedure TTrkGUI.ProcessHVFunc(hvFunc:THVFunc);
+var funkce:TFunkce;
+begin
+ if (hvFunc.HV = nil) then Exit();
+
+ funkce := hvFunc.HV.Slot.funkce;
+ funkce[hvFunc.fIndex] := false;
+ Self.LokSetFunc(Self, hvFunc.HV, funkce);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+///
+class function TTrkGUI.HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVFunc;
+begin
+ Result.HV := HV;
+ Result.fIndex := fIndex;
+ Result.time := time;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.Update();
+begin
+ Self.CheckToggleQueue();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

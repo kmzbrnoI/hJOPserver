@@ -24,15 +24,12 @@ type
     m_event: TRREv;
     m_sound: string;
     m_funcType: THoukFuncType;
-    t_delay: TTimer;
     m_sprref: TObject;
 
      procedure LoadFromDefString(data:string);
      function IsEnabled():boolean;
 
      procedure FireEvent(Souprava:TObject);
-
-     procedure ToggleOffOnTimer(Sender:TObject);
 
    public
 
@@ -60,7 +57,6 @@ constructor THoukEv.Create(data:string);
 begin
  inherited Create();
 
- Self.t_delay := nil;
  Self.m_sprref := nil;
 
  try
@@ -73,12 +69,6 @@ end;
 
 destructor THoukEv.Destroy();
 begin
- if (Assigned(Self.t_delay)) then
-  begin
-   Self.t_delay.OnTimer(Self);
-   Self.t_delay.Free();
-  end;
-
  Self.m_event.Free();
  inherited;
 end;
@@ -166,17 +156,8 @@ begin
            ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
            (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
 
-       func := HV.Stav.funkce;
-       func[HV.funcDict[Self.m_sound]] := true;
-       TrkSystem.LokSetFunc(Self, HV, func);
+       TrkSystem.LokFuncToggle(Self, HV, HV.funcDict[Self.m_sound]);
       end;
-
-     // turn the function off after 500 ms
-     Self.m_sprref := Souprava;
-     Self.t_delay := TTimer.Create(nil);
-     Self.t_delay.Interval := 500;
-     Self.t_delay.OnTimer := Self.ToggleOffOnTimer;
-     Self.t_delay.Enabled := true;
    end;
 
    hftOn: begin
@@ -206,36 +187,6 @@ begin
        TrkSystem.LokSetFunc(Self, HV, func);
       end;
    end;
- end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure THoukEv.ToggleOffOnTimer(Sender:TObject);
-var i:Integer;
-    Souprava:TSouprava;
-    HV:THV;
-    func:TFunkce;
-begin
- Self.t_delay.Free();
-
- try
-   if (Self.m_sprref = nil) then Exit();
-   Souprava := TSouprava(m_sprref);
-
-   for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
-    begin
-     HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-     if ((HV.Stav.regulators.Count > 0) or (HV.Slot.stolen) or
-         ((HV.funcDict.ContainsKey('zvuk')) and (not HV.Stav.funkce[HV.funcDict['zvuk']])) or
-         (not HV.funcDict.ContainsKey(Self.m_sound))) then continue;
-
-     func := HV.Stav.funkce;
-     func[HV.funcDict[Self.m_sound]] := false;
-     TrkSystem.LokSetFunc(Self, HV, func);
-    end;
- finally
-   Self.m_sprref := nil;
  end;
 end;
 

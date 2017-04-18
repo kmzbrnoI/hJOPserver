@@ -638,6 +638,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);
     ORs.Update();
     UpdateCallMethod();
     MTBd.Update();
+    TrkSystem.Update();
   except
    on E: Exception do
     begin
