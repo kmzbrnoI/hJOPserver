@@ -52,7 +52,8 @@ type
 
    public
 
-     constructor Create(data: string);
+     constructor Create(data: string); overload;
+     constructor Create(data: TRREvData); overload;
 
      function GetDefStr():string;
 
@@ -63,6 +64,8 @@ type
      function IsTriggerred(Sender:TObject; safeState: boolean):boolean;
 
      property enabled: boolean read m_state.enabled;
+     property data: TRREvData read m_data;
+     property typ: TRREvType read m_data.typ;
 
   end;
 
@@ -77,6 +80,13 @@ begin
  inherited Create();
  Self.m_state.enabled := false;
  LoadFromDefStr(data);
+end;
+
+constructor TRREv.Create(data: TRREvData);
+begin
+ inherited Create();
+ Self.m_state.enabled := false;
+ Self.m_data := data;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,10 +126,10 @@ begin
  Result := IntToStr(Integer(Self.m_data.typ)) + ';';
 
  case (Self.m_data.typ) of
-   rrtUsek: Result := Result + PrevodySoustav.BoolToStr(m_data.usekState) + ';' +
+   rrtUsek: Result := Result + IntToStr(PrevodySoustav.BoolToInt(m_data.usekState)) + ';' +
               IntToStr(m_data.usekPart);
 
-   rrtIR  : Result := Result + PrevodySoustav.BoolToStr(m_data.irState) + ';' +
+   rrtIR  : Result := Result + IntToStr(PrevodySoustav.BoolToInt(m_data.irState)) + ';' +
               IntToStr(m_data.irId);
 
    rrtTime: Result := Result + IntToStr(m_data.timeSec);

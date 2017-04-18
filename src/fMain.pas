@@ -263,6 +263,7 @@ type
     MI_Stop: TMenuItem;
     A_PT_Start: TAction;
     A_PT_Stop: TAction;
+    MI_Houk: TMenuItem;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -400,6 +401,7 @@ type
     procedure A_PT_StopExecute(Sender: TObject);
     procedure LV_Stav_MTBCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+    procedure MI_HoukClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -503,7 +505,7 @@ var
 implementation
 
 //deklarace ostatnich unit
-uses fTester, fSettings, fNastaveni_Casu, fSplash,
+uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek,
      fAbout, Verze,
      fLoginPozadi, fSystemInfo,
      fBlkUsek, fBlkVyhybka, fAdminForm,
@@ -2031,6 +2033,16 @@ begin
        Application.MessageBox(PChar('Výjimka pøi odpojování - '+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
    end;
   end;
+end;
+
+procedure TF_Main.MI_HoukClick(Sender: TObject);
+var Blk:TBlk;
+begin
+ if (Self.LV_Bloky.Selected = nil) then Exit();
+ if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
+ if ((Blk.GetGlobalSettings.typ <> _BLK_USEK) and (Blk.GetGlobalSettings.typ <> _BLK_TU)) then Exit();
+
+ F_HoukEvsUsek.Open(TBlkUsek(Blk));
 end;
 
 procedure TF_Main.MI_PropClick(Sender: TObject);

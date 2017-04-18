@@ -127,7 +127,11 @@ uses
   RCS in 'rcs\RCS.pas',
   RCSErrors in 'rcs\RCSErrors.pas',
   rrEvent in 'rrEvent.pas',
-  houkEvent in 'houkEvent.pas';
+  houkEvent in 'houkEvent.pas',
+  frrEv in 'frrEv.pas' {F_RREv},
+  fhoukEv in 'fhoukEv.pas' {F_HoukEv},
+  fHoukEvs in 'fHoukEvs.pas' {F_HoukEvs},
+  fHoukEvsUsek in 'fHoukEvsUsek.pas' {F_HoukEvsUsek};
 
 {$R *.res}
 
@@ -158,6 +162,7 @@ uses
   Application.CreateForm(TF_MJCEdit, F_MJCEdit);
   Application.CreateForm(TF_FuncsSet, F_FuncsSet);
   Application.CreateForm(TF_BlkTUZastEvent, F_BlkTUZastEvent);
+  Application.CreateForm(TF_HoukEvsUsek, F_HoukEvsUsek);
   F_Splash.AddStav('Vytváøím hlavní okno');
   F_Main.CreateSystem;
   F_Splash.AddStav('Vytváøím vedlejší okna');

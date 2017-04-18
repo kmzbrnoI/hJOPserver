@@ -24,7 +24,6 @@ type
     m_event: TRREv;
     m_sound: string;
     m_funcType: THoukFuncType;
-    m_sprref: TObject;
 
      procedure LoadFromDefString(data:string);
      function IsEnabled():boolean;
@@ -33,7 +32,8 @@ type
 
    public
 
-     constructor Create(data:string);
+     constructor Create(data:string); overload;
+     constructor Create(event:TRREv; sound:string; funcType:THoukFuncType); overload;
      destructor Destroy(); override;
 
      function GetDefString():string;
@@ -43,6 +43,9 @@ type
      function CheckTriggerred(Sender:TObject):boolean; // returns true when event triggerred
 
      property enabled: boolean read IsEnabled;
+     property sound: string read m_sound;
+     property funcType: THoukFuncType read m_funcType;
+     property event: TRREv read m_event;
 
   end;
 
@@ -57,14 +60,21 @@ constructor THoukEv.Create(data:string);
 begin
  inherited Create();
 
- Self.m_sprref := nil;
-
  try
    Self.LoadFromDefString(data);
  except
    if (Assigned(m_event)) then m_event.Free();
    raise;
  end;
+end;
+
+constructor THoukEv.Create(event:TRREv; sound:string; funcType:THoukFuncType);
+begin
+ inherited Create();
+
+ Self.m_event    := event;
+ Self.m_sound    := sound;
+ Self.m_funcType := funcType;
 end;
 
 destructor THoukEv.Destroy();

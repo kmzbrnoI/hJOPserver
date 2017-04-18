@@ -2,7 +2,7 @@ object F_Main: TF_Main
   Left = 264
   Top = 316
   Caption = 'hJOPserver'
-  ClientHeight = 675
+  ClientHeight = 695
   ClientWidth = 1297
   Color = clBtnFace
   Constraints.MinHeight = 244
@@ -3441,7 +3441,7 @@ object F_Main: TF_Main
   end
   object SB1: TStatusBar
     Left = 0
-    Top = 655
+    Top = 675
     Width = 1297
     Height = 20
     Hint = 'Status bar'
@@ -3488,7 +3488,7 @@ object F_Main: TF_Main
     Left = 0
     Top = 33
     Width = 1297
-    Height = 622
+    Height = 642
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -3857,7 +3857,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Hint = 'Tabulka definovan'#253'ch bloku'
         Margins.Left = 2
         Margins.Top = 2
@@ -4066,7 +4066,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Hint = 'Tabulka hnacich vozidel'
         Margins.Left = 2
         Margins.Top = 2
@@ -4314,7 +4314,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Hint = 'Tabulka definovan'#253'ch souprav'
         Margins.Left = 2
         Margins.Top = 2
@@ -4484,7 +4484,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Hint = 'Tabulka definovan'#253'ch stanic'
         Margins.Left = 2
         Margins.Top = 2
@@ -4602,7 +4602,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5149,7 +5149,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 185
         Width = 1289
-        Height = 409
+        Height = 429
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5184,7 +5184,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5337,7 +5337,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 0
         Width = 1289
-        Height = 594
+        Height = 614
         Hint = 'Stavy vstupu a v'#253'stupu MTB desek'
         Margins.Left = 2
         Margins.Top = 2
@@ -5514,7 +5514,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5694,7 +5694,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5742,7 +5742,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1289
-        Height = 554
+        Height = 574
         Align = alClient
         ScrollBars = ssVertical
         TabOrder = 0
@@ -5787,7 +5787,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 24
         Width = 1289
-        Height = 570
+        Height = 590
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5865,7 +5865,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 24
         Width = 1289
-        Height = 570
+        Height = 590
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -6219,7 +6219,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403780310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403840310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8085,7 +8085,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D002803F0031000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D002803FC031000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8626,7 +8626,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D8023C0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802480310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -9007,6 +9007,10 @@ object F_Main: TF_Main
     end
     object MenuItem2: TMenuItem
       Caption = '-'
+    end
+    object MI_Houk: TMenuItem
+      Caption = 'Houkac'#237' ud'#225'losti'
+      OnClick = MI_HoukClick
     end
     object MI_Prop: TMenuItem
       Caption = 'Vlastnosti'

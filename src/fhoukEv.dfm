@@ -1,0 +1,62 @@
+object F_HoukEv: TF_HoukEv
+  Left = 0
+  Top = 0
+  BorderStyle = bsNone
+  Caption = 'F_HoukEv'
+  ClientHeight = 265
+  ClientWidth = 161
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Label1: TLabel
+    Left = 8
+    Top = 8
+    Width = 27
+    Height = 13
+    Caption = 'Akce:'
+  end
+  object Label2: TLabel
+    Left = 8
+    Top = 56
+    Width = 38
+    Height = 13
+    Caption = 'Funkce:'
+  end
+  object CB_Action: TComboBox
+    Left = 8
+    Top = 27
+    Width = 145
+    Height = 21
+    Style = csDropDownList
+    ItemHeight = 13
+    TabOrder = 0
+    Items.Strings = (
+      'Nic ned'#283'lat'
+      'Kr'#225'tce zapnout funkci'
+      'Zapnout funkci'
+      'Vypnout funkci')
+  end
+  object P_Ev: TPanel
+    Left = 0
+    Top = 96
+    Width = 161
+    Height = 169
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 1
+  end
+  object CB_Func: TComboBox
+    Left = 8
+    Top = 75
+    Width = 145
+    Height = 21
+    ItemHeight = 13
+    TabOrder = 2
+  end
+end
