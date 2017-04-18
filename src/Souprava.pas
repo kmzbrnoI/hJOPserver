@@ -4,7 +4,7 @@ unit Souprava;
 
 interface
 
-uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo;
+uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, houkEvent;
 
 const
   _MAX_SPR_HV = 4;
@@ -78,6 +78,9 @@ type
     procedure InterChangeStanice(change_ev:Boolean = true);
     procedure SetSpeedBuffer(speedBuffer:PInteger);
     procedure LokDirChanged();
+
+    procedure ToggleHouk(desc:string);
+    procedure SetHoukState(desc:string; state:boolean);
 
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
@@ -710,6 +713,38 @@ begin
 
  // vsechna hv nastavena do opacneho smeru -> zmenit smer soupravy
  Self.smer := THVStanoviste(dir);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSouprava.ToggleHouk(desc:string);
+var i:Integer;
+    HV:THV;
+begin
+ for i := 0 to Self.sdata.HV.cnt-1 do
+  begin
+   HV := HVDb.HVozidla[Self.sdata.HV.HVs[i]];
+   if (HV.CanPlayHouk(desc)) then
+     TrkSystem.LokFuncToggle(Self, HV, HV.funcDict[desc]);
+  end;
+end;
+
+procedure TSouprava.SetHoukState(desc:string; state:boolean);
+var i:Integer;
+    HV:THV;
+    func:TFunkce;
+begin
+ for i := 0 to Self.sdata.HV.cnt-1 do
+  begin
+   HV := HVDb.HVozidla[Self.sdata.HV.HVs[i]];
+
+   if (HV.CanPlayHouk(desc)) then
+    begin
+     func := HV.Stav.funkce;
+     func[HV.funcDict[desc]] := state;
+     TrkSystem.LokSetFunc(Self, HV, func);
+    end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

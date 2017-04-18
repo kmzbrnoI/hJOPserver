@@ -85,6 +85,8 @@ type
   zast_enabled:boolean;                                                           // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
   zast_passed:boolean;                                                            // tady je ulozeno true, pokud souprava zastavku jiz projela
   zast_zpom_ready:boolean;                                                        // jestli je TU pripraveny ke zpomalovani soupravy v zastavce
+  zast_sound_step:Cardinal;                                                       // krok prehravani zvuku
+                                                                                    // 0 = pripraveno, 1 = prehrana pistalka vypravciho, 2 = prehrano zavreni dveri, 3 = prehrana houkacka
 
   bpInBlk:boolean;                                                                // jestli je v useku zavedena blokova podminka
                                                                                   // bpInBlk = kontroluji obsazeni bloku, pri uvolneni useku bez predani dale vyhlasit poruchu BP
@@ -101,6 +103,7 @@ type
     zast_stopped : false;
     zast_enabled : true;
     zast_zpom_ready : false;
+    zast_sound_step : 0;
     poruchaBP : false;
     sprRychUpdateIter : 0;
    );
@@ -508,9 +511,31 @@ begin
      Self.Change();  // change je dulezite volat kvuli menu
     end;
 
+   // prehravani zvuku pri rozjezdu
+   case (Self.TUStav.zast_sound_step) of
+    0: begin
+      if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 4, 0)) then
+       begin
+        Self.fTUStav.zast_sound_step := 1;
+        Soupravy.soupravy[Self.Souprava].ToggleHouk('píšalka výpravèího');
+       end;
+    end;
+
+    1: begin
+      if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 2, 0)) then
+       begin
+        Self.fTUStav.zast_sound_step := 2;
+        Soupravy.soupravy[Self.Souprava].ToggleHouk('zavøení dveøí');
+       end;
+    end;
+   end;
+
    // cekam na timeout na rozjeti vlaku
    if (Now > Self.TUStav.zast_run_time) then
-    Self.ZastRunTrain();
+    begin
+     Soupravy.soupravy[Self.Souprava].ToggleHouk('houkaèka krátká');
+     Self.ZastRunTrain();
+    end;
   end;
 end;//procedure
 
@@ -519,6 +544,7 @@ end;//procedure
 procedure TBlkTU.ZastStopTrain();
 begin
  Self.fTUStav.zast_stopped  := true;
+ Self.fTUStav.zast_sound_step := 0;
  Self.fTUStav.zast_run_time := Now+Self.TUSettings.Zastavka.delay;
 
  try
@@ -536,6 +562,7 @@ procedure TBlkTU.ZastRunTrain();
 begin
  Self.fTUStav.zast_stopped := false;
  Self.fTUStav.zast_passed  := true;
+ Self.fTUStav.zast_sound_step := 0;
 
  try
    Soupravy.soupravy[Self.Souprava].SetSpeedBuffer(nil);

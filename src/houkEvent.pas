@@ -143,47 +143,11 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THoukEv.FireEvent(Souprava:TObject);
-var i:Integer;
-    HV:THV;
-    func:TFunkce;
 begin
  case (Self.m_funcType) of
-   hftToggle: begin
-     for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
-      begin
-       HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-       if (HV.CanPlayHouk(Self.m_sound)) then
-         TrkSystem.LokFuncToggle(Self, HV, HV.funcDict[Self.m_sound]);
-      end;
-   end;
-
-   hftOn: begin
-     for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
-      begin
-       HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-
-       if (HV.CanPlayHouk(Self.m_sound)) then
-        begin
-         func := HV.Stav.funkce;
-         func[HV.funcDict[Self.m_sound]] := true;
-         TrkSystem.LokSetFunc(Self, HV, func);
-        end;
-      end;
-   end;
-
-   hftOff: begin
-     for i := 0 to TSouprava(Souprava).sdata.HV.cnt-1 do
-      begin
-       HV := HVDb.HVozidla[TSouprava(Souprava).sdata.HV.HVs[i]];
-
-       if (HV.CanPlayHouk(Self.m_sound)) then
-        begin
-         func := HV.Stav.funkce;
-         func[HV.funcDict[Self.m_sound]] := false;
-         TrkSystem.LokSetFunc(Self, HV, func);
-        end;
-      end;
-   end;
+   hftToggle : TSouprava(Souprava).ToggleHouk(Self.m_sound);
+   hftOn     : TSouprava(Souprava).SetHoukState(Self.m_sound, true);
+   hftOff    : TSouprava(Souprava).SetHoukState(Self.m_sound, false);
  end;
 end;
 
