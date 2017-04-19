@@ -23,7 +23,7 @@ type
     max:Integer;
   end;
 
-  zastaveni: TRREv;                             // zastavovoaci udalost
+  zastaveni: TRREv;                             // zastavovaci udalost
   zpomaleni: record                             // zpomalovaci udalost
     enabled: boolean;                             // povolena zpomalovaci udalost?
     speed: Integer;                               // rychlost z km/h (40, 50, 60...)
@@ -1117,13 +1117,33 @@ var Usek, SCom:TBlk;
     scomEv:TBlkScomSprEvent;
     i:Integer;
 begin
+ if (Self.SComSettings.events.Count = 0) then Exit();
  Usek := Self.UsekPred;
  if (Self.SComRel.SymbolType = 1) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
  if ((Usek = nil) or ((Usek.GetGlobalSettings().typ <> _BLK_USEK) and (Usek.GetGlobalSettings().typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
- if ((Usek as TBlkUsek).Souprava = -1) then Exit();     // pokud na useku prede mnou neni souprava, koncim funkci
+
+ // pokud na useku prede mnou neni souprava, koncim funkci
+ if ((Usek as TBlkUsek).Souprava = -1) then
+  begin
+   // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
+   // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
+   // event bude porad bezet -> pokud je casovy, okamzite byse spustil
+   if ((Self.lastEvIndex >= 0) and (Self.lastEvIndex < Self.SComSettings.events.Count)) then
+     if (Self.SComSettings.events[Self.lastEvIndex].zastaveni.enabled) then
+       Self.SComSettings.events[Self.lastEvIndex].zastaveni.Unregister();
+   Exit();
+  end;
+
+ // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
  spr := Soupravy.soupravy[(Usek as TBlkUsek).Souprava];
- if (spr.front <> Usek) then Exit();                    // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
- if (Self.SComSettings.events.Count = 0) then Exit();
+ if (spr.front <> Usek) then
+  begin
+   // tady musime zrusit registraci eventu, viz vyse
+   if ((Self.lastEvIndex >= 0) and (Self.lastEvIndex < Self.SComSettings.events.Count)) then
+     if (Self.SComSettings.events[Self.lastEvIndex].zastaveni.enabled) then
+       Self.SComSettings.events[Self.lastEvIndex].zastaveni.Unregister();
+   Exit();
+  end;
 
  // zjisteni aktualni udalosti podle typu a delky soupravy
  i := Self.CurrentEventIndex();
@@ -1131,7 +1151,7 @@ begin
 
  if (i <> Self.lastEvIndex) then
   begin
-   // Z nejakeho duvodu reagujeme na novou udalost -> vypnou starou udalost
+   // Z nejakeho duvodu reagujeme na novou udalost -> vypnout starou udalost
    if ((Self.lastEvIndex >= 0) and (Self.lastEvIndex < Self.SComSettings.events.Count)) then
     begin
      if (Self.SComSettings.events[Self.lastEvIndex].zastaveni.enabled) then
