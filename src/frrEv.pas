@@ -3,8 +3,8 @@ unit frrEv;
 {
   Okno TF_RREv umoznuje definovat udalost ve smyslu tridy TRREv (Railroad event).
   Toto male okynko se pouziva napriklad pri definici houkacich udalosti,
-  planovane vyuziti je take na zastavky a zastavovani a zpomalovani pred
-  navestidly.
+  zpomalovani a zastavovani pred navestidly, planovane vyuziti je take na
+  zastavky.
 }
 
 interface
@@ -39,6 +39,9 @@ type
     procedure ShowEmpty();
     function GetRREv():TRREv;
     function InputValid():boolean;
+
+  protected
+    procedure SetEnabled(state:boolean); override;
 
   end;
 
@@ -115,7 +118,7 @@ begin
 
   1: begin
     data.typ := rrtIR;
-    data.irId := CB_IR[Self.CB_IRId.ItemIndex];
+    data.irId := Blky.GetBlkID(CB_IR[Self.CB_IRId.ItemIndex]);
     data.irState := PrevodySoustav.IntToBool(Self.CB_IRStav.ItemIndex);
   end;
 
@@ -140,6 +143,30 @@ begin
  end;
 
  Result := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_RREv.SetEnabled(state:boolean);
+begin
+ inherited;
+
+ Self.CB_Typ.Enabled := state;
+ Self.CB_UsekPart.Enabled := state;
+ Self.CB_IRId.Enabled := state;
+ Self.CB_UsekStav.Enabled := state;
+ Self.CB_IRStav.Enabled := state;
+ Self.SE_Cas.Enabled := state;
+
+ if (not state) then
+  begin
+   Self.CB_Typ.ItemIndex := -1;
+   Self.CB_UsekPart.ItemIndex := -1;
+   Self.CB_IRId.ItemIndex := -1;
+   Self.CB_UsekStav.ItemIndex := -1;
+   Self.CB_IRStav.ItemIndex := -1;
+   Self.SE_Cas.Value := 0;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
