@@ -153,7 +153,7 @@ object F_RREv: TF_RREv
     OnChange = CB_TypChange
     Items.Strings = (
       #218'sek'
-      'IR '#269#237'dlo'
+      'IR '#269'idlo'
       #268'as')
   end
 end
