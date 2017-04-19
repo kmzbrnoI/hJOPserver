@@ -4,8 +4,8 @@ object F_BlkTU: TF_BlkTU
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 529
-  ClientWidth = 624
+  ClientHeight = 489
+  ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -140,8 +140,8 @@ object F_BlkTU: TF_BlkTU
     ParentFont = False
   end
   object B_OK: TButton
-    Left = 7
-    Top = 497
+    Left = 614
+    Top = 452
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -154,8 +154,8 @@ object F_BlkTU: TF_BlkTU
     OnClick = B_OKClick
   end
   object B_Storno: TButton
-    Left = 95
-    Top = 497
+    Left = 535
+    Top = 452
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -564,8 +564,8 @@ object F_BlkTU: TF_BlkTU
   object GB_Zastavka: TGroupBox
     Left = 324
     Top = 8
-    Width = 293
-    Height = 513
+    Width = 365
+    Height = 433
     Caption = ' Zast'#225'vka '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -631,7 +631,7 @@ object F_BlkTU: TF_BlkTU
     object E_Zast_Spr: TEdit
       Left = 16
       Top = 59
-      Width = 265
+      Width = 337
       Height = 21
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -639,12 +639,12 @@ object F_BlkTU: TF_BlkTU
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 1
+      TabOrder = 2
       Text = 'E_Zast_Spr'
     end
     object SE_Zast_DelkaSpr: TSpinEdit
-      Left = 216
-      Top = 88
+      Left = 288
+      Top = 91
       Width = 65
       Height = 22
       Font.Charset = DEFAULT_CHARSET
@@ -655,12 +655,12 @@ object F_BlkTU: TF_BlkTU
       MaxValue = 0
       MinValue = 0
       ParentFont = False
-      TabOrder = 2
+      TabOrder = 3
       Value = 0
     end
     object ME_Zast_Delay: TMaskEdit
-      Left = 216
-      Top = 120
+      Left = 288
+      Top = 123
       Width = 65
       Height = 21
       Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
@@ -678,26 +678,32 @@ object F_BlkTU: TF_BlkTU
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 3
+      TabOrder = 4
       Text = '00:00'
     end
     object PC_Zastavka: TPageControl
-      Left = 3
-      Top = 139
-      Width = 286
-      Height = 371
+      Left = 2
+      Top = 149
+      Width = 361
+      Height = 282
       ActivePage = TS_Zast_lichy
-      TabOrder = 4
+      Align = alBottom
+      TabOrder = 5
+      ExplicitTop = 229
       object TS_Zast_lichy: TTabSheet
         Caption = 'Lich'#253' sm'#283'r'
+        ExplicitWidth = 278
+        ExplicitHeight = 343
       end
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
+        ExplicitWidth = 278
+        ExplicitHeight = 343
       end
     end
     object CHB_Zastavka_Sudy: TCheckBox
-      Left = 152
+      Left = 212
       Top = 17
       Width = 113
       Height = 17
@@ -708,7 +714,7 @@ object F_BlkTU: TF_BlkTU
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 5
+      TabOrder = 1
       OnClick = CHB_Zastavka_LichyClick
     end
   end

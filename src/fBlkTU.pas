@@ -119,7 +119,6 @@ procedure TF_BlkTU.NewBlkCreate;
  end;//procedure
 
 procedure TF_BlkTU.NewBlkOpenForm;
-var zastEvents:TBlkTUZastevents;
  begin
   E_Nazev.Text               := '';
   SE_ID.Value                := Blky.GetBlkID(Blky.Cnt-1)+1;
@@ -153,10 +152,8 @@ var zastEvents:TBlkTUZastevents;
 
   Self.CB_Speed.ItemIndex := -1;
 
-  zastEvents.zastaveni.signal := TBlkTUSignal.disabled;
-  zastEvents.zpomaleni.signal := TBlkTUSignal.disabled;
-  Self.zastLichy.OpenForm(zastEvents);
-  Self.zastSudy.OpenForm(zastEvents);
+  Self.zastLichy.OpenEmptyForm();
+  Self.zastSudy.OpenEmptyForm();
 
   Self.Caption := 'Editace noveho tratoveho useku';
  end;//procedure
