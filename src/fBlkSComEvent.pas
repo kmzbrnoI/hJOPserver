@@ -175,6 +175,8 @@ procedure TF_BlkSComEvent.CHB_ZpomalitClick(Sender: TObject);
 begin
  Self.fZpom.Enabled := Self.CHB_Zpomalit.Checked;
  Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomalit.Checked;
+ if (not Self.CHB_Zpomalit.Checked) then
+   Self.CB_ZpomalitKmH.ItemIndex := -1;
 end;
 
 function TF_BlkSComEvent.Check():string;
