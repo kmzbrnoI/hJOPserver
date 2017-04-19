@@ -4,8 +4,8 @@ object F_BlkSComEvent: TF_BlkSComEvent
   Align = alClient
   BorderStyle = bsNone
   Caption = 'F_BlkSComEvent'
-  ClientHeight = 385
-  ClientWidth = 283
+  ClientHeight = 302
+  ClientWidth = 348
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,9 +13,6 @@ object F_BlkSComEvent: TF_BlkSComEvent
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnClose = FormClose
-  ExplicitWidth = 320
-  ExplicitHeight = 240
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -28,27 +25,27 @@ object F_BlkSComEvent: TF_BlkSComEvent
   object Label2: TLabel
     Left = 8
     Top = 51
-    Width = 146
+    Width = 106
     Height = 13
-    Caption = 'Minim'#225'ln'#237' d'#233'lka soupravy (cm):'
+    Caption = 'Min. d'#233'lka soup. (cm):'
   end
   object Label3: TLabel
     Left = 8
     Top = 79
-    Width = 150
+    Width = 110
     Height = 13
-    Caption = 'Maxim'#225'ln'#237' d'#233'lka soupravy (cm):'
+    Caption = 'Max. d'#233'lka soup. (cm):'
   end
   object GB_DetekceZastaveni: TGroupBox
-    Left = 8
+    Left = 7
     Top = 106
-    Width = 265
-    Height = 116
+    Width = 165
+    Height = 191
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Detekce zastaven'#237' pred n'#225'vestidlem '
+    Caption = ' Detekce zastaven'#237'  '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -56,87 +53,28 @@ object F_BlkSComEvent: TF_BlkSComEvent
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    object Label4: TLabel
-      Left = 79
-      Top = 18
-      Width = 56
-      Height = 13
-      Caption = #268#225'st '#250'seku:'
-    end
-    object Label5: TLabel
-      Left = 79
-      Top = 62
-      Width = 14
-      Height = 13
-      Caption = 'IR:'
-    end
-    object RB_ZastaveniUsek: TRadioButton
-      Left = 15
-      Top = 36
-      Width = 45
-      Height = 17
-      Caption = #218'sek'
+    object P_ZastForm: TPanel
+      Left = 2
+      Top = 15
+      Width = 161
+      Height = 174
+      Align = alClient
+      BevelOuter = bvNone
       TabOrder = 0
-      OnClick = RB_ZastaveniUsekClick
-    end
-    object RB_ZastaveniIR: TRadioButton
-      Left = 15
-      Top = 80
-      Width = 33
-      Height = 17
-      Caption = 'IR'
-      TabOrder = 1
-      OnClick = RB_ZastaveniUsekClick
-    end
-    object CB_ZastavitIR: TComboBox
-      Left = 78
-      Top = 80
-      Width = 169
-      Height = 21
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 0
-      ParentFont = False
-      TabOrder = 2
-    end
-    object CB_ZastavitUsek: TComboBox
-      Left = 79
-      Top = 36
-      Width = 169
-      Height = 21
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 0
-      ParentFont = False
-      TabOrder = 3
+      ExplicitLeft = 32
+      ExplicitWidth = 129
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
-    Left = 8
-    Top = 226
-    Width = 265
-    Height = 151
+    Left = 177
+    Top = 50
+    Width = 165
+    Height = 247
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Detekce zpomalen'#237' pred n'#225'vestidlem '
+    Caption = ' Detekce zpomalen'#237'  '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -144,35 +82,10 @@ object F_BlkSComEvent: TF_BlkSComEvent
     Font.Style = []
     ParentFont = False
     TabOrder = 1
-    object L_SCom14: TLabel
-      Left = 140
-      Top = 15
-      Width = 100
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Zpomalit na rychlost :'
-    end
-    object Label6: TLabel
-      Left = 79
-      Top = 102
-      Width = 14
-      Height = 13
-      Caption = 'IR:'
-    end
-    object Label7: TLabel
-      Left = 78
-      Top = 58
-      Width = 56
-      Height = 13
-      Caption = #268#225'st '#250'seku:'
-    end
     object CB_ZpomalitKmH: TComboBox
-      Left = 140
-      Top = 32
-      Width = 100
+      Left = 11
+      Top = 40
+      Width = 141
       Height = 21
       Margins.Left = 2
       Margins.Top = 2
@@ -200,86 +113,41 @@ object F_BlkSComEvent: TF_BlkSComEvent
         '100 km/h')
     end
     object CHB_Zpomalit: TCheckBox
-      Left = 15
-      Top = 24
+      Left = 11
+      Top = 19
       Width = 121
       Height = 17
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Povolit zpomalov'#225'n'#237
+      Caption = 'Zpomalit na rychlost:'
       TabOrder = 0
       OnClick = CHB_ZpomalitClick
     end
-    object CB_ZpomalitIR: TComboBox
-      Left = 77
-      Top = 120
-      Width = 169
-      Height = 21
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 0
-      ParentFont = False
+    object P_ZpomForm: TPanel
+      Left = 2
+      Top = 71
+      Width = 161
+      Height = 174
+      Align = alBottom
+      BevelOuter = bvNone
       TabOrder = 2
-    end
-    object RB_ZpomaleniIR: TRadioButton
-      Left = 14
-      Top = 120
-      Width = 33
-      Height = 17
-      Caption = 'IR'
-      TabOrder = 3
-      OnClick = RB_ZpomaleniUsekClick
-    end
-    object CB_ZpomalitUsek: TComboBox
-      Left = 78
-      Top = 76
-      Width = 169
-      Height = 21
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ItemHeight = 0
-      ParentFont = False
-      TabOrder = 4
-    end
-    object RB_ZpomaleniUsek: TRadioButton
-      Left = 14
-      Top = 76
-      Width = 45
-      Height = 17
-      Caption = #218'sek'
-      TabOrder = 5
-      OnClick = RB_ZpomaleniUsekClick
+      ExplicitLeft = 3
+      ExplicitTop = 66
     end
   end
   object E_Spr: TEdit
     Left = 8
     Top = 24
-    Width = 265
+    Width = 334
     Height = 21
     TabOrder = 2
   end
   object SE_MinLength: TSpinEdit
-    Left = 176
+    Left = 120
     Top = 51
-    Width = 97
+    Width = 52
     Height = 22
     MaxValue = 1000
     MinValue = 0
@@ -287,9 +155,9 @@ object F_BlkSComEvent: TF_BlkSComEvent
     Value = 0
   end
   object SE_MaxLength: TSpinEdit
-    Left = 176
+    Left = 120
     Top = 79
-    Width = 97
+    Width = 52
     Height = 22
     MaxValue = 1000
     MinValue = 0

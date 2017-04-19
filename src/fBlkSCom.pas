@@ -31,13 +31,13 @@ type
     SE_Delay: TSpinEdit;
     CHB_Zamknuto: TCheckBox;
     PC_Events: TPageControl;
-    BB_HV_Add: TBitBtn;
+    BB_Event_Add: TBitBtn;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure BB_HV_AddClick(Sender: TObject);
+    procedure BB_Event_AddClick(Sender: TObject);
      procedure PageControlCloseButtonMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
      procedure PageControlCloseButtonMouseMove(Sender: TObject;
@@ -179,28 +179,11 @@ procedure TF_BlkSCom.B_StornoClick(Sender: TObject);
   F_BlkSCom.Close;
  end;//procedure
 
-procedure TF_BlkSCom.BB_HV_AddClick(Sender: TObject);
+procedure TF_BlkSCom.BB_Event_AddClick(Sender: TObject);
 var
     eventForm:TF_BlkSComEvent;
     ts:TCloseTabSheet;
-    event:TBlkSComSprEvent;
 begin
-  event.spr_typ := TStringList.Create();
-  if (Assigned(Self.Blk)) then
-   begin
-    event.zastaveni.usekid := Self.Blk.UsekID;
-    event.zpomaleni.usekid := Self.Blk.UsekID;
-   end else begin
-    event.zastaveni.usekid := -1;
-    event.zpomaleni.usekid := -1;
-   end;
-
-  event.zastaveni.usekpart := 0;
-  event.zpomaleni.usekpart := 0;
-  event.zpomaleni.irid     := -1;
-  event.zastaveni.irid     := -1;
-  event.zpomaleni.signal   := TBlkSComSignal.disabled;
-
   ts             := TCloseTabSheet.Create(Self.PC_Events);
   if (Self.eventForms.Count = 0) then
     ts.Caption   := 'globální'
@@ -212,7 +195,7 @@ begin
   eventForm      := TF_BlkSComEvent.Create(ts);
   Self.PC_Events.ActivePage := ts;
 
-  eventForm.OpenForm(event, (Self.eventForms.Count = 0), Self.obls);
+  eventForm.OpenEmptyForm((Self.eventForms.Count = 0), Self.obls);
   eventForm.Parent := ts;
   eventForm.Show();
 
@@ -285,14 +268,6 @@ var glob:TBlkSettings;
   settings.ZpozdeniPadu := Self.SE_Delay.Value;
 
   settings.zamknuto := CHB_Zamknuto.Checked;
-
-  if Assigned(Self.Blk.GetSettings.events) then
-   begin
-    for i := 0 to Self.Blk.GetSettings.events.Count-1 do
-      Self.Blk.GetSettings.events[i].spr_typ.Free();
-    Self.Blk.GetSettings.events.Free();
-   end;
-
   settings.events := TList<TBlkSComSprEvent>.Create();
   for i := 0 to Self.eventForms.Count-1 do
     settings.events.Add(Self.eventForms[i].event);

@@ -5,22 +5,15 @@ unit TBlokSCom;
 
 interface
 
-uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
+uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-      TOblRizeni;
+      TOblRizeni, StrUtils;
 
 type
  TBlkSComVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
  TBlkSComOutputType = (scom = 0, binary = 1);
- TBlkSComSignal = (disabled = -1, usek = 0, ir = 1);
 
- // event zastaveni, ci zpomaleni
- TBlkSComRychEvent = record
-  signal:TBlkSComSignal;                        // rozhoduje, jeslti uvazovat IR, ci usek
-  usekid, usekpart:Integer;                     // id useku a index jeho casti
-  irid:Integer;                                 // id bloku IR
-  speed:Integer;                                // zpomalovaci rychlost z km/h (40, 50, 60...)
- end;
+ ENoEvents = class(Exception);
 
  // zastaovoaci a zpomalovaci udalost pro jeden typ soupravy a jeden rozsah delek soupravy
  TBlkSComSprEvent = record
@@ -30,8 +23,12 @@ type
     max:Integer;
   end;
 
-  zastaveni: TBlkSComRychEvent;                 // zastavovoaci udalost
-  zpomaleni: TBlkSComRychEvent;                 // zpomalovaci udalost
+  zastaveni: TRREv;                             // zastavovoaci udalost
+  zpomaleni: record                             // zpomalovaci udalost
+    enabled: boolean;                             // povolena zpomalovaci udalost?
+    speed: Integer;                               // rychlost z km/h (40, 50, 60...)
+    ev: TRREv;                                    // udalost
+  end;
  end;
 
  // vlastnosti bloku SCom, ktere se ukladaji do databaze bloku
@@ -60,7 +57,7 @@ type
   privol_timer_id:Integer;                       // id timeru ukonceni privolavacky v panelu, ze ktreho byla JC postavena
   autoblok:boolean;
 
-  toRnz:TDictionary<Integer, Cardinal>;          // senzam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
+  toRnz:TDictionary<Integer, Cardinal>;          // seznam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
  end;
 
  // vlastnosti navestidla ziskane ze souboru .spnl (od reliefu, resp. z Mergeru)
@@ -95,15 +92,14 @@ type
    SComRel:TBlkSComRel;
 
    fUsekPred:TBlk;
+   lastEvIndex:Integer;
 
-    procedure ParseEvents(str:string);
-    function ParseEvent(str:string):TBlkSComSprEvent;
+    function ParseEvent(str:string; old:boolean):TBlkSComSprEvent;
     function ParseSprTypes(str:string):TStrings;
-    function ParseRychEvent(str:string):TBlkSComRychEvent;
+    function ParseOldRychEvent(str:string):TRREv;
 
-    function GetRychEvent(data:TBlkSComRychEvent):string;
     function GetSprTypes(sl:TStrings):string;
-    function GetEvents():string;
+    function GetEvent(ev:TBlkSComSprEvent; short:boolean = false):string;
 
     procedure SetNavest(navest:Integer);
     procedure SetAB(ab:boolean);
@@ -143,12 +139,12 @@ type
 
     procedure SetUsekPredID(new_id:Integer);
 
-    class function IsRychEvent(data:TBlkSComRychEvent):boolean;
-    function IsZastavEvent():Integer;
-    function IsZpomalEvent():Integer;
+    function CurrentEventIndex():Integer;
 
     function GetUsekPred():TBlk;
     function CanIDoRNZ():boolean;
+
+    procedure UnregisterAllEvents();
 
   public
     constructor Create(index:Integer);
@@ -246,18 +242,24 @@ end;//ctor
 destructor TBlkSCom.Destroy();
 var i:Integer;
 begin
- Self.SComStav.toRnz.Clear();
+ Self.SComStav.toRnz.Free();
  for i := 0 to Self.SComSettings.events.Count-1 do
-   Self.SComSettings.events[i].spr_typ.Free();
+  begin
+   Self.SComSettings.events[i].zastaveni.Free();
+   if (Assigned(Self.SComSettings.events[i].zpomaleni.ev)) then
+     Self.SComSettings.events[i].zpomaleni.ev.Free();
+  end;
  Self.SComSettings.events.Free();
 
- inherited Destroy();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSCom.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 var str:TStrings;
+    i:Integer;
+    s:string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -273,44 +275,76 @@ begin
    //parsing *.spnl
    str := TStringList.Create();
 
-   ExtractStrings([';'],[],PChar(ini_rel.ReadString('N',IntToStr(Self.GlobalSettings.id),'')),str);
-   if (str.Count >= 3) then
-    begin
-     Self.ORsRef := ORs.ParseORs(str[0]);
-     Self.SComRel.SymbolType  := StrToInt(str[1]);
+   try
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('N',IntToStr(Self.GlobalSettings.id),'')),str);
+     if (str.Count >= 3) then
+      begin
+       Self.ORsRef := ORs.ParseORs(str[0]);
+       Self.SComRel.SymbolType  := StrToInt(str[1]);
 
-     // 0 = navestidlo v lichem smeru. 1 = navestidlo v sudem smeru
-     if (str[2] = '0') then
-       Self.SComRel.smer := THVStanoviste.lichy
-     else
-       Self.SComRel.smer := THVStanoviste.sudy;
+       // 0 = navestidlo v lichem smeru. 1 = navestidlo v sudem smeru
+       if (str[2] = '0') then
+         Self.SComRel.smer := THVStanoviste.lichy
+       else
+         Self.SComRel.smer := THVStanoviste.sudy;
 
-     Self.SComRel.UsekID      := StrToInt(str[3]);
-    end else begin
-     Self.SComRel.SymbolType := 0;
-     Self.SComRel.smer       := THVStanoviste.lichy;
-     Self.SComRel.UsekID     := -1;
-    end;
-
-   str.Free();
+       Self.SComRel.UsekID      := StrToInt(str[3]);
+      end else begin
+       Self.SComRel.SymbolType := 0;
+       Self.SComRel.smer       := THVStanoviste.lichy;
+       Self.SComRel.UsekID     := -1;
+      end;
+   finally
+     str.Free();
+   end;
   end else begin
     Self.ORsRef.Cnt := 0;
   end;
 
+ // Nacitani zastavovacich a zpomaovacich udalosti
  // toto musi byt az po nacteni spnl
- Self.ParseEvents(ini_tech.ReadString(section, 'ev', ''));
+ Self.SComSettings.events.Clear();
+
+ s := ini_tech.ReadString(section, 'ev', '');
+ if (s <> '') then
+  begin
+   // 1) stary zpusob nacitani zastavovacich udalosti (vsechny udalosti ve starem
+   //    formatu na jednom radku). Tohle je tady hlavne kvuli zpetne kompatibilite.
+   str := TStringList.Create();
+   try
+     ExtractStrings(['(', ')'], [], PChar(s), str);
+     for i := 0 to str.Count-1 do
+       Self.SComSettings.events.Add(Self.ParseEvent(str[i], true));
+   finally
+     str.Free();
+   end;
+
+  end else begin
+   // 2) novy zpusob nacitani zastavovacich udalosti
+   //    kazda udalost na samostatnem radku ev1=... ev2=... ...
+   i := 0;
+   s := ini_tech.ReadString(section, 'ev'+IntToStr(i), '');
+   while (s <> '') do
+    begin
+     Self.SComSettings.events.Add(Self.ParseEvent(s, false));
+     Inc(i);
+     s := ini_tech.ReadString(section, 'ev'+IntToStr(i), '');
+    end;
+  end;
 
  PushMTBToOR(Self.ORsRef, Self.SComSettings.MTBAddrs);
 end;//procedure
 
 procedure TBlkSCom.SaveData(ini_tech:TMemIniFile;const section:string);
+var i:Integer;
 begin
  inherited SaveData(ini_tech, section);
 
  Self.SaveMTB(ini_tech,section, Self.SComSettings.MTBAddrs);
 
- if (Self.SComSettings.events.Count > 0) then
-   ini_tech.WriteString(section, 'ev', Self.GetEvents());
+ for i := 0 to Self.SComSettings.events.Count-1 do
+   ini_tech.WriteString(section, 'ev'+IntToStr(i),
+      Self.GetEvent(Self.SComSettings.events[i], (i = 0)));
 
  ini_tech.WriteInteger(section, 'OutType', Integer(Self.SComSettings.OutputType));
 
@@ -339,6 +373,7 @@ begin
 
  Self.SComStav.Navest := 0;
  Self.SComStav.toRnz.Clear();
+ Self.UnregisterAllEvents();
  Self.Change();
 end;//procedure
 
@@ -349,6 +384,7 @@ begin
  Self.SComStav.AB  := false;
  Self.SComStav.ZAM := false;
  Self.SComStav.toRnz.Clear();
+ Self.UnregisterAllEvents();
  Self.Change();
 end;//procedure
 
@@ -401,54 +437,59 @@ begin
 end;//function
 
 procedure TBlkSCom.SetSettings(data:TBlkSComSettings);
-var i:Integer;
-    ev:TBlkSComSprEvent;
+var ev:TBlkSComSprEvent;
 begin
- Self.SComSettings := data;
-
- for i := 0 to Self.SComSettings.events.Count-1 do
+ if (Self.SComSettings.events <> data.events) then
   begin
-   ev := Self.SComSettings.events[i];
-   ev.zastaveni.usekid := Self.SComRel.UsekID;
-   ev.zpomaleni.usekid := Self.SComRel.UsekID;
-   Self.SComSettings.events[i] := ev;
+   // destrukce starych dat
+   for ev in Self.SComSettings.events do
+    begin
+     ev.zastaveni.Free();
+     if (Assigned(ev.zpomaleni.ev)) then
+       ev.zpomaleni.ev.Free();
+    end;
+   Self.SComSettings.events.Free();
   end;
 
+ Self.SComSettings := data;
  Self.Change();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// format ev: (ev1)(ev2)(ev3)
-procedure TBlkSCom.ParseEvents(str:string);
-var sl:TStrings;
-    i:Integer;
-begin
- sl := TStringList.Create();
- ExtractStrings(['(', ')'], [], PChar(str), sl);
-
- Self.SComSettings.events := TList<TBLkSComSprEvent>.Create();
- for i := 0 to sl.Count-1 do
-   Self.SComSettings.events.Add(Self.ParseEvent(sl[i]));
-
- sl.Free();
-end;//function
-
 // format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|spr_typ1;spr_typ2;spr_typ3;...|min_delka|max_delka
-function TBlkSCom.ParseEvent(str:string):TBlkSComSprEvent;
-var sl:TStrings;
+function TBlkSCom.ParseEvent(str:string; old:boolean):TBlkSComSprEvent;
+var sl, sl2:TStrings;
 begin
  sl := TStringList.Create();
- ExtractStringsEx(['|'], [], str, sl);
+ sl2 := TStringList.Create();
+ ExtractStringsEx(['|'], [], PChar(str), sl);
 
  Result.spr_typ := TStringList.Create();
- Result.delka.min := -1;
- Result.delka.max := -1;
+ try
+   Result.delka.min := -1;
+   Result.delka.max := -1;
 
- Result.zastaveni := Self.ParseRychEvent(sl[0]);
- if (sl.Count > 1) then
-  begin
-   Result.zpomaleni := Self.ParseRychEvent(sl[1]);
+   if (old) then
+     Result.zastaveni := Self.ParseOldRychEvent(sl[0])
+   else
+     Result.zastaveni := TRREv.Create(sl[0]);
+
+   if ((sl.Count > 1) and (sl[1] <> '') and (LeftStr(sl[1], 2) <> '-1')) then
+    begin
+     ExtractStringsEx([';'], [], sl[1], sl2);
+
+     Result.zpomaleni.enabled := true;
+     if (old) then
+       Result.zpomaleni.ev := Self.ParseOldRychEvent(sl[1])
+     else
+       Result.zpomaleni.ev := TRREv.Create(sl2[0]);
+
+     Result.zpomaleni.speed := StrToInt(sl2[sl2.Count-1]);
+    end else begin
+     Result.zpomaleni.enabled := false;
+     Result.zpomaleni.ev := nil;
+    end;
 
    if (sl.Count > 2) then
     begin
@@ -456,12 +497,10 @@ begin
      Result.delka.min := StrToIntDef(sl[3], -1);
      Result.delka.max := StrToIntDef(sl[4], -1);
     end;
-  end else
-   Result.zpomaleni.signal := disabled;
-
- Result.zastaveni.usekid := Self.SComRel.UsekID;
-
- sl.Free();
+ finally
+   sl.Free();
+   sl2.Free();
+ end;
 end;//function
 
 function TBlkSCom.ParseSprTypes(str:string):TStrings;
@@ -477,58 +516,35 @@ end;//function
 // : typ_zastaveni(0=usek;1=ir);
 //    pro usek nasleduje: usekid;usekpart;speed;
 //    pro ir nasleduje: irid;speed;
-function TBlkSCom.ParseRychEvent(str:string):TBlkSComRychEvent;
+function TBlkSCom.ParseOldRychEvent(str:string):TRREv;
 var data:TStrings;
+    rrData:TRREvData;
 begin
  data := TStringList.Create();
 
- ExtractStrings([';'],[],PChar(str),data);
+ try
+   ExtractStringsEx([';'], [], str, data);
 
- Result.usekid   := -1;
- Result.usekpart := -1;
- Result.irid     := -1;
- Result.speed    := 0;
+   case (data[0][1]) of
+    '0':begin
+      // usek
+      rrData.typ := TRREvType.rrtUsek;
+      rrData.usekState := true;
+      rrData.usekPart := StrToInt(data[2]);
+    end;//case 0
 
- Result.signal := TBlkSComSignal(StrToInt(data[0]));
- case (Result.signal) of
-  disabled:;
-  usek:begin
-    Result.usekid   := StrToInt(data[1]);
-    Result.usekpart := StrToInt(data[2]);
-    if (data.Count > 3) then
-      Result.speed := StrToInt(data[3])
-    else
-      Result.speed := 0;
-  end;//case 0
-  ir:begin
-    Result.irid  := StrToInt(data[1]);
-    if (data.Count > 2) then
-      Result.speed := StrToInt(data[2])
-    else
-      Result.speed := 0;
-  end;//case 1
- end;//case
-
- data.Free();
-end;//function
-
-//ziskavani zpomalovacich a zastavovaich dat pro export do souboru
-function TBlkSCom.GetRychEvent(data:TBlkSComRychEvent):string;
-begin
- if (data.speed = 0) then
-  begin
-   case (data.signal) of
-    disabled : Result := '-1;';
-    usek     : Result := '0;'+IntToStr(data.usekid)+';'+IntToStr(data.usekpart)+';';
-    ir       : Result := '1;'+IntToStr(data.irid)+';';
+    '1':begin
+      // ir
+      rrData.typ := TRREvType.rrtIR;
+      rrData.irId := StrToInt(data[1]);
+      rrData.irState := true;
+    end;//case 1
    end;//case
-  end else begin
-   case (data.signal) of
-    disabled : Result := '-1;';
-    usek     : Result := '0;'+IntToStr(data.usekid)+';'+IntToStr(data.usekpart)+';'+IntToStr(data.speed)+';';
-    ir       : Result := '1;'+IntToStr(data.irid)+';'+IntToStr(data.speed)+';';
-   end;//case
-  end;
+
+   Result := TRREv.Create(rrData);
+ finally
+   data.Free();
+ end;
 end;//function
 
 function TBlkSCom.GetSprTypes(sl:TStrings):string;
@@ -539,31 +555,22 @@ begin
   Result := Result + sl[i] + ';';
 end;//function
 
-// format ev: (ev1)(ev2)(ev3)
-// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|spr_typ1;spr_typ2;spr_typ3;...|min_delka|max_delka
-function TBlkSCom.GetEvents():string;
-var i:Integer;
+function TBlkSCom.GetEvent(ev:TBlkSComSprEvent; short:boolean = false):string;
 begin
- Result := '';
+ Result := '{' + ev.zastaveni.GetDefStr() + '}|';
 
- for i := 0 to Self.SComSettings.events.Count-1 do
+ if (ev.zpomaleni.enabled) then
+   Result := Result + '{{' + ev.zpomaleni.ev.GetDefStr() + '};' +
+              IntToStr(ev.zpomaleni.speed) + '}';
+ Result := Result + '|';
+
+ if (not short) then
   begin
-   if (i > 0) then
-    begin
-     Result := Result + '(' +
-                Self.GetRychEvent(Self.SComSettings.events[i].zastaveni) + '|' +
-                Self.GetRychEvent(Self.SComSettings.events[i].zpomaleni) + '|' +
-                Self.GetSprTypes(Self.SComSettings.events[i].spr_typ) + '|' +
-                IntToStr(Self.SComSettings.events[i].delka.min) + '|' +
-                IntToStr(Self.SComSettings.events[i].delka.max) + ')';
-
-    end else begin
-     Result := Result + '(' +
-                Self.GetRychEvent(Self.SComSettings.events[i].zastaveni) + '|' +
-                Self.GetRychEvent(Self.SComSettings.events[i].zpomaleni) + ')';
-    end;//e sel i > 0
-  end;//for i
-end;//function
+   Result := Result + Self.GetSprTypes(ev.spr_typ) + '|' +
+             IntToStr(ev.delka.min) + '|' +
+             IntToStr(ev.delka.max);
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //nastavovani stavovych promennych:
@@ -872,9 +879,9 @@ procedure TBlkSCom.MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabl
 var Blk:TBlk;
 begin
  try
-   if (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir) then
+   if (Self.SComSettings.events[0].zastaveni.typ = TRREvType.rrtIR) then
     begin
-     Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.irid, Blk);
+     Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.data.irId, Blk);
      if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit();
      if (enabled) then
        MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 1)
@@ -1009,9 +1016,9 @@ begin
  // DEBUG: jednoduche nastaveni IR pri simulator.dll
  if (MTB.lib = 'simulator.dll') then
   begin
-   if ((Self.SComSettings.events.Count > 0) and (Self.SComSettings.events[0].zastaveni.signal = TBlkSComSignal.ir)) then
+   if ((Self.SComSettings.events.Count > 0) and (Self.SComSettings.events[0].zastaveni.typ = TRREvType.rrtIR)) then
     begin
-     Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.irid, Blk);
+     Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.data.irId, Blk);
      if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_IR)) then
       begin
        case (TBlkIR(Blk).Stav) of
@@ -1107,7 +1114,8 @@ end;//procedure
 procedure TBlkSCom.UpdateRychlostSpr(force:boolean = false);
 var Usek, SCom:TBlk;
     spr:TSouprava;
-    zpomal:Integer;
+    scomEv:TBlkScomSprEvent;
+    i:Integer;
 begin
  Usek := Self.UsekPred;
  if (Self.SComRel.SymbolType = 1) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
@@ -1115,23 +1123,59 @@ begin
  if ((Usek as TBlkUsek).Souprava = -1) then Exit();     // pokud na useku prede mnou neni souprava, koncim funkci
  spr := Soupravy.soupravy[(Usek as TBlkUsek).Souprava];
  if (spr.front <> Usek) then Exit();                    // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
+ if (Self.SComSettings.events.Count = 0) then Exit();
+
+ // zjisteni aktualni udalosti podle typu a delky soupravy
+ i := Self.CurrentEventIndex();
+ scomEv := Self.SComSettings.events[i];
+
+ if (i <> Self.lastEvIndex) then
+  begin
+   // Z nejakeho duvodu reagujeme na novou udalost -> vypnou starou udalost
+   if ((Self.lastEvIndex >= 0) and (Self.lastEvIndex < Self.SComSettings.events.Count)) then
+    begin
+     if (Self.SComSettings.events[Self.lastEvIndex].zastaveni.enabled) then
+       Self.SComSettings.events[Self.lastEvIndex].zastaveni.Unregister();
+
+     if ((Self.SComSettings.events[Self.lastEvIndex].zpomaleni.enabled) and
+         (Self.SComSettings.events[Self.lastEvIndex].zpomaleni.ev.enabled)) then
+       Self.SComSettings.events[Self.lastEvIndex].zpomaleni.ev.Unregister();
+    end;
+
+   Self.lastEvIndex := i;
+  end;
 
  ///////////////////////////////////////////////////
 
  // ZPOMALOVANI
- zpomal := Self.IsZpomalEvent();
- if ((zpomal > -1) and (spr.rychlost > Self.SComSettings.events[zpomal].zpomaleni.speed) and ((Usek as TBLkUsek).zpomalovani_ready) and
-    ((not Assigned(Self.DNjc)) or (not Self.IsPovolovaciNavest())) and (spr.smer = Self.SComRel.smer)) then
+ if ((scomEv.zpomaleni.enabled) and (spr.rychlost > scomEv.zpomaleni.speed) and
+     ((Usek as TBlkUsek).zpomalovani_ready) and
+     ((not Assigned(Self.DNjc)) or (not Self.IsPovolovaciNavest())) and (spr.smer = Self.SComRel.smer)) then
   begin
-   spr.rychlost := Self.SComSettings.events[zpomal].zpomaleni.speed;
-   (Usek as TBLkUsek).zpomalovani_ready := false;
+   if (not scomEv.zpomaleni.ev.enabled) then
+     scomEv.zpomaleni.ev.Register();
+
+   if (scomEv.zpomaleni.ev.IsTriggerred(Usek, true)) then
+    begin
+     scomEv.zpomaleni.ev.Unregister();
+     spr.rychlost := scomEv.zpomaleni.speed;
+     (Usek as TBlkUsek).zpomalovani_ready := false;
+    end;
+  end else begin
+   if ((scomEv.zpomaleni.enabled) and (scomEv.zpomaleni.ev.enabled)) then
+     scomEv.zpomaleni.ev.Unregister();
   end;
 
  ///////////////////////////////////////////////////
 
  // ZASTAVOVANI, resp. nastavovani rychlosti prislusne JC
- if ((Self.IsZastavEvent() > -1) or (force)) then       // podminka IsRychEvent take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)
+ if (not scomEv.zastaveni.enabled) then
+   scomEv.zastaveni.Register();
+
+ if ((scomEv.zastaveni.IsTriggerred(Usek, true)) or (force)) then       // podminka IsRychEvent take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)
   begin
+   // event se odregistruje automaticky pri zmene
+
    if ((Assigned(Self.DNjc)) and (Self.DNjc.data.TypCesty = TJCType.vlak)) then
     begin
      // je JC -> je postaveno?
@@ -1198,109 +1242,37 @@ begin
       end;
     end;
   end;
-
-// writelog()
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+// Vraci udalost, na kterou by se melo reagovat podle aktualniho stavu kolejiste.
 
-function TBlkSCom.IsZastavEvent():Integer;
+function TBlkSCom.CurrentEventIndex():Integer;
 var i, j:Integer;
     spr:TSouprava;
     Usek:TBlk;
 begin
- if (Self.SComSettings.events.Count = 0) then Exit(-1);
+ if (Self.SComSettings.events.Count = 0) then
+   raise ENoEvents.Create('No current events!');
 
  Usek := Self.UsekPred;
  if ((Usek as TBlkUsek).Souprava < 0) then
   begin
-   // na bloku neni zadana souprava
-   if (Self.IsRychEvent(Self.SComSettings.events[0].zastaveni)) then Result := 0 else Result := -1;
+   // na bloku neni zadna souprava
+   Result := 0;
   end else begin
    spr := Soupravy.soupravy[(Usek as TBlkUsek).Souprava];
 
    // hledame takovy event, ktery odpovida nasi souprave
    for i := 0 to Self.SComSettings.events.Count-1 do
-    begin
      if ((spr.delka >= Self.SComSettings.events[i].delka.min) and (spr.delka <= Self.SComSettings.events[i].delka.max)) then
-      begin
        for j := 0 to Self.SComSettings.events[i].spr_typ.Count-1 do
-        begin
          if (spr.typ = Self.SComSettings.events[i].spr_typ[j]) then
-          begin
-           if (Self.IsRychEvent(Self.SComSettings.events[i].zastaveni)) then Result := i else Result := -1;
-           Exit();
-          end;
-        end;
-      end;
-    end;//for i
+           Exit(i);
 
    // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
-   if (Self.IsRychEvent(Self.SComSettings.events[0].zastaveni)) then Result := 0 else Result := -1;
+   Result := 0;
   end;
-end;//function
-
-function TBlkSCom.IsZpomalEvent():Integer;
-var i, j:Integer;
-    spr:TSouprava;
-    Usek:TBlk;
-begin
- if (Self.SComSettings.events.Count = 0) then Exit(-1);
-
- Usek := Self.UsekPred;
- if ((Usek as TBlkUsek).Souprava < 0) then
-  begin
-   // na bloku neni zadana souprava
-   if (Self.IsRychEvent(Self.SComSettings.events[0].zpomaleni)) then Result := 0 else Result := -1;
-  end else begin
-   spr := Soupravy.soupravy[(Usek as TBlkUsek).Souprava];
-
-   // hledame takovy event, ktery odpovida nasi souprave
-   for i := 0 to Self.SComSettings.events.Count-1 do
-    begin
-     if ((spr.delka >= Self.SComSettings.events[i].delka.min) and (spr.delka <= Self.SComSettings.events[i].delka.max)) then
-      begin
-       for j := 0 to Self.SComSettings.events[i].spr_typ.Count-1 do
-        begin
-         if (spr.typ = Self.SComSettings.events[i].spr_typ[j]) then
-          begin
-           if (Self.IsRychEvent(Self.SComSettings.events[i].zpomaleni)) then Result := i else Result := -1;
-           Exit();
-          end;
-        end;
-      end;
-    end;//for i
-
-   // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
-   if (Self.IsRychEvent(Self.SComSettings.events[0].zpomaleni)) then Result := 0 else Result := -1;
-  end;
-end;//function
-
-////////////////////////////////////////////////////////////////////////////////
-
-// zjistuje, jestli nastala udalost zastaveni, ci zpomaleni
-class function TBlkSCom.IsRychEvent(data:TBlkSComRychEvent):boolean;
-var Blk:TBlk;
-    obsz:TUsekStavAr;
-begin
- case (data.signal) of
-  TBlkSComSignal.disabled: Exit(false);
-  TBlkSComSignal.usek: begin
-    Blky.GetBlkByID(data.usekid, Blk);
-    if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then Exit(true);
-    (Blk as TBlkUsek).GetObsazeno(obsz);
-    if (obsz[data.usekpart] = TUsekStav.obsazeno) then
-     Exit(true);
-  end;
-  TBlkSComSignal.IR:begin
-    Blky.GetBlkByID(data.irid, Blk);
-    if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit(true);
-    if ((Blk as TBlkIR).Stav = TIrStav.obsazeno) then
-     Exit(true);
-  end;
- end;//case
-
- Result := false;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1403,20 +1375,9 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSCom.SetUsekPredID(new_id:Integer);
-var i:Integer;
-    ev:TBlkSComSprEvent;
 begin
  if (Self.SComRel.UsekID = new_id) then Exit();
  Self.SComRel.UsekID := new_id;
-
- for i := 0 to Self.SComSettings.events.Count-1 do
-  begin
-   ev := Self.SComSettings.events[i];
-   ev.zastaveni.usekid := Self.SComRel.UsekID;
-   ev.zpomaleni.usekid := Self.SComRel.UsekID;
-   Self.SComSettings.events[i] := ev;
-  end;
-
  if (new_id = -1) then Self.autoblok := false;
 end;
 
@@ -1459,6 +1420,19 @@ begin
    Self.SComStav.toRnz.Remove(blkId);
    if (Self.SComStav.toRnz.Count = 0) then
      Self.Change();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.UnregisterAllEvents();
+var ev:TBlkScomSprEvent;
+begin
+ for ev in Self.SComSettings.events do
+  begin
+   ev.zastaveni.Unregister();
+   if ((ev.zpomaleni.enabled) and (Assigned(ev.zpomaleni.ev))) then
+     ev.zpomaleni.ev.Unregister();
   end;
 end;
 

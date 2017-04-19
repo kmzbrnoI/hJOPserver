@@ -4,8 +4,8 @@ object F_BlkSCom: TF_BlkSCom
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 431
-  ClientWidth = 617
+  ClientHeight = 345
+  ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -281,7 +281,7 @@ object F_BlkSCom: TF_BlkSCom
   end
   object B_Storno: TButton
     Left = 85
-    Top = 399
+    Top = 313
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -294,7 +294,7 @@ object F_BlkSCom: TF_BlkSCom
   end
   object B_Save: TButton
     Left = 7
-    Top = 399
+    Top = 313
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -345,8 +345,8 @@ object F_BlkSCom: TF_BlkSCom
   object PC_Events: TPageControl
     Left = 317
     Top = 8
-    Width = 291
-    Height = 415
+    Width = 356
+    Height = 329
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -362,8 +362,8 @@ object F_BlkSCom: TF_BlkSCom
     OnMouseMove = PageControlCloseButtonMouseMove
     OnMouseUp = PageControlCloseButtonMouseUp
   end
-  object BB_HV_Add: TBitBtn
-    Left = 588
+  object BB_Event_Add: TBitBtn
+    Left = 652
     Top = 8
     Width = 21
     Height = 21
@@ -397,6 +397,6 @@ object F_BlkSCom: TF_BlkSCom
       0000000000B3B3B3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
     ParentDoubleBuffered = False
     TabOrder = 9
-    OnClick = BB_HV_AddClick
+    OnClick = BB_Event_AddClick
   end
 end
