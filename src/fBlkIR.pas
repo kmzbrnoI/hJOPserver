@@ -110,11 +110,6 @@ var glob:TBlkSettings;
     Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (SE_ID.Value = 0) then
-   begin
-    Application.MessageBox('ID bloku se nesmi rovnat nule !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
     Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);

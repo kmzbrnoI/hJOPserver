@@ -249,11 +249,6 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if ((Self.SE_Trat_ID.Value = 0) or (Self.SE_UA_id.Value = 0) or (Self.SE_UB_id.Value = 0)) then
-   begin
-    Application.MessageBox('ID bloku se nesmi rovnat nule !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
   if (Blky.IsBlok(Self.SE_Trat_ID.Value, trat)) then
    begin
     Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);

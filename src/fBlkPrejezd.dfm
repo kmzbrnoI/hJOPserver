@@ -4,8 +4,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 625
-  ClientWidth = 354
+  ClientHeight = 553
+  ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -70,9 +70,9 @@ object F_BlkPrejezd: TF_BlkPrejezd
     ParentFont = False
   end
   object E_Prj_Nazev: TEdit
-    Left = 138
+    Left = 120
     Top = 8
-    Width = 209
+    Width = 211
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -82,8 +82,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
     TabOrder = 0
   end
   object B_save_P: TButton
-    Left = 256
-    Top = 584
+    Left = 248
+    Top = 518
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -96,8 +96,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
     OnClick = B_save_PClick
   end
   object B_Storno: TButton
-    Left = 160
-    Top = 584
+    Left = 152
+    Top = 518
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -109,21 +109,21 @@ object F_BlkPrejezd: TF_BlkPrejezd
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
-    Left = 138
+    Left = 120
     Top = 33
-    Width = 209
+    Width = 211
     Height = 22
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    MaxValue = 0
-    MinValue = 0
+    MaxValue = 2147483647
+    MinValue = 1
     TabOrder = 1
     Value = 0
   end
   object LB_Stanice: TListBox
-    Left = 136
+    Left = 120
     Top = 59
     Width = 209
     Height = 46
@@ -141,10 +141,10 @@ object F_BlkPrejezd: TF_BlkPrejezd
     TabOrder = 2
   end
   object GB_MTB: TGroupBox
-    Left = 16
-    Top = 118
-    Width = 322
-    Height = 447
+    Left = 8
+    Top = 110
+    Width = 321
+    Height = 403
     Caption = ' MTB '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -154,8 +154,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
     ParentFont = False
     TabOrder = 3
     object L_P01: TLabel
-      Left = 24
-      Top = 24
+      Left = 64
+      Top = 16
       Width = 32
       Height = 13
       Margins.Left = 2
@@ -171,8 +171,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
       ParentFont = False
     end
     object GB_Prj_vyst: TGroupBox
-      Left = 56
-      Top = 68
+      Left = 64
+      Top = 42
       Width = 201
       Height = 142
       Margins.Left = 2
@@ -282,8 +282,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
       end
     end
     object GB_Prj_vst: TGroupBox
-      Left = 56
-      Top = 222
+      Left = 64
+      Top = 188
       Width = 201
       Height = 203
       Margins.Left = 2
@@ -436,8 +436,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
       end
     end
     object SE_MTB: TSpinEdit
-      Left = 176
-      Top = 24
+      Left = 184
+      Top = 16
       Width = 73
       Height = 22
       Margins.Left = 2

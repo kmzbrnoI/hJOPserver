@@ -146,8 +146,8 @@ object F_BlkTrat: TF_BlkTrat
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
-      MaxValue = 0
-      MinValue = 0
+      MaxValue = 2147483647
+      MinValue = 1
       ParentFont = False
       TabOrder = 1
       Value = 0
@@ -271,8 +271,8 @@ object F_BlkTrat: TF_BlkTrat
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
-      MaxValue = 0
-      MinValue = 0
+      MaxValue = 2147483647
+      MinValue = 1
       ParentFont = False
       TabOrder = 1
       Value = 0
@@ -374,8 +374,8 @@ object F_BlkTrat: TF_BlkTrat
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
-      MaxValue = 0
-      MinValue = 0
+      MaxValue = 2147483647
+      MinValue = 1
       ParentFont = False
       TabOrder = 1
       Value = 0
@@ -441,7 +441,6 @@ object F_BlkTrat: TF_BlkTrat
         Align = alBottom
         Caption = ' P'#345'idat nov'#253' tra'#357'ov'#253' '#250'sek  '
         TabOrder = 0
-        ExplicitTop = 193
         object B_blk_Add: TButton
           Left = 216
           Top = 14
@@ -470,7 +469,7 @@ object F_BlkTrat: TF_BlkTrat
           Font.Height = -11
           Font.Name = 'MS Sans Serif'
           Font.Style = []
-          ItemHeight = 0
+          ItemHeight = 13
           ParentFont = False
           TabOrder = 0
         end

@@ -5,7 +5,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (vyhybka)'
-  ClientHeight = 458
+  ClientHeight = 457
   ClientWidth = 320
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -71,9 +71,9 @@ object F_BlkVyhybka: TF_BlkVyhybka
     ParentFont = False
   end
   object E_Nazev: TEdit
-    Left = 120
+    Left = 118
     Top = 7
-    Width = 193
+    Width = 195
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -83,16 +83,16 @@ object F_BlkVyhybka: TF_BlkVyhybka
     TabOrder = 0
   end
   object SE_ID: TSpinEdit
-    Left = 120
+    Left = 118
     Top = 40
-    Width = 193
+    Width = 195
     Height = 22
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    MaxValue = 0
-    MinValue = 0
+    MaxValue = 2147483647
+    MinValue = 1
     TabOrder = 1
     Value = 0
   end
@@ -404,7 +404,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     OnClick = B_SaveClick
   end
   object LB_Stanice: TListBox
-    Left = 119
+    Left = 118
     Top = 72
     Width = 192
     Height = 46

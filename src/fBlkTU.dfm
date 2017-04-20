@@ -175,8 +175,8 @@ object F_BlkTU: TF_BlkTU
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    MaxValue = 0
-    MinValue = 0
+    MaxValue = 2147483647
+    MinValue = 1
     TabOrder = 1
     Value = 0
   end
@@ -689,17 +689,12 @@ object F_BlkTU: TF_BlkTU
       ActivePage = TS_Zast_lichy
       Align = alBottom
       TabOrder = 5
-      ExplicitTop = 229
       object TS_Zast_lichy: TTabSheet
         Caption = 'Lich'#253' sm'#283'r'
-        ExplicitWidth = 278
-        ExplicitHeight = 343
       end
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
-        ExplicitWidth = 278
-        ExplicitHeight = 343
       end
     end
     object CHB_Zastavka_Sudy: TCheckBox

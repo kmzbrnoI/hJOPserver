@@ -143,8 +143,8 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    MaxValue = 0
-    MinValue = 0
+    MaxValue = 2147483647
+    MinValue = 1
     TabOrder = 1
     Value = 0
   end
