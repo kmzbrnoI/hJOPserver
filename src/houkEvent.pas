@@ -95,7 +95,7 @@ begin
 
    m_event := TRREv.Create(str[0]);
 
-   if (str.Count > 1) then
+   if (str.Count > 2) then
      m_sound := str[2]
    else
      m_sound := '';
