@@ -133,12 +133,12 @@ begin
      begin
        if TPageControl(Sender).ActivePage.PageIndex <> j then
         begin
-         TPageControl(Sender).ActivePage.PageIndex := j;
-
          // vlozime okno na novou spravnou pozici
          tmp := Self.forms[TPageControl(Sender).ActivePageIndex];
          Self.forms.Delete(TPageControl(Sender).ActivePageIndex);
-         Self.forms.Insert(j, tmp)
+         Self.forms.Insert(j, tmp);
+
+         TPageControl(Sender).ActivePage.PageIndex := j;
         end;
        Exit;
      end;
