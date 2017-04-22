@@ -16,7 +16,7 @@ unit rrEvent;
 
 interface
 
-uses Classes, SysUtils, Prevody;
+uses Classes, SysUtils, Prevody, StrUtils;
 
 type
   TRREvType = (rrtUsek = 1, rrtIR = 2, rrtTime = 3);
@@ -34,7 +34,7 @@ type
       );
 
       rrtTime: (
-        timeSec: Cardinal;
+        time: TTime;
       );
   end;
 
@@ -93,6 +93,7 @@ end;
 
 procedure TRREv.LoadFromDefStr(data: string);
 var strs:TStrings;
+    tmpTime:Cardinal;
 begin
  strs := TStringList.Create();
 
@@ -113,7 +114,14 @@ begin
      end;
 
      rrtTime: begin
-       Self.m_data.timeSec := StrToInt(strs[1]);
+       if (StrToIntDef(strs[1], -1) <> -1) then
+        begin
+         tmpTime := StrToInt(strs[1]);
+         Self.m_data.time := EncodeTime(0, tmpTime div 60, tmpTime mod 60, 0);
+        end else begin
+         Self.m_data.time := EncodeTime(0, StrToInt(LeftStr(strs[1], 2)),
+               StrToInt(Copy(strs[1], 4, 2)), StrToInt(RightStr(strs[1], 1)));
+        end;
      end;
    end;// m_data.typ
  finally
@@ -132,7 +140,7 @@ begin
    rrtIR  : Result := Result + IntToStr(PrevodySoustav.BoolToInt(m_data.irState)) + ';' +
               IntToStr(m_data.irId);
 
-   rrtTime: Result := Result + IntToStr(m_data.timeSec);
+   rrtTime: Result := Result + FormatDateTime('nn:ss.z', m_data.time);
   end;
 end;
 
@@ -141,7 +149,7 @@ end;
 procedure TRREv.Register();
 begin
  if (Self.m_data.typ = rrtTime) then
-   Self.m_state.triggerTime := Now + EncodeTime(0, m_data.timeSec div 60, m_data.timeSec mod 60, 0);
+   Self.m_state.triggerTime := Now + m_data.time;
 
  Self.m_state.enabled := true;
 end;

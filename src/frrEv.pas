@@ -11,7 +11,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, rrEvent, TBloky;
+  Dialogs, StdCtrls, Spin, rrEvent, TBloky, Mask, StrUtils;
 
 type
   TF_RREv = class(TForm)
@@ -29,7 +29,7 @@ type
     CB_IRId: TComboBox;
     GB_Cas: TGroupBox;
     Label6: TLabel;
-    SE_Cas: TSpinEdit;
+    ME_Cas: TMaskEdit;
     procedure CB_TypChange(Sender: TObject);
   private
     CB_IR:TArI;
@@ -73,7 +73,7 @@ begin
  Self.CB_IRId.ItemIndex := 0;
  Self.CB_UsekStav.ItemIndex := 1;
  Self.CB_IRStav.ItemIndex := 1;
- Self.SE_Cas.Value := 0;
+ Self.ME_Cas.Text := '00:00.0';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ begin
 
    rrtTime: begin
      Self.CB_Typ.ItemIndex := 2;
-     Self.SE_Cas.Value := ev.data.timeSec;
+     Self.ME_Cas.Text := FormatDateTime('nn:ss.z', ev.data.time);
    end;
  end;
 
@@ -124,7 +124,8 @@ begin
 
   2: begin
     data.typ := rrtTime;
-    data.timeSec := Self.SE_Cas.Value;
+    data.time := EncodeTime(0, StrToInt(LeftStr(Self.ME_Cas.Text, 2)),
+        StrToInt(Copy(Self.ME_Cas.Text, 4, 2)), StrToInt(RightStr(Self.ME_Cas.Text, 1)));
   end;
  end;
 
@@ -156,7 +157,7 @@ begin
  Self.CB_IRId.Enabled := state;
  Self.CB_UsekStav.Enabled := state;
  Self.CB_IRStav.Enabled := state;
- Self.SE_Cas.Enabled := state;
+ Self.ME_Cas.Enabled := state;
 
  if (not state) then
   begin
@@ -165,7 +166,7 @@ begin
    Self.CB_IRId.ItemIndex := -1;
    Self.CB_UsekStav.ItemIndex := -1;
    Self.CB_IRStav.ItemIndex := -1;
-   Self.SE_Cas.Value := 0;
+   Self.ME_Cas.Text := '00:00.0';
   end;
 end;
 
