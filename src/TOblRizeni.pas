@@ -12,7 +12,7 @@ unit TOblRizeni;
 
 interface
 
-uses Types, IniFiles, SysUtils, Classes, Graphics, Menus,
+uses Types, IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
       IdContext, TechnologieMTB, StrUtils, ComCtrls, Forms,
       Generics.Collections, Zasobnik, Messages, Windows;
 
@@ -151,12 +151,15 @@ type
       procedure AuthReadToWrite(panel:TIdContext);
       procedure AuthWriteToRead(panel:TIdContext);
 
+      procedure OnHlaseniAvailable(Sender:TObject; available:boolean);
+
     public
 
       stack:TORStack;                                                           // zasobnik povelu
       changed:boolean;                                                          // jestli doslo ke zmene OR - true znamena aktualizaci tabulky
       vb:TList<TObject>;                                                        // seznam variantnich bodu, ktere jsou aktualne "naklikle"; zde je ulozen seznam bloku
       Connected:TList<TORPanel>;                                                // seznam pripojenych panelu
+      hlaseni:TStanicniHlaseni;                                                 // technologie stanicnich hlaseni
 
       constructor Create(index:Integer);
       destructor Destroy(); override;
@@ -217,6 +220,7 @@ type
       procedure PanelZAS(Sender:TIdContext; str:TStrings);
       procedure PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
       procedure PanelLokoReq(Sender:TIdContext; str:TStrings);
+      procedure PanelHlaseni(Sender:TIDContext; str:TStrings);
 
       procedure PanelHVAdd(Sender:TIDContext; str:string);
       procedure PanelHVRemove(Sender:TIDContext; addr:Integer);
@@ -279,10 +283,14 @@ begin
  Self.changed := false;
 
  Self.MereniCasu := TList<TMereniCasu>.Create();
+ Self.hlaseni := nil;
 end;//ctor
 
 destructor TOR.Destroy();
 begin
+ if (Assigned(Self.hlaseni)) then
+   Self.hlaseni.Free();
+
  Self.stack.Free();
  Self.ORProp.Osvetleni.Free();
  Self.vb.Free();
@@ -305,41 +313,46 @@ begin
  data_osv  := TStringList.Create();
  data_osv2 := TStringList.Create();
 
- ExtractStrings([';'],[],PChar(str), data_main);
+ try
+   ExtractStrings([';'],[],PChar(str), data_main);
 
- if (data_main.Count < 3) then
-   raise Exception.Create('Mene nez 3 parametry v popisu oblasti rizeni');
+   if (data_main.Count < 3) then
+     raise Exception.Create('Mene nez 3 parametry v popisu oblasti rizeni');
 
- Self.ORProp.Name       := data_main[0];
- Self.ORProp.ShortName  := data_main[1];
- Self.ORProp.id         := data_main[2];
+   Self.ORProp.Name       := data_main[0];
+   Self.ORProp.ShortName  := data_main[1];
+   Self.ORProp.id         := data_main[2];
 
- Self.ORProp.Osvetleni.Clear();
+   Self.ORProp.Osvetleni.Clear();
 
- data_osv.Clear();
- if (data_main.Count > 3) then
-  begin
-   ExtractStrings(['(', ')'], [], PChar(data_main[3]), data_osv);
-   for j := 0 to data_osv.Count-1 do
+   data_osv.Clear();
+   if (data_main.Count > 3) then
     begin
-     data_osv2.Clear();
-     ExtractStrings(['|'], [], PChar(data_osv[j]), data_osv2);
+     ExtractStrings(['(', ')'], [], PChar(data_main[3]), data_osv);
+     for j := 0 to data_osv.Count-1 do
+      begin
+       data_osv2.Clear();
+       ExtractStrings(['|'], [], PChar(data_osv[j]), data_osv2);
 
-     try
-       Osv.default_state := false;
-       Osv.board := StrToInt(data_osv2[0]);
-       Osv.port  := StrToInt(data_osv2[1]);
-       Osv.name  := data_osv2[2];
-       Self.ORProp.Osvetleni.Add(Osv);
-     except
+       try
+         Osv.default_state := false;
+         Osv.board := StrToInt(data_osv2[0]);
+         Osv.port  := StrToInt(data_osv2[1]);
+         Osv.name  := data_osv2[2];
+         Self.ORProp.Osvetleni.Add(Osv);
+       except
 
-     end;
-    end;//for j
-  end;
+       end;
+      end;//for j
+    end;
 
- FreeAndNil(data_main);
- FreeAndNil(data_osv);
- FreeAndNil(data_osv2);
+   Self.hlaseni := TStanicniHlaseni.Create(Self.id);
+   Self.hlaseni.OnAvailable := Self.OnHlaseniAvailable;
+ finally
+   FreeAndNil(data_main);
+   FreeAndNil(data_osv);
+   FreeAndNil(data_osv2);
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2006,6 +2019,9 @@ begin
      ORTCPServer.SendLn(panel, Self.id+';LOK-REQ;REQ;'+user.id+';'+user.firstname+';'+user.lastname+';');
   end;
 
+ if ((Assigned(Self.hlaseni)) and (Self.hlaseni.available)) then
+   ORTCPServer.SendLn(panel, Self.id+';SHP;AVAILABLE;1');
+
  if ((Self.NUZblkCnt > 0) and (not Self.NUZtimer)) then
    ORTCPServer.SendLn(panel, Self.id + ';NUZ;1;');
 end;//procedure
@@ -2153,6 +2169,37 @@ begin
  Result := TList<TPSPodminka>.Create();
  Result.Add(podm);
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.OnHlaseniAvailable(Sender:TObject; available:boolean);
+begin
+ if (available) then
+   Self.BroadcastData('SHP;AVAILABLE;1')
+ else
+   Self.BroadcastData('SHP;AVAILABLE;0');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.PanelHlaseni(Sender:TIDContext; str:TStrings);
+begin
+ if (not Assigned(Self.hlaseni)) then Exit();
+ if (str.Count < 3) then Exit();
+
+ //kontrola opravneni klienta
+ if (Self.PnlDGetRights(Sender) < write) then
+  begin
+   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   Exit;
+  end;
+
+ str[2] := UpperCase(str[2]);
+
+ if (str[2] = 'SPEC') then begin
+   Self.hlaseni.Spec(str[3]);
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -47,7 +47,9 @@ type
     regulator:boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
     regulator_user:TUser;                                                       // uzivatel, ktery autorizoval regulator
     regulator_zadost:TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
-    regulator_loks:TList<THV>;
+    regulator_loks:TList<THV>;                                                  // seznam lokomotiv v regulatoru
+
+    st_hlaseni:TList<TOR>;                                                      // stanice, do kterych je autorizovano stanicni hlaseni
 
     constructor Create();
     destructor Destroy(); override;
@@ -346,6 +348,7 @@ end;//procedure
 // Udalost vyvolana pri odpojeni klienta
 procedure TORTCPServer.OnTcpServerDisconnect(AContext: TIdContext);
 var i:Integer;
+    oblr:TOR;
 begin
  Self.tcpServer.Contexts.LockList();
 
@@ -395,6 +398,10 @@ begin
       Self.DCCStopped := nil;
       Self.BroadcastData('-;DCC;STOP');
      end;
+
+    for oblr in TTCPORsRef(AContext.Data).st_hlaseni do
+      if (Assigned(oblr.hlaseni)) then
+        oblr.hlaseni.ClientDisconnect(AContext);
 
     // aktualizujeme radek v tabulce klientu ve F_Main
     if (Self.tcpServer.Active) then
@@ -646,14 +653,19 @@ end;//procedure
 
 procedure TORTCPServer.ParseOR(AContext: TIdContext);
 var i:Integer;
+    oblr:TOR;
 begin
  // nejdriv se podivame, jestli nahodou nechce nekdo autorizaci
 
- if (parsed[1] = 'AUTH') then
-  begin
+ if (parsed[1] = 'AUTH') then begin
    Self.Auth(AContext);
    Exit;
-  end;
+ end else if (parsed[1] = 'SH') then begin
+   oblr := ORs.GetORById(parsed[0]);
+   if (Assigned(oblr) and Assigned(oblr.hlaseni)) then
+     oblr.hlaseni.Parse(AContext, oblr, parsed);
+   Exit();
+ end;
 
  // vsechna ostatni data pak podlehaji znalosti OR, ktere mam autorizovane, tak z toho vyjdeme
  for i := 0 to (AContext.Data as TTCPORsRef).ORsCnt-1 do
@@ -730,7 +742,10 @@ begin
   (AContext.Data as TTCPORsRef).ORs[i].PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
 
  else if (parsed[1] = 'LOK-REQ') then
-  (AContext.Data as TTCPORsRef).ORs[i].PanelLokoReq(AContext, parsed);
+  (AContext.Data as TTCPORsRef).ORs[i].PanelLokoReq(AContext, parsed)
+
+ else if (parsed[1] = 'SHP') then
+  (AContext.Data as TTCPORsRef).ORs[i].PanelHlaseni(AContext, parsed);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1114,10 +1129,12 @@ constructor TTCPORsRef.Create();
 begin
  inherited;
  Self.regulator_loks := TList<THV>.Create();
+ Self.st_hlaseni := TList<TOR>.Create();
 end;
 
 destructor TTCPORsRef.Destroy();
 begin
+ Self.st_hlaseni.Free();
  Self.regulator_loks.Free();
  inherited;
 end;
