@@ -9,6 +9,11 @@ interface
 
 uses Generics.Collections, IdContext, Classes, SysUtils;
 
+const
+  _HLASENI_SPRTYP_FORBIDDEN: array [0..5] of string = (
+    'Pn', 'Mn', 'Vn', 'Lv', 'Vle', 'Slu'
+  );
+
 type
   TAvailableEvent = procedure (Sender:TObject; available:boolean) of object;
 

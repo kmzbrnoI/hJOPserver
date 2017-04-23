@@ -38,6 +38,7 @@ type
   DCC:boolean;              // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
   redukuji:TReduction;      // zde si ukladam, koho redukuji; ukladaji se id; jakmile se z meho bloku uvolni zaver, vse odredukuji
   stanicni_kolej:boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
+  cislo_koleje:string;      // cislo koleje, pokud je stanicni
   vlakPresun:boolean;       // pokud je vlak na teto koleji oznacen pro presun do jine koelje, je zde true
 
   zpomalovani_ready:boolean;          // pri predani soupravy do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
@@ -70,6 +71,7 @@ type
     napajeni : TBoosterSignal.undef;
     DCC : false;
     stanicni_kolej : false;
+    cislo_koleje : '';
     zpomalovani_ready : false;
     currentHoukEv : -1;
    );
@@ -104,6 +106,7 @@ type
     procedure MenuNUZStartClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuNUZStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
+    procedure MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
     procedure PotvrUvolLok(Sender:TIdContext; success:boolean);
@@ -207,7 +210,8 @@ implementation
 
 uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
-    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv;
+    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
+    stanicniHlaseni;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -293,10 +297,11 @@ begin
 
    if (str.Count >= 2) then
     begin
-     if (str[1] = '1') then
-      Self.UsekStav.stanicni_kolej := true
+     Self.UsekStav.stanicni_kolej := (str[1] = '1');
+     if (str.Count >= 3) then
+       Self.UsekStav.cislo_koleje := str[2]
      else
-      Self.UsekStav.stanicni_kolej := false;
+       Self.UsekStav.cislo_koleje := '';
     end;
   end else begin
    Self.ORsRef.Cnt := 0;
@@ -982,22 +987,49 @@ begin
  end;
 end;//procedure
 
+procedure TBlkUsek.MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
+var shSpr:TSHSpr;
+begin
+ try
+   if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
+   if (Self.Souprava = -1) then Exit();
+
+   shSpr.cislo    := Soupravy[Self.Souprava].nazev;
+   shSpr.typ      := Soupravy[Self.Souprava].typ;
+   shSpr.kolej    := Self.UsekStav.cislo_koleje;
+   shSpr.fromORid := TOR(Soupravy[Self.Souprava].vychoziOR).id;
+   shSpr.toORid   := TOR(Soupravy[Self.Souprava].cilovaOR).id;
+
+   TOR(SenderOR).hlaseni.Odjede(shSpr);
+ except
+   on E:Exception do
+    begin
+     writelog('Nepodaøilo se spustit stanièní hlášení : ' + E.Message, WR_ERROR);
+     ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se spustit stanièní hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+    end;
+ end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkUsek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 var Blk:TBlk;
     i:Integer;
+    spr:TSouprava;
+    ok:boolean;
 begin
  Result := inherited;
 
  if (Self.UsekStav.Spr > -1) then
   begin
+   spr := Soupravy[Self.Souprava];
+
    if (Self.UsekStav.stanicni_kolej) then
     Result := Result + 'EDIT vlak,ZRUŠ vlak,';
    Result := Result + 'UVOL vlak,';
 
-   if (Soupravy.soupravy[Self.Souprava].sdata.HV.cnt > 0) then
+   if (spr.sdata.HV.cnt > 0) then
     begin
      Result := Result + 'RUÈ vlak,';
      if (TTCPORsRef(SenderPnl.Data).maus) then Result := Result + 'MAUS vlak,';
@@ -1005,11 +1037,29 @@ begin
 
    if (Self.VlakPresun) then
     Result := Result + 'PØESUÒ vlak<,'
-   else if ((Soupravy.soupravy[Self.UsekStav.Spr].rychlost = 0) and (Soupravy.soupravy[Self.UsekStav.Spr].stanice = SenderOR)) then
+   else if ((spr.rychlost = 0) and (spr.stanice = SenderOR)) then
      Result := Result + 'PØESUÒ vlak>,';
 
-   if (Soupravy.soupravy[Self.UsekStav.Spr].ukradeno) then
+   if (spr.ukradeno) then
      Result := Result + 'VEZMI vlak,';
+
+   if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
+       (Self.UsekStav.stanicni_kolej) and
+       (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
+    begin
+     ok := true;
+     for i := 0 to Length(stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN)-1 do
+      begin
+       if (spr.typ = stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN[i]) then
+        begin
+         ok := false;
+         break;
+        end;
+      end;
+
+     if (ok) then
+       Result := Result + 'HLÁŠENÍ odjezd,';
+    end;
 
    Result := Result + '-,';
   end else begin
@@ -1102,23 +1152,24 @@ procedure TBlkUsek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:s
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
- if (item = 'NOVÝ vlak')         then Self.MenuNewLokClick(SenderPnl, SenderOR)
- else if (item = 'EDIT vlak')    then Self.MenuEditLokClick(SenderPnl, SenderOR)
- else if (item = 'ZRUŠ vlak')    then Self.MenuDeleteLokClick(SenderPnl, SenderOR)
- else if (item = 'UVOL vlak')    then Self.MenuUVOLLokClick(SenderPnl, SenderOR)
- else if (item = 'VEZMI vlak')   then Self.MenuVEZMILokClick(SenderPnl, SenderOR)
- else if (item = 'PØESUÒ vlak>') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true)
- else if (item = 'PØESUÒ vlak<') then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false)
- else if (item = 'RUÈ vlak')     then Self.MenuRUCLokClick(SenderPnl, SenderOR)
- else if (item = 'MAUS vlak')    then Self.MenuMAUSLokClick(SenderPnl, SenderOR)
- else if (item = 'STIT')         then Self.MenuStitClick(SenderPnl, SenderOR)
- else if (item = 'VYL')          then Self.MenuVylClick(SenderPnl, SenderOR)
- else if (item = 'KC')           then Self.MenuKCClick(SenderPnl, SenderOR)
- else if (item = 'VB')           then Self.MenuVBClick(SenderPnl, SenderOR)
- else if (item = 'NUZ>')         then Self.MenuNUZStartClick(SenderPnl, SenderOR)
- else if (item = 'NUZ<')         then Self.MenuNUZStopClick(SenderPnl, SenderOR)
- else if (item = 'OBSAZ')        then Self.MenuObsazClick(SenderPnl, SenderOR)
- else if (item = 'UVOL')         then Self.MenuUvolClick(SenderPnl, SenderOR);
+ if (item = 'NOVÝ vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR)
+ else if (item = 'EDIT vlak')      then Self.MenuEditLokClick(SenderPnl, SenderOR)
+ else if (item = 'ZRUŠ vlak')      then Self.MenuDeleteLokClick(SenderPnl, SenderOR)
+ else if (item = 'UVOL vlak')      then Self.MenuUVOLLokClick(SenderPnl, SenderOR)
+ else if (item = 'VEZMI vlak')     then Self.MenuVEZMILokClick(SenderPnl, SenderOR)
+ else if (item = 'PØESUÒ vlak>')   then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true)
+ else if (item = 'PØESUÒ vlak<')   then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false)
+ else if (item = 'RUÈ vlak')       then Self.MenuRUCLokClick(SenderPnl, SenderOR)
+ else if (item = 'MAUS vlak')      then Self.MenuMAUSLokClick(SenderPnl, SenderOR)
+ else if (item = 'STIT')           then Self.MenuStitClick(SenderPnl, SenderOR)
+ else if (item = 'VYL')            then Self.MenuVylClick(SenderPnl, SenderOR)
+ else if (item = 'KC')             then Self.MenuKCClick(SenderPnl, SenderOR)
+ else if (item = 'VB')             then Self.MenuVBClick(SenderPnl, SenderOR)
+ else if (item = 'NUZ>')           then Self.MenuNUZStartClick(SenderPnl, SenderOR)
+ else if (item = 'NUZ<')           then Self.MenuNUZStopClick(SenderPnl, SenderOR)
+ else if (item = 'OBSAZ')          then Self.MenuObsazClick(SenderPnl, SenderOR)
+ else if (item = 'UVOL')           then Self.MenuUvolClick(SenderPnl, SenderOR)
+ else if (item = 'HLÁŠENÍ odjezd') then Self.MenuHLASENIOdjezdClick(SenderPnl, SenderOR);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

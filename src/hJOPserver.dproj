@@ -287,7 +287,7 @@
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">7</VersionInfo>
-						<VersionInfo Name="Release">4</VersionInfo>
+						<VersionInfo Name="Release">5</VersionInfo>
 						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
@@ -300,7 +300,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.7.4.0</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.7.5.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2017</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
