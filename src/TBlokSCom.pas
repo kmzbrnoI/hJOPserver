@@ -954,7 +954,7 @@ begin
  if (Self.SComSettings.zamknuto) then Exit();
 
  if ((((((Self.DNjc = nil) or (Self.DNjc.RozpadBlok > 0)) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) and (Self.Navest <> 8))
-    or ((SenderOR as TOR).stack.volba = VZ) or (Self.SComStav.ZacatekVolba <> TBlkSCOmVolba.none)) and
+    or ((SenderOR as TOR).stack.volba = VZ)) and
     (not Self.autoblok)) then
   begin
     case (Self.SComStav.ZacatekVolba) of
