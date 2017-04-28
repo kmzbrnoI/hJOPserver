@@ -1094,16 +1094,18 @@ begin
 
  try
    ORTCPServer.Start();
+   Self.A_PanelServer_Start.Enabled := false;
+   Self.A_PanelServer_Stop.Enabled  := true;
  except
    on E : Exception do
     begin
-     Application.MessageBox(PChar('Chyba pøi zapínání serveru - '+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+     SystemData.Status := TSystemStatus.null;
+     Self.A_System_Start.Enabled := true;
+     Self.A_System_Stop.Enabled := true;
+     Application.MessageBox(PChar('Chyba pøi zapínání serveru:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
  end;
-
- Self.A_PanelServer_Start.Enabled := false;
- Self.A_PanelServer_Stop.Enabled  := true;
 end;
 
 procedure TF_Main.A_PanelServer_StopExecute(Sender: TObject);

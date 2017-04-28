@@ -228,7 +228,7 @@ begin
    begin
     F_Main.S_Server.Brush.Color := clRed;
     F_Main.LogStatus('ERR: Panel server: chyba pøi startování serveru : '+E.Message);
-    Exit(2);
+    raise;
    end;
  end;
 
