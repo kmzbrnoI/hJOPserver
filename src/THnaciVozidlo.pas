@@ -533,7 +533,7 @@ var str, str2, str3:TStrings;
     i:Integer;
     pomCv:THVPomCv;
     tmp:string;
-    funcCnt:Integer;
+    maxFunc:Integer;
 begin
  str := TStringList.Create();
  str2 := TStringList.Create();
@@ -549,9 +549,10 @@ begin
   Self.Data.Trida       := THVClass(StrToInt(str[5]));
   Self.Stav.StanovisteA := THVStanoviste(StrToInt(str[7]));
 
-  funcCnt := Min(Length(str[8]), _HV_FUNC_MAX);
-  for i := 0 to funcCnt-1 do
-    Self.Stav.funkce[i] := (str[8][i+1] = '1');
+  maxFunc := Min(Length(str[8])-1, _HV_FUNC_MAX);
+  if (maxFunc >= 0) then
+    for i := 0 to maxFunc do
+      Self.Stav.funkce[i] := (str[8][i+1] = '1');
 
   if (str.Count > 13) then
    begin
