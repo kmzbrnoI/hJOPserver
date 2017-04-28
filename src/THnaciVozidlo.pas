@@ -222,6 +222,8 @@ begin
  Self.data.POMtake    := TList<THVPomCV>.Create;
  Self.data.POMrelease := TList<THVPomCV>.Create;
 
+ Self.m_funcDict := TDictionary<string, Integer>.Create();
+
  Self.UpdateFromPanelString(panel_str);
 end;//ctor
 
