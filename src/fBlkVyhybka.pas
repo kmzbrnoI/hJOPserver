@@ -177,9 +177,14 @@ var spojka_vypust:TArI;
 
     //zamek
     Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, _BLK_ZAMEK, Self.Blk.GetSettings().zamek);
+
+    Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.spojka > -1);
+    Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.zamek > -1);
    end else begin
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, obls, _BLK_VYH, -1);
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_ZamekData, nil, obls, _BLK_ZAMEK, -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, _BLK_VYH, -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, _BLK_ZAMEK, -1);
+    Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0);
+    Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);    
    end;
 
  end;//procedure
