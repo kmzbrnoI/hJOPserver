@@ -111,10 +111,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Konfigurace'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_ON_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -1196,10 +1192,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Rychlosti'
       ImageIndex = 25
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_DigiRych: TListView
         Left = 0
         Top = 0
@@ -1236,10 +1228,6 @@ object F_Options: TF_Options
     object TS_Centrala: TTabSheet
       Caption = 'Centr'#225'la'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GB_Centrala: TGroupBox
         Left = 522
         Top = 96
@@ -1280,13 +1268,13 @@ object F_Options: TF_Options
           object Label3: TLabel
             Left = 13
             Top = 16
-            Width = 21
+            Width = 62
             Height = 13
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Typ:'
+            Caption = 'Typ rozhran'#237':'
           end
           object Label4: TLabel
             Left = 13
@@ -1360,7 +1348,7 @@ object F_Options: TF_Options
             TabOrder = 0
             Items.Strings = (
               'Intellibox'
-              'NanoX (LI100F)')
+              'LI100F')
           end
           object CCB_BaudRate: TComComboBox
             Left = 104
