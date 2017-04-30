@@ -361,7 +361,7 @@ var str:string;
    F_Main.CB_centrala_loglevel_table.ItemIndex := Integer(TrkSystem.logtable);
 
    //nactitani dalsich dat
-   F_Options.LB_Timer.ItemIndex             := ini.ReadInteger('SystemCfg','TimerInterval',1);
+   F_Options.LB_Timer.ItemIndex             := ini.ReadInteger('SystemCfg','TimerInterval',4);
    F_Options.LB_TimerClick(Self);
    F_Options.CHB_povolit_spusteni.Checked   := ini.ReadBool('SystemCfg','AutSpusteni',false);
    if (F_Options.CHB_povolit_spusteni.Checked) then F_Main.KomunikacePocitani := 1;
