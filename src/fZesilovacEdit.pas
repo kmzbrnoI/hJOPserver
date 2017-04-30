@@ -208,6 +208,12 @@ var IgnoraceMTB:TArI;
   Self.SE_Napajeni_MTB.Value := 1;
   Self.SE_Zkrat_MTB.Value    := 1;
 
+  Self.SE_DCC_MTB.Value      := 1;
+  Self.SE_DCC_port.Value     := 0;
+
+  Self.CHB_DCC.Checked := false;
+  Self.CHB_DCCClick(Self.CHB_DCC);
+
   F_ZesilovacEdit.Caption := 'Nový zesilovaè';
  end;//procedure
 
