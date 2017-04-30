@@ -9,6 +9,7 @@
 //Zaèátek tvorby : záøí 2008
 
 // JCL_DEBUG_EXPERT_INSERTJDBG ON
+// JCL_DEBUG_EXPERT_DELETEMAPFILE ON
 program hJOPserver;
 
 uses
