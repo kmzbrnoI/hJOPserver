@@ -941,7 +941,7 @@ begin
  for first in TBlkUvazka(Self.uvazkaA).OblsRizeni.ORs[0].Connected do
    if (first.Rights >= TORControlRights.write) then
      for second in TBlkUvazka(Self.uvazkaB).OblsRizeni.ORs[0].Connected do
-       if (first.user = second.user) then
+       if ((first.user = second.user) and (second.Rights >= TORControlRights.write)) then
          Exit(true);
 
  Result := false;
