@@ -2063,10 +2063,20 @@ var UsekActual,UsekDalsi,Nav:TBlk;
  end;//procedure
 
 procedure TJC.CheckSmyckaBlok(blk:TBlk);
+var i:Integer;
 begin
  if (((Blk as TBlkUsek).GetSettings().SmcUsek) and ((Blk as TBlkUsek).Souprava > -1)) then
   begin
-   Soupravy.soupravy[(Blk as TBlkUsek).Souprava].InterChangeStanice(false);
+   // kontrola zmeny vychozi a cilove stanice
+   for i := 0 to blk.OblsRizeni.Cnt-1 do
+    begin
+     if (blk.OblsRizeni.ORs[i] = Soupravy.soupravy[(Blk as TBlkUsek).Souprava].cilovaOR) then
+      begin
+       Soupravy.soupravy[(Blk as TBlkUsek).Souprava].InterChangeStanice(false);
+       break;
+      end;
+    end;
+
    Soupravy.soupravy[(Blk as TBlkUsek).Souprava].ChangeSmer();
    writelog('Obsazen smyckovy usek '+Blk.GetGlobalSettings.name+ ' - menim smer loko v souprave '+Soupravy.soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
   end;//if
