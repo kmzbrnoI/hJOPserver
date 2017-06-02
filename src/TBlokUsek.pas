@@ -1063,7 +1063,8 @@ begin
 
    Result := Result + '-,';
   end else begin
-   if ((Self.UsekStav.stanicni_kolej) and (Self.UsekStav.Stav = TUsekStav.obsazeno)) then
+   if ((Self.UsekStav.stanicni_kolej) and
+       ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.MTBAddrs.Count = 0))) then
      Result := Result + 'NOVÝ vlak,-,';
   end;
 
