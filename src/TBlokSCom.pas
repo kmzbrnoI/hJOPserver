@@ -7,7 +7,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-      TOblRizeni, StrUtils;
+      TOblRizeni, StrUtils, JsonDataObjects;
 
 type
  TBlkSComVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -202,6 +202,11 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
+
+    //PT:
+
+    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
+    procedure GetPtState(json:TJsonObject); override;
 
  end;//class TBlkSCom
 
@@ -1454,6 +1459,21 @@ begin
    if ((ev.zpomaleni.enabled) and (Assigned(ev.zpomaleni.ev))) then
      ev.zpomaleni.ev.Unregister();
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.GetPtData(json:TJsonObject; includeState:boolean);
+begin
+ inherited;
+
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkSCom.GetPtState(json:TJsonObject);
+begin
+ json['navest'] := Self.Navest;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
