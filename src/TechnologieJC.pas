@@ -130,6 +130,7 @@ type
    podminky : record                                                            // dalsi podminky jizdni cesty, ktere ale nejsou nastavovany, ale pouze kontrolovany
     vyhybky  : TList<TJCVyhZaver>;                                                // konkretni vyhybky v konkretnich polohach
     zamky    : TList<TJCZamZaver>;                                                // konkretni zamky musi byt uzamcene
+    npUseky  : TList<Integer>;                                                    // neprofilove useky - tyto useky musi byt volne
    end;
    vb:TList<Integer>;                                                           // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
 
@@ -261,12 +262,13 @@ type
       procedure RusJCWithoutBlk();                                              // rusi vlakovou cestu bez zruseni zaveru useku
       procedure UsekyRusJC();                                                   // kontroluje projizdeni soupravy useky a rusi jejich zavery
       procedure UsekyRusNC();                                                   // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
+      procedure KontrolaNPStyku();                                              // kontrola volnosti neprofilivyc styku behem postavene JC
 
       procedure UpdateStaveni();                                                // prubezne stavi JC, meni kroky
       procedure UpdateTimeOut();                                                // kontroluje TimeOut staveni JC
       procedure CancelStaveni(reason:string = ''; stack_remove:boolean = false);// zrusi staveni a oduvodneni zaloguje a zobrazi dispecerovi
 
-      function LoadData(ini:TMemIniFile; section:string):Byte;
+      procedure LoadData(ini:TMemIniFile; section:string);
       procedure SaveData(ini:TMemIniFile; section:string);
 
       procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject;                  // pozadavek o postaveni jizdni cesty
@@ -311,6 +313,7 @@ begin
 
  Self.fproperties.podminky.vyhybky := TList<TJCVyhZaver>.Create();
  Self.fproperties.podminky.zamky   := TList<TJCZamZaver>.Create();
+ Self.fproperties.podminky.npUseky := TList<Integer>.Create();
  Self.fproperties.vb               := TList<Integer>.Create();
 
  Self.fproperties.Vyhybky  := TList<TJCVyhZaver>.Create();
@@ -330,6 +333,7 @@ begin
 
  if (not Assigned(Self.fproperties.podminky.vyhybky)) then Self.fproperties.podminky.vyhybky := TList<TJCVyhZaver>.Create();
  if (not Assigned(Self.fproperties.podminky.zamky))   then Self.fproperties.podminky.zamky   := TList<TJCZamZaver>.Create();
+ if (not Assigned(Self.fproperties.podminky.npUseky)) then Self.fproperties.podminky.npUseky := TList<Integer>.Create();
  if (not Assigned(Self.fproperties.vb))               then Self.fproperties.vb               := TList<Integer>.Create();
  if (not Assigned(Self.fproperties.Odvraty))          then Self.fproperties.Odvraty  := TList<TJCOdvratZaver>.Create();
  if (not Assigned(Self.fproperties.Prisl))            then Self.fproperties.Prisl    := TList<TJCPrislZaver>.Create();
@@ -344,6 +348,7 @@ begin
  if (Assigned(Self.fstaveni.ncBariery)) then FreeAndNil(Self.fstaveni.ncBariery);
  if (Assigned(Self.fproperties.podminky.vyhybky)) then FreeAndNil(Self.fproperties.podminky.vyhybky);
  if (Assigned(Self.fproperties.podminky.zamky)) then FreeAndNil(Self.fproperties.podminky.zamky);
+ if (Assigned(Self.fproperties.podminky.npUseky)) then FreeAndNil(Self.fproperties.podminky.npUseky);
  if (Assigned(Self.fproperties.vb)) then  Self.fproperties.vb.Free();
 
  if (Assigned(Self.fproperties.Vyhybky))  then Self.fproperties.Vyhybky.Free();
@@ -612,6 +617,26 @@ begin
      end;
    end;//for i
 
+  // kontrola neprofilovych useku
+  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
+   begin
+    if (Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i], blk) <> 0) then
+     begin
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.podminky.npUseky[i]));
+      Exit;
+     end;
+    if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
+     begin
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
+      Exit;
+     end;
+    if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.disabled) then
+     begin
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+      Exit;
+     end;
+   end;//for i
+
  if (NC) then
   Self.KontrolaPodminekNC(Result)
  else
@@ -644,7 +669,8 @@ begin
     // obsazenost
     if ((i <> Self.fproperties.Useky.Count-1) or (Self.fproperties.TypCesty <> TJCType.posun)) then
      begin
-      if ((Blk as TBlkUsek).Obsazeno = TUsekStav.obsazeno) then
+      // kontrola disabled jiz probehla
+      if ((Blk as TBlkUsek).Obsazeno <> TUsekStav.uvolneno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.GetGlobalSettings.id));
      end;//if
 
@@ -812,6 +838,16 @@ begin
     // kontrola uzamceni
     if ((Blk as TBlkZamek).klicUvolnen) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.GetGlobalSettings().id));
+   end;//for i
+
+  // kontrola volnosti neprofilovych useku:
+  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
+   begin
+    Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i], Blk);
+
+    // obsazenost
+    if ((Blk as TBlkUsek).Obsazeno = TUsekStav.obsazeno) then
+      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.GetGlobalSettings.id));
    end;//for i
 
  // kontrola ukradene loko v souprave pred navestidlem
@@ -1801,8 +1837,6 @@ procedure TJC.UsekyRusJC();
 var Nav,Blk,Usek,DalsiUsek:TBlk;
     i:Integer;
 begin
-// if (Self.RozpadBlok <= -5) then Exit();   overeno pri volani
-
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
 
  // kontrola obsazenosti useku pred navestidlem
@@ -1890,7 +1924,7 @@ begin
          //pokud jsme na jinem useku, nez RozpadBlok
          if (((Nav as TBlkSCom).Navest > 0) and ((Nav as TBlkSCom).DNjc = Self)) then
           begin
-           ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovaci navesti '+Nav.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+           ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
            Self.RusJCWithoutBlk();
           end;
 
@@ -1969,8 +2003,8 @@ begin
      begin
       if ((Usek as TBlkUsek).Souprava > -1) then
        begin
-       (Usek as TBlkUsek).Souprava := -1;
-       writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+        (Usek as TBlkUsek).Souprava := -1;
+        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
        end;
 
       if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
@@ -2014,7 +2048,30 @@ begin
       (Nav as TBlkSCom).DNjc := nil;
      end;
    end;
+
+ Self.KontrolaNPStyku();
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.KontrolaNPStyku();
+var i:Integer;
+    Nav, Blk:TBlk;
+begin
+ Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
+ if (((Nav as TBlkSCom).Navest = 0) or ((Nav as TBlkSCom).DNjc <> Self)) then Exit();
+
+ for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
+  begin
+   Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i], Blk);
+   if (TBlkUsek(Blk).Stav.Stav <> TUsekStav.uvolneno) then
+    begin
+     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+     Self.RusJCWithoutBlk();
+     Exit();
+    end;
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2143,7 +2200,7 @@ var Nav,DalsiNav:TBlk;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.LoadData(ini:TMemIniFile; section:string):Byte;
+procedure TJC.LoadData(ini:TMemIniFile; section:string);
 var sl,sl2:TStrings;
     i,j, cnt:Integer;
     vyhZaver:TJCVyhZaver;
@@ -2166,80 +2223,63 @@ begin
  // nacteni zaveru useku:
  sl  := TStringList.Create();
  sl2 := TStringList.Create();
- ExtractStrings([';', ',', '|', '-', '('], [')'], PChar(ini.ReadString(section, 'useky', '')), sl);
- Self.fproperties.Useky.Count := sl.Count;
- for i := 0 to Self.fproperties.Useky.Count-1 do
-  begin
-   try
-     Self.fproperties.Useky[i] := StrToInt(sl[i]);
-   except
-     Exit(1);
-   end;
-  end;//for i
 
- // nacteni zaveru vyhybek:
- sl.Clear();
- ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vyhybky', '')), sl);
- cnt := (sl.Count div 2);
- Self.fproperties.Vyhybky.Clear();
- for i := 0 to cnt-1 do
-  begin
-   try
+ try
+   ExtractStrings([';', ',', '|', '-', '('], [')'], PChar(ini.ReadString(section, 'useky', '')), sl);
+   Self.fproperties.Useky.Count := sl.Count;
+   for i := 0 to Self.fproperties.Useky.Count-1 do
+     Self.fproperties.Useky[i] := StrToInt(sl[i]);
+
+   // nacteni zaveru vyhybek:
+   sl.Clear();
+   ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vyhybky', '')), sl);
+   cnt := (sl.Count div 2);
+   Self.fproperties.Vyhybky.Clear();
+   for i := 0 to cnt-1 do
+    begin
      vyhZaver.Blok   := StrToInt(sl[i*2]);
      vyhZaver.Poloha := TVyhPoloha(StrToInt(sl[(i*2)+1]));
      Self.fproperties.Vyhybky.Add(vyhZaver);
-   except
-     Exit(2);
-   end;
-  end;//for i
+    end;//for i
 
- // nacteni odvratu:
- sl.Clear();
- ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'odvraty', '')), sl);
- cnt := (sl.Count div 3);
- Self.fproperties.Odvraty.Clear();
- for i := 0 to cnt-1 do
-  begin
-   try
+   // nacteni odvratu:
+   sl.Clear();
+   ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'odvraty', '')), sl);
+   cnt := (sl.Count div 3);
+   Self.fproperties.Odvraty.Clear();
+   for i := 0 to cnt-1 do
+    begin
      odvrat.Blok    := StrToInt(sl[i*2]);
      odvrat.Poloha  := TVyhPoloha(StrToInt(sl[(i*2)+1]));
      odvrat.ref_blk := StrToInt(sl[(i*2)+2]);
      Self.fproperties.Odvraty.Add(odvrat);
-   except
-     Exit(3);
-   end;
-  end;//for i
+    end;//for i
 
- // nacteni prislusenstvi
- sl.Clear();
- ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'prisl', '')), sl);
- cnt := (sl.Count div 2);
- Self.fproperties.Prisl.Clear();
- for i := 0 to cnt-1 do
-  begin
-   try
+   // nacteni prislusenstvi
+   sl.Clear();
+   ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'prisl', '')), sl);
+   cnt := (sl.Count div 2);
+   Self.fproperties.Prisl.Clear();
+   for i := 0 to cnt-1 do
+    begin
      prisl.Blok    := StrToInt(sl[i*2]);
      prisl.ref_blk := StrToInt(sl[(i*2)+1]);
      Self.fproperties.Prisl.Add(prisl);
-   except
-     Exit(4);
-   end;
-  end;//for i
+    end;//for i
 
- //format dat prejezdu:
- // (...),(...),(...) jsou jednotlive prejezdy
- // konkretni popis toho, co ma byt na miste tecek:
- //  (prj_blk_id,otevreni_blk,uzavreni_blk_1,uzavreni_blk_2,uzavreni_blk_3,..)
+   //format dat prejezdu:
+   // (...),(...),(...) jsou jednotlive prejezdy
+   // konkretni popis toho, co ma byt na miste tecek:
+   //  (prj_blk_id,otevreni_blk,uzavreni_blk_1,uzavreni_blk_2,uzavreni_blk_3,..)
 
- // nacteni prejezdu
- sl.Clear();
- ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'prj', '')), sl);
- for i := 0 to sl.Count-1 do
-  begin
-   sl2.Clear();
-   ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), sl2);
+   // nacteni prejezdu
+   sl.Clear();
+   ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'prj', '')), sl);
+   for i := 0 to sl.Count-1 do
+    begin
+     sl2.Clear();
+     ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), sl2);
 
-   try
      prj.Prejezd   := StrToInt(sl2[0]);
      prj.oteviraci := StrToInt(sl2[1]);
      prj.uzaviraci := TList<Integer>.Create();
@@ -2247,60 +2287,50 @@ begin
        prj.uzaviraci.Add(StrToInt(sl2[j]));
 
      Self.fproperties.Prejezdy.Add(prj);
-   except
-     Exit(5);
-   end;
-  end;//for i
+    end;//for i
 
- // nacteni podminek poloh vyhybek:
- sl.Clear();
- ExtractStrings(['(', ')', ',' , ';'], [], PChar(ini.ReadString(section, 'podm-vyh', '')), sl);
- Self.fproperties.podminky.vyhybky.Clear();
- for i := 0 to (sl.Count div 2)-1 do
-  begin
-   try
+   // nacteni podminek poloh vyhybek:
+   sl.Clear();
+   ExtractStrings(['(', ')', ',' , ';'], [], PChar(ini.ReadString(section, 'podm-vyh', '')), sl);
+   Self.fproperties.podminky.vyhybky.Clear();
+   for i := 0 to (sl.Count div 2)-1 do
+    begin
      vyhZaver.Blok   := StrToInt(sl[i*2]);
      vyhZaver.Poloha := TVyhPoloha(StrToInt(sl[(i*2)+1]));
      Self.fproperties.podminky.vyhybky.Add(vyhZaver);
-   except
-     Exit(2);
-   end;
-  end;//for i
+    end;//for i
 
- // nacteni podminek zamku:
- sl.Clear();
- ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'podm-zamky', '')), sl);
- Self.fproperties.podminky.zamky.Clear();
- for i := 0 to sl.Count-1 do
-  begin
-   sl2.Clear();
-   ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), sl2);
+   // nacteni podminek zamku:
+   sl.Clear();
+   ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'podm-zamky', '')), sl);
+   Self.fproperties.podminky.zamky.Clear();
+   for i := 0 to sl.Count-1 do
+    begin
+     sl2.Clear();
+     ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), sl2);
 
-   try
      zam.Blok    := StrToInt(sl2[0]);
      zam.ref_blk := StrToInt(sl2[1]);
      Self.fproperties.podminky.zamky.Add(zam);
-   except
-     Exit(2);
-   end;
-  end;//for i
+    end;//for i
 
- // nacteni variantnich bodu
- sl.Clear();
- ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vb', '')), sl);
- for i := 0 to sl.Count-1 do
-  begin
-   try
+   // nacteni neprofilovych useku:
+   sl.Clear();
+   ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'podm-np-useky', '')), sl);
+   Self.fproperties.podminky.npUseky.Clear();
+   for i := 0 to sl.Count-1 do
+     Self.fproperties.podminky.npUseky.Add(StrToInt(sl[i]));
+
+   // nacteni variantnich bodu
+   sl.Clear();
+   ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vb', '')), sl);
+   for i := 0 to sl.Count-1 do
      Self.fproperties.vb.Add(StrToInt(sl[i]));
-   except
 
-   end;
-  end;//for i
-
- sl.Free();
- sl2.Free();
-
- Result := 0;
+ finally
+   sl.Free();
+   sl2.Free();
+ end;
 end;//procedure
 
 procedure TJC.SaveData(ini:TMemIniFile; section:string);
@@ -2375,6 +2405,13 @@ begin
    line := line + '(' + IntToStr(Self.fproperties.podminky.zamky[i].Blok) + ';' + IntToStr(Self.fproperties.podminky.zamky[i].ref_blk) + ')';
  if (line <> '') then
    ini.WriteString(section, 'podm-zamky', line);
+
+ // podminky neprofilove useky
+ line := '';
+ for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
+   line := line + IntToStr(Self.fproperties.podminky.npUseky[i]) + ',';
+ if (line <> '') then
+   ini.WriteString(section, 'podm-np-useky', line);
 
  // variantni body
  line := '';
@@ -2498,6 +2535,16 @@ begin
 
     // kontrola uzamceni
     if ((Blk as TBlkZamek).klicUvolnen) then
+      Exit(false);
+   end;//for i
+
+  // kontrola volnosti neprofilovych useku
+  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
+   begin
+    Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i], Blk);
+
+    // kontrola volnosti
+    if ((Blk as TBlkUsek).Stav.Stav <> TUsekStav.uvolneno) then
       Exit(false);
    end;//for i
 
@@ -2866,10 +2913,14 @@ begin
     Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
     glob := Blk.GetGlobalSettings();
 
+    // disabled
+    if ((Blk as TBlkUsek).Obsazeno = TUsekStav.disabled) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings.id));
+
     // obsazenost
     if ((i <> Self.fproperties.Useky.Count-1) or (Self.fproperties.TypCesty <> TJCType.posun)) then
      begin
-      if ((Blk as TBlkUsek).Obsazeno = TUsekStav.obsazeno) then
+      if ((Blk as TBlkUsek).Obsazeno <> TUsekStav.uvolneno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.GetGlobalSettings.id));
      end;//if
 
@@ -2994,6 +3045,21 @@ begin
     // kontrola uzamceni
     if (not (Blk as TBlkZamek).nouzZaver) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NOUZ_ZAVER, blk, blk.GetGlobalSettings().id));
+   end;//for i
+
+  // kontrola volnosti neprofilovych useku:
+  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
+   begin
+    Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i], Blk);
+    glob := Blk.GetGlobalSettings();
+
+    // kontrola disabled:
+    if ((Blk as TBlkUsek).Stav.Stav <> TUsekStav.disabled) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, blk, blk.GetGlobalSettings().id));
+
+    // kontrola polohy:
+    if ((Blk as TBlkUsek).Stav.Stav <> TUsekStav.uvolneno) then
+      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, blk, blk.GetGlobalSettings().id));
    end;//for i
 end;//procedure
 

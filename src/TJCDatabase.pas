@@ -416,6 +416,11 @@ begin
     for j := 0 to Self.JCs[i].data.Useky.Count-1 do
       if (Self.JCs[i].data.Useky[j] = usek_id) then
         Exit(i);
+
+    // neprofilove useky
+    for j := 0 to Self.JCs[i].data.podminky.npUseky.Count-1 do
+      if (Self.JCs[i].data.podminky.npUseky[j] = usek_id) then
+        Exit(i);
    end;//for i
 end;//function
 
@@ -575,7 +580,7 @@ begin
 
      JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
      for j := 0 to (tmpBlk as TBlkScom).OblsRizeni.Cnt-1 do
-       (tmpBlk as TBlkScom).OblsRizeni.ORs[j].BlkWriteError(Self, 'Chyba povolovaci navesti '+tmpblk.GetGlobalSettings().name, 'TECHNOLOGIE');
+       (tmpBlk as TBlkScom).OblsRizeni.ORs[j].BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.GetGlobalSettings().name, 'TECHNOLOGIE');
     end;//for i
   end;//if jcindex <> -1
 end;//procedure
