@@ -4,7 +4,7 @@ unit DataJC;
 
 interface
 
-uses ComCtrls, SysUtils;
+uses ComCtrls, SysUtils, StrUtils;
 
 type
   TJCTableData=class
@@ -133,7 +133,7 @@ begin
  str := '';
  for j := 0 to JCData.Useky.Count-1 do
    str := str + Blky.GetBlkName(JCData.Useky[j])+'; ';
- Self.LV.Items.Item[line].SubItems.Strings[6] := str;
+ Self.LV.Items.Item[line].SubItems.Strings[6] := LeftStr(str, Length(str)-2);
 
  Self.LV.Items.Item[line].SubItems.Strings[9]  := IntToStr(JCData.RychlostDalsiN * 10)+' km/h';
  Self.LV.Items.Item[line].SubItems.Strings[10] := IntToStr(JCData.RychlostNoDalsiN * 10)+' km/h';
@@ -164,7 +164,7 @@ begin
  str := '';
  for j := 0 to JCData.Prejezdy.Count-1 do
    str := str + Blky.GetBlkName(JCData.Prejezdy[j].Prejezd)+'; ';
- Self.LV.Items.Item[line].SubItems.Strings[14] := str;
+ Self.LV.Items.Item[line].SubItems.Strings[14] := LeftStr(str, Length(str)-2);
 
  // podminky vyhybky
  str := '';
@@ -183,6 +183,11 @@ begin
    str := str + '('+Blky.GetBlkName(JCData.podminky.zamky[j].Blok)+' : ' + Blky.GetBlkName(JCData.podminky.zamky[j].ref_blk) + ')';
  Self.LV.Items.Item[line].SubItems.Strings[16] := str;
 
+ // neprofilove useky
+ str := '';
+ for j := 0 to JCData.podminky.npUseky.Count-1 do
+   str := str + Blky.GetBlkName(JCData.podminky.npUseky[j]) + ', ';
+ Self.LV.Items.Item[line].SubItems.Strings[17] := LeftStr(str, Length(str)-2);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
