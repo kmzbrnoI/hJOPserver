@@ -712,13 +712,18 @@ begin
     if ((Blk as TBlkVyhybka).Stitek <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.GetGlobalSettings.id));
 
-    // kontrola nouzoveho zaveru:
-    if (((Blk as TBlkVyhybka).vyhZaver) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id));
+    // kontrola nouzoveho zaveru a redukce menu:
+    if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
+     begin
+      if ((Blk as TBlkVyhybka).vyhZaver) then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+      else if (TBlkVyhybka(Blk).redukce_menu) then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.GetGlobalSettings.id));
+     end;
 
     // kontrola spojky
     Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
-    // pokud nemam ja polohu, prespokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
+    // pokud nemam ja polohu, predpokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku neni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
     if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
      begin
@@ -767,17 +772,41 @@ begin
 
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
      begin
-      if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
+      if ((Blk as TBlkVyhybka).vyhZaver) then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+
+      else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
 
       if ((Blk as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_OBSAZENA, blk, Self.fproperties.Odvraty[i].Blok));
-
-      if ((Blk as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id));
      end;//if poloha <> Poloha
 
-    // to-do: odvrat spojka
+    // kontrola spojky odvratu
+    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    if (Blk2 <> nil) then
+     begin
+      // kontrola vyluky vyhybky:
+      if ((Blk2 as TBlkVyhybka).Vyluka <> '') then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.GetGlobalSettings.id));
+
+      // kontrola stitku vyhybky:
+      if ((Blk2 as TBlkVyhybka).Stitek <> '') then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.GetGlobalSettings.id));
+
+      // kontrola zamceni odvratu
+      if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
+       begin
+        if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+
+        if ((Blk2 as TBlkVyhybka).vyhZaver) then
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+
+        if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.GetGlobalSettings.id));
+       end;
+     end;
    end;//for i
 
   // kontrola trati
@@ -937,9 +966,14 @@ begin
     if ((Blk as TBlkVyhybka).Stitek <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.GetGlobalSettings.id));
 
-    // kontrola nouzoveho zaveru:
-    if (((Blk as TBlkVyhybka).vyhZaver) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id));
+    // kontrola nouzoveho zaveru a redukce menu:
+    if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
+     begin
+      if ((Blk as TBlkVyhybka).vyhZaver) then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+      else if (TBlkVyhybka(Blk).redukce_menu) then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.GetGlobalSettings.id));
+     end;
 
     // kontrola spojky
     Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
@@ -977,14 +1011,35 @@ begin
 
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
      begin
-      if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
-        bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
-
       if ((Blk as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+
+      else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
+        bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
      end;//if poloha <> Poloha
 
-    // to-do: odvrat spojka
+    // kontrola spojky odvratu
+    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    if (blk2 <> nil) then
+     begin
+      // kontrola vyluky vyhybky:
+      if ((Blk2 as TBlkVyhybka).Vyluka <> '') then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.GetGlobalSettings.id));
+
+      // kontrola stitku vyhybky:
+      if ((Blk2 as TBlkVyhybka).Stitek <> '') then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.GetGlobalSettings.id));
+
+      // kontrola zamceni odvratu
+      if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
+       begin
+        if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+
+        if ((Blk2 as TBlkVyhybka).vyhZaver) then
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+       end;
+     end;
    end;//for i
 end;//procedure
 
@@ -2988,7 +3043,15 @@ begin
     if (not (Blk as TBlkVyhybka).vyhZaver) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id));
 
-    // to-do: odvrat spojka
+    // kontrola spojky odvratu
+    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    if (blk2 <> nil) then
+     begin
+      // kontrola spravneho uzamceni odvratu
+      if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
+        if (not (Blk2 as TBlkVyhybka).vyhZaver) then
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+     end;
    end;//for i
 
   if (Self.fproperties.Trat > -1) then

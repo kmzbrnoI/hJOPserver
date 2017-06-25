@@ -143,8 +143,8 @@ begin
  for j := 0 to JCData.Odvraty.Count-1 do
   begin
    case (JCData.Odvraty[j].Poloha) of
-     TVyhPoloha.plus  : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', +, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+' )';
-     TVyhPoloha.minus : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', -, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+' )';
+     TVyhPoloha.plus  : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', +, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+')';
+     TVyhPoloha.minus : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', -, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+')';
    end;
   end;//for j
  Self.LV.Items.Item[line].SubItems.Strings[11] := str;
