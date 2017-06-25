@@ -23,7 +23,6 @@ uses
   fRegulator in 'fRegulator.pas' {F_DigiReg},
   fSplash in 'fSplash.pas' {F_splash},
   fAbout in 'fAbout.pas' {F_About},
-  fACEdit in 'fACEdit.pas' {F_AutRezEdit},
   fBlkPrejezd in 'fBlkPrejezd.pas' {F_BlkPrejezd},
   Verze in 'Verze.pas',
   fLoginPozadi in 'fLoginPozadi.pas' {F_Pozadi},
@@ -191,7 +190,6 @@ uses
   Application.CreateForm(TF_BlkZamek, F_BlkZamek);
   Application.CreateForm(TF_BlkRozp, F_BlkRozp);
   Application.CreateForm(TF_HVEdit, F_HVEdit);
-  Application.CreateForm(TF_AutRezEdit, F_AutRezEdit);
   Application.CreateForm(TF_ModCasSet, F_ModCasSet);
   Application.CreateForm(TF_About, F_About);
   F_Main.OnStart;

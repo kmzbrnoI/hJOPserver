@@ -3856,10 +3856,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Bloky: TListView
         Left = 0
         Top = 40
@@ -4069,10 +4065,6 @@ object F_Main: TF_Main
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_HV: TListView
         Left = 0
         Top = 40
@@ -4321,10 +4313,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Soupravy'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Soupravy: TListView
         Left = 0
         Top = 40
@@ -4495,10 +4483,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Oblasti '#345#237'zen'#237
       ImageIndex = 16
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stanice: TListView
         Left = 0
         Top = 40
@@ -4617,10 +4601,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Zesilova'#269'e'
       ImageIndex = 20
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
@@ -4848,10 +4828,6 @@ object F_Main: TF_Main
       Caption = 'AC'
       ParentShowHint = False
       ShowHint = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_AC_Db: TListView
         Left = 0
         Top = 40
@@ -4865,10 +4841,6 @@ object F_Main: TF_Main
         Align = alTop
         Columns = <
           item
-            Caption = 'Index'
-            Width = 40
-          end
-          item
             Caption = 'N'#225'zev'
             Width = 150
           end
@@ -4880,6 +4852,12 @@ object F_Main: TF_Main
           item
             Caption = 'Soubor'
             Width = 500
+          end
+          item
+            Caption = 'Kolikr'#225't spu'#353't'#283'n'
+          end
+          item
+            Caption = 'Kolikr'#225't dokon'#269'en'
           end>
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
@@ -4896,7 +4874,6 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnChange = LV_AC_DbChange
         OnCustomDrawItem = LV_AC_DbCustomDrawItem
-        OnDblClick = LV_AC_DbDblClick
       end
       object Panel1: TPanel
         Left = 0
@@ -4914,7 +4891,7 @@ object F_Main: TF_Main
         object P_AC_Dataload: TPanel
           Left = 5
           Top = 4
-          Width = 580
+          Width = 460
           Height = 32
           Margins.Left = 2
           Margins.Top = 2
@@ -4924,7 +4901,7 @@ object F_Main: TF_Main
           Color = clWhite
           TabOrder = 0
           object SB_AC_Play: TSpeedButton
-            Left = 427
+            Left = 317
             Top = 4
             Width = 29
             Height = 23
@@ -4970,7 +4947,7 @@ object F_Main: TF_Main
             OnClick = SB_AC_PlayClick
           end
           object SB_AC_Stop: TSpeedButton
-            Left = 460
+            Left = 350
             Top = 4
             Width = 31
             Height = 23
@@ -5016,7 +4993,7 @@ object F_Main: TF_Main
             OnClick = SB_AC_StopClick
           end
           object SB_AC_Pause: TSpeedButton
-            Left = 496
+            Left = 386
             Top = 4
             Width = 32
             Height = 23
@@ -5062,7 +5039,7 @@ object F_Main: TF_Main
             OnClick = SB_AC_PauseClick
           end
           object SB_AC_Repeat: TSpeedButton
-            Left = 532
+            Left = 422
             Top = 4
             Width = 30
             Height = 23
@@ -5109,7 +5086,7 @@ object F_Main: TF_Main
               FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
             OnClick = SB_AC_RepeatClick
           end
-          object E_dataload_AutRez: TEdit
+          object E_dataload_AC: TEdit
             Left = 8
             Top = 6
             Width = 197
@@ -5126,10 +5103,9 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            ReadOnly = True
             TabOrder = 0
           end
-          object B_AutRezim_add: TButton
+          object B_AC_Reload: TButton
             Left = 210
             Top = 3
             Width = 96
@@ -5138,7 +5114,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'P'#345'idat AC'
+            Caption = 'Znovuna'#269#237'st AC'
             Enabled = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -5148,27 +5124,7 @@ object F_Main: TF_Main
             ImageIndex = 44
             ParentFont = False
             TabOrder = 1
-            OnClick = B_AutRezim_addClick
-          end
-          object B_AutRezim_delete: TButton
-            Left = 313
-            Top = 3
-            Width = 97
-            Height = 25
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Smazat AC'
-            Enabled = False
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            TabOrder = 2
-            OnClick = B_AutRezim_deleteClick
+            OnClick = B_AC_ReloadClick
           end
         end
       end
@@ -5207,10 +5163,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'#233
       ImageIndex = 23
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Users: TListView
         Left = 0
         Top = 40
@@ -5364,10 +5316,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav MTB'
       ImageIndex = -1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stav_MTB: TListView
         Left = 0
         Top = 0
@@ -5643,10 +5591,6 @@ object F_Main: TF_Main
     object TS_MultiJC: TTabSheet
       Caption = 'Slo'#382'en'#233' j'#237'zdn'#237' cesty'
       ImageIndex = 12
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 0
@@ -5780,10 +5724,6 @@ object F_Main: TF_Main
     object TS_FuncsVyznam: TTabSheet
       Caption = 'V'#253'znamy funkc'#237
       ImageIndex = 13
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object M_funcsVyznam: TMemo
         Left = 0
         Top = 40
@@ -5829,10 +5769,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Prim'#225'rn'#237' LOG'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log: TListView
         Left = 0
         Top = 24

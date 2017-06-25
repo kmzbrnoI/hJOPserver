@@ -154,7 +154,7 @@ type
     LV_AC_Db: TListView;
     Panel1: TPanel;
     P_AC_Dataload: TPanel;
-    E_dataload_AutRez: TEdit;
+    E_dataload_AC: TEdit;
     TS_Users: TTabSheet;
     LV_Users: TListView;
     P_Users_pozadi: TPanel;
@@ -232,8 +232,7 @@ type
     B_mJC_Add: TButton;
     B_mJC_Remove: TButton;
     LV_AC_Kroky: TListView;
-    B_AutRezim_add: TButton;
-    B_AutRezim_delete: TButton;
+    B_AC_Reload: TButton;
     SB_AC_Play: TSpeedButton;
     SB_AC_Stop: TSpeedButton;
     SB_AC_Pause: TSpeedButton;
@@ -305,9 +304,6 @@ type
     procedure PC_1Change(Sender: TObject);
     procedure LV_AC_DbChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
-    procedure B_AutRezim_deleteClick(Sender: TObject);
-    procedure B_AutRezim_addClick(Sender: TObject);
-    procedure LV_AC_DbDblClick(Sender: TObject);
     procedure LV_ZesilovaceDblClick(Sender: TObject);
     procedure B_zes_addClick(Sender: TObject);
     procedure B_zes_deleteClick(Sender: TObject);
@@ -402,6 +398,7 @@ type
     procedure LV_Stav_MTBCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure MI_HoukClick(Sender: TObject);
+    procedure B_AC_ReloadClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -515,7 +512,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek,
      TOblsRizeni, TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom,
      TBlokIR, TOblRizeni, AC, SnadnSpusteni,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, DataAC, DataJC,
-     DataBloky, DataHV, DataMTB, DataORs, DataZesilovac, fACEdit, fBlkNew, fHVEdit,
+     DataBloky, DataHV, DataMTB, DataORs, DataZesilovac, fBlkNew, fHVEdit,
      fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd, fBlkSCom, fBlkTrat,
      TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
@@ -1462,6 +1459,13 @@ begin
       AppEvents.LogException(E, 'Save OR status');
   end;
 
+  try
+    ACDb.SaveStatToFile(ACDb.statfilename);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Save AC stats');
+  end;
+
   ini_lib.WriteBool('Log','main-file', Self.CHB_Mainlog_File.Checked);
   ini_lib.WriteBool('Log','main-table', Self.CHB_Mainlog_Table.Checked);
 
@@ -1577,15 +1581,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.B_AutRezim_addClick(Sender: TObject);
+procedure TF_Main.B_AC_ReloadClick(Sender: TObject);
 begin
- F_AutRezEdit.NewAutRezCreate;
-end;
+ try
+   ACDb.LoadFromDir(F_Main.E_dataload_AC.Text);
+   ACDb.LoadStatFromFile(ACDb.statfilename);
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar(E.Message), 'Chyba pøi naèítání AC', MB_OK OR MB_ICONWARNING);
+     Exit();
+    end;
+ end;
 
-procedure TF_Main.B_AutRezim_deleteClick(Sender: TObject);
-begin
- if Application.MessageBox(PChar('Opravdu smazat AC '+ACDb.ACs[Self.LV_AC_Db.ItemIndex].name+'?'), 'Mazání AC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
-   ACDb.RemoveAC(Self.LV_AC_Db.ItemIndex);
+ Application.MessageBox(PChar('AC úspìšnì naèteny z adresáøe "' + ACDb.dirname + '".' + #13#10 + 'Více informací v logu.'), 'Hotovo', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_Main.B_BlkAddClick(Sender: TObject);
@@ -2575,12 +2584,6 @@ begin
    Self.LV_AC_Db.Canvas.Brush.Color := $FFFFFF;
 end;
 
-procedure TF_Main.LV_AC_DbDblClick(Sender: TObject);
-begin
- if (LV_AC_Db.Selected <> nil) then
-   F_AutRezEdit.OpenForm(LV_AC_Db.ItemIndex);
-end;
-
 procedure TF_Main.LV_AC_KrokyCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
@@ -2822,7 +2825,6 @@ procedure TF_Main.DisableRemoveButtons;
   B_lok_delete.Enabled      := false;
   B_zes_delete.Enabled      := false;
   B_User_Delete.Enabled     := false;
-  B_AutRezim_delete.Enabled := false;
   B_VC_delete.Enabled       := false;
   B_JC_Reset.Enabled        := false;
   B_RemoveStack.Enabled     := false;
@@ -2888,9 +2890,10 @@ end;
 
 procedure TF_Main.UpdateACButtons();
 begin
+ B_AC_Reload.Enabled := not ACDb.acRunning;
+
  if (LV_AC_Db.Selected <> nil) then
   begin
-   B_AutRezim_delete.Enabled := not (ACDb.ACs[Self.LV_AC_Db.ItemIndex].running);
    if (ACDb.ACs[Self.LV_AC_Db.ItemIndex].running) then
     begin
      Self.SB_AC_Play.Enabled   := not ACDb.ACs[Self.LV_AC_Db.ItemIndex].running;
@@ -2905,7 +2908,6 @@ begin
      Self.SB_AC_Repeat.Enabled := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
     end;
   end else begin
-   B_AutRezim_delete.Enabled := false;
    Self.SB_AC_Play.Enabled   := false;
    Self.SB_AC_Stop.Enabled   := false;
    Self.SB_AC_Pause.Enabled  := false;

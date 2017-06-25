@@ -155,14 +155,16 @@ var read,read2:string;
   F_Main.E_Dataload_multiJC.Text := MultiJCDb.filename;
 
   F_Splash.AddStav('Naèítám databázi automatických režimù');
-  read := ini_lib.ReadString('NacteniDat','AutRezimy', 'data\AutRezimy.ini');
+  read := ini_lib.ReadString('NacteniDat', 'AC', 'AC');
+  read2 := ini_lib.ReadString('NacteniDat', 'AC_stat', 'data\AC_stat.ini');
   try
-    ACDb.LoadFromFile(read);
+    ACDb.LoadFromDir(read);
+    ACDb.LoadStatFromFile(read2);
   except
     on E:Exception do
       AppEvents.LogException(E);
   end;
-  F_Main.E_dataload_AutRez.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
+  F_Main.E_dataload_AC.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.dirname);
 
   F_Splash.AddStav('Naèítám databázi FormData');
   read := ini_lib.ReadString('NacteniDat','FormData', 'data\FormData.ini');
@@ -219,7 +221,7 @@ var return:Integer;
   end;
 
   try
-    ACDb.SaveToFile(ACDb.filename);
+    ACDb.SaveStatToFile(ACDb.statfilename);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -300,6 +302,8 @@ var return:Integer;
     ini_lib.WriteString('NacteniDat', 'mJC', ExtractRelativePath(ExtractFilePath(Application.ExeName), MultiJCDb.filename));
     ini_lib.WriteString('NacteniDat', 'soupravy', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_soupr.Text));
     ini_lib.WriteString('NacteniDat', 'users', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_Dataload_Users.Text));
+    ini_lib.WriteString('NacteniDat', 'AC', ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.dirname));
+    ini_lib.WriteString('NacteniDat', 'AC_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.statfilename));
 
     if (ORs.status_filename = '') then
       tmpStr := 'data\or_stat.ini'

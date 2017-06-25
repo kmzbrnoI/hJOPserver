@@ -74,9 +74,6 @@
 			<DCCReference Include="fAbout.pas">
 				<Form>F_About</Form>
 			</DCCReference>
-			<DCCReference Include="fACEdit.pas">
-				<Form>F_AutRezEdit</Form>
-			</DCCReference>
 			<DCCReference Include="fBlkPrejezd.pas">
 				<Form>F_BlkPrejezd</Form>
 			</DCCReference>

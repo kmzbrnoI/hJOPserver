@@ -167,7 +167,7 @@ var Blk:TBlk;
       // nacist soubor do StringList
       lines := TStringList.Create();
       try
-        lines.LoadFromFile(filename);
+        lines.LoadFromFile(filename, TEncoding.UTF8);
       except
         raise Exception.Create('Nelze nacist soubor');
       end;
@@ -175,8 +175,11 @@ var Blk:TBlk;
       for i := 0 to lines.Count-1 do
        begin
         // odstranit bile znaky
-        tmp := RemoveWhiteSpace(lines[i]);
-        lines[i] := tmp;
+        if (i > 0) then
+         begin
+          tmp := RemoveWhiteSpace(lines[i]);
+          lines[i] := tmp;
+         end;
 
         // odstranit komentare
         for j := 1 to Length(lines[i]) do
@@ -420,6 +423,7 @@ begin
      Self.frunning  := true;
      Self.repeating := false;
      Inc(Self.stat_run);
+     Self.changed := true;
      writelog('AC '+Self.name+ ' : START', WR_AUTREZ);
    end;
   end;

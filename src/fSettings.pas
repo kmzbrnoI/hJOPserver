@@ -160,14 +160,10 @@ var
 
 implementation
 
-uses  fTester, fNastaveni_Casu,
-  fAbout, fACEdit, Verze,
-  fZesilovacEdit,
-  fHVEdit, fLoginPozadi, fSystemInfo,
-  fBlkUsek, fBlkVyhybka, fBlkIR, fBlkSCom, fBlkNew, fAdminForm,
-  fJCEdit, fRychlostiEdit,
-  fSplash, GetSystems, Prevody,
-   TechnologieJC, FileSystem, TBloky, TBlok,
+uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
+  fLoginPozadi, fSystemInfo, fBlkUsek, fBlkVyhybka, fBlkIR, fBlkSCom, fBlkNew,
+  fAdminForm, fJCEdit, fRychlostiEdit, fSplash, GetSystems, Prevody,
+  TechnologieJC, FileSystem, TBloky, TBlok,
   TBlokVyhybka, TBlokSCom, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,
   SnadnSpusteni, TBlokPrejezd, fBlkPrejezd, TJCDatabase, THVDatabase,
   Logging, DataBloky, DataJC, DataMTB, Trakce,

@@ -4,13 +4,17 @@ interface
 
 uses Generics.Collections, AC, IniFiles, SysUtils, Classes;
 
+const
+ _FILE_SUFFIX = '.krk';
+
 type
   //AC database
   TACDb = class
     private
-      ffilename:string;
+      fstatfilename:string;
+      fdirname:string;
 
-      procedure SaveStat();
+      function GetACRunning():boolean;
 
     public
 
@@ -19,8 +23,9 @@ type
       constructor Create();
       destructor Destroy(); override;
 
-      procedure LoadFromFile(filename:string);
-      procedure SaveToFile(filename:string);
+      procedure LoadFromDir(const dirname:string);
+      procedure LoadStatFromFile(const filename:string);
+      procedure SaveStatToFile(const filename:string);
 
       function AddAC():TAC;
       function RemoveAC(index:Cardinal):Integer;
@@ -29,7 +34,9 @@ type
 
       procedure StopAllACs();
 
-      property filename:string read ffilename;
+      property statfilename:string read fstatfilename;
+      property dirname:string read fdirname;
+      property acRunning:boolean read GetACRunning;
   end;
 
 var
@@ -51,7 +58,7 @@ end;//ctor
 destructor TACDb.Destroy();
 var i:Integer;
 begin
- Self.SaveStat();
+ Self.SaveStatToFile(Self.fstatfilename);
  for i := 0 to Self.ACs.Count-1 do Self.ACs[i].Free();
  Self.ACs.Free();
  inherited Destroy();
@@ -60,92 +67,91 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 //load ACs db from ini file
-procedure TACDb.LoadFromFile(filename:string);
-var ini:TMemIniFile;
-    i:Integer;
-    sections:TStrings;
-    AC:TAC;
-    krk_file:string;
+procedure TACDb.LoadFromDir(const dirname:string);
+var AC:TAC;
+    SR:TSearchRec;
 begin
- writelog('Nacitam AC - '+filename, WR_DATA);
- Self.ffilename := filename;
- Self.ACs.Clear();
+  writelog('Nacitam AC - ' + dirname, WR_DATA);
+  Self.fdirname := dirname;
+  Self.ACs.Clear();
 
- try
-   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
- except
-   on E:Exception do
-    begin
-     AppEvents.LogException(E, 'Nelze nacist databazi AC - nelze otevrit soubor - '+filename);
-     Exit();
-    end;
- end;
-
- sections := TStringList.Create();
- ini.ReadSections(sections);
-
- for i := 0 to sections.Count-1 do
-  begin
-   AC := nil;
-   try
-     krk_file := ini.ReadString(sections[i], 'file', '');
-     AC := TAC.Create(krk_file);
-   except
-     on E:Exception do
-      begin
-       AppEvents.LogException(E, 'Chyba pri nacitani souboru AC - '+krk_file);
-       if (Assigned(AC)) then AC.Free();
-       continue;
+  // prohledavani adresare a nacitani soubor *.2lok
+  // najdeme prvni soubor
+  if (FindFirst(dirname+'\*'+_FILE_SUFFIX, faAnyFile, SR) = 0) then
+   begin
+    if ((SR.Attr AND faDirectory) = 0) then
+     begin
+      try
+        AC := TAC.Create(dirname+'\'+SR.Name);
+        Self.ACs.Add(AC);
+      except
+        on E:Exception do
+          writelog('Nelze nacist AC ' + SR.Name + ' : ' + E.Message, WR_ERROR);
       end;
+     end;
+
+    // hledame dalsi soubory
+    while (FindNext(SR) = 0) do
+     begin
+      if ((SR.Attr AND faDirectory) = 0) then
+       begin
+        try
+          AC := TAC.Create(dirname+'\'+SR.Name);
+          Self.ACs.Add(AC);
+        except
+          on E:Exception do
+            writelog('Nelze nacist AC ' + SR.Name + ' : ' + E.Message, WR_ERROR);
+        end;
+       end;
+     end;
+
+    SysUtils.FindClose(SR);
+    writelog('Naèteno '+IntToStr(Self.ACs.Count)+' AC', WR_DATA);
+   end else begin
+    writelog('Nenacteno zadne AC',WR_DATA);
    end;
 
-   AC.stat_run  := ini.ReadInteger(sections[i], 'stat_run', 0);
-   AC.stat_end  := ini.ReadInteger(sections[i], 'stat_end', 0);
-
-   Self.ACs.Add(AC);
-  end;//for i
-
- ini.Free();
- writelog('Nacteno '+IntToStr(Self.ACs.Count)+' AC', WR_DATA);
-
- ACTableData.LoadToTable();
+  ACTableData.LoadToTable();
 end;//function
 
-//save ACs db to inifile
-procedure TACDb.SaveToFile(filename:string);
+//load ACs db from ini file
+procedure TACDb.LoadStatFromFile(const filename:string);
 var ini:TMemIniFile;
-    i:Integer;
+    AC:TAC;
+    krk_filename:string;
 begin
+ writelog('Nacitam AC - '+filename, WR_DATA);
+ Self.fstatfilename := filename;
+
  try
    ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
-     AppEvents.LogException(E, 'Nelze ulozit databazi AC - nelze otevrit soubor - '+filename);
+     AppEvents.LogException(E, 'Nelze nacist statistiku AC - nelze otevrit soubor - '+filename);
      Exit();
     end;
  end;
 
- ini.Clear();
-
- for i := 0 to Self.ACs.Count-1 do
+ for AC in Self.ACs do
   begin
-   ini.WriteInteger(IntToStr(i), 'stat_run', Self.ACs[i].stat_run);
-   ini.WriteInteger(IntToStr(i), 'stat_end', Self.ACs[i].stat_end);
-   ini.WriteString (IntToStr(i), 'file',     Self.ACs[i].krk_filename);
+   krk_filename := ExtractFileName(AC.krk_filename);
+   AC.stat_run := ini.ReadInteger(krk_filename, 'stat_run', 0);
+   AC.stat_end := ini.ReadInteger(krk_filename, 'stat_end', 0);
   end;//for i
 
- ini.UpdateFile();
  ini.Free();
-end;//procedure
+ ACTableData.UpdateTable(true);
+end;//function
 
-procedure TACDb.SaveStat();
+procedure TACDb.SaveStatToFile(const filename:string);
 var ini:TMemIniFile;
-    i:Integer;
+    AC:TAC;
+    krk_filename:string;
 begin
  //save stat data
  try
-   ini := TMemIniFile.Create(Self.filename, TEncoding.UTF8);
+   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
    on E:Exception do
     begin
@@ -154,11 +160,15 @@ begin
     end;
  end;
 
- for i := 0 to Self.ACs.Count-1 do
+ for AC in Self.ACs do
   begin
-   ini.WriteInteger(IntToStr(i), 'stat_run', Self.ACs[i].stat_run);
-   ini.WriteInteger(IntToStr(i), 'stat_end', Self.ACs[i].stat_end);
+   krk_filename := ExtractFileName(AC.krk_filename);
+   ini.WriteInteger(krk_filename, 'stat_run', AC.stat_run);
+   ini.WriteInteger(krk_filename, 'stat_end', AC.stat_end);
   end;
+
+ ini.UpdateFile();
+ ini.Free();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -198,6 +208,19 @@ begin
   if (Self.ACs[i].running) then Self.ACs[i].Stop();
  F_Main.LV_AC_Db.ItemIndex := -1;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TACDb.GetACRunning():boolean;
+var AC:TAC;
+begin
+ for AC in Self.ACs do
+   if (AC.running) then
+     Exit(true);
+ Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 initialization
   ACDb := TACDb.Create();
