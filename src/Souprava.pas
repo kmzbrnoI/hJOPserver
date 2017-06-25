@@ -459,7 +459,7 @@ begin
     begin
      HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.souprava := -1;
 
-     if (TrkSystem.openned) then
+     if ((TrkSystem.openned) and (not HVDb.HVozidla[Self.data.HV.HVs[i]].ruc)) then
       begin
        // lokomotivu fyzicky odhlasujeme jen pokud jsme pripojeni k centrale
        TrkSystem.LokSetDirectSpeed(Self, HVDb.HVozidla[Self.data.HV.HVs[i]], 0);
