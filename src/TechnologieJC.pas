@@ -2371,7 +2371,7 @@ begin
 
    // nacteni neprofilovych useku:
    sl.Clear();
-   ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'podm-np-useky', '')), sl);
+   ExtractStrings([','], [], PChar(ini.ReadString(section, 'podm-np-useky', '')), sl);
    Self.fproperties.podminky.npUseky.Clear();
    for i := 0 to sl.Count-1 do
      Self.fproperties.podminky.npUseky.Add(StrToInt(sl[i]));
