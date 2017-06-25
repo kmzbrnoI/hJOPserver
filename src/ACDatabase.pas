@@ -73,6 +73,9 @@ var AC:TAC;
 begin
   writelog('Nacitam AC - ' + dirname, WR_DATA);
   Self.fdirname := dirname;
+
+  for AC in Self.ACs do
+    AC.Free();
   Self.ACs.Clear();
 
   // prohledavani adresare a nacitani soubor *.2lok
