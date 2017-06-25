@@ -12,6 +12,7 @@ uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
 
 type
  TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
+ TSpojkaPoloha = (souhlas = 0, nesouhlas = 1);
 
  TBlkVyhSettings = record
   MTBAddrs:TMTBAddrs;     // poradi(0..3): vst+,vst-,vyst+,vyst-
@@ -19,6 +20,7 @@ type
                           // pokud jsou obe vyhybky ve spojce, maji reference na sebe navzajem
                           // zmena MTB vstupu a vystupu v nastaveni jedne vyhybky ovlivnuje druhou
                           // POZOR: jedna data ulozena na dvou mistech, pri nacitani se nekontroluje koherence; SOUBOR MUSI BYT KOHERENTNI (tj. obe vyhybky musi mit navaznosti vzdy na tu druhou)
+  spojkaPoloha:TSpojkaPoloha; // jestli je spojka navazana na souhlasne ci nesouhlasne polohy vyhybek
   zamek:Integer;          // pokud ma vyhybka navaznost na zamek, je zde id bloku zamku; jinak -1
   zamekPoloha:TVyhPoloha; // poloha, v jake se vyhybka musi nachazet pro uzamceni zamku
  end;
@@ -118,7 +120,7 @@ type
     procedure SetVyhZaver(zaver:boolean);
 
     function GetZamek():TBlk;
-
+    function GetNewSpojkaPoloha(ownPoloha:TVyhPoloha):TVyhPoloha;
 
   public
     constructor Create(index:Integer);
@@ -213,10 +215,11 @@ var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.VyhSettings.MTBAddrs    := Self.LoadMTB(ini_tech,section);
- Self.VyhSettings.spojka      := ini_tech.ReadInteger(section, 'spojka', -1);
- Self.VyhSettings.zamek       := ini_tech.ReadInteger(section, 'zamek', -1);
- Self.VyhSettings.zamekPoloha := TVyhPoloha(ini_tech.ReadInteger(section, 'zamek-pol', 0));
+ Self.VyhSettings.MTBAddrs     := Self.LoadMTB(ini_tech,section);
+ Self.VyhSettings.spojka       := ini_tech.ReadInteger(section, 'spojka', -1);
+ Self.VyhSettings.spojkaPoloha := TSpojkaPoloha(ini_tech.ReadInteger(section, 'spojka-pol', Integer(TSpojkaPoloha.souhlas)));
+ Self.VyhSettings.zamek        := ini_tech.ReadInteger(section, 'zamek', -1);
+ Self.VyhSettings.zamekPoloha  := TVyhPoloha(ini_tech.ReadInteger(section, 'zamek-pol', 0));
 
  Self.VyhStav.Stit := ini_stat.ReadString(section, 'stit', '');
  Self.VyhStav.Vyl  := ini_stat.ReadString(section, 'vyl', '');
@@ -248,7 +251,10 @@ begin
  Self.SaveMTB(ini_tech,section,Self.VyhSettings.MTBAddrs);
 
  if (Self.VyhSettings.spojka > -1) then
+  begin
    ini_tech.WriteInteger(section, 'spojka', Self.VyhSettings.spojka);
+   ini_tech.WriteInteger(section, 'spojka-pol', Integer(Self.VyhSettings.spojkaPoloha));
+  end;
 
  if (Self.VyhSettings.zamek > -1) then
   begin
@@ -394,8 +400,18 @@ begin
      Exit(2);
     end;
 
-   spojka_settings.spojka   := self.GlobalSettings.id;
-   spojka_settings.MTBAddrs := Self.VyhSettings.MTBAddrs;
+   spojka_settings.spojka       := self.GlobalSettings.id;
+   spojka_settings.spojkaPoloha := Self.VyhSettings.spojkaPoloha;
+
+   if (Self.VyhSettings.spojkaPoloha = TSpojkaPoloha.souhlas) then
+     spojka_settings.MTBAddrs := Self.VyhSettings.MTBAddrs
+   else begin
+     spojka_settings.MTBAddrs.data[0] := Self.VyhSettings.MTBAddrs.data[1];
+     spojka_settings.MTBAddrs.data[1] := Self.VyhSettings.MTBAddrs.data[0];
+     spojka_settings.MTBAddrs.data[2] := Self.VyhSettings.MTBAddrs.data[3];
+     spojka_settings.MTBAddrs.data[3] := Self.VyhSettings.MTBAddrs.data[2];
+   end;
+
    (Blk as TBlkVyhybka).SetSettings(spojka_settings);
   end else begin
    // odebereme spojku z druhe vyhybky
@@ -709,8 +725,9 @@ begin
    // pokud se jedna o spojku, volame SetPoloha i na spojku
    Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
    if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_VYH) and
-   (((Blk as TBlkVyhybka).Stav.staveni_plus <> Self.VyhStav.staveni_plus) or ((Blk as TBlkVyhybka).Stav.staveni_minus <> Self.VyhStav.staveni_minus))) then
-     (Blk as TBlkVyhybka).SetPoloha(new, zamek, nouz);
+      (((Blk as TBlkVyhybka).Stav.staveni_plus <> Self.VyhStav.staveni_plus) or
+       ((Blk as TBlkVyhybka).Stav.staveni_minus <> Self.VyhStav.staveni_minus))) then
+     (Blk as TBlkVyhybka).SetPoloha(Self.GetNewSpojkaPoloha(new), zamek, nouz);
   end;
 
  Result := 0;
@@ -1153,6 +1170,22 @@ begin
    Blky.NouzZaverZrusen(Self);
    Self.Change();
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVyhybka.GetNewSpojkaPoloha(ownPoloha:TVyhPoloha):TVyhPoloha;
+begin
+ if (Self.VyhSettings.spojkaPoloha = TSpojkaPoloha.souhlas) then
+   Result := ownPoloha
+ else begin
+   case (ownPoloha) of
+     TVyhPoloha.plus: Result := TVyhPoloha.minus;
+     TVyhPoloha.minus: Result := TVyhPoloha.plus;
+   else
+     Result := ownPoloha;
+   end;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

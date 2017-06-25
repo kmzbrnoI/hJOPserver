@@ -27,8 +27,6 @@ type
     B_Save: TButton;
     L_Usek03: TLabel;
     LB_Stanice: TListBox;
-    CHB_Spojka: TCheckBox;
-    CB_Spojka: TComboBox;
     SE_VystPlusMTB: TSpinEdit;
     SE_VystMinusMTB: TSpinEdit;
     SE_VstPlusMTB: TSpinEdit;
@@ -39,11 +37,17 @@ type
     CHB_Zamek: TCheckBox;
     Label2: TLabel;
     CB_Zamek_Poloha: TComboBox;
+    GB_Spojka: TGroupBox;
+    CHB_Spojka: TCheckBox;
+    CB_SpojkaBlok: TComboBox;
+    Label3: TLabel;
+    CB_SpojkaPoloha: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_SpojkaClick(Sender: TObject);
     procedure CHB_ZamekClick(Sender: TObject);
+    procedure CB_SpojkaBlokChange(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
@@ -123,21 +127,15 @@ var glob:TBlkSettings;
 
   settings := Blk.GetSettings();
 
-  if (settings.spojka > -1) then
-    Self.CHB_Spojka.Checked := true
-   else
-    Self.CHB_Spojka.Checked := false;
-
+  Self.CHB_Spojka.Checked := (settings.spojka > -1);
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
+  if (settings.spojka > -1) then
+    Self.CB_SpojkaPoloha.ItemIndex := Integer(settings.spojkaPoloha);
 
-  if (settings.zamek > -1) then
-   begin
-    Self.CHB_Zamek.Checked := true;
-    Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.zamekPoloha);
-   end else
-    Self.CHB_Zamek.Checked := false;
-
+  Self.CHB_Zamek.Checked := (settings.zamek > -1);
   Self.CHB_ZamekClick(Self.CHB_Zamek);
+  if (settings.zamek > -1) then
+    Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.zamekPoloha);
 
   //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni MTB_board = [0])
   SE_VstPlusMTB.Value    := settings.MTBAddrs.data[0].board;
@@ -173,7 +171,7 @@ var spojka_vypust:TArI;
     spojka_vypust[0] := Self.Blk.GetGlobalSettings().id;
 
     // spojka
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, _BLK_VYH, Self.Blk.GetSettings().spojka);
+    Blky.NactiBlokyDoObjektu(Self.CB_SpojkaBlok, @Self.CB_SpojkaData, @spojka_vypust, obls, _BLK_VYH, Self.Blk.GetSettings().spojka);
 
     //zamek
     Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, _BLK_ZAMEK, Self.Blk.GetSettings().zamek);
@@ -181,7 +179,7 @@ var spojka_vypust:TArI;
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.spojka > -1);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.zamek > -1);
    end else begin
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, _BLK_VYH, -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_SpojkaBlok, @Self.CB_SpojkaData, nil, nil, _BLK_VYH, -1);
     Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, _BLK_ZAMEK, -1);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);    
@@ -200,11 +198,57 @@ procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
   F_BlkVyhybka.Close;
  end;
 
+procedure TF_BlkVyhybka.CB_SpojkaBlokChange(Sender: TObject);
+var Blk:TBlk;
+    mtbs:TMTBAddrs;
+begin
+ if ((not Self.CHB_Spojka.Checked) or (Self.CB_SpojkaBlok.ItemIndex = -1) or
+     (Self.CB_SpojkaPoloha.ItemIndex = -1)) then Exit();
+
+ Blky.GetBlkByIndex(Self.CB_SpojkaData[Self.CB_SpojkaBlok.ItemIndex], Blk);
+ if ((Blk = nil) or (Blk.GetGlobalSettings.typ <> _BLK_VYH)) then Exit();
+
+ mtbs := TBlkVyhybka(Blk).GetSettings().MTBAddrs;
+
+ if (CB_SpojkaPoloha.ItemIndex = 0) then
+  begin
+   SE_VstPlusMTB.Value    := mtbs.data[0].board;
+   SE_VstPlusPort.Value   := mtbs.data[0].port;
+
+   SE_VstMinusMTB.Value   := mtbs.data[1].board;
+   SE_VstMinusPort.Value  := mtbs.data[1].port;
+
+   SE_VystPlusMTB.Value   := mtbs.data[2].board;
+   SE_VystPlusPort.Value  := mtbs.data[2].port;
+
+   SE_VystMinusMTB.Value  := mtbs.data[3].board;
+   SE_VystMinusPort.Value := mtbs.data[3].port;
+  end else begin
+   SE_VstPlusMTB.Value    := mtbs.data[1].board;
+   SE_VstPlusPort.Value   := mtbs.data[1].port;
+
+   SE_VstMinusMTB.Value   := mtbs.data[0].board;
+   SE_VstMinusPort.Value  := mtbs.data[0].port;
+
+   SE_VystPlusMTB.Value   := mtbs.data[3].board;
+   SE_VystPlusPort.Value  := mtbs.data[3].port;
+
+   SE_VystMinusMTB.Value  := mtbs.data[2].board;
+   SE_VystMinusPort.Value := mtbs.data[2].port;
+  end;
+end;
+
 procedure TF_BlkVyhybka.CHB_SpojkaClick(Sender: TObject);
 begin
- Self.CB_Spojka.Enabled := (Sender as TCheckBox).Checked;
- if (not (Sender as TCheckBox).Checked) then
-   Self.CB_Spojka.ItemIndex := -1;
+ Self.CB_SpojkaBlok.Enabled := (Sender as TCheckBox).Checked;
+ Self.CB_SpojkaPoloha.Enabled := (Sender as TCheckBox).Checked;
+ if ((Sender as TCheckBox).Checked) then
+  begin
+   Self.CB_SpojkaPoloha.ItemIndex := 0;
+  end else begin
+   Self.CB_SpojkaBlok.ItemIndex   := -1;
+   Self.CB_SpojkaPoloha.ItemIndex := -1;
+  end;
 end;
 
 procedure TF_BlkVyhybka.CHB_ZamekClick(Sender: TObject);
@@ -217,8 +261,6 @@ begin
    Self.CB_Zamek_Poloha.ItemIndex := -1;
   end;
 end;
-
-//procedure
 
 procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -235,9 +277,14 @@ var glob:TBlkSettings;
     Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if ((Self.CHB_Spojka.Checked) and (Self.CB_Spojka.ItemIndex < 0)) then
+  if ((Self.CHB_Spojka.Checked) and (Self.CB_SpojkaBlok.ItemIndex < 0)) then
    begin
-    Application.MessageBox('Vyberte spojku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte blok spojky !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+  if ((Self.CHB_Spojka.Checked) and (Self.CB_SpojkaPoloha.ItemIndex < 0)) then
+   begin
+    Application.MessageBox('Vyberte synchronizaci spojky !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CHB_Zamek.Checked) then
@@ -287,10 +334,12 @@ var glob:TBlkSettings;
   settings.MTBAddrs.data[3].board := SE_VystMinusMTB.Value;
   settings.MTBAddrs.data[3].port  := SE_VystMinusPort.Value;
 
-  if (Self.CHB_Spojka.Checked) then
-   settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex])
-  else
+  if (Self.CHB_Spojka.Checked) then begin
+   settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_SpojkaBlok.ItemIndex]);
+   settings.spojkaPoloha := TSpojkaPoloha(Self.CB_SpojkaPoloha.ItemIndex);
+  end else begin
    settings.spojka := -1;
+  end;
 
   if (Self.CHB_Zamek.Checked) then
    begin

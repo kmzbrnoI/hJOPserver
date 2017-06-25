@@ -5,7 +5,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (vyhybka)'
-  ClientHeight = 457
+  ClientHeight = 513
   ClientWidth = 320
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -94,11 +94,11 @@ object F_BlkVyhybka: TF_BlkVyhybka
     MaxValue = 2147483647
     MinValue = 1
     TabOrder = 1
-    Value = 0
+    Value = 1
   end
   object GB_MTB: TGroupBox
     Left = 7
-    Top = 238
+    Top = 302
     Width = 304
     Height = 172
     Margins.Left = 2
@@ -112,7 +112,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 5
+    TabOrder = 3
     object L_Vyh05: TLabel
       Left = 151
       Top = 16
@@ -378,7 +378,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
   end
   object B_Storno: TButton
     Left = 158
-    Top = 419
+    Top = 483
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -386,12 +386,12 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 5
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 237
-    Top = 419
+    Top = 483
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -400,7 +400,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 6
+    TabOrder = 4
     OnClick = B_SaveClick
   end
   object LB_Stanice: TListBox
@@ -415,33 +415,9 @@ object F_BlkVyhybka: TF_BlkVyhybka
     ItemHeight = 13
     TabOrder = 2
   end
-  object CHB_Spojka: TCheckBox
-    Left = 15
-    Top = 125
-    Width = 64
-    Height = 17
-    Caption = 'Spojka'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 3
-    OnClick = CHB_SpojkaClick
-  end
-  object CB_Spojka: TComboBox
-    Left = 118
-    Top = 123
-    Width = 194
-    Height = 21
-    Style = csDropDownList
-    ItemHeight = 13
-    TabOrder = 4
-  end
   object GroupBox1: TGroupBox
     Left = 8
-    Top = 150
+    Top = 214
     Width = 304
     Height = 83
     Caption = ' Z'#225'mek '
@@ -451,7 +427,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 8
+    TabOrder = 6
     object Label2: TLabel
       Left = 12
       Top = 46
@@ -516,6 +492,75 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Items.Strings = (
         '+'
         '-')
+    end
+  end
+  object GB_Spojka: TGroupBox
+    Left = 8
+    Top = 126
+    Width = 304
+    Height = 82
+    Caption = ' Spojka '
+    TabOrder = 7
+    object Label3: TLabel
+      Left = 12
+      Top = 46
+      Width = 73
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Synchonizovat:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object CHB_Spojka: TCheckBox
+      Left = 12
+      Top = 20
+      Width = 64
+      Height = 17
+      Caption = 'Spojka'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = CHB_SpojkaClick
+    end
+    object CB_SpojkaBlok: TComboBox
+      Left = 102
+      Top = 20
+      Width = 194
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 1
+      OnChange = CB_SpojkaBlokChange
+    end
+    object CB_SpojkaPoloha: TComboBox
+      Left = 102
+      Top = 47
+      Width = 194
+      Height = 21
+      Style = csDropDownList
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ItemHeight = 13
+      ParentFont = False
+      TabOrder = 2
+      OnChange = CB_SpojkaBlokChange
+      Items.Strings = (
+        'souhlasn'#233' polohy'
+        'nesouhlasn'#233' polohy')
     end
   end
 end
