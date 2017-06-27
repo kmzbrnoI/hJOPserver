@@ -1207,7 +1207,7 @@ begin
      if ((Self.IsPovolovaciNavest()) and (not Self.SComStav.padani)) then
       begin
        // je postaveno -> zkontrlolujeme, jestli je postaveno dalsi navestidlo
-       if ((spr.rychlost > 0) and (spr.smer <> Self.SComRel.smer)) then   Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
+       if ((spr.rychlost > 0) and (spr.smer <> Self.SComRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
        if (Self.DNjc.data.DalsiNNavaznostTyp = 2) then
         begin
@@ -1236,13 +1236,16 @@ begin
              spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.SComRel.smer);
           end;
         end;
+
+       // kontorla prehravani stanicniho hlaseni
+       spr.CheckSh(Self);
       end else begin
        // neni povolovaci navest -> zastavit LOKO
        if ((spr.smer = Self.SComRel.smer) and (spr.rychlost <> 0)) then
          spr.SetRychlostSmer(0, Self.SComRel.smer);
       end;
     end else begin
-     // nenalezena jizdni cesta -> muze se jedna o navestidlo v autobloku
+     // nenalezena jizdni cesta -> muze se jednat o navestidlo v autobloku
      if (spr.smer = Self.SComRel.smer) then
       begin
        if ((Self.IsPovolovaciNavest()) and (not Self.SComStav.padani) and

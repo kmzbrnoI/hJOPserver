@@ -36,6 +36,8 @@ type
 
    vychoziOR:TObject;
    cilovaOR:TObject;
+
+   hlaseniPrehrano:boolean;
   end;//TSoupravaData
 
   TSouprava = class
@@ -78,6 +80,7 @@ type
     procedure InterChangeStanice(change_ev:Boolean = true);
     procedure SetSpeedBuffer(speedBuffer:PInteger);
     procedure LokDirChanged();
+    procedure CheckSH(nav:TObject);
 
     procedure ToggleHouk(desc:string);
     procedure SetHoukState(desc:string; state:boolean);
@@ -94,6 +97,7 @@ type
     property typ:string read data.typ;
     property vychoziOR:TObject read data.vychoziOR;
     property cilovaOR:TObject read data.cilovaOR;
+    property hlaseniPrehrano:boolean read data.hlaseniPrehrano;
 
     // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
     class procedure UvolV(old:TSoupravaHV; new:TSoupravaHV);
@@ -102,9 +106,10 @@ type
 
 implementation
 
-uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr,
+uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlok, TBlokSCom,
-      fRegulator, Trakce, fMain, TBlokTratUsek;
+      fRegulator, Trakce, fMain, TBlokTratUsek, stanicniHlaseniHelper,
+      stanicniHlaseni;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -115,6 +120,7 @@ begin
  Self.changed := false;
  Self.findex := index;
  Self.LoadFromFile(ini, section);
+ Self.data.hlaseniPrehrano := false;
 end;//ctor
 
 constructor TSouprava.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject);
@@ -478,6 +484,7 @@ begin
  Self.data.OblRizeni := OblRizeni;
  for i := 0 to Self.data.HV.cnt-1 do
    HVDb.HVozidla[Self.data.HV.HVs[i]].PredejStanici(OblRizeni as TOR);
+ Self.Data.hlaseniPrehrano := false;
  Self.changed := true;
 end;//procedure
 
@@ -752,6 +759,70 @@ begin
      TrkSystem.LokSetFunc(Self, HV, func);
     end;
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSouprava.CheckSH(nav:TObject);
+var mnav:TBlkScom;
+    oblr:TOR;
+    shPlay:TSHToPlay;
+    shSpr:TSHSpr;
+    ok:boolean;
+    i:Integer;
+begin
+ if ((Self.hlaseniPrehrano) or (self.vychoziOR = nil) or (self.cilovaOR = nil)
+     or (self.typ = '')) then Exit();
+
+ ok := true;
+ for i := 0 to Length(stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN)-1 do
+  begin
+   if (Self.typ = stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN[i]) then
+    begin
+     ok := false;
+     break;
+    end;
+  end;
+
+ if (not ok) then Exit();
+
+ mnav := TBlkSCom(nav);
+ if (mnav.OblsRizeni.Cnt < 1) then Exit();
+ oblr := mnav.OblsRizeni.ORs[0];
+
+ if ((not Assigned(oblr.hlaseni)) or (not oblr.hlaseni.available)) then Exit();
+
+ try
+   shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(self, oblr);
+ except
+   on E:Exception do
+     AppEvents.LogException(E, 'CanPlayPrijezdSH');
+ end;
+
+ shSpr.cislo := Self.nazev;
+ shSpr.typ   := Self.typ;
+ shSpr.fromORid := TOR(Self.vychoziOR).id;
+ shSpr.toORid := TOR(Self.cilovaOR).id;
+
+ if (shPlay.stanicniKolej <> nil) then
+   shSpr.kolej := shPlay.stanicniKolej.Stav.cislo_koleje;
+
+ // WARN: Self.data.hlaseniPrehrano je nastaveno na true i kdyz s skutecne
+ // neprehraje. Tohle funguje za predpokadu, ze prvni navestidlo, ktere potkam
+ // na vjezdu do stanice, je vejzdove a setri to vypocetni cas.
+
+ try
+   if ((shPlay.trat = nil) and (shPlay.stanicniKolej <> nil)) then begin
+     oblr.hlaseni.Prijede(shSpr);
+     Self.data.hlaseniPrehrano := true;
+   end else if (shPlay.trat <> nil) then begin
+     oblr.hlaseni.Projede(shSpr);
+     Self.data.hlaseniPrehrano := true;
+   end;
+ except
+   on E:Exception do
+     AppEvents.LogException(E, 'Prehravani hlaseni');
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
