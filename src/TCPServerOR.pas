@@ -1058,7 +1058,7 @@ begin
      (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
      str := str + (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')' + ', ';
     end;
-   F_Main.LV_Clients.Items.Item[index].SubItems.Strings[5] := '';
+   F_Main.LV_Clients.Items.Item[index].SubItems.Strings[5] := LeftStr(str, Length(str)-2);
   end;
 
  if ((Self.clients[index].conn.Data as TTCPORsRef).menu <> nil) then
