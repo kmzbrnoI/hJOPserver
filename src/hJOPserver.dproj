@@ -248,6 +248,7 @@
 				<Form>F_HoukEvsUsek</Form>
 			</DCCReference>
 			<DCCReference Include="stanicniHlaseni.pas"/>
+			<DCCReference Include="stanicniHlaseniHelper.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

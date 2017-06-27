@@ -159,7 +159,7 @@ procedure TStanicniHlaseni.BroadcastData(data:string);
 var client:TIdContext;
 begin
  for client in Self.m_clients do
-   ORTCPServer.SendLn(client, Self.m_orid + ';OR;' + data);
+   ORTCPServer.SendLn(client, Self.m_orid + ';SH;' + data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

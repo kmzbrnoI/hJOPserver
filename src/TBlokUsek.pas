@@ -5,7 +5,8 @@ unit TBlokUsek;
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
-     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, rrEvent;
+     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, rrEvent,
+     stanicniHlaseni;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -107,6 +108,8 @@ type
     procedure MenuNUZStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
     procedure MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuHLASENIPrijezdClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
     procedure PotvrUvolLok(Sender:TIdContext; success:boolean);
@@ -122,6 +125,8 @@ type
     function GetHoukList():TList<THoukEv>;
     function GetHoukEvEnabled():boolean;
     procedure SetHoukEvEnabled(state:boolean);
+
+    function GetSHSpr():TSHSpr;
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -211,7 +216,7 @@ implementation
 uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
-    stanicniHlaseni;
+    stanicniHlaseniHelper;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -988,19 +993,57 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ try
+   if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
+   if (Self.Souprava = -1) then Exit();
+   TOR(SenderOR).hlaseni.Odjede(Self.GetSHSpr());
+ except
+   on E:Exception do
+    begin
+     writelog('Nepodaøilo se spustit stanièní hlášení : ' + E.Message, WR_ERROR);
+     ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se spustit stanièní hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+    end;
+ end;
+end;
+
+procedure TBlkUsek.MenuHLASENIPrijezdClick(SenderPnl:TIdContext; SenderOR:TObject);
 var shSpr:TSHSpr;
+    blk:TBlkUsek;
 begin
  try
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
    if (Self.Souprava = -1) then Exit();
 
-   shSpr.cislo    := Soupravy[Self.Souprava].nazev;
-   shSpr.typ      := Soupravy[Self.Souprava].typ;
-   shSpr.kolej    := Self.UsekStav.cislo_koleje;
-   shSpr.fromORid := TOR(Soupravy[Self.Souprava].vychoziOR).id;
-   shSpr.toORid   := TOR(Soupravy[Self.Souprava].cilovaOR).id;
+   shSpr := Self.GetSHSpr();
+   blk := stanicniHlaseniHelper.CanPlayPrijezdSH(Soupravy[Self.Souprava], TOR(SenderOR)).stanicniKolej;
+   if (blk = nil) then Exit();
 
-   TOR(SenderOR).hlaseni.Odjede(shSpr);
+   shSpr.kolej := blk.Stav.cislo_koleje;
+   TOR(SenderOR).hlaseni.Prijede(shSpr);
+ except
+   on E:Exception do
+    begin
+     writelog('Nepodaøilo se spustit stanièní hlášení : ' + E.Message, WR_ERROR);
+     ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se spustit stanièní hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+    end;
+ end;
+end;
+
+procedure TBlkUsek.MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
+var shSpr:TSHSpr;
+    blk:TBlkUsek;
+begin
+ try
+   if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
+   if (Self.Souprava = -1) then Exit();
+
+   shSpr := Self.GetSHSpr();
+   blk := stanicniHlaseniHelper.CanPlayPrijezdSH(Soupravy[Self.Souprava], TOR(SenderOR)).stanicniKolej;
+
+   if (blk <> nil) then
+     shSpr.kolej := blk.Stav.cislo_koleje;
+   TOR(SenderOR).hlaseni.Projede(shSpr);
  except
    on E:Exception do
     begin
@@ -1018,6 +1061,7 @@ var Blk:TBlk;
     i:Integer;
     spr:TSouprava;
     ok:boolean;
+    shPlay:stanicniHlaseniHelper.TSHToPlay;
 begin
  Result := inherited;
 
@@ -1044,7 +1088,6 @@ begin
      Result := Result + 'VEZMI vlak,';
 
    if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
-       (Self.UsekStav.stanicni_kolej) and
        (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
     begin
      ok := true;
@@ -1057,8 +1100,20 @@ begin
         end;
       end;
 
-     if (ok) then
+     if ((Self.UsekStav.stanicni_kolej) and (ok)) then
        Result := Result + 'HLÁŠENÍ odjezd,';
+
+     try
+       shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(spr, TOR(SenderOR));
+     except
+       on E:Exception do
+         AppEvents.LogException(E, 'CanPlayPrijezdSH');
+     end;
+
+     if ((shPlay.trat = nil) and (shPlay.stanicniKolej <> nil)) then
+       Result := Result + 'HLÁŠENÍ pøíjezd,'
+     else if (shPlay.trat <> nil) then
+       Result := Result + 'HLÁŠENÍ prùjezd,';
     end;
 
    Result := Result + '-,';
@@ -1170,7 +1225,9 @@ begin
  else if (item = 'NUZ<')           then Self.MenuNUZStopClick(SenderPnl, SenderOR)
  else if (item = 'OBSAZ')          then Self.MenuObsazClick(SenderPnl, SenderOR)
  else if (item = 'UVOL')           then Self.MenuUvolClick(SenderPnl, SenderOR)
- else if (item = 'HLÁŠENÍ odjezd') then Self.MenuHLASENIOdjezdClick(SenderPnl, SenderOR);
+ else if (item = 'HLÁŠENÍ odjezd') then Self.MenuHLASENIOdjezdClick(SenderPnl, SenderOR)
+ else if (item = 'HLÁŠENÍ pøíjezd')then Self.MenuHLASENIPrijezdClick(SenderPnl, SenderOR)
+ else if (item = 'HLÁŠENÍ prùjezd')then Self.MenuHLASENIPrujezdClick(SenderPnl, SenderOR);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1372,6 +1429,19 @@ begin
    Result := Self.UsekSettings.houkEvL
  else
    Result := Self.UsekSettings.houkEvS;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.GetSHSpr():TSHSpr;
+begin
+ if (Self.Souprava = -1) then Exit();
+
+ Result.cislo    := Soupravy[Self.Souprava].nazev;
+ Result.typ      := Soupravy[Self.Souprava].typ;
+ Result.kolej    := Self.UsekStav.cislo_koleje;
+ Result.fromORid := TOR(Soupravy[Self.Souprava].vychoziOR).id;
+ Result.toORid   := TOR(Soupravy[Self.Souprava].cilovaOR).id;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
