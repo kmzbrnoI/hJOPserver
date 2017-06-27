@@ -807,10 +807,6 @@ begin
  if (shPlay.stanicniKolej <> nil) then
    shSpr.kolej := shPlay.stanicniKolej.Stav.cislo_koleje;
 
- // WARN: Self.data.hlaseniPrehrano je nastaveno na true i kdyz s skutecne
- // neprehraje. Tohle funguje za predpokadu, ze prvni navestidlo, ktere potkam
- // na vjezdu do stanice, je vejzdove a setri to vypocetni cas.
-
  try
    if ((shPlay.trat = nil) and (shPlay.stanicniKolej <> nil)) then begin
      oblr.hlaseni.Prijede(shSpr);
