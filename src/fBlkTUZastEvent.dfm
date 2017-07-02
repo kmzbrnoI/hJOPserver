@@ -39,8 +39,6 @@ object F_BlkTUZastEvent: TF_BlkTUZastEvent
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitLeft = 10
-      ExplicitTop = 14
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
@@ -111,8 +109,6 @@ object F_BlkTUZastEvent: TF_BlkTUZastEvent
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitTop = 88
-      ExplicitWidth = 257
     end
   end
 end

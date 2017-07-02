@@ -66,13 +66,17 @@ end;
 procedure TF_BlkTUZastEvent.OpenForm(events: TBlkTUZastEvents);
 begin
  if (events.enabled) then
-   Self.fZast.FillFromRR(events.zastaveni);
+   Self.fZast.FillFromRR(events.zastaveni)
+ else
+   Self.fZast.ShowEmpty();
 
  Self.CHB_Zpomal.Checked := events.zpomaleni.enabled;
  if (events.zpomaleni.enabled) then
   begin
    Self.CB_ZpomalitKmH.ItemIndex := (events.zpomaleni.speed - 1) div 10;
    Self.fZpom.FillFromRR(events.zpomaleni.ev);
+  end else begin
+   Self.fZpom.ShowEmpty();
   end;
 
  Self.CHB_ZpomalClick(Self.CHB_Zpomal);

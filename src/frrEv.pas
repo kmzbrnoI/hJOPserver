@@ -74,6 +74,7 @@ begin
  Self.CB_UsekStav.ItemIndex := 1;
  Self.CB_IRStav.ItemIndex := 1;
  Self.ME_Cas.Text := '00:00.0';
+ Self.CB_TypChange(Self.CB_Typ);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

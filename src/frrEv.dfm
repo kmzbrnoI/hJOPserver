@@ -21,6 +21,44 @@ object F_RREv: TF_RREv
     Height = 13
     Caption = 'Typ ud'#225'losti:'
   end
+  object GB_Cas: TGroupBox
+    Left = 8
+    Top = 51
+    Width = 145
+    Height = 110
+    Caption = ' '#268'as '
+    TabOrder = 3
+    object Label6: TLabel
+      Left = 8
+      Top = 16
+      Width = 80
+      Height = 13
+      Caption = 'Form'#225't: mm:ss,z'
+    end
+    object ME_Cas: TMaskEdit
+      Left = 8
+      Top = 36
+      Width = 125
+      Height = 21
+      Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      EditMask = '!90:00.0;1;_'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      MaxLength = 7
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 0
+      Text = '  :  . '
+    end
+  end
   object GB_Usek: TGroupBox
     Left = 8
     Top = 51
@@ -110,49 +148,6 @@ object F_RREv: TF_RREv
       Style = csDropDownList
       ItemHeight = 13
       TabOrder = 1
-      Items.Strings = (
-        '1'
-        '2'
-        '3'
-        '4')
-    end
-  end
-  object GB_Cas: TGroupBox
-    Left = 8
-    Top = 51
-    Width = 145
-    Height = 110
-    Caption = ' '#268'as '
-    TabOrder = 3
-    object Label6: TLabel
-      Left = 8
-      Top = 16
-      Width = 80
-      Height = 13
-      Caption = 'Form'#225't: mm:ss,z'
-    end
-    object ME_Cas: TMaskEdit
-      Left = 8
-      Top = 36
-      Width = 125
-      Height = 21
-      Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      EditMask = '!90:00.0;1;_'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      MaxLength = 7
-      ParentFont = False
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 0
-      Text = '  :  . '
     end
   end
   object CB_Typ: TComboBox
