@@ -436,8 +436,9 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Width = 194
     Height = 21
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
+    OnChange = CB_SpojkaChange
   end
   object GroupBox1: TGroupBox
     Left = 8
@@ -480,7 +481,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = []
-      ItemHeight = 0
+      ItemHeight = 13
       ParentFont = False
       TabOrder = 0
     end

@@ -44,6 +44,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_SpojkaClick(Sender: TObject);
     procedure CHB_ZamekClick(Sender: TObject);
+    procedure CB_SpojkaChange(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
@@ -199,6 +200,30 @@ procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
  begin
   F_BlkVyhybka.Close;
  end;
+
+procedure TF_BlkVyhybka.CB_SpojkaChange(Sender: TObject);
+var Blk:TBlk;
+    mtbs:TMTBAddrs;
+begin
+ if ((not Self.CHB_Spojka.Checked) or (Self.CB_Spojka.ItemIndex = -1)) then Exit();
+
+ Blky.GetBlkByIndex(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex], Blk);
+ if ((Blk = nil) or (Blk.GetGlobalSettings.typ <> _BLK_VYH)) then Exit();
+
+ mtbs := TBlkVyhybka(Blk).GetSettings().MTBAddrs;
+
+ SE_VstPlusMTB.Value    := mtbs.data[0].board;
+ SE_VstPlusPort.Value   := mtbs.data[0].port;
+
+ SE_VstMinusMTB.Value   := mtbs.data[1].board;
+ SE_VstMinusPort.Value  := mtbs.data[1].port;
+
+ SE_VystPlusMTB.Value   := mtbs.data[2].board;
+ SE_VystPlusPort.Value  := mtbs.data[2].port;
+
+ SE_VystMinusMTB.Value  := mtbs.data[3].board;
+ SE_VystMinusPort.Value := mtbs.data[3].port;
+end;
 
 procedure TF_BlkVyhybka.CHB_SpojkaClick(Sender: TObject);
 begin
