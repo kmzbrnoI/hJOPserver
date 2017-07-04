@@ -970,6 +970,7 @@ begin
          panel.Rights := TORCOntrolRights.read;
          Self.Connected[i] := panel;
          Self.ORAuthoriseResponse(panel.Panel, panel.Rights, 'Pøevzetí øízení', user.fullName);
+         ORTCPServer.GUIQueueLineToRefresh(i);
         end else begin
          rights := TORControlRights.read;
          msg := 'Panel již pøipojen !';
