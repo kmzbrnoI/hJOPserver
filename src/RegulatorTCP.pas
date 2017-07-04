@@ -230,7 +230,7 @@ begin
    HV.RemoveRegulator(Sender);
    TTCPORsRef(Sender.Data).regulator_loks.Remove(HV);
    ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;release;Loko odhlášeno');
-   ORTCPServer.GUIRefreshLine(TTCPORsRef(Sender.Data).index);
+   ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
    Exit();
   end;
 
@@ -583,7 +583,7 @@ begin
    begin
     // pridani nove loko do seznamu
     TTCPORsRef(Regulator.Data).regulator_loks.Add(HV);
-    ORTCPServer.GUIRefreshLine(TTCPORsRef(Regulator.Data).index);
+    ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
    end;
 end;//procedure
 

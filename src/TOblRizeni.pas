@@ -886,7 +886,7 @@ begin
  if (rights = TORControlRights.null) then
   begin
    Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Úspìšnì autorizováno - odpojen', '');
-   ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
+   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
    if (Self.PnlDGetRights(Sender) >= write) then Self.AuthWriteToRead(Sender);
    if (Self.PnlDGetIndex(Sender) > -1) then Self.PnlDRemove(Sender);
    Exit();
@@ -936,7 +936,7 @@ begin
      Self.ORAuthoriseResponse(Sender, UserRights, msg, '')
     end;
 
-   ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
+   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
    Exit;
   end;
 
@@ -946,7 +946,7 @@ begin
    // superuser muze autorizovat zapis i pri vyplych systemech
    Self.PnlDAdd(Sender, TORControlRights.read, username);
    Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat zápis pøi vyplých systémech !', user.fullName);
-   ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
+   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
    Exit;
   end;
 
@@ -982,14 +982,14 @@ begin
 
  if (Self.PnlDAdd(Sender, rights, username) <> 0) then
   begin
-   ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
+   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
    Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Pøipojeno maximum OØ, nelze autorizovat další !', '');
    Exit;
   end;
 
  UsrDb.LoginUser(username);
  Self.ORAuthoriseResponse(Sender, rights, msg, user.fullName);
- ORTCPServer.GUIRefreshLine((Sender.Data as TTCPORsRef).index);
+ ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
 
  if ((rights > read) and (last_rights <= read)) then Self.AuthReadToWrite(Sender);
  if ((rights < write) and (last_rights >= write)) then Self.AuthWriteToRead(Sender);
@@ -1448,7 +1448,7 @@ begin
    Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Odpojení systémù', '');
    index := (Self.Connected[i].Panel.Data as TTCPORsRef).index;
    Self.PnlDRemove(Self.Connected[i].Panel);
-   ORTCPServer.GUIRefreshLine(index);
+   ORTCPServer.GUIQueueLineToRefresh(index);
  end;
 
  Self.stack.ClearStack();
