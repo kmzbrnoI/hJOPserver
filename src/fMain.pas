@@ -866,7 +866,16 @@ begin
  F_Main.LogStatus('Loko: odhlašuji...');
  Application.ProcessMessages();
  F_Main.S_lok_prevzato.Brush.Color := clBlue;
- TrkSystem.OdhlasitAll;
+
+ try
+   TrkSystem.OdhlasitAll();
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Nepodaøilo se odhlásit lokomotivy:'+#13#10+E.Message),
+            'Varování', MB_OK OR MB_ICONWARNING);
+    end;
+ end;
 end;
 
 procedure TF_Main.A_All_Loko_PrevzitExecute(Sender: TObject);

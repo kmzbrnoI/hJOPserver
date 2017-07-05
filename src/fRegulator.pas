@@ -215,9 +215,17 @@ procedure TF_DigiReg.FormCloseQuery(Sender: TObject;
   if (Self.OpenHV <> nil) then
    begin
 
-    if ((Self.OpenHV.Slot.prevzato) and (Self.OpenHV.Stav.regulators.Count = 0) and (Self.OpenHV.Stav.souprava < 0)) then
-      TrkSystem.OdhlasitLoko(Self.OpenHV)
-    else
+    if ((Self.OpenHV.Slot.prevzato) and (Self.OpenHV.Stav.regulators.Count = 0)
+        and (Self.OpenHV.Stav.souprava < 0)) then
+     begin
+      try
+        TrkSystem.OdhlasitLoko(Self.OpenHV)
+      except
+        on E:Exception do
+          Application.MessageBox(PChar('Lokomotivu se nepodaøilo odhlásit:'+#13#10+E.Message),
+              'Varování', MB_OK OR MB_ICONWARNING);
+      end;
+     end else
       if (Self.OpenHV.Stav.regulators.Count = 0) then
         Self.OpenHV.ruc := false;
 

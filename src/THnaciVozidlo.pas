@@ -743,7 +743,13 @@ begin
     end else begin
      // loko neni na souprave, ani v rucnim regulatoru -> odhlasit
      if ((Self.Stav.regulators.Count = 0) and (not RegCollector.IsLoko(Self))) then
-       TrkSystem.OdhlasitLoko(Self);
+      begin
+       try
+         TrkSystem.OdhlasitLoko(Self);
+       except
+
+       end;
+      end;
     end;
   end;
 

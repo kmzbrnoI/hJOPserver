@@ -1443,7 +1443,17 @@ begin
      Integer(data^) := i;
      Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateErr, data);
      Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateOK, data);
-     Self.OdhlasitLoko(HVDb.HVozidla[i]);
+     try
+       Self.OdhlasitLoko(HVDb.HVozidla[i]);
+     except
+       on E:Exception do
+        begin
+         Self.callback_err := TTrakce.GenerateCallback(nil);
+         Self.callback_ok  := TTrakce.GenerateCallback(nil);
+         FreeMem(data);
+         F_Main.LogStatus('Výjimka: ' + E.Message);
+        end;
+     end;
      Exit();
     end;
   end;
@@ -2110,7 +2120,12 @@ begin
       begin
        Integer(data^) := i;
        Self.callback_err := TTrakce.GenerateCallback(Self.NouzReleaseCallbackErr, data);
-       Self.OdhlasitLoko(HVDb.HVozidla[i]);
+       try
+         Self.OdhlasitLoko(HVDb.HVozidla[i]);
+       except
+         on E:Exception do
+           FreeMem(data);
+       end;
       end;
      while (HVDb.HVozidla[i].Slot.prevzato) do
       begin
