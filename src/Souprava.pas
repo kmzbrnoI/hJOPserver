@@ -445,7 +445,8 @@ begin
      HVDb.HVozidla[old.HVs[i]].Stav.souprava := -1;
      TrkSystem.LokSetSpeed(nil, HVDb.HVozidla[old.HVs[i]], 0);
 
-     if (HVDb.HVozidla[old.HVs[i]].Stav.regulators.Count = 0) and (not RegCollector.IsLoko(HVDb.HVozidla[old.HVs[i]])) then
+     if ((TrkSystem.openned) and (not HVDb.HVozidla[old.HVs[i]].ruc) and
+         (HVDb.HVozidla[old.HVs[i]].Stav.regulators.Count = 0) and (not RegCollector.IsLoko(HVDb.HVozidla[old.HVs[i]]))) then
        TrkSystem.OdhlasitLoko(HVDb.HVozidla[old.HVs[i]]);
     end;
   end;
