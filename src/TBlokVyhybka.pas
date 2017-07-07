@@ -726,8 +726,11 @@ begin
  if ((spojka = nil) or ((((spojka as TBlkVyhybka).Zaver = TZaver.no) or ((spojka as TBlkVyhybka).Zaver = TZaver.staveni)) and (not (spojka as TBlkVyhybka).vyhZaver) and (not (spojka as TBlkVyhybka).Stav.locked))) then
   begin
    try
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
+     if (MTB.Started) then
+      begin
+       MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
+       MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
+      end;
    except
 
    end;
