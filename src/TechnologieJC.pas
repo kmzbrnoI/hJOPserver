@@ -1508,6 +1508,13 @@ var i,j:Integer;
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
 
+        if (TBlkTrat(Blk).Zadost) then
+         begin
+          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Probíhá žádost '+Blk.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+          writelog('Krok 14 : Trat '+Blk.GetGlobalSettings().name+' : probiha zadost !', WR_VC);
+          Exit;
+         end;
+
         // tahleta situace opravdu muze nastat:
         if (( ((Blk as TBlkTrat).Smer <> Self.fproperties.TratSmer) and (((Blk as TBlkTrat).nouzZaver) or
              ((((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or
@@ -2568,6 +2575,7 @@ begin
   begin
    Blky.GetBlkByID(Self.fproperties.Trat, Blk);
    Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
+   if (TBlkTrat(Blk).Zadost) then Exit(false);   
    if ((((not (TBlkTU(Blk2).sectReady)) or ((Blk as TBlkTrat).ZAK)) and (Self.fproperties.TypCesty = TJCType.vlak)) or
        ((Blk as TBlkTrat).RBPCan) or (TBlkTrat(Blk).Smer <> Self.fproperties.TratSmer)) then
      Exit(false);
