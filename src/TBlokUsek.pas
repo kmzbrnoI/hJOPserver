@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
      IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, rrEvent,
-     stanicniHlaseni;
+     stanicniHlaseni, changeEvent;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -37,7 +37,6 @@ type
   zkrat:TBoosterSignal;     // zkrat zesilovace
   napajeni:TBoosterSignal;  // napajeni zesilovace
   DCC:boolean;              // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
-  redukuji:TReduction;      // zde si ukladam, koho redukuji; ukladaji se id; jakmile se z meho bloku uvolni zaver, vse odredukuji
   stanicni_kolej:boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
   cislo_koleje:string;      // cislo koleje, pokud je stanicni
   vlakPresun:boolean;       // pokud je vlak na teto koleji oznacen pro presun do jine koelje, je zde true
@@ -140,6 +139,7 @@ type
 
     EventsOnObsaz:TChangeEvents;
     EventsOnUvol:TChangeEvents;
+    EventsOnZaverRelease:TChangeEvents;
 
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -156,7 +156,6 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:boolean = false); override;
 
     procedure Freeze(); override;
     procedure UnFreeze(); override;
@@ -167,8 +166,6 @@ type
     procedure SetSettings(data:TBlkUsekSettings);
 
     procedure GetObsazeno(var ar:TUsekStavAr);
-
-    procedure AddToReductionDB(blk_id:Integer);
 
     procedure SetUsekVyl(Sender:TIDCOntext; vyl:string); overload;
 
@@ -224,10 +221,10 @@ begin
 
  Self.GlobalSettings.typ := _BLK_USEK;
  Self.UsekStav := _def_usek_stav;
- Self.InitReduction(Self.UsekStav.redukuji);
 
  Self.EventsOnObsaz := TChangeEvents.Create();
  Self.EventsOnUvol  := TChangeEvents.Create();
+ Self.EventsOnZaverRelease := TChangeEvents.Create();
 
  Self.UsekSettings.houkEvL := TList<THoukEv>.Create();
  Self.UsekSettings.houkEvS := TList<THoukEv>.Create();
@@ -252,7 +249,9 @@ begin
 
  Self.EventsOnObsaz.Free();
  Self.EventsOnUvol.Free();
- inherited Destroy();
+ Self.EventsOnZaverRelease.Free();
+
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -405,7 +404,11 @@ begin
  Self.UsekStav.napajeni   := TBoosterSignal.undef;
  Self.UsekStav.DCC        := false;
  for i := 0 to 3 do Self.UsekStav.StavAr[i] := disabled;
- Self.RemoveAllReduction(Self.UsekStav.redukuji);
+
+ Self.EventsOnObsaz.Clear();
+ Self.EventsOnUvol.Clear();
+ Self.EventsOnZaverRelease.Clear();
+
  Self.Change();
 end;//procedure
 
@@ -539,15 +542,6 @@ begin
  inherited Update();
 end;//procedure
 
-procedure TBlkUsek.Change(now:boolean = false);
-begin
- // pri zruseni zaveru zrusim redukci na vsech blocich, ktere mam ulozene
- if (Self.Zaver = TZaver.no) then
-   Self.RemoveAllReduction(Self.UsekStav.redukuji);
-
- inherited Change(now);
-end;//procedure
-
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.SetUsekNUZ(nuz:boolean);
@@ -576,12 +570,17 @@ end;//procedure
 procedure TBlkUsek.SetUsekZaver(Zaver:TZaver);
 var old:TZaver;
 begin
+ if (Zaver = Self.Zaver) then Exit();
+
  if ((Integer(Self.UsekStav.Zaver) > 0) and (Zaver = TZaver.no)) then
    Self.NUZ := false;
 
  old := Self.Zaver;
  Self.UsekStav.Zaver      := Zaver;
  Self.UsekStav.SprPredict := -1;
+
+ if ((old > TZaver.no) and (zaver = TZaver.no)) then
+   Self.CallChangeEvents(Self.EventsOnZaverRelease);
 
  // staveci zavery se do panelu neposilaji, protoze jsou mi k nicemu
  if (Self.Zaver <> TZaver.staveni) or (old <> TZaver.no) then
@@ -1228,13 +1227,6 @@ begin
  else if (item = 'HLÁŠENÍ odjezd') then Self.MenuHLASENIOdjezdClick(SenderPnl, SenderOR)
  else if (item = 'HLÁŠENÍ pøíjezd')then Self.MenuHLASENIPrijezdClick(SenderPnl, SenderOR)
  else if (item = 'HLÁŠENÍ prùjezd')then Self.MenuHLASENIPrujezdClick(SenderPnl, SenderOR);
-end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkUsek.AddToReductionDB(blk_id:Integer);
-begin
- Self.AddReduction(Self.UsekStav.redukuji, blk_id);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

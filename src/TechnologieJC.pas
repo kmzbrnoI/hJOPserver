@@ -42,7 +42,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok,
   IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO, TBlokVyhybka,
-  TOblRizeni;
+  TOblRizeni, changeEvent, changeEventCaller;
 
 const
   _JC_TIMEOUT_SEC = 20;                                                         // timeout pro staveni jizdni cesty (vlakove i posunove v sekundach)
@@ -531,6 +531,11 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Odvraty[i].ref_blk));
       Exit;
      end;
+    if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
+     begin
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Odvraty[i].ref_blk));
+      Exit;
+     end;
     if (Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Odvraty[i].Blok));
@@ -613,6 +618,11 @@ begin
     if (Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].ref_blk, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.podminky.zamky[i].ref_blk));
+      Exit;
+     end;
+    if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
+     begin
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
       Exit;
      end;
    end;//for i
@@ -1249,7 +1259,6 @@ var i,j:Integer;
     aZaver:TJCType;
     Navestidlo, Blk, Blk2, Trat:TBlk;
     uzavren,uzavren_glob:boolean;
-    ev:TChangeEvent;
     str:string;
  begin
   if (not Self.Staveni) then Exit;
@@ -1261,11 +1270,12 @@ var i,j:Integer;
 
   case (Self.Krok) of
    10:begin
-      // nejprve priradime uvolneni zaveru posledniho bloku uvolneni zaveru perdposledniho bloku
+      // nejprve priradime uvolneni zaveru posledniho bloku uvolneni zaveru predposledniho bloku
       if (Self.fproperties.Useky.Count > 1) then
        begin
         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-2], Blk);
-        (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Useky[Self.fproperties.Useky.Count-1]);
+        TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+          CreateChangeEvent(ceCaller.NullUsekZaver, Self.fproperties.Useky[Self.fproperties.Useky.Count-1]));
        end;
 
       writelog('Krok 10: useky: nastavuji staveci zavery', WR_VC);
@@ -1285,22 +1295,21 @@ var i,j:Integer;
        begin
         // pridani zruseni redukce
         Blky.GetBlkByID(Self.fproperties.Odvraty[i].ref_blk, Blk);
-        case (Blk.GetGlobalSettings().typ) of
-          _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Odvraty[i].Blok);
-        end;
+        TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, Self.fproperties.Odvraty[i].Blok));
 
         // nastaveni odvratu
         Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
-        (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha), true);
+        TBlkVyhybka(Blk).RedukujMenu();
+        TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha), true);
        end;
 
       writelog('Krok 10 : zamky: nastavuji zavery', WR_VC);
       for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].ref_blk, Blk);
-        case (Blk.GetGlobalSettings().typ) of
-          _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.podminky.zamky[i].Blok);
-        end;
+        TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+          CreateChangeEvent(ceCaller.NullZamekZaver, Self.fproperties.podminky.zamky[i].Blok));
 
         // nastaveni zaveru zamku
         Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, Blk);
@@ -1350,10 +1359,10 @@ var i,j:Integer;
            _BLK_SCOM:begin
              //scom
              writelog('Krok 12 : scom '+Blk.GetGlobalSettings().name+' - redukuji menu', WR_VC);
+             TBlkSCom(Blk).RedukujMenu();
              Blky.GetBlkByID(Self.fproperties.Prisl[i].ref_blk, Blk);
-             case (Blk.GetGlobalSettings().typ) of
-               _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prisl[i].Blok);
-             end;
+             TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+               CreateChangeEvent(ceCaller.NullSComMenuReduction, Self.fproperties.Prisl[i].Blok));
            end;// _BLK_SCOM
          end;//case
         end;//for i
@@ -1374,11 +1383,13 @@ var i,j:Integer;
            // posunova cesta:
            writelog('Krok 12 : prejezd '+Blk.GetGlobalSettings().name+' - uzaviram', WR_VC);
 
+           Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+           TBlkPrejezd(Blk).Zaver := true;
+
            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
            Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, Blk);
-           case (Blk.GetGlobalSettings().typ) of
-             _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[i].Prejezd);
-           end;
+           TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+             CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.Prejezdy[i].Prejezd));
 
            uzavren := true;
            uzavren_glob := true;
@@ -1392,29 +1403,28 @@ var i,j:Integer;
               begin
                writelog('Krok 12 : prejezd '+Blk.GetGlobalSettings().name+' - aktivacni usek '+Blk2.GetGlobalSettings().name+' obsazen - uzaviram', WR_VC);
 
+               Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+               TBlkPrejezd(Blk).Zaver := true;
+
                // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
                Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, Blk);
-               case (Blk.GetGlobalSettings().typ) of
-                 _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[i].Prejezd);
-               end;
+               TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+                 CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.Prejezdy[i].Prejezd));
 
                uzavren := true;
                uzavren_glob := true;
-               break;   // overit, ze breakuje jen vnitrni cyklus
+               break;
               end;
             end;//for j
           end;// else posunova cesta
 
          if (not uzavren) then
           begin
-           ev.func := Self.UsekClosePrj;
-           ev.data := i;
-
            // prejezd neuzaviram -> pridam pozadavek na zavreni pri obsazeni do vsech aktivacnich useku
            for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
             begin
              Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], Blk2);
-             (Blk2 as TBlkUsek).AddChangeEvent((Blk2 as TBlkUsek).EventsOnObsaz, ev);
+             (Blk2 as TBlkUsek).AddChangeEvent((Blk2 as TBlkUsek).EventsOnObsaz, CreateChangeEvent(Self.UsekClosePrj, i));
             end;
 
            writelog('Krok 12 : prejezd '+Blk.GetGlobalSettings().name+' - zadny aktivacni usek neobsazen - nechavam otevreny', WR_VC);
@@ -1542,7 +1552,8 @@ var i,j:Integer;
 
         // zruseni zaveru posledniho bloku JC priradime zruseni zaveru trati
         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
-        (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Trat);
+        TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+          CreateChangeEvent(ceCaller.NullTratZaver, Self.fproperties.Trat));
        end;
 
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
@@ -2638,27 +2649,25 @@ end;//procedure
 procedure TJC.UsekClosePrj(Sender:TObject; data:Integer);
 var i:Integer;
     Blk:TBlk;
-    func:TChangeEvent;
 begin
  if (not Self.postaveno) then Exit(); 
 
- // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
- // prejezd se taky prikazem AddToReductionDb automaticky uzavre
- Blky.GetBlkByID(Self.fproperties.Prejezdy[data].oteviraci, Blk);
- case (Blk.GetGlobalSettings().typ) of
-   _BLK_USEK, _BLK_TU: (Blk as TBlkUsek).AddToReductionDB(Self.fproperties.Prejezdy[data].Prejezd);
- end;
-
+ // zavrit prejezd
  Blky.GetBlkByID(Self.fproperties.Prejezdy[data].Prejezd, Blk);
- writelog('JC '+Self.nazev+': obsazen '+(Sender as TBlkUsek).GetGlobalSettings().name+' - uzaviram prejezd '+Blk.GetGlobalSettings().name, WR_VC, 0);
+ TBlkPrejezd(Blk).Zaver := true;
+ writelog('JC '+Self.nazev+': obsazen '+(Sender as TBlkUsek).GetGlobalSettings().name+
+    ' - uzaviram prejezd '+Blk.GetGlobalSettings().name, WR_VC, 0);
 
- func.func := Self.UsekClosePrj;
- func.data := data;
+ // prejezd se uzavira -> po uvolneni zaveru bloku pd prejezdem prejezd opet otevrit
+ Blky.GetBlkByID(Self.fproperties.Prejezdy[data].oteviraci, Blk);
+ TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
+   CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.Prejezdy[data].Prejezd));
 
  for i := 0 to Self.fproperties.Prejezdy[data].uzaviraci.Count-1 do
   begin
    Blky.GetBlkByID(Self.fproperties.Prejezdy[data].uzaviraci[i], Blk);
-   (Blk as TBlkUsek).RemoveChangeEvent((Blk as TBlkUsek).EventsOnObsaz, func);
+   (Blk as TBlkUsek).RemoveChangeEvent((Blk as TBlkUsek).EventsOnObsaz,
+          CreateChangeEvent(Self.UsekClosePrj, data));
   end;//for i
 end;//procedure
 

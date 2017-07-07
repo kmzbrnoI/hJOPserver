@@ -29,7 +29,7 @@ type
   staveni_minus,staveni_plus:Boolean;         // stavi se zrovna vyhybka do polohy plus, ci minus?
   locked: boolean;                            // skutecny zamek na vystupu - jestli je MTB vystup zamknut
   redukce_menu:Integer;                       // redukovane menu = zamcena vyhybka; 0 = neredukovano, jinak pocet bloku, kolik redukuje
-  redukuji:TReduction;                        // zde si ukladam, koho redukuji; ukladaji se id
+  redukuji_spojku:boolean;                    // jestli redukuji vyhybku ve spojce
   vyhZaver:Cardinal;                          // pocet bloku, ktere na vyhybku udelily nouzovy zaver
 
   staveniErrCallback, staveniOKCallback:TNotifyEvent;     // callback eventy pro koncovou polohu vyhybky (resp. timeout prestavovani)
@@ -198,7 +198,6 @@ begin
  Self.VyhStav := Self._def_vyh_stav;
  Self.fzamek  := nil;
  Self.fparent := nil;
- Self.InitReduction(Self.VyhStav.redukuji);
 end;//ctor
 
 destructor TBlkVyhybka.Destroy();
@@ -277,19 +276,20 @@ begin
     Exit();
 
  Self.VyhStav.poloha := none;
+ Self.VyhStav.redukuji_spojku := false;
  Self.Update();       //update will call Change()
 end;//procedure
 
 procedure TBlkVyhybka.Disable();
 begin
  Self.VyhStav.poloha := disabled;
- Self.RemoveAllReduction(Self.VyhStav.redukuji);
+ Self.VyhStav.redukuji_spojku := false;
  Self.Change();
 end;//procedure
 
 procedure TBlkVyhybka.Reset();
 begin
- Self.RemoveAllReduction(Self.VyhStav.redukuji);
+ Self.VyhStav.redukuji_spojku := false;
  Self.VyhStav.redukce_menu := 0;
 end;//procedure
 
@@ -935,6 +935,7 @@ end;//procedure
 
 procedure TBlkVyhybka.Change(now:boolean = false);
 var changed:boolean;
+    blk:TBlk;
 begin
  changed := false;
 
@@ -960,12 +961,20 @@ begin
    if ((Self.Zaver <> TZaver.no) or (Self.vyhZaver)) then
     begin
      // zaver
-     if (not Self.IsReduction(Self.VyhStav.redukuji, Self.VyhSettings.spojka)) then
-      Self.AddReduction(Self.VyhStav.redukuji, Self.VyhSettings.spojka);
+     if (not Self.VyhStav.redukuji_spojku) then
+      begin
+       Blky.GetBlkByID(Self.VyhSettings.spojka, blk);
+       TBlkVyhybka(blk).RedukujMenu();
+       Self.VyhStav.redukuji_spojku := true;
+      end;
     end else begin
      // zaver neni
-     if (Self.IsReduction(Self.VyhStav.redukuji, Self.VyhSettings.spojka)) then
-      Self.RemoveReduction(Self.VyhStav.redukuji, Self.VyhSettings.spojka);
+     if (Self.VyhStav.redukuji_spojku) then
+      begin
+       Blky.GetBlkByID(Self.VyhSettings.spojka, blk);
+       TBlkVyhybka(blk).ZrusRedukciMenu();
+       Self.VyhStav.redukuji_spojku := false;
+      end;
     end;
   end;
 

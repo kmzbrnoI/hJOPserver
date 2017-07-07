@@ -249,6 +249,8 @@
 			</DCCReference>
 			<DCCReference Include="stanicniHlaseni.pas"/>
 			<DCCReference Include="stanicniHlaseniHelper.pas"/>
+			<DCCReference Include="changeEvent.pas"/>
+			<DCCReference Include="changeEventCaller.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

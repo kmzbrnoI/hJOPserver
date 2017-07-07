@@ -133,7 +133,9 @@ uses
   fHoukEvs in 'fHoukEvs.pas' {F_HoukEvs},
   fHoukEvsUsek in 'fHoukEvsUsek.pas' {F_HoukEvsUsek},
   stanicniHlaseni in 'stanicniHlaseni.pas',
-  stanicniHlaseniHelper in 'stanicniHlaseniHelper.pas';
+  stanicniHlaseniHelper in 'stanicniHlaseniHelper.pas',
+  changeEvent in 'changeEvent.pas',
+  changeEventCaller in 'changeEventCaller.pas';
 
 {$R *.res}
 

@@ -5,7 +5,7 @@ unit TBlok;
 interface
 
 uses IniFiles, TechnologieMTB, SysUtils, TOblsRizeni,
-      Generics.Collections, IdContext, JsonDataObjects, TOblRizeni;
+      Generics.Collections, IdContext, JsonDataObjects, TOblRizeni, changeEvent;
 
 const
  //typy bloku
@@ -25,7 +25,6 @@ const
  _BLK_DISABLED = -5;
 
  _BLK_MTBCNT = 4;
- _MAX_REDUCTION = 16;
  _MAX_EVENTS    = 16;
 
 type
@@ -39,9 +38,6 @@ type
   Count:Byte;
  end;
 
- // pokud ja redukuji, zde si uchovavam, koho redukuji
- TReduction = array[0.._MAX_REDUCTION-1] of Integer;
-
  ///////////////////////////////
  TBlkSettings = record
   name:string;
@@ -53,17 +49,6 @@ type
  TOnBlkChange = procedure(Sender:TObject) of object;
 
  ///////////////////////////////
-
- // databaze funkci k zavolani pri urcite udalosti (napr. pri obsazeni useku se vola uzavreni prejezdu do jizdni cesty)
-
- TChangeEventFunc = procedure(Sender:TObject; data:Integer) of object;
-
- TChangeEvent = record
-  func:TChangeEventFunc;
-  data:Integer;
- end;
-
- TChangeEvents = TList<TChangeEvent>;
 
  TBlk = class(TObject)
   private const
@@ -86,12 +71,6 @@ type
    //loading and saving MTB
    class function LoadMTB(ini:TMemIniFile;section:string):TMTBAddrs;
    class procedure SaveMTB(ini:TMemIniFile;section:string;data:TMTBAddrs);
-
-   class procedure InitReduction(var db:TReduction);
-   class procedure AddReduction(var db:TReduction; const blk_id:Integer);       // zredukovat a zaznemanat do DB
-   class procedure RemoveReduction(var db:TReduction; const blk_id:Integer);    // odredukovat a smazat záznam z DB
-   class procedure RemoveAllReduction(var db:TReduction);                       // odredukovat vsechny bloky
-   class function IsReduction(var db:TReduction; const blk_id:Integer):boolean;     // Redukuji tento blok?
 
    class procedure PushMTBToOR(ORs:TORsRef; MTBs:TMTBAddrs);
 
@@ -272,86 +251,6 @@ procedure TBlk.UnFreeze();
 begin
  Self.ffrozen := false;
 end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-// redukcni prikazy
-
-class procedure TBlk.InitReduction(var db:TReduction);                                      // všude dát -1
-var i:Integer;
-begin
- for i := 0 to _MAX_REDUCTION-1 do
-  db[i] := -1;
-end;//procedure
-
-class procedure TBlk.AddReduction(var db:TReduction; const blk_id:Integer);       // zredukovat a zaznemanat do DB
-var i:Integer;
-    Blk:TBlk;
-begin
- for i := 0 to _MAX_REDUCTION-1 do
-  if (db[i] < 0) then
-   begin
-    // pridat prvek do db a zredukovat
-
-    // pozor: poradi je dulezite !! nejdriv pridat prvek do DB a pak redukovat (projevuje se pri staveni JC se spojkou)
-
-    Blky.GetBlkByID(blk_id, Blk);
-    if (Blk = nil) then Exit();
-
-    db[i] := blk_id;
-
-    case (Blk.GetGlobalSettings().typ) of
-     _BLK_VYH     : (Blk as TBlkVyhybka).RedukujMenu();
-     _BLK_PREJEZD : (Blk as TBlkPrejezd).Zaver := true;
-     _BLK_SCOM    : (Blk as TBlkSCom).RedukujMenu();
-    end;
-
-    Exit();
-   end;
-end;//procedure
-
-// pokud blk_id = -1, tak odredukuji vsechno
-class procedure TBlk.RemoveReduction(var db:TReduction; const blk_id:Integer);    // odredukovat a smazat záznam z DB
-var i:Integer;
-    Blk:TBlk;
-begin
- for i := 0 to _MAX_REDUCTION-1 do
-  if (((db[i] = blk_id) and (blk_id > -1)) or ((blk_id = -1) and (db[i] > -1))) then
-   begin
-    // smazat prvek z db a zrusit redukci
-
-    // POZOR: poradi je dulezite; njeprve smazat z DB, pak zrusit redukci
-
-    Blky.GetBlkByID(db[i], Blk);
-    if (Blk = nil) then Exit();
-
-    db[i] := -1;
-
-    case (Blk.GetGlobalSettings().typ) of
-     _BLK_VYH     : (Blk as TBlkVyhybka).ZrusRedukciMenu();
-     _BLK_PREJEZD : (Blk as TBlkPrejezd).Zaver := false;
-     _BLK_SCOM    : (Blk as TBlkSCom).ZrusRedukciMenu();
-     _BLK_TRAT    : (Blk as TBlkTrat).Zaver := false;
-     _BLK_USEK, _BLK_TU :
-                    (Blk as TBlkUsek).Zaver := TZaver.no;
-     _BLK_ZAMEK   : (Blk as TBlkZamek).Zaver := false;
-    end;
-
-   end;
-end;//procedure
-
-class procedure TBlk.RemoveAllReduction(var db:TReduction);                           // odredukovat vsechny bloky, ktere mam ulozene
-begin
- Self.RemoveReduction(db, -1);
-end;//procedure
-
-class function TBlk.IsReduction(var db:TReduction; const blk_id:Integer):boolean;     // Redukuji tento blok?
-var i:Integer;
-begin
- for i := 0 to _MAX_REDUCTION-1 do
-  if (db[i] = blk_id) then
-   Exit(true);
- Exit(false);
-end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
