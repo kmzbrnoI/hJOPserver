@@ -288,6 +288,7 @@ begin
  case (volba) of
   PV : begin
     (Self.OblR as TOR).BroadcastData('ZAS;PV');
+    Self.UPOenabled := false;
     writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - PV', WR_STACK);
   end;
   VZ : begin
