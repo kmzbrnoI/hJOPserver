@@ -397,7 +397,7 @@ procedure TOR.BlkChange(Sender:TObject; specificClient:TIDContext = nil);
 var blk_glob:TBlkSettings;
     i:Integer;
     msg:string;
-    fg, bg:TColor;
+    fg, bg, nebarVetve:TColor;
     Blk:TBlk;
 begin
  if (Self.Connected.Count = 0) then Exit();
@@ -428,6 +428,11 @@ begin
         posun  : fg := clWhite;
         nouz   : fg := clAqua;
        end;//case
+
+       Blky.GetBlkByID(TBlkVyhybka(Sender).UsekID, Blk);
+       if ((Blk <> nil) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU))
+           and (fg = $A0A0A0) and (TBlkUsek(Blk).IsNeprofilJC)) then
+         fg := clYellow;
       end;
     end else begin
      // nouzovy zaver vyhybky ma prioritu i nad obsazenim useku
@@ -454,7 +459,7 @@ begin
 
   _BLK_USEK:begin
    //vytvoreni dat
-//      usek : konec_jc;[souprava;barva_soupravy;sipkaLsipkaS] -  posledni 3 argumenty jsou nepovinne
+   nebarVetve := $A0A0A0;
 
    if ((Sender as TBlkUsek).Obsazeno = TUsekStav.disabled) then
     begin
@@ -476,7 +481,7 @@ begin
           fg := clBlue;
       end;
 
-     // TODO: zobrazovat cely usek, ne jenom konkretni vetev
+     // neprofilove deleni v useku
      if ((fg = $A0A0A0) and (TBlkUsek(Sender).IsNeprofilJC())) then
        fg := clYellow;
 
@@ -492,6 +497,10 @@ begin
 
      // zobrazeni poruchy BP v trati
      if (((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Sender).poruchaBP)) then fg := clAqua;
+
+     // neprofilove deleni v useku
+     if (fg = clYellow) then
+       nebarVetve := clYellow;
 
      msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
 
@@ -545,8 +554,14 @@ begin
         begin
          msg := msg + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SprPredict)+';'+PrevodySoustav.ColorToStr(fg)+';00;';
          msg := msg + PrevodySoustav.ColorToStr(bg);
+        end else begin
+         if (nebarVetve <> $A0A0A0) then
+           msg := msg + ';;;';
         end;
       end;// else Souprava > -1
+
+     if (nebarVetve <> $A0A0A0) then
+       msg := msg + ';' + PrevodySoustav.ColorToStr(nebarVetve);
     end;
 
   end;//_BLK_USEK

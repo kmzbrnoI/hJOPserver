@@ -2162,8 +2162,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.NeprofilObsaz();
-var i:Integer;
-    Nav, Blk:TBlk;
+var Nav:TBlk;
 begin
  if (Self.staveni) then
   begin
