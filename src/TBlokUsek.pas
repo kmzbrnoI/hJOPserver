@@ -25,7 +25,7 @@ type
 
  //aktualni stav useku (obsazeno, ...)
  TBlkUsekStav = record
-  Stav,StavOld:TUsekStav;   // hlavnis tav useku a jeho predchozi hodnota (pouzivano v Update())
+  Stav,StavOld:TUsekStav;   // hlavni stav useku a jeho predchozi hodnota (pouzivano v Update())
   StavAr:TUsekStavAr;       // obsazenost jednotlivych casti useku
   Zaver:TZaver;             // zaver na bloku
   NUZ:boolean;              // nouzove uvolneni zaveru
@@ -48,8 +48,9 @@ type
   spr_vypadek:boolean;      // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
   spr_vypadek_time:Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
                             // pro reseni timeoutu jsou tyto 2 promenne
-  DCCGoTime:TDateTime;
-  currentHoukEv:Integer;
+  DCCGoTime:TDateTime;      // cas kdy doslo k zpanuti DCC
+  currentHoukEv:Integer;    // index aktualni houkaci udalosti
+  neprofilJCcheck:TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
  end;
 
  TBlkUsek = class(TBlk)
@@ -127,6 +128,8 @@ type
 
     function GetSHSpr():TSHSpr;
 
+    procedure NeprofilObsaz();
+
   protected
    UsekSettings:TBlkUsekSettings;
 
@@ -168,6 +171,10 @@ type
     procedure GetObsazeno(var ar:TUsekStavAr);
 
     procedure SetUsekVyl(Sender:TIDCOntext; vyl:string); overload;
+
+    procedure AddNeprofilJC(id:Integer);
+    procedure RemoveNeprofilJC(id:Integer);
+    function IsNeprofilJC():boolean;
 
     property Stav:TBlkUsekStav read UsekStav;
 
@@ -213,7 +220,7 @@ implementation
 uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
-    stanicniHlaseniHelper;
+    stanicniHlaseniHelper, TechnologieJC;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -228,6 +235,8 @@ begin
 
  Self.UsekSettings.houkEvL := TList<THoukEv>.Create();
  Self.UsekSettings.houkEvS := TList<THoukEv>.Create();
+
+ Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
 end;//ctor
 
 destructor TBlkUsek.Destroy();
@@ -250,6 +259,8 @@ begin
  Self.EventsOnObsaz.Free();
  Self.EventsOnUvol.Free();
  Self.EventsOnZaverRelease.Free();
+
+ Self.UsekStav.neprofilJCcheck.Free();
 
  inherited;
 end;//dtor
@@ -384,6 +395,7 @@ begin
  Self.UsekStav.StavOld := none;
  for i := 0 to 3 do Self.UsekStav.StavAr[i] := none;
  Self.UsekStav.DCC     := true;
+ Self.UsekStav.neprofilJCcheck.Clear();
  Self.Update();
  //change event will be called in Update();
 end;//procedure
@@ -408,6 +420,8 @@ begin
  Self.EventsOnObsaz.Clear();
  Self.EventsOnUvol.Clear();
  Self.EventsOnZaverRelease.Clear();
+
+ Self.UsekStav.neprofilJCcheck.Clear();
 
  Self.Change();
 end;//procedure
@@ -504,7 +518,7 @@ begin
      if ((Self.GetGlobalSettings().typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
        for i := 0 to Self.OblsRizeni.Cnt-1 do
          Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.GetGlobalSettings().name, 'TECHNOLOGIE');
-     if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := nouz;
+     if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := TZaver.nouz;
     end;//if spr_vypadek_time > 3
   end;//if spr_vypadek
 
@@ -512,9 +526,10 @@ begin
  if (Self.UsekStav.Stav <> Self.UsekStav.StavOld) then
   begin
    // kontrola udalosti obsazeni
-   if (Self.UsekStav.Stav = TUsekStav.obsazeno) then
-     Self.CallChangeEvents(Self.EventsOnObsaz)
-   else if (Self.UsekStav.Stav = TUsekStav.uvolneno) then
+   if (Self.UsekStav.Stav = TUsekStav.obsazeno) then begin
+     Self.NeprofilObsaz();
+     Self.CallChangeEvents(Self.EventsOnObsaz);
+   end else if (Self.UsekStav.Stav = TUsekStav.uvolneno) then
      Self.CallChangeEvents(Self.EventsOnUvol);
 
    if (Self.UsekStav.Spr <> -1) then
@@ -1434,6 +1449,43 @@ begin
  Result.kolej    := Self.UsekStav.cislo_koleje;
  Result.fromORid := TOR(Soupravy[Self.Souprava].vychoziOR).id;
  Result.toORid   := TOR(Soupravy[Self.Souprava].cilovaOR).id;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.AddNeprofilJC(id:Integer);
+begin
+ if (Self.UsekStav.neprofilJCcheck.Contains(id)) then Exit();
+
+ Self.UsekStav.neprofilJCcheck.Add(id);
+ if (Self.UsekStav.neprofilJCcheck.Count = 1) then
+   Self.Change();
+end;
+
+procedure TBlkUsek.RemoveNeprofilJC(id:Integer);
+begin
+ if (not Self.UsekStav.neprofilJCcheck.Contains(id)) then Exit();
+
+ Self.UsekStav.neprofilJCcheck.Remove(id);
+ if (Self.UsekStav.neprofilJCcheck.Count = 0) then
+   Self.Change();
+end;
+
+function TBlkUsek.IsNeprofilJC():boolean;
+begin
+ Result := (Self.UsekStav.neprofilJCcheck.Count > 0);
+end;
+
+procedure TBlkUsek.NeprofilObsaz();
+var jcid:Integer;
+    jc:TJC;
+begin
+ for jcid in Self.UsekStav.neprofilJCcheck do
+  begin
+   jc := JCDb.GetJCByID(jcid);
+   if (jc <> nil) then
+     jc.NeprofilObsaz();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

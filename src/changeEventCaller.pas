@@ -10,6 +10,11 @@ interface
 uses changeEvent;
 
 type
+ TNPCallerData = record
+   usekId:Integer;
+   jcId:Integer;
+ end;
+
  TChangeEventCaller = class
    procedure NullUsekZaver(Sender:TObject; data:Integer);
    procedure NullZamekZaver(Sender:TObject; data:Integer);
@@ -17,6 +22,7 @@ type
    procedure NullTratZaver(Sender:TObject; data:Integer);
    procedure NullVyhybkaMenuReduction(Sender:TObject; data:Integer);
    procedure NullSComMenuReduction(Sender:TObject; data:Integer);
+   procedure RemoveUsekNeprofil(Sender:TObject; data:Integer);
  end;
 
 var ceCaller: TChangeEventCaller;
@@ -83,6 +89,22 @@ begin
  if ((blk = nil) or (blk.GetGlobalSettings.typ <> _BLK_SCOM)) then Exit();
 
  TBlkSCom(Blk).ZrusRedukciMenu();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TChangeEventCaller.RemoveUsekNeprofil(Sender:TObject; data:Integer);
+var blk:TBlk;
+    caller:^TNPCallerData;
+begin
+ caller := Pointer(data);
+
+ Blky.GetBlkByID(caller.usekId, blk);
+ if ((blk = nil) or ((blk.GetGlobalSettings.typ <> _BLK_USEK) and
+    (blk.GetGlobalSettings.typ <> _BLK_TU))) then Exit();
+
+ TBlkUsek(Blk).RemoveNeprofilJC(caller.jcId);
+ FreeMem(caller);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -467,6 +467,7 @@ begin
       TUsekStav.obsazeno : fg := clRed;
      end;//case
 
+     // zobrazeni zakazu odjezdu do trati
      if ((fg = $A0A0A0) and ((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and ((Sender as TBlkTU).InTrat > -1)) then
       begin
        Blky.GetBlkByID((Sender as TBlkTU).InTrat, Blk);
@@ -475,7 +476,11 @@ begin
           fg := clBlue;
       end;
 
-     // usekum v trati se nezobrazuje zaver
+     // TODO: zobrazovat cely usek, ne jenom konkretni vetev
+     if ((fg = $A0A0A0) and (TBlkUsek(Sender).IsNeprofilJC())) then
+       fg := clYellow;
+
+     // zobrazeni zaveru
      if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and ((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK)) then
       begin
        case ((Sender as TBlkUsek).Zaver) of
@@ -485,6 +490,7 @@ begin
        end;//case
       end;
 
+     // zobrazeni poruchy BP v trati
      if (((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Sender).poruchaBP)) then fg := clAqua;
 
      msg := msg + PrevodySoustav.ColorToStr(fg) + ';';

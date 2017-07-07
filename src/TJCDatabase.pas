@@ -416,11 +416,6 @@ begin
     for j := 0 to Self.JCs[i].data.Useky.Count-1 do
       if (Self.JCs[i].data.Useky[j] = usek_id) then
         Exit(i);
-
-    // neprofilove useky
-    for j := 0 to Self.JCs[i].data.podminky.npUseky.Count-1 do
-      if (Self.JCs[i].data.podminky.npUseky[j] = usek_id) then
-        Exit(i);
    end;//for i
 end;//function
 

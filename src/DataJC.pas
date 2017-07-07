@@ -186,7 +186,7 @@ begin
  // neprofilove useky
  str := '';
  for j := 0 to JCData.podminky.npUseky.Count-1 do
-   str := str + Blky.GetBlkName(JCData.podminky.npUseky[j]) + ', ';
+   str := str + '('+Blky.GetBlkName(JCData.podminky.npUseky[j].Blok)+' : ' + Blky.GetBlkName(JCData.podminky.npUseky[j].ref_blk) + ')';
  Self.LV.Items.Item[line].SubItems.Strings[17] := LeftStr(str, Length(str)-2);
 end;//procedure
 
