@@ -1177,7 +1177,9 @@ begin
  if (critical) then
   begin
    Self.CancelStaveni('Nelze postavit - kritické bariéry');
-   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritické bariéry', (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+   if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritické bariéry',
+        (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
    bariery.Free();
    Exit();
   end;
@@ -1220,7 +1222,9 @@ begin
  if (critical) then
   begin
    Self.CancelStaveni('Nelze postavit - kritické bariéry');
-   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritické bariéry', (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+   if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritické bariéry',
+        (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
    bariery.Free();
    Exit();
   end;
@@ -1239,7 +1243,11 @@ begin
    writelog('JC '+Self.Nazev+' : bariéry s potvrzovací sekvencí, žádám potvrzení...', WR_VC);
    Blky.GetBlkByID(Self.fproperties.NavestidloBlok, nav);
    Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], usek);
-   ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.PS_vylCallback, (Self.fstaveni.SenderOR as TOR), 'Jízdní cesta s potvrzením', TBlky.GetBlksList(nav, usek), podm);
+
+   if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+     ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.PS_vylCallback, (Self.fstaveni.SenderOR as TOR),
+        'Jízdní cesta s potvrzením', TBlky.GetBlksList(nav, usek), podm);
+
    Self.Krok := 6;
   end else begin
    // ne, takoveto bariery neexistuji -> stavim jizdni cestu
@@ -1362,8 +1370,9 @@ var i,j:Integer;
           Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].Blok, Blk);
           if (TBlkUsek(Blk).Obsazeno <> TUsekStav.uvolneno) then
            begin
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuvolnìn ' + Blk.GetGlobalSettings.name,
-                (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+            if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+              ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuvolnìn ' + Blk.GetGlobalSettings.name,
+                  (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
             writelog('Krok 14 : Neprofilovy usek '+Blk.GetGlobalSettings().name+' neuvolnen!', WR_VC);
             Self.CancelStaveni();
             Exit();
@@ -1529,7 +1538,9 @@ var i,j:Integer;
         Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
         if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
          begin
-          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.GetGlobalSettings().name,
+              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
           writelog('Krok 14 : Vyhybka '+Blk.GetGlobalSettings().name+' nema spravnou polohu !', WR_VC);
           Exit;
          end;
@@ -1540,7 +1551,9 @@ var i,j:Integer;
         Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
         if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
          begin
-          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.GetGlobalSettings().name,
+              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
           writelog('Krok 14 : Vyhybka '+Blk.GetGlobalSettings().name+' nema spravnou polohu !', WR_VC);
           Exit;
          end;
@@ -1556,7 +1569,9 @@ var i,j:Integer;
 
         if (TBlkTrat(Blk).Zadost) then
          begin
-          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Probíhá žádost '+Blk.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Probíhá žádost '+Blk.GetGlobalSettings().name,
+              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
           writelog('Krok 14 : Trat '+Blk.GetGlobalSettings().name+' : probiha zadost !', WR_VC);
           Exit;
          end;
@@ -1568,7 +1583,9 @@ var i,j:Integer;
              (((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((Blk as TBlkTrat).Smer <> TTratSmer.zadny))) )
           or ((not TBlkTU(blk2).sectReady) and (Self.fproperties.TypCesty = TJCType.vlak)) or (((Blk as TBlkTrat).ZAK) and (Self.fproperties.TypCesty <> TJCType.posun)) ) then
          begin
-          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba trati '+Blk.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba trati '+Blk.GetGlobalSettings().name,
+              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
           writelog('Krok 14 : Trat '+Blk.GetGlobalSettings().name+' nesplnuje podminky pro postaveni JC !', WR_VC);
           Exit;
          end;
@@ -1698,7 +1715,10 @@ var i,j:Integer;
           str := 'Zapnutí pøivolávací návìsti'
         else
           str := 'Nouzová posunová cesta';
-        ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.NC_PS_Callback, Self.fstaveni.SenderOR as TOR, str, TBlky.GetBlksList(Navestidlo, Blk), Self.BarieryNCToPotvr(Self.fstaveni.ncBariery));
+
+        if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+          ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.NC_PS_Callback, Self.fstaveni.SenderOR as TOR,
+            str, TBlky.GetBlksList(Navestidlo, Blk), Self.BarieryNCToPotvr(Self.fstaveni.ncBariery));
        end;
       Self.fstaveni.ncBarieryCntLast := Self.fstaveni.ncBariery.Count;
 
@@ -1850,8 +1870,8 @@ begin
  if (Self.fstaveni.from_stack <> nil) then
     if (stack_remove) then (Self.fstaveni.from_stack as TORStack).RemoveJC(Self)
   else
-   (Self.fstaveni.SenderOR as TOR).BroadcastData('ZAS;FIRST;1');
-
+   if (Self.fstaveni.SenderOR <> nil) then
+     (Self.fstaveni.SenderOR as TOR).BroadcastData('ZAS;FIRST;1');
 
  Self.fstaveni.from_stack := nil;
 end;
@@ -2033,7 +2053,9 @@ begin
          //pokud jsme na jinem useku, nez RozpadBlok
          if (((Nav as TBlkSCom).Navest > 0) and ((Nav as TBlkSCom).DNjc = Self)) then
           begin
-           ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+           if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+             ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name,
+                (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
            Self.RusJCWithoutBlk();
           end;
 
@@ -2171,8 +2193,9 @@ begin
    Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
    if (((Nav as TBlkSCom).Navest > 0) and ((Nav as TBlkSCom).DNjc = Self)) then
     begin
-     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name,
-          (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+     if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+       ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name,
+            (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
      Self.RusJCWithoutBlk();
     end;
   end;
@@ -2551,12 +2574,16 @@ begin
        begin
         Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
         if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then
-          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuzavøen '+(Blk as TBlkPrejezd).GetGlobalSettings().name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuzavøen '+(Blk as TBlkPrejezd).GetGlobalSettings().name,
+              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
        end;//for i
     end;//case 13
 
    else
-     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Timeout '+Self.nazev, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+     if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+       ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Timeout '+Self.nazev,
+         (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
    end;//else case
 
    //timeout
@@ -2978,7 +3005,9 @@ procedure TJC.VyhNeprestavenaJCPC(Sender:TObject);
 begin
  if (not Self.staveni) then Exit();
 
- ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepøestavena '+(Sender as TBlkVyhybka).GetGlobalSettings.name, (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+ if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepøestavena '+(Sender as TBlkVyhybka).GetGlobalSettings.name,
+     (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
  Self.RusJC();
 end;//procedure
