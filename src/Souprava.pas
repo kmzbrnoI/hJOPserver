@@ -289,6 +289,13 @@ begin
     end;
   end;
 
+ try
+  StrToInt(spr[0]);
+ except
+   on E:EConvertError do
+     raise Exception.Create('Èíslo soupravy není validní èíslo!');
+ end;
+
  Self.changed := true;
 
  Self.data.nazev := spr[0];
