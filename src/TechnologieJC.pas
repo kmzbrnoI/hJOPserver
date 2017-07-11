@@ -674,13 +674,18 @@ end;//function
 // kontrola podminek vlakove a posunove cesty
 
 procedure TJC.KontrolaPodminekVCPC(var bariery:TList<TJCBariera>);
-var i:Integer;
+var i, usek, cnt:Integer;
     Blk,blk2:TBlk;
     glob:TBlkSettings;
     flag:boolean;
 begin
   // useky:
-  for i := 0 to Self.fproperties.Useky.Count-1 do
+  if (Self.fproperties.Trat > -1) then
+    cnt := Self.fproperties.Useky.Count-1
+  else
+    cnt := Self.fproperties.Useky.Count;
+
+  for i := 0 to cnt-1 do
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
     glob := Blk.GetGlobalSettings();
@@ -864,6 +869,20 @@ begin
       if (not TBlkTrat(Blk).ready) then
         bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
      end;
+
+    // stitky a vyluky na tratovych usecich
+    for usek in TBlkTrat(Blk).GetSettings().Useky do
+     begin
+      Blky.GetBlkByID(usek, Blk2);
+
+      // vyluka
+      if (TBlkUsek(Blk2).Vyluka <> '') then
+        bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk2, blk2.GetGlobalSettings.id));
+
+      // stitek
+      if (TBlkUsek(Blk2).Stitek <> '') then
+        bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk2, blk2.GetGlobalSettings.id));
+     end;
    end;
 
   // kontrola polohy podminkovych vyhybek:
@@ -941,7 +960,7 @@ end;//procedure
 // kontrola podminek nouzove cesty:
 
 procedure TJC.KontrolaPodminekNC(var bariery:TList<TJCBariera>);
-var i:Integer;
+var i, usek, cnt:Integer;
     Blk,blk2:TBlk;
     glob:TBlkSettings;
 begin
@@ -953,7 +972,12 @@ begin
   }
 
   // useky:
-  for i := 0 to Self.fproperties.Useky.Count-1 do
+  if (Self.fproperties.Trat > -1) then
+    cnt := Self.fproperties.Useky.Count-1
+  else
+    cnt := Self.fproperties.Useky.Count;
+
+  for i := 0 to cnt-1 do
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
     glob := Blk.GetGlobalSettings();
@@ -1060,6 +1084,27 @@ begin
        end;
      end;
    end;//for i
+
+  // kontrola trati
+  if (Self.fproperties.Trat > -1) then
+   begin
+    Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+
+    // stitky a vyluky na tratovych usecich
+    for usek in TBlkTrat(Blk).GetSettings().Useky do
+     begin
+      Blky.GetBlkByID(usek, Blk2);
+
+      // vyluka
+      if (TBlkUsek(Blk2).Vyluka <> '') then
+        bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk2, blk2.GetGlobalSettings.id));
+
+      // stitek
+      if (TBlkUsek(Blk2).Stitek <> '') then
+        bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk2, blk2.GetGlobalSettings.id));
+     end;
+   end;
+
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
