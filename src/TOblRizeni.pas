@@ -434,19 +434,20 @@ begin
        if ((Blk <> nil) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU))
            and (fg = $A0A0A0) and (TBlkUsek(Blk).IsNeprofilJC)) then
          fg := clYellow;
-
-       // do profilu vyhybky zasahuje obsazeny usek
-       if ((fg = $A0A0A0) and (TBlkVyhybka(Sender).npBlokPlus <> nil) and
-           (TBlkVyhybka(Sender).Poloha = TVyhPoloha.plus) and
-           (TBlkUsek(TBlkVyhybka(Sender).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
-         fg := clYellow;
-
-       // do profilu vyhybky zasahuje obsazeny usek
-       if ((fg = $A0A0A0) and (TBlkVyhybka(Sender).npBlokMinus <> nil) and
-           (TBlkVyhybka(Sender).Poloha = TVyhPoloha.minus) and
-           (TBlkUsek(TBlkVyhybka(Sender).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
-         fg := clYellow;
       end;
+
+     // do profilu vyhybky zasahuje obsazeny usek
+     if (((fg = $A0A0A0) or (fg = clRed)) and (TBlkVyhybka(Sender).npBlokPlus <> nil) and
+         (TBlkVyhybka(Sender).Poloha = TVyhPoloha.plus) and
+         (TBlkUsek(TBlkVyhybka(Sender).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
+       fg := clYellow;
+
+     // do profilu vyhybky zasahuje obsazeny usek
+     if (((fg = $A0A0A0) or (fg = clRed)) and (TBlkVyhybka(Sender).npBlokMinus <> nil) and
+         (TBlkVyhybka(Sender).Poloha = TVyhPoloha.minus) and
+         (TBlkUsek(TBlkVyhybka(Sender).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
+       fg := clYellow;
+
     end else begin
      // nouzovy zaver vyhybky ma prioritu i nad obsazenim useku
      fg := clAqua;
