@@ -3,7 +3,7 @@ unit TechnologieJC;
 {
   Kompletni technologie jizdnich cest.
 
-  Tento soubor implmenetuje tridu TJC, ktera reprezentuje jednu jizdni cestu.
+  Tento soubor implementuje tridu TJC, ktera reprezentuje jednu jizdni cestu.
   Jizdni cesta se stara o vse od udrzovani vsech jejich udaju, kterymi je dana
   v zaverove tabulce, pres jeji staveni, kontrolu podminek, zobrazovani
   potvrzovacich sekvenci pri staveni az po spravne ruseni jizdni cesty.
