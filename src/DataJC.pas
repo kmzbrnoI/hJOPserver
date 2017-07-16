@@ -86,6 +86,7 @@ var JCData:TJCprop;
     JC:TJC;
     j:Integer;
     str:string;
+    Blk:TBlk;
 begin
  JC     := JCDb.GetJCByIndex(line);
  JCData := JC.data;
@@ -185,8 +186,14 @@ begin
 
  // neprofilove useky
  str := '';
- for j := 0 to JCData.podminky.npUseky.Count-1 do
-   str := str + '('+Blky.GetBlkName(JCData.podminky.npUseky[j].Blok)+' : ' + Blky.GetBlkName(JCData.podminky.npUseky[j].ref_blk) + ')';
+ for j := 0 to JCData.Vyhybky.Count-1 do
+  begin
+   Blky.GetBlkByID(JCData.Vyhybky[j].Blok, Blk);
+   if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
+     str := str + TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings.name + ', '
+   else if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
+     str := str + TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings.name + ', ';
+  end;
  Self.LV.Items.Item[line].SubItems.Strings[17] := LeftStr(str, Length(str)-2);
 end;//procedure
 

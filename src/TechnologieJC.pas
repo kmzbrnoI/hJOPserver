@@ -123,7 +123,6 @@ type
    podminky : record                                                            // dalsi podminky jizdni cesty, ktere ale nejsou nastavovany, ale pouze kontrolovany
     vyhybky  : TList<TJCVyhZaver>;                                                // konkretni vyhybky v konkretnich polohach
     zamky    : TList<TJCRefZaver>;                                                // konkretni zamky musi byt uzamcene
-    npUseky  : TList<TJCRefZaver>;                                                // neprofilove useky - tyto useky musi byt volne
    end;
    vb:TList<Integer>;                                                           // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
 
@@ -306,7 +305,6 @@ begin
 
  Self.fproperties.podminky.vyhybky := TList<TJCVyhZaver>.Create();
  Self.fproperties.podminky.zamky   := TList<TJCRefZaver>.Create();
- Self.fproperties.podminky.npUseky := TList<TJCRefZaver>.Create();
  Self.fproperties.vb               := TList<Integer>.Create();
 
  Self.fproperties.Vyhybky  := TList<TJCVyhZaver>.Create();
@@ -326,7 +324,6 @@ begin
 
  if (not Assigned(Self.fproperties.podminky.vyhybky)) then Self.fproperties.podminky.vyhybky := TList<TJCVyhZaver>.Create();
  if (not Assigned(Self.fproperties.podminky.zamky))   then Self.fproperties.podminky.zamky   := TList<TJCRefZaver>.Create();
- if (not Assigned(Self.fproperties.podminky.npUseky)) then Self.fproperties.podminky.npUseky := TList<TJCRefZaver>.Create();
  if (not Assigned(Self.fproperties.vb))               then Self.fproperties.vb               := TList<Integer>.Create();
  if (not Assigned(Self.fproperties.Odvraty))          then Self.fproperties.Odvraty  := TList<TJCOdvratZaver>.Create();
  if (not Assigned(Self.fproperties.Prisl))            then Self.fproperties.Prisl    := TList<TJCRefZaver>.Create();
@@ -341,7 +338,6 @@ begin
  if (Assigned(Self.fstaveni.ncBariery)) then FreeAndNil(Self.fstaveni.ncBariery);
  if (Assigned(Self.fproperties.podminky.vyhybky)) then FreeAndNil(Self.fproperties.podminky.vyhybky);
  if (Assigned(Self.fproperties.podminky.zamky)) then FreeAndNil(Self.fproperties.podminky.zamky);
- if (Assigned(Self.fproperties.podminky.npUseky)) then FreeAndNil(Self.fproperties.podminky.npUseky);
  if (Assigned(Self.fproperties.vb)) then  Self.fproperties.vb.Free();
 
  if (Assigned(Self.fproperties.Vyhybky))  then Self.fproperties.Vyhybky.Free();
@@ -418,6 +414,24 @@ begin
     if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+      Exit;
+     end;
+
+    // kontrola neprofilovych useku vyhybek pro polohu +
+    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
+        (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled)) then
+     begin
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
+          TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id));
+      Exit;
+     end;
+
+    // kontrola neprofilovych useku vyhybek pro polohu -
+    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
+        (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled)) then
+     begin
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
+          TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id));
       Exit;
      end;
    end;//for i
@@ -620,42 +634,6 @@ begin
      end;
    end;//for i
 
-  // kontrola neprofilovych useku
-  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
-   begin
-    if (Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].Blok, blk) <> 0) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.podminky.npUseky[i].Blok));
-      Exit;
-     end;
-    if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
-      Exit;
-     end;
-    if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
-      Exit;
-     end;
-
-    if (Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].ref_blk, blk) <> 0) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.podminky.npUseky[i].ref_blk));
-      Exit;
-     end;
-    if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
-      Exit;
-     end;
-    if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
-      Exit;
-     end;
-   end;//for i
-
  if (NC) then
   Self.KontrolaPodminekNC(Result)
  else
@@ -756,6 +734,24 @@ begin
 
       if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.GetGlobalSettings.id));
+     end;
+
+    // kontrola neprofiloveho styku pro polohu +
+    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
+        (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
+     begin
+      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
+          TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id));
+      Exit;
+     end;
+
+    // kontrola neprofiloveho styku pro polohu -
+    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
+        (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
+     begin
+      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
+          TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id));
+      Exit;
      end;
    end;//for i
 
@@ -905,16 +901,6 @@ begin
     // kontrola uzamceni
     if ((Blk as TBlkZamek).klicUvolnen) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.GetGlobalSettings().id));
-   end;//for i
-
-  // kontrola volnosti neprofilovych useku:
-  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
-   begin
-    Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].Blok, Blk);
-
-    // obsazenost
-    if ((Blk as TBlkUsek).Obsazeno = TUsekStav.obsazeno) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.GetGlobalSettings.id));
    end;//for i
 
  // kontrola ukradene loko v souprave pred navestidlem
@@ -1320,6 +1306,7 @@ procedure TJC.UpdateStaveni();
 var i,j:Integer;
     aZaver:TJCType;
     Navestidlo, Blk, Blk2, Trat:TBlk;
+    neprofil:TBlkUsek;
     uzavren,uzavren_glob:boolean;
     str:string;
     npCall:^TNPCallerData;
@@ -1407,27 +1394,35 @@ var i,j:Integer;
         (Blk as TBlkUsek).Zaver := TZaver.nouz;
        end;//for cyklus
 
-      if (Self.fproperties.podminky.npUseky.Count > 0) then
+      writelog('Krok 11: useky: kontroluji volnost useku s neprofilovymi styky, zapevnuji neprofilove useky', WR_VC);
+      for i := 0 to Self.fproperties.Vyhybky.Count-1 do
        begin
-        writelog('Krok 11: useky: kontroluji volnost useku s neprofilovymi styky, zapevnuji neprofilove useky', WR_VC);
-        for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
+        neprofil := nil;
+        Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
+
+        if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
+          neprofil := TBlkUsek(TBlkVyhybka(Blk).npBlokPlus)
+        else if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
+          neprofil := TBlkUsek(TBlkVyhybka(Blk).npBlokMinus);
+
+        if (neprofil <> nil) then
          begin
-          Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].Blok, Blk);
-          if (TBlkUsek(Blk).Obsazeno <> TUsekStav.uvolneno) then
+          if (neprofil.Obsazeno <> TUsekStav.uvolneno) then
            begin
             if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-              ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuvolnìn ' + Blk.GetGlobalSettings.name,
+              ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuvolnìn ' + neprofil.GetGlobalSettings.name,
                   (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-            writelog('Krok 14 : Neprofilovy usek '+Blk.GetGlobalSettings().name+' neuvolnen!', WR_VC);
+            writelog('Krok 14 : Neprofilovy usek '+neprofil.GetGlobalSettings().name+' neuvolnen!', WR_VC);
             Self.CancelStaveni();
             Exit();
            end;
 
-          TBlkUsek(Blk).AddNeprofilJC(Self.fproperties.id);
+          neprofil.AddNeprofilJC(Self.fproperties.id);
 
-          Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].ref_blk, Blk2);
+          Blky.GetBlkByID(TBlkVyhybka(Blk).UsekID, Blk2);
+
           npCall := GetMemory(SizeOf(TNPCallerData));
-          npCall.usekId := Self.fproperties.podminky.npUseky[i].Blok;
+          npCall.usekId := neprofil.GetGlobalSettings.id;
           npCall.jcId   := Self.fproperties.id;
           TBlkUsek(Blk2).AddChangeEvent(TBlkUsek(Blk2).EventsOnZaverRelease,
               CreateChangeEvent(ceCaller.RemoveUsekNeprofil, Integer(npCall)));
@@ -2486,20 +2481,6 @@ begin
      Self.fproperties.podminky.zamky.Add(ref);
     end;//for i
 
-   // nacteni neprofilovych useku:
-   sl.Clear();
-   ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'podm-np-useky', '')), sl);
-   Self.fproperties.podminky.npUseky.Clear();
-   for i := 0 to sl.Count-1 do
-    begin
-     sl2.Clear();
-     ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), sl2);
-
-     ref.Blok    := StrToInt(sl2[0]);
-     ref.ref_blk := StrToInt(sl2[1]);
-     Self.fproperties.podminky.npUseky.Add(ref);
-    end;
-
    // nacteni variantnich bodu
    sl.Clear();
    ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vb', '')), sl);
@@ -2585,13 +2566,6 @@ begin
  if (line <> '') then
    ini.WriteString(section, 'podm-zamky', line);
 
- // podminky neprofilove useky
- line := '';
- for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
-   line := line + '(' + IntToStr(Self.fproperties.podminky.npUseky[i].Blok) + ';' + IntToStr(Self.fproperties.podminky.npUseky[i].ref_blk) + ')';
- if (line <> '') then
-   ini.WriteString(section, 'podm-np-useky', line);
-
  // variantni body
  line := '';
  for i := 0 to Self.fproperties.vb.Count-1 do
@@ -2672,6 +2646,16 @@ begin
   begin
    Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
    if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then Exit(false);
+
+   // kontrola neprofiloveho styku pro polohu +
+   if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
+       (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
+     Exit(false);
+
+   // kontrola neprofiloveho styku pro polohu -
+   if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
+       (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
+     Exit(false);
   end;//for i
 
  // zkontrolujeme polohu odvratu
@@ -2719,16 +2703,6 @@ begin
 
     // kontrola uzamceni
     if ((Blk as TBlkZamek).klicUvolnen) then
-      Exit(false);
-   end;//for i
-
-  // kontrola volnosti neprofilovych useku
-  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
-   begin
-    Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].Blok, Blk);
-
-    // kontrola volnosti
-    if ((Blk as TBlkUsek).Stav.Stav <> TUsekStav.uvolneno) then
       Exit(false);
    end;//for i
 
@@ -3137,6 +3111,30 @@ begin
       if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.GetGlobalSettings.id));
      end;
+
+    // kontrola neprofiloveho styku pro polohu +
+    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
+     begin
+      if (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled) then
+        bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
+            TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id))
+      else
+        if (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
+              TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id));
+     end;
+
+    // kontrola neprofiloveho styku pro polohu -
+    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
+     begin
+      if (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled) then
+        bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
+            TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id))
+      else
+        if (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
+              TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id));
+     end;
    end;//for i
 
   // kontrola prejezdu
@@ -3237,21 +3235,6 @@ begin
     // kontrola uzamceni
     if (not (Blk as TBlkZamek).nouzZaver) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NOUZ_ZAVER, blk, blk.GetGlobalSettings().id));
-   end;//for i
-
-  // kontrola volnosti neprofilovych useku:
-  for i := 0 to Self.fproperties.podminky.npUseky.Count-1 do
-   begin
-    Blky.GetBlkByID(Self.fproperties.podminky.npUseky[i].Blok, Blk);
-    glob := Blk.GetGlobalSettings();
-
-    // kontrola disabled:
-    if ((Blk as TBlkUsek).Stav.Stav <> TUsekStav.disabled) then
-      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, blk, blk.GetGlobalSettings().id));
-
-    // kontrola polohy:
-    if ((Blk as TBlkUsek).Stav.Stav <> TUsekStav.uvolneno) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, blk, blk.GetGlobalSettings().id));
    end;//for i
 end;//procedure
 
