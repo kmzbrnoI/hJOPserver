@@ -1375,6 +1375,8 @@ begin
          if ((Nav as TBlkSCom).Navest > 0) then
            ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návìsti '+Blky.GetBlkName(JC.data.NavestidloBlok), Self.ShortName, 'TECHNOLOGIE');
          JC.RusJCWithoutBlk();
+         if ((Nav as TBlkSCom).DNjc = JC) then
+           (Nav as TBlkSCom).DNjc := nil;
         end;
       end;
     end;//for j
