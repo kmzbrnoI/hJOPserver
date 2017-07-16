@@ -39,18 +39,26 @@ type
     CHB_Zamek: TCheckBox;
     Label2: TLabel;
     CB_Zamek_Poloha: TComboBox;
+    GB_Neprofil: TGroupBox;
+    CHB_npPlus: TCheckBox;
+    CB_npPlus: TComboBox;
+    CHB_npMinus: TCheckBox;
+    CB_npMinus: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_SpojkaClick(Sender: TObject);
     procedure CHB_ZamekClick(Sender: TObject);
     procedure CB_SpojkaChange(Sender: TObject);
+    procedure CHB_npPlusClick(Sender: TObject);
+    procedure CHB_npMinusClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
    NewBlk:Boolean;
    CB_SpojkaData:TArI;
    CB_ZamekData:TArI;
+   CB_NeprofilData:TArI;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
@@ -106,7 +114,13 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
   Self.CHB_Zamek.Checked  := false;
   Self.CHB_ZamekClick(Self.CHB_Spojka);
 
-  F_BlkVyhybka.Caption := 'Editovat data noveho bloku vyhybka';
+  Self.CHB_npPlus.Checked := false;
+  Self.CHB_npPlusClick(Self.CHB_npPlus);
+
+  Self.CHB_npMinus.Checked := false;
+  Self.CHB_npMinusClick(Self.CHB_npMinus);
+
+  F_BlkVyhybka.Caption := 'Editovat data nového bloku výhybka';
  end;//procedure
 
 procedure TF_BlkVyhybka.NormalOpenForm;
@@ -131,13 +145,9 @@ var glob:TBlkSettings;
 
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
 
+  Self.CHB_Zamek.Checked := (settings.zamek > -1);
   if (settings.zamek > -1) then
-   begin
-    Self.CHB_Zamek.Checked := true;
     Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.zamekPoloha);
-   end else
-    Self.CHB_Zamek.Checked := false;
-
   Self.CHB_ZamekClick(Self.CHB_Zamek);
 
   //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni MTB_board = [0])
@@ -153,10 +163,16 @@ var glob:TBlkSettings;
   SE_VystMinusMTB.Value  := settings.MTBAddrs.data[3].board;
   SE_VystMinusPort.Value := settings.MTBAddrs.data[3].port;
 
+  Self.CHB_npPlus.Checked := (settings.npPlus > -1);
+  Self.CHB_npPlusClick(Self.CHB_npPlus);
+
+  Self.CHB_npMinus.Checked := (settings.npMinus > -1);
+  Self.CHB_npMinusClick(Self.CHB_npMinus);
+
   SetLength(obls,Self.Blk.OblsRizeni.Cnt);
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
 
-  F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (vyhybka)';
+  F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
  end;//procedure
 
 procedure TF_BlkVyhybka.HlavniOpenForm;
@@ -175,17 +191,32 @@ var spojka_vypust:TArI;
 
     // spojka
     Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, _BLK_VYH, Self.Blk.GetSettings().spojka);
-
-    //zamek
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, _BLK_ZAMEK, Self.Blk.GetSettings().zamek);
-
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.spojka > -1);
+
+    // zamek
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, _BLK_ZAMEK, Self.Blk.GetSettings().zamek);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.zamek > -1);
+
+    // neprofilove styky +
+    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, _BLK_USEK, Self.Blk.GetSettings().npPlus, _BLK_TU);
+    Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npPlus > -1);
+
+    // neprofilove styky -
+    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, _BLK_USEK, Self.Blk.GetSettings().npMinus, _BLK_TU);
+    Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npMinus > -1);
+
    end else begin
     Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, _BLK_VYH, -1);
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, _BLK_ZAMEK, -1);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0);
-    Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);    
+
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, _BLK_ZAMEK, -1);
+    Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);
+
+    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, _BLK_USEK, -1, _BLK_TU);
+    Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0);
+
+    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, _BLK_USEK, -1, _BLK_TU);
+    Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0);
    end;
 
  end;//procedure
@@ -225,6 +256,20 @@ begin
  SE_VystMinusPort.Value := mtbs.data[3].port;
 end;
 
+procedure TF_BlkVyhybka.CHB_npMinusClick(Sender: TObject);
+begin
+ Self.CB_npMinus.Enabled := Self.CHB_npMinus.Checked;
+ if (not Self.CHB_npMinus.Checked) then
+   Self.CB_npMinus.ItemIndex := -1;
+end;
+
+procedure TF_BlkVyhybka.CHB_npPlusClick(Sender: TObject);
+begin
+ Self.CB_npPlus.Enabled := Self.CHB_npPlus.Checked;
+ if (not Self.CHB_npPlus.Checked) then
+   Self.CB_npPlus.ItemIndex := -1;
+end;
+
 procedure TF_BlkVyhybka.CHB_SpojkaClick(Sender: TObject);
 begin
  Self.CB_Spojka.Enabled := (Sender as TCheckBox).Checked;
@@ -242,8 +287,6 @@ begin
    Self.CB_Zamek_Poloha.ItemIndex := -1;
   end;
 end;
-
-//procedure
 
 procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -274,10 +317,23 @@ var glob:TBlkSettings;
      end;
     if (Self.CB_Zamek_Poloha.ItemIndex < 0) then
      begin
-      Application.MessageBox('Vyberte polohu výhybky pro uzamèení zámku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Vyberte polohu výhybky pro uzamèení zámku!','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end;
+  if ((Self.CHB_npPlus.Checked) and (Self.CB_npPlus.ItemIndex < 0)) then
+   begin
+    Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu plus!',
+      'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+  if ((Self.CHB_npMinus.Checked) and (Self.CB_npMinus.ItemIndex < 0)) then
+   begin
+    Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu mínus!',
+      'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+
 
   glob.name     := E_Nazev.Text;
   glob.id       := SE_ID.Value;
@@ -325,6 +381,16 @@ var glob:TBlkSettings;
      settings.zamek := -1;
      settings.zamekPoloha := TVyhPoloha.none;
    end;
+
+  if (Self.CHB_npPlus.Checked) then
+   settings.npPlus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npPlus.ItemIndex])
+  else
+   settings.npPlus := -1;
+
+  if (Self.CHB_npMinus.Checked) then
+   settings.npMinus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npMinus.ItemIndex])
+  else
+   settings.npMinus := -1;
 
   return := Self.Blk.SetSettings(settings);
 

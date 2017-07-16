@@ -5,8 +5,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (vyhybka)'
-  ClientHeight = 457
-  ClientWidth = 320
+  ClientHeight = 329
+  ClientWidth = 641
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -98,14 +98,14 @@ object F_BlkVyhybka: TF_BlkVyhybka
   end
   object GB_MTB: TGroupBox
     Left = 7
-    Top = 238
+    Top = 150
     Width = 304
     Height = 172
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Ovl'#225'd'#225'n'#237' vyh'#253'bky - MTB '
+    Caption = ' Ovl'#225'd'#225'n'#237' v'#253'hybky - MTB '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -377,8 +377,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
     end
   end
   object B_Storno: TButton
-    Left = 158
-    Top = 419
+    Left = 475
+    Top = 297
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -390,8 +390,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
     OnClick = B_StornoClick
   end
   object B_Save: TButton
-    Left = 237
-    Top = 419
+    Left = 554
+    Top = 297
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -441,8 +441,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
     OnChange = CB_SpojkaChange
   end
   object GroupBox1: TGroupBox
-    Left = 8
-    Top = 150
+    Left = 326
+    Top = 8
     Width = 304
     Height = 83
     Caption = ' Z'#225'mek '
@@ -517,6 +517,50 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Items.Strings = (
         '+'
         '-')
+    end
+  end
+  object GB_Neprofil: TGroupBox
+    Left = 326
+    Top = 103
+    Width = 304
+    Height = 138
+    Caption = ' Neprofilov'#233' styky '
+    TabOrder = 9
+    object CHB_npPlus: TCheckBox
+      Left = 12
+      Top = 24
+      Width = 284
+      Height = 17
+      Caption = 'Kontrolovat volnost '#250'seku pro polohu +'
+      TabOrder = 0
+      OnClick = CHB_npPlusClick
+    end
+    object CB_npPlus: TComboBox
+      Left = 12
+      Top = 47
+      Width = 284
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 1
+    end
+    object CHB_npMinus: TCheckBox
+      Left = 12
+      Top = 80
+      Width = 284
+      Height = 17
+      Caption = 'Kontrolovat volnost '#250'seku pro polohu -'
+      TabOrder = 2
+      OnClick = CHB_npMinusClick
+    end
+    object CB_npMinus: TComboBox
+      Left = 12
+      Top = 103
+      Width = 284
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 3
     end
   end
 end

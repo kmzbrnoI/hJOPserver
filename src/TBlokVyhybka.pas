@@ -1,8 +1,8 @@
 unit TBlokVyhybka;
 
-//definice a obsluha technologickeho bloku Vyhybka
-
-// redukce menu u bloku vyhybka = vyhybku nelze stavit (ani nouzove)
+{
+ Definice a obsluha technologickeho bloku vyhybka.
+}
 
 interface
 
@@ -21,6 +21,8 @@ type
                           // POZOR: jedna data ulozena na dvou mistech, pri nacitani se nekontroluje koherence; SOUBOR MUSI BYT KOHERENTNI (tj. obe vyhybky musi mit navaznosti vzdy na tu druhou)
   zamek:Integer;          // pokud ma vyhybka navaznost na zamek, je zde id bloku zamku; jinak -1
   zamekPoloha:TVyhPoloha; // poloha, v jake se vyhybka musi nachazet pro uzamceni zamku
+  npPlus:Integer;         // id neprofiloveho useku pro polohu plus (-1 pokud neni)
+  npMinus:Integer;        // id neprofiloveho useku pro polohu minus (-1 pokud neni)
  end;
 
  TBlkVyhStav = record
@@ -77,6 +79,8 @@ type
 
    fzamek:TBlk;
    fparent:TBlk;
+   fnpPlus:TBlk;
+   fnpMinus:TBlk;
 
     function GetZaver():TZaver;
     function GetNUZ():boolean;
@@ -118,7 +122,11 @@ type
     procedure SetVyhZaver(zaver:boolean);
 
     function GetZamek():TBlk;
+    function GetNpPlus():TBlk;
+    function GetNpMinus():TBlk;
 
+    procedure NpObsazChange(Sender:TObject; data:Integer);
+    procedure MapNpEvents();
 
   public
     constructor Create(index:Integer);
@@ -164,6 +172,8 @@ type
     property UsekID:Integer read VyhRel.UsekID;
     property vyhZaver:boolean read GetVyhZaver write SetVyhZaver;
     property zamek:TBlk read GetZamek;
+    property npBlokPlus:TBlk read GetNpPlus;
+    property npBlokMinus:TBlk read GetNpMinus;
 
     property StaveniPlus:Boolean read VyhStav.staveni_plus write VyhStav.staveni_plus;
     property StaveniMinus:Boolean read VyhStav.staveni_minus write VyhStav.staveni_minus;
@@ -198,6 +208,8 @@ begin
  Self.VyhStav := Self._def_vyh_stav;
  Self.fzamek  := nil;
  Self.fparent := nil;
+ Self.fnpPlus := nil;
+ Self.fnpMinus := nil;
 end;//ctor
 
 destructor TBlkVyhybka.Destroy();
@@ -216,6 +228,9 @@ begin
  Self.VyhSettings.spojka      := ini_tech.ReadInteger(section, 'spojka', -1);
  Self.VyhSettings.zamek       := ini_tech.ReadInteger(section, 'zamek', -1);
  Self.VyhSettings.zamekPoloha := TVyhPoloha(ini_tech.ReadInteger(section, 'zamek-pol', 0));
+
+ Self.VyhSettings.npPlus  := ini_tech.ReadInteger(section, 'npPlus', -1);
+ Self.VyhSettings.npMinus := ini_tech.ReadInteger(section, 'npMinus', -1);
 
  Self.VyhStav.Stit := ini_stat.ReadString(section, 'stit', '');
  Self.VyhStav.Vyl  := ini_stat.ReadString(section, 'vyl', '');
@@ -249,6 +264,12 @@ begin
  if (Self.VyhSettings.spojka > -1) then
    ini_tech.WriteInteger(section, 'spojka', Self.VyhSettings.spojka);
 
+ if (Self.VyhSettings.npPlus > -1) then
+   ini_tech.WriteInteger(section, 'npPlus', Self.VyhSettings.npPlus);
+
+ if (Self.VyhSettings.npMinus > -1) then
+   ini_tech.WriteInteger(section, 'npMinus', Self.VyhSettings.npMinus);
+
  if (Self.VyhSettings.zamek > -1) then
   begin
    ini_tech.WriteInteger(section, 'zamek', Self.VyhSettings.zamek);
@@ -277,6 +298,7 @@ begin
 
  Self.VyhStav.poloha := none;
  Self.VyhStav.redukuji_spojku := false;
+ Self.MapNpEvents();
  Self.Update();       //update will call Change()
 end;//procedure
 
@@ -410,6 +432,8 @@ begin
    spojka_settings.spojka  := -1;
    (Blk as TBlkVyhybka).SetSettings(spojka_settings);
   end;
+
+ Self.MapNpEvents();
 
  Self.Change();
  Result := 0;
@@ -1066,6 +1090,24 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TBlkVyhybka.GetNpPlus():TBlk;
+begin
+ if (((Self.fnpPlus = nil) and (Self.VyhSettings.npPlus <> -1)) or
+     ((Self.fnpPlus <> nil) and (Self.fnpPlus.GetGlobalSettings.id <> Self.VyhSettings.npPlus))) then
+   Blky.GetBlkByID(Self.VyhSettings.npPlus, Self.fnpPlus);
+ Result := Self.fnpPlus;
+end;
+
+function TBlkVyhybka.GetNpMinus():TBlk;
+begin
+ if (((Self.fnpMinus = nil) and (Self.VyhSettings.npMinus <> -1)) or
+     ((Self.fnpMinus <> nil) and (Self.fnpMinus.GetGlobalSettings.id <> Self.VyhSettings.npMinus))) then
+   Blky.GetBlkByID(Self.VyhSettings.npMinus, Self.fnpMinus);
+ Result := Self.fnpMinus;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 // pokud je na vyhybku zamek, vyhybka ma nespravnou polohu a klic je v zamku, vyhlasime poruchu zamku
 procedure TBlkVyhybka.UpdateZamek();
 begin
@@ -1164,6 +1206,62 @@ begin
   begin
    Blky.NouzZaverZrusen(Self);
    Self.Change();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVyhybka.NpObsazChange(Sender:TObject; data:Integer);
+begin
+ if ((data = 0) and (Sender = Self.npBlokPlus)) then
+  begin
+   // zmena bloku pro polohu +
+   if (TBlkUsek(Self.npBlokPlus).Obsazeno = TUsekStav.obsazeno) then
+     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnUvol,
+       CreateChangeEvent(Self.NpObsazChange, 0))
+   else
+     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnObsaz,
+       CreateChangeEvent(Self.NpObsazChange, 0));
+
+   if (Self.Poloha = TVyhPoloha.plus) then Self.Change();
+
+  end else if ((data = 1) and (Sender = Self.npBlokMinus)) then begin
+   // zmena bloku pro polohu -
+   if (TBlkUsek(Self.npBlokMinus).Obsazeno = TUsekStav.obsazeno) then
+     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnUvol,
+       CreateChangeEvent(Self.NpObsazChange, 1))
+   else
+     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnObsaz,
+       CreateChangeEvent(Self.NpObsazChange, 1));
+
+   if (Self.Poloha = TVyhPoloha.minus) then Self.Change();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVyhybka.MapNpEvents();
+begin
+ // namapovani udalosti obsazeni a uvolneni neprofiloveho useku pro polohu +
+ if (Self.npBlokPlus <> nil) then
+  begin
+   if (TBlkUsek(Self.npBlokPlus).Obsazeno = TUsekStav.obsazeno) then
+     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnUvol,
+       CreateChangeEvent(Self.NpObsazChange, 0))
+   else
+     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnObsaz,
+       CreateChangeEvent(Self.NpObsazChange, 0));
+  end;
+
+ // namapovani udalosti obsazeni a uvolneni neprofiloveho useku pro polohu -
+ if (Self.npBlokMinus <> nil) then
+  begin
+   if (TBlkUsek(Self.npBlokMinus).Obsazeno = TUsekStav.obsazeno) then
+     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnUvol,
+       CreateChangeEvent(Self.NpObsazChange, 1))
+   else
+     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnObsaz,
+       CreateChangeEvent(Self.NpObsazChange, 1));
   end;
 end;
 
