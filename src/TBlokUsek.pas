@@ -1159,7 +1159,7 @@ begin
 
  // pokud mame knihovnu simulator, muzeme ridit stav useku
  //  DEBUG nastroj
- if (MTB.lib = 'simulator.dll') then
+ if (MTB.IsSimulatorMode()) then
   begin
    Result := Result + '-,';
 

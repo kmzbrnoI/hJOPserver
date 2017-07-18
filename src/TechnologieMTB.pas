@@ -89,6 +89,8 @@ type
       procedure AddOutputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
       procedure RemoveOutputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
 
+      function IsSimulatorMode():boolean;
+
       property generalError:boolean read fGeneralError;
 
       //events
@@ -393,6 +395,13 @@ begin
  except
    Result := false;
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TMTB.IsSimulatorMode():boolean;
+begin
+ Result := (LowerCase(Self.Lib) = 'simulator.dll');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

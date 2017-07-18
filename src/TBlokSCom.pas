@@ -1018,8 +1018,8 @@ begin
    if (Self.SComStav.redukce_menu > 0) then
      Result := Result + '-,*ZRUŠ REDUKCI,';
 
- // DEBUG: jednoduche nastaveni IR pri simulator.dll
- if (MTB.lib = 'simulator.dll') then
+ // DEBUG: jednoduche nastaveni IR pri knihovne simulator
+ if (MTB.IsSimulatorMode()) then
   begin
    if ((Self.SComSettings.events.Count > 0) and (Self.SComSettings.events[0].zastaveni.typ = TRREvType.rrtIR)) then
     begin

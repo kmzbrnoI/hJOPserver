@@ -100,7 +100,7 @@ procedure TF_Admin.LoadData();
     Self.Show();
 
  try
-   if ((MTB.ready) and (Self.CHB_SimInput.Checked) and (LowerCase(MTB.Lib) = 'simulator.dll')) then
+   if ((MTB.ready) and (Self.CHB_SimInput.Checked) and (MTB.IsSimulatorMode())) then
      MTB.InputSim();
  except
    on E:Exception do
@@ -175,7 +175,7 @@ end;//procedure
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
  begin
-  if (LowerCase(MTB.Lib) = 'simulator.dll') then
+  if (MTB.IsSimulatorMode()) then
    begin
     try
       MTB.InputSim();
@@ -212,7 +212,7 @@ procedure TJCSimulator.OnTimer(Sender:TObject);
 var i:Integer;
     JC:TJC;
 begin
- if ((not GetFunctions.GetSystemStart()) or (LowerCase(MTB.Lib) <> 'simulator.dll')) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not MTB.IsSimulatorMode())) then Exit;
 
  for i := 0 to JCDb.Count-1 do
   begin
@@ -286,7 +286,7 @@ procedure TTratSimulator.OnTimer(Sender:TObject);
 var i:Integer;
     Blk:TBlk;
 begin
-   if ((not GetFunctions.GetSystemStart()) or (LowerCase(MTB.Lib) <> 'simulator.dll')) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not MTB.IsSimulatorMode())) then Exit;
 
  for i := 0 to Blky.Cnt-1 do
   begin
@@ -361,7 +361,7 @@ var i:Integer;
     blk:TBlk;
 begin
  try
-   if ((not GetFunctions.GetSystemStart()) or (LowerCase(MTB.Lib) <> 'simulator.dll')) then Exit;
+   if ((not GetFunctions.GetSystemStart()) or (not MTB.IsSimulatorMode())) then Exit;
 
    for i := 0 to Blky.Cnt-1 do
     begin

@@ -1409,7 +1409,7 @@ begin
  Self.A_MTB_Stop.Enabled  := ready and started;
 
  try
-   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (LowerCase(MTB.Lib) = 'simulator.dll')) then
+   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (MTB.IsSimulatorMode())) then
      MTB.InputSim();
  except
    on E:Exception do
