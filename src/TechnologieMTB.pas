@@ -46,13 +46,17 @@ type
    public const
      _MAX_MTB = 192;                                        // maximalni pocet MTB desek
 
+   private const
+     _DEFAULT_LIB = 'simulator.dll';
+     _INIFILE_SECTNAME = 'RCS';
+
    private
      Desky:array [0.._MAX_MTB-1] of TMTBBoard;              // MTB desky, pole je indexovano MTB adresami
 
-     afilename:string;                                      // filename ke konfiguracnimu souboru
      aReady:boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
 
      fGeneralError:boolean;                                 // flag oznamujici nastani "MTB general IO error" -- te nejhorsi veci na svete
+     fLibDir:string;
 
      //events to the main program
      fOnReady : TMTBReadyEvent;
@@ -69,7 +73,7 @@ type
       constructor Create();
       destructor Destroy; override;
 
-      procedure LoadLib(NewLib:string;Must:Boolean=false);                      // nacte knihovnu
+      procedure LoadLib(filename:string);                                       // nacte knihovnu
 
       procedure InputSim();                                                     // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
       procedure SoupravaUsekSim();                                              // nastavit MTB vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
@@ -80,8 +84,8 @@ type
       procedure SetNeeded(MtbAdr:Integer; state:boolean = true);
       function GetNeeded(MtbAdr:Integer):boolean;
 
-      procedure LoadFromFile(FileName:string);
-      function SaveToFile(FileName:string):Byte;
+      procedure LoadFromFile(ini:TMemIniFile);
+      procedure SaveToFile(ini:TMemIniFile);
 
       procedure AddInputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
       procedure RemoveInputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
@@ -98,7 +102,7 @@ type
 
       property OnReady:TMTBReadyEvent read fOnReady write fOnReady;
       property ready:boolean read aready;
-      property filename:string read afilename;
+      property libDir:string read fLibDir;
   end;
 
 var
@@ -132,21 +136,20 @@ end;
 destructor TMTB.Destroy();
 var i:Integer;
 begin
- //ulozeni lib po zavreni
- Self.SaveToFile(Self.afilename);
-
  for i := 0 to _MAX_MTB-1 do
    if (Assigned(Self.Desky[i])) then FreeAndNil(Self.Desky[i]);
 
  inherited;
 end;
 
-procedure TMTB.LoadLib(NewLib:string; Must:Boolean=false);
-var str, tmp:string;
+procedure TMTB.LoadLib(filename:string);
+var str, tmp, libName:string;
 begin
- if ((NewLib <> Self.Lib) or (Must)) then
+ libName := ExtractFileName(filename);
+
+ if (filename <> Self.Lib) then
   begin
-   if (not FileExists(NewLib)) then
+   if (not FileExists(filename)) then
      raise Exception.Create('Library file not found, not loading');
 
    if (Self.ready) then
@@ -155,9 +158,9 @@ begin
      if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
     end;
 
-   TRCSIFace(Self).LoadLib(NewLib);
+   TRCSIFace(Self).LoadLib(filename);
 
-   writelog('Naètena knihovna '+ Self.lib, WR_MTB);
+   writelog('Naètena knihovna '+ libName, WR_MTB);
 
    // kontrola bindnuti vsech eventu
    if (Self.unbound.Contains('SetInput')) then
@@ -216,47 +219,24 @@ begin
   end;
 end;
 
-procedure TMTB.LoadFromFile(FileName:string);
-var ini:TMemIniFile;
-    lib:string;
+procedure TMTB.LoadFromFile(ini:TMemIniFile);
+var lib:string;
 begin
-  Self.afilename := FileName;
-
-  ini := nil;
-  try
-    ini := TMemIniFile.Create(FileName, TEncoding.UTF8);
-    lib := ini.ReadString('MTB', 'lib', 'simulator.dll')
-  except
-    lib := 'simulator.dll';
-  end;
+  fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
+  lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEFAULT_LIB);
 
   try
-    Self.LoadLib(lib, true);
+    Self.LoadLib(fLibDir + '\' + lib);
   except
     on E:Exception do
-      writeLog('Nelze naèíst knihovnu '+lib+', ' + E.Message, WR_ERROR);
+      writeLog('Nelze naèíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message, WR_ERROR);
   end;
-
-  ini.Free();
 end;
 
-function TMTB.SaveToFile(FileName:string):Byte;
-var ini:TMemIniFile;
+procedure TMTB.SaveToFile(ini:TMemIniFile);
 begin
-  try
-    DeleteFile(FileName);
-    ini := TMemIniFile.Create(FileName, TEncoding.UTF8);
-  except
-    Exit(1);
-  end;
-
   if (Self.Lib <> '') then
-    ini.WriteString('MTB', 'lib', Self.Lib);
-
-  ini.UpdateFile();
-  ini.Free();
-
-  Result := 0;
+    ini.WriteString(_INIFILE_SECTNAME, 'lib', ExtractFileName(Self.Lib));
 end;
 
 procedure TMTB.DllAfterClose(Sender:TObject);

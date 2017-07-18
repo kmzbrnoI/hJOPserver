@@ -89,16 +89,15 @@ var read,read2:string;
   F_Splash.AddStav('Naèítám hnací vozidla');
   HVDb.LoadFromDir('lok');
 
-  F_Splash.AddStav('Naèítám MTB');
-  writelog('Nacitam MTB...',WR_DATA);
-  read := ini_lib.ReadString('NacteniDat','MTBData', 'data\MTB.ini');
+  F_Splash.AddStav('Naèítám RCS');
+  writelog('Nacitam RCS...', WR_DATA);
   try
-    MTB.LoadFromFile(read);
+    MTB.LoadFromFile(ini_lib);
   except
     on E:Exception do
       AppEvents.LogException(E);
   end;
-  writelog('MTB nacteno',WR_DATA);
+  writelog('RCS nacteno',WR_DATA);
 
   F_Splash.AddStav('Naèítám databázi zesilovaèù');
   read := ini_lib.ReadString('NacteniDat','Zesilovace', 'data\Zesilovace.ini');
@@ -186,8 +185,7 @@ var read,read2:string;
  end;//procedure
 
 procedure TData.CompleteSaveToFile;
-var return:Integer;
-    tmpStr:string;
+var tmpStr:string;
  begin
   ini_lib.EraseSection('NacteniDat');
   WriteLog('Probiha kompletni ukladani dat',WR_DATA);
@@ -200,14 +198,7 @@ var return:Integer;
   end;
 
   try
-    return := MTB.SaveToFile(MTB.filename);
-    if (return <> 0) then  //overeni chyby pri nacitani
-     begin
-      writelog('MTB SAVE ERROR : '+IntToStr(return),WR_DATA);
-      Application.MessageBox(PChar('Chyba pri ukladani MTB - chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
-     end else begin
-      writelog('MTB SAVE OK',WR_DATA);
-     end;//else return <> 0
+    MTB.SaveToFile(ini_lib);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -296,7 +287,6 @@ var return:Integer;
     ini_lib.WriteString('NacteniDat', 'spnl', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_spnl.Text));
     ini_lib.WriteString('NacteniDat', 'Bloky', ExtractRelativePath(ExtractFilePath(Application.ExeName), Blky.blky_file));
     ini_lib.WriteString('NacteniDat', 'Bloky_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), Blky.fstatus));
-    ini_lib.WriteString('NacteniDat', 'MTBData', ExtractRelativePath(ExtractFilePath(Application.ExeName), MTB.filename));
     ini_lib.WriteString('NacteniDat', 'Zesilovace', ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_dataload_zes.Text));
     ini_lib.WriteString('NacteniDat', 'JC', ExtractRelativePath(ExtractFilePath(Application.ExeName), JCDb.filename));
     ini_lib.WriteString('NacteniDat', 'mJC', ExtractRelativePath(ExtractFilePath(Application.ExeName), MultiJCDb.filename));
@@ -315,6 +305,8 @@ var return:Integer;
     on E:Exception do
       AppEvents.LogException(E);
   end;
+
+  ini_lib.UpdateFile();
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -75,8 +75,6 @@ type
     SB_SystemStart: TSpeedButton;
     SB_SystemStop: TSpeedButton;
     MI_Libs: TMenuItem;
-    PM_lib_Simulator: TMenuItem;
-    PM_lib_MTB: TMenuItem;
     N2: TMenuItem;
     PM_SaveFormPos: TMenuItem;
     IL_Bloky: TImageList;
@@ -263,11 +261,11 @@ type
     A_PT_Start: TAction;
     A_PT_Stop: TAction;
     MI_Houk: TMenuItem;
+    MI_RCS_Update: TMenuItem;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
-    procedure PM_lib_MTBClick(Sender: TObject);
-    procedure PM_lib_SimClick(Sender: TObject);
+    procedure MI_RCS_libClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure AE_1Message(var Msg: tagMSG;
       var Handled: Boolean);
@@ -399,6 +397,7 @@ type
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure MI_HoukClick(Sender: TObject);
     procedure B_AC_ReloadClick(Sender: TObject);
+    procedure MI_RCS_UpdateClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -453,6 +452,8 @@ type
     procedure OnSoundDisabled(Sender:TObject);
 
     procedure CreateCfgDirs();
+
+    procedure UpdateRCSLibsList();
 
   end;//public
 
@@ -527,39 +528,23 @@ procedure TF_Main.FormCreate(Sender: TObject);
   //vse presunuto do Form1.CreateSystem kvuli splash oknu
  end;//procedure
 
-procedure TF_Main.PM_lib_MTBClick(Sender: TObject);
+procedure TF_Main.MI_RCS_libClick(Sender: TObject);
+var fn:string;
  begin
-  Screen.Cursor := crHourGlass;
-  writelog('MTB -> mtb.dll', WR_MTB);
-  try
-    MTB.LoadLib('mtb.dll');
-    Self.LogStatus('MTB: naèteno mtb.dll');
-  except
-    on E:Exception do
-     begin
-      Screen.Cursor := crDefault;
-      Application.MessageBox(PChar('Nelze naèíst knihovnu mtb.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
-      AppEvents.LogException(E, 'Nelze naèíst knihovnu mtb.dll');
-      Exit();
-     end;
-  end;
-  MTBTableData.UpdateTable();
-  Screen.Cursor := crDefault;
- end;
+  fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
-procedure TF_Main.PM_lib_SimClick(Sender: TObject);
- begin
   Screen.Cursor := crHourGlass;
-  writelog('MTB -> simulator.dll', WR_MTB);
+  writelog('RCS -> ' + fn, WR_MTB);
   try
-    MTB.LoadLib('simulator.dll');
-    Self.LogStatus('MTB: naèteno simulator.dll');
+    MTB.LoadLib(MTB.libDir + '\' + fn);
+    Self.LogStatus('RCS: naèteno ' + fn);
   except
     on E:Exception do
      begin
       Screen.Cursor := crDefault;
-      Application.MessageBox(PChar('Nelze naèíst knihovnu simulator.dll:'+#13#10+E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
-      AppEvents.LogException(E, 'Nelze naèíst knihovnu simulator.dll');
+      Application.MessageBox(PChar('Nelze naèíst knihovnu ' + fn + ':'+#13#10+
+          E.Message), 'Nelze naèíst knihovnu', MB_OK OR MB_ICONWARNING);
+      AppEvents.LogException(E, 'Nelze naèíst knihovnu ' + fn);
       Exit();
      end;
   end;
@@ -1475,6 +1460,13 @@ begin
       AppEvents.LogException(E, 'Save AC stats');
   end;
 
+  try
+    MTB.SaveToFile(ini_lib);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Save RCS');
+  end;
+
   ini_lib.WriteBool('Log','main-file', Self.CHB_Mainlog_File.Checked);
   ini_lib.WriteBool('Log','main-table', Self.CHB_Mainlog_Table.Checked);
 
@@ -2071,6 +2063,18 @@ begin
   Self.LV_BlokyDblClick(Self.LV_Bloky);
 end;
 
+procedure TF_Main.MI_RCS_UpdateClick(Sender: TObject);
+begin
+ try
+   Self.UpdateRCSLibsList();
+   Application.MessageBox('Seznam knihoven úspìšnì aktualizován.', 'Info', MB_OK OR MB_ICONINFORMATION);
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Seznam knihoven se nepodaøilo aktualizovat:'+#13#10 + E.Message),
+        'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
+end;
+
 procedure TF_Main.MI_Save_configClick(Sender: TObject);
 begin
   Application.ProcessMessages;
@@ -2240,6 +2244,8 @@ procedure TF_Main.OnStart;
   F_Main.Timer1.Enabled := true;
   F_Main.T_function.Enabled := true;
   F_Main.T_konflikty.Enabled := true;
+
+  Self.UpdateRCSLibsList();
 
   if (not CloseMessage) then
    begin
@@ -2922,6 +2928,42 @@ begin
    Self.SB_AC_Pause.Enabled  := false;
    Self.SB_AC_Repeat.Enabled := false;
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.UpdateRCSLibsList();
+var SR:TSearchRec;
+    item:TMenuItem;
+ begin
+  Self.MI_Libs.Clear();
+
+  // prohledavani adresare a nacitani soubor *.2lok
+  // najdeme prvni soubor
+  if (FindFirst(MTB.libDir+'\*.dll', faAnyFile, SR) = 0) then
+   begin
+    if ((SR.Attr AND faDirectory) = 0) then
+     begin
+      item := TMenuItem.Create(Self.MI_Libs);
+      item.Caption := SR.Name;
+      item.OnClick := Self.MI_RCS_libClick;
+      Self.MI_Libs.Add(item);
+     end;
+
+    // hledame dalsi soubory
+    while (FindNext(SR) = 0) do
+     begin
+      if ((SR.Attr AND faDirectory) = 0) then
+       begin
+        item := TMenuItem.Create(Self.MI_Libs);
+        item.Caption := SR.Name;
+        item.OnClick := Self.MI_RCS_libClick;
+        Self.MI_Libs.Add(item);
+       end;
+     end;
+
+    SysUtils.FindClose(SR);
+   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
