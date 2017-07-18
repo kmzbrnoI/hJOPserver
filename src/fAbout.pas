@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Verze, fLoginPozadi, TechnologieMTB, Logging, appEv;
+uses Verze, fLoginPozadi, TechnologieRCS, Logging, appEv;
 
 {$R *.dfm}
 
@@ -54,10 +54,10 @@ procedure TF_About.FormShow(Sender: TObject);
 
   Self.L_VApp.Caption       := NactiVerzi(Application.ExeName)+' ('+GetLastBuildDate+' '+GetLastBuildTime+')';
 
-  Self.L_VMTBLib.Caption    := MTB.Lib;
+  Self.L_VMTBLib.Caption    := RCSi.Lib;
 
   try
-    Self.L_VMTBDriver.Caption := MTB.GetDllVersion();
+    Self.L_VMTBDriver.Caption := RCSi.GetDllVersion();
   except
     on E:Exception do
      begin
@@ -67,8 +67,8 @@ procedure TF_About.FormShow(Sender: TObject);
   end;
 
   try
-    if (MTB.Opened) then
-      Self.L_VMTBUSB.Caption := MTB.GetDeviceVersion()
+    if (RCSi.Opened) then
+      Self.L_VMTBUSB.Caption := RCSi.GetDeviceVersion()
     else
       Self.L_VMTBUSB.Caption := 'zaøízení uzavøeno';
   except

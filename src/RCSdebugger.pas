@@ -1,25 +1,25 @@
-unit MTBdebugger;
+unit RCSdebugger;
 
 {
-  Trida TMTBd se stara o komunikaci s MTB debugger klienty po standardnim
+  Trida TRCSd se stara o komunikaci s RCS debugger klienty po standardnim
   panelovem TCP spojeni.
 
-  MTB debugger je klient, ktery ma pravo zobrazovat a nastavovat konkretni MTB
+  RCS debugger je klient, ktery ma pravo zobrazovat a nastavovat konkretni RCS
   vstupy/vystupy. Jedna se primarne o DEBUG funkci, predpokladanym klientem
-  jsou predevsim mobilni zarizeni. Pro pouziti MTB debuggeru je nutne se
+  jsou predevsim mobilni zarizeni. Pro pouziti RCS debuggeru je nutne se
   autorizovat uzivatelem s opravnenim "root".
 }
 
 {
   Princip:
-  TMTB vola do jednotlivych klientu eventy pri zmene stavu MTB portu,
-  TMTBdClient si ulozi, ze doslo ke zmene stavu MTB desky a pri Update()
+  TRCS vola do jednotlivych klientu eventy pri zmene stavu RCS portu,
+  TRCSdClient si ulozi, ze doslo ke zmene stavu RCS desky a pri Update()
   posle klientovi novy stav vsech vstupnich anebo vystupnich pinu.
 
-  - TMTBdClient reprezentuje vzdy prave jednoho autorizovaneho MTBd klienta.
-  - Kazdy klient muze ovladat 0..n MTB desek.
+  - TRCSdClient reprezentuje vzdy prave jednoho autorizovaneho RCSd klienta.
+  - Kazdy klient muze ovladat 0..n RCS desek.
   - O desku se zada prikazem "PLEASE", uvoluje se prikazem "RELEASE".
-  - Pri odpojeni klienta je vymazan jeho TMTBdClient zaznam.
+  - Pri odpojeni klienta je vymazan jeho TRCSdClient zaznam.
   - INFO kazde desky jsou nasledujici informace:
       adresa|nazev|typ|existence|verze_fw
       (veskera data jsou stringy, existence je [0,1])
@@ -27,33 +27,33 @@ unit MTBdebugger;
 
 interface
 
-uses SysUtils, TechnologieMTB, Generics.Collections, Classes, IdContext;
+uses SysUtils, TechnologieRCS, Generics.Collections, Classes, IdContext;
 
 type
-  TMTBdModule = record
+  TRCSdModule = record
     addr:Integer;
     output_changed, input_changed: boolean;
   end;
 
-  // jeden MTBd klient
-  TMTBdClient = class
+  // jeden RCSd klient
+  TRCSdClient = class
     private
-      modules:TList<TMTBdModule>;                                               // seznam autorizovanych modulu klienta
+      modules:TList<TRCSdModule>;                                               // seznam autorizovanych modulu klienta
       conn:TIdContext;                                                          // spojeni ke klientovi
 
-       procedure SendOutput(addr:Integer);                                      // odesle stav vystupnich portu MTB \addr
-       procedure SendInput(addr:Integer);                                       // odesle stav vstupnich portu MTB \addr
+       procedure SendOutput(addr:Integer);                                      // odesle stav vystupnich portu RCS \addr
+       procedure SendInput(addr:Integer);                                       // odesle stav vstupnich portu RCS \addr
 
        function ModuleIndexOf(addr:Integer):Integer;                            // vrati index \addr adresy v seznamu modulu \modules
 
-       procedure OnMTBInputChange(Sender:TObject; board:byte);                  // event z TMTB volany pri zmene MTB vstupu
-       procedure OnMTBOutputChange(Sender:TObject; board:byte);                 // event z TMTB volany pri zmene MTB vystupu
+       procedure OnRCSInputChange(Sender:TObject; board:byte);                  // event z TRCS volany pri zmene RCS vstupu
+       procedure OnRCSOutputChange(Sender:TObject; board:byte);                 // event z TRCS volany pri zmene RCS vystupu
 
     public
        constructor Create(conn:TIdContext);
        destructor Destroy(); override;
 
-       procedure Update();                                                      // aktualizace odesilani zmeny stavu MTB desky
+       procedure Update();                                                      // aktualizace odesilani zmeny stavu RCS desky
        procedure Parse(parsed:TStrings);                                        // parse prijatych dat od klienta
 
        property connection:TIdContext read conn;                                // reference na spojeni pro rodice
@@ -62,10 +62,10 @@ type
 
   //////////////////////////////////////////////////////////////////////////
 
-  // TMTBd sdruzuje jednotlive MTBd klienty
-  TMTBd = class
+  // TRCSd sdruzuje jednotlive RCSd klienty
+  TRCSd = class
     private
-      clients:TList<TMTBdClient>;                                               // seznam autorizovanych klientu
+      clients:TList<TRCSdClient>;                                               // seznam autorizovanych klientu
 
        procedure ParseAuth(Sender:TIdContext; parsed:TStrings);                 // parsovani autorizacniho prikazu "AUTH"
 
@@ -73,22 +73,22 @@ type
        constructor Create();
        destructor Destroy(); override;
 
-       procedure Parse(Sender:TIdContext; parsed:TStrings);                     // parsovani dat pro MTB debugger -- prefix "-;MTBd;"
-       procedure RemoveClient(conn:TIDContext);                                 // smazani MTBd klienta z databaze
-       procedure RemoveAllClients();                                            // smazani vsech MTBd klientu
-       procedure Update();                                                      // propagace stavu MTB k MTBd klientum
+       procedure Parse(Sender:TIdContext; parsed:TStrings);                     // parsovani dat pro RCS debugger -- prefix "-;RCSd;"
+       procedure RemoveClient(conn:TIDContext);                                 // smazani RCSd klienta z databaze
+       procedure RemoveAllClients();                                            // smazani vsech RCSd klientu
+       procedure Update();                                                      // propagace stavu RCS k RCSd klientum
 
-       class function GetMTBInfo(board:byte):string;                            // vraci INFO string
+       class function GetRCSInfo(board:byte):string;                            // vraci INFO string
 
   end;
 
 var
-  MTBd: tMTBd;
+  RCSd: tRCSd;
 
 implementation
 
 {
-  Popis TCP protokolu MTB debuggeru:
+  Popis TCP protokolu RCS debuggeru:
 
   @ server -> klient
     -;MTBd;AUTH;[ok,not];message                                                odpoved na autorizaci klienta
@@ -119,13 +119,13 @@ uses TCPServerOR, UserDb, User, RCSErrors;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TMTBd.Create();
+constructor TRCSd.Create();
 begin
  inherited;
- Self.clients := TList<TMTBdClient>.Create();
+ Self.clients := TList<TRCSdClient>.Create();
 end;
 
-destructor TMTBd.Destroy();
+destructor TRCSd.Destroy();
 begin
  Self.RemoveAllClients();
  Self.clients.Free();
@@ -134,7 +134,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBd.RemoveClient(conn:TIDContext);
+procedure TRCSd.RemoveClient(conn:TIDContext);
 var i:Integer;
 begin
  for i := 0 to Self.clients.Count-1 do
@@ -145,7 +145,7 @@ begin
     end;
 end;
 
-procedure TMTBd.RemoveAllClients();
+procedure TRCSd.RemoveAllClients();
 var i:Integer;
 begin
  for i := 0 to Self.clients.Count-1 do Self.clients[i].Free();
@@ -153,7 +153,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBd.Parse(Sender:TIdContext; parsed:TStrings);
+procedure TRCSd.Parse(Sender:TIdContext; parsed:TStrings);
 var i:Integer;
 begin
  parsed[2] := UpperCase(parsed[2]);
@@ -170,9 +170,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBd.ParseAuth(Sender:TIdContext; parsed:TStrings);
+procedure TRCSd.ParseAuth(Sender:TIdContext; parsed:TStrings);
 var user:TUser;
-    client:TMTBdClient;
+    client:TRCSdClient;
 begin
  // -> zjistime uzivatele
  user := UsrDb.GetUser(parsed[3]);
@@ -205,14 +205,14 @@ begin
    Exit();
   end;
 
- client := TMTBdClient.Create(Sender);
+ client := TRCSdClient.Create(Sender);
  Self.clients.Add(client);
  ORTCPServer.SendLn(Sender, '-;MTBd;AUTH;ok;Autorizováno');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBd.Update();
+procedure TRCSd.Update();
 var i:Integer;
 begin
  for i := 0 to Self.clients.Count-1 do
@@ -220,27 +220,27 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-///////////////////////////  TRIDA TMTBdClient /////////////////////////////////
+///////////////////////////  TRIDA TRCSdClient /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TMTBdClient.Create(conn:TIdContext);
+constructor TRCSdClient.Create(conn:TIdContext);
 begin
  inherited Create();
- Self.modules := TList<TMTBdModule>.Create();
+ Self.modules := TList<TRCSdModule>.Create();
  Self.conn := conn;
 end;
 
-destructor TMTBdClient.Destroy();
+destructor TRCSdClient.Destroy();
 begin
- MTB.RemoveInputChangeEvent(Self.OnMTBInputChange);
- MTB.RemoveInputChangeEvent(Self.OnMTBOutputChange);
+ RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange);
+ RCSi.RemoveInputChangeEvent(Self.OnRCSOutputChange);
  FreeAndNil(Self.modules);
  inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBdClient.SendOutput(addr:Integer);
+procedure TRCSdClient.SendOutput(addr:Integer);
 var i:Integer;
     str:string;
 begin
@@ -248,7 +248,7 @@ begin
  for i := 0 to 15 do
   begin
    try
-     str := str + IntToStr(MTB.GetOutput(addr, i)) + '|';
+     str := str + IntToStr(RCSi.GetOutput(addr, i)) + '|';
    except
      on E:Exception do
       begin
@@ -260,7 +260,7 @@ begin
  ORTCPServer.SendLn(Self.conn, '-;MTBd;MODULE;'+IntToStr(addr)+';CHANGE;O;{'+str+'}');
 end;
 
-procedure TMTBdClient.SendInput(addr:Integer);
+procedure TRCSdClient.SendInput(addr:Integer);
 var i:Integer;
     str:string;
 begin
@@ -268,7 +268,7 @@ begin
  for i := 0 to 15 do
   begin
    try
-     str := str + IntToStr(Integer(MTB.GetInput(addr, i))) + '|';
+     str := str + IntToStr(Integer(RCSi.GetInput(addr, i))) + '|';
    except
      on E:Exception do
       begin
@@ -282,9 +282,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBdClient.OnMTBInputChange(Sender:TObject; board:byte);
+procedure TRCSdClient.OnRCSInputChange(Sender:TObject; board:byte);
 var index:Integer;
-    module:TMTBdModule;
+    module:TRCSdModule;
 begin
  index := Self.ModuleIndexOf(board);
  if (index > -1) then
@@ -295,9 +295,9 @@ begin
   end;
 end;
 
-procedure TMTBdClient.OnMTBOutputChange(Sender:TObject; board:byte);
+procedure TRCSdClient.OnRCSOutputChange(Sender:TObject; board:byte);
 var index:Integer;
-    module:TMTBdModule;
+    module:TRCSdModule;
 begin
  index := Self.ModuleIndexOf(board);
  if (index > -1) then
@@ -310,7 +310,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMTBdClient.ModuleIndexOf(addr:Integer):Integer;
+function TRCSdClient.ModuleIndexOf(addr:Integer):Integer;
 var i:Integer;
 begin
  Result := -1;
@@ -320,9 +320,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBdClient.Update();
+procedure TRCSdClient.Update();
 var i:Integer;
-    module:TMTBdModule;
+    module:TRCSdModule;
 begin
  for i := 0 to Self.modules.Count-1 do
   begin
@@ -344,9 +344,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBdClient.Parse(parsed:TStrings);
+procedure TRCSdClient.Parse(parsed:TStrings);
 var addr, index, i:Integer;
-    module:TMTBdModule;
+    module:TRCSdModule;
     str:string;
 begin
  if (parsed[2] = 'PLEASE') then begin
@@ -364,8 +364,8 @@ begin
     module.output_changed := false;
     module.input_changed  := false;
     Self.modules.Add(module);
-    MTB.AddInputChangeEvent(addr, Self.OnMTBInputChange);
-    MTB.AddOutputChangeEvent(addr, Self.OnMTBOutputChange);
+    RCSi.AddInputChangeEvent(addr, Self.OnRCSInputChange);
+    RCSi.AddOutputChangeEvent(addr, Self.OnRCSOutputChange);
     ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;MOD-AUTH;'+IntToStr(addr)+';ok');
     Self.SendInput(addr);
     Self.SendOutput(addr);
@@ -382,8 +382,8 @@ begin
   index := Self.ModuleIndexOf(addr);
   if (index > -1) then
    begin
-    MTB.RemoveInputChangeEvent(Self.OnMTBInputChange, addr);
-    MTB.RemoveOutputChangeEvent(Self.OnMTBOutputChange, addr);
+    RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange, addr);
+    RCSi.RemoveOutputChangeEvent(Self.OnRCSOutputChange, addr);
     Self.modules.Delete(index);
     ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;MOD-AUTH;'+IntToStr(addr)+';not');
    end;
@@ -396,7 +396,7 @@ begin
     Exit();
   end;
 
-  MTB.SetOutput(addr, StrToInt(parsed[4]), StrToInt(parsed[5]));
+  RCSi.SetOutput(addr, StrToInt(parsed[4]), StrToInt(parsed[5]));
 
  end else if (parsed[2] = 'UPDATE') then begin
   try
@@ -416,25 +416,25 @@ begin
    end;
 
  end else if (parsed[2] = 'INFO') then begin
-   ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;INFO;{{'+TMTBd.GetMTBInfo(StrToInt(parsed[3]))+'}}');
+   ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
 
  end else if (parsed[2] = 'LIST') then begin
    str := '';
-   for i := 0 to TMTB._MAX_MTB-1 do
-     if ((MTB.IsModule(i)) or (MTB.GetNeeded(i))) then
-        str := str + '{' + TMTBd.GetMTBInfo(i) + '}';
+   for i := 0 to TRCS._MAX_RCS-1 do
+     if ((RCSi.IsModule(i)) or (RCSi.GetNeeded(i))) then
+        str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;INFO;{'+str+'}');
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TMTBd.GetMTBInfo(board:byte):string;
+class function TRCSd.GetRCSInfo(board:byte):string;
 begin
  Result := IntToStr(board) + '|';
 
  try
-   Result := Result + MTB.GetModuleName(board) + '|';
+   Result := Result + RCSi.GetModuleName(board) + '|';
  except
    on E:ERCSInvalidModuleAddr do
      Result := Result + '-|';
@@ -443,7 +443,7 @@ begin
  end;
 
  try
-   Result := Result + IntToStr(MTB.GetModuleType(board)) + '|';
+   Result := Result + IntToStr(RCSi.GetModuleType(board)) + '|';
  except
    on E:ERCSInvalidModuleAddr do
      Result := Result + '-|';
@@ -452,7 +452,7 @@ begin
  end;
 
  try
-   case (MTB.IsModule(board)) of
+   case (RCSi.IsModule(board)) of
     false : Result := Result + '0|';
     true  : Result := Result + '1|';
    end;
@@ -461,7 +461,7 @@ begin
  end;
 
  try
-   Result := Result + MTB.GetModuleFW(board);
+   Result := Result + RCSi.GetModuleFW(board);
  except
    on E:ERCSInvalidModuleAddr do
      Result := Result + '-|';
@@ -473,8 +473,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 initialization
-  MTBd := TMTBd.Create();
+  RCSd := TRCSd.Create();
 finalization
-  FreeAndNil(MTBd);
+  FreeAndNil(RCSd);
 
 end.

@@ -15,7 +15,7 @@ uses IniFiles,TBlok;
 type
 
  TBlkVystupSettings = record
-  MTBAddrs:TMTBAddrs;
+  RCSAddrs:TRCSAddrs;
  end;
 
  TBlkVystupStav = record
@@ -58,7 +58,7 @@ type
 
 implementation
 
-uses TechnologieMTB;
+uses TechnologieRCS;
 
 constructor TBlkVystup.Create(index:Integer);
 begin
@@ -77,13 +77,13 @@ end;//dtor
 procedure TBlkVystup.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
- Self.VystupSettings.MTBAddrs := Self.LoadMTB(ini_tech, section);
+ Self.VystupSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
 end;//procedure
 
 procedure TBlkVystup.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
- Self.SaveMTB(ini_tech,section, Self.VystupSettings.MTBAddrs);
+ Self.SaveRCS(ini_tech,section, Self.VystupSettings.RCSAddrs);
 end;//procedure
 
 procedure TBlkVystup.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -97,11 +97,11 @@ procedure TBlkVystup.Enable();
 var i:Integer;
 begin
  Self.VystupStav.enabled := true;
- for i := 0 to Self.VystupSettings.MTBAddrs.Count-1 do
+ for i := 0 to Self.VystupSettings.RCSAddrs.Count-1 do
   begin
    try
-     if ((MTB.Started) and (MTB.IsModule(Self.VystupSettings.MTBAddrs.data[i].board)) and (not MTB.IsModuleFailure(Self.VystupSettings.MTBAddrs.data[i].board))) then
-       MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 1);
+     if ((RCSi.Started) and (RCSi.IsModule(Self.VystupSettings.RCSAddrs.data[i].board)) and (not RCSi.IsModuleFailure(Self.VystupSettings.RCSAddrs.data[i].board))) then
+       RCSi.SetOutput(Self.VystupSettings.RCSAddrs.data[i].board, Self.VystupSettings.RCSAddrs.data[i].port, 1);
    except
 
    end;
@@ -112,11 +112,11 @@ procedure TBlkVystup.Disable();
 var i:Integer;
 begin
  Self.VystupStav.enabled := false;
- for i := 0 to Self.VystupSettings.MTBAddrs.Count-1 do
+ for i := 0 to Self.VystupSettings.RCSAddrs.Count-1 do
   begin
    try
-     if ((MTB.Started) and (MTB.IsModule(Self.VystupSettings.MTBAddrs.data[i].board)) and (not MTB.IsModuleFailure(Self.VystupSettings.MTBAddrs.data[i].board))) then
-       MTB.SetOutput(Self.VystupSettings.MTBAddrs.data[i].board, Self.VystupSettings.MTBAddrs.data[i].port, 0);
+     if ((RCSi.Started) and (RCSi.IsModule(Self.VystupSettings.RCSAddrs.data[i].board)) and (not RCSi.IsModuleFailure(Self.VystupSettings.RCSAddrs.data[i].board))) then
+       RCSi.SetOutput(Self.VystupSettings.RCSAddrs.data[i].board, Self.VystupSettings.RCSAddrs.data[i].port, 0);
    except
 
    end;

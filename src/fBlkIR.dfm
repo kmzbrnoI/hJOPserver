@@ -76,7 +76,7 @@ object F_BlkIR: TF_BlkIR
     MaxValue = 2147483647
     MinValue = 1
     TabOrder = 1
-    Value = 0
+    Value = 1
   end
   object GB_MTB: TGroupBox
     Left = 10
@@ -98,13 +98,13 @@ object F_BlkIR: TF_BlkIR
     object L_IR04: TLabel
       Left = 16
       Top = 16
-      Width = 64
+      Width = 63
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB adresa :'
+      Caption = 'RCS adresa :'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -115,13 +115,13 @@ object F_BlkIR: TF_BlkIR
     object L_IR05: TLabel
       Left = 16
       Top = 44
-      Width = 50
+      Width = 49
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB port :'
+      Caption = 'RCS port :'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11

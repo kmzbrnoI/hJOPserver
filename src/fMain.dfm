@@ -3493,7 +3493,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_VC
+    ActivePage = TS_Stav_RCS
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3580,7 +3580,7 @@ object F_Main: TF_Main
         ParentShowHint = False
         ShowHint = False
         TabOrder = 1
-        object S_MTB_open: TShape
+        object S_RCS_open: TShape
           Left = 16
           Top = 24
           Width = 17
@@ -3591,7 +3591,7 @@ object F_Main: TF_Main
           Margins.Bottom = 2
           Brush.Color = clRed
         end
-        object S_MTB_start: TShape
+        object S_RCS_start: TShape
           Left = 16
           Top = 39
           Width = 17
@@ -3638,25 +3638,25 @@ object F_Main: TF_Main
         object L_StavS_1: TLabel
           Left = 40
           Top = 24
-          Width = 69
+          Width = 68
           Height = 13
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = 'MTB otev'#345'eno'
+          Caption = 'RCS otev'#345'eno'
         end
         object L_StavS_2: TLabel
           Tag = 1
           Left = 40
           Top = 39
-          Width = 84
+          Width = 83
           Height = 13
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = 'MTB komunikace'
+          Caption = 'RCS komunikace'
         end
         object L_StavS_3: TLabel
           Tag = 2
@@ -5309,14 +5309,14 @@ object F_Main: TF_Main
         end
       end
     end
-    object TS_Stav_MTB: TTabSheet
+    object TS_Stav_RCS: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Stav MTB'
+      Caption = 'Stav RCS modul'#367
       ImageIndex = -1
-      object LV_Stav_MTB: TListView
+      object LV_Stav_RCS: TListView
         Left = 0
         Top = 0
         Width = 1289
@@ -5329,7 +5329,7 @@ object F_Main: TF_Main
         Align = alClient
         Columns = <
           item
-            Caption = 'Adresa MTB'
+            Caption = 'Adresa modulu'
             Width = 71
           end
           item
@@ -5337,22 +5337,22 @@ object F_Main: TF_Main
             Width = 30
           end
           item
-            Caption = 'N'#225'zev MTB'
+            Caption = 'N'#225'zev modulu'
             Width = 125
           end
           item
             Alignment = taCenter
-            Caption = 'Typ MTB'
+            Caption = 'Typ moduly'
             Width = 70
           end
           item
             Alignment = taCenter
-            Caption = 'Vstupy'
+            Caption = 'Stav vstup'#367
             Width = 200
           end
           item
             Alignment = taCenter
-            Caption = 'V'#253'stupy'
+            Caption = 'Stav v'#253'stup'#367
             Width = 200
           end
           item
@@ -5958,7 +5958,7 @@ object F_Main: TF_Main
     Images = IL_Menu
     Left = 728
     Top = 456
-    object M_System: TMenuItem
+    object MI_System: TMenuItem
       Caption = 'Syst'#233'm'
       object PM_Central_Start: TMenuItem
         Action = A_System_Start
@@ -5984,29 +5984,31 @@ object F_Main: TF_Main
         Action = A_PanelServer_Stop
       end
     end
-    object M_Zarizeni: TMenuItem
-      Caption = 'MTB'
-      object OtevtMTB1: TMenuItem
-        Action = A_MTB_Open
+    object MI_RCS: TMenuItem
+      Caption = #344#237'zen'#237' p'#345#237'slu'#353'enstv'#237' (RCS)'
+      object MI_RCS_Open: TMenuItem
+        Action = A_RCS_Open
+        Caption = 'Otev'#345#237't za'#345#237'zen'#237
       end
-      object ZavtMTB1: TMenuItem
-        Action = A_MTB_Close
+      object MI_RCS_Close: TMenuItem
+        Action = A_RCS_Close
+        Caption = 'Zav'#345#237't za'#345#237'zen'#237
       end
       object N8: TMenuItem
         Caption = '-'
       end
-      object PM_go: TMenuItem
-        Action = A_MTB_Go
+      object MI_RCS_Go: TMenuItem
+        Action = A_RCS_Go
         Caption = 'Zapnout komunikaci'
       end
-      object PM_stop: TMenuItem
-        Action = A_MTB_Stop
+      object MI_RCS_Stop: TMenuItem
+        Action = A_RCS_Stop
         Caption = 'Vypnout komunikaci'
       end
       object N1: TMenuItem
         Caption = '-'
       end
-      object PM_OptionsMTB: TMenuItem
+      object MI_RCS_Options: TMenuItem
         Action = A_lib_cfg
         Bitmap.Data = {
           06030000424D060300000000000036000000280000000F0000000F0000000100
@@ -6039,7 +6041,7 @@ object F_Main: TF_Main
       object N2: TMenuItem
         Caption = '-'
       end
-      object MI_Libs: TMenuItem
+      object MI_RCS_Libs: TMenuItem
         Caption = 'Na'#269#237'st knihovnu'
       end
       object MI_RCS_Update: TMenuItem
@@ -6047,8 +6049,8 @@ object F_Main: TF_Main
         OnClick = MI_RCS_UpdateClick
       end
     end
-    object M_Centrala: TMenuItem
-      Caption = 'Centr'#225'la'
+    object MI_Centrala: TMenuItem
+      Caption = #344#237'zen'#237' j'#237'zdy'
       object PM_Int_connect: TMenuItem
         Action = A_Trk_Connect
       end
@@ -6082,7 +6084,7 @@ object F_Main: TF_Main
         Action = A_FuncsSet
       end
     end
-    object M_Provoz: TMenuItem
+    object MI_Provoz: TMenuItem
       Caption = 'Provoz'
       object PM_Nastaveni: TMenuItem
         Caption = 'Nastaven'#237
@@ -6098,7 +6100,7 @@ object F_Main: TF_Main
         OnClick = PM_ConsoleClick
       end
     end
-    object M_Reset: TMenuItem
+    object MI_Reset: TMenuItem
       Caption = 'Reset'
       object PM_ResetV: TMenuItem
         Caption = 'Prestavit v'#253'hybky do z'#225'kladn'#237' polohy'
@@ -6107,7 +6109,7 @@ object F_Main: TF_Main
         OnClick = PM_ResetVClick
       end
     end
-    object M_Dalsi: TMenuItem
+    object MI_Dalsi: TMenuItem
       Caption = 'Dal'#353#237
       object PM_Tester: TMenuItem
         Caption = 'MTB tester'
@@ -6199,7 +6201,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C0101360014039C0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403A00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8065,7 +8067,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280314041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280318041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8606,7 +8608,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802600310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802640310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -8848,19 +8850,19 @@ object F_Main: TF_Main
     Images = IL_Menu
     Left = 920
     Top = 456
-    object A_MTB_Go: TAction
+    object A_RCS_Go: TAction
       Enabled = False
-      Hint = 'P'#345'ipojit se k MTB'
+      Hint = 'P'#345'ipojit se k RCS'
       ImageIndex = 4
       ShortCut = 117
-      OnExecute = A_MTB_GoExecute
+      OnExecute = A_RCS_GoExecute
     end
-    object A_MTB_Stop: TAction
+    object A_RCS_Stop: TAction
       Enabled = False
-      Hint = 'Odpojit se od MTB'
+      Hint = 'Odpojit se od RCS'
       ImageIndex = 5
       ShortCut = 118
-      OnExecute = A_MTB_StopExecute
+      OnExecute = A_RCS_StopExecute
     end
     object A_lib_cfg: TAction
       Hint = 'Otev'#345#237't konfiguraci knihovny'
@@ -8929,17 +8931,17 @@ object F_Main: TF_Main
       ShortCut = 16497
       OnExecute = A_PanelServer_StopExecute
     end
-    object A_MTB_Open: TAction
+    object A_RCS_Open: TAction
       Caption = 'Otev'#345#237't MTB'
       Enabled = False
       ImageIndex = 2
-      OnExecute = A_MTB_OpenExecute
+      OnExecute = A_RCS_OpenExecute
     end
-    object A_MTB_Close: TAction
+    object A_RCS_Close: TAction
       Caption = 'Zav'#345#237't MTB'
       Enabled = False
       ImageIndex = 3
-      OnExecute = A_MTB_CloseExecute
+      OnExecute = A_RCS_CloseExecute
     end
     object A_SaveStav: TAction
       Caption = 'Ulo'#382'it stav koleji'#353't'#283

@@ -6,7 +6,7 @@ unit Booster;
 
 interface
 
-uses IniFiles, TechnologieMTB, SysUtils;
+uses IniFiles, TechnologieRCS, SysUtils;
 
 type
  TBoosterSignal = (undef = -1, error = 0, ok = 1);
@@ -18,10 +18,10 @@ type
  TBoosterSettings = record
    bclass:TBoosterClass;                                                        // booster class (spax, bz100)
    Name:string;                                                                 // booster name
-   MTB:record                                                                   // MTB inputs
-    Zkrat:TMTBAddr;                                                             // overload input
-    Napajeni:TMTBAddr;                                                          // power input
-    DCC:TMTBAddr;                                                               // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
+   MTB:record                                                                   // RCS inputs
+    Zkrat:TRCSAddr;                                                             // overload input
+    Napajeni:TRCSAddr;                                                          // power input
+    DCC:TRCSAddr;                                                               // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
    end;
    id:string;
  end;//TBoosterSettings
@@ -166,8 +166,8 @@ begin
  Self.Settings.MTB.DCC.board  := ini.ReadInteger(section,'dcc_mtb',0);
  Self.Settings.MTB.DCC.port   := ini.ReadInteger(section,'dcc_port',0);
 
- MTB.SetNeeded(Self.Settings.MTB.Napajeni.board);
- MTB.SetNeeded(Self.Settings.MTB.Zkrat.board);
+ RCSi.SetNeeded(Self.Settings.MTB.Napajeni.board);
+ RCSi.SetNeeded(Self.Settings.MTB.Zkrat.board);
 end;//procedure
 
 //save data to the file
@@ -194,13 +194,13 @@ end;//procedure
 function TBooster.GetZkrat():TBoosterSignal;
 var val:TRCSInputState;
 begin
- if ((not MTB.ready) or (not MTB.Started)) then Exit(TBoosterSignal.undef);
+ if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  //if not a power, not a overload
  if (Self.napajeni = TBoosterSignal.error) then Exit(TBoosterSignal.undef);
 
  try
-   val := MTB.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port);
+   val := RCSi.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -216,10 +216,10 @@ end;//function
 function TBooster.GetNapajeni():TBoosterSignal;
 var val:TRCSInputState;
 begin
- if ((not MTB.ready) or (not MTB.Started)) then Exit(TBoosterSignal.undef);
+ if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  try
-   val := MTB.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port);
+   val := RCSi.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -235,12 +235,12 @@ end;//function
 function TBooster.GetDCC():TBoosterSignal;
 var val:TRCSInputState;
 begin
- if ((not MTB.ready) or (not MTB.Started)) then Exit(TBoosterSignal.undef);
+ if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  // DCC nemusi byt detekovano (to se pozna tak, ze MTB board = 0)
  if (Self.Settings.MTB.DCC.board = 0) then Exit(TBoosterSignal.undef);
  try
-   val := MTB.GetInput(Self.Settings.MTB.DCC.board, Self.Settings.MTB.DCC.port);
+   val := RCSi.GetInput(Self.Settings.MTB.DCC.board, Self.Settings.MTB.DCC.port);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -257,7 +257,7 @@ end;
 
 function TBooster.GetDefined():boolean;
 begin
- Result := ((MTB.IsModule(Self.Settings.MTB.Zkrat.board)) and (MTB.IsModule(Self.Settings.MTB.Napajeni.board)));
+ Result := ((RCSi.IsModule(Self.Settings.MTB.Zkrat.board)) and (RCSi.IsModule(Self.Settings.MTB.Napajeni.board)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

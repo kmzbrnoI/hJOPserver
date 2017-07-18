@@ -73,7 +73,7 @@ var
 
 implementation
 
-uses Prevody, GetSystems, FileSystem, TechnologieMTB, TBlok, fBlkVyhybkaSysVars,
+uses Prevody, GetSystems, FileSystem, TechnologieRCS, TBlok, fBlkVyhybkaSysVars,
     DataBloky;
 
 {$R *.dfm}
@@ -151,17 +151,17 @@ var glob:TBlkSettings;
   Self.CHB_ZamekClick(Self.CHB_Zamek);
 
   //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni MTB_board = [0])
-  SE_VstPlusMTB.Value    := settings.MTBAddrs.data[0].board;
-  SE_VstPlusPort.Value   := settings.MTBAddrs.data[0].port;
+  SE_VstPlusMTB.Value    := settings.RCSAddrs.data[0].board;
+  SE_VstPlusPort.Value   := settings.RCSAddrs.data[0].port;
 
-  SE_VstMinusMTB.Value   := settings.MTBAddrs.data[1].board;
-  SE_VstMinusPort.Value  := settings.MTBAddrs.data[1].port;
+  SE_VstMinusMTB.Value   := settings.RCSAddrs.data[1].board;
+  SE_VstMinusPort.Value  := settings.RCSAddrs.data[1].port;
 
-  SE_VystPlusMTB.Value   := settings.MTBAddrs.data[2].board;
-  SE_VystPlusPort.Value  := settings.MTBAddrs.data[2].port;
+  SE_VystPlusMTB.Value   := settings.RCSAddrs.data[2].board;
+  SE_VystPlusPort.Value  := settings.RCSAddrs.data[2].port;
 
-  SE_VystMinusMTB.Value  := settings.MTBAddrs.data[3].board;
-  SE_VystMinusPort.Value := settings.MTBAddrs.data[3].port;
+  SE_VystMinusMTB.Value  := settings.RCSAddrs.data[3].board;
+  SE_VystMinusPort.Value := settings.RCSAddrs.data[3].port;
 
   Self.CHB_npPlus.Checked := (settings.npPlus > -1);
   Self.CHB_npPlusClick(Self.CHB_npPlus);
@@ -234,14 +234,14 @@ procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
 
 procedure TF_BlkVyhybka.CB_SpojkaChange(Sender: TObject);
 var Blk:TBlk;
-    mtbs:TMTBAddrs;
+    mtbs:TRCSAddrs;
 begin
  if ((not Self.CHB_Spojka.Checked) or (Self.CB_Spojka.ItemIndex = -1)) then Exit();
 
  Blky.GetBlkByIndex(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex], Blk);
  if ((Blk = nil) or (Blk.GetGlobalSettings.typ <> _BLK_VYH)) then Exit();
 
- mtbs := TBlkVyhybka(Blk).GetSettings().MTBAddrs;
+ mtbs := TBlkVyhybka(Blk).GetSettings().RCSAddrs;
 
  SE_VstPlusMTB.Value    := mtbs.data[0].board;
  SE_VstPlusPort.Value   := mtbs.data[0].port;
@@ -354,19 +354,19 @@ var glob:TBlkSettings;
 
   //ukladani dat
 
-  settings.MTBAddrs.Count := 4;
+  settings.RCSAddrs.Count := 4;
 
-  settings.MTBAddrs.data[0].board := SE_VstPlusMTB.Value;
-  settings.MTBAddrs.data[0].port  := SE_VstPlusPort.Value;
+  settings.RCSAddrs.data[0].board := SE_VstPlusMTB.Value;
+  settings.RCSAddrs.data[0].port  := SE_VstPlusPort.Value;
 
-  settings.MTBAddrs.data[1].board := SE_VstMinusMTB.Value;
-  settings.MTBAddrs.data[1].port  := SE_VstMinusPort.Value;
+  settings.RCSAddrs.data[1].board := SE_VstMinusMTB.Value;
+  settings.RCSAddrs.data[1].port  := SE_VstMinusPort.Value;
 
-  settings.MTBAddrs.data[2].board := SE_VystPlusMTB.Value;
-  settings.MTBAddrs.data[2].port  := SE_VystPlusPort.Value;
+  settings.RCSAddrs.data[2].board := SE_VystPlusMTB.Value;
+  settings.RCSAddrs.data[2].port  := SE_VystPlusPort.Value;
 
-  settings.MTBAddrs.data[3].board := SE_VystMinusMTB.Value;
-  settings.MTBAddrs.data[3].port  := SE_VystMinusPort.Value;
+  settings.RCSAddrs.data[3].board := SE_VystMinusMTB.Value;
+  settings.RCSAddrs.data[3].port  := SE_VystMinusPort.Value;
 
   if (Self.CHB_Spojka.Checked) then
    settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex])

@@ -28,7 +28,7 @@ var
 
 implementation
 
-uses fMain, fLoginPozadi, TechnologieMTB, Logging,
+uses fMain, fLoginPozadi, TechnologieRCS, Logging,
       ModelovyCas;
 
 {$R *.dfm}

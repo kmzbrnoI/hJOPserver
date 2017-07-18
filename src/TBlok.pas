@@ -4,7 +4,7 @@ unit TBlok;
 
 interface
 
-uses IniFiles, TechnologieMTB, SysUtils, TOblsRizeni,
+uses IniFiles, TechnologieRCS, SysUtils, TOblsRizeni,
       Generics.Collections, IdContext, JsonDataObjects, TOblRizeni, changeEvent;
 
 const
@@ -33,8 +33,8 @@ type
  TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4);
 
  //spolecne recordy:
- TMTBAddrs = record
-  data:array[0.._BLK_MTBCNT-1] of TMTBAddr;
+ TRCSAddrs = record
+  data:array[0.._BLK_MTBCNT-1] of TRCSAddr;
   Count:Byte;
  end;
 
@@ -69,10 +69,10 @@ type
    ORsRef:TORsRef;          // ve kterych OR se blok nachazi
 
    //loading and saving MTB
-   class function LoadMTB(ini:TMemIniFile;section:string):TMTBAddrs;
-   class procedure SaveMTB(ini:TMemIniFile;section:string;data:TMTBAddrs);
+   class function LoadRCS(ini:TMemIniFile;section:string):TRCSAddrs;
+   class procedure SaveRCS(ini:TMemIniFile;section:string;data:TRCSAddrs);
 
-   class procedure PushMTBToOR(ORs:TORsRef; MTBs:TMTBAddrs);
+   class procedure PushRCSToOR(ORs:TORsRef; RCSs:TRCSAddrs);
 
    procedure CallChangeEvents(var events:TChangeEvents);
 
@@ -127,8 +127,8 @@ type
 
    class function BlkTypeToStr(typ:Byte):string;
    class function BlkTypeFromStr(typ:string):Byte;
-   class procedure MTBstoJSON(const addrs:TMTBAddrs; json:TJsonArray);
-   class procedure MTBtoJSON(const addr:TMTBAddr; json:TJsonObject);
+   class procedure RCSstoJSON(const addrs:TRCSAddrs; json:TJsonArray);
+   class procedure RCStoJSON(const addr:TRCSAddr; json:TJsonObject);
 
    //if some local variable is changed, this event is called to the program
    property OnChange:TOnBlkChange read FOnChange write FOnChange;
@@ -199,8 +199,8 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// mj. tady se zjistuje, ktera MTB jsou na kolejisti potreba
-class function TBlk.LoadMTB(ini:TMemIniFile;section:string):TMTBAddrs;
+// mj. tady se zjistuje, ktere moduly RCS jsou na kolejisti potreba
+class function TBlk.LoadRCS(ini:TMemIniFile;section:string):TRCSAddrs;
 var i:Integer;
 begin
  Result.Count := ini.ReadInteger(section,'MTBcnt',0);
@@ -208,7 +208,7 @@ begin
   begin
    Result.data[i].board := ini.ReadInteger(section,'MTBb'+IntToStr(i),0);
    Result.data[i].port  := ini.ReadInteger(section,'MTBp'+IntToStr(i),0);
-   MTB.SetNeeded(Result.data[i].board);
+   RCSi.SetNeeded(Result.data[i].board);
   end;//for i
  for i := Result.Count to _BLK_MTBCNT-1 do
   begin
@@ -217,7 +217,7 @@ begin
   end;
 end;//function
 
-class procedure TBlk.SaveMTB(ini:TMemIniFile;section:string;data:TMTBAddrs);
+class procedure TBlk.SaveRCS(ini:TMemIniFile;section:string;data:TRCSAddrs);
 var i:Integer;
 begin
  if (data.Count > 0) then
@@ -254,12 +254,12 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.PushMTBToOR(ORs:TORsRef; MTBs:TMTbAddrs);
+class procedure TBlk.PushRCSToOR(ORs:TORsRef; RCSs:TRCSAddrs);
 var i, j:Integer;
 begin
  for i := 0 to ORs.Cnt-1 do
-   for j := 0 to MTBs.Count-1 do
-     ORs.ORs[i].MTBAdd(MTBs.data[j].board);
+   for j := 0 to RCSs.Count-1 do
+     ORs.ORs[i].MTBAdd(RCSs.data[j].board);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -393,7 +393,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.MTBstoJSON(const addrs:TMTBAddrs; json:TJsonArray);
+class procedure TBlk.RCSstoJSON(const addrs:TRCSAddrs; json:TJsonArray);
 var i:Integer;
     newObj:TJsonObject;
 begin
@@ -405,7 +405,7 @@ begin
   end;
 end;
 
-class procedure TBlk.MTBtoJSON(const addr:TMTBAddr; json:TJsonObject);
+class procedure TBlk.RCStoJSON(const addr:TRCSAddr; json:TJsonObject);
 begin
  json['board'] := addr.board;
  json['port'] := addr.port;

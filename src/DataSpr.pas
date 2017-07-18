@@ -20,7 +20,7 @@ type
       procedure UpdateTable();
 
       constructor Create(LV:TListView);
-  end;//TMTBData
+  end;
 
 var
    SprTableData:TSprTableData;

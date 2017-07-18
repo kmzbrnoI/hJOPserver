@@ -567,13 +567,13 @@ object F_About: TF_About
     object Label2: TLabel
       Left = 8
       Top = 36
-      Width = 73
+      Width = 72
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB knihovna:'
+      Caption = 'RCS knihovna:'
     end
     object Label3: TLabel
       Left = 8
@@ -622,13 +622,13 @@ object F_About: TF_About
     object Label6: TLabel
       Left = 8
       Top = 54
-      Width = 91
+      Width = 90
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Verze MTB driveru:'
+      Caption = 'Verze RCS driveru:'
     end
     object L_VMTBDriver: TLabel
       Left = 154

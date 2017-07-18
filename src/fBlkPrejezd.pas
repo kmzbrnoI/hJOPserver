@@ -59,7 +59,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieMTB, fSettings, TOblsRizeni, TOblRizeni,
+uses GetSystems, TechnologieRCS, fSettings, TOblsRizeni, TOblRizeni,
      TBlok, FileSystem, DataBloky;
 
 {$R *.dfm}

@@ -76,7 +76,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, TBlok,
+uses GetSystems, FileSystem, TechnologieRCS, TBlok,
       TBLokUsek, DataBloky, fSettings, TBlokPrejezd;
 
 {$R *.dfm}
@@ -132,8 +132,8 @@ var glob:TBlkSettings;
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
 
   CB_Typ.ItemIndex       := Integer(settings.OutputType);
-  Self.SE_MTBMTB.Value   := settings.MTBAddrs.data[0].board;
-  SE_MTBPort.Value       := settings.MTBAddrs.data[0].port;
+  Self.SE_MTBMTB.Value   := settings.RCSAddrs.data[0].board;
+  SE_MTBPort.Value       := settings.RCSAddrs.data[0].port;
   SE_Delay.Value         := settings.ZpozdeniPadu;
 
   CHB_Zamknuto.Checked   := settings.zamknuto;
@@ -255,9 +255,9 @@ var glob:TBlkSettings;
 
   //ukladani dat
 
-  settings.MTBAddrs.Count := 1;
-  settings.MTBAddrs.data[0].board := Self.SE_MTBMTB.Value;
-  settings.MTBAddrs.data[0].port  := SE_MTBPort.Value;
+  settings.RCSAddrs.Count := 1;
+  settings.RCSAddrs.data[0].board := Self.SE_MTBMTB.Value;
+  settings.RCSAddrs.data[0].port  := SE_MTBPort.Value;
 
   settings.OutputType   := TBlkSComOutputType(CB_Typ.ItemIndex);
   settings.ZpozdeniPadu := Self.SE_Delay.Value;

@@ -151,7 +151,7 @@ implementation
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb,
-      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, MTBdebugger,
+      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -389,8 +389,8 @@ begin
       break;
      end;
 
-    // vymazeme klienta z MTB debuggeru
-    MTBd.RemoveClient(AContext);
+    // vymazeme klienta z RCS debuggeru
+    RCSd.RemoveClient(AContext);
 
     // odpoji se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
     if (Self.DCCStopped = AContext) then
@@ -637,7 +637,7 @@ begin
   end
 
  else if (parsed[1] = 'MTBD') then
-   MTBd.Parse(AContext, parsed)
+   RCSd.Parse(AContext, parsed)
 
  else if (parsed[1] = 'MAUS') then
   begin

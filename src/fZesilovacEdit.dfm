@@ -118,24 +118,24 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     object L_Zkrat_Port: TLabel
       Left = 8
       Top = 44
-      Width = 50
+      Width = 49
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB port :'
+      Caption = 'RCS port :'
     end
     object L_Zkrat_MTB: TLabel
       Left = 8
       Top = 20
-      Width = 61
+      Width = 60
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB deska :'
+      Caption = 'RCS deska :'
     end
     object SE_Zkrat_Port: TSpinEdit
       Left = 168
@@ -198,24 +198,24 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     object L_Napajeni_Port: TLabel
       Left = 8
       Top = 44
-      Width = 50
+      Width = 49
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB port :'
+      Caption = 'RCS port :'
     end
     object L_Napajeni_MTB: TLabel
       Left = 8
       Top = 20
-      Width = 61
+      Width = 60
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB deska :'
+      Caption = 'RCS deska :'
     end
     object SE_Napajeni_Port: TSpinEdit
       Left = 168
@@ -289,26 +289,26 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     ParentFont = False
     TabOrder = 7
     object Label1: TLabel
-      Left = 7
-      Top = 59
-      Width = 50
+      Left = 8
+      Top = 63
+      Width = 49
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB port :'
+      Caption = 'RCS port :'
     end
     object Label2: TLabel
       Left = 7
       Top = 35
-      Width = 61
+      Width = 60
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB deska :'
+      Caption = 'RCS deska :'
     end
     object SE_DCC_port: TSpinEdit
       Left = 167

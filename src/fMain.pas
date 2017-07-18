@@ -12,7 +12,7 @@ uses
 
 const
  _SB_LOG      = 0;
- _SB_MTB      = 1;
+ _SB_RCS      = 1;
  _SB_INT      = 2;
  _SB_POZICE   = 3;
  _SB_SBERNICE = 4;
@@ -25,17 +25,17 @@ type
   TF_Main = class(TForm)
     Timer1: TTimer;
     Menu_1: TMainMenu;
-    M_Zarizeni: TMenuItem;
-    PM_go: TMenuItem;
-    PM_stop: TMenuItem;
-    PM_OptionsMTB: TMenuItem;
-    M_Provoz: TMenuItem;
+    MI_RCS: TMenuItem;
+    MI_RCS_Go: TMenuItem;
+    MI_RCS_Stop: TMenuItem;
+    MI_RCS_Options: TMenuItem;
+    MI_Provoz: TMenuItem;
     PM_Nastaveni: TMenuItem;
-    M_Reset: TMenuItem;
+    MI_Reset: TMenuItem;
     PM_ResetV: TMenuItem;
     SB1: TStatusBar;
     N1: TMenuItem;
-    M_Dalsi: TMenuItem;
+    MI_Dalsi: TMenuItem;
     PM_Tester: TMenuItem;
     PM_TI: TPopupMenu;
     PM_Open: TMenuItem;
@@ -44,7 +44,7 @@ type
     PM_icon_close: TMenuItem;
     M_Help: TMenuItem;
     PM_Help_RP: TMenuItem;
-    M_Centrala: TMenuItem;
+    MI_Centrala: TMenuItem;
     PM_Int_run: TMenuItem;
     PM_Int_Stop: TMenuItem;
     PM_Int_Disconnect: TMenuItem;
@@ -53,7 +53,7 @@ type
     M_Zobrazeni: TMenuItem;
     PM_SB1: TMenuItem;
     T_function: TTimer;
-    M_System: TMenuItem;
+    MI_System: TMenuItem;
     PM_Central_Start: TMenuItem;
     PM_Central_Stop: TMenuItem;
     N5: TMenuItem;
@@ -74,7 +74,7 @@ type
     P_SystemSet: TPanel;
     SB_SystemStart: TSpeedButton;
     SB_SystemStop: TSpeedButton;
-    MI_Libs: TMenuItem;
+    MI_RCS_Libs: TMenuItem;
     N2: TMenuItem;
     PM_SaveFormPos: TMenuItem;
     IL_Bloky: TImageList;
@@ -82,8 +82,8 @@ type
     N7: TMenuItem;
     PM_Console: TMenuItem;
     AL_Main: TActionList;
-    A_MTB_Go: TAction;
-    A_MTB_Stop: TAction;
+    A_RCS_Go: TAction;
+    A_RCS_Stop: TAction;
     A_lib_cfg: TAction;
     A_DCC_Go: TAction;
     A_DCC_Stop: TAction;
@@ -98,10 +98,10 @@ type
     A_PanelServer_Stop: TAction;
     Start1: TMenuItem;
     Stop1: TMenuItem;
-    A_MTB_Open: TAction;
-    A_MTB_Close: TAction;
-    OtevtMTB1: TMenuItem;
-    ZavtMTB1: TMenuItem;
+    A_RCS_Open: TAction;
+    A_RCS_Close: TAction;
+    MI_RCS_Open: TMenuItem;
+    MI_RCS_Close: TMenuItem;
     N8: TMenuItem;
     PC_1: TPageControl;
     TS_Technologie: TTabSheet;
@@ -161,8 +161,8 @@ type
     B_User_Delete: TButton;
     P_Users_Dataload: TPanel;
     E_Dataload_Users: TEdit;
-    TS_Stav_MTB: TTabSheet;
-    LV_Stav_MTB: TListView;
+    TS_Stav_RCS: TTabSheet;
+    LV_Stav_RCS: TListView;
     TS_VC: TTabSheet;
     P_VC_Pozadi: TPanel;
     P_VC_Dataload: TPanel;
@@ -175,8 +175,8 @@ type
     GB_Connected_Panels: TGroupBox;
     LV_Clients: TListView;
     GB_stav_technologie: TGroupBox;
-    S_MTB_open: TShape;
-    S_MTB_start: TShape;
+    S_RCS_open: TShape;
+    S_RCS_start: TShape;
     S_Intellibox_connect: TShape;
     S_Intellibox_go: TShape;
     S_Server: TShape;
@@ -282,8 +282,8 @@ type
     procedure PM_SaveFormPosClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure PM_ConsoleClick(Sender: TObject);
-    procedure A_MTB_GoExecute(Sender: TObject);
-    procedure A_MTB_StopExecute(Sender: TObject);
+    procedure A_RCS_GoExecute(Sender: TObject);
+    procedure A_RCS_StopExecute(Sender: TObject);
     procedure A_lib_cfgExecute(Sender: TObject);
     procedure A_DCC_GoExecute(Sender: TObject);
     procedure A_DCC_StopExecute(Sender: TObject);
@@ -295,8 +295,8 @@ type
     procedure A_All_Loko_OdhlasitExecute(Sender: TObject);
     procedure A_PanelServer_StartExecute(Sender: TObject);
     procedure A_PanelServer_StopExecute(Sender: TObject);
-    procedure A_MTB_OpenExecute(Sender: TObject);
-    procedure A_MTB_CloseExecute(Sender: TObject);
+    procedure A_RCS_OpenExecute(Sender: TObject);
+    procedure A_RCS_CloseExecute(Sender: TObject);
     procedure LV_ClientsCustomDrawItem(Sender: TCustomListView; Item: TListItem;
       State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure PC_1Change(Sender: TObject);
@@ -431,17 +431,17 @@ type
     procedure DisableRemoveButtons();                                           // znemozni pouziti mazacich tlacitek, typicky se vola po startu systemu
     procedure UpdateACButtons();
 
-    // MTB events:
-    procedure OnMTBStart(Sender:TObject);
-    procedure OnMTBScanned(Sender:TObject);
-    procedure OnMTBStop(Sender:TObject);
-    procedure OnMTBOpen(Sender:TObject);
-    procedure OnMTBClose(Sender:TObject);
-    procedure OnMTBErrOpen(Sender:TObject; errMsg:string);
-    procedure OnMTBErrClose(Sender:TObject; errMsg:string);
-    procedure OnMTBErrStart(Sender:TObject; errMsg:string);
-    procedure OnMTBErrStop(Sender:TObject; errMsg:string);
-    procedure OnMTBReady(Sender:TObject; ready:boolean);
+    // RCS events:
+    procedure OnRCSStart(Sender:TObject);
+    procedure OnRCSScanned(Sender:TObject);
+    procedure OnRCSStop(Sender:TObject);
+    procedure OnRCSOpen(Sender:TObject);
+    procedure OnRCSClose(Sender:TObject);
+    procedure OnRCSErrOpen(Sender:TObject; errMsg:string);
+    procedure OnRCSErrClose(Sender:TObject; errMsg:string);
+    procedure OnRCSErrStart(Sender:TObject; errMsg:string);
+    procedure OnRCSErrStop(Sender:TObject; errMsg:string);
+    procedure OnRCSReady(Sender:TObject; ready:boolean);
 
     // centrala events:
     procedure OnCentralaDCCChange(Sender:TObject; state:boolean);
@@ -509,16 +509,16 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek,
      fBlkUsek, fBlkVyhybka, fAdminForm,
      fRegulator,
      fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
-     TechnologieMTB, TechnologieJC, FileSystem, fConsole,
+     TechnologieRCS, TechnologieJC, FileSystem, fConsole,
      TOblsRizeni, TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom,
      TBlokIR, TOblRizeni, AC, SnadnSpusteni,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, DataAC, DataJC,
-     DataBloky, DataHV, DataMTB, DataORs, DataZesilovac, fBlkNew, fHVEdit,
+     DataBloky, DataHV, DataRCS, DataORs, DataZesilovac, fBlkNew, fHVEdit,
      fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd, fBlkSCom, fBlkTrat,
      TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
-     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, MTBdebugger, Booster,
+     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster,
      AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors;
 
 {$R *.dfm}
@@ -534,9 +534,9 @@ var fn:string;
   fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
   Screen.Cursor := crHourGlass;
-  writelog('RCS -> ' + fn, WR_MTB);
+  writelog('RCS -> ' + fn, WR_RCS);
   try
-    MTB.LoadLib(MTB.libDir + '\' + fn);
+    RCSi.LoadLib(RCSi.libDir + '\' + fn);
     Self.LogStatus('RCS: naèteno ' + fn);
   except
     on E:Exception do
@@ -548,7 +548,7 @@ var fn:string;
       Exit();
      end;
   end;
-  MTBTableData.UpdateTable();
+  RCSTableData.UpdateTable();
   Screen.Cursor := crDefault;
  end;
 
@@ -621,7 +621,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);
     Boosters.Update();
     ORs.Update();
     UpdateCallMethod();
-    MTBd.Update();
+    RCSd.Update();
     TrkSystem.Update();
   except
    on E: Exception do
@@ -681,13 +681,13 @@ var ci:TCloseInfo;
     end;
 
     TCloseInfo.ci_mtb : begin
-      writelog('Pokus o zavøení okna bez uzavøení MTB', WR_ERROR);
-      if (Application.MessageBox('Program není odpojen od MTB, odpojit?',
+      writelog('Pokus o zavøení okna bez uzavøení RCS', WR_ERROR);
+      if (Application.MessageBox('Program není odpojen od RCS, odpojit?',
           'Nelze ukonèit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
        begin
         try
-          if (MTB.Started) then MTB.Stop()
-          else if (MTB.Opened) then MTB.Close();
+          if (RCSi.Started) then RCSi.Stop()
+          else if (RCSi.Opened) then RCSi.Close();
         except
           on E:Exception do
             Application.MessageBox(PChar('Nastala výjimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
@@ -746,10 +746,10 @@ begin
        case (msg.wParam) of
          VK_F9:begin
             try
-              MTB.HideConfigDialog();
+              RCSi.HideConfigDialog();
             except
               on E:Exception do
-                Application.MessageBox(PChar('Nelze skrýt konfiguraèní dialog MTB : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+                Application.MessageBox(PChar('Nelze skrýt konfiguraèní dialog RCS : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
             end;
          end;
 
@@ -787,8 +787,8 @@ begin
         end;
 
        try
-         if (MTB.Started) then MTB.Stop();
-         if (MTB.Opened) then MTB.Close();
+         if (RCSi.Started) then RCSi.Stop();
+         if (RCSi.Opened) then RCSi.Close();
        except
 
        end;
@@ -831,8 +831,8 @@ begin
     end;
 
    try
-     if (MTB.Started) then MTB.Stop();
-     if (MTB.Opened) then MTB.Close();
+     if (RCSi.Started) then RCSi.Stop();
+     if (RCSi.Opened) then RCSi.Close();
    except
 
    end;
@@ -929,20 +929,20 @@ end;//procedure
 procedure TF_Main.A_lib_cfgExecute(Sender: TObject);
 begin
  try
-   MTB.ShowConfigDialog();
+   RCSi.ShowConfigDialog();
  except
    on E:Exception do
     begin
-     Application.MessageBox(PChar('Nelze zobrazit konfiguraèní dialog MTB : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar('Nelze zobrazit konfiguraèní dialog RCS : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
  end;
- writelog('Zobrazen ConfigDialog knihovny',WR_MTB);
+ writelog('Zobrazen ConfigDialog knihovny', WR_RCS);
 end;
 
-procedure TF_Main.A_MTB_CloseExecute(Sender: TObject);
+procedure TF_Main.A_RCS_CloseExecute(Sender: TObject);
 begin
- if ((SystemData.Status = stopping) and (not MTB.NoExOpened)) then
+ if ((SystemData.Status = stopping) and (not RCSi.NoExOpened)) then
   begin
    Self.LogStatus('System: stop OK');
    SystemData.Status := null;
@@ -950,33 +950,33 @@ begin
    Exit();
   end;
 
- F_Main.S_MTB_open.Brush.Color := clBlue;
- Self.LogStatus('MTB: uzavírám zaøízení...');
+ F_Main.S_RCS_open.Brush.Color := clBlue;
+ Self.LogStatus('RCS: uzavírám zaøízení...');
 
- writelog('----- MTB CLOSING -----',WR_MTB);
+ writelog('----- RCS CLOSING -----', WR_RCS);
 
  with (F_Main) do
   begin
-   A_MTB_Open.Enabled      := false;
-   A_MTB_Close.Enabled     := false;
-   SB1.Panels.Items[_SB_MTB].Text := 'MTB closing...';
+   A_RCS_Open.Enabled      := false;
+   A_RCS_Close.Enabled     := false;
+   SB1.Panels.Items[_SB_RCS].Text := 'RCS closing...';
   end;//with F_Main do
 
  try
-   MTB.Close();
+   RCSi.Close();
  except
    on E:ERCSNotOpened do
-     Self.OnMTBErrClose(Self, 'MTB není otevøeno, nelze jej proto zavøít!');
+     Self.OnRCSErrClose(Self, 'RCS není otevøeno, nelze jej proto zavøít!');
    on E:ERCSScanningNotFinished do
-     Self.OnMTBErrClose(Self, 'MTB nelze uzavøít pøed sokonèneíms kenování modulù!');
+     Self.OnRCSErrClose(Self, 'RCS nelze uzavøít pøed sokonèneíms kenování modulù!');
    on E:Exception do
-     Self.OnMTBErrClose(Self, 'Nastala kritická chyba : '+E.Message);
+     Self.OnRCSErrClose(Self, 'Nastala kritická chyba : '+E.Message);
  end;
 end;
 
-procedure TF_Main.A_MTB_GoExecute(Sender: TObject);
+procedure TF_Main.A_RCS_GoExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (MTB.NoExStarted)) then
+ if ((SystemData.Status = starting) and (RCSi.NoExStarted)) then
   begin
    Self.A_Trk_ConnectExecute(nil);
    Exit();
@@ -984,98 +984,98 @@ begin
 
   with (F_Main) do
    begin
-    A_MTB_Go.Enabled     := false;
-    A_MTB_Stop.Enabled   := false;
-    A_MTB_Close.Enabled  := false;
+    A_RCS_Go.Enabled     := false;
+    A_RCS_Stop.Enabled   := false;
+    A_RCS_Close.Enabled  := false;
 
-    SB1.Panels.Items[_SB_MTB].Text := 'MTB starting...';
+    SB1.Panels.Items[_SB_RCS].Text := 'RCS starting...';
    end;//with F_Main do
 
-  Self.LogStatus('MTB: Spouštím komunikaci...');
-  F_Main.S_MTB_Start.Brush.Color   := clBlue;
+  Self.LogStatus('RCS: Spouštím komunikaci...');
+  F_Main.S_RCS_Start.Brush.Color   := clBlue;
 
-  writelog('----- MTB STARTING -----',WR_MTB);
+  writelog('----- RCS STARTING -----', WR_RCS);
 
   try
-    MTB.Start();
+    RCSi.Start();
   except
    on E:ERCSAlreadyStarted do
-     Self.OnMTBErrStart(Self, 'Komunikace již probíhá!');
+     Self.OnRCSErrStart(Self, 'Komunikace již probíhá!');
    on E:ERCSFirmwareTooLow do
-     Self.OnMTBErrStart(Self, 'Firmware MTB-USB modulu je starší než v0.2.20, nelze se pøipojit k takto starému FW!');
+     Self.OnRCSErrStart(Self, 'Firmware MTB-USB modulu je starší než v0.2.20, nelze se pøipojit k takto starému FW!');
    on E:ERCSNoModules do
-     Self.OnMTBErrStart(Self, 'Na sbìrnici nebyl nalezen žádný MTB modul, nelze spustit komunikaci!');
+     Self.OnRCSErrStart(Self, 'Na sbìrnici nebyl nalezen žádný RCS modul, nelze spustit komunikaci!');
    on E:ERCSNotOpened do
-     Self.OnMTBErrStart(Self, 'Nepøipojeno k MTB-USB, pøipojte se nejdøíve k MTB-USB!');
+     Self.OnRCSErrStart(Self, 'Nepøipojeno k MTB-USB, pøipojte se nejdøíve k MTB-USB!');
    on E:ERCSScanningNotFinished do
-     Self.OnMTBErrStart(Self, 'Neprobìhl sken modulù, vyèkejte na dokonèení skenu modulù!');
+     Self.OnRCSErrStart(Self, 'Neprobìhl sken modulù, vyèkejte na dokonèení skenu modulù!');
    on E:Exception do
-     Self.OnMTBErrStart(Self, 'Nastala kritická chyba : '+E.Message);
+     Self.OnRCSErrStart(Self, 'Nastala kritická chyba : '+E.Message);
   end;
 end;
 
-procedure TF_Main.A_MTB_OpenExecute(Sender: TObject);
+procedure TF_Main.A_RCS_OpenExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (MTB.NoExOpened)) then
+ if ((SystemData.Status = starting) and (RCSi.NoExOpened)) then
   begin
-   Self.A_MTB_GoExecute(nil);
+   Self.A_RCS_GoExecute(nil);
    Exit();
   end;
 
  with (F_Main) do
   begin
-   A_MTB_Open.Enabled     := false;
-   A_MTB_Close.Enabled    := false;
+   A_RCS_Open.Enabled     := false;
+   A_RCS_Close.Enabled    := false;
 
-   SB1.Panels.Items[_SB_MTB].Text := 'MTB opening...';
+   SB1.Panels.Items[_SB_RCS].Text := 'RCS opening...';
   end;//with F_Main do
 
- Self.LogStatus('MTB: Otevírám zaøízení, hledám moduly...');
- F_Main.S_MTB_open.Brush.Color   := clBlue;
+ Self.LogStatus('RCS: Otevírám zaøízení, hledám moduly...');
+ F_Main.S_RCS_open.Brush.Color   := clBlue;
 
- writelog('----- MTB OPENING -----',WR_MTB);
+ writelog('----- RCS OPENING -----', WR_RCS);
 
  try
-   MTB.Open();
+   RCSi.Open();
  except
   on E:ERCSAlreadyOpened do
-    Self.OnMTBErrOpen(Self, 'MTB je již otevøeno!');
+    Self.OnRCSErrOpen(Self, 'RCS je již otevøeno!');
   on E:ERCSCannotOpenPort do
-    Self.OnMTBErrOpen(Self, 'Nepodaøilo se otevøít USB port, otevøete konfiguraèní okno MTB driveru a zkontrolujte, že je vybrán správný port!');
+    Self.OnRCSErrOpen(Self, 'Nepodaøilo se otevøít USB port, otevøete konfiguraèní okno RCS driveru a zkontrolujte, že je vybrán správný port!');
   on E:Exception do
-    Self.OnMTBErrOpen(Self, 'Nastala kritická chyba : '+E.Message);
+    Self.OnRCSErrOpen(Self, 'Nastala kritická chyba : '+E.Message);
  end;
 end;//procedure
 
-procedure TF_Main.A_MTB_StopExecute(Sender: TObject);
+procedure TF_Main.A_RCS_StopExecute(Sender: TObject);
 begin
  ACDb.StopAllACs();
 
- if ((SystemData.Status = stopping) and (not MTB.NoExStarted)) then
+ if ((SystemData.Status = stopping) and (not RCSi.NoExStarted)) then
   begin
-   F_Main.A_MTB_CloseExecute(nil);
+   F_Main.A_RCS_CloseExecute(nil);
    Exit();
   end;
 
- F_Main.S_MTB_Start.Brush.Color := clGray;
- Self.LogStatus('MTB: zastavuji komunikaci...');
+ F_Main.S_RCS_Start.Brush.Color := clGray;
+ Self.LogStatus('RCS: zastavuji komunikaci...');
 
- writelog('----- MTB STOPPING -----',WR_MTB);
+ writelog('----- RCS STOPPING -----', WR_RCS);
 
  with (F_Main) do
   begin
-   A_MTB_Go.Enabled      := false;
-   A_MTB_Stop.Enabled    := false;
-   SB1.Panels.Items[_SB_MTB].Text := 'MTB stopping...';
+   A_RCS_Go.Enabled      := false;
+   A_RCS_Stop.Enabled    := false;
+   SB1.Panels.Items[_SB_RCS].Text := 'RCS stopping...';
   end;//with F_Main do
 
   try
-    MTB.Stop();
+    RCSi.Stop();
   except
    on E:ERCSNotStarted do
-     Self.OnMTBErrStop(Self, 'MTB komunikace není spuštìna, nelze ji proto zastavit!');
+     Self.OnRCSErrStop(Self, 'RCS komunikace není spuštìna, nelze ji proto zastavit!');
    on E:Exception do
-     Self.OnMTBErrStop(Self, 'Nastala kritická chyba : '+E.Message);
+     Self.OnRCSErrStop(Self, 'Nastala kritická chyba : '+E.Message);
   end;
 end;
 
@@ -1129,33 +1129,33 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//--- events from MTB lib begin ---
-procedure TF_Main.OnMTBStart(Sender:TObject);
+//--- events from RCS lib begin ---
+procedure TF_Main.OnRCSStart(Sender:TObject);
 begin
   with (F_Main) do
    begin
-    A_MTB_Go.Enabled     := false;
-    A_MTB_Stop.Enabled   := true;
+    A_RCS_Go.Enabled     := false;
+    A_RCS_Stop.Enabled   := true;
 
     PM_Tester.Enabled    := true;
     PM_ResetV.Enabled    := true;
 
-    SB1.Panels.Items[_SB_MTB].Text := 'MTB started';
+    SB1.Panels.Items[_SB_RCS].Text := 'RCS started';
    end;//with F_Main do
 
-  writelog('----- MTB START OK -----',WR_MTB);
+  writelog('----- RCS START OK -----', WR_RCS);
 
-  Self.LogStatus('MTB: komunikace spuštìna, èekám na první sken všech modulù...');
-  MTBTableData.UpdateTable();
+  Self.LogStatus('RCS: komunikace spuštìna, èekám na první sken všech modulù...');
+  RCSTableData.UpdateTable();
 end;//procedure
 
-procedure TF_Main.OnMTBScanned(Sender:TObject);
+procedure TF_Main.OnRCSScanned(Sender:TObject);
 begin
-  F_Main.S_MTB_Start.Brush.Color := clLime;
-  MTBTableData.UpdateTable();
+  F_Main.S_RCS_Start.Brush.Color := clLime;
+  RCSTableData.UpdateTable();
 
-  writelog('----- MTB SCANNED -----',WR_MTB);
-  Self.LogStatus('MTB: moduly naskenovány');
+  writelog('----- RCS SCANNED -----', WR_RCS);
+  Self.LogStatus('RCS: moduly naskenovány');
 
   if (F_Admin.CHB_SystemStart.Checked) then
     Blky.Enable();
@@ -1171,7 +1171,7 @@ begin
    Self.A_Trk_ConnectExecute(nil);
 end;
 
-procedure TF_Main.OnMTBStop(Sender:TObject);
+procedure TF_Main.OnRCSStop(Sender:TObject);
 begin
   if (F_Admin.CHB_SystemStart.Checked) then
    begin
@@ -1191,99 +1191,99 @@ begin
 
   if (F_Tester.Showing) then F_Tester.Close();  
 
-  F_Main.S_MTB_Start.Brush.Color := clRed;
+  F_Main.S_RCS_Start.Brush.Color := clRed;
 
   with (F_Main) do
    begin
-    A_MTB_Go.Enabled      := true;
-    A_MTB_Stop.Enabled    := false;
-    A_MTB_Close.Enabled   := true;
+    A_RCS_Go.Enabled      := true;
+    A_RCS_Stop.Enabled    := false;
+    A_RCS_Close.Enabled   := true;
 
     PM_ResetV.Enabled     := false;
     PM_Tester.Enabled     := false;
 
-    SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
+    SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
    end;//with F_Main do
 
 
-  writelog('----- MTB STOP OK -----',WR_MTB);
+  writelog('----- RCS STOP OK -----', WR_RCS);
 
-  Self.LogStatus('MTB: komunikace zastavena');
+  Self.LogStatus('RCS: komunikace zastavena');
 
-  MTBTableData.UpdateTable();
+  RCSTableData.UpdateTable();
 
   if ((F_Main.Showing) and (F_Main.PC_1.ActivePage = F_Main.TS_Bloky)) then BlokyTableData.UpdateTable;
 
   if (SystemData.Status = stopping) then
-   Self.A_MTB_CloseExecute(nil);
+   Self.A_RCS_CloseExecute(nil);
 end;//procedure
 
-procedure TF_Main.OnMTBOpen(Sender:TObject);
+procedure TF_Main.OnRCSOpen(Sender:TObject);
 var i:Integer;
     str:string;
 begin
- Self.A_MTB_Open.Enabled     := false;
- Self.A_MTB_Close.Enabled    := true;
- Self.A_MTB_Go.Enabled       := true;
- Self.A_MTB_Stop.Enabled     := false;
- Self.MI_Libs.Enabled        := false;
+ Self.A_RCS_Open.Enabled     := false;
+ Self.A_RCS_Close.Enabled    := true;
+ Self.A_RCS_Go.Enabled       := true;
+ Self.A_RCS_Stop.Enabled     := false;
+ Self.MI_RCS_Libs.Enabled    := false;
 
- F_Main.S_MTB_open.Brush.Color := clLime;
+ F_Main.S_RCS_open.Brush.Color := clLime;
 
- MTBTableData.LoadToTable;
+ RCSTableData.LoadToTable;
 
  try
-   writelog('----- MTB OPEN OK : '+IntToStr(MTB.GetModuleCount)+' modules -----', WR_MTB);
+   writelog('----- RCS OPEN OK : '+IntToStr(RCSi.GetModuleCount)+' modules -----', WR_RCS);
  except
-   writelog('----- MTB OPEN OK : unknown amount of modules -----', WR_MTB);
+   writelog('----- RCS OPEN OK : unknown amount of modules -----', WR_RCS);
  end;
 
- Self.LogStatus('MTB: otevøeno');
- SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
+ Self.LogStatus('RCS: otevøeno');
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
 
  F_Tester.AfterMTBOpen();
 
- MTBTableData.UpdateTable();
+ RCSTableData.UpdateTable();
 
  if (SystemData.Status = starting) then
   begin
-   // scan, jestli nahodou nechybi MTB desky
+   // scan, jestli nahodou nechybi RCS desky
    str := '';
-   for i := 0 to MTB._MAX_MTB-1 do
-    if ((MTB.GetNeeded(i)) and (not MTB.IsModule(i))) then
+   for i := 0 to TRCS._MAX_RCS-1 do
+    if ((RCSi.GetNeeded(i)) and (not RCSi.IsModule(i))) then
      begin
       if (Length(str) > 0) then str := str + ', ';
       str := str + IntToStr(i);
      end;
    if (str <> '') then
     begin
-     writelog('Chybí MTB moduly '+str, WR_MTB, 1);
-     Self.LogStatus('WARN: Chybí MTB moduly '+str);
+     writelog('Chybí RCS moduly '+str, WR_RCS, 1);
+     Self.LogStatus('WARN: Chybí RCS moduly '+str);
     end;
 
-   Self.A_MTB_GoExecute(nil);
+   Self.A_RCS_GoExecute(nil);
   end;
 end;//procedure
 
-procedure TF_Main.OnMTBClose(Sender:TObject);
+procedure TF_Main.OnRCSClose(Sender:TObject);
 begin
- Self.A_MTB_Go.Enabled    := false;
- Self.A_MTB_Stop.Enabled  := false;
- Self.A_MTB_Close.Enabled := false;
- Self.A_MTB_Open.Enabled  := true;
- Self.MI_Libs.Enabled     := true;
+ Self.A_RCS_Go.Enabled    := false;
+ Self.A_RCS_Stop.Enabled  := false;
+ Self.A_RCS_Close.Enabled := false;
+ Self.A_RCS_Open.Enabled  := true;
+ Self.MI_RCS_Libs.Enabled := true;
 
- // may happen when MTB USB disconnects
+ // may happen when RCS USB disconnects
  if (Blky.enabled) then Blky.Disable();
  Soupravy.StopAllSpr();
 
- F_Main.S_MTB_open.Brush.Color  := clRed;
- F_Main.S_MTB_start.Brush.Color := clRed;
+ F_Main.S_RCS_open.Brush.Color  := clRed;
+ F_Main.S_RCS_Start.Brush.Color := clRed;
 
- writelog('----- MTB CLOSE OK -----',WR_MTB);
+ writelog('----- RCS CLOSE OK -----', WR_RCS);
 
- Self.LogStatus('MTB: uzavøeno');
- SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
+ Self.LogStatus('RCS: uzavøeno');
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS closed';
 
  if (SystemData.Status = stopping) then
   begin
@@ -1292,53 +1292,53 @@ begin
    Self.A_System_Start.Enabled := true;
   end;
 
- MTBTableData.UpdateTable();
+ RCSTableData.UpdateTable();
 end;//procedure
 
-procedure TF_Main.OnMTBErrOpen(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrOpen(Sender:TObject; errMsg:string);
 begin
- Self.A_MTB_Go.Enabled    := false;
- Self.A_MTB_Stop.Enabled  := false;
- Self.A_MTB_Open.Enabled  := true;
+ Self.A_RCS_Go.Enabled    := false;
+ Self.A_RCS_Stop.Enabled  := false;
+ Self.A_RCS_Open.Enabled  := true;
  Self.A_System_Start.Enabled := true;
 
- F_Main.S_MTB_open.Brush.Color := clRed;
+ F_Main.S_RCS_open.Brush.Color := clRed;
 
  SystemData.Status := TSystemStatus.null;
  Self.A_System_Start.Enabled := true;
 
- Self.LogStatus('ERR: MTB OPEN FAIL: '+errMsg);
- writelog('----- MTB OPEN FAIL - '+errMsg+' -----', WR_ERROR, 21);
- SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
+ Self.LogStatus('ERR: RCS OPEN FAIL: '+errMsg);
+ writelog('----- RCS OPEN FAIL - '+errMsg+' -----', WR_ERROR, 21);
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS closed';
 
- Application.MessageBox(PChar('Pøi otevírání MTB nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
+ Application.MessageBox(PChar('Pøi otevírání RCS nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
-procedure TF_Main.OnMTBErrClose(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrClose(Sender:TObject; errMsg:string);
 begin
- A_MTB_Go.Enabled    := false;
- A_MTB_Stop.Enabled  := false;
- A_MTB_Open.Enabled  := true;
+ A_RCS_Go.Enabled    := false;
+ A_RCS_Stop.Enabled  := false;
+ A_RCS_Open.Enabled  := true;
 
- F_Main.S_MTB_open.Brush.Color := clRed;
+ F_Main.S_RCS_open.Brush.Color := clRed;
 
  SystemData.Status := null;
 
- Self.LogStatus('ERR: MTB CLOSE FAIL: '+errMsg);
- SB1.Panels.Items[_SB_MTB].Text := 'MTB closed';
+ Self.LogStatus('ERR: RCS CLOSE FAIL: '+errMsg);
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS closed';
 
- Application.MessageBox(PChar('Pøi uzavírání MTB nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
- writelog('----- MTB CLOSE FAIL - '+errMsg+' -----', WR_ERROR, 21);
+ Application.MessageBox(PChar('Pøi uzavírání RCS nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
+ writelog('----- RCS CLOSE FAIL - '+errMsg+' -----', WR_ERROR, 21);
 end;//procedure
 
-procedure TF_Main.OnMTBErrStart(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrStart(Sender:TObject; errMsg:string);
 begin
-  A_MTB_Close.Enabled := true;
+  A_RCS_Close.Enabled := true;
   A_System_Start.Enabled := true;
-  A_MTB_Go.Enabled := true;
+  A_RCS_Go.Enabled := true;
 
-  SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
-  S_MTB_Start.Brush.Color := clRed;
+  SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
+  S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
   Self.A_System_Start.Enabled := true;
@@ -1350,59 +1350,59 @@ begin
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
 
-  Self.LogStatus('ERR: MTB START FAIL: '+errMsg);
-  writelog('----- MTB START FAIL - '+errMsg+' -----',WR_ERROR,21);
+  Self.LogStatus('ERR: RCS START FAIL: '+errMsg);
+  writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR,21);
 
   Application.MessageBox(PChar('Pøi zapínání komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
-procedure TF_Main.OnMTBErrStop(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrStop(Sender:TObject; errMsg:string);
 begin
-  A_MTB_Open.Enabled := true;
-  A_MTB_Close.Enabled := true;
-  A_MTB_Go.Enabled := true;
+  A_RCS_Open.Enabled := true;
+  A_RCS_Close.Enabled := true;
+  A_RCS_Go.Enabled := true;
 
-  SB1.Panels.Items[_SB_MTB].Text := 'MTB openned';
-  S_MTB_Start.Brush.Color := clRed;
+  SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
+  S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := null;
 
-  Self.LogStatus('ERR: MTB STOP FAIL: '+errMsg);
+  Self.LogStatus('ERR: RCS STOP FAIL: '+errMsg);
 
   Application.MessageBox(PChar('Pøi vypínání komunikace nastala chyba:'+#13#10+errMsg+#13#10), 'Chyba', MB_OK OR MB_ICONWARNING);
-  writelog('----- MTB STOP FAIL - '+errMsg+' -----', WR_ERROR, 21);
+  writelog('----- RCS STOP FAIL - '+errMsg+' -----', WR_ERROR, 21);
 end;//procedure
 
-procedure TF_Main.OnMTBReady(Sender:TObject; ready:boolean);
+procedure TF_Main.OnRCSReady(Sender:TObject; ready:boolean);
 var started, opened: boolean;
 begin
  try
-   started := MTB.Started;
-   opened := MTB.Opened;
+   started := RCSi.Started;
+   opened := RCSi.Opened;
  except
    on E:Exception do
     begin
      started := false;
      opened := false;
-     AppEvents.LogException(E, 'OnMTBReady');
+     AppEvents.LogException(E, 'OnRCSReady');
     end;
  end;
 
- Self.A_MTB_Open.Enabled  := ready and (not opened);
- Self.A_MTB_Close.Enabled := ready and opened;
- Self.A_MTB_Go.Enabled    := ready and opened and (not started);
- Self.A_MTB_Stop.Enabled  := ready and started;
+ Self.A_RCS_Open.Enabled  := ready and (not opened);
+ Self.A_RCS_Close.Enabled := ready and opened;
+ Self.A_RCS_Go.Enabled    := ready and opened and (not started);
+ Self.A_RCS_Stop.Enabled  := ready and started;
 
  try
-   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (MTB.IsSimulatorMode())) then
-     MTB.InputSim();
+   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (RCSi.IsSimulatorMode())) then
+     RCSi.InputSim();
  except
    on E:Exception do
      writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
  end;
 end;
 
-//--- events from MTB lib end ---
+//--- events from RCS lib end ---
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1461,7 +1461,7 @@ begin
   end;
 
   try
-    MTB.SaveToFile(ini_lib);
+    RCSi.SaveToFile(ini_lib);
   except
     on E:Exception do
       AppEvents.LogException(E, 'Save RCS');
@@ -1486,17 +1486,17 @@ procedure TF_Main.A_System_StartExecute(Sender: TObject);      //system start
 begin
  Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
 
- if (not MTB.ready) then
+ if (not RCSi.ready) then
   begin
-   Application.MessageBox(PChar('Systém nelze spustit, MTB není pøipraveno k zapnutí systému'+#13#10+'Možné pøíèiny:'+#13#10+' - nenaètena validní knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
-   Self.LogStatus('ERR: Systém nelze spustit, MTB není pøipraveno k zapnutí systému');
+   Application.MessageBox(PChar('Systém nelze spustit, RCS není pøipraveno k zapnutí systému'+#13#10+'Možné pøíèiny:'+#13#10+' - nenaètena validní knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+   Self.LogStatus('ERR: Systém nelze spustit, RCS není pøipraveno k zapnutí systému');
    Exit();
   end;
 
  Self.LogStatus('Zapínám systémy...');
  SystemData.Status := starting;
  Self.A_System_Start.Enabled := false;
- Self.A_MTB_OpenExecute(nil);
+ Self.A_RCS_OpenExecute(nil);
 end;//procedure
 
 procedure TF_Main.A_System_StopExecute(Sender: TObject);       //system stop
@@ -1879,7 +1879,7 @@ end;//procedure
 
 procedure TF_Main.FreeVars;
  begin
-  MTB.Free;
+  RCSi.Free;
 
   ResetData.Free;
 
@@ -1973,7 +1973,7 @@ end;
 procedure TF_Main.CreateClasses;
  begin
   ini_lib        := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
-  MTB            := TMTB.Create();
+  RCSi           := TRCS.Create();
   ResetData      := TReset.Create;
   Vytizeni       := TVytizeni.Create;
   LogData        := TLogData.Create;
@@ -1985,7 +1985,7 @@ procedure TF_Main.CreateClasses;
   ACTableData    := TACTableData.Create(Self.LV_AC_Db);
   JCTableData    := TJCTableData.Create(Self.LV_JC);
   UsersTableData := TUsersTableData.Create(Self.LV_Users);
-  MTBTableData   := TMTBTableData.Create(Self.LV_Stav_MTB);
+  RCSTableData   := TRCSTableData.Create(Self.LV_Stav_RCS);
   SprTableData   := TSprTableData.Create(Self.LV_Soupravy);
   HVTableData    := THVTableData.Create(Self.LV_HV);
   ZesTableData   := TZesTableData.Create(Self.LV_Zesilovace);
@@ -2231,7 +2231,7 @@ procedure TF_Main.OnStart;
 
   BlokyTableData.LoadTable();
   JCTableData.LoadToTable();
-  MTBTableData.LoadToTable();
+  RCSTableData.LoadToTable();
   UsersTableData.LoadToTable();
   ORsTableData.LoadToTable();
 
@@ -2304,18 +2304,18 @@ procedure TF_Main.CreateSystem;
   QueryPerformanceFrequency(Vytizeni.LPc);
   SetStartVars;
 
-  // assign MTB events:
-  MTB.AfterOpen  := Self.OnMTBOpen;
-  MTB.AfterClose := Self.OnMTBClose;
-  MTB.AfterStart := Self.OnMTBStart;
-  MTB.AfterStop  := Self.OnMTBStop;
-  MTB.OnScanned  := Self.OnMTBScanned;
-  MTB.OnReady    := Self.ONMTBReady;
+  // assign RCS events:
+  RCSi.AfterOpen  := Self.OnRCSOpen;
+  RCSi.AfterClose := Self.OnRCSClose;
+  RCSi.AfterStart := Self.OnRCSStart;
+  RCSi.AfterStop  := Self.OnRCSStop;
+  RCSi.OnScanned  := Self.OnRCSScanned;
+  RCSi.OnReady    := Self.ONRCSReady;
 
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 
   F_Main.Caption := 'hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
-  F_Main.SB1.Panels.Items[_SB_MTB].Text := 'MTB close';
+  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS close';
   RepaintObjects;
  end;//procedure
 
@@ -2541,9 +2541,9 @@ procedure TF_Main.LV_Stav_MTBCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
  if ((Item.SubItems.Count > 5) and (Item.SubItems.Strings[5] = 'Fail')) then
-   Self.LV_Stav_MTB.Canvas.Brush.Color := $AAAAFF
+   Self.LV_Stav_RCS.Canvas.Brush.Color := $AAAAFF
  else
-   Self.LV_Stav_MTB.Canvas.Brush.Color := $FFFFFF;
+   Self.LV_Stav_RCS.Canvas.Brush.Color := $FFFFFF;
 end;
 
 procedure TF_Main.LV_UsersChange(Sender: TObject; Item: TListItem;
@@ -2802,7 +2802,7 @@ end;
 procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((not MTB.NoExStarted()) or (not Boosters.sorted[Item.Index].defined)) then
+ if ((not RCSi.NoExStarted()) or (not Boosters.sorted[Item.Index].defined)) then
   begin
    LV_Zesilovace.Canvas.Brush.Color := $CCCCCC;
   end else begin
@@ -2936,18 +2936,18 @@ procedure TF_Main.UpdateRCSLibsList();
 var SR:TSearchRec;
     item:TMenuItem;
  begin
-  Self.MI_Libs.Clear();
+  Self.MI_RCS_Libs.Clear();
 
   // prohledavani adresare a nacitani soubor *.2lok
   // najdeme prvni soubor
-  if (FindFirst(MTB.libDir+'\*.dll', faAnyFile, SR) = 0) then
+  if (FindFirst(RCSi.libDir+'\*.dll', faAnyFile, SR) = 0) then
    begin
     if ((SR.Attr AND faDirectory) = 0) then
      begin
-      item := TMenuItem.Create(Self.MI_Libs);
+      item := TMenuItem.Create(Self.MI_RCS_Libs);
       item.Caption := SR.Name;
       item.OnClick := Self.MI_RCS_libClick;
-      Self.MI_Libs.Add(item);
+      Self.MI_RCS_Libs.Add(item);
      end;
 
     // hledame dalsi soubory
@@ -2955,10 +2955,10 @@ var SR:TSearchRec;
      begin
       if ((SR.Attr AND faDirectory) = 0) then
        begin
-        item := TMenuItem.Create(Self.MI_Libs);
+        item := TMenuItem.Create(Self.MI_RCS_Libs);
         item.Caption := SR.Name;
         item.OnClick := Self.MI_RCS_libClick;
-        Self.MI_Libs.Add(item);
+        Self.MI_RCS_Libs.Add(item);
        end;
      end;
 

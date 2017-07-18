@@ -25,7 +25,7 @@ var
 implementation
 
 uses fMain,
-     fAdminForm, TechnologieMTB, fSettings, TBLoky, TOblsRizeni, Logging,
+     fAdminForm, TechnologieRCS, fSettings, TBLoky, TOblsRizeni, Logging,
      TCPServerOR;
 
 
@@ -37,7 +37,7 @@ begin
   if (ORTCPServer.openned) then Exit(TCloseInfo.ci_server);
 
   try
-    if ((MTB.ready) and (MTB.Opened)) then Exit(TCloseInfo.ci_mtb);
+    if ((RCSi.ready) and (RCSi.Opened)) then Exit(TCloseInfo.ci_mtb);
   except
 
   end;
@@ -50,8 +50,8 @@ end;
 function TGetFunctions.GetSystemStart:Boolean;
  begin
   try
-    Result := (((TrkSystem.openned) and (MTB.ready) and (ORTCPServer.openned) and (MTB.NoExStarted))
-              or (MTB.ready and MTB.NoExStarted and F_Admin.CHB_SystemStart.Checked));
+    Result := (((TrkSystem.openned) and (RCSi.ready) and (ORTCPServer.openned) and (RCSi.NoExStarted))
+              or (RCSi.ready and RCSi.NoExStarted and F_Admin.CHB_SystemStart.Checked));
   except
     Result := false;
   end;

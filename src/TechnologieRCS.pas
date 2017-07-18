@@ -1,16 +1,19 @@
-unit TechnologieMTB;
+unit TechnologieRCS;
 
 {
- Technologie MTB: rozhrani pro pouzivani MTB.
+ Technologie RCS: rozhrani pro pouzivani Railroad Control System.
 
- Vsechny ostatni casti programu by mely volat metody tridy TMTB, ktera interaguje
- s MTB. Trida TMTB v sob2 skryva interakci s TCSIFace. Trida TMTB pomerne <= TODO: tohle neni pravda
+ RCS je obecny nazev pro sbernici resici rizeni prislusenstvi, napriklad MTB,
+ touto sbernici ale muze byt klidne i XpressNET.
+
+ Vsechny ostatni casti programu by mely volat metody tridy TRCS, ktera interaguje
+ s RCS. Trida TRCS v sobe skryva interakci s TCSIFace. Trida TRCS pomerne <= TODO: tohle neni pravda
  intenzivne interaguje s dalsimi technologickymi prvku hJOPserveru -- je tedy
  nedilnou soucasti serveru.
 
  Pricip:
-  - na zacatku vytvorime tridy pro vsechna existujici MTB
-  - po otevreni MTB zjistime, ktere desky jsou skutecne dostupne a ktere ne
+  - na zacatku vytvorime tridy pro vsechny existujici moduly RCS
+  - po otevreni RCS zjistime, ktere desky jsou skutecne dostupne a ktere ne
 }
 
 interface
@@ -19,21 +22,21 @@ uses SysUtils, Classes, IniFiles, Generics.Collections, RCS;
 
 type
   TErrEvent = procedure(Sender:TObject; errValue: word; errAddr: byte; errMsg:string) of object;
-  TMTBReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
-  TMTBBoardChangeEvent = procedure (Sender:TObject; board:byte) of object;
+  TRCSReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
+  TRCSBoardChangeEvent = procedure (Sender:TObject; board:byte) of object;
 
   //////////////////////////////////////////////////////////////
 
   //toto se pouziva pro identifikaci desky a portu VSUDE v technologii
-  TMTBAddr = record                                                             // jedno fyzicke MTB spojeni
+  TRCSAddr = record                                                             // jedno fyzicke RCS spojeni
    board:Byte;                                                                    // cislo desky
    port:Byte;                                                                     // cislo portu
   end;
 
-  TMTBBoard = class                                                               // jedna MTB deska
+  TRCSBoard = class                                                               // jedna RCS deska
     needed:boolean;                                                               // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
-    inputChangedEv:TList<TMTBBoardChangeEvent>;
-    outputChangedEv:TList<TMTBBoardChangeEvent>;
+    inputChangedEv:TList<TRCSBoardChangeEvent>;
+    outputChangedEv:TList<TRCSBoardChangeEvent>;
 
     constructor Create();
     destructor Destroy(); override;
@@ -41,25 +44,25 @@ type
 
   //////////////////////////////////////////////////////////////
 
-  // Technologie MTB
-  TMTB = class(TRCSIFace)
+  // Technologie RCS
+  TRCS = class(TRCSIFace)
    public const
-     _MAX_MTB = 192;                                        // maximalni pocet MTB desek
+     _MAX_RCS = 192;                                        // maximalni pocet RCS desek
 
    private const
      _DEFAULT_LIB = 'simulator.dll';
      _INIFILE_SECTNAME = 'RCS';
 
    private
-     Desky:array [0.._MAX_MTB-1] of TMTBBoard;              // MTB desky, pole je indexovano MTB adresami
+     Desky:array [0.._MAX_RCS-1] of TRCSBoard;              // RCS desky, pole je indexovano RCS adresami
 
      aReady:boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
 
-     fGeneralError:boolean;                                 // flag oznamujici nastani "MTB general IO error" -- te nejhorsi veci na svete
+     fGeneralError:boolean;                                 // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
      fLibDir:string;
 
      //events to the main program
-     fOnReady : TMTBReadyEvent;
+     fOnReady : TRCSReadyEvent;
      fAfterClose : TNotifyEvent;
 
       //events from libraly
@@ -76,22 +79,22 @@ type
       procedure LoadLib(filename:string);                                       // nacte knihovnu
 
       procedure InputSim();                                                     // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
-      procedure SoupravaUsekSim();                                              // nastavit MTB vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
+      procedure SoupravaUsekSim();                                              // nastavit RCS vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
 
       function NoExStarted():boolean;
       function NoExOpened():boolean;
 
-      procedure SetNeeded(MtbAdr:Integer; state:boolean = true);
-      function GetNeeded(MtbAdr:Integer):boolean;
+      procedure SetNeeded(RCSAdr:Integer; state:boolean = true);
+      function GetNeeded(RCSAdr:Integer):boolean;
 
       procedure LoadFromFile(ini:TMemIniFile);
       procedure SaveToFile(ini:TMemIniFile);
 
-      procedure AddInputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
-      procedure RemoveInputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
+      procedure AddInputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
+      procedure RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
 
-      procedure AddOutputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
-      procedure RemoveOutputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
+      procedure AddOutputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
+      procedure RemoveOutputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
 
       function IsSimulatorMode():boolean;
 
@@ -100,28 +103,28 @@ type
       //events
       property AfterClose:TNotifyEvent read fAfterClose write fAfterClose;
 
-      property OnReady:TMTBReadyEvent read fOnReady write fOnReady;
+      property OnReady:TRCSReadyEvent read fOnReady write fOnReady;
       property ready:boolean read aready;
       property libDir:string read fLibDir;
   end;
 
 var
-  MTB:TMTB;
+  RCSi:TRCS;
 
 
 implementation
 
 uses fMain, fAdminForm, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
      TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd, RCSErrors, TOblsRizeni,
-     Logging, TCPServerOR, SprDb, DataMTB, appEv, Booster, StrUtils;
+     Logging, TCPServerOR, SprDb, DataRCS, appEv, Booster, StrUtils;
 
-constructor TMTB.Create();
+constructor TRCS.Create();
 var i:Integer;
 begin
  inherited;
 
- for i := 0 to _MAX_MTB-1 do
-   Self.Desky[i] := TMTBBoard.Create();
+ for i := 0 to _MAX_RCS-1 do
+   Self.Desky[i] := TRCSBoard.Create();
 
  Self.aReady := false;
  Self.fGeneralError := false;
@@ -133,16 +136,16 @@ begin
  TRCSIFace(Self).OnOutputChanged := Self.DllOnOutputChanged;
 end;
 
-destructor TMTB.Destroy();
+destructor TRCS.Destroy();
 var i:Integer;
 begin
- for i := 0 to _MAX_MTB-1 do
+ for i := 0 to _MAX_RCS-1 do
    if (Assigned(Self.Desky[i])) then FreeAndNil(Self.Desky[i]);
 
  inherited;
 end;
 
-procedure TMTB.LoadLib(filename:string);
+procedure TRCS.LoadLib(filename:string);
 var str, tmp, libName:string;
 begin
  libName := ExtractFileName(filename);
@@ -160,7 +163,7 @@ begin
 
    TRCSIFace(Self).LoadLib(filename);
 
-   writelog('Naètena knihovna '+ libName, WR_MTB);
+   writelog('Naètena knihovna '+ libName, WR_RCS);
 
    // kontrola bindnuti vsech eventu
    if (Self.unbound.Contains('SetInput')) then
@@ -180,7 +183,7 @@ begin
   end;
 end;
 
-procedure TMTB.InputSim();
+procedure TRCS.InputSim();
 var i:integer;
     Blk:TBlk;
     booster:TBooster;
@@ -190,11 +193,11 @@ begin
   begin
    Blky.GetBlkByIndex(i, Blk);
    if (Blk.GetGlobalSettings.typ = _BLK_VYH) then
-     Self.SetInput((Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].board, (Blk as TBlkVyhybka).GetSettings().MTBAddrs.data[0].port,1);
+     Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs.data[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs.data[0].port,1);
    if (Blk.GetGlobalSettings.typ = _BLK_PREJEZD) then
      Self.SetInput((Blk as TBlkPrejezd).GetSettings().MTB, (Blk as TBlkPrejezd).GetSettings().MTBInputs.Otevreno, 1);
    if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU)) and ((Blk as TBlkUsek).Souprava > -1)) then
-     Self.SetInput((Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].board, (Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].port, 1);
+     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].port, 1);
   end;//for cyklus
 
  //defaultni stav zesilovacu
@@ -206,7 +209,7 @@ begin
 end;//procedure
 
 //simulace obaszeni useku, na kterem je souprava
-procedure TMTB.SoupravaUsekSim;
+procedure TRCS.SoupravaUsekSim;
 var i:Integer;
     Blk:TBlk;
 begin
@@ -215,11 +218,11 @@ begin
    Blky.GetBlkByIndex(i,Blk);
    if ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
    if ((Blk as TBlkUsek).Souprava > -1) then
-     Self.SetInput((Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].board,(Blk as TBlkUsek).GetSettings().MTBAddrs.data[0].port,1);
+     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].board,(Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].port,1);
   end;
 end;
 
-procedure TMTB.LoadFromFile(ini:TMemIniFile);
+procedure TRCS.LoadFromFile(ini:TMemIniFile);
 var lib:string;
 begin
   fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
@@ -233,21 +236,21 @@ begin
   end;
 end;
 
-procedure TMTB.SaveToFile(ini:TMemIniFile);
+procedure TRCS.SaveToFile(ini:TMemIniFile);
 begin
   if (Self.Lib <> '') then
     ini.WriteString(_INIFILE_SECTNAME, 'lib', ExtractFileName(Self.Lib));
 end;
 
-procedure TMTB.DllAfterClose(Sender:TObject);
+procedure TRCS.DllAfterClose(Sender:TObject);
 begin
  Self.fGeneralError := false;
  if (Assigned(Self.fAfterClose)) then Self.fAfterClose(Self);
 end;//procdure
 
-procedure TMTB.DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:PChar);
+procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:PChar);
 begin
- writelog('MTB ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_MTB, 1);
+ writelog('RCS ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_RCS, 1);
 
  if (errAddr = 255) then
   begin
@@ -257,12 +260,12 @@ begin
       // general IO error
       F_Main.A_System_Start.Enabled := true;
       F_Main.A_System_Stop.Enabled  := true;
-      writelog('MTB FTDI Error - '+IntToStr(errValue), WR_ERROR, 0);
-      ORTCPServer.BroadcastBottomError('MTB FTDI error', 'TECHNOLOGIE');
+      writelog('RCS FTDI Error - '+IntToStr(errValue), WR_ERROR, 0);
+      ORTCPServer.BroadcastBottomError('RCS FTDI error', 'TECHNOLOGIE');
     end;
    end;//case
   end else begin
-   // errors on MTB boards
+   // errors on RCS boards
    case (errValue) of
     RCS_MODULE_FAIL: ORs.MTBFail(errAddr); // communication with module failed
     RCS_MODULE_RESTORED:; // communication with module restored, nothing should be here
@@ -270,46 +273,46 @@ begin
   end;//
 end;//procedure
 
-procedure TMTB.DllOnInputChanged(Sender:TObject; module:byte);
+procedure TRCS.DllOnInputChanged(Sender:TObject; module:byte);
 var i:Integer;
 begin
  for i := Self.Desky[module].inputChangedEv.Count-1 downto 0 do
    if (Assigned(Self.Desky[module].inputChangedEv[i])) then Self.Desky[module].inputChangedEv[i](Self, module)
      else Self.Desky[module].inputChangedEv.Delete(i);
- MTBTableData.UpdateLine(module);
+ RCSTableData.UpdateLine(module);
 end;
 
-procedure TMTB.DllOnOutputChanged(Sender:TObject; module:byte);
+procedure TRCS.DllOnOutputChanged(Sender:TObject; module:byte);
 var i:Integer;
 begin
  for i := Self.Desky[module].outputChangedEv.Count-1 downto 0 do
    if (Assigned(Self.Desky[module].outputChangedEv[i])) then Self.Desky[module].outputChangedEv[i](Self, module)
      else Self.Desky[module].outputChangedEv.Delete(i);
- MTBTableData.UpdateLine(module);
+ RCSTableData.UpdateLine(module);
 end;
 
 //----- events from dll end -----
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTB.SetNeeded(MtbAdr:Integer; state:boolean = true);
+procedure TRCS.SetNeeded(RCSAdr:Integer; state:boolean = true);
 begin
- Self.Desky[MtbAdr].needed := state;
+ Self.Desky[RCSAdr].needed := state;
 end;//procedure
 
-function TMTB.GetNeeded(MtbAdr:Integer):boolean;
+function TRCS.GetNeeded(RCSAdr:Integer):boolean;
 begin
- Result := Self.Desky[MtbAdr].needed;
+ Result := Self.Desky[RCSAdr].needed;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TMTBBoard.Create();
+constructor TRCSBoard.Create();
 begin
- Self.inputChangedEv  := TList<TMTBBoardChangeEvent>.Create();
- Self.outputChangedEv := TList<TMTBBoardChangeEvent>.Create();
+ Self.inputChangedEv  := TList<TRCSBoardChangeEvent>.Create();
+ Self.outputChangedEv := TList<TRCSBoardChangeEvent>.Create();
 end;//ctor
 
-destructor TMTBBoard.Destroy();
+destructor TRCSBoard.Destroy();
 begin
  Self.inputChangedEv.Free();
  Self.outputChangedEv.Free();
@@ -317,49 +320,49 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTB.AddInputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
+procedure TRCS.AddInputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
 begin
- if ((board >= 0) and (board < _MAX_MTB)) then
+ if ((board >= 0) and (board < _MAX_RCS)) then
    if (Self.Desky[board].inputChangedEv.IndexOf(event) = -1) then Self.Desky[board].inputChangedEv.Add(event);
 end;
 
-procedure TMTB.RemoveInputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
+procedure TRCS.RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
 var i:Integer;
 begin
  if (board = -1) then
   begin
-   for i := 0 to _MAX_MTB-1 do
+   for i := 0 to _MAX_RCS-1 do
      Self.Desky[i].inputChangedEv.Remove(event);
   end else begin
-   if ((board >= 0) and (board < _MAX_MTB)) then
+   if ((board >= 0) and (board < _MAX_RCS)) then
      Self.Desky[board].inputChangedEv.Remove(event);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTB.AddOutputChangeEvent(board:Integer; event:TMTBBoardChangeEvent);
+procedure TRCS.AddOutputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
 begin
- if ((board >= 0) and (board < _MAX_MTB)) then
+ if ((board >= 0) and (board < _MAX_RCS)) then
    if (Self.Desky[board].outputChangedEv.IndexOf(event) = -1) then Self.Desky[board].outputChangedEv.Add(event);
 end;
 
-procedure TMTB.RemoveOutputChangeEvent(event:TMTBBoardChangeEvent; board:Integer = -1);
+procedure TRCS.RemoveOutputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
 var i:Integer;
 begin
  if (board = -1) then
   begin
-   for i := 0 to _MAX_MTB-1 do
+   for i := 0 to _MAX_RCS-1 do
      Self.Desky[i].outputChangedEv.Remove(event);
   end else begin
-   if ((board >= 0) and (board < _MAX_MTB)) then
+   if ((board >= 0) and (board < _MAX_RCS)) then
      Self.Desky[board].outputChangedEv.Remove(event);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMTB.NoExStarted():boolean;
+function TRCS.NoExStarted():boolean;
 begin
  try
    Result := Self.Started();
@@ -368,7 +371,7 @@ begin
  end;
 end;
 
-function TMTB.NoExOpened():boolean;
+function TRCS.NoExOpened():boolean;
 begin
  try
    Result := Self.Opened();
@@ -379,7 +382,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMTB.IsSimulatorMode():boolean;
+function TRCS.IsSimulatorMode():boolean;
 begin
  Result := (LowerCase(Self.Lib) = 'simulator.dll');
 end;

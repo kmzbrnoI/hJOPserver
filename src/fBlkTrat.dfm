@@ -150,7 +150,7 @@ object F_BlkTrat: TF_BlkTrat
       MinValue = 1
       ParentFont = False
       TabOrder = 1
-      Value = 0
+      Value = 1
     end
     object LB_UA_St: TListBox
       Left = 104
@@ -275,7 +275,7 @@ object F_BlkTrat: TF_BlkTrat
       MinValue = 1
       ParentFont = False
       TabOrder = 1
-      Value = 0
+      Value = 1
     end
     object E_UB_name: TEdit
       Left = 104
@@ -378,7 +378,7 @@ object F_BlkTrat: TF_BlkTrat
       MinValue = 1
       ParentFont = False
       TabOrder = 1
-      Value = 0
+      Value = 1
     end
     object E_Trat_Name: TEdit
       Left = 104
@@ -469,7 +469,7 @@ object F_BlkTrat: TF_BlkTrat
           Font.Height = -11
           Font.Name = 'MS Sans Serif'
           Font.Style = []
-          ItemHeight = 13
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 0
         end

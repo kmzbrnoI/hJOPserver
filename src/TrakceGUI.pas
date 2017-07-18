@@ -383,7 +383,7 @@ type
 
 implementation
 
-uses fMain, fSettings, XpressNET, TechnologieMTB, fRegulator, SprDb, Souprava,
+uses fMain, fSettings, XpressNET, TechnologieRCS, fRegulator, SprDb, Souprava,
     GetSystems, THVDatabase, fAdminForm, DataHV,
     Prevody, TBloky, RegulatorTCP, TCPServerOR, fFuncsSet;
 
@@ -509,7 +509,7 @@ var i:Integer;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
-   F_Main.A_MTB_StopExecute(nil);
+   F_Main.A_RCS_StopExecute(nil);
    Exit(0);
   end;
 
@@ -990,7 +990,7 @@ begin
  Application.ProcessMessages();
 
  if (SystemData.Status = stopping) then
-   F_Main.A_MTB_StopExecute(nil);
+   F_Main.A_RCS_StopExecute(nil);
 end;//procedure
 
 function TTrkGUI.GetStepSpeed(step:byte):Integer;

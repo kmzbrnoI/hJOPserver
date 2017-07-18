@@ -11,7 +11,7 @@ type
  TRozpStatus = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
 
  TBlkRozpSettings = record
-  MTBAddrs:TMTBAddrs;     //only 1 address
+  RCSAddrs:TRCSAddrs;     //only 1 address
  end;
 
  TBlkRozpStav = record
@@ -70,7 +70,7 @@ type
 
 implementation
 
-uses TechnologieMTB, TCPServerOR;
+uses TechnologieRCS, TCPServerOR;
 
 constructor TBlkRozp.Create(index:Integer);
 begin
@@ -92,7 +92,7 @@ var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.RozpSettings.MTBAddrs := Self.LoadMTB(ini_tech,section);
+ Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
 
  if (ini_rel <> nil) then
   begin
@@ -115,7 +115,7 @@ procedure TBlkRozp.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
 
- Self.SaveMTB(ini_tech,section,Self.RozpSettings.MTBAddrs);
+ Self.SaveRCS(ini_tech,section,Self.RozpSettings.RCSAddrs);
 end;//procedure
 
 procedure TBlkRozp.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -231,9 +231,9 @@ procedure TBlkRozp.UpdateOutput();
 begin
  try
    if (Self.status = TRozpStatus.active) then
-     MTB.SetOutput(Self.RozpSettings.MTBAddrs.data[0].board, Self.RozpSettings.MTBAddrs.data[0].port, 1)
+     RCSi.SetOutput(Self.RozpSettings.RCSAddrs.data[0].board, Self.RozpSettings.RCSAddrs.data[0].port, 1)
    else
-     MTB.SetOutput(Self.RozpSettings.MTBAddrs.data[0].board, Self.RozpSettings.MTBAddrs.data[0].port, 0);
+     RCSi.SetOutput(Self.RozpSettings.RCSAddrs.data[0].board, Self.RozpSettings.RCSAddrs.data[0].port, 0);
  except
 
  end;

@@ -178,7 +178,7 @@ object F_BlkTU: TF_BlkTU
     MaxValue = 2147483647
     MinValue = 1
     TabOrder = 1
-    Value = 0
+    Value = 1
   end
   object E_Nazev: TEdit
     Left = 119
@@ -201,7 +201,7 @@ object F_BlkTU: TF_BlkTU
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Technologick'#233' vstupy - MTB  '
+    Caption = ' Technologick'#233' vstupy - RCS  '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11

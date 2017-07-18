@@ -51,7 +51,7 @@ var
 
 implementation
 
-uses GetSystems, fSettings, TechnologieMTB, BoosterDb, FileSystem, DataZesilovac,
+uses GetSystems, fSettings, TechnologieRCS, BoosterDb, FileSystem, DataZesilovac,
     TBloky;
 
 {$R *.dfm}

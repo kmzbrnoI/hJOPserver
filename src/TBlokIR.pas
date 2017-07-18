@@ -10,7 +10,7 @@ type
  TIRStav = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
 
  TBlkIRSettings = record
-  MTBAddrs:TMTBAddrs;     //only 1 address
+  RCSAddrs:TRCSAddrs;     //only 1 address
  end;
 
  TBlkIRStav = record
@@ -63,7 +63,7 @@ type
 
 implementation
 
-uses TechnologieMTB, RCS;
+uses TechnologieRCS, RCS;
 
 constructor TBlkIR.Create(index:Integer);
 begin
@@ -84,14 +84,14 @@ procedure TBlkIR.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.IRSettings.MTBAddrs := Self.LoadMTB(ini_tech,section);
+ Self.IRSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
 end;//procedure
 
 procedure TBlkIR.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
 
- Self.SaveMTB(ini_tech,section,Self.IRSettings.MTBAddrs);
+ Self.SaveRCS(ini_tech,section,Self.IRSettings.RCSAddrs);
 end;//procedure
 
 procedure TBlkIR.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -120,7 +120,7 @@ procedure TBlkIR.Update();
 var state:TRCSInputState;
 begin
  try
-   state := MTB.GetInput(Self.IRSettings.MTBAddrs.data[0].board,Self.IRSettings.MTBAddrs.data[0].port)
+   state := RCSi.GetInput(Self.IRSettings.RCSAddrs.data[0].board,Self.IRSettings.RCSAddrs.data[0].port)
  except
    state := failure;
  end;
@@ -160,7 +160,7 @@ procedure TBlkIR.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.MTBtoJSON(Self.IRSettings.MTBAddrs.data[0], json['mtb'].O['mtb']);
+ TBlk.RCStoJSON(Self.IRSettings.RCSAddrs.data[0], json['mtb'].O['mtb']);
 
  if (includeState) then
    Self.GetPtState(json['blokStav']);

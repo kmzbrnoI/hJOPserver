@@ -5,7 +5,7 @@ unit TBlokPrejezd;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, SysUtils, Menus, TOblsRizeni,
-     Classes, TechnologieMTB, IdContext, TOblRizeni;
+     Classes, TechnologieRCS, IdContext, TOblRizeni;
 
 type
  TBlkPrjMTBInputs = record
@@ -207,7 +207,7 @@ end;//procedure
 procedure TBlkPrejezd.Enable();
 begin
  try
-   if (not MTB.IsModule(Self.PrjSettings.MTB)) then
+   if (not RCSi.IsModule(Self.PrjSettings.MTB)) then
     Exit();
  except
    Exit();
@@ -233,7 +233,7 @@ begin
  if (not (GetFunctions.GetSystemStart())) then Exit;
 
  try
-   available :=  MTB.IsModule(Self.PrjSettings.MTB);
+   available :=  RCSi.IsModule(Self.PrjSettings.MTB);
  except
    available := false;
  end;
@@ -298,10 +298,10 @@ var tmpInputs: record
 begin
  // get data from mtb
  try
-   tmpInputs.Zavreno  := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno) = isOn);
-   tmpInputs.Otevreno := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Otevreno) = isOn);
-   tmpInputs.Vystraha := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Vystraha) = isOn);
-   tmpInputs.Anulace  := (MTB.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Anulace) = isOn);
+   tmpInputs.Zavreno  := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno) = isOn);
+   tmpInputs.Otevreno := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Otevreno) = isOn);
+   tmpInputs.Vystraha := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Vystraha) = isOn);
+   tmpInputs.Anulace  := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Anulace) = isOn);
  except
    // prejezd prejde do poruchoveho stavu
    tmpInputs.Zavreno  := false;
@@ -324,23 +324,23 @@ begin
  try
    if ((Self.PrjStav.PC_UZ) or (Self.Zaver)) then
     begin
-     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 1);
+     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 1);
     end else begin
-     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 0);
+     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 0);
     end;
 
    if (Self.PrjStav.PC_NOT) then
     begin
-     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 1);
+     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 1);
     end else begin
-     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 0);
+     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 0);
     end;
 
    if (Self.PrjStav.vyl <> '') then
     begin
-     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 1);
+     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 1);
     end else begin
-     MTB.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 0);
+     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 0);
     end;
  except
 
@@ -425,7 +425,7 @@ end;
 procedure TBlkPrejezd.MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 1);
+   RCSi.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 1);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -434,7 +434,7 @@ end;
 procedure TBlkPrejezd.MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   MTB.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 0);
+   RCSi.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 0);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -480,7 +480,7 @@ begin
 
  // pokud mame knihovnu simulator, muzeme ridit stav useku
  //  DEBUG nastroj
- if (MTB.IsSimulatorMode()) then
+ if (RCSi.IsSimulatorMode()) then
   begin
    Result := Result + '-,';
    if ((Self.Stav.basicStav = TBlkPrjBasicStav.uzavreno) or (Self.Stav.basicStav = TBlkPrjBasicStav.vystraha)) then

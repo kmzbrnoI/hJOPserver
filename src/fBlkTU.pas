@@ -93,7 +93,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, BoosterDb, DataBloky, ownStrUtils,
+uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
       TOblsRizeni, Booster;
 
 {$R *.dfm}
@@ -185,7 +185,7 @@ var glob:TBlkSettings;
   Self.CHB_D3.Checked := false;
   Self.CHB_D4.Checked := false;
 
-  case (Usettings.MTBAddrs.Count) of
+  case (Usettings.RCSAddrs.Count) of
     0, 1: begin
       Self.CHB_D1.Checked := true;
       Self.CHB_D1Click(Self.CHB_D1);
@@ -205,17 +205,17 @@ var glob:TBlkSettings;
    end;//case
 
 
-  Self.SE_Port1.Value  := Usettings.MTBAddrs.data[0].port;
-  Self.SE_Board1.Value := Usettings.MTBAddrs.data[0].board;
+  Self.SE_Port1.Value  := Usettings.RCSAddrs.data[0].port;
+  Self.SE_Board1.Value := Usettings.RCSAddrs.data[0].board;
 
-  Self.SE_Port2.Value  := Usettings.MTBAddrs.data[1].port;
-  Self.SE_Board2.Value := Usettings.MTBAddrs.data[1].board;
+  Self.SE_Port2.Value  := Usettings.RCSAddrs.data[1].port;
+  Self.SE_Board2.Value := Usettings.RCSAddrs.data[1].board;
 
-  Self.SE_Port3.Value  := Usettings.MTBAddrs.data[2].port;
-  Self.SE_Board3.Value := Usettings.MTBAddrs.data[2].board;
+  Self.SE_Port3.Value  := Usettings.RCSAddrs.data[2].port;
+  Self.SE_Board3.Value := Usettings.RCSAddrs.data[2].board;
 
-  Self.SE_Port4.Value  := Usettings.MTBAddrs.data[3].port;
-  Self.SE_Board4.Value := Usettings.MTBAddrs.data[3].board;
+  Self.SE_Port4.Value  := Usettings.RCSAddrs.data[3].port;
+  Self.SE_Board4.Value := Usettings.RCSAddrs.data[3].board;
 
   Self.CB_Zesil.ItemIndex := -1;
   for i := 0 to Boosters.sorted.Count-1 do
@@ -352,27 +352,27 @@ var glob:TBlkSettings;
    end;
 
   //ukladani dat
-  settings.MTBAddrs.data[0].board := Self.SE_Board1.Value;
-  settings.MTBAddrs.data[0].port  := Self.SE_Port1.Value;
+  settings.RCSAddrs.data[0].board := Self.SE_Board1.Value;
+  settings.RCSAddrs.data[0].port  := Self.SE_Port1.Value;
 
-  settings.MTBAddrs.data[1].board := Self.SE_Board2.Value;
-  settings.MTBAddrs.data[1].port  := Self.SE_Port2.Value;
+  settings.RCSAddrs.data[1].board := Self.SE_Board2.Value;
+  settings.RCSAddrs.data[1].port  := Self.SE_Port2.Value;
 
-  settings.MTBAddrs.data[2].board := Self.SE_Board3.Value;
-  settings.MTBAddrs.data[2].port  := Self.SE_Port3.Value;
+  settings.RCSAddrs.data[2].board := Self.SE_Board3.Value;
+  settings.RCSAddrs.data[2].port  := Self.SE_Port3.Value;
 
-  settings.MTBAddrs.data[3].board := Self.SE_Board4.Value;
-  settings.MTBAddrs.data[3].port  := Self.SE_Port4.Value;
+  settings.RCSAddrs.data[3].board := Self.SE_Board4.Value;
+  settings.RCSAddrs.data[3].port  := Self.SE_Port4.Value;
 
   if (Self.CHB_D4.Checked) then
-   settings.MTBAddrs.Count := 4
+   settings.RCSAddrs.Count := 4
   else if (Self.CHB_D3.Checked) then
-   settings.MTBAddrs.Count := 3
+   settings.RCSAddrs.Count := 3
   else if (Self.CHB_D2.Checked) then
-   settings.MTBAddrs.Count := 2
+   settings.RCSAddrs.Count := 2
   else if (Self.CHB_D1.Checked) then
-   settings.MTBAddrs.Count := 1
-  else settings.MTBAddrs.Count := 0;
+   settings.RCSAddrs.Count := 1
+  else settings.RCSAddrs.Count := 0;
 
   settings.Lenght  := StrToFloatDef(Self.E_Delka.Text,0);
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;

@@ -33,7 +33,7 @@ type
 
  // vlastnosti bloku SCom, ktere se ukladaji do databaze bloku
  TBlkSComSettings = record
-  MTBAddrs:TMTBAddrs;                            // ve skutecnosti je signifikantni jen jedna adresa - na indexu [0], coz je vystup pro rizeni navestidla
+  RCSAddrs:TRCSAddrs;                            // ve skutecnosti je signifikantni jen jedna adresa - na indexu [0], coz je vystup pro rizeni navestidla
   OutputType:TBlkSComOutputType;                 // typ vystupu: binarni/SCom
   events:TList<TBlkSComSprEvent>;                // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
                                                  // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky soupravy
@@ -229,7 +229,7 @@ type
 
 implementation
 
-uses TechnologieMTB, TBloky, TBlokUsek, TJCDatabase, TCPServerOR,
+uses TechnologieRCS, TBloky, TBlokUsek, TJCDatabase, TCPServerOR,
       GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
       TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek;
 
@@ -268,7 +268,7 @@ var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.SComSettings.MTBAddrs := Self.LoadMTB(ini_tech,section);
+ Self.SComSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
 
  Self.SComSettings.zamknuto     := ini_tech.ReadBool(section, 'zamknuti', false);
 
@@ -337,7 +337,7 @@ begin
     end;
   end;
 
- PushMTBToOR(Self.ORsRef, Self.SComSettings.MTBAddrs);
+ PushRCSToOR(Self.ORsRef, Self.SComSettings.RCSAddrs);
 end;//procedure
 
 procedure TBlkSCom.SaveData(ini_tech:TMemIniFile;const section:string);
@@ -345,7 +345,7 @@ var i:Integer;
 begin
  inherited SaveData(ini_tech, section);
 
- Self.SaveMTB(ini_tech,section, Self.SComSettings.MTBAddrs);
+ Self.SaveRCS(ini_tech,section, Self.SComSettings.RCSAddrs);
 
  for i := 0 to Self.SComSettings.events.Count-1 do
    ini_tech.WriteString(section, 'ev'+IntToStr(i),
@@ -370,7 +370,7 @@ end;//procedure
 procedure TBlkSCom.Enable();
 begin
  try
-   if (not MTB.IsModule(Self.SComSettings.MTBAddrs.data[0].board)) then
+   if (not RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) then
      Exit();
  except
    Exit();
@@ -403,7 +403,7 @@ begin
  if (Self.Navest = 8) then
    Self.UpdatePrivol();
 
- if (MTB.IsModule(Self.SComSettings.MTBAddrs.data[0].board)) then
+ if (RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) then
   begin
    if (Self.SComStav.Navest < 0) then
     begin
@@ -605,13 +605,13 @@ begin
    if (Self.SComSettings.OutputType = scom) then
     begin
      //scom
-     MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,navest);
+     RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,Self.SComSettings.RCSAddrs.data[0].port,navest);
     end else begin
      //binary
      case (navest) of
-      0,5,13,16..127:MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,0);
+      0,5,13,16..127:RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,Self.SComSettings.RCSAddrs.data[0].port,0);
      else//case (navest)
-      MTB.SetOutput(Self.SComSettings.MTBAddrs.data[0].board,Self.SComSettings.MTBAddrs.data[0].port,1);
+      RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,Self.SComSettings.RCSAddrs.data[0].port,1);
      end;//else case 0,5,13,16..127
     end;//else
  except
@@ -889,9 +889,9 @@ begin
      Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.data.irId, Blk);
      if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit();
      if (enabled) then
-       MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 1)
+       RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs.data[0].board, TBlkIR(Blk).GetSettings().RCSAddrs.data[0].port, 1)
      else
-       MTB.SetInput(TBlkIR(Blk).GetSettings().MTBAddrs.data[0].board, TBlkIR(Blk).GetSettings().MTBAddrs.data[0].port, 0);
+       RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs.data[0].board, TBlkIR(Blk).GetSettings().RCSAddrs.data[0].port, 0);
     end;
  except
    ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se nastavit stav IR èidla!', TOR(SenderOR).ShortName, 'SIMULACE');
@@ -1019,7 +1019,7 @@ begin
      Result := Result + '-,*ZRUŠ REDUKCI,';
 
  // DEBUG: jednoduche nastaveni IR pri knihovne simulator
- if (MTB.IsSimulatorMode()) then
+ if (RCSi.IsSimulatorMode()) then
   begin
    if ((Self.SComSettings.events.Count > 0) and (Self.SComSettings.events[0].zastaveni.typ = TRREvType.rrtIR)) then
     begin

@@ -55,7 +55,7 @@ var
 
 implementation
 
-uses TechnologieMTB, Logging, RCS;
+uses TechnologieRCS, Logging, RCS;
 
 {$R *.dfm}
 
@@ -81,7 +81,7 @@ var cyklus:Integer;
 procedure TF_Tester.UpdateOut;
 var cyklus, val:Integer;
  begin
-  if ((not MTB.NoExStarted()) or (MTBAddr < 0) or (MTB.IsModuleFailure(MTBAddr))) then
+  if ((not RCSi.NoExStarted()) or (MTBAddr < 0) or (RCSi.IsModuleFailure(MTBAddr))) then
    begin
     for cyklus := 0 to 15 do
       SOutput[cyklus].Brush.Color := clGray;
@@ -91,7 +91,7 @@ var cyklus, val:Integer;
   for cyklus := 0 to 15 do
    begin
     try
-      val := MTB.GetOutput(MTBAddr, cyklus);
+      val := RCSi.GetOutput(MTBAddr, cyklus);
     except
       val := -1;
     end;
@@ -116,7 +116,7 @@ var i:Integer;
     LastState:TRCSInputState;
     stateStr:string;
  begin
-  if ((not MTB.NoExStarted()) or (MTBAddr < 0) or (MTB.IsModuleFailure(MTBAddr))) then
+  if ((not RCSi.NoExStarted()) or (MTBAddr < 0) or (RCSi.IsModuleFailure(MTBAddr))) then
    begin
     for i := 0 to 15 do
       SInput[i].Brush.Color := clGray;
@@ -126,7 +126,7 @@ var i:Integer;
   for i := 0 to 15 do
    begin
     try
-      InputState := MTB.GetInput(MTBAddr, i);
+      InputState := RCSi.GetInput(MTBAddr, i);
     except
       InputState := failure;
     end;
@@ -169,7 +169,7 @@ var i:Integer;
 
 procedure TF_Tester.FormCreate(Sender: TObject);
  begin
-  SetLength(Self.CB_MTBAdrData, TMTB._MAX_MTB);  // pole indexu vytvorime tak, aby bylo co nejvetsi
+  SetLength(Self.CB_MTBAdrData, TRCS._MAX_RCS);  // pole indexu vytvorime tak, aby bylo co nejvetsi
   Self.MTBAddr := -1;
   Self.CreateSInput;
   Self.CreateSOutput;
@@ -188,7 +188,7 @@ var cyklus:Integer;
    begin
     MTBAddr := CB_MtbAdrData[CB_MtbAdr.ItemIndex];
     try
-      Self.T_tester.Enabled := MTB.IsModule(MTBAddr);
+      Self.T_tester.Enabled := RCSi.IsModule(MTBAddr);
     except
      Self.T_tester.Enabled := false;
     end;
@@ -272,10 +272,10 @@ procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
 
     if ((Sender as TShape).Brush.Color = clRed) then
      begin
-      MTB.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
+      RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
       (Sender as TShape).Brush.Color := clLime;
      end else begin
-      MTB.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
+      RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
       (Sender as TShape).Brush.Color := clRed;
      end;
 
@@ -295,10 +295,10 @@ var i:Integer;
 begin
  Self.CB_MtbAdr.Clear();
 
- for i := 0 to TMTB._MAX_MTB-1 do
+ for i := 0 to TRCS._MAX_RCS-1 do
   begin
    try
-     if (not MTB.IsModule(i)) then continue;
+     if (not RCSi.IsModule(i)) then continue;
    except
      continue;
    end;
@@ -306,7 +306,7 @@ begin
    Self.CB_MTBAdrData[Self.CB_MtbAdr.Items.Count] := i;
 
    try
-     Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : ' + MTB.GetModuleName(i));
+     Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : ' + RCSi.GetModuleName(i));
    except
      Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : -');
    end;

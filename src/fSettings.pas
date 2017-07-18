@@ -8,7 +8,7 @@ uses
   ExtCtrls, Mask, Gauges, StrUtils, Registry, Grids, jpeg, ShellAPI,
   ShlObj, ToolWin, winsock, Buttons, IdBaseComponent,
   IdComponent, IdIPWatch, fMain, CPort, CPortCtl, AC, THnaciVozidlo,
-  TechnologieMTB;
+  TechnologieRCS;
 
 type
 
@@ -166,7 +166,7 @@ uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
   TechnologieJC, FileSystem, TBloky, TBlok,
   TBlokVyhybka, TBlokSCom, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,
   SnadnSpusteni, TBlokPrejezd, fBlkPrejezd, TJCDatabase, THVDatabase,
-  Logging, DataBloky, DataJC, DataMTB, Trakce,
+  Logging, DataBloky, DataJC, DataRCS, Trakce,
   ModelovyCas, ACDatabase;
 
 {$R *.dfm}

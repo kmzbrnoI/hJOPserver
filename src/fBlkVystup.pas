@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, TBloky, TBlok, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
 
 {$R *.dfm}
 
@@ -78,8 +78,8 @@ var glob:TBlkSettings;
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  Self.SE_MTB.Value     := settings.MTBAddrs.data[0].board;
-  Self.SE_Port.Value    := settings.MTBAddrs.data[0].port;
+  Self.SE_MTB.Value     := settings.RCSAddrs.data[0].board;
+  Self.SE_Port.Value    := settings.RCSAddrs.data[0].port;
 
   E_Nazev.Text          := glob.name;
   SE_ID.Value           := glob.id;
@@ -137,9 +137,9 @@ var glob:TBlkSettings;
 
   //ukladani dat
 
-  settings.MTBAddrs.Count := 1;
-  settings.MTBAddrs.data[0].board := Self.SE_MTB.Value;
-  settings.MTBAddrs.data[0].port  := Self.SE_Port.Value;
+  settings.RCSAddrs.Count := 1;
+  settings.RCSAddrs.data[0].board := Self.SE_MTB.Value;
+  settings.RCSAddrs.data[0].port  := Self.SE_Port.Value;
 
   Self.Blk.SetSettings(settings);
 

@@ -45,7 +45,7 @@ var
 
 implementation
 
-uses GetSystems, TBlok, AC, TechnologieMTB, fMain, TBloky,
+uses GetSystems, TBlok, AC, TechnologieRCS, fMain, TBloky,
      Logging, ACDatabase, Prevody, RCS;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,26 +97,26 @@ var AC:TAC;
 
   AC := ACDb.ACs[Self.config.AutRezim];
 
-  if ((not MTB.IsModule(Self.config.MtbAdr)) or (MTB.IsModuleFailure(Self.config.MtbAdr))) then Exit();
+  if ((not RCSi.IsModule(Self.config.MtbAdr)) or (RCSi.IsModuleFailure(Self.config.MtbAdr))) then Exit();
 
   //vstupy:
 
   try
     if ((Self.config.IN_Start > -1) and (not AC.running) and (AC.ready)
-      and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Start) = isOn)) then
+      and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Start) = isOn)) then
         AC.Start();
 
     if ((Self.config.IN_Pause > -1) and (AC.running)
-      and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Pause) = isOn)) then
+      and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Pause) = isOn)) then
         AC.Pause();
 
     if ((Self.config.IN_Stop > -1) and (AC.running)
-      and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Stop) = isOn)) then
+      and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Stop) = isOn)) then
         AC.Stop();
 
     if (Self.config.IN_Repeat > -1) then
      begin
-      if (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Repeat) = isOn) then
+      if (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Repeat) = isOn) then
        begin
         if (not Self.RepeatDown) then
          begin
@@ -128,7 +128,7 @@ var AC:TAC;
        end;
      end;//if IN_Repeat_Used
 
-    if ((Self.config.IN_Reset > -1) and (MTB.GetInput(Self.config.MtbAdr,Self.config.IN_Reset) = isOn)) then
+    if ((Self.config.IN_Reset > -1) and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Reset) = isOn)) then
      begin
       // reset zatim neimplementovan
      end;
@@ -137,19 +137,19 @@ var AC:TAC;
     // vystupy;
 
     if (Self.config.OUT_Ready > -1) then
-      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.ready)));
+      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.ready)));
 
     if (Self.config.OUT_Start > -1) then
-      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
+      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
 
     if (Self.config.OUT_Pause > -1) then
-      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (AC.ACKrok > -1)));
+      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (AC.ACKrok > -1)));
 
     if (Self.config.OUT_Stop > -1) then
-      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
+      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
 
     if (Self.config.OUT_Repeat > -1) then
-      MTB.SetOutput(Self.config.MtbAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating));
+      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating));
 
   except
 

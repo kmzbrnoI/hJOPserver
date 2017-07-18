@@ -75,7 +75,7 @@ var
 
 implementation
 
-uses fMain, TechnologieMTB, FileSystem, fSettings, Trakce,
+uses fMain, TechnologieRCS, FileSystem, fSettings, Trakce,
      Logging, THVDatabase, TJCDatabase, TBlok, TBlokUsek,
     TBloky, TBlokSCom, GetSystems, TBlokVyhybka, TBlokTratUsek, SprDb;
 
@@ -100,8 +100,8 @@ procedure TF_Admin.LoadData();
     Self.Show();
 
  try
-   if ((MTB.ready) and (Self.CHB_SimInput.Checked) and (MTB.IsSimulatorMode())) then
-     MTB.InputSim();
+   if ((RCSi.ready) and (Self.CHB_SimInput.Checked) and (RCSi.IsSimulatorMode())) then
+     RCSi.InputSim();
  except
    on E:Exception do
      writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
@@ -175,11 +175,11 @@ end;//procedure
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
  begin
-  if (MTB.IsSimulatorMode()) then
+  if (RCSi.IsSimulatorMode()) then
    begin
     try
-      MTB.InputSim();
-      writelog('Proveden InputSim',WR_MTB);
+      RCSi.InputSim();
+      writelog('Proveden InputSim', WR_RCS);
     except
       on E:Exception do
         Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -212,7 +212,7 @@ procedure TJCSimulator.OnTimer(Sender:TObject);
 var i:Integer;
     JC:TJC;
 begin
- if ((not GetFunctions.GetSystemStart()) or (not MTB.IsSimulatorMode())) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not RCSi.IsSimulatorMode())) then Exit;
 
  for i := 0 to JCDb.Count-1 do
   begin
@@ -236,8 +236,8 @@ begin
      if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.obsazeno) then
       begin
        UsekSet := (Blk as TBlkUsek).GetSettings();
-       for i := 0 to UsekSet.MTBAddrs.Count-1 do
-        MTB.SetInput(UsekSet.MTBAddrs.data[i].board, UsekSet.MTBAddrs.data[i].port, 0);
+       for i := 0 to UsekSet.RCSAddrs.Count-1 do
+        RCSi.SetInput(UsekSet.RCSAddrs.data[i].board, UsekSet.RCSAddrs.data[i].port, 0);
        Exit();
       end;
     end;//uvolnit usek pred navestidlem
@@ -247,14 +247,14 @@ begin
      // uvolnit RozpadRuseniBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
-     for i := 0 to UsekSet.MTBAddrs.Count-1 do
-      MTB.SetInput(UsekSet.MTBAddrs.data[i].board, UsekSet.MTBAddrs.data[i].port, 0);
+     for i := 0 to UsekSet.RCSAddrs.Count-1 do
+      RCSi.SetInput(UsekSet.RCSAddrs.data[i].board, UsekSet.RCSAddrs.data[i].port, 0);
     end else begin
      // obsadit RopadBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
-     if (UsekSet.MTBAddrs.Count > 0) then
-      MTB.SetInput(UsekSet.MTBAddrs.data[0].board, UsekSet.MTBAddrs.data[0].port, 1);
+     if (UsekSet.RCSAddrs.Count > 0) then
+      RCSi.SetInput(UsekSet.RCSAddrs.data[0].board, UsekSet.RCSAddrs.data[0].port, 1);
     end;//else
  except
 
@@ -286,7 +286,7 @@ procedure TTratSimulator.OnTimer(Sender:TObject);
 var i:Integer;
     Blk:TBlk;
 begin
- if ((not GetFunctions.GetSystemStart()) or (not MTB.IsSimulatorMode())) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not RCSi.IsSimulatorMode())) then Exit;
 
  for i := 0 to Blky.Cnt-1 do
   begin
@@ -313,7 +313,7 @@ begin
      if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
          (TU.prevTU.Souprava = TU.Souprava)) then
       begin
-       MTB.SetInput(TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.prevTU).GetSettings().MTBAddrs.data[0].port, 0);
+       RCSi.SetInput(TBlkUsek(TU.prevTU).GetSettings().RCSAddrs.data[0].board, TBlkUsek(TU.prevTU).GetSettings().RCSAddrs.data[0].port, 0);
        Exit();
       end;
     end;//for i
@@ -326,7 +326,7 @@ begin
          (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
         ((TU.nextTU.navKryci = nil) or (TBlkSCom(TU.nextTU.navKryci).Navest > 0))) then
       begin
-       MTB.SetInput(TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].board, TBlkUsek(TU.nextTU).GetSettings().MTBAddrs.data[0].port, 1);
+       RCSi.SetInput(TBlkUsek(TU.nextTU).GetSettings().RCSAddrs.data[0].board, TBlkUsek(TU.nextTU).GetSettings().RCSAddrs.data[0].port, 1);
        Exit();
       end;
     end;//for i
@@ -361,7 +361,7 @@ var i:Integer;
     blk:TBlk;
 begin
  try
-   if ((not GetFunctions.GetSystemStart()) or (not MTB.IsSimulatorMode())) then Exit;
+   if ((not GetFunctions.GetSystemStart()) or (not RCSi.IsSimulatorMode())) then Exit;
 
    for i := 0 to Blky.Cnt-1 do
     begin
@@ -373,18 +373,18 @@ begin
        if (((blk as TBlkVyhybka).Stav.poloha_real <> TVyhPoloha.none) and ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
         begin
          if ((blk as TBlkVyhybka).StaveniPlus) then
-          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].port, 0)
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].port, 0)
          else
-          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].port, 0);
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].port, 0);
         end;//if koncova poloha
 
        // po 3 sekundach oznamime koncovou polohu
        if ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 3, 0) < Now) then
         begin
          if ((blk as TBlkVyhybka).StaveniPlus) then
-          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[0].port, 1)
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].port, 1)
          else
-          MTB.SetInput((blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.MTBAddrs.data[1].port, 1);
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].port, 1);
         end;//if koncova poloha
 
        Exit();

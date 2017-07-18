@@ -123,7 +123,7 @@
 			</DCCReference>
 			<DCCReference Include="GetSystems.pas"/>
 			<DCCReference Include="Prevody.pas"/>
-			<DCCReference Include="TechnologieMTB.pas"/>
+			<DCCReference Include="TechnologieRCS.pas"/>
 			<DCCReference Include="TechnologieJC.pas"/>
 			<DCCReference Include="FileSystem.pas"/>
 			<DCCReference Include="fConsole.pas">
@@ -153,7 +153,7 @@
 			<DCCReference Include="THnaciVozidlo.pas"/>
 			<DCCReference Include="Logging.pas"/>
 			<DCCReference Include="TCPServerOR.pas"/>
-			<DCCReference Include="DataMTB.pas"/>
+			<DCCReference Include="DataRCS.pas"/>
 			<DCCReference Include="DataHV.pas"/>
 			<DCCReference Include="DataJC.pas"/>
 			<DCCReference Include="DataAC.pas"/>
@@ -212,7 +212,7 @@
 			<DCCReference Include="fBlkTUZastEvent.pas">
 				<Form>F_BlkTUZastEvent</Form>
 			</DCCReference>
-			<DCCReference Include="MTBdebugger.pas"/>
+			<DCCReference Include="RCSdebugger.pas"/>
 			<DCCReference Include="UDPdiscover.pas"/>
 			<DCCReference Include="USock.pas"/>
 			<DCCReference Include="appEv.pas"/>
@@ -287,7 +287,7 @@
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">8</VersionInfo>
-						<VersionInfo Name="Release">5</VersionInfo>
+						<VersionInfo Name="Release">6</VersionInfo>
 						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
@@ -300,7 +300,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.8.5.0</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.8.6.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2017</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>

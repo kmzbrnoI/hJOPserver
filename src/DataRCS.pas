@@ -1,4 +1,4 @@
-unit DataMTB;
+unit DataRCS;
 
 // TMTBTableData - trida starajici se o vyplnovani tabulky MTB
 
@@ -7,7 +7,7 @@ interface
 uses ComCtrls, SysUtils;
 
 type
-  TMTBTableData=class
+  TRCSTableData=class
     private
       LV:TListView;
 
@@ -21,16 +21,16 @@ type
   end;//TMTBData
 
 var
-   MTBTableData:TMTBTableData;
+   RCSTableData:TRCSTableData;
 
 
 implementation
 
-uses TechnologieMTB, RCS, Prevody;
+uses TechnologieRCS, RCS, Prevody;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TMTBTableData.Create(LV:TListView);
+constructor TRCSTableData.Create(LV:TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -38,13 +38,13 @@ end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBTableData.LoadToTable();
+procedure TRCSTableData.LoadToTable();
 var i, j:integer;
     LI:TListItem;
  begin
   Self.LV.Clear();
 
-  for i := 0 to TMTB._MAX_MTB-1 do
+  for i := 0 to TRCS._MAX_RCS-1 do
    begin
     LI := Self.LV.Items.Add();
     LI.Caption := IntToStr(i);
@@ -57,16 +57,16 @@ var i, j:integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBTableData.UpdateTable();
+procedure TRCSTableData.UpdateTable();
 var i:Integer;
 begin
- for i := 0 to TMTB._MAX_MTB-1 do
+ for i := 0 to TRCS._MAX_RCS-1 do
   Self.UpdateLine(i);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMTBTableData.UpdateLine(board:integer);
+procedure TRCSTableData.UpdateLine(board:integer);
 var j:integer;
     output:Integer;
     LI:TListItem;
@@ -75,7 +75,7 @@ var j:integer;
 
   Self.LV.Items.Item[board].Caption := IntToStr(board);
 
-  if (not MTB.ready) then
+  if (not RCSi.ready) then
    begin
     LI.SubItems.Strings[0] := '';
     LI.SubItems.Strings[1] := '';
@@ -89,9 +89,9 @@ var j:integer;
    end;
 
   try
-    if (MTB.IsModule(board)) then
+    if (RCSi.IsModule(board)) then
      begin
-      case (MTB.GetModuleType(board)) of
+      case (RCSi.GetModuleType(board)) of
        _RCS_MOD_MTB_UNI_ID    : LI.ImageIndex := 0;
        _RCS_MOD_MTB_TTL_ID    : LI.ImageIndex := 1;
        _RCS_MOD_MTB_TTLOUT_ID : LI.ImageIndex := 2;
@@ -107,21 +107,21 @@ var j:integer;
     Self.LV.Items.Item[board].ImageIndex := -1;
   end;
 
-  if (MTB.GetNeeded(board)) then
+  if (RCSi.GetNeeded(board)) then
     LI.SubItems.Strings[0] := 'X'
   else
     LI.SubItems.Strings[0] := '';
 
   try
-    LI.SubItems.Strings[1] := MTB.GetModuleName(board);
+    LI.SubItems.Strings[1] := RCSi.GetModuleName(board);
   except
     on E:Exception do
       LI.SubItems.Strings[1] := E.Message;
   end;
 
   try
-    if (MTB.IsModule(board)) then
-      LI.SubItems.Strings[2] := MTB.ModuleTypeToStr(MTB.GetModuleType(board))
+    if (RCSi.IsModule(board)) then
+      LI.SubItems.Strings[2] := RCSi.ModuleTypeToStr(RCSi.GetModuleType(board))
     else
       LI.SubItems.Strings[2] := '-';
   except
@@ -130,18 +130,18 @@ var j:integer;
   end;
 
   try
-    if (MTB.Opened) then
+    if (RCSi.Opened) then
      begin
-      if (MTB.IsModule(board) and (not MTB.IsModuleFailure(board))) then
+      if (RCSi.IsModule(board) and (not RCSi.IsModuleFailure(board))) then
        begin
-        if (MTB.Started) then
+        if (RCSi.Started) then
          begin
           LI.SubItems.Strings[3] := '';
           LI.SubItems.Strings[4] := '';
 
           for j := 0 to 15 do
            begin
-            case (MTB.GetInput(board, j)) of
+            case (RCSi.GetInput(board, j)) of
               isOn          : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '1';
               isOff         : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '0';
               failure       : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + 'X';
@@ -149,7 +149,7 @@ var j:integer;
               unavailable   : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '-';
             end;
 
-            output := MTB.GetOutput(board, j);
+            output := RCSi.GetOutput(board, j);
             if (output > 1) then
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+'S'
             else
@@ -167,12 +167,12 @@ var j:integer;
          end;
 
         LI.SubItems.Strings[5] := 'Ano';
-        LI.SubItems.Strings[6] := MTB.GetModuleFW(board);
+        LI.SubItems.Strings[6] := RCSi.GetModuleFW(board);
        end else begin
         // neexistuje
         LI.SubItems.Strings[3] := '-------- --------';
         LI.SubItems.Strings[4] := '-------- --------';
-        if (MTB.IsModuleFailure(board)) then
+        if (RCSi.IsModuleFailure(board)) then
           LI.SubItems.Strings[5] := 'Fail'
         else
           LI.SubItems.Strings[5] := 'Ne';
@@ -201,6 +201,6 @@ var j:integer;
 initialization
 
 finalization
- MTBTableData.Free();
+ RCSTableData.Free();
 
 end.//unit

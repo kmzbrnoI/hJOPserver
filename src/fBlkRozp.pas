@@ -44,7 +44,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieMTB, TBloky, TBlok, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
 
 {$R *.dfm}
 
@@ -84,8 +84,8 @@ var glob:TBlkSettings;
 
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do Self.LB_Stanice.Items.Add((Self.Blk.OblsRizeni.ORs[i]).Name);
 
-  Self.SE_MTB.Value     := settings.MTBAddrs.data[0].board;
-  Self.SE_Port.Value    := settings.MTBAddrs.data[0].port;
+  Self.SE_MTB.Value     := settings.RCSAddrs.data[0].board;
+  Self.SE_Port.Value    := settings.RCSAddrs.data[0].port;
 
   E_Nazev.Text          := glob.name;
   SE_ID.Value           := glob.id;
@@ -142,9 +142,9 @@ var glob:TBlkSettings;
     Self.Blk.SetGlobalSettings(glob);
    end;
 
-  settings.MTBAddrs.Count := 1;
-  settings.MTBAddrs.data[0].board := Self.SE_MTB.Value;
-  settings.MTBAddrs.data[0].port  := Self.SE_Port.Value;
+  settings.RCSAddrs.Count := 1;
+  settings.RCSAddrs.data[0].board := Self.SE_MTB.Value;
+  settings.RCSAddrs.data[0].port  := Self.SE_Port.Value;
 
   Self.Blk.SetSettings(settings);
 

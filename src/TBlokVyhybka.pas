@@ -14,7 +14,7 @@ type
  TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
 
  TBlkVyhSettings = record
-  MTBAddrs:TMTBAddrs;     // poradi(0..3): vst+,vst-,vyst+,vyst-
+  RCSAddrs:TRCSAddrs;     // poradi(0..3): vst+,vst-,vyst+,vyst-
   spojka:Integer;         // reference na id vyhybky ve spojce
                           // pokud jsou obe vyhybky ve spojce, maji reference na sebe navzajem
                           // zmena MTB vstupu a vystupu v nastaveni jedne vyhybky ovlivnuje druhou
@@ -198,7 +198,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, TechnologieMTB, fMain, TJCDatabase,
+uses TBloky, GetSystems, TechnologieRCS, fMain, TJCDatabase,
       TCPServerOR, TBlokZamek, PTUtils, RCS;
 
 constructor TBlkVyhybka.Create(index:Integer);
@@ -224,7 +224,7 @@ var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.VyhSettings.MTBAddrs    := Self.LoadMTB(ini_tech,section);
+ Self.VyhSettings.RCSAddrs    := Self.LoadRCS(ini_tech,section);
  Self.VyhSettings.spojka      := ini_tech.ReadInteger(section, 'spojka', -1);
  Self.VyhSettings.zamek       := ini_tech.ReadInteger(section, 'zamek', -1);
  Self.VyhSettings.zamekPoloha := TVyhPoloha(ini_tech.ReadInteger(section, 'zamek-pol', 0));
@@ -252,14 +252,14 @@ begin
    Self.VyhRel.UsekID := -1;
   end;
 
- PushMTBToOR(Self.ORsRef, Self.VyhSettings.MTBAddrs);
+ PushRCStoOR(Self.ORsRef, Self.VyhSettings.RCSAddrs);
 end;//procedure
 
 procedure TBlkVyhybka.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
 
- Self.SaveMTB(ini_tech,section,Self.VyhSettings.MTBAddrs);
+ Self.SaveRCS(ini_tech,section,Self.VyhSettings.RCSAddrs);
 
  if (Self.VyhSettings.spojka > -1) then
    ini_tech.WriteInteger(section, 'spojka', Self.VyhSettings.spojka);
@@ -291,9 +291,9 @@ end;//procedure
 procedure TBlkVyhybka.Enable();
 var i:Integer;
 begin
- if (Self.VyhSettings.MTBAddrs.Count < 4) then Exit; 
- for i := 0 to Self.VyhSettings.MTBAddrs.Count-1 do
-   if (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[i].board)) then
+ if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit;
+ for i := 0 to Self.VyhSettings.RCSAddrs.Count-1 do
+   if (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[i].board)) then
     Exit();
 
  Self.VyhStav.poloha := none;
@@ -417,7 +417,7 @@ begin
     end;
 
    spojka_settings.spojka   := self.GlobalSettings.id;
-   spojka_settings.MTBAddrs := Self.VyhSettings.MTBAddrs;
+   spojka_settings.RCSAddrs := Self.VyhSettings.RCSAddrs;
    (Blk as TBlkVyhybka).SetSettings(spojka_settings);
   end else begin
    // odebereme spojku z druhe vyhybky
@@ -485,19 +485,19 @@ procedure TBlkVyhybka.UpdatePoloha();
 var iplus,iminus: TRCSInputState;
     i:Integer;
  begin
-  if (Self.VyhSettings.MTBAddrs.Count < 4) then Exit();
+  if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit();
 
-  //MTBAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
+  //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
   try
-    iplus  := MTB.GetInput(Self.VyhSettings.MTBAddrs.data[0].board,Self.VyhSettings.MTBAddrs.data[0].port);
-    iminus := MTB.GetInput(Self.VyhSettings.MTBAddrs.data[1].board,Self.VyhSettings.MTBAddrs.data[1].port);
+    iplus  := RCSi.GetInput(Self.VyhSettings.RCSAddrs.data[0].board,Self.VyhSettings.RCSAddrs.data[0].port);
+    iminus := RCSi.GetInput(Self.VyhSettings.RCSAddrs.data[1].board,Self.VyhSettings.RCSAddrs.data[1].port);
   except
     iplus  := failure;
     iminus := failure;
   end;
 
   try
-    if ((iplus = failure) or (iminus = failure) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[2].board)) or (not MTB.IsModule(Self.VyhSettings.MTBAddrs.data[3].board))) then
+    if ((iplus = failure) or (iminus = failure) or (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[2].board)) or (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[3].board))) then
      begin
       if (Self.Stav.poloha <> TVyhPoloha.disabled) then
         Self.VyhStav.poloha := TVyhPoloha.disabled;
@@ -646,7 +646,7 @@ var Blk:TBlk;
     i:Integer;
 begin
   if (not GetFunctions.GetSystemStart) then Exit(1);
-  if (Self.VyhSettings.MTBAddrs.Count < 4) then Exit(2);
+  if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit(2);
   if ((new <> plus) and (new <> minus)) then Exit(3);
 
  // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
@@ -680,13 +680,13 @@ begin
     if (Assigned(callback_ok)) then callback_ok(Self);
    end;
 
- //MTBAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
+ //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
 
  if (new = plus) then
   begin
    try
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board,Self.VyhSettings.MTBAddrs.data[2].port, 1);
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board,Self.VyhSettings.MTBAddrs.data[3].port, 0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board,Self.VyhSettings.RCSAddrs.data[2].port, 1);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board,Self.VyhSettings.RCSAddrs.data[3].port, 0);
    except
      for i := 0 to Self.OblsRizeni.Cnt-1 do
        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka MTB SetOutput', 'TECHNOLOGIE');
@@ -702,8 +702,8 @@ begin
  if (new = minus) then
   begin
    try
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 1);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board, Self.VyhSettings.RCSAddrs.data[2].port, 0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board, Self.VyhSettings.RCSAddrs.data[3].port, 1);
    except
      for i := 0 to Self.OblsRizeni.Cnt-1 do
        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka MTB SetOutput', 'TECHNOLOGIE');
@@ -750,10 +750,10 @@ begin
  if ((spojka = nil) or ((((spojka as TBlkVyhybka).Zaver = TZaver.no) or ((spojka as TBlkVyhybka).Zaver = TZaver.staveni)) and (not (spojka as TBlkVyhybka).vyhZaver) and (not (spojka as TBlkVyhybka).Stav.locked))) then
   begin
    try
-     if (MTB.Started) then
+     if (RCSi.Started) then
       begin
-       MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board, Self.VyhSettings.MTBAddrs.data[2].port, 0);
-       MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board, Self.VyhSettings.MTBAddrs.data[3].port, 0);
+       RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board, Self.VyhSettings.RCSAddrs.data[2].port, 0);
+       RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board, Self.VyhSettings.RCSAddrs.data[3].port, 0);
       end;
    except
 
@@ -774,8 +774,8 @@ begin
  if (Now >= Self.NullOutput.NullOutputTime) then
   begin
    try
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[2].board,Self.VyhSettings.MTBAddrs.data[2].port,0);
-     MTB.SetOutput(Self.VyhSettings.MTBAddrs.data[3].board,Self.VyhSettings.MTBAddrs.data[3].port,0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board,Self.VyhSettings.RCSAddrs.data[2].port,0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board,Self.VyhSettings.RCSAddrs.data[3].port,0);
    except
 
    end;
@@ -1123,10 +1123,10 @@ procedure TBlkVyhybka.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[0], json['mtb'].O['vstup+']);
- TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[1], json['mtb'].O['vstup-']);
- TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[2], json['mtb'].O['vystup+']);
- TBlk.MTBtoJSON(Self.VyhSettings.MTBAddrs.data[3], json['mtb'].O['vystup-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[0], json['mtb'].O['vstup+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[1], json['mtb'].O['vstup-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[2], json['mtb'].O['vystup+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[3], json['mtb'].O['vystup-']);
 
  json['usek'] := Self.VyhRel.UsekID;
 

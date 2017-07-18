@@ -43,7 +43,7 @@ var
 implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
-     TechnologieMTB, Verze, fHVEdit, TechnologieJC, fConsole, TOblsRizeni, TBloky,
+     TechnologieRCS, Verze, fHVEdit, TechnologieJC, fConsole, TOblsRizeni, TBloky,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, BoosterDb,
      Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase, TCPServerPT,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
@@ -92,7 +92,7 @@ var read,read2:string;
   F_Splash.AddStav('Naèítám RCS');
   writelog('Nacitam RCS...', WR_DATA);
   try
-    MTB.LoadFromFile(ini_lib);
+    RCSi.LoadFromFile(ini_lib);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -198,7 +198,7 @@ var tmpStr:string;
   end;
 
   try
-    MTB.SaveToFile(ini_lib);
+    RCSi.SaveToFile(ini_lib);
   except
     on E:Exception do
       AppEvents.LogException(E);

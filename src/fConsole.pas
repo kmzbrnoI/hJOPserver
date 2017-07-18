@@ -34,7 +34,7 @@ var
 
 implementation
 
-uses fMain, fSettings, TechnologieMTB, GetSystems, Verze,
+uses fMain, fSettings, TechnologieRCS, GetSystems, Verze,
      Logging, TBlok, TBlokUsek, TBLokVyhybka, TBLoky;
 
 {$R *.dfm}
@@ -109,16 +109,16 @@ begin
      if (pole_dat[0] = 'mtb') and (pole_dat.Count >= 2) then
       begin
        if (pole_dat[1] = 'start') then
-         F_Main.A_MTB_GoExecute(Self);
+         F_Main.A_RCS_GoExecute(Self);
 
        if (pole_dat[1] = 'stop') then
-         F_Main.A_MTB_StopExecute(Self);
+         F_Main.A_RCS_StopExecute(Self);
 
        if (pole_dat[1] = 'open') then
-         F_Main.A_MTB_OpenExecute(Self);
+         F_Main.A_RCS_OpenExecute(Self);
 
        if (pole_dat[1] = 'close') then
-         F_Main.A_MTB_CloseExecute(Self);
+         F_Main.A_RCS_CloseExecute(Self);
       end;
 
      if (pole_dat[0] = 'app-exit') then

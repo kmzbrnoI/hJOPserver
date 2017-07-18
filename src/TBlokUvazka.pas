@@ -9,7 +9,7 @@ uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
 
 type
 
- //technologicka nastaveni useku (delka, MTB, ...)
+ //technologicka nastaveni useku (delka, RCS moduly, ...)
  TBlkUvazkaSettings = record
   parent:Integer;       // reference na matersky blok (typu TTrat)
  end;
@@ -103,7 +103,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging,
+uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
 constructor TBlkUvazka.Create(index:Integer);

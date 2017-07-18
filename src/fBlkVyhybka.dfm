@@ -105,7 +105,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Ovl'#225'd'#225'n'#237' v'#253'hybky - MTB '
+    Caption = ' Ovl'#225'd'#225'n'#237' v'#253'hybky - RCS '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -116,13 +116,13 @@ object F_BlkVyhybka: TF_BlkVyhybka
     object L_Vyh05: TLabel
       Left = 151
       Top = 16
-      Width = 23
+      Width = 29
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB'
+      Caption = 'Modul'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11

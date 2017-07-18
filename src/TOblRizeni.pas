@@ -13,7 +13,7 @@ unit TOblRizeni;
 interface
 
 uses Types, IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
-      IdContext, TechnologieMTB, StrUtils, ComCtrls, Forms,
+      IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms,
       Generics.Collections, Zasobnik, Messages, Windows;
 
 const
@@ -97,7 +97,7 @@ type
 
  // seznam MTB v OR
  TORMTBs = record
-  MTBs: array [0..TMTB._MAX_MTB] of TORMTB;                                     // seznam MTB v OR, staticky mapovano kde index je adresa MTB
+  MTBs: array [0..TRCS._MAX_RCS] of TORMTB;                                     // seznam MTB v OR, staticky mapovano kde index je adresa MTB
   failture:boolean;                                                             // jestli doslo k selhani jakohokoliv MTB v OR
   last_failture_time:TDateTime;                                                 // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani MTB pro dispecera)
  end;
@@ -1510,7 +1510,7 @@ end;//procedure
 procedure TOR.MTBClear();
 var i:Integer;
 begin
- for i := 0 to MTB._MAX_MTB do
+ for i := 0 to TRCS._MAX_RCS do
   Self.OR_MTB.MTBs[i].present := false;
 end;//procedure
 
@@ -1544,7 +1544,7 @@ begin
  if ((Self.OR_MTB.last_failture_time + EncodeTime(0, 0, 0, 500)) < Now) then
   begin
    str := 'Výpadek MTB modulu ';
-   for i := 0 to MTB._MAX_MTB do
+   for i := 0 to TRCS._MAX_RCS do
     if (Self.OR_MTB.MTBs[i].failed) then
      begin
       str := str + IntToStr(i) + ', ';
@@ -1604,7 +1604,7 @@ begin
  if ((index < 0) or (index >= Self.ORProp.Osvetleni.Count)) then Exit(false);
 
  try
-   if (MTB.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1) then
+   if (RCSi.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1) then
      Result := true
    else
      Result := false;
@@ -1646,7 +1646,7 @@ begin
   if (Self.ORProp.Osvetleni[i].name = id) then
    begin
     try
-      MTB.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, PrevodySoustav.BoolToInt(state));
+      RCSi.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, PrevodySoustav.BoolToInt(state));
       osv := Self.ORProp.Osvetleni[i];
       osv.default_state := state;
       Self.ORProp.Osvetleni[i] := osv;
@@ -1665,8 +1665,8 @@ var osv:TOsv;
 begin
  try
    for osv in Self.ORProp.Osvetleni do
-     if (MTB.IsModule(osv.board)) then
-       MTB.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
+     if (RCSi.IsModule(osv.board)) then
+       RCSi.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
  except
 
  end;

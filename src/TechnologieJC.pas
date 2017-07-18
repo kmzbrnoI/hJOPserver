@@ -287,7 +287,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, fSettings, THnaciVozidlo,
+uses GetSystems, TechnologieRCS, fSettings, THnaciVozidlo,
      TBlokSCom, TBlokUsek, TOblsRizeni,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, SprDb,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;
@@ -2010,14 +2010,14 @@ begin
 
  // kontrola obsazenosti useku pred navestidlem
  Usek := (Nav as TBlkSCom).UsekPred;
- if ((Self.RozpadBlok = -1) and (((Usek as TBlkUsek).Obsazeno = TUsekStav.obsazeno) or ((Usek as TBlkUsek).GetSettings.MTBAddrs.Count = 0))) then
+ if ((Self.RozpadBlok = -1) and (((Usek as TBlkUsek).Obsazeno = TUsekStav.obsazeno) or ((Usek as TBlkUsek).GetSettings.RCSAddrs.Count = 0))) then
   begin
    Self.RozpadBlok       := 0;
    Self.RozpadRuseniBlok := -1;
   end;
 
  // uvolneni prvniho useku prd navestidlem v posunove ceste je signalem pro zhasnuti navestidla
- if (((Usek as TBlkUsek).GetSettings().MTBAddrs.Count > 0) and ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) and ((Nav as TBlkSCom).Navest <> 0) and
+ if (((Usek as TBlkUsek).GetSettings().RCSAddrs.Count > 0) and ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) and ((Nav as TBlkSCom).Navest <> 0) and
     (Self.RozpadRuseniBlok = 0) and (Self.data.TypCesty = TJCType.posun)) then
   begin
    writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+' : navestidlo '+Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
@@ -2064,7 +2064,7 @@ begin
        if (i = Self.fproperties.Useky.Count-2) then
         begin
          Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
-         if ((Blk as TBLkUsek).GetSettings().MTBAddrs.Count = 0) then
+         if ((Blk as TBLkUsek).GetSettings().RCSAddrs.Count = 0) then
            Self.RozpadBlok := Self.RozpadBlok + 1;
         end;
 
@@ -2132,7 +2132,7 @@ begin
 
     if (((Usek as TBlkUsek).Zaver = TZaver.nouz) and ((Usek as TBlkUsek).Obsazeno = uvolneno) and
         ((DalsiUsek = nil) or (TBlkUsek(DalsiUsek).Obsazeno = TUsekStav.obsazeno) or
-        (TBlkUsek(DalsiUsek).GetSettings.MTBAddrs.Count = 0))) then
+        (TBlkUsek(DalsiUsek).GetSettings.RCSAddrs.Count = 0))) then
      begin
       // cesta se rozpada...
 

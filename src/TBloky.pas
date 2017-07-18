@@ -130,7 +130,7 @@ var
 implementation
 
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
-      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieMTB,
+      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieRCS,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
       TBlokTratUsek, appEv, TBlokVystup, PTUtils;
 
@@ -493,7 +493,7 @@ end;//procedure
 procedure TBlky.Update();
 var i:Integer;
 begin
- if ((not (GetFunctions.GetSystemStart())) or (MTB.generalError)) then Exit();
+ if ((not (GetFunctions.GetSystemStart())) or (RCSi.generalError)) then Exit();
 
  for i := 0 to Self.Data.Count-1 do
   begin

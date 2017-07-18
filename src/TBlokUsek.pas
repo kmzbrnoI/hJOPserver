@@ -13,7 +13,7 @@ type
 
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
-  MTBAddrs:TMTBAddrs;
+  RCSAddrs:TRCSAddrs;
   Lenght:double;          //delka useku v metrech
   SmcUsek:boolean;        //specialni pripad: usek ve smycce
   Zesil:string;           //id zesilovace
@@ -217,7 +217,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieMTB, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
+uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC;
@@ -272,7 +272,7 @@ var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.UsekSettings.MTBAddrs := Self.LoadMTB(ini_tech, section);
+ Self.UsekSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.UsekSettings.Lenght   := ini_tech.ReadFloat(section,'delka',0);
  Self.UsekSettings.Zesil    := ini_tech.ReadString(section,'zesil','');
  Self.UsekSettings.SmcUsek  := ini_tech.ReadBool(section, 'smc', false);
@@ -322,7 +322,7 @@ begin
    Self.ORsRef.Cnt := 0;
   end;
 
- PushMTBToOR(Self.ORsRef, Self.UsekSettings.MTBAddrs);
+ PushRCSToOR(Self.ORsRef, Self.UsekSettings.RCSAddrs);
 
  str.Free();
 end;//procedure
@@ -332,7 +332,7 @@ var i:Integer;
 begin
  inherited SaveData(ini_tech,section);
 
- Self.SaveMTB(ini_tech, section, Self.UsekSettings.MTBAddrs);
+ Self.SaveRCS(ini_tech, section, Self.UsekSettings.RCSAddrs);
  ini_tech.WriteFloat(section,'delka', Self.UsekSettings.Lenght);
  ini_tech.WriteString(section,'zesil', Self.UsekSettings.Zesil);
 
@@ -384,8 +384,8 @@ procedure TBlkUsek.Enable();
 var i:Integer;
 begin
  try
-   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
-     if (not MTB.IsModule(Self.UsekSettings.MTBAddrs.data[i].board)) then
+   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
+     if (not RCSi.IsModule(Self.UsekSettings.RCSAddrs.data[i].board)) then
       Exit();
  except
    Exit();
@@ -460,10 +460,10 @@ begin
    Exit();
   end;
 
- for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+ for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
   begin
    try
-     state := MTB.GetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port);
+     state := RCSi.GetInput(Self.UsekSettings.RCSAddrs.data[i].board, Self.UsekSettings.RCSAddrs.data[i].port);
    except
      state := failure;
    end;
@@ -988,8 +988,8 @@ procedure TBlkUsek.MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
 var i:Integer;
 begin
  try
-   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
-     MTB.SetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port, 1);
+   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
+     RCSi.SetInput(Self.UsekSettings.RCSAddrs.data[i].board, Self.UsekSettings.RCSAddrs.data[i].port, 1);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -999,8 +999,8 @@ procedure TBlkUsek.MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
 var i:Integer;
 begin
  try
-   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
-     MTB.SetInput(Self.UsekSettings.MTBAddrs.data[i].board, Self.UsekSettings.MTBAddrs.data[i].port, 0);
+   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
+     RCSi.SetInput(Self.UsekSettings.RCSAddrs.data[i].board, Self.UsekSettings.RCSAddrs.data[i].port, 0);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -1133,7 +1133,7 @@ begin
    Result := Result + '-,';
   end else begin
    if ((Self.UsekStav.stanicni_kolej) and
-       ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.MTBAddrs.Count = 0))) then
+       ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0))) then
      Result := Result + 'NOVÝ vlak,-,';
   end;
 
@@ -1159,24 +1159,24 @@ begin
 
  // pokud mame knihovnu simulator, muzeme ridit stav useku
  //  DEBUG nastroj
- if (MTB.IsSimulatorMode()) then
+ if (RCSi.IsSimulatorMode()) then
   begin
    Result := Result + '-,';
 
-   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
     if (Self.UsekStav.StavAr[i] = TUsekStav.uvolneno) then
      begin
       Result := Result + '*OBSAZ,';
       break;
      end;
 
-   for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
     if (Self.UsekStav.StavAr[i] = TUsekStav.obsazeno) then
      begin
       Result := Result + '*UVOL,';
       break;
      end;
-  end;//if MTB.lib = 2
+  end;//if RCSi.lib = 2
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1293,7 +1293,7 @@ procedure TBlkUsek.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.MTBstoJSON(Self.UsekSettings.MTBAddrs, json.A['mtb']);
+ TBlk.RCSstoJSON(Self.UsekSettings.RCSAddrs, json.A['mtb']);
 
  json['delka'] := Self.UsekSettings.Lenght;
  if (Self.UsekSettings.SmcUsek) then json['smyckaUsek'] := Self.UsekSettings.SmcUsek;
@@ -1313,7 +1313,7 @@ begin
   TUsekStav.obsazeno : json['stav'] := 'obsazeno';
  end;
 
- for i := 0 to Self.UsekSettings.MTBAddrs.Count-1 do
+ for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
   begin
    case (Self.UsekStav.StavAr[i]) of
     TUsekStav.disabled : json.A['sekce'].Add('vypnuto');

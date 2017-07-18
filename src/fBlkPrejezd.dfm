@@ -120,7 +120,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     MaxValue = 2147483647
     MinValue = 1
     TabOrder = 1
-    Value = 0
+    Value = 1
   end
   object LB_Stanice: TListBox
     Left = 120
@@ -145,7 +145,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Top = 110
     Width = 321
     Height = 403
-    Caption = ' MTB '
+    Caption = ' RCS '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
