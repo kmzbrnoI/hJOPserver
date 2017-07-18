@@ -112,7 +112,7 @@ var j:integer;
    _BLK_VYH:begin
       Self.LV.Items.Item[line].ImageIndex := 0;
       s_vyh := (Blk as TBlkVyhybka).GetSettings();
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Vyhýbka';
+      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Výhybka';
 
       case ((Blk as TBlkVyhybka).Poloha) of
        TVyhPoloha.disabled:Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
