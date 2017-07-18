@@ -959,7 +959,7 @@ begin
   begin
    A_RCS_Open.Enabled      := false;
    A_RCS_Close.Enabled     := false;
-   SB1.Panels.Items[_SB_RCS].Text := 'RCS closing...';
+   SB1.Panels.Items[_SB_RCS].Text := 'Zavírám RCS...';
   end;//with F_Main do
 
  try
@@ -988,7 +988,7 @@ begin
     A_RCS_Stop.Enabled   := false;
     A_RCS_Close.Enabled  := false;
 
-    SB1.Panels.Items[_SB_RCS].Text := 'RCS starting...';
+    SB1.Panels.Items[_SB_RCS].Text := 'Spouštím RCS...';
    end;//with F_Main do
 
   Self.LogStatus('RCS: Spouštím komunikaci...');
@@ -1027,7 +1027,7 @@ begin
    A_RCS_Open.Enabled     := false;
    A_RCS_Close.Enabled    := false;
 
-   SB1.Panels.Items[_SB_RCS].Text := 'RCS opening...';
+   SB1.Panels.Items[_SB_RCS].Text := 'Otevírám RCS...';
   end;//with F_Main do
 
  Self.LogStatus('RCS: Otevírám zaøízení, hledám moduly...');
@@ -1066,7 +1066,7 @@ begin
   begin
    A_RCS_Go.Enabled      := false;
    A_RCS_Stop.Enabled    := false;
-   SB1.Panels.Items[_SB_RCS].Text := 'RCS stopping...';
+   SB1.Panels.Items[_SB_RCS].Text := 'Zastavuji RCS...';
   end;//with F_Main do
 
   try
@@ -1140,7 +1140,7 @@ begin
     PM_Tester.Enabled    := true;
     PM_ResetV.Enabled    := true;
 
-    SB1.Panels.Items[_SB_RCS].Text := 'RCS started';
+    SB1.Panels.Items[_SB_RCS].Text := 'RCS spuštìno';
    end;//with F_Main do
 
   writelog('----- RCS START OK -----', WR_RCS);
@@ -1202,7 +1202,7 @@ begin
     PM_ResetV.Enabled     := false;
     PM_Tester.Enabled     := false;
 
-    SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
+    SB1.Panels.Items[_SB_RCS].Text := 'RCS otevøeno';
    end;//with F_Main do
 
 
@@ -1239,7 +1239,7 @@ begin
  end;
 
  Self.LogStatus('RCS: otevøeno');
- SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS otevøeno';
 
  F_Tester.AfterMTBOpen();
 
@@ -1283,7 +1283,7 @@ begin
  writelog('----- RCS CLOSE OK -----', WR_RCS);
 
  Self.LogStatus('RCS: uzavøeno');
- SB1.Panels.Items[_SB_RCS].Text := 'RCS closed';
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS zavøeno';
 
  if (SystemData.Status = stopping) then
   begin
@@ -1309,7 +1309,7 @@ begin
 
  Self.LogStatus('ERR: RCS OPEN FAIL: '+errMsg);
  writelog('----- RCS OPEN FAIL - '+errMsg+' -----', WR_ERROR, 21);
- SB1.Panels.Items[_SB_RCS].Text := 'RCS closed';
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS zavøeno';
 
  Application.MessageBox(PChar('Pøi otevírání RCS nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
@@ -1325,7 +1325,7 @@ begin
  SystemData.Status := null;
 
  Self.LogStatus('ERR: RCS CLOSE FAIL: '+errMsg);
- SB1.Panels.Items[_SB_RCS].Text := 'RCS closed';
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS zavøeno';
 
  Application.MessageBox(PChar('Pøi uzavírání RCS nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
  writelog('----- RCS CLOSE FAIL - '+errMsg+' -----', WR_ERROR, 21);
@@ -1337,7 +1337,7 @@ begin
   A_System_Start.Enabled := true;
   A_RCS_Go.Enabled := true;
 
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
+  SB1.Panels.Items[_SB_RCS].Text := 'RCS otevøeno';
   S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
@@ -1362,7 +1362,7 @@ begin
   A_RCS_Close.Enabled := true;
   A_RCS_Go.Enabled := true;
 
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS openned';
+  SB1.Panels.Items[_SB_RCS].Text := 'RCS otevøeno';
   S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := null;
@@ -2315,7 +2315,7 @@ procedure TF_Main.CreateSystem;
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 
   F_Main.Caption := 'hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
-  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS close';
+  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavøeno';
   RepaintObjects;
  end;//procedure
 
