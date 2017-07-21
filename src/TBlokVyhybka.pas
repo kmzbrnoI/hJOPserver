@@ -988,16 +988,16 @@ begin
      if (not Self.VyhStav.redukuji_spojku) then
       begin
        Blky.GetBlkByID(Self.VyhSettings.spojka, blk);
-       TBlkVyhybka(blk).RedukujMenu();
        Self.VyhStav.redukuji_spojku := true;
+       TBlkVyhybka(blk).RedukujMenu();
       end;
     end else begin
      // zaver neni
      if (Self.VyhStav.redukuji_spojku) then
       begin
        Blky.GetBlkByID(Self.VyhSettings.spojka, blk);
-       TBlkVyhybka(blk).ZrusRedukciMenu();
        Self.VyhStav.redukuji_spojku := false;
+       TBlkVyhybka(blk).ZrusRedukciMenu();
       end;
     end;
   end;
