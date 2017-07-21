@@ -150,36 +150,35 @@ var str, tmp, libName:string;
 begin
  libName := ExtractFileName(filename);
 
- if (filename <> Self.Lib) then
+ if (not FileExists(filename)) then
+   raise Exception.Create('Library file not found, not loading');
+
+ if (Self.ready) then
   begin
-   if (not FileExists(filename)) then
-     raise Exception.Create('Library file not found, not loading');
+   Self.aReady := false;
+   if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
+  end;
 
-   if (Self.ready) then
-    begin
-     Self.aReady := false;
-     if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
-    end;
+ TRCSIFace(Self).LoadLib(filename);
 
-   TRCSIFace(Self).LoadLib(filename);
+ writelog('Naètena knihovna '+ libName, WR_RCS);
 
-   writelog('Naètena knihovna '+ libName, WR_RCS);
+ // kontrola bindnuti vsech eventu
 
-   // kontrola bindnuti vsech eventu
-   if (Self.unbound.Contains('SetInput')) then
-     Self.unbound.Remove('SetInput');
+ // bind SetInput neni striktne vyzadovan
+ if (Self.unbound.Contains('SetInput')) then
+   Self.unbound.Remove('SetInput');
 
-   if (Self.unbound.Count = 0) then
-    begin
-     Self.aReady := true;
-     if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
-    end else begin
-     str := '';
-     for tmp in Self.unbound do
-       str := str + tmp + ', ';
-     str := LeftStr(str, Length(str)-2);
-     F_Main.LogStatus('ERR: RCS: nepodaøilo se svázat následující funkce : ' + str);
-    end;
+ if (Self.unbound.Count = 0) then
+  begin
+   Self.aReady := true;
+   if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
+  end else begin
+   str := '';
+   for tmp in Self.unbound do
+     str := str + tmp + ', ';
+   str := LeftStr(str, Length(str)-2);
+   F_Main.LogStatus('ERR: RCS: nepodaøilo se svázat následující funkce : ' + str);
   end;
 end;
 
