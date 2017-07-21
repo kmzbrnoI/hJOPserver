@@ -124,6 +124,8 @@ type
     function SameUserControlsBothUvazka():boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
                                                                                 // kdyz je true, do trati neni potreba zadat
 
+    function ChangesSprDir():boolean;                                           // vraci true prave tehdy, kdyz se v trati meni smer soupravy
+
     property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
     property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
     property RBPCan:boolean read GetRBP;                                        // vraci, jestli v trati doslo k poruse uplne blokove podminky, resp. jesli je mozno ji zrusit
@@ -945,6 +947,14 @@ begin
          Exit(true);
 
  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.ChangesSprDir():boolean;
+begin
+ Result := (Assigned(Self.navLichy)) and (Assigned(Self.navSudy)) and
+    (TBlkSCom(Self.navLichy).Smer = TBlkSCom(Self.navSudy).Smer);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

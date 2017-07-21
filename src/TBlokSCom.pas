@@ -1161,6 +1161,21 @@ begin
    Exit();
   end;
 
+ if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and
+     ((TBlkTrat(TBlkTU(Usek).Trat)).ChangesSprDir())) then
+  begin
+   // pokud se jedna o navestidlo, u ktereho se meni smer trati, a vlak jede v
+   // trati ve smeru A --> B, navestidlo neni aktivni (tj. koncim funkci)
+   if ((Self = TBlkTrat(TBlkTU(Usek).Trat).navLichy) and
+       (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.AtoB)) then
+     Exit();
+
+   // podobne pokud se jedna o prvni navestidlo autobloku, ignoruji jej ve smeru B --> A
+   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.BtoA) and
+       (TBlkTU(Usek).GetGlobalSettings.id = TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky[0])) then
+     Exit();
+  end;
+
  // zjisteni aktualni udalosti podle typu a delky soupravy
  i := Self.CurrentEventIndex();
  scomEv := Self.SComSettings.events[i];
