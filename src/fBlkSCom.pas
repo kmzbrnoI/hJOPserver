@@ -363,7 +363,7 @@ begin
     TabCaption.X := Rect.Left + 3;
   end;
 
-  if ((PageControl.Pages[TabIndex] is TCloseTabSheet) and (TabIndex <> 0)) then
+  if (PageControl.Pages[TabIndex] is TCloseTabSheet) then
   begin
     TabSheet:=PageControl.Pages[TabIndex] as TCloseTabSheet;
     CloseBtnSize := 14;
@@ -482,9 +482,15 @@ end;
 procedure TF_BlkSCom.OnTabClose(Sender:TObject);
 var i:Integer;
 begin
- if (Self.eventTabSheets.Count <= 1) then Exit();
+ if (Self.eventTabSheets.Count <= 1) then
+  begin
+   if (Application.MessageBox(PChar('Mazání globální události zpùsobí nezastavení vlaku pøed návìstidlem, '+
+      'proto je doporuèeno jen u seøaïovacích návìstidel!'+#13#10+'Opravdu smazat globální událost?'),
+      'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
+     Exit();
+  end;
 
- for i := 1 to Self.eventTabSheets.Count-1 do
+ for i := 0 to Self.eventTabSheets.Count-1 do
   begin
    if (Self.eventTabSheets[i] = Sender) then
     begin
