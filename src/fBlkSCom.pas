@@ -32,6 +32,7 @@ type
     CHB_Zamknuto: TCheckBox;
     PC_Events: TPageControl;
     BB_Event_Add: TBitBtn;
+    CHB_RCS_Output: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -47,6 +48,7 @@ type
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
      procedure PageControlCloseButtonDrawTab(Control: TCustomTabControl;
   TabIndex: Integer; const Rect: TRect; Active: Boolean);
+    procedure CHB_RCS_OutputClick(Sender: TObject);
 
   private
    OpenIndex:Integer;
@@ -101,14 +103,19 @@ procedure TF_BlkSCom.NewBlkOpenForm();
  begin
   E_Nazev.Text             := '';
   SE_ID.Value              := Blky.GetBlkID(Blky.Cnt-1)+1;
-  SE_MTBMTB.Value          := 1;
-  SE_MTBPort.Value         := 0;
   SE_Delay.Value           := 0;
   CHB_Zamknuto.Checked     := false;
   Self.L_UsekID.Caption    := 'bude zobrazen priste';
 
-  // prvni navstidlo nepridavame, protoze muze byt navestidlo cestove, ktere ho nepotrebuje
-  //Self.BB_HV_AddClick(Self);
+  Self.SE_MTBMTB.Value  := 1;
+  Self.SE_MTBPort.Value := 0;
+  Self.CB_Typ.ItemIndex := -1;
+
+  Self.CHB_RCS_Output.Checked := true;
+  Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
+
+  // prvni udalost nepridavame, protoze muze byt navestidlo cestove,
+  // ktere ji nepotrebuje
 
   F_BlkSCom.Caption := 'Editovat data nového bloku návìstidlo';
  end;//procedure
@@ -131,10 +138,17 @@ var glob:TBlkSettings;
   SetLength(obls, Self.Blk.OblsRizeni.Cnt);
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
 
-  CB_Typ.ItemIndex       := Integer(settings.OutputType);
-  Self.SE_MTBMTB.Value   := settings.RCSAddrs.data[0].board;
-  SE_MTBPort.Value       := settings.RCSAddrs.data[0].port;
   SE_Delay.Value         := settings.ZpozdeniPadu;
+
+  Self.CHB_RCS_Output.Checked := (settings.RCSAddrs.Count > 0);
+  Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
+
+  if (settings.RCSAddrs.Count > 0) then
+   begin
+    Self.SE_MTBMTB.Value := settings.RCSAddrs.data[0].board;
+    SE_MTBPort.Value     := settings.RCSAddrs.data[0].port;
+    CB_Typ.ItemIndex     := Integer(settings.OutputType);
+   end;
 
   CHB_Zamknuto.Checked   := settings.zamknuto;
 
@@ -177,7 +191,21 @@ procedure TF_BlkSCom.NewBlkCreate();
 procedure TF_BlkSCom.B_StornoClick(Sender: TObject);
  begin
   F_BlkSCom.Close;
- end;//procedure
+ end;
+
+procedure TF_BlkSCom.CHB_RCS_OutputClick(Sender: TObject);
+begin
+ Self.SE_MTBMTB.Enabled  := Self.CHB_RCS_Output.Checked;
+ Self.SE_MTBPort.Enabled := Self.CHB_RCS_Output.Checked;
+ Self.CB_Typ.Enabled     := Self.CHB_RCS_Output.Checked;
+
+ if (not Self.CHB_RCS_Output.Checked) then
+  begin
+   Self.SE_MTBMTB.Value  := 1;
+   Self.SE_MTBPort.Value := 0;
+   Self.CB_Typ.ItemIndex := -1;
+  end;
+end;
 
 procedure TF_BlkSCom.BB_Event_AddClick(Sender: TObject);
 var
@@ -211,17 +239,17 @@ var glob:TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplòte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (CB_Typ.ItemIndex = -1) then
+  if ((Self.CHB_RCS_Output.Checked) and (CB_Typ.ItemIndex = -1)) then
    begin
-    Application.MessageBox('Vyberte typ vystupu !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -255,11 +283,16 @@ var glob:TBlkSettings;
 
   //ukladani dat
 
-  settings.RCSAddrs.Count := 1;
-  settings.RCSAddrs.data[0].board := Self.SE_MTBMTB.Value;
-  settings.RCSAddrs.data[0].port  := SE_MTBPort.Value;
+  if (Self.CHB_RCS_Output.Checked) then
+   begin
+    settings.RCSAddrs.Count := 1;
+    settings.RCSAddrs.data[0].board := Self.SE_MTBMTB.Value;
+    settings.RCSAddrs.data[0].port  := SE_MTBPort.Value;
+    settings.OutputType := TBlkSComOutputType(CB_Typ.ItemIndex);
+   end else begin
+    settings.RCSAddrs.Count := 0;
+   end;
 
-  settings.OutputType   := TBlkSComOutputType(CB_Typ.ItemIndex);
   settings.ZpozdeniPadu := Self.SE_Delay.Value;
 
   settings.zamknuto := CHB_Zamknuto.Checked;

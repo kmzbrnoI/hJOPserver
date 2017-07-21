@@ -4,7 +4,7 @@ object F_BlkSCom: TF_BlkSCom
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 345
+  ClientHeight = 369
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -146,13 +146,13 @@ object F_BlkSCom: TF_BlkSCom
     MaxValue = 2147483647
     MinValue = 1
     TabOrder = 1
-    Value = 0
+    Value = 1
   end
   object GB_MTB: TGroupBox
     Left = 7
     Top = 187
     Width = 304
-    Height = 99
+    Height = 123
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -166,15 +166,15 @@ object F_BlkSCom: TF_BlkSCom
     ParentFont = False
     TabOrder = 3
     object L_SCom05: TLabel
-      Left = 8
-      Top = 16
-      Width = 64
+      Left = 7
+      Top = 41
+      Width = 56
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB adresa :'
+      Caption = 'RCS modul:'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -183,15 +183,15 @@ object F_BlkSCom: TF_BlkSCom
       ParentFont = False
     end
     object L_SCom06: TLabel
-      Left = 8
-      Top = 39
-      Width = 50
+      Left = 7
+      Top = 64
+      Width = 46
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'MTB port :'
+      Caption = 'RCS port:'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -200,8 +200,8 @@ object F_BlkSCom: TF_BlkSCom
       ParentFont = False
     end
     object L_SCom04: TLabel
-      Left = 8
-      Top = 64
+      Left = 7
+      Top = 89
       Width = 61
       Height = 13
       Margins.Left = 2
@@ -217,8 +217,8 @@ object F_BlkSCom: TF_BlkSCom
       ParentFont = False
     end
     object SE_MTBPort: TSpinEdit
-      Left = 224
-      Top = 41
+      Left = 223
+      Top = 66
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -233,12 +233,12 @@ object F_BlkSCom: TF_BlkSCom
       MaxValue = 15
       MinValue = 0
       ParentFont = False
-      TabOrder = 1
+      TabOrder = 2
       Value = 0
     end
     object CB_Typ: TComboBox
-      Left = 96
-      Top = 67
+      Left = 95
+      Top = 92
       Width = 201
       Height = 21
       Margins.Left = 2
@@ -253,14 +253,14 @@ object F_BlkSCom: TF_BlkSCom
       Font.Style = []
       ItemHeight = 13
       ParentFont = False
-      TabOrder = 2
+      TabOrder = 3
       Items.Strings = (
         'S-Com'
         'bin'#225'rn'#237' (0/1)')
     end
     object SE_MTBMTB: TSpinEdit
-      Left = 224
-      Top = 15
+      Left = 223
+      Top = 40
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -275,13 +275,22 @@ object F_BlkSCom: TF_BlkSCom
       MaxValue = 191
       MinValue = 1
       ParentFont = False
-      TabOrder = 0
+      TabOrder = 1
       Value = 1
+    end
+    object CHB_RCS_Output: TCheckBox
+      Left = 8
+      Top = 16
+      Width = 201
+      Height = 17
+      Caption = 'N'#225'v'#283'stidlo m'#225' v'#253'stup na sb'#283'rnici RCS'
+      TabOrder = 0
+      OnClick = CHB_RCS_OutputClick
     end
   end
   object B_Storno: TButton
     Left = 85
-    Top = 313
+    Top = 337
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -294,7 +303,7 @@ object F_BlkSCom: TF_BlkSCom
   end
   object B_Save: TButton
     Left = 7
-    Top = 313
+    Top = 337
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -330,7 +339,7 @@ object F_BlkSCom: TF_BlkSCom
   end
   object CHB_Zamknuto: TCheckBox
     Left = 8
-    Top = 291
+    Top = 315
     Width = 201
     Height = 17
     Caption = 'N'#225'v'#283'stidlo trvale zamknuto do ST'#366'J'

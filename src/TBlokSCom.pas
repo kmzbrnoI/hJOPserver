@@ -268,11 +268,11 @@ var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.SComSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
+ Self.SComSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
 
  Self.SComSettings.zamknuto     := ini_tech.ReadBool(section, 'zamknuti', false);
 
- Self.SComSettings.OutputType   := TBlkSComOutputType(ini_tech.ReadInteger(section,'OutType',0));
+ Self.SComSettings.OutputType   := TBlkSComOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
  Self.SComSettings.ZpozdeniPadu := ini_tech.ReadInteger(section, 'zpoz', 0);
 
  if (ini_rel <> nil) then
@@ -345,13 +345,14 @@ var i:Integer;
 begin
  inherited SaveData(ini_tech, section);
 
- Self.SaveRCS(ini_tech,section, Self.SComSettings.RCSAddrs);
+ Self.SaveRCS(ini_tech, section, Self.SComSettings.RCSAddrs);
 
  for i := 0 to Self.SComSettings.events.Count-1 do
    ini_tech.WriteString(section, 'ev'+IntToStr(i),
       Self.GetEvent(Self.SComSettings.events[i], (i = 0)));
 
- ini_tech.WriteInteger(section, 'OutType', Integer(Self.SComSettings.OutputType));
+ if (Self.SComSettings.RCSAddrs.Count > 0) then
+   ini_tech.WriteInteger(section, 'OutType', Integer(Self.SComSettings.OutputType));
 
  if (Self.SComSettings.ZpozdeniPadu > 0) then
    ini_tech.WriteInteger(section, 'zpoz', Self.SComSettings.ZpozdeniPadu);
@@ -370,7 +371,8 @@ end;//procedure
 procedure TBlkSCom.Enable();
 begin
  try
-   if (not RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) then
+   if ((Self.SComSettings.RCSAddrs.Count > 0) and
+       (not RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board))) then
      Exit();
  except
    Exit();
@@ -403,19 +405,22 @@ begin
  if (Self.Navest = 8) then
    Self.UpdatePrivol();
 
- if (RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) then
+ if (Self.SComSettings.RCSAddrs.Count > 0) then
   begin
-   if (Self.SComStav.Navest < 0) then
+   if (RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) then
     begin
-     Self.SComStav.Navest := 0;
-     Self.Change();
-    end;
-  end else begin
-   if (Self.SComStav.Navest >= 0) then
-    begin
-     Self.SComStav.Navest := -1;
-     JCDb.RusJC(Self);
-     Self.Change();
+     if (Self.SComStav.Navest < 0) then
+      begin
+       Self.SComStav.Navest := 0;
+       Self.Change();
+      end;
+    end else begin
+     if (Self.SComStav.Navest >= 0) then
+      begin
+       Self.SComStav.Navest := -1;
+       JCDb.RusJC(Self);
+       Self.Change();
+      end;
     end;
   end;
 
@@ -602,18 +607,24 @@ begin
 
  //reseni typu navestidla (scom/binary)
  try
-   if (Self.SComSettings.OutputType = scom) then
+   if (Self.SComSettings.RCSAddrs.Count > 0) then
     begin
-     //scom
-     RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,Self.SComSettings.RCSAddrs.data[0].port,navest);
-    end else begin
-     //binary
-     case (navest) of
-      0,5,13,16..127:RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,Self.SComSettings.RCSAddrs.data[0].port,0);
-     else//case (navest)
-      RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,Self.SComSettings.RCSAddrs.data[0].port,1);
-     end;//else case 0,5,13,16..127
-    end;//else
+     if (Self.SComSettings.OutputType = scom) then
+      begin
+       //scom
+       RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,
+          Self.SComSettings.RCSAddrs.data[0].port, navest);
+      end else begin
+       //binary
+       case (navest) of
+        0,5,13,16..127:RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,
+            Self.SComSettings.RCSAddrs.data[0].port, 0);
+       else//case (navest)
+        RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,
+            Self.SComSettings.RCSAddrs.data[0].port, 1);
+       end;//else case 0,5,13,16..127
+      end;//else
+    end;
  except
 
  end;
