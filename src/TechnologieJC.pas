@@ -2377,7 +2377,7 @@ var sl,sl2:TStrings;
     prj:TJCPrjZaver;
 begin
  Self.fproperties.Nazev               := ini.ReadString(section, 'Nazev', section);
- Self.fproperties.id                  := ini.ReadInteger(section, 'id', Self.index);
+ Self.fproperties.id                  := StrToInt(section);
  Self.fproperties.NavestidloBlok      := ini.ReadInteger(section, 'Nav', -1);
  Self.fproperties.TypCesty            := TJCType(ini.ReadInteger(section, 'Typ', -1));
  Self.fproperties.DalsiNNavaznost     := ini.ReadInteger(section, 'DalsiN', 0);
@@ -2498,7 +2498,6 @@ var line:string;
     i,j:Integer;
 begin
  ini.WriteString (section, 'Nazev', Self.fproperties.Nazev);
- ini.WriteInteger(section, 'id', Self.fproperties.id);
  ini.WriteInteger(section, 'Nav', Self.fproperties.NavestidloBlok);
  ini.WriteInteger(section, 'Typ', Integer(Self.fproperties.TypCesty));
  ini.WriteInteger(section, 'DalsiN', Self.fproperties.DalsiNNavaznost);
