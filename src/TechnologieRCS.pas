@@ -384,7 +384,7 @@ end;
 
 function TRCS.IsSimulatorMode():boolean;
 begin
- Result := (LowerCase(Self.Lib) = 'simulator.dll');
+ Result := (LowerCase(ExtractFileName(Self.Lib)) = 'simulator.dll');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
