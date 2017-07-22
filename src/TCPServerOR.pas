@@ -50,6 +50,7 @@ type
     regulator_loks:TList<THV>;                                                  // seznam lokomotiv v regulatoru
 
     st_hlaseni:TList<TOR>;                                                      // stanice, do kterych je autorizovano stanicni hlaseni
+    spr_menu_index:Integer;                                                     // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
 
     constructor Create();
     destructor Destroy(); override;
@@ -1170,6 +1171,7 @@ begin
  Self.spr_usek    := nil;
 
  Self.funcsVyznamReq := false;
+ Self.spr_menu_index := -1;
 
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[6] := '';
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[7] := '';

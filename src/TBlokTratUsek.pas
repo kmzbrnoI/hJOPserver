@@ -685,7 +685,6 @@ begin
               if (not Self.PresunLok(SenderPnl, SenderOR)) then
                 ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   middle  : Self.MenuVBClick(SenderPnl, SenderOR);
-  F3: Self.ShowPanelSpr(SenderPnl, SenderOR, rights);
  end;
 end;
 
