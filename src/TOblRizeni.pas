@@ -540,24 +540,24 @@ begin
      else
       msg := msg + '-;';
 
-     if ((Sender as TBlkUsek).Souprava > -1) then
+     if ((Sender as TBlkUsek).IsSouprava()) then
       begin
-       if (Assigned(Soupravy.soupravy[(Sender as TBlkUsek).Souprava])) then
+       if (Assigned(Soupravy[(Sender as TBlkUsek).SoupravaL])) then
         begin
-         msg := msg + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).Souprava)+';';
+         msg := msg + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SoupravaL)+';';
          if ((Sender as TBlkUsek).Obsazeno = uvolneno) then fg := clAqua;
          msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
-         if (Soupravy.soupravy[(Sender as TBlkUsek).Souprava].sdata.smer_L) then
+         if (Soupravy.soupravy[(Sender as TBlkUsek).SoupravaL].sdata.smer_L) then
            msg := msg + '1'
          else
            msg := msg + '0';
-         if (Soupravy.soupravy[(Sender as TBlkUsek).Souprava].sdata.smer_S) then
+         if (Soupravy.soupravy[(Sender as TBlkUsek).SoupravaL].sdata.smer_S) then
            msg := msg + '1;'
          else
            msg := msg + '0;';
         end;
 
-       if ((Soupravy[TBlkUsek(Sender).Souprava].cilovaOR = Self) and (bg = clBlack)) then
+       if ((Soupravy[TBlkUsek(Sender).SoupravaL].cilovaOR = Self) and (bg = clBlack)) then
          bg := clSilver;
 
        msg := msg + PrevodySoustav.ColorToStr(bg);
@@ -1221,7 +1221,7 @@ begin
    Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
   else begin
    // kontrola jestli je souprava porad na useku
-   if ((TTCPORsRef(Sender.Data).spr_usek as TBlkUsek).Souprava = TTCPORsRef(Sender.Data).spr_edit.index) then
+   if ((TTCPORsRef(Sender.Data).spr_usek as TBlkUsek).IsSouprava(TTCPORsRef(Sender.Data).spr_edit.index)) then
      TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
    else begin
      ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava již není na úseku');
@@ -2018,7 +2018,7 @@ begin
        Exit();
       end;
 
-     if ((Blk as TBlkUsek).Souprava = -1) then
+     if (not (Blk as TBlkUsek).IsSouprava()) then
       begin
        ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Žádná souprava na bloku');
        Exit();
@@ -2026,9 +2026,9 @@ begin
 
      // generujeme zpravu s tokeny
      line := Self.id+';LOK-REQ;U-OK;{';
-     for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.cnt-1 do
+     for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).SoupravaL].sdata.HV.cnt-1 do
       begin
-       HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Souprava].sdata.HV.HVs[i]];
+       HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).SoupravaL].sdata.HV.HVs[i]];
        line := line + '[{' + HV.GetPanelLokString() + '}]';
       end;//for i
      line := line + '}';

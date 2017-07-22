@@ -727,7 +727,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if (TBlkTU(Blk).Souprava = spr) then Exit(true);
+   if (TBlkTU(Blk).IsSouprava(spr)) then Exit(true);
   end;
  Result := false;
 end;//function
@@ -859,11 +859,11 @@ begin
   TTratSmer.AtoB: begin
        Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1], TBlk(last));
        last.SprPredict := -1;
-       if (last.Souprava > -1) then Exit();       
+       if (last.IsSouprava()) then Exit();
        for i := Self.TratSettings.Useky.Count-2 downto 0 do
         begin
          Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(Blk));
-         if (Blk.Souprava > -1) then
+         if (Blk.IsSouprava()) then
           begin
            last.SprPredict := Blk.Souprava;
            break;
@@ -887,11 +887,11 @@ begin
   TTratSmer.BtoA: begin
        Blky.GetBlkByID(Self.TratSettings.Useky[0], TBlk(last));
        last.SprPredict := -1;
-       if (last.Souprava > -1) then Exit();
+       if (last.IsSouprava()) then Exit();
        for i := 1 to Self.TratSettings.Useky.Count-1 do
         begin
          Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(Blk));
-         if (Blk.Souprava > -1) then
+         if (Blk.IsSouprava()) then
           begin
            last.SprPredict := Blk.Souprava;
            break;

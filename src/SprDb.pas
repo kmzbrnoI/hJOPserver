@@ -188,7 +188,7 @@ begin
       Self.soupravy[i] := TSouprava.Create(spr, Usek, i, OblR);
       if (Assigned(Usek)) then          // toto musi byt tady, nikoliv v konstruktoru
        begin
-        (Usek as TBlkUsek).Souprava := i;
+        (Usek as TBlkUsek).AddSoupravaS(i);
         (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
         if ((Usek as TBlkUsek).SComJCRef <> nil) then
           ((Usek as TBlkUsek).SComJCRef as TBlkScom).UpdateRychlostSpr(true);

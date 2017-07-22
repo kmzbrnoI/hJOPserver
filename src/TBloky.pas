@@ -697,7 +697,7 @@ end;//procedure
 
 // pozn.: NUZ maze soupravy z bloku
 procedure TBlky.NUZ(or_id:string; state:boolean = true);
-var cyklus,i:Integer;
+var cyklus, i, spr:Integer;
  begin
   for cyklus := 0 to Self.Data.Count-1 do
    begin
@@ -710,10 +710,13 @@ var cyklus,i:Integer;
          begin
           if ((Self.Data[cyklus] as TBlkUsek).NUZ) then
            begin
-            if (Self.GetBlkWithSpr((Self.Data[cyklus] as TBlkUsek).Souprava).Count = 1) then
-              Soupravy.RemoveSpr((Self.Data[cyklus] as TBlkUsek).Souprava);
-            (Self.Data[cyklus] as TBlkUsek).Zaver    := TZaver.no;
-            (Self.Data[cyklus] as TBlkUsek).Souprava := -1;
+            for spr in (Self.Data[cyklus] as TBlkUsek).Soupravs do
+             begin
+              if (Self.GetBlkWithSpr(spr).Count = 1) then
+                Soupravy.RemoveSpr(spr);
+             end;
+            (Self.Data[cyklus] as TBlkUsek).Zaver := TZaver.no;
+              (Self.Data[cyklus] as TBlkUsek).RemoveSoupravy();
            end;
          end else
           (Self.Data[cyklus] as TBlkUsek).NUZ := false;
@@ -806,8 +809,11 @@ begin
   begin
    if ((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) or (Self.Data[i].GetGlobalSettings().typ = _BLK_TU)) then
     begin
-     if ((Self.Data[i] as TBlkUsek).Souprava = spr)   then (Self.Data[i] as TBlkUsek).Souprava := -1;
-     if ((Self.Data[i] as TBlkUsek).SprPredict = spr) then (Self.Data[i] as TBlkUsek).SprPredict := -1;
+     if ((Self.Data[i] as TBlkUsek).IsSouprava(spr)) then
+       (Self.Data[i] as TBlkUsek).RemoveSouprava(spr);
+
+     if ((Self.Data[i] as TBlkUsek).SprPredict = spr) then
+       (Self.Data[i] as TBlkUsek).SprPredict := -1;
     end;
    if (Self.Data[i].GetGlobalSettings().typ = _BLK_TRAT) then (Self.Data[i] as TBlkTrat).RemoveSpr(spr);
   end;//for
@@ -820,7 +826,8 @@ var i:Integer;
 begin
  Result := TList<TObject>.Create();
  for i := 0 to Self.Data.Count-1 do
-   if (((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) or (Self.Data[i].GetGlobalSettings().typ = _BLK_TU)) and ((Self.Data[i] as TBlkUsek).Souprava = spr)) then
+   if (((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) or (Self.Data[i].GetGlobalSettings().typ = _BLK_TU)) and
+       ((Self.Data[i] as TBlkUsek).IsSouprava(spr))) then
      Result.Add(Self.Data[i]);
 end;//function
 
@@ -834,13 +841,17 @@ var Usek:TBlk;
     JC:TJC;
 begin
  try
-   // zjistime soupravu pres navestidlem
+   // zjistime soupravu pred navestidlem
    Usek := (Nav as TBlkSCom).UsekPred;
+   spr := (Nav as TBlkSCom).GetSoupravaIndex(usek);
+
    if ((Nav as TBlkSCom).Navest > 0) then
-     if (((Usek as TBlkUsek).Souprava > -1) and (Soupravy.soupravy[(Usek as TBlkUsek).Souprava].smer = (Nav as TBlkSCom).Smer)) then
-      spr := (Usek as TBlkUsek).Souprava else spr := (Usek as TBlkUsek).SprPredict
+     if ((not (Usek as TBlkUsek).IsSouprava()) or
+         (Soupravy.soupravy[spr].smer <> (Nav as TBlkSCom).Smer)) then
+      spr := (Usek as TBlkUsek).SprPredict
    else
      spr := -1;
+
    JC := (Nav as TBlkSCom).DNjc;
    if ((JC <> nil) and (JC.stav.RozpadBlok > 0)) then Exit();
 

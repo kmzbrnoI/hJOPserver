@@ -179,6 +179,8 @@ type
     procedure AddBlkToRnz(blkId:Integer; change:boolean = true);
     procedure RemoveBlkFromRnz(blkId:Integer);
 
+    function GetSoupravaIndex(usek:TBlk = nil):Integer;
+
     class function NavestToString(navest:Integer):string;
 
     property SymbolType:Byte read SComRel.SymbolType;
@@ -1139,7 +1141,7 @@ begin
  if ((Usek = nil) or ((Usek.GetGlobalSettings().typ <> _BLK_USEK) and (Usek.GetGlobalSettings().typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
- if ((Usek as TBlkUsek).Souprava = -1) then
+ if (not (Usek as TBlkUsek).IsSouprava()) then
   begin
    // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
    // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
@@ -1151,7 +1153,7 @@ begin
   end;
 
  // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
- spr := Soupravy.soupravy[(Usek as TBlkUsek).Souprava];
+ spr := Soupravy[Self.GetSoupravaIndex(Usek)];
  if (spr.front <> Usek) then
   begin
    // tady musime zrusit registraci eventu, viz vyse
@@ -1310,12 +1312,12 @@ begin
    raise ENoEvents.Create('No current events!');
 
  Usek := Self.UsekPred;
- if ((Usek as TBlkUsek).Souprava < 0) then
+ if (not (Usek as TBlkUsek).IsSouprava()) then
   begin
    // na bloku neni zadna souprava
    Result := 0;
   end else begin
-   spr := Soupravy.soupravy[(Usek as TBlkUsek).Souprava];
+   spr := Soupravy[Self.GetSoupravaIndex(Usek)];
 
    // hledame takovy event, ktery odpovida nasi souprave
    for i := 0 to Self.SComSettings.events.Count-1 do
@@ -1503,6 +1505,19 @@ end;
 procedure TBlkSCom.GetPtState(json:TJsonObject);
 begin
  json['navest'] := Self.Navest;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkSCom.GetSoupravaIndex(usek:TBlk = nil):Integer;
+begin
+ if (usek = nil) then
+   Blky.GetBlkByID(Self.UsekID, usek);
+
+ if (Self.Smer = THVStanoviste.lichy) then
+   Result := TBlkUsek(usek).SoupravaL
+ else
+   Result := TBlkUsek(usek).SoupravaS;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -440,7 +440,7 @@ procedure TBlkTU.Update();
 begin
  inherited;
 
- if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.Souprava > -1) and
+ if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.IsSouprava()) and
      ((Self.TUSettings.Zastavka.ev_lichy.enabled) or (Self.TUSettings.Zastavka.ev_sudy.enabled))) then
    Self.ZastUpdate();
 
@@ -785,9 +785,9 @@ begin
    old_spr := Self.Souprava;
    Self.bpInBlk   := false;
    Self.poruchaBP := false;
-   if (Self.Souprava > -1) then
+   if (Self.IsSouprava()) then
     begin
-     Self.Souprava := -1;
+     Self.RemoveSoupravy();
      blks := Blky.GetBlkWithSpr(old_spr);
      if (blks.Count = 0) then Soupravy.RemoveSpr(old_spr);
      blks.Free();
@@ -891,7 +891,7 @@ begin
    // nastala aktivace blokove podminky
    Self.bpInBlk := true;
 
-   if ((Self.Souprava = -1) and (Self.prevTU.Souprava > -1)) then
+   if ((not Self.IsSouprava()) and (Self.prevTU.IsSouprava())) then
     begin
      // mezi useky je potreba predat soupravu
      Soupravy.soupravy[Self.prevTU.Souprava].front := Self;
@@ -914,7 +914,7 @@ begin
      (Self.Obsazeno = TusekStav.Uvolneno) and (Self.nextTU.Obsazeno = TUsekStav.obsazeno)) then
   begin
    Self.bpInBlk  := false;
-   Self.Souprava := -1;
+   Self.RemoveSoupravy();
    if (not TBlkTrat(Self.Trat).Obsazeno) then TBlkTrat(Self.Trat).BP := false;   
   end;
 
@@ -1132,7 +1132,7 @@ begin
    Dec(Self.fTUStav.sprRychUpdateIter);
    if (Self.fTUStav.sprRychUpdateIter = 0) then
     begin
-     if ((Self.Souprava > -1) and (Self.zpomalovani_ready) and
+     if ((Self.IsSouprava()) and (Self.zpomalovani_ready) and
         (Soupravy.soupravy[Self.Souprava].rychlost > 0) and
         (Soupravy.soupravy[Self.Souprava].rychlost <> Self.TUSettings.rychlost)) then
        Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.rychlost;
@@ -1210,7 +1210,7 @@ begin
  { zaver u prvniho bloku trati nekontrolujeme, protoze tuto metodu vyuziva JC
    pri staveni, ktera na prvni usek dava nouzovy zaver pri staveni }
  for blk in sectUseky do
-   if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.Souprava > -1)
+   if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.IsSouprava())
     or (blk.poruchaBP)) then Exit(false);
  Result := true;
 end;
@@ -1219,7 +1219,7 @@ end;
 
 function TBlkTU.GetReady():boolean;
 begin
- Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (Self.Souprava = -1)
+ Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.IsSouprava())
   and (not Self.poruchaBP));
 end;
 

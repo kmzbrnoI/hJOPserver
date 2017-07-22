@@ -52,6 +52,7 @@ type
   DCCGoTime:TDateTime;      // cas kdy doslo k zpanuti DCC
   currentHoukEv:Integer;    // index aktualni houkaci udalosti
   neprofilJCcheck:TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
+  soupravy:TList<Integer>;        // seznam souprav na useku ve smeru L --> S
  end;
 
  TBlkUsek = class(TBlk)
@@ -133,6 +134,9 @@ type
 
     procedure NeprofilObsaz();
 
+    function GetSoupravaL():Integer;
+    function GetSoupravaS():Integer;
+
   protected
    UsekSettings:TBlkUsekSettings;
 
@@ -179,6 +183,14 @@ type
     procedure RemoveNeprofilJC(id:Integer);
     function IsNeprofilJC():boolean;
 
+    function IsSouprava():boolean; overload;
+    function IsSouprava(index:Integer):boolean; overload;
+    procedure AddSoupravaL(index:Integer);
+    procedure AddSoupravaS(index:Integer);
+    procedure RemoveSoupravy();
+    procedure RemoveSouprava(index:Integer);
+    function SoupravyFull():boolean;
+
     property Stav:TBlkUsekStav read UsekStav;
 
     property Obsazeno:TUsekStav read UsekStav.Stav;
@@ -186,10 +198,14 @@ type
     property Zaver:TZaver read UsekStav.Zaver write SetUsekZaver;
     property Stitek:string read UsekStav.Stit write SetUsekStit;
     property Vyluka:string read UsekStav.Vyl write SetUsekVyl;
-    property Souprava:Integer read UsekStav.Spr write SetUsekSpr;
     property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property SComJCRef:TBlk read UsekStav.SComJCRef write UsekStav.SComJCRef;
+
+    property Souprava:Integer read UsekStav.Spr write SetUsekSpr;
+    property SoupravaL:Integer read GetSoupravaL;
+    property SoupravaS:Integer read GetSoupravaS;
+    property Soupravs:TList<Integer> read UsekStav.Soupravy;
 
     property ZesZkrat:TBoosterSignal read UsekStav.Zkrat write SetZesZkrat;
     property ZesNapajeni:TBoosterSignal read UsekStav.Napajeni write SetZesNap;
@@ -242,6 +258,7 @@ begin
  Self.UsekSettings.maxSpr := _DEFAULT_MAX_SPR;
 
  Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
+ Self.UsekStav.soupravy := TList<Integer>.Create();
 end;//ctor
 
 destructor TBlkUsek.Destroy();
@@ -266,6 +283,7 @@ begin
  Self.EventsOnZaverRelease.Free();
 
  Self.UsekStav.neprofilJCcheck.Free();
+ Self.UsekStav.soupravy.Free();
 
  inherited;
 end;//dtor
@@ -444,7 +462,7 @@ end;//procedure
 
 //update all local variables
 procedure TBlkUsek.Update();
-var i:Integer;
+var i, spr:Integer;
     state:TRCSInputState;
 begin
  if (((Self.ZesZkrat = TBoosterSignal.error) or (Self.ZesNapajeni = TBoosterSignal.error)) and (not Self.frozen)) then
@@ -488,9 +506,9 @@ begin
         Self.UsekStav.StavOld := Self.UsekStav.Stav;
         JCDb.RusJC(Self);
 
-        // zastavime soupravu na useku
-        if (Self.Souprava > -1) then
-         Soupravy.soupravy[Self.Souprava].rychlost := 0;
+        // zastavime soupravy na useku
+        for spr in Self.Soupravs do
+          Soupravy.soupravy[spr].rychlost := 0;
 
         Self.Change(true);
        end;
@@ -512,7 +530,7 @@ begin
  // pad soupravy z bloku az po urcitem case - aby se jizdni ceste nechal cas na zpracovani pohybu soupravy
  if (Self.UsekStav.spr_vypadek) then
   begin
-   if (Self.Souprava < 0) then
+   if (not Self.IsSouprava()) then
     begin
      Self.UsekStav.spr_vypadek := false;
      Exit();
@@ -1495,6 +1513,69 @@ begin
    if (jc <> nil) then
      jc.NeprofilObsaz();
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.GetSoupravaL():Integer;
+begin
+ if (Self.UsekStav.soupravy.Count < 1) then
+   Result := -1
+ else
+   Result := Self.UsekStav.soupravy[0];
+end;
+
+function TBlkUsek.GetSoupravaS():Integer;
+begin
+ if (Self.UsekStav.soupravy.Count < 1) then
+   Result := -1
+ else
+   Result := Self.UsekStav.soupravy[Self.UsekStav.soupravy.Count-1];
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.IsSouprava():boolean;
+begin
+ Result := (Self.UsekStav.soupravy.Count > 0);
+end;
+
+function TBlkUsek.IsSouprava(index:Integer):boolean;
+begin
+ Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.AddSoupravaL(index:Integer);
+begin
+
+end;
+
+procedure TBlkUsek.AddSoupravaS(index:Integer);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.RemoveSoupravy();
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.RemoveSouprava(index:Integer);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.SoupravyFull():boolean;
+begin
+ Result := (Cardinal(Self.UsekStav.soupravy.Count) >= Self.UsekSettings.maxSpr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

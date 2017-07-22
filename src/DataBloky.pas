@@ -4,7 +4,7 @@ unit DataBloky;
 
 interface
 
-uses ComCtrls, SysUtils;
+uses ComCtrls, SysUtils, StrUtils;
 
 type
   TBlokyTableData=class
@@ -86,7 +86,7 @@ begin
 end;//procedyre
 
 procedure TBlokyTableData.UpdateLine(line:Integer);
-var j:integer;
+var j, spr:integer;
     Blk:TBlk;
     glob:TBlkSettings;
     s_vyh:TBlkVyhSettings;
@@ -136,8 +136,10 @@ var j:integer;
 
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Úsek';
 
-      if ((Blk as TBlkUsek).Souprava > -1) then Self.LV.Items.Item[line].SubItems.Strings[2] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).Souprava) else
-            Self.LV.Items.Item[line].SubItems.Strings[2] := '--#--';
+      str := '';
+      for spr in (Blk as TBlkUsek).Soupravs do
+        str := str + Soupravy.GetSprNameByIndex(spr) + ', ';
+      Self.LV.Items.Item[line].SubItems.Strings[2] := LeftStr(str, Length(str)-2);
 
       case ((Blk as TBlkUsek).Obsazeno) of
         TUsekStav.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
@@ -308,8 +310,10 @@ var j:integer;
       Self.LV.Items.Item[line].ImageIndex := 2;
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Traový úsek';
 
-      if ((Blk as TBlkUsek).Souprava > -1) then Self.LV.Items.Item[line].SubItems.Strings[2] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).Souprava) else
-            Self.LV.Items.Item[line].SubItems.Strings[2] := '--#--';
+      str := '';
+      for spr in (Blk as TBlkUsek).Soupravs do
+        str := str + Soupravy.GetSprNameByIndex(spr) + ', ';
+      Self.LV.Items.Item[line].SubItems.Strings[2] := LeftStr(str, Length(str)-2);
 
       case ((Blk as TBlkUsek).Obsazeno) of
         TUsekStav.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
