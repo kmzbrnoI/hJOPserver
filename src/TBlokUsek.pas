@@ -19,6 +19,7 @@ type
   Zesil:string;           //id zesilovace
   houkEvL:TList<THoukEv>;  //seznam houkacich udalosti pro lichy smer
   houkEvS:TList<THoukEv>;  //seznam houkacich udalosti pro sudy smer
+  maxSpr:Cardinal;        // maximalni pocet souprav v bloku
  end;
 
  TUsekStavAr = array[0..3] of TUsekStav;
@@ -76,6 +77,8 @@ type
     zpomalovani_ready : false;
     currentHoukEv : -1;
    );
+
+   _DEFAULT_MAX_SPR = 1;
 
   private
    UsekStav:TBlkUsekStav;
@@ -236,6 +239,8 @@ begin
  Self.UsekSettings.houkEvL := TList<THoukEv>.Create();
  Self.UsekSettings.houkEvS := TList<THoukEv>.Create();
 
+ Self.UsekSettings.maxSpr := _DEFAULT_MAX_SPR;
+
  Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
 end;//ctor
 
@@ -276,6 +281,7 @@ begin
  Self.UsekSettings.Lenght   := ini_tech.ReadFloat(section,'delka',0);
  Self.UsekSettings.Zesil    := ini_tech.ReadString(section,'zesil','');
  Self.UsekSettings.SmcUsek  := ini_tech.ReadBool(section, 'smc', false);
+ Self.UsekSettings.maxSpr   := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_SPR);
 
  if (Boosters[Self.UsekSettings.Zesil] = nil) then
    writelog('WARNING: Blok '+Self.GetGlobalSettings.name + ' ('+IntToStr(Self.GetGlobalSettings.id)+
@@ -335,6 +341,9 @@ begin
  Self.SaveRCS(ini_tech, section, Self.UsekSettings.RCSAddrs);
  ini_tech.WriteFloat(section,'delka', Self.UsekSettings.Lenght);
  ini_tech.WriteString(section,'zesil', Self.UsekSettings.Zesil);
+
+ if (Self.UsekSettings.maxSpr <> _DEFAULT_MAX_SPR) then
+   ini_tech.WriteInteger(section, 'maxSpr', Self.UsekSettings.maxSpr);
 
  if (Self.UsekSettings.SmcUsek) then
    ini_tech.WriteBool(section, 'smc', Self.UsekSettings.SmcUsek);
