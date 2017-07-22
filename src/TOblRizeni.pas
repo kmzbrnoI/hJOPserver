@@ -535,7 +535,7 @@ begin
 
      msg := msg + IntToStr(Integer((Sender as TBlkUsek).KonecJC)) + ';';
 
-     if ((Sender as TBlkUsek).VlakPresun) then
+     if ((Sender as TBlkUsek).vlakPresun = 0) then
       msg := msg + PrevodySoustav.ColorToStr(clYellow) + ';'
      else
       msg := msg + '-;';
@@ -1106,7 +1106,7 @@ begin
   end;
 
  Blk := Blky.GetBlkUsekVlakPresun(Self.id);
- if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := false;
+ if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := -1;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

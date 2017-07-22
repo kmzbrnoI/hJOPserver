@@ -40,7 +40,7 @@ type
   DCC:boolean;              // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
   stanicni_kolej:boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
   cislo_koleje:string;      // cislo koleje, pokud je stanicni
-  vlakPresun:boolean;       // pokud je vlak na teto koleji oznacen pro presun do jine koelje, je zde true
+  vlakPresun:Integer;       // index souprava, ktera se presouva; zadny presun = -1
 
   zpomalovani_ready:boolean;          // pri predani soupravy do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
                                       // to znamena, ze je souprava pripravena ke zpomalovani; navetidlo umozni zpomaleni jen, pokud je tento flag na true
@@ -91,7 +91,7 @@ type
     procedure SetUsekVyl(vyl:string); overload;
     procedure SetSprPredict(sprcesta:Integer);
     procedure SetKonecJC(konecjc:TZaver);
-    procedure SetVlakPresun(presun:boolean);
+    procedure SetVlakPresun(presun:Integer);
 
     procedure SetZesZkrat(state:TBoosterSignal);
     procedure SetZesNap(state:TBoosterSignal);
@@ -191,6 +191,8 @@ type
     procedure RemoveSouprava(index:Integer);
     function SoupravyFull():boolean;
 
+    function IsVlakPresun():boolean;
+
     property Stav:TBlkUsekStav read UsekStav;
 
     property Obsazeno:TUsekStav read UsekStav.Stav;
@@ -213,7 +215,7 @@ type
     property CentralaDCC:boolean write SetCentralaDCC;
     property DCC:boolean read UsekStav.DCC;
 
-    property VlakPresun:boolean read UsekStav.vlakPresun write SetVlakPresun;
+    property VlakPresun:Integer read UsekStav.vlakPresun write SetVlakPresun;
     property zpomalovani_ready:boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
     property houk_ev_enabled:boolean read GetHoukEvEnabled write SetHoukEvEnabled;
 
@@ -574,8 +576,9 @@ begin
   end;
 
  // reseni zruseni PRESUN soupravy, ktera jede
- if ((Self.VlakPresun) and ((Self.Souprava = -1) or ((Self.Souprava > -1) and (Soupravy.soupravy[Self.Souprava].rychlost > 0)))) then
-   Self.VlakPresun := false;
+ if ((Self.IsVlakPresun()) and ((not Self.IsSouprava(Self.VlakPresun)) or
+     (Soupravy.soupravy[Self.VlakPresun].rychlost > 0))) then
+   Self.VlakPresun := -1;
 
  // pousteni houkani na houkaci udalosti
  if (Self.UsekStav.currentHoukEv > -1) then
@@ -663,7 +666,7 @@ begin
  if (spr > -1) then
   Self.UsekStav.SprPredict := -1
  else begin
-  Self.UsekStav.vlakPresun        := false;
+  Self.UsekStav.vlakPresun        := -1;
   Self.UsekStav.zpomalovani_ready := false;
   Self.houk_ev_enabled            := false;
  end;
@@ -753,7 +756,7 @@ begin
  Self.Change(true);
 end;
 
-procedure TBlkUsek.SetVlakPresun(presun:boolean);
+procedure TBlkUsek.SetVlakPresun(presun:Integer);
 begin
  if (Self.UsekStav.vlakPresun <> presun) then
   begin
@@ -848,7 +851,7 @@ procedure TBlkUsek.PotvrDeleteLok(Sender:TIdContext; success:boolean);
 begin
  if ((success) and (Self.Souprava > -1)) then
   begin
-   Self.UsekStav.VlakPresun := false;
+   Self.UsekStav.VlakPresun := -1; // TODO: jen pokud je mazana presouvana souprava
    Soupravy.RemoveSpr(Self.Souprava);
   end;
 end;//procedure
@@ -973,10 +976,10 @@ begin
     end;
 
    Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
-   if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := false;   
-   Self.VlakPresun := true;
+   if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := -1;
+   Self.VlakPresun := 0; //TODO realna cislo soupravy
   end else begin
-   Self.VlakPresun := false;
+   Self.VlakPresun := -1;
   end;
 end;//procedure
 
@@ -1120,7 +1123,7 @@ begin
      if (TTCPORsRef(SenderPnl.Data).maus) then Result := Result + 'MAUS vlak,';
     end;
 
-   if (Self.VlakPresun) then
+   if (Self.IsVlakPresun()) then
     Result := Result + 'PØESUÒ vlak<,'
    else if ((spr.rychlost = 0) and (spr.stanice = SenderOR)) then
      Result := Result + 'PØESUÒ vlak>,';
@@ -1281,7 +1284,7 @@ begin
  if (Blk = nil) then Exit(false);
  if (Blk = Self) then
   begin
-   Self.VlakPresun := false;
+   Self.VlakPresun := -1;
    Exit(true);
   end;
 
@@ -1576,6 +1579,13 @@ end;
 function TBlkUsek.SoupravyFull():boolean;
 begin
  Result := (Cardinal(Self.UsekStav.soupravy.Count) >= Self.UsekSettings.maxSpr);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.IsVlakPresun():boolean;
+begin
+ Result := (Self.Stav.vlakPresun > -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

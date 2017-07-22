@@ -637,7 +637,7 @@ begin
      if ((Self.Data[i] as TBlkUsek).OblsRizeni.ORs[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
-   if ((Self.Data[i] as TBlkUsek).VlakPresun) then Exit(Self.Data[i]);
+   if ((Self.Data[i] as TBlkUsek).IsVlakPresun()) then Exit(Self.Data[i]);
   end;//for i
 
  Result := nil;
@@ -851,7 +851,6 @@ begin
       spr := (Usek as TBlkUsek).SprPredict
    else
      spr := -1;
-
    JC := (Nav as TBlkSCom).DNjc;
    if ((JC <> nil) and (JC.stav.RozpadBlok > 0)) then Exit();
 
