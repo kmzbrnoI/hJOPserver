@@ -129,7 +129,11 @@ var j:integer;
 
  /////////////////////////////////////////////////////
    _BLK_USEK:begin
-      Self.LV.Items.Item[line].ImageIndex := 1;
+      if ((Blk as TBlkUsek).Stav.cislo_koleje <> '') then
+        Self.LV.Items.Item[line].ImageIndex := 1
+      else
+        Self.LV.Items.Item[line].ImageIndex := 3;
+
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Úsek';
 
       if ((Blk as TBlkUsek).Souprava > -1) then Self.LV.Items.Item[line].SubItems.Strings[2] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).Souprava) else
