@@ -298,6 +298,7 @@ end;//dtor
 
 procedure TBlkUsek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 var str:TStrings;
+    s:string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -313,9 +314,13 @@ begin
 
  Self.UsekStav.Stit         := ini_stat.ReadString(section, 'stit', '');
  Self.UsekStav.Vyl          := ini_stat.ReadString(section, 'vyl' , '');
- Self.UsekStav.Spr          := Soupravy.GetSprIndexByName(ini_stat.ReadString(section, 'spr' , ''));
 
  str := TStringList.Create();
+
+ Self.UsekStav.soupravy.Clear();
+ ExtractStringsEx([','], [], ini_stat.ReadString(section, 'spr' , ''), str);
+ for s in str do
+   Self.UsekStav.soupravy.Add(Soupravy.GetSprIndexByName(s));
 
  // houkaci udalosti
  try
@@ -400,6 +405,8 @@ begin
 end;//procedure
 
 procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
+var str:string;
+    spri:Integer;
 begin
  if (Self.UsekStav.Stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.UsekStav.Stit);
@@ -407,8 +414,13 @@ begin
  if (Self.UsekStav.Vyl <> '') then
    ini_stat.WriteString(section, 'vyl' , Self.UsekStav.Vyl);
 
- if (Self.UsekStav.Spr > -1) then
-   ini_stat.WriteString(section, 'spr' , Soupravy.GetSprNameByIndex(Self.UsekStav.Spr));
+ if (Self.IsSouprava()) then
+  begin
+   str := '';
+   for spri in Self.Soupravs do
+     str := str + Soupravy[spri].nazev + ',';
+   ini_stat.WriteString(section, 'spr' , str);
+  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
