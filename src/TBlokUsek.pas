@@ -77,6 +77,7 @@ type
     DCC : false;
     stanicni_kolej : false;
     cislo_koleje : '';
+    vlakPresun: -1;
     zpomalovani_ready : false;
     currentHoukEv : -1;
    );
@@ -595,7 +596,7 @@ begin
   end;
 
  // reseni zruseni PRESUN soupravy, ktera jede
- if ((Self.IsVlakPresun()) and ((not Self.IsSouprava(Self.VlakPresun)) or
+ if ((Self.IsVlakPresun()) and ((not Self.IsSouprava(Self.Soupravs[Self.VlakPresun])) or
      (Soupravy.soupravy[Self.VlakPresun].rychlost > 0))) then
    Self.VlakPresun := -1;
 
@@ -1153,7 +1154,7 @@ begin
  TTCPORsRef(SenderPnl.Data).spr_menu_index := sprLocalI;
 
  menu := inherited ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.read);
- menu := menu + '$' + Soupravy[Self.Soupravs[sprLocalI]].nazev + ',-,';
+ menu := menu + '$Souprava ' + Soupravy[Self.Soupravs[sprLocalI]].nazev + ',-,';
  menu := menu + Self.GetSprMenu(SenderPnl, SenderOr, sprLocalI);
 
  ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), menu);
@@ -1170,7 +1171,7 @@ begin
  Result := inherited;
 
  if (Self.SoupravyFull()) then begin
-   Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0);
+   Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0) + '-,';
    TTCPORsRef(SenderPnl.Data).spr_menu_index := 0;
  end else begin
    canAdd := ((not Self.SoupravyFull()) and (Self.UsekStav.stanicni_kolej) and
@@ -1250,9 +1251,9 @@ begin
    if (TTCPORsRef(SenderPnl.Data).maus) then Result := Result + 'MAUS vlak,';
   end;
 
- if (Self.IsVlakPresun()) then
+ if (Self.VlakPresun = sprLocalI) then
   Result := Result + 'PØESUÒ vlak<,'
- else if ((spr.rychlost = 0) and (spr.stanice = SenderOR)) then
+ else if ((not Self.IsVlakPresun()) and (spr.rychlost = 0) and (spr.stanice = SenderOR)) then
    Result := Result + 'PØESUÒ vlak>,';
 
  if (spr.ukradeno) then
@@ -1286,8 +1287,6 @@ begin
    else if (shPlay.trat <> nil) then
      Result := Result + 'HLÁŠENÍ prùjezd,';
   end;
-
- Result := Result + '-,';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
