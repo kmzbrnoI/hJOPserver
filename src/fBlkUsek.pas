@@ -40,6 +40,8 @@ type
     CHB_D4: TCheckBox;
     SE_Board4: TSpinEdit;
     SE_Port4: TSpinEdit;
+    SE_SprCnt: TSpinEdit;
+    Label5: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure E_DelkaKeyPress(Sender: TObject; var Key: Char);
@@ -95,6 +97,8 @@ procedure TF_BlkUsek.NewBlkOpenForm;
   E_Delka.Text               := '0';
   CHB_SmycBlok.Checked       := false;
   Self.CB_Zesil.ItemIndex    := -1;
+  Self.SE_SprCnt.Enabled := true;
+  Self.SE_SprCnt.Value := 1;
 
   Self.SE_Port1.Value  := 0;
   Self.SE_Board1.Value := 1;
@@ -127,6 +131,9 @@ var glob:TBlkSettings;
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
 
   if (Assigned(Self.Blk)) then settings := Self.Blk.GetSettings();
+
+  Self.SE_SprCnt.Value := settings.maxSpr;
+  Self.SE_SprCnt.Enabled := Self.Blk.Stav.stanicni_kolej;
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D2.Checked := false;
@@ -274,6 +281,8 @@ var glob:TBlkSettings;
 
   settings.houkEvL := Self.Blk.GetSettings().houkEvL;
   settings.houkEvS := Self.Blk.GetSettings().houkEvS;
+
+  settings.maxSpr := Self.SE_SprCnt.Value;
 
   Self.Blk.SetSettings(settings);
 

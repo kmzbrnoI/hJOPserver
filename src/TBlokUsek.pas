@@ -353,6 +353,9 @@ begin
      else
        Self.UsekStav.cislo_koleje := '';
     end;
+
+   if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxSpr <> 1)) then
+     Self.UsekSettings.maxSpr := 1;
   end else begin
    Self.ORsRef.Cnt := 0;
   end;
@@ -812,6 +815,10 @@ begin
   end;
 
  Self.UsekSettings := data;
+
+ if (not Self.UsekStav.stanicni_kolej) then
+   Self.UsekSettings.maxSpr := 1;
+
  Self.Change();
 end;
 

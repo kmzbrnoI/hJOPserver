@@ -4,7 +4,7 @@ object F_BlkUsek: TF_BlkUsek
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (usek)'
-  ClientHeight = 369
+  ClientHeight = 418
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -87,7 +87,7 @@ object F_BlkUsek: TF_BlkUsek
     ParentFont = False
   end
   object L_Usek33: TLabel
-    Left = 8
+    Left = 7
     Top = 182
     Width = 78
     Height = 13
@@ -112,7 +112,24 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Zesilovac:'
+    Caption = 'Zesilova'#269':'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label5: TLabel
+    Left = 8
+    Top = 206
+    Width = 97
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'Max. po'#269'et souprav:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -121,8 +138,8 @@ object F_BlkUsek: TF_BlkUsek
     ParentFont = False
   end
   object B_OK: TButton
-    Left = 238
-    Top = 336
+    Left = 239
+    Top = 386
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -131,12 +148,12 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 7
+    TabOrder = 8
     OnClick = B_OKClick
   end
   object B_Storno: TButton
-    Left = 159
-    Top = 336
+    Left = 160
+    Top = 386
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -144,7 +161,7 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 8
+    TabOrder = 9
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -175,7 +192,7 @@ object F_BlkUsek: TF_BlkUsek
   end
   object GB_MTB: TGroupBox
     Left = 7
-    Top = 203
+    Top = 243
     Width = 305
     Height = 129
     Margins.Left = 2
@@ -189,7 +206,7 @@ object F_BlkUsek: TF_BlkUsek
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 6
+    TabOrder = 7
     object L_Usek04: TLabel
       Left = 12
       Top = 19
@@ -557,5 +574,19 @@ object F_BlkUsek: TF_BlkUsek
     Style = csDropDownList
     ItemHeight = 13
     TabOrder = 4
+  end
+  object SE_SprCnt: TSpinEdit
+    Left = 119
+    Top = 206
+    Width = 192
+    Height = 22
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    MaxValue = 4
+    MinValue = 1
+    TabOrder = 6
+    Value = 1
   end
 end

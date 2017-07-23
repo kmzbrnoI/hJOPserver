@@ -377,6 +377,7 @@ var glob:TBlkSettings;
   settings.Lenght  := StrToFloatDef(Self.E_Delka.Text,0);
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;
   settings.Zesil   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
+  settings.maxSpr  := 1;
 
   TUsettings.Zastavka.ev_lichy.enabled  := Self.CHB_Zastavka_Lichy.Checked;
   TUsettings.Zastavka.ev_sudy.enabled   := Self.CHB_Zastavka_Sudy.Checked;
