@@ -91,7 +91,6 @@ var Blk:TBlk;
   Self.Blk.Zaver       := TZaver(CB_Zaver.ItemIndex);
   Self.Blk.NUZ         := PrevodySoustav.IntToBool(CB_NUZ.ItemIndex);
   Self.Blk.KonecJC     := TZaver(CB_KonecVC.ItemIndex);
-  Self.Blk.Souprava    := SE_Souprava.Value;
   Self.Blk.SprPredict  := SE_Souprava_Predict.Value;
   Blky.GetBlkByID(Self.SE_SComJCRef.Value, Blk);
   Self.Blk.SComJCRef   := Blk;

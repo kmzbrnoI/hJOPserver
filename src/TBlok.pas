@@ -111,7 +111,7 @@ type
    //   jinak je doporuceno ji vubec neimplementovat
    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); virtual;
 
-   procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); virtual;
+   procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); virtual;
 
    // Tyto procedury vraci json objekt do \json, z dedicich bloku
    // je nutno volat inherited.
@@ -339,7 +339,7 @@ begin
  // This function should be empty.
 end;
 
-procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  // This function should be empty.
 end;

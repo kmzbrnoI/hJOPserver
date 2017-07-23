@@ -111,7 +111,7 @@ type
     property Zaver:boolean read GetZaver write SetZaver;
 
     //GUI:
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
 
@@ -507,7 +507,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkPrejezd.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+procedure TBlkPrejezd.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if (Self.Stav.basicStav = TBlkPrjBasicStav.disabled) then Exit();
 

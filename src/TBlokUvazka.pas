@@ -94,7 +94,7 @@ type
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
  end;//class TBlkUsek
@@ -443,7 +443,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkUvazka.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+procedure TBlkUvazka.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if      (item = 'ZTS>') then Self.MenuZTSOnClick(SenderPnl, SenderOR)
  else if (item = 'ZTS<') then Self.MenuZTSOffClick(SenderPnl, SenderOR)

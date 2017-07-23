@@ -11,6 +11,9 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
 
+ ESprFull = class(Exception);
+ ESprNotExists = class(Exception);
+
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
   RCSAddrs:TRCSAddrs;
@@ -99,7 +102,7 @@ type
     procedure SetCentralaDCC(state:boolean);
     procedure SetDCC(state:boolean);
 
-    procedure MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
     procedure MenuEditLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -146,7 +149,6 @@ type
     procedure MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
     function MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
     function PresunLok(SenderPnl:TIdContext; SenderOR:TObject):boolean;
-    procedure SetUsekSpr(spr:Integer); virtual;
 
   public
 
@@ -188,8 +190,8 @@ type
 
     function IsSouprava():boolean; overload;
     function IsSouprava(index:Integer):boolean; overload;
-    procedure AddSoupravaL(index:Integer);
-    procedure AddSoupravaS(index:Integer);
+    procedure AddSoupravaL(index:Integer); virtual;
+    procedure AddSoupravaS(index:Integer); virtual;
     procedure RemoveSoupravy();
     procedure RemoveSouprava(index:Integer);
     function SoupravyFull():boolean;
@@ -207,7 +209,7 @@ type
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property SComJCRef:TBlk read UsekStav.SComJCRef write UsekStav.SComJCRef;
 
-    property Souprava:Integer read UsekStav.Spr write SetUsekSpr;
+    property Souprava:Integer read UsekStav.Spr;
     property SoupravaL:Integer read GetSoupravaL;
     property SoupravaS:Integer read GetSoupravaS;
     property Soupravs:TList<Integer> read UsekStav.Soupravy;
@@ -224,7 +226,7 @@ type
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
@@ -662,20 +664,6 @@ begin
   end;
 end;//procedure
 
-procedure TBlkUsek.SetUsekSpr(spr:Integer);
-begin
- Self.UsekStav.Spr := spr;
- if (spr > -1) then
-  Self.UsekStav.SprPredict := -1
- else begin
-  Self.UsekStav.vlakPresun        := -1;
-  Self.UsekStav.zpomalovani_ready := false;
-  Self.houk_ev_enabled            := false;
- end;
-
- Self.Change();
-end;//procedure
-
 procedure TBlkUsek.SetSprPredict(sprcesta:Integer);
 begin
  Self.UsekStav.SprPredict := sprcesta;
@@ -825,12 +813,13 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 //dynamicke funkce:
 
-procedure TBlkUsek.MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
 begin
  // nejdrive posleme aktualni senam hnacich vozidel
  (SenderOR as TOR).PanelHVList(SenderPnl);
 
  // pak posleme pozadavek na editaci hnaciho vozidla
+ TTCPORsRef(SenderPnl.Data).spr_menu_index := (itemindex-2) div 2;
  (SenderOR as TOR).BlkNewSpr(Self, SenderPnl);
 end;//procedure
 
@@ -1176,7 +1165,8 @@ begin
      if (canAdd) then Result := Result + 'NOVÝ vlak,';
     end;
 
-   Result := Result + '-,';
+   if ((canAdd) or (Self.Soupravs.Count > 0)) then
+     Result := Result + '-,';
  end;
 
  Result := Result + 'STIT,VYL,';
@@ -1299,12 +1289,12 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkUsek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+procedure TBlkUsek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 var i:Integer;
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
- if (item = 'NOVÝ vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR)
+ if (item = 'NOVÝ vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR, itemindex)
  else if (item = 'EDIT vlak')      then Self.MenuEditLokClick(SenderPnl, SenderOR)
  else if (item = 'ZRUŠ vlak')      then Self.MenuDeleteLokClick(SenderPnl, SenderOR)
  else if (item = 'UVOL vlak')      then Self.MenuUVOLLokClick(SenderPnl, SenderOR)
@@ -1608,33 +1598,61 @@ end;
 
 function TBlkUsek.IsSouprava(index:Integer):boolean;
 begin
- Result := false;
+ Result := Self.UsekStav.soupravy.Contains(index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.AddSoupravaL(index:Integer);
 begin
+ if (Self.SoupravyFull()) then
+   raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
 
+ Self.UsekStav.soupravy.Insert(0, index);
+ Self.UsekStav.SprPredict := -1;
+ Self.Change();
 end;
 
 procedure TBlkUsek.AddSoupravaS(index:Integer);
 begin
+ if (Self.SoupravyFull()) then
+   raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
 
+ Self.UsekStav.soupravy.Add(index);
+ Self.UsekStav.SprPredict := -1;
+ Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.RemoveSoupravy();
 begin
-
+ Self.UsekStav.soupravy.Clear();
+ Self.UsekStav.vlakPresun := -1;
+ Self.UsekStav.zpomalovani_ready := false;
+ Self.houk_ev_enabled := false;
+ Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.RemoveSouprava(index:Integer);
 begin
+ if (Self.UsekStav.soupravy.Contains(index)) then
+  begin
+   Self.UsekStav.soupravy.Remove(index);
+   Self.Change();
+  end else begin
+   raise ESprNotExists.Create('Souprava ' + IntToStr(index) +
+     ' neexistuje na useku ' + Self.GetGlobalSettings.name);
+  end;
 
+ if (not Self.IsSouprava()) then
+  begin
+   Self.UsekStav.vlakPresun := -1;
+   Self.UsekStav.zpomalovani_ready := false;
+   Self.houk_ev_enabled := false;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -123,8 +123,6 @@ type
     procedure MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    function GetUsekSpr:Integer;                                                // vrati soupravu na TU, vyuzito u property \Souprava
-
     procedure UpdateBP();                                                       // technologie blokove podminky, resi veskere predavani souprav mezi TU a sekcemi TU
 
     function GetTrat():TBlk;                                                    // vrati blok trati, ve kterem je TU, viz property \Trat
@@ -149,9 +147,7 @@ type
     function GetReady():boolean;                                                // jestli je usek pripraveny na vjeti soupravy
 
     procedure SetPoruchaBP(state:boolean);                                      // nastavi stav poruchy blokove podminky
-
-  protected
-    procedure SetUsekSpr(spr:Integer); override;                                // nastaven soupravy useku, kvuli warningum kompilatoru presunuto do protected (v bazove tride je protected)
+    procedure AddSouprava(spr:Integer);
 
   public
    lTU, sTU: TBlkTU;                                                            // reference na tratovy usek blize zacatku trati (lTU) a TU blize konci trati (sTU), tyto refence nastavuje trat pri inicializaci, nebo zmene konfigurace trati
@@ -182,7 +178,7 @@ type
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights); override;
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
 
     procedure CreateSComRefs();                                                 // navestidlum autobloku nastavi UsekPred a smer
     procedure RemoveTURefs();                                                   // zrusi UsekPred navetidlum autobloku
@@ -190,9 +186,11 @@ type
     procedure UvolnenoZJC();                                                    // obsah useku (ne nutne souprava!) byl prevzat z krajniho useku trati jizdni cestou
                                                                                 // tato metoda ma smysl pouze pro krajni TU trati a resi radne odstraneni obsahu useku z trati
 
+    procedure AddSoupravaL(index:Integer); override;
+    procedure AddSoupravaS(index:Integer); override;
+
     // pro vyznam properties viz hlavicky getteru a setteru
     property TUStav:TBlkTUStav read fTUStav;
-    property Souprava:Integer read GetUsekSpr write SetUsekSpr;
     property InTrat:Integer read fTUStav.InTrat write fTUStav.InTrat;
     property bpInBlk:boolean read fTUStav.bpInBlk write fTUStav.bpInBlk;
     property sectObsazeno:TUsekStav read GetSectObsazeno;
@@ -690,7 +688,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.SetUsekSpr(spr:Integer);
+procedure TBlkTU.AddSoupravaL(index: Integer);
+begin
+ inherited;
+ Self.AddSouprava(index);
+end;
+
+procedure TBlkTU.AddSoupravaS(index: Integer);
+begin
+ inherited;
+ Self.AddSouprava(index);
+end;
+
+procedure TBlkTU.AddSouprava(spr:Integer);
 var old_spr:Integer;
     trat:TBlkTrat;
 begin
@@ -751,11 +761,6 @@ begin
   end;
 end;
 
-function TBlkTU.GetUsekSpr:Integer;
-begin
- Result := Self.Stav.Spr;
-end;
-
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
@@ -798,7 +803,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+procedure TBlkTU.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
@@ -894,7 +899,7 @@ begin
     begin
      // mezi useky je potreba predat soupravu
      Soupravy.soupravy[Self.prevTU.Souprava].front := Self;
-     Self.Souprava := Self.prevTU.Souprava;
+     Self.AddSoupravaL(Self.prevTU.Souprava);
      Self.zpomalovani_ready := true;
      Self.houk_ev_enabled := true;
      Self.rychUpdate := true;

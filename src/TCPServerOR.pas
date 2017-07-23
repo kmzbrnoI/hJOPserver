@@ -553,7 +553,11 @@ begin
    blk := (AContext.Data as TTCPORsRef).menu;
    (AContext.Data as TTCPORsRef).menu := nil;       // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[6] := '';
-   blk.PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2]);
+
+   if (parsed.Count > 2) then
+     blk.PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2], StrToIntDef(parsed[3], -1))
+   else
+     blk.PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2], -1);
   end
 
  else if (parsed[1] = 'ESCAPE') then

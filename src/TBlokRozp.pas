@@ -55,7 +55,7 @@ type
 
     //----- SCom own functions -----
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string); override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
 
     function GetSettings():TBlkRozpSettings;
@@ -210,7 +210,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string);
+procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if (Self.status = TRozpStatus.disabled) then Exit();
 end;//procedure
