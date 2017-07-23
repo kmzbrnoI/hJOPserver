@@ -1515,9 +1515,9 @@ begin
    Blky.GetBlkByID(Self.UsekID, usek);
 
  if (Self.Smer = THVStanoviste.lichy) then
-   Result := TBlkUsek(usek).SoupravaL
+   Result := TBlkUsek(usek).SoupravaS
  else
-   Result := TBlkUsek(usek).SoupravaS;
+   Result := TBlkUsek(usek).SoupravaL;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

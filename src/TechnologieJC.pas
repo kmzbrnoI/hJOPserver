@@ -1852,9 +1852,9 @@ var i,j:Integer;
 
             // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
             if (TBlkSCom(Navestidlo).Smer = THVStanoviste.lichy) then
-              (Blk2 as TBlkUsek).AddSoupravaS(spri)
+              (Blk2 as TBlkUsek).AddSoupravaL(spri)
             else
-              (Blk2 as TBlkUsek).AddSoupravaL(spri);
+              (Blk2 as TBlkUsek).AddSoupravaS(spri);
 
             (Blk as TBlkUsek).RemoveSouprava(spri);
            end;
@@ -2025,17 +2025,19 @@ begin
 
  // kontrola obsazenosti useku pred navestidlem
  Usek := (Nav as TBlkSCom).UsekPred;
- if ((Self.RozpadBlok = -1) and (((Usek as TBlkUsek).Obsazeno = TUsekStav.obsazeno) or ((Usek as TBlkUsek).GetSettings.RCSAddrs.Count = 0))) then
+ if ((Self.RozpadBlok = -1) and (((Usek as TBlkUsek).Obsazeno = TUsekStav.obsazeno) or
+     ((Usek as TBlkUsek).GetSettings.RCSAddrs.Count = 0))) then
   begin
    Self.RozpadBlok       := 0;
    Self.RozpadRuseniBlok := -1;
   end;
 
- // uvolneni prvniho useku prd navestidlem v posunove ceste je signalem pro zhasnuti navestidla
+ // uvolneni prvniho useku pred navestidlem v posunove ceste je signalem pro zhasnuti navestidla
  if (((Usek as TBlkUsek).GetSettings().RCSAddrs.Count > 0) and ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) and ((Nav as TBlkSCom).Navest <> 0) and
-    (Self.RozpadRuseniBlok = 0) and (Self.data.TypCesty = TJCType.posun)) then
+    (Self.RozpadRuseniBlok = -1) and (Self.data.TypCesty = TJCType.posun)) then
   begin
-   writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+' : navestidlo '+Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
+   writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+' : navestidlo '+
+     Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
    (Nav as TBlkSCom).JCZrusNavest();
   end;
 
@@ -2064,7 +2066,6 @@ begin
        // pozor: toto musi byt na tomto miste kvuli nastavovani Souprava.front
        if ((i = 0) and ((Nav as TBlkSCom).Navest <> 0) and (Self.RozpadBlok = 0)) then
         begin
-         Self.RozpadRuseniBlok := 0;
          // navestidlo pri obsazeni prvniho useku rusime v pripade, ze se jedna o VC
          if (Self.data.TypCesty = TJCType.vlak) then
           begin
@@ -2140,6 +2141,7 @@ begin
    begin
     //ziskani dotazovaneho useku
     Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadRuseniBlok], Usek);
+
     if (Self.RozpadRuseniBlok+1 < Self.fproperties.Useky.Count) then
       Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadRuseniBlok+1], DalsiUsek)
     else
@@ -2150,39 +2152,66 @@ begin
         (TBlkUsek(DalsiUsek).GetSettings.RCSAddrs.Count = 0))) then
      begin
       // cesta se rozpada...
-
-      // uvolneni prvniho useku v posunove ceste je signalem pro zhasnuti navestidla
-      if (((Nav as TBlkSCom).Navest <> 0) and (Self.RozpadRuseniBlok = 0) and (Self.data.TypCesty = TJCType.posun)) then
-       begin
-        writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+' : navestidlo '+Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
-        (Nav as TBlkSCom).JCZrusNavest();
-       end;
-
       (Usek as TBlkUsek).Zaver := no;
       Self.RozpadRuseniBlok := Self.RozpadRuseniBlok + 1;
 
-      if (Self.fproperties.TypCesty = TJCType.vlak) then
+      if ((Self.fproperties.TypCesty = TJCType.vlak) and ((Usek as TBlkUsek).IsSouprava())) then
        begin
-        if ((Usek as TBlkUsek).IsSouprava()) then
-         begin
-          writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
-          (Usek as TBlkUsek).RemoveSoupravy();
-         end;
-
-        // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony), ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
-        Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadRuseniBlok], Blk);
-        Usek := (Nav as TBlkSCom).UsekPred;
-        if ((Self.RozpadRuseniBlok = 1) and ((Usek as TBlkUsek).IsSouprava()) and ((Usek as TBlkUsek).Souprava = (Blk as TBlkUsek).Souprava)) then
-         begin
-          writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
-          (Usek as TBlkUsek).RemoveSoupravy();
-         end;
+        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+
+          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+        (Usek as TBlkUsek).RemoveSoupravy();
        end;
      end;//if Self.RozpadBlok >= 1
    end;//if (cyklus2 = Self.RozpadRuseniBlok)
 
+  // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony),
+  // ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
+  if ((Self.RozpadRuseniBlok = -1) and (Self.fproperties.Useky.Count > 0)) then
+   begin
+    Blky.GetBlkByID(Self.fproperties.Useky[0], Usek);
+
+    if (Self.fproperties.Useky.Count > 1) then
+      Blky.GetBlkByID(Self.fproperties.Useky[1], DalsiUsek)
+    else
+      DalsiUsek := nil;
+
+    if (((Usek as TBlkUsek).Zaver = TZaver.nouz) and ((Usek as TBlkUsek).Obsazeno = uvolneno) and
+        ((DalsiUsek = nil) or (TBlkUsek(DalsiUsek).Obsazeno = TUsekStav.obsazeno) or
+        (TBlkUsek(DalsiUsek).GetSettings.RCSAddrs.Count = 0))) then
+     begin
+      // uvolneni prvniho useku v posunove ceste je signalem pro zhasnuti navestidla
+      if (((Nav as TBlkSCom).Navest <> 0) and (Self.data.TypCesty = TJCType.posun)) then
+       begin
+        writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+
+          ' : navestidlo '+Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
+        (Nav as TBlkSCom).JCZrusNavest();
+       end;
+
+      TBlkUsek(Usek).Zaver := no;
+      Self.RozpadRuseniBlok := 1;
+
+      if ((Self.fproperties.TypCesty = TJCType.vlak) and ((Usek as TBlkUsek).IsSouprava())) then
+       begin
+        // mazani soupravy z useku pred navestidlem
+        Blk := TBlkSCom(Nav).UsekPred;
+        spri := Self.GetSoupravaIndex(Nav, Blk);
+        if (spri = TBlkUsek(Usek).Souprava) then
+         begin
+          writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
+            ' z bloku '+Blk.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+          (Blk as TBlkUsek).RemoveSouprava(spri);
+         end;
+
+        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(TBlkUsek(Usek).Souprava)+
+          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+        (Usek as TBlkUsek).RemoveSoupravy();
+       end;
+     end;
+   end;
+
   // mazani soupravy z useku pred navestidlem
-  if ((Self.RozpadRuseniBlok = 0) and (Self.fproperties.TypCesty = TJCType.vlak)) then
+  if ((Self.RozpadBlok > 0) and (Self.RozpadRuseniBlok = -1) and
+      (Self.fproperties.TypCesty = TJCType.vlak)) then
    begin
     Usek := (Nav as TBlkSCom).UsekPred;
     if ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) then
@@ -2194,14 +2223,26 @@ begin
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
        end;
 
+      Self.RozpadRuseniBlok := 0;
+
       if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
         TBlkTU(Usek).UvolnenoZJC();
      end;
    end;
-  
+
+  Usek := (Nav as TBlkSCom).UsekPred;
+  if ((Self.RozpadBlok = 0) and (Self.RozpadRuseniBlok = -1) and
+      (TBlkUsek(Usek).Obsazeno <> TUsekStav.obsazeno)) then
+   begin
+    // usek pred navestidlem se opet uvolnil
+    Self.RozpadBlok := -1;
+    Self.RozpadRuseniBlok := -2;
+   end;
+
 
   // takhleta silenost za AND je tu pro pripad, kdy JC ma jen jeden usek (to se stava napriklad na smyckach)
-  if ((Self.RozpadRuseniBlok = Self.fproperties.Useky.Count-1) and ((Self.fproperties.Useky.Count > 1) or (Self.RozpadBlok = 1))) then
+  if ((Self.RozpadRuseniBlok = Self.fproperties.Useky.Count-1) and
+      ((Self.fproperties.Useky.Count > 1) or (Self.RozpadBlok = 1))) then
    begin
     // vsechny useky az na posledni jsou uvolneny -> rusime JC
 
@@ -2281,22 +2322,26 @@ end;
 //preda soupravu v jizdni ceste dalsimu bloku v poradi
 procedure TJC.PredejDataDalsimuBloku();
 var UsekActual,UsekDalsi,Nav:TBlk;
+    spri:Integer;
  begin
   if (Self.RozpadBlok = 0) then
    begin
     Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
     UsekActual := (Nav as TBlkSCom).UsekPred;
+    spri := Self.GetSoupravaIndex(Nav, UsekActual);
     if ((UsekActual as TBlkUsek).IsSouprava()) then
-      if (Soupravy.soupravy[(UsekActual as TBlkUsek).Souprava].front <> UsekActual) then
+      if (Soupravy[spri].front <> UsekActual) then
          Exit();
    end else begin
     Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadBlok-1], UsekActual);
+    spri := TBlkUsek(UsekActual).Souprava;
    end;
+
   Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadBlok], UsekDalsi);
   if (not (UsekActual as TBlkUsek).IsSouprava()) then Exit;
 
   (UsekDalsi as TBlkUsek).zpomalovani_ready := true;
-  (UsekDalsi as TBlkUsek).AddSoupravaL((UsekActual as TBlkUsek).Souprava);
+  (UsekDalsi as TBlkUsek).AddSoupravaL(spri);
   Soupravy.soupravy[(UsekDalsi as TBlkUsek).Souprava].front := UsekDalsi;
   (UsekDalsi as TBlkUsek).houk_ev_enabled := true;
   writelog('JC '+Self.nazev+': predana souprava '+Soupravy.GetSprNameByIndex((UsekDalsi as TBlkUsek).Souprava)+' z bloku '+UsekActual.GetGlobalSettings().name+' do bloku '+UsekDalsi.GetGlobalSettings().name,WR_SPRPREDAT, 0);

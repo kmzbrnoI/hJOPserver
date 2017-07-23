@@ -188,6 +188,8 @@ type
 
     procedure AddSoupravaL(index:Integer); override;
     procedure AddSoupravaS(index:Integer); override;
+    procedure RemoveSoupravy(); override;
+    procedure RemoveSouprava(index:Integer); override;
 
     // pro vyznam properties viz hlavicky getteru a setteru
     property TUStav:TBlkTUStav read fTUStav;
@@ -701,62 +703,74 @@ begin
 end;
 
 procedure TBlkTU.AddSouprava(spr:Integer);
+begin
+ if (spr = Self.Souprava) then Exit();
+
+ if (((Self.TUSettings.zastavka.ev_lichy.enabled) or (Self.TUSettings.zastavka.ev_sudy.enabled)) and
+     (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
+
+ // zmena smeru soupravy nastava vzdy v 1. bloku trati (nejblize zacatku)
+ if ((Self.Trat <> nil) and (TBlkTrat(Self.Trat).ChangesSprDir()) and
+     (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0) and
+     (Self.GetGlobalSettings.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
+  begin
+   // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
+   Soupravy.soupravy[Self.Souprava].ChangeSmer();
+  end;
+
+ // kontrola zmeny OR trati, ve ktere jen jeden blok
+ if ((Self.prevTU = nil) and (Self.nextTU = nil)) then
+   TBlkTrat(Self.Trat).SprChangeOR(Self.Souprava);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTU.RemoveSoupravy();
+var spr:Integer;
+begin
+ for spr in Self.Soupravs do
+   Self.RemoveSouprava(spr);
+end;
+
+procedure TBlkTU.RemoveSouprava(index:Integer);
 var old_spr:Integer;
     trat:TBlkTrat;
 begin
- if (spr = Self.Souprava) then Exit();
  old_spr := Self.Souprava;
 
- if (spr = -1) then
+ inherited;
+
+ if (Self.fTUStav.zast_stopped) then
   begin
-   if (Self.fTUStav.zast_stopped) then
-    begin
-     // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
-     // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
-     Soupravy.soupravy[old_spr].SetSpeedBuffer(nil);
-     Self.fTUStav.zast_stopped := false;
-    end;
+   // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
+   // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
+   Soupravy.soupravy[old_spr].SetSpeedBuffer(nil);
+   Self.fTUStav.zast_stopped := false;
+  end;
 
-   Self.fTUStav.zast_passed     := false;
-   Self.fTUStav.zast_zpom_ready := false;
+ Self.fTUStav.zast_passed     := false;
+ Self.fTUStav.zast_zpom_ready := false;
 
-   if (Self.TUSettings.zastavka.ev_lichy.enabled) then
-     Self.TUSettings.zastavka.ev_lichy.zastaveni.Unregister();
-   if (Self.TUSettings.zastavka.ev_sudy.enabled) then
-     Self.TUSettings.zastavka.ev_sudy.zastaveni.Unregister();
-   if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
-     Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
-   if (Self.TUSettings.zastavka.ev_sudy.zpomaleni.enabled) then
-     Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Unregister();
+ if (Self.TUSettings.zastavka.ev_lichy.enabled) then
+   Self.TUSettings.zastavka.ev_lichy.zastaveni.Unregister();
+ if (Self.TUSettings.zastavka.ev_sudy.enabled) then
+   Self.TUSettings.zastavka.ev_sudy.zastaveni.Unregister();
+ if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
+   Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
+ if (Self.TUSettings.zastavka.ev_sudy.zpomaleni.enabled) then
+   Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Unregister();
 
-   // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
-   if (Self.Trat <> nil) then
-    begin
-     trat := TBlkTrat(Self.Trat);
+ // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
+ if (Self.Trat <> nil) then
+  begin
+   trat := TBlkTrat(Self.Trat);
 
-     // souprava vyjela z trate -> odstranit z trate
-     if (not trat.IsSprInAnyTU(old_spr)) then
-       trat.RemoveSpr(old_spr);
+   // souprava vyjela z trate -> odstranit z trate
+   if (not trat.IsSprInAnyTU(old_spr)) then
+     trat.RemoveSpr(old_spr);
 
-     // zavolame uvolneni posledniho TU z jizdni cesty
-     Self.UvolnenoZJC();
-    end;
-  end else begin
-   if (((Self.TUSettings.zastavka.ev_lichy.enabled) or (Self.TUSettings.zastavka.ev_sudy.enabled)) and
-       (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
-
-   // zmena smeru soupravy nastava vzdy v 1. bloku trati (nejblize zacatku)
-   if ((Self.Trat <> nil) and (TBlkTrat(Self.Trat).ChangesSprDir()) and
-       (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0) and
-       (Self.GetGlobalSettings.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
-    begin
-     // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
-     Soupravy.soupravy[Self.Souprava].ChangeSmer();
-    end;
-
-   // kontrola zmeny OR trati, ve ktere jen jeden blok
-   if ((Self.prevTU = nil) and (Self.nextTU = nil)) then
-     TBlkTrat(Self.Trat).SprChangeOR(Self.Souprava);
+   // zavolame uvolneni posledniho TU z jizdni cesty
+   Self.UvolnenoZJC();
   end;
 end;
 

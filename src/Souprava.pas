@@ -546,7 +546,8 @@ begin
   end;
 
  if ((speed > 0) and (Assigned(Self.front)) and
-     ((Self.front as TBlkUsek).Soupravs[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
+     ((Self.front as TBlkUsek).IsVlakPresun()) and
+      ((Self.front as TBlkUsek).Soupravs[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
   (Self.front as TBlkUsek).VlakPresun := -1;
 
  writelog('Souprava ' + Self.nazev + ' : rychlost '+IntToStr(speed)+', smìr : '+IntToStr(Integer(dir)), WR_MESSAGE, 0);

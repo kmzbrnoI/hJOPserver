@@ -14,6 +14,7 @@ type
  ESprFull = class(Exception);
  ESprNotExists = class(Exception);
  EMultipleSprs = class(Exception);
+ EDuplicitSprs = class(Exception);
 
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
@@ -194,8 +195,8 @@ type
     procedure AddSoupravaL(index:Integer); virtual;
     procedure AddSoupravaS(index:Integer); virtual;
     procedure AddSouprava(localSprIndex:Integer; souprava:Integer);
-    procedure RemoveSoupravy();
-    procedure RemoveSouprava(index:Integer);
+    procedure RemoveSoupravy(); virtual;
+    procedure RemoveSouprava(index:Integer); virtual;
     function SoupravyFull():boolean;
 
     function IsVlakPresun():boolean;
@@ -1625,6 +1626,8 @@ procedure TBlkUsek.AddSoupravaL(index:Integer);
 begin
  if (Self.SoupravyFull()) then
    raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
+ if (Self.Soupravs.Contains(index)) then
+   raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
 
  Self.UsekStav.soupravy.Insert(0, index);
  Self.UsekStav.SprPredict := -1;
@@ -1635,6 +1638,8 @@ procedure TBlkUsek.AddSoupravaS(index:Integer);
 begin
  if (Self.SoupravyFull()) then
    raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
+ if (Self.Soupravs.Contains(index)) then
+   raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
 
  Self.UsekStav.soupravy.Add(index);
  Self.UsekStav.SprPredict := -1;
@@ -1645,6 +1650,8 @@ procedure TBlkUsek.AddSouprava(localSprIndex:Integer; souprava:Integer);
 begin
  if (Self.SoupravyFull()) then
    raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
+ if (Self.Soupravs.Contains(souprava)) then
+   raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
 
  Self.UsekStav.soupravy.Insert(localSprIndex, souprava);
  Self.UsekStav.SprPredict := -1;
@@ -1668,6 +1675,9 @@ procedure TBlkUsek.RemoveSouprava(index:Integer);
 begin
  if (Self.UsekStav.soupravy.Contains(index)) then
   begin
+   if ((Self.IsVlakPresun) and (Self.Soupravs[Self.VlakPresun] = index)) then
+     Self.UsekStav.vlakPresun := -1;
+
    Self.UsekStav.soupravy.Remove(index);
    Self.Change();
   end else begin
@@ -1677,7 +1687,6 @@ begin
 
  if (not Self.IsSouprava()) then
   begin
-   Self.UsekStav.vlakPresun := -1;
    Self.UsekStav.zpomalovani_ready := false;
    Self.houk_ev_enabled := false;
   end;

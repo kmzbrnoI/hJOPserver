@@ -228,7 +228,7 @@ var i:Integer;
     UsekSet:TBlkUsekSettings;
 begin
  try
-   if (JC.stav.RozpadRuseniBlok = 0) then
+   if ((JC.stav.RozpadBlok = 1) and (JC.stav.RozpadRuseniBlok = -1)) then
     begin
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
      Blky.GetBlkByID((Nav as TBlkSCom).UsekID, Blk);
@@ -242,7 +242,8 @@ begin
       end;
     end;//uvolnit usek pred navestidlem
 
-   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) and (JC.stav.RozpadRuseniBlok >= 0)) or (JC.stav.RozpadBlok = JC.data.Useky.Count)) then
+   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) and (JC.stav.RozpadRuseniBlok >= 0)) or
+       (JC.stav.RozpadBlok = JC.data.Useky.Count)) then
     begin
      // uvolnit RozpadRuseniBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
@@ -250,7 +251,7 @@ begin
      for i := 0 to UsekSet.RCSAddrs.Count-1 do
       RCSi.SetInput(UsekSet.RCSAddrs.data[i].board, UsekSet.RCSAddrs.data[i].port, 0);
     end else begin
-     // obsadit RopadBlok
+     // obsadit RozpadBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
      if (UsekSet.RCSAddrs.Count > 0) then

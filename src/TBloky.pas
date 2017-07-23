@@ -845,11 +845,11 @@ begin
    Usek := (Nav as TBlkSCom).UsekPred;
    spr := (Nav as TBlkSCom).GetSoupravaIndex(usek);
 
-   if ((Nav as TBlkSCom).Navest > 0) then
+   if ((Nav as TBlkSCom).Navest > 0) then begin
      if ((not (Usek as TBlkUsek).IsSouprava()) or
          (Soupravy.soupravy[spr].smer <> (Nav as TBlkSCom).Smer)) then
       spr := (Usek as TBlkUsek).SprPredict
-   else
+   end else
      spr := -1;
    JC := (Nav as TBlkSCom).DNjc;
    if ((JC <> nil) and (JC.stav.RozpadBlok > 0)) then Exit();
