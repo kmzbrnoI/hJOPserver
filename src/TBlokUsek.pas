@@ -13,6 +13,7 @@ type
 
  ESprFull = class(Exception);
  ESprNotExists = class(Exception);
+ EMultipleSprs = class(Exception);
 
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
@@ -36,7 +37,6 @@ type
   KonecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
   Stit,Vyl:string;          // stitek a vyluka
   SComJCRef:TBlk;           // zde je ulozeno, podle jakeho navestidla se odjizdi z tohoto bloku; pokud je postabeno vice navetidel, zde je ulozeno posledni, na kterem probehla volba
-  Spr:Integer;              // default -1, jinak array index
   SprPredict:Integer;       // souprava, ktera je na tomto bloku predpovidana
   zkrat:TBoosterSignal;     // zkrat zesilovace
   napajeni:TBoosterSignal;  // napajeni zesilovace
@@ -71,7 +71,6 @@ type
     Stit : '';
     Vyl : '';
     SComJCRef : nil;
-    Spr : -1;
     SprPredict : -1;
     zkrat : TBoosterSignal.undef;
     napajeni : TBoosterSignal.undef;
@@ -140,6 +139,7 @@ type
 
     function GetSoupravaL():Integer;
     function GetSoupravaS():Integer;
+    function GetUsekSpr():Integer;
 
     function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
 
@@ -209,7 +209,7 @@ type
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property SComJCRef:TBlk read UsekStav.SComJCRef write UsekStav.SComJCRef;
 
-    property Souprava:Integer read UsekStav.Spr;
+    property Souprava:Integer read GetUsekSpr;
     property SoupravaL:Integer read GetSoupravaL;
     property SoupravaS:Integer read GetSoupravaS;
     property Soupravs:TList<Integer> read UsekStav.Soupravy;
@@ -1679,6 +1679,16 @@ end;
 function TBlkUsek.IsVlakPresun():boolean;
 begin
  Result := (Self.Stav.vlakPresun > -1);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.GetUsekSpr():Integer;
+begin
+ if (Self.Soupravs.Count = 0) then Exit(-1)
+ else if (Self.Soupravs.Count = 1) then Exit(Self.Soupravs[0])
+ else raise EMultipleSprs.Create('Usek ' + Self.GetGlobalSettings.name +
+   ' obsahuje vice souprav, nelze se proto ptat jen na jednu soupravu!');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
