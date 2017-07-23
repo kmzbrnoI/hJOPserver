@@ -192,7 +192,7 @@ type
           sound:Integer; delay_ms:Integer = -1);
       procedure BlkRemoveSound(Sender:TObject; sound:Integer);                  // zrusi prehravani zvuku
       procedure BlkWriteError(Sender:TObject; error:string; system:string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
-      procedure BlkNewSpr(Sender:TObject; Panel:TIdContext);                    // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
+      procedure BlkNewSpr(Sender:TObject; Panel:TIdContext; sprUsekIndex:Integer); // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
       procedure BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TObject);// posle do panelu pozadavek na otevreni dialogu editace soupravy
 
       function ORSendMsg(Sender:TOR; msg:string):Byte;                          // odesle zpravu OR (od jine OR)
@@ -787,16 +787,16 @@ begin
   ORTCPServer.DeleteSound(Self.Connected[i].Panel, sound);
 end;//procedure
 
-procedure TOR.BlkNewSpr(Sender:TObject; Panel:TIdContext);
+procedure TOR.BlkNewSpr(Sender:TObject; Panel:TIdContext; sprUsekIndex:Integer);
 begin
- TTCPORsRef(Panel.Data).spr_new  := true;
+ TTCPORsRef(Panel.Data).spr_new_usek_index := sprUsekIndex;
  TTCPORsRef(Panel.Data).spr_usek := Sender;
  ORTCPServer.SendLn(Panel, Self.id+';SPR-NEW;');
 end;//procedure
 
 procedure TOR.BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TObject);
 begin
- TTCPORsRef(Panel.Data).spr_new  := false;
+ TTCPORsRef(Panel.Data).spr_new_usek_index := -1;
  TTCPORsRef(Panel.Data).spr_edit := TSouprava(Souprava);
  TTCPORsRef(Panel.Data).spr_usek := Sender;
 
@@ -1207,7 +1207,7 @@ end;//procedure
 // format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla
 procedure TOR.PanelSprChange(Sender:TIdContext; spr:TStrings);
 begin
- if ((not TTCPORsRef(Sender.Data).spr_new) and (TTCPORsRef(Sender.Data).spr_edit = nil)) then Exit();
+ if ((TTCPORsRef(Sender.Data).spr_new_usek_index = -1) and (TTCPORsRef(Sender.Data).spr_edit = nil)) then Exit();
 
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -1217,8 +1217,9 @@ begin
   end;
 
  try
-  if (TTCPORsRef(Sender.Data).spr_new) then
-   Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
+  if (TTCPORsRef(Sender.Data).spr_new_usek_index > -1) then
+   Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self,
+     (TTCPORsRef(Sender.Data).spr_new_usek_index))
   else begin
    // kontrola jestli je souprava porad na useku
    if ((TTCPORsRef(Sender.Data).spr_usek as TBlkUsek).IsSouprava(TTCPORsRef(Sender.Data).spr_edit.index)) then
@@ -1236,7 +1237,7 @@ begin
    end;
  end;
 
- TTCPORsRef(Sender.Data).spr_new  := false;
+ TTCPORsRef(Sender.Data).spr_new_usek_index := -1;
  TTCPORsRef(Sender.Data).spr_edit := nil;
  TTCPORsRef(Sender.Data).spr_usek := nil;
 

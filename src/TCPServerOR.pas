@@ -40,7 +40,7 @@ type
     funcsVyznamReq:boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
     maus:boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
 
-    spr_new:boolean;                                                            // jestli v panelu probiha zadavani nove soupravy
+    spr_new_usek_index:Integer;                                                 // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
     spr_edit:TSouprava;                                                         // souprava, kterou panel edituje
     spr_usek:TObject;                                                           // usek, na kterem panel edituje soupravu (TBlkUsek)
 
@@ -1170,7 +1170,7 @@ begin
  Self.UPO_Esc     := nil;
  Self.UPO_ref     := nil;
 
- Self.spr_new     := false;
+ Self.spr_new_usek_index := -1;
  Self.spr_edit    := nil;
  Self.spr_usek    := nil;
 

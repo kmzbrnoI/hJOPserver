@@ -706,7 +706,6 @@ var old_spr:Integer;
 begin
  if (spr = Self.Souprava) then Exit();
  old_spr := Self.Souprava;
- inherited;
 
  if (spr = -1) then
   begin

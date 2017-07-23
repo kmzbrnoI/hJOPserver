@@ -193,6 +193,7 @@ type
     function IsSouprava(index:Integer):boolean; overload;
     procedure AddSoupravaL(index:Integer); virtual;
     procedure AddSoupravaS(index:Integer); virtual;
+    procedure AddSouprava(localSprIndex:Integer; souprava:Integer);
     procedure RemoveSoupravy();
     procedure RemoveSouprava(index:Integer);
     function SoupravyFull():boolean;
@@ -839,8 +840,7 @@ begin
  (SenderOR as TOR).PanelHVList(SenderPnl);
 
  // pak posleme pozadavek na editaci hnaciho vozidla
- TTCPORsRef(SenderPnl.Data).spr_menu_index := (itemindex-2) div 2;
- (SenderOR as TOR).BlkNewSpr(Self, SenderPnl);
+ (SenderOR as TOR).BlkNewSpr(Self, SenderPnl, (itemindex-2) div 2);
 end;//procedure
 
 procedure TBlkUsek.MenuEditLokClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1170,7 +1170,7 @@ var Blk:TBlk;
 begin
  Result := inherited;
 
- if (Self.SoupravyFull()) then begin
+ if (Self.SoupravyFull() and (Self.Soupravs.Count = 1)) then begin
    Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0) + '-,';
    TTCPORsRef(SenderPnl.Data).spr_menu_index := 0;
  end else begin
@@ -1637,6 +1637,16 @@ begin
    raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
 
  Self.UsekStav.soupravy.Add(index);
+ Self.UsekStav.SprPredict := -1;
+ Self.Change();
+end;
+
+procedure TBlkUsek.AddSouprava(localSprIndex:Integer; souprava:Integer);
+begin
+ if (Self.SoupravyFull()) then
+   raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
+
+ Self.UsekStav.soupravy.Insert(localSprIndex, souprava);
  Self.UsekStav.SprPredict := -1;
  Self.Change();
 end;
