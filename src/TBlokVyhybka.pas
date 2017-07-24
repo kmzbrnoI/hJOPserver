@@ -497,15 +497,23 @@ var iplus,iminus: TRCSInputState;
   end;
 
   try
-    if ((iplus = failure) or (iminus = failure) or (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[2].board)) or (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[3].board))) then
+    if ((iplus = failure) or (iminus = failure) or
+        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[2].board)) or
+        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[3].board))) then
      begin
       if (Self.Stav.poloha <> TVyhPoloha.disabled) then
+       begin
         Self.VyhStav.poloha := TVyhPoloha.disabled;
+        JCDb.RusJC(Self);
+       end;
       Exit();
      end;
   except
     if (Self.Stav.poloha <> TVyhPoloha.disabled) then
+     begin
       Self.VyhStav.poloha := TVyhPoloha.disabled;
+      JCDb.RusJC(Self);
+     end;
     Exit();
   end;
 
