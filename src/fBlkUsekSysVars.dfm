@@ -4,7 +4,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Vlastnosti useku [usek]'
-  ClientHeight = 226
+  ClientHeight = 345
   ClientWidth = 585
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -26,7 +26,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Z'#225'ver :'
+    Caption = 'Z'#225'v'#283'r :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -68,26 +68,9 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Font.Style = []
     ParentFont = False
   end
-  object L_Usek20: TLabel
-    Left = 7
-    Top = 84
-    Width = 52
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Souprava :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
   object L_Usek27: TLabel
     Left = 8
-    Top = 110
+    Top = 82
     Width = 121
     Height = 13
     Margins.Left = 2
@@ -121,7 +104,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
   end
   object Label3: TLabel
     Left = 7
-    Top = 138
+    Top = 110
     Width = 60
     Height = 13
     Margins.Left = 2
@@ -155,14 +138,14 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
   end
   object Label2: TLabel
     Left = 8
-    Top = 168
+    Top = 140
     Width = 75
     Height = 13
     Caption = 'Zesilova'#269' zkrat:'
   end
   object Label7: TLabel
     Left = 8
-    Top = 200
+    Top = 172
     Width = 93
     Height = 13
     Caption = 'Zesilova'#269' nap'#225'jen'#237':'
@@ -252,7 +235,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
   end
   object B_SaveData: TButton
     Left = 505
-    Top = 189
+    Top = 314
     Width = 73
     Height = 24
     Margins.Left = 2
@@ -261,12 +244,12 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 10
+    TabOrder = 9
     OnClick = B_SaveDataClick
   end
   object B_Obnovit: TButton
     Left = 425
-    Top = 189
+    Top = 314
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -274,7 +257,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Obnovit'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = B_ObnovitClick
   end
   object M_Stitek: TMemo
@@ -284,7 +267,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Height = 49
     Lines.Strings = (
       'M_Stitek')
-    TabOrder = 8
+    TabOrder = 7
   end
   object M_Vyluka: TMemo
     Left = 304
@@ -293,9 +276,9 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Height = 49
     Lines.Strings = (
       'M_Stitek')
-    TabOrder = 9
+    TabOrder = 8
   end
-  object SE_Souprava: TSpinEdit
+  object SE_Souprava_Predict: TSpinEdit
     Left = 176
     Top = 82
     Width = 107
@@ -305,7 +288,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     TabOrder = 3
     Value = 0
   end
-  object SE_Souprava_Predict: TSpinEdit
+  object SE_SComJCRef: TSpinEdit
     Left = 176
     Top = 110
     Width = 107
@@ -315,19 +298,32 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     TabOrder = 4
     Value = 0
   end
-  object SE_SComJCRef: TSpinEdit
-    Left = 176
-    Top = 138
-    Width = 107
-    Height = 22
-    MaxValue = 0
-    MinValue = 0
-    TabOrder = 5
-    Value = 0
-  end
   object CB_Zes_Zkrat: TComboBox
     Left = 176
-    Top = 165
+    Top = 137
+    Width = 107
+    Height = 21
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Style = csDropDownList
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ItemHeight = 13
+    ParentFont = False
+    TabOrder = 5
+    Items.Strings = (
+      'Undef'
+      'Ano'
+      'Ne')
+  end
+  object CB_Zes_Napajeni: TComboBox
+    Left = 176
+    Top = 169
     Width = 107
     Height = 21
     Margins.Left = 2
@@ -345,30 +341,68 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     TabOrder = 6
     Items.Strings = (
       'Undef'
-      'Ano'
-      'Ne')
-  end
-  object CB_Zes_Napajeni: TComboBox
-    Left = 176
-    Top = 197
-    Width = 107
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ItemHeight = 13
-    ParentFont = False
-    TabOrder = 7
-    Items.Strings = (
-      'Undef'
       'Ne'
       'Ano')
+  end
+  object GB_Soupravy: TGroupBox
+    Left = 8
+    Top = 195
+    Width = 275
+    Height = 142
+    Caption = ' Soupravy '
+    TabOrder = 11
+    object LB_Soupravy: TListBox
+      Left = 2
+      Top = 44
+      Width = 271
+      Height = 44
+      Align = alBottom
+      ItemHeight = 13
+      TabOrder = 0
+    end
+    object B_SprDelete: TButton
+      Left = 56
+      Top = 13
+      Width = 161
+      Height = 25
+      Caption = 'Odstranit soupravu z '#250'seku'
+      TabOrder = 1
+      OnClick = B_SprDeleteClick
+    end
+    object GB_SprAdd: TGroupBox
+      Left = 2
+      Top = 88
+      Width = 271
+      Height = 52
+      Align = alBottom
+      Caption = ' P'#345'idat soupravu '
+      TabOrder = 2
+      object Label5: TLabel
+        Left = 9
+        Top = 17
+        Width = 75
+        Height = 13
+        Caption = 'Index soupravy:'
+      end
+      object SE_SprAdd_Index: TSpinEdit
+        Left = 94
+        Top = 17
+        Width = 80
+        Height = 22
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 0
+        Value = 0
+      end
+      object B_SprAdd: TButton
+        Left = 184
+        Top = 17
+        Width = 75
+        Height = 22
+        Caption = 'P'#345'idat'
+        TabOrder = 1
+        OnClick = B_SprAddClick
+      end
+    end
   end
 end
