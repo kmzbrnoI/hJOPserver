@@ -2220,7 +2220,8 @@ begin
        begin
         spri := Self.GetSoupravaIndex(nav, Usek);
         (Usek as TBlkUsek).RemoveSouprava(spri);
-        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
+          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
        end;
 
       Self.RozpadRuseniBlok := 0;
@@ -2240,13 +2241,14 @@ begin
    end;
 
 
-  // takhleta silenost za AND je tu pro pripad, kdy JC ma jen jeden usek (to se stava napriklad na smyckach)
-  if ((Self.RozpadRuseniBlok = Self.fproperties.Useky.Count-1) and
-      ((Self.fproperties.Useky.Count > 1) or (Self.RozpadBlok = 1))) then
+  // takhleta silenost za OR je tu pro pripad, kdy JC ma jen jeden usek (to se stava napriklad na smyckach)
+  if ((Self.RozpadRuseniBlok = Self.fproperties.Useky.Count-1) and (Self.fproperties.Useky.Count > 1))
+      or ((Self.fproperties.Useky.Count = 1) and (Self.RozpadBlok = 1)) then
    begin
     // vsechny useky az na posledni jsou uvolneny -> rusime JC
 
-    // tady by teoreticky melo prijit ruseni zaveru posledniho bloku, ale to neni poteba, protoze zaver tohoto bloku je primo navazny na zaver predposledniho bloku pres redukce
+    // tady by teoreticky melo prijit ruseni zaveru posledniho bloku, ale to neni poteba,
+    // protoze zaver tohoto bloku je primo navazny na zaver predposledniho bloku pres redukce
     // to je napriklad kvuli tratim, ci z toho duvodu, ze na stanicnich kolejich nejde dat NUZ
 
     // pozor ale na JC, ktere maji jen jeden usek a ten je stanicni koleji:
@@ -2255,15 +2257,20 @@ begin
       Blky.GetBlkByID(Self.fproperties.Useky[0], Usek);
       (Usek as TBlkUsek).Zaver := no;
 
+      Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
+      Usek := (Nav as TBlkSCom).UsekPred;
+      spri := Self.GetSoupravaIndex(Nav, Usek);
+
       // pokud ma cesta jen jeden usek, odstranime soupravu z useku pred navestidlem:
-      if (Self.fproperties.TypCesty = TJCType.vlak) then
+      if ((Self.fproperties.TypCesty = TJCType.vlak) and (spri > -1)) then
        begin
-        Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
-        Usek := (Nav as TBlkSCom).UsekPred;
-        spri := Self.GetSoupravaIndex(Nav, Usek);
-        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
         (Usek as TBlkUsek).RemoveSouprava(spri);
+        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
+          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
        end;
+
+      if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
+        TBlkTU(Usek).UvolnenoZJC();
      end;
 
     Self.RozpadBlok       := -5;
