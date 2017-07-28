@@ -1843,12 +1843,15 @@ var i,j:Integer;
 
         // a)
         if ((Blk2.GetGlobalSettings().typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
-           (Blk.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1) and (not TBlkUsek(Blk2).SoupravyFull())) then
+            (not TBlkUsek(Blk2).SoupravyFull())) then
          begin
           if (TBlkUsek(Blk).IsSouprava()) then
            begin
-            Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
-            (Trat as TBlkTrat).RemoveSpr(spri);
+            if ((Blk.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
+             begin
+              Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
+              (Trat as TBlkTrat).RemoveSpr(spri);
+             end;
 
             // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
             if (TBlkSCom(Navestidlo).Smer = THVStanoviste.lichy) then
