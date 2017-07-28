@@ -48,14 +48,14 @@ object F_Tester: TF_Tester
   object L_1: TLabel
     Left = 48
     Top = 8
-    Width = 65
+    Width = 64
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Alignment = taCenter
-    Caption = 'MTB Adresa :'
+    Caption = 'RCS Adresa :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11
@@ -91,7 +91,7 @@ object F_Tester: TF_Tester
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 1
     OnChange = CB_MtbAdrChange
   end
@@ -104,7 +104,7 @@ object F_Tester: TF_Tester
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Logovat zmeny'
+    Caption = 'Logovat zm'#283'ny'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11
@@ -122,7 +122,7 @@ object F_Tester: TF_Tester
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Zmeny '
+    Caption = ' Zm'#283'ny '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11

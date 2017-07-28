@@ -3895,15 +3895,15 @@ object F_Main: TF_Main
             Width = 125
           end
           item
-            Caption = 'Stitek'
+            Caption = #352't'#237'tek'
             Width = 80
           end
           item
-            Caption = 'Vyluka'
+            Caption = 'V'#253'luka'
             Width = 80
           end
           item
-            Caption = 'Predpovidana souprava'
+            Caption = 'P'#345'edpov'#237'dan'#225' souprava'
             Width = 150
           end>
         Font.Charset = DEFAULT_CHARSET
@@ -4085,7 +4085,7 @@ object F_Main: TF_Main
             Width = 130
           end
           item
-            Caption = 'Oznacen'#237
+            Caption = 'Ozna'#269'en'#237
             Width = 60
           end
           item
@@ -5342,7 +5342,7 @@ object F_Main: TF_Main
           end
           item
             Alignment = taCenter
-            Caption = 'Typ moduly'
+            Caption = 'Typ modulu'
             Width = 70
           end
           item
@@ -5516,21 +5516,21 @@ object F_Main: TF_Main
             Caption = 'Rozpad'
           end
           item
-            Caption = 'Rozpad ruseni'
+            Caption = 'Rozpad ru'#353'en'#237
           end
           item
-            Caption = 'Krok staveni'
+            Caption = 'Krok stav'#283'n'#237
           end
           item
-            Caption = 'V'#253'choz'#237' n'#225'vestidlo'
+            Caption = 'V'#253'choz'#237' n'#225'v'#283'stidlo'
             Width = 200
           end
           item
-            Caption = 'Vyh'#253'bky v z'#225'veru'
+            Caption = 'V'#253'hybky'
             Width = 300
           end
           item
-            Caption = 'Bloky v z'#225'veru'
+            Caption = #218'seky'
             Width = 300
           end
           item
@@ -5538,7 +5538,7 @@ object F_Main: TF_Main
             Width = 100
           end
           item
-            Caption = 'Dal'#353#237' n'#225'vestidlo'
+            Caption = 'Dal'#353#237' n'#225'v'#283'stidlo'
             Width = 200
           end
           item
@@ -5782,7 +5782,7 @@ object F_Main: TF_Main
         Color = clWhite
         Columns = <
           item
-            Caption = 'Cas'
+            Caption = #268'as'
           end
           item
             Caption = 'Zpr'#225'va'
@@ -5793,7 +5793,7 @@ object F_Main: TF_Main
             Width = 200
           end
           item
-            Caption = 'Error ID'
+            Caption = 'ID chyby'
             Width = 48
           end>
         Font.Charset = DEFAULT_CHARSET
@@ -5859,10 +5859,10 @@ object F_Main: TF_Main
         Align = alClient
         Columns = <
           item
-            Caption = 'Cas'
+            Caption = #268'as'
           end
           item
-            Caption = 'Level'
+            Caption = #218'rove'#328
             Width = 41
           end
           item
@@ -6103,7 +6103,7 @@ object F_Main: TF_Main
     object MI_Reset: TMenuItem
       Caption = 'Reset'
       object PM_ResetV: TMenuItem
-        Caption = 'Prestavit v'#253'hybky do z'#225'kladn'#237' polohy'
+        Caption = 'P'#345'estavit v'#253'hybky do z'#225'kladn'#237' polohy'
         Enabled = False
         ImageIndex = 27
         OnClick = PM_ResetVClick
@@ -6112,7 +6112,7 @@ object F_Main: TF_Main
     object MI_Dalsi: TMenuItem
       Caption = 'Dal'#353#237
       object PM_Tester: TMenuItem
-        Caption = 'MTB tester'
+        Caption = 'RCS tester'
         Enabled = False
         ImageIndex = 22
         ShortCut = 16468
@@ -6201,7 +6201,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403A40310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403A80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8067,7 +8067,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D0028031C041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280320041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8608,7 +8608,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802680310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D8026C0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

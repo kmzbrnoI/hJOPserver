@@ -104,7 +104,7 @@ object F_BlkUsek: TF_BlkUsek
     ParentFont = False
   end
   object Label1: TLabel
-    Left = 7
+    Left = 8
     Top = 157
     Width = 49
     Height = 13
