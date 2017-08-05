@@ -500,7 +500,9 @@ begin
        fg := clYellow;
 
      // zobrazeni zaveru
-     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and ((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK)) then
+     if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and
+         ((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK) and
+         ((Sender as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
       begin
        case ((Sender as TBlkUsek).Zaver) of
         vlak   : fg := clLime;
