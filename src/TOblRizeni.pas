@@ -765,8 +765,6 @@ end;//procedure
 procedure TOR.BlkWriteError(Sender:TObject; error:string; system:string);
 var i:Integer;
 begin
- Writelog(Self.Name + ' : ' + system + ' : ' + error, WR_ERROR, 100);
-
  for i := 0 to Self.Connected.Count-1 do
   if (Self.Connected[i].Rights >= TORControlRights.write) then
     ORTCPServer.BottomError(Self.Connected[i].Panel, error, Self.ShortName, system);

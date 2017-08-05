@@ -886,7 +886,7 @@ end;//procedure
 procedure TORTCPServer.BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
 begin
  Self.SendLn(AContext, '-;BOTTOMERR;'+err+';'+stanice+';'+tech+';');
- writelog('OR ERR: ' + tech + ' : ' + stanice + ' : ' + err, WR_ERROR);
+ writelog(tech + ' : ' + stanice + ' : ' + err, WR_ERROR);
 end;//procedure
 
 //  -;UPO;[item1][item2]                    - upozorneni
