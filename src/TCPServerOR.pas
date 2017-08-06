@@ -19,6 +19,13 @@ const
   _MAX_OR_CLIENTS = 32;                                                         // maximalni pocet klientu
   _PING_TIMER_PERIOD_MS = 20000;
 
+  // tady jsou vyjmenovane vsechny verze protokolu, ktere akceptuje server od klientu
+  _PROTO_V_ACCEPT : array[0..0] of string =
+    (
+      '1.0'
+    );
+
+
 type
   TPSCallback = procedure (Sender:TIdContext; success:boolean) of object;
 
@@ -457,6 +464,7 @@ procedure TORTCPServer.ParseGlobal(AContext: TIdContext);
 var i:Integer;
     tmp:string;
     blk:TBlk;
+    found:boolean;
 begin
  // najdeme klienta v databazi
  for i := 0 to _MAX_OR_CLIENTS-1 do
@@ -469,7 +477,24 @@ begin
  // parse handhake
  if (parsed[1] = 'HELLO') then
   begin
-   // tady muze prijit kontrola verze protokolu - je to ulozeno v Self.parsed[2]
+   // kontrola verze protokolu
+   found := false;
+   for i := 0 to Length(_PROTO_V_ACCEPT)-1 do
+    begin
+     if (Self.parsed[2] = _PROTO_V_ACCEPT[i]) then
+      begin
+       found := true;
+       break;
+      end;
+    end;//for i
+
+   if (not found) then
+    begin
+     Self.BottomError(AContext, 'Nepodporovaná verze protokolu.', '-', 'PROTOKOL');
+     Self.DisconnectClient(AContext);
+     Exit();
+    end;
+
    Self.clients[i].status := TPanelConnectionStatus.opened;
    Self.SendLn(AContext, '-;HELLO;' + _PROTOCOL_VERSION);
 
