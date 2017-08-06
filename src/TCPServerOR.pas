@@ -20,9 +20,9 @@ const
   _PING_TIMER_PERIOD_MS = 20000;
 
   // tady jsou vyjmenovane vsechny verze protokolu, ktere akceptuje server od klientu
-  _PROTO_V_ACCEPT : array[0..0] of string =
+  _PROTO_V_ACCEPT : array[0..1] of string =
     (
-      '1.1'
+      '1.0', '1.1'
     );
 
 
@@ -37,6 +37,7 @@ type
   TTCPORsRef = class
     ORs:array [0.._MAX_ORREF-1] of TOR;                                         // reference na OR
     ORsCnt:Integer;                                                             // pocet referenci na OR
+    protocol_version:string;
 
     stitek:TBlk;                                                                // blok, na kterema kutalne probiha zmena stitku
     vyluka:TBlk;                                                                // blok, na kterem aktualne probiha zmena vyluky
@@ -465,7 +466,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.ParseGlobal(AContext: TIdContext);
-var i:Integer;
+var i, j:Integer;
     tmp:string;
     blk:TBlk;
     found:boolean;
@@ -484,9 +485,9 @@ begin
   begin
    // kontrola verze protokolu
    found := false;
-   for i := 0 to Length(_PROTO_V_ACCEPT)-1 do
+   for j := 0 to Length(_PROTO_V_ACCEPT)-1 do
     begin
-     if (Self.parsed[2] = _PROTO_V_ACCEPT[i]) then
+     if (Self.parsed[2] = _PROTO_V_ACCEPT[j]) then
       begin
        found := true;
        break;
@@ -504,6 +505,7 @@ begin
    Self.SendLn(AContext, '-;HELLO;' + _PROTOCOL_VERSION);
 
    // oznamime verzi komunikacniho protokolu
+   (AContext.Data as TTCPORsRef).protocol_version := Self.parsed[2];
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := Self.parsed[2];
 
    ORTCPServer.GUIQueueLineToRefresh((AContext.Data as TTCPORsRef).index);
