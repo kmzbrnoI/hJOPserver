@@ -20,10 +20,8 @@ type
     GB_Prj_vyst: TGroupBox;
     L_P04: TLabel;
     L_P05: TLabel;
-    L_P06: TLabel;
     SE_vyst_open: TSpinEdit;
     SE_vyst_close: TSpinEdit;
-    SE_vyst_vyluka: TSpinEdit;
     GB_Prj_vst: TGroupBox;
     L_P07: TLabel;
     L_P08: TLabel;
@@ -119,7 +117,6 @@ var glob:TBlkSettings;
 
   settings.MTBOutputs.NOtevrit := Self.SE_vyst_open.Value;
   settings.MTBOutputs.Zavrit   := Self.SE_vyst_close.Value;
-  settings.MTBOutputs.Vyluka   := Self.SE_vyst_vyluka.Value;
 
   settings.MTBInputs.Otevreno  := SE_vst_open.Value;
   settings.MTBInputs.Zavreno   := SE_vst_close.Value;
@@ -163,7 +160,6 @@ var glob:TBlkSettings;
 
   SE_vyst_open.Value        := settings.MTBOutputs.NOtevrit;
   SE_vyst_close.Value       := settings.MTBOutputs.Zavrit;
-  SE_vyst_vyluka.Value      := settings.MTBOutputs.Vyluka;
 
   SE_vst_open.Value         := settings.MTBInputs.Otevreno;
   SE_vst_close.Value        := settings.MTBInputs.Zavreno;
@@ -179,7 +175,6 @@ procedure TF_BlkPrejezd.NewOpenForm;
   SE_ID.Value               := Blky.GetBlkID(Blky.Cnt-1)+1;
   SE_vyst_open.Value        := 0;
   SE_vyst_close.Value       := 0;
-  SE_vyst_vyluka.Value      := 0;
   SE_vst_open.Value         := 0;
   SE_vst_close.Value        := 0;
   SE_vst_vystraha.Value     := 0;

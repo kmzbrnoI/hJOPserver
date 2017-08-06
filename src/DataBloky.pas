@@ -207,7 +207,7 @@ var j, spr:integer;
       end;//case obsazeno
 
       Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkPrejezd).Stitek;
-      Self.LV.Items.Item[line].SubItems.Strings[6] := (Blk as TBlkPrejezd).Vyluka;
+      Self.LV.Items.Item[line].SubItems.Strings[6] := '';
 
       Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
    end;//_BLK_VYH

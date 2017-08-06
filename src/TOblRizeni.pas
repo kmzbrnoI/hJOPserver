@@ -646,8 +646,7 @@ begin
   _BLK_PREJEZD:begin
    //vytvoreni dat
 
-   if ((Sender as TBlkPrejezd).Vyluka <> '') then bg := clOlive
-   else if ((Sender as TBlkPrejezd).Stitek <> '') then bg := clTeal;
+   if ((Sender as TBlkPrejezd).Stitek <> '') then bg := clTeal;
 
    if ((Sender as TBlkPrejezd).NOtevreni) then fg := clRed
    else if ((Sender as TBlkPrejezd).UZ) then fg := clWhite

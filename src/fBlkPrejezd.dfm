@@ -4,7 +4,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 553
+  ClientHeight = 529
   ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -83,7 +83,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   end
   object B_save_P: TButton
     Left = 248
-    Top = 518
+    Top = 494
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -97,7 +97,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   end
   object B_Storno: TButton
     Left = 152
-    Top = 518
+    Top = 494
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -144,7 +144,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Left = 8
     Top = 110
     Width = 321
-    Height = 403
+    Height = 379
     Caption = ' RCS '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -174,7 +174,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Left = 64
       Top = 42
       Width = 201
-      Height = 142
+      Height = 103
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -208,17 +208,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Zavr'#237't prejezd :'
-      end
-      object L_P06: TLabel
-        Left = 17
-        Top = 96
-        Width = 38
-        Height = 13
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Caption = 'V'#253'luka :'
       end
       object SE_vyst_open: TSpinEdit
         Left = 128
@@ -260,30 +249,10 @@ object F_BlkPrejezd: TF_BlkPrejezd
         TabOrder = 1
         Value = 0
       end
-      object SE_vyst_vyluka: TSpinEdit
-        Left = 128
-        Top = 96
-        Width = 49
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        MaxValue = 15
-        MinValue = 0
-        ParentFont = False
-        TabOrder = 2
-        Value = 0
-      end
     end
     object GB_Prj_vst: TGroupBox
       Left = 64
-      Top = 188
+      Top = 156
       Width = 201
       Height = 203
       Margins.Left = 2

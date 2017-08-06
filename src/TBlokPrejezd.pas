@@ -18,7 +18,6 @@ type
  TBlkPrjMTBOutputs = record
   Zavrit:Byte;
   NOtevrit:Byte;
-  Vyluka:Byte;
  end;
 
  TBlkPrjSettings = record
@@ -114,7 +113,6 @@ type
     property UZ:boolean read PrjStav.PC_UZ write SetUZ;
 
     property Stitek:string read PrjStav.Stit write SetStit;
-    property Vyluka:string read PrjStav.Vyl write SetVyl;
 
     property Zaver:boolean read GetZaver write SetZaver;
 
@@ -167,7 +165,6 @@ begin
 
  Self.PrjSettings.MTBOutputs.Zavrit   := ini_tech.ReadInteger(section, 'MTBOz', 0);
  Self.PrjSettings.MTBOutputs.NOtevrit := ini_tech.ReadInteger(section, 'MTBOnot', 0);
- Self.PrjSettings.MTBOutputs.Vyluka   := ini_tech.ReadInteger(section, 'MTBOvyl', 0);
 
  Self.PrjStav.stit := ini_stat.ReadString(section, 'stit', '');
 
@@ -202,7 +199,6 @@ begin
 
  ini_tech.WriteInteger(section, 'MTBOz', Self.PrjSettings.MTBOutputs.Zavrit);
  ini_tech.WriteInteger(section, 'MTBOnot', Self.PrjSettings.MTBOutputs.NOtevrit);
- ini_tech.WriteInteger(section, 'MTBOvyl', Self.PrjSettings.MTBOutputs.Vyluka);
 end;//procedure
 
 procedure TBlkPrejezd.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -343,13 +339,6 @@ begin
      RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 1);
     end else begin
      RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 0);
-    end;
-
-   if (Self.PrjStav.vyl <> '') then
-    begin
-     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 1);
-    end else begin
-     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Vyluka, 0);
     end;
  except
 
