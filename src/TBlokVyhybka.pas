@@ -110,6 +110,11 @@ type
     procedure MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
 
+    procedure UPOPlusClick(Sender:TObject);
+    procedure UPOMinusClick(Sender:TObject);
+    procedure UPONSPlusClick(Sender:TObject);
+    procedure UPONSMinusClick(Sender:TObject);
+
     procedure MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure PanelPotvrSekvNSPlus(Sender:TIdContext; success:boolean);
@@ -127,6 +132,9 @@ type
 
     procedure NpObsazChange(Sender:TObject; data:Integer);
     procedure MapNpEvents();
+
+    procedure StitVylUPO(SenderPnl:TIdContext; SenderOR:TObject;
+        UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
 
   public
     constructor Create(index:Integer);
@@ -198,7 +206,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, TechnologieRCS, fMain, TJCDatabase,
+uses TBloky, GetSystems, TechnologieRCS, fMain, TJCDatabase, UPO, Graphics,
       TCPServerOR, TBlokZamek, PTUtils, RCS;
 
 constructor TBlkVyhybka.Create(index:Integer);
@@ -799,40 +807,82 @@ end;//procedure
 
 procedure TBlkVyhybka.MenuPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.VyhStav.staveniPanel := SenderPnl;
- Self.VyhStav.staveniOR    := SenderOR;
-
- Self.SetPoloha(TVyhPoloha.plus, false, false, nil, Self.PanelStaveniErr);
+ if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+   Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOPlusClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPOPlusClick(SenderPnl);
+ end;
 end;
 
 procedure TBlkVyhybka.MenuMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.VyhStav.staveniPanel := SenderPnl;
- Self.VyhStav.staveniOR    := SenderOR;
+ if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+   Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOMinusClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPOMinusClick(SenderPnl);
+ end;
+end;
+
+procedure TBlkVyhybka.MenuNSPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+   Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSPlusClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPONSPlusClick(SenderPnl);
+ end;
+end;
+
+procedure TBlkVyhybka.MenuNSMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+   Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSMinusClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPONSMinusClick(SenderPnl);
+ end;
+end;
+
+procedure TBlkVyhybka.UPOPlusClick(Sender:TObject);
+begin
+ Self.VyhStav.staveniPanel := TIdContext(Sender);
+ Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+
+ Self.SetPoloha(TVyhPoloha.plus, false, false, nil, Self.PanelStaveniErr);
+end;
+
+procedure TBlkVyhybka.UPOMinusClick(Sender:TObject);
+begin
+ Self.VyhStav.staveniPanel := TIdContext(Sender);
+ Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
  Self.SetPoloha(TVyhPoloha.minus, false, false, nil, Self.PanelStaveniErr);
 end;
 
-procedure TBlkVyhybka.MenuNSPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkVyhybka.UPONSPlusClick(Sender:TObject);
 var Blk:TBlk;
 begin
- Self.VyhStav.staveniPanel := SenderPnl;
- Self.VyhStav.staveniOR    := SenderOR;
+ Self.VyhStav.staveniPanel := TIdContext(Sender);
+ Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
  Blky.GetBlkByID(Self.UsekID, Blk);
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvNSPlus, (SenderOR as TOR), 'Nouzové stavìní do polohy plus',
-                    TBlky.GetBlksList(Self), TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+ ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+                    'Nouzové stavìní do polohy plus', TBlky.GetBlksList(Self),
+                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
-procedure TBlkVyhybka.MenuNSMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkVyhybka.UPONSMinusClick(Sender:TObject);
 var Blk:TBlk;
 begin
- Self.VyhStav.staveniPanel := SenderPnl;
- Self.VyhStav.staveniOR    := SenderOR;
+ Self.VyhStav.staveniPanel := TIdContext(Sender);
+ Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
  Blky.GetBlkByID(Self.UsekID, Blk);
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvNSMinus, (SenderOR as TOR), 'Nouzové stavìní do polohy mínus',
-                    TBlky.GetBlksList(Self), TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+ ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+                    'Nouzové stavìní do polohy mínus', TBlky.GetBlksList(Self),
+                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkVyhybka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1271,6 +1321,54 @@ begin
      TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnObsaz,
        CreateChangeEvent(Self.NpObsazChange, 1));
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVyhybka.StitVylUPO(SenderPnl:TIdContext; SenderOR:TObject;
+      UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
+var upo:TUPOItems;
+    item:TUPOItem;
+    lines:TStrings;
+begin
+ upo := TList<TUPOItem>.Create;
+ try
+  if (Self.Stitek <> '') then
+   begin
+    item[0] := GetUPOLine('ŠTÍTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
+
+    try
+      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
+
+   upo.Add(item);
+  end;
+
+  if (Self.Vyluka <> '') then
+   begin
+    item[0] := GetUPOLine('VÝLUKA '+Self.GlobalSettings.name, taCenter, clBlack, clOlive);
+    lines := GetLines(Self.Vyluka, _UPO_LINE_LEN);
+
+    try
+      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
+
+   upo.Add(item);
+  end;
+
+  ORTCPServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+ finally
+   upo.Free();
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
