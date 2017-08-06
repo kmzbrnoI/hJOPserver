@@ -5,7 +5,7 @@ unit TBlokPrejezd;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, SysUtils, Menus, TOblsRizeni,
-     Classes, TechnologieRCS, IdContext, TOblRizeni;
+     Classes, TechnologieRCS, IdContext, TOblRizeni, Generics.Collections;
 
 type
  TBlkPrjMTBInputs = record
@@ -74,10 +74,18 @@ type
     procedure MenuZNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
 
+    procedure UPOUZClick(Sender:TObject);
+    procedure UPOZUZClick(Sender:TObject);
+    procedure UPONOTClick(Sender:TObject);
+    procedure UPOZNOTClick(Sender:TObject);
+
     // DEBUG volby:
     procedure MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+
+    procedure StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
+        UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
 
   public
     constructor Create(index:Integer);
@@ -123,7 +131,8 @@ type
 
 implementation
 
-uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS;
+uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
+     Graphics;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin
@@ -399,20 +408,64 @@ end;//procedure
 
 procedure TBlkPrejezd.MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.UZ := true;
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPOUZClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPOUZClick(SenderPnl);
+ end;
 end;
 
 procedure TBlkPrejezd.MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelZUZCallBack, (SenderOR as TOR), 'Zrušení uzavøení pøejezdu', TBlky.GetBlksList(Self), nil);
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPOZUZClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPOZUZClick(SenderPnl);
+ end;
 end;
 
 procedure TBlkPrejezd.MenuNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelZNOTCallBack, (SenderOR as TOR), 'Nouzové otevøení pøejezdu', TBlky.GetBlksList(Self), nil);
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPONOTClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPONOTClick(SenderPnl);
+ end;
 end;
 
 procedure TBlkPrejezd.MenuZNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPOZNOTClick, nil)
+ else begin
+   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   Self.UPOZNOTClick(SenderPnl);
+ end;
+end;
+
+procedure TBlkPrejezd.UPOUZClick(Sender:TObject);
+begin
+ Self.UZ := true;
+end;
+
+procedure TBlkPrejezd.UPOZUZClick(Sender:TObject);
+begin
+ ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZUZCallBack,
+    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+    'Zrušení uzavøení pøejezdu', TBlky.GetBlksList(Self), nil);
+end;
+
+procedure TBlkPrejezd.UPONOTClick(Sender:TObject);
+begin
+ ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZNOTCallBack,
+    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+    'Nouzové otevøení pøejezdu', TBlky.GetBlksList(Self), nil);
+end;
+
+procedure TBlkPrejezd.UPOZNOTClick(Sender:TObject);
 begin
  Self.NOtevreni := false;
 end;
@@ -568,6 +621,38 @@ function TBlkPrejezd.GetZaver():boolean;
 begin
  Result := (Self.PrjStav.zaver > 0);
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
+      UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
+var upo:TUPOItems;
+    item:TUPOItem;
+    lines:TStrings;
+begin
+ upo := TList<TUPOItem>.Create;
+ try
+  if (Self.Stitek <> '') then
+   begin
+    item[0] := GetUPOLine('ŠTÍTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
+
+    try
+      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
+
+   upo.Add(item);
+  end;
+
+  ORTCPServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+ finally
+   upo.Free();
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
