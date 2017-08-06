@@ -471,7 +471,7 @@ begin
   begin
    // tady muze prijit kontrola verze protokolu - je to ulozeno v Self.parsed[2]
    Self.clients[i].status := TPanelConnectionStatus.opened;
-   Self.SendLn(AContext, '-;HELLO;1.0');
+   Self.SendLn(AContext, '-;HELLO;' + _PROTOCOL_VERSION);
 
    // oznamime verzi komunikacniho protokolu
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := Self.parsed[2];
