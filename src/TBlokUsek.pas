@@ -1293,15 +1293,26 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+var Blk:TBlk;
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
  case (Button) of
-  right,F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-  left    : if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-              if (not Self.PresunLok(SenderPnl, SenderOR)) then
-                ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-  middle  : Self.MenuVBClick(SenderPnl, SenderOR);
+  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+
+  ENTER: begin
+    if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
+    if (not Self.PresunLok(SenderPnl, SenderOR)) then
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  end;
+
+  F1: begin
+    Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
+    if (Blk = nil) then
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
+    else
+      Self.MenuVBClick(SenderPnl, SenderOR);
+  end;
  end;
 end;//procedure
 

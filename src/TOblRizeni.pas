@@ -29,7 +29,7 @@ const
 
 type
   TORControlRights = (null = 0, read = 1, write = 2, superuser = 3);
-  TPanelButton = (left = 0, middle = 1, right = 2, F2 = 3, F3 = 4);
+  TPanelButton = (F1, F2, ENTER, ESCAPE);
 
   // podminky potvrzovaci sekvence
   TPSPodminka = record

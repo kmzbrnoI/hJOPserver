@@ -977,7 +977,7 @@ begin
  if (Self.Stav.poloha <= TVyhPoloha.disabled) then Exit();
 
  case (Button) of
-  right, left, F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end;//case
 end;//procedure
 

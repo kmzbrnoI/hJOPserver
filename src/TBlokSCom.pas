@@ -918,14 +918,23 @@ begin
  if (Self.SComStav.Navest = -1) then Exit();
 
  case (Button) of
-  right,F2 : ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-  left     : begin
-    if (((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) then
+  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+
+  ENTER: begin
+    if ((((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and
+        ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) or (Self.SComRel.SymbolType = 1)) then
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
   end;
-  middle   : if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
+
+  F1: begin
+    if (((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and
+        ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) then
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
+    else
+      if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
+  end;
  end;//case
 end;//procedure
 
@@ -1369,13 +1378,13 @@ end;//procedure
 procedure TBlkSCom.PrivolDKClick(SenderPnl:TIDContext; SenderOR:TObject; Button:TPanelButton);
 var i:Integer;
 begin
- if (Button = TPanelButton.left) then
+ if (Button = ENTER) then
   begin
    for i := 0 to Self.OblsRizeni.Cnt-1 do
     Self.OblsRizeni.ORs[i].ORDKClickClient();
    ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti', TBLky.GetBlksList(Self), nil);
   end else begin
-   if ((Button = TPanelButton.F2) or (Button = TPanelButton.right)) then
+   if (Button = TPanelButton.F2) then
      ORTCPServer.Menu(SenderPnl, Self, TOR(SenderOR), '$'+TOR(SenderOR).Name + ',-,' + 'KC');
   end;
 end;//procedure

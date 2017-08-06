@@ -22,7 +22,7 @@ const
   // tady jsou vyjmenovane vsechny verze protokolu, ktere akceptuje server od klientu
   _PROTO_V_ACCEPT : array[0..0] of string =
     (
-      '1.0'
+      '1.1'
     );
 
 
@@ -30,6 +30,8 @@ type
   TPSCallback = procedure (Sender:TIdContext; success:boolean) of object;
 
   TPanelConnectionStatus = (closed, opening, handshake, opened);
+
+  EInvalidButton = class(Exception);
 
   // tady je ulozeno jedno fyzicke spojeni s panelem (obsahuje oblasti rizeni, otevrene okynko stitku, menu, ...)
   TTCPORsRef = class
@@ -147,6 +149,8 @@ type
      function GetClient(index:Integer):TORTCPClient;
 
      procedure DisconnectRegulatorUser(user:TUser);
+
+     function StrToPanelButton(button:string):TPanelButton;
 
       property openned:boolean read IsOpenned;
       property port:Word read fport write fport;
@@ -465,6 +469,7 @@ var i:Integer;
     tmp:string;
     blk:TBlk;
     found:boolean;
+    btn:TPanelButton;
 begin
  // najdeme klienta v databazi
  for i := 0 to _MAX_OR_CLIENTS-1 do
@@ -585,12 +590,17 @@ begin
      blk.PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2], -1);
   end
 
- else if (parsed[1] = 'ESCAPE') then
-  begin
-   (AContext.Data as TTCPORsRef).Escape(AContext);
-  end
+ else if (parsed[1] = 'CLICK') then begin
+  try
+   btn := Self.StrToPanelButton(parsed[2]);
+   if (btn = TPanelButton.ESCAPE) then
+     (AContext.Data as TTCPORsRef).Escape(AContext);
+  except
+   on E:EInvalidButton do
+     Exit();
+  end;
 
- else if (parsed[1] = 'OR-LIST') then
+ end else if (parsed[1] = 'OR-LIST') then
    ORs.SendORList(AContext)
 
  else if (parsed[1] = 'UPO') then
@@ -685,6 +695,7 @@ end;//procedure
 procedure TORTCPServer.ParseOR(AContext: TIdContext);
 var i:Integer;
     oblr:TOR;
+    btn:TPanelButton;
 begin
  if (parsed.Count < 2) then Exit();
 
@@ -730,10 +741,18 @@ begin
  else if (parsed[1] = 'GET-ALL') then
   (AContext.Data as TTCPORsRef).ORs[i].PanelFirstGet(AContext)
 
- else if (parsed[1] = 'CLICK') then
-  (AContext.Data as TTCPORsRef).ORs[i].PanelClick(AContext, StrToInt(parsed[2]), TPanelButton(StrToInt(parsed[3])))
+ else if (parsed[1] = 'CLICK') then begin
+  try
+   btn := Self.StrToPanelButton(parsed[2]);
+   (AContext.Data as TTCPORsRef).ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn);
+   if (btn = ESCAPE) then
+     (AContext.Data as TTCPORsRef).Escape(AContext);
+  except
+   on E:EInvalidButton do
+     Exit();
+  end;
 
- else if (parsed[1] = 'MSG') then
+ end else if (parsed[1] = 'MSG') then
    (AContext.Data as TTCPORsRef).ORs[i].PanelMessage(ACOntext, parsed[2], parsed[3])
 
  else if (parsed[1] = 'HV-LIST') then
@@ -1314,6 +1333,22 @@ begin
  except
 
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TORTCPServer.StrToPanelButton(button:string):TPanelButton;
+begin
+ if (button = 'F1') then
+   Result := TPanelButton.F1
+ else if (button = 'F2') then
+   Result := TPanelButton.F2
+ else if (button = 'ENTER') then
+   Result := TPanelButton.ENTER
+ else if (button = 'ESCAPE') then
+   Result := TPanelButton.ESCAPE
+ else
+   raise EInvalidButton.Create('Invalid button!');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

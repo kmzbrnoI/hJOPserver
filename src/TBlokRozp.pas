@@ -174,9 +174,9 @@ begin
  if (Self.status = TRozpStatus.disabled) then Exit();
 
  case (Button) of
-   TPanelButton.F2: Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+   F2: Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
 
-   TPanelButton.left:begin
+   ENTER: begin
      case (Self.status) of
        TRozpStatus.not_selected : begin
          // vybrat rozpojovac
@@ -195,7 +195,7 @@ begin
      end;//case
     end;//case TPanelButton.left
 
-   TPanelButton.right:begin
+   ESCAPE: begin
      case (Self.status) of
        TRozpStatus.mounting     : Self.status := TRozpStatus.not_selected;
        TRozpStatus.active       : Self.status := TRozpStatus.not_selected;
