@@ -5,7 +5,7 @@ unit TBlokUvazka;
 interface
 
 uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
-     IdContext, StrUtils, TOblRizeni;
+     IdContext, StrUtils, TOblRizeni, Generics.Collections;
 
 type
 
@@ -56,7 +56,15 @@ type
     procedure PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
     procedure PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
 
+    procedure UPOZTSOnClick(Sender:TObject);
+    procedure UPOUTSClick(Sender:TObject);
+    procedure UPOOTSClick(Sender:TObject);
+    procedure UPOZAKOnClick(Sender:TObject);
+
     procedure SetZadost(zadost:boolean);
+
+    procedure StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
+        UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
 
   public
     constructor Create(index:Integer);
@@ -77,6 +85,9 @@ type
     procedure ChangeFromTrat();
 
     //----- usek own functions -----
+
+    procedure DoZTS(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure DoUTS(SenderPnl:TIdContext; SenderOR:TObject);
 
     function GetSettings():TBlkUvazkaSettings;
     procedure SetSettings(data:TBlkUvazkaSettings);
@@ -103,7 +114,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging,
+uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging, UPO, Graphics,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
 constructor TBlkUvazka.Create(index:Integer);
@@ -239,7 +250,7 @@ procedure TBlkUvazka.MenuZTSOnClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  case ((SenderOR as TOR).stack.volba) of
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
-  TORStackVolba.PV : Self.zadost := true;
+  TORStackVolba.PV : Self.DoZTS(SenderPnl, SenderOR);
  end;
 end;//procedure
 
@@ -252,7 +263,7 @@ procedure TBlkUvazka.MenuUTSClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  case ((SenderOR as TOR).stack.volba) of
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
-  TORStackVolba.PV : Self.UdelSouhlas();
+  TORStackVolba.PV : Self.DoUTS(SenderPnl, SenderOR);
  end;
 end;//procedure
 
@@ -276,21 +287,24 @@ end;
 
 procedure TBlkUvazka.MenuOTSClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((Self.parent as TBlkTrat).GetSettings.zabzar = TTratZZ.nabidka) then
-   (Self.parent as TBlkTrat).smer := TTratSmer.zadny;
- Self.zadost := false;
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPOOTSClick, nil)
+ else
+   Self.UPOOTSClick(SenderPnl);
 end;//procedure
 
 procedure TBlkUvazka.MenuZAKOnClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((Self.parent as TBlkTrat).Zadost) then
-  (Self.parent as TBlkTrat).Zadost := false;
- Self.ZAK := true;
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPOZAKOnClick, nil)
+ else
+   Self.UPOZAKOnClick(SenderPnl);
 end;//procedure
 
 procedure TBlkUvazka.MenuZAKOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR, 'ZruöenÌ z·kazu odjezdu na traù', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR,
+    'ZruöenÌ z·kazu odjezdu na traù', TBlky.GetBlksList(Self), nil);
 end;//procedure
 
 procedure TBlkUvazka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -305,7 +319,8 @@ end;//procedure
 
 procedure TBlkUvazka.MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR, 'ZruöenÌ nouzovÈho z·vÏru', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR,
+    'ZruöenÌ nouzovÈho z·vÏru', TBlky.GetBlksList(Self), nil);
 end;//procedure
 
 
@@ -318,6 +333,36 @@ procedure TBlkUvazka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
 begin
  if (success) then Self.nouzZaver := false;
 end;//procedure
+
+procedure TBlkUvazka.UPOZTSOnClick(Sender:TObject);
+begin
+ Self.zadost := true;
+
+ if (Self.ORsRef.ORs[0].stack.volba = TORStackVolba.VZ) then
+   Self.ORsRef.ORs[0].stack.RemoveZTS(Self);
+end;
+
+procedure TBlkUvazka.UPOUTSClick(Sender:TObject);
+begin
+ Self.UdelSouhlas();
+
+ if (Self.ORsRef.ORs[0].stack.volba = TORStackVolba.VZ) then
+   Self.ORsRef.ORs[0].stack.RemoveUTS(Self);
+end;
+
+procedure TBlkUvazka.UPOOTSClick(Sender:TObject);
+begin
+ if ((Self.parent as TBlkTrat).GetSettings.zabzar = TTratZZ.nabidka) then
+   (Self.parent as TBlkTrat).smer := TTratSmer.zadny;
+ Self.zadost := false;
+end;
+
+procedure TBlkUvazka.UPOZAKOnClick(Sender:TObject);
+begin
+ if ((Self.parent as TBlkTrat).Zadost) then
+   (Self.parent as TBlkTrat).Zadost := false;
+ Self.ZAK := true;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -501,6 +546,58 @@ begin
    Result := ((not Self.zadost) and ((Self.parent as TBlkTrat).Smer <> TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost));
   end;
 end;//function
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUvazka.StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
+      UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
+var upo:TUPOItems;
+    item:TUPOItem;
+    lines:TStrings;
+begin
+ upo := TList<TUPOItem>.Create;
+ try
+  if (Self.Stitek <> '') then
+   begin
+    item[0] := GetUPOLine('äTÕTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
+
+    try
+      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
+
+   upo.Add(item);
+  end;
+
+  ORTCPServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+ finally
+   upo.Free();
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUvazka.DoZTS(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPOZTSOnClick, nil)
+ else
+   Self.UPOZTSOnClick(SenderPnl);
+end;
+
+procedure TBlkUvazka.DoUTS(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ if (Self.Stitek <> '') then
+   Self.StitUPO(SenderPnl, SenderOR, Self.UPOUTSClick, nil)
+ else
+   Self.UPOUTSClick(SenderPnl);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit
 

@@ -87,6 +87,8 @@ type
       procedure NewConnection(SenderPnl:TIdContext);
 
       procedure RemoveJC(JC:TObject);           // maze prvni nalezenou cestu - tuto metodu vyuziva jizdni cesta pri dokonceni staveni
+      procedure RemoveZTS(uvazka:TObject);      // maze ZTS pokud je na prvni pozici v zasobniku
+      procedure RemoveUTS(uvazka:TObject);      // maze UTS pokud je na prvni pozici v zasobniku
 
       procedure ClearStack();                   // mazani zasobniku je volano pri vypnuti systemu
       function GetList():string;
@@ -198,13 +200,19 @@ end;//procedure
 procedure TORStack.ORCmdUPO(SenderPnl:TIdContext);
 var cmd:TORStackCmdJC;
 begin
- if ((Self.stack.Count = 0) or (Self.stack[0].ClassType <> TORStackCmdJC)) then Exit();
+ if ((Self.stack.Count = 0)) then Exit();
 
  // ted jsou v ceste jen bariery na potvrzeni -> cestu muzu klasicky zacit stavet pres StavJC:
  (Self.OblR as TOR).BroadcastData('ZAS;FIRST;0');
  Self.UPOenabled := false;
- cmd := (Self.stack[0] as TORSTackCmdJC);
- (cmd.JC as TJC).StavJC(cmd.Pnl, Self.OblR, Self, cmd.nouz);
+
+ if (Self.stack[0].ClassType = TORStackCmdJC) then begin
+   cmd := (Self.stack[0] as TORSTackCmdJC);
+   (cmd.JC as TJC).StavJC(SenderPnl, Self.OblR, Self, cmd.nouz);
+  end else if (Self.stack[0].ClassType = TORStackCmdZTS) then
+   ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkUvazka).DoZTS(SenderPnl, Self.OblR)
+  else if (Self.stack[0].ClassType = TORStackCmdUTS) then
+   ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkUvazka).DoUTS(SenderPnl, Self.OblR)
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -403,13 +411,18 @@ var uv:TBlkUvazka;
 begin
  uv := (cmd.uvazka as TBlkUvazka);
 
- Self.UPOenabled := false;
  Self.hint := (uv as TBlk).GetGlobalSettings.name;
 
  if ((Self.volba = TORStackVolba.VZ) and (uv.CanZTS())) then
   begin
-   uv.zadost := true;
-   Self.RemoveFromStack(0);
+   Self.UPOenabled := (uv.Stitek <> '');
+   if (uv.Stitek = '') then
+    begin
+     uv.zadost := true;
+     Self.RemoveFromStack(0);
+    end;
+  end else begin
+   Self.UPOenabled := false;
   end;
 end;//procedure
 
@@ -418,14 +431,19 @@ var uv:TBlkUvazka;
 begin
  uv := (cmd.uvazka as TBlkUvazka);
 
- Self.UPOenabled := false;
  Self.hint := (uv as TBlk).GetGlobalSettings.name;
 
  if ((Self.volba = TORStackVolba.VZ) and
      (not uv.zadost) and ((uv.parent as TBlkTrat).Zadost)) then
   begin
-   uv.UdelSouhlas();
-   Self.RemoveFromStack(0);
+   Self.UPOenabled := (uv.Stitek <> '');
+   if (uv.Stitek = '') then
+    begin
+     uv.UdelSouhlas();
+     Self.RemoveFromStack(0);
+    end;
+  end else begin
+   Self.UPOenabled := false;
   end;
 end;//procedure
 
@@ -494,11 +512,26 @@ begin
  for i := 0 to Self.stack.Count-1 do
   if ((Self.stack[i].ClassType = TORStackCmdJC) and ((Self.stack[i] as TORStackCmdJC).JC = JC)) then
    begin
-    writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - JC '+((Self.stack[i] as TORStackCmdJC).JC as TJC).nazev+' : smazána ze zásobníku, id = '+IntToStr(Self.stack[i].id), WR_STACK);
+    writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - JC '+((Self.stack[i] as TORStackCmdJC).JC as TJC).nazev+
+        ' : smazána ze zásobníku, id = '+IntToStr(Self.stack[i].id), WR_STACK);
     Self.RemoveFromStack(i);
     Exit();
    end;
 end;//procedure
+
+procedure TORStack.RemoveZTS(uvazka:TObject);
+begin
+ if ((Self.stack.Count > 0) and (Self.stack[0].ClassType = TORStackCmdZTS) and
+     ((Self.stack[0] as TORStackCmdZTS).uvazka = uvazka)) then
+   Self.RemoveFromStack(0);
+end;
+
+procedure TORStack.RemoveUTS(uvazka:TObject);
+begin
+ if ((Self.stack.Count > 0) and (Self.stack[0].ClassType = TORStackCmdUTS) and
+     ((Self.stack[0] as TORStackCmdUTS).uvazka = uvazka)) then
+   Self.RemoveFromStack(0);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
