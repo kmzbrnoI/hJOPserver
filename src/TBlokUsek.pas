@@ -1083,7 +1083,7 @@ begin
 
  try
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
-   TOR(SenderOR).hlaseni.Odjede(Self.GetSHSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]));
+   TOR(SenderOR).hlaseni.Odjede(Self.GetSHSpr(TTCPORsRef(SenderPnl.Data).spr_menu_index));
  except
    on E:Exception do
     begin
@@ -1103,7 +1103,7 @@ begin
  try
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
 
-   shSpr := Self.GetSHSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]);
+   shSpr := Self.GetSHSpr(TTCPORsRef(SenderPnl.Data).spr_menu_index);
    blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
       Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]],
       TOR(SenderOR)).stanicniKolej;
@@ -1130,7 +1130,7 @@ begin
  try
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
 
-   shSpr := Self.GetSHSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]);
+   shSpr := Self.GetSHSpr(TTCPORsRef(SenderPnl.Data).spr_menu_index);
    blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
       Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]],
       TOR(SenderOR)).stanicniKolej;
