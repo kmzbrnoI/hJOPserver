@@ -176,6 +176,7 @@ type
     _JCB_TRAT_NESOUHLAS          = 74;
     _JCB_TRAT_NO_BP              = 75;
     _JCB_TRAT_NOT_ZAK            = 76;
+    _JCB_TRAT_STITEK             = 77;
 
     _JCB_ZAMEK_NEUZAMCEN         = 80;
     _JCB_ZAMEK_NOUZ_ZAVER        = 81;
@@ -869,6 +870,19 @@ begin
         bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
      end;
 
+    // kontrola stitku uvazky v nasi OR:
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Cnt > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
+          TBlkUvazka(TBlkTrat(Blk).uvazkaA).GetGlobalSettings.id));
+
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Cnt > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
+          TBlkUvazka(TBlkTrat(Blk).uvazkaB).GetGlobalSettings.id));
+
     // stitky a vyluky na tratovych usecich
     for usek in TBlkTrat(Blk).GetSettings().Useky do
      begin
@@ -1093,6 +1107,19 @@ begin
       if (TBlkUsek(Blk2).Stitek <> '') then
         bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk2, blk2.GetGlobalSettings.id));
      end;
+
+    // kontrola stitku uvazky v nasi OR:
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Cnt > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
+          TBlkUvazka(TBlkTrat(Blk).uvazkaA).GetGlobalSettings.id));
+
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Cnt > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
+          TBlkUvazka(TBlkTrat(Blk).uvazkaB).GetGlobalSettings.id));
    end;
 
 end;//procedure
@@ -3028,6 +3055,15 @@ begin
      end;
   end;
 
+  _JCB_TRAT_STITEK : begin
+    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
+    lines := GetLines((Bariera.blok as TBlkUvazka).Stitek, _UPO_LINE_LEN);
+    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+    if (lines.Count > 1) then
+      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    lines.Free();
+  end;
+
   _JCB_SPR_SMER : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Jízda proti smìru soupravy');
@@ -3070,7 +3106,7 @@ begin
       end;
   end;
   _JCB_USEK_STITEK, _JCB_USEK_VYLUKA, _JCB_VYHYBKA_STITEK, _JCB_VYHYBKA_VYLUKA, _JCB_PREJEZD_STITEK,
-  _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC, _JCB_SPR_SMER:
+  _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC, _JCB_SPR_SMER, _JCB_TRAT_STITEK:
             Result := true;
  else
   Result := false;
