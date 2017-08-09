@@ -21,11 +21,13 @@ const
   _MAX_ORREF = 16;
 
   // zvuky - musi korespondovat se zvuky klienta
-  _SND_TRAT_ZADOST = 4;
-  _SND_POTVR_SEKV  = 8;
-  _SND_CHYBA       = 10;
-  _SND_PRETIZENI   = 7;
-  _SND_ZPRAVA      = 9;
+  _SND_TRAT_ZADOST  = 4;
+  _SND_PRIVOLAVACKA = 5;
+  _SND_TIMEOUT      = 6;
+  _SND_PRETIZENI    = 7;
+  _SND_POTVR_SEKV   = 8;
+  _SND_ZPRAVA       = 9;
+  _SND_CHYBA        = 10;
 
 type
   TORControlRights = (null = 0, read = 1, write = 2, superuser = 3);
@@ -85,6 +87,7 @@ type
   NUZmerCasuID:Integer;                                                         // ID mereni casu NUZ
   ZkratBlkCnt:Integer;                                                          // kolik bloku je ve zkratu (vyuzivano pro prehravani zvuku)
   ZadostBlkCnt:Integer;                                                         // pocet uvazek, na ktere je zadost o tratovy souhlas (kvuli prehravani zvuku)
+  PrivolavackaBlkCnt:Integer;                                                   // pocet aktivnich privolavacch navesti
   dk_click_callback:TBlkCallback;                                               // callback kliku na dopravni kancelar
   reg_please:TIdCOntext;                                                        // zde je ulozen regulator, ktery danou oblast rizeni zada o prideleni lokomotivy
  end;
@@ -138,6 +141,7 @@ type
       procedure SetNUZBlkCnt(new:Integer);
       procedure SetZkratBlkCnt(new:Integer);
       procedure SetZadostBlkCnt(new:Integer);
+      procedure SetPrivolavackaBlkCnt(new:Integer);
 
       procedure MTBClear();                                                     // nastavi vsem MTB, ze nejsou v OR
       procedure MTBUpdate();                                                    // posila souhrnne zpravy panelu o vypadku MTB modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
@@ -189,7 +193,7 @@ type
       //--- komunikace s technologickymi bloky ---
       procedure BlkChange(Sender:TObject; specificClient:TIDContext = nil);     // doslo ke zmene bloku v OR, je potreba propagovat zmenu do panelu
       procedure BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights;       // prehraje zvuk
-          sound:Integer; delay_ms:Integer = -1);
+          sound:Integer; loop:boolean = false);
       procedure BlkRemoveSound(Sender:TObject; sound:Integer);                  // zrusi prehravani zvuku
       procedure BlkWriteError(Sender:TObject; error:string; system:string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
       procedure BlkNewSpr(Sender:TObject; Panel:TIdContext; sprUsekIndex:Integer); // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
@@ -246,6 +250,7 @@ type
       property NUZblkCnt:Integer read ORStav.NUZblkCnt write SetNUZBlkCnt;
       property ZKratBlkCnt:Integer read ORStav.ZKratBlkCnt write SetZkratBlkCnt;
       property ZadostBlkCnt:Integer read ORStav.ZadostBlkCnt write SetZadostBlkCnt;
+      property PrivolavackaBlkCnt:Integer read ORStav.PrivolavackaBlkCnt write SetPrivolavackaBlkCnt;
       property reg_please:TIdContext read ORStav.reg_please;
 
       //--- komunikace s panely konec ---
@@ -772,12 +777,12 @@ begin
     ORTCPServer.BottomError(Self.Connected[i].Panel, error, Self.ShortName, system);
 end;//procedure
 
-procedure TOR.BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights; sound:Integer; delay_ms:Integer = -1);
+procedure TOR.BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights; sound:Integer; loop:boolean = false);
 var i:Integer;
 begin
  for i := 0 to Self.Connected.COunt-1 do
   if (Self.Connected[i].Rights >= min_rights) then
-   ORTCPServer.PlaySound(Self.Connected[i].Panel, sound, delay_ms);
+   ORTCPServer.PlaySound(Self.Connected[i].Panel, sound, loop);
 end;//procedure
 
 procedure TOR.BlkRemoveSound(Sender:TObject; sound:Integer);
@@ -1435,7 +1440,7 @@ begin
    // V OR nastal zkrat -> prehrat zvuk
    for i := 0 to Self.Connected.Count-1 do
     if (Self.Connected[i].Rights > TORCOntrolRights.read) then
-     ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_PRETIZENI, 1000);
+     ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_PRETIZENI, true);
   end;
 
  if ((new <= 2) and (Self.ORStav.ZkratBlkCnt = 2)) then
@@ -1461,7 +1466,7 @@ begin
    // nastala zadost -> prehrat zvuk
    for i := 0 to Self.Connected.Count-1 do
     if (Self.Connected[i].Rights > TORCOntrolRights.read) then
-     ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_TRAT_ZADOST, 500);
+     ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_TRAT_ZADOST, true);
   end;
 
  if ((new = 0) and (Self.ZadostBlkCnt > 0)) then
@@ -1473,6 +1478,32 @@ begin
   end;
 
  Self.ORStav.ZadostBlkCnt := new;
+end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.SetPrivolavackaBlkCnt(new:Integer);
+var i:Integer;
+begin
+ if (new < 0) then Exit();
+
+ if ((new > 0) and (Self.PrivolavackaBlkCnt = 0)) then
+  begin
+   // aktivace prvni privolavaci navesti -> prehrat zvuk
+   for i := 0 to Self.Connected.Count-1 do
+    if (Self.Connected[i].Rights > TORCOntrolRights.read) then
+     ORTCPServer.PlaySound(Self.Connected[i].Panel, _SND_PRIVOLAVACKA, true);
+  end;
+
+ if ((new = 0) and (Self.PrivolavackaBlkCnt > 0)) then
+  begin
+   // skocnila posledni privolavaci navest -> vypnout zvuk
+   for i := 0 to Self.Connected.Count-1 do
+    if (Self.Connected[i].Rights > TORCOntrolRights.read) then
+     ORTCPServer.DeleteSound(Self.Connected[i].Panel, _SND_PRIVOLAVACKA);
+  end;
+
+ Self.ORStav.PrivolavackaBlkCnt := new;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2174,14 +2205,16 @@ end;//procedure
 
 procedure TOR.AuthReadToWrite(panel:TIdContext);
 begin
- if (Self.ZkratBlkCnt > 2) then ORTCPServer.PlaySound(panel, _SND_PRETIZENI, 1000);
- if (Self.ZadostBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TRAT_ZADOST, 500);
+ if (Self.ZkratBlkCnt > 2) then ORTCPServer.PlaySound(panel, _SND_PRETIZENI, true);
+ if (Self.ZadostBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TRAT_ZADOST, true);
+ if (Self.PrivolavackaBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_PRIVOLAVACKA, true);
 end;//procedure
 
 procedure TOR.AuthWriteToRead(panel:TIdContext);
 begin
  if (Self.ZkratBlkCnt > 2) then ORTCPServer.DeleteSound(panel, _SND_PRETIZENI);
  if (Self.ZadostBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TRAT_ZADOST);
+ if (Self.PrivolavackaBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_PRIVOLAVACKA);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

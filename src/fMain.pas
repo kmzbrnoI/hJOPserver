@@ -2393,7 +2393,7 @@ begin
    ORTCPServer.DCCStart();
   end else begin
 
-   ORs.BroadcastPlaySound(_SND_CHYBA, -1, TORControlRights.write);
+   ORs.BroadcastPlaySound(_SND_CHYBA, false, TORControlRights.write);
 
    //neni DCC
    F_Main.S_Intellibox_go.Brush.Color  := clRed;

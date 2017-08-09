@@ -128,7 +128,7 @@ type
      procedure CancelUPO(AContext: TIdContext; ref:TObject);
 
      // tyto funkce take muzou byt volany z oblasti rizeni, protoze nemusi byt primou reakci na akci uzivatele - chceme je odeslat vsem
-     procedure PlaySound(AContext: TIdContext; code:Integer; delay_ms:Integer = -1);
+     procedure PlaySound(AContext: TIdContext; code:Integer; loop:boolean = false);
      procedure DeleteSound(AContext: TIdContext; code:Integer);
      procedure BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
 
@@ -919,9 +919,12 @@ begin
  end;
 end;//procedure
 
-procedure TORTCPServer.PlaySound(AContext: TIdContext; code:Integer; delay_ms:Integer = -1);
+procedure TORTCPServer.PlaySound(AContext: TIdContext; code:Integer; loop:boolean = false);
 begin
- Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';'+IntToStr(delay_ms)+';');
+ if (loop) then
+   Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';L')
+ else
+   Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';');
 end;//procedure
 
 procedure TORTCPServer.DeleteSound(AContext: TIdContext; code:Integer);

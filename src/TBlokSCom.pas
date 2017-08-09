@@ -600,10 +600,21 @@ begin
    Self.SComStav.privol_timer_id := 0;
   end;
 
-  if (navest = 8) then
-   Self.SComStav.privol_start := Now;
+ if (navest = 8) then
+  Self.SComStav.privol_start := Now;
 
  if (Self.SComStav.Navest = navest) then Exit();
+
+ if (navest = 8) then
+  begin
+   // nova navest je privolavacka -> zapnout zvukovou vyzvu
+   for i := 0 to Self.OblsRizeni.Cnt-1 do
+     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt + 1;
+  end else if ((Self.SComStav.Navest = 8) and (navest = 0)) then begin
+   // STUJ po privolavacce -> vypnout zvukovou vyzvu
+   for i := 0 to Self.OblsRizeni.Cnt-1 do
+     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt - 1;
+  end;
 
  Self.SComStav.Navest := navest;
 
