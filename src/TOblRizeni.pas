@@ -536,48 +536,49 @@ begin
       msg := msg + '0;';
 
      msg := msg + IntToStr(Integer((Sender as TBlkUsek).KonecJC)) + ';';
+     msg := msg + PrevodySoustav.ColorToStr(nebarVetve) + ';';
 
-     if ((Sender as TBlkUsek).vlakPresun = 0) then
-      msg := msg + PrevodySoustav.ColorToStr(clYellow) + ';'
-     else
-      msg := msg + '-;';
-
-     if ((Sender as TBlkUsek).IsSouprava()) then
+     // odeslani seznamu souprav
+     msg := msg + '{';
+     for i := 0 to (Sender as TBlkUsek).Soupravs.Count-1 do
       begin
-       if (Assigned(Soupravy[(Sender as TBlkUsek).SoupravaL])) then
-        begin
-         msg := msg + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SoupravaL)+';';
-         if ((Sender as TBlkUsek).Obsazeno = uvolneno) then fg := clAqua;
+       msg := msg + '(' + Soupravy[(Sender as TBlkUsek).Soupravs[i]].nazev + ';';
+
+       if (Soupravy[(Sender as TBlkUsek).Soupravs[i]].sdata.smer_L) then
+         msg := msg + '1'
+       else
+         msg := msg + '0';
+       if (Soupravy[(Sender as TBlkUsek).Soupravs[i]].sdata.smer_S) then
+         msg := msg + '1;'
+       else
+         msg := msg + '0;';
+
+       if ((Sender as TBlkUsek).Obsazeno = uvolneno) then
+         msg := msg + PrevodySoustav.ColorToStr(clAqua) + ';'
+       else
          msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
-         if (Soupravy.soupravy[(Sender as TBlkUsek).SoupravaL].sdata.smer_L) then
-           msg := msg + '1'
-         else
-           msg := msg + '0';
-         if (Soupravy.soupravy[(Sender as TBlkUsek).SoupravaL].sdata.smer_S) then
-           msg := msg + '1;'
-         else
-           msg := msg + '0;';
-        end;
 
-       if ((Soupravy[TBlkUsek(Sender).SoupravaL].cilovaOR = Self) and (bg = clBlack)) then
-         bg := clSilver;
+       if ((Soupravy[(Sender as TBlkUsek).Soupravs[i]].cilovaOR = Self) and (bg = clBlack)) then
+         msg := msg + PrevodySoustav.ColorToStr(clSilver) + ';'
+       else
+         msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
 
-       msg := msg + PrevodySoustav.ColorToStr(bg);
+       if ((Sender as TBlkUsek).vlakPresun = i) then
+        msg := msg + PrevodySoustav.ColorToStr(clYellow) + ';';
 
-      end else begin
+       msg := msg + ')';
+      end;
 
-       if ((Sender as TBlkUsek).SprPredict > -1) then
-        begin
-         msg := msg + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SprPredict)+';'+PrevodySoustav.ColorToStr(fg)+';00;';
-         msg := msg + PrevodySoustav.ColorToStr(bg);
-        end else begin
-         if (nebarVetve <> $A0A0A0) then
-           msg := msg + ';;;';
-        end;
-      end;// else Souprava > -1
+     // predpovidana souprava
+     if ((Sender as TBlkUsek).SprPredict > -1) then
+      begin
+       msg := msg + '(' + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SprPredict) + ';' +
+                  '00;' +
+                  PrevodySoustav.ColorToStr(fg) + ';' +
+                  PrevodySoustav.ColorToStr(bg) + ';)';
+      end;
 
-     if (nebarVetve <> $A0A0A0) then
-       msg := msg + ';' + PrevodySoustav.ColorToStr(nebarVetve);
+     msg := msg + '}';
     end;
 
   end;//_BLK_USEK
