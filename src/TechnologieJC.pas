@@ -1901,7 +1901,7 @@ var i,j:Integer;
             (Blk2.GetGlobalSettings().typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat = Self.data.Trat) and
             ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
          begin
-          (Trat as TBlkTrat).AddSpr((Blk as TBlkUsek).Souprava);
+          (Trat as TBlkTrat).AddSpr(spri);
           (Blk2 as TBlkTU).poruchaBP := true;
           (Trat as TBlkTrat).Change();
 
