@@ -2232,7 +2232,7 @@ begin
           (Blk as TBlkUsek).RemoveSouprava(spri);
          end;
 
-        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(TBlkUsek(Usek).Souprava)+
+        writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
           ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
         (Usek as TBlkUsek).RemoveSoupravy();
        end;
@@ -2381,7 +2381,8 @@ var UsekActual,UsekDalsi,Nav:TBlk;
   (UsekDalsi as TBlkUsek).AddSoupravaL(spri);
   Soupravy.soupravy[(UsekDalsi as TBlkUsek).Souprava].front := UsekDalsi;
   (UsekDalsi as TBlkUsek).houk_ev_enabled := true;
-  writelog('JC '+Self.nazev+': predana souprava '+Soupravy.GetSprNameByIndex((UsekDalsi as TBlkUsek).Souprava)+' z bloku '+UsekActual.GetGlobalSettings().name+' do bloku '+UsekDalsi.GetGlobalSettings().name,WR_SPRPREDAT, 0);
+  writelog('JC '+Self.nazev+': predana souprava '+Soupravy.GetSprNameByIndex((UsekDalsi as TBlkUsek).Souprava)+
+      ' z bloku '+UsekActual.GetGlobalSettings().name+' do bloku '+UsekDalsi.GetGlobalSettings().name,WR_SPRPREDAT, 0);
 
   Self.CheckSmyckaBlok(UsekDalsi);
  end;//procedure
@@ -2402,7 +2403,8 @@ begin
     end;
 
    Soupravy.soupravy[(Blk as TBlkUsek).Souprava].ChangeSmer();
-   writelog('Obsazen smyckovy usek '+Blk.GetGlobalSettings.name+ ' - menim smer loko v souprave '+Soupravy.soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
+   writelog('Obsazen smyckovy usek '+Blk.GetGlobalSettings.name+ ' - menim smer loko v souprave '+
+      Soupravy.soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
   end;//if
 end;//procedure
 
