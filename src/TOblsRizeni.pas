@@ -55,6 +55,7 @@ type
       procedure BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read);
                                                                                 // broadcast chybove hlasky, ktera ma jit jen panelum,
                                                                                 // kde alespon jeden je minimalne opravneni min_rights
+      procedure BroadcastPlaySound(sound_code:Integer; sound_delay_ms:Integer = -1; min_rights:TORControlRights = read);
 
       property Count:Integer read GetORCnt;                                     // vrati seznam oblasti rizeni
       property status_filename:string read fstat_filename;
@@ -311,6 +312,24 @@ begin
 
  for client in clients.Keys do
    ORTCPServer.BottomError(client, err, '-', tech);
+
+ clients.Free();
+end;
+
+procedure TORs.BroadcastPlaySound(sound_code:Integer; sound_delay_ms:Integer = -1; min_rights:TORControlRights = read);
+var OblR:TOR;
+    connected:TORPanel;
+    clients:TDictionary<TIdContext,Boolean>; // set
+    client:TIdContext;
+begin
+ clients := TDictionary<TIdContext,Boolean>.Create();
+ for OblR in Self.ORsDatabase do
+   for connected in OblR.Connected do
+     if (connected.Rights >= min_rights) then
+       clients.AddOrSetValue(connected.Panel, true);
+
+ for client in clients.Keys do
+   ORTCPServer.PlaySound(client, sound_code, sound_delay_ms);
 
  clients.Free();
 end;
