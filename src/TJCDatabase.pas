@@ -568,7 +568,7 @@ begin
   begin
    for i := 0 to Length(jcs)-1 do
     begin
-     if (jcs[i] < 0) then continue;   // toto tady musi byt, proto napr FindPostavenaJCWithTrat vraci -1, pokud trat nenajde
+     if (jcs[i] < 0) then continue;   // toto tady musi byt, protoze napr FindPostavenaJCWithTrat vraci -1, pokud trat nenajde
 
      Blky.GetBlkByID(JCDb.GetJCByIndex(jcs[i]).data.NavestidloBlok, tmpblk);
      if ((tmpblk as TBlkSCom).Navest = 0) then continue;

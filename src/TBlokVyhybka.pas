@@ -1095,11 +1095,8 @@ end;//procedure
 
 function TBlkVyhybka.GetVyhZaver():boolean;
 begin
- if (Self.Stav.vyhZaver > 0) then
-   Result := true
- else
-   Result := false;
-end;//function
+ Result := (Self.Stav.vyhZaver > 0);
+end;
 
 procedure TBlkVyhybka.SetVyhZaver(zaver:boolean);
 begin
