@@ -685,7 +685,7 @@ begin
 
   ENTER : begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-    if (not Self.PresunLok(SenderPnl, SenderOR)) then
+    if (not Self.PresunLok(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 

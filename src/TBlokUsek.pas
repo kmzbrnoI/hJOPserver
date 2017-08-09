@@ -119,6 +119,7 @@ type
     procedure MenuHLASENIPrijezdClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer);
+    procedure MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
 
     procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
     procedure PotvrUvolLok(Sender:TIdContext; success:boolean);
@@ -150,7 +151,7 @@ type
 
     procedure MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
     function MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
-    function PresunLok(SenderPnl:TIdContext; SenderOR:TObject):boolean;
+    function PresunLok(SenderPnl:TIdContext; SenderOR:TObject; sprLocalIndex:Integer):boolean;
 
   public
 
@@ -844,6 +845,11 @@ begin
  (SenderOR as TOR).BlkNewSpr(Self, SenderPnl, (itemindex-2) div 2);
 end;//procedure
 
+procedure TBlkUsek.MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
+begin
+ Self.PresunLok(SenderPnl, SenderOR, (itemindex-2) div 2);
+end;
+
 procedure TBlkUsek.MenuEditLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
@@ -1168,22 +1174,31 @@ function TBlkUsek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:T
 var Blk:TBlk;
     i, spr:Integer;
     canAdd:boolean;
+    addStr:string;
 begin
  Result := inherited;
+
+ if (Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id) <> nil) then
+   addStr := 'VLOŽ vlak,'
+ else
+   addStr := 'NOVÝ vlak,';
 
  if (Self.SoupravyFull() and (Self.Soupravs.Count = 1)) then begin
    Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0) + '-,';
    TTCPORsRef(SenderPnl.Data).spr_menu_index := 0;
  end else begin
-   canAdd := ((not Self.SoupravyFull()) and (Self.UsekStav.stanicni_kolej) and
-             ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0)));
+   canAdd := ((Self.UsekStav.stanicni_kolej) and
+              (( (not Self.SoupravyFull()) and ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0)) ) or // novy vlak
+               ( addStr = 'VLOŽ vlak,' ) // presun vlaku
+              ));
+
    if (canAdd) then
-     Result := Result + 'NOVÝ vlak,';
+     Result := Result + addStr;
 
    for spr in Self.Soupravs do
     begin
      Result := Result + Soupravy[spr].nazev + ',';
-     if (canAdd) then Result := Result + 'NOVÝ vlak,';
+     if (canAdd) then Result := Result + addStr;
     end;
 
    if ((canAdd) or (Self.Soupravs.Count > 0)) then
@@ -1302,8 +1317,8 @@ begin
 
   ENTER: begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-    if (not Self.PresunLok(SenderPnl, SenderOR)) then
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      if (((Self.UsekSettings.maxSpr <> 1) and (Self.Soupravs.Count > 0)) or (not Self.PresunLok(SenderPnl, SenderOR, 0))) then
+        ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
   F1: begin
@@ -1325,6 +1340,7 @@ begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
  if (item = 'NOVÝ vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR, itemindex)
+ else if (item = 'VLOŽ vlak')      then Self.MenuVLOZLokClick(SenderPnl, SenderOR, itemindex)
  else if (item = 'EDIT vlak')      then Self.MenuEditLokClick(SenderPnl, SenderOR)
  else if (item = 'ZRUŠ vlak')      then Self.MenuDeleteLokClick(SenderPnl, SenderOR)
  else if (item = 'UVOL vlak')      then Self.MenuUVOLLokClick(SenderPnl, SenderOR)
@@ -1358,35 +1374,53 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci true, pokud loko opravdu presunuto
-function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject):boolean;
+function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject; sprLocalIndex:Integer):boolean;
 var Blk:TBlk;
     spri:Integer;
 begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
  if (Blk = nil) then Exit(false);
- if (Blk = Self) then
-  begin
-   Self.VlakPresun := -1;
-   Exit(true);
-  end;
 
  if (not Self.UsekStav.stanicni_kolej) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Loko lze pøesunout pouze na stanièní kolej');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Loko lze pøesunout pouze na stanièní kolej!');
    Exit(true);
   end;
 
- if (Self.IsSouprava()) then
+ if ((Self.SoupravyFull()) and (Blk <> Self)) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Úsek již obsahuje soupravu');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Do úseku se již nevejde další souprava!');
    Exit(true);
   end;
 
  spri := TBlkUsek(Blk).Soupravs[TBlkUsek(Blk).VlakPresun];
- Self.AddSoupravaS(spri);
- (Blk as TBlkUsek).RemoveSouprava(spri);
 
- ORTCPServer.SendInfoMsg(SenderPnl, 'Loko '+Soupravy.GetSprNameByIndex(spri)+' pøesunuta na '+Self.GlobalSettings.name);
+ if (Blk = Self) then
+  begin
+   Self.UsekStav.soupravy.Insert(sprLocalIndex, spri);
+
+   if (sprLocalIndex <= Self.VlakPresun) then
+     Self.UsekStav.soupravy.Delete(Self.VlakPresun+1)
+   else
+     Self.UsekStav.soupravy.Delete(Self.VlakPresun);
+
+   Self.UsekStav.vlakPresun := -1;
+   Self.Change();
+  end else begin
+
+   try
+     Self.AddSouprava(sprLocalIndex, spri);
+     (Blk as TBlkUsek).RemoveSouprava(spri);
+   except
+     on E:Exception do
+      begin
+       ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
+       Exit(true);
+      end;
+   end;
+  end;
+
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Loko '+Soupravy.GetSprNameByIndex(spri)+' pøesunuta na '+Self.GlobalSettings.name+'.');
 
  if (Blky.GetBlkWithSpr(spri).Count = 1) then
   Soupravy[spri].front := Self;
@@ -1394,7 +1428,7 @@ begin
  if ((Blk as TBlkUsek).SComJCRef <> nil) then
   Blky.SprPrediction((Blk as TBlkUsek).SComJCRef);
 
- if (Self.SComJCRef <> nil) then
+ if ((Blk <> Self) and (Self.SComJCRef <> nil)) then
   Blky.SprPrediction(Self.SComJCRef);
 
  Result := true;
