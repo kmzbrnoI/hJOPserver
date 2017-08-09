@@ -62,6 +62,9 @@ type
     st_hlaseni:TList<TOR>;                                                      // stanice, do kterych je autorizovano stanicni hlaseni
     spr_menu_index:Integer;                                                     // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
 
+    soundDict:TDictionary<Integer, Cardinal>;                                   // pro kazdy zvuk obsahuje pocet jeho prehravani
+                                                                                // predpoklada se, ze kazda OR si resi zvuku samostatne, az tady se to spojuje
+
     constructor Create();
     destructor Destroy(); override;
 
@@ -127,9 +130,16 @@ type
      procedure UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
      procedure CancelUPO(AContext: TIdContext; ref:TObject);
 
-     // tyto funkce take muzou byt volany z oblasti rizeni, protoze nemusi byt primou reakci na akci uzivatele - chceme je odeslat vsem
+     // Tyto funkce take muzou byt volany z oblasti rizeni, protoze nemusi byt
+     // primou reakci na akci uzivatele - chceme je odeslat vsem.
+
+     // Prehravani zvuku neprehrava a nezacina prehravat zvuky primo, pamatuje si pocitadlo prehravani jednotlivych zvuku
+     // a prehravani meni jen pokud se pocitadlo mezi z 0 na 1 resp. z 1 na 0.
+     //  To je k tomu, aby ruzne OR mohly volat tyto funkce bez dali kontroly nezavisle.
+     //  Priority prehravani zvuku resi klient.
      procedure PlaySound(AContext: TIdContext; code:Integer; loop:boolean = false);
      procedure DeleteSound(AContext: TIdContext; code:Integer);
+
      procedure BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
 
      procedure BroadcastBottomError(err:string; tech:string);
@@ -921,15 +931,27 @@ end;//procedure
 
 procedure TORTCPServer.PlaySound(AContext: TIdContext; code:Integer; loop:boolean = false);
 begin
- if (loop) then
-   Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';L')
+ if ((not TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) or (TTCPORsRef(AContext.Data).soundDict[code] = 0)) then
+  begin
+   if (loop) then
+     Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';L')
+   else
+     Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';');
+  end;
+
+ if (not TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) then
+   TTCPORsRef(AContext.Data).soundDict.Add(code, 1)
  else
-   Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';');
+   TTCPORsRef(AContext.Data).soundDict[code] := TTCPORsRef(AContext.Data).soundDict[code] + 1;
 end;//procedure
 
 procedure TORTCPServer.DeleteSound(AContext: TIdContext; code:Integer);
 begin
- Self.SendLn(AContext, '-;SND;STOP;'+IntToStr(code)+';');
+ if ((TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) and (TTCPORsRef(AContext.Data).soundDict[code] = 1)) then
+   Self.SendLn(AContext, '-;SND;STOP;'+IntToStr(code)+';');
+
+ if (TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) then
+   TTCPORsRef(AContext.Data).soundDict[code] := TTCPORsRef(AContext.Data).soundDict[code] - 1;
 end;//procedure
 
 procedure TORTCPServer.BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
@@ -1192,12 +1214,14 @@ begin
  inherited;
  Self.regulator_loks := TList<THV>.Create();
  Self.st_hlaseni := TList<TOR>.Create();
+ Self.soundDict := TDictionary<Integer, Cardinal>.Create();
 end;
 
 destructor TTCPORsRef.Destroy();
 begin
  Self.st_hlaseni.Free();
  Self.regulator_loks.Free();
+ Self.soundDict.Free();
  inherited;
 end;
 

@@ -596,7 +596,10 @@ begin
   begin
    if (Self.SComStav.privol_timer_id > 0) then
      for i := 0 to Self.ORsRef.Cnt-1 do
+      begin
        Self.ORsRef.ORs[i].BroadcastGlobalData('INFO-TIMER-RM;'+IntToStr(Self.SComStav.privol_timer_id));
+       Self.ORsRef.ORs[i].TimerCnt := Self.ORsRef.ORs[i].TimerCnt - 1;
+      end;
    Self.SComStav.privol_timer_id := 0;
   end;
 
@@ -1373,7 +1376,11 @@ begin
    // oznameni o brzkem ukonceni privolavaci navesti
    Self.SComStav.privol_timer_id := Random(65536)+1;
    for i := 0 to Self.ORsRef.Cnt-1 do
-     Self.ORsRef.ORs[i].BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.SComStav.privol_timer_id)+';0;30;PN '+Self.GlobalSettings.name);
+    begin
+     Self.ORsRef.ORs[i].BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.SComStav.privol_timer_id)+
+        ';0;30;PN '+Self.GlobalSettings.name);
+     Self.ORsRef.ORs[i].TimerCnt := Self.ORsRef.ORs[i].TimerCnt + 1;
+    end;
   end;
 
  if (Self.SComStav.privol_start+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now) then
