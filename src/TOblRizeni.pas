@@ -485,7 +485,8 @@ begin
 
    if ((Sender as TBlkUsek).Obsazeno = TUsekStav.disabled) then
     begin
-     msg := msg + PrevodySoustav.ColorToStr(clFuchsia) + ';' + PrevodySoustav.ColorToStr(clBlack) + ';0;0;-;';
+     msg := msg + PrevodySoustav.ColorToStr(clFuchsia) + ';' + PrevodySoustav.ColorToStr(clBlack) +
+       ';0;0;' + PrevodySoustav.ColorToStr(clBlack);
     end else begin
      case ((Sender as TBlkUsek).Obsazeno) of
       TUsekStav.disabled : fg := clFuchsia;
