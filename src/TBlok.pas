@@ -109,7 +109,7 @@ type
    // panel click je virtualni metoda, ktera v zakladu prazdna
    // u bloku, kde je zadouci osetrovat kliknuti na panel, je doporuceno ji pretizit,
    //   jinak je doporuceno ji vubec neimplementovat
-   procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); virtual;
+   procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); virtual;
 
    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); virtual;
 
@@ -334,7 +334,7 @@ begin
  Result := '$'+Self.GlobalSettings.name+',-,';
 end;//function
 
-procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
  // This function should be empty.
 end;

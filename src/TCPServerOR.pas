@@ -756,7 +756,12 @@ begin
  else if (parsed[1] = 'CLICK') then begin
   try
    btn := Self.StrToPanelButton(parsed[2]);
-   (AContext.Data as TTCPORsRef).ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn);
+
+   if (parsed.Count > 4) then
+     (AContext.Data as TTCPORsRef).ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
+   else
+     (AContext.Data as TTCPORsRef).ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn);
+
    if (btn = ESCAPE) then
      (AContext.Data as TTCPORsRef).Escape(AContext);
   except

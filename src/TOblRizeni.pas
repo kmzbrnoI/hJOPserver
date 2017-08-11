@@ -215,7 +215,7 @@ type
       //--- komunikace s panely zacatek: ---
       procedure PanelAuthorise(Sender:TIdContext; rights:TORControlRights; username:string; password:string);
       procedure PanelFirstGet(Sender:TIdContext);
-      procedure PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton);
+      procedure PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton; params:string = '');
       procedure PanelEscape(Sender:TIdContext);
       procedure PanelNUZ(Sender:TIdContext);
       procedure PanelNUZCancel(Sender:TIdContext);
@@ -1061,7 +1061,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 //v panelu je kliknuto na urcity blok
-procedure TOR.PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton);
+procedure TOR.PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton; params:string = '');
 var Blk:TBlk;
     i:Integer;
     rights:TORCOntrolRights;
@@ -1082,7 +1082,7 @@ begin
  for i := 0 to Blk.OblsRizeni.Cnt-1 do
    if (Blk.OblsRizeni.ORs[i] = Self) then
     begin
-     Blk.PanelClick(Sender, Self, Button, rights);
+     Blk.PanelClick(Sender, Self, Button, rights, params);
      Exit;
     end;
 

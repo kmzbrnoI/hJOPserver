@@ -145,6 +145,7 @@ type
     function GetUsekSpr():Integer;
 
     function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
+    procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -233,7 +234,7 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights); override;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
 
     //PT:
 
@@ -1160,7 +1161,7 @@ var menu:string;
 begin
  TTCPORsRef(SenderPnl.Data).spr_menu_index := sprLocalI;
 
- menu := inherited ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.read);
+ menu := '$'+Self.GlobalSettings.name+',';
  menu := menu + '$Souprava ' + Soupravy[Self.Soupravs[sprLocalI]].nazev + ',-,';
  menu := menu + Self.GetSprMenu(SenderPnl, SenderOr, sprLocalI);
 
@@ -1307,24 +1308,24 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights);
+procedure TBlkUsek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 var Blk:TBlk;
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
  case (Button) of
-  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F2: Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params);
 
   ENTER: begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
       if (((Self.UsekSettings.maxSpr <> 1) and (Self.Soupravs.Count > 0)) or (not Self.PresunLok(SenderPnl, SenderOR, 0))) then
-        ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+        Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params);
   end;
 
   F1: begin
     Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
     if (Blk = nil) then
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
+      Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params)
     else
       Self.MenuVBClick(SenderPnl, SenderOR);
   end;
@@ -1759,6 +1760,21 @@ begin
  else if (Self.Soupravs.Count = 1) then Exit(Self.Soupravs[0])
  else raise EMultipleSprs.Create('Usek ' + Self.GetGlobalSettings.name +
    ' obsahuje vice souprav, nelze se proto ptat jen na jednu soupravu!');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
+var i:Integer;
+begin
+ if (params <> '') then begin
+   i := StrToIntDef(params, -1);
+   if ((i <> -1) and (i >= 0) and (i < Self.Soupravs.Count)) then
+     Self.MenuSOUPRAVA(SenderPnl, (SenderOR as TOR), i)
+   else
+     ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+ end else
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
