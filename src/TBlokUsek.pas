@@ -1421,7 +1421,7 @@ begin
    end;
   end;
 
- ORTCPServer.SendInfoMsg(SenderPnl, 'Loko '+Soupravy.GetSprNameByIndex(spri)+' pøesunuta na '+Self.GlobalSettings.name+'.');
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+Soupravy.GetSprNameByIndex(spri)+' pøesunuta na '+Self.GlobalSettings.name+'.');
 
  if (Blky.GetBlkWithSpr(spri).Count = 1) then
   Soupravy[spri].front := Self;
