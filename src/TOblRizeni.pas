@@ -1907,11 +1907,12 @@ end;//procedure
 // Tato procedura parsuje "LOK-REQ" z panelu.
 procedure TOR.PanelLokoReq(Sender:TIdContext; str:TStrings);
 var data:TStrings;
-    i:Integer;
+    i, j:Integer;
     HV:THV;
     rights:TORControlRights;
     line:string;
     Blk:TBlk;
+    spri:Integer;
 begin
 //  or;LOK-REQ;PLEASE;addr1|addr2|...       - zadost o vydani tokenu
 //  or;LOK-REQ;PLEASE-U;blk_id              - zadost o vydani tokenu pro vozidla soupravy na danem techologickem bloku
@@ -2060,7 +2061,7 @@ begin
    Self.ORStav.reg_please := nil;
   end
 
-//  or;LOK-REQ;U-PLEASE;blk_id              - zadost o vydani seznamu hnacich vozidel na danem useku
+//  or;LOK-REQ;U-PLEASE;blk_id;spr_index      - zadost o vydani seznamu hnacich vozidel na danem useku
 //  mozne odpovedi:
 //    or;LOK-REQ;U-OK;[hv1][hv2]...           - seznamu hnacich vozidel v danem useku
 //    or;LOK-REQ;U-ERR;info                   - chyba odpoved na pozadavek na seznam loko v danem useku
@@ -2081,13 +2082,39 @@ begin
        Exit();
       end;
 
+     spri := -1;
+     if (str.Count > 4) then
+      begin
+       spri := StrToIntDef(str[4], -1);
+       if ((spri < -1) or (spri >= (Blk as TBlkUsek).Soupravs.Count)) then
+        begin
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Tato souprava na úseku neexistuje');
+         Exit();
+        end;
+      end;
+
      // generujeme zpravu s tokeny
      line := Self.id+';LOK-REQ;U-OK;{';
-     for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).SoupravaL].sdata.HV.cnt-1 do
+     if (spri = -1) then
       begin
-       HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).SoupravaL].sdata.HV.HVs[i]];
-       line := line + '[{' + HV.GetPanelLokString() + '}]';
-      end;//for i
+       // vsechny soupravy na useku
+       for j := 0 to (Blk as TBlkUsek).Soupravs.Count-1 do
+         for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[j]].sdata.HV.cnt-1 do
+          begin
+           HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[j]].sdata.HV.HVs[i]];
+           line := line + '[{' + HV.GetPanelLokString() + '}]';
+          end;
+
+      end else begin
+
+       // konkretni souprava
+       for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[spri]].sdata.HV.cnt-1 do
+        begin
+         HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[spri]].sdata.HV.HVs[i]];
+         line := line + '[{' + HV.GetPanelLokString() + '}]';
+        end;
+      end;
+
      line := line + '}';
      ORTCPServer.SendLn(Sender, line);
 
