@@ -447,7 +447,6 @@ begin
  Self.UsekStav.Stav    := none;
  Self.UsekStav.StavOld := none;
  for i := 0 to 3 do Self.UsekStav.StavAr[i] := none;
- Self.UsekStav.DCC     := true;
  Self.UsekStav.neprofilJCcheck.Clear();
  Self.Update();
  //change event will be called in Update();
@@ -706,6 +705,11 @@ begin
      ((not Self.DCC) or (Self.ZesNapajeni = TBoosterSignal.error) or
       (Now < Self.Stav.DCCGoTime+EncodeTime(0, 0, 1, 0)))) then
   begin
+   if (Self.ZesZkrat <> TBoosterSignal.ok) then
+    begin
+     Self.UsekStav.zkrat := TBoosterSignal.ok;
+     Self.Change(true);
+    end;
    Self.Freeze();
    Exit();
   end;
