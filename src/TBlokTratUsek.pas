@@ -715,8 +715,6 @@ end;
 
 procedure TBlkTU.AddSouprava(spr:Integer);
 begin
- if (spr = Self.Souprava) then Exit();
-
  if (((Self.TUSettings.zastavka.ev_lichy.enabled) or (Self.TUSettings.zastavka.ev_sudy.enabled)) and
      (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
 
