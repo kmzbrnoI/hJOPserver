@@ -39,6 +39,9 @@ type
    SInput:array [0..15] of TShape;
    SOutput:array [0..15] of TShape;   
 
+   LInput:array [0..15] of TLabel;
+   LOutput:array [0..15] of TLabel;
+
     procedure CreateSInput;
     procedure CreateSOutput;
     procedure SOutputMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -79,30 +82,46 @@ var cyklus:Integer;
  end;//procedure
 
 procedure TF_Tester.UpdateOut;
-var cyklus, val:Integer;
+var i, val:Integer;
+    outCnt:Cardinal;
  begin
   if ((not RCSi.NoExStarted()) or (MTBAddr < 0) or (RCSi.IsModuleFailure(MTBAddr))) then
    begin
-    for cyklus := 0 to 15 do
-      SOutput[cyklus].Brush.Color := clGray;
+    for i := 0 to 15 do
+     begin
+      SOutput[i].Brush.Color := clGray;
+      SOutput[i].Visible := true;
+     end;
     Exit();
    end;
 
-  for cyklus := 0 to 15 do
-   begin
-    try
-      val := RCSi.GetOutput(MTBAddr, cyklus);
-    except
-      val := -1;
-    end;
+  try
+    outCnt := RCSi.GetModuleOutputsCount(MTBAddr);
+  except
+    outCnt := 16;
+  end;
 
-    if (val < 0) then
-      SOutput[cyklus].Brush.Color := clGray
-    else if (val = 0) then
-      SOutput[cyklus].Brush.Color := clRed
-    else
-      SOutput[cyklus].Brush.Color := clLime;
-   end;//for cyklus
+  for i := 0 to 15 do
+   begin
+    SOutput[i].Visible := (i < Integer(outCnt));
+    LOutput[i].Visible := (i < Integer(outCnt));
+
+    if (i < Integer(outCnt)) then
+     begin
+      try
+        val := RCSi.GetOutput(MTBAddr, i);
+      except
+        val := -1;
+      end;
+
+      if (val < 0) then
+        SOutput[i].Brush.Color := clGray
+      else if (val = 0) then
+        SOutput[i].Brush.Color := clRed
+      else
+        SOutput[i].Brush.Color := clLime;
+     end;
+   end;//for i
  end;//procedure
 
 procedure TF_Tester.SE_OutMtbChange(Sender: TObject);
@@ -115,55 +134,71 @@ var i:Integer;
     InputState:TRCSInputState;
     LastState:TRCSInputState;
     stateStr:string;
+    inCnt:Cardinal;
  begin
   if ((not RCSi.NoExStarted()) or (MTBAddr < 0) or (RCSi.IsModuleFailure(MTBAddr))) then
    begin
     for i := 0 to 15 do
+     begin
       SInput[i].Brush.Color := clGray;
+      SInput[i].Visible := true;
+     end;
     Exit();
    end;
 
+  try
+    inCnt := RCSi.GetModuleInputsCount(MTBAddr);
+  except
+    inCnt := 16;
+  end;
+
   for i := 0 to 15 do
    begin
-    try
-      InputState := RCSi.GetInput(MTBAddr, i);
-    except
-      InputState := failure;
-    end;
+    SInput[i].Visible := (i < Integer(inCnt));
+    LInput[i].Visible := (i < Integer(inCnt));
 
-    if (F_Tester.CHB_LogZmeny.Checked) then
+    if (i < Integer(inCnt)) then
      begin
-      case (SInput[i].Brush.Color) of
-       clRed :LastState := isOff;
-       clLime:LastState := isOn;
-       clGray:LastState := failure;
-       clSilver:LastState := notYetScanned;
-      else
-       LastState := failure;
+      try
+        InputState := RCSi.GetInput(MTBAddr, i);
+      except
+        InputState := failure;
       end;
 
-      if (InputState <> LastState) then
+      if (F_Tester.CHB_LogZmeny.Checked) then
        begin
-        case (InputState) of
-         isOff         : stateStr := '0';
-         isOn          : stateStr := '1';
-         failure       : stateStr := 'F';
-         notYetScanned : stateStr := '?';
+        case (SInput[i].Brush.Color) of
+         clRed :LastState := isOff;
+         clLime:LastState := isOn;
+         clGray:LastState := failure;
+         clSilver:LastState := notYetScanned;
+        else
+         LastState := failure;
         end;
 
-        F_Tester.LB_Changes.Items.Add('Zmena:: MTB:'+Format('%3d' ,[MTBAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
-        Beep;
-       end;//if (InputState <> LastState)
-     end;//if F_Tester.CHB_LogZmeny.Checked
+        if (InputState <> LastState) then
+         begin
+          case (InputState) of
+           isOff         : stateStr := '0';
+           isOn          : stateStr := '1';
+           failure       : stateStr := 'F';
+           notYetScanned : stateStr := '?';
+          end;
 
-    if (InputState = isOn) then
-      SInput[i].Brush.Color := clLime
-    else if (InputState = isOff) then
-      SInput[i].Brush.Color := clRed
-    else if (InputState = notYetScanned) then
-      SInput[i].Brush.Color := clSilver
-    else
-      SInput[i].Brush.Color := clGray;
+          F_Tester.LB_Changes.Items.Add('Zmena:: MTB:'+Format('%3d' ,[MTBAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
+          Beep;
+         end;//if (InputState <> LastState)
+       end;//if F_Tester.CHB_LogZmeny.Checked
+
+      if (InputState = isOn) then
+        SInput[i].Brush.Color := clLime
+      else if (InputState = isOff) then
+        SInput[i].Brush.Color := clRed
+      else if (InputState = notYetScanned) then
+        SInput[i].Brush.Color := clSilver
+      else
+        SInput[i].Brush.Color := clGray;
+     end;//if i < inCnt
    end;//for i
  end;//procedure
 
@@ -176,13 +211,13 @@ procedure TF_Tester.FormCreate(Sender: TObject);
  end;//procedure
 
 procedure TF_Tester.CB_MtbAdrChange(Sender: TObject);
-var cyklus:Integer;
+var i:Integer;
  begin
-  for cyklus := 0 to 15 do
+  for i := 0 to 15 do
    begin
-    SInput[cyklus].Brush.Color  := clGray;
-    SOutput[cyklus].Brush.Color := clGray;
-   end;//for cyklus
+    SInput[i].Brush.Color  := clGray;
+    SOutput[i].Brush.Color := clGray;
+   end;//for i
 
   if ((CB_MtbAdr.ItemIndex > -1) and (CB_MtbAdr.ItemIndex < Length(CB_MTBAdrData))) then
    begin
@@ -202,66 +237,68 @@ procedure TF_Tester.FormClose(Sender: TObject; var Action: TCloseAction);
  end;//procedure
 
 procedure TF_Tester.CreateSInput;
-var cyklus:Integer;
+var i:Integer;
     aTop:Integer;
     L:TLabel;
  begin
   aTop := _S_TOP;
 
-  for cyklus := 0 to 15 do
+  for i := 0 to 15 do
    begin
-    SInput[cyklus] := TShape.Create(F_Tester.GB_vstupy);
+    SInput[i] := TShape.Create(F_Tester.GB_vstupy);
 
-    SInput[cyklus].Parent := F_Tester.GB_vstupy;
-    SInput[cyklus].Top    := aTop;
-    SInput[cyklus].Left   := _S_LEFT;
-    SInput[cyklus].Width  := _S_WIDTH;
-    SInput[cyklus].Height := _S_HEIGHT;
-    SInput[cyklus].Shape  := stRectangle;
-    SInput[cyklus].Tag    := cyklus;
-    SInput[cyklus].Brush.Color := clRed;
+    SInput[i].Parent := F_Tester.GB_vstupy;
+    SInput[i].Top    := aTop;
+    SInput[i].Left   := _S_LEFT;
+    SInput[i].Width  := _S_WIDTH;
+    SInput[i].Height := _S_HEIGHT;
+    SInput[i].Shape  := stRectangle;
+    SInput[i].Tag    := i;
+    SInput[i].Brush.Color := clRed;
 
     L            := TLabel.Create(F_Tester.GB_vstupy);
     L.Parent     := Self.GB_vstupy;
     L.Font.Color := clWhite;
-    L.Caption    := IntToStr(cyklus);
+    L.Caption    := IntToStr(i);
     L.Left       := _L_LEFT;
     L.Top        := aTop;
+    LInput[i] := L;
 
     aTop := aTop + _S_INCR;
-   end;//for cyklus
+   end;//for i
  end;//procedure
 
 procedure TF_Tester.CreateSOutput;
-var cyklus:Integer;
+var i:Integer;
     aTop:Integer;
     L:TLabel;
  begin
   aTop := _S_TOP;
 
-  for cyklus := 0 to 15 do
+  for i := 0 to 15 do
    begin
-    SOutput[cyklus] := TShape.Create(F_Tester.GB_vystupy);
+    SOutput[i] := TShape.Create(F_Tester.GB_vystupy);
 
-    SOutput[cyklus].Parent := F_Tester.GB_vystupy;
-    SOutput[cyklus].Top    := aTop;
-    SOutput[cyklus].Left   := _S_LEFT;
-    SOutput[cyklus].Width  := _S_WIDTH;
-    SOutput[cyklus].Height := _S_HEIGHT;
-    SOutput[cyklus].Shape  := stRectangle;
-    SOutput[cyklus].Tag    := cyklus;
-    SOutput[cyklus].Brush.Color := clRed;
-    SOutput[cyklus].OnMouseUp := SOutputMouseUp;
+    SOutput[i].Parent := F_Tester.GB_vystupy;
+    SOutput[i].Top    := aTop;
+    SOutput[i].Left   := _S_LEFT;
+    SOutput[i].Width  := _S_WIDTH;
+    SOutput[i].Height := _S_HEIGHT;
+    SOutput[i].Shape  := stRectangle;
+    SOutput[i].Tag    := i;
+    SOutput[i].Brush.Color := clRed;
+    SOutput[i].OnMouseUp := SOutputMouseUp;
 
     L            := TLabel.Create(F_Tester.GB_vystupy);
     L.Parent     := Self.GB_vystupy;
     L.Font.Color := clWhite;
-    L.Caption    := IntToStr(cyklus);
+    L.Caption    := IntToStr(i);
     L.Left       := _L_LEFT;
     L.Top        := aTop;
+    LOutput[i] := L;
 
     aTop := aTop + _S_INCR;
-   end;//for cyklus
+   end;//for i
  end;//procedure
 
 procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
