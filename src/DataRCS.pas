@@ -139,7 +139,7 @@ var j:integer;
           LI.SubItems.Strings[3] := '';
           LI.SubItems.Strings[4] := '';
 
-          for j := 0 to 15 do
+          for j := 0 to RCSi.GetModuleInputsCount(board)-1 do
            begin
             case (RCSi.GetInput(board, j)) of
               isOn          : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '1';
@@ -149,6 +149,12 @@ var j:integer;
               unavailable   : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '-';
             end;
 
+            if (j = 7) then
+              LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + ' ';
+           end;
+
+          for j := 0 to RCSi.GetModuleOutputsCount(board)-1 do
+           begin
             output := RCSi.GetOutput(board, j);
             if (output > 1) then
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+'S'
@@ -156,22 +162,20 @@ var j:integer;
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+IntToStr(output);
 
             if (j = 7) then
-             begin
-              LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + ' ';
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4] + ' ';
-             end;//if
            end;//for
+
          end else begin
-          LI.SubItems.Strings[3] := '-------- --------';
-          LI.SubItems.Strings[4] := '-------- --------';
+          LI.SubItems.Strings[3] := '-';
+          LI.SubItems.Strings[4] := '-';
          end;
 
         LI.SubItems.Strings[5] := 'Ano';
         LI.SubItems.Strings[6] := RCSi.GetModuleFW(board);
        end else begin
         // neexistuje
-        LI.SubItems.Strings[3] := '-------- --------';
-        LI.SubItems.Strings[4] := '-------- --------';
+        LI.SubItems.Strings[3] := '-';
+        LI.SubItems.Strings[4] := '-';
         if (RCSi.IsModuleFailure(board)) then
           LI.SubItems.Strings[5] := 'Fail'
         else
@@ -180,8 +184,8 @@ var j:integer;
        end;
      end else begin
       // mtb closed
-      LI.SubItems.Strings[3] := '-------- --------';
-      LI.SubItems.Strings[4] := '-------- --------';
+      LI.SubItems.Strings[3] := '-';
+      LI.SubItems.Strings[4] := '-';
       LI.SubItems.Strings[5] := '-';
       LI.SubItems.Strings[6] := '-';
      end;
