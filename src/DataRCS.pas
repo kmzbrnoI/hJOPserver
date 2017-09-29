@@ -67,7 +67,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSTableData.UpdateLine(board:integer);
-var j:integer;
+var j, cnt:integer;
     output:Integer;
     LI:TListItem;
  begin
@@ -139,8 +139,12 @@ var j:integer;
           LI.SubItems.Strings[3] := '';
           LI.SubItems.Strings[4] := '';
 
-          for j := 0 to RCSi.GetModuleInputsCount(board)-1 do
+          cnt := RCSi.GetModuleInputsCount(board);
+          for j := 0 to cnt-1 do
            begin
+            if (j = cnt div 2) then
+              LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + ' ';
+
             case (RCSi.GetInput(board, j)) of
               isOn          : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '1';
               isOff         : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '0';
@@ -148,21 +152,19 @@ var j:integer;
               notYetScanned : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '?';
               unavailable   : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '-';
             end;
-
-            if (j = 7) then
-              LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + ' ';
            end;
 
-          for j := 0 to RCSi.GetModuleOutputsCount(board)-1 do
+          cnt := RCSi.GetModuleOutputsCount(board);
+          for j := 0 to cnt-1 do
            begin
+            if (j = cnt div 2) then
+              LI.SubItems.Strings[4] := LI.SubItems.Strings[4] + ' ';
+
             output := RCSi.GetOutput(board, j);
             if (output > 1) then
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+'S'
             else
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+IntToStr(output);
-
-            if (j = 7) then
-              LI.SubItems.Strings[4] := LI.SubItems.Strings[4] + ' ';
            end;//for
 
          end else begin
