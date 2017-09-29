@@ -274,7 +274,6 @@ type
     procedure PM_SB1Click(Sender: TObject);
     procedure T_functionTimer(Sender: TObject);
     procedure T_konfliktyTimer(Sender: TObject);
-    procedure PM_system_resetClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure L_DateDblClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -454,6 +453,7 @@ type
     procedure CreateCfgDirs();
 
     procedure UpdateRCSLibsList();
+    procedure UpdateSystemButtons();
 
   end;//public
 
@@ -905,8 +905,7 @@ end;//procedure
 procedure TF_Main.OnDCCGoError(Sender:TObject; Data:Pointer);
 begin
  SystemData.Status := TSystemStatus.null;
- F_Main.A_System_Start.Enabled := true;
- F_Main.A_System_Stop.Enabled  := true;
+ Self.UpdateSystemButtons();
  F_Main.A_DCC_Go.Enabled       := true;
  F_Main.A_DCC_Stop.Enabled     := true;
  F_Main.S_Intellibox_go.Brush.Color  := clGray;
@@ -917,8 +916,7 @@ end;//procedure
 procedure TF_Main.OnDCCStopError(Sender:TObject; Data:Pointer);
 begin
  Self.LogStatus('DCC: STOP: ERR: cenrála neodpovìdìla na pøíkaz');
- F_Main.A_System_Start.Enabled := true;
- F_Main.A_System_Stop.Enabled  := true;
+ Self.UpdateSystemButtons();
  F_Main.A_DCC_Go.Enabled       := true;
  F_Main.A_DCC_Stop.Enabled     := true;
  F_Main.S_Intellibox_go.Brush.Color  := clGray;
@@ -946,7 +944,7 @@ begin
   begin
    Self.LogStatus('System: stop OK');
    SystemData.Status := null;
-   Self.A_System_Start.Enabled := true;
+   Self.UpdateSystemButtons();
    Exit();
   end;
 
@@ -960,6 +958,9 @@ begin
    A_RCS_Open.Enabled      := false;
    A_RCS_Close.Enabled     := false;
    SB1.Panels.Items[_SB_RCS].Text := 'Zavírám RCS...';
+
+   A_System_Start.Enabled := false;
+   A_System_Stop.Enabled := false;
   end;//with F_Main do
 
  try
@@ -987,6 +988,9 @@ begin
     A_RCS_Go.Enabled     := false;
     A_RCS_Stop.Enabled   := false;
     A_RCS_Close.Enabled  := false;
+
+    A_System_Start.Enabled := false;
+    A_System_Stop.Enabled := false;
 
     SB1.Panels.Items[_SB_RCS].Text := 'Spouštím RCS...';
    end;//with F_Main do
@@ -1028,6 +1032,9 @@ begin
    A_RCS_Close.Enabled    := false;
 
    SB1.Panels.Items[_SB_RCS].Text := 'Otevírám RCS...';
+
+   A_System_Start.Enabled := false;
+   A_System_Stop.Enabled := false;
   end;//with F_Main do
 
  Self.LogStatus('RCS: Otevírám zaøízení, hledám moduly...');
@@ -1067,6 +1074,9 @@ begin
    A_RCS_Go.Enabled      := false;
    A_RCS_Stop.Enabled    := false;
    SB1.Panels.Items[_SB_RCS].Text := 'Zastavuji RCS...';
+
+   A_System_Start.Enabled := false;
+   A_System_Stop.Enabled := false;
   end;//with F_Main do
 
   try
@@ -1087,12 +1097,12 @@ begin
    ORTCPServer.Start();
    Self.A_PanelServer_Start.Enabled := false;
    Self.A_PanelServer_Stop.Enabled  := true;
+   Self.UpdateSystemButtons();
  except
    on E : Exception do
     begin
      SystemData.Status := TSystemStatus.null;
-     Self.A_System_Start.Enabled := true;
-     Self.A_System_Stop.Enabled := true;
+     Self.UpdateSystemButtons();
      Application.MessageBox(PChar('Chyba pøi zapínání serveru:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
@@ -1105,6 +1115,7 @@ begin
 
  Self.A_PanelServer_Start.Enabled := true;
  Self.A_PanelServer_Stop.Enabled  := false;
+ Self.UpdateSystemButtons();
 end;
 
 procedure TF_Main.A_PT_StartExecute(Sender: TObject);
@@ -1141,6 +1152,7 @@ begin
     PM_ResetV.Enabled    := true;
 
     SB1.Panels.Items[_SB_RCS].Text := 'RCS spuštìno';
+    UpdateSystemButtons();
    end;//with F_Main do
 
   writelog('----- RCS START OK -----', WR_RCS);
@@ -1182,6 +1194,7 @@ begin
   if (Blky.enabled) then Blky.Disable();
 
   ModCas.started := false;
+  Self.UpdateSystemButtons();
 
   //vynulovani RunErroru
   Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
@@ -1227,6 +1240,7 @@ begin
  Self.A_RCS_Go.Enabled       := true;
  Self.A_RCS_Stop.Enabled     := false;
  Self.MI_RCS_Libs.Enabled    := false;
+ Self.UpdateSystemButtons();
 
  F_Main.S_RCS_open.Brush.Color := clLime;
 
@@ -1272,6 +1286,7 @@ begin
  Self.A_RCS_Close.Enabled := false;
  Self.A_RCS_Open.Enabled  := true;
  Self.MI_RCS_Libs.Enabled := true;
+ Self.UpdateSystemButtons();
 
  // may happen when RCS USB disconnects
  if (Blky.enabled) then Blky.Disable();
@@ -1289,7 +1304,7 @@ begin
   begin
    Self.LogStatus('System: stop OK');
    SystemData.Status := null;
-   Self.A_System_Start.Enabled := true;
+   Self.UpdateSystemButtons();
   end;
 
  RCSTableData.UpdateTable();
@@ -1300,12 +1315,11 @@ begin
  Self.A_RCS_Go.Enabled    := false;
  Self.A_RCS_Stop.Enabled  := false;
  Self.A_RCS_Open.Enabled  := true;
- Self.A_System_Start.Enabled := true;
+ Self.UpdateSystemButtons();
 
  F_Main.S_RCS_open.Brush.Color := clRed;
 
  SystemData.Status := TSystemStatus.null;
- Self.A_System_Start.Enabled := true;
 
  Self.LogStatus('ERR: RCS OPEN FAIL: '+errMsg);
  writelog('----- RCS OPEN FAIL - '+errMsg+' -----', WR_ERROR, 21);
@@ -1334,15 +1348,13 @@ end;//procedure
 procedure TF_Main.OnRCSErrStart(Sender:TObject; errMsg:string);
 begin
   A_RCS_Close.Enabled := true;
-  A_System_Start.Enabled := true;
+  Self.UpdateSystemButtons();
   A_RCS_Go.Enabled := true;
 
   SB1.Panels.Items[_SB_RCS].Text := 'RCS otevøeno';
   S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
-  Self.A_System_Start.Enabled := true;
-  Self.A_System_Stop.Enabled := true;
 
   //defaultni hodnota padu
   Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
@@ -1932,12 +1944,6 @@ procedure TF_Main.CloseForm;
   end;
   WriteLog('###############################################',WR_MESSAGE);
  end;
-
-procedure TF_Main.PM_system_resetClick(Sender: TObject);
-begin
- Self.A_System_StartExecute(Self);
- Self.A_System_StopExecute(Self);
-end;
 
 function TLogData.CreateLogDirectories:boolean;
  begin
@@ -2964,6 +2970,16 @@ var SR:TSearchRec;
 
     SysUtils.FindClose(SR);
    end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.UpdateSystemButtons();
+begin
+ Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrkSystem.openned)
+    or (Self.A_All_Loko_Prevzit.Enabled) or (not ORTCPServer.openned));
+ Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrkSystem.openned)
+    or (ORTCPServer.openned);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

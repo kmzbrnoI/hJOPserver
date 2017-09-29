@@ -3505,6 +3505,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav technologie'
       ImageIndex = 15
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GB_Connected_Panels: TGroupBox
         Left = 16
         Top = 206
@@ -5968,7 +5972,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
           OnChange = CB_centrala_loglevel_fileChange
           Items.Strings = (
@@ -5985,7 +5989,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 1
           OnChange = CB_centrala_loglevel_tableChange
           Items.Strings = (
@@ -6024,7 +6028,6 @@ object F_Main: TF_Main
         Caption = 'Restartovat syst'#233'my'
         Enabled = False
         ImageIndex = 1
-        OnClick = PM_system_resetClick
       end
     end
     object MI_PanelServer: TMenuItem
@@ -6253,7 +6256,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403AC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403B00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8119,7 +8122,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280324041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280328041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8660,7 +8663,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802700310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802740310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

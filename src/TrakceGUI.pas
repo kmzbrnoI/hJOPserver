@@ -915,6 +915,8 @@ procedure TTrkGUI.BeforeOpen(Sender:TObject);
 begin
  F_Main.A_Trk_Connect.Enabled       := false;
  F_Main.A_Trk_Disconnect.Enabled    := false;
+ F_Main.A_System_Start.Enabled := false;
+ F_Main.A_System_Stop.Enabled := false;
  F_Main.SB1.Panels.Items[_SB_INT].Text := 'Pøipojování...';
  F_Main.S_Intellibox_connect.Brush.Color := clBlue;
  F_Main.LogStatus('Centrála: pøipojování...');
@@ -934,6 +936,7 @@ begin
  F_Main.S_Intellibox_connect.Brush.Color := clLime;
  F_Main.A_All_Loko_Prevzit.Enabled := true;
  F_Main.B_CS_Ver_Update.Enabled    := true;
+ F_Main.UpdateSystemButtons();
 
  F_Main.A_DCC_Go.Enabled   := true;
  F_Main.A_DCC_Stop.Enabled := true;
@@ -949,6 +952,8 @@ procedure TTrkGUI.BeforeClose(Sender:TObject);
 begin
  F_Main.A_Trk_Connect.Enabled       := false;
  F_Main.A_Trk_Disconnect.Enabled    := false;
+ F_Main.A_System_Start.Enabled := false;
+ F_Main.A_System_Stop.Enabled := false;
  F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
  F_Main.LogStatus('Centrála: odpojování...');
  F_Main.S_Intellibox_connect.Brush.Color := clBlue;
@@ -971,6 +976,7 @@ begin
  F_Main.A_All_Loko_Odhlasit.Enabled := false;
  F_Main.B_HV_Add.Enabled            := true;
  F_Main.B_CS_Ver_Update.Enabled     := false;
+ F_Main.UpdateSystemButtons();
 
  // zavrit vsechny regulatory
  RegCollector.CloseAll();

@@ -232,7 +232,7 @@ begin
   begin
    F_Main.LogStatus('System: start OK');
    SystemData.Status := null;
-   F_Main.A_System_Stop.Enabled := true;
+   F_Main.UpdateSystemButtons();
    Exit(0);
   end;
 
@@ -266,7 +266,7 @@ begin
   begin
    F_Main.LogStatus('System: start OK');
    SystemData.Status := null;
-   F_Main.A_System_Stop.Enabled := true;
+   F_Main.UpdateSystemButtons();
   end;
 
  Result := 0;
