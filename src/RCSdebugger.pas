@@ -107,8 +107,8 @@ implementation
     -;MTBd;LIST;                                                                zadost o info vsech existujicich MTB
     -;MTBd;INFO;addr                                                            zadost o info konkretniho MTB
 
-  # stav_vstupu, stav_vystupu: 15 cisel oddelenych "|"
-    napr. 0;0;0;0;0;0;0;0;0;0;0;0;0;0;0 je MTB se vsemi vystupy v logicke nule
+  # stav_vstupu, stav_vystupu: az 15 cisel oddelenych "|"
+    napr. 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0 je MTB se vsemi vystupy v logicke nule
     0    = vystup v logicke 0
     1    = vystup v logicke 1
     -2   = MTB neexistuje / vypadek MTB
@@ -243,9 +243,17 @@ end;
 procedure TRCSdClient.SendOutput(addr:Integer);
 var i:Integer;
     str:string;
+    max:Cardinal;
 begin
  str := '';
- for i := 0 to 15 do
+
+ try
+   max := RCSi.GetModuleOutputsCount(addr);
+ except
+   max := 16;
+ end;
+
+ for i := 0 to max-1 do
   begin
    try
      str := str + IntToStr(RCSi.GetOutput(addr, i)) + '|';
@@ -263,9 +271,17 @@ end;
 procedure TRCSdClient.SendInput(addr:Integer);
 var i:Integer;
     str:string;
+    max:Cardinal;
 begin
  str := '';
- for i := 0 to 15 do
+
+ try
+   max := RCSi.GetModuleInputsCount(addr);
+ except
+   max := 16;
+ end;
+
+ for i := 0 to max-1 do
   begin
    try
      str := str + IntToStr(Integer(RCSi.GetInput(addr, i))) + '|';
