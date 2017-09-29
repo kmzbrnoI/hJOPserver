@@ -91,16 +91,16 @@ var j:integer;
   try
     if (RCSi.IsModule(board)) then
      begin
-      case (RCSi.GetModuleType(board)) of
-       _RCS_MOD_MTB_UNI_ID    : LI.ImageIndex := 0;
-       _RCS_MOD_MTB_TTL_ID    : LI.ImageIndex := 1;
-       _RCS_MOD_MTB_TTLOUT_ID : LI.ImageIndex := 2;
-       _RCS_MOD_MTB_REGP_ID   : LI.ImageIndex := 3;
-       _RCS_MOD_MTB_POT_ID    : LI.ImageIndex := 4;
-       _RCS_MOD_MTB_UNIOUT_ID : LI.ImageIndex := 5;
+      if (RCSi.GetModuleType(board) = 'MTB-UNI') then
+        LI.ImageIndex := 0
+      else if (RCSi.GetModuleType(board) = 'MTB-TTL') then
+        LI.ImageIndex := 1
+      else if (RCSi.GetModuleType(board) = 'MTB-TTLo') then
+        LI.ImageIndex := 2
+      else if (RCSi.GetModuleType(board) = 'MTB-UNIo') then
+        LI.ImageIndex := 5
       else
        Self.LV.Items.Item[board].ImageIndex := -1;
-      end;
      end else
        Self.LV.Items.Item[board].ImageIndex := -1;
   except
@@ -121,7 +121,7 @@ var j:integer;
 
   try
     if (RCSi.IsModule(board)) then
-      LI.SubItems.Strings[2] := RCSi.ModuleTypeToStr(RCSi.GetModuleType(board))
+      LI.SubItems.Strings[2] := RCSi.GetModuleType(board)
     else
       LI.SubItems.Strings[2] := '-';
   except

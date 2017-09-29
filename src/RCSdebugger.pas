@@ -443,7 +443,7 @@ begin
  end;
 
  try
-   Result := Result + IntToStr(RCSi.GetModuleType(board)) + '|';
+   Result := Result + RCSi.GetModuleType(board) + '|';
  except
    on E:ERCSInvalidModuleAddr do
      Result := Result + '-|';
