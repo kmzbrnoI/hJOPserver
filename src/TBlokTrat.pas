@@ -154,7 +154,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase,
-    TBlokTratUsek;
+    TBlokTratUsek, appEv;
 
 constructor TBlkTrat.Create(index:Integer);
 begin
@@ -390,21 +390,26 @@ begin
  if (Self.Zadost = Zadost) then Exit(); 
 
  // tady se resi prehravani zvuku
- uvazka := nil;
- if ((Self.fuvazkaA as TBlkUvazka).zadost) then uvazka := (Self.fuvazkaB as TBlkUvazka)
- else if ((Self.fuvazkaB as TBlkUvazka).zadost) then uvazka := (Self.fuvazkaA as TBlkUvazka);
+ try
+   uvazka := nil;
+   if ((Self.fuvazkaA as TBlkUvazka).zadost) then uvazka := (Self.fuvazkaB as TBlkUvazka)
+   else if ((Self.fuvazkaB as TBlkUvazka).zadost) then uvazka := (Self.fuvazkaA as TBlkUvazka);
 
- if ((uvazka <> nil) and (Zadost <> Self.TratStav.zadost)) then
-  begin
-   if (Zadost) then
+   if ((uvazka <> nil) and (Zadost <> Self.TratStav.zadost)) then
     begin
-     for i := 0 to uvazka.OblsRizeni.Cnt-1 do
-      uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt + 1;
-    end else begin
-     for i := 0 to uvazka.OblsRizeni.Cnt-1 do
-      uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt - 1;
+     if (Zadost) then
+      begin
+       for i := 0 to uvazka.OblsRizeni.Cnt-1 do
+        uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt + 1;
+      end else begin
+       for i := 0 to uvazka.OblsRizeni.Cnt-1 do
+        uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt - 1;
+      end;
     end;
-  end;
+ except
+   on E:Exception do
+     AppEvents.LogException(E, 'SetTratZadost');
+ end;
 
  Self.TratStav.zadost := zadost;
  Self.Change();
