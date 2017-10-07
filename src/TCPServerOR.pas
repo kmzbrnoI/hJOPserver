@@ -952,11 +952,14 @@ end;//procedure
 
 procedure TORTCPServer.DeleteSound(AContext: TIdContext; code:Integer);
 begin
- if ((TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) and (TTCPORsRef(AContext.Data).soundDict[code] = 1)) then
-   Self.SendLn(AContext, '-;SND;STOP;'+IntToStr(code)+';');
+ if (not TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) then Exit();
 
- if (TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) then
+ if (TTCPORsRef(AContext.Data).soundDict[code] > 0) then
+  begin
+   if (TTCPORsRef(AContext.Data).soundDict[code] = 1) then
+     Self.SendLn(AContext, '-;SND;STOP;'+IntToStr(code)+';');
    TTCPORsRef(AContext.Data).soundDict[code] := TTCPORsRef(AContext.Data).soundDict[code] - 1;
+  end;
 end;//procedure
 
 procedure TORTCPServer.BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
