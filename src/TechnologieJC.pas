@@ -2747,16 +2747,19 @@ begin
    // na usecich v ceste je dovoleno mit soupravu pred navestidlem, v takovem
    // pripade ji DN z useku v ceste smaze
 
-   if (spri = -1) then
+   if (Self.fproperties.TypCesty = TJCType.vlak) then
     begin
-     // pred navestidlem eni souprava -> na usecich nesmi byt zadna souprava
-     if (TBlkUsek(Blk).IsSouprava()) then Exit(false);
-    end else begin
-     // pred navstidlem je souprava -> na usecich smi byt jen stejna souprava
-     // jako pred navestidlem
-     if ((TBlkUsek(Blk).IsSouprava()) and
-         ((TBlkUsek(Blk).Soupravs.Count > 1) or (TBlkUsek(Blk).Souprava <> spri))) then
-       Exit(false);
+     if (spri = -1) then
+      begin
+       // pred navestidlem neni souprava -> na usecich nesmi byt zadna souprava
+       if (TBlkUsek(Blk).IsSouprava()) then Exit(false);
+      end else begin
+       // pred navestidlem je souprava -> na usecich smi byt jen stejna souprava
+       // jako pred navestidlem
+       if ((TBlkUsek(Blk).IsSouprava()) and
+           ((TBlkUsek(Blk).Soupravs.Count > 1) or (TBlkUsek(Blk).Souprava <> spri))) then
+         Exit(false);
+      end;
     end;
   end;//for i
 
