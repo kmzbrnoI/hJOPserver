@@ -2063,8 +2063,9 @@ begin
   end;
 
  // uvolneni prvniho useku pred navestidlem v posunove ceste je signalem pro zhasnuti navestidla
- if (((Usek as TBlkUsek).GetSettings().RCSAddrs.Count > 0) and ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) and ((Nav as TBlkSCom).Navest <> 0) and
-    (Self.RozpadRuseniBlok = -1) and (Self.data.TypCesty = TJCType.posun)) then
+ if (((Usek as TBlkUsek).GetSettings().RCSAddrs.Count > 0) and ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) and
+     ((Nav as TBlkSCom).Navest <> 0) and (Self.RozpadRuseniBlok = -1) and (Self.data.TypCesty = TJCType.posun) and
+     (Self.RozpadBlok >= 1)) then
   begin
    writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+' : navestidlo '+
      Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
