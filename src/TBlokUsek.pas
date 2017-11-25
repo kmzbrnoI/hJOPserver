@@ -15,6 +15,7 @@ type
  ESprNotExists = class(Exception);
  EMultipleSprs = class(Exception);
  EDuplicitSprs = class(Exception);
+ ERunningSpr   = class(Exception);
 
  //technologicka nastaveni useku (delka, MTB, ...)
  TBlkUsekSettings = record
@@ -146,6 +147,8 @@ type
 
     function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
     procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
+
+    function CanSprSpeedInsert(index:Integer):boolean;
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -843,7 +846,7 @@ end;//procedure
 
 procedure TBlkUsek.MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
 begin
- // nejdrive posleme aktualni senam hnacich vozidel
+ // nejdrive posleme aktualni seznam hnacich vozidel
  (SenderOR as TOR).PanelHVList(SenderPnl);
 
  // pak posleme pozadavek na editaci hnaciho vozidla
@@ -1404,6 +1407,12 @@ begin
    Exit(true);
   end;
 
+ if (not Self.CanSprSpeedInsert(sprLocalIndex)) then
+  begin
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze vložit soupravu pøed jedoucí soupravu!');
+   Exit(true);
+  end;
+
  spri := TBlkUsek(Blk).Soupravs[TBlkUsek(Blk).VlakPresun];
 
  if (Blk = Self) then
@@ -1708,6 +1717,8 @@ begin
    raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
  if (Self.Soupravs.Contains(souprava)) then
    raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
+ if (not Self.CanSprSpeedInsert(localSprIndex)) then
+   raise ERunningSpr.Create('Nelze vložit soupravu pøed jedoucí soupravu!');
 
  Self.UsekStav.soupravy.Insert(localSprIndex, souprava);
  Self.UsekStav.SprPredict := -1;
@@ -1785,6 +1796,17 @@ begin
      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end else
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+// vraci true prave tehdy, kdyz lze vlozit soupravu na pozici index
+// kontroluje, zda-li se nenazime vlozit pred soupravu v pohybu
+function TBlkUsek.CanSprSpeedInsert(index:Integer):boolean;
+begin
+ Result := not ((Self.Soupravs.Count > 0) and
+                (((index = 0) and (Soupravy[Self.Soupravs[index]].rychlost > 0) and (Soupravy[Self.Soupravs[index]].smer = THVStanoviste.sudy)) or
+                 ((index = Self.Soupravs.Count) and (Soupravy[Self.Soupravs[index-1]].rychlost > 0) and (Soupravy[Self.Soupravs[index-1]].smer = THVStanoviste.lichy))));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
