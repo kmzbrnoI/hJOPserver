@@ -242,8 +242,8 @@ begin
       end;
     end;//uvolnit usek pred navestidlem
 
-   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) and (JC.stav.RozpadRuseniBlok >= 0)) or
-       (JC.stav.RozpadBlok = JC.data.Useky.Count)) then
+   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) or (JC.stav.RozpadBlok = JC.data.Useky.Count)) and
+       (JC.stav.RozpadRuseniBlok >= 0)) then
     begin
      // uvolnit RozpadRuseniBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
