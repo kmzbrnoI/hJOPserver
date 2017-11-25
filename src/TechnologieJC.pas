@@ -2241,13 +2241,12 @@ begin
    end;
 
   // mazani soupravy z useku pred navestidlem
-  if ((Self.RozpadBlok > 0) and (Self.RozpadRuseniBlok = -1) and
-      (Self.fproperties.TypCesty = TJCType.vlak)) then
+  if ((Self.RozpadBlok > 0) and (Self.RozpadRuseniBlok = -1)) then
    begin
     Usek := (Nav as TBlkSCom).UsekPred;
     if ((Usek as TBlkUsek).Obsazeno = TUsekStav.uvolneno) then
      begin
-      if ((Usek as TBlkUsek).IsSouprava()) then
+      if ((Usek as TBlkUsek).IsSouprava() and (Self.fproperties.TypCesty = TJCType.vlak)) then
        begin
         spri := Self.GetSoupravaIndex(nav, Usek);
         (Usek as TBlkUsek).RemoveSouprava(spri);
