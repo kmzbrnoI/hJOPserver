@@ -1378,7 +1378,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// vraci true, pokud loko opravdu presunuto
+// vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
 function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject; sprLocalIndex:Integer):boolean;
 var Blk:TBlk;
     spri:Integer;
@@ -1395,6 +1395,12 @@ begin
  if ((Self.SoupravyFull()) and (Blk <> Self)) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Do úseku se již nevejde další souprava!');
+   Exit(true);
+  end;
+
+ if (Self.Zaver > TZaver.no) then
+  begin
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze pøesunout na úsek se závìrem!');
    Exit(true);
   end;
 
