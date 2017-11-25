@@ -72,6 +72,8 @@ type
       procedure ZpracujZTS(cmd:TORStackCmdZTS);
       procedure ZpracujUTS(cmd:TORStackCmdUTS);
 
+      procedure SetFirstEnabled(enabled:boolean);
+
    public
 
 
@@ -99,6 +101,7 @@ type
       property hint:string read fhint write SetHint;
       property UPOenabled:boolean read fUPOenabled write SetUPOEnabled;
       property Count:Integer read GetCount;
+      property firstEnabled:boolean write SetFirstEnabled;
 
   end;//TORStack
 
@@ -610,6 +613,16 @@ function TORStack.GetCount():Integer;
 begin
  Result := Self.stack.Count;
 end;//function
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure TORStack.SetFirstEnabled(enabled:boolean);
+begin
+ if (enabled) then
+  (Self.OblR as TOR).BroadcastData('ZAS;FIRST;1')
+ else
+  (Self.OblR as TOR).BroadcastData('ZAS;FIRST;0');
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 

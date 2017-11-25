@@ -1605,7 +1605,12 @@ var i,j:Integer;
       Self.Krok := 0;
       (Navestidlo as TBlkSCom).DNjc := Self;
 
-      // jeste jednou zkontrolujeme, jeslti jsou vyybky ve spravnych polohach, protoze se teoreticky behem staveni mohly nejak podhodit...
+      // kdyby nastala nize chyba, musi byt moznost JC smazat ze zasobniku
+      if (Self.fstaveni.from_stack <> nil) then
+        (Self.fstaveni.from_stack as TORStack).firstEnabled := true;
+
+      // jeste jednou zkontrolujeme, jeslti jsou vyybky ve spravnych polohach,
+      // protoze se teoreticky behem staveni mohly nejak podhodit...
 
       for i := 0 to Self.fproperties.Vyhybky.Count-1 do
        begin
