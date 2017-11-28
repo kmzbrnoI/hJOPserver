@@ -1401,7 +1401,7 @@ begin
    Exit(true);
   end;
 
- if (Self.Zaver > TZaver.no) then
+ if ((Self.Zaver > TZaver.no) and (Self.Zaver <> TZaver.posun)) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze pøesunout na úsek se závìrem!');
    Exit(true);
