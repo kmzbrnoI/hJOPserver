@@ -45,6 +45,7 @@ type
     fhint:string;
     stack:TList<TORStackCmd>;
     fUPOenabled:boolean;
+    EZs:TList<TIdContext>; // klienti, kteri maji otevrenou editaci zasobniku
 
       // obsluzne funkce jednotlivych pozadavku z panelu
       procedure ORCmdPV(SenderPnl:TIdContext);
@@ -87,6 +88,8 @@ type
 
       procedure Update();
       procedure NewConnection(SenderPnl:TIdContext);
+      procedure OnDisconnect(SenderPnl:TIdContext);
+      procedure OnWriteToRead(SenderPnl:TIdContext);
 
       procedure RemoveJC(JC:TObject);           // maze prvni nalezenou cestu - tuto metodu vyuziva jizdni cesta pri dokonceni staveni
       procedure RemoveZTS(uvazka:TObject);      // maze ZTS pokud je na prvni pozici v zasobniku
@@ -121,12 +124,14 @@ begin
  Self.fvolba     := TORStackVolba.PV;
  Self.UPOenabled := false;
 
+ Self.EZs    := TList<TIdContext>.Create();
  Self.stack  := TList<TORStackCmd>.Create();
 end;//ctor
 
 destructor TORStack.Destroy();
 begin
  Self.stack.Free();
+ Self.EZs.Free();
  inherited Destroy();
 end;//dtor
 
@@ -173,7 +178,15 @@ end;//procedure
 procedure TORStack.ORCmdEZ(SenderPnl:TIdContext; show:boolean);
 begin
  if (show) then
+  begin
+   if (not Self.EZs.Contains(SenderPnl)) then
+     Self.EZs.Add(SenderPnl);
+
    Self.SendList(SenderPnl);
+  end else begin
+   if (Self.EZs.Contains(SenderPnl)) then
+     Self.EZs.Remove(SenderPnl);
+  end;
 end;//procedure
 
 procedure TORStack.ORCmdRM(SenderPnl:TIdContext; id:Integer);
@@ -327,6 +340,7 @@ end;//procedure
 procedure TORStack.Update();
 begin
  if (Self.stack.Count = 0) then Exit();
+ if (Self.EZs.Count > 0) then Exit(); 
 
  try
    if (Self.stack[0].ClassType = TORStackCmdJC) then
@@ -483,6 +497,7 @@ end;//procedure
 procedure TORStack.ClearStack();
 begin
  Self.stack.Clear();
+ Self.EZs.Clear();
  (Self.OblR as TOR).BroadcastData('ZAS;LIST;1;;');
  Self.hint := '';
  Self.UPOenabled := false;
@@ -506,6 +521,18 @@ begin
 
  Self.SendList(SenderPnl);
 end;//procedure
+
+procedure TORStack.OnDisconnect(SenderPnl:TIdContext);
+begin
+ if (Self.EZs.Contains(SenderPnl)) then
+   Self.EZs.Remove(SenderPnl);
+end;
+
+procedure TORStack.OnWriteToRead(SenderPnl:TIdContext);
+begin
+ if (Self.EZs.Contains(SenderPnl)) then
+   Self.EZs.Remove(SenderPnl);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -573,7 +600,10 @@ begin
   end;
 
  if (index = 0) then
+  begin
+   Self.EZs.Clear();
    Self.UPOenabled := false;
+  end;
 end;//procedure
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1411,6 +1411,7 @@ end;//procedure
 procedure TOR.RemoveClient(Panel:TIdContext);
 begin
  Self.PnlDRemove(Panel);
+ Self.stack.OnDisconnect(Panel);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2270,6 +2271,7 @@ begin
  if (Self.ZadostBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TRAT_ZADOST);
  if (Self.PrivolavackaBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_PRIVOLAVACKA);
  if (Self.TimerCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TIMEOUT);
+ Self.stack.OnWriteToRead(panel);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
