@@ -58,6 +58,7 @@ type
   autoblok:boolean;
 
   toRnz:TDictionary<Integer, Cardinal>;          // seznam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
+  RCtimer:Integer;                              // id timeru, ktery se prave ted pouziva pro ruseni JC
  end;
 
  // vlastnosti navestidla ziskane ze souboru .spnl (od reliefu, resp. z Mergeru)
@@ -80,6 +81,7 @@ type
      privol_ref : nil;
      privol_timer_id : 0;
      autoblok : false;
+     RCtimer : -1;
    );
 
    // privolavaci navest sviti jednu minitu a 30 sekund
@@ -100,6 +102,7 @@ type
 
     function GetSprTypes(sl:TStrings):string;
     function GetEvent(ev:TBlkSComSprEvent; short:boolean = false):string;
+    function RCinProgress():boolean;
 
     procedure SetNavest(navest:Integer);
     procedure SetAB(ab:boolean);
@@ -178,6 +181,7 @@ type
     procedure UpdateRychlostSpr(force:boolean = false);
     procedure AddBlkToRnz(blkId:Integer; change:boolean = true);
     procedure RemoveBlkFromRnz(blkId:Integer);
+    procedure RCtimerTimeout();
 
     function GetSoupravaIndex(usek:TBlk = nil):Integer;
 
@@ -198,6 +202,7 @@ type
     property UsekPred:TBlk read GetUsekPred;
     property autoblok:boolean read SComStav.autoblok write SComStav.autoblok;
     property canRNZ:boolean read CanIDoRNZ;
+    property RCtimer:Integer read SComStav.RCtimer write SComStav.RCtimer;
 
     //GUI:
 
@@ -393,6 +398,7 @@ begin
  Self.SComStav.AB  := false;
  Self.SComStav.ZAM := false;
  Self.SComStav.toRnz.Clear();
+ Self.SComStav.RCtimer := -1;
  Self.UnregisterAllEvents();
  Self.Change();
 end;//procedure
@@ -684,7 +690,7 @@ end;//procedure
 
 procedure TBlkSCom.SetZAM(zam:boolean);
 begin
- if (Self.SComStav.ZAM = zam) then Exit(); 
+ if (Self.SComStav.ZAM = zam) then Exit();
  Self.SComStav.ZAM := zam;
 
  if (Self.DNjc <> nil) then
@@ -698,7 +704,7 @@ begin
        JCDb.CheckNNavaznost(Self.DNjc);
       end;
     end else begin
-     if (Self.DNjc.RozpadBlok = -2) then
+     if ((Self.DNjc.RozpadBlok = -2) and (not Self.RCinProgress())) then
       begin
        Self.DNjc.RozpadBlok := -1;
        Self.DNjc.DN();
@@ -768,6 +774,12 @@ procedure TBlkSCom.MenuDNClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  if (Self.DNjc = nil) then Exit();
 
+ if (Self.RCinProgress()) then
+  begin
+   TOR(SenderOR).StopMereniCasu(Self.SComStav.RCtimer);
+   Self.SComStav.RCtimer := -1;
+  end;
+
  Self.DNjc.DN();
  Blky.SprPrediction(Self);
 end;//procedure
@@ -776,7 +788,7 @@ procedure TBlkSCom.MenuRCClick(SenderPnl:TIdContext; SenderOR:TObject);
 var JC:TJC;
     Blk:TBlk;
 begin
- if (Self.DNjc = nil) then Exit;
+ if ((Self.DNjc = nil) or (Self.RCinProgress())) then Exit;
 
  JC := Self.DNjc;
 
@@ -784,26 +796,25 @@ begin
  if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
-   (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
+   Self.SComStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
   end else begin
    if ((Blk as TBlkUsek).Obsazeno = TUsekStav.uvolneno) then
     begin
      // pokud neni blok pred JC obsazen -> 2 sekundy
-     (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 2, 0));
+     Self.SComStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 2, 0));
     end else begin
      // pokud je obsazen, zalezi na typu jizdni cesty
      case (JC.data.TypCesty) of
-      TJCType.vlak  : (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
-      TJCType.posun : (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
+      TJCType.vlak  : Self.SComStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
+      TJCType.posun : Self.SComStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
      else
-      (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 1, 0, 0));                   // nejaka divna cesta: 1 minuta
+      Self.SComStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 1, 0, 0));                   // nejaka divna cesta: 1 minuta
      end;
     end;
   end;
 
  JC.RusJCWithoutBlk();
  Blky.SprPrediction(Self);
- Self.DNjc := nil;
 end;//procedure
 
 procedure TBlkSCom.MenuABStartClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1031,7 +1042,8 @@ begin
    if ((not Self.ZAM) and (Self.Navest = 0) and (Self.DNjc.CanDN())) then
      Result := Result + 'DN,';
 
-   if ((Self.Navest > 0) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1)) then
+   if (((Self.Navest > 0) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1))
+       and (not Self.RCinProgress())) then
     begin
      Result := Result + 'RC,';
 
@@ -1550,6 +1562,20 @@ begin
    Result := TBlkUsek(usek).SoupravaS
  else
    Result := TBlkUsek(usek).SoupravaL;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkSCom.RCinProgress():boolean;
+begin
+ Result := (Self.SComStav.RCtimer > -1);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.RCtimerTimeout();
+begin
+ Self.SComStav.RCtimer := -1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

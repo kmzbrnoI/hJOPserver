@@ -2016,6 +2016,7 @@ var cyklus:Integer;
 
   Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
   (Nav as TBlkSCom).DNjc := nil;
+  (Nav as TBlkSCom).RCtimerTimeout();
 
   for cyklus := 0 to Self.fproperties.Useky.Count-1 do
    begin
