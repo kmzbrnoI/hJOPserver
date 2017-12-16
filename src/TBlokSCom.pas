@@ -719,7 +719,8 @@ var Blk:TBlk;
 begin
  if (Self.SComRel.SymbolType = 1) then Exit;
  if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then Exit;
+   if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
+       (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) > -1)) then Exit;
 
  Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then
@@ -739,7 +740,8 @@ procedure TBlkSCom.MenuPCStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then Exit;
+   if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
+       (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) > -1)) then Exit;
 
  Blk := BLky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
@@ -789,7 +791,7 @@ begin
      // pokud neni blok pred JC obsazen -> 2 sekundy
      (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 2, 0));
     end else begin
-     // polud je obsazen, zalezi na typu jizdni cesty
+     // pokud je obsazen, zalezi na typu jizdni cesty
      case (JC.data.TypCesty) of
       TJCType.vlak  : (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
       TJCType.posun : (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
@@ -935,19 +937,21 @@ begin
   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER: begin
-    if ((((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and
-        ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) or (Self.SComRel.SymbolType = 1)) then
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
-    else
+    if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
+           (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8))
+         or (TOR(SenderOR).stack.volba = VZ)) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
+    end else
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
   F1: begin
-    if (((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) and
-        ((SenderOR as TOR).stack.volba = TORStackVOlba.PV)) then
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
-    else
+    if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
+           (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8))
+         or ((SenderOR as TOR).stack.volba = VZ)) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
+    end else
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
  end;//case
 end;//procedure
@@ -994,9 +998,10 @@ begin
  // pokud je navestidlo trvale zamkle, neumoznime zadne volby
  if (Self.SComSettings.zamknuto) then Exit();
 
- if ((((((Self.DNjc = nil) or (Self.DNjc.RozpadBlok > 0)) and (JCDb.FindJC(Self.GetGlobalSettings().id, true) = -1)) and (Self.Navest <> 8))
-    or ((SenderOR as TOR).stack.volba = VZ)) and
-    (not Self.autoblok)) then
+ if ((((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
+        (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8))
+      or ((SenderOR as TOR).stack.volba = VZ)) and
+     (not Self.autoblok)) then
   begin
     case (Self.SComStav.ZacatekVolba) of
      TBlkSCOmVolba.VC : Result := Result + 'VC<,';

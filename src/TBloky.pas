@@ -616,7 +616,7 @@ begin
    if (orindex = -1) then continue;
 
    if ((Integer((Self.Data[i] as TBlkSCom).ZacatekVolba) > 0) and
-      ((JCDb.FindJC((Self.Data[i] as TBlkSCom).GetGlobalSettings().id, true) = -1) or
+      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkSCom).GetGlobalSettings().id) = -1) or
         ((Self.Data[i] as TBlkSCom).OblsRizeni.ORs[orindex].stack.volba = VZ))) then
      Exit(Self.Data[i]);
   end;//for i

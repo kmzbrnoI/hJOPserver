@@ -43,6 +43,7 @@ type
 
      // najde JC, ktera je postavena, ci prave stavena !
      function FindJC(NavestidloBlokID:Integer;Staveni:Boolean = false):Integer;
+     function FindOnlyStaveniJC(NavestidloBlokID:Integer):Integer;
      function IsJC(id:Integer; ignore_index:Integer = -1):boolean;
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
@@ -356,6 +357,15 @@ var i:Integer;
       Exit(i);
   Exit(-1);
  end;//function
+
+function TJCDb.FindOnlyStaveniJC(NavestidloBlokID:Integer):Integer;
+var i:Integer;
+begin
+  for i := 0 to Self.JCs.Count-1 do
+    if ((Self.JCs[i].staveni) and (Self.JCs[i].data.NavestidloBlok = NavestidloBlokID)) then
+      Exit(i);
+  Exit(-1);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
