@@ -944,10 +944,11 @@ begin
      Self.SendLn(AContext, '-;SND;PLAY;'+IntToStr(code)+';');
   end;
 
- if (not TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) then
-   TTCPORsRef(AContext.Data).soundDict.Add(code, 1)
- else
-   TTCPORsRef(AContext.Data).soundDict[code] := TTCPORsRef(AContext.Data).soundDict[code] + 1;
+ if (loop) then
+   if (not TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) then
+     TTCPORsRef(AContext.Data).soundDict.Add(code, 1)
+   else
+     TTCPORsRef(AContext.Data).soundDict[code] := TTCPORsRef(AContext.Data).soundDict[code] + 1;
 end;//procedure
 
 procedure TORTCPServer.DeleteSound(AContext: TIdContext; code:Integer);
