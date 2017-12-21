@@ -2720,12 +2720,12 @@ end;//procedure
 
 function TJC.GetStaveni():boolean;
 begin
- if (Self.Krok > 0) then Result := true else Result := false;
+ Result := (Self.Krok > 0);
 end;//function
 
 function TJC.GetPostaveno():boolean;
 begin
- if (Self.fstaveni.RozpadBlok > -5) then Result := true else Result := false; 
+ Result := (Self.fstaveni.RozpadBlok > -5);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
