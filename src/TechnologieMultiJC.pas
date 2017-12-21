@@ -206,9 +206,9 @@ begin
  Self.fstaveni.SenderOR  := SenderOR;
  Self.fstaveni.SenderPnl := SenderPnl;
 
- Self.fstaveni.JCIndex   := 0;
- Self.staveno := JCDb.GetJCByID(Self.fproperties.JCs[Self.fstaveni.JCIndex]);
+ Self.staveno := JCDb.GetJCByID(Self.fproperties.JCs[0]);
  Self.staveno.StavJC(SenderPnl, SenderOR);
+ Self.fstaveni.JCIndex := 0;
 
  (SenderOR as TOR).vb.Clear();
 
