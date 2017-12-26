@@ -256,9 +256,8 @@ procedure TF_Options.PM_Data_SaveClick(Sender: TObject);
 
 procedure TF_Options.StartLogWrite;
  begin
-  DateTimeToString(OPData.xDate,'dd.mm.yyyy', Now);
   WriteLog('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$',WR_MESSAGE);
-  WriteLog('Datum '+OPData.xDate,WR_MESSAGE);
+  WriteLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
   WriteLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',WR_MESSAGE);
  end;//procedure
 

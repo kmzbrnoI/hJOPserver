@@ -52,8 +52,6 @@ uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
 procedure TData.CompleteLoadFromFile;
 var read,read2:string;
  begin
-  DateTimeToString(OPData.xDate, 'dd.mm.yyyy', Now);
-
   F_Splash.AddStav('Naèítám konfiguraci');
   read := ini_lib.ReadString('NacteniDat','Konfigurace', 'data\Konfigurace.ini');
   try

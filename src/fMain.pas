@@ -1,4 +1,4 @@
-unit fMain;
+Ôªøunit fMain;
 
 interface
 
@@ -471,26 +471,20 @@ type
    procedure ZakladniPolohaVyhybek;                                                // prestavit vyhybky do zakladni polohy
  end;
 
- TStav=record                                                                   //stav systemu
-  xTime:string;                                                                   // aktualni cas
-  xDate:string;                                                                   // aktualni datum
+ TLogData=class
+   function CreateLogDirectories:boolean;                                        // vytvori slozky, od kterych se ukladaji soubory log
  end;
 
-TLogData=class
-  function CreateLogDirectories:boolean;                                        // vytvori slozky, od kterych se ukladaji soubory log
-end;
-
-TSystemStatus = (null, starting, stopping);                                     // stav startovani / vypinani systemu
-TSystem=class
-  Status:TSystemStatus;                                                         // aktualni stav systemu
- end;
+ TSystemStatus = (null, starting, stopping);                                     // stav startovani / vypinani systemu
+ TSystem=class
+   Status:TSystemStatus;                                                         // aktualni stav systemu
+  end;
 
 var
   F_Main: TF_Main;
 
   ResetData:TReset;                                                             // reset
   LogData:TLogData;                                                             // logovani
-  OPData:TStav;                                                                 // aktualni datum a cas
   Vytizeni:TVytizeni;                                                           // zobrazeni vytizceni procesoru
   SystemData:TSystem;                                                           // zapinani / vypinani systemu
   TrkSystem:TTrkGUI;                                                            // trakce
@@ -538,14 +532,14 @@ var fn:string;
   writelog('RCS -> ' + fn, WR_RCS);
   try
     RCSi.LoadLib(RCSi.libDir + '\' + fn);
-    Self.LogStatus('RCS: naËteno ' + fn);
+    Self.LogStatus('RCS: naƒçteno ' + fn);
   except
     on E:Exception do
      begin
       Screen.Cursor := crDefault;
-      Application.MessageBox(PChar('Nelze naËÌst knihovnu ' + fn + ':'+#13#10+
-          E.Message), 'Nelze naËÌst knihovnu', MB_OK OR MB_ICONWARNING);
-      AppEvents.LogException(E, 'Nelze naËÌst knihovnu ' + fn);
+      Application.MessageBox(PChar('Nelze naƒç√≠st knihovnu ' + fn + ':'+#13#10+
+          E.Message), 'Nelze naƒç√≠st knihovnu', MB_OK OR MB_ICONWARNING);
+      AppEvents.LogException(E, 'Nelze naƒç√≠st knihovnu ' + fn);
       Exit();
      end;
   end;
@@ -648,7 +642,7 @@ begin
    try
     ret := RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
     if (ret = 1) then
-      Application.MessageBox('Dos·hli jste maxim·lnÌho poËtu otev¯en˝ch regul·tor˘!', 'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Dos√°hli jste maxim√°ln√≠ho poƒçtu otev≈ôen√Ωch regul√°tor≈Ø!', 'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
    except
 
    end;
@@ -668,52 +662,52 @@ var ci:TCloseInfo;
 
   case (ci) of
     TCloseInfo.ci_system_changing : begin
-      writelog('Pokus o zav¯enÌ okna p¯i zapÌn·nÌ nebo vypÌn·nÌ systÈm˘', WR_ERROR);
-      Application.MessageBox(PChar('Technologie pr·vÏ zapÌn· nebo vypÌn· systÈmy, aplikaci nelze moment·lnÏ zav¯Ìt.'+
-              #13#10+'NouzovÈ ukonËenÌ programu lze provÈst spuötÏnÌm p¯Ìkazu "app-exit" v konzoli')
-              , 'Nelze ukonËit program', MB_OK OR MB_ICONWARNING);
+      writelog('Pokus o zav≈ôen√≠ okna p≈ôi zap√≠n√°n√≠ nebo vyp√≠n√°n√≠ syst√©m≈Ø', WR_ERROR);
+      Application.MessageBox(PChar('Technologie pr√°vƒõ zap√≠n√° nebo vyp√≠n√° syst√©my, aplikaci nelze moment√°lnƒõ zav≈ô√≠t.'+
+              #13#10+'Nouzov√© ukonƒçen√≠ programu lze prov√©st spu≈°tƒõn√≠m p≈ô√≠kazu "app-exit" v konzoli')
+              , 'Nelze ukonƒçit program', MB_OK OR MB_ICONWARNING);
     end;
 
     TCloseInfo.ci_system_started : begin
-      writelog('Pokus o zav¯enÌ okna bez ukonËenÌ komunikace se systÈmy', WR_ERROR);
-      if (Application.MessageBox('Program nenÌ odpojen od systÈm˘, odpojit od systÈm˘?',
-        'Nelze ukonËit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+      writelog('Pokus o zav≈ôen√≠ okna bez ukonƒçen√≠ komunikace se syst√©my', WR_ERROR);
+      if (Application.MessageBox('Program nen√≠ odpojen od syst√©m≈Ø, odpojit od syst√©m≈Ø?',
+        'Nelze ukonƒçit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
           F_Main.A_System_StopExecute(Self);
     end;
 
     TCloseInfo.ci_mtb : begin
-      writelog('Pokus o zav¯enÌ okna bez uzav¯enÌ RCS', WR_ERROR);
-      if (Application.MessageBox('Program nenÌ odpojen od RCS, odpojit?',
-          'Nelze ukonËit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+      writelog('Pokus o zav≈ôen√≠ okna bez uzav≈ôen√≠ RCS', WR_ERROR);
+      if (Application.MessageBox('Program nen√≠ odpojen od RCS, odpojit?',
+          'Nelze ukonƒçit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
        begin
         try
           if (RCSi.Started) then RCSi.Stop()
           else if (RCSi.Opened) then RCSi.Close();
         except
           on E:Exception do
-            Application.MessageBox(PChar('Nastala v˝jimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+            Application.MessageBox(PChar('Nastala v√Ωjimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
         end;
        end;
     end;
 
     TCloseInfo.ci_server : begin
-      writelog('Pokus o zav¯enÌ okna bez vypnutÌ panel serveru', WR_ERROR);
-      if (Application.MessageBox('PanelServer st·le bÏûÌ, vypnout?',
-          'Nelze ukonËit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+      writelog('Pokus o zav≈ôen√≠ okna bez vypnut√≠ panel serveru', WR_ERROR);
+      if (Application.MessageBox('PanelServer st√°le bƒõ≈æ√≠, vypnout?',
+          'Nelze ukonƒçit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
        ORTCPServer.Stop();
     end;
 
     TCloseInfo.ci_trakce : begin
-      writelog('Pokus o zav¯enÌ okna bez odpojenÌ od centr·ly', WR_ERROR);
-      if (Application.MessageBox('Program nenÌ odpojen od centr·ly, odpojit?',
-          'Nelze ukonËit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+      writelog('Pokus o zav≈ôen√≠ okna bez odpojen√≠ od centr√°ly', WR_ERROR);
+      if (Application.MessageBox('Program nen√≠ odpojen od centr√°ly, odpojit?',
+          'Nelze ukonƒçit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
         TrkSystem.Close();
     end;
 
     TCloseInfo.ci_yes : begin
       if (CloseMessage) then
        begin
-        CanClose := (Application.Messagebox('Opravdu chcete ukonËit program?', 'hJOPserver',
+        CanClose := (Application.Messagebox('Opravdu chcete ukonƒçit program?', 'hJOPserver',
             MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES);
        end else begin//CloseMessage
         CloseMessage := true;
@@ -750,7 +744,7 @@ begin
               RCSi.HideConfigDialog();
             except
               on E:Exception do
-                Application.MessageBox(PChar('Nelze skr˝t konfiguraËnÌ dialog RCS : ' + E.Message), 'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+                Application.MessageBox(PChar('Nelze skr√Ωt konfiguraƒçn√≠ dialog RCS : ' + E.Message), 'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
             end;
          end;
 
@@ -804,7 +798,7 @@ begin
   begin
    // disallow Windows from shutting down
 //   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
-//   ShutdownBlockReasonCreate(Application.MainForm.Handle, 'hJOPserver nenÌ odpojen od systÈm˘');
+//   ShutdownBlockReasonCreate(Application.MainForm.Handle, 'hJOPserver nen√≠ odpojen od syst√©m≈Ø');
    Msg.Result := 0;
  end else begin
 //   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
@@ -849,7 +843,7 @@ end;
 
 procedure TF_Main.A_All_Loko_OdhlasitExecute(Sender: TObject);
 begin
- F_Main.LogStatus('Loko: odhlaöuji...');
+ F_Main.LogStatus('Loko: odhla≈°uji...');
  Application.ProcessMessages();
  F_Main.S_lok_prevzato.Brush.Color := clBlue;
 
@@ -858,15 +852,15 @@ begin
  except
    on E:Exception do
     begin
-     Application.MessageBox(PChar('Nepoda¯ilo se odhl·sit lokomotivy:'+#13#10+E.Message),
-            'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar('Nepoda≈ôilo se odhl√°sit lokomotivy:'+#13#10+E.Message),
+            'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
     end;
  end;
 end;
 
 procedure TF_Main.A_All_Loko_PrevzitExecute(Sender: TObject);
 begin
- F_Main.LogStatus('Loko: p¯ebÌr·m...');
+ F_Main.LogStatus('Loko: p≈ôeb√≠r√°m...');
  Application.ProcessMessages();
  F_Main.S_lok_prevzato.Brush.Color := clBlue;
  TrkSystem.PrevzitAll;
@@ -875,7 +869,7 @@ end;//procedure
 procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
 var return:Integer;
 begin
-  Self.LogStatus('DCC: zapÌn·m');
+  Self.LogStatus('DCC: zap√≠n√°m');
   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCGoError);
   return := TrkSystem.CentralStart();
   if (return <> 0) then
@@ -888,7 +882,7 @@ end;//procedure
 procedure TF_Main.A_DCC_StopExecute(Sender: TObject); //DCC stop
 var return:Integer;
 begin
-  Self.LogStatus('DCC: vypÌn·m');
+  Self.LogStatus('DCC: vyp√≠n√°m');
   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCStopError);
   return := TrkSystem.CentralStop();
   if (return <> 0) then
@@ -910,18 +904,18 @@ begin
  F_Main.A_DCC_Go.Enabled       := true;
  F_Main.A_DCC_Stop.Enabled     := true;
  F_Main.S_Intellibox_go.Brush.Color  := clGray;
- Self.LogStatus('DCC: START: ERR: cenr·la neodpovÏdÏla na p¯Ìkaz');
- Application.MessageBox('Centr·la neodpovÏdÏla na p¯Ìkaz DCC START', 'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+ Self.LogStatus('DCC: START: ERR: cenr√°la neodpovƒõdƒõla na p≈ô√≠kaz');
+ Application.MessageBox('Centr√°la neodpovƒõdƒõla na p≈ô√≠kaz DCC START', 'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
 procedure TF_Main.OnDCCStopError(Sender:TObject; Data:Pointer);
 begin
- Self.LogStatus('DCC: STOP: ERR: cenr·la neodpovÏdÏla na p¯Ìkaz');
+ Self.LogStatus('DCC: STOP: ERR: cenr√°la neodpovƒõdƒõla na p≈ô√≠kaz');
  Self.UpdateSystemButtons();
  F_Main.A_DCC_Go.Enabled       := true;
  F_Main.A_DCC_Stop.Enabled     := true;
  F_Main.S_Intellibox_go.Brush.Color  := clGray;
- Application.MessageBox('Centr·la neodpovÏdÏla na p¯Ìkaz DCC STOP', 'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+ Application.MessageBox('Centr√°la neodpovƒõdƒõla na p≈ô√≠kaz DCC STOP', 'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
 
@@ -932,7 +926,7 @@ begin
  except
    on E:Exception do
     begin
-     Application.MessageBox(PChar('Nelze zobrazit konfiguraËnÌ dialog RCS : ' + E.Message), 'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar('Nelze zobrazit konfiguraƒçn√≠ dialog RCS : ' + E.Message), 'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
  end;
@@ -950,7 +944,7 @@ begin
   end;
 
  F_Main.S_RCS_open.Brush.Color := clBlue;
- Self.LogStatus('RCS: uzavÌr·m za¯ÌzenÌ...');
+ Self.LogStatus('RCS: uzav√≠r√°m za≈ô√≠zen√≠...');
 
  writelog('----- RCS CLOSING -----', WR_RCS);
 
@@ -958,7 +952,7 @@ begin
   begin
    A_RCS_Open.Enabled      := false;
    A_RCS_Close.Enabled     := false;
-   SB1.Panels.Items[_SB_RCS].Text := 'ZavÌr·m RCS...';
+   SB1.Panels.Items[_SB_RCS].Text := 'Zav√≠r√°m RCS...';
 
    A_System_Start.Enabled := false;
    A_System_Stop.Enabled := false;
@@ -968,11 +962,11 @@ begin
    RCSi.Close();
  except
    on E:ERCSNotOpened do
-     Self.OnRCSErrClose(Self, 'RCS nenÌ otev¯eno, nelze jej proto zav¯Ìt!');
+     Self.OnRCSErrClose(Self, 'RCS nen√≠ otev≈ôeno, nelze jej proto zav≈ô√≠t!');
    on E:ERCSScanningNotFinished do
-     Self.OnRCSErrClose(Self, 'RCS nelze uzav¯Ìt p¯ed sokonËneÌms kenov·nÌ modul˘!');
+     Self.OnRCSErrClose(Self, 'RCS nelze uzav≈ô√≠t p≈ôed sokonƒçne√≠ms kenov√°n√≠ modul≈Ø!');
    on E:Exception do
-     Self.OnRCSErrClose(Self, 'Nastala kritick· chyba : '+E.Message);
+     Self.OnRCSErrClose(Self, 'Nastala kritick√° chyba : '+E.Message);
  end;
 end;
 
@@ -993,10 +987,10 @@ begin
     A_System_Start.Enabled := false;
     A_System_Stop.Enabled := false;
 
-    SB1.Panels.Items[_SB_RCS].Text := 'SpouötÌm RCS...';
+    SB1.Panels.Items[_SB_RCS].Text := 'Spou≈°t√≠m RCS...';
    end;//with F_Main do
 
-  Self.LogStatus('RCS: SpouötÌm komunikaci...');
+  Self.LogStatus('RCS: Spou≈°t√≠m komunikaci...');
   F_Main.S_RCS_Start.Brush.Color   := clBlue;
 
   writelog('----- RCS STARTING -----', WR_RCS);
@@ -1005,17 +999,17 @@ begin
     RCSi.Start();
   except
    on E:ERCSAlreadyStarted do
-     Self.OnRCSErrStart(Self, 'Komunikace jiû probÌh·!');
+     Self.OnRCSErrStart(Self, 'Komunikace ji≈æ prob√≠h√°!');
    on E:ERCSFirmwareTooLow do
-     Self.OnRCSErrStart(Self, 'Firmware MTB-USB modulu je staröÌ neû v0.2.20, nelze se p¯ipojit k takto starÈmu FW!');
+     Self.OnRCSErrStart(Self, 'Firmware MTB-USB modulu je star≈°√≠ ne≈æ v0.2.20, nelze se p≈ôipojit k takto star√©mu FW!');
    on E:ERCSNoModules do
-     Self.OnRCSErrStart(Self, 'Na sbÏrnici nebyl nalezen û·dn˝ RCS modul, nelze spustit komunikaci!');
+     Self.OnRCSErrStart(Self, 'Na sbƒõrnici nebyl nalezen ≈æ√°dn√Ω RCS modul, nelze spustit komunikaci!');
    on E:ERCSNotOpened do
-     Self.OnRCSErrStart(Self, 'Nep¯ipojeno k MTB-USB, p¯ipojte se nejd¯Ìve k MTB-USB!');
+     Self.OnRCSErrStart(Self, 'Nep≈ôipojeno k MTB-USB, p≈ôipojte se nejd≈ô√≠ve k MTB-USB!');
    on E:ERCSScanningNotFinished do
-     Self.OnRCSErrStart(Self, 'NeprobÏhl sken modul˘, vyËkejte na dokonËenÌ skenu modul˘!');
+     Self.OnRCSErrStart(Self, 'Neprobƒõhl sken modul≈Ø, vyƒçkejte na dokonƒçen√≠ skenu modul≈Ø!');
    on E:Exception do
-     Self.OnRCSErrStart(Self, 'Nastala kritick· chyba : '+E.Message);
+     Self.OnRCSErrStart(Self, 'Nastala kritick√° chyba : '+E.Message);
   end;
 end;
 
@@ -1032,13 +1026,13 @@ begin
    A_RCS_Open.Enabled     := false;
    A_RCS_Close.Enabled    := false;
 
-   SB1.Panels.Items[_SB_RCS].Text := 'OtevÌr·m RCS...';
+   SB1.Panels.Items[_SB_RCS].Text := 'Otev√≠r√°m RCS...';
 
    A_System_Start.Enabled := false;
    A_System_Stop.Enabled := false;
   end;//with F_Main do
 
- Self.LogStatus('RCS: OtevÌr·m za¯ÌzenÌ, hled·m moduly...');
+ Self.LogStatus('RCS: Otev√≠r√°m za≈ô√≠zen√≠, hled√°m moduly...');
  F_Main.S_RCS_open.Brush.Color   := clBlue;
 
  writelog('----- RCS OPENING -----', WR_RCS);
@@ -1047,11 +1041,11 @@ begin
    RCSi.Open();
  except
   on E:ERCSAlreadyOpened do
-    Self.OnRCSErrOpen(Self, 'RCS je jiû otev¯eno!');
+    Self.OnRCSErrOpen(Self, 'RCS je ji≈æ otev≈ôeno!');
   on E:ERCSCannotOpenPort do
-    Self.OnRCSErrOpen(Self, 'Nepoda¯ilo se otev¯Ìt USB port, otev¯ete konfiguraËnÌ okno RCS driveru a zkontrolujte, ûe je vybr·n spr·vn˝ port!');
+    Self.OnRCSErrOpen(Self, 'Nepoda≈ôilo se otev≈ô√≠t USB port, otev≈ôete konfiguraƒçn√≠ okno RCS driveru a zkontrolujte, ≈æe je vybr√°n spr√°vn√Ω port!');
   on E:Exception do
-    Self.OnRCSErrOpen(Self, 'Nastala kritick· chyba : '+E.Message);
+    Self.OnRCSErrOpen(Self, 'Nastala kritick√° chyba : '+E.Message);
  end;
 end;//procedure
 
@@ -1084,9 +1078,9 @@ begin
     RCSi.Stop();
   except
    on E:ERCSNotStarted do
-     Self.OnRCSErrStop(Self, 'RCS komunikace nenÌ spuötÏna, nelze ji proto zastavit!');
+     Self.OnRCSErrStop(Self, 'RCS komunikace nen√≠ spu≈°tƒõna, nelze ji proto zastavit!');
    on E:Exception do
-     Self.OnRCSErrStop(Self, 'Nastala kritick· chyba : '+E.Message);
+     Self.OnRCSErrStop(Self, 'Nastala kritick√° chyba : '+E.Message);
   end;
 end;
 
@@ -1104,7 +1098,7 @@ begin
     begin
      SystemData.Status := TSystemStatus.null;
      Self.UpdateSystemButtons();
-     Application.MessageBox(PChar('Chyba p¯i zapÌn·nÌ serveru:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar('Chyba p≈ôi zap√≠n√°n√≠ serveru:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
  end;
@@ -1152,13 +1146,13 @@ begin
     PM_Tester.Enabled    := true;
     PM_ResetV.Enabled    := true;
 
-    SB1.Panels.Items[_SB_RCS].Text := 'RCS spuötÏno';
+    SB1.Panels.Items[_SB_RCS].Text := 'RCS spu≈°tƒõno';
     UpdateSystemButtons();
    end;//with F_Main do
 
   writelog('----- RCS START OK -----', WR_RCS);
 
-  Self.LogStatus('RCS: komunikace spuötÏna, Ëek·m na prvnÌ sken vöech modul˘...');
+  Self.LogStatus('RCS: komunikace spu≈°tƒõna, ƒçek√°m na prvn√≠ sken v≈°ech modul≈Ø...');
   RCSTableData.UpdateTable();
 end;//procedure
 
@@ -1168,7 +1162,7 @@ begin
   RCSTableData.UpdateTable();
 
   writelog('----- RCS SCANNED -----', WR_RCS);
-  Self.LogStatus('RCS: moduly naskenov·ny');
+  Self.LogStatus('RCS: moduly naskenov√°ny');
 
   if (F_Admin.CHB_SystemStart.Checked) then
     Blky.Enable();
@@ -1216,7 +1210,7 @@ begin
     PM_ResetV.Enabled     := false;
     PM_Tester.Enabled     := false;
 
-    SB1.Panels.Items[_SB_RCS].Text := 'RCS otev¯eno';
+    SB1.Panels.Items[_SB_RCS].Text := 'RCS otev≈ôeno';
    end;//with F_Main do
 
 
@@ -1253,8 +1247,8 @@ begin
    writelog('----- RCS OPEN OK : unknown amount of modules -----', WR_RCS);
  end;
 
- Self.LogStatus('RCS: otev¯eno');
- SB1.Panels.Items[_SB_RCS].Text := 'RCS otev¯eno';
+ Self.LogStatus('RCS: otev≈ôeno');
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS otev≈ôeno';
 
  F_Tester.AfterMTBOpen();
 
@@ -1272,8 +1266,8 @@ begin
      end;
    if (str <> '') then
     begin
-     writelog('ChybÌ RCS moduly '+str, WR_RCS, 1);
-     Self.LogStatus('WARN: ChybÌ RCS moduly '+str);
+     writelog('Chyb√≠ RCS moduly '+str, WR_RCS, 1);
+     Self.LogStatus('WARN: Chyb√≠ RCS moduly '+str);
     end;
 
    Self.A_RCS_GoExecute(nil);
@@ -1298,8 +1292,8 @@ begin
 
  writelog('----- RCS CLOSE OK -----', WR_RCS);
 
- Self.LogStatus('RCS: uzav¯eno');
- SB1.Panels.Items[_SB_RCS].Text := 'RCS zav¯eno';
+ Self.LogStatus('RCS: uzav≈ôeno');
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS zav≈ôeno';
 
  if (SystemData.Status = stopping) then
   begin
@@ -1324,9 +1318,9 @@ begin
 
  Self.LogStatus('ERR: RCS OPEN FAIL: '+errMsg);
  writelog('----- RCS OPEN FAIL - '+errMsg+' -----', WR_ERROR, 21);
- SB1.Panels.Items[_SB_RCS].Text := 'RCS zav¯eno';
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS zav≈ôeno';
 
- Application.MessageBox(PChar('P¯i otevÌr·nÌ RCS nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
+ Application.MessageBox(PChar('P≈ôi otev√≠r√°n√≠ RCS nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
 procedure TF_Main.OnRCSErrClose(Sender:TObject; errMsg:string);
@@ -1340,9 +1334,9 @@ begin
  SystemData.Status := null;
 
  Self.LogStatus('ERR: RCS CLOSE FAIL: '+errMsg);
- SB1.Panels.Items[_SB_RCS].Text := 'RCS zav¯eno';
+ SB1.Panels.Items[_SB_RCS].Text := 'RCS zav≈ôeno';
 
- Application.MessageBox(PChar('P¯i uzavÌr·nÌ RCS nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
+ Application.MessageBox(PChar('P≈ôi uzav√≠r√°n√≠ RCS nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
  writelog('----- RCS CLOSE FAIL - '+errMsg+' -----', WR_ERROR, 21);
 end;//procedure
 
@@ -1352,7 +1346,7 @@ begin
   Self.UpdateSystemButtons();
   A_RCS_Go.Enabled := true;
 
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS otev¯eno';
+  SB1.Panels.Items[_SB_RCS].Text := 'RCS otev≈ôeno';
   S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
@@ -1366,7 +1360,7 @@ begin
   Self.LogStatus('ERR: RCS START FAIL: '+errMsg);
   writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR,21);
 
-  Application.MessageBox(PChar('P¯i zapÌn·nÌ komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
+  Application.MessageBox(PChar('P≈ôi zap√≠n√°n√≠ komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
 procedure TF_Main.OnRCSErrStop(Sender:TObject; errMsg:string);
@@ -1375,14 +1369,14 @@ begin
   A_RCS_Close.Enabled := true;
   A_RCS_Go.Enabled := true;
 
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS otev¯eno';
+  SB1.Panels.Items[_SB_RCS].Text := 'RCS otev≈ôeno';
   S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := null;
 
   Self.LogStatus('ERR: RCS STOP FAIL: '+errMsg);
 
-  Application.MessageBox(PChar('P¯i vypÌn·nÌ komunikace nastala chyba:'+#13#10+errMsg+#13#10), 'Chyba', MB_OK OR MB_ICONWARNING);
+  Application.MessageBox(PChar('P≈ôi vyp√≠n√°n√≠ komunikace nastala chyba:'+#13#10+errMsg+#13#10), 'Chyba', MB_OK OR MB_ICONWARNING);
   writelog('----- RCS STOP FAIL - '+errMsg+' -----', WR_ERROR, 21);
 end;//procedure
 
@@ -1411,7 +1405,7 @@ begin
      RCSi.InputSim();
  except
    on E:Exception do
-     writelog('Nelze provÈst inputSim : ' + E.Message, WR_ERROR);
+     writelog('Nelze prov√©st inputSim : ' + E.Message, WR_ERROR);
  end;
 end;
 
@@ -1501,12 +1495,12 @@ begin
 
  if (not RCSi.ready) then
   begin
-   Application.MessageBox(PChar('SystÈm nelze spustit, RCS nenÌ p¯ipraveno k zapnutÌ systÈmu'+#13#10+'MoûnÈ p¯ÌËiny:'+#13#10+' - nenaËtena validnÌ knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
-   Self.LogStatus('ERR: SystÈm nelze spustit, RCS nenÌ p¯ipraveno k zapnutÌ systÈmu');
+   Application.MessageBox(PChar('Syst√©m nelze spustit, RCS nen√≠ p≈ôipraveno k zapnut√≠ syst√©mu'+#13#10+'Mo≈æn√© p≈ô√≠ƒçiny:'+#13#10+' - nenaƒçtena validn√≠ knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+   Self.LogStatus('ERR: Syst√©m nelze spustit, RCS nen√≠ p≈ôipraveno k zapnut√≠ syst√©mu');
    Exit();
   end;
 
- Self.LogStatus('ZapÌn·m systÈmy...');
+ Self.LogStatus('Zap√≠n√°m syst√©my...');
  SystemData.Status := starting;
  Self.A_System_Start.Enabled := false;
  Self.A_RCS_OpenExecute(nil);
@@ -1517,10 +1511,10 @@ begin
  Self.A_System_Stop.Enabled := false;
 
  Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
- Self.LogStatus('VypÌn·m systÈmy...');
+ Self.LogStatus('Vyp√≠n√°m syst√©my...');
  SystemData.Status := stopping;
 
- Self.LogStatus('Zastavuji vöechny soupravy...');
+ Self.LogStatus('Zastavuji v≈°echny soupravy...');
  Soupravy.StopAllSpr();
 
  Application.ProcessMessages();
@@ -1558,12 +1552,12 @@ begin
  if (return <> 0) then
   begin
    case (return) of
-    3: err := 'nelze otev¯Ìt COM port, vÌce informacÌ v LOGu';
+    3: err := 'nelze otev≈ô√≠t COM port, v√≠ce informac√≠ v LOGu';
    else
-    err := 'nezn·m· chyba';
+    err := 'nezn√°m√° chyba';
    end;
 
-   Application.MessageBox(PChar('Chyba pri otevÌr·nÌ komunikace s centr·lou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
+   Application.MessageBox(PChar('Chyba pri otev√≠r√°n√≠ komunikace s centr√°lou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
 
    F_Main.A_Trk_Connect.Enabled          := true;
    F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
@@ -1582,12 +1576,12 @@ begin
  if (return <> 0) then
   begin
    case (return) of
-    3: err := 'nelze zav¯Ìt COM port, vÌce informacÌ v LOGu';
+    3: err := 'nelze zav≈ô√≠t COM port, v√≠ce informac√≠ v LOGu';
    else
-    err := 'nezn·m· chyba';
+    err := 'nezn√°m√° chyba';
    end;
 
-   Application.MessageBox(PChar('Chyba pri uzavÌr·nÌ komunikace s centr·lou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
+   Application.MessageBox(PChar('Chyba pri uzav√≠r√°n√≠ komunikace s centr√°lou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
    Exit;
   end;
  Application.ProcessMessages;
@@ -1603,12 +1597,12 @@ begin
  except
    on E:Exception do
     begin
-     Application.MessageBox(PChar(E.Message), 'Chyba p¯i naËÌt·nÌ AC', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar(E.Message), 'Chyba p≈ôi naƒç√≠t√°n√≠ AC', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
  end;
 
- Application.MessageBox(PChar('AC ˙spÏönÏ naËteny z adres·¯e "' + ACDb.dirname + '".' + #13#10 + 'VÌce informacÌ v logu.'), 'Hotovo', MB_OK OR MB_ICONINFORMATION);
+ Application.MessageBox(PChar('AC √∫spƒõ≈°nƒõ naƒçteny z adres√°≈ôe "' + ACDb.dirname + '".' + #13#10 + 'V√≠ce informac√≠ v logu.'), 'Hotovo', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_Main.B_BlkAddClick(Sender: TObject);
@@ -1622,7 +1616,7 @@ var pozice:Integer;
   Pozice := LV_Bloky.ItemIndex;
 
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blky.GetBlkIndexName(pozice)+'?'),'Maz·nÌ bloku', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blky.GetBlkIndexName(pozice)+'?'),'Maz√°n√≠ bloku', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
    begin
     try
       Blky.Delete(pozice);
@@ -1648,7 +1642,7 @@ end;
 
 procedure TF_Main.B_ClearStatsClick(Sender: TObject);
 begin
- if (Application.MessageBox('Opravdu smazat najetÈ bloky a kilometry vöech hnacÌch vozidel?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+ if (Application.MessageBox('Opravdu smazat najet√© bloky a kilometry v≈°ech hnac√≠ch vozidel?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
    HVDb.ClearAllStatistics();
 end;
 
@@ -1699,17 +1693,17 @@ begin
 
  addr := Integer(LV_HV.Selected.Data^);
 
- if Application.MessageBox(PChar('Opravdu chcete smazat HV '+IntToStr(addr)+'?'),'Maz·nÌ HV', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+ if Application.MessageBox(PChar('Opravdu chcete smazat HV '+IntToStr(addr)+'?'),'Maz√°n√≠ HV', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
   begin
    return := HVDb.Remove(addr);
    if (return <> 0) then
     begin
      case (return) of
-       1: Application.MessageBox('Operace se nezda¯ila - HV neexistuje', 'Chyba', MB_OK OR MB_ICONWARNING);
-       2: Application.MessageBox(PChar('Operace se nezda¯ila - HV je p¯i¯azeno soupravÏ '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].Stav.souprava)), 'Chyba', MB_OK OR MB_ICONWARNING);
-       3: Application.MessageBox('Operace se nezda¯ila - HV je p¯evzato do ¯ÌzenÌ', 'Chyba', MB_OK OR MB_ICONWARNING);
+       1: Application.MessageBox('Operace se nezda≈ôila - HV neexistuje', 'Chyba', MB_OK OR MB_ICONWARNING);
+       2: Application.MessageBox(PChar('Operace se nezda≈ôila - HV je p≈ôi≈ôazeno soupravƒõ '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].Stav.souprava)), 'Chyba', MB_OK OR MB_ICONWARNING);
+       3: Application.MessageBox('Operace se nezda≈ôila - HV je p≈ôevzato do ≈ô√≠zen√≠', 'Chyba', MB_OK OR MB_ICONWARNING);
      else
-      Application.MessageBox(PChar('Operace se nezda¯ila - chyba '+IntToStr(return)), 'Chyba', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Operace se nezda≈ôila - chyba '+IntToStr(return)), 'Chyba', MB_OK OR MB_ICONWARNING);
      end;
     end;
   end;
@@ -1722,7 +1716,7 @@ begin
 
  JC := JCDb.GetJCByIndex(Self.LV_JC.ItemIndex);
  if (JC.staveni) then
-   JC.CancelStaveni('NouzovÈ ruöenÌ stavÏnÌ JC', true);
+   JC.CancelStaveni('Nouzov√© ru≈°en√≠ stavƒõn√≠ JC', true);
 end;
 
 procedure TF_Main.B_lok_deleteClick(Sender: TObject);
@@ -1740,7 +1734,7 @@ end;
 
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
 begin
- if ((Self.LV_MultiJC.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat sloûenou jÌzdnÌ cestu '+MultiJCDb[Self.LV_MultiJC.ItemIndex].Nazev), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
+ if ((Self.LV_MultiJC.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat slo≈æenou j√≠zdn√≠ cestu '+MultiJCDb[Self.LV_MultiJC.ItemIndex].Nazev), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
    MultiJCDb.Remove(Self.LV_MultiJC.ItemIndex);
 end;
 
@@ -1749,7 +1743,7 @@ var OblR:TOR;
 begin
  if (Self.LV_Stanice.Selected = nil) then Exit();
  ORs.GetORByIndex(Self.LV_Stanice.ItemIndex, OblR);
- if (Application.MessageBox(PChar('Opravdu smazat z·sobnÌk jÌzdnÌch cest stanice '+OblR.Name+' ?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+ if (Application.MessageBox(PChar('Opravdu smazat z√°sobn√≠k j√≠zdn√≠ch cest stanice '+OblR.Name+' ?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    OblR.stack.ClearStack();
 end;
 
@@ -1760,7 +1754,7 @@ end;
 
 procedure TF_Main.B_User_DeleteClick(Sender: TObject);
 begin
- if (Application.MessageBox(PChar('Opravdu smazat uûivatele '+Self.LV_Users.Selected.SubItems.Strings[0]+' ?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+ if (Application.MessageBox(PChar('Opravdu smazat u≈æivatele '+Self.LV_Users.Selected.SubItems.Strings[0]+' ?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
    UsrDB.RemoveUser(Self.LV_Users.ItemIndex);
    Self.B_User_Delete.Enabled := false;
@@ -1774,7 +1768,7 @@ end;
 
 procedure TF_Main.B_VC_deleteClick(Sender: TObject);
 begin
- if (Application.MessageBox(PChar('Opravdu chcete smazat jÌzdnÌ cestu '+JCDb.GetJCByIndex(LV_JC.ItemIndex).nazev+' ?'),'Maz·nÌ jÌzdnÌ cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+ if (Application.MessageBox(PChar('Opravdu chcete smazat j√≠zdn√≠ cestu '+JCDb.GetJCByIndex(LV_JC.ItemIndex).nazev+' ?'),'Maz√°n√≠ j√≠zdn√≠ cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
   begin
    try
      JCDb.RemoveJC(LV_JC.ItemIndex);
@@ -1795,7 +1789,7 @@ var pozice:integer;
 begin
  Pozice := LV_Zesilovace.ItemIndex;
  Beep;
- if Application.MessageBox(PChar('Opravdu chcete smazat zesilovac '+Boosters.sorted[Pozice].name+'?'),'Maz·nÌ zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+ if Application.MessageBox(PChar('Opravdu chcete smazat zesilovac '+Boosters.sorted[Pozice].name+'?'),'Maz√°n√≠ zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
   begin
    Boosters.Remove(Boosters.sorted[Pozice].id);
    LV_Zesilovace.Items.Delete(Pozice);
@@ -1832,7 +1826,7 @@ var i:Integer;
     if (Blk.GetGlobalSettings().typ <> _BLK_VYH) then continue;
     (Blk as TBlkVyhybka).SetPoloha(plus);
    end;//for cyklus
-  writelog('Vyh˝bky p¯estaveny do z·kladnÌ polohy', WR_MESSAGE);
+  writelog('Vyh√Ωbky p≈ôestaveny do z√°kladn√≠ polohy', WR_MESSAGE);
  end;//procedure
 
 procedure TF_Main.PM_SB1Click(Sender: TObject);
@@ -1926,7 +1920,7 @@ end;
 
 procedure TF_Main.CloseForm;
  begin
-  WriteLog('########## ProbÌh· ukonËov·nÌ hJOPserver ##########',WR_MESSAGE);
+  WriteLog('########## Prob√≠h√° ukonƒçov√°n√≠ hJOPserver ##########',WR_MESSAGE);
 
   Self.Timer1.Enabled         := false;
   Self.T_function.Enabled     := false;
@@ -1952,16 +1946,16 @@ function TLogData.CreateLogDirectories:boolean;
 
   if not DirectoryExists('log\') then
     if not CreateDir('log\') then
-      raise Exception.Create('Nelze vytvo¯it sloûku log');
+      raise Exception.Create('Nelze vytvo≈ôit slo≈æku log');
 
   if not DirectoryExists('log\program') then
     if not CreateDir('log\program') then
-      raise Exception.Create('Nelze vytvo¯it sloûku log\program');
+      raise Exception.Create('Nelze vytvo≈ôit slo≈æku log\program');
 
   if not DirectoryExists('log\lnet') then
     if not CreateDir('log\lnet') then
      begin
-      writelog('ERR: Nelze vytvo¯it sloûku log\lnet', WR_ERROR);
+      writelog('ERR: Nelze vytvo≈ôit slo≈æku log\lnet', WR_ERROR);
       Result := false;
      end;
  end;
@@ -2038,7 +2032,7 @@ procedure TF_Main.FormResize(Sender: TObject);
 
 procedure TF_Main.L_DateDblClick(Sender: TObject);
 begin
- Application.Messagebox('Datum a Ëas lze nastavit v operaËnÌm systÈmu','Informace',MB_ICONINFORMATION OR MB_OK OR MB_DEFBUTTON1);
+ Application.Messagebox('Datum a ƒças lze nastavit v operaƒçn√≠m syst√©mu','Informace',MB_ICONINFORMATION OR MB_OK OR MB_DEFBUTTON1);
 end;
 
 procedure TF_Main.MI_DisconnectClick(Sender: TObject);
@@ -2049,7 +2043,7 @@ begin
      ORTCPServer.DisconnectClient(ORTCPServer.GetClient(Self.LV_Clients.ItemIndex).conn);
    except
      on E:Exception do
-       Application.MessageBox(PChar('V˝jimka p¯i odpojov·nÌ - '+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+       Application.MessageBox(PChar('V√Ωjimka p≈ôi odpojov√°n√≠ - '+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
    end;
   end;
 end;
@@ -2074,10 +2068,10 @@ procedure TF_Main.MI_RCS_UpdateClick(Sender: TObject);
 begin
  try
    Self.UpdateRCSLibsList();
-   Application.MessageBox('Seznam knihoven ˙spÏönÏ aktualizov·n.', 'Info', MB_OK OR MB_ICONINFORMATION);
+   Application.MessageBox('Seznam knihoven √∫spƒõ≈°nƒõ aktualizov√°n.', 'Info', MB_OK OR MB_ICONINFORMATION);
  except
    on E:Exception do
-     Application.MessageBox(PChar('Seznam knihoven se nepoda¯ilo aktualizovat:'+#13#10 + E.Message),
+     Application.MessageBox(PChar('Seznam knihoven se nepoda≈ôilo aktualizovat:'+#13#10 + E.Message),
         'Chyba', MB_OK OR MB_ICONWARNING);
  end;
 end;
@@ -2185,10 +2179,8 @@ procedure TF_Main.DetekujAutSpusteniSystemu;
 
 procedure TF_Main.VypisDatumCas;
  begin
-  DateTimeToString(OPData.xTime, 'hh:mm:ss', Time);                //cas
-  DateTimeToString(OPData.xDate,'dd.mm.yyyy', Now);
-  P_Date.Caption := OPData.xDate;
-  P_Time.Caption := OPData.xTime;
+  P_Date.Caption := FormatDateTime('dd.‚Äâmm.‚Äâyyyy', Now);
+  P_Time.Caption := FormatDateTime('hh:mm:ss', Now);
  end;//procedure
 
 procedure TF_Main.SB_AC_PauseClick(Sender: TObject);
@@ -2228,7 +2220,7 @@ procedure TF_Main.OnStart;
  begin
   Vytizeni.DrawCPUGauge;
 
-  writelog('SpuötÏn hJOPserver v'+NactiVerzi(application.ExeName),0,0);
+  writelog('Spu≈°tƒõn hJOPserver v'+NactiVerzi(application.ExeName),0,0);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
 
   if (not CloseMessage) then F_Main.Close;
@@ -2263,7 +2255,7 @@ procedure TF_Main.OnStart;
 
 procedure TF_Main.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  F_SystemInfo.OpenForm('ProbÌh· ukl·d·nÌ dat...');
+  F_SystemInfo.OpenForm('Prob√≠h√° ukl√°d√°n√≠ dat...');
   Application.ProcessMessages;
   CloseForm;
  end;//procedure
@@ -2295,11 +2287,11 @@ procedure TF_Main.CreateSystem;
   if (not FileExists(_INIDATA_FN)) then
     Self.CreateCfgDirs();
 
-  F_splash.AddStav('Vytv·¯Ìm datovÈ struktury');
+  F_splash.AddStav('Vytv√°≈ô√≠m datov√© struktury');
   CreateClasses;
-  F_splash.AddStav('NaËÌt·m ini_lib data');
+  F_splash.AddStav('Naƒç√≠t√°m ini_lib data');
   LoadIniLibData;
-  F_splash.AddStav('Vytv·¯Ìm sloûky log˘');
+  F_splash.AddStav('Vytv√°≈ô√≠m slo≈æky log≈Ø');
 
   try
     LogData.CreateLogDirectories;
@@ -2322,7 +2314,7 @@ procedure TF_Main.CreateSystem;
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 
   F_Main.Caption := 'hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
-  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zav¯eno';
+  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zav≈ôeno';
   RepaintObjects;
  end;//procedure
 
@@ -2755,11 +2747,11 @@ end;
 procedure TF_Main.LV_ClientsCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((Item.SubItems.Strings[0] = 'uzav¯eno') or (Item.SubItems.Strings[0] = 'odpojen')) then
+ if ((Item.SubItems.Strings[0] = 'uzav≈ôeno') or (Item.SubItems.Strings[0] = 'odpojen')) then
    Self.LV_Clients.Canvas.Brush.Color := clWhite
- else if ((Item.SubItems.Strings[0] = 'otevÌr·nÌ') or (Item.SubItems.Strings[0] = 'handshake'))then
+ else if ((Item.SubItems.Strings[0] = 'otev√≠r√°n√≠') or (Item.SubItems.Strings[0] = 'handshake'))then
    Self.LV_Clients.Canvas.Brush.Color := $CCCCCC
- else if (Item.SubItems.Strings[0] = 'otev¯eno') then
+ else if (Item.SubItems.Strings[0] = 'otev≈ôeno') then
    Self.LV_Clients.Canvas.Brush.Color := $E0FFE0
  else
    Self.LV_Clients.Canvas.Brush.Color := $66CCFF;
@@ -2792,7 +2784,7 @@ begin
    try
     ret := RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
     if (ret = 1) then
-      Application.MessageBox('Dos·hli jste maxim·lnÌho poËtu otev¯en˝ch regul·tor˘!', 'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Dos√°hli jste maxim√°ln√≠ho poƒçtu otev≈ôen√Ωch regul√°tor≈Ø!', 'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
    except
 
    end;

@@ -3149,12 +3149,14 @@ object F_Main: TF_Main
     Align = alTop
     BevelOuter = bvNone
     Color = clGray
+    DoubleBuffered = True
     ParentBackground = False
+    ParentDoubleBuffered = False
     TabOrder = 0
     object P_Date: TPanel
-      Left = 888
+      Left = 897
       Top = 4
-      Width = 121
+      Width = 137
       Height = 25
       Hint = 'Datum'
       Margins.Left = 2
@@ -3179,9 +3181,9 @@ object F_Main: TF_Main
       OnDblClick = L_DateDblClick
     end
     object P_Time: TPanel
-      Left = 1016
+      Left = 1039
       Top = 4
-      Width = 121
+      Width = 106
       Height = 25
       Hint = 'Cas'
       Margins.Left = 2
@@ -3206,9 +3208,9 @@ object F_Main: TF_Main
       OnDblClick = L_DateDblClick
     end
     object P_Time_modelovy: TPanel
-      Left = 1144
+      Left = 1150
       Top = 4
-      Width = 110
+      Width = 106
       Height = 25
       Hint = 'Modelov'#253' cas'
       Margins.Left = 2
