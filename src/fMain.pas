@@ -455,6 +455,7 @@ type
     procedure UpdateRCSLibsList();
     procedure UpdateSystemButtons();
 
+    procedure CheckNasobicWidth();
   end;//public
 
  TVytizeni=class                                                                // vytizeni procesoru programem
@@ -2980,6 +2981,23 @@ begin
     or (Self.A_All_Loko_Prevzit.Enabled) or (not ORTCPServer.openned));
  Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrkSystem.openned)
     or (ORTCPServer.openned);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.CheckNasobicWidth();
+const _SMALL = 33;
+      _LARGE = 50;
+begin
+ if ((Length(Self.P_Zrychleni.Caption) > 2) and (Self.P_Zrychleni.Width <= _SMALL)) then
+  begin
+   Self.P_Zrychleni.Width := _LARGE;
+   Self.FormResize(Self);
+ end else if ((Length(Self.P_Zrychleni.Caption) = 2) and (Self.P_Zrychleni.Width = _LARGE)) then
+  begin
+   Self.P_Zrychleni.Width := _SMALL;
+   Self.FormResize(Self);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

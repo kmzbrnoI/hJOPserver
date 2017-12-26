@@ -638,7 +638,7 @@ begin
   begin
    if (parsed[2] = 'START') then ModCas.started := true;
    if (parsed[2] = 'STOP')  then ModCas.started := false;
-   if (parsed[2] = 'TIME')  then ModCas.SetTime(StrToTime(parsed[3]), StrToInt(parsed[4]));
+   if (parsed[2] = 'TIME')  then ModCas.SetTime(StrToTime(parsed[3]), StrToFloat(parsed[4]));
   end
 
  else if (parsed[1] = 'DCC') then

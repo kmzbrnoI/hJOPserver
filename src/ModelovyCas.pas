@@ -32,14 +32,17 @@ type
 
    private
     ftime:TTime;
-    fnasobic:Integer;
+    fnasobic:Real;
     fstarted:boolean;
     last_sync:TDateTime;
     last_call:TDateTime;
 
     procedure SetTime(time:TTime); overload;
-    procedure SetNasobic(nasobic:Integer);
+    procedure SetNasobic(nasobic:Real);
     procedure SetStarted(started:boolean);
+
+    function GetStrNasobic():string;
+    procedure SetStrNasobic(nasobic:string);
 
     procedure BroadcastTime();
 
@@ -52,11 +55,12 @@ type
      procedure Update();
 
      procedure SendTimeToPanel(AContext:TIDContext);
-     procedure SetTime(time:TTime; nasobic:Integer); overload;
+     procedure SetTime(time:TTime; nasobic:Real); overload;
 
      property time:TTime read ftime write SetTime;
-     property nasobic:Integer read fnasobic write SetNasobic;
+     property nasobic:Real read fnasobic write SetNasobic;
      property started:boolean read fstarted write SetStarted;
+     property strNasobic:string read GetStrNasobic write SetStrNasobic;
   end;//class TModCas
 
 var
@@ -78,7 +82,7 @@ begin
    PORT_Sekundy := ini.ReadInteger(_INI_SECTION, 'PORT_Sekundy', -1);
   end;
 
- Self.nasobic := ini.ReadInteger('ModCas', 'nasobic', 5);
+ Self.nasobic := ini.ReadFloat('ModCas', 'nasobic', 5);
  Self.time    := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
 end;//procedure
 
@@ -92,7 +96,7 @@ begin
    ini.WriteInteger(_INI_SECTION, 'PORT_Sekundy', PORT_Sekundy);
   end;
 
- ini.WriteInteger('ModCas', 'nasobic', Self.nasobic);
+ ini.WriteString('ModCas', 'nasobic', Self.strNasobic);
  ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
 end;//procedure
 
@@ -109,7 +113,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetNasobic(nasobic:Integer);
+procedure TModCas.SetNasobic(nasobic:Real);
 begin
  if ((Self.fnasobic <> nasobic) and (not Self.started)) then
   begin
@@ -170,25 +174,26 @@ begin
  Self.last_sync := Now;
 
  F_Main.P_Time_modelovy.Caption := TimeToStr(Self.time);
- F_Main.P_Zrychleni.Caption := IntToStr(Self.nasobic)+'x';
+ F_Main.P_Zrychleni.Caption := strNasobic + '×';
+ F_Main.CheckNasobicWidth();
 
  if (Self.started) then
-   ORTCPServer.BroadcastData('-;MOD-CAS;1;'+IntToStr(Self.nasobic)+';'+TimeToStr(Self.time))
+   ORTCPServer.BroadcastData('-;MOD-CAS;1;'+Self.strNasobic+';'+TimeToStr(Self.time))
  else
-   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+IntToStr(Self.nasobic)+';'+TimeToStr(Self.time));
+   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strNasobic+';'+TimeToStr(Self.time));
 end;//procedure
 
 procedure TModCas.SendTimeToPanel(AContext:TIDContext);
 begin
  if (Self.started) then
-   ORTCPServer.SendLn(AContext, '-;MOD-CAS;1;'+IntToStr(Self.nasobic)+';'+TimeToStr(Self.time))
+   ORTCPServer.SendLn(AContext, '-;MOD-CAS;1;'+Self.strNasobic+';'+TimeToStr(Self.time))
  else
-   ORTCPServer.SendLn(AContext, '-;MOD-CAS;0;'+IntToStr(Self.nasobic)+';'+TimeToStr(Self.time));
+   ORTCPServer.SendLn(AContext, '-;MOD-CAS;0;'+Self.strNasobic+';'+TimeToStr(Self.time));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetTime(time:TTime; nasobic:Integer);
+procedure TModCas.SetTime(time:TTime; nasobic:Real);
 begin
  if (((Self.ftime <> time) or (Self.fnasobic <> nasobic)) and (not Self.started)) then
   begin
@@ -198,6 +203,18 @@ begin
   end;
 end;//procedure
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TModCas.GetStrNasobic():string;
+begin
+ Result := FloatToStrF(Self.nasobic, ffGeneral, 1, 1);
+end;
+
+procedure TModCas.SetStrNasobic(nasobic:string);
+begin
+ Self.SetNasobic(StrToFloat(nasobic));
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

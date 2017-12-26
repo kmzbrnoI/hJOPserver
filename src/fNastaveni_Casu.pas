@@ -1,5 +1,9 @@
 unit fNastaveni_Casu;
 
+{
+  Okno nastaveni modeloveho casu.
+}
+
 interface
 
 uses
@@ -10,11 +14,11 @@ type
   TF_ModCasSet = class(TForm)
     ME_start_time: TMaskEdit;
     L_time_start: TLabel;
-    RG_zrychleni: TRadioGroup;
     B_OK: TButton;
     B_Storno: TButton;
+    Label1: TLabel;
+    ME_Nasobic: TMaskEdit;
     procedure B_OKClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
     procedure ME_start_timeKeyPress(Sender: TObject; var Key: Char);
   private
@@ -28,8 +32,7 @@ var
 
 implementation
 
-uses fMain, fLoginPozadi, TechnologieRCS, Logging,
-      ModelovyCas;
+uses ModelovyCas;
 
 {$R *.dfm}
 
@@ -48,8 +51,14 @@ procedure TF_ModCasSet.B_OKClick(Sender: TObject);
       Exit;
      end;
 
-    ModCas.time    := EncodeTime(StrToInt(LeftStr(ME_start_time.Text, 2)), StrToInt(Copy(ME_start_time.Text, 4, 2)), 0, 0);
-    ModCas.nasobic := Self.RG_zrychleni.ItemIndex+2;
+    if (StrToFloat(ME_Nasobic.Text) >= 10) then
+     begin
+      Application.MessageBox('Násobiè zadejte v rozsahu 0-9.9','Nelze nastavit cas',MB_OK OR MB_ICONWARNING);
+      Exit;
+     end;
+
+    ModCas.time       := EncodeTime(StrToInt(LeftStr(ME_start_time.Text, 2)), StrToInt(Copy(ME_start_time.Text, 4, 2)), 0, 0);
+    ModCas.strNasobic := Self.ME_Nasobic.Text;
 
     Self.Close();
   except
@@ -62,12 +71,6 @@ procedure TF_ModCasSet.B_StornoClick(Sender: TObject);
 begin
  Self.Close();
 end;
-
-procedure TF_ModCasSet.FormClose(Sender: TObject;
-  var Action: TCloseAction);
- begin
-  F_Pozadi.CloseForm;
- end;
 
 procedure TF_ModCasSet.ME_start_timeKeyPress(Sender: TObject; var Key: Char);
 begin
@@ -82,9 +85,10 @@ end;//procedure
 
 procedure TF_ModCasSet.OpenForm;
  begin
-  Self.ME_start_time.Text     := FormatDateTime('hh:nn', ModCas.time);
-  Self.RG_zrychleni.ItemIndex := ModCas.nasobic-2;
+  Self.ME_start_time.Text := FormatDateTime('hh:nn', ModCas.time);
+  Self.ME_Nasobic.Text    := FloatToStrF(ModCas.nasobic, ffNumber, 1, 1);
 
+  Self.ActiveControl := Self.ME_start_time;
   Self.Show();
  end;//procedure
 
