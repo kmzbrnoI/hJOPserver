@@ -1628,7 +1628,8 @@ begin
  LI.SubItems.Strings[0] := Self.Name;
  LI.SubItems.Strings[1] := Self.ShortName;
  LI.SubItems.Strings[2] := Self.id;
- LI.SubItems.Strings[3] := Self.stack.GetList();
+ str := Self.stack.GetList();
+ LI.SubItems.Strings[3] := RightStr(str, Length(str)-2);
 
  case (Self.stack.volba) of
   TORStackVolba.PV : LI.SubItems.Strings[4] := 'PV';
