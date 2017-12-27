@@ -82,7 +82,9 @@ type
   TJCPrjZaver=record
    Prejezd:Integer;                                                             // odkaz na ID bloku prejezdu
    uzaviraci:TList<Integer>;                                                    // uzaviraci bloky (ID) prejezdu
+                                                                                // pokud se prejezd nezavira, je seznam prazdny
    oteviraci:Integer;                                                           // oteviraci blok (ID) prejezdu
+                                                                                // pokud se prejezd nezavira, je nedefinovany
   end;
 
   ///////////////////////////////////////////////////////////////////////////
@@ -502,35 +504,38 @@ begin
       Exit;
      end;
 
-    // kontrola existence oteviraciho bloku
-    if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, blk2) <> 0) then
+    // pokud se ma prejezd zavirat
+    if (Self.fproperties.Prejezdy[i].uzaviraci.Count > 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].oteviraci));
-      Exit;
-     end;
-
-    // kontrola typu oteviraciho bloku
-    if ((blk2.GetGlobalSettings().typ <> _BLK_USEK) and (blk2.GetGlobalSettings().typ <> _BLK_TU)) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].oteviraci));
-      Exit;
-     end;
-
-    // kontrola existence uzaviracich bloku a jejich typu
-    for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
-     begin
-      if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], blk2) <> 0) then
+      // kontrola existence oteviraciho bloku
+      if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, blk2) <> 0) then
        begin
-        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
+        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].oteviraci));
         Exit;
        end;
-      if ((blk2.GetGlobalSettings.typ <> _BLK_USEK) and (blk2.GetGlobalSettings.typ <> _BLK_TU)) then
+
+      // kontrola typu oteviraciho bloku
+      if ((blk2.GetGlobalSettings().typ <> _BLK_USEK) and (blk2.GetGlobalSettings().typ <> _BLK_TU)) then
        begin
-        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
+        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].oteviraci));
         Exit;
        end;
-     end;//for j
 
+      // kontrola existence uzaviracich bloku a jejich typu
+      for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
+       begin
+        if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], blk2) <> 0) then
+         begin
+          Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
+          Exit;
+         end;
+        if ((blk2.GetGlobalSettings.typ <> _BLK_USEK) and (blk2.GetGlobalSettings.typ <> _BLK_TU)) then
+         begin
+          Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
+          Exit;
+         end;
+       end;//for j
+     end;
    end;//for i
 
   // kontrola odvratu
@@ -1488,8 +1493,10 @@ var i,j:Integer;
        uzavren_glob := false;
        for i := 0 to Self.fproperties.Prejezdy.Count-1 do
         begin
-         Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+         if (Self.fproperties.Prejezdy[i].uzaviraci.Count = 0) then
+           continue;
 
+         Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
          uzavren := false;
 
          // prejezd uzavirame jen v pripade, ze nejaky z jeho aktivacnich bloku je obsazen
@@ -1500,7 +1507,6 @@ var i,j:Integer;
            // posunova cesta:
            writelog('Krok 12 : prejezd '+Blk.GetGlobalSettings().name+' - uzaviram', WR_VC);
 
-           Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
            TBlkPrejezd(Blk).Zaver := true;
 
            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
@@ -1560,6 +1566,9 @@ var i,j:Integer;
        // kontrola stavu prejezdu
        for i := 0 to Self.fproperties.Prejezdy.Count-1 do
         begin
+         if (Self.fproperties.Prejezdy[i].uzaviraci.Count = 0) then
+           continue;
+
          Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
 
          if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then Exit();
@@ -1761,6 +1770,9 @@ var i,j:Integer;
       writelog('Krok 100: prejezdy: uzaviram', WR_VC);
       for i := 0 to Self.fproperties.Prejezdy.Count-1 do
        begin
+        if (Self.fproperties.Prejezdy[i].uzaviraci.Count = 0) then
+          continue;
+
         Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
         (Blk as TBlkPrejezd).UZ := true;
        end;
@@ -2554,8 +2566,12 @@ begin
      sl2.Clear();
      ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), sl2);
 
-     prj.Prejezd   := StrToInt(sl2[0]);
-     prj.oteviraci := StrToInt(sl2[1]);
+     prj.Prejezd := StrToInt(sl2[0]);
+     if (sl2.Count > 1) then
+       prj.oteviraci := StrToInt(sl2[1])
+     else
+       prj.oteviraci := -1;
+
      prj.uzaviraci := TList<Integer>.Create();
      for j := 2 to sl2.Count-1 do
        prj.uzaviraci.Add(StrToInt(sl2[j]));
@@ -2650,9 +2666,15 @@ begin
  line := '';
  for i := 0 to Self.fproperties.Prejezdy.Count-1 do
   begin
-   line := line + '(' + IntToStr(Self.fproperties.Prejezdy[i].Prejezd) + ',' + IntToStr(Self.fproperties.Prejezdy[i].oteviraci)+ ',';
-   for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
-    line := line + IntToStr(Self.fproperties.Prejezdy[i].uzaviraci[j]) + ',';
+   line := line + '(' + IntToStr(Self.fproperties.Prejezdy[i].Prejezd);
+
+   if (Self.fproperties.Prejezdy[i].uzaviraci.Count > 0) then
+    begin
+     line := line + ',' + IntToStr(Self.fproperties.Prejezdy[i].oteviraci)+ ',';
+     for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
+       line := line + IntToStr(Self.fproperties.Prejezdy[i].uzaviraci[j]) + ',';
+    end;
+
    line[Length(line)] := ')';
   end;
  if (line <> '') then
