@@ -52,6 +52,7 @@ type
       procedure ORCmdVZ(SenderPnl:TIdContext);
       procedure ORCmdEZ(SenderPnl:TIdContext; show:boolean);
       procedure ORCmdRM(SenderPnl:TIdContext; id:Integer);
+      procedure ORCmdSWITCH(SenderPnl:TIdContext; fromId:Integer; toId:Integer; listend:boolean = false);
       procedure ORCmdUPO(SenderPnl:TIdContext);
 
       // zmena volby a hintu
@@ -74,6 +75,8 @@ type
       procedure ZpracujUTS(cmd:TORStackCmdUTS);
 
       procedure SetFirstEnabled(enabled:boolean);
+
+      function FindCmdIndexById(id:Integer):Integer;
 
    public
 
@@ -156,7 +159,13 @@ begin
    else if (data[2] = 'RM') then
     Self.ORCmdRM(SenderPnl, StrToInt(data[3]))
    else if (data[2] = 'UPO') then
-    Self.ORCmdUPO(SenderPnl);
+    Self.ORCmdUPO(SenderPnl)
+   else if (data[2] = 'SWITCH') then begin
+     if (UpperCase(data[4]) = 'END') then
+       Self.ORCmdSWITCH(SenderPnl, StrToInt(data[3]), 0, true)
+     else
+       Self.ORCmdSWITCH(SenderPnl, StrToInt(data[3]), StrToInt(data[4]), false);
+   end;
  except
   on e:Exception do
     writelog('Server: stack data parse error : '+e.Message, WR_ERROR);
@@ -192,23 +201,68 @@ end;//procedure
 procedure TORStack.ORCmdRM(SenderPnl:TIdContext; id:Integer);
 var i:Integer;
 begin
- for i := 0 to Self.stack.Count-1 do
-  if (Self.stack[i].id = id) then
+ i := Self.FindCmdIndexById(id);
+ if (i = -1) then
+  begin
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s tímto ID v zásobníku neexistuje!');
+   Exit();
+  end;
+
+ try
+  if ((i = 0) and (Self.stack[i].ClassType = TORStackCmdJC) and (((Self.stack[i] as TORSTackCmdJC).JC as TJC).staveni)) then
    begin
-    try
-      if ((i = 0) and (Self.stack[i].ClassType = TORStackCmdJC) and (((Self.stack[i] as TORSTackCmdJC).JC as TJC).staveni)) then
-       begin
-        ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze smazat JC, která se staví');
-        Exit();
-       end;
-    except
-
-    end;
-
-    Self.RemoveFromStack(i, SenderPnl);
+    ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze smazat JC, která se staví');
     Exit();
    end;
+ except
+
+ end;
+
+ Self.RemoveFromStack(i, SenderPnl);
 end;//procedure
+
+procedure TORStack.ORCmdSWITCH(SenderPnl:TIdContext; fromId:Integer; toId:Integer; listend:boolean = false);
+var i, j:Integer;
+    tmp:TORStackCmd;
+begin
+ if ((fromId = toId) and (not listend)) then
+  begin
+   Self.SendList(SenderPnl);
+   Exit();
+  end;
+
+ i := Self.FindCmdIndexById(fromId);
+ if (i = -1) then
+  begin
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s výchozím ID v zásobníku neexistuje!');
+   Exit();
+  end;
+
+ tmp := Self.stack[i];
+ Self.stack.Delete(i);
+
+ try
+   if (listend) then
+    begin
+     Self.stack.Add(tmp);
+    end else begin
+     j := Self.FindCmdIndexById(toId);
+     if (j = -1) then
+      begin
+       ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s cílovým ID v zásobníku neexistuje!');
+       Self.stack.Insert(i, tmp);
+       Exit();
+      end;
+
+     Self.stack.Insert(j, tmp);
+    end;
+ except
+   Self.stack.Insert(i, tmp);
+ end;
+
+ (Self.OblR as TOR).BroadcastData('ZAS;LIST;'+Self.GetList());
+ (Self.OblR as TOR).changed := true;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -236,6 +290,7 @@ end;//procedure
 
 procedure TORStack.AddCmd(cmd:TORStackCmd);
 var description:string;
+    i, max:Integer;
 begin
  if (Self.stack.Count >= _MAX_STACK_JC) then
   begin
@@ -243,10 +298,12 @@ begin
    raise Exception.Create('Zásobník je plný');
   end;
 
- if (Self.stack.Count > 0) then
-  cmd.id := Self.stack[Self.stack.Count-1].id + 1
- else
-  cmd.id := 0;
+ max := 0;
+ for i := 0 to Self.stack.Count-1 do
+   if (Self.stack[i].id > max) then
+     max := Self.stack[i].id;
+
+ cmd.id := max + 1;
 
  description := Self.GetStackString(cmd);
  Self.stack.Add(cmd);
@@ -469,25 +526,19 @@ end;//procedure
 // odeslani cest v zasobniku
 // format dat: {id|name}{id|name} ...
 procedure TORStack.SendList(connection:TIdContext);
-var str:string;
-    i:Integer;
-    first_enabled:string;
 begin
- if ((Self.stack.Count > 0) and (Self.stack[0].ClassType = TORStackCmdJC) and (not ((Self.stack[0] as TORStackCmdJC).JC as TJC).staveni)) then
-  first_enabled := '1'
- else
-  first_enabled := '0';
-
- str := '';
- for i := 0 to Self.stack.Count-1 do
-  str := str + '[' + IntToStr(Self.stack[i].id) + '|' + Self.GetStackString(Self.stack[i]) + ']';
- ORTCPServer.SendLn(connection, (Self.OblR as TOR).id+';ZAS;LIST;'+first_enabled+';'+str);
+ ORTCPServer.SendLn(connection, (Self.OblR as TOR).id+';ZAS;LIST;'+Self.GetList());
 end;//procedure
 
 function TORStack.GetList():string;
 var i:Integer;
 begin
- Result := '';
+ if ((Self.stack.Count > 0) and (Self.stack[0].ClassType = TORStackCmdJC) and
+     (not ((Self.stack[0] as TORStackCmdJC).JC as TJC).staveni)) then
+  Result := '1;'
+ else
+  Result := '0;';
+
  for i := 0 to Self.stack.Count-1 do
    Result := Result + '[' + IntToStr(Self.stack[i].id) + '|' + Self.GetStackString(Self.stack[i]) + ']';
 end;//procedure
@@ -604,6 +655,8 @@ begin
    Self.EZs.Clear();
    Self.UPOenabled := false;
   end;
+
+ (Self.OblR as TOR).changed := true;
 end;//procedure
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -652,6 +705,18 @@ begin
   (Self.OblR as TOR).BroadcastData('ZAS;FIRST;1')
  else
   (Self.OblR as TOR).BroadcastData('ZAS;FIRST;0');
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
+function TORStack.FindCmdIndexById(id:Integer):Integer;
+var i:Integer;
+begin
+ for i := 0 to Self.stack.Count-1 do
+  if (Self.stack[i].id = id) then
+   Exit(i);
+
+ Result := -1;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
