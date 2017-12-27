@@ -651,10 +651,10 @@ begin
   end;
 
  if (index = 0) then
-  begin
-   Self.EZs.Clear();
    Self.UPOenabled := false;
-  end;
+
+ if (Self.stack.Count = 0) then
+   Self.EZs.Clear();
 
  (Self.OblR as TOR).changed := true;
 end;//procedure
