@@ -59,9 +59,9 @@ procedure TF_ModCasSet.B_OKClick(Sender: TObject);
       Exit;
      end;
 
-    ModCas.used       := Self.CHB_Used.Checked;
-    ModCas.time       := EncodeTime(StrToInt(LeftStr(ME_start_time.Text, 2)), StrToInt(Copy(ME_start_time.Text, 4, 2)), 0, 0);
-    ModCas.strNasobic := Self.ME_Nasobic.Text;
+    ModCas.used     := Self.CHB_Used.Checked;
+    ModCas.time     := EncodeTime(StrToInt(LeftStr(ME_start_time.Text, 2)), StrToInt(Copy(ME_start_time.Text, 4, 2)), 0, 0);
+    ModCas.strSpeed := Self.ME_Nasobic.Text;
 
     Self.Close();
   except
@@ -96,7 +96,7 @@ procedure TF_ModCasSet.OpenForm;
  begin
   Self.CHB_Used.Checked   := ModCas.used;
   Self.ME_start_time.Text := FormatDateTime('hh:nn', ModCas.time);
-  Self.ME_Nasobic.Text    := FloatToStrF(ModCas.nasobic, ffNumber, 1, 1);
+  Self.ME_Nasobic.Text    := FloatToStrF(ModCas.speed, ffNumber, 1, 1);
 
   Self.CHB_UsedClick(Self.CHB_Used);
 

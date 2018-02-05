@@ -20,9 +20,9 @@ type
   TModCasMTB=record                                   //data o pinech modeloveho casu
    MtbAdr:Integer;                                     //Mtb adresa na vysupy hodin
 
-   PORT_Hodiny:SmallInt;                               //port na kazdou hodinu, -1 pokud nevyuzito
-   PORT_Minuty:SmallInt;                               //port na kazdou minutu, -1 pokud nevyuzito
-   PORT_Sekundy:SmallInt;                              //port na kazdou sekundu, -1 pokud nevyuzito
+   PORT_H:SmallInt;                                    //port na kazdou hodinu, -1 pokud nevyuzito
+   PORT_M:SmallInt;                                    //port na kazdou minutu, -1 pokud nevyuzito
+   PORT_S:SmallInt;                                    //port na kazdou sekundu, -1 pokud nevyuzito
   end;
 
   TModCas = class
@@ -32,19 +32,19 @@ type
 
    private
     ftime:TTime;
-    fnasobic:Real;
+    fspeed:Real;
     fstarted:boolean;
     fused:boolean;
     last_sync:TDateTime;
     last_call:TDateTime;
 
     procedure SetTime(time:TTime); overload;
-    procedure SetNasobic(nasobic:Real);
+    procedure SetSpeed(speed:Real);
     procedure SetStarted(started:boolean);
     procedure SetUsed(used:boolean);
 
-    function GetStrNasobic():string;
-    procedure SetStrNasobic(nasobic:string);
+    function GetStrSpeed():string;
+    procedure SetStrSpeed(speed:string);
 
     procedure BroadcastTime();
 
@@ -57,14 +57,14 @@ type
      procedure Update();
 
      procedure SendTimeToPanel(AContext:TIDContext);
-     procedure SetTime(time:TTime; nasobic:Real); overload;
+     procedure SetTime(time:TTime; speed:Real); overload;
      procedure UpdateGUIColors();
 
      property time:TTime read ftime write SetTime;
-     property nasobic:Real read fnasobic write SetNasobic;
+     property speed:Real read fspeed write SetSpeed;
      property started:boolean read fstarted write SetStarted;
      property used:boolean read fused write SetUsed;
-     property strNasobic:string read GetStrNasobic write SetStrNasobic;
+     property strSpeed:string read GetStrSpeed write SetStrSpeed;
   end;//class TModCas
 
 var
@@ -80,13 +80,13 @@ procedure TModCas.LoadData(var ini:TMemIniFile);
 begin
  with (Self.MTBdata) do
   begin
-   MtbAdr       := ini.ReadInteger(_INI_SECTION, 'MtbAdr', -1);
-   PORT_Hodiny  := ini.ReadInteger(_INI_SECTION, 'PORT_Hodiny', -1);
-   PORT_Minuty  := ini.ReadInteger(_INI_SECTION, 'PORT_Minuty', -1);
-   PORT_Sekundy := ini.ReadInteger(_INI_SECTION, 'PORT_Sekundy', -1);
+   MtbAdr := ini.ReadInteger(_INI_SECTION, 'MtbAdr', -1);
+   PORT_H := ini.ReadInteger(_INI_SECTION, 'PORT_Hodiny', -1);
+   PORT_M := ini.ReadInteger(_INI_SECTION, 'PORT_Minuty', -1);
+   PORT_S := ini.ReadInteger(_INI_SECTION, 'PORT_Sekundy', -1);
   end;
 
- Self.fnasobic := ini.ReadFloat('ModCas', 'nasobic', 5);
+ Self.fspeed := ini.ReadFloat('ModCas', 'speed', 5);
  Self.time     := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
  Self.fused    := ini.ReadBool('ModCas', 'used', true);
 end;//procedure
@@ -96,12 +96,12 @@ begin
  with (Self.MTBdata) do
   begin
    ini.WriteInteger(_INI_SECTION, 'MtbAdr', MtbAdr);
-   ini.WriteInteger(_INI_SECTION, 'PORT_Hodiny', PORT_Hodiny);
-   ini.WriteInteger(_INI_SECTION, 'PORT_Minuty', PORT_Minuty);
-   ini.WriteInteger(_INI_SECTION, 'PORT_Sekundy', PORT_Sekundy);
+   ini.WriteInteger(_INI_SECTION, 'PORT_Hodiny', PORT_H);
+   ini.WriteInteger(_INI_SECTION, 'PORT_Minuty', PORT_M);
+   ini.WriteInteger(_INI_SECTION, 'PORT_Sekundy', PORT_S);
   end;
 
- ini.WriteString('ModCas', 'nasobic', Self.strNasobic);
+ ini.WriteString('ModCas', 'speed', Self.strSpeed);
  ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
  ini.WriteBool('ModCas', 'used', Self.used);
 end;//procedure
@@ -119,11 +119,11 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetNasobic(nasobic:Real);
+procedure TModCas.SetSpeed(speed:Real);
 begin
- if ((Self.fnasobic <> nasobic) and (not Self.started)) then
+ if ((Self.fspeed <> speed) and (not Self.started)) then
   begin
-   Self.fnasobic := nasobic;
+   Self.fspeed := speed;
    Self.BroadcastTime();
  end;
 end;//procedure
@@ -165,7 +165,7 @@ begin
 
  // pocitani aktualniho modeloveho casu:
  diff := Now - Self.last_call;
- Self.ftime := Self.ftime + (diff*Self.nasobic);
+ Self.ftime := Self.ftime + (diff*Self.speed);
 
  // synchronizace casu (po "_SYNC_REAL_MINUTES" case odesilame aktualni cas klientovi)
  if (Now > Self.last_sync+EncodeTime(0, _SYNC_REAL_MINUTES, 0, 0)) then
@@ -184,52 +184,50 @@ begin
  Self.last_sync := Now;
 
  F_Main.P_Time_modelovy.Caption := TimeToStr(Self.time);
- F_Main.P_Zrychleni.Caption := strNasobic + '×';
+ F_Main.P_Zrychleni.Caption := strSpeed + '×';
  F_Main.CheckNasobicWidth();
 
  if (Self.started) then
-   ORTCPServer.BroadcastData('-;MOD-CAS;1;'+Self.strNasobic+';'+TimeToStr(Self.time))
+   ORTCPServer.BroadcastData('-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
  else
-   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strNasobic+';'+TimeToStr(Self.time));
+   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time));
 end;//procedure
 
 procedure TModCas.SendTimeToPanel(AContext:TIDContext);
 begin
  if (Self.started) then
-   ORTCPServer.SendLn(AContext, '-;MOD-CAS;1;'+Self.strNasobic+';'+TimeToStr(Self.time))
+   ORTCPServer.SendLn(AContext, '-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
  else
-   ORTCPServer.SendLn(AContext, '-;MOD-CAS;0;'+Self.strNasobic+';'+TimeToStr(Self.time));
+   ORTCPServer.SendLn(AContext, '-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetTime(time:TTime; nasobic:Real);
+procedure TModCas.SetTime(time:TTime; speed:Real);
 begin
- if (((Self.ftime <> time) or (Self.fnasobic <> nasobic)) and (not Self.started)) then
+ if (((Self.ftime <> time) or (Self.fspeed <> speed)) and (not Self.started)) then
   begin
-   Self.ftime    := time;
-   Self.fnasobic := nasobic;
+   Self.ftime  := time;
+   Self.fspeed := speed;
    Self.BroadcastTime();
   end;
 end;//procedure
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
-function TModCas.GetStrNasobic():string;
+function TModCas.GetStrSpeed():string;
 begin
- Result := FloatToStrF(Self.nasobic, ffGeneral, 1, 1);
+ Result := FloatToStrF(Self.speed, ffGeneral, 1, 1);
 end;
 
-procedure TModCas.SetStrNasobic(nasobic:string);
+procedure TModCas.SetStrSpeed(speed:string);
 begin
- Self.SetNasobic(StrToFloat(nasobic));
+ Self.SetSpeed(StrToFloat(speed));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TModCas.UpdateGUIColors();
-var tmp:TColor;
 begin
  if (Self.started) then
   begin

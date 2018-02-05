@@ -446,30 +446,30 @@ var IgnoraceMTB:TArI;
 
   Self.SE_ModCas_MtbAdr.Value := ModCas.MTBdata.MtbAdr;
 
-  CHB_ModCas_Sekundy.Checked := (ModCas.MTBdata.PORT_Sekundy > -1);
-  CHB_ModCas_Minuty.Checked  := (ModCas.MTBdata.PORT_Minuty  > -1);
-  CHB_ModCas_Hodiny.Checked  := (ModCas.MTBdata.PORT_Hodiny  > -1);
+  CHB_ModCas_Sekundy.Checked := (ModCas.MTBdata.PORT_S > -1);
+  CHB_ModCas_Minuty.Checked  := (ModCas.MTBdata.PORT_M  > -1);
+  CHB_ModCas_Hodiny.Checked  := (ModCas.MTBdata.PORT_H  > -1);
 
-  if (ModCas.MTBdata.PORT_Sekundy > -1) then
+  if (ModCas.MTBdata.PORT_S > -1) then
    begin
     SE_ModCas_Sekundy.Enabled := true;
-    SE_ModCas_Sekundy.Value   := ModCas.MTBdata.PORT_Sekundy;
+    SE_ModCas_Sekundy.Value   := ModCas.MTBdata.PORT_S;
    end else begin
     SE_ModCas_Sekundy.Enabled := false;
     SE_ModCas_Sekundy.Value   := 0;
    end;
-  if (ModCas.MTBdata.PORT_Minuty > -1) then
+  if (ModCas.MTBdata.PORT_M > -1) then
    begin
     SE_ModCas_Minuty.Enabled := true;
-    SE_ModCas_Minuty.Value   := ModCas.MTBdata.PORT_Minuty;
+    SE_ModCas_Minuty.Value   := ModCas.MTBdata.PORT_M;
    end else begin
     SE_ModCas_Minuty.Enabled := false;
     SE_ModCas_Minuty.Value   := 0;
    end;
-  if (ModCas.MTBdata.PORT_Hodiny > -1) then
+  if (ModCas.MTBdata.PORT_H > -1) then
    begin
     SE_ModCas_Hodiny.Enabled := true;
-    SE_ModCas_Hodiny.Value   := ModCas.MTBdata.PORT_Hodiny;
+    SE_ModCas_Hodiny.Value   := ModCas.MTBdata.PORT_H;
    end else begin
     SE_ModCas_Hodiny.Enabled := false;
     SE_ModCas_Hodiny.Value   := 0;
@@ -481,19 +481,19 @@ procedure TF_Options.UlozDataDoModCasZObjektu;
   ModCas.MTBData.MtbAdr := Self.SE_ModCas_MtbAdr.Value;
 
   if (CHB_ModCas_Sekundy.Checked) then
-    ModCas.MTBData.PORT_Sekundy := SE_ModCas_Sekundy.Value
+    ModCas.MTBData.PORT_S := SE_ModCas_Sekundy.Value
   else
-    ModCas.MTBData.PORT_Sekundy := -1;
+    ModCas.MTBData.PORT_S := -1;
 
   if (CHB_ModCas_Minuty.Checked) then
-    ModCas.MTBData.PORT_Minuty := SE_ModCas_Minuty.Value
+    ModCas.MTBData.PORT_M := SE_ModCas_Minuty.Value
   else
-    ModCas.MTBData.PORT_Minuty := -1;
+    ModCas.MTBData.PORT_M := -1;
 
   if (CHB_ModCas_Hodiny.Checked) then
-    ModCas.MTBData.PORT_Hodiny := SE_ModCas_Hodiny.Value
+    ModCas.MTBData.PORT_H := SE_ModCas_Hodiny.Value
   else
-    ModCas.MTBData.PORT_Hodiny := -1;
+    ModCas.MTBData.PORT_H := -1;
 
  end;//procedure
 
