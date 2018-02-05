@@ -47,6 +47,7 @@ type
     procedure SetStrSpeed(speed:string);
 
     procedure BroadcastTime();
+    function GetTCPString():string;
 
    public
     MTBdata:TModCasMTB;
@@ -59,6 +60,7 @@ type
      procedure SendTimeToPanel(AContext:TIDContext);
      procedure SetTime(time:TTime; speed:Real); overload;
      procedure UpdateGUIColors();
+     procedure Parse(parsed:TStrings);
 
      property time:TTime read ftime write SetTime;
      property speed:Real read fspeed write SetSpeed;
@@ -187,18 +189,12 @@ begin
  F_Main.P_Zrychleni.Caption := strSpeed + '×';
  F_Main.CheckNasobicWidth();
 
- if (Self.started) then
-   ORTCPServer.BroadcastData('-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
- else
-   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time));
+ ORTCPServer.BroadcastData(Self.GetTCPString());
 end;//procedure
 
 procedure TModCas.SendTimeToPanel(AContext:TIDContext);
 begin
- if (Self.started) then
-   ORTCPServer.SendLn(AContext, '-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
- else
-   ORTCPServer.SendLn(AContext, '-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time));
+ ORTCPServer.SendLn(AContext, Self.GetTCPString());
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,6 +242,40 @@ begin
    F_Main.P_Time_modelovy.Color := clSilver;
    F_Main.P_Zrychleni.Color := clSilver;
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TModCas.GetTCPString():string;
+begin
+ if (Self.started) then
+  ORTCPServer.BroadcastData('-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
+ else begin
+  if (Self.used) then
+   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time))
+  else
+   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time)+';0');
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TModCas.Parse(parsed:TStrings);
+begin
+ parsed[2] := UpperCase(parsed[2]);
+
+ if ((parsed[2] = 'START') or (parsed[2] = 'STOP')) then
+   Self.fstarted := (parsed[2] = 'START');
+
+ if ((parsed.Count >= 4) and (parsed[2] = 'TIME')) then
+  begin
+   ModCas.SetTime(StrToTime(parsed[3]), StrToFloat(parsed[4]));
+   if (parsed.Count >= 6) then
+     Self.fused := (parsed[5] = '1');
+  end;
+
+ Self.BroadcastTime();
+ Self.UpdateGUIColors();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
