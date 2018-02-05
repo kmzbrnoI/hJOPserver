@@ -4,8 +4,8 @@ object F_ModCasSet: TF_ModCasSet
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Nastaven'#237' modelov'#233'ho '#269'asu'
-  ClientHeight = 145
-  ClientWidth = 202
+  ClientHeight = 185
+  ClientWidth = 210
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object F_ModCasSet: TF_ModCasSet
   TextHeight = 13
   object L_time_start: TLabel
     Left = 7
-    Top = 25
+    Top = 38
     Width = 21
     Height = 13
     Margins.Left = 2
@@ -35,15 +35,15 @@ object F_ModCasSet: TF_ModCasSet
     ParentFont = False
   end
   object Label1: TLabel
-    Left = 8
-    Top = 64
+    Left = 10
+    Top = 88
     Width = 73
     Height = 13
     Caption = 'Zrychlen'#237' '#269'asu:'
   end
   object ME_start_time: TMaskEdit
-    Left = 104
-    Top = 12
+    Left = 114
+    Top = 38
     Width = 89
     Height = 45
     Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
@@ -66,8 +66,8 @@ object F_ModCasSet: TF_ModCasSet
     OnKeyPress = ME_start_timeKeyPress
   end
   object B_OK: TButton
-    Left = 120
-    Top = 114
+    Left = 128
+    Top = 153
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -80,8 +80,8 @@ object F_ModCasSet: TF_ModCasSet
     OnClick = B_OKClick
   end
   object B_Storno: TButton
-    Left = 40
-    Top = 114
+    Left = 48
+    Top = 152
     Width = 75
     Height = 25
     Caption = 'Storno'
@@ -89,8 +89,8 @@ object F_ModCasSet: TF_ModCasSet
     OnClick = B_StornoClick
   end
   object ME_Nasobic: TMaskEdit
-    Left = 104
-    Top = 64
+    Left = 114
+    Top = 88
     Width = 88
     Height = 45
     EditMask = '!9.9;1;_'
@@ -104,5 +104,14 @@ object F_ModCasSet: TF_ModCasSet
     TabOrder = 1
     Text = ' . '
     OnKeyPress = ME_start_timeKeyPress
+  end
+  object CHB_Used: TCheckBox
+    Left = 8
+    Top = 8
+    Width = 194
+    Height = 17
+    Caption = 'Na koleji'#353'ti se pou'#382#237'v'#225' modelov'#253' '#269'as'
+    TabOrder = 4
+    OnClick = CHB_UsedClick
   end
 end

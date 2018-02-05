@@ -2237,6 +2237,7 @@ procedure TF_Main.OnStart;
   Self.PC_1.ActivePage := TS_Technologie;
 
   ORTCPServer.GUIInitTable();
+  ModCas.UpdateGUIColors();
 
   F_Main.Visible := true;
 

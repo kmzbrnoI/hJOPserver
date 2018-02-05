@@ -34,12 +34,14 @@ type
     ftime:TTime;
     fnasobic:Real;
     fstarted:boolean;
+    fused:boolean;
     last_sync:TDateTime;
     last_call:TDateTime;
 
     procedure SetTime(time:TTime); overload;
     procedure SetNasobic(nasobic:Real);
     procedure SetStarted(started:boolean);
+    procedure SetUsed(used:boolean);
 
     function GetStrNasobic():string;
     procedure SetStrNasobic(nasobic:string);
@@ -56,10 +58,12 @@ type
 
      procedure SendTimeToPanel(AContext:TIDContext);
      procedure SetTime(time:TTime; nasobic:Real); overload;
+     procedure UpdateGUIColors();
 
      property time:TTime read ftime write SetTime;
      property nasobic:Real read fnasobic write SetNasobic;
      property started:boolean read fstarted write SetStarted;
+     property used:boolean read fused write SetUsed;
      property strNasobic:string read GetStrNasobic write SetStrNasobic;
   end;//class TModCas
 
@@ -82,8 +86,9 @@ begin
    PORT_Sekundy := ini.ReadInteger(_INI_SECTION, 'PORT_Sekundy', -1);
   end;
 
- Self.nasobic := ini.ReadFloat('ModCas', 'nasobic', 5);
- Self.time    := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
+ Self.fnasobic := ini.ReadFloat('ModCas', 'nasobic', 5);
+ Self.time     := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
+ Self.fused    := ini.ReadBool('ModCas', 'used', true);
 end;//procedure
 
 procedure TModCas.SaveData(var ini:TMemIniFile);
@@ -98,6 +103,7 @@ begin
 
  ini.WriteString('ModCas', 'nasobic', Self.strNasobic);
  ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
+ ini.WriteBool('ModCas', 'used', Self.used);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,19 +134,23 @@ procedure TModCas.SetStarted(started:boolean);
 begin
  if (started <> Self.fstarted) then
   begin
-   Self.fstarted   := started;
+   Self.fstarted := started;
    Self.BroadcastTime();
-  end;
-
- if (started) then
-  begin
-   F_Main.P_Time_modelovy.Font.Color := clBlack;
-   F_Main.P_Zrychleni.Font.Color     := clBlack;
-  end else begin
-   F_Main.P_Time_modelovy.Font.Color := clRed;
-   F_Main.P_Zrychleni.Font.Color     := clRed;
+   Self.UpdateGUIColors();
   end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TModCas.SetUsed(used:boolean);
+begin
+ if (used <> Self.fused) then
+  begin
+   Self.fused := used;
+   Self.BroadcastTime();
+   Self.UpdateGUIColors();
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -214,6 +224,30 @@ end;
 procedure TModCas.SetStrNasobic(nasobic:string);
 begin
  Self.SetNasobic(StrToFloat(nasobic));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TModCas.UpdateGUIColors();
+var tmp:TColor;
+begin
+ if (Self.started) then
+  begin
+   F_Main.P_Time_modelovy.Font.Color := clBlack;
+   F_Main.P_Zrychleni.Font.Color     := clBlack;
+  end else begin
+   F_Main.P_Time_modelovy.Font.Color := clRed;
+   F_Main.P_Zrychleni.Font.Color     := clRed;
+  end;
+
+ if (Self.used) then
+  begin
+   F_Main.P_Time_modelovy.Color := clSkyBlue;
+   F_Main.P_Zrychleni.Color := clSkyBlue;
+  end else begin
+   F_Main.P_Time_modelovy.Color := clSilver;
+   F_Main.P_Zrychleni.Color := clSilver;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
