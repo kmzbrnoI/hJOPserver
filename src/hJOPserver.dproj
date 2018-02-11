@@ -304,7 +304,7 @@
 						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
 						<VersionInfoKeys Name="FileVersion">4.8.18.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2017</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2018</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
 						<VersionInfoKeys Name="OriginalFilename">hJOPserver.exe</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductName">hJOPserver</VersionInfoKeys>
