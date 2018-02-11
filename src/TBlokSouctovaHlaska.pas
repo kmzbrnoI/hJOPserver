@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses TBlokPrejezd, TBloky;
+uses TBlokPrejezd, TBloky, TOblsRizeni;
 
 constructor TBlkSH.Create(index:Integer);
 begin
@@ -111,6 +111,17 @@ begin
 
    for str in data do
      Self.settings.prejezdy.Add(StrToInt(str));
+
+   if (ini_rel <> nil) then
+    begin
+     //parsing *.spnl
+     data.Clear();
+     ExtractStrings([';'], [], PChar(ini_rel.ReadString('T', IntToStr(Self.GlobalSettings.id), '')), data);
+     if (data.Count > 0) then
+       Self.ORsRef := ORs.ParseORs(data[0]);
+    end else begin
+     Self.ORsRef.Cnt := 0;
+    end;
  finally
    data.Free();
  end;

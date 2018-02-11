@@ -188,7 +188,7 @@ begin
 
  Result.Cnt := parsed.Count;
  for i := 0 to parsed.Count-1 do
-    Result.ORs[i] := Self.ORsDatabase[Self.GetORIndex(parsed[i])];
+   Result.ORs[i] := Self.ORsDatabase[Self.GetORIndex(parsed[i])];
 
  parsed.Free();
 end;//function
