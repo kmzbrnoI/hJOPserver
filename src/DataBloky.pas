@@ -36,7 +36,8 @@ var
 implementation
 
 uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokSCom, TBlokIR, TBlokPrejezd,
-      fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp, TBlokVystup;
+      fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp, TBlokVystup,
+      TBlokSouctovaHlaska;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -347,8 +348,23 @@ var j, spr:integer;
       Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
    end;//_BLK_TU
 
-  end;//case BLOK_VYSTUP
+ /////////////////////////////////////////////////////
+   _BLK_SH:begin
+      Self.LV.Items.Item[line].ImageIndex := -1;
+      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Souètová hláska';
 
+      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+
+      if ((Blk as TBlkSH).enabled) then
+        Self.LV.Items.Item[line].SubItems.Strings[3] := 'ok'
+      else
+        Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
+
+      Self.LV.Items.Item[line].SubItems.Strings[5] := '';
+      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+   end;//_BLK_SH
+
+  end;//case BLOK_VYSTUP
 
  end;//procedure
 

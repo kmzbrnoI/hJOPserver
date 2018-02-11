@@ -497,23 +497,18 @@ var
 
 implementation
 
-//deklarace ostatnich unit
-uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek,
-     fAbout, Verze,
-     fLoginPozadi, fSystemInfo,
-     fBlkUsek, fBlkVyhybka, fAdminForm,
-     fRegulator,
-     fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
-     TechnologieRCS, TechnologieJC, FileSystem, fConsole,
-     TOblsRizeni, TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom,
-     TBlokIR, TOblRizeni, AC, SnadnSpusteni,
-     TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, DataAC, DataJC,
-     DataBloky, DataHV, DataRCS, DataORs, DataZesilovac, fBlkNew, fHVEdit,
-     fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd, fBlkSCom, fBlkTrat,
-     TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
+uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
+     fAbout, Verze, fLoginPozadi, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm,
+     fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
+     TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
+     TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, AC,
+     SnadnSpusteni, TBlokSouctovaHlaska, TBlokPrejezd, TJCDatabase, Logging,
+     TCPServerOR, DataAC, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
+     fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
+     fBlkSCom, fBlkTrat, TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
-     TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase,
-     TBlokRozp, fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster,
+     TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase, TBlokRozp,
+     fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster,
      AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors;
 
 {$R *.dfm}
@@ -2717,6 +2712,14 @@ var Blk:TBlk;
     end;
   end;
 
+  //////////////////////
+  _BLK_SH:begin
+    case ((Blk as TBlkSH).enabled) of
+      false : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
+      true  : LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+    end;
+  end;
+
   end;//case
 end;
 
@@ -2737,6 +2740,7 @@ var Blk:TBlk;
    _BLK_ROZP    : F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_TU      : F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_VYSTUP  : F_BlkVystup.OpenForm(Self.LV_Bloky.ItemIndex);
+   _BLK_SH      : F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
   end;//case
 end;
 

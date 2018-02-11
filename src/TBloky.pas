@@ -132,7 +132,7 @@ implementation
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
       TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieRCS,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
-      TBlokTratUsek, appEv, TBlokVystup, PTUtils;
+      TBlokTratUsek, appEv, TBlokVystup, PTUtils, TBlokSouctovaHlaska;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -271,6 +271,7 @@ begin
       _BLK_ROZP     : Blk := TBlkRozp.Create(-1);
       _BLK_TU       : Blk := TBlkTU.Create(-1);
       _BLK_VYSTUP   : Blk := TBlkVystup.Create(-1);
+      _BLK_SH       : Blk := TBlkSH.Create(-1);
 
      else//case
        continue;
@@ -389,6 +390,7 @@ begin
   _BLK_ROZP     : Blk := TBlkRozp.Create(index);
   _BLK_TU       : Blk := TBlkTU.Create(index);
   _BLK_VYSTUP   : Blk := TBlkVystup.Create(index);
+  _BLK_SH       : Blk := TBlkSH.Create(index);
  else//case
   Exit(nil);
  end;

@@ -136,7 +136,8 @@ uses
   stanicniHlaseniHelper in 'stanicniHlaseniHelper.pas',
   changeEvent in 'changeEvent.pas',
   changeEventCaller in 'changeEventCaller.pas',
-  TBlokSouctovaHlaska in 'TBlokSouctovaHlaska.pas';
+  TBlokSouctovaHlaska in 'TBlokSouctovaHlaska.pas',
+  fBlkSH in 'fBlkSH.pas';
 
 {$R *.res}
 
@@ -181,6 +182,7 @@ uses
   Application.CreateForm(TF_BlkPrejezd, F_BlkPrejezd);
   Application.CreateForm(TF_BlkTU, F_BlkTU);
   Application.CreateForm(TF_BlkVystup, F_BlkVystup);
+  Application.CreateForm(TF_BlkSH, F_BlkSH);
   Application.CreateForm(TF_AutoStartSystems, F_AutoStartSystems);
   Application.CreateForm(TF_BlkUsek_tech, F_BlkUsek_tech);
   Application.CreateForm(TF_Pozadi, F_Pozadi);

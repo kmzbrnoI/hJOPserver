@@ -153,6 +153,7 @@ procedure TBlkSH.SetSettings(data:TBlkSHSettings);
 begin
  if (Self.enabled) then
    Self.RemoveReferences();
+ Self.settings.prejezdy.Free();
 
  Self.settings := data;
 

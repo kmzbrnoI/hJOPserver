@@ -87,7 +87,7 @@ type
 
    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); virtual;
    procedure SaveData(ini_tech:TMemIniFile;const section:string); virtual;
-   procedure SaveStatus(ini_stat:TMemIniFile;const section:string); virtual; abstract;
+   procedure SaveStatus(ini_stat:TMemIniFile;const section:string); virtual;
 
    //enable or disable symbol on relief
    procedure Enable(); virtual; abstract;
@@ -197,6 +197,11 @@ begin
  if (Self.GlobalSettings.poznamka <> '') then
    ini_tech.WriteString(section, 'pozn', Self.GlobalSettings.poznamka);
 end;//procedure
+
+procedure TBlk.SaveStatus(ini_stat:TMemIniFile;const section:string);
+begin
+
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
