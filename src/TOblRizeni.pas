@@ -271,7 +271,8 @@ uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain, Booster,
      TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User,
-     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava;
+     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava,
+     TBlokSouctovaHlaska;
 
 constructor TOR.Create(index:Integer);
 begin
@@ -753,7 +754,36 @@ begin
 
    msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
    msg := msg + PrevodySoustav.ColorToStr(bg) + ';0;';
-  end;//_BLK_ZAMEK
+  end;//_BLK_ROZP
+
+  /////////////////////////////////////////////////
+
+  _BLK_SH:begin
+   //vytvoreni dat
+
+   // n.o. rail
+   fg := clPurple;
+   if (TBlkSH(Sender).anulace) then
+     fg := clWhite;
+   msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
+   msg := msg + PrevodySoustav.ColorToStr(clBlack) + ';0;';
+
+   // left rectangle
+   fg := clBlack;
+   if (TBlkSH(Sender).porucha) then
+     fg := clRed;
+   if (not TBlkSH(Sender).komunikace) then
+     fg := clFuchsia;
+   msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
+
+   // right rectangle
+   fg := clBlack;
+   if (TBlkSH(Sender).uzavreno) then
+     fg := $A0A0A0;
+   if (not TBlkSH(Sender).UZ) then
+     fg := clWhite;
+   msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
+  end;//_BLK_SH
 
  else Exit; end;
 
