@@ -135,7 +135,8 @@ uses
   stanicniHlaseni in 'stanicniHlaseni.pas',
   stanicniHlaseniHelper in 'stanicniHlaseniHelper.pas',
   changeEvent in 'changeEvent.pas',
-  changeEventCaller in 'changeEventCaller.pas';
+  changeEventCaller in 'changeEventCaller.pas',
+  TBlokSouctovaHlaska in 'TBlokSouctovaHlaska.pas';
 
 {$R *.res}
 

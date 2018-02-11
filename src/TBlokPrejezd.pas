@@ -34,6 +34,7 @@ type
   PC_NOT, PC_UZ: boolean;                           // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
   zaver:Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
   uzavStart:TDateTime;
+  shs:TList<TBlk>;                                  // seznam souctovych hlasek, kam hlasi prejezd stav
  end;
 
  TBlkPrejezd = class(TBlk)
@@ -101,11 +102,15 @@ type
 
     //update states
     procedure Update(); override;
+    procedure Change(now:boolean = false); override;
 
-    //----- vyhybka own functions -----
+    //----- prejezd own functions -----
 
     function GetSettings():TBlkPrjSettings;
     procedure SetSettings(data:TBlkPrjSettings);
+
+    procedure AddSH(Sender:TBlk);
+    procedure RemoveSH(Sender:TBlk);
 
     property Stav:TBlkPrjStav read PrjStav;
 
@@ -130,19 +135,21 @@ type
 implementation
 
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics;
+     Graphics, TBlokSouctovaHlaska;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin
- inherited Create(index);
+ inherited;
 
  Self.GlobalSettings.typ := _BLK_PREJEZD;
  Self.PrjStav := Self._def_prj_stav;
+ Self.PrjStav.shs := TList<TBlk>.Create();
 end;//ctor
 
 destructor TBlkPrejezd.Destroy();
 begin
- inherited Destroy();
+ Self.PrjStav.shs.Free();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -225,6 +232,7 @@ end;//procedure
 procedure TBlkPrejezd.Disable();
 begin
  Self.PrjStav.basicStav := disabled;
+ Self.PrjStav.shs.Clear();
  Self.Change();
 end;//procedure
 
@@ -290,6 +298,21 @@ begin
 
  inherited Update();
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.Change(now:boolean = false);
+var sh:TBlk;
+begin
+ inherited;
+
+ try
+   for sh in Self.Stav.shs do
+     sh.Change();
+ except
+
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -641,6 +664,20 @@ begin
  finally
    upo.Free();
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.AddSH(Sender:TBlk);
+begin
+ if (not Self.PrjStav.shs.Contains(Sender)) then
+   Self.PrjStav.shs.Add(Sender);
+end;
+
+procedure TBlkPrejezd.RemoveSH(Sender:TBlk);
+begin
+ if (Self.PrjStav.shs.Contains(Sender)) then
+   Self.PrjStav.shs.Remove(Sender);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

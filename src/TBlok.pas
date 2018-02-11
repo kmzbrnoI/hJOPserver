@@ -20,6 +20,7 @@ const
  _BLK_ROZP    = 8;            // rozpojovac
  _BLK_TU      = 9;            // tratovy usek
  _BLK_VYSTUP  = 10;           // logicky vystup
+ _BLK_SH      = 11;           // souctova hlaska
 
  //if the block is disbled, this is is its state
  _BLK_DISABLED = -5;
