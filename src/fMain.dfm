@@ -3503,7 +3503,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Bloky
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3970,7 +3970,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Pridat blok'
+            Caption = 'P'#345'idat blok'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
@@ -4219,7 +4219,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Pridat HV'
+            Caption = 'P'#345'idat HV'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
@@ -4684,7 +4684,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Pridat zesilovac'
+            Caption = 'P'#345'idat zesilova'#269
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
@@ -4703,7 +4703,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Smazat zesilovac'
+            Caption = 'Smazat zesilova'#269
             Enabled = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -5254,7 +5254,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Pridat uzivatele'
+            Caption = 'P'#345'idat u'#382'ivatele'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
@@ -5273,7 +5273,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Smazat uzivatele'
+            Caption = 'Smazat u'#382'ivatele'
             Enabled = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -5451,7 +5451,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Pridat cestu'
+            Caption = 'P'#345'idat JC'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
@@ -5470,7 +5470,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Smazat cestu'
+            Caption = 'Smazat JC'
             Enabled = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -5654,7 +5654,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Pridat cestu'
+            Caption = 'P'#345'idat cestu'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
@@ -5978,11 +5978,6 @@ object F_Main: TF_Main
         Action = A_System_Stop
         Caption = 'Central stop'
       end
-      object PM_system_reset: TMenuItem
-        Caption = 'Restartovat syst'#233'my'
-        Enabled = False
-        ImageIndex = 1
-      end
     end
     object MI_PanelServer: TMenuItem
       Caption = 'Panel server'
@@ -6210,7 +6205,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403BC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403C00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8076,7 +8071,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280334041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280338041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8617,7 +8612,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802800310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802840310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

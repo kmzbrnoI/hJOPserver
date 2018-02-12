@@ -58,7 +58,6 @@ type
     PM_Central_Stop: TMenuItem;
     N5: TMenuItem;
     T_konflikty: TTimer;
-    PM_system_reset: TMenuItem;
     P_Pozadi: TPanel;
     P_Date: TPanel;
     P_Time: TPanel;
