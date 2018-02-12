@@ -280,7 +280,7 @@ begin
  Self.SComSettings.zamknuto     := ini_tech.ReadBool(section, 'zamknuti', false);
 
  Self.SComSettings.OutputType   := TBlkSComOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
- Self.SComSettings.ZpozdeniPadu := ini_tech.ReadInteger(section, 'zpoz', 0);
+ Self.SComSettings.ZpozdeniPadu := ini_tech.ReadInteger(section, 'zpoz', 2);
 
  if (ini_rel <> nil) then
   begin
@@ -361,7 +361,7 @@ begin
  if (Self.SComSettings.RCSAddrs.Count > 0) then
    ini_tech.WriteInteger(section, 'OutType', Integer(Self.SComSettings.OutputType));
 
- if (Self.SComSettings.ZpozdeniPadu > 0) then
+ if (Self.SComSettings.ZpozdeniPadu <> 2) then
    ini_tech.WriteInteger(section, 'zpoz', Self.SComSettings.ZpozdeniPadu);
 
  if (Self.SComSettings.zamknuto) then

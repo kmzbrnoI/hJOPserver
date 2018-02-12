@@ -130,15 +130,15 @@ var glob:TBlkSettings;
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  E_Nazev.Text           := glob.name;
-  SE_ID.Value            := glob.id;
+  E_Nazev.Text := glob.name;
+  SE_ID.Value  := glob.id;
 
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do Self.LB_Stanice.Items.Add(Self.Blk.OblsRizeni.ORs[i].Name);
 
   SetLength(obls, Self.Blk.OblsRizeni.Cnt);
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
 
-  SE_Delay.Value         := settings.ZpozdeniPadu;
+  SE_Delay.Value := settings.ZpozdeniPadu;
 
   Self.CHB_RCS_Output.Checked := (settings.RCSAddrs.Count > 0);
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
