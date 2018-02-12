@@ -137,7 +137,8 @@ begin
  for n in Self.settings.prejezdy do
    str := str + IntToStr(n) + ',';
 
- ini_tech.WriteString(section, 'prejezdy', str);
+ if (str <> '') then
+   ini_tech.WriteString(section, 'prejezdy', str);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
