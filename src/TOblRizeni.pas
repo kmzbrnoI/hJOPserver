@@ -769,7 +769,7 @@ begin
    msg := msg + PrevodySoustav.ColorToStr(clBlack) + ';0;';
 
    // left rectangle
-   fg := clBlack;
+   fg := clGreen;
    if ((TBlkSH(Sender).porucha) or (TBlkSH(Sender).nouzoveOT)) then
      fg := clRed;
    if (not TBlkSH(Sender).komunikace) then

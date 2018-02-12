@@ -213,11 +213,12 @@ var prj:TBlk;
 begin
  if (not Self.enabled) then Exit();
 
- if ((itemindex >= 0) and (itemindex < Self.settings.prejezdy.Count)) then
+ if ((itemindex-2 >= 0) and (itemindex-2 < Self.settings.prejezdy.Count)) then
   begin
-   Blky.GetBlkByID(Self.settings.prejezdy[itemindex], prj);
+   Blky.GetBlkByID(Self.settings.prejezdy[itemindex-2], prj);
    if ((prj <> nil) and (prj.GetGlobalSettings().typ = _BLK_PREJEZD)) then
-     prj.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write);
+     ORTCPServer.Menu(SenderPnl, prj, SenderOR as TOR,
+                      prj.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write));
   end;
 end;
 
