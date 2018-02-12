@@ -762,7 +762,7 @@ begin
    //vytvoreni dat
 
    // n.o. rail
-   fg := clPurple;
+   fg := clTeal;
    if (TBlkSH(Sender).anulace) then
      fg := clWhite;
    msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
@@ -770,7 +770,7 @@ begin
 
    // left rectangle
    fg := clBlack;
-   if (TBlkSH(Sender).porucha) then
+   if ((TBlkSH(Sender).porucha) or (TBlkSH(Sender).nouzoveOT)) then
      fg := clRed;
    if (not TBlkSH(Sender).komunikace) then
      fg := clFuchsia;
@@ -780,7 +780,7 @@ begin
    fg := clBlack;
    if (TBlkSH(Sender).uzavreno) then
      fg := $A0A0A0;
-   if (not TBlkSH(Sender).UZ) then
+   if (TBlkSH(Sender).UZ) then
      fg := clWhite;
    msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
   end;//_BLK_SH
