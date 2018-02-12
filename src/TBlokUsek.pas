@@ -243,6 +243,7 @@ type
 
     procedure GetPtData(json:TJsonObject; includeState:boolean); override;
     procedure GetPtState(json:TJsonObject); override;
+    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
  end;//class TBlkUsek
 
@@ -253,7 +254,7 @@ implementation
 uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
-    stanicniHlaseniHelper, TechnologieJC;
+    stanicniHlaseniHelper, TechnologieJC, PTUtils;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -1471,7 +1472,7 @@ begin
 end;
 
 procedure TBlkUsek.GetPtState(json:TJsonObject);
-var i:Integer;
+var i, spr:Integer;
 begin
  case (Self.Obsazeno) of
   TUsekStav.disabled : json['stav'] := 'vypnuto';
@@ -1496,6 +1497,48 @@ begin
 
  if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
  if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
+
+ for spr in Self.Soupravs do
+   json.A['soupravy'].Add(Soupravy[spr].nazev);
+end;
+
+procedure TBlkUsek.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+var sprStr:string;
+    spr:Integer;
+begin
+ if (reqJson.Contains('soupravy')) then
+  begin
+   if (Cardinal(reqJson.A['soupravy'].Count) > Self.UsekSettings.maxSpr) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
+                           'Nelze pridat vice souprav, nez je limit useku');
+     inherited;
+     Exit();
+    end;
+
+   Self.RemoveSoupravy();
+   for sprStr in reqJson.A['soupravy'] do
+    begin
+     spr := Soupravy.GetSprIndexByName(sprStr);
+     if (spr > -1) then
+      begin
+       try
+         Self.AddSoupravaS(spr)
+       except
+        on E: Exception do
+         begin
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
+                                E.Message);
+         end;
+
+       end;
+      end else
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
+                             'Souprava ' + sprStr + ' neexistuje, ignoruji.');
+    end;
+  end;
+
+ inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
