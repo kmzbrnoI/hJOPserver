@@ -4,14 +4,15 @@ object F_Options: TF_Options
   ActiveControl = PC_1
   AlphaBlendValue = 200
   BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
   Caption = 'Nastaven'#237
-  ClientHeight = 527
-  ClientWidth = 1190
+  ClientHeight = 529
+  ClientWidth = 555
   Color = clBtnFace
   Constraints.MaxHeight = 585
   Constraints.MaxWidth = 1625
   Constraints.MinHeight = 574
-  Constraints.MinWidth = 813
+  Constraints.MinWidth = 500
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
   Font.Height = -11
@@ -93,7 +94,7 @@ object F_Options: TF_Options
   object PC_1: TPageControl
     Left = 0
     Top = 0
-    Width = 1190
+    Width = 555
     Height = 489
     Margins.Left = 2
     Margins.Top = 2
@@ -111,14 +112,11 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Konfigurace'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1182
       object P_ON_Pozadi: TPanel
         Left = 0
         Top = 0
-        Width = 1182
+        Width = 547
         Height = 461
         Margins.Left = 2
         Margins.Top = 2
@@ -128,6 +126,7 @@ object F_Options: TF_Options
         BevelOuter = bvNone
         ParentColor = True
         TabOrder = 0
+        ExplicitWidth = 1182
         object GB_ON_1: TGroupBox
           Left = 8
           Top = 8
@@ -574,16 +573,13 @@ object F_Options: TF_Options
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Snadn'#233' spu'#353'ten'#237
+      Caption = 'Snadn'#233' spu'#353't'#283'n'#237
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1182
       object P_SS: TPanel
         Left = 0
         Top = 0
-        Width = 1182
+        Width = 547
         Height = 461
         Margins.Left = 2
         Margins.Top = 2
@@ -593,9 +589,10 @@ object F_Options: TF_Options
         BevelOuter = bvNone
         ParentColor = True
         TabOrder = 0
+        ExplicitWidth = 1182
         object L_SS_02: TLabel
-          Left = 560
-          Top = 126
+          Left = 200
+          Top = 142
           Width = 161
           Height = 13
           Margins.Left = 2
@@ -613,8 +610,8 @@ object F_Options: TF_Options
           ParentFont = False
         end
         object L_SS_01: TLabel
-          Left = 560
-          Top = 78
+          Left = 200
+          Top = 94
           Width = 161
           Height = 13
           Margins.Left = 2
@@ -623,7 +620,7 @@ object F_Options: TF_Options
           Margins.Bottom = 2
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Adresa MTB modulu'
+          Caption = 'Adresa RCS modulu'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -11
@@ -632,8 +629,8 @@ object F_Options: TF_Options
           ParentFont = False
         end
         object CB_SS_AutRezimy: TComboBox
-          Left = 560
-          Top = 142
+          Left = 200
+          Top = 158
           Width = 161
           Height = 21
           Margins.Left = 2
@@ -646,13 +643,13 @@ object F_Options: TF_Options
           Font.Height = -11
           Font.Name = 'MS Sans Serif'
           Font.Style = []
-          ItemHeight = 0
+          ItemHeight = 13
           ParentFont = False
           TabOrder = 0
         end
         object GB_SS_Vystupy: TGroupBox
-          Left = 464
-          Top = 174
+          Left = 104
+          Top = 190
           Width = 161
           Height = 145
           Margins.Left = 2
@@ -885,8 +882,8 @@ object F_Options: TF_Options
           end
         end
         object GB_SS_Vstupy: TGroupBox
-          Left = 632
-          Top = 174
+          Left = 272
+          Top = 190
           Width = 161
           Height = 145
           Margins.Left = 2
@@ -1161,8 +1158,8 @@ object F_Options: TF_Options
           OnClick = B_SS_SaveClick
         end
         object CHB_SS_Enable: TCheckBox
-          Left = 612
-          Top = 45
+          Left = 252
+          Top = 61
           Width = 53
           Height = 17
           Caption = 'Povolit'
@@ -1176,8 +1173,8 @@ object F_Options: TF_Options
           OnClick = CHB_SS_EnableClick
         end
         object SE_SS_MtbAdr: TSpinEdit
-          Left = 564
-          Top = 96
+          Left = 204
+          Top = 112
           Width = 157
           Height = 22
           Font.Charset = DEFAULT_CHARSET
@@ -1200,14 +1197,11 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Rychlosti'
       ImageIndex = 25
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1182
       object LV_DigiRych: TListView
         Left = 0
         Top = 0
-        Width = 1182
+        Width = 547
         Height = 461
         Margins.Left = 2
         Margins.Top = 2
@@ -1217,7 +1211,7 @@ object F_Options: TF_Options
         Color = clWhite
         Columns = <
           item
-            Caption = 'Stupen'
+            Caption = 'Stupe'#328
           end
           item
             Caption = 'Rychlost'
@@ -1235,17 +1229,15 @@ object F_Options: TF_Options
         TabOrder = 0
         ViewStyle = vsReport
         OnDblClick = LV_DigiRychDblClick
+        ExplicitWidth = 1182
       end
     end
     object TS_Centrala: TTabSheet
       Caption = 'Centr'#225'la'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 1182
       object GB_Centrala: TGroupBox
-        Left = 522
+        Left = 114
         Top = 96
         Width = 303
         Height = 265
@@ -1442,7 +1434,7 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             ComProperty = cpPort
-            Text = 'COM1'
+            Text = 'COM3'
             Style = csDropDownList
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
