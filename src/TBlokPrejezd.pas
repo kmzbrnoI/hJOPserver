@@ -246,7 +246,8 @@ begin
  if (not (GetFunctions.GetSystemStart())) then Exit;
 
  try
-   available :=  RCSi.IsModule(Self.PrjSettings.MTB);
+   available := (RCSi.IsModule(Self.PrjSettings.MTB) and
+                 (not RCSi.IsModuleFailure(Self.PrjSettings.MTB)));
  except
    available := false;
  end;
