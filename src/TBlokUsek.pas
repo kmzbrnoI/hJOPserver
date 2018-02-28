@@ -1922,14 +1922,20 @@ end;
 
 procedure TBlkUsek.CheckPOdjChanged();
 var spr:Integer;
+    shouldChange:boolean;
 begin
+ shouldChange := false;
+
  for spr in Self.Soupravs do
   begin
    if ((Soupravy[spr].IsPOdj(Self)) and (Soupravy[spr].GetPOdj(Self).changed)) then
     begin
-     Soupravy[spr].GetPOdj(Self).changed := false;
-     Self.Change();
-     Exit();
+     if (Soupravy[spr].GetPOdj(Self).DepRealDelta() < 0) then
+       Soupravy[spr].RemovePOdj(Self)
+     else
+       Soupravy[spr].GetPOdj(Self).changed := false;
+
+     shouldChange := true;
     end;
   end;
 
@@ -1938,11 +1944,17 @@ begin
    spr := Self.SprPredict;
    if ((Soupravy[spr].IsPOdj(Self)) and (Soupravy[spr].GetPOdj(Self).changed)) then
     begin
-     Soupravy[spr].GetPOdj(Self).changed := false;
-     Self.Change();
-     Exit();
+     if (Soupravy[spr].GetPOdj(Self).DepRealDelta() < 0) then
+       Soupravy[spr].RemovePOdj(Self)
+     else
+       Soupravy[spr].GetPOdj(Self).changed := false;
+
+     shouldChange := true;
     end;
   end;
+
+ if (shouldChange) then
+   Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
