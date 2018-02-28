@@ -487,7 +487,7 @@ end;//procedure
 procedure TSouprava.ReleaseAllLoko();
 var i:Integer;
 begin
- if (not Assigned(HVDb)) then Exit();
+ if ((not Assigned(HVDb)) or (not Assigned(TrkSystem))) then Exit();
 
  for i := 0 to Self.data.HV.cnt-1 do
   begin
