@@ -5,7 +5,7 @@ unit Souprava;
 interface
 
 uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, houkEvent,
-     Generics.Collections, predvidanyOdjezd;
+     Generics.Collections, predvidanyOdjezd, TBlok;
 
 const
   _MAX_SPR_HV = 4;
@@ -86,10 +86,14 @@ type
     procedure ToggleHouk(desc:string);
     procedure SetHoukState(desc:string; state:boolean);
 
-    procedure AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj);
-    function IsPOdj(usekid:Integer):Boolean;
-    function GetPOdj(usekid:Integer):TPOdj;
-    procedure RemovePOdj(usekid:Integer);
+    procedure AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj); overload;
+    procedure AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj); overload;
+    function IsPOdj(usekid:Integer):Boolean; overload;
+    function IsPOdj(usek:TBlk):Boolean; overload;
+    function GetPOdj(usekid:Integer):TPOdj; overload;
+    function GetPOdj(usek:TBlk):TPOdj; overload;
+    procedure RemovePOdj(usekid:Integer); overload;
+    procedure RemovePOdj(usek:TBlk); overload;
 
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
@@ -113,7 +117,7 @@ type
 implementation
 
 uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
-      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlok, TBlokSCom,
+      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokSCom,
       fRegulator, Trakce, fMain, TBlokTratUsek, stanicniHlaseniHelper,
       stanicniHlaseni;
 
@@ -856,7 +860,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Predvidane odjezdy.
+// Predvidane odjezdy:
 
 procedure TSouprava.AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj);
 begin
@@ -884,6 +888,26 @@ end;
 procedure TSouprava.RemovePOdj(usekid:Integer);
 begin
  Self.data.podj.Remove(usekid);
+end;
+
+procedure TSouprava.AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj);
+begin
+ Self.AddOrUpdatePOdj(usek.GetGlobalSettings.id, podj);
+end;
+
+function TSouprava.IsPOdj(usek:TBlk):Boolean;
+begin
+ Result := Self.IsPOdj(usek.GetGlobalSettings.id);
+end;
+
+function TSouprava.GetPOdj(usek:TBlk):TPOdj;
+begin
+ Result := Self.GetPOdj(usek.GetGlobalSettings.id);
+end;
+
+procedure TSouprava.RemovePOdj(usek:TBlk);
+begin
+ Self.RemovePOdj(usek.GetGlobalSettings.id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
