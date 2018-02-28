@@ -703,7 +703,12 @@ begin
        podj := TPodj.Create();
        try
          if (parsed[2] <> '') then
-           podj.abs := StrToTime(parsed[2]);
+          begin
+           if (ModCas.used) then
+             podj.abs := StrToTime(parsed[2])
+           else
+             podj.abs := Date() + StrToTime(parsed[2]);
+          end;
 
          if (parsed[3] <> '') then
            podj.rel := StrToTime('00:'+parsed[3]);

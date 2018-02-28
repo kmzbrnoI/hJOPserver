@@ -151,6 +151,8 @@ type
 
     function CanSprSpeedInsert(index:Integer):boolean;
 
+    procedure CheckPOdjChanged();
+
   protected
    UsekSettings:TBlkUsekSettings;
 
@@ -612,6 +614,9 @@ begin
  // pousteni houkani na houkaci udalosti
  if (Self.UsekStav.currentHoukEv > -1) then
    Self.CheckHoukEv();
+
+ // kontrola zmeny barev vlivem uplynuti casu predvidaneho odjezdu
+ Self.CheckPOdjChanged();
 
  inherited Update();
 end;//procedure
@@ -1911,6 +1916,33 @@ begin
  Soupravy[sprId].AddOrUpdatePOdj(Self, podj);
 
  Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.CheckPOdjChanged();
+var spr:Integer;
+begin
+ for spr in Self.Soupravs do
+  begin
+   if ((Soupravy[spr].IsPOdj(Self)) and (Soupravy[spr].GetPOdj(Self).changed)) then
+    begin
+     Soupravy[spr].GetPOdj(Self).changed := false;
+     Self.Change();
+     Exit();
+    end;
+  end;
+
+ if (Self.SprPredict > -1) then
+  begin
+   spr := Self.SprPredict;
+   if ((Soupravy[spr].IsPOdj(Self)) and (Soupravy[spr].GetPOdj(Self).changed)) then
+    begin
+     Soupravy[spr].GetPOdj(Self).changed := false;
+     Self.Change();
+     Exit();
+    end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

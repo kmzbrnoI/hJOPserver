@@ -12,6 +12,10 @@ type
   ENoTimeDefined = class(Exception);
   EOriginNotSet = class(Exception);
 
+  TPobjPhase = (ppBlue, ppYellow, ppRed);                                       // faze, ve kterych muze byt cas odjezdu
+                                                                                // muze odpovidat barvam v panelu, ale tohle
+                                                                                // jsou spis logicke faze
+
   TPOdj = class
   private
    prel: TTime;
@@ -20,6 +24,7 @@ type
    prel_enabled: boolean;
    pabs_enabled: boolean;
    porigin_set: boolean;
+   pphase_old: TPobjPhase;
 
     function GetRel():TTime;
     procedure SetRel(new:TTime);
@@ -30,6 +35,9 @@ type
     function GetOrigin():TTime;
     procedure SetOrigin(new:TTime);
 
+    function IsChanged():boolean;
+    procedure SetChanged(new:boolean);
+
   public
 
     constructor Create();
@@ -39,6 +47,8 @@ type
     property abs_enabled: boolean read pabs_enabled write pabs_enabled;
     property origin_set: boolean read porigin_set;
 
+    property changed: boolean read IsChanged write SetChanged;                  // vraci true pokud je zmena faze
+
     property rel: TTime read GetRel write SetRel;
     property abs: TTime read GetAbs write SetAbs;
     property origin: TTime read GetOrigin write SetOrigin;
@@ -46,6 +56,7 @@ type
     function IsDepSet():boolean;                                                // vraci jestli je mozno spocitat cas do odjezdu
     function DepRealDelta():TTime;                                              // vraci realny cas do odjezdu
     procedure RecordOriginNow();
+    function GetPhase():TPobjPhase;
 
   end;
 
@@ -83,6 +94,7 @@ procedure TPOdj.SetRel(new:TTime);
 begin
  Self.prel := new;
  Self.prel_enabled := true;
+ Self.pphase_old := Self.GetPhase();
 end;
 
 function TPOdj.GetAbs():TTime;
@@ -96,6 +108,7 @@ procedure TPOdj.SetAbs(new:TTime);
 begin
  Self.pabs := new;
  Self.pabs_enabled := true;
+ Self.pphase_old := Self.GetPhase();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,31 +165,58 @@ procedure TPOdj.SetOrigin(new:TTime);
 begin
  Self.porigin := new;
  Self.porigin_set := true;
+ Self.pphase_old := Self.GetPhase();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
+function TPOdj.GetPhase():TPobjPhase;
 var time: TTime;
 begin
- if (podj.IsDepSet()) then
+ if (Self.IsDepSet()) then
   begin
-   time := podj.DepRealDelta();
+   time := Self.DepRealDelta();
    if (time < EncodeTime(0, 0, 30, 0)) then
-    begin
+     Result := ppRed
+   else if (time < EncodeTime(0, 3, 0, 0)) then
+     Result := ppYellow
+   else
+     Result := ppBlue;
+  end else begin
+   Result := ppBlue;
+  end;
+end;
+
+function TPOdj.IsChanged():boolean;
+begin
+ Result := (Self.pphase_old <> Self.GetPhase());
+end;
+
+procedure TPOdj.SetChanged(new:boolean);
+begin
+ if (not new) then
+   Self.pphase_old := Self.GetPhase();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
+begin
+ case (podj.GetPhase()) of
+   ppBlue: bg := clBlue;
+
+   ppYellow: bg := clYellow;
+
+   ppRed: begin
      if (fg = clRed) then
       begin
        fg := clBlack;
        bg := clRed;
       end else
        bg := clRed;
-    end else if (time < EncodeTime(0, 3, 0, 0)) then
-      bg := clYellow
-    else
-      bg := clBlue;
-  end else begin
-   bg := clBlue;
-  end;
+   end;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
