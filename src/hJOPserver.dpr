@@ -137,7 +137,8 @@ uses
   changeEvent in 'changeEvent.pas',
   changeEventCaller in 'changeEventCaller.pas',
   TBlokSouctovaHlaska in 'TBlokSouctovaHlaska.pas',
-  fBlkSH in 'fBlkSH.pas';
+  fBlkSH in 'fBlkSH.pas',
+  predvidanyOdjezd in 'predvidanyOdjezd.pas';
 
 {$R *.res}
 

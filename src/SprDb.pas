@@ -15,7 +15,7 @@ type
    private
       ffilename:string;
 
-      procedure ClearSpr();
+      procedure FreeSpr();
 
       function GetCount():Integer;
       function GetItem(index:Integer):TSouprava;
@@ -55,19 +55,23 @@ uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom, appEv;
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TSprDb.Create();
+var i:Integer;
 begin
- inherited Create();
- Self.ClearSpr();
+ inherited;
+
+ for i := 0 to _MAX_SPR-1 do
+   Self.soupravy[i] := nil;
 end;//ctor
 
 destructor TSprDb.Destroy();
 begin
- inherited Destroy();
+ Self.FreeSpr();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.ClearSpr();
+procedure TSprDb.FreeSpr();
 var i:Integer;
 begin
  for i := 0 to _MAX_SPR-1 do
@@ -98,7 +102,7 @@ begin
  sections := TStringList.Create();
  ini.ReadSections(sections);
 
- Self.ClearSpr();
+ Self.FreeSpr();
 
  for i := 0 to sections.Count-1 do
    Self.soupravy[i] := TSouprava.Create(ini, sections[i], i);

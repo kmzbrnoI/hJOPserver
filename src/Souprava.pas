@@ -5,19 +5,12 @@ unit Souprava;
 interface
 
 uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, houkEvent,
-     Generics.Collections;
+     Generics.Collections, predvidanyOdjezd;
 
 const
   _MAX_SPR_HV = 4;
 
 type
-
-  // predvidany odjezd
-  TPOdj = record
-   rel: TTime;   // relativni cas do odjezdu vlaku, 0 pokud neni nastaveno
-   abs: TTime;   // absolutni cas do odjezdu vlaku, 0 pokud není nastaveno
-  end;
-
   TSoupravaHV = record
    HVs:array [0.._MAX_SPR_HV-1] of Integer;
    cnt:Integer;
@@ -45,7 +38,7 @@ type
    cilovaOR:TObject;
 
    hlaseniPrehrano:boolean;
-   podj:TDictionary<Integer, TPOdj>;  // id useku : predvidany odjezd
+   podj:TObjectDictionary<Integer, TPOdj>;  // id useku : predvidany odjezd
   end;//TSoupravaData
 
   TSouprava = class
@@ -93,7 +86,7 @@ type
     procedure ToggleHouk(desc:string);
     procedure SetHoukState(desc:string; state:boolean);
 
-    procedure AddOrUpdatePOdj(usekid:Integer; rel:TTime; abs:TTime);
+    procedure AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj);
     function IsPOdj(usekid:Integer):Boolean;
     function GetPOdj(usekid:Integer):TPOdj;
     procedure RemovePOdj(usekid:Integer);
@@ -132,7 +125,7 @@ begin
  Self.speedBuffer := nil;
  Self.changed := false;
  Self.findex := index;
- Self.data.podj := TDictionary<Integer, TPOdj>.Create();
+ Self.data.podj := TObjectDictionary<Integer, TPOdj>.Create([doOwnsValues]);
  Self.LoadFromFile(ini, section);
  Self.data.hlaseniPrehrano := false;
 end;//ctor
@@ -142,7 +135,7 @@ begin
  inherited Create();
  Self.speedBuffer := nil;
  Self.findex := index;
- Self.data.podj := TDictionary<Integer, TPOdj>.Create();
+ Self.data.podj := TObjectDictionary<Integer, TPOdj>.Create([doOwnsValues]);
  Self.LoadFromPanelStr(panelStr, Usek, OblR);
 end;//ctor
 
@@ -150,7 +143,7 @@ destructor TSouprava.Destroy();
 begin
  Self.ReleaseAllLoko();
  Self.data.podj.Free();
- inherited Destroy();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -489,6 +482,8 @@ end;//procedure
 procedure TSouprava.ReleaseAllLoko();
 var i:Integer;
 begin
+ if (not Assigned(HVDb)) then Exit();
+
  for i := 0 to Self.data.HV.cnt-1 do
   begin
    if (Assigned(HVDb.HVozidla[Self.data.HV.HVs[i]])) then
@@ -863,17 +858,16 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Predvidane odjezdy.
 
-procedure TSouprava.AddOrUpdatePOdj(usekid:Integer; rel:TTime; abs:TTime);
-var podj:TPOdj;
+procedure TSouprava.AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj);
 begin
- if ((rel = 0) and (abs = 0)) then
+ if ((not podj.rel_enabled) and (not podj.abs_enabled)) then
   begin
    if (Self.data.podj.ContainsKey(usekid)) then
      Self.data.podj.Remove(usekid);
+   FreeAndNil(podj);
   end else begin
-   podj.rel := rel;
-   podj.abs := abs;
    Self.data.podj.AddOrSetValue(usekid, podj);
+   podj := nil;
   end;
 end;
 

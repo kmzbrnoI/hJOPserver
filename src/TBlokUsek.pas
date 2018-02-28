@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
      IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, rrEvent,
-     stanicniHlaseni, changeEvent;
+     stanicniHlaseni, changeEvent, predvidanyOdjezd;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -239,7 +239,7 @@ type
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    procedure PanelPOdj(SenderPnl:TIdContext; sprId:Integer; abs:TTime; rel:TTime);
+    procedure PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
 
     //PT:
 
@@ -1177,10 +1177,9 @@ begin
   end;
 
  if (spr.IsPOdj(Self.GetGlobalSettings.id)) then
-   ORTCPServer.POdj(SenderPnl, Self, spr.index, spr.GetPOdj(Self.GetGlobalSettings.id).rel,
-                    spr.GetPOdj(Self.GetGlobalSettings.id).abs)
+   ORTCPServer.POdj(SenderPnl, Self, spr.index, spr.GetPOdj(Self.GetGlobalSettings.id))
  else
-   ORTCPServer.POdj(SenderPnl, Self, spr.index, 0, 0);
+   ORTCPServer.POdj(SenderPnl, Self, spr.index, nil);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1881,7 +1880,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.PanelPOdj(SenderPnl:TIdContext; sprId:Integer; abs:TTime; rel:TTime);
+procedure TBlkUsek.PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
 begin
  if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.SprPredict)) then
   begin
@@ -1889,7 +1888,7 @@ begin
    Exit();
   end;
 
- Soupravy[sprId].AddOrUpdatePOdj(Self.GetGlobalSettings.id, rel, abs);
+ Soupravy[sprId].AddOrUpdatePOdj(Self.GetGlobalSettings.id, podj);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

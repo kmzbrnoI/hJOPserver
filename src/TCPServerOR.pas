@@ -12,7 +12,7 @@ interface
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
      IdContext, TBlok, Prevody, ComCtrls, IdSync, TBloky, UPO,
-     User, Souprava, Generics.Collections, THnaciVozidlo;
+     User, Souprava, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
@@ -133,7 +133,7 @@ type
      procedure UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
      procedure CancelUPO(AContext: TIdContext; ref:TObject);
      procedure POdj(AContext: TIdContext; SenderBlk:TBlk; SenderSprId:Integer;
-                    rel:TTime; abs:TTime);
+                    podj:TPOdj = nil);
 
      // Tyto funkce take muzou byt volany z oblasti rizeni, protoze nemusi byt
      // primou reakci na akci uzivatele - chceme je odeslat vsem.
@@ -486,7 +486,7 @@ var i, j:Integer;
     blk:TBlk;
     found:boolean;
     btn:TPanelButton;
-    rel, abs: TTime;
+    podj: TPOdj;
 begin
  // najdeme klienta v databazi
  for i := 0 to _MAX_OR_CLIENTS-1 do
@@ -700,19 +700,21 @@ begin
    if (TTCPORsRef(AContext.Data).podj_usek <> nil) then
     begin
      try
-       if (parsed[2] <> '') then
-         abs := StrToTime(parsed[2])
-       else
-         abs := 0;
+       podj := TPodj.Create();
+       try
+         if (parsed[2] <> '') then
+           podj.abs := StrToTime(parsed[2]);
 
-       if (parsed[3] <> '') then
-         rel := StrToTime('00:'+parsed[3])
-       else
-         rel := 0;
+         if (parsed[3] <> '') then
+           podj.rel := StrToTime('00:'+parsed[3]);
 
-       (TTCPORsRef(AContext.Data).podj_usek as TBlkUsek).PanelPOdj(
-         AContext, TTCPORsRef(AContext.Data).podj_sprid, abs, rel
-       );
+         (TTCPORsRef(AContext.Data).podj_usek as TBlkUsek).PanelPOdj(
+           AContext, TTCPORsRef(AContext.Data).podj_sprid, podj
+         );
+       finally
+         if (podj <> nil) then
+           podj.Free();
+       end;
      except
        Self.SendInfoMsg(AContext, 'Nepodaøilo se nastavit pøedvídaný odjezd!');
      end;
@@ -1021,17 +1023,17 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.POdj(AContext: TIdContext; SenderBlk:TBlk;
-                            SenderSprId:Integer; rel:TTime; abs:TTime);
+                            SenderSprId:Integer; podj:TPOdj = nil);
 var str:string;
 begin
  str := '-;PODJ;';
 
- if (abs <> 0) then
-   str := str + FormatDateTime('hh:nn:ss', abs);
+ if ((podj <> nil) and (podj.abs_enabled)) then
+   str := str + FormatDateTime('hh:nn:ss', podj.abs);
  str := str + ';';
 
- if (rel <> 0) then
-   str := str + FormatDateTime('nn:ss', rel) + ';';
+ if ((podj <> nil) and (podj.rel_enabled)) then
+   str := str + FormatDateTime('nn:ss', podj.rel);
  str := str + ';';
 
  (AContext.Data as TTCPORsRef).podj_usek := SenderBlk;
