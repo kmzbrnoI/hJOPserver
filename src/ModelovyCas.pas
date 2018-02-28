@@ -74,7 +74,7 @@ var
 
 implementation
 
-uses TCPServerOR, fMain;
+uses TCPServerOR, fMain, SprDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -271,7 +271,12 @@ begin
   begin
    ModCas.SetTime(StrToTime(parsed[3]), StrToFloat(parsed[4]));
    if (parsed.Count >= 6) then
+    begin
+     if (Self.fused <> (parsed[5] = '1')) then
+       Soupravy.ClearPOdj();
+
      Self.fused := (parsed[5] = '1');
+    end;
   end;
 
  Self.BroadcastTime();

@@ -94,6 +94,7 @@ type
     function GetPOdj(usek:TBlk):TPOdj; overload;
     procedure RemovePOdj(usekid:Integer); overload;
     procedure RemovePOdj(usek:TBlk); overload;
+    procedure ClearPOdj();
 
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
@@ -908,6 +909,11 @@ end;
 procedure TSouprava.RemovePOdj(usek:TBlk);
 begin
  Self.RemovePOdj(usek.GetGlobalSettings.id);
+end;
+
+procedure TSouprava.ClearPOdj();
+begin
+ Self.data.podj.Clear();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

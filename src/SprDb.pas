@@ -37,6 +37,7 @@ type
 
       procedure UpdateFront();
       procedure StopAllSpr();
+      procedure ClearPOdj();
 
       property filename:string read ffilename;
 
@@ -251,6 +252,16 @@ end;//procedure
 function TSprDb.GetItem(index:Integer):TSouprava;
 begin
  Result := Self.soupravy[index];
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSprDb.ClearPOdj();
+var i:Integer;
+begin
+ for i := 0 to _MAX_SPR-1 do
+  if (Self.soupravy[i] <> nil) then
+    Self.soupravy[i].ClearPOdj();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
