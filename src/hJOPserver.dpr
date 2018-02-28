@@ -138,7 +138,8 @@ uses
   changeEventCaller in 'changeEventCaller.pas',
   TBlokSouctovaHlaska in 'TBlokSouctovaHlaska.pas',
   fBlkSH in 'fBlkSH.pas',
-  predvidanyOdjezd in 'predvidanyOdjezd.pas';
+  predvidanyOdjezd in 'predvidanyOdjezd.pas',
+  timeHelper in 'timeHelper.pas';
 
 {$R *.res}
 
