@@ -1180,7 +1180,11 @@ begin
     JCDB.RusAllJC();
     ORs.DisconnectPanels();
    end;//if AdminVstup
-  if (Blky.enabled) then Blky.Disable();
+  if (Blky.enabled) then
+   begin
+    Blky.Disable();
+    Soupravy.ClearPOdj();
+   end;
 
   ModCas.started := false;
   Self.UpdateSystemButtons();
@@ -1278,7 +1282,11 @@ begin
  Self.UpdateSystemButtons();
 
  // may happen when RCS USB disconnects
- if (Blky.enabled) then Blky.Disable();
+ if (Blky.enabled) then
+  begin
+   Blky.Disable();
+   Soupravy.ClearPOdj();
+  end;
  Soupravy.StopAllSpr();
 
  F_Main.S_RCS_open.Brush.Color  := clRed;
@@ -1521,6 +1529,7 @@ begin
 
  JCDb.RusAllJC();
  Blky.Disable();
+ Soupravy.ClearPOdj();
  Blky.Reset();
 end;
 
