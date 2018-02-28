@@ -6,7 +6,7 @@ unit predvidanyOdjezd;
 
 interface
 
-uses SysUtils;
+uses SysUtils, Graphics;
 
 type
   ENoTimeDefined = class(Exception);
@@ -48,6 +48,8 @@ type
     procedure RecordOriginNow();
 
   end;
+
+procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
 
 implementation
 
@@ -150,6 +152,31 @@ procedure TPOdj.SetOrigin(new:TTime);
 begin
  Self.porigin := new;
  Self.porigin_set := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
+var time: TTime;
+begin
+ if (podj.IsDepSet()) then
+  begin
+   time := podj.DepRealDelta();
+   if (time < EncodeTime(0, 0, 30, 0)) then
+    begin
+     if (fg = clRed) then
+      begin
+       fg := clBlack;
+       bg := clRed;
+      end else
+       bg := clRed;
+    end else if (time < EncodeTime(0, 3, 0, 0)) then
+      bg := clYellow
+    else
+      bg := clBlue;
+  end else begin
+   bg := clBlue;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

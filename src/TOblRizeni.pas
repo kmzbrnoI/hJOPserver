@@ -272,7 +272,7 @@ uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain, Booster,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User,
      fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava,
-     TBlokSouctovaHlaska;
+     TBlokSouctovaHlaska, predvidanyOdjezd;
 
 constructor TOR.Create(index:Integer);
 begin
@@ -564,14 +564,18 @@ begin
          msg := msg + '0;';
 
        if ((Sender as TBlkUsek).Obsazeno = uvolneno) then
-         msg := msg + PrevodySoustav.ColorToStr(clAqua) + ';'
-       else
-         msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
+         fg := clAqua;
 
        if ((Soupravy[(Sender as TBlkUsek).Soupravs[i]].cilovaOR = Self) and (bg = clBlack)) then
-         msg := msg + PrevodySoustav.ColorToStr(clSilver) + ';'
-       else
-         msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
+         bg := clSilver;
+
+       // predvidany odjezd
+       if (Soupravy[(Sender as TBlkUsek).Soupravs[i]].IsPOdj(Sender as TBlk)) then
+         if (Soupravy[(Sender as TBlkUsek).Soupravs[i]].IsPOdj(Sender as TBlkUsek)) then
+           predvidanyOdjezd.GetPOdjColors(Soupravy[(Sender as TBlkUsek).Soupravs[i]].GetPOdj(Sender as TBlkUsek), fg, bg);
+
+       msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
+       msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
 
        if ((Sender as TBlkUsek).vlakPresun = i) then
         msg := msg + PrevodySoustav.ColorToStr(clYellow) + ';';
@@ -582,6 +586,10 @@ begin
      // predpovidana souprava
      if ((Sender as TBlkUsek).SprPredict > -1) then
       begin
+       // predvidany odjezd
+       if (Soupravy[(Sender as TBlkUsek).SprPredict].IsPOdj(Sender as TBlkUsek)) then
+         predvidanyOdjezd.GetPOdjColors(Soupravy[(Sender as TBlkUsek).SprPredict].GetPOdj(Sender as TBlkUsek), fg, bg);
+
        msg := msg + '(' + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SprPredict) + ';' +
                   '00;' +
                   PrevodySoustav.ColorToStr(fg) + ';' +
