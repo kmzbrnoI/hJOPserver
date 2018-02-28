@@ -866,9 +866,15 @@ end;
 procedure TSouprava.AddOrUpdatePOdj(usekid:Integer; rel:TTime; abs:TTime);
 var podj:TPOdj;
 begin
- podj.rel := rel;
- podj.abs := abs;
- Self.data.podj.AddOrSetValue(usekid, podj);
+ if ((rel = 0) and (abs = 0)) then
+  begin
+   if (Self.data.podj.ContainsKey(usekid)) then
+     Self.data.podj.Remove(usekid);
+  end else begin
+   podj.rel := rel;
+   podj.abs := abs;
+   Self.data.podj.AddOrSetValue(usekid, podj);
+  end;
 end;
 
 function TSouprava.IsPOdj(usekid:Integer):Boolean;

@@ -486,6 +486,7 @@ var i, j:Integer;
     blk:TBlk;
     found:boolean;
     btn:TPanelButton;
+    rel, abs: TTime;
 begin
  // najdeme klienta v databazi
  for i := 0 to _MAX_OR_CLIENTS-1 do
@@ -692,6 +693,33 @@ begin
        ((TTCPORsRef(AContext.Data).menu.GetGlobalSettings.typ = _BLK_USEK) or
         (TTCPORsRef(AContext.Data).menu.GetGlobalSettings.typ = _BLK_TU))) then
      TTCPORsRef(AContext.Data).menu.Change();
+  end
+
+ else if (parsed[1] = 'PODJ') then
+  begin
+   if (TTCPORsRef(AContext.Data).podj_usek <> nil) then
+    begin
+     try
+       if (parsed[2] <> '') then
+         abs := StrToTime(parsed[2])
+       else
+         abs := 0;
+
+       if (parsed[3] <> '') then
+         rel := StrToTime('00:'+parsed[3])
+       else
+         rel := 0;
+
+       (TTCPORsRef(AContext.Data).podj_usek as TBlkUsek).PanelPOdj(
+         AContext, TTCPORsRef(AContext.Data).podj_sprid, abs, rel
+       );
+     except
+       Self.SendInfoMsg(AContext, 'Nepodaøilo se nastavit pøedvídaný odjezd!');
+     end;
+
+     TTCPORsRef(AContext.Data).podj_usek := nil;
+     TTCPORsRef(AContext.Data).podj_sprid := -1;
+    end;
   end;
 
 end;//procedure

@@ -238,7 +238,8 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    procedure PanelPOdj(SenderPnl:TIdContext; sprId:Integer; abs:TTime; rel:TTime);
 
     //PT:
 
@@ -1876,6 +1877,19 @@ begin
  Result := not ((Self.Soupravs.Count > 0) and
                 (((index = 0) and (Soupravy[Self.Soupravs[index]].rychlost > 0) and (Soupravy[Self.Soupravs[index]].smer = THVStanoviste.sudy)) or
                  ((index = Self.Soupravs.Count) and (Soupravy[Self.Soupravs[index-1]].rychlost > 0) and (Soupravy[Self.Soupravs[index-1]].smer = THVStanoviste.lichy))));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.PanelPOdj(SenderPnl:TIdContext; sprId:Integer; abs:TTime; rel:TTime);
+begin
+ if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.SprPredict)) then
+  begin
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava již není na úseku!');
+   Exit();
+  end;
+
+ Soupravy[sprId].AddOrUpdatePOdj(Self.GetGlobalSettings.id, rel, abs);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
