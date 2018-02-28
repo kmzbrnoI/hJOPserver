@@ -1249,7 +1249,7 @@ begin
      Result := Result + '-,';
  end;
 
- if (Self.SprPredict > -1) then
+ if ((Self.SprPredict > -1) and (Self.UsekStav.stanicni_kolej)) then
    Result := Result + 'PODJ,-,';
 
  Result := Result + 'STIT,VYL,';
@@ -1322,7 +1322,8 @@ begin
  if (spr.ukradeno) then
    Result := Result + 'VEZMI vlak,';
 
- Result := Result + 'PODJ,';
+ if (Self.UsekStav.stanicni_kolej) then
+   Result := Result + 'PODJ,';
 
  if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
      (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
@@ -1906,12 +1907,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
+var spr:Integer;
 begin
  if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.SprPredict)) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava již není na úseku!');
    Exit();
   end;
+
+ for spr in Self.Soupravs do
+   if (spr = sprId) then
+     podj.RecordOriginNow();
 
  Soupravy[sprId].AddOrUpdatePOdj(Self, podj);
 
