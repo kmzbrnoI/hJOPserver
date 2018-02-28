@@ -1269,6 +1269,22 @@ begin
   begin
    // event se odregistruje automaticky pri zmene
 
+   if (spr.IsPOdj(Usek)) then
+    begin
+     // predvidany odjezd neuplynul -> zastavit soupravu
+     if (spr.rychlost <> 0) then
+       spr.SetRychlostSmer(0, Self.SComRel.smer);
+
+     // souprava je na zastavovaci udalosti -> zacit pocitat cas
+     if (not spr.GetPOdj(Usek).origin_set) then
+      begin
+       spr.GetPOdj(Usek).RecordOriginNow();
+       Usek.Change();
+      end;
+
+     Exit();
+    end;
+
    if ((Assigned(Self.DNjc)) and (Self.DNjc.data.TypCesty = TJCType.vlak)) then
     begin
      // je JC -> je postaveno?
