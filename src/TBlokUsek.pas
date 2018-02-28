@@ -690,8 +690,18 @@ begin
 end;//procedure
 
 procedure TBlkUsek.SetSprPredict(sprcesta:Integer);
+var old:Integer;
 begin
+ old := Self.UsekStav.SprPredict;
  Self.UsekStav.SprPredict := sprcesta;
+
+ if ((sprcesta = -1) and (old > -1)) then
+  begin
+   // odstranit predvidany odjezd mazane predpovidane soupravy
+   if (Soupravy[old].IsPOdj(Self)) then
+     Soupravy[old].RemovePOdj(Self);
+  end;
+
  Self.Change();
 end;//procedure
 
@@ -1176,8 +1186,8 @@ begin
    spr := Soupravy[Self.SprPredict];
   end;
 
- if (spr.IsPOdj(Self.GetGlobalSettings.id)) then
-   ORTCPServer.POdj(SenderPnl, Self, spr.index, spr.GetPOdj(Self.GetGlobalSettings.id))
+ if (spr.IsPOdj(Self)) then
+   ORTCPServer.POdj(SenderPnl, Self, spr.index, spr.GetPOdj(Self))
  else
    ORTCPServer.POdj(SenderPnl, Self, spr.index, nil);
 end;
@@ -1797,7 +1807,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.RemoveSoupravy();
+var spr:Integer;
 begin
+ for spr in Self.Soupravs do
+   if (Soupravy[spr].IsPOdj(Self)) then
+     Soupravy[spr].RemovePOdj(Self);
+
  Self.UsekStav.soupravy.Clear();
  Self.UsekStav.vlakPresun := -1;
  Self.UsekStav.zpomalovani_ready := false;
@@ -1815,6 +1830,11 @@ begin
      Self.UsekStav.vlakPresun := -1;
 
    Self.UsekStav.soupravy.Remove(index);
+
+   // odstranit predvidany odjezd z aktualniho useku
+   if (Soupravy[index].IsPOdj(Self)) then
+     Soupravy[index].RemovePOdj(Self);
+
    Self.Change();
   end else begin
    raise ESprNotExists.Create('Souprava ' + IntToStr(index) +
@@ -1888,7 +1908,9 @@ begin
    Exit();
   end;
 
- Soupravy[sprId].AddOrUpdatePOdj(Self.GetGlobalSettings.id, podj);
+ Soupravy[sprId].AddOrUpdatePOdj(Self, podj);
+
+ Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
