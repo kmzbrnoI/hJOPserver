@@ -4,16 +4,23 @@ unit Souprava;
 
 interface
 
-uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, houkEvent;
+uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, houkEvent,
+     Generics.Collections;
 
 const
   _MAX_SPR_HV = 4;
 
 type
 
+  // predvidany odjezd
+  TPOdj = record
+   rel: TTime;   // relativni cas do odjezdu vlaku, 0 pokud neni nastaveno
+   abs: TTime;   // absolutni cas do odjezdu vlaku, 0 pokud není nastaveno
+  end;
+
   TSoupravaHV = record
-    HVs:array [0.._MAX_SPR_HV-1] of Integer;
-    cnt:Integer;
+   HVs:array [0.._MAX_SPR_HV-1] of Integer;
+   cnt:Integer;
   end;
 
   TSoupravaData = record
@@ -38,6 +45,7 @@ type
    cilovaOR:TObject;
 
    hlaseniPrehrano:boolean;
+   podj:TDictionary<Integer, TPOdj>;  // id useku : predvidany odjezd
   end;//TSoupravaData
 
   TSouprava = class
@@ -85,6 +93,11 @@ type
     procedure ToggleHouk(desc:string);
     procedure SetHoukState(desc:string; state:boolean);
 
+    procedure AddOrUpdatePOdj(usekid:Integer; rel:TTime; abs:TTime);
+    function IsPOdj(usekid:Integer):Boolean;
+    function GetPOdj(usekid:Integer):TPOdj;
+    procedure RemovePOdj(usekid:Integer);
+
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
     property index:Integer read findex;
@@ -119,6 +132,7 @@ begin
  Self.speedBuffer := nil;
  Self.changed := false;
  Self.findex := index;
+ Self.data.podj := TDictionary<Integer, TPOdj>.Create();
  Self.LoadFromFile(ini, section);
  Self.data.hlaseniPrehrano := false;
 end;//ctor
@@ -128,12 +142,14 @@ begin
  inherited Create();
  Self.speedBuffer := nil;
  Self.findex := index;
+ Self.data.podj := TDictionary<Integer, TPOdj>.Create();
  Self.LoadFromPanelStr(panelStr, Usek, OblR);
 end;//ctor
 
 destructor TSouprava.Destroy();
 begin
  Self.ReleaseAllLoko();
+ Self.data.podj.Free();
  inherited Destroy();
 end;//dtor
 
@@ -842,6 +858,32 @@ begin
    on E:Exception do
      AppEvents.LogException(E, 'Prehravani hlaseni');
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Predvidane odjezdy.
+
+procedure TSouprava.AddOrUpdatePOdj(usekid:Integer; rel:TTime; abs:TTime);
+var podj:TPOdj;
+begin
+ podj.rel := rel;
+ podj.abs := abs;
+ Self.data.podj.AddOrSetValue(usekid, podj);
+end;
+
+function TSouprava.IsPOdj(usekid:Integer):Boolean;
+begin
+ Result := Self.data.podj.ContainsKey(usekid);
+end;
+
+function TSouprava.GetPOdj(usekid:Integer):TPOdj;
+begin
+ Result := Self.data.podj[usekid];
+end;
+
+procedure TSouprava.RemovePOdj(usekid:Integer);
+begin
+ Self.data.podj.Remove(usekid);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

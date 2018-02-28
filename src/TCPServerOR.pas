@@ -65,6 +65,9 @@ type
     soundDict:TDictionary<Integer, Cardinal>;                                   // pro kazdy zvuk obsahuje pocet jeho prehravani
                                                                                 // predpoklada se, ze kazda OR si resi zvuku samostatne, az tady se to spojuje
 
+    podj_usek: TBlk;                                                            // data pro editaci predvidaneho odjezdu
+    podj_sprid: Integer;
+
     constructor Create();
     destructor Destroy(); override;
 
@@ -129,6 +132,8 @@ type
      procedure PotvrClose(AContext: TIdContext; msg:string = '');
      procedure UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
      procedure CancelUPO(AContext: TIdContext; ref:TObject);
+     procedure POdj(AContext: TIdContext; SenderBlk:TBlk; SenderSprId:Integer;
+                    rel:TTime; abs:TTime);
 
      // Tyto funkce take muzou byt volany z oblasti rizeni, protoze nemusi byt
      // primou reakci na akci uzivatele - chceme je odeslat vsem.
@@ -531,9 +536,6 @@ begin
    Exit();
   end;
 
-//  -;STIT;stitek                 - nastaveni stitku
-//  -;VYL;vyluka                  - nastaveni vyluky
-
  // vsechny nasledujici prikazy jsou podminene tim, ze probehl handshake
  if (Self.clients[i].status < TPanelConnectionStatus.opened) then Exit();
 
@@ -574,7 +576,6 @@ begin
    (AContext.Data as TTCPORsRef).vyluka := nil;
   end
 
-//  -;PS;stav                     - odhlaska na potvrzovaci sekvenci
  else if (parsed[1] = 'PS') then
   begin
    if (not Assigned((AContext.Data as TTCPORsRef).potvr)) then Exit();
@@ -631,9 +632,6 @@ begin
    (AContext.Data as TTCPORsRef).UPO_ref := nil;
   end//if parsed[2] = 'UPO'
 
-//  -;MOD-CAS;START;              - zapnuti modeloveho casu
-//  -;MOD-CAS;STOP;               - vypnuti modleoveho casu
-//  -;MOD-CAS;TIME;time;nasobic   - nastaveni modeloveho casu
  else if (parsed[1] = 'MOD-CAS') then
   ModCas.Parse(parsed)
 
@@ -729,14 +727,6 @@ begin
    Exit();
   end;
 
-//  or;NUZ;stav                   - 1 = zapnout NUZ, 2 = vypnout NUZ
-//  or;GET-ALL;                   - pozadavek na zjisteni stavu vsech bloku v prislusne OR
-//  or;CLICK;block_id;button      - klik na blok na panelu
-//                                      stav = ['ok', 'cancel']
-//  or;AUTH;opravneni             - pozadavek o autorizaci
-//  or;MSG:recepient;msg          - zprava pro recepient od or
-//  or;LOK-MOVE-OR;lok_addr;or_id - presun soupravy do jine oblasti rizeni
-
  if (parsed[1] = 'NUZ') then
   begin
    if (parsed[2] = '1') then
@@ -829,16 +819,6 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 // volani funkci ke klientovi
-
-//  -;STIT;blk_name;stitek;                 - pozadavek na zobrazeni vstupu pro stitek
-//  -;VYL;blk_name;vyluka;                  - pozadavek na zobrazeni vstupu pro vyluku
-//  -;PS;stanice;udalost;sender1|sender2|...;(blok1_name;blok1_podminka)(blok2_name;blok2_podminka)(...)...
-//                                          - pozadavek na zobrazeni potvrzovaci sekvence
-//  -;MENU;prikaz1,prikaz2,...              - pozadavek na zobrazeni MENU
-//  -;INFOMSG;msg                           - zobrazeni informacni zpravy
-//  -;BOTTOMERR;err;stanice;technologie     - zobrazeni spodni chyby
-//  -;SND;PLAY;code;[delay (ms)]            - prehravani zvuku, delay je nepovinny, pokud neni uveden, je zvuk prehran jen jednou
-//  -;SND;STOP;code                         - zastaveni prehravani zvuku
 
 procedure TORTCPServer.Stitek(AContext: TIdContext; Blk:TBlk; stit:string);
 begin
@@ -965,11 +945,6 @@ begin
  writelog(tech + ' : ' + stanice + ' : ' + err, WR_ERROR);
 end;//procedure
 
-//  -;UPO;[item1][item2]                    - upozorneni
-//  -;UPO-CRIT;[item1][item2]               - kriticke upozorneni - nelze porkacovat dale
-//      format [item_x]:
-//          (radek1)(radek2)(radek3)
-//        radek_x: fg|bg|text         barvy na dalsich radcich nemusi byt vyplnene, pak prebiraji tu barvu, jako radek predchozi
 procedure TORTCPServer.UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
 var str:string;
     i, j:Integer;
@@ -1014,6 +989,28 @@ begin
 
  end;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TORTCPServer.POdj(AContext: TIdContext; SenderBlk:TBlk;
+                            SenderSprId:Integer; rel:TTime; abs:TTime);
+var str:string;
+begin
+ str := '-;PODJ;';
+
+ if (abs <> 0) then
+   str := str + FormatDateTime('hh:nn:ss', abs);
+ str := str + ';';
+
+ if (rel <> 0) then
+   str := str + FormatDateTime('nn:ss', rel) + ';';
+ str := str + ';';
+
+ (AContext.Data as TTCPORsRef).podj_usek := SenderBlk;
+ (AContext.Data as TTCPORsRef).podj_sprid := SenderSprId;
+
+ Self.SendLn(AContext, str);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1251,6 +1248,9 @@ begin
  Self.spr_new_usek_index := -1;
  Self.spr_edit    := nil;
  Self.spr_usek    := nil;
+
+ Self.podj_usek   := nil;
+ Self.podj_sprid  := -1;
 
  Self.funcsVyznamReq := false;
  Self.spr_menu_index := -1;

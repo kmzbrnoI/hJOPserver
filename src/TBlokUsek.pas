@@ -121,6 +121,7 @@ type
     procedure MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer);
     procedure MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
+    procedure MenuPOdjClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
     procedure PotvrUvolLok(Sender:TIdContext; success:boolean);
@@ -1162,6 +1163,25 @@ begin
  end;
 end;
 
+procedure TBlkUsek.MenuPOdjClick(SenderPnl:TIdContext; SenderOR:TObject);
+var spr:TSouprava;
+begin
+ if ((TTCPORsRef(SenderPnl.Data).spr_menu_index >= 0) and
+     (TTCPORsRef(SenderPnl.Data).spr_menu_index < Self.Soupravs.Count)) then
+  begin
+   spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
+  end else begin
+   if (Self.SprPredict = -1) then Exit();
+   spr := Soupravy[Self.SprPredict];
+  end;
+
+ if (spr.IsPOdj(Self.GetGlobalSettings.id)) then
+   ORTCPServer.POdj(SenderPnl, Self, spr.index, spr.GetPOdj(Self.GetGlobalSettings.id).rel,
+                    spr.GetPOdj(Self.GetGlobalSettings.id).abs)
+ else
+   ORTCPServer.POdj(SenderPnl, Self, spr.index, 0, 0);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer);
@@ -1213,6 +1233,9 @@ begin
    if ((canAdd) or (Self.Soupravs.Count > 0)) then
      Result := Result + '-,';
  end;
+
+ if (Self.SprPredict > -1) then
+   Result := Result + 'PODJ,-,';
 
  Result := Result + 'STIT,VYL,';
 
@@ -1283,6 +1306,8 @@ begin
 
  if (spr.ukradeno) then
    Result := Result + 'VEZMI vlak,';
+
+ Result := Result + 'PODJ,';
 
  if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
      (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
@@ -1369,6 +1394,7 @@ begin
  else if (item = 'HLÁŠENÍ odjezd') then Self.MenuHLASENIOdjezdClick(SenderPnl, SenderOR)
  else if (item = 'HLÁŠENÍ pøíjezd')then Self.MenuHLASENIPrijezdClick(SenderPnl, SenderOR)
  else if (item = 'HLÁŠENÍ prùjezd')then Self.MenuHLASENIPrujezdClick(SenderPnl, SenderOR)
+ else if (item = 'PODJ')           then Self.MenuPOdjClick(SenderPnl, SenderOR)
  else begin
   // cislo soupravy
   for i := 0 to Self.Soupravs.Count-1 do
