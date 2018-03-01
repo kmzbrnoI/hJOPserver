@@ -18,7 +18,7 @@ function RealDelta(future:TTime):TTime;
 begin
  if (ModCas.used) then
   begin
-   Result := (future - ModCas.time) / ModCas.speed;
+   Result := (future - ModCas.dateTime) / ModCas.speed;
   end else begin
    Result := future - Now;
   end;

@@ -180,7 +180,7 @@ implementation
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover;
+      UDPDiscover, DateUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -487,6 +487,7 @@ var i, j:Integer;
     found:boolean;
     btn:TPanelButton;
     podj: TPOdj;
+    dt: TDateTime;
 begin
  // najdeme klienta v databazi
  for i := 0 to _MAX_OR_CLIENTS-1 do
@@ -705,9 +706,17 @@ begin
          if (parsed[2] <> '') then
           begin
            if (ModCas.used) then
-             podj.abs := StrToTime(parsed[2])
-           else
+            begin
+             podj.abs := StrToTime(parsed[2]);
+             if (podj.abs < ModCas.time) then
+               podj.abs := IncDay(podj.abs);
+            end else begin
              podj.abs := Date() + StrToTime(parsed[2]);
+             dt := Now;
+             ReplaceDate(dt, 0);
+             if (podj.abs < dt) then
+               podj.abs := IncDay(podj.abs);
+            end;
           end;
 
          if (parsed[3] <> '') then

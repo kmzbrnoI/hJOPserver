@@ -9,6 +9,17 @@ unit ModelovyCas;
   Modelovy cas pocita server i klient separatne. Kazde 3 minuty odesle server
   informaci o aktualnim modelovem casu a tak provede synchonizaci casu serveru
   a klienta.
+
+  Modelovy cas pri zapnuti hJOPserveru ma nastvene datum na 0 (pravdepodobne
+  UNIX origin), jak cas pribyva, datum take pribyva. To je dulezite zejmena
+  pri prechodu pres pulnoc (kvuli predvidanym odjezdum).
+
+  Trida TModCas rozlisuje Date a Time a DateTime.
+   * DateTime obsahuje den i cas.
+   * Date obsahuje jen den a cas nastaveny na pulnoc.
+   * Time obsahuje jen cas a den nastaveny na 0.
+
+  Nektere metody ocekavaji cas, jine DateTime, tak pozor na to!
 }
 
 interface
@@ -31,13 +42,14 @@ type
     _SYNC_REAL_MINUTES = 3;
 
    private
-    ftime:TTime;
+    fdateTime:TDateTime;
     fspeed:Real;
     fstarted:boolean;
     fused:boolean;
     last_sync:TDateTime;
     last_call:TDateTime;
 
+    procedure SetDateTime(dt:TDateTime);
     procedure SetTime(time:TTime); overload;
     procedure SetSpeed(speed:Real);
     procedure SetStarted(started:boolean);
@@ -48,9 +60,13 @@ type
 
     procedure BroadcastTime();
     function GetTCPString():string;
+    function GetDate():TDate;
+    function GetTime():TTime;
 
    public
     MTBdata:TModCasMTB;
+
+     constructor Create();
 
      procedure LoadData(var ini:TMemIniFile);
      procedure SaveData(var ini:TMemIniFile);
@@ -62,7 +78,9 @@ type
      procedure UpdateGUIColors();
      procedure Parse(parsed:TStrings);
 
-     property time:TTime read ftime write SetTime;
+     property dateTime:TDateTime read fdateTime write SetDateTime;
+     property date:TDate read GetDate;
+     property time:TTime read GetTime write SetTime;
      property speed:Real read fspeed write SetSpeed;
      property started:boolean read fstarted write SetStarted;
      property used:boolean read fused write SetUsed;
@@ -78,6 +96,16 @@ uses TCPServerOR, fMain, SprDb, TBloky;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+constructor TModCas.Create();
+begin
+ Self.fdateTime := 0;
+ Self.fspeed := 3;
+ Self.fused := false;
+ Self.fstarted := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TModCas.LoadData(var ini:TMemIniFile);
 begin
  with (Self.MTBdata) do
@@ -89,8 +117,8 @@ begin
   end;
 
  Self.fspeed := ini.ReadFloat('ModCas', 'speed', 5);
- Self.time     := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
- Self.fused    := ini.ReadBool('ModCas', 'used', true);
+ Self.dateTime := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
+ Self.fused := ini.ReadBool('ModCas', 'used', true);
 end;//procedure
 
 procedure TModCas.SaveData(var ini:TMemIniFile);
@@ -110,14 +138,23 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetTime(time:TTime);
+procedure TModCas.SetDateTime(dt:TDateTime);
 begin
- if ((Self.ftime <> time) and (not Self.started)) then
+ if ((Self.fdateTime <> dt) and (not Self.started)) then
   begin
-   Self.ftime := time;
+   Self.fdateTime := dt;
    Self.BroadcastTime();
   end;
-end;//procedure
+end;
+
+procedure TModCas.SetTime(time:TTime);
+begin
+ if ((Self.fdateTime <> Self.date + time) and (not Self.started)) then
+  begin
+   Self.fdateTime := Self.date + time;
+   Self.BroadcastTime();
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -167,7 +204,7 @@ begin
 
  // pocitani aktualniho modeloveho casu:
  diff := Now - Self.last_call;
- Self.ftime := Self.ftime + (diff*Self.speed);
+ Self.fdateTime := Self.fdateTime + (diff*Self.speed);
 
  // synchronizace casu (po "_SYNC_REAL_MINUTES" case odesilame aktualni cas klientovi)
  if (Now > Self.last_sync+EncodeTime(0, _SYNC_REAL_MINUTES, 0, 0)) then
@@ -201,10 +238,10 @@ end;//procedure
 
 procedure TModCas.SetTime(time:TTime; speed:Real);
 begin
- if (((Self.ftime <> time) or (Self.fspeed <> speed)) and (not Self.started)) then
+ if (((Self.time <> time) or (Self.fspeed <> speed)) and (not Self.started)) then
   begin
-   Self.ftime  := time;
    Self.fspeed := speed;
+   Self.fdateTime := Self.date + time;
    Self.BroadcastTime();
   end;
 end;//procedure
@@ -286,6 +323,24 @@ begin
 
  Self.BroadcastTime();
  Self.UpdateGUIColors();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TModCas.GetDate():TDate;
+var dt: TDateTime;
+begin
+ dt := Self.dateTime;
+ ReplaceTime(dt, 0);
+ Result := dt;
+end;
+
+function TModCas.GetTime():TTime;
+var dt: TDateTime;
+begin
+ dt := Self.dateTime;
+ ReplaceDate(dt, 0);
+ Result := dt;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
