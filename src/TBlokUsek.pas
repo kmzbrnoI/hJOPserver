@@ -208,6 +208,7 @@ type
     function SoupravyFull():boolean;
 
     function IsVlakPresun():boolean;
+    procedure ClearPOdj();
 
     property Stav:TBlkUsekStav read UsekStav;
 
@@ -1960,6 +1961,34 @@ begin
   end;
 
  if (shouldChange) then
+   Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+// predvidane odjezdy se mazou pres bloky, aby bloky zavolaly Change().
+procedure TBlkUsek.ClearPOdj();
+var spr:Integer;
+    change:boolean;
+begin
+ change := false;
+
+ for spr in Self.Soupravs do
+  begin
+   if (Soupravy[spr].IsPOdj(Self)) then
+    begin
+     Soupravy[spr].RemovePOdj(Self);
+     change := true;
+    end;
+  end;
+
+ if ((Self.SprPredict > -1) and (Soupravy[Self.SprPredict].IsPOdj(Self))) then
+  begin
+   Soupravy[Self.SprPredict].RemovePOdj(Self);
+   change := true;
+  end;
+
+ if (change) then
    Self.Change();
 end;
 

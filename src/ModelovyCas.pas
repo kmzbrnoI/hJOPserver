@@ -74,7 +74,7 @@ var
 
 implementation
 
-uses TCPServerOR, fMain, SprDb;
+uses TCPServerOR, fMain, SprDb, TBloky;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -273,7 +273,12 @@ begin
    if (parsed.Count >= 6) then
     begin
      if (Self.fused <> (parsed[5] = '1')) then
+      begin
+       // Nejdriv smazeme pres bloky, pripadne pochybne stavy resime natvrdo
+       // smazanim u soupravy. Mazani pres bloky zajisti volani Change().
+       Blky.ClearPOdj();
        Soupravy.ClearPOdj();
+      end;
 
      Self.fused := (parsed[5] = '1');
     end;

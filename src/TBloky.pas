@@ -111,6 +111,8 @@ type
     // -> je potreba zmenit poradi bloku
     procedure BlkIDChanged(index:Integer);
 
+    procedure ClearPOdj();
+
     class function GetBlksList(first:TObject = nil; second:TObject = nil; third:TObject = nil):TBlksList;
 
     // vrati vsechny bloky do JSON objektu PTserveru
@@ -1050,6 +1052,16 @@ begin
  for Blk in Self.data do
    if (Blk.GetGlobalSettings().typ = _BLK_SCOM) then
      TBlkSCom(Blk).RemoveBlkFromRnz(Sender.GetGlobalSettings().id);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.ClearPOdj();
+var Blk:TBlk;
+begin
+ for Blk in Self.data do
+   if ((Blk.GetGlobalSettings().typ = _BLK_USEK) or (Blk.GetGlobalSettings().typ = _BLK_TU)) then
+     TBlkUsek(Blk).ClearPOdj();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
