@@ -12,7 +12,7 @@ type
   ENoTimeDefined = class(Exception);
   EOriginNotSet = class(Exception);
 
-  TPobjPhase = (ppGone, ppBlue, ppYellow, ppRed);                               // faze, ve kterych muze byt cas odjezdu
+  TPobjPhase = (ppGone, ppGoingToLeave, ppPreparing, ppLongTime, ppTimeNotSet); // faze, ve kterych muze byt cas odjezdu
                                                                                 // muze odpovidat barvam v panelu, ale tohle
                                                                                 // jsou spis logicke faze
 
@@ -179,13 +179,13 @@ begin
    if (time < 0) then
      Result := ppGone
    else if (time < EncodeTime(0, 0, 30, 0)) then
-     Result := ppRed
+     Result := ppGoingToLeave
    else if (time < EncodeTime(0, 3, 0, 0)) then
-     Result := ppYellow
+     Result := ppPreparing
    else
-     Result := ppBlue;
+     Result := ppLongTime;
   end else begin
-   Result := ppBlue;
+   Result := ppTimeNotSet;
   end;
 end;
 
@@ -204,19 +204,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
+var tmp:TColor;
 begin
  case (podj.GetPhase()) of
-   ppGone, ppBlue: bg := clBlue;
+   ppPreparing: bg := clBlue;
 
-   ppYellow: bg := clYellow;
+   ppGoingToLeave, ppGone: bg := clYellow;
 
-   ppRed: begin
-     if (fg = clRed) then
-      begin
-       fg := clBlack;
-       bg := clRed;
-      end else
-       bg := clRed;
+   ppLongTime, ppTimeNotSet: begin
+     tmp := fg;
+     fg := bg;
+     bg := tmp;
    end;
  end;
 end;
