@@ -1930,6 +1930,8 @@ end;
 procedure TBlkUsek.CheckPOdjChanged();
 var spr:Integer;
     shouldChange:boolean;
+    podj:TPOdj;
+    i:Integer;
 begin
  shouldChange := false;
 
@@ -1937,6 +1939,20 @@ begin
   begin
    if ((Soupravy[spr].IsPOdj(Self)) and (Soupravy[spr].GetPOdj(Self).changed)) then
     begin
+     podj := Soupravy[spr].GetPOdj(Self);
+
+     // prehravani zvukove vystrahy
+     if ((not shouldChange) and ((Self.SComJCRef = nil) or (TBlkSCom(Self.SComJCRef).IsPovolovaciNavest()))) then
+      begin
+        if ((podj.phase_old = ppPreparing) and (podj.GetPhase() = ppGoingToLeave)) then
+          for i := 0 to Self.ORsRef.Cnt-1 do
+            Self.ORsRef.ORs[i].BlkPlaySound(Self, TORControlRights.write, _SND_STAVENI_VYZVA)
+
+        else if ((podj.phase_old = ppGoingToLeave) and (podj.GetPhase() = ppSoundLeave)) then
+          for i := 0 to Self.ORsRef.Cnt-1 do
+            Self.ORsRef.ORs[i].BlkPlaySound(Self, TORControlRights.write, _SND_NENI_JC);
+      end;
+
      if (Soupravy[spr].GetPOdj(Self).DepRealDelta() < 0) then
        Soupravy[spr].RemovePOdj(Self)
      else

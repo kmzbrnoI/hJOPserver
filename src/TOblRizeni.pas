@@ -21,13 +21,15 @@ const
   _MAX_ORREF = 16;
 
   // zvuky - musi korespondovat se zvuky klienta
-  _SND_TRAT_ZADOST  = 4;
-  _SND_PRIVOLAVACKA = 5;
-  _SND_TIMEOUT      = 6;
-  _SND_PRETIZENI    = 7;
-  _SND_POTVR_SEKV   = 8;
-  _SND_ZPRAVA       = 9;
-  _SND_CHYBA        = 10;
+  _SND_TRAT_ZADOST   = 4;
+  _SND_PRIVOLAVACKA  = 5;
+  _SND_TIMEOUT       = 6;
+  _SND_PRETIZENI     = 7;
+  _SND_POTVR_SEKV    = 8;
+  _SND_ZPRAVA        = 9;
+  _SND_CHYBA         = 10;
+  _SND_STAVENI_VYZVA = 11;
+  _SND_NENI_JC       = 12;
 
 type
   TORControlRights = (null = 0, read = 1, write = 2, superuser = 3);

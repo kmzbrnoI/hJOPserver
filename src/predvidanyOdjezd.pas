@@ -12,7 +12,8 @@ type
   ENoTimeDefined = class(Exception);
   EOriginNotSet = class(Exception);
 
-  TPobjPhase = (ppGone, ppGoingToLeave, ppPreparing, ppLongTime, ppTimeNotSet); // faze, ve kterych muze byt cas odjezdu
+  TPobjPhase = (ppGone, ppSoundLeave, ppGoingToLeave, ppPreparing, ppLongTime,  // faze, ve kterych muze byt cas odjezdu
+                ppTimeNotSet);
                                                                                 // muze odpovidat barvam v panelu, ale tohle
                                                                                 // jsou spis logicke faze
 
@@ -46,6 +47,7 @@ type
     property rel_enabled: boolean read prel_enabled write prel_enabled;
     property abs_enabled: boolean read pabs_enabled write pabs_enabled;
     property origin_set: boolean read porigin_set;
+    property phase_old: TPobjPhase read pphase_old;
 
     property changed: boolean read IsChanged write SetChanged;                  // vraci true pokud je zmena faze
 
@@ -178,6 +180,8 @@ begin
    time := Self.DepRealDelta();
    if (time < 0) then
      Result := ppGone
+   else if (time < EncodeTime(0, 0, 3, 0)) then
+     Result := ppSoundLeave
    else if (time < EncodeTime(0, 0, 30, 0)) then
      Result := ppGoingToLeave
    else if (time < EncodeTime(0, 3, 0, 0)) then
@@ -209,7 +213,7 @@ begin
  case (podj.GetPhase()) of
    ppPreparing: bg := clBlue;
 
-   ppGoingToLeave, ppGone: bg := clYellow;
+   ppGoingToLeave, ppGone, ppSoundLeave: bg := clYellow;
 
    ppLongTime, ppTimeNotSet: begin
      tmp := fg;
