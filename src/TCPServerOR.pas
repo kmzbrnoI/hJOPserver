@@ -707,7 +707,7 @@ begin
           begin
            if (ModCas.used) then
             begin
-             podj.abs := StrToTime(parsed[2]);
+             podj.abs := ModCas.date + StrToTime(parsed[2]);
              if (podj.abs < ModCas.time) then
                podj.abs := IncDay(podj.abs);
             end else begin
