@@ -408,7 +408,7 @@ procedure TOR.BlkChange(Sender:TObject; specificClient:TIDContext = nil);
 var blk_glob:TBlkSettings;
     i:Integer;
     msg:string;
-    fg, bg, nebarVetve:TColor;
+    fg, bg, nebarVetve, sfg, sbg:TColor;
     Blk:TBlk;
 begin
  if (Self.Connected.Count = 0) then Exit();
@@ -554,6 +554,12 @@ begin
      msg := msg + '{';
      for i := 0 to (Sender as TBlkUsek).Soupravs.Count-1 do
       begin
+       sfg := fg;
+       sbg := bg;
+
+       if ((Sender as TBlkUsek).Obsazeno = uvolneno) then
+         sfg := clAqua;
+
        msg := msg + '(' + Soupravy[(Sender as TBlkUsek).Soupravs[i]].nazev + ';';
 
        if (Soupravy[(Sender as TBlkUsek).Soupravs[i]].sdata.smer_L) then
@@ -565,19 +571,16 @@ begin
        else
          msg := msg + '0;';
 
-       if ((Sender as TBlkUsek).Obsazeno = uvolneno) then
-         fg := clAqua;
-
-       if ((Soupravy[(Sender as TBlkUsek).Soupravs[i]].cilovaOR = Self) and (bg = clBlack)) then
-         bg := clSilver;
+       if ((Soupravy[(Sender as TBlkUsek).Soupravs[i]].cilovaOR = Self) and (sbg = clBlack)) then
+         sbg := clSilver;
 
        // predvidany odjezd
        if (Soupravy[(Sender as TBlkUsek).Soupravs[i]].IsPOdj(Sender as TBlk)) then
          if (Soupravy[(Sender as TBlkUsek).Soupravs[i]].IsPOdj(Sender as TBlkUsek)) then
-           predvidanyOdjezd.GetPOdjColors(Soupravy[(Sender as TBlkUsek).Soupravs[i]].GetPOdj(Sender as TBlkUsek), fg, bg);
+           predvidanyOdjezd.GetPOdjColors(Soupravy[(Sender as TBlkUsek).Soupravs[i]].GetPOdj(Sender as TBlkUsek), sfg, sbg);
 
-       msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
-       msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
+       msg := msg + PrevodySoustav.ColorToStr(sfg) + ';';
+       msg := msg + PrevodySoustav.ColorToStr(sbg) + ';';
 
        if ((Sender as TBlkUsek).vlakPresun = i) then
         msg := msg + PrevodySoustav.ColorToStr(clYellow) + ';';
@@ -589,13 +592,16 @@ begin
      if ((Sender as TBlkUsek).SprPredict > -1) then
       begin
        // predvidany odjezd
+       sfg := fg;
+       sbg := bg;
+
        if (Soupravy[(Sender as TBlkUsek).SprPredict].IsPOdj(Sender as TBlkUsek)) then
-         predvidanyOdjezd.GetPOdjColors(Soupravy[(Sender as TBlkUsek).SprPredict].GetPOdj(Sender as TBlkUsek), fg, bg);
+         predvidanyOdjezd.GetPOdjColors(Soupravy[(Sender as TBlkUsek).SprPredict].GetPOdj(Sender as TBlkUsek), sfg, sbg);
 
        msg := msg + '(' + Soupravy.GetSprNameByIndex((Sender as TBlkUsek).SprPredict) + ';' +
                   '00;' +
-                  PrevodySoustav.ColorToStr(fg) + ';' +
-                  PrevodySoustav.ColorToStr(bg) + ';)';
+                  PrevodySoustav.ColorToStr(sfg) + ';' +
+                  PrevodySoustav.ColorToStr(sbg) + ';)';
       end;
 
      msg := msg + '}';
