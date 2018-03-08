@@ -1942,7 +1942,7 @@ begin
      podj := Soupravy[spr].GetPOdj(Self);
 
      // prehravani zvukove vystrahy
-     if ((not shouldChange) and ((Self.SComJCRef = nil) or (TBlkSCom(Self.SComJCRef).IsPovolovaciNavest()))) then
+     if ((not shouldChange) and ((Self.SComJCRef = nil) or (not TBlkSCom(Self.SComJCRef).IsPovolovaciNavest()))) then
       begin
         if ((podj.phase_old = ppPreparing) and (podj.GetPhase() = ppGoingToLeave)) then
           for i := 0 to Self.ORsRef.Cnt-1 do
