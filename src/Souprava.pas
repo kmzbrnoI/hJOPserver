@@ -38,7 +38,7 @@ type
    cilovaOR:TObject;
 
    hlaseniPrehrano:boolean;
-   podj:TObjectDictionary<Integer, TPOdj>;  // id useku : predvidany odjezd
+   podj:TDictionary<Integer, TPOdj>;  // id useku : predvidany odjezd
   end;//TSoupravaData
 
   TSouprava = class
@@ -130,7 +130,7 @@ begin
  Self.speedBuffer := nil;
  Self.changed := false;
  Self.findex := index;
- Self.data.podj := TObjectDictionary<Integer, TPOdj>.Create([doOwnsValues]);
+ Self.data.podj := TDictionary<Integer, TPOdj>.Create();
  Self.LoadFromFile(ini, section);
  Self.data.hlaseniPrehrano := false;
 end;//ctor
@@ -140,14 +140,16 @@ begin
  inherited Create();
  Self.speedBuffer := nil;
  Self.findex := index;
- Self.data.podj := TObjectDictionary<Integer, TPOdj>.Create([doOwnsValues]);
+ Self.data.podj := TDictionary<Integer, TPOdj>.Create();
  Self.LoadFromPanelStr(panelStr, Usek, OblR);
 end;//ctor
 
 destructor TSouprava.Destroy();
 begin
  Self.ReleaseAllLoko();
+ Self.ClearPOdj();
  Self.data.podj.Free();
+
  inherited;
 end;//dtor
 
@@ -868,9 +870,14 @@ begin
  if ((not podj.rel_enabled) and (not podj.abs_enabled)) then
   begin
    if (Self.data.podj.ContainsKey(usekid)) then
+    begin
+     Self.data.podj[usekid].Free();
      Self.data.podj.Remove(usekid);
+    end;
    FreeAndNil(podj);
   end else begin
+   if (Self.data.podj.ContainsKey(usekid)) then
+     Self.data.podj[usekid].Free();
    Self.data.podj.AddOrSetValue(usekid, podj);
    podj := nil;
   end;
@@ -888,6 +895,7 @@ end;
 
 procedure TSouprava.RemovePOdj(usekid:Integer);
 begin
+ Self.data.podj[usekid].Free();
  Self.data.podj.Remove(usekid);
 end;
 
@@ -912,7 +920,11 @@ begin
 end;
 
 procedure TSouprava.ClearPOdj();
+var podj:TPOdj;
 begin
+ for podj in Self.data.podj.Values do
+   podj.Free();
+
  Self.data.podj.Clear();
 end;
 
