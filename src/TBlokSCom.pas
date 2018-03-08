@@ -1269,7 +1269,7 @@ begin
   begin
    // event se odregistruje automaticky pri zmene
 
-   if (spr.IsPOdj(Usek)) then
+   if ((spr.IsPOdj(Usek)) and (spr.smer = Self.SComRel.smer)) then
     begin
      // predvidany odjezd neuplynul -> zastavit soupravu
      if (spr.rychlost <> 0) then
