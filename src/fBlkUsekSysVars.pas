@@ -81,10 +81,7 @@ var spr:Integer;
     Self.LB_Soupravy.Items.Add(IntToStr(spr));
 
   SE_Souprava_Predict.Value   := Blk.SprPredict;
-  if (Blk.SComJCRef <> nil) then
-    SE_SComJCRef.Value        := (Blk.SComJCRef as TBlk).GetGlobalSettings.id
-  else
-    SE_SComJCRef.Value        := -1;
+  SE_SComJCRef.Value          := Blk.SComJCRef.Count;
   CB_KonecVC.ItemIndex        := Integer(Self.Blk.KonecJC);
 
   M_Stitek.Text               := Blk.Stitek;
@@ -104,7 +101,8 @@ var Blk:TBlk;
   Self.Blk.KonecJC     := TZaver(CB_KonecVC.ItemIndex);
   Self.Blk.SprPredict  := SE_Souprava_Predict.Value;
   Blky.GetBlkByID(Self.SE_SComJCRef.Value, Blk);
-  Self.Blk.SComJCRef   := Blk;
+  if (Self.Blk.SComJCRef.Count = 0) then
+    Self.Blk.SComJCRef.Clear();
   Self.Blk.ZesZkrat    := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
   Self.Blk.ZesNapajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
   Self.Blk.Vyluka      := M_Vyluka.Text;

@@ -51,7 +51,7 @@ var
 
 implementation
 
-uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom, appEv;
+uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom, appEv, TBlok;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -185,6 +185,7 @@ end;//function
 
 procedure TSprDb.AddSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; sprUsekIndex:Integer);
 var i:Integer;
+    nav:TBlk;
 begin
  for i := 0 to _MAX_SPR-1 do
   if (Self.soupravy[i] = nil) then
@@ -195,8 +196,8 @@ begin
        begin
         (Usek as TBlkUsek).AddSouprava(sprUsekIndex, i);
         (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
-        if ((Usek as TBlkUsek).SComJCRef <> nil) then
-          ((Usek as TBlkUsek).SComJCRef as TBlkScom).UpdateRychlostSpr(true);
+        for nav in (Usek as TBlkUsek).SComJCRef do
+          (nav as TBlkScom).UpdateRychlostSpr(true);
        end;
       Exit();
     except

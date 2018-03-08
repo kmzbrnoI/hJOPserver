@@ -887,11 +887,10 @@ begin
      (Usek as TBlkUsek).SprPredict := spr;
 
      // zjistime, jeslti je nejake nevastidlo u tohoto useku postaveno na volno
-     Nav := (Usek as TBlkUsek).SComJCRef;
-     if (Nav = nil) then
+     if ((Usek as TBlkUsek).SComJCRef.Count = 0) then
       JC := nil
      else
-      JC := (Nav as TBlkSCom).DNjc;
+      JC := ((Usek as TBlkUsek).SComJCRef[0] as TBlkSCom).DNjc;
     end;//while
  except
   on E:Exception do

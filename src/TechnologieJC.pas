@@ -1609,7 +1609,9 @@ var i,j:Integer;
       Blk := (Navestidlo as TBlkSCom).UsekPred;
       if ((Blk as TBlkUsek).IsSouprava()) then
         Soupravy.soupravy[Self.GetSoupravaIndex(Navestidlo, Blk)].front := (Blk as TBlkUsek);
-      (Blk as TBlkUsek).SComJCRef := Navestidlo;
+
+      if (not (Blk as TBlkUsek).SComJCRef.Contains(Navestidlo)) then
+        (Blk as TBlkUsek).SComJCRef.Add(Navestidlo);
 
       Self.Krok := 0;
       (Navestidlo as TBlkSCom).DNjc := Self;

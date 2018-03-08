@@ -436,12 +436,13 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject);
+var nav:TBlk;
 begin
  Self.LoadFromPanelStr(spr, Usek, OblR);
  (Usek as TBlkUsek).Change();
 
- if ((Usek as TBlkUsek).SComJCRef <> nil) then
-   ((Usek as TBlkUsek).SComJCRef as TBlkScom).UpdateRychlostSpr(true);
+ for nav in (Usek as TBlkUsek).SComJCRef do
+   (nav as TBlkScom).UpdateRychlostSpr(true);
 
  Self.changed := true;
 end;//procedure

@@ -653,8 +653,9 @@ begin
 
  if (Self.SComStav.Navest = 0) then
   begin
-   if ((Self.UsekPred <> nil) and ((Self.UsekPred.GetGlobalSettings().typ = _BLK_USEK) or (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU))) then
-    (Self.UsekPred as TBlkUsek).SComJCRef := nil;
+   if ((Self.UsekPred <> nil) and ((Self.UsekPred.GetGlobalSettings().typ = _BLK_USEK) or
+       (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).SComJCRef.Contains(Self))) then
+    (Self.UsekPred as TBlkUsek).SComJCRef.Remove(Self);
 
    // ruseni nouzove jizdni cesty
    if (Assigned(Self.privol)) then

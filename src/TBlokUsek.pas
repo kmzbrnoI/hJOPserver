@@ -38,7 +38,7 @@ type
   NUZ:boolean;              // nouzove uvolneni zaveru
   KonecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
   Stit,Vyl:string;          // stitek a vyluka
-  SComJCRef:TBlk;           // zde je ulozeno, podle jakeho navestidla se odjizdi z tohoto bloku; pokud je postabeno vice navetidel, zde je ulozeno posledni, na kterem probehla volba
+  SComJCRef:TList<TBlk>;    // navestidla, ze kterych je z tohoto bloku postavena JC
   SprPredict:Integer;       // souprava, ktera je na tomto bloku predpovidana
   zkrat:TBoosterSignal;     // zkrat zesilovace
   napajeni:TBoosterSignal;  // napajeni zesilovace
@@ -72,7 +72,6 @@ type
     KonecJC : no;
     Stit : '';
     Vyl : '';
-    SComJCRef : nil;
     SprPredict : -1;
     zkrat : TBoosterSignal.undef;
     napajeni : TBoosterSignal.undef;
@@ -153,6 +152,8 @@ type
 
     procedure CheckPOdjChanged();
 
+    function IsStujForSpr(spr:Integer):boolean;
+
   protected
    UsekSettings:TBlkUsekSettings;
 
@@ -219,7 +220,7 @@ type
     property Vyluka:string read UsekStav.Vyl write SetUsekVyl;
     property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
-    property SComJCRef:TBlk read UsekStav.SComJCRef write UsekStav.SComJCRef;
+    property SComJCRef:TList<TBlk> read UsekStav.SComJCRef write UsekStav.SComJCRef;
 
     property Souprava:Integer read GetUsekSpr;
     property SoupravaL:Integer read GetSoupravaL;
@@ -279,6 +280,7 @@ begin
 
  Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
  Self.UsekStav.soupravy := TList<Integer>.Create();
+ Self.UsekStav.SComJCRef := TList<TBlk>.Create();
 end;//ctor
 
 destructor TBlkUsek.Destroy();
@@ -304,6 +306,7 @@ begin
 
  Self.UsekStav.neprofilJCcheck.Free();
  Self.UsekStav.soupravy.Free();
+ Self.UsekStav.SComJCRef.Free();
 
  inherited;
 end;//dtor
@@ -1427,7 +1430,7 @@ end;//procedure
 
 // vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
 function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject; sprLocalIndex:Integer):boolean;
-var Blk:TBlk;
+var Blk, Nav:TBlk;
     spri:Integer;
 begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
@@ -1487,13 +1490,14 @@ begin
  ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+Soupravy.GetSprNameByIndex(spri)+' pøesunuta na '+Self.GlobalSettings.name+'.');
 
  if (Blky.GetBlkWithSpr(spri).Count = 1) then
-  Soupravy[spri].front := Self;
+   Soupravy[spri].front := Self;
 
- if ((Blk as TBlkUsek).SComJCRef <> nil) then
-  Blky.SprPrediction((Blk as TBlkUsek).SComJCRef);
+ for nav in (Blk as TBlkUsek).SComJCRef do
+   Blky.SprPrediction(Nav);
 
- if ((Blk <> Self) and (Self.SComJCRef <> nil)) then
-  Blky.SprPrediction(Self.SComJCRef);
+ if (Blk <> Self) then
+   for nav in Self.SComJCRef do
+     Blky.SprPrediction(Nav);
 
  Result := true;
 end;//function
@@ -1909,6 +1913,8 @@ end;
 
 procedure TBlkUsek.PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
 var spr:Integer;
+    was:boolean;
+    nav:TBlk;
 begin
  if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.SprPredict)) then
   begin
@@ -1916,11 +1922,21 @@ begin
    Exit();
   end;
 
+ was := Soupravy[sprId].IsPOdj(Self);
+
  for spr in Self.Soupravs do
    if (spr = sprId) then
      podj.RecordOriginNow();
 
  Soupravy[sprId].AddOrUpdatePOdj(Self, podj);
+
+ if ((was) and (not Soupravy[sprId].IsPOdj(Self))) then
+  begin
+   // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
+   // aktuiualziaci rychlosti pro vsechny SComJCReg bychom nemeli nic pokazit
+   for nav in Self.SComJCRef do
+     TBlkSCom(nav).UpdateRychlostSpr(true);
+  end;
 
  Self.Change();
 end;
@@ -1932,6 +1948,8 @@ var spr:Integer;
     shouldChange:boolean;
     podj:TPOdj;
     i:Integer;
+    smer:THVStanoviste;
+    Nav:TBlk;
 begin
  shouldChange := false;
 
@@ -1942,7 +1960,7 @@ begin
      podj := Soupravy[spr].GetPOdj(Self);
 
      // prehravani zvukove vystrahy
-     if ((not shouldChange) and ((Self.SComJCRef = nil) or (not TBlkSCom(Self.SComJCRef).IsPovolovaciNavest()))) then
+     if ((not shouldChange) and (Self.IsStujForSpr(spr))) then
       begin
         if ((podj.phase_old = ppPreparing) and (podj.GetPhase() = ppGoingToLeave)) then
           for i := 0 to Self.ORsRef.Cnt-1 do
@@ -1954,8 +1972,22 @@ begin
       end;
 
      if (Soupravy[spr].GetPOdj(Self).DepRealDelta() < 0) then
-       Soupravy[spr].RemovePOdj(Self)
-     else
+      begin
+       Soupravy[spr].RemovePOdj(Self);
+
+       // tvrda aktualizace rychlosti soupravy
+       if ((spr = Self.SoupravaL) or (spr = Self.SoupravaS)) then
+        begin
+         if (spr = Self.SoupravaL) then
+           smer := THVStanoviste.sudy
+         else
+           smer := THVStanoviste.lichy;
+
+         for nav in Self.SComJCRef do
+           if (TBlkSCom(nav).Smer = smer) then
+             TBlkSCom(nav).UpdateRychlostSpr(true);
+        end;
+      end else
        Soupravy[spr].GetPOdj(Self).changed := false;
 
      shouldChange := true;
@@ -2006,6 +2038,34 @@ begin
 
  if (change) then
    Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.IsStujForSpr(spr:Integer):boolean;
+begin
+ if (not Self.Soupravs.Contains(spr)) then Exit(false);
+ if (Self.SComJCRef.Count = 0) then Exit(true);
+
+ if (Self.SComJCRef.Count = 1) then
+  begin
+   if (not TBlkSCom(Self.SComJCRef[0]).IsPovolovaciNavest()) then Exit(true);
+   if (TBlkSCom(Self.SComJCRef[0]).Smer = THvStanoviste.lichy) then
+     Exit(spr <> Self.SoupravaS)
+   else
+     Exit(spr <> Self.SoupravaL);
+  end;
+
+ if (Self.SComJCRef.Count = 2) then
+  begin
+   if ((Self.Soupravs.Count = 1) and (not TBlkSCom(Self.SComJCRef[0]).IsPovolovaciNavest()) and
+        (not TBlkSCom(Self.SComJCRef[1]).IsPovolovaciNavest())) then Exit(true);
+   if ((Self.Soupravs.Count >= 2) and ((not TBlkSCom(Self.SComJCRef[0]).IsPovolovaciNavest()) or
+        (not TBlkSCom(Self.SComJCRef[1]).IsPovolovaciNavest()))) then Exit(true);
+   if ((Self.Soupravs.Count > 2) and (Self.SoupravaL <> spr) and (Self.SoupravaS <> spr)) then Exit(true);
+ end;
+
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
