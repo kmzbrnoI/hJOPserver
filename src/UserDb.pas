@@ -64,17 +64,21 @@ var ini:TMemIniFile;
     i:Integer;
 begin
  // ulozit statistiku uzivatelu
- try
-   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+ if (Self.filename <> '') then
+  begin
+   // kontrola pro pripad zabijeni programu ihned po spusteni
+   try
+     ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
-   for i := 0 to Self.Users.Count-1 do
-    Self.Users[i].SaveStat(ini, Self.Users[i].id);
+     for i := 0 to Self.Users.Count-1 do
+      Self.Users[i].SaveStat(ini, Self.Users[i].id);
 
-   ini.UpdateFile();
-   ini.Free();
- except
+     ini.UpdateFile();
+     ini.Free();
+   except
 
- end;
+   end;
+  end;
 
  Self.FreeUsers();
  Self.Users.Free();

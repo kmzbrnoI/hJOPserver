@@ -58,7 +58,8 @@ end;//ctor
 destructor TACDb.Destroy();
 var i:Integer;
 begin
- Self.SaveStatToFile(Self.fstatfilename);
+ if (Self.fstatfilename <> '') then
+   Self.SaveStatToFile(Self.fstatfilename);
  for i := 0 to Self.ACs.Count-1 do Self.ACs[i].Free();
  Self.ACs.Free();
  inherited Destroy();
