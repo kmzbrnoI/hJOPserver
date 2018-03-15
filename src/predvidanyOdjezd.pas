@@ -178,13 +178,13 @@ begin
  if (Self.IsDepSet()) then
   begin
    time := Self.DepRealDelta();
-   if (time < 0) then
+   if (time <= 0) then
      Result := ppGone
-   else if (time < EncodeTime(0, 0, 3, 0)) then
+   else if (time <= EncodeTime(0, 0, 3, 0)) then
      Result := ppSoundLeave
-   else if (time < EncodeTime(0, 0, 30, 0)) then
+   else if (time <= EncodeTime(0, 0, 30, 0)) then
      Result := ppGoingToLeave
-   else if (time < EncodeTime(0, 3, 0, 0)) then
+   else if (time <= EncodeTime(0, 3, 0, 0)) then
      Result := ppPreparing
    else
      Result := ppLongTime;
