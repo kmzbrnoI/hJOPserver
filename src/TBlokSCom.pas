@@ -1244,7 +1244,8 @@ begin
  // ZPOMALOVANI
  if ((scomEv.zpomaleni.enabled) and (spr.rychlost > scomEv.zpomaleni.speed) and
      ((Usek as TBlkUsek).zpomalovani_ready) and
-     ((not Assigned(Self.DNjc)) or (not Self.IsPovolovaciNavest())) and (spr.smer = Self.SComRel.smer)) then
+     ((not Assigned(Self.DNjc)) or (not Self.IsPovolovaciNavest()) or (spr.IsPOdj(Usek))) and
+     (spr.smer = Self.SComRel.smer)) then
   begin
    if (not scomEv.zpomaleni.ev.enabled) then
      scomEv.zpomaleni.ev.Register();
