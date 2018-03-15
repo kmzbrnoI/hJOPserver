@@ -1948,7 +1948,6 @@ var spr:Integer;
     shouldChange:boolean;
     podj:TPOdj;
     i:Integer;
-    smer:THVStanoviste;
     Nav:TBlk;
 begin
  shouldChange := false;
@@ -1978,13 +1977,9 @@ begin
        // tvrda aktualizace rychlosti soupravy
        if ((spr = Self.SoupravaL) or (spr = Self.SoupravaS)) then
         begin
-         if (spr = Self.SoupravaL) then
-           smer := THVStanoviste.sudy
-         else
-           smer := THVStanoviste.lichy;
-
          for nav in Self.SComJCRef do
-           if (TBlkSCom(nav).Smer = smer) then
+           if (((TBlkSCom(nav).Smer = THVStanoviste.sudy) and (spr = Self.SoupravaL)) or
+               ((TBlkSCom(nav).Smer = THVStanoviste.lichy) and (spr = Self.SoupravaS))) then
              TBlkSCom(nav).UpdateRychlostSpr(true);
         end;
       end else
