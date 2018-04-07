@@ -88,10 +88,17 @@ begin
      ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
     end;
 
-   if (Self.m_clients.Contains(Sender)) then Exit();
+   if (Self.m_clients.Contains(Sender)) then
+    begin
+     ORTCPServer.SendLn(Sender, parsed[0] + ';SH;REGISTER-RESPONSE;ERR;ALREADY_REGISTERED');
+     Exit();
+    end;
+
    Self.m_clients.Add(Sender);
    if ((self.m_clients.Count = 1) and (Assigned(Self.OnAvailable))) then
      Self.OnAvailable(Self, true);
+
+   ORTCPServer.SendLn(Sender, parsed[0] + ';SH;REGISTER-RESPONSE;OK');
 
   end else if (parsed[2] = 'UNREGISTER') then begin
    if (TTCPORsRef(Sender.Data).st_hlaseni.Contains(TOR(SenderOR))) then
@@ -100,10 +107,17 @@ begin
      ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
     end;
 
-   if (not Self.m_clients.Contains(Sender)) then Exit();
+   if (not Self.m_clients.Contains(Sender)) then
+    begin
+     ORTCPServer.SendLn(Sender, parsed[0] + ';SH;UNREGISTER-RESPONSE;ERR;NOT_REGISTERED');
+     Exit();
+    end;
+
    Self.m_clients.Remove(Sender);
    if ((Self.m_clients.Count = 0) and (Assigned(Self.OnAvailable))) then
      Self.OnAvailable(Self, false);
+
+   ORTCPServer.SendLn(Sender, parsed[0] + ';SH;UNREGISTER-RESPONSE;OK');
   end;
 end;
 

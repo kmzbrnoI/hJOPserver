@@ -754,9 +754,20 @@ begin
    Self.Auth(AContext);
    Exit;
  end else if (parsed[1] = 'SH') then begin
-   oblr := ORs.GetORById(parsed[0]);
-   if (Assigned(oblr) and Assigned(oblr.hlaseni)) then
-     oblr.hlaseni.Parse(AContext, oblr, parsed);
+   try
+     oblr := ORs.GetORById(parsed[0]);
+     if (Assigned(oblr)) then begin
+       if (Assigned(oblr.hlaseni)) then
+         oblr.hlaseni.Parse(AContext, oblr, parsed)
+       else
+         Self.SendLn(AContext, parsed[0] + ';SH;' + parsed[2]+'-RESPONSE;ERR;INTERNAL_ERROR');
+     end else if (parsed.Count > 2) then
+      Self.SendLn(AContext, parsed[0] + ';SH;' + parsed[2]+'-RESPONSE;ERR;NONEXISTING_OR');
+   except
+     if (parsed.Count > 2) then
+       Self.SendLn(AContext, parsed[0] + ';SH;' + parsed[2]+'-RESPONSE;ERR;INTERNAL_ERROR')
+   end;
+
    Exit();
  end;
 
