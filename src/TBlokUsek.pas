@@ -1352,7 +1352,7 @@ begin
        AppEvents.LogException(E, 'CanPlayPrijezdSH');
    end;
 
-   if ((shPlay.trat = nil) and (shPlay.stanicniKolej <> nil)) then
+   if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (spr.IsPOdj(shPlay.stanicniKolej)))) then
      Result := Result + 'HLÁŠENÍ pøíjezd,'
    else if (shPlay.trat <> nil) then
      Result := Result + 'HLÁŠENÍ prùjezd,';
@@ -1706,6 +1706,14 @@ begin
  Result.kolej    := Self.UsekStav.cislo_koleje;
  Result.fromORid := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].vychoziOR).id;
  Result.toORid   := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].cilovaOR).id;
+
+ Result.timeArrive := 0;
+
+ if ((Soupravy[Self.Soupravs[sprLocalIndex]].IsPOdj(Self)) and
+     (Soupravy[Self.Soupravs[sprLocalIndex]].GetPOdj(Self).abs_enabled)) then
+   Result.timeDepart := Soupravy[Self.Soupravs[sprLocalIndex]].GetPOdj(Self).abs
+ else
+   Result.timeDepart := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

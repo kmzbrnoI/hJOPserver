@@ -23,6 +23,8 @@ type
     kolej: string;
     fromORid: string;
     toORid: string;
+    timeArrive: TTime;
+    timeDepart: TTime;
   end;
 
   TStanicniHlaseni = class
@@ -181,7 +183,14 @@ end;
 function TStanicniHlaseni.SprToStr(spr:TSHSpr):string;
 begin
  Result := spr.cislo + ';' + spr.typ + ';' + spr.kolej + ';' + spr.fromORid + ';' +
-             spr.toORid;
+             spr.toORid + ';';
+
+ if (spr.timeArrive <> 0) then
+   Result := Result + FormatDateTime('hh:nn', spr.timeArrive);
+
+ Result := Result + ';';
+ if (spr.timeDepart <> 0) then
+   Result := Result + FormatDateTime('hh:nn', spr.timeDepart);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

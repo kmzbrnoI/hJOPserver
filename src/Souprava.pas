@@ -845,12 +845,19 @@ begin
  shSpr.typ   := Self.typ;
  shSpr.fromORid := TOR(Self.vychoziOR).id;
  shSpr.toORid := TOR(Self.cilovaOR).id;
+ shSpr.timeArrive := 0;
+ shSpr.timeDepart := 0;
 
  if (shPlay.stanicniKolej <> nil) then
+  begin
    shSpr.kolej := shPlay.stanicniKolej.Stav.cislo_koleje;
 
+   if ((Self.IsPOdj(shPlay.stanicniKolej)) and (Self.GetPOdj(shPlay.stanicniKolej).abs_enabled)) then
+     shSpr.timeDepart := Self.GetPOdj(shPlay.stanicniKolej).abs;
+  end;
+
  try
-   if ((shPlay.trat = nil) and (shPlay.stanicniKolej <> nil)) then begin
+   if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (Self.IsPOdj(shPlay.stanicniKolej)))) then begin
      oblr.hlaseni.Prijede(shSpr);
      Self.data.hlaseniPrehrano := true;
    end else if (shPlay.trat <> nil) then begin
