@@ -701,31 +701,31 @@ end;//procedure
 
 // pozn.: NUZ maze soupravy z bloku
 procedure TBlky.NUZ(or_id:string; state:boolean = true);
-var cyklus, i, spr:Integer;
+var usek, i, spr:Integer;
  begin
-  for cyklus := 0 to Self.Data.Count-1 do
+  for usek := 0 to Self.Data.Count-1 do
    begin
-    if (Self.Data[cyklus].GetGlobalSettings().typ <> _BLK_USEK) then continue;
+    if (Self.Data[usek].GetGlobalSettings().typ <> _BLK_USEK) then continue;
+    if (not (Self.Data[usek] as TBlkUsek).NUZ) then continue;
 
-    for i := 0 to (Self.Data[cyklus] as TBlkUsek).OblsRizeni.Cnt-1 do
-      if ((Self.Data[cyklus] as TBlkUsek).OblsRizeni.ORs[i].id = or_id) then
+    for i := 0 to (Self.Data[usek] as TBlkUsek).OblsRizeni.Cnt-1 do
+     begin
+      if ((Self.Data[usek] as TBlkUsek).OblsRizeni.ORs[i].id = or_id) then
        begin
         if (state) then
          begin
-          if ((Self.Data[cyklus] as TBlkUsek).NUZ) then
+          for spr in (Self.Data[usek] as TBlkUsek).Soupravs do
            begin
-            for spr in (Self.Data[cyklus] as TBlkUsek).Soupravs do
-             begin
-              if (Self.GetBlkWithSpr(spr).Count = 1) then
-                Soupravy.RemoveSpr(spr);
-             end;
-            (Self.Data[cyklus] as TBlkUsek).Zaver := TZaver.no;
-              (Self.Data[cyklus] as TBlkUsek).RemoveSoupravy();
+            if (Self.GetBlkWithSpr(spr).Count = 1) then
+              Soupravy.RemoveSpr(spr);
            end;
+          (Self.Data[usek] as TBlkUsek).Zaver := TZaver.no;
+            (Self.Data[usek] as TBlkUsek).RemoveSoupravy();
          end else
-          (Self.Data[cyklus] as TBlkUsek).NUZ := false;
+          (Self.Data[usek] as TBlkUsek).NUZ := false;
        end;
-   end;//for cyklus
+     end;
+   end;//for usek
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

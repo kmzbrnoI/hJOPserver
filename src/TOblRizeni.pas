@@ -1419,6 +1419,7 @@ begin
   begin
    Blky.GetBlkByIndex(i, Blk);
    if (Blk.GetGlobalSettings().typ <> _BLK_USEK) then continue;
+   if (not TBlkUsek(Blk).NUZ) then continue;
 
    for j := 0 to (Blk as TBlkUsek).OblsRizeni.Cnt-1 do
     begin
@@ -1430,7 +1431,8 @@ begin
         begin
          Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
          if ((Nav as TBlkSCom).Navest > 0) then
-           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návìsti '+Blky.GetBlkName(JC.data.NavestidloBlok), Self.ShortName, 'TECHNOLOGIE');
+           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návìsti '+Blky.GetBlkName(JC.data.NavestidloBlok),
+                                   Self.ShortName, 'TECHNOLOGIE');
          JC.RusJCWithoutBlk();
          if ((Nav as TBlkSCom).DNjc = JC) then
            (Nav as TBlkSCom).DNjc := nil;
