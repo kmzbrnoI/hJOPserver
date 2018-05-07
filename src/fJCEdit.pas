@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, Spin, TechnologieJC,
-  Generics.Collections, TBloky;
+  Generics.Collections, TBloky, StrUtils;
 
 type
   TF_JCEdit = class(TForm)
@@ -48,6 +48,18 @@ type
     CB_TratSmer: TComboBox;
     Label3: TLabel;
     SE_ID: TSpinEdit;
+    GB_Advanced: TGroupBox;
+    Label4: TLabel;
+    M_Prj: TMemo;
+    Label5: TLabel;
+    M_Odvraty: TMemo;
+    Label6: TLabel;
+    Label7: TLabel;
+    E_VB: TEdit;
+    Label8: TLabel;
+    CHB_Advanced: TCheckBox;
+    M_Redukce: TMemo;
+    M_Zamky: TMemo;
     procedure B_StornoClick(Sender: TObject);
     procedure B_NewZaverAddClick(Sender: TObject);
     procedure B_NewUsekClick(Sender: TObject);
@@ -64,6 +76,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CHB_TratClick(Sender: TObject);
+    procedure CHB_AdvancedClick(Sender: TObject);
   private
    OpenIndex:Integer;
    NewVC:Boolean;
@@ -142,6 +155,12 @@ procedure TF_JCEdit.NewVCOpenForm;
   LV_Zavery.Clear;
   LV_Useky.Clear;
 
+  Self.M_Prj.Clear();
+  Self.M_Odvraty.Clear();
+  Self.M_Redukce.Clear();
+  Self.M_Zamky.Clear();
+  Self.E_VB.Text := '';
+
   Self.CHB_Trat.Checked := false;
   Self.CHB_TratClick(Self.CHB_Trat);
  end;//procedure
@@ -149,6 +168,12 @@ procedure TF_JCEdit.NewVCOpenForm;
 procedure TF_JCEdit.NormalOpenForm();
 var cyklus:Integer;
     LI:TListItem;
+    prjz:TJCPrjZaver;
+    tmp:string;
+    blokid:integer;
+    odvrat:TJCOdvratZaver;
+    jcref:TJCRefZaver;
+    vb:Integer;
  begin
   JCData := JCDb.GetJCByIndex(OpenIndex).data;
 
@@ -199,12 +224,55 @@ var cyklus:Integer;
     Self.Useky.Add(JCData.Useky[cyklus]);
    end;//for cyklus
 
+  Self.M_Prj.Clear();
+  for prjz in JCData.Prejezdy do
+   begin
+    tmp := IntToStr(prjz.Prejezd);
+    if (prjz.oteviraci <> -1) then
+     begin
+      tmp := tmp + ', ' + IntToStr(prjz.oteviraci);
+      for blokid in prjz.uzaviraci do
+        tmp := tmp + ', ' + IntToStr(blokid);
+     end;
+
+    Self.M_Prj.Lines.Add(tmp);
+   end;
+
+  Self.M_Odvraty.Clear();
+  for odvrat in JCData.Odvraty do
+   begin
+    tmp := IntToStr(odvrat.Blok) + ', ';
+    if (odvrat.Poloha = TVyhPoloha.plus) then
+      tmp := tmp + '+, '
+    else
+      tmp := tmp + '-, ';
+    tmp := tmp + IntToStr(odvrat.ref_blk);
+
+    Self.M_Odvraty.Lines.Add(tmp);
+   end;
+
+  Self.M_Redukce.Clear();
+  for jcref in JCData.Prisl do
+    Self.M_Redukce.Lines.Add(IntToStr(jcref.Blok) + ', ' + IntToStr(jcref.ref_blk));
+
+  Self.M_Zamky.Clear();
+  for jcref in JCData.podminky.zamky do
+    Self.M_Zamky.Lines.Add(IntToStr(jcref.Blok) + ', ' + IntToStr(jcref.ref_blk));
+
+  Self.E_VB.Text := '';
+  for vb in JCData.vb do
+    Self.E_VB.Text := Self.E_VB.Text + IntToStr(vb) + ', ';
+  Self.E_VB.Text := LeftStr(Self.E_VB.Text, Length(Self.E_VB.Text) - 2);
+
   Self.Caption := 'Editovat data jízdní cesty '+JCData.nazev;
  end;//procedure
 
 procedure TF_JCEdit.HlavniOpenForm;
  begin
- end;//procedure
+  Self.CHB_AdvancedClick(Self.CHB_Advanced);
+
+  Self.ActiveControl := Self.E_VCNazev;
+ end;
 
 procedure TF_JCEdit.B_NewZaverAddClick(Sender: TObject);
 var LI:TListItem;
@@ -317,6 +385,11 @@ procedure TF_JCEdit.NewVCCreate;
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
 var JC:TJC;
     i:Integer;
+    line, item:string;
+    parsed:TStrings;
+    odvrat:TJCOdvratZaver;
+    prejezd:TJCPrjZaver;
+    refz:TJCRefZaver;
  begin
   if (E_VCNazev.Text = '') then
    begin
@@ -398,6 +471,143 @@ var JC:TJC;
   if (not Assigned(JCData.Useky)) then JCData.Useky := TList<Integer>.Create();
   JCData.Useky.Clear();
   for i := 0 to Self.Useky.Count-1 do JCData.Useky.Add(Self.Useky[i]);
+
+  parsed := TStringList.Create();
+  try
+    // Prejezdy
+    if (not Assigned(JCData.Prejezdy)) then JCData.Prejezdy := TList<TJCPrjZaver>.Create();
+    for prejezd in JCData.Prejezdy do
+      prejezd.uzaviraci.Free();
+    JCData.Prejezdy.Clear();
+    for line in Self.M_Prj.Lines do
+     begin
+      parsed.Clear();
+      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+
+      try
+        prejezd.uzaviraci := nil;
+        prejezd.Prejezd := StrToInt(parsed[0]);
+        if (parsed.Count > 1) then
+          prejezd.oteviraci := StrToInt(parsed[1])
+        else
+          prejezd.oteviraci := -1;
+
+        prejezd.uzaviraci := TList<Integer>.Create();
+        for i := 2 to parsed.Count-1 do
+          prejezd.uzaviraci.Add(StrToInt(parsed[i]));
+
+        JCData.Prejezdy.Add(prejezd);
+      except
+       on E:Exception do
+        begin
+         if (Assigned(prejezd.uzaviraci)) then
+           prejezd.uzaviraci.Free();
+
+         Application.MessageBox(PChar('Napodaøilo se naparsovat pøejezd "' + line + '":'+#13#10+E.Message),
+                                'Chyba', MB_OK OR MB_ICONWARNING);
+         Exit;
+        end;
+      end;
+     end;
+
+    // Odvraty
+    if (not Assigned(JCData.Odvraty)) then JCData.Odvraty := TList<TJCOdvratZaver>.Create();
+    JCData.Odvraty.Clear();
+    for line in Self.M_Odvraty.Lines do
+     begin
+      parsed.Clear();
+      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+
+      try
+        odvrat.Blok := StrToInt(parsed[0]);
+        if (parsed[1] = '+') then
+          odvrat.Poloha := TVyhPoloha.plus
+        else
+          odvrat.Poloha := TVyhPoloha.minus;
+        odvrat.ref_blk := StrToInt(parsed[2]);
+        JCData.Odvraty.Add(odvrat);
+      except
+       on E:Exception do
+        begin
+         Application.MessageBox(PChar('Napodaøilo se naparsovat odvrat "' + line + '":'+#13#10+E.Message),
+                                'Chyba', MB_OK OR MB_ICONWARNING);
+         Exit;
+        end;
+      end;
+     end;
+
+    // Redukce
+    if (not Assigned(JCData.Prisl)) then JCData.Prisl := TList<TJCRefZaver>.Create();
+    JCData.Prisl.Clear();
+    for line in Self.M_Redukce.Lines do
+     begin
+      parsed.Clear();
+      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+
+      try
+        refz.Blok := StrToInt(parsed[0]);
+        refz.ref_blk := StrToInt(parsed[1]);
+        JCData.Prisl.Add(refz);
+      except
+       on E:Exception do
+        begin
+         Application.MessageBox(PChar('Napodaøilo se naparsovat redukci "' + line + '":'+#13#10+E.Message),
+                                'Chyba', MB_OK OR MB_ICONWARNING);
+         Exit;
+        end;
+      end;
+     end;
+
+    // Zamky
+    if (not Assigned(JCData.podminky.zamky)) then JCData.podminky.zamky := TList<TJCRefZaver>.Create();
+    JCData.podminky.zamky.Clear();
+    for line in Self.M_Zamky.Lines do
+     begin
+      parsed.Clear();
+      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+
+      try
+        refz.Blok := StrToInt(parsed[0]);
+        refz.ref_blk := StrToInt(parsed[1]);
+        JCData.podminky.zamky.Add(refz);
+      except
+       on E:Exception do
+        begin
+         Application.MessageBox(PChar('Napodaøilo se naparsovat zámek ' + line + ':'+#13#10+E.Message),
+                                'Chyba', MB_OK OR MB_ICONWARNING);
+         Exit;
+        end;
+      end;
+     end;
+
+    // Variantní body
+    if (not Assigned(JCData.vb)) then JCData.vb := TList<Integer>.Create();
+    JCData.vb.Clear();
+    parsed.Clear();
+    ExtractStrings([','], [], PChar(StringReplace(Self.E_VB.Text, ' ', '', [rfReplaceAll])), parsed);
+
+    for item in parsed do
+     begin
+      try
+        JCData.vb.Add(StrToInt(item));
+      except
+       on E:Exception do
+        begin
+         Application.MessageBox(PChar('Napodaøilo se naparsovat variatní bod ' + item + ':'+#13#10+E.Message),
+                                'Chyba', MB_OK OR MB_ICONWARNING);
+         Exit;
+        end;
+      end;
+     end;
+
+    // Podmínky výhybky
+    if (not Assigned(JCData.podminky.vyhybky)) then JCData.podminky.vyhybky := TList<TJCVyhZaver>.Create();
+    JCData.podminky.vyhybky.Clear();
+
+  finally
+    parsed.Free()
+  end;
+
 
   if (OpenIndex < 0) then
    begin
@@ -552,6 +762,19 @@ procedure TF_JCEdit.CB_TypCestyChange(Sender: TObject);
    end;
  end;
 
+procedure TF_JCEdit.CHB_AdvancedClick(Sender: TObject);
+var gb:TGroupBox;
+begin
+ if (Self.CHB_Advanced.Checked) then
+  gb := Self.GB_Advanced
+ else
+  gb := Self.GB_ZaveryVyhybek;
+
+ Self.Width := gb.Left + gb.Width + 10;
+ Self.B_Save.Left := gb.Left + gb.Width - Self.B_Save.Width;
+ Self.B_Storno.Left := Self.B_Save.Left - Self.B_Storno.Width - 5;
+end;
+
 procedure TF_JCEdit.CHB_TratClick(Sender: TObject);
 var obls:TArStr;
 begin
@@ -567,7 +790,7 @@ begin
    Self.CB_TratBlok.ItemIndex := -1;
    Self.CB_TratSmer.ItemIndex := -1;
   end;
-end;//procedure
+end;
 
 procedure TF_JCEdit.MakeObls(var obls:TArStr);
 var Blk:TBlk;

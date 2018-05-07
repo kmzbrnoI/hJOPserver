@@ -5,7 +5,7 @@ object F_JCEdit: TF_JCEdit
   BorderStyle = bsToolWindow
   Caption = 'Editace vlakove cesty [nazev]'
   ClientHeight = 472
-  ClientWidth = 617
+  ClientWidth = 922
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -257,7 +257,7 @@ object F_JCEdit: TF_JCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 0
+        ItemHeight = 13
         ParentFont = False
         TabOrder = 0
       end
@@ -308,7 +308,7 @@ object F_JCEdit: TF_JCEdit
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Smazat z'#225'ver'
+      Caption = 'Smazat z'#225'v'#283'r'
       Enabled = False
       TabOrder = 1
       OnClick = B_ZaveryVyhybek_DeleteClick
@@ -384,7 +384,7 @@ object F_JCEdit: TF_JCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 0
+        ItemHeight = 13
         ParentFont = False
         TabOrder = 0
       end
@@ -456,7 +456,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 10
+    TabOrder = 11
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
@@ -469,7 +469,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 11
+    TabOrder = 12
     OnClick = B_StornoClick
   end
   object CB_Navestidlo: TComboBox
@@ -482,7 +482,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
@@ -513,7 +513,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object CB_Rychlost_DalsiN: TComboBox
@@ -580,7 +580,7 @@ object F_JCEdit: TF_JCEdit
     Font.Style = []
     ParentFont = False
     State = cbChecked
-    TabOrder = 12
+    TabOrder = 14
   end
   object GB_trat: TGroupBox
     Left = 347
@@ -618,7 +618,7 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CB_TratSmer: TComboBox
@@ -644,5 +644,128 @@ object F_JCEdit: TF_JCEdit
     MinValue = 0
     TabOrder = 1
     Value = 0
+  end
+  object GB_Advanced: TGroupBox
+    Left = 617
+    Top = 8
+    Width = 297
+    Height = 389
+    Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' my'#353'i) '
+    TabOrder = 13
+    object Label4: TLabel
+      Left = 8
+      Top = 16
+      Width = 44
+      Height = 13
+      Caption = 'P'#345'ejezdy:'
+    end
+    object Label5: TLabel
+      Left = 8
+      Top = 112
+      Width = 40
+      Height = 13
+      Caption = 'Odvraty:'
+    end
+    object Label6: TLabel
+      Left = 8
+      Top = 207
+      Width = 147
+      Height = 13
+      Caption = 'Bloky, na nich'#382' zav'#233'st redukci:'
+    end
+    object Label7: TLabel
+      Left = 8
+      Top = 268
+      Width = 35
+      Height = 13
+      Caption = 'Z'#225'mky:'
+    end
+    object Label8: TLabel
+      Left = 8
+      Top = 332
+      Width = 71
+      Height = 13
+      Caption = 'Variantn'#237' body:'
+    end
+    object M_Prj: TMemo
+      Left = 8
+      Top = 35
+      Width = 281
+      Height = 67
+      Hint = 
+        'Form'#225't: na ka'#382'd'#253' '#345#225'dek jeden p'#345'ejezd: id bloku p'#345'ejezdu, id otev' +
+        #237'rac'#237'ho bloku, id 1. uz. bloku., id 2. uz. bloku, ...'
+      Lines.Strings = (
+        'M_Prj')
+      ParentShowHint = False
+      ScrollBars = ssVertical
+      ShowHint = True
+      TabOrder = 0
+    end
+    object M_Odvraty: TMemo
+      Left = 8
+      Top = 131
+      Width = 281
+      Height = 67
+      Hint = 
+        'Form'#225't: na ka'#382'd'#253' '#345#225'dek jeden odvrat: id bloku odvratu, poloha (+' +
+        ',-), id referen'#269'n'#237'ho bloku'
+      Lines.Strings = (
+        'M_Odvraty')
+      ParentShowHint = False
+      ScrollBars = ssVertical
+      ShowHint = True
+      TabOrder = 1
+    end
+    object E_VB: TEdit
+      Left = 8
+      Top = 351
+      Width = 281
+      Height = 21
+      Hint = 'Form'#225't: id blok'#367' odd'#283'len'#253'ch '#269#225'rkami'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
+      Text = 'E_VB'
+    end
+    object M_Redukce: TMemo
+      Left = 8
+      Top = 224
+      Width = 281
+      Height = 36
+      Hint = 
+        'Form'#225't: na ka'#382'd'#233'm '#345#225'dku jeden blok: id bloku, id referen'#269'n'#237'ho bl' +
+        'oku'
+      Lines.Strings = (
+        'M_Redukce')
+      ParentShowHint = False
+      ScrollBars = ssVertical
+      ShowHint = True
+      TabOrder = 3
+    end
+    object M_Zamky: TMemo
+      Left = 8
+      Top = 288
+      Width = 281
+      Height = 36
+      Hint = 
+        'Form'#225't: na ka'#382'd'#233'm '#345#225'dku jeden blok: id bloku, id referen'#269'n'#237'ho bl' +
+        'oku'
+      Lines.Strings = (
+        'M_Zamky')
+      ParentShowHint = False
+      ScrollBars = ssVertical
+      ShowHint = True
+      TabOrder = 4
+    end
+  end
+  object CHB_Advanced: TCheckBox
+    Left = 347
+    Top = 408
+    Width = 261
+    Height = 17
+    Caption = 'Zobrazit pokro'#269'il'#225' nastaven'#237
+    TabOrder = 10
+    OnClick = CHB_AdvancedClick
   end
 end
