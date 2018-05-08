@@ -122,10 +122,7 @@ type
    Odvraty  : TList<TJCOdvratZaver>;
    Prisl    : TList<TJCRefZaver>;
    Prejezdy : TList<TJCPrjZaver>;
-   podminky : record                                                            // dalsi podminky jizdni cesty, ktere ale nejsou nastavovany, ale pouze kontrolovany
-    vyhybky  : TList<TJCVyhZaver>;                                                // konkretni vyhybky v konkretnich polohach
-    zamky    : TList<TJCRefZaver>;                                                // konkretni zamky musi byt uzamcene
-   end;
+   zamky    : TList<TJCRefZaver>;                                               // zamky, ktere musi byt uzamcene
    vb:TList<Integer>;                                                           // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
 
    Trat:Integer;                                                                // ID trati, na kterou JC navazuje; pokud JC nenavazuje na trat, je \Trat = -1
@@ -308,9 +305,8 @@ begin
  Self.fstaveni := _def_jc_staveni;
  Self.fstaveni.ncBariery := TList<TJCBariera>.Create();
 
- Self.fproperties.podminky.vyhybky := TList<TJCVyhZaver>.Create();
- Self.fproperties.podminky.zamky   := TList<TJCRefZaver>.Create();
- Self.fproperties.vb               := TList<Integer>.Create();
+ Self.fproperties.zamky := TList<TJCRefZaver>.Create();
+ Self.fproperties.vb    := TList<Integer>.Create();
 
  Self.fproperties.Vyhybky  := TList<TJCVyhZaver>.Create();
  Self.fproperties.Useky    := TList<Integer>.Create();
@@ -327,22 +323,20 @@ begin
  Self.fstaveni := _def_jc_staveni;
  if (not Assigned(Self.fstaveni.ncBariery)) then Self.fstaveni.ncBariery := TList<TJCBariera>.Create();
 
- if (not Assigned(Self.fproperties.podminky.vyhybky)) then Self.fproperties.podminky.vyhybky := TList<TJCVyhZaver>.Create();
- if (not Assigned(Self.fproperties.podminky.zamky))   then Self.fproperties.podminky.zamky   := TList<TJCRefZaver>.Create();
- if (not Assigned(Self.fproperties.vb))               then Self.fproperties.vb               := TList<Integer>.Create();
- if (not Assigned(Self.fproperties.Odvraty))          then Self.fproperties.Odvraty  := TList<TJCOdvratZaver>.Create();
- if (not Assigned(Self.fproperties.Prisl))            then Self.fproperties.Prisl    := TList<TJCRefZaver>.Create();
- if (not Assigned(Self.fproperties.Prejezdy))         then Self.fproperties.Prejezdy := TList<TJCPrjZaver>.Create();
- if (not Assigned(Self.fproperties.Vyhybky))          then Self.fproperties.Vyhybky := TList<TJCVyhZaver>.Create();
- if (not Assigned(Self.fproperties.Useky))            then Self.fproperties.Useky   := TList<Integer>.Create();
+ if (not Assigned(Self.fproperties.zamky))    then Self.fproperties.zamky := TList<TJCRefZaver>.Create();
+ if (not Assigned(Self.fproperties.vb))       then Self.fproperties.vb := TList<Integer>.Create();
+ if (not Assigned(Self.fproperties.Odvraty))  then Self.fproperties.Odvraty := TList<TJCOdvratZaver>.Create();
+ if (not Assigned(Self.fproperties.Prisl))    then Self.fproperties.Prisl := TList<TJCRefZaver>.Create();
+ if (not Assigned(Self.fproperties.Prejezdy)) then Self.fproperties.Prejezdy := TList<TJCPrjZaver>.Create();
+ if (not Assigned(Self.fproperties.Vyhybky))  then Self.fproperties.Vyhybky := TList<TJCVyhZaver>.Create();
+ if (not Assigned(Self.fproperties.Useky))    then Self.fproperties.Useky := TList<Integer>.Create();
 end;//ctor
 
 destructor TJC.Destroy();
 var i:Integer;
 begin
  if (Assigned(Self.fstaveni.ncBariery)) then FreeAndNil(Self.fstaveni.ncBariery);
- if (Assigned(Self.fproperties.podminky.vyhybky)) then FreeAndNil(Self.fproperties.podminky.vyhybky);
- if (Assigned(Self.fproperties.podminky.zamky)) then FreeAndNil(Self.fproperties.podminky.zamky);
+ if (Assigned(Self.fproperties.zamky)) then FreeAndNil(Self.fproperties.zamky);
  if (Assigned(Self.fproperties.vb)) then  Self.fproperties.vb.Free();
 
  if (Assigned(Self.fproperties.Vyhybky))  then Self.fproperties.Vyhybky.Free();
@@ -596,33 +590,12 @@ begin
      end;
    end;
 
-  // kontrola podminkovych bloku vyhybek
-  for i := 0 to Self.fproperties.podminky.vyhybky.Count-1 do
-   begin
-    if (Blky.GetBlkByID(Self.fproperties.podminky.vyhybky[i].Blok, blk) <> 0) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.podminky.vyhybky[i].Blok));
-      Exit;
-     end;
-    if (blk.GetGlobalSettings().typ <> _BLK_VYH) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
-      Exit;
-     end;
-    // blok disabled
-    if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
-      Exit;
-     end;
-   end;//for i
-
   // kontrola podminkovych bloku zamku
-  for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
+  for i := 0 to Self.fproperties.zamky.Count-1 do
    begin
-    if (Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, blk) <> 0) then
+    if (Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.podminky.zamky[i].Blok));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.zamky[i].Blok));
       Exit;
      end;
     if (blk.GetGlobalSettings().typ <> _BLK_ZAMEK) then
@@ -630,9 +603,9 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
       Exit;
      end;
-    if (Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].ref_blk, blk) <> 0) then
+    if (Blky.GetBlkByID(Self.fproperties.zamky[i].ref_blk, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.podminky.zamky[i].ref_blk));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.zamky[i].ref_blk));
       Exit;
      end;
     if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
@@ -903,21 +876,10 @@ begin
      end;
    end;
 
-  // kontrola polohy podminkovych vyhybek:
-  for i := 0 to Self.fproperties.podminky.vyhybky.Count-1 do
-   begin
-    Blky.GetBlkByID(Self.fproperties.podminky.vyhybky[i].Blok, Blk);
-    glob := Blk.GetGlobalSettings();
-
-    // kontrola koncove polohy:
-    if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.podminky.vyhybky[i].Poloha) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NESPAVNA_POLOHA, blk, blk.GetGlobalSettings().id));
-   end;//for i
-
   // kontrola uzamceni podminkovych zamku:
-  for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
+  for i := 0 to Self.fproperties.zamky.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, Blk);
+    Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
@@ -1392,14 +1354,14 @@ var i,j:Integer;
        end;
 
       writelog('Krok 10 : zamky: nastavuji zavery', WR_VC);
-      for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
+      for i := 0 to Self.fproperties.zamky.Count-1 do
        begin
-        Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].ref_blk, Blk);
+        Blky.GetBlkByID(Self.fproperties.zamky[i].ref_blk, Blk);
         TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverRelease,
-          CreateChangeEvent(ceCaller.NullZamekZaver, Self.fproperties.podminky.zamky[i].Blok));
+          CreateChangeEvent(ceCaller.NullZamekZaver, Self.fproperties.zamky[i].Blok));
 
         // nastaveni zaveru zamku
-        Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, Blk);
+        Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
         (Blk as TBlkZamek).Zaver := true;
        end;
 
@@ -1780,9 +1742,9 @@ var i,j:Integer;
        end;
 
       // nastavit nouzovy zaver zamkum
-      for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
+      for i := 0 to Self.fproperties.zamky.Count-1 do
        begin
-        Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, Blk);
+        Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
         (Blk as TBlkZamek).nouzZaver := true;
         TBlkSCom(Navestidlo).AddBlkToRnz(Blk.GetGlobalSettings().id, false);
        end;
@@ -2581,21 +2543,10 @@ begin
      Self.fproperties.Prejezdy.Add(prj);
     end;//for i
 
-   // nacteni podminek poloh vyhybek:
-   sl.Clear();
-   ExtractStrings(['(', ')', ',' , ';'], [], PChar(ini.ReadString(section, 'podm-vyh', '')), sl);
-   Self.fproperties.podminky.vyhybky.Clear();
-   for i := 0 to (sl.Count div 2)-1 do
-    begin
-     vyhZaver.Blok   := StrToInt(sl[i*2]);
-     vyhZaver.Poloha := TVyhPoloha(StrToInt(sl[(i*2)+1]));
-     Self.fproperties.podminky.vyhybky.Add(vyhZaver);
-    end;//for i
-
    // nacteni podminek zamku:
    sl.Clear();
    ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'podm-zamky', '')), sl);
-   Self.fproperties.podminky.zamky.Clear();
+   Self.fproperties.zamky.Clear();
    for i := 0 to sl.Count-1 do
     begin
      sl2.Clear();
@@ -2603,7 +2554,7 @@ begin
 
      ref.Blok    := StrToInt(sl2[0]);
      ref.ref_blk := StrToInt(sl2[1]);
-     Self.fproperties.podminky.zamky.Add(ref);
+     Self.fproperties.zamky.Add(ref);
     end;//for i
 
    // nacteni variantnich bodu
@@ -2682,17 +2633,10 @@ begin
  if (line <> '') then
    ini.WriteString(section, 'prj', line);
 
- // podminky vyhybky
+ // zamky
  line := '';
- for i := 0 to Self.fproperties.podminky.vyhybky.Count-1 do
-   line := line + '(' + IntToStr(Self.fproperties.podminky.vyhybky[i].Blok) + ',' + IntToStr(Integer(Self.fproperties.podminky.vyhybky[i].Poloha))+ ')';
- if (line <> '') then
-   ini.WriteString(section, 'podm-vyh', line);
-
- // podminky zamky
- line := '';
- for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
-   line := line + '(' + IntToStr(Self.fproperties.podminky.zamky[i].Blok) + ';' + IntToStr(Self.fproperties.podminky.zamky[i].ref_blk) + ')';
+ for i := 0 to Self.fproperties.zamky.Count-1 do
+   line := line + '(' + IntToStr(Self.fproperties.zamky[i].Blok) + ';' + IntToStr(Self.fproperties.zamky[i].ref_blk) + ')';
  if (line <> '') then
    ini.WriteString(section, 'podm-zamky', line);
 
@@ -2838,20 +2782,10 @@ begin
      Exit(false);
   end;
 
-  // kontrola polohy podminkovych vyhybek:
-  for i := 0 to Self.fproperties.podminky.vyhybky.Count-1 do
+  // kontrola uzamceni zamku:
+  for i := 0 to Self.fproperties.zamky.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.podminky.vyhybky[i].Blok, Blk);
-
-    // kontrola koncove polohy:
-    if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.podminky.vyhybky[i].Poloha) then
-      Exit(false);
-   end;//for i
-
-  // kontrola uzamceni podminkovych zamku:
-  for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
-   begin
-    Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, Blk);
+    Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
 
     // kontrola uzamceni
     if ((Blk as TBlkZamek).klicUvolnen) then
@@ -3372,21 +3306,10 @@ begin
       bariery.Add(Self.JCBariera(_JCB_TRAT_NO_BP, blk, Self.fproperties.Trat));
    end;
 
-  // kontrola polohy podminkovych vyhybek:
-  for i := 0 to Self.fproperties.podminky.vyhybky.Count-1 do
+  // kontrola uzamceni zamku:
+  for i := 0 to Self.fproperties.zamky.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.podminky.vyhybky[i].Blok, Blk);
-    glob := Blk.GetGlobalSettings();
-
-    // kontrola koncove polohy:
-    if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.podminky.vyhybky[i].Poloha) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NESPAVNA_POLOHA, blk, blk.GetGlobalSettings().id));
-   end;//for i
-
-  // kontrola uzamceni podminkovych zamku:
-  for i := 0 to Self.fproperties.podminky.zamky.Count-1 do
-   begin
-    Blky.GetBlkByID(Self.fproperties.podminky.zamky[i].Blok, Blk);
+    Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni

@@ -257,7 +257,7 @@ object F_JCEdit: TF_JCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 13
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 0
       end
@@ -384,7 +384,7 @@ object F_JCEdit: TF_JCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 13
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 0
       end
@@ -482,7 +482,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
+    ItemHeight = 0
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
@@ -513,7 +513,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
+    ItemHeight = 0
     TabOrder = 4
   end
   object CB_Rychlost_DalsiN: TComboBox
@@ -618,7 +618,7 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
     end
     object CB_TratSmer: TComboBox

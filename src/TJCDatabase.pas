@@ -77,7 +77,7 @@ var
 implementation
 
 uses Logging, GetSystems, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
-      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv;
+      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlokVyhybka;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TJCDb
@@ -373,7 +373,12 @@ end;
 // muze vracet vic jizdnich cest - jeden odvrat muze byt u vic aktualne postavenych JC
 function TJCDB.FindPostavenaJCWithVyhybka(vyh_id:Integer):TArI;
 var i,j:Integer;
+    refz:TJCRefZaver;
+    blk:TBlk;
+    vyh:TBlkVyhybka;
 begin
+  Blky.GetBlkByID(vyh_id, blk);
+  vyh := TBlkVyhybka(blk);
   SetLength(Result, 0);
 
   for i := 0 to Self.JCs.Count-1 do
@@ -400,16 +405,18 @@ begin
        end;//if (JC[cyklus2].VyhybkyZaver[cyklus3].Blok = Bloky.Data[cyklus].ID)
      end;//for j
 
-    // kontrolovane vyhybky
-    for j := 0 to Self.JCs[i].data.podminky.vyhybky.Count-1 do
+    // zamky
+    if ((vyh <> nil) and (vyh.zamek <> nil)) then
      begin
-      if (Self.JCs[i].data.podminky.vyhybky[j].Blok = vyh_id) then
+      for refz in Self.JCs[i].data.zamky do
        begin
-        SetLength(Result, Length(Result)+1);
-        Result[Length(Result)-1] := i;
-       end;//if (JC[cyklus2].VyhybkyZaver[cyklus3].Blok = Bloky.Data[cyklus].ID)
-     end;//for j
-
+        if (refz.Blok = vyh.zamek.GetGlobalSettings().id) then
+         begin
+          SetLength(Result, Length(Result)+1);
+          Result[Length(Result)-1] := i;
+         end;
+       end;
+     end;
    end;//for i
 end;//function
 
@@ -484,9 +491,9 @@ begin
     if (not Self.JCs[i].postaveno) then continue;
 
     // prime vyhybky
-    for j := 0 to Self.JCs[i].data.podminky.zamky.Count-1 do
+    for j := 0 to Self.JCs[i].data.zamky.Count-1 do
      begin
-      if (Self.JCs[i].data.podminky.zamky[j].Blok = zam_id) then
+      if (Self.JCs[i].data.zamky[j].Blok = zam_id) then
        begin
         SetLength(Result, Length(Result)+1);
         Result[Length(Result)-1] := i;
@@ -543,7 +550,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// tusi cestu, ve ktere je zadany blok
+// rusi cestu, ve ktere je zadany blok
 procedure TJCDb.RusJC(Blk:TBlk);
 var tmpblk:TBlk;
     jcs:TArI;

@@ -133,8 +133,7 @@ procedure TF_JCEdit.NewVCOpenForm;
   Self.JCData.Prisl    := nil;
   Self.JCData.Prejezdy := nil;
   Self.JCData.vb       := nil;
-  Self.JCData.podminky.vyhybky := nil;
-  Self.JCData.podminky.zamky := nil;
+  Self.JCData.zamky    := nil;
 
   Self.Useky.Clear();
   Self.Vyhybky.Clear();
@@ -256,7 +255,7 @@ var cyklus:Integer;
     Self.M_Redukce.Lines.Add(IntToStr(jcref.Blok) + ', ' + IntToStr(jcref.ref_blk));
 
   Self.M_Zamky.Clear();
-  for jcref in JCData.podminky.zamky do
+  for jcref in JCData.zamky do
     Self.M_Zamky.Lines.Add(IntToStr(jcref.Blok) + ', ' + IntToStr(jcref.ref_blk));
 
   Self.E_VB.Text := '';
@@ -559,8 +558,8 @@ var JC:TJC;
      end;
 
     // Zamky
-    if (not Assigned(JCData.podminky.zamky)) then JCData.podminky.zamky := TList<TJCRefZaver>.Create();
-    JCData.podminky.zamky.Clear();
+    if (not Assigned(JCData.zamky)) then JCData.zamky := TList<TJCRefZaver>.Create();
+    JCData.zamky.Clear();
     for line in Self.M_Zamky.Lines do
      begin
       parsed.Clear();
@@ -569,7 +568,7 @@ var JC:TJC;
       try
         refz.Blok := StrToInt(parsed[0]);
         refz.ref_blk := StrToInt(parsed[1]);
-        JCData.podminky.zamky.Add(refz);
+        JCData.zamky.Add(refz);
       except
        on E:Exception do
         begin
@@ -599,10 +598,6 @@ var JC:TJC;
         end;
       end;
      end;
-
-    // Podmínky výhybky
-    if (not Assigned(JCData.podminky.vyhybky)) then JCData.podminky.vyhybky := TList<TJCVyhZaver>.Create();
-    JCData.podminky.vyhybky.Clear();
 
   finally
     parsed.Free()

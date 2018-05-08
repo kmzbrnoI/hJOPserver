@@ -167,22 +167,11 @@ begin
    str := str + Blky.GetBlkName(JCData.Prejezdy[j].Prejezd)+'; ';
  Self.LV.Items.Item[line].SubItems.Strings[14] := LeftStr(str, Length(str)-2);
 
- // podminky vyhybky
- str := '';
- for j := 0 to JCData.podminky.vyhybky.Count-1 do
-  begin
-   case (JCData.podminky.vyhybky[j].Poloha) of
-     TVyhPoloha.plus  : str := str + '(' + Blky.GetBlkName(JCData.podminky.vyhybky[j].Blok)+', +)';
-     TVyhPoloha.minus : str := str + '(' + Blky.GetBlkName(JCData.podminky.vyhybky[j].Blok)+', -)';
-   end;
-  end;//for j
- Self.LV.Items.Item[line].SubItems.Strings[15] := str;
-
  // podminky zamky
  str := '';
- for j := 0 to JCData.podminky.zamky.Count-1 do
-   str := str + '('+Blky.GetBlkName(JCData.podminky.zamky[j].Blok)+' : ' + Blky.GetBlkName(JCData.podminky.zamky[j].ref_blk) + ')';
- Self.LV.Items.Item[line].SubItems.Strings[16] := str;
+ for j := 0 to JCData.zamky.Count-1 do
+   str := str + '('+Blky.GetBlkName(JCData.zamky[j].Blok)+' : ' + Blky.GetBlkName(JCData.zamky[j].ref_blk) + ')';
+ Self.LV.Items.Item[line].SubItems.Strings[15] := str;
 
  // neprofilove useky
  str := '';
@@ -194,7 +183,7 @@ begin
    else if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
      str := str + TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings.name + ', ';
   end;
- Self.LV.Items.Item[line].SubItems.Strings[17] := LeftStr(str, Length(str)-2);
+ Self.LV.Items.Item[line].SubItems.Strings[16] := LeftStr(str, Length(str)-2);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
