@@ -1388,7 +1388,7 @@ var i,j:Integer;
         // nastaveni odvratu
         Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
         TBlkVyhybka(Blk).RedukujMenu();
-        TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha), true);
+        TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha), true, false, nil, Self.VyhNeprestavenaJCPC);
        end;
 
       writelog('Krok 10 : zamky: nastavuji zavery', WR_VC);
