@@ -555,6 +555,7 @@ procedure TJCDb.RusJC(Blk:TBlk);
 var tmpblk:TBlk;
     jcs:TArI;
     i, j:Integer;
+    jc:TJC;
 begin
  case (Blk.GetGlobalSettings().typ) of
   _BLK_VYH     : jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.GetGlobalSettings().id);
@@ -587,12 +588,14 @@ begin
     begin
      if (jcs[i] < 0) then continue;   // toto tady musi byt, protoze napr FindPostavenaJCWithTrat vraci -1, pokud trat nenajde
 
+     jc := JCDb.GetJCByIndex(jcs[i]);
      Blky.GetBlkByID(JCDb.GetJCByIndex(jcs[i]).data.NavestidloBlok, tmpblk);
-     if ((tmpblk as TBlkSCom).Navest = 0) then continue;
-
-     JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
-     for j := 0 to (tmpBlk as TBlkScom).OblsRizeni.Cnt-1 do
-       (tmpBlk as TBlkScom).OblsRizeni.ORs[j].BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.GetGlobalSettings().name, 'TECHNOLOGIE');
+     if ((TBlkSCom(tmpblk).Navest > 0) and (TBlkSCom(tmpblk).DNjc = jc)) then
+      begin
+       JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
+       for j := 0 to (tmpBlk as TBlkScom).OblsRizeni.Cnt-1 do
+         (tmpBlk as TBlkScom).OblsRizeni.ORs[j].BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.GetGlobalSettings().name, 'TECHNOLOGIE');
+      end;
     end;//for i
   end;//if jcindex <> -1
 end;//procedure
