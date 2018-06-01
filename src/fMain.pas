@@ -261,6 +261,9 @@ type
     A_PT_Stop: TAction;
     MI_Houk: TMenuItem;
     MI_RCS_Update: TMenuItem;
+    Label8: TLabel;
+    SE_LI_Addr: TSpinEdit;
+    B_Set_LI_Addr: TButton;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -396,6 +399,7 @@ type
     procedure MI_HoukClick(Sender: TObject);
     procedure B_AC_ReloadClick(Sender: TObject);
     procedure MI_RCS_UpdateClick(Sender: TObject);
+    procedure B_Set_LI_AddrClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -453,6 +457,11 @@ type
 
     procedure UpdateRCSLibsList();
     procedure UpdateSystemButtons();
+
+    procedure SetLIAddrOk(Sender:TObject; Data:Pointer);
+    procedure SetLIAddrErr(Sender:TObject; Data:Pointer);
+    procedure GetCSVersionOk(Sender:TObject; Data:Pointer);
+    procedure GetCSVersionErr(Sender:TObject; Data:Pointer);
 
     procedure CheckNasobicWidth();
   end;//public
@@ -1661,8 +1670,16 @@ end;//procedure
 
 procedure TF_Main.B_CS_Ver_UpdateClick(Sender: TObject);
 begin
+ Self.SE_LI_Addr.Value := 0;
+ Self.SE_LI_Addr.Enabled := false;
+ Self.B_Set_LI_Addr.Enabled := false;
+ Self.B_CS_Ver_Update.Enabled := false;
+
+ TrkSystem.callback_ok := TTrakce.GenerateCallback(Self.GetCSVersionOk);
+ TrkSystem.callback_err := TTrakce.GenerateCallback(Self.GetCSVersionErr);
  TrkSystem.GetCSVersion();
  TrkSystem.GetLIVersion();
+ TrkSystem.GetLIAddress();
 end;
 
 procedure TF_Main.B_HVStats_ExportClick(Sender: TObject);
@@ -1748,6 +1765,50 @@ begin
  ORs.GetORByIndex(Self.LV_Stanice.ItemIndex, OblR);
  if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+OblR.Name+' ?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    OblR.stack.ClearStack();
+end;
+
+procedure TF_Main.GetCSVersionOk(Sender:TObject; Data:Pointer);
+begin
+ Self.B_CS_Ver_Update.Enabled := true;
+end;
+
+procedure TF_Main.GetCSVersionErr(Sender:TObject; Data:Pointer);
+begin
+ Self.B_CS_Ver_Update.Enabled := true;
+ Application.MessageBox('Nepodařilo se zjistit informace o centrále!', 'Varování', MB_OK OR MB_ICONWARNING);
+end;
+
+procedure TF_Main.B_Set_LI_AddrClick(Sender: TObject);
+begin
+ if (Self.SE_LI_Addr.Value = 0) then
+  begin
+   Application.MessageBox('Adresa LI musí být v rozsahu 1-31', 'Nelze pokračovat!', MB_ICONERROR OR MB_OK);
+   Exit();
+  end;
+
+ if (Application.MessageBox('Opravdu změnit adresu LI?', 'Otázka', MB_YESNO OR MB_DEFBUTTON2 OR MB_ICONQUESTION) <> mrYes) then
+   Exit();
+
+ Self.B_Set_LI_Addr.Enabled := false;
+ Self.SE_LI_Addr.Enabled := false;
+
+ TrkSystem.callback_ok := TTrakce.GenerateCallback(Self.SetLIAddrOk);
+ TrkSystem.callback_err := TTrakce.GenerateCallback(Self.SetLIAddrErr);
+ TrkSystem.SetLIAddress(Self.SE_LI_Addr.Value);
+end;
+
+procedure TF_Main.SetLIAddrOk(Sender:TObject; Data:Pointer);
+begin
+ Self.B_Set_LI_Addr.Enabled := true;
+ Self.SE_LI_Addr.Enabled := true;
+ Application.MessageBox('Adresa LI nastavena, aktuální adresa je zobrazena v políčku "Adresa LI".', 'Ok', MB_OK OR MB_ICONINFORMATION);
+end;
+
+procedure TF_Main.SetLIAddrErr(Sender:TObject; Data:Pointer);
+begin
+ Self.B_Set_LI_Addr.Enabled := true;
+ Self.SE_LI_Addr.Enabled := true;
+ Application.MessageBox('Nepodařilo se nastavit adresu LI!', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.B_User_AddClick(Sender: TObject);

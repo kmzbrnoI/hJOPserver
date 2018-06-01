@@ -27,6 +27,7 @@ type
     XB_TRK_CS_VERSION = 13,
     XB_TRK_LI_VERSION = 14,
     XB_LOK_SET_SPD = 15,
+    XB_TRK_LI_ADDRESS = 16,
 
     XB_LOK_SET_FUNC_0_4 = 20,
     XB_LOK_SET_FUNC_5_8 = 21,
@@ -123,6 +124,8 @@ type
      procedure GetTrackStatus(); override;                                      // zjisti stav trakce z centraly
      procedure GetCSVersion(callback:TCSVersionEvent); override;                // zjisti verzi FW hlavniho procesoru v centrale
      procedure GetLIVersion(callback:TLIVersionEvent); override;                // zjisti verzi FW LI
+     procedure GetLIAddress(callback:TLIAddressEvent); override;                // zjisti adresu LI
+     procedure SetLIAddress(callback:TLIAddressEvent; addr:Byte); override;     // nastavi adresu LI
      procedure POMWriteCV(Address:Integer; cv:Word; data:byte); override;       // zapis CV \cv na hodnotu \data POMem
 
 
@@ -141,6 +144,7 @@ type
 implementation
 
 ////////////////////////////////////////////////////////////////////////////////
+
 constructor TXpressNET.Create();
 begin
  inherited Create();
@@ -158,6 +162,7 @@ begin
 end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
+
 destructor TXpressNET.Destroy();
 begin
  Self.timer_history.Free();
@@ -168,6 +173,7 @@ begin
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
+
 function TXpressNET.LokAddrEncode(addr: Integer): Word;
 begin
   if (addr > 99) then begin
@@ -185,12 +191,14 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
 function TXpressNET.LokAddrDecode(ah, al: byte): Integer;
 begin
   Result := al or ((ah AND $3F) shl 8);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.DataReceive(Sender: TObject; Count: Integer);
 var
   ok: Boolean;
@@ -255,6 +263,7 @@ begin
 end;//procedur
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.ParseMsgTry(msg: TBuffer);
 var Handled: boolean;
 begin
@@ -265,6 +274,7 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.ParseMsg(msg: TBuffer);
 var
   i: integer;
@@ -283,15 +293,15 @@ begin
        $01: Self.WriteLog(1, 'ERR: GET: Error occurred between the interfaces and the PC');
        $02: Self.WriteLog(1, 'ERR: GET: Error occurred between the interfaces and the command station');
        $03: begin
-          Self.WriteLog(1, 'ERR: GET: Unknown communication error');      // probably send data again ?
-//          if (Self.send_history.Count > 0) then Self.hist_send(0);    // odpoved chybou - data radsi neodesilame hned - pockame na timeout
+          Self.WriteLog(1, 'ERR: GET: Unknown communication error');
+          // odpoved chybou - data radsi neodesilame hned - pockame na timeout
        end;
        $04: begin
           Self.WriteLog(2, 'GET: OK');
           Self.hist_ok();
        end;
        $05: Self.WriteLog(2, 'ERR: GET: The Command Station is no longer providing the LI100 a timeslot for communication');
-       $06: Self.WriteLog(1, 'ERR: GET: Buffer overflow in the LI100');
+       $06: Self.WriteLog(1, 'ERR: GET: Buffer overflow in the LI');
       end;//case
     end;
 
@@ -509,6 +519,15 @@ begin
       Self.WriteLog(4,'GET: LOKO STATUS loko in Double Header - not supported');
     end;
 
+    $F2:begin
+      if (msg.data[1] = $01) then
+       begin
+        Self.WriteLog(2, 'GET: LI ADDRESS: '+IntToStr(msg.data[2]));
+        Self.LIGotAddress(msg.data[2]);
+        Self.hist_ok();
+       end;
+    end;
+
   end;//case
 end;//procedure
 
@@ -567,6 +586,7 @@ begin
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.SendCommand(cmd: Tcmd; p1:Integer = 0; p2:Integer = 0; p3: Integer = 0; sent_times:Integer = 0);
 var
   i: Integer;
@@ -599,6 +619,7 @@ begin
     XB_TRK_STATUS: Send(CreateBuf(#$21+#$24));
     XB_TRK_CS_VERSION: Send(CreateBuf(#$21+#$21));
     XB_TRK_LI_VERSION: Send(CreateBuf(#$F0));
+    XB_TRK_LI_ADDRESS: Send(CreateBuf(#$F2+AnsiChar(#$01)+AnsiChar(p1)));
 
     XB_LOK_SET_SPD: begin // addr, speed, dir
       // pouzivame 28 jizdnich stupnu
@@ -670,6 +691,7 @@ end;//procedure
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.LokSetSpeed(Address: Integer; speed: Integer; dir: Integer);
 begin
  if ((Address < 0) or (Address > 9999)) then
@@ -680,6 +702,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.LokSetFunc(Address:Integer; sada:Byte; stav:Byte);
 var func:Byte;
 begin
@@ -712,6 +735,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.SetTrackStatus(NewTrackStatus: Ttrk_status);
 begin
   case NewTrackStatus of
@@ -721,6 +745,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
 function TXpressNET.CreateBuf(str:ShortString):TBuffer;
 var i:Integer;
 begin
@@ -730,18 +755,21 @@ begin
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.EmergencyStop();
 begin
  Self.SendCommand(XB_STOP_ALL);
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.LokEmergencyStop(addr:Integer);
 begin
  Self.SendCommand(XB_LOK_STOP, addr);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.LokGetInfo(Address:Integer);
 begin
  if ((Address < 0) or (Address > 9999)) then
@@ -752,6 +780,7 @@ begin
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
+
 //timto prevezmu vozidlo - tady se vpodstate nic nedeje, jen ven reknu, ze si
 //HV muzou vzit
 procedure TXpressNET.Lok2MyControl(Address:Integer);
@@ -767,6 +796,7 @@ begin
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.LokFromMyControl(Address:Integer);
 begin
  if ((Address < 0) or (Address > 9999)) then
@@ -920,6 +950,22 @@ begin
  Self.WriteLog(4, 'PUT: GET-LI-VERSION');
  Self.SendCommand(XB_TRK_LI_VERSION);
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TXpressNET.GetLIAddress(callback:TLIAddressEvent);
+begin
+ inherited;
+ Self.WriteLog(4, 'PUT: GET-LI-ADDR');
+ Self.SendCommand(XB_TRK_LI_ADDRESS, 0);
+end;
+
+procedure TXpressNET.SetLIAddress(callback:TLIAddressEvent; addr:Byte);
+begin
+ inherited;
+ Self.WriteLog(4, 'PUT: SET-LI-ADDR');
+ Self.SendCommand(XB_TRK_LI_ADDRESS, addr);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

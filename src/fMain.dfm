@@ -3834,21 +3834,28 @@ object F_Main: TF_Main
           Caption = 'nezn'#225'm'#225
         end
         object Label6: TLabel
-          Left = 404
+          Left = 571
           Top = 24
           Width = 70
           Height = 13
           Caption = 'Aktualizov'#225'no:'
         end
         object L_CS_UpdateTime: TLabel
-          Left = 404
-          Top = 43
+          Left = 571
+          Top = 40
           Width = 25
           Height = 13
           Caption = 'nikdy'
         end
+        object Label8: TLabel
+          Left = 385
+          Top = 24
+          Width = 48
+          Height = 13
+          Caption = 'Adresa LI:'
+        end
         object B_CS_Ver_Update: TButton
-          Left = 544
+          Left = 704
           Top = 43
           Width = 75
           Height = 25
@@ -3856,6 +3863,27 @@ object F_Main: TF_Main
           Enabled = False
           TabOrder = 0
           OnClick = B_CS_Ver_UpdateClick
+        end
+        object SE_LI_Addr: TSpinEdit
+          Left = 385
+          Top = 40
+          Width = 64
+          Height = 22
+          Enabled = False
+          MaxValue = 31
+          MinValue = 0
+          TabOrder = 1
+          Value = 0
+        end
+        object B_Set_LI_Addr: TButton
+          Left = 455
+          Top = 40
+          Width = 66
+          Height = 22
+          Caption = 'Zm'#283'nit'
+          Enabled = False
+          TabOrder = 2
+          OnClick = B_Set_LI_AddrClick
         end
       end
     end
@@ -6205,7 +6233,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403C00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403C40310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8071,7 +8099,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280338041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D0028033C041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8612,7 +8640,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802840310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802880310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

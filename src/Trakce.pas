@@ -78,6 +78,7 @@ type
   TGeneralEvent = procedure(Sender: TObject) of object;
   TCSVersionEvent = procedure(Sender:TObject; version:TCSVersion) of object;
   TLIVersionEvent = procedure(Sender:TObject; version:TLIVersion) of object;
+  TLIAddressEvent = procedure(Sender:TObject; addr:Byte) of object;
 
   TTrakce = class
     private const
@@ -91,6 +92,7 @@ type
      FOnComError          : TGeneralEvent;
      FOnCSVersion         : TCSVersionEvent;
      FOnLIVersion         : TLIVersionEvent;
+     FOnLIAddr            : TLIAddressEvent;
 
      FFtrk_status: Ttrk_status;
 
@@ -100,6 +102,7 @@ type
       procedure LokComOK(addr:Integer);
       procedure CSGotVersion(version:TCSVersion);
       procedure LIGotVersion(version:TLIVersion);
+      procedure LIGotAddress(addr:Byte);
 
       procedure SetTrackStatus(NewtrackStatus:Ttrk_status); virtual; abstract;
       procedure SetOwnTrackStatus(New:Ttrk_status);
@@ -136,6 +139,8 @@ type
       procedure LokFromMyControl(Address:Integer); virtual; abstract;
       procedure GetCSVersion(callback:TCSVersionEvent); virtual;
       procedure GetLIVersion(callback:TLIVersionEvent); virtual;
+      procedure GetLIAddress(callback:TLIAddressEvent); virtual;
+      procedure SetLIAddress(callback:TLIAddressEvent; addr:Byte); virtual;
 
       procedure GetTrackStatus(); virtual; abstract;
       procedure AfterOpen(); virtual;
@@ -234,6 +239,21 @@ procedure TTrakce.LIGotVersion(version:TLIVersion);
 begin
  if (Assigned(Self.FOnLIVersion)) then Self.FOnLIVersion(Self, version);
 end;//procedure
+
+procedure TTrakce.GetLIAddress(callback:TLIAddressEvent);
+begin
+ Self.FOnLIAddr := callback;
+end;
+
+procedure TTrakce.SetLIAddress(callback:TLIAddressEvent; addr:Byte);
+begin
+ Self.FOnLIAddr := callback;
+end;
+
+procedure TTrakce.LIGotAddress(addr:Byte);
+begin
+ if (Assigned(Self.FOnLIAddr)) then Self.FOnLIAddr(Self, addr);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

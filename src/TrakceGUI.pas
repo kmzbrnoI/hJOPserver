@@ -245,6 +245,7 @@ type
 
      procedure GotCSVersion(Sender:TObject; version:TCSVersion);                // Callback z .Trakce volany pri prichodu prikazu informujicim o verzi v FW v centrale
      procedure GotLIVersion(Sender:TObject; version:TLIVersion);                // Callback z .Trakce volany pri prichodu prikazu informujicim o verzi v LI
+     procedure GotLIAddress(Sender:TObject; addr:Byte);                         // Callback z .Trakce volany pri prichodu prikazu informujicim o adrese LI
 
      // eventy spojene se zapisem jednotlivych POM:
      procedure POMCvWroteOK(Sender:TObject; Data:Pointer);
@@ -261,6 +262,9 @@ type
      // callback pri zjistovani verze LI
      procedure GotLIVersionOK(Sender:TObject; Data:Pointer);
      procedure GotLIVersionErr(Sender:TObject; Data:Pointer);
+
+     // callback pri zjistovani adresy LI
+     procedure GotLIAddrErr(Sender:TObject; Data:Pointer);
 
      procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
      procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
@@ -317,6 +321,8 @@ type
 
      procedure GetCSVersion();                                                  // zjistit verzi FW v centrale
      procedure GetLIVersion();                                                  // zjistit verzi SW a HW LI
+     procedure GetLIAddress();                                                  // zjisti adresu LI
+     procedure SetLIAddress(addr:Byte);                                         // nastavi adresu LI
 
      procedure InitSystems();                                                   // odesle centrale povel TRACK-STATUS a doufa v odpoved
                                                                                 // je volano pri pripojeni k centrale jako overeni funkcni komunikace
@@ -936,6 +942,8 @@ begin
  F_Main.S_Intellibox_connect.Brush.Color := clLime;
  F_Main.A_All_Loko_Prevzit.Enabled := true;
  F_Main.B_CS_Ver_Update.Enabled    := true;
+ F_Main.B_Set_LI_Addr.Enabled      := true;
+ F_Main.SE_LI_Addr.Enabled         := true;
  F_Main.UpdateSystemButtons();
 
  F_Main.A_DCC_Go.Enabled   := true;
@@ -976,6 +984,9 @@ begin
  F_Main.A_All_Loko_Odhlasit.Enabled := false;
  F_Main.B_HV_Add.Enabled            := true;
  F_Main.B_CS_Ver_Update.Enabled     := false;
+ F_Main.B_Set_LI_Addr.Enabled       := false;
+ F_Main.SE_LI_Addr.Enabled          := false;
+ F_Main.SE_LI_Addr.Value            := 0;
  F_Main.UpdateSystemButtons();
 
  // zavrit vsechny regulatory
@@ -1355,8 +1366,9 @@ begin
  Self.finitok := true;
  F_Main.LogStatus('Centrála: komunikuje');
 
+ Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
+ Self.callback_err := TTrakce.GenerateCallback(Self.GotCSVersionErr);
  Self.GetCSVersion();
- Self.GetLIVersion();
 
  if (SystemData.Status = starting) then
   begin
@@ -1801,6 +1813,13 @@ begin
  F_Main.LogStatus('FW v LI: '+F_Main.L_CS_LI_FW.Caption);
 end;//procedure
 
+procedure TTrkGUI.GotLIAddress(Sender:TObject; addr:Byte);
+begin
+ F_Main.SE_LI_Addr.Value := addr;
+ F_Main.SE_LI_Addr.Enabled := true;
+ F_Main.B_Set_LI_Addr.Enabled := true;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrkGUI.GetCSVersion();
@@ -1812,6 +1831,18 @@ procedure TTrkGUI.GetLIVersion();
 begin
  Self.Trakce.GetLIVersion(Self.GotLIVersion);
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.GetLIAddress();
+begin
+ Self.Trakce.GetLIAddress(Self.GotLIAddress);
+end;
+
+procedure TTrkGUI.SetLIAddress(addr:Byte);
+begin
+ Self.Trakce.SetLIAddress(Self.GotLIAddress, addr);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1915,6 +1946,9 @@ begin
  Self.callback_ok  := TTrakce.GenerateCallback(Self.GotLIVersionOK);
  Self.callback_err := TTrakce.GenerateCallback(Self.GotLIVersionErr);
  Self.GetLIVersion();
+
+ Self.callback_err := TTrakce.GenerateCallback(Self.GotLIAddrErr);
+ Self.GetLIAddress();
 end;//procedure
 
 procedure TTrkGUI.GotCSVersionErr(Sender:TObject; Data:Pointer);
@@ -1936,9 +1970,16 @@ end;//procedure
 
 procedure TTrkGUI.GotLIVersionErr(Sender:TObject; Data:Pointer);
 begin
- F_Main.LogStatus('WARN: Centrála nepodvìdìla na požadavek o verzi LI, pokraèuji...');
+ F_Main.LogStatus('WARN: Centrála neodpovìdìla na požadavek o verzi LI, pokraèuji...');
  Self.GotLIVersionOK(Self, data);
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrkGUI.GotLIAddrErr(Sender:TObject; Data:Pointer);
+begin
+ F_Main.LogStatus('WARN: Centrála neodpovìdìla na požadavek o adresu LI');
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // callbacky pri nastavovani funkci hnacicho vozidel (F0-Fn)
