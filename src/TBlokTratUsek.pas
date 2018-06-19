@@ -947,7 +947,8 @@ begin
  // kontrola poruchy blokove podminky
  if (Self.bpInBlk) then
   begin
-   if ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.poruchaBP) and (Self.Zaver = TZaver.no)) then
+   if ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.poruchaBP) and
+       ((Self.Zaver = TZaver.no) or (Self.Zaver = TZaver.ab))) then
      Self.poruchaBP := true;
    if ((Self.Obsazeno = TUsekStav.obsazeno) and (Self.poruchaBP)) then
      Self.poruchaBP := false;
