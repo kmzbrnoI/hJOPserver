@@ -269,7 +269,7 @@ type
       procedure SaveData(ini:TMemIniFile; section:string);
 
       procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject;                  // pozadavek o postaveni jizdni cesty
-          from_stack:TObject = nil; nc:boolean = false);
+          from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false);
 
 
       function CanDN():boolean;                                                 // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
@@ -1122,9 +1122,11 @@ end;//procedure
 // stavi konkretni jizdni cestu
 // tato fce ma za ukol zkontrolovat vstupni podminky jizdni cesty
 // tato funkce jeste nic nenastavuje!
-procedure TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject; from_stack:TObject = nil; nc:boolean = false);
+procedure TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject; from_stack:TObject = nil;
+                     nc:boolean = false; fromAB:boolean = false);
 var i:Integer;
     bariery:TJCBariery;
+    bariera:TJCBariera;
     critical:boolean;
     upo:TUPOItems;
     item:TUPOItem;
@@ -1143,16 +1145,26 @@ var i:Integer;
   writelog('JC '+Self.Nazev+' - požadavek na stavìní, kontroluji podmínky', WR_VC);
 
   bariery := Self.KontrolaPodminek(Self.fstaveni.nc);
+
+  // ignorujeme AB zaver pokud je staveno z AB seznamu
+  if (fromAB) then
+    for i := bariery.Count-1 downto 0 do
+      if (bariery[i].typ = _JCB_USEK_AB) then
+        bariery.Delete(i);
+
   upo := TList<TUPOItem>.Create;
 
   // existuji kriticke bariery?
   critical := false;
-  for i := 0 to bariery.Count-1 do
-   if ((Self.CriticalBariera(bariery[i].typ)) or (not Self.WarningBariera(bariery[i].typ))) then
-    begin
-     critical := true;
-     upo.Add(Self.JCBarieraToMessage(bariery[i]));
-    end;
+  for bariera in bariery do
+   begin
+    if ((Self.CriticalBariera(bariera.typ)) or (not Self.WarningBariera(bariera.typ))) then
+     begin
+      critical := true;
+      upo.Add(Self.JCBarieraToMessage(bariera));
+     end;
+   end;
+
   if (critical) then
    begin
     // kriticke bariey existuji -> oznamim je
@@ -1935,13 +1947,15 @@ var i:Integer;
 begin
  if (reason <> '') then
   begin
-   ORTCPServer.SendInfoMsg(Self.fstaveni.SenderPnl, reason);
+   if (Self.fstaveni.SenderPnl <> nil) then
+     ORTCPServer.SendInfoMsg(Self.fstaveni.SenderPnl, reason);
    writelog('Nelze postavit JC '+Self.Nazev+' - '+reason, WR_VC);
   end;
 
  case (Self.Krok) of
     101:begin
-      ORTCPServer.PotvrClose(Self.fstaveni.SenderPnl, reason);
+      if (Self.fstaveni.SenderPnl <> nil) then
+        ORTCPServer.PotvrClose(Self.fstaveni.SenderPnl, reason);
     end   
  end;//case Self.Krok
 
@@ -1958,7 +1972,8 @@ begin
  Self.RusZacatekJC();
  Self.RusVBJC();
  Self.RusKonecJC();
- ORTCPServer.CancelUPO(Self.fstaveni.SenderPnl, Self);
+ if (Self.fstaveni.SenderPnl <> nil) then
+   ORTCPServer.CancelUPO(Self.fstaveni.SenderPnl, Self);
  if (Self.fstaveni.from_stack <> nil) then
     if (stack_remove) then (Self.fstaveni.from_stack as TORStack).RemoveJC(Self)
   else
@@ -2044,8 +2059,9 @@ var Nav:TBlk;
     if ((Nav as TBlkSCom).AB) then
      begin
       (Nav as TBlkSCom).AB := false; // automaticky zrusi AB
-      ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Zrušena AB '+Nav.GetGlobalSettings().name,
-        (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+      if (Self.fstaveni.SenderPnl <> nil) then
+        ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Zrušena AB '+Nav.GetGlobalSettings().name,
+          (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
      end;
    end;
 

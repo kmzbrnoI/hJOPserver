@@ -18,6 +18,7 @@ type
     JCs: TList<TJC>;
 
      function GetItem(index:Integer):TJC;
+     procedure TryJC(jc:TJC);
 
    public
 
@@ -40,7 +41,7 @@ var
 
 implementation
 
-uses DataAB, TBlok, TBloky, TBlokUsek;
+uses DataAB, TBlok, TBloky, TBlokUsek, logging, TBlokSCom;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,6 +66,7 @@ begin
 
  Self.JCs.Add(jc);
  ABTableData.AddJC(jc);
+ writelog('AB: JC '+jc.nazev+' pøidána do seznamu AB JC', WR_VC);
 end;
 
 procedure TABlist.Remove(jc:TJC);
@@ -85,6 +87,7 @@ begin
   end;
 
  i := Self.JCs.IndexOf(jc);
+ writelog('AB: JC '+Self.JCs[i].nazev+' odstranìna ze seznamu AB JC', WR_VC);
  Self.JCs.Delete(i);
  ABTableData.DeleteJC(i);
 end;
@@ -96,9 +99,46 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TABlist.Update();
+procedure TABlist.TryJC(jc:TJC);
+var bariery:TJCBariery;
+    blk:TBlk;
+    bariera:TJCBariera;
 begin
+  bariery := JC.KontrolaPodminek();
+  try
+    // v jizdni ceste jsou urcite bariery (musi tam byt minimalne zavery AB cesty)
+    for bariera in bariery do
+     begin
+      if ((bariera.typ <> TJC._JCB_USEK_AB) and
+          ((TJC.CriticalBariera(bariera.typ)) or (not JC.WarningBariera(bariera.typ)))) then
+        Exit();
+     end;
 
+    // Tady mame zajisteno, ze v jizdni ceste nejsou kriticke ani nevarovne bariery
+    //  (KontrolaPodminek() zarucuje, ze tyto typy barier jsou na zacatku seznamu).
+    // Upozornovaci bariery ignorujeme a stavime JC.
+
+    writelog('DN JC '+JC.nazev+' : podmínky splnìny, stavím', WR_STACK);
+
+    Blky.GetBlkByID(JC.data.NavestidloBlok, blk);
+    if ((blk = nil) or (blk.typ <> _BLK_SCOM) or (TBlkSCom(blk).OblsRizeni.Cnt = 0)) then
+      Self.Remove(jc);
+
+    JC.StavJC(nil, TBlkSCom(blk).OblsRizeni.ORs[0], nil, false, true);
+  finally
+    bariery.Free();
+  end;
+end;
+
+// Zkousi stavet kazdou z jizdnich cest v seznamu Self.JCs.
+procedure TABlist.Update();
+var jc:TJC;
+begin
+ for jc in Self.JCs do
+  begin
+   if ((jc.postaveno) or (jc.staveni)) then continue;
+   Self.TryJC(jc);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

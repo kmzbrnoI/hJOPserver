@@ -629,6 +629,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);
     UpdateCallMethod();
     RCSd.Update();
     TrkSystem.Update();
+    ABlist.Update();
   except
    on E: Exception do
     begin
