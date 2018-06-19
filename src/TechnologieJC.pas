@@ -2191,7 +2191,11 @@ begin
         (TBlkUsek(DalsiUsek).GetSettings.RCSAddrs.Count = 0))) then
      begin
       // cesta se rozpada...
-      (Usek as TBlkUsek).Zaver := no;
+      if (Self.AB) then
+        (Usek as TBlkUsek).Zaver := TZaver.AB
+      else
+        (Usek as TBlkUsek).Zaver := TZaver.no;
+
       Self.RozpadRuseniBlok := Self.RozpadRuseniBlok + 1;
 
       if ((Self.fproperties.TypCesty = TJCType.vlak) and ((Usek as TBlkUsek).IsSouprava())) then
@@ -2318,7 +2322,6 @@ begin
      begin
       if ((Nav as TBlkSCom).Navest > 0) then      // tato situace opravdu muze nastat - predstavte si posunovou cestu s jednim usekem vychazejici z nedetek koleje
         (Nav as TBlkSCom).JCZrusNavest();
-      (Nav as TBlkSCom).AB := false;        // zatim vzdy zrusime AB
       (Nav as TBlkSCom).DNjc := nil;
      end;
    end;
