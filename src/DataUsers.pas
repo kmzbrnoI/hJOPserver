@@ -1,6 +1,6 @@
 unit DataUsers;
 
-// TJCTableData - trida starajici se o vyplneni tabulky jizdnich cest
+// TUsersTableData - trida starajici se o vyplneni tabulky uzivatelu
 
 interface
 
