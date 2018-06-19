@@ -139,7 +139,8 @@ uses
   TBlokSouctovaHlaska in 'TBlokSouctovaHlaska.pas',
   fBlkSH in 'fBlkSH.pas',
   predvidanyOdjezd in 'predvidanyOdjezd.pas',
-  timeHelper in 'timeHelper.pas';
+  timeHelper in 'timeHelper.pas',
+  TechnologieAB in 'TechnologieAB.pas';
 
 {$R *.res}
 
