@@ -3503,7 +3503,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_AB
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5490,7 +5490,7 @@ object F_Main: TF_Main
             OnClick = B_VC_AddClick
           end
           object B_VC_delete: TButton
-            Left = 317
+            Left = 314
             Top = 3
             Width = 97
             Height = 25
@@ -5757,6 +5757,55 @@ object F_Main: TF_Main
         OnCustomDrawItem = LV_MultiJCCustomDrawItem
         OnDblClick = LV_MultiJCDblClick
         OnKeyPress = LV_MultiJCKeyPress
+      end
+    end
+    object TS_AB: TTabSheet
+      Caption = 'AB'
+      ImageIndex = 14
+      object Panel4: TPanel
+        Left = 0
+        Top = 0
+        Width = 1289
+        Height = 40
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clGray
+        TabOrder = 0
+      end
+      object LV_AB: TListView
+        Left = 0
+        Top = 40
+        Width = 1289
+        Height = 574
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alClient
+        Columns = <
+          item
+            Caption = 'J'#237'zdn'#237' cesta'
+            Width = 500
+          end>
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        GridLines = True
+        ReadOnly = True
+        RowSelect = True
+        ParentFont = False
+        TabOrder = 1
+        ViewStyle = vsReport
+        OnChange = LV_JCChange
+        OnCustomDrawItem = LV_JCCustomDrawItem
+        OnDblClick = LV_JCDblClick
+        OnKeyPress = LV_JCKeyPress
       end
     end
     object TS_FuncsVyznam: TTabSheet
@@ -6233,7 +6282,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403C40310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403C80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8099,7 +8148,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D0028033C041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280340041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8640,7 +8689,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802880310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D8028C0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

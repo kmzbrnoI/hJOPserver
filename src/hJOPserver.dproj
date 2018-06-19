@@ -256,6 +256,7 @@
 			<DCCReference Include="predvidanyOdjezd.pas"/>
 			<DCCReference Include="timeHelper.pas"/>
 			<DCCReference Include="TechnologieAB.pas"/>
+			<DCCReference Include="DataAB.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

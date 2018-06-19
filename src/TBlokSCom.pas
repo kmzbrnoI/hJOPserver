@@ -45,7 +45,7 @@ type
  TBlkSComStav = record
   ZacatekVolba:TBlkSComVolba;                    // nazatek volby jidni cesty
   Navest:Integer;                                // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
-  AB:Boolean;                                    // automaticke staveni
+  ABJC:TJC;                                      // odkaz na automaticky stavenou JC
   ZAM:Boolean;                                   // navestidlo zamkle z panelu
   redukce_menu:Integer;                          // kolik blokù mì redukuje
   dn_jc_ref,privol_ref:TJC;                      // reference na aktualni JC na navestidle (resp. NC)
@@ -75,7 +75,7 @@ type
    _def_scom_stav:TBlkSComStav = (
      ZacatekVolba : none;
      Navest : -1;
-     AB : false;
+     ABJC : nil;
      ZAM : false;
      dn_jc_ref : nil;
      privol_ref : nil;
@@ -105,7 +105,11 @@ type
     function RCinProgress():boolean;
 
     procedure SetNavest(navest:Integer);
+
+    function GetAB():boolean;
     procedure SetAB(ab:boolean);
+    procedure SetABJC(ab:TJC);
+
     procedure SetZacatekVolba(typ:TBlkSComVolba);
     procedure SetZAM(zam:boolean);
 
@@ -194,7 +198,8 @@ type
     //stavovae promenne
     property Navest:Integer read SComStav.Navest write SetNavest;
     property ZacatekVolba:TBlkSComVolba read SComStav.ZacatekVolba write SetZacatekVolba;
-    property AB:boolean read SComStav.AB write SetAB;
+    property AB:boolean read GetAB write SetAB;
+    property ABJC:TJC read SComStav.ABJC write SetABJC;
     property ZAM:boolean read SComStav.ZAM write SetZAM;
     property Lichy:THVStanoviste read SComRel.Smer;
     property DNjc:TJC read SComStav.dn_jc_ref write SComStav.dn_jc_ref;
@@ -238,7 +243,7 @@ implementation
 
 uses TechnologieRCS, TBloky, TBlokUsek, TJCDatabase, TCPServerOR,
       GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
-      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek;
+      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB;
 
 constructor TBlkSCom.Create(index:Integer);
 begin
@@ -395,8 +400,8 @@ procedure TBlkSCom.Disable();
 begin
  Self.SComStav.Navest := -1;
  Self.SComStav.ZacatekVolba := TBlkSComVolba.none;
- Self.SComStav.AB  := false;
- Self.SComStav.ZAM := false;
+ Self.AB := false;
+ Self.SComStav.ZAM  := false;
  Self.SComStav.toRnz.Clear();
  Self.SComStav.RCtimer := -1;
  Self.UnregisterAllEvents();
@@ -675,12 +680,35 @@ begin
  Self.Change();
 end;//procedure
 
+function TBlkSCom.GetAB():boolean;
+begin
+ Result := (Self.SComStav.ABJC <> nil);
+end;
+
+procedure TBlkSCom.SetABJC(ab:TJC);
+begin
+ if ((ab <> nil) and (Self.ABJC <> nil)) then
+   raise EInvalidOperation.Create('Cannot change AB JC, can only enable/disable AB JC!');
+
+ if ((Self.ABJC <> nil) and (ab = nil)) then begin
+   ABlist.Remove(Self.ABJC);
+   Self.SComStav.ABJC := nil;
+   Self.Change();
+ end else if ((Self.ABJC = nil) and (ab <> nil)) then begin
+   ABlist.Add(ab);
+   Self.SComStav.ABJC := ab;
+   Self.Change();
+ end;
+end;
+
 procedure TBlkSCom.SetAB(ab:boolean);
 begin
- if (Self.SComStav.AB = ab) then Exit();
- Self.SComStav.AB := ab;
- Self.Change();
-end;//procedure
+ if (ab) then
+   raise EInvalidOperation.Create('You can only disable AB via SetAB!');
+
+ if (Self.AB and (not ab)) then
+   Self.ABJC := nil;
+end;
 
 procedure TBlkSCom.SetZacatekVolba(typ:TBlkSComVolba);
 begin
@@ -820,12 +848,12 @@ end;//procedure
 
 procedure TBlkSCom.MenuABStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.AB := true;
+ Self.ABJC := Self.DNjc;
 end;//procedure
 
 procedure TBlkSCom.MenuABStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.AB := false;
+ Self.ABJC := nil;
 end;//procedure
 
 procedure TBlkSCom.MenuLockClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1051,7 +1079,7 @@ begin
      // AB lze jen u vlakove cesty
      if (Self.DNjc.data.TypCesty = TJCType.vlak) then
       begin
-       if (Self.SComStav.AB) then
+       if (Self.AB) then
          Result := Result + 'AB<,'
         else
          Result := Result + 'AB>,'

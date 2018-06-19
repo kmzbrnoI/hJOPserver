@@ -140,7 +140,8 @@ uses
   fBlkSH in 'fBlkSH.pas',
   predvidanyOdjezd in 'predvidanyOdjezd.pas',
   timeHelper in 'timeHelper.pas',
-  TechnologieAB in 'TechnologieAB.pas';
+  TechnologieAB in 'TechnologieAB.pas',
+  DataAB in 'DataAB.pas';
 
 {$R *.res}
 

@@ -264,6 +264,9 @@ type
     Label8: TLabel;
     SE_LI_Addr: TSpinEdit;
     B_Set_LI_Addr: TButton;
+    TS_AB: TTabSheet;
+    Panel4: TPanel;
+    LV_AB: TListView;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -516,8 +519,8 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fBlkSCom, fBlkTrat, TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase, TBlokRozp,
-     fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster,
-     AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors;
+     fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
+     AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors, TechnologieAB;
 
 {$R *.dfm}
 
@@ -1831,10 +1834,15 @@ begin
 end;
 
 procedure TF_Main.B_VC_deleteClick(Sender: TObject);
+var jc:TJC;
 begin
- if (Application.MessageBox(PChar('Opravdu chcete smazat jízdní cestu '+JCDb.GetJCByIndex(LV_JC.ItemIndex).nazev+' ?'),'Mazání jízdní cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+ jc := JCDb.GetJCByIndex(LV_JC.ItemIndex);
+ if (Application.MessageBox(PChar('Opravdu chcete smazat jízdní cestu '+jc.nazev+' ?'),'Mazání jízdní cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
   begin
    try
+     if (ABlist.Contains(jc)) then
+       ABlist.Remove(jc);
+
      JCDb.RemoveJC(LV_JC.ItemIndex);
    except
      on E:Exception do
@@ -2049,6 +2057,7 @@ procedure TF_Main.CreateClasses;
 
   ACTableData    := TACTableData.Create(Self.LV_AC_Db);
   JCTableData    := TJCTableData.Create(Self.LV_JC);
+  ABTableData    := TABTableData.Create(Self.LV_AB);
   UsersTableData := TUsersTableData.Create(Self.LV_Users);
   RCSTableData   := TRCSTableData.Create(Self.LV_Stav_RCS);
   SprTableData   := TSprTableData.Create(Self.LV_Soupravy);

@@ -234,6 +234,8 @@ type
 
       function GetSoupravaIndex(nav:TBlk = nil; usek:TBlk = nil):Integer;       // vraci cislo soupravy na useku pred navestidlem
 
+      function GetAB():boolean;
+
    public
 
      index:Integer;                                                             // index v tabulce jizdni cest ve F_Main
@@ -282,6 +284,7 @@ type
       property nazev:string read fproperties.Nazev;
       property postaveno:boolean read GetPostaveno;                             // true pokud je postavena navest
       property id:Integer read fproperties.id write fproperties.id;
+      property AB:boolean read GetAB;
 
       property RozpadBlok:Integer read fstaveni.RozpadBlok write SetRozpadBlok;
       property RozpadRuseniBlok:Integer read fstaveni.RozpadRuseniBlok write SetRozpadRuseniBlok;
@@ -2037,7 +2040,7 @@ var Nav:TBlk;
 
   if ((Nav as TBlkSCom).DNjc = self) then
    begin
-    (Nav as TBlkSCom).AB := false;
+    (Nav as TBlkSCom).AB := false; // automaticky zrusi AB
     if ((Nav as TBlkSCom).Navest > 0) then
       (Nav as TBlkSCom).Navest := 0;
    end;
@@ -3429,6 +3432,15 @@ begin
    Blky.GetBlkByID(Self.fproperties.NavestidloBlok, nav);
 
  Result := TBlkSCom(nav).GetSoupravaIndex(usek);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJC.GetAB():boolean;
+var Blk:TBlk;
+begin
+ Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
+ Result := ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (TBlkSCom(Blk).ABJC = Self));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
