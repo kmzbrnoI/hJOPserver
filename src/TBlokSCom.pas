@@ -691,11 +691,22 @@ begin
    raise EInvalidOperation.Create('Cannot change AB JC, can only enable/disable AB JC!');
 
  if ((Self.ABJC <> nil) and (ab = nil)) then begin
-   ABlist.Remove(Self.ABJC);
+   try
+     if (Assigned(ABlist)) then
+       ABlist.Remove(Self.ABJC);
+   except
+     on E:EABJCNotInList do
+       asm nop; end; // ignore exception
+   end;
    Self.SComStav.ABJC := nil;
    Self.Change();
  end else if ((Self.ABJC = nil) and (ab <> nil)) then begin
-   ABlist.Add(ab);
+   try
+     ABlist.Add(ab);
+   except
+     on E:EABJCAlreadyInList do
+       asm nop; end; // ignore exception
+   end;
    Self.SComStav.ABJC := ab;
    Self.Change();
  end;
