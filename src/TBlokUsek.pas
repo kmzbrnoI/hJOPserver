@@ -165,7 +165,7 @@ type
 
     EventsOnObsaz:TChangeEvents;
     EventsOnUvol:TChangeEvents;
-    EventsOnZaverRelease:TChangeEvents;
+    EventsOnZaverReleaseOrAB:TChangeEvents;
 
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -271,7 +271,7 @@ begin
 
  Self.EventsOnObsaz := TChangeEvents.Create();
  Self.EventsOnUvol  := TChangeEvents.Create();
- Self.EventsOnZaverRelease := TChangeEvents.Create();
+ Self.EventsOnZaverReleaseOrAB := TChangeEvents.Create();
 
  Self.UsekSettings.houkEvL := TList<THoukEv>.Create();
  Self.UsekSettings.houkEvS := TList<THoukEv>.Create();
@@ -302,7 +302,7 @@ begin
 
  Self.EventsOnObsaz.Free();
  Self.EventsOnUvol.Free();
- Self.EventsOnZaverRelease.Free();
+ Self.EventsOnZaverReleaseOrAB.Free();
 
  Self.UsekStav.neprofilJCcheck.Free();
  Self.UsekStav.soupravy.Free();
@@ -483,7 +483,7 @@ begin
 
  Self.EventsOnObsaz.Clear();
  Self.EventsOnUvol.Clear();
- Self.EventsOnZaverRelease.Clear();
+ Self.EventsOnZaverReleaseOrAB.Clear();
 
  Self.UsekStav.neprofilJCcheck.Clear();
 
@@ -663,7 +663,9 @@ begin
  Self.UsekStav.SprPredict := -1;
 
  if ((old > TZaver.no) and (zaver = TZaver.no)) then
-   Self.CallChangeEvents(Self.EventsOnZaverRelease);
+   Self.CallChangeEvents(Self.EventsOnZaverReleaseOrAb)
+ else if ((old <> TZaver.no) and (old <> TZaver.ab) and (zaver = TZaver.ab)) then
+   Self.CallChangeEvents(Self.EventsOnZaverReleaseOrAb);
 
  // staveci zavery se do panelu neposilaji, protoze jsou mi k nicemu
  if (Self.Zaver <> TZaver.staveni) or (old <> TZaver.no) then

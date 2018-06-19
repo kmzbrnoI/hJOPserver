@@ -16,7 +16,7 @@ type
  end;
 
  TChangeEventCaller = class
-   procedure NullUsekZaver(Sender:TObject; data:Integer);
+   procedure CopyUsekZaver(Sender:TObject; data:Integer);
    procedure NullZamekZaver(Sender:TObject; data:Integer);
    procedure NullPrejezdZaver(Sender:TObject; data:Integer);
    procedure NullTratZaver(Sender:TObject; data:Integer);
@@ -34,14 +34,14 @@ uses TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokZamek, TBlokSCom, TBlokPrejezd
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TChangeEventCaller.NullUsekZaver(Sender:TObject; data:Integer);
+procedure TChangeEventCaller.CopyUsekZaver(Sender:TObject; data:Integer);
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
  if ((blk = nil) or ((blk.GetGlobalSettings.typ <> _BLK_USEK) and
     (blk.GetGlobalSettings.typ <> _BLK_TU))) then Exit();
 
- TBlkUsek(Blk).Zaver := TZaver.no;
+ TBlkUsek(Blk).Zaver := TBlkUsek(Sender).Zaver;
 end;
 
 procedure TChangeEventCaller.NullZamekZaver(Sender:TObject; data:Integer);
