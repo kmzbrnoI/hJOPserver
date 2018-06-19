@@ -151,6 +151,7 @@ type
     _JCB_USEK_VYLUKA             = 22;
     _JCB_USEK_SOUPRAVA           = 23;
     _JCB_USEK_STITEK             = 24;
+    _JCB_USEK_AB                 = 25;
 
     _JCB_VYHYBKA_KONC_POLOHA     = 30;
     _JCB_VYHYBKA_VYLUKA          = 31;
@@ -660,7 +661,12 @@ begin
 
     // zaver
     if ((Blk as TBlkUsek).Zaver <> TZaver.no) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
+     begin
+      if ((Blk as TBlkUsek).Zaver = TZaver.ab) then
+        bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk, Blk.GetGlobalSettings.id))
+      else
+        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
+     end;
 
     // souprava
     if (((Blk as TBlkUsek).IsSouprava()) and (Self.fproperties.TypCesty = TJCType.vlak)) then
@@ -800,7 +806,12 @@ begin
       if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
        begin
         if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
-          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+         begin
+          if ((Blk2 as TBlkVyhybka).Zaver = TZaver.ab) then
+            bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.GetGlobalSettings.id))
+          else
+            bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+         end;
 
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
@@ -954,8 +965,15 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // zaver
+
+    // zaver
     if ((Blk as TBlkUsek).Zaver <> TZaver.no) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
+     begin
+      if ((Blk as TBlkUsek).Zaver = TZaver.ab) then
+        bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk, Blk.GetGlobalSettings.id))
+      else
+        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
+     end;
 
     // vyluka
     if ((Blk as TBlkUsek).Vyluka <> '') then
@@ -1048,7 +1066,12 @@ begin
       if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
        begin
         if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
-          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+         begin
+          if ((Blk2 as TBlkVyhybka).Zaver = TZaver.ab) then
+            bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.GetGlobalSettings.id))
+          else
+            bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+         end;
 
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
@@ -2888,7 +2911,7 @@ begin
 
  case (Bariera.typ) of
   _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_SCOM_NOT_USEK, _JCB_BLOK_NOT_EXIST,
-  _JCB_USEK_OBSAZENO, _JCB_USEK_ZAVER, _JCB_USEK_SOUPRAVA,
+  _JCB_USEK_OBSAZENO, _JCB_USEK_ZAVER, _JCB_USEK_AB, _JCB_USEK_SOUPRAVA,
   _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_ZAMCENA, _JCB_VYHYBKA_NOUZ_ZAVER,
   _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA,
   _JCB_ODVRAT_ZAMCENA, _JCB_ODVRAT_OBSAZENA, _JCB_ODVRAT_KONC_POLOHA,
@@ -2917,6 +2940,7 @@ begin
   _JCB_USEK_OBSAZENO           : Result[1] := GetUPOLine('Úsek obsazen');
   _JCB_USEK_ZAVER              : Result[1] := GetUPOLine('Úsek zapevnìn');
   _JCB_USEK_SOUPRAVA           : Result[1] := GetUPOLine('Souprava');
+  _JCB_USEK_AB                 : Result[1] := GetUPOLine('Blokováno automatickou JC');
 
   _JCB_VYHYBKA_KONC_POLOHA     : Result[1] := GetUPOLine('Není koncová poloha');
   _JCB_VYHYBKA_ZAMCENA         : Result[1] := GetUPOLine('Zamèena');
