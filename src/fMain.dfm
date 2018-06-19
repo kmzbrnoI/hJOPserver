@@ -5775,6 +5775,39 @@ object F_Main: TF_Main
         BevelOuter = bvNone
         Color = clGray
         TabOrder = 0
+        object Panel5: TPanel
+          Left = 8
+          Top = 4
+          Width = 113
+          Height = 32
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          BevelOuter = bvNone
+          Color = clWhite
+          TabOrder = 0
+          object B_AB_Delete: TButton
+            Left = 8
+            Top = 3
+            Width = 97
+            Height = 25
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Caption = 'Smazat cestu'
+            Enabled = False
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 0
+            OnClick = B_AB_DeleteClick
+          end
+        end
       end
       object LV_AB: TListView
         Left = 0
@@ -5802,10 +5835,7 @@ object F_Main: TF_Main
         ParentFont = False
         TabOrder = 1
         ViewStyle = vsReport
-        OnChange = LV_JCChange
-        OnCustomDrawItem = LV_JCCustomDrawItem
-        OnDblClick = LV_JCDblClick
-        OnKeyPress = LV_JCKeyPress
+        OnEdited = LV_ABEdited
       end
     end
     object TS_FuncsVyznam: TTabSheet

@@ -267,6 +267,8 @@ type
     TS_AB: TTabSheet;
     Panel4: TPanel;
     LV_AB: TListView;
+    Panel5: TPanel;
+    B_AB_Delete: TButton;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -403,6 +405,8 @@ type
     procedure B_AC_ReloadClick(Sender: TObject);
     procedure MI_RCS_UpdateClick(Sender: TObject);
     procedure B_Set_LI_AddrClick(Sender: TObject);
+    procedure LV_ABEdited(Sender: TObject; Item: TListItem; var S: string);
+    procedure B_AB_DeleteClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -1604,6 +1608,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TF_Main.B_AB_DeleteClick(Sender: TObject);
+begin
+ if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+ABlist[Self.LV_AB.ItemIndex].Nazev), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
+   ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
+end;
+
 procedure TF_Main.B_AC_ReloadClick(Sender: TObject);
 begin
  try
@@ -2652,6 +2662,11 @@ begin
    Self.LB_Log.Items.Insert(0, FormatDateTime('hh:nn:ss', Now)+ ' : ' + str);
   end;
  writeLog(str, WR_SYSTEM, 0);
+end;
+
+procedure TF_Main.LV_ABEdited(Sender: TObject; Item: TListItem; var S: string);
+begin
+ Self.B_AB_Delete.Enabled := (Self.LV_AB.Selected <> nil);
 end;
 
 procedure TF_Main.LV_AC_DbChange(Sender: TObject; Item: TListItem;

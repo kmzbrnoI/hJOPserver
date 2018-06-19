@@ -16,6 +16,9 @@ type
   TABlist = class
    private
     JCs: TList<TJC>;
+
+     function GetItem(index:Integer):TJC;
+
    public
 
      constructor Create();
@@ -26,6 +29,8 @@ type
      function Contains(jc:TJC):boolean;
 
      procedure Update();
+
+     property Items[index : integer]: TJC read GetItem; default;
   end;
 
 var
@@ -96,6 +101,11 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TABlist.GetItem(index:Integer):TJC;
+begin
+ Result := Self.JCs[index];
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
