@@ -3503,7 +3503,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_AB
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5835,7 +5835,7 @@ object F_Main: TF_Main
         ParentFont = False
         TabOrder = 1
         ViewStyle = vsReport
-        OnEdited = LV_ABEdited
+        OnChange = LV_ABChange
       end
     end
     object TS_FuncsVyznam: TTabSheet

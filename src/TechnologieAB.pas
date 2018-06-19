@@ -10,8 +10,8 @@ interface
 uses SysUtils, Generics.Collections, TechnologieJC;
 
 type
-  EJCAlreadyInList = class(Exception);
-  EJCNotInList = class(Exception);
+  EABJCAlreadyInList = class(Exception);
+  EABJCNotInList = class(Exception);
 
   TABlist = class
    private
@@ -59,7 +59,7 @@ end;
 procedure TABlist.Add(jc:TJC);
 begin
  if (Self.JCs.Contains(jc)) then
-   raise EJCAlreadyInList.Create('This JC is already in AB list!');
+   raise EABJCAlreadyInList.Create('This JC is already in AB list!');
 
  Self.JCs.Add(jc);
  ABTableData.AddJC(jc);
@@ -71,8 +71,7 @@ var i:Integer;
     blk:TBlk;
 begin
  if (not Self.JCs.Contains(jc)) then
-   raise EJCNotInList.Create('This JC is not in AB list!');
-
+   raise EABJCNotInList.Create('This JC is not in AB list!');
 
  for usek in jc.data.Useky do
   begin
@@ -85,7 +84,7 @@ begin
 
  i := Self.JCs.IndexOf(jc);
  Self.JCs.Delete(i);
- ABTableData.RemoveJC(i);
+ ABTableData.DeleteJC(i);
 end;
 
 function TABlist.Contains(jc:TJC):boolean;

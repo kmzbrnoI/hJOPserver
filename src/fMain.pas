@@ -405,8 +405,9 @@ type
     procedure B_AC_ReloadClick(Sender: TObject);
     procedure MI_RCS_UpdateClick(Sender: TObject);
     procedure B_Set_LI_AddrClick(Sender: TObject);
-    procedure LV_ABEdited(Sender: TObject; Item: TListItem; var S: string);
     procedure B_AB_DeleteClick(Sender: TObject);
+    procedure LV_ABChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -1609,9 +1610,26 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.B_AB_DeleteClick(Sender: TObject);
+var blk:TBlk;
+    jc:TJC;
 begin
- if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+ABlist[Self.LV_AB.ItemIndex].Nazev), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
-   ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
+ jc := ABlist[Self.LV_AB.ItemIndex];
+ if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+jc.Nazev+'?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
+  begin
+   try
+     Blky.GetBlkByID(jc.data.NavestidloBlok, blk);
+     if ((blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_SCOM) and (TBlkSCom(blk).ABJC = jc)) then
+      begin
+       TBlkSCom(blk).ABJC := nil;
+       if (ABlist.Contains(jc)) then
+         ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
+      end else
+       ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
+   except
+    on E:Exception do
+      Application.MessageBox(PChar('Chyba při mazání:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+   end;
+  end;
 end;
 
 procedure TF_Main.B_AC_ReloadClick(Sender: TObject);
@@ -1944,6 +1962,8 @@ begin
      if (F_Main.PC_1.ActivePage = F_Main.TS_MultiJC) then MultiJCTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Stanice) then ORsTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Technologie) then ORTCPServer.GUIRefreshFromQueue();
+
+     ABTableData.Update();
     end;
 
     HVDb.UpdateTokenTimeout();
@@ -2664,7 +2684,8 @@ begin
  writeLog(str, WR_SYSTEM, 0);
 end;
 
-procedure TF_Main.LV_ABEdited(Sender: TObject; Item: TListItem; var S: string);
+procedure TF_Main.LV_ABChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
 begin
  Self.B_AB_Delete.Enabled := (Self.LV_AB.Selected <> nil);
 end;
