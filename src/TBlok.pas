@@ -136,6 +136,11 @@ type
    property table_index:Integer read ftable_index write ftable_index;
    property frozen:boolean read ffrozen;
    property OblsRizeni:TORsRef read ORsRef;
+
+   property id:Integer read GlobalSettings.id;
+   property name:string read GlobalSettings.name;
+   property typ:Byte read GlobalSettings.typ;
+   property poznamka:string read GlobalSettings.poznamka;
  end;
 
 implementation
