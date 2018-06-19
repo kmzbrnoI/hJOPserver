@@ -2038,11 +2038,15 @@ var Nav:TBlk;
   Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
   writelog('Probiha ruseni navesti JC '+Self.Nazev, WR_VC);
 
-  if ((Nav as TBlkSCom).DNjc = self) then
+  if (((Nav as TBlkSCom).DNjc = self) and ((Nav as TBlkSCom).Navest > 0)) then
    begin
-    (Nav as TBlkSCom).AB := false; // automaticky zrusi AB
-    if ((Nav as TBlkSCom).Navest > 0) then
-      (Nav as TBlkSCom).Navest := 0;
+    (Nav as TBlkSCom).Navest := 0;
+    if ((Nav as TBlkSCom).AB) then
+     begin
+      (Nav as TBlkSCom).AB := false; // automaticky zrusi AB
+      ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Zrušena AB '+Nav.GetGlobalSettings().name,
+        (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+     end;
    end;
 
   Self.Krok             := 0;

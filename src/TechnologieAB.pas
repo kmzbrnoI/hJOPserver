@@ -30,6 +30,8 @@ type
 
      procedure Update();
 
+     function IsUsekInAnyABJC(usekid:Integer):boolean;
+
      property Items[index : integer]: TJC read GetItem; default;
   end;
 
@@ -107,6 +109,18 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TABlist.IsUsekInAnyABJC(usekid:Integer):boolean;
+var jc:TJC;
+    id:Integer;
+begin
+ for jc in Self.JCs do
+   for id in jc.data.Useky do
+     if (id = usekid) then
+       Exit(true);
+
+ Result := false;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -655,7 +655,7 @@ var old:TZaver;
 begin
  if (Zaver = Self.Zaver) then Exit();
 
- if ((Integer(Self.UsekStav.Zaver) > 0) and (Zaver = TZaver.no)) then
+ if ((Integer(Self.UsekStav.Zaver) > 0) and ((Zaver = TZaver.no) or (Zaver = TZaver.ab))) then
    Self.NUZ := false;
 
  old := Self.Zaver;

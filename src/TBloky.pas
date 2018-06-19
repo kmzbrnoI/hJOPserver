@@ -134,7 +134,8 @@ implementation
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
       TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieRCS,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
-      TBlokTratUsek, appEv, TBlokVystup, PTUtils, TBlokSouctovaHlaska;
+      TBlokTratUsek, appEv, TBlokVystup, PTUtils, TBlokSouctovaHlaska,
+      TechnologieAB;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -719,8 +720,13 @@ var usek, i, spr:Integer;
             if (Self.GetBlkWithSpr(spr).Count = 1) then
               Soupravy.RemoveSpr(spr);
            end;
-          (Self.Data[usek] as TBlkUsek).Zaver := TZaver.no;
-            (Self.Data[usek] as TBlkUsek).RemoveSoupravy();
+
+          if (ABlist.IsUsekInAnyABJC(Self.Data[usek].id)) then
+            (Self.Data[usek] as TBlkUsek).Zaver := TZaver.ab
+          else
+            (Self.Data[usek] as TBlkUsek).Zaver := TZaver.no;
+
+          (Self.Data[usek] as TBlkUsek).RemoveSoupravy();
          end else
           (Self.Data[usek] as TBlkUsek).NUZ := false;
        end;
