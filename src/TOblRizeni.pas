@@ -438,6 +438,7 @@ begin
         vlak   : fg := clLime;
         posun  : fg := clWhite;
         nouz   : fg := clAqua;
+        ab     : fg := $707070;
        end;//case
 
        // je soucasti vybarveneho neprofiloveho useku
@@ -520,6 +521,7 @@ begin
         vlak   : fg := clLime;
         posun  : fg := clWhite;
         nouz   : fg := clAqua;
+        ab     : fg := $707070;
        end;//case
       end;
 

@@ -231,7 +231,8 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
       'Vlakov'#253
       'Posunov'#253
       'Nouzov'#253
-      'Stav'#283'c'#237)
+      'Stav'#283'c'#237
+      'AB')
   end
   object B_SaveData: TButton
     Left = 505

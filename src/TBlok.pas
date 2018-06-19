@@ -31,7 +31,7 @@ const
 type
  ETypeNotFound = class(Exception);
 
- TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4);
+ TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4, ab = 5);
 
  //spolecne recordy:
  TRCSAddrs = record
