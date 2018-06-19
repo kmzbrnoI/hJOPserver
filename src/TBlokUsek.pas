@@ -1260,14 +1260,14 @@ begin
 
  Result := Result + 'STIT,VYL,';
 
- if (((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TZaver.staveni)
-    and (Self.GetGlobalSettings().typ = _BLK_USEK) and (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) then
-  begin
-   if (Self.UsekStav.NUZ) then
-     Result := Result + '-,NUZ<,'
-    else
-     Result := Result + '-,NUZ>,';
-  end;
+ if (Self.UsekStav.NUZ) then
+   Result := Result + '-,NUZ<,';
+
+ if ((((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TZaver.ab) and
+      (Self.UsekStav.Zaver <> TZaver.staveni) and (Self.GetGlobalSettings().typ = _BLK_USEK) and
+      (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) and
+      (not Self.UsekStav.NUZ)) then
+   Result := Result + '-,NUZ>,';
 
  //11 = KC
  Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
