@@ -1050,7 +1050,7 @@ begin
  if (Self.SComSettings.zamknuto) then Exit();
 
  if ((((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-        (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8))
+        (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8) and (not Self.AB))
       or ((SenderOR as TOR).stack.volba = VZ)) and
      (not Self.autoblok)) then
   begin
@@ -1088,15 +1088,14 @@ begin
      Result := Result + 'RC,';
 
      // AB lze jen u vlakove cesty
-     if (Self.DNjc.data.TypCesty = TJCType.vlak) then
-      begin
-       if (Self.AB) then
-         Result := Result + 'AB<,'
-        else
-         Result := Result + 'AB>,'
-      end;
+     if ((Self.DNjc.data.TypCesty = TJCType.vlak) and (not Self.AB)) then
+       Result := Result + 'AB>,';
     end;
  end;
+
+ // AB lze jen u vlakove cesty
+ if (Self.AB) then
+   Result := Result + 'AB<,';
 
  //7=ZAM
  if (Self.SComStav.ZAM) then
