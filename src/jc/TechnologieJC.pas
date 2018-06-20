@@ -2055,7 +2055,7 @@ var Nav:TBlk;
 
   if (((Nav as TBlkSCom).DNjc = self) and ((Nav as TBlkSCom).Navest > 0)) then
    begin
-    (Nav as TBlkSCom).Navest := 0;
+    (Nav as TBlkSCom).Navest := TBlkSCom._NAV_STUJ;
     if ((Nav as TBlkSCom).AB) then
      begin
       (Nav as TBlkSCom).AB := false; // automaticky zrusi AB
@@ -2448,18 +2448,18 @@ var Nav,DalsiNav:TBlk;
  begin
   Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
 
-  Navest := 0;
+  Navest := TBlkSCom._NAV_STUJ;
 
   if ((Self.fstaveni.nc) and (Self.fproperties.TypCesty = TJCType.vlak)) then
    begin
     // nouzova cesta
-    Navest := 8;
+    Navest := TBlkSCom._NAV_PRIVOL;
    end else begin
 
     case (Self.fproperties.TypCesty) of
      TJCType.posun : begin
       // posunova cesta
-      Navest := 9;          // dovolen zajisteny posun
+      Navest := TBlkSCom._NAV_POSUN_ZAJ;
      end;//case posun
 
      TJcType.vlak : begin
@@ -2469,25 +2469,17 @@ var Nav,DalsiNav:TBlk;
         // na dalsim navestidle lze jet
 
         if (Self.fproperties.RychlostDalsiN = 4) then
-         begin
-          // 40 km/h
-          Navest := 4;              // 40 km/h a volno
-         end else begin
-          // ostatni rychlosti
-          Navest := 1;              // volno
-         end;
+          Navest := TBlkSCom._NAV_VOLNO_40
+        else
+          Navest := TBlkSCom._NAV_VOLNO;
 
        end else begin//if ...SCom.Cesta
         // na dalsim navestidle je na STUJ
 
         if (Self.fproperties.RychlostNoDalsiN = 4) then
-         begin
-          // 40 km/h
-          Navest := 6;              // 40 km/h a vystraha
-         end else begin
-          // ostatni rychlosti
-          Navest := 2;              // vystraha
-         end;
+          Navest := TBlkSCom._NAV_VYSTRAHA_40
+        else
+          Navest := TBlkSCom._NAV_VYSTRAHA;
        end;
      end;//case vlak
 

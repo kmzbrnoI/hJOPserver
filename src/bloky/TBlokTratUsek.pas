@@ -1091,7 +1091,7 @@ begin
     if (Self.TUSettings.navSid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
      end;
    end;
 
@@ -1099,7 +1099,7 @@ begin
     if (Self.TUSettings.navLid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
      end;
    end;
 
@@ -1107,12 +1107,12 @@ begin
     if (Self.TUSettings.navSid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
      end;
     if (Self.TUSettings.navLid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := 13;
+      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
      end;
     Exit();
    end;
@@ -1131,13 +1131,13 @@ begin
    if (not Self.sectReady) then
     begin
      // sekce obsazena -> navetidlo na STUJ
-     TBlkSCom(Self.navKryci).Navest := 0
+     TBlkSCom(Self.navKryci).Navest := TBlkSCom._NAV_STUJ
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
      if ((Self.nextNav = nil) or (TBlkSCom(Self.nextNav).Navest = 0)) then
-       TBlkSCom(Self.navKryci).Navest := 2
+       TBlkSCom(Self.navKryci).Navest := TBlkSCom._NAV_VYSTRAHA
       else
-       TBlkSCom(Self.navKryci).Navest := 1;
+       TBlkSCom(Self.navKryci).Navest := TBlkSCom._NAV_VOLNO;
     end;
   end;
 

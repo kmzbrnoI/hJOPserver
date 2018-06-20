@@ -89,6 +89,7 @@ type
    _PRIVOL_SEC = 30;
 
    // Kody navesti
+   _NAV_DISABLED = -1;
    _NAV_STUJ = 0;
    _NAV_VOLNO = 1;
    _NAV_VYSTRAHA = 2;
@@ -408,7 +409,7 @@ begin
    Exit();
  end;
 
- Self.SComStav.Navest := 0;
+ Self.SComStav.Navest := _NAV_STUJ;
  Self.SComStav.toRnz.Clear();
  Self.UnregisterAllEvents();
  Self.Change();
@@ -416,7 +417,7 @@ end;//procedure
 
 procedure TBlkSCom.Disable();
 begin
- Self.SComStav.Navest := -1;
+ Self.SComStav.Navest := _NAV_DISABLED;
  Self.SComStav.ZacatekVolba := TBlkSComVolba.none;
  Self.AB := false;
  Self.SComStav.ZAM  := false;
@@ -442,13 +443,13 @@ begin
     begin
      if (Self.SComStav.Navest < 0) then
       begin
-       Self.SComStav.Navest := 0;
+       Self.SComStav.Navest := _NAV_STUJ;
        Self.Change();
       end;
     end else begin
      if (Self.SComStav.Navest >= 0) then
       begin
-       Self.SComStav.Navest := -1;
+       Self.SComStav.Navest := _NAV_DISABLED;
        JCDb.RusJC(Self);
        Self.Change();
       end;
@@ -621,7 +622,7 @@ var i:Integer;
 begin
  if ((Self.SComStav.Navest < 0) or (Self.SComSettings.zamknuto)) then Exit();
 
- if ((navest = 8) or (navest = 0)) then
+ if ((navest = _NAV_PRIVOL) or (navest = _NAV_STUJ)) then
   begin
    if (Self.SComStav.privol_timer_id > 0) then
      for i := 0 to Self.ORsRef.Cnt-1 do
@@ -632,17 +633,17 @@ begin
    Self.SComStav.privol_timer_id := 0;
   end;
 
- if (navest = 8) then
+ if (navest = _NAV_PRIVOL) then
   Self.SComStav.privol_start := Now;
 
  if (Self.SComStav.Navest = navest) then Exit();
 
- if (navest = 8) then
+ if (navest = TBlkSCom._NAV_PRIVOL) then
   begin
    // nova navest je privolavacka -> zapnout zvukovou vyzvu
    for i := 0 to Self.OblsRizeni.Cnt-1 do
      Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt + 1;
-  end else if ((Self.SComStav.Navest = 8) and (navest = 0)) then begin
+  end else if ((Self.SComStav.Navest = _NAV_PRIVOL) and (navest = _NAV_STUJ)) then begin
    // STUJ po privolavacce -> vypnout zvukovou vyzvu
    for i := 0 to Self.OblsRizeni.Cnt-1 do
      Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt - 1;
@@ -820,7 +821,7 @@ end;//procedure
 procedure TBlkSCom.MenuSTUJClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  // poradi musi byt zachovano !
- Self.Navest := 0;
+ Self.Navest := _NAV_STUJ;
  if (Self.DNjc = nil) then Exit();
 
  Self.DNjc.STUJ();
@@ -888,7 +889,7 @@ end;//procedure
 procedure TBlkSCom.MenuLockClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZAM := true;
- Self.Navest := 0;
+ Self.Navest := _NAV_STUJ;
 end;//procedure
 
 procedure TBlkSCom.MenuUnlockClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1203,7 +1204,7 @@ begin
    Self.SComStav.padani_start := Now;
    writelog('Návìstidlo '+Self.GlobalSettings.name+': spoždìní pádu '+IntToStr(Self.SComSettings.ZpozdeniPadu)+' s', WR_VC, 0);
   end else begin
-   Self.Navest := 0;
+   Self.Navest := _NAV_STUJ;
   end;
 
  Self.UpdateRychlostSpr(true);
@@ -1215,7 +1216,7 @@ begin
 
  if (Self.SComStav.padani_start + EncodeTime(0, Self.SComSettings.ZpozdeniPadu div 60, Self.SComSettings.ZpozdeniPadu mod 60, 0) < Now) then
   begin
-   Self.Navest := 0;
+   Self.Navest := _NAV_STUJ;
    Self.SComStav.padani := false;
   end;
 end;//procedure
@@ -1477,7 +1478,7 @@ begin
  if (Self.SComStav.privol_start+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now) then
   begin
    // pad privolavaci navesti
-   Self.Navest := 0;
+   Self.Navest := _NAV_STUJ;
   end;
 end;//procedure
 
@@ -1505,7 +1506,7 @@ begin
  if (success) then
   begin
    Self.SComStav.ZacatekVolba := TBlkSComVolba.none;
-   Self.Navest := 8;
+   Self.Navest := _NAV_PRIVOL;
   end else begin
    self.ZacatekVolba := TBlkSComVolba.none;
   end;
