@@ -88,6 +88,24 @@ type
    _PRIVOL_MIN = 1;
    _PRIVOL_SEC = 30;
 
+   // Kody navesti
+   _NAV_STUJ = 0;
+   _NAV_VOLNO = 1;
+   _NAV_VYSTRAHA = 2;
+   _NAV_OCEK_40 = 3;
+   _NAV_VOLNO_40 = 4;
+   _NAV_VSE = 5;
+   _NAV_VYSTRAHA_40 = 6;
+   _NAV_40_OCEK_40 = 7;
+   _NAV_PRIVOL = 8;
+   _NAV_POSUN_ZAJ = 9;
+   _NAV_POSUN_NEZAJ = 10;
+   _NAV_OPAK_VOLNO = 11;
+   _NAV_OPAK_VYSTRAHA = 12;
+   _NAV_ZHASNUTO = 13;
+   _NAV_OPAK_OCEK_40 = 14;
+   _NAV_OPAK_VYSTRAHA_40 = 15;
+
   private
    SComSettings:TBlkSComSettings;
    SComStav:TBlkSComStav;

@@ -528,20 +528,16 @@ begin
     if (my_navest > 0) then
      begin
       if (Self.JCs[i].data.RychlostDalsiN = 4) then
-       begin
-        (nav as TBlkSCom).Navest := 4;              // 40 km/h a volno
-       end else begin
-        (nav as TBlkSCom).Navest := 1;              // volno
-       end;//else ...Odbocka
+        (nav as TBlkSCom).Navest := TBlkSCom._NAV_VOLNO_40
+      else
+        (nav as TBlkSCom).Navest := TBlkSCom._NAV_VOLNO;
 
      end else begin
 
       if (Self.JCs[i].data.RychlostNoDalsiN = 4) then
-       begin
-        (nav as TBlkSCom).Navest := 4;              // 40 km/h a volno
-       end else begin
-        (nav as TBlkSCom).Navest := 1;              // volno
-       end;//else ...Odbocka
+        (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA_40
+      else
+        (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA;
 
      end;
    end;//for i
