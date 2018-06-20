@@ -2467,11 +2467,23 @@ var Nav,DalsiNav:TBlk;
       if ((Self.fproperties.DalsiNNavaznostTyp = 1) or ((DalsiNav <> nil) and ((DalsiNav as TBlkSCom).IsPovolovaciNavest()))) then
        begin
         // na dalsim navestidle lze jet
-
-        if (Self.fproperties.RychlostDalsiN = 4) then
-          Navest := TBlkSCom._NAV_VOLNO_40
-        else
-          Navest := TBlkSCom._NAV_VOLNO;
+        if (Self.fproperties.RychlostDalsiN = 4) then begin
+          if ((Self.fproperties.DalsiNNavaznostTyp = 2) and (DalsiNav <> nil) and
+              ((TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_VYSTRAHA_40) or
+               ((TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_40_OCEK_40)) or
+               (TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_VOLNO_40))) then
+            Navest := TBlkSCom._NAV_40_OCEK_40
+          else
+            Navest := TBlkSCom._NAV_VOLNO_40;
+        end else begin
+          if ((Self.fproperties.DalsiNNavaznostTyp = 2) and (DalsiNav <> nil) and
+              ((TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_VYSTRAHA_40) or
+               ((TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_40_OCEK_40)) or
+               (TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_VOLNO_40))) then
+            Navest := TBlkSCom._NAV_OCEK_40
+          else
+            Navest := TBlkSCom._NAV_VOLNO;
+        end;
 
        end else begin//if ...SCom.Cesta
         // na dalsim navestidle je na STUJ
