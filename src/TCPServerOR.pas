@@ -551,7 +551,7 @@ begin
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := '';
 
    if ((AContext.Data as TTCPORsRef).stitek = nil) then Exit();
-   case ((AContext.Data as TTCPORsRef).stitek.GetGlobalSettings().typ) of
+   case ((AContext.Data as TTCPORsRef).stitek.typ) of
     _BLK_USEK, _BLK_TU : ((AContext.Data as TTCPORsRef).stitek as TBlkUsek).Stitek := tmp;
     _BLK_VYH           : ((AContext.Data as TTCPORsRef).stitek as TBlkVyhybka).Stitek := tmp;
     _BLK_UVAZKA        : ((AContext.Data as TTCPORsRef).stitek as TBlkUvazka).Stitek := tmp;
@@ -571,7 +571,7 @@ begin
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := '';
 
    if ((AContext.Data as TTCPORsRef).vyluka = nil) then Exit();
-   case ((AContext.Data as TTCPORsRef).vyluka.GetGlobalSettings().typ) of
+   case ((AContext.Data as TTCPORsRef).vyluka.typ) of
     _BLK_USEK, _BLK_TU : ((AContext.Data as TTCPORsRef).vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
     _BLK_VYH           : ((AContext.Data as TTCPORsRef).vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
    end;//case
@@ -691,8 +691,8 @@ begin
   begin
    TTCPORsRef(AContext.Data).maus := (parsed[2] = '1');
    if ((Assigned(TTCPORsRef(AContext.Data).menu)) and
-       ((TTCPORsRef(AContext.Data).menu.GetGlobalSettings.typ = _BLK_USEK) or
-        (TTCPORsRef(AContext.Data).menu.GetGlobalSettings.typ = _BLK_TU))) then
+       ((TTCPORsRef(AContext.Data).menu.typ = _BLK_USEK) or
+        (TTCPORsRef(AContext.Data).menu.typ = _BLK_TU))) then
      TTCPORsRef(AContext.Data).menu.Change();
   end
 
@@ -879,8 +879,8 @@ procedure TORTCPServer.Stitek(AContext: TIdContext; Blk:TBlk; stit:string);
 begin
  try
    (AContext.Data as TTCPORsRef).stitek := Blk;
-   Self.SendLn(AContext, '-;STIT;'+Blk.GetGlobalSettings().name+';'+stit+';');
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := Blk.GetGlobalSettings.name;
+   Self.SendLn(AContext, '-;STIT;'+Blk.name+';'+stit+';');
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := Blk.name;
  except
 
  end;
@@ -890,8 +890,8 @@ procedure TORTCPServer.Vyluka(AContext: TIdContext; Blk:TBlk; vyl:string);
 begin
  try
    (AContext.Data as TTCPORsRef).vyluka := Blk;
-   Self.SendLn(AContext, '-;VYL;'+Blk.GetGlobalSettings().name+';'+vyl+';');
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := Blk.GetGlobalSettings.name;
+   Self.SendLn(AContext, '-;VYL;'+Blk.name+';'+vyl+';');
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := Blk.name;
  except
 
  end;
@@ -903,7 +903,7 @@ begin
    (AContext.Data as TTCPORsRef).menu    := Blk;
    (AContext.Data as TTCPORsRef).menu_or := OblR;
    Self.SendLn(AContext, '-;MENU;'+menu+';');
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[6] := Blk.GetGlobalSettings.name;
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[6] := Blk.name;
  except
 
  end;
@@ -920,7 +920,7 @@ begin
      begin
       if ((senders[i].ClassType = TBlk) or
           (senders[i].ClassType = TBlkVyhybka) or (senders[i].ClassType = TBlkUsek) or (senders[i].ClassType = TBlkSCom) or (senders[i].ClassType = TBlkUvazka)) then
-       str := str + (senders[i] as TBlk).GetGlobalSettings.name + '|'
+       str := str + (senders[i] as TBlk).name + '|'
       else if (senders[i].ClassType = TOR) then
        str := str + 'Stanovištì výpravèího '+(senders[i] as TOR).Name + '|';
      end;
@@ -932,7 +932,7 @@ begin
      if (Assigned(podminky[i].blok)) then
       begin
        try
-         str := str + '['+(podminky[i].blok as TBlk).GetGlobalSettings.name + '|' + podminky[i].podminka + ']';
+         str := str + '['+(podminky[i].blok as TBlk).name + '|' + podminky[i].podminka + ']';
        except
 
        end;
@@ -1195,16 +1195,16 @@ begin
   end;
 
  if ((Self.clients[index].conn.Data as TTCPORsRef).menu <> nil) then
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[6] := (Self.clients[index].conn.Data as TTCPORsRef).menu.GetGlobalSettings.name
+  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[6] := (Self.clients[index].conn.Data as TTCPORsRef).menu.name
  else begin
   F_Main.LV_Clients.Items.Item[index].SubItems.Strings[6] := '';
  end;
 
  if ((Self.clients[index].conn.Data as TTCPORsRef).vyluka <> nil) then
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := (Self.clients[index].conn.Data as TTCPORsRef).vyluka.GetGlobalSettings.name
+  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := (Self.clients[index].conn.Data as TTCPORsRef).vyluka.name
  else begin
    if ((Self.clients[index].conn.Data as TTCPORsRef).stitek <> nil) then
-    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := (Self.clients[index].conn.Data as TTCPORsRef).stitek.GetGlobalSettings.name
+    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := (Self.clients[index].conn.Data as TTCPORsRef).stitek.name
    else
     F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := '';
  end;

@@ -81,7 +81,7 @@ begin
   begin
    Blky.GetBlkByID(usek, blk);
    if ((blk <> nil) and
-       ((blk.GetGlobalSettings().typ = _BLK_USEK) or (blk.GetGlobalSettings().typ = _BLK_TU)) and
+       ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) and
        (TBlkUsek(blk).Zaver = TZaver.ab)) then
      TBlkUsek(blk).Zaver := TZaver.no;
   end;

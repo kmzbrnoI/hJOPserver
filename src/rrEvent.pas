@@ -174,7 +174,7 @@ begin
      rrtIR: begin
        Blky.GetBlkByID(m_data.irId, Blk);
        if (Blk = nil) then Exit(safeState);
-       if (Blk.GetGlobalSettings.typ <> _BLK_IR) then Exit(safeState);
+       if (Blk.typ <> _BLK_IR) then Exit(safeState);
        Result := ((TBlkIR(Blk).Stav = TIRStav.obsazeno) and (m_data.irState)) or
                  ((TBlkIR(Blk).Stav = TIRStav.uvolneno) and (not m_data.irState));
      end;

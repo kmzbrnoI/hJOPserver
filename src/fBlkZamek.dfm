@@ -93,7 +93,7 @@ object F_BlkZamek: TF_BlkZamek
     MaxValue = 2147483647
     MinValue = 1
     TabOrder = 1
-    Value = 0
+    Value = 1
   end
   object B_Storno: TButton
     Left = 151

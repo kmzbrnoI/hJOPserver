@@ -113,7 +113,7 @@ procedure TF_BlkUsek_tech.OpenForm(Blok:TBlkUsek);
  begin
   Self.Blk := Blok;
   LoadPrmnFromProgram();
-  Self.Caption := 'Vlastnosti úseku '+Self.Blk.GetGlobalSettings.name;
+  Self.Caption := 'Vlastnosti úseku '+Self.Blk.name;
   Self.Show;
  end;//procedure
 

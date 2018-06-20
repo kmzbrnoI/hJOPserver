@@ -81,7 +81,7 @@ begin
  formL.FillFromHouks(Blk.GetSettings().houkEvL);
  formS.FillFromHouks(Blk.GetSettings().houkEvS);
 
- Self.Caption := 'Houkací události úseku ' + Blk.GetGlobalSettings().name;
+ Self.Caption := 'Houkací události úseku ' + Blk.name;
  Self.ActiveControl := B_Apply;
  Self.ShowModal();
 end;

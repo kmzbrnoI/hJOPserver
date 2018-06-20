@@ -327,7 +327,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_TU)) then
+   if ((Blk <> nil) and (Blk.typ = _BLK_TU)) then
     Blk.Change();
   end;
 end;//procedure
@@ -341,7 +341,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   if ((Blk = nil) or (Blk.typ <> _BLK_TU)) then continue;
    if ((Blk as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
     Exit(true);
   end;
@@ -647,7 +647,7 @@ begin
    for i := 0 to Blky.Cnt-1 do
     begin
      Blky.GetBlkByIndex(i, Blk);
-     if (Blk.GetGlobalSettings().typ <> _BLK_SCOM) then continue;
+     if (Blk.typ <> _BLK_SCOM) then continue;
      if ((TBlkSCom(Blk).UsekID = Self.TratSettings.Useky[0]) and
          (Blk.OblsRizeni.ORs[0] = Self.uvazkaA.OblsRizeni.ORs[0]) and
          ((BlkTU = nil) or (TBlkSCom(Blk).UsekID <> BlkTU.GetSettings.navLid))) then
@@ -677,7 +677,7 @@ begin
    for i := 0 to Blky.Cnt-1 do
     begin
      Blky.GetBlkByIndex(i, Blk);
-     if (Blk.GetGlobalSettings().typ <> _BLK_SCOM) then continue;
+     if (Blk.typ <> _BLK_SCOM) then continue;
      if ((TBlkSCom(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
          (Blk.OblsRizeni.ORs[0] = Self.uvazkaB.OblsRizeni.ORs[0]) and
          ((BlkTU = nil) or (TBlkSCom(Blk).UsekID <> BlkTU.GetSettings.navSid))) then
@@ -707,15 +707,15 @@ begin
  for i := Self.TratSettings.Useky.Count-1 downto 0 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then
+   if ((Blk = nil) or (Blk.typ <> _BLK_TU)) then
     begin
-     writelog('Trat '+Self.GetGlobalSettings().name+' obsahuje referenci na TU ID '+IntToStr(Self.TratSettings.Useky[i])+', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', WR_ERROR);
+     writelog('Trat '+Self.name+' obsahuje referenci na TU ID '+IntToStr(Self.TratSettings.Useky[i])+', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', WR_ERROR);
      Self.TratSettings.Useky.Delete(i);
      continue;
     end;
-   if (((Blk as TBlkTU).InTrat <> -1) and ((Blk as TBlkTU).InTrat <> Self.GetGlobalSettings().id)) then
+   if (((Blk as TBlkTU).InTrat <> -1) and ((Blk as TBlkTU).InTrat <> Self.id)) then
     begin
-     writelog('Trat '+Self.GetGlobalSettings().name+': TU ID '+IntToStr(Self.TratSettings.Useky[i])+' jiz referuje na trat ID '+IntToStr((Blk as TBlkTU).InTrat)+', odstranuji referenci', WR_ERROR);
+     writelog('Trat '+Self.name+': TU ID '+IntToStr(Self.TratSettings.Useky[i])+' jiz referuje na trat ID '+IntToStr((Blk as TBlkTU).InTrat)+', odstranuji referenci', WR_ERROR);
      Self.TratSettings.Useky.Delete(i);
     end;
   end;
@@ -926,7 +926,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_TU)) then Exit(false);
+   if ((Blk = nil) or (Blk.typ <> _BLK_TU)) then Exit(false);
    if (not TBlkTU(Blk).ready) then Exit(false);
   end;
  Result := true;

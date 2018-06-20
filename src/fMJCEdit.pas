@@ -232,7 +232,7 @@ begin
    try
      Blky.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok, Blk);
 
-     if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_SCOM)) then
+     if ((Blk = nil) or (Blk.typ <> _BLK_SCOM)) then
       begin
        obls := nil;
        Exit();

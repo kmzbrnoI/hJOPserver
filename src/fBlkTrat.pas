@@ -79,7 +79,7 @@ var Blk:TBlk;
   if (Blk <> nil) then
    begin
     // tato situace nastava v pripade tvorby noveho bloku
-    case (Blk.GetGlobalSettings().typ) of
+    case (Blk.typ) of
      _BLK_TRAT   : Self.Trat := Blk as TBlkTrat;
      _BLK_UVAZKA : Self.Trat := (Blk as TBlkUvazka).parent as TBlkTrat;
     end;
@@ -161,7 +161,7 @@ var glob:TBlkSettings;
     LI.SubItems.Add(Blky.GetBlkName(settings.Useky[i]));
    end;
 
-  Self.Caption := 'Edititace dat bloku '+Self.Trat.GetGlobalSettings().name+' (traù)';
+  Self.Caption := 'Edititace dat bloku '+Self.Trat.name+' (traù)';
  end;//procedure
 
 procedure TF_BlkTrat.HlavniOpenForm;
@@ -239,9 +239,9 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     uvazkaA := -1;
     uvazkaB := -1;
    end else begin
-    trat    := Blky.GetBlkIndex(Self.Trat.GetGlobalSettings().id);
-    uvazkaA := Blky.GetBlkIndex(Self.UvazkaA.GetGlobalSettings().id);
-    uvazkaB := Blky.GetBlkIndex(Self.UvazkaB.GetGlobalSettings().id);
+    trat    := Blky.GetBlkIndex(Self.Trat.id);
+    uvazkaA := Blky.GetBlkIndex(Self.UvazkaA.id);
+    uvazkaB := Blky.GetBlkIndex(Self.UvazkaB.id);
    end;
 
   if ((Self.E_Trat_Name.Text = '') or (Self.E_UA_name.Text = '') or (Self.E_UB_name.Text = '')) then
@@ -310,9 +310,9 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
       Exit;
      end;
    end else begin
-    glob_trat.poznamka := Self.Trat.GetGlobalSettings().poznamka;
-    glob_uvA.poznamka  := Self.UvazkaA.GetGlobalSettings().poznamka;
-    glob_uvB.poznamka  := Self.UvazkaB.GetGlobalSettings().poznamka;
+    glob_trat.poznamka := Self.Trat.poznamka;
+    glob_uvA.poznamka  := Self.UvazkaA.poznamka;
+    glob_uvB.poznamka  := Self.UvazkaB.poznamka;
 
     Self.Trat.SetGlobalSettings(glob_trat);
     Self.UvazkaA.SetGlobalSettings(glob_uvA);

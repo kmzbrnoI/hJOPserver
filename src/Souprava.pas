@@ -225,7 +225,7 @@ begin
    ini.DeleteKey(section, 'do');
 
  if (Self.data.front <> nil) then
-   ini.WriteInteger(section, 'front', (Self.data.front as TBlk).GetGlobalSettings().id)
+   ini.WriteInteger(section, 'front', (Self.data.front as TBlk).id)
  else
    ini.WriteInteger(section, 'front', -1);
 
@@ -534,7 +534,7 @@ procedure TSouprava.SetRychlostSmer(speed:Integer; dir:THVStanoviste);
 var i:Integer;
     smer:Integer;
 begin
- if ((TBlk(Self.front).GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
+ if ((TBlk(Self.front).typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
    TBlkTU(Self.front).rychUpdate := false;
 
  Self.data.smer := dir;
@@ -909,22 +909,22 @@ end;
 
 procedure TSouprava.AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj);
 begin
- Self.AddOrUpdatePOdj(usek.GetGlobalSettings.id, podj);
+ Self.AddOrUpdatePOdj(usek.id, podj);
 end;
 
 function TSouprava.IsPOdj(usek:TBlk):Boolean;
 begin
- Result := Self.IsPOdj(usek.GetGlobalSettings.id);
+ Result := Self.IsPOdj(usek.id);
 end;
 
 function TSouprava.GetPOdj(usek:TBlk):TPOdj;
 begin
- Result := Self.GetPOdj(usek.GetGlobalSettings.id);
+ Result := Self.GetPOdj(usek.id);
 end;
 
 procedure TSouprava.RemovePOdj(usek:TBlk);
 begin
- Self.RemovePOdj(usek.GetGlobalSettings.id);
+ Self.RemovePOdj(usek.id);
 end;
 
 procedure TSouprava.ClearPOdj();

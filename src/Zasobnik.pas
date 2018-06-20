@@ -453,7 +453,7 @@ begin
       if (not JC.WarningBariera(bariery[i].typ)) then
        begin
         // tyto bariery nelze rozkliknout pomoci UPO
-        Self.hint := bariery[i].blok.GetGlobalSettings().name;
+        Self.hint := bariery[i].blok.name;
         Self.UPOenabled := false;
         Exit();
        end;
@@ -462,7 +462,7 @@ begin
     // neupozornovaci bariery nejsou -> podivam se na zbytek barier (ty by mely byt upozornovaci a melo byt se u nich dat kliknout na UPO)
     Self.UPOenabled := true;
     if ((bariery.Count > 0) and (bariery[0].blok <> nil)) then
-      Self.hint := bariery[0].blok.GetGlobalSettings().name  // tohleto si muzeme dovolit, protoze mame zajiteno, ze v JC je alespon jedna bariera (viz podminka vyse)
+      Self.hint := bariery[0].blok.name  // tohleto si muzeme dovolit, protoze mame zajiteno, ze v JC je alespon jedna bariera (viz podminka vyse)
     else
       Self.hint := '';
 
@@ -485,7 +485,7 @@ var uv:TBlkUvazka;
 begin
  uv := (cmd.uvazka as TBlkUvazka);
 
- Self.hint := (uv as TBlk).GetGlobalSettings.name;
+ Self.hint := (uv as TBlk).name;
 
  if ((Self.volba = TORStackVolba.VZ) and (uv.CanZTS())) then
   begin
@@ -505,7 +505,7 @@ var uv:TBlkUvazka;
 begin
  uv := (cmd.uvazka as TBlkUvazka);
 
- Self.hint := (uv as TBlk).GetGlobalSettings.name;
+ Self.hint := (uv as TBlk).name;
 
  if ((Self.volba = TORStackVolba.VZ) and
      (not uv.zadost) and ((uv.parent as TBlkTrat).Zadost)) then
@@ -677,12 +677,12 @@ begin
 
    else if (cmd.ClassType = TORStackCmdZTS) then
     begin
-     Result := 'ZTS ' + ((cmd as TORStackCmdZTS).uvazka as TBlk).GetGlobalSettings.name;
+     Result := 'ZTS ' + ((cmd as TORStackCmdZTS).uvazka as TBlk).name;
     end
 
    else if (cmd.ClassType = TORStackCmdUTS) then
     begin
-     Result := 'UTS ' + ((cmd as TORStackCmdUTS).uvazka as TBlk).GetGlobalSettings.name;
+     Result := 'UTS ' + ((cmd as TORStackCmdUTS).uvazka as TBlk).name;
     end;
 
  except

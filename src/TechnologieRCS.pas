@@ -193,9 +193,9 @@ begin
    Blky.GetBlkByIndex(i, Blk);
    if (Blk.GetGlobalSettings.typ = _BLK_VYH) then
      Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs.data[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs.data[0].port,1);
-   if (Blk.GetGlobalSettings.typ = _BLK_PREJEZD) then
+   if (Blk.typ = _BLK_PREJEZD) then
      Self.SetInput((Blk as TBlkPrejezd).GetSettings().MTB, (Blk as TBlkPrejezd).GetSettings().MTBInputs.Otevreno, 1);
-   if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava())) then
+   if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava())) then
      Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].port, 1);
   end;//for cyklus
 
@@ -215,7 +215,7 @@ begin
  for i := 0 to Blky.Cnt-1 do
   begin
    Blky.GetBlkByIndex(i,Blk);
-   if ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then continue;
    if ((Blk as TBlkUsek).IsSouprava()) then
      Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].board,(Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].port,1);
   end;

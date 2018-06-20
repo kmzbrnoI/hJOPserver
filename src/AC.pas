@@ -286,7 +286,7 @@ var Blk:TBlk;
           end;
 
           Blky.GetBlkByID(krok.Params[0], Blk);
-          if ((not Assigned(Blk)) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
+          if ((not Assigned(Blk)) or ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU))) then
             raise Exception.Create('Nevalidni blok - '+lines[i]);
 
           Self.kroky.Add(krok);
@@ -314,7 +314,7 @@ var Blk:TBlk;
           end;
 
           Blky.GetBlkByID(krok.Params[0], Blk);
-          if ((blk = nil) or (blk.GetGlobalSettings.typ <> _BLK_TRAT)) then
+          if ((blk = nil) or (blk.typ <> _BLK_TRAT)) then
             raise Exception.Create('Nevalidni blok - '+lines[i]);
 
           Self.kroky.Add(krok);
@@ -350,7 +350,7 @@ var Blk:TBlk;
           end;
 
           Blky.GetBlkByID(krok.Params[0], Blk);
-          if ((not Assigned(Blk)) or (Blk.GetGlobalSettings().typ <> _BLK_SCOM)) then
+          if ((not Assigned(Blk)) or (Blk.typ <> _BLK_SCOM)) then
             raise Exception.Create('Nevalidni blok - '+lines[i]);
 
           Self.kroky.Add(krok);
@@ -557,7 +557,7 @@ var cmd:integer;
 
       if (Self.subkrok = 0) then
        begin
-        writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Cekani na '+Blk.GetGlobalSettings().name,WR_AUTREZ);
+        writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Cekani na '+Blk.name,WR_AUTREZ);
         Self.subkrok := 1;
        end;
 
@@ -583,7 +583,7 @@ var cmd:integer;
 
       if (Self.subkrok = 0) then
        begin
-        writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Zmena smeru trati '+Blk.GetGlobalSettings().name,WR_AUTREZ);
+        writelog('AC '+Self.name+': krok : '+IntToStr(Self.Krok)+' == Zmena smeru trati '+Blk.name,WR_AUTREZ);
         Self.subkrok := 1;
        end;
 

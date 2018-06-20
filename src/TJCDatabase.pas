@@ -251,7 +251,7 @@ begin
      // jeste kontrola variantnich bodu:
      if (Self.JCs[i].data.vb.Count <> (SenderOR as TOR).vb.Count) then continue;
      for j := 0 to Self.JCs[i].data.vb.Count-1 do
-      if (Self.JCs[i].data.vb[j] <> ((SenderOR as TOR).vb[j] as TBlk).GetGlobalSettings.id) then continue;
+      if (Self.JCs[i].data.vb[j] <> ((SenderOR as TOR).vb[j] as TBlk).id) then continue;
 
      // v pripade nouzove cesty klik na DK opet prevest na klienta
      if ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) then
@@ -410,7 +410,7 @@ begin
      begin
       for refz in Self.JCs[i].data.zamky do
        begin
-        if (refz.Blok = vyh.zamek.GetGlobalSettings().id) then
+        if (refz.Blok = vyh.zamek.id) then
          begin
           SetLength(Result, Length(Result)+1);
           Result[Length(Result)-1] := i;
@@ -557,28 +557,28 @@ var tmpblk:TBlk;
     i, j:Integer;
     jc:TJC;
 begin
- case (Blk.GetGlobalSettings().typ) of
-  _BLK_VYH     : jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.GetGlobalSettings().id);
+ case (Blk.typ) of
+  _BLK_VYH     : jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
   _BLK_PREJEZD : begin
     SetLength(jcs, 1);
-    jcs[0] := JCDb.FindPostavenaJCWithPrj(Blk.GetGlobalSettings().id);
+    jcs[0] := JCDb.FindPostavenaJCWithPrj(Blk.id);
   end;
   _BLK_USEK, _BLK_TU: begin
     SetLength(jcs, 1);
-    jcs[0] := JCDb.FindPostavenaJCWithUsek(Blk.GetGlobalSettings().id);
+    jcs[0] := JCDb.FindPostavenaJCWithUsek(Blk.id);
   end;
 
   _BLK_SCOM: begin
     SetLength(jcs, 1);
-    jcs[0] := JCDb.FindJC(Blk.GetGlobalSettings().id);
+    jcs[0] := JCDb.FindJC(Blk.id);
   end;
 
   _BLK_TRAT: begin
     SetLength(jcs, 1);
-    jcs[0] := JCDb.FindPostavenaJCWithTrat(Blk.GetGlobalSettings().id);
+    jcs[0] := JCDb.FindPostavenaJCWithTrat(Blk.id);
   end;
 
-  _BLK_ZAMEK: jcs := JCDb.FindPostavenaJCWithZamek(Blk.GetGlobalSettings().id);
+  _BLK_ZAMEK: jcs := JCDb.FindPostavenaJCWithZamek(Blk.id);
  end;//case
 
 
@@ -594,7 +594,7 @@ begin
       begin
        JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
        for j := 0 to (tmpBlk as TBlkScom).OblsRizeni.Cnt-1 do
-         (tmpBlk as TBlkScom).OblsRizeni.ORs[j].BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.GetGlobalSettings().name, 'TECHNOLOGIE');
+         (tmpBlk as TBlkScom).OblsRizeni.ORs[j].BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
     end;//for i
   end;//if jcindex <> -1

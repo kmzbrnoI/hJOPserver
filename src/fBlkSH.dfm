@@ -180,7 +180,7 @@ object F_BlkSH: TF_BlkSH
       Width = 232
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
     end
     object B_Add: TButton

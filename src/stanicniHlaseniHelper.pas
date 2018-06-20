@@ -67,7 +67,7 @@ begin
       end;
 
      // trate z aktualni stanice kontrolujeme cele
-     if ((not inOR) and (blk.GetGlobalSettings.typ = _BLK_TU) and (TBlkUsek(blk).SprPredict = spr.index) and
+     if ((not inOR) and (blk.typ = _BLK_TU) and (TBlkUsek(blk).SprPredict = spr.index) and
          (TBlkTU(blk).Trat <> nil) and
          (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.OblsRizeni.ORs[0] = OblR) or
           ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.OblsRizeni.ORs[0] = OblR))) then
@@ -75,11 +75,11 @@ begin
 
      if (not inOR) then continue;
 
-     if (((blk.GetGlobalSettings.typ = _BLK_USEK) or (blk.GetGlobalSettings.typ = _BLK_TU)) and
+     if (((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) and
          (TBlkUsek(blk).SprPredict = spr.index)) then
        blksWithSpr.Add(TBlkUsek(blk));
 
-     if ((blk.GetGlobalSettings.typ = _BLK_TU) and (TBlkUsek(blk).Souprava = spr.index)) then
+     if ((blk.typ = _BLK_TU) and (TBlkUsek(blk).Souprava = spr.index)) then
        if (TBlkTU(blk).Trat <> nil) then
          inTrat := TBlkTrat(TBlkTU(blk).Trat);
     end;
@@ -89,7 +89,7 @@ begin
    for blkUsek in blksWithSpr do
     begin
      // souprava je predpovidana do jine trati nez ve ktere je -> prujezd
-     if ((blkUsek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(blkUsek).Trat <> inTrat)
+     if ((blkUsek.typ = _BLK_TU) and (TBlkTU(blkUsek).Trat <> inTrat)
          and (TBlkTU(blkUsek).Trat <> nil)) then
        Result.trat := TBlkTrat(TBlkTU(blkUsek).Trat);
 

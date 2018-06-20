@@ -187,7 +187,7 @@ var spojka_vypust:TArI;
     SetLength(obls,Self.Blk.OblsRizeni.Cnt);
     for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
     SetLength(spojka_vypust, 1);
-    spojka_vypust[0] := Self.Blk.GetGlobalSettings().id;
+    spojka_vypust[0] := Self.Blk.id;
 
     // spojka
     Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, _BLK_VYH, Self.Blk.GetSettings().spojka);
@@ -348,7 +348,7 @@ var glob:TBlkSettings;
       Exit;
      end;
    end else begin
-    glob.poznamka := Self.Blk.GetGlobalSettings().poznamka;
+    glob.poznamka := Self.Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);
    end;
 

@@ -376,7 +376,7 @@ begin
     Exit;
    end;
 
-  if (Blk.GetGlobalSettings().typ <> _BLK_SCOM) then
+  if (Blk.typ <> _BLK_SCOM) then
    begin
     // blok navestidla neni typu navestidlo
     Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.NavestidloBlok));
@@ -386,7 +386,7 @@ begin
   // blok disabled
   if ((Blk as TBlkSCom).Navest < 0) then
    begin
-    Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+    Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
     Exit;
    end;
 
@@ -407,7 +407,7 @@ begin
       Exit;
      end;//if
 
-    if (Blk.GetGlobalSettings().typ <> _BLK_VYH) then
+    if (Blk.typ <> _BLK_VYH) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Vyhybky[i].Blok));
       Exit;
@@ -416,7 +416,7 @@ begin
     // blok disabled
     if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
       Exit;
      end;
 
@@ -425,7 +425,7 @@ begin
         (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
-          TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id));
+          TBlkVyhybka(Blk).npBlokPlus.id));
       Exit;
      end;
 
@@ -434,7 +434,7 @@ begin
         (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
-          TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id));
+          TBlkVyhybka(Blk).npBlokMinus.id));
       Exit;
      end;
    end;//for i
@@ -449,7 +449,7 @@ begin
       Exit;
      end;//if
 
-    if ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU)) then
+    if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Useky[i]));
       Exit;
@@ -458,7 +458,7 @@ begin
     // blok disabled
     if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.disabled) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
       Exit;
      end;
    end;//for i
@@ -489,7 +489,7 @@ begin
      end;
 
     // kontrola typu bloku prejezdu
-    if (blk.GetGlobalSettings.typ <> _BLK_PREJEZD) then
+    if (blk.typ <> _BLK_PREJEZD) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].Prejezd));
       Exit;
@@ -498,7 +498,7 @@ begin
     // blok disabled
     if ((Blk as TBlkPrejezd).Stav.basicStav = TBlkPrjBasicStav.disabled) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
       Exit;
      end;
 
@@ -513,7 +513,7 @@ begin
        end;
 
       // kontrola typu oteviraciho bloku
-      if ((blk2.GetGlobalSettings().typ <> _BLK_USEK) and (blk2.GetGlobalSettings().typ <> _BLK_TU)) then
+      if ((blk2.typ <> _BLK_USEK) and (blk2.typ <> _BLK_TU)) then
        begin
         Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].oteviraci));
         Exit;
@@ -527,7 +527,7 @@ begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
           Exit;
          end;
-        if ((blk2.GetGlobalSettings.typ <> _BLK_USEK) and (blk2.GetGlobalSettings.typ <> _BLK_TU)) then
+        if ((blk2.typ <> _BLK_USEK) and (blk2.typ <> _BLK_TU)) then
          begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
           Exit;
@@ -544,7 +544,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Odvraty[i].ref_blk));
       Exit;
      end;
-    if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
+    if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Odvraty[i].ref_blk));
       Exit;
@@ -554,7 +554,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Odvraty[i].Blok));
       Exit;
      end;
-    if (blk.GetGlobalSettings().typ <> _BLK_VYH) then
+    if (blk.typ <> _BLK_VYH) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Odvraty[i].Blok));
       Exit;
@@ -562,7 +562,7 @@ begin
     // blok disabled
     if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
       Exit;
      end;
    end;//for i
@@ -571,7 +571,7 @@ begin
   if (Self.fproperties.Trat > -1) then
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], blk);
-    if (Blk.GetGlobalSettings().typ <> _BLK_TU) then
+    if (Blk.typ <> _BLK_TU) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Useky[Self.fproperties.Useky.Count-1]));
       Exit;
@@ -581,7 +581,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Trat));
       Exit;
      end;
-    if (blk.GetGlobalSettings().typ <> _BLK_TRAT) then
+    if (blk.typ <> _BLK_TRAT) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Trat));
       Exit;
@@ -589,7 +589,7 @@ begin
     // blok disabled
     if ((Blk as TBlkTrat).stav.smer = TTratSmer.disabled) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings().id));
+      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
       Exit;
      end;
    end;
@@ -602,9 +602,9 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.zamky[i].Blok));
       Exit;
      end;
-    if (blk.GetGlobalSettings().typ <> _BLK_ZAMEK) then
+    if (blk.typ <> _BLK_ZAMEK) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
      end;
     if (Blky.GetBlkByID(Self.fproperties.zamky[i].ref_blk, blk) <> 0) then
@@ -612,9 +612,9 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.zamky[i].ref_blk));
       Exit;
      end;
-    if ((blk.GetGlobalSettings().typ <> _BLK_USEK) and (blk.GetGlobalSettings().typ <> _BLK_TU)) then
+    if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.GetGlobalSettings().id));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
      end;
    end;//for i
@@ -628,7 +628,7 @@ begin
  privol := Blky.GetSComPrivol(Self.fstaveni.SenderOR as TOR);
 
  for i := 0 to privol.Count-1 do
-   Result.Add(Self.JCBariera(_JCB_PRIVOLAVACKA, privol[i] as TBlk, (privol[i] as TBlk).GetGlobalSettings().id));
+   Result.Add(Self.JCBariera(_JCB_PRIVOLAVACKA, privol[i] as TBlk, (privol[i] as TBlk).id));
 
  if (Assigned(privol)) then privol.Free();
 end;//function
@@ -659,29 +659,29 @@ begin
      begin
       // kontrola disabled jiz probehla
       if ((Blk as TBlkUsek).Obsazeno <> TUsekStav.uvolneno) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.id));
      end;//if
 
     // zaver
     if ((Blk as TBlkUsek).Zaver <> TZaver.no) then
      begin
       if ((Blk as TBlkUsek).Zaver = TZaver.ab) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk, Blk.GetGlobalSettings.id))
+        bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk, Blk.id))
       else
-        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.id));
      end;
 
     // souprava
     if (((Blk as TBlkUsek).IsSouprava()) and (Self.fproperties.TypCesty = TJCType.vlak)) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.id));
 
     // vyluka
     if ((Blk as TBlkUsek).Vyluka <> '') then
-      bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk, blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk, blk.id));
 
     // stitek
     if ((Blk as TBlkUsek).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk, blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk, blk.id));
    end;//for i
 
   // kontrola vyhybek:
@@ -692,26 +692,26 @@ begin
 
     // kontrola koncove polohy:
     if ((Integer((Blk as TBlkVyhybka).poloha) < 0) or (Integer((Blk as TBlkVyhybka).poloha) > 1)) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // zaver nema smysl kontrolovat - zaver vyhybek je prakticky zaver useku
     // proto ho staci zkontrolovat jen u useku
 
     // kontrola vyluky vyhybky:
     if ((Blk as TBlkVyhybka).Vyluka <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
     if ((Blk as TBlkVyhybka).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
     if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
       else if (TBlkVyhybka(Blk).redukce_menu) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.id));
      end;
 
     // kontrola spojky
@@ -721,10 +721,10 @@ begin
     if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
      begin
       if ((Blk2 as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
 
       if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
      end;
 
     // kontrola neprofiloveho styku pro polohu +
@@ -732,7 +732,7 @@ begin
         (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
      begin
       bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
-          TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id));
+          TBlkVyhybka(Blk).npBlokPlus.id));
       Exit;
      end;
 
@@ -741,7 +741,7 @@ begin
         (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
      begin
       bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
-          TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id));
+          TBlkVyhybka(Blk).npBlokMinus.id));
       Exit;
      end;
    end;//for i
@@ -760,7 +760,7 @@ begin
 
     // kontrola stitku prejezdu:
     if ((Blk as TBlkPrejezd).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.id));
    end;//for i
 
   // kontrola odvratu
@@ -775,16 +775,16 @@ begin
 
     // kontrola vyluky vyhybky:
     if ((Blk as TBlkVyhybka).Vyluka <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
     if ((Blk as TBlkVyhybka).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
       else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
@@ -799,11 +799,11 @@ begin
      begin
       // kontrola vyluky vyhybky:
       if ((Blk2 as TBlkVyhybka).Vyluka <> '') then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.id));
 
       // kontrola stitku vyhybky:
       if ((Blk2 as TBlkVyhybka).Stitek <> '') then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
       if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
@@ -811,16 +811,16 @@ begin
         if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
          begin
           if ((Blk2 as TBlkVyhybka).Zaver = TZaver.ab) then
-            bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.GetGlobalSettings.id))
+            bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.id))
           else
-            bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+            bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
          end;
 
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
-          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
 
         if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
-          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.GetGlobalSettings.id));
+          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
        end;
      end;
    end;//for i
@@ -867,13 +867,13 @@ begin
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaA).GetGlobalSettings.id));
+          TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
 
     if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Cnt > 0) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaB).GetGlobalSettings.id));
+          TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
 
     // stitky a vyluky na tratovych usecich
     for usek in TBlkTrat(Blk).GetSettings().Useky do
@@ -882,11 +882,11 @@ begin
 
       // vyluka
       if (TBlkUsek(Blk2).Vyluka <> '') then
-        bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk2, blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk2, blk2.id));
 
       // stitek
       if (TBlkUsek(Blk2).Stitek <> '') then
-        bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk2, blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk2, blk2.id));
      end;
    end;
 
@@ -898,7 +898,7 @@ begin
 
     // kontrola uzamceni
     if ((Blk as TBlkZamek).klicUvolnen) then
-      bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.GetGlobalSettings().id));
+      bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.id));
    end;//for i
 
  // kontrola ukradene loko v souprave pred navestidlem
@@ -973,18 +973,18 @@ begin
     if ((Blk as TBlkUsek).Zaver <> TZaver.no) then
      begin
       if ((Blk as TBlkUsek).Zaver = TZaver.ab) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk, Blk.GetGlobalSettings.id))
+        bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk, Blk.id))
       else
-        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.id));
      end;
 
     // vyluka
     if ((Blk as TBlkUsek).Vyluka <> '') then
-      bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk, blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk, blk.id));
 
     // stitek
     if ((Blk as TBlkUsek).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk, blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk, blk.id));
    end;//for i
 
   // kontrola vyhybek:
@@ -995,19 +995,19 @@ begin
 
     // kontrola vyluky vyhybky:
     if ((Blk as TBlkVyhybka).Vyluka <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
     if ((Blk as TBlkVyhybka).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
     if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
       else if (TBlkVyhybka(Blk).redukce_menu) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.id));
      end;
 
     // kontrola spojky
@@ -1017,7 +1017,7 @@ begin
     if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
      begin
       if ((Blk2 as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
      end;
    end;//for i
 
@@ -1027,7 +1027,7 @@ begin
     Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
     // kontrola stitku prejezdu:
     if ((Blk as TBlkPrejezd).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.id));
    end;//for i
 
   // kontrola odvratu
@@ -1038,16 +1038,16 @@ begin
 
     // kontrola vyluky vyhybky:
     if ((Blk as TBlkVyhybka).Vyluka <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
     if ((Blk as TBlkVyhybka).Stitek <> '') then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id))
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
       else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
@@ -1059,11 +1059,11 @@ begin
      begin
       // kontrola vyluky vyhybky:
       if ((Blk2 as TBlkVyhybka).Vyluka <> '') then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.id));
 
       // kontrola stitku vyhybky:
       if ((Blk2 as TBlkVyhybka).Stitek <> '') then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
       if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
@@ -1071,13 +1071,13 @@ begin
         if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
          begin
           if ((Blk2 as TBlkVyhybka).Zaver = TZaver.ab) then
-            bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.GetGlobalSettings.id))
+            bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.id))
           else
-            bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+            bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
          end;
 
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
-          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
        end;
      end;
    end;//for i
@@ -1094,11 +1094,11 @@ begin
 
       // vyluka
       if (TBlkUsek(Blk2).Vyluka <> '') then
-        bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk2, blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_VYLUKA, blk2, blk2.id));
 
       // stitek
       if (TBlkUsek(Blk2).Stitek <> '') then
-        bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk2, blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_STITEK, blk2, blk2.id));
      end;
 
     // kontrola stitku uvazky v nasi OR:
@@ -1106,13 +1106,13 @@ begin
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaA).GetGlobalSettings.id));
+          TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
 
     if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Cnt > 0) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaB).GetGlobalSettings.id));
+          TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
    end;
 
 end;//procedure
@@ -1447,9 +1447,9 @@ var i,j:Integer;
           if (neprofil.Obsazeno <> TUsekStav.uvolneno) then
            begin
             if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-              ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuvolnìn ' + neprofil.GetGlobalSettings.name,
+              ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuvolnìn ' + neprofil.name,
                   (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-            writelog('Krok 14 : Neprofilovy usek '+neprofil.GetGlobalSettings().name+' neuvolnen!', WR_VC);
+            writelog('Krok 14 : Neprofilovy usek '+neprofil.name+' neuvolnen!', WR_VC);
             Self.CancelStaveni();
             Exit();
            end;
@@ -1459,7 +1459,7 @@ var i,j:Integer;
           Blky.GetBlkByID(TBlkVyhybka(Blk).UsekID, Blk2);
 
           npCall := GetMemory(SizeOf(TNPCallerData));
-          npCall.usekId := neprofil.GetGlobalSettings.id;
+          npCall.usekId := neprofil.id;
           npCall.jcId   := Self.fproperties.id;
           TBlkUsek(Blk2).AddChangeEvent(TBlkUsek(Blk2).EventsOnZaverReleaseOrAB,
               CreateChangeEvent(ceCaller.RemoveUsekNeprofil, Integer(npCall)));
@@ -1477,10 +1477,10 @@ var i,j:Integer;
         begin
          Blky.GetBlkByID(Self.fproperties.Prisl[i].Blok, Blk);
 
-         case (Blk.GetGlobalSettings().typ) of
+         case (Blk.typ) of
            _BLK_SCOM:begin
              //scom
-             writelog('Krok 12 : scom '+Blk.GetGlobalSettings().name+' - redukuji menu', WR_VC);
+             writelog('Krok 12 : scom '+Blk.name+' - redukuji menu', WR_VC);
              TBlkSCom(Blk).RedukujMenu();
              Blky.GetBlkByID(Self.fproperties.Prisl[i].ref_blk, Blk);
              TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverReleaseOrAB,
@@ -1505,7 +1505,7 @@ var i,j:Integer;
          if (Self.fproperties.TypCesty = TJCType.posun) then
           begin
            // posunova cesta:
-           writelog('Krok 12 : prejezd '+Blk.GetGlobalSettings().name+' - uzaviram', WR_VC);
+           writelog('Krok 12 : prejezd '+Blk.name+' - uzaviram', WR_VC);
 
            TBlkPrejezd(Blk).Zaver := true;
 
@@ -1524,7 +1524,7 @@ var i,j:Integer;
              Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], Blk2);
              if ((Blk2 as TBlkUsek).Obsazeno = TusekStav.obsazeno) then
               begin
-               writelog('Krok 12 : prejezd '+Blk.GetGlobalSettings().name+' - aktivacni usek '+Blk2.GetGlobalSettings().name+' obsazen - uzaviram', WR_VC);
+               writelog('Krok 12 : prejezd '+Blk.name+' - aktivacni usek '+Blk2.name+' obsazen - uzaviram', WR_VC);
 
                Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
                TBlkPrejezd(Blk).Zaver := true;
@@ -1550,7 +1550,7 @@ var i,j:Integer;
              (Blk2 as TBlkUsek).AddChangeEvent((Blk2 as TBlkUsek).EventsOnObsaz, CreateChangeEvent(Self.UsekClosePrj, i));
             end;
 
-           writelog('Krok 12 : prejezd '+Blk.GetGlobalSettings().name+' - zadny aktivacni usek neobsazen - nechavam otevreny', WR_VC);
+           writelog('Krok 12 : prejezd '+Blk.name+' - zadny aktivacni usek neobsazen - nechavam otevreny', WR_VC);
           end;
         end;//for i
 
@@ -1572,7 +1572,7 @@ var i,j:Integer;
          Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
 
          if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then Exit();
-         writelog('Krok 13 : prejezd '+Blk.GetGlobalSettings().name+' uzavren', WR_VC);
+         writelog('Krok 13 : prejezd '+Blk.name+' uzavren', WR_VC);
         end;//for i
 
       Self.Krok := 14;
@@ -1629,9 +1629,9 @@ var i,j:Integer;
         if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
          begin
           if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.GetGlobalSettings().name,
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.name,
               (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Vyhybka '+Blk.GetGlobalSettings().name+' nema spravnou polohu !', WR_VC);
+          writelog('Krok 14 : Vyhybka '+Blk.name+' nema spravnou polohu !', WR_VC);
           Exit;
          end;
        end;//for cyklus
@@ -1642,9 +1642,9 @@ var i,j:Integer;
         if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
          begin
           if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.GetGlobalSettings().name,
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.name,
               (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Vyhybka '+Blk.GetGlobalSettings().name+' nema spravnou polohu !', WR_VC);
+          writelog('Krok 14 : Vyhybka '+Blk.name+' nema spravnou polohu !', WR_VC);
           Exit;
          end;
        end;//for cyklus
@@ -1660,9 +1660,9 @@ var i,j:Integer;
         if (TBlkTrat(Blk).Zadost) then
          begin
           if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Probíhá žádost '+Blk.GetGlobalSettings().name,
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Probíhá žádost '+Blk.name,
               (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Trat '+Blk.GetGlobalSettings().name+' : probiha zadost !', WR_VC);
+          writelog('Krok 14 : Trat '+Blk.name+' : probiha zadost !', WR_VC);
           Exit;
          end;
 
@@ -1674,9 +1674,9 @@ var i,j:Integer;
           or ((not TBlkTU(blk2).sectReady) and (Self.fproperties.TypCesty = TJCType.vlak)) or (((Blk as TBlkTrat).ZAK) and (Self.fproperties.TypCesty <> TJCType.posun)) ) then
          begin
           if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba trati '+Blk.GetGlobalSettings().name,
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba trati '+Blk.name,
               (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Trat '+Blk.GetGlobalSettings().name+' nesplnuje podminky pro postaveni JC !', WR_VC);
+          writelog('Krok 14 : Trat '+Blk.name+' nesplnuje podminky pro postaveni JC !', WR_VC);
           Exit;
          end;
 
@@ -1784,7 +1784,7 @@ var i,j:Integer;
        begin
         Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
         (Blk as TBlkZamek).nouzZaver := true;
-        TBlkSCom(Navestidlo).AddBlkToRnz(Blk.GetGlobalSettings().id, false);
+        TBlkSCom(Navestidlo).AddBlkToRnz(Blk.id, false);
        end;
 
       Self.fstaveni.ncBarieryCntLast := -1;   // tady je potreba mit cislo < 0
@@ -1888,12 +1888,12 @@ var i,j:Integer;
         spri := Self.GetSoupravaIndex(Navestidlo, Blk);
 
         // a)
-        if ((Blk2.GetGlobalSettings().typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
+        if ((Blk2.typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
             (not TBlkUsek(Blk2).SoupravyFull())) then
          begin
           if (TBlkUsek(Blk).IsSouprava()) then
            begin
-            if ((Blk.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
+            if ((Blk.typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
              begin
               Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
               (Trat as TBlkTrat).RemoveSpr(spri);
@@ -1911,13 +1911,13 @@ var i,j:Integer;
          end;
 
         // b)
-        if ((Blk2.GetGlobalSettings().typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat > -1)) then
+        if ((Blk2.typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat > -1)) then
           Blky.GetBlkByID((Blk2 as TBlkTU).InTrat, Trat)
         else
           Trat := nil;
 
         if ((Trat <> nil) and ((Blk as TBlkUsek).IsSouprava()) and (not (Blk2 as TBlkUsek).IsSouprava()) and
-            (Blk2.GetGlobalSettings().typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat = Self.data.Trat) and
+            (Blk2.typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat = Self.data.Trat) and
             ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
          begin
           (Trat as TBlkTrat).AddSpr(spri);
@@ -1991,14 +1991,14 @@ var Blk:TBlk;
  begin
   Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
   if (Blk = nil) then Exit;
-  if (Blk.GetGlobalSettings().typ <> _BLK_SCOM) then Exit;
+  if (Blk.typ <> _BLK_SCOM) then Exit;
   if ((Blk as TBlkSCom).ZacatekVolba = TBlkSComVolba.none) then Exit;
 
   (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
   if ((Blk as TBlkSCom).DNjc = Self) then
     (Blk as TBlkSCom).DNjc := nil;
 
-  writelog('Zrusen zacatek staveni VC na bloku '+Blk.GetGlobalSettings().name,WR_VC);
+  writelog('Zrusen zacatek staveni VC na bloku '+Blk.name,WR_VC);
  end;//procedure
 
 //rusi konec jizdni cesty
@@ -2017,7 +2017,7 @@ begin
  for i := 0 to Self.data.vb.Count-1 do
   begin
    Blky.GetBlkByID(Self.data.vb[i], Blk);
-   if ((Blk <> nil) and ((Blk.GetGlobalSettings().typ = _BLK_USEK) or (Blk.GetGlobalSettings().typ = _BLK_TU))) then
+   if ((Blk <> nil) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU))) then
      (Blk as TBLkUsek).KonecJC := TZaver.no;
   end; 
 end;
@@ -2060,7 +2060,7 @@ var Nav:TBlk;
      begin
       (Nav as TBlkSCom).AB := false; // automaticky zrusi AB
       if (Self.fstaveni.SenderPnl <> nil) then
-        ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Zrušena AB '+Nav.GetGlobalSettings().name,
+        ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Zrušena AB '+Nav.name,
           (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
      end;
    end;
@@ -2095,8 +2095,8 @@ begin
      ((Nav as TBlkSCom).Navest <> 0) and (Self.RozpadRuseniBlok = -1) and (Self.data.TypCesty = TJCType.posun) and
      (Self.RozpadBlok >= 1)) then
   begin
-   writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+' : navestidlo '+
-     Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
+   writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.name+' : navestidlo '+
+     Nav.name+' nastaveno na STUJ',WR_VC);
    (Nav as TBlkSCom).JCZrusNavest();
   end;
 
@@ -2128,7 +2128,7 @@ begin
          // navestidlo pri obsazeni prvniho useku rusime v pripade, ze se jedna o VC
          if (Self.data.TypCesty = TJCType.vlak) then
           begin
-           writelog('JC '+Self.Nazev+': Obsazen usek '+Usek.GetGlobalSettings().name+' : navestidlo '+Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
+           writelog('JC '+Self.Nazev+': Obsazen usek '+Usek.name+' : navestidlo '+Nav.name+' nastaveno na STUJ',WR_VC);
            (Nav as TBlkSCom).JCZrusNavest();
           end;
         end;
@@ -2169,7 +2169,7 @@ begin
          if (((Nav as TBlkSCom).Navest > 0) and ((Nav as TBlkSCom).DNjc = Self)) then
           begin
            if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-             ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name,
+             ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.name,
                 (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
            Self.RusJCWithoutBlk();
           end;
@@ -2221,7 +2221,7 @@ begin
       if ((Self.fproperties.TypCesty = TJCType.vlak) and ((Usek as TBlkUsek).IsSouprava())) then
        begin
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex((Usek as TBlkUsek).Souprava)+
-          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
         (Usek as TBlkUsek).RemoveSoupravy();
        end;
      end;//if Self.RozpadBlok >= 1
@@ -2245,8 +2245,8 @@ begin
       // uvolneni prvniho useku v posunove ceste je signalem pro zhasnuti navestidla
       if (((Nav as TBlkSCom).Navest <> 0) and (Self.data.TypCesty = TJCType.posun)) then
        begin
-        writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.GetGlobalSettings().name+
-          ' : navestidlo '+Nav.GetGlobalSettings().name+' nastaveno na STUJ',WR_VC);
+        writelog('JC '+Self.Nazev+': Uvolnen usek '+Usek.name+
+          ' : navestidlo '+Nav.name+' nastaveno na STUJ',WR_VC);
         (Nav as TBlkSCom).JCZrusNavest();
        end;
 
@@ -2261,12 +2261,12 @@ begin
         if (spri = TBlkUsek(Usek).Souprava) then
          begin
           writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-            ' z bloku '+Blk.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+            ' z bloku '+Blk.name, WR_SPRPREDAT, 0);
           (Blk as TBlkUsek).RemoveSouprava(spri);
          end;
 
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
         (Usek as TBlkUsek).RemoveSoupravy();
        end;
      end;
@@ -2283,12 +2283,12 @@ begin
         spri := Self.GetSoupravaIndex(nav, Usek);
         (Usek as TBlkUsek).RemoveSouprava(spri);
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
        end;
 
       Self.RozpadRuseniBlok := 0;
 
-      if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
+      if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
         TBlkTU(Usek).UvolnenoZJC();
      end;
    end;
@@ -2328,10 +2328,10 @@ begin
        begin
         (Usek as TBlkUsek).RemoveSouprava(spri);
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-          ' z bloku '+Usek.GetGlobalSettings().name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
        end;
 
-      if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
+      if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
         TBlkTU(Usek).UvolnenoZJC();
      end;
 
@@ -2360,7 +2360,7 @@ begin
    if (((Nav as TBlkSCom).Navest > 0) and ((Nav as TBlkSCom).DNjc = Self)) then
     begin
      if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-       ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.GetGlobalSettings().name,
+       ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovací návìsti '+Nav.name,
             (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
      Self.RusJCWithoutBlk();
     end;
@@ -2413,7 +2413,7 @@ var UsekActual,UsekDalsi,Nav:TBlk;
   Soupravy.soupravy[(UsekDalsi as TBlkUsek).Souprava].front := UsekDalsi;
   (UsekDalsi as TBlkUsek).houk_ev_enabled := true;
   writelog('JC '+Self.nazev+': predana souprava '+Soupravy.GetSprNameByIndex((UsekDalsi as TBlkUsek).Souprava)+
-      ' z bloku '+UsekActual.GetGlobalSettings().name+' do bloku '+UsekDalsi.GetGlobalSettings().name,WR_SPRPREDAT, 0);
+      ' z bloku '+UsekActual.name+' do bloku '+UsekDalsi.name,WR_SPRPREDAT, 0);
 
   Self.CheckSmyckaBlok(UsekDalsi);
  end;//procedure
@@ -2434,7 +2434,7 @@ begin
     end;
 
    Soupravy.soupravy[(Blk as TBlkUsek).Souprava].ChangeSmer();
-   writelog('Obsazen smyckovy usek '+Blk.GetGlobalSettings.name+ ' - menim smer loko v souprave '+
+   writelog('Obsazen smyckovy usek '+Blk.name+ ' - menim smer loko v souprave '+
       Soupravy.soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
   end;//if
 end;//procedure
@@ -2717,7 +2717,7 @@ begin
         Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
         if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then
           if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuzavøen '+(Blk as TBlkPrejezd).GetGlobalSettings().name,
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuzavøen '+(Blk as TBlkPrejezd).name,
               (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
        end;//for i
     end;//case 13
@@ -2874,8 +2874,8 @@ begin
  // zavrit prejezd
  Blky.GetBlkByID(Self.fproperties.Prejezdy[data].Prejezd, Blk);
  TBlkPrejezd(Blk).Zaver := true;
- writelog('JC '+Self.nazev+': obsazen '+(Sender as TBlkUsek).GetGlobalSettings().name+
-    ' - uzaviram prejezd '+Blk.GetGlobalSettings().name, WR_VC, 0);
+ writelog('JC '+Self.nazev+': obsazen '+(Sender as TBlkUsek).name+
+    ' - uzaviram prejezd '+Blk.name, WR_VC, 0);
 
  // prejezd se uzavira -> po uvolneni zaveru bloku pd prejezdem prejezd opet otevrit
  Blky.GetBlkByID(Self.fproperties.Prejezdy[data].oteviraci, Blk);
@@ -2946,7 +2946,7 @@ begin
   begin
     Result[0] := GetUPOLine('NEPØÍPUSTNÉ', taCenter, clRed, clWhite);
     if (Assigned(Bariera.blok)) then
-      Result[2] := GetUPOLine(Bariera.blok.GetGlobalSettings().name)
+      Result[2] := GetUPOLine(Bariera.blok.name)
     else
       Result[2] := GetUPOLine('ID ' + IntToStr(bariera.param));
   end;
@@ -2989,7 +2989,7 @@ begin
   _JCB_ZAMEK_NOUZ_ZAVER        : Result[1] := GetUPOLine('Není nouzový závìr');
 
   _JCB_USEK_VYLUKA             : begin
-    Result[0] := GetUPOLine('VÝLUKA '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clOlive);
+    Result[0] := GetUPOLine('VÝLUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
     lines := GetLines((Bariera.blok as TBlkUsek).Vyluka, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 2) then
@@ -2997,7 +2997,7 @@ begin
     lines.Free();
   end;
   _JCB_USEK_STITEK             : begin
-    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkUsek).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 1) then
@@ -3006,7 +3006,7 @@ begin
   end;
 
   _JCB_VYHYBKA_VYLUKA          : begin
-    Result[0] := GetUPOLine('VÝLUKA '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clOlive);
+    Result[0] := GetUPOLine('VÝLUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
     lines := GetLines((Bariera.blok as TBlkVyhybka).Vyluka, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 1) then
@@ -3015,7 +3015,7 @@ begin
   end;
 
   _JCB_VYHYBKA_STITEK          : begin
-    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkVyhybka).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 1) then
@@ -3024,7 +3024,7 @@ begin
   end;
 
   _JCB_PREJEZD_STITEK          : begin
-    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkPrejezd).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 1) then
@@ -3035,7 +3035,7 @@ begin
   _JCB_PRIVOLAVACKA : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Svítí pøivolávací návìst');
-    Result[2] := GetUPOLine(Bariera.blok.GetGlobalSettings().name);
+    Result[2] := GetUPOLine(Bariera.blok.name);
   end;
 
   _JCB_HV_RUC : begin
@@ -3062,20 +3062,20 @@ begin
     if ((Self.fproperties.TypCesty = TJCType.posun) and (canZAK)) then
      begin
       Result[0] := GetUPOLine('ZAVEDEN ZÁKAZ ODJEZDU', taCenter, clRed, clWhite);
-      Result[1] := GetUPOLine(Bariera.blok.GetGlobalSettings().name);
+      Result[1] := GetUPOLine(Bariera.blok.name);
       Result[2] := GetUPOLine('');
      end else begin
       Result[0] := GetUPOLine('NEPØÍPUSTNÉ', taCenter, clRed, clWhite);
       Result[1] := GetUPOLine('Zákaz odjezdu');
       if (Assigned(Bariera.blok)) then
-        Result[2] := GetUPOLine(Bariera.blok.GetGlobalSettings().name)
+        Result[2] := GetUPOLine(Bariera.blok.name)
       else
         Result[2] := GetUPOLine('ID ' + IntToStr(bariera.param));
      end;
   end;
 
   _JCB_TRAT_STITEK : begin
-    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.GetGlobalSettings().name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkUvazka).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 1) then
@@ -3170,7 +3170,7 @@ begin
  if (not Self.staveni) then Exit();
 
  if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepøestavena '+(Sender as TBlkVyhybka).GetGlobalSettings.name,
+   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepøestavena '+(Sender as TBlkVyhybka).name,
      (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
  Self.RusJC();
@@ -3191,7 +3191,7 @@ begin
  TBlkVyhybka(Sender).vyhZaver := true;
 
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Navestidlo);
- TBlkSCom(Navestidlo).AddBlkToRnz(TBlk(Sender).GetGlobalSettings().id, false);
+ TBlkSCom(Navestidlo).AddBlkToRnz(TBlk(Sender).id, false);
 
  if (TBlkVyhybka(Sender).GetSettings().spojka > -1) then
   begin
@@ -3218,18 +3218,18 @@ begin
 
     // disabled
     if ((Blk as TBlkUsek).Obsazeno = TUsekStav.disabled) then
-      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
     // obsazenost
     if ((i <> Self.fproperties.Useky.Count-1) or (Self.fproperties.TypCesty <> TJCType.posun)) then
      begin
       if ((Blk as TBlkUsek).Obsazeno <> TUsekStav.uvolneno) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.id));
      end;//if
 
     // souprava
     if (((Blk as TBlkUsek).IsSouprava()) and (Self.fproperties.TypCesty = TJCType.vlak)) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.id));
    end;//for i
 
   // kontrola vyhybek:
@@ -3240,21 +3240,21 @@ begin
 
     // kontrola polohy:
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Vyhybky[i].Poloha) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru:
     if (not (Blk as TBlkVyhybka).vyhZaver) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id));
 
     // kontrola spojky
     Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
     if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
      begin
       if (not (Blk2 as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
 
       if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.GetGlobalSettings.id));
+        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
      end;
 
     // kontrola neprofiloveho styku pro polohu +
@@ -3262,11 +3262,11 @@ begin
      begin
       if (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled) then
         bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
-            TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id))
+            TBlkVyhybka(Blk).npBlokPlus.id))
       else
         if (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno) then
           bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
-              TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings().id));
+              TBlkVyhybka(Blk).npBlokPlus.id));
      end;
 
     // kontrola neprofiloveho styku pro polohu -
@@ -3274,11 +3274,11 @@ begin
      begin
       if (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled) then
         bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
-            TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id))
+            TBlkVyhybka(Blk).npBlokMinus.id))
       else
         if (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno) then
           bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
-              TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings().id));
+              TBlkVyhybka(Blk).npBlokMinus.id));
      end;
    end;//for i
 
@@ -3309,11 +3309,11 @@ begin
 
     // kontrola polohy:
     if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Vyhybky[i].Poloha) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru:
     if (not (Blk as TBlkVyhybka).vyhZaver) then
-      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.GetGlobalSettings.id));
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id));
 
     // kontrola spojky odvratu
     Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
@@ -3322,7 +3322,7 @@ begin
       // kontrola spravneho uzamceni odvratu
       if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
         if (not (Blk2 as TBlkVyhybka).vyhZaver) then
-          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.GetGlobalSettings.id));
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
      end;
    end;//for i
 
@@ -3364,11 +3364,11 @@ begin
 
     // kontrola uzamceni
     if ((Blk as TBlkZamek).klicUvolnen) then
-      bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.GetGlobalSettings().id));
+      bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.id));
 
     // kontrola uzamceni
     if (not (Blk as TBlkZamek).nouzZaver) then
-      bariery.Add(Self.JCBariera(_JCB_ZAMEK_NOUZ_ZAVER, blk, blk.GetGlobalSettings().id));
+      bariery.Add(Self.JCBariera(_JCB_ZAMEK_NOUZ_ZAVER, blk, blk.id));
    end;//for i
 end;//procedure
 
@@ -3463,7 +3463,7 @@ function TJC.GetAB():boolean;
 var Blk:TBlk;
 begin
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
- Result := ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (TBlkSCom(Blk).ABJC = Self));
+ Result := ((Blk <> nil) and (Blk.typ = _BLK_SCOM) and (TBlkSCom(Blk).ABJC = Self));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

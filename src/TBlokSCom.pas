@@ -446,7 +446,7 @@ procedure TBlkSCom.Change(now:boolean = false);
 begin
  // zmenu navesti propagujeme do prilehle trati, kde by mohlo dojit ke zmene
  // navesti autobloku
- if ((Self.UsekPred <> nil) and (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
+ if ((Self.UsekPred <> nil) and (Self.UsekPred.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
    Self.UsekPred.Change();
 
  inherited;
@@ -658,8 +658,8 @@ begin
 
  if (Self.SComStav.Navest = 0) then
   begin
-   if ((Self.UsekPred <> nil) and ((Self.UsekPred.GetGlobalSettings().typ = _BLK_USEK) or
-       (Self.UsekPred.GetGlobalSettings().typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).SComJCRef.Contains(Self))) then
+   if ((Self.UsekPred <> nil) and ((Self.UsekPred.typ = _BLK_USEK) or
+       (Self.UsekPred.typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).SComJCRef.Contains(Self))) then
     (Self.UsekPred as TBlkUsek).SComJCRef.Remove(Self);
 
    // ruseni nouzove jizdni cesty
@@ -766,7 +766,7 @@ begin
  if (Self.SComRel.SymbolType = 1) then Exit;
  if ((SenderOR as TOR).stack.volba = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) > -1)) then Exit;
+       (JCDb.FindOnlyStaveniJC(Self.id) > -1)) then Exit;
 
  Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then
@@ -787,7 +787,7 @@ var Blk:TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) > -1)) then Exit;
+       (JCDb.FindOnlyStaveniJC(Self.id) > -1)) then Exit;
 
  Blk := BLky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
@@ -833,7 +833,7 @@ begin
  JC := Self.DNjc;
 
  Blk := Self.UsekPred;
- if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
+ if ((Blk = nil) or ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
    Self.SComStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
@@ -967,7 +967,7 @@ begin
    if (Self.SComSettings.events[0].zastaveni.typ = TRREvType.rrtIR) then
     begin
      Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.data.irId, Blk);
-     if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_IR)) then Exit();
+     if ((Blk = nil) or (Blk.typ <> _BLK_IR)) then Exit();
      if (enabled) then
        RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs.data[0].board, TBlkIR(Blk).GetSettings().RCSAddrs.data[0].port, 1)
      else
@@ -989,7 +989,7 @@ begin
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8))
+           (JCDb.FindOnlyStaveniJC(Self.id) = -1)) and (Self.Navest <> 8))
          or (TOR(SenderOR).stack.volba = VZ)) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
@@ -998,7 +998,7 @@ begin
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8))
+           (JCDb.FindOnlyStaveniJC(Self.id) = -1)) and (Self.Navest <> 8))
          or ((SenderOR as TOR).stack.volba = VZ)) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
@@ -1050,7 +1050,7 @@ begin
  if (Self.SComSettings.zamknuto) then Exit();
 
  if ((((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-        (JCDb.FindOnlyStaveniJC(Self.GetGlobalSettings().id) = -1)) and (Self.Navest <> 8) and (not Self.AB))
+        (JCDb.FindOnlyStaveniJC(Self.id) = -1)) and (Self.Navest <> 8) and (not Self.AB))
       or ((SenderOR as TOR).stack.volba = VZ)) and
      (not Self.autoblok)) then
   begin
@@ -1116,7 +1116,7 @@ begin
    if ((Self.SComSettings.events.Count > 0) and (Self.SComSettings.events[0].zastaveni.typ = TRREvType.rrtIR)) then
     begin
      Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.data.irId, Blk);
-     if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_IR)) then
+     if ((Blk <> nil) and (Blk.typ = _BLK_IR)) then
       begin
        case (TBlkIR(Blk).Stav) of
          TIRStav.uvolneno : Result := Result + '-,*IR>,';
@@ -1217,7 +1217,7 @@ begin
  if (Self.SComSettings.events.Count = 0) then Exit();
  Usek := Self.UsekPred;
  if (Self.SComRel.SymbolType = 1) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
- if ((Usek = nil) or ((Usek.GetGlobalSettings().typ <> _BLK_USEK) and (Usek.GetGlobalSettings().typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
+ if ((Usek = nil) or ((Usek.typ <> _BLK_USEK) and (Usek.typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
  if (not (Usek as TBlkUsek).IsSouprava()) then
@@ -1242,7 +1242,7 @@ begin
    Exit();
   end;
 
- if ((Usek.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and
+ if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and
      ((TBlkTrat(TBlkTU(Usek).Trat)).ChangesSprDir())) then
   begin
    // pokud se jedna o navestidlo, u ktereho se meni smer trati, a vlak jede v
@@ -1253,7 +1253,7 @@ begin
 
    // podobne pokud se jedna o prvni navestidlo autobloku, ignoruji jej ve smeru B --> A
    if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.BtoA) and
-       (TBlkTU(Usek).GetGlobalSettings.id = TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky[0])) then
+       (TBlkTU(Usek).id = TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky[0])) then
      Exit();
   end;
 
@@ -1338,7 +1338,7 @@ begin
          // zjistime dalsi navestidlo
          Blky.GetBlkByID(Self.DNjc.data.DalsiNNavaznost, SCom);
 
-         if ((SCom <> nil) and (SCom.GetGlobalSettings().typ = _BLK_SCOM) and ((SCom as TBlkSCom).IsPovolovaciNavest())) then
+         if ((SCom <> nil) and (SCom.typ = _BLK_SCOM) and ((SCom as TBlkSCom).IsPovolovaciNavest())) then
           begin
             // dalsi navestilo je na VOLNO
             if ((spr.rychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.SComRel.smer)) then
@@ -1373,7 +1373,7 @@ begin
      if (spr.smer = Self.SComRel.smer) then
       begin
        if ((Self.IsPovolovaciNavest()) and (not Self.SComStav.padani) and
-           (Self.UsekPred.GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
+           (Self.UsekPred.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
         begin
          // je povolavaci navest -> je zelena, nebo zluta?
          if (Self.Navest = 1) then
@@ -1511,7 +1511,7 @@ begin
    Blky.GetBlkByID(blkId, blk);
    if (blk = nil) then continue;   
 
-   case (blk.GetGlobalSettings().typ) of
+   case (blk.typ) of
     _BLK_VYH: begin
        if (TBlkVyhybka(blk).vyhZaver) then
          TBlkVyhybka(blk).DecreaseNouzZaver(toRnz[blkId]);
@@ -1541,7 +1541,7 @@ end;
 
 function TBlkSCom.GetUsekPred():TBlk;
 begin
- if (((Self.fUsekPred = nil) and (Self.UsekID <> -1)) or ((Self.fUsekPred <> nil) and (Self.UsekID <> Self.fUsekPred.GetGlobalSettings.id))) then
+ if (((Self.fUsekPred = nil) and (Self.UsekID <> -1)) or ((Self.fUsekPred <> nil) and (Self.UsekID <> Self.fUsekPred.id))) then
    Blky.GetBlkByID(Self.UsekID, Self.fUsekPred);
  Result := Self.fUsekPred;
 end;

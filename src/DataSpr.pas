@@ -150,7 +150,7 @@ var spr:TSoupravaData;
   end;
 
   if (spr.front <> nil) then
-    Self.LV.Items.Item[line].SubItems.Strings[9] := (spr.front as TBlk).GetGlobalSettings().name
+    Self.LV.Items.Item[line].SubItems.Strings[9] := (spr.front as TBlk).name
   else
     Self.LV.Items.Item[line].SubItems.Strings[9] := '-';
 

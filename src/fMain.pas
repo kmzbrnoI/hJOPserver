@@ -1619,7 +1619,7 @@ begin
   begin
    try
      Blky.GetBlkByID(jc.data.NavestidloBlok, blk);
-     if ((blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_SCOM) and (TBlkSCom(blk).ABJC = jc)) then
+     if ((blk <> nil) and (Blk.typ = _BLK_SCOM) and (TBlkSCom(blk).ABJC = jc)) then
       begin
        TBlkSCom(blk).ABJC := nil;
        if (ABlist.Contains(jc)) then
@@ -1924,7 +1924,7 @@ var i:Integer;
   for i := 0 to Blky.Cnt-1 do
    begin
     Blky.GetBlkByIndex(i,Blk);
-    if (Blk.GetGlobalSettings().typ <> _BLK_VYH) then continue;
+    if (Blk.typ <> _BLK_VYH) then continue;
     (Blk as TBlkVyhybka).SetPoloha(plus);
    end;//for cyklus
   writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
@@ -2157,7 +2157,7 @@ var Blk:TBlk;
 begin
  if (Self.LV_Bloky.Selected = nil) then Exit();
  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
- if ((Blk.GetGlobalSettings.typ <> _BLK_USEK) and (Blk.GetGlobalSettings.typ <> _BLK_TU)) then Exit();
+ if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then Exit();
 
  F_HoukEvsUsek.Open(TBlkUsek(Blk));
 end;
@@ -2196,7 +2196,7 @@ var Blk:TBlk;
   if (LV_Bloky.Selected = nil) then Exit;
   if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
 
-  case (Blk.GetGlobalSettings.typ) of
+  case (Blk.typ) of
    _BLK_VYH     : F_BlkVyh_tech.OpenForm(Blk as TBlkVyhybka);
    _BLK_USEK, _BLK_TU :
                   F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
@@ -2730,7 +2730,7 @@ var Blk:TBlk;
  begin
   if (Blky.GetBlkByIndex(Item.Index,Blk) <> 0) then Exit;
 
-  case (Blk.GetGlobalSettings().typ) of
+  case (Blk.typ) of
    _BLK_VYH:begin
     case ((Blk as TBlkVyhybka).Poloha) of
      TVyhPoloha.disabled : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
@@ -2844,7 +2844,7 @@ var Blk:TBlk;
   if (LV_Bloky.Selected = nil) then Exit;
   if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
 
-  case (Blk.GetGlobalSettings.typ) of
+  case (Blk.typ) of
    _BLK_VYH     : F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_USEK    : F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_IR      : F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);

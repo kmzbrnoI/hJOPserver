@@ -326,7 +326,7 @@ begin
  Self.UsekSettings.maxSpr   := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_SPR);
 
  if (Boosters[Self.UsekSettings.Zesil] = nil) then
-   writelog('WARNING: Blok '+Self.GetGlobalSettings.name + ' ('+IntToStr(Self.GetGlobalSettings.id)+
+   writelog('WARNING: Blok '+Self.name + ' ('+IntToStr(Self.id)+
             ') nemá návaznost na validní zesilovaè', WR_ERROR);
 
  Self.UsekStav.Stit         := ini_stat.ReadString(section, 'stit', '');
@@ -343,13 +343,13 @@ begin
  try
    Self.LoadHoukEventToList(Self.UsekSettings.houkEvL, ini_tech, section, 'houkL');
  except
-   writelog('Nepodaøilo se naèíst houkací události L bloku ' + Self.GetGlobalSettings.name, WR_ERROR);
+   writelog('Nepodaøilo se naèíst houkací události L bloku ' + Self.name, WR_ERROR);
  end;
 
  try
    Self.LoadHoukEventToList(Self.UsekSettings.houkEvS, ini_tech, section, 'houkS');
  except
-   writelog('Nepodaøilo se naèíst houkací události S bloku ' + Self.GetGlobalSettings.name, WR_ERROR);
+   writelog('Nepodaøilo se naèíst houkací události S bloku ' + Self.name, WR_ERROR);
  end;
 
 
@@ -405,7 +405,7 @@ begin
        ini_tech.WriteString(section, 'houkL'+IntToStr(i), Self.UsekSettings.houkEvL[i].GetDefString());
      except
        on E:Exception do
-         AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.GetGlobalSettings().name);
+         AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.name);
      end;
     end;
   end;
@@ -418,7 +418,7 @@ begin
        ini_tech.WriteString(section, 'houkS'+IntToStr(i), Self.UsekSettings.houkEvS[i].GetDefString());
      except
        on E:Exception do
-         AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.GetGlobalSettings().name);
+         AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.name);
      end;
     end;
   end;
@@ -579,9 +579,9 @@ begin
      Self.UsekStav.spr_vypadek := false;
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
-     if ((Self.GetGlobalSettings().typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
+     if ((Self.typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
        for i := 0 to Self.OblsRizeni.Cnt-1 do
-         Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.GetGlobalSettings().name, 'TECHNOLOGIE');
+         Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
      if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := TZaver.nouz;
     end;//if spr_vypadek_time > 3
   end;//if spr_vypadek
@@ -1264,7 +1264,7 @@ begin
    Result := Result + '-,NUZ<,';
 
  if ((((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TZaver.ab) and
-      (Self.UsekStav.Zaver <> TZaver.staveni) and (Self.GetGlobalSettings().typ = _BLK_USEK) and
+      (Self.UsekStav.Zaver <> TZaver.staveni) and (Self.typ = _BLK_USEK) and
       (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) and
       (not Self.UsekStav.NUZ)) then
    Result := Result + '-,NUZ>,';
@@ -1606,7 +1606,7 @@ begin
        list.Add(THoukEv.Create(data));
      except
        writelog('Nepodarilo se nacist houkaci udalost ' + data + ' bloku ' +
-                  Self.GetGlobalSettings.name, WR_ERROR);
+                  Self.name, WR_ERROR);
        Exit();
      end;
 
@@ -1790,7 +1790,7 @@ end;
 procedure TBlkUsek.AddSoupravaL(index:Integer);
 begin
  if (Self.SoupravyFull()) then
-   raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
+   raise ESprFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
  if (Self.Soupravs.Contains(index)) then
    raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
 
@@ -1802,7 +1802,7 @@ end;
 procedure TBlkUsek.AddSoupravaS(index:Integer);
 begin
  if (Self.SoupravyFull()) then
-   raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
+   raise ESprFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
  if (Self.Soupravs.Contains(index)) then
    raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
 
@@ -1814,7 +1814,7 @@ end;
 procedure TBlkUsek.AddSouprava(localSprIndex:Integer; souprava:Integer);
 begin
  if (Self.SoupravyFull()) then
-   raise ESprFull.Create('Do bloku ' + Self.GetGlobalSettings.name + ' se uz nevejde dalsi souprava!');
+   raise ESprFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
  if (Self.Soupravs.Contains(souprava)) then
    raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
  if (not Self.CanSprSpeedInsert(localSprIndex)) then
@@ -1859,7 +1859,7 @@ begin
    Self.Change();
   end else begin
    raise ESprNotExists.Create('Souprava ' + IntToStr(index) +
-     ' neexistuje na useku ' + Self.GetGlobalSettings.name);
+     ' neexistuje na useku ' + Self.name);
   end;
 
  if (not Self.IsSouprava()) then
@@ -1889,7 +1889,7 @@ function TBlkUsek.GetUsekSpr():Integer;
 begin
  if (Self.Soupravs.Count = 0) then Exit(-1)
  else if (Self.Soupravs.Count = 1) then Exit(Self.Soupravs[0])
- else raise EMultipleSprs.Create('Usek ' + Self.GetGlobalSettings.name +
+ else raise EMultipleSprs.Create('Usek ' + Self.name +
    ' obsahuje vice souprav, nelze se proto ptat jen na jednu soupravu!');
 end;
 

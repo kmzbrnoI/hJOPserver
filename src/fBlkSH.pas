@@ -90,12 +90,12 @@ begin
   end;
 
  Blky.GetBlkByIndex(Self.CB_PrjAddData[Self.CB_Prj_Add.ItemIndex], blk);
- if ((blk <> nil) and (blk.GetGlobalSettings().typ = _BLK_PREJEZD)) then
+ if ((blk <> nil) and (blk.typ = _BLK_PREJEZD)) then
   begin
-   Self.prejezdy.Add(blk.GetGlobalSettings().id);
+   Self.prejezdy.Add(blk.id);
 
    LI := Self.LV_Prejezdy.Items.Add();
-   LI.Caption := blk.GetGlobalSettings().name;
+   LI.Caption := blk.name;
   end;
 
  Self.FillNewPrjCB();
@@ -143,7 +143,7 @@ begin
      Exit;
     end;
   end else begin
-   glob.poznamka := Self.Blk.GetGlobalSettings().poznamka;
+   glob.poznamka := Self.Blk.poznamka;
    Self.Blk.SetGlobalSettings(glob);
   end;
 

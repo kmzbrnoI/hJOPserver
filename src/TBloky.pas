@@ -172,7 +172,7 @@ var blkset:TBlkSettings;
     obl_rizeni:TORsRef;
     i:Integer;
 begin
- if ((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK) then
+ if ((Sender as TBlk).typ = _BLK_USEK) then
   begin
    obl_rizeni := (Sender as TBlkUsek).OblsRizeni;
 
@@ -180,7 +180,7 @@ begin
    // navaznost: usek -> vyhybka
    blkset := (Sender as TBlk).GetGlobalSettings();
    for i := 0 to Self.Data.Count-1 do
-     if (Self.Data[i].GetGlobalSettings().typ = _BLK_VYH) then
+     if (Self.Data[i].typ = _BLK_VYH) then
        if ((Self.Data[i] as TBlkVyhybka).UsekID = blkset.id) then
          Self.Data[i].Change();
   end;//_BLK_USEK
@@ -283,7 +283,7 @@ begin
      Blk.LoadData(ini_tech, str[i], ini_rel, ini_stat);
      Blk.OnChange := Self.BlkChange;
 
-     Self.data.Insert(Self.FindPlaceForNewBlk(Blk.GetGlobalSettings().id), Blk);
+     Self.data.Insert(Self.FindPlaceForNewBlk(Blk.id), Blk);
      Blk := nil;
    except
     on E:Exception do
@@ -326,7 +326,7 @@ begin
     end;
  end;
 
- for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveData(ini, IntToStr(Self.data[i].GetGlobalSettings().id));
+ for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveData(ini, IntToStr(Self.data[i].id));
 
  ini.UpdateFile();
  FreeAndNil(ini);
@@ -356,10 +356,10 @@ begin
  for i := 0 to Self.Data.Count-1 do
   begin
    try
-     Self.Data[i].SaveStatus(ini, IntToStr(Self.data[i].GetGlobalSettings().id));
+     Self.Data[i].SaveStatus(ini, IntToStr(Self.data[i].id));
    except
      on E:Exception do
-       AppEvents.LogException(E, 'Save blok '+Self.data[i].GetGlobalSettings().name);
+       AppEvents.LogException(E, 'Save blok '+Self.data[i].name);
    end;
   end;
 
@@ -417,7 +417,7 @@ begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam bloku');
  if (index >= Self.Data.Count) then raise Exception.Create('Index pretekl seznam bloku');
  tmp := Self.data[index];
- if ((tmp.GetGlobalSettings().typ = _BLK_TU) and ((tmp as TBlkTU).InTrat > -1)) then
+ if ((tmp.typ = _BLK_TU) and ((tmp as TBlkTU).InTrat > -1)) then
    raise Exception.Create('Tento blok je zaveden jako tratovy usek v trati ID '+IntToStr((tmp as TBlkTU).InTrat));
 
  Self.data.Delete(index);
@@ -427,12 +427,12 @@ begin
    Self.data[i].table_index := Self.data[i].table_index - 1;
 
  // pokud mazeme trat, je potreba smazat i uvazky
- if (tmp.GetGlobalSettings().typ = _BLK_TRAT) then
+ if (tmp.typ = _BLK_TRAT) then
   begin
    Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaA));
    Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaB));
   end;
- if (tmp.GetGlobalSettings().typ = _BLK_UVAZKA) then
+ if (tmp.typ = _BLK_UVAZKA) then
   begin
    Blky.GetBlkByID((tmp as TBlkUvazka).GetSettings.parent, Blk);
    if (blk <> nil) then
@@ -508,7 +508,7 @@ begin
     on E:Exception do
      begin
       if (not log_err_flag) then
-       AppEvents.LogException(E, 'Blok '+Self.Data[i].GetGlobalSettings().name + ' update error');
+       AppEvents.LogException(E, 'Blok '+Self.Data[i].name + ' update error');
      end;
    end;
   end;
@@ -526,9 +526,9 @@ begin
  while (left <= right) do
   begin
    mid := (left + right) div 2;
-   if (Self.data[mid].GetGlobalSettings().id = id) then Exit(mid);
+   if (Self.data[mid].id = id) then Exit(mid);
 
-   if (Self.data[mid].GetGlobalSettings().id > id) then
+   if (Self.data[mid].id > id) then
      right := mid - 1
    else
      left := mid + 1;
@@ -585,7 +585,7 @@ end;//function
 function TBlky.GetBlkID(index:Integer):Integer;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit(-1);
- Result := Self.Data[index].GetGlobalSettings.id;
+ Result := Self.Data[index].id;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -595,13 +595,13 @@ var Blk:TBlk;
 begin
  Self.GetBlkByID(id,Blk);
  if (not Assigned(Blk)) then Exit('## Blok s timto ID neexistuje ##');
- Result := Blk.GetGlobalSettings().name;
+ Result := Blk.name;
 end;//function
 
 function TBlky.GetBlkIndexName(index:Integer):string;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit('## Blok s timto ID neexistuje ##');
- Result := Self.Data[index].GetGlobalSettings().name;
+ Result := Self.Data[index].name;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -612,7 +612,7 @@ var i,j:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (Self.Data[i].GetGlobalSettings.typ <> _BLK_SCOM) then continue;
+   if (Self.Data[i].typ <> _BLK_SCOM) then continue;
 
    orindex := -1;
    for j := 0 to (Self.Data[i] as TBlkSCom).OblsRizeni.Cnt-1 do
@@ -621,7 +621,7 @@ begin
    if (orindex = -1) then continue;
 
    if ((Integer((Self.Data[i] as TBlkSCom).ZacatekVolba) > 0) and
-      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkSCom).GetGlobalSettings().id) = -1) or
+      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkSCom).id) = -1) or
         ((Self.Data[i] as TBlkSCom).OblsRizeni.ORs[orindex].stack.volba = VZ))) then
      Exit(Self.Data[i]);
   end;//for i
@@ -635,7 +635,7 @@ var i,j:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if ((Self.Data[i].GetGlobalSettings.typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings.typ <> _BLK_TU)) then continue;
+   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
 
    orindex := -1;
    for j := 0 to (Self.Data[i] as TBlkUsek).OblsRizeni.Cnt-1 do
@@ -656,7 +656,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
 
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesZkrat := state;
@@ -669,7 +669,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
 
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesNapajeni := state;
@@ -682,7 +682,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if ((Self.Data[i].GetGlobalSettings().typ <> _BLK_USEK) and (Self.Data[i].GetGlobalSettings().typ <> _BLK_TU)) then continue;
+   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
 
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesDCC := state;
@@ -694,7 +694,7 @@ procedure TBlky.SetDCC(state:boolean);
 var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
-   if ((Self.data[i].GetGlobalSettings.typ = _BLK_USEK) or (Self.data[i].GetGlobalSettings.typ = _BLK_TU)) then
+   if ((Self.data[i].typ = _BLK_USEK) or (Self.data[i].typ = _BLK_TU)) then
      TBlkUsek(Self.data[i]).CentralaDCC := state;
 end;//procedure
 
@@ -706,7 +706,7 @@ var usek, i, spr:Integer;
  begin
   for usek := 0 to Self.Data.Count-1 do
    begin
-    if (Self.Data[usek].GetGlobalSettings().typ <> _BLK_USEK) then continue;
+    if (Self.Data[usek].typ <> _BLK_USEK) then continue;
     if (not (Self.Data[usek] as TBlkUsek).NUZ) then continue;
 
     for i := 0 to (Self.Data[usek] as TBlkUsek).OblsRizeni.Cnt-1 do
@@ -817,7 +817,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if ((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) or (Self.Data[i].GetGlobalSettings().typ = _BLK_TU)) then
+   if ((Self.Data[i].typ = _BLK_USEK) or (Self.Data[i].typ = _BLK_TU)) then
     begin
      if ((Self.Data[i] as TBlkUsek).IsSouprava(spr)) then
        (Self.Data[i] as TBlkUsek).RemoveSouprava(spr);
@@ -825,7 +825,7 @@ begin
      if ((Self.Data[i] as TBlkUsek).SprPredict = spr) then
        (Self.Data[i] as TBlkUsek).SprPredict := -1;
     end;
-   if (Self.Data[i].GetGlobalSettings().typ = _BLK_TRAT) then (Self.Data[i] as TBlkTrat).RemoveSpr(spr);
+   if (Self.Data[i].typ = _BLK_TRAT) then (Self.Data[i] as TBlkTrat).RemoveSpr(spr);
   end;//for
 end;//procedure
 
@@ -836,7 +836,7 @@ var i:Integer;
 begin
  Result := TList<TObject>.Create();
  for i := 0 to Self.Data.Count-1 do
-   if (((Self.Data[i].GetGlobalSettings().typ = _BLK_USEK) or (Self.Data[i].GetGlobalSettings().typ = _BLK_TU)) and
+   if (((Self.Data[i].typ = _BLK_USEK) or (Self.Data[i].typ = _BLK_TU)) and
        ((Self.Data[i] as TBlkUsek).IsSouprava(spr))) then
      Result.Add(Self.Data[i]);
 end;//function
@@ -870,7 +870,7 @@ begin
      // zjistime posledni usek jizdni cesty
      Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Usek);
 
-     if ((Usek.GetGlobalSettings().typ = _BLK_TU) and ((Usek as TBlkTU).InTrat > -1)) then
+     if ((Usek.typ = _BLK_TU) and ((Usek as TBlkTU).InTrat > -1)) then
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
        Blky.GetBlkByID((Usek as TBlkTU).InTrat, Trat);
@@ -902,7 +902,7 @@ begin
   on E:Exception do
    begin
     if (Usek <> nil) then
-      AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy - Usek '+Usek.GetGlobalSettings.name)
+      AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy - Usek '+Usek.name)
     else
       AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy');
    end;
@@ -927,7 +927,7 @@ begin
  Result := TList<TObject>.Create();
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (self.Data[i].GetGlobalSettings.typ <> _BLK_SCOM) then continue;
+   if (self.Data[i].typ <> _BLK_SCOM) then continue;
    if ((Self.Data[i] as TBlkSCom).Navest <> 8) then continue;
 
    for j := 0 to (Self.Data[i] as TBlkSCom).OblsRizeni.Cnt-1 do
@@ -948,7 +948,7 @@ begin
  Result := TBlksList.Create();
  for i := 0 to Self.Data.Count-1 do
   begin
-   if ((Self.Data[i].GetGlobalSettings().typ = _BLK_VYH) and
+   if ((Self.Data[i].typ = _BLK_VYH) and
       ((Self.Data[i] as TBlkVyhybka).GetSettings().zamek = zamekID)) then
     Result.Add(Self.Data[i]);
   end;
@@ -979,7 +979,7 @@ procedure TBlky.ChangeSprToTrat(spr:Integer);
 var i:Integer;
 begin
  for i := 0 to Self.data.Count-1 do
-   if ((Self.data[i].GetGlobalSettings().typ = _BLK_TRAT) and (Self.data[i] as TBlkTrat).IsSpr(spr, true)) then
+   if ((Self.data[i].typ = _BLK_TRAT) and (Self.data[i] as TBlkTrat).IsSpr(spr, true)) then
      Self.data[i].Change();
 end;//procedure
 
@@ -991,7 +991,7 @@ function TBlky.FindPlaceForNewBlk(id:Integer):Integer;
 var i:Integer;
 begin
  i := Self.data.Count-1;
- while ((i >= 0) and (Self.data[i].GetGlobalSettings().id > id)) do
+ while ((i >= 0) and (Self.data[i].id > id)) do
    i := i - 1;
  Result := i+1;
 end;//function
@@ -1013,7 +1013,7 @@ var new_index, min_index, i:Integer;
 begin
  tmp := Self.data[index];
  Self.data.Delete(index);
- new_index := FindPlaceForNewBlk(tmp.GetGlobalSettings().id);
+ new_index := FindPlaceForNewBlk(tmp.id);
 
  Self.data.Insert(new_index, tmp);
  if (index = new_index) then Exit();  // pozice bloku se nemeni -> koncime
@@ -1037,13 +1037,13 @@ begin
   begin
    try
      if ((stanice <> nil) and (not Blk.IsInOR(stanice))) then continue;
-     if ((typ <> -1) and (Blk.GetGlobalSettings().typ <> typ)) then continue;
+     if ((typ <> -1) and (Blk.typ <> typ)) then continue;
 
      Blk.GetPtData(json.A['bloky'].AddObject, includeState);
    except
      on E:Exception do
        PTUtils.PtErrorToJson(json.A['errors'].AddObject,
-        '500', 'Chyba pri nacitani bloku '+IntToStr(Blk.GetGlobalSettings.id)+' : '+Blk.GetGlobalSettings.name,
+        '500', 'Chyba pri nacitani bloku '+IntToStr(Blk.id)+' : '+Blk.name,
         E.Message);
    end;
   end;
@@ -1055,8 +1055,8 @@ procedure TBlky.NouzZaverZrusen(Sender:TBlk);
 var Blk:TBlk;
 begin
  for Blk in Self.data do
-   if (Blk.GetGlobalSettings().typ = _BLK_SCOM) then
-     TBlkSCom(Blk).RemoveBlkFromRnz(Sender.GetGlobalSettings().id);
+   if (Blk.typ = _BLK_SCOM) then
+     TBlkSCom(Blk).RemoveBlkFromRnz(Sender.id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1065,7 +1065,7 @@ procedure TBlky.ClearPOdj();
 var Blk:TBlk;
 begin
  for Blk in Self.data do
-   if ((Blk.GetGlobalSettings().typ = _BLK_USEK) or (Blk.GetGlobalSettings().typ = _BLK_TU)) then
+   if ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) then
      TBlkUsek(Blk).ClearPOdj();
 end;
 

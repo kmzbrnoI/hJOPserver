@@ -794,7 +794,7 @@ begin
  Blky.GetBlkByID(JCData.NavestidloBlok, Blk);
 
  if (Blk = nil) then Exit;
- if (Blk.GetGlobalSettings().typ <> _BLK_SCOM) then Exit;
+ if (Blk.typ <> _BLK_SCOM) then Exit;
 
  SetLength(obls, (Blk as TBlkScom).OblsRizeni.Cnt);
  for i := 0 to (Blk as TBlkScom).OblsRizeni.Cnt-1 do

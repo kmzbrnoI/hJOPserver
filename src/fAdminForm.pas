@@ -292,7 +292,7 @@ begin
  for i := 0 to Blky.Cnt-1 do
   begin
    Blky.GetBlkByIndex(i, Blk);
-   if (Blk.GetGlobalSettings().typ <> _BLK_TRAT) then continue;
+   if (Blk.typ <> _BLK_TRAT) then continue;
    if (((Blk as TBlkTrat).BP) and ((Blk as TBlkTrat).Obsazeno) and
        ((TBlkTrat(Blk).Smer = TTratSmer.AtoB) or (TBlkTrat(Blk).Smer = TTratSmer.BtoA))) then
      Self.UpdateTrat(Blk as TBlkTrat);
@@ -367,7 +367,7 @@ begin
    for i := 0 to Blky.Cnt-1 do
     begin
      Blky.GetBlkByIndex(i, blk);
-     if (blk.GetGlobalSettings().typ <> _BLK_VYH) then continue;
+     if (blk.typ <> _BLK_VYH) then continue;
      if (((blk as TBlkVyhybka).StaveniPlus) or ((blk as TBlkVyhybka).StaveniMinus)) then
       begin
        // po 1 sekunde nastavime vstup aktualni polohy na 0

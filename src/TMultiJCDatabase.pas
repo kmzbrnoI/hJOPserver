@@ -275,7 +275,7 @@ begin
    flag := true;
    if (Self.JCs[i].data.vb.Count <> (SenderOR as TOR).vb.Count) then continue;
    for j := 0 to Self.JCs[i].data.vb.Count-1 do
-     if (Self.JCs[i].data.vb[j] <> ((SenderOR as TOR).vb[j] as TBlk).GetGlobalSettings().id) then flag := false;
+     if (Self.JCs[i].data.vb[j] <> ((SenderOR as TOR).vb[j] as TBlk).id) then flag := false;
    if (not flag) then continue;
 
    JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[0]);

@@ -179,9 +179,9 @@ begin
   begin
    Blky.GetBlkByID(JCData.Vyhybky[j].Blok, Blk);
    if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
-     str := str + TBlkVyhybka(Blk).npBlokPlus.GetGlobalSettings.name + ', '
+     str := str + TBlkVyhybka(Blk).npBlokPlus.name + ', '
    else if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
-     str := str + TBlkVyhybka(Blk).npBlokMinus.GetGlobalSettings.name + ', ';
+     str := str + TBlkVyhybka(Blk).npBlokMinus.name + ', ';
   end;
  Self.LV.Items.Item[line].SubItems.Strings[16] := LeftStr(str, Length(str)-2);
 end;//procedure

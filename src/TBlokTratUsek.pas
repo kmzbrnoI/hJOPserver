@@ -275,7 +275,7 @@ begin
  Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
  if (Self.TUSettings.rychlost < 10) then
-   writelog('WARNING: traový úsek '+Self.GetGlobalSettings.name + ' ('+IntToStr(Self.GetGlobalSettings.id)+') nemá korektnì zadanou traovou rychlost', WR_ERROR);
+   writelog('WARNING: traový úsek '+Self.name + ' ('+IntToStr(Self.id)+') nemá korektnì zadanou traovou rychlost', WR_ERROR);
 
  // nacitani zastavky
  if (Assigned(Self.TUSettings.Zastavka.soupravy)) then Self.TUSettings.Zastavka.soupravy.Free();
@@ -721,7 +721,7 @@ begin
  // zmena smeru soupravy nastava vzdy v 1. bloku trati (nejblize zacatku)
  if ((Self.Trat <> nil) and (TBlkTrat(Self.Trat).ChangesSprDir()) and
      (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0) and
-     (Self.GetGlobalSettings.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
+     (Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
   begin
    // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
    Soupravy.soupravy[Self.Souprava].ChangeSmer();
@@ -840,7 +840,7 @@ end;//procedure
 
 function TBlkTU.GetTrat():TBlk;
 begin
- if (((Self.fTrat = nil) and (Self.TUStav.inTrat <> -1)) or ((Self.fTrat <> nil) and (Self.fTrat.GetGlobalSettings.id <> Self.TUStav.inTrat))) then
+ if (((Self.fTrat = nil) and (Self.TUStav.inTrat <> -1)) or ((Self.fTrat <> nil) and (Self.fTrat.id <> Self.TUStav.inTrat))) then
    Blky.GetBlkByID(Self.TUStav.inTrat, Self.fTrat);
  Result := Self.fTrat;
 end;
@@ -859,7 +859,7 @@ begin
   navPrevID := -1;
  end;
 
- if (((Self.fNavKryci = nil) and (navPrevID <> -1)) or ((Self.fNavKryci <> nil) and (Self.fNavKryci.GetGlobalSettings.id <> navPrevID))) then
+ if (((Self.fNavKryci = nil) and (navPrevID <> -1)) or ((Self.fNavKryci <> nil) and (Self.fNavKryci.id <> navPrevID))) then
    Blky.GetBlkByID(navPrevID, Self.fNavKryci);
  Result := Self.fNavKryci;
 end;
@@ -1035,17 +1035,17 @@ procedure TBlkTU.CreateSComRefs();
 var Blk:TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (Self.lTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = _BLK_SCOM) and (Self.lTU <> nil)) then
   begin
-   TBlkSCom(Blk).UsekID   := Self.lTU.GetGlobalSettings.id;
+   TBlkSCom(Blk).UsekID   := Self.lTU.id;
    TBlkSCom(Blk).Smer     := THVStanoviste.lichy;
    TBlkSCom(Blk).autoblok := true;
   end;
 
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM) and (Self.sTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = _BLK_SCOM) and (Self.sTU <> nil)) then
   begin
-   TBlkSCom(Blk).UsekID   := Self.sTU.GetGlobalSettings.id;
+   TBlkSCom(Blk).UsekID   := Self.sTU.id;
    TBlkSCom(Blk).Smer     := THVStanoviste.sudy;
    TBlkSCom(Blk).autoblok := true;
   end;
@@ -1066,9 +1066,9 @@ begin
  Self.InTrat      := -1;
 
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.GetGlobalSettings.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

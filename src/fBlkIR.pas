@@ -130,7 +130,7 @@ var glob:TBlkSettings;
       Exit;
      end;
    end else begin
-    glob.poznamka := Blk.GetGlobalSettings.poznamka;
+    glob.poznamka := Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);
    end;
 

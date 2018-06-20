@@ -86,7 +86,7 @@ begin
  Self.OpenBlk := blk;
  Self.myUpdate();
 
- Self.Caption := 'Technologické vlastnosti bloku '+blk.GetGlobalSettings().name;
+ Self.Caption := 'Technologické vlastnosti bloku '+blk.name;
  Self.Show();
 end;//procedure
 

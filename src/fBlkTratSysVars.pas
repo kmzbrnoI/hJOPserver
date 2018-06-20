@@ -92,7 +92,7 @@ procedure TF_BlkTrat_tech.OpenForm(Blk:TBlkTrat);
 begin
  Self.trat := Blk;
  Self.Update();
- Self.Caption := 'Traù '+Blk.GetGlobalSettings().name;
+ Self.Caption := 'Traù '+Blk.name;
  Self.Show();
 end;//procedure
 

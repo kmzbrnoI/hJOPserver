@@ -443,7 +443,7 @@ begin
 
        // je soucasti vybarveneho neprofiloveho useku
        Blky.GetBlkByID(TBlkVyhybka(Sender).UsekID, Blk);
-       if ((Blk <> nil) and ((Blk.GetGlobalSettings.typ = _BLK_USEK) or (Blk.GetGlobalSettings.typ = _BLK_TU))
+       if ((Blk <> nil) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU))
            and (fg = $A0A0A0) and (TBlkUsek(Blk).IsNeprofilJC)) then
          fg := clYellow;
       end;
@@ -500,10 +500,10 @@ begin
      end;//case
 
      // zobrazeni zakazu odjezdu do trati
-     if ((fg = $A0A0A0) and ((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and ((Sender as TBlkTU).InTrat > -1)) then
+     if ((fg = $A0A0A0) and ((Sender as TBlk).typ = _BLK_TU) and ((Sender as TBlkTU).InTrat > -1)) then
       begin
        Blky.GetBlkByID((Sender as TBlkTU).InTrat, Blk);
-       if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_TRAT)) then
+       if ((Blk <> nil) and (Blk.typ = _BLK_TRAT)) then
          if ((Blk as TBlkTrat).ZAK) then
           fg := clBlue;
       end;
@@ -514,7 +514,7 @@ begin
 
      // zobrazeni zaveru
      if ((((Sender as TBlkUsek).Obsazeno) = TUsekStav.uvolneno) and
-         ((Sender as TBlk).GetGlobalSettings.typ = _BLK_USEK) and
+         ((Sender as TBlk).typ = _BLK_USEK) and
          ((Sender as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
       begin
        case ((Sender as TBlkUsek).Zaver) of
@@ -526,7 +526,7 @@ begin
       end;
 
      // zobrazeni poruchy BP v trati
-     if (((Sender as TBlk).GetGlobalSettings.typ = _BLK_TU) and (TBlkTU(Sender).poruchaBP)) then fg := clAqua;
+     if (((Sender as TBlk).typ = _BLK_TU) and (TBlkTU(Sender).poruchaBP)) then fg := clAqua;
 
      // neprofilove deleni v useku
      if (fg = clYellow) then
@@ -1185,7 +1185,7 @@ begin
  for i := 0 to Blky.Cnt-1 do
   begin
    Blky.GetBlkByIndex(i, Blk);
-   if (Blk.GetGlobalSettings().typ <> _BLK_USEK) then continue;
+   if (Blk.typ <> _BLK_USEK) then continue;
    if (not (Blk as TBlkUsek).NUZ) then continue;
 
    for j := 0 to (Blk as TBlkUsek).OblsRizeni.Cnt-1 do
@@ -1420,14 +1420,14 @@ begin
  for i := 0 to Blky.Cnt-1 do
   begin
    Blky.GetBlkByIndex(i, Blk);
-   if (Blk.GetGlobalSettings().typ <> _BLK_USEK) then continue;
+   if (Blk.typ <> _BLK_USEK) then continue;
    if (not TBlkUsek(Blk).NUZ) then continue;
 
    for j := 0 to (Blk as TBlkUsek).OblsRizeni.Cnt-1 do
     begin
      if ((Blk as TBlkUsek).OblsRizeni.ORs[j] = Self) then
       begin
-       JC := JcDb.GetJCByIndex(JCDb.FindPostavenaJCWithUsek(Blk.GetGlobalSettings().id));
+       JC := JcDb.GetJCByIndex(JCDb.FindPostavenaJCWithUsek(Blk.id));
 
        if (JC <> nil) then
         begin
@@ -2123,7 +2123,7 @@ begin
   begin
    try
      Blky.GetBlkByID(StrToInt(str[3]), Blk);
-     if ((Blk = nil) or ((Blk.GetGlobalSettings().typ <> _BLK_USEK) and (Blk.GetGlobalSettings().typ <> _BLK_TU))) then
+     if ((Blk = nil) or ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU))) then
       begin
        ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatný blok');
        Exit();

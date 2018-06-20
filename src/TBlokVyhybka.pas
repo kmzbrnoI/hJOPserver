@@ -345,7 +345,7 @@ end;//procedure
 
 function TBlkVyhybka.GetZaver():TZaver;
 begin
- if (((Self.fparent = nil) and (Self.VyhRel.UsekID <> -1)) or ((Self.fparent.GetGlobalSettings.id <> Self.VyhRel.UsekID))) then
+ if (((Self.fparent = nil) and (Self.VyhRel.UsekID <> -1)) or ((Self.fparent.id <> Self.VyhRel.UsekID))) then
    Blky.GetBlkByID(Self.VyhRel.UsekID, Self.fparent);
  if (Self.fparent <> nil) then
    Result := (Self.fparent as TBlkUsek).Zaver
@@ -359,7 +359,7 @@ var tmpBlk:TBlk;
 begin
  return := Blky.GetBlkByID(Self.VyhRel.UsekID,tmpBlk);
  if (return < 0) then Exit(false);
- if (tmpBlk.GetGlobalSettings().typ <> _BLK_USEK) then Exit(false);
+ if (tmpBlk.typ <> _BLK_USEK) then Exit(false);
 
  Result := (TBlkUsek(tmpBlk)).NUZ;
 end;//function
@@ -370,7 +370,7 @@ var tmpBlk:TBlk;
 begin
  return := Blky.GetBlkByID(Self.VyhRel.UsekID,tmpBlk);
  if (return < 0) then Exit(TUsekStav.none);
- if ((tmpBlk.GetGlobalSettings().typ <> _BLK_USEK) and (tmpBlk.GetGlobalSettings().typ <> _BLK_TU)) then Exit(TUsekStav.none);
+ if ((tmpBlk.typ <> _BLK_USEK) and (tmpBlk.typ <> _BLK_TU)) then Exit(TUsekStav.none);
 
  Result := (tmpBlk as TBlkUsek).Obsazeno;
 end;//function
@@ -397,7 +397,7 @@ begin
    if (spojka_old > -1) then
     begin
      Blky.GetBlkByID(spojka_old, Blk);
-     if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_VYH)) then Exit(3);
+     if ((Blk = nil) or (Blk.typ <> _BLK_VYH)) then Exit(3);
 
      spojka_settings := (Blk as TBlkVyhybka).GetSettings();
      spojka_settings.spojka  := -1;
@@ -406,7 +406,7 @@ begin
 
    // pridame spojku do druhe vyhybky
    Blky.GetBlkByID(data.spojka, Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_VYH)) then
+   if ((Blk = nil) or (Blk.typ <> _BLK_VYH)) then
     begin
      Self.VyhSettings.spojka := -1;
      Exit(1);
@@ -434,7 +434,7 @@ begin
    if (spojka_old = -1) then Exit(0);
 
    Blky.GetBlkByID(spojka_old, Blk);
-   if ((Blk = nil) or (Blk.GetGlobalSettings().typ <> _BLK_VYH)) then Exit(3);
+   if ((Blk = nil) or (Blk.typ <> _BLK_VYH)) then Exit(3);
 
    spojka_settings := (Blk as TBlkVyhybka).GetSettings();
    spojka_settings.spojka  := -1;
@@ -748,7 +748,7 @@ begin
   begin
    // pokud se jedna o spojku, volame SetPoloha i na spojku
    Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-   if ((Blk <> nil) and (Blk.GetGlobalSettings().typ = _BLK_VYH) and
+   if ((Blk <> nil) and (Blk.typ = _BLK_VYH) and
    (((Blk as TBlkVyhybka).Stav.staveni_plus <> Self.VyhStav.staveni_plus) or ((Blk as TBlkVyhybka).Stav.staveni_minus <> Self.VyhStav.staveni_minus))) then
      (Blk as TBlkVyhybka).SetPoloha(new, zamek, nouz);
   end;
@@ -903,7 +903,7 @@ begin
  if (Self.VyhSettings.spojka > -1) then
   begin
    Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-   if ((Assigned(Blk)) and (Blk.GetGlobalSettings().typ = _BLK_VYH)) then
+   if ((Assigned(Blk)) and (Blk.typ = _BLK_VYH)) then
     (Blk as TBlkVyhybka).vyhZaver := true;
   end;
 end;//procedure
@@ -1138,7 +1138,7 @@ end;//procedure
 
 function TBlkVyhybka.GetZamek():TBlk;
 begin
- if (((Self.fzamek = nil) and (Self.VyhSettings.zamek <> -1)) or ((Self.fzamek <> nil) and (Self.fzamek.GetGlobalSettings.id <> Self.VyhSettings.zamek))) then
+ if (((Self.fzamek = nil) and (Self.VyhSettings.zamek <> -1)) or ((Self.fzamek <> nil) and (Self.fzamek.id <> Self.VyhSettings.zamek))) then
    Blky.GetBlkByID(Self.VyhSettings.zamek, Self.fzamek);
  Result := Self.fzamek;
 end;//function
@@ -1148,7 +1148,7 @@ end;//function
 function TBlkVyhybka.GetNpPlus():TBlk;
 begin
  if (((Self.fnpPlus = nil) and (Self.VyhSettings.npPlus <> -1)) or
-     ((Self.fnpPlus <> nil) and (Self.fnpPlus.GetGlobalSettings.id <> Self.VyhSettings.npPlus))) then
+     ((Self.fnpPlus <> nil) and (Self.fnpPlus.id <> Self.VyhSettings.npPlus))) then
    Blky.GetBlkByID(Self.VyhSettings.npPlus, Self.fnpPlus);
  Result := Self.fnpPlus;
 end;
@@ -1156,7 +1156,7 @@ end;
 function TBlkVyhybka.GetNpMinus():TBlk;
 begin
  if (((Self.fnpMinus = nil) and (Self.VyhSettings.npMinus <> -1)) or
-     ((Self.fnpMinus <> nil) and (Self.fnpMinus.GetGlobalSettings.id <> Self.VyhSettings.npMinus))) then
+     ((Self.fnpMinus <> nil) and (Self.fnpMinus.id <> Self.VyhSettings.npMinus))) then
    Blky.GetBlkByID(Self.VyhSettings.npMinus, Self.fnpMinus);
  Result := Self.fnpMinus;
 end;
