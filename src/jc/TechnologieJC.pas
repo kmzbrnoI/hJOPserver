@@ -2464,7 +2464,7 @@ var Nav,DalsiNav:TBlk;
 
      TJcType.vlak : begin
       Blky.GetBlkByID(Self.fproperties.DalsiNNavaznost, DalsiNav);
-      if ((Self.fproperties.DalsiNNavaznostTyp = 1) or ((DalsiNav <> nil) and ((DalsiNav as TBlkSCom).Navest > 0))) then
+      if ((Self.fproperties.DalsiNNavaznostTyp = 1) or ((DalsiNav <> nil) and ((DalsiNav as TBlkSCom).IsPovolovaciNavest()))) then
        begin
         // na dalsim navestidle lze jet
 

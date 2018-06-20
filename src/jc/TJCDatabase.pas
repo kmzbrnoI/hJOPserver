@@ -509,13 +509,13 @@ end;//function
 procedure TJCDb.CheckNNavaznost(fJC:TJC);
 var i:Integer;
     nav:TBlk;
-    my_navest:Integer;
+    my_nav:TBlkSCom;
 begin
   if (fJC.data.TypCesty = TJCType.posun) then Exit;
 
   Blky.GetBlkByID(fJC.data.NavestidloBlok, nav);
   if (nav = nil) then Exit;
-  my_navest := (nav as TBlkSCom).Navest;
+  my_nav := (nav as TBlkSCom);
 
   for i := 0 to Self.JCs.Count-1 do
    begin
@@ -523,9 +523,9 @@ begin
 
     Blky.GetBlkByID(Self.JCs[i].data.NavestidloBlok, nav);
 
-    if ((nav as TBlkSCom).Navest = 0) then continue;    
+    if (not (nav as TBlkSCom).IsPovolovaciNavest()) then continue;
 
-    if (my_navest > 0) then
+    if (my_nav.IsPovolovaciNavest()) then
      begin
       if (Self.JCs[i].data.RychlostDalsiN = 4) then
         (nav as TBlkSCom).Navest := TBlkSCom._NAV_VOLNO_40
