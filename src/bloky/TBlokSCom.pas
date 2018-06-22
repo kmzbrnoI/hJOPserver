@@ -872,6 +872,7 @@ begin
     end;
   end;
 
+ Self.AB := false;
  JC.RusJCWithoutBlk();
  Blky.SprPrediction(Self);
 end;//procedure
