@@ -2153,7 +2153,8 @@ begin
            (Blk as TBlkTrat).BP := true;
            if ((Usek as TBlkUsek).IsSouprava()) then
             begin
-             if ((Blk as TBlkTrat).SprPredict.souprava = (Usek as TBlkUsek).Souprava) then
+             if (((Blk as TBlkTrat).SprPredict <> nil) and
+                 ((Blk as TBlkTrat).SprPredict.souprava = (Usek as TBlkUsek).Souprava)) then
                (Blk as TBlkTrat).AddSpr((Blk as TBlkTrat).SprPredict)
              else
                (Blk as TBlkTrat).AddSpr(TBlkTratSouprava.Create((Blk as TBlkTrat).SprPredict.souprava));
