@@ -22,10 +22,9 @@ type
      _SECT_OR = 'OR';                                                           // sekce ini souboru .spnl, ve ktere jsou ulozeny oblasti rizeni
 
    private
-     ORsDatabase:TList<TOR>;                                                    // databaze oblasti rizeni
+     ORsDatabase:TObjectList<TOR>;                                                    // databaze oblasti rizeni
      fstat_filename:string;
 
-     procedure FreeORs();                                                       // zniceni a vymazani vsech OR
      function GetORCnt():Integer;                                               // vrati pocet OR
 
    public
@@ -73,12 +72,11 @@ uses Prevody, Logging, TCPServerOR, THVDatabase, appEv, FileSystem;
 constructor TORs.Create();
 begin
  inherited;
- Self.ORsDatabase := TList<TOR>.Create();
+ Self.ORsDatabase := TObjectList<TOR>.Create();
 end;//ctor
 
 destructor TORs.Destroy();
 begin
- Self.FreeORs();
  Self.ORsDatabase.Free();
  inherited Destroy();
 end;//dtor
@@ -150,17 +148,6 @@ begin
  ini.UpdateFile();
  ini.Free();
 end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-//smazani databaze a regulerni zniceni trid v teto databazi
-procedure TORs.FreeORs();
-var i:Integer;
-begin
- for i := 0 to Self.ORsDatabase.Count-1 do
-   if (Assigned(Self.ORsDatabase[i])) then Self.ORsDatabase[i].Free();
- Self.ORsDatabase.Clear();
-end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 

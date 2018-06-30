@@ -18,7 +18,7 @@ type
 
     public
 
-      ACs:TList<TAC>;
+      ACs:TObjectList<TAC>;
 
       constructor Create();
       destructor Destroy(); override;
@@ -28,7 +28,7 @@ type
       procedure SaveStatToFile(const filename:string);
 
       function AddAC():TAC;
-      function RemoveAC(index:Cardinal):Integer;
+      procedure RemoveAC(index:Cardinal);
 
       procedure Update();
 
@@ -52,17 +52,15 @@ constructor TACDb.Create();
 begin
  inherited Create();
 
- Self.ACs := TList<TAC>.Create;
+ Self.ACs := TObjectList<TAC>.Create;
 end;//ctor
 
 destructor TACDb.Destroy();
-var i:Integer;
 begin
  if (Self.fstatfilename <> '') then
    Self.SaveStatToFile(Self.fstatfilename);
- for i := 0 to Self.ACs.Count-1 do Self.ACs[i].Free();
  Self.ACs.Free();
- inherited Destroy();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,8 +73,6 @@ begin
   writelog('Nacitam AC - ' + dirname, WR_DATA);
   Self.fdirname := dirname;
 
-  for AC in Self.ACs do
-    AC.Free();
   Self.ACs.Clear();
 
   // prohledavani adresare a nacitani soubor *.2lok
@@ -186,13 +182,10 @@ begin
  Result := AC;
 end;//function
 
-function TACDb.RemoveAC(index:Cardinal):Integer;
+procedure TACDb.RemoveAC(index:Cardinal);
 begin
- if (Integer(index) >= Self.ACs.Count) then Exit(1);
- Self.ACs[index].Free();
  Self.ACs.Delete(index);
  ACTableData.RemoveAC(index);
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////

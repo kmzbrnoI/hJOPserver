@@ -23,8 +23,8 @@ type
   Lenght:double;          //delka useku v metrech
   SmcUsek:boolean;        //specialni pripad: usek ve smycce
   Zesil:string;           //id zesilovace
-  houkEvL:TList<THoukEv>;  //seznam houkacich udalosti pro lichy smer
-  houkEvS:TList<THoukEv>;  //seznam houkacich udalosti pro sudy smer
+  houkEvL:TObjectList<THoukEv>;  //seznam houkacich udalosti pro lichy smer
+  houkEvS:TObjectList<THoukEv>;  //seznam houkacich udalosti pro sudy smer
   maxSpr:Cardinal;        // maximalni pocet souprav v bloku
  end;
 
@@ -273,8 +273,8 @@ begin
  Self.EventsOnUvol  := TChangeEvents.Create();
  Self.EventsOnZaverReleaseOrAB := TChangeEvents.Create();
 
- Self.UsekSettings.houkEvL := TList<THoukEv>.Create();
- Self.UsekSettings.houkEvS := TList<THoukEv>.Create();
+ Self.UsekSettings.houkEvL := TObjectList<THoukEv>.Create();
+ Self.UsekSettings.houkEvS := TObjectList<THoukEv>.Create();
 
  Self.UsekSettings.maxSpr := _DEFAULT_MAX_SPR;
 
@@ -284,21 +284,12 @@ begin
 end;//ctor
 
 destructor TBlkUsek.Destroy();
-var houkEv:THoukEv;
 begin
  if (Assigned(Self.UsekSettings.houkEvL)) then
-  begin
-   for houkEv in Self.UsekSettings.houkEvL do
-     houkEv.Free();
    Self.UsekSettings.houkEvL.Free();
-  end;
 
  if (Assigned(Self.UsekSettings.houkEvS)) then
-  begin
-   for houkEv in Self.UsekSettings.houkEvS do
-     houkEv.Free();
    Self.UsekSettings.houkEvS.Free();
-  end;
 
  Self.EventsOnObsaz.Free();
  Self.EventsOnUvol.Free();
@@ -834,21 +825,12 @@ begin
 end;//function
 
 procedure TBlkUsek.SetSettings(data:TBlkUsekSettings);
-var houkEv:THoukEv;
 begin
  if (Self.UsekSettings.houkEvL <> data.houkEvL) then
-  begin
-   for houkEv in Self.UsekSettings.houkEvL do
-     houkEv.Free();
    Self.UsekSettings.houkEvL.Free();
-  end;
 
  if (Self.UsekSettings.houkEvS <> data.houkEvS) then
-  begin
-   for houkEv in Self.UsekSettings.houkEvS do
-     houkEv.Free();
    Self.UsekSettings.houkEvS.Free();
-  end;
 
  Self.UsekSettings := data;
 

@@ -133,6 +133,7 @@ end;//ctor
 
 destructor TORStack.Destroy();
 begin
+ Self.ClearStack();
  Self.stack.Free();
  Self.EZs.Free();
  inherited Destroy();
@@ -546,8 +547,12 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORStack.ClearStack();
+var cmd:TORStackCmd;
 begin
+ for cmd in Self.stack do
+   cmd.Free();
  Self.stack.Clear();
+
  Self.EZs.Clear();
  (Self.OblR as TOR).BroadcastData('ZAS;LIST;1;;');
  Self.hint := '';

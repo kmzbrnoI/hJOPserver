@@ -42,7 +42,7 @@ type
      destructor Destroy(); override;
 
      procedure FillFromHouks(evs:TList<THoukEv>);
-     function GetHoukEvs():TList<THoukEv>;
+     function GetHoukEvs():TObjectList<THoukEv>;
      function InputValid():boolean;
 
   end;
@@ -95,10 +95,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_HoukEvs.GetHoukEvs():TList<THoukEv>;
+function TF_HoukEvs.GetHoukEvs():TObjectList<THoukEv>;
 var form:TF_HoukEv;
 begin
- Result := TList<THoukEv>.Create();
+ Result := TObjectList<THoukEv>.Create();
  for form in Self.forms do
    Result.Add(form.GetHoukEv());
 end;

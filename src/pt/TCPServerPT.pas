@@ -38,7 +38,7 @@ type
   TPtServer = class
    private
     // seznam endpointu PTserveru, PTserver instanciuje vsechny endpointy v konstruktoru
-    enpoints: TList<TPTEndpoint>;
+    endpoints: TObjectList<TPTEndpoint>;
 
     httpServer: TIdHTTPServer;
     readLock:TCriticalSection;
@@ -120,24 +120,21 @@ begin
  Self.httpServer.OnStatus       := Self.httpStatus;
 
  // endpoints
- Self.enpoints := TList<TPTEndpoint>.Create();
+ Self.endpoints := TObjectList<TPTEndpoint>.Create();
 
  // sem doplnit seznam vsech endpointu:
- Self.enpoints.Add(TPTEndpointBlok.Create());
- Self.enpoints.Add(TPTEndpointBloky.Create());
- Self.enpoints.Add(TPTEndpointBlokStav.Create());
- Self.enpoints.Add(TPTEndpointLok.Create());
- Self.enpoints.Add(TPTEndpointLoks.Create());
- Self.enpoints.Add(TPTEndpointLokStav.Create());
+ Self.endpoints.Add(TPTEndpointBlok.Create());
+ Self.endpoints.Add(TPTEndpointBloky.Create());
+ Self.endpoints.Add(TPTEndpointBlokStav.Create());
+ Self.endpoints.Add(TPTEndpointLok.Create());
+ Self.endpoints.Add(TPTEndpointLoks.Create());
+ Self.endpoints.Add(TPTEndpointLokStav.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
-var i:Integer;
 begin
  try
-   for i := 0 to Self.enpoints.Count-1 do
-     Self.enpoints[i].Free();
-   Self.enpoints.Free();
+   Self.endpoints.Free();
    if (Self.httpServer.Active) then
     Self.httpServer.Active := false;
    Self.httpServer.Free();
@@ -202,7 +199,7 @@ begin
    try
      // vybereme vhodny endpoint
      found := false;
-     for endpoint in Self.enpoints do
+     for endpoint in Self.endpoints do
       begin
        if (endpoint.EndpointMatch(ARequestInfo.Document)) then
         begin

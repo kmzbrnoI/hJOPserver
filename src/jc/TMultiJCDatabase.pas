@@ -15,11 +15,10 @@ type
 
   TMultiJCDb = class
    private
-    JCs:TList<TMultiJC>;                                                        // seznam slozenych jizdnich cest serazeny podle jejich id vzestupne
+    JCs:TObjectList<TMultiJC>;                                                        // seznam slozenych jizdnich cest serazeny podle jejich id vzestupne
 
     ffilename:string;
 
-     procedure Clear();
      function GetJCCnt():Word;
      function GetItem(index:Integer):TMultiJC;
 
@@ -66,7 +65,7 @@ uses Logging, GetSystems, TBloky, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
 constructor TMultiJCDb.Create();
 begin
  inherited Create();
- Self.JCs := TList<TMultiJC>.Create(TComparer<TMultiJC>.Construct(
+ Self.JCs := TObjectList<TMultiJC>.Create(TComparer<TMultiJC>.Construct(
   function(const mJC1, mJC2:TMultiJC):Integer
   begin
     Result := CompareValue(mJC1.id, mJC2.id);
@@ -75,7 +74,6 @@ end;//ctor
 
 destructor TMultiJCDb.Destroy();
 begin
- Self.Clear();
  Self.JCs.Free();
  inherited Destroy();
 end;//dtor
@@ -103,7 +101,7 @@ begin
     end;
  end;
 
- Self.Clear();
+ Self.JCs.Clear();
 
  sections := TStringList.Create();
  ini.ReadSections(sections);
@@ -229,16 +227,6 @@ begin
      end;
    end;//except
   end;//for i }
-end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TMultiJCDb.Clear();
-var i:Integer;
-begin
- for i := Self.JCs.Count-1 downto 0 do
-   Self.JCs[i].Free();
- Self.JCs.Clear();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

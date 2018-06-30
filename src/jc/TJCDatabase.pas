@@ -14,11 +14,10 @@ type
 
   TJCDb = class
    private
-    JCs:TList<TJC>;
+    JCs:TObjectList<TJC>;
 
     ffilename:string;
 
-     procedure Clear();
      function GetCount():Word;
      function FindPlaceForNewJC(id:Integer):Integer;
 
@@ -88,12 +87,11 @@ uses Logging, GetSystems, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
 constructor TJCDb.Create();
 begin
  inherited Create();
- Self.JCs := TList<TJC>.Create();
+ Self.JCs := TObjectList<TJC>.Create();
 end;//ctor
 
 destructor TJCDb.Destroy();
 begin
- Self.Clear();
  Self.JCs.Free();
  inherited Destroy();
 end;//dtor
@@ -206,16 +204,6 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCDb.Clear();
-var i:Integer;
-begin
- for i := 0 to Self.JCs.Count-1 do
-   Self.JCs[i].Free();
- Self.JCs.Clear();
-end;//procedure
-
-////////////////////////////////////////////////////////////////////////////////
-
 function TJCDb.GetJCByIndex(index:Integer):TJC;
 begin
  if ((index < 0) or (index >= Self.JCs.Count)) then
@@ -313,17 +301,15 @@ end;//function
 procedure TJCDb.RemoveJC(index:Integer);
 var i:Integer;
     OblR:TOR;
-    tmp:TJC;
 begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam JC');
  if (index >= Self.JCs.Count) then raise Exception.Create('Index pretekl seznam JC');
  if (Self.JCs[index].postaveno) then raise Exception.Create('JC postavena, nelze smazat');
 
- tmp := Self.JCs[index];
  for i := 0 to ORs.Count-1 do
   begin
    ORs.GetORByIndex(i, OblR);
-   if (OblR.stack.IsJCInStack(tmp)) then
+   if (OblR.stack.IsJCInStack(Self.JCs[index])) then
      raise Exception.Create('JC v zasobniku OR '+OblR.id);
   end;
 
@@ -333,7 +319,6 @@ begin
  for i := index to Self.JCs.Count-1 do
    Self.JCs[i].index := Self.JCs[i].index - 1;
 
- FreeAndNil(tmp);
  JCTableData.RemoveJC(index);
 end;//function
 

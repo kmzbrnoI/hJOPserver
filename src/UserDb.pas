@@ -13,10 +13,9 @@ uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows,
 type
   TUsrDb = class
    private
-    Users: TList<TUser>;                                                        // seznam uzivatelu
+    Users: TObjectList<TUser>;                                                        // seznam uzivatelu
     ffilename:string;                                                           // jmeno ini souboru s daty uzivatelu, ze ktereho jsme naposled nacitali data
 
-      procedure FreeUsers();                                                    // znici vsechny uzivatele
       function GetCount():Integer;                                              // vrati pocet uzivatelu
 
    public
@@ -56,7 +55,7 @@ uses Logging, DataUsers, TOblsRizeni, appEv;
 constructor TUsrDb.Create();
 begin
  inherited Create();
- Self.Users := TList<TUser>.Create();
+ Self.Users := TObjectList<TUser>.Create();
 end;//ctor
 
 destructor TUsrDb.Destroy();
@@ -80,20 +79,9 @@ begin
    end;
   end;
 
- Self.FreeUsers();
  Self.Users.Free();
  inherited Destroy();
 end;//dtor
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TUsrDb.FreeUsers();
-var i:Integer;
-begin
- for i := 0 to Self.Users.Count-1 do
-  Self.Users.Items[i].Free();
- Self.Users.Clear();
-end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -104,7 +92,7 @@ var ini:TMemIniFile;
     User:TUser;
 begin
  Self.ffilename := filename;
- Self.FreeUsers();
+ Self.Users.Clear();
 
  writelog('Nacitam uzivatele...', WR_USERS);
 
@@ -210,11 +198,8 @@ begin
      if (OblRRef <> nil) then OblRRef.UserDelete(Self.Users[index].id);
     end;
 
-   if (Assigned(Self.Users.Items[index])) then
-    begin
-     Self.Users.Items[index].Free();
+   if (Assigned(Self.Users[index])) then
      Self.Users.Delete(index);
-    end;
  except
 
  end;

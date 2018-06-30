@@ -81,6 +81,7 @@ end;
 
 destructor TBoosterDb.Destroy();
 begin
+ Self.Clear();
  Self.db.Free();
  Self.sortedKeys.Free();
  inherited;
