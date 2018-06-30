@@ -104,7 +104,10 @@ begin
  Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;
  Self.CB_Zadost.ItemIndex := PrevodySoustav.BoolToInt(trat.Zadost);
 
- Self.SE_Souprava.Value   := trat.SprPredict.souprava;
+ if (trat.SprPredict <> nil) then
+   Self.SE_Souprava.Value := trat.SprPredict.souprava
+ else
+   Self.SE_Souprava.Value := -1;
 
  Self.E_Soupravy.Text := '';
  for i := 0 to trat.stav.soupravy.Count-1 do
