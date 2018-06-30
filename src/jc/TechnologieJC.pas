@@ -294,7 +294,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, fSettings, THnaciVozidlo, Souprava,
-     TBlokSCom, TBlokUsek, TOblsRizeni,
+     TBlokSCom, TBlokUsek, TOblsRizeni, timeHelper,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, SprDb,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;
 
@@ -1920,7 +1920,7 @@ var i,j:Integer;
             (Blk2.typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat = Self.data.Trat) and
             ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
          begin
-          (Trat as TBlkTrat).AddSpr(spri);
+          (Trat as TBlkTrat).AddSpr(TBlkTratSouprava.Create(spri));
           (Blk2 as TBlkTU).poruchaBP := true;
           (Trat as TBlkTrat).Change();
 
@@ -2152,7 +2152,12 @@ begin
           begin
            (Blk as TBlkTrat).BP := true;
            if ((Usek as TBlkUsek).IsSouprava()) then
-             (Blk as TBlkTrat).AddSpr((Usek as TBlkUsek).Souprava);
+            begin
+             if ((Blk as TBlkTrat).SprPredict.souprava = (Usek as TBlkUsek).Souprava) then
+               (Blk as TBlkTrat).AddSpr((Blk as TBlkTrat).SprPredict)
+             else
+               (Blk as TBlkTrat).AddSpr(TBlkTratSouprava.Create((Blk as TBlkTrat).SprPredict.souprava));
+            end;
           end;
          (Blk as TBlkTrat).Zaver := false;
 

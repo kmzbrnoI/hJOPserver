@@ -570,7 +570,13 @@ begin
    raise TBlkTratEFull.Create('Trat je plna!');
 
  Self.TratStav.soupravy.Add(spr);
- Self.SprPredict := nil;
+ if (spr <> Self.SprPredict) then
+   Self.SprPredict := nil // will also Free
+ else
+   Self.TratStav.SprPredict := nil; // will not Free
+
+ if (not spr.IsTimeDefined()) then
+   spr.time := timeHelper.hJOPnow();
 
  writelog('Traù '+Self.GlobalSettings.name+ ' : p¯id·na souprava '+Soupravy.soupravy[spr.souprava].nazev, WR_SPRPREDAT);
 
@@ -582,7 +588,7 @@ var toChange:boolean;
 begin
  toChange := false;
 
- if (Self.SprPredict.souprava = spr) then
+ if ((Self.SprPredict <> nil) and (Self.SprPredict.souprava = spr)) then
   begin
    Self.SprPredict := nil;
    toChange := true;
