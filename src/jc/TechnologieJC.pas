@@ -2130,6 +2130,17 @@ begin
           begin
            writelog('JC '+Self.Nazev+': Obsazen usek '+Usek.name+' : navestidlo '+Nav.name+' nastaveno na STUJ',WR_VC);
            (Nav as TBlkSCom).JCZrusNavest();
+
+           // aktualizace casu odjezdu v trati
+           if (Self.fproperties.Trat > -1) then
+            begin
+             Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+             if (TBlkTrat(Blk).SprPredict <> nil) then
+              begin
+               TBlkTrat(Blk).SprPredict.time := timeHelper.hJOPnow();
+               TBlkTrat(Blk).Change();
+              end;
+            end;
           end;
         end;
 
@@ -2157,7 +2168,7 @@ begin
                  ((Blk as TBlkTrat).SprPredict.souprava = (Usek as TBlkUsek).Souprava)) then
                (Blk as TBlkTrat).AddSpr((Blk as TBlkTrat).SprPredict)
              else
-               (Blk as TBlkTrat).AddSpr(TBlkTratSouprava.Create((Blk as TBlkTrat).SprPredict.souprava));
+               (Blk as TBlkTrat).AddSpr(TBlkTratSouprava.Create((Usek as TBlkUsek).Souprava));
             end;
           end;
          (Blk as TBlkTrat).Zaver := false;
