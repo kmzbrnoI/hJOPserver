@@ -53,210 +53,211 @@
 			<DelphiCompile Include="hJOPserver.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
-			<DCCReference Include="fTester.pas">
+			<DCCReference Include="forms\fTester.pas">
 				<Form>F_Tester</Form>
 			</DCCReference>
-			<DCCReference Include="fMain.pas">
+			<DCCReference Include="forms\fMain.pas">
 				<Form>F_Main</Form>
 			</DCCReference>
-			<DCCReference Include="fSettings.pas">
+			<DCCReference Include="forms\fSettings.pas">
 				<Form>F_Options</Form>
 			</DCCReference>
-			<DCCReference Include="fNastaveni_Casu.pas">
+			<DCCReference Include="forms\fNastaveni_Casu.pas">
 				<Form>F_ModCasSet</Form>
 			</DCCReference>
-			<DCCReference Include="fRegulator.pas">
+			<DCCReference Include="hv\forms\fRegulator.pas">
 				<Form>F_DigiReg</Form>
 			</DCCReference>
-			<DCCReference Include="fSplash.pas">
+			<DCCReference Include="forms\fSplash.pas">
 				<Form>F_splash</Form>
 			</DCCReference>
-			<DCCReference Include="fAbout.pas">
+			<DCCReference Include="forms\fAbout.pas">
 				<Form>F_About</Form>
 			</DCCReference>
-			<DCCReference Include="fBlkPrejezd.pas">
+			<DCCReference Include="bloky\forms\fBlkPrejezd.pas">
 				<Form>F_BlkPrejezd</Form>
 			</DCCReference>
-			<DCCReference Include="Verze.pas"/>
-			<DCCReference Include="fLoginPozadi.pas">
+			<DCCReference Include="helpers\Verze.pas"/>
+			<DCCReference Include="helpers\adCpuUsage.pas"/>
+			<DCCReference Include="forms\fLoginPozadi.pas">
 				<Form>F_Pozadi</Form>
 			</DCCReference>
-			<DCCReference Include="fZesilovacEdit.pas">
+			<DCCReference Include="forms\fZesilovacEdit.pas">
 				<Form>F_ZesilovacEdit</Form>
 			</DCCReference>
-			<DCCReference Include="fBlkTrat.pas">
+			<DCCReference Include="bloky\forms\fBlkTrat.pas">
 				<Form>F_BlkTrat</Form>
 			</DCCReference>
-			<DCCReference Include="fHVEdit.pas">
+			<DCCReference Include="hv\forms\fHVEdit.pas">
 				<Form>F_HVEdit</Form>
 			</DCCReference>
-			<DCCReference Include="fSystemInfo.pas">
+			<DCCReference Include="forms\fSystemInfo.pas">
 				<Form>F_SystemInfo</Form>
 			</DCCReference>
-			<DCCReference Include="fBlkUsek.pas">
+			<DCCReference Include="bloky\forms\fBlkUsek.pas">
 				<Form>F_BlkUsek</Form>
 			</DCCReference>
-			<DCCReference Include="fBlkVyhybka.pas">
+			<DCCReference Include="bloky\forms\fBlkVyhybka.pas">
 				<Form>F_BlkVyhybka</Form>
 			</DCCReference>
-			<DCCReference Include="fBlkIR.pas">
+			<DCCReference Include="bloky\forms\fBlkIR.pas">
 				<Form>F_BlkIR</Form>
 			</DCCReference>
-			<DCCReference Include="TBlokPrejezd.pas"/>
-			<DCCReference Include="fBlkNew.pas">
+			<DCCReference Include="bloky\TBlokPrejezd.pas"/>
+			<DCCReference Include="bloky\forms\fBlkNew.pas">
 				<Form>F_BlkNew</Form>
 			</DCCReference>
-			<DCCReference Include="fAdminForm.pas">
+			<DCCReference Include="forms\fAdminForm.pas">
 				<Form>F_Admin</Form>
 			</DCCReference>
-			<DCCReference Include="fJCEdit.pas">
+			<DCCReference Include="jc\forms\fJCEdit.pas">
 				<Form>F_JCEdit</Form>
 			</DCCReference>
-			<DCCReference Include="fRychlostiEdit.pas">
+			<DCCReference Include="forms\fRychlostiEdit.pas">
 				<Form>F_RychlostiEdit</Form>
 			</DCCReference>
-			<DCCReference Include="fSystemAutoStart.pas">
+			<DCCReference Include="forms\fSystemAutoStart.pas">
 				<Form>F_AutoStartSystems</Form>
 			</DCCReference>
-			<DCCReference Include="fBlkUsekSysVars.pas">
+			<DCCReference Include="bloky\forms\fBlkUsekSysVars.pas">
 				<Form>F_BlkUsek_tech</Form>
 			</DCCReference>
-			<DCCReference Include="GetSystems.pas"/>
-			<DCCReference Include="Prevody.pas"/>
+			<DCCReference Include="helpers\GetSystems.pas"/>
+			<DCCReference Include="helpers\Prevody.pas"/>
 			<DCCReference Include="TechnologieRCS.pas"/>
-			<DCCReference Include="TechnologieJC.pas"/>
+			<DCCReference Include="jc\TechnologieJC.pas"/>
 			<DCCReference Include="FileSystem.pas"/>
-			<DCCReference Include="fConsole.pas">
+			<DCCReference Include="forms\fConsole.pas">
 				<Form>F_Console</Form>
 			</DCCReference>
-			<DCCReference Include="Trakce.pas"/>
-			<DCCReference Include="XpressNET.pas"/>
-			<DCCReference Include="TrakceGUI.pas"/>
-			<DCCReference Include="TBlok.pas"/>
-			<DCCReference Include="TBloky.pas"/>
-			<DCCReference Include="TBlokVyhybka.pas"/>
-			<DCCReference Include="TBlokUsek.pas"/>
-			<DCCReference Include="TBlokIR.pas"/>
-			<DCCReference Include="TBlokSCom.pas"/>
+			<DCCReference Include="trakce\Trakce.pas"/>
+			<DCCReference Include="trakce\XpressNET.pas"/>
+			<DCCReference Include="trakce\TrakceGUI.pas"/>
+			<DCCReference Include="bloky\TBlok.pas"/>
+			<DCCReference Include="bloky\TBloky.pas"/>
+			<DCCReference Include="bloky\TBlokVyhybka.pas"/>
+			<DCCReference Include="bloky\TBlokUsek.pas"/>
+			<DCCReference Include="bloky\TBlokIR.pas"/>
+			<DCCReference Include="bloky\TBlokSCom.pas"/>
 			<DCCReference Include="TOblsRizeni.pas"/>
 			<DCCReference Include="TOblRizeni.pas"/>
 			<DCCReference Include="Booster.pas"/>
 			<DCCReference Include="BoosterDb.pas"/>
-			<DCCReference Include="fBlkVyhybkaSysVars.pas">
+			<DCCReference Include="bloky\forms\fBlkVyhybkaSysVars.pas">
 				<Form>F_BlkVyh_tech</Form>
 			</DCCReference>
 			<DCCReference Include="AC.pas"/>
 			<DCCReference Include="SnadnSpusteni.pas"/>
-			<DCCReference Include="fBlkSCom.pas"/>
-			<DCCReference Include="TJCDatabase.pas"/>
-			<DCCReference Include="THVDatabase.pas"/>
-			<DCCReference Include="THnaciVozidlo.pas"/>
+			<DCCReference Include="bloky\forms\fBlkSCom.pas"/>
+			<DCCReference Include="jc\TJCDatabase.pas"/>
+			<DCCReference Include="hv\THVDatabase.pas"/>
+			<DCCReference Include="hv\THnaciVozidlo.pas"/>
 			<DCCReference Include="Logging.pas"/>
 			<DCCReference Include="TCPServerOR.pas"/>
-			<DCCReference Include="DataRCS.pas"/>
-			<DCCReference Include="DataHV.pas"/>
-			<DCCReference Include="DataJC.pas"/>
-			<DCCReference Include="DataAC.pas"/>
-			<DCCReference Include="DataBloky.pas"/>
-			<DCCReference Include="DataZesilovac.pas"/>
-			<DCCReference Include="DataORs.pas"/>
-			<DCCReference Include="TBlokTrat.pas"/>
-			<DCCReference Include="TBlokUvazka.pas"/>
+			<DCCReference Include="tables\DataRCS.pas"/>
+			<DCCReference Include="tables\DataHV.pas"/>
+			<DCCReference Include="tables\DataJC.pas"/>
+			<DCCReference Include="tables\DataAC.pas"/>
+			<DCCReference Include="tables\DataBloky.pas"/>
+			<DCCReference Include="tables\DataZesilovac.pas"/>
+			<DCCReference Include="tables\DataORs.pas"/>
+			<DCCReference Include="bloky\TBlokTrat.pas"/>
+			<DCCReference Include="bloky\TBlokUvazka.pas"/>
 			<DCCReference Include="Souprava.pas"/>
 			<DCCReference Include="SprDb.pas"/>
-			<DCCReference Include="DataSpr.pas"/>
+			<DCCReference Include="tables\DataSpr.pas"/>
 			<DCCReference Include="User.pas"/>
 			<DCCReference Include="UserDb.pas"/>
-			<DCCReference Include="DataUsers.pas"/>
-			<DCCReference Include="fUserEdit.pas">
+			<DCCReference Include="tables\DataUsers.pas"/>
+			<DCCReference Include="forms\fUserEdit.pas">
 				<Form>F_UserEdit</Form>
 			</DCCReference>
 			<DCCReference Include="Zasobnik.pas"/>
-			<DCCReference Include="UPO.pas"/>
-			<DCCReference Include="fBlkTratSysVars.pas">
+			<DCCReference Include="jc\UPO.pas"/>
+			<DCCReference Include="bloky\forms\fBlkTratSysVars.pas">
 				<Form>F_BlkTrat_tech</Form>
 			</DCCReference>
 			<DCCReference Include="ModelovyCas.pas"/>
-			<DCCReference Include="fBlkSComEvent.pas">
+			<DCCReference Include="bloky\forms\fBlkSComEvent.pas">
 				<Form>F_BlkSComEvent</Form>
 			</DCCReference>
-			<DCCReference Include="CloseTabSheet.pas"/>
-			<DCCReference Include="TBlokZamek.pas"/>
-			<DCCReference Include="fBlkZamek.pas">
+			<DCCReference Include="helpers\CloseTabSheet.pas"/>
+			<DCCReference Include="bloky\TBlokZamek.pas"/>
+			<DCCReference Include="bloky\forms\fBlkZamek.pas">
 				<Form>F_BlkZamek</Form>
 			</DCCReference>
-			<DCCReference Include="TMultiJCDatabase.pas"/>
-			<DCCReference Include="TechnologieMultiJC.pas"/>
-			<DCCReference Include="DataMultiJC.pas"/>
-			<DCCReference Include="fHVPomEdit.pas">
+			<DCCReference Include="jc\TMultiJCDatabase.pas"/>
+			<DCCReference Include="jc\TechnologieMultiJC.pas"/>
+			<DCCReference Include="tables\DataMultiJC.pas"/>
+			<DCCReference Include="hv\forms\fHVPomEdit.pas">
 				<Form>F_HV_Pom</Form>
 			</DCCReference>
-			<DCCReference Include="fMJCEdit.pas">
+			<DCCReference Include="jc\forms\fMJCEdit.pas">
 				<Form>F_MJCEdit</Form>
 			</DCCReference>
 			<DCCReference Include="ACDatabase.pas"/>
-			<DCCReference Include="ownStrUtils.pas"/>
-			<DCCReference Include="TBlokRozp.pas"/>
-			<DCCReference Include="fBlkRozp.pas">
+			<DCCReference Include="helpers\ownStrUtils.pas"/>
+			<DCCReference Include="bloky\TBlokRozp.pas"/>
+			<DCCReference Include="bloky\forms\fBlkRozp.pas">
 				<Form>F_BlkRozp</Form>
 			</DCCReference>
 			<DCCReference Include="RegulatorTCP.pas"/>
-			<DCCReference Include="fFuncsSet.pas">
+			<DCCReference Include="forms\fFuncsSet.pas">
 				<Form>F_FuncsSet</Form>
 			</DCCReference>
-			<DCCReference Include="FunkceVyznam.pas"/>
-			<DCCReference Include="TBlokTratUsek.pas"/>
-			<DCCReference Include="fBlkTU.pas">
+			<DCCReference Include="hv\FunkceVyznam.pas"/>
+			<DCCReference Include="bloky\TBlokTratUsek.pas"/>
+			<DCCReference Include="bloky\forms\fBlkTU.pas">
 				<Form>F_BlkTU</Form>
 			</DCCReference>
-			<DCCReference Include="fBlkTUZastEvent.pas">
+			<DCCReference Include="bloky\forms\fBlkTUZastEvent.pas">
 				<Form>F_BlkTUZastEvent</Form>
 			</DCCReference>
 			<DCCReference Include="RCSdebugger.pas"/>
 			<DCCReference Include="UDPdiscover.pas"/>
-			<DCCReference Include="USock.pas"/>
-			<DCCReference Include="appEv.pas"/>
-			<DCCReference Include="SystemCriticalU.pas"/>
-			<DCCReference Include="TBlokVystup.pas"/>
-			<DCCReference Include="fBlkVystup.pas">
+			<DCCReference Include="helpers\USock.pas"/>
+			<DCCReference Include="helpers\appEv.pas"/>
+			<DCCReference Include="helpers\SystemCriticalU.pas"/>
+			<DCCReference Include="bloky\TBlokVystup.pas"/>
+			<DCCReference Include="bloky\forms\fBlkVystup.pas">
 				<Form>F_BlkVystup</Form>
 			</DCCReference>
-			<DCCReference Include="TCPServerPT.pas"/>
+			<DCCReference Include="pt\TCPServerPT.pas"/>
 			<DCCReference Include="..\lib\JsonDataObjects\Source\JsonDataObjects.pas"/>
-			<DCCReference Include="PTEndpoint.pas"/>
-			<DCCReference Include="PTEndpointBlok.pas"/>
-			<DCCReference Include="PTEndpointBloky.pas"/>
-			<DCCReference Include="PTUtils.pas"/>
-			<DCCReference Include="PTEndpointLok.pas"/>
-			<DCCReference Include="PTEndpointLoks.pas"/>
-			<DCCReference Include="PTEndpointBlokStav.pas"/>
-			<DCCReference Include="PTEndpointLokStav.pas"/>
+			<DCCReference Include="pt\PTEndpoint.pas"/>
+			<DCCReference Include="pt\PTEndpointBlok.pas"/>
+			<DCCReference Include="pt\PTEndpointBloky.pas"/>
+			<DCCReference Include="pt\PTUtils.pas"/>
+			<DCCReference Include="pt\PTEndpointLok.pas"/>
+			<DCCReference Include="pt\PTEndpointLoks.pas"/>
+			<DCCReference Include="pt\PTEndpointBlokStav.pas"/>
+			<DCCReference Include="pt\PTEndpointLokStav.pas"/>
 			<DCCReference Include="rcs\RCS.pas"/>
 			<DCCReference Include="rcs\RCSErrors.pas"/>
 			<DCCReference Include="rrEvent.pas"/>
 			<DCCReference Include="houkEvent.pas"/>
-			<DCCReference Include="frrEv.pas">
+			<DCCReference Include="forms\frrEv.pas">
 				<Form>F_RREv</Form>
 			</DCCReference>
-			<DCCReference Include="fhoukEv.pas">
+			<DCCReference Include="bloky\forms\fhoukEv.pas">
 				<Form>F_HoukEv</Form>
 			</DCCReference>
-			<DCCReference Include="fHoukEvs.pas">
+			<DCCReference Include="bloky\forms\fHoukEvs.pas">
 				<Form>F_HoukEvs</Form>
 			</DCCReference>
-			<DCCReference Include="fHoukEvsUsek.pas">
+			<DCCReference Include="bloky\forms\fHoukEvsUsek.pas">
 				<Form>F_HoukEvsUsek</Form>
 			</DCCReference>
 			<DCCReference Include="stanicniHlaseni.pas"/>
 			<DCCReference Include="stanicniHlaseniHelper.pas"/>
 			<DCCReference Include="changeEvent.pas"/>
 			<DCCReference Include="changeEventCaller.pas"/>
-			<DCCReference Include="TBlokSouctovaHlaska.pas"/>
-			<DCCReference Include="fBlkSH.pas"/>
+			<DCCReference Include="bloky\TBlokSouctovaHlaska.pas"/>
+			<DCCReference Include="bloky\forms\fBlkSH.pas"/>
 			<DCCReference Include="predvidanyOdjezd.pas"/>
-			<DCCReference Include="timeHelper.pas"/>
+			<DCCReference Include="helpers\timeHelper.pas"/>
 			<DCCReference Include="TechnologieAB.pas"/>
-			<DCCReference Include="DataAB.pas"/>
+			<DCCReference Include="tables\DataAB.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
@@ -292,7 +293,7 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">4</VersionInfo>
-						<VersionInfo Name="MinorVer">11</VersionInfo>
+						<VersionInfo Name="MinorVer">12</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
 						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
@@ -306,7 +307,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.11.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.12.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2018</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
