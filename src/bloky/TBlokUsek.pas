@@ -612,7 +612,7 @@ begin
 
  // reseni zruseni PRESUN soupravy, ktera jede
  if ((Self.IsVlakPresun()) and ((not Self.IsSouprava(Self.Soupravs[Self.VlakPresun])) or
-     (Soupravy.soupravy[Self.VlakPresun].rychlost > 0))) then
+     (Soupravy[Self.Soupravs[Self.VlakPresun]].rychlost > 0))) then
    Self.VlakPresun := -1;
 
  // pousteni houkani na houkaci udalosti
