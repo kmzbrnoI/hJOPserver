@@ -47,6 +47,8 @@ type
      constructor Create(souprava:Integer; time:TTime); overload;
      function IsTimeDefined():boolean;
      property time: TTime read GetTime write SetTime;
+
+     function SerializeForPanel():string;
  end;
 
  //aktualni stav trati
@@ -135,7 +137,7 @@ type
 
     procedure AddSpr(spr:Integer); overload;
     procedure AddSpr(spr:TBlkTratSouprava); overload;
-    function GetSprList(separator:Char; hvs:boolean = true):string;
+    function GetSprList(separator:Char):string;
     procedure RemoveSpr(spr:Integer);
 
     function IsSpr(spr:Integer; predict:boolean = true):boolean;
@@ -599,35 +601,16 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetSprList(separator:Char; hvs:boolean = true):string;
-var i, j:Integer;
-    spr:TBlkTratSouprava;
+function TBlkTrat.GetSprList(separator:Char):string;
+var spr:TBlkTratSouprava;
 begin
  Result := '';
 
  for spr in Self.TratStav.soupravy do
-  begin
-   Result := Result + Soupravy.GetSprNameByIndex(spr.souprava);
-   if (hvs) then
-    begin
-     Result := Result + '|';
-     for j := 0 to Soupravy.soupravy[spr.souprava].sdata.HV.cnt-1 do
-       Result := Result + HVDb.HVozidla[Soupravy.soupravy[spr.souprava].sdata.HV.HVs[j]].Data.Nazev + '|';
-    end;
-   Result := Result + separator;
-  end;
+   Result := Result + spr.SerializeForPanel() + separator;
 
  if (Self.SprPredict <> nil) then
-  begin
-   Result := Result + '$' + Soupravy.GetSprNameByIndex(Self.SprPredict.souprava);
-   if (hvs) then
-    begin
-     Result := Result + '|';
-     for j := 0 to Soupravy.soupravy[Self.SprPredict.souprava].sdata.HV.cnt-1 do
-       Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.SprPredict.souprava].sdata.HV.HVs[j]].Data.Nazev + '|';
-    end;
-   Result := Result + separator;
-  end;
+   Result := Result + '$' + Self.SprPredict.SerializeForPanel() + separator;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1044,6 +1027,18 @@ end;
 function TBlkTratSouprava.IsTimeDefined():boolean;
 begin
  Result := Self.mTimeDefined;
+end;
+
+function TBlkTratSouprava.SerializeForPanel():string;
+var i:Integer;
+begin
+ Result := Soupravy.GetSprNameByIndex(Self.souprava) + '|';
+ if (Self.mTimeDefined) then
+   Result := Result + FormatDateTime('nn', Self.mTime);
+ Result := Result + '|';
+
+ for i := 0 to Soupravy.soupravy[Self.souprava].sdata.HV.cnt-1 do
+   Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.souprava].sdata.HV.HVs[i]].Data.Nazev + '|';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
