@@ -56,7 +56,13 @@ uses Prevody;
 
 procedure TF_BlkTrat_tech.B_AddSprClick(Sender: TObject);
 begin
- Self.trat.AddSpr(Self.SE_Spr_Add.Value);
+ try
+   Self.trat.AddSpr(Self.SE_Spr_Add.Value);
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Výjimka:'+#13#10+E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
+ end;
+
  Self.Update();
 end;
 
