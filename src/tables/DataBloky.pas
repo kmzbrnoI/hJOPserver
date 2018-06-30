@@ -246,7 +246,9 @@ var j, spr:integer;
     Self.LV.Items.Item[line].SubItems.Strings[5] := '';
     Self.LV.Items.Item[line].SubItems.Strings[6] := '';
 
-    if ((Blk as TBlkTrat).SprPredict > -1) then Self.LV.Items.Item[line].SubItems.Strings[7] := Soupravy.GetSprNameByIndex((Blk as TBlkTrat).SprPredict) else
+    if (Assigned((Blk as TBlkTrat).SprPredict)) then
+      Self.LV.Items.Item[line].SubItems.Strings[7] := Soupravy.GetSprNameByIndex((Blk as TBlkTrat).SprPredict.souprava)
+    else
       Self.LV.Items.Item[line].SubItems.Strings[7] := '--#--';
    end;//_BLK_TRAT
 

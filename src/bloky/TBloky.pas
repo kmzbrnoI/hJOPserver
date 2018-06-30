@@ -874,7 +874,8 @@ begin
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
        Blky.GetBlkByID((Usek as TBlkTU).InTrat, Trat);
-       (Trat as TBlkTrat).SprPredict := spr;
+       if (((Trat as TBlkTrat).SprPredict = nil) or ((Trat as TBlkTrat).SprPredict.souprava <> spr)) then
+         (Trat as TBlkTrat).SprPredict := TBlkTratSouprava.Create(spr);
 
        // v trati jsou jiz soupravy -> konec predpovidani
        if (TBlkTrat(Trat).stav.soupravy.Count > 0) then Exit();

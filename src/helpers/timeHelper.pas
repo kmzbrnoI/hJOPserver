@@ -10,6 +10,9 @@ interface
 // "future" bere v modelovem casu, jinak ve skutecnem.
 function RealDelta(future:TTime):TTime;
 
+// Vrati aktualni cas podle toho, jestli je aktivni modelovy/skutecny.
+function hJOPnow():TTime;
+
 implementation
 
 uses SysUtils, ModelovyCas;
@@ -22,6 +25,14 @@ begin
   end else begin
    Result := future - Now;
   end;
+end;
+
+function hJOPnow():TTime;
+begin
+ if (ModCas.used) then
+   Result := ModCas.dateTime
+ else
+   Result := Now;
 end;
 
 end.

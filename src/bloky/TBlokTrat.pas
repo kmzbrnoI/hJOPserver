@@ -28,13 +28,34 @@ type
   Useky:TList<integer>;                                                         // reference na ID bloku v trati
  end;
 
+ TBlkTratEFull = class(Exception);
+ TBlkTratETimeNotDefined = class(Exception);
+
+ // Jedna souprava v trati.
+ TBlkTratSouprava = class
+  private
+    mTime: TTime;                                                               // cas minuti navestidla
+    mTimeDefined: Boolean;
+
+     function GetTime():TTime;
+     procedure SetTime(time:TTime);
+
+  public
+    souprava:Integer;                                                           // index soupravy
+
+     constructor Create(souprava:Integer); overload;
+     constructor Create(souprava:Integer; time:TTime); overload;
+     function IsTimeDefined():boolean;
+     property time: TTime read GetTime write SetTime;
+ end;
+
  //aktualni stav trati
  TBlkTratStav = record
   zaver:boolean;                                                                // aktualni stav zaveru na trati
   smer:TTratSmer;                                                               // aktualni smer trati, reprezentuje i enabled bloku
   zadost:boolean;                                                               // flag probihajici zadosti, zadost vzdy probiha proti aktualnimu smeru trati
-  soupravy:TList<Integer>;                                                      // seznam souprav v trati (seznam indexu souprav)
-  SprPredict:Integer;                                                           // index predpovidane soupravy do trate, pokud neni souprava predpovidana je -1
+  soupravy:TObjectList<TBlkTratSouprava>;                                       // seznam souprav v trati
+  SprPredict:TBlkTratSouprava;                                                  // predpovidana souprava
   BP:boolean;                                                                   // jestli je v trati zavedena blokova podminka
  end;
 
@@ -45,7 +66,7 @@ type
     zaver: false;
     smer: disabled;
     zadost: false;
-    SprPredict: -1;
+    SprPredict: nil;
    );
 
   private
@@ -69,7 +90,7 @@ type
     procedure SetTratSmer(smer:TTratSmer);
     procedure SetTratZaver(Zaver:boolean);
     procedure SetTratZadost(Zadost:boolean);
-    procedure SetSprPredict(Spr:Integer);
+    procedure SetSprPredict(Spr:TBlkTratSouprava);
 
     procedure UpdateBezsouhlasSmer();                                           // resi padani smeru trati v pripade bezsouhlsove trati
 
@@ -83,6 +104,7 @@ type
     procedure ResetTUs();                                                       // resetuje stav tratoveho useku; tratovy usek zapomene, ze je v nejake trati a stane se neutralnim tratovym usekem, ktery nic nevi
 
     function GetReady():boolean;                                                // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd soupravy, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
+    function GetSprIndex(spr:Integer):Integer;
 
   public
     constructor Create(index:Integer);
@@ -111,7 +133,8 @@ type
     function IsFirstUvazka(uv:TBlk):boolean;
     procedure SprChangeOR(spr:Integer);
 
-    procedure AddSpr(spr:Integer);
+    procedure AddSpr(spr:Integer); overload;
+    procedure AddSpr(spr:TBlkTratSouprava); overload;
     function GetSprList(separator:Char; hvs:boolean = true):string;
     procedure RemoveSpr(spr:Integer);
 
@@ -138,7 +161,7 @@ type
     property nouzZaver:boolean read GetNouzZaver;                               // flag nouzoveho zaveru trati
     property Zadost:boolean read TratStav.zadost write SetTratZadost;           // flag probihajici zadosti o tratovy souhlas
     property BP:boolean read TratStav.BP write SetBP;                           // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty, rusi se pri uvolneni posledni soupravy z trati
-    property SprPredict:Integer read TratStav.SprPredict write SetSprPredict;   // predpovidana souprava do trati, odkaz na index soupravy
+    property SprPredict:TBlkTratSouprava read TratStav.SprPredict write SetSprPredict; // predpovidana souprava do trati
 
     // vrati hranicni navestidla
     property navLichy:TBlk read GetNavLichy;                                    // hranicni navestidlo trati blize zacatku trati
@@ -154,7 +177,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase,
-    TBlokTratUsek, appEv;
+    TBlokTratUsek, appEv, timeHelper;
 
 constructor TBlkTrat.Create(index:Integer);
 begin
@@ -170,7 +193,7 @@ begin
  Self.fNavSudy  := nil;
 
  Self.TratSettings.Useky := TList<Integer>.Create();
- Self.TratStav.soupravy  := TList<Integer>.Create();
+ Self.TratStav.soupravy  := TObjectList<TBlkTratSouprava>.Create();
 end;//ctor
 
 destructor TBlkTrat.Destroy();
@@ -204,7 +227,7 @@ begin
  for i := 0 to data.Count-1 do
   begin
    index := Soupravy.GetSprIndexByName(data[i]);
-   if (index > -1) then Self.TratStav.soupravy.Add(index);
+   if (index > -1) then Self.TratStav.soupravy.Add(TBlkTratSouprava.Create(index));
   end;
  data.Free();
 
@@ -249,7 +272,7 @@ begin
 
  str := '';
  for i := 0 to Self.TratStav.soupravy.Count-1 do
-   str := str + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy[i]) + ';';
+   str := str + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy[i].souprava) + ';';
 
  if (str <> '') then
    ini_stat.WriteString(section, 'spr', str);
@@ -267,7 +290,7 @@ procedure TBlkTrat.Disable();
 begin
  if (Self.Smer <> TTratSmer.disabled) then
    Self.file_smer := Self.Smer;
- Self.SprPredict    := -1;
+ Self.SprPredict    := nil;
  Self.TratStav.Smer := TTratSmer.disabled;
  Self.Change();
 end;//procedure
@@ -276,7 +299,7 @@ procedure TBlkTrat.Reset();
 begin
  Self.Zaver  := false;
  Self.Zadost := false;
- Self.SprPredict := -1;
+ Self.SprPredict := nil;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -376,10 +399,10 @@ begin
  if (Self.TratStav.zaver <> Zaver) then
   begin
    Self.TratStav.zaver := zaver;
-   Self.TratStav.SprPredict := -1;
+   Self.SprPredict := nil;
    Self.Change();
   end else begin
-   Self.SprPredict := -1;
+   Self.SprPredict := nil;
   end;
 end;//procedure
 
@@ -415,13 +438,17 @@ begin
  Self.Change();
 end;//procedure
 
-procedure TBlkTrat.SetSprPredict(Spr:Integer);
+procedure TBlkTrat.SetSprPredict(Spr:TBlkTratSouprava);
 begin
- if (Self.TratStav.SprPredict <> Spr) then
-  begin
+ if (Self.TratStav.SprPredict = Spr) then Exit();
+
+ if (Self.TratStav.SprPredict <> nil) then
+   FreeAndNil(Self.TratStav.SprPredict);
+
+ if (Spr <> nil) then
    Self.TratStav.SprPredict := Spr;
-   Self.Change();
-  end;
+
+ Self.Change();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -532,30 +559,36 @@ end;//procedure
 
 procedure TBlkTrat.AddSpr(spr:Integer);
 begin
- if (Self.TratStav.soupravy.Count >= _MAX_TRAT_SPR) then Exit();
+ Self.AddSpr(TBlkTratSouprava.Create(spr, timeHelper.hJOPnow()));
+end;
+
+procedure TBlkTrat.AddSpr(spr:TBlkTratSouprava);
+begin
+ if (Self.TratStav.soupravy.Count >= _MAX_TRAT_SPR) then
+   raise TBlkTratEFull.Create('Trat je plna!');
 
  Self.TratStav.soupravy.Add(spr);
- Self.SprPredict := -1;
+ Self.SprPredict := nil;
 
- writelog('Tra '+Self.GlobalSettings.name+ ' : pøidána souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
+ writelog('Tra '+Self.GlobalSettings.name+ ' : pøidána souprava '+Soupravy.soupravy[spr.souprava].nazev, WR_SPRPREDAT);
 
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkTrat.RemoveSpr(spr:Integer);
 var toChange:boolean;
 begin
  toChange := false;
 
- if (Self.TratStav.SprPredict = spr) then
+ if (Self.SprPredict.souprava = spr) then
   begin
-   Self.TratStav.SprPredict := -1;
+   Self.SprPredict := nil;
    toChange := true;
   end;
 
- if (Self.TratStav.soupravy.Contains(spr)) then
+ if (Self.IsSpr(spr)) then
   begin
-   Self.TratStav.soupravy.Remove(spr);
+   Self.TratStav.soupravy.Delete(Self.GetSprIndex(spr));
    writelog('Tra '+Self.GlobalSettings.name+ ' : smazána souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
    toChange := true;
   end;
@@ -568,29 +601,30 @@ end;//procedure
 
 function TBlkTrat.GetSprList(separator:Char; hvs:boolean = true):string;
 var i, j:Integer;
+    spr:TBlkTratSouprava;
 begin
  Result := '';
 
- for i := 0 to Self.TratStav.soupravy.Count-1 do
+ for spr in Self.TratStav.soupravy do
   begin
-   Result := Result + Soupravy.GetSprNameByIndex(Self.TratStav.soupravy[i]);
+   Result := Result + Soupravy.GetSprNameByIndex(spr.souprava);
    if (hvs) then
     begin
      Result := Result + '|';
-     for j := 0 to Soupravy.soupravy[Self.TratStav.soupravy[i]].sdata.HV.cnt-1 do
-       Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.TratStav.soupravy[i]].sdata.HV.HVs[j]].Data.Nazev + '|';
+     for j := 0 to Soupravy.soupravy[spr.souprava].sdata.HV.cnt-1 do
+       Result := Result + HVDb.HVozidla[Soupravy.soupravy[spr.souprava].sdata.HV.HVs[j]].Data.Nazev + '|';
     end;
    Result := Result + separator;
   end;
 
- if (Self.SprPredict > -1) then
+ if (Self.SprPredict <> nil) then
   begin
-   Result := Result + '$' + Soupravy.GetSprNameByIndex(Self.SprPredict);
+   Result := Result + '$' + Soupravy.GetSprNameByIndex(Self.SprPredict.souprava);
    if (hvs) then
     begin
      Result := Result + '|';
-     for j := 0 to Soupravy.soupravy[Self.SprPredict].sdata.HV.cnt-1 do
-       Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.SprPredict].sdata.HV.HVs[j]].Data.Nazev + '|';
+     for j := 0 to Soupravy.soupravy[Self.SprPredict.souprava].sdata.HV.cnt-1 do
+       Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.SprPredict.souprava].sdata.HV.HVs[j]].Data.Nazev + '|';
     end;
    Result := Result + separator;
   end;
@@ -695,8 +729,20 @@ end;//function
 
 function TBlkTrat.IsSpr(spr:Integer; predict:boolean = true):boolean;
 begin
- Result := ((Self.TratStav.soupravy.IndexOf(spr) > -1) or ((predict) and (Self.TratStav.SprPredict = spr)));
+ Result := ((Self.GetSprIndex(spr) > -1) or
+            ((predict) and (Self.SprPredict <> nil) and (Self.SprPredict.souprava = spr)));
 end;//function
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.GetSprIndex(spr:Integer):Integer;
+var i:Integer;
+begin
+ for i := 0 to Self.TratStav.soupravy.Count-1 do
+   if (Self.TratStav.soupravy[i].souprava = spr) then
+     Exit(i);
+ Exit(-1);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -883,8 +929,10 @@ begin
           end;
         end;
 
-       if ((last.SprPredict = -1) and (Self.SprPredict > -1)) then last.SprPredict := Self.SprPredict;
-       if (Self.navSudy <> nil) then Blky.SprPrediction(Self.navSudy);
+       if ((last.SprPredict = -1) and (Self.SprPredict <> nil)) then
+         last.SprPredict := Self.SprPredict.souprava;
+       if (Self.navSudy <> nil) then
+         Blky.SprPrediction(Self.navSudy);
   end;
 
   TTratSmer.BtoA: begin
@@ -911,8 +959,10 @@ begin
           end;
         end;
 
-       if ((last.SprPredict = -1) and (Self.SprPredict > -1)) then last.SprPredict := Self.SprPredict;
-       if (Self.navLichy <> nil) then Blky.SprPrediction(Self.navLichy);
+       if ((last.SprPredict = -1) and (Self.SprPredict <> nil)) then
+         last.SprPredict := Self.SprPredict.souprava;
+       if (Self.navLichy <> nil) then
+         Blky.SprPrediction(Self.navLichy);
   end;
  end;//case
 end;
@@ -960,6 +1010,43 @@ begin
     (TBlkSCom(Self.navLichy).Smer = TBlkSCom(Self.navSudy).Smer);
 end;
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// TBlkTratSouprava
+
+constructor TBlkTratSouprava.Create(souprava:Integer);
+begin
+ inherited Create();
+ Self.souprava := souprava;
+ Self.mTimeDefined := false;
+end;
+
+constructor TBlkTratSouprava.Create(souprava:Integer; time:TTime);
+begin
+ inherited Create();
+ Self.souprava := souprava;
+ Self.time := time;
+end;
+
+function TBlkTratSouprava.GetTime():TTime;
+begin
+ if (not Self.IsTimeDefined()) then
+   raise TBlkTratETimeNotDefined.Create('Time not defined!');
+ Result := Self.mTime;
+end;
+
+procedure TBlkTratSouprava.SetTime(time:TTime);
+begin
+ Self.mTimeDefined := true;
+ Self.mTime := time;
+end;
+
+function TBlkTratSouprava.IsTimeDefined():boolean;
+begin
+ Result := Self.mTimeDefined;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

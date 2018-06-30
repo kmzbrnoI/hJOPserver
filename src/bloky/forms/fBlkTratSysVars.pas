@@ -98,16 +98,17 @@ end;//procedure
 
 procedure TF_BlkTrat_tech.Update();
 var i:Integer;
+
 begin
  Self.CB_Zaver.ItemIndex  := PrevodySoustav.BoolToInt(trat.Zaver);
  Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;
  Self.CB_Zadost.ItemIndex := PrevodySoustav.BoolToInt(trat.Zadost);
 
- Self.SE_Souprava.Value   := trat.SprPredict;
+ Self.SE_Souprava.Value   := trat.SprPredict.souprava;
 
  Self.E_Soupravy.Text := '';
  for i := 0 to trat.stav.soupravy.Count-1 do
-   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(trat.stav.soupravy[i])+',';
+   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(trat.stav.soupravy[i].souprava)+',';
 end;//procedure
 
 procedure TF_BlkTrat_tech.Save();
@@ -115,7 +116,11 @@ begin
  trat.Zaver  := PrevodySoustav.IntToBool(CB_Zaver.ItemIndex);
  trat.Smer   := TTratSmer(Self.CB_Smer.ItemIndex-1);
  trat.Zadost := PrevodySoustav.IntToBool(CB_Zadost.ItemIndex);
- trat.SprPredict := Self.SE_Souprava.Value;
+
+ if (Self.SE_Souprava.Value = -1) then
+   trat.SprPredict := nil
+ else
+   trat.SprPredict := TBlkTratSouprava.Create(Self.SE_Souprava.Value);
 end;//procedure
 
 end.//unit

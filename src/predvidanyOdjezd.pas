@@ -148,10 +148,7 @@ end;
 
 procedure TPOdj.RecordOriginNow();
 begin
- if (ModCas.used) then
-   Self.origin := ModCas.dateTime
- else
-   Self.origin := Now;
+ Self.origin := hJOPnow();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
