@@ -164,7 +164,7 @@ object F_BlkSCom: TF_BlkSCom
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 4
     object L_SCom05: TLabel
       Left = 7
       Top = 41
@@ -298,7 +298,7 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 7
     OnClick = B_StornoClick
   end
   object B_Save: TButton
@@ -312,7 +312,7 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 6
     OnClick = B_SaveClick
   end
   object LB_Stanice: TListBox
@@ -334,7 +334,7 @@ object F_BlkSCom: TF_BlkSCom
     Height = 22
     MaxValue = 60
     MinValue = 0
-    TabOrder = 6
+    TabOrder = 3
     Value = 0
   end
   object CHB_Zamknuto: TCheckBox
@@ -349,7 +349,7 @@ object F_BlkSCom: TF_BlkSCom
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 5
   end
   object PC_Events: TPageControl
     Left = 317

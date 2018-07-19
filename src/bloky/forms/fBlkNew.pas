@@ -31,7 +31,7 @@ uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkSCom, fMain, fSettings, fBlkSH,
 
 procedure TF_BlkNew.OpenForm;
 begin
- F_BlkNew.RG_NewTyp.ItemIndex := -1;
+ Self.ActiveControl := Self.RG_NewTyp;
  F_BlkNew.ShowModal();
 end;
 

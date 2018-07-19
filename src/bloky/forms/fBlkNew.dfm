@@ -57,6 +57,7 @@ object F_BlkNew: TF_BlkNew
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Vytvo'#345'it'
+    Default = True
     TabOrder = 1
     OnClick = B_SaveClick
   end
