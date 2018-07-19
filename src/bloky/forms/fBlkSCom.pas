@@ -103,7 +103,7 @@ procedure TF_BlkSCom.NewBlkOpenForm();
  begin
   E_Nazev.Text             := '';
   SE_ID.Value              := Blky.GetBlkID(Blky.Cnt-1)+1;
-  SE_Delay.Value           := 0;
+  SE_Delay.Value           := TBlkScom._NAV_DEFAULT_DELAY;
   CHB_Zamknuto.Checked     := false;
   Self.L_UsekID.Caption    := 'bude zobrazen priste';
 
