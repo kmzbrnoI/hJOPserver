@@ -45,7 +45,6 @@ procedure TF_BlkZamek.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
-  Self.ActiveControl := B_Save;
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -62,7 +61,8 @@ procedure TF_BlkZamek.NewBlkOpenForm;
   E_Nazev.Text          := '';
   SE_ID.Value           := Blky.GetBlkID(Blky.Cnt-1)+1;
 
-  Self.Caption       := 'Editovat data noveho bloku';
+  Self.Caption := 'Editovat data noveho bloku';
+  Self.ActiveControl := Self.E_Nazev;
  end;//procedure
 
 procedure TF_BlkZamek.NormalOpenForm;
@@ -77,6 +77,7 @@ var glob:TBlkSettings;
   SE_ID.Value           := glob.id;
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (zámek)';
+  Self.ActiveControl := Self.B_Save;
  end;//procedure
 
 procedure TF_BlkZamek.HlavniOpenForm;

@@ -66,7 +66,6 @@ procedure TF_BlkSH.OpenForm(BlokIndex:Integer);
 begin
  OpenIndex := BlokIndex;
  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
- Self.ActiveControl := Self.E_Name;
  Self.MainOpenForm();
 
  if (NewBlk) then
@@ -197,6 +196,7 @@ begin
   end;
 
  Self.Caption := 'Souètová hláska '+glob.name;
+ Self.ActiveControl := Self.B_save_P;
 end;
 
 procedure TF_BlkSH.NewOpenForm();
@@ -205,6 +205,7 @@ begin
  SE_ID.Value := Blky.GetBlkID(Blky.Cnt-1)+1;
 
  Self.Caption := 'Nová souètová hláska';
+ Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkSH.FormClose(Sender: TObject; var Action: TCloseAction);

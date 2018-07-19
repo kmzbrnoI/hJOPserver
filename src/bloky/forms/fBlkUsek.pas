@@ -112,7 +112,8 @@ procedure TF_BlkUsek.NewBlkOpenForm;
   Self.CHB_D1.Checked := false;
   Self.CHB_D1Click(Self.CHB_D1);
 
-  F_BlkUsek.Caption     := 'Editace noveho bloku';
+  F_BlkUsek.Caption := 'Editace noveho bloku';
+  F_BlkUsek.ActiveControl := E_Nazev;
  end;//procedure
 
 procedure TF_BlkUsek.NormalOpenForm;
@@ -191,13 +192,13 @@ var glob:TBlkSettings;
 
 
   F_BlkUsek.Caption := 'Edititace dat bloku '+glob.name+' (Usek)';
+  F_BlkUsek.ActiveControl := B_OK;
  end;//procedure
 
 procedure TF_BlkUsek.HlavniOpenForm;
 var booster:TBooster;
  begin
   Self.LB_Stanice.Clear();
-  F_BlkUsek.ActiveControl := B_OK;
 
   //nacteni zesilovacu
   Self.CB_Zesil.Clear();

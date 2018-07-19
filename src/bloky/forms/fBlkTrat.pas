@@ -119,6 +119,7 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, _BLK_TU, -1);
 
   Self.Caption := 'Editace noveho bloku';
+  Self.ActiveControl := Self.E_Trat_Name;
  end;//procedure
 
 procedure TF_BlkTrat.NormalOpenForm;
@@ -161,7 +162,8 @@ var glob:TBlkSettings;
     LI.SubItems.Add(Blky.GetBlkName(settings.Useky[i]));
    end;
 
-  Self.Caption := 'Edititace dat bloku '+Self.Trat.name+' (traù)';
+  Self.Caption := 'Editace dat bloku '+Self.Trat.name+' (traù)';
+ Self.ActiveControl := Self.B_Save;
  end;//procedure
 
 procedure TF_BlkTrat.HlavniOpenForm;

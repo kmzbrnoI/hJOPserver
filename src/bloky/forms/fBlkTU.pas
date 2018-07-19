@@ -156,6 +156,7 @@ procedure TF_BlkTU.NewBlkOpenForm;
   Self.zastSudy.OpenEmptyForm();
 
   Self.Caption := 'Editace noveho tratoveho useku';
+  Self.ActiveControl := E_Nazev;
  end;//procedure
 
 procedure TF_BlkTU.NormalOpenForm;
@@ -253,13 +254,13 @@ var glob:TBlkSettings;
   Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
 
   Self.Caption := 'Edititace dat bloku '+glob.name+' (tratovy usek)';
+  Self.ActiveControl := Self.B_OK;
  end;//procedure
 
 procedure TF_BlkTU.HlavniOpenForm;
 var booster:TBooster;
  begin
   Self.LB_Stanice.Clear();
-  Self.ActiveControl := B_OK;
 
   //nacteni zesilovacu
   Self.CB_Zesil.Clear();

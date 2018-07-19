@@ -66,7 +66,6 @@ procedure TF_BlkPrejezd.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  Self.ActiveControl := Self.E_Prj_Nazev;
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -167,6 +166,7 @@ var glob:TBlkSettings;
   SE_vst_anulace.Value      := settings.MTBInputs.Anulace;
 
   Self.Caption     := 'Pøejezd '+glob.name;
+  Self.ActiveControl := Self.B_save_P;
  end;//procedure
 
 procedure TF_BlkPrejezd.NewOpenForm;
@@ -182,6 +182,7 @@ procedure TF_BlkPrejezd.NewOpenForm;
   Self.SE_MTB.Value         := 1;
 
   Self.Caption := 'Nový pøejezd';
+  Self.ActiveControl := Self.E_Prj_Nazev;
  end;//procedure
 
 procedure TF_BlkPrejezd.FormClose(Sender: TObject; var Action: TCloseAction);

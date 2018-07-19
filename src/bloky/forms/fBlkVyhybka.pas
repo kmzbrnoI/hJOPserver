@@ -82,7 +82,6 @@ procedure TF_BlkVyhybka.OpenForm(BlokIndex:Integer);
  begin
   Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
   OpenIndex := BlokIndex;
-  F_BlkVyhybka.ActiveControl := B_Save;
 
   HlavniOpenForm;
   if (NewBlk) then
@@ -121,6 +120,7 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
   Self.CHB_npMinusClick(Self.CHB_npMinus);
 
   F_BlkVyhybka.Caption := 'Editovat data nového bloku výhybka';
+  F_BlkVyhybka.ActiveControl := E_Nazev;
  end;//procedure
 
 procedure TF_BlkVyhybka.NormalOpenForm;
@@ -173,6 +173,7 @@ var glob:TBlkSettings;
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
 
   F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
+  F_BlkVyhybka.ActiveControl := B_Save;
  end;//procedure
 
 procedure TF_BlkVyhybka.HlavniOpenForm;

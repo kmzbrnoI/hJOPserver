@@ -87,7 +87,6 @@ procedure TF_BlkSCom.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
-  F_BlkSCom.ActiveControl := B_Save;
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -118,6 +117,7 @@ procedure TF_BlkSCom.NewBlkOpenForm();
   // ktere ji nepotrebuje
 
   F_BlkSCom.Caption := 'Editovat data nového bloku návìstidlo';
+  F_BlkSCom.ActiveControl := E_Nazev;
  end;//procedure
 
 procedure TF_BlkSCom.NormalOpenForm;
@@ -174,6 +174,7 @@ var glob:TBlkSettings;
   Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkSCom).UsekID);
 
   F_BlkSCom.Caption := 'Editovat data bloku '+glob.name+' (návìstidlo)';
+  F_BlkSCom.ActiveControl := B_Save;
  end;//procedure
 
 procedure TF_BlkSCom.HlavniOpenForm();

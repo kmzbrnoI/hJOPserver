@@ -49,7 +49,6 @@ procedure TF_BlkVystup.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
-  Self.ActiveControl := B_Save;
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -68,7 +67,8 @@ procedure TF_BlkVystup.NewBlkOpenForm;
   Self.SE_MTB.Value     := 1;
   Self.SE_Port.Value    := 0;
 
-  Self.Caption          := 'Editovat data noveho bloku';
+  Self.Caption := 'Editovat data noveho bloku';
+  Self.ActiveControl := Self.E_Nazev;
  end;//procedure
 
 procedure TF_BlkVystup.NormalOpenForm;
@@ -85,6 +85,7 @@ var glob:TBlkSettings;
   SE_ID.Value           := glob.id;
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (logický výstup)';
+  Self.ActiveControl := Self.B_Save;
  end;//procedure
 
 procedure TF_BlkVystup.HlavniOpenForm;
