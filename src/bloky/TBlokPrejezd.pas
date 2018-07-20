@@ -37,6 +37,8 @@ type
   shs:TList<TBlk>;                                  // seznam souctovych hlasek, kam hlasi prejezd stav
  end;
 
+ EPrjNOT = class(Exception);
+
  TBlkPrejezd = class(TBlk)
   const
    //defaultni stav
@@ -401,6 +403,12 @@ procedure TBlkPrejezd.SetNOT(state:boolean);
 begin
  if ((Self.Zaver) and (state)) then Exit();
 
+ if (state) then
+  begin
+   // NOT rusi jizdni cesty vedouci pres prejezd
+   JCDb.RusJC(Self);
+  end;
+
  Self.PrjStav.PC_NOT := state;
  Self.Change();
  Self.UpdateOutputs();
@@ -408,7 +416,12 @@ end;//procedure
 
 procedure TBlkPrejezd.SetUZ(state:boolean);
 begin
- if (state) then Self.PrjStav.uzavStart := now;
+ if (state) then
+  begin
+   if (Self.NOtevreni) then
+     raise EPrjNot.Create('Prejezd nouzove otevren, nelze uzavrit!');
+   Self.PrjStav.uzavStart := now;
+  end;
 
  Self.PrjStav.PC_UZ := state;
  Self.Change();
@@ -608,6 +621,9 @@ begin
  if (zaver) then
   begin
    Inc(Self.PrjStav.zaver);
+
+   if (Self.NOtevreni) then
+     raise EPrjNot.Create('Prejezd nouzove otevren, nelze udelit zaver!');
 
    if (Self.PrjStav.zaver = 1) then
     begin

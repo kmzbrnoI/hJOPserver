@@ -1804,7 +1804,8 @@ var i,j:Integer;
           continue;
 
         Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
-        (Blk as TBlkPrejezd).UZ := true;
+        if (not (Blk as TBlkPrejezd).NOtevreni) then
+          (Blk as TBlkPrejezd).UZ := true;
        end;
 
       // nastavit nouzovy zaver zamkum
