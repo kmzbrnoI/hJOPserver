@@ -492,6 +492,7 @@ end;
 procedure TBlkVyhybka.UpdatePoloha();
 var iplus,iminus: TRCSInputState;
     i:Integer;
+    Blk:TBlk;
  begin
   if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit();
 
@@ -553,6 +554,13 @@ var iplus,iminus: TRCSInputState;
       Self.VyhStav.poloha := plus;
       Self.VyhStav.staveni_plus := false;
 
+      // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
+      if (Self.VyhSettings.spojka > -1) then
+       begin
+        Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
+        if (Blk <> nil) then Blk.Update();
+       end;
+
       if (Assigned(Self.VyhStav.staveniOKCallback)) then
        begin
         Self.VyhStav.staveniOKCallback(Self);
@@ -589,6 +597,13 @@ var iplus,iminus: TRCSInputState;
      begin
       Self.VyhStav.poloha := minus;
       Self.VyhStav.staveni_minus := false;
+
+      // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
+      if (Self.VyhSettings.spojka > -1) then
+       begin
+        Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
+        if (Blk <> nil) then Blk.Update();
+       end;
 
       if (Assigned(Self.VyhStav.staveniOKCallback)) then
        begin
