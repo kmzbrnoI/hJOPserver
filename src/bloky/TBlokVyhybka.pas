@@ -651,6 +651,7 @@ var iplus,iminus: TRCSInputState;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVyhybka.UpdateStaveniTimeout();
+var Blk:TBlk;
 begin
  if ((not Self.StaveniPlus) and (not Self.StaveniMinus)) then Exit();
 
@@ -659,6 +660,14 @@ begin
   begin
    Self.StaveniPlus  := false;
    Self.StaveniMinus := false;
+
+   // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
+   if (Self.VyhSettings.spojka > -1) then
+    begin
+     Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
+     if (Blk <> nil) then Blk.Update();
+    end;
+
    if (Assigned(Self.VyhStav.staveniErrCallback)) then
     begin
      Self.VyhStav.staveniErrCallback(Self);
