@@ -851,6 +851,8 @@ begin
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZAVER, blk, Self.fproperties.Trat));
     if ((blk as TBlkTrat).Zadost) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZADOST, blk, Self.fproperties.Trat));
+    if (((TBlkTrat(blk).Zaver) or (TBlkTrat(blk).nouzZaver)) and (Self.fproperties.TratSmer <> TBlkTrat(blk).Smer)) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_NESOUHLAS, blk, Self.fproperties.Trat));
 
     if ((not TBlkTrat(blk).SameUserControlsBothUvazka()) or ((blk as TBlkTrat).nouzZaver)) then
       if ((((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or ((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka) or
@@ -1352,6 +1354,8 @@ var i,j:Integer;
     npCall:^TNPCallerData;
     spri:Integer;
     stavim:Cardinal;
+    bariery:TList<TJCBariera>;
+    bariera:TJCBariera;
  begin
   if (not Self.Staveni) then Exit;
 
@@ -1647,34 +1651,31 @@ var i,j:Integer;
       if (Self.fstaveni.from_stack <> nil) then
         (Self.fstaveni.from_stack as TORStack).firstEnabled := true;
 
-      // jeste jednou zkontrolujeme, jeslti jsou vyybky ve spravnych polohach,
-      // protoze se teoreticky behem staveni mohly nejak podhodit...
+      // Kontrola kritickych podminek.
+      // (behem staveni mohla nastat zmena)
 
-      for i := 0 to Self.fproperties.Vyhybky.Count-1 do
-       begin
-        Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
-        if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
+      bariery := TList<TJCBariera>.Create();
+      try
+        Self.KontrolaPodminekVCPC(bariery);
+        for bariera in bariery do
          begin
-          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.name,
-              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Vyhybka '+Blk.name+' nema spravnou polohu !', WR_VC);
-          Exit;
+          case (bariera.typ) of
+            _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP,
+            _JCB_SCOM_NOT_USEK, _JCB_USEK_OBSAZENO, _JCB_USEK_SOUPRAVA, _JCB_USEK_AB,
+            _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_NESPAVNA_POLOHA, _JCB_PREJEZD_NOUZOVE_OTEVREN,
+            _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAK, _JCB_TRAT_OBSAZENO,
+            _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN: begin
+              if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+                ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Podmínky pro JC nesplnìny!',
+                  (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+              writelog('Krok 14 : Podmínky pro JC nesplnìny!', WR_VC);
+              Exit();
+            end;
+          end;
          end;
-       end;//for cyklus
-
-      for i := 0 to Self.fproperties.Odvraty.Count-1 do
-       begin
-        Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
-        if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
-         begin
-          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepoloha '+Blk.name,
-              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Vyhybka '+Blk.name+' nema spravnou polohu !', WR_VC);
-          Exit;
-         end;
-       end;//for cyklus
+      finally
+        bariery.Free();
+      end;
 
       // trat
       // zruseni redukce posledniho bloku jizdni cesty je navazano na zruseni zaveru trati
@@ -1683,29 +1684,6 @@ var i,j:Integer;
        begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
-
-        if (TBlkTrat(Blk).Zadost) then
-         begin
-          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Probíhá žádost '+Blk.name,
-              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Trat '+Blk.name+' : probiha zadost !', WR_VC);
-          Exit;
-         end;
-
-        // tahleta situace opravdu muze nastat:
-        if (( ((Blk as TBlkTrat).Smer <> Self.fproperties.TratSmer) and (((Blk as TBlkTrat).nouzZaver) or
-             ((((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or
-             ((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka)) and (not TBlkTrat(Blk).SameUserControlsBothUvazka())) or
-             (((Blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((Blk as TBlkTrat).Smer <> TTratSmer.zadny))) )
-          or ((not TBlkTU(blk2).sectReady) and (Self.fproperties.TypCesty = TJCType.vlak)) or (((Blk as TBlkTrat).ZAK) and (Self.fproperties.TypCesty <> TJCType.posun)) ) then
-         begin
-          if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba trati '+Blk.name,
-              (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-          writelog('Krok 14 : Trat '+Blk.name+' nesplnuje podminky pro postaveni JC !', WR_VC);
-          Exit;
-         end;
 
         if (Self.fproperties.TypCesty = TJCType.vlak) then (Blk as TBlkTrat).Zaver := true;
 
