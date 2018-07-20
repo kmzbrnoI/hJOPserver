@@ -3005,14 +3005,14 @@ begin
    LI := Self.LV_AC_Kroky.Items.Add;
    LI.Caption := IntToStr(i+1);
 
-   if  (AC.kroky[i].command = _AC_CMDTYPE_END) then LI.SubItems.Add('----- Ukonceni AC -----');
-   if  (AC.kroky[i].command = _AC_CMDTYPE_JC) then LI.SubItems.Add('Vlakova cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
-   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 1)) then LI.SubItems.Add('Cekani na obsazeni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 0)) then LI.SubItems.Add('Cekani na uvolneni useku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if  (AC.kroky[i].command = _AC_CMDTYPE_OSV) then LI.SubItems.Add('Zmena osvetleni ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));
-   if  (AC.kroky[i].command = _AC_CMDTYPE_TRAT) then LI.SubItems.Add('Nastaveni smeru trati '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if  (AC.kroky[i].command = _AC_CMDTYPE_DELAY) then LI.SubItems.Add('Cekani '+IntToStr(AC.kroky[i].Params[0])+' sekund');
-   if  (AC.kroky[i].command = _AC_CMDTYPE_NAV) then LI.SubItems.Add('Kontrola stavu navestidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+'; navest:'+IntToStr(AC.kroky[i].Params[1]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_END) then LI.SubItems.Add('----- Ukončení AC -----');
+   if  (AC.kroky[i].command = _AC_CMDTYPE_JC) then LI.SubItems.Add('Vlakoáa cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
+   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 1)) then LI.SubItems.Add('Čekání na obsazení úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 0)) then LI.SubItems.Add('Čekání na uvolnění úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_OSV) then LI.SubItems.Add('Změna osvětlení ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_TRAT) then LI.SubItems.Add('Nastavení směru trati '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_DELAY) then LI.SubItems.Add('Prodleva '+IntToStr(AC.kroky[i].Params[0])+' sekund');
+   if  (AC.kroky[i].command = _AC_CMDTYPE_NAV) then LI.SubItems.Add('Kontrola stavu návěstidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+'; navest:'+IntToStr(AC.kroky[i].Params[1]));
   end;//for i
 end;//procedure
 
