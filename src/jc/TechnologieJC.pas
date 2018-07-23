@@ -1356,6 +1356,7 @@ var i,j:Integer;
     stavim:Cardinal;
     bariery:TList<TJCBariera>;
     bariera:TJCBariera;
+    nextVyhybka:Integer;
  begin
   if (not Self.Staveni) then Exit;
 
@@ -1384,16 +1385,22 @@ var i,j:Integer;
       writelog('Krok 10 : vyhybky: zamykam do pozadovanych poloh', WR_VC);
       Self.fstaveni.nextVyhybka := -1;
       stavim := 0;
+      nextVyhybka := -1;
       for i := 0 to Self.fproperties.Vyhybky.Count-1 do
        begin
         Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
         if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
+           begin
+            if (nextVyhybka = -1) then
+              nextVyhybka := i;
             continue;
+           end;
           Inc(stavim);
          end;
 
+        writelog('Stavim ' + Blk.name, WR_VC);
         (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha),
                                        true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        end;
@@ -1410,7 +1417,11 @@ var i,j:Integer;
         if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Odvraty[i].Poloha)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
+           begin
+            if (nextVyhybka = -1) then
+              nextVyhybka := i;
             continue;
+           end;
           Inc(stavim);
          end;
 
@@ -1419,7 +1430,7 @@ var i,j:Integer;
                                    true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        end;
 
-      Self.fstaveni.nextVyhybka := stavim;
+      Self.fstaveni.nextVyhybka := nextVyhybka;
 
       writelog('Krok 10 : zamky: nastavuji zavery', WR_VC);
       for i := 0 to Self.fproperties.zamky.Count-1 do
@@ -3222,24 +3233,27 @@ var i:Integer;
     Blk:TBlk;
     odvrat:Integer;
 begin
- if (Self.fstaveni.nextVyhybka < 0) then Exit(); 
+ { Pozor: muze se stat, ze nektera z vyhybek, ktere jeste nejsou prestavovany,
+   je behem staveni JC prestavena externim zdrojem. Je treba na to pamatovat.
+   Pozor: i ty vyhybky, ktere pri staveni nebyly explicitne zamknuty, se samy
+   zamknou pri udeleni zaveru na usek. Nelze tedy vyhybky rozlisovat podle
+   zamknuti.
+ }
+
+ if (Self.fstaveni.nextVyhybka < 0) then Exit();
 
  if (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count) then
   begin
    // stavim dalsi vyhybku
-
    for i := Self.fstaveni.nextVyhybka to Self.fproperties.Vyhybky.Count-1 do
     begin
      Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
-     if (not (Blk as TBlkVyhybka).Stav.locked) then
+     if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha)) then
       begin
        (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha),
                                       true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
-       if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha)) then
-        begin
-         Inc(Self.fstaveni.nextVyhybka);
-         Exit();
-        end;
+       Self.fstaveni.nextVyhybka := i+1;
+       Exit();
       end;
     end;
 
@@ -3249,21 +3263,19 @@ begin
 
  if (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
   begin
+   // stavim dalsi odvrat
    odvrat := Self.fstaveni.nextVyhybka - Self.fproperties.Vyhybky.Count;
    for i := odvrat to Self.fproperties.Odvraty.Count-1 do
     begin
      // nastaveni odvratu
      Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
-     if (not (Blk as TBlkVyhybka).Stav.locked) then
+     if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Odvraty[i].Poloha)) then
       begin
        TBlkVyhybka(Blk).RedukujMenu();
        TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha),
                                   true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
-       if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Odvraty[i].Poloha)) then
-        begin
-         Inc(Self.fstaveni.nextVyhybka);
-         Exit();
-        end;
+       Self.fstaveni.nextVyhybka := i+1;
+       Exit();
       end;
     end;
 
@@ -3329,7 +3341,7 @@ begin
                                       true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
        if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha)) then
         begin
-         Inc(Self.fstaveni.nextVyhybka);
+         Self.fstaveni.nextVyhybka := i+1;
          Exit();
         end;
       end;
@@ -3352,7 +3364,7 @@ begin
                                   true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
        if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Odvraty[i].Poloha)) then
         begin
-         Inc(Self.fstaveni.nextVyhybka);
+         Self.fstaveni.nextVyhybka := i+1;
          Exit();
         end;
       end;
