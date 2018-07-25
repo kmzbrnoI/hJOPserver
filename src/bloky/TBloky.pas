@@ -845,7 +845,7 @@ end;//function
 // predpovidani soupravy na bloky v jizdni ceste
 
 procedure TBlky.SprPrediction(Nav:TBlk);
-var Usek:TBlk;
+var Usek, startUsek:TBlk;
     Trat:TBlk;
     spr:Integer;
     JC:TJC;
@@ -853,6 +853,7 @@ begin
  try
    // zjistime soupravu pred navestidlem
    Usek := (Nav as TBlkSCom).UsekPred;
+   startUsek := Usek;
    spr := (Nav as TBlkSCom).GetSoupravaIndex(usek);
 
    if ((Nav as TBlkSCom).Navest > 0) then begin
@@ -869,6 +870,9 @@ begin
     begin
      // zjistime posledni usek jizdni cesty
      Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Usek);
+
+     if (usek = startUsek) then
+       break; // ochrana proti JC na ovalu
 
      if ((Usek.typ = _BLK_TU) and ((Usek as TBlkTU).InTrat > -1)) then
       begin
