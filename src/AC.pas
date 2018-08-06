@@ -190,6 +190,9 @@ var Blk:TBlk;
           end;
        end;
 
+      // odstranit mezery na krajich stringu nazvu (zejmena kvuli komentari vpravo)
+      lines[0] := Trim(lines[0]);
+
       // odtsranit prazdne radky
       i := 0;
       while (i < lines.Count) do
