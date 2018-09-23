@@ -34,7 +34,7 @@ type
     SE_VstPlusMTB: TSpinEdit;
     SE_VstMinusMTB: TSpinEdit;
     Label1: TLabel;
-    GroupBox1: TGroupBox;
+    GB_Zamek: TGroupBox;
     CB_Zamek: TComboBox;
     CHB_Zamek: TCheckBox;
     Label2: TLabel;
@@ -52,6 +52,7 @@ type
     procedure CB_SpojkaChange(Sender: TObject);
     procedure CHB_npPlusClick(Sender: TObject);
     procedure CHB_npMinusClick(Sender: TObject);
+    procedure GB_ZamekClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
@@ -411,6 +412,11 @@ procedure TF_BlkVyhybka.FormClose(Sender: TObject;
   NewBlk     := false;
   OpenIndex  := -1;
   BlokyTableData.UpdateTable;
- end;//procedure
+ end;procedure TF_BlkVyhybka.GB_ZamekClick(Sender: TObject);
+begin
+
+end;
+
+//procedure
 
 end.//unit

@@ -133,13 +133,13 @@ object F_BlkVyhybka: TF_BlkVyhybka
     object L_Vyh06: TLabel
       Left = 8
       Top = 40
-      Width = 48
+      Width = 135
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Poloha + :'
+      Caption = 'Nastaven'#237' polohy + (v'#253'stup):'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -150,13 +150,13 @@ object F_BlkVyhybka: TF_BlkVyhybka
     object L_Vyh07: TLabel
       Left = 8
       Top = 72
-      Width = 45
+      Width = 132
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Poloha - :'
+      Caption = 'Nastaven'#237' polohy - (v'#253'stup):'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -167,13 +167,13 @@ object F_BlkVyhybka: TF_BlkVyhybka
     object L_Vyh08: TLabel
       Left = 8
       Top = 104
-      Width = 90
+      Width = 122
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Detekce polohy + :'
+      Caption = 'Detekce polohy + (vstup):'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -184,13 +184,13 @@ object F_BlkVyhybka: TF_BlkVyhybka
     object L_Vyh09: TLabel
       Left = 8
       Top = 136
-      Width = 87
+      Width = 119
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Detekce polohy - :'
+      Caption = 'Detekce polohy - (vstup):'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -11
@@ -440,7 +440,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     TabOrder = 4
     OnChange = CB_SpojkaChange
   end
-  object GroupBox1: TGroupBox
+  object GB_Zamek: TGroupBox
     Left = 326
     Top = 8
     Width = 304
@@ -453,6 +453,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Font.Style = []
     ParentFont = False
     TabOrder = 8
+    OnClick = GB_ZamekClick
     object Label2: TLabel
       Left = 12
       Top = 46
