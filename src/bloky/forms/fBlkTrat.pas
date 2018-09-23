@@ -191,6 +191,12 @@ var LI:TListItem;
     obls:TArStr;
     i:Integer;
 begin
+ if (F_BlkTrat.CB_NewTratBlok.ItemIndex < 0) then
+  begin
+   Application.MessageBox('Vyberte blok!', 'Nelze pokraèovat', MB_OK OR MB_ICONWARNING);
+   Exit();
+  end;
+
  LI := Self.LV_Useky.Items.Add;
  LI.Caption := IntToStr(Blky.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex]));
  LI.SubItems.Add(Blky.GetBlkName(Blky.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex])));
