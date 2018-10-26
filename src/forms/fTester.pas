@@ -116,10 +116,20 @@ var i, val:Integer;
 
       if (val < 0) then
         SOutput[i].Brush.Color := clGray
-      else if (val = 0) then
-        SOutput[i].Brush.Color := clRed
-      else
-        SOutput[i].Brush.Color := clLime;
+      else begin
+        if (RCSi.GetOutputType(MtbAddr, i) = TRCSOPortType.optSCom) then
+         begin
+          if (val = 0) then
+            SOutput[i].Brush.Color := clBlue
+          else
+            SOutput[i].Brush.Color := clWhite;
+         end else begin
+          if (val = 0) then
+            SOutput[i].Brush.Color := clRed
+          else
+            SOutput[i].Brush.Color := clLime;
+         end;
+      end;
      end;
    end;//for i
  end;//procedure
@@ -307,14 +317,16 @@ procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   try
     if (MTBAddr < 0) then Exit;
 
-    if ((Sender as TShape).Brush.Color = clRed) then
-     begin
+    if ((Sender as TShape).Brush.Color = clRed) then begin
       RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
       (Sender as TShape).Brush.Color := clLime;
-     end else begin
+    end else if ((Sender as TShape).Brush.Color = clBlue) then begin
+      RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 5);
+      (Sender as TShape).Brush.Color := clWhite;
+    end else begin
       RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
       (Sender as TShape).Brush.Color := clRed;
-     end;
+    end;
 
     (Sender as TShape).Brush.Color := clYellow;
   except
