@@ -40,7 +40,7 @@ end;
  
 function GetLastBuildDate():String;
  begin
-  DateTimeToString(Result, 'dd.mm.yyyy', jclPEImage.PeReadLinkerTimeStamp(Application.ExeName));
+  DateTimeToString(Result, 'dd. mm. yyyy', jclPEImage.PeReadLinkerTimeStamp(Application.ExeName));
  end;//function
 
 function GetLastBuildTime():String;
