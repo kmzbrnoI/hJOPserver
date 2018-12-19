@@ -1177,7 +1177,10 @@ begin
   Self.LogStatus('RCS: moduly naskenovány');
 
   if (F_Admin.CHB_SystemStart.Checked) then
+   begin
     Blky.Enable();
+    Blky.SetDCC(true);
+   end;
 
   // aktualizace ovladaich prvku AC
   if (F_Main.LV_AC_Db.Selected <> nil) then

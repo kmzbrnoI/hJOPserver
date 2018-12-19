@@ -770,7 +770,7 @@ var booster:TBooster;
 begin
  booster := Boosters[Self.UsekSettings.Zesil];
  if ((booster = nil) or (not booster.isDCCdetection) or (booster.DCC = TBoosterSignal.undef)) then
-   Self.SetDCC(TrkSystem.status = Ttrk_status.TS_ON);
+   Self.SetDCC(state);
 end;
 
 procedure TBlkUsek.SetDCC(state:boolean);
