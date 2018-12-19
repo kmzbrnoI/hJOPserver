@@ -530,7 +530,7 @@ begin
 
    if (TrkSystem.status = Ttrk_status.TS_ON) then
      Self.SendLn(AContext, '-;DCC;GO')
-   else if (Self.DCCStopped <> nil) then
+   else if ((Self.DCCStopped <> nil) or (TrkSystem.status <> Ttrk_status.TS_OFF)) then
      Self.SendLn(AContext, '-;DCC;DISABLED')
    else
      Self.SendLn(AContext, '-;DCC;STOP');
@@ -1368,7 +1368,7 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if (Assigned(Self.clients[i])) then
    begin
-    if (Self.DCCStopped = Self.clients[i].conn) then
+    if ((Self.DCCStopped = Self.clients[i].conn) and (TrkSystem.status = Ttrk_status.TS_OFF)) then
       Self.SendLn(Self.clients[i].conn, '-;DCC;STOP')
     else
       Self.SendLn(Self.clients[i].conn, '-;DCC;DISABLED');
