@@ -641,7 +641,7 @@ end;//function
 // kontrola podminek vlakove a posunove cesty
 
 procedure TJC.KontrolaPodminekVCPC(var bariery:TList<TJCBariera>);
-var i, usek, cnt:Integer;
+var i, usek, cnt, addr:Integer;
     Blk,blk2:TBlk;
     glob:TBlkSettings;
     flag:boolean;
@@ -918,19 +918,17 @@ begin
 
    // kontrola rucniho rizeni lokomotiv
    if (Self.fproperties.TypCesty = TJCType.vlak) then
-     for i := 0 to spr.sdata.HV.cnt-1 do
-       if ((HVDb.HVozidla[spr.sdata.HV.HVs[i]].Slot.stolen) or
-           (HVDb.HVozidla[spr.sdata.HV.HVs[i]].ruc)) then
+     for addr in spr.HVs do
+       if ((HVDb.HVozidla[addr].Slot.stolen) or (HVDb.HVozidla[addr].ruc)) then
         begin
-         bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, spr.sdata.HV.HVs[i]));
+         bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, addr));
          flag := true;
         end;
 
    // pokud jsou jen nektere lokomotivy rizene rucne
    if (flag) then
-     for i := 0 to spr.sdata.HV.cnt-1 do
-       if ((not HVDb.HVozidla[spr.sdata.HV.HVs[i]].Slot.stolen) and
-           (not HVDb.HVozidla[spr.sdata.HV.HVs[i]].ruc)) then
+     for addr in spr.HVs do
+       if ((not HVDb.HVozidla[addr].Slot.stolen) and (not HVDb.HVozidla[addr].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_NOT_ALL_RUC));
          break;

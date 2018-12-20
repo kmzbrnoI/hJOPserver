@@ -144,6 +144,7 @@ type
      procedure UpdateAllRegulators();
 
      function CanPlayHouk(sound:string):boolean;       // vraci true pokud je povoleno prehravani zvuku
+     procedure CheckRelease();
 
      //PT:
      procedure GetPtData(json:TJsonObject; includeState:boolean);
@@ -660,7 +661,11 @@ begin
      Self.Stav.regulators.Delete(i);
 
      // aktualizace rychlosti v pripade, kdy byla loko rizena rucne (force = true)
-     if (Self.Stav.regulators.Count = 0) then Self.ruc := false;
+     if (Self.Stav.regulators.Count = 0) then
+      begin
+       Self.ruc := false;
+       Self.CheckRelease();
+      end;
 
      Exit();
     end;
@@ -720,7 +725,7 @@ end;//procedure
 // timto prikazem je lokomotive zapinano / vypinano rucni rizeni
 procedure THV.SetRuc(state:boolean);
 begin
- if (Self.Stav.ruc = state) then Exit(); 
+ if (Self.Stav.ruc = state) then Exit();
  Self.Stav.ruc := state;
 
  if (state) then
@@ -741,20 +746,13 @@ begin
 
      Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
     end else begin
-     // loko neni na souprave, ani v rucnim regulatoru -> odhlasit
-     if ((Self.Stav.regulators.Count = 0) and (not RegCollector.IsLoko(Self))) then
-      begin
-       try
-         TrkSystem.OdhlasitLoko(Self);
-       except
-
-       end;
-      end;
+     // loko neni na souprave -> zkusit odhlasit
+     Self.CheckRelease();
     end;
   end;
 
  if (RegCollector.IsLoko(Self)) then
-  RegCollector.UpdateElements(Self, Self.Slot.adresa);
+   RegCollector.UpdateElements(Self, Self.Slot.adresa);
  TCPRegulator.LokUpdateRuc(Self);
 
  // aktualizace informaci do panelu
@@ -917,5 +915,15 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.CheckRelease();
+begin
+ if ((Self.Stav.souprava = -1) and (not Self.ruc) and (Self.Stav.regulators.Count = 0) and
+     (not RegCollector.IsLoko(Self)) and (Self.Slot.prevzato)) then
+  begin
+   TrkSystem.LokSetSpeed(nil, Self, 0, Self.Slot.smer);
+   TrkSystem.OdhlasitLoko(Self);
+  end;
+end;
 
 end.//unit

@@ -1960,7 +1960,7 @@ end;//procedure
 // Tato procedura parsuje "LOK-REQ" z panelu.
 procedure TOR.PanelLokoReq(Sender:TIdContext; str:TStrings);
 var data:TStrings;
-    i, j:Integer;
+    i, j, addr:Integer;
     HV:THV;
     rights:TORControlRights;
     line:string;
@@ -2152,20 +2152,12 @@ begin
       begin
        // vsechny soupravy na useku
        for j := 0 to (Blk as TBlkUsek).Soupravs.Count-1 do
-         for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[j]].sdata.HV.cnt-1 do
-          begin
-           HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[j]].sdata.HV.HVs[i]];
-           line := line + '[{' + HV.GetPanelLokString() + '}]';
-          end;
-
+         for addr in Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[j]].HVs do
+           line := line + '[{' + HVDb.HVozidla[addr].GetPanelLokString() + '}]';
       end else begin
-
        // konkretni souprava
-       for i := 0 to Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[spri]].sdata.HV.cnt-1 do
-        begin
-         HV := HVDb.HVozidla[Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[spri]].sdata.HV.HVs[i]];
-         line := line + '[{' + HV.GetPanelLokString() + '}]';
-        end;
+       for addr in Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[spri]].HVs do
+         line := line + '[{' + HVDb.HVozidla[addr].GetPanelLokString() + '}]';
       end;
 
      line := line + '}';

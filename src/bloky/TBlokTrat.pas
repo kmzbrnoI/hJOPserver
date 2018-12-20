@@ -1036,15 +1036,15 @@ begin
 end;
 
 function TBlkTratSouprava.SerializeForPanel():string;
-var i:Integer;
+var addr:Integer;
 begin
  Result := Soupravy.GetSprNameByIndex(Self.souprava) + '|';
  if (Self.mTimeDefined) then
    Result := Result + FormatDateTime('nn', Self.mTime);
  Result := Result + '|';
 
- for i := 0 to Soupravy.soupravy[Self.souprava].sdata.HV.cnt-1 do
-   Result := Result + HVDb.HVozidla[Soupravy.soupravy[Self.souprava].sdata.HV.HVs[i]].Data.Nazev + '|';
+ for addr in Soupravy.soupravy[Self.souprava].HVs do
+   Result := Result + HVDb.HVozidla[addr].Data.Nazev + '|';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

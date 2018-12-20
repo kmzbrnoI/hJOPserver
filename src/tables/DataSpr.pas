@@ -107,15 +107,15 @@ var spr:TSoupravaData;
 
   Self.LV.Items.Item[line].SubItems.Strings[0] := spr.nazev;
 
-  if (spr.HV.cnt > 0) then
-   Self.LV.Items.Item[line].SubItems.Strings[1] := IntToStr(HVDb.HVozidla[spr.HV.HVs[0]].adresa) + ' : ' +
-       HVDb.HVozidla[spr.HV.HVs[0]].Data.Nazev + ' ('+HVDb.HVozidla[spr.HV.HVs[0]].Data.Oznaceni+')'
+  if (spr.HVs.Count > 0) then
+   Self.LV.Items.Item[line].SubItems.Strings[1] := IntToStr(HVDb.HVozidla[spr.HVs[0]].adresa) + ' : ' +
+       HVDb.HVozidla[spr.HVs[0]].Data.Nazev + ' ('+HVDb.HVozidla[spr.HVs[0]].Data.Oznaceni+')'
   else
    Self.LV.Items.Item[line].SubItems.Strings[1] := '-';
 
   str := '';
-  for i := 1 to spr.HV.cnt-1 do
-      str := str + IntToStr(spr.HV.HVs[i]) + ', ';
+  for i := 1 to spr.HVS.Count-1 do
+      str := str + IntToStr(spr.HVs[i]) + ', ';
 
   if (str <> '') then
     Self.LV.Items.Item[line].SubItems.Strings[2] := LeftStr(str, Length(str)-2)

@@ -1038,7 +1038,7 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuRUClokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var i:Integer;
+var addr:Integer;
     str:string;
     HV:THV;
 begin
@@ -1046,9 +1046,9 @@ begin
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
 
  str := (SenderOR as TOR).id + ';LOK-TOKEN;OK;';
- for i := 0 to Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].sdata.HV.cnt-1 do
+ for addr in Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].HVs do
   begin
-   HV := HVDb.HVozidla[Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].sdata.HV.HVs[i]];
+   HV := HVDb.HVozidla[addr];
    str := str + '[' + IntToStr(HV.adresa) + '|' + HV.GetToken() + ']';
   end;//for i
 
@@ -1056,7 +1056,7 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuMAUSlokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var i:Integer;
+var addr:Integer;
     str:string;
     HV:THV;
 begin
@@ -1064,9 +1064,9 @@ begin
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
 
  str := (SenderOR as TOR).id + ';MAUS;{';
- for i := 0 to Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].sdata.HV.cnt-1 do
+ for addr in Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].HVs do
   begin
-   HV := HVDb.HVozidla[Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].sdata.HV.HVs[i]];
+   HV := HVDb.HVozidla[addr];
    str := str + IntToStr(HV.adresa) + '|';
   end;//for i
  str := str + '}';
@@ -1286,7 +1286,6 @@ end;//procedure
 
 function TBlkUsek.GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
 var spr:TSouprava;
-    ok:boolean;
     shPlay:stanicniHlaseniHelper.TSHToPlay;
 begin
  spr := Soupravy[Self.Soupravs[sprLocalI]];
@@ -1295,7 +1294,7 @@ begin
   Result := Result + 'EDIT vlak,ZRUŠ vlak,';
  Result := Result + 'UVOL vlak,';
 
- if (spr.sdata.HV.cnt > 0) then
+ if (spr.HVs.Count > 0) then
   begin
    Result := Result + 'RUÈ vlak,';
    if (TTCPORsRef(SenderPnl.Data).maus) then Result := Result + 'MAUS vlak,';
@@ -1315,9 +1314,7 @@ begin
  if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
      (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
   begin
-   ok := TStanicniHlaseni.HlasitSprTyp(spr.typ);
-
-   if ((Self.UsekStav.stanicni_kolej) and (ok)) then
+   if ((Self.UsekStav.stanicni_kolej) and (spr.hlaseni)) then
      Result := Result + 'HLÁŠENÍ odjezd,';
 
    try

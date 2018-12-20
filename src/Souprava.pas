@@ -11,23 +11,20 @@ const
   _MAX_SPR_HV = 4;
 
 type
-  TSoupravaHV = record
-   HVs:array [0.._MAX_SPR_HV-1] of Integer;
-   cnt:Integer;
-  end;
+  TSoupravaHVs = TList<Integer>; // seznam adres hnacich vozidel na souprave
 
   TSoupravaData = record
-   nazev : string;
-   pocet_vozu : Word;
-   poznamka : string;
-   delka:Integer;     // delka soupravy v centimetrech - polde toho se urcuje zastavovani na blocich
+   nazev:string;
+   pocet_vozu:Word;
+   poznamka:string;
+   delka:Integer;     // delka soupravy v centimetrech - podle toho se urcuje zastavovani na blocich
    typ:string;        // MOs, Os, Mn, Pn, ... - podle toho se urcuje zastavovaci udalost
 
    // ovlivnuje vybarvovani sipecky
    smer_L:boolean;
    smer_S:boolean;
 
-   HV:TSoupravaHV;
+   HVs:TSoupravaHVs; // seznam adres hnacich vozidel na souprave
 
    OblRizeni:TObject;
    rychlost:Integer;
@@ -49,6 +46,7 @@ type
     filefront:Integer;
     speedBuffer:PInteger;                                                       // pokud tento ukazatel neni nil, rychlost je nastavovana do promenne, na kterou ukazuje a ne primo souprave; to se hodi napriklad v zastavce v TU
 
+    procedure Init(index:Integer);
     procedure LoadFromFile(ini:TMemIniFile; const section:string);
     procedure LoadFromPanelStr(spr:TStrings; Usek:TObject; OblR:TObject);
 
@@ -111,9 +109,10 @@ type
     property cilovaOR:TObject read data.cilovaOR;
     property hlaseniPrehrano:boolean read data.hlaseniPrehrano;
     property hlaseni:boolean read data.hlaseni;
+    property HVs:TSoupravaHVs read data.HVs;
 
     // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
-    class procedure UvolV(old:TSoupravaHV; new:TSoupravaHV);
+    class procedure UvolV(old:TSoupravaHVs; new:TSoupravaHVs);
 
   end;//TSouprava
 
@@ -126,23 +125,27 @@ uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TSouprava.Create(ini:TMemIniFile; const section:string; index:Integer);
+procedure TSouprava.Init(index:Integer);
 begin
- inherited Create();
  Self.speedBuffer := nil;
  Self.changed := false;
  Self.findex := index;
  Self.data.podj := TDictionary<Integer, TPOdj>.Create();
- Self.LoadFromFile(ini, section);
+ Self.data.HVs := TList<Integer>.Create();
  Self.data.hlaseniPrehrano := false;
+end;
+
+constructor TSouprava.Create(ini:TMemIniFile; const section:string; index:Integer);
+begin
+ inherited Create();
+ Self.Init(index);
+ Self.LoadFromFile(ini, section);
 end;//ctor
 
 constructor TSouprava.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject);
 begin
  inherited Create();
- Self.speedBuffer := nil;
- Self.findex := index;
- Self.data.podj := TDictionary<Integer, TPOdj>.Create();
+ Self.Init(index);
  Self.LoadFromPanelStr(panelStr, Usek, OblR);
 end;//ctor
 
@@ -151,6 +154,7 @@ begin
  Self.ReleaseAllLoko();
  Self.ClearPOdj();
  Self.data.podj.Free();
+ Self.data.HVs.Free();
 
  inherited;
 end;//dtor
@@ -158,8 +162,9 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.LoadFromFile(ini:TMemIniFile; const section:string);
-var i:Integer;
+var addr:Integer;
     data:TStrings;
+    s:string;
 begin
  Self.data.nazev      := ini.ReadString(section, 'nazev', section);
  Self.data.pocet_vozu := ini.ReadInteger(section, 'vozu', 0);
@@ -180,15 +185,15 @@ begin
  ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
 
  // HV se nacitaji takto prapodivne pro osetreni pripadu, kdy u soupravy je uvedene HV, ktere neexistuje
- Self.data.HV.cnt := 0;
+ Self.data.HVs.Clear();
  try
-   for i := 0 to data.Count-1 do
+   for s in data do
     begin
-     Self.data.HV.HVs[Self.data.HV.cnt] := StrToInt(data[i]);
-     if (Assigned(HVDb.HVozidla[Self.data.HV.HVs[Self.data.HV.cnt]])) then
+     addr := StrToInt(s);
+     if (Assigned(HVDb.HVozidla[addr])) then
       begin
-       HVDb.HVozidla[Self.data.HV.HVs[Self.data.HV.cnt]].Stav.souprava := Self.index;
-       Inc(Self.data.HV.cnt);
+       HVDb.HVozidla[addr].Stav.souprava := Self.index;
+       Self.data.HVs.Add(addr);
       end;
     end;
  except
@@ -201,7 +206,7 @@ end;//procedure
 
 procedure TSouprava.SaveToFile(ini:TMemIniFile; const section:string);
 var str:string;
-    i: Integer;
+    addr: Integer;
 begin
  ini.WriteString(section, 'nazev', Self.data.nazev);
  ini.WriteInteger(section, 'vozu', Self.data.pocet_vozu);
@@ -240,8 +245,8 @@ begin
  ini.WriteBool(section, 'hlaseni', Self.data.hlaseni);
 
  str := '';
- for i := 0 to Self.data.HV.cnt-1 do
-  str := str + IntToStr(Self.data.HV.HVs[i]) + ';';
+ for addr in Self.HVs do
+  str := str + IntToStr(addr) + ';';
  ini.WriteString(section, 'HV', str);
 end;//procedure
 
@@ -250,24 +255,24 @@ end;//procedure
 // vraci string, kterym je definovana souprava, do panelu
 // format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;delka;typ;hnaci vozidla;vychozi stanice;cilova stanice
 function TSouprava.GetPanelString():string;
-var i:Integer;
+var addr:Integer;
 begin
  Result := Self.data.nazev + ';' + IntToStr(Self.data.pocet_vozu) + ';{' + Self.data.poznamka + '};';
 
  if (Self.data.smer_L) then
-  Result := Result + '1'
+   Result := Result + '1'
  else
-  Result := Result + '0';
+   Result := Result + '0';
 
  if (Self.data.smer_S) then
-  Result := Result + '1'
+   Result := Result + '1'
  else
-  Result := Result + '0';
+   Result := Result + '0';
 
  Result := Result + ';' + IntToStr(Self.data.delka) + ';' + Self.data.typ + ';{';
 
- for i := 0 to Self.data.HV.cnt-1 do
-  Result := Result + '[{' + HVDb.HVozidla[Self.data.HV.HVs[i]].GetPanelLokString() + '}]';
+ for addr in Self.HVs do
+   Result := Result + '[{' + HVDb.HVozidla[addr].GetPanelLokString() + '}]';
  Result := Result + '};';
 
  if (Self.vychoziOR <> nil) then
@@ -290,160 +295,155 @@ end;//function
 // format hnaciho vozidla:  nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce
 procedure TSouprava.LoadFromPanelStr(spr:TStrings; Usek:TObject; OblR:TObject);
 var hvs,hv:TStrings;
-    i,j,timeout:Integer;
-    old:TSoupravaHV;
+    i, j, timeout, addr:Integer;
+    new:TSoupravaHVs;
     Func:TFunkce;
     max_func:Integer;
     smer:THVStanoviste;
+    s:string;
 begin
  hvs  := TStringList.Create();
  hv   := TStringList.Create();
 
- // zkontrolujeme, jestli nejaka souprava s timto cislem uz nahodou neexistuje
- for i := 0 to _MAX_SPR-1 do
-  begin
-   if (soupravy.soupravy[i] = nil) then continue;
-
-   if ((Soupravy.soupravy[i].nazev = spr[0]) and (Soupravy.soupravy[i] <> Self)) then
-    begin
-     if (Soupravy.soupravy[i].stanice <> nil) then
-       raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' již existuje v OØ '+(Soupravy.soupravy[i].stanice as TOR).Name)
-     else
-       raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' již existuje');
-
-     Exit();
-    end;
-  end;
-
  try
-  StrToInt(spr[0]);
- except
-   on E:EConvertError do
-     raise Exception.Create('Èíslo soupravy není validní èíslo!');
- end;
-
- Self.changed := true;
-
- Self.data.nazev := spr[0];
- Self.data.pocet_vozu := StrToInt(spr[1]);
- Self.data.poznamka := spr[2];
- Self.data.smer_L := (spr[3][1] = '1');
- Self.data.smer_S := (spr[3][2] = '1');
-
- Self.data.delka := StrToInt(spr[4]);
- Self.data.typ   := spr[5];
-
- Self.data.OblRizeni := OblR;
- Self.data.front     := Usek;
-
- if (spr.Count > 7) then
-   Self.data.vychoziOR := ORs.GetORById(spr[7]);
-
- if (spr.Count > 8) then
-   Self.data.cilovaOR := ORs.GetORById(spr[8]);
-
- if (spr.Count > 9) then
-   Self.data.hlaseni := (spr[9] = '1')
- else
-   Self.data.hlaseni := TStanicniHlaseni.HlasitSprTyp(Self.typ);
-
- ExtractStringsEx([']'], ['['], spr[6], hvs);
-
- // nejprve si zapamtujeme stara hnaci vozidla na souprave, abychom pak vedeli rozdil
- old.cnt := Self.data.HV.cnt;
- for i := 0 to Self.data.HV.cnt-1 do
-  old.HVs[i] := Self.data.HV.HVs[i];
-
- // pak nacteneme samotna HV
- Self.data.HV.cnt := hvs.Count;
- for i := 0 to Self.data.HV.cnt-1 do
-  begin
-   hv.Clear();
-   ExtractStringsEx(['|'], [], hvs[i], hv);
-   Self.data.HV.HVs[i] := StrToInt(hv[4]);
-
-   if (not Assigned(HVDb.HVozidla[Self.data.HV.HVs[i]])) then
+   // zkontrolujeme, jestli nejaka souprava s timto cislem uz nahodou neexistuje
+   for i := 0 to _MAX_SPR-1 do
     begin
-     Self.data.HV.cnt := i;
-     raise Exception.Create('Hnací vozidlo s adresou '+IntToStr(Self.data.HV.HVs[i])+' neexistuje');
-     Exit();
-    end;
+     if (soupravy.soupravy[i] = nil) then continue;
 
-   if ((HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.souprava > -1) and (HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.souprava <> Self.index)) then
-    begin
-     Self.data.HV.cnt := i;
-     raise Exception.Create('Loko '+IntToStr(Self.data.HV.HVs[i])+' již pøiøazena soupravì '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.souprava));
-     Exit();
-    end;
-
-   for j := 0 to i-1 do
-    if (Self.data.HV.HVs[i] = Self.data.HV.HVs[j]) then
-     begin
-      Self.data.HV.cnt := i;
-      raise Exception.Create('Duplicitní loko!');
-      Exit();
-     end;
-
-   if ((not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.prevzato) or (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.stolen)) then
-    begin
-     // pripravit funkce:
-     max_func := Min(Length(hv[8]), _HV_FUNC_MAX);
-     for j := 0 to max_func do
-       HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.funkce[j] := (hv[8][j+1] = '1');
-
-     try
-       TrkSystem.PrevzitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
-     except
-       on E:Exception do
-         raise Exception.Create('PrevzitLoko exception : '+E.Message);
-     end;
-
-     timeout := 0;
-     while (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.prevzato_full) do
+     if ((Soupravy.soupravy[i].nazev = spr[0]) and (Soupravy.soupravy[i] <> Self)) then
       begin
-       Sleep(1);
-       timeout := timeout + 1;
-       Application.ProcessMessages;
-
-       if (timeout > 1000) then  //timeout 1 sec na kazde hnaci vozidlo
-        begin
-         raise Exception.Create('Loko '+ IntToStr(Self.data.HV.HVs[i]) +' nepøevzato');
-         Exit();
-        end;
-      end;//while
-
-    end else begin
-     // nastavit funkce
-     for j := 0 to _HV_FUNC_MAX do
-       if (j < Length(hv[8])) then
-         Func[j] := (hv[8][j+1] = '1')
+       if (Soupravy.soupravy[i].stanice <> nil) then
+         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' již existuje v OØ '+(Soupravy.soupravy[i].stanice as TOR).Name)
        else
-         Func[j] := HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.funkce[j];
+         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' již existuje');
 
-     TrkSystem.LokSetFunc(Self, HVDb.HVozidla[Self.data.HV.HVs[i]], Func);
+       Exit();
+      end;
     end;
 
-   HVDb.HVozidla[Self.data.HV.HVs[i]].Data.Poznamka := hv[3];
-   HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
-   HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.souprava := Self.index;
-  end;
+   try
+    StrToInt(spr[0]);
+   except
+     on E:EConvertError do
+       raise Exception.Create('Èíslo soupravy není validní èíslo!');
+   end;
 
- Self.UvolV(old, Self.data.HV);
+   Self.changed := true;
 
- if ((Self.rychlost = 0) and (Self.data.smer_L xor Self.data.smer_S)) then
-  begin
-    // vypocet smeru ze sipky
-    if (Self.data.smer_L) then
-      smer := THVStanoviste.lichy
-    else
-      smer := THVStanoviste.sudy;
-  end else
-    smer := Self.smer;
+   Self.data.nazev := spr[0];
+   Self.data.pocet_vozu := StrToInt(spr[1]);
+   Self.data.poznamka := spr[2];
+   Self.data.smer_L := (spr[3][1] = '1');
+   Self.data.smer_S := (spr[3][2] = '1');
 
- Self.SetRychlostSmer(Self.rychlost, smer);
+   Self.data.delka := StrToInt(spr[4]);
+   Self.data.typ   := spr[5];
 
- hvs.Free();
- hv.Free();
+   Self.data.OblRizeni := OblR;
+   Self.data.front     := Usek;
+
+   if (spr.Count > 7) then
+     Self.data.vychoziOR := ORs.GetORById(spr[7]);
+
+   if (spr.Count > 8) then
+     Self.data.cilovaOR := ORs.GetORById(spr[8]);
+
+   if (spr.Count > 9) then
+     Self.data.hlaseni := (spr[9] = '1')
+   else
+     Self.data.hlaseni := TStanicniHlaseni.HlasitSprTyp(Self.typ);
+
+   ExtractStringsEx([']'], ['['], spr[6], hvs);
+
+   new := TList<Integer>.Create();
+
+   try
+     for s in hvs do
+      begin
+       hv.Clear();
+       ExtractStringsEx(['|'], [], s, hv);
+       addr := StrToInt(hv[4]);
+
+       if (not Assigned(HVDb.HVozidla[addr])) then
+         Exit();
+
+       if ((HVDb.HVozidla[addr].Stav.souprava > -1) and (HVDb.HVozidla[addr].Stav.souprava <> Self.index)) then
+         raise Exception.Create('Loko '+IntToStr(addr)+' již pøiøazena soupravì '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].Stav.souprava));
+
+       if (new.Contains(addr)) then
+         raise Exception.Create('Duplicitní loko!');
+
+       if ((not HVDb.HVozidla[addr].Slot.prevzato) or (HVDb.HVozidla[addr].Slot.stolen)) then
+        begin
+         // pripravit funkce:
+         max_func := Min(Length(hv[8]), _HV_FUNC_MAX);
+         for j := 0 to max_func do
+           HVDb.HVozidla[addr].Stav.funkce[j] := (hv[8][j+1] = '1');
+
+         try
+           TrkSystem.PrevzitLoko(HVDb.HVozidla[addr]);
+         except
+           on E:Exception do
+             raise Exception.Create('PrevzitLoko exception : '+E.Message);
+         end;
+
+         timeout := 0;
+         while (not HVDb.HVozidla[addr].Slot.prevzato_full) do
+          begin
+           Sleep(1);
+           timeout := timeout + 1;
+           Application.ProcessMessages;
+
+           if (timeout > 1000) then  //timeout 1 sec na kazde hnaci vozidlo
+            begin
+             raise Exception.Create('Loko '+ IntToStr(addr) +' nepøevzato');
+             Exit();
+            end;
+          end;//while
+
+        end else begin
+         // nastavit funkce
+         for j := 0 to _HV_FUNC_MAX do
+           if (j < Length(hv[8])) then
+             Func[j] := (hv[8][j+1] = '1')
+           else
+             Func[j] := HVDb.HVozidla[addr].Stav.funkce[j];
+
+         TrkSystem.LokSetFunc(Self, HVDb.HVozidla[addr], Func);
+        end;
+
+       HVDb.HVozidla[addr].Data.Poznamka := hv[3];
+       HVDb.HVozidla[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
+       HVDb.HVozidla[addr].Stav.souprava := Self.index;
+
+       new.Add(addr);
+      end;
+   except
+     new.Free();
+     raise;
+   end;
+
+   Self.UvolV(Self.HVs, new);
+   Self.data.HVs.Free();
+   Self.data.HVs := new;
+
+   if ((Self.rychlost = 0) and (Self.data.smer_L xor Self.data.smer_S)) then
+    begin
+     // vypocet smeru ze sipky
+     if (Self.data.smer_L) then
+       smer := THVStanoviste.lichy
+     else
+       smer := THVStanoviste.sudy;
+    end else
+     smer := Self.smer;
+
+   Self.SetRychlostSmer(Self.rychlost, smer);
+
+ finally
+   hvs.Free();
+   hv.Free();
+ end;
 
  Blky.ChangeSprToTrat(Self.index);
 end;//procedure
@@ -464,38 +464,31 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TSouprava.UvolV(old:TSoupravaHV; new:TSoupravaHV);
-var i, j:Integer;
-    old_marked:array [0.._MAX_SPR_HV] of boolean;
+class procedure TSouprava.UvolV(old:TSoupravaHVs; new:TSoupravaHVs);
+var new_addr, old_addr:Integer;
+    keep:TList<Integer>;
 begin
- for i := 0 to _MAX_SPR_HV-1 do
-  old_marked[i] := false;
+ keep := TList<Integer>.Create();
 
- for i := 0 to new.cnt-1 do
-   for j := 0 to old.cnt-1 do
-     if (new.HVs[i] = old.HVs[j]) then
-      old_marked[j] := true;
+ try
+   for new_addr in new do
+     for old_addr in old do
+       if (new_addr = old_addr) then
+          keep.Add(new_addr);
 
- for i := 0 to old.cnt-1 do
-  begin
-   if (not old_marked[i]) then
+   for old_addr in old do
     begin
-     // vozidlo, ktere neni v novem seznamu -> uvolnit
-     HVDb.HVozidla[old.HVs[i]].Stav.souprava := -1;
-     TrkSystem.LokSetSpeed(nil, HVDb.HVozidla[old.HVs[i]], 0);
-
-     if ((TrkSystem.openned) and (not HVDb.HVozidla[old.HVs[i]].ruc) and
-         (HVDb.HVozidla[old.HVs[i]].Stav.regulators.Count = 0) and (not RegCollector.IsLoko(HVDb.HVozidla[old.HVs[i]]))) then
+     if (not keep.Contains(old_addr)) then
       begin
-       try
-         TrkSystem.OdhlasitLoko(HVDb.HVozidla[old.HVs[i]]);
-       except
-
-       end;
+       // vozidlo, ktere neni v novem seznamu -> uvolnit
+       HVDb.HVozidla[old_addr].Stav.souprava := -1;
+       HVDb.HVozidla[old_addr].CheckRelease();
+       HVDb.HVozidla[old_addr].changed := true;
       end;
     end;
-  end;
-
+ finally
+   keep.Free();
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -503,42 +496,29 @@ end;//procedure
 // uvolnit vsechna loko
 // pred uvolnenim loko take zastavime
 procedure TSouprava.ReleaseAllLoko();
-var i:Integer;
+var addr:Integer;
 begin
  if ((not Assigned(HVDb)) or (not Assigned(TrkSystem))) then Exit();
 
- for i := 0 to Self.data.HV.cnt-1 do
+ for addr in Self.HVs do
   begin
-   if (Assigned(HVDb.HVozidla[Self.data.HV.HVs[i]])) then
-    begin
-     HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.souprava := -1;
+   if (not Assigned(HVDb.HVozidla[addr])) then
+     continue;
 
-     if ((TrkSystem.openned) and (not HVDb.HVozidla[Self.data.HV.HVs[i]].ruc)) then
-      begin
-       // lokomotivu fyzicky odhlasujeme jen pokud jsme pripojeni k centrale
-       TrkSystem.LokSetDirectSpeed(Self, HVDb.HVozidla[Self.data.HV.HVs[i]], 0);
-       if ((HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.regulators.Count = 0) and
-          (not RegCollector.IsLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]))) then
-        begin
-         try
-           TrkSystem.OdhlasitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
-         except
-
-         end;
-        end;
-      end;
-    end;
+   HVDb.HVozidla[addr].Stav.souprava := -1;
+   HVDb.HVozidla[addr].CheckRelease();
+   HVDb.HVozidla[addr].changed := true;
   end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.SetOR(OblRizeni:TObject);
-var i:Integer;
+var addr:Integer;
 begin
  Self.data.OblRizeni := OblRizeni;
- for i := 0 to Self.data.HV.cnt-1 do
-   HVDb.HVozidla[Self.data.HV.HVs[i]].PredejStanici(OblRizeni as TOR);
+ for addr in Self.HVs do
+   HVDb.HVozidla[addr].PredejStanici(OblRizeni as TOR);
  Self.Data.hlaseniPrehrano := false;
  Self.changed := true;
 end;//procedure
@@ -546,7 +526,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.SetRychlostSmer(speed:Integer; dir:THVStanoviste);
-var i:Integer;
+var addr:Integer;
     smer:Integer;
 begin
  if ((TBlk(Self.front).typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
@@ -560,23 +540,23 @@ begin
    Exit();
  end;
 
- for i := 0 to Self.data.HV.cnt-1 do
+ for addr in Self.HVs do
   begin
-   if (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.prevzato) then continue;
+   if (not HVDb.HVozidla[addr].Slot.prevzato) then continue;
    
-   if (HVDb.HVozidla[Self.data.HV.HVs[i]].ruc) then
+   if (HVDb.HVozidla[addr].ruc) then
     begin      // pokud je loko prevzato na rucni rizeni, ignoruji ho
-      writelog('LOKO ' + IntToStr(Self.data.HV.HVs[i]) + ' v ruèním regulátoru, nenastavuji rychlost', WR_MESSAGE, 0);
+      writelog('LOKO ' + IntToStr(addr) + ' v ruèním regulátoru, nenastavuji rychlost', WR_MESSAGE, 0);
       continue;
     end;
 
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.HVComErr);
-   smer := (Integer(dir) xor Integer(HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.StanovisteA));
+   smer := (Integer(dir) xor Integer(HVDb.HVozidla[addr].Stav.StanovisteA));
 
-   if (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.stolen) then
-     TrkSystem.LokSetSpeed(Self, HVDb.HVozidla[Self.data.HV.HVs[i]], speed, smer)
+   if (not HVDb.HVozidla[addr].Slot.stolen) then
+     TrkSystem.LokSetSpeed(Self, HVDb.HVozidla[addr], speed, smer)
    else
-    writelog('LOKO ' + IntToStr(Self.data.HV.HVs[i]) + ' ukradena, nenastavuji rychlost', WR_MESSAGE, 0);
+    writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE, 0);
   end;
 
  if ((speed > 0) and (Assigned(Self.front)) and
@@ -612,10 +592,10 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 function TSouprava.IsUkradeno():boolean;
-var i:Integer;
+var addr:Integer;
 begin
- for i := 0 to Self.data.HV.cnt-1 do
-  if (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.stolen) then
+ for addr in Self.HVs do
+  if (HVDb.HVozidla[addr].Slot.stolen) then
     Exit(true);
  Result := false;
 end;//function
@@ -623,16 +603,16 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.VezmiVlak();
-var i, timeout:Integer;
+var addr, timeout:Integer;
     taken:boolean;
 begin
  taken := false;
- for i := 0 to Self.data.HV.cnt-1 do
+ for addr in Self.HVs do
   begin
-   if (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.stolen) then
+   if (HVDb.HVozidla[addr].Slot.stolen) then
     begin
      try
-       TrkSystem.PrevzitLoko(HVDb.HVozidla[Self.data.HV.HVs[i]]);
+       TrkSystem.PrevzitLoko(HVDb.HVozidla[addr]);
      except
        on E:Exception do
          raise Exception.Create('PrevzitLoko exception : '+E.Message);
@@ -640,7 +620,7 @@ begin
      taken := true;
 
      timeout := 0;
-     while (not HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.Prevzato) do
+     while (not HVDb.HVozidla[addr].Slot.Prevzato) do
       begin
        Sleep(1);
        timeout := timeout + 1;
@@ -648,7 +628,7 @@ begin
 
        if (timeout > 1000) then  //timeout 1 sec
         begin
-         raise Exception.Create('Loko '+ IntToStr(Self.data.HV.HVs[i]) +' nepøevzato');
+         raise Exception.Create('Loko '+ IntToStr(addr) +' nepøevzato');
          Exit();
         end;
       end;//while
@@ -662,7 +642,7 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.SetFront(front:TObject);
-var i:Integer;
+var addr:Integer;
 begin
  if (Self.data.front = front) then Exit();
 
@@ -671,20 +651,20 @@ begin
  Self.data.front := front;
 
  // pricteme delku tohoto useku k front:
- for i := 0 to Self.data.HV.cnt-1 do
+ for addr in Self.HVs do
   begin
-   case (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.smer) of
+   case (HVDb.HVozidla[addr].Slot.smer) of
     0 : begin
-      HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.najeto_vpred.Metru := HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.najeto_vpred.Metru + (front as TBlkUsek).GetSettings().Lenght/100;
-      Inc(HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.najeto_vpred.Bloku);
+      HVDb.HVozidla[addr].Stav.najeto_vpred.Metru := HVDb.HVozidla[addr].Stav.najeto_vpred.Metru + (front as TBlkUsek).GetSettings().Lenght/100;
+      Inc(HVDb.HVozidla[addr].Stav.najeto_vpred.Bloku);
     end;
     1 : begin
-      HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.najeto_vzad.Metru := HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.najeto_vzad.Metru + (front as TBlkUsek).GetSettings().Lenght/100;
-      Inc(HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.najeto_vzad.Bloku);
+      HVDb.HVozidla[addr].Stav.najeto_vzad.Metru := HVDb.HVozidla[addr].Stav.najeto_vzad.Metru + (front as TBlkUsek).GetSettings().Lenght/100;
+      Inc(HVDb.HVozidla[addr].Stav.najeto_vzad.Bloku);
     end;//case 1
    end;//case
 
-   HVDb.HVozidla[Self.data.HV.HVs[i]].changed := true;
+   HVDb.HVozidla[addr].changed := true;
   end;//for
 
  Self.changed := true;
@@ -701,15 +681,15 @@ end;//procedure
 
 // zmena smeru pri naslapu na smyckovy blok
 procedure TSouprava.ChangeSmer();
-var i:Integer;
+var addr:Integer;
     tmp:boolean;
 begin
  // zmenit orintaci stanoviste A hnacich vozidel
- for i := 0 to Self.data.HV.cnt-1 do
+ for addr in Self.HVs do
   begin
-   case (HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.StanovisteA) of
-    THVStanoviste.lichy : HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.StanovisteA := THVStanoviste.sudy;
-    THVStanoviste.sudy  : HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.StanovisteA := THVStanoviste.lichy;
+   case (HVDb.HVozidla[addr].Stav.StanovisteA) of
+    THVStanoviste.lichy : HVDb.HVozidla[addr].Stav.StanovisteA := THVStanoviste.sudy;
+    THVStanoviste.sudy  : HVDb.HVozidla[addr].Stav.StanovisteA := THVStanoviste.lichy;
    end;//case
   end;//for i
 
@@ -763,16 +743,16 @@ var i:Integer;
     dir:Integer;
 begin
  if ((Self.rychlost <> 0) or (Self.data.smer_L xor Self.data.smer_S) or
-     (Self.data.HV.cnt = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
+     (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
    Exit();
 
- dir := HVDb.HVozidla[Self.data.HV.HVs[0]].Slot.smer xor
-        Integer(HVDb.HVozidla[Self.data.HV.HVs[0]].Stav.StanovisteA);
+ dir := HVDb.HVozidla[Self.HVs[0]].Slot.smer xor
+        Integer(HVDb.HVozidla[Self.HVs[0]].Stav.StanovisteA);
 
  if (dir = Integer(Self.smer)) then Exit();
- for i := 1 to Self.data.HV.cnt-1 do
-   if (dir <> (HVDb.HVozidla[Self.data.HV.HVs[i]].Slot.smer xor
-              Integer(HVDb.HVozidla[Self.data.HV.HVs[i]].Stav.StanovisteA))) then
+ for i := 1 to Self.HVs.Count-1 do
+   if (dir <> (HVDb.HVozidla[Self.HVs[i]].Slot.smer xor
+              Integer(HVDb.HVozidla[Self.HVs[i]].Stav.StanovisteA))) then
      Exit();
 
  // vsechna hv nastavena do opacneho smeru -> zmenit smer soupravy
@@ -782,21 +762,21 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.ToggleHouk(desc:string);
-var i:Integer;
+var addr:Integer;
     HV:THV;
 begin
  writelog('Souprava ' + Self.nazev + ' : aktivuji houkání ' + desc, WR_MESSAGE, 0);
 
- for i := 0 to Self.sdata.HV.cnt-1 do
+ for addr in Self.HVs do
   begin
-   HV := HVDb.HVozidla[Self.sdata.HV.HVs[i]];
+   HV := HVDb.HVozidla[addr];
    if (HV.CanPlayHouk(desc)) then
      TrkSystem.LokFuncToggle(Self, HV, HV.funcDict[desc]);
   end;
 end;
 
 procedure TSouprava.SetHoukState(desc:string; state:boolean);
-var i:Integer;
+var addr:Integer;
     HV:THV;
     func:TFunkce;
 begin
@@ -805,9 +785,9 @@ begin
  else
    writelog('Souprava ' + Self.nazev + ' : deaktivuji funkci ' + desc, WR_MESSAGE, 0);
 
- for i := 0 to Self.sdata.HV.cnt-1 do
+ for addr in Self.HVs do
   begin
-   HV := HVDb.HVozidla[Self.sdata.HV.HVs[i]];
+   HV := HVDb.HVozidla[addr];
 
    if (HV.CanPlayHouk(desc)) then
     begin
@@ -827,7 +807,7 @@ var mnav:TBlkScom;
     shSpr:TSHSpr;
 begin
  if ((not Self.hlaseni) or (Self.hlaseniPrehrano) or (self.vychoziOR = nil) or
-     (self.cilovaOR = nil)) then Exit();
+     (self.cilovaOR = nil) or (Self.typ = '')) then Exit();
 
  mnav := TBlkSCom(nav);
  if (mnav.OblsRizeni.Cnt < 1) then Exit();

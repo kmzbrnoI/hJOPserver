@@ -119,8 +119,16 @@ uses fMain, Trakce;
 
 procedure TF_DigiReg.CHB_DojezdIgnorateClick(Sender: TObject);
 begin
- if (Self.OpenHV <> nil) then
-   Self.OpenHV.ruc := Self.CHB_DojezdIgnorate.Checked;
+ try
+  if (Self.OpenHV <> nil) then
+    Self.OpenHV.ruc := Self.CHB_DojezdIgnorate.Checked;
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Nepodaøilo se nastavit RUÈ:'+#13#10+E.Message),
+         'Varování', MB_OK OR MB_ICONWARNING);
+    end;
+ end;
 end;
 
 procedure TF_DigiReg.CHB_svetlaClick(Sender: TObject);
@@ -211,25 +219,27 @@ procedure TF_DigiReg.FormCreate(Sender: TObject);
 
 procedure TF_DigiReg.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
+var tmp:THV;
  begin
   if (Self.OpenHV <> nil) then
    begin
-
-    if ((Self.OpenHV.Slot.prevzato) and (Self.OpenHV.Stav.regulators.Count = 0)
-        and (Self.OpenHV.Stav.souprava < 0)) then
-     begin
-      try
-        TrkSystem.OdhlasitLoko(Self.OpenHV)
-      except
-        on E:Exception do
-          Application.MessageBox(PChar('Lokomotivu se nepodaøilo odhlásit:'+#13#10+E.Message),
-              'Varování', MB_OK OR MB_ICONWARNING);
-      end;
-     end else
-      if (Self.OpenHV.Stav.regulators.Count = 0) then
-        Self.OpenHV.ruc := false;
-
+    tmp := self.OpenHV;
     Self.OpenHV := nil;
+
+    try
+      if ((tmp.Slot.prevzato) and (tmp.Stav.regulators.Count = 0)) then
+       begin
+        tmp.ruc := false;
+        tmp.CheckRelease();
+       end;
+    except
+     on E:Exception do
+      begin
+       Self.OpenHV := tmp;
+       Application.MessageBox(PChar('Lokomotivu se nepodaøilo odhlásit:'+#13#10+E.Message),
+           'Varování', MB_OK OR MB_ICONWARNING);
+      end;
+    end;
    end;
 
   Self.T_Speed.Enabled := false;
@@ -352,7 +362,8 @@ end;
 
 procedure TF_DigiReg.T_SpeedTimer(Sender: TObject);
 begin
-  if (not OpenHV.slot.Prevzato) then Exit;
+  if (Self.OpenHV = nil) then Exit();
+  if (not OpenHV.slot.Prevzato) then Exit();
   if (Self.speed = Self.TB_reg.Position) then Exit();
 
   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
