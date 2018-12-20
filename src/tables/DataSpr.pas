@@ -166,6 +166,11 @@ var spr:TSoupravaData;
     Self.LV.Items.Item[line].SubItems.Strings[13] := TOR(spr.cilovaOR).Name
   else
     Self.LV.Items.Item[line].SubItems.Strings[13] := '-';
+
+  if (spr.hlaseni) then
+    Self.LV.Items.Item[line].SubItems.Strings[14] := 'Ano'
+  else
+    Self.LV.Items.Item[line].SubItems.Strings[14] := 'Ne';
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

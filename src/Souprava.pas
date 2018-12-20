@@ -36,6 +36,7 @@ type
 
    vychoziOR:TObject;
    cilovaOR:TObject;
+   hlaseni:boolean;
 
    hlaseniPrehrano:boolean;
    podj:TDictionary<Integer, TPOdj>;  // id useku : predvidany odjezd
@@ -109,6 +110,7 @@ type
     property vychoziOR:TObject read data.vychoziOR;
     property cilovaOR:TObject read data.cilovaOR;
     property hlaseniPrehrano:boolean read data.hlaseniPrehrano;
+    property hlaseni:boolean read data.hlaseni;
 
     // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
     class procedure UvolV(old:TSoupravaHV; new:TSoupravaHV);
@@ -172,6 +174,7 @@ begin
  Self.data.vychoziOR  := ORs.GetORById(ini.ReadString(section, 'z', ''));
  Self.data.cilovaOR   := ORs.GetORById(ini.ReadString(section, 'do', ''));
  Self.data.OblRizeni  := ORs.GetORById(ini.ReadString(section, 'OR', ''));
+ Self.data.hlaseni    := ini.ReadBool(section, 'hlaseni', false);
 
  data := TStringList.Create();
  ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
@@ -234,6 +237,8 @@ begin
  else
    ini.DeleteKey(section, 'OR');
 
+ ini.WriteBool(section, 'hlaseni', Self.data.hlaseni);
+
  str := '';
  for i := 0 to Self.data.HV.cnt-1 do
   str := str + IntToStr(Self.data.HV.HVs[i]) + ';';
@@ -272,6 +277,11 @@ begin
  if (Self.cilovaOR <> nil) then
    Result := Result + TOR(Self.cilovaOR).id;
  Result := Result + ';';
+
+ if (Self.data.hlaseni) then
+   Result := Result + '1;'
+ else
+   Result := Result + '0;';
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -331,6 +341,11 @@ begin
 
  if (spr.Count > 8) then
    Self.data.cilovaOR := ORs.GetORById(spr[8]);
+
+ if (spr.Count > 9) then
+   Self.data.hlaseni := (spr[9] = '1')
+ else
+   Self.data.hlaseni := TStanicniHlaseni.HlasitSprTyp(Self.typ);
 
  ExtractStringsEx([']'], ['['], spr[6], hvs);
 
@@ -810,23 +825,9 @@ var mnav:TBlkScom;
     oblr:TOR;
     shPlay:TSHToPlay;
     shSpr:TSHSpr;
-    ok:boolean;
-    i:Integer;
 begin
- if ((Self.hlaseniPrehrano) or (self.vychoziOR = nil) or (self.cilovaOR = nil)
-     or (self.typ = '')) then Exit();
-
- ok := true;
- for i := 0 to Length(stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN)-1 do
-  begin
-   if (Self.typ = stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN[i]) then
-    begin
-     ok := false;
-     break;
-    end;
-  end;
-
- if (not ok) then Exit();
+ if ((not Self.hlaseni) or (Self.hlaseniPrehrano) or (self.vychoziOR = nil) or
+     (self.cilovaOR = nil)) then Exit();
 
  mnav := TBlkSCom(nav);
  if (mnav.OblsRizeni.Cnt < 1) then Exit();

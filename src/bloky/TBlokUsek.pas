@@ -1287,7 +1287,6 @@ end;//procedure
 function TBlkUsek.GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
 var spr:TSouprava;
     ok:boolean;
-    i:Integer;
     shPlay:stanicniHlaseniHelper.TSHToPlay;
 begin
  spr := Soupravy[Self.Soupravs[sprLocalI]];
@@ -1316,15 +1315,7 @@ begin
  if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
      (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
   begin
-   ok := true;
-   for i := 0 to Length(stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN)-1 do
-    begin
-     if (spr.typ = stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN[i]) then
-      begin
-       ok := false;
-       break;
-      end;
-    end;
+   ok := TStanicniHlaseni.HlasitSprTyp(spr.typ);
 
    if ((Self.UsekStav.stanicni_kolej) and (ok)) then
      Result := Result + 'HLÁŠENÍ odjezd,';

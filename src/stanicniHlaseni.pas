@@ -51,6 +51,8 @@ type
      procedure Projede(spr:TSHSpr);
      procedure Spec(id:string);
 
+     class function HlasitSprTyp(typ:string):boolean;
+
      property available: boolean read GetAvailable;
 
 end;
@@ -198,6 +200,17 @@ end;
 function TStanicniHlaseni.GetAvailable():boolean;
 begin
  Result := (Self.m_clients.Count > 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TStanicniHlaseni.HlasitSprTyp(typ:string):boolean;
+var s:string;
+begin
+ for s in stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN do
+   if (typ = s) then
+     Exit(False);
+ Result := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
