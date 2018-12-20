@@ -184,6 +184,9 @@ begin
  data := TStringList.Create();
  ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
 
+ while (data.Count > _MAX_SPR_HV) do
+   data.Delete(_MAX_SPR_HV);
+
  // HV se nacitaji takto prapodivne pro osetreni pripadu, kdy u soupravy je uvedene HV, ktere neexistuje
  Self.data.HVs.Clear();
  try
@@ -355,6 +358,9 @@ begin
      Self.data.hlaseni := TStanicniHlaseni.HlasitSprTyp(Self.typ);
 
    ExtractStringsEx([']'], ['['], spr[6], hvs);
+
+   if (hvs.Count > _MAX_SPR_HV) then
+     raise Exception.Create('Pøekroèen maximální poèet hnacích vozidel na soupravì');
 
    new := TList<Integer>.Create();
 
