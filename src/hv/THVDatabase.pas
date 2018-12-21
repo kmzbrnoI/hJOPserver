@@ -425,13 +425,15 @@ begin
   AssignFile(f, filename);
   Rewrite(f);
 
-  WriteLn(f, 'adresa;nazev;majitel;najeto_metru_vpred;majeto_bloku_vpred;najeto_metru_vzad;najeto_bloku_vzad');
+  try
+    WriteLn(f, 'adresa;nazev;majitel;najeto_metru_vpred;majeto_bloku_vpred;najeto_metru_vzad;najeto_bloku_vzad');
 
-  for i := 0 to _MAX_ADDR-1 do
-    if (Assigned(self.HVs[i])) then
-      WriteLn(f, Self.HVs[i].ExportStats());
-
-  CloseFile(f);
+    for i := 0 to _MAX_ADDR-1 do
+      if (Assigned(self.HVs[i])) then
+        WriteLn(f, Self.HVs[i].ExportStats());
+  finally
+    CloseFile(f);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
