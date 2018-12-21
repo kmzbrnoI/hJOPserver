@@ -501,7 +501,11 @@ begin
               Slot.maxsp := 28;   // rychlost normujeme
 
               // prevezmeme loko tim, ze ji nastavime rychlost
-              Self.LokSetSpeed(Slot.adresa, Slot.speed, Slot.smer);
+              try
+                Self.LokSetSpeed(Slot.adresa, Slot.speed, Slot.smer);
+              finally
+
+              end;
 
               Self.hist_ok();
 

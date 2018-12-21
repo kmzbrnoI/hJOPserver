@@ -645,18 +645,16 @@ procedure TF_Main.PM_ResetVClick(Sender: TObject);
  end;
 
 procedure TF_Main.PM_RegulatorClick(Sender: TObject);
-var ret:Integer;
 begin
- if (Self.LV_HV.Selected = nil) then Exit; 
+ if (Self.LV_HV.Selected = nil) then Exit;
 
  if (TrkSystem.openned) then
   begin
    try
-    ret := RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
-    if (ret = 1) then
-      Application.MessageBox('Dosáhli jste maximálního počtu otevřených regulátorů!', 'Varování', MB_OK OR MB_ICONWARNING);
+    RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
    except
-
+    on E:Exception do
+      Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
    end;
   end;//if
 end;//procedure
@@ -879,29 +877,35 @@ begin
 end;//procedure
 
 procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
-var return:Integer;
 begin
   Self.LogStatus('DCC: zapínám');
-  TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCGoError);
-  return := TrkSystem.CentralStart();
-  if (return <> 0) then
-   begin
-    Application.MessageBox(PChar('Chyba pri DCC GO: chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
-    Self.LogStatus('DCC: START: ERR '+IntToStr(return));
-   end;
+
+  try
+    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCGoError);
+    TrkSystem.CentralStart();
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar('Chyba při DCC GO:'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
+      Self.LogStatus('DCC: START: ERR '+E.Message);
+     end;
+  end;
 end;//procedure
 
 procedure TF_Main.A_DCC_StopExecute(Sender: TObject); //DCC stop
-var return:Integer;
 begin
   Self.LogStatus('DCC: vypínám');
-  TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCStopError);
-  return := TrkSystem.CentralStop();
-  if (return <> 0) then
-   begin
-    Application.MessageBox(PChar('Chyba pri DCC STOP: chyba '+IntToStr(return)),'Chyba',MB_OK OR MB_ICONERROR);
-    Self.LogStatus('DCC: STOP: ERR '+IntToStr(return));
-   end;
+
+  try
+    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCStopError);
+    TrkSystem.CentralStop();
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar('Chyba při DCC STOP:'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
+      Self.LogStatus('DCC: STOP: ERR '+E.Message);
+     end;
+  end;
 end;
 
 procedure TF_Main.A_FuncsSetExecute(Sender: TObject);
@@ -2895,18 +2899,16 @@ begin
 end;
 
 procedure TF_Main.LV_HVDblClick(Sender: TObject);
-var ret:Integer;
 begin
  if (LV_HV.Selected = nil) then Exit();
 
  if (TrkSystem.openned) then
   begin
    try
-    ret := RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
-    if (ret = 1) then
-      Application.MessageBox('Dosáhli jste maximálního počtu otevřených regulátorů!', 'Varování', MB_OK OR MB_ICONWARNING);
+    RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
    except
-
+    on E:Exception do
+      Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
    end;
   end else begin
    F_HVEdit.OpenForm(HVDB.HVozidla[Integer(LV_HV.Selected.Data^)]);

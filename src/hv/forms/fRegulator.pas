@@ -78,6 +78,8 @@ type
 
  ///////////////////////////////////////////////////////////////////////////////
 
+ ERCMaxWindows = class(Exception);
+
  TRegulatorCollector = class
    private const
     _MAX_FORMS = 4;
@@ -93,7 +95,7 @@ type
     constructor Create();
     destructor Destroy(); override;
 
-    function Open(HV:THV):Byte;
+    procedure Open(HV:THV);
 
     procedure UpdateElements(Sender:TObject; addr:Word);
     procedure ConnectChange(addr:Word);
@@ -141,7 +143,12 @@ var func:TFunkce;
 
   Func := OpenHV.Slot.funkce;
   Func[(Sender as TCheckBox).Tag] := (Sender as TCheckBox).Checked;
-  TrkSystem.LokSetFunc(Self, OpenHV, Func);
+
+  try
+    TrkSystem.LokSetFunc(Self, OpenHV, Func);
+  except
+    Self.LokoComErr(Self, nil);
+  end;
  end;//procedure
 
 procedure TF_DigiReg.OpenForm(HV:THV);
@@ -249,7 +256,13 @@ procedure TF_DigiReg.B_STOPClick(Sender: TObject);
  begin
   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
-  TrkSystem.EmergencyStopLoko(Self, Self.OpenHV);
+
+  try
+    TrkSystem.EmergencyStopLoko(Self, Self.OpenHV);
+  except
+    Self.LokoComErr(Self, nil);
+  end;
+
   Self.UpdateElements();
  end;//procedure
 
@@ -368,7 +381,13 @@ begin
 
   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
-  TrkSystem.LokSetDirectSpeed(Self, OpenHV, TB_reg.Position, RG_Smer.ItemIndex);
+
+  try
+    TrkSystem.LokSetDirectSpeed(Self, OpenHV, TB_reg.Position, RG_Smer.ItemIndex);
+  except
+    Self.LokoComErr(Self, nil);
+  end;
+
   Self.L_stupen.Caption := IntToStr(TB_Reg.Position)+' / '+IntToStr(OpenHV.Slot.maxsp);
   Self.L_speed.Caption  := IntToStr(TrkSystem.GetStepSpeed(TB_reg.Position));
 
@@ -454,26 +473,24 @@ begin
  frm.ConnectChange();
 end;//procedure
 
-function TRegulatorCollector.Open(HV:THV):Byte;
+procedure TRegulatorCollector.Open(HV:THV);
 var i:Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    if ((Self.forms.data[i].Showing) and (Self.forms.data[i].OpenHV = HV)) then
     begin
-     Result := 2;
      Self.forms.data[i].SetFocus;
-     Exit;
+     Exit();
     end;
 
  for i := 0 to Self._MAX_FORMS-1 do
    if (not Self.forms.data[i].Showing) then
-    break;
+     break;
 
- if (i = Self._MAX_FORMS) then Exit(1);
+ if (i = Self._MAX_FORMS) then
+   raise ERCMaxWindows.Create('Otevøen maximální poèet oken regulátorù!');
 
  Self.forms.data[i].OpenForm(HV);
-
- Result := 0;
 end;//procedure
 
 function TRegulatorCollector.GetForm(addr:Word):TF_DigiReg;

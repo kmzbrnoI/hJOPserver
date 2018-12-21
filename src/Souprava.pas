@@ -559,9 +559,14 @@ begin
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.HVComErr);
    smer := (Integer(dir) xor Integer(HVDb.HVozidla[addr].Stav.StanovisteA));
 
-   if (not HVDb.HVozidla[addr].Slot.stolen) then
-     TrkSystem.LokSetSpeed(Self, HVDb.HVozidla[addr], speed, smer)
-   else
+   if (not HVDb.HVozidla[addr].Slot.stolen) then begin
+     try
+       TrkSystem.LokSetSpeed(Self, HVDb.HVozidla[addr], speed, smer)
+     except
+       on E:Exception do
+         AppEvents.LogException(E, 'TSouprava.SetRychlostSmer');
+     end;
+   end else
     writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE, 0);
   end;
 
@@ -799,7 +804,12 @@ begin
     begin
      func := HV.Stav.funkce;
      func[HV.funcDict[desc]] := state;
-     TrkSystem.LokSetFunc(Self, HV, func);
+
+     try
+       TrkSystem.LokSetFunc(Self, HV, func);
+     except
+
+     end;
     end;
   end;
 end;

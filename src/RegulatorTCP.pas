@@ -295,7 +295,11 @@ begin
    TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   TrkSystem.LokSetSpeed(Sender, HV, StrToInt(parsed[4]));
+   try
+     TrkSystem.LokSetSpeed(Sender, HV, StrToInt(parsed[4]));
+   except
+     Self.PanelLOKResponseErr(Self, LokResponseData);
+   end;
   end
 
  else if (parsed[3] = 'SPD') then
@@ -306,7 +310,11 @@ begin
    TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   TrkSystem.LokSetSpeed(Sender, HV, StrToInt(parsed[4]), StrToInt(parsed[5]));
+   try
+     TrkSystem.LokSetSpeed(Sender, HV, StrToInt(parsed[4]), StrToInt(parsed[5]));
+   except
+     Self.PanelLOKResponseErr(Self, LokResponseData);
+   end;
   end
 
  else if (parsed[3] = 'SP-S') then
@@ -317,7 +325,11 @@ begin
    TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   TrkSystem.LokSetDirectSpeed(Sender, HV, StrToInt(parsed[4]));
+   try
+     TrkSystem.LokSetDirectSpeed(Sender, HV, StrToInt(parsed[4]));
+   except
+     Self.PanelLOKResponseErr(Self, LokResponseData);
+   end;
   end
 
  else if (parsed[3] = 'SPD-S') then
@@ -328,7 +340,11 @@ begin
    TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   TrkSystem.LokSetDirectSpeed(Sender, HV, StrToInt(parsed[4]), StrToInt(parsed[5]));
+   try
+     TrkSystem.LokSetDirectSpeed(Sender, HV, StrToInt(parsed[4]), StrToInt(parsed[5]));
+   except
+     Self.PanelLOKResponseErr(Self, LokResponseData);
+   end;
   end
 
  else if (parsed[3] = 'D') then
@@ -339,7 +355,11 @@ begin
    TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   TrkSystem.LokSetDirectSpeed(Sender, HV, HV.Slot.speed, StrToInt(parsed[4]));
+   try
+     TrkSystem.LokSetDirectSpeed(Sender, HV, HV.Slot.speed, StrToInt(parsed[4]));
+   except
+     Self.PanelLOKResponseErr(Self, LokResponseData);
+   end;
   end
 
  else if (parsed[3] = 'F') then
@@ -363,7 +383,11 @@ begin
    TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   TrkSystem.LokSetFunc(Sender, HV, Func);
+   try
+     TrkSystem.LokSetFunc(Sender, HV, Func);
+   except
+     Self.PanelLOKResponseErr(Self, LokResponseData);
+   end;
   end
 
  else if (parsed[3] = 'STOP') then
@@ -374,7 +398,11 @@ begin
    TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   TrkSystem.EmergencyStopLoko(Sender, HV);
+   try
+     TrkSystem.EmergencyStopLoko(Sender, HV);
+   except
+     Self.PanelLOKResponseErr(Self, LokResponseData);
+   end;
   end
 
  else if (parsed[3] = 'TOTAL') then

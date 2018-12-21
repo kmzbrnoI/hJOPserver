@@ -60,6 +60,10 @@ type
   TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
 
   ENotOpenned = class(Exception);
+  EAlreadyOpened = class(Exception);
+  EAlreradyClosed = class(Exception);
+  ETrakceUnassigned = class(Exception);
+  EInvalidArgument = class(Exception);
 
   TTrkLogLevel = (tllNo = 0, tllErrors = 1, tllCommands = 2, tllData = 3, tllChanges = 4, tllDetail = 5);
 
@@ -304,20 +308,20 @@ type
      function Close(force:boolean = false):Byte;
 
      // zakladni prikazy do centraly:
-     function CentralStart():Byte;                                              // TRACK ON
-     function CentralStop():Byte;                                               // TRACK OFF
-     function LokSetSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;
+     procedure CentralStart();                                                  // TRACK ON
+     procedure CentralStop();                                                   // TRACK OFF
+     procedure LokSetSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1);
                                                                                 // nastaveni rychlosti daneho HV, rychlost v km/h
-     function LokSetDirectSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;
+     procedure LokSetDirectSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1);
                                                                                 // nastaveni rychlosti daneho HV, rychlost se zadava primo ve stupnich
-     function LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false):Byte;
+     procedure LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false);
                                                                                 // nastaveni funkce HV; force nastavi vsechny funkce v parametru bez ohledu na rozdilnost od aktualniho stavu
-     function LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal):Byte;      // zapne a po 500 ms vypne konkretni funkci
+     procedure LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);          // zapne a po 500 ms vypne konkretni funkci
      procedure LoksSetFunc(vyznam:string; state:boolean);                       // nastavi funkci s danym vyznamem u vsech prevzatych hnacich vozidel na hodnotu state
-     function LokGetSpSteps(HV:THV):Byte;                                       // vysle pozadavek na zjisteni informaci o lokomotive
-     function EmergencyStop():Byte;                                             // nouzove zastaveni vsech lokomotiv, ktere centrala zna (centrala, nikoliv pocitac!)
-     function EmergencyStopLoko(Sender:TObject; HV:THV):Byte;                   // nouzove zastaveni konkretniho HV
-     function EmergencyStopAddr(addr:Integer):Byte;                             // nouzove zastaveni konkretni adresy lokmotivy
+     procedure LokGetInfo(HV:THV);                                           // vysle pozadavek na zjisteni informaci o lokomotive
+     procedure EmergencyStop();                                                 // nouzove zastaveni vsech lokomotiv, ktere centrala zna (centrala, nikoliv pocitac!)
+     procedure EmergencyStopLoko(Sender:TObject; HV:THV);                       // nouzove zastaveni konkretniho HV
+     procedure EmergencyStopAddr(addr:Integer);                                 // nouzove zastaveni konkretni adresy lokmotivy
 
      procedure GetCSVersion();                                                  // zjistit verzi FW v centrale
      procedure GetLIVersion();                                                  // zjistit verzi SW a HW LI
@@ -337,7 +341,7 @@ type
      procedure PrevzitLoko(HV:THV);                                             // prevzit dane HV (tj. z centraly, nastavit funkce, POM)
      procedure OdhlasitLoko(HV:THV);                                            // uvolnit loko (tj. RELEASE POM, odhlasit)
 
-     function POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte):Integer;   // zapsat 1 CV POMem, v praxi nevyuzivano
+     procedure POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte);          // zapsat 1 CV POMem, v praxi nevyuzivano
      procedure POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus);
                                                                                 // zapsat seznam CV POMem
 
@@ -373,6 +377,7 @@ type
         OK callback je volan kdyz centrala odpovi na prikaz "OK",
         Error callback je volany, kdyz centrala odpovi chybou,
           nebo na prikaz opakovane neodpovi.
+        Funkce krome error callbacku muze vyvolat i vyjimku!
      }
      property callback_err:TCommandCallback write SetCallbackErr;
      property callback_ok:TCommandCallback write SetCallbackOK;
@@ -610,42 +615,45 @@ end;//prrocedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrkGUI.CentralStart():Byte;
+procedure TTrkGUI.CentralStart();
 begin
- if (not Assigned(Self.Trakce)) then Exit(1);
- if (not Self.openned) then Exit(2);
+ if (not Assigned(Self.Trakce)) then
+   raise ETrakceUnassigned.Create('Objekt trakce není pøiøazen!');
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
 
  Self.TrkLog(self,2,'PUT: CENTRAL START');
  Self.Trakce.TrackStatus := TS_ON;
-
- Result := 0;
 end;//function
 
-function TTrkGUI.CentralStop():Byte;
+procedure TTrkGUI.CentralStop();
 begin
- if (not Assigned(Self.Trakce)) then Exit(1);
- if (not Self.openned) then Exit(2);
+ if (not Assigned(Self.Trakce)) then
+   raise ETrakceUnassigned.Create('Objekt trakce není pøiøazen!');
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
 
  Self.TrkLog(self,2,'PUT: CENTRAL STOP');
  Self.Trakce.TrackStatus := TS_OFF;
-
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrkGUI.LokSetSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;    //rychlost se zadava v km/h
+procedure TTrkGUI.LokSetSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1);    //rychlost se zadava v km/h
 var speedOld:Integer;
     dirOld:Integer;
 begin
- if (not Self.openned) then Exit(1);
- if (HV = nil) then Exit(2);
- if ((dir > 1) or (dir < -1)) then Exit(4);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+ if (HV = nil) then
+   raise EInvalidArgument.Create('HV nezadáno!');
+ if ((dir > 1) or (dir < -1)) then
+   raise EInvalidArgument.Create('Špatný smìr!');
 
  if ((HV.Slot.speed = Self.GettSpeed(speed)) and (HV.Slot.Smer = dir)) then
   begin
    Self.TrkLog(self, 5, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' skmph; dir='+IntToStr(dir));
-   Exit(5);
+   Exit();
   end;
 
  if (dir = -1) then dir := HV.Slot.Smer;
@@ -659,21 +667,23 @@ begin
 
  Self.TrkLog(self,2,'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToSTr(speed)+' kmph = '+IntToStr(Self.GettSpeed(speed))+' steps; dir='+IntToStr(dir));
  Self.Trakce.LokSetSpeed(HV.Adresa,Self.GettSpeed(speed),dir);
- Result := 0;
 end;//function
 
-function TTrkGUI.LokSetDirectSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1):Byte;    //rychlost se zadava v steps
+procedure TTrkGUI.LokSetDirectSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1);    //rychlost se zadava v steps
 var speedOld:Integer;
     dirOld:Integer;
 begin
- if (not Self.openned) then Exit(1);
- if (HV = nil) then Exit(2);
- if ((dir > 1) or (dir < -1)) then Exit(4);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+ if (HV = nil) then
+   raise EInvalidArgument.Create('HV nezadáno!');
+ if ((dir > 1) or (dir < -1)) then
+   raise EInvalidArgument.Create('Špatný smìr!');
 
  if ((HV.Slot.speed = speed) and (HV.Slot.Smer = dir)) then
   begin
    Self.TrkLog(self, 5, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
-   Exit(5);
+   Exit();
   end;
 
  if (dir = -1) then dir := HV.Slot.Smer;
@@ -687,13 +697,12 @@ begin
 
  Self.TrkLog(self,2,'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
  Self.Trakce.LokSetSpeed(HV.Adresa,speed,dir);
- Result := 0;
 end;//function
 
 // nastaveni funkci lokomotiv:
 //  vypocteme sady a samotne funkce nechame nastavit TTrkGUI.FuncOK(...)
 //  jednotlive sady se pak nastavuji postupne (po prijeti OK callbacku)
-function TTrkGUI.LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false):Byte;
+procedure TTrkGUI.LokSetFunc(Sender:TObject; HV:THV; funkce:TFunkce; force:boolean = false);
 const
     _SADY_CNT = 5;
 
@@ -703,8 +712,10 @@ var i:Cardinal;
     sada:TFuncCBSada;
 
 begin
- if (not Self.openned) then Exit(1);
- if (HV = nil) then Exit(2);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+ if (HV = nil) then
+   raise EInvalidArgument.Create('HV nezadáno!');
 
  for i := 0 to _SADY_CNT-1 do sady_change[i] := false;
 
@@ -777,23 +788,20 @@ begin
     TFuncCallback(fc^).callback_ok.callback(Self, TFuncCallback(fc^).callback_ok.data);
    FreeMem(fc);
   end;
-
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrkGUI.LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal):Byte;
+procedure TTrkGUI.LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);
 var funkce:TFunkce;
 begin
- if (HV = nil) then Exit(2);
+ if (HV = nil) then
+   raise EInvalidArgument.Create('HV nezadáno!');
 
  funkce := HV.Slot.funkce;
  funkce[fIndex] := true;
- Result := Self.LokSetFunc(Sender, HV, funkce);
-
- if (Result = 0) then
-   Self.toggleQueue.Enqueue(HVFunc(HV, fIndex, Now+EncodeTime(0, 0, 0, 500)));
+ Self.LokSetFunc(Sender, HV, funkce);
+ Self.toggleQueue.Enqueue(HVFunc(HV, fIndex, Now+EncodeTime(0, 0, 0, 500)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -820,7 +828,12 @@ begin
 
        Self.callback_ok  := TTrakce.GenerateCallback(Self.LoksSetFuncOK, cb);
        Self.callback_err := TTrakce.GenerateCallback(Self.LoksSetFuncErr, cb);
-       Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+
+       try
+         Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+       except
+         Self.LoksSetFuncErr(Self, cb);
+       end;
 
        Exit();
       end;//if vyznam = vyznam
@@ -1023,30 +1036,32 @@ begin
  Result := 0;
 end;//function
 
-function TTrkGUI.EmergencyStop():Byte;
+procedure TTrkGUI.EmergencyStop();
 begin
- if (not Self.openned) then Exit(1);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP');
  Self.Trakce.EmergencyStop();
- Result := 0;
 end;//function
 
-function TTrkGUI.EmergencyStopAddr(addr:Integer):Byte;
+procedure TTrkGUI.EmergencyStopAddr(addr:Integer);
 begin
- if (not Self.openned) then Exit(1);
- if (addr < 0) then Exit(2);
- if (addr > 9999) then Exit(3);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+ if ((addr < 0) or (addr > 9999)) then
+   raise EInvalidArgument.Create('Neplatná adresa!');
 
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP LOKO '+IntToStr(addr));
  Self.Trakce.LokEmergencyStop(addr);
-
- Result := 0;
 end;//function
 
-function TTrkGUI.EmergencyStopLoko(Sender:TObject; HV:THV):Byte;
+procedure TTrkGUI.EmergencyStopLoko(Sender:TObject; HV:THV);
 begin
- if (not Self.openned) then Exit(1);
- if (HV = nil) then Exit(2);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+ if (HV = nil) then
+   raise EInvalidArgument.Create('HV nezadáno!');
 
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP HV '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
  Self.Trakce.LokEmergencyStop(HV.Adresa);
@@ -1054,19 +1069,17 @@ begin
  HV.Slot.speed := 0;
 
  Self.UpdateSpeedDir(HV, Sender, true, false);
-
- Result := 0;
 end;//fucnction
 
-function TTrkGUI.LokGetSpSteps(HV:THV):Byte;
+procedure TTrkGUI.LokGetInfo(HV:THV);
 begin
- if (not Self.openned) then Exit(1);
- if (HV = nil) then Exit(2);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+ if (HV = nil) then
+   raise EInvalidArgument.Create('HV nezadáno!');
 
  Self.TrkLog(self,2,'PUT: GET HV INFO '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
  Self.Trakce.LokGetInfo(HV.Adresa);
-
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1545,7 +1558,12 @@ begin
      // smer nok -> aktualizovat smer
      Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoSmerOK, data);
      Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, data);
-     Self.LokSetDirectSpeed(nil, HV, 0, smer);
+
+     try
+       Self.LokSetDirectSpeed(nil, HV, 0, smer);
+     except
+       Self.PrevzatoErr(Self, data);
+     end;
     end;
   end else
    Self.PrevzatoSmerOK(Sender, Data);
@@ -1558,7 +1576,12 @@ begin
  // nastavime funkce tak, jak je chceme my
  Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFuncOK, data);
  Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoFuncErr, data);
- Self.LokSetFunc(nil, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.funkce);
+
+ try
+   Self.LokSetFunc(nil, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.funkce);
+ except
+   Self.PrevzatoFuncErr(Self, data);
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1733,8 +1756,12 @@ begin
      Self.callback_err := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
      Self.callback_ok  := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
 
-     Self.LokSetFunc(Self, HVDb.HVozidla[i], newfuncs);
-     HVDb.HVozidla[i].Stav.funkce[func] := true;
+     try
+       Self.LokSetFunc(Self, HVDb.HVozidla[i], newfuncs);
+       HVDb.HVozidla[i].Stav.funkce[func] := true;
+     except
+       Self.TurnOffFunctions_cmdOK(Self, addr);
+     end;
 
      Exit();
     end;
@@ -1846,14 +1873,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrkGUI.POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte):Integer;
+procedure TTrkGUI.POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte);
 begin
- if (not Self.openned) then Exit(1);
- if (HV = nil) then Exit(2);
+ if (not Self.openned) then
+   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+ if (HV = nil) then
+   raise EInvalidArgument.Create('HV nezadáno!');
 
  Self.TrkLog(self, 2, 'PUT: POM '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+') : '+IntToStr(cv)+':'+IntToStr(data));
  Self.Trakce.POMWriteCV(HV.adresa, cv, data);
- Result := 0;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1883,7 +1911,12 @@ begin
    // callback pro jednotlive pom
    Self.callback_err := TTrakce.GenerateCallback(Self.POMCvWroteErr, data);
    Self.callback_ok  := TTrakce.GenerateCallback(Self.POMCvWroteOK, data);
-   Self.POMWriteCV(Sender, HV, list[0].cv, list[0].data);
+
+   try
+     Self.POMWriteCV(Sender, HV, list[0].cv, list[0].data);
+   except
+     Self.POMCvWroteErr(Self, data);
+   end;
   end;
 end;//procedure
 
@@ -1900,7 +1933,6 @@ begin
      HVDb.HVozidla[TPOMCallback(data^).addr].Slot.pom := TPOMCallback(data^).new;
      HVDb.HVozidla[TPOMCallback(data^).addr].changed := true;
      RegCollector.ConnectChange(TPOMCallback(data^).addr);
-//     HVDb.HVozidla[TPOMCallback(data^).addr].UpdateRuc(); zakomentovano - resi se pri RUC hanciho vozidla
     end;
 
    if (Assigned(TPOMCallback(data^).callback_ok.callback)) then TPOMCallback(data^).callback_ok.callback(Self, TPOMCallback(data^).callback_ok.data);
@@ -1923,7 +1955,6 @@ begin
    HVDb.HVozidla[TPOMCallback(data^).addr].Slot.pom := TPomStatus.error;
    HVDb.HVozidla[TPOMCallback(data^).addr].changed  := true;
    RegCollector.ConnectChange(TPOMCallback(data^).addr);
-//   HVDb.HVozidla[TPOMCallback(data^).addr].UpdateRuc(); resi se pri RUC hnaciho vozidla
   end;
 
  if (Assigned(TPOMCallback(data^).callback_err.callback)) then
@@ -2057,7 +2088,12 @@ begin
    TFuncCallback(data^).sady.Delete(0);     // prvni sada zpracovana
    Self.callback_ok  := TTrakce.GenerateCallback(Self.FuncOK, data);
    Self.callback_err := TTrakce.GenerateCallback(Self.FuncErr, data);
-   Self.Trakce.LokSetFunc(TFuncCallback(data^).addr, sada, func);
+
+   try
+     Self.Trakce.LokSetFunc(TFuncCallback(data^).addr, sada, func);
+   except
+     Self.FuncErr(Self, data);
+   end;
   end;
 end;//procedure
 
@@ -2118,7 +2154,12 @@ begin
 
        Self.callback_ok  := TTrakce.GenerateCallback(Self.LoksSetFuncOK, data);
        Self.callback_err := TTrakce.GenerateCallback(Self.LoksSetFuncErr, data);
-       Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+
+       try
+         Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+       except
+         Self.LoksSetFuncErr(Self, data);
+       end;
 
        Exit();
       end;//if vyznam = vyznam
@@ -2224,13 +2265,25 @@ begin
  if (Self.toggleQueue.Count = 0) then Exit();
 
  if (Now >= Self.toggleQueue.Peek.time) then
-   Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+  begin
+   try
+     Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+   except
+
+   end;
+  end;
 end;
 
 procedure TTrkGUI.FlushToggleQueue();
 begin
  while (Self.toggleQueue.Count > 0) do
-   Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+  begin
+   try
+     Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+   except
+
+   end;
+  end;
 end;
 
 procedure TTrkGUI.ProcessHVFunc(hvFunc:THVFunc);

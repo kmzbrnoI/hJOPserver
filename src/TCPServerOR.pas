@@ -641,12 +641,22 @@ begin
   begin
    if ((parsed[2] = 'GO') and (TrkSystem.status <> TS_ON)) then begin
     TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCCmdErr, AContext);
-    TrkSystem.CentralStart()
+    try
+      TrkSystem.CentralStart();
+    except
+      on E:Exception do
+        Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
+    end;
    end else if ((parsed[2] = 'STOP') and (TrkSystem.status = TS_ON)) then
     begin
      Self.DCCStopped := AContext;
      TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCCmdErr, AContext);
-     TrkSystem.CentralStop();
+     try
+       TrkSystem.CentralStop();
+     except
+       on E:Exception do
+         Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
+     end;
     end;
   end
 
