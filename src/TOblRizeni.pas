@@ -1845,7 +1845,6 @@ begin
 end;//procedure
 
 procedure TOR.PanelHVRemove(Sender:TIDContext; addr:Integer);
-var ret:Integer;
 begin
  //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
@@ -1864,11 +1863,14 @@ begin
    Exit();
   end;
 
- ret := HVDb.Remove(addr);
- if (ret > 0) then
-   ORTCPServer.SendInfoMsg(Sender, 'Nelze smazat loko - chyba '+IntToStr(ret))
-  else
-   ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' smazáno');
+ try
+   HVDb.Remove(addr);
+ except
+   on E:Exception do
+     ORTCPServer.SendInfoMsg(Sender, 'Nelze smazat loko - '+E.Message)
+ end;
+
+ ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' smazáno');
 end;//procedure
 
 procedure TOR.PanelHVEdit(Sender:TIDContext; str:string);

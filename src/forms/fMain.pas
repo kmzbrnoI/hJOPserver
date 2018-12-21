@@ -1730,7 +1730,7 @@ begin
     HVDb.ExportStatistics(fn);
    except
     on E:Exception do
-      Application.MessageBox(PChar('Nelze exporotvat'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+      Application.MessageBox(PChar('Nelze exportovat'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
    end;
   end;
 end;
@@ -1742,26 +1742,20 @@ end;
 
 procedure TF_Main.B_HV_DeleteClick(Sender: TObject);
 var addr:Word;
-    return:Integer;
 begin
  if (Self.LV_HV.Selected = nil) then Exit(); 
 
  addr := Integer(LV_HV.Selected.Data^);
 
- if Application.MessageBox(PChar('Opravdu chcete smazat HV '+IntToStr(addr)+'?'),'Mazání HV', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
-  begin
-   return := HVDb.Remove(addr);
-   if (return <> 0) then
-    begin
-     case (return) of
-       1: Application.MessageBox('Operace se nezdařila - HV neexistuje', 'Chyba', MB_OK OR MB_ICONWARNING);
-       2: Application.MessageBox(PChar('Operace se nezdařila - HV je přiřazeno soupravě '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].Stav.souprava)), 'Chyba', MB_OK OR MB_ICONWARNING);
-       3: Application.MessageBox('Operace se nezdařila - HV je převzato do řízení', 'Chyba', MB_OK OR MB_ICONWARNING);
-     else
-      Application.MessageBox(PChar('Operace se nezdařila - chyba '+IntToStr(return)), 'Chyba', MB_OK OR MB_ICONWARNING);
-     end;
-    end;
-  end;
+ if (Application.MessageBox(PChar('Opravdu chcete smazat HV '+IntToStr(addr)+'?'),
+                            'Mazání HV', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) <> mrYes) then Exit();
+
+ try
+   HVDb.Remove(addr);
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Operace se nezdařila:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
 end;
 
 procedure TF_Main.B_JC_ResetClick(Sender: TObject);

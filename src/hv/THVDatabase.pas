@@ -23,6 +23,10 @@ type
 
   THVArray = array [0.._MAX_ADDR-1] of THV;
 
+  ENoLoco = class(Exception);
+  ELocoOnSpr = class(Exception);
+  ELocoPrevzato = class(Exception);
+
   THVDb = class
 
    private
@@ -49,7 +53,7 @@ type
 
      function Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject):Byte; overload; // pridani HV
      procedure Add(panel_str:string; SenderOR:TObject); overload;
-     function Remove(addr:Word):Byte;            // smazani HV
+     procedure Remove(addr:Word);
 
      procedure RemoveRegulator(conn:TIDContext);
 
@@ -320,13 +324,16 @@ begin
  HVTableData.AddHV(HV.index, HV);
 end;//procedure
 
-function THVDb.Remove(addr:Word):Byte;
+procedure THVDb.Remove(addr:Word);
 var i, index:Integer;
 begin
  // hv neexistuje
- if (Self.HVs[addr] = nil) then Exit(1);
- if (Self.HVs[addr].Stav.souprava > -1) then Exit(2);
- if ((Self.HVs[addr].Slot.prevzato) or (Self.HVs[addr].Slot.stolen)) then Exit(3);
+ if (Self.HVs[addr] = nil) then
+   raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
+ if (Self.HVs[addr].Stav.souprava > -1) then
+   raise ELocoOnSpr.Create('Lokomotiva je na soupravì!');
+ if ((Self.HVs[addr].Slot.prevzato) or (Self.HVs[addr].Slot.stolen)) then
+   raise ELocoPrevzato.Create('Lokomotiva pøevzata do øízení poèítaèe');
 
  index := Self.HVs[addr].index;
  FreeAndNil(Self.HVs[addr]);
@@ -343,8 +350,6 @@ begin
 
  // aktualizujeme tabulky:
  HVTableData.RemoveHV(index);
-
- Result := 0;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
