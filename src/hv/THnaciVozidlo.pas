@@ -244,7 +244,7 @@ var strs, strs2:TStrings;
     i:Integer;
     stanice:Integer;
     pomCV:THVPomCV;
-    str:string;
+    str, s:string;
     addr:Integer;
 begin
   strs  := TStringList.Create();
@@ -285,10 +285,10 @@ begin
    Self.Data.POMtake.Clear();
    strs.Clear();
    ExtractStringsEx([')'], ['('], str, strs);
-   for i := 0 to strs.Count-1 do
+   for s in strs do
     begin
      strs2.Clear();
-     ExtractStringsEx([','], [], strs[i], strs2);
+     ExtractStringsEx([','], [], s, strs2);
      if (strs2.Count >= 2) then
       begin
        try
@@ -300,17 +300,17 @@ begin
          continue;
        end;// except
       end;//if data2.Count >= 2
-    end;//for i
+    end;
 
    // POM pri uvolneni : (cv,data)(cv,data)(...)...
    str := ini.ReadString(section, 'pom_release', '');
    Self.Data.POMrelease.Clear();
    strs.Clear();
    ExtractStringsEx([')'], ['('], str, strs);
-   for i := 0 to strs.Count-1 do
+   for s in strs do
     begin
      strs2.Clear();
-     ExtractStringsEx([','], [], strs[i], strs2);
+     ExtractStringsEx([','], [], s, strs2);
      if (strs2.Count >= 2) then
       begin
        try
@@ -322,7 +322,7 @@ begin
          continue;
        end;// except
       end;//if data2.Count >= 2
-    end;//for i
+    end;
 
    // vyznamy funkci:
    str := ini.ReadString(section, 'func_vyznam', '');
@@ -351,6 +351,7 @@ procedure THV.SaveToFile(const filename:string);
 var ini:TMemIniFile;
     addr, str:string;
     i:Integer;
+    pom:THVPomCV;
 begin
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
@@ -390,14 +391,14 @@ begin
 
    // POM pri prebirani
    str := '';
-   for i := 0 to Self.Data.POMtake.Count-1 do
-    str := str + '(' + IntToStr(Self.Data.POMtake[i].cv) + ',' + IntToStr(Self.Data.POMtake[i].data) + ')';
+   for pom in Self.Data.POMtake do
+     str := str + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
    ini.WriteString(addr, 'pom_take', str);
 
    // POM pri uvolneni
    str := '';
-   for i := 0 to Self.Data.POMrelease.Count-1 do
-    str := str + '(' + IntToStr(Self.Data.POMrelease[i].cv) + ',' + IntToStr(Self.Data.POMrelease[i].data) + ')';
+   for pom in Self.Data.POMrelease do
+     str := str + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
    ini.WriteString(addr, 'pom_release', str);
 
    // vyznam funkci
@@ -693,10 +694,10 @@ begin
 end;//function
 
 function THV.IsToken(str:string):boolean;
-var i:Integer;
+var token:THVToken;
 begin
- for i := 0 to Self.Stav.tokens.Count-1 do
-  if (Self.Stav.tokens[i].token = str) then
+ for token in Self.Stav.tokens do
+  if (token.token = str) then
    Exit(true);
  Result := false;
 end;//function
@@ -762,10 +763,10 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 function THV.IsReg(conn:TIdContext):boolean;
-var i:Integer;
+var reg:THVRegulator;
 begin
- for i := 0 to Self.Stav.regulators.Count-1 do
-   if (Self.Stav.regulators[i].conn = conn) then
+ for reg in Self.Stav.regulators do
+   if (reg.conn = conn) then
      Exit(true);
  Result := false;
 end;//function
