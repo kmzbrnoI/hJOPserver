@@ -30,8 +30,6 @@ type
     CHB_f10: TCheckBox;
     CHB_f12: TCheckBox;
     CHB_f11: TCheckBox;
-    P_Speed: TPanel;
-    TB_reg: TTrackBar;
     L_address: TLabel;
     L_mine: TLabel;
     L_stupen: TLabel;
@@ -43,6 +41,7 @@ type
     L_ComStatus: TLabel;
     Label2: TLabel;
     L_POM: TLabel;
+    TB_reg: TTrackBar;
     procedure CHB_svetlaClick(Sender: TObject);
     procedure B_PrevzitLokoClick(Sender: TObject);
     procedure B_OdhlLokoClick(Sender: TObject);
@@ -327,7 +326,7 @@ begin
 
  if ((Slot.prevzato) and ((Slot.pom = pc) or (Slot.pom = released))) then
   begin
-   Self.S_Status.Brush.Color := clLime;
+   Self.S_Status.Brush.Color := clGreen;
   end else begin
    if ((Slot.stolen) or (Slot.pom = progr)) then
     begin
@@ -430,7 +429,7 @@ end;//procedure
 
 procedure TF_DigiReg.LokoComOK(Sender:TObject; data:Pointer);
 begin
- Self.L_ComStatus.Font.Color := clLime;
+ Self.L_ComStatus.Font.Color := clGreen;
  Self.L_ComStatus.Caption := 'loko KOMUNIKUJE';
 end;//procedure
 

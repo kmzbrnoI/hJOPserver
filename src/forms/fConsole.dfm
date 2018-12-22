@@ -6,7 +6,7 @@ object F_Console: TF_Console
   Caption = 'Konzole'
   ClientHeight = 441
   ClientWidth = 570
-  Color = clBlack
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -28,10 +28,10 @@ object F_Console: TF_Console
     Margins.Right = 2
     Margins.Bottom = 2
     Align = alTop
-    Color = clBlack
+    Color = clWhite
     DragCursor = crDefault
     Font.Charset = EASTEUROPE_CHARSET
-    Font.Color = clYellow
+    Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'Fixedsys'
     Font.Style = []
@@ -50,9 +50,9 @@ object F_Console: TF_Console
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Color = clBlack
+    Color = clWhite
     Font.Charset = EASTEUROPE_CHARSET
-    Font.Color = clYellow
+    Font.Color = clSilver
     Font.Height = -12
     Font.Name = 'Fixedsys'
     Font.Style = []
@@ -62,9 +62,9 @@ object F_Console: TF_Console
   end
   object B_OK_console: TButton
     Left = 507
-    Top = 406
+    Top = 407
     Width = 57
-    Height = 25
+    Height = 26
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2

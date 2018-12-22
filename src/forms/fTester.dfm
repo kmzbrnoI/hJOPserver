@@ -6,7 +6,7 @@ object F_Tester: TF_Tester
   Caption = 'MTB tester'
   ClientHeight = 354
   ClientWidth = 492
-  Color = clBlack
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -57,7 +57,7 @@ object F_Tester: TF_Tester
     Alignment = taCenter
     Caption = 'RCS Adresa :'
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
+    Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
@@ -73,12 +73,6 @@ object F_Tester: TF_Tester
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Vstupy '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 0
   end
   object CB_MtbAdr: TComboBox
@@ -173,12 +167,6 @@ object F_Tester: TF_Tester
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' V'#253'stupy '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 4
   end
   object T_tester: TTimer

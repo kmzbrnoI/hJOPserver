@@ -14,7 +14,6 @@ type
     L_Cas: TLabel;
     L_Systems3: TLabel;
     procedure FormShow(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_AbortClick(Sender: TObject);
   private
     { Private declarations }
@@ -27,20 +26,13 @@ var
 
 implementation
 
-uses fLoginPozadi, fMain, Logging;
+uses fMain, Logging;
 
 {$R *.dfm}
 
 procedure TF_AutoStartSystems.FormShow(Sender: TObject);
  begin
-  F_Pozadi.OpenForm(false);
   F_AutoStartSystems.Show;
- end;//procedure
-
-procedure TF_AutoStartSystems.FormClose(Sender: TObject;
-  var Action: TCloseAction);
- begin
-  F_Pozadi.CloseForm;
  end;//procedure
 
 procedure TF_AutoStartSystems.B_AbortClick(Sender: TObject);

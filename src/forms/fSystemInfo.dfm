@@ -5,7 +5,7 @@ object F_SystemInfo: TF_SystemInfo
   BorderStyle = bsNone
   ClientHeight = 133
   ClientWidth = 254
-  Color = clBlack
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

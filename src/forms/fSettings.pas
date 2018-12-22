@@ -161,7 +161,7 @@ var
 implementation
 
 uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
-  fLoginPozadi, fSystemInfo, fBlkUsek, fBlkVyhybka, fBlkIR, fBlkSCom, fBlkNew,
+  fSystemInfo, fBlkUsek, fBlkVyhybka, fBlkIR, fBlkSCom, fBlkNew,
   fAdminForm, fJCEdit, fRychlostiEdit, fSplash, GetSystems, Prevody,
   TechnologieJC, FileSystem, TBloky, TBlok,
   TBlokVyhybka, TBlokSCom, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,

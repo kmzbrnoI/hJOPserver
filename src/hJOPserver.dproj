@@ -79,9 +79,6 @@
 			</DCCReference>
 			<DCCReference Include="helpers\Verze.pas"/>
 			<DCCReference Include="helpers\adCpuUsage.pas"/>
-			<DCCReference Include="forms\fLoginPozadi.pas">
-				<Form>F_Pozadi</Form>
-			</DCCReference>
 			<DCCReference Include="forms\fZesilovacEdit.pas">
 				<Form>F_ZesilovacEdit</Form>
 			</DCCReference>
@@ -293,8 +290,8 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">4</VersionInfo>
-						<VersionInfo Name="MinorVer">13</VersionInfo>
-						<VersionInfo Name="Release">3</VersionInfo>
+						<VersionInfo Name="MinorVer">14</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
 						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
@@ -307,7 +304,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.13.3.0</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.14.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2018</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>

@@ -268,7 +268,6 @@ var i:Integer;
 
     L            := TLabel.Create(F_Tester.GB_vstupy);
     L.Parent     := Self.GB_vstupy;
-    L.Font.Color := clWhite;
     L.Caption    := IntToStr(i);
     L.Left       := _L_LEFT;
     L.Top        := aTop;
@@ -301,7 +300,6 @@ var i:Integer;
 
     L            := TLabel.Create(F_Tester.GB_vystupy);
     L.Parent     := Self.GB_vystupy;
-    L.Font.Color := clWhite;
     L.Caption    := IntToStr(i);
     L.Left       := _L_LEFT;
     L.Top        := aTop;

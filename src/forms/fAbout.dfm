@@ -6,7 +6,7 @@ object F_About: TF_About
   Caption = 'O programu hJOPserver'
   ClientHeight = 361
   ClientWidth = 568
-  Color = clWhite
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

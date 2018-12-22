@@ -10,10 +10,8 @@ const
    //konstanty pro writelog
    WR_MESSAGE     = 0;
    WR_ERROR       = 1;
-   WR_VYHYBKY     = 2;
    WR_AUTREZ      = 3;
    WR_VC          = 4;
-   WR_INTELLIBOX  = 5;
    WR_DATA        = 6;
    WR_RCS         = 7;
    WR_SYSTEM      = 8;
@@ -43,16 +41,15 @@ function GetLogColor(LogTyp:Integer; ErrorID:Integer):TColor;
 
   case (LogTyp) of
    WR_MESSAGE    : Result := clWhite;
-   WR_ERROR      : Result := RGB($FF,$A0,$A0);
-   WR_VYHYBKY    : Result := RGB($A0,$A0,$80);
+   WR_ERROR      : Result := fMain._TABLE_COLOR_RED;
    WR_AUTREZ     : Result := RGB($A0,$FF,$A0);
-   WR_VC         : Result := RGB($FF,$FF,$A0);
-   WR_DATA       : Result := RGB($A0,$FF,$FF);
-   WR_RCS        : Result := RGB($80,$FF,$80);
-   WR_SYSTEM     : Result := RGB($E0,$E0,$FF);
-   WR_CONSOLE    : Result := RGB($A0,$A0,$FF);
-   WR_SPRPREDAT  : Result := RGB($AA,$FF,$AA);
-   WR_USERS      : Result := RGB($F0,$F0,$C0);
+   WR_VC         : Result := RGB($FF,$FF,$D0);
+   WR_DATA       : Result := fMain._TABLE_COLOR_BLUE;
+   WR_RCS        : Result := fMain._TABLE_COLOR_GREEN;
+   WR_SYSTEM     : Result := RGB($FF,$FF,$D0);
+   WR_CONSOLE    : Result := RGB($C0,$C0,$FF);
+   WR_SPRPREDAT  : Result := RGB($CA,$FF,$CA);
+   WR_USERS      : Result := RGB($F0,$F0,$D0);
    WR_TRAT       : Result := clHotLight;
    WR_PT         : Result := RGB($F0,$FF,$F0);
   else//case
@@ -65,10 +62,8 @@ function GetWriteLogTyp(Typ:Integer):string;
   case Typ of
    WR_MESSAGE:   Result := 'Zpráva';
    WR_ERROR:     Result := 'Chyba';
-   WR_VYHYBKY:   Result := 'Vyhýbky';
    WR_AUTREZ:    Result := 'Automatický režim';
    WR_VC:        Result := 'Jízdní cesty';
-   WR_INTELLIBOX:Result := 'Intellibox';
    WR_DATA:      Result := 'Data';
    WR_RCS:       Result := 'RCS';
    WR_SYSTEM:    Result := 'SYSTEM';

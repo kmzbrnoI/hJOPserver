@@ -5,7 +5,7 @@ object F_RychlostiEdit: TF_RychlostiEdit
   Caption = 'Editovat stupen [stupen]'
   ClientHeight = 73
   ClientWidth = 233
-  Color = clBlack
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -27,7 +27,7 @@ object F_RychlostiEdit: TF_RychlostiEdit
     Margins.Bottom = 2
     Caption = 'Rychlost (km/h) :'
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
+    Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
@@ -37,7 +37,7 @@ object F_RychlostiEdit: TF_RychlostiEdit
     Left = 106
     Top = 7
     Width = 121
-    Height = 26
+    Height = 22
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2

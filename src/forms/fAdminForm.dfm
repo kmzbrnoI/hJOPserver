@@ -8,7 +8,7 @@ object F_Admin: TF_Admin
   Caption = 'Administratorske rozhrani programu'
   ClientHeight = 154
   ClientWidth = 417
-  Color = clBlack
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -41,7 +41,7 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Ulozit data'
+    Caption = 'Ulo'#382'it data'
     TabOrder = 1
     OnClick = B_SaveClick
   end
@@ -72,7 +72,7 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Simulovat obsazeni useku soupravou'
+    Caption = 'Simulovat obsazen'#237' '#250'seku soupravou'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11
@@ -90,7 +90,7 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Umoznit start systemu pouze se zaplym MTB'
+    Caption = 'Umo'#382'nit start syst'#233'mu pouze se zapl'#253'm MTB'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11
@@ -108,7 +108,7 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'JC simulator'
+    Caption = 'JC simul'#225'tor'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11
@@ -127,7 +127,7 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Trat simulator'
+    Caption = 'Tra'#357' simul'#225'tor'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11
@@ -146,7 +146,7 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Simulace staveni vyhybek'
+    Caption = 'Simulace stav'#283'n'#237' v'#253'hybek'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11

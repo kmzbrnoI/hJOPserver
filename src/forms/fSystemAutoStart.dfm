@@ -6,7 +6,7 @@ object F_AutoStartSystems: TF_AutoStartSystems
   Caption = '[nil]'
   ClientHeight = 105
   ClientWidth = 345
-  Color = clWhite
+  Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -15,7 +15,6 @@ object F_AutoStartSystems: TF_AutoStartSystems
   FormStyle = fsStayOnTop
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13

@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Verze, fLoginPozadi, TechnologieRCS, Logging, appEv;
+uses Verze, TechnologieRCS, Logging, appEv;
 
 {$R *.dfm}
 

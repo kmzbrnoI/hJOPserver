@@ -26,7 +26,6 @@ uses
   fBlkPrejezd in 'bloky\forms\fBlkPrejezd.pas' {F_BlkPrejezd},
   Verze in 'helpers\Verze.pas',
   adCpuUsage in 'helpers\adCpuUsage.pas',
-  fLoginPozadi in 'forms\fLoginPozadi.pas' {F_Pozadi},
   fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_ZesilovacEdit},
   fBlkTrat in 'bloky\forms\fBlkTrat.pas' {F_BlkTrat},
   fHVEdit in 'hv\forms\fHVEdit.pas' {F_HVEdit},
@@ -190,7 +189,6 @@ uses
   Application.CreateForm(TF_BlkSH, F_BlkSH);
   Application.CreateForm(TF_AutoStartSystems, F_AutoStartSystems);
   Application.CreateForm(TF_BlkUsek_tech, F_BlkUsek_tech);
-  Application.CreateForm(TF_Pozadi, F_Pozadi);
   Application.CreateForm(TF_SystemInfo, F_SystemInfo);
   Application.CreateForm(TF_Admin, F_Admin);
   Application.CreateForm(TF_Options, F_Options);

@@ -73,7 +73,7 @@ end;//procedure
 procedure TBlokyTableData.UpdateTable();
 var i:Integer;
 begin
-  F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.Cnt);
+  F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blky.Cnt)+' blokù';
 
   for i := 0 to Blky.Cnt-1 do
    if ((Self.changed[i]) or (Self.reload)) then

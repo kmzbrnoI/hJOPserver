@@ -14,7 +14,7 @@ object F_Options: TF_Options
   Constraints.MinHeight = 574
   Constraints.MinWidth = 500
   Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWhite
+  Font.Color = clBlack
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
@@ -100,7 +100,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Centrala
+    ActivePage = TS_Options
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -112,7 +112,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Konfigurace'
       ImageIndex = 4
-      ExplicitWidth = 1182
       object P_ON_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -126,7 +125,6 @@ object F_Options: TF_Options
         BevelOuter = bvNone
         ParentColor = True
         TabOrder = 0
-        ExplicitWidth = 1182
         object GB_ON_1: TGroupBox
           Left = 8
           Top = 8
@@ -137,12 +135,6 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Caption = ' Glob'#225'ln'#237' konfigura'#269'n'#237' soubor  '
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1
@@ -156,13 +148,7 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Color = clSilver
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
+            ParentColor = True
             ReadOnly = True
             TabOrder = 0
           end
@@ -237,7 +223,7 @@ object F_Options: TF_Options
               Margins.Top = 2
               Margins.Right = 2
               Margins.Bottom = 2
-              Caption = 'Automaticky spustit systemy'
+              Caption = 'Automaticky spustit syst'#233'my'
               TabOrder = 0
             end
           end
@@ -488,8 +474,8 @@ object F_Options: TF_Options
             TabOrder = 7
             Items.Strings = (
               #381#225'dn'#233' n'#225'soben'#237
-              'Hodiny*minuty -> minuty'
-              'Hodiny*minuty*sekundy -> sekundy')
+              'Hodiny '#183' minuty '#8594' minuty'
+              'Hodiny '#183' minuty '#183' sekundy '#8594' sekundy')
           end
           object SE_ModCas_MtbAdr: TSpinEdit
             Left = 7
@@ -575,7 +561,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Snadn'#233' spu'#353't'#283'n'#237
       ImageIndex = 5
-      ExplicitWidth = 1182
       object P_SS: TPanel
         Left = 0
         Top = 0
@@ -589,7 +574,6 @@ object F_Options: TF_Options
         BevelOuter = bvNone
         ParentColor = True
         TabOrder = 0
-        ExplicitWidth = 1182
         object L_SS_02: TLabel
           Left = 200
           Top = 142
@@ -1197,7 +1181,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Rychlosti'
       ImageIndex = 25
-      ExplicitWidth = 1182
       object LV_DigiRych: TListView
         Left = 0
         Top = 0
@@ -1229,13 +1212,11 @@ object F_Options: TF_Options
         TabOrder = 0
         ViewStyle = vsReport
         OnDblClick = LV_DigiRychDblClick
-        ExplicitWidth = 1182
       end
     end
     object TS_Centrala: TTabSheet
       Caption = 'Centr'#225'la'
       ImageIndex = 3
-      ExplicitWidth = 1182
       object GB_Centrala: TGroupBox
         Left = 114
         Top = 96
@@ -1434,7 +1415,7 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             ComProperty = cpPort
-            Text = 'COM3'
+            Text = 'COM1'
             Style = csDropDownList
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -1448,9 +1429,9 @@ object F_Options: TF_Options
           end
           object B_PortRefresh: TButton
             Left = 50
-            Top = 136
+            Top = 132
             Width = 49
-            Height = 17
+            Height = 23
             Caption = 'Refresh'
             TabOrder = 5
             OnClick = B_PortRefreshClick

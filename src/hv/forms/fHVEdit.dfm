@@ -456,7 +456,7 @@ object F_HVEdit: TF_HVEdit
     OnKeyPress = E_AdresaKeyPress
   end
   object CB_OR: TComboBox
-    Left = 97
+    Left = 96
     Top = 255
     Width = 177
     Height = 21

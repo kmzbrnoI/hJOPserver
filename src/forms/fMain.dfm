@@ -7,6 +7,7 @@ object F_Main: TF_Main
   Color = clBtnFace
   Constraints.MinHeight = 244
   Constraints.MinWidth = 772
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -3150,7 +3151,6 @@ object F_Main: TF_Main
     BevelOuter = bvNone
     Color = clGray
     DoubleBuffered = True
-    ParentBackground = False
     ParentDoubleBuffered = False
     TabOrder = 0
     object P_Date: TPanel
@@ -3270,7 +3270,6 @@ object F_Main: TF_Main
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      BevelInner = bvSpace
       BevelOuter = bvNone
       Color = clWhite
       ParentBackground = False
@@ -3381,7 +3380,6 @@ object F_Main: TF_Main
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      BevelInner = bvSpace
       BevelOuter = bvNone
       Color = clWhite
       ParentBackground = False
@@ -3459,6 +3457,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
+    DoubleBuffered = True
     Panels = <
       item
         BiDiMode = bdLeftToRight
@@ -3491,8 +3490,9 @@ object F_Main: TF_Main
         Text = 'CPU'
         Width = 125
       end>
+    ParentDoubleBuffered = False
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
   end
   object PC_1: TPageControl
     Left = 0
@@ -3505,7 +3505,9 @@ object F_Main: TF_Main
     Margins.Bottom = 2
     ActivePage = TS_Technologie
     Align = alClient
+    DoubleBuffered = True
     MultiLine = True
+    ParentDoubleBuffered = False
     TabOrder = 2
     OnChange = PC_1Change
     object TS_Technologie: TTabSheet
@@ -3521,6 +3523,9 @@ object F_Main: TF_Main
         Width = 800
         Height = 206
         Caption = ' P'#345'ipojen'#233' panely '
+        Color = clWhite
+        ParentBackground = False
+        ParentColor = False
         TabOrder = 0
         object LV_Clients: TListView
           Left = 2
@@ -3568,9 +3573,11 @@ object F_Main: TF_Main
             item
               Caption = 'Stani'#269'n'#237' hl'#225#353'en'#237
             end>
+          DoubleBuffered = True
           GridLines = True
           ReadOnly = True
           RowSelect = True
+          ParentDoubleBuffered = False
           PopupMenu = PM_Clients
           TabOrder = 0
           ViewStyle = vsReport
@@ -3579,7 +3586,7 @@ object F_Main: TF_Main
       end
       object GB_stav_technologie: TGroupBox
         Left = 16
-        Top = 14
+        Top = 15
         Width = 197
         Height = 186
         Margins.Left = 2
@@ -3587,6 +3594,9 @@ object F_Main: TF_Main
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = ' Stav technologie '
+        Color = clWhite
+        ParentBackground = False
+        ParentColor = False
         ParentShowHint = False
         ShowHint = False
         TabOrder = 1
@@ -3770,6 +3780,9 @@ object F_Main: TF_Main
         Width = 584
         Height = 186
         Caption = ' Log '
+        Color = clWhite
+        ParentBackground = False
+        ParentColor = False
         TabOrder = 2
         object LB_Log: TListBox
           Left = 2
@@ -3778,7 +3791,9 @@ object F_Main: TF_Main
           Height = 169
           Style = lbOwnerDrawFixed
           Align = alClient
+          DoubleBuffered = True
           ItemHeight = 13
+          ParentDoubleBuffered = False
           TabOrder = 0
           OnDblClick = LB_LogDblClick
           OnDrawItem = LB_LogDrawItem
@@ -3790,6 +3805,9 @@ object F_Main: TF_Main
         Width = 800
         Height = 84
         Caption = ' Centr'#225'la '
+        Color = clWhite
+        ParentBackground = False
+        ParentColor = False
         TabOrder = 3
         object Label3: TLabel
           Left = 16
@@ -3894,6 +3912,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Bloky: TListView
         Left = 0
         Top = 40
@@ -3944,6 +3966,7 @@ object F_Main: TF_Main
             Caption = 'P'#345'edpov'#237'dan'#225' souprava'
             Width = 150
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -3952,6 +3975,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
         PopupMenu = PM_Bloky
@@ -3975,23 +3999,78 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_BlkTlc: TPanel
-          Left = 504
-          Top = 4
-          Width = 217
-          Height = 32
+        object P_Blk_Ostatni: TPanel
+          Left = 1176
+          Top = 0
+          Width = 113
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alRight
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 1
+          object L_BlkPocet: TLabel
+            Left = 30
+            Top = 12
+            Width = 76
+            Height = 13
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Align = alCustom
+            Alignment = taRightJustify
+            Caption = 'Celkem ? blok'#367'.'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentFont = False
+          end
+        end
+        object P_Blk_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 417
+          Height = 40
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Align = alLeft
+          BevelOuter = bvNone
+          Color = clWhite
+          TabOrder = 0
+          object E_dataload_block: TEdit
+            Left = 9
+            Top = 9
+            Width = 197
+            Height = 21
+            Hint = 'cesta k souboru bloku'
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentColor = True
+            ParentFont = False
+            ReadOnly = True
+            TabOrder = 0
+          end
           object B_BlkAdd: TButton
-            Left = 13
-            Top = 3
+            Left = 215
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -4005,12 +4084,12 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            TabOrder = 0
+            TabOrder = 1
             OnClick = B_BlkAddClick
           end
           object B_BlkDelete: TButton
-            Left = 112
-            Top = 3
+            Left = 316
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -4025,71 +4104,8 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            TabOrder = 1
+            TabOrder = 2
             OnClick = B_BlkDeleteClick
-          end
-        end
-        object P_Blk_Ostatni: TPanel
-          Left = 992
-          Top = 4
-          Width = 113
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 2
-          object L_BlkPocet: TLabel
-            Left = 8
-            Top = 10
-            Width = 72
-            Height = 13
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Pocet bloku : ?'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-          end
-        end
-        object P_Blk_Dataload: TPanel
-          Left = 8
-          Top = 4
-          Width = 212
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 0
-          object E_dataload_block: TEdit
-            Left = 8
-            Top = 6
-            Width = 197
-            Height = 21
-            Hint = 'cesta k souboru bloku'
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Color = clSilver
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            ReadOnly = True
-            TabOrder = 0
           end
         end
       end
@@ -4103,6 +4119,10 @@ object F_Main: TF_Main
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_HV: TListView
         Left = 0
         Top = 40
@@ -4194,6 +4214,7 @@ object F_Main: TF_Main
             Alignment = taRightJustify
             Caption = 'Najeto vzad blok'#367
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -4202,6 +4223,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
         PopupMenu = PM_HV
@@ -4224,23 +4246,45 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_HV_Tlac: TPanel
-          Left = 504
-          Top = 4
-          Width = 217
-          Height = 32
+        object P_HV_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 657
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
-          TabOrder = 1
+          TabOrder = 0
+          object E_dataload_HV: TEdit
+            Left = 9
+            Top = 9
+            Width = 197
+            Height = 21
+            Hint = 'cesta k souboru bloku'
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Color = clWhite
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentFont = False
+            ReadOnly = True
+            TabOrder = 0
+          end
           object B_HV_Add: TButton
-            Left = 11
-            Top = 3
+            Left = 214
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -4254,12 +4298,12 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            TabOrder = 0
+            TabOrder = 1
             OnClick = B_HV_AddClick
           end
           object B_HV_Delete: TButton
-            Left = 112
-            Top = 3
+            Left = 315
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -4274,72 +4318,26 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            TabOrder = 1
+            TabOrder = 2
             OnClick = B_HV_DeleteClick
           end
-        end
-        object P_HV_Dataload: TPanel
-          Left = 16
-          Top = 4
-          Width = 217
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 0
-          object E_dataload_HV: TEdit
-            Left = 8
-            Top = 6
-            Width = 197
-            Height = 21
-            Hint = 'cesta k souboru bloku'
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Color = clSilver
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            ReadOnly = True
-            TabOrder = 0
-          end
-        end
-        object P_HV_Stats: TPanel
-          Left = 1024
-          Top = 3
-          Width = 257
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 2
-          object B_HVStats_Clear: TButton
-            Left = 130
-            Top = 3
-            Width = 116
-            Height = 25
-            Caption = 'Smazat statistiky'
-            TabOrder = 0
-            OnClick = B_ClearStatsClick
-          end
           object B_HVStats_Export: TButton
-            Left = 8
-            Top = 3
+            Left = 416
+            Top = 7
             Width = 116
             Height = 25
             Caption = 'Exportovat statistiky'
-            TabOrder = 1
+            TabOrder = 3
             OnClick = B_HVStats_ExportClick
+          end
+          object B_HVStats_Clear: TButton
+            Left = 536
+            Top = 7
+            Width = 116
+            Height = 25
+            Caption = 'Smazat statistiky'
+            TabOrder = 4
+            OnClick = B_ClearStatsClick
           end
         end
       end
@@ -4351,6 +4349,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Soupravy'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Soupravy: TListView
         Left = 0
         Top = 40
@@ -4420,6 +4422,7 @@ object F_Main: TF_Main
           item
             Caption = 'Stani'#269'n'#237' hl'#225#353'en'#237
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -4428,6 +4431,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
@@ -4447,23 +4451,45 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_Soupravy_Tlc: TPanel
-          Left = 552
-          Top = 4
-          Width = 113
-          Height = 32
+        object P_Spr_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 321
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
-          TabOrder = 1
+          TabOrder = 0
+          object E_dataload_soupr: TEdit
+            Left = 9
+            Top = 9
+            Width = 197
+            Height = 21
+            Hint = 'cesta k souboru souprav'
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentColor = True
+            ParentFont = False
+            ReadOnly = True
+            TabOrder = 0
+          end
           object B_lok_delete: TButton
-            Left = 8
-            Top = 3
+            Left = 214
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -4478,41 +4504,8 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            TabOrder = 0
+            TabOrder = 1
             OnClick = B_lok_deleteClick
-          end
-        end
-        object P_Spr_Dataload: TPanel
-          Left = 8
-          Top = 4
-          Width = 212
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 0
-          object E_dataload_soupr: TEdit
-            Left = 8
-            Top = 6
-            Width = 197
-            Height = 21
-            Hint = 'cesta k souboru souprav'
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Color = clSilver
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            ReadOnly = True
-            TabOrder = 0
           end
         end
       end
@@ -4524,6 +4517,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Oblasti '#345#237'zen'#237
       ImageIndex = 16
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Stanice: TListView
         Left = 0
         Top = 40
@@ -4563,6 +4560,7 @@ object F_Main: TF_Main
           item
             Caption = 'Osv'#283'tlen'#237
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -4571,6 +4569,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
@@ -4589,23 +4588,25 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_St_Dataload: TPanel
-          Left = 8
-          Top = 4
+        object P_St_Left: TPanel
+          Left = 0
+          Top = 0
           Width = 313
-          Height = 32
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
           object E_dataload_spnl: TEdit
-            Left = 8
-            Top = 6
+            Left = 9
+            Top = 9
             Width = 197
             Height = 21
             Hint = 'cesta k souboru stanic'
@@ -4613,21 +4614,21 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Color = clSilver
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
             Font.Name = 'MS Sans Serif'
             Font.Style = []
+            ParentColor = True
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
           end
           object B_RemoveStack: TButton
-            Left = 210
-            Top = 6
+            Left = 213
+            Top = 7
             Width = 95
-            Height = 19
+            Height = 25
             Caption = 'Smazat z'#225'sobn'#237'k'
             TabOrder = 1
             OnClick = B_RemoveStackClick
@@ -4642,6 +4643,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Zesilova'#269'e'
       ImageIndex = 20
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
@@ -4665,6 +4670,7 @@ object F_Main: TF_Main
             Caption = 'Typ'
             Width = 300
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -4673,6 +4679,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 0
         ViewStyle = vsReport
@@ -4692,75 +4699,25 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_Zes_Tlc: TPanel
-          Left = 480
-          Top = 4
-          Width = 217
-          Height = 32
+        object P_Zes_Right: TPanel
+          Left = 1064
+          Top = 0
+          Width = 225
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alRight
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 1
-          object B_zes_add: TButton
-            Left = 8
-            Top = 3
-            Width = 97
-            Height = 25
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'P'#345'idat zesilova'#269
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            TabOrder = 0
-            OnClick = B_zes_addClick
-          end
-          object B_zes_delete: TButton
-            Left = 112
-            Top = 3
-            Width = 97
-            Height = 25
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Smazat zesilova'#269
-            Enabled = False
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            TabOrder = 1
-            OnClick = B_zes_deleteClick
-          end
-        end
-        object P_Zes_Vysvetlivky: TPanel
-          Left = 960
-          Top = 4
-          Width = 217
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 2
           object L_Zes_Napajeni: TLabel
-            Left = 8
-            Top = 16
+            Left = 12
+            Top = 20
             Width = 84
             Height = 13
             Margins.Left = 2
@@ -4776,15 +4733,15 @@ object F_Main: TF_Main
             ParentFont = False
           end
           object L_Zes_OK: TLabel
-            Left = 104
-            Top = 3
+            Left = 108
+            Top = 7
             Width = 103
             Height = 13
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Zesilovac funkcn'#237
+            Caption = 'Zesilova'#269' funk'#269'n'#237
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clLime
             Font.Height = -11
@@ -4793,15 +4750,15 @@ object F_Main: TF_Main
             ParentFont = False
           end
           object L_Zes_NapajeniL_Zes_Zkrat: TLabel
-            Left = 104
-            Top = 16
+            Left = 108
+            Top = 20
             Width = 109
             Height = 13
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Zkrat na zesilovaci'
+            Caption = 'Zkrat na zesilova'#269'i'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clRed
             Font.Height = -11
@@ -4810,8 +4767,8 @@ object F_Main: TF_Main
             ParentFont = False
           end
           object L_Zes_Nedetekovano: TLabel
-            Left = 8
-            Top = 3
+            Left = 12
+            Top = 7
             Width = 57
             Height = 13
             Margins.Left = 2
@@ -4827,36 +4784,76 @@ object F_Main: TF_Main
             ParentFont = False
           end
         end
-        object P_Zes_Dataload: TPanel
-          Left = 8
-          Top = 4
-          Width = 212
-          Height = 32
+        object P_Zes_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 425
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
           object E_dataload_zes: TEdit
-            Left = 8
-            Top = 6
+            Left = 9
+            Top = 9
             Width = 197
             Height = 21
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Color = clSilver
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentColor = True
+            ParentFont = False
+            ReadOnly = True
+            TabOrder = 0
+          end
+          object B_zes_add: TButton
+            Left = 212
+            Top = 7
+            Width = 97
+            Height = 25
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Caption = 'P'#345'idat zesilova'#269
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            ReadOnly = True
-            TabOrder = 0
+            TabOrder = 1
+            OnClick = B_zes_addClick
+          end
+          object B_zes_delete: TButton
+            Left = 313
+            Top = 7
+            Width = 97
+            Height = 25
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Caption = 'Smazat zesilova'#269
+            Enabled = False
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 2
+            OnClick = B_zes_deleteClick
           end
         end
       end
@@ -4869,6 +4866,10 @@ object F_Main: TF_Main
       Caption = 'AC'
       ParentShowHint = False
       ShowHint = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_AC_Db: TListView
         Left = 0
         Top = 40
@@ -4900,6 +4901,7 @@ object F_Main: TF_Main
           item
             Caption = 'Kolikr'#225't dokon'#269'en'
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -4908,6 +4910,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
@@ -4927,23 +4930,25 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_AC_Dataload: TPanel
-          Left = 5
-          Top = 4
-          Width = 460
-          Height = 32
+        object P_AC_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 473
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
           object SB_AC_Play: TSpeedButton
-            Left = 317
-            Top = 4
+            Left = 322
+            Top = 8
             Width = 29
             Height = 23
             Margins.Left = 2
@@ -4988,8 +4993,8 @@ object F_Main: TF_Main
             OnClick = SB_AC_PlayClick
           end
           object SB_AC_Stop: TSpeedButton
-            Left = 350
-            Top = 4
+            Left = 355
+            Top = 8
             Width = 31
             Height = 23
             Margins.Left = 2
@@ -5034,8 +5039,8 @@ object F_Main: TF_Main
             OnClick = SB_AC_StopClick
           end
           object SB_AC_Pause: TSpeedButton
-            Left = 386
-            Top = 4
+            Left = 391
+            Top = 8
             Width = 32
             Height = 23
             Margins.Left = 2
@@ -5080,8 +5085,8 @@ object F_Main: TF_Main
             OnClick = SB_AC_PauseClick
           end
           object SB_AC_Repeat: TSpeedButton
-            Left = 422
-            Top = 4
+            Left = 427
+            Top = 8
             Width = 30
             Height = 23
             Margins.Left = 2
@@ -5128,8 +5133,8 @@ object F_Main: TF_Main
             OnClick = SB_AC_RepeatClick
           end
           object E_dataload_AC: TEdit
-            Left = 8
-            Top = 6
+            Left = 9
+            Top = 9
             Width = 197
             Height = 21
             Hint = 'cesta k souboru automatick'#253'ch re'#382'imu'
@@ -5137,20 +5142,20 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Color = clSilver
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
             Font.Name = 'MS Sans Serif'
             Font.Style = []
+            ParentColor = True
             ParentFont = False
             TabOrder = 0
           end
           object B_AC_Reload: TButton
-            Left = 210
-            Top = 3
+            Left = 211
+            Top = 8
             Width = 96
-            Height = 25
+            Height = 23
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
@@ -5188,10 +5193,12 @@ object F_Main: TF_Main
             Caption = 'Popis'
             Width = 1000
           end>
+        DoubleBuffered = True
         Enabled = False
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         TabOrder = 2
         ViewStyle = vsReport
         OnCustomDrawItem = LV_AC_KrokyCustomDrawItem
@@ -5204,6 +5211,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'#233
       ImageIndex = 23
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Users: TListView
         Left = 0
         Top = 40
@@ -5236,6 +5247,7 @@ object F_Main: TF_Main
             Caption = 'Posledn'#237' prihl'#225#353'en'#237
             Width = 125
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -5244,6 +5256,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 0
         ViewStyle = vsReport
@@ -5262,23 +5275,44 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_Users_Tlc: TPanel
-          Left = 480
-          Top = 4
-          Width = 217
-          Height = 32
+        object P_Users_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 425
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
-          TabOrder = 1
+          TabOrder = 0
+          object E_Dataload_Users: TEdit
+            Left = 9
+            Top = 9
+            Width = 197
+            Height = 21
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentColor = True
+            ParentFont = False
+            ReadOnly = True
+            TabOrder = 0
+          end
           object B_User_Add: TButton
-            Left = 8
-            Top = 3
+            Left = 213
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5292,12 +5326,12 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            TabOrder = 0
+            TabOrder = 1
             OnClick = B_User_AddClick
           end
           object B_User_Delete: TButton
-            Left = 112
-            Top = 3
+            Left = 315
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5312,40 +5346,8 @@ object F_Main: TF_Main
             Font.Name = 'MS Sans Serif'
             Font.Style = []
             ParentFont = False
-            TabOrder = 1
+            TabOrder = 2
             OnClick = B_User_DeleteClick
-          end
-        end
-        object P_Users_Dataload: TPanel
-          Left = 8
-          Top = 4
-          Width = 212
-          Height = 32
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 0
-          object E_Dataload_Users: TEdit
-            Left = 8
-            Top = 6
-            Width = 197
-            Height = 21
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Color = clSilver
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            ReadOnly = True
-            TabOrder = 0
           end
         end
       end
@@ -5357,6 +5359,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav RCS modul'#367
       ImageIndex = -1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Stav_RCS: TListView
         Left = 0
         Top = 0
@@ -5406,6 +5412,7 @@ object F_Main: TF_Main
             Caption = 'Firmware'
             Width = 100
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -5414,6 +5421,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
@@ -5429,6 +5437,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'J'#237'zdn'#237' cesty'
       ImageIndex = 24
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object P_VC_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -5440,42 +5452,44 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
-        object P_VC_Dataload: TPanel
-          Left = 8
-          Top = 4
-          Width = 529
-          Height = 32
+        object P_VC_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 537
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
           object E_Dataload_JC: TEdit
-            Left = 8
-            Top = 6
+            Left = 9
+            Top = 9
             Width = 197
             Height = 21
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Color = clSilver
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
             Font.Name = 'MS Sans Serif'
             Font.Style = []
+            ParentColor = True
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
           end
           object B_VC_Add: TButton
-            Left = 213
-            Top = 3
+            Left = 220
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5493,8 +5507,8 @@ object F_Main: TF_Main
             OnClick = B_VC_AddClick
           end
           object B_VC_delete: TButton
-            Left = 314
-            Top = 3
+            Left = 323
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5513,8 +5527,8 @@ object F_Main: TF_Main
             OnClick = B_VC_deleteClick
           end
           object B_JC_Reset: TButton
-            Left = 420
-            Top = 3
+            Left = 430
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5612,6 +5626,7 @@ object F_Main: TF_Main
           item
             Caption = 'Neprofilov'#233' '#250'seky'
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -5620,6 +5635,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 0
         ViewStyle = vsReport
@@ -5632,6 +5648,10 @@ object F_Main: TF_Main
     object TS_MultiJC: TTabSheet
       Caption = 'Slo'#382'en'#233' j'#237'zdn'#237' cesty'
       ImageIndex = 12
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 0
@@ -5643,42 +5663,44 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 0
-        object Panel7: TPanel
-          Left = 8
-          Top = 4
+        object P_MJC_Left: TPanel
+          Left = 0
+          Top = 0
           Width = 425
-          Height = 32
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
           object E_Dataload_multiJC: TEdit
-            Left = 8
-            Top = 6
+            Left = 9
+            Top = 9
             Width = 197
             Height = 21
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Color = clSilver
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
             Font.Name = 'MS Sans Serif'
             Font.Style = []
+            ParentColor = True
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
           end
           object B_mJC_Add: TButton
-            Left = 213
-            Top = 3
+            Left = 216
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5697,7 +5719,7 @@ object F_Main: TF_Main
           end
           object B_mJC_Remove: TButton
             Left = 317
-            Top = 3
+            Top = 7
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5745,6 +5767,7 @@ object F_Main: TF_Main
           item
             Caption = 'Variantn'#237' body'
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -5753,6 +5776,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 1
         ViewStyle = vsReport
@@ -5765,6 +5789,10 @@ object F_Main: TF_Main
     object TS_AB: TTabSheet
       Caption = 'AB'
       ImageIndex = 14
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel4: TPanel
         Left = 0
         Top = 0
@@ -5776,23 +5804,25 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
-        Color = clGray
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 0
-        object Panel5: TPanel
-          Left = 8
-          Top = 4
-          Width = 113
-          Height = 32
+        object P_AB_Left: TPanel
+          Left = 0
+          Top = 0
+          Width = 121
+          Height = 40
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
+          Align = alLeft
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
           object B_AB_Delete: TButton
-            Left = 8
-            Top = 3
+            Left = 9
+            Top = 6
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -5827,6 +5857,7 @@ object F_Main: TF_Main
             Caption = 'J'#237'zdn'#237' cesta'
             Width = 500
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -5835,6 +5866,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 1
         ViewStyle = vsReport
@@ -5844,12 +5876,18 @@ object F_Main: TF_Main
     object TS_FuncsVyznam: TTabSheet
       Caption = 'V'#253'znamy funkc'#237
       ImageIndex = 13
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object M_funcsVyznam: TMemo
         Left = 0
         Top = 40
         Width = 1289
         Height = 574
         Align = alClient
+        DoubleBuffered = True
+        ParentDoubleBuffered = False
         ScrollBars = ssVertical
         TabOrder = 0
       end
@@ -5860,6 +5898,8 @@ object F_Main: TF_Main
         Height = 40
         Align = alTop
         BevelOuter = bvNone
+        Color = clWhite
+        ParentBackground = False
         TabOrder = 1
         object B_Change: TButton
           Left = 9
@@ -5889,6 +5929,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Prim'#225'rn'#237' LOG'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_log: TListView
         Left = 0
         Top = 24
@@ -5916,6 +5960,7 @@ object F_Main: TF_Main
             Caption = 'ID chyby'
             Width = 48
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -5924,6 +5969,7 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 0
         ViewStyle = vsReport
@@ -5940,6 +5986,7 @@ object F_Main: TF_Main
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
+        Color = clWhite
         ParentBackground = False
         TabOrder = 1
         object CHB_Mainlog_File: TCheckBox
@@ -5969,9 +6016,9 @@ object F_Main: TF_Main
       ImageIndex = 14
       object LV_log_lnet: TListView
         Left = 0
-        Top = 24
+        Top = 26
         Width = 1289
-        Height = 590
+        Height = 588
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5989,6 +6036,7 @@ object F_Main: TF_Main
             Caption = 'Zpr'#225'va'
             Width = 813
           end>
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -5997,23 +6045,26 @@ object F_Main: TF_Main
         GridLines = True
         ReadOnly = True
         RowSelect = True
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 0
         ViewStyle = vsReport
         OnCustomDrawItem = LV_log_lnetCustomDrawItem
         OnDblClick = LV_log_lnetDblClick
+        ExplicitTop = 27
       end
       object Panel3: TPanel
         Left = 0
         Top = 0
         Width = 1289
-        Height = 24
+        Height = 26
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
         Align = alTop
         BevelOuter = bvNone
+        Color = clWhite
         ParentBackground = False
         TabOrder = 1
         object Label2: TLabel
@@ -6315,7 +6366,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403D00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403DC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8181,7 +8232,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280348041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280354041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8722,7 +8773,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802940310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802A00310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

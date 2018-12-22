@@ -20,6 +20,14 @@ const
 
  _INIDATA_FN = 'inidata.ini';
 
+ _TABLE_COLOR_GREEN = $E0FFE0;
+ _TABLE_COLOR_GRAY = $DDDDDD;
+ _TABLE_COLOR_RED = $E0E0FF;
+ _TABLE_COLOR_YELLOW = $A0FFFF;
+ _TABLE_COLOR_BLUE = $FFE0E0;
+ _TABLE_COLOR_WHITE = $FFFFFF;
+ _TABLE_COLOR_PINKY = $E2B6FF;
+
 type
 
   TF_Main = class(TForm)
@@ -107,64 +115,50 @@ type
     TS_Bloky: TTabSheet;
     LV_Bloky: TListView;
     P_BlkPozadi: TPanel;
-    P_BlkTlc: TPanel;
-    B_BlkAdd: TButton;
-    B_BlkDelete: TButton;
     P_Blk_Ostatni: TPanel;
     L_BlkPocet: TLabel;
-    P_Blk_Dataload: TPanel;
+    P_Blk_Left: TPanel;
     E_dataload_block: TEdit;
     TS_HV: TTabSheet;
     LV_HV: TListView;
     P_HV_Pozadi: TPanel;
-    P_HV_Tlac: TPanel;
-    B_HV_Add: TButton;
-    B_HV_Delete: TButton;
-    P_HV_Dataload: TPanel;
+    P_HV_Left: TPanel;
     E_dataload_HV: TEdit;
     TS_Soupravy: TTabSheet;
     LV_Soupravy: TListView;
     P_Soupravy_pozadi: TPanel;
-    P_Soupravy_Tlc: TPanel;
-    B_lok_delete: TButton;
-    P_Spr_Dataload: TPanel;
+    P_Spr_Left: TPanel;
     E_dataload_soupr: TEdit;
     TS_Stanice: TTabSheet;
     LV_Stanice: TListView;
     P_Stanice_Pozadi: TPanel;
-    P_St_Dataload: TPanel;
+    P_St_Left: TPanel;
     E_dataload_spnl: TEdit;
     TS_Zesilovace: TTabSheet;
     LV_Zesilovace: TListView;
     P_zes_pozadi: TPanel;
-    P_Zes_Tlc: TPanel;
-    B_zes_add: TButton;
-    B_zes_delete: TButton;
-    P_Zes_Vysvetlivky: TPanel;
+    P_Zes_Right: TPanel;
     L_Zes_Napajeni: TLabel;
     L_Zes_OK: TLabel;
     L_Zes_NapajeniL_Zes_Zkrat: TLabel;
     L_Zes_Nedetekovano: TLabel;
-    P_Zes_Dataload: TPanel;
+    P_Zes_Left: TPanel;
     E_dataload_zes: TEdit;
     TS_Aut_Rezimy: TTabSheet;
     LV_AC_Db: TListView;
     Panel1: TPanel;
-    P_AC_Dataload: TPanel;
+    P_AC_Left: TPanel;
     E_dataload_AC: TEdit;
     TS_Users: TTabSheet;
     LV_Users: TListView;
     P_Users_pozadi: TPanel;
-    P_Users_Tlc: TPanel;
-    B_User_Add: TButton;
-    B_User_Delete: TButton;
-    P_Users_Dataload: TPanel;
+    P_Users_Left: TPanel;
     E_Dataload_Users: TEdit;
     TS_Stav_RCS: TTabSheet;
     LV_Stav_RCS: TListView;
     TS_VC: TTabSheet;
     P_VC_Pozadi: TPanel;
-    P_VC_Dataload: TPanel;
+    P_VC_Left: TPanel;
     E_Dataload_JC: TEdit;
     LV_JC: TListView;
     TS_log: TTabSheet;
@@ -213,7 +207,7 @@ type
     B_RemoveStack: TButton;
     TS_MultiJC: TTabSheet;
     Panel6: TPanel;
-    Panel7: TPanel;
+    P_MJC_Left: TPanel;
     E_Dataload_multiJC: TEdit;
     LV_MultiJC: TListView;
     GB_Centrala: TGroupBox;
@@ -246,9 +240,6 @@ type
     B_Change: TButton;
     CHB_LoadChanges: TCheckBox;
     AE_Main: TApplicationEvents;
-    P_HV_Stats: TPanel;
-    B_HVStats_Clear: TButton;
-    B_HVStats_Export: TButton;
     SD_HV_Stats: TSaveDialog;
     CB_centrala_loglevel_table: TComboBox;
     Label7: TLabel;
@@ -267,8 +258,19 @@ type
     TS_AB: TTabSheet;
     Panel4: TPanel;
     LV_AB: TListView;
-    Panel5: TPanel;
+    P_AB_Left: TPanel;
     B_AB_Delete: TButton;
+    B_BlkAdd: TButton;
+    B_BlkDelete: TButton;
+    B_HV_Add: TButton;
+    B_HV_Delete: TButton;
+    B_lok_delete: TButton;
+    B_HVStats_Export: TButton;
+    B_HVStats_Clear: TButton;
+    B_zes_add: TButton;
+    B_zes_delete: TButton;
+    B_User_Add: TButton;
+    B_User_Delete: TButton;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -514,7 +516,7 @@ var
 implementation
 
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
-     fAbout, Verze, fLoginPozadi, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm,
+     fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, AC,
@@ -2104,7 +2106,6 @@ procedure TF_Main.CreateClasses;
 
 procedure TF_Main.RepaintObjects;
  begin
-  SB1.Top:=F_Main.ClientWidth-SB1.Width;
   SB1.Panels.Items[0].Width:=F_Main.ClientWidth-SB1.Panels.Items[1].Width-SB1.Panels.Items[2].Width-
   SB1.Panels.Items[3].Width-SB1.Panels.Items[4].Width-SB1.Panels.Items[5].Width;
   P_Zrychleni.Left:=F_Main.ClientWidth-P_Zrychleni.Width-5;
@@ -2112,17 +2113,7 @@ procedure TF_Main.RepaintObjects;
   P_Time.Left:=P_Time_modelovy.Left-P_Time.Width-5;
   P_Date.Left:=P_Time.Left-P_Date.Width-5;
 
-  P_Soupravy_Tlc.Left  := (PC_1.Width div 2)-(P_Soupravy_Tlc.Width div 2);
-  P_Zes_Tlc.Left       := (PC_1.Width div 2)-(P_Zes_Tlc.Width div 2);
-  P_Users_Tlc.Left     := (PC_1.Width div 2)-(P_Users_Tlc.Width div 2);
-  P_BlkTlc.Left        := (PC_1.Width div 2)-(P_BlkTlc.Width div 2);
-  P_HV_Tlac.Left       := (PC_1.Width div 2)-(P_HV_Tlac.Width div 2);
-
-  P_Zes_Vysvetlivky.Left := PC_1.Width - P_Zes_Vysvetlivky.Width-15;
-  P_HV_Stats.Left        := PC_1.Width - P_HV_Stats.Width-15;
-  P_Blk_Ostatni.Left     := PC_1.Width - P_Blk_Ostatni.Width - 15;
-
-  GB_Centrala.Top := TS_Technologie.ClientHeight - GB_Centrala.Height - 10;
+  GB_Centrala.Top := TS_Technologie.ClientHeight - GB_Centrala.Height - 15;
   GB_Connected_Panels.Height := GB_Centrala.Top - GB_Connected_Panels.Top - 10;
 
   GB_Centrala.Width := TS_Technologie.ClientWidth - 2*GB_Centrala.Left;
@@ -2540,11 +2531,11 @@ begin
  if (Item.SubItems.Count >= 4) then
   begin
    if (Item.SubItems.Strings[3] <> '0') then
-     Self.LV_JC.Canvas.Brush.Color := $AAFFFF
+     Self.LV_JC.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
    else if (Item.SubItems.Strings[1] = '-6') then
      Self.LV_JC.Canvas.Brush.Color := clAqua
    else if (Item.SubItems.Strings[1] <> '-5') then
-     Self.LV_JC.Canvas.Brush.Color := $AAFFAA;
+     Self.LV_JC.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
   end;
 end;
 
@@ -2571,15 +2562,15 @@ begin
  if (Item.SubItems.Count < 2) then Exit();
 
  case (StrToIntDef(Item.SubItems.Strings[0],0)) of
-  1:(Sender as TCustomListView).Canvas.Brush.Color := $AAAAFF;
+  1:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
   2:begin
-     (Sender as TCustomListView).Canvas.Brush.Color := $EEEEEE;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then (Sender as TCustomListView).Canvas.Brush.Color := $FFD0D0;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then (Sender as TCustomListView).Canvas.Brush.Color := $D0FFD0;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'ERR') then (Sender as TCustomListView).Canvas.Brush.Color := $AAAAFF;
-     if (LeftStr(Item.SubItems.Strings[1], 4) = 'WARN') then (Sender as TCustomListView).Canvas.Brush.Color := $AAFFFF;
+     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_BLUE;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'ERR') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
+     if (LeftStr(Item.SubItems.Strings[1], 4) = 'WARN') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
     end;//case 2
-  3:(Sender as TCustomListView).Canvas.Brush.Color := clWhite;
+  3:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
  end;//case
 end;
 
@@ -2600,9 +2591,9 @@ begin
  if (Item.SubItems.Count >= 4) then
   begin
    if (Item.SubItems.Strings[1] <> '-1') then
-     Self.LV_MultiJC.Canvas.Brush.Color := $AAFFFF
+     Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
    else
-     Self.LV_MultiJC.Canvas.Brush.Color := clWhite;
+     Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
   end;
 end;
 
@@ -2714,9 +2705,9 @@ procedure TF_Main.LV_AC_KrokyCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
  if ((Self.LV_AC_Db.Selected = nil) or (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok <> Item.Index)) then
-   Self.LV_AC_Kroky.Canvas.Brush.Color := $FFFFFF
+   Self.LV_AC_Kroky.Canvas.Brush.Color := _TABLE_COLOR_WHITE
  else
-   Self.LV_AC_Kroky.Canvas.Brush.Color := $AAFFFF;
+   Self.LV_AC_Kroky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
 end;
 
 procedure TF_Main.LV_BlokyChange(Sender: TObject; Item: TListItem;
@@ -2734,68 +2725,70 @@ var Blk:TBlk;
   case (Blk.typ) of
    _BLK_VYH:begin
     case ((Blk as TBlkVyhybka).Poloha) of
-     TVyhPoloha.disabled : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
-     TVyhPoloha.none     : LV_Bloky.Canvas.Brush.Color := $E0FFEE;
-     TVyhPoloha.plus     : LV_Bloky.Canvas.Brush.Color := $E0FFE0;
-     TVyhPoloha.minus    : LV_Bloky.Canvas.Brush.Color := $E0FFE0;
-     TVyhPoloha.both     : LV_Bloky.Canvas.Brush.Color := $0000FF;
+     TVyhPoloha.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TVyhPoloha.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TVyhPoloha.plus     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TVyhPoloha.minus    : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TVyhPoloha.both     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_RED;
     end;//case poloha
    end;//_BLK_VYH
 
   //////////////////////
    _BLK_USEK, _BLK_TU:begin
     case ((Blk as TBlkUsek).Obsazeno) of
-     TUsekStav.disabled : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
-     TUsekStav.none     : LV_Bloky.Canvas.Brush.Color := $E0FFEE;
-     TUsekStav.uvolneno : LV_Bloky.Canvas.Brush.Color := $E0FFE0;
-     TUsekStav.obsazeno : LV_Bloky.Canvas.Brush.Color := $66CCFF;
+     TUsekStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TUsekStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TUsekStav.uvolneno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TUsekStav.obsazeno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
     end;//case Obsazeno
    end;//_BLK_VYH
 
   //////////////////////
    _BLK_IR:begin
     case ((Blk as TBlkIR).Stav) of
-     TIRStav.disabled : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
-     TIRStav.none     : LV_Bloky.Canvas.Brush.Color := $E0FFEE;
-     TIRStav.uvolneno : LV_Bloky.Canvas.Brush.Color := $E0FFE0;
-     TIRStav.obsazeno : LV_Bloky.Canvas.Brush.Color := $66CCFF;
+     TIRStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TIRStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TIRStav.uvolneno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TIRStav.obsazeno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
     end;//case Obsazeno
    end;//_BLK_VYH
 
   //////////////////////
    _BLK_SCOM:begin
     if ((Blk as TBlkSCom).Navest < 0) then
-     LV_Bloky.Canvas.Brush.Color := $CCCCCC  // disabled
+     LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY  // disabled
+    else if ((Blk as TBlkSCom).Navest = 0) then
+     LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
     else
-     LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+     LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
    end;//_BLK_VYH
 
   //////////////////////
    _BLK_PREJEZD:begin
     case ((Blk as TBlkPrejezd).Stav.basicStav) of
-     TBlkPrjBasicStav.disabled : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
-     TBlkPrjBasicStav.none     : LV_Bloky.Canvas.Brush.Color := $66CCFF;
-     TBlkPrjBasicStav.otevreno : LV_Bloky.Canvas.Brush.Color := $E0FFE0;
-     TBlkPrjBasicStav.vystraha : LV_Bloky.Canvas.Brush.Color := $E0FFE0;
-     TBlkPrjBasicStav.uzavreno : LV_Bloky.Canvas.Brush.Color := $E0FFE0;
-     TBlkPrjBasicStav.anulace  : LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+     TBlkPrjBasicStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TBlkPrjBasicStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TBlkPrjBasicStav.otevreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TBlkPrjBasicStav.vystraha : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+     TBlkPrjBasicStav.uzavreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+     TBlkPrjBasicStav.anulace  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
     end;//case Obsazeno
    end;//_BLK_VYH
 
   //////////////////////
    _BLK_UVAZKA:begin
     if (not (Blk as TBlkUvazka).enabled) then
-     LV_Bloky.Canvas.Brush.Color := $CCCCCC
+     LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
-     LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+     LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
    end;
 
   //////////////////////
    _BLK_TRAT:begin
     if ((Blk as TBlkTrat).stav.smer = TTratSmer.disabled) then
-     LV_Bloky.Canvas.Brush.Color := $CCCCCC
+     LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
-     LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+     LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
    end;
 
   //////////////////////
@@ -2803,36 +2796,36 @@ var Blk:TBlk;
     if ((Blk as TBlkZamek).Stav.enabled) then
      begin
       if ((Blk as TBlkZamek).klicUvolnen) then
-       LV_Bloky.Canvas.Brush.Color := $AAAAFF
+       LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY
       else
-       LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+       LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
      end else
-       LV_Bloky.Canvas.Brush.Color := $CCCCCC
+       LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
    end;
 
   //////////////////////
    _BLK_ROZP:begin
     case ((Blk as TBlkRozp).status) of
-      TRozpStatus.disabled     : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
-      TRozpStatus.not_selected : LV_Bloky.Canvas.Brush.Color := $FFFFFF;
-      TRozpStatus.mounting     : LV_Bloky.Canvas.Brush.Color := $FFAAAA;
-      TRozpStatus.active       : LV_Bloky.Canvas.Brush.Color := $AAAAFF;
+      TRozpStatus.disabled     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+      TRozpStatus.not_selected : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+      TRozpStatus.mounting     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+      TRozpStatus.active       : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
     end;
    end;
 
   //////////////////////
   _BLK_VYSTUP:begin
     case ((Blk as TBlkVystup).enabled) of
-      false : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
-      true  : LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+      false : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+      true  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
     end;
   end;
 
   //////////////////////
   _BLK_SH:begin
     case ((Blk as TBlkSH).enabled) of
-      false : LV_Bloky.Canvas.Brush.Color := $CCCCCC;
-      true  : LV_Bloky.Canvas.Brush.Color := $FFFFFF;
+      false : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+      true  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
     end;
   end;
 
@@ -2871,7 +2864,7 @@ begin
  if ((Item.SubItems.Strings[0] = 'uzavřeno') or (Item.SubItems.Strings[0] = 'odpojen')) then
    Self.LV_Clients.Canvas.Brush.Color := clWhite
  else if ((Item.SubItems.Strings[0] = 'otevírání') or (Item.SubItems.Strings[0] = 'handshake'))then
-   Self.LV_Clients.Canvas.Brush.Color := $CCCCCC
+   Self.LV_Clients.Canvas.Brush.Color := $DDDDDD
  else if (Item.SubItems.Strings[0] = 'otevřeno') then
    Self.LV_Clients.Canvas.Brush.Color := $E0FFE0
  else
@@ -2890,11 +2883,11 @@ begin
  if (Item.SubItems.Count > 16) then
   begin
    if ((Item.SubItems.Strings[15] = 'COM ERROR!') or (Item.SubItems.Strings[16] = 'error')) then
-     (Sender as TCustomListView).Canvas.Brush.Color := $AAAAFF;
+     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
    if (Item.SubItems.Strings[15] = 'PC') then
-     (Sender as TCustomListView).Canvas.Brush.Color := $AAFFAA;
+     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
    if ((Item.SubItems.Strings[15] = 'ukradeno') or (Item.SubItems.Strings[16] = 'progr')) then
-     (Sender as TCustomListView).Canvas.Brush.Color := $AAFFFF;
+     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
   end;
 end;
 
@@ -2925,18 +2918,18 @@ procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView;
 begin
  if ((not RCSi.NoExStarted()) or (not Boosters.sorted[Item.Index].defined)) then
   begin
-   LV_Zesilovace.Canvas.Brush.Color := $CCCCCC;
+   LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
   end else begin
    if (Boosters.sorted[Item.Index].napajeni = TBoosterSignal.ok) then
     begin
      if (Boosters.sorted[Item.Index].Zkrat = TBoosterSignal.ok) then
       begin
-       LV_Zesilovace.Canvas.Brush.Color := $AAFFAA;
+       LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
       end else begin
-       LV_Zesilovace.Canvas.Brush.Color := $AAAAFF;
+       LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_RED;
       end;
     end else begin
-     LV_Zesilovace.Canvas.Brush.Color := $FFAAAA;
+     LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_BLUE;
     end;
   end;//if not Zarizeni.Start
 end;
