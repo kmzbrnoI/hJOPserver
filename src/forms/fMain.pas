@@ -2417,7 +2417,7 @@ procedure TF_Main.CreateSystem;
 
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 
-  F_Main.Caption := 'hJOPserver         v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
+  F_Main.Caption := 'hJOPserver – v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
   F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
   RepaintObjects;
  end;//procedure
