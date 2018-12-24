@@ -37,7 +37,6 @@ type
     SB_Take_Add: TSpeedButton;
     SB_Take_Remove: TSpeedButton;
     procedure B_SaveClick(Sender: TObject);
-    procedure E_AdresaKeyPress(Sender: TObject; var Key: Char);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_StornoClick(Sender: TObject);
     procedure B_NajetoDeleteClick(Sender: TObject);
@@ -269,17 +268,6 @@ var data:THVData;
 
   Self.Close;
  end;//procedure
-
-procedure TF_HVEdit.E_AdresaKeyPress(Sender: TObject; var Key: Char);
-begin
- Key := Key;
- case Key of
-  '0'..'9',#9,#8:begin
-              end else begin
-               Key := #0;
-              end;
-  end;//case
-end;
 
 procedure TF_HVEdit.NewHV();
 begin

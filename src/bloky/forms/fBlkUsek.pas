@@ -44,7 +44,6 @@ type
     Label5: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
-    procedure E_DelkaKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D1Click(Sender: TObject);
   private
@@ -289,17 +288,6 @@ var glob:TBlkSettings;
 
   F_BlkUsek.Close;
   Self.Blk.Change();
- end;//procedure
-
-procedure TF_BlkUsek.E_DelkaKeyPress(Sender: TObject; var Key: Char);
- begin
-  Key := Key;
-  case Key of
-   '0'..'9',#9,#8:begin
-                  end else begin
-                   Key := #0;
-                  end;
-   end;//case
  end;//procedure
 
 procedure TF_BlkUsek.FormClose(Sender: TObject; var Action: TCloseAction);

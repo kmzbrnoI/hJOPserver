@@ -257,7 +257,7 @@ object F_JCEdit: TF_JCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 0
+        ItemHeight = 13
         ParentFont = False
         TabOrder = 0
       end
@@ -384,7 +384,7 @@ object F_JCEdit: TF_JCEdit
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = []
-        ItemHeight = 0
+        ItemHeight = 13
         ParentFont = False
         TabOrder = 0
       end
@@ -482,7 +482,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
@@ -500,8 +500,8 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 3
     OnChange = CB_TypCestyChange
     Items.Strings = (
-      'Vlakova cesta'
-      'Posunova cesta')
+      'Vlakov'#225' cesta'
+      'Posunov'#225' cesta')
   end
   object CB_DalsiNNavaznost: TComboBox
     Left = 136
@@ -513,7 +513,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object CB_Rychlost_DalsiN: TComboBox
@@ -618,7 +618,7 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CB_TratSmer: TComboBox
@@ -650,7 +650,7 @@ object F_JCEdit: TF_JCEdit
     Top = 8
     Width = 297
     Height = 389
-    Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' my'#353'i) '
+    Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
     TabOrder = 13
     object Label4: TLabel
       Left = 8

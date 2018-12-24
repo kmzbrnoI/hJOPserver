@@ -532,9 +532,10 @@ object F_BlkTU: TF_BlkTU
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
+    MaxLength = 6
+    NumbersOnly = True
     TabOrder = 3
     Text = '0'
-    OnKeyPress = E_DelkaKeyPress
   end
   object LB_Stanice: TListBox
     Left = 119
@@ -695,10 +696,6 @@ object F_BlkTU: TF_BlkTU
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
     end
     object CHB_Zastavka_Sudy: TCheckBox

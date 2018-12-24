@@ -44,7 +44,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Oznacen'#237' :'
+    Caption = 'Ozna'#269'en'#237' :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -72,13 +72,13 @@ object F_HVEdit: TF_HVEdit
   object L_HV4: TLabel
     Left = 8
     Top = 104
-    Width = 55
+    Width = 56
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Pozn'#225'mky :'
+    Caption = 'Pozn'#225'mka :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -89,13 +89,13 @@ object F_HVEdit: TF_HVEdit
   object L_HV5: TLabel
     Left = 8
     Top = 160
-    Width = 79
+    Width = 63
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Digit'#225'ln'#237' adresa :'
+    Caption = 'DCC adresa :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -112,7 +112,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Stanovi'#353'te A :'
+    Caption = 'Stanovi'#353't'#283' A :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -451,9 +451,10 @@ object F_HVEdit: TF_HVEdit
     Top = 161
     Width = 177
     Height = 21
+    MaxLength = 4
+    NumbersOnly = True
     TabOrder = 4
     Text = '[addr]'
-    OnKeyPress = E_AdresaKeyPress
   end
   object CB_OR: TComboBox
     Left = 96

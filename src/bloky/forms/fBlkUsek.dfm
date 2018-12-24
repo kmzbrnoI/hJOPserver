@@ -529,9 +529,10 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
+    MaxLength = 8
+    NumbersOnly = True
     TabOrder = 3
     Text = '0'
-    OnKeyPress = E_DelkaKeyPress
   end
   object CHB_SmycBlok: TCheckBox
     Left = 119
