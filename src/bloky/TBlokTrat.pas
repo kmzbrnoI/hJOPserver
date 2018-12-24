@@ -34,18 +34,20 @@ type
  // Jedna souprava v trati.
  TBlkTratSouprava = class
   private
-    mTime: TTime;                                                               // cas minuti navestidla
+    mTime: TTime;
     mTimeDefined: Boolean;
 
      function GetTime():TTime;
      procedure SetTime(time:TTime);
 
   public
-    souprava:Integer;                                                           // index soupravy
+    souprava: Integer;                                                          // index soupravy
+    predict: Boolean;
 
      constructor Create(souprava:Integer); overload;
-     constructor Create(souprava:Integer; time:TTime); overload;
+     constructor Create(souprava:Integer; time:TTime; predict:Boolean = false); overload;
      function IsTimeDefined():boolean;
+     procedure UndefTime();
      property time: TTime read GetTime write SetTime;
 
      function SerializeForPanel():string;
@@ -1008,13 +1010,15 @@ begin
  inherited Create();
  Self.souprava := souprava;
  Self.mTimeDefined := false;
+ Self.predict := false;
 end;
 
-constructor TBlkTratSouprava.Create(souprava:Integer; time:TTime);
+constructor TBlkTratSouprava.Create(souprava:Integer; time:TTime; predict:Boolean = false);
 begin
  inherited Create();
  Self.souprava := souprava;
  Self.time := time;
+ Self.predict := predict;
 end;
 
 function TBlkTratSouprava.GetTime():TTime;
@@ -1035,12 +1039,21 @@ begin
  Result := Self.mTimeDefined;
 end;
 
+procedure TBlkTratSouprava.UndefTime();
+begin
+ Self.mTimeDefined := false;
+end;
+
 function TBlkTratSouprava.SerializeForPanel():string;
 var addr:Integer;
 begin
  Result := Soupravy.GetSprNameByIndex(Self.souprava) + '|';
  if (Self.mTimeDefined) then
+  begin
+   if (Self.predict) then
+     Result := Result + '$';
    Result := Result + FormatDateTime('nn', Self.mTime);
+  end;
  Result := Result + '|';
 
  for addr in Soupravy.soupravy[Self.souprava].HVs do

@@ -1,11 +1,10 @@
 object F_Admin: TF_Admin
   Left = 751
   Top = 268
-  AlphaBlend = True
-  AlphaBlendValue = 200
+  AlphaBlendValue = 100
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Administratorske rozhrani programu'
+  Caption = 'Testovac'#237' rozhran'#237' programu'
   ClientHeight = 154
   ClientWidth = 417
   Color = clBtnFace

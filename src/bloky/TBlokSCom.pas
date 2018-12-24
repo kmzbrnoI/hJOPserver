@@ -209,6 +209,7 @@ type
     procedure RCtimerTimeout();
 
     function GetSoupravaIndex(usek:TBlk = nil):Integer;
+    procedure PropagatePOdjToTrat();
 
     class function NavestToString(navest:Integer):string;
 
@@ -264,7 +265,8 @@ implementation
 
 uses TechnologieRCS, TBloky, TBlokUsek, TJCDatabase, TCPServerOR,
       GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
-      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB;
+      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
+      predvidanyOdjezd;
 
 constructor TBlkSCom.Create(index:Integer);
 begin
@@ -1341,6 +1343,7 @@ begin
      if (not spr.GetPOdj(Usek).origin_set) then
       begin
        spr.GetPOdj(Usek).RecordOriginNow();
+       TBlkUsek(Usek).PropagatePOdjToTrat();
        Usek.Change();
       end;
 
@@ -1654,6 +1657,43 @@ end;
 procedure TBlkSCom.RCtimerTimeout();
 begin
  Self.SComStav.RCtimer := -1;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSCom.PropagatePOdjToTrat();
+var spr:Integer;
+    trat:TBlk;
+    podj:TPOdj;
+begin
+ spr := Self.GetSoupravaIndex();
+ if (spr = -1) then
+  begin
+   spr := TBlkUsek(Self.UsekPred).SprPredict;
+   if (spr = -1) then Exit();
+  end;
+
+ if (Self.DNjc = nil) then Exit();
+ if (Self.DNjc.data.Trat = -1) then Exit();
+ Blky.GetBlkByID(Self.DNjc.data.Trat, trat);
+ if (TBlkTrat(trat).SprPredict = nil) then Exit();
+ if (TBlkTrat(trat).SprPredict.souprava <> spr) then Exit();
+
+ if (Soupravy[spr].IsPOdj(Self.UsekPred)) then
+  begin
+   podj := Soupravy[spr].GetPOdj(Self.UsekPred);
+   if (not podj.IsDepSet) then Exit();
+   if ((TBlkTrat(trat).SprPredict.IsTimeDefined) and (TBlkTrat(trat).SprPredict.time = podj.DepTime())) then Exit();
+
+   TBlkTrat(trat).SprPredict.predict := true;
+   TBlkTrat(trat).SprPredict.time := podj.DepTime();
+   TBlkTrat(trat).Change();
+  end else if ((TBlkTrat(trat).SprPredict.predict) and
+               ((not Soupravy[spr].IsPOdj(Self.UsekPred)) or (not Soupravy[spr].GetPOdj(Self.UsekPred).IsDepSet()))) then begin
+   TBlkTrat(trat).SprPredict.predict := false;
+   TBlkTrat(trat).SprPredict.UndefTime();
+   TBlkTrat(trat).Change();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

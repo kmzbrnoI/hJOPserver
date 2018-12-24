@@ -57,6 +57,7 @@ type
 
     function IsDepSet():boolean;                                                // vraci jestli je mozno spocitat cas do odjezdu
     function DepRealDelta():TTime;                                              // vraci realny cas do odjezdu
+    function DepTime():TTime;                                                   // vraci cas (modelovy nebo realny) odjezdu
     procedure RecordOriginNow();
     function GetPhase():TPobjPhase;
 
@@ -141,6 +142,32 @@ begin
 
  else if (Self.prel_enabled) then
    Exit(timeHelper.RealDelta(Self.prel + Self.porigin))
+
+ else
+   Result := 0;
+end;
+
+function TPOdj.DepTime():TTime;
+var rel_elapse, abs_elapse: TTime;
+begin
+ if (not Self.IsDepSet()) then
+   raise EOriginNotSet.Create('Departure not set!');
+
+ if (Self.pabs_enabled and Self.prel_enabled) then
+  begin
+   abs_elapse := timeHelper.RealDelta(Self.pabs);
+   rel_elapse := timeHelper.RealDelta(Self.prel + Self.porigin);
+   if (abs_elapse > rel_elapse) then
+     Exit(Self.pabs)
+   else
+     Exit(Self.prel + Self.porigin);
+  end else
+
+ if (Self.pabs_enabled) then
+   Exit(Self.pabs)
+
+ else if (Self.prel_enabled) then
+   Exit(Self.prel + Self.porigin)
 
  else
    Result := 0;

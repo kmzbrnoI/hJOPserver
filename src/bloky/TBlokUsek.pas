@@ -133,6 +133,8 @@ type
     procedure LoadHoukEventToList(list:TList<THoukEv>; ini_tech:TMemIniFile; section:string; prefix:string);
     procedure CheckHoukEv();
 
+    procedure CheckPOdjChanged();
+
     function GetHoukList():TList<THoukEv>;
     function GetHoukEvEnabled():boolean;
     procedure SetHoukEvEnabled(state:boolean);
@@ -149,8 +151,6 @@ type
     procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
 
     function CanSprSpeedInsert(index:Integer):boolean;
-
-    procedure CheckPOdjChanged();
 
     function IsStujForSpr(spr:Integer):boolean;
 
@@ -210,6 +210,7 @@ type
 
     function IsVlakPresun():boolean;
     procedure ClearPOdj();
+    procedure PropagatePOdjToTrat();
 
     property Stav:TBlkUsekStav read UsekStav;
 
@@ -1918,6 +1919,7 @@ begin
      TBlkSCom(nav).UpdateRychlostSpr(true);
   end;
 
+ Self.PropagatePOdjToTrat();
  Self.Change();
 end;
 
@@ -2013,6 +2015,15 @@ begin
 
  if (change) then
    Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.PropagatePOdjToTrat();
+var nav: TBlk;
+begin
+ for nav in Self.SComJCRef do
+   TBlkSCom(nav).PropagatePOdjToTrat();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

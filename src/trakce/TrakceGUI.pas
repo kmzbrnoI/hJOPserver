@@ -1,4 +1,4 @@
-unit TrakceGUI;
+ï»¿unit TrakceGUI;
 
 {
  Trida TTrkGUI vytvari pomyslne 'graficke rozhrani' tridy TTrakce pro zbytek
@@ -618,9 +618,9 @@ end;//prrocedure
 procedure TTrkGUI.CentralStart();
 begin
  if (not Assigned(Self.Trakce)) then
-   raise ETrakceUnassigned.Create('Objekt trakce není pøiøazen!');
+   raise ETrakceUnassigned.Create('Objekt trakce nenÃ­ pÅ™iÅ™azen!');
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
 
  Self.TrkLog(self,2,'PUT: CENTRAL START');
  Self.Trakce.TrackStatus := TS_ON;
@@ -629,9 +629,9 @@ end;//function
 procedure TTrkGUI.CentralStop();
 begin
  if (not Assigned(Self.Trakce)) then
-   raise ETrakceUnassigned.Create('Objekt trakce není pøiøazen!');
+   raise ETrakceUnassigned.Create('Objekt trakce nenÃ­ pÅ™iÅ™azen!');
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
 
  Self.TrkLog(self,2,'PUT: CENTRAL STOP');
  Self.Trakce.TrackStatus := TS_OFF;
@@ -644,11 +644,11 @@ var speedOld:Integer;
     dirOld:Integer;
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
  if (HV = nil) then
-   raise EInvalidArgument.Create('HV nezadáno!');
+   raise EInvalidArgument.Create('HV nezadÃ¡no!');
  if ((dir > 1) or (dir < -1)) then
-   raise EInvalidArgument.Create('Špatný smìr!');
+   raise EInvalidArgument.Create('Å patnÃ½ smÄ›r!');
 
  if ((HV.Slot.speed = Self.GettSpeed(speed)) and (HV.Slot.Smer = dir)) then
   begin
@@ -674,11 +674,11 @@ var speedOld:Integer;
     dirOld:Integer;
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
  if (HV = nil) then
-   raise EInvalidArgument.Create('HV nezadáno!');
+   raise EInvalidArgument.Create('HV nezadÃ¡no!');
  if ((dir > 1) or (dir < -1)) then
-   raise EInvalidArgument.Create('Špatný smìr!');
+   raise EInvalidArgument.Create('Å patnÃ½ smÄ›r!');
 
  if ((HV.Slot.speed = speed) and (HV.Slot.Smer = dir)) then
   begin
@@ -713,9 +713,9 @@ var i:Cardinal;
 
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
  if (HV = nil) then
-   raise EInvalidArgument.Create('HV nezadáno!');
+   raise EInvalidArgument.Create('HV nezadÃ¡no!');
 
  for i := 0 to _SADY_CNT-1 do sady_change[i] := false;
 
@@ -796,7 +796,7 @@ procedure TTrkGUI.LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);
 var funkce:TFunkce;
 begin
  if (HV = nil) then
-   raise EInvalidArgument.Create('HV nezadáno!');
+   raise EInvalidArgument.Create('HV nezadÃ¡no!');
 
  funkce := HV.Slot.funkce;
  funkce[fIndex] := true;
@@ -878,7 +878,7 @@ var i, j:Integer;
       except
         on E:Exception do
          begin
-          Self.TrkLog(self, 1, 'Soubor s rychlostmi, øádek ' + IntToStr(i+1) + ': ' + E.Message);
+          Self.TrkLog(self, 1, 'Soubor s rychlostmi, Å™Ã¡dek ' + IntToStr(i+1) + ': ' + E.Message);
           Self.SpeedTable[i] := _DEFAULT_SPEED_TABLE[i];
          end;
       end;
@@ -936,9 +936,9 @@ begin
  F_Main.A_Trk_Disconnect.Enabled    := false;
  F_Main.A_System_Start.Enabled := false;
  F_Main.A_System_Stop.Enabled := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Pøipojování...';
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'PÅ™ipojovÃ¡nÃ­...';
  F_Main.S_Intellibox_connect.Brush.Color := clBlue;
- F_Main.LogStatus('Centrála: pøipojování...');
+ F_Main.LogStatus('CentrÃ¡la: pÅ™ipojovÃ¡nÃ­...');
  F_Main.B_HV_Add.Enabled    := false;
  F_Main.B_HV_Delete.Enabled := false;
  Application.ProcessMessages();
@@ -950,8 +950,8 @@ begin
  Self.TrkLog(self, 2, 'OPEN OK');
  F_Main.A_Trk_Connect.Enabled       := false;
  F_Main.A_Trk_Disconnect.Enabled    := true;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála pøipojena';
- F_Main.LogStatus('Centrála: pøipojeno');
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'CentrÃ¡la pÅ™ipojena';
+ F_Main.LogStatus('CentrÃ¡la: pÅ™ipojeno');
  F_Main.S_Intellibox_connect.Brush.Color := clLime;
  F_Main.A_All_Loko_Prevzit.Enabled := true;
  F_Main.B_CS_Ver_Update.Enabled    := true;
@@ -975,8 +975,8 @@ begin
  F_Main.A_Trk_Disconnect.Enabled    := false;
  F_Main.A_System_Start.Enabled := false;
  F_Main.A_System_Stop.Enabled := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
- F_Main.LogStatus('Centrála: odpojování...');
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'OdpojovÃ¡nÃ­...';
+ F_Main.LogStatus('CentrÃ¡la: odpojovÃ¡nÃ­...');
  F_Main.S_Intellibox_connect.Brush.Color := clBlue;
  F_Main.G_Loko_Prevzato.Progress := 0;
  F_Main.S_lok_prevzato.Brush.Color := clRed;
@@ -990,8 +990,8 @@ begin
  Self.TrkLog(self,2,'CLOSE OK');
  F_Main.A_Trk_Connect.Enabled       := true;
  F_Main.A_Trk_Disconnect.Enabled    := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála odpojena';
- F_Main.LogStatus('Centrála: odpojena');
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'CentrÃ¡la odpojena';
+ F_Main.LogStatus('CentrÃ¡la: odpojena');
  F_Main.S_Intellibox_connect.Brush.Color := clRed;
  F_Main.A_All_Loko_Prevzit.Enabled  := false;
  F_Main.A_All_Loko_Odhlasit.Enabled := false;
@@ -1039,7 +1039,7 @@ end;//function
 procedure TTrkGUI.EmergencyStop();
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
 
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP');
  Self.Trakce.EmergencyStop();
@@ -1048,9 +1048,9 @@ end;//function
 procedure TTrkGUI.EmergencyStopAddr(addr:Integer);
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
  if ((addr < 0) or (addr > 9999)) then
-   raise EInvalidArgument.Create('Neplatná adresa!');
+   raise EInvalidArgument.Create('NeplatnÃ¡ adresa!');
 
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP LOKO '+IntToStr(addr));
  Self.Trakce.LokEmergencyStop(addr);
@@ -1059,9 +1059,9 @@ end;//function
 procedure TTrkGUI.EmergencyStopLoko(Sender:TObject; HV:THV);
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
  if (HV = nil) then
-   raise EInvalidArgument.Create('HV nezadáno!');
+   raise EInvalidArgument.Create('HV nezadÃ¡no!');
 
  Self.TrkLog(self,2,'PUT: EMERGENCY STOP HV '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
  Self.Trakce.LokEmergencyStop(HV.Adresa);
@@ -1074,9 +1074,9 @@ end;//fucnction
 procedure TTrkGUI.LokGetInfo(HV:THV);
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
  if (HV = nil) then
-   raise EInvalidArgument.Create('HV nezadáno!');
+   raise EInvalidArgument.Create('HV nezadÃ¡no!');
 
  Self.TrkLog(self,2,'PUT: GET HV INFO '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
  Self.Trakce.LokGetInfo(HV.Adresa);
@@ -1186,7 +1186,7 @@ begin
     end;
   end;
 
- F_Main.LogStatus('Loko: žádné loko k pøevzetí');
+ F_Main.LogStatus('Loko: Å¾Ã¡dnÃ© loko k pÅ™evzetÃ­');
  F_Main.G_Loko_Prevzato.MaxValue := 1;
  F_Main.G_Loko_Prevzato.Progress := 1;
  Self.AllPrevzato();
@@ -1222,7 +1222,7 @@ begin
     end;
   end;
 
- F_Main.LogStatus('Loko: žádné loko k odhlášení');
+ F_Main.LogStatus('Loko: Å¾Ã¡dnÃ© loko k odhlÃ¡Å¡enÃ­');
  F_Main.G_Loko_Prevzato.MaxValue := 1;
  F_Main.G_Loko_Prevzato.Progress := 0;
  Self.AllOdhlaseno();
@@ -1337,7 +1337,7 @@ end;
 
 procedure TTrkGUI.InitSystems();
 begin
- F_Main.LogStatus('Centrála: testuji komunikaci - vysílám povel STATUS');
+ F_Main.LogStatus('CentrÃ¡la: testuji komunikaci - vysÃ­lÃ¡m povel STATUS');
 
  Self.callback_err := TTrakce.GenerateCallback(Self.InitStatErr);
  Self.callback_ok  := TTrakce.GenerateCallback(Self.InitStatOK);
@@ -1346,7 +1346,7 @@ end;//procedure
 
 procedure TTrkGUI.InitStatErr(Sender:TObject; Data:Pointer);
 begin
- F_Main.LogStatus('WARN: Centrála: neodpovìdìla na pøíkaz STATUS, zkouším pøíkaz STOP...');
+ F_Main.LogStatus('WARN: CentrÃ¡la: neodpovÄ›dÄ›la na pÅ™Ã­kaz STATUS, zkouÅ¡Ã­m pÅ™Ã­kaz STOP...');
 
  Self.callback_err := TTrakce.GenerateCallback(Self.InitStopErr);
  Self.callback_ok  := TTrakce.GenerateCallback(Self.InitStopOK);
@@ -1356,9 +1356,9 @@ end;//procedure
 procedure TTrkGUI.InitStatOK(Sender:TObject; Data:Pointer);
 begin
  Self.finitok := true;
- F_Main.LogStatus('Centrála: komunikuje');
+ F_Main.LogStatus('CentrÃ¡la: komunikuje');
 
- F_Main.LogStatus('Zjišuji verzi FW v centrále...');
+ F_Main.LogStatus('ZjiÅ¡Å¥uji verzi FW v centrÃ¡le...');
  Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
  Self.callback_err := TTrakce.GenerateCallback(Self.GotCSVersionErr);
  Self.GetCSVersion();
@@ -1367,17 +1367,17 @@ end;//procedure
 procedure TTrkGUI.InitStopErr(Sender:TObject; Data:Pointer);
 begin
  Self.finitok := false;
- F_Main.LogStatus('ERR: Centrála: neodpovìdìla na pøíkaz STOP !');
+ F_Main.LogStatus('ERR: CentrÃ¡la: neodpovÄ›dÄ›la na pÅ™Ã­kaz STOP !');
  SystemData.Status := TSystemStatus.null;
  F_Main.A_System_Start.Enabled := true;
  F_Main.A_System_Stop.Enabled := true;
- Application.MessageBox('Centrála neodpovìdìla na pøíkaz STATUS a STOP', 'Nelze pokraèovat', MB_OK OR MB_ICONWARNING);
+ Application.MessageBox('CentrÃ¡la neodpovÄ›dÄ›la na pÅ™Ã­kaz STATUS a STOP', 'Nelze pokraÄovat', MB_OK OR MB_ICONWARNING);
 end;//procedure
 
 procedure TTrkGUI.InitStopOK(Sender:TObject; Data:Pointer);
 begin
  Self.finitok := true;
- F_Main.LogStatus('Centrála: komunikuje');
+ F_Main.LogStatus('CentrÃ¡la: komunikuje');
 
  Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
  Self.callback_err := TTrakce.GenerateCallback(Self.GotCSVersionErr);
@@ -1431,14 +1431,14 @@ begin
  // zadne dalsi loko k prevzeti
  FreeMem(data);
  Application.ProcessMessages();
- F_Main.LogStatus('Loko: všechna loko pøevzata');
+ F_Main.LogStatus('Loko: vÅ¡echna loko pÅ™evzata');
  Self.AllPrevzato();
 end;//procedure
 
 procedure TTrkGUI.PrebiraniUpdateErr(Sender:TObject; Data:Pointer);
 begin
- Self.WriteLog(1, 'ERR: LOKO '+ IntToStr(Integer(data^)) + ' se nepodaøilo pøevzít');
- F_Main.LogStatus('LOKO: loko '+ IntToStr(Integer(data^)) + ' se nepodaøilo pøevzít');
+ Self.WriteLog(1, 'ERR: LOKO '+ IntToStr(Integer(data^)) + ' se nepodaÅ™ilo pÅ™evzÃ­t');
+ F_Main.LogStatus('LOKO: loko '+ IntToStr(Integer(data^)) + ' se nepodaÅ™ilo pÅ™evzÃ­t');
 
  F_Main.G_Loko_Prevzato.ForeColor := clRed;
 
@@ -1452,7 +1452,7 @@ begin
    F_Main.A_System_Stop.Enabled  := true;
   end;
 
- Application.MessageBox(PChar('LOKO '+ IntToStr(Integer(data^)) + ' se nepodaøilo pøevzít'), 'Chyba', MB_OK OR MB_ICONWARNING);
+ Application.MessageBox(PChar('LOKO '+ IntToStr(Integer(data^)) + ' se nepodaÅ™ilo pÅ™evzÃ­t'), 'Chyba', MB_OK OR MB_ICONWARNING);
  FreeMem(data);
 end;//procedure
 
@@ -1482,7 +1482,7 @@ begin
          Self.callback_err := TTrakce.GenerateCallback(nil);
          Self.callback_ok  := TTrakce.GenerateCallback(nil);
          FreeMem(data);
-         F_Main.LogStatus('Výjimka: ' + E.Message);
+         F_Main.LogStatus('VÃ½jimka: ' + E.Message);
         end;
      end;
      Exit();
@@ -1491,7 +1491,7 @@ begin
 
  // zadne dalsi loko k odhlaseni
  FreeMem(data);
- F_Main.LogStatus('Loko: všechna loko odhlášena');
+ F_Main.LogStatus('Loko: vÅ¡echna loko odhlÃ¡Å¡ena');
  Application.ProcessMessages();
  Self.AllOdhlaseno();
 end;//procedure
@@ -1499,8 +1499,8 @@ end;//procedure
 procedure TTrkGUI.OdhlasovaniUpdateErr(Sender:TObject; Data:Pointer);
 begin
  // pokud behem odhlasovani loko nastane chyba, nahlasime ji, ale loko povazujeme za odhlasene
- Self.WriteLog(1, 'WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodaøilo odhlásit');
- F_Main.LogStatus('WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodaøilo odhlásit');
+ Self.WriteLog(1, 'WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodaÅ™ilo odhlÃ¡sit');
+ F_Main.LogStatus('WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodaÅ™ilo odhlÃ¡sit');
  F_Main.G_Loko_Prevzato.ForeColor := clRed;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato := false;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false;
@@ -1731,7 +1731,7 @@ begin
  if (Assigned(Self.turnoff_callback)) then Exit();
  Self.turnoff_callback := callback;
 
- F_Main.LogStatus('Vypínám zvuky hnacích vozidel...');
+ F_Main.LogStatus('VypÃ­nÃ¡m zvuky hnacÃ­ch vozidel...');
  Application.ProcessMessages();
 
  for i := 0 to _MAX_ADDR-1 do
@@ -1811,7 +1811,7 @@ begin
   end;//for i
 
  // no further loco
- F_Main.LogStatus('Zvuky všech hnacích vozidel vypnuty');
+ F_Main.LogStatus('Zvuky vÅ¡ech hnacÃ­ch vozidel vypnuty');
  Application.ProcessMessages();
 
  FreeMem(data);
@@ -1828,15 +1828,15 @@ procedure TTrkGUI.GotCSVersion(Sender:TObject; version:TCSVersion);
 begin
  F_Main.L_CS_FW.Caption := IntToStr(version.major) + '.' + IntToStr(version.minor);
  F_Main.L_CS_ID.Caption := IntToStr(version.id);
- F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', Now);
- F_Main.LogStatus('FW v centrále: '+IntToStr(version.major) + '.' + IntToStr(version.minor) + ', id: '+IntToStr(version.id));
+ F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd. mm. yyyy hh:nn:ss', Now);
+ F_Main.LogStatus('FW v centrÃ¡le: '+IntToStr(version.major) + '.' + IntToStr(version.minor) + ', id: '+IntToStr(version.id));
 end;//procedure
 
 procedure TTrkGUI.GotLIVersion(Sender:TObject; version:TLIVersion);
 begin
  F_Main.L_CS_LI_FW.Caption := 'HW: ' + IntToStr(version.hw_major) + '.' + IntToStr(version.hw_minor) +
                               ', SW: ' + IntToStr(version.sw_major) + '.' + IntToStr(version.sw_minor);
- F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', Now);
+ F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd. mm. yyyy hh:nn:ss', Now);
  F_Main.LogStatus('FW v LI: '+F_Main.L_CS_LI_FW.Caption);
 end;//procedure
 
@@ -1876,9 +1876,9 @@ end;
 procedure TTrkGUI.POMWriteCV(Sender:TObject; HV:THV; cv:Word; data:byte);
 begin
  if (not Self.openned) then
-   raise ENotOpenned.Create('Nepøipojeno k centrále!');
+   raise ENotOpenned.Create('NepÅ™ipojeno k centrÃ¡le!');
  if (HV = nil) then
-   raise EInvalidArgument.Create('HV nezadáno!');
+   raise EInvalidArgument.Create('HV nezadÃ¡no!');
 
  Self.TrkLog(self, 2, 'PUT: POM '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+') : '+IntToStr(cv)+':'+IntToStr(data));
  Self.Trakce.POMWriteCV(HV.adresa, cv, data);
@@ -1984,7 +1984,7 @@ end;//procedure
 
 procedure TTrkGUI.GotCSVersionErr(Sender:TObject; Data:Pointer);
 begin
- F_Main.LogStatus('WARN: Centrála nepodvìdìla na požadavek o verzi centrály, pokraèuji...');
+ F_Main.LogStatus('WARN: CentrÃ¡la nepodvÄ›dÄ›la na poÅ¾adavek o verzi centrÃ¡ly, pokraÄuji...');
  Self.GotCSVersionOK(Self, data);
 end;//procedure
 
@@ -2001,7 +2001,7 @@ end;//procedure
 
 procedure TTrkGUI.GotLIVersionErr(Sender:TObject; Data:Pointer);
 begin
- F_Main.LogStatus('WARN: Centrála neodpovìdìla na požadavek o verzi LI, pokraèuji...');
+ F_Main.LogStatus('WARN: CentrÃ¡la neodpovÄ›dÄ›la na poÅ¾adavek o verzi LI, pokraÄuji...');
  Self.GotLIVersionOK(Self, data);
 end;//procedure
 
@@ -2009,7 +2009,7 @@ end;//procedure
 
 procedure TTrkGUI.GotLIAddrErr(Sender:TObject; Data:Pointer);
 begin
- F_Main.LogStatus('WARN: Centrála neodpovìdìla na požadavek o adresu LI');
+ F_Main.LogStatus('WARN: CentrÃ¡la neodpovÄ›dÄ›la na poÅ¾adavek o adresu LI');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2130,8 +2130,8 @@ end;//procedure
 procedure TTrkGUI.PrevzatoFuncErr(Sender:TObject; Data:Pointer);
 begin
  // loko prevzato, ale funkce se nepodarilo nastavit -> error callback
- Self.WriteLog(1, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaøilo nastavit funkce');
- F_Main.LogStatus('WARN: loko '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaøilo nastavit funkce');
+ Self.WriteLog(1, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaÅ™ilo nastavit funkce');
+ F_Main.LogStatus('WARN: loko '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodaÅ™ilo nastavit funkce');
  Self.PrevzatoFuncOK(Self, data);
 end;//procedure
 
@@ -2232,14 +2232,14 @@ end;
 class function TTrkGUI.LogLevelToString(ll:TTrkLogLevel):string;
 begin
  case ll of
-   TTrkLogLevel.tllNo       : Result := 'žádné zprávy';
+   TTrkLogLevel.tllNo       : Result := 'Å¾Ã¡dnÃ© zprÃ¡vy';
    TTrkLogLevel.tllErrors   : Result := 'chyby';
-   TTrkLogLevel.tllCommands : Result := 'pøíkazy';
+   TTrkLogLevel.tllCommands : Result := 'pÅ™Ã­kazy';
    TTrkLogLevel.tllData     : Result := 'data';
-   TTrkLogLevel.tllChanges  : Result := 'zmìny stavù';
-   TTrkLogLevel.tllDetail   : Result := 'podrobné informace';
+   TTrkLogLevel.tllChanges  : Result := 'zmÄ›ny stavÅ¯';
+   TTrkLogLevel.tllDetail   : Result := 'podrobnÃ© informace';
  else
-   Result := 'neznámý';
+   Result := 'neznÃ¡mÃ½';
  end;
 end;
 

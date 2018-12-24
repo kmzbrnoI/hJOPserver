@@ -1734,6 +1734,8 @@ var i,j:Integer;
         Self.fstaveni.from_stack := nil;
        end;
 
+      (Navestidlo as TBlkSCom).PropagatePOdjToTrat();
+
       writelog('Postavena JC '+Self.Nazev, WR_VC);
      end;//case 14
 
@@ -2186,6 +2188,7 @@ begin
              if (TBlkTrat(Blk).SprPredict <> nil) then
               begin
                TBlkTrat(Blk).SprPredict.time := timeHelper.hJOPnow();
+               TBlkTrat(Blk).SprPredict.predict := false;
                TBlkTrat(Blk).Change();
               end;
             end;
