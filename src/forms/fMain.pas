@@ -808,12 +808,8 @@ procedure TF_Main.WMQueryEndSession(var Msg: TWMQueryEndSession);
 begin
  if (GetFunctions.CanClose() <> ci_yes) then
   begin
-   // disallow Windows from shutting down
-//   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
-//   ShutdownBlockReasonCreate(Application.MainForm.Handle, 'hJOPserver není odpojen od systémů');
    Msg.Result := 0;
  end else begin
-//   ShutdownBlockReasonDestroy(Application.MainForm.Handle);
    Msg.Result := 1;
    CloseMessage := false;
    NUZClose     := true;
@@ -944,7 +940,8 @@ begin
  except
    on E:Exception do
     begin
-     Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog RCS : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog RCS : ' + E.Message),
+                            'Varování', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
  end;
@@ -1587,7 +1584,7 @@ begin
     err := 'neznámá chyba';
    end;
 
-   Application.MessageBox(PChar('Chyba pri otevírání komunikace s centrálou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
+   Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
 
    F_Main.A_Trk_Connect.Enabled          := true;
    F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
@@ -1655,7 +1652,8 @@ begin
     end;
  end;
 
- Application.MessageBox(PChar('AC úspěšně načteny z adresáře "' + ACDb.dirname + '".' + #13#10 + 'Více informací v logu.'), 'Hotovo', MB_OK OR MB_ICONINFORMATION);
+ Application.MessageBox(PChar('AC úspěšně načteny z adresáře "' + ACDb.dirname + '".' + #13#10 + 'Více informací v logu.'),
+                        'Hotovo', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_Main.B_BlkAddClick(Sender: TObject);
@@ -1669,7 +1667,8 @@ var pozice:Integer;
   Pozice := LV_Bloky.ItemIndex;
 
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blky.GetBlkIndexName(pozice)+'?'),'Mazání bloku', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blky.GetBlkIndexName(pozice)+'?'),
+                            'Mazání bloku', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
    begin
     try
       Blky.Delete(pozice);
@@ -1695,7 +1694,8 @@ end;
 
 procedure TF_Main.B_ClearStatsClick(Sender: TObject);
 begin
- if (Application.MessageBox('Opravdu smazat najeté bloky a kilometry všech hnacích vozidel?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+ if (Application.MessageBox('Opravdu smazat najeté bloky a kilometry všech hnacích vozidel?',
+                            'Opravdu?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
    HVDb.ClearAllStatistics();
 end;
 
@@ -1778,7 +1778,8 @@ procedure TF_Main.B_lok_deleteClick(Sender: TObject);
 begin
  if (not Assigned(Soupravy.soupravy[Self.LV_Soupravy.ItemIndex])) then Exit();
 
- if (Application.MessageBox(PChar('Opravdu smazat soupravu '+Soupravy.soupravy[Self.LV_Soupravy.ItemIndex].nazev+'?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+ if (Application.MessageBox(PChar('Opravdu smazat soupravu '+Soupravy.soupravy[Self.LV_Soupravy.ItemIndex].nazev+'?'),
+                            '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   Soupravy.RemoveSpr(Self.LV_Soupravy.ItemIndex);
 end;
 
@@ -1789,7 +1790,8 @@ end;
 
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
 begin
- if ((Self.LV_MultiJC.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat složenou jízdní cestu '+MultiJCDb[Self.LV_MultiJC.ItemIndex].Nazev), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
+ if ((Self.LV_MultiJC.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat složenou jízdní cestu '+MultiJCDb[Self.LV_MultiJC.ItemIndex].Nazev),
+                                                                   'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
    MultiJCDb.Remove(Self.LV_MultiJC.ItemIndex);
 end;
 
@@ -1798,7 +1800,8 @@ var OblR:TOR;
 begin
  if (Self.LV_Stanice.Selected = nil) then Exit();
  ORs.GetORByIndex(Self.LV_Stanice.ItemIndex, OblR);
- if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+OblR.Name+' ?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+ if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+OblR.Name+' ?'),
+                            'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    OblR.stack.ClearStack();
 end;
 
@@ -1836,7 +1839,8 @@ procedure TF_Main.SetLIAddrOk(Sender:TObject; Data:Pointer);
 begin
  Self.B_Set_LI_Addr.Enabled := true;
  Self.SE_LI_Addr.Enabled := true;
- Application.MessageBox('Adresa LI nastavena, aktuální adresa je zobrazena v políčku "Adresa LI".', 'Ok', MB_OK OR MB_ICONINFORMATION);
+ Application.MessageBox('Adresa LI nastavena, aktuální adresa je zobrazena v políčku "Adresa LI".',
+                        'Ok', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_Main.SetLIAddrErr(Sender:TObject; Data:Pointer);
@@ -1853,7 +1857,8 @@ end;
 
 procedure TF_Main.B_User_DeleteClick(Sender: TObject);
 begin
- if (Application.MessageBox(PChar('Opravdu smazat uživatele '+Self.LV_Users.Selected.SubItems.Strings[0]+' ?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+ if (Application.MessageBox(PChar('Opravdu smazat uživatele '+Self.LV_Users.Selected.SubItems.Strings[0]+' ?'),
+                            'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
    UsrDB.RemoveUser(Self.LV_Users.ItemIndex);
    Self.B_User_Delete.Enabled := false;
@@ -1869,7 +1874,8 @@ procedure TF_Main.B_VC_deleteClick(Sender: TObject);
 var jc:TJC;
 begin
  jc := JCDb.GetJCByIndex(LV_JC.ItemIndex);
- if (Application.MessageBox(PChar('Opravdu chcete smazat jízdní cestu '+jc.nazev+' ?'),'Mazání jízdní cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+ if (Application.MessageBox(PChar('Opravdu chcete smazat jízdní cestu '+jc.nazev+' ?'),
+                            'Mazání jízdní cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
   begin
    try
      if (ABlist.Contains(jc)) then
@@ -1893,7 +1899,8 @@ var pozice:integer;
 begin
  Pozice := LV_Zesilovace.ItemIndex;
  Beep;
- if Application.MessageBox(PChar('Opravdu chcete smazat zesilovac '+Boosters.sorted[Pozice].name+'?'),'Mazání zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+ if Application.MessageBox(PChar('Opravdu chcete smazat zesilovač '+Boosters.sorted[Pozice].name+'?'),
+                           'Mazání zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
   begin
    Boosters.Remove(Boosters.sorted[Pozice].id);
    LV_Zesilovace.Items.Delete(Pozice);
@@ -2565,10 +2572,14 @@ begin
   1:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
   2:begin
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_BLUE;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'ERR') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
-     if (LeftStr(Item.SubItems.Strings[1], 4) = 'WARN') then (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then
+       (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_BLUE;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then
+       (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     if (LeftStr(Item.SubItems.Strings[1], 3) = 'ERR') then
+       (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
+     if (LeftStr(Item.SubItems.Strings[1], 4) = 'WARN') then
+       (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
     end;//case 2
   3:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
  end;//case
@@ -2997,14 +3008,23 @@ begin
    LI := Self.LV_AC_Kroky.Items.Add;
    LI.Caption := IntToStr(i+1);
 
-   if  (AC.kroky[i].command = _AC_CMDTYPE_END) then LI.SubItems.Add('----- Ukončení AC -----');
-   if  (AC.kroky[i].command = _AC_CMDTYPE_JC) then LI.SubItems.Add('Vlakoáa cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
-   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 1)) then LI.SubItems.Add('Čekání na obsazení úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 0)) then LI.SubItems.Add('Čekání na uvolnění úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if  (AC.kroky[i].command = _AC_CMDTYPE_OSV) then LI.SubItems.Add('Změna osvětlení ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));
-   if  (AC.kroky[i].command = _AC_CMDTYPE_TRAT) then LI.SubItems.Add('Nastavení směru trati '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if  (AC.kroky[i].command = _AC_CMDTYPE_DELAY) then LI.SubItems.Add('Prodleva '+IntToStr(AC.kroky[i].Params[0])+' sekund');
-   if  (AC.kroky[i].command = _AC_CMDTYPE_NAV) then LI.SubItems.Add('Kontrola stavu návěstidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+'; navest:'+IntToStr(AC.kroky[i].Params[1]));
+   if (AC.kroky[i].command = _AC_CMDTYPE_END) then
+     LI.SubItems.Add('----- Ukončení AC -----');
+   if (AC.kroky[i].command = _AC_CMDTYPE_JC) then
+     LI.SubItems.Add('Vlakoáa cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
+   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 1)) then
+     LI.SubItems.Add('Čekání na obsazení úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 0)) then
+     LI.SubItems.Add('Čekání na uvolnění úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if (AC.kroky[i].command = _AC_CMDTYPE_OSV) then
+     LI.SubItems.Add('Změna osvětlení ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));
+   if (AC.kroky[i].command = _AC_CMDTYPE_TRAT) then
+     LI.SubItems.Add('Nastavení směru trati '+Blky.GetBlkName(AC.kroky[i].Params[0]));
+   if  (AC.kroky[i].command = _AC_CMDTYPE_DELAY) then
+     LI.SubItems.Add('Prodleva '+IntToStr(AC.kroky[i].Params[0])+' sekund');
+   if  (AC.kroky[i].command = _AC_CMDTYPE_NAV) then
+     LI.SubItems.Add('Kontrola stavu návěstidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+
+                     '; navest:'+IntToStr(AC.kroky[i].Params[1]));
   end;//for i
 end;//procedure
 
