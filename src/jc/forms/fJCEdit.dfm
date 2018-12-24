@@ -96,7 +96,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Rychlost v ceste (dal'#353#237' N = Stuj) :'
+    Caption = 'Rychlost v cest'#283' (dal'#353#237' N = Stuj) :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -113,7 +113,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Rychlost v ceste (dal'#353#237' N = Volno) :'
+    Caption = 'Rychlost v cest'#283' (dal'#353#237' N = Volno) :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11

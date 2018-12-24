@@ -23,7 +23,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Z'#225'ver :'
+    Caption = 'Z'#225'v'#283'r :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11

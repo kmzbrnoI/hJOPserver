@@ -55,7 +55,7 @@ object F_BlkTrat: TF_BlkTrat
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' '#218'vazka bl'#237#382'e po'#269#237'tku trati  '
+    Caption = ' '#218'vazka bl'#237#382'e po'#269#225'tku trati  '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11

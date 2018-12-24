@@ -48,14 +48,14 @@ object F_Tester: TF_Tester
   object L_1: TLabel
     Left = 48
     Top = 8
-    Width = 64
+    Width = 63
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Alignment = taCenter
-    Caption = 'RCS Adresa :'
+    Caption = 'RCS adresa :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11

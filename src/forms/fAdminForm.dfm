@@ -46,7 +46,7 @@ object F_Admin: TF_Admin
   end
   object CHB_SimInput: TCheckBox
     Left = 8
-    Top = 40
+    Top = 39
     Width = 65
     Height = 17
     Margins.Left = 2
@@ -145,7 +145,7 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Simulace stav'#283'n'#237' v'#253'hybek'
+    Caption = 'Simulovat stav'#283'n'#237' v'#253'hybek'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -11

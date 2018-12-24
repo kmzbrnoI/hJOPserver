@@ -62,7 +62,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Vlastn'#237' z'#225'ver :'
+    Caption = 'Vlastn'#237' z'#225'v'#283'r :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -258,7 +258,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Top = 155
     Width = 107
     Height = 25
-    Caption = 'Zrusit refukci menu'
+    Caption = 'Zrusit redukci menu'
     TabOrder = 9
     OnClick = B_CancelRedukceClick
   end

@@ -5203,7 +5203,7 @@ object F_Main: TF_Main
             Width = 40
           end
           item
-            Caption = 'Id'
+            Caption = 'U'#382'ivatelsk'#233' jm'#233'no'
             Width = 150
           end
           item

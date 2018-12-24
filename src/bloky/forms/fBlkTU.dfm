@@ -97,7 +97,7 @@ object F_BlkTU: TF_BlkTU
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Zesilovac:'
+    Caption = 'Zesilova'#269':'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11

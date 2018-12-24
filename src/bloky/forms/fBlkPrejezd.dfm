@@ -21,13 +21,13 @@ object F_BlkPrejezd: TF_BlkPrejezd
   object L_P02: TLabel
     Left = 8
     Top = 8
-    Width = 80
+    Width = 81
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev prejezdu :'
+    Caption = 'N'#225'zev p'#345'ejezdu :'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
