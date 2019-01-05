@@ -115,6 +115,7 @@ type
 
    _NAV_DEFAULT_DELAY = 2;
    _NAV_CHANGE_DELAY_MSEC = 1000;
+   _NAV_CHANGE_SHORT_DELAY_MSEC = 200;
 
   private
    SComSettings:TBlkSComSettings;
@@ -722,7 +723,11 @@ begin
  Self.SComStav.changeCallbackErr := changeCallbackErr;
  Self.SComStav.Navest := _NAV_CHANGING;
  Self.SComStav.cilova_navest := navest;
- Self.SComStav.changeEnd := Now + EncodeTime(0, 0, _NAV_CHANGE_DELAY_MSEC div 1000, _NAV_CHANGE_DELAY_MSEC mod 1000);
+
+ if (Self.SComSettings.RCSAddrs.Count > 0) then
+   Self.SComStav.changeEnd := Now + EncodeTime(0, 0, _NAV_CHANGE_DELAY_MSEC div 1000, _NAV_CHANGE_DELAY_MSEC mod 1000)
+ else
+   Self.SComStav.changeEnd := Now + EncodeTime(0, 0, _NAV_CHANGE_SHORT_DELAY_MSEC div 1000, _NAV_CHANGE_SHORT_DELAY_MSEC mod 1000);
 
  if (not TBlkSCom.IsPovolovaciNavest(Self.SComStav.cilova_navest)) then // zastavujeme ihned
    Self.UpdateRychlostSpr(true);
