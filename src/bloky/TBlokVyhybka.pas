@@ -17,7 +17,7 @@ type
   RCSAddrs:TRCSAddrs;     // poradi(0..3): vst+,vst-,vyst+,vyst-
   spojka:Integer;         // reference na id vyhybky ve spojce
                           // pokud jsou obe vyhybky ve spojce, maji reference na sebe navzajem
-                          // zmena MTB vstupu a vystupu v nastaveni jedne vyhybky ovlivnuje druhou
+                          // zmena RCS vstupu a vystupu v nastaveni jedne vyhybky ovlivnuje druhou
                           // POZOR: jedna data ulozena na dvou mistech, pri nacitani se nekontroluje koherence; SOUBOR MUSI BYT KOHERENTNI (tj. obe vyhybky musi mit navaznosti vzdy na tu druhou)
   zamek:Integer;          // pokud ma vyhybka navaznost na zamek, je zde id bloku zamku; jinak -1
   zamekPoloha:TVyhPoloha; // poloha, v jake se vyhybka musi nachazet pro uzamceni zamku
@@ -26,10 +26,10 @@ type
  end;
 
  TBlkVyhStav = record
-  poloha,polohaOld,poloha_real:TVyhPoloha;    // poloha_real je skutecna poloha, kterou aktualne zobrazuji MTB vstupy
+  poloha,polohaOld,poloha_real:TVyhPoloha;    // poloha_real je skutecna poloha, kterou aktualne zobrazuji RCS vstupy
   stit,vyl:string;                            // stitek a vyluka vyhybky
   staveni_minus,staveni_plus:Boolean;         // stavi se zrovna vyhybka do polohy plus, ci minus?
-  locked: boolean;                            // skutecny zamek na vystupu - jestli je MTB vystup zamknut
+  locked: boolean;                            // skutecny zamek na vystupu - jestli je RCS vystup zamknut
   redukce_menu:Integer;                       // redukovane menu = zamcena vyhybka; 0 = neredukovano, jinak pocet bloku, kolik redukuje
   redukuji_spojku:boolean;                    // jestli redukuji vyhybku ve spojce
   vyhZaver:Cardinal;                          // pocet bloku, ktere na vyhybku udelily nouzovy zaver
@@ -1206,10 +1206,10 @@ procedure TBlkVyhybka.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[0], json['mtb'].O['vstup+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[1], json['mtb'].O['vstup-']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[2], json['mtb'].O['vystup+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[3], json['mtb'].O['vystup-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[0], json['rcs'].O['vstup+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[1], json['rcs'].O['vstup-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[2], json['rcs'].O['vystup+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[3], json['rcs'].O['vystup-']);
 
  json['usek'] := Self.VyhRel.UsekID;
 

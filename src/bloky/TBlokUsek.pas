@@ -17,7 +17,7 @@ type
  EDuplicitSprs = class(Exception);
  ERunningSpr   = class(Exception);
 
- //technologicka nastaveni useku (delka, MTB, ...)
+ //technologicka nastaveni useku (delka, RCS moduly, ...)
  TBlkUsekSettings = record
   RCSAddrs:TRCSAddrs;
   Lenght:double;          //delka useku v metrech
@@ -535,7 +535,7 @@ begin
     isOn  : Self.UsekStav.sekce[i] := TUsekStav.obsazeno;
     isOff : Self.UsekStav.sekce[i] := TUsekStav.uvolneno;
     failure, notYetScanned, unavailable:begin
-      // vypadek MTB, ci nespravny argument -> disable blok
+      // vypadek RCS modulu, ci nespravny argument -> disable blok
       if (Self.UsekStav.Stav <> disabled) then
        begin
         Self.UsekStav.Stav    := disabled;
@@ -1082,7 +1082,7 @@ begin
    for rcsaddr in Self.UsekSettings.RCSAddrs do
      RCSi.SetInput(rcsaddr.board, rcsaddr.port, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;//procedure
 
@@ -1093,7 +1093,7 @@ begin
    for rcsaddr in Self.UsekSettings.RCSAddrs do
      RCSi.SetInput(rcsaddr.board, rcsaddr.port, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;//procedure
 
@@ -1482,7 +1482,7 @@ procedure TBlkUsek.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.RCSstoJSON(Self.UsekSettings.RCSAddrs, json.A['mtb']);
+ TBlk.RCSstoJSON(Self.UsekSettings.RCSAddrs, json.A['rcs']);
 
  json['delka'] := Self.UsekSettings.Lenght;
  if (Self.UsekSettings.SmcUsek) then json['smyckaUsek'] := Self.UsekSettings.SmcUsek;
