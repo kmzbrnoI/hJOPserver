@@ -186,7 +186,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 0
+      TabOrder = 1
       object L_P04: TLabel
         Left = 17
         Top = 28
@@ -201,13 +201,13 @@ object F_BlkPrejezd: TF_BlkPrejezd
       object L_P05: TLabel
         Left = 17
         Top = 63
-        Width = 71
+        Width = 72
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Zavr'#237't prejezd :'
+        Caption = 'Zav'#345#237't prejezd :'
       end
       object SE_vyst_open: TSpinEdit
         Left = 128
@@ -266,7 +266,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 1
+      TabOrder = 2
       object L_P07: TLabel
         Left = 16
         Top = 32
@@ -285,7 +285,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         ParentFont = False
       end
       object L_P08: TLabel
-        Left = 17
+        Left = 16
         Top = 72
         Width = 51
         Height = 13
@@ -302,7 +302,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         ParentFont = False
       end
       object L_P09: TLabel
-        Left = 17
+        Left = 16
         Top = 112
         Width = 47
         Height = 13
@@ -313,7 +313,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Caption = 'V'#253'straha :'
       end
       object L_P10: TLabel
-        Left = 17
+        Left = 16
         Top = 152
         Width = 45
         Height = 13
@@ -421,7 +421,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       MaxValue = 191
       MinValue = 1
       ParentFont = False
-      TabOrder = 2
+      TabOrder = 0
       Value = 1
     end
   end
