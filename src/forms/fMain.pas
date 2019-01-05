@@ -85,7 +85,7 @@ type
     N2: TMenuItem;
     PM_SaveFormPos: TMenuItem;
     IL_Bloky: TImageList;
-    IL_MTB: TImageList;
+    IL_RCS: TImageList;
     N7: TMenuItem;
     PM_Console: TMenuItem;
     AL_Main: TActionList;
@@ -401,7 +401,7 @@ type
     procedure CB_centrala_loglevel_tableChange(Sender: TObject);
     procedure A_PT_StartExecute(Sender: TObject);
     procedure A_PT_StopExecute(Sender: TObject);
-    procedure LV_Stav_MTBCustomDrawItem(Sender: TCustomListView;
+    procedure LV_Stav_RCSCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure MI_HoukClick(Sender: TObject);
     procedure B_AC_ReloadClick(Sender: TObject);
@@ -1016,11 +1016,11 @@ begin
    on E:ERCSAlreadyStarted do
      Self.OnRCSErrStart(Self, 'Komunikace již probíhá!');
    on E:ERCSFirmwareTooLow do
-     Self.OnRCSErrStart(Self, 'Firmware MTB-USB modulu je starší než v0.2.20, nelze se připojit k takto starému FW!');
+     Self.OnRCSErrStart(Self, 'Firmware RCS-USB modulu je starý, nelze se připojit k takto starému FW!');
    on E:ERCSNoModules do
      Self.OnRCSErrStart(Self, 'Na sběrnici nebyl nalezen žádný RCS modul, nelze spustit komunikaci!');
    on E:ERCSNotOpened do
-     Self.OnRCSErrStart(Self, 'Nepřipojeno k MTB-USB, připojte se nejdříve k MTB-USB!');
+     Self.OnRCSErrStart(Self, 'Nepřipojeno k RCS-USB, připojte se nejdříve k RCS-USB!');
    on E:ERCSScanningNotFinished do
      Self.OnRCSErrStart(Self, 'Neproběhl sken modulů, vyčkejte na dokončení skenu modulů!');
    on E:Exception do
@@ -1272,7 +1272,7 @@ begin
  Self.LogStatus('RCS: otevřeno');
  SB1.Panels.Items[_SB_RCS].Text := 'RCS otevřeno';
 
- F_Tester.AfterMTBOpen();
+ F_Tester.AfterRCSOpen();
 
  RCSTableData.UpdateTable();
 
@@ -2644,13 +2644,13 @@ begin
   end;
 end;
 
-procedure TF_Main.LV_Stav_MTBCustomDrawItem(Sender: TCustomListView;
+procedure TF_Main.LV_Stav_RCSCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
  if ((Item.SubItems.Count > 5) and (Item.SubItems.Strings[5] = 'Fail')) then
-   Self.LV_Stav_RCS.Canvas.Brush.Color := $AAAAFF
+   Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_RED
  else
-   Self.LV_Stav_RCS.Canvas.Brush.Color := $FFFFFF;
+   Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
 end;
 
 procedure TF_Main.LV_UsersChange(Sender: TObject; Item: TListItem;

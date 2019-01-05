@@ -75,7 +75,7 @@ object F_Tester: TF_Tester
     Caption = ' Vstupy '
     TabOrder = 0
   end
-  object CB_MtbAdr: TComboBox
+  object CB_RCSAdr: TComboBox
     Left = 8
     Top = 24
     Width = 153
@@ -87,7 +87,7 @@ object F_Tester: TF_Tester
     Style = csDropDownList
     ItemHeight = 13
     TabOrder = 1
-    OnChange = CB_MtbAdrChange
+    OnChange = CB_RCSAdrChange
   end
   object CHB_LogZmeny: TCheckBox
     Left = 7

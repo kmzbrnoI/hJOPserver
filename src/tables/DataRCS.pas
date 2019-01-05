@@ -1,6 +1,6 @@
 unit DataRCS;
 
-// TMTBTableData - trida starajici se o vyplnovani tabulky MTB
+// TRCSTableData - trida starajici se o vyplnovani tabulky RCS
 
 interface
 
@@ -18,7 +18,7 @@ type
       procedure UpdateTable();
 
       constructor Create(LV:TListView);
-  end;//TMTBData
+  end;
 
 var
    RCSTableData:TRCSTableData;

@@ -12,7 +12,7 @@ type
     T_tester: TTimer;
     GB_vstupy: TGroupBox;
     L_1: TLabel;
-    CB_MtbAdr: TComboBox;
+    CB_RCSAdr: TComboBox;
     CHB_LogZmeny: TCheckBox;
     GB_Change: TGroupBox;
     LB_Changes: TListBox;
@@ -20,9 +20,8 @@ type
     GB_vystupy: TGroupBox;
     procedure T_testerTimer(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure SE_OutMtbChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure CB_MtbAdrChange(Sender: TObject);
+    procedure CB_RCSAdrChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_ClearClick(Sender: TObject);
   private const
@@ -34,8 +33,8 @@ type
     _L_LEFT   = 40;
 
   private
-   MTBAddr:Smallint;
-   CB_MTBAdrData:TArI;
+   RCSAddr:Smallint;
+   CB_RCSAdrData:TArI;
    SInput:array [0..15] of TShape;
    SOutput:array [0..15] of TShape;   
 
@@ -49,7 +48,7 @@ type
    procedure UpdateOut;
    procedure UpdateIn;
 
-   procedure AfterMTBOpen();
+   procedure AfterRCSOpen();
 
   end;
 
@@ -85,7 +84,7 @@ procedure TF_Tester.UpdateOut;
 var i, val:Integer;
     outCnt:Cardinal;
  begin
-  if ((not RCSi.NoExStarted()) or (MTBAddr < 0) or (RCSi.IsModuleFailure(MTBAddr))) then
+  if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
    begin
     for i := 0 to 15 do
      begin
@@ -96,7 +95,7 @@ var i, val:Integer;
    end;
 
   try
-    outCnt := RCSi.GetModuleOutputsCount(MTBAddr);
+    outCnt := RCSi.GetModuleOutputsCount(RCSAddr);
   except
     outCnt := 16;
   end;
@@ -109,7 +108,7 @@ var i, val:Integer;
     if (i < Integer(outCnt)) then
      begin
       try
-        val := RCSi.GetOutput(MTBAddr, i);
+        val := RCSi.GetOutput(RCSAddr, i);
       except
         val := -1;
       end;
@@ -117,7 +116,7 @@ var i, val:Integer;
       if (val < 0) then
         SOutput[i].Brush.Color := clGray
       else begin
-        if (RCSi.GetOutputType(MtbAddr, i) = TRCSOPortType.optSCom) then
+        if (RCSi.GetOutputType(RCSAddr, i) = TRCSOPortType.optSCom) then
          begin
           if (val = 0) then
             SOutput[i].Brush.Color := clBlue
@@ -134,11 +133,6 @@ var i, val:Integer;
    end;//for i
  end;//procedure
 
-procedure TF_Tester.SE_OutMtbChange(Sender: TObject);
- begin
-  UpdateOut;
- end;//procedure
-
 procedure TF_Tester.UpdateIn;
 var i:Integer;
     InputState:TRCSInputState;
@@ -146,7 +140,7 @@ var i:Integer;
     stateStr:string;
     inCnt:Cardinal;
  begin
-  if ((not RCSi.NoExStarted()) or (MTBAddr < 0) or (RCSi.IsModuleFailure(MTBAddr))) then
+  if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
    begin
     for i := 0 to 15 do
      begin
@@ -157,7 +151,7 @@ var i:Integer;
    end;
 
   try
-    inCnt := RCSi.GetModuleInputsCount(MTBAddr);
+    inCnt := RCSi.GetModuleInputsCount(RCSAddr);
   except
     inCnt := 16;
   end;
@@ -170,7 +164,7 @@ var i:Integer;
     if (i < Integer(inCnt)) then
      begin
       try
-        InputState := RCSi.GetInput(MTBAddr, i);
+        InputState := RCSi.GetInput(RCSAddr, i);
       except
         InputState := failure;
       end;
@@ -195,7 +189,7 @@ var i:Integer;
            notYetScanned : stateStr := '?';
           end;
 
-          F_Tester.LB_Changes.Items.Add('Zmena:: MTB:'+Format('%3d' ,[MTBAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
+          F_Tester.LB_Changes.Items.Add('Zmena:: RCS:'+Format('%3d' ,[RCSAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
           Beep;
          end;//if (InputState <> LastState)
        end;//if F_Tester.CHB_LogZmeny.Checked
@@ -214,13 +208,13 @@ var i:Integer;
 
 procedure TF_Tester.FormCreate(Sender: TObject);
  begin
-  SetLength(Self.CB_MTBAdrData, TRCS._MAX_RCS);  // pole indexu vytvorime tak, aby bylo co nejvetsi
-  Self.MTBAddr := -1;
+  SetLength(Self.CB_RCSAdrData, TRCS._MAX_RCS);  // pole indexu vytvorime tak, aby bylo co nejvetsi
+  Self.RCSAddr := -1;
   Self.CreateSInput;
   Self.CreateSOutput;
  end;//procedure
 
-procedure TF_Tester.CB_MtbAdrChange(Sender: TObject);
+procedure TF_Tester.CB_RCSAdrChange(Sender: TObject);
 var i:Integer;
  begin
   for i := 0 to 15 do
@@ -229,11 +223,11 @@ var i:Integer;
     SOutput[i].Brush.Color := clGray;
    end;//for i
 
-  if ((CB_MtbAdr.ItemIndex > -1) and (CB_MtbAdr.ItemIndex < Length(CB_MTBAdrData))) then
+  if ((CB_RCSAdr.ItemIndex > -1) and (CB_RCSAdr.ItemIndex < Length(CB_RCSAdrData))) then
    begin
-    MTBAddr := CB_MtbAdrData[CB_MtbAdr.ItemIndex];
+    RCSAddr := CB_RCSAdrData[CB_RCSAdr.ItemIndex];
     try
-      Self.T_tester.Enabled := RCSi.IsModule(MTBAddr);
+      Self.T_tester.Enabled := RCSi.IsModule(RCSAddr);
     except
      Self.T_tester.Enabled := false;
     end;
@@ -313,17 +307,17 @@ procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
  begin
   try
-    if (MTBAddr < 0) then Exit;
+    if (RCSAddr < 0) then Exit;
 
     try
       if ((Sender as TShape).Brush.Color = clRed) then begin
-        RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
+        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 1);
         (Sender as TShape).Brush.Color := clLime;
       end else if ((Sender as TShape).Brush.Color = clBlue) then begin
-        RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, TBlkSCom._NAV_VSE);
+        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, TBlkSCom._NAV_VSE);
         (Sender as TShape).Brush.Color := clWhite;
       end else begin
-        RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
+        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 0);
         (Sender as TShape).Brush.Color := clRed;
       end;
     except
@@ -342,10 +336,10 @@ procedure TF_Tester.B_ClearClick(Sender: TObject);
   F_Tester.LB_Changes.Clear;
  end;//procedure
 
-procedure TF_Tester.AfterMTBOpen();
+procedure TF_Tester.AfterRCSOpen();
 var i:Integer;
 begin
- Self.CB_MtbAdr.Clear();
+ Self.CB_RCSAdr.Clear();
 
  for i := 0 to TRCS._MAX_RCS-1 do
   begin
@@ -355,17 +349,17 @@ begin
      continue;
    end;
 
-   Self.CB_MTBAdrData[Self.CB_MtbAdr.Items.Count] := i;
+   Self.CB_RCSAdrData[Self.CB_RCSAdr.Items.Count] := i;
 
    try
-     Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : ' + RCSi.GetModuleName(i));
+     Self.CB_RCSAdr.Items.Add(IntToStr(i) + ' : ' + RCSi.GetModuleName(i));
    except
-     Self.CB_MtbAdr.Items.Add(IntToStr(i) + ' : -');
+     Self.CB_RCSAdr.Items.Add(IntToStr(i) + ' : -');
    end;
   end;//for i
 
- Self.CB_MtbAdr.ItemIndex := -1;
- Self.CB_MtbAdrChange(self);
+ Self.CB_RCSAdr.ItemIndex := -1;
+ Self.CB_RCSAdrChange(self);
 end;//procedure
 
 end.//unit

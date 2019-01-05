@@ -729,7 +729,7 @@ begin
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board,Self.VyhSettings.RCSAddrs.data[3].port, 0);
    except
      for i := 0 to Self.OblsRizeni.Cnt-1 do
-       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka MTB SetOutput', 'TECHNOLOGIE');
+       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
    end;
 
@@ -746,7 +746,7 @@ begin
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board, Self.VyhSettings.RCSAddrs.data[3].port, 1);
    except
      for i := 0 to Self.OblsRizeni.Cnt-1 do
-       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka MTB SetOutput', 'TECHNOLOGIE');
+       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
    end;
 

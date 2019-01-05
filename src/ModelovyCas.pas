@@ -28,8 +28,8 @@ uses Classes, SysUtils, IniFiles, IDContext, Graphics;
 
 type
 
-  TModCasMTB=record                                   //data o pinech modeloveho casu
-   MtbAdr:Integer;                                     //Mtb adresa na vysupy hodin
+  TModCasRCS=record                                   //data o pinech modeloveho casu
+   RCSAdr:Integer;                                     //RCS adresa na vysupy hodin
 
    PORT_H:SmallInt;                                    //port na kazdou hodinu, -1 pokud nevyuzito
    PORT_M:SmallInt;                                    //port na kazdou minutu, -1 pokud nevyuzito
@@ -64,7 +64,7 @@ type
     function GetTime():TTime;
 
    public
-    MTBdata:TModCasMTB;
+    RCSdata:TModCasRCS;
 
      constructor Create();
 
@@ -108,9 +108,11 @@ end;
 
 procedure TModCas.LoadData(var ini:TMemIniFile);
 begin
- with (Self.MTBdata) do
+ with (Self.RCSdata) do
   begin
-   MtbAdr := ini.ReadInteger(_INI_SECTION, 'MtbAdr', -1);
+   RCSAdr := ini.ReadInteger(_INI_SECTION, 'RCSAdr', -1);
+   if (RCSAdr = -1) then // backward compatibility
+     RCSAdr := ini.ReadInteger(_INI_SECTION, 'MtbAdr', -1);
    PORT_H := ini.ReadInteger(_INI_SECTION, 'PORT_Hodiny', -1);
    PORT_M := ini.ReadInteger(_INI_SECTION, 'PORT_Minuty', -1);
    PORT_S := ini.ReadInteger(_INI_SECTION, 'PORT_Sekundy', -1);
@@ -123,9 +125,9 @@ end;//procedure
 
 procedure TModCas.SaveData(var ini:TMemIniFile);
 begin
- with (Self.MTBdata) do
+ with (Self.RCSdata) do
   begin
-   ini.WriteInteger(_INI_SECTION, 'MtbAdr', MtbAdr);
+   ini.WriteInteger(_INI_SECTION, 'RCSAdr', RCSAdr);
    ini.WriteInteger(_INI_SECTION, 'PORT_Hodiny', PORT_H);
    ini.WriteInteger(_INI_SECTION, 'PORT_Minuty', PORT_M);
    ini.WriteInteger(_INI_SECTION, 'PORT_Sekundy', PORT_S);

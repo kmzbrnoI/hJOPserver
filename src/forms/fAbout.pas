@@ -20,10 +20,10 @@ type
     Label2: TLabel;
     Label3: TLabel;
     L_VApp: TLabel;
-    L_VMTBLib: TLabel;
-    L_VMTBUSB: TLabel;
+    L_VRCSLib: TLabel;
+    L_VRCSUSB: TLabel;
     Label6: TLabel;
-    L_VMTBDriver: TLabel;
+    L_VRCSDriver: TLabel;
     I_AppIcon: TImage;
     procedure FormShow(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
@@ -54,28 +54,28 @@ procedure TF_About.FormShow(Sender: TObject);
 
   Self.L_VApp.Caption       := NactiVerzi(Application.ExeName)+' ('+GetLastBuildDate+' '+GetLastBuildTime+')';
 
-  Self.L_VMTBLib.Caption    := RCSi.Lib;
+  Self.L_VRCSLib.Caption    := RCSi.Lib;
 
   try
-    Self.L_VMTBDriver.Caption := RCSi.GetDllVersion();
+    Self.L_VRCSDriver.Caption := RCSi.GetDllVersion();
   except
     on E:Exception do
      begin
-      Self.L_VMTBDriver.Caption := 'nelze získat';
-      AppEvents.LogException(e, 'MTB.GetDllVersion');
+      Self.L_VRCSDriver.Caption := 'nelze získat';
+      AppEvents.LogException(e, 'RCS.GetDllVersion');
      end;
   end;
 
   try
     if (RCSi.Opened) then
-      Self.L_VMTBUSB.Caption := RCSi.GetDeviceVersion()
+      Self.L_VRCSUSB.Caption := RCSi.GetDeviceVersion()
     else
-      Self.L_VMTBUSB.Caption := 'zaøízení uzavøeno';
+      Self.L_VRCSUSB.Caption := 'zaøízení uzavøeno';
   except
     on E:Exception do
      begin
-      Self.L_VMTBUSB.Caption := 'nelze získat';
-      AppEvents.LogException(e, 'MTB.GetDeviceVersion');
+      Self.L_VRCSUSB.Caption := 'nelze získat';
+      AppEvents.LogException(e, 'RCS.GetDeviceVersion');
      end;
   end;
  end;//procedure

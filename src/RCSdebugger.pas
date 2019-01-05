@@ -91,27 +91,27 @@ implementation
   Popis TCP protokolu RCS debuggeru:
 
   @ server -> klient
-    -;MTBd;AUTH;[ok,not];message                                                odpoved na autorizaci klienta
-    -;MTBd;MOD-AUTH;addr;[ok,not]                                               odpoved na autorizaci MTB modulu
-    -;MTBd;MODULE;addr;CHANGE;I;stav_vstupu                                     zmena stavu vstupu MTB modulu \addr
-    -;MTBd;MODULE;addr;CHANGE;O;stav_vystupu                                    zmena stavu vystupu MTB modulu \addr
-    -;MTBd;ERR;error_message                                                    chybova zprava
-    -;MTBd;INFO;board1, board2, ...                                             INFO o modulu (modulech)
+    -;RCSd;AUTH;[ok,not];message                                                odpoved na autorizaci klienta
+    -;RCSd;MOD-AUTH;addr;[ok,not]                                               odpoved na autorizaci RCS modulu
+    -;RCSd;MODULE;addr;CHANGE;I;stav_vstupu                                     zmena stavu vstupu RCS modulu \addr
+    -;RCSd;MODULE;addr;CHANGE;O;stav_vystupu                                    zmena stavu vystupu RCS modulu \addr
+    -;RCSd;ERR;error_message                                                    chybova zprava
+    -;RCSd;INFO;board1, board2, ...                                             INFO o modulu (modulech)
 
   @ klient -> server
-    -;MTBd;AUTH;username;hashed_password                                        zadost o povoleni MTB debugger, je nutne se prihlasit rootem
-    -;MTBd;PLEASE;addr                                                          zadost o MTB modul \addr
-    -;MTBd;RELEASE;addr                                                         uvolneni MTB modulu \addr
-    -;MTBd;SETOUT;addr;port;stav                                                nastaveni vystupu \port MTB modulu \addr na stav \stav
-    -;MTBd;UPDATE;addr;                                                         pozadavek na zaslani aktualniho stavu vsech portu MTB \addr
-    -;MTBd;LIST;                                                                zadost o info vsech existujicich MTB
-    -;MTBd;INFO;addr                                                            zadost o info konkretniho MTB
+    -;RCSd;AUTH;username;hashed_password                                        zadost o povoleni RCS debugger, je nutne se prihlasit rootem
+    -;RCSd;PLEASE;addr                                                          zadost o RCS modul \addr
+    -;RCSd;RELEASE;addr                                                         uvolneni RCS modulu \addr
+    -;RCSd;SETOUT;addr;port;stav                                                nastaveni vystupu \port RCS modulu \addr na stav \stav
+    -;RCSd;UPDATE;addr;                                                         pozadavek na zaslani aktualniho stavu vsech portu RCS \addr
+    -;RCSd;LIST;                                                                zadost o info vsech existujicich RCS
+    -;RCSd;INFO;addr                                                            zadost o info konkretniho RCS
 
   # stav_vstupu, stav_vystupu: az 15 cisel oddelenych "|"
-    napr. 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0 je MTB se vsemi vystupy v logicke nule
+    napr. 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0 je RCS se vsemi vystupy v logicke nule
     0    = vystup v logicke 0
     1    = vystup v logicke 1
-    -2   = MTB neexistuje / vypadek MTB
+    -2   = RCS neexistuje / vypadek RCS
     0..n = kod SCom navesti
 }
 
@@ -180,34 +180,34 @@ begin
  // kontrola existence uzivatele
  if (not Assigned(user)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;MTBd;AUTH;not;Neexistující uživatel');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Neexistující uživatel');
    Exit();
   end;
 
  // kontrola BANu uzivatele
  if (user.ban) then
   begin
-   ORTCPServer.SendLn(Sender, '-;MTBd;AUTH;not;Uživatel '+user.id+' má BAN !');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel '+user.id+' má BAN !');
    Exit();
   end;
 
  // kontrola hesla uzivatele
  if (not TUser.ComparePasswd(parsed[4], user.password, user.salt)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;MTBd;AUTH;not;Neplatné heslo');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Neplatné heslo');
    Exit();
   end;
 
  // kontrola opravneni root
  if (not user.root) then
   begin
-   ORTCPServer.SendLn(Sender, '-;MTBd;AUTH;not;Uživatel nemá oprávnìní root');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel nemá oprávnìní root');
    Exit();
   end;
 
  client := TRCSdClient.Create(Sender);
  Self.clients.Add(client);
- ORTCPServer.SendLn(Sender, '-;MTBd;AUTH;ok;Autorizováno');
+ ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;ok;Autorizováno');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,12 +260,12 @@ begin
    except
      on E:Exception do
       begin
-       ORTCPServer.SendLn(Self.conn, '-;MTBd;ERR;{' + E.Message+'}');
+       ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
        Exit();
       end;
    end;
   end;
- ORTCPServer.SendLn(Self.conn, '-;MTBd;MODULE;'+IntToStr(addr)+';CHANGE;O;{'+str+'}');
+ ORTCPServer.SendLn(Self.conn, '-;RCSd;MODULE;'+IntToStr(addr)+';CHANGE;O;{'+str+'}');
 end;
 
 procedure TRCSdClient.SendInput(addr:Integer);
@@ -288,12 +288,12 @@ begin
    except
      on E:Exception do
       begin
-       ORTCPServer.SendLn(Self.conn, '-;MTBd;ERR;{' + E.Message+'}');
+       ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
        Exit();
       end;
    end;
   end;
- ORTCPServer.SendLn(Self.conn, '-;MTBd;MODULE;'+IntToStr(addr)+';CHANGE;I;{'+str+'}');
+ ORTCPServer.SendLn(Self.conn, '-;RCSd;MODULE;'+IntToStr(addr)+';CHANGE;I;{'+str+'}');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -369,7 +369,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;MOD-AUTH;'+parsed[2]+';not;Neplatná adresa modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+parsed[2]+';not;Neplatná adresa modulu');
     Exit();
   end;
 
@@ -382,7 +382,7 @@ begin
     Self.modules.Add(module);
     RCSi.AddInputChangeEvent(addr, Self.OnRCSInputChange);
     RCSi.AddOutputChangeEvent(addr, Self.OnRCSOutputChange);
-    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;MOD-AUTH;'+IntToStr(addr)+';ok');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';ok');
     Self.SendInput(addr);
     Self.SendOutput(addr);
    end;
@@ -391,7 +391,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;ERR;Neplatná adresa MTB modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -401,14 +401,14 @@ begin
     RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange, addr);
     RCSi.RemoveOutputChangeEvent(Self.OnRCSOutputChange, addr);
     Self.modules.Delete(index);
-    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;MOD-AUTH;'+IntToStr(addr)+';not');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';not');
    end;
 
  end else if (parsed[2] = 'SETOUT') then begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;ERR;Neplatná adresa MTB modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -418,7 +418,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;ERR;Neplatná adresa MTB modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -428,18 +428,18 @@ begin
     Self.SendInput(addr);
     Self.SendOutput(addr);
    end else begin
-    ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;ERR;Modul není autorizován');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Modul není autorizován');
    end;
 
  end else if (parsed[2] = 'INFO') then begin
-   ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
+   ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
 
  end else if (parsed[2] = 'LIST') then begin
    str := '';
    for i := 0 to TRCS._MAX_RCS-1 do
      if ((RCSi.IsModule(i)) or (RCSi.GetNeeded(i))) then
         str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
-   ORTCPServer.SendInfoMsg(Self.conn, '-;MTBd;INFO;{'+str+'}');
+   ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;INFO;{'+str+'}');
  end;
 end;
 

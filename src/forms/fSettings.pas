@@ -98,8 +98,8 @@ type
     CHB_SS_In_Reset: TCheckBox;
     SE_SS_In_Reset: TSpinEdit;
     CHB_SS_Enable: TCheckBox;
-    SE_SS_MtbAdr: TSpinEdit;
-    SE_ModCas_MtbAdr: TSpinEdit;
+    SE_SS_RCSAdr: TSpinEdit;
+    SE_ModCas_RCSAdr: TSpinEdit;
     TS_Centrala: TTabSheet;
     GB_Centrala: TGroupBox;
     B_Save: TButton;
@@ -263,13 +263,13 @@ procedure TF_Options.StartLogWrite;
 
 procedure TF_Options.FormResize(Sender: TObject);
 begin
- SE_SS_MtbAdr.Left    := (PC_1.Width div 2) - (SE_SS_MtbAdr.Width div 2);
- CB_SS_AutRezimy.Left := SE_SS_MtbAdr.Left;
+ SE_SS_RCSAdr.Left    := (PC_1.Width div 2) - (SE_SS_RCSAdr.Width div 2);
+ CB_SS_AutRezimy.Left := SE_SS_RCSAdr.Left;
  GB_SS_Vstupy.Left    := (PC_1.Width div 2) - (GB_SS_Vstupy.Width)-5;
  GB_SS_Vystupy.Left   := (PC_1.Width div 2) + 5;
  CHB_SS_Enable.Left   := (PC_1.Width div 2) - (CHB_SS_Enable.Width div 2);
- L_SS_01.Left         := SE_SS_MtbAdr.Left;
- L_SS_02.Left         := SE_SS_MtbAdr.Left;
+ L_SS_01.Left         := SE_SS_RCSAdr.Left;
+ L_SS_02.Left         := SE_SS_RCSAdr.Left;
  GB_Centrala.Left     := (PC_1.Width div 2) - (GB_Centrala.Width div 2);
 
  B_SS_Save.Left := P_SS.Width-B_SS_Save.Width-10;
@@ -277,17 +277,17 @@ begin
 end;
 
 procedure TF_Options.NactiSSDoObjektu();
-var IgnoraceMTB:TArI;
+var IgnoraceRCS:TArI;
     i:Integer;
     data:TSSData;
  begin
   data := SS.GetData();
 
-  SetLength(IgnoraceMTB,2);
-  IgnoraceMTB[0] := 3;
-  IgnoraceMTB[1] := 4;
+  SetLength(IgnoraceRCS,2);
+  IgnoraceRCS[0] := 3;
+  IgnoraceRCS[1] := 4;
 
-  Self.SE_SS_MtbAdr.Value := data.mtbadr;
+  Self.SE_SS_RCSAdr.Value := data.RCSAdr;
 
   F_Options.CB_SS_AutRezimy.Clear;
   for i := 0 to ACDb.ACs.Count-1 do
@@ -363,12 +363,12 @@ begin
  if (Self.CHB_SS_Enable.Checked) then
   begin
    Self.CB_SS_AutRezimy.Enabled := true;
-   Self.SE_SS_MtbAdr.Enabled    := true;
+   Self.SE_SS_RCSAdr.Enabled    := true;
    Self.GB_SS_Vstupy.Enabled    := true;
    Self.GB_SS_Vystupy.Enabled   := true;
   end else begin
    Self.CB_SS_AutRezimy.Enabled := false;
-   Self.SE_SS_MtbAdr.Enabled    := false;
+   Self.SE_SS_RCSAdr.Enabled    := false;
    Self.GB_SS_Vstupy.Enabled    := false;
    Self.GB_SS_Vystupy.Enabled   := false;
   end;
@@ -409,7 +409,7 @@ var data:TSSData;
  begin
   data.enabled := Self.CHB_SS_Enable.Checked;
 
-  data.MtbAdr         := Self.SE_SS_MtbAdr.Value;
+  data.RCSAdr         := Self.SE_SS_RCSAdr.Value;
   data.AutRezim       := CB_SS_AutRezimy.ItemIndex;
 
   if (CHB_SS_In_Start.Checked)  then data.IN_Start  := Self.SE_SS_In_Start.Value else data.IN_Start := -1;
@@ -438,38 +438,38 @@ procedure TF_Options.B_SS_SaveClick(Sender: TObject);
  end;//procedure
 
 procedure TF_Options.NactiModCasDoObjektu;
-var IgnoraceMTB:TArI;
+var IgnoraceRCS:TArI;
  begin
-  SetLength(IgnoraceMTB,2);
-  IgnoraceMTB[0] := 3;
-  IgnoraceMTB[1] := 4;
+  SetLength(IgnoraceRCS,2);
+  IgnoraceRCS[0] := 3;
+  IgnoraceRCS[1] := 4;
 
-  Self.SE_ModCas_MtbAdr.Value := ModCas.MTBdata.MtbAdr;
+  Self.SE_ModCas_RCSAdr.Value := ModCas.RCSdata.RCSAdr;
 
-  CHB_ModCas_Sekundy.Checked := (ModCas.MTBdata.PORT_S > -1);
-  CHB_ModCas_Minuty.Checked  := (ModCas.MTBdata.PORT_M  > -1);
-  CHB_ModCas_Hodiny.Checked  := (ModCas.MTBdata.PORT_H  > -1);
+  CHB_ModCas_Sekundy.Checked := (ModCas.RCSdata.PORT_S > -1);
+  CHB_ModCas_Minuty.Checked  := (ModCas.RCSdata.PORT_M  > -1);
+  CHB_ModCas_Hodiny.Checked  := (ModCas.RCSdata.PORT_H  > -1);
 
-  if (ModCas.MTBdata.PORT_S > -1) then
+  if (ModCas.RCSdata.PORT_S > -1) then
    begin
     SE_ModCas_Sekundy.Enabled := true;
-    SE_ModCas_Sekundy.Value   := ModCas.MTBdata.PORT_S;
+    SE_ModCas_Sekundy.Value   := ModCas.RCSdata.PORT_S;
    end else begin
     SE_ModCas_Sekundy.Enabled := false;
     SE_ModCas_Sekundy.Value   := 0;
    end;
-  if (ModCas.MTBdata.PORT_M > -1) then
+  if (ModCas.RCSdata.PORT_M > -1) then
    begin
     SE_ModCas_Minuty.Enabled := true;
-    SE_ModCas_Minuty.Value   := ModCas.MTBdata.PORT_M;
+    SE_ModCas_Minuty.Value   := ModCas.RCSdata.PORT_M;
    end else begin
     SE_ModCas_Minuty.Enabled := false;
     SE_ModCas_Minuty.Value   := 0;
    end;
-  if (ModCas.MTBdata.PORT_H > -1) then
+  if (ModCas.RCSdata.PORT_H > -1) then
    begin
     SE_ModCas_Hodiny.Enabled := true;
-    SE_ModCas_Hodiny.Value   := ModCas.MTBdata.PORT_H;
+    SE_ModCas_Hodiny.Value   := ModCas.RCSdata.PORT_H;
    end else begin
     SE_ModCas_Hodiny.Enabled := false;
     SE_ModCas_Hodiny.Value   := 0;
@@ -478,22 +478,22 @@ var IgnoraceMTB:TArI;
 
 procedure TF_Options.UlozDataDoModCasZObjektu;
  begin
-  ModCas.MTBData.MtbAdr := Self.SE_ModCas_MtbAdr.Value;
+  ModCas.RCSData.RCSAdr := Self.SE_ModCas_RCSAdr.Value;
 
   if (CHB_ModCas_Sekundy.Checked) then
-    ModCas.MTBData.PORT_S := SE_ModCas_Sekundy.Value
+    ModCas.RCSData.PORT_S := SE_ModCas_Sekundy.Value
   else
-    ModCas.MTBData.PORT_S := -1;
+    ModCas.RCSData.PORT_S := -1;
 
   if (CHB_ModCas_Minuty.Checked) then
-    ModCas.MTBData.PORT_M := SE_ModCas_Minuty.Value
+    ModCas.RCSData.PORT_M := SE_ModCas_Minuty.Value
   else
-    ModCas.MTBData.PORT_M := -1;
+    ModCas.RCSData.PORT_M := -1;
 
   if (CHB_ModCas_Hodiny.Checked) then
-    ModCas.MTBData.PORT_H := SE_ModCas_Hodiny.Value
+    ModCas.RCSData.PORT_H := SE_ModCas_Hodiny.Value
   else
-    ModCas.MTBData.PORT_H := -1;
+    ModCas.RCSData.PORT_H := -1;
 
  end;//procedure
 

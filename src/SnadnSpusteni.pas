@@ -9,7 +9,7 @@ uses Classes, IniFiles, StrUtils, SysUtils;
 type
   TSSData = record
    enabled:boolean;
-   MtbAdr:Smallint;                                  //adresa mtb
+   RCSAdr:Smallint;                                  //adresa RCS
    AutRezim:Smallint;                                //pri klepnuti na zelene tlacitko spustit aut rezim...
    IN_Start:Smallint;                                //tlacitko na zapnuti
    IN_Pause:Smallint;                                //tlacitko na pozastaveni
@@ -52,9 +52,11 @@ uses GetSystems, TBlok, AC, TechnologieRCS, fMain, TBloky,
 
 procedure TSS.LoadData(ini:TMemIniFile);
 begin
- Self.config.enabled  := ini.ReadBool('Snadne Spusteni', 'enabled',false);
- Self.config.MtbAdr   := ini.ReadInteger('Snadne Spusteni', 'MtbAdr',-1);
- Self.config.AutRezim := ini.ReadInteger('Snadne Spusteni', 'AutRezim',-1);
+ Self.config.enabled  := ini.ReadBool('Snadne Spusteni', 'enabled', false);
+ Self.config.RCSAdr   := ini.ReadInteger('Snadne Spusteni', 'RCSAdr', -1);
+ if (Self.config.RCSAdr = -1) then //backward compatibility
+   Self.config.RCSAdr := ini.ReadInteger('Snadne Spusteni', 'MtbAdr', -1);
+ Self.config.AutRezim := ini.ReadInteger('Snadne Spusteni', 'AutRezim', -1);
 
  Self.config.IN_Start       := ini.ReadInteger('Snadne Spusteni', 'IN_Start',-1);
  Self.config.IN_Pause       := ini.ReadInteger('Snadne Spusteni', 'IN_Pause',-1);
@@ -72,7 +74,7 @@ end;//procedure
 procedure TSS.SaveData(ini:TMemIniFile);
 begin
  ini.WriteBool('Snadne Spusteni', 'enabled',Self.config.enabled);
- ini.WriteInteger('Snadne Spusteni', 'MtbAdr',Self.config.MtbAdr);
+ ini.WriteInteger('Snadne Spusteni', 'RCSAdr',Self.config.RCSAdr);
  ini.WriteInteger('Snadne Spusteni', 'AutRezim',Self.config.AutRezim);
 
  ini.WriteInteger('Snadne Spusteni', 'IN_Start',Self.config.IN_Start);
@@ -97,26 +99,26 @@ var AC:TAC;
 
   AC := ACDb.ACs[Self.config.AutRezim];
 
-  if ((not RCSi.IsModule(Self.config.MtbAdr)) or (RCSi.IsModuleFailure(Self.config.MtbAdr))) then Exit();
+  if ((not RCSi.IsModule(Self.config.RCSAdr)) or (RCSi.IsModuleFailure(Self.config.RCSAdr))) then Exit();
 
   //vstupy:
 
   try
     if ((Self.config.IN_Start > -1) and (not AC.running) and (AC.ready)
-      and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Start) = isOn)) then
+      and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Start) = isOn)) then
         AC.Start();
 
     if ((Self.config.IN_Pause > -1) and (AC.running)
-      and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Pause) = isOn)) then
+      and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Pause) = isOn)) then
         AC.Pause();
 
     if ((Self.config.IN_Stop > -1) and (AC.running)
-      and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Stop) = isOn)) then
+      and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Stop) = isOn)) then
         AC.Stop();
 
     if (Self.config.IN_Repeat > -1) then
      begin
-      if (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Repeat) = isOn) then
+      if (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Repeat) = isOn) then
        begin
         if (not Self.RepeatDown) then
          begin
@@ -128,7 +130,7 @@ var AC:TAC;
        end;
      end;//if IN_Repeat_Used
 
-    if ((Self.config.IN_Reset > -1) and (RCSi.GetInput(Self.config.MtbAdr,Self.config.IN_Reset) = isOn)) then
+    if ((Self.config.IN_Reset > -1) and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Reset) = isOn)) then
      begin
       // reset zatim neimplementovan
      end;
@@ -137,19 +139,19 @@ var AC:TAC;
     // vystupy;
 
     if (Self.config.OUT_Ready > -1) then
-      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.ready)));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.ready)));
 
     if (Self.config.OUT_Start > -1) then
-      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
 
     if (Self.config.OUT_Pause > -1) then
-      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (AC.ACKrok > -1)));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (AC.ACKrok > -1)));
 
     if (Self.config.OUT_Stop > -1) then
-      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
 
     if (Self.config.OUT_Repeat > -1) then
-      RCSi.SetOutput(Self.config.MtbAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating));
 
   except
 

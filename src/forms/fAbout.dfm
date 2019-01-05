@@ -597,27 +597,27 @@ object F_About: TF_About
       Margins.Bottom = 2
       Caption = 'L_VApp'
     end
-    object L_VMTBLib: TLabel
+    object L_VRCSLib: TLabel
       Left = 154
       Top = 36
-      Width = 56
+      Width = 55
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'L_VMTBLib'
+      Caption = 'L_VRCSLib'
     end
-    object L_VMTBUSB: TLabel
+    object L_VRCSUSB: TLabel
       Left = 154
       Top = 72
-      Width = 64
+      Width = 63
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'L_VMTBUSB'
+      Caption = 'L_VRCSUSB'
     end
     object Label6: TLabel
       Left = 8
@@ -630,16 +630,16 @@ object F_About: TF_About
       Margins.Bottom = 2
       Caption = 'Verze RCS driveru:'
     end
-    object L_VMTBDriver: TLabel
+    object L_VRCSDriver: TLabel
       Left = 154
       Top = 54
-      Width = 70
+      Width = 69
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'L_VMTBDriver'
+      Caption = 'L_VRCSDriver'
     end
   end
 end

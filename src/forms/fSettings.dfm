@@ -307,13 +307,13 @@ object F_Options: TF_Options
           object L_ModCas_1: TLabel
             Left = 8
             Top = 16
-            Width = 104
+            Width = 103
             Height = 13
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'MTB adresa v'#253'stupu :'
+            Caption = 'RCS adresa v'#253'stupu :'
           end
           object L_ModCas_3: TLabel
             Left = 8
@@ -477,7 +477,7 @@ object F_Options: TF_Options
               'Hodiny '#183' minuty '#8594' minuty'
               'Hodiny '#183' minuty '#183' sekundy '#8594' sekundy')
           end
-          object SE_ModCas_MtbAdr: TSpinEdit
+          object SE_ModCas_RCSAdr: TSpinEdit
             Left = 7
             Top = 29
             Width = 176
@@ -1156,7 +1156,7 @@ object F_Options: TF_Options
           TabOrder = 4
           OnClick = CHB_SS_EnableClick
         end
-        object SE_SS_MtbAdr: TSpinEdit
+        object SE_SS_RCSAdr: TSpinEdit
           Left = 204
           Top = 112
           Width = 157

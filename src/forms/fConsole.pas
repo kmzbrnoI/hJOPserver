@@ -72,7 +72,7 @@ begin
       begin
        M_console.Lines.Add('Napoveda:');
        M_console.Lines.Add('centrala [open/close]       Pripojeni k centrale');
-       M_console.Lines.Add('mtb [start/stop/open/close] Povely pro MTB');
+       M_console.Lines.Add('rcs [start/stop/open/close] Povely pro RCS');
        M_console.Lines.Add('clear                       Smaze konzoli');
        M_console.Lines.Add('exit                        Zavre okno konzole');
        M_console.Lines.Add('app-exit                    Nouzove regulerni ukonceni aplikace');
@@ -106,7 +106,7 @@ begin
         end;
       end;
 
-     if (pole_dat[0] = 'mtb') and (pole_dat.Count >= 2) then
+     if (pole_dat[0] = 'rcs') and (pole_dat.Count >= 2) then
       begin
        if (pole_dat[1] = 'start') then
          F_Main.A_RCS_GoExecute(Self);

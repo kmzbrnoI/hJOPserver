@@ -506,7 +506,7 @@ begin
  try
    RCSi.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -515,7 +515,7 @@ begin
  try
    RCSi.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
