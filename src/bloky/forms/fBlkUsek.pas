@@ -16,7 +16,7 @@ type
     L_Usek03: TLabel;
     E_Nazev: TEdit;
     L_Usek01: TLabel;
-    GB_MTB: TGroupBox;
+    GB_RCS: TGroupBox;
     L_Usek04: TLabel;
     SE_Port1: TSpinEdit;
     L_Usek15: TLabel;

@@ -3,7 +3,7 @@ unit TBlokVystup;
 {
   Definice a obsluha technologickeho bloku Vystup.
 
-  Technologicky blok Vystup nastavi po spusteni systemu konkretni MTB vystup
+  Technologicky blok Vystup nastavi po spusteni systemu konkretni vystup RCS modulu
   do logicke hodnoty "1", pri vypinani systemu ho vrati do logicke hodnoty
   "0".
 }

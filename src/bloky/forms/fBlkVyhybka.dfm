@@ -96,7 +96,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     TabOrder = 1
     Value = 1
   end
-  object GB_MTB: TGroupBox
+  object GB_RCS: TGroupBox
     Left = 7
     Top = 150
     Width = 304
@@ -215,7 +215,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Font.Style = []
       ParentFont = False
     end
-    object SE_VystPlusPort: TSpinEdit
+    object SE_VystPlus_port: TSpinEdit
       Left = 230
       Top = 40
       Width = 67
@@ -235,7 +235,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 1
       Value = 0
     end
-    object SE_VystMinusPort: TSpinEdit
+    object SE_VystMinus_port: TSpinEdit
       Left = 230
       Top = 72
       Width = 67
@@ -255,7 +255,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 3
       Value = 0
     end
-    object SE_VstPlusPort: TSpinEdit
+    object SE_VstPlus_port: TSpinEdit
       Left = 230
       Top = 104
       Width = 67
@@ -275,7 +275,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 5
       Value = 0
     end
-    object SE_VstMinusPort: TSpinEdit
+    object SE_VstMinus_port: TSpinEdit
       Left = 230
       Top = 136
       Width = 67
@@ -295,7 +295,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 7
       Value = 0
     end
-    object SE_VystPlusMTB: TSpinEdit
+    object SE_VystPlus_module: TSpinEdit
       Left = 151
       Top = 40
       Width = 67
@@ -315,7 +315,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 0
       Value = 1
     end
-    object SE_VystMinusMTB: TSpinEdit
+    object SE_VystMinus_module: TSpinEdit
       Left = 151
       Top = 72
       Width = 67
@@ -335,7 +335,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 2
       Value = 1
     end
-    object SE_VstPlusMTB: TSpinEdit
+    object SE_VstPlus_module: TSpinEdit
       Left = 151
       Top = 104
       Width = 67
@@ -355,7 +355,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 4
       Value = 1
     end
-    object SE_VstMinusMTB: TSpinEdit
+    object SE_VstMinus_module: TSpinEdit
       Left = 151
       Top = 136
       Width = 67

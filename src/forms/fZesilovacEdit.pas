@@ -14,20 +14,20 @@ type
     B_Save: TButton;
     GB_Zkrat: TGroupBox;
     L_Zkrat_Port: TLabel;
-    L_Zkrat_MTB: TLabel;
+    L_Zkrat_module: TLabel;
     SE_Zkrat_Port: TSpinEdit;
     GB_Napajeni: TGroupBox;
     L_Napajeni_Port: TLabel;
-    L_Napajeni_MTB: TLabel;
+    L_Napajeni_module: TLabel;
     SE_Napajeni_Port: TSpinEdit;
     B_Storno: TButton;
-    SE_Zkrat_MTB: TSpinEdit;
-    SE_Napajeni_MTB: TSpinEdit;
+    SE_Zkrat_module: TSpinEdit;
+    SE_Napajeni_module: TSpinEdit;
     GB_DCC: TGroupBox;
     Label1: TLabel;
     Label2: TLabel;
     SE_DCC_port: TSpinEdit;
-    SE_DCC_MTB: TSpinEdit;
+    SE_DCC_module: TSpinEdit;
     CHB_DCC: TCheckBox;
     E_ID: TEdit;
     Label3: TLabel;
@@ -112,18 +112,18 @@ begin
  settings.bclass := TBoosterClass(RG_Typ.ItemIndex+1);
  settings.id     := E_ID.Text;
 
- settings.MTB.Zkrat.board     := Self.SE_Zkrat_MTB.Value;
- settings.MTB.Napajeni.board  := Self.SE_Napajeni_MTB.Value;
- settings.MTB.Zkrat.port      := SE_Zkrat_Port.Value;
- settings.MTB.Napajeni.port   := SE_Napajeni_Port.Value;
+ settings.RCS.Zkrat.board     := Self.SE_Zkrat_module.Value;
+ settings.RCS.Napajeni.board  := Self.SE_Napajeni_module.Value;
+ settings.RCS.Zkrat.port      := SE_Zkrat_Port.Value;
+ settings.RCS.Napajeni.port   := SE_Napajeni_Port.Value;
 
  if (Self.CHB_DCC.Checked) then
   begin
-   Settings.MTB.DCC.board := Self.SE_DCC_MTB.Value;
-   Settings.MTB.DCC.port  := Self.SE_DCC_port.Value;
+   Settings.RCS.DCC.board := Self.SE_DCC_module.Value;
+   Settings.RCS.DCC.port  := Self.SE_DCC_port.Value;
   end else begin
-   Settings.MTB.DCC.board := 0;
-   Settings.MTB.DCC.port  := 0;
+   Settings.RCS.DCC.board := 0;
+   Settings.RCS.DCC.port  := 0;
   end;
 
  Self.open_booster.bSettings := settings;
@@ -141,7 +141,7 @@ procedure TF_ZesilovacEdit.B_StornoClick(Sender: TObject);
 
 procedure TF_ZesilovacEdit.CHB_DCCClick(Sender: TObject);
 begin
- Self.SE_DCC_MTB.Enabled  := Self.CHB_DCC.Checked;
+ Self.SE_DCC_module.Enabled  := Self.CHB_DCC.Checked;
  Self.SE_DCC_port.Enabled := Self.CHB_DCC.Checked;
 end;
 
@@ -164,7 +164,7 @@ procedure TF_ZesilovacEdit.HlavniOpenForm;
 
 procedure TF_ZesilovacEdit.NormalOpenForm;
 var bSettings:TBoosterSettings;
-    IgnoraceMTB:TArI;
+    IgnoraceRCS:TArI;
  begin
   bSettings := open_booster.bSettings;
 
@@ -172,18 +172,18 @@ var bSettings:TBoosterSettings;
   E_Nazev.Text     := bSettings.Name;
   RG_Typ.ItemIndex := Integer(bSettings.bclass)-1;
 
-  SE_Zkrat_Port.Value       := bSettings.MTB.Zkrat.port;
-  SE_Napajeni_Port.Value    := bSettings.MTB.Napajeni.port;
+  SE_Zkrat_Port.Value       := bSettings.RCS.Zkrat.port;
+  SE_Napajeni_Port.Value    := bSettings.RCS.Napajeni.port;
 
-  SetLength(IgnoraceMTB,2);
-  IgnoraceMTB[0] := 3;
-  IgnoraceMTB[1] := 4;
+  SetLength(IgnoraceRCS,2);
+  IgnoraceRCS[0] := 3;
+  IgnoraceRCS[1] := 4;
 
-  Self.SE_Napajeni_MTB.Value := bSettings.MTB.Napajeni.board;
-  Self.SE_Zkrat_MTB.Value    := bSettings.MTB.Zkrat.board;
+  Self.SE_Napajeni_module.Value := bSettings.RCS.Napajeni.board;
+  Self.SE_Zkrat_module.Value    := bSettings.RCS.Zkrat.board;
 
-  Self.SE_DCC_MTB.Value      := bSettings.MTB.DCC.board;
-  Self.SE_DCC_port.Value     := bSettings.MTB.DCC.port;
+  Self.SE_DCC_module.Value      := bSettings.RCS.DCC.board;
+  Self.SE_DCC_port.Value     := bSettings.RCS.DCC.port;
 
   Self.CHB_DCC.Checked := open_booster.isDCCdetection;
   Self.CHB_DCCClick(Self.CHB_DCC);
@@ -192,7 +192,7 @@ var bSettings:TBoosterSettings;
  end;//procedure
 
 procedure TF_ZesilovacEdit.NewOpenForm;
-var IgnoraceMTB:TArI;
+var IgnoraceRCS:TArI;
  begin
   E_ID.Text         := '';
   E_Nazev.Text      := '';
@@ -201,15 +201,15 @@ var IgnoraceMTB:TArI;
   SE_Zkrat_Port.Value    := 0;
   SE_Napajeni_Port.Value := 0;
 
-  SetLength(IgnoraceMTB,2);
-  IgnoraceMTB[0] := 3;
-  IgnoraceMTB[1] := 4;
+  SetLength(IgnoraceRCS,2);
+  IgnoraceRCS[0] := 3;
+  IgnoraceRCS[1] := 4;
 
-  Self.SE_Napajeni_MTB.Value := 1;
-  Self.SE_Zkrat_MTB.Value    := 1;
+  Self.SE_Napajeni_module.Value := 1;
+  Self.SE_Zkrat_module.Value    := 1;
 
-  Self.SE_DCC_MTB.Value      := 1;
-  Self.SE_DCC_port.Value     := 0;
+  Self.SE_DCC_module.Value := 1;
+  Self.SE_DCC_port.Value   := 0;
 
   Self.CHB_DCC.Checked := false;
   Self.CHB_DCCClick(Self.CHB_DCC);

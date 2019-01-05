@@ -12,13 +12,13 @@ type
     SE_ID: TSpinEdit;
     L_IR02: TLabel;
     L_IR01: TLabel;
-    GB_MTB: TGroupBox;
+    GB_RCS: TGroupBox;
     L_IR04: TLabel;
     L_IR05: TLabel;
-    SE_Port: TSpinEdit;
+    SE_port: TSpinEdit;
     B_Storno: TButton;
     B_Save: TButton;
-    SE_MTB: TSpinEdit;
+    SE_module: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -64,8 +64,8 @@ procedure TF_BlkVystup.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
   SE_ID.Value           := Blky.GetBlkID(Blky.Cnt-1)+1;
-  Self.SE_MTB.Value     := 1;
-  Self.SE_Port.Value    := 0;
+  Self.SE_module.Value  := 1;
+  Self.SE_port.Value    := 0;
 
   Self.Caption := 'Editovat data noveho bloku';
   Self.ActiveControl := Self.E_Nazev;
@@ -80,11 +80,11 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
-    Self.SE_MTB.Value  := settings.RCSAddrs[0].board;
-    Self.SE_Port.Value := settings.RCSAddrs[0].port;
+    Self.SE_module.Value := settings.RCSAddrs[0].board;
+    Self.SE_port.Value   := settings.RCSAddrs[0].port;
    end else begin
-    Self.SE_MTB.Value  := 0;
-    Self.SE_Port.Value := 0;
+    Self.SE_module.Value := 0;
+    Self.SE_Port.Value   := 0;
    end;
 
   E_Nazev.Text := glob.name;
@@ -145,7 +145,7 @@ var glob:TBlkSettings;
   //ukladani dat
 
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_MTB.Value, Self.SE_Port.Value));
+  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value));
 
   Self.Blk.SetSettings(settings);
   Self.Close;

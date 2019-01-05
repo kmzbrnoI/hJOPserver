@@ -13,15 +13,15 @@ type
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
     L_Vyh02: TLabel;
-    GB_MTB: TGroupBox;
+    GB_RCS: TGroupBox;
     L_Vyh05: TLabel;
     L_Vyh06: TLabel;
-    SE_VystPlusPort: TSpinEdit;
-    SE_VystMinusPort: TSpinEdit;
+    SE_VystPlus_port: TSpinEdit;
+    SE_VystMinus_port: TSpinEdit;
     L_Vyh07: TLabel;
     L_Vyh08: TLabel;
-    SE_VstPlusPort: TSpinEdit;
-    SE_VstMinusPort: TSpinEdit;
+    SE_VstPlus_port: TSpinEdit;
+    SE_VstMinus_port: TSpinEdit;
     L_Vyh09: TLabel;
     B_Storno: TButton;
     B_Save: TButton;
@@ -29,10 +29,10 @@ type
     LB_Stanice: TListBox;
     CHB_Spojka: TCheckBox;
     CB_Spojka: TComboBox;
-    SE_VystPlusMTB: TSpinEdit;
-    SE_VystMinusMTB: TSpinEdit;
-    SE_VstPlusMTB: TSpinEdit;
-    SE_VstMinusMTB: TSpinEdit;
+    SE_VystPlus_module: TSpinEdit;
+    SE_VystMinus_module: TSpinEdit;
+    SE_VstPlus_module: TSpinEdit;
+    SE_VstMinus_module: TSpinEdit;
     Label1: TLabel;
     GB_Zamek: TGroupBox;
     CB_Zamek: TComboBox;
@@ -99,14 +99,14 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
   E_Nazev.Text := '';
   SE_ID.Value  := Blky.GetBlkID(Blky.Cnt-1)+1;
 
-  SE_VystPlusPort.Value  := 0;
-  SE_VystPlusMTB.Value   := 1;
-  SE_VystMinusPort.Value := 0;
-  SE_VystMinusMTB.Value  := 1;
-  SE_VstPlusPort.Value   := 0;
-  SE_VstPlusMTB.Value    := 1;
-  SE_VstMinusPort.Value  := 0;
-  SE_VstMinusMTB.Value   := 1;
+  SE_VystPlus_port.Value  := 0;
+  SE_VystPlus_module.Value   := 1;
+  SE_VystMinus_port.Value := 0;
+  SE_VystMinus_module.Value  := 1;
+  SE_VstPlus_port.Value   := 0;
+  SE_VstPlus_module.Value    := 1;
+  SE_VstMinus_port.Value  := 0;
+  SE_VstMinus_module.Value   := 1;
 
   Self.CHB_Spojka.Checked  := false;
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
@@ -151,41 +151,41 @@ var glob:TBlkSettings;
     Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.zamekPoloha);
   Self.CHB_ZamekClick(Self.CHB_Zamek);
 
-  //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni MTB_board = [0])
+  //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni RCS_board = [0])
   if (settings.RCSAddrs.Count > 0) then
    begin
-    SE_VstPlusMTB.Value  := settings.RCSAddrs[0].board;
-    SE_VstPlusPort.Value := settings.RCSAddrs[0].port;
+    SE_VstPlus_module.Value  := settings.RCSAddrs[0].board;
+    SE_VstPlus_port.Value := settings.RCSAddrs[0].port;
    end else begin
-    SE_VstPlusMTB.Value  := 0;
-    SE_VstPlusPort.Value := 0;
+    SE_VstPlus_module.Value  := 0;
+    SE_VstPlus_port.Value := 0;
    end;
 
   if (settings.RCSAddrs.Count > 1) then
    begin
-    SE_VstMinusMTB.Value  := settings.RCSAddrs[1].board;
-    SE_VstMinusPort.Value := settings.RCSAddrs[1].port;
+    SE_VstMinus_module.Value  := settings.RCSAddrs[1].board;
+    SE_VstMinus_port.Value := settings.RCSAddrs[1].port;
    end else begin
-    SE_VstMinusMTB.Value  := 0;
-    SE_VstMinusPort.Value := 0;
+    SE_VstMinus_module.Value  := 0;
+    SE_VstMinus_port.Value := 0;
    end;
 
   if (settings.RCSAddrs.Count > 2) then
    begin
-    SE_VystPlusMTB.Value  := settings.RCSAddrs[2].board;
-    SE_VystPlusPort.Value := settings.RCSAddrs[2].port;
+    SE_VystPlus_module.Value  := settings.RCSAddrs[2].board;
+    SE_VystPlus_port.Value := settings.RCSAddrs[2].port;
    end else begin
-    SE_VystPlusMTB.Value  := 0;
-    SE_VystPlusPort.Value := 0;
+    SE_VystPlus_module.Value  := 0;
+    SE_VystPlus_port.Value := 0;
    end;
 
   if (settings.RCSAddrs.Count > 3) then
    begin
-    SE_VystMinusMTB.Value  := settings.RCSAddrs[3].board;
-    SE_VystMinusPort.Value := settings.RCSAddrs[3].port;
+    SE_VystMinus_module.Value  := settings.RCSAddrs[3].board;
+    SE_VystMinus_port.Value := settings.RCSAddrs[3].port;
    end else begin
-    SE_VystMinusMTB.Value  := 0;
-    SE_VystMinusPort.Value := 0;
+    SE_VystMinus_module.Value  := 0;
+    SE_VystMinus_port.Value := 0;
    end;
 
   Self.CHB_npPlus.Checked := (settings.npPlus > -1);
@@ -271,38 +271,38 @@ begin
 
  if (rcs.Count > 0) then
   begin
-   SE_VstPlusMTB.Value  := rcs[0].board;
-   SE_VstPlusPort.Value := rcs[0].port;
+   SE_VstPlus_module.Value  := rcs[0].board;
+   SE_VstPlus_port.Value := rcs[0].port;
   end else begin
-   SE_VstPlusMTB.Value  := 0;
-   SE_VstPlusPort.Value := 0;
+   SE_VstPlus_module.Value  := 0;
+   SE_VstPlus_port.Value := 0;
   end;
 
  if (rcs.Count > 1) then
   begin
-   SE_VstMinusMTB.Value  := rcs[1].board;
-   SE_VstMinusPort.Value := rcs[1].port;
+   SE_VstMinus_module.Value  := rcs[1].board;
+   SE_VstMinus_port.Value := rcs[1].port;
   end else begin
-   SE_VstMinusMTB.Value  := 0;
-   SE_VstMinusPort.Value := 0;
+   SE_VstMinus_module.Value  := 0;
+   SE_VstMinus_port.Value := 0;
   end;
 
  if (rcs.Count > 2) then
   begin
-   SE_VystPlusMTB.Value  := rcs[2].board;
-   SE_VystPlusPort.Value := rcs[2].port;
+   SE_VystPlus_module.Value  := rcs[2].board;
+   SE_VystPlus_port.Value := rcs[2].port;
   end else begin
-   SE_VystPlusMTB.Value  := 0;
-   SE_VystPlusPort.Value := 0;
+   SE_VystPlus_module.Value  := 0;
+   SE_VystPlus_port.Value := 0;
   end;
 
  if (rcs.Count > 3) then
   begin
-   SE_VystMinusMTB.Value  := rcs[3].board;
-   SE_VystMinusPort.Value := rcs[3].port;
+   SE_VystMinus_module.Value  := rcs[3].board;
+   SE_VystMinus_port.Value := rcs[3].port;
   end else begin
-   SE_VystMinusMTB.Value  := 0;
-   SE_VystMinusPort.Value := 0;
+   SE_VystMinus_module.Value  := 0;
+   SE_VystMinus_port.Value := 0;
   end;
 end;
 
@@ -404,10 +404,10 @@ var glob:TBlkSettings;
 
   //ukladani dat
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VstPlusMTB.Value, SE_VstPlusPort.Value));
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VstMinusMTB.Value, SE_VstMinusPort.Value));
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VystPlusMTB.Value, SE_VystPlusPort.Value));
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VystMinusMTB.Value, SE_VystMinusPort.Value));
+  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VstPlus_module.Value, SE_VstPlus_port.Value));
+  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VstMinus_module.Value, SE_VstMinus_port.Value));
+  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VystPlus_module.Value, SE_VystPlus_port.Value));
+  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VystMinus_module.Value, SE_VystMinus_port.Value));
 
   if (Self.CHB_Spojka.Checked) then
    settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex])

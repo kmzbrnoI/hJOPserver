@@ -190,7 +190,7 @@ object F_BlkUsek: TF_BlkUsek
     MaxLength = 32
     TabOrder = 0
   end
-  object GB_MTB: TGroupBox
+  object GB_RCS: TGroupBox
     Left = 7
     Top = 243
     Width = 305
@@ -573,7 +573,7 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object SE_SprCnt: TSpinEdit

@@ -148,7 +148,7 @@ object F_BlkSCom: TF_BlkSCom
     TabOrder = 1
     Value = 1
   end
-  object GB_MTB: TGroupBox
+  object GB_RCS: TGroupBox
     Left = 7
     Top = 187
     Width = 304
@@ -216,7 +216,7 @@ object F_BlkSCom: TF_BlkSCom
       Font.Style = []
       ParentFont = False
     end
-    object SE_MTBPort: TSpinEdit
+    object SE_RCSport: TSpinEdit
       Left = 223
       Top = 66
       Width = 73
@@ -258,7 +258,7 @@ object F_BlkSCom: TF_BlkSCom
         'S-Com'
         'bin'#225'rn'#237' (0/1)')
     end
-    object SE_MTBMTB: TSpinEdit
+    object SE_RCSmodule: TSpinEdit
       Left = 223
       Top = 40
       Width = 73

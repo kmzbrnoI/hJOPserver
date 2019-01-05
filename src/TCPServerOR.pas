@@ -694,7 +694,7 @@ begin
    Self.BroadcastFuncsVyznam();
   end
 
- else if (parsed[1] = 'MTBD') then
+ else if (parsed[1] = 'RCSD') then
    RCSd.Parse(AContext, parsed)
 
  else if (parsed[1] = 'MAUS') then

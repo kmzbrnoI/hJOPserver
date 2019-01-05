@@ -126,7 +126,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Bottom = 2
       Caption = 'RCS port :'
     end
-    object L_Zkrat_MTB: TLabel
+    object L_Zkrat_module: TLabel
       Left = 8
       Top = 20
       Width = 60
@@ -157,7 +157,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       TabOrder = 1
       Value = 0
     end
-    object SE_Zkrat_MTB: TSpinEdit
+    object SE_Zkrat_module: TSpinEdit
       Left = 168
       Top = 22
       Width = 89
@@ -206,7 +206,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Bottom = 2
       Caption = 'RCS port :'
     end
-    object L_Napajeni_MTB: TLabel
+    object L_Napajeni_module: TLabel
       Left = 8
       Top = 20
       Width = 60
@@ -237,7 +237,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       TabOrder = 1
       Value = 0
     end
-    object SE_Napajeni_MTB: TSpinEdit
+    object SE_Napajeni_module: TSpinEdit
       Left = 168
       Top = 22
       Width = 89
@@ -330,7 +330,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       TabOrder = 1
       Value = 0
     end
-    object SE_DCC_MTB: TSpinEdit
+    object SE_DCC_module: TSpinEdit
       Left = 167
       Top = 37
       Width = 89

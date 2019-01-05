@@ -36,7 +36,7 @@ type
 
       function GetORIndex(const id:string):Integer;
       function ParseORs(str:string):TORsRef;                                    // parsuje seznam oblasti rizeni
-      procedure MTBFail(addr:integer);                                          // je vyvolano pri vypadku MTB modulu, resi zobrazeni chyby do panelu v OR
+      procedure RCSFail(addr:integer);                                          // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
       function GetORByIndex(index:Integer;var obl:TOR):Byte;
       function GetORNameByIndex(index:Integer):string;
       function GetORIdByIndex(index:Integer):string;
@@ -247,7 +247,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORs.MTBFail(addr:integer);
+procedure TORs.RCSFail(addr:integer);
 var OblR:TOR;
 begin
  for OblR in Self.ORsDatabase do

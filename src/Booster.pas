@@ -18,7 +18,7 @@ type
  TBoosterSettings = record
    bclass:TBoosterClass;                                                        // booster class (spax, bz100)
    Name:string;                                                                 // booster name
-   MTB:record                                                                   // RCS inputs
+   RCS:record                                                                   // RCS inputs
     Zkrat:TRCSAddr;                                                             // overload input
     Napajeni:TRCSAddr;                                                          // power input
     DCC:TRCSAddr;                                                               // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
@@ -84,11 +84,11 @@ uses GetSystems, fMain, RCS;
   [id]
     name
     class
-    zkr_mtb
+    zkr_RCS
     zkr_port
-    nap_mtb
+    nap_RCS
     nap_port
-    dcc_mtb
+    dcc_RCS
     dcc_port
 }
 
@@ -157,17 +157,17 @@ begin
  Self.Settings.Name   := ini.ReadString(section,'name','booster');
  Self.Settings.bclass := TBoosterClass(ini.ReadInteger(section,'class',0));
 
- Self.Settings.MTB.Zkrat.board  := ini.ReadInteger(section,'zkr_mtb',0);
- Self.Settings.MTB.Zkrat.port   := ini.ReadInteger(section,'zkr_port',0);
+ Self.Settings.RCS.Zkrat.board  := ini.ReadInteger(section,'zkr_mtb',0);
+ Self.Settings.RCS.Zkrat.port   := ini.ReadInteger(section,'zkr_port',0);
 
- Self.Settings.MTB.Napajeni.board  := ini.ReadInteger(section,'nap_mtb',0);
- Self.Settings.MTB.Napajeni.port   := ini.ReadInteger(section,'nap_port',0);
+ Self.Settings.RCS.Napajeni.board  := ini.ReadInteger(section,'nap_mtb',0);
+ Self.Settings.RCS.Napajeni.port   := ini.ReadInteger(section,'nap_port',0);
 
- Self.Settings.MTB.DCC.board  := ini.ReadInteger(section,'dcc_mtb',0);
- Self.Settings.MTB.DCC.port   := ini.ReadInteger(section,'dcc_port',0);
+ Self.Settings.RCS.DCC.board  := ini.ReadInteger(section,'dcc_mtb',0);
+ Self.Settings.RCS.DCC.port   := ini.ReadInteger(section,'dcc_port',0);
 
- RCSi.SetNeeded(Self.Settings.MTB.Napajeni.board);
- RCSi.SetNeeded(Self.Settings.MTB.Zkrat.board);
+ RCSi.SetNeeded(Self.Settings.RCS.Napajeni.board);
+ RCSi.SetNeeded(Self.Settings.RCS.Zkrat.board);
 end;//procedure
 
 //save data to the file
@@ -176,20 +176,20 @@ begin
  ini.WriteString(section, 'name', Self.Settings.Name);
  ini.WriteInteger(section, 'class', Integer(Self.Settings.bclass));
 
- ini.WriteInteger(section, 'zkr_mtb', Self.Settings.MTB.Zkrat.board);
- ini.WriteInteger(section, 'zkr_port', Self.Settings.MTB.Zkrat.port);
+ ini.WriteInteger(section, 'zkr_mtb', Self.Settings.RCS.Zkrat.board);
+ ini.WriteInteger(section, 'zkr_port', Self.Settings.RCS.Zkrat.port);
 
- ini.WriteInteger(section, 'nap_mtb', Self.Settings.MTB.Napajeni.board);
- ini.WriteInteger(section, 'nap_port', Self.Settings.MTB.Napajeni.port);
+ ini.WriteInteger(section, 'nap_mtb', Self.Settings.RCS.Napajeni.board);
+ ini.WriteInteger(section, 'nap_port', Self.Settings.RCS.Napajeni.port);
 
- ini.WriteInteger(section, 'dcc_mtb', Self.Settings.MTB.DCC.board);
- ini.WriteInteger(section, 'dcc_port', Self.Settings.MTB.DCC.port);
+ ini.WriteInteger(section, 'dcc_mtb', Self.Settings.RCS.DCC.board);
+ ini.WriteInteger(section, 'dcc_port', Self.Settings.RCS.DCC.port);
 
  ini.UpdateFile();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
-//gets data from MTB
+//gets data from RCS
 
 function TBooster.GetZkrat():TBoosterSignal;
 var val:TRCSInputState;
@@ -200,7 +200,7 @@ begin
  if (Self.napajeni = TBoosterSignal.error) then Exit(TBoosterSignal.undef);
 
  try
-   val := RCSi.GetInput(Self.Settings.MTB.Zkrat.board, Self.Settings.MTB.Zkrat.port);
+   val := RCSi.GetInput(Self.Settings.RCS.Zkrat.board, Self.Settings.RCS.Zkrat.port);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -219,7 +219,7 @@ begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  try
-   val := RCSi.GetInput(Self.Settings.MTB.Napajeni.board,Self.Settings.MTB.Napajeni.port);
+   val := RCSi.GetInput(Self.Settings.RCS.Napajeni.board,Self.Settings.RCS.Napajeni.port);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -237,10 +237,10 @@ var val:TRCSInputState;
 begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
- // DCC nemusi byt detekovano (to se pozna tak, ze MTB board = 0)
- if (Self.Settings.MTB.DCC.board = 0) then Exit(TBoosterSignal.undef);
+ // DCC nemusi byt detekovano (to se pozna tak, ze RCS board = 0)
+ if (Self.Settings.RCS.DCC.board = 0) then Exit(TBoosterSignal.undef);
  try
-   val := RCSi.GetInput(Self.Settings.MTB.DCC.board, Self.Settings.MTB.DCC.port);
+   val := RCSi.GetInput(Self.Settings.RCS.DCC.board, Self.Settings.RCS.DCC.port);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -257,14 +257,14 @@ end;
 
 function TBooster.GetDefined():boolean;
 begin
- Result := ((RCSi.IsModule(Self.Settings.MTB.Zkrat.board)) and (RCSi.IsModule(Self.Settings.MTB.Napajeni.board)));
+ Result := ((RCSi.IsModule(Self.Settings.RCS.Zkrat.board)) and (RCSi.IsModule(Self.Settings.RCS.Napajeni.board)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBooster.GetDCCDetection():boolean;
 begin
- Result := (Self.Settings.MTB.DCC.board > 0);
+ Result := (Self.Settings.RCS.DCC.board > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

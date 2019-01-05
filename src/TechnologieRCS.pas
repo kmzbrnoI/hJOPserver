@@ -204,8 +204,8 @@ begin
  //defaultni stav zesilovacu
  for booster in Boosters.sorted do
   begin
-   Self.SetInput(booster.bSettings.MTB.Napajeni.board, booster.bSettings.MTB.Napajeni.port, 0);
-   Self.SetInput(booster.bSettings.MTB.Zkrat.board, booster.bSettings.MTB.Zkrat.port, 0);
+   Self.SetInput(booster.bSettings.RCS.Napajeni.board, booster.bSettings.RCS.Napajeni.port, 0);
+   Self.SetInput(booster.bSettings.RCS.Zkrat.board, booster.bSettings.RCS.Zkrat.port, 0);
   end;
 end;//procedure
 
@@ -255,7 +255,7 @@ begin
 
  if (errAddr = 255) then
   begin
-   //errors on main board (MTB-USB)
+   //errors on main board (RCS-USB)
    case (errValue) of
     RCS_FT_EXCEPTION: begin
       // general IO error
@@ -268,7 +268,7 @@ begin
   end else begin
    // errors on RCS boards
    case (errValue) of
-    RCS_MODULE_FAIL: ORs.MTBFail(errAddr); // communication with module failed
+    RCS_MODULE_FAIL: ORs.RCSFail(errAddr); // communication with module failed
     RCS_MODULE_RESTORED:; // communication with module restored, nothing should be here
    end;
   end;//

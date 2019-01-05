@@ -14,10 +14,10 @@ type
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
     L_SCom02: TLabel;
-    GB_MTB: TGroupBox;
+    GB_RCS: TGroupBox;
     L_SCom05: TLabel;
     L_SCom06: TLabel;
-    SE_MTBPort: TSpinEdit;
+    SE_RCSport: TSpinEdit;
     B_Storno: TButton;
     B_Save: TButton;
     LB_Stanice: TListBox;
@@ -26,7 +26,7 @@ type
     CB_Typ: TComboBox;
     Label1: TLabel;
     L_UsekID: TLabel;
-    SE_MTBMTB: TSpinEdit;
+    SE_RCSmodule: TSpinEdit;
     Label2: TLabel;
     SE_Delay: TSpinEdit;
     CHB_Zamknuto: TCheckBox;
@@ -106,8 +106,8 @@ procedure TF_BlkSCom.NewBlkOpenForm();
   CHB_Zamknuto.Checked     := false;
   Self.L_UsekID.Caption    := 'bude zobrazen priste';
 
-  Self.SE_MTBMTB.Value  := 1;
-  Self.SE_MTBPort.Value := 0;
+  Self.SE_RCSmodule.Value  := 1;
+  Self.SE_RCSPort.Value := 0;
   Self.CB_Typ.ItemIndex := -1;
 
   Self.CHB_RCS_Output.Checked := true;
@@ -145,8 +145,8 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
-    Self.SE_MTBMTB.Value := settings.RCSAddrs[0].board;
-    SE_MTBPort.Value     := settings.RCSAddrs[0].port;
+    Self.SE_RCSmodule.Value := settings.RCSAddrs[0].board;
+    SE_RCSPort.Value     := settings.RCSAddrs[0].port;
     CB_Typ.ItemIndex     := Integer(settings.OutputType);
    end;
 
@@ -196,14 +196,14 @@ procedure TF_BlkSCom.B_StornoClick(Sender: TObject);
 
 procedure TF_BlkSCom.CHB_RCS_OutputClick(Sender: TObject);
 begin
- Self.SE_MTBMTB.Enabled  := Self.CHB_RCS_Output.Checked;
- Self.SE_MTBPort.Enabled := Self.CHB_RCS_Output.Checked;
+ Self.SE_RCSmodule.Enabled  := Self.CHB_RCS_Output.Checked;
+ Self.SE_RCSPort.Enabled := Self.CHB_RCS_Output.Checked;
  Self.CB_Typ.Enabled     := Self.CHB_RCS_Output.Checked;
 
  if (not Self.CHB_RCS_Output.Checked) then
   begin
-   Self.SE_MTBMTB.Value  := 1;
-   Self.SE_MTBPort.Value := 0;
+   Self.SE_RCSmodule.Value  := 1;
+   Self.SE_RCSPort.Value := 0;
    Self.CB_Typ.ItemIndex := -1;
   end;
 end;
@@ -287,7 +287,7 @@ var glob:TBlkSettings;
   if (Self.CHB_RCS_Output.Checked) then
    begin
     settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_MTBMTB.Value, SE_MTBPort.Value));
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule.Value, SE_RCSPort.Value));
     settings.OutputType := TBlkSComOutputType(CB_Typ.ItemIndex);
    end else begin
     settings.RCSAddrs.Count := 0;

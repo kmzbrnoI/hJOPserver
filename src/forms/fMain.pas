@@ -687,7 +687,7 @@ var ci:TCloseInfo;
           F_Main.A_System_StopExecute(Self);
     end;
 
-    TCloseInfo.ci_mtb : begin
+    TCloseInfo.ci_rcs : begin
       writelog('Pokus o zavření okna bez uzavření RCS', WR_ERROR);
       if (Application.MessageBox('Program není odpojen od RCS, odpojit?',
           'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
@@ -2329,7 +2329,7 @@ procedure TF_Main.OnStart;
   if (not CloseMessage) then F_Main.Close;
 
   F_splash.PB_Prubeh.Position := F_splash.PB_Prubeh.Max;
-  F_Splash.AddStav('Temer spusteno...');
+  F_Splash.AddStav('Téměř spuštěno...');
 
   BlokyTableData.LoadTable();
   JCTableData.LoadToTable();

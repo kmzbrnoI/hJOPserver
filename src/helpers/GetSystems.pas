@@ -10,7 +10,7 @@ type
  TCloseInfo = ( ci_yes = 0,
                 ci_system_changing = 1,
                 ci_system_started = 2,
-                ci_mtb = 3,
+                ci_rcs = 3,
                 ci_server = 4,
                 ci_trakce = 5);
 
@@ -37,7 +37,7 @@ begin
   if (ORTCPServer.openned) then Exit(TCloseInfo.ci_server);
 
   try
-    if ((RCSi.ready) and (RCSi.Opened)) then Exit(TCloseInfo.ci_mtb);
+    if ((RCSi.ready) and (RCSi.Opened)) then Exit(TCloseInfo.ci_rcs);
   except
 
   end;

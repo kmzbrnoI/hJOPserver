@@ -78,7 +78,7 @@ object F_BlkIR: TF_BlkIR
     TabOrder = 1
     Value = 1
   end
-  object GB_MTB: TGroupBox
+  object GB_RCS: TGroupBox
     Left = 10
     Top = 66
     Width = 304
@@ -129,7 +129,7 @@ object F_BlkIR: TF_BlkIR
       Font.Style = []
       ParentFont = False
     end
-    object SE_Port: TSpinEdit
+    object SE_port: TSpinEdit
       Left = 216
       Top = 43
       Width = 73
@@ -149,7 +149,7 @@ object F_BlkIR: TF_BlkIR
       TabOrder = 1
       Value = 0
     end
-    object SE_MTB: TSpinEdit
+    object SE_module: TSpinEdit
       Left = 216
       Top = 17
       Width = 73
