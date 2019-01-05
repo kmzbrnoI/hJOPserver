@@ -1640,6 +1640,28 @@ var i,j:Integer;
          end;
        end;//for cyklus
 
+      (Navestidlo as TBlkSCom).DNjc := Self;
+
+      if ((Navestidlo as TBlkSCom).ZAM) then
+       begin
+        writelog('Krok 14 : navestidlo: zamkle na STUJ',WR_VC);
+        Self.Krok := 16;
+       end else begin
+        writelog('Krok 14 : navestidlo: stavim...', WR_VC);
+        Self.NastavSCom();
+        Self.Krok := 15;
+       end;
+   end;// case 14
+
+   15:begin
+     if ((Navestidlo as TBlkSCom).Navest > TBlkSCom._NAV_STUJ) then
+      begin
+       writelog('Krok 15 : navestidlo postaveno', WR_VC);
+       Self.Krok := 16;
+      end;
+   end;
+
+   16:begin
       Self.RusZacatekJC();
       Self.RusVBJC();
       Self.RusKonecJC();
@@ -1652,8 +1674,8 @@ var i,j:Integer;
       if (not (Blk as TBlkUsek).SComJCRef.Contains(Navestidlo)) then
         (Blk as TBlkUsek).SComJCRef.Add(Navestidlo);
 
-      Self.Krok := 0;
       (Navestidlo as TBlkSCom).DNjc := Self;
+      Self.Krok := 0;
 
       // kdyby nastala nize chyba, musi byt moznost JC smazat ze zasobniku
       if (Self.fstaveni.from_stack <> nil) then
@@ -1714,14 +1736,6 @@ var i,j:Integer;
 
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
 
-      if ((Navestidlo as TBlkSCom).ZAM) then
-       begin
-        writelog('Krok 14 : navestidlo: zamkle na STUJ',WR_VC);
-       end else begin
-        Self.NastavSCom();
-        writelog('Krok 14 : navestidlo: nastaveno na '+TBlkScom.NavestToString((Navestidlo as TBlkSCom).Navest), WR_VC);
-       end;
-
       if ((Navestidlo as TBlkSCom).ZAM) then Self.RozpadBlok := -2 else Self.RozpadBlok := -1;
       Self.RozpadRuseniBlok := -2;
 
@@ -1737,8 +1751,7 @@ var i,j:Integer;
       (Navestidlo as TBlkSCom).PropagatePOdjToTrat();
 
       writelog('Postavena JC '+Self.Nazev, WR_VC);
-     end;//case 14
-
+     end;//case 16
 
      ///////////////////////////////////////////////////////////////////////////
      // staveni nouzovych cest:
@@ -2921,6 +2934,7 @@ end;//function
 procedure TJC.DN();
 begin
  writelog('DN JC '+Self.nazev, WR_VC);
+ Self.fstaveni.TimeOut := Now + EncodeTime(0, 0, _JC_TIMEOUT_SEC, 0);
 
  // tohleto je finta, jak vykonat jen posledni krok staveni JC
  Self.Krok := 14;

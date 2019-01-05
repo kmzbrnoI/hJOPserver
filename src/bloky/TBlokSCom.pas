@@ -190,7 +190,8 @@ type
     constructor Create(index:Integer);
     destructor Destroy(); override;
 
-    function IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):boolean;
+    function IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):boolean; overload;
+    class function IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean; overload;
 
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
@@ -468,7 +469,7 @@ begin
      if (Self.changing) then
        Self.OnNavestSetError();
 
-     if (Self.SComStav.Navest >= 0) then
+     if (Self.SComStav.Navest >= _NAV_STUJ) then
       begin
        Self.SComStav.Navest := _NAV_DISABLED;
        JCDb.RusJC(Self);
@@ -723,6 +724,8 @@ begin
  Self.SComStav.cilova_navest := navest;
  Self.SComStav.changeEnd := Now + EncodeTime(0, 0, _NAV_CHANGE_DELAY_MSEC div 1000, _NAV_CHANGE_DELAY_MSEC mod 1000);
 
+ if (not TBlkSCom.IsPovolovaciNavest(Self.SComStav.cilova_navest)) then // zastavujeme ihned
+   Self.UpdateRychlostSpr(true);
  Self.Change();
 end;//procedure
 
@@ -1540,13 +1543,23 @@ end;//function
 
 function TBlkSCom.IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):boolean;
 begin
- // zatim jen pro vlakovou cestu
- case (Self.Navest) of
-  1..4, 6, 7, 11, 12, 14, 15: Result := true;
- else
-  Result := false;
- end;
-end;//function
+ Result := TBlkSCom.IsPovolovaciNavest(Self.Navest, jctype);
+end;
+
+class function TBlkSCom.IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean;
+begin
+ if (jcType = TJCType.vlak) then
+  begin
+   case (navest) of
+    1..4, 6, 7, 11, 12, 14, 15: Result := true;
+   else
+    Result := false;
+   end;
+  end else if (jcType = TJCType.posun) then
+    Result := (navest = _NAV_POSUN_ZAJ) or (navest = _NAV_POSUN_NEZAJ)
+  else
+    Result := false;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

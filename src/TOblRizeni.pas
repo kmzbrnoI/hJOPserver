@@ -621,7 +621,13 @@ begin
      bg := clFuchsia;
     end else if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_CHANGING) then begin
      fg := clBlack;
-     bg := $A0A0A0;
+     case ((Sender as TBlkSCom).ZacatekVolba) of
+      TBlkSComVolba.none : bg := $A0A0A0;
+      TBlkSComVolba.VC   : bg := clGreen;
+      TBlkSComVolba.PC   : bg := clWhite;
+      TBlkSComVolba.NC,
+      TBlkSComVolba.PP   : bg := clTeal;
+     end;//case
     end else begin
      if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_PRIVOL) then
       begin
