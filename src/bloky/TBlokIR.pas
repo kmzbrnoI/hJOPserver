@@ -120,7 +120,7 @@ procedure TBlkIR.Update();
 var state:TRCSInputState;
 begin
  try
-   state := RCSi.GetInput(Self.IRSettings.RCSAddrs.data[0].board,Self.IRSettings.RCSAddrs.data[0].port)
+   state := RCSi.GetInput(Self.IRSettings.RCSAddrs[0].board, Self.IRSettings.RCSAddrs[0].port)
  except
    state := failure;
  end;
@@ -150,6 +150,9 @@ end;//function
 
 procedure TBlkIR.SetSettings(data:TBlkIRSettings);
 begin
+ if (Self.IRSettings.RCSAddrs <> data.RCSAddrs) then
+   Self.IRSettings.RCSAddrs.Free();
+
  Self.IRSettings := data;
  Self.Change();
 end;//procedure
@@ -160,7 +163,7 @@ procedure TBlkIR.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.RCStoJSON(Self.IRSettings.RCSAddrs.data[0], json['mtb'].O['mtb']);
+ TBlk.RCStoJSON(Self.IRSettings.RCSAddrs[0], json['mtb'].O['mtb']);
 
  if (includeState) then
    Self.GetPtState(json['blokStav']);

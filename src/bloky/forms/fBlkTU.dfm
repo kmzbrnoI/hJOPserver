@@ -696,6 +696,10 @@ object F_BlkTU: TF_BlkTU
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
       end
     end
     object CHB_Zastavka_Sudy: TCheckBox

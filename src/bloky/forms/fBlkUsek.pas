@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, fSettings,
-  fBlkUsekSysVars, TBloky, TBlok, TBlokUsek, Mask, StrUtils;
+  fBlkUsekSysVars, TBloky, TBlok, TBlokUsek, Mask, StrUtils, Generics.Collections;
 
 type
   TF_BlkUsek = class(TForm)
@@ -163,18 +163,41 @@ var glob:TBlkSettings;
     end;
    end;//case
 
+  if (settings.RCSAddrs.Count > 0) then
+   begin
+    Self.SE_Port1.Value  := settings.RCSAddrs[0].port;
+    Self.SE_Board1.Value := settings.RCSAddrs[0].board;
+   end else begin
+    Self.SE_Port1.Value  := 0;
+    Self.SE_Board1.Value := 0;
+   end;
 
-  Self.SE_Port1.Value  := settings.RCSAddrs.data[0].port;
-  Self.SE_Board1.Value := settings.RCSAddrs.data[0].board;
+  if (settings.RCSAddrs.Count > 1) then
+   begin
+    Self.SE_Port2.Value  := settings.RCSAddrs[1].port;
+    Self.SE_Board2.Value := settings.RCSAddrs[1].board;
+   end else begin
+    Self.SE_Port2.Value  := 0;
+    Self.SE_Board2.Value := 0;
+   end;
 
-  Self.SE_Port2.Value  := settings.RCSAddrs.data[1].port;
-  Self.SE_Board2.Value := settings.RCSAddrs.data[1].board;
+  if (settings.RCSAddrs.Count > 2) then
+   begin
+    Self.SE_Port3.Value  := settings.RCSAddrs[2].port;
+    Self.SE_Board3.Value := settings.RCSAddrs[2].board;
+   end else begin
+    Self.SE_Port3.Value  := 0;
+    Self.SE_Board3.Value := 0;
+   end;
 
-  Self.SE_Port3.Value  := settings.RCSAddrs.data[2].port;
-  Self.SE_Board3.Value := settings.RCSAddrs.data[2].board;
-
-  Self.SE_Port4.Value  := settings.RCSAddrs.data[3].port;
-  Self.SE_Board4.Value := settings.RCSAddrs.data[3].board;
+  if (settings.RCSAddrs.Count > 3) then
+   begin
+    Self.SE_Port4.Value  := settings.RCSAddrs[3].port;
+    Self.SE_Board4.Value := settings.RCSAddrs[3].board;
+   end else begin
+    Self.SE_Port4.Value  := 0;
+    Self.SE_Board4.Value := 0;
+   end;
 
   Self.CB_Zesil.ItemIndex := -1;
   for i := 0 to Boosters.sorted.Count-1 do
@@ -253,27 +276,15 @@ var glob:TBlkSettings;
    end;
 
   //ukladani dat
-  settings.RCSAddrs.data[0].board := Self.SE_Board1.Value;
-  settings.RCSAddrs.data[0].port  := Self.SE_Port1.Value;
-
-  settings.RCSAddrs.data[1].board := Self.SE_Board2.Value;
-  settings.RCSAddrs.data[1].port  := Self.SE_Port2.Value;
-
-  settings.RCSAddrs.data[2].board := Self.SE_Board3.Value;
-  settings.RCSAddrs.data[2].port  := Self.SE_Port3.Value;
-
-  settings.RCSAddrs.data[3].board := Self.SE_Board4.Value;
-  settings.RCSAddrs.data[3].port  := Self.SE_Port4.Value;
-
+  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+  if (Self.CHB_D1.Checked) then
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board1.Value, Self.SE_Port1.Value));
+  if (Self.CHB_D2.Checked) then
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board2.Value, Self.SE_Port2.Value));
+  if (Self.CHB_D3.Checked) then
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board3.Value, Self.SE_Port3.Value));
   if (Self.CHB_D4.Checked) then
-   settings.RCSAddrs.Count := 4
-  else if (Self.CHB_D3.Checked) then
-   settings.RCSAddrs.Count := 3
-  else if (Self.CHB_D2.Checked) then
-   settings.RCSAddrs.Count := 2
-  else if (Self.CHB_D1.Checked) then
-   settings.RCSAddrs.Count := 1
-  else settings.RCSAddrs.Count := 0;
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
 
   settings.Lenght  := StrToFloatDef(Self.E_Delka.Text,0);
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;

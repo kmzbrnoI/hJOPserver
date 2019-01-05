@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlokIR;
+  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlokIR, Generics.Collections;
 
 type
   TF_BlkIR = class(TForm)
@@ -77,11 +77,17 @@ var glob:TBlkSettings;
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  Self.SE_MTB.Value     := settings.RCSAddrs.data[0].board;
-  Self.SE_Port.Value    := settings.RCSAddrs.data[0].port;
+  if (settings.RCSAddrs.Count > 0) then
+   begin
+    Self.SE_MTB.Value  := settings.RCSAddrs[0].board;
+    Self.SE_Port.Value := settings.RCSAddrs[0].port;
+   end else begin
+    Self.SE_MTB.Value  := 0;
+    Self.SE_Port.Value := 0;
+   end;
 
-  E_Nazev.Text          := glob.name;
-  SE_ID.Value           := glob.id;
+  E_Nazev.Text := glob.name;
+  SE_ID.Value  := glob.id;
 
   F_BlkIR.Caption := 'Editovat data bloku '+glob.name+' (IR)';
   F_BlkIR.ActiveControl := B_Save;
@@ -137,9 +143,8 @@ var glob:TBlkSettings;
 
   //ukladani dat
 
-  settings.RCSAddrs.Count := 1;
-  settings.RCSAddrs.data[0].board := Self.SE_MTB.Value;
-  settings.RCSAddrs.data[0].port  := Self.SE_Port.Value;
+  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_MTB.Value, Self.SE_Port.Value));
 
   Self.Blk.SetSettings(settings);
 

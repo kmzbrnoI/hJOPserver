@@ -95,17 +95,17 @@ type
   reg_please:TIdCOntext;                                                        // zde je ulozen regulator, ktery danou oblast rizeni zada o prideleni lokomotivy
  end;
 
- // jedno MTB oblasti rizeni
- TORMTB = record
-  present:boolean;                                                              // jestli je MTB v OR pritomno
-  failed:boolean;                                                               // jestli MTB v OR selhalo (nekomunikuje)
+ // jedno RCS oblasti rizeni
+ TORRCS = record
+  present:boolean;                                                              // jestli je RCS v OR pritomno
+  failed:boolean;                                                               // jestli RCS v OR selhalo (nekomunikuje)
  end;
 
  // seznam MTB v OR
- TORMTBs = record
-  MTBs: array [0..TRCS._MAX_RCS] of TORMTB;                                     // seznam MTB v OR, staticky mapovano kde index je adresa MTB
-  failture:boolean;                                                             // jestli doslo k selhani jakohokoliv MTB v OR
-  last_failture_time:TDateTime;                                                 // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani MTB pro dispecera)
+ TORRCSs = record
+  modules: array [0..TRCS._MAX_RCS] of TORRCS;                                     // seznam RCS modulu v OR, indexem je adresa RCS
+  failure:boolean;                                                              // jestli doslo k selhani jakohokoliv RCS modulu v OR
+  last_failure_time:TDateTime;                                                  // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani RCS modulu pro dispecera)
  end;
 
  /////////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ type
 
       MereniCasu:TList<TMereniCasu>;                                            // seznam mereni casu bezicich v OR
 
-      OR_MTB:TORMTBs;                                                           // seznam MTB pritomnych v OR, seznam vsech MTB asociovanych s bloky pritomnych v teto OR
+      OR_RCS:TORRCSs;                                                           // seznam RCS modulu pritomnych v OR, seznam vsech RCS asociovanych s bloky pritomnych v teto OR
 
       // prace s databazi pripojenych panelu:
       function PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string):Byte;
@@ -147,8 +147,8 @@ type
       procedure SetPrivolavackaBlkCnt(new:Integer);
       procedure SetTimerCnt(new:Integer);
 
-      procedure MTBClear();                                                     // nastavi vsem MTB, ze nejsou v OR
-      procedure MTBUpdate();                                                    // posila souhrnne zpravy panelu o vypadku MTB modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
+      procedure RCSClear();                                                     // nastavi vsem MTB, ze nejsou v OR
+      procedure RCSUpdate();                                                    // posila souhrnne zpravy panelu o vypadku MTB modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
 
       procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
 
@@ -184,8 +184,8 @@ type
       function AddMereniCasu(callback:TNotifyEvent; len:TDateTime):Byte;        // prida mereni casu; vrati ID mereni
       procedure StopMereniCasu(id:Integer);                                     // zastavi mereni casu s danym ID
 
-      procedure MTBAdd(addr:integer);                                           // prida MTB do OR
-      procedure MTBFail(addr:integer);                                          // informuje OR o vypadku MTB
+      procedure RCSAdd(addr:integer);                                           // prida MTB do OR
+      procedure RCSFail(addr:integer);                                          // informuje OR o vypadku RCS
 
       procedure UpdateLine(LI:TListItem);                                       // aktualizuje zaznam v tabulce oblasti rizeni ve F_Main
 
@@ -284,7 +284,7 @@ begin
 
  Self.ORProp.Osvetleni := TList<TOsv>.Create();
  Self.Connected        := TList<TORPanel>.Create();
- Self.MTBClear();
+ Self.RCSClear();
 
  Self.ORStav.dk_click_callback := nil;
  Self.ORStav.reg_please := nil;
@@ -314,7 +314,7 @@ end;//dtor
 
 //nacitani dat OR
 //na kazdem radku je ulozena jedna oblast rizeni ve formatu:
-//  nazev;nazev_zkratka;id;(osv_mtb|osv_port|osv_name)(osv_mtb|...)...;;
+//  nazev;nazev_zkratka;id;(osv_RCS|osv_port|osv_name)(osv_RCS|...)...;;
 procedure TOR.LoadData(str:string);
 var data_main,data_osv,data_osv2:TStrings;
     j:Integer;
@@ -1354,7 +1354,7 @@ end;//procedure
 procedure TOR.Update();
 var i:Integer;
 begin
- Self.MTBUpdate();
+ Self.RCSUpdate();
  Self.stack.Update();
 
  //aktualizace mereni casu:
@@ -1624,52 +1624,52 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.MTBClear();
+procedure TOR.RCSClear();
 var i:Integer;
 begin
  for i := 0 to TRCS._MAX_RCS do
-  Self.OR_MTB.MTBs[i].present := false;
+  Self.OR_RCS.modules[i].present := false;
 end;//procedure
 
-procedure TOR.MTBAdd(addr:integer);
+procedure TOR.RCSAdd(addr:integer);
 begin
  try
-   Self.OR_MTB.MTBs[addr].present := true;
+   Self.OR_RCS.modules[addr].present := true;
  except
 
  end;
 end;//procedure
 
-procedure TOR.MTBFail(addr:integer);
+procedure TOR.RCSFail(addr:integer);
 begin
  try
-   if (not Self.OR_MTB.MTBs[addr].present) then Exit();
-   Self.OR_MTB.MTBs[addr].failed := true;
-   Self.OR_MTB.failture := true;
-   Self.OR_MTB.last_failture_time := Now;
+   if (not Self.OR_RCS.modules[addr].present) then Exit();
+   Self.OR_RCS.modules[addr].failed := true;
+   Self.OR_RCS.failure := true;
+   Self.OR_RCS.last_failure_time := Now;
  except
 
  end;
 end;//procedure
 
-procedure TOR.MTBUpdate();
+procedure TOR.RCSUpdate();
 var i:Integer;
     str:string;
 begin
- if (not Self.OR_MTB.failture) then Exit();
+ if (not Self.OR_RCS.failure) then Exit();
 
- if ((Self.OR_MTB.last_failture_time + EncodeTime(0, 0, 0, 500)) < Now) then
+ if ((Self.OR_RCS.last_failure_time + EncodeTime(0, 0, 0, 500)) < Now) then
   begin
-   str := 'Výpadek MTB modulu ';
+   str := 'Výpadek RCS modulu ';
    for i := 0 to TRCS._MAX_RCS do
-    if (Self.OR_MTB.MTBs[i].failed) then
+    if (Self.OR_RCS.modules[i].failed) then
      begin
       str := str + IntToStr(i) + ', ';
-      Self.OR_MTB.MTBs[i].failed := false;
+      Self.OR_RCS.modules[i].failed := false;
      end;
 
    str := LeftStr(str, Length(str)-2);
-   Self.OR_MTB.failture := false;
+   Self.OR_RCS.failure := false;
 
    for i := 0 to Self.Connected.Count-1 do
      if (Self.Connected[i].Rights >= read) then

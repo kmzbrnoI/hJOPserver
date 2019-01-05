@@ -297,12 +297,12 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVyhybka.Enable();
-var i:Integer;
+var rcsaddr:TRCSAddr;
 begin
  if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit;
- for i := 0 to Self.VyhSettings.RCSAddrs.Count-1 do
-   if (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[i].board)) then
-    Exit();
+ for rcsaddr in Self.VyhSettings.RCSAddrs do
+   if (not RCSi.IsModule(rcsaddr.board)) then
+     Exit();
 
  Self.VyhStav.poloha := none;
  Self.VyhStav.redukuji_spojku := false;
@@ -388,6 +388,10 @@ var Blk:TBlk;
     spojka_old:Integer;
 begin
  spojka_old := Self.VyhSettings.spojka;
+
+ if (data.RCSAddrs <> Self.VyhSettings.RCSAddrs) then
+   Self.VyhSettings.RCSAddrs.Free();
+
  Self.VyhSettings := data;
 
  // kontrola navaznosti spojky
@@ -498,8 +502,8 @@ var iplus,iminus: TRCSInputState;
 
   //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
   try
-    iplus  := RCSi.GetInput(Self.VyhSettings.RCSAddrs.data[0].board,Self.VyhSettings.RCSAddrs.data[0].port);
-    iminus := RCSi.GetInput(Self.VyhSettings.RCSAddrs.data[1].board,Self.VyhSettings.RCSAddrs.data[1].port);
+    iplus  := RCSi.GetInput(Self.VyhSettings.RCSAddrs[0].board,Self.VyhSettings.RCSAddrs[0].port);
+    iminus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[1].board,Self.VyhSettings.RCSAddrs[1].port);
   except
     iplus  := failure;
     iminus := failure;
@@ -507,8 +511,8 @@ var iplus,iminus: TRCSInputState;
 
   try
     if ((iplus = failure) or (iminus = failure) or
-        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[2].board)) or
-        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs.data[3].board))) then
+        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[2].board)) or
+        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[3].board))) then
      begin
       if (Self.Stav.poloha <> TVyhPoloha.disabled) then
        begin
@@ -725,8 +729,8 @@ begin
  if (new = plus) then
   begin
    try
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board,Self.VyhSettings.RCSAddrs.data[2].port, 1);
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board,Self.VyhSettings.RCSAddrs.data[3].port, 0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board,Self.VyhSettings.RCSAddrs[2].port, 1);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board,Self.VyhSettings.RCSAddrs[3].port, 0);
    except
      for i := 0 to Self.OblsRizeni.Cnt-1 do
        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
@@ -742,8 +746,8 @@ begin
  if (new = minus) then
   begin
    try
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board, Self.VyhSettings.RCSAddrs.data[2].port, 0);
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board, Self.VyhSettings.RCSAddrs.data[3].port, 1);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 1);
    except
      for i := 0 to Self.OblsRizeni.Cnt-1 do
        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
@@ -792,8 +796,8 @@ begin
    try
      if (RCSi.Started) then
       begin
-       RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board, Self.VyhSettings.RCSAddrs.data[2].port, 0);
-       RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board, Self.VyhSettings.RCSAddrs.data[3].port, 0);
+       RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
+       RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 0);
       end;
    except
 
@@ -814,8 +818,8 @@ begin
  if (Now >= Self.NullOutput.NullOutputTime) then
   begin
    try
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[2].board,Self.VyhSettings.RCSAddrs.data[2].port,0);
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs.data[3].board,Self.VyhSettings.RCSAddrs.data[3].port,0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board,Self.VyhSettings.RCSAddrs[2].port,0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board,Self.VyhSettings.RCSAddrs[3].port,0);
    except
 
    end;
@@ -1202,10 +1206,10 @@ procedure TBlkVyhybka.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[0], json['mtb'].O['vstup+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[1], json['mtb'].O['vstup-']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[2], json['mtb'].O['vystup+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs.data[3], json['mtb'].O['vystup-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[0], json['mtb'].O['vstup+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[1], json['mtb'].O['vstup-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[2], json['mtb'].O['vystup+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[3], json['mtb'].O['vystup-']);
 
  json['usek'] := Self.VyhRel.UsekID;
 

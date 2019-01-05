@@ -99,6 +99,7 @@ type
       function IsSimulatorMode():boolean;
 
       property generalError:boolean read fGeneralError;
+      class function RCSAddr(board:Byte; port:Byte):TRCSAddr;
 
       //events
       property AfterClose:TNotifyEvent read fAfterClose write fAfterClose;
@@ -191,12 +192,13 @@ begin
  for i := 0 to Blky.Cnt-1 do
   begin
    Blky.GetBlkByIndex(i, Blk);
-   if (Blk.GetGlobalSettings.typ = _BLK_VYH) then
-     Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs.data[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs.data[0].port,1);
+   if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).GetSettings().RCSAddrs.Count > 0)) then
+     Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
    if (Blk.typ = _BLK_PREJEZD) then
-     Self.SetInput((Blk as TBlkPrejezd).GetSettings().MTB, (Blk as TBlkPrejezd).GetSettings().MTBInputs.Otevreno, 1);
-   if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava())) then
-     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].port, 1);
+     Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCS, (Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
+   if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava()) and
+       ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
+     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
   end;//for cyklus
 
  //defaultni stav zesilovacu
@@ -216,8 +218,8 @@ begin
   begin
    Blky.GetBlkByIndex(i,Blk);
    if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then continue;
-   if ((Blk as TBlkUsek).IsSouprava()) then
-     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].board,(Blk as TBlkUsek).GetSettings().RCSAddrs.data[0].port,1);
+   if (((Blk as TBlkUsek).IsSouprava()) and ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
+     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port,1);
   end;
 end;
 
@@ -384,6 +386,14 @@ end;
 function TRCS.IsSimulatorMode():boolean;
 begin
  Result := (LowerCase(ExtractFileName(Self.Lib)) = 'simulator.dll');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TRCS.RCSAddr(board:Byte; port:Byte):TRCSAddr;
+begin
+ Result.board := board;
+ Result.port := port;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

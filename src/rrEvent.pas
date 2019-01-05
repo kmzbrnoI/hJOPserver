@@ -168,8 +168,13 @@ begin
 
  try
    case (Self.m_data.typ) of
-     rrtUsek: Result := ((TBlkUsek(Sender).Stav.StavAr[m_data.usekPart] = TUsekStav.obsazeno) and (m_data.usekState)) or
-                       ((TBlkUsek(Sender).Stav.StavAr[m_data.usekPart] = TUsekStav.uvolneno) and (not m_data.usekState));
+     rrtUsek: begin
+       if (Integer(m_data.usekPart) < TBlkUsek(Sender).sekceStav.Count) then
+         Result := ((TBlkUsek(Sender).sekceStav[m_data.usekPart] = TUsekStav.obsazeno) and (m_data.usekState)) or
+                         ((TBlkUsek(Sender).sekceStav[m_data.usekPart] = TUsekStav.uvolneno) and (not m_data.usekState))
+        else
+         Result := safeState;
+     end;
 
      rrtIR: begin
        Blky.GetBlkByID(m_data.irId, Blk);

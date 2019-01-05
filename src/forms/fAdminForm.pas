@@ -237,7 +237,7 @@ begin
       begin
        UsekSet := (Blk as TBlkUsek).GetSettings();
        for i := 0 to UsekSet.RCSAddrs.Count-1 do
-        RCSi.SetInput(UsekSet.RCSAddrs.data[i].board, UsekSet.RCSAddrs.data[i].port, 0);
+        RCSi.SetInput(UsekSet.RCSAddrs[i].board, UsekSet.RCSAddrs[i].port, 0);
        Exit();
       end;
     end;//uvolnit usek pred navestidlem
@@ -249,13 +249,13 @@ begin
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
      for i := 0 to UsekSet.RCSAddrs.Count-1 do
-      RCSi.SetInput(UsekSet.RCSAddrs.data[i].board, UsekSet.RCSAddrs.data[i].port, 0);
+      RCSi.SetInput(UsekSet.RCSAddrs[i].board, UsekSet.RCSAddrs[i].port, 0);
     end else begin
      // obsadit RozpadBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
      if (UsekSet.RCSAddrs.Count > 0) then
-      RCSi.SetInput(UsekSet.RCSAddrs.data[0].board, UsekSet.RCSAddrs.data[0].port, 1);
+      RCSi.SetInput(UsekSet.RCSAddrs[0].board, UsekSet.RCSAddrs[0].port, 1);
     end;//else
  except
 
@@ -314,7 +314,7 @@ begin
      if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
          (TU.prevTU.Souprava = TU.Souprava)) then
       begin
-       RCSi.SetInput(TBlkUsek(TU.prevTU).GetSettings().RCSAddrs.data[0].board, TBlkUsek(TU.prevTU).GetSettings().RCSAddrs.data[0].port, 0);
+       RCSi.SetInput(TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0].board, TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0].port, 0);
        Exit();
       end;
     end;//for i
@@ -327,7 +327,7 @@ begin
          (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
         ((TU.nextTU.navKryci = nil) or (TBlkSCom(TU.nextTU.navKryci).Navest > 0))) then
       begin
-       RCSi.SetInput(TBlkUsek(TU.nextTU).GetSettings().RCSAddrs.data[0].board, TBlkUsek(TU.nextTU).GetSettings().RCSAddrs.data[0].port, 1);
+       RCSi.SetInput(TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0].board, TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0].port, 1);
        Exit();
       end;
     end;//for i
@@ -374,18 +374,18 @@ begin
        if (((blk as TBlkVyhybka).Stav.poloha_real <> TVyhPoloha.none) and ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
         begin
          if ((blk as TBlkVyhybka).StaveniPlus) then
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].port, 0)
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[1].port, 0)
          else
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].port, 0);
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[0].port, 0);
         end;//if koncova poloha
 
        // po 3 sekundach oznamime koncovou polohu
        if ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 3, 0) < Now) then
         begin
          if ((blk as TBlkVyhybka).StaveniPlus) then
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[0].port, 1)
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[0].port, 1)
          else
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs.data[1].port, 1);
+          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[1].port, 1);
         end;//if koncova poloha
 
        Exit();

@@ -94,14 +94,14 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVystup.Enable();
-var i:Integer;
+var RCSaddr:TRCSAddr;
 begin
  Self.VystupStav.enabled := true;
- for i := 0 to Self.VystupSettings.RCSAddrs.Count-1 do
+ for RCSaddr in Self.VystupSettings.RCSAddrs do
   begin
    try
-     if ((RCSi.Started) and (RCSi.IsModule(Self.VystupSettings.RCSAddrs.data[i].board)) and (not RCSi.IsModuleFailure(Self.VystupSettings.RCSAddrs.data[i].board))) then
-       RCSi.SetOutput(Self.VystupSettings.RCSAddrs.data[i].board, Self.VystupSettings.RCSAddrs.data[i].port, 1);
+     if ((RCSi.Started) and (RCSi.IsModule(RCSaddr.board)) and (not RCSi.IsModuleFailure(RCSaddr.board))) then
+       RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 1);
    except
 
    end;
@@ -109,14 +109,14 @@ begin
 end;//procedure
 
 procedure TBlkVystup.Disable();
-var i:Integer;
+var RCSaddr:TRCSAddr;
 begin
  Self.VystupStav.enabled := false;
- for i := 0 to Self.VystupSettings.RCSAddrs.Count-1 do
+ for RCSaddr in Self.VystupSettings.RCSAddrs do
   begin
    try
-     if ((RCSi.Started) and (RCSi.IsModule(Self.VystupSettings.RCSAddrs.data[i].board)) and (not RCSi.IsModuleFailure(Self.VystupSettings.RCSAddrs.data[i].board))) then
-       RCSi.SetOutput(Self.VystupSettings.RCSAddrs.data[i].board, Self.VystupSettings.RCSAddrs.data[i].port, 0);
+     if ((RCSi.Started) and (RCSi.IsModule(RCSaddr.board)) and (not RCSi.IsModuleFailure(RCSaddr.board))) then
+       RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 0);
    except
 
    end;
@@ -132,6 +132,9 @@ end;//function
 
 procedure TBlkVystup.SetSettings(data:TBlkVystupSettings);
 begin
+ if (Self.VystupSettings.RCSAddrs <> data.RCSAddrs) then
+   Self.VystupSettings.RCSAddrs.Free();
+
  Self.VystupSettings := data;
  Self.Change();
 end;//procedure

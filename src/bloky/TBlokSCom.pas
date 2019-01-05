@@ -423,7 +423,7 @@ procedure TBlkSCom.Enable();
 begin
  try
    if ((Self.SComSettings.RCSAddrs.Count > 0) and
-       (not RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board))) then
+       (not RCSi.IsModule(Self.SComSettings.RCSAddrs[0].board))) then
      Exit();
  except
    Exit();
@@ -462,8 +462,8 @@ begin
 
  if (Self.SComSettings.RCSAddrs.Count > 0) then
   begin
-   if ((RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) and
-       (not RCSi.IsModuleFailure(Self.SComSettings.RCSAddrs.data[0].board))) then
+   if ((RCSi.IsModule(Self.SComSettings.RCSAddrs[0].board)) and
+       (not RCSi.IsModuleFailure(Self.SComSettings.RCSAddrs[0].board))) then
     begin
      if (Self.SComStav.Navest = _NAV_DISABLED) then
       begin
@@ -519,6 +519,9 @@ begin
     end;
    Self.SComSettings.events.Free();
   end;
+
+ if (Self.SComSettings.RCSAddrs <> data.RCSAddrs) then
+   Self.SComSettings.RCSAddrs.Free();
 
  Self.SComSettings := data;
  Self.Change();
@@ -683,16 +686,16 @@ begin
      if (Self.SComSettings.OutputType = scom) then
       begin
        //scom
-       RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,
-          Self.SComSettings.RCSAddrs.data[0].port, navest);
+       RCSi.SetOutput(Self.SComSettings.RCSAddrs[0].board,
+          Self.SComSettings.RCSAddrs[0].port, navest);
       end else begin
        //binary
        case (navest) of
-        0,5,13,16..127:RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,
-            Self.SComSettings.RCSAddrs.data[0].port, 0);
+        0,5,13,16..127:RCSi.SetOutput(Self.SComSettings.RCSAddrs[0].board,
+            Self.SComSettings.RCSAddrs[0].port, 0);
        else//case (navest)
-        RCSi.SetOutput(Self.SComSettings.RCSAddrs.data[0].board,
-            Self.SComSettings.RCSAddrs.data[0].port, 1);
+        RCSi.SetOutput(Self.SComSettings.RCSAddrs[0].board,
+            Self.SComSettings.RCSAddrs[0].port, 1);
        end;//else case 0,5,13,16..127
       end;//else
     end;
@@ -1093,9 +1096,9 @@ begin
      Blky.GetBlkByID(Self.SComSettings.events[0].zastaveni.data.irId, Blk);
      if ((Blk = nil) or (Blk.typ <> _BLK_IR)) then Exit();
      if (enabled) then
-       RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs.data[0].board, TBlkIR(Blk).GetSettings().RCSAddrs.data[0].port, 1)
+       RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 1)
      else
-       RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs.data[0].board, TBlkIR(Blk).GetSettings().RCSAddrs.data[0].port, 0);
+       RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 0);
     end;
  except
    ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se nastavit stav IR èidla!', TOR(SenderOR).ShortName, 'SIMULACE');

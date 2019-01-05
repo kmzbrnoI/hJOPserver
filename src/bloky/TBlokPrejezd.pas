@@ -8,22 +8,22 @@ uses IniFiles, TBlok, TechnologieJC, SysUtils, Menus, TOblsRizeni,
      Classes, TechnologieRCS, IdContext, TOblRizeni, Generics.Collections;
 
 type
- TBlkPrjMTBInputs = record
+ TBlkPrjRCSInputs = record
   Zavreno:Byte;
   Otevreno:Byte;
   Vystraha:Byte;
   Anulace:Byte;
  end;
 
- TBlkPrjMTBOutputs = record
+ TBlkPrjRCSOutputs = record
   Zavrit:Byte;
   NOtevrit:Byte;
  end;
 
  TBlkPrjSettings = record
-  MTB:Byte;
-  MTBInputs:TBlkPrjMTBInputs;
-  MTBOutputs:TBlkPrjMTBOutputs;
+  RCS:Byte;
+  RCSInputs:TBlkPrjRCSInputs;
+  RCSOutputs:TBlkPrjRCSOutputs;
  end;
 
  TBlkPrjBasicStav = (disabled = -5, none = -1, otevreno = 0, vystraha = 1, uzavreno = 2, anulace = 3);
@@ -165,15 +165,15 @@ begin
  Self.PrjStav.Stit := '';
  Self.PrjStav.Vyl  := '';
 
- Self.PrjSettings.MTB := ini_tech.ReadInteger(section, 'MTB', 0);
+ Self.PrjSettings.RCS := ini_tech.ReadInteger(section, 'RCS', 0);
 
- Self.PrjSettings.MTBInputs.Zavreno   := ini_tech.ReadInteger(section, 'MTBIz', 0);
- Self.PrjSettings.MTBInputs.Otevreno  := ini_tech.ReadInteger(section, 'MTBIo', 0);
- Self.PrjSettings.MTBInputs.Vystraha  := ini_tech.ReadInteger(section, 'MTBIv', 0);
- Self.PrjSettings.MTBInputs.Anulace   := ini_tech.ReadInteger(section, 'MTBa', 0);
+ Self.PrjSettings.RCSInputs.Zavreno   := ini_tech.ReadInteger(section, 'RCSIz', 0);
+ Self.PrjSettings.RCSInputs.Otevreno  := ini_tech.ReadInteger(section, 'RCSIo', 0);
+ Self.PrjSettings.RCSInputs.Vystraha  := ini_tech.ReadInteger(section, 'RCSIv', 0);
+ Self.PrjSettings.RCSInputs.Anulace   := ini_tech.ReadInteger(section, 'RCSa', 0);
 
- Self.PrjSettings.MTBOutputs.Zavrit   := ini_tech.ReadInteger(section, 'MTBOz', 0);
- Self.PrjSettings.MTBOutputs.NOtevrit := ini_tech.ReadInteger(section, 'MTBOnot', 0);
+ Self.PrjSettings.RCSOutputs.Zavrit   := ini_tech.ReadInteger(section, 'RCSOz', 0);
+ Self.PrjSettings.RCSOutputs.NOtevrit := ini_tech.ReadInteger(section, 'RCSOnot', 0);
 
  Self.PrjStav.stit := ini_stat.ReadString(section, 'stit', '');
 
@@ -192,22 +192,22 @@ begin
   end;
 
  for i := 0 to Self.ORsRef.Cnt-1 do
-  Self.ORsRef.ORs[i].MTBAdd(Self.PrjSettings.MTB);
+  Self.ORsRef.ORs[i].RCSAdd(Self.PrjSettings.RCS);
 end;//procedure
 
 procedure TBlkPrejezd.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech, section);
 
- ini_tech.WriteInteger(section, 'MTB', Self.PrjSettings.MTB);
+ ini_tech.WriteInteger(section, 'RCS', Self.PrjSettings.RCS);
 
- ini_tech.WriteInteger(section, 'MTBIz', Self.PrjSettings.MTBInputs.Zavreno);
- ini_tech.WriteInteger(section, 'MTBIo', Self.PrjSettings.MTBInputs.Otevreno);
- ini_tech.WriteInteger(section, 'MTBIv', Self.PrjSettings.MTBInputs.Vystraha);
- ini_tech.WriteInteger(section, 'MTBa', Self.PrjSettings.MTBInputs.Anulace);
+ ini_tech.WriteInteger(section, 'RCSIz', Self.PrjSettings.RCSInputs.Zavreno);
+ ini_tech.WriteInteger(section, 'RCSIo', Self.PrjSettings.RCSInputs.Otevreno);
+ ini_tech.WriteInteger(section, 'RCSIv', Self.PrjSettings.RCSInputs.Vystraha);
+ ini_tech.WriteInteger(section, 'RCSa', Self.PrjSettings.RCSInputs.Anulace);
 
- ini_tech.WriteInteger(section, 'MTBOz', Self.PrjSettings.MTBOutputs.Zavrit);
- ini_tech.WriteInteger(section, 'MTBOnot', Self.PrjSettings.MTBOutputs.NOtevrit);
+ ini_tech.WriteInteger(section, 'RCSOz', Self.PrjSettings.RCSOutputs.Zavrit);
+ ini_tech.WriteInteger(section, 'RCSOnot', Self.PrjSettings.RCSOutputs.NOtevrit);
 end;//procedure
 
 procedure TBlkPrejezd.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -221,7 +221,7 @@ end;//procedure
 procedure TBlkPrejezd.Enable();
 begin
  try
-   if (not RCSi.IsModule(Self.PrjSettings.MTB)) then
+   if (not RCSi.IsModule(Self.PrjSettings.RCS)) then
     Exit();
  except
    Exit();
@@ -248,8 +248,8 @@ begin
  if (not (GetFunctions.GetSystemStart())) then Exit;
 
  try
-   available := (RCSi.IsModule(Self.PrjSettings.MTB) and
-                 (not RCSi.IsModuleFailure(Self.PrjSettings.MTB)));
+   available := (RCSi.IsModule(Self.PrjSettings.RCS) and
+                 (not RCSi.IsModuleFailure(Self.PrjSettings.RCS)));
  except
    available := false;
  end;
@@ -327,12 +327,12 @@ var tmpInputs: record
       Anulace:Boolean;
     end;
 begin
- // get data from mtb
+ // get data from RCS
  try
-   tmpInputs.Zavreno  := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno) = isOn);
-   tmpInputs.Otevreno := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Otevreno) = isOn);
-   tmpInputs.Vystraha := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Vystraha) = isOn);
-   tmpInputs.Anulace  := (RCSi.GetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Anulace) = isOn);
+   tmpInputs.Zavreno  := (RCSi.GetInput(Self.PrjSettings.RCS, Self.PrjSettings.RCSInputs.Zavreno) = isOn);
+   tmpInputs.Otevreno := (RCSi.GetInput(Self.PrjSettings.RCS, Self.PrjSettings.RCSInputs.Otevreno) = isOn);
+   tmpInputs.Vystraha := (RCSi.GetInput(Self.PrjSettings.RCS, Self.PrjSettings.RCSInputs.Vystraha) = isOn);
+   tmpInputs.Anulace  := (RCSi.GetInput(Self.PrjSettings.RCS, Self.PrjSettings.RCSInputs.Anulace) = isOn);
  except
    // prejezd prejde do poruchoveho stavu
    tmpInputs.Zavreno  := false;
@@ -355,16 +355,16 @@ begin
  try
    if ((Self.PrjStav.PC_UZ) or (Self.Zaver)) then
     begin
-     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 1);
+     RCSi.SetOutput(Self.PrjSettings.RCS, Self.PrjSettings.RCSOutputs.Zavrit, 1);
     end else begin
-     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.Zavrit, 0);
+     RCSi.SetOutput(Self.PrjSettings.RCS, Self.PrjSettings.RCSOutputs.Zavrit, 0);
     end;
 
    if (Self.PrjStav.PC_NOT) then
     begin
-     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 1);
+     RCSi.SetOutput(Self.PrjSettings.RCS, Self.PrjSettings.RCSOutputs.NOtevrit, 1);
     end else begin
-     RCSi.SetOutput(Self.PrjSettings.MTB, Self.PrjSettings.MTBOutputs.NOtevrit, 0);
+     RCSi.SetOutput(Self.PrjSettings.RCS, Self.PrjSettings.RCSOutputs.NOtevrit, 0);
     end;
  except
 
@@ -504,7 +504,7 @@ end;
 procedure TBlkPrejezd.MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 1);
+   RCSi.SetInput(Self.PrjSettings.RCS, Self.PrjSettings.RCSInputs.Zavreno, 1);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -513,7 +513,7 @@ end;
 procedure TBlkPrejezd.MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.PrjSettings.MTB, Self.PrjSettings.MTBInputs.Zavreno, 0);
+   RCSi.SetInput(Self.PrjSettings.RCS, Self.PrjSettings.RCSInputs.Zavreno, 0);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -566,7 +566,7 @@ begin
      Result := Result + '*ZAVRENO<'
    else
      Result := Result + '*ZAVRENO>';
-  end;//if MTB.lib = 2
+  end;//if RCS.lib = 2
 
  if (rights >= TORControlRights.superuser) then
   begin

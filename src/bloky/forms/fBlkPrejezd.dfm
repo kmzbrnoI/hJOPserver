@@ -140,7 +140,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     ParentFont = False
     TabOrder = 2
   end
-  object GB_MTB: TGroupBox
+  object GB_RCS: TGroupBox
     Left = 8
     Top = 110
     Width = 321
@@ -404,7 +404,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Value = 0
       end
     end
-    object SE_MTB: TSpinEdit
+    object SE_RCS: TSpinEdit
       Left = 184
       Top = 16
       Width = 73

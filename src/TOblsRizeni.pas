@@ -248,10 +248,10 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORs.MTBFail(addr:integer);
-var i:Integer;
+var OblR:TOR;
 begin
- for i := 0 to Self.ORsDatabase.Count-1 do
-  Self.ORsDatabase[i].MTBFail(addr);
+ for OblR in Self.ORsDatabase do
+   OblR.RCSFail(addr);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

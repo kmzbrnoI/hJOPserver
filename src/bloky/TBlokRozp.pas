@@ -163,6 +163,9 @@ end;//function
 
 procedure TBlkRozp.SetSettings(data:TBlkRozpSettings);
 begin
+ if (Self.RozpSettings.RCSAddrs <> data.RCSAddrs) then
+   Self.RozpSettings.RCSAddrs.Free();
+
  Self.RozpSettings := data;
  Self.Change();
 end;//procedure
@@ -231,9 +234,9 @@ procedure TBlkRozp.UpdateOutput();
 begin
  try
    if (Self.status = TRozpStatus.active) then
-     RCSi.SetOutput(Self.RozpSettings.RCSAddrs.data[0].board, Self.RozpSettings.RCSAddrs.data[0].port, 1)
+     RCSi.SetOutput(Self.RozpSettings.RCSAddrs[0].board, Self.RozpSettings.RCSAddrs[0].port, 1)
    else
-     RCSi.SetOutput(Self.RozpSettings.RCSAddrs.data[0].board, Self.RozpSettings.RCSAddrs.data[0].port, 0);
+     RCSi.SetOutput(Self.RozpSettings.RCSAddrs[0].board, Self.RozpSettings.RCSAddrs[0].port, 0);
  except
 
  end;

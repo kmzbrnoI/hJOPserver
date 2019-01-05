@@ -145,8 +145,8 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
-    Self.SE_MTBMTB.Value := settings.RCSAddrs.data[0].board;
-    SE_MTBPort.Value     := settings.RCSAddrs.data[0].port;
+    Self.SE_MTBMTB.Value := settings.RCSAddrs[0].board;
+    SE_MTBPort.Value     := settings.RCSAddrs[0].port;
     CB_Typ.ItemIndex     := Integer(settings.OutputType);
    end;
 
@@ -286,9 +286,8 @@ var glob:TBlkSettings;
 
   if (Self.CHB_RCS_Output.Checked) then
    begin
-    settings.RCSAddrs.Count := 1;
-    settings.RCSAddrs.data[0].board := Self.SE_MTBMTB.Value;
-    settings.RCSAddrs.data[0].port  := SE_MTBPort.Value;
+    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_MTBMTB.Value, SE_MTBPort.Value));
     settings.OutputType := TBlkSComOutputType(CB_Typ.ItemIndex);
    end else begin
     settings.RCSAddrs.Count := 0;

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky;
+  Dialogs, ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections;
 
 type
   TF_BlkPrejezd = class(TForm)
@@ -16,7 +16,7 @@ type
     SE_ID: TSpinEdit;
     L_Usek03: TLabel;
     LB_Stanice: TListBox;
-    GB_MTB: TGroupBox;
+    GB_RCS: TGroupBox;
     GB_Prj_vyst: TGroupBox;
     L_P04: TLabel;
     L_P05: TLabel;
@@ -32,7 +32,7 @@ type
     SE_vst_vystraha: TSpinEdit;
     SE_vst_anulace: TSpinEdit;
     L_P01: TLabel;
-    SE_MTB: TSpinEdit;
+    SE_RCS: TSpinEdit;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -112,15 +112,15 @@ var glob:TBlkSettings;
    end;
 
 
-  settings.MTB := Self.SE_MTB.Value;
+  settings.RCS := Self.SE_RCS.Value;
 
-  settings.MTBOutputs.NOtevrit := Self.SE_vyst_open.Value;
-  settings.MTBOutputs.Zavrit   := Self.SE_vyst_close.Value;
+  settings.RCSOutputs.NOtevrit := Self.SE_vyst_open.Value;
+  settings.RCSOutputs.Zavrit   := Self.SE_vyst_close.Value;
 
-  settings.MTBInputs.Otevreno  := SE_vst_open.Value;
-  settings.MTBInputs.Zavreno   := SE_vst_close.Value;
-  settings.MTBInputs.Vystraha  := SE_vst_vystraha.Value;
-  settings.MTBInputs.Anulace   := SE_vst_anulace.Value;
+  settings.RCSInputs.Otevreno  := SE_vst_open.Value;
+  settings.RCSInputs.Zavreno   := SE_vst_close.Value;
+  settings.RCSInputs.Vystraha  := SE_vst_vystraha.Value;
+  settings.RCSInputs.Anulace   := SE_vst_anulace.Value;
 
   Self.Blk.SetSettings(settings);
 
@@ -152,18 +152,18 @@ var glob:TBlkSettings;
   SetLength(obls,Self.Blk.OblsRizeni.Cnt);
   for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
 
-  Self.SE_MTB.Value := settings.MTB;
+  Self.SE_RCS.Value := settings.RCS;
 
   E_Prj_Nazev.Text          := glob.name;
   SE_ID.Value               := glob.id;
 
-  SE_vyst_open.Value        := settings.MTBOutputs.NOtevrit;
-  SE_vyst_close.Value       := settings.MTBOutputs.Zavrit;
+  SE_vyst_open.Value        := settings.RCSOutputs.NOtevrit;
+  SE_vyst_close.Value       := settings.RCSOutputs.Zavrit;
 
-  SE_vst_open.Value         := settings.MTBInputs.Otevreno;
-  SE_vst_close.Value        := settings.MTBInputs.Zavreno;
-  SE_vst_vystraha.Value     := settings.MTBInputs.Vystraha;
-  SE_vst_anulace.Value      := settings.MTBInputs.Anulace;
+  SE_vst_open.Value         := settings.RCSInputs.Otevreno;
+  SE_vst_close.Value        := settings.RCSInputs.Zavreno;
+  SE_vst_vystraha.Value     := settings.RCSInputs.Vystraha;
+  SE_vst_anulace.Value      := settings.RCSInputs.Anulace;
 
   Self.Caption     := 'Pøejezd '+glob.name;
   Self.ActiveControl := Self.B_save_P;
@@ -179,7 +179,7 @@ procedure TF_BlkPrejezd.NewOpenForm;
   SE_vst_close.Value        := 0;
   SE_vst_vystraha.Value     := 0;
   SE_vst_anulace.Value      := 0;
-  Self.SE_MTB.Value         := 1;
+  Self.SE_RCS.Value         := 1;
 
   Self.Caption := 'Nový pøejezd';
   Self.ActiveControl := Self.E_Prj_Nazev;

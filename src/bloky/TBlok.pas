@@ -25,7 +25,7 @@ const
  //if the block is disbled, this is is its state
  _BLK_DISABLED = -5;
 
- _BLK_MTBCNT = 4;
+ _BLK_RCS_CNT   = 4;
  _MAX_EVENTS    = 16;
 
 type
@@ -34,10 +34,7 @@ type
  TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4, ab = 5);
 
  //spolecne recordy:
- TRCSAddrs = record
-  data:array[0.._BLK_MTBCNT-1] of TRCSAddr;
-  Count:Byte;
- end;
+ TRCSAddrs = TList<TRCSAddr>;
 
  ///////////////////////////////
  TBlkSettings = record
@@ -69,7 +66,7 @@ type
    ffrozen:boolean;
    ORsRef:TORsRef;          // ve kterych OR se blok nachazi
 
-   //loading and saving MTB
+   //loading and saving RCS
    class function LoadRCS(ini:TMemIniFile;section:string):TRCSAddrs;
    class procedure SaveRCS(ini:TMemIniFile;section:string;data:TRCSAddrs);
 
@@ -211,24 +208,25 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // mj. tady se zjistuje, ktere moduly RCS jsou na kolejisti potreba
-class function TBlk.LoadRCS(ini:TMemIniFile;section:string):TRCSAddrs;
-var i:Integer;
+class function TBlk.LoadRCS(ini:TMemIniFile; section:string):TRCSAddrs;
+var i, count:Integer;
+    rcsAddr:TRCSAddr;
 begin
- Result.Count := ini.ReadInteger(section,'MTBcnt',0);
- for i := 0 to Result.Count-1 do
-  begin
-   Result.data[i].board := ini.ReadInteger(section,'MTBb'+IntToStr(i),0);
-   Result.data[i].port  := ini.ReadInteger(section,'MTBp'+IntToStr(i),0);
-   RCSi.SetNeeded(Result.data[i].board);
-  end;//for i
- for i := Result.Count to _BLK_MTBCNT-1 do
-  begin
-   Result.data[i].board := 0;
-   Result.data[i].port  := 0;
-  end;
-end;//function
+ Result := TList<TechnologieRCS.TRCSAddr>.Create();
 
-class procedure TBlk.SaveRCS(ini:TMemIniFile;section:string;data:TRCSAddrs);
+ count := ini.ReadInteger(section, 'MTBcnt', 0);
+ for i := 0 to count-1 do
+  begin
+   rcsAddr := TRCS.RCSAddr(
+    ini.ReadInteger(section,'MTBb'+IntToStr(i),0),
+    ini.ReadInteger(section,'MTBp'+IntToStr(i),0)
+   );
+   Result.Add(rcsAddr);
+   RCSi.SetNeeded(rcsAddr.board);
+  end;
+end;
+
+class procedure TBlk.SaveRCS(ini:TMemIniFile; section:string; data:TRCSAddrs);
 var i:Integer;
 begin
  if (data.Count > 0) then
@@ -236,8 +234,8 @@ begin
 
  for i := 0 to data.Count-1 do
   begin
-   ini.WriteInteger(section, 'MTBb'+IntToStr(i), data.data[i].board);
-   ini.WriteInteger(section, 'MTBp'+IntToStr(i), data.data[i].port);
+   ini.WriteInteger(section, 'MTBb'+IntToStr(i), data[i].board);
+   ini.WriteInteger(section, 'MTBp'+IntToStr(i), data[i].port);
   end;//for i
 end;//function
 
@@ -266,11 +264,12 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 class procedure TBlk.PushRCSToOR(ORs:TORsRef; RCSs:TRCSAddrs);
-var i, j:Integer;
+var i:Integer;
+    rcsAddr:TRCSAddr;
 begin
  for i := 0 to ORs.Cnt-1 do
-   for j := 0 to RCSs.Count-1 do
-     ORs.ORs[i].MTBAdd(RCSs.data[j].board);
+   for rcsAddr in RCSs do
+     ORs.ORs[i].RCSAdd(rcsAddr.board);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -405,14 +404,14 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 class procedure TBlk.RCSstoJSON(const addrs:TRCSAddrs; json:TJsonArray);
-var i:Integer;
+var rcsAddr:TRCSAddr;
     newObj:TJsonObject;
 begin
- for i := 0 to addrs.Count-1 do
+ for rcsAddr in addrs do
   begin
    newObj := json.AddObject();
-   newObj['board'] := addrs.data[i].board;
-   newObj['port'] := addrs.data[i].port;
+   newObj['board'] := rcsAddr.board;
+   newObj['port'] := rcsAddr.port;
   end;
 end;
 

@@ -28,12 +28,12 @@ type
   maxSpr:Cardinal;        // maximalni pocet souprav v bloku
  end;
 
- TUsekStavAr = array[0..3] of TUsekStav;
+ TSekceStav = TList<TUsekStav>;
 
  //aktualni stav useku (obsazeno, ...)
  TBlkUsekStav = record
   Stav,StavOld:TUsekStav;   // hlavni stav useku a jeho predchozi hodnota (pouzivano v Update())
-  StavAr:TUsekStavAr;       // obsazenost jednotlivych casti useku
+  sekce:TSekceStav;         // obsazenost jednotlivych casti useku
   Zaver:TZaver;             // zaver na bloku
   NUZ:boolean;              // nouzove uvolneni zaveru
   KonecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
@@ -66,7 +66,6 @@ type
    _def_usek_stav:TBlkUsekStav = (
     Stav : disabled;
     StavOld : disabled;
-    StavAr : (disabled, disabled, disabled, disabled);
     Zaver : no;
     NUZ : false;
     KonecJC : no;
@@ -191,8 +190,6 @@ type
     function GetSettings():TBlkUsekSettings;
     procedure SetSettings(data:TBlkUsekSettings);
 
-    procedure GetObsazeno(var ar:TUsekStavAr);
-
     procedure SetUsekVyl(Sender:TIDCOntext; vyl:string); overload;
 
     procedure AddNeprofilJC(id:Integer);
@@ -222,6 +219,7 @@ type
     property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property SComJCRef:TList<TBlk> read UsekStav.SComJCRef write UsekStav.SComJCRef;
+    property SekceStav:TList<TUsekStav> read UsekStav.sekce;
 
     property Souprava:Integer read GetUsekSpr;
     property SoupravaL:Integer read GetSoupravaL;
@@ -282,6 +280,7 @@ begin
  Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
  Self.UsekStav.soupravy := TList<Integer>.Create();
  Self.UsekStav.SComJCRef := TList<TBlk>.Create();
+ Self.UsekStav.sekce := TList<TUsekStav>.Create();
 end;//ctor
 
 destructor TBlkUsek.Destroy();
@@ -299,6 +298,7 @@ begin
  Self.UsekStav.neprofilJCcheck.Free();
  Self.UsekStav.soupravy.Free();
  Self.UsekStav.SComJCRef.Free();
+ Self.UsekStav.sekce.Free();
 
  inherited;
 end;//dtor
@@ -438,26 +438,25 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.Enable();
-var i:Integer;
+var rcsaddr:TRCSAddr;
 begin
  try
-   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
-     if (not RCSi.IsModule(Self.UsekSettings.RCSAddrs.data[i].board)) then
-      Exit();
+   for rcsaddr in Self.UsekSettings.RCSAddrs do
+     if (not RCSi.IsModule(rcsaddr.board)) then
+       Exit();
  except
    Exit();
  end;
 
  Self.UsekStav.Stav    := none;
  Self.UsekStav.StavOld := none;
- for i := 0 to 3 do Self.UsekStav.StavAr[i] := none;
+ Self.UsekStav.sekce.Clear();
  Self.UsekStav.neprofilJCcheck.Clear();
  Self.Update();
  //change event will be called in Update();
 end;//procedure
 
 procedure TBlkUsek.Disable();
-var i:Integer;
 begin
  inherited;
 
@@ -471,7 +470,7 @@ begin
  Self.UsekStav.zkrat      := TBoosterSignal.undef;
  Self.UsekStav.napajeni   := TBoosterSignal.undef;
  Self.UsekStav.DCC        := false;
- for i := 0 to 3 do Self.UsekStav.StavAr[i] := disabled;
+ Self.UsekStav.sekce.Clear();
 
  Self.EventsOnObsaz.Clear();
  Self.EventsOnUvol.Clear();
@@ -493,6 +492,7 @@ end;//procedure
 procedure TBlkUsek.Update();
 var i, spr:Integer;
     state:TRCSInputState;
+    usekStav:TUsekStav;
 begin
  if (((Self.ZesZkrat = TBoosterSignal.error) or (Self.ZesNapajeni = TBoosterSignal.error)) and (not Self.frozen)) then
   begin
@@ -516,17 +516,24 @@ begin
    Exit();
   end;
 
+ if (Self.UsekStav.sekce.Count <> Self.UsekSettings.RCSAddrs.Count) then
+  begin
+   Self.UsekStav.sekce.Clear();
+   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
+     Self.UsekStav.sekce.Add(TUsekStav.none);
+  end;
+
  for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
   begin
    try
-     state := RCSi.GetInput(Self.UsekSettings.RCSAddrs.data[i].board, Self.UsekSettings.RCSAddrs.data[i].port);
+     state := RCSi.GetInput(Self.UsekSettings.RCSAddrs[i].board, Self.UsekSettings.RCSAddrs[i].port);
    except
      state := failure;
    end;
 
    case (state) of
-    isOn  : Self.UsekStav.StavAr[i] := TUsekStav.obsazeno;
-    isOff : Self.UsekStav.StavAr[i] := TUsekStav.uvolneno;
+    isOn  : Self.UsekStav.sekce[i] := TUsekStav.obsazeno;
+    isOff : Self.UsekStav.sekce[i] := TUsekStav.uvolneno;
     failure, notYetScanned, unavailable:begin
       // vypadek MTB, ci nespravny argument -> disable blok
       if (Self.UsekStav.Stav <> disabled) then
@@ -548,12 +555,9 @@ begin
 
  //get current state
  Self.UsekStav.Stav := uvolneno;
- for i := 0 to 3 do
-  if (Self.UsekStav.StavAr[i] = TUsekStav.obsazeno) then
-   begin
+ for usekStav in Self.UsekStav.sekce do
+  if (usekStav = TUsekStav.obsazeno) then
     Self.UsekStav.Stav := TUsekStav.obsazeno;
-    break;
-   end;
 
  // reseni vypadku soupravy
  // pad soupravy z bloku az po urcitem case - aby se jizdni ceste nechal cas na zpracovani pohybu soupravy
@@ -833,6 +837,9 @@ begin
  if (Self.UsekSettings.houkEvS <> data.houkEvS) then
    Self.UsekSettings.houkEvS.Free();
 
+ if (Self.UsekSettings.RCSAddrs <> data.RCSAddrs) then
+   Self.UsekSettings.RCSAddrs.Free();
+
  Self.UsekSettings := data;
 
  if (not Self.UsekStav.stanicni_kolej) then
@@ -840,13 +847,6 @@ begin
 
  Self.Change();
 end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkUsek.GetObsazeno(var ar:TUsekStavAr);
-begin
- ar := Self.UsekStav.StavAr;
-end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 //dynamicke funkce:
@@ -1076,22 +1076,22 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
-var i:Integer;
+var rcsaddr:TRCSAddr;
 begin
  try
-   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
-     RCSi.SetInput(Self.UsekSettings.RCSAddrs.data[i].board, Self.UsekSettings.RCSAddrs.data[i].port, 1);
+   for rcsaddr in Self.UsekSettings.RCSAddrs do
+     RCSi.SetInput(rcsaddr.board, rcsaddr.port, 1);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;//procedure
 
 procedure TBlkUsek.MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
-var i:Integer;
+var rcsaddr:TRCSAddr;
 begin
  try
-   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
-     RCSi.SetInput(Self.UsekSettings.RCSAddrs.data[i].board, Self.UsekSettings.RCSAddrs.data[i].port, 0);
+   for rcsaddr in Self.UsekSettings.RCSAddrs do
+     RCSi.SetInput(rcsaddr.board, rcsaddr.port, 0);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení MTB vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -1205,9 +1205,10 @@ end;
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkUsek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 var Blk:TBlk;
-    i, spr:Integer;
+    spr:Integer;
     canAdd:boolean;
     addStr:string;
+    usekStav:TUsekStav;
 begin
  Result := inherited;
 
@@ -1267,15 +1268,15 @@ begin
   begin
    Result := Result + '-,';
 
-   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
-    if (Self.UsekStav.StavAr[i] = TUsekStav.uvolneno) then
+   for usekStav in Self.SekceStav do
+    if (usekStav = TUsekStav.uvolneno) then
      begin
       Result := Result + '*OBSAZ,';
       break;
      end;
 
-   for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
-    if (Self.UsekStav.StavAr[i] = TUsekStav.obsazeno) then
+   for usekStav in Self.SekceStav do
+    if (usekStav = TUsekStav.obsazeno) then
      begin
       Result := Result + '*UVOL,';
       break;
@@ -1492,7 +1493,8 @@ begin
 end;
 
 procedure TBlkUsek.GetPtState(json:TJsonObject);
-var i, spr:Integer;
+var spr:Integer;
+    usekStav:TUsekStav;
 begin
  case (Self.Obsazeno) of
   TUsekStav.disabled : json['stav'] := 'vypnuto';
@@ -1501,9 +1503,9 @@ begin
   TUsekStav.obsazeno : json['stav'] := 'obsazeno';
  end;
 
- for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
+ for usekStav in Self.SekceStav do
   begin
-   case (Self.UsekStav.StavAr[i]) of
+   case (usekStav) of
     TUsekStav.disabled : json.A['sekce'].Add('vypnuto');
     TUsekStav.none     : json.A['sekce'].Add('zadny');
     TUsekStav.uvolneno : json.A['sekce'].Add('uvolneno');
