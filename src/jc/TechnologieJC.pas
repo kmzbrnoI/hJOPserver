@@ -1752,251 +1752,263 @@ var i,j:Integer;
       (Navestidlo as TBlkSCom).PropagatePOdjToTrat();
 
       writelog('Postavena JC '+Self.Nazev, WR_VC);
-     end;//case 16
+   end;//case 16
 
-     ///////////////////////////////////////////////////////////////////////////
-     // staveni nouzovych cest:
+   ///////////////////////////////////////////////////////////////////////////
+   // staveni nouzovych cest:
 
-     100:begin
-      // vsem usekum nastavime staveci zaver:
-      writelog('Krok 100: useky: nastavuji staveci zavery', WR_VC);
-      for i := 0 to Self.fproperties.Useky.Count-1 do
+   100:begin
+    // vsem usekum nastavime staveci zaver:
+    writelog('Krok 100: useky: nastavuji staveci zavery', WR_VC);
+    for i := 0 to Self.fproperties.Useky.Count-1 do
+     begin
+      Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
+      (Blk as TBlkUsek).Zaver := TZaver.staveni;
+     end;//for cyklus
+
+    // nastavit nouzovy zaver uvazky
+    if (Self.fproperties.Trat > -1) then
+     begin
+      writelog('Krok 100: trat: nastavuji nouzovy zaver uvazky', WR_VC);
+      Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+
+      // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
+      if (((Blk as TBlkTrat).uvazkaA as TBlkUvazka).OblsRizeni.cnt > 0) then
        begin
-        Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-        (Blk as TBlkUsek).Zaver := TZaver.staveni;
-       end;//for cyklus
+        for i := 0 to (Navestidlo as TBlkSCom).OblsRizeni.Cnt-1 do
+          if (((Blk as TBlkTrat).uvazkaA as TBlkUvazka).OblsRizeni.ORs[0] = (Navestidlo as TBlkSCom).OblsRizeni.ORs[i]) then
+             ((Blk as TBlkTrat).uvazkaA as TBlkUvazka).nouzZaver := true;
 
-      // nastavit nouzovy zaver uvazky
-      if (Self.fproperties.Trat > -1) then
-       begin
-        writelog('Krok 100: trat: nastavuji nouzovy zaver uvazky', WR_VC);
-        Blky.GetBlkByID(Self.fproperties.Trat, Blk);
-
-        // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
-        if (((Blk as TBlkTrat).uvazkaA as TBlkUvazka).OblsRizeni.cnt > 0) then
-         begin
-          for i := 0 to (Navestidlo as TBlkSCom).OblsRizeni.Cnt-1 do
-            if (((Blk as TBlkTrat).uvazkaA as TBlkUvazka).OblsRizeni.ORs[0] = (Navestidlo as TBlkSCom).OblsRizeni.ORs[i]) then
-               ((Blk as TBlkTrat).uvazkaA as TBlkUvazka).nouzZaver := true;
-
-          for i := 0 to (Navestidlo as TBlkSCom).OblsRizeni.Cnt-1 do
-            if (((Blk as TBlkTrat).uvazkaB as TBlkUvazka).OblsRizeni.ORs[0] = (Navestidlo as TBlkSCom).OblsRizeni.ORs[i]) then
-               ((Blk as TBlkTrat).uvazkaB as TBlkUvazka).nouzZaver := true;
-         end;
-       end;
-
-      // nastavit vyhybky do pozadovanych poloh:
-      writelog('Krok 100: vyhybky: nastavuji do pozadovanych poloh', WR_VC);
-
-      Self.fstaveni.nextVyhybka := -1;
-      stavim := 0;
-      nextVyhybka := -1;
-      for i := 0 to Self.fproperties.Vyhybky.Count-1 do
-       begin
-        Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
-        if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha)) then
-         begin
-          if (stavim >= _JC_MAX_VYH_STAVENI) then
-           begin
-            if (nextVyhybka = -1) then
-              nextVyhybka := i;
-            continue;
-           end;
-          Inc(stavim);
-         end;
-
-        (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha),
-                                       true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
-       end;
-
-      for i := 0 to Self.fproperties.Odvraty.Count-1 do
-       begin
-        // nastaveni odvratu
-        Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
-        if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Odvraty[i].Poloha)) then
-         begin
-          if (stavim >= _JC_MAX_VYH_STAVENI) then
-           begin
-            if (nextVyhybka = -1) then
-              nextVyhybka := i;
-            continue;
-           end;
-          Inc(stavim);
-         end;
-
-        TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha),
-                                   true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
-       end;
-
-      Self.fstaveni.nextVyhybka := nextVyhybka;
-
-      writelog('Krok 100: prejezdy: uzaviram', WR_VC);
-      for i := 0 to Self.fproperties.Prejezdy.Count-1 do
-       begin
-        if (Self.fproperties.Prejezdy[i].uzaviraci.Count = 0) then
-          continue;
-
-        Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
-        if (not (Blk as TBlkPrejezd).NOtevreni) then
-          (Blk as TBlkPrejezd).UZ := true;
-       end;
-
-      // nastavit nouzovy zaver zamkum
-      for i := 0 to Self.fproperties.zamky.Count-1 do
-       begin
-        Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
-        (Blk as TBlkZamek).nouzZaver := true;
-        TBlkSCom(Navestidlo).AddBlkToRnz(Blk.id, false);
-       end;
-
-      Self.fstaveni.ncBarieryCntLast := -1;   // tady je potreba mit cislo < 0
-
-      Self.Krok := 101;
-     end;//case 100
-
-     101:begin
-      // prubezne kontroluji podminky a zobrazuji potvrzovaci sekvenci
-
-      // zjistime aktualni bariery:
-      Self.fstaveni.ncBariery.Clear();
-      Self.PodminkyNCStaveni(Self.fstaveni.ncBariery);
-
-      // kontrolujeme rozdilnost seznamu:
-      if (Self.fstaveni.ncBariery.Count <> Self.fstaveni.ncBarieryCntLast) then
-       begin
-        Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
-        writelog('Krok 101: zmena potvr., odesilam aktualni seznam', WR_VC);
-        if (Self.fproperties.TypCesty = TJCType.vlak) then
-          str := 'Zapnutí pøivolávací návìsti'
-        else
-          str := 'Nouzová posunová cesta';
-
-        if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-          ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.NC_PS_Callback, Self.fstaveni.SenderOR as TOR,
-            str, TBlky.GetBlksList(Navestidlo, Blk), Self.BarieryNCToPotvr(Self.fstaveni.ncBariery));
-       end;
-      Self.fstaveni.ncBarieryCntLast := Self.fstaveni.ncBariery.Count;
-
-      // nastavovani smeru trati:
-      if (Self.fproperties.Trat > -1) then
-       begin
-        Blky.GetBlkByID(Self.fproperties.Trat, Blk);
-        Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
-
-        if (((Blk as TBlkTrat).GetSettings.zabzar = TTratZZ.bezsouhas) and (not (blk as TBlkTrat).ZAK) and
-          (not (blk as TBlkTrat).Zaver) and ((blk2 as TBlkTU).sectReady) and (not (blk as TBlkTrat).Zadost) and
-          ((Blk as TBlkTrat).Smer <> Self.fproperties.TratSmer)) then
-           begin
-            writelog('Krok 101: trat: nastaven smer', WR_VC);
-            (Blk as TBlkTrat).Smer := Self.fproperties.TratSmer;
-           end;
-
-        // pokud v trati neni zavedena blokova podminka, zavedeme ji
-        if ((Self.fproperties.TypCesty = TJCType.vlak) and ((Blk as TBlkTrat).Smer = Self.data.TratSmer) and (not (Blk as TBlkTrat).BP)) then
-          (Blk as TBlkTrat).BP := true;
-
-        // posledni blok posunove cesty je trat = posun mezi dopravnami -> zavedeme zakaz odjezdu do trati
-        if ((Self.fproperties.TypCesty = TJCType.posun) and (TBlkTrat(Blk).Smer = Self.fproperties.TratSmer)) then
-         begin
-          case (Self.fproperties.TratSmer) of
-           TTratSmer.AtoB : if (not TBlkUvazka(TBlkTrat(Blk).uvazkaA).ZAK) then TBlkUvazka(TBlkTrat(Blk).uvazkaA).ZAK := true;
-           TTratSmer.BtoA : if (not TBlkUvazka(TBlkTrat(Blk).uvazkaB).ZAK) then TBlkUvazka(TBlkTrat(Blk).uvazkaB).ZAK := true;
-          end;
-         end;
+        for i := 0 to (Navestidlo as TBlkSCom).OblsRizeni.Cnt-1 do
+          if (((Blk as TBlkTrat).uvazkaB as TBlkUvazka).OblsRizeni.ORs[0] = (Navestidlo as TBlkSCom).OblsRizeni.ORs[i]) then
+             ((Blk as TBlkTrat).uvazkaB as TBlkUvazka).nouzZaver := true;
        end;
      end;
 
-     102:begin
-      // potrvzovaci sekvence potvrzena -> stavim navestidlo, ...
+    // nastavit vyhybky do pozadovanych poloh:
+    writelog('Krok 100: vyhybky: nastavuji do pozadovanych poloh', WR_VC);
 
-      Self.fstaveni.nextVyhybka := -1;
-      writelog('Krok 102: useky: rusim zavery', WR_VC);
-      for i := 0 to Self.fproperties.Useky.Count-1 do
+    Self.fstaveni.nextVyhybka := -1;
+    stavim := 0;
+    nextVyhybka := -1;
+    for i := 0 to Self.fproperties.Vyhybky.Count-1 do
+     begin
+      Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
+      if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha)) then
        begin
-        Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
-        (Blk as TBlkUsek).Zaver := TZaver.no;
-       end;//for cyklus
-
-      Self.RusZacatekJC();
-      Self.RusVBJC();
-      Self.RusKonecJC();
-
-      Self.Krok := 0;
-      (Navestidlo as TBlkSCom).privol := Self;
-
-      // i pokud je navetidlo ve STUJ, nastavuji navest (to je spravne chovani podle JOP)
-      if (Self.fproperties.TypCesty = TJCType.vlak) then
-       begin
-        Self.NastavSCom();
-        writelog('Krok 102 : navestidlo: nastaveno na '+TBlkScom.NavestToString((Navestidlo as TBlkSCom).Navest), WR_VC);
-       end;
-
-      // pokud je cesta ze zasobniku, smazeme ji odtam
-      if (Self.fstaveni.from_stack <> nil) then
-       begin
-        (Self.fstaveni.from_stack as TORStack).RemoveJC(Self);
-        Self.fstaveni.from_stack := nil;
-       end;
-
-      // presun soupravy z useku pred navestidlem do posledniho useku JC
-
-      // Presun probehne za techto podminek:
-      //  a) Bud privolavame do stanice = na dopravni kolej
-      //  b) Nebo privolavame do trate, ktera MUSI byt ve spravnem smeru a MUSI v ni byt zavedena blokova podminka
-
-      if (Self.fproperties.TypCesty = TJCType.vlak) then
-       begin
-        Blk := (Navestidlo as TBlkSCom).UsekPred;
-        Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
-        spri := Self.GetSoupravaIndex(Navestidlo, Blk);
-
-        // a)
-        if ((Blk2.typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
-            (not TBlkUsek(Blk2).SoupravyFull())) then
+        if (stavim >= _JC_MAX_VYH_STAVENI) then
          begin
-          if (TBlkUsek(Blk).IsSouprava()) then
-           begin
-            if ((Blk.typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
-             begin
-              Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
-              (Trat as TBlkTrat).RemoveSpr(spri);
-             end;
+          if (nextVyhybka = -1) then
+            nextVyhybka := i;
+          continue;
+         end;
+        Inc(stavim);
+       end;
 
-            // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
-            if (TBlkSCom(Navestidlo).Smer = THVStanoviste.lichy) then
-              (Blk2 as TBlkUsek).AddSoupravaL(spri)
-            else
-              (Blk2 as TBlkUsek).AddSoupravaS(spri);
+      (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha),
+                                     true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+     end;
 
-            (Blk as TBlkUsek).RemoveSouprava(spri);
-           end;
-          Self.fstaveni.RozpadBlok := -6;
+    for i := 0 to Self.fproperties.Odvraty.Count-1 do
+     begin
+      // nastaveni odvratu
+      Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
+      if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Odvraty[i].Poloha)) then
+       begin
+        if (stavim >= _JC_MAX_VYH_STAVENI) then
+         begin
+          if (nextVyhybka = -1) then
+            nextVyhybka := i;
+          continue;
+         end;
+        Inc(stavim);
+       end;
+
+      TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha),
+                                 true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+     end;
+
+    Self.fstaveni.nextVyhybka := nextVyhybka;
+
+    writelog('Krok 100: prejezdy: uzaviram', WR_VC);
+    for i := 0 to Self.fproperties.Prejezdy.Count-1 do
+     begin
+      if (Self.fproperties.Prejezdy[i].uzaviraci.Count = 0) then
+        continue;
+
+      Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+      if (not (Blk as TBlkPrejezd).NOtevreni) then
+        (Blk as TBlkPrejezd).UZ := true;
+     end;
+
+    // nastavit nouzovy zaver zamkum
+    for i := 0 to Self.fproperties.zamky.Count-1 do
+     begin
+      Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
+      (Blk as TBlkZamek).nouzZaver := true;
+      TBlkSCom(Navestidlo).AddBlkToRnz(Blk.id, false);
+     end;
+
+    Self.fstaveni.ncBarieryCntLast := -1;   // tady je potreba mit cislo < 0
+
+    Self.Krok := 101;
+   end;//case 100
+
+   101:begin
+    // prubezne kontroluji podminky a zobrazuji potvrzovaci sekvenci
+
+    // zjistime aktualni bariery:
+    Self.fstaveni.ncBariery.Clear();
+    Self.PodminkyNCStaveni(Self.fstaveni.ncBariery);
+
+    // kontrolujeme rozdilnost seznamu:
+    if (Self.fstaveni.ncBariery.Count <> Self.fstaveni.ncBarieryCntLast) then
+     begin
+      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
+      writelog('Krok 101: zmena potvr., odesilam aktualni seznam', WR_VC);
+      if (Self.fproperties.TypCesty = TJCType.vlak) then
+        str := 'Zapnutí pøivolávací návìsti'
+      else
+        str := 'Nouzová posunová cesta';
+
+      if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+        ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.NC_PS_Callback, Self.fstaveni.SenderOR as TOR,
+          str, TBlky.GetBlksList(Navestidlo, Blk), Self.BarieryNCToPotvr(Self.fstaveni.ncBariery));
+     end;
+    Self.fstaveni.ncBarieryCntLast := Self.fstaveni.ncBariery.Count;
+
+    // nastavovani smeru trati:
+    if (Self.fproperties.Trat > -1) then
+     begin
+      Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
+
+      if (((Blk as TBlkTrat).GetSettings.zabzar = TTratZZ.bezsouhas) and (not (blk as TBlkTrat).ZAK) and
+        (not (blk as TBlkTrat).Zaver) and ((blk2 as TBlkTU).sectReady) and (not (blk as TBlkTrat).Zadost) and
+        ((Blk as TBlkTrat).Smer <> Self.fproperties.TratSmer)) then
+         begin
+          writelog('Krok 101: trat: nastaven smer', WR_VC);
+          (Blk as TBlkTrat).Smer := Self.fproperties.TratSmer;
          end;
 
-        // b)
-        if ((Blk2.typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat > -1)) then
-          Blky.GetBlkByID((Blk2 as TBlkTU).InTrat, Trat)
-        else
-          Trat := nil;
+      // pokud v trati neni zavedena blokova podminka, zavedeme ji
+      if ((Self.fproperties.TypCesty = TJCType.vlak) and ((Blk as TBlkTrat).Smer = Self.data.TratSmer) and (not (Blk as TBlkTrat).BP)) then
+        (Blk as TBlkTrat).BP := true;
 
-        if ((Trat <> nil) and ((Blk as TBlkUsek).IsSouprava()) and (not (Blk2 as TBlkUsek).IsSouprava()) and
-            (Blk2.typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat = Self.data.Trat) and
-            ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
+      // posledni blok posunove cesty je trat = posun mezi dopravnami -> zavedeme zakaz odjezdu do trati
+      if ((Self.fproperties.TypCesty = TJCType.posun) and (TBlkTrat(Blk).Smer = Self.fproperties.TratSmer)) then
+       begin
+        case (Self.fproperties.TratSmer) of
+         TTratSmer.AtoB : if (not TBlkUvazka(TBlkTrat(Blk).uvazkaA).ZAK) then TBlkUvazka(TBlkTrat(Blk).uvazkaA).ZAK := true;
+         TTratSmer.BtoA : if (not TBlkUvazka(TBlkTrat(Blk).uvazkaB).ZAK) then TBlkUvazka(TBlkTrat(Blk).uvazkaB).ZAK := true;
+        end;
+       end;
+     end;
+   end;
+
+   102:begin
+    // potrvzovaci sekvence potvrzena -> stavim navestidlo, ...
+
+    Self.fstaveni.nextVyhybka := -1;
+    writelog('Krok 102: useky: rusim zavery', WR_VC);
+    for i := 0 to Self.fproperties.Useky.Count-1 do
+     begin
+      Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
+      (Blk as TBlkUsek).Zaver := TZaver.no;
+     end;//for cyklus
+
+    (Navestidlo as TBlkSCom).privol := Self;
+
+    // i pokud je navetidlo ve STUJ, nastavuji navest (to je spravne chovani podle JOP)
+    if (Self.fproperties.TypCesty = TJCType.vlak) then
+     begin
+      Self.NastavSCom();
+      writelog('Krok 102 : navestidlo: nastavuji na privolavaci navest...', WR_VC);
+      Self.Krok := 103;
+     end else
+      Self.Krok := 104;
+   end;
+
+   103:begin
+     if ((Navestidlo as TBlkSCom).Navest = TBlkSCom._NAV_PRIVOL) then
+      begin
+       writelog('Krok 103 : navestidlo postaveno', WR_VC);
+       Self.Krok := 104;
+      end;
+   end;
+
+   104:begin
+    Self.RusZacatekJC();
+    Self.RusVBJC();
+    Self.RusKonecJC();
+
+    Self.Krok := 0;
+
+    // pokud je cesta ze zasobniku, smazeme ji odtam
+    if (Self.fstaveni.from_stack <> nil) then
+     begin
+      (Self.fstaveni.from_stack as TORStack).RemoveJC(Self);
+      Self.fstaveni.from_stack := nil;
+     end;
+
+    // presun soupravy z useku pred navestidlem do posledniho useku JC
+
+    // Presun probehne za techto podminek:
+    //  a) Bud privolavame do stanice = na dopravni kolej
+    //  b) Nebo privolavame do trate, ktera MUSI byt ve spravnem smeru a MUSI v ni byt zavedena blokova podminka
+
+    if (Self.fproperties.TypCesty = TJCType.vlak) then
+     begin
+      Blk := (Navestidlo as TBlkSCom).UsekPred;
+      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk2);
+      spri := Self.GetSoupravaIndex(Navestidlo, Blk);
+
+      // a)
+      if ((Blk2.typ = _BLK_USEK) and (TBlkUsek(Blk2).Stav.stanicni_kolej) and
+          (not TBlkUsek(Blk2).SoupravyFull())) then
+       begin
+        if (TBlkUsek(Blk).IsSouprava()) then
          begin
-          (Trat as TBlkTrat).AddSpr(TBlkTratSouprava.Create(spri));
-          (Blk2 as TBlkTU).poruchaBP := true;
-          (Trat as TBlkTrat).Change();
+          if ((Blk.typ = _BLK_TU) and (TBlkTU(Blk).InTrat > -1)) then
+           begin
+            Blky.GetBlkByID((Blk as TBlkTU).InTrat, Trat);
+            (Trat as TBlkTrat).RemoveSpr(spri);
+           end;
 
-          (Blk2 as TBlkUsek).AddSoupravaL(spri); // tady je jedno jestli zavolat L nebo S
-                                                 // v trati muze byt na jednom useku vzdy jen jedna souprava
-                                                 // kontrolovano vyse
+          // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
+          if (TBlkSCom(Navestidlo).Smer = THVStanoviste.lichy) then
+            (Blk2 as TBlkUsek).AddSoupravaL(spri)
+          else
+            (Blk2 as TBlkUsek).AddSoupravaS(spri);
+
           (Blk as TBlkUsek).RemoveSouprava(spri);
          end;
-       end;//if typcesty = vlak
+        Self.fstaveni.RozpadBlok := -6;
+       end;
 
-      writelog('Postavena NC '+Self.Nazev, WR_VC);
-     end;//case 102
+      // b)
+      if ((Blk2.typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat > -1)) then
+        Blky.GetBlkByID((Blk2 as TBlkTU).InTrat, Trat)
+      else
+        Trat := nil;
 
+      if ((Trat <> nil) and ((Blk as TBlkUsek).IsSouprava()) and (not (Blk2 as TBlkUsek).IsSouprava()) and
+          (Blk2.typ = _BLK_TU) and ((Blk2 as TBlkTU).InTrat = Self.data.Trat) and
+          ((Trat as TBlkTrat).Smer = Self.data.TratSmer) and ((Trat as TBlkTrat).BP)) then
+       begin
+        (Trat as TBlkTrat).AddSpr(TBlkTratSouprava.Create(spri));
+        (Blk2 as TBlkTU).poruchaBP := true;
+        (Trat as TBlkTrat).Change();
+
+        (Blk2 as TBlkUsek).AddSoupravaL(spri); // tady je jedno jestli zavolat L nebo S
+                                               // v trati muze byt na jednom useku vzdy jen jedna souprava
+                                               // kontrolovano vyse
+        (Blk as TBlkUsek).RemoveSouprava(spri);
+       end;
+     end;//if typcesty = vlak
+
+    writelog('Postavena NC '+Self.Nazev, WR_VC);
+   end;//case 102
    end;//case
  end;//procedure
 
