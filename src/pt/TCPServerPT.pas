@@ -29,7 +29,7 @@ const
   _PT_MAX_CONNECTIONS = 10;
   _PT_COMPACT_RESPONSE = false;
   _PT_CONTENT_TYPE = 'application/json';
-  _PT_DESCRIPTION = 'ptServer v1.0.0';
+  _PT_DESCRIPTION = 'ptServer v1.1.0';
 
 type
 
