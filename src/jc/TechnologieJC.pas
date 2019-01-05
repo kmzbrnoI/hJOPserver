@@ -3404,7 +3404,6 @@ begin
    ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Návìstidlo '+nav.name + ' nepostaveno',
      (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
- Self.RusJC();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -462,7 +462,8 @@ begin
 
  if (Self.SComSettings.RCSAddrs.Count > 0) then
   begin
-   if (RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) then
+   if ((RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) and
+       (not RCSi.IsModuleFailure(Self.SComSettings.RCSAddrs.data[0].board))) then
     begin
      if (Self.SComStav.Navest = _NAV_DISABLED) then
       begin
