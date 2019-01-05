@@ -150,7 +150,7 @@ var glob:TBlkSettings;
     CB_Typ.ItemIndex     := Integer(settings.OutputType);
    end;
 
-  CHB_Zamknuto.Checked   := settings.zamknuto;
+  CHB_Zamknuto.Checked := settings.zamknuto;
 
   for i := 0 to settings.events.Count-1 do
    begin
@@ -283,14 +283,11 @@ var glob:TBlkSettings;
    end;
 
   //ukladani dat
-
+  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_RCS_Output.Checked) then
    begin
-    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule.Value, SE_RCSPort.Value));
     settings.OutputType := TBlkSComOutputType(CB_Typ.ItemIndex);
-   end else begin
-    settings.RCSAddrs.Count := 0;
    end;
 
   settings.ZpozdeniPadu := Self.SE_Delay.Value;

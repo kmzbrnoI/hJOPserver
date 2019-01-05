@@ -211,15 +211,23 @@ end;
 class function TBlk.LoadRCS(ini:TMemIniFile; section:string):TRCSAddrs;
 var i, count:Integer;
     rcsAddr:TRCSAddr;
+    prefix:string;
 begin
  Result := TList<TechnologieRCS.TRCSAddr>.Create();
 
- count := ini.ReadInteger(section, 'MTBcnt', 0);
+ prefix := 'RCS';
+ count := ini.ReadInteger(section, prefix+'cnt', 0);
+ if (count = 0) then // backward compatibility
+  begin
+   prefix := 'MTB';
+   count := ini.ReadInteger(section, prefix+'cnt', 0);
+  end;
+
  for i := 0 to count-1 do
   begin
    rcsAddr := TRCS.RCSAddr(
-    ini.ReadInteger(section,'MTBb'+IntToStr(i),0),
-    ini.ReadInteger(section,'MTBp'+IntToStr(i),0)
+    ini.ReadInteger(section, prefix+'b'+IntToStr(i), 0),
+    ini.ReadInteger(section, prefix+'p'+IntToStr(i), 0)
    );
    Result.Add(rcsAddr);
    RCSi.SetNeeded(rcsAddr.board);
@@ -230,12 +238,12 @@ class procedure TBlk.SaveRCS(ini:TMemIniFile; section:string; data:TRCSAddrs);
 var i:Integer;
 begin
  if (data.Count > 0) then
-   ini.WriteInteger(section, 'MTBcnt', data.Count);
+   ini.WriteInteger(section, 'RCScnt', data.Count);
 
  for i := 0 to data.Count-1 do
   begin
-   ini.WriteInteger(section, 'MTBb'+IntToStr(i), data[i].board);
-   ini.WriteInteger(section, 'MTBp'+IntToStr(i), data[i].port);
+   ini.WriteInteger(section, 'RCSb'+IntToStr(i), data[i].board);
+   ini.WriteInteger(section, 'RCSp'+IntToStr(i), data[i].port);
   end;//for i
 end;//function
 

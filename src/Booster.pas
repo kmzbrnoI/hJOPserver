@@ -154,17 +154,23 @@ end;//procedure
 procedure TBooster.LoadDataFromFile(var ini:TMemIniFile;const section:string);
 begin
  Self.Settings.id     := section;
- Self.Settings.Name   := ini.ReadString(section,'name','booster');
- Self.Settings.bclass := TBoosterClass(ini.ReadInteger(section,'class',0));
+ Self.Settings.Name   := ini.ReadString(section, 'name', 'booster');
+ Self.Settings.bclass := TBoosterClass(ini.ReadInteger(section, 'class', 0));
 
- Self.Settings.RCS.Zkrat.board  := ini.ReadInteger(section,'zkr_mtb',0);
- Self.Settings.RCS.Zkrat.port   := ini.ReadInteger(section,'zkr_port',0);
+ Self.Settings.RCS.Zkrat.board := ini.ReadInteger(section, 'zkr_module', 0);
+ if (Self.Settings.RCS.Zkrat.board = 0) then
+   Self.Settings.RCS.Zkrat.board  := ini.ReadInteger(section, 'zkr_mtb', 0);
+ Self.Settings.RCS.Zkrat.port := ini.ReadInteger(section, 'zkr_port', 0);
 
- Self.Settings.RCS.Napajeni.board  := ini.ReadInteger(section,'nap_mtb',0);
- Self.Settings.RCS.Napajeni.port   := ini.ReadInteger(section,'nap_port',0);
+ Self.Settings.RCS.Napajeni.board := ini.ReadInteger(section, 'nap_module', 0);
+ if (Self.Settings.RCS.Napajeni.board = 0) then
+   Self.Settings.RCS.Napajeni.board := ini.ReadInteger(section, 'nap_mtb', 0);
+ Self.Settings.RCS.Napajeni.port := ini.ReadInteger(section, 'nap_port', 0);
 
- Self.Settings.RCS.DCC.board  := ini.ReadInteger(section,'dcc_mtb',0);
- Self.Settings.RCS.DCC.port   := ini.ReadInteger(section,'dcc_port',0);
+ Self.Settings.RCS.DCC.board  := ini.ReadInteger(section, 'dcc_module', 0);
+ if (Self.Settings.RCS.DCC.board = 0) then
+   Self.Settings.RCS.DCC.board  := ini.ReadInteger(section, 'dcc_mtb', 0);
+ Self.Settings.RCS.DCC.port   := ini.ReadInteger(section, 'dcc_port', 0);
 
  RCSi.SetNeeded(Self.Settings.RCS.Napajeni.board);
  RCSi.SetNeeded(Self.Settings.RCS.Zkrat.board);
@@ -176,13 +182,13 @@ begin
  ini.WriteString(section, 'name', Self.Settings.Name);
  ini.WriteInteger(section, 'class', Integer(Self.Settings.bclass));
 
- ini.WriteInteger(section, 'zkr_mtb', Self.Settings.RCS.Zkrat.board);
+ ini.WriteInteger(section, 'zkr_module', Self.Settings.RCS.Zkrat.board);
  ini.WriteInteger(section, 'zkr_port', Self.Settings.RCS.Zkrat.port);
 
- ini.WriteInteger(section, 'nap_mtb', Self.Settings.RCS.Napajeni.board);
+ ini.WriteInteger(section, 'nap_module', Self.Settings.RCS.Napajeni.board);
  ini.WriteInteger(section, 'nap_port', Self.Settings.RCS.Napajeni.port);
 
- ini.WriteInteger(section, 'dcc_mtb', Self.Settings.RCS.DCC.board);
+ ini.WriteInteger(section, 'dcc_module', Self.Settings.RCS.DCC.board);
  ini.WriteInteger(section, 'dcc_port', Self.Settings.RCS.DCC.port);
 
  ini.UpdateFile();

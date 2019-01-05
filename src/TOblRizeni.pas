@@ -45,8 +45,8 @@ type
 
   //1 osvetleni
   TOsv = record
-   board:Byte;                                                                  // MTB deska osvetleni
-   port:Byte;                                                                   // MTB port osvetleni
+   board:Byte;                                                                  // RCS deska osvetleni
+   port:Byte;                                                                   // RCS port osvetleni
    name:string;                                                                 // popis osvetleni, max 5 znaku
 
    default_state:boolean;                                                       // vychozi stav osvetleni - toto je ukladano do souboru a nacitano ze souboru
@@ -101,7 +101,7 @@ type
   failed:boolean;                                                               // jestli RCS v OR selhalo (nekomunikuje)
  end;
 
- // seznam MTB v OR
+ // seznam RCS modulu v OR
  TORRCSs = record
   modules: array [0..TRCS._MAX_RCS] of TORRCS;                                     // seznam RCS modulu v OR, indexem je adresa RCS
   failure:boolean;                                                              // jestli doslo k selhani jakohokoliv RCS modulu v OR
@@ -147,8 +147,8 @@ type
       procedure SetPrivolavackaBlkCnt(new:Integer);
       procedure SetTimerCnt(new:Integer);
 
-      procedure RCSClear();                                                     // nastavi vsem MTB, ze nejsou v OR
-      procedure RCSUpdate();                                                    // posila souhrnne zpravy panelu o vypadku MTB modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
+      procedure RCSClear();                                                     // nastavi vsem RCS modulum, ze nejsou v OR
+      procedure RCSUpdate();                                                    // posila souhrnne zpravy panelu o vypadku RCS modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
 
       procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
 
@@ -184,7 +184,7 @@ type
       function AddMereniCasu(callback:TNotifyEvent; len:TDateTime):Byte;        // prida mereni casu; vrati ID mereni
       procedure StopMereniCasu(id:Integer);                                     // zastavi mereni casu s danym ID
 
-      procedure RCSAdd(addr:integer);                                           // prida MTB do OR
+      procedure RCSAdd(addr:integer);                                           // prida RCS modul do OR
       procedure RCSFail(addr:integer);                                          // informuje OR o vypadku RCS
 
       procedure UpdateLine(LI:TListItem);                                       // aktualizuje zaznam v tabulce oblasti rizeni ve F_Main
