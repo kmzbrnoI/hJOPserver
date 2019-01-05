@@ -58,7 +58,7 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS;
+uses TechnologieRCS, Logging, RCS, TBlokSCom;
 
 {$R *.dfm}
 
@@ -315,15 +315,20 @@ procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   try
     if (MTBAddr < 0) then Exit;
 
-    if ((Sender as TShape).Brush.Color = clRed) then begin
-      RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
-      (Sender as TShape).Brush.Color := clLime;
-    end else if ((Sender as TShape).Brush.Color = clBlue) then begin
-      RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 5);
-      (Sender as TShape).Brush.Color := clWhite;
-    end else begin
-      RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
-      (Sender as TShape).Brush.Color := clRed;
+    try
+      if ((Sender as TShape).Brush.Color = clRed) then begin
+        RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 1);
+        (Sender as TShape).Brush.Color := clLime;
+      end else if ((Sender as TShape).Brush.Color = clBlue) then begin
+        RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, TBlkSCom._NAV_VSE);
+        (Sender as TShape).Brush.Color := clWhite;
+      end else begin
+        RCSi.SetOutput(MTBAddr, (Sender as TShape).Tag, 0);
+        (Sender as TShape).Brush.Color := clRed;
+      end;
+    except
+      on E:Exception do
+        Application.MessageBox(PChar('Nelze nastavít výstup:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
     end;
 
     (Sender as TShape).Brush.Color := clYellow;
