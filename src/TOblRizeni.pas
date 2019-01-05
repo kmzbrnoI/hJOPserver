@@ -615,17 +615,19 @@ begin
 
   _BLK_SCOM:begin
    //vytvoreni dat
-   if ((Sender as TBlkSCom).Navest = -1) then
+   if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_DISABLED) then
     begin
      fg := clBlack;
      bg := clFuchsia;
+    end else if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_CHANGING) then begin
+     fg := clBlack;
+     bg := $A0A0A0;
     end else begin
-     // privolavaci navest
-     if ((Sender as TBlkSCom).Navest = 8) then
+     if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_PRIVOL) then
       begin
        fg := clWhite;
       end else begin
-       if (((Sender as TBlkSCom).DNjc <> nil) and ((Sender as TBlkSCom).Navest > 0)) then
+       if (((Sender as TBlkSCom).DNjc <> nil) and ((Sender as TBlkSCom).Navest > TBlkSCom._NAV_STUJ)) then
         begin
           case ((Sender as TBlkSCom).DNjc.data.TypCesty) of
            TJCType.vlak  : fg := clLime;
@@ -634,7 +636,7 @@ begin
            fg := clAqua;
           end;
         end else begin
-         if (((Sender as TBlkSCom).Navest <> 8) and ((Sender as TBlkSCom).canRNZ)) then
+         if (((Sender as TBlkSCom).Navest <> TBlkSCom._NAV_PRIVOL) and ((Sender as TBlkSCom).canRNZ)) then
            fg := clTeal
          else
            fg := $A0A0A0;

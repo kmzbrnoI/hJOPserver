@@ -45,6 +45,7 @@ type
  TBlkSComStav = record
   ZacatekVolba:TBlkSComVolba;                    // nazatek volby jidni cesty
   Navest:Integer;                                // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
+  cilova_navest:Integer;                         // navest, ktera ma byt nastavena
   ABJC:TJC;                                      // odkaz na automaticky stavenou JC
   ZAM:Boolean;                                   // navestidlo zamkle z panelu
   redukce_menu:Integer;                          // kolik blokù mì redukuje
@@ -58,7 +59,9 @@ type
   autoblok:boolean;
 
   toRnz:TDictionary<Integer, Cardinal>;          // seznam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
-  RCtimer:Integer;                              // id timeru, ktery se prave ted pouziva pro ruseni JC
+  RCtimer:Integer;                               // id timeru, ktery se prave ted pouziva pro ruseni JC
+  changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
+  changeEnd: TTime;
  end;
 
  // vlastnosti navestidla ziskane ze souboru .spnl (od reliefu, resp. z Mergeru)
@@ -82,6 +85,8 @@ type
      privol_timer_id : 0;
      autoblok : false;
      RCtimer : -1;
+     changeCallbackOk: nil;
+     changeCallbackErr: nil;
    );
 
    // privolavaci navest sviti jednu minitu a 30 sekund
@@ -89,6 +94,7 @@ type
    _PRIVOL_SEC = 30;
 
    // Kody navesti
+   _NAV_CHANGING = -2;
    _NAV_DISABLED = -1;
    _NAV_STUJ = 0;
    _NAV_VOLNO = 1;
@@ -108,6 +114,7 @@ type
    _NAV_OPAK_VYSTRAHA_40 = 15;
 
    _NAV_DEFAULT_DELAY = 2;
+   _NAV_CHANGE_DELAY_MSEC = 1000;
 
   private
    SComSettings:TBlkSComSettings;
@@ -125,7 +132,8 @@ type
     function GetEvent(ev:TBlkSComSprEvent; short:boolean = false):string;
     function RCinProgress():boolean;
 
-    procedure SetNavest(navest:Integer);
+    procedure SetNavest(navest:Integer); overload;
+    procedure SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent); overload;
 
     function GetAB():boolean;
     procedure SetAB(ab:boolean);
@@ -160,6 +168,9 @@ type
 
     procedure UpdatePadani();
     procedure UpdatePrivol();
+    procedure UpdateNavestSet();
+    procedure OnNavestSetOk();
+    procedure OnNavestSetError();
 
     procedure PrivolDKClick(SenderPnl:TIDContext; SenderOR:TObject; Button:TPanelButton);
     procedure PrivokDKPotvrSekv(Sender:TIdContext; success:boolean);
@@ -173,6 +184,7 @@ type
     function CanIDoRNZ():boolean;
 
     procedure UnregisterAllEvents();
+    function IsChanging():boolean;
 
   public
     constructor Create(index:Integer);
@@ -217,7 +229,7 @@ type
     property UsekID:Integer read SComRel.UsekID write SetUsekPredID;
     property Smer:THVStanoviste read SComRel.smer write SComRel.smer;
 
-    //stavovae promenne
+    //stavove promenne
     property Navest:Integer read SComStav.Navest write SetNavest;
     property ZacatekVolba:TBlkSComVolba read SComStav.ZacatekVolba write SetZacatekVolba;
     property AB:boolean read GetAB write SetAB;
@@ -230,6 +242,7 @@ type
     property autoblok:boolean read SComStav.autoblok write SComStav.autoblok;
     property canRNZ:boolean read CanIDoRNZ;
     property RCtimer:Integer read SComStav.RCtimer write SComStav.RCtimer;
+    property changing:Boolean read IsChanging;
 
     //GUI:
 
@@ -435,6 +448,7 @@ end;//procedure
 
 procedure TBlkSCom.Update();
 begin
+ Self.UpdateNavestSet();
  Self.UpdatePadani();
  Self.UpdateRychlostSpr();
 
@@ -445,12 +459,15 @@ begin
   begin
    if (RCSi.IsModule(Self.SComSettings.RCSAddrs.data[0].board)) then
     begin
-     if (Self.SComStav.Navest < 0) then
+     if (Self.SComStav.Navest = _NAV_DISABLED) then
       begin
        Self.SComStav.Navest := _NAV_STUJ;
        Self.Change();
       end;
     end else begin
+     if (Self.changing) then
+       Self.OnNavestSetError();
+
      if (Self.SComStav.Navest >= 0) then
       begin
        Self.SComStav.Navest := _NAV_DISABLED;
@@ -621,13 +638,19 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 //nastavovani stavovych promennych:
 
-procedure TBlkSCom.SetNavest(navest:Integer);
+procedure TBlkSCom.SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent);
 var i:Integer;
 begin
- if ((Self.SComStav.Navest < 0) or (Self.SComSettings.zamknuto)) then Exit();
+ if ((Self.SComStav.Navest = _NAV_DISABLED) or (Self.SComSettings.zamknuto)) then
+  begin
+   if (Assigned(changeCallbackErr)) then
+     changeCallbackErr(Self);
+   Exit();
+  end;
 
  if ((navest = _NAV_PRIVOL) or (navest = _NAV_STUJ)) then
   begin
+   // prodlouzeni nebo zruseni privolavaci navesti -> zrusit odpocet v panelu
    if (Self.SComStav.privol_timer_id > 0) then
      for i := 0 to Self.ORsRef.Cnt-1 do
       begin
@@ -638,24 +661,16 @@ begin
   end;
 
  if (navest = _NAV_PRIVOL) then
-  Self.SComStav.privol_start := Now;
+   Self.SComStav.privol_start := Now;
 
- if (Self.SComStav.Navest = navest) then Exit();
-
- if (navest = TBlkSCom._NAV_PRIVOL) then
+ if (Self.SComStav.Navest = navest) then
   begin
-   // nova navest je privolavacka -> zapnout zvukovou vyzvu
-   for i := 0 to Self.OblsRizeni.Cnt-1 do
-     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt + 1;
-  end else if ((Self.SComStav.Navest = _NAV_PRIVOL) and (navest = _NAV_STUJ)) then begin
-   // STUJ po privolavacce -> vypnout zvukovou vyzvu
-   for i := 0 to Self.OblsRizeni.Cnt-1 do
-     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt - 1;
+   if (Assigned(changeCallbackOk)) then
+     changeCallbackOk(Self);
+   Exit();
   end;
 
- Self.SComStav.Navest := navest;
-
- //reseni typu navestidla (scom/binary)
+ // nastaveni vystupu
  try
    if (Self.SComSettings.RCSAddrs.Count > 0) then
     begin
@@ -676,21 +691,57 @@ begin
       end;//else
     end;
  except
-
+   if (Assigned(changeCallbackErr)) then
+     changeCallbackErr(Self);
+   Exit();
  end;
 
- if (Self.SComStav.Navest = 0) then
+ // ruseni nouzove jizdni cesty pri padu navestidla do STUJ
+ if (Self.SComStav.Navest = _NAV_STUJ) then
   begin
    if ((Self.UsekPred <> nil) and ((Self.UsekPred.typ = _BLK_USEK) or
        (Self.UsekPred.typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).SComJCRef.Contains(Self))) then
     (Self.UsekPred as TBlkUsek).SComJCRef.Remove(Self);
 
-   // ruseni nouzove jizdni cesty
    if (Assigned(Self.privol)) then
     begin
      Self.privol.RusJCWithoutBlk();
      Self.privol := nil;
     end;
+  end;
+
+ if ((Self.Navest = _NAV_PRIVOL) and (navest = _NAV_STUJ)) then
+  begin
+   // STUJ po privolavacce -> vypnout zvukovou vyzvu
+   for i := 0 to Self.OblsRizeni.Cnt-1 do
+     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt - 1;
+  end;
+
+ Self.SComStav.changeCallbackOk := changeCallbackOk;
+ Self.SComStav.changeCallbackErr := changeCallbackErr;
+ Self.SComStav.Navest := _NAV_CHANGING;
+ Self.SComStav.cilova_navest := navest;
+ Self.SComStav.changeEnd := Now + EncodeTime(0, 0, _NAV_CHANGE_DELAY_MSEC div 1000, _NAV_CHANGE_DELAY_MSEC mod 1000);
+
+ Self.Change();
+end;//procedure
+
+procedure TBlkSCom.SetNavest(navest:Integer);
+begin
+ Self.SetNavest(navest, TNotifyEvent(nil), TNotifyEvent(nil));
+end;
+
+procedure TBlkSCom.OnNavestSetOk();
+var tmp:TNotifyEvent;
+    i:Integer;
+begin
+ Self.SComStav.Navest := Self.SComStav.cilova_navest;
+
+ if (Self.SComStav.cilova_navest = TBlkSCom._NAV_PRIVOL) then
+  begin
+   // nova navest je privolavacka -> zapnout zvukovou vyzvu
+   for i := 0 to Self.OblsRizeni.Cnt-1 do
+     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt + 1;
   end;
 
  if (Self.autoblok) then
@@ -699,9 +750,42 @@ begin
    if (TBlkTU(Self.UsekPred).Trat <> nil) then TBlkTrat(TBlkTU(Self.UsekPred).Trat).UpdateSprPredict();
   end;
 
+ if (Assigned(Self.SComStav.changeCallbackOk)) then
+  begin
+   tmp := Self.SComStav.changeCallbackOk; // may set new callback in event
+   Self.SComStav.changeCallbackOk := nil;
+   tmp(Self);
+  end;
+
  Self.UpdateRychlostSpr(true);
  Self.Change();
-end;//procedure
+end;
+
+procedure TBlkSCom.OnNavestSetError();
+var tmp:TNotifyEvent;
+begin
+ // Tato funkce zatim neni moc vyuzivana, jedna se o pripravu do budoucna, kdy
+ // by melo navestidlo kontrolu navesti (vstup do hJOP).
+
+ if (Assigned(Self.SComStav.changeCallbackErr)) then
+  begin
+   tmp := Self.SComStav.changeCallbackErr; // may set new callback in event
+   Self.SComStav.changeCallbackErr := nil;
+   tmp(Self);
+  end;
+
+ // Jak nastavit aktualni navest?
+ Self.SComStav.Navest := _NAV_STUJ;
+
+ Self.Change();
+end;
+
+procedure TBlkSCom.UpdateNavestSet();
+begin
+ if (not Self.changing) then Exit();
+ if (Self.SComStav.changeEnd <= Now) then
+   Self.OnNavestSetOk();
+end;
 
 function TBlkSCom.GetAB():boolean;
 begin
@@ -1469,7 +1553,8 @@ end;//function
 procedure TBlkSCom.UpdatePrivol();
 var i:Integer;
 begin
- if ((Self.SComStav.privol_start+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now+EncodeTime(0, 0, 30, 0)) and (Self.SComStav.privol_timer_id = 0)) then
+ if ((Self.SComStav.privol_start+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now+EncodeTime(0, 0, 30, 0)) and
+     (Self.SComStav.privol_timer_id = 0)) then
   begin
    // oznameni o brzkem ukonceni privolavaci navesti
    Self.SComStav.privol_timer_id := Random(65536)+1;
@@ -1694,6 +1779,13 @@ begin
    TBlkTrat(trat).SprPredict.UndefTime();
    TBlkTrat(trat).Change();
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkSCom.IsChanging():boolean;
+begin
+ Result := (Self.Navest = _NAV_CHANGING);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
