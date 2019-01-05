@@ -504,11 +504,13 @@ begin
 
   for i := 0 to Self.JCs.Count-1 do
    begin
-    if ((Self.JCs[i].data.TypCesty = TJCType.posun) or (Self.JCs[i].data.DalsiNNavaznost <> fJC.data.NavestidloBlok)) then continue;
+    if ((Self.JCs[i].data.TypCesty = TJCType.posun) or
+        (Self.JCs[i].data.DalsiNNavaznost <> fJC.data.NavestidloBlok)) then continue;
 
     Blky.GetBlkByID(Self.JCs[i].data.NavestidloBlok, nav);
 
     if (not (nav as TBlkSCom).IsPovolovaciNavest()) then continue;
+    if ((nav as TBlkSCom).changing) then continue;
 
     if (my_nav.IsPovolovaciNavest()) then
      begin

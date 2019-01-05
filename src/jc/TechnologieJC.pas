@@ -229,6 +229,7 @@ type
       procedure VyhNeprestavenaNC(Sender:TObject);
       procedure VyhPrestavenaNC(Sender:TObject);
       procedure VyhPrestavenaJCPC(Sender:TObject);
+      procedure NavNepostaveno(Sender:TObject);
 
       procedure KontrolaPodminekVCPC(var bariery:TList<TJCBariera>);            // kontrola podminek vlakovych a posunovych cest
       procedure KontrolaPodminekNC(var bariery:TList<TJCBariera>);              // kontrola podminek nouzovych cest
@@ -2579,8 +2580,7 @@ var Nav,DalsiNav:TBlk;
      end;//case
    end;// else nouzova cesta
 
-  (Nav as TBlkSCom).Navest := Navest;
-  JCDb.CheckNNavaznost(Self);
+  (Nav as TBlkSCom).SetNavest(Navest, TNotifyEvent(nil), Self.NavNepostaveno);
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3379,6 +3379,21 @@ begin
  if (Self.fstaveni.nextVyhybka = Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
    Self.fstaveni.nextVyhybka := -1;
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.NavNepostaveno(Sender:TObject);
+var nav:TBlk;
+begin
+ if (not Self.staveni) then Exit();
+ Blky.GetBlkByID(Self.fproperties.NavestidloBlok, nav);
+
+ if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Návìstidlo '+nav.name + ' nepostaveno',
+     (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+ Self.CancelStaveni('', true);
+ Self.RusJC();
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // generuje podminky branici postaveni nouzove posunove ceste

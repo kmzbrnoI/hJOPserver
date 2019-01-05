@@ -46,6 +46,7 @@ type
   ZacatekVolba:TBlkSComVolba;                    // nazatek volby jidni cesty
   Navest:Integer;                                // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
   cilova_navest:Integer;                         // navest, ktera ma byt nastavena
+  navest_old:Integer;                            // behem staveni obsahuje byvalou navest
   ABJC:TJC;                                      // odkaz na automaticky stavenou JC
   ZAM:Boolean;                                   // navestidlo zamkle z panelu
   redukce_menu:Integer;                          // kolik blokù mì redukuje
@@ -134,7 +135,6 @@ type
     function RCinProgress():boolean;
 
     procedure SetNavest(navest:Integer); overload;
-    procedure SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent); overload;
 
     function GetAB():boolean;
     procedure SetAB(ab:boolean);
@@ -208,6 +208,7 @@ type
     procedure Change(now:boolean = false); override;
 
     procedure JCZrusNavest();   // zahrnuje cas na pad navesti
+    procedure SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent); overload;
 
     //----- SCom own functions -----
 
@@ -429,6 +430,7 @@ begin
  end;
 
  Self.SComStav.Navest := _NAV_STUJ;
+ Self.SComStav.navest_old := _NAV_STUJ;
  Self.SComStav.toRnz.Clear();
  Self.UnregisterAllEvents();
  Self.Change();
@@ -437,6 +439,7 @@ end;//procedure
 procedure TBlkSCom.Disable();
 begin
  Self.SComStav.Navest := _NAV_DISABLED;
+ Self.SComStav.navest_old := _NAV_DISABLED;
  Self.SComStav.ZacatekVolba := TBlkSComVolba.none;
  Self.AB := false;
  Self.SComStav.ZAM  := false;
@@ -719,6 +722,8 @@ begin
      Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt - 1;
   end;
 
+ if (not Self.changing) then
+   Self.SComStav.navest_old := Self.Navest;
  Self.SComStav.changeCallbackOk := changeCallbackOk;
  Self.SComStav.changeCallbackErr := changeCallbackErr;
  Self.SComStav.Navest := _NAV_CHANGING;
@@ -766,6 +771,8 @@ begin
   end;
 
  Self.UpdateRychlostSpr(true);
+ if (Self.DNjc <> nil) then
+   JCDb.CheckNNavaznost(Self.DNjc);
  Self.Change();
 end;
 
@@ -1548,7 +1555,11 @@ end;//function
 
 function TBlkSCom.IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):boolean;
 begin
- Result := TBlkSCom.IsPovolovaciNavest(Self.Navest, jctype);
+ if ((Self.Navest = _NAV_CHANGING) and (TBlkSCom.IsPovolovaciNavest(Self.SComStav.cilova_navest, jctype))) then
+   // navest se meni na nejakou povolovaci -> ridim se jeste tou starou
+   Result := TBlkSCom.IsPovolovaciNavest(Self.SComStav.navest_old, jctype)
+ else
+   Result := TBlkSCom.IsPovolovaciNavest(Self.Navest, jctype);
 end;
 
 class function TBlkSCom.IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean;
