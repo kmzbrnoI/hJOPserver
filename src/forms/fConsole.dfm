@@ -52,8 +52,8 @@ object F_Console: TF_Console
     Margins.Bottom = 2
     Color = clWhite
     Font.Charset = EASTEUROPE_CHARSET
-    Font.Color = clSilver
-    Font.Height = -12
+    Font.Color = clBlack
+    Font.Height = -11
     Font.Name = 'Fixedsys'
     Font.Style = []
     ParentFont = False
