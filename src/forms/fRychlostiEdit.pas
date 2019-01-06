@@ -36,7 +36,7 @@ procedure TF_RychlostiEdit.OpenForm(Stupen:Integer);
  begin
   OpenIndex := Stupen;
   SE_Rychlost.Value := TrkSystem.GetStepSpeed(stupen);
-  F_RychlostiEdit.Caption := 'Editovat stupen '+IntToStr(Stupen);
+  F_RychlostiEdit.Caption := 'Editovat stupeò '+IntToStr(Stupen);
   Self.ActiveControl := Self.SE_Rychlost;
   F_RychlostiEdit.ShowModal;
  end;

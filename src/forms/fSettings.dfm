@@ -100,7 +100,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Options
+    ActivePage = TS_SS
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -422,7 +422,7 @@ object F_Options: TF_Options
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = ' MTB v'#253'stupy '
+          Caption = ' RCS v'#253'stupy '
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -11
@@ -433,13 +433,13 @@ object F_Options: TF_Options
           object L_SS_Out_1: TLabel
             Left = 8
             Top = 16
-            Width = 57
+            Width = 58
             Height = 13
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Pripraveno :'
+            Caption = 'P'#345'ipraveno :'
           end
           object L_SS_Out_2: TLabel
             Left = 8
@@ -477,13 +477,13 @@ object F_Options: TF_Options
           object L_SS_Out_5: TLabel
             Left = 8
             Top = 112
-            Width = 58
+            Width = 59
             Height = 13
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Opakovani :'
+            Caption = 'Opakov'#225'n'#237' :'
           end
           object SE_SS_Out_Ready: TSpinEdit
             Left = 104
@@ -656,7 +656,7 @@ object F_Options: TF_Options
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = ' MTB vstupy '
+          Caption = ' RCS vstupy '
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -11
@@ -854,8 +854,8 @@ object F_Options: TF_Options
             OnClick = CHB_SS_Out_ReadyClick
           end
           object CHB_SS_In_Stop: TCheckBox
-            Left = 83
-            Top = 67
+            Left = 80
+            Top = 64
             Width = 17
             Height = 17
             Margins.Left = 2
