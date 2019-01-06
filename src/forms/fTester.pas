@@ -31,15 +31,17 @@ type
     _S_INCR   = 15;
     _S_LEFT   = 10;
     _L_LEFT   = 40;
+    _NO_INPUTS = 16;
+    _NO_OUTPUTS = 16;
 
   private
    RCSAddr:Smallint;
    CB_RCSAdrData:TArI;
-   SInput:array [0..15] of TShape;
-   SOutput:array [0..15] of TShape;   
+   SInput:array [0.._NO_INPUTS-1] of TShape;
+   SOutput:array [0.._NO_OUTPUTS-1] of TShape;
 
-   LInput:array [0..15] of TLabel;
-   LOutput:array [0..15] of TLabel;
+   LInput:array [0.._NO_INPUTS-1] of TLabel;
+   LOutput:array [0.._NO_OUTPUTS-1] of TLabel;
 
     procedure CreateSInput;
     procedure CreateSOutput;
@@ -68,13 +70,12 @@ procedure TF_Tester.T_testerTimer(Sender: TObject);
  end;//procedure
 
 procedure TF_Tester.FormShow(Sender: TObject);
-var cyklus:Integer;
+var i:Integer;
  begin
-  for cyklus := 0 to 15 do
-   begin
-    SInput[cyklus].Brush.Color  := clGray;
-    SOutput[cyklus].Brush.Color := clGray;
-   end;//for cyklus
+  for i := 0 to _NO_INPUTS-1 do
+    SInput[i].Brush.Color  := clGray;
+  for i := 0 to _NO_OUTPUTS-1 do
+    SOutput[i].Brush.Color := clGray;
 
   T_tester.Enabled := true; 
   writelog('Zobrazeno okno Testeru',0,0);
@@ -86,7 +87,7 @@ var i, val:Integer;
  begin
   if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
    begin
-    for i := 0 to 15 do
+    for i := 0 to _NO_OUTPUTS-1 do
      begin
       SOutput[i].Brush.Color := clGray;
       SOutput[i].Visible := true;
@@ -97,10 +98,10 @@ var i, val:Integer;
   try
     outCnt := RCSi.GetModuleOutputsCount(RCSAddr);
   except
-    outCnt := 16;
+    outCnt := _NO_OUTPUTS;
   end;
 
-  for i := 0 to 15 do
+  for i := 0 to _NO_OUTPUTS-1 do
    begin
     SOutput[i].Visible := (i < Integer(outCnt));
     LOutput[i].Visible := (i < Integer(outCnt));
@@ -142,7 +143,7 @@ var i:Integer;
  begin
   if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
    begin
-    for i := 0 to 15 do
+    for i := 0 to _NO_INPUTS-1 do
      begin
       SInput[i].Brush.Color := clGray;
       SInput[i].Visible := true;
@@ -153,10 +154,10 @@ var i:Integer;
   try
     inCnt := RCSi.GetModuleInputsCount(RCSAddr);
   except
-    inCnt := 16;
+    inCnt := _NO_INPUTS;
   end;
 
-  for i := 0 to 15 do
+  for i := 0 to _NO_INPUTS-1 do
    begin
     SInput[i].Visible := (i < Integer(inCnt));
     LInput[i].Visible := (i < Integer(inCnt));
@@ -217,11 +218,10 @@ procedure TF_Tester.FormCreate(Sender: TObject);
 procedure TF_Tester.CB_RCSAdrChange(Sender: TObject);
 var i:Integer;
  begin
-  for i := 0 to 15 do
-   begin
+  for i := 0 to _NO_INPUTS-1 do
     SInput[i].Brush.Color  := clGray;
+  for i := 0 to _NO_OUTPUTS-1 do
     SOutput[i].Brush.Color := clGray;
-   end;//for i
 
   if ((CB_RCSAdr.ItemIndex > -1) and (CB_RCSAdr.ItemIndex < Length(CB_RCSAdrData))) then
    begin
@@ -247,7 +247,7 @@ var i:Integer;
  begin
   aTop := _S_TOP;
 
-  for i := 0 to 15 do
+  for i := 0 to _NO_INPUTS-1 do
    begin
     SInput[i] := TShape.Create(F_Tester.GB_vstupy);
 
@@ -278,7 +278,7 @@ var i:Integer;
  begin
   aTop := _S_TOP;
 
-  for i := 0 to 15 do
+  for i := 0 to _NO_OUTPUTS-1 do
    begin
     SOutput[i] := TShape.Create(F_Tester.GB_vystupy);
 
