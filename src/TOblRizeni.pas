@@ -893,7 +893,7 @@ begin
   end;//for i
 
  if (Self.Connected.Count >= _MAX_CON_PNL) then Exit(1);
- if ((Panel.Data as TTCPORsRef).ORsCnt >= _MAX_ORREF) then Exit(2);
+ if ((Panel.Data as TTCPORsRef).ORs.Count >= _MAX_ORREF) then Exit(2);
 
  //pridani 1 panelu
  pnl.Panel  := Panel;
@@ -902,8 +902,7 @@ begin
  Self.Connected.Add(pnl);
 
  // pridame referenci na sami sebe do TIDContext
- (Panel.Data as TTCPORsRef).ORsCnt := (Panel.Data as TTCPORsRef).ORsCnt + 1;
- (Panel.Data as TTCPORsRef).ORs[(Panel.Data as TTCPORsRef).ORsCnt-1] := Self;
+ (Panel.Data as TTCPORsRef).ORs.Add(Self);
 
  // odesleme incializacni udaje
  if (rights > TORCOntrolRights.null) then
@@ -915,7 +914,7 @@ end;//function
 
 //mazani 1 panelu z databaze
 function TOR.PnlDRemove(Panel:TIdContext):Byte;
-var i, found:Integer;
+var i:Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
   begin
@@ -927,20 +926,8 @@ begin
   end;//for i
 
  // a samozrejme se musime smazat z oblasti rizeni
- found := -1;
- for i := 0 to (Panel.Data as TTCPORsRef).ORsCnt-1 do
-  if ((Panel.Data as TTCPORsRef).ORs[i] = Self) then
-   begin
-    found := i;
-    break;
-   end;
-
- if (found <> -1) then
-  begin
-   for i := found to (Panel.Data as TTCPORsRef).ORsCnt-2 do
-     (Panel.Data as TTCPORsRef).ORs[i] := (Panel.Data as TTCPORsRef).ORs[i+1];
-   (Panel.Data as TTCPORsRef).ORsCnt := (Panel.Data as TTCPORsRef).ORsCnt - 1;
-  end;
+ if ((Panel.Data as TTCPORsRef).ORs.Contains(Self)) then
+   (Panel.Data as TTCPORsRef).ORs.Remove(Self);
 
  Result := 0;
 end;//function

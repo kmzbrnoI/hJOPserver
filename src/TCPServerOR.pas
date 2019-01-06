@@ -35,8 +35,7 @@ type
 
   // tady je ulozeno jedno fyzicke spojeni s panelem (obsahuje oblasti rizeni, otevrene okynko stitku, menu, ...)
   TTCPORsRef = class
-    ORs:array [0.._MAX_ORREF-1] of TOR;                                         // reference na OR
-    ORsCnt:Integer;                                                             // pocet referenci na OR
+    ORs:TList<TOR>;                                                             // reference na OR
     protocol_version:string;
 
     stitek:TBlk;                                                                // blok, na kterema kutalne probiha zmena stitku
@@ -68,10 +67,11 @@ type
     podj_usek: TBlk;                                                            // data pro editaci predvidaneho odjezdu
     podj_sprid: Integer;
 
-    constructor Create();
+    constructor Create(index:Integer);
     destructor Destroy(); override;
 
     procedure Escape(AContext: TIdContext);                                     // volano pri stisku Escape v panelu
+    procedure Reset();
 
   end;
 
@@ -80,6 +80,8 @@ type
     conn:TIdContext;                                                            // fyzicke spojeni
     status:TPanelConnectionStatus;                                              // stav spojeni
     // v conn.data je ulozen objekt typu TTCPORsRef, kde jsou ulozeny oblasti rizeni, ktere dany panel ma autorizovane
+
+    constructor Create(conn:TIDContext; status:TPanelConnectionStatus = handshake);
   end;
 
   TORTCPServer = class
@@ -337,7 +339,6 @@ end;//function
 
 procedure TORTCPServer.OnTcpServerConnect(AContext: TIdContext);
 var i:Integer;
-    ORsref:TTCPORsRef;
 begin
  Self.tcpServer.Contexts.LockList();
  try
@@ -356,17 +357,8 @@ begin
      Exit();
     end;
 
-   ORsref             := TTCPORsRef.Create;
-   ORsref.ORsCnt      := 0;
-   ORsref.index  := i;
-   ORsref.regulator_zadost := nil;
-   ORsref.Escape(AContext);
-
-   Self.clients[i]           := TORTCPClient.Create();
-   Self.clients[i].conn      := AContext;
-   Self.clients[i].status    := TPanelConnectionStatus.handshake;
-   Self.clients[i].conn.Data := ORsref;
-
+   AContext.Data := TTCPORsRef.Create(i);
+   Self.clients[i] := TORTCPClient.Create(AContext);
    Self.GUIQueueLineToRefresh(i);
  finally
    Self.tcpServer.Contexts.UnlockList();
@@ -382,8 +374,8 @@ begin
 
  try
    // vymazeme klienta ze vsech oblasti rizeni
-   for i := (AContext.Data as TTCPORsRef).ORsCnt-1 downto 0 do
-    (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
+   for oblr in (AContext.Data as TTCPORsRef).ORs do
+     oblr.RemoveClient(AContext);
 
    // ukoncime probihajici potvrzovaci sekvenci
    if (Assigned(TTCPORsRef(AContext.Data).potvr)) then
@@ -488,6 +480,7 @@ var i, j:Integer;
     btn:TPanelButton;
     podj: TPOdj;
     dt: TDateTime;
+    oblr:TOR;
 begin
  // najdeme klienta v databazi
  for i := 0 to _MAX_OR_CLIENTS-1 do
@@ -663,8 +656,8 @@ begin
  else if (parsed[1] = 'SPR-LIST') then
   begin
    tmp := '';
-   for i := 0 to (AContext.Data as TTCPORsRef).ORsCnt-1 do
-    tmp := tmp + (AContext.Data as TTCPORsRef).ORs[i].PanelGetSprs(AContext);
+   for oblr in (AContext.Data as TTCPORsRef).ORs do
+     tmp := tmp + oblr.PanelGetSprs(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
 
@@ -674,8 +667,8 @@ begin
    if (i >= 0) then (Soupravy.soupravy[i].stanice as TOR).PanelRemoveSpr(AContext, i);
 
    tmp := '';
-   for i := 0 to (AContext.Data as TTCPORsRef).ORsCnt-1 do
-    tmp := tmp + (AContext.Data as TTCPORsRef).ORs[i].PanelGetSprs(AContext);
+   for oblr in (AContext.Data as TTCPORsRef).ORs do
+    tmp := tmp + oblr.PanelGetSprs(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
 
@@ -782,11 +775,11 @@ begin
  end;
 
  // vsechna ostatni data pak podlehaji znalosti OR, ktere mam autorizovane, tak z toho vyjdeme
- for i := 0 to (AContext.Data as TTCPORsRef).ORsCnt-1 do
-  if (parsed[0] = (AContext.Data as TTCPORsRef).ORs[i].id) then
-   break;
+ for i := 0 to (AContext.Data as TTCPORsRef).ORs.Count-1 do
+   if (parsed[0] = (AContext.Data as TTCPORsRef).ORs[i].id) then
+     break;
 
- if (i = (AContext.Data as TTCPORsRef).ORsCnt) then
+ if (i = (AContext.Data as TTCPORsRef).ORs.Count) then
   begin
    Self.SendInfoMsg(AContext, 'Neautorizováno');
    Exit();
@@ -1181,7 +1174,7 @@ begin
 
  for i := 0 to 2 do
   begin
-   if (i < (Self.clients[index].conn.Data as TTCPORsRef).ORsCnt) then
+   if (i < (Self.clients[index].conn.Data as TTCPORsRef).ORs.Count) then
     begin
      // klient existuje
      (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
@@ -1193,10 +1186,10 @@ begin
     end;
   end;//for i
 
- if ((Self.clients[index].conn.Data as TTCPORsRef).ORsCnt > 3) then
+ if ((Self.clients[index].conn.Data as TTCPORsRef).ORs.Count > 3) then
   begin
    str := '';
-   for i := 3 to (Self.clients[index].conn.Data as TTCPORsRef).ORsCnt-1 do
+   for i := 3 to (Self.clients[index].conn.Data as TTCPORsRef).ORs.Count-1 do
     begin
      (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
      str := str + (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')' + ', ';
@@ -1276,16 +1269,21 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTCPORsRef.Create();
+constructor TTCPORsRef.Create(index:Integer);
 begin
- inherited;
+ inherited Create();
  Self.regulator_loks := TList<THV>.Create();
  Self.st_hlaseni := TList<TOR>.Create();
  Self.soundDict := TDictionary<Integer, Cardinal>.Create();
+ Self.ORs := TList<TOR>.Create();
+ Self.regulator_zadost := nil;
+ Self.index := index;
+ Self.Reset();
 end;
 
 destructor TTCPORsRef.Destroy();
 begin
+ Self.ORs.Free();
  Self.st_hlaseni.Free();
  Self.regulator_loks.Free();
  Self.soundDict.Free();
@@ -1295,12 +1293,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPORsRef.Escape(AContext: TIdContext);
-var i:Integer;
+var oblr:TOR;
 begin
  if ((Self.stitek = nil) and (Self.vyluka = nil) and (not Assigned(Self.potvr)) and (Self.menu = nil) and (not Assigned(Self.UPO_OK))) then
-   for i := 0 to Self.ORsCnt-1 do
-     Self.ORs[i].PanelEscape(AContext);
+   for oblr in Self.ORs do
+     oblr.PanelEscape(AContext);
 
+ Self.Reset();
+end;
+
+procedure TTCPOrsRef.Reset();
+begin
  Self.stitek      := nil;
  Self.vyluka      := nil;
  Self.potvr       := nil;
@@ -1323,7 +1326,7 @@ begin
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[6] := '';
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[7] := '';
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[8] := '';
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1448,6 +1451,16 @@ begin
    Result := TPanelButton.ESCAPE
  else
    raise EInvalidButton.Create('Invalid button!');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+constructor TORTCPClient.Create(conn:TIDContext; status:TPanelConnectionStatus = handshake);
+begin
+ inherited Create();
+
+ Self.conn := conn;
+ Self.status := status;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
