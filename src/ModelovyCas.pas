@@ -27,15 +27,6 @@ interface
 uses Classes, SysUtils, IniFiles, IDContext, Graphics;
 
 type
-
-  TModCasRCS=record                                   //data o pinech modeloveho casu
-   RCSAdr:Integer;                                     //RCS adresa na vysupy hodin
-
-   PORT_H:SmallInt;                                    //port na kazdou hodinu, -1 pokud nevyuzito
-   PORT_M:SmallInt;                                    //port na kazdou minutu, -1 pokud nevyuzito
-   PORT_S:SmallInt;                                    //port na kazdou sekundu, -1 pokud nevyuzito
-  end;
-
   TModCas = class
    private const
     _INI_SECTION  = 'ModCas';
@@ -64,7 +55,6 @@ type
     function GetTime():TTime;
 
    public
-    RCSdata:TModCasRCS;
 
      constructor Create();
 
@@ -108,16 +98,6 @@ end;
 
 procedure TModCas.LoadData(var ini:TMemIniFile);
 begin
- with (Self.RCSdata) do
-  begin
-   RCSAdr := ini.ReadInteger(_INI_SECTION, 'RCSAdr', -1);
-   if (RCSAdr = -1) then // backward compatibility
-     RCSAdr := ini.ReadInteger(_INI_SECTION, 'MtbAdr', -1);
-   PORT_H := ini.ReadInteger(_INI_SECTION, 'PORT_Hodiny', -1);
-   PORT_M := ini.ReadInteger(_INI_SECTION, 'PORT_Minuty', -1);
-   PORT_S := ini.ReadInteger(_INI_SECTION, 'PORT_Sekundy', -1);
-  end;
-
  Self.fspeed := ini.ReadFloat('ModCas', 'speed', 5);
  Self.dateTime := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
  Self.fused := ini.ReadBool('ModCas', 'used', true);
@@ -125,14 +105,6 @@ end;//procedure
 
 procedure TModCas.SaveData(var ini:TMemIniFile);
 begin
- with (Self.RCSdata) do
-  begin
-   ini.WriteInteger(_INI_SECTION, 'RCSAdr', RCSAdr);
-   ini.WriteInteger(_INI_SECTION, 'PORT_Hodiny', PORT_H);
-   ini.WriteInteger(_INI_SECTION, 'PORT_Minuty', PORT_M);
-   ini.WriteInteger(_INI_SECTION, 'PORT_Sekundy', PORT_S);
-  end;
-
  ini.WriteString('ModCas', 'speed', Self.strSpeed);
  ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
  ini.WriteBool('ModCas', 'used', Self.used);

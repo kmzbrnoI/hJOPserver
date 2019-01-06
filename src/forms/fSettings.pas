@@ -36,18 +36,6 @@ type
     GB_ON_1: TGroupBox;
     E_dataload: TEdit;
     GB_ON_2: TGroupBox;
-    GB_ModelovyCas: TGroupBox;
-    L_ModCas_2: TLabel;
-    L_ModCas_1: TLabel;
-    L_ModCas_3: TLabel;
-    L_ModCas_4: TLabel;
-    SE_ModCas_Sekundy: TSpinEdit;
-    SE_ModCas_Minuty: TSpinEdit;
-    SE_ModCas_Hodiny: TSpinEdit;
-    CHB_ModCas_Sekundy: TCheckBox;
-    CHB_ModCas_Minuty: TCheckBox;
-    CHB_ModCas_Hodiny: TCheckBox;
-    B_ModCas_Save: TButton;
     TS_SS: TTabSheet;
     P_SS: TPanel;
     L_SS_02: TLabel;
@@ -89,8 +77,6 @@ type
     CHB_Log_console: TCheckBox;
     GB_OnStart: TGroupBox;
     CHB_povolit_spusteni: TCheckBox;
-    L_ModCas_5: TLabel;
-    CB_ModCasPretaceni: TComboBox;
     L_SS_Out_5: TLabel;
     CHB_SS_OUT_Opakovani: TCheckBox;
     SE_SS_Out_Opakovani: TSpinEdit;
@@ -99,7 +85,6 @@ type
     SE_SS_In_Reset: TSpinEdit;
     CHB_SS_Enable: TCheckBox;
     SE_SS_RCSAdr: TSpinEdit;
-    SE_ModCas_RCSAdr: TSpinEdit;
     TS_Centrala: TTabSheet;
     GB_Centrala: TGroupBox;
     B_Save: TButton;
@@ -130,7 +115,6 @@ type
     procedure FormResize(Sender: TObject);
     procedure CHB_SS_Out_ReadyClick(Sender: TObject);
     procedure B_SS_SaveClick(Sender: TObject);
-    procedure B_ModCas_SaveClick(Sender: TObject);
     procedure LB_TimerClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -147,8 +131,6 @@ type
     procedure StartLogWrite;
     procedure NactiSSDoObjektu;
     procedure UlozDataDoSSzObjektu;
-    procedure NactiModCasDoObjektu;
-    procedure UlozDataDoModCasZObjektu;
 
     procedure NactiCentralaData();
     procedure UlozCentralaData();
@@ -219,7 +201,6 @@ begin
  if (PC_1.ActivePage = TS_SS)         then NactiSSDoObjektu;
  if (PC_1.ActivePage = TS_Options)    then
   begin
-   NactiModCasDoObjektu;
    Self.ME_autosave_period.Text := FormatDateTime('nn:ss', data.autosave_period);
    Self.CHB_Autosave.Checked := Data.autosave;
   end;
@@ -437,71 +418,6 @@ procedure TF_Options.B_SS_SaveClick(Sender: TObject);
   UlozDataDoSSzObjektu;
  end;//procedure
 
-procedure TF_Options.NactiModCasDoObjektu;
-var IgnoraceRCS:TArI;
- begin
-  SetLength(IgnoraceRCS,2);
-  IgnoraceRCS[0] := 3;
-  IgnoraceRCS[1] := 4;
-
-  Self.SE_ModCas_RCSAdr.Value := ModCas.RCSdata.RCSAdr;
-
-  CHB_ModCas_Sekundy.Checked := (ModCas.RCSdata.PORT_S > -1);
-  CHB_ModCas_Minuty.Checked  := (ModCas.RCSdata.PORT_M  > -1);
-  CHB_ModCas_Hodiny.Checked  := (ModCas.RCSdata.PORT_H  > -1);
-
-  if (ModCas.RCSdata.PORT_S > -1) then
-   begin
-    SE_ModCas_Sekundy.Enabled := true;
-    SE_ModCas_Sekundy.Value   := ModCas.RCSdata.PORT_S;
-   end else begin
-    SE_ModCas_Sekundy.Enabled := false;
-    SE_ModCas_Sekundy.Value   := 0;
-   end;
-  if (ModCas.RCSdata.PORT_M > -1) then
-   begin
-    SE_ModCas_Minuty.Enabled := true;
-    SE_ModCas_Minuty.Value   := ModCas.RCSdata.PORT_M;
-   end else begin
-    SE_ModCas_Minuty.Enabled := false;
-    SE_ModCas_Minuty.Value   := 0;
-   end;
-  if (ModCas.RCSdata.PORT_H > -1) then
-   begin
-    SE_ModCas_Hodiny.Enabled := true;
-    SE_ModCas_Hodiny.Value   := ModCas.RCSdata.PORT_H;
-   end else begin
-    SE_ModCas_Hodiny.Enabled := false;
-    SE_ModCas_Hodiny.Value   := 0;
-   end;
- end;//procedure
-
-procedure TF_Options.UlozDataDoModCasZObjektu;
- begin
-  ModCas.RCSData.RCSAdr := Self.SE_ModCas_RCSAdr.Value;
-
-  if (CHB_ModCas_Sekundy.Checked) then
-    ModCas.RCSData.PORT_S := SE_ModCas_Sekundy.Value
-  else
-    ModCas.RCSData.PORT_S := -1;
-
-  if (CHB_ModCas_Minuty.Checked) then
-    ModCas.RCSData.PORT_M := SE_ModCas_Minuty.Value
-  else
-    ModCas.RCSData.PORT_M := -1;
-
-  if (CHB_ModCas_Hodiny.Checked) then
-    ModCas.RCSData.PORT_H := SE_ModCas_Hodiny.Value
-  else
-    ModCas.RCSData.PORT_H := -1;
-
- end;//procedure
-
-procedure TF_Options.B_ModCas_SaveClick(Sender: TObject);
- begin
-  UlozDataDoModCasZObjektu;
- end;//procedure
-
 procedure TF_Options.LB_TimerClick(Sender: TObject);
  begin
   F_Main.Timer1.Interval := StrToInt(LB_Timer.Items.Strings[LB_Timer.ItemIndex]);
@@ -512,7 +428,6 @@ procedure TF_Options.LB_TimerClick(Sender: TObject);
 procedure TF_Options.FormShow(Sender: TObject);
  begin
   writelog('Zobrazeno okno nastaveni',WR_MESSAGE);
-  Self.NactiModCasDoObjektu();
   Self.PC_1Change(Self);
  end;//procedure
 
