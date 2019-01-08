@@ -176,7 +176,7 @@ var read,read2:string;
   F_Main.E_dataload_AC.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.dirname);
 
   F_Splash.AddStav('Naèítám databázi FormData');
-  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'FormData', 'data\FormData.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'forms', 'stav\forms.ini');
   try
     FormData.LoadFormData(read);
   except
