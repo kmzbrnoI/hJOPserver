@@ -5263,7 +5263,7 @@ object F_Main: TF_Main
         object P_Users_Left: TPanel
           Left = 0
           Top = 0
-          Width = 425
+          Width = 537
           Height = 40
           Margins.Left = 2
           Margins.Top = 2
@@ -5273,10 +5273,10 @@ object F_Main: TF_Main
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
-          object E_Dataload_Users: TEdit
+          object E_dataload_users: TEdit
             Left = 9
             Top = 9
-            Width = 197
+            Width = 152
             Height = 21
             Margins.Left = 2
             Margins.Top = 2
@@ -5291,9 +5291,10 @@ object F_Main: TF_Main
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
+            Text = 'E_dataload_users'
           end
           object B_User_Add: TButton
-            Left = 213
+            Left = 329
             Top = 7
             Width = 97
             Height = 25
@@ -5312,7 +5313,7 @@ object F_Main: TF_Main
             OnClick = B_User_AddClick
           end
           object B_User_Delete: TButton
-            Left = 315
+            Left = 431
             Top = 7
             Width = 97
             Height = 25
@@ -5330,6 +5331,26 @@ object F_Main: TF_Main
             ParentFont = False
             TabOrder = 2
             OnClick = B_User_DeleteClick
+          end
+          object E_dataload_users_stat: TEdit
+            Left = 169
+            Top = 9
+            Width = 152
+            Height = 21
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentColor = True
+            ParentFont = False
+            ReadOnly = True
+            TabOrder = 3
+            Text = 'E_dataload_users_stat'
           end
         end
       end

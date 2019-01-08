@@ -45,7 +45,8 @@ procedure TUsersTableData.LoadToTable();
 var i, j:Integer;
     LI:TListItem;
 begin
- F_Main.E_Dataload_Users.text := UsrDB.filename;
+ F_Main.E_Dataload_Users.text := UsrDB.filenameData;
+ F_Main.E_dataload_users_stat.text := UsrDB.filenameStat;
  Self.LV.Clear();
 
  for i := 0 to UsrDB.Count-1 do
@@ -53,7 +54,7 @@ begin
    LI := Self.LV.Items.Add;
    LI.Caption := IntToStr(i);
    for j := 0 to Self.LV.Columns.Count-2 do
-    LI.SubItems.Add('');
+     LI.SubItems.Add('');
  end;//for i
 
  Self.UpdateTable();

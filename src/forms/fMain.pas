@@ -153,7 +153,7 @@ type
     LV_Users: TListView;
     P_Users_pozadi: TPanel;
     P_Users_Left: TPanel;
-    E_Dataload_Users: TEdit;
+    E_dataload_users: TEdit;
     TS_Stav_RCS: TTabSheet;
     LV_Stav_RCS: TListView;
     TS_VC: TTabSheet;
@@ -272,6 +272,7 @@ type
     B_User_Add: TButton;
     B_User_Delete: TButton;
     E_dataload_HV_state: TEdit;
+    E_dataload_users_stat: TEdit;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);

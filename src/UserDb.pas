@@ -13,8 +13,9 @@ uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows,
 type
   TUsrDb = class
    private
-    Users: TObjectList<TUser>;                                                        // seznam uzivatelu
-    ffilename:string;                                                           // jmeno ini souboru s daty uzivatelu, ze ktereho jsme naposled nacitali data
+    Users: TObjectList<TUser>;                                                  // seznam uzivatelu
+    ffilenameData:string;                                                       // jmeno ini souboru s daty uzivatelu, ze ktereho jsme naposled nacitali data
+    ffilenameStat:string;
 
       function GetCount():Integer;                                              // vrati pocet uzivatelu
 
@@ -23,8 +24,9 @@ type
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadFile(const filename:string);
-     procedure SaveFile(const filename:string);
+     procedure LoadAll(const datafn:string; const statefn:string);
+     procedure SaveData(const filename:string);
+     procedure SaveStat(const filename:string);
 
      function GetRights(user:string; passwd:string; OblR:string):               // vrati prava uzivatele \user s heslem \passwd pro oblast rizeni \OblR
                 TORCOntrolRights;
@@ -39,7 +41,8 @@ type
      function GetUser(index:Integer):TUser; overload;                           // vrati uzivatele podle jeho indexu v senzamu univatelu
      function GetUser(id:string):TUser; overload;
      property count:Integer read GetCount;                                      // vrati pocet uzivatelu
-     property filename:string read ffilename;                                   // vrati jsmeno souboru, ze ktereho byly uzivatele necteni
+     property filenameData:string read ffilenameData;                                   // vrati jsmeno souboru, ze ktereho byly uzivatele necteni
+     property filenameStat:string read ffilenameStat;
 
   end;//class TUserDb
 
@@ -59,21 +62,13 @@ begin
 end;//ctor
 
 destructor TUsrDb.Destroy();
-var ini:TMemIniFile;
-    i:Integer;
 begin
  // ulozit statistiku uzivatelu
- if (Self.filename <> '') then
+ if (Self.filenameData <> '') then
   begin
    // kontrola pro pripad zabijeni programu ihned po spusteni
    try
-     ini := TMemIniFile.Create(filename, TEncoding.UTF8);
-
-     for i := 0 to Self.Users.Count-1 do
-      Self.Users[i].SaveStat(ini, Self.Users[i].id);
-
-     ini.UpdateFile();
-     ini.Free();
+    Self.SaveStat(Self.filenameStat);
    except
 
    end;
@@ -85,54 +80,58 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUsrDb.LoadFile(const filename:string);
-var ini:TMemIniFile;
+procedure TUsrDb.LoadAll(const datafn:string; const statefn:string);
+var iniData, iniStat:TMemIniFile;
     str:TStrings;
     i:Integer;
     User:TUser;
 begin
- Self.ffilename := filename;
+ Self.ffilenameData := datafn;
+ Self.ffilenameStat := statefn;
  Self.Users.Clear();
 
- writelog('Nacitam uzivatele...', WR_USERS);
+ writelog('Naèítám uživatele...', WR_USERS);
 
  try
-   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+   iniData := TMemIniFile.Create(datafn, TEncoding.UTF8);
+   iniStat := TMemIniFile.Create(statefn, TEncoding.UTF8);
  except
    on E:Exception do
     begin
-     AppEvents.LogException(E, 'Pri nacitani uzivatelu nastala chyba - nelze inicializaovat ini objekt');
+     AppEvents.LogException(E, 'TUsrDb.LoadAll: Ini.Create');
      Exit();
     end;
  end;
 
  str := TStringList.Create();
- ini.ReadSections(str);
+ try
+   iniData.ReadSections(str);
 
- for i := 0 to str.Count-1 do
-  begin
-   try
-    User := TUser.Create(ini, str[i]);
-    Self.Users.Add(User);
-   except
-    on E : Exception do
-      AppEvents.LogException(E, 'Chyba pri nacitani uzivatele '+str[i]);
-   end;
-  end;//for i
-
- str.Free();
- ini.Free();
+   for i := 0 to str.Count-1 do
+    begin
+     try
+      User := TUser.Create(iniData, iniStat, str[i]);
+      Self.Users.Add(User);
+     except
+      on E : Exception do
+        AppEvents.LogException(E, 'Chyba pøi naèítání uživatele '+str[i]);
+     end;
+    end;//for i
+ finally
+   str.Free();
+   iniData.Free();
+   iniStat.Free();
+ end;
 
  Self.Users.Sort(TComparer<TUser>.Construct(TUser.comparer));
-
- writelog('Nacteno ' + IntToStr(Self.Users.Count) + ' uzivatelu', WR_USERS);
+ writelog('Naèteno ' + IntToStr(Self.Users.Count) + ' uživatelù', WR_USERS);
 end;//procedure
 
-procedure TUsrDb.SaveFile(const filename:string);
+procedure TUsrDb.SaveData(const filename:string);
 var ini:TMemIniFile;
-    i:Integer;
+    user:TUser;
 begin
- writelog('Ukladam uzivatele...', WR_USERS);
+ writelog('Ukládám uživatele...', WR_USERS);
 
  try
    DeleteFile(PChar(filename));
@@ -140,18 +139,41 @@ begin
  except
    on E:Exception do
     begin
-     AppEvents.LogException(E, 'Pri ukladani uzivatelu nastala chyba - nelze inicializaovat ini objekt');
+     AppEvents.LogException(E, 'TUsrDb.SaveData: DeleteFile, Ini.Create');
      Exit();
     end;
  end;
 
- for i := 0 to Self.Users.Count-1 do
-  Self.Users[i].SaveData(ini, Self.Users[i].id);
+ try
+   for user in Self.Users do
+     user.SaveData(ini, user.login);
 
- ini.UpdateFile();
- ini.Free();
- writelog('Uzivatele ulozeni', WR_USERS);
+   ini.UpdateFile();
+ finally
+   ini.Free();
+ end;
+
+ writelog('Uživatelé uloženi', WR_USERS);
 end;//procedure
+
+procedure TUsrDb.SaveStat(const filename: string);
+var ini:TMemIniFile;
+    user:TUser;
+begin
+ ini := TMemIniFile.Create(filename+'_', TEncoding.UTF8);
+ try
+   for user in Self.Users do
+     user.SaveStat(ini, user.login);
+   ini.UpdateFile();
+
+   if (FileExists(filename)) then
+     SysUtils.DeleteFile(filename);
+   MoveFile(PChar(filename+'_'), PChar(filename));
+   SysUtils.DeleteFile(filename+'_');
+ finally
+   ini.Free();
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

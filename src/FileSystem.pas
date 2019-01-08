@@ -65,14 +65,15 @@ var read,read2:string;
   end;
 
   F_Splash.AddStav('Naèítám uživatele');
-  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'users', 'data\users.ini');
   try
-    UsrDB.LoadFile(read);
+    UsrDB.LoadAll(
+      ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'users', 'data\users.ini'),
+      ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'users', 'stav\users.ini')
+    );
   except
     on E:Exception do
       AppEvents.LogException(E, E.Message);
   end;
-  F_Main.E_Dataload_Users.Text := read;
 
   F_Splash.AddStav('Naèítám stanice (soubor *.spnl)');
   read  := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'spnl', 'data\stanice.spnl');
@@ -185,7 +186,7 @@ var read,read2:string;
   end;
 
   F_Splash.AddStav('Naèítám vedlejší databáze');
-  TrkSystem.LoadSpeedTable('data\Rychlosti.csv',F_Options.LV_DigiRych);
+  TrkSystem.LoadSpeedTable('data\rychlosti.csv',F_Options.LV_DigiRych);
   try
     F_Admin.LoadData;
   except
@@ -265,7 +266,8 @@ var tmpStr:string;
   end;
 
   try
-    UsrDB.SaveFile(F_Main.E_Dataload_Users.Text);
+    UsrDB.SaveData(F_Main.E_Dataload_Users.Text);
+    UsrDB.SaveStat(F_Main.E_dataload_users_stat.Text);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -280,7 +282,7 @@ var tmpStr:string;
   end;
 
   try
-    TrkSystem.SaveSpeedTable(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data/Rychlosti.csv');
+    TrkSystem.SaveSpeedTable('data/rychlosti.csv');
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -303,7 +305,8 @@ var tmpStr:string;
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'JC', JCDb.filename);
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'mJC', MultiJCDb.filename);
     ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
-    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', F_Main.E_Dataload_Users.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', UsrDB.filenameData);
+    ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'users', UsrDB.filenameStat);
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'AC', ACDb.dirname);
     ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'AC', ACDb.statfilename);
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_HV_dir.Text);

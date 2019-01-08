@@ -51,10 +51,11 @@ type
     class var comparer: TComparison<TUser>;
 
       constructor Create(); overload;
-      constructor Create(ini:TMemIniFile; section:string); overload;
+      constructor Create(iniData, iniStat:TMemIniFile; section:string); overload;
       destructor Destroy(); override;
 
       procedure LoadData(ini:TMemIniFile; section:string);
+      procedure LoadStat(ini:TMemIniFile; section:string);
       procedure SaveData(ini:TMemIniFile; section:string);
       procedure SaveStat(ini:TMemIniFile; section:string);
 
@@ -67,6 +68,7 @@ type
       property regulator:boolean read freg write SetReg;
       property fullName:string read GetFullName;
       property salt:string read fsalt;
+      property login:string read fid write SetId;
 
       class function ComparePasswd(plain:string; hash:string; salt:string):boolean; // kontroluje shodu hesel; true poku hesla sedi, jinak false
       class function GenerateHash(plain:AnsiString):string;                     // generuje hash hesla
@@ -78,11 +80,12 @@ uses TOblsRizeni, TCPServerOR, UserDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TUser.Create(ini:TMemIniFile; section:string);
+constructor TUser.Create(iniData, iniStat:TMemIniFile; section:string);
 begin
  inherited Create();
  Self.OblR := TDictionary<string, TORControlRights>.Create();
- Self.LoadData(ini, section);
+ Self.LoadData(iniData, section);
+ Self.LoadStat(iniStat, section);
 end;//ctor
 
 constructor TUser.Create();
@@ -111,36 +114,47 @@ begin
  Self.firstname := ini.ReadString(section, 'fname', '');
  Self.lastname  := ini.ReadString(section, 'lname', '');
  Self.fsalt     := ini.ReadString(section, 'salt', '');
- try
-   Self.lastlogin := StrToDateTime(ini.ReadString(section, 'lastlogin', ''));
- except
-   Self.lastlogin := 0;
- end;
  Self.fban      := ini.ReadBool(section, 'ban', false);
  Self.freg      := ini.ReadBool(section, 'reg', false);
 
+ try
+   if (ini.ValueExists(section, 'lastlogin')) then // backward compatibility
+     Self.lastlogin := StrToDateTime(ini.ReadString(section, 'lastlogin', ''));
+ except
+   Self.lastlogin := 0;
+ end;
+
  data := TStringList.Create();
- ExtractStrings(['(', ')', ',', ';'], [], PChar(ini.ReadString(section, 'ORs', '')), data);
+ try
+   ExtractStrings(['(', ')', ',', ';'], [], PChar(ini.ReadString(section, 'ORs', '')), data);
+   for i := 0 to (data.Count div 2)-1 do
+    begin
+     try
+      Self.OblR.Add(data[i*2], TORControlRights(StrToInt(data[i*2 + 1])));
+     except
 
- for i := 0 to (data.Count div 2)-1 do
-  begin
-   try
-    Self.OblR.Add(data[i*2], TORControlRights(StrToInt(data[i*2 + 1])));
-   except
-
-   end;
-  end;//for i
-
- data.Free();
+     end;
+    end;//for i
+ finally
+   data.Free();
+ end;
 end;//procedure
+
+procedure TUser.LoadStat(ini:TMemIniFile; section:string);
+begin
+ try
+   if (ini.ValueExists(section, 'lastlogin')) then
+     Self.lastlogin := StrToDateTime(ini.ReadString(section, 'lastlogin', ''));
+ except
+   Self.lastlogin := 0;
+ end;
+end;
 
 procedure TUser.SaveData(ini:TMemIniFile; section:string);
 var i:Integer;
     rights:TORControlRights;
     str:string;
 begin
- Self.SaveStat(ini, section);
-
  ini.WriteString(section, 'passwd', Self.fpasswd);
 
  if (Self.root) then
