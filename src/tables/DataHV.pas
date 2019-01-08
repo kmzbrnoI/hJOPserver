@@ -200,6 +200,12 @@ var line:Integer;
      Self.LV.Items.Item[line].SubItems.Strings[15] := 'PC';
   end;//else not prevzato
 
+  if (stav.souprava > -1) then
+    Self.LV.Items.Item[line].SubItems.Strings[22] := 'teï'
+  else if (stav.last_used > 0) then
+    Self.LV.Items.Item[line].SubItems.Strings[22] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
+  else
+    Self.LV.Items.Item[line].SubItems.Strings[22] := '-';
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

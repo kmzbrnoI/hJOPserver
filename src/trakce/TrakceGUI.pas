@@ -1098,6 +1098,7 @@ begin
 
  Self.TrkLog(self, 2, 'PUT: LOK-2-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
  HV.Slot.prevzato_full := false;
+ HV.RecordUseNow();
 
  GetMem(cb, sizeof(TPrevzitCallback));
  TPrevzitCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
@@ -1141,6 +1142,7 @@ begin
 
  // nenastavovat HV.ruc, POM si tady delame sami !!
  HV.Stav.ruc := false;
+ HV.RecordUseNow();
 
  if (HV.Slot.pom <> TPomStatus.released) then
    Self.POMWriteCVs(Self, HV, HV.Data.POMrelease, TPomStatus.released)

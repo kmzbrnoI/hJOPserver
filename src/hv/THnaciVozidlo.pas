@@ -96,6 +96,7 @@ type
    regulators:TList<THVRegulator>;                     // seznam regulatoru -- kleintu
    tokens:TList<THVToken>;                             // aktualni seznam tokenu -- jedno HV muze mit prideleno vice tokenu
    ruc:boolean;                                        // jestli je hnaciho vozidlo v rucnim rizeni
+   last_used:TDateTime;                                // cas posledniho pouzivani loko
   end;
 
   THV = class                                       // HNACI VOZIDLO
@@ -111,6 +112,7 @@ type
                                                        // nacte data ze souboru
      procedure SetRuc(state:boolean);                  // nastavi rucni rizeni
      procedure UpdateFuncDict();
+     procedure SetSouprava(new:Integer);
 
    public
 
@@ -148,6 +150,7 @@ type
 
      function CanPlayHouk(sound:string):boolean;       // vraci true pokud je povoleno prehravani zvuku
      procedure CheckRelease();
+     procedure RecordUseNow();
 
      //PT:
      procedure GetPtData(json:TJsonObject; includeState:boolean);
@@ -157,6 +160,7 @@ type
      property adresa:Word read fadresa;                // adresa HV
      property ruc:boolean read Stav.ruc write SetRuc;  // rucni rizeni HV
      property funcDict:TDictionary<string, Integer> read m_funcDict;
+     property souprava:Integer read Stav.souprava write SetSouprava;
 
   end;//THV
 
@@ -226,6 +230,7 @@ begin
 
  Self.Stav.souprava := -1;
  Self.Stav.stanice  := Sender;
+ Self.Stav.last_used := Now;
 
  Self.data.POMtake    := TList<THVPomCV>.Create;
  Self.data.POMrelease := TList<THVPomCV>.Create;
@@ -353,6 +358,12 @@ begin
 
  Self.Stav.StanovisteA := THVStanoviste(ini.ReadInteger(section, 'stanoviste_a', 0));
 
+ try
+   Self.Stav.last_used := StrToDateTime(ini.ReadString(section, 'last_used', ''));
+ except
+   Self.Stav.last_used := 0;
+ end;
+
  // stav funkci
  str := ini.ReadString(section, 'stav_funkci', '');
  for i := 0 to _HV_FUNC_MAX do
@@ -420,6 +431,9 @@ procedure THV.SaveState(ini:TMemIniFile);
 var i:Integer;
     addr, str:string;
 begin
+ if (Self.Stav.souprava > -1) then
+   Self.RecordUseNow();
+
  addr := IntToStr(Self.adresa);
 
  if (Self.Stav.stanice <> nil) then
@@ -434,6 +448,9 @@ begin
  ini.WriteInteger(addr, 'najeto_vzad_bloku', Self.Stav.najeto_vzad.Bloku);
 
  ini.WriteInteger(addr, 'stanoviste_a', Integer(Self.Stav.StanovisteA));
+
+ if (Self.Stav.last_used > 0) then
+   ini.WriteString(addr, 'last_used', DateTimeToStr(Self.Stav.last_used));
 
  // stav funkci
  str := '';
@@ -951,6 +968,30 @@ begin
    TrkSystem.LokSetSpeed(nil, Self, 0, Self.Slot.smer);
    TrkSystem.OdhlasitLoko(Self);
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.RecordUseNow();
+begin
+ Self.Stav.last_used := Now;
+ Self.changed := true;
+end;
+
+procedure THV.SetSouprava(new:Integer);
+begin
+ if (new = Self.Souprava) then
+   Exit();
+
+ Self.Stav.souprava := new;
+
+ if (new = -1) then
+  begin
+   Self.CheckRelease();
+   Self.RecordUseNow();
+  end;
+
+ Self.changed := true;
 end;
 
 end.//unit

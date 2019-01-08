@@ -195,7 +195,7 @@ begin
      addr := StrToInt(s);
      if (Assigned(HVDb.HVozidla[addr])) then
       begin
-       HVDb.HVozidla[addr].Stav.souprava := Self.index;
+       HVDb.HVozidla[addr].souprava := Self.index;
        Self.data.HVs.Add(addr);
       end;
     end;
@@ -374,8 +374,8 @@ begin
        if (not Assigned(HVDb.HVozidla[addr])) then
          Exit();
 
-       if ((HVDb.HVozidla[addr].Stav.souprava > -1) and (HVDb.HVozidla[addr].Stav.souprava <> Self.index)) then
-         raise Exception.Create('Loko '+IntToStr(addr)+' již pøiøazena soupravì '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].Stav.souprava));
+       if ((HVDb.HVozidla[addr].souprava > -1) and (HVDb.HVozidla[addr].souprava <> Self.index)) then
+         raise Exception.Create('Loko '+IntToStr(addr)+' již pøiøazena soupravì '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].souprava));
 
        if (new.Contains(addr)) then
          raise Exception.Create('Duplicitní loko!');
@@ -421,7 +421,7 @@ begin
 
        HVDb.HVozidla[addr].Data.Poznamka := hv[3];
        HVDb.HVozidla[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
-       HVDb.HVozidla[addr].Stav.souprava := Self.index;
+       HVDb.HVozidla[addr].souprava := Self.index;
 
        new.Add(addr);
       end;
@@ -487,9 +487,7 @@ begin
      if (not keep.Contains(old_addr)) then
       begin
        // vozidlo, ktere neni v novem seznamu -> uvolnit
-       HVDb.HVozidla[old_addr].Stav.souprava := -1;
-       HVDb.HVozidla[old_addr].CheckRelease();
-       HVDb.HVozidla[old_addr].changed := true;
+       HVDb.HVozidla[old_addr].souprava := -1;
       end;
     end;
  finally
@@ -511,9 +509,7 @@ begin
    if (not Assigned(HVDb.HVozidla[addr])) then
      continue;
 
-   HVDb.HVozidla[addr].Stav.souprava := -1;
-   HVDb.HVozidla[addr].CheckRelease();
-   HVDb.HVozidla[addr].changed := true;
+   HVDb.HVozidla[addr].souprava := -1;
   end;
 end;//procedure
 
