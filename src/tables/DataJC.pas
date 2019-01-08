@@ -178,10 +178,14 @@ begin
  for j := 0 to JCData.Vyhybky.Count-1 do
   begin
    Blky.GetBlkByID(JCData.Vyhybky[j].Blok, Blk);
-   if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
-     str := str + TBlkVyhybka(Blk).npBlokPlus.name + ', '
-   else if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
-     str := str + TBlkVyhybka(Blk).npBlokMinus.name + ', ';
+   if (Blk <> nil) and (Blk.typ = _BLK_VYH) then
+    begin
+     if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
+       str := str + TBlkVyhybka(Blk).npBlokPlus.name + ', '
+     else if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
+       str := str + TBlkVyhybka(Blk).npBlokMinus.name + ', ';
+    end else
+     str := str + '?, ';
   end;
  Self.LV.Items.Item[line].SubItems.Strings[16] := LeftStr(str, Length(str)-2);
 end;//procedure

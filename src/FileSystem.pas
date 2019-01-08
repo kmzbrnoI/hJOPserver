@@ -8,7 +8,8 @@ uses
   fMain, Trakce, TrakceGUI, XpressNET, CPort, AC, TJCDatabase;
 
 const
-  _INIDATA_PATHS_SECTION = 'NacteniDat';
+  _INIDATA_PATHS_DATA_SECTION = 'PathsData';
+  _INIDATA_PATHS_STATE_SECTION = 'PathsState';
 
 type
   EFileNotFound = class(Exception);
@@ -55,7 +56,7 @@ procedure TData.CompleteLoadFromFile;
 var read,read2:string;
  begin
   F_Splash.AddStav('Naèítám konfiguraci');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'Konfigurace', 'data\Konfigurace.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
   try
     Konfigurace.LoadCfgFromFile(read);
   except
@@ -64,7 +65,7 @@ var read,read2:string;
   end;
 
   F_Splash.AddStav('Naèítám uživatele');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'users', 'data\users.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'users', 'data\users.ini');
   try
     UsrDB.LoadFile(read);
   except
@@ -74,8 +75,8 @@ var read,read2:string;
   F_Main.E_Dataload_Users.Text := read;
 
   F_Splash.AddStav('Naèítám stanice (soubor *.spnl)');
-  read  := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'spnl', 'data\stanice.spnl');
-  read2 := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'or_stat', 'data\or_stat.ini');
+  read  := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'spnl', 'data\stanice.spnl');
+  read2 := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'or', 'stav\or.ini');
   try
     ORs.LoadData(read, read2);
   except
@@ -87,8 +88,8 @@ var read,read2:string;
   F_Main.E_dataload_spnl.Text := read;
 
   F_Splash.AddStav('Naèítám hnací vozidla');
-  F_Main.E_dataload_HV_dir.Text := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'lok', 'lok');
-  F_Main.E_dataload_HV_state.Text := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'lok_stav', 'stav\lok_stav.ini');
+  F_Main.E_dataload_HV_dir.Text := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'lok', 'lok');
+  F_Main.E_dataload_HV_state.Text := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'lok', 'stav\lok.ini');
   writelog('Naèítám hnací vozidla - '+F_Main.E_dataload_HV_dir.Text+'\*', WR_DATA);
   try
     HVDb.LoadFromDir(F_Main.E_dataload_HV_dir.Text, F_Main.E_dataload_HV_state.Text);
@@ -109,7 +110,7 @@ var read,read2:string;
   writelog('RCS nacteno',WR_DATA);
 
   F_Splash.AddStav('Naèítám databázi zesilovaèù');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'Zesilovace', 'data\Zesilovace.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', 'data\zesilovace.ini');
   try
     Boosters.LoadFromFile(read);
   except
@@ -119,7 +120,7 @@ var read,read2:string;
   F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
 
   F_Splash.AddStav('Naèítám soupravy');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'soupravy', 'data\soupravy.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'soupravy', 'data\soupravy.ini');
   try
     Soupravy.LoadData(read);
   except
@@ -130,8 +131,8 @@ var read,read2:string;
 
   //nacitani bloku
   F_Splash.AddStav('Naèítám databázi blokù');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'Bloky', 'data\bloky.ini');
-  read2 := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'Bloky_stat', 'data\bloky_stat.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'bloky', 'data\bloky.ini');
+  read2 := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'bloky', 'stav\bloky.ini');
   try
     Blky.LoadFromFile(read, F_Main.E_dataload_spnl.Text, read2);
   except
@@ -144,7 +145,7 @@ var read,read2:string;
   Soupravy.UpdateFront();
 
   F_Splash.AddStav('Naèítám databázi jizdních cest');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'JC', 'data\JC.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'JC', 'data\JC.ini');
   try
     JCDb.LoadData(read);
   except
@@ -153,7 +154,7 @@ var read,read2:string;
   end;
 
   F_Splash.AddStav('Naèítám databázi složených jizdních cest');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'mJC', 'data\mJC.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'mJC', 'data\mJC.ini');
   try
     MultiJCDb.LoadData(read);
   except
@@ -163,8 +164,8 @@ var read,read2:string;
   F_Main.E_Dataload_multiJC.Text := MultiJCDb.filename;
 
   F_Splash.AddStav('Naèítám databázi automatických režimù');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'AC', 'AC');
-  read2 := ini_lib.ReadString(_INIDATA_PATHS_SECTION, 'AC_stat', 'data\AC_stat.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'AC', 'AC');
+  read2 := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'AC', 'stav\AC.ini');
   try
     ACDb.LoadFromDir(read);
     ACDb.LoadStatFromFile(read2);
@@ -175,7 +176,7 @@ var read,read2:string;
   F_Main.E_dataload_AC.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.dirname);
 
   F_Splash.AddStav('Naèítám databázi FormData');
-  read := ini_lib.ReadString(_INIDATA_PATHS_SECTION,'FormData', 'data\FormData.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'FormData', 'data\FormData.ini');
   try
     FormData.LoadFormData(read);
   except
@@ -196,7 +197,8 @@ var read,read2:string;
 procedure TData.CompleteSaveToFile;
 var tmpStr:string;
  begin
-  ini_lib.EraseSection(_INIDATA_PATHS_SECTION);
+  ini_lib.EraseSection(_INIDATA_PATHS_DATA_SECTION);
+  ini_lib.EraseSection(_INIDATA_PATHS_STATE_SECTION);
   WriteLog('Probíha kompletní ukládání dat', WR_DATA);
 
   try
@@ -294,25 +296,25 @@ var tmpStr:string;
   WriteLog('Kompletni ukladani dat dokonceno',WR_DATA);
 
   try
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'Bloky', Blky.blky_file);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'Bloky_stat', Blky.fstatus);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'Zesilovace', F_Main.E_dataload_zes.Text);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'JC', JCDb.filename);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'mJC', MultiJCDb.filename);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'users', F_Main.E_Dataload_Users.Text);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'AC', ACDb.dirname);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'AC_stat', ACDb.statfilename);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'lok', F_Main.E_dataload_HV_dir.Text);
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'lok_stav', F_Main.E_dataload_HV_state.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blky.blky_file);
+    ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blky.fstatus);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', F_Main.E_dataload_zes.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'JC', JCDb.filename);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'mJC', MultiJCDb.filename);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', F_Main.E_Dataload_Users.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'AC', ACDb.dirname);
+    ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'AC', ACDb.statfilename);
+    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_HV_dir.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_HV_state.Text);
 
     if (ORs.status_filename = '') then
-      tmpStr := 'data\or_stat.ini'
+      tmpStr := 'stav\or_stav.ini'
     else
       tmpStr := ORs.status_filename;
 
-    ini_lib.WriteString(_INIDATA_PATHS_SECTION, 'or_stat', ExtractRelativePath(ExtractFilePath(Application.ExeName), tmpStr));
+    ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'or', tmpStr);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -411,7 +413,7 @@ var str:string;
 
 procedure TKonfigurace.SaveCfgToFile(IniSave:string);
  begin
-  ini_lib.WriteString(_INIDATA_PATHS_SECTION,'Konfigurace',IniSave);
+  ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', IniSave);
   Konfigurace.ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
 
   //ukladani modeloveho casu
