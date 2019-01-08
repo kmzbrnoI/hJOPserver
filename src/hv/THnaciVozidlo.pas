@@ -125,7 +125,8 @@ type
      constructor Create(panel_str:string; Sender:TOR); overload;
      destructor Destroy(); override;
 
-     procedure SaveData(const filename:string);
+     procedure SaveData(); overload;
+     procedure SaveData(const filename:string); overload;
      procedure SaveState(ini:TMemIniFile);
 
      procedure UpdateFromPanelString(data:string);     // nacteni informaci o HV z klienta
@@ -370,6 +371,7 @@ begin
    ini.WriteString('global', 'version', _LOK_VERSION_SAVE);
 
    addr := IntToStr(Self.adresa);
+   ini.EraseSection(addr);
    ini.WriteString(addr, 'nazev', Self.Data.Nazev);
    ini.WriteString(addr, 'majitel', Self.Data.Majitel);
    ini.WriteString(addr, 'oznaceni', Self.Data.Oznaceni);
@@ -408,6 +410,11 @@ begin
  ini.UpdateFile();
  ini.Free();
 end;//procedure
+
+procedure THV.SaveData();
+begin
+ Self.SaveData(HVdb.FilenameForLok(Self));
+end;
 
 procedure THV.SaveState(ini:TMemIniFile);
 var i:Integer;
@@ -641,6 +648,7 @@ begin
 
  // aktulizace LOKO v regulatorech
  Self.UpdateAllRegulators();
+ Self.SaveData();
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

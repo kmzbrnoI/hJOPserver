@@ -35,6 +35,7 @@ type
     HVs:THVArray;
 
     fdefault_or:Integer;
+    fLoksDir:string;
 
      procedure Clear();
      procedure LoadFile(filename:string; stateini:TMemIniFile);
@@ -62,10 +63,13 @@ type
      procedure ExportStatistics(filename:string);
 
      procedure UpdateTokenTimeout();
+     function FilenameForLok(addr:Word):string; overload;
+     function FilenameForLok(hv:THV):string; overload;
 
      property cnt:Word read GetCnt;              // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
      property HVozidla:THVArray read HVs;
      property default_or:Integer read fdefault_or write fdefault_or;
+     property loksDir:string read fLoksDir;
 
   end;//THVDb
 
@@ -165,6 +169,7 @@ procedure THVDb.LoadFromDir(const dirname:string; const statefn:string);
 var SR:TSearchRec;
     stateIni:TMemIniFile;
  begin
+  Self.fLoksDir := dirname;
   stateIni := TMemIniFile.Create(statefn);
 
   try
@@ -195,12 +200,14 @@ end;//procedure
 procedure THVDb.SaveData(const dirname:string);
 var i:Integer;
 begin
+ Self.fLoksDir := dirname;
+
  for i := 0 to _MAX_ADDR-1 do
   begin
    if (Self.HVs[i] <> nil) then
     begin
      try
-       Self.HVs[i].SaveData(dirname+'\L_'+IntToStr(i)+_FILE_SUFFIX);
+       Self.HVs[i].SaveData(Self.FilenameForLok(Self.HVs[i]));
      except
        on E:Exception do
         AppEvents.LogException(E, 'THVDb.SaveData '+IntToStr(i));
@@ -364,7 +371,7 @@ begin
  FreeAndNil(Self.HVs[addr]);
 
  // smazat soubor
- SysUtils.DeleteFile('lok\L_'+IntToStr(addr)+_FILE_SUFFIX);
+ SysUtils.DeleteFile(Self.FilenameForLok(addr));
 
  // ------- update indexu: ------
 
@@ -459,6 +466,18 @@ begin
   finally
     CloseFile(f);
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THVDb.FilenameForLok(addr:Word):string;
+begin
+ Result := Self.loksDir + '\L_' + IntToStr(addr) + _FILE_SUFFIX;
+end;
+
+function THVDb.FilenameForLok(hv:THV):string;
+begin
+ Result := Self.FilenameForLok(hv.adresa);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
