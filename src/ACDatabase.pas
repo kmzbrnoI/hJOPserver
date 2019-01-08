@@ -57,8 +57,12 @@ end;//ctor
 
 destructor TACDb.Destroy();
 begin
- if (Self.fstatfilename <> '') then
-   Self.SaveStatToFile(Self.fstatfilename);
+ try
+   if (Self.fstatfilename <> '') then
+     Self.SaveStatToFile(Self.fstatfilename);
+ except
+
+ end;
  Self.ACs.Free();
  inherited;
 end;//dtor
@@ -160,15 +164,18 @@ begin
     end;
  end;
 
- for AC in Self.ACs do
-  begin
-   krk_filename := ExtractFileName(AC.krk_filename);
-   ini.WriteInteger(krk_filename, 'stat_run', AC.stat_run);
-   ini.WriteInteger(krk_filename, 'stat_end', AC.stat_end);
-  end;
+ try
+   for AC in Self.ACs do
+    begin
+     krk_filename := ExtractFileName(AC.krk_filename);
+     ini.WriteInteger(krk_filename, 'stat_run', AC.stat_run);
+     ini.WriteInteger(krk_filename, 'stat_end', AC.stat_end);
+    end;
 
- ini.UpdateFile();
- ini.Free();
+   ini.UpdateFile();
+ finally
+   ini.Free();
+ end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
