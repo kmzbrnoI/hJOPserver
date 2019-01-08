@@ -120,7 +120,7 @@ var read,read2:string;
   F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
 
   F_Splash.AddStav('Naèítám soupravy');
-  read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'soupravy', 'data\soupravy.ini');
+  read := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', 'stav\soupravy.ini');
   try
     Soupravy.LoadData(read);
   except
@@ -302,7 +302,7 @@ var tmpStr:string;
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', F_Main.E_dataload_zes.Text);
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'JC', JCDb.filename);
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'mJC', MultiJCDb.filename);
-    ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
+    ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', F_Main.E_Dataload_Users.Text);
     ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'AC', ACDb.dirname);
     ini_lib.WriteString(_INIDATA_PATHS_STATE_SECTION, 'AC', ACDb.statfilename);
