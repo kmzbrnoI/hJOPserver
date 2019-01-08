@@ -123,7 +123,7 @@ type
     LV_HV: TListView;
     P_HV_Pozadi: TPanel;
     P_HV_Left: TPanel;
-    E_dataload_HV: TEdit;
+    E_dataload_HV_dir: TEdit;
     TS_Soupravy: TTabSheet;
     LV_Soupravy: TListView;
     P_Soupravy_pozadi: TPanel;
@@ -271,6 +271,7 @@ type
     B_zes_delete: TButton;
     B_User_Add: TButton;
     B_User_Delete: TButton;
+    E_dataload_HV_state: TEdit;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -1445,7 +1446,8 @@ begin
     // ukladani stavu bloku: ulozime do docasneho souboru a az pak prepiseme stavajici konfigurak
     Blky.SaveStatToFile(Blky.fstatus+'_');
 
-    DeleteFile(Blky.fstatus);
+    if (FileExists(Blky.fstatus)) then
+      DeleteFile(Blky.fstatus);
     MoveFile(PChar(Blky.fstatus+'_'), PChar(Blky.fstatus));
     DeleteFile(Blky.fstatus+'_');
   except
@@ -1454,7 +1456,12 @@ begin
   end;
 
   try
-    HVDb.SaveToDir('lok');    // tady se ulozi predevsim stavy funkci
+    HVDb.SaveState(F_Main.E_dataload_HV_state.Text+'_');
+
+    if (FileExists(F_Main.E_dataload_HV_state.Text)) then
+      DeleteFile(F_Main.E_dataload_HV_state.Text);
+    MoveFile(PChar(F_Main.E_dataload_HV_state.Text+'_'), PChar(F_Main.E_dataload_HV_state.Text));
+    DeleteFile(F_Main.E_dataload_HV_state.Text+'_');
   except
     on E:Exception do
       AppEvents.LogException(E, 'HvDb.SaveToDir');
@@ -1463,7 +1470,8 @@ begin
   try
     Soupravy.SaveData(F_Main.E_dataload_soupr.Text+'_');
 
-    DeleteFile(F_Main.E_dataload_soupr.Text);
+    if (FileExists(F_Main.E_dataload_soupr.Text)) then
+      DeleteFile(F_Main.E_dataload_soupr.Text);
     MoveFile(PChar(F_Main.E_dataload_soupr.Text+'_'), PChar(F_Main.E_dataload_soupr.Text));
     DeleteFile(F_Main.E_dataload_soupr.Text+'_');
   except
@@ -2078,6 +2086,7 @@ begin
  try
    CreateDir('data');
    CreateDir('lok');
+   CreateDir('stav');
  except
    on e:Exception do
      AppEvents.LogException(E);

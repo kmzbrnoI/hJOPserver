@@ -3503,7 +3503,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Stav_RCS
+    ActivePage = TS_Technologie
     Align = alClient
     DoubleBuffered = True
     MultiLine = True
@@ -4244,7 +4244,7 @@ object F_Main: TF_Main
         object P_HV_Left: TPanel
           Left = 0
           Top = 0
-          Width = 657
+          Width = 769
           Height = 40
           Margins.Left = 2
           Margins.Top = 2
@@ -4254,10 +4254,10 @@ object F_Main: TF_Main
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
-          object E_dataload_HV: TEdit
+          object E_dataload_HV_dir: TEdit
             Left = 9
             Top = 9
-            Width = 197
+            Width = 152
             Height = 21
             Hint = 'cesta k souboru bloku'
             Margins.Left = 2
@@ -4273,10 +4273,11 @@ object F_Main: TF_Main
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
+            Text = 'E_dataload_HV_dir'
           end
           object B_HV_Add: TButton
-            Left = 214
-            Top = 7
+            Left = 322
+            Top = 6
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -4294,8 +4295,8 @@ object F_Main: TF_Main
             OnClick = B_HV_AddClick
           end
           object B_HV_Delete: TButton
-            Left = 315
-            Top = 7
+            Left = 423
+            Top = 6
             Width = 97
             Height = 25
             Margins.Left = 2
@@ -4314,8 +4315,8 @@ object F_Main: TF_Main
             OnClick = B_HV_DeleteClick
           end
           object B_HVStats_Export: TButton
-            Left = 416
-            Top = 7
+            Left = 524
+            Top = 6
             Width = 116
             Height = 25
             Caption = 'Exportovat statistiky'
@@ -4323,13 +4324,22 @@ object F_Main: TF_Main
             OnClick = B_HVStats_ExportClick
           end
           object B_HVStats_Clear: TButton
-            Left = 536
-            Top = 7
+            Left = 644
+            Top = 6
             Width = 116
             Height = 25
             Caption = 'Smazat statistiky'
             TabOrder = 4
             OnClick = B_ClearStatsClick
+          end
+          object E_dataload_HV_state: TEdit
+            Left = 166
+            Top = 9
+            Width = 152
+            Height = 21
+            ReadOnly = True
+            TabOrder = 5
+            Text = 'E_dataload_HV_state'
           end
         end
       end
@@ -6314,7 +6324,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403E40310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403E80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8180,7 +8190,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D0028035C041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280360041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8721,7 +8731,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802A80310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802AC0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

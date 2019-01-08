@@ -37,7 +37,7 @@ type
     fdefault_or:Integer;
 
      procedure Clear();
-     procedure LoadFile(filename:string);
+     procedure LoadFile(filename:string; stateini:TMemIniFile);
 
      function GetCnt():Word;
 
@@ -48,8 +48,9 @@ type
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadFromDir(const dirname:string);
-     procedure SaveToDir(const dirname:string);
+     procedure LoadFromDir(const dirname:string; const statefn:string);
+     procedure SaveData(const dirname:string);
+     procedure SaveState(const statefn:string);
 
      function Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject):Byte; overload; // pridani HV
      procedure Add(panel_str:string; SenderOR:TObject); overload;
@@ -73,7 +74,7 @@ var
 
 implementation
 
-uses fSettings, Logging, fMain, DataHV, TOblRizeni, appEv;
+uses fSettings, fMain, DataHV, TOblRizeni, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -108,7 +109,7 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.LoadFile(filename:string);
+procedure THVDb.LoadFile(filename:string; stateini:TMemIniFile);
 var aHV:THV;
     ini:TMemIniFile;
     sections:TStrings;
@@ -130,7 +131,7 @@ begin
 
      // nacteni jedne loko
      try
-       aHV := THV.Create(ini, sect);
+       aHV := THV.Create(ini, stateini, sect);
      except
        on E:Exception do
          AppEvents.LogException(E, 'Chyba pri nacitani souboru loko : '+filename + ', sekce '+sect);
@@ -140,7 +141,6 @@ begin
 
      if (Self.HVs[aHV.adresa] <> nil) then
       begin
-       writelog('Loko s adresou '+filename+' jiz existuje !', WR_ERROR);
        FreeAndNil(aHv);
       end else begin
        Self.HVs[aHV.adresa] := aHV;
@@ -161,38 +161,38 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.LoadFromDir(const dirname:string);
+procedure THVDb.LoadFromDir(const dirname:string; const statefn:string);
 var SR:TSearchRec;
+    stateIni:TMemIniFile;
  begin
-  F_Main.E_dataload_HV.Text := dirname+'\';
-  writelog('Naèítám hnaci vozidla - '+dirname+'\', WR_DATA);
+  stateIni := TMemIniFile.Create(statefn);
 
-  Self.Clear();
+  try
+    Self.Clear();
 
-  // prohledavani adresare a nacitani soubor *.2lok
-  // najdeme prvni soubor
-  if (FindFirst(dirname+'\*'+_FILE_SUFFIX, faAnyFile, SR) = 0) then
-   begin
-    if ((SR.Attr AND faDirectory) = 0) then
-      Self.LoadFile(dirname+'\'+SR.Name);
-
-    // hledame dalsi soubory
-    while (FindNext(SR) = 0) do
+    // prohledavani adresare a nacitani soubor *.2lok
+    // najdeme prvni soubor
+    if (FindFirst(dirname+'\*'+_FILE_SUFFIX, faAnyFile, SR) = 0) then
+     begin
       if ((SR.Attr AND faDirectory) = 0) then
-        Self.LoadFile(dirname+'\'+SR.Name);
+        Self.LoadFile(dirname+'\'+SR.Name, stateIni);
 
-    SysUtils.FindClose(SR);
-    writelog('Naèteno '+IntToStr(Self.cnt)+' hnacich vozidel',WR_DATA);
-   end else begin
-    writelog('Nenacteno zadne hnaci vozidlo',WR_DATA);
-   end;
+      // hledame dalsi soubory
+      while (FindNext(SR) = 0) do
+        if ((SR.Attr AND faDirectory) = 0) then
+          Self.LoadFile(dirname+'\'+SR.Name, stateIni);
 
- Self.CreateIndex();
+      SysUtils.FindClose(SR);
+     end;
 
- HVTableData.LoadToTable();
+   Self.CreateIndex();
+   HVTableData.LoadToTable();
+  finally
+    stateIni.Free();
+  end;
 end;//procedure
 
-procedure THVDb.SaveToDir(const dirname:string);
+procedure THVDb.SaveData(const dirname:string);
 var i:Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
@@ -200,14 +200,39 @@ begin
    if (Self.HVs[i] <> nil) then
     begin
      try
-       Self.HVs[i].SaveToFile(dirname+'\L_'+IntToStr(i)+_FILE_SUFFIX);
+       Self.HVs[i].SaveData(dirname+'\L_'+IntToStr(i)+_FILE_SUFFIX);
      except
        on E:Exception do
-        AppEvents.LogException(E, 'Vyjimka pri ukladani loko '+IntToStr(i));
+        AppEvents.LogException(E, 'THVDb.SaveData '+IntToStr(i));
      end;
     end;//if <> nil
   end;//for i
 end;//procedure
+
+procedure THVDb.SaveState(const statefn:string);
+var i:Integer;
+    stateIni:TMemIniFile;
+begin
+ stateIni := TMemIniFile.Create(statefn);
+
+ try
+   for i := 0 to _MAX_ADDR-1 do
+    begin
+     if (Self.HVs[i] <> nil) then
+      begin
+       try
+         Self.HVs[i].SaveState(stateIni);
+       except
+         on E:Exception do
+          AppEvents.LogException(E, 'THVDb.SaveState '+IntToStr(i));
+       end;
+      end;//if <> nil
+    end;//for i
+ finally
+  stateIni.UpdateFile();
+  stateIni.Free();
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

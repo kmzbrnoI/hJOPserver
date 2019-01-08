@@ -106,7 +106,8 @@ type
      fadresa:Word;                                     // adresa je read-only !
      m_funcDict:TDictionary<string, Integer>;          // mapovani vyznamu funkci na cisla funkci
 
-     procedure LoadFromIni(ini:TMemIniFile; section:string);
+     procedure LoadData(ini:TMemIniFile; section:string);
+     procedure LoadState(ini:TMemIniFile; section:string);
                                                        // nacte data ze souboru
      procedure SetRuc(state:boolean);                  // nastavi rucni rizeni
      procedure UpdateFuncDict();
@@ -119,12 +120,13 @@ type
     Slot:TSlot;                                        // slot HV (viz trakcni tridy)
     changed:boolean;                                   // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
 
-     constructor Create(ini:TMemIniFile; section:string); overload;
+     constructor Create(data_ini:TMemIniFile; state_ini:TMemIniFile; section:string); overload;
      constructor Create(adresa:Word; data:THVData; stav:THVStav); overload;
      constructor Create(panel_str:string; Sender:TOR); overload;
      destructor Destroy(); override;
 
-     procedure SaveToFile(const filename:string);
+     procedure SaveData(const filename:string);
+     procedure SaveState(ini:TMemIniFile);
 
      procedure UpdateFromPanelString(data:string);     // nacteni informaci o HV z klienta
 
@@ -165,7 +167,7 @@ uses ownStrUtils, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor THV.Create(ini:TMemIniFile; section:string);
+constructor THV.Create(data_ini:TMemIniFile; state_ini:TMemIniFile; section:string);
 begin
  inherited Create();
 
@@ -181,10 +183,14 @@ begin
  Self.m_funcDict := TDictionary<string, Integer>.Create();
 
  try
-   Self.LoadFromIni(ini, section);
+   Self.LoadData(data_ini, section);
+   if (state_ini.SectionExists(section)) then // backward compatibility
+     Self.LoadState(state_ini, section)
+   else
+     Self.LoadState(data_ini, section)
  except
    on E:Exception do
-     raise Exception.Create('Chyba pri nacitani sekce '+section+' - '+E.Message);
+     raise Exception.Create('Chyba pøi naèítání sekce '+section+' - '+E.Message);
  end;
 end;//ctor
 
@@ -239,10 +245,9 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.LoadFromIni(ini:TMemIniFile; section:string);
+procedure THV.LoadData(ini:TMemIniFile; section:string);
 var strs, strs2:TStrings;
     i:Integer;
-    stanice:Integer;
     pomCV:THVPomCV;
     str, s:string;
     addr:Integer;
@@ -260,25 +265,6 @@ begin
    Self.Data.Oznaceni := ini.ReadString(section, 'oznaceni', section);
    Self.Data.Poznamka := ini.ReadString(section, 'poznamka', '');
    Self.Data.Trida    := THVClass(ini.ReadInteger(section, 'trida', 0));
-
-   stanice := ORs.GetORIndex(ini.ReadString(section, 'stanice', ''));
-   if (stanice <> -1) then
-    ORs.GetORByIndex(stanice, Self.Stav.stanice)
-   else
-    ORs.GetORByIndex(HVDb.default_or, Self.Stav.stanice);
-
-   Self.Stav.najeto_vpred.Metru := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
-   Self.Stav.najeto_vpred.Bloku := ini.ReadInteger(section, 'najeto_vpred_bloku', 0);
-
-   Self.Stav.najeto_vzad.Metru := ini.ReadFloat(section, 'najeto_vzad_metru', 0);
-   Self.Stav.najeto_vzad.Bloku := ini.ReadInteger(section, 'najeto_vzad_bloku', 0);
-
-   Self.Stav.StanovisteA := THVStanoviste(ini.ReadInteger(section, 'stanoviste_a', 0));
-
-   // stav funkci
-   str := ini.ReadString(section, 'stav_funkci', '');
-   for i := 0 to _HV_FUNC_MAX do
-     Self.Stav.funkce[i] := ((i < Length(str)) and PrevodySoustav.StrToBool(str[i+1]));
 
    // POM pri prebirani : (cv,data)(cv,data)(...)...
    str := ini.ReadString(section, 'pom_take', '');
@@ -347,7 +333,32 @@ begin
  strs2.Free();
 end;//procedure
 
-procedure THV.SaveToFile(const filename:string);
+procedure THV.LoadState(ini:TMemIniFile; section:string);
+var i:Integer;
+    stanice:Integer;
+    str:string;
+begin
+ stanice := ORs.GetORIndex(ini.ReadString(section, 'stanice', ''));
+ if (stanice <> -1) then
+  ORs.GetORByIndex(stanice, Self.Stav.stanice)
+ else
+  ORs.GetORByIndex(HVDb.default_or, Self.Stav.stanice);
+
+ Self.Stav.najeto_vpred.Metru := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
+ Self.Stav.najeto_vpred.Bloku := ini.ReadInteger(section, 'najeto_vpred_bloku', 0);
+
+ Self.Stav.najeto_vzad.Metru := ini.ReadFloat(section, 'najeto_vzad_metru', 0);
+ Self.Stav.najeto_vzad.Bloku := ini.ReadInteger(section, 'najeto_vzad_bloku', 0);
+
+ Self.Stav.StanovisteA := THVStanoviste(ini.ReadInteger(section, 'stanoviste_a', 0));
+
+ // stav funkci
+ str := ini.ReadString(section, 'stav_funkci', '');
+ for i := 0 to _HV_FUNC_MAX do
+   Self.Stav.funkce[i] := ((i < Length(str)) and PrevodySoustav.StrToBool(str[i+1]));
+end;
+
+procedure THV.SaveData(const filename:string);
 var ini:TMemIniFile;
     addr, str:string;
     i:Integer;
@@ -364,30 +375,6 @@ begin
    ini.WriteString(addr, 'oznaceni', Self.Data.Oznaceni);
    ini.WriteString(addr, 'poznamka', Self.Data.Poznamka);
    ini.WriteInteger(addr, 'trida', Integer(Self.Data.Trida));
-
-   if (Self.Stav.stanice <> nil) then
-     ini.WriteString(addr, 'stanice', Self.Stav.stanice.id)
-   else
-     ini.WriteString(addr, 'stanice', '');
-
-   ini.WriteFloat(addr, 'najeto_vpred_metru', Self.Stav.najeto_vpred.Metru);
-   ini.WriteInteger(addr, 'najeto_vpred_bloku', Self.Stav.najeto_vpred.Bloku);
-
-   ini.WriteFloat(addr, 'najeto_vzad_metru', Self.Stav.najeto_vzad.Metru);
-   ini.WriteInteger(addr, 'najeto_vzad_bloku', Self.Stav.najeto_vzad.Bloku);
-
-   ini.WriteInteger(addr, 'stanoviste_a', Integer(Self.Stav.StanovisteA));
-
-   // stav funkci
-   str := '';
-   for i := 0 to _HV_FUNC_MAX do
-    begin
-     if (Self.Stav.funkce[i]) then
-       str := str + '1'
-     else
-       str := str + '0';
-    end;
-   ini.WriteString(addr, 'stav_funkci', str);
 
    // POM pri prebirani
    str := '';
@@ -421,6 +408,37 @@ begin
  ini.UpdateFile();
  ini.Free();
 end;//procedure
+
+procedure THV.SaveState(ini:TMemIniFile);
+var i:Integer;
+    addr, str:string;
+begin
+ addr := IntToStr(Self.adresa);
+
+ if (Self.Stav.stanice <> nil) then
+   ini.WriteString(addr, 'stanice', Self.Stav.stanice.id)
+ else
+   ini.WriteString(addr, 'stanice', '');
+
+ ini.WriteFloat(addr, 'najeto_vpred_metru', Self.Stav.najeto_vpred.Metru);
+ ini.WriteInteger(addr, 'najeto_vpred_bloku', Self.Stav.najeto_vpred.Bloku);
+
+ ini.WriteFloat(addr, 'najeto_vzad_metru', Self.Stav.najeto_vzad.Metru);
+ ini.WriteInteger(addr, 'najeto_vzad_bloku', Self.Stav.najeto_vzad.Bloku);
+
+ ini.WriteInteger(addr, 'stanoviste_a', Integer(Self.Stav.StanovisteA));
+
+ // stav funkci
+ str := '';
+ for i := 0 to _HV_FUNC_MAX do
+  begin
+   if (Self.Stav.funkce[i]) then
+     str := str + '1'
+   else
+     str := str + '0';
+  end;
+ ini.WriteString(addr, 'stav_funkci', str);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
