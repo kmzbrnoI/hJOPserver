@@ -4,7 +4,7 @@ object F_Main: TF_Main
   Caption = 'hJOPserver'
   ClientHeight = 695
   ClientWidth = 1297
-  Color = clBtnFace
+  Color = clWhite
   Constraints.MinHeight = 244
   Constraints.MinWidth = 772
   DoubleBuffered = True
@@ -3151,6 +3151,7 @@ object F_Main: TF_Main
     BevelOuter = bvNone
     Color = clGray
     DoubleBuffered = True
+    ParentBackground = False
     ParentDoubleBuffered = False
     TabOrder = 0
     object P_Date: TPanel
@@ -3505,9 +3506,7 @@ object F_Main: TF_Main
     Margins.Bottom = 2
     ActivePage = TS_Technologie
     Align = alClient
-    DoubleBuffered = True
     MultiLine = True
-    ParentDoubleBuffered = False
     TabOrder = 2
     OnChange = PC_1Change
     object TS_Technologie: TTabSheet
@@ -3523,9 +3522,6 @@ object F_Main: TF_Main
         Width = 800
         Height = 206
         Caption = ' P'#345'ipojen'#233' panely '
-        Color = clWhite
-        ParentBackground = False
-        ParentColor = False
         TabOrder = 0
         object LV_Clients: TListView
           Left = 2
@@ -3594,9 +3590,6 @@ object F_Main: TF_Main
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = ' Stav technologie '
-        Color = clWhite
-        ParentBackground = False
-        ParentColor = False
         ParentShowHint = False
         ShowHint = False
         TabOrder = 1
@@ -3780,9 +3773,6 @@ object F_Main: TF_Main
         Width = 584
         Height = 186
         Caption = ' Log '
-        Color = clWhite
-        ParentBackground = False
-        ParentColor = False
         TabOrder = 2
         object LB_Log: TListBox
           Left = 2
@@ -3805,9 +3795,6 @@ object F_Main: TF_Main
         Width = 800
         Height = 84
         Caption = ' Centr'#225'la '
-        Color = clWhite
-        ParentBackground = False
-        ParentColor = False
         TabOrder = 3
         object Label3: TLabel
           Left = 16
@@ -6347,7 +6334,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403EC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403F00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8213,7 +8200,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280364041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280368041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8754,7 +8741,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802B00310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802B40310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
