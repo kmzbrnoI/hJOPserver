@@ -374,8 +374,8 @@ begin
 
  try
    // vymazeme klienta ze vsech oblasti rizeni
-   for oblr in (AContext.Data as TTCPORsRef).ORs do
-     oblr.RemoveClient(AContext);
+   for i := (AContext.Data as TTCPORsRef).ORs.Count-1 downto 0 do // do range-based for!
+     (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
 
    // ukoncime probihajici potvrzovaci sekvenci
    if (Assigned(TTCPORsRef(AContext.Data).potvr)) then
