@@ -54,12 +54,6 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'InputSim'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 2
   end
   object CHB_SimSoupravaUsek: TCheckBox
@@ -72,12 +66,6 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat obsazen'#237' '#250'seku soupravou'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 3
   end
   object CHB_SystemStart: TCheckBox
@@ -90,12 +78,6 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Umo'#382'nit start syst'#233'mu pouze se zapl'#253'm MTB'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 4
   end
   object CHB_JC_Simulator: TCheckBox
@@ -108,12 +90,6 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'JC simul'#225'tor'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 5
     OnClick = CHB_JC_SimulatorClick
   end
@@ -127,12 +103,6 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Tra'#357' simul'#225'tor'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 6
     OnClick = CHB_Trat_SimClick
   end
@@ -146,12 +116,6 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat stav'#283'n'#237' v'#253'hybek'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 7
     OnClick = CHB_SimVyhybkyClick
   end
