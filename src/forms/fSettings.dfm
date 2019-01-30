@@ -100,7 +100,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_SS
+    ActivePage = TS_Centrala
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -1108,7 +1108,6 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             Style = csDropDownList
-            Enabled = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -9
@@ -1118,8 +1117,8 @@ object F_Options: TF_Options
             ParentFont = False
             TabOrder = 0
             Items.Strings = (
-              'Intellibox'
-              'LI100F')
+              'LI100F'
+              'Simulator')
           end
           object CCB_BaudRate: TComComboBox
             Left = 104

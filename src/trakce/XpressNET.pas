@@ -507,10 +507,9 @@ begin
 
               end;
 
-              Self.hist_ok();
-
               Self.Get.sp_addr := -1;
               Self.CheckLoading();
+              Self.hist_ok();
         end;//case 0..4
       end;
     end;//acse $E4

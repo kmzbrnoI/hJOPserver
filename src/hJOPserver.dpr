@@ -141,7 +141,8 @@ uses
   predvidanyOdjezd in 'predvidanyOdjezd.pas',
   timeHelper in 'helpers\timeHelper.pas',
   TechnologieAB in 'TechnologieAB.pas',
-  DataAB in 'tables\DataAB.pas';
+  DataAB in 'tables\DataAB.pas',
+  Simulator in 'trakce\Simulator.pas';
 
 {$R *.res}
 

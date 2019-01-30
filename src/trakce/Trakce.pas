@@ -24,7 +24,8 @@ type
 
   Ttrk_system = (                                                               // typ komunikacniho protokolu
     TRS_LocoNET   = 0,
-    TRS_XpressNET = 1
+    TRS_XpressNET = 1,
+    TRS_Simulator = 2
   );
 
   TConnect_code = (                                                             // stav pristupu k lokomotive
@@ -164,8 +165,6 @@ type
   end;//TTrakce
 
 implementation
-
-uses XpressNET;
 
 constructor TTrakce.Create();
 begin

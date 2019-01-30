@@ -64,6 +64,7 @@ type
   EAlreradyClosed = class(Exception);
   ETrakceUnassigned = class(Exception);
   EInvalidArgument = class(Exception);
+  EOpened = class(Exception);
 
   TTrkLogLevel = (tllNo = 0, tllErrors = 1, tllCommands = 2, tllData = 3, tllChanges = 4, tllDetail = 5);
 
@@ -283,6 +284,7 @@ type
      procedure FlushToggleQueue();
      procedure ProcessHVFunc(hvFunc:THVFunc);
      class function HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVFunc;
+     procedure SetTrkSystem(system:Ttrk_system);
 
    public
 
@@ -362,7 +364,7 @@ type
      property FlowControl:TFlowCOntrol read CPortData.FlowControl write CPortData.FlowControl;
 
      property openned:boolean read GetOpenned;                                  // otevreny seriovy port
-     property TrkSystem:Ttrk_system read fTrkSystem;                            // aktualni TrkSystem (XpressNET, LocoNET, ...)
+     property TrkSystem:Ttrk_system read fTrkSystem write SetTrkSystem;         // aktualni TrkSystem (XpressNET, LocoNET, ...)
      property isInitOk:boolean read finitok;                                    // komunikuje cetrala?, resp. odpovedel na prikaz STATUS
      property status:Ttrk_status read GetTrkStatus;                             // aktualni STATUS centraly
 
@@ -395,31 +397,21 @@ type
 implementation
 
 uses fMain, fSettings, XpressNET, TechnologieRCS, fRegulator, SprDb, Souprava,
-    GetSystems, THVDatabase, fAdminForm, DataHV,
-    Prevody, TBloky, RegulatorTCP, TCPServerOR, fFuncsSet;
+    GetSystems, THVDatabase, fAdminForm, DataHV, Simulator, Prevody, TBloky,
+    RegulatorTCP, TCPServerOR, fFuncsSet;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTrkGUI.Create(TrkSystem:Ttrk_system; LogObj:TListView; loglevel_file:TTrkLogLevel = _DEF_LOGLEVEL; loglevel_table: TTrkLogLevel = _DEF_LOGLEVEL);
+constructor TTrkGUI.Create(TrkSystem:Ttrk_system; LogObj:TListView;
+                           loglevel_file:TTrkLogLevel = _DEF_LOGLEVEL; loglevel_table: TTrkLogLevel = _DEF_LOGLEVEL);
 begin
- inherited Create;
-
- case TrkSystem of
-  TRS_LocoNET   : ;
-  TRS_XpressNET : Self.Trakce := TXpressNET.Create();
- end;//case
+ inherited Create();
 
  Self.flogfile  := loglevel_file;
  Self.flogtable := loglevel_table;
 
- Self.fTrkSystem := TrkSystem;
-
- Self.Trakce.OnLog                := Self.TrkLog;
- Self.Trakce.OnConnectChange      := Self.ConnectChange;
- Self.Trakce.OnLokComError        := Self.LokComErr;
- Self.Trakce.OnLokComOK           := Self.LokComOK;
- Self.Trakce.OnTrackStatusChange  := Self.OnTrackStatusChange;
- Self.Trakce.OnComError           := Self.OnComWriteError;
+ Self.Trakce := nil;
+ Self.SetTrkSystem(TrkSystem);
 
  Self.LogObj := LogObj;
 
@@ -453,9 +445,35 @@ end;//dotr
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TTrkGUI.SetTrkSystem(system:Ttrk_system);
+begin
+ if (system = Self.TrkSystem) then
+   Exit();
+ if (Self.openned) then
+   raise EOpened.Create('Cannot change system when system opened!');
+
+ if (Self.Trakce <> nil) then
+   Self.Trakce.Free();
+
+ Self.fTrkSystem := system;
+
+ case (system) of
+  TRS_LocoNET   : ;
+  TRS_XpressNET : Self.Trakce := TXpressNET.Create();
+  TRS_Simulator : Self.Trakce := TSimulator.Create();
+ end;//case
+
+ Self.Trakce.OnLog                := Self.TrkLog;
+ Self.Trakce.OnConnectChange      := Self.ConnectChange;
+ Self.Trakce.OnLokComError        := Self.LokComErr;
+ Self.Trakce.OnLokComOK           := Self.LokComOK;
+ Self.Trakce.OnTrackStatusChange  := Self.OnTrackStatusChange;
+ Self.Trakce.OnComError           := Self.OnComWriteError;
+end;
+
 function TTrkGUI.GetOpenned():boolean;
 begin
- if (not Assigned(Self.Trakce.ComPort.CPort)) then Exit(false);
+ if ((not Assigned(Self.Trakce)) or (not Assigned(Self.Trakce.ComPort.CPort))) then Exit(false);
  Result := Self.Trakce.ComPort.CPort.Connected;
 end;//function
 

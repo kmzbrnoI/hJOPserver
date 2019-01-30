@@ -330,6 +330,7 @@ var tmpStr:string;
 
 procedure TKonfigurace.LoadCfgFromFile(IniLoad:string);
 var str:string;
+    system:Ttrk_system;
  begin
    writelog('Naèítám konfiguraci - '+IniLoad,WR_DATA);
    Konfigurace.ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
@@ -358,11 +359,18 @@ var str:string;
    //nacitani dat o konzoli
    F_Options.CHB_Log_console.Checked := ini_lib.ReadBool('Log','Log_console',true);
 
-   //zjisteni, jestli byl naposled program ukoncen nasilim
-   Konfigurace.ini.WriteInteger('SystemCfg','RunError',0);
-   Konfigurace.ini.UpdateFile;
+   str := ini.ReadString('Centrala', 'system', 'xpressnet');
+   if (str = 'simulator') then
+    system := TRS_Simulator
+   else
+    system := TRS_XpressNet;
 
-   TrkSystem := TTrkGUI.Create(Ttrk_system.TRS_XpressNET, F_Main.LV_log_lnet, TTrkLogLevel(ini.ReadInteger('Centrala', 'logfile', 2)), TTrkLogLevel(ini.ReadInteger('Centrala', 'logtable', 2)));
+   TrkSystem := TTrkGUI.Create(
+    system,
+    F_Main.LV_log_lnet,
+    TTrkLogLevel(ini.ReadInteger('Centrala', 'logfile', 2)),
+    TTrkLogLevel(ini.ReadInteger('Centrala', 'logtable', 2))
+   );
 
    TrkSystem.BaudRate := TBaudRate(ini.ReadInteger('Centrala','BaudRate',0));
    TrkSystem.StopBits := TStopBits(ini.ReadInteger('Centrala','StopBits',0));
@@ -374,9 +382,9 @@ var str:string;
    F_Main.CB_centrala_loglevel_table.ItemIndex := Integer(TrkSystem.logtable);
 
    //nactitani dalsich dat
-   F_Options.LB_Timer.ItemIndex             := ini.ReadInteger('SystemCfg','TimerInterval',4);
+   F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg','TimerInterval',4);
    F_Options.LB_TimerClick(Self);
-   F_Options.CHB_povolit_spusteni.Checked   := ini.ReadBool('SystemCfg','AutSpusteni',false);
+   F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg','AutSpusteni',false);
    if (F_Options.CHB_povolit_spusteni.Checked) then F_Main.KomunikacePocitani := 1;
 
    //nacitani modeloveho casu
@@ -430,6 +438,14 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
   ini.WriteInteger('Centrala','DataBits', Integer(TrkSystem.DataBits));
   ini.WriteInteger('Centrala','FlowControl', Integer(TrkSystem.FlowControl));
   ini.Writestring('Centrala','COM', TrkSystem.COM);
+
+  if (TrkSystem.TrkSystem = TRS_LocoNET) then
+    ini.WriteString('Centrala', 'system', 'loconet')
+  else if (TrkSystem.TrkSystem = TRS_Simulator) then
+    ini.WriteString('Centrala', 'system', 'simulator')
+  else
+    ini.WriteString('Centrala', 'system', 'xpressnet');
+  
 
   ini.WriteInteger('Centrala', 'logtable', Integer(TrkSystem.logtable));
   ini.WriteInteger('Centrala', 'logfile', Integer(TrkSystem.logfile));

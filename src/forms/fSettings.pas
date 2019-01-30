@@ -445,7 +445,7 @@ procedure TF_Options.LV_DigiRychDblClick(Sender: TObject);
 
 procedure TF_Options.NactiCentralaData();
 begin
-  Self.CB_TrackSystem.ItemIndex := Integer(TrkSystem.TrkSystem);
+  Self.CB_TrackSystem.ItemIndex := Integer(TrkSystem.TrkSystem)-1;
   Self.CCB_BaudRate.ItemIndex  := Integer(TrkSystem.BaudRate);
   Self.CCB_DataBits.ItemIndex  := Integer(TrkSystem.DataBits);
   Self.CCB_StopBits.ItemIndex  := Integer(TrkSystem.StopBits);
@@ -455,7 +455,7 @@ end;//procedure
 
 procedure TF_Options.UlozCentralaData();
 begin
- //TrkSystem.TrackSystem   := Ttrk_system(Self.CB_TrackSystem.ItemIndex);
+ TrkSystem.TrkSystem   := Ttrk_system(Self.CB_TrackSystem.ItemIndex+1);
  TrkSystem.BaudRate    := TBaudRate(Self.CCB_BaudRate.ItemIndex);
  TrkSystem.DataBits    := TDataBits(Self.CCB_DataBits.ItemIndex);
  TrkSystem.StopBits    := TStopBits(Self.CCB_StopBits.ItemIndex);
