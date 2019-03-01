@@ -1955,7 +1955,8 @@ begin
      RegCollector.ConnectChange(TPOMCallback(data^).addr);
     end;
 
-   if (Assigned(TPOMCallback(data^).callback_ok.callback)) then TPOMCallback(data^).callback_ok.callback(Self, TPOMCallback(data^).callback_ok.data);
+   if (Assigned(TPOMCallback(data^).callback_ok.callback)) then
+     TPOMCallback(data^).callback_ok.callback(Self, TPOMCallback(data^).callback_ok.data);
    FreeMem(data);
   end else begin
    // odesleme dalsi data
@@ -1963,7 +1964,8 @@ begin
 
    Self.callback_err := TTrakce.GenerateCallback(Self.POMCvWroteErr, data);
    Self.callback_ok  := TTrakce.GenerateCallback(Self.POMCvWroteOK, data);
-   Self.POMWriteCV(Sender, HVDB.HVozidla[TPOMCallback(data^).addr], TPOMCallback(data^).list[TPOMCallback(data^).index].cv, TPOMCallback(data^).list[TPOMCallback(data^).index].data);
+   Self.POMWriteCV(Sender, HVDB.HVozidla[TPOMCallback(data^).addr], TPOMCallback(data^).list[TPOMCallback(data^).index].cv,
+                   TPOMCallback(data^).list[TPOMCallback(data^).index].data);
   end;// else konec dat
 end;//procedure
 

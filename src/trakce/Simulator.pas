@@ -140,6 +140,8 @@ begin
  Result.cmd := cmd;
  Result.callback_err := Self.callback_err;
  Result.callback_ok := Self.callback_ok;
+ Self.callback_err.callback := nil;  // WARNING: modifying of global variables!
+ Self.callback_ok.callback := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
