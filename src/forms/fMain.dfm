@@ -3470,21 +3470,21 @@ object F_Main: TF_Main
         Alignment = taCenter
         BiDiMode = bdLeftToRight
         ParentBiDiMode = False
-        Text = 'MTB Close'
+        Text = 'RCS uzav'#345'eno'
         Width = 100
       end
       item
         Alignment = taCenter
         Text = 'Centr'#225'la odpojena'
-        Width = 100
+        Width = 120
       end
       item
         Alignment = taCenter
-        Text = '--- ; ---'
-        Width = 55
+        Text = 'XpressNET'
+        Width = 100
       end
       item
-        Text = 'Rychlost sbernice : x ms'
+        Text = 'Prim'#225'rn'#237' smy'#269'ka: x ms'
         Width = 150
       end
       item

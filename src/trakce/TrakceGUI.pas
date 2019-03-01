@@ -471,6 +471,8 @@ begin
  Self.Trakce.OnComError           := Self.OnComWriteError;
 
  Self.WriteLog(tllCommand, 'USING '+ Self.Trakce.Name());
+
+ F_Main.SB1.Panels.Items[3].Text := Self.Trakce.Name();
 end;
 
 function TTrkGUI.GetOpenned():boolean;

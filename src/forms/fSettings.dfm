@@ -1118,7 +1118,7 @@ object F_Options: TF_Options
             TabOrder = 0
             OnChange = CB_TrackSystemChange
             Items.Strings = (
-              'LI100F'
+              'LI100F (XpressNET)'
               'Simul'#225'tor')
           end
           object CCB_BaudRate: TComComboBox
@@ -1214,7 +1214,7 @@ object F_Options: TF_Options
             Top = 132
             Width = 49
             Height = 23
-            Caption = 'Refresh'
+            Caption = 'Obnovit'
             TabOrder = 5
             OnClick = B_PortRefreshClick
           end

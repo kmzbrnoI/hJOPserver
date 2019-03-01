@@ -13,23 +13,20 @@ uses
 type
 
   TF_Options = class(TForm)
+    //Ukladani
+    B_pouzit: TButton;
+    B_OK: TButton;
 
-     //Ukladani
-      B_pouzit: TButton;
-      B_OK: TButton;
-
-      //Log
-       M_log: TMenuItem;
-
-       PM_log_delete: TMenuItem;
-
+    //Log
+    M_log: TMenuItem;
+    PM_log_delete: TMenuItem;
 
     //TPopupMenu/TMainMenu
-     MM_Options: TMainMenu;
+    MM_Options: TMainMenu;
 
     //TOpenDisalog/TSaveDialog
-     OD_Open: TOpenDialog;
-     SD_Save: TSaveDialog;
+    OD_Open: TOpenDialog;
+    SD_Save: TSaveDialog;
     PC_1: TPageControl;
     TS_Options: TTabSheet;
     P_ON_Pozadi: TPanel;
