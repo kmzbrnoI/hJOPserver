@@ -108,6 +108,7 @@ type
 
      constructor Create();
      destructor Destroy(); override;
+     function Name():string; override;
 
      procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;            // nastav stav centraly: ON, OFF, PROGR
 
@@ -161,8 +162,6 @@ begin
  Self.Get.sp_addr := -1;
 end;//ctor
 
-////////////////////////////////////////////////////////////////////////////////
-
 destructor TXpressNET.Destroy();
 begin
  Self.timer_history.Free();
@@ -171,6 +170,11 @@ begin
 
  inherited Destroy;
 end;//dtor
+
+function TXpressNET.Name():string;
+begin
+ Result := 'XpressNET';
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -219,7 +223,7 @@ begin
 
   s := 'BUF: ';
   for i := 0 to Fbuf_in.Count-1 do s := s + IntToHex(Fbuf_in.data[i],2)+' ';
-  WriteLog(5, s);
+  WriteLog(tllDebug, s);
 
   ok := true;
   while (ok) do
@@ -248,12 +252,12 @@ begin
 
           s := 'BUF: ';
           for i := 0 to Fbuf_in.Count-1 do s := s + IntToHex(Fbuf_in.data[i],2)+' ';
-          if (Fbuf_in.Count > 0) then WriteLog(5, s);
+          if (Fbuf_in.Count > 0) then WriteLog(tllDebug, s);
          end else begin
           // xor error
           s := '';
           for i := 0 to Fbuf_in.Count-1 do s := s + IntToHex(Fbuf_in.data[i],2)+' ';
-          WriteLog(1, 'GET: XOR ERROR, removing buffer : '+s);
+          WriteLog(tllError, 'GET: XOR ERROR, removing buffer : '+s);
           Fbuf_in.Count := 0;
          end;
 
@@ -285,23 +289,23 @@ begin
   s := '';
   for i := 0 to msg.Count-1 do s := s + IntToHex(msg.data[i], 2) + ' ';
 
-  Self.WriteLog(4, 'GET: '+s);
+  Self.WriteLog(tllData, 'GET: '+s);
 
   case (msg.data[0]) of
     $01: begin
       case (msg.data[1]) of
-       $01: Self.WriteLog(1, 'ERR: GET: Error occurred between the interfaces and the PC');
-       $02: Self.WriteLog(1, 'ERR: GET: Error occurred between the interfaces and the command station');
+       $01: Self.WriteLog(tllError, 'ERR: GET: Error occurred between the interfaces and the PC');
+       $02: Self.WriteLog(tllError, 'ERR: GET: Error occurred between the interfaces and the command station');
        $03: begin
-          Self.WriteLog(1, 'ERR: GET: Unknown communication error');
+          Self.WriteLog(tllError, 'ERR: GET: Unknown communication error');
           // odpoved chybou - data radsi neodesilame hned - pockame na timeout
        end;
        $04: begin
-          Self.WriteLog(2, 'GET: OK');
+          Self.WriteLog(tllCommand, 'GET: OK');
           Self.hist_ok();
        end;
-       $05: Self.WriteLog(2, 'ERR: GET: The Command Station is no longer providing the LI100 a timeslot for communication');
-       $06: Self.WriteLog(1, 'ERR: GET: Buffer overflow in the LI');
+       $05: Self.WriteLog(tllError, 'ERR: GET: The Command Station is no longer providing the LI100 a timeslot for communication');
+       $06: Self.WriteLog(tllError, 'ERR: GET: Buffer overflow in the LI');
       end;//case
     end;
 
@@ -313,7 +317,7 @@ begin
       li_version.sw_major := (msg.data[2] shr 4) and $0F;
       li_version.sw_minor := (msg.data[2]) and $0F;
 
-      Self.WriteLog(2, 'GET: LI VERSION: HW: '+IntToStr(li_version.hw_major)+'.'+IntToStr(li_version.hw_minor)+
+      Self.WriteLog(tllCommand, 'GET: LI VERSION: HW: '+IntToStr(li_version.hw_major)+'.'+IntToStr(li_version.hw_minor)+
                         ', SW: '+IntToStr(li_version.sw_major)+'.'+IntToStr(li_version.sw_minor));
       Self.LIGotVersion(li_version);
       Self.hist_ok();
@@ -324,13 +328,13 @@ begin
 
         $02: begin
           Ftrk_status := TS_SERVICE;
-          Self.WriteLog(2, 'GET: STATUS SERVICE');
+          Self.WriteLog(tllCommand, 'GET: STATUS SERVICE');
           Self.hist_ok();
         end;
 
         $01:begin
           Ftrk_status := TS_ON;
-          Self.WriteLog(2, 'GET: STATUS ON');
+          Self.WriteLog(tllCommand, 'GET: STATUS ON');
 
           // druha cast podminky je dulezita
           //  resi se tu to, ze centralal odpovida na prikaz TRK_ON 3x TRK_ON
@@ -340,7 +344,7 @@ begin
 
         $00: begin
           Ftrk_status := TS_OFF;
-          Self.WriteLog(2, 'GET: STATUS OFF');
+          Self.WriteLog(tllCommand, 'GET: STATUS OFF');
 
           // druha cast podminky je dulezita
           //  resi se tu to, ze centralalodpovida na prikaz TRK_OFF 3x TRK_OFF
@@ -349,18 +353,18 @@ begin
         end;
 
         $80: begin
-          Self.WriteLog(1, 'ERR: GET: transfer ('+s+')');
+          Self.WriteLog(tllError, 'ERR: GET: transfer ('+s+')');
           if (Self.send_history.Count > 0) then
             Self.hist_send(0);    // odpoved chybou - odesleme data znovu
         end;
         $81: begin
-          Self.WriteLog(2, 'WARN: GET: busy ('+s+')');
+          Self.WriteLog(tllWarning, 'WARN: GET: busy ('+s+')');
           // data NEODESILAME hend znovu!
           // centrala je vytizena -> pockame nejaky ten cas a az pak posleme data znovu
         end;
 
         $82: begin
-          Self.WriteLog(1, 'ERR: GET: instruction not supported by command station');
+          Self.WriteLog(tllError, 'ERR: GET: instruction not supported by command station');
           Self.hist_err();      // -> call error
         end;
       end;//case msg.data[1]
@@ -373,23 +377,23 @@ begin
         if (i = 0) then
          begin
           Ftrk_status := TS_ON;
-          Self.WriteLog(2, 'GET: STATUS ON');
+          Self.WriteLog(tllCommand, 'GET: STATUS ON');
           Self.hist_ok();
          end;
         if ((i AND 3) > 0) then
          begin
           Ftrk_status := TS_OFF;
-          Self.WriteLog(2, 'GET: STATUS OFF');
+          Self.WriteLog(tllCommand, 'GET: STATUS OFF');
           Self.hist_ok();
          end;
         if (i = 8) then
          begin
           Ftrk_status := TS_SERVICE;
-          Self.WriteLog(2, 'GET: STATUS SERVICE');
+          Self.WriteLog(tllCommand, 'GET: STATUS SERVICE');
           Self.hist_ok();
          end;
        end else begin
-        Self.WriteLog(1, 'GET ERR: Status - bad response!');
+        Self.WriteLog(tllError, 'GET ERR: Status - bad response!');
       end;
     end;
 
@@ -400,7 +404,8 @@ begin
         cs_version.major := (msg.data[2] shr 4) and $0F;   // major
         cs_version.minor := msg.data[2] and $0F;           // minor
         cs_version.id    := msg.data[3];                   // id
-        Self.WriteLog(2, 'GET: CS VERSION '+IntToStr(cs_version.major)+'.'+IntToStr(cs_version.minor)+', ID: '+IntToStr(cs_version.id));
+        Self.WriteLog(tllCommand, 'GET: CS VERSION '+IntToStr(cs_version.major)+'.'+
+                      IntToStr(cs_version.minor)+', ID: '+IntToStr(cs_version.id));
         Self.CSGotVersion(cs_version);
         Self.hist_ok();
        end;
@@ -409,17 +414,17 @@ begin
     $E3: begin
       case (msg.data[1]) of
         $30: begin
-          Self.WriteLog(4, Format('GET: Found: %d', [LokAddrDecode(msg.data[2], msg.data[3])]));
+          Self.WriteLog(tllCommand, Format('GET: Found: %d', [LokAddrDecode(msg.data[2], msg.data[3])]));
         end;
         $40: begin
           // somebody took control of our loco (loco has been stolen)
           Slot.adresa := Self.LokAddrDecode(msg.data[2], msg.data[3]);
-          Self.WriteLog(4, 'GET: LOKO '+IntToStr(Slot.adresa)+' is being operated by another device');
+          Self.WriteLog(tllCommand, 'GET: LOKO '+IntToStr(Slot.adresa)+' is being operated by another device');
           Self.ConnectChange(Slot.adresa, TConnect_code.TC_Stolen, nil);
         end;
         $50:begin
           // function F0-F12 status response
-          Self.WriteLog(4, 'GET: FUNCTION STATUS F0-F12');
+          Self.WriteLog(tllCommand, 'GET: FUNCTION STATUS F0-F12');
 
           Slot.funkce[0] := (((msg.data[3] shr 4) AND $01) = 1);
           for i := 0 to 3 do Slot.funkce[1+i] := (((msg.data[2] shr i) AND $01) = 1);
@@ -429,7 +434,7 @@ begin
         end;
         $52:begin
           // functon F13-F28 status response
-          Self.WriteLog(4, 'GET: FUNCTION STATUS F13-F28');
+          Self.WriteLog(tllCommand, 'GET: FUNCTION STATUS F13-F28');
 
           for i := 0 to 7 do Slot.funkce[13+i] := (((msg.data[2] shr i) AND $01) = 1);
           for i := 0 to 7 do Slot.funkce[21+i] := (((msg.data[3] shr i) AND $01) = 1);
@@ -437,7 +442,7 @@ begin
           Self.hist_ok();
         end;
 
-        else Self.WriteLog(4,'GET: function not supported in program');
+        else Self.WriteLog(tllWarning, 'GET: function not supported in program');
       end;
     end;
 
@@ -459,7 +464,7 @@ begin
                 4: Slot.maxsp := 128;
               end;//case
 
-              Self.WriteLog(4, 'GET: LOKO STATUS, '+IntToStr(Slot.maxsp)+' speed steps');
+              Self.WriteLog(tllCommand, 'GET: LOKO STATUS, '+IntToStr(Slot.maxsp)+' speed steps');
 
               if ((msg.data[1] shr 3) and $1 = 1) then Slot.stolen := true else Slot.stolen := false;
 
@@ -494,7 +499,7 @@ begin
                end;
 
                else
-                Self.WriteLog(4, 'GET: '+IntToStr(Slot.maxsp)+' speed steps - not supported');
+                Self.WriteLog(tllWarning, 'GET: '+IntToStr(Slot.maxsp)+' speed steps - not supported');
                 Exit;
               end;// case speed steps
 
@@ -515,17 +520,17 @@ begin
     end;//acse $E4
 
     $E5:begin  // multitrack
-      Self.WriteLog(4,'GET: LOKO STATUS multitrack - not supported');
+      Self.WriteLog(tllWarning, 'GET: LOKO STATUS multitrack - not supported');
     end;
 
     $E6:begin  // Double header
-      Self.WriteLog(4,'GET: LOKO STATUS loko in Double Header - not supported');
+      Self.WriteLog(tllWarning, 'GET: LOKO STATUS loko in Double Header - not supported');
     end;
 
     $F2:begin
       if (msg.data[1] = $01) then
        begin
-        Self.WriteLog(2, 'GET: LI ADDRESS: '+IntToStr(msg.data[2]));
+        Self.WriteLog(tllCommand, 'GET: LI ADDRESS: '+IntToStr(msg.data[2]));
         Self.LIGotAddress(msg.data[2]);
         Self.hist_ok();
        end;
@@ -547,12 +552,12 @@ var
 begin
   if ((not Assigned(Self.ComPort.CPort)) or (not Self.ComPort.CPort.Connected)) then
    begin
-    Self.WriteLog(1, 'PUT ERR: XpressNet not connected');
+    Self.WriteLog(tllError, 'PUT ERR: XpressNet not connected');
     Exit;
    end;
   if (buf.Count > 254) then
    begin
-    Self.WriteLog(1, 'PUT ERR: Message too long');
+    Self.WriteLog(tllError, 'PUT ERR: Message too long');
     Exit;
    end;
 
@@ -565,7 +570,7 @@ begin
   //get string for log
   log := '';
   for i := 0 to buf.Count-1 do log := log + IntToHex(buf.data[i],2) + ' ';
-  Self.WriteLog(4, 'PUT: '+log);
+  Self.WriteLog(tllData, 'PUT: '+log);
 
   try
     InitAsync(asp);
@@ -578,8 +583,8 @@ begin
   except
    on E : Exception do
     begin
-     Self.WriteLog(1, 'PUT ERR: com object error : '+E.Message);
-     Self.WriteLog(1, 'REMOVING HISTORY');
+     Self.WriteLog(tllError, 'PUT ERR: com object error : '+E.Message);
+     Self.WriteLog(tllWarning, 'REMOVING HISTORY');
      while (Self.send_history.Count > 0) do Self.hist_err();
      if (Assigned(Self.FOnComError)) then Self.FOnComError(Self);
     end;
@@ -641,7 +646,7 @@ begin
          else p2 := 0;
       end;
       buf.data[4] := buf.data[4] + ((p2 AND $1e) shr 1) + ((p2 AND $01) shl 4);
-      Self.WriteLog(4, 'PUT SPEED: '+Format('addr=%d; speed=%d; dir=%d', [p1, p2, p3]));
+      Self.WriteLog(tllCommand, 'PUT SPEED: '+Format('addr=%d; speed=%d; dir=%d', [p1, p2, p3]));
       Send(buf);
     end;
 
@@ -860,7 +865,7 @@ begin
    // prekrocen timeout
    data := Self.send_history[index];
    Self.send_history.Delete(index);
-   WriteLog(1, 'ERR: SEND TIMEOUT');
+   WriteLog(tllError, 'ERR: SEND TIMEOUT');
 
    case (data.cmd) of
     // tyto prikazy informuji system o primem vypadku lokomotivy
@@ -875,7 +880,7 @@ begin
     data.callback_err.callback(Self, data.callback_err.data);
   end else begin
    // odeslat data znovu
-   WriteLog(2, 'WARN: SENDING AGAIN');
+   WriteLog(tllWarning, 'WARN: SENDING AGAIN');
    data := Self.send_history[0];
    Self.send_history.Delete(0);
 
@@ -895,7 +900,7 @@ begin
    Self.send_history.Delete(0);      // odpoved na data - smazat z historie
 
    if (Self.send_history.Count = 0) then
-    Self.WriteLog(5, 'BUF TIMEOUT EMPTY');
+    Self.WriteLog(tllDebug, 'BUF TIMEOUT EMPTY');
 
    case (data.cmd) of
     // tyto prikazy informuji system o primem vypadku lokomotivy
@@ -909,7 +914,7 @@ begin
    if (Assigned(data.callback_ok.callback)) then
      data.callback_ok.callback(Self, data.callback_ok.data);
   end else begin
-   WriteLog(2, 'WARN: HISTORY BUFFER UNDERFLOW (hist_ok)');
+   WriteLog(tllWarning, 'WARN: HISTORY BUFFER UNDERFLOW (hist_ok)');
   end;
 end;//procedure
 
@@ -923,10 +928,10 @@ begin
    data := Self.send_history[0];
    Self.send_history.Delete(0);      // odpoved na data - smazat z historie
 
-   if (Self.send_history.Count = 0) then Self.WriteLog(5, 'BUF TIMEOUT REMOVE');
+   if (Self.send_history.Count = 0) then Self.WriteLog(tllDebug, 'BUF TIMEOUT REMOVE');
    if (Assigned(data.callback_err.callback)) then data.callback_err.callback(Self, data.callback_err.data);
   end else begin
-   WriteLog(2, 'WARN: HISTORY BUFFER UNDERFLOW (hist_err)');
+   WriteLog(tllWarning, 'WARN: HISTORY BUFFER UNDERFLOW (hist_err)');
   end;
 end;//procedure
 
@@ -934,7 +939,7 @@ end;//procedure
 
 procedure TXpressNET.GetTrackStatus();
 begin
- Self.WriteLog(4, 'PUT: GET-TRACK-STATUS');
+ Self.WriteLog(tllCommand, 'PUT: GET-TRACK-STATUS');
  Self.SendCommand(XB_TRK_STATUS);;
 end;//procedure
 
@@ -943,14 +948,14 @@ end;//procedure
 procedure TXpressNET.GetCSVersion(callback:TCSVersionEvent);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: GET-CS-VERSION');
+ Self.WriteLog(tllCommand, 'PUT: GET-CS-VERSION');
  Self.SendCommand(XB_TRK_CS_VERSION);
 end;//procedure
 
 procedure TXpressNET.GetLIVersion(callback:TLIVersionEvent);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: GET-LI-VERSION');
+ Self.WriteLog(tllCommand, 'PUT: GET-LI-VERSION');
  Self.SendCommand(XB_TRK_LI_VERSION);
 end;//procedure
 
@@ -959,14 +964,14 @@ end;//procedure
 procedure TXpressNET.GetLIAddress(callback:TLIAddressEvent);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: GET-LI-ADDR');
+ Self.WriteLog(tllCommand, 'PUT: GET-LI-ADDR');
  Self.SendCommand(XB_TRK_LI_ADDRESS, 0);
 end;
 
 procedure TXpressNET.SetLIAddress(callback:TLIAddressEvent; addr:Byte);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: SET-LI-ADDR');
+ Self.WriteLog(tllCommand, 'PUT: SET-LI-ADDR');
  Self.SendCommand(XB_TRK_LI_ADDRESS, addr);
 end;
 
@@ -982,7 +987,7 @@ end;//procedure
 
 procedure TXpressNET.POMWriteCV(Address:Integer; cv:Word; data:byte);
 begin
- Self.WriteLog(4, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
+ Self.WriteLog(tllCommand, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
  Self.SendCommand(XB_POM_WRITEBYTE, address, cv, data);
 end;//procedure
 
@@ -999,12 +1004,12 @@ procedure TXpressNET.LokGetFunctions(Address:Integer; startFunc:Integer);
 begin
  case (startFunc) of
   0:  begin
-       Self.WriteLog(4, 'PUT: GET-FUNC 0..12');
+       Self.WriteLog(tllCommand, 'PUT: GET-FUNC 0..12');
        Self.SendCommand(XB_LOK_GET_FUNC, Address);
       end;
 
   13: begin
-       Self.WriteLog(4, 'PUT: GET-FUNC 13..28');
+       Self.WriteLog(tllCommand, 'PUT: GET-FUNC 13..28');
        Self.SendCommand(XB_LOK_GET_FUNC_13_28, Address);
       end;
  end;//case
@@ -1016,7 +1021,7 @@ procedure TXpressNET.CheckFbufInTimeout();
 begin
  if ((Self.Fbuf_in_timeout < Now) and (Self.Fbuf_in.Count > 0)) then
   begin
-   WriteLog(1, 'INPUT BUFFER TIMEOUT, removing buffer');
+   WriteLog(tllError, 'INPUT BUFFER TIMEOUT, removing buffer');
    Self.Fbuf_in.Count := 0;
   end;
 end;

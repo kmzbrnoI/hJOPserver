@@ -12,9 +12,11 @@ uses
   SysUtils, Classes, CPort;
 
 const
-  _HV_FUNC_MAX       = 28;                                                      // maximalni funkcni cislo; funkce zacinaji na cisle 0
+  _HV_FUNC_MAX = 28;                                                            // maximalni funkcni cislo; funkce zacinaji na cisle 0
 
 type
+  TTrkLogLevel = (tllNo = 0, tllError = 1, tllWarning = 2, tllCommand = 3, tllData = 4, tllDebug = 5);
+
   Ttrk_status = (                                                               // stav centraly
     TS_UNKNOWN = -1,
     TS_OFF = 0,
@@ -73,7 +75,7 @@ type
     sw_minor:byte;
   end;
 
-  TLogEvent = procedure(Sender:TObject; lvl:Integer; msg:string) of object;
+  TLogEvent = procedure(Sender:TObject; lvl:TTrkLogLevel; msg:string) of object;
   TConnectChangeInfo = procedure(Sender: TObject; addr:Integer; code:TConnect_code; data:Pointer) of object;
   TLokComEvent = procedure (Sender:TObject; addr:Integer) of object;
   TGeneralEvent = procedure(Sender: TObject) of object;
@@ -97,7 +99,7 @@ type
 
      FFtrk_status: Ttrk_status;
 
-      procedure WriteLog(lvl:Integer; msg:string);
+      procedure WriteLog(lvl:TTrkLogLevel; msg:string);
       procedure ConnectChange(addr:Integer; code:TConnect_code; data:Pointer);
       procedure LokComError(addr:Integer);
       procedure LokComOK(addr:Integer);
@@ -129,6 +131,7 @@ type
 
       constructor Create();
       destructor Destroy(); override;
+      function Name():string; virtual; abstract;
 
       procedure LokSetSpeed(Address:Integer; speed:Integer; dir:Integer); virtual; abstract;
       procedure LokSetFunc(Address:Integer; sada:Byte; stav:Byte); virtual; abstract;
@@ -177,7 +180,7 @@ begin
  inherited;
 end;//dtor
 
-procedure TTrakce.WriteLog(lvl:Integer; msg: string);
+procedure TTrakce.WriteLog(lvl:TTrkLogLevel; msg: string);
 begin
  if (Assigned(Self.FOnLog)) then Self.FOnLog(Self, lvl, msg);
 end;//procedure

@@ -2580,18 +2580,15 @@ begin
 
  case (StrToIntDef(Item.SubItems.Strings[0],0)) of
   1:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
-  2:begin
+  2:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+  3:begin
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then
        (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_BLUE;
      if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then
        (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'ERR') then
-       (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
-     if (LeftStr(Item.SubItems.Strings[1], 4) = 'WARN') then
-       (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
     end;//case 2
-  3:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+  4,5:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
  end;//case
 end;
 

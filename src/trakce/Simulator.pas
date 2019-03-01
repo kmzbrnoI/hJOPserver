@@ -67,6 +67,7 @@ type
 
      constructor Create();
      destructor Destroy(); override;
+     function Name():string; override;
 
      procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;            // nastav stav centraly: ON, OFF, PROGR
 
@@ -122,8 +123,6 @@ begin
  Self.Get.sp_addr := -1;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-
 destructor TSimulator.Destroy();
 begin
  Self.timer_history.Free();
@@ -131,6 +130,11 @@ begin
    FreeAndNil(Self.send_history);
 
  inherited;
+end;
+
+function TSimulator.Name():string;
+begin
+ Result := 'Simulator';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -252,22 +256,22 @@ begin
 
    case (data.cmd) of
      XB_TRK_OFF: begin
-       Self.WriteLog(2, 'GET: STATUS OFF');
+       Self.WriteLog(tllCommand, 'GET: STATUS OFF');
        Self.Ftrk_status := TS_OFF;
      end;
 
      XB_TRK_ON: begin
-       Self.WriteLog(2, 'GET: STATUS ON');
+       Self.WriteLog(tllCommand, 'GET: STATUS ON');
        Self.Ftrk_status := TS_ON;
      end;
 
      XB_TRK_STATUS: begin
       if ((Self.Ftrk_status = TS_ON) or (Self.Ftrk_status = TS_UNKNOWN)) then
-        Self.WriteLog(2, 'GET: STATUS ON')
+        Self.WriteLog(tllCommand, 'GET: STATUS ON')
       else if (Self.Ftrk_status = TS_OFF) then
-        Self.WriteLog(2, 'GET: STATUS OFF')
+        Self.WriteLog(tllCommand, 'GET: STATUS OFF')
       else if (Self.Ftrk_status = TS_SERVICE) then
-        Self.WriteLog(2, 'GET: STATUS SERVICE');
+        Self.WriteLog(tllCommand, 'GET: STATUS SERVICE');
 
       if (Self.Ftrk_status = TS_UNKNOWN) then
         Self.Ftrk_status := TS_ON
@@ -276,19 +280,19 @@ begin
      end;
 
      XB_TRK_CS_VERSION: begin
-       Self.WriteLog(2, 'GET: CS VERSION '+IntToStr(_CS_VERSION.major)+'.'+IntToStr(_CS_VERSION.minor)+
+       Self.WriteLog(tllCommand, 'GET: CS VERSION '+IntToStr(_CS_VERSION.major)+'.'+IntToStr(_CS_VERSION.minor)+
                         ', ID: '+IntToStr(_CS_VERSION.id));
        Self.CSGotVersion(_CS_VERSION);
      end;
 
      XB_TRK_LI_VERSION: begin
-       Self.WriteLog(2, 'GET: LI VERSION: HW: '+IntToStr(_LI_VERSION.hw_major)+'.'+IntToStr(_LI_VERSION.hw_minor)+
+       Self.WriteLog(tllCommand, 'GET: LI VERSION: HW: '+IntToStr(_LI_VERSION.hw_major)+'.'+IntToStr(_LI_VERSION.hw_minor)+
                         ', SW: '+IntToStr(_LI_VERSION.sw_major)+'.'+IntToStr(_LI_VERSION.sw_minor));
        Self.LIGotVersion(_LI_VERSION);
      end;
 
      XB_TRK_LI_ADDRESS: begin
-       Self.WriteLog(2, 'GET: LI ADDRESS: '+IntToStr(_LI_ADDRESS));
+       Self.WriteLog(tllCommand, 'GET: LI ADDRESS: '+IntToStr(_LI_ADDRESS));
        Self.LIGotAddress(_LI_ADDRESS);
      end;
 
@@ -307,7 +311,7 @@ end;//procedure
 
 procedure TSimulator.GetTrackStatus();
 begin
- Self.WriteLog(4, 'PUT: GET-TRACK-STATUS');
+ Self.WriteLog(tllCommand, 'PUT: GET-TRACK-STATUS');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_STATUS));
 end;//procedure
 
@@ -316,14 +320,14 @@ end;//procedure
 procedure TSimulator.GetCSVersion(callback:TCSVersionEvent);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: GET-CS-VERSION');
+ Self.WriteLog(tllCommand, 'PUT: GET-CS-VERSION');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_CS_VERSION));
 end;//procedure
 
 procedure TSimulator.GetLIVersion(callback:TLIVersionEvent);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: GET-LI-VERSION');
+ Self.WriteLog(tllCommand, 'PUT: GET-LI-VERSION');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_LI_VERSION));
 end;//procedure
 
@@ -332,14 +336,14 @@ end;//procedure
 procedure TSimulator.GetLIAddress(callback:TLIAddressEvent);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: GET-LI-ADDR');
+ Self.WriteLog(tllCommand, 'PUT: GET-LI-ADDR');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_LI_ADDRESS));
 end;
 
 procedure TSimulator.SetLIAddress(callback:TLIAddressEvent; addr:Byte);
 begin
  inherited;
- Self.WriteLog(4, 'PUT: SET-LI-ADDR');
+ Self.WriteLog(tllCommand, 'PUT: SET-LI-ADDR');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_LI_ADDRESS));
 end;
 
@@ -347,7 +351,7 @@ end;
 
 procedure TSimulator.POMWriteCV(Address:Integer; cv:Word; data:byte);
 begin
- Self.WriteLog(4, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
+ Self.WriteLog(tllCommand, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
  Self.send_history.Add(Self.HistoryPacket(XB_POM_WRITEBYTE));
 end;//procedure
 

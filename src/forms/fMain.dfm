@@ -6059,12 +6059,12 @@ object F_Main: TF_Main
           TabOrder = 0
           OnChange = CB_centrala_loglevel_fileChange
           Items.Strings = (
-            '0 - '#382#225'dn'#233' zpr'#225'vy'
-            '1 - chyby'
-            '2 - p'#345#237'kazy'
-            '3 - data'
-            '4 - zm'#283'na stav'#367
-            '5 - podrobn'#233' informace')
+            '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
+            '1 '#8211' chyby'
+            '2 '#8211' varov'#225'n'#237
+            '3 '#8211' p'#345#237'kazy'
+            '4 '#8211' data'
+            '5 '#8211' debug')
         end
         object CB_centrala_loglevel_table: TComboBox
           Left = 380
@@ -6076,12 +6076,12 @@ object F_Main: TF_Main
           TabOrder = 1
           OnChange = CB_centrala_loglevel_tableChange
           Items.Strings = (
-            '0 - '#382#225'dn'#233' zpr'#225'vy'
-            '1 - chyby'
-            '2 - p'#345#237'kazy'
-            '3 - data'
-            '4 - zm'#283'na stav'#367
-            '5 - podrobn'#233' informace')
+            '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
+            '1 '#8211' chyby'
+            '2 '#8211' varov'#225'n'#237
+            '3 '#8211' p'#345#237'kazy'
+            '4 '#8211' data'
+            '5 '#8211' debug')
         end
       end
     end
@@ -6334,7 +6334,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403F00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403F80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8200,7 +8200,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280368041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280370041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8741,7 +8741,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802B40310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802BC0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -55,7 +55,7 @@ const
   );
 
 type
-  TLogEvent = procedure(Sender:TObject; lvl:Integer; msg:string; var handled:boolean) of object;
+  TLogEvent = procedure(Sender:TObject; lvl:TTrkLogLevel; msg:string; var handled:boolean) of object;
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TSlot; var handled:boolean) of object;
   TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
 
@@ -65,8 +65,6 @@ type
   ETrakceUnassigned = class(Exception);
   EInvalidArgument = class(Exception);
   EOpened = class(Exception);
-
-  TTrkLogLevel = (tllNo = 0, tllErrors = 1, tllCommands = 2, tllData = 3, tllChanges = 4, tllDetail = 5);
 
   // pri programovani POMu se do callbacku predavaji tato data
   TPOMCallback = record
@@ -124,7 +122,7 @@ type
   // ------- trida TTrkGUI --------
   TTrkGUI = class
    private const
-     _DEF_LOGLEVEL = TTrkLogLevel.tllCommands;                                  // default loglevel
+     _DEF_LOGLEVEL = TTrkLogLevel.tllCommand;                                   // default loglevel
 
      _DEF_BAUDRATE    = br9600;                                                 // default serial baudrate
      _DEF_STOPBITS    = sbOneStopBit;                                           // default serial stopbits
@@ -171,8 +169,8 @@ type
 
      function GetOpenned():boolean;                                             // je seriak otevreny ?
 
-     procedure TrkLog(Sender:TObject; lvl:Integer; msg:string);                 // logovaci event z .Trakce
-     procedure WriteLog(lvl:Integer; msg:string);                               // zaloguje data (at uz do souboru, ci do tabulky)
+     procedure TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);            // logovaci event z .Trakce
+     procedure WriteLog(lvl:TTrkLogLevel; msg:string);                          // zaloguje data (at uz do souboru, ci do tabulky)
 
      // eventy serioveho portu:
      procedure OnComError(Sender: TObject; Errors: TComErrors);
@@ -409,11 +407,15 @@ begin
 
  Self.flogfile  := loglevel_file;
  Self.flogtable := loglevel_table;
+ Self.LogObj := LogObj;
+
+ Self.WriteLog(tllCommand, 'BEGIN '+
+                  'loglevel_file='+LogLevelToString(loglevel_file)+
+                  ', loglevel_table='+LogLevelToString(loglevel_table)
+ );
 
  Self.Trakce := nil;
  Self.SetTrkSystem(TrkSystem);
-
- Self.LogObj := LogObj;
 
  Self.CPortData.br          := _DEF_BAUDRATE;
  Self.CPortData.sb          := _DEF_STOPBITS;
@@ -424,14 +426,12 @@ begin
  Self.DCCGoTime := Now;
 
  Self.toggleQueue := TQueue<THVFunc>.Create();
-
- Self.WriteLog(2, 'BEGIN loglevel_file='+LogLevelToString(loglevel_file)+', loglevel_table='+LogLevelToString(loglevel_table));
 end;//ctor
 
 destructor TTrkGUI.Destroy();
 begin
  try
-   Self.WriteLog(2, 'END');
+   Self.WriteLog(tllCommand, 'END');
  except
 
  end;
@@ -469,6 +469,8 @@ begin
  Self.Trakce.OnLokComOK           := Self.LokComOK;
  Self.Trakce.OnTrackStatusChange  := Self.OnTrackStatusChange;
  Self.Trakce.OnComError           := Self.OnComWriteError;
+
+ Self.WriteLog(tllCommand, 'USING '+ Self.Trakce.Name());
 end;
 
 function TTrkGUI.GetOpenned():boolean;
@@ -487,11 +489,13 @@ begin
    Exit(0);
   end;
 
- Self.TrkLog(self,2,'OPENING port='+Self.CPortData.com+' br='+BaudRateToStr(Self.CPortData.br)+' sb='+StopBitsToStr(Self.CPortData.sb)+' db='+DataBitsToStr(Self.CPortData.db)+' fc='+FlowControlToStr(Self.CPortData.FlowControl));
+ Self.TrkLog(self, tllCommand, 'OPENING port='+Self.CPortData.com+' br='+BaudRateToStr(Self.CPortData.br)+
+             ' sb='+StopBitsToStr(Self.CPortData.sb)+' db='+DataBitsToStr(Self.CPortData.db)+
+             ' fc='+FlowControlToStr(Self.CPortData.FlowControl));
 
  if ((Assigned(Self.Trakce.ComPort.CPort)) and (Self.Trakce.ComPort.CPort.Connected)) then
   begin
-   Self.TrkLog(self, 1, 'OPEN: already connected');
+   Self.TrkLog(self, tllError, 'OPEN: already connected');
    Exit(0);
   end;
 
@@ -516,7 +520,7 @@ begin
   on E : Exception do
    begin
     Self.Trakce.ComPort.CPort.Close;
-    Self.TrkLog(self, 1, 'OPEN ERR: com port object error : '+E.Message);
+    Self.TrkLog(self, tllError, 'OPEN ERR: com port object error : '+E.Message);
     Self.AfterClose(self);
 
     if (SystemData.Status = TSystemStatus.starting) then
@@ -542,11 +546,11 @@ begin
    Exit(0);
   end;
 
- Self.TrkLog(self, 2, 'CLOSING...');
+ Self.TrkLog(self, tllCommand, 'CLOSING...');
 
  if (not Self.openned) then
   begin
-   Self.TrkLog(self, 1, 'CLOSE: already disconnected');
+   Self.TrkLog(self, tllError, 'CLOSE: already disconnected');
    Exit(0);
   end;
 
@@ -563,7 +567,7 @@ begin
   Self.Trakce.ComPort.CPort.Close();
  except
   on E : Exception do
-    Self.TrkLog(self, 1, 'CLOSE ERR: com port object error : '+E.Message);
+    Self.TrkLog(self, tllError, 'CLOSE ERR: com port object error : '+E.Message);
  end;
 
  try
@@ -578,7 +582,7 @@ end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrkGUI.TrkLog(Sender:TObject; lvl:Integer; msg:string);
+procedure TTrkGUI.TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
 var handled:boolean;
 begin
  handled := false;
@@ -588,12 +592,12 @@ begin
  Self.WriteLog(lvl, msg);
 end;//procedure
 
-procedure TTrkGUI.WriteLog(lvl:Integer; msg:string);
+procedure TTrkGUI.WriteLog(lvl:TTrkLogLevel; msg:string);
 var LV_Log:TListItem;
     f:TextFile;
     xDate, xTime:string;
  begin
-  if ((lvl > Integer(Self.logfile)) and (lvl > Integer(Self.logtable))) then Exit;
+  if ((lvl > Self.logfile) and (lvl > Self.logtable)) then Exit;
 
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
@@ -601,19 +605,19 @@ var LV_Log:TListItem;
   if (Self.LogObj.Items.Count > 500) then
     Self.LogObj.Clear();
 
-  if (lvl <= Integer(Self.logtable)) then
+  if (lvl <= Self.logtable) then
    begin
     try
       LV_Log := Self.LogObj.Items.Insert(0);
       LV_Log.Caption := xTime;
-      LV_Log.SubItems.Add(IntToStr(lvl));
+      LV_Log.SubItems.Add(IntToStr(Integer(lvl)));
       LV_Log.SubItems.Add(msg);
     except
 
     end;
    end;//if Self.logtable
 
-  if (lvl <= Integer(Self.logfile)) then
+  if (lvl <= Self.logfile) then
    begin
     try
       AssignFile(f, 'log\lnet\'+xDate+'.log');
@@ -622,7 +626,7 @@ var LV_Log:TListItem;
       else
         Rewrite(f);
 
-      Writeln(f, xTime+' '+IntToStr(lvl)+': '+msg);
+      Writeln(f, xTime+' '+IntToStr(Integer(lvl))+': '+msg);
 
       CloseFile(f);
     except
@@ -640,7 +644,7 @@ begin
  if (not Self.openned) then
    raise ENotOpenned.Create('Nepřipojeno k centrále!');
 
- Self.TrkLog(self,2,'PUT: CENTRAL START');
+ Self.TrkLog(self, tllCommand, 'PUT: CENTRAL START');
  Self.Trakce.TrackStatus := TS_ON;
 end;//function
 
@@ -651,7 +655,7 @@ begin
  if (not Self.openned) then
    raise ENotOpenned.Create('Nepřipojeno k centrále!');
 
- Self.TrkLog(self,2,'PUT: CENTRAL STOP');
+ Self.TrkLog(self, tllCommand, 'PUT: CENTRAL STOP');
  Self.Trakce.TrackStatus := TS_OFF;
 end;//function
 
@@ -670,7 +674,7 @@ begin
 
  if ((HV.Slot.speed = Self.GettSpeed(speed)) and (HV.Slot.Smer = dir)) then
   begin
-   Self.TrkLog(self, 5, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' skmph; dir='+IntToStr(dir));
+   Self.TrkLog(self, tllDebug, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' skmph; dir='+IntToStr(dir));
    Exit();
   end;
 
@@ -683,7 +687,7 @@ begin
 
  Self.UpdateSpeedDir(HV, Sender, speedOld <> HV.Slot.speed, dirOld <> HV.Slot.smer);
 
- Self.TrkLog(self,2,'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToSTr(speed)+' kmph = '+IntToStr(Self.GettSpeed(speed))+' steps; dir='+IntToStr(dir));
+ Self.TrkLog(self, tllCommand, 'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToSTr(speed)+' kmph = '+IntToStr(Self.GettSpeed(speed))+' steps; dir='+IntToStr(dir));
  Self.Trakce.LokSetSpeed(HV.Adresa,Self.GettSpeed(speed),dir);
 end;//function
 
@@ -700,7 +704,7 @@ begin
 
  if ((HV.Slot.speed = speed) and (HV.Slot.Smer = dir)) then
   begin
-   Self.TrkLog(self, 5, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
+   Self.TrkLog(self, tllDebug, 'PUT: IGNORE LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
    Exit();
   end;
 
@@ -713,7 +717,7 @@ begin
 
  Self.UpdateSpeedDir(HV, Sender, speedOld <> HV.Slot.speed, dirOld <> HV.Slot.smer);
 
- Self.TrkLog(self,2,'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
+ Self.TrkLog(self, tllCommand, 'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
  Self.Trakce.LokSetSpeed(HV.Adresa,speed,dir);
 end;//function
 
@@ -870,7 +874,7 @@ var i, j:Integer;
     AssignFile(myFile, filename);
     Reset(myFile);
   except
-    Self.TrkLog(self, 1, 'Chyba pri nacitani souboru s rychlostmi - nepodarilo se pristoupit k souboru! Pouzivam vychozi rychlostni tabulku.');
+    Self.TrkLog(self, tllError, 'Chyba pri nacitani souboru s rychlostmi - nepodarilo se pristoupit k souboru! Pouzivam vychozi rychlostni tabulku.');
 
     // nacteme vychozi rychlostni tabulku
     for i := 0 to _MAX_SPEED do
@@ -884,7 +888,7 @@ var i, j:Integer;
    begin
     if (Eof(myFile)) then
      begin
-      Self.TrkLog(self, 1, 'Chyba pri nacitani souboru s rychlostmi - prilis malo radku! Doplnuji vychozi rychlostni tabulkou.');
+      Self.TrkLog(self, tllError, 'Chyba pri nacitani souboru s rychlostmi - prilis malo radku! Doplnuji vychozi rychlostni tabulkou.');
       CloseFile(myFile);
       for j := i to _MAX_SPEED do
         Self.SpeedTable[j] := _DEFAULT_SPEED_TABLE[j];
@@ -896,7 +900,7 @@ var i, j:Integer;
       except
         on E:Exception do
          begin
-          Self.TrkLog(self, 1, 'Soubor s rychlostmi, řádek ' + IntToStr(i+1) + ': ' + E.Message);
+          Self.TrkLog(self, tllError, 'Soubor s rychlostmi, řádek ' + IntToStr(i+1) + ': ' + E.Message);
           Self.SpeedTable[i] := _DEFAULT_SPEED_TABLE[i];
          end;
       end;
@@ -929,7 +933,7 @@ var i:Integer;
     AssignFile(myFile, filename);
     Rewrite(myFile);
   except
-    Self.TrkLog(self,1,'Chyba pri ukladani souboru s rychlostmi - nepodarilo se pristoupit k souboru !');
+    Self.TrkLog(self, tllError, 'Chyba pri ukladani souboru s rychlostmi - nepodarilo se pristoupit k souboru !');
     Exit;
   end;
 
@@ -965,7 +969,7 @@ end;//procedure
 procedure TTrkGUI.AfterOpen(Sender:TObject);
 begin
  Self.Trakce.AfterOpen();
- Self.TrkLog(self, 2, 'OPEN OK');
+ Self.TrkLog(self, tllCommand, 'OPEN OK');
  F_Main.A_Trk_Connect.Enabled       := false;
  F_Main.A_Trk_Disconnect.Enabled    := true;
  F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála připojena';
@@ -1005,7 +1009,7 @@ end;//procedure
 procedure TTrkGUI.AfterClose(Sender:TObject);
 var addr:Integer;
 begin
- Self.TrkLog(self,2,'CLOSE OK');
+ Self.TrkLog(self, tllCommand, 'CLOSE OK');
  F_Main.A_Trk_Connect.Enabled       := true;
  F_Main.A_Trk_Disconnect.Enabled    := false;
  F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála odpojena';
@@ -1059,7 +1063,7 @@ begin
  if (not Self.openned) then
    raise ENotOpenned.Create('Nepřipojeno k centrále!');
 
- Self.TrkLog(self,2,'PUT: EMERGENCY STOP');
+ Self.TrkLog(self, tllCommand, 'PUT: EMERGENCY STOP');
  Self.Trakce.EmergencyStop();
 end;//function
 
@@ -1070,7 +1074,7 @@ begin
  if ((addr < 0) or (addr > 9999)) then
    raise EInvalidArgument.Create('Neplatná adresa!');
 
- Self.TrkLog(self,2,'PUT: EMERGENCY STOP LOKO '+IntToStr(addr));
+ Self.TrkLog(self, tllCommand, 'PUT: EMERGENCY STOP LOKO '+IntToStr(addr));
  Self.Trakce.LokEmergencyStop(addr);
 end;//function
 
@@ -1081,7 +1085,7 @@ begin
  if (HV = nil) then
    raise EInvalidArgument.Create('HV nezadáno!');
 
- Self.TrkLog(self,2,'PUT: EMERGENCY STOP HV '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
+ Self.TrkLog(self, tllCommand, 'PUT: EMERGENCY STOP HV '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
  Self.Trakce.LokEmergencyStop(HV.Adresa);
 
  HV.Slot.speed := 0;
@@ -1096,7 +1100,7 @@ begin
  if (HV = nil) then
    raise EInvalidArgument.Create('HV nezadáno!');
 
- Self.TrkLog(self,2,'PUT: GET HV INFO '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
+ Self.TrkLog(self, tllCommand, 'PUT: GET HV INFO '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
  Self.Trakce.LokGetInfo(HV.Adresa);
 end;//function
 
@@ -1110,11 +1114,11 @@ var cb:Pointer;
 begin
  if (not Self.openned) then
   begin
-   Self.WriteLog(1, 'ERR: COM not openned');
+   Self.WriteLog(tllError, 'ERR: COM not openned');
    raise ENotOpenned.Create('COM not openned');
   end;
 
- Self.TrkLog(self, 2, 'PUT: LOK-2-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
+ Self.TrkLog(self, tllCommand, 'PUT: LOK-2-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
  HV.Slot.prevzato_full := false;
  HV.RecordUseNow();
 
@@ -1144,11 +1148,11 @@ var cb:Pointer;
 begin
  if (not Self.openned) then
   begin
-   Self.WriteLog(1, 'ERR: COM not openned');
+   Self.WriteLog(tllError, 'ERR: COM not openned');
    raise ENotOpenned.Create('COM not openned');
   end;
 
- Self.TrkLog(self, 2, 'PUT: LOK-FROM-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
+ Self.TrkLog(self, tllCommand, 'PUT: LOK-FROM-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
 
  GetMem(cb, sizeof(TPrevzitCallback));
  TPrevzitCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
@@ -1268,7 +1272,7 @@ begin
      HVDb.HVozidla[addr].Slot.prevzato_full := false;
      HVDb.HVozidla[addr].Slot.Prevzato := true;
      HVDb.HVozidla[addr].Slot.stolen   := false;
-     Self.TrkLog(self,2,'GET LOCO DATA: loko '+HVDb.HVozidla[addr].data.Nazev+' ('+IntToSTr(addr)+')');
+     Self.TrkLog(self, tllCommand, 'GET LOCO DATA: loko '+HVDb.HVozidla[addr].data.Nazev+' ('+IntToSTr(addr)+')');
      HVDb.HVozidla[addr].changed := true;
 
      // 2) priprava POM (POM zatim neprogramujeme, jen si pripravime flag)
@@ -1344,13 +1348,13 @@ end;//procedure
 procedure TTrkGUI.SetLoglevelFile(ll:TTrkLogLevel);
 begin
  Self.flogfile := ll;
- Self.WriteLog(2, 'NEW loglevel_file = '+LogLevelToString(ll));
+ Self.WriteLog(tllCommand, 'NEW loglevel_file = '+LogLevelToString(ll));
 end;
 
 procedure TTrkGUI.SetLoglevelTable(ll:TTrkLogLevel);
 begin
  Self.flogtable := ll;
- Self.WriteLog(2, 'NEW loglevel_table = '+LogLevelToString(ll));
+ Self.WriteLog(tllCommand, 'NEW loglevel_table = '+LogLevelToString(ll));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1457,7 +1461,7 @@ end;//procedure
 
 procedure TTrkGUI.PrebiraniUpdateErr(Sender:TObject; Data:Pointer);
 begin
- Self.WriteLog(1, 'ERR: LOKO '+ IntToStr(Integer(data^)) + ' se nepodařilo převzít');
+ Self.WriteLog(tllError, 'ERR: LOKO '+ IntToStr(Integer(data^)) + ' se nepodařilo převzít');
  F_Main.LogStatus('LOKO: loko '+ IntToStr(Integer(data^)) + ' se nepodařilo převzít');
 
  F_Main.G_Loko_Prevzato.ForeColor := clRed;
@@ -1519,7 +1523,7 @@ end;//procedure
 procedure TTrkGUI.OdhlasovaniUpdateErr(Sender:TObject; Data:Pointer);
 begin
  // pokud behem odhlasovani loko nastane chyba, nahlasime ji, ale loko povazujeme za odhlasene
- Self.WriteLog(1, 'WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodařilo odhlásit');
+ Self.WriteLog(tllError, 'WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodařilo odhlásit');
  F_Main.LogStatus('WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodařilo odhlásit');
  F_Main.G_Loko_Prevzato.ForeColor := clRed;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato := false;
@@ -1703,7 +1707,7 @@ end;//procedure
 
 procedure TTrkGUI.OnComError(Sender: TObject; Errors: TComErrors);
 begin
- Self.WriteLog(1, 'ERR: COM PORT ERROR');
+ Self.WriteLog(tllError, 'ERR: COM PORT ERROR');
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1712,7 +1716,7 @@ procedure TTrkGUI.OnComException(Sender: TObject;
   TComException: TComExceptions; ComportMessage: string; WinError: Int64;
   WinMessage: string);
 begin
- Self.WriteLog(1, 'ERR: COM PORT EXCEPTION: '+ComportMessage+'; '+WinMessage);
+ Self.WriteLog(tllError, 'ERR: COM PORT EXCEPTION: '+ComportMessage+'; '+WinMessage);
  raise Exception.Create(ComportMessage);
 end;//procedure
 
@@ -1900,7 +1904,7 @@ begin
  if (HV = nil) then
    raise EInvalidArgument.Create('HV nezadáno!');
 
- Self.TrkLog(self, 2, 'PUT: POM '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+') : '+IntToStr(cv)+':'+IntToStr(data));
+ Self.TrkLog(self, tllCommand, 'PUT: POM '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+') : '+IntToStr(cv)+':'+IntToStr(data));
  Self.Trakce.POMWriteCV(HV.adresa, cv, data);
 end;//procedure
 
@@ -2059,7 +2063,7 @@ begin
    case (sada) of
     0:begin
        for i := 0 to 4 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, 2, 'PUT: LOK FUNC 0-4: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
+       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 0-4: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
 
        func := 0;
        for i := 0 to 3 do if (TFuncCallback(data^).sady[0].func[i+1]) then func := func or (1 shl (i+1));
@@ -2068,7 +2072,7 @@ begin
 
     1: begin
        for i := 0 to 3 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, 2, 'PUT: LOK FUNC 5-8: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
+       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 5-8: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
 
        func := 0;
        for i := 0 to 3 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
@@ -2076,7 +2080,7 @@ begin
 
     2: begin
        for i := 0 to 3 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, 2, 'PUT: LOK FUNC 9-12: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
+       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 9-12: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
 
        func := 0;
        for i := 0 to 3 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
@@ -2084,7 +2088,7 @@ begin
 
     3: begin
        for i := 0 to 7 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, 2, 'PUT: LOK FUNC 13-20: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
+       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 13-20: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
 
        func := 0;
        for i := 0 to 7 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
@@ -2092,7 +2096,7 @@ begin
 
     4: begin
        for i := 0 to 7 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, 2, 'PUT: LOK FUNC 21-28: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
+       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 21-28: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
 
        func := 0;
        for i := 0 to 7 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
@@ -2152,7 +2156,7 @@ end;//procedure
 procedure TTrkGUI.PrevzatoFuncErr(Sender:TObject; Data:Pointer);
 begin
  // loko prevzato, ale funkce se nepodarilo nastavit -> error callback
- Self.WriteLog(1, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodařilo nastavit funkce');
+ Self.WriteLog(tllWarning, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodařilo nastavit funkce');
  F_Main.LogStatus('WARN: loko '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodařilo nastavit funkce');
  Self.PrevzatoFuncOK(Self, data);
 end;//procedure
@@ -2254,12 +2258,12 @@ end;
 class function TTrkGUI.LogLevelToString(ll:TTrkLogLevel):string;
 begin
  case ll of
-   TTrkLogLevel.tllNo       : Result := 'žádné zprávy';
-   TTrkLogLevel.tllErrors   : Result := 'chyby';
-   TTrkLogLevel.tllCommands : Result := 'příkazy';
-   TTrkLogLevel.tllData     : Result := 'data';
-   TTrkLogLevel.tllChanges  : Result := 'změny stavů';
-   TTrkLogLevel.tllDetail   : Result := 'podrobné informace';
+   TTrkLogLevel.tllNo      : Result := 'žádné zprávy';
+   TTrkLogLevel.tllError   : Result := 'chyby';
+   TTrkLogLevel.tllWarning : Result := 'varování';
+   TTrkLogLevel.tllCommand : Result := 'příkazy';
+   TTrkLogLevel.tllData    : Result := 'data';
+   TTrkLogLevel.tllDebug   : Result := 'debug';
  else
    Result := 'neznámý';
  end;
