@@ -124,6 +124,7 @@ type
     procedure B_OKClick(Sender: TObject);
     procedure B_PortRefreshClick(Sender: TObject);
     procedure CHB_AutosaveClick(Sender: TObject);
+    procedure CB_TrackSystemChange(Sender: TObject);
   private
 
   public
@@ -326,6 +327,16 @@ var IgnoraceRCS:TArI;
   SE_SS_Out_Opakovani.Value  := data.OUT_Repeat;
  end;//procedure
 
+procedure TF_Options.CB_TrackSystemChange(Sender: TObject);
+begin
+ Self.CCB_BaudRate.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
+ Self.CCB_DataBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
+ Self.CCB_StopBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
+ Self.CCB_Port.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
+ Self.CCB_FC.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
+ Self.B_PortRefresh.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
+end;
+
 procedure TF_Options.CHB_AutosaveClick(Sender: TObject);
 begin
  Data.autosave := Self.CHB_Autosave.Checked;
@@ -445,22 +456,27 @@ procedure TF_Options.LV_DigiRychDblClick(Sender: TObject);
 
 procedure TF_Options.NactiCentralaData();
 begin
-  Self.CB_TrackSystem.ItemIndex := Integer(TrkSystem.TrkSystem)-1;
-  Self.CCB_BaudRate.ItemIndex  := Integer(TrkSystem.BaudRate);
-  Self.CCB_DataBits.ItemIndex  := Integer(TrkSystem.DataBits);
-  Self.CCB_StopBits.ItemIndex  := Integer(TrkSystem.StopBits);
-  Self.CCB_FC.ItemIndex        := Integer(TrkSystem.FlowControl);
-  Self.CCB_Port.Text           := TrkSystem.COM;
+ Self.CB_TrackSystem.ItemIndex := Integer(TrkSystem.TrkSystem)-1;
+ Self.CCB_BaudRate.ItemIndex  := Integer(TrkSystem.BaudRate);
+ Self.CCB_DataBits.ItemIndex  := Integer(TrkSystem.DataBits);
+ Self.CCB_StopBits.ItemIndex  := Integer(TrkSystem.StopBits);
+ Self.CCB_FC.ItemIndex        := Integer(TrkSystem.FlowControl);
+ Self.CCB_Port.Text           := TrkSystem.COM;
+ Self.CB_TrackSystemChange(Self.CB_TrackSystem);
 end;//procedure
 
 procedure TF_Options.UlozCentralaData();
 begin
- TrkSystem.TrkSystem   := Ttrk_system(Self.CB_TrackSystem.ItemIndex+1);
- TrkSystem.BaudRate    := TBaudRate(Self.CCB_BaudRate.ItemIndex);
- TrkSystem.DataBits    := TDataBits(Self.CCB_DataBits.ItemIndex);
- TrkSystem.StopBits    := TStopBits(Self.CCB_StopBits.ItemIndex);
- TrkSystem.FlowControl := TFlowControl(Self.CCB_FC.ItemIndex);
- TrkSystem.COM         := Self.CCB_Port.Text;
+ TrkSystem.TrkSystem := Ttrk_system(Self.CB_TrackSystem.ItemIndex+1);
+
+ if (TrkSystem.TrkSystem <> TRS_Simulator) then
+  begin
+   TrkSystem.BaudRate    := TBaudRate(Self.CCB_BaudRate.ItemIndex);
+   TrkSystem.DataBits    := TDataBits(Self.CCB_DataBits.ItemIndex);
+   TrkSystem.StopBits    := TStopBits(Self.CCB_StopBits.ItemIndex);
+   TrkSystem.FlowControl := TFlowControl(Self.CCB_FC.ItemIndex);
+   TrkSystem.COM         := Self.CCB_Port.Text;
+  end;
 end;
 ////////////////////////////////////////////////////////////////////////////////
 

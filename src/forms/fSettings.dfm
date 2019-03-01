@@ -1116,9 +1116,10 @@ object F_Options: TF_Options
             ItemHeight = 13
             ParentFont = False
             TabOrder = 0
+            OnChange = CB_TrackSystemChange
             Items.Strings = (
               'LI100F'
-              'Simulator')
+              'Simul'#225'tor')
           end
           object CCB_BaudRate: TComComboBox
             Left = 104
