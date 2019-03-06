@@ -85,7 +85,7 @@ object F_Tester: TF_Tester
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
+    ItemHeight = 0
     TabOrder = 1
     OnChange = CB_RCSAdrChange
   end
@@ -100,7 +100,7 @@ object F_Tester: TF_Tester
     Margins.Bottom = 2
     Caption = 'Logovat zm'#283'ny'
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
+    Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
@@ -118,7 +118,7 @@ object F_Tester: TF_Tester
     Margins.Bottom = 2
     Caption = ' Zm'#283'ny '
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
+    Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
