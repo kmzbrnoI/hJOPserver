@@ -28,12 +28,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek03: TLabel
     Left = 7
@@ -45,12 +39,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanice :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek01: TLabel
     Left = 7
@@ -62,12 +50,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek15: TLabel
     Left = 8
@@ -79,12 +61,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'D'#233'lka '#250'seku (cm) :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek33: TLabel
     Left = 7
@@ -96,12 +72,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Smy'#269'kov'#253' blok :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label1: TLabel
     Left = 8
@@ -113,12 +83,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Zesilova'#269':'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label5: TLabel
     Left = 8
@@ -130,12 +94,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Max. po'#269'et souprav:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object B_OK: TButton
     Left = 239
@@ -200,12 +158,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Technologick'#233' vstupy - RCS  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 7
     object L_Usek04: TLabel
       Left = 12
@@ -217,12 +169,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = '1. detektor:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label2: TLabel
       Left = 12
@@ -234,12 +180,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = '2. detektor:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label3: TLabel
       Left = 12
@@ -251,12 +191,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = '3. detektor:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label4: TLabel
       Left = 12
@@ -268,12 +202,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = '4. detektor:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object SE_Port1: TSpinEdit
       Left = 224
@@ -285,14 +213,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 2
       Value = 0
     end
@@ -306,14 +228,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 1
       Value = 1
     end
@@ -327,12 +243,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 0
       OnClick = CHB_D1Click
     end
@@ -346,12 +256,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 3
       OnClick = CHB_D1Click
     end
@@ -365,14 +269,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 4
       Value = 1
     end
@@ -386,14 +284,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 5
       Value = 0
     end
@@ -407,12 +299,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 6
       OnClick = CHB_D1Click
     end
@@ -426,14 +312,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 7
       Value = 1
     end
@@ -447,14 +327,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 8
       Value = 0
     end
@@ -468,12 +342,6 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 9
       OnClick = CHB_D1Click
     end
@@ -487,14 +355,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 10
       Value = 1
     end
@@ -508,14 +370,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 11
       Value = 0
     end
@@ -543,12 +399,6 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 5
   end
   object LB_Stanice: TListBox

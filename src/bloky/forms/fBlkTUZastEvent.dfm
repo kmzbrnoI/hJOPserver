@@ -24,12 +24,6 @@ object F_BlkTUZastEvent: TF_BlkTUZastEvent
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce zastaven'#237'  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 0
     object P_Stop: TPanel
       Left = 2
@@ -51,12 +45,6 @@ object F_BlkTUZastEvent: TF_BlkTUZastEvent
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce zpomalen'#237'  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 1
     object CB_ZpomalitKmH: TComboBox
       Left = 15
@@ -68,13 +56,7 @@ object F_BlkTUZastEvent: TF_BlkTUZastEvent
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 1
       Items.Strings = (
         '10 km/h'

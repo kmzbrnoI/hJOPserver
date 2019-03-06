@@ -192,12 +192,6 @@ object F_Options: TF_Options
               Margins.Right = 2
               Margins.Bottom = 2
               Caption = 'Logovat konzoli'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clBlack
-              Font.Height = -11
-              Font.Name = 'MS Sans Serif'
-              Font.Style = []
-              ParentFont = False
               ParentShowHint = False
               ShowHint = True
               TabOrder = 0
@@ -286,12 +280,6 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Caption = ' Interval hlavn'#237'ho '#269'asova'#269'e '
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
           TabOrder = 2
           object L_Data1: TLabel
             Left = 8
@@ -313,11 +301,6 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             ItemHeight = 13
             Items.Strings = (
               '10'
@@ -329,7 +312,6 @@ object F_Options: TF_Options
               '250'
               '500'
               '1000')
-            ParentFont = False
             TabOrder = 0
             OnClick = LB_TimerClick
           end
@@ -368,12 +350,6 @@ object F_Options: TF_Options
           Alignment = taCenter
           AutoSize = False
           Caption = 'Spustit automatick'#253' re'#382'im'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
         end
         object L_SS_01: TLabel
           Left = 200
@@ -387,12 +363,6 @@ object F_Options: TF_Options
           Alignment = taCenter
           AutoSize = False
           Caption = 'Adresa RCS modulu'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
         end
         object CB_SS_AutRezimy: TComboBox
           Left = 200
@@ -404,13 +374,7 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
           ItemHeight = 13
-          ParentFont = False
           TabOrder = 0
         end
         object GB_SS_Vystupy: TGroupBox
@@ -423,12 +387,6 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Caption = ' RCS v'#253'stupy '
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
           TabOrder = 1
           object L_SS_Out_1: TLabel
             Left = 8
@@ -494,14 +452,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 1
             Value = 0
           end
@@ -514,14 +466,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 3
             Value = 0
           end
@@ -534,14 +480,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 5
             Value = 0
           end
@@ -554,14 +494,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 7
             Value = 0
           end
@@ -635,14 +569,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 9
             Value = 0
           end
@@ -657,12 +585,6 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Caption = ' RCS vstupy '
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
           TabOrder = 2
           object L_SS_In_1: TLabel
             Left = 8
@@ -674,12 +596,6 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             Caption = 'Zapnout :'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
           end
           object L_SS_In_2: TLabel
             Left = 8
@@ -691,12 +607,6 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             Caption = 'Pozastavit :'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
           end
           object L_SS_In_3: TLabel
             Left = 8
@@ -708,12 +618,6 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             Caption = 'Vypnout :'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
           end
           object L_SS_In_4: TLabel
             Left = 8
@@ -725,12 +629,6 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             Caption = 'Opakovat :'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
           end
           object L_SS_In_5: TLabel
             Left = 8
@@ -742,12 +640,6 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             Caption = 'Reset :'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
           end
           object SE_SS_In_Start: TSpinEdit
             Left = 104
@@ -758,14 +650,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 1
             Value = 0
           end
@@ -778,14 +664,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 3
             Value = 0
           end
@@ -798,14 +678,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 5
             Value = 0
           end
@@ -818,14 +692,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 7
             Value = 0
           end
@@ -898,14 +766,8 @@ object F_Options: TF_Options
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             MaxValue = 15
             MinValue = 0
-            ParentFont = False
             TabOrder = 9
             Value = 0
           end
@@ -929,12 +791,6 @@ object F_Options: TF_Options
           Width = 53
           Height = 17
           Caption = 'Povolit'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
           TabOrder = 4
           OnClick = CHB_SS_EnableClick
         end
@@ -943,14 +799,8 @@ object F_Options: TF_Options
           Top = 112
           Width = 157
           Height = 22
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
           MaxValue = 191
           MinValue = 1
-          ParentFont = False
           TabOrder = 5
           Value = 1
         end
@@ -982,15 +832,9 @@ object F_Options: TF_Options
             Caption = 'Rychlost'
             Width = 100
           end>
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         GridLines = True
         ReadOnly = True
         RowSelect = True
-        ParentFont = False
         TabOrder = 0
         ViewStyle = vsReport
         OnDblClick = LV_DigiRychDblClick
@@ -1029,12 +873,6 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Caption = ' Komunikace s centr'#225'lou  '
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -9
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
-          ParentFont = False
           TabOrder = 1
           object Label3: TLabel
             Left = 13
@@ -1108,13 +946,7 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             Style = csDropDownList
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -9
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             ItemHeight = 13
-            ParentFont = False
             TabOrder = 0
             OnChange = CB_TrackSystemChange
             Items.Strings = (
@@ -1133,14 +965,8 @@ object F_Options: TF_Options
             ComProperty = cpBaudRate
             Text = 'Custom'
             Style = csDropDownList
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -9
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             ItemHeight = 13
             ItemIndex = 0
-            ParentFont = False
             TabOrder = 1
           end
           object CCB_DataBits: TComComboBox
@@ -1155,14 +981,8 @@ object F_Options: TF_Options
             ComProperty = cpDataBits
             Text = '5'
             Style = csDropDownList
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -9
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             ItemHeight = 13
             ItemIndex = 0
-            ParentFont = False
             TabOrder = 2
           end
           object CCB_StopBits: TComComboBox
@@ -1177,14 +997,8 @@ object F_Options: TF_Options
             ComProperty = cpStopBits
             Text = '1'
             Style = csDropDownList
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -9
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             ItemHeight = 13
             ItemIndex = 0
-            ParentFont = False
             TabOrder = 3
           end
           object CCB_Port: TComComboBox
@@ -1199,14 +1013,8 @@ object F_Options: TF_Options
             ComProperty = cpPort
             Text = 'COM1'
             Style = csDropDownList
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -9
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
             ItemHeight = 13
             ItemIndex = 0
-            ParentFont = False
             TabOrder = 4
           end
           object B_PortRefresh: TButton

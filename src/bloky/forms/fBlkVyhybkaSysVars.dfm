@@ -29,12 +29,6 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'V'#253'luka:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label1: TLabel
     Left = 298
@@ -46,63 +40,39 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = #352't'#237'tek:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek21: TLabel
     Left = 8
     Top = 24
-    Width = 67
+    Width = 68
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Vlastn'#237' z'#225'v'#283'r :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek25: TLabel
     Left = 7
     Top = 101
-    Width = 39
+    Width = 37
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Locked:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek20: TLabel
     Left = 7
     Top = 129
-    Width = 122
+    Width = 118
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Po'#269'et redukuj'#237'c'#237'ch blok'#367':'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label2: TLabel
     Left = 8
@@ -124,12 +94,6 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Width = 92
     Height = 26
     Caption = 'Aktualizovat'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 0
     OnClick = B_UpdateClick
   end
@@ -139,12 +103,6 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Width = 89
     Height = 26
     Caption = 'Pou'#382#237't'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 1
     OnClick = B_ApplyClick
   end
@@ -176,13 +134,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 4
     Items.Strings = (
       'Ne'
@@ -209,13 +161,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 6
     Items.Strings = (
       'Ne'
@@ -231,13 +177,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 7
     Items.Strings = (
       'Ne'
@@ -258,7 +198,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Top = 155
     Width = 107
     Height = 25
-    Caption = 'Zrusit redukci menu'
+    Caption = 'Zru'#353'it redukci menu'
     TabOrder = 9
     OnClick = B_CancelRedukceClick
   end

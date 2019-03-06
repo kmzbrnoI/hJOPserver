@@ -28,12 +28,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_HV2: TLabel
     Left = 8
@@ -45,12 +39,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Ozna'#269'en'#237' :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_HV3: TLabel
     Left = 8
@@ -62,12 +50,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Majitel :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_HV4: TLabel
     Left = 8
@@ -79,12 +61,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Pozn'#225'mka :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_HV5: TLabel
     Left = 8
@@ -96,12 +72,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'DCC adresa :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_HV7: TLabel
     Left = 8
@@ -113,12 +83,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanovi'#353't'#283' A :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_HV10: TLabel
     Left = 8
@@ -130,12 +94,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Trakce :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label1: TLabel
     Left = 9
@@ -147,12 +105,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanice :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label2: TLabel
     Left = 287
@@ -164,12 +116,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'POM p'#345'i p'#345'evzet'#237' do automatu:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label3: TLabel
     Left = 287
@@ -181,12 +127,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'POM p'#345'i uvoln'#283'n'#237' z automatu:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object SB_Rel_Remove: TSpeedButton
     Left = 505

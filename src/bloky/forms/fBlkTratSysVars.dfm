@@ -17,53 +17,35 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
   object L_Usek21: TLabel
     Left = 8
     Top = 8
-    Width = 34
+    Width = 35
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Z'#225'v'#283'r :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek24: TLabel
     Left = 7
     Top = 33
-    Width = 27
+    Width = 28
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Sm'#283'r:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek25: TLabel
     Left = 7
     Top = 56
-    Width = 36
+    Width = 37
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = #381#225'dost:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek20: TLabel
     Left = 7
@@ -75,46 +57,28 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'P'#345'edpov'#237'dan'#225' souprava :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek27: TLabel
     Left = 8
     Top = 110
-    Width = 115
+    Width = 114
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Blokov'#225' podm'#237'nka next:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label3: TLabel
     Left = 7
     Top = 138
-    Width = 111
+    Width = 109
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Blokov'#225' podm'#237'nka last:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label1: TLabel
     Left = 8
@@ -140,13 +104,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 0
     Items.Strings = (
       'Ne'
@@ -163,13 +121,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 1
     Items.Strings = (
       'disabled'
@@ -187,13 +139,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 2
     Items.Strings = (
       'Ne'

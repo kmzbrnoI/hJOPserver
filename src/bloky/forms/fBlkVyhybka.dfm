@@ -29,12 +29,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Vyh02: TLabel
     Left = 7
@@ -46,12 +40,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek03: TLabel
     Left = 7
@@ -63,12 +51,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanice :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object E_Nazev: TEdit
     Left = 118
@@ -106,12 +88,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' v'#253'hybky - RCS '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 5
     object L_Vyh05: TLabel
       Left = 151
@@ -123,12 +99,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Modul'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_Vyh06: TLabel
       Left = 8
@@ -140,12 +110,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Nastaven'#237' polohy + (v'#253'stup):'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_Vyh07: TLabel
       Left = 8
@@ -157,12 +121,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Nastaven'#237' polohy - (v'#253'stup):'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_Vyh08: TLabel
       Left = 8
@@ -174,12 +132,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Detekce polohy + (vstup):'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_Vyh09: TLabel
       Left = 8
@@ -191,12 +143,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Detekce polohy - (vstup):'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label1: TLabel
       Left = 230
@@ -208,12 +154,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Port'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object SE_VystPlus_port: TSpinEdit
       Left = 230
@@ -224,14 +164,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 1
       Value = 0
     end
@@ -244,14 +178,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 3
       Value = 0
     end
@@ -264,14 +192,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = -1
-      ParentFont = False
       TabOrder = 5
       Value = 0
     end
@@ -284,14 +206,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = -1
-      ParentFont = False
       TabOrder = 7
       Value = 0
     end
@@ -304,14 +220,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 0
       Value = 1
     end
@@ -324,14 +234,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 2
       Value = 1
     end
@@ -344,14 +248,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 4
       Value = 1
     end
@@ -364,14 +262,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 6
       Value = 1
     end
@@ -421,12 +313,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Width = 64
     Height = 17
     Caption = 'Spojka'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 3
     OnClick = CHB_SpojkaClick
   end
@@ -446,12 +332,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Width = 304
     Height = 83
     Caption = ' Z'#225'mek '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 8
     OnClick = GB_ZamekClick
     object Label2: TLabel
@@ -464,12 +344,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Poloha v'#253'hybky pro zamknut'#237':'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object CB_Zamek: TComboBox
       Left = 107
@@ -477,13 +351,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 189
       Height = 21
       Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 0
     end
     object CHB_Zamek: TCheckBox
@@ -492,12 +360,6 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 64
       Height = 17
       Caption = 'Z'#225'mek'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 1
       OnClick = CHB_ZamekClick
     end
@@ -507,13 +369,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 112
       Height = 21
       Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 2
       Items.Strings = (
         '+'

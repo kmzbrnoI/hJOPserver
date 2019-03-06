@@ -46,12 +46,6 @@ object F_BlkSComEvent: TF_BlkSComEvent
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce zastaven'#237'  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 0
     object P_ZastForm: TPanel
       Left = 2
@@ -61,8 +55,6 @@ object F_BlkSComEvent: TF_BlkSComEvent
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitLeft = 32
-      ExplicitWidth = 129
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
@@ -75,12 +67,6 @@ object F_BlkSComEvent: TF_BlkSComEvent
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce zpomalen'#237'  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 1
     object CB_ZpomalitKmH: TComboBox
       Left = 11
@@ -92,13 +78,7 @@ object F_BlkSComEvent: TF_BlkSComEvent
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 1
       Items.Strings = (
         '10 km/h'
@@ -133,8 +113,6 @@ object F_BlkSComEvent: TF_BlkSComEvent
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitLeft = 3
-      ExplicitTop = 66
     end
   end
   object E_Spr: TEdit

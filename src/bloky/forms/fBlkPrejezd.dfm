@@ -28,12 +28,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev p'#345'ejezdu :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_SCom02: TLabel
     Left = 9
@@ -45,12 +39,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek03: TLabel
     Left = 7
@@ -62,12 +50,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanice :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object E_Prj_Nazev: TEdit
     Left = 120
@@ -131,13 +113,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 2
   end
   object GB_RCS: TGroupBox
@@ -146,12 +122,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Width = 321
     Height = 379
     Caption = ' RCS '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 3
     object L_P01: TLabel
       Left = 64
@@ -163,12 +133,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Modul:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object GB_Prj_vyst: TGroupBox
       Left = 64
@@ -180,12 +144,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = ' V'#253'stupy '
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 1
       object L_P04: TLabel
         Left = 17
@@ -218,14 +176,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         MaxValue = 15
         MinValue = 0
-        ParentFont = False
         TabOrder = 0
         Value = 0
       end
@@ -238,14 +190,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         MaxValue = 15
         MinValue = 0
-        ParentFont = False
         TabOrder = 1
         Value = 0
       end
@@ -260,12 +206,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = ' Vstupy '
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 2
       object L_P07: TLabel
         Left = 16
@@ -277,12 +217,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Zav'#345'eno :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
       end
       object L_P08: TLabel
         Left = 16
@@ -294,12 +228,6 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Otev'#345'eno :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
       end
       object L_P09: TLabel
         Left = 16
@@ -332,14 +260,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         MaxValue = 15
         MinValue = 0
-        ParentFont = False
         TabOrder = 0
         Value = 0
       end
@@ -352,14 +274,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         MaxValue = 15
         MinValue = 0
-        ParentFont = False
         TabOrder = 1
         Value = 0
       end
@@ -372,14 +288,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         MaxValue = 15
         MinValue = 0
-        ParentFont = False
         TabOrder = 2
         Value = 0
       end
@@ -392,14 +302,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         MaxValue = 15
         MinValue = 0
-        ParentFont = False
         TabOrder = 3
         Value = 0
       end
@@ -413,14 +317,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 0
       Value = 1
     end

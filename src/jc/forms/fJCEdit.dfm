@@ -29,12 +29,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev cesty :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_VC_02: TLabel
     Left = 8
@@ -46,12 +40,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'v'#283'stidlo :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_VC_11: TLabel
     Left = 8
@@ -63,12 +51,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Typ cesty :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_VC_07: TLabel
     Left = 8
@@ -80,12 +62,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Dal'#353#237' n'#225'v'#283'stidlo :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_VC_10: TLabel
     Left = 7
@@ -97,12 +73,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Rychlost v cest'#283' (dal'#353#237' N = Stuj) :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_VC_12: TLabel
     Left = 7
@@ -114,12 +84,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Rychlost v cest'#283' (dal'#353#237' N = Volno) :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label3: TLabel
     Left = 8
@@ -150,12 +114,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Z'#225'v'#283'ry v'#253'hybek '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 8
     object LV_Zavery: TListView
       Left = 2
@@ -177,15 +135,9 @@ object F_JCEdit: TF_JCEdit
           Caption = 'Poloha'
           Width = 75
         end>
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       GridLines = True
       ReadOnly = True
       RowSelect = True
-      ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_ZaveryChange
@@ -201,12 +153,6 @@ object F_JCEdit: TF_JCEdit
       Margins.Bottom = 2
       Align = alBottom
       Caption = ' Z'#225'v'#283'r nov'#233' vyh'#253'bky '
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 2
       object L_SCom11: TLabel
         Left = 8
@@ -218,12 +164,6 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Blok :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
       end
       object L_SCom12: TLabel
         Left = 8
@@ -235,12 +175,6 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Poloha :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
       end
       object CB_NewZaverBlok: TComboBox
         Left = 56
@@ -252,13 +186,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         ItemHeight = 13
-        ParentFont = False
         TabOrder = 0
       end
       object CB_NewZaverPoloha: TComboBox
@@ -271,14 +199,8 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         ItemHeight = 13
         ItemIndex = 0
-        ParentFont = False
         TabOrder = 1
         Text = '+'
         Items.Strings = (
@@ -325,12 +247,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Z'#225'v'#283'ry '#250'sek'#367' '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     ParentShowHint = False
     ShowHint = True
     TabOrder = 7
@@ -345,12 +261,6 @@ object F_JCEdit: TF_JCEdit
       Margins.Bottom = 2
       Align = alBottom
       Caption = ' Nov'#253' '#250'sek '
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 2
       object L_SCom14: TLabel
         Left = 8
@@ -362,12 +272,6 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Blok :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
       end
       object CB_NewUsek: TComboBox
         Left = 56
@@ -379,13 +283,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         ItemHeight = 13
-        ParentFont = False
         TabOrder = 0
       end
       object B_NewUsek: TButton
@@ -417,15 +315,9 @@ object F_JCEdit: TF_JCEdit
           Caption = 'Blok'
           Width = 250
         end>
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       GridLines = True
       ReadOnly = True
       RowSelect = True
-      ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_UsekyChange
@@ -573,12 +465,6 @@ object F_JCEdit: TF_JCEdit
     Height = 17
     Caption = 'auto'
     Checked = True
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     State = cbChecked
     TabOrder = 14
   end

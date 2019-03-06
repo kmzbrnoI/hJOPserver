@@ -29,12 +29,6 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_SCom02: TLabel
     Left = 8
@@ -46,12 +40,6 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek03: TLabel
     Left = 7
@@ -63,12 +51,6 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanice :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label1: TLabel
     Left = 7
@@ -80,12 +62,6 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = #218'sek p'#345'ed n'#225'v'#283'stidlem:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_UsekID: TLabel
     Left = 291
@@ -98,12 +74,6 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Bottom = 2
     Alignment = taRightJustify
     Caption = '[blk]'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label2: TLabel
     Left = 7
@@ -115,12 +85,6 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Zpo'#382'd'#283'n'#237' p'#225'du n'#225'v'#283'stidla [sekund]:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object E_Nazev: TEdit
     Left = 119
@@ -158,12 +122,6 @@ object F_BlkSCom: TF_BlkSCom
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 4
     object L_SCom05: TLabel
       Left = 7
@@ -175,12 +133,6 @@ object F_BlkSCom: TF_BlkSCom
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS modul:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_SCom06: TLabel
       Left = 7
@@ -192,12 +144,6 @@ object F_BlkSCom: TF_BlkSCom
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS port:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_SCom04: TLabel
       Left = 7
@@ -209,12 +155,6 @@ object F_BlkSCom: TF_BlkSCom
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Typ v'#253'stupu:'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object SE_RCSport: TSpinEdit
       Left = 223
@@ -225,14 +165,8 @@ object F_BlkSCom: TF_BlkSCom
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 2
       Value = 0
     end
@@ -246,13 +180,7 @@ object F_BlkSCom: TF_BlkSCom
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 3
       Items.Strings = (
         'S-Com'
@@ -267,14 +195,8 @@ object F_BlkSCom: TF_BlkSCom
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 1
       Value = 1
     end
@@ -343,12 +265,6 @@ object F_BlkSCom: TF_BlkSCom
     Width = 201
     Height = 17
     Caption = 'N'#225'v'#283'stidlo trvale zamknuto do ST'#366'J'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 5
   end
   object PC_Events: TPageControl
@@ -356,14 +272,8 @@ object F_BlkSCom: TF_BlkSCom
     Top = 8
     Width = 356
     Height = 329
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     MultiLine = True
     OwnerDraw = True
-    ParentFont = False
     TabOrder = 8
     OnDrawTab = PageControlCloseButtonDrawTab
     OnMouseDown = PageControlCloseButtonMouseDown

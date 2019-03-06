@@ -28,12 +28,6 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label3: TLabel
     Left = 10
@@ -45,12 +39,6 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object E_Nazev: TEdit
     Left = 97
@@ -74,14 +62,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Typ '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     Items.Strings = (
       'SPAX')
-    ParentFont = False
     TabOrder = 2
   end
   object B_Save: TButton
@@ -108,12 +90,6 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce zkratu '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 3
     object L_Zkrat_Port: TLabel
       Left = 8
@@ -128,7 +104,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     end
     object L_Zkrat_module: TLabel
       Left = 8
-      Top = 20
+      Top = 22
       Width = 60
       Height = 13
       Margins.Left = 2
@@ -146,14 +122,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 1
       Value = 0
     end
@@ -166,14 +136,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 0
       Value = 1
     end
@@ -188,12 +152,6 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce nap'#225'jen'#237' '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 4
     object L_Napajeni_Port: TLabel
       Left = 8
@@ -226,14 +184,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 1
       Value = 0
     end
@@ -246,14 +198,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 0
       Value = 1
     end
@@ -281,12 +227,6 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce DCC '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 7
     object Label1: TLabel
       Left = 8
@@ -319,14 +259,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 1
       Value = 0
     end
@@ -339,14 +273,8 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 0
       Value = 1
     end

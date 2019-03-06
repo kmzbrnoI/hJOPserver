@@ -27,12 +27,6 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Z'#225'v'#283'r :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek24: TLabel
     Left = 7
@@ -44,12 +38,6 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'NUZ :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek25: TLabel
     Left = 7
@@ -61,12 +49,6 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Konec JC :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek27: TLabel
     Left = 8
@@ -78,12 +60,6 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'P'#345'edpov'#237'dan'#225' souprava :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label1: TLabel
     Left = 306
@@ -95,12 +71,6 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = #352't'#237'tek:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label3: TLabel
     Left = 7
@@ -112,12 +82,6 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'SComJCRef po'#269'et:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label6: TLabel
     Left = 306
@@ -129,12 +93,6 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'V'#253'luka:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object Label2: TLabel
     Left = 8
@@ -173,13 +131,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 2
     Items.Strings = (
       'Zadne'
@@ -196,13 +148,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 1
     Items.Strings = (
       'Ne'
@@ -218,13 +164,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 0
     Items.Strings = (
       #381#225'dn'#253
@@ -309,13 +249,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 5
     Items.Strings = (
       'Undef'
@@ -332,13 +266,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 6
     Items.Strings = (
       'Undef'

@@ -28,12 +28,6 @@ object F_BlkIR: TF_BlkIR
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_IR01: TLabel
     Left = 8
@@ -45,12 +39,6 @@ object F_BlkIR: TF_BlkIR
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object E_Nazev: TEdit
     Left = 120
@@ -88,12 +76,6 @@ object F_BlkIR: TF_BlkIR
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' '#268'ten'#237' stavu infra'#269'idla '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 2
     object L_IR04: TLabel
       Left = 16
@@ -105,12 +87,6 @@ object F_BlkIR: TF_BlkIR
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS adresa :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_IR05: TLabel
       Left = 16
@@ -122,12 +98,6 @@ object F_BlkIR: TF_BlkIR
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS port :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object SE_port: TSpinEdit
       Left = 216
@@ -138,14 +108,8 @@ object F_BlkIR: TF_BlkIR
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 1
       Value = 0
     end
@@ -158,14 +122,8 @@ object F_BlkIR: TF_BlkIR
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 0
       Value = 1
     end

@@ -56,12 +56,6 @@ object F_BlkTrat: TF_BlkTrat
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' '#218'vazka bl'#237#382'e po'#269#225'tku trati  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 1
     object Label1: TLabel
       Left = 23
@@ -73,12 +67,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'N'#225'zev bloku :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label2: TLabel
       Left = 23
@@ -90,12 +78,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Stanice :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label3: TLabel
       Left = 22
@@ -107,12 +89,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'ID'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object E_UA_name: TEdit
       Left = 104
@@ -123,13 +99,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxLength = 32
-      ParentFont = False
       TabOrder = 0
     end
     object SE_UA_id: TSpinEdit
@@ -141,14 +111,8 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 2147483647
       MinValue = 1
-      ParentFont = False
       TabOrder = 1
       Value = 1
     end
@@ -161,13 +125,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 2
     end
   end
@@ -181,12 +139,6 @@ object F_BlkTrat: TF_BlkTrat
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' '#218'vazka bl'#237#382'e konci trati  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 2
     object Label4: TLabel
       Left = 23
@@ -198,12 +150,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'N'#225'zev bloku :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label5: TLabel
       Left = 22
@@ -215,12 +161,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'ID'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label6: TLabel
       Left = 23
@@ -232,12 +172,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Stanice :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object LB_UB_St: TListBox
       Left = 104
@@ -248,13 +182,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 2
     end
     object SE_UB_id: TSpinEdit
@@ -266,14 +194,8 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 2147483647
       MinValue = 1
-      ParentFont = False
       TabOrder = 1
       Value = 1
     end
@@ -286,13 +208,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxLength = 32
-      ParentFont = False
       TabOrder = 0
     end
   end
@@ -302,12 +218,6 @@ object F_BlkTrat: TF_BlkTrat
     Width = 337
     Height = 385
     Caption = ' Tra'#357' '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 0
     object L_P02: TLabel
       Left = 18
@@ -319,12 +229,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'N'#225'zev trati :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_SCom02: TLabel
       Left = 18
@@ -336,12 +240,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'ID'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object Label7: TLabel
       Left = 17
@@ -353,12 +251,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Typ zab. za'#345'. :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object SE_Trat_ID: TSpinEdit
       Left = 104
@@ -369,14 +261,8 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 2147483647
       MinValue = 1
-      ParentFont = False
       TabOrder = 1
       Value = 1
     end
@@ -389,13 +275,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxLength = 32
-      ParentFont = False
       TabOrder = 0
     end
     object GB_TratBlk: TGroupBox
@@ -408,12 +288,6 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = ' Tra'#357'ov'#233' bloky (ve sm'#283'ru trati) '
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 3
       object B_Blk_Delete: TButton
         Left = 113
@@ -464,13 +338,7 @@ object F_BlkTrat: TF_BlkTrat
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clBlack
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = []
           ItemHeight = 13
-          ParentFont = False
           TabOrder = 0
         end
       end
@@ -488,14 +356,8 @@ object F_BlkTrat: TF_BlkTrat
             Caption = 'N'#225'zev'
             Width = 200
           end>
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
         ReadOnly = True
         RowSelect = True
-        ParentFont = False
         TabOrder = 2
         ViewStyle = vsReport
         OnChange = LV_UsekyChange
@@ -511,13 +373,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       ItemHeight = 13
-      ParentFont = False
       TabOrder = 2
       Items.Strings = (
         'pouze souhlasov'#253' stav'

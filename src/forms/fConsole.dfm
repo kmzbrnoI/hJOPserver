@@ -70,12 +70,6 @@ object F_Console: TF_Console
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Odeslat'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 1
     OnClick = B_OK_consoleClick
   end

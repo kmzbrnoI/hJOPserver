@@ -28,12 +28,6 @@ object F_BlkRozp: TF_BlkRozp
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_IR01: TLabel
     Left = 8
@@ -45,12 +39,6 @@ object F_BlkRozp: TF_BlkRozp
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek03: TLabel
     Left = 8
@@ -62,12 +50,6 @@ object F_BlkRozp: TF_BlkRozp
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanice :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object E_Nazev: TEdit
     Left = 120
@@ -105,12 +87,6 @@ object F_BlkRozp: TF_BlkRozp
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' rozpojova'#269'e  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 2
     object L_IR04: TLabel
       Left = 16
@@ -122,12 +98,6 @@ object F_BlkRozp: TF_BlkRozp
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS adresa :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object L_IR05: TLabel
       Left = 16
@@ -139,12 +109,6 @@ object F_BlkRozp: TF_BlkRozp
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS port :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
     end
     object SE_port: TSpinEdit
       Left = 216
@@ -155,14 +119,8 @@ object F_BlkRozp: TF_BlkRozp
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 15
       MinValue = 0
-      ParentFont = False
       TabOrder = 1
       Value = 0
     end
@@ -175,14 +133,8 @@ object F_BlkRozp: TF_BlkRozp
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
       MaxValue = 191
       MinValue = 1
-      ParentFont = False
       TabOrder = 0
       Value = 1
     end
@@ -223,13 +175,7 @@ object F_BlkRozp: TF_BlkRozp
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 5
   end
 end

@@ -30,12 +30,6 @@ object F_BlkSH: TF_BlkSH
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev bloku :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_SCom02: TLabel
     Left = 9
@@ -47,12 +41,6 @@ object F_BlkSH: TF_BlkSH
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object L_Usek03: TLabel
     Left = 7
@@ -64,12 +52,6 @@ object F_BlkSH: TF_BlkSH
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stanice :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
   end
   object E_Name: TEdit
     Left = 120
@@ -133,13 +115,7 @@ object F_BlkSH: TF_BlkSH
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     ItemHeight = 13
-    ParentFont = False
     TabOrder = 2
   end
   object GB_Prejezdy: TGroupBox

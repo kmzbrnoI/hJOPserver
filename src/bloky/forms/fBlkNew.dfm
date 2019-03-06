@@ -27,11 +27,6 @@ object F_BlkNew: TF_BlkNew
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Typ nov'#233'ho bloku  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     Items.Strings = (
       'Vyh'#253'bka'
       #218'sek'
@@ -44,7 +39,6 @@ object F_BlkNew: TF_BlkNew
       'Tra'#357'ov'#253' '#250'sek'
       'Logick'#253' v'#253'stup'
       'Sou'#269'tov'#225' hl'#225'ska')
-    ParentFont = False
     TabOrder = 0
   end
   object B_Save: TButton
