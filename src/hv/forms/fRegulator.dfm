@@ -27,14 +27,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Adresa'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object Label6: TLabel
     Left = 286
@@ -46,14 +38,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'P'#345'evzato'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object Label7: TLabel
     Left = 286
@@ -65,14 +49,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Stupe'#328
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object Label8: TLabel
     Left = 286
@@ -84,14 +60,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Rychlost'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object L_address: TLabel
     Left = 349
@@ -104,14 +72,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Alignment = taRightJustify
     Caption = '9999'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object L_mine: TLabel
     Left = 361
@@ -124,14 +84,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Alignment = taRightJustify
     Caption = 'ne'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object L_stupen: TLabel
     Left = 361
@@ -144,14 +96,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Alignment = taRightJustify
     Caption = '28'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object L_speed: TLabel
     Left = 339
@@ -164,14 +108,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Alignment = taRightJustify
     Caption = '120'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object Label1: TLabel
     Left = 361
@@ -183,14 +119,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'km/h'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object S_Status: TShape
     Left = 16
@@ -207,13 +135,11 @@ object F_DigiReg: TF_DigiReg
     Width = 75
     Height = 13
     Caption = 'L_ComStatus'
-    Color = clBlack
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
-    ParentColor = False
     ParentFont = False
   end
   object Label2: TLabel
@@ -226,14 +152,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'POM:'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object L_POM: TLabel
     Left = 370
@@ -246,14 +164,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Alignment = taRightJustify
     Caption = '?'
-    Color = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
   end
   object CHB_svetla: TCheckBox
     Left = 138
@@ -266,12 +176,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F0 (sv'#283'tla)'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 1
     OnClick = CHB_svetlaClick
   end
@@ -287,12 +191,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F1'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 2
     OnClick = CHB_svetlaClick
   end
@@ -308,12 +206,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F2'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 3
     OnClick = CHB_svetlaClick
   end
@@ -329,12 +221,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F4'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 5
     OnClick = CHB_svetlaClick
   end
@@ -350,12 +236,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F3'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 4
     OnClick = CHB_svetlaClick
   end
@@ -371,12 +251,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F5'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 6
     OnClick = CHB_svetlaClick
   end
@@ -392,12 +266,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F6'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 7
     OnClick = CHB_svetlaClick
   end
@@ -413,12 +281,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F8'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 9
     OnClick = CHB_svetlaClick
   end
@@ -434,12 +296,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F7'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 8
     OnClick = CHB_svetlaClick
   end
@@ -453,15 +309,9 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Sm'#283'r '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
     Items.Strings = (
       'Vp'#345'ed'
       'Vzad')
-    ParentFont = False
     TabOrder = 0
     OnClick = RG_SmerClick
   end
@@ -515,12 +365,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Tot'#225'ln'#237' '#345#237'zen'#237
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 13
     OnClick = CHB_DojezdIgnorateClick
   end
@@ -536,12 +380,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F9'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 14
     OnClick = CHB_svetlaClick
   end
@@ -557,12 +395,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F10'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 15
     OnClick = CHB_svetlaClick
   end
@@ -578,12 +410,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F12'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 16
     OnClick = CHB_svetlaClick
   end
@@ -599,12 +425,6 @@ object F_DigiReg: TF_DigiReg
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'F11'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
     TabOrder = 17
     OnClick = CHB_svetlaClick
   end
