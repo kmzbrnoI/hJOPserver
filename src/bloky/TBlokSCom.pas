@@ -1259,7 +1259,8 @@ end;//procedure
 class function TBlkSCom.NavestToString(Navest:Integer):string;
  begin
   case (Navest) of
-   -1:Result  := 'disabled';
+   -2:Result  := 'Stavìní...';
+   -1:Result  := 'Disabled';
     0:Result  := 'Stùj/Posun zakázán';
     1:Result  := 'Volno';
     2:Result  := 'Výstraha';
