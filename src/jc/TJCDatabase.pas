@@ -514,7 +514,7 @@ begin
 
     if (my_nav.IsPovolovaciNavest()) then
      begin
-      if (Self.JCs[i].data.RychlostDalsiN = 4) then begin
+      if (Self.JCs[i].IsAnyVyhMinus()) then begin
         if ((my_nav.Navest = TBlkSCom._NAV_VYSTRAHA_40) or
             (my_nav.Navest = TBlkSCom._NAV_40_OCEK_40) or
             (my_nav.Navest = TBlkSCom._NAV_VOLNO_40)) then
@@ -532,7 +532,7 @@ begin
 
      end else begin
 
-      if (Self.JCs[i].data.RychlostNoDalsiN = 4) then
+      if (Self.JCs[i].IsAnyVyhMinus()) then
         (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA_40
       else
         (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA;

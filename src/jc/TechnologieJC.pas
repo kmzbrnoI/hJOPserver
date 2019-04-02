@@ -282,6 +282,7 @@ type
       procedure STUJ();
 
       function KontrolaPodminek(NC:boolean = false):TJCBariery;
+      function IsAnyVyhMinus():boolean;
 
       property data:TJCprop read fproperties write SetProperties;
       property stav:TJCStaveni read fstaveni;
@@ -2561,7 +2562,7 @@ var Nav,DalsiNav:TBlk;
       if ((Self.fproperties.DalsiNNavaznostTyp = 1) or ((DalsiNav <> nil) and ((DalsiNav as TBlkSCom).IsPovolovaciNavest()))) then
        begin
         // na dalsim navestidle lze jet
-        if (Self.fproperties.RychlostDalsiN = 4) then begin
+        if (Self.IsAnyVyhMinus()) then begin
           if ((Self.fproperties.DalsiNNavaznostTyp = 2) and (DalsiNav <> nil) and
               ((TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_VYSTRAHA_40) or
                ((TBlkSCom(DalsiNav).Navest = TBlkSCom._NAV_40_OCEK_40)) or
@@ -2582,7 +2583,7 @@ var Nav,DalsiNav:TBlk;
        end else begin//if ...SCom.Cesta
         // na dalsim navestidle je na STUJ
 
-        if (Self.fproperties.RychlostNoDalsiN = 4) then
+        if (Self.IsAnyVyhMinus()) then
           Navest := TBlkSCom._NAV_VYSTRAHA_40
         else
           Navest := TBlkSCom._NAV_VYSTRAHA;
@@ -3669,6 +3670,17 @@ var Blk:TBlk;
 begin
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
  Result := ((Blk <> nil) and (Blk.typ = _BLK_SCOM) and (TBlkSCom(Blk).ABJC = Self));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJC.IsAnyVyhMinus():boolean;
+var vyh:TJCVyhZaver;
+begin
+ for vyh in Self.fproperties.Vyhybky do
+   if (vyh.Poloha = TVyhPoloha.minus) then
+     Exit(true);
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
