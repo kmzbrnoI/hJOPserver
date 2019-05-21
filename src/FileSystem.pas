@@ -413,6 +413,7 @@ var str:string;
 
    // nacteni vyznamu funkci
    FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
+   F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
 
    // nacteni UDP discovery
    UDPdisc := TUDPDiscover.Create(_DISC_DEFAULT_PORT,
@@ -469,6 +470,7 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
 
   // ulozeni vyznamu funkci
   ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
+  ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
 
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;

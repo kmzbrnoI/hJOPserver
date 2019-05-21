@@ -5353,9 +5353,9 @@ object F_Main: TF_Main
       ImageIndex = -1
       object LV_Stav_RCS: TListView
         Left = 0
-        Top = 0
+        Top = 24
         Width = 1289
-        Height = 614
+        Height = 590
         Hint = 'Stavy vstupu a v'#253'stupu MTB desek'
         Margins.Left = 2
         Margins.Top = 2
@@ -5417,6 +5417,31 @@ object F_Main: TF_Main
         TabOrder = 0
         ViewStyle = vsReport
         OnCustomDrawItem = LV_Stav_RCSCustomDrawItem
+        ExplicitTop = 0
+        ExplicitHeight = 614
+      end
+      object P_dataload_rcs: TPanel
+        Left = 0
+        Top = 0
+        Width = 1289
+        Height = 24
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clWhite
+        TabOrder = 1
+        object CHB_RCS_Show_Only_Active: TCheckBox
+          Left = 9
+          Top = 2
+          Width = 169
+          Height = 17
+          Caption = 'Zobrazit jen aktivn'#237' moduly'
+          TabOrder = 0
+          OnClick = CHB_RCS_Show_Only_ActiveClick
+        end
       end
     end
     object TS_VC: TTabSheet
@@ -6334,7 +6359,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403F80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403FC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8200,7 +8225,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280370041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280374041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8741,7 +8766,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802BC0310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802C00310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

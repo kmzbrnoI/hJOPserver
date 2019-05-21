@@ -4,20 +4,24 @@ unit DataRCS;
 
 interface
 
-uses ComCtrls, SysUtils;
+uses ComCtrls, SysUtils, Generics.Collections;
 
 type
   TRCSTableData=class
     private
       LV:TListView;
+      AddrToLine:TDictionary<Integer, Integer>;
 
     public
 
-      procedure LoadToTable();
-      procedure UpdateLine(Board:integer);
+      procedure LoadToTable(load_all:Boolean = false);
+      procedure UpdateBoard(addr:Integer);
       procedure UpdateTable();
+      function CreateLineForNewBoard(addr:Integer):Integer;
+      function GetLineForNewBoard(addr:Integer):Integer;
 
       constructor Create(LV:TListView);
+      destructor Destroy(); override;
   end;
 
 var
@@ -34,46 +38,84 @@ constructor TRCSTableData.Create(LV:TListView);
 begin
  inherited Create();
  Self.LV := LV;
+ Self.AddrToLine := TDictionary<Integer, Integer>.Create();
 end;//ctor
+
+destructor TRCSTableData.Destroy();
+begin
+ Self.AddrToLine.Free();
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSTableData.LoadToTable();
+procedure TRCSTableData.LoadToTable(load_all:Boolean = false);
 var i, j:integer;
     LI:TListItem;
  begin
   Self.LV.Clear();
+  Self.AddrToLine.Clear();
 
   for i := 0 to TRCS._MAX_RCS-1 do
    begin
+    if ((not RCSi.IsModule(i)) and (not RCSi.GetNeeded(i)) and (not load_all)) then
+      continue;
+
     LI := Self.LV.Items.Add();
     LI.Caption := IntToStr(i);
     for j := 0 to Self.LV.Columns.Count-1 do
       LI.SubItems.Add('');
 
-    Self.UpdateLine(i);
+    Self.AddrToLine.Add(i, Self.LV.Items.Count-1);
+    Self.UpdateBoard(i);
    end;//for i
  end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSTableData.UpdateTable();
-var i:Integer;
+var item: TListItem;
 begin
- for i := 0 to TRCS._MAX_RCS-1 do
-  Self.UpdateLine(i);
+ for item in Self.LV.Items do
+   Self.UpdateBoard(StrToInt(item.Caption));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSTableData.UpdateLine(board:integer);
+function TRCSTableData.GetLineForNewBoard(addr:Integer):Integer;
+var i:Integer;
+begin
+ for i := 0 to Self.LV.Items.Count-1 do
+   if (addr < StrToInt(Self.LV.Items[i].Caption)) then
+     Exit(i);
+ Result := Self.LV.Items.Count;
+end;
+
+function TRCSTableData.CreateLineForNewBoard(addr:Integer):Integer;
+var LI:TListItem;
+    i, line:Integer;
+begin
+ line := Self.GetLineForNewBoard(addr);
+ LI := Self.LV.Items.Insert(line);
+ LI.Caption := IntToStr(addr);
+ for i := 0 to Self.LV.Columns.Count-1 do
+   LI.SubItems.Add('');
+
+ Self.AddrToLine.Add(addr, line);
+ Result := line;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TRCSTableData.UpdateBoard(addr:Integer);
 var j, cnt:integer;
     output:Integer;
     LI:TListItem;
  begin
-  LI := Self.LV.Items[board];
+  if (not Self.AddrToLine.ContainsKey(addr)) then
+    Self.CreateLineForNewBoard(addr);
 
-  Self.LV.Items.Item[board].Caption := IntToStr(board);
+  LI := Self.LV.Items[Self.AddrToLine[addr]];
 
   if (not RCSi.ready) then
    begin
@@ -89,39 +131,39 @@ var j, cnt:integer;
    end;
 
   try
-    if (RCSi.IsModule(board)) then
+    if (RCSi.IsModule(addr)) then
      begin
-      if (RCSi.GetModuleType(board) = 'MTB-UNI') then
+      if (RCSi.GetModuleType(addr) = 'MTB-UNI') then
         LI.ImageIndex := 0
-      else if (RCSi.GetModuleType(board) = 'MTB-TTL') then
+      else if (RCSi.GetModuleType(addr) = 'MTB-TTL') then
         LI.ImageIndex := 1
-      else if (RCSi.GetModuleType(board) = 'MTB-TTLo') then
+      else if (RCSi.GetModuleType(addr) = 'MTB-TTLo') then
         LI.ImageIndex := 2
-      else if (RCSi.GetModuleType(board) = 'MTB-UNIo') then
+      else if (RCSi.GetModuleType(addr) = 'MTB-UNIo') then
         LI.ImageIndex := 5
       else
-       Self.LV.Items.Item[board].ImageIndex := -1;
+       LI.ImageIndex := -1;
      end else
-       Self.LV.Items.Item[board].ImageIndex := -1;
+       LI.ImageIndex := -1;
   except
-    Self.LV.Items.Item[board].ImageIndex := -1;
+    LI.ImageIndex := -1;
   end;
 
-  if (RCSi.GetNeeded(board)) then
+  if (RCSi.GetNeeded(addr)) then
     LI.SubItems.Strings[0] := 'X'
   else
     LI.SubItems.Strings[0] := '';
 
   try
-    LI.SubItems.Strings[1] := RCSi.GetModuleName(board);
+    LI.SubItems.Strings[1] := RCSi.GetModuleName(addr);
   except
     on E:Exception do
       LI.SubItems.Strings[1] := E.Message;
   end;
 
   try
-    if (RCSi.IsModule(board)) then
-      LI.SubItems.Strings[2] := RCSi.GetModuleType(board)
+    if (RCSi.IsModule(addr)) then
+      LI.SubItems.Strings[2] := RCSi.GetModuleType(addr)
     else
       LI.SubItems.Strings[2] := '-';
   except
@@ -132,20 +174,20 @@ var j, cnt:integer;
   try
     if (RCSi.Opened) then
      begin
-      if (RCSi.IsModule(board) and (not RCSi.IsModuleFailure(board))) then
+      if (RCSi.IsModule(addr) and (not RCSi.IsModuleFailure(addr))) then
        begin
         if (RCSi.Started) then
          begin
           LI.SubItems.Strings[3] := '';
           LI.SubItems.Strings[4] := '';
 
-          cnt := RCSi.GetModuleInputsCount(board);
+          cnt := RCSi.GetModuleInputsCount(addr);
           for j := 0 to cnt-1 do
            begin
             if (j = cnt div 2) then
               LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + ' ';
 
-            case (RCSi.GetInput(board, j)) of
+            case (RCSi.GetInput(addr, j)) of
               isOn          : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '1';
               isOff         : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '0';
               failure       : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + 'X';
@@ -154,13 +196,13 @@ var j, cnt:integer;
             end;
            end;
 
-          cnt := RCSi.GetModuleOutputsCount(board);
+          cnt := RCSi.GetModuleOutputsCount(addr);
           for j := 0 to cnt-1 do
            begin
             if (j = cnt div 2) then
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4] + ' ';
 
-            output := RCSi.GetOutput(board, j);
+            output := RCSi.GetOutput(addr, j);
             if (output > 1) then
               LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+'S'
             else
@@ -173,12 +215,12 @@ var j, cnt:integer;
          end;
 
         LI.SubItems.Strings[5] := 'Ano';
-        LI.SubItems.Strings[6] := RCSi.GetModuleFW(board);
+        LI.SubItems.Strings[6] := RCSi.GetModuleFW(addr);
        end else begin
         // neexistuje
         LI.SubItems.Strings[3] := '-';
         LI.SubItems.Strings[4] := '-';
-        if (RCSi.IsModuleFailure(board)) then
+        if (RCSi.IsModuleFailure(addr)) then
           LI.SubItems.Strings[5] := 'Fail'
         else
           LI.SubItems.Strings[5] := 'Ne';

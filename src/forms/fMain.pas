@@ -273,6 +273,8 @@ type
     B_User_Delete: TButton;
     E_dataload_HV_state: TEdit;
     E_dataload_users_stat: TEdit;
+    P_dataload_rcs: TPanel;
+    CHB_RCS_Show_Only_Active: TCheckBox;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -412,6 +414,7 @@ type
     procedure B_AB_DeleteClick(Sender: TObject);
     procedure LV_ABChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
+    procedure CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -558,7 +561,7 @@ var fn:string;
       Exit();
      end;
   end;
-  RCSTableData.UpdateTable();
+  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
   Screen.Cursor := crDefault;
  end;
 
@@ -1263,8 +1266,6 @@ begin
 
  F_Main.S_RCS_open.Brush.Color := clLime;
 
- RCSTableData.LoadToTable;
-
  try
    writelog('----- RCS OPEN OK : '+IntToStr(RCSi.GetModuleCount)+' modules -----', WR_RCS);
  except
@@ -1276,7 +1277,7 @@ begin
 
  F_Tester.AfterRCSOpen();
 
- RCSTableData.UpdateTable();
+ RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
 
  if (SystemData.Status = starting) then
   begin
@@ -1516,6 +1517,7 @@ begin
     Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text), TEncoding.UTF8);
     ModCas.SaveData(Konfigurace.ini);
     Konfigurace.ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
+    Konfigurace.ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
     Konfigurace.ini.UpdateFile();
     Konfigurace.ini.Free();
   except
@@ -2040,6 +2042,12 @@ begin
  TrkSystem.logtable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
 end;
 
+procedure TF_Main.CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
+begin
+ if (RCSi.Lib <> '') then
+   RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
+end;
+
 procedure TF_Main.CloseForm;
  begin
   WriteLog('########## Probíhá ukončování hJOPserver ##########',WR_MESSAGE);
@@ -2343,7 +2351,7 @@ procedure TF_Main.OnStart;
 
   BlokyTableData.LoadTable();
   JCTableData.LoadToTable();
-  RCSTableData.LoadToTable();
+  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
   UsersTableData.LoadToTable();
   ORsTableData.LoadToTable();
 
