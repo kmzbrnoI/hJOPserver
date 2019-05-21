@@ -246,6 +246,7 @@ object F_MJCEdit: TF_MJCEdit
     Width = 75
     Height = 25
     Caption = 'Pou'#382#237't'
+    Default = True
     TabOrder = 5
     OnClick = B_SaveClick
   end
