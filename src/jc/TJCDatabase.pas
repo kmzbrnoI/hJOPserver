@@ -660,8 +660,10 @@ procedure TJCDb.JCIDChanged(index:Integer);
 var new_index, min_index, i:Integer;
     tmp:TJC;
 begin
+ Self.JCs.OwnsObjects := false;
  tmp := Self.JCs[index];
  Self.JCs.Delete(index);
+ Self.JCs.OwnsObjects := true;
  new_index := FindPlaceForNewJC(tmp.id);
 
  // provedeme prehozeni bloku na jinou pozici
