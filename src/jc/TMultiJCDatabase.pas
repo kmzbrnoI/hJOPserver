@@ -344,7 +344,9 @@ begin
  if (((previousIndex = 0) or (Self.JCs[previousIndex-1].id <= Self.JCs[previousIndex].id)) and
     ((previousIndex = Self.JCs.Count-1) or (Self.JCs[previousIndex].id <= Self.JCs[previousIndex+1].id))) then Exit();
 
+ Self.JCs.OwnsObjects := false;
  Self.JCs.Delete(previousIndex);
+ Self.JCs.OwnsObjects := true;
  MultiJCTableData.RemoveJC(previousIndex);
 
  // linearne vyhledame pozici pro novou slozenou JC
