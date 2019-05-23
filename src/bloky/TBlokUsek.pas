@@ -878,13 +878,18 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+var podm:TPSPodminky;
+    blk:TObject;
 begin
  if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
 
+ podm := TPSPodminky.Create();
+ for blk in Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]) do
+   podm.Add(TOR.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
  ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
    'Smazání soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev,
-   TBlky.GetBlksList(Self), nil);
+   TBlky.GetBlksList(Self), podm);
 end;//procedure
 
 procedure TBlkUsek.PotvrDeleteLok(Sender:TIdContext; success:boolean);
