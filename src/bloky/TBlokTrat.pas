@@ -109,6 +109,7 @@ type
 
     function GetReady():boolean;                                                // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd soupravy, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
     function GetSprIndex(spr:Integer):Integer;
+    function SprTUsCount(spr:Integer):Integer;
 
   public
     constructor Create(index:Integer);
@@ -144,6 +145,7 @@ type
 
     function IsSpr(spr:Integer; predict:boolean = true):boolean;
     function IsSprInAnyTU(spr:Integer):boolean;
+    function IsSprInMoreTUs(spr:Integer):boolean;
 
     procedure CallChangeToTU();
     procedure UpdateSprPredict();
@@ -760,17 +762,28 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.IsSprInAnyTU(spr:Integer):boolean;
-var i:Integer;
+function TBlkTrat.SprTUsCount(spr:Integer):Integer;
+var usek:Integer;
     Blk:TBlk;
 begin
- for i := 0 to Self.TratSettings.Useky.Count-1 do
+ Result := 0;
+ for usek in Self.TratSettings.Useky do
   begin
-   Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if (TBlkTU(Blk).IsSouprava(spr)) then Exit(true);
+   Blky.GetBlkByID(usek, Blk);
+   if (TBlkTU(Blk).IsSouprava(spr)) then
+     Inc(Result);
   end;
- Result := false;
-end;//function
+end;
+
+function TBlkTrat.IsSprInAnyTU(spr:Integer):boolean;
+begin
+ Result := (Self.SprTUsCount(spr) > 0);
+end;
+
+function TBlkTrat.IsSprInMoreTUs(spr:Integer):boolean;
+begin
+ Result := (Self.SprTUsCount(spr) > 1);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // vytvoreni navaznosti mezi tratovymi useky, sekcemi tratovych useku a

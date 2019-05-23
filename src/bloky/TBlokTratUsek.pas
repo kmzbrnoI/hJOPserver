@@ -798,8 +798,20 @@ begin
 end;//procedure
 
 procedure TBlkTU.MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
+var podm:TPSPodminky;
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR, 'Zrušení poruchy blokové podmínky', TBlky.GetBlksList(Self), nil);
+ podm := TPSPodminky.Create();
+ if (Self.IsSouprava()) then
+  begin
+   podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Soupravy[Self.Souprava].nazev+' z úseku'));
+   if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsSprInMoreTUs(Self.Souprava))) then
+     podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smazání soupravy '+Soupravy[Self.Souprava].nazev+' z tratì'));
+   if (Blky.GetBlkWithSpr(Self.Souprava).Count = 1) then
+     podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Soupravy[Self.Souprava].nazev+' z kolejištì'));
+  end;
+
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR,
+                   'Zrušení poruchy blokové podmínky', TBlky.GetBlksList(Self), podm);
 end;
 
 procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
