@@ -1297,9 +1297,9 @@ begin
  if (Self.UsekStav.stanicni_kolej) then
    Result := Result + 'EDIT vlak,';
  if ((Self.UsekStav.stanicni_kolej) or (spr_count <= 1)) then
-   Result := Result + 'ZRUŠ vlak,';
+   Result := Result + '!ZRUŠ vlak,';
  if (spr_count > 1) then
-   Result := Result + 'UVOL vlak,';
+   Result := Result + '!UVOL vlak,';
 
  if (spr.HVs.Count > 0) then
   begin
