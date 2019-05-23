@@ -1218,8 +1218,8 @@ begin
    addStr := 'NOVÝ vlak,';
 
  if (Self.SoupravyFull() and (Self.Soupravs.Count = 1)) then begin
-   Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0) + '-,';
    TTCPORsRef(SenderPnl.Data).spr_menu_index := 0;
+   Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0) + '-,';
  end else begin
    canAdd := ((Self.UsekStav.stanicni_kolej) and
               (( (not Self.SoupravyFull()) and ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0)) ) or // novy vlak
@@ -1289,12 +1289,17 @@ end;//procedure
 function TBlkUsek.GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
 var spr:TSouprava;
     shPlay:stanicniHlaseniHelper.TSHToPlay;
+    spr_count:Integer;
 begin
  spr := Soupravy[Self.Soupravs[sprLocalI]];
+ spr_count := Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]).Count;
 
  if (Self.UsekStav.stanicni_kolej) then
-  Result := Result + 'EDIT vlak,ZRUŠ vlak,';
- Result := Result + 'UVOL vlak,';
+   Result := Result + 'EDIT vlak,';
+ if ((Self.UsekStav.stanicni_kolej) or (spr_count <= 1)) then
+   Result := Result + 'ZRUŠ vlak,';
+ if (spr_count > 1) then
+   Result := Result + 'UVOL vlak,';
 
  if (spr.HVs.Count > 0) then
   begin
