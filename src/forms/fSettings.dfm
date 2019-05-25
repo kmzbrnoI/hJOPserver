@@ -1011,7 +1011,7 @@ object F_Options: TF_Options
             Margins.Right = 2
             Margins.Bottom = 2
             ComProperty = cpPort
-            Text = 'COM1'
+            Text = 'COM3'
             Style = csDropDownList
             ItemHeight = 13
             ItemIndex = 0

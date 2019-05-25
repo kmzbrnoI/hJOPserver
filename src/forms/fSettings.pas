@@ -132,6 +132,8 @@ type
 
     procedure NactiCentralaData();
     procedure UlozCentralaData();
+    procedure RefreshTrackSystemEnabled();
+
   end;
 
 var
@@ -147,7 +149,7 @@ uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
   TBlokVyhybka, TBlokSCom, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,
   SnadnSpusteni, TBlokPrejezd, fBlkPrejezd, TJCDatabase, THVDatabase,
   Logging, DataBloky, DataJC, DataRCS, Trakce,
-  ModelovyCas, ACDatabase;
+  ModelovyCas, ACDatabase, TrakceGUI;
 
 {$R *.dfm}
 
@@ -326,12 +328,19 @@ var IgnoraceRCS:TArI;
 
 procedure TF_Options.CB_TrackSystemChange(Sender: TObject);
 begin
- Self.CCB_BaudRate.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
- Self.CCB_DataBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
- Self.CCB_StopBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
- Self.CCB_Port.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
- Self.CCB_FC.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
- Self.B_PortRefresh.Enabled := (Self.CB_TrackSystem.ItemIndex = 0);
+ Self.RefreshTrackSystemEnabled();
+end;
+
+procedure TF_Options.RefreshTrackSystemEnabled();
+begin
+ Self.CB_TrackSystem.Enabled := not TrkSystem.openned;
+ Self.CCB_BaudRate.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
+ Self.CCB_DataBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
+ Self.CCB_StopBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
+ Self.CCB_Port.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
+ Self.CCB_FC.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
+ Self.B_PortRefresh.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
+ Self.B_Save.Enabled := not TrkSystem.openned;
 end;
 
 procedure TF_Options.CHB_AutosaveClick(Sender: TObject);
@@ -464,7 +473,22 @@ end;//procedure
 
 procedure TF_Options.UlozCentralaData();
 begin
- TrkSystem.TrkSystem := Ttrk_system(Self.CB_TrackSystem.ItemIndex+1);
+ try
+   TrkSystem.TrkSystem := Ttrk_system(Self.CB_TrackSystem.ItemIndex+1);
+ except
+   on E:TrakceGUI.EOpened do
+    begin
+     Self.NactiCentralaData();
+     Application.MessageBox('Nelze zmìnit trakèní systém pøi pøipojeném trakèním systému!', 'Chyba!', MB_OK OR MB_ICONERROR);
+     Exit();
+    end;
+   on E:Exception do
+    begin
+     Self.NactiCentralaData();
+     Application.MessageBox(PChar(E.Message), 'Chyba!', MB_OK OR MB_ICONERROR);
+     Exit();
+    end;
+ end;
 
  if (TrkSystem.TrkSystem <> TRS_Simulator) then
   begin

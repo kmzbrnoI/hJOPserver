@@ -987,6 +987,8 @@ begin
  F_Main.A_DCC_Stop.Enabled := true;
  F_Main.A_FuncsSet.Enabled := true;
 
+ F_Options.RefreshTrackSystemEnabled();
+
  Application.ProcessMessages();
 
  // na STATUS se ptam vzdy
@@ -1037,9 +1039,10 @@ begin
  F_Main.A_FuncsSet.Enabled := false;
  if (F_FuncsSet.Showing) then F_FuncsSet.Close();
  
-
  for addr := 0 to _MAX_ADDR-1 do
-  if (HVDb.HVozidla[addr] <> nil) then HVDb.HVozidla[addr].Slot.pom := TPomStatus.released;  
+  if (HVDb.HVozidla[addr] <> nil) then HVDb.HVozidla[addr].Slot.pom := TPomStatus.released;
+
+ F_Options.RefreshTrackSystemEnabled();
 
  Application.ProcessMessages();
 
