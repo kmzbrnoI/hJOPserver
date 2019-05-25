@@ -240,6 +240,7 @@ type
       function GetSoupravaIndex(nav:TBlk = nil; usek:TBlk = nil):Integer;       // vraci cislo soupravy na useku pred navestidlem
 
       function GetAB():boolean;
+      function PorusenaKritickaPodminka():boolean;
 
    public
 
@@ -1644,6 +1645,13 @@ var i,j:Integer;
 
       (Navestidlo as TBlkSCom).DNjc := Self;
 
+      if (Self.PorusenaKritickaPodminka()) then
+       begin
+        // Nepostavit navestidlo!
+        Self.Krok := 16;
+        Exit();
+       end;
+
       if ((Navestidlo as TBlkSCom).ZAM) then
        begin
         writelog('Krok 14 : navestidlo: zamkle na STUJ',WR_VC);
@@ -1685,29 +1693,16 @@ var i,j:Integer;
 
       // Kontrola kritickych podminek.
       // (behem staveni mohla nastat zmena)
-
-      bariery := TList<TJCBariera>.Create();
-      try
-        Self.KontrolaPodminekVCPC(bariery);
-        for bariera in bariery do
-         begin
-          case (bariera.typ) of
-            _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP,
-            _JCB_SCOM_NOT_USEK, _JCB_USEK_OBSAZENO, _JCB_USEK_SOUPRAVA, _JCB_USEK_AB,
-            _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_NESPAVNA_POLOHA, _JCB_PREJEZD_NOUZOVE_OTEVREN,
-            _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAK, _JCB_TRAT_OBSAZENO,
-            _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN: begin
-              if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-                ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Podmínky pro JC nesplnìny!',
-                  (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-              writelog('Krok 14 : Podmínky pro JC nesplnìny!', WR_VC);
-              Exit();
-            end;
-          end;
-         end;
-      finally
-        bariery.Free();
-      end;
+      if (Self.PorusenaKritickaPodminka()) then
+       begin
+        if ((Navestidlo as TBlkSCom).Navest <> TBlkSCom._NAV_STUJ) then
+          (Navestidlo as TBlkSCom).Navest := TBlkSCom._NAV_STUJ;
+        if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Podmínky pro JC nesplnìny!',
+            (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+        writelog('Krok 16 : Podmínky pro JC nesplnìny!', WR_VC);
+        Exit();
+       end;
 
       // trat
       // zruseni redukce posledniho bloku jizdni cesty je navazano na zruseni zaveru trati
@@ -3681,6 +3676,34 @@ begin
    if (vyh.Poloha = TVyhPoloha.minus) then
      Exit(true);
  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJC.PorusenaKritickaPodminka():boolean;
+var bariery:TJCBariery;
+    bariera:TJCBariera;
+    Navestidlo:TBlk;
+begin
+  Result := false;
+  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Navestidlo);
+  bariery := TJCBariery.Create();
+  try
+    Self.KontrolaPodminekVCPC(bariery);
+    for bariera in bariery do
+     begin
+      case (bariera.typ) of
+        _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP,
+        _JCB_SCOM_NOT_USEK, _JCB_USEK_OBSAZENO, _JCB_USEK_SOUPRAVA, _JCB_USEK_AB,
+        _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_NESPAVNA_POLOHA, _JCB_PREJEZD_NOUZOVE_OTEVREN,
+        _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAK, _JCB_TRAT_OBSAZENO,
+        _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN:
+          Exit(true);
+      end;
+     end;
+  finally
+    bariery.Free();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
