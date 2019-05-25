@@ -63,6 +63,11 @@ type
   BP:boolean;                                                                   // jestli je v trati zavedena blokova podminka
  end;
 
+ TSprUsek = record
+  trat_index:Integer;
+  usek:TBlk;
+ end;
+
  TBlkTrat = class(TBlk)
   const
    //defaultni stav
@@ -154,6 +159,7 @@ type
                                                                                 // kdyz je true, do trati neni potreba zadat
 
     function ChangesSprDir():boolean;                                           // vraci true prave tehdy, kdyz se v trati meni smer soupravy
+    function GetSprUsek(spr_id:Integer):TSprUsek;
 
     property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
     property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
@@ -1015,6 +1021,28 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.GetSprUsek(spr_id:Integer):TSprUsek;
+var i:Integer;
+    blk:TBlk;
+begin
+ Result.trat_index := -1;
+ Result.usek := nil;
+
+ for i := 0 to Self.TratSettings.Useky.Count-1 do
+  begin
+   Blky.GetBlkByID(Self.TratSettings.Useky[i], blk);
+   if ((blk <> nil) and (blk.typ = _BLK_TU)) then
+     if (TBlkUsek(blk).Souprava = spr_id) then
+      begin
+       Result.trat_index := i;
+       Result.usek := blk;
+       Exit();
+      end;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // TBlkTratSouprava
 
@@ -1073,7 +1101,6 @@ begin
    Result := Result + HVDb.HVozidla[addr].Data.Nazev + '|';
 end;
 
-////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

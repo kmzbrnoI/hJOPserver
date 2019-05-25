@@ -107,7 +107,8 @@ type
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    procedure ShowUvazkaSprMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; spr_index:Integer);
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -369,44 +370,48 @@ end;
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkUvazka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 var Blk, Blk2:TBlk;
+    trat:TBlkTrat;
 begin
+ trat := TBlkTrat(Self.parent);
+ if (trat = nil) then Exit('-');
+
  Result := inherited;
 
  // tratovy zabezpecovaci system
- case ((Self.parent as TBlkTrat).GetSettings().zabzar) of
+ case (trat.GetSettings().zabzar) of
   TTratZZ.souhlas:begin
 
-   if ((not Self.zadost) and ((Self.parent as TBlkTrat).Zadost)) then
+   if ((not Self.zadost) and (trat.Zadost)) then
      Result := Result + 'UTS,';
 
-   if ((Self.parent as TBlkTrat).Zadost) then
+   if (trat.Zadost) then
      Result := Result + 'ZTS<,';
 
-   if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
+   if (trat.IsFirstUvazka(Self)) then
     begin
      // prvni uvazka
 
-     if (((not Self.zadost) and ((Self.parent as TBlkTrat).Smer = TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost) and
-          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
-          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+     if (((not Self.zadost) and (trat.Smer = TTratSmer.BtoA) and (not trat.Zadost) and
+          (not trat.RBPCan) and (not trat.nouzZaver) and
+          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
 
-     if (((not Self.zadost) and ((Self.parent as TBlkTrat).Smer = TTratSmer.AtoB) and (not (Self.parent as TBlkTrat).Zadost) and
-          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
-          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+     if (((not Self.zadost) and (trat.Smer = TTratSmer.AtoB) and (not trat.Zadost) and
+          (not trat.RBPCan) and (not trat.nouzZaver) and
+          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not (Self.parent as TBlkTrat).Zadost)) then
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not trat.Zadost)) then
      Result := Result + 'UTS,';
 
-   if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
+   if (((not Self.zadost) and trat.Zadost)) then
      Result := Result + 'OTS,';
 
    if (RightStr(Result, 2) <> '-,') then
@@ -418,37 +423,37 @@ begin
 
   TTratZZ.nabidka:begin
 
-   if ((not Self.zadost) and ((Self.parent as TBlkTrat).Zadost)) then
+   if ((not Self.zadost) and (trat.Zadost)) then
      Result := Result + 'UTS,';
 
    if (Self.zadost) then
      Result := Result + 'ZTS<,';
 
-   if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
+   if (trat.IsFirstUvazka(Self)) then
     begin
      // prvni uvazka
 
-     if (((not Self.zadost) and((Self.parent as TBlkTrat).Smer <> TTratSmer.AtoB) and (not (Self.parent as TBlkTrat).Zadost) and
-          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
-          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+     if (((not Self.zadost) and(trat.Smer <> TTratSmer.AtoB) and (not trat.Zadost) and
+          (not trat.RBPCan) and (not trat.nouzZaver) and
+          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
 
-     if (((not Self.zadost) and ((Self.parent as TBlkTrat).Smer <> TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost) and
-          (not (Self.parent as TBlkTrat).RBPCan) and (not (Self.parent as TBlkTrat).nouzZaver) and
-          (not (Self.parent as TBlkTrat).Obsazeno) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).ZAK)) or
+     if (((not Self.zadost) and (trat.Smer <> TTratSmer.BtoA) and (not trat.Zadost) and
+          (not trat.RBPCan) and (not trat.nouzZaver) and
+          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not (Self.parent as TBlkTrat).Zadost)) then
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not trat.Zadost)) then
      Result := Result + 'UTS,';
 
-   if (((not Self.zadost) and (Self.parent as TBlkTrat).Zadost)) then
+   if (((not Self.zadost) and trat.Zadost)) then
      Result := Result + 'OTS,';
 
    if (RightStr(Result, 2) <> '-,') then
@@ -471,7 +476,7 @@ begin
    if ((Blk <> nil) and (Blk2 <> nil) and (TBlkUsek(Blk).Zaver = TZaver.no) and (TBlkUsek(Blk2).Zaver = TZaver.no)) then
      Result := Result + '!ZAK<,'
   end else
-  if ((not (Self.parent as TBlkTrat).ZAK) and (not (Self.parent as TBlkTrat).Zaver) and (not (Self.parent as TBlkTrat).Obsazeno)) then
+  if ((not trat.ZAK) and (not trat.Zaver) and (not trat.Obsazeno)) then
    Result := Result + 'ZAK>,';
 
  Result := Result + 'STIT,';
@@ -479,10 +484,33 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkUvazka.ShowUvazkaSprMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; spr_index:Integer);
+var trat:TBlkTrat;
+    usek:TBlokTrat.TSprUsek;
+    blk:TBlk;
+    spr:Integer;
+begin
+ trat := TBlkTrat(Self.parent);
+ if (trat = nil) then Exit();
+ if (spr_index >= trat.stav.soupravy.Count) then Exit();
+ spr := trat.stav.soupravy[spr_index].souprava;
+
+ usek := trat.GetSprUsek(spr);
+ if (usek.usek = nil) then Exit();
+ TBlkUsek(usek.usek).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUvazka.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
  if (TBlkTrat(Self.parent).Smer < TTratSmer.zadny) then Exit();
- ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+ if (Button = TPanelButton.ESCAPE) then Exit(); 
+
+ if (params <> '') then
+   Self.ShowUvazkaSprMenu(SenderPnl, SenderOR, rights, StrToInt(params))
+ else
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -534,16 +562,18 @@ end;//procedure
 
 // Takto zasobnik zjistuje, jestli muze zacit zadost:
 function TBlkUvazka.CanZTS():boolean;
+var trat:TBlkTrat;
 begin
- if (((Self.parent as TBlkTrat).Obsazeno) or ((Self.parent as TBlkTrat).Zaver) or
-    ((Self.parent as TBlkTrat).ZAK) or ((Self.parent as TBlkTrat).nouzZaver) or
-    ((Self.parent as TBlkTrat).RBPCan) or ((Self.parent as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas)) then Exit(false);
+ trat := TBlkTrat(Self.parent);
+ if ((trat.Obsazeno) or (trat.Zaver) or
+    (trat.ZAK) or (trat.nouzZaver) or
+    (trat.RBPCan) or (trat.GetSettings().zabzar = TTratZZ.bezsouhas)) then Exit(false);
 
- if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
+ if (trat.IsFirstUvazka(Self)) then
   begin
-   Result := ((not Self.zadost) and ((Self.parent as TBlkTrat).Smer <> TTratSmer.AtoB) and (not (Self.parent as TBlkTrat).Zadost));
+   Result := ((not Self.zadost) and (trat.Smer <> TTratSmer.AtoB) and (not trat.Zadost));
   end else begin
-   Result := ((not Self.zadost) and ((Self.parent as TBlkTrat).Smer <> TTratSmer.BtoA) and (not (Self.parent as TBlkTrat).Zadost));
+   Result := ((not Self.zadost) and (trat.Smer <> TTratSmer.BtoA) and (not trat.Zadost));
   end;
 end;//function
 

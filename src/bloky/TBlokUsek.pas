@@ -117,7 +117,6 @@ type
     procedure MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuHLASENIPrijezdClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer);
     procedure MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
     procedure MenuPOdjClick(SenderPnl:TIdContext; SenderOR:TObject);
 
@@ -146,7 +145,6 @@ type
     function GetSoupravaS():Integer;
     function GetUsekSpr():Integer;
 
-    function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
     procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
 
     function CanSprSpeedInsert(index:Integer):boolean;
@@ -209,6 +207,8 @@ type
     procedure ClearPOdj();
     procedure PropagatePOdjToTrat();
 
+    procedure MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer);
+
     property Stav:TBlkUsekStav read UsekStav;
 
     property Obsazeno:TUsekStav read UsekStav.Stav;
@@ -243,6 +243,7 @@ type
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     procedure PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
+    function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
 
     //PT:
 
@@ -1297,7 +1298,7 @@ var spr:TSouprava;
     spr_count:Integer;
 begin
  spr := Soupravy[Self.Soupravs[sprLocalI]];
- spr_count := Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]).Count;
+ spr_count := Blky.GetBlkWithSpr(Self.Soupravs[sprLocalI]).Count;
 
  if (Self.UsekStav.stanicni_kolej) then
    Result := Result + 'EDIT vlak,';
