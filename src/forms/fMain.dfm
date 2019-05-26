@@ -5417,8 +5417,6 @@ object F_Main: TF_Main
         TabOrder = 0
         ViewStyle = vsReport
         OnCustomDrawItem = LV_Stav_RCSCustomDrawItem
-        ExplicitTop = 0
-        ExplicitHeight = 614
       end
       object P_dataload_rcs: TPanel
         Left = 0
@@ -6206,6 +6204,16 @@ object F_Main: TF_Main
         Caption = 'Aktualizovat seznam knihoven'
         OnClick = MI_RCS_UpdateClick
       end
+      object N11: TMenuItem
+        Caption = '-'
+      end
+      object PM_Tester: TMenuItem
+        Caption = 'RCS tester'
+        Enabled = False
+        ImageIndex = 22
+        ShortCut = 16468
+        OnClick = PM_TesterClick
+      end
     end
     object MI_Centrala: TMenuItem
       Caption = #344#237'zen'#237' j'#237'zdy'
@@ -6250,31 +6258,18 @@ object F_Main: TF_Main
         ShortCut = 16463
         OnClick = PM_NastaveniClick
       end
-      object N7: TMenuItem
-        Caption = '-'
-      end
-      object PM_Console: TMenuItem
-        Caption = 'Konzole'
-        OnClick = PM_ConsoleClick
-      end
-    end
-    object MI_Reset: TMenuItem
-      Caption = 'Reset'
       object PM_ResetV: TMenuItem
         Caption = 'P'#345'estavit v'#253'hybky do z'#225'kladn'#237' polohy'
         Enabled = False
         ImageIndex = 27
         OnClick = PM_ResetVClick
       end
-    end
-    object MI_Dalsi: TMenuItem
-      Caption = 'Dal'#353#237
-      object PM_Tester: TMenuItem
-        Caption = 'RCS tester'
-        Enabled = False
-        ImageIndex = 22
-        ShortCut = 16468
-        OnClick = PM_TesterClick
+      object N7: TMenuItem
+        Caption = '-'
+      end
+      object PM_Console: TMenuItem
+        Caption = 'Konzole'
+        OnClick = PM_ConsoleClick
       end
     end
     object MI_File: TMenuItem
@@ -6359,7 +6354,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403FC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403000410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8225,7 +8220,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D00280374041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D00280378041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8766,7 +8761,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802C00310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802C40310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

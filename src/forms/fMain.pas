@@ -39,11 +39,9 @@ type
     MI_RCS_Options: TMenuItem;
     MI_Provoz: TMenuItem;
     PM_Nastaveni: TMenuItem;
-    MI_Reset: TMenuItem;
     PM_ResetV: TMenuItem;
     SB1: TStatusBar;
     N1: TMenuItem;
-    MI_Dalsi: TMenuItem;
     PM_Tester: TMenuItem;
     PM_TI: TPopupMenu;
     PM_Open: TMenuItem;
@@ -275,6 +273,7 @@ type
     E_dataload_users_stat: TEdit;
     P_dataload_rcs: TPanel;
     CHB_RCS_Show_Only_Active: TCheckBox;
+    N11: TMenuItem;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
