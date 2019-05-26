@@ -50,7 +50,7 @@ type
      procedure UndefTime();
      property time: TTime read GetTime write SetTime;
 
-     function SerializeForPanel(sprPredict:Boolean = false):string;
+     function SerializeForPanel(trat:TBlk; sprPredict:Boolean = false):string;
  end;
 
  //aktualni stav trati
@@ -623,10 +623,10 @@ begin
  Result := '';
 
  for spr in Self.TratStav.soupravy do
-   Result := Result + spr.SerializeForPanel() + separator;
+   Result := Result + spr.SerializeForPanel(Self) + separator;
 
  if (Self.SprPredict <> nil) then
-   Result := Result + Self.SprPredict.SerializeForPanel(true) + separator;
+   Result := Result + Self.SprPredict.SerializeForPanel(Self, true) + separator;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1085,12 +1085,27 @@ begin
  Self.mTimeDefined := false;
 end;
 
-function TBlkTratSouprava.SerializeForPanel(sprPredict:Boolean = false):string;
-var addr:Integer;
+function TBlkTratSouprava.SerializeForPanel(trat:TBlk; sprPredict:Boolean = false):string;
+var addr, usek:Integer;
+    porucha_bp:Boolean;
+    blk:TBlk;
 begin
+ // Pozor, souprava muze byt ve vice usecich a mit poruchu BP jen v jednom z nich
+ porucha_bp := false;
+ for usek in TBlkTrat(trat).GetSettings().Useky do
+  begin
+   Blky.GetBlkByID(usek, blk);
+   if ((blk <> nil) and (blk.typ = _BLK_TU)) then
+     if (TBlkUsek(blk).Souprava = Self.souprava) and (TBlkTU(blk).poruchaBP) then
+       porucha_bp := true;
+  end;
+
+
  Result := Soupravy.GetSprNameByIndex(Self.souprava) + '|';
  if (sprPredict) then
    Result := Result + PrevodySoustav.ColorToStr(clYellow) + '|'
+ else if (porucha_bp) then
+   Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|'
  else
    Result := Result + PrevodySoustav.ColorToStr(clWhite) + '|';
 
