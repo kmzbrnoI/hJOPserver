@@ -86,7 +86,7 @@ type
 
   TORTCPServer = class
    private const
-    _PROTOCOL_VERSION = '1.0';
+    _PROTOCOL_VERSION = '1.1';
 
    private
     clients:array[0.._MAX_OR_CLIENTS-1] of TORTCPClient;                        // databaze klientu

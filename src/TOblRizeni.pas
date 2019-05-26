@@ -17,7 +17,7 @@ uses Types, IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
       Generics.Collections, Zasobnik, Messages, Windows;
 
 const
-  _MAX_CON_PNL = 16;                                                            // maximalni poce tpripojenych panelu k jedne oblasti rizeni
+  _MAX_CON_PNL = 16;                                                            // maximalni pocet pripojenych panelu k jedne oblasti rizeni
   _MAX_ORREF = 16;
 
   // zvuky - musi korespondovat se zvuky klienta
@@ -410,6 +410,7 @@ var blk_glob:TBlkSettings;
     msg:string;
     fg, bg, nebarVetve, sfg, sbg:TColor;
     Blk:TBlk;
+    trat:TBlkTrat;
 begin
  if (Self.Connected.Count = 0) then Exit();
 
@@ -711,7 +712,8 @@ begin
   _BLK_UVAZKA:begin
    //vytvoreni dat
 
-   if (((Sender as TBlkUvazka).parent as TBlkTrat).Smer = TTratSmer.disabled) then
+   trat := TBlkTrat(TBlkUvazka(Sender).parent);
+   if (trat.Smer = TTratSmer.disabled) then
     begin
      fg := clBlack;
      bg := clFuchsia;
@@ -719,22 +721,22 @@ begin
      if ((Sender as TBlkUvazka).Stitek <> '') then bg := clTeal
      else bg := clBlack;
 
-     if (((Sender as TBlkUvazka).parent as TBlkTrat).RBPCan) then fg := clRed
-     else if (((Sender as TBlkUvazka).parent as TBlkTrat).Zaver) then fg := clBlue
-     else if (((Sender as TBlkUvazka).parent as TBlkTrat).nouzZaver) then fg := clAqua
-     else if (((Sender as TBlkUvazka).parent as TBlkTrat).Obsazeno) then fg := clBlue
+     if (trat.RBPCan) then fg := clRed
+     else if (trat.Zaver) then fg := clBlue
+     else if (trat.nouzZaver) then fg := clAqua
+     else if (trat.Obsazeno) then fg := clBlue
      else fg := $A0A0A0;
     end;
 
    msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
    msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
-   if (((Sender as TBlkUvazka).parent as TBlkTrat).Zadost) then
+   if (trat.Zadost) then
     msg := msg + '1;'
    else
     msg := msg + '0;';
 
    // smer trati
-   case (((Sender as TBlkUvazka).parent as TBlkTrat).Smer) of
+   case (trat.Smer) of
     TTratSmer.disabled, TTratSmer.zadny
                        : msg := msg + '0;';
     TTratSmer.AtoB     : msg := msg + '1;';
@@ -742,7 +744,7 @@ begin
    end;//case
 
    // soupravy
-   msg := msg + ((Sender as TBlkUvazka).parent as TBlkTrat).GetSprList(',') + ';';
+   msg := msg + trat.GetSprList(',') + ';';
   end;//_BLK_UVAZKA
 
   /////////////////////////////////////////////////

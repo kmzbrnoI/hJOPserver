@@ -50,7 +50,7 @@ type
      procedure UndefTime();
      property time: TTime read GetTime write SetTime;
 
-     function SerializeForPanel():string;
+     function SerializeForPanel(sprPredict:Boolean = false):string;
  end;
 
  //aktualni stav trati
@@ -189,7 +189,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokSCom, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase,
-    TBlokTratUsek, appEv, timeHelper;
+    TBlokTratUsek, appEv, timeHelper, Prevody, Graphics;
 
 constructor TBlkTrat.Create(index:Integer);
 begin
@@ -626,7 +626,7 @@ begin
    Result := Result + spr.SerializeForPanel() + separator;
 
  if (Self.SprPredict <> nil) then
-   Result := Result + '$' + Self.SprPredict.SerializeForPanel() + separator;
+   Result := Result + Self.SprPredict.SerializeForPanel(true) + separator;
 end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1085,17 +1085,22 @@ begin
  Self.mTimeDefined := false;
 end;
 
-function TBlkTratSouprava.SerializeForPanel():string;
+function TBlkTratSouprava.SerializeForPanel(sprPredict:Boolean = false):string;
 var addr:Integer;
 begin
  Result := Soupravy.GetSprNameByIndex(Self.souprava) + '|';
+ if (sprPredict) then
+   Result := Result + PrevodySoustav.ColorToStr(clYellow) + '|'
+ else
+   Result := Result + PrevodySoustav.ColorToStr(clWhite) + '|';
+
  if (Self.mTimeDefined) then
-  begin
-   if (Self.predict) then
-     Result := Result + '$';
    Result := Result + FormatDateTime('nn', Self.mTime);
-  end;
  Result := Result + '|';
+ if (Self.predict) then
+   Result := Result + PrevodySoustav.ColorToStr(clYellow) + '|'
+ else
+   Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|';
 
  for addr in Soupravy.soupravy[Self.souprava].HVs do
    Result := Result + HVDb.HVozidla[addr].Data.Nazev + '|';

@@ -487,7 +487,6 @@ end;//procedure
 procedure TBlkUvazka.ShowUvazkaSprMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; spr_index:Integer);
 var trat:TBlkTrat;
     usek:TBlokTrat.TSprUsek;
-    blk:TBlk;
     spr:Integer;
 begin
  trat := TBlkTrat(Self.parent);
