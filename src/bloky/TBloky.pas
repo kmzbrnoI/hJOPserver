@@ -844,69 +844,73 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 // predpovidani soupravy na bloky v jizdni ceste
 
-procedure TBlky.SprPrediction(Nav:TBlk);
-var Usek, startUsek:TBlk;
-    Trat:TBlk;
+procedure TBlky.SprPrediction(nav:TBlk);
+var usek, startUsek:TBlkUsek;
+    trat:TBlkTrat;
     spr:Integer;
     JC:TJC;
 begin
  try
    // zjistime soupravu pred navestidlem
-   Usek := (Nav as TBlkSCom).UsekPred;
-   startUsek := Usek;
-   spr := (Nav as TBlkSCom).GetSoupravaIndex(usek);
+   usek := TBlkUsek(TBlkSCom(nav).UsekPred);
+   startUsek := usek;
+   spr := TBlkSCom(nav).GetSoupravaIndex(usek);
 
-   if ((Nav as TBlkSCom).Navest > 0) then begin
-     if ((not (Usek as TBlkUsek).IsSouprava()) or
-         (Soupravy.soupravy[spr].smer <> (Nav as TBlkSCom).Smer)) then
-      spr := (Usek as TBlkUsek).SprPredict
+   if (TBlkSCom(nav).IsPovolovaciNavest()) then begin
+     if ((not usek.IsSouprava()) or
+         (Soupravy[spr].smer <> TBlkSCom(nav).Smer)) then
+      spr := usek.SprPredict
    end else
      spr := -1;
-   JC := (Nav as TBlkSCom).DNjc;
-   if ((JC <> nil) and (JC.stav.RozpadBlok > 0)) then Exit();
+   JC := TBlkSCom(nav).DNjc;
 
    // predpovidame, dokud existuji jizdni cesty
-   while ((JC <> nil) and (JC.data.TypCesty = TJCType.vlak)) do
+   while ((JC <> nil) and (JC.data.TypCesty = TJCType.vlak) and (JC.stav.RozpadBlok <= 0)) do
     begin
+     // kontrola povolujici navesti
+     Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
+     if ((nav = nil) or (nav.typ <> _BLK_SCOM) or (not TBlkSCom(nav).IsPovolovaciNavest())) then
+       spr := -1;
+
      // zjistime posledni usek jizdni cesty
-     Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Usek);
+     Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], TBlk(usek));
 
      if (usek = startUsek) then
        break; // ochrana proti JC na ovalu
 
-     if ((Usek.typ = _BLK_TU) and ((Usek as TBlkTU).InTrat > -1)) then
+     if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).InTrat > -1)) then
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
-       Blky.GetBlkByID((Usek as TBlkTU).InTrat, Trat);
+       Blky.GetBlkByID(TBlkTU(Usek).InTrat, TBlk(trat));
        if (spr > -1) then begin
-         if (((Trat as TBlkTrat).SprPredict = nil) or ((Trat as TBlkTrat).SprPredict.souprava <> spr)) then
-           (Trat as TBlkTrat).SprPredict := TBlkTratSouprava.Create(spr);
+         if ((trat.SprPredict = nil) or (trat.SprPredict.souprava <> spr)) then
+           trat.SprPredict := TBlkTratSouprava.Create(spr);
        end else begin
-         if ((Trat as TBlkTrat).SprPredict <> nil) then
-           (Trat as TBlkTrat).SprPredict := nil;
+         if (trat.SprPredict <> nil) then
+           trat.SprPredict := nil;
        end;
 
        // v trati jsou jiz soupravy -> konec predpovidani
-       if (TBlkTrat(Trat).stav.soupravy.Count > 0) then Exit();
-       TBlkTrat(Trat).UpdateSprPredict();
+       if (trat.stav.soupravy.Count > 0) then Exit();
+       trat.UpdateSprPredict();
 
-       case ((Trat as TBlkTrat).Smer) of
-        TTratSmer.AtoB : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[(Trat as TBlkTrat).GetSettings().Useky.Count-1], Usek);
-        TTratSmer.BtoA : Blky.GetBlkByID((Trat as TBlkTrat).GetSettings().Useky[0], Usek);
+       case (trat.Smer) of
+        TTratSmer.AtoB : Blky.GetBlkByID(trat.GetSettings().Useky[trat.GetSettings().Useky.Count-1], TBlk(usek));
+        TTratSmer.BtoA : Blky.GetBlkByID(trat.GetSettings().Useky[0], TBlk(usek));
        end;//case
 
        // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
-       if (TBlkUsek(Usek).SprPredict <> spr) then Exit();
+       if (usek.SprPredict <> spr) then Exit();
       end;
 
      // do useku vlozime predpovidnou soupravu
-     (Usek as TBlkUsek).SprPredict := spr;
+     usek.SprPredict := spr;
 
      // zjistime, jeslti je nejake nevastidlo u tohoto useku postaveno na volno
-     if ((Usek as TBlkUsek).SComJCRef.Count = 0) then
+     if (usek.SComJCRef.Count = 0) then
       JC := nil
      else
-      JC := ((Usek as TBlkUsek).SComJCRef[0] as TBlkSCom).DNjc;
+      JC := TBlkSCom(usek.SComJCRef[0]).DNjc;
     end;//while
  except
   on E:Exception do
