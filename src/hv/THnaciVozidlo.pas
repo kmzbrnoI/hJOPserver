@@ -93,7 +93,7 @@ type
    funkce:TFunkce;                                     // stav funkci tak, jak je chceme; uklada se do souboru
    souprava:Integer;                                   // index soupravy, na ktere je hnaci vozidlo
    stanice:TOR;                                        // oblast rizeni, ve ktere se nachazi HV
-   regulators:TList<THVRegulator>;                     // seznam regulatoru -- kleintu
+   regulators:TList<THVRegulator>;                     // seznam regulatoru -- klientu
    tokens:TList<THVToken>;                             // aktualni seznam tokenu -- jedno HV muze mit prideleno vice tokenu
    ruc:boolean;                                        // jestli je hnaciho vozidlo v rucnim rizeni
    last_used:TDateTime;                                // cas posledniho pouzivani loko
@@ -139,18 +139,21 @@ type
      function PredejStanici(st:TOR):Integer;           // predej HV jine stanici
      function GetPanelLokString(mode:TLokStringMode = normal):string; // vrati HV ve standardnim formatu pro klienta
      procedure UpdateRuc(send_remove:boolean = true);  // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
-     procedure RemoveRegulator(conn:TIDContext);       // smaze regulator -- klienta
+
+     procedure RemoveRegulator(conn:TIDContext);       // smaze regulator -- klienta; je volano jen jako callback regulatoru!
      function IsReg(conn:TIdContext):boolean;          // je na tomto HV tento regulator ?
+     procedure UpdateAllRegulators();
+     procedure ForceRemoveAllRegulators();
 
      function GetToken():string;                       // ziskani tokenu
      function IsToken(str:string):boolean;             // overeni tokenu
      procedure RemoveToken(token:string);              // smazani tokenu
      procedure UpdateTokenTimeout();                   // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
-     procedure UpdateAllRegulators();
 
      function CanPlayHouk(sound:string):boolean;       // vraci true pokud je povoleno prehravani zvuku
      procedure CheckRelease();
      procedure RecordUseNow();
+     function NiceName():string;
 
      //PT:
      procedure GetPtData(json:TJsonObject; includeState:boolean);
@@ -168,7 +171,7 @@ type
 implementation
 
 uses ownStrUtils, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
-      RegulatorTCP, fMain, PTUtils, TCPServerOR;
+      RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -992,6 +995,29 @@ begin
   end;
 
  Self.changed := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THV.NiceName():string;
+begin
+ Result := IntToStr(Self.adresa) + ' : ' + Self.Data.Nazev + '(' + Self.Data.Oznaceni + ')';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.ForceRemoveAllRegulators();
+var i:Integer;
+begin
+ for i := Self.Stav.regulators.Count-1 downto 0 do
+  begin
+   try
+     TCPRegulator.RemoveLok(Self.Stav.regulators[i].conn, Self, 'Násilné odhlášení dispeèerem');
+   except
+     on E:Exception do
+       AppEvents.LogException(E, 'THV.ForceRemoveAllRegulators');
+   end;
+  end;
 end;
 
 end.//unit

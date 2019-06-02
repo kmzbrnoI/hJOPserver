@@ -932,14 +932,7 @@ begin
 
  if (podminky <> nil) then
    for i := 0 to podminky.Count-1 do
-     if (Assigned(podminky[i].blok)) then
-      begin
-       try
-         str := str + '['+(podminky[i].blok as TBlk).name + '|' + podminky[i].podminka + ']';
-       except
-
-       end;
-      end;
+     str := str + '[' + podminky[i].cil + '|' + podminky[i].podminka + ']';
 
  try
    (AContext.Data as TTCPORsRef).potvr := callback;

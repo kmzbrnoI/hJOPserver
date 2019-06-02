@@ -107,6 +107,8 @@ type
     procedure MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuXVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuRUCLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuMAUSLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -122,6 +124,7 @@ type
 
     procedure PotvrDeleteLok(Sender:TIdContext; success:boolean);
     procedure PotvrUvolLok(Sender:TIdContext; success:boolean);
+    procedure PotvrRegVezmiLok(Sender:TIdContext; success:boolean);
 
     procedure MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -260,7 +263,7 @@ implementation
 uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
-    stanicniHlaseniHelper, TechnologieJC, PTUtils;
+    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -933,6 +936,27 @@ begin
 end;//procedure
 
 procedure TBlkUsek.MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
+var spr:TSouprava;
+begin
+ if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+
+ spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
+
+ if (spr.ukradeno) then
+  begin
+   // Prevzit soupravu, ktera byla ukradena.
+   Self.MenuXVEZMILokClick(SenderPnl, SenderOR);
+  end else begin
+   if (spr.IsAnyLokoInRegulator()) then
+    begin
+     // Nasilim prevzit lokomotivy z regulatoru.
+     Self.MenuRegVEZMILokClick(SenderPnl, SenderOR);
+    end;
+  end;
+end;
+
+procedure TBlkUsek.MenuXVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
@@ -948,7 +972,44 @@ begin
  end;
 
  ORTCPServer.SendInfoMsg(SenderPnl, 'Vlak pøevzat');
-end;//procedure
+end;
+
+procedure TBlkUsek.MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
+var podm:TPSPodminky;
+    spr:TSouprava;
+    hvaddr:Integer;
+begin
+ if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
+
+ podm := TPSPodminky.Create();
+ for hvaddr in spr.HVs do
+   if (HVDb[hvaddr] <> nil) then
+     podm.Add(TOR.GetPSPodminka(HVDb[hvaddr].NiceName(), 'Násilné pøevzetí øízení'));
+
+ ORTCPServer.Potvr(SenderPnl, Self.PotvrRegVezmiLok, SenderOR as TOR,
+  'Nouzové pøevzetí hnacích vozidel do automatického øízení',
+  TBlky.GetBlksList(Self), podm);
+end;
+
+procedure TBlkUsek.PotvrRegVezmiLok(Sender:TIdContext; success:boolean);
+var spr:TSouprava;
+begin
+ if ((TTCPORsRef(Sender.Data).spr_menu_index < 0) or
+     (TTCPORsRef(Sender.Data).spr_menu_index >= Self.Soupravs.Count) or (not success)) then Exit();
+ spr := Soupravy[Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]];
+
+ try
+   spr.ForceRemoveAllRegulators();
+   ORTCPServer.SendInfoMsg(Sender, 'Vlak pøevzat');
+ except
+  on E: Exception do
+    ORTCPServer.BottomError(Sender, 'Vlak se nepodaøilo pøevzít', TOR(Sender).ShortName, 'TECHNOLOGIE');
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -1319,7 +1380,11 @@ begin
    Result := Result + 'PØESUÒ vlak>,';
 
  if (spr.ukradeno) then
-   Result := Result + 'VEZMI vlak,';
+   Result := Result + 'VEZMI vlak,'
+ else begin
+   if (spr.IsAnyLokoInRegulator()) then
+     Result := Result + '!VEZMI vlak,';
+ end;
 
  if (Self.UsekStav.stanicni_kolej) then
    Result := Result + 'PODJ,';

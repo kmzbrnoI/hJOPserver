@@ -37,7 +37,7 @@ type
 
   // podminky potvrzovaci sekvence
   TPSPodminka = record
-   blok:TObject;
+   cil:string;
    podminka:string;
   end;
 
@@ -247,7 +247,8 @@ type
       procedure UserDelete(userid:string);
 
       class function ORRightsToString(rights:TORControlRights):string;
-      class function GetPSPodminka(blok:TObject; podminka:string):TPSPodminka;
+      class function GetPSPodminka(blok:TObject; podminka:string):TPSPodminka; overload;
+      class function GetPSPodminka(cil:string; podminka:string):TPSPodminka; overload;
       class function GetPSPodminky(podm:TPSPodminka):TPSPodminky;
 
       property NUZtimer:Boolean read ORStav.NUZtimer write ORStav.NUZtimer;
@@ -2334,15 +2335,21 @@ end;//function
 
 class function TOR.GetPSPodminka(blok:TObject; podminka:string):TPSPodminka;
 begin
- Result.blok     := blok;
+ Result.cil      := TBlk(blok).name;
  Result.podminka := podminka;
-end;//function
+end;
+
+class function TOR.GetPSPodminka(cil:string; podminka:string):TPSPodminka;
+begin
+ Result.cil      := cil;
+ Result.podminka := podminka;
+end;
 
 class function TOR.GetPSPodminky(podm:TPSPodminka):TPSPodminky;
 begin
  Result := TList<TPSPodminka>.Create();
  Result.Add(podm);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

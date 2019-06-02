@@ -94,6 +94,8 @@ type
     procedure RemovePOdj(usekid:Integer); overload;
     procedure RemovePOdj(usek:TBlk); overload;
     procedure ClearPOdj();
+    function IsAnyLokoInRegulator():Boolean;
+    procedure ForceRemoveAllRegulators();
 
     property nazev:string read data.nazev;
     property sdata:TSoupravaData read data;
@@ -927,6 +929,27 @@ begin
    podj.Free();
 
  Self.data.podj.Clear();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TSouprava.IsAnyLokoInRegulator():Boolean;
+var hvaddr:Integer;
+begin
+ for hvaddr in Self.HVs do
+   if (HVDb[hvaddr].Stav.regulators.Count > 0) then
+     Exit(true);
+ Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSouprava.ForceRemoveAllRegulators();
+var hvaddr:Integer;
+begin
+ for hvaddr in Self.HVs do
+   if (HVDb[hvaddr].Stav.regulators.Count > 0) then
+     HVDb[hvaddr].ForceRemoveAllRegulators();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

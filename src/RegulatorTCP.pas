@@ -37,6 +37,7 @@ TTCPRegulator = class
 
     procedure LokToRegulator(Regulator:TIDContext; HV:THV);
     procedure RegDisconnect(reg:TIdContext);
+    procedure RemoveLok(Regulator:TIDContext; HV:THV; info:string);
 
 end;
 
@@ -227,10 +228,7 @@ begin
  if (parsed[3] = 'RELEASE') then
   begin
    // regulator ukoncuje rizeni LOKO
-   HV.RemoveRegulator(Sender);
-   TTCPORsRef(Sender.Data).regulator_loks.Remove(HV);
-   ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;release;Loko odhlášeno');
-   ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
+   Self.RemoveLok(Sender, HV, 'Loko odhlášeno');
    Exit();
   end;
 
@@ -250,14 +248,23 @@ begin
            Exit();
           end;
 
-       // kontrola tokenu
-       if (not HV.IsToken(parsed[4])) then
+       if (parsed.Count < 5) then
         begin
-         ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Špatný token');
-         Exit();
+         if (not HV.IsReg(Sender)) then
+          begin
+           // Uzivatel nema na hnaci vozidlo narok
+           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Na toto hnací vozidlo nemáte nárok');
+           Exit();
+          end;
+        end else begin
+         // kontrola tokenu
+         if ((not HV.IsToken(parsed[4]))) then
+          begin
+           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Špatný token');
+           Exit();
+          end;
         end;
       end;//if regulator_user_root
-
 
      if (parsed.Count > 4) then HV.RemoveToken(parsed[4]);
 
@@ -629,6 +636,16 @@ begin
  TTCPORsRef(reg.Data).regulator_user := nil;
  TTCPORsRef(reg.Data).regulator_loks.Clear();
 end;//procedure
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTCPRegulator.RemoveLok(Regulator:TIDContext; HV:THV; info:string);
+begin
+ HV.RemoveRegulator(Regulator);
+ TTCPORsRef(Regulator.Data).regulator_loks.Remove(HV);
+ ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;release;'+info);
+ ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

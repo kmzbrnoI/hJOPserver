@@ -43,6 +43,7 @@ type
      function GetCnt():Word;
 
      procedure CreateIndex();
+     function GetItem(index:Integer):THV;
 
    public
 
@@ -70,6 +71,8 @@ type
      property HVozidla:THVArray read HVs;
      property default_or:Integer read fdefault_or write fdefault_or;
      property loksDir:string read fLoksDir;
+
+     property Items[index : integer] : THV read GetItem; default;
 
   end;//THVDb
 
@@ -478,6 +481,13 @@ end;
 function THVDb.FilenameForLok(hv:THV):string;
 begin
  Result := Self.FilenameForLok(hv.adresa);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THVDb.GetItem(index:Integer):THV;
+begin
+ Result := Self.HVs[index];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
