@@ -454,13 +454,11 @@ object F_About: TF_About
     Alignment = taCenter
     AutoSize = False
     Caption = #169' Jan Hor'#225#269'ek 2008'#8211'2019'
-    Color = clWhite
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clBlack
     Font.Height = -20
     Font.Name = 'Arial'
     Font.Style = []
-    ParentColor = False
     ParentFont = False
     TabOrder = 1
   end

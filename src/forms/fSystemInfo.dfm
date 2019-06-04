@@ -29,14 +29,12 @@ object F_SystemInfo: TF_SystemInfo
     Alignment = taCenter
     BiDiMode = bdLeftToRight
     Caption = '**********Info**********'
-    Color = clWhite
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentBiDiMode = False
-    ParentColor = False
     ParentFont = False
     Layout = tlCenter
     ExplicitWidth = 98
