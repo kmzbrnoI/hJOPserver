@@ -207,7 +207,7 @@ type
 implementation
 
 uses TBloky, GetSystems, TechnologieRCS, fMain, TJCDatabase, UPO, Graphics,
-      TCPServerOR, TBlokZamek, PTUtils, RCS;
+      TCPServerOR, TBlokZamek, PTUtils, RCS, changeEvent;
 
 constructor TBlkVyhybka.Create(index:Integer);
 begin

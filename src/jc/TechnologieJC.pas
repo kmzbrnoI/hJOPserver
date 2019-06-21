@@ -1358,6 +1358,8 @@ var i,j:Integer;
     bariery:TList<TJCBariera>;
     bariera:TJCBariera;
     nextVyhybka:Integer;
+    uzavBlok:Integer;
+    prjZaver:TJCPrjZaver;
  begin
   if (not Self.Staveni) then Exit;
 
@@ -1535,10 +1537,11 @@ var i,j:Integer;
        uzavren_glob := false;
        for i := 0 to Self.fproperties.Prejezdy.Count-1 do
         begin
-         if (Self.fproperties.Prejezdy[i].uzaviraci.Count = 0) then
+         prjZaver := Self.fproperties.Prejezdy[i];
+         if (prjZaver.uzaviraci.Count = 0) then
            continue;
 
-         Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+         Blky.GetBlkByID(prjZaver.Prejezd, Blk);
          uzavren := false;
 
          // prejezd uzavirame jen v pripade, ze nejaky z jeho aktivacnich bloku je obsazen
@@ -1552,29 +1555,29 @@ var i,j:Integer;
            TBlkPrejezd(Blk).Zaver := true;
 
            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
-           Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, Blk);
+           Blky.GetBlkByID(prjZaver.oteviraci, Blk);
            TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverReleaseOrAB,
-             CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.Prejezdy[i].Prejezd));
+             CreateChangeEvent(ceCaller.NullPrejezdZaver, prjZaver.Prejezd));
 
            uzavren := true;
            uzavren_glob := true;
           end else begin
 
            // vlakova cesta:
-           for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
+           for uzavBlok in prjZaver.uzaviraci do
             begin
-             Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], Blk2);
+             Blky.GetBlkByID(uzavBlok, Blk2);
              if ((Blk2 as TBlkUsek).Obsazeno = TusekStav.obsazeno) then
               begin
                writelog('Krok 12 : prejezd '+Blk.name+' - aktivacni usek '+Blk2.name+' obsazen - uzaviram', WR_VC);
 
-               Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+               Blky.GetBlkByID(prjZaver.Prejezd, Blk);
                TBlkPrejezd(Blk).Zaver := true;
 
                // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
-               Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, Blk);
+               Blky.GetBlkByID(prjZaver.oteviraci, Blk);
                TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverReleaseOrAB,
-                 CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.Prejezdy[i].Prejezd));
+                 CreateChangeEvent(ceCaller.NullPrejezdZaver, prjZaver.Prejezd));
 
                uzavren := true;
                uzavren_glob := true;
@@ -1586,10 +1589,11 @@ var i,j:Integer;
          if (not uzavren) then
           begin
            // prejezd neuzaviram -> pridam pozadavek na zavreni pri obsazeni do vsech aktivacnich useku
-           for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
+           for uzavBlok in prjZaver.uzaviraci do
             begin
-             Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], Blk2);
-             (Blk2 as TBlkUsek).AddChangeEvent((Blk2 as TBlkUsek).EventsOnObsaz, CreateChangeEvent(Self.UsekClosePrj, i));
+             Blky.GetBlkByID(uzavBlok, Blk2);
+             if (not TBlkUsek(Blk2).EventsOnObsaz.Contains(CreateChangeEvent(Self.UsekClosePrj, i))) then
+               TBlkUsek(Blk2).AddChangeEvent((Blk2 as TBlkUsek).EventsOnObsaz, CreateChangeEvent(Self.UsekClosePrj, i));
             end;
 
            writelog('Krok 12 : prejezd '+Blk.name+' - zadny aktivacni usek neobsazen - nechavam otevreny', WR_VC);
@@ -2960,28 +2964,29 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.UsekClosePrj(Sender:TObject; data:Integer);
-var i:Integer;
-    Blk:TBlk;
+var blkId:Integer;
+    prejezd:TBlkPrejezd;
+    usek:TBlkUsek;
 begin
- if (not Self.postaveno) then Exit(); 
-
- // zavrit prejezd
- Blky.GetBlkByID(Self.fproperties.Prejezdy[data].Prejezd, Blk);
- TBlkPrejezd(Blk).Zaver := true;
- writelog('JC '+Self.nazev+': obsazen '+(Sender as TBlkUsek).name+
-    ' - uzaviram prejezd '+Blk.name, WR_VC, 0);
-
- // prejezd se uzavira -> po uvolneni zaveru bloku pd prejezdem prejezd opet otevrit
- Blky.GetBlkByID(Self.fproperties.Prejezdy[data].oteviraci, Blk);
- TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverReleaseOrAB,
-   CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.Prejezdy[data].Prejezd));
-
- for i := 0 to Self.fproperties.Prejezdy[data].uzaviraci.Count-1 do
+ if ((Self.postaveno) or (Self.staveni)) then
   begin
-   Blky.GetBlkByID(Self.fproperties.Prejezdy[data].uzaviraci[i], Blk);
-   (Blk as TBlkUsek).RemoveChangeEvent((Blk as TBlkUsek).EventsOnObsaz,
-          CreateChangeEvent(Self.UsekClosePrj, data));
-  end;//for i
+   // zavrit prejezd
+   Blky.GetBlkByID(Self.fproperties.Prejezdy[data].Prejezd, TBlk(prejezd));
+   prejezd.Zaver := true;
+   writelog('JC '+Self.nazev+': obsazen '+TBlkUsek(Sender).name+
+      ' - uzaviram prejezd '+prejezd.name, WR_VC, 0);
+
+   // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
+   Blky.GetBlkByID(Self.fproperties.Prejezdy[data].oteviraci, TBlk(usek));
+   usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
+     CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.Prejezdy[data].Prejezd));
+  end;
+
+ for blkId in Self.fproperties.Prejezdy[data].uzaviraci do
+  begin
+   Blky.GetBlkByID(blkId, TBlk(usek));
+   usek.RemoveChangeEvent(usek.EventsOnObsaz, CreateChangeEvent(Self.UsekClosePrj, data));
+  end;
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////

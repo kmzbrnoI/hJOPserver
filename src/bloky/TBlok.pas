@@ -121,7 +121,6 @@ type
 
    class procedure AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
    class procedure RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
-   class function CreateChangeEvent(func:TChangeEventFunc; data:Integer = 0):TChangeEvent;
 
    class function BlkTypeToStr(typ:Byte):string;
    class function BlkTypeFromStr(typ:string):Byte;
@@ -306,19 +305,10 @@ end;//procedure
 class procedure TBlk.RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
 var i:Integer;
 begin
- for i := 0 to events.Count-1 do
-   if ((@events[i].func = @func.func) and (events[i].data = func.data)) then
-    begin
+ for I := events.Count-1 downto 0 do
+   if (events[i] = func) then
      events.Delete(i);
-     Exit();
-    end;
 end;//procedure
-
-class function TBlk.CreateCHangeEvent(func:TChangeEventFunc; data:Integer = 0):TChangeEvent;
-begin
- Result.func := func;
- Result.data := data;
-end;//function
 
 ////////////////////////////////////////////////////////////////////////////////
 

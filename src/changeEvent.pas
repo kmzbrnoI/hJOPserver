@@ -12,6 +12,8 @@ type
  TChangeEvent = record
   func:TChangeEventFunc;
   data:Integer;
+
+  class operator Equal(a, b: TChangeEvent): Boolean;
  end;
 
  TChangeEvents = TList<TChangeEvent>;
@@ -23,6 +25,11 @@ function CreateChangeEvent(func:TChangeEventFunc; data:Integer):TChangeEvent;
 begin
  Result.func := func;
  Result.data := data;
+end;
+
+class operator TChangeEvent.Equal(a, b: TChangeEvent): Boolean;
+begin
+ Result := ((@a.func = @b.func) and (a.data = b.data));
 end;
 
 end.
