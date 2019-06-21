@@ -2387,7 +2387,7 @@ begin
   if ((Self.RozpadBlok > 0) and (Self.RozpadRuseniBlok = -1)) then
    begin
     Usek := Nav.UsekPred as TBlkUsek;
-    if (Usek.Obsazeno = TUsekStav.uvolneno) then
+    if ((Usek.Obsazeno = TUsekStav.uvolneno) and (Usek.GetSettings.RCSAddrs.Count > 0)) then
      begin
       if (Usek.IsSouprava() and (Self.fproperties.TypCesty = TJCType.vlak)) then
        begin
