@@ -57,7 +57,7 @@ procedure TF_BlkVyh_tech.B_ApplyClick(Sender: TObject);
 begin
  Self.myApply();
  Self.myUpdate();
-end;//procedure
+end;
 
 procedure TF_BlkVyh_tech.B_CancelRedukceClick(Sender: TObject);
 begin
@@ -68,18 +68,18 @@ end;
 procedure TF_BlkVyh_tech.B_UpdateClick(Sender: TObject);
 begin
  Self.myUpdate();
-end;//procedure
+end;
 
 procedure TF_BlkVyh_tech.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
  Self.OpenBlk := nil;
-end;//procedure
+end;
 
 procedure TF_BlkVyh_tech.FormCreate(Sender: TObject);
 begin
  Self.OpenBlk := nil;
-end;//procedure
+end;
 
 procedure TF_BlkVyh_tech.OpenForm(blk:TBlkVyhybka);
 begin
@@ -88,7 +88,7 @@ begin
 
  Self.Caption := 'Technologické vlastnosti bloku '+blk.name;
  Self.Show();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -105,7 +105,7 @@ begin
  Self.SE_Redukce.Value        := Self.OpenBlk.Stav.redukce_menu;
 
  Self.B_CancelRedukce.Enabled := Self.OpenBlk.redukce_menu;
-end;//procedure
+end;
 
 procedure TF_BlkVyh_tech.myApply();
 begin
@@ -117,7 +117,7 @@ begin
 
  Self.OpenBlk.StaveniPlus  := PrevodySoustav.IntToBool(CB_Stav_Plus.ItemIndex);
  Self.OpenBlk.StaveniMinus := PrevodySoustav.IntToBool(CB_Stav_Minus.ItemIndex);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

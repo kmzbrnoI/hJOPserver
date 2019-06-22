@@ -32,7 +32,7 @@ procedure TF_SystemInfo.OpenForm(System:String);
   F_SystemInfo.Height := Round((GetWidthLabel(System,'MS Sans Serif')+50)/3);
   L_Info.Caption := System;
   F_SystemInfo.Show;
- end;//procedure
+ end;
 
 function TF_SystemInfo.GetWidthLabel(Nazev:string;Font:String):integer;
 var L_Test:TLabel;

@@ -138,7 +138,7 @@ begin
  finally
    data.Free();
  end;
-end;//procedure
+end;
 
 procedure TUser.LoadStat(ini:TMemIniFile; section:string);
 begin
@@ -182,12 +182,12 @@ begin
 
  if (str <> '') then
    ini.WriteString(section, 'ORs', str);
-end;//procedure
+end;
 
 procedure TUser.SaveStat(ini:TMemIniFile; section:string);
 begin
  ini.WriteString(section, 'lastlogin', DateTimeToStr(Self.lastlogin));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -196,7 +196,7 @@ begin
  // heslo je 2x zahashovane
  Self.fsalt := Self.GenSalt();
  Self.fpasswd := TUser.GenerateHash(AnsiString(TUser.GenerateHash(AnsiString(passwd)) + self.fsalt));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -243,7 +243,7 @@ begin
  Self.OblR.AddOrSetValue(OblR, rights);
  ORs.GetORByIndex(ORs.GetORIndex(OblR), OblRRef);
  if (OblRRef <> nil) then OblRRef.UserUpdateRights(Self);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -262,7 +262,7 @@ begin
      if (OblRRef <> nil) then OblRRef.UserUpdateRights(Self);
     end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -271,7 +271,7 @@ begin
  if (Self.freg = state) then Exit();
  Self.freg := state;
  if (not Self.freg) then ORTCPServer.DisconnectRegulatorUser(self);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

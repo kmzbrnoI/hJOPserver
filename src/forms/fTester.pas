@@ -67,7 +67,7 @@ procedure TF_Tester.T_testerTimer(Sender: TObject);
  begin
   UpdateOut;
   UpdateIn;
- end;//procedure
+ end;
 
 procedure TF_Tester.FormShow(Sender: TObject);
 var i:Integer;
@@ -79,7 +79,7 @@ var i:Integer;
 
   T_tester.Enabled := true; 
   writelog('Zobrazeno okno Testeru',0,0);
- end;//procedure
+ end;
 
 procedure TF_Tester.UpdateOut;
 var i, val:Integer;
@@ -132,7 +132,7 @@ var i, val:Integer;
       end;
      end;
    end;//for i
- end;//procedure
+ end;
 
 procedure TF_Tester.UpdateIn;
 var i:Integer;
@@ -205,7 +205,7 @@ var i:Integer;
         SInput[i].Brush.Color := clGray;
      end;//if i < inCnt
    end;//for i
- end;//procedure
+ end;
 
 procedure TF_Tester.FormCreate(Sender: TObject);
  begin
@@ -213,7 +213,7 @@ procedure TF_Tester.FormCreate(Sender: TObject);
   Self.RCSAddr := -1;
   Self.CreateSInput;
   Self.CreateSOutput;
- end;//procedure
+ end;
 
 procedure TF_Tester.CB_RCSAdrChange(Sender: TObject);
 var i:Integer;
@@ -232,13 +232,13 @@ var i:Integer;
      Self.T_tester.Enabled := false;
     end;
    end;
- end;//procedure
+ end;
 
 procedure TF_Tester.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   T_tester.Enabled := false;
   writelog('Skryto okno Testeru',0,0);
- end;//procedure
+ end;
 
 procedure TF_Tester.CreateSInput;
 var i:Integer;
@@ -269,7 +269,7 @@ var i:Integer;
 
     aTop := aTop + _S_INCR;
    end;//for i
- end;//procedure
+ end;
 
 procedure TF_Tester.CreateSOutput;
 var i:Integer;
@@ -301,7 +301,7 @@ var i:Integer;
 
     aTop := aTop + _S_INCR;
    end;//for i
- end;//procedure
+ end;
 
 procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
@@ -329,12 +329,12 @@ procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   except
     // stav modulu se zaktualizuje sam
   end;
- end;//procedure
+ end;
 
 procedure TF_Tester.B_ClearClick(Sender: TObject);
  begin
   F_Tester.LB_Changes.Clear;
- end;//procedure
+ end;
 
 procedure TF_Tester.AfterRCSOpen();
 var i:Integer;
@@ -360,6 +360,6 @@ begin
 
  Self.CB_RCSAdr.ItemIndex := -1;
  Self.CB_RCSAdrChange(self);
-end;//procedure
+end;
 
 end.//unit

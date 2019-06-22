@@ -367,7 +367,7 @@ begin
    FreeAndNil(data_osv);
    FreeAndNil(data_osv2);
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -832,7 +832,7 @@ begin
 
   end;//for i
 
-end;//procedure
+end;
 
 procedure TOR.BlkWriteError(Sender:TObject; error:string; system:string);
 var i:Integer;
@@ -840,7 +840,7 @@ begin
  for i := 0 to Self.Connected.Count-1 do
   if (Self.Connected[i].Rights >= TORControlRights.write) then
     ORTCPServer.BottomError(Self.Connected[i].Panel, error, Self.ShortName, system);
-end;//procedure
+end;
 
 procedure TOR.BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights; sound:Integer; loop:boolean = false);
 var i:Integer;
@@ -848,21 +848,21 @@ begin
  for i := 0 to Self.Connected.COunt-1 do
   if (Self.Connected[i].Rights >= min_rights) then
    ORTCPServer.PlaySound(Self.Connected[i].Panel, sound, loop);
-end;//procedure
+end;
 
 procedure TOR.BlkRemoveSound(Sender:TObject; sound:Integer);
 var i:Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
   ORTCPServer.DeleteSound(Self.Connected[i].Panel, sound);
-end;//procedure
+end;
 
 procedure TOR.BlkNewSpr(Sender:TObject; Panel:TIdContext; sprUsekIndex:Integer);
 begin
  TTCPORsRef(Panel.Data).spr_new_usek_index := sprUsekIndex;
  TTCPORsRef(Panel.Data).spr_usek := Sender;
  ORTCPServer.SendLn(Panel, Self.id+';SPR-NEW;');
-end;//procedure
+end;
 
 procedure TOR.BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TObject);
 begin
@@ -871,7 +871,7 @@ begin
  TTCPORsRef(Panel.Data).spr_usek := Sender;
 
  ORTCPServer.SendLn(Panel, Self.id+';'+'SPR-EDIT;'+TSouprava(Souprava).GetPanelString());
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //funkce pro praci s databazi pripojenych panelu
@@ -1085,7 +1085,7 @@ begin
 
  if ((rights > read) and (last_rights <= read)) then Self.AuthReadToWrite(Sender);
  if ((rights < write) and (last_rights >= write)) then Self.AuthWriteToRead(Sender);
-end;//procedure
+end;
 
 //ziskani stavu vsech bloku v panelu
 procedure TOR.PanelFirstGet(Sender:TIdContext);
@@ -1105,7 +1105,7 @@ begin
  for addr := 0 to _MAX_ADDR-1 do
   if ((HVDb.HVozidla[addr] <> nil) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
     HVDb.HVozidla[addr].UpdateRuc(false);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1136,7 +1136,7 @@ begin
     end;
 
  ORTCPServer.SendInfoMsg(Sender, 'Nemáte oprávnìní mìnit tento blok');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1164,7 +1164,7 @@ begin
 
  Blk := Blky.GetBlkUsekVlakPresun(Self.id);
  if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := -1;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1195,7 +1195,7 @@ begin
   end;//for i
 
  ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnìní závìrù úsekù', TBlky.GetBlksList(Self), podminky);
-end;//procedure
+end;
 
 procedure TOR.PanelNUZCancel(Sender:TIdContext);
 begin
@@ -1209,7 +1209,7 @@ begin
  Self.NUZcancelPrematureEvents();
  Blky.NUZ(Self.id, false);
  Self.NUZblkCnt := 0; // zastavi mereni casu (melo by zastavit uz volani vyse)
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1236,7 +1236,7 @@ begin
 
  if (return = 1) then
    ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';K této OØ aktuálnì není pøipojen žádný panel');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1258,7 +1258,7 @@ begin
     str := str + '[{' + HVDb.HVozidla[addr].GetPanelLokString(full) + '}]';
  str := str + '}';
  ORTCPServer.SendLn(Sender, str);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1315,7 +1315,7 @@ begin
 
  TTCPORsRef(Sender.Data).ResetSpr();
  ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ACK;');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1355,7 +1355,7 @@ begin
  ORs.GetORByIndex(n_or, new);
  HVDb.HVozidla[lok_addr].PredejStanici(new);
  ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' pøedáno stanici '+new.Name);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1376,7 +1376,7 @@ begin
      break;
     end;
   end;//for i
-end;//procedure
+end;
 
 // vraci id pridaneho mereni
 function TOR.AddMereniCasu(callback:TNotifyEvent; len:TDateTime):Byte;
@@ -1420,7 +1420,7 @@ begin
  Self.NUZtimer := false;
  Blky.NUZ(Self.id);
  Self.NUZblkCnt := 0;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1468,14 +1468,14 @@ begin
 
  Self.BroadcastData('NUZ;2;');
  Self.ORStav.NUZmerCasuID := Self.AddMereniCasu(Self.NUZTimeOut, EncodeTime(0, 0, 20, 0));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string; username:string);
 begin
  ORTCPServer.SendLn(Panel, Self.id+';AUTH;'+IntToStr(Integer(Rights))+';'+msg+';'+username);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1483,7 +1483,7 @@ procedure TOR.RemoveClient(Panel:TIdContext);
 begin
  Self.PnlDRemove(Panel);
  Self.stack.OnDisconnect(Panel);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1507,7 +1507,7 @@ begin
   end;
 
  Self.ORStav.NUZblkCnt := new;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1532,7 +1532,7 @@ begin
   end;
 
  Self.ORStav.ZkratBlkCnt := new;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1557,7 +1557,7 @@ begin
   end;
 
  Self.ORStav.ZadostBlkCnt := new;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1582,7 +1582,7 @@ begin
   end;
 
  Self.ORStav.PrivolavackaBlkCnt := new;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1607,7 +1607,7 @@ begin
   end;
 
  Self.ORStav.timerCnt := new;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1624,7 +1624,7 @@ begin
  end;
 
  Self.stack.ClearStack();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1638,7 +1638,7 @@ begin
      ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id + ';MSG;' + Sender.id + ';{'+msg+'}');
      Result := 0;
     end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1647,7 +1647,7 @@ var i:Integer;
 begin
  for i := 0 to TRCS._MAX_RCS do
   Self.OR_RCS.modules[i].present := false;
-end;//procedure
+end;
 
 procedure TOR.RCSAdd(addr:integer);
 begin
@@ -1656,7 +1656,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 procedure TOR.RCSFail(addr:integer);
 begin
@@ -1668,7 +1668,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 procedure TOR.RCSUpdate();
 var i:Integer;
@@ -1693,7 +1693,7 @@ begin
      if (Self.Connected[i].Rights >= read) then
        ORTCPServer.BottomError(Self.Connected[i].Panel, str, Self.ShortName, 'TECHNOLOGIE');
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1716,7 +1716,7 @@ begin
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
    str := str + '(' + Self.ORProp.Osvetleni[i].name + ' - ' + IntToStr(Self.ORProp.Osvetleni[i].board) + ':' + IntToStr(Self.ORProp.Osvetleni[i].port) + ')';
  LI.SubItems.Strings[5] := str;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1730,7 +1730,7 @@ begin
   end;
 
  Self.stack.ParseCommand(Sender, str);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1765,7 +1765,7 @@ begin
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
    str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(PrevodySoustav.BoolToInt(Self.PanelGetOsv(i))) + ']';
  ORTCPServer.SendLn(Sender, str);
-end;//procedure
+end;
 
 procedure TOR.PanelSetOsv(Sender:TIdCOntext; id:string; state:boolean);
 var i:Integer;
@@ -1792,7 +1792,7 @@ begin
 
     Exit();
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1825,7 +1825,7 @@ begin
    if ((Assigned(Soupravy.soupravy[i])) and (Soupravy.soupravy[i].stanice = Self)) then
     Result := Result + '[{' + Soupravy.soupravy[i].GetPanelString() + '}]';
  Result := Result + '}';
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1844,7 +1844,7 @@ begin
    ORTCPServer.SendInfoMsg(Sender, 'Souprava smazána');
    Exit();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1868,7 +1868,7 @@ begin
  end;
 
  ORTCPServer.SendInfoMsg(Sender, 'Loko pøidáno');
-end;//procedure
+end;
 
 procedure TOR.PanelHVRemove(Sender:TIDContext; addr:Integer);
 begin
@@ -1897,7 +1897,7 @@ begin
  end;
 
  ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' smazáno');
-end;//procedure
+end;
 
 procedure TOR.PanelHVEdit(Sender:TIDContext; str:string);
 var data:TStrings;
@@ -1941,7 +1941,7 @@ begin
  end;
 
  ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' aktualizováno');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1951,7 +1951,7 @@ begin
  for i := 0 to Self.Connected.Count-1 do
    if (Self.Connected[i].Rights >= min_rights) then
     ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id+';'+data);
-end;//procedure
+end;
 
 procedure TOR.BroadcastGlobalData(data:string; min_rights:TORControlRights = read);
 var i:Integer;
@@ -1959,7 +1959,7 @@ begin
  for i := 0 to Self.Connected.Count-1 do
    if (Self.Connected[i].Rights >= min_rights) then
     ORTCPServer.SendLn(Self.Connected[i].Panel, '-;'+data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1967,7 +1967,7 @@ procedure TOR.ORDKClickServer(callback:TBlkCallback);
 begin
  Self.ORStav.dk_click_callback := callback;
  Self.BroadcastData('DK-CLICK;1', TORControlRights.write);
-end;//procedure
+end;
 
 procedure TOR.ORDKClickClient();
 begin
@@ -1975,7 +1975,7 @@ begin
 
  Self.ORStav.dk_click_callback := nil;
  Self.BroadcastData('DK-CLICK;0', TORControlRights.write);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1983,7 +1983,7 @@ procedure TOR.PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
 begin
  if (Assigned(Self.ORStav.dk_click_callback)) then
    Self.ORStav.dk_click_callback(SenderPnl, Self, Button);
-end;//procedure
+end;
 
 // Tato procedura parsuje "LOK-REQ" z panelu.
 procedure TOR.PanelLokoReq(Sender:TIdContext; str:TStrings);
@@ -2195,7 +2195,7 @@ begin
      ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatný formát argumentù');
    end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2222,7 +2222,7 @@ begin
 
  if ((Self.NUZblkCnt > 0) and (not Self.NUZtimer)) then
    ORTCPServer.SendLn(panel, Self.id + ';NUZ;1;');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2232,7 +2232,7 @@ begin
  for i := 0 to Self.vb.Count-1 do
   (Self.vb[i] as TBlkUsek).KonecJC := TZaver.no;
  Self.vb.Clear();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2280,7 +2280,7 @@ begin
      Self.ORAuthoriseResponse(Self.Connected[i].Panel, rights, 'Snížena oprávnìní uživatele', '');
     end;
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2295,7 +2295,7 @@ begin
      Self.PnlDRemove(Self.Connected[i].Panel);
     end;
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2316,7 +2316,7 @@ begin
  Self.BroadcastData(str);
 
  Result := 0;
-end;//procedure
+end;
 
 procedure TOR.LokoCancel(Sender:TIdContext);
 begin
@@ -2324,7 +2324,7 @@ begin
  Self.ORStav.reg_please := nil;
  //format: or;LOK-REQ;CANCEL;
  Self.BroadcastData('LOK-REQ;CANCEL;');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2334,7 +2334,7 @@ begin
  if (Self.ZadostBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TRAT_ZADOST, true);
  if (Self.PrivolavackaBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_PRIVOLAVACKA, true);
  if (Self.TimerCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TIMEOUT, true);
-end;//procedure
+end;
 
 procedure TOR.AuthWriteToRead(panel:TIdContext);
 begin
@@ -2343,7 +2343,7 @@ begin
  if (Self.PrivolavackaBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_PRIVOLAVACKA);
  if (Self.TimerCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TIMEOUT);
  Self.stack.OnWriteToRead(panel);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

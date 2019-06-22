@@ -63,7 +63,7 @@ begin
    end;
  end;//for i
 
-end;//procedure
+end;
 
 procedure TMultiJCTableData.UpdateTable();
 var i:Integer;
@@ -78,7 +78,7 @@ begin
 
      end;
     end;
-end;//procedure
+end;
 
 procedure TMultiJCTableData.UpdateLine(line:Integer);
 var mJCData:TMultiJCprop;
@@ -112,7 +112,7 @@ begin
  for i := 0 to mJCData.vb.Count-1 do
    str := str + Blky.GetBlkName(mJCData.vb[i]) + ', ';
  Self.LV.Items.Item[line].SubItems.Strings[3] := str;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -126,12 +126,12 @@ begin
   LI.SubItems.Add('');
 
  Self.UpdateLine(pos);
-end;//procedure
+end;
 
 procedure TMultiJCTableData.RemoveJC(index:Integer);
 begin
  Self.LV.Items.Delete(index);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

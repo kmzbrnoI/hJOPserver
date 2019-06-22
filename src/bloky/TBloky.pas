@@ -161,7 +161,7 @@ begin
  for i := 0 to Self.data.Count-1 do
   if (Assigned(Self.Data[i])) then Self.data[i].Free;
  Self.data.Clear();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -189,7 +189,7 @@ begin
  if (obl_rizeni.Count > 0) then
    for oblr in obl_rizeni do
      oblr.BlkChange(Sender);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -333,7 +333,7 @@ begin
  writelog('Ulozeno bloku: '+IntToStr(Self.Cnt), WR_DATA);
 
  Self.SaveStatToFile(Self.fstatus);
-end;//procedure
+end;
 
 procedure TBlky.SaveStatToFile(const stat_filename:string);
 var ini:TMemIniFile;
@@ -366,7 +366,7 @@ begin
  FreeAndNil(ini);
 
  writelog('Ulozen status bloku: '+IntToStr(Self.Cnt), WR_DATA);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -470,7 +470,7 @@ begin
  Self.fenabled := true;
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
-end;//procedure
+end;
 
 //disable all blocks
 procedure TBlky.Disable();
@@ -480,7 +480,7 @@ begin
  Self.fenabled := false;
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
-end;//procedure
+end;
 
 // reset all blocks
 procedure TBlky.Reset();
@@ -489,7 +489,7 @@ begin
  for i := 0 to Self.Data.Count-1 do Self.Data[i].Reset();
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -511,7 +511,7 @@ begin
      end;
    end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Hledame blok se zadanym ID v seznamu bloku pomoci binarniho vyhledavani.
@@ -533,7 +533,7 @@ begin
      left := mid + 1;
   end;
  Result := -1;
-end;//procedure
+end;
 
 function TBlky.GetBlkByID(id:integer;var Blk:TBlk):Integer;
 var index:Integer;
@@ -566,7 +566,7 @@ begin
        break;
       end;
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -661,7 +661,7 @@ begin
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesZkrat := state;
   end;//for i
-end;//procedure
+end;
 
 //pokud je na zesilovaci zmeneno napajeni
 procedure TBlky.SetZesNapajeni(zesilID:string; state:TBoosterSignal);
@@ -674,7 +674,7 @@ begin
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesNapajeni := state;
   end;//for i
-end;//procedure
+end;
 
 //pokud je na zesilovaci zmeneno napajeni
 procedure TBlky.SetZesDCC(zesilID:string; state:TBoosterSignal);
@@ -687,7 +687,7 @@ begin
    if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
      (Self.Data[i] as TBlkUsek).ZesDCC := state;
   end;//for i
-end;//procedure
+end;
 
 //vola se pri zmene stavu DCC z centraly
 procedure TBlky.SetDCC(state:boolean);
@@ -696,7 +696,7 @@ begin
  for i := 0 to Self.Data.Count-1 do
    if ((Self.data[i].typ = _BLK_USEK) or (Self.data[i].typ = _BLK_TU)) then
      TBlkUsek(Self.data[i]).CentralaDCC := state;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -734,7 +734,7 @@ var spr:Integer;
        end;
      end;
    end;//for usek
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -811,7 +811,7 @@ var cyklus,i:Integer;
     CB.Items.Add('Bloky nenalezeny');
     CB.Enabled := false;
    end;//if Length(UsekNaveestidlo) = 0}
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -830,7 +830,7 @@ begin
     end;
    if (Self.Data[i].typ = _BLK_TRAT) then (Self.Data[i] as TBlkTrat).RemoveSpr(spr);
   end;//for
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -924,7 +924,7 @@ begin
       AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy');
    end;
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -982,7 +982,7 @@ begin
  for i := 0 to Blks.Count-1 do
   (Blks[i] as TBlk).Change();
  Blks.Free();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -999,7 +999,7 @@ begin
  for i := 0 to Self.data.Count-1 do
    if ((Self.data[i].typ = _BLK_TRAT) and (Self.data[i] as TBlkTrat).IsSpr(spr, true)) then
      Self.data[i].Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

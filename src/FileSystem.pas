@@ -193,7 +193,7 @@ var read,read2:string;
     on E:Exception do
       AppEvents.LogException(E);
   end;
- end;//procedure
+ end;
 
 procedure TData.CompleteSaveToFile;
 var tmpStr:string;
@@ -324,7 +324,7 @@ var tmpStr:string;
   end;
 
   ini_lib.UpdateFile();
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -421,7 +421,7 @@ var str:string;
         ini.ReadString('PanelServer', 'popis', ''));
 
    writelog('Konfigurace naètena', WR_DATA);
- end;//procedure
+ end;
 
 procedure TKonfigurace.SaveCfgToFile(IniSave:string);
  begin
@@ -474,7 +474,7 @@ procedure TKonfigurace.SaveCfgToFile(IniSave:string);
 
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -519,7 +519,7 @@ var cyklus,cyklus2:Integer;
   Polozky.Free;
   FormData.ini.Free;
   writelog('FormData uspesne nactena',WR_DATA);
- end;//procedure
+ end;
 
 procedure TFormData.SaveFormData(IniSave:String);
 var cyklus,cyklus2:Integer;
@@ -539,7 +539,7 @@ var cyklus,cyklus2:Integer;
 
   FormData.ini.UpdateFile;
   FormData.ini.Free;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -556,7 +556,7 @@ begin
    end;
    Self.autosave_next := Now + Self.autosave_period;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

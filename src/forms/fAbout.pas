@@ -78,7 +78,7 @@ procedure TF_About.FormShow(Sender: TObject);
       AppEvents.LogException(e, 'RCS.GetDeviceVersion');
      end;
   end;
- end;//procedure
+ end;
 
 procedure TF_About.B_OKClick(Sender: TObject);
 begin
@@ -91,12 +91,12 @@ procedure TF_About.ST_about5Click(Sender: TObject);
   ShellExecute(0,nil,PChar(ST_about5.Caption),nil,nil,0);
   Screen.Cursor := crDefault;
   ST_about5.Font.Color := clPurple;
- end;//procedure
+ end;
 
 procedure TF_About.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   writelog('Skryto okno O programu',WR_MESSAGE);
- end;//procedure
+ end;
 
 procedure TF_About.ST_about3Click(Sender: TObject);
  begin
@@ -104,11 +104,11 @@ procedure TF_About.ST_about3Click(Sender: TObject);
   ShellExecute(0,nil,PChar('mailto:'+ST_about3.Caption),nil,nil,0);
   Screen.Cursor := crDefault;
   ST_about3.Font.Color := clPurple;
- end;//procedure
+ end;
 
 procedure TF_About.B_RegistraceClick(Sender: TObject);
  begin
   F_About.Close;
- end;//procedure
+ end;
 
 end.//unit

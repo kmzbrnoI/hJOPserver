@@ -64,7 +64,7 @@ begin
 
    Self.UpdateLine(HVDb.HVozidla[i]);
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +82,7 @@ begin
   end;//for i
 
  Self.reload := false;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -206,7 +206,7 @@ var line:Integer;
     Self.LV.Items.Item[line].SubItems.Strings[22] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
   else
     Self.LV.Items.Item[line].SubItems.Strings[22] := '-';
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -226,12 +226,12 @@ begin
   LI.Subitems.Add('');
 
  Self.UpdateLine(HV);
-end;//procedure
+end;
 
 procedure THVTableData.RemoveHV(line:Integer);
 begin
  Self.LV.Items.Delete(line);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

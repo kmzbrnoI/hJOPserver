@@ -127,7 +127,7 @@ begin
   Self.NormalOpenForm();
 
  Self.ShowModal();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -165,7 +165,7 @@ begin
  Self.UpdateVBCb();
 
  Self.Caption := 'Editovat složenou jízdní cestu '+Self.openMJC.Nazev;
-end;//procedure
+end;
 
 procedure TF_MJCEdit.NewOpenForm();
 begin
@@ -179,7 +179,7 @@ begin
  Self.E_VCNazev.Text := '';
  Self.ActiveControl := CB_JC_Add;
  Self.Caption := 'Nová složená jízdní cesta';
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -206,7 +206,7 @@ begin
    Self.CB_JC_Add.Items.Add(JC.nazev);
    Self.CB_JC_ids[Self.CB_JC_Add.Items.Count-1] := JC.id;
   end;
-end;//procedure
+end;
 
 procedure TF_MJCEdit.UpdateVBCb();
 var obls:TArStr;
@@ -217,7 +217,7 @@ begin
  for i := 0 to Self.vb.Count-1 do vypustit[i] := Self.vb[i];
  Self.MakeObls(obls);
  Blky.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, @Vypustit, obls, _BLK_USEK, -1);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -245,7 +245,7 @@ begin
      obls := nil;
    end;
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

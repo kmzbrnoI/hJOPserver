@@ -57,7 +57,7 @@ var i, j:integer;
 
     Self.UpdateLine(i);
    end;//for i
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +80,7 @@ begin
   end;
 
  Self.reload := false;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -171,7 +171,7 @@ var spr:TSoupravaData;
     Self.LV.Items.Item[line].SubItems.Strings[14] := 'Ano'
   else
     Self.LV.Items.Item[line].SubItems.Strings[14] := 'Ne';
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -161,7 +161,7 @@ begin
  Self.ActiveControl := Self.E_UserName;
  Self.Caption := 'Editovat uživatele '+User.id;
  Self.ShowModal();
-end;//procedure
+end;
 
 procedure TF_UserEdit.NewUser();
 begin
@@ -182,7 +182,7 @@ begin
  Self.ActiveControl := Self.E_UserName;
  Self.Caption := 'Vytvoøit nového uživatele';
  Self.ShowModal();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -255,7 +255,7 @@ begin
   end;
 
  Self.Close();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -287,7 +287,7 @@ begin
  Self.CB_Rights.Enabled   := false;
 
  Self.LV_ORs.Repaint();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

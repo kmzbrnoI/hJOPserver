@@ -78,18 +78,18 @@ procedure TBlkVystup.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.VystupSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
-end;//procedure
+end;
 
 procedure TBlkVystup.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
  Self.SaveRCS(ini_tech,section, Self.VystupSettings.RCSAddrs);
-end;//procedure
+end;
 
 procedure TBlkVystup.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  //
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -106,7 +106,7 @@ begin
 
    end;
   end;
-end;//procedure
+end;
 
 procedure TBlkVystup.Disable();
 var RCSaddr:TRCSAddr;
@@ -121,7 +121,7 @@ begin
 
    end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -137,7 +137,7 @@ begin
 
  Self.VystupSettings := data;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -57,7 +57,7 @@ procedure TF_BlkIR.OpenForm(BlokIndex:Integer);
     NormalOpenForm;
    end;
   F_BlkIR.ShowModal;
- end;//procedure
+ end;
 
 procedure TF_BlkIR.NewBlkOpenForm;
  begin
@@ -68,7 +68,7 @@ procedure TF_BlkIR.NewBlkOpenForm;
 
   F_BlkIR.Caption       := 'Editovat data noveho bloku';
   F_BlkIR.ActiveControl := E_Nazev;
- end;//procedure
+ end;
 
 procedure TF_BlkIR.NormalOpenForm;
 var glob:TBlkSettings;
@@ -91,22 +91,22 @@ var glob:TBlkSettings;
 
   F_BlkIR.Caption := 'Editovat data bloku '+glob.name+' (IR)';
   F_BlkIR.ActiveControl := B_Save;
- end;//procedure
+ end;
 
 procedure TF_BlkIR.HlavniOpenForm;
  begin
- end;//procedure
+ end;
 
 procedure TF_BlkIR.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 procedure TF_BlkIR.B_StornoClick(Sender: TObject);
  begin
   F_BlkIR.Close;
- end;//procedure
+ end;
 
 procedure TF_BlkIR.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -151,7 +151,7 @@ var glob:TBlkSettings;
   F_BlkIR.Close;
 
   Self.Blk.Change();
- end;//procedure
+ end;
 
 procedure TF_BlkIR.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
@@ -159,6 +159,6 @@ procedure TF_BlkIR.FormClose(Sender: TObject; var Action: TCloseAction);
   OpenIndex  := -1;
   CanMonitor := false;
   BlokyTableData.UpdateTable;
- end;//procedure
+ end;
 
 end.//unit

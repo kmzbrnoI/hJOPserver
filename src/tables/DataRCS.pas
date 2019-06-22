@@ -69,7 +69,7 @@ var i, j:integer;
     Self.AddrToLine.Add(i, Self.LV.Items.Count-1);
     Self.UpdateBoard(i);
    end;//for i
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +78,7 @@ var item: TListItem;
 begin
  for item in Self.LV.Items do
    Self.UpdateBoard(StrToInt(item.Caption));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -242,7 +242,7 @@ var j, cnt:integer;
       LI.SubItems.Strings[6] := 'Ex';
      end;
   end;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

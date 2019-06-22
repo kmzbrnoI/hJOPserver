@@ -55,7 +55,7 @@ begin
  end;//for i
 
  Self.UpdateTable();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,7 +91,7 @@ begin
    Self.LV.Items.Item[i].SubItems.Strings[2] := IntToStr(AC.stat_run);
    Self.LV.Items.Item[i].SubItems.Strings[3] := IntToStr(AC.stat_end);
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -101,12 +101,12 @@ begin
  LI := Self.LV.Items.Add;
  LI.Caption := ACDb.ACs[ACDb.ACs.Count-1].name;
  LI.SubItems.Add(ACDb.ACs[ACDb.ACs.Count-1].krk_filename);
-end;//procedure
+end;
 
 procedure TACTableData.RemoveAC(index:Integer);
 begin
  Self.LV.Items.Delete(index);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

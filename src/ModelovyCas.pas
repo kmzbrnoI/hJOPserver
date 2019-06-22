@@ -101,14 +101,14 @@ begin
  Self.fspeed := ini.ReadFloat('ModCas', 'speed', 5);
  Self.dateTime := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
  Self.fused := ini.ReadBool('ModCas', 'used', true);
-end;//procedure
+end;
 
 procedure TModCas.SaveData(var ini:TMemIniFile);
 begin
  ini.WriteString('ModCas', 'speed', Self.strSpeed);
  ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
  ini.WriteBool('ModCas', 'used', Self.used);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -139,7 +139,7 @@ begin
    Self.fspeed := speed;
    Self.BroadcastTime();
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -151,7 +151,7 @@ begin
    Self.BroadcastTime();
    Self.UpdateGUIColors();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -188,7 +188,7 @@ begin
  F_Main.P_Time_modelovy.Caption := TimeToStr(Self.time);
 
  Self.last_call := Now;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -201,12 +201,12 @@ begin
  F_Main.CheckNasobicWidth();
 
  ORTCPServer.BroadcastData(Self.GetTCPString());
-end;//procedure
+end;
 
 procedure TModCas.SendTimeToPanel(AContext:TIDContext);
 begin
  ORTCPServer.SendLn(AContext, Self.GetTCPString());
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -218,7 +218,7 @@ begin
    Self.fdateTime := Self.date + time;
    Self.BroadcastTime();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

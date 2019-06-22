@@ -264,7 +264,7 @@ begin
   end;
 
  PushRCStoOR(Self.ORsRef, Self.VyhSettings.RCSAddrs);
-end;//procedure
+end;
 
 procedure TBlkVyhybka.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
@@ -286,7 +286,7 @@ begin
    ini_tech.WriteInteger(section, 'zamek', Self.VyhSettings.zamek);
    ini_tech.WriteInteger(section, 'zamek-pol', Integer(Self.VyhSettings.zamekPoloha));
   end;
-end;//procedure
+end;
 
 procedure TBlkVyhybka.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
@@ -295,7 +295,7 @@ begin
 
  if (Self.VyhStav.vyl <> '') then
    ini_stat.WriteString(section, 'vyl', Self.VyhStav.Vyl);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -311,20 +311,20 @@ begin
  Self.VyhStav.redukuji_spojku := false;
  Self.MapNpEvents();
  Self.Update();       //update will call Change()
-end;//procedure
+end;
 
 procedure TBlkVyhybka.Disable();
 begin
  Self.VyhStav.poloha := disabled;
  Self.VyhStav.redukuji_spojku := false;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkVyhybka.Reset();
 begin
  Self.VyhStav.redukuji_spojku := false;
  Self.VyhStav.redukce_menu := 0;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -342,7 +342,7 @@ begin
   end;
 
  inherited Update();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -460,19 +460,19 @@ procedure TBlkVyhybka.SetVyhStit(stit:string);
 begin
  Self.VyhStav.stit := Stit;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkVyhybka.SetVyhVyl(vyl:string);
 begin
  Self.VyhStav.vyl := vyl;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkVyhybka.ORVylukaNull(Sender:TIdContext; success:boolean);
 begin
  if (success) then
   Self.Vyluka := '';
-end;//procedure
+end;
 
 procedure TBlkVyhybka.SetVyhVyl(Sender:TIDCOntext; vyl:string);
 begin
@@ -482,7 +482,7 @@ begin
   end else begin
    Self.Vyluka := vyl;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -653,7 +653,7 @@ var iplus,iminus: TRCSInputState;
 
     Self.VyhStav.poloha_real := both;
    end;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -684,7 +684,7 @@ begin
    Self.Change();
   end;
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -830,7 +830,7 @@ begin
    Self.NullOutput.enabled := false;
    Self.Change();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //gui: menu
@@ -937,24 +937,24 @@ begin
    if ((Assigned(Blk)) and (Blk.typ = _BLK_VYH)) then
     (Blk as TBlkVyhybka).vyhZaver := true;
   end;
-end;//procedure
+end;
 
 procedure TBlkVyhybka.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závìru', TBlky.GetBlksList(Self), nil);
-end;//procedure
+end;
 
 procedure TBlkVyhybka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
 begin
  if (success) then
    Self.NullVyhZaver();
-end;//procedure
+end;
 
 procedure TBlkVyhybka.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.VyhStav.redukce_menu := 0;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -999,7 +999,7 @@ begin
    Result := Result + '-,';
    if (Self.redukce_menu) then Result := Result + '*ZRUŠ REDUKCI,';
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1010,7 +1010,7 @@ begin
  case (Button) of
   F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end;//case
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1028,7 +1028,7 @@ begin
  else if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR)
  else if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR)
  else if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1036,13 +1036,13 @@ procedure TBlkVyhybka.PanelPotvrSekvNSPlus(Sender:TIdContext; success:boolean);
 begin
  if (not success) then Exit();
  Self.SetPoloha(plus, false, true, nil, Self.PanelStaveniErr);
-end;//procedure
+end;
 
 procedure TBlkVyhybka.PanelPotvrSekvNSMinus(Sender:TIdContext; success:boolean);
 begin
  if (not success) then Exit();
  Self.SetPoloha(minus, false, true, nil, Self.PanelStaveniErr);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1099,7 +1099,7 @@ begin
   end;
 
  if (not changed) then inherited Change(now);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1110,7 +1110,7 @@ begin
  // prave zacala redukce
  if (Self.VyhStav.redukce_menu = 1) then
   Self.Change();
-end;//procedure
+end;
 
 procedure TBlkVyhybka.ZrusRedukciMenu();
 begin
@@ -1120,7 +1120,7 @@ begin
  // prave skoncila redukce
  if (Self.VyhStav.redukce_menu = 0) then
   Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1143,14 +1143,14 @@ begin
      Blky.NouzZaverZrusen(Self);
     end;
   end;
-end;//procedure
+end;
 
 procedure TBlkVyhybka.NullVyhZaver();
 begin
  Self.VyhStav.vyhZaver := 0;
  Blky.NouzZaverZrusen(Self);
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1163,7 +1163,7 @@ begin
     Self.VyhStav.staveniPanel := nil;
     Self.VyhStav.staveniOR    := nil;
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1200,7 +1200,7 @@ begin
  if ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (not (Self.zamek as TBlkZamek).nouzZaver) and
   (Self.Poloha <> Self.VyhSettings.zamekPoloha) and (not (Self.zamek as TBlkZamek).porucha)) then
    (Self.zamek as TBlkZamek).porucha := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PT:

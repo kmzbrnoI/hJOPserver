@@ -146,7 +146,7 @@ begin
    if (Assigned(Self.OnZkratChange)) then Self.OnZkratChange(Self, state);
    Self.ZkratOld := state;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -174,7 +174,7 @@ begin
 
  RCSi.SetNeeded(Self.Settings.RCS.Napajeni.board);
  RCSi.SetNeeded(Self.Settings.RCS.Zkrat.board);
-end;//procedure
+end;
 
 //save data to the file
 procedure TBooster.SaveDataToFile(var ini:TMemIniFile;const section:string);
@@ -192,7 +192,7 @@ begin
  ini.WriteInteger(section, 'dcc_port', Self.Settings.RCS.DCC.port);
 
  ini.UpdateFile();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //gets data from RCS

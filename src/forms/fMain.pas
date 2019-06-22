@@ -538,7 +538,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
 procedure TF_Main.FormCreate(Sender: TObject);
  begin
   //vse presunuto do Form1.CreateSystem kvuli splash oknu
- end;//procedure
+ end;
 
 procedure TF_Main.MI_RCS_libClick(Sender: TObject);
 var fn:string;
@@ -643,7 +643,7 @@ procedure TF_Main.Timer1Timer(Sender: TObject);
        AppEvents.LogException(E, 'Main timer exception');
     end;
   end;
- end;//procedure
+ end;
 
 procedure TF_Main.PM_ResetVClick(Sender: TObject);
  begin
@@ -663,7 +663,7 @@ begin
       Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
    end;
   end;//if
-end;//procedure
+end;
 
 procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var ci:TCloseInfo;
@@ -732,7 +732,7 @@ var ci:TCloseInfo;
     end;
 
   end;//case
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -774,7 +774,7 @@ begin
         end;//case
    end;
  end;
-end;//procedure
+end;
 
 procedure TF_Main.WMPowerBroadcast(var Msg: TMessage);
 begin
@@ -806,7 +806,7 @@ begin
      end;
 
  end;//case
-end;//procedure
+end;
 
 procedure TF_Main.WMQueryEndSession(var Msg: TWMQueryEndSession);
 begin
@@ -876,7 +876,7 @@ begin
  Application.ProcessMessages();
  F_Main.S_lok_prevzato.Brush.Color := clBlue;
  TrkSystem.PrevzitAll;
-end;//procedure
+end;
 
 procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
 begin
@@ -892,7 +892,7 @@ begin
       Self.LogStatus('DCC: START: ERR '+E.Message);
      end;
   end;
-end;//procedure
+end;
 
 procedure TF_Main.A_DCC_StopExecute(Sender: TObject); //DCC stop
 begin
@@ -913,7 +913,7 @@ end;
 procedure TF_Main.A_FuncsSetExecute(Sender: TObject);
 begin
  F_FuncsSet.Show();
-end;//procedure
+end;
 
 procedure TF_Main.OnDCCGoError(Sender:TObject; Data:Pointer);
 begin
@@ -924,7 +924,7 @@ begin
  F_Main.S_Intellibox_go.Brush.Color  := clGray;
  Self.LogStatus('DCC: START: ERR: cenrála neodpověděla na příkaz');
  Application.MessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
-end;//procedure
+end;
 
 procedure TF_Main.OnDCCStopError(Sender:TObject; Data:Pointer);
 begin
@@ -934,7 +934,7 @@ begin
  F_Main.A_DCC_Stop.Enabled     := true;
  F_Main.S_Intellibox_go.Brush.Color  := clGray;
  Application.MessageBox('Centrála neodpověděla na příkaz DCC STOP', 'Varování', MB_OK OR MB_ICONWARNING);
-end;//procedure
+end;
 
 
 procedure TF_Main.A_lib_cfgExecute(Sender: TObject);
@@ -1066,7 +1066,7 @@ begin
   on E:Exception do
     Self.OnRCSErrOpen(Self, 'Nastala kritická chyba : '+E.Message);
  end;
-end;//procedure
+end;
 
 procedure TF_Main.A_RCS_StopExecute(Sender: TObject);
 begin
@@ -1173,7 +1173,7 @@ begin
 
   Self.LogStatus('RCS: komunikace spuštěna, čekám na první sken všech modulů...');
   RCSTableData.UpdateTable();
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSScanned(Sender:TObject);
 begin
@@ -1250,7 +1250,7 @@ begin
 
   if (SystemData.Status = stopping) then
    Self.A_RCS_CloseExecute(nil);
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSOpen(Sender:TObject);
 var i:Integer;
@@ -1296,7 +1296,7 @@ begin
 
    Self.A_RCS_GoExecute(nil);
   end;
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSClose(Sender:TObject);
 begin
@@ -1331,7 +1331,7 @@ begin
   end;
 
  RCSTableData.UpdateTable();
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSErrOpen(Sender:TObject; errMsg:string);
 begin
@@ -1349,7 +1349,7 @@ begin
  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
  Application.MessageBox(PChar('Při otevírání RCS nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSErrClose(Sender:TObject; errMsg:string);
 begin
@@ -1366,7 +1366,7 @@ begin
 
  Application.MessageBox(PChar('Při uzavírání RCS nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
  writelog('----- RCS CLOSE FAIL - '+errMsg+' -----', WR_ERROR, 21);
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSErrStart(Sender:TObject; errMsg:string);
 begin
@@ -1389,7 +1389,7 @@ begin
   writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR,21);
 
   Application.MessageBox(PChar('Při zapínání komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSErrStop(Sender:TObject; errMsg:string);
 begin
@@ -1406,7 +1406,7 @@ begin
 
   Application.MessageBox(PChar('Při vypínání komunikace nastala chyba:'+#13#10+errMsg+#13#10), 'Chyba', MB_OK OR MB_ICONWARNING);
   writelog('----- RCS STOP FAIL - '+errMsg+' -----', WR_ERROR, 21);
-end;//procedure
+end;
 
 procedure TF_Main.OnRCSReady(Sender:TObject; ready:boolean);
 var started, opened: boolean;
@@ -1540,7 +1540,7 @@ begin
  SystemData.Status := starting;
  Self.A_System_Start.Enabled := false;
  Self.A_RCS_OpenExecute(nil);
-end;//procedure
+end;
 
 procedure TF_Main.A_System_StopExecute(Sender: TObject);       //system stop
 begin
@@ -1577,7 +1577,7 @@ begin
    sleep(1);
   end;
  Self.call_method := method;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1603,7 +1603,7 @@ begin
    Exit;
   end;
  Application.ProcessMessages;
-end;//procedure
+end;
 
 procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
 var return:Integer;
@@ -1717,7 +1717,7 @@ begin
  for i := 0 to FuncsFyznam.Items.Count-1 do
    Self.M_funcsVyznam.Lines.Add(FuncsFyznam.Items[i]);
  F_FuncsSet.UpdateFuncsList(FuncsFyznam.Items);
-end;//procedure
+end;
 
 procedure TF_Main.B_CS_Ver_UpdateClick(Sender: TObject);
 begin
@@ -1873,7 +1873,7 @@ begin
    UsrDB.RemoveUser(Self.LV_Users.ItemIndex);
    Self.B_User_Delete.Enabled := false;
   end;
-end;//procedure
+end;
 
 procedure TF_Main.B_VC_AddClick(Sender: TObject);
 begin
@@ -1935,7 +1935,7 @@ begin
    for i := 0 to (Sender as TPopUpMenu).Items.Count-1 do
     (Sender as TPopUpMenu).Items.Items[i].Enabled := true;
   end;
-end;//procedure
+end;
 
 procedure TReset.ZakladniPolohaVyhybek;
 var i:Integer;
@@ -1948,7 +1948,7 @@ var i:Integer;
     (Blk as TBlkVyhybka).SetPoloha(plus);
    end;//for cyklus
   writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
- end;//procedure
+ end;
 
 procedure TF_Main.PM_SB1Click(Sender: TObject);
 begin
@@ -1996,7 +1996,7 @@ begin
        AppEvents.LogException(E, 'Function timer exception');
     end;
   end;
-end;//procedure
+end;
 
 procedure TF_Main.T_konfliktyTimer(Sender: TObject);
 begin
@@ -2005,7 +2005,7 @@ begin
    F_Main.SB1.Panels.Items[_SB_LOG].Text:='';
    log:=false;
   end;
-end;//procedure
+end;
 
 procedure TF_Main.FreeVars;
  begin
@@ -2143,12 +2143,12 @@ procedure TF_Main.RepaintObjects;
   GB_Centrala.Width := TS_Technologie.ClientWidth - 2*GB_Centrala.Left;
   GB_Connected_Panels.Width := TS_Technologie.ClientWidth - 2*GB_Connected_Panels.Left;
   GB_Log.Width := TS_Technologie.Width - GB_Log.Left - GB_stav_technologie.Left;
-end;//procedure
+end;
 
 procedure TF_Main.FormResize(Sender: TObject);
  begin
   RepaintObjects;
- end;//procedure
+ end;
 
 procedure TF_Main.L_DateDblClick(Sender: TObject);
 begin
@@ -2255,12 +2255,12 @@ procedure TF_Main.LoadIniLibData;
  begin
   Self.CHB_Mainlog_File.Checked  := ini_lib.ReadBool('Log','main-file', true);
   Self.CHB_Mainlog_Table.Checked := ini_lib.ReadBool('Log','main-table', true);
- end;//procedure
+ end;
 
 procedure TF_Main.SetStartVars;
  begin
   CloseMessage := true;
- end;//procedure
+ end;
 
 procedure TVytizeni.DetekujVytizeniProcesoru;
  begin
@@ -2295,13 +2295,13 @@ procedure TF_Main.DetekujAutSpusteniSystemu;
        end;//else not KomunikacePocitani
      end;//if (not GetFunctions.GetSystemStart) and ...
    end;//if KomunikacePocitani <> -1
- end;//procedure
+ end;
 
 procedure TF_Main.VypisDatumCas;
  begin
   P_Date.Caption := FormatDateTime('dd. mm. yyyy', Now);
   P_Time.Caption := FormatDateTime('hh:mm:ss', Now);
- end;//procedure
+ end;
 
 procedure TF_Main.SB_AC_PauseClick(Sender: TObject);
 begin
@@ -2372,14 +2372,14 @@ procedure TF_Main.OnStart;
     F_Main.Close;
     Exit;
    end;//if not CloseMessage
- end;//procedure
+ end;
 
 procedure TF_Main.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   F_SystemInfo.OpenForm('Probíhá ukládání dat...');
   Application.ProcessMessages;
   CloseForm;
- end;//procedure
+ end;
 
 procedure TF_Main.SaveFormPosition;
  begin
@@ -2394,7 +2394,7 @@ procedure TF_Main.SaveFormPosition;
   Konfigurace.ini.WriteInteger('Application', 'Width',F_Main.Width);
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
- end;//procedure
+ end;
 
 procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);
  begin
@@ -2437,7 +2437,7 @@ procedure TF_Main.CreateSystem;
   F_Main.Caption := 'hJOPserver – v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
   F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
   RepaintObjects;
- end;//procedure
+ end;
 
 procedure TVytizeni.DrawCPUGauge;
 var cyklus:Integer;
@@ -2456,12 +2456,12 @@ var cyklus:Integer;
   Gauge.Width := F_Main.SB1.Panels.Items[_SB_PROC].Width-30;
   Gauge.Color := clWhite;
   Gauge.ForeColor := clLime;
- end;//procedure
+ end;
 
 procedure TF_Main.FormPaint(Sender: TObject);
  begin
   Vytizeni.ResizeCPUGauge;
- end;//procedure
+ end;
 
 procedure TVytizeni.ResizeCPUGauge;
 var cyklus,Zleva:Integer;
@@ -2474,19 +2474,19 @@ var cyklus,Zleva:Integer;
    end;//for cyklus
   Zleva := Zleva + 30;
   Gauge.Left := Zleva;
- end;//procedure
+ end;
 
 procedure TF_Main.PM_ClientsPopup(Sender: TObject);
 var i:Integer;
 begin
  for i := 0 to F_Main.PM_Clients.Items.Count-1 do
   F_Main.PM_Clients.Items.Items[i].Enabled := (F_Main.LV_Clients.Selected <> nil) and (ORTCPServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
-end;//procedure
+end;
 
 procedure TF_Main.PM_ConsoleClick(Sender: TObject);
  begin
   F_Console.Show;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //centrala events:
@@ -2528,7 +2528,7 @@ begin
    ORTCPServer.DCCStop();
   end;//else state
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2688,7 +2688,7 @@ procedure TF_Main.LV_ZesilovaceChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
  B_zes_delete.Enabled := LV_Zesilovace.Selected <> nil;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2988,7 +2988,7 @@ procedure TF_Main.DisableRemoveButtons;
   Self.SB_AC_Stop.Enabled   := false;
   Self.SB_AC_Pause.Enabled  := false;
   Self.SB_AC_Repeat.Enabled := false;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3040,7 +3040,7 @@ begin
      LI.SubItems.Add('Kontrola stavu návěstidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+
                      '; navest:'+IntToStr(AC.kroky[i].Params[1]));
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

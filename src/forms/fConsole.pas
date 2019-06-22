@@ -49,7 +49,7 @@ begin
  Self.M_console.Lines.Add('Spustena konzole - v '+_CONSOLE_V);
  Self.M_console.Lines.Add('------------------------');
  Self.M_console.Lines.Add('> ');
-end;//procedure
+end;
 
 procedure TF_Console.B_OK_consoleClick(Sender: TObject);
 var pole_dat:TStrings;
@@ -158,11 +158,11 @@ begin
  M_console.Lines.Add('> ');
  E_console.Text := '';
  pole_dat.Free;
-end;//procedure
+end;
 
 procedure TF_Console.PM_DeleteConsoleClick(Sender: TObject);
  begin
   M_console.Clear();
- end;//procedure
+ end;
 
 end.//unit

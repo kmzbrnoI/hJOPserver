@@ -125,7 +125,7 @@ begin
 
  Self.Users.Sort(TComparer<TUser>.Construct(TUser.comparer));
  writelog('Naèteno ' + IntToStr(Self.Users.Count) + ' uživatelù', WR_USERS);
-end;//procedure
+end;
 
 procedure TUsrDb.SaveData(const filename:string);
 var ini:TMemIniFile;
@@ -154,7 +154,7 @@ begin
  end;
 
  writelog('Uživatelé uloženi', WR_USERS);
-end;//procedure
+end;
 
 procedure TUsrDb.SaveStat(const filename: string);
 var ini:TMemIniFile;
@@ -206,7 +206,7 @@ begin
  Self.Users.Add(User);
  UsersTableData.AddUser();
  Self.Sort();
-end;//procedure
+end;
 
 procedure TUsrDb.RemoveUser(index:Integer);
 var oblr:string;
@@ -227,7 +227,7 @@ begin
  end;
 
  UsersTableData.RemoveUser(index);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -256,7 +256,7 @@ begin
     UsersTableData.UpdateLine(i);
     Exit();
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

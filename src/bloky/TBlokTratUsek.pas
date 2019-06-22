@@ -329,7 +329,7 @@ begin
      Self.TUsettings.Zastavka.ev_sudy.enabled := false;
    end;
   end;
-end;//procedure
+end;
 
 // ulozi konfiguracni data do souboru
 procedure TBlkTU.SaveData(ini_tech:TMemIniFile;const section:string);
@@ -377,7 +377,7 @@ begin
     str := str + Self.TUsettings.Zastavka.soupravy[i] + ';';
    ini_tech.WriteString(section, 'zast_soupravy', str);
   end;
-end;//procedure
+end;
 
 // ulozi stavova data do souboru
 procedure TBlkTU.SaveStatus(ini_stat:TMemIniFile;const section:string);
@@ -608,7 +608,7 @@ begin
      Self.ZastRunTrain();
     end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -627,7 +627,7 @@ begin
  end;
 
  Self.Change();     // change je dulezite volat kvuli menu
-end;//procedure
+end;
 
 procedure TBlkTU.ZastRunTrain();
 begin
@@ -643,7 +643,7 @@ begin
  end;
 
  Self.Change();     // change je dulezite volat kvuli menu
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -789,13 +789,13 @@ procedure TBlkTU.MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state
 begin
  if (not Self.TUStav.zast_stopped) then
    Self.fTUStav.zast_enabled := new_state;
-end;//procedure
+end;
 
 procedure TBlkTU.MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  if (Self.TUStav.zast_stopped) then
    Self.ZastRunTrain();
-end;//procedure
+end;
 
 procedure TBlkTU.MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
 var podm:TPSPodminky;
@@ -833,7 +833,7 @@ begin
 
    if (Self.Trat <> nil) then Self.Trat.Change();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -846,7 +846,7 @@ begin
  else if (item = 'ZAST<') then Self.MenuZastClick(SenderPnl, SenderOR, false)
  else if (item = 'RBP') then Self.MenuRBPClick(SenderPnl, SenderOR)
  else inherited;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1153,7 +1153,7 @@ begin
     end;
   end;
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

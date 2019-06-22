@@ -171,19 +171,19 @@ begin
   on e:Exception do
     writelog('Server: stack data parse error : '+e.Message, WR_ERROR);
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORStack.ORCmdPV(SenderPnl:TIdContext);
 begin
  Self.volba := PV;
-end;//procedure
+end;
 
 procedure TORStack.ORCmdVZ(SenderPnl:TIdContext);
 begin
  Self.volba := VZ;
-end;//procedure
+end;
 
 procedure TORStack.ORCmdEZ(SenderPnl:TIdContext; show:boolean);
 begin
@@ -197,7 +197,7 @@ begin
    if (Self.EZs.Contains(SenderPnl)) then
      Self.EZs.Remove(SenderPnl);
   end;
-end;//procedure
+end;
 
 procedure TORStack.ORCmdRM(SenderPnl:TIdContext; id:Integer);
 var i:Integer;
@@ -220,7 +220,7 @@ begin
  end;
 
  Self.RemoveFromStack(i, SenderPnl);
-end;//procedure
+end;
 
 procedure TORStack.ORCmdSWITCH(SenderPnl:TIdContext; fromId:Integer; toId:Integer; listend:boolean = false);
 var i, j:Integer;
@@ -284,7 +284,7 @@ begin
    ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkUvazka).DoZTS(SenderPnl, Self.OblR)
   else if (Self.stack[0].ClassType = TORStackCmdUTS) then
    ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkUvazka).DoUTS(SenderPnl, Self.OblR)
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Pridani obecneho prikazu do zasobniku:
@@ -311,7 +311,7 @@ begin
  (Self.OblR as TOR).BroadcastData('ZAS;ADD;'+IntToStr(cmd.id)+'|'+description);
  writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - : pøidán pøíkaz ' + description + ', id = '+IntToStr(cmd.id), WR_STACK);
  (Self.OblR as TOR).changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -330,7 +330,7 @@ begin
   on E:Exception do
     ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
  end;
-end;//procedure
+end;
 
 // Pridani zdosti o tratovy souhlas do zasobniku
 procedure TORStack.AddZTS(uvazka:TObject; SenderPnl:TIDContext);
@@ -345,7 +345,7 @@ begin
   on E:Exception do
     ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
  end;
-end;//procedure
+end;
 
 // Pridani udeleni tratoveho souhlasu do zasobniku:
 procedure TORStack.AddUTS(uvazka:TObject; SenderPnl:TIDContext);
@@ -360,7 +360,7 @@ begin
   on E:Exception do
     ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -380,7 +380,7 @@ begin
  end;//case
 
  (Self.OblR as TOR).changed := true;
-end;//procedure
+end;
 
 procedure TORStack.SetHint(hint:string);
 begin
@@ -390,7 +390,7 @@ begin
    (Self.OblR as TOR).BroadcastData('ZAS;HINT;'+hint);
    (Self.OblR as TOR).changed := true;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -415,7 +415,7 @@ begin
    end;
  end;
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -479,7 +479,7 @@ begin
  JC.StavJC(cmd.Pnl, Self.OblR, Self);
  Self.UPOenabled := false;
  bariery.Free();
-end;//procedure
+end;
 
 procedure TORStack.ZpracujZTS(cmd:TORStackCmdZTS);
 var uv:TBlkUvazka;
@@ -499,7 +499,7 @@ begin
   end else begin
    Self.UPOenabled := false;
   end;
-end;//procedure
+end;
 
 procedure TORStack.ZpracujUTS(cmd:TORStackCmdUTS);
 var uv:TBlkUvazka;
@@ -520,7 +520,7 @@ begin
   end else begin
    Self.UPOenabled := false;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -529,7 +529,7 @@ end;//procedure
 procedure TORStack.SendList(connection:TIdContext);
 begin
  ORTCPServer.SendLn(connection, (Self.OblR as TOR).id+';ZAS;LIST;'+Self.GetList());
-end;//procedure
+end;
 
 function TORStack.GetList():string;
 var i:Integer;
@@ -542,7 +542,7 @@ begin
 
  for i := 0 to Self.stack.Count-1 do
    Result := Result + '[' + IntToStr(Self.stack[i].id) + '|' + Self.GetStackString(Self.stack[i]) + ']';
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -557,7 +557,7 @@ begin
  (Self.OblR as TOR).BroadcastData('ZAS;LIST;1;;');
  Self.hint := '';
  Self.UPOenabled := false;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -576,7 +576,7 @@ begin
   ORTCPServer.SendLn(SenderPnl, (Self.OblR as TOR).id+';ZAS;UPO;0');
 
  Self.SendList(SenderPnl);
-end;//procedure
+end;
 
 procedure TORStack.OnDisconnect(SenderPnl:TIdContext);
 begin
@@ -603,7 +603,7 @@ begin
     Self.RemoveFromStack(i);
     Exit();
    end;
-end;//procedure
+end;
 
 procedure TORStack.RemoveZTS(uvazka:TObject);
 begin
@@ -642,7 +642,7 @@ begin
   (Self.OblR as TOR).BroadcastData('ZAS;UPO;0');
 
  Self.fUPOenabled := enabled;
-end;//procedure
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -662,7 +662,7 @@ begin
    Self.EZs.Clear();
 
  (Self.OblR as TOR).changed := true;
-end;//procedure
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 

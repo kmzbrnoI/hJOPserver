@@ -131,13 +131,13 @@ var glob:TBlkSettings;
 procedure TF_BlkPrejezd.B_StornoClick(Sender: TObject);
  begin
   Self.Close;
- end;//procedure
+ end;
 
 procedure TF_BlkPrejezd.HlavniOpenForm;
  begin
   SetLength(Self.obls,0);
   Self.LB_Stanice.Clear();
- end;//procedure
+ end;
 
 procedure TF_BlkPrejezd.NormalOpenForm;
 var glob:TBlkSettings;
@@ -170,7 +170,7 @@ var glob:TBlkSettings;
 
   Self.Caption     := 'Pøejezd '+glob.name;
   Self.ActiveControl := Self.B_save_P;
- end;//procedure
+ end;
 
 procedure TF_BlkPrejezd.NewOpenForm;
  begin
@@ -186,19 +186,19 @@ procedure TF_BlkPrejezd.NewOpenForm;
 
   Self.Caption := 'Nový pøejezd';
   Self.ActiveControl := Self.E_Prj_Nazev;
- end;//procedure
+ end;
 
 procedure TF_BlkPrejezd.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   NewBlk     := false;
   OpenIndex  := -1;
   BlokyTableData.UpdateTable;
-end;//procedure
+end;
 
 procedure TF_BlkPrejezd.NewBlkCreate;
  begin
   Self.NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 end.//unit

@@ -85,19 +85,19 @@ begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
  Self.IRSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
-end;//procedure
+end;
 
 procedure TBlkIR.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
 
  Self.SaveRCS(ini_tech,section,Self.IRSettings.RCSAddrs);
-end;//procedure
+end;
 
 procedure TBlkIR.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  //
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -105,14 +105,14 @@ procedure TBlkIR.Enable();
 begin
  Self.IRStav.Stav := none;
  Self.Update();   //will call change
-end;//procedure
+end;
 
 procedure TBlkIR.Disable();
 begin
  Self.IRStav.Stav    := disabled;
  Self.IRStav.StavOld := disabled;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -139,7 +139,7 @@ begin
   end;
 
  inherited;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -155,7 +155,7 @@ begin
 
  Self.IRSettings := data;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

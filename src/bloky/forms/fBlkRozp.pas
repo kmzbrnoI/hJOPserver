@@ -61,7 +61,7 @@ procedure TF_BlkRozp.OpenForm(BlokIndex:Integer);
     NormalOpenForm;
    end;
   Self.ShowModal();
- end;//procedure
+ end;
 
 procedure TF_BlkRozp.NewBlkOpenForm;
  begin
@@ -72,7 +72,7 @@ procedure TF_BlkRozp.NewBlkOpenForm;
 
   Self.Caption       := 'Editovat data noveho bloku';
   Self.ActiveControl := E_Nazev;
- end;//procedure
+ end;
 
 procedure TF_BlkRozp.NormalOpenForm;
 var glob:TBlkSettings;
@@ -99,23 +99,23 @@ var glob:TBlkSettings;
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (rozpojovaè)';
   Self.ActiveControl := B_Save;
- end;//procedure
+ end;
 
 procedure TF_BlkRozp.HlavniOpenForm;
  begin
   Self.LB_Stanice.Clear();
- end;//procedure
+ end;
 
 procedure TF_BlkRozp.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 procedure TF_BlkRozp.B_StornoClick(Sender: TObject);
  begin
   Self.Close();
- end;//procedure
+ end;
 
 procedure TF_BlkRozp.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -157,13 +157,13 @@ var glob:TBlkSettings;
 
   Self.Close();
   Self.Blk.Change();
- end;//procedure
+ end;
 
 procedure TF_BlkRozp.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   NewBlk     := false;
   OpenIndex  := -1;
   BlokyTableData.UpdateTable;
- end;//procedure
+ end;
 
 end.//unit

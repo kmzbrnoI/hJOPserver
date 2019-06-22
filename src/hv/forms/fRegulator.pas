@@ -148,7 +148,7 @@ var func:TFunkce;
   except
     Self.LokoComErr(Self, nil);
   end;
- end;//procedure
+ end;
 
 procedure TF_DigiReg.OpenForm(HV:THV);
  begin
@@ -180,7 +180,7 @@ procedure TF_DigiReg.OpenForm(HV:THV);
 
   Self.Show();
   Self.T_Speed.Enabled := true;
- end;//procedure
+ end;
 
 procedure TF_DigiReg.B_PrevzitLokoClick(Sender: TObject);
 begin
@@ -192,7 +192,7 @@ begin
   on E:Exception do
     Application.MessageBox(PChar('Pøevzetí HV se nezdaøilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
-end;//procedure
+end;
 
 procedure TF_DigiReg.B_IdleClick(Sender: TObject);
 begin
@@ -216,7 +216,7 @@ procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
 
   Self.SetElemntsState(false);
   Self.UpdateElements();
- end;//procedure
+ end;
 
 procedure TF_DigiReg.FormCreate(Sender: TObject);
  begin
@@ -249,7 +249,7 @@ var tmp:THV;
    end;
 
   Self.T_Speed.Enabled := false;
- end;//procedure
+ end;
 
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);
  begin
@@ -263,20 +263,20 @@ procedure TF_DigiReg.B_STOPClick(Sender: TObject);
   end;
 
   Self.UpdateElements();
- end;//procedure
+ end;
 
 procedure TF_DigiReg.RG_SmerClick(Sender: TObject);
  begin
   Self.speed := -1;
   Self.T_SpeedTimer(Self);
- end;//procedure
+ end;
 
 //zavola se po zadosti o prevezeti, pokud je lokomotiva volna
 procedure TF_DigiReg.ConnectChange();
 begin
  Self.SetElemntsState(((Self.OpenHV.Slot.prevzato) and ((Self.OpenHV.Slot.pom = pc) or (Self.OpenHV.Slot.pom = released))));
  Self.UpdateElements();
-end;//procedure
+end;
 
 procedure TF_DigiReg.SetElemntsState(state:boolean);
  begin
@@ -298,7 +298,7 @@ procedure TF_DigiReg.SetElemntsState(state:boolean);
   CHB_f11.Enabled := state;
   CHB_f12.Enabled := state;
   CHB_DojezdIgnorate.Enabled := state;
- end;//procedure
+ end;
 
 procedure TF_DIgiReg.UpdateElements();
 var Slot:TSlot;
@@ -356,7 +356,7 @@ begin
  CHB_f10.Checked := Slot.funkce[10];
  CHB_f11.Checked := Slot.funkce[11];
  CHB_f12.Checked := Slot.funkce[12];
-end;//procedure
+end;
 
 procedure TF_DIgiReg.Stolen();
 begin
@@ -391,7 +391,7 @@ begin
   Self.L_speed.Caption  := IntToStr(TrkSystem.GetStepSpeed(TB_reg.Position));
 
   Self.speed := Self.TB_reg.Position;
-end;//procedure
+end;
 
 // vyvola se, pokud je me okynko aktivni a je nad nim stiskla klavesa
 procedure TF_DigiReg.MyKeyPress(key:Integer);
@@ -425,19 +425,19 @@ begin
   73: Self.B_IdleClick(Self);   // 'i'
  end;
 
-end;//procedure
+end;
 
 procedure TF_DigiReg.LokoComOK(Sender:TObject; data:Pointer);
 begin
  Self.L_ComStatus.Font.Color := clGreen;
  Self.L_ComStatus.Caption := 'loko KOMUNIKUJE';
-end;//procedure
+end;
 
 procedure TF_DigiReg.LokoComErr(Sender:TObject; data:Pointer);
 begin
  Self.L_ComStatus.Font.Color := clRed;
  Self.L_ComStatus.Caption := 'loko NEKOMUNIKUJE';
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -462,7 +462,7 @@ begin
  frm := Self.GetForm(addr);
  if ((frm = nil) or (Sender = frm)) then Exit;
  frm.UpdateElements();
-end;//procedure
+end;
 
 procedure TRegulatorCollector.ConnectChange(addr:Word);
 var frm:TF_DigiReg;
@@ -470,7 +470,7 @@ begin
  frm := Self.GetForm(addr);
  if (frm = nil) then Exit;
  frm.ConnectChange();
-end;//procedure
+end;
 
 procedure TRegulatorCollector.Open(HV:THV);
 var i:Integer;
@@ -490,7 +490,7 @@ begin
    raise ERCMaxWindows.Create('Otevøen maximální poèet oken regulátorù!');
 
  Self.forms.data[i].OpenForm(HV);
-end;//procedure
+end;
 
 function TRegulatorCollector.GetForm(addr:Word):TF_DigiReg;
 var i:Integer;
@@ -509,7 +509,7 @@ var i:Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    Self.forms.data[i].Close;
-end;//procedure
+end;
 
 procedure TRegulatorCollector.Stolen(addr:Word);
 var frm:TF_DigiReg;
@@ -518,7 +518,7 @@ begin
  if (frm = nil) then Exit;
 
  frm.Stolen();
-end;//procedure
+end;
 
 procedure TRegulatorCollector.KeyPress(key:Integer; var handled:boolean);
 var i:Integer;
@@ -534,7 +534,7 @@ begin
      Exit;
     end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -60,7 +60,7 @@ begin
   Self.ParseGlobal(Sender, parsed)
  else
   Self.ParseLoko(Sender, parsed);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;G;"
@@ -168,7 +168,7 @@ begin
    (Sender.Data as TTCPORsRef).regulator_zadost := nil;
    ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok;Žádost zrušena');
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;addr;"
@@ -415,7 +415,7 @@ begin
  else if (parsed[3] = 'TOTAL') then
    HV.ruc := (parsed[4] = '1');
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -444,7 +444,7 @@ begin
    TTCPORsRef(conn.Data).regulator_loks.Clear();
    HVDb.RemoveRegulator(conn);
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -455,7 +455,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -469,7 +469,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 procedure TTCPRegulator.PanelLOKResponseErr(Sender:TObject; Data:Pointer);
 begin
@@ -479,7 +479,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -499,7 +499,7 @@ begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
      ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
-end;//procedure
+end;
 
 //  or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
 procedure TTCPRegulator.LokUpdateSpeed(HV:THV; exclude:TObject = nil);
@@ -508,7 +508,7 @@ begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
      ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';SPD;'+IntToStr(TrkSystem.GetStepSpeed(HV.Slot.speed))+';'+IntToStr(HV.Slot.speed)+';'+IntToStr(HV.Slot.smer)+';');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -518,7 +518,7 @@ begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
      ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;stolen;Loko ukradeno ovladaèem');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -533,7 +533,7 @@ begin
 
  for i := 0 to HV.Stav.regulators.Count-1 do
    ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';TOTAL;'+state);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -620,7 +620,7 @@ begin
     TTCPORsRef(Regulator.Data).regulator_loks.Add(HV);
     ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // odhlasit vsechna hnaci vozidla regulatoru
@@ -635,7 +635,7 @@ begin
  TTCPORsRef(reg.Data).regulator := false;
  TTCPORsRef(reg.Data).regulator_user := nil;
  TTCPORsRef(reg.Data).regulator_loks.Clear();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

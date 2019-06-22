@@ -136,7 +136,7 @@ begin
  ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vb', '')), sl);
  for i := 0 to sl.Count-1 do
    Self.fproperties.vb.Add(StrToInt(sl[i]));
-end;//procedure
+end;
 
 procedure TMultiJC.SaveData(ini:TMemIniFile);
 var i:Integer;
@@ -158,7 +158,7 @@ begin
    str := str + IntToStr(Self.data.vb[i]) + ';';
  if (str <> '') then
    ini.WriteString(section, 'vb', str);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -192,7 +192,7 @@ begin
      Self.RusStaveni();
     end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -213,7 +213,7 @@ begin
  (SenderOR as TOR).vb.Clear();
 
  Self.changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -243,7 +243,7 @@ begin
   end;
 
  Self.changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

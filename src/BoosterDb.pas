@@ -157,7 +157,7 @@ begin
  ZesTableData.LoadToTable();
 
  writelog('Naèteno '+IntToStr(Self.Count)+' zesilovaèù', WR_DATA);
-end;//procedure
+end;
 
 procedure TBoosterDb.SaveToFile(inifilename:string);
 var ini:TMemIniFile;
@@ -183,7 +183,7 @@ begin
  ini.Free();
 
  writelog('Uloženo zesilovaèù: '+IntToStr(Self.Count), WR_DATA);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //db operations
@@ -220,7 +220,7 @@ begin
  for booster in Self.db.Values do booster.Update();
 
  Self.ControlBeep();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -228,19 +228,19 @@ procedure TBoosterDb.OnZkratChange(Sender:TObject; state:TBoosterSignal);
 begin
  Blky.SetZesZkrat(TBooster(Sender).id, state);
  ZesTableData.ZesChange();
-end;//procedure
+end;
 
 procedure TBoosterDb.OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
 begin
  Blky.SetZesNapajeni(TBooster(Sender).id, state);
  ZesTableData.ZesChange();
-end;//procedure
+end;
 
 procedure TBoosterDb.OnDCCChange(Sender:TObject; state:TBoosterSignal);
 begin
  Blky.SetZesDCC(TBooster(Sender).id, state);
  ZesTableData.ZesChange();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -265,7 +265,7 @@ begin
 
  if (Self.Beep.NextBeep < Now) then
    Self.Beep.NextBeep := Now+EncodeTime(0,0,Self._BEEP_INTERVAL,0);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -112,7 +112,7 @@ begin
  for i := 0 to _MAX_ADDR-1 do
    if (Self.HVs[i] <> nil) then
      FreeAndNil(Self.HVs[i]);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +164,7 @@ begin
 
  ini.Free();
  sections.Free();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -198,7 +198,7 @@ var SR:TSearchRec;
   finally
     stateIni.Free();
   end;
-end;//procedure
+end;
 
 procedure THVDb.SaveData(const dirname:string);
 var i:Integer;
@@ -217,7 +217,7 @@ begin
      end;
     end;//if <> nil
   end;//for i
-end;//procedure
+end;
 
 procedure THVDb.SaveState(const statefn:string);
 var i:Integer;
@@ -357,7 +357,7 @@ begin
 
  // aktualizujeme tabulky:
  HVTableData.AddHV(HV.index, HV);
-end;//procedure
+end;
 
 procedure THVDb.Remove(addr:Word);
 var i, index:Integer;
@@ -417,7 +417,7 @@ begin
      index := index + 1;
     end;
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -427,7 +427,7 @@ begin
  for i := 0 to _MAX_ADDR-1 do
    if (Assigned(Self.HVs[i])) then
      Self.HVs[i].RemoveRegulator(conn);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -437,7 +437,7 @@ begin
  for i := 0 to _MAX_ADDR-1 do
    if (Assigned(self.HVs[i])) then
      Self.HVs[i].UpdateTokenTimeout();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

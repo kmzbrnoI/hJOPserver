@@ -115,7 +115,7 @@ procedure TF_BlkTU.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 procedure TF_BlkTU.NewBlkOpenForm;
  begin
@@ -156,7 +156,7 @@ procedure TF_BlkTU.NewBlkOpenForm;
 
   Self.Caption := 'Editace noveho tratoveho useku';
   Self.ActiveControl := E_Nazev;
- end;//procedure
+ end;
 
 procedure TF_BlkTU.NormalOpenForm;
 var glob:TBlkSettings;
@@ -280,7 +280,7 @@ var glob:TBlkSettings;
 
   Self.Caption := 'Edititace dat bloku '+glob.name+' (tratovy usek)';
   Self.ActiveControl := Self.B_OK;
- end;//procedure
+ end;
 
 procedure TF_BlkTU.HlavniOpenForm;
 var booster:TBooster;
@@ -290,12 +290,12 @@ var booster:TBooster;
   //nacteni zesilovacu
   Self.CB_Zesil.Clear();
   for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
- end;//procedure
+ end;
 
 procedure TF_BlkTU.B_StornoClick(Sender: TObject);
  begin
   Self.Close;
- end;//procedure
+ end;
 
 procedure TF_BlkTU.B_OKClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -440,7 +440,7 @@ var glob:TBlkSettings;
 
   Self.Close;
   Self.Blk.Change();
- end;//procedure
+ end;
 
 procedure TF_BlkTU.FormClose(Sender: TObject; var Action: TCloseAction);
  begin

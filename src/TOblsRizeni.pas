@@ -117,7 +117,7 @@ begin
  ini_stat.Free();
 
  writelog('Naèteno '+IntToStr(Self.ORsDatabase.Count)+' stanic',WR_DATA);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ukladani stavu vsech oblasti rizeni
@@ -214,7 +214,7 @@ var i:Integer;
 begin
  for i := 0 to Self.ORsDatabase.Count-1 do
    Self.ORsDatabase[i].Update();
-end;//procedure
+end;
 
 procedure TORs.DisconnectPanels();
 var i:Integer;
@@ -226,7 +226,7 @@ begin
  for i := 0 to _MAX_ADDR-1 do
   if (Assigned(HVDb.HVozidla[i])) then
     HVDb.HVozidla[i].Stav.regulators.Clear();
-end;//procedure
+end;
 
 procedure TORs.SendORList(Context:TIdContext);
 var i:Integer;
@@ -237,7 +237,7 @@ begin
    str := str + '[' + Self.ORsDatabase[i].id + ',' + Self.ORsDatabase[i].Name + ']';
 
  ORTCPServer.SendLn(Context, str);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -246,7 +246,7 @@ var OblR:TOR;
 begin
  for OblR in Self.ORsDatabase do
    OblR.RCSFail(addr);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -260,7 +260,7 @@ begin
    if (Self.ORsDatabase[i] = selected) then
     CB.ItemIndex := i;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

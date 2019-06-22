@@ -176,7 +176,7 @@ begin
  finally
    ini.Free();
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -201,7 +201,7 @@ procedure TACDb.Update();
 var i:Integer;
 begin
  for i := 0 to Self.ACs.Count-1 do Self.ACs[i].Update();   
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -211,7 +211,7 @@ begin
  for i := 0 to Self.ACs.Count-1 do
   if (Self.ACs[i].running) then Self.ACs[i].Stop();
  F_Main.LV_AC_Db.ItemIndex := -1;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

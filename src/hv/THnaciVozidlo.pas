@@ -340,7 +340,7 @@ begin
 
  strs.Free();
  strs2.Free();
-end;//procedure
+end;
 
 procedure THV.LoadState(ini:TMemIniFile; section:string);
 var i:Integer;
@@ -423,7 +423,7 @@ begin
 
  ini.UpdateFile();
  ini.Free();
-end;//procedure
+end;
 
 procedure THV.SaveData();
 begin
@@ -475,7 +475,7 @@ begin
  Self.Stav.najeto_vpred.Bloku := 0;
  Self.Stav.najeto_vzad.Metru  := 0;
  Self.Stav.najeto_vzad.Bloku  := 0;
-end;//procedure
+end;
 
 // format vystupnich dat: adresa;nazev;majitel;najeto_metru_vpres;majeto_bloku_vpred;najeto_metru_vzad;najeto_bloku_vzad
 function THV.ExportStats():string;
@@ -669,7 +669,7 @@ begin
  // aktulizace LOKO v regulatorech
  Self.UpdateAllRegulators();
  Self.SaveData();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -694,7 +694,7 @@ begin
      if (send_remove) then Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.adresa));
   end;
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -716,7 +716,7 @@ begin
 
      Exit();
     end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -757,7 +757,7 @@ begin
     Self.Stav.tokens.Delete(i);
     Exit();
    end;
-end;//procedure
+end;
 
 procedure THV.UpdateTokenTimeout();
 var i:Integer;
@@ -765,7 +765,7 @@ begin
  for i := Self.Stav.tokens.Count-1 downto 0 do
    if (Now > Self.Stav.tokens[i].timeout) then
      Self.Stav.tokens.Delete(i);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -804,7 +804,7 @@ begin
 
  // aktualizace informaci do panelu
  Self.UpdateRuc();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

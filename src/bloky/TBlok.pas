@@ -174,7 +174,7 @@ begin
    // pri vytvareni novych bloku se sem neskace
    Blky.BlkIDChanged(Self.table_index);
   end;
-end;//procedure
+end;
 
 function TBlk.GetGlobalSettings():TBlkSettings;
 begin
@@ -189,7 +189,7 @@ begin
  Self.GlobalSettings.id       := StrToInt(section);
  Self.GlobalSettings.typ      := ini_tech.ReadInteger(section, 'typ', -1);
  Self.GlobalSettings.poznamka := ini_tech.ReadString(section, 'pozn', '');
-end;//procedure
+end;
 
 procedure TBlk.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
@@ -198,7 +198,7 @@ begin
 
  if (Self.GlobalSettings.poznamka <> '') then
    ini_tech.WriteString(section, 'pozn', Self.GlobalSettings.poznamka);
-end;//procedure
+end;
 
 procedure TBlk.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
@@ -257,17 +257,17 @@ begin
    Self.changed := true;
 
  BlokyTableData.BlkChange(Self.table_index);
-end;//procedure
+end;
 
 procedure TBlk.Freeze();
 begin
  Self.ffrozen := true;
-end;//procedure
+end;
 
 procedure TBlk.UnFreeze();
 begin
  Self.ffrozen := false;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -278,7 +278,7 @@ begin
  for oblr in ORs do
    for rcsAddr in RCSs do
      oblr.RCSAdd(rcsAddr.board);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -296,12 +296,12 @@ begin
     end;
    end;
  events.Clear();
-end;//procedure
+end;
 
 class procedure TBlk.AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
 begin
  events.Add(func);
-end;//procedure
+end;
 
 class procedure TBlk.RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
 var i:Integer;
@@ -309,19 +309,19 @@ begin
  for I := events.Count-1 downto 0 do
    if (events[i] = func) then
      events.Delete(i);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlk.Disable();
 begin
  Self.ffrozen := false;
-end;//procedure
+end;
 
 procedure TBlk.Reset();
 begin
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -332,7 +332,7 @@ begin
    if (Assigned(Self.FOnChange)) then Self.FOnChange(Self);
    Self.changed := false;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

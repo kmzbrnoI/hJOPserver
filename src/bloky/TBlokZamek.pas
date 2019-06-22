@@ -141,17 +141,17 @@ begin
    Self.ORsRef.Clear();
   end;
 
-end;//procedure
+end;
 
 procedure TBlkZamek.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
-end;//procedure
+end;
 
 procedure TBlkZamek.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  ini_stat.WriteString (section, 'stit', Self.ZamekStav.Stit);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +164,7 @@ begin
  // nouzove odemkla (vyhybka, ktere Enable() se vola driv)
 
  inherited Change();
-end;//procedure
+end;
 
 procedure TBlkZamek.Disable();
 begin
@@ -174,14 +174,14 @@ begin
  Self.ZamekStav.porucha     := false;
 
  inherited Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkZamek.Update();
 begin
  inherited Update();
-end;//procedure
+end;
 
 // change je volan z vyhybky pri zmene zaveru
 procedure TBlkZamek.Change(now:boolean = false);
@@ -191,7 +191,7 @@ begin
    JCDb.RusJC(Self);
 
  inherited Change(now);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -199,27 +199,27 @@ procedure TBlkZamek.MenuUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  if ((not Self.Zaver) and (not Self.nouzZaver)) then
    Self.klicUvolnen := true;
-end;//procedure
+end;
 
 procedure TBlkZamek.MenuZUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.klicUvolnen := false;
-end;//procedure
+end;
 
 procedure TBlkZamek.MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
-end;//procedure
+end;
 
 procedure TBlkZamek.MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.nouzZaver := true;
-end;//procedure
+end;
 
 procedure TBlkZamek.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závìru', TBlky.GetBlksList(Self), nil);
-end;//procedure
+end;
 
 procedure TBlkZamek.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
 begin
@@ -228,7 +228,7 @@ begin
    Self.ZamekStav.nouzZaver := 0;
    Self.SetNouzZaver(false);
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -250,7 +250,7 @@ begin
    Result := Result + 'ZAV>,';
 
  Result := Result + 'STIT,';
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -258,7 +258,7 @@ procedure TBlkZamek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TP
 begin
  if (Self.Stav.enabled) then
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -272,7 +272,7 @@ begin
  else if (item = 'STIT') then Self.MenuSTITClick(SenderPnl, SenderOR)
  else if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR)
  else if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -287,7 +287,7 @@ begin
   Inc(Self.ZamekStav.Zaver)
  else
   if (Self.ZamekStav.Zaver > 0) then Dec(Self.ZamekStav.Zaver);
-end;//procedure
+end;
 
 function TBlkZamek.GetNouzZaver():boolean;
 begin
@@ -322,7 +322,7 @@ begin
      Blky.NouzZaverZrusen(Self);
     end;
   end;
-end;//procedure
+end;
 
 procedure TBlkZamek.SetStit(stit:string);
 begin
@@ -331,7 +331,7 @@ begin
    Self.ZamekStav.stit := stit;
    inherited Change();
   end;
-end;//procedure
+end;
 
 procedure TBlkZamek.SetKlicUvolnen(new:boolean);
 begin
@@ -342,7 +342,7 @@ begin
    Self.CallChangeToVyh();
    inherited Change();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -356,7 +356,7 @@ begin
   (list[i] as TBlkVyhybka).Change();
 
  list.Free();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -369,7 +369,7 @@ begin
     Self.ZamekStav.klicUvolnen := true;
    Self.Change();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -207,7 +207,7 @@ begin
 
  data.Free();
  Self.changed := true;
-end;//procedure
+end;
 
 procedure TSouprava.SaveToFile(ini:TMemIniFile; const section:string);
 var str:string;
@@ -253,7 +253,7 @@ begin
  for addr in Self.HVs do
   str := str + IntToStr(addr) + ';';
  ini.WriteString(section, 'HV', str);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -454,7 +454,7 @@ begin
  end;
 
  Blky.ChangeSprToTrat(Self.index);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -468,7 +468,7 @@ begin
    (nav as TBlkScom).UpdateRychlostSpr(true);
 
  Self.changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -495,7 +495,7 @@ begin
  finally
    keep.Free();
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -513,7 +513,7 @@ begin
 
    HVDb.HVozidla[addr].souprava := -1;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -525,7 +525,7 @@ begin
    HVDb.HVozidla[addr].PredejStanici(OblRizeni as TOR);
  Self.Data.hlaseniPrehrano := false;
  Self.changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -576,19 +576,19 @@ begin
  writelog('Souprava ' + Self.nazev + ' : rychlost '+IntToStr(speed)+', smìr : '+IntToStr(Integer(dir)), WR_MESSAGE, 0);
 
  Self.changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.SetSpeed(speed:Integer);
 begin
  Self.SetRychlostSmer(speed, Self.data.smer);
-end;//procedure
+end;
 
 procedure TSouprava.SetSmer(smer:THVStanoviste);
 begin
  Self.SetRychlostSmer(Self.data.rychlost, smer);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -596,7 +596,7 @@ procedure TSouprava.HVComErr(Sender:TObject; Data:Pointer);
 begin
  if (Self.data.OblRizeni <> nil) then
    (Self.data.OblRizeni as TOR).BlkWriteError(nil, 'Souprava '+Self.nazev+' nekomunikuje s centrálou', 'CENTRÁLA');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -646,7 +646,7 @@ begin
 
  if (taken) then
    Self.SetRychlostSmer(Self.rychlost, Self.smer);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -677,14 +677,14 @@ begin
   end;//for
 
  Self.changed := true;
-end;//procedure
+end;
 
 procedure TSouprava.UpdateFront();
 var blk:TBlk;
 begin
  Blky.GetBlkByID(Self.filefront, blk);
  Self.front := blk;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -717,7 +717,7 @@ begin
 
  if (Self.front <> nil) then
    (Self.front as TBlkUsek).Change();  // kvuli sipce
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

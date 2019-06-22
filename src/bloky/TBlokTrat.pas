@@ -255,7 +255,7 @@ begin
    end;
   end;//for i
  str.Free();
-end;//procedure
+end;
 
 procedure TBlkTrat.SaveData(ini_tech:TMemIniFile;const section:string);
 var str:string;
@@ -271,7 +271,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   str := str + IntToStr(Self.TratSettings.Useky[i]) + ',';
  ini_tech.WriteString(section, 'useky', str)
-end;//procedure
+end;
 
 procedure TBlkTrat.SaveStatus(ini_stat:TMemIniFile;const section:string);
 var i:Integer;
@@ -288,7 +288,7 @@ begin
 
  if (str <> '') then
    ini_stat.WriteString(section, 'spr', str);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -296,7 +296,7 @@ procedure TBlkTrat.Enable();
 begin
  Self.TratStav.smer := Self.file_smer;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkTrat.Disable();
 begin
@@ -305,14 +305,14 @@ begin
  Self.SprPredict    := nil;
  Self.TratStav.Smer := TTratSmer.disabled;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkTrat.Reset();
 begin
  Self.Zaver  := false;
  Self.Zadost := false;
  Self.SprPredict := nil;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -320,7 +320,7 @@ procedure TBlkTrat.AfterLoad();
 begin
  Self.CheckTUExist();
  Self.InitTUs();
-end;//procedure
+end;
 
 // change je vyvolano i pri zmene obsazenosti jakehokoliv useku v trati
 procedure TBlkTrat.Change(now:boolean = false);
@@ -337,7 +337,7 @@ begin
  (Self.uvazkaB as TBlkUvazka).ChangeFromTrat();
 
  inherited Update();
-end;//procedure
+end;
 
 procedure TBlkTrat.ChangeFromUv(Sender:TBlk);
 begin
@@ -351,7 +351,7 @@ begin
 
  // zachovat poradi volani techto dvou funkci !
  Self.UpdateBezsouhlasSmer();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -365,7 +365,7 @@ begin
    if ((Blk <> nil) and (Blk.typ = _BLK_TU)) then
     Blk.Change();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -404,7 +404,7 @@ begin
 
  Self.Change();
  Self.CallChangeToTU();
-end;//procedure
+end;
 
 procedure TBlkTrat.SetTratZaver(Zaver:boolean);
 begin
@@ -416,7 +416,7 @@ begin
   end else begin
    Self.SprPredict := nil;
   end;
-end;//procedure
+end;
 
 procedure TBlkTrat.SetTratZadost(Zadost:boolean);
 var uvazka:TBlkUvazka;
@@ -448,7 +448,7 @@ begin
 
  Self.TratStav.zadost := zadost;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkTrat.SetSprPredict(Spr:TBlkTratSouprava);
 begin
@@ -461,7 +461,7 @@ begin
    Self.TratStav.SprPredict := Spr;
 
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -541,7 +541,7 @@ begin
      ((Self.Smer = TTratSmer.AtoB) or (Self.Smer = TTratSmer.BtoA)) and
      (not Self.RBPCan) and (Self.TratStav.soupravy.Count = 0) and (not Self.nouzZaver)) then
   Self.Smer := TTratSmer.zadny;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // zavedeni / zruseni blokove podminky
@@ -565,7 +565,7 @@ begin
     end;
    Self.TratStav.BP := false;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -613,7 +613,7 @@ begin
 
  if (toChange) then
    Self.Change(); 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -649,7 +649,7 @@ begin
  end;//case
 
  writelog('Traù '+Self.GlobalSettings.name+ ' : souprava '+Soupravy.soupravy[spr].nazev+' : stanice zmÏnÏna na '+(Soupravy.soupravy[spr].stanice as TOR).Name, WR_SPRPREDAT);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

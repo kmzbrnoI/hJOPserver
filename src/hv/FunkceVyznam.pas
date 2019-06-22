@@ -63,7 +63,7 @@ begin
  Self.vyznamy.Clear();
  ExtractStringsEx([';'], [], data, Self.vyznamy);
  if (Assigned(Self.OnChange)) then Self.OnChange(Self);
-end;//procedure
+end;
 
 procedure TFuncsVyznam.ParseNewItems(data:string);
 var sl:TStrings;
@@ -81,7 +81,7 @@ begin
  end;
 
  if (Assigned(Self.OnChange)) then Self.OnChange(Self);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

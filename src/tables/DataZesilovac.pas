@@ -53,7 +53,7 @@ begin
    LI.SubItems.Add(booster.name);
    LI.SubItems.Add(TBooster.GetBClassString(booster.bSettings.bclass));
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

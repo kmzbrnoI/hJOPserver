@@ -200,7 +200,7 @@ begin
      end;
    end;//except
   end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -278,7 +278,7 @@ begin
  (EndBlk as TBlkUsek).KonecJC := TZaver.no;
  ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závìrové tabulce');
  writelog('Nelze postavit JC -  nenalezena v zaverove tabulce',WR_VC);
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -336,7 +336,7 @@ begin
  for i := 0 to Self.JCs.Count-1 do
    if (Self.JCs[i].postaveno) then
      Self.JCs[i].RusJC();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -383,7 +383,7 @@ begin
        begin
         SetLength(Result, Length(Result)+1);
         Result[Length(Result)-1] := i;
-       end;//if (JC[cyklus2].VyhybkyZaver[cyklus3].Blok = Bloky.Data[cyklus].ID)
+       end;
      end;//for j
 
     // odvraty
@@ -393,7 +393,7 @@ begin
        begin
         SetLength(Result, Length(Result)+1);
         Result[Length(Result)-1] := i;
-       end;//if (JC[cyklus2].VyhybkyZaver[cyklus3].Blok = Bloky.Data[cyklus].ID)
+       end;
      end;//for j
 
     // zamky
@@ -442,7 +442,7 @@ begin
        begin
         SetLength(Result, Length(Result)+1);
         Result[Length(Result)-1] := i;
-       end;//if (JC[cyklus2].VyhybkyZaver[cyklus3].Blok = Bloky.Data[cyklus].ID)
+       end;
      end;//for j
    end;//for i
 end;//function
@@ -470,7 +470,7 @@ begin
   end;//for i
 
  Exit(-1);
-end;//procedure
+end;
 
 function TJCDB.FindPostavenaJCWithZamek(zam_id:Integer):TArI;
 var i,j:Integer;
@@ -488,7 +488,7 @@ begin
        begin
         SetLength(Result, Length(Result)+1);
         Result[Length(Result)-1] := i;
-       end;//if (JC[cyklus2].VyhybkyZaver[cyklus3].Blok = Bloky.Data[cyklus].ID)
+       end;
      end;//for j
    end;//for i
 end;//function
@@ -546,7 +546,7 @@ begin
      end;
    end;//for i
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -599,7 +599,7 @@ begin
       end;
     end;//for i
   end;//if jcindex <> -1
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

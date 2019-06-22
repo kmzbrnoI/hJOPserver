@@ -50,19 +50,19 @@ end;
 procedure TF_RychlostiEdit.B_StornoClick(Sender: TObject);
  begin
   F_RychlostiEdit.Close;
- end;//procedure
+ end;
 
 procedure TF_RychlostiEdit.B_SaveClick(Sender: TObject);
  begin
   TrkSystem.SetSpetSpeed(OpenIndex,SE_Rychlost.Value);
   F_Options.LV_DigiRych.Items[OpenIndex].SubItems.Strings[0] := IntToStr(SE_Rychlost.Value)+' km/h';
   F_RychlostiEdit.Close;
- end;//procedure
+ end;
 
 procedure TF_RychlostiEdit.FormClose(Sender: TObject;
   var Action: TCloseAction);
  begin
   OpenIndex := -1;
- end;//procedure
+ end;
 
 end.//unit

@@ -275,7 +275,7 @@ begin
     FOnParseMsg(Self, msg, Handled);
     if (not Handled) then ParseMsg(msg);
    end else ParseMsg(msg);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -537,7 +537,7 @@ begin
     end;
 
   end;//case
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -591,7 +591,7 @@ begin
   end;
 
  DoneAsync(asp);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -695,7 +695,7 @@ begin
     XB_LOK_SET_LOCK_13_20 : Send(CreateBuf(#$E4 + #$27 + LokAddrToBuf(p1) + AnsiChar(byte(p2))));
 
   end;//case
-end;//procedure
+end;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -774,7 +774,7 @@ end;//function
 procedure TXpressNET.LokEmergencyStop(addr:Integer);
 begin
  Self.SendCommand(XB_LOK_STOP, addr);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -838,7 +838,7 @@ begin
      // zavolame s prazdnymi daty
      Self.ConnectChange(Slot.adresa, TConnect_code.TC_Connected, nil);
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -855,7 +855,7 @@ begin
  if (Self.send_history.Count > 0) then
    if ((Self.send_history[0].time + EncodeTime(0, 0, Self._TIMEOUT_MSEC div 1000, Self._TIMEOUT_MSEC mod 1000)) < Now) then
      Self.hist_send(0);
-end;//procedure
+end;
 
 procedure TXpressNET.hist_send(index:Integer);
 var data:TXpressNETHistoryPacket;
@@ -889,7 +889,7 @@ begin
    Self.SendCommand(data.cmd, data.params[0], data.params[1], data.params[2], data.sent+1);
   end;
 
-end;//procedure
+end;
 
 procedure TXpressNET.hist_ok();
 var data:TXpressNETHistoryPacket;
@@ -916,7 +916,7 @@ begin
   end else begin
    WriteLog(tllWarning, 'WARN: HISTORY BUFFER UNDERFLOW (hist_ok)');
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -933,7 +933,7 @@ begin
   end else begin
    WriteLog(tllWarning, 'WARN: HISTORY BUFFER UNDERFLOW (hist_err)');
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -941,7 +941,7 @@ procedure TXpressNET.GetTrackStatus();
 begin
  Self.WriteLog(tllCommand, 'PUT: GET-TRACK-STATUS');
  Self.SendCommand(XB_TRK_STATUS);;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -950,14 +950,14 @@ begin
  inherited;
  Self.WriteLog(tllCommand, 'PUT: GET-CS-VERSION');
  Self.SendCommand(XB_TRK_CS_VERSION);
-end;//procedure
+end;
 
 procedure TXpressNET.GetLIVersion(callback:TLIVersionEvent);
 begin
  inherited;
  Self.WriteLog(tllCommand, 'PUT: GET-LI-VERSION');
  Self.SendCommand(XB_TRK_LI_VERSION);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -981,7 +981,7 @@ procedure TXpressNET.AfterOpen();
 begin
  inherited;
  Self.ComPort.CPort.OnRxChar := Self.DataReceive;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -989,14 +989,14 @@ procedure TXpressNET.POMWriteCV(Address:Integer; cv:Word; data:byte);
 begin
  Self.WriteLog(tllCommand, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
  Self.SendCommand(XB_POM_WRITEBYTE, address, cv, data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TXpressNET.BeforeClose();
 begin
  Self.send_history.Clear();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

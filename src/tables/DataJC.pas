@@ -64,7 +64,7 @@ begin
    end;
  end;//for i
 
-end;//procedure
+end;
 
 procedure TJCTableData.UpdateTable();
 var i:Integer;
@@ -79,7 +79,7 @@ begin
 
      end;
     end;
-end;//procedure
+end;
 
 procedure TJCTableData.UpdateLine(line:Integer);
 var JCData:TJCprop;
@@ -188,7 +188,7 @@ begin
      str := str + '?, ';
   end;
  Self.LV.Items.Item[line].SubItems.Strings[16] := LeftStr(str, Length(str)-2);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -202,12 +202,12 @@ begin
   LI.SubItems.Add('');
 
  Self.UpdateLine(index);
-end;//procedure
+end;
 
 procedure TJCTableData.RemoveJC(index:Integer);
 begin
  Self.LV.Items.Delete(index);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -220,7 +220,7 @@ begin
  for i := 0 to Self.LV.Columns.Count-2 do
   LI.SubItems.Add('');
  Self.UpdateLine(target);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

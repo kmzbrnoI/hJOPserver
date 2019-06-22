@@ -107,7 +107,7 @@ procedure TF_Admin.LoadData();
      writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
  end;
 
- end;//procedure
+ end;
 
 procedure TF_Admin.SaveData();
  begin
@@ -123,7 +123,7 @@ procedure TF_Admin.SaveData();
 
   Konfigurace.ini.UpdateFile;
   Konfigurace.ini.Free;
- end;//procedure
+ end;
 
 procedure TF_Admin.B_SaveClick(Sender: TObject);
  begin
@@ -171,7 +171,7 @@ begin
   F_Admin.Top  := Konfigurace.ini.ReadInteger('AdminData','FormTop', F_Admin.Top);
 
   Konfigurace.ini.Free;
-end;//procedure
+end;
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
  begin
@@ -185,7 +185,7 @@ procedure TF_Admin.B_InputSimClick(Sender: TObject);
         Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
     end;
    end;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani useku v jizdni ceste
@@ -199,14 +199,14 @@ begin
  Self.timer.Interval := 2000;
  Self.timer.Enabled  := false;
  Self.timer.OnTimer  := Self.OnTimer;
-end;//procedure
+end;
 
 destructor TJCSimulator.Destroy();
 begin
  if (Assigned(Self.timer)) then
    FreeAndNil(Self.timer);
  inherited Destroy();
-end;//procedure
+end;
 
 procedure TJCSimulator.OnTimer(Sender:TObject);
 var i:Integer;
@@ -220,7 +220,7 @@ begin
    if (JC.stav.RozpadBlok > -1) then
      Self.UpdateJC(JC);
   end;
-end;//procedure
+end;
 
 procedure TJCSimulator.UpdateJC(JC:TJC);
 var i:Integer;
@@ -260,7 +260,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani trati
@@ -274,14 +274,14 @@ begin
  Self.timer.Interval := 2000;
  Self.timer.Enabled  := false;
  Self.timer.OnTimer  := Self.OnTimer;
-end;//procedure
+end;
 
 destructor TTratSimulator.Destroy();
 begin
  if (Assigned(Self.timer)) then
    FreeAndNil(Self.timer);
  inherited Destroy();
-end;//procedure
+end;
 
 procedure TTratSimulator.OnTimer(Sender:TObject);
 var i:Integer;
@@ -297,7 +297,7 @@ begin
        ((TBlkTrat(Blk).Smer = TTratSmer.AtoB) or (TBlkTrat(Blk).Smer = TTratSmer.BtoA))) then
      Self.UpdateTrat(Blk as TBlkTrat);
   end;
-end;//procedure
+end;
 
 procedure TTratSimulator.UpdateTrat(Trat:TBlkTrat);
 var TU:TBlkTU;
@@ -334,7 +334,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // simulator staveni vyhybek
@@ -348,14 +348,14 @@ begin
  Self.timer.Interval := 500;
  Self.timer.Enabled  := false;
  Self.timer.OnTimer  := Self.OnTimer;
-end;//procedure
+end;
 
 destructor TVyhSimulator.Destroy();
 begin
  if (Assigned(Self.timer)) then
    FreeAndNil(Self.timer);
  inherited Destroy();
-end;//procedure
+end;
 
 procedure TVyhSimulator.OnTimer(Sender:TObject);
 var i:Integer;
@@ -394,7 +394,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

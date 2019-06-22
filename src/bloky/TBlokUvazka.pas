@@ -162,20 +162,20 @@ begin
    Self.ORsRef.Clear();
   end;
 
-end;//procedure
+end;
 
 procedure TBlkUvazka.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
 
  ini_tech.WriteInteger(section, 'parent', Self.UvazkaSettings.parent);
-end;//procedure
+end;
 
 procedure TBlkUvazka.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  if (Self.UvazkaStav.stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.UvazkaStav.Stit);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -183,14 +183,14 @@ procedure TBlkUvazka.Enable();
 begin
  Self.UvazkaStav.enabled := true;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUvazka.Disable();
 begin
  Self.UvazkaStav.enabled   := false;
  Self.UvazkaStav.nouzZaver := false;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -198,13 +198,13 @@ end;//procedure
 procedure TBlkUvazka.Update();
 begin
  inherited Update();
-end;//procedure
+end;
 
 procedure TBlkUvazka.Change(now:boolean = false);
 begin
  inherited Change(now);
  (Self.parent as TBlkTrat).ChangeFromUv(Self);
-end;//procedure
+end;
 
 procedure TBlkUvazka.ChangeFromTrat();
 begin
@@ -213,7 +213,7 @@ begin
   Self.fzadost := false;
 
  inherited Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -221,7 +221,7 @@ procedure TBlkUvazka.SetUvazkaStit(stit:string);
 begin
  Self.UvazkaStav.Stit := stit;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUvazka.SetUvazkaZAK(ZAK:boolean);
 var old:boolean;
@@ -232,7 +232,7 @@ begin
 
  if (old <> ZAK) then
   (Self.parent as TBlkTrat).ChangeUseky();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -257,12 +257,12 @@ begin
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
   TORStackVolba.PV : Self.DoZTS(SenderPnl, SenderOR);
  end;
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuZTSOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.zadost := false;
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuUTSClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -270,7 +270,7 @@ begin
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
   TORStackVolba.PV : Self.DoUTS(SenderPnl, SenderOR);
  end;
-end;//procedure
+end;
 
 procedure TBlkUvazka.UdelSouhlas();
 begin
@@ -296,7 +296,7 @@ begin
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOOTSClick, nil)
  else
    Self.UPOOTSClick(SenderPnl);
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuZAKOnClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -304,40 +304,40 @@ begin
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOZAKOnClick, nil)
  else
    Self.UPOZAKOnClick(SenderPnl);
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuZAKOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR,
     'Zrušení zákazu odjezdu na tra', TBlky.GetBlksList(Self), nil);
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.UvazkaStav.Stit);
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuZAVOnClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.nouzZaver := true;
-end;//procedure
+end;
 
 procedure TBlkUvazka.MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR,
     'Zrušení nouzového závìru', TBlky.GetBlksList(Self), nil);
-end;//procedure
+end;
 
 
 procedure TBlkUvazka.PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
 begin
  if (success) then Self.ZAK := false;
-end;//procedure
+end;
 
 procedure TBlkUvazka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
 begin
  if (success) then Self.nouzZaver := false;
-end;//procedure
+end;
 
 procedure TBlkUvazka.UPOZTSOnClick(Sender:TObject);
 begin
@@ -484,7 +484,7 @@ begin
    Result := Result + 'ZAK>,';
 
  Result := Result + 'STIT,';
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -514,7 +514,7 @@ begin
    Self.ShowUvazkaSprMenu(SenderPnl, SenderOR, rights, StrToInt(params))
  else
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -530,7 +530,7 @@ begin
  else if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'ZAV>') then Self.MenuZAVOnClick(SenderPnl, SenderOR)
  else if (item = 'ZAV<') then Self.MenuZAVOffClick(SenderPnl, SenderOR);
-end;//procedure
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -549,7 +549,7 @@ begin
  if (zadost) then Self.fzadost := zadost;
  (Self.parent as TBlkTrat).Zadost := zadost;
  if (not zadost) then Self.fzadost := zadost;
-end;//procedure
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -559,7 +559,7 @@ begin
 
  Self.UvazkaStav.nouzZaver := nouz;
  Self.Change();
-end;//procedure
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 

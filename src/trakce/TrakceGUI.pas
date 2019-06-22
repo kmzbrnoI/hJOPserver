@@ -592,7 +592,7 @@ begin
 
  if (handled) then Exit;
  Self.WriteLog(lvl, msg);
-end;//procedure
+end;
 
 procedure TTrkGUI.WriteLog(lvl:TTrkLogLevel; msg:string);
 var LV_Log:TListItem;
@@ -864,7 +864,7 @@ begin
   end;//for i
 
  if (Assigned(Self.Trakce.callback_ok.callback)) then Self.Trakce.callback_ok.callback(Self, Self.Trakce.callback_ok.data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -942,7 +942,7 @@ var i:Integer;
   for i := 0 to _MAX_SPEED do WriteLn(myFile, IntToStr(Self.SpeedTable[i]));
 
   CloseFile(myFile);
-end;//procedure
+end;
 
 // vrati jizdni stupen prislusny k dane rychlosti v km/h
 function TTrkGUI.GettSpeed(kmph:Integer):Integer;
@@ -966,7 +966,7 @@ begin
  F_Main.B_HV_Add.Enabled    := false;
  F_Main.B_HV_Delete.Enabled := false;
  Application.ProcessMessages();
-end;//procedure
+end;
 
 procedure TTrkGUI.AfterOpen(Sender:TObject);
 begin
@@ -993,7 +993,7 @@ begin
 
  // na STATUS se ptam vzdy
  Self.InitSystems();
-end;//procedure
+end;
 
 procedure TTrkGUI.BeforeClose(Sender:TObject);
 begin
@@ -1008,7 +1008,7 @@ begin
  F_Main.S_lok_prevzato.Brush.Color := clRed;
  Application.ProcessMessages();
  Self.Trakce.BeforeClose();   // smaze buffer historie
-end;//procedure
+end;
 
 procedure TTrkGUI.AfterClose(Sender:TObject);
 var addr:Integer;
@@ -1048,7 +1048,7 @@ begin
 
  if (SystemData.Status = stopping) then
    F_Main.A_RCS_StopExecute(nil);
-end;//procedure
+end;
 
 function TTrkGUI.GetStepSpeed(step:byte):Integer;
 begin
@@ -1219,7 +1219,7 @@ begin
  F_Main.G_Loko_Prevzato.MaxValue := 1;
  F_Main.G_Loko_Prevzato.Progress := 1;
  Self.AllPrevzato();
-end;//procedure
+end;
 
 procedure TTrkGUI.OdhlasitAll();
 var i:Integer;
@@ -1255,7 +1255,7 @@ begin
  F_Main.G_Loko_Prevzato.MaxValue := 1;
  F_Main.G_Loko_Prevzato.Progress := 0;
  Self.AllOdhlaseno();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1348,7 +1348,7 @@ begin
  end;//case
 
  HVDb.HVozidla[addr].changed := true;
-end;//procedure
+end;
 
 procedure TTrkGUI.SetLoglevelFile(ll:TTrkLogLevel);
 begin
@@ -1371,7 +1371,7 @@ begin
  Self.callback_err := TTrakce.GenerateCallback(Self.InitStatErr);
  Self.callback_ok  := TTrakce.GenerateCallback(Self.InitStatOK);
  Self.Trakce.GetTrackStatus();
-end;//procedure
+end;
 
 procedure TTrkGUI.InitStatErr(Sender:TObject; Data:Pointer);
 begin
@@ -1380,7 +1380,7 @@ begin
  Self.callback_err := TTrakce.GenerateCallback(Self.InitStopErr);
  Self.callback_ok  := TTrakce.GenerateCallback(Self.InitStopOK);
  Self.CentralStop();
-end;//procedure
+end;
 
 procedure TTrkGUI.InitStatOK(Sender:TObject; Data:Pointer);
 begin
@@ -1391,7 +1391,7 @@ begin
  Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
  Self.callback_err := TTrakce.GenerateCallback(Self.GotCSVersionErr);
  Self.GetCSVersion();
-end;//procedure
+end;
 
 procedure TTrkGUI.InitStopErr(Sender:TObject; Data:Pointer);
 begin
@@ -1401,7 +1401,7 @@ begin
  F_Main.A_System_Start.Enabled := true;
  F_Main.A_System_Stop.Enabled := true;
  Application.MessageBox('Centrála neodpověděla na příkaz STATUS a STOP', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
-end;//procedure
+end;
 
 procedure TTrkGUI.InitStopOK(Sender:TObject; Data:Pointer);
 begin
@@ -1417,19 +1417,19 @@ begin
    // poslali jsme STOP -> je jasne, ze musime DCC opet zapnout
    F_Main.A_DCC_GoExecute(self)
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrkGUI.SetCallbackErr(callback_err:TCommandCallback);
 begin
  Self.Trakce.callback_err := callback_err;
-end;//procedure
+end;
 
 procedure TTrkGUI.SetCallbackOK(callback_ok:TCommandCallback);     
 begin
  Self.Trakce.callback_ok := callback_ok;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // eventy pri prebirani vsech LOKO:
@@ -1462,7 +1462,7 @@ begin
  Application.ProcessMessages();
  F_Main.LogStatus('Loko: všechna loko převzata');
  Self.AllPrevzato();
-end;//procedure
+end;
 
 procedure TTrkGUI.PrebiraniUpdateErr(Sender:TObject; Data:Pointer);
 begin
@@ -1483,7 +1483,7 @@ begin
 
  Application.MessageBox(PChar('LOKO '+ IntToStr(Integer(data^)) + ' se nepodařilo převzít'), 'Chyba', MB_OK OR MB_ICONWARNING);
  FreeMem(data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // eventy pri odhlasovani vech LOKO:
@@ -1523,7 +1523,7 @@ begin
  F_Main.LogStatus('Loko: všechna loko odhlášena');
  Application.ProcessMessages();
  Self.AllOdhlaseno();
-end;//procedure
+end;
 
 procedure TTrkGUI.OdhlasovaniUpdateErr(Sender:TObject; Data:Pointer);
 begin
@@ -1534,7 +1534,7 @@ begin
  HVDb.HVozidla[Integer(data^)].Slot.prevzato := false;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false;
  Self.OdhlasovaniUpdateOK(Self, data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // callback funkce pri prebirani jednoho HV a pri programovani POM (pri prebirani):
@@ -1545,7 +1545,7 @@ begin
  if (Assigned(TPrevzitCallback(data^).callback_err.callback)) then
    TPrevzitCallback(data^).callback_err.callback(Self, TPrevzitCallback(data^).callback_err.data);
  FreeMem(data);
-end;//procedure
+end;
 
 procedure TTrkGUI.PrevzatoPOMOK(Sender:TObject; Data:Pointer);
 begin
@@ -1556,7 +1556,7 @@ begin
  if (Assigned(TPrevzitCallback(data^).callback_ok.callback)) then
    TPrevzitCallback(data^).callback_ok.callback(Self, TPrevzitCallback(data^).callback_ok.data);
  FreeMem(data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1622,7 +1622,7 @@ begin
  if (Assigned(TPrevzitCallback(data^).callback_ok.callback)) then
    TPrevzitCallback(data^).callback_ok.callback(Self, TPrevzitCallback(data^).callback_ok.data);
  FreeMem(data);
-end;//procedure
+end;
 
 procedure TTrkGUI.OdhlasenoErr(Sender:TObject; Data:Pointer);
 begin
@@ -1630,7 +1630,7 @@ begin
  if (Assigned(TPrevzitCallback(data^).callback_err.callback)) then
    TPrevzitCallback(data^).callback_err.callback(Self, TPrevzitCallback(data^).callback_err.data);
  FreeMem(data);
-end;//procedure
+end;
 
 procedure TTrkGUI.OdhlasenoPOMOK(Sender:TObject; Data:Pointer);
 begin
@@ -1644,7 +1644,7 @@ begin
  Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasenoOK, data);
  Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasenoErr, data);
  Self.Trakce.LokFromMyControl(TPrevzitCallback(data^).addr);
-end;//procedure
+end;
 
 procedure TTrkGUI.OdhlasenoPOMErr(Sender:TObject; Data:Pointer);
 begin
@@ -1652,7 +1652,7 @@ begin
  if (Assigned(TPrevzitCallback(data^).callback_err.callback)) then
    TPrevzitCallback(data^).callback_err.callback(Self, TPrevzitCallback(data^).callback_err.data);
  FreeMem(data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1668,7 +1668,7 @@ begin
 
  if (SystemData.Status = starting) then
    F_Main.A_PanelServer_StartExecute(nil);
-end;//procedure
+end;
 
 procedure TTrkGUI.AllOdhlaseno();
 begin
@@ -1682,7 +1682,7 @@ begin
 
  if (SystemData.Status = stopping) then
    F_Main.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1695,7 +1695,7 @@ begin
    HVDb.HVozidla[addr].Slot.com_err := true;
    HVDb.HVozidla[addr].changed := true;
   end;
-end;//procedure
+end;
 
 procedure TTrkGUI.LokComOK(Sender:TObject; addr:Integer);
 begin
@@ -1706,14 +1706,14 @@ begin
    HVDb.HVozidla[addr].Slot.com_err := false;
    HVDb.HVozidla[addr].changed := true;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrkGUI.OnComError(Sender: TObject; Errors: TComErrors);
 begin
  Self.WriteLog(tllError, 'ERR: COM PORT ERROR');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1723,7 +1723,7 @@ procedure TTrkGUI.OnComException(Sender: TObject;
 begin
  Self.WriteLog(tllError, 'ERR: COM PORT EXCEPTION: '+ComportMessage+'; '+WinMessage);
  raise Exception.Create(ComportMessage);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1731,7 +1731,7 @@ procedure TTrkGUI.OnTrackStatusChange(Sender: TObject);
 begin
  if (Self.Trakce.TrackStatus = Ttrk_status.TS_ON) then Self.DCCGoTime := Now;
  F_Main.OnCentralaDCCChange(Self, Self.Trakce.TrackStatus = Ttrk_status.TS_ON);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1745,7 +1745,7 @@ end;//function
 procedure TTrkGUI.OnComWriteError(Sender:TObject);
 begin
  if (Self.openned) then Self.Close(true);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1802,7 +1802,7 @@ begin
    Self.turnoff_callback(Self);
    Self.turnoff_callback := nil;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1849,7 +1849,7 @@ begin
    Self.turnoff_callback(Self);
    Self.turnoff_callback := nil;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1859,7 +1859,7 @@ begin
  F_Main.L_CS_ID.Caption := IntToStr(version.id);
  F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd. mm. yyyy hh:nn:ss', Now);
  F_Main.LogStatus('FW v centrále: '+IntToStr(version.major) + '.' + IntToStr(version.minor) + ', id: '+IntToStr(version.id));
-end;//procedure
+end;
 
 procedure TTrkGUI.GotLIVersion(Sender:TObject; version:TLIVersion);
 begin
@@ -1867,7 +1867,7 @@ begin
                               ', SW: ' + IntToStr(version.sw_major) + '.' + IntToStr(version.sw_minor);
  F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd. mm. yyyy hh:nn:ss', Now);
  F_Main.LogStatus('FW v LI: '+F_Main.L_CS_LI_FW.Caption);
-end;//procedure
+end;
 
 procedure TTrkGUI.GotLIAddress(Sender:TObject; addr:Byte);
 begin
@@ -1881,12 +1881,12 @@ end;
 procedure TTrkGUI.GetCSVersion();
 begin
  Self.Trakce.GetCSVersion(Self.GotCSVersion);
-end;//procedure
+end;
 
 procedure TTrkGUI.GetLIVersion();
 begin
  Self.Trakce.GetLIVersion(Self.GotLIVersion);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1911,7 +1911,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: POM '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+') : '+IntToStr(cv)+':'+IntToStr(data));
  Self.Trakce.POMWriteCV(HV.adresa, cv, data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1947,7 +1947,7 @@ begin
      Self.POMCvWroteErr(Self, data);
    end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1976,7 +1976,7 @@ begin
    Self.POMWriteCV(Sender, HVDB.HVozidla[TPOMCallback(data^).addr], TPOMCallback(data^).list[TPOMCallback(data^).index].cv,
                    TPOMCallback(data^).list[TPOMCallback(data^).index].data);
   end;// else konec dat
-end;//procedure
+end;
 
 // pokud pri POMu nastane chyba, zavolame Error callback a ukoncime programovani
 procedure TTrkGUI.POMCvWroteErr(Sender:TObject; Data:Pointer);
@@ -1991,7 +1991,7 @@ begin
  if (Assigned(TPOMCallback(data^).callback_err.callback)) then
   TPOMCallback(data^).callback_err.callback(Self, TPOMCallback(data^).callback_err.data);
  FreeMem(data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1999,7 +1999,7 @@ procedure TTrkGUI.NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
 begin
  HVDb.HVozidla[Integer(data^)].Slot.prevzato      := false;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2011,13 +2011,13 @@ begin
 
  Self.callback_err := TTrakce.GenerateCallback(Self.GotLIAddrErr);
  Self.GetLIAddress();
-end;//procedure
+end;
 
 procedure TTrkGUI.GotCSVersionErr(Sender:TObject; Data:Pointer);
 begin
  F_Main.LogStatus('WARN: Centrála nepodvěděla na požadavek o verzi centrály, pokračuji...');
  Self.GotCSVersionOK(Self, data);
-end;//procedure
+end;
 
 procedure TTrkGUI.GotLIVersionOK(Sender:TObject; Data:Pointer);
 begin
@@ -2028,13 +2028,13 @@ begin
     else
      F_Main.A_All_Loko_PrevzitExecute(nil);
   end;
-end;//procedure
+end;
 
 procedure TTrkGUI.GotLIVersionErr(Sender:TObject; Data:Pointer);
 begin
  F_Main.LogStatus('WARN: Centrála neodpověděla na požadavek o verzi LI, pokračuji...');
  Self.GotLIVersionOK(Self, data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2126,7 +2126,7 @@ begin
      Self.FuncErr(Self, data);
    end;
   end;
-end;//procedure
+end;
 
 procedure TTrkGUI.FuncErr(Sender:TObject; Data:Pointer);
 begin
@@ -2135,7 +2135,7 @@ begin
  if (Assigned(TFuncCallback(data^).callback_err.callback)) then
     TFuncCallback(data^).callback_err.callback(Self, TFuncCallback(data^).callback_err.data);
  FreeMem(data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // callbacky pri nastavovani funkci hnaciho vozidla pri prebirani:
@@ -2156,7 +2156,7 @@ begin
    HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.ruc := false;
    Self.POMWriteCVs(Self, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Data.POMtake, TPomStatus.pc);
   end;
-end;//procedure
+end;
 
 procedure TTrkGUI.PrevzatoFuncErr(Sender:TObject; Data:Pointer);
 begin
@@ -2164,7 +2164,7 @@ begin
  Self.WriteLog(tllWarning, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodařilo nastavit funkce');
  F_Main.LogStatus('WARN: loko '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodařilo nastavit funkce');
  Self.PrevzatoFuncOK(Self, data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // callbacky hromadneho nastavovani funkci dle vyznamu:
@@ -2198,13 +2198,13 @@ begin
 
  if (Assigned(TFuncsCallback(data^).callback_ok.callback)) then TFuncsCallback(data^).callback_ok.callback(Self, TFuncsCallback(data^).callback_ok.data);
  FreeMem(data);
-end;//procedure
+end;
 
 procedure TTrkGUI.LoksSetFuncErr(Sender:TObject; Data:Pointer);
 begin
  // sem lze pridat oznameni chyby
  Self.LoksSetFuncOK(Sender, Data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

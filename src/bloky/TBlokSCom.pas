@@ -391,7 +391,7 @@ begin
   end;
 
  PushRCSToOR(Self.ORsRef, Self.SComSettings.RCSAddrs);
-end;//procedure
+end;
 
 procedure TBlkSCom.SaveData(ini_tech:TMemIniFile;const section:string);
 var i:Integer;
@@ -412,12 +412,12 @@ begin
 
  if (Self.SComSettings.zamknuto) then
    ini_tech.WriteBool(section, 'zamknuti', Self.SComSettings.zamknuto);
-end;//procedure
+end;
 
 procedure TBlkSCom.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -436,7 +436,7 @@ begin
  Self.SComStav.toRnz.Clear();
  Self.UnregisterAllEvents();
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkSCom.Disable();
 begin
@@ -449,7 +449,7 @@ begin
  Self.SComStav.RCtimer := -1;
  Self.UnregisterAllEvents();
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -486,7 +486,7 @@ begin
   end;
 
  inherited;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -527,7 +527,7 @@ begin
 
  Self.SComSettings := data;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -743,7 +743,7 @@ begin
  if (not TBlkSCom.IsPovolovaciNavest(Self.SComStav.cilova_navest)) then // zastavujeme ihned
    Self.UpdateRychlostSpr(true);
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkSCom.SetNavest(navest:Integer);
 begin
@@ -854,7 +854,7 @@ begin
  if (Self.SComStav.ZacatekVolba = typ) then Exit();
  Self.SComStav.ZacatekVolba := typ;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkSCom.SetZAM(zam:boolean);
 begin
@@ -882,7 +882,7 @@ begin
   end;//if Self.DNjc <> nil
 
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //gui: menu
@@ -903,12 +903,12 @@ begin
    TOR(SenderOR).ClearVb(); // smazeme dosavadni seznam variantnich bodu
   end;
  Self.ZacatekVolba := TBlkSComVolba.VC;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuVCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZacatekVolba := TBlkSComVolba.none;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuPCStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
@@ -920,12 +920,12 @@ begin
  Blk := BLky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
  Self.ZacatekVolba := TBlkSComVolba.PC;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuPCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZacatekVolba := TBlkSComVolba.none;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuSTUJClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -936,7 +936,7 @@ begin
  Self.DNjc.STUJ();
  JCDb.CheckNNavaznost(Self.DNjc);
  Blky.SprPrediction(Self);
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuDNClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -950,7 +950,7 @@ begin
 
  Self.DNjc.DN();
  Blky.SprPrediction(Self);
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuRCClick(SenderPnl:TIdContext; SenderOR:TObject);
 var JC:TJC;
@@ -984,28 +984,28 @@ begin
  Self.AB := false;
  JC.RusJCWithoutBlk();
  Blky.SprPrediction(Self);
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuABStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ABJC := Self.DNjc;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuABStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ABJC := nil;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuLockClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZAM := true;
  Self.Navest := _NAV_STUJ;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuUnlockClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZAM := false;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1023,12 +1023,12 @@ begin
 
  for oblr in Self.OblsRizeni do
    oblr.ORDKClickServer(Self.PrivolDKClick);
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuPNStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZacatekVolba := TBLkSComVolba.none;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1041,19 +1041,19 @@ begin
  Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
  Self.ZacatekVolba := TBlkSComVolba.PP;
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuPPStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZacatekVolba := TBLkSComVolba.none;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSCom.MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Prodloužení doby pøivolávací návìsti', TBlky.GetBlksList(Self), nil);
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
 var podminky:TList<TPSPodminka>;
@@ -1070,7 +1070,7 @@ begin
   end;
 
  ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závìrù po nouzové cestì', TBlky.GetBlksList(Self), podminky);
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
 var oblr:TOR;
@@ -1088,7 +1088,7 @@ procedure TBlkSCom.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.SComStav.redukce_menu := 0;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkSCom.MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:boolean);
 var Blk:TBlk;
@@ -1135,7 +1135,7 @@ begin
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
  end;//case
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1166,7 +1166,7 @@ begin
  else if (item = 'KC')   then Self.MenuKCDKClick   (SenderPnl, SenderOR);
 
  if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1255,7 +1255,7 @@ begin
       end;
     end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1294,7 +1294,7 @@ begin
  // prave zacala redukce
  if (Self.SComStav.redukce_menu = 1) then
   Self.Change();
-end;//procedure
+end;
 
 procedure TBlkSCom.ZrusRedukciMenu();
 begin
@@ -1304,7 +1304,7 @@ begin
  // prave skoncila redukce
  if (Self.SComStav.redukce_menu = 0) then
   Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1320,7 +1320,7 @@ begin
   end;
 
  Self.UpdateRychlostSpr(true);
-end;//procedure
+end;
 
 procedure TBlkSCom.UpdatePadani();
 begin
@@ -1331,7 +1331,7 @@ begin
    Self.Navest := _NAV_STUJ;
    Self.SComStav.padani := false;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1526,7 +1526,7 @@ begin
       end;
     end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vraci udalost, na kterou by se melo reagovat podle aktualniho stavu kolejiste.
@@ -1608,7 +1608,7 @@ begin
    // pad privolavaci navesti
    Self.Navest := _NAV_STUJ;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1626,7 +1626,7 @@ begin
    if (Button = TPanelButton.F2) then
      ORTCPServer.Menu(SenderPnl, Self, TOR(SenderOR), '$'+TOR(SenderOR).Name + ',-,' + 'KC');
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1639,7 +1639,7 @@ begin
   end else begin
    self.ZacatekVolba := TBlkSComVolba.none;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1674,7 +1674,7 @@ begin
 
  toRNZ.Free();
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

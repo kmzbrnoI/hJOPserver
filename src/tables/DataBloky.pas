@@ -66,7 +66,7 @@ begin
 
  Self.reload := true;
  Self.UpdateTable();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -368,7 +368,7 @@ var j, spr:integer;
 
   end;//case BLOK_VYSTUP
 
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -376,7 +376,7 @@ procedure TBlokyTableData.BlkChange(line:Integer);
 begin
  if ((line > -1) and (line < Blky.Cnt)) then
   Self.changed[line] := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -385,7 +385,7 @@ begin
  Self.LV.Items.Delete(line);
  Self.reload := true;
  Self.UpdateTable();
-end;//procedure
+end;
 
 procedure TBlokyTableData.BlkAdd(index:Integer);
 var LI:TListItem;
@@ -400,7 +400,7 @@ begin
  Self.UpdateLine(index);
 
  F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.Cnt);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -413,7 +413,7 @@ begin
  for i := 0 to Self.LV.Columns.Count-2 do
   LI.SubItems.Add('');
  Self.UpdateLine(target);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

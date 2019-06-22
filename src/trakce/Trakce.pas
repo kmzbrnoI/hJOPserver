@@ -183,17 +183,17 @@ end;//dtor
 procedure TTrakce.WriteLog(lvl:TTrkLogLevel; msg: string);
 begin
  if (Assigned(Self.FOnLog)) then Self.FOnLog(Self, lvl, msg);
-end;//procedure
+end;
 
 procedure TTrakce.ConnectChange(addr:Integer; code:TConnect_code; data:Pointer);
 begin
  if (Assigned(Self.FOnConnectChange)) then Self.FOnConnectChange(self, addr, code, data);
-end;//procedure
+end;
 
 procedure TTrakce.LokComError(addr:Integer);
 begin
  if (Assigned(Self.FOnLokComError)) then Self.FOnLokComError(Self, addr);
-end;//procedure
+end;
 
 procedure TTrakce.LokComOK(addr:Integer);
 begin
@@ -213,19 +213,19 @@ begin
    Self.FFtrk_status := new;
    if (Assigned(Self.FOnTrackStatusChange)) then Self.FOnTrackStatusChange(Self);
   end;
-end;//procedure
+end;
 
 procedure TTrakce.AfterOpen();
 begin
  Self.FFtrk_status := TS_UNKNOWN;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.CSGotVersion(version:TCSVersion);
 begin
  if (Assigned(Self.FOnCSVersion)) then Self.FOnCSVersion(Self, version);
-end;//procedure
+end;
 
 procedure TTrakce.GetCSVersion(callback:TCSVersionEvent);
 begin
@@ -235,12 +235,12 @@ end;//function
 procedure TTrakce.GetLIVersion(callback:TLIVersionEvent);
 begin
  Self.FOnLIVersion := callback;
-end;//procedure
+end;
 
 procedure TTrakce.LIGotVersion(version:TLIVersion);
 begin
  if (Assigned(Self.FOnLIVersion)) then Self.FOnLIVersion(Self, version);
-end;//procedure
+end;
 
 procedure TTrakce.GetLIAddress(callback:TLIAddressEvent);
 begin

@@ -96,7 +96,7 @@ procedure TF_BlkSCom.OpenForm(BlokIndex:Integer);
     NormalOpenForm;
    end;
   F_BlkSCom.ShowModal;
- end;//procedure
+ end;
 
 procedure TF_BlkSCom.NewBlkOpenForm();
  begin
@@ -118,7 +118,7 @@ procedure TF_BlkSCom.NewBlkOpenForm();
 
   F_BlkSCom.Caption := 'Editovat data nového bloku návìstidlo';
   F_BlkSCom.ActiveControl := E_Nazev;
- end;//procedure
+ end;
 
 procedure TF_BlkSCom.NormalOpenForm;
 var glob:TBlkSettings;
@@ -178,19 +178,19 @@ var glob:TBlkSettings;
 
   F_BlkSCom.Caption := 'Editovat data bloku '+glob.name+' (návìstidlo)';
   F_BlkSCom.ActiveControl := B_Save;
- end;//procedure
+ end;
 
 procedure TF_BlkSCom.HlavniOpenForm();
  begin
   SetLength(Self.obls, 0);
   Self.LB_Stanice.Clear();
- end;//procedure
+ end;
 
 procedure TF_BlkSCom.NewBlkCreate();
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 procedure TF_BlkSCom.B_StornoClick(Sender: TObject);
  begin
@@ -233,7 +233,7 @@ begin
 
   Self.eventForms.Add(eventForm);
   Self.eventTabSheets.Add(ts);
-end;//procedure
+end;
 
 procedure TF_BlkSCom.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -304,7 +304,7 @@ var glob:TBlkSettings;
 
   F_BlkSCom.Close;
   Self.Blk.Change();
- end;//procedure
+ end;
 
 procedure TF_BlkSCom.FormClose(Sender: TObject; var Action: TCloseAction);
 var i:Integer;
@@ -501,7 +501,7 @@ begin
      Exit();
     end;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

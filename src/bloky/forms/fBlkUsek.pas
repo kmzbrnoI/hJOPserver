@@ -81,13 +81,13 @@ procedure TF_BlkUsek.OpenForm(BlokIndex:Integer);
     NormalOpenForm;
    end;//else NewBlk
   F_BlkUsek.ShowModal;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.NewBlkOpenForm;
  begin
@@ -113,7 +113,7 @@ procedure TF_BlkUsek.NewBlkOpenForm;
 
   F_BlkUsek.Caption := 'Editace noveho bloku';
   F_BlkUsek.ActiveControl := E_Nazev;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.NormalOpenForm;
 var glob:TBlkSettings;
@@ -218,7 +218,7 @@ var glob:TBlkSettings;
 
   F_BlkUsek.Caption := 'Edititace dat bloku '+glob.name+' (Usek)';
   F_BlkUsek.ActiveControl := B_OK;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.HlavniOpenForm;
 var booster:TBooster;
@@ -228,12 +228,12 @@ var booster:TBooster;
   //nacteni zesilovacu
   Self.CB_Zesil.Clear();
   for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.B_StornoClick(Sender: TObject);
  begin
   F_BlkUsek.Close;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.B_OKClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -302,14 +302,14 @@ var glob:TBlkSettings;
 
   F_BlkUsek.Close;
   Self.Blk.Change();
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   OpenIndex  := -1;
   NewBlk     := false;
   BlokyTableData.UpdateTable();
- end;//procedure
+ end;
 
 procedure TF_BlkUsek.CHB_D1Click(Sender: TObject);
  begin

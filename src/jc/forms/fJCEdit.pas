@@ -115,7 +115,7 @@ uses GetSystems, FileSystem, TBlok, TOblsRizeni,
 procedure TF_JCEdit.B_StornoClick(Sender: TObject);
  begin
   Self.Close;
- end;//procedure
+ end;
 
 procedure TF_JCEdit.NewVCOpenForm;
  begin
@@ -162,7 +162,7 @@ procedure TF_JCEdit.NewVCOpenForm;
 
   Self.CHB_Trat.Checked := false;
   Self.CHB_TratClick(Self.CHB_Trat);
- end;//procedure
+ end;
 
 procedure TF_JCEdit.NormalOpenForm();
 var cyklus:Integer;
@@ -264,7 +264,7 @@ var cyklus:Integer;
   Self.E_VB.Text := LeftStr(Self.E_VB.Text, Length(Self.E_VB.Text) - 2);
 
   Self.Caption := 'Editovat data jízdní cesty '+JCData.nazev;
- end;//procedure
+ end;
 
 procedure TF_JCEdit.HlavniOpenForm;
  begin
@@ -313,7 +313,7 @@ var LI:TListItem;
 
   Self.MakeObls(obls);
   Blky.NactiBlokyDoObjektu(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, @Vypustit, obls, 0, -1);
- end;//procedure
+ end;
 
 procedure TF_JCEdit.B_NewUsekClick(Sender: TObject);
 var LI:TListItem;
@@ -341,7 +341,7 @@ var LI:TListItem;
   Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
- end;//procedure
+ end;
 
 procedure TF_JCEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
  begin
@@ -360,7 +360,7 @@ procedure TF_JCEdit.FormDestroy(Sender: TObject);
 begin
  Self.Useky.Free();
  Self.Vyhybky.Free();
-end;//procedure
+end;
 
 procedure TF_JCEdit.OpenForm(VCIndex:Integer);
  begin
@@ -373,13 +373,13 @@ procedure TF_JCEdit.OpenForm(VCIndex:Integer);
     NormalOpenForm;
    end;
   Self.ShowModal();
- end;//procedure
+ end;
 
 procedure TF_JCEdit.NewVCCreate;
  begin
   NewVC := true;
   OpenForm(-1);
- end;//procedure
+ end;
 
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
 var JC:TJC;
@@ -626,7 +626,7 @@ var JC:TJC;
    end;
 
   Self.Close;
- end;//procedure
+ end;
 
 procedure TF_JCEdit.B_ZaveryUseku_DeleteClick(Sender: TObject);
 var Pozice,i:Integer;
@@ -650,7 +650,7 @@ var Pozice,i:Integer;
    end;//if MessageBox
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
- end;//procedure
+ end;
 
 procedure TF_JCEdit.B_ZaveryVyhybek_DeleteClick(Sender: TObject);
 var cyklus,Pozice:Integer;
@@ -675,7 +675,7 @@ var cyklus,Pozice:Integer;
     Blky.NactiBlokyDoObjektu(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, @Vypustit, obls, 0, -1);
 
    end;//if MessageBox
- end;//procedure
+ end;
 
 procedure TF_JCEdit.LV_ZaveryChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
@@ -687,7 +687,7 @@ procedure TF_JCEdit.LV_ZaveryChange(Sender: TObject; Item: TListItem;
     B_ZaveryVyhybek_Delete.Enabled := false;
    end;
   B_ZaveryUseku_Delete.Enabled := false;
- end;//procedure
+ end;
 
 procedure TF_JCEdit.LV_UsekyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
@@ -699,7 +699,7 @@ procedure TF_JCEdit.LV_UsekyChange(Sender: TObject; Item: TListItem;
     B_ZaveryUseku_Delete.Enabled := false;
    end;
   B_ZaveryVyhybek_Delete.Enabled := false;
- end;//procedure
+ end;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
 var Vypustit:TArI;
@@ -741,7 +741,7 @@ var Vypustit:TArI;
    end;//if CB_Navestidlo.ItemIndex <> -1
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();  
- end;//procedure
+ end;
 
 procedure TF_JCEdit.CB_TypCestyChange(Sender: TObject);
  begin
@@ -799,7 +799,7 @@ begin
  SetLength(obls, (Blk as TBlkScom).OblsRizeni.Count);
  for i := 0 to (Blk as TBlkScom).OblsRizeni.Count-1 do
   obls[i] := (Blk as TBlkScom).OblsRizeni[i].id;
-end;//procedure
+end;
 
 procedure TF_JCEdit.UpdateJCName();
 begin
@@ -808,7 +808,7 @@ begin
 
  if (Self.Useky.Count <> 0) then
    Self.E_VCNazev.Text := Self.E_VCNazev.Text + Blky.GetBlkName(Self.Useky[Self.Useky.Count-1]);
-end;//procedure
+end;
 
 end.//unit
 

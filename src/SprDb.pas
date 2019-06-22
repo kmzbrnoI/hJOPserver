@@ -79,7 +79,7 @@ begin
  for i := 0 to _MAX_SPR-1 do
   if (Assigned(Self.soupravy[i])) then
    FreeAndNil(Self.soupravy[i]);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -211,7 +211,7 @@ begin
       end;
     end;
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -223,7 +223,7 @@ begin
  ORTCPServer.OnRemoveSpr(Self.soupravy[index]);
  FreeAndNil(Self.soupravy[index]);
  SprTableData.reload := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -233,7 +233,7 @@ begin
  for i := 0 to _MAX_SPR-1 do
   if (Self.soupravy[i] <> nil) then
     Self.soupravy[i].UpdateFront();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -248,7 +248,7 @@ begin
     Self.soupravy[i].rychlost := 0;
     Sleep(3);
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

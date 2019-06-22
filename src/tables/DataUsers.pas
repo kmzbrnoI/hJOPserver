@@ -58,14 +58,14 @@ begin
  end;//for i
 
  Self.UpdateTable();
-end;//procedure
+end;
 
 procedure TUsersTableData.UpdateTable();
 var i:Integer;
 begin
  for i := 0 to UsrDB.Count-1 do
    Self.UpdateLine(i);
-end;//procedure
+end;
 
 procedure TUsersTableData.UpdateLine(line:Integer);
 var User:TUser;
@@ -77,7 +77,7 @@ begin
  Self.LV.Items.Item[line].SubItems.Strings[1] := User.firstname + ' ' + User.lastname;
  Self.LV.Items.Item[line].SubItems.Strings[2] := PrevodySoustav.BoolToStr(User.root);
  Self.LV.Items.Item[line].SubItems.Strings[3] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,12 +91,12 @@ begin
   LI.SubItems.Add('');
 
  Self.UpdateLine(Self.LV.Items.Count-1);
-end;//procedure
+end;
 
 procedure TUsersTableData.RemoveUser(index:Integer);
 begin
  Self.LV.Items.Delete(index);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

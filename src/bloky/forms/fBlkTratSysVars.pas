@@ -100,7 +100,7 @@ begin
  Self.Update();
  Self.Caption := 'Traù '+Blk.name;
  Self.Show();
-end;//procedure
+end;
 
 procedure TF_BlkTrat_tech.Update();
 var i:Integer;
@@ -118,7 +118,7 @@ begin
  Self.E_Soupravy.Text := '';
  for i := 0 to trat.stav.soupravy.Count-1 do
    Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(trat.stav.soupravy[i].souprava)+',';
-end;//procedure
+end;
 
 procedure TF_BlkTrat_tech.Save();
 begin
@@ -130,6 +130,6 @@ begin
    trat.SprPredict := nil
  else
    trat.SprPredict := TBlkTratSouprava.Create(Self.SE_Souprava.Value);
-end;//procedure
+end;
 
 end.//unit

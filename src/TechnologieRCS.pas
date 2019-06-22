@@ -207,7 +207,7 @@ begin
    Self.SetInput(booster.bSettings.RCS.Napajeni.board, booster.bSettings.RCS.Napajeni.port, 0);
    Self.SetInput(booster.bSettings.RCS.Zkrat.board, booster.bSettings.RCS.Zkrat.port, 0);
   end;
-end;//procedure
+end;
 
 //simulace obaszeni useku, na kterem je souprava
 procedure TRCS.SoupravaUsekSim;
@@ -272,7 +272,7 @@ begin
     RCS_MODULE_RESTORED:; // communication with module restored, nothing should be here
    end;
   end;//
-end;//procedure
+end;
 
 procedure TRCS.DllOnInputChanged(Sender:TObject; module:byte);
 var i:Integer;
@@ -298,7 +298,7 @@ end;
 procedure TRCS.SetNeeded(RCSAdr:Integer; state:boolean = true);
 begin
  Self.Desky[RCSAdr].needed := state;
-end;//procedure
+end;
 
 function TRCS.GetNeeded(RCSAdr:Integer):boolean;
 begin

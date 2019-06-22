@@ -206,7 +206,7 @@ begin
   end;
  if (PC_1.ActivePage = TS_Centrala)   then Self.NactiCentralaData();
 
-end;//procedure
+end;
 
 procedure TF_Options.B_OKClick(Sender: TObject);
 begin
@@ -228,19 +228,19 @@ procedure TF_Options.B_pouzitClick(Sender: TObject);
 
   Screen.Cursor := crDefault;
   F_Options.ActiveControl := B_OK;
- end;//procedure
+ end;
 
 procedure TF_Options.PM_Data_SaveClick(Sender: TObject);
  begin
   B_pouzitClick(self);
- end;//procedure
+ end;
 
 procedure TF_Options.StartLogWrite;
  begin
   WriteLog('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$',WR_MESSAGE);
   WriteLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
   WriteLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',WR_MESSAGE);
- end;//procedure
+ end;
 
 procedure TF_Options.FormResize(Sender: TObject);
 begin
@@ -324,7 +324,7 @@ var IgnoraceRCS:TArI;
   SE_SS_Out_Pause.Value      := data.OUT_Pause;
   SE_SS_Out_Stop.Value       := data.OUT_Stop;
   SE_SS_Out_Opakovani.Value  := data.OUT_Repeat;
- end;//procedure
+ end;
 
 procedure TF_Options.CB_TrackSystemChange(Sender: TObject);
 begin
@@ -370,7 +370,7 @@ begin
    Self.GB_SS_Vstupy.Enabled    := false;
    Self.GB_SS_Vystupy.Enabled   := false;
   end;
-end;//procedure
+end;
 
 procedure TF_Options.CHB_SS_Out_ReadyClick(Sender: TObject);
 var data:TSSData;
@@ -423,7 +423,7 @@ var data:TSSData;
   if (CHB_SS_OUT_Opakovani.Checked) then data.OUT_Repeat := Self.SE_SS_Out_Opakovani.Value else data.OUT_Repeat := -1;
 
   SS.SetData(data);
- end;//procedure
+ end;
 
 procedure TF_Options.B_SaveClick(Sender: TObject);
 begin
@@ -433,30 +433,30 @@ end;
 procedure TF_Options.B_SS_SaveClick(Sender: TObject);
  begin
   UlozDataDoSSzObjektu;
- end;//procedure
+ end;
 
 procedure TF_Options.LB_TimerClick(Sender: TObject);
  begin
   F_Main.Timer1.Interval := StrToInt(LB_Timer.Items.Strings[LB_Timer.ItemIndex]);
   F_Main.SB1.Panels.Items[_SB_SBERNICE].Text:='Primární smyèka : '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms';
   writelog('Primární smyèka nastavena na '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms',WR_MESSAGE);
- end;//procedure
+ end;
 
 procedure TF_Options.FormShow(Sender: TObject);
  begin
   writelog('Zobrazeno okno nastaveni',WR_MESSAGE);
   Self.PC_1Change(Self);
- end;//procedure
+ end;
 
 procedure TF_Options.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   writelog('Skryto okno nastaveni',WR_MESSAGE);
- end;//procedure
+ end;
 
 procedure TF_Options.LV_DigiRychDblClick(Sender: TObject);
  begin
   if (LV_DigiRych.Selected <> nil) then F_RychlostiEdit.OpenForm(LV_DigiRych.ItemIndex);
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -469,7 +469,7 @@ begin
  Self.CCB_FC.ItemIndex        := Integer(TrkSystem.FlowControl);
  Self.CCB_Port.Text           := TrkSystem.COM;
  Self.CB_TrackSystemChange(Self.CB_TrackSystem);
-end;//procedure
+end;
 
 procedure TF_Options.UlozCentralaData();
 begin

@@ -227,7 +227,7 @@ begin
      end;
    end;//except
   end;//for i }
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -294,7 +294,7 @@ begin
   end;//for i
 
  Result := false;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -313,7 +313,7 @@ begin
  Self.JCs.Insert(pos, mJC);
  MultiJCTableData.AddJC(pos);
  Result := mJC;
-end;//procedure
+end;
 
 procedure TMultiJCDb.Remove(index:Integer);
 begin
@@ -322,7 +322,7 @@ begin
    Self.JCs.Delete(index);
    MultiJCTableData.RemoveJC(index);
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

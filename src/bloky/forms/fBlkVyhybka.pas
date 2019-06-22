@@ -52,7 +52,6 @@ type
     procedure CB_SpojkaChange(Sender: TObject);
     procedure CHB_npPlusClick(Sender: TObject);
     procedure CHB_npMinusClick(Sender: TObject);
-    procedure GB_ZamekClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
@@ -92,7 +91,7 @@ procedure TF_BlkVyhybka.OpenForm(BlokIndex:Integer);
     NormalOpenForm;
    end;
   F_BlkVyhybka.ShowModal;
- end;//procedure
+ end;
 
 procedure TF_BlkVyhybka.NewBlkOpenForm;
  begin
@@ -122,7 +121,7 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
 
   F_BlkVyhybka.Caption := 'Editovat data nového bloku výhybka';
   F_BlkVyhybka.ActiveControl := E_Nazev;
- end;//procedure
+ end;
 
 procedure TF_BlkVyhybka.NormalOpenForm;
 var glob:TBlkSettings;
@@ -202,7 +201,7 @@ var glob:TBlkSettings;
 
   F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
   F_BlkVyhybka.ActiveControl := B_Save;
- end;//procedure
+ end;
 
 procedure TF_BlkVyhybka.HlavniOpenForm;
 var spojka_vypust:TArI;
@@ -249,13 +248,13 @@ var spojka_vypust:TArI;
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0);
    end;
 
- end;//procedure
+ end;
 
 procedure TF_BlkVyhybka.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
  begin
@@ -447,7 +446,7 @@ var glob:TBlkSettings;
 
   F_BlkVyhybka.Close;
   Self.Blk.Change();
- end;//procedure
+ end;
 
 procedure TF_BlkVyhybka.FormClose(Sender: TObject;
   var Action: TCloseAction);
@@ -455,11 +454,4 @@ procedure TF_BlkVyhybka.FormClose(Sender: TObject;
   NewBlk     := false;
   OpenIndex  := -1;
   BlokyTableData.UpdateTable;
- end;procedure TF_BlkVyhybka.GB_ZamekClick(Sender: TObject);
-begin
-
-end;
-
-//procedure
-
-end.//unit
+ end;end.//unit

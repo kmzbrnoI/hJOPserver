@@ -69,7 +69,7 @@ begin
  Self.config.OUT_Pause       := ini.ReadInteger('Snadne Spusteni', 'OUT_Pause',-1);
  Self.config.OUT_Stop        := ini.ReadInteger('Snadne Spusteni', 'OUT_Stop',-1);
  Self.config.OUT_Repeat      := ini.ReadInteger('Snadne Spusteni', 'OUT_Repeat',-1);
-end;//procedure
+end;
 
 procedure TSS.SaveData(ini:TMemIniFile);
 begin
@@ -87,7 +87,7 @@ begin
  ini.WriteInteger('Snadne Spusteni', 'OUT_Start',Self.config.OUT_Start);
  ini.WriteInteger('Snadne Spusteni', 'OUT_Stop',Self.config.OUT_Stop);
  ini.WriteInteger('Snadne Spusteni', 'OUT_Repeat',Self.config.OUT_Repeat);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -156,7 +156,7 @@ var AC:TAC;
   except
 
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -168,7 +168,7 @@ end;//function
 procedure TSS.SetData(data:TSSData);
 begin
  Self.config := data;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

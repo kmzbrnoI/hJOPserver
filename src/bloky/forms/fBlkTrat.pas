@@ -96,13 +96,13 @@ var Blk:TBlk;
    end;//else NewBlk
 
   Self.ShowModal;
- end;//procedure
+ end;
 
 procedure TF_BlkTrat.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
- end;//procedure
+ end;
 
 procedure TF_BlkTrat.NewBlkOpenForm;
  begin
@@ -120,7 +120,7 @@ procedure TF_BlkTrat.NewBlkOpenForm;
 
   Self.Caption := 'Editace noveho bloku';
   Self.ActiveControl := Self.E_Trat_Name;
- end;//procedure
+ end;
 
 procedure TF_BlkTrat.NormalOpenForm;
 var glob:TBlkSettings;
@@ -170,7 +170,7 @@ var glob:TBlkSettings;
 
   Self.Caption := 'Editace dat bloku '+Self.Trat.name+' (traù)';
  Self.ActiveControl := Self.B_Save;
- end;//procedure
+ end;
 
 procedure TF_BlkTrat.HlavniOpenForm;
 begin

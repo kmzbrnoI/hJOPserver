@@ -379,7 +379,7 @@ begin
  finally
    str.Free();
  end;
-end;//procedure
+end;
 
 procedure TBlkUsek.SaveData(ini_tech:TMemIniFile;const section:string);
 var i:Integer;
@@ -421,7 +421,7 @@ begin
      end;
     end;
   end;
-end;//procedure
+end;
 
 procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
 var str:string;
@@ -440,7 +440,7 @@ begin
      str := str + Soupravy[spri].nazev + ',';
    ini_stat.WriteString(section, 'spr' , str);
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -461,7 +461,7 @@ begin
  Self.UsekStav.neprofilJCcheck.Clear();
  Self.Update();
  //change event will be called in Update();
-end;//procedure
+end;
 
 procedure TBlkUsek.Disable();
 begin
@@ -486,12 +486,12 @@ begin
  Self.UsekStav.neprofilJCcheck.Clear();
 
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.Reset();
 begin
  Self.Zaver := TZaver.no;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -627,7 +627,7 @@ begin
  Self.CheckPOdjChanged();
 
  inherited Update();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -649,7 +649,7 @@ begin
 
  Self.UsekStav.NUZ := nuz;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.SetUsekZaver(Zaver:TZaver);
 var old:TZaver;
@@ -671,25 +671,25 @@ begin
  // staveci zavery se do panelu neposilaji, protoze jsou mi k nicemu
  if (Self.Zaver <> TZaver.staveni) or (old <> TZaver.no) then
    Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.SetUsekStit(stit:string);
 begin
  Self.UsekStav.Stit := stit;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.SetUsekVyl(vyl:string);
 begin
  Self.UsekStav.Vyl := vyl;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.ORVylukaNull(Sender:TIdContext; success:boolean);
 begin
  if (success) then
   Self.Vyluka := '';
-end;//procedure
+end;
 
 procedure TBlkUsek.SetUsekVyl(Sender:TIDCOntext; vyl:string);
 begin
@@ -699,7 +699,7 @@ begin
   end else begin
    Self.Vyluka := vyl;
   end;
-end;//procedure
+end;
 
 procedure TBlkUsek.SetSprPredict(sprcesta:Integer);
 var old:Integer;
@@ -715,13 +715,13 @@ begin
   end;
 
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.SetKonecJC(konecjc:TZaver);
 begin
  Self.UsekStav.KonecJC := konecjc;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.SetZesZkrat(state:TBoosterSignal);
 var oblr:TOR;
@@ -759,13 +759,13 @@ begin
    Self.UsekStav.zkrat := state;
    Self.Change(true);
   end;
-end;//procedure
+end;
 
 procedure TBlkUsek.SetZesNap(state:TBoosterSignal);
 begin
  Self.UsekStav.napajeni := state;
  Self.Change(true);
-end;//procedure
+end;
 
 procedure TBlkUsek.SetZesDCC(state:TBoosterSignal);
 begin
@@ -805,7 +805,7 @@ begin
    Self.UsekStav.vlakPresun := presun;
    Self.Change();
   end;
-end;//procedure
+end;
 
 procedure TBlkUsek.Freeze();
 begin
@@ -813,7 +813,7 @@ begin
 
  inherited;
  Self.last_zes_zkrat := Self.ZesZkrat;
-end;//procedure
+end;
 
 procedure TBlkUsek.UnFreeze();
 begin
@@ -825,7 +825,7 @@ begin
    Self.ZesZkrat := Self.last_zes_zkrat;
    Self.Change();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -863,7 +863,7 @@ begin
 
  // pak posleme pozadavek na editaci hnaciho vozidla
  (SenderOR as TOR).BlkNewSpr(Self, SenderPnl, (itemindex-2) div 2);
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
 begin
@@ -880,7 +880,7 @@ begin
 
  // pak posleme pozadavek na editaci hnaciho vozidla
  (SenderOR as TOR).BlkEditSpr(Self, SenderPnl, Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]]);
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 var podm:TPSPodminky;
@@ -895,7 +895,7 @@ begin
  ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
    'Smazání soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev,
    TBlky.GetBlksList(Self), podm);
-end;//procedure
+end;
 
 procedure TBlkUsek.PotvrDeleteLok(Sender:TIdContext; success:boolean);
 begin
@@ -908,7 +908,7 @@ begin
      Self.UsekStav.VlakPresun := -1;
    Soupravy.RemoveSpr(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
   end;
-end;//procedure
+end;
 
 procedure TBlkUsek.PotvrUvolLok(Sender:TIdContext; success:boolean);
 begin
@@ -924,7 +924,7 @@ begin
   end else begin
    Self.RemoveSouprava(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
   end;
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -934,7 +934,7 @@ begin
  ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TOR,
   'Uvolnìní soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev+' z bloku',
   TBlky.GetBlksList(Self), nil);
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
 var spr:TSouprava;
@@ -1015,12 +1015,12 @@ end;
 procedure TBlkUsek.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Vyluka(SenderPnl, Self, Self.Stav.Vyl);
-end;//procedure
+end;
 
 // pokud volba nebyla uspesna, vraci false a v tom pripade je vyvolano menu
 function TBlkUsek.MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
@@ -1048,7 +1048,7 @@ begin
 
  Self.Change();
  Result := true;
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
@@ -1072,17 +1072,17 @@ begin
  (SenderOR as TOR).vb.Add(Self);
 
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuNUZStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.NUZ := true;
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuNUZStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.NUZ := false;
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
 var Blk:TBlk;
@@ -1104,7 +1104,7 @@ begin
   end else begin
    Self.VlakPresun := -1;
   end;
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuRUClokClick(SenderPnl:TIdContext; SenderOR:TObject);
 var addr:Integer;
@@ -1122,7 +1122,7 @@ begin
   end;//for i
 
  ORTCPServer.SendLn(SenderPnl, str);
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuMAUSlokClick(SenderPnl:TIdContext; SenderOR:TObject);
 var addr:Integer;
@@ -1141,7 +1141,7 @@ begin
  str := str + '}';
 
  ORTCPServer.SendLn(SenderPnl, str);
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
 var rcsaddr:TRCSAddr;
@@ -1152,7 +1152,7 @@ begin
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
 var rcsaddr:TRCSAddr;
@@ -1163,7 +1163,7 @@ begin
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
-end;//procedure
+end;
 
 procedure TBlkUsek.MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
@@ -1350,7 +1350,7 @@ begin
       break;
      end;
   end;//if RCSi.lib = 2
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1434,7 +1434,7 @@ begin
       Self.MenuVBClick(SenderPnl, SenderOR);
   end;
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1475,7 +1475,7 @@ begin
       break;
      end;
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

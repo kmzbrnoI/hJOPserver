@@ -267,22 +267,22 @@ var data:THVData;
    end;
 
   Self.Close;
- end;//procedure
+ end;
 
 procedure TF_HVEdit.NewHV();
 begin
  Self.OpenForm(nil);
-end;//procedure
+end;
 
 procedure TF_HVEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
  begin
   Self.OpenHV := nil;
- end;//procedure
+ end;
 
 procedure TF_HVEdit.B_StornoClick(Sender: TObject);
  begin
   Self.Close;
- end;//procedure
+ end;
 
 procedure TF_HVEdit.B_NajetoDeleteClick(Sender: TObject);
  begin
@@ -292,7 +292,7 @@ procedure TF_HVEdit.B_NajetoDeleteClick(Sender: TObject);
   HVTableData.UpdateLine(Self.OpenHV);
 
   Application.MessageBox('Operace probìhla úspìšne', 'OK', MB_OK OR MB_ICONINFORMATION);
- end;//procedure
+ end;
 
 procedure TF_HVEdit.HlavniOpenForm;
  begin
@@ -375,7 +375,7 @@ var data:THVData;
   ORs.FillCB(Self.CB_OR, stav.stanice);
 
   F_HVEdit.Caption := 'HV : '+IntToStr(Self.OpenHV.adresa);
- end;//procedure
+ end;
 
 procedure TF_HVEdit.NewHVOpenForm;
  begin
@@ -396,6 +396,6 @@ procedure TF_HVEdit.NewHVOpenForm;
   ORs.FillCB(Self.CB_OR, nil);
 
   F_HVEdit.Caption       := 'Nové HV';
- end;//procedure
+ end;
 
 end.//unit

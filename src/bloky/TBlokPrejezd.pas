@@ -197,7 +197,7 @@ begin
 
  for oblr in Self.ORsRef do
    oblr.RCSAdd(Self.PrjSettings.RCS);
-end;//procedure
+end;
 
 procedure TBlkPrejezd.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
@@ -212,13 +212,13 @@ begin
 
  ini_tech.WriteInteger(section, 'RCSOz', Self.PrjSettings.RCSOutputs.Zavrit);
  ini_tech.WriteInteger(section, 'RCSOnot', Self.PrjSettings.RCSOutputs.NOtevrit);
-end;//procedure
+end;
 
 procedure TBlkPrejezd.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  if (Self.PrjStav.stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.PrjStav.stit);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -233,14 +233,14 @@ begin
 
  Self.PrjStav.basicStav := TBlkPrjBasicStav.none;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkPrejezd.Disable();
 begin
  Self.PrjStav.basicStav := disabled;
  Self.PrjStav.shs.Clear();
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -304,7 +304,7 @@ begin
   end;
 
  inherited Update();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -373,7 +373,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -386,7 +386,7 @@ procedure TBlkPrejezd.SetSettings(data:TBlkPrjSettings);
 begin
  Self.PrjSettings := data;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -394,14 +394,14 @@ procedure TBlkPrejezd.SetStit(stit:string);
 begin
  Self.PrjStav.stit := Stit;
  Self.Change();
-end;//procedure
+end;
 
 procedure TBlkPrejezd.SetVyl(vyl:string);
 begin
  Self.PrjStav.vyl := vyl;
  Self.Change();
  Self.UpdateOutputs();
-end;//procedure
+end;
 
 procedure TBlkPrejezd.SetNOT(state:boolean);
 begin
@@ -416,7 +416,7 @@ begin
  Self.PrjStav.PC_NOT := state;
  Self.Change();
  Self.UpdateOutputs();
-end;//procedure
+end;
 
 procedure TBlkPrejezd.SetUZ(state:boolean);
 begin
@@ -430,7 +430,7 @@ begin
  Self.PrjStav.PC_UZ := state;
  Self.Change();
  Self.UpdateOutputs();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //gui: menu
@@ -528,7 +528,7 @@ begin
  Self.PrjStav.zaver := 0;
  Self.UpdateOutputs();
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -577,7 +577,7 @@ begin
    Result := Result + '-,';
    if (Self.Zaver) then Result := Result + '*NUZ>,';
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -585,7 +585,7 @@ procedure TBlkPrejezd.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:
 begin
  if ((Button <> TPanelButton.ESCAPE) and (Self.Stav.basicStav <> TBlkPrjBasicStav.disabled)) then
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -602,7 +602,7 @@ begin
  else if (item = 'NUZ>')     then Self.MenuAdminNUZClick(SenderPnl, SenderOR)
  else if (item = 'ZAVRENO>') then Self.MenuAdminZAVRENOStartClick(SenderPnl, SenderOR)
  else if (item = 'ZAVRENO<') then Self.MenuAdminZAVRENOStopClick(SenderPnl, SenderOR);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -611,12 +611,12 @@ procedure TBlkPrejezd.PanelZNOTCallBack(Sender:TIdContext; success:boolean);
 begin
  if (not success) then Exit();
  Self.Notevreni := true;
-end;//procedure
+end;
 
 procedure TBlkPrejezd.PanelZUZCallBack(Sender:TIdContext; success:boolean);
 begin
  if (success) then Self.UZ := false; 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -648,7 +648,7 @@ begin
      Self.Change();
     end;
   end;
-end;//procedure
+end;
 
 function TBlkPrejezd.GetZaver():boolean;
 begin

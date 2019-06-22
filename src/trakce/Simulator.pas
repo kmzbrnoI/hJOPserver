@@ -190,7 +190,7 @@ end;//function
 procedure TSimulator.LokEmergencyStop(addr:Integer);
 begin
  Self.send_history.Add(Self.HistoryPacket(XB_LOK_STOP));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -242,7 +242,7 @@ begin
    Self.loading_addr := 0;
    Self.ConnectChange(Slot.adresa, TConnect_code.TC_Connected, hist_item.callback_ok.data)
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -305,7 +305,7 @@ begin
    if (Assigned(data.callback_ok.callback)) then
      data.callback_ok.callback(Self, data.callback_ok.data);
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -313,7 +313,7 @@ procedure TSimulator.GetTrackStatus();
 begin
  Self.WriteLog(tllCommand, 'PUT: GET-TRACK-STATUS');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_STATUS));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -322,14 +322,14 @@ begin
  inherited;
  Self.WriteLog(tllCommand, 'PUT: GET-CS-VERSION');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_CS_VERSION));
-end;//procedure
+end;
 
 procedure TSimulator.GetLIVersion(callback:TLIVersionEvent);
 begin
  inherited;
  Self.WriteLog(tllCommand, 'PUT: GET-LI-VERSION');
  Self.send_history.Add(Self.HistoryPacket(XB_TRK_LI_VERSION));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -353,14 +353,14 @@ procedure TSimulator.POMWriteCV(Address:Integer; cv:Word; data:byte);
 begin
  Self.WriteLog(tllCommand, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
  Self.send_history.Add(Self.HistoryPacket(XB_POM_WRITEBYTE));
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSimulator.BeforeClose();
 begin
  Self.send_history.Clear();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

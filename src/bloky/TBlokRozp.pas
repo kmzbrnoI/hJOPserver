@@ -113,32 +113,32 @@ begin
    Self.ORsRef.Clear();
   end;
 
-end;//procedure
+end;
 
 procedure TBlkRozp.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
  inherited SaveData(ini_tech,section);
 
  Self.SaveRCS(ini_tech,section,Self.RozpSettings.RCSAddrs);
-end;//procedure
+end;
 
 procedure TBlkRozp.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
  //
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRozp.Enable();
 begin
  Self.status := TRozpStatus.not_selected;
-end;//procedure
+end;
 
 procedure TBlkRozp.Disable();
 begin
  Self.status := TRozpStatus.disabled;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -156,7 +156,7 @@ begin
  end;//case
 
  inherited Update();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -172,7 +172,7 @@ begin
 
  Self.RozpSettings := data;
  Self.Change();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -212,7 +212,7 @@ begin
    end;
  end;//case
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -220,7 +220,7 @@ end;//procedure
 procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if (Self.status = TRozpStatus.disabled) then Exit();
-end;//procedure
+end;
 
 procedure TBlkRozp.SetStatus(status:TRozpStatus);
 begin
@@ -230,7 +230,7 @@ begin
    Self.UpdateOutput();
    Self.Change();
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -244,7 +244,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

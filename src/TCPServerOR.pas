@@ -363,7 +363,7 @@ begin
  finally
    Self.tcpServer.Contexts.UnlockList();
  end;
-end;//procedure
+end;
 
 // Udalost vyvolana pri odpojeni klienta
 procedure TORTCPServer.OnTcpServerDisconnect(AContext: TIdContext);
@@ -429,7 +429,7 @@ begin
  finally
    Self.tcpServer.Contexts.UnlockList();
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -468,7 +468,7 @@ begin
  finally
    readLock.Release();
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -741,7 +741,7 @@ begin
     end;
   end;
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -858,14 +858,14 @@ begin
 
  else if (parsed[1] = 'SHP') then
   (AContext.Data as TTCPORsRef).ORs[i].PanelHlaseni(AContext, parsed);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.SendInfoMsg(AContext:TIdContext; msg:string);
 begin
  Self.SendLn(AContext, '-;INFOMSG;'+msg+';');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -887,7 +887,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 procedure TORTCPServer.Vyluka(AContext: TIdContext; Blk:TBlk; vyl:string);
 begin
@@ -898,7 +898,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 procedure TORTCPServer.Menu(AContext: TIdContext; Blk:TBlk; OblR:TOR; menu:string);
 begin
@@ -910,7 +910,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 procedure TORTCPServer.Potvr(AContext: TIdContext; callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList; podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
 var str:string;
@@ -944,7 +944,7 @@ begin
 
  if ((free_senders) and (Assigned(senders))) then senders.Free();
  if ((free_podm) and (Assigned(podminky))) then podminky.Free();
-end;//procedure
+end;
 
 procedure TORTCPServer.PotvrClose(AContext: TIdContext; msg:string = '');
 begin
@@ -959,7 +959,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 procedure TORTCPServer.PlaySound(AContext: TIdContext; code:Integer; loop:boolean = false);
 begin
@@ -976,7 +976,7 @@ begin
      TTCPORsRef(AContext.Data).soundDict.Add(code, 1)
    else
      TTCPORsRef(AContext.Data).soundDict[code] := TTCPORsRef(AContext.Data).soundDict[code] + 1;
-end;//procedure
+end;
 
 procedure TORTCPServer.DeleteSound(AContext: TIdContext; code:Integer);
 begin
@@ -988,13 +988,13 @@ begin
      Self.SendLn(AContext, '-;SND;STOP;'+IntToStr(code)+';');
    TTCPORsRef(AContext.Data).soundDict[code] := TTCPORsRef(AContext.Data).soundDict[code] - 1;
   end;
-end;//procedure
+end;
 
 procedure TORTCPServer.BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
 begin
  Self.SendLn(AContext, '-;BOTTOMERR;'+err+';'+stanice+';'+tech+';');
  writelog(tech + ' : ' + stanice + ' : ' + err, WR_ERROR);
-end;//procedure
+end;
 
 procedure TORTCPServer.UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
 var str:string;
@@ -1039,7 +1039,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1084,7 +1084,7 @@ begin
  else
   OblR.PanelAuthorise(AContext, TORControlRights(StrToInt(parsed[2])), parsed[3], parsed[4]);
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1094,7 +1094,7 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
    if (Assigned(Self.clients[i])) then
      Self.BottomError(Self.clients[i].conn, err, '-', tech);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1106,7 +1106,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // gui metody
@@ -1125,7 +1125,7 @@ begin
    for j := 1 to F_Main.LV_Clients.Columns.Count-1 do
     MI.SubItems.Add('');
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1232,7 +1232,7 @@ begin
  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[11] := LeftStr(str, Length(str)-2);
 
  F_Main.LV_Clients.UpdateItems(index, index);
-end;//procedure
+end;
 
 procedure TORTCPServer.GUIRefreshTable();
 var i:Integer;
@@ -1240,7 +1240,7 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   Self.GUIRefreshLine(i, false);
  F_Main.LV_Clients.Repaint();
-end;//procedure
+end;
 
 procedure TORTCPServer.GUIRefreshFromQueue();
 var i:Integer;
@@ -1340,7 +1340,7 @@ begin
  except
 
  end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1350,7 +1350,7 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if (Assigned(Self.clients[i])) then
     Self.SendLn(Self.clients[i].conn, data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1362,7 +1362,7 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if ((Assigned(Self.clients[i])) and ((Self.clients[i].conn.Data as TTCPORsRef).funcsVyznamReq)) then
     Self.SendLn(Self.clients[i].conn, data);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1370,7 +1370,7 @@ procedure TORTCPServer.DCCStart();
 begin
  Self.BroadcastData('-;DCC;GO;');
  Self.DCCStopped := nil;
-end;//procedure
+end;
 
 procedure TORTCPServer.DCCStop();
 var i:Integer;
@@ -1383,21 +1383,21 @@ begin
     else
       Self.SendLn(Self.clients[i].conn, '-;DCC;DISABLED');
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.OnDCCCmdErr(Sender:TObject; Data:Pointer);
 begin
  Self.BottomError(TIdContext(Data), 'Centrála neodpovìdìla na pøíkaz', '-', 'CENTRÁLA');
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.DisconnectClient(conn:TIdContext);
 begin
  conn.Connection.Disconnect();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

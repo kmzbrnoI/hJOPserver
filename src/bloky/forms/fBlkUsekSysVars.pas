@@ -91,7 +91,7 @@ var spr:Integer;
     false: Self.S_DCC.Brush.Color := clRed;
     true : Self.S_DCC.Brush.Color := clLime;
   end;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek_tech.SavePrmnToProgram;
 var Blk:TBlk;
@@ -107,7 +107,7 @@ var Blk:TBlk;
   Self.Blk.ZesNapajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
   Self.Blk.Vyluka      := M_Vyluka.Text;
   Self.Blk.Stitek      := M_Stitek.Text;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek_tech.OpenForm(Blok:TBlkUsek);
  begin
@@ -115,12 +115,12 @@ procedure TF_BlkUsek_tech.OpenForm(Blok:TBlkUsek);
   LoadPrmnFromProgram();
   Self.Caption := 'Vlastnosti úseku '+Self.Blk.name;
   Self.Show;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek_tech.B_ObnovitClick(Sender: TObject);
  begin
   LoadPrmnFromProgram;
- end;//procedure
+ end;
 
 procedure TF_BlkUsek_tech.B_SaveDataClick(Sender: TObject);
  begin

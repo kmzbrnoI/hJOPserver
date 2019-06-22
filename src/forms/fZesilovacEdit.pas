@@ -132,7 +132,7 @@ begin
  ZesTableData.LoadToTable();
 
  Self.Close;
-end;//procedure
+end;
 
 procedure TF_ZesilovacEdit.B_StornoClick(Sender: TObject);
  begin
@@ -148,19 +148,19 @@ end;
 procedure TF_ZesilovacEdit.NewZes;
  begin
   OpenForm(nil);
- end;//procedure
+ end;
 
 procedure TF_ZesilovacEdit.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
  begin
   Self.open_booster := nil;
   CanClose := true;
- end;//procedure
+ end;
 
 procedure TF_ZesilovacEdit.HlavniOpenForm;
  begin
   F_ZesilovacEdit.ActiveControl := B_Save;
- end;//procedure
+ end;
 
 procedure TF_ZesilovacEdit.NormalOpenForm;
 var bSettings:TBoosterSettings;
@@ -189,7 +189,7 @@ var bSettings:TBoosterSettings;
   Self.CHB_DCCClick(Self.CHB_DCC);
 
   F_ZesilovacEdit.Caption := 'Zesilovaè : '+bSettings.Name;
- end;//procedure
+ end;
 
 procedure TF_ZesilovacEdit.NewOpenForm;
 var IgnoraceRCS:TArI;
@@ -215,6 +215,6 @@ var IgnoraceRCS:TArI;
   Self.CHB_DCCClick(Self.CHB_DCC);
 
   F_ZesilovacEdit.Caption := 'Nový zesilovaè';
- end;//procedure
+ end;
 
 end.//unit

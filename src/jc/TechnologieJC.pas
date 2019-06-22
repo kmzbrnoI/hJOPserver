@@ -946,7 +946,7 @@ begin
     end;
 
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // kontrola podminek nouzove cesty:
@@ -1122,7 +1122,7 @@ begin
           TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
    end;
 
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1216,7 +1216,7 @@ var i:Integer;
 
   bariery.Free();
   upo.Free();
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1263,7 +1263,7 @@ begin
    Self.Krok := 100
  else
    Self.Krok := 10;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // callbacky z upozornovacich barier:
@@ -1339,7 +1339,7 @@ begin
    Self.CancelStaveni();
    Self.Krok := 0;
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2025,7 +2025,7 @@ var i,j:Integer;
     writelog('Postavena NC '+Self.Nazev, WR_VC);
    end;//case 102
    end;//case
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2090,7 +2090,7 @@ var Blk:TBlk;
     (Blk as TBlkSCom).DNjc := nil;
 
   writelog('Zrusen zacatek staveni VC na bloku '+Blk.name,WR_VC);
- end;//procedure
+ end;
 
 //rusi konec jizdni cesty
 procedure TJC.RusKonecJC();
@@ -2099,7 +2099,7 @@ var usek:TBlkUsek;
   Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(usek));
   if (usek = nil) then Exit;
   usek.KonecJC := no;
- end;//procedure
+ end;
 
 procedure TJC.RusVBJC();
 var Blk:TBlk;
@@ -2136,7 +2136,7 @@ var usekZaver: Integer;
   // zaver trati se rusi automaticky uvolnenim zaveru posledniho bloku pred trati
 
   writelog('Zrusena JC '+Self.Nazev, WR_VC);
- end;//procedure
+ end;
 
 //ruseni jizdni cesty bez ruseni zaveru bloku
 procedure TJC.RusJCWithoutBlk();
@@ -2161,7 +2161,7 @@ var Nav:TBlk;
   Self.RozpadBlok       := -5;
   Self.RozpadRuseniBlok := -5;
   JCDb.CheckNNavaznost(Self);
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2456,7 +2456,7 @@ begin
       Nav.DNjc := nil;
      end;
    end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2527,7 +2527,7 @@ var UsekActual,UsekDalsi,Nav:TBlk;
       ' z bloku '+UsekActual.name+' do bloku '+UsekDalsi.name,WR_SPRPREDAT, 0);
 
   Self.CheckSmyckaBlok(UsekDalsi);
- end;//procedure
+ end;
 
 procedure TJC.CheckSmyckaBlok(blk:TBlk);
 var oblr:TOR;
@@ -2548,7 +2548,7 @@ begin
    writelog('Obsazen smyckovy usek '+Blk.name+ ' - menim smer loko v souprave '+
       Soupravy.soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
   end;//if
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2610,7 +2610,7 @@ var Nav,DalsiNav:TBlkSCom;
    end;// else nouzova cesta
 
   Nav.SetNavest(Navest, TNotifyEvent(nil), Self.NavNepostaveno);
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2730,7 +2730,7 @@ begin
    sl.Free();
    sl2.Free();
  end;
-end;//procedure
+end;
 
 procedure TJC.SaveData(ini:TMemIniFile; section:string);
 var line:string;
@@ -2809,7 +2809,7 @@ begin
    line := line + IntToStr(Self.fproperties.vb[i]) + ';';
  if (line <> '') then
    ini.WriteString(section, 'vb', line);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2845,7 +2845,7 @@ begin
    //timeout
    Self.CancelStaveni('Pøekroèení èasu stavìní JC', true);    // toto je docasne reseni: cestu vymazeme ze zasobniku
   end;//if timeout
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2977,7 +2977,7 @@ begin
 
  // tohleto je finta, jak vykonat jen posledni krok staveni JC
  Self.Krok := 14;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2986,7 +2986,7 @@ end;//procedure
 procedure TJC.STUJ();
 begin
  Self.RozpadBlok := -2;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3014,7 +3014,7 @@ begin
    Blky.GetBlkByID(blkId, TBlk(usek));
    usek.RemoveChangeEvent(usek.EventsOnObsaz, CreateChangeEvent(Self.UsekClosePrj, data));
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3022,19 +3022,19 @@ procedure TJC.SetRozpadBlok(RozpadBlok:Integer);
 begin
  Self.fstaveni.RozpadBlok := RozpadBlok;
  Self.changed := true;
-end;//procedure
+end;
 
 procedure TJC.SetRozpadRuseniBlok(RozpadRuseniBlok:Integer);
 begin
  Self.fstaveni.RozpadRuseniBlok := RozpadRuseniBlok;
  Self.changed := true;
-end;//procedure
+end;
 
 procedure TJC.SetKrok(Krok:Integer);
 begin
  Self.fstaveni.Krok := Krok;
  Self.changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3287,7 +3287,7 @@ end;//function
 procedure TJC.CritBarieraEsc(Sender:TObject);
 begin
  Self.CancelStaveni('', true);
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3358,14 +3358,14 @@ begin
      (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
  Self.RusJC();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.VyhNeprestavenaNC(Sender:TObject);
 begin
  Self.VyhPrestavenaNC(Sender);
-end;//procedure
+end;
 
 procedure TJC.VyhPrestavenaNC(Sender:TObject);
 var Navestidlo, spojka:TBlk;
@@ -3418,7 +3418,7 @@ begin
 
  if (Self.fstaveni.nextVyhybka = Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
    Self.fstaveni.nextVyhybka := -1;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3603,7 +3603,7 @@ begin
     if (not (Blk as TBlkZamek).nouzZaver) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NOUZ_ZAVER, blk, blk.id));
    end;//for i
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3628,7 +3628,7 @@ begin
      (Blk as TBlkUsek).Zaver := TZaver.no;
     end;//for cyklus
   end;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -398,14 +398,14 @@ begin
  Self.stat_run := 0;
  Self.stat_end := 0;
  Self.changed := true;
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TAC.Update();
 begin
  if (Self.running) then Self.UpdateKrok();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // zapnout AC:
@@ -433,7 +433,7 @@ begin
 
  Self.changed := true;
  F_Main.LV_AC_Kroky.Repaint();
-end;//procedure
+end;
 
 procedure TAC.Stop();
 begin
@@ -445,7 +445,7 @@ begin
  Self.changed := true;
  F_Main.LV_AC_Kroky.Repaint();
  F_Main.UpdateACButtons();
-end;//procedure
+end;
 
 procedure TAC.Pause();
 begin
@@ -453,7 +453,7 @@ begin
  Self.frunning := false;
  Self.changed := true;
  writelog('AC '+Self.name+ ' : PAUSE', WR_AUTREZ);
-end;//procedure
+end;
 
 function TAC.GetPaused():boolean;
 begin
@@ -641,7 +641,7 @@ var cmd:integer;
   else//case
    Inc(Self.krok);
   end;
- end;//procedure
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -650,7 +650,7 @@ begin
  Inc(Self.krok);
  Self.subkrok := 0;
  F_Main.LV_AC_Kroky.Repaint();
-end;//procedure
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
