@@ -10,7 +10,7 @@ unit FunkceVyznam;
 
 interface
 
-uses Generics.Collections, Classes, THnaciVozidlo;
+uses Generics.Collections, Classes, THnaciVozidlo, Generics.Defaults, AnsiStrings;
 
 type
   TGeneralEvent = procedure(Sender: TObject) of object;
@@ -22,6 +22,8 @@ type
     constructor Create(str:string); overload;
     constructor Create(popis:string; typ:THVFuncType); overload;
     function GetPanelStr():string;
+
+    class function Comparer():IComparer<TFuncVyznam>;
   end;
 
   TFuncsVyznam = class
@@ -83,6 +85,7 @@ begin
  finally
    strs.Free();
  end;
+ Self.vyznamy.Sort(TFuncVyznam.Comparer());
 
  if (Assigned(Self.OnChange)) then Self.OnChange(Self);
 end;
@@ -90,7 +93,6 @@ end;
 procedure TFuncsVyznam.ParseNewItems(data:string);
 var sl:TStrings;
     str:string;
-    i:Integer;
 begin
  sl := TStringList.Create();
  try
@@ -103,9 +105,8 @@ begin
         if (not Self.IsVyznam(str)) then
           Self.vyznamy.Add(TFuncVyznam.Create(str))
         else begin
-          i := Self.GetVyznamIndex(str);
-          Self.vyznamy.Delete(i);
-          Self.vyznamy.Insert(i, TFuncVyznam.Create(str));
+          Self.vyznamy.Delete(Self.GetVyznamIndex(str));
+          Self.vyznamy.Add(TFuncVyznam.Create(str));
         end;
       end;
     end;
@@ -113,6 +114,7 @@ begin
    sl.Free();
  end;
 
+ Self.vyznamy.Sort(TFuncVyznam.Comparer());
  if (Assigned(Self.OnChange)) then Self.OnChange(Self);
 end;
 
@@ -169,6 +171,16 @@ end;
 function TFuncVyznam.GetPanelStr():string;
 begin
  Result := Self.popis + ':' + THV.HVFuncTypeToChar(Self.typ);
+end;
+
+class function TFuncVyznam.Comparer():IComparer<TFuncVyznam>;
+begin
+ Result := TComparer<TFuncVyznam>.Construct(
+  function(const Left, Right: TFuncVyznam): Integer
+   begin
+    Result := CompareStr(AnsiString(Left.popis), AnsiString(Right.popis));
+   end
+ );
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
