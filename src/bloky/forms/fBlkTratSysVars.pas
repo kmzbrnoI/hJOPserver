@@ -99,8 +99,7 @@ begin
 end;
 
 procedure TF_BlkTrat_tech.Update();
-var i:Integer;
-    spr:TBlkTratSouprava;
+var spr:TBlkTratSouprava;
 begin
  Self.CB_Zaver.ItemIndex  := PrevodySoustav.BoolToInt(trat.Zaver);
  Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;

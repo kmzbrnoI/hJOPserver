@@ -369,6 +369,11 @@ function TJC.KontrolaPodminek(NC:boolean = false):TJCBariery;
 var i,j:Integer;
     Blk,blk2:TBlk;
     privol:TBlksList;
+    vyhZaver:TJCVyhZaver;
+    usekZaver:Integer;
+    refZaver:TJCRefZaver;
+    prjZaver:TJCPrjZaver;
+    odvratZaver:TJCOdvratZaver;
 begin
   Result := TList<TJCBariera>.Create();
 
@@ -406,17 +411,17 @@ begin
 
   // vyhybky:
   // kontrolujeme, jestli vyhybky existuji a jestli jsou to vyhybky
-  for i := 0 to Self.fproperties.Vyhybky.Count-1 do
+  for vyhZaver in Self.fproperties.Vyhybky do
    begin
-    if (Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk) <> 0) then
+    if (Blky.GetBlkByID(vyhZaver.Blok, Blk) <> 0) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Vyhybky[i].Blok));
+      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, vyhZaver.Blok));
       Exit;
      end;//if
 
     if (Blk.typ <> _BLK_VYH) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Vyhybky[i].Blok));
+      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, vyhZaver.Blok));
       Exit;
      end;
 
@@ -428,7 +433,7 @@ begin
      end;
 
     // kontrola neprofilovych useku vyhybek pro polohu +
-    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
+    if ((vyhZaver.Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
         (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
@@ -437,7 +442,7 @@ begin
      end;
 
     // kontrola neprofilovych useku vyhybek pro polohu -
-    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
+    if ((vyhZaver.Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
         (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
@@ -447,18 +452,18 @@ begin
    end;//for i
 
   // useky:
-  for i := 0 to Self.fproperties.Useky.Count-1 do
+  for usekZaver in Self.fproperties.Useky do
    begin
     // zkontrolujeme, jestli useky existuji a jestli jsou to useky
-    if (Blky.GetBlkByID(Self.fproperties.Useky[i], Blk) <> 0) then
+    if (Blky.GetBlkByID(usekZaver, Blk) <> 0) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Useky[i]));
+      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, usekZaver));
       Exit;
      end;//if
 
     if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Useky[i]));
+      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, usekZaver));
       Exit;
      end;
 
@@ -471,34 +476,34 @@ begin
    end;//for i
 
   // kontrola existence bloku prislusenstvi
-  for i := 0 to Self.fproperties.Prisl.Count-1 do
+  for refZaver in Self.fproperties.Prisl do
    begin
-    if (Blky.GetBlkByID(Self.fproperties.Prisl[i].ref_blk, blk) <> 0) then
+    if (Blky.GetBlkByID(refZaver.ref_blk, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Prisl[i].ref_blk));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
       Exit;
      end;
-    if (Blky.GetBlkByID(Self.fproperties.Prisl[i].Blok, blk) <> 0) then
+    if (Blky.GetBlkByID(refZaver.Blok, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Prisl[i].Blok));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.Blok));
       Exit;
      end;
    end;//for i
 
   // kontrola prejezdu
-  for i := 0 to Self.fproperties.Prejezdy.Count-1 do
+  for prjZaver in Self.fproperties.Prejezdy do
    begin
     // kontrola existence bloku prejezdu
-    if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, blk) <> 0) then
+    if (Blky.GetBlkByID(prjZaver.Prejezd, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Prejezdy[i].Prejezd));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, prjZaver.Prejezd));
       Exit;
      end;
 
     // kontrola typu bloku prejezdu
     if (blk.typ <> _BLK_PREJEZD) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].Prejezd));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, prjZaver.Prejezd));
       Exit;
      end;
 
@@ -510,33 +515,33 @@ begin
      end;
 
     // pokud se ma prejezd zavirat
-    if (Self.fproperties.Prejezdy[i].uzaviraci.Count > 0) then
+    if (prjZaver.uzaviraci.Count > 0) then
      begin
       // kontrola existence oteviraciho bloku
-      if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].oteviraci, blk2) <> 0) then
+      if (Blky.GetBlkByID(prjZaver.oteviraci, blk2) <> 0) then
        begin
-        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].oteviraci));
+        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, prjZaver.oteviraci));
         Exit;
        end;
 
       // kontrola typu oteviraciho bloku
       if ((blk2.typ <> _BLK_USEK) and (blk2.typ <> _BLK_TU)) then
        begin
-        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].oteviraci));
+        Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, prjZaver.oteviraci));
         Exit;
        end;
 
       // kontrola existence uzaviracich bloku a jejich typu
-      for j := 0 to Self.fproperties.Prejezdy[i].uzaviraci.Count-1 do
+      for usekZaver in prjZaver.uzaviraci do
        begin
-        if (Blky.GetBlkByID(Self.fproperties.Prejezdy[i].uzaviraci[j], blk2) <> 0) then
+        if (Blky.GetBlkByID(usekZaver, blk2) <> 0) then
          begin
-          Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
+          Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, usekZaver));
           Exit;
          end;
         if ((blk2.typ <> _BLK_USEK) and (blk2.typ <> _BLK_TU)) then
          begin
-          Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Prejezdy[i].uzaviraci[j]));
+          Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, usekZaver));
           Exit;
          end;
        end;//for j
@@ -544,26 +549,26 @@ begin
    end;//for i
 
   // kontrola odvratu
-  for i := 0 to Self.fproperties.Odvraty.Count-1 do
+  for odvratZaver in Self.fproperties.Odvraty do
    begin
-    if (Blky.GetBlkByID(Self.fproperties.Odvraty[i].ref_blk, blk) <> 0) then
+    if (Blky.GetBlkByID(odvratZaver.ref_blk, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Odvraty[i].ref_blk));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.ref_blk));
       Exit;
      end;
     if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Odvraty[i].ref_blk));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.ref_blk));
       Exit;
      end;
-    if (Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, blk) <> 0) then
+    if (Blky.GetBlkByID(odvratZaver.Blok, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Odvraty[i].Blok));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.Blok));
       Exit;
      end;
     if (blk.typ <> _BLK_VYH) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Odvraty[i].Blok));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.Blok));
       Exit;
      end;
     // blok disabled
@@ -602,11 +607,11 @@ begin
    end;
 
   // kontrola podminkovych bloku zamku
-  for i := 0 to Self.fproperties.zamky.Count-1 do
+  for refZaver in Self.fproperties.zamky do
    begin
-    if (Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, blk) <> 0) then
+    if (Blky.GetBlkByID(refZaver.Blok, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.zamky[i].Blok));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.Blok));
       Exit;
      end;
     if (blk.typ <> _BLK_ZAMEK) then
@@ -614,9 +619,9 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
      end;
-    if (Blky.GetBlkByID(Self.fproperties.zamky[i].ref_blk, blk) <> 0) then
+    if (Blky.GetBlkByID(refZaver.ref_blk, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.zamky[i].ref_blk));
+      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
       Exit;
      end;
     if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then
@@ -649,6 +654,10 @@ var i, usek, cnt, addr:Integer;
     glob:TBlkSettings;
     flag:boolean;
     spr:TSouprava;
+    prjZaver:TJCPrjZaver;
+    vyhZaver:TJCVyhZaver;
+    odvratZaver:TJCOdvratZaver;
+    refZaver:TJCRefZaver;
 begin
   // useky:
   if (Self.fproperties.Trat > -1) then
@@ -692,9 +701,9 @@ begin
    end;//for i
 
   // kontrola vyhybek:
-  for i := 0 to Self.fproperties.Vyhybky.Count-1 do
+  for vyhZaver in Self.fproperties.Vyhybky do
    begin
-    Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
+    Blky.GetBlkByID(vyhZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola koncove polohy:
@@ -713,7 +722,7 @@ begin
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
-    if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
+    if ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
@@ -725,7 +734,7 @@ begin
     Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
     // pokud nemam ja polohu, predpokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku neni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
-    if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
+    if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha)) then
      begin
       if ((Blk2 as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
@@ -735,7 +744,7 @@ begin
      end;
 
     // kontrola neprofiloveho styku pro polohu +
-    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
+    if ((vyhZaver.Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
         (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
      begin
       bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
@@ -744,7 +753,7 @@ begin
      end;
 
     // kontrola neprofiloveho styku pro polohu -
-    if ((Self.fproperties.Vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
+    if ((vyhZaver.Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
         (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
      begin
       bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
@@ -754,15 +763,15 @@ begin
    end;//for i
 
   // kontrola prejezdu
-  for i := 0 to Self.fproperties.Prejezdy.Count-1 do
+  for prjZaver in Self.fproperties.Prejezdy do
    begin
-    Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+    Blky.GetBlkByID(prjZaver.Prejezd, Blk);
     if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.none) then
      begin
       if ((Blk as TBlkPrejezd).Stav.PC_NOT) then
-        bariery.Add(Self.JCBariera(_JCB_PREJEZD_NOUZOVE_OTEVREN, blk, Self.fproperties.Prejezdy[i].Prejezd));
+        bariery.Add(Self.JCBariera(_JCB_PREJEZD_NOUZOVE_OTEVREN, blk, prjZaver.Prejezd));
      end else begin
-      bariery.Add(Self.JCBariera(_JCB_PREJEZD_PORUCHA, blk, Self.fproperties.Prejezdy[i].Prejezd));
+      bariery.Add(Self.JCBariera(_JCB_PREJEZD_PORUCHA, blk, prjZaver.Prejezd));
      end;//else NouzoveOtevreni
 
     // kontrola stitku prejezdu:
@@ -771,14 +780,14 @@ begin
    end;//for i
 
   // kontrola odvratu
-  for i := 0 to Self.fproperties.Odvraty.Count-1 do
+  for odvratZaver in Self.fproperties.Odvraty do
    begin
-    Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
+    Blky.GetBlkByID(odvratZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola koncove polohy:
     if ((Integer((Blk as TBlkVyhybka).poloha) < 0) or (Integer((Blk as TBlkVyhybka).poloha) > 1)) then
-      bariery.Add(Self.JCBariera(_JCB_ODVRAT_KONC_POLOHA, blk, Self.fproperties.Odvraty[i].Blok));
+      bariery.Add(Self.JCBariera(_JCB_ODVRAT_KONC_POLOHA, blk, odvratZaver.Blok));
 
     // kontrola vyluky vyhybky:
     if ((Blk as TBlkVyhybka).Vyluka <> '') then
@@ -788,16 +797,16 @@ begin
     if ((Blk as TBlkVyhybka).Stitek <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
-    if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
+    if ((Blk as TBlkVyhybka).poloha <> odvratZaver.Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
       else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
-        bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
+        bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, odvratZaver.Blok));
 
       if ((Blk as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
-        bariery.Add(Self.JCBariera(_JCB_ODVRAT_OBSAZENA, blk, Self.fproperties.Odvraty[i].Blok));
+        bariery.Add(Self.JCBariera(_JCB_ODVRAT_OBSAZENA, blk, odvratZaver.Blok));
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
@@ -813,7 +822,7 @@ begin
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
-      if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
+      if ((Blk as TBlkVyhybka).Poloha <> odvratZaver.Poloha) then
        begin
         if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
          begin
@@ -900,9 +909,9 @@ begin
    end;
 
   // kontrola uzamceni podminkovych zamku:
-  for i := 0 to Self.fproperties.zamky.Count-1 do
+  for refZaver in Self.fproperties.zamky do
    begin
-    Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
+    Blky.GetBlkByID(refZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
@@ -955,6 +964,9 @@ procedure TJC.KontrolaPodminekNC(var bariery:TList<TJCBariera>);
 var i, usek, cnt:Integer;
     Blk,blk2:TBlk;
     glob:TBlkSettings;
+    vyhZaver:TJCVyhZaver;
+    prjZaver:TJCPrjZaver;
+    odvratZaver:TJCOdvratZaver;
 begin
   {
     nouzovou cestu nelze postavit pres:
@@ -995,9 +1007,9 @@ begin
    end;//for i
 
   // kontrola vyhybek:
-  for i := 0 to Self.fproperties.Vyhybky.Count-1 do
+  for vyhZaver in Self.fproperties.Vyhybky do
    begin
-    Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
+    Blky.GetBlkByID(vyhZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
@@ -1009,7 +1021,7 @@ begin
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
-    if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha) then
+    if ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
@@ -1021,7 +1033,7 @@ begin
     Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
     // pokud nemam ja polohu, prespokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku eni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
-    if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Vyhybky[i].Poloha)) then
+    if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha)) then
      begin
       if ((Blk2 as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
@@ -1029,18 +1041,18 @@ begin
    end;//for i
 
   // kontrola prejezdu
-  for i := 0 to Self.fproperties.Prejezdy.Count-1 do
+  for prjZaver in Self.fproperties.Prejezdy do
    begin
-    Blky.GetBlkByID(Self.fproperties.Prejezdy[i].Prejezd, Blk);
+    Blky.GetBlkByID(prjZaver.Prejezd, Blk);
     // kontrola stitku prejezdu:
     if ((Blk as TBlkPrejezd).Stitek <> '') then
       bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.id));
    end;//for i
 
   // kontrola odvratu
-  for i := 0 to Self.fproperties.Odvraty.Count-1 do
+  for odvratZaver in Self.fproperties.Odvraty do
    begin
-    Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
+    Blky.GetBlkByID(odvratZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
@@ -1051,13 +1063,13 @@ begin
     if ((Blk as TBlkVyhybka).Stitek <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
-    if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.Odvraty[i].Poloha) then
+    if ((Blk as TBlkVyhybka).poloha <> odvratZaver.Poloha) then
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
       else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
-        bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, Self.fproperties.Odvraty[i].Blok));
+        bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, odvratZaver.Blok));
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
@@ -1073,7 +1085,7 @@ begin
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
-      if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.Odvraty[i].Poloha) then
+      if ((Blk as TBlkVyhybka).Poloha <> odvratZaver.Poloha) then
        begin
         if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
          begin
