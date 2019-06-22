@@ -26,7 +26,7 @@ type
 
   TFuncsVyznam = class
     private const
-      _MAX_FUNCS_VYZNAM = 24;
+      _MAX_FUNCS_VYZNAM = 50;
 
     private
       vyznamy: TObjectList<TFuncVyznam>;
