@@ -635,15 +635,12 @@ begin
  if (Self.UsekStav.NUZ) and (not nuz) then
   begin
    for i := 0 to Self.ORsRef.Cnt-1 do
-    begin
-     Self.ORsRef.ORs[i].NUZblkCnt := Self.ORsRef.ORs[i].NUZblkCnt - 1;
-     if (Self.ORsRef.ORs[i].NUZblkCnt < 0) then Self.ORsRef.ORs[i].NUZblkCnt := 0;
-    end;
+     if (Self.ORsRef.ORs[i].NUZblkCnt > 0) then
+       Self.ORsRef.ORs[i].NUZblkCnt := Self.ORsRef.ORs[i].NUZblkCnt - 1;
   end else begin
     if ((not Self.UsekStav.NUZ) and (nuz)) then
-     for i := 0 to Self.ORsRef.Cnt-1 do
-       Self.ORsRef.ORs[i].NUZblkCnt := Self.ORsRef.ORs[i].NUZblkCnt + 1;
-
+      for i := 0 to Self.ORsRef.Cnt-1 do
+        Self.ORsRef.ORs[i].NUZblkCnt := Self.ORsRef.ORs[i].NUZblkCnt + 1;
   end;
 
  Self.UsekStav.NUZ := nuz;

@@ -85,7 +85,7 @@ type
  // stav OR
  TORStav = record
   NUZtimer:boolean;                                                             // probiha ruseni useku NUZ?
-  NUZblkCnt:Integer;                                                            // kolik bloku ma zaplych NUZ (ruseni jeste neprobiha)
+  NUZblkCnt:Integer;                                                            // kolik bloku ma zaplych NUZ
   NUZmerCasuID:Integer;                                                         // ID mereni casu NUZ
   ZkratBlkCnt:Integer;                                                          // kolik bloku je ve zkratu (vyuzivano pro prehravani zvuku)
   ZadostBlkCnt:Integer;                                                         // pocet uvazek, na ktere je zadost o tratovy souhlas (kvuli prehravani zvuku)
@@ -160,6 +160,8 @@ type
       procedure AuthWriteToRead(panel:TIdContext);
 
       procedure OnHlaseniAvailable(Sender:TObject; available:boolean);
+      procedure NUZPrematureZaverRelease(Sender:TObject; data:Integer);
+      procedure NUZcancelPrematureEvents();
 
     public
 
@@ -275,7 +277,7 @@ uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain, Booster,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User,
      fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava,
-     TBlokSouctovaHlaska, predvidanyOdjezd;
+     TBlokSouctovaHlaska, predvidanyOdjezd, changeEvent;
 
 constructor TOR.Create(index:Integer);
 begin
@@ -1203,9 +1205,9 @@ begin
    Exit;
   end;
 
+ Self.NUZcancelPrematureEvents();
  Blky.NUZ(Self.id, false);
- Self.StopMereniCasu(Self.ORStav.NUZmerCasuID);
- Self.ORStav.NUZtimer := false;
+ Self.NUZblkCnt := 0; // zastavi mereni casu (melo by zastavit uz volani vyse)
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1401,7 +1403,7 @@ procedure TOR.StopMereniCasu(id:Integer);
 var i:Integer;
 begin
  // pridat mereni casu do vsech OR:
- for i := 0 to Self.MereniCasu.Count-1 do
+ for i := Self.MereniCasu.Count-1 downto 0 do
    if (Self.MereniCasu[i].id = id) then
      Self.MereniCasu.Delete(i);
 
@@ -1413,8 +1415,9 @@ end;//function
 // zavola se, az probehne meerni casu:
 procedure TOR.NUZTimeOut(Sender:TObject);
 begin
+ Self.NUZcancelPrematureEvents();
+ Self.NUZtimer := false;
  Blky.NUZ(Self.id);
- Self.ORStav.NUZtimer := false;
  Self.NUZblkCnt := 0;
 end;//procedure
 
@@ -1423,7 +1426,9 @@ end;//procedure
 procedure TOR.NUZ_PS(Sender:TIdContext; success:boolean);
 var i, j:Integer;
     JC:TJC;
-    Blk, Nav:TBlk;
+    Blk:TBlk;
+    usek:TBlkUsek;
+    nav:TBlkSCom;
 begin
  if (not success) then Exit;
 
@@ -1434,23 +1439,25 @@ begin
   begin
    Blky.GetBlkByIndex(i, Blk);
    if (Blk.typ <> _BLK_USEK) then continue;
-   if (not TBlkUsek(Blk).NUZ) then continue;
+   usek := Blk as TBlkUsek;
+   if (not usek.NUZ) then continue;
 
-   for j := 0 to (Blk as TBlkUsek).OblsRizeni.Cnt-1 do
+   for j := 0 to usek.OblsRizeni.Cnt-1 do
     begin
-     if ((Blk as TBlkUsek).OblsRizeni.ORs[j] = Self) then
+     if (usek.OblsRizeni.ORs[j] = Self) then
       begin
+       usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
        JC := JcDb.GetJCByIndex(JCDb.FindPostavenaJCWithUsek(Blk.id));
 
        if (JC <> nil) then
         begin
-         Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-         if (((Nav as TBlkSCom).Navest > 0) and ((Nav as TBlkSCom).DNjc = JC)) then
-           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návìsti '+Blky.GetBlkName(JC.data.NavestidloBlok),
+         Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(Nav));
+         if ((Nav.Navest > 0) and (Nav.DNjc = JC)) then
+           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návìsti '+nav.name,
                                    Self.ShortName, 'TECHNOLOGIE');
          JC.RusJCWithoutBlk();
-         if ((Nav as TBlkSCom).DNjc = JC) then
-           (Nav as TBlkSCom).DNjc := nil;
+         if (Nav.DNjc = JC) then
+           Nav.DNjc := nil;
         end;
       end;
     end;//for j
@@ -1458,7 +1465,6 @@ begin
   end;//for i
 
  Self.BroadcastData('NUZ;2;');
-
  Self.ORStav.NUZmerCasuID := Self.AddMereniCasu(Self.NUZTimeOut, EncodeTime(0, 0, 20, 0));
 end;//procedure
 
@@ -1491,6 +1497,11 @@ begin
   begin
    // nekdo si rekl, ze bloky nechce nuzovat
    Self.BroadcastData('NUZ;0;');
+   if (Self.NUZtimer) then
+    begin
+     Self.NUZtimer := false;
+     Self.StopMereniCasu(Self.ORStav.NUZmerCasuID);
+    end;
   end;
 
  Self.ORStav.NUZblkCnt := new;
@@ -2395,6 +2406,31 @@ begin
  if (str[2] = 'SPEC') then begin
    Self.hlaseni.Spec(str[3]);
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.NUZPrematureZaverRelease(Sender:TObject; data:Integer);
+begin
+ if (Self.NUZblkCnt > 0) then
+   Self.NUZblkCnt := Self.NUZblkCnt - 1;
+end;
+
+procedure TOR.NUZcancelPrematureEvents();
+var i, j:Integer;
+    blk:TBlk;
+    usek:TBlkUsek;
+begin
+ for i := 0 to Blky.Cnt-1 do
+  begin
+   Blky.GetBlkByIndex(i, Blk);
+   if (Blk.typ <> _BLK_USEK) then continue;
+   usek := Blk as TBlkUsek;
+   if (not usek.NUZ) then continue;
+   for j := 0 to usek.OblsRizeni.Cnt-1 do
+     if (usek.OblsRizeni.ORs[j] = Self) then
+       usek.RemoveChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
