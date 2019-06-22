@@ -1261,28 +1261,46 @@ end;//procedure
 
 // format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla
 procedure TOR.PanelSprChange(Sender:TIdContext; spr:TStrings);
+var usek:TBlkUsek;
+    souprava:TSouprava;
 begin
- if ((TTCPORsRef(Sender.Data).spr_new_usek_index = -1) and (TTCPORsRef(Sender.Data).spr_edit = nil)) then Exit();
-
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
+  end;
+
+ if ((TTCPORsRef(Sender.Data).spr_new_usek_index = -1) and (TTCPORsRef(Sender.Data).spr_edit = nil)) then
+  begin
+   ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Žádná souprava k editaci / neplatný úsek pro vytvoøení soupravy');
+   Exit();
   end;
 
  try
   if (TTCPORsRef(Sender.Data).spr_new_usek_index > -1) then
+   // nova souprava
    Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self,
      (TTCPORsRef(Sender.Data).spr_new_usek_index))
   else begin
-   // kontrola jestli je souprava porad na useku
-   if ((TTCPORsRef(Sender.Data).spr_usek as TBlkUsek).IsSouprava(TTCPORsRef(Sender.Data).spr_edit.index)) then
-     TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self)
-   else begin
+
+   // editace soupravy
+   usek := (TTCPORsRef(Sender.Data).spr_usek as TBlkUsek);
+   souprava := TTCPORsRef(Sender.Data).spr_edit;
+
+   if (not usek.IsSouprava(TTCPORsRef(Sender.Data).spr_edit.index)) then
+    begin
      ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava již není na úseku');
      Exit();
-   end;
+    end;
+
+   if ((souprava.front <> usek) and (souprava.rychlost > 0)) then
+    begin
+     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Nelze editovat soupravu, která odjela a je v pohybu');
+     Exit();
+    end;
+
+   TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, usek, Self)
   end;
  except
   on E: Exception do
@@ -1292,10 +1310,7 @@ begin
    end;
  end;
 
- TTCPORsRef(Sender.Data).spr_new_usek_index := -1;
- TTCPORsRef(Sender.Data).spr_edit := nil;
- TTCPORsRef(Sender.Data).spr_usek := nil;
-
+ TTCPORsRef(Sender.Data).ResetSpr();
  ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ACK;');
 end;//procedure
 

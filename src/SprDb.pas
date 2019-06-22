@@ -51,7 +51,8 @@ var
 
 implementation
 
-uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom, appEv, TBlok;
+uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom, appEv, TBlok,
+     TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -219,6 +220,7 @@ begin
  if (not Assigned(Self.soupravy[index])) then Exit();
 
  Blky.RemoveSpr(index);
+ ORTCPServer.OnRemoveSpr(Self.soupravy[index]);
  FreeAndNil(Self.soupravy[index]);
  SprTableData.reload := true;
 end;//procedure

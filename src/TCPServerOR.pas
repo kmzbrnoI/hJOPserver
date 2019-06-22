@@ -72,6 +72,7 @@ type
 
     procedure Escape(AContext: TIdContext);                                     // volano pri stisku Escape v panelu
     procedure Reset();
+    procedure ResetSpr();
 
   end;
 
@@ -165,10 +166,9 @@ type
      procedure DCCStop();
 
      function GetClient(index:Integer):TORTCPClient;
-
      procedure DisconnectRegulatorUser(user:TUser);
-
      function StrToPanelButton(button:string):TPanelButton;
+     procedure OnRemoveSpr(spr:TSouprava);
 
       property openned:boolean read IsOpenned;
       property port:Word read fport write fport;
@@ -1305,10 +1305,7 @@ begin
  Self.UPO_OK      := nil;
  Self.UPO_Esc     := nil;
  Self.UPO_ref     := nil;
-
- Self.spr_new_usek_index := -1;
- Self.spr_edit    := nil;
- Self.spr_usek    := nil;
+ Self.ResetSpr();
 
  Self.podj_usek   := nil;
  Self.podj_sprid  := -1;
@@ -1319,6 +1316,13 @@ begin
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[6] := '';
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[7] := '';
  F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[8] := '';
+end;
+
+procedure TTCPOrsRef.ResetSpr();
+begin
+ Self.spr_new_usek_index := -1;
+ Self.spr_edit    := nil;
+ Self.spr_usek    := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1444,6 +1448,16 @@ begin
    Result := TPanelButton.ESCAPE
  else
    raise EInvalidButton.Create('Invalid button!');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TORTCPServer.OnRemoveSpr(spr:TSouprava);
+var i:Integer;
+begin
+ for i := 0 to _MAX_OR_CLIENTS-1 do
+   if ((Self.clients[i] <> nil) and (TTCPORsRef(Self.clients[i].conn.Data).spr_edit = spr)) then
+     TTCPORsRef(Self.clients[i].conn.Data).ResetSpr();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
