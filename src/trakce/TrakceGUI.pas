@@ -1,4 +1,4 @@
-unit TrakceGUI;
+﻿unit TrakceGUI;
 
 {
  Trida TTrkGUI vytvari pomyslne 'graficke rozhrani' tridy TTrakce pro zbytek

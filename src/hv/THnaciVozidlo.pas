@@ -57,6 +57,8 @@ type
     data:Byte;                                         // dat, ktera se maji do CV zapsat.
   end;
 
+  THVFuncType = (permanent = 0, momentary = 1);
+
   THVData = record                                  // data hnaciho vozidla (nacitaji se ze souboru, program sam je vicemene nemeni)
    Nazev:string;                                       // nazev HV
    Majitel:string;                                     // majitel HV
@@ -68,6 +70,7 @@ type
    POMrelease:TList<THVPomCV>;                         // seznam POM pri uvolneni to rucniho rizeni
 
    funcVyznam:array[0.._HV_FUNC_MAX] of string;        // seznam popisu funkci hnaciho vozidla
+   funcType:array[0.._HV_FUNC_MAX] of THVFuncType;     // typy funkci hnaciho vozidla
   end;
 
   THVNajeto = record                                // kolik bloku a metru hnaciho vozidlo najelo (vedeme si statistiky)
@@ -154,6 +157,9 @@ type
      procedure CheckRelease();
      procedure RecordUseNow();
      function NiceName():string;
+
+     class function CharToHVFuncType(c:char):THVFuncType;
+     class function HVFuncTypeToChar(t:THVFuncType):char;
 
      //PT:
      procedure GetPtData(json:TJsonObject; includeState:boolean);
@@ -329,8 +335,19 @@ begin
        Self.Data.funcVyznam[i] := strs[i]
       else
        Self.Data.funcVyznam[i] := '';
-    end;//for i
+    end;
    Self.UpdateFuncDict();
+
+   // typy funkci:
+   str := ini.ReadString(section, 'func_type', '');
+   for i := 0 to _HV_FUNC_MAX do
+    begin
+     if (i < Length(str)) then
+      begin
+       Self.Data.funcType[i] := CharToHVFuncType(str[i+1]);
+      end else
+       Self.Data.funcType[i] := THVFuncType.permanent;
+    end;
 
   except
    strs.Free();
@@ -415,6 +432,12 @@ begin
     end;
    ini.WriteString(addr, 'func_vyznam', str);
 
+   // typ funkci
+   str := '';
+   for i := 0 to _HV_FUNC_MAX do
+     str := str + HVFuncTypeToChar(Self.Data.funcType[i]);
+   ini.WriteString(addr, 'func_type', str);
+
  except
    ini.UpdateFile();
    ini.Free();
@@ -495,7 +518,7 @@ var i:Integer;
 begin
  // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce|rychlost_stupne|
  //   rychlost_kmph|smer|or_id|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
- //   {vyznam-F0;vyznam-F1;...}|
+ //   {vyznam-F0;vyznam-F1;...}|typ_funkci|
 
  // souprava je bud cislo soupravy, nebo znak '-'
  Result := Self.Data.Nazev + '|' + Self.Data.Majitel + '|' + Self.Data.Oznaceni + '|{' + Self.Data.Poznamka + '}|' +
@@ -538,9 +561,8 @@ begin
    Result := Result + '|';
   end;// else pom
 
- Result := Result + '|{';
-
  // vyznamy funkci
+ Result := Result + '|{';
  for i := 0 to _HV_FUNC_MAX do
   begin
    if (Self.Data.funcVyznam[i] <> '') then
@@ -548,8 +570,12 @@ begin
    else
      Result := Result + ';';
   end;
-
  Result := Result + '}|';
+
+ // typy funkci
+ for i := 0 to _HV_FUNC_MAX do
+   Result := Result + HVFuncTypeToChar(Self.Data.funcType[i]);
+ Result := Result + '|';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -573,7 +599,7 @@ end;
 
 // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|-|stanovisteA|funkce|rychlost_stupne|
 //   rychlost_kmph|smer|orid|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
-//   {vyznam-F0;vyznam-F1;...}|
+//   {vyznam-F0;vyznam-F1;...}|typy_funkci
 // na miste znaku - obvykle byva souprava, pri nacitani hnaciho vozidla tuto polozku nemenime -> je tam pomlcka
 procedure THV.UpdateFromPanelString(data:string);
 var str, str2, str3:TStrings;
@@ -649,6 +675,18 @@ begin
    end;
    Self.UpdateFuncDict();
 
+  if (str.Count > 16) then
+   begin
+    // typy funkci
+    for i := 0 to _HV_FUNC_MAX do
+      if (i < Length(str[16])) then
+       Self.Data.funcType[i] := CharToHVFuncType(str[16][i+1])
+      else
+       Self.Data.funcType[i] := THVFuncType.permanent;
+   end else begin
+    for i := 0 to _HV_FUNC_MAX do
+      Self.Data.funcType[i] := THVFuncType.permanent;
+   end;
  except
   on e:Exception do
    begin
@@ -830,6 +868,7 @@ end;
 
 procedure THV.GetPtData(json:TJsonObject; includeState:boolean);
 var i, lastFunction:Integer;
+    types:string;
 begin
  json['adresa']   := Self.adresa;
  json['nazev']    := Self.Data.Nazev;
@@ -848,8 +887,13 @@ begin
  while ((lastFunction >= 0) and (Self.Data.funcVyznam[lastFunction] = '')) do
    Dec(lastFunction);
 
+ types := '';
  for i := 0 to lastFunction do
+  begin
    json.A['vyznamFunkci'].Add(Self.Data.funcVyznam[i]);
+   types := types + HVFuncTypeToChar(Self.Data.funcType[i]);
+  end;
+ json['typFunkci'] := types;
 
  if (includeState) then
    Self.GetPtState(json['lokStav']);
@@ -1019,5 +1063,25 @@ begin
    end;
   end;
 end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function THV.CharToHVFuncType(c:char):THVFuncType;
+begin
+ if (UpperCase(c) = 'M') then
+   Result := THVFuncType.momentary
+ else
+   Result := THVFuncType.permanent;
+end;
+
+class function THV.HVFuncTypeToChar(t:THVFuncType):char;
+begin
+ if (t = THVFuncType.momentary) then
+   Result := 'M'
+ else
+   Result := 'P';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit
