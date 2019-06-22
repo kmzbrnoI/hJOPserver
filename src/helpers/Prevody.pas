@@ -31,7 +31,7 @@ var s: string;
     cislo := cislo shr 1;
    end;
   Result := s;
- end;//function
+ end;
 
 function TPrevody.BoolToStr(Bool:Boolean):String;
  begin
@@ -41,7 +41,7 @@ function TPrevody.BoolToStr(Bool:Boolean):String;
    end else begin
     Result := 'Ne';
    end;//else Bool
- end;//function
+ end;
 
 function TPrevody.BoolToInt(Bool:Boolean):Integer;
  begin
@@ -51,7 +51,7 @@ function TPrevody.BoolToInt(Bool:Boolean):Integer;
    end else begin
     Result := 0;
    end;
- end;//function
+ end;
 
 function TPrevody.IntToBool(Int:Integer):Boolean;
  begin
@@ -61,23 +61,23 @@ function TPrevody.IntToBool(Int:Integer):Boolean;
    end else begin
     Result := false
    end;
- end;//function
+ end;
 
 function TPrevody.StrToBool(str:string):boolean;
 begin
  if (str = '1') then Result := true
  else Result := false;
-end;//function
+end;
 
 function TPrevody.StrToColor(str:string):TColor;
 begin
  Result := RGB(StrToInt('$'+LeftStr(str, 2)), StrToInt('$'+Copy(str, 2, 2)), StrToInt('$'+RightStr(str, 2)));
-end;//function
+end;
 
 function TPrevody.ColorToStr(Color:TColor):string;
 begin
  Result := IntToHex(GetRValue(Color), 2) + IntToHex(GetGValue(Color), 2) + IntToHex(GetBValue(Color), 2);
-end;//function
+end;
 
 
 end.//uses

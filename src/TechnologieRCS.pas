@@ -303,7 +303,7 @@ end;
 function TRCS.GetNeeded(RCSAdr:Integer):boolean;
 begin
  Result := Self.Desky[RCSAdr].needed;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

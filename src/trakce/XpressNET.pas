@@ -760,14 +760,14 @@ begin
  Result.Count := Length(str);
  for i := 0 to Result.Count-1 do
    Result.data[i] := ord(str[i+1]);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TXpressNET.EmergencyStop();
 begin
  Self.SendCommand(XB_STOP_ALL);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -785,7 +785,7 @@ begin
 
  Self.Get.sp_addr := Address;
  Self.SendCommand(XB_LOK_GET_INFO, Address);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -801,7 +801,7 @@ begin
 
  Self.loading_addr := Address;
  Self.LokGetInfo(Address);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -818,7 +818,7 @@ begin
 
  Self.callback_err.callback := nil;
  Self.callback_ok.callback  := nil;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

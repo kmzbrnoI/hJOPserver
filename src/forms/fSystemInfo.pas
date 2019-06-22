@@ -44,6 +44,6 @@ var L_Test:TLabel;
   L_Test.Font.Name  := Font;
   Result            := L_Test.Width;
   L_Test.Free;
- end;//function
+ end;
 
 end.

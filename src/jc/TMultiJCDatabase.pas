@@ -144,7 +144,7 @@ begin
  writelog('Naèteno '+IntToStr(Self.JCs.Count)+' složených JC', WR_DATA);
 
  MultiJCTableData.LoadToTable();
-end;//function
+end;
 
 // save data to ini file:
 procedure TMultiJCDb.SaveData(const filename:string);
@@ -171,7 +171,7 @@ begin
  ini.Free();
 
  writelog('Složené JC uloženy', WR_DATA);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vyhledavame slozenou JC binarnim vyhledavanim.
@@ -194,7 +194,7 @@ begin
   end;
 
  Result := -1;
-end;//function
+end;
 
 function TMultiJCDb.GetJCByID(id:Integer):TMultiJC;
 var index:Integer;
@@ -234,7 +234,7 @@ end;
 function TMultiJCDb.GetJCCnt():Word;
 begin
  Result := Self.JCs.Count;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

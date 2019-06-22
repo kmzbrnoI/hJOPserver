@@ -183,7 +183,7 @@ end;
 procedure TSimulator.EmergencyStop();
 begin
  Self.send_history.Add(Self.HistoryPacket(XB_STOP_ALL));
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -201,7 +201,7 @@ begin
 
  Self.Get.sp_addr := Address;
  Self.send_history.Add(Self.HistoryPacket(XB_LOK_GET_INFO));
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -212,7 +212,7 @@ begin
 
  Self.loading_addr := Address;
  Self.LokGetInfo(Address);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -229,7 +229,7 @@ begin
 
  Self.callback_err.callback := nil;
  Self.callback_ok.callback  := nil;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

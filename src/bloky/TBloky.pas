@@ -305,7 +305,7 @@ begin
 
  writelog('Nacteno bloku: '+IntToStr(Self.Cnt), WR_DATA);
  Result := 0;
-end;//function
+end;
 
 //save all blocks to the file
 procedure TBlky.SaveToFile(const tech_filename:string);
@@ -406,7 +406,7 @@ begin
  // indexy prislusnych bloku na konci seznamu posuneme o 1 nahoru
  for i := index+1 to Self.data.Count-1 do
    Self.data[i].table_index := Self.data[i].table_index + 1;
-end;//function
+end;
 
 //Smazat blok z databaze
 procedure TBlky.Delete(index:Integer);
@@ -440,7 +440,7 @@ begin
 
  FreeAndNil(tmp);
  BlokyTableData.BlkRemove(index);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -451,14 +451,14 @@ begin
 
  Blk := Self.data[index];
  Result := 0;
-end;//function
+end;
 
 function TBlky.SetBlk(index:integer;data:TBlk):Integer;
 begin
  if ((index < 0) or (index >= Self.Data.Count)) then Exit(1);
  Self.Data[index] := data;
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -543,7 +543,7 @@ begin
  if (index < 0) then Exit(-1);
  Self.GetBlkByIndex(index,Blk);
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -578,7 +578,7 @@ var index:Integer;
 begin
  index := Self.GetBlkIndex(id);
  Result := ((index <> -1) and (index <> ignore_index));
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -586,7 +586,7 @@ function TBlky.GetBlkID(index:Integer):Integer;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit(-1);
  Result := Self.Data[index].id;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -596,13 +596,13 @@ begin
  Self.GetBlkByID(id,Blk);
  if (not Assigned(Blk)) then Exit('## Blok s timto ID neexistuje ##');
  Result := Blk.name;
-end;//function
+end;
 
 function TBlky.GetBlkIndexName(index:Integer):string;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit('## Blok s timto ID neexistuje ##');
  Result := Self.Data[index].name;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -627,7 +627,7 @@ begin
   end;//for i
 
  Result := nil;
-end;//function
+end;
 
 function TBlky.GetBlkUsekVlakPresun(obl:string):TBlk;
 var i,j:Integer;
@@ -646,7 +646,7 @@ begin
   end;//for i
 
  Result := nil;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -842,7 +842,7 @@ begin
    if (((Self.Data[i].typ = _BLK_USEK) or (Self.Data[i].typ = _BLK_TU)) and
        ((Self.Data[i] as TBlkUsek).IsSouprava(spr))) then
      Result.Add(Self.Data[i]);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // predpovidani soupravy na bloky v jizdni ceste
@@ -934,7 +934,7 @@ begin
  if (first <> nil) then Result.Add(first);
  if (second <> nil) then Result.Add(second);
  if (third <> nil) then Result.Add(third);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -956,7 +956,7 @@ begin
      end;//if ORs[j] = oblR
   end;//for i
 
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -970,7 +970,7 @@ begin
       ((Self.Data[i] as TBlkVyhybka).GetSettings().zamek = zamekID)) then
     Result.Add(Self.Data[i]);
   end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -989,7 +989,7 @@ end;
 function TBlky.GetCount():Integer;
 begin
  Result := Self.data.Count;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1012,7 +1012,7 @@ begin
  while ((i >= 0) and (Self.data[i].id > id)) do
    i := i - 1;
  Result := i+1;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

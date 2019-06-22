@@ -104,7 +104,7 @@ begin
     Exit('Vyberte rychlost, na kterou se ma zpomalit!');
 
  Result := '';
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

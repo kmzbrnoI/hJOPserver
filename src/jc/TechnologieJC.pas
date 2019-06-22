@@ -638,7 +638,7 @@ begin
    Result.Add(Self.JCBariera(_JCB_PRIVOLAVACKA, privol[i] as TBlk, (privol[i] as TBlk).id));
 
  if (Assigned(privol)) then privol.Free();
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // kontrola podminek vlakove a posunove cesty
@@ -2852,12 +2852,12 @@ end;
 function TJC.GetStaveni():boolean;
 begin
  Result := (Self.Krok > 0);
-end;//function
+end;
 
 function TJC.GetPostaveno():boolean;
 begin
  Result := (Self.fstaveni.RozpadBlok > -5);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2966,7 +2966,7 @@ begin
    end;//for i
 
  Result := true;
-end;//function
+end;
 
 // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
 // tato procedura predpoklada, ze podminky pro DN jsou splneny
@@ -3043,7 +3043,7 @@ begin
  Result.typ   := typ;
  Result.blok  := Blok;
  Result.param := param;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3218,7 +3218,7 @@ begin
  else
   Result[0] := GetUPOLine('Neznámá bariéra ve stavìní JC', taCenter, clRed, clWhite);
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3233,7 +3233,7 @@ begin
  else
   Result := false;
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3256,7 +3256,7 @@ begin
  else
   Result := false;
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3267,7 +3267,7 @@ begin
  else
   Result := false;
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3280,7 +3280,7 @@ begin
  else
   Result := '';
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3663,7 +3663,7 @@ begin
     _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Není zaveden nouzový závìr'));
    end;//case bariera typ
   end;//for i
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

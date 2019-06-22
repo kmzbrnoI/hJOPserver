@@ -204,7 +204,7 @@ class function TTrakce.GenerateCallback(callback:TCommandFuncCallback; data:Poin
 begin
  Result.callback := callback;
  Result.data     := data;
-end;//function
+end;
 
 procedure TTrakce.SetOwnTrackStatus(New:Ttrk_status);
 begin
@@ -230,7 +230,7 @@ end;
 procedure TTrakce.GetCSVersion(callback:TCSVersionEvent);
 begin
  Self.FOnCSVersion := callback;
-end;//function
+end;
 
 procedure TTrakce.GetLIVersion(callback:TLIVersionEvent);
 begin

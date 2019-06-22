@@ -141,7 +141,7 @@ begin
  sections.Free();
  Result := 0;
  writelog('Naèteno '+IntToStr(Self.JCs.Count)+' JC', WR_DATA);
-end;//function
+end;
 
 // save data to ini file:
 function TJCDb.SaveData(const filename:string):Byte;
@@ -165,7 +165,7 @@ begin
  Result := 0;
 
  writelog('JC uloženy', WR_DATA);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -213,7 +213,7 @@ begin
   end;
 
  Result := Self.JCs[index];
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -302,7 +302,7 @@ begin
 
  JCTableData.AddJC(index);
  Result := JC;
-end;//function
+end;
 
 procedure TJCDb.RemoveJC(index:Integer);
 var i:Integer;
@@ -326,7 +326,7 @@ begin
    Self.JCs[i].index := Self.JCs[i].index - 1;
 
  JCTableData.RemoveJC(index);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -347,7 +347,7 @@ var i:Integer;
     if (((Self.JCs[i].postaveno) or ((Staveni) and (Self.JCs[i].staveni))) and (Self.JCs[i].data.NavestidloBlok = NavestidloBlokID)) then
       Exit(i);
   Exit(-1);
- end;//function
+ end;
 
 function TJCDb.FindOnlyStaveniJC(NavestidloBlokID:Integer):Integer;
 var i:Integer;
@@ -409,7 +409,7 @@ begin
        end;
      end;
    end;//for i
-end;//function
+end;
 
 //vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
 function TJCDB.FindPostavenaJCWithUsek(usek_id:Integer):Integer;
@@ -425,7 +425,7 @@ begin
       if (Self.JCs[i].data.Useky[j] = usek_id) then
         Exit(i);
    end;//for i
-end;//function
+end;
 
 function TJCDB.FindPostavenaJCWithPrisl(blk_id:Integer):TArI;
 var i,j:Integer;
@@ -445,7 +445,7 @@ begin
        end;
      end;//for j
    end;//for i
-end;//function
+end;
 
 function TJCDB.FindPostavenaJCWithTrat(trat_id:Integer):Integer;
 var i:Integer;
@@ -457,7 +457,7 @@ begin
   end;//for i
 
  Exit(-1);
-end;//function
+end;
 
 function TJCDB.FindPostavenaJCWithPrj(blk_id:Integer):Integer;
 var i,j:Integer;
@@ -491,7 +491,7 @@ begin
        end;
      end;//for j
    end;//for i
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -606,7 +606,7 @@ end;
 function TJCDb.GetCount():Word;
 begin
  Result := Self.JCs.Count;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -618,7 +618,7 @@ begin
  while ((i >= 0) and (Self.JCs[i].id > id)) do
    i := i - 1;
  Result := i+1;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

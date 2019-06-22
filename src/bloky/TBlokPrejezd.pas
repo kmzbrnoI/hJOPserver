@@ -352,7 +352,7 @@ begin
 
  // without data
  Result := none;
-end;//function
+end;
 
 procedure TBlkPrejezd.UpdateOutputs();
 begin
@@ -380,7 +380,7 @@ end;
 function TBlkPrejezd.GetSettings():TBlkPrjSettings;
 begin
  Result := Self.PrjSettings;
-end;//function
+end;
 
 procedure TBlkPrejezd.SetSettings(data:TBlkPrjSettings);
 begin
@@ -653,7 +653,7 @@ end;
 function TBlkPrejezd.GetZaver():boolean;
 begin
  Result := (Self.PrjStav.zaver > 0);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

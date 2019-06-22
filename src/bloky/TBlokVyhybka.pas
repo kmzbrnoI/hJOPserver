@@ -354,7 +354,7 @@ begin
    Result := (Self.fparent as TBlkUsek).Zaver
  else
    Result := TZaver.no;
-end;//function
+end;
 
 function TBlkVyhybka.GetNUZ():boolean;
 var tmpBlk:TBlk;
@@ -365,7 +365,7 @@ begin
  if (tmpBlk.typ <> _BLK_USEK) then Exit(false);
 
  Result := (TBlkUsek(tmpBlk)).NUZ;
-end;//function
+end;
 
 function TBlkVyhybka.GetObsazeno():TUsekStav;
 var tmpBlk:TBlk;
@@ -376,14 +376,14 @@ begin
  if ((tmpBlk.typ <> _BLK_USEK) and (tmpBlk.typ <> _BLK_TU)) then Exit(TUsekStav.none);
 
  Result := (tmpBlk as TBlkUsek).Obsazeno;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkVyhybka.GetSettings():TBlkVyhSettings;
 begin
  Result := Self.VyhSettings;
-end;//function
+end;
 
 function TBlkVyhybka.SetSettings(data:TBlkVyhSettings):Byte;
 var Blk:TBlk;
@@ -452,7 +452,7 @@ begin
 
  Self.Change();
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -786,7 +786,7 @@ begin
 
  Result := 0;
  Self.Change();
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -810,7 +810,7 @@ begin
  Self.VyhStav.locked := false;
 
  Self.Change();
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1172,7 +1172,7 @@ begin
  if (((Self.fzamek = nil) and (Self.VyhSettings.zamek <> -1)) or ((Self.fzamek <> nil) and (Self.fzamek.id <> Self.VyhSettings.zamek))) then
    Blky.GetBlkByID(Self.VyhSettings.zamek, Self.fzamek);
  Result := Self.fzamek;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

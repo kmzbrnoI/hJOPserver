@@ -832,7 +832,7 @@ end;
 function TBlkUsek.GetSettings():TBlkUsekSettings;
 begin
  Result := Self.UsekSettings;
-end;//function
+end;
 
 procedure TBlkUsek.SetSettings(data:TBlkUsekSettings);
 begin
@@ -1551,7 +1551,7 @@ begin
      Blky.SprPrediction(Nav);
 
  Result := true;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

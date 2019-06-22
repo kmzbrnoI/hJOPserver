@@ -201,7 +201,7 @@ begin
 
  Self.sortedKeys.Add(new);
  Self.sortedKeys.Sort();
-end;//function
+end;
 
 procedure TBoosterDb.Remove(id:string);
 begin
@@ -210,7 +210,7 @@ begin
    Self.sortedKeys.Remove(Self.db[id]);
    Self.db.Remove(id);
   end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

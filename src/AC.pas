@@ -375,7 +375,7 @@ var Blk:TBlk;
    if (Assigned(data2)) then data2.Free();
   end;
 
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -389,7 +389,7 @@ begin
    if ((Blk = nil) or (Integer((Blk as TBlkUsek).Stav.Stav) <> Self.podm[i].stav)) then Exit(false);
   end;
  Result := true;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

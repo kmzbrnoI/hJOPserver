@@ -550,7 +550,7 @@ begin
   end;
 
  Result := Result + '}|';
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -567,7 +567,7 @@ begin
 
  Self.changed := true;
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -737,7 +737,7 @@ begin
  token.timeout := Now + EncodeTime(0, _TOKEN_TIMEOUT_MIN, 0, 0);
  Result := token.token;
  Self.Stav.tokens.Add(token);
-end;//function
+end;
 
 function THV.IsToken(str:string):boolean;
 var token:THVToken;
@@ -746,7 +746,7 @@ begin
   if (token.token = str) then
    Exit(true);
  Result := false;
-end;//function
+end;
 
 procedure THV.RemoveToken(token:string);
 var i:Integer;
@@ -815,7 +815,7 @@ begin
    if (reg.conn = conn) then
      Exit(true);
  Result := false;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

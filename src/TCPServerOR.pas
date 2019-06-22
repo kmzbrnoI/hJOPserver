@@ -277,12 +277,12 @@ begin
   end;
 
  Result := 0;
-end;//function
+end;
 
 function TORTCPServer.Start():Integer;
 begin
  Result := Self.Start(Self.port);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -332,7 +332,7 @@ begin
    TrkSystem.TurnOffFunctions(F_Main.OnSoundDisabled);
 
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // eventy z IdTCPClient
@@ -872,7 +872,7 @@ end;
 function TORTCPServer.IsOpenned():boolean;
 begin
  Result := Self.tcpServer.Active;
-end;//function
+end;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1407,7 +1407,7 @@ begin
    Result := Self.clients[index]
  else
    Result := nil;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

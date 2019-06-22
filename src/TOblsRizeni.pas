@@ -153,7 +153,7 @@ begin
      Exit(i);
 
  Result := -1;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -181,7 +181,7 @@ begin
  if ((index < 0) or (index >= Self.ORsDatabase.Count)) then Exit(1);
  obl := Self.ORsDatabase[index];
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -191,7 +191,7 @@ begin
    Exit('## OR s timto indexem neexistuje ##');
 
  Result := Self.ORsDatabase[index].Name;
-end;//function
+end;
 
 function TORs.GetORIdByIndex(index:Integer):string;
 begin
@@ -199,7 +199,7 @@ begin
    Exit('## OR s timto indexem neexistuje ##');
 
  Result := Self.ORsDatabase[index].id;
-end;//function
+end;
 
 function TORs.GetORShortNameByIndex(index:Integer):string;
 begin
@@ -207,7 +207,7 @@ begin
    Exit('## OR s timto indexem neexistuje ##');
 
  Result := Self.ORsDatabase[index].ShortName;
-end;//function
+end;
 
 procedure TORs.Update();
 var i:Integer;

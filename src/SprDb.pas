@@ -118,7 +118,7 @@ begin
 
  HVTableData.LoadToTable();
  Result := 0;
-end;//function
+end;
 
 function TSprDb.SaveData(const filename:string):Byte;
 var ini:TMemIniFile;
@@ -146,7 +146,7 @@ begin
 
  writelog('Ulozeno '+IntToStr(Self.Count)+' souprav', WR_DATA);
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -157,7 +157,7 @@ begin
  for i := 0 to _MAX_SPR do
   if (Assigned(Self.soupravy[i])) then
    Inc(Result);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -169,7 +169,7 @@ begin
   Result := Self.soupravy[index].nazev
  else
   Result := '-';
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -180,7 +180,7 @@ begin
   if ((Assigned(Self.soupravy[i])) and (Self.soupravy[i].nazev = name)) then
    Exit(i);
  Exit(-1);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -128,7 +128,7 @@ end;
 function TBlkVystup.GetSettings():TBlkVystupSettings;
 begin
  Result := Self.VystupSettings;
-end;//function
+end;
 
 procedure TBlkVystup.SetSettings(data:TBlkVystupSettings);
 begin

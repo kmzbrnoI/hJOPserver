@@ -146,7 +146,7 @@ end;
 function TBlkIR.GetSettings():TBlkIRSettings;
 begin
  Result := Self.IRSettings;
-end;//function
+end;
 
 procedure TBlkIR.SetSettings(data:TBlkIRSettings);
 begin

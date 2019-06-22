@@ -116,7 +116,7 @@ begin
    end;
 
   ACTableData.LoadToTable();
-end;//function
+end;
 
 //load ACs db from ini file
 procedure TACDb.LoadStatFromFile(const filename:string);
@@ -146,7 +146,7 @@ begin
 
  ini.Free();
  ACTableData.UpdateTable(true);
-end;//function
+end;
 
 procedure TACDb.SaveStatToFile(const filename:string);
 var ini:TMemIniFile;
@@ -187,13 +187,13 @@ begin
  Self.ACs.Add(AC);
  ACTableData.AddAC();
  Result := AC;
-end;//function
+end;
 
 procedure TACDb.RemoveAC(index:Cardinal);
 begin
  Self.ACs.Delete(index);
  ACTableData.RemoveAC(index);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

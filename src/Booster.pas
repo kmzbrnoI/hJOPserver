@@ -217,7 +217,7 @@ begin
    Result := TBoosterSignal.error
  else
    Result := TBoosterSignal.ok;
-end;//function
+end;
 
 function TBooster.GetNapajeni():TBoosterSignal;
 var val:TRCSInputState;
@@ -236,7 +236,7 @@ begin
    Result := TBoosterSignal.error
  else
    Result := TBoosterSignal.ok;
-end;//function
+end;
 
 function TBooster.GetDCC():TBoosterSignal;
 var val:TRCSInputState;
@@ -282,7 +282,7 @@ begin
  else
   Result := '';
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

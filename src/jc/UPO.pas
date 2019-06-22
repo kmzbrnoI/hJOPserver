@@ -39,7 +39,7 @@ begin
  Result.fg    := fg;
  Result.bg    := bg;
  Result.align := align;
-end;//function
+end;
 
 function GetLines(str:string; line_length:Integer):TStrings;
 var i:Integer;
@@ -52,6 +52,6 @@ begin
    Result.Add(copy(str, i, Min(Length(str)-i+1, line_length)));
    i := i + Min(Length(str), line_length);
   end;//while
-end;//function
+end;
 
 end.//unit

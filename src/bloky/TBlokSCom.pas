@@ -505,7 +505,7 @@ end;
 function TBlkSCom.GetSettings():TBlkSComSettings;
 begin
  Result := Self.SComSettings;
-end;//function
+end;
 
 procedure TBlkSCom.SetSettings(data:TBlkSComSettings);
 var ev:TBlkSComSprEvent;
@@ -575,13 +575,13 @@ begin
    sl.Free();
    sl2.Free();
  end;
-end;//function
+end;
 
 function TBlkSCom.ParseSprTypes(str:string):TStrings;
 begin
  Result := TStringList.Create();
  ExtractStrings([';'], [' '], PChar(str), Result);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -619,7 +619,7 @@ begin
  finally
    data.Free();
  end;
-end;//function
+end;
 
 function TBlkSCom.GetSprTypes(sl:TStrings):string;
 var i:Integer;
@@ -627,7 +627,7 @@ begin
  Result := '';
  for i := 0 to sl.Count-1 do
   Result := Result + sl[i] + ';';
-end;//function
+end;
 
 function TBlkSCom.GetEvent(ev:TBlkSComSprEvent; short:boolean = false):string;
 begin
@@ -1283,7 +1283,7 @@ class function TBlkSCom.NavestToString(Navest:Integer):string;
    else//case
     Result := 'Jiná návìst';
    end;//else case
- end;//function
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1557,7 +1557,7 @@ begin
    // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
    Result := 0;
   end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

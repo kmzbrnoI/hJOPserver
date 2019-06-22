@@ -55,6 +55,6 @@ function TGetFunctions.GetSystemStart:Boolean;
   except
     Result := false;
   end;
- end;//function
+ end;
 
 end.//uses

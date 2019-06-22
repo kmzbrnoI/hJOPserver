@@ -91,7 +91,7 @@ begin
  Result := '';
  for i := 0 to Self.vyznamy.Count-1 do
    Result := Result + '{' + Self.vyznamy[i] + '};';
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

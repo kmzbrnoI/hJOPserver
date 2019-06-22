@@ -179,7 +179,7 @@ end;
 function TBlk.GetGlobalSettings():TBlkSettings;
 begin
  Result := Self.GlobalSettings;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -245,7 +245,7 @@ begin
    ini.WriteInteger(section, 'RCSb'+IntToStr(i), data[i].board);
    ini.WriteInteger(section, 'RCSp'+IntToStr(i), data[i].port);
   end;//for i
-end;//function
+end;
 
 procedure TBlk.Change(now:boolean = false);
 begin
@@ -341,7 +341,7 @@ end;
 function TBlk.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
  Result := '$'+Self.GlobalSettings.name+',-,';
-end;//function
+end;
 
 procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin

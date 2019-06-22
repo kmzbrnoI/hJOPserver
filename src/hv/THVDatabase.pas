@@ -302,7 +302,7 @@ begin
  HVTableData.AddHV(Self.HVs[addr].index, Self.HVs[addr]);
 
  Result := 0;
-end;//function
+end;
 
 procedure THVDb.Add(panel_str:string; SenderOR:TObject);
 var HV:THV;
@@ -385,7 +385,7 @@ begin
 
  // aktualizujeme tabulky:
  HVTableData.RemoveHV(index);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -397,7 +397,7 @@ begin
  for i := 0 to _MAX_ADDR-1 do
   if (Self.HVs[i] <> nil) then
     Result := Result + 1;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

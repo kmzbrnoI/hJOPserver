@@ -163,7 +163,7 @@ end;
 function TBlkRozp.GetSettings():TBlkRozpSettings;
 begin
  Result := Self.RozpSettings;
-end;//function
+end;
 
 procedure TBlkRozp.SetSettings(data:TBlkRozpSettings);
 begin

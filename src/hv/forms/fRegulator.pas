@@ -502,7 +502,7 @@ begin
    if (Self.forms.data[i].OpenHV.Slot.adresa = addr) then
      Exit(Self.forms.data[i]);
   end;//for
-end;//function
+end;
 
 procedure TRegulatorCollector.CloseAll();
 var i:Integer;
@@ -545,7 +545,7 @@ begin
    if ((Self.forms.data[i] <> nil) and (Self.forms.data[i].OpenHV = HV)) then
      Exit(true);
  Result := false;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

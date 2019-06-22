@@ -185,14 +185,14 @@ begin
     if (TUser.ComparePasswd(passwd, Self.Users.Items[i].password, Self.Users.Items[i].salt)) then   // password check
       Exit(Self.Users.Items[i].GetRights(OblR));
  Result := TORControlRights.null;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TUsrDb.GetCount():Integer;
 begin
  Result := Self.Users.Count;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -235,14 +235,14 @@ function TUsrDb.GetUser(index:Integer):TUser;
 begin
  if (index >= Self.Users.Count) then Exit(nil);
  Result := Self.Users.Items[index];
-end;//function
+end;
 
 function TUsrDb.GetUser(id:string):TUser;
 var index:Integer;
 begin
  index := Self.IndexOf(id);
  if (index = -1) then Exit(nil) else Result := Self.Users[index];
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

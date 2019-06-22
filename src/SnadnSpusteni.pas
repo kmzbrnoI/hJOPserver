@@ -163,7 +163,7 @@ end;
 function TSS.GetData():TSSData;
 begin
  Result := Self.config;
-end;//function
+end;
 
 procedure TSS.SetData(data:TSSData);
 begin

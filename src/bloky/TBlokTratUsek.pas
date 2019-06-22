@@ -394,7 +394,7 @@ end;
 function TBlkTU.GetSettings():TBlkTUSettings;
 begin
  Result := Self.TUSettings;
-end;//function
+end;
 
 procedure TBlkTU.SetSettings(data:TBlkTUSettings);
 begin

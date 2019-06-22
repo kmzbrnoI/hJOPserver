@@ -915,7 +915,7 @@ begin
    Self.SendStatus(Panel);
    Self.stack.NewConnection(Panel);
   end;
-end;//function
+end;
 
 //mazani 1 panelu z databaze
 function TOR.PnlDRemove(Panel:TIdContext):Byte;
@@ -935,7 +935,7 @@ begin
    (Panel.Data as TTCPORsRef).ORs.Remove(Self);
 
  Result := 0;
-end;//function
+end;
 
 //ziskani prav daneho panelu z databaze
 //v pripade nenalezeni panelu v datbazi vracime prava 'no' = zadna
@@ -950,7 +950,7 @@ begin
   end;
 
  Result := Self.Connected[index].Rights;
-end;//function
+end;
 
 function TOR.PnlDGetIndex(Panel:TIdContext):Integer;
 var i:Integer;
@@ -960,7 +960,7 @@ begin
      Exit(i);
 
  Result := -1;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 //komunikace s panely:
@@ -1398,7 +1398,7 @@ begin
  Self.MereniCasu.Add(mc);
 
  Result := id;
-end;//function
+end;
 
 procedure TOR.StopMereniCasu(id:Integer);
 var i:Integer;
@@ -1409,7 +1409,7 @@ begin
      Self.MereniCasu.Delete(i);
 
  Self.BroadcastData('CAS;STOP;'+IntToStr(id)+';');
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2260,7 +2260,7 @@ begin
  else
   Result := '';
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2357,7 +2357,7 @@ begin
  else
   Result := '';
  end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

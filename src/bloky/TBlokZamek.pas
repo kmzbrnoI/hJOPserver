@@ -279,7 +279,7 @@ end;
 function TBlkZamek.GetZaver():boolean;
 begin
  Result := (Self.ZamekStav.Zaver > 0);
-end;//function
+end;
 
 procedure TBlkZamek.SetZaver(new:boolean);
 begin
@@ -292,7 +292,7 @@ end;
 function TBlkZamek.GetNouzZaver():boolean;
 begin
  Result := (Self.Stav.nouzZaver > 0);
-end;//function
+end;
 
 procedure TBlkZamek.SetNouzZaver(new:boolean);
 begin
@@ -388,7 +388,7 @@ begin
 
  list.Free();
  Result := true;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

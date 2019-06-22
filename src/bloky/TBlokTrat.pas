@@ -382,7 +382,7 @@ begin
   end;
 
  Result := false;
-end;//function
+end;
 
 function TBlkTrat.GetZAK():boolean;
 begin
@@ -391,7 +391,7 @@ begin
   Result := true
  else
   Result := false;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -468,7 +468,7 @@ end;
 function TBlkTrat.GetSettings():TBlkTratSettings;
 begin
  Result := Self.TratSettings;
-end;//function
+end;
 
 procedure TBlkTrat.SetSettings(data:TBlkTratSettings);
 begin
@@ -497,7 +497,7 @@ begin
   Result := true
  else
   Result := false;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -527,7 +527,7 @@ begin
    if (TBlkTU(Blk).poruchaBP) then Exit(true);
   end;//for i
  Exit(false);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -627,7 +627,7 @@ begin
 
  if (Self.SprPredict <> nil) then
    Result := Result + Self.SprPredict.SerializeForPanel(Self, true) + separator;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -656,7 +656,7 @@ end;
 function TBlkTrat.GetNouzZaver():boolean;
 begin
  Result := (Self.uvazkaA as TBlkUvazka).nouzZaver or (Self.uvazkaB as TBlkUvazka).nouzZaver;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -692,7 +692,7 @@ begin
   end;
 
  Result := Self.fNavLichy;
-end;//function
+end;
 
 // vrati hranicni navestidlo trati na jejim konci
 function TBlkTrat.GetNavSudy():TBlk;
@@ -722,7 +722,7 @@ begin
   end;
 
  Result := Self.fNavSudy;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -730,7 +730,7 @@ function TBlkTrat.IsSpr(spr:Integer; predict:boolean = true):boolean;
 begin
  Result := ((Self.GetSprIndex(spr) > -1) or
             ((predict) and (Self.SprPredict <> nil) and (Self.SprPredict.souprava = spr)));
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

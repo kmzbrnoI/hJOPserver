@@ -628,7 +628,7 @@ begin
   if ((Self.stack[i].ClassType = TORStackCmdJC) and ((Self.stack[i] as TORStackCmdJC).JC = JC)) then
    Exit(true);
  Result := false;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -693,14 +693,14 @@ begin
  except
   Result := 'neexistující pøíkaz';
  end;
-end;//function
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
 function TORStack.GetCount():Integer;
 begin
  Result := Self.stack.Count;
-end;//function
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -55,7 +55,7 @@ function GetLogColor(LogTyp:Integer; ErrorID:Integer):TColor;
   else//case
    Result := clWhite;
   end;//else case
- end;//function
+ end;
 
 function GetWriteLogTyp(Typ:Integer):string;
  begin
@@ -76,7 +76,7 @@ function GetWriteLogTyp(Typ:Integer):string;
   else//case
    Result := 'Neznámý typ';
   end;//else case
- end;//function
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

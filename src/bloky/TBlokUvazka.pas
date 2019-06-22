@@ -239,7 +239,7 @@ end;
 function TBlkUvazka.GetSettings():TBlkUvazkaSettings;
 begin
  Result := Self.UvazkaSettings;
-end;//function
+end;
 
 procedure TBlkUvazka.SetSettings(data:TBlkUvazkaSettings);
 begin
@@ -539,7 +539,7 @@ begin
  if (Self.fparent = nil) then
    Blky.GetBlkByID(Self.UvazkaSettings.parent, Self.fparent);
  Result := Self.fparent;
-end;//function
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -578,7 +578,7 @@ begin
   end else begin
    Result := ((not Self.zadost) and (trat.Smer <> TTratSmer.BtoA) and (not trat.Zadost));
   end;
-end;//function
+end;
 
 ///////////////////////////////////////////////////////////////////////////////
 

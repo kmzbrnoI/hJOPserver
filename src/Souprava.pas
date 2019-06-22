@@ -292,7 +292,7 @@ begin
    Result := Result + '1;'
  else
    Result := Result + '0;';
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -607,7 +607,7 @@ begin
   if (HVDb.HVozidla[addr].Slot.stolen) then
     Exit(true);
  Result := false;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

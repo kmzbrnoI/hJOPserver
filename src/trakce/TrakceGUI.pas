@@ -1,4 +1,4 @@
-﻿unit TrakceGUI;
+unit TrakceGUI;
 
 {
  Trida TTrkGUI vytvari pomyslne 'graficke rozhrani' tridy TTrakce pro zbytek
@@ -479,7 +479,7 @@ function TTrkGUI.GetOpenned():boolean;
 begin
  if ((not Assigned(Self.Trakce)) or (not Assigned(Self.Trakce.ComPort.CPort))) then Exit(false);
  Result := Self.Trakce.ComPort.CPort.Connected;
-end;//function
+end;
 
 function TTrkGUI.Open():Byte;
 begin
@@ -537,7 +537,7 @@ begin
  end;
 
  Result := 0;
-end;//function
+end;
 
 function TTrkGUI.Close(force:boolean = false):Byte;
 var i:Integer;
@@ -580,7 +580,7 @@ begin
 
 
  Result := 0;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -648,7 +648,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: CENTRAL START');
  Self.Trakce.TrackStatus := TS_ON;
-end;//function
+end;
 
 procedure TTrkGUI.CentralStop();
 begin
@@ -659,7 +659,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: CENTRAL STOP');
  Self.Trakce.TrackStatus := TS_OFF;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -691,7 +691,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToSTr(speed)+' kmph = '+IntToStr(Self.GettSpeed(speed))+' steps; dir='+IntToStr(dir));
  Self.Trakce.LokSetSpeed(HV.Adresa,Self.GettSpeed(speed),dir);
-end;//function
+end;
 
 procedure TTrkGUI.LokSetDirectSpeed(Sender:TObject; HV:THV; speed:Integer; dir:Integer = -1);    //rychlost se zadava v steps
 var speedOld:Integer;
@@ -721,7 +721,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: LOK SPEED: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+'); sp='+IntToStr(speed)+' steps; dir='+IntToStr(dir));
  Self.Trakce.LokSetSpeed(HV.Adresa,speed,dir);
-end;//function
+end;
 
 // nastaveni funkci lokomotiv:
 //  vypocteme sady a samotne funkce nechame nastavit TTrkGUI.FuncOK(...)
@@ -812,7 +812,7 @@ begin
     TFuncCallback(fc^).callback_ok.callback(Self, TFuncCallback(fc^).callback_ok.data);
    FreeMem(fc);
   end;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -911,7 +911,7 @@ var i, j:Integer;
 
   CloseFile(myFile);
   Self.LoadSpeedTableToTable(LVRych);
-end;//function
+end;
 
 procedure TTrkGUI.LoadSpeedTableToTable(var LVRych:TListView);
 var i:Integer;
@@ -1054,14 +1054,14 @@ function TTrkGUI.GetStepSpeed(step:byte):Integer;
 begin
  if (step >  _MAX_SPEED) then Exit(-1);
  Result := Self.SpeedTable[step];
-end;//function
+end;
 
 function TTrkGUI.SetSpetSpeed(step:byte;sp:Integer):Byte;
 begin
  if (step >  _MAX_SPEED) then Exit(1);
  Self.SpeedTable[step] := sp;
  Result := 0;
-end;//function
+end;
 
 procedure TTrkGUI.EmergencyStop();
 begin
@@ -1070,7 +1070,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: EMERGENCY STOP');
  Self.Trakce.EmergencyStop();
-end;//function
+end;
 
 procedure TTrkGUI.EmergencyStopAddr(addr:Integer);
 begin
@@ -1081,7 +1081,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: EMERGENCY STOP LOKO '+IntToStr(addr));
  Self.Trakce.LokEmergencyStop(addr);
-end;//function
+end;
 
 procedure TTrkGUI.EmergencyStopLoko(Sender:TObject; HV:THV);
 begin
@@ -1107,7 +1107,7 @@ begin
 
  Self.TrkLog(self, tllCommand, 'PUT: GET HV INFO '+HV.data.Nazev+' = '+IntToStr(HV.Adresa));
  Self.Trakce.LokGetInfo(HV.Adresa);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1143,7 +1143,7 @@ begin
    Self.callback_ok  := TTrakce.GenerateCallback(nil);
    Self.ConnectChange(Self, HV.adresa, Tconnect_code.TC_Connected, cb);
   end;
-end;//function
+end;
 
 // odhlasovani loko =
 //    1) POM release
@@ -1175,7 +1175,7 @@ begin
    Self.POMWriteCVs(Self, HV, HV.Data.POMrelease, TPomStatus.released)
  else
    Self.OdhlasenoPOMOK(Self, cb);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1738,7 +1738,7 @@ end;
 function TTrkGUI.GetTrkStatus():Ttrk_status;
 begin
  Result := Self.Trakce.TrackStatus;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

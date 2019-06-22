@@ -209,14 +209,14 @@ begin
   Result := rights
  else
   Result := null;
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TUser.ComparePasswd(plain:string; hash:string; salt:string):boolean;
 begin
  Result := (hash = TUser.GenerateHash(AnsiString(LowerCase(plain + salt))));
-end;//function
+end;
 
 class function TUser.GenerateHash(plain:AnsiString):string;
 var hash: TDCP_sha256;
@@ -233,7 +233,7 @@ begin
  for i := 0 to 31 do
    Result := Result + IntToHex(Digest[i], 2);
  Result := LowerCase(Result);
-end;//function
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

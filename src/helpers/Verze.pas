@@ -41,12 +41,12 @@ end;
 function GetLastBuildDate():String;
  begin
   DateTimeToString(Result, 'dd. mm. yyyy', jclPEImage.PeReadLinkerTimeStamp(Application.ExeName));
- end;//function
+ end;
 
 function GetLastBuildTime():String;
  begin
   DateTimeToString(Result, 'hh:mm:ss', jclPEImage.PeReadLinkerTimeStamp(Application.ExeName));
- end;//function
+ end;
 
 function ZkontrolujSpusteno:Boolean;
  begin
@@ -59,6 +59,6 @@ function ZkontrolujSpusteno:Boolean;
    end else begin
     Result := false;
    end;
- end;//function
+ end;
 
 end.//unit
