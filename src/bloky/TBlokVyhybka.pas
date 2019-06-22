@@ -689,16 +689,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkVyhybka.SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false; callback_ok:TNotifyEvent = nil; callback_err:TNotifyEvent = nil):Integer;
-var Blk:TBlk;
+var spojka:TBlkVyhybka;
     oblr:TOR;
 begin
   if (not GetFunctions.GetSystemStart) then Exit(1);
   if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit(2);
   if ((new <> plus) and (new <> minus)) then Exit(3);
 
- // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
- // k zacykleni pri staveni spojek.
- Self.UpdatePoloha();
+  // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
+  // k zacykleni pri staveni spojek.
+  Self.UpdatePoloha();
+  Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
 
   if (new <> Self.VyhStav.poloha) then
    begin
@@ -706,16 +707,15 @@ begin
     // zamknout ji muzeme kdykoliv
 
     // pokud se nerovna moje poloha, nerovna se i poloha spojky -> obsazenost na spojce apod. je problem
-    Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
     if ((Integer(Self.Zaver) > 0) and (Self.Zaver <> TZaver.staveni) or (Self.vyhZaver) or
-        ((Blk <> nil) and ((Integer((Blk as TBlkVyhybka).Zaver) > 0) and ((Blk as TBlkVyhybka).Zaver <> TZaver.staveni) or ((Blk as TBlkVyhybka).vyhZaver)))) then
+        ((spojka <> nil) and ((Integer(spojka.Zaver) > 0) and (spojka.Zaver <> TZaver.staveni) or (spojka.vyhZaver)))) then
      begin
       for oblr in Self.OblsRizeni do
         oblr.BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - pod závìrem', 'TECHNOLOGIE');
       if (Assigned(callback_err)) then callback_err(self);
       Exit(4);
      end;
-    if (((Self.Obsazeno = TUsekStav.obsazeno) or ((Blk <> nil) and ((Blk as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno))) and (not nouz)) then
+    if (((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and (spojka.Obsazeno = TUsekStav.obsazeno))) and (not nouz)) then
      begin
       for oblr in Self.OblsRizeni do
         oblr.BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - obsazeno', 'TECHNOLOGIE');
@@ -778,10 +778,9 @@ begin
  if (Self.VyhSettings.spojka > -1) then
   begin
    // pokud se jedna o spojku, volame SetPoloha i na spojku
-   Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-   if ((Blk <> nil) and (Blk.typ = _BLK_VYH) and
-   (((Blk as TBlkVyhybka).Stav.staveni_plus <> Self.VyhStav.staveni_plus) or ((Blk as TBlkVyhybka).Stav.staveni_minus <> Self.VyhStav.staveni_minus))) then
-     (Blk as TBlkVyhybka).SetPoloha(new, zamek, nouz);
+   if ((spojka <> nil) and (spojka.typ = _BLK_VYH) and
+       ((spojka.Stav.staveni_plus <> Self.VyhStav.staveni_plus) or (spojka.Stav.staveni_minus <> Self.VyhStav.staveni_minus))) then
+     spojka.SetPoloha(new, zamek, nouz);
   end;
 
  Result := 0;
@@ -791,10 +790,11 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVyhybka.Unlock();
-var spojka:TBlk;
+var spojka:TBlkVyhybka;
 begin
- Blky.GetBlkByID(Self.VyhSettings.spojka, spojka);
- if ((spojka = nil) or ((((spojka as TBlkVyhybka).Zaver = TZaver.no) or ((spojka as TBlkVyhybka).Zaver = TZaver.staveni)) and (not (spojka as TBlkVyhybka).vyhZaver) and (not (spojka as TBlkVyhybka).Stav.locked))) then
+ Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
+ if ((spojka = nil) or (((spojka.Zaver = TZaver.no) or (spojka.Zaver = TZaver.staveni)) and
+     (not spojka.vyhZaver) and (not spojka.Stav.locked))) then
   begin
    try
      if (RCSi.Started) then
@@ -960,19 +960,19 @@ end;
 
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkVyhybka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
-var spojka:TBlk;
+var spojka:TBlkVyhybka;
 begin
  Result := inherited;
 
- Blky.GetBlkByID(Self.VyhSettings.spojka, spojka);
+ Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
 
  if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (not Self.redukce_menu) and
     ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen)) and
-  ((spojka = nil) or (((spojka as TBlkVyhybka).Zaver = TZaver.no) and (not (spojka as TBlkVyhybka).vyhZaver)))) then
+  ((spojka = nil) or ((spojka.Zaver = TZaver.no) and (not spojka.vyhZaver)))) then
   begin
    // na vyhybce neni zaver a menu neni redukovane
 
-   if ((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and ((spojka as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno))) then
+   if ((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and (spojka.Obsazeno = TUsekStav.obsazeno))) then
     begin
      if (Self.VyhStav.poloha = plus) then Result := Result + '!NS-,';
      if (Self.VyhStav.poloha = minus) then Result := Result + '!NS+,';
@@ -1092,7 +1092,7 @@ begin
   end;
 
  if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (Self.VyhStav.locked) and (Self.VyhStav.redukce_menu = 0) and
-   ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen))) then
+     ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen))) then
   begin
    Self.Unlock();
    changed := true;
