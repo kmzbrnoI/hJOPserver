@@ -77,11 +77,11 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEv.FillFuncs();
-var str:string;
+var vyzn:TFuncVyznam;
 begin
  Self.CB_Func.Clear();
- for str in FuncsFyznam.Items do
-   Self.CB_Func.Items.Add(str);
+ for vyzn in FuncsFyznam.Items do
+   Self.CB_Func.Items.Add(vyzn.popis);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

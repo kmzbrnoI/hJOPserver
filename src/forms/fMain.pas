@@ -1710,13 +1710,22 @@ begin
 end;
 
 procedure TF_Main.OnFuncsVyznamChange(Sender:TObject);
-var i:Integer;
+var vyzn:TFuncVyznam;
+    strs:TStrings;
 begin
  if (not Self.CHB_LoadChanges.Checked) then Exit();
  Self.M_funcsVyznam.Clear();
- for i := 0 to FuncsFyznam.Items.Count-1 do
-   Self.M_funcsVyznam.Lines.Add(FuncsFyznam.Items[i]);
- F_FuncsSet.UpdateFuncsList(FuncsFyznam.Items);
+ for vyzn in FuncsFyznam.Items do
+   Self.M_funcsVyznam.Lines.Add(vyzn.GetPanelStr());
+
+ strs := TStringList.Create();
+ try
+   for vyzn in FuncsFyznam.Items do
+     strs.Add(vyzn.popis);
+   F_FuncsSet.UpdateFuncsList(strs);
+ finally
+   strs.Free();
+ end;
 end;
 
 procedure TF_Main.B_CS_Ver_UpdateClick(Sender: TObject);
