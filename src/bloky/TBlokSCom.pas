@@ -335,6 +335,8 @@ begin
      ExtractStrings([';'],[],PChar(ini_rel.ReadString('N',IntToStr(Self.GlobalSettings.id),'')),str);
      if (str.Count >= 3) then
       begin
+       if (Self.ORsRef <> nil) then
+         Self.ORsRef.Free();
        Self.ORsRef := ORs.ParseORs(str[0]);
        Self.SComRel.SymbolType  := StrToInt(str[1]);
 
@@ -354,7 +356,7 @@ begin
      str.Free();
    end;
   end else begin
-    Self.ORsRef.Cnt := 0;
+    Self.ORsRef.Clear();
   end;
 
  // Nacitani zastavovacich a zpomaovacich udalosti
@@ -648,7 +650,7 @@ end;
 //nastavovani stavovych promennych:
 
 procedure TBlkSCom.SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent);
-var i:Integer;
+var oblr:TOR;
 begin
  if ((Self.SComStav.Navest = _NAV_DISABLED) or (Self.SComSettings.zamknuto)) then
   begin
@@ -661,10 +663,10 @@ begin
   begin
    // prodlouzeni nebo zruseni privolavaci navesti -> zrusit odpocet v panelu
    if (Self.SComStav.privol_timer_id > 0) then
-     for i := 0 to Self.ORsRef.Cnt-1 do
+     for oblr in Self.ORsRef do
       begin
-       Self.ORsRef.ORs[i].BroadcastGlobalData('INFO-TIMER-RM;'+IntToStr(Self.SComStav.privol_timer_id));
-       Self.ORsRef.ORs[i].TimerCnt := Self.ORsRef.ORs[i].TimerCnt - 1;
+       oblr.BroadcastGlobalData('INFO-TIMER-RM;'+IntToStr(Self.SComStav.privol_timer_id));
+       oblr.TimerCnt := oblr.TimerCnt - 1;
       end;
    Self.SComStav.privol_timer_id := 0;
   end;
@@ -722,8 +724,8 @@ begin
  if ((Self.Navest = _NAV_PRIVOL) and (navest = _NAV_STUJ)) then
   begin
    // STUJ po privolavacce -> vypnout zvukovou vyzvu
-   for i := 0 to Self.OblsRizeni.Cnt-1 do
-     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt - 1;
+   for oblr in Self.ORsRef do
+     oblr.PrivolavackaBlkCnt := oblr.PrivolavackaBlkCnt - 1;
   end;
 
  if (not Self.changing) then
@@ -750,15 +752,15 @@ end;
 
 procedure TBlkSCom.OnNavestSetOk();
 var tmp:TNotifyEvent;
-    i:Integer;
+    oblr:TOR;
 begin
  Self.SComStav.Navest := Self.SComStav.cilova_navest;
 
  if (Self.SComStav.cilova_navest = TBlkSCom._NAV_PRIVOL) then
   begin
    // nova navest je privolavacka -> zapnout zvukovou vyzvu
-   for i := 0 to Self.OblsRizeni.Cnt-1 do
-     Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt := Self.OblsRizeni.ORs[i].PrivolavackaBlkCnt + 1;
+   for oblr in Self.ORsRef do
+     oblr.PrivolavackaBlkCnt := oblr.PrivolavackaBlkCnt + 1;
   end;
 
  if (Self.autoblok) then
@@ -1009,7 +1011,7 @@ end;//procedure
 
 procedure TBlkSCom.MenuPNStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
-    i:Integer;
+    oblr:TOR;
 begin
  if (Self.SComRel.SymbolType = 1) then Exit;
  if ((SenderOR as TOR).stack.volba = PV) then
@@ -1019,8 +1021,8 @@ begin
  if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkSComVolba.none;
  Self.ZacatekVolba := TBlkSComVolba.NC;
 
- for i := 0 to Self.OblsRizeni.Cnt-1 do
-  Self.OblsRizeni.ORs[i].ORDKClickServer(Self.PrivolDKClick);
+ for oblr in Self.OblsRizeni do
+   oblr.ORDKClickServer(Self.PrivolDKClick);
 end;//procedure
 
 procedure TBlkSCom.MenuPNStopClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1071,13 +1073,14 @@ begin
 end;//procedure
 
 procedure TBlkSCom.MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
-var i:Integer;
+var oblr:TOR;
 begin
  if (Self.ZacatekVolba = TBlkSComVolba.NC) then
   begin
-   for i := 0 to Self.OblsRizeni.Cnt-1 do
-    Self.OblsRizeni.ORs[i].ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti', TBLky.GetBlksList(Self), nil);
+   for oblr in Self.OblsRizeni do
+     oblr.ORDKClickClient();
+   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti',
+                     TBlky.GetBlksList(Self), nil);
   end;
 end;
 
@@ -1585,18 +1588,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSCom.UpdatePrivol();
-var i:Integer;
+var oblr:TOR;
 begin
  if ((Self.SComStav.privol_start+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now+EncodeTime(0, 0, 30, 0)) and
      (Self.SComStav.privol_timer_id = 0)) then
   begin
    // oznameni o brzkem ukonceni privolavaci navesti
    Self.SComStav.privol_timer_id := Random(65536)+1;
-   for i := 0 to Self.ORsRef.Cnt-1 do
+   for oblr in Self.ORsRef do
     begin
-     Self.ORsRef.ORs[i].BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.SComStav.privol_timer_id)+
-        ';0;30;PN '+Self.GlobalSettings.name);
-     Self.ORsRef.ORs[i].TimerCnt := Self.ORsRef.ORs[i].TimerCnt + 1;
+     oblr.BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.SComStav.privol_timer_id)+
+                              ';0;30;PN '+Self.GlobalSettings.name);
+     oblr.TimerCnt := oblr.TimerCnt + 1;
     end;
   end;
 
@@ -1611,13 +1614,14 @@ end;//procedure
 
 // privolavaci navest bez podpory zabezpecovaciho zarizeni
 procedure TBlkSCom.PrivolDKClick(SenderPnl:TIDContext; SenderOR:TObject; Button:TPanelButton);
-var i:Integer;
+var oblr:TOR;
 begin
  if (Button = ENTER) then
   begin
-   for i := 0 to Self.OblsRizeni.Cnt-1 do
-    Self.OblsRizeni.ORs[i].ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti', TBLky.GetBlksList(Self), nil);
+   for oblr in Self.OblsRizeni do
+     oblr.ORDKClickClient();
+   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti',
+                     TBlky.GetBlksList(Self), nil);
   end else begin
    if (Button = TPanelButton.F2) then
      ORTCPServer.Menu(SenderPnl, Self, TOR(SenderOR), '$'+TOR(SenderOR).Name + ',-,' + 'KC');

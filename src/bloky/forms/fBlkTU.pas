@@ -93,7 +93,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
-      TOblsRizeni, Booster;
+      TOblsRizeni, Booster, TOblRizeni;
 
 {$R *.dfm}
 
@@ -164,15 +164,18 @@ var glob:TBlkSettings;
     Usettings:TBlkUsekSettings;
     i:Integer;
     obls:TArstr;
+    oblr:TOR;
  begin
   if (Assigned(Self.Blk)) then glob := Self.Blk.GetGlobalSettings();
   E_Nazev.Text := glob.name;
   SE_ID.Value  := glob.id;
 
-  for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do Self.LB_Stanice.Items.Add((Self.Blk.OblsRizeni.ORs[i]).Name);
+  for oblr in Self.Blk.OblsRizeni do
+    Self.LB_Stanice.Items.Add(oblr.Name);
 
-  SetLength(obls,Self.Blk.OblsRizeni.Cnt);
-  for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
+  SetLength(obls,Self.Blk.OblsRizeni.Count);
+  for i := 0 to Self.Blk.OblsRizeni.Count-1 do
+    obls[i] := Self.Blk.OblsRizeni[i].id;
 
   if (Assigned(Self.Blk)) then
    begin

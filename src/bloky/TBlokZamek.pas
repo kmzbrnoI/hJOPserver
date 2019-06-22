@@ -128,13 +128,17 @@ begin
   begin
    //parsing *.spnl
    str := TStringList.Create();
-   str.Clear();
-   ExtractStrings([';'],[],PChar(ini_rel.ReadString('Z', IntToStr(Self.GlobalSettings.id), '')),str);
-   if (str.Count < 1) then Exit;
-   Self.ORsRef := ORs.ParseORs(str[0]);
-   str.Free();
+   try
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('Z', IntToStr(Self.GlobalSettings.id), '')),str);
+     if (str.Count < 1) then Exit;
+     if (Self.ORsRef <> nil) then
+       Self.ORsRef.Free();
+     Self.ORsRef := ORs.ParseORs(str[0]);
+   finally
+     str.Free();
+   end;
   end else begin
-   Self.ORsRef.Cnt := 0;
+   Self.ORsRef.Clear();
   end;
 
 end;//procedure

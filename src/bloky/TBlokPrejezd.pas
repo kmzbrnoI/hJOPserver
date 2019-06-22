@@ -158,7 +158,7 @@ end;//dtor
 
 procedure TBlkPrejezd.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
 var str:TStrings;
-    i:Integer;
+    oblr:TOR;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -184,15 +184,19 @@ begin
 
    ExtractStringsEx([';'], [], ini_rel.ReadString('PRJ', IntToStr(Self.GlobalSettings.id), ''), str);
    if (str.Count > 0) then
+    begin
+     if (Self.ORsRef <> nil) then
+       Self.ORsRef.Free();
      Self.ORsRef := ORs.ParseORs(str[0]);
+    end;
 
    str.Free();
   end else begin
-    Self.ORsRef.Cnt := 0;
+    Self.ORsRef.Clear();
   end;
 
- for i := 0 to Self.ORsRef.Cnt-1 do
-  Self.ORsRef.ORs[i].RCSAdd(Self.PrjSettings.RCS);
+ for oblr in Self.ORsRef do
+   oblr.RCSAdd(Self.PrjSettings.RCS);
 end;//procedure
 
 procedure TBlkPrejezd.SaveData(ini_tech:TMemIniFile;const section:string);
@@ -242,8 +246,8 @@ end;//procedure
 
 procedure TBlkPrejezd.Update();
 var new_stav:TBlkPrjBasicStav;
-    i:Integer;
     available:boolean;
+    oblr:TOR;
 begin
  if (not (GetFunctions.GetSystemStart())) then Exit;
 
@@ -273,15 +277,15 @@ begin
    // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
    if ((Self.Zaver) and (Self.PrjStav.basicStav = TBlkPrjBasicStav.uzavreno)) then
     begin
-     for i := 0 to Self.OblsRizeni.Cnt-1 do
-      Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta dohledu na pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+     for oblr in Self.OblsRizeni do
+      oblr.BlkWriteError(Self, 'Ztráta dohledu na pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
      JCDb.RusJC(Self);
     end;
 
    if (new_stav = none) then
     begin
-     for i := 0 to Self.OblsRizeni.Cnt-1 do
-      Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Porucha pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+     for oblr in Self.OblsRizeni do
+      oblr.BlkWriteError(Self, 'Porucha pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
     end;
 
    Self.PrjStav.basicStav := new_stav;
@@ -293,8 +297,8 @@ begin
   begin
    if (Now > Self.PrjStav.uzavStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
-     for i := 0 to Self.OblsRizeni.Cnt-1 do
-      Self.OblsRizeni.ORs[i].BlkWriteError(Self, Self.GlobalSettings.name+' otevøen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
+     for oblr in Self.OblsRizeni do
+      oblr.BlkWriteError(Self, Self.GlobalSettings.name+' otevøen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
      Self.PrjStav.uzavStart := now;
     end;
   end;

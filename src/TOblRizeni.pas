@@ -1112,8 +1112,8 @@ end;//procedure
 //v panelu je kliknuto na urcity blok
 procedure TOR.PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton; params:string = '');
 var Blk:TBlk;
-    i:Integer;
     rights:TORCOntrolRights;
+    oblr:TOR;
 begin
  //kontrola opravneni
  rights := Self.PnlDGetRights(Sender);
@@ -1128,8 +1128,8 @@ begin
  // musime provest kontrolu, jestli OR ma povoleno menit blok
  // tj. jestli ma technologicky blok toto OR
 
- for i := 0 to Blk.OblsRizeni.Cnt-1 do
-   if (Blk.OblsRizeni.ORs[i] = Self) then
+ for oblr in Blk.OblsRizeni do
+   if (oblr = Self) then
     begin
      Blk.PanelClick(Sender, Self, Button, rights, params);
      Exit;
@@ -1169,9 +1169,10 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.PanelNUZ(Sender:TIdContext);
-var i,j:Integer;
+var i:Integer;
     Blk:TBlk;
     podminky:TList<TPSPodminka>;
+    oblr:TOR;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -1188,8 +1189,8 @@ begin
    if (Blk.typ <> _BLK_USEK) then continue;
    if (not (Blk as TBlkUsek).NUZ) then continue;
 
-   for j := 0 to (Blk as TBlkUsek).OblsRizeni.Cnt-1 do
-     if ((Blk as TBlkUsek).OblsRizeni.ORs[j] = Self) then
+   for oblr in (Blk as TBlkUsek).OblsRizeni do
+     if (oblr = Self) then
        podminky.Add(GetPSPodminka(Blk, 'Nouzové vybavování'));
   end;//for i
 
@@ -1424,11 +1425,12 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.NUZ_PS(Sender:TIdContext; success:boolean);
-var i, j:Integer;
+var i:Integer;
     JC:TJC;
     Blk:TBlk;
     usek:TBlkUsek;
     nav:TBlkSCom;
+    oblr:TOR;
 begin
  if (not success) then Exit;
 
@@ -1442,9 +1444,9 @@ begin
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;
 
-   for j := 0 to usek.OblsRizeni.Cnt-1 do
+   for oblr in usek.OblsRizeni do
     begin
-     if (usek.OblsRizeni.ORs[j] = Self) then
+     if (oblr = Self) then
       begin
        usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
        JC := JcDb.GetJCByIndex(JCDb.FindPostavenaJCWithUsek(Blk.id));
@@ -2417,9 +2419,10 @@ begin
 end;
 
 procedure TOR.NUZcancelPrematureEvents();
-var i, j:Integer;
+var i:Integer;
     blk:TBlk;
     usek:TBlkUsek;
+    oblr:TOR;
 begin
  for i := 0 to Blky.Cnt-1 do
   begin
@@ -2427,8 +2430,8 @@ begin
    if (Blk.typ <> _BLK_USEK) then continue;
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;
-   for j := 0 to usek.OblsRizeni.Cnt-1 do
-     if (usek.OblsRizeni.ORs[j] = Self) then
+   for oblr in usek.OblsRizeni do
+     if (oblr = Self) then
        usek.RemoveChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
   end;
 end;

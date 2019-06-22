@@ -148,14 +148,18 @@ begin
    //parsing *.spnl
    str := TStringList.Create();
 
-   ExtractStrings([';'],[],PChar(ini_rel.ReadString('Uv',IntToStr(Self.GlobalSettings.id),'')),str);
-   if (str.Count < 1) then Exit;
+   try
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('Uv',IntToStr(Self.GlobalSettings.id),'')),str);
+     if (str.Count < 1) then Exit;
 
-   Self.ORsRef := ORs.ParseORs(str[0]);
-
-   str.Free();
+     if (Self.ORsRef <> nil) then
+       Self.ORsRef.Free();
+     Self.ORsRef := ORs.ParseORs(str[0]);
+   finally
+     str.Free();
+   end;
   end else begin
-   Self.ORsRef.Cnt := 0;
+   Self.ORsRef.Clear();
   end;
 
 end;//procedure
@@ -339,16 +343,16 @@ procedure TBlkUvazka.UPOZTSOnClick(Sender:TObject);
 begin
  Self.zadost := true;
 
- if (Self.ORsRef.ORs[0].stack.volba = TORStackVolba.VZ) then
-   Self.ORsRef.ORs[0].stack.RemoveZTS(Self);
+ if (Self.ORsRef[0].stack.volba = TORStackVolba.VZ) then
+   Self.ORsRef[0].stack.RemoveZTS(Self);
 end;
 
 procedure TBlkUvazka.UPOUTSClick(Sender:TObject);
 begin
  Self.UdelSouhlas();
 
- if (Self.ORsRef.ORs[0].stack.volba = TORStackVolba.VZ) then
-   Self.ORsRef.ORs[0].stack.RemoveUTS(Self);
+ if (Self.ORsRef[0].stack.volba = TORStackVolba.VZ) then
+   Self.ORsRef[0].stack.RemoveUTS(Self);
 end;
 
 procedure TBlkUvazka.UPOOTSClick(Sender:TObject);

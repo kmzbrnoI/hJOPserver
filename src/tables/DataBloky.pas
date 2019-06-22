@@ -103,10 +103,10 @@ var j, spr:integer;
   Self.LV.Items.Item[line].SubItems.Strings[1] := IntToStr(glob.id);
 
   str := '';
-  if (Blk.OblsRizeni.Cnt > 1) then
-    for j := 0 to Blk.OblsRizeni.Cnt-2 do str := str + Blk.OblsRizeni.ORs[j].Name+', ';
-  if (Blk.OblsRizeni.Cnt > 0) then
-    str := str + Blk.OblsRizeni.ORs[Blk.OblsRizeni.Cnt-1].Name;
+  if (Blk.OblsRizeni.Count > 1) then
+    for j := 0 to Blk.OblsRizeni.Count-2 do str := str + Blk.OblsRizeni[j].Name+', ';
+  if (Blk.OblsRizeni.Count > 0) then
+    str := str + Blk.OblsRizeni[Blk.OblsRizeni.Count-1].Name;
   Self.LV.Items.Item[line].SubItems.Strings[4] := str;
 
   case (glob.typ) of

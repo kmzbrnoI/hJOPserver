@@ -66,7 +66,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, TBlok;
+uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, TBlok, TOblRizeni;
 
 {$R *.dfm}
 
@@ -129,6 +129,7 @@ var glob:TBlkSettings;
     obls:TArstr;
     LI:TListItem;
     vypust:TArI;
+    oblr:TOR;
  begin
   glob := Self.Trat.GetGlobalSettings();
   Self.E_Trat_Name.Text := glob.name;
@@ -137,20 +138,25 @@ var glob:TBlkSettings;
   glob := Self.UvazkaA.GetGlobalSettings();
   Self.E_UA_name.Text := glob.name;
   Self.SE_UA_id.Value := glob.id;
-  for i := 0 to Self.UvazkaA.OblsRizeni.Cnt-1 do Self.LB_UA_St.Items.Add((Self.UvazkaA.OblsRizeni.ORs[i]).Name);
+  for oblr in Self.UvazkaA.OblsRizeni do
+    Self.LB_UA_St.Items.Add(oblr.Name);
 
   glob := Self.UvazkaB.GetGlobalSettings();
   Self.E_UB_name.Text := glob.name;
   Self.SE_UB_id.Value := glob.id;
-  for i := 0 to Self.UvazkaB.OblsRizeni.Cnt-1 do Self.LB_UB_St.Items.Add((Self.UvazkaB.OblsRizeni.ORs[i]).Name);
+  for oblr in Self.UvazkaB.OblsRizeni do
+    Self.LB_UB_St.Items.Add(oblr.Name);
 
   settings := Self.Trat.GetSettings();
 
-  SetLength(obls, Self.UvazkaA.OblsRizeni.Cnt + Self.UvazkaB.OblsRizeni.Cnt);
-  for i := 0 to Self.UvazkaA.OblsRizeni.Cnt-1 do obls[i] := Self.UvazkaA.OblsRizeni.ORs[i].id;
-  for i := 0 to Self.UvazkaB.OblsRizeni.Cnt-1 do obls[i+Self.UvazkaA.OblsRizeni.Cnt] := Self.UvazkaB.OblsRizeni.ORs[i].id;
+  SetLength(obls, Self.UvazkaA.OblsRizeni.Count + Self.UvazkaB.OblsRizeni.Count);
+  for i := 0 to Self.UvazkaA.OblsRizeni.Count-1 do
+    obls[i] := Self.UvazkaA.OblsRizeni[i].id;
+  for i := 0 to Self.UvazkaB.OblsRizeni.Count-1 do
+    obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
   SetLength(vypust, settings.Useky.Count);
-  for i := 0 to settings.Useky.Count-1 do vypust[i] := settings.Useky[i];
+  for i := 0 to settings.Useky.Count-1 do
+    vypust[i] := settings.Useky[i];
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, _BLK_TU, -1);
 
   Self.CB_Trat_ZabZar.ItemIndex := Integer(settings.zabzar);
@@ -207,9 +213,11 @@ begin
 
  if ((Self.UvazkaA <> nil) and (Self.UvazkaB <> nil)) then
   begin
-   SetLength(obls, Self.UvazkaA.OblsRizeni.Cnt + Self.UvazkaB.OblsRizeni.Cnt);
-   for i := 0 to Self.UvazkaA.OblsRizeni.Cnt-1 do obls[i] := Self.UvazkaA.OblsRizeni.ORs[i].id;
-   for i := 0 to Self.UvazkaB.OblsRizeni.Cnt-1 do obls[i+Self.UvazkaA.OblsRizeni.Cnt] := Self.UvazkaB.OblsRizeni.ORs[i].id;
+   SetLength(obls, Self.UvazkaA.OblsRizeni.Count + Self.UvazkaB.OblsRizeni.Count);
+   for i := 0 to Self.UvazkaA.OblsRizeni.Count-1 do
+     obls[i] := Self.UvazkaA.OblsRizeni[i].id;
+   for i := 0 to Self.UvazkaB.OblsRizeni.Count-1 do
+     obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
   end;
 
  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_TU, -1);
@@ -227,9 +235,11 @@ begin
  for i := 0 to Self.LV_Useky.Items.Count-1 do
   useky_vypust[i] := StrToInt(Self.LV_Useky.Items.Item[i].Caption);
 
- SetLength(obls, Self.UvazkaA.OblsRizeni.Cnt + Self.UvazkaB.OblsRizeni.Cnt);
- for i := 0 to Self.UvazkaA.OblsRizeni.Cnt-1 do obls[i] := Self.UvazkaA.OblsRizeni.ORs[i].id;
- for i := 0 to Self.UvazkaB.OblsRizeni.Cnt-1 do obls[i+Self.UvazkaA.OblsRizeni.Cnt] := Self.UvazkaB.OblsRizeni.ORs[i].id;
+ SetLength(obls, Self.UvazkaA.OblsRizeni.Count + Self.UvazkaB.OblsRizeni.Count);
+ for i := 0 to Self.UvazkaA.OblsRizeni.Count-1 do
+   obls[i] := Self.UvazkaA.OblsRizeni[i].id;
+ for i := 0 to Self.UvazkaB.OblsRizeni.Count-1 do
+   obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
 
  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_TU, -1);
 end;

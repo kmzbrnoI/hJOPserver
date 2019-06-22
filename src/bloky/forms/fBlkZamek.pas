@@ -37,7 +37,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky, TOblRizeni;
 
 {$R *.dfm}
 
@@ -67,11 +67,12 @@ procedure TF_BlkZamek.NewBlkOpenForm;
 
 procedure TF_BlkZamek.NormalOpenForm;
 var glob:TBlkSettings;
-    i:Integer;
+    oblr:TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
-  for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do Self.LB_Stanice.Items.Add((Self.Blk.OblsRizeni.ORs[i]).Name);
+  for oblr in Self.Blk.OblsRizeni do
+    Self.LB_Stanice.Items.Add(oblr.Name);
 
   E_Nazev.Text          := glob.name;
   SE_ID.Value           := glob.id;

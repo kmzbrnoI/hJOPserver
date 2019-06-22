@@ -64,13 +64,13 @@ type
    FOnChange:TOnBlkChange;  // childs can call the event
    ftable_index:Integer;
    ffrozen:boolean;
-   ORsRef:TORsRef;          // ve kterych OR se blok nachazi
+   ORsRef:TList<TOR>;          // ve kterych OR se blok nachazi
 
    //loading and saving RCS
    class function LoadRCS(ini:TMemIniFile;section:string):TRCSAddrs;
    class procedure SaveRCS(ini:TMemIniFile;section:string;data:TRCSAddrs);
 
-   class procedure PushRCSToOR(ORs:TORsRef; RCSs:TRCSAddrs);
+   class procedure PushRCSToOR(ORs:TList<TOR>; RCSs:TRCSAddrs);
 
    procedure CallChangeEvents(var events:TChangeEvents);
 
@@ -131,7 +131,7 @@ type
    property OnChange:TOnBlkChange read FOnChange write FOnChange;
    property table_index:Integer read ftable_index write ftable_index;
    property frozen:boolean read ffrozen;
-   property OblsRizeni:TORsRef read ORsRef;
+   property OblsRizeni:TList<TOR> read ORsRef;
 
    property id:Integer read GlobalSettings.id;
    property name:string read GlobalSettings.name;
@@ -152,12 +152,13 @@ begin
  Self.GlobalSettings := _def_glob_settings;
  Self.ftable_index   := index;
  Self.ffrozen        := false;
- Self.ORsRef.Cnt     := 0;
+ Self.ORsRef := TList<TOR>.Create();
 end;//ctor
 
 destructor TBlk.Destroy();
 begin
- inherited Destroy();
+ Self.ORsRef.Free();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -270,13 +271,13 @@ end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.PushRCSToOR(ORs:TORsRef; RCSs:TRCSAddrs);
-var i:Integer;
+class procedure TBlk.PushRCSToOR(ORs:TList<TOR>; RCSs:TRCSAddrs);
+var oblr:TOR;
     rcsAddr:TRCSAddr;
 begin
- for i := 0 to ORs.Cnt-1 do
+ for oblr in ORs do
    for rcsAddr in RCSs do
-     ORs.ORs[i].RCSAdd(rcsAddr.board);
+     oblr.RCSAdd(rcsAddr.board);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -422,12 +423,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlk.IsInOR(OblR:TObject):boolean;
-var i:Integer;
 begin
- for i := 0 to Self.OblsRizeni.Cnt-1 do
-   if (Self.OblsRizeni.ORs[i] = OblR) then
-     Exit(true);
- Result := false;
+ Result := Self.OblsRizeni.Contains(OblR as TOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -78,7 +78,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBlok,
+uses GetSystems, FileSystem, TechnologieRCS, TBlok, TOblRizeni,
       TBLokUsek, DataBloky, fSettings, TBlokPrejezd;
 
 {$R *.dfm}
@@ -126,6 +126,7 @@ var glob:TBlkSettings;
     i:Integer;
     eventForm:TF_BlkSComEvent;
     ts:TCloseTabSheet;
+    oblr:TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -133,10 +134,12 @@ var glob:TBlkSettings;
   E_Nazev.Text := glob.name;
   SE_ID.Value  := glob.id;
 
-  for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do Self.LB_Stanice.Items.Add(Self.Blk.OblsRizeni.ORs[i].Name);
+  for oblr in Self.Blk.OblsRizeni do
+    Self.LB_Stanice.Items.Add(oblr.Name);
 
-  SetLength(obls, Self.Blk.OblsRizeni.Cnt);
-  for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do obls[i] := Self.Blk.OblsRizeni.ORs[i].id;
+  SetLength(obls, Self.Blk.OblsRizeni.Count);
+  for i := 0 to Self.Blk.OblsRizeni.Count-1 do
+    obls[i] := Self.Blk.OblsRizeni[i].id;
 
   SE_Delay.Value := settings.ZpozdeniPadu;
 

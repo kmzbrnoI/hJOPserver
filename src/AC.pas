@@ -528,8 +528,8 @@ var cmd:integer;
         if (not JC.postaveno) then
          begin
           Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
-          if ((Blk as TBlkSCom).OblsRizeni.Cnt > 0) then
-           OblR := (Blk as TBlkSCom).OblsRizeni.ORs[0]
+          if ((Blk as TBlkSCom).OblsRizeni.Count > 0) then
+           OblR := (Blk as TBlkSCom).OblsRizeni[0]
           else
            OblR := nil;
 

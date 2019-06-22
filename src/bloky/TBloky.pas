@@ -169,13 +169,12 @@ end;//procedure
 //tady se resi veskere provazanosti bloku a odesilani eventu do oblasti rizeni
 procedure TBlky.BlkChange(Sender:TObject);
 var blkset:TBlkSettings;
-    obl_rizeni:TORsRef;
+    obl_rizeni:TList<TOR>;
     i:Integer;
+    oblr:TOR;
 begin
  if ((Sender as TBlk).typ = _BLK_USEK) then
   begin
-   obl_rizeni := (Sender as TBlkUsek).OblsRizeni;
-
    // pri jakekoliv zmene useku dojde k Change() na vyhybce
    // navaznost: usek -> vyhybka
    blkset := (Sender as TBlk).GetGlobalSettings();
@@ -187,9 +186,9 @@ begin
 
  //zavolame OnChange vsech OR daneho bloku
  obl_rizeni := (Sender as TBlk).OblsRizeni;
- if (obl_rizeni.Cnt > 0) then
-   for i := 0 to obl_rizeni.Cnt-1 do
-     obl_rizeni.ORs[i].BlkChange(Sender);
+ if (obl_rizeni.Count > 0) then
+   for oblr in obl_rizeni do
+     oblr.BlkChange(Sender);
 end;//procedure
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -550,8 +549,9 @@ end;//function
 
 //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
 procedure TBlky.GetORBlk(OblRizeni_id:string; conn:TIdContext);
-var i,j:Integer;
-    obl_rizeni:TORsRef;
+var i:Integer;
+    obl_rizeni:TList<TOR>;
+    oblr:TOR;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
@@ -559,10 +559,10 @@ begin
    obl_rizeni := Self.Data[i].OblsRizeni;
 
    //tyto OR porovname na "OblRizeni:PTOR"
-   for j := 0 to obl_rizeni.Cnt-1 do
-     if (obl_rizeni.ORs[j].id = OblRizeni_id) then
+   for oblr in obl_rizeni do
+     if (oblr.id = OblRizeni_id) then
       begin
-       obl_rizeni.ORs[j].BlkChange(Self.data[i], conn);
+       oblr.BlkChange(Self.data[i], conn);
        break;
       end;
   end;//for i
@@ -615,14 +615,14 @@ begin
    if (Self.Data[i].typ <> _BLK_SCOM) then continue;
 
    orindex := -1;
-   for j := 0 to (Self.Data[i] as TBlkSCom).OblsRizeni.Cnt-1 do
-     if ((Self.Data[i] as TBlkSCom).OblsRizeni.ORs[j].id = obl) then orindex := j;
+   for j := 0 to (Self.Data[i] as TBlkSCom).OblsRizeni.Count-1 do
+     if ((Self.Data[i] as TBlkSCom).OblsRizeni[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
 
    if ((Integer((Self.Data[i] as TBlkSCom).ZacatekVolba) > 0) and
       ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkSCom).id) = -1) or
-        ((Self.Data[i] as TBlkSCom).OblsRizeni.ORs[orindex].stack.volba = VZ))) then
+        ((Self.Data[i] as TBlkSCom).OblsRizeni[orindex].stack.volba = VZ))) then
      Exit(Self.Data[i]);
   end;//for i
 
@@ -638,8 +638,8 @@ begin
    if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
 
    orindex := -1;
-   for j := 0 to (Self.Data[i] as TBlkUsek).OblsRizeni.Cnt-1 do
-     if ((Self.Data[i] as TBlkUsek).OblsRizeni.ORs[j].id = obl) then orindex := j;
+   for j := 0 to (Self.Data[i] as TBlkUsek).OblsRizeni.Count-1 do
+     if ((Self.Data[i] as TBlkUsek).OblsRizeni[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
    if ((Self.Data[i] as TBlkUsek).IsVlakPresun()) then Exit(Self.Data[i]);
@@ -702,9 +702,10 @@ end;//procedure
 
 // pozn.: NUZ maze soupravy z bloku
 procedure TBlky.NUZ(or_id:string; state:boolean = true);
-var spr, i:Integer;
+var spr:Integer;
     blk:TBlk;
     usek:TBlkUsek;
+    oblr:TOR;
  begin
   for blk in Self.Data do
    begin
@@ -712,9 +713,9 @@ var spr, i:Integer;
     usek := (blk as TBlkUsek);
     if (not usek.NUZ) then continue;
 
-    for i := 0 to usek.OblsRizeni.Cnt-1 do
+    for oblr in usek.OblsRizeni do
      begin
-      if (usek.OblsRizeni.ORs[i].id = or_id) then
+      if (oblr.id = or_id) then
        begin
         if (state) then
          begin
@@ -738,11 +739,12 @@ var spr, i:Integer;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
-var cyklus,i,j:Integer;
+var cyklus,i:Integer;
     Priradit:Boolean;
     Pocet:Integer;
     Blk:TBlk;
-    Obl_r:TOrsRef;
+    Obl_r:TList<TOR>;
+    oblr:TOR;
     glob:TBlkSettings;
  begin
   Pocet := 0;
@@ -767,10 +769,10 @@ var cyklus,i,j:Integer;
       else begin
         for i := 0 to Length(OblRizeniID)-1 do
          begin
-          if (Obl_r.Cnt = 0) then priradit := true;
+          if (Obl_r.Count = 0) then priradit := true;
           if (Priradit) then Break;
-          for j := 0 to Obl_r.Cnt-1 do
-            if (Obl_r.ORs[j].id = OBlRizeniID[i]) then
+          for oblr in Obl_r do
+            if (oblr.id = OBlRizeniID[i]) then
              begin
               Priradit := true;
               Break;
@@ -937,7 +939,8 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlky.GetSComPrivol(oblR:TOR):TBlksList;
-var i, j:Integer;
+var i:Integer;
+    moblr:TOR;
 begin
  Result := TList<TObject>.Create();
  for i := 0 to Self.Data.Count-1 do
@@ -945,8 +948,8 @@ begin
    if (self.Data[i].typ <> _BLK_SCOM) then continue;
    if ((Self.Data[i] as TBlkSCom).Navest <> 8) then continue;
 
-   for j := 0 to (Self.Data[i] as TBlkSCom).OblsRizeni.Cnt-1 do
-    if ((Self.Data[i] as TBlkSCom).OblsRizeni.ORs[j] = oblR) then
+   for moblr in (Self.Data[i] as TBlkSCom).OblsRizeni do
+    if (moblr = oblR) then
      begin
       Result.Add(self.Data[i]);
       break;

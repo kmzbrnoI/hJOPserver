@@ -69,7 +69,7 @@ implementation
 
 {$R *.dfm}
 
-uses TJCDatabase, TechnologieJC, TBlok, TBlokUsek,
+uses TJCDatabase, TechnologieJC, TBlok, TBlokUsek, TOblRizeni,
       TBlokSCom, TMultiJCDatabase, DataMultiJC;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,9 +238,9 @@ begin
        Exit();
       end;
 
-     SetLength(obls, (Blk as TBlkScom).OblsRizeni.Cnt);
-     for i := 0 to (Blk as TBlkScom).OblsRizeni.Cnt-1 do
-      obls[i] := (Blk as TBlkScom).OblsRizeni.ORs[i].id;
+     SetLength(obls, (Blk as TBlkScom).OblsRizeni.Count);
+     for i := 0 to (Blk as TBlkScom).OblsRizeni.Count-1 do
+      obls[i] := (Blk as TBlkScom).OblsRizeni[i].id;
    except
      obls := nil;
    end;

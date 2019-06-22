@@ -219,54 +219,60 @@ end;//function
 
 //toto se vola zvnejsi, kdyz chceme postavit jakoukoliv JC
 procedure TJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject);
-var i, j:Integer;
+var j:Integer;
     Blk:TBlk;
+    oblr:TOR;
+    startNav:TBlkSCom;
+    senderOblr:TOR;
+    jc:TJC;
 begin
- for i := 0 to Self.JCs.Count-1 do
+ startNav := StartBlk as TBlkSCom;
+ senderOblr := SenderOR as TOR;
+
+ for jc in Self.JCs do
   begin
-   Blky.GetBlkByID(Self.JCs[i].data.NavestidloBlok, Blk);
+   Blky.GetBlkByID(jc.data.NavestidloBlok, Blk);
    if (Blk <> StartBlk) then continue;
 
-   Blky.GetBlkByID(Self.JCs[i].data.Useky[Self.JCs[i].data.Useky.Count-1], Blk);
+   Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], Blk);
    if (Blk <> EndBlk) then continue;
 
-   if ((Integer((StartBlk as TBlkSCom).ZacatekVolba) = Integer(Self.JCs[i].data.TypCesty)) or
-      (((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) and (Self.JCs[i].data.TypCesty = TJCType.vlak)) or
-      (((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.PP) and (Self.JCs[i].data.TypCesty = TJCType.posun))) then
+   if ((Integer(startNav.ZacatekVolba) = Integer(jc.data.TypCesty)) or
+      ((startNav.ZacatekVolba = TBLkSComVolba.NC) and (jc.data.TypCesty = TJCType.vlak)) or
+      ((startNav.ZacatekVolba = TBLkSComVolba.PP) and (jc.data.TypCesty = TJCType.posun))) then
     begin
      // nasli jsme jizdni cestu, kterou hledame
 
      // jeste kontrola variantnich bodu:
-     if (Self.JCs[i].data.vb.Count <> (SenderOR as TOR).vb.Count) then continue;
-     for j := 0 to Self.JCs[i].data.vb.Count-1 do
-      if (Self.JCs[i].data.vb[j] <> ((SenderOR as TOR).vb[j] as TBlk).id) then continue;
+     if (jc.data.vb.Count <> SenderOblr.vb.Count) then continue;
+     for j := 0 to jc.data.vb.Count-1 do
+      if (jc.data.vb[j] <> (SenderOblr.vb[j] as TBlk).id) then continue;
 
      // v pripade nouzove cesty klik na DK opet prevest na klienta
-     if ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) then
-       for j:= 0 to (StartBlk as TBlkSCom).OblsRizeni.Cnt-1 do
-        (StartBlk as TBlkSCom).OblsRizeni.ORs[j].ORDKClickClient();
+     if (startNav.ZacatekVolba = TBLkSComVolba.NC) then
+       for oblr in startNav.OblsRizeni do
+         oblr.ORDKClickClient();
 
 
-     if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) then
+     if (SenderOblr.stack.volba = TORStackVolba.VZ) then
       begin
-       (SenderOR as TOR).stack.AddJC(Self.JCs[i], SenderPnl, ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) or ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.PP));
+       SenderOblr.stack.AddJC(jc, SenderPnl, (startNav.ZacatekVolba = TBLkSComVolba.NC) or (startNav.ZacatekVolba = TBLkSComVolba.PP));
 
        // zrusime zacatek, konec a variantni body
-       (StartBlk as TBlkSCom).ZacatekVolba := TBlkSComVOlba.none;
+       startNav.ZacatekVolba := TBlkSComVOlba.none;
        (EndBlk as TBlkUsek).KonecJC        := TZaver.no;
-       (SenderOR as TOR).ClearVb();
+       SenderOblr.ClearVb();
       end else begin
-       (SenderOR as TOR).vb.Clear();            // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
-       Self.JCs[i].StavJC(SenderPnl, SenderOR, nil, ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) or ((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.PP));
+       SenderOblr.vb.Clear();            // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
+       jc.StavJC(SenderPnl, SenderOR, nil, (startNav.ZacatekVolba = TBLkSComVolba.NC) or (startNav.ZacatekVolba = TBLkSComVolba.PP));
       end;
-
 
      Exit;
     end;
   end;//for i
 
  // kontrola staveni slozene jizdni cesty
- if ((StartBlk as TBlkSCom).ZacatekVolba <> TBLkSComVolba.NC) then
+ if (startNav.ZacatekVolba <> TBLkSComVolba.NC) then
    if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
 
  (EndBlk as TBlkUsek).KonecJC := TZaver.no;
@@ -548,8 +554,9 @@ end;//procedure
 procedure TJCDb.RusJC(Blk:TBlk);
 var tmpblk:TBlk;
     jcs:TArI;
-    i, j:Integer;
+    i:Integer;
     jc:TJC;
+    oblr:TOR;
 begin
  case (Blk.typ) of
   _BLK_VYH     : jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
@@ -587,8 +594,8 @@ begin
      if ((TBlkSCom(tmpblk).Navest > 0) and (TBlkSCom(tmpblk).DNjc = jc)) then
       begin
        JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
-       for j := 0 to (tmpBlk as TBlkScom).OblsRizeni.Cnt-1 do
-         (tmpBlk as TBlkScom).OblsRizeni.ORs[j].BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.name, 'TECHNOLOGIE');
+       for oblr in (tmpBlk as TBlkScom).OblsRizeni do
+         oblr.BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
     end;//for i
   end;//if jcindex <> -1

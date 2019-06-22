@@ -420,7 +420,7 @@ end;//procedure
 
 procedure TBlkTrat.SetTratZadost(Zadost:boolean);
 var uvazka:TBlkUvazka;
-    i:Integer;
+    oblr:TOR;
 begin
  if (Self.Zadost = Zadost) then Exit(); 
 
@@ -434,11 +434,11 @@ begin
     begin
      if (Zadost) then
       begin
-       for i := 0 to uvazka.OblsRizeni.Cnt-1 do
-        uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt + 1;
+       for oblr in uvazka.OblsRizeni do
+         oblr.ZadostBlkCnt := oblr.ZadostBlkCnt + 1;
       end else begin
-       for i := 0 to uvazka.OblsRizeni.Cnt-1 do
-        uvazka.OblsRizeni.ORs[i].ZadostBlkCnt := uvazka.OblsRizeni.ORs[i].ZadostBlkCnt - 1;
+       for oblr in uvazka.OblsRizeni do
+         oblr.ZadostBlkCnt := oblr.ZadostBlkCnt - 1;
       end;
     end;
  except
@@ -635,14 +635,14 @@ procedure TBlkTrat.SprChangeOR(spr:Integer);
 begin
  case (Self.Smer) of
    TTratSmer.AtoB: begin
-      if ((Self.uvazkaB as TBlkUvazka).OblsRizeni.Cnt > 0) then
-        Soupravy.soupravy[spr].stanice := (Self.uvazkaB as TBlkUvazka).OblsRizeni.ORs[0]
+      if ((Self.uvazkaB as TBlkUvazka).OblsRizeni.Count > 0) then
+        Soupravy.soupravy[spr].stanice := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
       else
         Soupravy.soupravy[spr].stanice := nil;
    end;//AtoB
    TTratSmer.BtoA:begin
-      if ((Self.uvazkaA as TBlkUvazka).OblsRizeni.Cnt > 0) then
-        Soupravy.soupravy[spr].stanice := (Self.uvazkaA as TBlkUvazka).OblsRizeni.ORs[0]
+      if ((Self.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
+        Soupravy.soupravy[spr].stanice := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
       else
         Soupravy.soupravy[spr].stanice := nil;
    end;//BtoA
@@ -682,7 +682,7 @@ begin
      Blky.GetBlkByIndex(i, Blk);
      if (Blk.typ <> _BLK_SCOM) then continue;
      if ((TBlkSCom(Blk).UsekID = Self.TratSettings.Useky[0]) and
-         (Blk.OblsRizeni.ORs[0] = Self.uvazkaA.OblsRizeni.ORs[0]) and
+         (Blk.OblsRizeni[0] = Self.uvazkaA.OblsRizeni[0]) and
          ((BlkTU = nil) or (TBlkSCom(Blk).UsekID <> BlkTU.GetSettings.navLid))) then
       begin
        Self.fNavLichy := Blk;
@@ -712,7 +712,7 @@ begin
      Blky.GetBlkByIndex(i, Blk);
      if (Blk.typ <> _BLK_SCOM) then continue;
      if ((TBlkSCom(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
-         (Blk.OblsRizeni.ORs[0] = Self.uvazkaB.OblsRizeni.ORs[0]) and
+         (Blk.OblsRizeni[0] = Self.uvazkaB.OblsRizeni[0]) and
          ((BlkTU = nil) or (TBlkSCom(Blk).UsekID <> BlkTU.GetSettings.navSid))) then
       begin
        Self.fNavSudy := Blk;
@@ -1001,11 +1001,11 @@ function TBlkTrat.SameUserControlsBothUvazka():boolean;
 var first, second:TORPanel;
 begin
  if ((not Assigned(Self.uvazkaA)) or (not Assigned(Self.uvazkaB))) then Exit(false);
- if ((TBlkUvazka(Self.uvazkaA).OblsRizeni.Cnt <> 1) or (TBlkUvazka(Self.uvazkaB).OblsRizeni.Cnt <> 1)) then Exit(false);
+ if ((TBlkUvazka(Self.uvazkaA).OblsRizeni.Count <> 1) or (TBlkUvazka(Self.uvazkaB).OblsRizeni.Count <> 1)) then Exit(false);
 
- for first in TBlkUvazka(Self.uvazkaA).OblsRizeni.ORs[0].Connected do
+ for first in TBlkUvazka(Self.uvazkaA).OblsRizeni[0].Connected do
    if (first.Rights >= TORControlRights.write) then
-     for second in TBlkUvazka(Self.uvazkaB).OblsRizeni.ORs[0].Connected do
+     for second in TBlkUvazka(Self.uvazkaB).OblsRizeni[0].Connected do
        if ((first.user = second.user) and (second.Rights >= TORControlRights.write)) then
          Exit(true);
 

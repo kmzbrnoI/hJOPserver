@@ -329,53 +329,56 @@ begin
  Self.UsekStav.Vyl          := ini_stat.ReadString(section, 'vyl' , '');
 
  str := TStringList.Create();
-
- Self.UsekStav.soupravy.Clear();
- ExtractStringsEx([','], [], ini_stat.ReadString(section, 'spr' , ''), str);
- for s in str do
-   Self.UsekStav.soupravy.Add(Soupravy.GetSprIndexByName(s));
-
- // houkaci udalosti
  try
-   Self.LoadHoukEventToList(Self.UsekSettings.houkEvL, ini_tech, section, 'houkL');
- except
-   writelog('Nepodaøilo se naèíst houkací události L bloku ' + Self.name, WR_ERROR);
- end;
+   Self.UsekStav.soupravy.Clear();
+   ExtractStringsEx([','], [], ini_stat.ReadString(section, 'spr' , ''), str);
+   for s in str do
+     Self.UsekStav.soupravy.Add(Soupravy.GetSprIndexByName(s));
 
- try
-   Self.LoadHoukEventToList(Self.UsekSettings.houkEvS, ini_tech, section, 'houkS');
- except
-   writelog('Nepodaøilo se naèíst houkací události S bloku ' + Self.name, WR_ERROR);
- end;
+   // houkaci udalosti
+   try
+     Self.LoadHoukEventToList(Self.UsekSettings.houkEvL, ini_tech, section, 'houkL');
+   except
+     writelog('Nepodaøilo se naèíst houkací události L bloku ' + Self.name, WR_ERROR);
+   end;
+
+   try
+     Self.LoadHoukEventToList(Self.UsekSettings.houkEvS, ini_tech, section, 'houkS');
+   except
+     writelog('Nepodaøilo se naèíst houkací události S bloku ' + Self.name, WR_ERROR);
+   end;
 
 
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str.Clear();
-   ExtractStrings([';'],[],PChar(ini_rel.ReadString('U',IntToStr(Self.GlobalSettings.id),'')),str);
-   if (str.Count < 1) then Exit;
-
-   Self.ORsRef := ORs.ParseORs(str[0]);
-
-   if (str.Count >= 2) then
+   if (ini_rel <> nil) then
     begin
-     Self.UsekStav.stanicni_kolej := (str[1] = '1');
-     if (str.Count >= 3) then
-       Self.UsekStav.cislo_koleje := str[2]
-     else
-       Self.UsekStav.cislo_koleje := '';
+     //parsing *.spnl
+     str.Clear();
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('U',IntToStr(Self.GlobalSettings.id),'')),str);
+     if (str.Count < 1) then Exit;
+
+     if (Self.ORsRef <> nil) then
+       Self.ORsRef.Free();
+     Self.ORsRef := ORs.ParseORs(str[0]);
+
+     if (str.Count >= 2) then
+      begin
+       Self.UsekStav.stanicni_kolej := (str[1] = '1');
+       if (str.Count >= 3) then
+         Self.UsekStav.cislo_koleje := str[2]
+       else
+         Self.UsekStav.cislo_koleje := '';
+      end;
+
+     if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxSpr <> 1)) then
+       Self.UsekSettings.maxSpr := 1;
+    end else begin
+     Self.ORsRef.Clear();
     end;
 
-   if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxSpr <> 1)) then
-     Self.UsekSettings.maxSpr := 1;
-  end else begin
-   Self.ORsRef.Cnt := 0;
-  end;
-
- PushRCSToOR(Self.ORsRef, Self.UsekSettings.RCSAddrs);
-
- str.Free();
+   PushRCSToOR(Self.ORsRef, Self.UsekSettings.RCSAddrs);
+ finally
+   str.Free();
+ end;
 end;//procedure
 
 procedure TBlkUsek.SaveData(ini_tech:TMemIniFile;const section:string);
@@ -497,6 +500,7 @@ procedure TBlkUsek.Update();
 var i, spr:Integer;
     state:TRCSInputState;
     usekStav:TUsekStav;
+    oblr:TOR;
 begin
  if (((Self.ZesZkrat = TBoosterSignal.error) or (Self.ZesNapajeni = TBoosterSignal.error)) and (not Self.frozen)) then
   begin
@@ -511,8 +515,8 @@ begin
        and (Self.ZesZkrat = TBoosterSignal.error)) then
     begin
      Self.UsekStav.zkrat := TBoosterSignal.ok;
-     for i := 0 to Self.ORsRef.Cnt-1 do
-       Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt - 1;
+     for oblr in Self.ORsRef do
+       oblr.ZKratBlkCnt := oblr.ZKratBlkCnt - 1;
      Self.Change(true);
     end;
    if ((Self.DCC) and (Self.ZesZkrat <> TBoosterSignal.error) and (Self.ZesNapajeni <> TBoosterSignal.error) and
@@ -580,8 +584,8 @@ begin
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
      if ((Self.typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
-       for i := 0 to Self.OblsRizeni.Cnt-1 do
-         Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
+       for oblr in Self.OblsRizeni do
+         oblr.BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
      if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := TZaver.nouz;
     end;//if spr_vypadek_time > 3
   end;//if spr_vypadek
@@ -628,19 +632,19 @@ end;//procedure
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.SetUsekNUZ(nuz:boolean);
-var i:Integer;
+var oblr:TOR;
 begin
  if (Self.UsekStav.NUZ = nuz) then Exit(); 
 
  if (Self.UsekStav.NUZ) and (not nuz) then
   begin
-   for i := 0 to Self.ORsRef.Cnt-1 do
-     if (Self.ORsRef.ORs[i].NUZblkCnt > 0) then
-       Self.ORsRef.ORs[i].NUZblkCnt := Self.ORsRef.ORs[i].NUZblkCnt - 1;
+   for oblr in Self.ORsRef do
+     if (oblr.NUZblkCnt > 0) then
+       oblr.NUZblkCnt := oblr.NUZblkCnt - 1;
   end else begin
     if ((not Self.UsekStav.NUZ) and (nuz)) then
-      for i := 0 to Self.ORsRef.Cnt-1 do
-        Self.ORsRef.ORs[i].NUZblkCnt := Self.ORsRef.ORs[i].NUZblkCnt + 1;
+      for oblr in Self.ORsRef do
+        oblr.NUZblkCnt := oblr.NUZblkCnt + 1;
   end;
 
  Self.UsekStav.NUZ := nuz;
@@ -691,7 +695,7 @@ procedure TBlkUsek.SetUsekVyl(Sender:TIDCOntext; vyl:string);
 begin
  if ((self.UsekStav.Vyl <> '') and (vyl = '')) then
   begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef.ORs[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
   end else begin
    Self.Vyluka := vyl;
   end;
@@ -720,7 +724,7 @@ begin
 end;//procedure
 
 procedure TBlkUsek.SetZesZkrat(state:TBoosterSignal);
-var i:Integer;
+var oblr:TOR;
 begin
  if (Self.frozen) then
    Self.last_zes_zkrat := state;
@@ -742,12 +746,12 @@ begin
   begin
    // do OR oznamime, ze nastal zkrat, pak se prehraje zvuk v klientech...
    if (not Self.frozen) then
-     for i := 0 to Self.ORsRef.Cnt-1 do
-      Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt + 1;
+     for oblr in Self.ORsRef do
+      oblr.ZKratBlkCnt := oblr.ZKratBlkCnt + 1;
   end else begin
    if (Self.UsekStav.zkrat = TBoosterSignal.error) then
-     for i := 0 to Self.ORsRef.Cnt-1 do
-      Self.ORsRef.ORs[i].ZKratBlkCnt := Self.ORsRef.ORs[i].ZKratBlkCnt - 1;
+     for oblr in Self.ORsRef do
+       oblr.ZKratBlkCnt := oblr.ZKratBlkCnt - 1;
   end;
 
  if (Self.UsekStav.zkrat <> state) then
@@ -2004,8 +2008,8 @@ procedure TBlkUsek.CheckPOdjChanged();
 var spr:Integer;
     shouldChange:boolean;
     podj:TPOdj;
-    i:Integer;
     Nav:TBlk;
+    oblr:TOR;
 begin
  shouldChange := false;
 
@@ -2019,12 +2023,12 @@ begin
      if ((not shouldChange) and (Self.IsStujForSpr(spr))) then
       begin
         if ((podj.phase_old = ppPreparing) and (podj.GetPhase() = ppGoingToLeave)) then
-          for i := 0 to Self.ORsRef.Cnt-1 do
-            Self.ORsRef.ORs[i].BlkPlaySound(Self, TORControlRights.write, _SND_STAVENI_VYZVA)
+          for oblr in Self.ORsRef do
+            oblr.BlkPlaySound(Self, TORControlRights.write, _SND_STAVENI_VYZVA)
 
         else if ((podj.phase_old = ppGoingToLeave) and (podj.GetPhase() = ppSoundLeave)) then
-          for i := 0 to Self.ORsRef.Cnt-1 do
-            Self.ORsRef.ORs[i].BlkPlaySound(Self, TORControlRights.write, _SND_NENI_JC);
+          for oblr in Self.ORsRef do
+            oblr.BlkPlaySound(Self, TORControlRights.write, _SND_NENI_JC);
       end;
 
      if (Soupravy[spr].GetPOdj(Self).DepRealDelta() < 0) then

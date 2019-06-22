@@ -824,8 +824,8 @@ begin
      (self.cilovaOR = nil) or (Self.typ = '')) then Exit();
 
  mnav := TBlkSCom(nav);
- if (mnav.OblsRizeni.Cnt < 1) then Exit();
- oblr := mnav.OblsRizeni.ORs[0];
+ if (mnav.OblsRizeni.Count < 1) then Exit();
+ oblr := mnav.OblsRizeni[0];
 
  if ((not Assigned(oblr.hlaseni)) or (not oblr.hlaseni.available)) then Exit();
 

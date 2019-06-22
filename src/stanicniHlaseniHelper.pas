@@ -36,7 +36,7 @@ uses TBloky, TBlok, TBlokTratUsek;
 
 function CanPlayPrijezdSH(spr:TSouprava; OblR:TOR):TSHToPlay;
 var blksWithSpr:TList<TBlkUsek>;
-    i, j:Integer;
+    i:Integer;
     blk:TBlk;
     blkUsek:TBlkUsek;
     inTrat:TBlkTrat;
@@ -55,22 +55,13 @@ begin
    for i := 0 to Blky.Cnt-1 do
     begin
      Blky.GetBlkByIndex(i, blk);
-
-     inOR := false;
-     for j := 0 to Blk.OblsRizeni.Cnt-1 do
-      begin
-       if (Blk.OblsRizeni.ORs[j] = OblR) then
-        begin
-         inOR := true;
-         break;
-        end;
-      end;
+     inOR := Blk.OblsRizeni.Contains(OblR);
 
      // trate z aktualni stanice kontrolujeme cele
      if ((not inOR) and (blk.typ = _BLK_TU) and (TBlkUsek(blk).SprPredict = spr.index) and
          (TBlkTU(blk).Trat <> nil) and
-         (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.OblsRizeni.ORs[0] = OblR) or
-          ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.OblsRizeni.ORs[0] = OblR))) then
+         (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.OblsRizeni[0] = OblR) or
+          ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.OblsRizeni[0] = OblR))) then
        blksWithSpr.Add(TBlkUsek(blk));
 
      if (not inOR) then continue;

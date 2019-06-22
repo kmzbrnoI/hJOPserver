@@ -10,13 +10,6 @@ uses TOblRizeni, IniFiles, SysUtils, Classes, COmCtrls, IdContext,
       StdCtrls, Generics.Collections;
 
 type
-  //recordy vyuzivany pri externich implementacich navaznosti na OR (napriklad u technologickych bloku)
-  // vyuziva se i u TCP serveru - kazde spojeni si pamatuje, jake jsou na nem oblasti rizeni
-  TORsRef = record
-    ORs:array [0.._MAX_ORREF-1] of TOR;
-    Cnt:Integer;
-  end;
-
   TORs = class
    private const
      _SECT_OR = 'OR';                                                           // sekce ini souboru .spnl, ve ktere jsou ulozeny oblasti rizeni
@@ -35,7 +28,7 @@ type
       procedure SaveStatus(const filename:string);
 
       function GetORIndex(const id:string):Integer;
-      function ParseORs(str:string):TORsRef;                                    // parsuje seznam oblasti rizeni
+      function ParseORs(str:string):TList<TOR>;                                 // parsuje seznam oblasti rizeni
       procedure RCSFail(addr:integer);                                          // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
       function GetORByIndex(index:Integer;var obl:TOR):Byte;
       function GetORNameByIndex(index:Integer):string;
@@ -165,20 +158,21 @@ end;//function
 ////////////////////////////////////////////////////////////////////////////////
 
 //parsing OR stringu
-function TORs.ParseORs(str:string):TORsRef;
+function TORs.ParseORs(str:string):TList<TOR>;
 var parsed:TStrings;
-    i:Integer;
+    oblr:string;
 begin
  parsed := TStringList.Create();
+ try
+   ExtractStrings(['|'],[],PChar(str),parsed);
 
- ExtractStrings(['|'],[],PChar(str),parsed);
-
- Result.Cnt := parsed.Count;
- for i := 0 to parsed.Count-1 do
-   Result.ORs[i] := Self.ORsDatabase[Self.GetORIndex(parsed[i])];
-
- parsed.Free();
-end;//function
+   Result := TList<TOR>.Create();
+   for oblr in parsed do
+     Result.Add(Self.ORsDatabase[Self.GetORIndex(oblr)]);
+ finally
+   parsed.Free();
+ end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -44,7 +44,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky, TOblRizeni;
 
 {$R *.dfm}
 
@@ -77,12 +77,13 @@ procedure TF_BlkRozp.NewBlkOpenForm;
 procedure TF_BlkRozp.NormalOpenForm;
 var glob:TBlkSettings;
     settings:TBlkRozpSettings;
-    i:Integer;
+    oblr:TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for i := 0 to Self.Blk.OblsRizeni.Cnt-1 do Self.LB_Stanice.Items.Add((Self.Blk.OblsRizeni.ORs[i]).Name);
+  for oblr in Self.Blk.OblsRizeni do
+    Self.LB_Stanice.Items.Add(oblr.Name);
 
   if (settings.RCSAddrs.Count > 0) then
    begin

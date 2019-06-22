@@ -247,16 +247,19 @@ begin
   begin
    //parsing *.spnl
    str := TStringList.Create();
+   try
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('V',IntToStr(Self.GlobalSettings.id),'')),str);
+     if (str.Count < 2) then Exit;
 
-   ExtractStrings([';'],[],PChar(ini_rel.ReadString('V',IntToStr(Self.GlobalSettings.id),'')),str);
-   if (str.Count < 2) then Exit;
-
-   Self.ORsRef := ORs.ParseORs(str[0]);
-   Self.VyhRel.UsekID := StrToInt(str[1]);
-
-   str.Free();
+     if (Self.ORsRef <> nil) then
+       Self.ORsRef.Free();
+     Self.ORsRef := ORs.ParseORs(str[0]);
+     Self.VyhRel.UsekID := StrToInt(str[1]);
+   finally
+     str.Free();
+   end;
   end else begin
-   Self.ORsRef.Cnt := 0;
+   Self.ORsRef.Clear();
    Self.VyhRel.UsekID := -1;
   end;
 
@@ -475,7 +478,7 @@ procedure TBlkVyhybka.SetVyhVyl(Sender:TIDCOntext; vyl:string);
 begin
  if ((self.VyhStav.Vyl <> '') and (vyl = '')) then
   begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef.ORs[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
   end else begin
    Self.Vyluka := vyl;
   end;
@@ -495,8 +498,8 @@ end;
 
 procedure TBlkVyhybka.UpdatePoloha();
 var iplus,iminus: TRCSInputState;
-    i:Integer;
     Blk:TBlk;
+    oblr:TOR;
  begin
   if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit();
 
@@ -540,8 +543,8 @@ var iplus,iminus: TRCSInputState;
       ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
      and (Self.Zaver <> TZaver.staveni)) then
      begin
-      for i := 0 to Self.OblsRizeni.Cnt-1 do
-        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+      for oblr in Self.OblsRizeni do
+        oblr.BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -582,8 +585,8 @@ var iplus,iminus: TRCSInputState;
       if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TZaver.staveni)) or
           ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> plus))) then
        begin
-        for i := 0 to Self.OblsRizeni.Cnt-1 do
-          Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        for oblr in Self.OblsRizeni do
+          oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
         JCDb.RusJC(Self);
        end;//if Blokovani
       Self.VyhStav.poloha := plus;
@@ -624,8 +627,8 @@ var iplus,iminus: TRCSInputState;
       if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TZaver.staveni)) or
           ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> minus))) then
        begin
-        for i := 0 to Self.OblsRizeni.Cnt-1 do
-          Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        for oblr in Self.OblsRizeni do
+          oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
         JCDb.RusJC(Self);
        end;//if Blokovani
       Self.VyhStav.poloha := minus;
@@ -643,8 +646,8 @@ var iplus,iminus: TRCSInputState;
       and (Self.Zaver <> TZaver.staveni)) or ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
          and (Self.VyhStav.polohaOld <> both)) then
      begin
-      for i := 0 to Self.OblsRizeni.Cnt-1 do
-        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+      for oblr in Self.OblsRizeni do
+        oblr.BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -687,7 +690,7 @@ end;//procedure
 
 function TBlkVyhybka.SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false; callback_ok:TNotifyEvent = nil; callback_err:TNotifyEvent = nil):Integer;
 var Blk:TBlk;
-    i:Integer;
+    oblr:TOR;
 begin
   if (not GetFunctions.GetSystemStart) then Exit(1);
   if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit(2);
@@ -707,15 +710,15 @@ begin
     if ((Integer(Self.Zaver) > 0) and (Self.Zaver <> TZaver.staveni) or (Self.vyhZaver) or
         ((Blk <> nil) and ((Integer((Blk as TBlkVyhybka).Zaver) > 0) and ((Blk as TBlkVyhybka).Zaver <> TZaver.staveni) or ((Blk as TBlkVyhybka).vyhZaver)))) then
      begin
-      for i := 0 to Self.OblsRizeni.Cnt-1 do
-        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - pod závìrem', 'TECHNOLOGIE');
+      for oblr in Self.OblsRizeni do
+        oblr.BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - pod závìrem', 'TECHNOLOGIE');
       if (Assigned(callback_err)) then callback_err(self);
       Exit(4);
      end;
     if (((Self.Obsazeno = TUsekStav.obsazeno) or ((Blk <> nil) and ((Blk as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno))) and (not nouz)) then
      begin
-      for i := 0 to Self.OblsRizeni.Cnt-1 do
-        Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - obsazeno', 'TECHNOLOGIE');
+      for oblr in Self.OblsRizeni do
+        oblr.BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - obsazeno', 'TECHNOLOGIE');
       if (Assigned(callback_err)) then callback_err(self);
       Exit(5);
      end;
@@ -732,8 +735,8 @@ begin
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board,Self.VyhSettings.RCSAddrs[2].port, 1);
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board,Self.VyhSettings.RCSAddrs[3].port, 0);
    except
-     for i := 0 to Self.OblsRizeni.Cnt-1 do
-       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
+     for oblr in Self.OblsRizeni do
+       oblr.BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
    end;
 
@@ -749,8 +752,8 @@ begin
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 1);
    except
-     for i := 0 to Self.OblsRizeni.Cnt-1 do
-       Self.OblsRizeni.ORs[i].BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
+     for oblr in Self.OblsRizeni do
+       oblr.BlkWriteError(Self, 'Nelze pøestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
    end;
 

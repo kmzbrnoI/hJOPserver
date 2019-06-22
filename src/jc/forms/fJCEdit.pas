@@ -796,9 +796,9 @@ begin
  if (Blk = nil) then Exit;
  if (Blk.typ <> _BLK_SCOM) then Exit;
 
- SetLength(obls, (Blk as TBlkScom).OblsRizeni.Cnt);
- for i := 0 to (Blk as TBlkScom).OblsRizeni.Cnt-1 do
-  obls[i] := (Blk as TBlkScom).OblsRizeni.ORs[i].id;
+ SetLength(obls, (Blk as TBlkScom).OblsRizeni.Count);
+ for i := 0 to (Blk as TBlkScom).OblsRizeni.Count-1 do
+  obls[i] := (Blk as TBlkScom).OblsRizeni[i].id;
 end;//procedure
 
 procedure TF_JCEdit.UpdateJCName();

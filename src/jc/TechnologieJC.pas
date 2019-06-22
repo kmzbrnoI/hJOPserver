@@ -872,14 +872,14 @@ begin
      end;
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Cnt > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
           TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
 
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Cnt > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
           TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
@@ -1109,14 +1109,14 @@ begin
      end;
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Cnt > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
           TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
 
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Cnt > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.ORs[0] = Self.fstaveni.SenderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni[0] = Self.fstaveni.SenderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
           TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
@@ -1371,6 +1371,7 @@ var i,j:Integer;
     navestidlo:TBlkSCom;
     trat:TBlkTrat;
     tu:TBlkTU;
+    oblr:TOR;
  begin
   if (not Self.Staveni) then Exit;
 
@@ -1785,14 +1786,14 @@ var i,j:Integer;
       Blky.GetBlkByID(Self.fproperties.Trat, TBlk(trat));
 
       // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
-      if ((trat.uvazkaA as TBlkUvazka).OblsRizeni.cnt > 0) then
+      if ((trat.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
        begin
-        for i := 0 to navestidlo.OblsRizeni.Cnt-1 do
-          if ((trat.uvazkaA as TBlkUvazka).OblsRizeni.ORs[0] = navestidlo.OblsRizeni.ORs[i]) then
+        for oblr in navestidlo.OblsRizeni do
+          if ((trat.uvazkaA as TBlkUvazka).OblsRizeni[0] = oblr) then
              (trat.uvazkaA as TBlkUvazka).nouzZaver := true;
 
-        for i := 0 to navestidlo.OblsRizeni.Cnt-1 do
-          if ((trat.uvazkaB as TBlkUvazka).OblsRizeni.ORs[0] = navestidlo.OblsRizeni.ORs[i]) then
+        for oblr in navestidlo.OblsRizeni do
+          if ((trat.uvazkaB as TBlkUvazka).OblsRizeni[0] = oblr) then
              (trat.uvazkaB as TBlkUvazka).nouzZaver := true;
        end;
      end;
@@ -2529,14 +2530,14 @@ var UsekActual,UsekDalsi,Nav:TBlk;
  end;//procedure
 
 procedure TJC.CheckSmyckaBlok(blk:TBlk);
-var i:Integer;
+var oblr:TOR;
 begin
  if (((Blk as TBlkUsek).GetSettings().SmcUsek) and ((Blk as TBlkUsek).IsSouprava())) then
   begin
    // kontrola zmeny vychozi a cilove stanice
-   for i := 0 to blk.OblsRizeni.Cnt-1 do
+   for oblr in blk.OblsRizeni do
     begin
-     if (blk.OblsRizeni.ORs[i] = Soupravy.soupravy[(Blk as TBlkUsek).Souprava].cilovaOR) then
+     if (oblr = Soupravy.soupravy[(Blk as TBlkUsek).Souprava].cilovaOR) then
       begin
        Soupravy.soupravy[(Blk as TBlkUsek).Souprava].InterChangeStanice(false);
        break;
