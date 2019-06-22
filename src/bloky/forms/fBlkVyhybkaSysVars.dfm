@@ -134,6 +134,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
+    Enabled = False
     ItemHeight = 13
     TabOrder = 4
     Items.Strings = (

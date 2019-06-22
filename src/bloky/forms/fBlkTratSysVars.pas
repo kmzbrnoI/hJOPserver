@@ -12,16 +12,12 @@ type
     L_Usek24: TLabel;
     L_Usek25: TLabel;
     L_Usek20: TLabel;
-    L_Usek27: TLabel;
-    Label3: TLabel;
     CB_Zadost: TComboBox;
     CB_Smer: TComboBox;
     CB_Zaver: TComboBox;
     B_SaveData: TButton;
     B_Obnovit: TButton;
     SE_Souprava: TSpinEdit;
-    SE_BP_next: TSpinEdit;
-    SE_BP_last: TSpinEdit;
     Label1: TLabel;
     E_Soupravy: TEdit;
     B_BP_Enable: TButton;
@@ -104,7 +100,7 @@ end;
 
 procedure TF_BlkTrat_tech.Update();
 var i:Integer;
-
+    spr:TBlkTratSouprava;
 begin
  Self.CB_Zaver.ItemIndex  := PrevodySoustav.BoolToInt(trat.Zaver);
  Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;
@@ -116,8 +112,8 @@ begin
    Self.SE_Souprava.Value := -1;
 
  Self.E_Soupravy.Text := '';
- for i := 0 to trat.stav.soupravy.Count-1 do
-   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(trat.stav.soupravy[i].souprava)+',';
+ for spr in trat.stav.soupravy do
+   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(spr.souprava)+',';
 end;
 
 procedure TF_BlkTrat_tech.Save();

@@ -3,7 +3,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'F_BlkTrat_tech'
-  ClientHeight = 247
+  ClientHeight = 185
   ClientWidth = 514
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -50,39 +50,17 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
   object L_Usek20: TLabel
     Left = 7
     Top = 84
-    Width = 121
+    Width = 118
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'P'#345'edpov'#237'dan'#225' souprava :'
-  end
-  object L_Usek27: TLabel
-    Left = 8
-    Top = 110
-    Width = 114
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Blokov'#225' podm'#237'nka next:'
-  end
-  object Label3: TLabel
-    Left = 7
-    Top = 138
-    Width = 109
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Blokov'#225' podm'#237'nka last:'
+    Caption = 'P'#345'edpov'#237'dan'#225' souprava:'
   end
   object Label1: TLabel
     Left = 8
-    Top = 168
+    Top = 107
     Width = 50
     Height = 13
     Caption = 'Soupravy:'
@@ -96,7 +74,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
   end
   object CB_Zadost: TComboBox
     Left = 176
-    Top = 56
+    Top = 58
     Width = 107
     Height = 21
     Margins.Left = 2
@@ -147,7 +125,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
   end
   object B_SaveData: TButton
     Left = 210
-    Top = 213
+    Top = 152
     Width = 73
     Height = 24
     Margins.Left = 2
@@ -161,7 +139,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
   end
   object B_Obnovit: TButton
     Left = 130
-    Top = 213
+    Top = 152
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -182,33 +160,13 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     TabOrder = 5
     Value = 0
   end
-  object SE_BP_next: TSpinEdit
-    Left = 176
-    Top = 110
-    Width = 107
-    Height = 22
-    MaxValue = 0
-    MinValue = 0
-    TabOrder = 6
-    Value = 0
-  end
-  object SE_BP_last: TSpinEdit
-    Left = 176
-    Top = 138
-    Width = 107
-    Height = 22
-    MaxValue = 0
-    MinValue = 0
-    TabOrder = 7
-    Value = 0
-  end
   object E_Soupravy: TEdit
     Left = 8
-    Top = 187
+    Top = 126
     Width = 275
     Height = 21
     ReadOnly = True
-    TabOrder = 8
+    TabOrder = 6
     Text = 'E_Soupravy'
   end
   object B_BP_Enable: TButton
@@ -217,7 +175,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Width = 89
     Height = 25
     Caption = 'Zav'#233'st BP'
-    TabOrder = 9
+    TabOrder = 7
     OnClick = B_BP_EnableClick
   end
   object B_BP_Disable: TButton
@@ -226,7 +184,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Width = 89
     Height = 25
     Caption = 'Zru'#353'it BP'
-    TabOrder = 10
+    TabOrder = 8
     OnClick = B_BP_DisableClick
   end
   object SE_Spr_Add: TSpinEdit
@@ -236,7 +194,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Height = 22
     MaxValue = 0
     MinValue = 0
-    TabOrder = 11
+    TabOrder = 9
     Value = 0
   end
   object B_RmSpr: TButton
@@ -245,7 +203,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Width = 108
     Height = 21
     Caption = 'Smazat soupravu'
-    TabOrder = 12
+    TabOrder = 10
     OnClick = B_RmSprClick
   end
   object B_AddSpr: TButton
@@ -254,7 +212,7 @@ object F_BlkTrat_tech: TF_BlkTrat_tech
     Width = 96
     Height = 21
     Caption = 'P'#345'idat soupravu'
-    TabOrder = 13
+    TabOrder = 11
     OnClick = B_AddSprClick
   end
 end
