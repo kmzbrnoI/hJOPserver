@@ -45,7 +45,7 @@ begin
  for i := 0 to ORs.Count-1 do
   begin
    LI := Self.LV.Items.Add;
-   LI.Caption := IntToStr(i);
+   LI.Caption := IntToStr(i+1);
    for j := 0 to Self.LV.Columns.Count-2 do
      LI.SubItems.Add('---');
   end;//for i

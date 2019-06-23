@@ -1706,6 +1706,7 @@ procedure TOR.UpdateLine(LI:TListItem);
 var str:string;
   i: Integer;
 begin
+ LI.Caption := IntToStr(Self.index);
  LI.SubItems.Strings[0] := Self.Name;
  LI.SubItems.Strings[1] := Self.ShortName;
  LI.SubItems.Strings[2] := Self.id;
