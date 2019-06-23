@@ -6,7 +6,7 @@ unit Booster;
 
 interface
 
-uses IniFiles, TechnologieRCS, SysUtils;
+uses IniFiles, TechnologieRCS, SysUtils, Generics.Defaults;
 
 type
  TBoosterSignal = (undef = -1, error = 0, ok = 1);
@@ -73,6 +73,7 @@ type
     property OnDCCChange:TBoosterChangeEvent read FOnDCCChange write FONDCCChange;
 
     class function GetBClassString(b_type:TBoosterClass):string;          //get booster name as a string
+    class function IdComparer():IComparer<TBooster>;
  end;//TBooster
 
 implementation
@@ -282,6 +283,18 @@ begin
  else
   Result := '';
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TBooster.IdComparer():IComparer<TBooster>;
+begin
+ Result := TComparer<TBooster>.Construct(
+  function(const Left, Right: TBooster): Integer
+   begin
+    Result := CompareStr(Left.id, Right.id, loUserLocale);
+   end
+ );
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

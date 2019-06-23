@@ -311,7 +311,7 @@ begin
  Result := TComparer<TUser>.Construct(
     function (const Left, Right: TUser): Integer
       begin
-        Result := AnsiCompareStr(Left.id, Right.id);
+        Result := CompareStr(Left.id, Right.id, loUserLocale);
       end
  );
 end;

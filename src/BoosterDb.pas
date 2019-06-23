@@ -71,11 +71,7 @@ constructor TBoosterDb.Create(inifilename:string = '');
 begin
  inherited Create();
  Self.db := TDictionary<string, TBooster>.Create();
- Self.sortedKeys := TList<TBooster>.Create(TComparer<TBooster>.Construct(
-  function(const b1, b2:TBooster):Integer
-  begin
-    Result := SysUtils.CompareText(b1.id, b2.id);
-  end));
+ Self.sortedKeys := TList<TBooster>.Create(TBooster.IdComparer());
  if (inifilename <> '') then Self.LoadFromFile(inifilename);
 end;
 

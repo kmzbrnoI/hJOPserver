@@ -10,7 +10,7 @@ unit FunkceVyznam;
 
 interface
 
-uses Generics.Collections, Classes, THnaciVozidlo, Generics.Defaults, AnsiStrings;
+uses Generics.Collections, Classes, THnaciVozidlo, Generics.Defaults, SysUtils;
 
 type
   TGeneralEvent = procedure(Sender: TObject) of object;
@@ -178,7 +178,7 @@ begin
  Result := TComparer<TFuncVyznam>.Construct(
   function(const Left, Right: TFuncVyznam): Integer
    begin
-    Result := CompareStr(AnsiString(Left.popis), AnsiString(Right.popis));
+    Result := CompareStr(Left.popis, Right.popis, loUserLocale);
    end
  );
 end;

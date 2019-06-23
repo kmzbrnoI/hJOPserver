@@ -279,7 +279,7 @@ begin
    mid := (left + right) div 2;
    if (Self.Users[mid].id = id) then Exit(mid);
 
-   if (AnsiCompareStr(id, Self.Users[mid].id) < 0) then
+   if (CompareStr(id, Self.Users[mid].id, loUserLocale) < 0) then
      right := mid - 1
    else
      left := mid + 1;

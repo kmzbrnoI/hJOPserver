@@ -14,7 +14,7 @@ interface
 
 uses Types, IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
       IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms,
-      Generics.Collections, Zasobnik, Messages, Windows;
+      Generics.Collections, Zasobnik, Messages, Windows, Generics.Defaults;
 
 const
   _MAX_CON_PNL = 16;                                                            // maximalni pocet pripojenych panelu k jedne oblasti rizeni
@@ -163,6 +163,8 @@ type
       procedure NUZPrematureZaverRelease(Sender:TObject; data:Integer);
       procedure NUZcancelPrematureEvents();
 
+      procedure SetIndex(newIndex:Integer);
+
     public
 
       stack:TORStack;                                                           // zasobnik povelu
@@ -253,6 +255,8 @@ type
       class function GetPSPodminka(cil:string; podminka:string):TPSPodminka; overload;
       class function GetPSPodminky(podm:TPSPodminka):TPSPodminky;
 
+      class function NameComparer():IComparer<TOR>;
+
       property NUZtimer:Boolean read ORStav.NUZtimer write ORStav.NUZtimer;
       property NUZblkCnt:Integer read ORStav.NUZblkCnt write SetNUZBlkCnt;
       property ZKratBlkCnt:Integer read ORStav.ZKratBlkCnt write SetZkratBlkCnt;
@@ -266,6 +270,7 @@ type
       property Name:string read ORProp.Name;
       property ShortName:string read ORProp.ShortName;
       property id:string read ORProp.id;
+      property index:Integer read findex write SetIndex;
   end;//TOR
 
 implementation
@@ -2434,6 +2439,28 @@ begin
      if (oblr = Self) then
        usek.RemoveChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.SetIndex(newIndex:Integer);
+begin
+ if (Self.index = newIndex) then
+   Exit();
+ Self.stack.index := newIndex;
+ Self.findex := newIndex;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TOR.NameComparer():IComparer<TOR>;
+begin
+ Result := TComparer<TOR>.Construct(
+  function(const Left, Right: TOR): Integer
+   begin
+    Result := CompareStr(Left.Name, Right.Name, loUserLocale);
+   end
+ );
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
