@@ -482,7 +482,7 @@ begin
  str := '';
  for i := 0 to _HV_FUNC_MAX do
   begin
-   if (Self.Stav.funkce[i]) then
+   if ((Self.Stav.funkce[i]) and (Self.Data.funcType[i] <> THVFuncType.momentary)) then
      str := str + '1'
    else
      str := str + '0';
