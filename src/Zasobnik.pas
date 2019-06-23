@@ -108,6 +108,7 @@ type
       property UPOenabled:boolean read fUPOenabled write SetUPOEnabled;
       property Count:Integer read GetCount;
       property firstEnabled:boolean write SetFirstEnabled;
+      property index:Integer read findex write findex;
 
   end;//TORStack
 

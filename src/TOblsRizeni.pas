@@ -94,27 +94,33 @@ begin
  ini_stat := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
  oblasti := TStringList.Create();
 
- ini.ReadSection(_SECT_OR, oblasti);
+ try
+   ini.ReadSection(_SECT_OR, oblasti);
 
- for i := 0 to oblasti.Count-1 do
-  begin
-   OblR := TOR.Create(i);
-   try
-     OblR.LoadData(ini.ReadString(_SECT_OR, oblasti[i], ''));
-     OblR.LoadStat(ini_stat, OblR.id);
-     Self.ORsDatabase.Add(OblR);
-   except
-     on E:Exception do
-      begin
-       AppEvents.LogException(E, 'Nacitam oblast rizeni ' + IntToStr(i));
-       OblR.Free();
-      end;
-   end;
-  end;//for i
+   for i := 0 to oblasti.Count-1 do
+    begin
+     OblR := TOR.Create(i);
+     try
+       OblR.LoadData(ini.ReadString(_SECT_OR, oblasti[i], ''));
+       OblR.LoadStat(ini_stat, OblR.id);
+       Self.ORsDatabase.Add(OblR);
+     except
+       on E:Exception do
+        begin
+         AppEvents.LogException(E, 'Nacitam oblast rizeni ' + IntToStr(i));
+         OblR.Free();
+        end;
+     end;
+    end;
 
- oblasti.Free();
- ini.Free();
- ini_stat.Free();
+   Self.ORsDatabase.Sort(TOR.NameComparer());
+   for i := 0 to Self.ORsDatabase.Count-1 do
+     Self.ORsDatabase[i].index := i+1;
+ finally
+   oblasti.Free();
+   ini.Free();
+   ini_stat.Free();
+ end;
 
  writelog('Naèteno '+IntToStr(Self.ORsDatabase.Count)+' stanic',WR_DATA);
 end;
