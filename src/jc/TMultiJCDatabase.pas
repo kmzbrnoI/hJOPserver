@@ -8,7 +8,7 @@ unit TMultiJCDatabase;
 interface
 
 uses TechnologieMultiJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, Generics.Defaults, Math;
+      Generics.Collections, Classes, Generics.Defaults;
 
 type
   MutiJCExistsException = class(Exception);
@@ -65,11 +65,7 @@ uses Logging, GetSystems, TBloky, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
 constructor TMultiJCDb.Create();
 begin
  inherited Create();
- Self.JCs := TObjectList<TMultiJC>.Create(TComparer<TMultiJC>.Construct(
-  function(const mJC1, mJC2:TMultiJC):Integer
-  begin
-    Result := CompareValue(mJC1.id, mJC2.id);
-  end));
+ Self.JCs := TObjectList<TMultiJC>.Create(TMultiJC.IdComparer());
 end;//ctor
 
 destructor TMultiJCDb.Destroy();

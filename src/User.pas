@@ -48,8 +48,6 @@ type
     OblR: TDictionary<string, TORControlRights>;                                // seznam oblasti rizeni vcetne opravneni
     lastlogin:TDateTime;                                                        // cas posledniho loginu
 
-    class var comparer: TComparison<TUser>;
-
       constructor Create(); overload;
       constructor Create(iniData, iniStat:TMemIniFile; section:string); overload;
       destructor Destroy(); override;
@@ -72,6 +70,7 @@ type
 
       class function ComparePasswd(plain:string; hash:string; salt:string):boolean; // kontroluje shodu hesel; true poku hesla sedi, jinak false
       class function GenerateHash(plain:AnsiString):string;                     // generuje hash hesla
+      class function NameComparer():IComparer<TUser>;
   end;//class TUser
 
 implementation
@@ -307,13 +306,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-initialization
- TUser.comparer :=
+class function TUser.NameComparer():IComparer<TUser>;
+begin
+ Result := TComparer<TUser>.Construct(
     function (const Left, Right: TUser): Integer
       begin
         Result := AnsiCompareStr(Left.id, Right.id);
-      end;
+      end
+ );
+end;
 
-finalization
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

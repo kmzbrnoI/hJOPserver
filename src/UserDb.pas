@@ -123,7 +123,7 @@ begin
    iniStat.Free();
  end;
 
- Self.Users.Sort(TComparer<TUser>.Construct(TUser.comparer));
+ Self.Users.Sort(TUser.NameComparer());
  writelog('Naèteno ' + IntToStr(Self.Users.Count) + ' uživatelù', WR_USERS);
 end;
 
@@ -262,7 +262,7 @@ end;
 
 procedure TUsrDb.Sort();
 begin
- Self.Users.Sort(TComparer<TUser>.Construct(TUser.comparer));
+ Self.Users.Sort(TUser.NameComparer());
  UsersTableData.UpdateTable();
 end;
 

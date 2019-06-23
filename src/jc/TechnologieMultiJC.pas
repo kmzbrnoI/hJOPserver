@@ -8,7 +8,7 @@ interface
 
 uses
   IniFiles, TechnologieJC, Generics.Collections, TBloky, IdContext, SysUtils,
-  Classes;
+  Classes, Generics.Defaults, Math;
 
 type
 
@@ -65,6 +65,8 @@ type
       property Nazev:string read fproperties.Nazev;
       property staveni:boolean read GetStaveni;
       property id:Integer read fproperties.id;
+
+      class function IdComparer():IComparer<TMultiJC>;
   end;
 
 implementation
@@ -251,6 +253,19 @@ function TMultiJC.GetStaveni():boolean;
 begin
  Result := (Self.fstaveni.JCIndex > -1);
 end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TMultiJC.IdComparer():IComparer<TMultiJC>;
+begin
+ Result := TComparer<TMultiJC>.Construct(
+   function(const mJC1, mJC2:TMultiJC):Integer
+    begin
+     Result := CompareValue(mJC1.id, mJC2.id);
+    end
+ );
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 end.//unit
