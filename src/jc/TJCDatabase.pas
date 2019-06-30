@@ -65,6 +65,10 @@ type
      procedure RusAllJC();
      procedure RusJC(Blk:TBlk);     // rusi cestu, ve ktere je zadany blok
 
+     function IsAnyJC(nav:TBlkSCom):Boolean;
+     function IsAnyVC(nav:TBlkSCom):Boolean;
+     function IsAnyPC(nav:TBlkSCom):Boolean;
+
      property Count:Word read GetCount;
      property filename:string read ffilename;
 
@@ -754,6 +758,35 @@ begin
      Self.JCsStartNav.Add(jc.navestidlo as TBlkSCom, TList<TJC>.Create());
    Self.JCsStartNav[jc.navestidlo as TBlkSCom].Add(jc);
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJCDb.IsAnyJC(nav:TBlkSCom):Boolean;
+begin
+ Result := Self.JCsStartNav.ContainsKey(nav) and (Self.JCsStartNav[nav].Count > 0);
+end;
+
+function TJCDb.IsAnyVC(nav:TBlkSCom):Boolean;
+var jc:TJC;
+begin
+ if (not Self.JCsStartNav.ContainsKey(nav)) then
+   Exit(false);
+ for jc in Self.JCsStartNav[nav] do
+   if (jc.data.TypCesty = TJCType.vlak) then
+      Exit(true);
+ Result := false;
+end;
+
+function TJCDb.IsAnyPC(nav:TBlkSCom):Boolean;
+var jc:TJC;
+begin
+ if (not Self.JCsStartNav.ContainsKey(nav)) then
+   Exit(false);
+ for jc in Self.JCsStartNav[nav] do
+   if (jc.data.TypCesty = TJCType.posun) then
+      Exit(true);
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

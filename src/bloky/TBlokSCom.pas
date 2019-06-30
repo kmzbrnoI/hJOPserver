@@ -1119,8 +1119,8 @@ begin
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = -1)) and (Self.Navest <> 8))
-         or (TOR(SenderOR).stack.volba = VZ)) then begin
+           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8))
+         or (TOR(SenderOR).stack.volba = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1128,8 +1128,8 @@ begin
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = -1)) and (Self.Navest <> 8))
-         or ((SenderOR as TOR).stack.volba = VZ)) then begin
+           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8))
+         or ((SenderOR as TOR).stack.volba = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1179,8 +1179,8 @@ begin
  // pokud je navestidlo trvale zamkle, neumoznime zadne volby
  if (Self.SComSettings.zamknuto) then Exit();
 
- if ((((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-        (JCDb.FindOnlyStaveniJC(Self.id) = -1)) and (Self.Navest <> 8) and (not Self.AB))
+ if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
+        (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8) and (not Self.AB))
       or ((SenderOR as TOR).stack.volba = VZ)) and
      (not Self.autoblok)) then
   begin
@@ -1192,9 +1192,14 @@ begin
     else
       //2 = VC, 3= PC
       if (Self.SComRel.SymbolType <> 1) then
-        Result := Result + 'VC>,!PN>,';
-       Result := Result + 'PC>,PP>,';
-    end;// else ZacatekVOlba <> none ...
+       begin
+        if (JCDb.IsAnyJC(Self)) then
+          Result := Result + 'VC>,';
+        Result := Result + '!PN>,';
+       end;
+      if (JCDb.IsAnyPC(Self)) then
+        Result := Result + 'PC>,PP>,';
+    end;// else ZacatekVolba <> none ...
 
     Result := Result + '-,';
   end;
