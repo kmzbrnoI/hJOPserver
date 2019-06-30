@@ -7,7 +7,7 @@ unit TJCDatabase;
 interface
 
 uses TechnologieJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, IBUtils, TBloky;
+      Generics.Collections, Classes, IBUtils, TBloky, TBlokSCom;
 
 type
   EJCIdAlreadyExists = class(Exception);
@@ -15,19 +15,22 @@ type
   TJCDb = class
    private
     JCs:TObjectList<TJC>;
+    JCsStartNav:TObjectDictionary<TBlkSCom, TList<TJC>>;
 
     ffilename:string;
 
      function GetCount():Word;
      function FindPlaceForNewJC(id:Integer):Integer;
+     procedure FillJCsStartNav();
+     procedure JCOnNavChanged(Sender:TObject; origNav:TBlk);
 
    public
 
      constructor Create();
      destructor Destroy(); override;
 
-     function LoadData(const filename:string):Byte;
-     function SaveData(const filename:string):Byte;
+     procedure LoadData(const filename:string);
+     procedure SaveData(const filename:string);
      procedure UpdateJCIndexes();
 
      procedure Update();
@@ -75,7 +78,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, TBlokUsek, TOblRizeni, TCPServerOR,
       DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlokVyhybka;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,20 +89,22 @@ uses Logging, GetSystems, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
 
 constructor TJCDb.Create();
 begin
- inherited Create();
+ inherited;
  Self.JCs := TObjectList<TJC>.Create();
+ Self.JCsStartNav := TObjectDictionary<TBlkSCom, TList<TJC>>.Create();
 end;//ctor
 
 destructor TJCDb.Destroy();
 begin
  Self.JCs.Free();
- inherited Destroy();
+ Self.JCsStartNav.Free();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // load data from ini file
-function TJCDb.LoadData(const filename:string):Byte;
+procedure TJCDb.LoadData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
     sections:TStrings;
@@ -108,61 +113,57 @@ begin
  writelog('Naèítám JC - '+filename, WR_DATA);
 
  Self.ffilename := filename;
-
- try
-   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
- except
-   Exit(1);
- end;
+ ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
  Self.JCs.Clear();
  sections := TStringList.Create();
- ini.ReadSections(sections);
+ try
+   ini.ReadSections(sections);
 
- for i := 0 to sections.Count-1 do
-  begin
-   JC := TJC.Create();
-   try
-     JC.index := i;
-     JC.LoadData(ini, sections[i]);
-     Self.JCs.Insert(Self.FindPlaceForNewJC(JC.id), JC);
-   except
-     on E:Exception do
-      begin
-       AppEvents.LogException(E, 'JC '+JC.nazev+' se nepodaøilo naèíst');
-       JC.Free();
-      end;
-   end;
-  end;//for i
+   for i := 0 to sections.Count-1 do
+    begin
+     JC := TJC.Create();
+     try
+       JC.index := i;
+       JC.OnNavChanged := Self.JCOnNavChanged;
+       JC.LoadData(ini, sections[i]);
+       Self.JCs.Insert(Self.FindPlaceForNewJC(JC.id), JC);
+     except
+       on E:Exception do
+        begin
+         AppEvents.LogException(E, 'JC '+JC.nazev+' se nepodaøilo naèíst');
+         JC.Free();
+        end;
+     end;
+    end;//for i
 
- Self.UpdateJCIndexes();
+   Self.UpdateJCIndexes();
+ finally
+   ini.Free;
+   sections.Free();
+ end;
 
- ini.Free;
- sections.Free();
- Result := 0;
+ Self.FillJCsStartNav();
  writelog('Naèteno '+IntToStr(Self.JCs.Count)+' JC', WR_DATA);
 end;
 
 // save data to ini file:
-function TJCDb.SaveData(const filename:string):Byte;
+procedure TJCDb.SaveData(const filename:string);
 var ini:TMemIniFile;
-    i:Integer;
+    JC:TJC;
 begin
  writelog('Ukládám JC - '+filename, WR_DATA);
 
+ DeleteFile(PChar(filename));
+ ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  try
-   DeleteFile(PChar(filename));
-   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
- except
-   Exit(1);
+   for JC in Self.JCs do
+     JC.SaveData(ini, IntToStr(JC.id));
+
+   ini.UpdateFile();
+ finally
+   ini.Free();
  end;
-
- for i := 0 to Self.JCs.Count-1 do
-   Self.JCs[i].SaveData(ini, IntToStr(Self.JCs[i].id));
-
- ini.UpdateFile();
- ini.Free();
- Result := 0;
 
  writelog('JC uloženy', WR_DATA);
 end;
@@ -170,33 +171,33 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.Update();
-var i:Integer;
+var JC:TJC;
 begin
  if (not GetFunctions.GetSystemStart) then Exit;
 
- for i := 0 to Self.JCs.Count-1 do
+ for JC in Self.JCs do
   begin
    try
-     if (Self.JCs[i].stav.RozpadBlok > -5) then
-       Self.JCs[i].UsekyRusJC();
-     if (Self.JCs[i].stav.RozpadBlok = -6) then
-       Self.JCs[i].UsekyRusNC();
+     if (JC.stav.RozpadBlok > -5) then
+       JC.UsekyRusJC();
+     if (JC.stav.RozpadBlok = -6) then
+       JC.UsekyRusNC();
 
 
-     if (Self.JCs[i].Staveni) then
+     if (JC.Staveni) then
       begin
-       Self.JCs[i].UpdateStaveni();
-       Self.JCs[i].UpdateTimeOut();
+       JC.UpdateStaveni();
+       JC.UpdateTimeOut();
       end;
    except
     on E:Exception do
      begin
       if (not log_err_flag) then
-       AppEvents.LogException(E, 'JC '+Self.JCs[i].nazev + ' update error');
-      if (Self.JCs[i].staveni) then
-        Self.JCs[i].CancelStaveni('Vyjímka', true)
+       AppEvents.LogException(E, 'JC '+JC.nazev + ' update error');
+      if (JC.staveni) then
+        JC.CancelStaveni('Vyjímka', true)
       else
-        Self.JCs[i].RusJCWithoutBlk();
+        JC.RusJCWithoutBlk();
      end;
    end;//except
   end;//for i
@@ -225,14 +226,17 @@ var j:Integer;
     startNav:TBlkSCom;
     senderOblr:TOR;
     jc:TJC;
+label noJC;
 begin
  startNav := StartBlk as TBlkSCom;
  senderOblr := SenderOR as TOR;
 
- for jc in Self.JCs do
+ if (not Self.JCsStartNav.ContainsKey(startNav)) then
+   goto noJC;
+
+ for jc in Self.JCsStartNav[startNav] do
   begin
-   Blky.GetBlkByID(jc.data.NavestidloBlok, Blk);
-   if (Blk <> StartBlk) then continue;
+   if (JC.navestidlo <> StartBlk) then continue;
 
    Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], Blk);
    if (Blk <> EndBlk) then continue;
@@ -271,6 +275,7 @@ begin
     end;
   end;//for i
 
+noJC:
  // kontrola staveni slozene jizdni cesty
  if (startNav.ZacatekVolba <> TBLkSComVolba.NC) then
    if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
@@ -286,6 +291,7 @@ function TJCDb.AddJC(JCdata:TJCprop):TJC;
 var JC:TJC;
     index:Integer;
     i:Integer;
+    nav:TBlkSCom;
 begin
  // kontrola existence JC stejneho ID
  if (Self.IsJC(JCData.id)) then
@@ -294,11 +300,17 @@ begin
  index := Self.FindPlaceForNewJC(JCData.id);
  JC := TJC.Create(JCData);
  JC.index := index;
+ JC.OnNavChanged := Self.JCOnNavChanged;
  Self.JCs.Insert(index, JC);
 
  // indexy prislusnych JC na konci seznamu posuneme o 1 nahoru
  for i := index+1 to Self.JCs.Count-1 do
    Self.JCs[i].index := Self.JCs[i].index + 1;
+
+ nav := JC.navestidlo as TBlkSCom;
+ if (not Self.JCsStartNav.ContainsKey(nav)) then
+   Self.JCsStartNav.Add(nav, TList<TJC>.Create());
+ Self.JCsStartNav[nav].Add(JC);
 
  JCTableData.AddJC(index);
  Result := JC;
@@ -310,7 +322,8 @@ var i:Integer;
 begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam JC');
  if (index >= Self.JCs.Count) then raise Exception.Create('Index pretekl seznam JC');
- if (Self.JCs[index].postaveno) then raise Exception.Create('JC postavena, nelze smazat');
+ if (Self.JCs[index].postaveno or Self.JCs[index].staveni) then
+   raise Exception.Create('JC postavena, nelze smazat');
 
  for i := 0 to ORs.Count-1 do
   begin
@@ -318,6 +331,9 @@ begin
    if (OblR.stack.IsJCInStack(Self.JCs[index])) then
      raise Exception.Create('JC v zasobniku OR '+OblR.id);
   end;
+
+ if (Self.JCsStartNav.ContainsKey(Self.JCs[index].navestidlo as TBlkSCom)) then
+   Self.JCsStartNav[Self.JCs[index].navestidlo as TBlkSCom].Remove(Self.JCs[index]);
 
  Self.JCs.Delete(index);
 
@@ -331,11 +347,11 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.RusAllJC();
-var i:Integer;
+var JC:TJC;
 begin
- for i := 0 to Self.JCs.Count-1 do
-   if (Self.JCs[i].postaveno) then
-     Self.JCs[i].RusJC();
+ for JC in Self.JCs do
+   if (JC.postaveno) then
+     JC.RusJC();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -498,7 +514,7 @@ end;
 //jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
 //se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak
 procedure TJCDb.CheckNNavaznost(fJC:TJC);
-var i:Integer;
+var JC:TJC;
     nav:TBlk;
     my_nav:TBlkSCom;
 begin
@@ -508,19 +524,19 @@ begin
   if (nav = nil) then Exit;
   my_nav := (nav as TBlkSCom);
 
-  for i := 0 to Self.JCs.Count-1 do
+  for JC in Self.JCs do
    begin
-    if ((Self.JCs[i].data.TypCesty = TJCType.posun) or
-        (Self.JCs[i].data.DalsiNNavaznost <> fJC.data.NavestidloBlok)) then continue;
+    if ((JC.data.TypCesty = TJCType.posun) or
+        (JC.data.DalsiNNavaznost <> fJC.data.NavestidloBlok)) then continue;
 
-    Blky.GetBlkByID(Self.JCs[i].data.NavestidloBlok, nav);
+    Blky.GetBlkByID(JC.data.NavestidloBlok, nav);
 
     if (not (nav as TBlkSCom).IsPovolovaciNavest()) then continue;
     if ((nav as TBlkSCom).changing) then continue;
 
     if (my_nav.IsPovolovaciNavest()) then
      begin
-      if (Self.JCs[i].IsAnyVyhMinus()) then begin
+      if (JC.IsAnyVyhMinus()) then begin
         if ((my_nav.Navest = TBlkSCom._NAV_VYSTRAHA_40) or
             (my_nav.Navest = TBlkSCom._NAV_40_OCEK_40) or
             (my_nav.Navest = TBlkSCom._NAV_VOLNO_40)) then
@@ -538,7 +554,7 @@ begin
 
      end else begin
 
-      if (Self.JCs[i].IsAnyVyhMinus()) then
+      if (JC.IsAnyVyhMinus()) then
         (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA_40
       else
         (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA;
@@ -693,7 +709,50 @@ procedure TJCDb.UpdateJCIndexes();
 var i:Integer;
 begin
  for i := 0 to Self.JCs.Count-1 do
-  Self.JCs[i].index := i;
+   Self.JCs[i].index := i;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJCDb.FillJCsStartNav();
+var JC:TJC;
+    nav:TBlkSCom;
+begin
+ Self.JCsStartNav.Clear();
+ for JC in Self.JCs do
+  begin
+   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = _BLK_SCOM)) then
+    begin
+     nav := JC.navestidlo as TBlkSCom;
+     if (not Self.JCsStartNav.ContainsKey(nav)) then
+       Self.JCsStartNav.Add(nav, TList<TJC>.Create());
+     Self.JCsStartNav[nav].Add(JC);
+    end;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJCDb.JCOnNavChanged(Sender:TObject; origNav:TBlk);
+var nav:TBlkSCom;
+    jc:TJC;
+begin
+ nav := origNav as TBlkSCom;
+ jc := Sender as TJC;
+
+ if (origNav <> nil) then
+  begin
+   if (Self.JCsStartNav.ContainsKey(nav)) then
+     if (Self.JCsStartNav[nav].Contains(jc)) then
+       Self.JCsStartNav[nav].Remove(jc);
+  end;
+
+ if (jc.navestidlo <> nil) then
+  begin
+   if (not Self.JCsStartNav.ContainsKey(jc.navestidlo as TBlkSCom)) then
+     Self.JCsStartNav.Add(jc.navestidlo as TBlkSCom, TList<TJC>.Create());
+   Self.JCsStartNav[jc.navestidlo as TBlkSCom].Add(jc);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

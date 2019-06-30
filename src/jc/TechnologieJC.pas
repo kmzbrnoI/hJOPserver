@@ -133,6 +133,8 @@ type
    RychlostNoDalsiN,RychlostDalsiN:Byte;                                        // rychlost v JC pri dalsim navestidle navestici NEdovolujici navest, rychlost v JC pri dalsim navestidle navesticim dovolujici navest
   end;
 
+  ENavChanged = procedure(Sender:TObject; origNav:TBlk) of object;
+
   ///////////////////////////////////////////////////////////////////////////
 
   TJC=class
@@ -199,7 +201,8 @@ type
 
    private
      fproperties: TJCprop;
-     fstaveni:TJCStaveni;
+     fstaveni: TJCStaveni;
+     fOnNavChanged: ENavChanged;
 
       procedure SetProperties(prop:TJCProp);
 
@@ -241,6 +244,7 @@ type
 
       function GetAB():boolean;
       function PorusenaKritickaPodminka():boolean;
+      function GetNav():TBlk;
 
    public
 
@@ -296,6 +300,9 @@ type
       property RozpadBlok:Integer read fstaveni.RozpadBlok write SetRozpadBlok;
       property RozpadRuseniBlok:Integer read fstaveni.RozpadRuseniBlok write SetRozpadRuseniBlok;
       property Krok:Integer read fstaveni.Krok write SetKrok;
+      property navestidlo:TBlk read GetNav;
+
+      property OnNavChanged: ENavChanged read fOnNavChanged write fOnNavChanged;
   end;
 
 implementation
@@ -3684,8 +3691,12 @@ end;
 
 procedure TJC.SetProperties(prop:TJCProp);
 var id_changed:boolean;
+    nav_changed:boolean;
+    orig_nav:TBlk;
 begin
  id_changed := ((Self.id <> prop.id) and (Self.id <> -1));
+ nav_changed := (Self.data.NavestidloBlok <> prop.NavestidloBlok);
+ Blky.GetBlkByID(Self.data.NavestidloBlok, orig_nav);
  Self.fproperties := prop;
  if (id_Changed) then
   begin
@@ -3693,6 +3704,10 @@ begin
    // pri vytvareni novych JC se sem neskace
    JCDb.JCIDChanged(Self.index);
   end;
+
+ if (nav_changed) then
+   if (Assigned(Self.OnNavChanged)) then
+     Self.OnNavChanged(Self, orig_nav);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3751,6 +3766,13 @@ begin
   finally
     bariery.Free();
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJC.GetNav():TBlk;
+begin
+ Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
