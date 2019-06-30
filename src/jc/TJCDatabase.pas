@@ -22,6 +22,8 @@ type
      function GetCount():Word;
      function FindPlaceForNewJC(id:Integer):Integer;
      procedure FillJCsStartNav();
+
+     procedure JCOnIDChanged(Sender:TObject);
      procedure JCOnNavChanged(Sender:TObject; origNav:TBlk);
 
    public
@@ -62,10 +64,6 @@ type
 
      procedure RusAllJC();
      procedure RusJC(Blk:TBlk);     // rusi cestu, ve ktere je zadany blok
-
-     // volano pri zmene ID JC na indexu \index
-     // -> je potreba zmenit poradi JC
-     procedure JCIDChanged(index:Integer);
 
      property Count:Word read GetCount;
      property filename:string read ffilename;
@@ -125,6 +123,7 @@ begin
      JC := TJC.Create();
      try
        JC.index := i;
+       JC.OnIdChanged := Self.JCOnIDChanged;
        JC.OnNavChanged := Self.JCOnNavChanged;
        JC.LoadData(ini, sections[i]);
        Self.JCs.Insert(Self.FindPlaceForNewJC(JC.id), JC);
@@ -300,6 +299,7 @@ begin
  index := Self.FindPlaceForNewJC(JCData.id);
  JC := TJC.Create(JCData);
  JC.index := index;
+ JC.OnIdChanged := Self.JCOnIDChanged;
  JC.OnNavChanged := Self.JCOnNavChanged;
  Self.JCs.Insert(index, JC);
 
@@ -679,10 +679,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCDb.JCIDChanged(index:Integer);
-var new_index, min_index, i:Integer;
+procedure TJCDb.JCOnIDChanged(Sender:TObject);
+var new_index, min_index, i, index:Integer;
     tmp:TJC;
 begin
+ index := (Sender as TJC).index;
  Self.JCs.OwnsObjects := false;
  tmp := Self.JCs[index];
  Self.JCs.Delete(index);

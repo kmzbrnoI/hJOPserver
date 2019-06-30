@@ -202,6 +202,7 @@ type
    private
      fproperties: TJCprop;
      fstaveni: TJCStaveni;
+     fOnIdChanged: TNotifyEvent;
      fOnNavChanged: ENavChanged;
 
       procedure SetProperties(prop:TJCProp);
@@ -302,6 +303,7 @@ type
       property Krok:Integer read fstaveni.Krok write SetKrok;
       property navestidlo:TBlk read GetNav;
 
+      property OnIdChanged: TNotifyEvent read fOnIdChanged write fOnIdChanged;
       property OnNavChanged: ENavChanged read fOnNavChanged write fOnNavChanged;
   end;
 
@@ -3702,7 +3704,8 @@ begin
   begin
    // sem se skoci, pokud je potreba preskladat JC, protoze doslo ke zmene ID
    // pri vytvareni novych JC se sem neskace
-   JCDb.JCIDChanged(Self.index);
+   if (Assigned(Self.OnIdChanged)) then
+     Self.OnIdChanged(Self);
   end;
 
  if (nav_changed) then
