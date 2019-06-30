@@ -92,17 +92,33 @@ begin
        if (pole_dat[1] = 'open') then
         begin
          M_console.Lines.Add('Pripojuji se k centrale...');
-         return := TrkSystem.Open();
-         if (return <> 0) then M_console.Lines.Add('Chyba pri pripojovani: chyba '+IntToStr(return))
-          else M_console.Lines.Add('Pripojeno k centrale');
+         try
+           TrkSystem.Open();
+         except
+           on E:Exception do
+            begin
+             M_console.Lines.Add(E.Message);
+             Exit();
+            end;
+         end;
+
+         M_console.Lines.Add('Pripojeno k centrale');
         end;
 
        if (pole_dat[1] = 'close') then
         begin
          M_console.Lines.Add('Odpojuji se od cntraly...');
-         return := TrkSystem.Close();
-         if (return <> 0) then M_console.Lines.Add('Chyba pri odpojovani: chyba '+IntToStr(return))
-          else M_console.Lines.Add('Odpojeno od centraly');
+
+         try
+           TrkSystem.Close();
+         except
+           on E:Exception do
+            begin
+             M_console.Lines.Add(E.Message);
+             Exit();
+            end;
+         end;
+         M_console.Lines.Add('Odpojeno od centraly');
         end;
       end;
 

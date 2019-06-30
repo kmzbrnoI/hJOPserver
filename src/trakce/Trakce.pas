@@ -49,7 +49,7 @@ type
 
   TPomStatus = (released = 0, pc = 1, progr = 2, error = 3);
 
-  TSlot=record                                                                  //data slotu (dalsi vysvetleni v manualu k loconetu a xpressnetu)
+  TSlot = record                                                                //data slotu (dalsi vysvetleni v manualu k loconetu a xpressnetu)
    adresa:word;                                                                 // adresa LOKO
    smer:ShortInt;                                                               // aktualni smer: [0,1]
    speed:byte;                                                                  // aktualni jizdni stupen
@@ -75,6 +75,14 @@ type
     sw_minor:byte;
   end;
 
+  TComPortData = record
+    br:TBaudRate;
+    com:string;
+    sb:TStopBits;
+    db:TDataBits;
+    FlowControl:TFlowControl;
+  end;
+
   TLogEvent = procedure(Sender:TObject; lvl:TTrkLogLevel; msg:string) of object;
   TConnectChangeInfo = procedure(Sender: TObject; addr:Integer; code:TConnect_code; data:Pointer) of object;
   TLokComEvent = procedure (Sender:TObject; addr:Integer) of object;
@@ -82,6 +90,8 @@ type
   TCSVersionEvent = procedure(Sender:TObject; version:TCSVersion) of object;
   TLIVersionEvent = procedure(Sender:TObject; version:TLIVersion) of object;
   TLIAddressEvent = procedure(Sender:TObject; addr:Byte) of object;
+  EAlreadyConnected = class(Exception);
+  EAlreadyDisconnected = class(Exception);
 
   TTrakce = class
     private const
@@ -93,6 +103,11 @@ type
 
      FOnTrackStatusChange : TGeneralEvent;
      FOnComError          : TGeneralEvent;
+     fOnBeforeOpen        : TGeneralEvent;
+     fOnAfterOpen         : TGeneralEvent;
+     fOnBeforeClose       : TGeneralEvent;
+     fOnAfterClose        : TGeneralEvent;
+
      FOnCSVersion         : TCSVersionEvent;
      FOnLIVersion         : TLIVersionEvent;
      FOnLIAddr            : TLIAddressEvent;
@@ -125,13 +140,13 @@ type
 
      Slot:TSlot;
 
-     ComPort:record
-       CPort:TComPort;
-     end;
-
       constructor Create();
       destructor Destroy(); override;
       function Name():string; virtual; abstract;
+
+      procedure Open(params:Pointer); virtual; abstract;
+      procedure Close(); virtual; abstract;
+      function Opened():boolean; virtual; abstract;
 
       procedure LokSetSpeed(Address:Integer; speed:Integer; dir:Integer); virtual; abstract;
       procedure LokSetFunc(Address:Integer; sada:Byte; stav:Byte); virtual; abstract;
@@ -147,8 +162,6 @@ type
       procedure SetLIAddress(callback:TLIAddressEvent; addr:Byte); virtual;
 
       procedure GetTrackStatus(); virtual; abstract;
-      procedure AfterOpen(); virtual;
-      procedure BeforeClose(); virtual; abstract;
 
       procedure POMWriteCV(Address:Integer; cv:Word; data:byte); virtual; abstract;
 
@@ -165,6 +178,11 @@ type
 
       property OnTrackStatusChange: TGeneralEvent read FOnTrackStatusChange write FOnTrackStatusChange;
       property OnComError : TGeneralEvent read fOnComError write fOnComError;
+      property OnBeforeOpen : TGeneralEvent read fOnBeforeOpen write fOnBeforeOpen;
+      property OnAfterOpen : TGeneralEvent read fOnAfterOpen write fOnAfterOpen;
+      property OnBeforeClose : TGeneralEvent read fOnBeforeClose write fOnBeforeClose;
+      property OnAfterClose : TGeneralEvent read fOnAfterClose write fOnAfterClose;
+
   end;//TTrakce
 
 implementation
@@ -213,11 +231,6 @@ begin
    Self.FFtrk_status := new;
    if (Assigned(Self.FOnTrackStatusChange)) then Self.FOnTrackStatusChange(Self);
   end;
-end;
-
-procedure TTrakce.AfterOpen();
-begin
- Self.FFtrk_status := TS_UNKNOWN;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

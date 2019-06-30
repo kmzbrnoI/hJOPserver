@@ -70,6 +70,7 @@ type
     _BUF_IN_TIMEOUT_MS = 300;                                                   // timeout vstupniho bufferu v ms (po uplynuti timeoutu dojde k vymazani bufferu) - DULEZITY SAMOOPRAVNY MECHANISMUS!
                                                                                 // pro spravnou funkcnost musi byt < _TIMEOUT_MSEC
    private
+    CPort: TComPort;
     Fbuf_in: TBuffer;                                                           // vstupni buffer (data z centraly do PC)
     Fbuf_in_timeout:TDateTime;
 
@@ -104,11 +105,24 @@ type
 
     procedure CheckFbufInTimeout();
 
+    procedure ComBeforeOpen(Sender:TObject);
+    procedure ComAfterOpen(Sender:TObject);
+    procedure ComBeforeClose(Sender:TObject);
+    procedure ComAfterClose(Sender:TObject);
+    procedure ComOnException(Sender: TObject;
+      TComException: TComExceptions; ComportMessage: string; WinError: Int64;
+      WinMessage: string);
+    procedure ComOnError(Sender: TObject; Errors: TComErrors);
+
    public
 
      constructor Create();
      destructor Destroy(); override;
      function Name():string; override;
+
+     procedure Open(params:Pointer); override;
+     procedure Close(); override;
+     function Opened():boolean; override;
 
      procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;            // nastav stav centraly: ON, OFF, PROGR
 
@@ -131,9 +145,6 @@ type
 
 
      procedure EmergencyStop(); override;                                       // nouzove zastav vsechny lokomotivy
-
-     procedure AfterOpen(); override;                                           // event po otevreni komunikace
-     procedure BeforeClose(); override;                                         // event pred zavrenim komunikace
 
      //events
      property OnParseMsg: TParseMsgEvent read FOnParseMsg write FOnParseMsg;
@@ -159,6 +170,15 @@ begin
  Self.callback_err.callback := nil;
  Self.callback_ok.callback  := nil;
 
+ Self.CPort := TComPort.Create(nil);
+ Self.CPort.OnRxChar      := Self.DataReceive;
+ Self.CPort.OnBeforeOpen  := Self.ComBeforeOpen;
+ Self.CPort.OnAfterOpen   := Self.ComAfterOpen;
+ Self.CPort.OnBeforeClose := Self.ComBeforeClose;
+ Self.CPort.OnAfterClose  := Self.ComAfterClose;
+ Self.CPort.OnError       := Self.ComOnError;
+ Self.CPort.OnException   := Self.ComOnException;
+
  Self.Get.sp_addr := -1;
 end;//ctor
 
@@ -168,7 +188,13 @@ begin
  if (Assigned(Self.send_history)) then
    FreeAndNil(Self.send_history);
 
- inherited Destroy;
+ try
+   Self.CPort.Free();
+ except
+
+ end;
+
+ inherited;
 end;//dtor
 
 function TXpressNET.Name():string;
@@ -203,6 +229,57 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TXpressNET.Open(params:Pointer);
+var cpData:TComPortData;
+begin
+ cpData := TComPortData(params^);
+
+ Self.WriteLog(tllCommand, 'OPENING port='+cpData.com+' br='+BaudRateToStr(cpData.br)+
+               ' sb='+StopBitsToStr(cpData.sb)+' db='+DataBitsToStr(cpData.db)+
+               ' fc='+FlowControlToStr(cpData.FlowControl));
+
+ if (Self.CPort.Connected) then
+   raise EAlreadyConnected.Create('Already connected to XpressNET!');
+
+ Self.CPort.Port        := cpData.com;
+ Self.CPort.BaudRate    := cpData.br;
+ Self.CPort.DataBits    := cpData.db;
+ Self.CPort.StopBits    := cpData.sb;
+ Self.CPort.FlowControl.FlowControl := cpData.FlowControl;
+
+ try
+  Self.CPort.Open();
+ except
+  on E: Exception do
+   begin
+    Self.CPort.Close();
+    raise;
+   end;
+ end;
+end;
+
+procedure TXpressNET.Close();
+begin
+ Self.WriteLog(tllCommand, 'CLOSING...');
+
+ if (not Self.Opened()) then
+   raise EAlreadyDisconnected.Create('Already disconnected from XpressNET!');
+
+ try
+  Self.CPort.Close();
+ except
+  on E: Exception do
+    raise;
+ end;
+end;
+
+function TXpressNET.Opened():boolean;
+begin
+ Result := (Assigned(Self.CPort) and (Self.CPort.Connected));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TXpressNET.DataReceive(Sender: TObject; Count: Integer);
 var
   ok: Boolean;
@@ -215,7 +292,7 @@ begin
   // check timeout
   Self.CheckFbufInTimeout();
 
-  Self.ComPort.CPort.Read(buf, Count);
+  Self.CPort.Read(buf, Count);
 
   for i := 0 to Count-1 do Fbuf_in.data[Fbuf_in.Count+i] := Buf[i];
   Fbuf_in.Count := Fbuf_in.Count + Count;
@@ -550,7 +627,7 @@ var
   log:string;
   asp: PAsync;
 begin
-  if ((not Assigned(Self.ComPort.CPort)) or (not Self.ComPort.CPort.Connected)) then
+  if ((not Assigned(Self.CPort)) or (not Self.CPort.Connected)) then
    begin
     Self.WriteLog(tllError, 'PUT ERR: XpressNet not connected');
     Exit;
@@ -574,8 +651,8 @@ begin
 
   try
     InitAsync(asp);
-    Self.ComPort.CPort.WriteAsync(buf.data, buf.Count, asp);
-    while (not Self.ComPort.CPort.IsAsyncCompleted(asp)) do
+    Self.CPort.WriteAsync(buf.data, buf.Count, asp);
+    while (not Self.CPort.IsAsyncCompleted(asp)) do
      begin
       Application.ProcessMessages();
       Sleep(1);
@@ -844,7 +921,7 @@ end;
 
 procedure TXpressNET.OnTimer_history(Sender:TObject);
 begin
- if ((not Assigned(Self.ComPort.CPort)) or (not Self.ComPort.CPort.Connected)) then
+ if ((not Assigned(Self.CPort)) or (not Self.CPort.Connected)) then
   begin
    // pri ukonceni komunikace vymazeme historii
    if (Self.send_history.Count > 0) then
@@ -977,10 +1054,26 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TXpressNET.AfterOpen();
+procedure TXpressNET.ComBeforeOpen(Sender:TObject);
 begin
- inherited;
- Self.ComPort.CPort.OnRxChar := Self.DataReceive;
+ if (Assigned(Self.fOnBeforeOpen)) then Self.fOnBeforeOpen(Self);
+end;
+
+procedure TXpressNET.ComAfterOpen(Sender:TObject);
+begin
+ Self.FFtrk_status := TS_UNKNOWN;
+ if (Assigned(Self.fOnAfterOpen)) then Self.fOnAfterOpen(Self);
+end;
+
+procedure TXpressNET.ComBeforeClose(Sender:TObject);
+begin
+ Self.send_history.Clear();
+ if (Assigned(Self.fOnBeforeClose)) then Self.fOnBeforeClose(Self);
+end;
+
+procedure TXpressNET.ComAfterClose(Sender:TObject);
+begin
+ if (Assigned(Self.fOnAfterClose)) then Self.fOnAfterClose(Self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -989,13 +1082,6 @@ procedure TXpressNET.POMWriteCV(Address:Integer; cv:Word; data:byte);
 begin
  Self.WriteLog(tllCommand, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
  Self.SendCommand(XB_POM_WRITEBYTE, address, cv, data);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TXpressNET.BeforeClose();
-begin
- Self.send_history.Clear();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1024,6 +1110,23 @@ begin
    WriteLog(tllError, 'INPUT BUFFER TIMEOUT, removing buffer');
    Self.Fbuf_in.Count := 0;
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TXpressNET.ComOnError(Sender: TObject; Errors: TComErrors);
+begin
+ Self.WriteLog(tllError, 'ERR: COM PORT ERROR');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TXpressNET.ComOnException(Sender: TObject;
+  TComException: TComExceptions; ComportMessage: string; WinError: Int64;
+  WinMessage: string);
+begin
+ Self.WriteLog(tllError, 'ERR: COM PORT EXCEPTION: '+ComportMessage+'; '+WinMessage);
+ raise Exception.Create(ComportMessage);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

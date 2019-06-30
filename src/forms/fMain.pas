@@ -1585,43 +1585,37 @@ procedure TF_Main.A_Trk_ConnectExecute(Sender: TObject);
 var return:Integer;
     err:string;
 begin
- return := TrkSystem.Open;
- if (return <> 0) then
-  begin
-   case (return) of
-    3: err := 'nelze otevřít COM port, více informací v LOGu';
-   else
-    err := 'neznámá chyba';
-   end;
+ try
+   TrkSystem.Open();
+ except
+   on E:Exception do
+    begin
+     F_Main.A_Trk_Connect.Enabled          := true;
+     F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
+     F_Main.S_Intellibox_connect.Brush.Color := clRed;
+     Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
+                            'Chyba', MB_OK OR MB_ICONERROR);
+    end;
+ end;
 
-   Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
-
-   F_Main.A_Trk_Connect.Enabled          := true;
-   F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
-   F_Main.S_Intellibox_connect.Brush.Color := clRed;
-
-   Exit;
-  end;
- Application.ProcessMessages;
+ Application.ProcessMessages();
 end;
 
 procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
 var return:Integer;
     err:string;
 begin
- return := TrkSystem.Close;
- if (return <> 0) then
-  begin
-   case (return) of
-    3: err := 'nelze zavřít COM port, více informací v LOGu';
-   else
-    err := 'neznámá chyba';
-   end;
+ try
+   TrkSystem.Close();
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Chyba pri uzavírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
+                            'Chyba', MB_OK OR MB_ICONERROR);
+    end;
+ end;
 
-   Application.MessageBox(PChar('Chyba pri uzavírání komunikace s centrálou: chyba '+IntToStr(return)+#13#10+err),'Chyba',MB_OK OR MB_ICONERROR);
-   Exit;
-  end;
- Application.ProcessMessages;
+ Application.ProcessMessages();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

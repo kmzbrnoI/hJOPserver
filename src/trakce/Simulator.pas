@@ -58,6 +58,7 @@ type
 
     send_history: TList<THistoryPacket>;                                        // vystupni buffer (data z PC do centraly)
     timer_history:TTimer;                                                       // timer starajici se o vystupni buffer
+    fOpened:boolean;
 
     procedure OnTimer_history(Sender:TObject);                                  // tick timer_history
     function HistoryPacket(cmd:Tcmd):THistoryPacket;
@@ -68,6 +69,10 @@ type
      constructor Create();
      destructor Destroy(); override;
      function Name():string; override;
+
+     procedure Open(params:Pointer); override;
+     procedure Close(); override;
+     function Opened():boolean; override;
 
      procedure SetTrackStatus(NewtrackStatus:Ttrk_status); override;            // nastav stav centraly: ON, OFF, PROGR
 
@@ -90,8 +95,6 @@ type
 
      procedure EmergencyStop(); override;                                       // nouzove zastav vsechny lokomotivy
 
-     procedure BeforeClose(); override;                                         // event pred zavrenim komunikace
-
    protected
 
   end;
@@ -104,6 +107,8 @@ constructor TSimulator.Create();
 var i:Integer;
 begin
  inherited;
+
+ Self.fOpened := false;
 
  Self.send_history            := TList<THistoryPacket>.Create();
  Self.timer_history           := TTimer.Create(nil);
@@ -135,6 +140,34 @@ end;
 function TSimulator.Name():string;
 begin
  Result := 'Simulator';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSimulator.Open(params:Pointer);
+begin
+  if (Self.fOpened) then
+    raise EAlreadyConnected.Create('Already opened!');
+
+  if (Assigned(Self.OnBeforeOpen)) then Self.OnBeforeOpen(Self);
+  Self.fOpened := true;
+  if (Assigned(Self.OnAfterOpen)) then Self.OnAfterOpen(Self);
+end;
+
+procedure TSimulator.Close();
+begin
+  if (not Self.fOpened) then
+    raise EAlreadyDisconnected.Create('Already disconnected!');
+
+  if (Assigned(Self.OnBeforeClose)) then Self.OnBeforeClose(Self);
+  Self.fOpened := false;
+  Self.send_history.Clear();
+  if (Assigned(Self.OnAfterClose)) then Self.OnAfterClose(Self);
+end;
+
+function TSimulator.Opened():boolean;
+begin
+ Result := Self.fOpened;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -353,13 +386,6 @@ procedure TSimulator.POMWriteCV(Address:Integer; cv:Word; data:byte);
 begin
  Self.WriteLog(tllCommand, 'PUT: POM '+IntToStr(cv)+':'+IntToStr(data));
  Self.send_history.Add(Self.HistoryPacket(XB_POM_WRITEBYTE));
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TSimulator.BeforeClose();
-begin
- Self.send_history.Clear();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

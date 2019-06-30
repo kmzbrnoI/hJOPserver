@@ -152,18 +152,13 @@ type
      finitok  : boolean;                                                        // je true, pokud po otevreni seriaku centrala zakomujikovala (tj. odpovedela na prikaz)
                                                                                 // pri .Open se nastavuje na false
      {
+      TODO aktualizovat
       Info: Samotna komponenta serioveho portu je ulozena v .Trakce.ComPort.CPort.
       Tato komponenta je pri uzavrenem seriaku znicena.
-      Pred otevrenim je volna konstruktor, po uzavreni destruktor!
+      Pred otevrenim je volan konstruktor, po uzavreni destruktor!
      }
 
-     CPortData : record                                                         // data pro nastaveni serioveho portu
-      br:TBaudRate;                                                             // baudrate
-      com:string;                                                               // com port ve formatu "COM1", "COM8" ...
-      sb:TStopBits;                                                             // stop bits
-      db:TDataBits;                                                             // data bits
-      FlowControl:TFlowControl;
-     end;
+     CPortData: TComPortData;
 
      toggleQueue:TQueue<THVFunc>;
 
@@ -304,8 +299,8 @@ type
      destructor Destroy(); override;
 
      // otevrit a zavrit spojeni s centralou:
-     function Open():Byte;
-     function Close(force:boolean = false):Byte;
+     procedure Open();
+     procedure Close(force:boolean = false);
 
      // zakladni prikazy do centraly:
      procedure CentralStart();                                                  // TRACK ON
@@ -468,7 +463,12 @@ begin
  Self.Trakce.OnLokComError        := Self.LokComErr;
  Self.Trakce.OnLokComOK           := Self.LokComOK;
  Self.Trakce.OnTrackStatusChange  := Self.OnTrackStatusChange;
+
  Self.Trakce.OnComError           := Self.OnComWriteError;
+ Self.Trakce.OnBeforeOpen         := Self.BeforeOpen;
+ Self.Trakce.OnAfterOpen          := Self.AfterOpen;
+ Self.Trakce.OnBeforeClose        := Self.BeforeClose;
+ Self.Trakce.OnAfterClose         := Self.AfterClose;
 
  Self.WriteLog(tllCommand, 'USING '+ Self.Trakce.Name());
 
@@ -477,109 +477,80 @@ end;
 
 function TTrkGUI.GetOpenned():boolean;
 begin
- if ((not Assigned(Self.Trakce)) or (not Assigned(Self.Trakce.ComPort.CPort))) then Exit(false);
- Result := Self.Trakce.ComPort.CPort.Connected;
+ if (not Assigned(Self.Trakce)) then Exit(false);
+ Result := Self.Trakce.Opened();
 end;
 
-function TTrkGUI.Open():Byte;
+procedure TTrkGUI.Open();
+var data:Pointer;
 begin
  Self.finitok := false;
 
  if ((SystemData.Status = starting) and (Self.openned)) then
   begin
    Self.InitSystems();
-   Exit(0);
+   Exit();
   end;
 
- Self.TrkLog(self, tllCommand, 'OPENING port='+Self.CPortData.com+' br='+BaudRateToStr(Self.CPortData.br)+
-             ' sb='+StopBitsToStr(Self.CPortData.sb)+' db='+DataBitsToStr(Self.CPortData.db)+
-             ' fc='+FlowControlToStr(Self.CPortData.FlowControl));
-
- if ((Assigned(Self.Trakce.ComPort.CPort)) and (Self.Trakce.ComPort.CPort.Connected)) then
-  begin
-   Self.TrkLog(self, tllError, 'OPEN: already connected');
-   Exit(0);
-  end;
-
- if (not Assigned(Self.Trakce.ComPort.CPort)) then
-   Self.Trakce.ComPort.CPort := TComPort.Create(nil);
-
- Self.Trakce.ComPort.CPort.OnError       := Self.OnComError;
- Self.Trakce.ComPort.CPort.OnException   := Self.OnComException;
- Self.Trakce.ComPort.CPort.OnBeforeOpen  := Self.BeforeOpen;
- Self.Trakce.ComPort.CPort.OnAfterOpen   := Self.AfterOpen;
- Self.Trakce.ComPort.CPort.OnBeforeClose := Self.BeforeClose;
- Self.Trakce.ComPort.CPort.OnAfterClose  := Self.AfterClose;
- Self.Trakce.ComPort.CPort.Port        := Self.CPortData.com;
- Self.Trakce.ComPort.CPort.BaudRate    := Self.CPortData.br;
- Self.Trakce.ComPort.CPort.DataBits    := Self.CPortData.db;
- Self.Trakce.ComPort.CPort.StopBits    := Self.CPortData.sb;
- Self.Trakce.ComPort.CPort.FlowControl.FlowControl := Self.CPortData.FlowControl;
+ if (Self.TrkSystem = Ttrk_system.TRS_XpressNET) then
+   data := @Self.CPortData
+ else
+   data := nil;
 
  try
-  Self.Trakce.ComPort.CPort.Open;
+   Self.Trakce.Open(data);
  except
-  on E : Exception do
-   begin
-    Self.Trakce.ComPort.CPort.Close;
-    Self.TrkLog(self, tllError, 'OPEN ERR: com port object error : '+E.Message);
-    Self.AfterClose(self);
-
-    if (SystemData.Status = TSystemStatus.starting) then
-     begin
-      SystemData.Status := TSystemStatus.null;
-      F_Main.A_System_Start.Enabled := true;
-      F_Main.A_System_Stop.Enabled := true;
-     end;
-
-    Exit(3);
-   end;
+   on E:EAlreadyConnected do
+    begin
+     Self.WriteLog(tllError, 'OPEN: error: ' + E.Message);
+     raise;
+    end;
+   on E:Exception do
+    begin
+     Self.WriteLog(tllError, 'OPEN: error: ' + E.Message);
+     Self.AfterClose(Self);
+     if (SystemData.Status = TSystemStatus.starting) then
+      begin
+       SystemData.Status := TSystemStatus.null;
+       F_Main.A_System_Start.Enabled := true;
+       F_Main.A_System_Stop.Enabled := true;
+      end;
+     raise;
+    end;
  end;
-
- Result := 0;
 end;
 
-function TTrkGUI.Close(force:boolean = false):Byte;
+procedure TTrkGUI.Close(force:boolean = false);
 var i:Integer;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
    F_Main.A_RCS_StopExecute(nil);
-   Exit(0);
+   Exit();
   end;
 
  Self.TrkLog(self, tllCommand, 'CLOSING...');
 
- if (not Self.openned) then
+ for i := 0 to _MAX_ADDR-1 do
   begin
-   Self.TrkLog(self, tllError, 'CLOSE: already disconnected');
-   Exit(0);
+   if (HVDb[i] <> nil) then
+    begin
+     HVDb[i].Slot.stolen   := false;
+     HVDb[i].Slot.prevzato := false;
+    end;
   end;
 
- for i := 0 to _MAX_ADDR-1 do
-   if (HVDb.HVozidla[i] <> nil) then
-    begin
-     HVDb.HVozidla[i].Slot.stolen   := false;
-     HVDb.HVozidla[i].Slot.prevzato := false;
-    end;
-
  if (not force) then Self.NouzReleaseLoko();
- 
- try
-  Self.Trakce.ComPort.CPort.Close();
- except
-  on E : Exception do
-    Self.TrkLog(self, tllError, 'CLOSE ERR: com port object error : '+E.Message);
- end;
 
  try
-   FreeAndNil(Self.Trakce.ComPort.CPort);
+   Self.Trakce.Close();
  except
-   Self.AfterClose(self);
+   on E:Exception do
+    begin
+     Self.WriteLog(tllError, 'OPEN: error: ' + E.Message);
+     raise;
+    end;
  end;
-
-
- Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -970,7 +941,6 @@ end;
 
 procedure TTrkGUI.AfterOpen(Sender:TObject);
 begin
- Self.Trakce.AfterOpen();
  Self.TrkLog(self, tllCommand, 'OPEN OK');
  F_Main.A_Trk_Connect.Enabled       := false;
  F_Main.A_Trk_Disconnect.Enabled    := true;
@@ -1007,7 +977,6 @@ begin
  F_Main.G_Loko_Prevzato.Progress := 0;
  F_Main.S_lok_prevzato.Brush.Color := clRed;
  Application.ProcessMessages();
- Self.Trakce.BeforeClose();   // smaze buffer historie
 end;
 
 procedure TTrkGUI.AfterClose(Sender:TObject);
