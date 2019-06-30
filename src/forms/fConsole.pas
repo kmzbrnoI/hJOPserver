@@ -53,7 +53,6 @@ end;
 
 procedure TF_Console.B_OK_consoleClick(Sender: TObject);
 var pole_dat:TStrings;
-    return:Byte;
     Blk:TBlk;
 begin
  pole_dat := TStringList.Create;

@@ -1570,8 +1570,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.A_Trk_ConnectExecute(Sender: TObject);
-var return:Integer;
-    err:string;
 begin
  try
    TrkSystem.Open();
@@ -1590,8 +1588,6 @@ begin
 end;
 
 procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
-var return:Integer;
-    err:string;
 begin
  try
    TrkSystem.Close();

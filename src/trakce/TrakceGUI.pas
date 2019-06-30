@@ -168,10 +168,6 @@ type
      procedure WriteLog(lvl:TTrkLogLevel; msg:string);                          // zaloguje data (at uz do souboru, ci do tabulky)
 
      // eventy serioveho portu:
-     procedure OnComError(Sender: TObject; Errors: TComErrors);
-     procedure OnComException(Sender: TObject;
-        TComException: TComExceptions; ComportMessage: string; WinError: Int64;
-        WinMessage: string);
      procedure OnComWriteError(Sender:TObject);                                 // tento event je volan z .Trakce pri vyvolani vyjimky pri zapisu do ComPortu
                                                                                 // to nastava napriklad, pokud ComPort najednou zmizi z pocitace (nekdo odpoji USB)
      function GettSpeed(kmph:Integer):Integer;                                  // vrati rchlostni stupen pri zadane rychlosti v km/h
@@ -1675,23 +1671,6 @@ begin
    HVDb.HVozidla[addr].Slot.com_err := false;
    HVDb.HVozidla[addr].changed := true;
   end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrkGUI.OnComError(Sender: TObject; Errors: TComErrors);
-begin
- Self.WriteLog(tllError, 'ERR: COM PORT ERROR');
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrkGUI.OnComException(Sender: TObject;
-  TComException: TComExceptions; ComportMessage: string; WinError: Int64;
-  WinMessage: string);
-begin
- Self.WriteLog(tllError, 'ERR: COM PORT EXCEPTION: '+ComportMessage+'; '+WinMessage);
- raise Exception.Create(ComportMessage);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
