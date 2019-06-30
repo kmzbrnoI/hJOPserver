@@ -2803,7 +2803,10 @@ begin
        line := line + IntToStr(Self.fproperties.Prejezdy[i].uzaviraci[j]) + ',';
     end;
 
-   line[Length(line)] := ')';
+   if (line[Length(line)] = ',') then
+     line[Length(line)] := ')'
+   else
+     line := line + ')';
   end;
  if (line <> '') then
    ini.WriteString(section, 'prj', line);
