@@ -50,8 +50,7 @@ end;
 function TGetFunctions.GetSystemStart:Boolean;
  begin
   try
-    Result := (((TrkSystem.openned) and (RCSi.ready) and (ORTCPServer.openned) and (RCSi.NoExStarted))
-              or (RCSi.ready and RCSi.NoExStarted and F_Admin.CHB_SystemStart.Checked));
+    Result := ((TrkSystem.openned) and (RCSi.ready) and (ORTCPServer.openned) and (RCSi.NoExStarted));
   except
     Result := false;
   end;

@@ -5,7 +5,7 @@ object F_Admin: TF_Admin
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Testovac'#237' rozhran'#237' programu'
-  ClientHeight = 154
+  ClientHeight = 137
   ClientWidth = 417
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -33,7 +33,7 @@ object F_Admin: TF_Admin
   end
   object B_Save: TButton
     Left = 337
-    Top = 122
+    Top = 104
     Width = 73
     Height = 25
     Margins.Left = 2
@@ -68,21 +68,9 @@ object F_Admin: TF_Admin
     Caption = 'Simulovat obsazen'#237' '#250'seku soupravou'
     TabOrder = 3
   end
-  object CHB_SystemStart: TCheckBox
-    Left = 8
-    Top = 73
-    Width = 233
-    Height = 17
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Umo'#382'nit start syst'#233'mu pouze se zapl'#253'm MTB'
-    TabOrder = 4
-  end
   object CHB_JC_Simulator: TCheckBox
     Left = 8
-    Top = 90
+    Top = 74
     Width = 75
     Height = 17
     Margins.Left = 2
@@ -90,12 +78,12 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'JC simul'#225'tor'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = CHB_JC_SimulatorClick
   end
   object CHB_Trat_Sim: TCheckBox
     Left = 8
-    Top = 107
+    Top = 91
     Width = 97
     Height = 17
     Margins.Left = 2
@@ -103,12 +91,12 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Tra'#357' simul'#225'tor'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = CHB_Trat_SimClick
   end
   object CHB_SimVyhybky: TCheckBox
     Left = 8
-    Top = 124
+    Top = 108
     Width = 145
     Height = 17
     Margins.Left = 2
@@ -116,7 +104,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat stav'#283'n'#237' v'#253'hybek'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = CHB_SimVyhybkyClick
   end
 end

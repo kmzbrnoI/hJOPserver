@@ -1183,13 +1183,7 @@ begin
   writelog('----- RCS SCANNED -----', WR_RCS);
   Self.LogStatus('RCS: moduly naskenovány');
 
-  if (F_Admin.CHB_SystemStart.Checked) then
-   begin
-    Blky.Enable();
-    Blky.SetDCC(true);
-   end;
-
-  // aktualizace ovladaich prvku AC
+  // aktualizace ovladacich prvku AC
   if (F_Main.LV_AC_Db.Selected <> nil) then
     F_Main.LV_AC_DbChange(F_Main.LV_AC_Db, F_Main.LV_AC_Db.Selected, TItemChange.ctText);
 
@@ -1202,12 +1196,6 @@ end;
 
 procedure TF_Main.OnRCSStop(Sender:TObject);
 begin
-  if (F_Admin.CHB_SystemStart.Checked) then
-   begin
-    // debug mod
-    JCDB.RusAllJC();
-    ORs.DisconnectPanels();
-   end;//if AdminVstup
   if (Blky.enabled) then
    begin
     Blky.Disable();

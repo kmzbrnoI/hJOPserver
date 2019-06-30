@@ -51,7 +51,6 @@ type
     B_Save: TButton;
     CHB_SimInput: TCheckBox;
     CHB_SimSoupravaUsek: TCheckBox;
-    CHB_SystemStart: TCheckBox;
     CHB_JC_Simulator: TCheckBox;
     CHB_Trat_Sim: TCheckBox;
     CHB_SimVyhybky: TCheckBox;
@@ -87,7 +86,6 @@ procedure TF_Admin.LoadData();
 
   CHB_SimInput.Checked          := Konfigurace.ini.ReadBool('AdminData', 'InputSim', false);
   CHB_SimSoupravaUsek.Checked   := Konfigurace.ini.ReadBool('AdminData', 'SoupravaUsekSim', false);
-  CHB_SystemStart.Checked       := Konfigurace.ini.ReadBool('AdminData', 'SystemStart', false);
   CHB_JC_Simulator.Checked      := Konfigurace.ini.ReadBool('AdminData', 'JCsim', false);
   CHB_SimVyhybky.Checked        := Konfigurace.ini.ReadBool('AdminData', 'VYHsim', false);
   Self.CHB_JC_SimulatorClick(Self.CHB_JC_Simulator);
@@ -116,7 +114,6 @@ procedure TF_Admin.SaveData();
   Konfigurace.ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
   Konfigurace.ini.WriteBool('AdminData','InputSim',CHB_SimInput.Checked);
   Konfigurace.ini.WriteBool('AdminData','SoupravaUsekSim',CHB_SimSoupravaUsek.Checked);
-  Konfigurace.ini.WriteBool('AdminData','SystemStart',CHB_SystemStart.Checked);
   Konfigurace.ini.WriteBool('AdminData', 'JCsim', CHB_JC_Simulator.Checked);
   Konfigurace.ini.WriteBool('AdminData', 'TRATsim', CHB_Trat_Sim.Checked);
   Konfigurace.ini.WriteBool('AdminData', 'VYHsim', CHB_SimVyhybky.Checked);
