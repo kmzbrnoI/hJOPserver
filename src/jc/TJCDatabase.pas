@@ -69,6 +69,10 @@ type
      function IsAnyVC(nav:TBlkSCom):Boolean;
      function IsAnyPC(nav:TBlkSCom):Boolean;
 
+     function IsAnyJCAvailable(nav:TBlkSCom; typ:TJCType):Boolean;
+     function IsAnyVCAvailable(nav:TBlkSCom):Boolean;
+     function IsAnyPCAvailable(nav:TBlkSCom):Boolean;
+
      property Count:Word read GetCount;
      property filename:string read ffilename;
 
@@ -787,6 +791,43 @@ begin
    if (jc.data.TypCesty = TJCType.posun) then
       Exit(true);
  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Zjistuje, jestli je mozno postvit z navestidla \nav v aktualni situaci alespon
+// jednu cestu typu \typ.
+
+function TJCDb.IsAnyJCAvailable(nav:TBlkSCom; typ:TJCType):Boolean;
+var jc:TJC;
+    blk:TBlk;
+    usek:TBlkUsek;
+begin
+ if (not Self.JCsStartNav.ContainsKey(nav)) then
+   Exit(false);
+ for jc in Self.JCsStartNav[nav] do
+  begin
+   if ((jc.data.TypCesty = typ) and (jc.data.Useky.Count > 0)) then
+    begin
+      Blky.GetBlkByID(jc.data.Useky[0], blk);
+      if ((blk <> nil) and ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU))) then
+       begin
+        usek := blk as TBlkUsek;
+        if ((usek.Zaver = TZaver.no) and (usek.Obsazeno = TUsekStav.uvolneno)) then
+          Exit(true);
+       end;
+    end;
+  end;
+ Result := false;
+end;
+
+function TJCDb.IsAnyVCAvailable(nav:TBlkSCom):Boolean;
+begin
+ Result := Self.IsAnyJCAvailable(nav, TJCType.vlak);
+end;
+
+function TJCDb.IsAnyPCAvailable(nav:TBlkSCom):Boolean;
+begin
+ Result := Self.IsAnyJCAvailable(nav, TJCType.posun);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
