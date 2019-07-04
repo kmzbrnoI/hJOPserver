@@ -25,14 +25,12 @@ type
   end;
 
   TKonfigurace=class
-   ini:TMemIniFile;
     procedure LoadCfgFromFile(IniLoad:string);
     procedure SaveCfgToFile(IniSave:string);
   end;
 
   TFormData=class
    aFile:String;
-   ini:TMemIniFile;
     procedure LoadFormData(IniLoad:string);
     procedure SaveFormData(IniSave:string);
   end;
@@ -331,214 +329,214 @@ var tmpStr:string;
 procedure TKonfigurace.LoadCfgFromFile(IniLoad:string);
 var str:string;
     system:Ttrk_system;
+    ini:TMemIniFile;
  begin
-   writelog('Naèítám konfiguraci - '+IniLoad,WR_DATA);
-   Konfigurace.ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
-   F_Options.E_dataload.Text:=IniLoad;
+  writelog('Naèítám konfiguraci - '+IniLoad,WR_DATA);
+  F_Options.E_dataload.Text := IniLoad;
+  ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
+  try
+    //nastaveni defaultnich cest pro Open/Save dialogy
+    F_Options.OD_Open.InitialDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\';
+    F_Options.SD_Save.InitialDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\';
 
-   //zacatek nacitani dat do programu
+    //nacitani dat o programu - left, top...
+    case ini.ReadInteger('Application','WState',0) of
+     0:begin
+        F_Main.WindowState := wsMaximized;
+       end;
+     1:begin
+        F_Main.Left   := ini.ReadInteger('Application', 'Left',200);
+        F_Main.Top    := ini.ReadInteger('Application', 'Top',200);
+        F_Main.Height := ini.ReadInteger('Application', 'Heigth',500);
+        F_Main.Width  := ini.ReadInteger('Application', 'Width',1125);
+        F_Main.WindowState := wsNormal;
+       end;
+    end;//case
 
-   //nastaveni defaultnich cest pro Open/Save dialogy
-   F_Options.OD_Open.InitialDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\';
-   F_Options.SD_Save.InitialDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\';
+    //nacitani dat o konzoli
+    F_Options.CHB_Log_console.Checked := ini_lib.ReadBool('Log','Log_console',true);
 
-   //nacitani dat o programu - left, top...
-   case Konfigurace.ini.ReadInteger('Application','WState',0) of
-    0:begin
-       F_Main.WindowState := wsMaximized;
-      end;
-    1:begin
-       F_Main.Left   := Konfigurace.ini.ReadInteger('Application', 'Left',200);
-       F_Main.Top    := Konfigurace.ini.ReadInteger('Application', 'Top',200);
-       F_Main.Height := Konfigurace.ini.ReadInteger('Application', 'Heigth',500);
-       F_Main.Width  := Konfigurace.ini.ReadInteger('Application', 'Width',1125);
-       F_Main.WindowState := wsNormal;
-      end;
-   end;//case
+    str := ini.ReadString('Centrala', 'system', 'xpressnet');
+    if (str = 'simulator') then
+     system := TRS_Simulator
+    else
+     system := TRS_XpressNet;
 
-   //nacitani dat o konzoli
-   F_Options.CHB_Log_console.Checked := ini_lib.ReadBool('Log','Log_console',true);
+    TrkSystem := TTrkGUI.Create(
+     system,
+     F_Main.LV_log_lnet,
+     TTrkLogLevel(ini.ReadInteger('Centrala', 'logfile', 2)),
+     TTrkLogLevel(ini.ReadInteger('Centrala', 'logtable', 2))
+    );
 
-   str := ini.ReadString('Centrala', 'system', 'xpressnet');
-   if (str = 'simulator') then
-    system := TRS_Simulator
-   else
-    system := TRS_XpressNet;
+    TrkSystem.BaudRate := TBaudRate(ini.ReadInteger('Centrala','BaudRate',0));
+    TrkSystem.StopBits := TStopBits(ini.ReadInteger('Centrala','StopBits',0));
+    TrkSystem.DataBits := TDataBits(ini.ReadInteger('Centrala','DataBits',0));
+    TrkSystem.FlowControl := TFlowControl(ini.ReadInteger('Centrala', 'FlowControl', 0));
+    TrkSystem.COM := ini.ReadString('Centrala','COM','COM1');
 
-   TrkSystem := TTrkGUI.Create(
-    system,
-    F_Main.LV_log_lnet,
-    TTrkLogLevel(ini.ReadInteger('Centrala', 'logfile', 2)),
-    TTrkLogLevel(ini.ReadInteger('Centrala', 'logtable', 2))
-   );
+    F_Main.CB_centrala_loglevel_file.ItemIndex  := Integer(TrkSystem.logfile);
+    F_Main.CB_centrala_loglevel_table.ItemIndex := Integer(TrkSystem.logtable);
 
-   TrkSystem.BaudRate := TBaudRate(ini.ReadInteger('Centrala','BaudRate',0));
-   TrkSystem.StopBits := TStopBits(ini.ReadInteger('Centrala','StopBits',0));
-   TrkSystem.DataBits := TDataBits(ini.ReadInteger('Centrala','DataBits',0));
-   TrkSystem.FlowControl := TFlowControl(ini.ReadInteger('Centrala', 'FlowControl', 0));
-   TrkSystem.COM := ini.ReadString('Centrala','COM','COM1');
+    //nactitani dalsich dat
+    F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg','TimerInterval',4);
+    F_Options.LB_TimerClick(Self);
+    F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg','AutSpusteni',false);
+    if (F_Options.CHB_povolit_spusteni.Checked) then F_Main.KomunikacePocitani := 1;
 
-   F_Main.CB_centrala_loglevel_file.ItemIndex  := Integer(TrkSystem.logfile);
-   F_Main.CB_centrala_loglevel_table.ItemIndex := Integer(TrkSystem.logtable);
+    //nacitani modeloveho casu
+    ModCas.LoadData(ini);
 
-   //nactitani dalsich dat
-   F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg','TimerInterval',4);
-   F_Options.LB_TimerClick(Self);
-   F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg','AutSpusteni',false);
-   if (F_Options.CHB_povolit_spusteni.Checked) then F_Main.KomunikacePocitani := 1;
+    SS.LoadData(ini);
 
-   //nacitani modeloveho casu
-   ModCas.LoadData(Konfigurace.ini);
+    ORTCPServer.port := ini.ReadInteger('PanelServer', 'port', _PANEL_DEFAULT_PORT);
 
-   SS.LoadData(Konfigurace.ini);
+    try
+      PtServer.port := ini.ReadInteger('PTServer', 'port', _PT_DEFAULT_PORT);
+    except
+      on E:EPTActive do
+        writeLog('PT ERR: '+E.Message, WR_PT);
+    end;
 
-   ORTCPServer.port := ini.ReadInteger('PanelServer', 'port', _PANEL_DEFAULT_PORT);
+    PtServer.compact := ini.ReadBool('PTServer', 'compact', _PT_COMPACT_RESPONSE);
 
-   try
-     PtServer.port := ini.ReadInteger('PTServer', 'port', _PT_DEFAULT_PORT);
-   except
-     on E:EPTActive do
-       writeLog('PT ERR: '+E.Message, WR_PT);
-   end;
+    // autosave
 
-   PtServer.compact := ini.ReadBool('PTServer', 'compact', _PT_COMPACT_RESPONSE);
+    Data.autosave := ini.ReadBool('autosave', 'enabled', true);
+    str := ini.ReadString('autosave', 'period', '00:30');
+    Data.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
+    if (data.autosave) then
+      Data.autosave_next := Now + Data.autosave_period;
 
-   // autosave
+    // nacteni vyznamu funkci
+    FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
+    F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
 
-   Data.autosave        := ini.ReadBool('autosave', 'enabled', true);
-   str := ini.ReadString('autosave', 'period', '00:30');
-   Data.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
-   if (data.autosave) then
-     Data.autosave_next := Now + Data.autosave_period;
+    // nacteni UDP discovery
+    UDPdisc := TUDPDiscover.Create(_DISC_DEFAULT_PORT,
+         ini.ReadString('PanelServer', 'nazev', ''),
+         ini.ReadString('PanelServer', 'popis', ''));
 
-   // nacteni vyznamu funkci
-   FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
-   F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
-
-   // nacteni UDP discovery
-   UDPdisc := TUDPDiscover.Create(_DISC_DEFAULT_PORT,
-        ini.ReadString('PanelServer', 'nazev', ''),
-        ini.ReadString('PanelServer', 'popis', ''));
-
-   writelog('Konfigurace naètena', WR_DATA);
+    writelog('Konfigurace naètena', WR_DATA);
+  finally
+    ini.Free();
+  end;
  end;
 
 procedure TKonfigurace.SaveCfgToFile(IniSave:string);
+var ini:TMemIniFile;
  begin
   ini_lib.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', IniSave);
-  Konfigurace.ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
+  ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
 
-  //ukladani modeloveho casu
-  ModCas.SaveData(Konfigurace.ini);
+  try
+    ModCas.SaveData(ini);
 
-  ini.WriteInteger('SystemCfg','TimerInterval',F_Options.LB_Timer.ItemIndex);
-  ini.WriteBool('SystemCfg','AutSpusteni',F_Options.CHB_povolit_spusteni.Checked);
+    ini.WriteInteger('SystemCfg', 'TimerInterval', F_Options.LB_Timer.ItemIndex);
+    ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
 
-  ini.WriteInteger('Centrala','BaudRate', Integer(TrkSystem.BaudRate));
-  ini.WriteInteger('Centrala','StopBits', Integer(TrkSystem.StopBits));
-  ini.WriteInteger('Centrala','DataBits', Integer(TrkSystem.DataBits));
-  ini.WriteInteger('Centrala','FlowControl', Integer(TrkSystem.FlowControl));
-  ini.Writestring('Centrala','COM', TrkSystem.COM);
+    ini.WriteInteger('Centrala', 'BaudRate', Integer(TrkSystem.BaudRate));
+    ini.WriteInteger('Centrala', 'StopBits', Integer(TrkSystem.StopBits));
+    ini.WriteInteger('Centrala', 'DataBits', Integer(TrkSystem.DataBits));
+    ini.WriteInteger('Centrala', 'FlowControl', Integer(TrkSystem.FlowControl));
+    ini.Writestring('Centrala', 'COM', TrkSystem.COM);
 
-  if (TrkSystem.TrkSystem = TRS_LocoNET) then
-    ini.WriteString('Centrala', 'system', 'loconet')
-  else if (TrkSystem.TrkSystem = TRS_Simulator) then
-    ini.WriteString('Centrala', 'system', 'simulator')
-  else
-    ini.WriteString('Centrala', 'system', 'xpressnet');
-  
+    if (TrkSystem.TrkSystem = TRS_LocoNET) then
+      ini.WriteString('Centrala', 'system', 'loconet')
+    else if (TrkSystem.TrkSystem = TRS_Simulator) then
+      ini.WriteString('Centrala', 'system', 'simulator')
+    else
+      ini.WriteString('Centrala', 'system', 'xpressnet');
 
-  ini.WriteInteger('Centrala', 'logtable', Integer(TrkSystem.logtable));
-  ini.WriteInteger('Centrala', 'logfile', Integer(TrkSystem.logfile));
+    ini.WriteInteger('Centrala', 'logtable', Integer(TrkSystem.logtable));
+    ini.WriteInteger('Centrala', 'logfile', Integer(TrkSystem.logfile));
 
-  ini_lib.WriteBool('Log','Log_console',F_Options.CHB_Log_console.Checked);
-  ini.WriteInteger('AdminData','FormLeft',F_Admin.Left);
-  ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
+    ini_lib.WriteBool('Log', 'Log_console', F_Options.CHB_Log_console.Checked);
+    ini.WriteInteger('AdminData', 'FormLeft', F_Admin.Left);
+    ini.WriteInteger('AdminData', 'FormTop', F_Admin.Top);
 
-  ini.WriteInteger('PanelServer', 'port', ORTCPServer.port);
-  ini.WriteString('PanelServer', 'nazev', UDPdisc.name);
-  ini.WriteString('PanelServer', 'popis', UDPdisc.description);
+    ini.WriteInteger('PanelServer', 'port', ORTCPServer.port);
+    ini.WriteString('PanelServer', 'nazev', UDPdisc.name);
+    ini.WriteString('PanelServer', 'popis', UDPdisc.description);
 
-  ini.WriteInteger('PTServer', 'port', PtServer.port);
-  ini.WriteBool('PTServer', 'compact', PtServer.compact);
+    ini.WriteInteger('PTServer', 'port', PtServer.port);
+    ini.WriteBool('PTServer', 'compact', PtServer.compact);
 
-  SS.SaveData(Konfigurace.ini);
+    SS.SaveData(ini);
 
-  // autosave
-  ini.WriteBool('autosave', 'enabled', Data.autosave);
-  ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Data.autosave_period));
+    // autosave
+    ini.WriteBool('autosave', 'enabled', Data.autosave);
+    ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Data.autosave_period));
 
-  // ulozeni vyznamu funkci
-  ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
-  ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
-
-  Konfigurace.ini.UpdateFile;
-  Konfigurace.ini.Free;
+    // ulozeni vyznamu funkci
+    ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
+    ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
+  finally
+    ini.UpdateFile();
+    ini.Free();
+  end;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TFormData.LoadFormData(IniLoad:String);
-var cyklus,cyklus2:Integer;
-    Polozky:TStrings;
-    Polozka:String;
+var j:Integer;
+    objs:TStrings;
+    obj, rawObj:String;
     aComponent:TComponent;
+    ini:TMemIniFile;
  begin
   writelog('Naèítám FormData - '+IniLoad,WR_DATA);
 
-  FormData.ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
+  ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
   FormData.aFile := IniLoad;
-  Polozky := TStringList.Create;
-
-  FormData.ini.GetStrings(Polozky);
-  if (Polozky.Count = 0) then
-   begin
-    writelog('FormData upozorneni - pocet polozek = 0',WR_DATA);
-    Exit;
-   end;//if Polozky.Count = 0
-  for cyklus := 0 to Polozky.Count-1 do
-   begin
-    cyklus2 := 0;
-    while (FormData.ini.ReadInteger(RightStr(LeftStr(Polozky[cyklus],Length(Polozky[cyklus])-1),Length(Polozky[cyklus])-2),IntToStr(cyklus2),-1) > -1) do
+  objs := TStringList.Create();
+  try
+    ini.GetStrings(objs); // "[LV_xy]" (must cut "[]")
+    for obj in objs do
      begin
-      Polozka := RightStr(LeftStr(Polozky[cyklus],Length(Polozky[cyklus])-1),Length(Polozky[cyklus])-2);
-      aComponent := F_Options.FindComponent(Polozka);
-      if (AComponent = nil) then aComponent := F_Main.FindComponent(Polozka);
-
-      if (aComponent <> nil) then
+      j := 0;
+      rawObj := Copy(obj, 2, Length(obj)-2);
+      while (ini.ReadInteger(rawObj, IntToStr(j), -1) > -1) do
        begin
-        if (cyklus2 < (aComponent as TListView).Columns.Count) then
-         begin
-          (aComponent as TListView).Columns.Items[cyklus2].Width := FormData.ini.ReadInteger(Polozka,IntToStr(cyklus2),0);
-         end;
-       end;//if (aComponent <> nil)
-      cyklus2 := cyklus2 + 1;
-     end;//while
-   end;//for cyklus
+        aComponent := F_Options.FindComponent(rawObj);
+        if (AComponent = nil) then aComponent := F_Main.FindComponent(rawObj);
 
-  Polozky.Free;
-  FormData.ini.Free;
-  writelog('FormData uspesne nactena',WR_DATA);
+        if (aComponent <> nil) then
+          if (j < (aComponent as TListView).Columns.Count) then
+            (aComponent as TListView).Columns.Items[j].Width := ini.ReadInteger(rawObj, IntToStr(j),0);
+
+        j := j + 1;
+       end;//while
+     end;//for i
+  finally
+    objs.Free();
+    ini.Free();
+  end;
+  writelog('FormData úspìšnì naètena', WR_DATA);
  end;
 
 procedure TFormData.SaveFormData(IniSave:String);
-var cyklus,cyklus2:Integer;
+var i, j:Integer;
+    ini:TMemIniFile;
  begin
   DeleteFile(IniSave);
-  FormData.ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
+  ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
 
-  for cyklus := 0 to F_Options.ComponentCount-1 do
-    if (F_Options.Components[cyklus].ClassType = TListView) then
-      for cyklus2 := 0 to (F_Options.Components[cyklus] as TListView).Columns.Count-1 do
-        FormData.ini.WriteInteger(F_Options.Components[cyklus].Name,IntToStr(cyklus2),(F_Options.Components[cyklus] as TListView).Columns.Items[cyklus2].Width);
+  try
+    for i := 0 to F_Options.ComponentCount-1 do
+      if (F_Options.Components[i].ClassType = TListView) then
+        for j := 0 to (F_Options.Components[i] as TListView).Columns.Count-1 do
+          ini.WriteInteger(F_Options.Components[i].Name, IntToStr(j), (F_Options.Components[i] as TListView).Columns.Items[j].Width);
 
-  for cyklus := 0 to F_Main.ComponentCount-1 do
-    if (F_Main.Components[cyklus].ClassType = TListView) then
-      for cyklus2 := 0 to (F_Main.Components[cyklus] as TListView).Columns.Count-1 do
-        FormData.ini.WriteInteger(F_Main.Components[cyklus].Name,IntToStr(cyklus2),(F_Main.Components[cyklus] as TListView).Columns.Items[cyklus2].Width);
-
-  FormData.ini.UpdateFile;
-  FormData.ini.Free;
+    for i := 0 to F_Main.ComponentCount-1 do
+      if (F_Main.Components[i].ClassType = TListView) then
+        for j := 0 to (F_Main.Components[i] as TListView).Columns.Count-1 do
+          ini.WriteInteger(F_Main.Components[i].Name, IntToStr(j), (F_Main.Components[i] as TListView).Columns.Items[j].Width);
+  finally
+    ini.UpdateFile();
+    ini.Free();
+  end;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////

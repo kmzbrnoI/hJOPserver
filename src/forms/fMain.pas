@@ -1195,6 +1195,7 @@ begin
 end;
 
 procedure TF_Main.OnRCSStop(Sender:TObject);
+var ini:TMemIniFile;
 begin
   if (Blky.enabled) then
    begin
@@ -1206,10 +1207,13 @@ begin
   Self.UpdateSystemButtons();
 
   //vynulovani RunErroru
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  Konfigurace.ini.WriteInteger('SystemCfg', 'RunError',0);
-  Konfigurace.ini.UpdateFile;
-  Konfigurace.ini.Free;
+  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  try
+    ini.WriteInteger('SystemCfg', 'RunError', 0);
+  finally
+    ini.UpdateFile();
+    ini.Free();
+  end;
 
   if (F_Tester.Showing) then F_Tester.Close();  
 
@@ -1357,6 +1361,7 @@ begin
 end;
 
 procedure TF_Main.OnRCSErrStart(Sender:TObject; errMsg:string);
+var ini:TMemIniFile;
 begin
   A_RCS_Close.Enabled := true;
   Self.UpdateSystemButtons();
@@ -1368,10 +1373,13 @@ begin
   SystemData.Status := TSystemStatus.null;
 
   //defaultni hodnota padu
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  Konfigurace.ini.WriteInteger('SystemCfg','RunError',0);
-  Konfigurace.ini.UpdateFile;
-  Konfigurace.ini.Free;
+  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  try
+    ini.WriteInteger('SystemCfg','RunError',0);
+  finally
+    ini.UpdateFile();
+    ini.Free();
+  end;
 
   Self.LogStatus('ERR: RCS START FAIL: '+errMsg);
   writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR,21);
@@ -1430,6 +1438,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.A_SaveStavExecute(Sender: TObject);
+var ini:TMemIniFile;
 begin
   try
     // ukladani stavu bloku: ulozime do docasneho souboru a az pak prepiseme stavajici konfigurak
@@ -1501,12 +1510,15 @@ begin
   ini_lib.WriteBool('Log','main-table', Self.CHB_Mainlog_Table.Checked);
 
   try
-    Konfigurace.ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text), TEncoding.UTF8);
-    ModCas.SaveData(Konfigurace.ini);
-    Konfigurace.ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
-    Konfigurace.ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
-    Konfigurace.ini.UpdateFile();
-    Konfigurace.ini.Free();
+    ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text), TEncoding.UTF8);
+    try
+      ModCas.SaveData(ini);
+      ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
+      ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
+    finally
+      ini.UpdateFile();
+      ini.Free();
+    end;
   except
     on E:Exception do
       AppEvents.LogException(E, 'Save cfg');
@@ -2368,19 +2380,23 @@ procedure TF_Main.FormClose(Sender: TObject; var Action: TCloseAction);
   CloseForm;
  end;
 
-procedure TF_Main.SaveFormPosition;
+procedure TF_Main.SaveFormPosition();
+var ini:TMemIniFile;
  begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  case F_Main.WindowState of
-   wsNormal   : Konfigurace.ini.WriteInteger('Application', 'WState',1);
-   wsMaximized: Konfigurace.ini.WriteInteger('Application', 'WState',0);
-  end;//case
-  Konfigurace.ini.WriteInteger('Application', 'Left',F_Main.Left);
-  Konfigurace.ini.WriteInteger('Application', 'Top',F_Main.Top);
-  Konfigurace.ini.WriteInteger('Application', 'Heigth',F_Main.Height);
-  Konfigurace.ini.WriteInteger('Application', 'Width',F_Main.Width);
-  Konfigurace.ini.UpdateFile;
-  Konfigurace.ini.Free;
+  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  try
+    case F_Main.WindowState of
+     wsNormal   : ini.WriteInteger('Application', 'WState', 1);
+     wsMaximized: ini.WriteInteger('Application', 'WState', 0);
+    end;//case
+    ini.WriteInteger('Application', 'Left', F_Main.Left);
+    ini.WriteInteger('Application', 'Top', F_Main.Top);
+    ini.WriteInteger('Application', 'Heigth', F_Main.Height);
+    ini.WriteInteger('Application', 'Width', F_Main.Width);
+  finally
+    ini.UpdateFile();
+    ini.Free();
+  end;
  end;
 
 procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);

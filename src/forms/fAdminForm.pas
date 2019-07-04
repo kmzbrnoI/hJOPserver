@@ -81,21 +81,25 @@ uses fMain, TechnologieRCS, FileSystem, fSettings, Trakce,
 {$R *.dfm}
 
 procedure TF_Admin.LoadData();
+var ini:TMemIniFile;
  begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
 
-  CHB_SimInput.Checked          := Konfigurace.ini.ReadBool('AdminData', 'InputSim', false);
-  CHB_SimSoupravaUsek.Checked   := Konfigurace.ini.ReadBool('AdminData', 'SoupravaUsekSim', false);
-  CHB_JC_Simulator.Checked      := Konfigurace.ini.ReadBool('AdminData', 'JCsim', false);
-  CHB_SimVyhybky.Checked        := Konfigurace.ini.ReadBool('AdminData', 'VYHsim', false);
-  Self.CHB_JC_SimulatorClick(Self.CHB_JC_Simulator);
+  try
+    CHB_SimInput.Checked := ini.ReadBool('AdminData', 'InputSim', false);
+    CHB_SimSoupravaUsek.Checked := ini.ReadBool('AdminData', 'SoupravaUsekSim', false);
+    CHB_JC_Simulator.Checked := ini.ReadBool('AdminData', 'JCsim', false);
+    CHB_SimVyhybky.Checked := ini.ReadBool('AdminData', 'VYHsim', false);
+    Self.CHB_JC_SimulatorClick(Self.CHB_JC_Simulator);
 
-  CHB_Trat_Sim.Checked          := Konfigurace.ini.ReadBool('AdminData', 'TRATsim', false);
-  Self.CHB_Trat_SimClick(Self.CHB_Trat_Sim);
+    CHB_Trat_Sim.Checked          := ini.ReadBool('AdminData', 'TRATsim', false);
+    Self.CHB_Trat_SimClick(Self.CHB_Trat_Sim);
 
-
-  if (Konfigurace.ini.ReadBool('AdminData','show', false)) then
-    Self.Show();
+    if (ini.ReadBool('AdminData','show', false)) then
+      Self.Show();
+  finally
+    ini.Free();
+  end;
 
  try
    if ((RCSi.ready) and (Self.CHB_SimInput.Checked) and (RCSi.IsSimulatorMode())) then
@@ -104,22 +108,24 @@ procedure TF_Admin.LoadData();
    on E:Exception do
      writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
  end;
-
- end;
+end;
 
 procedure TF_Admin.SaveData();
+var ini:TMemIniFile;
  begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  Konfigurace.ini.WriteInteger('AdminData','FormLeft',F_Admin.Left);
-  Konfigurace.ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
-  Konfigurace.ini.WriteBool('AdminData','InputSim',CHB_SimInput.Checked);
-  Konfigurace.ini.WriteBool('AdminData','SoupravaUsekSim',CHB_SimSoupravaUsek.Checked);
-  Konfigurace.ini.WriteBool('AdminData', 'JCsim', CHB_JC_Simulator.Checked);
-  Konfigurace.ini.WriteBool('AdminData', 'TRATsim', CHB_Trat_Sim.Checked);
-  Konfigurace.ini.WriteBool('AdminData', 'VYHsim', CHB_SimVyhybky.Checked);
-
-  Konfigurace.ini.UpdateFile;
-  Konfigurace.ini.Free;
+  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  try
+    ini.WriteInteger('AdminData','FormLeft',F_Admin.Left);
+    ini.WriteInteger('AdminData','FormTop',F_Admin.Top);
+    ini.WriteBool('AdminData','InputSim',CHB_SimInput.Checked);
+    ini.WriteBool('AdminData','SoupravaUsekSim',CHB_SimSoupravaUsek.Checked);
+    ini.WriteBool('AdminData', 'JCsim', CHB_JC_Simulator.Checked);
+    ini.WriteBool('AdminData', 'TRATsim', CHB_Trat_Sim.Checked);
+    ini.WriteBool('AdminData', 'VYHsim', CHB_SimVyhybky.Checked);
+  finally
+    ini.UpdateFile();
+    ini.Free();
+  end;
  end;
 
 procedure TF_Admin.B_SaveClick(Sender: TObject);
@@ -129,26 +135,17 @@ procedure TF_Admin.B_SaveClick(Sender: TObject);
 
 procedure TF_Admin.CHB_JC_SimulatorClick(Sender: TObject);
 begin
- if (Self.CHB_JC_Simulator.Checked) then
-  JCSimulator.timer.Enabled := true
- else
-  JCSimulator.timer.Enabled := false;
+ JCSimulator.timer.Enabled := Self.CHB_JC_Simulator.Checked;
 end;
 
 procedure TF_Admin.CHB_SimVyhybkyClick(Sender: TObject);
 begin
- if (Self.CHB_SimVyhybky.Checked) then
-  VyhSimulator.timer.Enabled := true
- else
-  VyhSimulator.timer.Enabled := false;
+ VyhSimulator.timer.Enabled := Self.CHB_SimVyhybky.Checked;
 end;
 
 procedure TF_Admin.CHB_Trat_SimClick(Sender: TObject);
 begin
- if (Self.CHB_Trat_Sim.Checked) then
-  TratSimulator.timer.Enabled := true
- else
-  TratSimulator.timer.Enabled := false;
+ TratSimulator.timer.Enabled := Self.CHB_Trat_Sim.Checked;
 end;
 
 procedure TF_Admin.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -157,17 +154,19 @@ begin
   begin
    Self.FormStyle := fsNormal;
    Self.Visible := false;
-  end;//if Self.Visible
+  end;
 end;
 
 procedure TF_Admin.FormShow(Sender: TObject);
+var ini:TMemIniFile;
 begin
-  Konfigurace.ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-
-  F_Admin.Left := Konfigurace.ini.ReadInteger('AdminData','FormLeft', F_Admin.Left);
-  F_Admin.Top  := Konfigurace.ini.ReadInteger('AdminData','FormTop', F_Admin.Top);
-
-  Konfigurace.ini.Free;
+  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  try
+    F_Admin.Left := ini.ReadInteger('AdminData', 'FormLeft', F_Admin.Left);
+    F_Admin.Top := ini.ReadInteger('AdminData', 'FormTop', F_Admin.Top);
+  finally
+    ini.Free;
+  end;
 end;
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
