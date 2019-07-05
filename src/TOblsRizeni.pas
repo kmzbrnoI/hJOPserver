@@ -99,7 +99,7 @@ begin
 
    for i := 0 to oblasti.Count-1 do
     begin
-     OblR := TOR.Create(i);
+     OblR := TOR.Create(i+1);
      try
        OblR.LoadData(ini.ReadString(_SECT_OR, oblasti[i], ''));
        OblR.LoadStat(ini_stat, OblR.id);

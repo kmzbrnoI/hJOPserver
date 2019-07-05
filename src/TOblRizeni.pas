@@ -297,7 +297,7 @@ begin
  Self.ORStav.dk_click_callback := nil;
  Self.ORStav.reg_please := nil;
 
- Self.stack   := TORStack.Create(index+1, Self);
+ Self.stack   := TORStack.Create(index, Self);
  Self.vb      := TList<TObject>.Create();
  Self.changed := false;
 
