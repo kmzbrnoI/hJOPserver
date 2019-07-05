@@ -1119,8 +1119,8 @@ begin
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8))
-         or (TOR(SenderOR).stack.volba = VZ)) and (JCDb.IsAnyVCAvailable(Self))) then begin
+           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8) and (JCDb.IsAnyVCAvailable(Self)))
+         or (TOR(SenderOR).stack.volba = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1128,8 +1128,8 @@ begin
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8))
-         or ((SenderOR as TOR).stack.volba = VZ)) and (JCDb.IsAnyPCAvailable(Self))) then begin
+           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8) and (JCDb.IsAnyPCAvailable(Self)))
+         or ((SenderOR as TOR).stack.volba = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.SComSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1193,13 +1193,13 @@ begin
       //2 = VC, 3= PC
       if (Self.SComRel.SymbolType <> 1) then
        begin
-        if (JCDb.IsAnyVCAvailable(Self)) then // i kdyz neni zadna VC, schvalne umoznime PN
+        if ((JCDb.IsAnyVCAvailable(Self)) or ((SenderOR as TOR).stack.volba = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
           Result := Result + 'VC>,';
         Result := Result + '!PN>,';
        end;
       if (JCDb.IsAnyPC(Self)) then
        begin
-        if (JCDb.IsAnyPCAvailable(Self)) then
+        if ((JCDb.IsAnyPCAvailable(Self)) or ((SenderOR as TOR).stack.volba = VZ)) then
           Result := Result + 'PC>,';
         Result := Result + 'PP>,';
        end;
