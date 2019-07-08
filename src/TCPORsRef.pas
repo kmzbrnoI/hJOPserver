@@ -18,7 +18,7 @@ type
   // tady je ulozeno jedno fyzicke spojeni s panelem (obsahuje oblasti rizeni, otevrene okynko stitku, menu, ...)
   TTCPORsRef = class
    const
-    _PING_WINDOW_SIZE = 5;
+    _PING_WINDOW_SIZE = 3;
     _PING_PERIOD_NOREG = 5;
     _PING_PERIOD_REG = 1;
     _PING_TRYOUT = 3;
@@ -103,7 +103,7 @@ begin
  Self.index := index;
  Self.ping_sent := TQueue<TORPing>.Create();
  Self.ping_received := TList<TTime>.Create();
- Self.ping_next_send := 0;
+ Self.ping_next_send := Now+EncodeTime(0, 0, 0, 500); // do not disturb device for first half a sec
  Self.ping_received_next_index := 0;
  Self.ping_unreachable := false;
  Self.Reset();
