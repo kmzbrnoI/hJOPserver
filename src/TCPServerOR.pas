@@ -1100,7 +1100,6 @@ var i:Integer;
     oblr:TOR;
     orRef:TTCPORsRef;
     Hour, Min, Sec, MSec: Word;
-    ms: Integer;
 begin
  if (not Assigned(F_Main.LV_Clients.Items.Item[index])) then
    Exit();
@@ -1138,7 +1137,6 @@ begin
    if (orRef.PingComputed()) then
     begin
      DecodeTime(orRef.ping, Hour, Min, Sec, MSec);
-     ms := (Min * 60000) + (Sec * 1000) + MSec;
      F_Main.LV_Clients.Items[index].SubItems[2] := IntToStr(MSec);
     end else
      F_Main.LV_Clients.Items[index].SubItems[2] := '?';
