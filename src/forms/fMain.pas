@@ -2896,6 +2896,8 @@ begin
  else if (Item.SubItems[0] = 'otevřeno') then begin
    if (Item.SubItems[2] = 'unreachable') then
      Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_RED
+   else if (Item.SubItems[2] = '?') then
+     Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
    else
      Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
  end else
