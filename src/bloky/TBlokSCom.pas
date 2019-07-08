@@ -693,12 +693,13 @@ begin
       end else begin
        //binary
        case (navest) of
-        0,5,13,16..127:RCSi.SetOutput(Self.SComSettings.RCSAddrs[0].board,
-            Self.SComSettings.RCSAddrs[0].port, 0);
-       else//case (navest)
+        _NAV_STUJ, _NAV_VSE, _NAV_PRIVOL, _NAV_ZHASNUTO, 16..127:
+            RCSi.SetOutput(Self.SComSettings.RCSAddrs[0].board,
+                           Self.SComSettings.RCSAddrs[0].port, 0);
+       else
         RCSi.SetOutput(Self.SComSettings.RCSAddrs[0].board,
             Self.SComSettings.RCSAddrs[0].port, 1);
-       end;//else case 0,5,13,16..127
+       end;
       end;//else
     end;
  except
