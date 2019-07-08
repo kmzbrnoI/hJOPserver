@@ -17,7 +17,7 @@ uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
 const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
   _MAX_OR_CLIENTS = 32;                                                         // maximalni pocet klientu
-  _PING_TIMER_PERIOD_MS = 20000;
+  _PING_TIMER_PERIOD_MS = 250;
 
   // tady jsou vyjmenovane vsechny verze protokolu, ktere akceptuje server od klientu
   _PROTO_V_ACCEPT : array[0..1] of string =
@@ -68,7 +68,7 @@ type
      function IsOpenned():boolean;                                              // je server zapnut?
 
      procedure OnDCCCmdErr(Sender:TObject; Data:Pointer);                       // event chyby komunikace s lokomotivou v automatu
-     procedure BroadcastPing(Sedner:TObject);
+     procedure CheckPing(Sender:TObject);
 
    public
 
@@ -156,7 +156,7 @@ begin
  Self.pingTimer := TTimer.Create(nil);
  Self.pingTimer.Enabled := false;
  Self.pingTimer.Interval := _PING_TIMER_PERIOD_MS;
- Self.pingTimer.OnTimer := Self.BroadcastPing;
+ Self.pingTimer.OnTimer := Self.CheckPing;
 
  Self.tcpServer := TIdTCPServer.Create(nil);
  Self.tcpServer.OnConnect    := Self.OnTcpServerConnect;
@@ -435,7 +435,10 @@ var i, j:Integer;
     podj: TPOdj;
     dt: TDateTime;
     oblr:TOR;
+    orRef:TTCPORsRef;
 begin
+ orRef := (AContext.Data as TTCPORsRef);
+
  // najdeme klienta v databazi
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if ((Assigned(Self.clients[i])) and (Self.clients[i].conn = AContext)) then
@@ -469,10 +472,10 @@ begin
    Self.SendLn(AContext, '-;HELLO;' + _PROTOCOL_VERSION);
 
    // oznamime verzi komunikacniho protokolu
-   (AContext.Data as TTCPORsRef).protocol_version := Self.parsed[2];
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := Self.parsed[2];
+   orRef.protocol_version := Self.parsed[2];
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[9] := Self.parsed[2];
 
-   ORTCPServer.GUIQueueLineToRefresh((AContext.Data as TTCPORsRef).index);
+   ORTCPServer.GUIQueueLineToRefresh(orRef.index);
    ModCas.SendTimeToPanel(AContext);
 
    if (TrkSystem.status = Ttrk_status.TS_ON) then
@@ -488,24 +491,28 @@ begin
  // vsechny nasledujici prikazy jsou podminene tim, ze probehl handshake
  if (Self.clients[i].status < TPanelConnectionStatus.opened) then Exit();
 
- if (parsed[1] = 'STIT') then
+ if (parsed[1] = 'PONG') then begin
+   if (parsed.Count >= 3) then
+     orRef.PongReceived(StrToInt(parsed[2]));
+
+ end else if (parsed[1] = 'STIT') then
   begin
    if (parsed.Count < 3) then
     tmp := ''
    else
     tmp := parsed[2];
 
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := '';
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[7] := '';
 
-   if ((AContext.Data as TTCPORsRef).stitek = nil) then Exit();
-   case ((AContext.Data as TTCPORsRef).stitek.typ) of
-    _BLK_USEK, _BLK_TU : ((AContext.Data as TTCPORsRef).stitek as TBlkUsek).Stitek := tmp;
-    _BLK_VYH           : ((AContext.Data as TTCPORsRef).stitek as TBlkVyhybka).Stitek := tmp;
-    _BLK_UVAZKA        : ((AContext.Data as TTCPORsRef).stitek as TBlkUvazka).Stitek := tmp;
-    _BLK_PREJEZD       : ((AContext.Data as TTCPORsRef).stitek as TBlkPrejezd).Stitek := tmp;
-    _BLK_ZAMEK         : ((AContext.Data as TTCPORsRef).stitek as TBlkZamek).Stitek := tmp;
+   if (orRef.stitek = nil) then Exit();
+   case (orRef.stitek.typ) of
+    _BLK_USEK, _BLK_TU : (orRef.stitek as TBlkUsek).Stitek := tmp;
+    _BLK_VYH           : (orRef.stitek as TBlkVyhybka).Stitek := tmp;
+    _BLK_UVAZKA        : (orRef.stitek as TBlkUvazka).Stitek := tmp;
+    _BLK_PREJEZD       : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
+    _BLK_ZAMEK         : (orRef.stitek as TBlkZamek).Stitek := tmp;
    end;//case
-   (AContext.Data as TTCPORsRef).stitek := nil;
+   orRef.stitek := nil;
   end
 
  else if (parsed[1] = 'VYL') then
@@ -515,48 +522,48 @@ begin
    else
     tmp := parsed[2];
 
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := '';
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[7] := '';
 
-   if ((AContext.Data as TTCPORsRef).vyluka = nil) then Exit();
-   case ((AContext.Data as TTCPORsRef).vyluka.typ) of
-    _BLK_USEK, _BLK_TU : ((AContext.Data as TTCPORsRef).vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
-    _BLK_VYH           : ((AContext.Data as TTCPORsRef).vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
+   if (orRef.vyluka = nil) then Exit();
+   case (orRef.vyluka.typ) of
+    _BLK_USEK, _BLK_TU : (orRef.vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
+    _BLK_VYH           : (orRef.vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
    end;//case
-   (AContext.Data as TTCPORsRef).vyluka := nil;
+   orRef.vyluka := nil;
   end
 
  else if (parsed[1] = 'PS') then
   begin
-   if (not Assigned((AContext.Data as TTCPORsRef).potvr)) then Exit();
+   if (not Assigned(orRef.potvr)) then Exit();
 
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[8] := '';
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[8] := '';
 
    if (parsed[2] = '2') then
-     (AContext.Data as TTCPORsRef).potvr(AContext, true)
+     orRef.potvr(AContext, true)
    else
-     (AContext.Data as TTCPORsRef).potvr(AContext, false);
+     orRef.potvr(AContext, false);
 
-   (AContext.Data as TTCPORsRef).potvr := nil;
+   orRef.potvr := nil;
   end
 
  else if (parsed[1] = 'MENUCLICK') then
   begin
-   if ((AContext.Data as TTCPORsRef).menu = nil) then Exit();
-   blk := (AContext.Data as TTCPORsRef).menu;
-   (AContext.Data as TTCPORsRef).menu := nil;       // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[6] := '';
+   if (orRef.menu = nil) then Exit();
+   blk := orRef.menu;
+   orRef.menu := nil;       // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[6] := '';
 
    if (parsed.Count > 2) then
-     blk.PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2], StrToIntDef(parsed[3], -1))
+     blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], StrToIntDef(parsed[3], -1))
    else
-     blk.PanelMenuClick(AContext, (AContext.Data as TTCPORsRef).menu_or, parsed[2], -1);
+     blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], -1);
   end
 
  else if (parsed[1] = 'CLICK') then begin
   try
    btn := Self.StrToPanelButton(parsed[2]);
    if (btn = TPanelButton.ESCAPE) then
-     (AContext.Data as TTCPORsRef).Escape(AContext);
+     orRef.Escape(AContext);
   except
    on E:EInvalidButton do
      Exit();
@@ -569,16 +576,16 @@ begin
   begin
    if (parsed[2] = 'OK') then
     begin
-      if (Assigned((AContext.Data as TTCPORsRef).UPO_OK)) then
-        (AContext.Data as TTCPORsRef).UPO_OK(AContext);
+      if (Assigned(orRef.UPO_OK)) then
+        orRef.UPO_OK(AContext);
     end else
       if (parsed[2] = 'ESC') then
-        if (Assigned((AContext.Data as TTCPORsRef).UPO_Esc)) then
-          (AContext.Data as TTCPORsRef).UPO_Esc(AContext);
+        if (Assigned(orRef.UPO_Esc)) then
+          orRef.UPO_Esc(AContext);
 
-   (AContext.Data as TTCPORsRef).UPO_OK  := nil;
-   (AContext.Data as TTCPORsRef).UPO_Esc := nil;
-   (AContext.Data as TTCPORsRef).UPO_ref := nil;
+   orRef.UPO_OK  := nil;
+   orRef.UPO_Esc := nil;
+   orRef.UPO_ref := nil;
   end//if parsed[2] = 'UPO'
 
  else if (parsed[1] = 'MOD-CAS') then
@@ -610,7 +617,7 @@ begin
  else if (parsed[1] = 'SPR-LIST') then
   begin
    tmp := '';
-   for oblr in (AContext.Data as TTCPORsRef).ORs do
+   for oblr in orRef.ORs do
      tmp := tmp + oblr.PanelGetSprs(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
@@ -621,7 +628,7 @@ begin
    if (i >= 0) then (Soupravy.soupravy[i].stanice as TOR).PanelRemoveSpr(AContext, i);
 
    tmp := '';
-   for oblr in (AContext.Data as TTCPORsRef).ORs do
+   for oblr in orRef.ORs do
     tmp := tmp + oblr.PanelGetSprs(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
@@ -631,7 +638,7 @@ begin
 
  else if (parsed[1] = 'F-VYZN-GET') then
   begin
-   (AContext.Data as TTCPORsRef).funcsVyznamReq := true;
+   orRef.funcsVyznamReq := true;
    Self.SendLn(AContext, '-;F-VYZN-LIST;{'+ FuncsFyznam.GetFuncsVyznam() +'}');
   end
 
@@ -703,7 +710,9 @@ procedure TORTCPServer.ParseOR(AContext: TIdContext);
 var i:Integer;
     oblr:TOR;
     btn:TPanelButton;
+    orRef:TTCPORsRef;
 begin
+ orRef := (AContext.Data as TTCPORsRef);
  if (parsed.Count < 2) then Exit();
 
  // nejdriv se podivame, jestli nahodou nechce nekdo autorizaci
@@ -729,11 +738,11 @@ begin
  end;
 
  // vsechna ostatni data pak podlehaji znalosti OR, ktere mam autorizovane, tak z toho vyjdeme
- for i := 0 to (AContext.Data as TTCPORsRef).ORs.Count-1 do
-   if (parsed[0] = (AContext.Data as TTCPORsRef).ORs[i].id) then
+ for i := 0 to orRef.ORs.Count-1 do
+   if (parsed[0] = orRef.ORs[i].id) then
      break;
 
- if (i = (AContext.Data as TTCPORsRef).ORs.Count) then
+ if (i = orRef.ORs.Count) then
   begin
    Self.SendInfoMsg(AContext, 'Neautorizováno');
    Exit();
@@ -742,76 +751,76 @@ begin
  if (parsed[1] = 'NUZ') then
   begin
    if (parsed[2] = '1') then
-     (AContext.Data as TTCPORsRef).ORs[i].PanelNUZ(AContext);
+     orRef.ORs[i].PanelNUZ(AContext);
    if (parsed[2] = '0') then
-     (AContext.Data as TTCPORsRef).ORs[i].PanelNUZCancel(AContext);
+     orRef.ORs[i].PanelNUZCancel(AContext);
    Exit();
   end
 
  else if (parsed[1] = 'GET-ALL') then
-  (AContext.Data as TTCPORsRef).ORs[i].PanelFirstGet(AContext)
+  orRef.ORs[i].PanelFirstGet(AContext)
 
  else if (parsed[1] = 'CLICK') then begin
   try
    btn := Self.StrToPanelButton(parsed[2]);
 
    if (parsed.Count > 4) then
-     (AContext.Data as TTCPORsRef).ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
+     orRef.ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
    else
-     (AContext.Data as TTCPORsRef).ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn);
+     orRef.ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn);
 
    if (btn = ESCAPE) then
-     (AContext.Data as TTCPORsRef).Escape(AContext);
+     orRef.Escape(AContext);
   except
    on E:EInvalidButton do
      Exit();
   end;
 
  end else if (parsed[1] = 'MSG') then
-   (AContext.Data as TTCPORsRef).ORs[i].PanelMessage(ACOntext, parsed[2], parsed[3])
+   orRef.ORs[i].PanelMessage(ACOntext, parsed[2], parsed[3])
 
  else if (parsed[1] = 'HV-LIST') then
-   (AContext.Data as TTCPORsRef).ORs[i].PanelHVList(AContext)
+   orRef.ORs[i].PanelHVList(AContext)
 
  else if (parsed[1] = 'SPR-CHANGE') then
   begin
    parsed.Delete(0);
    parsed.Delete(0);
-   (AContext.Data as TTCPORsRef).ORs[i].PanelSprChange(AContext, parsed);
+   orRef.ORs[i].PanelSprChange(AContext, parsed);
   end
 
  else if (parsed[1] = 'LOK-MOVE-OR') then
-   (AContext.Data as TTCPORsRef).ORs[i].PanelMoveLok(AContext, StrToInt(parsed[2]), parsed[3])
+   orRef.ORs[i].PanelMoveLok(AContext, StrToInt(parsed[2]), parsed[3])
 
  else if (parsed[1] = 'OSV') then
   begin
    if (parsed[2] = 'GET') then
-     (AContext.Data as TTCPORsRef).ORs[i].PanelSendOsv(AContext)
+     orRef.ORs[i].PanelSendOsv(AContext)
    else if (parsed[2] = 'SET') then
-   (AContext.Data as TTCPORsRef).ORs[i].PanelSetOsv(AContext, parsed[3], PrevodySoustav.StrToBool(parsed[4]));
+   orRef.ORs[i].PanelSetOsv(AContext, parsed[3], PrevodySoustav.StrToBool(parsed[4]));
   end
 
  else if (parsed[1] = 'HV') then
   begin
    if (parsed[2] = 'ADD') then
-     (AContext.Data as TTCPORsRef).ORs[i].PanelHVAdd(AContext, parsed[3]);
+     orRef.ORs[i].PanelHVAdd(AContext, parsed[3]);
    if (parsed[2] = 'REMOVE') then
-     (AContext.Data as TTCPORsRef).ORs[i].PanelHVRemove(AContext, StrToInt(parsed[3]));
+     orRef.ORs[i].PanelHVRemove(AContext, StrToInt(parsed[3]));
    if (parsed[2] = 'EDIT') then
-     (AContext.Data as TTCPORsRef).ORs[i].PanelHVEdit(AContext, parsed[3]);
+     orRef.ORs[i].PanelHVEdit(AContext, parsed[3]);
   end
 
  else if (parsed[1] = 'ZAS') then
-  (AContext.Data as TTCPORsRef).ORs[i].PanelZAS(AContext, parsed)
+  orRef.ORs[i].PanelZAS(AContext, parsed)
 
  else if (parsed[1] = 'DK-CLICK') then
-  (AContext.Data as TTCPORsRef).ORs[i].PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
+  orRef.ORs[i].PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
 
  else if (parsed[1] = 'LOK-REQ') then
-  (AContext.Data as TTCPORsRef).ORs[i].PanelLokoReq(AContext, parsed)
+  orRef.ORs[i].PanelLokoReq(AContext, parsed)
 
  else if (parsed[1] = 'SHP') then
-  (AContext.Data as TTCPORsRef).ORs[i].PanelHlaseni(AContext, parsed);
+  orRef.ORs[i].PanelHlaseni(AContext, parsed);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1314,13 +1323,22 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORTCPServer.BroadcastPing(Sedner:TObject);
+procedure TORTCPServer.CheckPing(Sender:TObject);
+var i:Integer;
+    orRef:TTCPORsRef;
 begin
- try
-   Self.BroadcastData('-;PING');
- except
+ for i := _MAX_OR_CLIENTS-1 downto 0 do
+  begin
+   if (Self.clients[i] <> nil) then
+    begin
+     try
+      orRef := TTCPORsRef(Self.clients[i].conn.Data);
+      orRef.PingUpdate(Self.clients[i].conn);
+     except
 
- end;
+     end;
+    end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

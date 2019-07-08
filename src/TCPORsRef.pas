@@ -19,10 +19,17 @@ type
   TTCPORsRef = class
    const
     _PING_WINDOW_SIZE = 5;
+    _PING_PERIOD_NOREG = 5;
+    _PING_PERIOD_REG = 1;
+    _PING_TRYOUT = 3;
 
    private
-    function GetPing():double;
-    procedure OnUnreachable();
+    procedure CheckSendPing(AContext:TIdContext);
+    procedure CheckUnreachable(AContext:TIdContext);
+
+    function GetPing():TTime;
+    procedure OnUnreachable(AContext:TIdContext);
+    procedure PingNewReceived(time:TTime);
 
    public
     ORs:TList<TOR>;                                                             // reference na OR
@@ -57,10 +64,12 @@ type
     podj_usek: TBlk;                                                            // data pro editaci predvidaneho odjezdu
     podj_sprid: Integer;
 
-    ping_id: Cardinal;
-    ping_last_sent: TDateTime;
+    ping_next_id: Cardinal;
+    ping_next_send: TDateTime;
     ping_sent: TQueue<TORPing>;
-    ping_time_sum: Double;
+    ping_received: TList<TTime>;
+    ping_received_next_index: Integer;
+    ping_unreachable: Boolean;
 
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -70,14 +79,16 @@ type
     procedure ResetSpr();
 
     class function ORPing(id: Cardinal; sent: TDateTime):TORPing;
-    procedure Update();
     function PingComputed():boolean;
-    property ping: Double read GetPing;
+    procedure PingUpdate(AContext:TIdContext);
+    procedure PongReceived(id:Cardinal);
+
+    property ping: TTime read GetPing;
   end;
 
 implementation
 
-uses fMain;
+uses fMain, TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +102,10 @@ begin
  Self.regulator_zadost := nil;
  Self.index := index;
  Self.ping_sent := TQueue<TORPing>.Create();
+ Self.ping_received := TList<TTime>.Create();
+ Self.ping_next_send := 0;
+ Self.ping_received_next_index := 0;
+ Self.ping_unreachable := false;
  Self.Reset();
 end;
 
@@ -101,6 +116,7 @@ begin
  Self.regulator_loks.Free();
  Self.soundDict.Free();
  Self.ping_sent.Free();
+ Self.ping_received.Free();
  inherited;
 end;
 
@@ -158,35 +174,95 @@ end;
 
 function TTCPOrsRef.PingComputed():boolean;
 begin
- Result := (Self.ping_sent.Count > 0);
+ Result := (Self.ping_received.Count > 0);
 end;
 
-function TTCPOrsRef.GetPing():Double;
+function TTCPOrsRef.GetPing():TTime;
+var sum, ping: TTime;
 begin
  if (Self.ping_sent.Count = 0) then
    raise EPingNotYetComputed.Create('Ping not yet computed!');
 
- Result := Self.ping_time_sum / Self.ping_sent.Count;
+ sum := 0;
+ for ping in Self.ping_received do
+   sum := sum + ping;
+ Result := sum / Self.ping_received.Count;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.Update();
+procedure TTCPORsRef.OnUnreachable(AContext:TIdContext);
 begin
-
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.OnUnreachable();
+procedure TTCPORsRef.CheckSendPing(AContext:TIdContext);
 begin
+ if (Now >= Self.ping_next_send) then
+  begin
+   ORTCPServer.SendLn(AContext, '-;PING;REQ-RESP;'+IntToStr(Self.ping_next_id));
+   Self.ping_sent.Enqueue(ORPing(Self.ping_next_id, Now));
+   if (Self.regulator_loks.Count > 0) then
+     Self.ping_next_send := Now+EncodeTime(0, 0, _PING_PERIOD_REG, 0)
+   else
+     Self.ping_next_send := Now+EncodeTime(0, 0, _PING_PERIOD_NOREG, 0);
+   Self.ping_next_id := Self.ping_next_id + 1;
+   if (Self.ping_unreachable) then
+     Self.ping_sent.Dequeue(); // do not fill queue with inifinite amount of data
+  end;
+end;
 
+procedure TTCPORsRef.PongReceived(id:Cardinal);
+var orPing: TORPing;
+begin
+ while (Self.ping_sent.Count > 0) do
+  begin
+   orPing := Self.ping_sent.Dequeue();
+   if (orPing.id = id) then
+    begin
+     Self.PingNewReceived(Now-orPing.sent);
+     Exit();
+    end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+procedure TTCPORsRef.CheckUnreachable(AContext:TIdContext);
+begin
+ if ((Self.ping_sent.Count > _PING_TRYOUT) and (not Self.ping_unreachable)) then
+  begin
+   Self.OnUnreachable(AContext);
+   Self.ping_unreachable := true; // set flag
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure TTCPORsRef.PingUpdate(AContext:TIdContext);
+begin
+ Self.CheckSendPing(AContext);
+ Self.CheckUnreachable(AContext);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTCPORsRef.PingNewReceived(time:TTime);
+begin
+ if (Self.ping_unreachable) then
+   Self.ping_unreachable := false; // client restored
+
+ if (Self.ping_received.Count <= Self.ping_received_next_index) then
+   Self.ping_received.Add(time)
+ else
+   Self.ping_received[Self.ping_received_next_index] := time;
+
+ Self.ping_received_next_index := Self.ping_received_next_index mod _PING_WINDOW_SIZE;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+// TODO: kontrola co se bude dit kdyz dlouho neodpovida (neplnit frontu)
 
 end.
