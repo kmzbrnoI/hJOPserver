@@ -280,7 +280,7 @@ implementation
 uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain, Booster,
      TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
-     Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User,
+     Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User, TCPORsRef,
      fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava,
      TBlokSouctovaHlaska, predvidanyOdjezd, changeEvent;
 

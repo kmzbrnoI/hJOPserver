@@ -256,6 +256,7 @@
 			<DCCReference Include="TechnologieAB.pas"/>
 			<DCCReference Include="tables\DataAB.pas"/>
 			<DCCReference Include="trakce\Simulator.pas"/>
+			<DCCReference Include="TCPORsRef.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

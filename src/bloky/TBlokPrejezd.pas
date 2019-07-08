@@ -137,7 +137,7 @@ type
 implementation
 
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics, TBlokSouctovaHlaska;
+     Graphics, TBlokSouctovaHlaska, TCPORsRef;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin

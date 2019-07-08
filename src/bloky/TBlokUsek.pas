@@ -263,7 +263,7 @@ implementation
 uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
-    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP;
+    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef;
 
 constructor TBlkUsek.Create(index:Integer);
 begin

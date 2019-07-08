@@ -59,7 +59,7 @@ end;
 
 implementation
 
-uses TCPServerOR, TOblRizeni;
+uses TCPServerOR, TOblRizeni, TCPORsRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 
