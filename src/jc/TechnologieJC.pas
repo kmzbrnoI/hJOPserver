@@ -182,6 +182,8 @@ type
     _JCB_TRAT_NO_BP              = 75;
     _JCB_TRAT_NOT_ZAK            = 76;
     _JCB_TRAT_STITEK             = 77;
+    _JCB_TRAT_NEPRENOS           = 78;
+    _JCB_TRAT_PRENOS_NAKONEC     = 79;
 
     _JCB_ZAMEK_NEUZAMCEN         = 80;
     _JCB_ZAMEK_NOUZ_ZAVER        = 81;
@@ -1393,6 +1395,7 @@ var i,j:Integer;
     trat:TBlkTrat;
     tu:TBlkTU;
     oblr:TOR;
+    tuAdd:TBlkTU;
  begin
   if (not Self.Staveni) then Exit;
 
@@ -2028,18 +2031,39 @@ var i,j:Integer;
       else
         trat := nil;
 
-      if ((trat <> nil) and (usek.IsSouprava()) and (not lastUsek.IsSouprava()) and
-          (lastUsek.typ = _BLK_TU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat) and
-          (trat.Smer = Self.data.TratSmer) and (trat.BP)) then
+      if ((trat <> nil) and (usek.IsSouprava()) and (lastUsek.typ = _BLK_TU) and
+          ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
        begin
-        trat.AddSpr(TBlkTratSouprava.Create(spri));
-        (lastUsek as TBlkTU).poruchaBP := true;
-        trat.Change();
+        tuAdd := nil;
 
-        lastUsek.AddSoupravaL(spri); // tady je jedno jestli zavolat L nebo S
-                                     // v trati muze byt na jednom useku vzdy jen jedna souprava
-                                     // kontrolovano vyse
-        usek.RemoveSouprava(spri);
+        if (trat.vyluka) then
+         begin
+          // Pridat soupravu do posledniho bloku trati
+          if ((trat.stav.soupravy.Count = 0) and ((trat.GetLastUsek(Self.data.TratSmer) as TBlkTU).Zaver = TZaver.no)) then
+           begin
+            tuAdd := (trat.GetLastUsek(Self.data.TratSmer) as TBlkTU);
+            trat.SprChangeOR(spri, Self.data.TratSmer);
+            if (trat.ChangesSprDir()) then
+              Soupravy.soupravy[spri].ChangeSmer();
+          end;
+         end else begin
+          if ((not lastUsek.IsSouprava()) and (trat.BP) and (trat.Smer = Self.data.TratSmer)) then
+           begin
+            // Pridat soupravu do prvniho bloku trati
+            tuAdd := (lastUsek as TBlkTU);
+            tuAdd.poruchaBP := true;
+           end;
+         end;
+
+        if (tuAdd <> nil) then
+         begin
+          trat.AddSpr(TBlkTratSouprava.Create(spri));
+          tuAdd.AddSoupravaL(spri); // tady je jedno jestli zavolat L nebo S
+                                    // v trati muze byt na jednom useku vzdy jen jedna souprava
+                                    // kontrolovano vyse
+          trat.Change();
+          usek.RemoveSouprava(spri);
+         end;
        end;
      end;//if typcesty = vlak
 
@@ -3138,48 +3162,64 @@ begin
   _JCB_ZAMEK_NEUZAMCEN         : Result[1] := GetUPOLine('Neuzamèen');
   _JCB_ZAMEK_NOUZ_ZAVER        : Result[1] := GetUPOLine('Není nouzový závìr');
 
-  _JCB_USEK_VYLUKA             : begin
+  _JCB_USEK_VYLUKA : begin
     Result[0] := GetUPOLine('VÝLUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
     lines := GetLines((Bariera.blok as TBlkUsek).Vyluka, _UPO_LINE_LEN);
-    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 2) then
-      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-    lines.Free();
+    try
+      Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
   end;
-  _JCB_USEK_STITEK             : begin
+
+  _JCB_USEK_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkUsek).Stitek, _UPO_LINE_LEN);
-    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 1) then
-      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-    lines.Free();
+    try
+      Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
   end;
 
-  _JCB_VYHYBKA_VYLUKA          : begin
+  _JCB_VYHYBKA_VYLUKA : begin
     Result[0] := GetUPOLine('VÝLUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
     lines := GetLines((Bariera.blok as TBlkVyhybka).Vyluka, _UPO_LINE_LEN);
-    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 1) then
-      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-    lines.Free();
+    try
+      Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
   end;
 
-  _JCB_VYHYBKA_STITEK          : begin
+  _JCB_VYHYBKA_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkVyhybka).Stitek, _UPO_LINE_LEN);
-    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 1) then
-      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-    lines.Free();
+    try
+      Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
   end;
 
-  _JCB_PREJEZD_STITEK          : begin
+  _JCB_PREJEZD_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkPrejezd).Stitek, _UPO_LINE_LEN);
-    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-    if (lines.Count > 1) then
-      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-    lines.Free();
+    try
+      Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
   end;
 
   _JCB_PRIVOLAVACKA : begin
@@ -3466,6 +3506,8 @@ procedure TJC.PodminkyNCStaveni(var bariery:TList<TJCBariera>);
 var i:Integer;
     Blk,blk2:TBlk;
     glob:TBlkSettings;
+    usek, lastUsek:TBlkUsek;
+    trat:TBlkTrat;
 begin
   // useky:
   for i := 0 to Self.fproperties.Useky.Count-1 do
@@ -3595,22 +3637,41 @@ begin
        end;
      end;
 
-    Blky.GetBlkByID(Self.fproperties.Trat, Blk);
-    glob := Blk.GetGlobalSettings();
+    Blky.GetBlkByID(Self.fproperties.Trat, TBlk(trat));
+    glob := trat.GetGlobalSettings();
 
-    if (((blk as TBlkTrat).ZAK) and (Self.fproperties.TypCesty = TJCType.vlak)) then
+    if ((trat.ZAK) and (Self.fproperties.TypCesty = TJCType.vlak)) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZAK, blk, Self.fproperties.Trat));
-    if ((not (blk as TBlkTrat).ZAK) and (Self.fproperties.TypCesty = TJCType.posun)) then
+    if ((not trat.ZAK) and (Self.fproperties.TypCesty = TJCType.posun)) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_NOT_ZAK, blk, Self.fproperties.Trat));
-    if ((blk as TBlkTrat).Zaver) then
+    if (trat.Zaver) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZAVER, blk, Self.fproperties.Trat));
-    if ((blk as TBlkTrat).Zadost) then
+    if (trat.Zadost) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZADOST, blk, Self.fproperties.Trat));
-    if ((((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or ((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka) or (((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((blk as TBlkTrat).nouzZaver)))
-        and (Self.fproperties.TratSmer <> (blk as TBlkTrat).Smer)) then
+    if (((trat.GetSettings().zabzar = TTratZZ.souhlas) or
+         (trat.GetSettings().zabzar = TTratZZ.nabidka) or
+         ((trat.GetSettings().zabzar = TTratZZ.bezsouhas) and (trat.nouzZaver)))
+        and (Self.fproperties.TratSmer <> trat.Smer)) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_NESOUHLAS, blk, Self.fproperties.Trat));
-    if ((not (blk as TBlkTrat).BP) and (Self.fproperties.TypCesty = TJCType.vlak)) then
+    if ((not trat.BP) and (Self.fproperties.TypCesty = TJCType.vlak)) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_NO_BP, blk, Self.fproperties.Trat));
+
+    usek := (Self.navestidlo as TBlkSCom).UsekPred as TBlkUsek;
+    Blky.GetBlkByID(Self.data.Useky[Self.data.Useky.Count-1], TBlk(lastUsek));
+
+    if ((usek.IsSouprava) and (lastUsek.typ = _BLK_TU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
+     begin
+      if (trat.vyluka) then
+       begin
+        if ((trat.stav.soupravy.Count > 0) or ((trat.GetLastUsek(Self.data.TratSmer) as TBlkTU).Zaver <> TZaver.no)) then
+          bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRENOS, trat, Self.fproperties.Trat))
+        else
+          bariery.Add(Self.JCBariera(_JCB_TRAT_PRENOS_NAKONEC, trat, Self.fproperties.Trat));
+       end else begin
+        if ((lastUsek.IsSouprava()) or (not trat.BP) or (trat.Smer <> Self.data.TratSmer)) then
+          bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRENOS, trat, Self.fproperties.Trat));
+       end;
+     end;
    end;
 
   // kontrola uzamceni zamku:
@@ -3682,6 +3743,8 @@ begin
     _JCB_TRAT_ZADOST             : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Probíhá žádost'));
     _JCB_TRAT_NESOUHLAS          : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nesouhlas'));
     _JCB_TRAT_NO_BP              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Bloková podmínka nezavedena'));
+    _JCB_TRAT_NEPRENOS           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nedojde k pøenosu èísla vlaku'));
+    _JCB_TRAT_PRENOS_NAKONEC     : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Vlak bude pøenesen až na konec trati'));
 
     _JCB_ZAMEK_NEUZAMCEN         : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Neuzamèen'));
     _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Není zaveden nouzový závìr'));

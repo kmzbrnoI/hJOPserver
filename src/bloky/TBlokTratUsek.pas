@@ -728,7 +728,7 @@ begin
   end;
 
  // kontrola zmeny OR trati, ve ktere jen jeden blok
- if ((Self.prevTU = nil) and (Self.nextTU = nil)) then
+ if (((Self.Trat as TBlkTrat).Smer >= TTratSmer.AtoB) and (Self.prevTU = nil) and (Self.nextTU = nil)) then
    TBlkTrat(Self.Trat).SprChangeOR(Self.Souprava);
 end;
 

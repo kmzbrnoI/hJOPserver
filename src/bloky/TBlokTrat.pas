@@ -116,6 +116,9 @@ type
     function GetSprIndex(spr:Integer):Integer;
     function SprTUsCount(spr:Integer):Integer;
 
+    function GetLastUsek():TBlk; overload;
+    function GetVyluka():boolean;
+
   public
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -141,7 +144,8 @@ type
     procedure SetSettings(data:TBlkTratSettings);
 
     function IsFirstUvazka(uv:TBlk):boolean;
-    procedure SprChangeOR(spr:Integer);
+    procedure SprChangeOR(spr:Integer); overload;
+    procedure SprChangeOR(spr:Integer; smer:TTratSmer); overload;
 
     procedure AddSpr(spr:Integer); overload;
     procedure AddSpr(spr:TBlkTratSouprava); overload;
@@ -160,6 +164,7 @@ type
 
     function ChangesSprDir():boolean;                                           // vraci true prave tehdy, kdyz se v trati meni smer soupravy
     function GetSprUsek(spr_id:Integer):TSprUsek;
+    function GetLastUsek(smer:TTratSmer):TBlk; overload;
 
     property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
     property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
@@ -174,6 +179,8 @@ type
     property Zadost:boolean read TratStav.zadost write SetTratZadost;           // flag probihajici zadosti o tratovy souhlas
     property BP:boolean read TratStav.BP write SetBP;                           // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty, rusi se pri uvolneni posledni soupravy z trati
     property SprPredict:TBlkTratSouprava read TratStav.SprPredict write SetSprPredict; // predpovidana souprava do trati
+    property lastUsek:TBlk read GetLastUsek;                                    // posledni usek trati (smerove zavisle)
+    property vyluka:boolean read GetVyluka;
 
     // vrati hranicni navestidla
     property navLichy:TBlk read GetNavLichy;                                    // hranicni navestidlo trati blize zacatku trati
@@ -588,7 +595,7 @@ begin
  if (not spr.IsTimeDefined()) then
    spr.time := timeHelper.hJOPnow();
 
- writelog('Traù '+Self.GlobalSettings.name+ ' : p¯id·na souprava '+Soupravy.soupravy[spr.souprava].nazev, WR_SPRPREDAT);
+ writelog('Traù '+Self.GlobalSettings.name+ ' : p¯id·na souprava '+Soupravy[spr.souprava].nazev, WR_SPRPREDAT);
 
  Self.Change();
 end;
@@ -607,7 +614,7 @@ begin
  if (Self.IsSpr(spr)) then
   begin
    Self.TratStav.soupravy.Delete(Self.GetSprIndex(spr));
-   writelog('Traù '+Self.GlobalSettings.name+ ' : smaz·na souprava '+Soupravy.soupravy[spr].nazev, WR_SPRPREDAT);
+   writelog('Traù '+Self.GlobalSettings.name+ ' : smaz·na souprava '+Soupravy[spr].nazev, WR_SPRPREDAT);
    toChange := true;
   end;
 
@@ -633,22 +640,27 @@ end;
 
 procedure TBlkTrat.SprChangeOR(spr:Integer);
 begin
- case (Self.Smer) of
+ Self.SprChangeOR(spr, Self.Smer);
+end;
+
+procedure TBlkTrat.SprChangeOR(spr:Integer; smer:TTratSmer);
+begin
+ case (smer) of
    TTratSmer.AtoB: begin
       if ((Self.uvazkaB as TBlkUvazka).OblsRizeni.Count > 0) then
-        Soupravy.soupravy[spr].stanice := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
+        Soupravy[spr].stanice := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
       else
-        Soupravy.soupravy[spr].stanice := nil;
+        Soupravy[spr].stanice := nil;
    end;//AtoB
    TTratSmer.BtoA:begin
       if ((Self.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
-        Soupravy.soupravy[spr].stanice := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
+        Soupravy[spr].stanice := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
       else
-        Soupravy.soupravy[spr].stanice := nil;
+        Soupravy[spr].stanice := nil;
    end;//BtoA
  end;//case
 
- writelog('Traù '+Self.GlobalSettings.name+ ' : souprava '+Soupravy.soupravy[spr].nazev+' : stanice zmÏnÏna na '+(Soupravy.soupravy[spr].stanice as TOR).Name, WR_SPRPREDAT);
+ writelog('Traù '+Self.GlobalSettings.name+ ' : souprava '+Soupravy[spr].nazev+' : stanice zmÏnÏna na '+(Soupravy[spr].stanice as TOR).Name, WR_SPRPREDAT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1043,6 +1055,43 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.GetLastUsek():TBlk;
+begin
+ Result := Self.GetLastUsek(Self.smer);
+end;
+
+function TBlkTrat.GetLastUsek(smer:TTratSmer):TBlk;
+begin
+ if (Self.TratSettings.Useky.Count < 1) then
+   raise Exception.Create('Traù nem· û·dn˝ ˙sek!');
+
+ if (smer = TTratSmer.AtoB) then
+   Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1], Result)
+ else if (smer = TTratSmer.BtoA) then
+   Blky.GetBlkByID(Self.TratSettings.Useky[0], Result)
+ else
+   raise Exception.Create('Traù nem· û·dn˝ smÏr!');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+function TBlkTrat.GetVyluka():boolean;
+var blkUsek:TBlkUsek;
+    usek:Integer;
+begin
+ for usek in Self.TratSettings.Useky do
+  begin
+   Blky.GetBlkByID(usek, TBlk(blkUsek));
+   if (blkUsek <> nil) then
+     if (blkUsek.Vyluka <> '') then
+       Exit(true);
+  end;
+ Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // TBlkTratSouprava
 
@@ -1117,7 +1166,7 @@ begin
  else
    Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|';
 
- for addr in Soupravy.soupravy[Self.souprava].HVs do
+ for addr in Soupravy[Self.souprava].HVs do
    Result := Result + HVDb.HVozidla[addr].Data.Nazev + '|';
 end;
 
