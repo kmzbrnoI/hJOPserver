@@ -433,11 +433,11 @@ begin
    else
      str := 'ano';
 
-   F_Main.LV_Clients.Items.Item[(conn.Data as TTCPORsRef).index].SubItems.Strings[10] := str;
+   F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[11] := str;
    ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;ok;'+comment)
   end else begin
    (conn.Data as TTCPORsRef).regulator_user := nil;
-   F_Main.LV_Clients.Items.Item[(conn.Data as TTCPORsRef).index].SubItems.Strings[10] := '';
+   F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[11] := '';
    ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;not;'+comment);
 
    // odhlasime vsechny prihlasene regulatory

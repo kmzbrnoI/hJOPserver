@@ -2889,14 +2889,17 @@ end;
 procedure TF_Main.LV_ClientsCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((Item.SubItems.Strings[0] = 'uzavřeno') or (Item.SubItems.Strings[0] = 'odpojen')) then
-   Self.LV_Clients.Canvas.Brush.Color := clWhite
- else if ((Item.SubItems.Strings[0] = 'otevírání') or (Item.SubItems.Strings[0] = 'handshake'))then
-   Self.LV_Clients.Canvas.Brush.Color := $DDDDDD
- else if (Item.SubItems.Strings[0] = 'otevřeno') then
-   Self.LV_Clients.Canvas.Brush.Color := $E0FFE0
- else
-   Self.LV_Clients.Canvas.Brush.Color := $66CCFF;
+ if ((Item.SubItems[0] = 'uzavřeno') or (Item.SubItems[0] = 'odpojen')) then
+   Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_WHITE
+ else if ((Item.SubItems[0] = 'otevírání') or (Item.SubItems[0] = 'handshake')) then
+   Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_GRAY
+ else if (Item.SubItems[0] = 'otevřeno') then begin
+   if (Item.SubItems[2] = 'unreachable') then
+     Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_RED
+   else
+     Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+ end else
+   Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
 end;
 
 procedure TF_Main.LV_HVChange(Sender: TObject; Item: TListItem;

@@ -473,7 +473,7 @@ begin
 
    // oznamime verzi komunikacniho protokolu
    orRef.protocol_version := Self.parsed[2];
-   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[9] := Self.parsed[2];
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[10] := Self.parsed[2];
 
    ORTCPServer.GUIQueueLineToRefresh(orRef.index);
    ModCas.SendTimeToPanel(AContext);
@@ -502,7 +502,7 @@ begin
    else
     tmp := parsed[2];
 
-   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[7] := '';
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[8] := '';
 
    if (orRef.stitek = nil) then Exit();
    case (orRef.stitek.typ) of
@@ -522,7 +522,7 @@ begin
    else
     tmp := parsed[2];
 
-   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[7] := '';
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[8] := '';
 
    if (orRef.vyluka = nil) then Exit();
    case (orRef.vyluka.typ) of
@@ -536,7 +536,7 @@ begin
   begin
    if (not Assigned(orRef.potvr)) then Exit();
 
-   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[8] := '';
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[9] := '';
 
    if (parsed[2] = '2') then
      orRef.potvr(AContext, true)
@@ -551,7 +551,7 @@ begin
    if (orRef.menu = nil) then Exit();
    blk := orRef.menu;
    orRef.menu := nil;       // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
-   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[6] := '';
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[7] := '';
 
    if (parsed.Count > 2) then
      blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], StrToIntDef(parsed[3], -1))
@@ -846,7 +846,7 @@ begin
  try
    (AContext.Data as TTCPORsRef).stitek := Blk;
    Self.SendLn(AContext, '-;STIT;'+Blk.name+';'+stit+';');
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := Blk.name;
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[8] := Blk.name;
  except
 
  end;
@@ -857,7 +857,7 @@ begin
  try
    (AContext.Data as TTCPORsRef).vyluka := Blk;
    Self.SendLn(AContext, '-;VYL;'+Blk.name+';'+vyl+';');
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := Blk.name;
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[8] := Blk.name;
  except
 
  end;
@@ -869,7 +869,7 @@ begin
    (AContext.Data as TTCPORsRef).menu    := Blk;
    (AContext.Data as TTCPORsRef).menu_or := OblR;
    Self.SendLn(AContext, '-;MENU;'+menu+';');
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[6] := Blk.name;
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[7] := Blk.name;
  except
 
  end;
@@ -900,7 +900,7 @@ begin
  try
    (AContext.Data as TTCPORsRef).potvr := callback;
     Self.SendLn(AContext, '-;PS;'+stanice.Name+';'+udalost+';'+str);
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[8] := udalost;
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := udalost;
  except
 
  end;
@@ -913,7 +913,7 @@ procedure TORTCPServer.PotvrClose(AContext: TIdContext; msg:string = '');
 begin
  try
    (AContext.Data as TTCPORsRef).potvr := nil;
-   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[8] := '';
+   F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := '';
 
    if (msg <> '') then
     Self.SendLn(AContext, '-;PS-CLOSE;'+msg)
@@ -1098,101 +1098,111 @@ var i:Integer;
     ORPanel:TORPanel;
     HV:THV;
     oblr:TOR;
+    orRef:TTCPORsRef;
 begin
  if (not Assigned(F_Main.LV_Clients.Items.Item[index])) then
-  Exit;
+   Exit();
 
  if (not Assigned(Self.clients[index])) then
   begin
    // klient neexistuje
-   F_Main.LV_Clients.Items.Item[index].SubItems.Strings[0] := 'odpojen';
+   F_Main.LV_Clients.Items[index].SubItems[0] := 'odpojen';
    for i := 1 to F_Main.LV_Clients.Columns.Count-1 do
-    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[i] := '';
+    F_Main.LV_Clients.Items[index].SubItems[i] := '';
 
    Exit();
   end;
 
  if (not Assigned(Self.clients[index].conn)) then
   begin
-   F_Main.LV_Clients.Items.Item[index].SubItems.Strings[0] := 'soket nenalezen';
+   F_Main.LV_Clients.Items[index].SubItems[0] := 'soket nenalezen';
    for i := 1 to F_Main.LV_Clients.Columns.Count-1 do
-    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[i] := '';
+    F_Main.LV_Clients.Items[index].SubItems[i] := '';
   end;
 
+ orRef := (Self.clients[index].conn.Data as TTCPORsRef);
+
  case (Self.clients[index].status) of
-  TPanelConnectionStatus.closed    : F_Main.LV_Clients.Items.Item[index].SubItems.Strings[0] := 'uzavøeno';
-  TPanelConnectionStatus.opening   : F_Main.LV_Clients.Items.Item[index].SubItems.Strings[0] := 'otevírání';
-  TPanelConnectionStatus.handshake : F_Main.LV_Clients.Items.Item[index].SubItems.Strings[0] := 'handshake';
-  TPanelConnectionStatus.opened    : F_Main.LV_Clients.Items.Item[index].SubItems.Strings[0] := 'otevøeno';
+  TPanelConnectionStatus.closed    : F_Main.LV_Clients.Items[index].SubItems[0] := 'uzavøeno';
+  TPanelConnectionStatus.opening   : F_Main.LV_Clients.Items[index].SubItems[0] := 'otevírání';
+  TPanelConnectionStatus.handshake : F_Main.LV_Clients.Items[index].SubItems[0] := 'handshake';
+  TPanelConnectionStatus.opened    : F_Main.LV_Clients.Items[index].SubItems[0] := 'otevøeno';
  end;
 
- F_Main.LV_Clients.Items.Item[index].SubItems.Strings[1] := Self.clients[index].conn.Connection.Socket.Binding.PeerIP;
+ F_Main.LV_Clients.Items[index].SubItems[1] := Self.clients[index].conn.Connection.Socket.Binding.PeerIP;
+ if (orRef.ping_unreachable) then
+   F_Main.LV_Clients.Items[index].SubItems[2] := 'unreachable'
+ else
+   if (orRef.PingComputed()) then
+     F_Main.LV_Clients.Items[index].SubItems[2] := Format('%.2f', [orRef.ping])
+   else
+     F_Main.LV_Clients.Items[index].SubItems[2] := '?';
 
  for i := 0 to 2 do
   begin
-   if (i < (Self.clients[index].conn.Data as TTCPORsRef).ORs.Count) then
+   if (i < orRef.ORs.Count) then
     begin
      // klient existuje
-     (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
-     F_Main.LV_Clients.Items.Item[index].SubItems.Strings[2+i] :=
-      (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')';
+     orRef.ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
+     F_Main.LV_Clients.Items[index].SubItems[3+i] :=
+       orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')';
     end else begin
      // klient neexistuje
-     F_Main.LV_Clients.Items.Item[index].SubItems.Strings[2+i] := '';
+     F_Main.LV_Clients.Items.Item[index].SubItems[3+i] := '';
     end;
   end;//for i
 
- if ((Self.clients[index].conn.Data as TTCPORsRef).ORs.Count > 3) then
+ if (orRef.ORs.Count > 3) then
   begin
    str := '';
-   for i := 3 to (Self.clients[index].conn.Data as TTCPORsRef).ORs.Count-1 do
+   for i := 3 to orRef.ORs.Count-1 do
     begin
-     (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
-     str := str + (Self.clients[index].conn.Data as TTCPORsRef).ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')' + ', ';
+     orRef.ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
+     str := str + orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')' + ', ';
     end;
-   F_Main.LV_Clients.Items.Item[index].SubItems.Strings[5] := LeftStr(str, Length(str)-2);
+   F_Main.LV_Clients.Items[index].SubItems[6] := LeftStr(str, Length(str)-2);
   end;
 
- if ((Self.clients[index].conn.Data as TTCPORsRef).menu <> nil) then
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[6] := (Self.clients[index].conn.Data as TTCPORsRef).menu.name
+ if (orRef.menu <> nil) then
+  F_Main.LV_Clients.Items[index].SubItems[7] := orRef.menu.name
  else begin
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[6] := '';
+  F_Main.LV_Clients.Items[index].SubItems[7] := '';
  end;
 
- if ((Self.clients[index].conn.Data as TTCPORsRef).vyluka <> nil) then
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := (Self.clients[index].conn.Data as TTCPORsRef).vyluka.name
+ if (orRef.vyluka <> nil) then
+  F_Main.LV_Clients.Items[index].SubItems[8] := orRef.vyluka.name
  else begin
-   if ((Self.clients[index].conn.Data as TTCPORsRef).stitek <> nil) then
-    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := (Self.clients[index].conn.Data as TTCPORsRef).stitek.name
+   if (orRef.stitek <> nil) then
+    F_Main.LV_Clients.Items[index].SubItems[8] := orRef.stitek.name
    else
-    F_Main.LV_Clients.Items.Item[index].SubItems.Strings[7] := '';
+    F_Main.LV_Clients.Items[index].SubItems[8] := '';
  end;
 
- if (not Assigned((Self.clients[index].conn.Data as TTCPORsRef).potvr)) then
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[8] := '';
+ if (not Assigned(orRef.potvr)) then
+  F_Main.LV_Clients.Items[index].SubItems[9] := '';
 
- if ((Self.clients[index].conn.Data as TTCPORsRef).regulator) then begin
-  if (Assigned((Self.clients[index].conn.Data as TTCPORsRef).regulator_user)) then
-    str := (Self.clients[index].conn.Data as TTCPORsRef).regulator_user.id
+ if (orRef.regulator) then begin
+  if (Assigned(orRef.regulator_user)) then
+    str := orRef.regulator_user.id
   else
     str := 'ano';
 
-  if ((Self.clients[index].conn.Data as TTCPORsRef).regulator_loks.Count > 0) then
+  if (orRef.regulator_loks.Count > 0) then
    begin
     str := str + ': ';
-    for HV in (Self.clients[index].conn.Data as TTCPORsRef).regulator_loks do
+    for HV in orRef.regulator_loks do
       str := str + IntToStr(HV.adresa) + ', ';
     str := LeftStr(str, Length(str)-2);
    end;
 
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[10] := str;
+  F_Main.LV_Clients.Items[index].SubItems[11] := str;
  end else
-  F_Main.LV_Clients.Items.Item[index].SubItems.Strings[10] := '';
+  F_Main.LV_Clients.Items[index].SubItems[11] := '';
 
  str := '';
  for oblr in TTCPORsRef(Self.clients[index].conn.Data).st_hlaseni do
    str := str + oblr.ShortName + ', ';
- F_Main.LV_Clients.Items.Item[index].SubItems.Strings[11] := LeftStr(str, Length(str)-2);
+ F_Main.LV_Clients.Items.Item[index].SubItems[12] := LeftStr(str, Length(str)-2);
 
  F_Main.LV_Clients.UpdateItems(index, index);
 end;

@@ -180,7 +180,7 @@ end;
 function TTCPOrsRef.GetPing():TTime;
 var sum, ping: TTime;
 begin
- if (Self.ping_sent.Count = 0) then
+ if (Self.ping_received.Count = 0) then
    raise EPingNotYetComputed.Create('Ping not yet computed!');
 
  sum := 0;
@@ -193,6 +193,8 @@ end;
 
 procedure TTCPORsRef.OnUnreachable(AContext:TIdContext);
 begin
+ Self.ping_received.Clear();
+ ORTCPServer.GUIQueueLineToRefresh(Self.index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -251,14 +253,19 @@ end;
 procedure TTCPORsRef.PingNewReceived(time:TTime);
 begin
  if (Self.ping_unreachable) then
+  begin
    Self.ping_unreachable := false; // client restored
+   ORTCPServer.GUIQueueLineToRefresh(Self.index);
+  end;
 
  if (Self.ping_received.Count <= Self.ping_received_next_index) then
    Self.ping_received.Add(time)
  else
    Self.ping_received[Self.ping_received_next_index] := time;
 
- Self.ping_received_next_index := Self.ping_received_next_index mod _PING_WINDOW_SIZE;
+ Self.ping_received_next_index := (Self.ping_received_next_index+1) mod _PING_WINDOW_SIZE;
+
+ ORTCPServer.GUIQueueLineToRefresh(Self.index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
