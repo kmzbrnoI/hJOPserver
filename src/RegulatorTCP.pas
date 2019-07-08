@@ -146,6 +146,11 @@ begin
        ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Do oblasti øízení ji probíhá ádost');
        Exit();
       end;
+     if (((Sender.Data as TTCPORsRef).ping_unreachable) or (not (Sender.Data as TTCPORsRef).PingComputed())) then
+      begin
+       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Zaøízení neodpovídá na ping');
+       Exit();
+      end;
 
      (Sender.Data as TTCPORsRef).regulator_zadost := OblR;
      if (parsed.Count > 5) then

@@ -88,7 +88,7 @@ type
 
 implementation
 
-uses fMain, TCPServerOR;
+uses fMain, TCPServerOR, RegulatorTCP;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -158,8 +158,8 @@ end;
 procedure TTCPOrsRef.ResetSpr();
 begin
  Self.spr_new_usek_index := -1;
- Self.spr_edit    := nil;
- Self.spr_usek    := nil;
+ Self.spr_edit := nil;
+ Self.spr_usek := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,9 +192,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPORsRef.OnUnreachable(AContext:TIdContext);
+var i:Integer;
 begin
- Self.ping_received.Clear();
- ORTCPServer.GUIQueueLineToRefresh(Self.index);
+ // clear loco always (even when called after several attempts)
+ for i := Self.regulator_loks.Count-1 downto 0 do
+   TCPRegulator.RemoveLok(AContext, Self.regulator_loks[i], 'Zaøízení neodpovídá na ping!');
+
+ if (not Self.ping_unreachable) then
+  begin
+   Self.ping_received.Clear();
+   ORTCPServer.GUIQueueLineToRefresh(Self.index);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +241,7 @@ end;
 
 procedure TTCPORsRef.CheckUnreachable(AContext:TIdContext);
 begin
- if ((Self.ping_sent.Count > _PING_TRYOUT) and (not Self.ping_unreachable)) then
+ if (Self.ping_sent.Count > _PING_TRYOUT) then
   begin
    Self.OnUnreachable(AContext);
    Self.ping_unreachable := true; // set flag
