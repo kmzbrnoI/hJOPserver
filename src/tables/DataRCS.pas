@@ -58,8 +58,9 @@ var i, j:integer;
 
   for i := 0 to TRCS._MAX_RCS-1 do
    begin
-    if ((not RCSi.IsModule(i)) and (not RCSi.GetNeeded(i)) and (not load_all)) then
-      continue;
+    if (RCSi.ready) then
+      if ((not RCSi.IsModule(i)) and (not RCSi.GetNeeded(i)) and (not load_all)) then
+        continue;
 
     LI := Self.LV.Items.Add();
     LI.Caption := IntToStr(i);
