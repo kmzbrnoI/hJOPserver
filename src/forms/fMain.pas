@@ -274,6 +274,7 @@ type
     P_dataload_rcs: TPanel;
     CHB_RCS_Show_Only_Active: TCheckBox;
     N11: TMenuItem;
+    CHB_rcslog: TCheckBox;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -414,6 +415,7 @@ type
     procedure LV_ABChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
+    procedure CHB_rcslogClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -1511,8 +1513,9 @@ begin
       AppEvents.LogException(E, 'Save RCS');
   end;
 
-  ini_lib.WriteBool('Log','main-file', Self.CHB_Mainlog_File.Checked);
-  ini_lib.WriteBool('Log','main-table', Self.CHB_Mainlog_Table.Checked);
+  ini_lib.WriteBool('Log', 'main-file', Self.CHB_Mainlog_File.Checked);
+  ini_lib.WriteBool('Log', 'main-table', Self.CHB_Mainlog_Table.Checked);
+  ini_lib.WriteBool('Log', 'rcs', Self.CHB_rcslog.Checked);
 
   try
     ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text), TEncoding.UTF8);
@@ -2045,6 +2048,11 @@ begin
  TrkSystem.logtable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
 end;
 
+procedure TF_Main.CHB_rcslogClick(Sender: TObject);
+begin
+ RCSi.log := Self.CHB_rcslog.Checked;
+end;
+
 procedure TF_Main.CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
 begin
  if (RCSi.Lib <> '') then
@@ -2257,8 +2265,10 @@ end;
 
 procedure TF_Main.LoadIniLibData;
  begin
-  Self.CHB_Mainlog_File.Checked  := ini_lib.ReadBool('Log','main-file', true);
+  Self.CHB_Mainlog_File.Checked := ini_lib.ReadBool('Log','main-file', true);
   Self.CHB_Mainlog_Table.Checked := ini_lib.ReadBool('Log','main-table', true);
+  Self.CHB_rcslog.Checked := ini_lib.ReadBool('Log', 'rcs', false);
+  RCSi.log := Self.CHB_rcslog.Checked;
  end;
 
 procedure TF_Main.SetStartVars;

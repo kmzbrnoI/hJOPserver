@@ -69,11 +69,14 @@ type
       //events from libraly
       procedure DllAfterClose(Sender:TObject);
 
+      procedure DllOnLog(Sender: TObject; logLevel:TRCSLogLevel; msg:string);
       procedure DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg:PChar);
       procedure DllOnInputChanged(Sender:TObject; module:Cardinal);
       procedure DllOnOutputChanged(Sender:TObject; module:Cardinal);
 
    public
+     log:boolean;
+
       constructor Create();
       destructor Destroy; override;
 
@@ -131,12 +134,14 @@ begin
  if not DirectoryExists(_CONFIG_PATH) then
    CreateDir(_CONFIG_PATH);
 
+ Self.log := false;
  Self.aReady := false;
  Self.fGeneralError := false;
 
  //assign events
  TRCSIFace(Self).AfterClose := Self.DllAfterClose;
  TRCSIFace(Self).OnError    := Self.DllOnError;
+ TRCSIFace(Self).OnLog      := Self.DllOnLog;
  TRCSIFace(Self).OnInputChanged  := Self.DllOnInputChanged;
  TRCSIFace(Self).OnOutputChanged := Self.DllOnOutputChanged;
 end;
@@ -276,6 +281,12 @@ begin
     RCS_MODULE_RESTORED:; // communication with module restored, nothing should be here
    end;
   end;//
+end;
+
+procedure TRCS.DllOnLog(Sender: TObject; logLevel:TRCSLogLevel; msg:string);
+begin
+ if (Self.log) then
+   writelog(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_RCS);
 end;
 
 procedure TRCS.DllOnInputChanged(Sender:TObject; module:Cardinal);
