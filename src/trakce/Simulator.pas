@@ -160,6 +160,7 @@ begin
     raise EAlreadyDisconnected.Create('Already disconnected!');
 
   if (Assigned(Self.OnBeforeClose)) then Self.OnBeforeClose(Self);
+  inherited;
   Self.fOpened := false;
   Self.send_history.Clear();
   if (Assigned(Self.OnAfterClose)) then Self.OnAfterClose(Self);

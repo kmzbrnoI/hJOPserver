@@ -267,6 +267,7 @@ begin
 
  try
   Self.CPort.Close();
+  inherited;
  except
   on E: Exception do
     raise;

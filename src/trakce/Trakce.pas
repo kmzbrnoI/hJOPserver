@@ -145,7 +145,7 @@ type
       function Name():string; virtual; abstract;
 
       procedure Open(params:Pointer); virtual; abstract;
-      procedure Close(); virtual; abstract;
+      procedure Close(); virtual;
       function Opened():boolean; virtual; abstract;
 
       procedure LokSetSpeed(Address:Integer; speed:Integer; dir:Integer); virtual; abstract;
@@ -231,6 +231,11 @@ begin
    Self.FFtrk_status := new;
    if (Assigned(Self.FOnTrackStatusChange)) then Self.FOnTrackStatusChange(Self);
   end;
+end;
+
+procedure TTrakce.Close();
+begin
+ Self.FFtrk_status := Ttrk_status.TS_UNKNOWN;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
