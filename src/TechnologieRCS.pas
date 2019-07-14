@@ -52,6 +52,7 @@ type
    private const
      _DEFAULT_LIB = 'simulator.dll';
      _INIFILE_SECTNAME = 'RCS';
+     _CONFIG_PATH = 'rcs';
 
    private
      Desky:array [0.._MAX_RCS-1] of TRCSBoard;              // RCS desky, pole je indexovano RCS adresami
@@ -127,6 +128,9 @@ begin
  for i := 0 to _MAX_RCS-1 do
    Self.Desky[i] := TRCSBoard.Create();
 
+ if not DirectoryExists(_CONFIG_PATH) then
+   CreateDir(_CONFIG_PATH);
+
  Self.aReady := false;
  Self.fGeneralError := false;
 
@@ -160,7 +164,7 @@ begin
    if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
   end;
 
- TRCSIFace(Self).LoadLib(filename);
+ TRCSIFace(Self).LoadLib(filename, _CONFIG_PATH + '\' + ChangeFileExt(libName, '.ini'));
 
  writelog('Naètena knihovna '+ libName, WR_RCS);
 
