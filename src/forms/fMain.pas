@@ -938,6 +938,12 @@ end;
 
 procedure TF_Main.A_lib_cfgExecute(Sender: TObject);
 begin
+ if (not RCSi.HasDialog()) then
+  begin
+   Application.MessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
+   Exit();
+  end;
+
  try
    RCSi.ShowConfigDialog();
  except
