@@ -68,9 +68,9 @@ type
       //events from libraly
       procedure DllAfterClose(Sender:TObject);
 
-      procedure DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:PChar);
-      procedure DllOnInputChanged(Sender:TObject; module:byte);
-      procedure DllOnOutputChanged(Sender:TObject; module:byte);
+      procedure DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg:PChar);
+      procedure DllOnInputChanged(Sender:TObject; module:Cardinal);
+      procedure DllOnOutputChanged(Sender:TObject; module:Cardinal);
 
    public
       constructor Create();
@@ -249,7 +249,7 @@ begin
  if (Assigned(Self.fAfterClose)) then Self.fAfterClose(Self);
 end;//procdure
 
-procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: byte; errMsg:PChar);
+procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg:PChar);
 begin
  writelog('RCS ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_RCS, 1);
 
@@ -274,7 +274,7 @@ begin
   end;//
 end;
 
-procedure TRCS.DllOnInputChanged(Sender:TObject; module:byte);
+procedure TRCS.DllOnInputChanged(Sender:TObject; module:Cardinal);
 var i:Integer;
 begin
  for i := Self.Desky[module].inputChangedEv.Count-1 downto 0 do
@@ -283,7 +283,7 @@ begin
  RCSTableData.UpdateBoard(module);
 end;
 
-procedure TRCS.DllOnOutputChanged(Sender:TObject; module:byte);
+procedure TRCS.DllOnOutputChanged(Sender:TObject; module:Cardinal);
 var i:Integer;
 begin
  for i := Self.Desky[module].outputChangedEv.Count-1 downto 0 do

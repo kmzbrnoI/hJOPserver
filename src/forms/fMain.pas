@@ -556,7 +556,6 @@ var fn:string;
       Screen.Cursor := crDefault;
       Application.MessageBox(PChar('Nelze načíst knihovnu ' + fn + ':'+#13#10+
           E.Message), 'Nelze načíst knihovnu', MB_OK OR MB_ICONWARNING);
-      AppEvents.LogException(E, 'Nelze načíst knihovnu ' + fn);
       Exit();
      end;
   end;
