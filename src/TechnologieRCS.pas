@@ -292,18 +292,20 @@ end;
 procedure TRCS.DllOnInputChanged(Sender:TObject; module:Cardinal);
 var i:Integer;
 begin
- for i := Self.Desky[module].inputChangedEv.Count-1 downto 0 do
-   if (Assigned(Self.Desky[module].inputChangedEv[i])) then Self.Desky[module].inputChangedEv[i](Self, module)
-     else Self.Desky[module].inputChangedEv.Delete(i);
+ if (module < High(Self.Desky)) then
+   for i := Self.Desky[module].inputChangedEv.Count-1 downto 0 do
+     if (Assigned(Self.Desky[module].inputChangedEv[i])) then Self.Desky[module].inputChangedEv[i](Self, module)
+       else Self.Desky[module].inputChangedEv.Delete(i);
  RCSTableData.UpdateBoard(module);
 end;
 
 procedure TRCS.DllOnOutputChanged(Sender:TObject; module:Cardinal);
 var i:Integer;
 begin
- for i := Self.Desky[module].outputChangedEv.Count-1 downto 0 do
-   if (Assigned(Self.Desky[module].outputChangedEv[i])) then Self.Desky[module].outputChangedEv[i](Self, module)
-     else Self.Desky[module].outputChangedEv.Delete(i);
+ if (module < High(Self.Desky)) then
+   for i := Self.Desky[module].outputChangedEv.Count-1 downto 0 do
+     if (Assigned(Self.Desky[module].outputChangedEv[i])) then Self.Desky[module].outputChangedEv[i](Self, module)
+       else Self.Desky[module].outputChangedEv.Delete(i);
  RCSTableData.UpdateBoard(module);
 end;
 
@@ -312,12 +314,16 @@ end;
 
 procedure TRCS.SetNeeded(RCSAdr:Integer; state:boolean = true);
 begin
- Self.Desky[RCSAdr].needed := state;
+ if (RCSAdr < High(Self.Desky)) then
+   Self.Desky[RCSAdr].needed := state;
 end;
 
 function TRCS.GetNeeded(RCSAdr:Integer):boolean;
 begin
- Result := Self.Desky[RCSAdr].needed;
+ if (RCSAdr < High(Self.Desky)) then
+   Result := Self.Desky[RCSAdr].needed
+ else
+   Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
