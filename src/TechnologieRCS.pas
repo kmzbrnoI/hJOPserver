@@ -55,10 +55,8 @@ type
      _CONFIG_PATH = 'rcs';
 
    private
-     Desky:array [0.._MAX_RCS-1] of TRCSBoard;              // RCS desky, pole je indexovano RCS adresami
-
+     boards:TObjectDictionary<Cardinal, TRCSBoard>;
      aReady:boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
-
      fGeneralError:boolean;                                 // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
      fLibDir:string;
 
@@ -88,16 +86,16 @@ type
       function NoExStarted():boolean;
       function NoExOpened():boolean;
 
-      procedure SetNeeded(RCSAdr:Integer; state:boolean = true);
-      function GetNeeded(RCSAdr:Integer):boolean;
+      procedure SetNeeded(RCSAdr:Cardinal; state:boolean = true);
+      function GetNeeded(RCSAdr:Cardinal):boolean;
 
       procedure LoadFromFile(ini:TMemIniFile);
       procedure SaveToFile(ini:TMemIniFile);
 
-      procedure AddInputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
+      procedure AddInputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
       procedure RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
 
-      procedure AddOutputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
+      procedure AddOutputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
       procedure RemoveOutputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
 
       function IsSimulatorMode():boolean;
@@ -124,12 +122,10 @@ uses fMain, fAdminForm, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
      Logging, TCPServerOR, SprDb, DataRCS, appEv, Booster, StrUtils;
 
 constructor TRCS.Create();
-var i:Integer;
 begin
  inherited;
 
- for i := 0 to _MAX_RCS-1 do
-   Self.Desky[i] := TRCSBoard.Create();
+ Self.boards := TObjectDictionary<Cardinal, TRCSBoard>.Create();
 
  if not DirectoryExists(_CONFIG_PATH) then
    CreateDir(_CONFIG_PATH);
@@ -147,11 +143,8 @@ begin
 end;
 
 destructor TRCS.Destroy();
-var i:Integer;
 begin
- for i := 0 to _MAX_RCS-1 do
-   if (Assigned(Self.Desky[i])) then FreeAndNil(Self.Desky[i]);
-
+ Self.boards.Free();
  inherited;
 end;
 
@@ -292,36 +285,37 @@ end;
 procedure TRCS.DllOnInputChanged(Sender:TObject; module:Cardinal);
 var i:Integer;
 begin
- if (module < High(Self.Desky)) then
-   for i := Self.Desky[module].inputChangedEv.Count-1 downto 0 do
-     if (Assigned(Self.Desky[module].inputChangedEv[i])) then Self.Desky[module].inputChangedEv[i](Self, module)
-       else Self.Desky[module].inputChangedEv.Delete(i);
+ if (Self.boards.ContainsKey(module)) then
+   for i := Self.boards[module].inputChangedEv.Count-1 downto 0 do
+     if (Assigned(Self.boards[module].inputChangedEv[i])) then Self.boards[module].inputChangedEv[i](Self, module)
+       else Self.boards[module].inputChangedEv.Delete(i);
  RCSTableData.UpdateBoard(module);
 end;
 
 procedure TRCS.DllOnOutputChanged(Sender:TObject; module:Cardinal);
 var i:Integer;
 begin
- if (module < High(Self.Desky)) then
-   for i := Self.Desky[module].outputChangedEv.Count-1 downto 0 do
-     if (Assigned(Self.Desky[module].outputChangedEv[i])) then Self.Desky[module].outputChangedEv[i](Self, module)
-       else Self.Desky[module].outputChangedEv.Delete(i);
+ if (Self.boards.ContainsKey(module)) then
+   for i := Self.boards[module].outputChangedEv.Count-1 downto 0 do
+     if (Assigned(Self.boards[module].outputChangedEv[i])) then Self.boards[module].outputChangedEv[i](Self, module)
+       else Self.boards[module].outputChangedEv.Delete(i);
  RCSTableData.UpdateBoard(module);
 end;
 
 //----- events from dll end -----
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.SetNeeded(RCSAdr:Integer; state:boolean = true);
+procedure TRCS.SetNeeded(RCSAdr:Cardinal; state:boolean = true);
 begin
- if (RCSAdr < High(Self.Desky)) then
-   Self.Desky[RCSAdr].needed := state;
+ if (not Self.boards.ContainsKey(RCSAdr)) then
+   Self.boards.Add(RCSAdr, TRCSBoard.Create());
+ Self.boards[RCSAdr].needed := state
 end;
 
-function TRCS.GetNeeded(RCSAdr:Integer):boolean;
+function TRCS.GetNeeded(RCSAdr:Cardinal):boolean;
 begin
- if (RCSAdr < High(Self.Desky)) then
-   Result := Self.Desky[RCSAdr].needed
+ if (Self.boards.ContainsKey(RCSAdr)) then
+   Result := Self.boards[RCSAdr].needed
  else
    Result := false;
 end;
@@ -330,55 +324,61 @@ end;
 
 constructor TRCSBoard.Create();
 begin
+ inherited;
  Self.inputChangedEv  := TList<TRCSBoardChangeEvent>.Create();
  Self.outputChangedEv := TList<TRCSBoardChangeEvent>.Create();
-end;//ctor
+end;
 
 destructor TRCSBoard.Destroy();
 begin
  Self.inputChangedEv.Free();
  Self.outputChangedEv.Free();
-end;//dtor
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.AddInputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
+procedure TRCS.AddInputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
 begin
- if ((board >= 0) and (board < _MAX_RCS)) then
-   if (Self.Desky[board].inputChangedEv.IndexOf(event) = -1) then Self.Desky[board].inputChangedEv.Add(event);
+ if (not Self.boards.ContainsKey(board)) then
+   Self.boards.Add(board, TRCSBoard.Create());
+ if (Self.boards[board].inputChangedEv.IndexOf(event) = -1) then
+   Self.boards[board].inputChangedEv.Add(event);
 end;
 
 procedure TRCS.RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
-var i:Integer;
+var rcsBoard:TRCSBoard;
 begin
  if (board = -1) then
   begin
-   for i := 0 to _MAX_RCS-1 do
-     Self.Desky[i].inputChangedEv.Remove(event);
+   for rcsBoard in Self.boards.Values do
+     rcsBoard.inputChangedEv.Remove(event);
   end else begin
-   if ((board >= 0) and (board < _MAX_RCS)) then
-     Self.Desky[board].inputChangedEv.Remove(event);
+   if (Self.boards.ContainsKey(board)) then
+     Self.boards[board].inputChangedEv.Remove(event);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.AddOutputChangeEvent(board:Integer; event:TRCSBoardChangeEvent);
+procedure TRCS.AddOutputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
 begin
- if ((board >= 0) and (board < _MAX_RCS)) then
-   if (Self.Desky[board].outputChangedEv.IndexOf(event) = -1) then Self.Desky[board].outputChangedEv.Add(event);
+ if (not Self.boards.ContainsKey(board)) then
+   Self.boards.Add(board, TRCSBoard.Create());
+ if (Self.boards[board].outputChangedEv.IndexOf(event) = -1) then
+   Self.boards[board].outputChangedEv.Add(event);
 end;
 
 procedure TRCS.RemoveOutputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
-var i:Integer;
+var rcsBoard:TRCSBoard;
 begin
  if (board = -1) then
   begin
-   for i := 0 to _MAX_RCS-1 do
-     Self.Desky[i].outputChangedEv.Remove(event);
+   for rcsBoard in Self.boards.Values do
+     rcsBoard.outputChangedEv.Remove(event);
   end else begin
-   if ((board >= 0) and (board < _MAX_RCS)) then
-     Self.Desky[board].outputChangedEv.Remove(event);
+   if (Self.boards.ContainsKey(board)) then
+     Self.boards[board].outputChangedEv.Remove(event);
   end;
 end;
 
