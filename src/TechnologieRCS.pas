@@ -29,7 +29,7 @@ type
 
   //toto se pouziva pro identifikaci desky a portu VSUDE v technologii
   TRCSAddr = record                                                             // jedno fyzicke RCS spojeni
-   board:Byte;                                                                    // cislo desky
+   board:Cardinal;                                                                // cislo desky
    port:Byte;                                                                     // cislo portu
   end;
 
@@ -109,6 +109,7 @@ type
       property OnReady:TRCSReadyEvent read fOnReady write fOnReady;
       property ready:boolean read aready;
       property libDir:string read fLibDir;
+      property maxModuleAddr:Cardinal read GetMaxModuleAddr;
   end;
 
 var
