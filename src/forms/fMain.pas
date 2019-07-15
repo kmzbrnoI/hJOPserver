@@ -1281,7 +1281,7 @@ begin
   begin
    // scan, jestli nahodou nechybi RCS desky
    str := '';
-   for i := 0 to TRCS._MAX_RCS-1 do
+   for i := 0 to RCSi.maxModuleAddr+1 do
     if ((RCSi.GetNeeded(i)) and (not RCSi.IsModule(i))) then
      begin
       if (Length(str) > 0) then str := str + ', ';

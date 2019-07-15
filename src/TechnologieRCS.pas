@@ -47,7 +47,6 @@ type
   // Technologie RCS
   TRCS = class(TRCSIFace)
    public const
-     _MAX_RCS = 192;                                        // maximalni pocet RCS desek
 
    private const
      _DEFAULT_LIB = 'simulator.dll';
