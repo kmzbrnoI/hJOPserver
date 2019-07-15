@@ -56,7 +56,10 @@ var i, j:integer;
   Self.LV.Clear();
   Self.AddrToLine.Clear();
 
-  for i := 0 to TRCS._MAX_RCS-1 do
+  if (not RCSi.ready) then
+    Exit();
+
+  for i := 0 to RCSi.maxModuleAddr do
    begin
     if (RCSi.ready) then
       if ((not RCSi.IsModule(i)) and (not RCSi.GetNeeded(i)) and (not load_all)) then
