@@ -209,7 +209,6 @@ var i:Integer;
 
 procedure TF_Tester.FormCreate(Sender: TObject);
  begin
-  SetLength(Self.CB_RCSAdrData, TRCS._MAX_RCS);  // pole indexu vytvorime tak, aby bylo co nejvetsi
   Self.RCSAddr := -1;
   Self.CreateSInput;
   Self.CreateSOutput;
@@ -339,9 +338,10 @@ procedure TF_Tester.B_ClearClick(Sender: TObject);
 procedure TF_Tester.AfterRCSOpen();
 var i:Integer;
 begin
+ SetLength(Self.CB_RCSAdrData, RCSi.maxModuleAddr+1);
  Self.CB_RCSAdr.Clear();
 
- for i := 0 to TRCS._MAX_RCS-1 do
+ for i := 0 to RCSi.maxModuleAddr do
   begin
    try
      if (not RCSi.IsModule(i)) then continue;
