@@ -436,7 +436,7 @@ begin
 
  end else if (parsed[2] = 'LIST') then begin
    str := '';
-   for i := 0 to TRCS._MAX_RCS-1 do
+   for i := 0 to RCSi.maxModuleAddr do
      if ((RCSi.IsModule(i)) or (RCSi.GetNeeded(i))) then
         str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;INFO;{'+str+'}');
