@@ -96,16 +96,19 @@ type
  end;
 
  // jedno RCS oblasti rizeni
- TORRCS = record
-  present:boolean;                                                              // jestli je RCS v OR pritomno
+ TORRCS = class
   failed:boolean;                                                               // jestli RCS v OR selhalo (nekomunikuje)
+  constructor Create(failed:boolean = false);
  end;
 
  // seznam RCS modulu v OR
- TORRCSs = record
-  modules: array [0..TRCS._MAX_RCS] of TORRCS;                                     // seznam RCS modulu v OR, indexem je adresa RCS
+ TORRCSs = class
+  modules: TObjectDictionary<Cardinal, TORRCS>;
   failure:boolean;                                                              // jestli doslo k selhani jakohokoliv RCS modulu v OR
   last_failure_time:TDateTime;                                                  // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani RCS modulu pro dispecera)
+
+  constructor Create();
+  destructor Destroy(); override;
  end;
 
  /////////////////////////////////////////////////////////////////////////////
@@ -147,7 +150,6 @@ type
       procedure SetPrivolavackaBlkCnt(new:Integer);
       procedure SetTimerCnt(new:Integer);
 
-      procedure RCSClear();                                                     // nastavi vsem RCS modulum, ze nejsou v OR
       procedure RCSUpdate();                                                    // posila souhrnne zpravy panelu o vypadku RCS modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
 
       procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
@@ -292,7 +294,7 @@ begin
 
  Self.ORProp.Osvetleni := TList<TOsv>.Create();
  Self.Connected        := TList<TORPanel>.Create();
- Self.RCSClear();
+ Self.OR_RCS := TORRCSs.Create();
 
  Self.ORStav.dk_click_callback := nil;
  Self.ORStav.reg_please := nil;
@@ -315,8 +317,28 @@ begin
  Self.vb.Free();
  Self.MereniCasu.Free();
  Self.Connected.Free();
- inherited Destroy();
+ Self.OR_RCS.Free();
+
+ inherited;
 end;//dtor
+
+constructor TORRCSs.Create();
+begin
+ inherited;
+ Self.modules := TObjectDictionary<Cardinal, TORRCS>.Create();
+end;
+
+destructor TORRCSs.Destroy();
+begin
+ Self.modules.Free();
+ inherited;
+end;
+
+constructor TORRCS.Create(failed:boolean = false);
+begin
+ inherited Create();
+ Self.failed := failed;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1647,17 +1669,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.RCSClear();
-var i:Integer;
-begin
- for i := 0 to TRCS._MAX_RCS do
-  Self.OR_RCS.modules[i].present := false;
-end;
-
 procedure TOR.RCSAdd(addr:integer);
 begin
  try
-   Self.OR_RCS.modules[addr].present := true;
+   if (not Self.OR_RCS.modules.ContainsKey(addr)) then
+     Self.OR_RCS.modules.Add(addr, TORRCS.Create(false));
  except
 
  end;
@@ -1666,7 +1682,7 @@ end;
 procedure TOR.RCSFail(addr:integer);
 begin
  try
-   if (not Self.OR_RCS.modules[addr].present) then Exit();
+   if (not Self.OR_RCS.modules.ContainsKey(addr)) then Exit();
    Self.OR_RCS.modules[addr].failed := true;
    Self.OR_RCS.failure := true;
    Self.OR_RCS.last_failure_time := Now;
@@ -1676,27 +1692,28 @@ begin
 end;
 
 procedure TOR.RCSUpdate();
-var i:Integer;
+var addr:Integer;
     str:string;
+    panel:TORPanel;
 begin
  if (not Self.OR_RCS.failure) then Exit();
 
  if ((Self.OR_RCS.last_failure_time + EncodeTime(0, 0, 0, 500)) < Now) then
   begin
    str := 'Výpadek RCS modulu ';
-   for i := 0 to TRCS._MAX_RCS do
-    if (Self.OR_RCS.modules[i].failed) then
+   for addr in Self.OR_RCS.modules.Keys do
+    if (Self.OR_RCS.modules[addr].failed) then
      begin
-      str := str + IntToStr(i) + ', ';
-      Self.OR_RCS.modules[i].failed := false;
+      str := str + IntToStr(addr) + ', ';
+      Self.OR_RCS.modules[addr].failed := false;
      end;
 
    str := LeftStr(str, Length(str)-2);
    Self.OR_RCS.failure := false;
 
-   for i := 0 to Self.Connected.Count-1 do
-     if (Self.Connected[i].Rights >= read) then
-       ORTCPServer.BottomError(Self.Connected[i].Panel, str, Self.ShortName, 'TECHNOLOGIE');
+   for panel in Self.Connected do
+     if (panel.Rights >= read) then
+       ORTCPServer.BottomError(panel.Panel, str, Self.ShortName, 'TECHNOLOGIE');
   end;
 end;
 
