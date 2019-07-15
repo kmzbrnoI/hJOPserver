@@ -70,6 +70,7 @@ type
       procedure DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg:PChar);
       procedure DllOnInputChanged(Sender:TObject; module:Cardinal);
       procedure DllOnOutputChanged(Sender:TObject; module:Cardinal);
+      function GetMaxModuleAddrSafe():Cardinal;
 
    public
      log:boolean;
@@ -109,6 +110,7 @@ type
       property ready:boolean read aready;
       property libDir:string read fLibDir;
       property maxModuleAddr:Cardinal read GetMaxModuleAddr;
+      property maxModuleAddrSafe:Cardinal read GetMaxModuleAddrSafe;
   end;
 
 var
@@ -415,6 +417,19 @@ class function TRCS.RCSAddr(board:Byte; port:Byte):TRCSAddr;
 begin
  Result.board := board;
  Result.port := port;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TRCS.GetMaxModuleAddrSafe():Cardinal;
+begin
+ if (not Self.ready) then
+   Exit(0);
+ try
+   Result := Self.GetMaxModuleAddr();
+ except
+   Result := 0;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
