@@ -49,6 +49,7 @@ type
      procedure PageControlCloseButtonDrawTab(Control: TCustomTabControl;
   TabIndex: Integer; const Rect: TRect; Active: Boolean);
     procedure CHB_RCS_OutputClick(Sender: TObject);
+    procedure SE_RCSmoduleExit(Sender: TObject);
 
   private
    OpenIndex:Integer;
@@ -106,7 +107,8 @@ procedure TF_BlkSCom.NewBlkOpenForm();
   CHB_Zamknuto.Checked     := false;
   Self.L_UsekID.Caption    := 'bude zobrazen priste';
 
-  Self.SE_RCSmodule.Value  := 1;
+  Self.SE_RCSmodule.Value := 1;
+  Self.SE_RCSmoduleExit(Self);
   Self.SE_RCSPort.Value := 0;
   Self.CB_Typ.ItemIndex := -1;
 
@@ -149,9 +151,10 @@ var glob:TBlkSettings;
   if (settings.RCSAddrs.Count > 0) then
    begin
     Self.SE_RCSmodule.Value := settings.RCSAddrs[0].board;
-    SE_RCSPort.Value     := settings.RCSAddrs[0].port;
-    CB_Typ.ItemIndex     := Integer(settings.OutputType);
+    SE_RCSPort.Value := settings.RCSAddrs[0].port;
+    CB_Typ.ItemIndex := Integer(settings.OutputType);
    end;
+  Self.SE_RCSmoduleExit(Self);
 
   CHB_Zamknuto.Checked := settings.zamknuto;
 
@@ -476,6 +479,11 @@ begin
       PageControl.Repaint;
     end;
   end;
+end;
+
+procedure TF_BlkSCom.SE_RCSmoduleExit(Sender: TObject);
+begin
+ Self.SE_RCSport.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_RCSmodule.Value)-1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

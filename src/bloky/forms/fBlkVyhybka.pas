@@ -52,6 +52,7 @@ type
     procedure CB_SpojkaChange(Sender: TObject);
     procedure CHB_npPlusClick(Sender: TObject);
     procedure CHB_npMinusClick(Sender: TObject);
+    procedure SE_moduleExit(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
@@ -93,19 +94,28 @@ procedure TF_BlkVyhybka.OpenForm(BlokIndex:Integer);
   F_BlkVyhybka.ShowModal;
  end;
 
+procedure TF_BlkVyhybka.SE_moduleExit(Sender: TObject);
+begin
+ Self.SE_VystPlus_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_VystPlus_module.Value)-1;
+ Self.SE_VystMinus_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_VystMinus_module.Value)-1;
+ Self.SE_VstPlus_port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_VstPlus_module.Value)-1;
+ Self.SE_VstMinus_port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_VstMinus_module.Value)-1;
+end;
+
 procedure TF_BlkVyhybka.NewBlkOpenForm;
  begin
   E_Nazev.Text := '';
   SE_ID.Value  := Blky.GetBlkID(Blky.Cnt-1)+1;
 
-  SE_VystPlus_port.Value  := 0;
-  SE_VystPlus_module.Value   := 1;
+  SE_VystPlus_port.Value := 0;
+  SE_VystPlus_module.Value := 1;
   SE_VystMinus_port.Value := 0;
-  SE_VystMinus_module.Value  := 1;
-  SE_VstPlus_port.Value   := 0;
-  SE_VstPlus_module.Value    := 1;
-  SE_VstMinus_port.Value  := 0;
-  SE_VstMinus_module.Value   := 1;
+  SE_VystMinus_module.Value := 1;
+  SE_VstPlus_port.Value := 0;
+  SE_VstPlus_module.Value  := 1;
+  SE_VstMinus_port.Value := 0;
+  SE_VstMinus_module.Value := 1;
+  Self.SE_moduleExit(Self);
 
   Self.CHB_Spojka.Checked  := false;
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
@@ -188,6 +198,8 @@ var glob:TBlkSettings;
     SE_VystMinus_module.Value  := 0;
     SE_VystMinus_port.Value := 0;
    end;
+
+  Self.SE_moduleExit(Self);
 
   Self.CHB_npPlus.Checked := (settings.npPlus > -1);
   Self.CHB_npPlusClick(Self.CHB_npPlus);

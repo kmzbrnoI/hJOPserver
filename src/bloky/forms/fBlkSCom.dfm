@@ -165,7 +165,7 @@ object F_BlkSCom: TF_BlkSCom
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      MaxValue = 15
+      MaxValue = 0
       MinValue = 0
       TabOrder = 2
       Value = 0
@@ -199,6 +199,7 @@ object F_BlkSCom: TF_BlkSCom
       MinValue = 0
       TabOrder = 1
       Value = 1
+      OnExit = SE_RCSmoduleExit
     end
     object CHB_RCS_Output: TCheckBox
       Left = 8

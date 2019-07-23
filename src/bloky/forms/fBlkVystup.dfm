@@ -108,7 +108,7 @@ object F_BlkVystup: TF_BlkVystup
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      MaxValue = 15
+      MaxValue = 0
       MinValue = 0
       TabOrder = 1
       Value = 0
@@ -126,6 +126,7 @@ object F_BlkVystup: TF_BlkVystup
       MinValue = 0
       TabOrder = 0
       Value = 1
+      OnExit = SE_moduleExit
     end
   end
   object B_Storno: TButton

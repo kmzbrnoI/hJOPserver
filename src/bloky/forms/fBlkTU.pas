@@ -71,6 +71,7 @@ type
     procedure CHB_NavSClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure SE_RCS_BoardExit(Sender: TObject);
   private
    NewBlk:Boolean;
    Blk:TBlkTU;
@@ -111,6 +112,14 @@ procedure TF_BlkTU.OpenForm(BlokIndex:Integer);
   Self.ShowModal;
  end;
 
+procedure TF_BlkTU.SE_RCS_BoardExit(Sender: TObject);
+begin
+ Self.SE_Port1.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board1.Value)-1;
+ Self.SE_Port2.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board2.Value)-1;
+ Self.SE_Port3.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board3.Value)-1;
+ Self.SE_Port4.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board4.Value)-1;
+end;
+
 procedure TF_BlkTU.NewBlkCreate;
  begin
   NewBlk := true;
@@ -133,6 +142,7 @@ procedure TF_BlkTU.NewBlkOpenForm;
   Self.SE_Board3.Value := 1;
   Self.SE_Port4.Value  := 0;
   Self.SE_Board4.Value := 1;
+  Self.SE_RCS_BoardExit(Self);
 
   Self.CHB_D1.Checked := true;
   Self.CHB_D1Click(Self.CHB_D1);
@@ -243,6 +253,8 @@ var glob:TBlkSettings;
     Self.SE_Board4.Value := 0;
    end;
 
+  Self.SE_RCS_BoardExit(Self);
+
   Self.CB_Zesil.ItemIndex := -1;
   for i := 0 to Boosters.sorted.Count-1 do
    begin
@@ -278,7 +290,7 @@ var glob:TBlkSettings;
   Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
   Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
 
-  Self.Caption := 'Edititace dat bloku '+glob.name+' (tratovy usek)';
+  Self.Caption := 'Editovat data bloku '+glob.name+' (traùov˝ ˙sek)';
   Self.ActiveControl := Self.B_OK;
  end;
 

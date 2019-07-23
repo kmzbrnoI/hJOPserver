@@ -22,6 +22,7 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure SE_moduleExit(Sender: TObject);
   private
    NewBlk:Boolean;
    Blk:TBlkIR;
@@ -59,14 +60,20 @@ procedure TF_BlkIR.OpenForm(BlokIndex:Integer);
   F_BlkIR.ShowModal;
  end;
 
+procedure TF_BlkIR.SE_moduleExit(Sender: TObject);
+begin
+ Self.SE_port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_module.Value)-1;
+end;
+
 procedure TF_BlkIR.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
   SE_ID.Value           := Blky.GetBlkID(Blky.Cnt-1)+1;
   Self.SE_module.Value  := 1;
   Self.SE_Port.Value    := 0;
+  Self.SE_moduleExit(Self);
 
-  F_BlkIR.Caption       := 'Editovat data noveho bloku';
+  F_BlkIR.Caption       := 'Editovat data nového bloku';
   F_BlkIR.ActiveControl := E_Nazev;
  end;
 
@@ -85,6 +92,8 @@ var glob:TBlkSettings;
     Self.SE_module.Value := 0;
     Self.SE_Port.Value := 0;
    end;
+
+  Self.SE_moduleExit(Self);
 
   E_Nazev.Text := glob.name;
   SE_ID.Value  := glob.id;

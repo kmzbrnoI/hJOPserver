@@ -46,6 +46,7 @@ type
     procedure B_OKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D1Click(Sender: TObject);
+    procedure SE_RCS_BoardExit(Sender: TObject);
   private
    NewBlk:Boolean;
    Blk:TBlkUsek;
@@ -83,6 +84,14 @@ procedure TF_BlkUsek.OpenForm(BlokIndex:Integer);
   F_BlkUsek.ShowModal;
  end;
 
+procedure TF_BlkUsek.SE_RCS_BoardExit(Sender: TObject);
+begin
+ Self.SE_Port1.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board1.Value)-1;
+ Self.SE_Port2.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board2.Value)-1;
+ Self.SE_Port3.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board3.Value)-1;
+ Self.SE_Port4.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board4.Value)-1;
+end;
+
 procedure TF_BlkUsek.NewBlkCreate;
  begin
   NewBlk := true;
@@ -107,6 +116,7 @@ procedure TF_BlkUsek.NewBlkOpenForm;
   Self.SE_Board3.Value := 1;
   Self.SE_Port4.Value  := 0;
   Self.SE_Board4.Value := 1;
+  Self.SE_RCS_BoardExit(Self);
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D1Click(Self.CHB_D1);
@@ -212,11 +222,12 @@ var glob:TBlkSettings;
      end;
    end;
 
+  Self.SE_RCS_BoardExit(Self);
+
   E_Delka.Text := FloatToStr(settings.Lenght);
   CHB_SmycBlok.Checked := settings.SmcUsek;
 
-
-  F_BlkUsek.Caption := 'Edititace dat bloku '+glob.name+' (Usek)';
+  F_BlkUsek.Caption := 'Editovat data bloku '+glob.name+' (úsek)';
   F_BlkUsek.ActiveControl := B_OK;
  end;
 

@@ -52,6 +52,7 @@ type
      _DEFAULT_LIB = 'simulator.dll';
      _INIFILE_SECTNAME = 'RCS';
      _CONFIG_PATH = 'rcs';
+     _MODULE_DEFAULT_IO = 16;
 
    private
      boards:TObjectDictionary<Cardinal, TRCSBoard>;
@@ -97,6 +98,9 @@ type
 
       procedure AddOutputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
       procedure RemoveOutputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
+
+      function GetModuleInputsCountSafe(Module:Cardinal):Cardinal;
+      function GetModuleOutputsCountSafe(Module:Cardinal):Cardinal;
 
       function IsSimulatorMode():boolean;
 
@@ -429,6 +433,30 @@ begin
    Result := Self.GetMaxModuleAddr();
  except
    Result := 0;
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TRCS.GetModuleInputsCountSafe(Module:Cardinal):Cardinal;
+begin
+ if (not Self.ready) then
+   Exit(_MODULE_DEFAULT_IO);
+ try
+   Result := Self.GetModuleInputsCount(Module);
+ except
+   Result := _MODULE_DEFAULT_IO;
+ end;
+end;
+
+function TRCS.GetModuleOutputsCountSafe(Module:Cardinal):Cardinal;
+begin
+ if (not Self.ready) then
+   Exit(_MODULE_DEFAULT_IO);
+ try
+   Result := Self.GetModuleOutputsCount(Module);
+ except
+   Result := _MODULE_DEFAULT_IO;
  end;
 end;
 

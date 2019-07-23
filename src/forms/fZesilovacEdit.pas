@@ -35,6 +35,7 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure CHB_DCCClick(Sender: TObject);
+    procedure SE_RCS_moduleExit(Sender: TObject);
   private
     open_booster:TBooster;
 
@@ -69,6 +70,13 @@ procedure TF_ZesilovacEdit.OpenForm(Zesilovac:TBooster);
 
   Self.ShowModal;
  end;
+
+procedure TF_ZesilovacEdit.SE_RCS_moduleExit(Sender: TObject);
+begin
+ Self.SE_Napajeni_Port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Napajeni_module.Value)-1;
+ Self.SE_DCC_port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_DCC_module.Value)-1;
+ Self.SE_Zkrat_Port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Zkrat_module.Value)-1;
+end;
 
 procedure TF_ZesilovacEdit.B_SaveClick(Sender: TObject);
 var settings:TBoosterSettings;
@@ -184,15 +192,17 @@ var bSettings:TBoosterSettings;
   IgnoraceRCS[1] := 4;
 
   Self.SE_Napajeni_module.Value := bSettings.RCS.Napajeni.board;
-  Self.SE_Zkrat_module.Value    := bSettings.RCS.Zkrat.board;
+  Self.SE_Zkrat_module.Value := bSettings.RCS.Zkrat.board;
 
-  Self.SE_DCC_module.Value      := bSettings.RCS.DCC.board;
-  Self.SE_DCC_port.Value     := bSettings.RCS.DCC.port;
+  Self.SE_DCC_module.Value := bSettings.RCS.DCC.board;
+  Self.SE_DCC_port.Value := bSettings.RCS.DCC.port;
 
   Self.CHB_DCC.Checked := open_booster.isDCCdetection;
   Self.CHB_DCCClick(Self.CHB_DCC);
 
-  F_ZesilovacEdit.Caption := 'Zesilovaè : '+bSettings.Name;
+  Self.SE_RCS_moduleExit(Self);
+
+  F_ZesilovacEdit.Caption := 'Zesilovaè: '+bSettings.Name;
  end;
 
 procedure TF_ZesilovacEdit.NewOpenForm;
@@ -217,6 +227,8 @@ var IgnoraceRCS:TArI;
 
   Self.CHB_DCC.Checked := false;
   Self.CHB_DCCClick(Self.CHB_DCC);
+
+  Self.SE_RCS_moduleExit(Self);
 
   F_ZesilovacEdit.Caption := 'Nový zesilovaè';
  end;

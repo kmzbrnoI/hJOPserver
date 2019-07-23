@@ -215,7 +215,7 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 15
+      MaxValue = 0
       MinValue = 0
       TabOrder = 2
       Value = 0
@@ -234,6 +234,7 @@ object F_BlkTU: TF_BlkTU
       MinValue = 0
       TabOrder = 1
       Value = 1
+      OnExit = SE_RCS_BoardExit
     end
     object CHB_D1: TCheckBox
       Tag = 1
@@ -276,6 +277,7 @@ object F_BlkTU: TF_BlkTU
       MinValue = 0
       TabOrder = 4
       Value = 1
+      OnExit = SE_RCS_BoardExit
     end
     object SE_Port2: TSpinEdit
       Left = 224
@@ -287,7 +289,7 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 15
+      MaxValue = 0
       MinValue = 0
       TabOrder = 5
       Value = 0
@@ -319,6 +321,7 @@ object F_BlkTU: TF_BlkTU
       MinValue = 0
       TabOrder = 7
       Value = 1
+      OnExit = SE_RCS_BoardExit
     end
     object SE_Port3: TSpinEdit
       Left = 224
@@ -330,7 +333,7 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 15
+      MaxValue = 0
       MinValue = 0
       TabOrder = 8
       Value = 0
@@ -362,6 +365,7 @@ object F_BlkTU: TF_BlkTU
       MinValue = 0
       TabOrder = 10
       Value = 1
+      OnExit = SE_RCS_BoardExit
     end
     object SE_Port4: TSpinEdit
       Left = 224
@@ -373,7 +377,7 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 15
+      MaxValue = 0
       MinValue = 0
       TabOrder = 11
       Value = 0
