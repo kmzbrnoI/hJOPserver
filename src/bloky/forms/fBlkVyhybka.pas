@@ -210,6 +210,11 @@ var spojka_vypust:TArI;
  begin
   Self.LB_Stanice.Clear();
 
+  Self.SE_VystPlus_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_VystMinus_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_VstPlus_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_VstMinus_module.MaxValue := RCSi.maxModuleAddrSafe;
+
   if (Self.Blk <> nil) then
    begin
     SetLength(obls,Self.Blk.OblsRizeni.Count);

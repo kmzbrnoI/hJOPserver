@@ -122,8 +122,8 @@ object F_BlkIR: TF_BlkIR
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 0
       Value = 1
     end

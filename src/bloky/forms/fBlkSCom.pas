@@ -184,6 +184,7 @@ procedure TF_BlkSCom.HlavniOpenForm();
  begin
   SetLength(Self.obls, 0);
   Self.LB_Stanice.Clear();
+  Self.SE_RCSmodule.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
 procedure TF_BlkSCom.NewBlkCreate();

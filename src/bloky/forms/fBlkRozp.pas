@@ -104,6 +104,7 @@ var glob:TBlkSettings;
 procedure TF_BlkRozp.HlavniOpenForm;
  begin
   Self.LB_Stanice.Clear();
+  Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
 procedure TF_BlkRozp.NewBlkCreate;

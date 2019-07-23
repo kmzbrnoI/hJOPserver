@@ -160,6 +160,10 @@ procedure TF_ZesilovacEdit.FormCloseQuery(Sender: TObject;
 procedure TF_ZesilovacEdit.HlavniOpenForm;
  begin
   F_ZesilovacEdit.ActiveControl := B_Save;
+
+  Self.SE_Napajeni_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_Zkrat_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_DCC_module.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
 procedure TF_ZesilovacEdit.NormalOpenForm;

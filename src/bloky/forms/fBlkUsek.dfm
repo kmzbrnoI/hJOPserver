@@ -228,8 +228,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 1
       Value = 1
     end
@@ -269,8 +269,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 4
       Value = 1
     end
@@ -312,8 +312,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 7
       Value = 1
     end
@@ -355,8 +355,8 @@ object F_BlkUsek: TF_BlkUsek
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 10
       Value = 1
     end
@@ -423,7 +423,7 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object SE_SprCnt: TSpinEdit

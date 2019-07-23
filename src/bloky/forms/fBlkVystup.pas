@@ -96,6 +96,7 @@ var glob:TBlkSettings;
 
 procedure TF_BlkVystup.HlavniOpenForm;
  begin
+  Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
 procedure TF_BlkVystup.NewBlkCreate;

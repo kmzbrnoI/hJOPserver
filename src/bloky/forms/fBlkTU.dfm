@@ -230,8 +230,8 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 1
       Value = 1
     end
@@ -272,8 +272,8 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 4
       Value = 1
     end
@@ -315,8 +315,8 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 7
       Value = 1
     end
@@ -358,8 +358,8 @@ object F_BlkTU: TF_BlkTU
       Margins.Right = 2
       Margins.Bottom = 2
       Enabled = False
-      MaxValue = 191
-      MinValue = 1
+      MaxValue = 0
+      MinValue = 0
       TabOrder = 10
       Value = 1
     end
@@ -415,7 +415,7 @@ object F_BlkTU: TF_BlkTU
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object GB_Zastavka: TGroupBox
@@ -500,18 +500,10 @@ object F_BlkTU: TF_BlkTU
       TabOrder = 5
       object TS_Zast_lichy: TTabSheet
         Caption = 'Lich'#253' sm'#283'r'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
     end
     object CHB_Zastavka_Sudy: TCheckBox
@@ -570,7 +562,7 @@ object F_BlkTU: TF_BlkTU
       Width = 280
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CHB_NavS: TCheckBox
@@ -587,7 +579,7 @@ object F_BlkTU: TF_BlkTU
       Width = 280
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 3
     end
   end

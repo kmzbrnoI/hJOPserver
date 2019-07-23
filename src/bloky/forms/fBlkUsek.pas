@@ -225,6 +225,11 @@ var booster:TBooster;
  begin
   Self.LB_Stanice.Clear();
 
+  Self.SE_Board1.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_Board2.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_Board3.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_Board4.MaxValue := RCSi.maxModuleAddrSafe;
+
   //nacteni zesilovacu
   Self.CB_Zesil.Clear();
   for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
