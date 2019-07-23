@@ -207,7 +207,7 @@ begin
  if (Self.napajeni = TBoosterSignal.error) then Exit(TBoosterSignal.undef);
 
  try
-   val := RCSi.GetInput(Self.Settings.RCS.Zkrat.board, Self.Settings.RCS.Zkrat.port);
+   val := RCSi.GetInput(Self.Settings.RCS.Zkrat);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -226,7 +226,7 @@ begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  try
-   val := RCSi.GetInput(Self.Settings.RCS.Napajeni.board,Self.Settings.RCS.Napajeni.port);
+   val := RCSi.GetInput(Self.Settings.RCS.Napajeni);
  except
    Exit(TBoosterSignal.undef);
  end;
@@ -247,7 +247,7 @@ begin
  // DCC nemusi byt detekovano (to se pozna tak, ze RCS board = 0)
  if (Self.Settings.RCS.DCC.board = 0) then Exit(TBoosterSignal.undef);
  try
-   val := RCSi.GetInput(Self.Settings.RCS.DCC.board, Self.Settings.RCS.DCC.port);
+   val := RCSi.GetInput(Self.Settings.RCS.DCC);
  except
    Exit(TBoosterSignal.undef);
  end;

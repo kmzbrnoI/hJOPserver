@@ -505,8 +505,8 @@ var iplus,iminus: TRCSInputState;
 
   //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
   try
-    iplus  := RCSi.GetInput(Self.VyhSettings.RCSAddrs[0].board,Self.VyhSettings.RCSAddrs[0].port);
-    iminus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[1].board,Self.VyhSettings.RCSAddrs[1].port);
+    iplus  := RCSi.GetInput(Self.VyhSettings.RCSAddrs[0]);
+    iminus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[1]);
   except
     iplus  := failure;
     iminus := failure;

@@ -534,7 +534,7 @@ begin
  for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
   begin
    try
-     state := RCSi.GetInput(Self.UsekSettings.RCSAddrs[i].board, Self.UsekSettings.RCSAddrs[i].port);
+     state := RCSi.GetInput(Self.UsekSettings.RCSAddrs[i]);
    except
      state := failure;
    end;

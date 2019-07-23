@@ -120,7 +120,7 @@ procedure TBlkIR.Update();
 var state:TRCSInputState;
 begin
  try
-   state := RCSi.GetInput(Self.IRSettings.RCSAddrs[0].board, Self.IRSettings.RCSAddrs[0].port)
+   state := RCSi.GetInput(Self.IRSettings.RCSAddrs[0])
  except
    state := failure;
  end;
