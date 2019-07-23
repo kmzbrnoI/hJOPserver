@@ -93,6 +93,11 @@ type
       procedure LoadFromFile(ini:TMemIniFile);
       procedure SaveToFile(ini:TMemIniFile);
 
+      procedure SetOutput(addr:TRCSAddr; state: Integer); overload;
+      function GetInput(addr:TRCSAddr): TRCSInputState; overload;
+      procedure SetInput(addr:TRCSAddr; State:Integer); overload;
+      function GetOutput(addr:TRCSAddr):Integer; overload;
+
       procedure AddInputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
       procedure RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
 
@@ -203,7 +208,7 @@ begin
    if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).GetSettings().RCSAddrs.Count > 0)) then
      Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
    if (Blk.typ = _BLK_PREJEZD) then
-     Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCS, (Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
+     Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
    if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava()) and
        ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
      Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
@@ -458,6 +463,28 @@ begin
  except
    Result := _MODULE_DEFAULT_IO;
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TRCS.SetInput(addr:TRCSAddr; State:Integer);
+begin
+ Self.SetInput(addr.board, addr.port, State);
+end;
+
+function TRCS.GetInput(addr:TRCSAddr): TRCSInputState;
+begin
+ Result := Self.GetInput(addr.board, addr.port);
+end;
+
+procedure TRCS.SetOutput(addr:TRCSAddr; State:Integer);
+begin
+ Self.SetOutput(addr.board, addr.port, State);
+end;
+
+function TRCS.GetOutput(addr:TRCSAddr):Integer;
+begin
+ Result := Self.GetOutput(addr.board, addr.port);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

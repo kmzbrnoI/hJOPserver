@@ -4,7 +4,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 529
+  ClientHeight = 417
   ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -65,7 +65,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   end
   object B_save_P: TButton
     Left = 248
-    Top = 494
+    Top = 385
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -79,7 +79,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   end
   object B_Storno: TButton
     Left = 152
-    Top = 494
+    Top = 385
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -120,207 +120,294 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Left = 8
     Top = 110
     Width = 321
-    Height = 379
+    Height = 259
     Caption = ' RCS '
     TabOrder = 3
     object L_P01: TLabel
-      Left = 64
-      Top = 16
-      Width = 32
+      Left = 144
+      Top = 15
+      Width = 29
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Modul:'
+      Caption = 'Modul'
+    end
+    object Label1: TLabel
+      Left = 222
+      Top = 15
+      Width = 19
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Port'
     end
     object GB_Prj_vyst: TGroupBox
-      Left = 64
-      Top = 42
-      Width = 201
-      Height = 103
+      Left = 14
+      Top = 32
+      Width = 291
+      Height = 79
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = ' V'#253'stupy '
-      TabOrder = 1
+      TabOrder = 0
       object L_P04: TLabel
-        Left = 17
-        Top = 28
-        Width = 92
+        Left = 15
+        Top = 20
+        Width = 89
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Nouzov'#233' otev'#345'en'#237' :'
+        Caption = 'Nouzov'#233' otev'#345'en'#237':'
       end
       object L_P05: TLabel
-        Left = 17
-        Top = 63
-        Width = 72
+        Left = 15
+        Top = 47
+        Width = 69
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Zav'#345#237't prejezd :'
+        Caption = 'Zav'#345#237't prejezd:'
       end
-      object SE_vyst_open: TSpinEdit
-        Left = 128
-        Top = 27
-        Width = 49
+      object SE_vyst_open_port: TSpinEdit
+        Left = 208
+        Top = 19
+        Width = 65
         Height = 22
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 15
-        MinValue = 0
-        TabOrder = 0
-        Value = 0
-      end
-      object SE_vyst_close: TSpinEdit
-        Left = 128
-        Top = 61
-        Width = 49
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        MaxValue = 15
+        MaxValue = 0
         MinValue = 0
         TabOrder = 1
         Value = 0
       end
+      object SE_vyst_close_port: TSpinEdit
+        Left = 208
+        Top = 45
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 3
+        Value = 0
+      end
+      object SE_vyst_open_board: TSpinEdit
+        Left = 128
+        Top = 19
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 191
+        MinValue = 0
+        TabOrder = 0
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_vyst_close_board: TSpinEdit
+        Left = 128
+        Top = 45
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 191
+        MinValue = 0
+        TabOrder = 2
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
     end
     object GB_Prj_vst: TGroupBox
-      Left = 64
-      Top = 156
-      Width = 201
-      Height = 203
+      Left = 14
+      Top = 115
+      Width = 291
+      Height = 134
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = ' Vstupy '
-      TabOrder = 2
+      TabOrder = 1
       object L_P07: TLabel
-        Left = 16
-        Top = 32
-        Width = 47
+        Left = 15
+        Top = 24
+        Width = 44
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Zav'#345'eno :'
+        Caption = 'Zav'#345'eno:'
       end
       object L_P08: TLabel
-        Left = 16
-        Top = 72
-        Width = 51
+        Left = 15
+        Top = 50
+        Width = 48
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Otev'#345'eno :'
+        Caption = 'Otev'#345'eno:'
       end
       object L_P09: TLabel
-        Left = 16
-        Top = 112
-        Width = 47
+        Left = 15
+        Top = 76
+        Width = 44
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'V'#253'straha :'
+        Caption = 'V'#253'straha:'
       end
       object L_P10: TLabel
-        Left = 16
-        Top = 152
-        Width = 45
+        Left = 15
+        Top = 102
+        Width = 42
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Anulace :'
+        Caption = 'Anulace:'
       end
-      object SE_vst_close: TSpinEdit
-        Left = 128
-        Top = 32
-        Width = 49
+      object SE_vst_close_port: TSpinEdit
+        Left = 208
+        Top = 24
+        Width = 65
         Height = 22
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 15
-        MinValue = 0
-        TabOrder = 0
-        Value = 0
-      end
-      object SE_vst_open: TSpinEdit
-        Left = 128
-        Top = 72
-        Width = 49
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        MaxValue = 15
+        MaxValue = 0
         MinValue = 0
         TabOrder = 1
         Value = 0
       end
-      object SE_vst_vystraha: TSpinEdit
-        Left = 128
-        Top = 112
-        Width = 49
+      object SE_vst_open_port: TSpinEdit
+        Left = 208
+        Top = 50
+        Width = 65
         Height = 22
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 15
-        MinValue = 0
-        TabOrder = 2
-        Value = 0
-      end
-      object SE_vst_anulace: TSpinEdit
-        Left = 128
-        Top = 152
-        Width = 49
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        MaxValue = 15
+        MaxValue = 0
         MinValue = 0
         TabOrder = 3
         Value = 0
       end
-    end
-    object SE_RCS: TSpinEdit
-      Left = 184
-      Top = 16
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 191
-      MinValue = 1
-      TabOrder = 0
-      Value = 1
+      object SE_vst_vystraha_port: TSpinEdit
+        Left = 208
+        Top = 76
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 5
+        Value = 0
+      end
+      object SE_vst_anulace_port: TSpinEdit
+        Left = 208
+        Top = 102
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 7
+        Value = 0
+      end
+      object SE_vst_close_board: TSpinEdit
+        Left = 128
+        Top = 24
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 0
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_vst_open_board: TSpinEdit
+        Left = 128
+        Top = 50
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 2
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_vst_vystraha_board: TSpinEdit
+        Left = 128
+        Top = 76
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 4
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_vst_anulace_board: TSpinEdit
+        Left = 128
+        Top = 102
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 6
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
     end
   end
 end

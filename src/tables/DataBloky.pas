@@ -177,7 +177,7 @@ var j, spr:integer;
    end;//_BLK_VYH
 
  /////////////////////////////////////////////////////
-   _BLK_SCOM:begin
+   _BLK_NAV:begin
       Self.LV.Items.Item[line].ImageIndex := 5;
       s_scom := (Blk as TBlkNav).GetSettings();
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Návìstidlo';
