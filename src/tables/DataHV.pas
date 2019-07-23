@@ -103,80 +103,80 @@ var line:Integer;
   stav := HV.stav;
   slot := HV.Slot;
 
-  Self.LV.Items.Item[line].Caption := IntToStr(HV.adresa);
-  Self.LV.Items.Item[line].SubItems.Strings[0] := data.Nazev;
-  Self.LV.Items.Item[line].SubItems.Strings[1] := data.Oznaceni;
-  Self.LV.Items.Item[line].SubItems.Strings[2] := data.Majitel;
-  Self.LV.Items.Item[line].SubItems.Strings[3] := data.Poznamka;
+  Self.LV.Items[line].Caption := IntToStr(HV.adresa);
+  Self.LV.Items[line].SubItems[0] := data.Nazev;
+  Self.LV.Items[line].SubItems[1] := data.Oznaceni;
+  Self.LV.Items[line].SubItems[2] := data.Majitel;
+  Self.LV.Items[line].SubItems[3] := data.Poznamka;
 
   case (data.Trida) of
-   THVClass.parni   : Self.LV.Items.Item[line].SubItems.Strings[4] := 'parní';
-   THVClass.diesel  : Self.LV.Items.Item[line].SubItems.Strings[4] := 'diesel';
-   THVClass.motor   : Self.LV.Items.Item[line].SubItems.Strings[4] := 'motor';
-   THVClass.elektro : Self.LV.Items.Item[line].SubItems.Strings[4] := 'elektro';
+   THVClass.parni   : Self.LV.Items[line].SubItems[4] := 'parní';
+   THVClass.diesel  : Self.LV.Items[line].SubItems[4] := 'diesel';
+   THVClass.motor   : Self.LV.Items[line].SubItems[4] := 'motor';
+   THVClass.elektro : Self.LV.Items[line].SubItems[4] := 'elektro';
   end;//case
 
   case (stav.StanovisteA) of
-   lichy : Self.LV.Items.Item[line].SubItems.Strings[5] := 'lichý';
-   sudy  : Self.LV.Items.Item[line].SubItems.Strings[5] := 'sudý';
+   lichy : Self.LV.Items[line].SubItems[5] := 'lichý';
+   sudy  : Self.LV.Items[line].SubItems[5] := 'sudý';
   end;//case
 
-  Self.LV.Items.Item[line].SubItems.Strings[18]  := Format('%5.2f',[stav.najeto_vpred.Metru]);
-  Self.LV.Items.Item[line].SubItems.Strings[19]  := IntToStr(stav.najeto_vpred.Bloku);
-  Self.LV.Items.Item[line].SubItems.Strings[20]  := Format('%5.2f',[stav.najeto_vzad.Metru]);
-  Self.LV.Items.Item[line].SubItems.Strings[21]  := IntToStr(stav.najeto_vzad.Bloku);
+  Self.LV.Items[line].SubItems[18]  := Format('%5.2f',[stav.najeto_vpred.Metru]);
+  Self.LV.Items[line].SubItems[19]  := IntToStr(stav.najeto_vpred.Bloku);
+  Self.LV.Items[line].SubItems[20]  := Format('%5.2f',[stav.najeto_vzad.Metru]);
+  Self.LV.Items[line].SubItems[21]  := IntToStr(stav.najeto_vzad.Bloku);
 
   if (stav.stanice <> nil) then
-    Self.LV.Items.Item[line].SubItems.Strings[6] := stav.stanice.Name
+    Self.LV.Items[line].SubItems[6] := stav.stanice.Name
   else
-    Self.LV.Items.Item[line].SubItems.Strings[6] := '';
+    Self.LV.Items[line].SubItems[6] := '';
 
   if (stav.souprava > -1) then
-    Self.LV.Items.Item[line].SubItems.Strings[17] := Soupravy.GetSprNameByIndex(stav.souprava)
+    Self.LV.Items[line].SubItems[17] := Soupravy.GetSprNameByIndex(stav.souprava)
   else
-    Self.LV.Items.Item[line].SubItems.Strings[17] := '-';
+    Self.LV.Items[line].SubItems[17] := '-';
 
   case (slot.pom) of
-   TPomStatus.progr    : Self.LV.Items.Item[line].SubItems.Strings[16] := 'progr';
-   TPomStatus.error    : Self.LV.Items.Item[line].SubItems.Strings[16] := 'error';
-   TPomStatus.pc       : Self.LV.Items.Item[line].SubItems.Strings[16] := 'automat';
-   TPomStatus.released : Self.LV.Items.Item[line].SubItems.Strings[16] := 'ruèní';
+   TPomStatus.progr    : Self.LV.Items[line].SubItems[16] := 'progr';
+   TPomStatus.error    : Self.LV.Items[line].SubItems[16] := 'error';
+   TPomStatus.pc       : Self.LV.Items[line].SubItems[16] := 'automat';
+   TPomStatus.released : Self.LV.Items[line].SubItems[16] := 'ruèní';
   end;//case
 
  if (not HV.Slot.Prevzato) then
   begin
    // neprevzato
-   Self.LV.Items.Item[line].SubItems.Strings[7]  := '---';
-   Self.LV.Items.Item[line].SubItems.Strings[8]  := '---';
-   Self.LV.Items.Item[line].SubItems.Strings[9]  := '?';
-   Self.LV.Items.Item[line].SubItems.Strings[10]  := '????';
-   Self.LV.Items.Item[line].SubItems.Strings[11]  := '????';
-   Self.LV.Items.Item[line].SubItems.Strings[12]  := '????';
-   Self.LV.Items.Item[line].SubItems.Strings[13]  := '???? ????';
-   Self.LV.Items.Item[line].SubItems.Strings[14]  := '???? ????';
+   Self.LV.Items[line].SubItems[7]  := '---';
+   Self.LV.Items[line].SubItems[8]  := '---';
+   Self.LV.Items[line].SubItems[9]  := '?';
+   Self.LV.Items[line].SubItems[10]  := '????';
+   Self.LV.Items[line].SubItems[11]  := '????';
+   Self.LV.Items[line].SubItems[12]  := '????';
+   Self.LV.Items[line].SubItems[13]  := '???? ????';
+   Self.LV.Items[line].SubItems[14]  := '???? ????';
 
    if (slot.stolen) then
-     Self.LV.Items.Item[line].SubItems.Strings[15] := 'ukradeno'
+     Self.LV.Items[line].SubItems[15] := 'ukradeno'
    else
-     Self.LV.Items.Item[line].SubItems.Strings[15] := '---';
+     Self.LV.Items[line].SubItems[15] := '---';
   end else begin
    // prevzato
 
-   Self.LV.Items.Item[line].SubItems.Strings[7] := IntToStr(TrkSystem.GetStepSpeed(Slot.speed)) + 'km/h / '+IntToStr(Slot.speed)+' st';
-   Self.LV.Items.Item[line].SubItems.Strings[8] := IntToStr(Slot.smer);
-   Self.LV.Items.Item[line].SubItems.Strings[9] := IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[0]));
+   Self.LV.Items[line].SubItems[7] := IntToStr(TrkSystem.GetStepSpeed(Slot.speed)) + 'km/h / '+IntToStr(Slot.speed)+' st';
+   Self.LV.Items[line].SubItems[8] := IntToStr(Slot.smer);
+   Self.LV.Items[line].SubItems[9] := IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[0]));
 
    str := '';
    for i := 1 to 4 do str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
-   Self.LV.Items.Item[line].SubItems.Strings[10] := str;
+   Self.LV.Items[line].SubItems[10] := str;
 
    str := '';
    for i := 5 to 8 do str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
-   Self.LV.Items.Item[line].SubItems.Strings[11] := str;
+   Self.LV.Items[line].SubItems[11] := str;
 
    str := '';
    for i := 9 to 12 do str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
-   Self.LV.Items.Item[line].SubItems.Strings[12] := str;
+   Self.LV.Items[line].SubItems[12] := str;
 
    str := '';
    for i := 13 to 20 do
@@ -184,7 +184,7 @@ var line:Integer;
      str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
      if (i = 16) then str := str + ' ';
     end;
-   Self.LV.Items.Item[line].SubItems.Strings[13] := str;
+   Self.LV.Items[line].SubItems[13] := str;
 
    str := '';
    for i := 21 to 28 do
@@ -192,20 +192,20 @@ var line:Integer;
      str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
      if (i = 24) then str := str + ' ';
     end;
-   Self.LV.Items.Item[line].SubItems.Strings[14] := str;
+   Self.LV.Items[line].SubItems[14] := str;
 
    if (slot.com_err) then
-     Self.LV.Items.Item[line].SubItems.Strings[15] := 'COM ERROR!'
+     Self.LV.Items[line].SubItems[15] := 'COM ERROR!'
    else
-     Self.LV.Items.Item[line].SubItems.Strings[15] := 'PC';
+     Self.LV.Items[line].SubItems[15] := 'PC';
   end;//else not prevzato
 
   if (stav.souprava > -1) then
-    Self.LV.Items.Item[line].SubItems.Strings[22] := 'teï'
+    Self.LV.Items[line].SubItems[22] := 'teï'
   else if (stav.last_used > 0) then
-    Self.LV.Items.Item[line].SubItems.Strings[22] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
+    Self.LV.Items[line].SubItems[22] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
   else
-    Self.LV.Items.Item[line].SubItems.Strings[22] := '-';
+    Self.LV.Items[line].SubItems[22] := '-';
  end;
 
 ////////////////////////////////////////////////////////////////////////////////

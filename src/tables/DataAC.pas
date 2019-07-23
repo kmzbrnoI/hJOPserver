@@ -67,29 +67,29 @@ begin
   begin
    AC := ACDb.ACs[i];
 
-   if ((Self.LV.Items.Item[i].SubItems.Strings[0] = 'nepøipraven') and (AC.ready)) then
-     Self.LV.Items.Item[i].SubItems.Strings[0] := 'pøipraven';
-   if ((Self.LV.Items.Item[i].SubItems.Strings[0] = 'pøipraven') and (not AC.ready)) then
-     Self.LV.Items.Item[i].SubItems.Strings[0] := 'nepøipraven';
+   if ((Self.LV.Items[i].SubItems[0] = 'nepøipraven') and (AC.ready)) then
+     Self.LV.Items[i].SubItems[0] := 'pøipraven';
+   if ((Self.LV.Items[i].SubItems[0] = 'pøipraven') and (not AC.ready)) then
+     Self.LV.Items[i].SubItems[0] := 'nepøipraven';
 
    if ((not AC.changed) and (not force)) then continue;
 
    AC.changed := false;
-   Self.LV.Items.Item[i].Caption := AC.name;
+   Self.LV.Items[i].Caption := AC.name;
 
    if (AC.running) then
-     Self.LV.Items.Item[i].SubItems.Strings[0] := 'spuštìn'
+     Self.LV.Items[i].SubItems[0] := 'spuštìn'
    else if (AC.paused) then
-     Self.LV.Items.Item[i].SubItems.Strings[0] := 'pozastaven'
+     Self.LV.Items[i].SubItems[0] := 'pozastaven'
    else if (AC.ready) then
-     Self.LV.Items.Item[i].SubItems.Strings[0] := 'pøipraven'
+     Self.LV.Items[i].SubItems[0] := 'pøipraven'
    else
-     Self.LV.Items.Item[i].SubItems.Strings[0] := 'nepøipraven';
+     Self.LV.Items[i].SubItems[0] := 'nepøipraven';
 
-   Self.LV.Items.Item[i].SubItems.Strings[1] := AC.krk_filename;
+   Self.LV.Items[i].SubItems[1] := AC.krk_filename;
 
-   Self.LV.Items.Item[i].SubItems.Strings[2] := IntToStr(AC.stat_run);
-   Self.LV.Items.Item[i].SubItems.Strings[3] := IntToStr(AC.stat_end);
+   Self.LV.Items[i].SubItems[2] := IntToStr(AC.stat_run);
+   Self.LV.Items[i].SubItems[3] := IntToStr(AC.stat_end);
   end;//for i
 end;
 

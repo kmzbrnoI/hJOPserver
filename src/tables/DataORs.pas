@@ -64,7 +64,7 @@ begin
    ORs.GetORByIndex(i, OblR);
    if ((OblR.changed) or (force)) then
     begin
-     OblR.UpdateLine(Self.LV.Items.Item[i]);
+     OblR.UpdateLine(Self.LV.Items[i]);
      OblR.changed := false;
     end;
   end;

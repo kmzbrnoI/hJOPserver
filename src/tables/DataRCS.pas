@@ -123,13 +123,13 @@ var j, cnt:integer;
 
   if (not RCSi.ready) then
    begin
-    LI.SubItems.Strings[0] := '';
-    LI.SubItems.Strings[1] := '';
-    LI.SubItems.Strings[2] := '';
-    LI.SubItems.Strings[3] := '-------- --------';
-    LI.SubItems.Strings[4] := '-------- --------';
-    LI.SubItems.Strings[5] := '-';
-    LI.SubItems.Strings[6] := '-';
+    LI.SubItems[0] := '';
+    LI.SubItems[1] := '';
+    LI.SubItems[2] := '';
+    LI.SubItems[3] := '-------- --------';
+    LI.SubItems[4] := '-------- --------';
+    LI.SubItems[5] := '-';
+    LI.SubItems[6] := '-';
 
     Exit();
    end;
@@ -154,25 +154,25 @@ var j, cnt:integer;
   end;
 
   if (RCSi.GetNeeded(addr)) then
-    LI.SubItems.Strings[0] := 'X'
+    LI.SubItems[0] := 'X'
   else
-    LI.SubItems.Strings[0] := '';
+    LI.SubItems[0] := '';
 
   try
-    LI.SubItems.Strings[1] := RCSi.GetModuleName(addr);
+    LI.SubItems[1] := RCSi.GetModuleName(addr);
   except
     on E:Exception do
-      LI.SubItems.Strings[1] := E.Message;
+      LI.SubItems[1] := E.Message;
   end;
 
   try
     if (RCSi.IsModule(addr)) then
-      LI.SubItems.Strings[2] := RCSi.GetModuleType(addr)
+      LI.SubItems[2] := RCSi.GetModuleType(addr)
     else
-      LI.SubItems.Strings[2] := '-';
+      LI.SubItems[2] := '-';
   except
     on E:Exception do
-      LI.SubItems.Strings[2] := E.Message;
+      LI.SubItems[2] := E.Message;
   end;
 
   try
@@ -182,21 +182,21 @@ var j, cnt:integer;
        begin
         if (RCSi.Started) then
          begin
-          LI.SubItems.Strings[3] := '';
-          LI.SubItems.Strings[4] := '';
+          LI.SubItems[3] := '';
+          LI.SubItems[4] := '';
 
           cnt := RCSi.GetModuleInputsCount(addr);
           for j := 0 to cnt-1 do
            begin
             if (j = cnt div 2) then
-              LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + ' ';
+              LI.SubItems[3] := LI.SubItems[3] + ' ';
 
             case (RCSi.GetInput(addr, j)) of
-              isOn          : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '1';
-              isOff         : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '0';
-              failure       : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + 'X';
-              notYetScanned : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '?';
-              unavailable   : LI.SubItems.Strings[3] := LI.SubItems.Strings[3] + '-';
+              isOn          : LI.SubItems[3] := LI.SubItems[3] + '1';
+              isOff         : LI.SubItems[3] := LI.SubItems[3] + '0';
+              failure       : LI.SubItems[3] := LI.SubItems[3] + 'X';
+              notYetScanned : LI.SubItems[3] := LI.SubItems[3] + '?';
+              unavailable   : LI.SubItems[3] := LI.SubItems[3] + '-';
             end;
            end;
 
@@ -204,46 +204,46 @@ var j, cnt:integer;
           for j := 0 to cnt-1 do
            begin
             if (j = cnt div 2) then
-              LI.SubItems.Strings[4] := LI.SubItems.Strings[4] + ' ';
+              LI.SubItems[4] := LI.SubItems[4] + ' ';
 
             output := RCSi.GetOutput(addr, j);
             if (output > 1) then
-              LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+'S'
+              LI.SubItems[4] := LI.SubItems[4]+'S'
             else
-              LI.SubItems.Strings[4] := LI.SubItems.Strings[4]+IntToStr(output);
+              LI.SubItems[4] := LI.SubItems[4]+IntToStr(output);
            end;//for
 
          end else begin
-          LI.SubItems.Strings[3] := '-';
-          LI.SubItems.Strings[4] := '-';
+          LI.SubItems[3] := '-';
+          LI.SubItems[4] := '-';
          end;
 
-        LI.SubItems.Strings[5] := 'Ano';
-        LI.SubItems.Strings[6] := RCSi.GetModuleFW(addr);
+        LI.SubItems[5] := 'Ano';
+        LI.SubItems[6] := RCSi.GetModuleFW(addr);
        end else begin
         // neexistuje
-        LI.SubItems.Strings[3] := '-';
-        LI.SubItems.Strings[4] := '-';
+        LI.SubItems[3] := '-';
+        LI.SubItems[4] := '-';
         if (RCSi.IsModuleFailure(addr)) then
-          LI.SubItems.Strings[5] := 'Fail'
+          LI.SubItems[5] := 'Fail'
         else
-          LI.SubItems.Strings[5] := 'Ne';
-        LI.SubItems.Strings[6] := '-';
+          LI.SubItems[5] := 'Ne';
+        LI.SubItems[6] := '-';
        end;
      end else begin
       // mtb closed
-      LI.SubItems.Strings[3] := '-';
-      LI.SubItems.Strings[4] := '-';
-      LI.SubItems.Strings[5] := '-';
-      LI.SubItems.Strings[6] := '-';
+      LI.SubItems[3] := '-';
+      LI.SubItems[4] := '-';
+      LI.SubItems[5] := '-';
+      LI.SubItems[6] := '-';
      end;
   except
     on E:Exception do
      begin
-      LI.SubItems.Strings[3] := 'Exception';
-      LI.SubItems.Strings[4] := E.Message;
-      LI.SubItems.Strings[5] := 'Ex';
-      LI.SubItems.Strings[6] := 'Ex';
+      LI.SubItems[3] := 'Exception';
+      LI.SubItems[4] := E.Message;
+      LI.SubItems[5] := 'Ex';
+      LI.SubItems[6] := 'Ex';
      end;
   end;
  end;

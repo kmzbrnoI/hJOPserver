@@ -72,11 +72,11 @@ var User:TUser;
 begin
  User   := UsrDb.GetUser(line);
 
- Self.LV.Items.Item[line].Caption := IntToStr(line);
- Self.LV.Items.Item[line].SubItems.Strings[0] := User.id;
- Self.LV.Items.Item[line].SubItems.Strings[1] := User.firstname + ' ' + User.lastname;
- Self.LV.Items.Item[line].SubItems.Strings[2] := PrevodySoustav.BoolToStr(User.root);
- Self.LV.Items.Item[line].SubItems.Strings[3] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
+ Self.LV.Items[line].Caption := IntToStr(line);
+ Self.LV.Items[line].SubItems[0] := User.id;
+ Self.LV.Items[line].SubItems[1] := User.firstname + ' ' + User.lastname;
+ Self.LV.Items[line].SubItems[2] := PrevodySoustav.BoolToStr(User.root);
+ Self.LV.Items[line].SubItems[3] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -90,11 +90,11 @@ begin
  mJCData := mJC.data;
  mJC.changed := false;
 
- Self.LV.Items.Item[line].Caption := IntToStr(mJCData.id);
- Self.LV.Items.Item[line].SubItems.Strings[0] := mJCData.Nazev;
+ Self.LV.Items[line].Caption := IntToStr(mJCData.id);
+ Self.LV.Items[line].SubItems[0] := mJCData.Nazev;
 
  // krok ( = aktualne stavena JC)
- Self.LV.Items.Item[line].SubItems.Strings[1] := IntToStr(mJC.stav.JCIndex);
+ Self.LV.Items[line].SubItems[1] := IntToStr(mJC.stav.JCIndex);
 
  // jednotlive jizdni cesty
  str := '';
@@ -105,13 +105,13 @@ begin
    else
      str := str + '(neexistujici JC), ';
   end;
- Self.LV.Items.Item[line].SubItems.Strings[2] := str;
+ Self.LV.Items[line].SubItems[2] := str;
 
  // variantni body
  str := '';
  for i := 0 to mJCData.vb.Count-1 do
    str := str + Blky.GetBlkName(mJCData.vb[i]) + ', ';
- Self.LV.Items.Item[line].SubItems.Strings[3] := str;
+ Self.LV.Items[line].SubItems[3] := str;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

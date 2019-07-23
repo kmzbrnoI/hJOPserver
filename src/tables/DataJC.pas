@@ -92,30 +92,30 @@ begin
  JCData := JC.data;
  JC.changed := false;
 
- Self.LV.Items.Item[line].Caption := IntToStr(JCData.id);
- Self.LV.Items.Item[line].SubItems.Strings[0] := JCData.Nazev;
- Self.LV.Items.Item[line].SubItems.Strings[4] := Blky.GetBlkName(JCData.NavestidloBlok);
+ Self.LV.Items[line].Caption := IntToStr(JCData.id);
+ Self.LV.Items[line].SubItems[0] := JCData.Nazev;
+ Self.LV.Items[line].SubItems[4] := Blky.GetBlkName(JCData.NavestidloBlok);
 
  // stav:
- Self.LV.Items.Item[line].SubItems.Strings[1] := IntToStr(JC.stav.RozpadBlok);
- Self.LV.Items.Item[line].SubItems.Strings[2] := IntToStr(JC.stav.RozpadRuseniBlok);
- Self.LV.Items.Item[line].SubItems.Strings[3] := IntToStr(JC.stav.Krok);
+ Self.LV.Items[line].SubItems[1] := IntToStr(JC.stav.RozpadBlok);
+ Self.LV.Items[line].SubItems[2] := IntToStr(JC.stav.RozpadRuseniBlok);
+ Self.LV.Items[line].SubItems[3] := IntToStr(JC.stav.Krok);
 
  case (JCData.TypCesty) of
-  TJCType.vlak  : Self.LV.Items.Item[line].SubItems.Strings[7] := 'VC';
-  TJCType.posun : Self.LV.Items.Item[line].SubItems.Strings[7] := 'PC';
-  TJCType.nouz  : Self.LV.Items.Item[line].SubItems.Strings[7] := 'NC';
+  TJCType.vlak  : Self.LV.Items[line].SubItems[7] := 'VC';
+  TJCType.posun : Self.LV.Items[line].SubItems[7] := 'PC';
+  TJCType.nouz  : Self.LV.Items[line].SubItems[7] := 'NC';
  end;
 
  if (JCData.DalsiNNavaznostTyp = 0) then
   begin
-   Self.LV.Items.Item[line].SubItems.Strings[8] := 'Zadna navaznost';
+   Self.LV.Items[line].SubItems[8] := 'Zadna navaznost';
   end else begin
    if (JCData.DalsiNNavaznostTyp = 1) then
     begin
-     Self.LV.Items.Item[line].SubItems.Strings[8] := 'Trat';
+     Self.LV.Items[line].SubItems[8] := 'Trat';
     end else begin
-     Self.LV.Items.Item[line].SubItems.Strings[8] := Blky.GetBlkName(JCData.DalsiNNavaznost);
+     Self.LV.Items[line].SubItems[8] := Blky.GetBlkName(JCData.DalsiNNavaznost);
     end;//else DalsiNNavaznostTyp = 1
   end;//else DalsiNNavaznostTyp = 0
 
@@ -128,16 +128,16 @@ begin
      TVyhPoloha.minus : str := str + '(' + Blky.GetBlkName(JCData.Vyhybky[j].Blok)+', -)';
    end;
   end;//for j
- Self.LV.Items.Item[line].SubItems.Strings[5] := str;
+ Self.LV.Items[line].SubItems[5] := str;
 
  // useky
  str := '';
  for j := 0 to JCData.Useky.Count-1 do
    str := str + Blky.GetBlkName(JCData.Useky[j])+'; ';
- Self.LV.Items.Item[line].SubItems.Strings[6] := LeftStr(str, Length(str)-2);
+ Self.LV.Items[line].SubItems[6] := LeftStr(str, Length(str)-2);
 
- Self.LV.Items.Item[line].SubItems.Strings[9]  := IntToStr(JCData.RychlostDalsiN * 10)+' km/h';
- Self.LV.Items.Item[line].SubItems.Strings[10] := IntToStr(JCData.RychlostNoDalsiN * 10)+' km/h';
+ Self.LV.Items[line].SubItems[9]  := IntToStr(JCData.RychlostDalsiN * 10)+' km/h';
+ Self.LV.Items[line].SubItems[10] := IntToStr(JCData.RychlostNoDalsiN * 10)+' km/h';
 
  // odvraty
  str := '';
@@ -148,30 +148,30 @@ begin
      TVyhPoloha.minus : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', -, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+')';
    end;
   end;//for j
- Self.LV.Items.Item[line].SubItems.Strings[11] := str;
+ Self.LV.Items[line].SubItems[11] := str;
 
  // prislusenstvi
  str := '';
  for j := 0 to JCData.Prisl.Count-1 do
    str := str + '(' + Blky.GetBlkName(JCData.Prisl[j].Blok)+', '+Blky.GetBlkName(JCData.Prisl[j].ref_blk)+' )';
- Self.LV.Items.Item[line].SubItems.Strings[12] := str;
+ Self.LV.Items[line].SubItems[12] := str;
 
  if (JCData.Trat > -1) then
-  Self.LV.Items.Item[line].SubItems.Strings[13] := Blky.GetBlkName(JCData.Trat)
+  Self.LV.Items[line].SubItems[13] := Blky.GetBlkName(JCData.Trat)
  else
-  Self.LV.Items.Item[line].SubItems.Strings[13] := '';
+  Self.LV.Items[line].SubItems[13] := '';
 
  // prejezdy
  str := '';
  for j := 0 to JCData.Prejezdy.Count-1 do
    str := str + Blky.GetBlkName(JCData.Prejezdy[j].Prejezd)+'; ';
- Self.LV.Items.Item[line].SubItems.Strings[14] := LeftStr(str, Length(str)-2);
+ Self.LV.Items[line].SubItems[14] := LeftStr(str, Length(str)-2);
 
  // podminky zamky
  str := '';
  for j := 0 to JCData.zamky.Count-1 do
    str := str + '('+Blky.GetBlkName(JCData.zamky[j].Blok)+' : ' + Blky.GetBlkName(JCData.zamky[j].ref_blk) + ')';
- Self.LV.Items.Item[line].SubItems.Strings[15] := str;
+ Self.LV.Items[line].SubItems[15] := str;
 
  // neprofilove useky
  str := '';
@@ -187,7 +187,7 @@ begin
     end else
      str := str + '?, ';
   end;
- Self.LV.Items.Item[line].SubItems.Strings[16] := LeftStr(str, Length(str)-2);
+ Self.LV.Items[line].SubItems[16] := LeftStr(str, Length(str)-2);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
