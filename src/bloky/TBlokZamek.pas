@@ -97,7 +97,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging,
+uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, TBlokVyhybka;
 

@@ -124,7 +124,7 @@ var
 implementation
 
 uses fMain, fAdminForm, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
-     TBlokIR, TBlokSCom, BoosterDb, TBlokPrejezd, RCSErrors, TOblsRizeni,
+     TBlokIR, TBlokNav, BoosterDb, TBlokPrejezd, RCSErrors, TOblsRizeni,
      Logging, TCPServerOR, SprDb, DataRCS, appEv, Booster, StrUtils;
 
 constructor TRCS.Create();

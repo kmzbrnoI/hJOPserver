@@ -260,7 +260,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging, RCS, ownStrUtils,
+uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef;
@@ -1034,13 +1034,13 @@ begin
 
  if ((SenderOR as TOR).vb.Contains(Self)) then (SenderOR as TOR).vb.Remove(self);
 
- Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
+ Blk := Blky.GetBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk = nil) then Exit(false);
 
- case ((Blk as TBlkSCom).ZacatekVolba) of
-  TBLkSComVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
-  TBLkSComVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
-  TBLkSComVolba.NC, TBLkSComVolba.PP
+ case ((Blk as TBlkNav).ZacatekVolba) of
+  TBlkNavVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
+  TBlkNavVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
+  TBlkNavVolba.NC, TBlkNavVolba.PP
                    : Self.UsekStav.KonecJC := TZaver.nouz;
  end;//case
 
@@ -1059,12 +1059,12 @@ begin
    Exit();
   end;
 
- Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
+ Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk = nil) then Exit();
 
- case ((Blk as TBlkSCom).ZacatekVolba) of
-  TBLkSComVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
-  TBLkSComVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
+ case ((Blk as TBlkNav).ZacatekVolba) of
+  TBlkNavVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
+  TBlkNavVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
  else
   Exit();     // nouzova cesta nemuze mit variantni body
  end;
@@ -1322,7 +1322,7 @@ begin
    Result := Result + '-,NUZ>,';
 
  //11 = KC
- Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
+ Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then
   begin
    Result := Result + '-,KC,';
@@ -1427,7 +1427,7 @@ begin
   end;
 
   F1: begin
-    Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
+    Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
     if (Blk = nil) then
       Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params)
     else
@@ -1995,7 +1995,7 @@ begin
    // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
    // aktuiualziaci rychlosti pro vsechny SComJCReg bychom nemeli nic pokazit
    for nav in Self.SComJCRef do
-     TBlkSCom(nav).UpdateRychlostSpr(true);
+     TBlkNav(nav).UpdateRychlostSpr(true);
   end;
 
  Self.PropagatePOdjToTrat();
@@ -2039,9 +2039,9 @@ begin
        if ((spr = Self.SoupravaL) or (spr = Self.SoupravaS)) then
         begin
          for nav in Self.SComJCRef do
-           if (((TBlkSCom(nav).Smer = THVStanoviste.sudy) and (spr = Self.SoupravaL)) or
-               ((TBlkSCom(nav).Smer = THVStanoviste.lichy) and (spr = Self.SoupravaS))) then
-             TBlkSCom(nav).UpdateRychlostSpr(true);
+           if (((TBlkNav(nav).Smer = THVStanoviste.sudy) and (spr = Self.SoupravaL)) or
+               ((TBlkNav(nav).Smer = THVStanoviste.lichy) and (spr = Self.SoupravaS))) then
+             TBlkNav(nav).UpdateRychlostSpr(true);
         end;
       end else
        Soupravy[spr].GetPOdj(Self).changed := false;
@@ -2102,7 +2102,7 @@ procedure TBlkUsek.PropagatePOdjToTrat();
 var nav: TBlk;
 begin
  for nav in Self.SComJCRef do
-   TBlkSCom(nav).PropagatePOdjToTrat();
+   TBlkNav(nav).PropagatePOdjToTrat();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2114,8 +2114,8 @@ begin
 
  if (Self.SComJCRef.Count = 1) then
   begin
-   if (not TBlkSCom(Self.SComJCRef[0]).IsPovolovaciNavest()) then Exit(true);
-   if (TBlkSCom(Self.SComJCRef[0]).Smer = THvStanoviste.lichy) then
+   if (not TBlkNav(Self.SComJCRef[0]).IsPovolovaciNavest()) then Exit(true);
+   if (TBlkNav(Self.SComJCRef[0]).Smer = THvStanoviste.lichy) then
      Exit(spr <> Self.SoupravaS)
    else
      Exit(spr <> Self.SoupravaL);
@@ -2123,10 +2123,10 @@ begin
 
  if (Self.SComJCRef.Count = 2) then
   begin
-   if ((Self.Soupravs.Count = 1) and (not TBlkSCom(Self.SComJCRef[0]).IsPovolovaciNavest()) and
-        (not TBlkSCom(Self.SComJCRef[1]).IsPovolovaciNavest())) then Exit(true);
-   if ((Self.Soupravs.Count >= 2) and ((not TBlkSCom(Self.SComJCRef[0]).IsPovolovaciNavest()) or
-        (not TBlkSCom(Self.SComJCRef[1]).IsPovolovaciNavest()))) then Exit(true);
+   if ((Self.Soupravs.Count = 1) and (not TBlkNav(Self.SComJCRef[0]).IsPovolovaciNavest()) and
+        (not TBlkNav(Self.SComJCRef[1]).IsPovolovaciNavest())) then Exit(true);
+   if ((Self.Soupravs.Count >= 2) and ((not TBlkNav(Self.SComJCRef[0]).IsPovolovaciNavest()) or
+        (not TBlkNav(Self.SComJCRef[1]).IsPovolovaciNavest()))) then Exit(true);
    if ((Self.Soupravs.Count > 2) and (Self.SoupravaL <> spr) and (Self.SoupravaS <> spr)) then Exit(true);
  end;
 

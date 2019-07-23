@@ -21,7 +21,7 @@ type
  end;
 
  TBlkPrjSettings = record
-  RCS:Byte;
+  RCS:Cardinal;
   RCSInputs:TBlkPrjRCSInputs;
   RCSOutputs:TBlkPrjRCSOutputs;
  end;

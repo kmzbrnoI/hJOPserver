@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokSCom,
+  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokNav,
   fBlkNavEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
   StrUtils, TBloky;
 
@@ -53,7 +53,7 @@ type
 
   private
    OpenIndex:Integer;
-   Blk:TBlkSCom;
+   Blk:TBlkNav;
    NewBlk:Boolean;
    obls:TArstr;   //oblasti rizeni, ve kterych se SCom nachazi
 
@@ -103,7 +103,7 @@ procedure TF_BlkNav.NewBlkOpenForm();
  begin
   E_Nazev.Text             := '';
   SE_ID.Value              := Blky.GetBlkID(Blky.Cnt-1)+1;
-  SE_Delay.Value           := TBlkScom._NAV_DEFAULT_DELAY;
+  SE_Delay.Value           := TBlkNav._NAV_DEFAULT_DELAY;
   CHB_Zamknuto.Checked     := false;
   Self.L_UsekID.Caption    := 'bude zobrazen priste';
 
@@ -124,7 +124,7 @@ procedure TF_BlkNav.NewBlkOpenForm();
 
 procedure TF_BlkNav.NormalOpenForm;
 var glob:TBlkSettings;
-    settings:TBlkSComSettings;
+    settings:TBlkNavSettings;
     i:Integer;
     eventForm:TF_BlkNavEvent;
     ts:TCloseTabSheet;
@@ -177,7 +177,7 @@ var glob:TBlkSettings;
     Self.eventTabSheets.Add(ts);
    end;
 
-  Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkSCom).UsekID);
+  Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkNav).UsekID);
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (návìstidlo)';
   Self.ActiveControl := B_Save;
@@ -240,7 +240,7 @@ end;
 
 procedure TF_BlkNav.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
-    settings:TBlkSComSettings;
+    settings:TBlkNavSettings;
     i: Integer;
     str:string;
  begin
@@ -272,12 +272,12 @@ var glob:TBlkSettings;
 
   glob.name     := E_Nazev.Text;
   glob.id       := SE_ID.Value;
-  glob.typ      := _BLK_SCOM;
+  glob.typ      := _BLK_NAV;
 
   if (NewBlk) then
    begin
     glob.poznamka := '';
-    Blk := Blky.Add(_BLK_SCOM, glob) as TBlkSCom;
+    Blk := Blky.Add(_BLK_NAV, glob) as TBlkNav;
     if (Blk = nil) then
      begin
       Application.MessageBox('Nepodarilo se pridat blok !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
@@ -293,13 +293,13 @@ var glob:TBlkSettings;
   if (Self.CHB_RCS_Output.Checked) then
    begin
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule.Value, SE_RCSPort.Value));
-    settings.OutputType := TBlkSComOutputType(CB_Typ.ItemIndex);
+    settings.OutputType := TBlkNavOutputType(CB_Typ.ItemIndex);
    end;
 
   settings.ZpozdeniPadu := Self.SE_Delay.Value;
 
   settings.zamknuto := CHB_Zamknuto.Checked;
-  settings.events := TList<TBlkSComSprEvent>.Create();
+  settings.events := TList<TBlkNavSprEvent>.Create();
   for i := 0 to Self.eventForms.Count-1 do
     settings.events.Add(Self.eventForms[i].event);
 

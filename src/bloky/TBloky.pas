@@ -71,10 +71,10 @@ type
     function GetBlkName(id:Integer):string;
     function GetBlkIndexName(index:Integer):string;
 
-    function GetBlkSComZacatekVolba(obl:string):TBlk;
+    function GetBlkNavZacatekVolba(obl:string):TBlk;
     function GetBlkUsekVlakPresun(obl:string):TBlk;
 
-    function GetSComPrivol(oblR:TOR):TBlksList;
+    function GetNavPrivol(oblR:TOR):TBlksList;
 
     //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
     procedure GetORBlk(OblRizeni_id:string; conn:TIdContext);
@@ -131,7 +131,7 @@ var
 
 implementation
 
-uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokSCom, fMain, TBlokPrejezd,
+uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokNav, fMain, TBlokPrejezd,
       TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieRCS,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
       TBlokTratUsek, appEv, TBlokVystup, PTUtils, TBlokSouctovaHlaska,
@@ -265,7 +265,7 @@ begin
       _BLK_VYH      : Blk := TBlkVyhybka.Create(-1);
       _BLK_USEK     : Blk := TBlkUsek.Create(-1);
       _BLK_IR       : Blk := TBlkIR.Create(-1);
-      _BLK_SCOM     : Blk := TBlkSCom.Create(-1);
+      _BLK_NAV      : Blk := TBlkNav.Create(-1);
       _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(-1);
       _BLK_TRAT     : Blk := TBlkTrat.Create(-1);
       _BLK_UVAZKA   : Blk := TBlkUvazka.Create(-1);
@@ -384,7 +384,7 @@ begin
   _BLK_VYH      : Blk := TBlkVyhybka.Create(index);
   _BLK_USEK     : Blk := TBlkUsek.Create(index);
   _BLK_IR       : Blk := TBlkIR.Create(index);
-  _BLK_SCOM     : Blk := TBlkSCom.Create(index);
+  _BLK_NAV      : Blk := TBlkNav.Create(index);
   _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(index);
   _BLK_TRAT     : Blk := TBlkTrat.Create(index);
   _BLK_UVAZKA   : Blk := TBlkUvazka.Create(index);
@@ -606,23 +606,23 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkSComZacatekVolba(obl:string):TBlk;
+function TBlky.GetBlkNavZacatekVolba(obl:string):TBlk;
 var i,j:Integer;
     orindex:Integer;
 begin
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (Self.Data[i].typ <> _BLK_SCOM) then continue;
+   if (Self.Data[i].typ <> _BLK_NAV) then continue;
 
    orindex := -1;
-   for j := 0 to (Self.Data[i] as TBlkSCom).OblsRizeni.Count-1 do
-     if ((Self.Data[i] as TBlkSCom).OblsRizeni[j].id = obl) then orindex := j;
+   for j := 0 to (Self.Data[i] as TBlkNav).OblsRizeni.Count-1 do
+     if ((Self.Data[i] as TBlkNav).OblsRizeni[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
 
-   if ((Integer((Self.Data[i] as TBlkSCom).ZacatekVolba) > 0) and
-      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkSCom).id) = -1) or
-        ((Self.Data[i] as TBlkSCom).OblsRizeni[orindex].stack.volba = VZ))) then
+   if ((Integer((Self.Data[i] as TBlkNav).ZacatekVolba) > 0) and
+      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkNav).id) = -1) or
+        ((Self.Data[i] as TBlkNav).OblsRizeni[orindex].stack.volba = VZ))) then
      Exit(Self.Data[i]);
   end;//for i
 
@@ -855,24 +855,24 @@ var usek, startUsek:TBlkUsek;
 begin
  try
    // zjistime soupravu pred navestidlem
-   usek := TBlkUsek(TBlkSCom(nav).UsekPred);
+   usek := TBlkUsek(TBlkNav(nav).UsekPred);
    startUsek := usek;
-   spr := TBlkSCom(nav).GetSoupravaIndex(usek);
+   spr := TBlkNav(nav).GetSoupravaIndex(usek);
 
-   if (TBlkSCom(nav).IsPovolovaciNavest()) then begin
+   if (TBlkNav(nav).IsPovolovaciNavest()) then begin
      if ((not usek.IsSouprava()) or
-         (Soupravy[spr].smer <> TBlkSCom(nav).Smer)) then
+         (Soupravy[spr].smer <> TBlkNav(nav).Smer)) then
       spr := usek.SprPredict
    end else
      spr := -1;
-   JC := TBlkSCom(nav).DNjc;
+   JC := TBlkNav(nav).DNjc;
 
    // predpovidame, dokud existuji jizdni cesty
    while ((JC <> nil) and (JC.data.TypCesty = TJCType.vlak) and (JC.stav.RozpadBlok <= 0)) do
     begin
      // kontrola povolujici navesti
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-     if ((nav = nil) or (nav.typ <> _BLK_SCOM) or (not TBlkSCom(nav).IsPovolovaciNavest())) then
+     if ((nav = nil) or (nav.typ <> _BLK_NAV) or (not TBlkNav(nav).IsPovolovaciNavest())) then
        spr := -1;
 
      // zjistime posledni usek jizdni cesty
@@ -913,7 +913,7 @@ begin
      if (usek.SComJCRef.Count = 0) then
       JC := nil
      else
-      JC := TBlkSCom(usek.SComJCRef[0]).DNjc;
+      JC := TBlkNav(usek.SComJCRef[0]).DNjc;
     end;//while
  except
   on E:Exception do
@@ -938,17 +938,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetSComPrivol(oblR:TOR):TBlksList;
+function TBlky.GetNavPrivol(oblR:TOR):TBlksList;
 var i:Integer;
     moblr:TOR;
 begin
  Result := TList<TObject>.Create();
  for i := 0 to Self.Data.Count-1 do
   begin
-   if (self.Data[i].typ <> _BLK_SCOM) then continue;
-   if ((Self.Data[i] as TBlkSCom).Navest <> 8) then continue;
+   if (self.Data[i].typ <> _BLK_NAV) then continue;
+   if ((Self.Data[i] as TBlkNav).Navest <> 8) then continue;
 
-   for moblr in (Self.Data[i] as TBlkSCom).OblsRizeni do
+   for moblr in (Self.Data[i] as TBlkNav).OblsRizeni do
     if (moblr = oblR) then
      begin
       Result.Add(self.Data[i]);
@@ -1073,8 +1073,8 @@ procedure TBlky.NouzZaverZrusen(Sender:TBlk);
 var Blk:TBlk;
 begin
  for Blk in Self.data do
-   if (Blk.typ = _BLK_SCOM) then
-     TBlkSCom(Blk).RemoveBlkFromRnz(Sender.id);
+   if (Blk.typ = _BLK_NAV) then
+     TBlkNav(Blk).RemoveBlkFromRnz(Sender.id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

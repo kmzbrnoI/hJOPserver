@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, TBlokSCom, TBlok, TOblRizeni, TOblsRizeni,
+  Dialogs, StdCtrls, Spin, TBlokNav, TBlok, TOblRizeni, TOblsRizeni,
   TBloky, ExtCtrls, frrEv;
 
 type
@@ -29,17 +29,17 @@ type
    fZast: TF_RREv;
    fZpom: TF_RREv;
 
-    function GetEvent():TBlkSComSprEvent;
+    function GetEvent():TBlkNavSprEvent;
 
   public
     constructor Create(AOwner:TComponent); override;
     destructor Destroy(); override;
 
-    procedure OpenForm(event:TBlkSComSprEvent; first:boolean; obls:TArstr);
+    procedure OpenForm(event:TBlkNavSprEvent; first:boolean; obls:TArstr);
     procedure OpenEmptyForm(first:boolean; obls:TArstr);
     function Check():string;
 
-    property event:TBlkSComSprEvent read GetEvent;
+    property event:TBlkNavSprEvent read GetEvent;
   end;
 
 var
@@ -75,7 +75,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNavEvent.OpenForm(event:TBlkSComSprEvent; first:boolean; obls:TArstr);
+procedure TF_BlkNavEvent.OpenForm(event:TBlkNavSprEvent; first:boolean; obls:TArstr);
 var i:Integer;
 begin
  Self.obls  := obls;
@@ -149,7 +149,7 @@ begin
 end;
 ///////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkNavEvent.GetEvent():TBlkSComSprEvent;
+function TF_BlkNavEvent.GetEvent():TBlkNavSprEvent;
 begin
  Result.spr_typ := TStringList.Create();
  if (not Self.first) then

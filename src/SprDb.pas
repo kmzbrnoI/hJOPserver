@@ -51,7 +51,7 @@ var
 
 implementation
 
-uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokSCom, appEv, TBlok,
+uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokNav, appEv, TBlok,
      TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ begin
         (Usek as TBlkUsek).AddSouprava(sprUsekIndex, i);
         (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
         for nav in (Usek as TBlkUsek).SComJCRef do
-          (nav as TBlkScom).UpdateRychlostSpr(true);
+          (nav as TBlkNav).UpdateRychlostSpr(true);
        end;
       Exit();
     except

@@ -95,7 +95,7 @@ type
 implementation
 
 uses fSettings, GetSystems, TJCDatabase, Logging,
-      TOblRizeni, TOblsRizeni, TBlokSCom, TBlokTrat, Zasobnik;
+      TOblRizeni, TOblsRizeni, TBlokNav, TBlokTrat, Zasobnik;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -353,7 +353,7 @@ var Blk:TBlk;
           end;
 
           Blky.GetBlkByID(krok.Params[0], Blk);
-          if ((not Assigned(Blk)) or (Blk.typ <> _BLK_SCOM)) then
+          if ((not Assigned(Blk)) or (Blk.typ <> _BLK_NAV)) then
             raise Exception.Create('Nevalidni blok - '+lines[i]);
 
           Self.kroky.Add(krok);
@@ -528,8 +528,8 @@ var cmd:integer;
         if (not JC.postaveno) then
          begin
           Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
-          if ((Blk as TBlkSCom).OblsRizeni.Count > 0) then
-           OblR := (Blk as TBlkSCom).OblsRizeni[0]
+          if ((Blk as TBlkNav).OblsRizeni.Count > 0) then
+           OblR := (Blk as TBlkNav).OblsRizeni[0]
           else
            OblR := nil;
 
@@ -629,11 +629,11 @@ var cmd:integer;
         if (params[1] = 0) then
          begin
           //0
-          if (((Blk as TBlkSCom).Navest = 0) or ((Blk as TBlkSCom).Navest = 13)) then
+          if (((Blk as TBlkNav).Navest = 0) or ((Blk as TBlkNav).Navest = 13)) then
             Self.NextStep();
          end else begin
           //1
-          if (((Blk as TBlkSCom).Navest <> 0) and ((Blk as TBlkSCom).Navest <> 13)) then
+          if (((Blk as TBlkNav).Navest <> 0) and ((Blk as TBlkNav).Navest <> 13)) then
             Self.NextStep();
          end;
        end;//if AutRezimy[AC].Podkrok

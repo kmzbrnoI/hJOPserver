@@ -133,7 +133,7 @@ var
 
 implementation
 
-uses fMain, TBlokUsek, TBlokVyhybka, TBlokSCom, TOblsRizeni, TBlokUvazka,
+uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, DateUtils;
@@ -885,7 +885,7 @@ begin
     if (Assigned(senders[i])) then
      begin
       if ((senders[i].ClassType = TBlk) or
-          (senders[i].ClassType = TBlkVyhybka) or (senders[i].ClassType = TBlkUsek) or (senders[i].ClassType = TBlkSCom) or (senders[i].ClassType = TBlkUvazka)) then
+          (senders[i].ClassType = TBlkVyhybka) or (senders[i].ClassType = TBlkUsek) or (senders[i].ClassType = TBlkNav) or (senders[i].ClassType = TBlkUvazka)) then
        str := str + (senders[i] as TBlk).name + '|'
       else if (senders[i].ClassType = TOR) then
        str := str + 'Stanovištì výpravèího '+(senders[i] as TOR).Name + '|';

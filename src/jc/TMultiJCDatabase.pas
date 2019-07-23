@@ -53,7 +53,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBloky, TBlokSCom, TBlokUsek, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, TBloky, TBlokNav, TBlokUsek, TOblRizeni, TCPServerOR,
       DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -263,8 +263,8 @@ begin
    if (not flag) then continue;
 
    JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[0]);
-   if ((Integer((StartBlk as TBlkSCom).ZacatekVolba) = Integer(JC.data.TypCesty)) or
-      (((StartBlk as TBlkSCom).ZacatekVolba = TBLkSComVolba.NC) and (JC.data.TypCesty = TJCType.vlak))) then
+   if ((Integer((StartBlk as TBlkNav).ZacatekVolba) = Integer(JC.data.TypCesty)) or
+      (((StartBlk as TBlkNav).ZacatekVolba = TBlkNavVolba.NC) and (JC.data.TypCesty = TJCType.vlak))) then
     begin
      // nasli jsme jizdni cestu, kterou hledame
 
@@ -278,7 +278,7 @@ begin
        for j := 0 to Self.JCs[i].data.JCs.Count-1 do
          (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(Self.JCs[i].data.JCs[j]), SenderPnl, false);
 
-       (StartBlk as TBlkSCom).ZacatekVolba := TBlkSComVOlba.none;
+       (StartBlk as TBlkNav).ZacatekVolba := TBlkNavVOlba.none;
        (EndBlk as TBlkUsek).KonecJC        := TZaver.no;
        (SenderOR as TOR).ClearVb();
       end else begin

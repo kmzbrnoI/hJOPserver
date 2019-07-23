@@ -279,7 +279,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokSCOm, fMain, Booster,
+uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokNav, fMain, Booster,
      TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User, TCPORsRef,
@@ -644,56 +644,56 @@ begin
 
   /////////////////////////////////////////////////
 
-  _BLK_SCOM:begin
+  _BLK_NAV:begin
    //vytvoreni dat
-   if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_DISABLED) then
+   if ((Sender as TBlkNav).Navest = TBlkNav._NAV_DISABLED) then
     begin
      fg := clBlack;
      bg := clFuchsia;
-    end else if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_CHANGING) then begin
+    end else if ((Sender as TBlkNav).Navest = TBlkNav._NAV_CHANGING) then begin
      fg := clBlack;
-     case ((Sender as TBlkSCom).ZacatekVolba) of
-      TBlkSComVolba.none : bg := $A0A0A0;
-      TBlkSComVolba.VC   : bg := clGreen;
-      TBlkSComVolba.PC   : bg := clWhite;
-      TBlkSComVolba.NC,
-      TBlkSComVolba.PP   : bg := clTeal;
+     case ((Sender as TBlkNav).ZacatekVolba) of
+      TBlkNavVolba.none : bg := $A0A0A0;
+      TBlkNavVolba.VC   : bg := clGreen;
+      TBlkNavVolba.PC   : bg := clWhite;
+      TBlkNavVolba.NC,
+      TBlkNavVolba.PP   : bg := clTeal;
      end;//case
     end else begin
-     if ((Sender as TBlkSCom).Navest = TBlkSCom._NAV_PRIVOL) then
+     if ((Sender as TBlkNav).Navest = TBlkNav._NAV_PRIVOL) then
       begin
        fg := clWhite;
       end else begin
-       if (((Sender as TBlkSCom).DNjc <> nil) and ((Sender as TBlkSCom).Navest > TBlkSCom._NAV_STUJ)) then
+       if (((Sender as TBlkNav).DNjc <> nil) and ((Sender as TBlkNav).Navest > TBlkNav._NAV_STUJ)) then
         begin
-          case ((Sender as TBlkSCom).DNjc.data.TypCesty) of
+          case ((Sender as TBlkNav).DNjc.data.TypCesty) of
            TJCType.vlak  : fg := clLime;
            TJCType.posun : fg := clWhite;
           else
            fg := clAqua;
           end;
         end else begin
-         if (((Sender as TBlkSCom).Navest <> TBlkSCom._NAV_PRIVOL) and ((Sender as TBlkSCom).canRNZ)) then
+         if (((Sender as TBlkNav).Navest <> TBlkNav._NAV_PRIVOL) and ((Sender as TBlkNav).canRNZ)) then
            fg := clTeal
          else
            fg := $A0A0A0;
         end;
       end;// else privolavacka
 
-     if ((Sender as TBlkSCom).ZAM) then
+     if ((Sender as TBlkNav).ZAM) then
       begin
-       case ((Sender as TBlkSCom).SymbolType) of
+       case ((Sender as TBlkNav).SymbolType) of
         0 : fg := clRed;
         1 : fg := clBlue;
        end;
       end;
 
-     case ((Sender as TBlkSCom).ZacatekVolba) of
-      TBlkSComVolba.none : bg := clBlack;
-      TBlkSComVolba.VC   : bg := clGreen;
-      TBlkSComVolba.PC   : bg := clWhite;
-      TBlkSComVolba.NC,
-      TBlkSComVolba.PP   : bg := clTeal;
+     case ((Sender as TBlkNav).ZacatekVolba) of
+      TBlkNavVolba.none : bg := clBlack;
+      TBlkNavVolba.VC   : bg := clGreen;
+      TBlkNavVolba.PC   : bg := clWhite;
+      TBlkNavVolba.NC,
+      TBlkNavVolba.PP   : bg := clTeal;
      end;//case
     end;//else Navest = -1
 
@@ -701,13 +701,13 @@ begin
    msg := msg + PrevodySoustav.ColorToStr(bg) + ';';
 
    // blikani privolavacky
-   if ((Sender as TBlkSCom).Navest = 8) then
+   if ((Sender as TBlkNav).Navest = 8) then
     msg := msg + '1;'
    else
     msg := msg + '0;';
 
-   msg := msg + IntToStr(PrevodySoustav.BoolToInt((Sender as TBlkSCom).AB)) + ';';
-  end;//_BLK_SCOM
+   msg := msg + IntToStr(PrevodySoustav.BoolToInt((Sender as TBlkNav).AB)) + ';';
+  end;//_BLK_NAV
 
   /////////////////////////////////////////////////
 
@@ -735,7 +735,7 @@ begin
    msg := msg + PrevodySoustav.ColorToStr(fg) + ';';
    msg := msg + PrevodySoustav.ColorToStr(bg) + ';0;';
    msg := msg + IntToStr(Integer((Sender as TBlkPrejezd).Stav.basicStav)) + ';';
-  end;//_BLK_SCOM
+  end;//_BLK_PREJEZD
 
   /////////////////////////////////////////////////
 
@@ -1185,8 +1185,8 @@ begin
    (Self.vb[Self.vb.Count-1] as TBlkUsek).KonecJC := TZaver.no;
    Self.vb.Delete(Self.vb.Count-1);
   end else begin
-   Blk := Blky.GetBlkSComZacatekVolba(Self.id);
-   if (Blk <> nil) then (Blk as TBlkSCom).ZacatekVolba := TBlkScomVolba.none;
+   Blk := Blky.GeTBlkNavZacatekVolba(Self.id);
+   if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
   end;
 
  Blk := Blky.GetBlkUsekVlakPresun(Self.id);
@@ -1456,7 +1456,7 @@ var i:Integer;
     JC:TJC;
     Blk:TBlk;
     usek:TBlkUsek;
-    nav:TBlkSCom;
+    nav:TBlkNav;
     oblr:TOR;
 begin
  if (not success) then Exit;

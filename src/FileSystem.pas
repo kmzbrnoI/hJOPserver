@@ -45,7 +45,7 @@ implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
      TechnologieRCS, Verze, fHVEdit, TechnologieJC, fConsole, TOblsRizeni, TBloky,
-     TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, BoosterDb,
+     TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni, BoosterDb,
      Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase, TCPServerPT,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv;

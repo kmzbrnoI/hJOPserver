@@ -76,7 +76,7 @@ implementation
 
 uses fMain, TechnologieRCS, FileSystem, fSettings, Trakce,
      Logging, THVDatabase, TJCDatabase, TBlok, TBlokUsek,
-    TBloky, TBlokSCom, GetSystems, TBlokVyhybka, TBlokTratUsek, SprDb;
+    TBloky, TBlokNav, GetSystems, TBlokVyhybka, TBlokTratUsek, SprDb;
 
 {$R *.dfm}
 
@@ -227,7 +227,7 @@ begin
    if ((JC.stav.RozpadBlok = 1) and (JC.stav.RozpadRuseniBlok = -1)) then
     begin
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-     Blky.GetBlkByID((Nav as TBlkSCom).UsekID, Blk);
+     Blky.GetBlkByID((Nav as TBlkNav).UsekID, Blk);
 
      if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.obsazeno) then
       begin
@@ -321,7 +321,7 @@ begin
      Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
      if ((TU.Obsazeno = TUsekStav.obsazeno) and (TU.bpInBlk) and (TU.nextTU <> nil) and
          (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
-        ((TU.nextTU.navKryci = nil) or (TBlkSCom(TU.nextTU.navKryci).Navest > 0))) then
+        ((TU.nextTU.navKryci = nil) or (TBlkNav(TU.nextTU.navKryci).Navest > 0))) then
       begin
        RCSi.SetInput(TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0].board, TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0].port, 1);
        Exit();

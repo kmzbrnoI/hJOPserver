@@ -7,7 +7,7 @@ unit TJCDatabase;
 interface
 
 uses TechnologieJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, IBUtils, TBloky, TBlokSCom;
+      Generics.Collections, Classes, IBUtils, TBloky, TBlokNav;
 
 type
   EJCIdAlreadyExists = class(Exception);
@@ -15,7 +15,7 @@ type
   TJCDb = class
    private
     JCs:TObjectList<TJC>;
-    JCsStartNav:TObjectDictionary<TBlkSCom, TList<TJC>>;
+    JCsStartNav:TObjectDictionary<TBlkNav, TList<TJC>>;
 
     ffilename:string;
 
@@ -65,13 +65,13 @@ type
      procedure RusAllJC();
      procedure RusJC(Blk:TBlk);     // rusi cestu, ve ktere je zadany blok
 
-     function IsAnyJC(nav:TBlkSCom):Boolean;
-     function IsAnyVC(nav:TBlkSCom):Boolean;
-     function IsAnyPC(nav:TBlkSCom):Boolean;
+     function IsAnyJC(nav:TBlkNav):Boolean;
+     function IsAnyVC(nav:TBlkNav):Boolean;
+     function IsAnyPC(nav:TBlkNav):Boolean;
 
-     function IsAnyJCAvailable(nav:TBlkSCom; typ:TJCType):Boolean;
-     function IsAnyVCAvailable(nav:TBlkSCom):Boolean;
-     function IsAnyPCAvailable(nav:TBlkSCom):Boolean;
+     function IsAnyJCAvailable(nav:TBlkNav; typ:TJCType):Boolean;
+     function IsAnyVCAvailable(nav:TBlkNav):Boolean;
+     function IsAnyPCAvailable(nav:TBlkNav):Boolean;
 
      property Count:Word read GetCount;
      property filename:string read ffilename;
@@ -97,7 +97,7 @@ constructor TJCDb.Create();
 begin
  inherited;
  Self.JCs := TObjectList<TJC>.Create();
- Self.JCsStartNav := TObjectDictionary<TBlkSCom, TList<TJC>>.Create();
+ Self.JCsStartNav := TObjectDictionary<TBlkNav, TList<TJC>>.Create();
 end;//ctor
 
 destructor TJCDb.Destroy();
@@ -230,12 +230,12 @@ procedure TJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObj
 var j:Integer;
     Blk:TBlk;
     oblr:TOR;
-    startNav:TBlkSCom;
+    startNav:TBlkNav;
     senderOblr:TOR;
     jc:TJC;
 label noJC;
 begin
- startNav := StartBlk as TBlkSCom;
+ startNav := StartBlk as TBlkNav;
  senderOblr := SenderOR as TOR;
 
  if (not Self.JCsStartNav.ContainsKey(startNav)) then
@@ -249,8 +249,8 @@ begin
    if (Blk <> EndBlk) then continue;
 
    if ((Integer(startNav.ZacatekVolba) = Integer(jc.data.TypCesty)) or
-      ((startNav.ZacatekVolba = TBLkSComVolba.NC) and (jc.data.TypCesty = TJCType.vlak)) or
-      ((startNav.ZacatekVolba = TBLkSComVolba.PP) and (jc.data.TypCesty = TJCType.posun))) then
+      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.data.TypCesty = TJCType.vlak)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.data.TypCesty = TJCType.posun))) then
     begin
      // nasli jsme jizdni cestu, kterou hledame
 
@@ -260,22 +260,22 @@ begin
       if (jc.data.vb[j] <> (SenderOblr.vb[j] as TBlk).id) then continue;
 
      // v pripade nouzove cesty klik na DK opet prevest na klienta
-     if (startNav.ZacatekVolba = TBLkSComVolba.NC) then
+     if (startNav.ZacatekVolba = TBlkNavVolba.NC) then
        for oblr in startNav.OblsRizeni do
          oblr.ORDKClickClient();
 
 
      if (SenderOblr.stack.volba = TORStackVolba.VZ) then
       begin
-       SenderOblr.stack.AddJC(jc, SenderPnl, (startNav.ZacatekVolba = TBLkSComVolba.NC) or (startNav.ZacatekVolba = TBLkSComVolba.PP));
+       SenderOblr.stack.AddJC(jc, SenderPnl, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
 
        // zrusime zacatek, konec a variantni body
-       startNav.ZacatekVolba := TBlkSComVOlba.none;
+       startNav.ZacatekVolba := TBlkNavVOlba.none;
        (EndBlk as TBlkUsek).KonecJC        := TZaver.no;
        SenderOblr.ClearVb();
       end else begin
        SenderOblr.vb.Clear();            // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
-       jc.StavJC(SenderPnl, SenderOR, nil, (startNav.ZacatekVolba = TBLkSComVolba.NC) or (startNav.ZacatekVolba = TBLkSComVolba.PP));
+       jc.StavJC(SenderPnl, SenderOR, nil, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
       end;
 
      Exit;
@@ -284,7 +284,7 @@ begin
 
 noJC:
  // kontrola staveni slozene jizdni cesty
- if (startNav.ZacatekVolba <> TBLkSComVolba.NC) then
+ if (startNav.ZacatekVolba <> TBlkNavVolba.NC) then
    if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
 
  (EndBlk as TBlkUsek).KonecJC := TZaver.no;
@@ -298,7 +298,7 @@ function TJCDb.AddJC(JCdata:TJCprop):TJC;
 var JC:TJC;
     index:Integer;
     i:Integer;
-    nav:TBlkSCom;
+    nav:TBlkNav;
 begin
  // kontrola existence JC stejneho ID
  if (Self.IsJC(JCData.id)) then
@@ -315,7 +315,7 @@ begin
  for i := index+1 to Self.JCs.Count-1 do
    Self.JCs[i].index := Self.JCs[i].index + 1;
 
- nav := JC.navestidlo as TBlkSCom;
+ nav := JC.navestidlo as TBlkNav;
  if (not Self.JCsStartNav.ContainsKey(nav)) then
    Self.JCsStartNav.Add(nav, TList<TJC>.Create());
  Self.JCsStartNav[nav].Add(JC);
@@ -340,8 +340,8 @@ begin
      raise Exception.Create('JC v zasobniku OR '+OblR.id);
   end;
 
- if (Self.JCsStartNav.ContainsKey(Self.JCs[index].navestidlo as TBlkSCom)) then
-   Self.JCsStartNav[Self.JCs[index].navestidlo as TBlkSCom].Remove(Self.JCs[index]);
+ if (Self.JCsStartNav.ContainsKey(Self.JCs[index].navestidlo as TBlkNav)) then
+   Self.JCsStartNav[Self.JCs[index].navestidlo as TBlkNav].Remove(Self.JCs[index]);
 
  Self.JCs.Delete(index);
 
@@ -524,13 +524,13 @@ end;
 procedure TJCDb.CheckNNavaznost(fJC:TJC);
 var JC:TJC;
     nav:TBlk;
-    my_nav:TBlkSCom;
+    my_nav:TBlkNav;
 begin
   if (fJC.data.TypCesty = TJCType.posun) then Exit;
 
   Blky.GetBlkByID(fJC.data.NavestidloBlok, nav);
   if (nav = nil) then Exit;
-  my_nav := (nav as TBlkSCom);
+  my_nav := (nav as TBlkNav);
 
   for JC in Self.JCs do
    begin
@@ -539,33 +539,33 @@ begin
 
     Blky.GetBlkByID(JC.data.NavestidloBlok, nav);
 
-    if (not (nav as TBlkSCom).IsPovolovaciNavest()) then continue;
-    if ((nav as TBlkSCom).changing) then continue;
+    if (not (nav as TBlkNav).IsPovolovaciNavest()) then continue;
+    if ((nav as TBlkNav).changing) then continue;
 
     if (my_nav.IsPovolovaciNavest()) then
      begin
       if (JC.IsAnyVyhMinus()) then begin
-        if ((my_nav.Navest = TBlkSCom._NAV_VYSTRAHA_40) or
-            (my_nav.Navest = TBlkSCom._NAV_40_OCEK_40) or
-            (my_nav.Navest = TBlkSCom._NAV_VOLNO_40)) then
-          (nav as TBlkSCom).Navest := TBlkSCom._NAV_40_OCEK_40
+        if ((my_nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
+            (my_nav.Navest = TBlkNav._NAV_40_OCEK_40) or
+            (my_nav.Navest = TBlkNav._NAV_VOLNO_40)) then
+          (nav as TBlkNav).Navest := TBlkNav._NAV_40_OCEK_40
         else
-          (nav as TBlkSCom).Navest := TBlkSCom._NAV_VOLNO_40;
+          (nav as TBlkNav).Navest := TBlkNav._NAV_VOLNO_40;
        end else begin
-        if ((my_nav.Navest = TBlkSCom._NAV_VYSTRAHA_40) or
-             (my_nav.Navest = TBlkSCom._NAV_40_OCEK_40) or
-             (my_nav.Navest = TBlkSCom._NAV_VOLNO_40)) then
-          (nav as TBlkSCom).Navest := TBlkSCom._NAV_OCEK_40
+        if ((my_nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
+             (my_nav.Navest = TBlkNav._NAV_40_OCEK_40) or
+             (my_nav.Navest = TBlkNav._NAV_VOLNO_40)) then
+          (nav as TBlkNav).Navest := TBlkNav._NAV_OCEK_40
         else
-          (nav as TBlkSCom).Navest := TBlkSCom._NAV_VOLNO;
+          (nav as TBlkNav).Navest := TBlkNav._NAV_VOLNO;
        end;
 
      end else begin
 
       if (JC.IsAnyVyhMinus()) then
-        (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA_40
+        (nav as TBlkNav).Navest := TBlkNav._NAV_VYSTRAHA_40
       else
-        (nav as TBlkSCom).Navest := TBlkSCom._NAV_VYSTRAHA;
+        (nav as TBlkNav).Navest := TBlkNav._NAV_VYSTRAHA;
 
      end;
    end;//for i
@@ -593,7 +593,7 @@ begin
     jcs[0] := JCDb.FindPostavenaJCWithUsek(Blk.id);
   end;
 
-  _BLK_SCOM: begin
+  _BLK_NAV: begin
     SetLength(jcs, 1);
     jcs[0] := JCDb.FindJC(Blk.id);
   end;
@@ -615,10 +615,10 @@ begin
 
      jc := JCDb.GetJCByIndex(jcs[i]);
      Blky.GetBlkByID(JCDb.GetJCByIndex(jcs[i]).data.NavestidloBlok, tmpblk);
-     if ((TBlkSCom(tmpblk).Navest > 0) and (TBlkSCom(tmpblk).DNjc = jc)) then
+     if ((TBlkNav(tmpblk).Navest > 0) and (TBlkNav(tmpblk).DNjc = jc)) then
       begin
        JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
-       for oblr in (tmpBlk as TBlkScom).OblsRizeni do
+       for oblr in (tmpBlk as TBlkNav).OblsRizeni do
          oblr.BlkWriteError(Self, 'Chyba povolovací návìsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
     end;//for i
@@ -725,14 +725,14 @@ end;
 
 procedure TJCDb.FillJCsStartNav();
 var JC:TJC;
-    nav:TBlkSCom;
+    nav:TBlkNav;
 begin
  Self.JCsStartNav.Clear();
  for JC in Self.JCs do
   begin
-   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = _BLK_SCOM)) then
+   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = _BLK_NAV)) then
     begin
-     nav := JC.navestidlo as TBlkSCom;
+     nav := JC.navestidlo as TBlkNav;
      if (not Self.JCsStartNav.ContainsKey(nav)) then
        Self.JCsStartNav.Add(nav, TList<TJC>.Create());
      Self.JCsStartNav[nav].Add(JC);
@@ -743,10 +743,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.JCOnNavChanged(Sender:TObject; origNav:TBlk);
-var nav:TBlkSCom;
+var nav:TBlkNav;
     jc:TJC;
 begin
- nav := origNav as TBlkSCom;
+ nav := origNav as TBlkNav;
  jc := Sender as TJC;
 
  if (origNav <> nil) then
@@ -758,20 +758,20 @@ begin
 
  if (jc.navestidlo <> nil) then
   begin
-   if (not Self.JCsStartNav.ContainsKey(jc.navestidlo as TBlkSCom)) then
-     Self.JCsStartNav.Add(jc.navestidlo as TBlkSCom, TList<TJC>.Create());
-   Self.JCsStartNav[jc.navestidlo as TBlkSCom].Add(jc);
+   if (not Self.JCsStartNav.ContainsKey(jc.navestidlo as TBlkNav)) then
+     Self.JCsStartNav.Add(jc.navestidlo as TBlkNav, TList<TJC>.Create());
+   Self.JCsStartNav[jc.navestidlo as TBlkNav].Add(jc);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsAnyJC(nav:TBlkSCom):Boolean;
+function TJCDb.IsAnyJC(nav:TBlkNav):Boolean;
 begin
  Result := Self.JCsStartNav.ContainsKey(nav) and (Self.JCsStartNav[nav].Count > 0);
 end;
 
-function TJCDb.IsAnyVC(nav:TBlkSCom):Boolean;
+function TJCDb.IsAnyVC(nav:TBlkNav):Boolean;
 var jc:TJC;
 begin
  if (not Self.JCsStartNav.ContainsKey(nav)) then
@@ -782,7 +782,7 @@ begin
  Result := false;
 end;
 
-function TJCDb.IsAnyPC(nav:TBlkSCom):Boolean;
+function TJCDb.IsAnyPC(nav:TBlkNav):Boolean;
 var jc:TJC;
 begin
  if (not Self.JCsStartNav.ContainsKey(nav)) then
@@ -797,7 +797,7 @@ end;
 // Zjistuje, jestli je mozno postvit z navestidla \nav v aktualni situaci alespon
 // jednu cestu typu \typ.
 
-function TJCDb.IsAnyJCAvailable(nav:TBlkSCom; typ:TJCType):Boolean;
+function TJCDb.IsAnyJCAvailable(nav:TBlkNav; typ:TJCType):Boolean;
 var jc:TJC;
     blk:TBlk;
     usek:TBlkUsek;
@@ -820,12 +820,12 @@ begin
  Result := false;
 end;
 
-function TJCDb.IsAnyVCAvailable(nav:TBlkSCom):Boolean;
+function TJCDb.IsAnyVCAvailable(nav:TBlkNav):Boolean;
 begin
  Result := Self.IsAnyJCAvailable(nav, TJCType.vlak);
 end;
 
-function TJCDb.IsAnyPCAvailable(nav:TBlkSCom):Boolean;
+function TJCDb.IsAnyPCAvailable(nav:TBlkNav):Boolean;
 begin
  Result := Self.IsAnyJCAvailable(nav, TJCType.posun);
 end;

@@ -12,7 +12,7 @@ const
  _BLK_VYH     = 0;            // vyhybka
  _BLK_USEK    = 1;            // usek
  _BLK_IR      = 2;            // IR cidlo
- _BLK_SCOM    = 3;            // navestidlo
+ _BLK_NAV     = 3;            // navestidlo
  _BLK_PREJEZD = 4;            // prejezd
  _BLK_TRAT    = 5;            // trat
  _BLK_UVAZKA  = 6;            // uvazka
@@ -141,7 +141,7 @@ type
 
 implementation
 
-uses TBloky, TBlokVyhybka, TBlokPrejezd, TBlokSCom, TBlokTrat, TBlokUsek,
+uses TBloky, TBlokVyhybka, TBlokPrejezd, TBlokNav, TBlokTrat, TBlokUsek,
       DataBloky, TBlokZamek, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -387,7 +387,7 @@ begin
   _BLK_VYH     : Result := 'vyhybka';
   _BLK_USEK    : Result := 'usek';
   _BLK_IR      : Result := 'ir';
-  _BLK_SCOM    : Result := 'scom';
+  _BLK_NAV    : Result := 'scom';
   _BLK_PREJEZD : Result := 'prejezd';
   _BLK_TRAT    : Result := 'trat';
   _BLK_UVAZKA  : Result := 'uvazka';
@@ -434,7 +434,7 @@ begin
  if (typ = 'vyhybka') or (typ = 'v˝hybka') then Result := _BLK_VYH
  else if (typ = 'usek') or (typ = '˙sek') then Result := _BLK_USEK
  else if (typ = 'ir') then Result := _BLK_IR
- else if (typ = 'scom') then Result := _BLK_SCOM
+ else if (typ = 'scom') then Result := _BLK_NAV
  else if (typ = 'prejezd') or (typ = 'p¯ejezd') then Result := _BLK_PREJEZD
  else if (typ = 'trat') or (typ = 'traù') then Result := _BLK_TRAT
  else if (typ = 'uvazka') or (typ = '˙vazka') then Result := _BLK_UVAZKA

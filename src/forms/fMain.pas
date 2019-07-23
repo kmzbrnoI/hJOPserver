@@ -525,7 +525,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
-     TBlok, TBlokUsek, TBlokVyhybka, TBlokSCom, TBlokIR, TOblRizeni, AC,
+     TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni, AC,
      SnadnSpusteni, TBlokSouctovaHlaska, TBlokPrejezd, TJCDatabase, Logging,
      TCPServerOR, DataAC, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
@@ -1633,9 +1633,9 @@ begin
   begin
    try
      Blky.GetBlkByID(jc.data.NavestidloBlok, blk);
-     if ((blk <> nil) and (Blk.typ = _BLK_SCOM) and (TBlkSCom(blk).ABJC = jc)) then
+     if ((blk <> nil) and (Blk.typ = _BLK_NAV) and (TBlkNav(blk).ABJC = jc)) then
       begin
-       TBlkSCom(blk).ABJC := nil;
+       TBlkNav(blk).ABJC := nil;
        if (ABlist.Contains(jc)) then
          ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
       end else
@@ -2229,7 +2229,7 @@ var Blk:TBlk;
    _BLK_USEK, _BLK_TU :
                   F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
    _BLK_IR      : ;
-   _BLK_SCOM    : ;
+   _BLK_NAV     : ;
    _BLK_PREJEZD : ;
    _BLK_TRAT    : F_BlkTrat_tech.OpenForm(Blk as TBlkTrat);
    _BLK_UVAZKA  : ;
@@ -2797,10 +2797,10 @@ var Blk:TBlk;
    end;//_BLK_VYH
 
   //////////////////////
-   _BLK_SCOM:begin
-    if ((Blk as TBlkSCom).Navest < 0) then
+   _BLK_NAV:begin
+    if ((Blk as TBlkNav).Navest < 0) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY  // disabled
-    else if ((Blk as TBlkSCom).Navest = 0) then
+    else if ((Blk as TBlkNav).Navest = 0) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
     else
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
@@ -2885,7 +2885,7 @@ var Blk:TBlk;
    _BLK_VYH     : F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_USEK    : F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_IR      : F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_SCOM    : F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
+   _BLK_NAV     : F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_PREJEZD : F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_TRAT, _BLK_UVAZKA : F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_ZAMEK   : F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);

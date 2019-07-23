@@ -29,7 +29,7 @@ var ceCaller: TChangeEventCaller;
 
 implementation
 
-uses TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokZamek, TBlokSCom, TBlokPrejezd,
+uses TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokZamek, TBlokNav, TBlokPrejezd,
      TBlokTrat;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,9 +86,9 @@ procedure TChangeEventCaller.NullSComMenuReduction(Sender:TObject; data:Integer)
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> _BLK_SCOM)) then Exit();
+ if ((blk = nil) or (blk.typ <> _BLK_NAV)) then Exit();
 
- TBlkSCom(Blk).ZrusRedukciMenu();
+ TBlkNav(Blk).ZrusRedukciMenu();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

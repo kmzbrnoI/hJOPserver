@@ -59,7 +59,7 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS, TBlokSCom;
+uses TechnologieRCS, Logging, RCS, TBlokNav;
 
 {$R *.dfm}
 
@@ -313,7 +313,7 @@ procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
         RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 1);
         (Sender as TShape).Brush.Color := clLime;
       end else if ((Sender as TShape).Brush.Color = clBlue) then begin
-        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, TBlkSCom._NAV_VSE);
+        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, TBlkNav._NAV_VSE);
         (Sender as TShape).Brush.Color := clWhite;
       end else begin
         RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 0);

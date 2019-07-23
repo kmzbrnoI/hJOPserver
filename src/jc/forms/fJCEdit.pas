@@ -108,7 +108,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TBlok, TOblsRizeni,
-      TBlokSCom, fSettings, TJCDatabase, DataJC, TBlokTrat, TBlokVyhybka;
+      TBlokNav, fSettings, TJCDatabase, DataJC, TBlokTrat, TBlokVyhybka;
 
 {$R *.dfm}
 
@@ -143,7 +143,7 @@ procedure TF_JCEdit.NewVCOpenForm;
     SE_ID.Value := JCDb.GetJCByIndex(JCDb.Count-1).id + 1
   else
     SE_ID.Value := 1;
-  Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, _BLK_SCOM, -1);
+  Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, _BLK_NAV, -1);
 
   CB_TypCesty.ItemIndex           := -1;
   CB_DalsiNNavaznost.ItemIndex    := -1;
@@ -176,7 +176,7 @@ var cyklus:Integer;
  begin
   JCData := JCDb.GetJCByIndex(OpenIndex).data;
 
-  Blky.NactiBlokyDoObjektu(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, _BLK_SCOM, JCData.NavestidloBlok);
+  Blky.NactiBlokyDoObjektu(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, _BLK_NAV, JCData.NavestidloBlok);
   CB_NavestidloChange(Self);
 
   E_VCNazev.Text := JCData.Nazev;
@@ -794,11 +794,11 @@ begin
  Blky.GetBlkByID(JCData.NavestidloBlok, Blk);
 
  if (Blk = nil) then Exit;
- if (Blk.typ <> _BLK_SCOM) then Exit;
+ if (Blk.typ <> _BLK_NAV) then Exit;
 
- SetLength(obls, (Blk as TBlkScom).OblsRizeni.Count);
- for i := 0 to (Blk as TBlkScom).OblsRizeni.Count-1 do
-  obls[i] := (Blk as TBlkScom).OblsRizeni[i].id;
+ SetLength(obls, (Blk as TBlkNav).OblsRizeni.Count);
+ for i := 0 to (Blk as TBlkNav).OblsRizeni.Count-1 do
+  obls[i] := (Blk as TBlkNav).OblsRizeni[i].id;
 end;
 
 procedure TF_JCEdit.UpdateJCName();

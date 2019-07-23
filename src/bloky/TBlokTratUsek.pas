@@ -215,7 +215,7 @@ type
 
 implementation
 
-uses SprDb, TBloky, TBlokIR, TCPServerOR, TBlokTrat, TBlokSCom,
+uses SprDb, TBloky, TBlokIR, TCPServerOR, TBlokTrat, TBlokNav,
       TJCDatabase, Prevody, logging, THnaciVozidlo;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -690,7 +690,7 @@ begin
   end;
 
   F1: begin
-    Blk := Blky.GetBlkSComZacatekVolba((SenderOR as TOR).id);
+    Blk := Blky.GetBlkNavZacatekVolba((SenderOR as TOR).id);
     if (Blk = nil) then
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
@@ -924,7 +924,7 @@ begin
  // predavani soupravy z predchoziho TU do meho TU
  if ((Self.prevTU <> nil) and (Self.Obsazeno = TUsekStav.obsazeno) and
      (Self.prevTU.Obsazeno = TUsekStav.obsazeno) and
-     ((Self.navKryci = nil) or (TBlkSCom(Self.navKryci).Navest > 0))) then
+     ((Self.navKryci = nil) or (TBlkNav(Self.navKryci).Navest > 0))) then
   begin
    // nastala aktivace blokove podminky
    Self.bpInBlk := true;
@@ -1047,19 +1047,19 @@ procedure TBlkTU.CreateSComRefs();
 var Blk:TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_SCOM) and (Self.lTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = _BLK_NAV) and (Self.lTU <> nil)) then
   begin
-   TBlkSCom(Blk).UsekID   := Self.lTU.id;
-   TBlkSCom(Blk).Smer     := THVStanoviste.lichy;
-   TBlkSCom(Blk).autoblok := true;
+   TBlkNav(Blk).UsekID := Self.lTU.id;
+   TBlkNav(Blk).Smer := THVStanoviste.lichy;
+   TBlkNav(Blk).autoblok := true;
   end;
 
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_SCOM) and (Self.sTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = _BLK_NAV) and (Self.sTU <> nil)) then
   begin
-   TBlkSCom(Blk).UsekID   := Self.sTU.id;
-   TBlkSCom(Blk).Smer     := THVStanoviste.sudy;
-   TBlkSCom(Blk).autoblok := true;
+   TBlkNav(Blk).UsekID := Self.sTU.id;
+   TBlkNav(Blk).Smer := THVStanoviste.sudy;
+   TBlkNav(Blk).autoblok := true;
   end;
 end;
 
@@ -1078,9 +1078,9 @@ begin
  Self.InTrat      := -1;
 
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = _BLK_NAV)) then TBlkNav(Blk).UsekID := -1;
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_SCOM)) then TBlkSCom(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = _BLK_NAV)) then TBlkNav(Blk).UsekID := -1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1103,7 +1103,7 @@ begin
     if (Self.TUSettings.navSid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
+      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
      end;
    end;
 
@@ -1111,7 +1111,7 @@ begin
     if (Self.TUSettings.navLid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
+      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
      end;
    end;
 
@@ -1119,12 +1119,12 @@ begin
     if (Self.TUSettings.navSid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
+      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
      end;
     if (Self.TUSettings.navLid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if ((Blk <> nil) and (TBlkSCom(Blk).Navest >= 0)) then TBlkSCom(Blk).Navest := TBlkSCom._NAV_ZHASNUTO;
+      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
      end;
     Exit();
    end;
@@ -1137,19 +1137,19 @@ begin
    JCDb.RusJC(Self);
 
  // nastavime kryci navestidlo
- if ((Self.navKryci <> nil) and (not TBlkSCom(Self.navKryci).ZAM) and
-     (TBlkSCom(Self.navKryci).Navest >= 0)) then
+ if ((Self.navKryci <> nil) and (not TBlkNav(Self.navKryci).ZAM) and
+     (TBlkNav(Self.navKryci).Navest >= 0)) then
   begin
    if (not Self.sectReady) then
     begin
      // sekce obsazena -> navetidlo na STUJ
-     TBlkSCom(Self.navKryci).Navest := TBlkSCom._NAV_STUJ
+     TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_STUJ
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
-     if ((Self.nextNav = nil) or (TBlkSCom(Self.nextNav).Navest = 0)) then
-       TBlkSCom(Self.navKryci).Navest := TBlkSCom._NAV_VYSTRAHA
+     if ((Self.nextNav = nil) or (TBlkNav(Self.nextNav).Navest = 0)) then
+       TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VYSTRAHA
       else
-       TBlkSCom(Self.navKryci).Navest := TBlkSCom._NAV_VOLNO;
+       TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
     end;
   end;
 

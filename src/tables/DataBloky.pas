@@ -35,7 +35,7 @@ var
 
 implementation
 
-uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokSCom, TBlokIR, TBlokPrejezd,
+uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokNav, TBlokIR, TBlokPrejezd,
       fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp, TBlokVystup,
       TBlokSouctovaHlaska;
 
@@ -91,7 +91,7 @@ var j, spr:integer;
     Blk:TBlk;
     glob:TBlkSettings;
     s_vyh:TBlkVyhSettings;
-    s_scom:TBlkSComSettings;
+    s_scom:TBlkNavSettings;
     str:string;
  begin
   Blky.GetBlkByIndex(line, Blk);
@@ -179,12 +179,12 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_SCOM:begin
       Self.LV.Items.Item[line].ImageIndex := 5;
-      s_scom := (Blk as TBlkSCom).GetSettings();
+      s_scom := (Blk as TBlkNav).GetSettings();
       Self.LV.Items.Item[line].SubItems.Strings[0] := 'Návìstidlo';
 
       Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
 
-      Self.LV.Items.Item[line].SubItems.Strings[3] := TBlkScom.NavestToString((Blk as TBlkSCom).Navest);
+      Self.LV.Items.Item[line].SubItems.Strings[3] := TBlkNav.NavestToString((Blk as TBlkNav).Navest);
 
       Self.LV.Items.Item[line].SubItems.Strings[5] := '---';
       Self.LV.Items.Item[line].SubItems.Strings[6] := '---';

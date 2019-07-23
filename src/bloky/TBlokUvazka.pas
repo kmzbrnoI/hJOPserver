@@ -115,7 +115,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokSCom, Logging, UPO, Graphics,
+uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, UPO, Graphics,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
 constructor TBlkUvazka.Create(index:Integer);

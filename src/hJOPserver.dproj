@@ -135,7 +135,7 @@
 			<DCCReference Include="bloky\TBlokVyhybka.pas"/>
 			<DCCReference Include="bloky\TBlokUsek.pas"/>
 			<DCCReference Include="bloky\TBlokIR.pas"/>
-			<DCCReference Include="bloky\TBlokSCom.pas"/>
+			<DCCReference Include="bloky\TBlokNav.pas"/>
 			<DCCReference Include="TOblsRizeni.pas"/>
 			<DCCReference Include="TOblRizeni.pas"/>
 			<DCCReference Include="Booster.pas"/>

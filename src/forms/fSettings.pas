@@ -146,7 +146,7 @@ uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
   fSystemInfo, fBlkUsek, fBlkVyhybka, fBlkIR, fBlkNav, fBlkNew,
   fAdminForm, fJCEdit, fRychlostiEdit, fSplash, GetSystems, Prevody,
   TechnologieJC, FileSystem, TBloky, TBlok,
-  TBlokVyhybka, TBlokSCom, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,
+  TBlokVyhybka, TBlokNav, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,
   SnadnSpusteni, TBlokPrejezd, fBlkPrejezd, TJCDatabase, THVDatabase,
   Logging, DataBloky, DataJC, DataRCS, Trakce,
   ModelovyCas, ACDatabase, TrakceGUI;

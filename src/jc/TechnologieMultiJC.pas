@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses TBlok, TJCDatabase, TBlokSCom, TBlokUsek, TOblRizeni;
+uses TBlok, TJCDatabase, TBlokNav, TBlokUsek, TOblRizeni;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -230,7 +230,7 @@ begin
  // zrusime zacatek staveni na navestidle
  JC := JCDb.GetJCByID(Self.fproperties.JCs[0]);
  Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
- (Blk as TBLkSCom).ZacatekVolba := TBlkSCOmVolba.none;
+ (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
 
  // zrusime konec staveni na poslednim useku posledni JC
  JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);

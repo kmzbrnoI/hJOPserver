@@ -194,7 +194,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokSCom, Logging,
+uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokNav, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase,
     TBlokTratUsek, appEv, timeHelper, Prevody, Graphics;
 
@@ -682,7 +682,7 @@ var i:Integer;
     Blk:TBlk;
     BlkTU:TBlkTU;
 begin
- if ((Self.fNavLichy = nil) or ((Self.fNavLichy as TBlkSCom).UsekID <> Self.TratSettings.Useky[0])) then
+ if ((Self.fNavLichy = nil) or ((Self.fNavLichy as TBlkNav).UsekID <> Self.TratSettings.Useky[0])) then
   begin
    if (Self.TratSettings.Useky.Count > 1) then
      Blky.GetBlkByID(Self.TratSettings.Useky[1], TBlk(BlkTU))
@@ -692,10 +692,10 @@ begin
    for i := 0 to Blky.Cnt-1 do
     begin
      Blky.GetBlkByIndex(i, Blk);
-     if (Blk.typ <> _BLK_SCOM) then continue;
-     if ((TBlkSCom(Blk).UsekID = Self.TratSettings.Useky[0]) and
+     if (Blk.typ <> _BLK_NAV) then continue;
+     if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[0]) and
          (Blk.OblsRizeni[0] = Self.uvazkaA.OblsRizeni[0]) and
-         ((BlkTU = nil) or (TBlkSCom(Blk).UsekID <> BlkTU.GetSettings.navLid))) then
+         ((BlkTU = nil) or (TBlkNav(Blk).UsekID <> BlkTU.GetSettings.navLid))) then
       begin
        Self.fNavLichy := Blk;
        break;
@@ -712,7 +712,7 @@ var i:Integer;
     Blk:TBlk;
     BlkTU:TBlkTU;
 begin
- if ((Self.fNavSudy = nil) or ((Self.fNavSudy as TBlkSCom).UsekID <> Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1])) then
+ if ((Self.fNavSudy = nil) or ((Self.fNavSudy as TBlkNav).UsekID <> Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1])) then
   begin
    if (Self.TratSettings.Useky.Count > 1) then
      Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-2], TBlk(BlkTU))
@@ -722,10 +722,10 @@ begin
    for i := 0 to Blky.Cnt-1 do
     begin
      Blky.GetBlkByIndex(i, Blk);
-     if (Blk.typ <> _BLK_SCOM) then continue;
-     if ((TBlkSCom(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
+     if (Blk.typ <> _BLK_NAV) then continue;
+     if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
          (Blk.OblsRizeni[0] = Self.uvazkaB.OblsRizeni[0]) and
-         ((BlkTU = nil) or (TBlkSCom(Blk).UsekID <> BlkTU.GetSettings.navSid))) then
+         ((BlkTU = nil) or (TBlkNav(Blk).UsekID <> BlkTU.GetSettings.navSid))) then
       begin
        Self.fNavSudy := Blk;
        break;
@@ -944,7 +944,7 @@ begin
            last.SprPredict := Blk.SprPredict;
            break;
           end;
-         if ((Blk.navKryci <> nil) and (TBlkSCom(Blk.navKryci).Navest = 0)) then
+         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = 0)) then
           begin
            Blky.SprPrediction(Self.navSudy);
            Exit();
@@ -974,7 +974,7 @@ begin
            last.SprPredict := Blk.SprPredict;
            break;
           end;
-         if ((Blk.navKryci <> nil) and (TBlkSCom(Blk.navKryci).Navest = 0)) then
+         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = 0)) then
           begin
            Blky.SprPrediction(Self.navLichy);
            Exit();
@@ -1029,7 +1029,7 @@ end;
 function TBlkTrat.ChangesSprDir():boolean;
 begin
  Result := (Assigned(Self.navLichy)) and (Assigned(Self.navSudy)) and
-    (TBlkSCom(Self.navLichy).Smer = TBlkSCom(Self.navSudy).Smer);
+    (TBlkNav(Self.navLichy).Smer = TBlkNav(Self.navSudy).Smer);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

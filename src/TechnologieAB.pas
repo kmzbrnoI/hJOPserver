@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses DataAB, TBlok, TBloky, TBlokUsek, logging, TBlokSCom;
+uses DataAB, TBlok, TBloky, TBlokUsek, logging, TBlokNav;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -121,10 +121,10 @@ begin
     writelog('DN JC '+JC.nazev+' : podmínky splnìny, stavím', WR_STACK);
 
     Blky.GetBlkByID(JC.data.NavestidloBlok, blk);
-    if ((blk = nil) or (blk.typ <> _BLK_SCOM) or (TBlkSCom(blk).OblsRizeni.Count = 0)) then
+    if ((blk = nil) or (blk.typ <> _BLK_NAV) or (TBlkNav(blk).OblsRizeni.Count = 0)) then
       Self.Remove(jc);
 
-    JC.StavJC(nil, TBlkSCom(blk).OblsRizeni[0], nil, false, true);
+    JC.StavJC(nil, TBlkNav(blk).OblsRizeni[0], nil, false, true);
   finally
     bariery.Free();
   end;

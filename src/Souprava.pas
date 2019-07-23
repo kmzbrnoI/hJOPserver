@@ -121,7 +121,7 @@ type
 implementation
 
 uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
-      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokSCom,
+      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokNav,
       fRegulator, Trakce, fMain, TBlokTratUsek, stanicniHlaseniHelper,
       stanicniHlaseni;
 
@@ -465,7 +465,7 @@ begin
  (Usek as TBlkUsek).Change();
 
  for nav in (Usek as TBlkUsek).SComJCRef do
-   (nav as TBlkScom).UpdateRychlostSpr(true);
+   (nav as TBlkNav).UpdateRychlostSpr(true);
 
  Self.changed := true;
 end;
@@ -815,7 +815,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.CheckSH(nav:TObject);
-var mnav:TBlkScom;
+var mnav:TBlkNav;
     oblr:TOR;
     shPlay:TSHToPlay;
     shSpr:TSHSpr;
@@ -823,7 +823,7 @@ begin
  if ((not Self.hlaseni) or (Self.hlaseniPrehrano) or (self.vychoziOR = nil) or
      (self.cilovaOR = nil) or (Self.typ = '')) then Exit();
 
- mnav := TBlkSCom(nav);
+ mnav := TBlkNav(nav);
  if (mnav.OblsRizeni.Count < 1) then Exit();
  oblr := mnav.OblsRizeni[0];
 

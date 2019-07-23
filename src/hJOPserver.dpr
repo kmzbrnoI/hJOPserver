@@ -54,7 +54,7 @@ uses
   TBlokVyhybka in 'bloky\TBlokVyhybka.pas',
   TBlokUsek in 'bloky\TBlokUsek.pas',
   TBlokIR in 'bloky\TBlokIR.pas',
-  TBlokSCom in 'bloky\TBlokSCom.pas',
+  TBlokNav in 'bloky\TBlokNav.pas',
   TOblsRizeni in 'TOblsRizeni.pas',
   TOblRizeni in 'TOblRizeni.pas',
   Booster in 'Booster.pas',
