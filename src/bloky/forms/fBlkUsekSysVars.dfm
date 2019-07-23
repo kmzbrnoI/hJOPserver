@@ -75,13 +75,13 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
   object Label3: TLabel
     Left = 7
     Top = 110
-    Width = 90
+    Width = 77
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'SComJCRef po'#269'et:'
+    Caption = 'NavCRef po'#269'et:'
   end
   object Label6: TLabel
     Left = 306
@@ -229,7 +229,7 @@ object F_BlkUsek_tech: TF_BlkUsek_tech
     TabOrder = 3
     Value = 0
   end
-  object SE_SComJCRef: TSpinEdit
+  object SE_NavJCRef: TSpinEdit
     Left = 176
     Top = 110
     Width = 107

@@ -16,8 +16,8 @@ type
     GB_Trat: TGroupBox;
     SE_Trat_ID: TSpinEdit;
     E_Trat_Name: TEdit;
-    L_P02: TLabel;
-    L_SCom02: TLabel;
+    L_Name: TLabel;
+    L_ID: TLabel;
     GB_TratBlk: TGroupBox;
     B_Blk_Delete: TButton;
     GB_NewBlk: TGroupBox;

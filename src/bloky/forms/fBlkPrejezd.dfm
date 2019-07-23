@@ -18,7 +18,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13
-  object L_P02: TLabel
+  object L_Name: TLabel
     Left = 8
     Top = 8
     Width = 81
@@ -29,7 +29,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Bottom = 2
     Caption = 'N'#225'zev p'#345'ejezdu :'
   end
-  object L_SCom02: TLabel
+  object L_ID: TLabel
     Left = 9
     Top = 36
     Width = 11
@@ -40,7 +40,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Bottom = 2
     Caption = 'ID'
   end
-  object L_Usek03: TLabel
+  object L_Station: TLabel
     Left = 7
     Top = 59
     Width = 42

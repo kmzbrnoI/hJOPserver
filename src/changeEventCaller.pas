@@ -21,7 +21,7 @@ type
    procedure NullPrejezdZaver(Sender:TObject; data:Integer);
    procedure NullTratZaver(Sender:TObject; data:Integer);
    procedure NullVyhybkaMenuReduction(Sender:TObject; data:Integer);
-   procedure NullSComMenuReduction(Sender:TObject; data:Integer);
+   procedure NullNavMenuReduction(Sender:TObject; data:Integer);
    procedure RemoveUsekNeprofil(Sender:TObject; data:Integer);
  end;
 
@@ -82,7 +82,7 @@ begin
  TBlkVyhybka(Blk).ZrusRedukciMenu();
 end;
 
-procedure TChangeEventCaller.NullSComMenuReduction(Sender:TObject; data:Integer);
+procedure TChangeEventCaller.NullNavMenuReduction(Sender:TObject; data:Integer);
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);

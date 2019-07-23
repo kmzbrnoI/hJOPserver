@@ -14,14 +14,14 @@ type
     GB_ZaveryVyhybek: TGroupBox;
     LV_Zavery: TListView;
     CHB_NewZaver: TGroupBox;
-    L_SCom11: TLabel;
-    L_SCom12: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
     CB_NewZaverBlok: TComboBox;
     CB_NewZaverPoloha: TComboBox;
     B_NewZaverAdd: TButton;
     GB_Useky: TGroupBox;
     CHB_NewBlok: TGroupBox;
-    L_SCom14: TLabel;
+    Label12: TLabel;
     CB_NewUsek: TComboBox;
     B_NewUsek: TButton;
     LV_Useky: TListView;

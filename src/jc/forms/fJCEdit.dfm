@@ -154,7 +154,7 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' Z'#225'v'#283'r nov'#233' vyh'#253'bky '
       TabOrder = 2
-      object L_SCom11: TLabel
+      object Label10: TLabel
         Left = 8
         Top = 16
         Width = 27
@@ -165,7 +165,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Bottom = 2
         Caption = 'Blok :'
       end
-      object L_SCom12: TLabel
+      object Label11: TLabel
         Left = 8
         Top = 40
         Width = 39
@@ -186,7 +186,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 0
       end
       object CB_NewZaverPoloha: TComboBox
@@ -262,7 +262,7 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' Nov'#253' '#250'sek '
       TabOrder = 2
-      object L_SCom14: TLabel
+      object Label12: TLabel
         Left = 8
         Top = 16
         Width = 27
@@ -283,7 +283,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 0
       end
       object B_NewUsek: TButton
@@ -374,7 +374,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
@@ -405,7 +405,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object CB_Rychlost_DalsiN: TComboBox
@@ -504,7 +504,7 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CB_TratSmer: TComboBox

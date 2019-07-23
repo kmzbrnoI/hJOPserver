@@ -53,7 +53,7 @@ type
     //update states
     procedure Update(); override;
 
-    //----- SCom own functions -----
+    //----- Rozpojovac own functions -----
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;

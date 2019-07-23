@@ -31,9 +31,9 @@ object F_BlkSH: TF_BlkSH
     Margins.Bottom = 2
     Caption = 'N'#225'zev bloku :'
   end
-  object L_SCom02: TLabel
+  object L_ID: TLabel
     Left = 9
-    Top = 36
+    Top = 33
     Width = 11
     Height = 13
     Margins.Left = 2
@@ -156,7 +156,7 @@ object F_BlkSH: TF_BlkSH
       Width = 232
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object B_Add: TButton

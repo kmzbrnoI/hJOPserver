@@ -149,7 +149,7 @@ type
     _JCB_BLOK_NOT_TYP            = 4;
     _JCB_PRIVOLAVACKA            = 5;
 
-    _JCB_SCOM_NOT_USEK           = 10;
+    _JCB_NAV_NOT_USEK            = 10;
 
     _JCB_USEK_OBSAZENO           = 20;
     _JCB_USEK_ZAVER              = 21;
@@ -267,7 +267,7 @@ type
       constructor Create(data:TJCprop); overload;
       destructor Destroy(); override;
 
-      procedure NastavSCom();                                                   // nastavi pozadovanu navest pri postaveni JC
+      procedure NastavNav();                                                    // nastavi pozadovanu navest pri postaveni JC
       procedure RusJC(Sender:TObject = nil);                                    // rusi vlakovou cestu
       procedure RusJCWithoutBlk();                                              // rusi vlakovou cestu bez zruseni zaveru useku
       procedure UsekyRusJC();                                                   // kontroluje projizdeni soupravy useky a rusi jejich zavery
@@ -416,7 +416,7 @@ begin
   if ((Blk as TBlkNav).UsekPred = nil) then
    begin
     // blok navestidla pred sebou nema zadny usek
-    Result.Add(Self.JCBariera(_JCB_SCOM_NOT_USEK, Blk, Self.fproperties.NavestidloBlok));
+    Result.Add(Self.JCBariera(_JCB_NAV_NOT_USEK, Blk, Self.fproperties.NavestidloBlok));
     Exit;
    end;
 
@@ -1563,12 +1563,11 @@ var i,j:Integer;
 
          case (Blk.typ) of
            _BLK_NAV:begin
-             //scom
-             writelog('Krok 12 : scom '+Blk.name+' - redukuji menu', WR_VC);
+             writelog('Krok 12 : návìstidlo '+Blk.name+' - redukuji menu', WR_VC);
              TBlkNav(Blk).RedukujMenu();
              Blky.GetBlkByID(refZaver.ref_blk, Blk);
              TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverReleaseOrAB,
-               CreateChangeEvent(ceCaller.NullSComMenuReduction, refZaver.Blok));
+               CreateChangeEvent(ceCaller.NullNavMenuReduction, refZaver.Blok));
            end;// _BLK_NAV
          end;//case
         end;
@@ -1701,7 +1700,7 @@ var i,j:Integer;
         Self.Krok := 16;
        end else begin
         writelog('Krok 14 : navestidlo: stavim...', WR_VC);
-        Self.NastavSCom();
+        Self.NastavNav();
         Self.Krok := 15;
        end;
    end;// case 14
@@ -1724,8 +1723,8 @@ var i,j:Integer;
       if (usek.IsSouprava()) then
         Soupravy.soupravy[Self.GetSoupravaIndex(Navestidlo, usek)].front := usek;
 
-      if (not usek.SComJCRef.Contains(Navestidlo)) then
-        usek.SComJCRef.Add(Navestidlo);
+      if (not usek.NavJCRef.Contains(Navestidlo)) then
+        usek.NavJCRef.Add(Navestidlo);
 
       navestidlo.DNjc := Self;
       Self.Krok := 0;
@@ -1961,7 +1960,7 @@ var i,j:Integer;
     // i pokud je navetidlo ve STUJ, nastavuji navest (to je spravne chovani podle JOP)
     if (Self.fproperties.TypCesty = TJCType.vlak) then
      begin
-      Self.NastavSCom();
+      Self.NastavNav();
       writelog('Krok 102 : navestidlo: nastavuji na privolavaci navest...', WR_VC);
       Self.Krok := 103;
      end else
@@ -2598,7 +2597,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //nastavi navestidlo JC na pozadovanou navest
-procedure TJC.NastavSCom();
+procedure TJC.NastavNav();
 var Nav,DalsiNav:TBlkNav;
     Navest:Integer;
  begin
@@ -2641,7 +2640,7 @@ var Nav,DalsiNav:TBlkNav;
             Navest := TBlkNav._NAV_VOLNO;
         end;
 
-       end else begin//if ...SCom.Cesta
+       end else begin
         // na dalsim navestidle je na STUJ
 
         if (Self.IsAnyVyhMinus()) then
@@ -3110,7 +3109,7 @@ begin
 
 
  case (Bariera.typ) of
-  _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_SCOM_NOT_USEK, _JCB_BLOK_NOT_EXIST,
+  _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_NAV_NOT_USEK, _JCB_BLOK_NOT_EXIST,
   _JCB_USEK_OBSAZENO, _JCB_USEK_ZAVER, _JCB_USEK_AB, _JCB_USEK_SOUPRAVA,
   _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_ZAMCENA, _JCB_VYHYBKA_NOUZ_ZAVER,
   _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA,
@@ -3135,7 +3134,7 @@ begin
   _JCB_BLOK_NOT_EXIST          : Result[1] := GetUPOLine('Blok neexistuje');
   _JCB_BLOK_NOT_TYP            : Result[1] := GetUPOLine('Blok není správného typu');
 
-  _JCB_SCOM_NOT_USEK           : Result[1] := GetUPOLine('Není úsek pøed návìstidlem');
+  _JCB_NAV_NOT_USEK            : Result[1] := GetUPOLine('Není úsek pøed návìstidlem');
 
   _JCB_USEK_OBSAZENO           : Result[1] := GetUPOLine('Úsek obsazen');
   _JCB_USEK_ZAVER              : Result[1] := GetUPOLine('Úsek zapevnìn');
@@ -3822,7 +3821,7 @@ begin
      begin
       case (bariera.typ) of
         _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP,
-        _JCB_SCOM_NOT_USEK, _JCB_USEK_OBSAZENO, _JCB_USEK_SOUPRAVA, _JCB_USEK_AB,
+        _JCB_NAV_NOT_USEK, _JCB_USEK_OBSAZENO, _JCB_USEK_SOUPRAVA, _JCB_USEK_AB,
         _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_NESPAVNA_POLOHA, _JCB_PREJEZD_NOUZOVE_OTEVREN,
         _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAK, _JCB_TRAT_OBSAZENO,
         _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN:

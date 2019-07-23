@@ -197,7 +197,7 @@ begin
        begin
         (Usek as TBlkUsek).AddSouprava(sprUsekIndex, i);
         (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
-        for nav in (Usek as TBlkUsek).SComJCRef do
+        for nav in (Usek as TBlkUsek).NavJCRef do
           (nav as TBlkNav).UpdateRychlostSpr(true);
        end;
       Exit();

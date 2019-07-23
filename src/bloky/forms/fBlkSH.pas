@@ -13,7 +13,7 @@ type
     E_Name: TEdit;
     B_save_P: TButton;
     B_Storno: TButton;
-    L_SCom02: TLabel;
+    L_ID: TLabel;
     SE_ID: TSpinEdit;
     L_Usek03: TLabel;
     LB_Stanice: TListBox;

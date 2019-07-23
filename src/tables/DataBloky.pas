@@ -91,7 +91,7 @@ var j, spr:integer;
     Blk:TBlk;
     glob:TBlkSettings;
     s_vyh:TBlkVyhSettings;
-    s_scom:TBlkNavSettings;
+    s_nav:TBlkNavSettings;
     str:string;
  begin
   Blky.GetBlkByIndex(line, Blk);
@@ -99,271 +99,271 @@ var j, spr:integer;
 
   glob := Blk.GetGlobalSettings();
 
-  Self.LV.Items.Item[line].Caption             := glob.name;
-  Self.LV.Items.Item[line].SubItems.Strings[1] := IntToStr(glob.id);
+  Self.LV.Items[line].Caption             := glob.name;
+  Self.LV.Items[line].SubItems.Strings[1] := IntToStr(glob.id);
 
   str := '';
   if (Blk.OblsRizeni.Count > 1) then
     for j := 0 to Blk.OblsRizeni.Count-2 do str := str + Blk.OblsRizeni[j].Name+', ';
   if (Blk.OblsRizeni.Count > 0) then
     str := str + Blk.OblsRizeni[Blk.OblsRizeni.Count-1].Name;
-  Self.LV.Items.Item[line].SubItems.Strings[4] := str;
+  Self.LV.Items[line].SubItems.Strings[4] := str;
 
   case (glob.typ) of
    _BLK_VYH:begin
-      Self.LV.Items.Item[line].ImageIndex := 0;
+      Self.LV.Items[line].ImageIndex := 0;
       s_vyh := (Blk as TBlkVyhybka).GetSettings();
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Výhybka';
+      Self.LV.Items[line].SubItems.Strings[0] := 'Výhybka';
 
       case ((Blk as TBlkVyhybka).Poloha) of
-       TVyhPoloha.disabled:Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-       TVyhPoloha.none    :Self.LV.Items.Item[line].SubItems.Strings[3] := 'none';
-       TVyhPoloha.plus    :Self.LV.Items.Item[line].SubItems.Strings[3] := '+';
-       TVyhPoloha.minus   :Self.LV.Items.Item[line].SubItems.Strings[3] := '-';
-       TVyhPoloha.both    :Self.LV.Items.Item[line].SubItems.Strings[3] := '+-';
+       TVyhPoloha.disabled:Self.LV.Items[line].SubItems[3] := 'disabled';
+       TVyhPoloha.none    :Self.LV.Items[line].SubItems[3] := 'none';
+       TVyhPoloha.plus    :Self.LV.Items[line].SubItems[3] := '+';
+       TVyhPoloha.minus   :Self.LV.Items[line].SubItems[3] := '-';
+       TVyhPoloha.both    :Self.LV.Items[line].SubItems[3] := '+-';
       end;//case poloha
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkVyhybka).Stitek;
-      Self.LV.Items.Item[line].SubItems.Strings[6] := (Blk as TBlkVyhybka).Vyluka;
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkVyhybka).Stitek;
+      Self.LV.Items[line].SubItems[6] := (Blk as TBlkVyhybka).Vyluka;
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_VYH
 
  /////////////////////////////////////////////////////
    _BLK_USEK:begin
       if ((Blk as TBlkUsek).Stav.cislo_koleje <> '') then
-        Self.LV.Items.Item[line].ImageIndex := 1
+        Self.LV.Items[line].ImageIndex := 1
       else
-        Self.LV.Items.Item[line].ImageIndex := 3;
+        Self.LV.Items[line].ImageIndex := 3;
 
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Úsek';
+      Self.LV.Items[line].SubItems[0] := 'Úsek';
 
       str := '';
       for spr in (Blk as TBlkUsek).Soupravs do
         str := str + Soupravy.GetSprNameByIndex(spr) + ', ';
-      Self.LV.Items.Item[line].SubItems.Strings[2] := LeftStr(str, Length(str)-2);
+      Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2);
 
       case ((Blk as TBlkUsek).Obsazeno) of
-        TUsekStav.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-        TUsekStav.none     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'none';
-        TUsekStav.uvolneno : Self.LV.Items.Item[line].SubItems.Strings[3] := '---';
-        TUsekStav.obsazeno : Self.LV.Items.Item[line].SubItems.Strings[3] := '+++';
+        TUsekStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TUsekStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TUsekStav.uvolneno : Self.LV.Items[line].SubItems[3] := '---';
+        TUsekStav.obsazeno : Self.LV.Items[line].SubItems[3] := '+++';
       end;//case obsazeno
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkUsek).Stitek;
-      Self.LV.Items.Item[line].SubItems.Strings[6] := (Blk as TBlkUsek).Vyluka;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
+      Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
 
-      if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items.Item[line].SubItems.Strings[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
-        Self.LV.Items.Item[line].SubItems.Strings[7] := '--#--';
+      if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items[line].SubItems[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
+        Self.LV.Items[line].SubItems[7] := '--#--';
    end;//_BLK_VYH
 
  /////////////////////////////////////////////////////
    _BLK_IR:begin
-      Self.LV.Items.Item[line].ImageIndex := 4;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'IR';
+      Self.LV.Items[line].ImageIndex := 4;
+      Self.LV.Items[line].SubItems[0] := 'IR';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       case ((Blk as TBlkIR).Stav) of
-        TIRStav.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-        TIRStav.none     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'none';
-        TIRStav.uvolneno : Self.LV.Items.Item[line].SubItems.Strings[3] := '---';
-        TIRStav.obsazeno : Self.LV.Items.Item[line].SubItems.Strings[3] := '+++';
+        TIRStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TIRStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TIRStav.uvolneno : Self.LV.Items[line].SubItems[3] := '---';
+        TIRStav.obsazeno : Self.LV.Items[line].SubItems[3] := '+++';
       end;//case
 
-      Self.LV.Items.Item[line].SubItems.Strings[4] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[5] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[6] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[4] := '---';
+      Self.LV.Items[line].SubItems[5] := '---';
+      Self.LV.Items[line].SubItems[6] := '---';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_VYH
 
  /////////////////////////////////////////////////////
    _BLK_NAV:begin
-      Self.LV.Items.Item[line].ImageIndex := 5;
-      s_scom := (Blk as TBlkNav).GetSettings();
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Návìstidlo';
+      Self.LV.Items[line].ImageIndex := 5;
+      s_nav := (Blk as TBlkNav).GetSettings();
+      Self.LV.Items[line].SubItems[0] := 'Návìstidlo';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
-      Self.LV.Items.Item[line].SubItems.Strings[3] := TBlkNav.NavestToString((Blk as TBlkNav).Navest);
+      Self.LV.Items[line].SubItems[3] := TBlkNav.NavestToString((Blk as TBlkNav).Navest);
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[6] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[5] := '---';
+      Self.LV.Items[line].SubItems[6] := '---';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_VYH
 
  /////////////////////////////////////////////////////
    _BLK_PREJEZD:begin
-      Self.LV.Items.Item[line].ImageIndex := 7;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Pøejezd';
+      Self.LV.Items[line].ImageIndex := 7;
+      Self.LV.Items[line].SubItems[0] := 'Pøejezd';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       case ((Blk as TBlkPrejezd).Stav.basicStav) of
-        TBlkPrjBasicStav.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-        TBlkPrjBasicStav.none     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'none';
-        TBlkPrjBasicStav.otevreno : Self.LV.Items.Item[line].SubItems.Strings[3] := 'otevøeno';
-        TBlkPrjBasicStav.vystraha : Self.LV.Items.Item[line].SubItems.Strings[3] := 'výstraha';
-        TBlkPrjBasicStav.uzavreno : Self.LV.Items.Item[line].SubItems.Strings[3] := 'uzavøeno';
-        TBlkPrjBasicStav.anulace  : Self.LV.Items.Item[line].SubItems.Strings[3] := 'anulace';
+        TBlkPrjBasicStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TBlkPrjBasicStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TBlkPrjBasicStav.otevreno : Self.LV.Items[line].SubItems[3] := 'otevøeno';
+        TBlkPrjBasicStav.vystraha : Self.LV.Items[line].SubItems[3] := 'výstraha';
+        TBlkPrjBasicStav.uzavreno : Self.LV.Items[line].SubItems[3] := 'uzavøeno';
+        TBlkPrjBasicStav.anulace  : Self.LV.Items[line].SubItems[3] := 'anulace';
       end;//case obsazeno
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkPrejezd).Stitek;
-      Self.LV.Items.Item[line].SubItems.Strings[6] := '';
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkPrejezd).Stitek;
+      Self.LV.Items[line].SubItems[6] := '';
 
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_VYH
 
  /////////////////////////////////////////////////////
    _BLK_TRAT:begin
-      Self.LV.Items.Item[line].ImageIndex := 8;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Tra';
+      Self.LV.Items[line].ImageIndex := 8;
+      Self.LV.Items[line].SubItems[0] := 'Tra';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       if ((Blk as TBlkTrat).Obsazeno) then begin
-        Self.LV.Items.Item[line].SubItems.Strings[3] := 'obsazeno';
+        Self.LV.Items[line].SubItems[3] := 'obsazeno';
       end else begin
         if ((Blk as TBlkTrat).Zaver) then begin
-          Self.LV.Items.Item[line].SubItems.Strings[3] := 'závìr'
+          Self.LV.Items[line].SubItems[3] := 'závìr'
         end else begin
           if ((Blk as TBlkTrat).ZAK) then begin
-            Self.LV.Items.Item[line].SubItems.Strings[3] := 'ZAK'
+            Self.LV.Items[line].SubItems[3] := 'ZAK'
           end else begin
 
            if ((Blk as TBlkTrat).Zadost) then
-            Self.LV.Items.Item[line].SubItems.Strings[3] := 'žádost'
+            Self.LV.Items[line].SubItems[3] := 'žádost'
            else
             case ((Blk as TBlkTrat).Smer) of
-             TTratSmer.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-             TTratSmer.AtoB     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'smìr A->B';
-             TTratSmer.BtoA     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'smìr B->A';
-             TTratSmer.zadny    : Self.LV.Items.Item[line].SubItems.Strings[3] := 'smìr žádný'
+             TTratSmer.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+             TTratSmer.AtoB     : Self.LV.Items[line].SubItems[3] := 'smìr A->B';
+             TTratSmer.BtoA     : Self.LV.Items[line].SubItems[3] := 'smìr B->A';
+             TTratSmer.zadny    : Self.LV.Items[line].SubItems[3] := 'smìr žádný'
             end;//case
           end;
         end;
       end;
 
-    Self.LV.Items.Item[line].SubItems.Strings[5] := '';
-    Self.LV.Items.Item[line].SubItems.Strings[6] := '';
+    Self.LV.Items[line].SubItems[5] := '';
+    Self.LV.Items[line].SubItems[6] := '';
 
     if (Assigned((Blk as TBlkTrat).SprPredict)) then
-      Self.LV.Items.Item[line].SubItems.Strings[7] := Soupravy.GetSprNameByIndex((Blk as TBlkTrat).SprPredict.souprava)
+      Self.LV.Items[line].SubItems[7] := Soupravy.GetSprNameByIndex((Blk as TBlkTrat).SprPredict.souprava)
     else
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '--#--';
+      Self.LV.Items[line].SubItems[7] := '--#--';
    end;//_BLK_TRAT
 
  /////////////////////////////////////////////////////
    _BLK_UVAZKA:begin
-      Self.LV.Items.Item[line].ImageIndex := 9;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Úvazka';
+      Self.LV.Items[line].ImageIndex := 9;
+      Self.LV.Items[line].SubItems[0] := 'Úvazka';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       if ((Blk as TBlkUvazka).enabled) then
-        Self.LV.Items.Item[line].SubItems.Strings[3] := 'enabled'
+        Self.LV.Items[line].SubItems[3] := 'enabled'
       else
-        Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
+        Self.LV.Items[line].SubItems[3] := 'disabled';
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkUvazka).Stitek;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkUvazka).Stitek;
 
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_UVAZKA
 
  /////////////////////////////////////////////////////
    _BLK_ZAMEK:begin
-      Self.LV.Items.Item[line].ImageIndex := 10;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Zámek';
+      Self.LV.Items[line].ImageIndex := 10;
+      Self.LV.Items[line].SubItems[0] := 'Zámek';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       if ((Blk as TBlkZamek).Stav.enabled) then
        begin
         if ((Blk as TBlkZamek).klicUvolnen) then
-          Self.LV.Items.Item[line].SubItems.Strings[3] := 'klíè uvolnìn'
+          Self.LV.Items[line].SubItems[3] := 'klíè uvolnìn'
         else
-          Self.LV.Items.Item[line].SubItems.Strings[3] := 'klíè zamknut';
+          Self.LV.Items[line].SubItems[3] := 'klíè zamknut';
        end else
-        Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
+        Self.LV.Items[line].SubItems[3] := 'disabled';
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkZamek).Stitek;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkZamek).Stitek;
 
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_ZAMEK
 
  /////////////////////////////////////////////////////
    _BLK_ROZP:begin
-      Self.LV.Items.Item[line].ImageIndex := 11;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Rozpojovaè';
+      Self.LV.Items[line].ImageIndex := 11;
+      Self.LV.Items[line].SubItems[0] := 'Rozpojovaè';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       case ((Blk as TBlkRozp).status) of
-        TRozpStatus.disabled     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-        TRozpStatus.not_selected : Self.LV.Items.Item[line].SubItems.Strings[3] := 'ok';
-        TRozpStatus.mounting     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'mounting';
-        TRozpStatus.active       : Self.LV.Items.Item[line].SubItems.Strings[3] := 'active';
+        TRozpStatus.disabled     : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TRozpStatus.not_selected : Self.LV.Items[line].SubItems[3] := 'ok';
+        TRozpStatus.mounting     : Self.LV.Items[line].SubItems[3] := 'mounting';
+        TRozpStatus.active       : Self.LV.Items[line].SubItems[3] := 'active';
       end;//case
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := '';
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[5] := '';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_ROZP
 
  /////////////////////////////////////////////////////
    _BLK_TU:begin
-      Self.LV.Items.Item[line].ImageIndex := 2;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Traový úsek';
+      Self.LV.Items[line].ImageIndex := 2;
+      Self.LV.Items[line].SubItems[0] := 'Traový úsek';
 
       str := '';
       for spr in (Blk as TBlkUsek).Soupravs do
         str := str + Soupravy.GetSprNameByIndex(spr) + ', ';
-      Self.LV.Items.Item[line].SubItems.Strings[2] := LeftStr(str, Length(str)-2);
+      Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2);
 
       case ((Blk as TBlkUsek).Obsazeno) of
-        TUsekStav.disabled : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-        TUsekStav.none     : Self.LV.Items.Item[line].SubItems.Strings[3] := 'none';
-        TUsekStav.uvolneno : Self.LV.Items.Item[line].SubItems.Strings[3] := '---';
-        TUsekStav.obsazeno : Self.LV.Items.Item[line].SubItems.Strings[3] := '+++';
+        TUsekStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TUsekStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TUsekStav.uvolneno : Self.LV.Items[line].SubItems[3] := '---';
+        TUsekStav.obsazeno : Self.LV.Items[line].SubItems[3] := '+++';
       end;//case obsazeno
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := (Blk as TBlkUsek).Stitek;
-      Self.LV.Items.Item[line].SubItems.Strings[6] := (Blk as TBlkUsek).Vyluka;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
+      Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
 
-      if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items.Item[line].SubItems.Strings[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
-        Self.LV.Items.Item[line].SubItems.Strings[7] := '--#--';
+      if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items[line].SubItems[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
+        Self.LV.Items[line].SubItems[7] := '--#--';
    end;//_BLK_TU
 
  /////////////////////////////////////////////////////
    _BLK_VYSTUP:begin
-      Self.LV.Items.Item[line].ImageIndex := 12;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Logický výstup';
+      Self.LV.Items[line].ImageIndex := 12;
+      Self.LV.Items[line].SubItems[0] := 'Logický výstup';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       case ((Blk as TBlkVystup).enabled) of
-        false : Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
-        true  : Self.LV.Items.Item[line].SubItems.Strings[3] := 'enabled';
+        false : Self.LV.Items[line].SubItems[3] := 'disabled';
+        true  : Self.LV.Items[line].SubItems[3] := 'enabled';
       end;//case obsazeno
 
-      Self.LV.Items.Item[line].SubItems.Strings[4] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[5] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[6] := '---';
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[4] := '---';
+      Self.LV.Items[line].SubItems[5] := '---';
+      Self.LV.Items[line].SubItems[6] := '---';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_TU
 
  /////////////////////////////////////////////////////
    _BLK_SH:begin
-      Self.LV.Items.Item[line].ImageIndex := -1;
-      Self.LV.Items.Item[line].SubItems.Strings[0] := 'Souètová hláska';
+      Self.LV.Items[line].ImageIndex := -1;
+      Self.LV.Items[line].SubItems[0] := 'Souètová hláska';
 
-      Self.LV.Items.Item[line].SubItems.Strings[2] := '---';
+      Self.LV.Items[line].SubItems[2] := '---';
 
       if ((Blk as TBlkSH).enabled) then
-        Self.LV.Items.Item[line].SubItems.Strings[3] := 'ok'
+        Self.LV.Items[line].SubItems[3] := 'ok'
       else
-        Self.LV.Items.Item[line].SubItems.Strings[3] := 'disabled';
+        Self.LV.Items[line].SubItems[3] := 'disabled';
 
-      Self.LV.Items.Item[line].SubItems.Strings[5] := '';
-      Self.LV.Items.Item[line].SubItems.Strings[7] := '---';
+      Self.LV.Items[line].SubItems[5] := '';
+      Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_SH
 
   end;//case BLOK_VYSTUP

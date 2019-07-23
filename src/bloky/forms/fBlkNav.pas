@@ -10,19 +10,19 @@ uses
 
 type
   TF_BlkNav = class(TForm)
-    L_SCom01: TLabel;
+    L_Name: TLabel;
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
-    L_SCom02: TLabel;
+    L_ID: TLabel;
     GB_RCS: TGroupBox;
-    L_SCom05: TLabel;
-    L_SCom06: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
     SE_RCSport: TSpinEdit;
     B_Storno: TButton;
     B_Save: TButton;
     LB_Stanice: TListBox;
-    L_Usek03: TLabel;
-    L_SCom04: TLabel;
+    L_Station: TLabel;
+    Label5: TLabel;
     CB_Typ: TComboBox;
     Label1: TLabel;
     L_UsekID: TLabel;

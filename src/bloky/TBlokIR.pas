@@ -46,7 +46,7 @@ type
     //update states
     procedure Update(); override;
 
-    //----- SCom own functions -----
+    //----- IR own functions -----
 
     function GetSettings():TBlkIRSettings;
     procedure SetSettings(data:TBlkIRSettings);

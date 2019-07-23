@@ -464,7 +464,7 @@ begin
  Self.LoadFromPanelStr(spr, Usek, OblR);
  (Usek as TBlkUsek).Change();
 
- for nav in (Usek as TBlkUsek).SComJCRef do
+ for nav in (Usek as TBlkUsek).NavJCRef do
    (nav as TBlkNav).UpdateRychlostSpr(true);
 
  Self.changed := true;

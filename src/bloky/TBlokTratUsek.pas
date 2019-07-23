@@ -180,7 +180,7 @@ type
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
 
-    procedure CreateSComRefs();                                                 // navestidlum autobloku nastavi UsekPred a smer
+    procedure CreateNavRefs();                                                  // navestidlum autobloku nastavi UsekPred a smer
     procedure RemoveTURefs();                                                   // zrusi UsekPred navetidlum autobloku
 
     procedure UvolnenoZJC();                                                    // obsah useku (ne nutne souprava!) byl prevzat z krajniho useku trati jizdni cestou
@@ -1043,7 +1043,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.CreateSComRefs();
+procedure TBlkTU.CreateNavRefs();
 var Blk:TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);

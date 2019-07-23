@@ -387,7 +387,7 @@ begin
   _BLK_VYH     : Result := 'vyhybka';
   _BLK_USEK    : Result := 'usek';
   _BLK_IR      : Result := 'ir';
-  _BLK_NAV    : Result := 'scom';
+  _BLK_NAV     : Result := 'navestidlo';
   _BLK_PREJEZD : Result := 'prejezd';
   _BLK_TRAT    : Result := 'trat';
   _BLK_UVAZKA  : Result := 'uvazka';
@@ -434,7 +434,7 @@ begin
  if (typ = 'vyhybka') or (typ = 'v˝hybka') then Result := _BLK_VYH
  else if (typ = 'usek') or (typ = '˙sek') then Result := _BLK_USEK
  else if (typ = 'ir') then Result := _BLK_IR
- else if (typ = 'scom') then Result := _BLK_NAV
+ else if (typ = 'navestidlo') then Result := _BLK_NAV
  else if (typ = 'prejezd') or (typ = 'p¯ejezd') then Result := _BLK_PREJEZD
  else if (typ = 'trat') or (typ = 'traù') then Result := _BLK_TRAT
  else if (typ = 'uvazka') or (typ = '˙vazka') then Result := _BLK_UVAZKA

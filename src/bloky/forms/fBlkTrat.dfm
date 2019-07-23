@@ -219,7 +219,7 @@ object F_BlkTrat: TF_BlkTrat
     Height = 385
     Caption = ' Tra'#357' '
     TabOrder = 0
-    object L_P02: TLabel
+    object L_Name: TLabel
       Left = 18
       Top = 23
       Width = 57
@@ -230,7 +230,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Bottom = 2
       Caption = 'N'#225'zev trati :'
     end
-    object L_SCom02: TLabel
+    object L_ID: TLabel
       Left = 18
       Top = 48
       Width = 11
@@ -338,7 +338,7 @@ object F_BlkTrat: TF_BlkTrat
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
         end
       end

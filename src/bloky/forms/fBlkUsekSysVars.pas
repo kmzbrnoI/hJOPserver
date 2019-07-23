@@ -23,7 +23,7 @@ type
     Label6: TLabel;
     M_Vyluka: TMemo;
     SE_Souprava_Predict: TSpinEdit;
-    SE_SComJCRef: TSpinEdit;
+    SE_NavJCRef: TSpinEdit;
     Label2: TLabel;
     Label7: TLabel;
     CB_Zes_Zkrat: TComboBox;
@@ -68,7 +68,7 @@ var spr:Integer;
    true  : CB_NUZ.ItemIndex := 1;
   end;
 
-  CB_Zes_Zkrat.ItemIndex    := Integer(Self.Blk.ZesZkrat)+1;
+  CB_Zes_Zkrat.ItemIndex := Integer(Self.Blk.ZesZkrat)+1;
   CB_Zes_Napajeni.ItemIndex := Integer(Self.Blk.ZesNapajeni)+1;
 
   case (Self.Blk.NUZ) of
@@ -80,12 +80,12 @@ var spr:Integer;
   for spr in Self.Blk.Soupravs do
     Self.LB_Soupravy.Items.Add(IntToStr(spr));
 
-  SE_Souprava_Predict.Value   := Blk.SprPredict;
-  SE_SComJCRef.Value          := Blk.SComJCRef.Count;
-  CB_KonecVC.ItemIndex        := Integer(Self.Blk.KonecJC);
+  SE_Souprava_Predict.Value := Blk.SprPredict;
+  SE_NavJCRef.Value := Blk.NavJCRef.Count;
+  CB_KonecVC.ItemIndex  := Integer(Self.Blk.KonecJC);
 
-  M_Stitek.Text               := Blk.Stitek;
-  M_Vyluka.Text               := Blk.Vyluka;
+  M_Stitek.Text := Blk.Stitek;
+  M_Vyluka.Text := Blk.Vyluka;
 
   case (Self.Blk.DCC) of
     false: Self.S_DCC.Brush.Color := clRed;
@@ -96,17 +96,17 @@ var spr:Integer;
 procedure TF_BlkUsek_tech.SavePrmnToProgram;
 var Blk:TBlk;
  begin
-  Self.Blk.Zaver       := TZaver(CB_Zaver.ItemIndex);
-  Self.Blk.NUZ         := PrevodySoustav.IntToBool(CB_NUZ.ItemIndex);
-  Self.Blk.KonecJC     := TZaver(CB_KonecVC.ItemIndex);
-  Self.Blk.SprPredict  := SE_Souprava_Predict.Value;
-  Blky.GetBlkByID(Self.SE_SComJCRef.Value, Blk);
-  if (Self.Blk.SComJCRef.Count = 0) then
-    Self.Blk.SComJCRef.Clear();
-  Self.Blk.ZesZkrat    := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
+  Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
+  Self.Blk.NUZ := PrevodySoustav.IntToBool(CB_NUZ.ItemIndex);
+  Self.Blk.KonecJC := TZaver(CB_KonecVC.ItemIndex);
+  Self.Blk.SprPredict := SE_Souprava_Predict.Value;
+  Blky.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
+  if (Self.Blk.NavJCRef.Count = 0) then
+    Self.Blk.NavJCRef.Clear();
+  Self.Blk.ZesZkrat := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
   Self.Blk.ZesNapajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
-  Self.Blk.Vyluka      := M_Vyluka.Text;
-  Self.Blk.Stitek      := M_Stitek.Text;
+  Self.Blk.Vyluka := M_Vyluka.Text;
+  Self.Blk.Stitek := M_Stitek.Text;
  end;
 
 procedure TF_BlkUsek_tech.OpenForm(Blok:TBlkUsek);

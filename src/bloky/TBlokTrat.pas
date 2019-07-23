@@ -885,7 +885,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(blk));
-   blk.CreateSComRefs();
+   blk.CreateNavRefs();
   end;
 
 end;

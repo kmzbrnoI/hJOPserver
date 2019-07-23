@@ -909,11 +909,11 @@ begin
      // do useku vlozime predpovidnou soupravu
      usek.SprPredict := spr;
 
-     // zjistime, jeslti je nejake nevastidlo u tohoto useku postaveno na volno
-     if (usek.SComJCRef.Count = 0) then
+     // zjistime, jeslti je nejake navestidlo u tohoto useku postaveno na volno
+     if (usek.NavJCRef.Count = 0) then
       JC := nil
      else
-      JC := TBlkNav(usek.SComJCRef[0]).DNjc;
+      JC := TBlkNav(usek.NavJCRef[0]).DNjc;
     end;//while
  except
   on E:Exception do

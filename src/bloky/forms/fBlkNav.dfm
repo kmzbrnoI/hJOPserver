@@ -19,7 +19,7 @@ object F_BlkNav: TF_BlkNav
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object L_SCom01: TLabel
+  object L_Name: TLabel
     Left = 8
     Top = 8
     Width = 37
@@ -30,7 +30,7 @@ object F_BlkNav: TF_BlkNav
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
   end
-  object L_SCom02: TLabel
+  object L_ID: TLabel
     Left = 8
     Top = 40
     Width = 11
@@ -41,7 +41,7 @@ object F_BlkNav: TF_BlkNav
     Margins.Bottom = 2
     Caption = 'ID'
   end
-  object L_Usek03: TLabel
+  object L_Station: TLabel
     Left = 7
     Top = 72
     Width = 42
@@ -123,7 +123,7 @@ object F_BlkNav: TF_BlkNav
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
     TabOrder = 4
-    object L_SCom05: TLabel
+    object Label3: TLabel
       Left = 7
       Top = 41
       Width = 56
@@ -134,7 +134,7 @@ object F_BlkNav: TF_BlkNav
       Margins.Bottom = 2
       Caption = 'RCS modul:'
     end
-    object L_SCom06: TLabel
+    object Label4: TLabel
       Left = 7
       Top = 64
       Width = 46
@@ -145,7 +145,7 @@ object F_BlkNav: TF_BlkNav
       Margins.Bottom = 2
       Caption = 'RCS port:'
     end
-    object L_SCom04: TLabel
+    object Label5: TLabel
       Left = 7
       Top = 89
       Width = 61

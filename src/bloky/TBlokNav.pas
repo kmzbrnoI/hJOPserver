@@ -1,6 +1,6 @@
 unit TBlokNav;
 
-//definice a obsluha technologickeho bloku SCom
+//definice a obsluha technologickeho bloku Navestidlo
 // Pritomnost redukce menu u bloku navestidla znamena, ze z tohoto bloku nelze zacit jizdni cestu.
 
 interface
@@ -712,8 +712,8 @@ begin
  if (Self.NavStav.Navest = _NAV_STUJ) then
   begin
    if ((Self.UsekPred <> nil) and ((Self.UsekPred.typ = _BLK_USEK) or
-       (Self.UsekPred.typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).SComJCRef.Contains(Self))) then
-    (Self.UsekPred as TBlkUsek).SComJCRef.Remove(Self);
+       (Self.UsekPred.typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).NavJCRef.Contains(Self))) then
+    (Self.UsekPred as TBlkUsek).NavJCRef.Remove(Self);
 
    if (Assigned(Self.privol)) then
     begin
@@ -1350,9 +1350,9 @@ end;
 // force nucene zastavi vlak, resp. nastavi jeho rychlost
 //  metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
 procedure TBlkNav.UpdateRychlostSpr(force:boolean = false);
-var Usek, SCom:TBlk;
+var Usek, Nav:TBlk;
     spr:TSouprava;
-    scomEv:TBlkNavSprEvent;
+    navEv:TBlkNavSprEvent;
     i:Integer;
 begin
  if (Self.NavSettings.events.Count = 0) then Exit();
@@ -1400,7 +1400,7 @@ begin
 
  // zjisteni aktualni udalosti podle typu a delky soupravy
  i := Self.CurrentEventIndex();
- scomEv := Self.NavSettings.events[i];
+ navEv := Self.NavSettings.events[i];
 
  if (i <> Self.lastEvIndex) then
   begin
@@ -1421,32 +1421,32 @@ begin
  ///////////////////////////////////////////////////
 
  // ZPOMALOVANI
- if ((scomEv.zpomaleni.enabled) and (spr.rychlost > scomEv.zpomaleni.speed) and
+ if ((navEv.zpomaleni.enabled) and (spr.rychlost > navEv.zpomaleni.speed) and
      ((Usek as TBlkUsek).zpomalovani_ready) and
      ((not Assigned(Self.DNjc)) or (not Self.IsPovolovaciNavest()) or (spr.IsPOdj(Usek))) and
      (spr.smer = Self.NavRel.smer)) then
   begin
-   if (not scomEv.zpomaleni.ev.enabled) then
-     scomEv.zpomaleni.ev.Register();
+   if (not navEv.zpomaleni.ev.enabled) then
+     navEv.zpomaleni.ev.Register();
 
-   if (scomEv.zpomaleni.ev.IsTriggerred(Usek, true)) then
+   if (navEv.zpomaleni.ev.IsTriggerred(Usek, true)) then
     begin
-     scomEv.zpomaleni.ev.Unregister();
-     spr.rychlost := scomEv.zpomaleni.speed;
+     navEv.zpomaleni.ev.Unregister();
+     spr.rychlost := navEv.zpomaleni.speed;
      (Usek as TBlkUsek).zpomalovani_ready := false;
     end;
   end else begin
-   if ((scomEv.zpomaleni.enabled) and (scomEv.zpomaleni.ev.enabled)) then
-     scomEv.zpomaleni.ev.Unregister();
+   if ((navEv.zpomaleni.enabled) and (navEv.zpomaleni.ev.enabled)) then
+     navEv.zpomaleni.ev.Unregister();
   end;
 
  ///////////////////////////////////////////////////
 
  // ZASTAVOVANI, resp. nastavovani rychlosti prislusne JC
- if (not scomEv.zastaveni.enabled) then
-   scomEv.zastaveni.Register();
+ if (not navEv.zastaveni.enabled) then
+   navEv.zastaveni.Register();
 
- if ((scomEv.zastaveni.IsTriggerred(Usek, true)) or (force)) then       // podminka IsRychEvent take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)
+ if ((navEv.zastaveni.IsTriggerred(Usek, true)) or (force)) then       // podminka IsRychEvent take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)
   begin
    // event se odregistruje automaticky pri zmene
 
@@ -1478,9 +1478,9 @@ begin
        if (Self.DNjc.data.DalsiNNavaznostTyp = 2) then
         begin
          // zjistime dalsi navestidlo
-         Blky.GetBlkByID(Self.DNjc.data.DalsiNNavaznost, SCom);
+         Blky.GetBlkByID(Self.DNjc.data.DalsiNNavaznost, nav);
 
-         if ((SCom <> nil) and (SCom.typ = _BLK_NAV) and ((SCom as TBlkNav).IsPovolovaciNavest())) then
+         if ((nav <> nil) and (nav.typ = _BLK_NAV) and ((nav as TBlkNav).IsPovolovaciNavest())) then
           begin
             // dalsi navestilo je na VOLNO
             if ((spr.rychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then

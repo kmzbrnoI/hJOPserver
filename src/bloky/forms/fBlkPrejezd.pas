@@ -8,13 +8,13 @@ uses
 
 type
   TF_BlkPrejezd = class(TForm)
-    L_P02: TLabel;
+    L_Name: TLabel;
     E_Prj_Nazev: TEdit;
     B_save_P: TButton;
     B_Storno: TButton;
-    L_SCom02: TLabel;
+    L_ID: TLabel;
     SE_ID: TSpinEdit;
-    L_Usek03: TLabel;
+    L_Station: TLabel;
     LB_Stanice: TListBox;
     GB_RCS: TGroupBox;
     GB_Prj_vyst: TGroupBox;
@@ -47,7 +47,7 @@ type
    OpenIndex:Integer;
    Blk:TBlkPrejezd;
    NewBlk:Boolean;
-   obls:TArstr;   //oblasti rizeni, ve kterych se SCom nachazi
+   obls:TArstr;
 
     procedure NormalOpenForm;
     procedure HlavniOpenForm;

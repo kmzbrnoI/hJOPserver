@@ -38,7 +38,7 @@ type
   NUZ:boolean;              // nouzove uvolneni zaveru
   KonecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
   Stit,Vyl:string;          // stitek a vyluka
-  SComJCRef:TList<TBlk>;    // navestidla, ze kterych je z tohoto bloku postavena JC
+  NavJCRef:TList<TBlk>;     // navestidla, ze kterych je z tohoto bloku postavena JC
   SprPredict:Integer;       // souprava, ktera je na tomto bloku predpovidana
   zkrat:TBoosterSignal;     // zkrat zesilovace
   napajeni:TBoosterSignal;  // napajeni zesilovace
@@ -221,7 +221,7 @@ type
     property Vyluka:string read UsekStav.Vyl write SetUsekVyl;
     property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
-    property SComJCRef:TList<TBlk> read UsekStav.SComJCRef write UsekStav.SComJCRef;
+    property NavJCRef:TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
     property SekceStav:TList<TUsekStav> read UsekStav.sekce;
 
     property Souprava:Integer read GetUsekSpr;
@@ -283,7 +283,7 @@ begin
 
  Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
  Self.UsekStav.soupravy := TList<Integer>.Create();
- Self.UsekStav.SComJCRef := TList<TBlk>.Create();
+ Self.UsekStav.NavJCRef := TList<TBlk>.Create();
  Self.UsekStav.sekce := TList<TUsekStav>.Create();
 end;//ctor
 
@@ -301,7 +301,7 @@ begin
 
  Self.UsekStav.neprofilJCcheck.Free();
  Self.UsekStav.soupravy.Free();
- Self.UsekStav.SComJCRef.Free();
+ Self.UsekStav.NavJCRef.Free();
  Self.UsekStav.sekce.Free();
 
  inherited;
@@ -1543,11 +1543,11 @@ begin
  if (Blky.GetBlkWithSpr(spri).Count = 1) then
    Soupravy[spri].front := Self;
 
- for nav in (Blk as TBlkUsek).SComJCRef do
+ for nav in (Blk as TBlkUsek).NavJCRef do
    Blky.SprPrediction(Nav);
 
  if (Blk <> Self) then
-   for nav in Self.SComJCRef do
+   for nav in Self.NavJCRef do
      Blky.SprPrediction(Nav);
 
  Result := true;
@@ -1993,8 +1993,8 @@ begin
  if ((was) and (not Soupravy[sprId].IsPOdj(Self))) then
   begin
    // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
-   // aktuiualziaci rychlosti pro vsechny SComJCReg bychom nemeli nic pokazit
-   for nav in Self.SComJCRef do
+   // aktuiualziaci rychlosti pro vsechny NavJCRef bychom nemeli nic pokazit
+   for nav in Self.NavJCRef do
      TBlkNav(nav).UpdateRychlostSpr(true);
   end;
 
@@ -2038,7 +2038,7 @@ begin
        // tvrda aktualizace rychlosti soupravy
        if ((spr = Self.SoupravaL) or (spr = Self.SoupravaS)) then
         begin
-         for nav in Self.SComJCRef do
+         for nav in Self.NavJCRef do
            if (((TBlkNav(nav).Smer = THVStanoviste.sudy) and (spr = Self.SoupravaL)) or
                ((TBlkNav(nav).Smer = THVStanoviste.lichy) and (spr = Self.SoupravaS))) then
              TBlkNav(nav).UpdateRychlostSpr(true);
@@ -2101,7 +2101,7 @@ end;
 procedure TBlkUsek.PropagatePOdjToTrat();
 var nav: TBlk;
 begin
- for nav in Self.SComJCRef do
+ for nav in Self.NavJCRef do
    TBlkNav(nav).PropagatePOdjToTrat();
 end;
 
@@ -2110,23 +2110,23 @@ end;
 function TBlkUsek.IsStujForSpr(spr:Integer):boolean;
 begin
  if (not Self.Soupravs.Contains(spr)) then Exit(false);
- if (Self.SComJCRef.Count = 0) then Exit(true);
+ if (Self.NavJCRef.Count = 0) then Exit(true);
 
- if (Self.SComJCRef.Count = 1) then
+ if (Self.NavJCRef.Count = 1) then
   begin
-   if (not TBlkNav(Self.SComJCRef[0]).IsPovolovaciNavest()) then Exit(true);
-   if (TBlkNav(Self.SComJCRef[0]).Smer = THvStanoviste.lichy) then
+   if (not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) then Exit(true);
+   if (TBlkNav(Self.NavJCRef[0]).Smer = THvStanoviste.lichy) then
      Exit(spr <> Self.SoupravaS)
    else
      Exit(spr <> Self.SoupravaL);
   end;
 
- if (Self.SComJCRef.Count = 2) then
+ if (Self.NavJCRef.Count = 2) then
   begin
-   if ((Self.Soupravs.Count = 1) and (not TBlkNav(Self.SComJCRef[0]).IsPovolovaciNavest()) and
-        (not TBlkNav(Self.SComJCRef[1]).IsPovolovaciNavest())) then Exit(true);
-   if ((Self.Soupravs.Count >= 2) and ((not TBlkNav(Self.SComJCRef[0]).IsPovolovaciNavest()) or
-        (not TBlkNav(Self.SComJCRef[1]).IsPovolovaciNavest()))) then Exit(true);
+   if ((Self.Soupravs.Count = 1) and (not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) and
+        (not TBlkNav(Self.NavJCRef[1]).IsPovolovaciNavest())) then Exit(true);
+   if ((Self.Soupravs.Count >= 2) and ((not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) or
+        (not TBlkNav(Self.NavJCRef[1]).IsPovolovaciNavest()))) then Exit(true);
    if ((Self.Soupravs.Count > 2) and (Self.SoupravaL <> spr) and (Self.SoupravaS <> spr)) then Exit(true);
  end;
 
