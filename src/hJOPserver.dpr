@@ -62,7 +62,6 @@ uses
   fBlkVyhybkaSysVars in 'bloky\forms\fBlkVyhybkaSysVars.pas' {F_BlkVyh_tech},
   AC in 'AC.pas',
   SnadnSpusteni in 'SnadnSpusteni.pas',
-  fBlkSCom in 'bloky\forms\fBlkSCom.pas',
   TJCDatabase in 'jc\TJCDatabase.pas',
   THVDatabase in 'hv\THVDatabase.pas',
   THnaciVozidlo in 'hv\THnaciVozidlo.pas',
@@ -88,7 +87,7 @@ uses
   UPO in 'jc\UPO.pas',
   fBlkTratSysVars in 'bloky\forms\fBlkTratSysVars.pas' {F_BlkTrat_tech},
   ModelovyCas in 'ModelovyCas.pas',
-  fBlkSComEvent in 'bloky\forms\fBlkSComEvent.pas' {F_BlkSComEvent},
+  fBlkNavEvent in 'bloky\forms\fBlkNavEvent.pas' {F_BlkNavEvent},
   CloseTabSheet in 'helpers\CloseTabSheet.pas',
   TBlokZamek in 'bloky\TBlokZamek.pas',
   fBlkZamek in 'bloky\forms\fBlkZamek.pas' {F_BlkZamek},
@@ -143,7 +142,8 @@ uses
   TechnologieAB in 'TechnologieAB.pas',
   DataAB in 'tables\DataAB.pas',
   Simulator in 'trakce\Simulator.pas',
-  TCPORsRef in 'TCPORsRef.pas';
+  TCPORsRef in 'TCPORsRef.pas',
+  fBlkNav in 'bloky\forms\fBlkNav.pas';
 
 {$R *.res}
 
@@ -169,7 +169,7 @@ uses
   Application.CreateForm(TF_BlkVyh_tech, F_BlkVyh_tech);
   Application.CreateForm(TF_UserEdit, F_UserEdit);
   Application.CreateForm(TF_BlkTrat_tech, F_BlkTrat_tech);
-  Application.CreateForm(TF_BlkSComEvent, F_BlkSComEvent);
+  Application.CreateForm(TF_BlkNavEvent, F_BlkNavEvent);
   Application.CreateForm(TF_HV_Pom, F_HV_Pom);
   Application.CreateForm(TF_MJCEdit, F_MJCEdit);
   Application.CreateForm(TF_FuncsSet, F_FuncsSet);
@@ -183,7 +183,7 @@ uses
   Application.CreateForm(TF_BlkUsek, F_BlkUsek);
   Application.CreateForm(TF_BlkVyhybka, F_BlkVyhybka);
   Application.CreateForm(TF_BlkIR, F_BlkIR);
-  Application.CreateForm(TF_BlkSCom, F_BlkSCom);
+  Application.CreateForm(TF_BlkNav, F_BlkNav);
   Application.CreateForm(TF_BlkNew, F_BlkNew);
   Application.CreateForm(TF_BlkPrejezd, F_BlkPrejezd);
   Application.CreateForm(TF_BlkTU, F_BlkTU);

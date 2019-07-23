@@ -1,9 +1,9 @@
-object F_BlkSComEvent: TF_BlkSComEvent
+object F_BlkNavEvent: TF_BlkNavEvent
   Left = 0
   Top = 0
   Align = alClient
   BorderStyle = bsNone
-  Caption = 'F_BlkSComEvent'
+  Caption = 'F_BlkNavEvent'
   ClientHeight = 302
   ClientWidth = 348
   Color = clBtnFace
@@ -13,8 +13,6 @@ object F_BlkSComEvent: TF_BlkSComEvent
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  ExplicitWidth = 320
-  ExplicitHeight = 240
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel

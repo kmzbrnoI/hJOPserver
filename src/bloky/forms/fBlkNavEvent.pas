@@ -1,4 +1,4 @@
-unit fBlkSComEvent;
+unit fBlkNavEvent;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   TBloky, ExtCtrls, frrEv;
 
 type
-  TF_BlkSComEvent = class(TForm)
+  TF_BlkNavEvent = class(TForm)
     GB_DetekceZastaveni: TGroupBox;
     GB_DetekceZpomalenii: TGroupBox;
     CB_ZpomalitKmH: TComboBox;
@@ -43,7 +43,7 @@ type
   end;
 
 var
-  F_BlkSComEvent: TF_BlkSComEvent;
+  F_BlkNavEvent: TF_BlkNavEvent;
 
 implementation
 
@@ -53,7 +53,7 @@ uses TBlokUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_BlkSComEvent.Create(AOwner:TComponent);
+constructor TF_BlkNavEvent.Create(AOwner:TComponent);
 begin
  inherited;
 
@@ -66,7 +66,7 @@ begin
  Self.fZpom.Show();
 end;
 
-destructor TF_BlkSComEvent.Destroy();
+destructor TF_BlkNavEvent.Destroy();
 begin
  Self.fZast.Free();
  Self.fZpom.Free();
@@ -75,7 +75,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkSComEvent.OpenForm(event:TBlkSComSprEvent; first:boolean; obls:TArstr);
+procedure TF_BlkNavEvent.OpenForm(event:TBlkSComSprEvent; first:boolean; obls:TArstr);
 var i:Integer;
 begin
  Self.obls  := obls;
@@ -116,7 +116,7 @@ begin
  Self.CHB_ZpomalitClick(CHB_Zpomalit);
 end;
 
-procedure TF_BlkSComEvent.OpenEmptyForm(first:boolean; obls:TArstr);
+procedure TF_BlkNavEvent.OpenEmptyForm(first:boolean; obls:TArstr);
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -149,7 +149,7 @@ begin
 end;
 ///////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkSComEvent.GetEvent():TBlkSComSprEvent;
+function TF_BlkNavEvent.GetEvent():TBlkSComSprEvent;
 begin
  Result.spr_typ := TStringList.Create();
  if (not Self.first) then
@@ -171,7 +171,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkSComEvent.CHB_ZpomalitClick(Sender: TObject);
+procedure TF_BlkNavEvent.CHB_ZpomalitClick(Sender: TObject);
 begin
  Self.fZpom.Enabled := Self.CHB_Zpomalit.Checked;
  Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomalit.Checked;
@@ -179,7 +179,7 @@ begin
    Self.CB_ZpomalitKmH.ItemIndex := -1;
 end;
 
-function TF_BlkSComEvent.Check():string;
+function TF_BlkNavEvent.Check():string;
 begin
   if (not Self.fZast.InputValid()) then
     Exit('Vyberte zastavovací událost!');

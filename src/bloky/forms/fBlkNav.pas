@@ -1,15 +1,15 @@
-unit fBlkSCom;
+unit fBlkNav;
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokSCom,
-  fBlkSComEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
+  fBlkNavEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
   StrUtils, TBloky;
 
 type
-  TF_BlkSCom = class(TForm)
+  TF_BlkNav = class(TForm)
     L_SCom01: TLabel;
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
@@ -57,7 +57,7 @@ type
    NewBlk:Boolean;
    obls:TArstr;   //oblasti rizeni, ve kterych se SCom nachazi
 
-    eventForms:TList<TF_BlkSComEvent>;
+    eventForms:TList<TF_BlkNavEvent>;
     eventTabSheets:TList<TTabSheet>;
 
     FCloseButtonMouseDownTab: TCloseTabSheet;
@@ -75,7 +75,7 @@ type
   end;
 
 var
-  F_BlkSCom: TF_BlkSCom;
+  F_BlkNav: TF_BlkNav;
 
 implementation
 
@@ -84,7 +84,7 @@ uses GetSystems, FileSystem, TechnologieRCS, TBlok, TOblRizeni,
 
 {$R *.dfm}
 
-procedure TF_BlkSCom.OpenForm(BlokIndex:Integer);
+procedure TF_BlkNav.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
@@ -96,10 +96,10 @@ procedure TF_BlkSCom.OpenForm(BlokIndex:Integer);
    end else begin
     NormalOpenForm;
    end;
-  F_BlkSCom.ShowModal;
+  Self.ShowModal;
  end;
 
-procedure TF_BlkSCom.NewBlkOpenForm();
+procedure TF_BlkNav.NewBlkOpenForm();
  begin
   E_Nazev.Text             := '';
   SE_ID.Value              := Blky.GetBlkID(Blky.Cnt-1)+1;
@@ -118,15 +118,15 @@ procedure TF_BlkSCom.NewBlkOpenForm();
   // prvni udalost nepridavame, protoze muze byt navestidlo cestove,
   // ktere ji nepotrebuje
 
-  F_BlkSCom.Caption := 'Editovat data nového bloku návìstidlo';
-  F_BlkSCom.ActiveControl := E_Nazev;
+  Self.Caption := 'Editovat data nového bloku návìstidlo';
+  Self.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkSCom.NormalOpenForm;
+procedure TF_BlkNav.NormalOpenForm;
 var glob:TBlkSettings;
     settings:TBlkSComSettings;
     i:Integer;
-    eventForm:TF_BlkSComEvent;
+    eventForm:TF_BlkNavEvent;
     ts:TCloseTabSheet;
     oblr:TOR;
  begin
@@ -167,7 +167,7 @@ var glob:TBlkSettings;
       ts.Caption  := 'globální'
     else
       ts.Caption  := IntToStr(settings.events[i].delka.min)+'-'+IntToStr(settings.events[i].delka.max)+'      ';
-    eventForm      := TF_BlkSComEvent.Create(ts);
+    eventForm  := TF_BlkNavEvent.Create(ts);
 
     eventForm.OpenForm(settings.events[i], (i = 0), Self.obls);
     eventForm.Parent := ts;
@@ -179,29 +179,29 @@ var glob:TBlkSettings;
 
   Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkSCom).UsekID);
 
-  F_BlkSCom.Caption := 'Editovat data bloku '+glob.name+' (návìstidlo)';
-  F_BlkSCom.ActiveControl := B_Save;
+  Self.Caption := 'Editovat data bloku '+glob.name+' (návìstidlo)';
+  Self.ActiveControl := B_Save;
  end;
 
-procedure TF_BlkSCom.HlavniOpenForm();
+procedure TF_BlkNav.HlavniOpenForm();
  begin
   SetLength(Self.obls, 0);
   Self.LB_Stanice.Clear();
   Self.SE_RCSmodule.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
-procedure TF_BlkSCom.NewBlkCreate();
+procedure TF_BlkNav.NewBlkCreate();
  begin
   NewBlk := true;
   OpenForm(Blky.Cnt);
  end;
 
-procedure TF_BlkSCom.B_StornoClick(Sender: TObject);
+procedure TF_BlkNav.B_StornoClick(Sender: TObject);
  begin
-  F_BlkSCom.Close;
+  Self.Close();
  end;
 
-procedure TF_BlkSCom.CHB_RCS_OutputClick(Sender: TObject);
+procedure TF_BlkNav.CHB_RCS_OutputClick(Sender: TObject);
 begin
  Self.SE_RCSmodule.Enabled  := Self.CHB_RCS_Output.Checked;
  Self.SE_RCSPort.Enabled := Self.CHB_RCS_Output.Checked;
@@ -215,9 +215,8 @@ begin
   end;
 end;
 
-procedure TF_BlkSCom.BB_Event_AddClick(Sender: TObject);
-var
-    eventForm:TF_BlkSComEvent;
+procedure TF_BlkNav.BB_Event_AddClick(Sender: TObject);
+var eventForm:TF_BlkNavEvent;
     ts:TCloseTabSheet;
 begin
   ts             := TCloseTabSheet.Create(Self.PC_Events);
@@ -228,7 +227,7 @@ begin
 
   ts.PageControl := Self.PC_Events;
   ts.OnClose     := Self.OnTabClose;
-  eventForm      := TF_BlkSComEvent.Create(ts);
+  eventForm      := TF_BlkNavEvent.Create(ts);
   Self.PC_Events.ActivePage := ts;
 
   eventForm.OpenEmptyForm((Self.eventForms.Count = 0), Self.obls);
@@ -239,7 +238,7 @@ begin
   Self.eventTabSheets.Add(ts);
 end;
 
-procedure TF_BlkSCom.B_SaveClick(Sender: TObject);
+procedure TF_BlkNav.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkSComSettings;
     i: Integer;
@@ -306,11 +305,11 @@ var glob:TBlkSettings;
 
   Self.Blk.SetSettings(settings);
 
-  F_BlkSCom.Close;
+  Self.Close();
   Self.Blk.Change();
  end;
 
-procedure TF_BlkSCom.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkNav.FormClose(Sender: TObject; var Action: TCloseAction);
 var i:Integer;
  begin
   NewBlk     := false;
@@ -326,13 +325,13 @@ var i:Integer;
   Self.eventTabSheets.Clear();
  end;
 
-procedure TF_BlkSCom.FormCreate(Sender: TObject);
+procedure TF_BlkNav.FormCreate(Sender: TObject);
 begin
- eventForms     := TList<TF_BlkSComEvent>.Create();
+ eventForms     := TList<TF_BlkNavEvent>.Create();
  eventTabSheets := TList<TTabSheet>.Create();;
 end;
 
-procedure TF_BlkSCom.FormDestroy(Sender: TObject);
+procedure TF_BlkNav.FormDestroy(Sender: TObject);
 begin
  eventForms.Free();
  eventTabSheets.Free();
@@ -340,7 +339,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkSCom.PageControlCloseButtonDrawTab(Control: TCustomTabControl;
+procedure TF_BlkNav.PageControlCloseButtonDrawTab(Control: TCustomTabControl;
   TabIndex: Integer; const Rect: TRect; Active: Boolean);
 var
   CloseBtnSize: Integer;
@@ -409,7 +408,7 @@ begin
   end;
 end;
 
-procedure TF_BlkSCom.PageControlCloseButtonMouseDown(Sender: TObject;
+procedure TF_BlkNav.PageControlCloseButtonMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   I: Integer;
@@ -434,7 +433,7 @@ begin
   end;
 end;
 
-procedure TF_BlkSCom.PageControlCloseButtonMouseLeave(Sender: TObject);
+procedure TF_BlkNav.PageControlCloseButtonMouseLeave(Sender: TObject);
 var
   PageControl: TPageControl;
 begin
@@ -443,7 +442,7 @@ begin
   PageControl.Repaint;
 end;
 
-procedure TF_BlkSCom.PageControlCloseButtonMouseMove(Sender: TObject;
+procedure TF_BlkNav.PageControlCloseButtonMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
   PageControl: TPageControl;
@@ -463,7 +462,7 @@ begin
   end;
 end;
 
-procedure TF_BlkSCom.PageControlCloseButtonMouseUp(Sender: TObject;
+procedure TF_BlkNav.PageControlCloseButtonMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   PageControl: TPageControl;
@@ -481,14 +480,14 @@ begin
   end;
 end;
 
-procedure TF_BlkSCom.SE_RCSmoduleExit(Sender: TObject);
+procedure TF_BlkNav.SE_RCSmoduleExit(Sender: TObject);
 begin
  Self.SE_RCSport.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_RCSmodule.Value)-1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkSCom.OnTabClose(Sender:TObject);
+procedure TF_BlkNav.OnTabClose(Sender:TObject);
 var i:Integer;
 begin
  if (Self.eventTabSheets.Count <= 1) then

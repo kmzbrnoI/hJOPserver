@@ -1,4 +1,4 @@
-object F_BlkSCom: TF_BlkSCom
+object F_BlkNav: TF_BlkNav
   Left = 485
   Top = 168
   BorderIcons = [biSystemMenu]

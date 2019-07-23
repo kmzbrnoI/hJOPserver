@@ -145,7 +145,6 @@
 			</DCCReference>
 			<DCCReference Include="AC.pas"/>
 			<DCCReference Include="SnadnSpusteni.pas"/>
-			<DCCReference Include="bloky\forms\fBlkSCom.pas"/>
 			<DCCReference Include="jc\TJCDatabase.pas"/>
 			<DCCReference Include="hv\THVDatabase.pas"/>
 			<DCCReference Include="hv\THnaciVozidlo.pas"/>
@@ -175,8 +174,8 @@
 				<Form>F_BlkTrat_tech</Form>
 			</DCCReference>
 			<DCCReference Include="ModelovyCas.pas"/>
-			<DCCReference Include="bloky\forms\fBlkSComEvent.pas">
-				<Form>F_BlkSComEvent</Form>
+			<DCCReference Include="bloky\forms\fBlkNavEvent.pas">
+				<Form>F_BlkNavEvent</Form>
 			</DCCReference>
 			<DCCReference Include="helpers\CloseTabSheet.pas"/>
 			<DCCReference Include="bloky\TBlokZamek.pas"/>
@@ -257,6 +256,7 @@
 			<DCCReference Include="tables\DataAB.pas"/>
 			<DCCReference Include="trakce\Simulator.pas"/>
 			<DCCReference Include="TCPORsRef.pas"/>
+			<DCCReference Include="bloky\forms\fBlkNav.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
