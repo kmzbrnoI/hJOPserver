@@ -616,7 +616,7 @@ begin
 
  // reseni zruseni PRESUN soupravy, ktera jede
  if ((Self.IsVlakPresun()) and ((not Self.IsSouprava(Self.Soupravs[Self.VlakPresun])) or
-     (Soupravy[Self.Soupravs[Self.VlakPresun]].rychlost > 0))) then
+     (Soupravy[Self.Soupravs[Self.VlakPresun]].chtenaRychlost > 0))) then
    Self.VlakPresun := -1;
 
  // pousteni houkani na houkaci udalosti
@@ -1377,7 +1377,7 @@ begin
 
  if (Self.VlakPresun = sprLocalI) then
   Result := Result + 'PØESUÒ vlak<,'
- else if ((not Self.IsVlakPresun()) and (spr.rychlost = 0) and (spr.stanice = SenderOR)) then
+ else if ((not Self.IsVlakPresun()) and (spr.chtenaRychlost = 0) and (spr.stanice = SenderOR)) then
    Result := Result + 'PØESUÒ vlak>,';
 
  if (spr.ukradeno) then
@@ -1965,8 +1965,8 @@ end;
 function TBlkUsek.CanSprSpeedInsert(index:Integer):boolean;
 begin
  Result := not ((Self.Soupravs.Count > 0) and
-                (((index = 0) and (Soupravy[Self.Soupravs[index]].rychlost > 0) and (Soupravy[Self.Soupravs[index]].smer = THVStanoviste.sudy)) or
-                 ((index = Self.Soupravs.Count) and (Soupravy[Self.Soupravs[index-1]].rychlost > 0) and (Soupravy[Self.Soupravs[index-1]].smer = THVStanoviste.lichy))));
+                (((index = 0) and (Soupravy[Self.Soupravs[index]].chtenaRychlost > 0) and (Soupravy[Self.Soupravs[index]].smer = THVStanoviste.sudy)) or
+                 ((index = Self.Soupravs.Count) and (Soupravy[Self.Soupravs[index-1]].chtenaRychlost > 0) and (Soupravy[Self.Soupravs[index-1]].smer = THVStanoviste.lichy))));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

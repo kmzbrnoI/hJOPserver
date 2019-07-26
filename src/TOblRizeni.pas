@@ -1324,7 +1324,7 @@ begin
      Exit();
     end;
 
-   if ((souprava.front <> usek) and (souprava.rychlost > 0)) then
+   if ((souprava.front <> usek) and (souprava.chtenaRychlost > 0)) then
     begin
      ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Nelze editovat soupravu, která odjela a je v pohybu');
      Exit();

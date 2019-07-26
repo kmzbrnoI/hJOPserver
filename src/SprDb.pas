@@ -243,7 +243,7 @@ procedure TSprDb.StopAllSpr();
 var i:Integer;
 begin
  for i := 0 to _MAX_SPR-1 do
-  if ((Self.soupravy[i] <> nil) and (Self.soupravy[i].rychlost <> 0)) then
+  if ((Self.soupravy[i] <> nil) and (Self.soupravy[i].chtenaRychlost <> 0)) then
    begin
     Self.soupravy[i].rychlost := 0;
     Sleep(3);

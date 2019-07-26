@@ -442,7 +442,7 @@ begin
    Self.data.HVs.Free();
    Self.data.HVs := new;
 
-   if ((Self.rychlost = 0) and (Self.data.smer_L xor Self.data.smer_S)) then
+   if ((Self.chtenaRychlost = 0) and (Self.data.smer_L xor Self.data.smer_S)) then
     begin
      // vypocet smeru ze sipky
      if (Self.data.smer_L) then
@@ -570,7 +570,7 @@ begin
 
    if (not HVDb.HVozidla[addr].Slot.stolen) then begin
      try
-       TrkSystem.LokSetSpeed(Self, HVDb.HVozidla[addr], speed, smer)
+       TrkSystem.LokSetSpeed(Self, HVDb.HVozidla[addr], Self.data.rychlost, smer)
      except
        on E:Exception do
          AppEvents.LogException(E, 'TSouprava.SetRychlostSmer');
@@ -762,7 +762,7 @@ procedure TSouprava.LokDirChanged();
 var i:Integer;
     dir:Integer;
 begin
- if ((Self.rychlost <> 0) or (Self.data.smer_L xor Self.data.smer_S) or
+ if ((Self.chtenaRychlost <> 0) or (Self.data.smer_L xor Self.data.smer_S) or
      (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
    Exit();
 

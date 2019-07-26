@@ -515,7 +515,7 @@ begin
             Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Register();
 
           if ((Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) and
-              (Soupravy.soupravy[Self.Souprava].rychlost > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
+              (Soupravy.soupravy[Self.Souprava].chtenaRychlost > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
             Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
@@ -532,7 +532,7 @@ begin
           if (not Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.enabled) then
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Register();
 
-          if ((Soupravy.soupravy[Self.Souprava].rychlost > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
+          if ((Soupravy.soupravy[Self.Souprava].chtenaRychlost > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
             Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
@@ -576,7 +576,7 @@ begin
 
    // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
    //  pokud se souprava rozjede, koncim zastavku
-   if (Soupravy.soupravy[Self.Souprava].rychlost <> 0) then
+   if (Soupravy.soupravy[Self.Souprava].chtenaRychlost <> 0) then
     begin
      Self.fTUStav.zast_stopped := false;
      Self.Change();  // change je dulezite volat kvuli menu
@@ -1172,8 +1172,8 @@ begin
    if (Self.fTUStav.sprRychUpdateIter = 0) then
     begin
      if ((Self.IsSouprava()) and (Self.zpomalovani_ready) and
-        (Soupravy.soupravy[Self.Souprava].rychlost > 0) and
-        (Soupravy.soupravy[Self.Souprava].rychlost <> Self.TUSettings.rychlost)) then
+        (Soupravy.soupravy[Self.Souprava].chtenaRychlost > 0) and
+        (Soupravy.soupravy[Self.Souprava].chtenaRychlost <> Self.TUSettings.rychlost)) then
        Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.rychlost;
     end;
   end;

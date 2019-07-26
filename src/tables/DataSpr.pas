@@ -135,7 +135,7 @@ var spr:TSoupravaData;
 
   Self.LV.Items[line].SubItems[6] := IntToStr(spr.rychlost) + ' km/h';
   if (spr.rychlost <> spr.chtenaRychlost) then
-    Self.LV.Items[line].SubItems[6] := Self.LV.Items[line].SubItems[6] + '(' + IntToStr(spr.chtenaRychlost) + ' km/h)';
+    Self.LV.Items[line].SubItems[6] := Self.LV.Items[line].SubItems[6] + ' (' + IntToStr(spr.chtenaRychlost) + ' km/h)';
 
   case (spr.smer) of
    THVStanoviste.lichy: Self.LV.Items[line].SubItems[7] := 'lichý';

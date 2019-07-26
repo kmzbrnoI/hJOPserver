@@ -1421,7 +1421,7 @@ begin
  ///////////////////////////////////////////////////
 
  // ZPOMALOVANI
- if ((navEv.zpomaleni.enabled) and (spr.rychlost > navEv.zpomaleni.speed) and
+ if ((navEv.zpomaleni.enabled) and (spr.chtenaRychlost > navEv.zpomaleni.speed) and
      ((Usek as TBlkUsek).zpomalovani_ready) and
      ((not Assigned(Self.DNjc)) or (not Self.IsPovolovaciNavest()) or (spr.IsPOdj(Usek))) and
      (spr.smer = Self.NavRel.smer)) then
@@ -1453,7 +1453,7 @@ begin
    if ((spr.IsPOdj(Usek)) and (spr.smer = Self.NavRel.smer)) then
     begin
      // predvidany odjezd neuplynul -> zastavit soupravu
-     if (spr.rychlost <> 0) then
+     if (spr.chtenaRychlost <> 0) then
        spr.SetRychlostSmer(0, Self.NavRel.smer);
 
      // souprava je na zastavovaci udalosti -> zacit pocitat cas
@@ -1473,7 +1473,7 @@ begin
      if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani)) then
       begin
        // je postaveno -> zkontrlolujeme, jestli je postaveno dalsi navestidlo
-       if ((spr.rychlost > 0) and (spr.smer <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
+       if ((spr.chtenaRychlost > 0) and (spr.smer <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
        if (Self.DNjc.data.DalsiNNavaznostTyp = 2) then
         begin
@@ -1483,22 +1483,22 @@ begin
          if ((nav <> nil) and (nav.typ = _BLK_NAV) and ((nav as TBlkNav).IsPovolovaciNavest())) then
           begin
             // dalsi navestilo je na VOLNO
-            if ((spr.rychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+            if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
               spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
           end else begin
             // dalsi navestidlo je na STUJ
-            if ((spr.rychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+            if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
               spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
           end;
         end else begin
          if (Self.DNjc.data.DalsiNNavaznostTyp = 1) then
           begin
            // navaznost na trat
-           if ((spr.rychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+           if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
              spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
           end else begin
            // navaznost nikam
-           if ((spr.rychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+           if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
              spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
           end;
         end;
@@ -1507,7 +1507,7 @@ begin
        spr.CheckSh(Self);
       end else begin
        // neni povolovaci navest -> zastavit LOKO
-       if ((spr.smer = Self.NavRel.smer) and (spr.rychlost <> 0)) then
+       if ((spr.smer = Self.NavRel.smer) and (spr.chtenaRychlost <> 0)) then
          spr.SetRychlostSmer(0, Self.NavRel.smer);
       end;
     end else begin
@@ -1521,16 +1521,16 @@ begin
          if (Self.Navest = 1) then
           begin
            // zelena -> rychlost dalsiho useku
-           if (spr.rychlost <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
+           if (spr.chtenaRychlost <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
              spr.SetRychlostSmer(TBlkTU(Self.UsekPred).GetSettings.rychlost, Self.NavRel.smer)
           end else begin
            // vystraha -> 40 km/h
-           if (spr.rychlost <> 40) then
+           if (spr.chtenaRychlost <> 40) then
              spr.SetRychlostSmer(40, Self.NavRel.smer)
           end;
         end else begin
          //  neni povolovaci navest -> zastavit
-         if (spr.rychlost <> 0) then
+         if (spr.chtenaRychlost <> 0) then
            spr.SetRychlostSmer(0, Self.NavRel.smer);
         end;
       end;
