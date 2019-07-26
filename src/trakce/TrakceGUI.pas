@@ -840,6 +840,7 @@ end;
 procedure TTrkGUI.LoadSpeedTable(filename:string;var LVRych:TListView);
 var i, j:Integer;
     myFile:TextFile;
+    speed:Integer;
  begin
   try
     AssignFile(myFile, filename);
@@ -867,7 +868,8 @@ var i, j:Integer;
       Exit();
      end else begin
       try
-        ReadLn(myFile, Self.SpeedTable[i]);
+        ReadLn(myFile, speed);
+        Self.SpeedTable[i] := speed;
       except
         on E:Exception do
          begin

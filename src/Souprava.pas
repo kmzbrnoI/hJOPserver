@@ -28,6 +28,7 @@ type
 
    OblRizeni:TObject;
    rychlost:Integer;
+   chtenaRychlost:Integer;
    smer:THVStanoviste;
    front:TObject;   // nejprednejsi blok, kde je souprava
 
@@ -75,7 +76,7 @@ type
 
     function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
     procedure UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject);
-    procedure SetRychlostSmer(speed:Integer; dir:THVStanoviste);
+    procedure SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
     procedure VezmiVlak();
     procedure UpdateFront();
     procedure ChangeSmer();
@@ -104,6 +105,7 @@ type
     property index:Integer read findex;
     property stanice:TObject read data.OblRizeni write SetOR;
     property rychlost:Integer read data.rychlost write SetSpeed;
+    property chtenaRychlost:Integer read data.chtenaRychlost;
     property smer:THVStanoviste read data.smer write SetSmer;
     property ukradeno:boolean read IsUkradeno;
     property front:TObject read data.front write SetFront;
@@ -533,7 +535,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetRychlostSmer(speed:Integer; dir:THVStanoviste);
+procedure TSouprava.SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
 var addr:Integer;
     smer:Integer;
 begin
@@ -542,11 +544,16 @@ begin
 
  Self.data.smer := dir;
  if (Self.speedBuffer = nil) then
-   Self.data.rychlost := speed
- else begin
+  begin
+   Self.data.chtenaRychlost := speed;
+   if (speed > Self.maxRychlost) then
+     Self.data.rychlost := Self.maxRychlost
+   else
+     Self.data.rychlost := speed;
+  end else begin
    Self.speedBuffer^ := speed;
    Exit();
- end;
+  end;
 
  for addr in Self.HVs do
   begin
@@ -554,8 +561,8 @@ begin
    
    if (HVDb.HVozidla[addr].ruc) then
     begin      // pokud je loko prevzato na rucni rizeni, ignoruji ho
-      writelog('LOKO ' + IntToStr(addr) + ' v ruèním regulátoru, nenastavuji rychlost', WR_MESSAGE, 0);
-      continue;
+     writelog('LOKO ' + IntToStr(addr) + ' v ruèním regulátoru, nenastavuji rychlost', WR_MESSAGE, 0);
+     continue;
     end;
 
    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.HVComErr);
