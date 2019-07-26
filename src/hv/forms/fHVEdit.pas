@@ -232,6 +232,7 @@ var data:THVData;
   if (Self.OpenHV = nil) then
    begin
      // vytvoreni noveho HV
+     data.maxRychlost := _DEFAUT_MAX_SPEED;
      ORs.GetORByIndex(Self.CB_OR.ItemIndex, OblR);
      return := HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
 
@@ -248,6 +249,7 @@ var data:THVData;
    end else begin
      // vyznamy funkci jednoduse zkopirujeme
      data.funcVyznam := Self.OpenHV.Data.funcVyznam;
+     data.maxRychlost := Self.OpenHV.Data.maxRychlost;
 
      // update HV
      Self.OpenHV.data := data;
