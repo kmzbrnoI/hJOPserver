@@ -38,6 +38,7 @@ const
   _HV_FUNC_MAX       = 28;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
   _TOKEN_TIMEOUT_MIN = 3;    // delka platnosti tokenu pro autorizaci hnaciho vozidla v minutach
   _TOKEN_LEN         = 24;   // delka autorizacniho tokenu pro prevzeti hnaciho vozidla
+  _DEFAUT_MAX_SPEED  = 120;  // 120 km/h
 
   _LOK_VERSION_SAVE = '2.0';
 
@@ -65,6 +66,7 @@ type
    Oznaceni:string;                                    // oznaceni HV
    Poznamka:String;                                    // poznamka k HV
    Trida:THVClass;                                     // trida hnaciho vozidla - parni, diesel, motor, elektro
+   maxRychlost:Cardinal;                               // max. rychlsot hnaciho vozidla
 
    POMtake:TList<THVPomCV>;                            // seznam POM pri prevzeti do automatu
    POMrelease:TList<THVPomCV>;                         // seznam POM pri uvolneni to rucniho rizeni
@@ -280,6 +282,7 @@ begin
    Self.Data.Oznaceni := ini.ReadString(section, 'oznaceni', section);
    Self.Data.Poznamka := ini.ReadString(section, 'poznamka', '');
    Self.Data.Trida    := THVClass(ini.ReadInteger(section, 'trida', 0));
+   Self.Data.maxRychlost := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
 
    // POM pri prebirani : (cv,data)(cv,data)(...)...
    str := ini.ReadString(section, 'pom_take', '');
@@ -408,6 +411,7 @@ begin
    ini.WriteString(addr, 'oznaceni', Self.Data.Oznaceni);
    ini.WriteString(addr, 'poznamka', Self.Data.Poznamka);
    ini.WriteInteger(addr, 'trida', Integer(Self.Data.Trida));
+   ini.WriteInteger(addr, 'max_rychlost', Self.Data.maxRychlost);
 
    // POM pri prebirani
    str := '';
@@ -518,7 +522,7 @@ var i:Integer;
 begin
  // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce|rychlost_stupne|
  //   rychlost_kmph|smer|or_id|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
- //   {vyznam-F0;vyznam-F1;...}|typ_funkci|
+ //   {vyznam-F0;vyznam-F1;...}|typ_funkci|maximalni rychlost
 
  // souprava je bud cislo soupravy, nebo znak '-'
  Result := Self.Data.Nazev + '|' + Self.Data.Majitel + '|' + Self.Data.Oznaceni + '|{' + Self.Data.Poznamka + '}|' +
@@ -576,6 +580,8 @@ begin
  for i := 0 to _HV_FUNC_MAX do
    Result := Result + HVFuncTypeToChar(Self.Data.funcType[i]);
  Result := Result + '|';
+
+ Result := Result + IntToStr(Self.Data.maxRychlost) + '|';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -687,6 +693,10 @@ begin
     for i := 0 to _HV_FUNC_MAX do
       Self.Data.funcType[i] := THVFuncType.permanent;
    end;
+
+  if (str.Count > 17) then
+    Self.Data.maxRychlost := StrToInt(str[17]);
+
  except
   on e:Exception do
    begin
@@ -874,6 +884,7 @@ begin
  json['nazev']    := Self.Data.Nazev;
  json['majitel']  := Self.Data.Majitel;
  json['oznaceni'] := Self.Data.Oznaceni;
+ json['maxRychlost'] := Self.Data.maxRychlost;
  if (Self.Data.Poznamka <> '') then json['poznamka'] := Self.Data.Poznamka;
 
  case (Self.Data.Trida) of

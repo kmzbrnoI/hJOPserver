@@ -22,7 +22,7 @@ const
 
   // tato rychlostni tabulka je pouzita v pripade, kdy selze nacitani
   // souboru s rychlostni tabulkou:
-  _DEFAULT_SPEED_TABLE : array [0.._MAX_SPEED] of Integer = (
+  _DEFAULT_SPEED_TABLE : array [0.._MAX_SPEED] of Cardinal = (
     0,
     1,
     2,
@@ -136,7 +136,7 @@ type
 
      fTrkSystem:Ttrk_system;                                                    // aktualni trakcni system; koresponduje se vytvorenou instanci v .Trakce
 
-     SpeedTable:array [0.._MAX_SPEED] of Integer;                               // rychlostni tabulka
+     SpeedTable:array [0.._MAX_SPEED] of Cardinal;                              // rychlostni tabulka
                                                                                 //   index = jizdni stupen, .SpeedTable[index] = rychlost v km/h
                                                                                 //   napr. SpeedTable[15] = 40 <-> rychlostni stupen 15: 40 km/h
 
@@ -170,7 +170,7 @@ type
      // eventy serioveho portu:
      procedure OnComWriteError(Sender:TObject);                                 // tento event je volan z .Trakce pri vyvolani vyjimky pri zapisu do ComPortu
                                                                                 // to nastava napriklad, pokud ComPort najednou zmizi z pocitace (nekdo odpoji USB)
-     function GettSpeed(kmph:Integer):Integer;                                  // vrati rchlostni stupen pri zadane rychlosti v km/h
+     function GettSpeed(kmph:Cardinal):Cardinal;                                // vrati rchlostni stupen pri zadane rychlosti v km/h
 
      // eventy z komponenty seriaku:
      procedure BeforeOpen(Sender:TObject);
@@ -344,6 +344,8 @@ type
      procedure Update();
 
      class function LogLevelToString(ll:TTrkLogLevel):string;                   // rewrite loglevel to human-reada ble format
+
+     function NearestLowerSpeed(speed:Cardinal):Cardinal;
 
      // aktualni data serioveho portu
      property BaudRate:TBaudRate read CPortData.br write CPortData.br;
@@ -912,7 +914,7 @@ var i:Integer;
 end;
 
 // vrati jizdni stupen prislusny k dane rychlosti v km/h
-function TTrkGUI.GettSpeed(kmph:Integer):Integer;
+function TTrkGUI.GettSpeed(kmph:Cardinal):Cardinal;
 var i:Integer;
 begin
  for i := 0 to  _MAX_SPEED do
@@ -2289,6 +2291,17 @@ end;
 procedure TTrkGUI.Update();
 begin
  Self.CheckToggleQueue();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrkGUI.NearestLowerSpeed(speed:Cardinal):Cardinal;
+var stupen:Integer;
+begin
+ for stupen := _MAX_SPEED downto 0 do
+   if (Self.SpeedTable[stupen] <= speed) then
+     Exit(Self.SpeedTable[stupen]);
+ Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

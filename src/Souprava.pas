@@ -60,6 +60,8 @@ type
     procedure SetFront(front:TObject);
 
     function IsUkradeno():boolean;
+    function GetMaxRychlost():Cardinal;
+    function GetMaxRychlostStupen():Cardinal;
 
    public
 
@@ -112,6 +114,8 @@ type
     property hlaseniPrehrano:boolean read data.hlaseniPrehrano;
     property hlaseni:boolean read data.hlaseni;
     property HVs:TSoupravaHVs read data.HVs;
+    property maxRychlost:Cardinal read GetMaxRychlost; // pozor, muze byt i rychlost, ke tere nemame stupen!
+    property maxRychlostStupen:Cardinal read GetMaxRychlostStupen; // je vzdy rychlost, ke ktere mame stupen
 
     // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
     class procedure UvolV(old:TSoupravaHVs; new:TSoupravaHVs);
@@ -953,5 +957,30 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TSouprava.GetMaxRychlost():Cardinal;
+var addr:Integer;
+    min:Cardinal;
+begin
+ if (Self.HVs.Count = 0) then
+   Exit(THnaciVozidlo._DEFAUT_MAX_SPEED);
+
+ min := HVDb[Self.HVs[0]].Data.maxRychlost;
+ for addr in Self.HVs do
+   if (HVDb[addr].Data.maxRychlost < min) then
+     min := HVDb[addr].Data.maxRychlost;
+
+ Result := min;
+end;
+
+function TSouprava.GetMaxRychlostStupen():Cardinal;
+begin
+ // vraci rychlost <= max rychlosti takovou, ze pro ni mame prirazeni stupne
+ // tj. tuto rychlost lze skutene nastavit
+ Result := TrkSystem.NearestLowerSpeed(Self.maxRychlost);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 end.//unit
