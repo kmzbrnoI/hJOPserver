@@ -465,11 +465,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPRegulator.PanelLOKResponseOK(Sender:TObject; Data:Pointer);
+var speed:Cardinal;
+    HV:THV;
 begin
 //  -;LOK;RESP;ADDR;[ok, err]; info
  try
+  HV := HVDb.HVozidla[TLokResponseData(Data^).addr];
+  speed := TrkSystem.GetStepSpeed(HV.Slot.speed);
+  if (speed > HV.Data.maxRychlost) then
+    speed := HV.Data.maxRychlost;
+
   ORTCPServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+
-      ';RESP;ok;'+IntToStr(TrkSystem.GetStepSpeed(HVDb.HVozidla[TLokResponseData(Data^).addr].Slot.speed)));
+      ';RESP;ok;'+IntToStr(speed));
   FreeMem(data);
  except
 
