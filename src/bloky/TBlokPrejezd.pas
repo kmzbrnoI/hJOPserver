@@ -176,7 +176,7 @@ begin
                                                     ini_tech.ReadInteger(section, 'RCSIz', 0));
  Self.PrjSettings.RCSInputs.Otevreno := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIom', defaultModule),
                                                      ini_tech.ReadInteger(section, 'RCSIo', 0));
- Self.PrjSettings.RCSInputs.Vystraha := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIbm', defaultModule),
+ Self.PrjSettings.RCSInputs.Vystraha := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIvm', defaultModule),
                                                      ini_tech.ReadInteger(section, 'RCSIv', 0));
  Self.PrjSettings.RCSInputs.Anulace := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSam', defaultModule),
                                                     ini_tech.ReadInteger(section, 'RCSa', 0));
