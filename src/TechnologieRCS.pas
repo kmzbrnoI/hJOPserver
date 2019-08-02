@@ -289,7 +289,12 @@ end;
 
 procedure TRCS.DllOnLog(Sender: TObject; logLevel:TRCSLogLevel; msg:string);
 begin
- if (Self.log) then
+ if (not Self.log) then
+   Exit();
+
+ if (logLevel = TRCSLogLevel.llErrors) then
+   writelog(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_ERROR)
+ else
    writelog(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_RCS);
 end;
 
