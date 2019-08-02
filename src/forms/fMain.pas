@@ -946,16 +946,19 @@ begin
    Exit();
   end;
 
+ Screen.Cursor := crHourGlass;
  try
    RCSi.ShowConfigDialog();
  except
    on E:Exception do
     begin
+     Screen.Cursor := crDefault;
      Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog RCS : ' + E.Message),
                             'Varování', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
  end;
+ Screen.Cursor := crDefault;
  writelog('Zobrazen ConfigDialog knihovny', WR_RCS);
 end;
 
