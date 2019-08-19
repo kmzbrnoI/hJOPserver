@@ -3,7 +3,7 @@ object F_Tester: TF_Tester
   Top = 124
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  Caption = 'MTB tester'
+  Caption = 'RCS tester'
   ClientHeight = 354
   ClientWidth = 492
   Color = clBtnFace
@@ -85,7 +85,7 @@ object F_Tester: TF_Tester
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 1
     OnChange = CB_RCSAdrChange
   end
