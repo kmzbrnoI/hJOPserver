@@ -130,7 +130,7 @@ implementation
 
 uses fMain, fAdminForm, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
      TBlokIR, TBlokNav, BoosterDb, TBlokPrejezd, RCSErrors, TOblsRizeni,
-     Logging, TCPServerOR, SprDb, DataRCS, appEv, Booster, StrUtils;
+     Logging, TCPServerOR, SprDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
 constructor TRCS.Create();
 begin
@@ -306,6 +306,7 @@ begin
      if (Assigned(Self.boards[module].inputChangedEv[i])) then Self.boards[module].inputChangedEv[i](Self, module)
        else Self.boards[module].inputChangedEv.Delete(i);
  RCSTableData.UpdateBoard(module);
+ F_Tester.RCSModuleChanged(module);
 end;
 
 procedure TRCS.DllOnOutputChanged(Sender:TObject; module:Cardinal);
@@ -316,6 +317,7 @@ begin
      if (Assigned(Self.boards[module].outputChangedEv[i])) then Self.boards[module].outputChangedEv[i](Self, module)
        else Self.boards[module].outputChangedEv.Delete(i);
  RCSTableData.UpdateBoard(module);
+ F_Tester.RCSModuleChanged(module);
 end;
 
 //----- events from dll end -----

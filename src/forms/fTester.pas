@@ -5,11 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Menus, Spin, ExtCtrls, Buttons, ColorGrd,
-  ComCtrls, TabNotBk, Gauges, fMain, TBloky;
+  ComCtrls, TabNotBk, Gauges, fMain, TBloky, Generics.Collections;
 
 type
   TF_Tester = class(TForm)
-    T_tester: TTimer;
     GB_vstupy: TGroupBox;
     L_1: TLabel;
     CB_RCSAdr: TComboBox;
@@ -18,12 +17,13 @@ type
     LB_Changes: TListBox;
     B_Clear: TButton;
     GB_vystupy: TGroupBox;
-    procedure T_testerTimer(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CB_RCSAdrChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_ClearClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+
   private const
     _S_TOP    = 18;
     _S_HEIGHT = 12;
@@ -35,22 +35,25 @@ type
     _NO_OUTPUTS = 16;
 
   private
-   RCSAddr:Smallint;
-   CB_RCSAdrData:TArI;
+   RCSAddr:Integer;
+   CB_RCSAdrData:TList<Cardinal>; // always sorted!
    SInput:array [0.._NO_INPUTS-1] of TShape;
    SOutput:array [0.._NO_OUTPUTS-1] of TShape;
 
    LInput:array [0.._NO_INPUTS-1] of TLabel;
    LOutput:array [0.._NO_OUTPUTS-1] of TLabel;
 
-    procedure CreateSInput;
-    procedure CreateSOutput;
+    procedure CreateSInput();
+    procedure CreateSOutput();
     procedure SOutputMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FillRCSAddrs();
+
   public
-   procedure UpdateOut;
-   procedure UpdateIn;
+   procedure UpdateOut();
+   procedure UpdateIn();
 
    procedure AfterRCSOpen();
+   procedure RCSModuleChanged(addr:Cardinal);
 
   end;
 
@@ -63,25 +66,12 @@ uses TechnologieRCS, Logging, RCS, TBlokNav;
 
 {$R *.dfm}
 
-procedure TF_Tester.T_testerTimer(Sender: TObject);
- begin
-  UpdateOut;
-  UpdateIn;
- end;
-
 procedure TF_Tester.FormShow(Sender: TObject);
-var i:Integer;
  begin
-  for i := 0 to _NO_INPUTS-1 do
-    SInput[i].Brush.Color  := clGray;
-  for i := 0 to _NO_OUTPUTS-1 do
-    SOutput[i].Brush.Color := clGray;
-
-  T_tester.Enabled := true; 
-  writelog('Zobrazeno okno Testeru',0,0);
+  writelog('Zobrazeno okno Testeru', 0, 0);
  end;
 
-procedure TF_Tester.UpdateOut;
+procedure TF_Tester.UpdateOut();
 var i, val:Integer;
     outCnt:Cardinal;
  begin
@@ -134,7 +124,7 @@ var i, val:Integer;
    end;//for i
  end;
 
-procedure TF_Tester.UpdateIn;
+procedure TF_Tester.UpdateIn();
 var i:Integer;
     InputState:TRCSInputState;
     LastState:TRCSInputState;
@@ -190,7 +180,7 @@ var i:Integer;
            notYetScanned : stateStr := '?';
           end;
 
-          F_Tester.LB_Changes.Items.Add('Zmena:: RCS:'+Format('%3d' ,[RCSAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
+          F_Tester.LB_Changes.Items.Add('Zmìna:: RCS:'+Format('%3d' ,[RCSAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
           Beep;
          end;//if (InputState <> LastState)
        end;//if F_Tester.CHB_LogZmeny.Checked
@@ -209,37 +199,34 @@ var i:Integer;
 
 procedure TF_Tester.FormCreate(Sender: TObject);
  begin
+  Self.CB_RCSAdrData := TList<Cardinal>.Create();
   Self.RCSAddr := -1;
-  Self.CreateSInput;
-  Self.CreateSOutput;
+  Self.CreateSInput();
+  Self.CreateSOutput();
  end;
 
-procedure TF_Tester.CB_RCSAdrChange(Sender: TObject);
-var i:Integer;
- begin
-  for i := 0 to _NO_INPUTS-1 do
-    SInput[i].Brush.Color  := clGray;
-  for i := 0 to _NO_OUTPUTS-1 do
-    SOutput[i].Brush.Color := clGray;
+procedure TF_Tester.FormDestroy(Sender: TObject);
+begin
+ Self.CB_RCSAdrData.Free();
+end;
 
-  if ((CB_RCSAdr.ItemIndex > -1) and (CB_RCSAdr.ItemIndex < Length(CB_RCSAdrData))) then
-   begin
-    RCSAddr := CB_RCSAdrData[CB_RCSAdr.ItemIndex];
-    try
-      Self.T_tester.Enabled := RCSi.IsModule(RCSAddr);
-    except
-     Self.T_tester.Enabled := false;
-    end;
-   end;
+procedure TF_Tester.CB_RCSAdrChange(Sender: TObject);
+ begin
+  if ((CB_RCSAdr.ItemIndex > -1) and (CB_RCSAdr.ItemIndex < CB_RCSAdrData.Count)) then
+    RCSAddr := CB_RCSAdrData[CB_RCSAdr.ItemIndex]
+  else
+    RCSAddr := -1;
+
+  Self.UpdateOut();
+  Self.UpdateIn();
  end;
 
 procedure TF_Tester.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  T_tester.Enabled := false;
   writelog('Skryto okno Testeru',0,0);
  end;
 
-procedure TF_Tester.CreateSInput;
+procedure TF_Tester.CreateSInput();
 var i:Integer;
     aTop:Integer;
     L:TLabel;
@@ -270,7 +257,7 @@ var i:Integer;
    end;//for i
  end;
 
-procedure TF_Tester.CreateSOutput;
+procedure TF_Tester.CreateSOutput();
 var i:Integer;
     aTop:Integer;
     L:TLabel;
@@ -304,29 +291,23 @@ var i:Integer;
 
 procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
+var oldColor:TColor;
  begin
+  if (RCSAddr < 0) then Exit;
+  oldColor := (Sender as TShape).Brush.Color;
+  (Sender as TShape).Brush.Color := clYellow;
+
   try
-    if (RCSAddr < 0) then Exit;
-
-    try
-      if ((Sender as TShape).Brush.Color = clRed) then begin
-        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 1);
-        (Sender as TShape).Brush.Color := clLime;
-      end else if ((Sender as TShape).Brush.Color = clBlue) then begin
-        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, TBlkNav._NAV_VSE);
-        (Sender as TShape).Brush.Color := clWhite;
-      end else begin
-        RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 0);
-        (Sender as TShape).Brush.Color := clRed;
-      end;
-    except
-      on E:Exception do
-        Application.MessageBox(PChar('Nelze nastavít výstup:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+    if (oldColor = clRed) then begin
+      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 1);
+    end else if (oldColor = clBlue) then begin
+      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, TBlkNav._NAV_VSE);
+    end else begin
+      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 0);
     end;
-
-    (Sender as TShape).Brush.Color := clYellow;
   except
-    // stav modulu se zaktualizuje sam
+    on E:Exception do
+      Application.MessageBox(PChar('Nelze nastavít výstup:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
   end;
  end;
 
@@ -335,10 +316,10 @@ procedure TF_Tester.B_ClearClick(Sender: TObject);
   F_Tester.LB_Changes.Clear;
  end;
 
-procedure TF_Tester.AfterRCSOpen();
+procedure TF_Tester.FillRCSAddrs();
 var i:Integer;
 begin
- SetLength(Self.CB_RCSAdrData, RCSi.maxModuleAddr+1);
+ Self.CB_RCSAdrData.Clear();
  Self.CB_RCSAdr.Clear();
 
  for i := 0 to RCSi.maxModuleAddr do
@@ -349,17 +330,44 @@ begin
      continue;
    end;
 
-   Self.CB_RCSAdrData[Self.CB_RCSAdr.Items.Count] := i;
+   Self.CB_RCSAdrData.Add(i);
 
    try
-     Self.CB_RCSAdr.Items.Add(IntToStr(i) + ' : ' + RCSi.GetModuleName(i));
+     Self.CB_RCSAdr.Items.Add(IntToStr(i) + ': ' + RCSi.GetModuleName(i));
    except
-     Self.CB_RCSAdr.Items.Add(IntToStr(i) + ' : -');
+     Self.CB_RCSAdr.Items.Add(IntToStr(i) + ': -');
    end;
   end;//for i
 
  Self.CB_RCSAdr.ItemIndex := -1;
  Self.CB_RCSAdrChange(self);
+end;
+
+procedure TF_Tester.AfterRCSOpen();
+begin
+ Self.FillRCSAddrs();
+end;
+
+procedure TF_Tester.RCSModuleChanged(addr:Cardinal);
+var i:Integer;
+begin
+ if (Integer(addr) = Self.RCSAddr) then
+  begin
+   Self.UpdateOut();
+   Self.UpdateIn();
+  end;
+
+ if (not Self.CB_RCSAdrData.BinarySearch(addr, i)) then
+  begin
+   // address not in addrs list -> add
+   try
+     Self.CB_RCSAdr.Items.Insert(i, IntToStr(addr) + ': ' + RCSi.GetModuleName(addr));
+   except
+     Self.CB_RCSAdr.Items.Insert(i, IntToStr(addr) + ': -');
+   end;
+
+   Self.CB_RCSAdrData.Insert(i, addr);
+  end;
 end;
 
 end.//unit

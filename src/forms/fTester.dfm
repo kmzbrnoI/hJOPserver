@@ -42,6 +42,7 @@ object F_Tester: TF_Tester
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -168,12 +169,5 @@ object F_Tester: TF_Tester
     Margins.Bottom = 2
     Caption = ' V'#253'stupy '
     TabOrder = 4
-  end
-  object T_tester: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = T_testerTimer
-    Left = 8
-    Top = 8
   end
 end
