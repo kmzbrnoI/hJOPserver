@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, fSettings,
+  Dialogs, StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, fSettings, IBUtils,
   fBlkUsekSysVars, TBloky, TBlok, TBlokUsek, Mask, StrUtils, Generics.Collections;
 
 type
@@ -86,10 +86,10 @@ procedure TF_BlkUsek.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkUsek.SE_RCS_BoardExit(Sender: TObject);
 begin
- Self.SE_Port1.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board1.Value)-1;
- Self.SE_Port2.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board2.Value)-1;
- Self.SE_Port3.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board3.Value)-1;
- Self.SE_Port4.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Board4.Value)-1;
+ Self.SE_Port1.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board1.Value))-1, 0);
+ Self.SE_Port2.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board2.Value))-1, 0);
+ Self.SE_Port3.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board3.Value))-1, 0);
+ Self.SE_Port4.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board4.Value))-1, 0);
 end;
 
 procedure TF_BlkUsek.NewBlkCreate;

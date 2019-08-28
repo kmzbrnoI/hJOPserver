@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Spin, StdCtrls, ExtCtrls, fMain, fBlkUsek, TBlokVyhybka,
+  Dialogs, Spin, StdCtrls, ExtCtrls, fMain, fBlkUsek, TBlokVyhybka, IBUtils,
   TBloky, Generics.Collections;
 
 type
@@ -96,10 +96,10 @@ procedure TF_BlkVyhybka.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkVyhybka.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_VystPlus_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_VystPlus_module.Value)-1;
- Self.SE_VystMinus_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_VystMinus_module.Value)-1;
- Self.SE_VstPlus_port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_VstPlus_module.Value)-1;
- Self.SE_VstMinus_port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_VstMinus_module.Value)-1;
+ Self.SE_VystPlus_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_VystPlus_module.Value))-1, 0);
+ Self.SE_VystMinus_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_VystMinus_module.Value))-1, 0);
+ Self.SE_VstPlus_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_VstPlus_module.Value))-1, 0);
+ Self.SE_VstMinus_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_VstMinus_module.Value))-1, 0);
 end;
 
 procedure TF_BlkVyhybka.NewBlkOpenForm;
