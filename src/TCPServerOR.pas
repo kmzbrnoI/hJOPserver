@@ -18,7 +18,7 @@ const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
   _MAX_OR_CLIENTS = 32;                                                         // maximalni pocet klientu
   _PING_TIMER_PERIOD_MS = 250;
-  _RECEIVE_CHECK_PERIOD_MS = 10;
+  _RECEIVE_CHECK_PERIOD_MS = 15;
 
   // tady jsou vyjmenovane vsechny verze protokolu, ktere akceptuje server od klientu
   _PROTO_V_ACCEPT : array[0..1] of string =
