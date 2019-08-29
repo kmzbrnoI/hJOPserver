@@ -18,6 +18,7 @@ const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
   _MAX_OR_CLIENTS = 32;                                                         // maximalni pocet klientu
   _PING_TIMER_PERIOD_MS = 250;
+  _RECEIVE_CHECK_PERIOD_MS = 10;
 
   // tady jsou vyjmenovane vsechny verze protokolu, ktere akceptuje server od klientu
   _PROTO_V_ACCEPT : array[0..1] of string =
@@ -39,14 +40,25 @@ type
     constructor Create(conn:TIDContext; status:TPanelConnectionStatus = handshake);
   end;
 
+  TTCPReceived = class
+    AContext: TIdContext;
+    parsed: TStrings;
+
+    constructor Create();
+    destructor Destroy(); override;
+  end;
+
   TORTCPServer = class
    private const
     _PROTOCOL_VERSION = '1.1';
 
    private
+    receiveTimer:TTimer;                                                        // must be executed in main thread synchronously!
+    received:TObjectQueue<TTCPReceived>;                                        // locked by receivedLock!
+    receivedLock:TCriticalSection;
+
     clients:array[0.._MAX_OR_CLIENTS-1] of TORTCPClient;                        // databaze klientu
     tcpServer: TIdTCPServer;                                                    // object serveru
-    parsed: TStrings;                                                           // naparsovana data, implementovano jako globalni promenna pro zrychleni
     data:string;                                                                // prijata data v plain-text forme
     fport:Word;                                                                 // aktualni port serveru
     DCCStopped:TIdContext;                                                      // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
@@ -54,21 +66,22 @@ type
                                                                                 // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
                                                                                 // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
     refreshQueue:array [0.._MAX_OR_CLIENTS-1] of Boolean;
-    readLock:TCriticalSection;
     pingTimer:TTimer;
 
      procedure OnTcpServerConnect(AContext: TIdContext);                        // event pripojeni klienta z TIdTCPServer
      procedure OnTcpServerDisconnect(AContext: TIdContext);                     // event odpojeni klienta z TIdTCPServer
      procedure OnTcpServerExecute(AContext: TIdContext);                        // event akce klienta z TIdTCPServer
 
-     procedure ParseGlobal(AContext: TIdContext);                               // parsinag dat s globalnim prefixem: "-;"
-     procedure ParseOR(AContext: TIdContext);                                   // parsing dat s prefixem konkretni oblasti rizeni
-     procedure Auth(AContext: TIdContext);                                      // pozadavek na autorizaci OR, data se ziskavaji z \parsed
+     procedure ParseGlobal(AContext: TIdContext; parsed: TStrings);             // parsinag dat s globalnim prefixem: "-;"
+     procedure ParseOR(AContext: TIdContext; parsed: TStrings);                 // parsing dat s prefixem konkretni oblasti rizeni
+     procedure Auth(AContext: TIdContext; parsed: TStrings);                    // pozadavek na autorizaci OR, data se ziskavaji z \parsed
 
      function IsOpenned():boolean;                                              // je server zapnut?
 
      procedure OnDCCCmdErr(Sender:TObject; Data:Pointer);                       // event chyby komunikace s lokomotivou v automatu
      procedure CheckPing(Sender:TObject);
+     procedure ProcessReceivedMessages();
+     procedure OnReceiveTimerTick(Sender: TObject);
 
    public
 
@@ -140,6 +153,20 @@ uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+constructor TTCPReceived.Create();
+begin
+ inherited;
+ Self.parsed := TStringList.Create;
+end;
+
+destructor TTCPReceived.Destroy();
+begin
+ Self.parsed.Free();
+ inherited;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 constructor TORTCPServer.Create();
 var i:Integer;
 begin
@@ -150,8 +177,8 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   Self.clients[i] := nil;
 
- Self.parsed := TStringList.Create;
- Self.readLock := TCriticalSection.Create();
+ Self.received := TObjectQueue<TTCPReceived>.Create();
+ Self.receivedLock := TCriticalSection.Create();
 
  Self.pingTimer := TTimer.Create(nil);
  Self.pingTimer.Enabled := false;
@@ -162,6 +189,11 @@ begin
  Self.tcpServer.OnConnect    := Self.OnTcpServerConnect;
  Self.tcpServer.OnDisconnect := Self.OnTcpServerDisconnect;
  Self.tcpServer.OnExecute    := Self.OnTcpServerExecute;
+
+ Self.receiveTimer := TTimer.Create(nil);
+ Self.receiveTimer.Enabled := false;
+ Self.receiveTimer.Interval := _RECEIVE_CHECK_PERIOD_MS;
+ Self.receiveTimer.OnTimer := Self.OnReceiveTimerTick;
 
  Self.DCCStopped := nil;
 end;//ctor
@@ -175,11 +207,12 @@ begin
    if (Assigned(Self.tcpServer)) then
      FreeAndNil(Self.tcpServer);
 
-   if (Assigned(Self.parsed)) then
-     FreeAndNil(Self.parsed);
+   Self.receivedLock.Acquire(); // wait for everything to end
+   FreeAndNil(Self.received);
+   Self.receivedLock.Release();
+   Self.receivedLock.Free();
 
    Self.pingTimer.Free();
-   Self.readLock.Free();
  finally
    inherited;
  end;
@@ -216,6 +249,7 @@ begin
    end;
  end;
 
+ Self.receiveTimer.Enabled := true;
  Self.pingTimer.Enabled := true;
 
  F_Main.S_Server.Brush.Color := clLime;
@@ -255,6 +289,7 @@ begin
  F_Main.LogStatus('Panel server: vypínám...');
  F_Main.S_Server.Brush.Color := clGray;
 
+ Self.receiveTimer.Enabled := false;
  Self.pingTimer.Enabled := false;
 
  with Self.tcpServer.Contexts.LockList do
@@ -386,8 +421,10 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+// This function is executed in separate thread for each client!
 
 procedure TORTCPServer.OnTcpServerExecute(AContext: TIdContext);
+var received:TTCPReceived;
 begin
  if (not AContext.Connection.Connected) then Exit;
 
@@ -397,36 +434,63 @@ begin
    Exit();
   end;
 
- readLock.Acquire();
+ receivedLock.Acquire();
+ if (not Assigned(Self.received)) then
+   Exit(); // everything is shutting down
 
  try
-   //read data
-   // data jsou schvalne globalni, aby se porad nevytvarela a nenicila dokola
+   received := TTCPReceived.Create();
+   received.AContext := AContext;
+
    data := AContext.Connection.IOHandler.ReadLn();
+   ExtractStringsEx([';'], [#13, #10], data, received.parsed);
 
-   Self.parsed.Clear();
-   ExtractStringsEx([';'], [#13, #10], data, Self.parsed);
+   if (received.parsed.Count = 0) then
+    begin
+     received.Free();
+     Exit();
+    end else if (received.parsed.Count > 1) then
+     received.parsed[1] := UpperCase(received.parsed[1]);
 
-   if (Self.parsed.Count = 0) then Exit();
-   if (Self.parsed.Count > 1) then Self.parsed[1] := UpperCase(Self.parsed[1]);
-
-   try
-     // zakladni rozdeleni parsovani - na data, ktera jsou obecna a na data pro konkretni oblast rizeni
-     if (Self.parsed[0] = '-') then
-      Self.ParseGlobal(AContext)
-     else
-      Self.ParseOR(AContext);
-   except
-
-   end;
+    Self.received.Enqueue(received);
  finally
-   readLock.Release();
+   receivedLock.Release();
+ end;
+end;
+
+procedure TORTCPServer.OnReceiveTimerTick(Sender: TObject);
+begin
+ Self.ProcessReceivedMessages();
+end;
+
+procedure TORTCPServer.ProcessReceivedMessages();
+var received:TTCPReceived;
+begin
+ receivedLock.Acquire();
+ if (not Assigned(Self.received)) then
+   Exit(); // everything is shutting down
+
+ try
+   while (Self.received.Count > 0) do
+    begin
+     received := Self.received.Extract();
+     try
+      if (received.parsed[0] = '-') then
+        Self.ParseGlobal(received.AContext, received.parsed)
+      else
+        Self.ParseOR(received.AContext, received.parsed);
+     except
+
+     end;
+    end;
+ finally
+   receivedLock.Release();
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORTCPServer.ParseGlobal(AContext: TIdContext);
+procedure TORTCPServer.ParseGlobal(AContext: TIdContext; parsed: TStrings);
 var i, j:Integer;
     tmp:string;
     blk:TBlk;
@@ -454,7 +518,7 @@ begin
    found := false;
    for j := 0 to Length(_PROTO_V_ACCEPT)-1 do
     begin
-     if (Self.parsed[2] = _PROTO_V_ACCEPT[j]) then
+     if (parsed[2] = _PROTO_V_ACCEPT[j]) then
       begin
        found := true;
        break;
@@ -472,8 +536,8 @@ begin
    Self.SendLn(AContext, '-;HELLO;' + _PROTOCOL_VERSION);
 
    // oznamime verzi komunikacniho protokolu
-   orRef.protocol_version := Self.parsed[2];
-   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[10] := Self.parsed[2];
+   orRef.protocol_version := parsed[2];
+   F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[10] := parsed[2];
 
    ORTCPServer.GUIQueueLineToRefresh(orRef.index);
    ModCas.SendTimeToPanel(AContext);
@@ -706,7 +770,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORTCPServer.ParseOR(AContext: TIdContext);
+procedure TORTCPServer.ParseOR(AContext: TIdContext; parsed: TStrings);
 var i:Integer;
     oblr:TOR;
     btn:TPanelButton;
@@ -717,7 +781,7 @@ begin
 
  // nejdriv se podivame, jestli nahodou nechce nekdo autorizaci
  if (parsed[1] = 'AUTH') then begin
-   Self.Auth(AContext);
+   Self.Auth(AContext, parsed);
    Exit;
  end else if (parsed[1] = 'SH') then begin
    try
@@ -1028,7 +1092,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORTCPServer.Auth(AContext: TIdContext);
+procedure TORTCPServer.Auth(AContext: TIdContext; parsed: TStrings);
 var OblR:TOR;
     i:Integer;
 begin
