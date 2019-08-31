@@ -479,10 +479,6 @@ begin
  Self.UsekStav.DCC        := false;
  Self.UsekStav.sekce.Clear();
 
- Self.EventsOnObsaz.Clear();
- Self.EventsOnUvol.Clear();
- Self.EventsOnZaverReleaseOrAB.Clear();
-
  Self.UsekStav.neprofilJCcheck.Clear();
 
  Self.Change(true);
@@ -490,6 +486,9 @@ end;
 
 procedure TBlkUsek.Reset();
 begin
+ Self.EventsOnObsaz.Clear();
+ Self.EventsOnUvol.Clear();
+ Self.EventsOnZaverReleaseOrAB.Clear();
  Self.Zaver := TZaver.no;
 end;
 
