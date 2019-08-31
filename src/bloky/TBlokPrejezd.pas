@@ -303,7 +303,7 @@ begin
      JCDb.RusJC(Self);
     end;
 
-   if (new_stav = none) then
+   if ((new_stav = TBlkPrjBasicStav.none) and (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled)) then
     begin
      for oblr in Self.OblsRizeni do
       oblr.BlkWriteError(Self, 'Porucha pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
