@@ -485,7 +485,7 @@ begin
 
  Self.UsekStav.neprofilJCcheck.Clear();
 
- Self.Change();
+ Self.Change(true);
 end;
 
 procedure TBlkUsek.Reset();

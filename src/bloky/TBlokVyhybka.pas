@@ -317,7 +317,7 @@ procedure TBlkVyhybka.Disable();
 begin
  Self.VyhStav.poloha := disabled;
  Self.VyhStav.redukuji_spojku := false;
- Self.Change();
+ Self.Change(true);
 end;
 
 procedure TBlkVyhybka.Reset();

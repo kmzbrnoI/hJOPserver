@@ -111,7 +111,7 @@ procedure TBlkIR.Disable();
 begin
  Self.IRStav.Stav    := disabled;
  Self.IRStav.StavOld := disabled;
- Self.Change();
+ Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

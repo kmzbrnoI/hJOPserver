@@ -311,7 +311,7 @@ begin
    Self.file_smer := Self.Smer;
  Self.SprPredict    := nil;
  Self.TratStav.Smer := TTratSmer.disabled;
- Self.Change();
+ Self.Change(true);
 end;
 
 procedure TBlkTrat.Reset();

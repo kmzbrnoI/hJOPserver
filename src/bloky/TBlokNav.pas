@@ -448,7 +448,7 @@ begin
  Self.NavStav.toRnz.Clear();
  Self.NavStav.RCtimer := -1;
  Self.UnregisterAllEvents();
- Self.Change();
+ Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

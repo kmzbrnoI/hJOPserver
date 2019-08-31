@@ -137,7 +137,7 @@ end;
 procedure TBlkRozp.Disable();
 begin
  Self.status := TRozpStatus.disabled;
- Self.Change();
+ Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

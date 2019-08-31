@@ -173,7 +173,7 @@ begin
  Self.ZamekStav.nouzZaver   := 0;
  Self.ZamekStav.porucha     := false;
 
- inherited Change();
+ Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

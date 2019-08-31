@@ -156,6 +156,7 @@ end;
 procedure TBlkSH.Disable();
 begin
  Self.shStav.enabled := false;
+ Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

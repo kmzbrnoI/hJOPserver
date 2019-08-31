@@ -258,7 +258,7 @@ procedure TBlkPrejezd.Disable();
 begin
  Self.PrjStav.basicStav := disabled;
  Self.PrjStav.shs.Clear();
- Self.Change();
+ Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

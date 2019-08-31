@@ -189,7 +189,7 @@ procedure TBlkUvazka.Disable();
 begin
  Self.UvazkaStav.enabled   := false;
  Self.UvazkaStav.nouzZaver := false;
- Self.Change();
+ Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
