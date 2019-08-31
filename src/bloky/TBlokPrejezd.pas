@@ -309,6 +309,12 @@ begin
       oblr.BlkWriteError(Self, 'Porucha pøejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
     end;
 
+   if (Self.PrjStav.basicStav = disabled) then
+    begin
+     // wake-up
+     Self.UpdateOutputs();
+    end;
+
    Self.PrjStav.basicStav := new_stav;
    Self.Change();
   end;
