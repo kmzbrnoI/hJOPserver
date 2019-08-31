@@ -319,7 +319,7 @@ begin
    if (Now > Self.PrjStav.uzavStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
      for oblr in Self.OblsRizeni do
-      oblr.BlkWriteError(Self, Self.GlobalSettings.name+' otevøen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
+      oblr.BlkWriteError(Self, Self.GlobalSettings.name+' uzavøen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
      Self.PrjStav.uzavStart := now;
     end;
   end;
