@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, fMain, Booster;
+  Dialogs, StdCtrls, ExtCtrls, Spin, fMain, Booster, IBUtils;
 
 type
   TF_ZesilovacEdit = class(TForm)
@@ -73,9 +73,9 @@ procedure TF_ZesilovacEdit.OpenForm(Zesilovac:TBooster);
 
 procedure TF_ZesilovacEdit.SE_RCS_moduleExit(Sender: TObject);
 begin
- Self.SE_Napajeni_Port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Napajeni_module.Value)-1;
- Self.SE_DCC_port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_DCC_module.Value)-1;
- Self.SE_Zkrat_Port.MaxValue := RCSi.GetModuleInputsCountSafe(Self.SE_Zkrat_module.Value)-1;
+ Self.SE_Napajeni_Port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Napajeni_module.Value))-1, 0);
+ Self.SE_DCC_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_DCC_module.Value))-1, 0);
+ Self.SE_Zkrat_Port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Zkrat_module.Value))-1, 0);
 end;
 
 procedure TF_ZesilovacEdit.B_SaveClick(Sender: TObject);
