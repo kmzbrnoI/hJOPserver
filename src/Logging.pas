@@ -84,6 +84,8 @@ procedure intWriteLog(Text:string; Typ:integer; ErrorID:integer = 0; multiline:b
 var LV:TListItem;
     f:TextFile;
     xTime,xDate:string;
+    b:Byte;
+    output:string;
  begin
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss', Now);
@@ -125,12 +127,18 @@ var LV:TListItem;
     if (F_Main.CHB_Mainlog_File.Checked) then
      begin
       AssignFile(f, 'log\program\'+xDate+'.log');
-      if FileExists('log\program\'+xDate+'.log') then
+      if (FileExists('log\program\'+xDate+'.log')) then
         Append(f)
        else
         Rewrite(f);
 
-      writeln(f, xtime+';'+GetWriteLogTyp(Typ)+';'+InttoStr(ErrorID)+';'+Text+';'+ColorToString(GetLogColor(Typ, ErrorID))+';');
+      output := xtime+' ['+GetWriteLogTyp(Typ);
+      if (ErrorID <> 0) then
+        output := output + ':' + IntToStr(ErrorID);
+      output := output + '] ' + Text + #13#10;
+      for b in TEncoding.UTF8.GetBytes(output) do
+        Write(f, AnsiChar(b));
+
       CloseFile(f);
      end;
   except
