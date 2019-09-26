@@ -2377,7 +2377,7 @@ begin
       if ((Self.fproperties.TypCesty = TJCType.vlak) and (Usek.IsSouprava())) then
        begin
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(Usek.Souprava)+
-          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT);
         Usek.RemoveSoupravy();
        end;
      end;//if Self.RozpadBlok >= 1
@@ -2417,12 +2417,12 @@ begin
         if (spri = TBlkUsek(Usek).Souprava) then
          begin
           writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-            ' z bloku '+Blk.name, WR_SPRPREDAT, 0);
+            ' z bloku '+Blk.name, WR_SPRPREDAT);
           (Blk as TBlkUsek).RemoveSouprava(spri);
          end;
 
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT);
         Usek.RemoveSoupravy();
        end;
      end;
@@ -2439,7 +2439,7 @@ begin
         spri := Self.GetSoupravaIndex(nav, Usek);
         Usek.RemoveSouprava(spri);
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT);
        end;
 
       Self.RozpadRuseniBlok := 0;
@@ -2483,7 +2483,7 @@ begin
        begin
         Usek.RemoveSouprava(spri);
         writelog('JC '+Self.nazev+': smazana souprava '+Soupravy.GetSprNameByIndex(spri)+
-          ' z bloku '+Usek.name, WR_SPRPREDAT, 0);
+          ' z bloku '+Usek.name, WR_SPRPREDAT);
        end;
 
       if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
@@ -2568,7 +2568,7 @@ var UsekActual,UsekDalsi,Nav:TBlk;
   Soupravy.soupravy[(UsekDalsi as TBlkUsek).Souprava].front := UsekDalsi;
   (UsekDalsi as TBlkUsek).houk_ev_enabled := true;
   writelog('JC '+Self.nazev+': predana souprava '+Soupravy.GetSprNameByIndex((UsekDalsi as TBlkUsek).Souprava)+
-      ' z bloku '+UsekActual.name+' do bloku '+UsekDalsi.name,WR_SPRPREDAT, 0);
+      ' z bloku '+UsekActual.name+' do bloku '+UsekDalsi.name,WR_SPRPREDAT);
 
   Self.CheckSmyckaBlok(UsekDalsi);
  end;
@@ -3048,7 +3048,7 @@ begin
    Blky.GetBlkByID(Self.fproperties.Prejezdy[data].Prejezd, TBlk(prejezd));
    prejezd.Zaver := true;
    writelog('JC '+Self.nazev+': obsazen '+TBlkUsek(Sender).name+
-      ' - uzaviram prejezd '+prejezd.name, WR_VC, 0);
+      ' - uzaviram prejezd '+prejezd.name, WR_VC);
 
    // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
    Blky.GetBlkByID(Self.fproperties.Prejezdy[data].oteviraci, TBlk(usek));

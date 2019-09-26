@@ -1324,7 +1324,7 @@ begin
   begin
    Self.NavStav.padani       := true;
    Self.NavStav.padani_start := Now;
-   writelog('Návìstidlo '+Self.GlobalSettings.name+': spoždìní pádu '+IntToStr(Self.NavSettings.ZpozdeniPadu)+' s', WR_VC, 0);
+   writelog('Návìstidlo '+Self.GlobalSettings.name+': spoždìní pádu '+IntToStr(Self.NavSettings.ZpozdeniPadu)+' s', WR_VC);
   end else begin
    Self.Navest := _NAV_STUJ;
   end;

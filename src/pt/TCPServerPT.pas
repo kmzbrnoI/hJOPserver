@@ -162,7 +162,7 @@ begin
  except
   on E:Exception do
    begin
-    writeLog('ERR: Cannot start server : '+E.Message, WR_PT, 1);
+    writeLog('ERR: Cannot start server : '+E.Message, WR_PT);
     F_Main.S_PTServer.Brush.Color := clRed;
     raise;
    end;

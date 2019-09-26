@@ -263,7 +263,7 @@ end;//procdure
 
 procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg:PChar);
 begin
- writelog('RCS ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_RCS, 1);
+ writelog('RCS ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_RCS);
 
  if (errAddr = 255) then
   begin
@@ -273,7 +273,7 @@ begin
       // general IO error
       F_Main.A_System_Start.Enabled := true;
       F_Main.A_System_Stop.Enabled  := true;
-      writelog('RCS FTDI Error - '+IntToStr(errValue), WR_ERROR, 0);
+      writelog('RCS FTDI Error - '+IntToStr(errValue), WR_ERROR);
       ORTCPServer.BroadcastBottomError('RCS FTDI error', 'TECHNOLOGIE');
     end;
    end;//case

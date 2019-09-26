@@ -561,7 +561,7 @@ begin
    
    if (HVDb.HVozidla[addr].ruc) then
     begin      // pokud je loko prevzato na rucni rizeni, ignoruji ho
-     writelog('LOKO ' + IntToStr(addr) + ' v ruèním regulátoru, nenastavuji rychlost', WR_MESSAGE, 0);
+     writelog('LOKO ' + IntToStr(addr) + ' v ruèním regulátoru, nenastavuji rychlost', WR_MESSAGE);
      continue;
     end;
 
@@ -576,7 +576,7 @@ begin
          AppEvents.LogException(E, 'TSouprava.SetRychlostSmer');
      end;
    end else
-    writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE, 0);
+    writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
   end;
 
  if ((speed > 0) and (Assigned(Self.front)) and
@@ -584,7 +584,7 @@ begin
       ((Self.front as TBlkUsek).Soupravs[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
   (Self.front as TBlkUsek).VlakPresun := -1;
 
- writelog('Souprava ' + Self.nazev + ' : rychlost '+IntToStr(speed)+', smìr : '+IntToStr(Integer(dir)), WR_MESSAGE, 0);
+ writelog('Souprava ' + Self.nazev + ' : rychlost '+IntToStr(speed)+', smìr : '+IntToStr(Integer(dir)), WR_MESSAGE);
 
  Self.changed := true;
 end;
@@ -785,7 +785,7 @@ procedure TSouprava.ToggleHouk(desc:string);
 var addr:Integer;
     HV:THV;
 begin
- writelog('Souprava ' + Self.nazev + ' : aktivuji houkání ' + desc, WR_MESSAGE, 0);
+ writelog('Souprava ' + Self.nazev + ' : aktivuji houkání ' + desc, WR_MESSAGE);
 
  for addr in Self.HVs do
   begin
@@ -801,9 +801,9 @@ var addr:Integer;
     func:TFunkce;
 begin
  if (state) then
-   writelog('Souprava ' + Self.nazev + ' : aktivuji funkci ' + desc, WR_MESSAGE, 0)
+   writelog('Souprava ' + Self.nazev + ' : aktivuji funkci ' + desc, WR_MESSAGE)
  else
-   writelog('Souprava ' + Self.nazev + ' : deaktivuji funkci ' + desc, WR_MESSAGE, 0);
+   writelog('Souprava ' + Self.nazev + ' : deaktivuji funkci ' + desc, WR_MESSAGE);
 
  for addr in Self.HVs do
   begin

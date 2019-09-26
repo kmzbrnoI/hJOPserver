@@ -68,7 +68,7 @@ uses TechnologieRCS, Logging, RCS, TBlokNav;
 
 procedure TF_Tester.FormShow(Sender: TObject);
  begin
-  writelog('Zobrazeno okno Testeru', 0, 0);
+  writelog('Zobrazeno okno Testeru', WR_MESSAGE);
  end;
 
 procedure TF_Tester.UpdateOut();
@@ -223,7 +223,7 @@ procedure TF_Tester.CB_RCSAdrChange(Sender: TObject);
 
 procedure TF_Tester.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  writelog('Skryto okno Testeru',0,0);
+  writelog('Skryto okno Testeru', WR_MESSAGE);
  end;
 
 procedure TF_Tester.CreateSInput();

@@ -54,6 +54,9 @@ const
     120
   );
 
+  _MAX_LOGTABLE_ITEMS = 500;
+  _LOG_PATH = 'log\trakce';
+
 type
   TLogEvent = procedure(Sender:TObject; lvl:TTrkLogLevel; msg:string; var handled:boolean) of object;
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TSlot; var handled:boolean) of object;
@@ -567,13 +570,15 @@ procedure TTrkGUI.WriteLog(lvl:TTrkLogLevel; msg:string);
 var LV_Log:TListItem;
     f:TextFile;
     xDate, xTime:string;
+    output:string;
+    b:Byte;
  begin
   if ((lvl > Self.logfile) and (lvl > Self.logtable)) then Exit;
 
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
 
-  if (Self.LogObj.Items.Count > 500) then
+  if (Self.LogObj.Items.Count > _MAX_LOGTABLE_ITEMS) then
     Self.LogObj.Clear();
 
   if (lvl <= Self.logtable) then
@@ -591,13 +596,15 @@ var LV_Log:TListItem;
   if (lvl <= Self.logfile) then
    begin
     try
-      AssignFile(f, 'log\lnet\'+xDate+'.log');
-      if FileExists('log\lnet\'+xDate+'.log') then
+      AssignFile(f, _LOG_PATH+'\'+xDate+'.log');
+      if (FileExists(_LOG_PATH+'\'+xDate+'.log')) then
         Append(f)
       else
         Rewrite(f);
 
-      Writeln(f, xTime+' '+IntToStr(Integer(lvl))+': '+msg);
+      output := xTime + ' [' +IntToStr(Integer(lvl))+'] ' + msg + #13#10;
+      for b in TEncoding.UTF8.GetBytes(output) do
+        Write(f, AnsiChar(b));
 
       CloseFile(f);
     except

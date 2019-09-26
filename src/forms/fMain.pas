@@ -491,25 +491,25 @@ type
    procedure ResizeCPUGauge;                                                      // meni pozici Gauge pri zmene velikosti okna
  end;
 
- TReset=class                                                                   // reset SW
-   procedure ZakladniPolohaVyhybek;                                                // prestavit vyhybky do zakladni polohy
+ TReset=class
+   procedure ZakladniPolohaVyhybek();
  end;
 
  TLogData=class
-   function CreateLogDirectories:boolean;                                        // vytvori slozky, od kterych se ukladaji soubory log
+   procedure CreateLogDirectories();
  end;
 
- TSystemStatus = (null, starting, stopping);                                     // stav startovani / vypinani systemu
+ TSystemStatus = (null, starting, stopping);                                    // stav startovani / vypinani systemu
  TSystem=class
-   Status:TSystemStatus;                                                         // aktualni stav systemu
-  end;
+   Status:TSystemStatus;                                                        // aktualni stav systemu
+ end;
 
 var
   F_Main: TF_Main;
 
-  ResetData:TReset;                                                             // reset
-  LogData:TLogData;                                                             // logovani
-  Vytizeni:TVytizeni;                                                           // zobrazeni vytizceni procesoru
+  ResetData:TReset;
+  LogData:TLogData;
+  Vytizeni:TVytizeni;                                                           // zobrazeni vytizeni procesoru
   SystemData:TSystem;                                                           // zapinani / vypinani systemu
   TrkSystem:TTrkGUI;                                                            // trakce
 
@@ -1292,7 +1292,7 @@ begin
      end;
    if (str <> '') then
     begin
-     writelog('Chybí RCS moduly '+str, WR_RCS, 1);
+     writelog('Chybí RCS moduly '+str, WR_RCS);
      Self.LogStatus('WARN: Chybí RCS moduly '+str);
     end;
 
@@ -1347,7 +1347,7 @@ begin
  SystemData.Status := TSystemStatus.null;
 
  Self.LogStatus('ERR: RCS OPEN FAIL: '+errMsg);
- writelog('----- RCS OPEN FAIL - '+errMsg+' -----', WR_ERROR, 21);
+ writelog('----- RCS OPEN FAIL - '+errMsg+' -----', WR_ERROR);
  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
  Application.MessageBox(PChar('Při otevírání RCS nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -1367,7 +1367,7 @@ begin
  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
  Application.MessageBox(PChar('Při uzavírání RCS nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
- writelog('----- RCS CLOSE FAIL - '+errMsg+' -----', WR_ERROR, 21);
+ writelog('----- RCS CLOSE FAIL - '+errMsg+' -----', WR_ERROR);
 end;
 
 procedure TF_Main.OnRCSErrStart(Sender:TObject; errMsg:string);
@@ -1392,7 +1392,7 @@ begin
   end;
 
   Self.LogStatus('ERR: RCS START FAIL: '+errMsg);
-  writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR,21);
+  writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR);
 
   Application.MessageBox(PChar('Při zapínání komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;
@@ -1411,7 +1411,7 @@ begin
   Self.LogStatus('ERR: RCS STOP FAIL: '+errMsg);
 
   Application.MessageBox(PChar('Při vypínání komunikace nastala chyba:'+#13#10+errMsg+#13#10), 'Chyba', MB_OK OR MB_ICONWARNING);
-  writelog('----- RCS STOP FAIL - '+errMsg+' -----', WR_ERROR, 21);
+  writelog('----- RCS STOP FAIL - '+errMsg+' -----', WR_ERROR);
 end;
 
 procedure TF_Main.OnRCSReady(Sender:TObject; ready:boolean);
@@ -2064,14 +2064,14 @@ end;
 
 procedure TF_Main.CloseForm;
  begin
-  WriteLog('########## Probíhá ukončování hJOPserver ##########',WR_MESSAGE);
+  WriteLog('########## Probíhá ukončování hJOPserver ##########', WR_MESSAGE);
 
-  Self.Timer1.Enabled         := false;
-  Self.T_function.Enabled     := false;
-  self.T_konflikty.Enabled    := false;
-  JCSimulator.timer.Enabled   := false;
+  Self.Timer1.Enabled := false;
+  Self.T_function.Enabled := false;
+  self.T_konflikty.Enabled := false;
+  JCSimulator.timer.Enabled := false;
   TratSimulator.timer.Enabled := false;
-  VyhSimulator.timer.Enabled  := false;
+  VyhSimulator.timer.Enabled := false;
 
   Self.A_SaveStavExecute(Self);
 
@@ -2081,27 +2081,18 @@ procedure TF_Main.CloseForm;
     on E:Exception do
       AppEvents.LogException(E, 'FreeVars');
   end;
-  WriteLog('###############################################',WR_MESSAGE);
+  WriteLog('###############################################', WR_MESSAGE);
  end;
 
-function TLogData.CreateLogDirectories:boolean;
+procedure TLogData.CreateLogDirectories();
  begin
-  Result := true;
+  if not DirectoryExists(Logging._LOG_PATH) then
+    if not SysUtils.ForceDirectories(ExpandFileName(Logging._LOG_PATH)) then
+      writelog('ERR: Nelze vytvořit složku '+Logging._LOG_PATH, WR_ERROR);
 
-  if not DirectoryExists('log\') then
-    if not CreateDir('log\') then
-      raise Exception.Create('Nelze vytvořit složku log');
-
-  if not DirectoryExists('log\program') then
-    if not CreateDir('log\program') then
-      raise Exception.Create('Nelze vytvořit složku log\program');
-
-  if not DirectoryExists('log\lnet') then
-    if not CreateDir('log\lnet') then
-     begin
-      writelog('ERR: Nelze vytvořit složku log\lnet', WR_ERROR);
-      Result := false;
-     end;
+  if not DirectoryExists(TrakceGUI._LOG_PATH) then
+    if not SysUtils.ForceDirectories(ExpandFileName(TrakceGUI._LOG_PATH)) then
+      writelog('ERR: Nelze vytvořit složku '+TrakceGUI._LOG_PATH, WR_ERROR);
  end;
 
 procedure TF_Main.CreateCfgDirs();
@@ -2357,7 +2348,7 @@ procedure TF_Main.OnStart;
  begin
   Vytizeni.DrawCPUGauge;
 
-  writelog('Spuštěn hJOPserver v'+NactiVerzi(application.ExeName),0,0);
+  writelog('Spuštěn hJOPserver v'+NactiVerzi(application.ExeName), WR_MESSAGE);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
 
   if (not CloseMessage) then F_Main.Close;
@@ -2436,7 +2427,7 @@ procedure TF_Main.CreateSystem;
   F_splash.AddStav('Vytvářím složky logů');
 
   try
-    LogData.CreateLogDirectories;
+    LogData.CreateLogDirectories();
   except
     on e:Exception do
       AppEvents.LogException(E);
@@ -2720,7 +2711,7 @@ begin
    if (Self.LB_Log.Items.Count > 100) then Self.LB_Log.Clear();   
    Self.LB_Log.Items.Insert(0, FormatDateTime('hh:nn:ss', Now)+ ' : ' + str);
   end;
- writeLog(str, WR_SYSTEM, 0);
+ writeLog(str, WR_SYSTEM);
 end;
 
 procedure TF_Main.LV_ABChange(Sender: TObject; Item: TListItem;

@@ -22,9 +22,12 @@ const
    WR_TRAT        = 16;
    WR_PT          = 17;
 
+   _MAX_LOGTABLE_ITEMS = 500;
+   _LOG_PATH = 'log\program';
 
-procedure writeLog(Text:string;Typ:integer;ErrorID:integer = 0); overload;
-procedure writeLog(Text:TStrings; Typ:integer; ErrorID:integer = 0); overload;
+
+procedure writeLog(Text:string; Typ:Integer); overload;
+procedure writeLog(Text:TStrings; Typ:Integer); overload;
 
 var
   log_err_flag:boolean;              // pokud je posledni log chyba, je zde true, jinak je zde false
@@ -35,10 +38,8 @@ uses fSettings, fMain, GetSystems;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function GetLogColor(LogTyp:Integer; ErrorID:Integer):TColor;
+function GetLogColor(LogTyp:Integer):TColor;
  begin
-  if (ErrorID > 0) then Exit(RGB($FF,$A0,$A0));
-
   case (LogTyp) of
    WR_MESSAGE    : Result := clWhite;
    WR_ERROR      : Result := fMain._TABLE_COLOR_RED;
@@ -80,7 +81,7 @@ function GetWriteLogTyp(Typ:Integer):string;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure intWriteLog(Text:string; Typ:integer; ErrorID:integer = 0; multiline:boolean = false);
+procedure intWriteLog(Text:string; Typ:integer; multiline:boolean = false);
 var LV:TListItem;
     f:TextFile;
     xTime,xDate:string;
@@ -88,35 +89,26 @@ var LV:TListItem;
     output:string;
  begin
   DateTimeToString(xDate, 'yy_mm_dd', Now);
-  DateTimeToString(xTime, 'hh:mm:ss', Now);
-  if (multiline) then xTime := '';
+  DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
+  if (multiline) then
+    xTime := '';
+  log_err_flag := (typ = WR_ERROR);
 
-  if (typ = WR_ERROR) then
-   log_err_flag := true
-  else
-   log_err_flag := false;
-
-  if (F_Main.LV_log.Items.Count > 500) then
+  if (F_Main.LV_log.Items.Count > _MAX_LOGTABLE_ITEMS) then
     F_Main.LV_log.Clear();
 
   try
     if (F_Main.CHB_mainlog_table.Checked) then
      begin
       LV := F_Main.LV_log.Items.Insert(0);
-      LV.Data    := Pointer(GetLogColor(Typ, ErrorID));
+      LV.Data := Pointer(GetLogColor(Typ));
       LV.Caption := xtime;
-      LV.SubItems.Add(text);
       LV.SubItems.Add(GetWriteLogTyp(Typ));
-      if (ErrorID > 0) then
-       begin
-        LV.SubItems.Add(Inttostr(ErrorID));
-       end else begin
-        LV.SubItems.Add('X');
-       end;
-     end;//if mainlog.Checked
+      LV.SubItems.Add(Text);
+     end;
     if (not multiline) then
      begin
-      F_Main.SB1.Panels.Items[_SB_LOG].Text:=text;
+      F_Main.SB1.Panels.Items[_SB_LOG].Text := text;
       Log := true;
      end;
   except
@@ -126,16 +118,13 @@ var LV:TListItem;
   try
     if (F_Main.CHB_Mainlog_File.Checked) then
      begin
-      AssignFile(f, 'log\program\'+xDate+'.log');
-      if (FileExists('log\program\'+xDate+'.log')) then
+      AssignFile(f, _LOG_PATH+'\'+xDate+'.log');
+      if (FileExists(_LOG_PATH+'\'+xDate+'.log')) then
         Append(f)
-       else
+      else
         Rewrite(f);
 
-      output := xtime+' ['+GetWriteLogTyp(Typ);
-      if (ErrorID <> 0) then
-        output := output + ':' + IntToStr(ErrorID);
-      output := output + '] ' + Text + #13#10;
+      output := xtime + ' ['+GetWriteLogTyp(Typ) + '] ' + Text + #13#10;
       for b in TEncoding.UTF8.GetBytes(output) do
         Write(f, AnsiChar(b));
 
@@ -144,24 +133,23 @@ var LV:TListItem;
   except
 
   end;
-
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure writeLog(Text:string; Typ:integer; ErrorID:integer = 0); overload;
+procedure writeLog(Text:string; Typ:integer); overload;
 begin
- intWriteLog(Text, Typ, ErrorID, false);
+ intWriteLog(Text, Typ, false);
 end;
 
-procedure writeLog(Text:TStrings; Typ:integer; ErrorID:integer = 0); overload;
+procedure writeLog(Text:TStrings; Typ:integer); overload;
 var i:Integer;
 begin
  if (Text.Count = 0) then Exit();
 
- intWriteLog(Text[0], Typ, ErrorID, false);
+ intWriteLog(Text[0], Typ, false);
  for i := 1 to Text.Count-1 do
-   intWriteLog(' -> '+Text[i], Typ, ErrorID, true);
+   intWriteLog(' -> '+Text[i], Typ, true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
