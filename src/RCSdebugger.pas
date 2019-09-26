@@ -46,8 +46,8 @@ type
 
        function ModuleIndexOf(addr:Integer):Integer;                            // vrati index \addr adresy v seznamu modulu \modules
 
-       procedure OnRCSInputChange(Sender:TObject; board:byte);                  // event z TRCS volany pri zmene RCS vstupu
-       procedure OnRCSOutputChange(Sender:TObject; board:byte);                 // event z TRCS volany pri zmene RCS vystupu
+       procedure OnRCSInputChange(Sender:TObject; board:Cardinal);              // event z TRCS volany pri zmene RCS vstupu
+       procedure OnRCSOutputChange(Sender:TObject; board:Cardinal);             // event z TRCS volany pri zmene RCS vystupu
 
     public
        constructor Create(conn:TIdContext);
@@ -78,7 +78,7 @@ type
        procedure RemoveAllClients();                                            // smazani vsech RCSd klientu
        procedure Update();                                                      // propagace stavu RCS k RCSd klientum
 
-       class function GetRCSInfo(board:byte):string;                            // vraci INFO string
+       class function GetRCSInfo(board:Cardinal):string;                        // vraci INFO string
 
   end;
 
@@ -298,7 +298,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSdClient.OnRCSInputChange(Sender:TObject; board:byte);
+procedure TRCSdClient.OnRCSInputChange(Sender:TObject; board:Cardinal);
 var index:Integer;
     module:TRCSdModule;
 begin
@@ -311,7 +311,7 @@ begin
   end;
 end;
 
-procedure TRCSdClient.OnRCSOutputChange(Sender:TObject; board:byte);
+procedure TRCSdClient.OnRCSOutputChange(Sender:TObject; board:Cardinal);
 var index:Integer;
     module:TRCSdModule;
 begin
@@ -445,7 +445,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TRCSd.GetRCSInfo(board:byte):string;
+class function TRCSd.GetRCSInfo(board:Cardinal):string;
 begin
  Result := IntToStr(board) + '|';
 

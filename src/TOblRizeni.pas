@@ -45,7 +45,7 @@ type
 
   //1 osvetleni
   TOsv = record
-   board:Byte;                                                                  // RCS deska osvetleni
+   board:Cardinal;                                                              // RCS deska osvetleni
    port:Byte;                                                                   // RCS port osvetleni
    name:string;                                                                 // popis osvetleni, max 5 znaku
 

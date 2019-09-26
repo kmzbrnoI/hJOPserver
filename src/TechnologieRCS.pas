@@ -21,9 +21,8 @@ interface
 uses SysUtils, Classes, IniFiles, Generics.Collections, RCS;
 
 type
-  TErrEvent = procedure(Sender:TObject; errValue: word; errAddr: byte; errMsg:string) of object;
   TRCSReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
-  TRCSBoardChangeEvent = procedure (Sender:TObject; board:byte) of object;
+  TRCSBoardChangeEvent = procedure (Sender:TObject; board:Cardinal) of object;
 
   //////////////////////////////////////////////////////////////
 
@@ -110,7 +109,7 @@ type
       function IsSimulatorMode():boolean;
 
       property generalError:boolean read fGeneralError;
-      class function RCSAddr(board:Byte; port:Byte):TRCSAddr;
+      class function RCSAddr(board:Cardinal; port:Byte):TRCSAddr;
 
       //events
       property AfterClose:TNotifyEvent read fAfterClose write fAfterClose;
@@ -429,7 +428,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TRCS.RCSAddr(board:Byte; port:Byte):TRCSAddr;
+class function TRCS.RCSAddr(board:Cardinal; port:Byte):TRCSAddr;
 begin
  Result.board := board;
  Result.port := port;
