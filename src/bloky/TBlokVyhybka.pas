@@ -12,6 +12,7 @@ uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
 
 type
  TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
+ ESpojka = class(Exception);
 
  TBlkVyhSettings = record
   RCSAddrs:TRCSAddrs;     // poradi(0..3): vst+,vst-,vyst+,vyst-
@@ -157,10 +158,11 @@ type
     //----- vyhybka own functions -----
 
     function GetSettings():TBlkVyhSettings;
-    function SetSettings(data:TBlkVyhSettings):Byte;
+    procedure SetSettings(data:TBlkVyhSettings);
 
     function SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false; callback_ok:TNotifyEvent = nil; callback_err:TNotifyEvent = nil):Integer;
     procedure SetVyhVyl(Sender:TIDContext; vyl:string); overload;
+    procedure SetSpojkaNoPropag(spojka:Integer);
 
     procedure RedukujMenu();
     procedure ZrusRedukciMenu();
@@ -385,17 +387,16 @@ begin
  Result := Self.VyhSettings;
 end;
 
-function TBlkVyhybka.SetSettings(data:TBlkVyhSettings):Byte;
+procedure TBlkVyhybka.SetSettings(data:TBlkVyhSettings);
 var Blk:TBlk;
     spojka_settings:TBlkVyhSettings;
     spojka_old:Integer;
 begin
+ if (data.spojka = Self.GlobalSettings.id) then
+   raise ESpojka.Create('Nelze mít spojku sám se sebou!');
  spojka_old := Self.VyhSettings.spojka;
 
- if (data.RCSAddrs <> Self.VyhSettings.RCSAddrs) then
-   Self.VyhSettings.RCSAddrs.Free();
-
- Self.VyhSettings := data;
+ Self.VyhSettings.spojka := data.spojka;
 
  // kontrola navaznosti spojky
  if (data.spojka > -1) then
@@ -404,11 +405,8 @@ begin
    if (spojka_old > -1) then
     begin
      Blky.GetBlkByID(spojka_old, Blk);
-     if ((Blk = nil) or (Blk.typ <> _BLK_VYH)) then Exit(3);
-
-     spojka_settings := (Blk as TBlkVyhybka).GetSettings();
-     spojka_settings.spojka  := -1;
-     (Blk as TBlkVyhybka).SetSettings(spojka_settings);
+     if ((Blk <> nil) and (Blk.typ = _BLK_VYH)) then
+       (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
     end;
 
    // pridame spojku do druhe vyhybky
@@ -416,42 +414,39 @@ begin
    if ((Blk = nil) or (Blk.typ <> _BLK_VYH)) then
     begin
      Self.VyhSettings.spojka := -1;
-     Exit(1);
+    end else begin
+     spojka_settings := (Blk as TBlkVyhybka).GetSettings();
+     if (spojka_settings.spojka <> Self.GlobalSettings.id) then
+      begin
+       if (spojka_settings.spojka <> -1) then
+        begin
+         Self.VyhSettings.spojka := -1;
+         raise ESpojka.Create('Na výhybce je již jiná spojka!');
+        end;
+
+       spojka_settings.spojka := self.GlobalSettings.id;
+       spojka_settings.RCSAddrs.Clear();
+       spojka_settings.RCSAddrs.AddRange(data.RCSAddrs);
+       (Blk as TBlkVyhybka).SetSettings(spojka_settings);
+      end;
     end;
-
-   spojka_settings := (Blk as TBlkVyhybka).GetSettings();
-
-   // zabraneni cykleni
-   if (spojka_settings.spojka = Self.GlobalSettings.id) then Exit(0);
-
-   // na vyhybce je jina spojka - neumoznime tedy spojku vytvorit
-   if (spojka_settings.spojka <> -1) then
-    begin
-     Self.VyhSettings.spojka := -1;
-     Exit(2);
-    end;
-
-   spojka_settings.spojka   := self.GlobalSettings.id;
-   spojka_settings.RCSAddrs := Self.VyhSettings.RCSAddrs;
-   (Blk as TBlkVyhybka).SetSettings(spojka_settings);
   end else begin
    // odebereme spojku z druhe vyhybky
 
    // pokud uz nebyla, neni co odebirat
-   if (spojka_old = -1) then Exit(0);
+   if (spojka_old = -1) then Exit();
 
    Blky.GetBlkByID(spojka_old, Blk);
-   if ((Blk = nil) or (Blk.typ <> _BLK_VYH)) then Exit(3);
-
-   spojka_settings := (Blk as TBlkVyhybka).GetSettings();
-   spojka_settings.spojka  := -1;
-   (Blk as TBlkVyhybka).SetSettings(spojka_settings);
+   if ((Blk <> nil) and (Blk.typ = _BLK_VYH)) then
+     (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
   end;
 
- Self.MapNpEvents();
+ if (data.RCSAddrs <> Self.VyhSettings.RCSAddrs) then
+   Self.VyhSettings.RCSAddrs.Free();
+ Self.VyhSettings := data;
 
+ Self.MapNpEvents();
  Self.Change();
- Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1397,6 +1392,13 @@ begin
  finally
    upo.Free();
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVyhybka.SetSpojkaNoPropag(spojka:Integer);
+begin
+ Self.VyhSettings.spojka := spojka;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

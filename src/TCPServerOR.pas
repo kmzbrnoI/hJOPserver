@@ -88,10 +88,10 @@ type
      constructor Create();
      destructor Destroy(); override;
 
-     function Start(port:Word):Integer; overload;                               // spustit server
-     function Start():Integer; overload;                                        // spustit server
-     function Stop():Integer;                                                   // zastavit server
-     procedure DisconnectClient(conn:TIdContext);                               // odpojit konkretniho klienta
+     procedure Start(port:Word); overload;
+     procedure Start(); overload;
+     procedure Stop();
+     procedure DisconnectClient(conn:TIdContext);
 
      // volani funkci do panelu, ktere neprislusi OR, ale jednotlivym panelum
      procedure SendInfoMsg(AContext:TIdContext; msg:string);
@@ -220,17 +220,17 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORTCPServer.Start(port:Word):Integer;
+procedure TORTCPServer.Start(port:Word);
 begin
  if ((SystemData.Status = starting) and (Self.openned)) then
   begin
    F_Main.LogStatus('System: start OK');
    SystemData.Status := null;
    F_Main.UpdateSystemButtons();
-   Exit(0);
+   Exit();
   end;
 
- if (Self.tcpServer.Active) then Exit(1);
+ if (Self.tcpServer.Active) then Exit();
 
  F_Main.S_Server.Brush.Color := clGray;
  F_Main.LogStatus('Panel server: spouštìní...');
@@ -263,28 +263,26 @@ begin
    SystemData.Status := null;
    F_Main.UpdateSystemButtons();
   end;
-
- Result := 0;
 end;
 
-function TORTCPServer.Start():Integer;
+procedure TORTCPServer.Start();
 begin
- Result := Self.Start(Self.port);
+ Self.Start(Self.port);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORTCPServer.Stop():Integer;
+procedure TORTCPServer.Stop();
 var iA:integer;
     Context: TidContext;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
    TrkSystem.TurnOffFunctions(F_Main.OnSoundDisabled);
-   Exit(0);
+   Exit();
   end;
 
- if (not Self.tcpServer.Active) then Exit(1);
+ if (not Self.tcpServer.Active) then Exit();
 
  F_Main.LogStatus('Panel server: vypínám...');
  F_Main.S_Server.Brush.Color := clGray;
@@ -319,8 +317,6 @@ begin
 
  if (SystemData.Status = stopping) then
    TrkSystem.TurnOffFunctions(F_Main.OnSoundDisabled);
-
- Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

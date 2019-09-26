@@ -148,7 +148,6 @@ end;
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
 var data:THVData;
     stav:THVStav;
-    return:Byte;
     OblR:TOR;
     i:Integer;
     pomCV:THVPomCV;
@@ -234,18 +233,15 @@ var data:THVData;
      // vytvoreni noveho HV
      data.maxRychlost := _DEFAUT_MAX_SPEED;
      ORs.GetORByIndex(Self.CB_OR.ItemIndex, OblR);
-     return := HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
-
-     if (return = 1) then
-      begin
-       Application.MessageBox(PChar('Chyba '+IntToStr(return)+#13#10+'Neplatná adresa !'), 'Nelze pøidat', MB_OK OR MB_ICONWARNING);
-       Exit;
-      end;
-     if (return = 2) then
-      begin
-       Application.MessageBox(PChar('Chyba '+IntToStr(return)+#13#10+'HV s touto adresou již existuje !'), 'Nelze pøidat', MB_OK OR MB_ICONWARNING);
-       Exit;
-      end;
+     try
+       HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
+     except
+       on E:Exception do
+        begin
+         Application.MessageBox(PChar(E.Message), 'Nelze pøidat', MB_OK OR MB_ICONWARNING);
+         Exit;
+        end;
+     end;
    end else begin
      // vyznamy funkci jednoduse zkopirujeme
      data.funcVyznam := Self.OpenHV.Data.funcVyznam;
@@ -268,7 +264,7 @@ var data:THVData;
        Blky.ChangeSprToTrat(stav.souprava);
    end;
 
-  Self.Close;
+  Self.Close();
  end;
 
 procedure TF_HVEdit.NewHV();

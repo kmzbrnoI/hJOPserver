@@ -361,7 +361,6 @@ end;
 procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkVyhSettings;
-    return:Byte;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -453,15 +452,17 @@ var glob:TBlkSettings;
   else
    settings.npMinus := -1;
 
-  return := Self.Blk.SetSettings(settings);
+  try
+    Self.Blk.SetSettings(settings);
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar(E.Message), 'Nelze uložit', MB_OK OR MB_ICONWARNING);
+      Exit();
+     end;
+  end;
 
-  if (return = 2) then
-   begin
-    Application.MessageBox(PChar('Výhybka, se kterou se chcete spojit, má již jinou výhybku ve spojce.'+#13#10+'Pro vytvoøení nové spojky odstraòte spojku starou.'), 'Nelze uložit', MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
-
-  F_BlkVyhybka.Close;
+  Self.Close();
   Self.Blk.Change();
  end;
 

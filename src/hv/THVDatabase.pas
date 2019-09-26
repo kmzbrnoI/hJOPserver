@@ -26,6 +26,8 @@ type
   ENoLoco = class(Exception);
   ELocoOnSpr = class(Exception);
   ELocoPrevzato = class(Exception);
+  EInvalidAddress = class(Exception);
+  ELocoExists = class(Exception);
 
   THVDb = class
 
@@ -54,7 +56,7 @@ type
      procedure SaveData(const dirname:string);
      procedure SaveState(const statefn:string);
 
-     function Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject):Byte; overload; // pridani HV
+     procedure Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject); overload;
      procedure Add(panel_str:string; SenderOR:TObject); overload;
      procedure Remove(addr:Word);
 
@@ -246,13 +248,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THVDb.Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject):Byte;
+procedure THVDb.Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject);
 var i, index:Integer;
     stav:THVStav;
 begin
- if (addr > 9999) then Exit(1);
- // overime, pokud uz loko nahodou neexistuje
- if (Self.HVs[addr] <> nil) then Exit(2);
+ if (addr > 9999) then
+   raise EInvalidAddress.Create('Neplatná adresa lokomotivy ' + IntToStr(addr));
+ if (Self.HVs[addr] <> nil) then
+   raise ELocoExists.Create('Lokomotiva s adresou ' + IntToStr(addr) + ' již existuje');
 
  // pokud neexistuje, pridame ji
 
@@ -263,8 +266,8 @@ begin
  stav.najeto_vzad.Bloku  := 0;
  stav.stanice            := (OblR as TOR);
 
- stav.souprava           := -1;
- stav.ruc                := false;
+ stav.souprava := -1;
+ stav.ruc := false;
 
  stav.regulators := nil;
  stav.tokens     := nil;
@@ -294,14 +297,12 @@ begin
  if (addr < _MAX_ADDR-1) then
   begin
    for i := addr+1 to _MAX_ADDR-1 do
-    if (Self.HVs[i] <> nil) then
-      Self.HVs[i].index := Self.HVs[i].index + 1;
-  end;//if
+     if (Self.HVs[i] <> nil) then
+        Self.HVs[i].index := Self.HVs[i].index + 1;
+  end;
 
  // aktualizujeme tabulky:
- HVTableData.AddHV(Self.HVs[addr].index, Self.HVs[addr]);
-
- Result := 0;
+ HVTableData.AddHV(Self.HVs[addr].index, Self.HVs[addr])
 end;
 
 procedure THVDb.Add(panel_str:string; SenderOR:TObject);

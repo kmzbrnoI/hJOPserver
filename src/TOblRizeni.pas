@@ -34,6 +34,7 @@ const
 type
   TORControlRights = (null = 0, read = 1, write = 2, superuser = 3);
   TPanelButton = (F1, F2, ENTER, ESCAPE);
+  EMaxClients = class(Exception);
 
   // podminky potvrzovaci sekvence
   TPSPodminka = record
@@ -134,8 +135,8 @@ type
       OR_RCS:TORRCSs;                                                           // seznam RCS modulu pritomnych v OR, seznam vsech RCS asociovanych s bloky pritomnych v teto OR
 
       // prace s databazi pripojenych panelu:
-      function PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string):Byte;
-      function PnlDRemove(Panel:TIdContext):Byte;
+      procedure PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string);
+      procedure PnlDRemove(Panel:TIdContext);
       function PnlDGetRights(Panel:TIdContext):TORControlRights;
       function PnlDGetIndex(Panel:TIdContext):Integer;
 
@@ -905,12 +906,10 @@ end;
 
 //pridani 1 prvku do databaze
 //v pripade existence jen zvysime prava
-function TOR.PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string):Byte;
+procedure TOR.PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string);
 var i:Integer;
     pnl:TORPanel;
 begin
- Result := 0;
-
  for i := 0 to Self.Connected.Count-1 do
   begin
    if (Self.Connected[i].Panel = Panel) then
@@ -920,12 +919,14 @@ begin
      pnl.Rights := rights;
      pnl.user   := user;
      Self.Connected[i] := pnl;
-     Exit;
+     Exit();
     end;
   end;//for i
 
- if (Self.Connected.Count >= _MAX_CON_PNL) then Exit(1);
- if ((Panel.Data as TTCPORsRef).ORs.Count >= _MAX_ORREF) then Exit(2);
+ if (Self.Connected.Count >= _MAX_CON_PNL) then
+   raise EMaxClients.Create('Pøipojen maximální poèet klientù');
+ if ((Panel.Data as TTCPORsRef).ORs.Count >= _MAX_ORREF) then
+   raise EMaxClients.Create('Pøipojen maximální OR k jedné stanici');
 
  //pridani 1 panelu
  pnl.Panel  := Panel;
@@ -945,7 +946,7 @@ begin
 end;
 
 //mazani 1 panelu z databaze
-function TOR.PnlDRemove(Panel:TIdContext):Byte;
+procedure TOR.PnlDRemove(Panel:TIdContext);
 var i:Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
@@ -960,8 +961,6 @@ begin
  // a samozrejme se musime smazat z oblasti rizeni
  if ((Panel.Data as TTCPORsRef).ORs.Contains(Self)) then
    (Panel.Data as TTCPORsRef).ORs.Remove(Self);
-
- Result := 0;
 end;
 
 //ziskani prav daneho panelu z databaze
@@ -1044,66 +1043,70 @@ begin
  // do last_rights si ulozime posledni opravneni panelu
  last_rights := Self.PnlDGetRights(Sender);
 
- if (UserRights < rights) then
-  begin
-   if (UserRights > TORControlRights.null) then
+ try
+   if (UserRights < rights) then
     begin
-     Self.PnlDAdd(Sender, UserRights, username);
-     Self.ORAuthoriseResponse(Sender, UserRights, msg, user.fullName)
-    end else begin
-     Self.PnlDRemove(Sender);
-     Self.ORAuthoriseResponse(Sender, UserRights, msg, '')
+     if (UserRights > TORControlRights.null) then
+      begin
+       Self.PnlDAdd(Sender, UserRights, username);
+       Self.ORAuthoriseResponse(Sender, UserRights, msg, user.fullName)
+      end else begin
+       Self.PnlDRemove(Sender);
+       Self.ORAuthoriseResponse(Sender, UserRights, msg, '')
+      end;
+
+     ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+     Exit;
     end;
 
-   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
-   Exit;
-  end;
-
- // kontrola vyplych systemu
- if ((not GetFunctions.GetSystemStart) and (rights > read) and (rights < superuser)) then
-  begin
-   // superuser muze autorizovat zapis i pri vyplych systemech
-   Self.PnlDAdd(Sender, TORControlRights.read, username);
-   Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat zápis pøi vyplých systémech !', user.fullName);
-   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
-   Exit;
-  end;
-
- msg := 'Úspìšnì autorizováno !';
-
- // kontrola pripojeni dalsich panelu
- // pokud chce panel zapisovat, musime zkontrolovat, jestli uz nahodou neni nejaky panel s pravy zapisovat, pripojeny
- if (UserRights < TORCOntrolRights.superuser) then
-  begin
-   // pokud jsme superuser, pripojenost dalsich panelu nekontrolujeme
-   for i := 0 to Self.Connected.Count-1 do
+   // kontrola vyplych systemu
+   if ((not GetFunctions.GetSystemStart) and (rights > read) and (rights < superuser)) then
     begin
-     if ((Self.Connected[i].Rights > read) and (Self.Connected[i].Panel <> Sender) and (Self.Connected[i].Rights < superuser)) then
-      begin
-       // pokud se pripojuje stejny uzivatel, prevezme rizeni z jiz pripojene OR
-       //  jiny uzivatel rizeni prevzit nemuze
-       // -> technologie pripojovani zarucuje, ze pripojeny dispecer muze byt jen jeden
-       if (Self.Connected[i].user = username) then
-        begin
-         panel := Self.Connected[i];
-         panel.Rights := TORCOntrolRights.read;
-         Self.Connected[i] := panel;
-         Self.ORAuthoriseResponse(panel.Panel, panel.Rights, 'Pøevzetí øízení', user.fullName);
-         ORTCPServer.GUIQueueLineToRefresh(i);
-        end else begin
-         rights := TORControlRights.read;
-         msg := 'Panel již pøipojen !';
-         break;
-        end;
-      end;
-    end;//for i
-  end;
+     // superuser muze autorizovat zapis i pri vyplych systemech
+     Self.PnlDAdd(Sender, TORControlRights.read, username);
+     Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat zápis pøi vyplých systémech !', user.fullName);
+     ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+     Exit;
+    end;
 
- if (Self.PnlDAdd(Sender, rights, username) <> 0) then
-  begin
-   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
-   Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Pøipojeno maximum OØ, nelze autorizovat další !', '');
-   Exit;
+   msg := 'Úspìšnì autorizováno !';
+
+   // kontrola pripojeni dalsich panelu
+   // pokud chce panel zapisovat, musime zkontrolovat, jestli uz nahodou neni nejaky panel s pravy zapisovat, pripojeny
+   if (UserRights < TORCOntrolRights.superuser) then
+    begin
+     // pokud jsme superuser, pripojenost dalsich panelu nekontrolujeme
+     for i := 0 to Self.Connected.Count-1 do
+      begin
+       if ((Self.Connected[i].Rights > read) and (Self.Connected[i].Panel <> Sender) and (Self.Connected[i].Rights < superuser)) then
+        begin
+         // pokud se pripojuje stejny uzivatel, prevezme rizeni z jiz pripojene OR
+         //  jiny uzivatel rizeni prevzit nemuze
+         // -> technologie pripojovani zarucuje, ze pripojeny dispecer muze byt jen jeden
+         if (Self.Connected[i].user = username) then
+          begin
+           panel := Self.Connected[i];
+           panel.Rights := TORCOntrolRights.read;
+           Self.Connected[i] := panel;
+           Self.ORAuthoriseResponse(panel.Panel, panel.Rights, 'Pøevzetí øízení', user.fullName);
+           ORTCPServer.GUIQueueLineToRefresh(i);
+          end else begin
+           rights := TORControlRights.read;
+           msg := 'Panel již pøipojen !';
+           break;
+          end;
+        end;
+      end;//for i
+    end;
+
+   Self.PnlDAdd(Sender, rights, username);
+  except
+    on E:EMaxClients do
+     begin
+      ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+      Self.ORAuthoriseResponse(Sender, TORControlRights.null, E.Message, user.fullName);
+      Exit();
+     end;
   end;
 
  UsrDb.LoginUser(username);

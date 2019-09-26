@@ -47,7 +47,7 @@ type
     destructor Destroy(); override;
 
     //data loading/saving
-    function LoadFromFile(const tech_filename,rel_filename,stat_filename:string):Integer;
+    procedure LoadFromFile(const tech_filename,rel_filename,stat_filename:string);
     procedure SaveToFile(const tech_filename:string);
     procedure SaveStatToFile(const stat_filename:string);
 
@@ -196,115 +196,87 @@ end;
 // load all blocks from file
 // Pri vytvareni dostavaji vsechny bloky table_index -1, pak je hromadne
 //  oindexujeme metodou UpdateBlkIndexes
-function TBlky.LoadFromFile(const tech_filename,rel_filename,stat_filename:string):Integer;
+procedure TBlky.LoadFromFile(const tech_filename,rel_filename,stat_filename:string);
 var ini_tech,ini_rel,ini_stat:TMemIniFile;
-    i, id:Integer;
+    id:Integer;
     Blk:TBlk;
     str:TStrings;
+    section:string;
 begin
- writelog('Nacitam bloky: '+tech_filename+ '; '+rel_filename, WR_DATA);
+ writelog('Naèítám bloky: '+tech_filename+ '; '+rel_filename, WR_DATA);
  Self.ffile    := tech_filename;
  Self.ffstatus := stat_filename;
 
- try
-   ini_tech := TMemIniFile.Create(tech_filename, TEncoding.UTF8);
- except
-   on E:Exception do
-    begin
-     AppEvents.LogException(E, 'Nacitam bloky: nelze otevrit soubor bloku');
-     Exit(1);
-    end;
- end;
-
- try
-   ini_rel  := TMemIniFile.Create(rel_filename, TEncoding.UTF8);
- except
-   on E:Exception do
-    begin
-     ini_rel := nil;
-     AppEvents.LogException(E, 'Nacitam bloky: nelze otevrit soubor s reliefy');
-     Exit(2);
-    end;
- end;
-
- try
-   ini_stat  := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
- except
-   on E:Exception do
-    begin
-     ini_stat := nil;
-     AppEvents.LogException(E, 'Nacitam bloky: nelze otevrit soubor se stavy bloku');
-     Exit(3);
-    end;
- end;
-
- //all data will be rewrited
- Self.DestroyBlocks();
-
+ ini_tech := TMemIniFile.Create(tech_filename, TEncoding.UTF8);
+ ini_rel := TMemIniFile.Create(rel_filename, TEncoding.UTF8);
+ ini_stat := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
  str := TStringList.Create();
- ini_tech.ReadSections(str);
 
- Blk := nil;
- for i := 0 to str.Count-1 do
-  begin
-   try
-     id := StrToIntDef(str[i], -1);
-     if (id < 0) then
-      begin
-       writelog('Nenacitam blok ' + str[i] + ' - id neni validni', WR_ERROR);
-       continue;
-      end;
+ try
+   Self.DestroyBlocks();
+   ini_tech.ReadSections(str);
 
-     if (Self.IsBlok(id)) then
-      begin
-       writelog('Nenacitam blok ' + str[i] + ' - blok s timto id jiz existuje', WR_ERROR);
-       continue;
-      end;
+   Blk := nil;
+   for section in str do
+    begin
+     try
+       id := StrToIntDef(section, -1);
+       if (id < 0) then
+        begin
+         writelog('Nenacitam blok ' + section + ' - id neni validni', WR_ERROR);
+         continue;
+        end;
 
-     case (ini_tech.ReadInteger(str[i], 'typ', -1)) of
-      _BLK_VYH      : Blk := TBlkVyhybka.Create(-1);
-      _BLK_USEK     : Blk := TBlkUsek.Create(-1);
-      _BLK_IR       : Blk := TBlkIR.Create(-1);
-      _BLK_NAV      : Blk := TBlkNav.Create(-1);
-      _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(-1);
-      _BLK_TRAT     : Blk := TBlkTrat.Create(-1);
-      _BLK_UVAZKA   : Blk := TBlkUvazka.Create(-1);
-      _BLK_ZAMEK    : Blk := TBlkZamek.Create(-1);
-      _BLK_ROZP     : Blk := TBlkRozp.Create(-1);
-      _BLK_TU       : Blk := TBlkTU.Create(-1);
-      _BLK_VYSTUP   : Blk := TBlkVystup.Create(-1);
-      _BLK_SH       : Blk := TBlkSH.Create(-1);
+       if (Self.IsBlok(id)) then
+        begin
+         writelog('Nenacitam blok ' + section + ' - blok s timto id jiz existuje', WR_ERROR);
+         continue;
+        end;
 
-     else//case
-       continue;
+       case (ini_tech.ReadInteger(section, 'typ', -1)) of
+        _BLK_VYH      : Blk := TBlkVyhybka.Create(-1);
+        _BLK_USEK     : Blk := TBlkUsek.Create(-1);
+        _BLK_IR       : Blk := TBlkIR.Create(-1);
+        _BLK_NAV      : Blk := TBlkNav.Create(-1);
+        _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(-1);
+        _BLK_TRAT     : Blk := TBlkTrat.Create(-1);
+        _BLK_UVAZKA   : Blk := TBlkUvazka.Create(-1);
+        _BLK_ZAMEK    : Blk := TBlkZamek.Create(-1);
+        _BLK_ROZP     : Blk := TBlkRozp.Create(-1);
+        _BLK_TU       : Blk := TBlkTU.Create(-1);
+        _BLK_VYSTUP   : Blk := TBlkVystup.Create(-1);
+        _BLK_SH       : Blk := TBlkSH.Create(-1);
+
+       else//case
+         continue;
+       end;
+
+       Blk.LoadData(ini_tech, section, ini_rel, ini_stat);
+       Blk.OnChange := Self.BlkChange;
+
+       Self.data.Insert(Self.FindPlaceForNewBlk(Blk.id), Blk);
+       Blk := nil;
+     except
+      on E:Exception do
+       begin
+        if (Assigned(Blk)) then Blk.Free();
+        AppEvents.LogException(E, 'Nacitani bloku ' + section);
+       end;
      end;
+    end;//for i
 
-     Blk.LoadData(ini_tech, str[i], ini_rel, ini_stat);
-     Blk.OnChange := Self.BlkChange;
+   Self.UpdateBlkIndexes();
+ finally
+   FreeAndNil(ini_tech);
+   FreeAndNil(ini_rel);
+   FreeAndNil(ini_stat);
+   FreeAndNil(str);
+ end;
 
-     Self.data.Insert(Self.FindPlaceForNewBlk(Blk.id), Blk);
-     Blk := nil;
-   except
-    on E:Exception do
-     begin
-      if (Assigned(Blk)) then Blk.Free();
-      AppEvents.LogException(E, 'Nacitani bloku ' + str[i]);
-     end;
-   end;
-  end;//for i
+ for Blk in Self.data do
+   Blk.AfterLoad();
 
- Self.UpdateBlkIndexes();
-
- FreeAndNil(ini_tech);
- FreeAndNil(ini_rel);
- FreeAndNil(ini_stat);
- FreeAndNil(str);
-
- for i := 0 to Self.data.Count-1 do
-   Self.data[i].AfterLoad();
-
- writelog('Nacteno bloku: '+IntToStr(Self.Cnt), WR_DATA);
- Result := 0;
+ writelog('Naèteno blokù: '+IntToStr(Self.Cnt), WR_DATA);
 end;
 
 //save all blocks to the file

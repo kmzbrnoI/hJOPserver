@@ -26,8 +26,8 @@ type
       constructor Create();
       destructor Destroy(); override;
 
-      function LoadData(const filename:string):Byte;
-      function SaveData(const filename:string):Byte;
+      procedure LoadData(const filename:string);
+      procedure SaveData(const filename:string);
 
       procedure AddSprFromPanel(spr:TStrings; usek:TObject; OblR:TObject; sprUsekIndex:Integer);
       procedure RemoveSpr(index:Integer);
@@ -83,69 +83,54 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSprDb.LoadData(const filename:string):Byte;
+procedure TSprDb.LoadData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
     sections:TStrings;
 begin
- writelog('Nacitam soupravy: '+filename, WR_DATA);
+ writelog('Naèítám soupravy: '+filename, WR_DATA);
  Self.ffilename := filename;
 
+ ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+ sections := TStringList.Create();
+
  try
-   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
- except
-   on E:Exception do
-    begin
-     AppEvents.LogException(E, 'Nacitam soupravy: nelze otevrit soubor souprav');
-     Exit(1);
-    end;
+   ini.ReadSections(sections);
+
+   Self.FreeSpr();
+
+   for i := 0 to sections.Count-1 do
+     Self.soupravy[i] := TSouprava.Create(ini, sections[i], i);
+
+   writelog('Naèteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
+ finally
+   FreeAndNil(ini);
+   FreeAndNil(sections);
  end;
 
- sections := TStringList.Create();
- ini.ReadSections(sections);
-
- Self.FreeSpr();
-
- for i := 0 to sections.Count-1 do
-   Self.soupravy[i] := TSouprava.Create(ini, sections[i], i);
-
- writelog('Nacteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
-
- FreeAndNil(ini);
- FreeAndNil(sections);
-
- SprTableData.LoadToTable;
-
+ SprTableData.LoadToTable();
  HVTableData.LoadToTable();
- Result := 0;
 end;
 
-function TSprDb.SaveData(const filename:string):Byte;
+procedure TSprDb.SaveData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
 begin
- writelog('Ukladam soupravy: '+filename, WR_DATA);
+ writelog('Ukládám soupravy: '+filename, WR_DATA);
 
- try
+ if (FileExists(filename)) then
    DeleteFile(PChar(filename));
-   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
- except
-   on E:Exception do
-    begin
-     AppEvents.LogException(E, 'Ukladam soupravy: nelze otevrit soubor souprav');
-     Exit(1);
-    end;
+ ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+ try
+   for i := 0 to _MAX_SPR-1 do
+     if (Assigned(Self.soupravy[i])) then
+       Self.soupravy[i].SaveToFile(ini, IntToStr(i));
+   ini.UpdateFile();
+ finally
+   FreeAndNil(ini);
  end;
 
- for i := 0 to _MAX_SPR-1 do
-   if (Assigned(Self.soupravy[i])) then
-     Self.soupravy[i].SaveToFile(ini, IntToStr(i));
-
- ini.UpdateFile();
- FreeAndNil(ini);
-
- writelog('Ulozeno '+IntToStr(Self.Count)+' souprav', WR_DATA);
- Result := 0;
+ writelog('Uloženo '+IntToStr(Self.Count)+' souprav', WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
