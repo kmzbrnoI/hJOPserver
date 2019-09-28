@@ -709,7 +709,7 @@ begin
  end;
 
  // ruseni nouzove jizdni cesty pri padu navestidla do STUJ
- if (Self.NavStav.Navest = _NAV_STUJ) then
+ if (navest = _NAV_STUJ) then
   begin
    if ((Self.UsekPred <> nil) and ((Self.UsekPred.typ = _BLK_USEK) or
        (Self.UsekPred.typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).NavJCRef.Contains(Self))) then
