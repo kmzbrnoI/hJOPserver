@@ -432,13 +432,12 @@ begin
     end;
   end else begin
    // odebereme spojku z druhe vyhybky
-
-   // pokud uz nebyla, neni co odebirat
-   if (spojka_old = -1) then Exit();
-
-   Blky.GetBlkByID(spojka_old, Blk);
-   if ((Blk <> nil) and (Blk.typ = _BLK_VYH)) then
-     (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
+   if (spojka_old <> -1) then
+    begin
+     Blky.GetBlkByID(spojka_old, Blk);
+     if ((Blk <> nil) and (Blk.typ = _BLK_VYH)) then
+       (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
+    end;
   end;
 
  if (data.RCSAddrs <> Self.VyhSettings.RCSAddrs) then
