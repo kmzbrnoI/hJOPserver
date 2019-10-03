@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, TBlokRozp, Generics.Collections;
+  Dialogs, ExtCtrls, StdCtrls, Spin, TBlokRozp, Generics.Collections, IBUtils;
 
 type
   TF_BlkRozp = class(TForm)
@@ -66,7 +66,7 @@ procedure TF_BlkRozp.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkRozp.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_module.Value)-1;
+ Self.SE_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_module.Value))-1, 0);
 end;
 
 procedure TF_BlkRozp.NewBlkOpenForm;

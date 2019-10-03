@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections;
+  Dialogs, ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections,
+  IBUtils;
 
 type
   TF_BlkPrejezd = class(TForm)
@@ -87,13 +88,13 @@ procedure TF_BlkPrejezd.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkPrejezd.SE_RCS_boardExit(Sender: TObject);
 begin
- Self.SE_vyst_open_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_vyst_open_board.Value)-1;
- Self.SE_vyst_close_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_vyst_close_board.Value)-1;
+ Self.SE_vyst_open_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vyst_open_board.Value))-1, 0);
+ Self.SE_vyst_close_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vyst_close_board.Value))-1, 0);
 
- Self.SE_vst_close_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_vst_close_board.Value)-1;
- Self.SE_vst_open_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_vst_open_board.Value)-1;
- Self.SE_vst_vystraha_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_vst_vystraha_board.Value)-1;
- Self.SE_vst_anulace_port.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_vst_anulace_board.Value)-1;
+ Self.SE_vst_close_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_close_board.Value))-1, 0);
+ Self.SE_vst_open_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_open_board.Value))-1, 0);
+ Self.SE_vst_vystraha_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_vystraha_board.Value))-1, 0);
+ Self.SE_vst_anulace_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_anulace_board.Value))-1, 0);
 end;
 
 procedure TF_BlkPrejezd.B_save_PClick(Sender: TObject);

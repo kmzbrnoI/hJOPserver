@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokNav,
+  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokNav, IBUtils,
   fBlkNavEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
   StrUtils, TBloky;
 
@@ -482,7 +482,7 @@ end;
 
 procedure TF_BlkNav.SE_RCSmoduleExit(Sender: TObject);
 begin
- Self.SE_RCSport.MaxValue := RCSi.GetModuleOutputsCountSafe(Self.SE_RCSmodule.Value)-1;
+ Self.SE_RCSport.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_RCSmodule.Value))-1, 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
