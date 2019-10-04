@@ -213,11 +213,17 @@ begin
   begin
    ORTCPServer.SendLn(AContext, '-;PING;REQ-RESP;'+IntToStr(Self.ping_next_id));
    Self.ping_sent.Enqueue(ORPing(Self.ping_next_id, Now));
+
    if (Self.regulator_loks.Count > 0) then
      Self.ping_next_send := Now+EncodeTime(0, 0, _PING_PERIOD_REG, 0)
    else
      Self.ping_next_send := Now+EncodeTime(0, 0, _PING_PERIOD_NOREG, 0);
-   Self.ping_next_id := Self.ping_next_id + 1;
+
+   if (Self.ping_next_id < High(Cardinal)) then
+     Self.ping_next_id := Self.ping_next_id + 1
+   else
+     Self.ping_next_id := 0;
+
    if (Self.ping_unreachable) then
      Self.ping_sent.Dequeue(); // do not fill queue with inifinite amount of data
   end;
