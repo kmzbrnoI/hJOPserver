@@ -272,7 +272,7 @@
 		</ItemGroup>
 		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
 		<PropertyGroup>
-			<PreBuildEvent><![CDATA[rm $(PROJECTDIR)/../outunit/*]]></PreBuildEvent>
+			<PreBuildEvent><![CDATA[del /q ..\outunit\*]]></PreBuildEvent>
 		</PropertyGroup>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
