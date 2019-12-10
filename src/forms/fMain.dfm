@@ -3907,7 +3907,6 @@ object F_Main: TF_Main
         Top = 40
         Width = 1289
         Height = 574
-        Hint = 'Tabulka definovan'#253'ch bloku'
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -3965,7 +3964,7 @@ object F_Main: TF_Main
         ParentFont = False
         ParentShowHint = False
         PopupMenu = PM_Bloky
-        ShowHint = True
+        ShowHint = False
         SmallImages = IL_Bloky
         TabOrder = 0
         ViewStyle = vsReport
@@ -4351,7 +4350,6 @@ object F_Main: TF_Main
         Top = 40
         Width = 1289
         Height = 574
-        Hint = 'Tabulka definovan'#253'ch souprav'
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4427,7 +4425,7 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
-        ShowHint = True
+        ShowHint = False
         TabOrder = 0
         ViewStyle = vsReport
         OnChange = LV_SoupravyChange
@@ -4515,7 +4513,6 @@ object F_Main: TF_Main
         Top = 40
         Width = 1289
         Height = 574
-        Hint = 'Tabulka definovan'#253'ch stanic'
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4561,7 +4558,7 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
-        ShowHint = True
+        ShowHint = False
         TabOrder = 0
         ViewStyle = vsReport
         OnChange = LV_StaniceChange
@@ -4856,7 +4853,6 @@ object F_Main: TF_Main
         Top = 40
         Width = 1289
         Height = 145
-        Hint = 'Tabulka definovan'#253'ch automatick'#253'ch re'#382'imu'
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4894,7 +4890,7 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
-        ShowHint = True
+        ShowHint = False
         TabOrder = 0
         ViewStyle = vsReport
         OnChange = LV_AC_DbChange
@@ -5362,7 +5358,6 @@ object F_Main: TF_Main
         Top = 24
         Width = 1289
         Height = 590
-        Hint = 'Stavy vstupu a v'#253'stupu MTB desek'
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5418,7 +5413,7 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
-        ShowHint = True
+        ShowHint = False
         SmallImages = IL_RCS
         TabOrder = 0
         ViewStyle = vsReport
@@ -6362,7 +6357,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403300410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403340410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8228,7 +8223,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D002803A8041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D002803AC041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8769,7 +8764,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802F40310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802F80310000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
