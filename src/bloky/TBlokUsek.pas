@@ -541,7 +541,7 @@ begin
    case (state) of
     isOn  : Self.UsekStav.sekce[i] := TUsekStav.obsazeno;
     isOff : Self.UsekStav.sekce[i] := TUsekStav.uvolneno;
-    failure, notYetScanned, unavailable:begin
+    failure, notYetScanned, unavailableModule, unavailablePort:begin
       // vypadek RCS modulu, ci nespravny argument -> disable blok
       if (Self.UsekStav.Stav <> disabled) then
        begin

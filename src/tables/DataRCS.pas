@@ -196,7 +196,7 @@ var j, cnt:integer;
               isOff         : LI.SubItems[3] := LI.SubItems[3] + '0';
               failure       : LI.SubItems[3] := LI.SubItems[3] + 'X';
               notYetScanned : LI.SubItems[3] := LI.SubItems[3] + '?';
-              unavailable   : LI.SubItems[3] := LI.SubItems[3] + '-';
+              unavailableModule, unavailablePort : LI.SubItems[3] := LI.SubItems[3] + '-';
             end;
            end;
 
