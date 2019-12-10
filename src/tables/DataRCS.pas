@@ -115,6 +115,7 @@ procedure TRCSTableData.UpdateBoard(addr:Integer);
 var j, cnt:integer;
     output:Integer;
     LI:TListItem;
+    start:integer;
  begin
   if (not Self.AddrToLine.ContainsKey(addr)) then
     Self.CreateLineForNewBoard(addr);
@@ -186,17 +187,22 @@ var j, cnt:integer;
           LI.SubItems[4] := '';
 
           cnt := RCSi.GetModuleInputsCount(addr);
-          for j := 0 to cnt-1 do
+          if (RCSi.GetInput(addr, 0) = unavailablePort) then
+            start := 1
+          else
+            start := 0;
+
+          for j := start to cnt-1 do
            begin
-            if (j = cnt div 2) then
+            if (j = ((cnt+start) div 2)) then
               LI.SubItems[3] := LI.SubItems[3] + ' ';
 
             case (RCSi.GetInput(addr, j)) of
-              isOn          : LI.SubItems[3] := LI.SubItems[3] + '1';
-              isOff         : LI.SubItems[3] := LI.SubItems[3] + '0';
-              failure       : LI.SubItems[3] := LI.SubItems[3] + 'X';
+              isOn : LI.SubItems[3] := LI.SubItems[3] + '1';
+              isOff : LI.SubItems[3] := LI.SubItems[3] + '0';
+              failure : LI.SubItems[3] := LI.SubItems[3] + 'X';
               notYetScanned : LI.SubItems[3] := LI.SubItems[3] + '?';
-              unavailableModule, unavailablePort : LI.SubItems[3] := LI.SubItems[3] + '-';
+              unavailableModule: LI.SubItems[3] := LI.SubItems[3] + '-';
             end;
            end;
 
