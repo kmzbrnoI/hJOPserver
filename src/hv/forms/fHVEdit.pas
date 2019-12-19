@@ -246,6 +246,7 @@ var data:THVData;
      // vyznamy funkci jednoduse zkopirujeme
      data.funcVyznam := Self.OpenHV.Data.funcVyznam;
      data.maxRychlost := Self.OpenHV.Data.maxRychlost;
+     data.funcType := Self.OpenHV.Data.funcType;
 
      // update HV
      Self.OpenHV.data := data;
