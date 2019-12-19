@@ -1,4 +1,4 @@
-unit TBlokUvazka;
+Ôªøunit TBlokUvazka;
 
 //definice a obsluha technologickeho bloku Usek
 
@@ -309,7 +309,7 @@ end;
 procedure TBlkUvazka.MenuZAKOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR,
-    'ZruöenÌ z·kazu odjezdu na traù', TBlky.GetBlksList(Self), nil);
+    'Zru≈°en√≠ z√°kazu odjezdu na tra≈•', TBlky.GetBlksList(Self), nil);
 end;
 
 procedure TBlkUvazka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -325,7 +325,7 @@ end;
 procedure TBlkUvazka.MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR,
-    'ZruöenÌ nouzovÈho z·vÏru', TBlky.GetBlksList(Self), nil);
+    'Zru≈°en√≠ nouzov√©ho z√°vƒõru', TBlky.GetBlksList(Self), nil);
 end;
 
 
@@ -592,7 +592,7 @@ begin
  try
   if (Self.Stitek <> '') then
    begin
-    item[0] := GetUPOLine('äTÕTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    item[0] := GetUPOLine('≈†T√çTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
     lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
 
     try

@@ -1,4 +1,4 @@
-unit fBlkUsek;
+﻿unit fBlkUsek;
 
 interface
 
@@ -227,7 +227,7 @@ var glob:TBlkSettings;
   E_Delka.Text := FloatToStr(settings.Lenght);
   CHB_SmycBlok.Checked := settings.SmcUsek;
 
-  F_BlkUsek.Caption := 'Editovat data bloku '+glob.name+' (�sek)';
+  F_BlkUsek.Caption := 'Editovat data bloku '+glob.name+' (úsek)';
   F_BlkUsek.ActiveControl := B_OK;
  end;
 

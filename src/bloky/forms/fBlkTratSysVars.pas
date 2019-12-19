@@ -1,4 +1,4 @@
-unit fBlkTratSysVars;
+Ôªøunit fBlkTratSysVars;
 
 interface
 
@@ -56,7 +56,7 @@ begin
    Self.trat.AddSpr(Self.SE_Spr_Add.Value);
  except
    on E:Exception do
-     Application.MessageBox(PChar('V˝jimka:'+#13#10+E.Message), 'V˝jimka', MB_OK OR MB_ICONERROR);
+     Application.MessageBox(PChar('V√Ωjimka:'+#13#10+E.Message), 'V√Ωjimka', MB_OK OR MB_ICONERROR);
  end;
 
  Self.Update();
@@ -94,7 +94,7 @@ procedure TF_BlkTrat_tech.OpenForm(Blk:TBlkTrat);
 begin
  Self.trat := Blk;
  Self.Update();
- Self.Caption := 'Traù '+Blk.name;
+ Self.Caption := 'Tra≈• '+Blk.name;
  Self.Show();
 end;
 

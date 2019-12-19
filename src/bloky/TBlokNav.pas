@@ -1,4 +1,4 @@
-unit TBlokNav;
+ï»¿unit TBlokNav;
 
 //definice a obsluha technologickeho bloku Navestidlo
 // Pritomnost redukce menu u bloku navestidla znamena, ze z tohoto bloku nelze zacit jizdni cestu.
@@ -49,7 +49,7 @@ type
   navest_old:Integer;                            // behem staveni obsahuje byvalou navest
   ABJC:TJC;                                      // odkaz na automaticky stavenou JC
   ZAM:Boolean;                                   // navestidlo zamkle z panelu
-  redukce_menu:Integer;                          // kolik blokù mì redukuje
+  redukce_menu:Integer;                          // kolik blokÅ¯ mÄ› redukuje
   dn_jc_ref,privol_ref:TJC;                      // reference na aktualni JC na navestidle (resp. NC)
 
   padani:boolean;                                // zde je true, pokud navestidlo pada do STUJ (ma zpozdeny pad) a jeste nespadlo
@@ -1053,7 +1053,7 @@ end;
 
 procedure TBlkNav.MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Prodlouení doby pøivolávací návìsti', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'ProdlouÅ¾enÃ­ doby pÅ™ivolÃ¡vacÃ­ nÃ¡vÄ›sti', TBlky.GetBlksList(Self), nil);
 end;
 
 procedure TBlkNav.MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1067,10 +1067,10 @@ begin
   begin
    Blky.GetBlkByID(blkId, Blk);
    if (blk <> nil) then
-     podminky.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
+     podminky.Add(TOR.GetPSPodminka(blk, 'RuÅ¡enÃ­ NZ'));
   end;
 
- ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzovıch závìrù po nouzové cestì', TBlky.GetBlksList(Self), podminky);
+ ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'ZruÅ¡enÃ­ nouzovÃ½ch zÃ¡vÄ›rÅ¯ po nouzovÃ© cestÄ›', TBlky.GetBlksList(Self), podminky);
 end;
 
 procedure TBlkNav.MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1080,7 +1080,7 @@ begin
   begin
    for oblr in Self.OblsRizeni do
      oblr.ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti',
+   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'ZapnutÃ­ pÅ™ivolÃ¡vacÃ­ nÃ¡vÄ›sti',
                      TBlky.GetBlksList(Self), nil);
   end;
 end;
@@ -1105,7 +1105,7 @@ begin
        RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 0);
     end;
  except
-   ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se nastavit stav IR èidla!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'NepodaÅ™ilo se nastavit stav IR Äidla!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1166,7 +1166,7 @@ begin
  else if (item = 'IR<')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, false)
  else if (item = 'KC')   then Self.MenuKCDKClick   (SenderPnl, SenderOR);
 
- if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
+ if (item = 'ZRUÅ  REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1248,7 +1248,7 @@ begin
 
  if (rights >= TORControlRights.superuser) then
    if (Self.NavStav.redukce_menu > 0) then
-     Result := Result + '-,*ZRUŠ REDUKCI,';
+     Result := Result + '-,*ZRUÅ  REDUKCI,';
 
  // DEBUG: jednoduche nastaveni IR pri knihovne simulator
  if (RCSi.IsSimulatorMode()) then
@@ -1272,26 +1272,26 @@ end;
 class function TBlkNav.NavestToString(Navest:Integer):string;
  begin
   case (Navest) of
-   -2:Result  := 'Stavìní...';
+   -2:Result  := 'StavÄ›nÃ­...';
    -1:Result  := 'Disabled';
-    0:Result  := 'Stùj/Posun zakázán';
+    0:Result  := 'StÅ¯j/Posun zakÃ¡zÃ¡n';
     1:Result  := 'Volno';
-    2:Result  := 'Vıstraha';
-    3:Result  := 'Oèekávejte 40 km/h';
+    2:Result  := 'VÃ½straha';
+    3:Result  := 'OÄekÃ¡vejte 40 km/h';
     4:Result  := '40 km/h a volno';
-    5:Result  := 'Svítí vše (Rezerva)';
-    6:Result  := '40 km/h a vıstraha';
-    7:Result  := '40 km/h a oèekávejte 40 km/h';
-    8:Result  := 'Pøivolávací návìst';
-    9:Result  := 'Dovolen zajištìnı posun';
-    10:Result := 'Dovolen nezajištìnı posun';
-    11:Result := 'Opakování návìsti volno';
-    12:Result := 'Opakování návìsti vıstraha';
-    13:Result := 'Návìstidlo zhaslé';
-    14:Result := 'Opakování návìsti oèekávejte 40 km/h';
-    15:Result := 'Opakování návìsti vıstraha a 40 km/h';
+    5:Result  := 'SvÃ­tÃ­ vÅ¡e (Rezerva)';
+    6:Result  := '40 km/h a vÃ½straha';
+    7:Result  := '40 km/h a oÄekÃ¡vejte 40 km/h';
+    8:Result  := 'PÅ™ivolÃ¡vacÃ­ nÃ¡vÄ›st';
+    9:Result  := 'Dovolen zajiÅ¡tÄ›nÃ½ posun';
+    10:Result := 'Dovolen nezajiÅ¡tÄ›nÃ½ posun';
+    11:Result := 'OpakovÃ¡nÃ­ nÃ¡vÄ›sti volno';
+    12:Result := 'OpakovÃ¡nÃ­ nÃ¡vÄ›sti vÃ½straha';
+    13:Result := 'NÃ¡vÄ›stidlo zhaslÃ©';
+    14:Result := 'OpakovÃ¡nÃ­ nÃ¡vÄ›sti oÄekÃ¡vejte 40 km/h';
+    15:Result := 'OpakovÃ¡nÃ­ nÃ¡vÄ›sti vÃ½straha a 40 km/h';
    else//case
-    Result := 'Jiná návìst';
+    Result := 'JinÃ¡ nÃ¡vÄ›st';
    end;//else case
  end;
 
@@ -1324,7 +1324,7 @@ begin
   begin
    Self.NavStav.padani       := true;
    Self.NavStav.padani_start := Now;
-   writelog('Návìstidlo '+Self.GlobalSettings.name+': spodìní pádu '+IntToStr(Self.NavSettings.ZpozdeniPadu)+' s', WR_VC);
+   writelog('NÃ¡vÄ›stidlo '+Self.GlobalSettings.name+': spoÅ¾dÄ›nÃ­ pÃ¡du '+IntToStr(Self.NavSettings.ZpozdeniPadu)+' s', WR_VC);
   end else begin
    Self.Navest := _NAV_STUJ;
   end;
@@ -1345,8 +1345,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// aktualizace rychlosti souprav pøed návìstidlem
-// pozor na padání !
+// aktualizace rychlosti souprav pÅ™ed nÃ¡vÄ›stidlem
+// pozor na padÃ¡nÃ­ !
 // force nucene zastavi vlak, resp. nastavi jeho rychlost
 //  metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
 procedure TBlkNav.UpdateRychlostSpr(force:boolean = false);
@@ -1630,7 +1630,7 @@ begin
   begin
    for oblr in Self.OblsRizeni do
      oblr.ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí pøivolávací návìsti',
+   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'ZapnutÃ­ pÅ™ivolÃ¡vacÃ­ nÃ¡vÄ›sti',
                      TBlky.GetBlksList(Self), nil);
   end else begin
    if (Button = TPanelButton.F2) then

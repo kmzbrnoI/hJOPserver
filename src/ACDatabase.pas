@@ -1,4 +1,4 @@
-unit ACDatabase;
+﻿unit ACDatabase;
 
 interface
 
@@ -110,7 +110,7 @@ begin
      end;
 
     SysUtils.FindClose(SR);
-    writelog('Na�teno '+IntToStr(Self.ACs.Count)+' AC', WR_DATA);
+    writelog('Načteno '+IntToStr(Self.ACs.Count)+' AC', WR_DATA);
    end else begin
     writelog('Nenacteno zadne AC',WR_DATA);
    end;

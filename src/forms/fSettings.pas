@@ -1,4 +1,4 @@
-unit fSettings;
+Ôªøunit fSettings;
 
 interface
 
@@ -158,7 +158,7 @@ begin
  //Zapis do logu o startu programu
  StartLogWrite;
  //Nacteni dat ze souboru do promennych programu
- F_splash.AddStav('NaËÌt·m data');
+ F_splash.AddStav('Naƒç√≠t√°m data');
  Data.CompleteLoadFromFile;
  //Nastaveni PageIndexe na 0
  PC_1.ActivePageIndex:=0;
@@ -192,7 +192,7 @@ begin
    i := FindNext(s);
  end;
  FindClose(s);
- writelog('Smaz·ny soubory LOG',WR_MESSAGE);
+ writelog('Smaz√°ny soubory LOG',WR_MESSAGE);
  Application.Messagebox('Soubory log smazany','Informace',MB_OK OR MB_ICONINFORMATION OR MB_DEFBUTTON1);
 end;
 
@@ -237,7 +237,7 @@ procedure TF_Options.PM_Data_SaveClick(Sender: TObject);
 
 procedure TF_Options.StartLogWrite;
  begin
-  WriteLog('$$$$$$$$$$ SpouötÌm hJOPserver $$$$$$$$$$',WR_MESSAGE);
+  WriteLog('$$$$$$$$$$ Spou≈°t√≠m hJOPserver $$$$$$$$$$',WR_MESSAGE);
   WriteLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
   WriteLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',WR_MESSAGE);
  end;
@@ -438,8 +438,8 @@ procedure TF_Options.B_SS_SaveClick(Sender: TObject);
 procedure TF_Options.LB_TimerClick(Sender: TObject);
  begin
   F_Main.Timer1.Interval := StrToInt(LB_Timer.Items.Strings[LB_Timer.ItemIndex]);
-  F_Main.SB1.Panels.Items[_SB_SBERNICE].Text:='Prim·rnÌ smyËka : '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms';
-  writelog('Prim·rnÌ smyËka nastavena na '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms',WR_MESSAGE);
+  F_Main.SB1.Panels.Items[_SB_SBERNICE].Text:='Prim√°rn√≠ smyƒçka : '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms';
+  writelog('Prim√°rn√≠ smyƒçka nastavena na '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms',WR_MESSAGE);
  end;
 
 procedure TF_Options.FormShow(Sender: TObject);
@@ -479,7 +479,7 @@ begin
    on E:TrakceGUI.EOpened do
     begin
      Self.NactiCentralaData();
-     Application.MessageBox('Nelze zmÏnit trakËnÌ systÈm p¯i p¯ipojenÈm trakËnÌm systÈmu!', 'Chyba!', MB_OK OR MB_ICONERROR);
+     Application.MessageBox('Nelze zmƒõnit trakƒçn√≠ syst√©m p≈ôi p≈ôipojen√©m trakƒçn√≠m syst√©mu!', 'Chyba!', MB_OK OR MB_ICONERROR);
      Exit();
     end;
    on E:Exception do

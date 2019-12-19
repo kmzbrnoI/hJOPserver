@@ -1,4 +1,4 @@
-unit FileSystem;
+Ôªøunit FileSystem;
 
 interface
 
@@ -53,7 +53,7 @@ uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
 procedure TData.CompleteLoadFromFile;
 var read,read2:string;
  begin
-  F_Splash.AddStav('NaËÌt·m konfiguraci');
+  F_Splash.AddStav('Naƒç√≠t√°m konfiguraci');
   read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
   try
     Konfigurace.LoadCfgFromFile(read);
@@ -62,7 +62,7 @@ var read,read2:string;
       AppEvents.LogException(E);
   end;
 
-  F_Splash.AddStav('NaËÌt·m uûivatele');
+  F_Splash.AddStav('Naƒç√≠t√°m u≈æivatele');
   try
     UsrDB.LoadAll(
       ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'users', 'data\users.ini'),
@@ -73,7 +73,7 @@ var read,read2:string;
       AppEvents.LogException(E, E.Message);
   end;
 
-  F_Splash.AddStav('NaËÌt·m stanice (soubor *.spnl)');
+  F_Splash.AddStav('Naƒç√≠t√°m stanice (soubor *.spnl)');
   read  := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'spnl', 'data\stanice.spnl');
   read2 := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'or', 'stav\or.ini');
   try
@@ -86,19 +86,19 @@ var read,read2:string;
   end;
   F_Main.E_dataload_spnl.Text := read;
 
-  F_Splash.AddStav('NaËÌt·m hnacÌ vozidla');
+  F_Splash.AddStav('Naƒç√≠t√°m hnac√≠ vozidla');
   F_Main.E_dataload_HV_dir.Text := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'lok', 'lok');
   F_Main.E_dataload_HV_state.Text := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'lok', 'stav\lok.ini');
-  writelog('NaËÌt·m hnacÌ vozidla - '+F_Main.E_dataload_HV_dir.Text+'\*', WR_DATA);
+  writelog('Naƒç√≠t√°m hnac√≠ vozidla - '+F_Main.E_dataload_HV_dir.Text+'\*', WR_DATA);
   try
     HVDb.LoadFromDir(F_Main.E_dataload_HV_dir.Text, F_Main.E_dataload_HV_state.Text);
   except
     on E:Exception do
       AppEvents.LogException(E);
   end;
-  writelog('NaËteno '+IntToStr(HVDb.cnt)+' hnacÌch vozidel',WR_DATA);
+  writelog('Naƒçteno '+IntToStr(HVDb.cnt)+' hnac√≠ch vozidel',WR_DATA);
 
-  F_Splash.AddStav('NaËÌt·m RCS');
+  F_Splash.AddStav('Naƒç√≠t√°m RCS');
   writelog('Nacitam RCS...', WR_DATA);
   try
     RCSi.LoadFromFile(ini_lib);
@@ -108,7 +108,7 @@ var read,read2:string;
   end;
   writelog('RCS nacteno',WR_DATA);
 
-  F_Splash.AddStav('NaËÌt·m datab·zi zesilovaË˘');
+  F_Splash.AddStav('Naƒç√≠t√°m datab√°zi zesilovaƒç≈Ø');
   read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', 'data\zesilovace.ini');
   try
     Boosters.LoadFromFile(read);
@@ -118,7 +118,7 @@ var read,read2:string;
   end;
   F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
 
-  F_Splash.AddStav('NaËÌt·m soupravy');
+  F_Splash.AddStav('Naƒç√≠t√°m soupravy');
   read := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', 'stav\soupravy.ini');
   try
     Soupravy.LoadData(read);
@@ -129,7 +129,7 @@ var read,read2:string;
   F_Main.E_dataload_soupr.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), read);
 
   //nacitani bloku
-  F_Splash.AddStav('NaËÌt·m datab·zi blok˘');
+  F_Splash.AddStav('Naƒç√≠t√°m datab√°zi blok≈Ø');
   read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'bloky', 'data\bloky.ini');
   read2 := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'bloky', 'stav\bloky.ini');
   try
@@ -143,7 +143,7 @@ var read,read2:string;
 
   Soupravy.UpdateFront();
 
-  F_Splash.AddStav('NaËÌt·m datab·zi jizdnÌch cest');
+  F_Splash.AddStav('Naƒç√≠t√°m datab√°zi jizdn√≠ch cest');
   read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'JC', 'data\JC.ini');
   try
     JCDb.LoadData(read);
@@ -152,7 +152,7 @@ var read,read2:string;
       AppEvents.LogException(E);
   end;
 
-  F_Splash.AddStav('NaËÌt·m datab·zi sloûen˝ch jizdnÌch cest');
+  F_Splash.AddStav('Naƒç√≠t√°m datab√°zi slo≈æen√Ωch jizdn√≠ch cest');
   read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'mJC', 'data\mJC.ini');
   try
     MultiJCDb.LoadData(read);
@@ -162,7 +162,7 @@ var read,read2:string;
   end;
   F_Main.E_Dataload_multiJC.Text := MultiJCDb.filename;
 
-  F_Splash.AddStav('NaËÌt·m datab·zi automatick˝ch reûim˘');
+  F_Splash.AddStav('Naƒç√≠t√°m datab√°zi automatick√Ωch re≈æim≈Ø');
   read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'AC', 'AC');
   read2 := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'AC', 'stav\AC.ini');
   try
@@ -174,7 +174,7 @@ var read,read2:string;
   end;
   F_Main.E_dataload_AC.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.dirname);
 
-  F_Splash.AddStav('NaËÌt·m datab·zi FormData');
+  F_Splash.AddStav('Naƒç√≠t√°m datab√°zi FormData');
   read := ini_lib.ReadString(_INIDATA_PATHS_STATE_SECTION, 'forms', 'stav\forms.ini');
   try
     FormData.LoadFormData(read);
@@ -183,7 +183,7 @@ var read,read2:string;
       AppEvents.LogException(E);
   end;
 
-  F_Splash.AddStav('NaËÌt·m vedlejöÌ datab·ze');
+  F_Splash.AddStav('Naƒç√≠t√°m vedlej≈°√≠ datab√°ze');
   TrkSystem.LoadSpeedTable('data\rychlosti.csv',F_Options.LV_DigiRych);
   try
     F_Admin.LoadData;
@@ -198,7 +198,7 @@ var tmpStr:string;
  begin
   ini_lib.EraseSection(_INIDATA_PATHS_DATA_SECTION);
   ini_lib.EraseSection(_INIDATA_PATHS_STATE_SECTION);
-  WriteLog('ProbÌha kompletnÌ ukl·d·nÌ dat', WR_DATA);
+  WriteLog('Prob√≠ha kompletn√≠ ukl√°d√°n√≠ dat', WR_DATA);
 
   try
     Blky.SaveToFile(F_Main.E_dataload_block.Text);
@@ -331,7 +331,7 @@ var str:string;
     system:Ttrk_system;
     ini:TMemIniFile;
  begin
-  writelog('NaËÌt·m konfiguraci - '+IniLoad,WR_DATA);
+  writelog('Naƒç√≠t√°m konfiguraci - '+IniLoad,WR_DATA);
   F_Options.E_dataload.Text := IniLoad;
   ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
   try
@@ -417,7 +417,7 @@ var str:string;
          ini.ReadString('PanelServer', 'nazev', ''),
          ini.ReadString('PanelServer', 'popis', ''));
 
-    writelog('Konfigurace naËtena', WR_DATA);
+    writelog('Konfigurace naƒçtena', WR_DATA);
   finally
     ini.Free();
   end;
@@ -486,7 +486,7 @@ var j:Integer;
     aComponent:TComponent;
     ini:TMemIniFile;
  begin
-  writelog('NaËÌt·m FormData - '+IniLoad,WR_DATA);
+  writelog('Naƒç√≠t√°m FormData - '+IniLoad,WR_DATA);
 
   ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
   FormData.aFile := IniLoad;
@@ -513,7 +513,7 @@ var j:Integer;
     objs.Free();
     ini.Free();
   end;
-  writelog('FormData ˙spÏönÏ naËtena', WR_DATA);
+  writelog('FormData √∫spƒõ≈°nƒõ naƒçtena', WR_DATA);
  end;
 
 procedure TFormData.SaveFormData(IniSave:String);

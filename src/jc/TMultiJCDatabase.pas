@@ -1,4 +1,4 @@
-unit TMultiJCDatabase;
+Ôªøunit TMultiJCDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TMultiJCDb
@@ -83,7 +83,7 @@ var ini:TMemIniFile;
     mJC:TMultiJC;
     sections:TStrings;
 begin
- writelog('NaËÌt·m sloûenÈ JC - '+filename, WR_DATA);
+ writelog('Naƒç√≠t√°m slo≈æen√© JC - '+filename, WR_DATA);
 
  Self.ffilename := filename;
 
@@ -110,7 +110,7 @@ begin
      on e:Exception do
       begin
        mJC.Free();
-       AppEvents.LogException(E, 'Chyba p¯i naËÌt·nÌ sloûenÈ JC '+mJC.Nazev);
+       AppEvents.LogException(E, 'Chyba p≈ôi naƒç√≠t√°n√≠ slo≈æen√© JC '+mJC.Nazev);
        continue;
       end;
    end;
@@ -128,7 +128,7 @@ begin
   begin
    if (Self.JCs[i].id = Self.JCs[i+1].id) then
     begin
-     writelog('WARNING: duplicita prim·rnÌho klÌËe mJC ('+IntToStr(Self.JCs[i].id)+') - p¯eskakuji', WR_ERROR);
+     writelog('WARNING: duplicita prim√°rn√≠ho kl√≠ƒçe mJC ('+IntToStr(Self.JCs[i].id)+') - p≈ôeskakuji', WR_ERROR);
      Self.JCs.Delete(i+1);
     end;
    Inc(i);
@@ -137,7 +137,7 @@ begin
 
  ini.Free;
  sections.Free();
- writelog('NaËteno '+IntToStr(Self.JCs.Count)+' sloûen˝ch JC', WR_DATA);
+ writelog('Naƒçteno '+IntToStr(Self.JCs.Count)+' slo≈æen√Ωch JC', WR_DATA);
 
  MultiJCTableData.LoadToTable();
 end;
@@ -147,7 +147,7 @@ procedure TMultiJCDb.SaveData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
 begin
- writelog('Ukl·d·m sloûenÈ JC - '+filename, WR_DATA);
+ writelog('Ukl√°d√°m slo≈æen√© JC - '+filename, WR_DATA);
 
  try
    DeleteFile(PChar(filename));
@@ -166,7 +166,7 @@ begin
  ini.UpdateFile();
  ini.Free();
 
- writelog('SloûenÈ JC uloûeny', WR_DATA);
+ writelog('Slo≈æen√© JC ulo≈æeny', WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -299,7 +299,7 @@ var mJC:TMultiJC;
     pos:Integer;
 begin
  if (Self.GetJCByID(data.id) <> nil) then
-   raise MutiJCExistsException.Create('Sloûen· JC s ID '+IntToStr(data.id)+' jiû existuje');
+   raise MutiJCExistsException.Create('Slo≈æen√° JC s ID '+IntToStr(data.id)+' ji≈æ existuje');
 
  // linearne vyhledame pozici pro novou slozenou JC
  pos := 0;

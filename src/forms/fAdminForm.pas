@@ -1,4 +1,4 @@
-unit fAdminForm;
+﻿unit fAdminForm;
 
 interface
 
@@ -106,7 +106,7 @@ var ini:TMemIniFile;
      RCSi.InputSim();
  except
    on E:Exception do
-     writelog('Nelze prov�st inputSim : ' + E.Message, WR_ERROR);
+     writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
  end;
 end;
 

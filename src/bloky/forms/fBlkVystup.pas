@@ -1,4 +1,4 @@
-unit fBlkVystup;
+ï»¿unit fBlkVystup;
 
 interface
 
@@ -100,7 +100,7 @@ var glob:TBlkSettings;
   E_Nazev.Text := glob.name;
   SE_ID.Value  := glob.id;
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (logický výstup)';
+  Self.Caption := 'Editovat data bloku '+glob.name+' (logickÃ½ vÃ½stup)';
   Self.ActiveControl := Self.B_Save;
  end;
 

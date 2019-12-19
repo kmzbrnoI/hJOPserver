@@ -1,4 +1,4 @@
-unit TCPServerPT;
+ï»¿unit TCPServerPT;
 
 {
   PTserver slouzi k administraci hJOPserveru.
@@ -302,7 +302,7 @@ end;
 
 procedure TPtServer.httpAfterBind(Sender:TObject);
 begin
- writeLog('PT server spuštìn', WR_PT);
+ writeLog('PT server spuÅ¡tÄ›n', WR_PT);
 
  with (F_Main) do
   begin

@@ -1,4 +1,4 @@
-unit fHVEdit;
+Ôªøunit fHVEdit;
 
 interface
 
@@ -174,13 +174,13 @@ var data:THVData;
    end;
   if ((not Self.E_Addr.ReadOnly) and (Self.E_Addr.text = '')) then
    begin
-    Application.MessageBox('VyplÚte adresu !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vypl≈àte adresu !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
   ORs.GetORByIndex(Self.CB_OR.ItemIndex, OblR);
   if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.souprava > -1) and (Self.OpenHV.Stav.stanice <> OblR)) then
-    if (Application.MessageBox('MÏnÌte stanici HV, kterÈ je na soupravÏ, opravdu pokraËovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
+    if (Application.MessageBox('Mƒõn√≠te stanici HV, kter√© je na soupravƒõ, opravdu pokraƒçovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 
 
@@ -238,7 +238,7 @@ var data:THVData;
      except
        on E:Exception do
         begin
-         Application.MessageBox(PChar(E.Message), 'Nelze p¯idat', MB_OK OR MB_ICONWARNING);
+         Application.MessageBox(PChar(E.Message), 'Nelze p≈ôidat', MB_OK OR MB_ICONWARNING);
          Exit;
         end;
      end;
@@ -290,7 +290,7 @@ procedure TF_HVEdit.B_NajetoDeleteClick(Sender: TObject);
   OpenHV.RemoveStats();
   HVTableData.UpdateLine(Self.OpenHV);
 
-  Application.MessageBox('Operace probÏhla ˙spÏöne', 'OK', MB_OK OR MB_ICONINFORMATION);
+  Application.MessageBox('Operace probƒõhla √∫spƒõ≈°ne', 'OK', MB_OK OR MB_ICONINFORMATION);
  end;
 
 procedure TF_HVEdit.HlavniOpenForm;
@@ -394,7 +394,7 @@ procedure TF_HVEdit.NewHVOpenForm;
 
   ORs.FillCB(Self.CB_OR, nil);
 
-  F_HVEdit.Caption       := 'NovÈ HV';
+  F_HVEdit.Caption       := 'Nov√© HV';
  end;
 
 end.//unit

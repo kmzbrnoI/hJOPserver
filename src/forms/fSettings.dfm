@@ -855,10 +855,6 @@ object F_Options: TF_Options
     object TS_Centrala: TTabSheet
       Caption = 'Centr'#225'la'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GB_Centrala: TGroupBox
         Left = 114
         Top = 96

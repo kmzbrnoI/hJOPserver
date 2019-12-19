@@ -1,4 +1,4 @@
-unit fZesilovacEdit;
+Ôªøunit fZesilovacEdit;
 
 interface
 
@@ -98,7 +98,7 @@ begin
   end;
  if (Boosters.ContainsKey(E_ID.Text, Self.open_booster)) then
   begin
-   Application.MessageBox('ZesilovaË s tÌmto ID jiû existuje!','Nelze ulozit data',MB_OK OR MB_ICONSTOP);
+   Application.MessageBox('Zesilovaƒç s t√≠mto ID ji≈æ existuje!','Nelze ulozit data',MB_OK OR MB_ICONSTOP);
    Exit;
   end;
 
@@ -110,7 +110,7 @@ begin
    except
      on E:Exception do
       begin
-       Application.MessageBox(PChar(e.Message), 'Chyba p¯i vytv·¯enÌ zesilovaËe', MB_OK OR MB_ICONERROR);
+       Application.MessageBox(PChar(e.Message), 'Chyba p≈ôi vytv√°≈ôen√≠ zesilovaƒçe', MB_OK OR MB_ICONERROR);
        Exit();
       end;
    end;
@@ -202,7 +202,7 @@ var bSettings:TBoosterSettings;
 
   Self.SE_RCS_moduleExit(Self);
 
-  F_ZesilovacEdit.Caption := 'ZesilovaË: '+bSettings.Name;
+  F_ZesilovacEdit.Caption := 'Zesilovaƒç: '+bSettings.Name;
  end;
 
 procedure TF_ZesilovacEdit.NewOpenForm;
@@ -230,7 +230,7 @@ var IgnoraceRCS:TArI;
 
   Self.SE_RCS_moduleExit(Self);
 
-  F_ZesilovacEdit.Caption := 'Nov˝ zesilovaË';
+  F_ZesilovacEdit.Caption := 'Nov√Ω zesilovaƒç';
  end;
 
 end.//unit

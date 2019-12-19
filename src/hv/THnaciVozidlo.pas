@@ -1,4 +1,4 @@
-unit THnaciVozidlo;
+Ôªøunit THnaciVozidlo;
 
 {
   -------------------------- implementace ----------------------------------
@@ -206,7 +206,7 @@ begin
      Self.LoadState(data_ini, section)
  except
    on E:Exception do
-     raise Exception.Create('Chyba p¯i naËÌt·nÌ sekce '+section+' - '+E.Message);
+     raise Exception.Create('Chyba p≈ôi naƒç√≠t√°n√≠ sekce '+section+' - '+E.Message);
  end;
 end;//ctor
 
@@ -700,7 +700,7 @@ begin
  except
   on e:Exception do
    begin
-    raise Exception.Create('Chyba p¯i parsov·nÌ dat hnacÌho vozidla - '+e.Message);
+    raise Exception.Create('Chyba p≈ôi parsov√°n√≠ dat hnac√≠ho vozidla - '+e.Message);
     Exit();
    end;
  end;
@@ -736,7 +736,7 @@ begin
    Exit();
   end else begin
    if (Self.ruc) then
-     Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';RU». '+IntToStr(Self.adresa)+' ('+spr+')')
+     Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';RUƒå. '+IntToStr(Self.adresa)+' ('+spr+')')
    else
      // loko neni v rucnim rizeni -> oznamit klientovi
      if (send_remove) then Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.adresa));
@@ -1067,7 +1067,7 @@ begin
  for i := Self.Stav.regulators.Count-1 downto 0 do
   begin
    try
-     TCPRegulator.RemoveLok(Self.Stav.regulators[i].conn, Self, 'N·silnÈ odhl·öenÌ dispeËerem');
+     TCPRegulator.RemoveLok(Self.Stav.regulators[i].conn, Self, 'N√°siln√© odhl√°≈°en√≠ dispeƒçerem');
    except
      on E:Exception do
        AppEvents.LogException(E, 'THV.ForceRemoveAllRegulators');

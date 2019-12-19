@@ -1,4 +1,4 @@
-unit fBlkNav;
+Ôªøunit fBlkNav;
 
 interface
 
@@ -118,7 +118,7 @@ procedure TF_BlkNav.NewBlkOpenForm();
   // prvni udalost nepridavame, protoze muze byt navestidlo cestove,
   // ktere ji nepotrebuje
 
-  Self.Caption := 'Editovat data novÈho bloku n·vÏstidlo';
+  Self.Caption := 'Editovat data nov√©ho bloku n√°vƒõstidlo';
   Self.ActiveControl := E_Nazev;
  end;
 
@@ -164,7 +164,7 @@ var glob:TBlkSettings;
     ts.PageControl := Self.PC_Events;
     ts.OnClose     := Self.OnTabClose;
     if (i = 0) then
-      ts.Caption  := 'glob·lnÌ'
+      ts.Caption  := 'glob√°ln√≠'
     else
       ts.Caption  := IntToStr(settings.events[i].delka.min)+'-'+IntToStr(settings.events[i].delka.max)+'      ';
     eventForm  := TF_BlkNavEvent.Create(ts);
@@ -179,7 +179,7 @@ var glob:TBlkSettings;
 
   Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkNav).UsekID);
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (n·vÏstidlo)';
+  Self.Caption := 'Editovat data bloku '+glob.name+' (n√°vƒõstidlo)';
   Self.ActiveControl := B_Save;
  end;
 
@@ -221,7 +221,7 @@ var eventForm:TF_BlkNavEvent;
 begin
   ts             := TCloseTabSheet.Create(Self.PC_Events);
   if (Self.eventForms.Count = 0) then
-    ts.Caption   := 'glob·lnÌ'
+    ts.Caption   := 'glob√°ln√≠'
   else
     ts.Caption   := IntToStr(Self.eventForms.Count);
 
@@ -246,17 +246,17 @@ var glob:TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('VyplÚte n·zev bloku!', 'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vypl≈àte n√°zev bloku!', 'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
-    Application.MessageBox('ID jiû bylo definov·no na jinÈm bloku!', 'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID ji≈æ bylo definov√°no na jin√©m bloku!', 'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if ((Self.CHB_RCS_Output.Checked) and (CB_Typ.ItemIndex = -1)) then
    begin
-    Application.MessageBox('Vyberte typ v˝stupu!', 'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte typ v√Ωstupu!', 'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -265,7 +265,7 @@ var glob:TBlkSettings;
     str := Self.eventForms[i].Check();
     if (str <> '') then
      begin
-      Application.MessageBox(PChar(str), 'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar(str), 'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
       Exit();
      end;
    end;//for i
@@ -492,8 +492,8 @@ var i:Integer;
 begin
  if (Self.eventTabSheets.Count <= 1) then
   begin
-   if (Application.MessageBox(PChar('Maz·nÌ glob·lnÌ ud·losti zp˘sobÌ nezastavenÌ vlaku p¯ed n·vÏstidlem, '+
-      'proto je doporuËeno jen u se¯aÔovacÌch n·vÏstidel!'+#13#10+'Opravdu smazat glob·lnÌ ud·lost?'),
+   if (Application.MessageBox(PChar('Maz√°n√≠ glob√°ln√≠ ud√°losti zp≈Øsob√≠ nezastaven√≠ vlaku p≈ôed n√°vƒõstidlem, '+
+      'proto je doporuƒçeno jen u se≈ôaƒèovac√≠ch n√°vƒõstidel!'+#13#10+'Opravdu smazat glob√°ln√≠ ud√°lost?'),
       'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
      Exit();
   end;

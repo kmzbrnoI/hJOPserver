@@ -1,4 +1,4 @@
-unit AC;
+ï»¿unit AC;
 
 // Trida definujici AC
 //   Stezejni casti teto tridy je parsing souboru .krk
@@ -420,7 +420,7 @@ begin
    writelog('AC '+Self.name+ ' : RESUME', WR_AUTREZ);
   end else begin
    if (not Self.ready) then
-    raise Exception.Create('Podmínky pro spuštìní nesplnìny!')
+    raise Exception.Create('PodmÃ­nky pro spuÅ¡tÄ›nÃ­ nesplnÄ›ny!')
    else begin
      Self.krok := 0;
      Self.frunning  := true;

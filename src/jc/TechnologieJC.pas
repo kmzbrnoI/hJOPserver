@@ -1,4 +1,4 @@
-unit TechnologieJC;
+Ôªøunit TechnologieJC;
 
 {
   Kompletni technologie jizdnich cest.
@@ -1172,7 +1172,7 @@ var i:Integer;
   Self.fstaveni.SenderPnl  := SenderPnl;
   Self.fstaveni.nc         := nc;
 
-  writelog('JC '+Self.Nazev+' - poûadavek na stavÏnÌ, kontroluji podmÌnky', WR_VC);
+  writelog('JC '+Self.Nazev+' - po≈æadavek na stavƒõn√≠, kontroluji podm√≠nky', WR_VC);
 
   bariery := Self.KontrolaPodminek(Self.fstaveni.nc);
 
@@ -1199,7 +1199,7 @@ var i:Integer;
    begin
     // kriticke bariey existuji -> oznamim je
     Self.Krok := 1;
-    writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' bariÈr, ukonËuji stavÏnÌ', WR_VC);
+    writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' bari√©r, ukonƒçuji stavƒõn√≠', WR_VC);
     ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
     bariery.Free();
     upo.Free();
@@ -1208,7 +1208,7 @@ var i:Integer;
     // bariery k potvrzeni
     if ((bariery.Count > 0) or ((nc) and (from_stack <> nil))) then
      begin
-      writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' warning bariÈr, û·d·m potvrzenÌ...', WR_VC);
+      writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' warning bari√©r, ≈æ√°d√°m potvrzen√≠...', WR_VC);
       for i := 0 to bariery.Count-1 do
        upo.Add(Self.JCBarieraToMessage(bariery[i]));
 
@@ -1216,7 +1216,7 @@ var i:Integer;
       if ((nc) and (from_stack <> nil)) then
        begin
         item[0] := GetUPOLine('Pozor !', taCenter, clYellow, $A0A0A0);
-        item[1] := GetUPOLine('StavÏnÌ nouzovÈ cesty.');
+        item[1] := GetUPOLine('Stavƒõn√≠ nouzov√© cesty.');
         item[2] := GetUPOLine('');
         upo.Add(item);
        end;
@@ -1230,7 +1230,7 @@ var i:Integer;
    end;
 
   // v jzdni ceste nejsou zadne bariery -> stavim
-  writelog('JC '+Self.Nazev+' : û·dnÈ bariÈry, stavÌm', WR_VC);
+  writelog('JC '+Self.Nazev+' : ≈æ√°dn√© bari√©ry, stav√≠m', WR_VC);
 
   if (Self.fstaveni.nc) then
     Self.Krok := 100
@@ -1273,9 +1273,9 @@ begin
  // behem potvrzovani se mohly vyskytnout
  if (critical) then
   begin
-   Self.CancelStaveni('Nelze postavit - kritickÈ bariÈry');
+   Self.CancelStaveni('Nelze postavit - kritick√© bari√©ry');
    if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritickÈ bariÈry',
+     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritick√© bari√©ry',
         (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
    bariery.Free();
    Exit();
@@ -1301,7 +1301,7 @@ var
 begin
  if (Self.Krok <> 5) then Exit();
 
- writelog('JC '+Self.Nazev+' : krok 1 : upozornÏnÌ schv·lena, kontroluji znovu bariÈry', WR_VC);
+ writelog('JC '+Self.Nazev+' : krok 1 : upozornƒõn√≠ schv√°lena, kontroluji znovu bari√©ry', WR_VC);
 
  // znovu zkontrolujeme bariery (behem potvrzovani se mohly vyskytnout)
  bariery := Self.KontrolaPodminek(Self.fstaveni.nc);
@@ -1318,9 +1318,9 @@ begin
  // behem potvrzovani se mohly vyskytnout
  if (critical) then
   begin
-   Self.CancelStaveni('Nelze postavit - kritickÈ bariÈry');
+   Self.CancelStaveni('Nelze postavit - kritick√© bari√©ry');
    if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritickÈ bariÈry',
+     ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nelze postavit '+Self.nazev+' - kritick√© bari√©ry',
         (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
    bariery.Free();
    Exit();
@@ -1337,13 +1337,13 @@ begin
  if (podm.Count > 0) then
   begin
    // ano, takoveto bariery existuji -> potvrzovaci sekvence
-   writelog('JC '+Self.Nazev+' : bariÈry s potvrzovacÌ sekvencÌ, û·d·m potvrzenÌ...', WR_VC);
+   writelog('JC '+Self.Nazev+' : bari√©ry s potvrzovac√≠ sekvenc√≠, ≈æ√°d√°m potvrzen√≠...', WR_VC);
    Blky.GetBlkByID(Self.fproperties.NavestidloBlok, nav);
    Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], usek);
 
    if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
      ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.PS_vylCallback, (Self.fstaveni.SenderOR as TOR),
-        'JÌzdnÌ cesta s potvrzenÌm', TBlky.GetBlksList(nav, usek), podm);
+        'J√≠zdn√≠ cesta s potvrzen√≠m', TBlky.GetBlksList(nav, usek), podm);
 
    Self.Krok := 6;
   end else begin
@@ -1531,7 +1531,7 @@ var i,j:Integer;
           if (neprofil.Obsazeno <> TUsekStav.uvolneno) then
            begin
             if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-              ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'NeuvolnÏn ' + neprofil.name,
+              ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuvolnƒõn ' + neprofil.name,
                   (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
             writelog('Krok 14 : Neprofilovy usek '+neprofil.name+' neuvolnen!', WR_VC);
             Self.CancelStaveni();
@@ -1563,7 +1563,7 @@ var i,j:Integer;
 
          case (Blk.typ) of
            _BLK_NAV:begin
-             writelog('Krok 12 : n·vÏstidlo '+Blk.name+' - redukuji menu', WR_VC);
+             writelog('Krok 12 : n√°vƒõstidlo '+Blk.name+' - redukuji menu', WR_VC);
              TBlkNav(Blk).RedukujMenu();
              Blky.GetBlkByID(refZaver.ref_blk, Blk);
              TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverReleaseOrAB,
@@ -1740,9 +1740,9 @@ var i,j:Integer;
         if (navestidlo.Navest <> TBlkNav._NAV_STUJ) then
           navestidlo.Navest := TBlkNav._NAV_STUJ;
         if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'PodmÌnky pro JC nesplnÏny!',
+          ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Podm√≠nky pro JC nesplnƒõny!',
             (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-        writelog('Krok 16 : PodmÌnky pro JC nesplnÏny!', WR_VC);
+        writelog('Krok 16 : Podm√≠nky pro JC nesplnƒõny!', WR_VC);
         Exit();
        end;
 
@@ -1905,9 +1905,9 @@ var i,j:Integer;
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(lastUsek));
       writelog('Krok 101: zmena potvr., odesilam aktualni seznam', WR_VC);
       if (Self.fproperties.TypCesty = TJCType.vlak) then
-        str := 'ZapnutÌ p¯ivol·vacÌ n·vÏsti'
+        str := 'Zapnut√≠ p≈ôivol√°vac√≠ n√°vƒõsti'
       else
-        str := 'Nouzov· posunov· cesta';
+        str := 'Nouzov√° posunov√° cesta';
 
       if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
         ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.NC_PS_Callback, Self.fstaveni.SenderOR as TOR,
@@ -2196,7 +2196,7 @@ var Nav:TBlk;
      begin
       (Nav as TBlkNav).AB := false; // automaticky zrusi AB
       if (Self.fstaveni.SenderPnl <> nil) then
-        ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Zruöena AB '+Nav.name,
+        ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Zru≈°ena AB '+Nav.name,
           (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
      end;
    end;
@@ -2325,7 +2325,7 @@ begin
          if ((Nav.Navest > 0) and (Nav.DNjc = Self)) then
           begin
            if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-             ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovacÌ n·vÏsti '+Nav.name,
+             ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovac√≠ n√°vƒõsti '+Nav.name,
                 (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
            Self.RusJCWithoutBlk();
           end;
@@ -2509,13 +2509,13 @@ var Nav:TBlk;
 begin
  if (Self.staveni) then
   begin
-   Self.CancelStaveni('Nelze postavit - obsazen neprofilov˝ ˙sek');
+   Self.CancelStaveni('Nelze postavit - obsazen neprofilov√Ω √∫sek');
   end else begin
    Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
    if (((Nav as TBlkNav).Navest > 0) and ((Nav as TBlkNav).DNjc = Self)) then
     begin
      if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-       ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovacÌ n·vÏsti '+Nav.name,
+       ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Chyba povolovac√≠ n√°vƒõsti '+Nav.name,
             (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
      Self.RusJCWithoutBlk();
     end;
@@ -2878,7 +2878,7 @@ begin
         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
         if (prejezd.Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then
           if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuzav¯en '+prejezd.name,
+            ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Neuzav≈ôen '+prejezd.name,
               (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
        end;//for i
     end;//case 13
@@ -2890,7 +2890,7 @@ begin
    end;//else case
 
    //timeout
-   Self.CancelStaveni('P¯ekroËenÌ Ëasu stavÏnÌ JC', true);    // toto je docasne reseni: cestu vymazeme ze zasobniku
+   Self.CancelStaveni('P≈ôekroƒçen√≠ ƒçasu stavƒõn√≠ JC', true);    // toto je docasne reseni: cestu vymazeme ze zasobniku
   end;//if timeout
 end;
 
@@ -3117,7 +3117,7 @@ begin
   _JCB_TRAT_ZAVER, _JCB_TRAT_OBSAZENO, _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS,
   _JCB_ZAMEK_NEUZAMCEN, _JCB_VYHYBKA_NESPAVNA_POLOHA:
   begin
-    Result[0] := GetUPOLine('NEPÿÕPUSTN…', taCenter, clRed, clWhite);
+    Result[0] := GetUPOLine('NEP≈ò√çPUSTN√â', taCenter, clRed, clWhite);
     if (Assigned(Bariera.blok)) then
       Result[2] := GetUPOLine(Bariera.blok.name)
     else
@@ -3128,41 +3128,41 @@ begin
 
  case (Bariera.typ) of
   _JCB_OK                      : Result[0] := GetUPOLine('OK', taCenter, clBlue, $A0A0A0);
-  _JCB_STAVENI                 : Result[0] := GetUPOLine('Jiû se stavÌ', taCenter, clBlue, $A0A0A0);
+  _JCB_STAVENI                 : Result[0] := GetUPOLine('Ji≈æ se stav√≠', taCenter, clBlue, $A0A0A0);
 
-  _JCB_BLOK_DISABLED           : Result[1] := GetUPOLine('Blok neaktivnÌ');
+  _JCB_BLOK_DISABLED           : Result[1] := GetUPOLine('Blok neaktivn√≠');
   _JCB_BLOK_NOT_EXIST          : Result[1] := GetUPOLine('Blok neexistuje');
-  _JCB_BLOK_NOT_TYP            : Result[1] := GetUPOLine('Blok nenÌ spr·vnÈho typu');
+  _JCB_BLOK_NOT_TYP            : Result[1] := GetUPOLine('Blok nen√≠ spr√°vn√©ho typu');
 
-  _JCB_NAV_NOT_USEK            : Result[1] := GetUPOLine('NenÌ ˙sek p¯ed n·vÏstidlem');
+  _JCB_NAV_NOT_USEK            : Result[1] := GetUPOLine('Nen√≠ √∫sek p≈ôed n√°vƒõstidlem');
 
-  _JCB_USEK_OBSAZENO           : Result[1] := GetUPOLine('⁄sek obsazen');
-  _JCB_USEK_ZAVER              : Result[1] := GetUPOLine('⁄sek zapevnÏn');
+  _JCB_USEK_OBSAZENO           : Result[1] := GetUPOLine('√ösek obsazen');
+  _JCB_USEK_ZAVER              : Result[1] := GetUPOLine('√ösek zapevnƒõn');
   _JCB_USEK_SOUPRAVA           : Result[1] := GetUPOLine('Souprava');
-  _JCB_USEK_AB                 : Result[1] := GetUPOLine('Blokov·no automatickou JC');
+  _JCB_USEK_AB                 : Result[1] := GetUPOLine('Blokov√°no automatickou JC');
 
-  _JCB_VYHYBKA_KONC_POLOHA     : Result[1] := GetUPOLine('NenÌ koncov· poloha');
-  _JCB_VYHYBKA_ZAMCENA         : Result[1] := GetUPOLine('ZamËena');
-  _JCB_VYHYBKA_NOUZ_ZAVER      : Result[1] := GetUPOLine('Nouzov˝ z·vÏr');
-  _JCB_VYHYBKA_NESPAVNA_POLOHA : Result[1] := GetUPOLine('Nespr·vn· poloha');
+  _JCB_VYHYBKA_KONC_POLOHA     : Result[1] := GetUPOLine('Nen√≠ koncov√° poloha');
+  _JCB_VYHYBKA_ZAMCENA         : Result[1] := GetUPOLine('Zamƒçena');
+  _JCB_VYHYBKA_NOUZ_ZAVER      : Result[1] := GetUPOLine('Nouzov√Ω z√°vƒõr');
+  _JCB_VYHYBKA_NESPAVNA_POLOHA : Result[1] := GetUPOLine('Nespr√°vn√° poloha');
 
-  _JCB_PREJEZD_NOUZOVE_OTEVREN : Result[1] := GetUPOLine('NouzovÏ otev¯en');
-  _JCB_PREJEZD_PORUCHA         : Result[1] := GetUPOLine('Poruchov˝ stav');
+  _JCB_PREJEZD_NOUZOVE_OTEVREN : Result[1] := GetUPOLine('Nouzovƒõ otev≈ôen');
+  _JCB_PREJEZD_PORUCHA         : Result[1] := GetUPOLine('Poruchov√Ω stav');
 
-  _JCB_ODVRAT_ZAMCENA          : Result[1] := GetUPOLine('ZamËena');
+  _JCB_ODVRAT_ZAMCENA          : Result[1] := GetUPOLine('Zamƒçena');
   _JCB_ODVRAT_OBSAZENA         : Result[1] := GetUPOLine('Obsazena');
-  _JCB_ODVRAT_KONC_POLOHA      : Result[1] := GetUPOLine('NenÌ koncov· poloha');
+  _JCB_ODVRAT_KONC_POLOHA      : Result[1] := GetUPOLine('Nen√≠ koncov√° poloha');
 
-  _JCB_TRAT_ZAVER              : Result[1] := GetUPOLine('Z·vÏr');
+  _JCB_TRAT_ZAVER              : Result[1] := GetUPOLine('Z√°vƒõr');
   _JCB_TRAT_OBSAZENO           : Result[1] := GetUPOLine('Obsazena');
-  _JCB_TRAT_ZADOST             : Result[1] := GetUPOLine('ProbÌh· û·dost');
+  _JCB_TRAT_ZADOST             : Result[1] := GetUPOLine('Prob√≠h√° ≈æ√°dost');
   _JCB_TRAT_NESOUHLAS          : Result[1] := GetUPOLine('Nesouhlas');
 
-  _JCB_ZAMEK_NEUZAMCEN         : Result[1] := GetUPOLine('NeuzamËen');
-  _JCB_ZAMEK_NOUZ_ZAVER        : Result[1] := GetUPOLine('NenÌ nouzov˝ z·vÏr');
+  _JCB_ZAMEK_NEUZAMCEN         : Result[1] := GetUPOLine('Neuzamƒçen');
+  _JCB_ZAMEK_NOUZ_ZAVER        : Result[1] := GetUPOLine('Nen√≠ nouzov√Ω z√°vƒõr');
 
   _JCB_USEK_VYLUKA : begin
-    Result[0] := GetUPOLine('V›LUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
+    Result[0] := GetUPOLine('V√ùLUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
     lines := GetLines((Bariera.blok as TBlkUsek).Vyluka, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -3174,7 +3174,7 @@ begin
   end;
 
   _JCB_USEK_STITEK : begin
-    Result[0] := GetUPOLine('äTÕTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('≈†T√çTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkUsek).Stitek, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -3186,7 +3186,7 @@ begin
   end;
 
   _JCB_VYHYBKA_VYLUKA : begin
-    Result[0] := GetUPOLine('V›LUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
+    Result[0] := GetUPOLine('V√ùLUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
     lines := GetLines((Bariera.blok as TBlkVyhybka).Vyluka, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -3198,7 +3198,7 @@ begin
   end;
 
   _JCB_VYHYBKA_STITEK : begin
-    Result[0] := GetUPOLine('äTÕTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('≈†T√çTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkVyhybka).Stitek, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -3210,7 +3210,7 @@ begin
   end;
 
   _JCB_PREJEZD_STITEK : begin
-    Result[0] := GetUPOLine('äTÕTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('≈†T√çTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkPrejezd).Stitek, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -3223,19 +3223,19 @@ begin
 
   _JCB_PRIVOLAVACKA : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-    Result[1] := GetUPOLine('SvÌtÌ p¯ivol·vacÌ n·vÏst');
+    Result[1] := GetUPOLine('Sv√≠t√≠ p≈ôivol√°vac√≠ n√°vƒõst');
     Result[2] := GetUPOLine(Bariera.blok.name);
   end;
 
   _JCB_HV_RUC : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-    Result[1] := GetUPOLine('HnacÌ vozidlo v ruËnÌm ¯ÌzenÌ');
+    Result[1] := GetUPOLine('Hnac√≠ vozidlo v ruƒçn√≠m ≈ô√≠zen√≠');
     Result[2] := GetUPOLine(IntToStr(Bariera.param) + ' : ' + HVDb.HVozidla[Bariera.param].Data.Nazev);
   end;
 
   _JCB_HV_NOT_ALL_RUC : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-    Result[1] := GetUPOLine('Ne vöechna HV v ruËnÌm ¯ÌzenÌ');
+    Result[1] := GetUPOLine('Ne v≈°echna HV v ruƒçn√≠m ≈ô√≠zen√≠');
     Result[2] := GetUPOLine('');
   end;
 
@@ -3250,12 +3250,12 @@ begin
 
     if ((Self.fproperties.TypCesty = TJCType.posun) and (canZAK)) then
      begin
-      Result[0] := GetUPOLine('ZAVEDEN Z¡KAZ ODJEZDU', taCenter, clRed, clWhite);
+      Result[0] := GetUPOLine('ZAVEDEN Z√ÅKAZ ODJEZDU', taCenter, clRed, clWhite);
       Result[1] := GetUPOLine(Bariera.blok.name);
       Result[2] := GetUPOLine('');
      end else begin
-      Result[0] := GetUPOLine('NEPÿÕPUSTN…', taCenter, clRed, clWhite);
-      Result[1] := GetUPOLine('Z·kaz odjezdu');
+      Result[0] := GetUPOLine('NEP≈ò√çPUSTN√â', taCenter, clRed, clWhite);
+      Result[1] := GetUPOLine('Z√°kaz odjezdu');
       if (Assigned(Bariera.blok)) then
         Result[2] := GetUPOLine(Bariera.blok.name)
       else
@@ -3264,7 +3264,7 @@ begin
   end;
 
   _JCB_TRAT_STITEK : begin
-    Result[0] := GetUPOLine('äTÕTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
+    Result[0] := GetUPOLine('≈†T√çTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
     lines := GetLines((Bariera.blok as TBlkUvazka).Stitek, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 1) then
@@ -3274,12 +3274,12 @@ begin
 
   _JCB_SPR_SMER : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-    Result[1] := GetUPOLine('JÌzda proti smÏru soupravy');
+    Result[1] := GetUPOLine('J√≠zda proti smƒõru soupravy');
     Result[2] := GetUPOLine('Soprava ' + Soupravy.soupravy[Bariera.param].nazev);
   end;
 
  else
-  Result[0] := GetUPOLine('Nezn·m· bariÈra ve stavÏnÌ JC', taCenter, clRed, clWhite);
+  Result[0] := GetUPOLine('Nezn√°m√° bari√©ra ve stavƒõn√≠ JC', taCenter, clRed, clWhite);
  end;
 end;
 
@@ -3337,9 +3337,9 @@ end;
 class function TJC.PotvrSekvBarieraToReason(typ:Integer):string;
 begin
  case (typ) of
-  _JCB_VYHYBKA_VYLUKA : Result := 'V˝luka v˝hybkovÈho bloku';
-  _JCB_USEK_VYLUKA    : Result := 'V˝luka kolejovÈho ˙seku';
-  _JCB_TRAT_ZAK       : Result := 'Z·kaz odjezdu na traù';
+  _JCB_VYHYBKA_VYLUKA : Result := 'V√Ωluka v√Ωhybkov√©ho bloku';
+  _JCB_USEK_VYLUKA    : Result := 'V√Ωluka kolejov√©ho √∫seku';
+  _JCB_TRAT_ZAK       : Result := 'Z√°kaz odjezdu na tra≈•';
  else
   Result := '';
  end;
@@ -3417,7 +3417,7 @@ begin
  if (not Self.staveni) then Exit();
 
  if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nep¯estavena '+(Sender as TBlkVyhybka).name,
+   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nep≈ôestavena '+(Sender as TBlkVyhybka).name,
      (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
  Self.RusJC();
@@ -3492,7 +3492,7 @@ begin
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, nav);
 
  if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'N·vÏstidlo '+nav.name + ' nepostaveno',
+   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'N√°vƒõstidlo '+nav.name + ' nepostaveno',
      (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
 end;
@@ -3724,29 +3724,29 @@ begin
  for i := 0 to bariery.Count-1 do
   begin
    case (bariery[i].typ) of
-    _JCB_USEK_OBSAZENO           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, '⁄sek obsazen'));
-    _JCB_USEK_SOUPRAVA           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, '⁄sek obsahuje soupravu'));
+    _JCB_USEK_OBSAZENO           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, '√ösek obsazen'));
+    _JCB_USEK_SOUPRAVA           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, '√ösek obsahuje soupravu'));
 
-    _JCB_PREJEZD_NOUZOVE_OTEVREN : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'NouzovÏ otev¯en'));
+    _JCB_PREJEZD_NOUZOVE_OTEVREN : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nouzovƒõ otev≈ôen'));
     _JCB_PREJEZD_PORUCHA         : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Porucha'));
-    _JCB_PREJEZD_NEUZAVREN       : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Neuzav¯en'));
+    _JCB_PREJEZD_NEUZAVREN       : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Neuzav≈ôen'));
 
-    _JCB_VYHYBKA_KONC_POLOHA     : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'NenÌ spr·vn· poloha'));
-    _JCB_VYHYBKA_NOUZ_ZAVER      : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'NenÌ zaveden nouzov˝ z·vÏr'));
-    _JCB_VYHYBKA_NESPAVNA_POLOHA : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'NenÌ spr·vn· poloha'));
+    _JCB_VYHYBKA_KONC_POLOHA     : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nen√≠ spr√°vn√° poloha'));
+    _JCB_VYHYBKA_NOUZ_ZAVER      : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nen√≠ zaveden nouzov√Ω z√°vƒõr'));
+    _JCB_VYHYBKA_NESPAVNA_POLOHA : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nen√≠ spr√°vn√° poloha'));
 
-    _JCB_TRAT_ZAK                : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Z·kaz odjezdu'));
-    _JCB_TRAT_NOT_ZAK            : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nezaveden z·kaz odjezdu'));
-    _JCB_TRAT_ZAVER              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Z·vÏr'));
+    _JCB_TRAT_ZAK                : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Z√°kaz odjezdu'));
+    _JCB_TRAT_NOT_ZAK            : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nezaveden z√°kaz odjezdu'));
+    _JCB_TRAT_ZAVER              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Z√°vƒõr'));
     _JCB_TRAT_OBSAZENO           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Obsazeno'));
-    _JCB_TRAT_ZADOST             : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'ProbÌh· û·dost'));
+    _JCB_TRAT_ZADOST             : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Prob√≠h√° ≈æ√°dost'));
     _JCB_TRAT_NESOUHLAS          : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nesouhlas'));
-    _JCB_TRAT_NO_BP              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Blokov· podmÌnka nezavedena'));
-    _JCB_TRAT_NEPRENOS           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nedojde k p¯enosu ËÌsla vlaku'));
-    _JCB_TRAT_PRENOS_NAKONEC     : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Vlak bude p¯enesen aû na konec trati'));
+    _JCB_TRAT_NO_BP              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Blokov√° podm√≠nka nezavedena'));
+    _JCB_TRAT_NEPRENOS           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nedojde k p≈ôenosu ƒç√≠sla vlaku'));
+    _JCB_TRAT_PRENOS_NAKONEC     : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Vlak bude p≈ôenesen a≈æ na konec trati'));
 
-    _JCB_ZAMEK_NEUZAMCEN         : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'NeuzamËen'));
-    _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'NenÌ zaveden nouzov˝ z·vÏr'));
+    _JCB_ZAMEK_NEUZAMCEN         : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Neuzamƒçen'));
+    _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nen√≠ zaveden nouzov√Ω z√°vƒõr'));
    end;//case bariera typ
   end;//for i
 end;

@@ -1,4 +1,4 @@
-unit TCPORsRef;
+Ôªøunit TCPORsRef;
 
 interface
 
@@ -196,7 +196,7 @@ var i:Integer;
 begin
  // clear loco always (even when called after several attempts)
  for i := Self.regulator_loks.Count-1 downto 0 do
-   TCPRegulator.RemoveLok(AContext, Self.regulator_loks[i], 'Za¯ÌzenÌ neodpovÌd· na ping!');
+   TCPRegulator.RemoveLok(AContext, Self.regulator_loks[i], 'Za≈ô√≠zen√≠ neodpov√≠d√° na ping!');
 
  if (not Self.ping_unreachable) then
   begin

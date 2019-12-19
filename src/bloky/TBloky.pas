@@ -1,4 +1,4 @@
-unit TBloky;
+ï»¿unit TBloky;
 
 //tato unita definuje tridu, ktera se stara o vsechny bloky
 //tedy jsou v ni ulozeny  vsechny bloky
@@ -203,7 +203,7 @@ var ini_tech,ini_rel,ini_stat:TMemIniFile;
     str:TStrings;
     section:string;
 begin
- writelog('Naèítám bloky: '+tech_filename+ '; '+rel_filename, WR_DATA);
+ writelog('NaÄÃ­tÃ¡m bloky: '+tech_filename+ '; '+rel_filename, WR_DATA);
  Self.ffile    := tech_filename;
  Self.ffstatus := stat_filename;
 
@@ -276,7 +276,7 @@ begin
  for Blk in Self.data do
    Blk.AfterLoad();
 
- writelog('Naèteno blokù: '+IntToStr(Self.Cnt), WR_DATA);
+ writelog('NaÄteno blokÅ¯: '+IntToStr(Self.Cnt), WR_DATA);
 end;
 
 //save all blocks to the file
@@ -891,9 +891,9 @@ begin
   on E:Exception do
    begin
     if (Usek <> nil) then
-      AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy - Usek '+Usek.name)
+      AppEvents.LogException(E, 'VyjÃ­mka pÅ™i pÅ™edpovÃ­dÃ¡nÃ­ soupravy - Usek '+Usek.name)
     else
-      AppEvents.LogException(E, 'Vyjímka pøi pøedpovídání soupravy');
+      AppEvents.LogException(E, 'VyjÃ­mka pÅ™i pÅ™edpovÃ­dÃ¡nÃ­ soupravy');
    end;
  end;
 end;

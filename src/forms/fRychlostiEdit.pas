@@ -1,4 +1,4 @@
-unit fRychlostiEdit;
+﻿unit fRychlostiEdit;
 
 interface
 
@@ -36,7 +36,7 @@ procedure TF_RychlostiEdit.OpenForm(Stupen:Integer);
  begin
   OpenIndex := Stupen;
   SE_Rychlost.Value := TrkSystem.GetStepSpeed(stupen);
-  F_RychlostiEdit.Caption := 'Editovat stupe� '+IntToStr(Stupen);
+  F_RychlostiEdit.Caption := 'Editovat stupeň '+IntToStr(Stupen);
   Self.ActiveControl := Self.SE_Rychlost;
   F_RychlostiEdit.ShowModal;
  end;

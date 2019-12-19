@@ -1,4 +1,4 @@
-unit fBlkTrat;
+Ôªøunit fBlkTrat;
 
 interface
 
@@ -168,7 +168,7 @@ var glob:TBlkSettings;
     LI.SubItems.Add(Blky.GetBlkName(settings.Useky[i]));
    end;
 
-  Self.Caption := 'Editace dat bloku '+Self.Trat.name+' (traù)';
+  Self.Caption := 'Editace dat bloku '+Self.Trat.name+' (tra≈•)';
  Self.ActiveControl := Self.B_Save;
  end;
 
@@ -199,7 +199,7 @@ var LI:TListItem;
 begin
  if (F_BlkTrat.CB_NewTratBlok.ItemIndex < 0) then
   begin
-   Application.MessageBox('Vyberte blok!', 'Nelze pokraËovat', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Vyberte blok!', 'Nelze pokraƒçovat', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
 
@@ -274,17 +274,17 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
    end;
   if (Blky.IsBlok(Self.SE_UA_id.Value, uvazkaA)) then
    begin
-    Application.MessageBox('ID ˙vazky A jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID √∫vazky A jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(Self.SE_UB_id.Value,  uvazkaB)) then
    begin
-    Application.MessageBox('ID ˙vazky B jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID √∫vazky B jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CB_Trat_ZabZar.ItemIndex < 0) then
    begin
-    Application.MessageBox('Vyberte typ zabezpeËovacÌho za¯ÌzenÌ trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte typ zabezpeƒçovac√≠ho za≈ô√≠zen√≠ trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -310,21 +310,21 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     Self.Trat := Blky.Add(_BLK_TRAT, glob_trat) as TBlkTrat;
     if (Self.Trat = nil) then
      begin
-      Application.MessageBox('Nepodarilo se pridat blok traù !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Nepodarilo se pridat blok tra≈• !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
 
     Self.UvazkaA  := Blky.Add(_BLK_UVAZKA, glob_uvA) as TBlkUvazka;
     if (Self.UvazkaA = nil) then
      begin
-      Application.MessageBox('Nepodarilo se pridat blok ˙vazka A !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Nepodarilo se pridat blok √∫vazka A !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
 
     Self.UvazkaB  := Blky.Add(_BLK_UVAZKA, glob_uvB) as TBlkUvazka;
     if (Self.UvazkaB = nil) then
      begin
-      Application.MessageBox('Nepodarilo se pridat blok ˙vazka B !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Nepodarilo se pridat blok √∫vazka B !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end else begin

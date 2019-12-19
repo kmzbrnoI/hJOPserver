@@ -1,4 +1,4 @@
-unit fBlkRozp;
+﻿unit fBlkRozp;
 
 interface
 
@@ -106,7 +106,7 @@ var glob:TBlkSettings;
   E_Nazev.Text := glob.name;
   SE_ID.Value  := glob.id;
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (rozpojova�)';
+  Self.Caption := 'Editovat data bloku '+glob.name+' (rozpojovač)';
   Self.ActiveControl := B_Save;
  end;
 

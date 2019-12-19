@@ -1,4 +1,4 @@
-unit fBlkTUZastEvent;
+Ôªøunit fBlkTUZastEvent;
 
 interface
 
@@ -95,10 +95,10 @@ end;
 function TF_BlkTUZastEvent.Check():string;
 begin
   if (not Self.fZast.InputValid()) then
-    Exit('Vyberte zastavovacÌ ud·lost!');
+    Exit('Vyberte zastavovac√≠ ud√°lost!');
 
   if ((Self.CHB_Zpomal.Checked) and (not Self.fZpom.InputValid())) then
-    Exit('Vyberte zpomalovacÌ ud·lost!');
+    Exit('Vyberte zpomalovac√≠ ud√°lost!');
 
   if ((CB_ZpomalitKmH.ItemIndex = -1) and (CHB_Zpomal.Checked)) then
     Exit('Vyberte rychlost, na kterou se ma zpomalit!');

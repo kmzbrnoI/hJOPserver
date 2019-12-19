@@ -1,4 +1,4 @@
-unit DataHV;
+ï»¿unit DataHV;
 
 // THVTableData - trida starajici se o vyplnovani tabulky hnacich vozidel
 
@@ -110,15 +110,15 @@ var line:Integer;
   Self.LV.Items[line].SubItems[3] := data.Poznamka;
 
   case (data.Trida) of
-   THVClass.parni   : Self.LV.Items[line].SubItems[4] := 'parní';
+   THVClass.parni   : Self.LV.Items[line].SubItems[4] := 'parnÃ­';
    THVClass.diesel  : Self.LV.Items[line].SubItems[4] := 'diesel';
    THVClass.motor   : Self.LV.Items[line].SubItems[4] := 'motor';
    THVClass.elektro : Self.LV.Items[line].SubItems[4] := 'elektro';
   end;//case
 
   case (stav.StanovisteA) of
-   lichy : Self.LV.Items[line].SubItems[5] := 'lichý';
-   sudy  : Self.LV.Items[line].SubItems[5] := 'sudý';
+   lichy : Self.LV.Items[line].SubItems[5] := 'lichÃ½';
+   sudy  : Self.LV.Items[line].SubItems[5] := 'sudÃ½';
   end;//case
 
   Self.LV.Items[line].SubItems[19]  := Format('%5.2f',[stav.najeto_vpred.Metru]);
@@ -142,7 +142,7 @@ var line:Integer;
    TPomStatus.progr    : Self.LV.Items[line].SubItems[17] := 'progr';
    TPomStatus.error    : Self.LV.Items[line].SubItems[17] := 'error';
    TPomStatus.pc       : Self.LV.Items[line].SubItems[17] := 'automat';
-   TPomStatus.released : Self.LV.Items[line].SubItems[17] := 'ruèní';
+   TPomStatus.released : Self.LV.Items[line].SubItems[17] := 'ruÄnÃ­';
   end;//case
 
  if (not HV.Slot.Prevzato) then
@@ -203,7 +203,7 @@ var line:Integer;
   end;//else not prevzato
 
   if (stav.souprava > -1) then
-    Self.LV.Items[line].SubItems[23] := 'teï'
+    Self.LV.Items[line].SubItems[23] := 'teÄ'
   else if (stav.last_used > 0) then
     Self.LV.Items[line].SubItems[23] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
   else

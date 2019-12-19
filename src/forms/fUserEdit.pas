@@ -1,4 +1,4 @@
-unit fUserEdit;
+Ôªøunit fUserEdit;
 
 interface
 
@@ -159,7 +159,7 @@ begin
  Self.E_Password2.Text  := 'heslo';
 
  Self.ActiveControl := Self.E_UserName;
- Self.Caption := 'Editovat uûivatele '+User.id;
+ Self.Caption := 'Editovat u≈æivatele '+User.id;
  Self.ShowModal();
 end;
 
@@ -180,7 +180,7 @@ begin
  Self.E_Password2.Text  := '';
 
  Self.ActiveControl := Self.E_UserName;
- Self.Caption := 'Vytvo¯it novÈho uûivatele';
+ Self.Caption := 'Vytvo≈ôit nov√©ho u≈æivatele';
  Self.ShowModal();
 end;
 
@@ -191,7 +191,7 @@ var index:Integer;
 begin
  if (Length(Self.E_UserName.Text) < 3) then
   begin
-   Application.MessageBox('UûivatelskÈ jmÈno musÌ mÌt alespoÚ 3 znaky!', 'nelze uloûit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('U≈æivatelsk√© jm√©no mus√≠ m√≠t alespo≈à 3 znaky!', 'nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
 
@@ -199,19 +199,19 @@ begin
   begin
    if (Self.E_Password1.Text = '') then
     begin
-     Application.MessageBox('Heslo nem˘ûe b˝t pr·zdnÈ!', 'nelze uloûit data', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox('Heslo nem≈Ø≈æe b√Ωt pr√°zdn√©!', 'nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
   end;//if Self.OpenUser <> nil
 
  if (Self.E_Password1.Text <> Self.E_Password2.Text) then
   begin
-   Application.MessageBox('Zadan· hesla se neshodujÌ!', 'nelze uloûit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Zadan√° hesla se neshoduj√≠!', 'nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
  if (Length(Self.E_Password1.Text) < 3) then
   begin
-   Application.MessageBox('Heslo musÌ mÌt alespoÚ 3 znaky!', 'nelze uloûit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Heslo mus√≠ m√≠t alespo≈à 3 znaky!', 'nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
 
@@ -239,7 +239,7 @@ begin
    except
      on e:Exception do
       begin
-       Application.MessageBox(PChar(e.Message), 'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+       Application.MessageBox(PChar(e.Message), 'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
        Exit();
       end;
    end;

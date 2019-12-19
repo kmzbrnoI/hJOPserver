@@ -1,4 +1,4 @@
-unit TechnologieAB;
+ï»¿unit TechnologieAB;
 
 {
   Trida TABlist udrzuje seznam automaticky stavenych jizdnich cest a postupne
@@ -66,7 +66,7 @@ begin
 
  Self.JCs.Add(jc);
  ABTableData.AddJC(jc);
- writelog('AB: JC '+jc.nazev+' pøidána do seznamu AB JC', WR_VC);
+ writelog('AB: JC '+jc.nazev+' pÅ™idÃ¡na do seznamu AB JC', WR_VC);
 end;
 
 procedure TABlist.Remove(jc:TJC);
@@ -87,7 +87,7 @@ begin
   end;
 
  i := Self.JCs.IndexOf(jc);
- writelog('AB: JC '+Self.JCs[i].nazev+' odstranìna ze seznamu AB JC', WR_VC);
+ writelog('AB: JC '+Self.JCs[i].nazev+' odstranÄ›na ze seznamu AB JC', WR_VC);
  Self.JCs.Delete(i);
  ABTableData.DeleteJC(i);
 end;
@@ -118,7 +118,7 @@ begin
     //  (KontrolaPodminek() zarucuje, ze tyto typy barier jsou na zacatku seznamu).
     // Upozornovaci bariery ignorujeme a stavime JC.
 
-    writelog('DN JC '+JC.nazev+' : podmínky splnìny, stavím', WR_STACK);
+    writelog('DN JC '+JC.nazev+' : podmÃ­nky splnÄ›ny, stavÃ­m', WR_STACK);
 
     Blky.GetBlkByID(JC.data.NavestidloBlok, blk);
     if ((blk = nil) or (blk.typ <> _BLK_NAV) or (TBlkNav(blk).OblsRizeni.Count = 0)) then

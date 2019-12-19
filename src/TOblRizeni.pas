@@ -1,4 +1,4 @@
-unit TOblRizeni;
+Ôªøunit TOblRizeni;
 
 {
   Tato unita se stara o rizeni Oblasti rizeni (OR, tedy stanic).
@@ -117,7 +117,7 @@ type
   TOR = class
     private const
       //chybove hlasky komunikace
-      _COM_ACCESS_DENIED = 'P¯Ìstup odep¯en';
+      _COM_ACCESS_DENIED = 'P≈ô√≠stup odep≈ôen';
 
       //levely opravneni
       _R_no        = 0;                                                         // zadne opravneni
@@ -924,9 +924,9 @@ begin
   end;//for i
 
  if (Self.Connected.Count >= _MAX_CON_PNL) then
-   raise EMaxClients.Create('P¯ipojen maxim·lnÌ poËet klient˘');
+   raise EMaxClients.Create('P≈ôipojen maxim√°ln√≠ poƒçet klient≈Ø');
  if ((Panel.Data as TTCPORsRef).ORs.Count >= _MAX_ORREF) then
-   raise EMaxClients.Create('P¯ipojen maxim·lnÌ OR k jednÈ stanici');
+   raise EMaxClients.Create('P≈ôipojen maxim√°ln√≠ OR k jedn√© stanici');
 
  //pridani 1 panelu
  pnl.Panel  := Panel;
@@ -1003,7 +1003,7 @@ begin
  // panel se chce odpojit -> vyradit z databaze
  if (rights = TORControlRights.null) then
   begin
-   Self.ORAuthoriseResponse(Sender, TORControlRights.null, '⁄spÏönÏ autorizov·no - odpojen', '');
+   Self.ORAuthoriseResponse(Sender, TORControlRights.null, '√öspƒõ≈°nƒõ autorizov√°no - odpojen', '');
    ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
    if (Self.PnlDGetRights(Sender) >= write) then Self.AuthWriteToRead(Sender);
    if (Self.PnlDGetIndex(Sender) > -1) then Self.PnlDRemove(Sender);
@@ -1019,25 +1019,25 @@ begin
  if (not Assigned(user)) then
   begin
    UserRights := TORControlRights.null;
-   msg := 'Uûivatel '+username+' neexistuje !';
+   msg := 'U≈æivatel '+username+' neexistuje !';
   end else
 
  // kontrola BANu uzivatele
  if (user.ban) then
   begin
    UserRights := TORControlRights.null;
-   msg := 'Uûivatel '+user.id+' m· BAN !';
+   msg := 'U≈æivatel '+user.id+' m√° BAN !';
   end else
 
  // kontrola opravneni uzivatele pro tento panel
  if (not TUser.ComparePasswd(password, user.password, user.salt)) then
   begin
    UserRights := TORControlRights.null;
-   msg := 'NeplatnÈ heslo !';
+   msg := 'Neplatn√© heslo !';
   end else begin
    UserRights := user.GetRights(Self.id);
    if (UserRights < rights) then
-     msg := 'K tÈto Oÿ nem·te opr·vnÏnÌ';
+     msg := 'K t√©to O≈ò nem√°te opr√°vnƒõn√≠';
   end;
 
  // do last_rights si ulozime posledni opravneni panelu
@@ -1064,12 +1064,12 @@ begin
     begin
      // superuser muze autorizovat zapis i pri vyplych systemech
      Self.PnlDAdd(Sender, TORControlRights.read, username);
-     Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat z·pis p¯i vypl˝ch systÈmech !', user.fullName);
+     Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat z√°pis p≈ôi vypl√Ωch syst√©mech !', user.fullName);
      ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
      Exit;
     end;
 
-   msg := '⁄spÏönÏ autorizov·no !';
+   msg := '√öspƒõ≈°nƒõ autorizov√°no !';
 
    // kontrola pripojeni dalsich panelu
    // pokud chce panel zapisovat, musime zkontrolovat, jestli uz nahodou neni nejaky panel s pravy zapisovat, pripojeny
@@ -1088,11 +1088,11 @@ begin
            panel := Self.Connected[i];
            panel.Rights := TORCOntrolRights.read;
            Self.Connected[i] := panel;
-           Self.ORAuthoriseResponse(panel.Panel, panel.Rights, 'P¯evzetÌ ¯ÌzenÌ', user.fullName);
+           Self.ORAuthoriseResponse(panel.Panel, panel.Rights, 'P≈ôevzet√≠ ≈ô√≠zen√≠', user.fullName);
            ORTCPServer.GUIQueueLineToRefresh(i);
           end else begin
            rights := TORControlRights.read;
-           msg := 'Panel jiû p¯ipojen !';
+           msg := 'Panel ji≈æ p≈ôipojen !';
            break;
           end;
         end;
@@ -1165,7 +1165,7 @@ begin
      Exit;
     end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Nem·te opr·vnÏnÌ mÏnit tento blok');
+ ORTCPServer.SendInfoMsg(Sender, 'Nem√°te opr√°vnƒõn√≠ mƒõnit tento blok');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1221,10 +1221,10 @@ begin
 
    for oblr in (Blk as TBlkUsek).OblsRizeni do
      if (oblr = Self) then
-       podminky.Add(GetPSPodminka(Blk, 'NouzovÈ vybavov·nÌ'));
+       podminky.Add(GetPSPodminka(Blk, 'Nouzov√© vybavov√°n√≠'));
   end;//for i
 
- ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'NouzovÈ uvolnÏnÌ z·vÏr˘ ˙sek˘', TBlky.GetBlksList(Self), podminky);
+ ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'Nouzov√© uvolnƒõn√≠ z√°vƒõr≈Ø √∫sek≈Ø', TBlky.GetBlksList(Self), podminky);
 end;
 
 procedure TOR.PanelNUZCancel(Sender:TIdContext);
@@ -1257,7 +1257,7 @@ begin
  orindex := ORs.GetORIndex(recepient);
  if (orindex < 0) then
   begin
-   ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';Tato Oÿ neexistuje');
+   ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';Tato O≈ò neexistuje');
    Exit();
   end;
 
@@ -1265,7 +1265,7 @@ begin
  return := tmp.ORSendMsg(Self, msg);
 
  if (return = 1) then
-   ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';K tÈto Oÿ aktu·lnÏ nenÌ p¯ipojen û·dn˝ panel');
+   ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';K t√©to O≈ò aktu√°lnƒõ nen√≠ p≈ôipojen ≈æ√°dn√Ω panel');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1306,7 +1306,7 @@ begin
 
  if ((TTCPORsRef(Sender.Data).spr_new_usek_index = -1) and (TTCPORsRef(Sender.Data).spr_edit = nil)) then
   begin
-   ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;é·dn· souprava k editaci / neplatn˝ ˙sek pro vytvo¯enÌ soupravy');
+   ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;≈Ω√°dn√° souprava k editaci / neplatn√Ω √∫sek pro vytvo≈ôen√≠ soupravy');
    Exit();
   end;
 
@@ -1323,13 +1323,13 @@ begin
 
    if (not usek.IsSouprava(TTCPORsRef(Sender.Data).spr_edit.index)) then
     begin
-     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava jiû nenÌ na ˙seku');
+     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava ji≈æ nen√≠ na √∫seku');
      Exit();
     end;
 
    if ((souprava.front <> usek) and (souprava.chtenaRychlost > 0)) then
     begin
-     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Nelze editovat soupravu, kter· odjela a je v pohybu');
+     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Nelze editovat soupravu, kter√° odjela a je v pohybu');
      Exit();
     end;
 
@@ -1373,18 +1373,18 @@ begin
   end;
  if (HVDb.HVozidla[lok_addr].Stav.souprava > -1) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' p¯i¯azeno soupravÏ '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[lok_addr].Stav.souprava)+'!');
+   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' p≈ôi≈ôazeno soupravƒõ '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[lok_addr].Stav.souprava)+'!');
    Exit;
   end;
  if (HVDb.HVozidla[lok_addr].Stav.stanice <> Self) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' nepat¯Ì tÈto stanici!');
+   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' nepat≈ô√≠ t√©to stanici!');
    Exit;
   end;
 
  ORs.GetORByIndex(n_or, new);
  HVDb.HVozidla[lok_addr].PredejStanici(new);
- ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' p¯ed·no stanici '+new.Name);
+ ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' p≈ôed√°no stanici '+new.Name);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1485,7 +1485,7 @@ begin
         begin
          Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(Nav));
          if ((Nav.Navest > 0) and (Nav.DNjc = JC)) then
-           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovacÌ n·vÏsti '+nav.name,
+           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovac√≠ n√°vƒõsti '+nav.name,
                                    Self.ShortName, 'TECHNOLOGIE');
          JC.RusJCWithoutBlk();
          if (Nav.DNjc = JC) then
@@ -1647,7 +1647,7 @@ var i:Integer;
 begin
  for i := Self.Connected.Count-1 downto 0 do
   begin
-   Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'OdpojenÌ systÈm˘', '');
+   Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Odpojen√≠ syst√©m≈Ø', '');
    index := (Self.Connected[i].Panel.Data as TTCPORsRef).index;
    Self.PnlDRemove(Self.Connected[i].Panel);
    ORTCPServer.GUIQueueLineToRefresh(index);
@@ -1703,7 +1703,7 @@ begin
 
  if ((Self.OR_RCS.last_failure_time + EncodeTime(0, 0, 0, 500)) < Now) then
   begin
-   str := 'V˝padek RCS modulu ';
+   str := 'V√Ωpadek RCS modulu ';
    for addr in Self.OR_RCS.modules.Keys do
     if (Self.OR_RCS.modules[addr].failed) then
      begin
@@ -1867,7 +1867,7 @@ begin
  if ((Soupravy.soupravy[spr_index] <> nil) and (Soupravy.soupravy[spr_index].stanice = Self)) then
   begin
    Soupravy.RemoveSpr(spr_index);
-   ORTCPServer.SendInfoMsg(Sender, 'Souprava smaz·na');
+   ORTCPServer.SendInfoMsg(Sender, 'Souprava smaz√°na');
    Exit();
   end;
 end;
@@ -1893,7 +1893,7 @@ begin
     end;
  end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Loko p¯id·no');
+ ORTCPServer.SendInfoMsg(Sender, 'Loko p≈ôid√°no');
 end;
 
 procedure TOR.PanelHVRemove(Sender:TIDContext; addr:Integer);
@@ -1911,7 +1911,7 @@ begin
   end;
  if (HVDb.HVozidla[addr].Stav.stanice <> self) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'Loko se nenach·zÌ ve stanici '+Self.Name);
+   ORTCPServer.SendInfoMsg(Sender, 'Loko se nenach√°z√≠ ve stanici '+Self.Name);
    Exit();
   end;
 
@@ -1922,7 +1922,7 @@ begin
      ORTCPServer.SendInfoMsg(Sender, 'Nelze smazat loko - '+E.Message)
  end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' smaz·no');
+ ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' smaz√°no');
 end;
 
 procedure TOR.PanelHVEdit(Sender:TIDContext; str:string);
@@ -1949,7 +1949,7 @@ begin
     end;
    if (HVDb.HVozidla[addr].Stav.stanice <> self) then
     begin
-     ORTCPServer.SendInfoMsg(Sender, 'Loko se nenach·zÌ ve stanici '+Self.Name);
+     ORTCPServer.SendInfoMsg(Sender, 'Loko se nenach√°z√≠ ve stanici '+Self.Name);
      Exit();
     end;
 
@@ -1966,7 +1966,7 @@ begin
     end;
  end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' aktualizov·no');
+ ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' aktualizov√°no');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2038,7 +2038,7 @@ begin
 
  // zadost o vydani tokenu
  // odpovedi:
-  //  or;LOK-TOKEN;OK;[addr|token][addr|token] - odpovÏÔ na û·dost o token, je posÌlano takÈ p¯i RU» loko
+  //  or;LOK-TOKEN;OK;[addr|token][addr|token] - odpovƒõƒè na ≈æ√°dost o token, je pos√≠lano tak√© p≈ôi RUƒå loko
   //  or;LOK-TOKEN;ERR;addr1|addr2...;comment  - chybova odpoved na zadost o token
  if (str[2] = 'PLEASE') then
   begin
@@ -2062,14 +2062,14 @@ begin
        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
        if ((HV.Stav.stanice <> Self) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' se nenach·zÌ ve stanici');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' se nenach√°z√≠ ve stanici');
          Exit();
         end;
 
        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
        if ((HV.Stav.regulators.Count > 0) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' jiû otev¯eno v regul·toru');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' ji≈æ otev≈ôeno v regul√°toru');
          Exit();
         end;
       end;//for i
@@ -2085,7 +2085,7 @@ begin
 
      data.Free();
    except
-     ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;Neplatn˝ form·t argument˘');
+     ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;Neplatn√Ω form√°t argument≈Ø');
    end;
   end
 
@@ -2099,7 +2099,7 @@ begin
      // nejdriv musi probihat zadost o loko
      if (Self.ORStav.reg_please = nil) then
       begin
-       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;NeprobÌh· û·dn· û·dost z regul·toru');
+       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Neprob√≠h√° ≈æ√°dn√° ≈æ√°dost z regul√°toru');
        Exit();
       end;
 
@@ -2121,14 +2121,14 @@ begin
        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
        if ((HV.Stav.stanice <> Self) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Loko '+data[i]+' se nenach·zÌ ve stanici');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Loko '+data[i]+' se nenach√°z√≠ ve stanici');
          Exit();
         end;
 
        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
        if ((HV.Stav.regulators.Count > 0) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Loko '+data[i]+' jiû otev¯eno v regul·toru');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Loko '+data[i]+' ji≈æ otev≈ôeno v regul√°toru');
          Exit();
         end;
       end;//for i
@@ -2155,14 +2155,14 @@ begin
 
      data.Free();
    except
-     ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Neplatn˝ form·t argument˘');
+     ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Neplatn√Ω form√°t argument≈Ø');
    end;
   end
 
  // relief odmitl zadost regulatoru o lokomotivu
  else if (str[2] = 'DENY') then
   begin
-   ORTCPServer.SendLn(Self.ORStav.reg_please, '-;LOK;G;PLEASE-RESP;err;DispeËer odmÌtl û·dost');
+   ORTCPServer.SendLn(Self.ORStav.reg_please, '-;LOK;G;PLEASE-RESP;err;Dispeƒçer odm√≠tl ≈æ√°dost');
    Self.BroadcastData('LOK-REQ;CANCEL;');
    (Self.ORStav.reg_please.Data as TTCPORsRef).regulator_zadost := nil;
    Self.ORStav.reg_please := nil;
@@ -2179,13 +2179,13 @@ begin
      Blky.GetBlkByID(StrToInt(str[3]), Blk);
      if ((Blk = nil) or ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU))) then
       begin
-       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatn˝ blok');
+       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatn√Ω blok');
        Exit();
       end;
 
      if (not (Blk as TBlkUsek).IsSouprava()) then
       begin
-       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;é·dn· souprava na bloku');
+       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;≈Ω√°dn√° souprava na bloku');
        Exit();
       end;
 
@@ -2195,7 +2195,7 @@ begin
        spri := StrToIntDef(str[4], -1);
        if ((spri < -1) or (spri >= (Blk as TBlkUsek).Soupravs.Count)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Tato souprava na ˙seku neexistuje');
+         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Tato souprava na √∫seku neexistuje');
          Exit();
         end;
       end;
@@ -2218,7 +2218,7 @@ begin
      ORTCPServer.SendLn(Sender, line);
 
    except
-     ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatn˝ form·t argument˘');
+     ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatn√Ω form√°t argument≈Ø');
    end;
   end;
 end;
@@ -2303,7 +2303,7 @@ begin
     begin
      if (TUser(user).ban) then rights := TORControlRights.null;
      Self.PnlDAdd(Self.Connected[i].Panel, rights, TUser(user).id);
-     Self.ORAuthoriseResponse(Self.Connected[i].Panel, rights, 'SnÌûena opr·vnÏnÌ uûivatele', '');
+     Self.ORAuthoriseResponse(Self.Connected[i].Panel, rights, 'Sn√≠≈æena opr√°vnƒõn√≠ u≈æivatele', '');
     end;
   end;//for i
 end;
@@ -2317,7 +2317,7 @@ begin
   begin
    if (Self.Connected[i].user = userid) then
     begin
-     Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'Uûivatel smaz·n', '');
+     Self.ORAuthoriseResponse(Self.Connected[i].Panel, TORControlRights.null, 'U≈æivatel smaz√°n', '');
      Self.PnlDRemove(Self.Connected[i].Panel);
     end;
   end;//for i
@@ -2376,9 +2376,9 @@ end;
 class function TOR.ORRightsToString(rights:TORControlRights):string;
 begin
  case (rights) of
-  null      : Result := 'û·dn· opr·vnÏnÌ';
-  read      : Result := 'opr·vnÏnÌ ke ËtenÌ';
-  write     : Result := 'opr·vnÏnÌ k z·pisu';
+  null      : Result := '≈æ√°dn√° opr√°vnƒõn√≠';
+  read      : Result := 'opr√°vnƒõn√≠ ke ƒçten√≠';
+  write     : Result := 'opr√°vnƒõn√≠ k z√°pisu';
   superuser : Result := 'superuser';
  else
   Result := '';

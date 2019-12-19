@@ -1,4 +1,4 @@
-unit SprDb;
+Ôªøunit SprDb;
 
 // databaze souprav
 
@@ -88,7 +88,7 @@ var ini:TMemIniFile;
     i:Integer;
     sections:TStrings;
 begin
- writelog('NaËÌt·m soupravy: '+filename, WR_DATA);
+ writelog('Naƒç√≠t√°m soupravy: '+filename, WR_DATA);
  Self.ffilename := filename;
 
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -102,7 +102,7 @@ begin
    for i := 0 to sections.Count-1 do
      Self.soupravy[i] := TSouprava.Create(ini, sections[i], i);
 
-   writelog('NaËteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
+   writelog('Naƒçteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
  finally
    FreeAndNil(ini);
    FreeAndNil(sections);
@@ -116,7 +116,7 @@ procedure TSprDb.SaveData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
 begin
- writelog('Ukl·d·m soupravy: '+filename, WR_DATA);
+ writelog('Ukl√°d√°m soupravy: '+filename, WR_DATA);
 
  if (FileExists(filename)) then
    DeleteFile(PChar(filename));
@@ -130,7 +130,7 @@ begin
    FreeAndNil(ini);
  end;
 
- writelog('Uloûeno '+IntToStr(Self.Count)+' souprav', WR_DATA);
+ writelog('Ulo≈æeno '+IntToStr(Self.Count)+' souprav', WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

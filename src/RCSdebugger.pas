@@ -1,4 +1,4 @@
-unit RCSdebugger;
+Ôªøunit RCSdebugger;
 
 {
   Trida TRCSd se stara o komunikaci s RCS debugger klienty po standardnim
@@ -180,34 +180,34 @@ begin
  // kontrola existence uzivatele
  if (not Assigned(user)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;NeexistujÌcÌ uûivatel');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Neexistuj√≠c√≠ u≈æivatel');
    Exit();
   end;
 
  // kontrola BANu uzivatele
  if (user.ban) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uûivatel '+user.id+' m· BAN !');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;U≈æivatel '+user.id+' m√° BAN !');
    Exit();
   end;
 
  // kontrola hesla uzivatele
  if (not TUser.ComparePasswd(parsed[4], user.password, user.salt)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;NeplatnÈ heslo');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Neplatn√© heslo');
    Exit();
   end;
 
  // kontrola opravneni root
  if (not user.root) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uûivatel nem· opr·vnÏnÌ root');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;U≈æivatel nem√° opr√°vnƒõn√≠ root');
    Exit();
   end;
 
  client := TRCSdClient.Create(Sender);
  Self.clients.Add(client);
- ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;ok;Autorizov·no');
+ ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;ok;Autorizov√°no');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -369,7 +369,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+parsed[2]+';not;Neplatn· adresa modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+parsed[2]+';not;Neplatn√° adresa modulu');
     Exit();
   end;
 
@@ -391,7 +391,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatn· adresa RCS modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatn√° adresa RCS modulu');
     Exit();
   end;
 
@@ -408,7 +408,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatn· adresa RCS modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatn√° adresa RCS modulu');
     Exit();
   end;
 
@@ -418,7 +418,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatn· adresa RCS modulu');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatn√° adresa RCS modulu');
     Exit();
   end;
 
@@ -428,7 +428,7 @@ begin
     Self.SendInput(addr);
     Self.SendOutput(addr);
    end else begin
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Modul nenÌ autorizov·n');
+    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Modul nen√≠ autorizov√°n');
    end;
 
  end else if (parsed[2] = 'INFO') then begin

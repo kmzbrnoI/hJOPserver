@@ -1,4 +1,4 @@
-unit UserDb;
+Ôªøunit UserDb;
 
 {
   Trida TUsrDb udrzuje seznam uzivatelu a resi veskere operace s touto
@@ -90,7 +90,7 @@ begin
  Self.ffilenameStat := statefn;
  Self.Users.Clear();
 
- writelog('NaËÌt·m uûivatele...', WR_USERS);
+ writelog('Naƒç√≠t√°m u≈æivatele...', WR_USERS);
 
  try
    iniData := TMemIniFile.Create(datafn, TEncoding.UTF8);
@@ -114,7 +114,7 @@ begin
       Self.Users.Add(User);
      except
       on E : Exception do
-        AppEvents.LogException(E, 'Chyba p¯i naËÌt·nÌ uûivatele '+str[i]);
+        AppEvents.LogException(E, 'Chyba p≈ôi naƒç√≠t√°n√≠ u≈æivatele '+str[i]);
      end;
     end;//for i
  finally
@@ -124,14 +124,14 @@ begin
  end;
 
  Self.Users.Sort(TUser.NameComparer());
- writelog('NaËteno ' + IntToStr(Self.Users.Count) + ' uûivatel˘', WR_USERS);
+ writelog('Naƒçteno ' + IntToStr(Self.Users.Count) + ' u≈æivatel≈Ø', WR_USERS);
 end;
 
 procedure TUsrDb.SaveData(const filename:string);
 var ini:TMemIniFile;
     user:TUser;
 begin
- writelog('Ukl·d·m uûivatele...', WR_USERS);
+ writelog('Ukl√°d√°m u≈æivatele...', WR_USERS);
 
  try
    DeleteFile(PChar(filename));
@@ -153,7 +153,7 @@ begin
    ini.Free();
  end;
 
- writelog('UûivatelÈ uloûeni', WR_USERS);
+ writelog('U≈æivatel√© ulo≈æeni', WR_USERS);
 end;
 
 procedure TUsrDb.SaveStat(const filename: string);
@@ -201,7 +201,7 @@ var i:Integer;
 begin
  for i := 0 to Self.Users.Count-1 do
   if (Self.Users.Items[i].id = User.id) then
-    raise Exception.Create('Uûivatel s tÌmto ID jiû existuje');
+    raise Exception.Create('U≈æivatel s t√≠mto ID ji≈æ existuje');
 
  Self.Users.Add(User);
  UsersTableData.AddUser();

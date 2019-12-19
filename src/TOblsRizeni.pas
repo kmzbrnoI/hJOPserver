@@ -1,4 +1,4 @@
-unit TOblsRizeni;
+Ôªøunit TOblsRizeni;
 
 {
   Trida TORs sdruzuje oblasti rizeni do databaze.
@@ -83,7 +83,7 @@ var ini, ini_stat:TMemIniFile;
     i:Integer;
     OblR:TOR;
 begin
- writelog('NaËÌt·m stanice - '+filename,WR_DATA);
+ writelog('Naƒç√≠t√°m stanice - '+filename,WR_DATA);
  Self.fstat_filename := stat_filename;
 
  if (not FileExists(filename)) then
@@ -122,7 +122,7 @@ begin
    ini_stat.Free();
  end;
 
- writelog('NaËteno '+IntToStr(Self.ORsDatabase.Count)+' stanic',WR_DATA);
+ writelog('Naƒçteno '+IntToStr(Self.ORsDatabase.Count)+' stanic',WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

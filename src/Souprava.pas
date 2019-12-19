@@ -1,4 +1,4 @@
-unit Souprava;
+Ôªøunit Souprava;
 
 // trida "TSouprava"
 
@@ -325,9 +325,9 @@ begin
      if ((Soupravy.soupravy[i].nazev = spr[0]) and (Soupravy.soupravy[i] <> Self)) then
       begin
        if (Soupravy.soupravy[i].stanice <> nil) then
-         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' jiû existuje v Oÿ '+(Soupravy.soupravy[i].stanice as TOR).Name)
+         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' ji≈æ existuje v O≈ò '+(Soupravy.soupravy[i].stanice as TOR).Name)
        else
-         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' jiû existuje');
+         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' ji≈æ existuje');
 
        Exit();
       end;
@@ -337,7 +337,7 @@ begin
     StrToInt(spr[0]);
    except
      on E:EConvertError do
-       raise Exception.Create('»Ìslo soupravy nenÌ validnÌ ËÌslo!');
+       raise Exception.Create('ƒå√≠slo soupravy nen√≠ validn√≠ ƒç√≠slo!');
    end;
 
    Self.changed := true;
@@ -368,7 +368,7 @@ begin
    ExtractStringsEx([']'], ['['], spr[6], hvs);
 
    if (hvs.Count > _MAX_SPR_HV) then
-     raise Exception.Create('P¯ekroËen maxim·lnÌ poËet hnacÌch vozidel na soupravÏ');
+     raise Exception.Create('P≈ôekroƒçen maxim√°ln√≠ poƒçet hnac√≠ch vozidel na soupravƒõ');
 
    new := TList<Integer>.Create();
 
@@ -383,10 +383,10 @@ begin
          Exit();
 
        if ((HVDb.HVozidla[addr].souprava > -1) and (HVDb.HVozidla[addr].souprava <> Self.index)) then
-         raise Exception.Create('Loko '+IntToStr(addr)+' jiû p¯i¯azena soupravÏ '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].souprava));
+         raise Exception.Create('Loko '+IntToStr(addr)+' ji≈æ p≈ôi≈ôazena soupravƒõ '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].souprava));
 
        if (new.Contains(addr)) then
-         raise Exception.Create('DuplicitnÌ loko!');
+         raise Exception.Create('Duplicitn√≠ loko!');
 
        if ((not HVDb.HVozidla[addr].Slot.prevzato) or (HVDb.HVozidla[addr].Slot.stolen)) then
         begin
@@ -411,7 +411,7 @@ begin
 
            if (timeout > 1000) then  //timeout 1 sec na kazde hnaci vozidlo
             begin
-             raise Exception.Create('Loko '+ IntToStr(addr) +' nep¯evzato');
+             raise Exception.Create('Loko '+ IntToStr(addr) +' nep≈ôevzato');
              Exit();
             end;
           end;//while
@@ -561,7 +561,7 @@ begin
    
    if (HVDb.HVozidla[addr].ruc) then
     begin      // pokud je loko prevzato na rucni rizeni, ignoruji ho
-     writelog('LOKO ' + IntToStr(addr) + ' v ruËnÌm regul·toru, nenastavuji rychlost', WR_MESSAGE);
+     writelog('LOKO ' + IntToStr(addr) + ' v ruƒçn√≠m regul√°toru, nenastavuji rychlost', WR_MESSAGE);
      continue;
     end;
 
@@ -584,7 +584,7 @@ begin
       ((Self.front as TBlkUsek).Soupravs[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
   (Self.front as TBlkUsek).VlakPresun := -1;
 
- writelog('Souprava ' + Self.nazev + ' : rychlost '+IntToStr(speed)+', smÏr : '+IntToStr(Integer(dir)), WR_MESSAGE);
+ writelog('Souprava ' + Self.nazev + ' : rychlost '+IntToStr(speed)+', smƒõr : '+IntToStr(Integer(dir)), WR_MESSAGE);
 
  Self.changed := true;
 end;
@@ -606,7 +606,7 @@ end;
 procedure TSouprava.HVComErr(Sender:TObject; Data:Pointer);
 begin
  if (Self.data.OblRizeni <> nil) then
-   (Self.data.OblRizeni as TOR).BlkWriteError(nil, 'Souprava '+Self.nazev+' nekomunikuje s centr·lou', 'CENTR¡LA');
+   (Self.data.OblRizeni as TOR).BlkWriteError(nil, 'Souprava '+Self.nazev+' nekomunikuje s centr√°lou', 'CENTR√ÅLA');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -648,7 +648,7 @@ begin
 
        if (timeout > 1000) then  //timeout 1 sec
         begin
-         raise Exception.Create('Loko '+ IntToStr(addr) +' nep¯evzato');
+         raise Exception.Create('Loko '+ IntToStr(addr) +' nep≈ôevzato');
          Exit();
         end;
       end;//while
@@ -785,7 +785,7 @@ procedure TSouprava.ToggleHouk(desc:string);
 var addr:Integer;
     HV:THV;
 begin
- writelog('Souprava ' + Self.nazev + ' : aktivuji houk·nÌ ' + desc, WR_MESSAGE);
+ writelog('Souprava ' + Self.nazev + ' : aktivuji houk√°n√≠ ' + desc, WR_MESSAGE);
 
  for addr in Self.HVs do
   begin

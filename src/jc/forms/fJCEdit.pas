@@ -1,4 +1,4 @@
-unit fJCEdit;
+Ôªøunit fJCEdit;
 
 interface
 
@@ -150,7 +150,7 @@ procedure TF_JCEdit.NewVCOpenForm;
   CB_Rychlost_NoDalsiN.ItemIndex  := 4;
   CB_Rychlost_DalsiN.ItemIndex    := 4;
   CB_NavestidloChange(Self);
-  Self.Caption  := 'Editovat data novÈ jÌzdnÌ cesty';
+  Self.Caption  := 'Editovat data nov√© j√≠zdn√≠ cesty';
   LV_Zavery.Clear;
   LV_Useky.Clear;
 
@@ -263,7 +263,7 @@ var cyklus:Integer;
     Self.E_VB.Text := Self.E_VB.Text + IntToStr(vb) + ', ';
   Self.E_VB.Text := LeftStr(Self.E_VB.Text, Length(Self.E_VB.Text) - 2);
 
-  Self.Caption := 'Editovat data jÌzdnÌ cesty '+JCData.nazev;
+  Self.Caption := 'Editovat data j√≠zdn√≠ cesty '+JCData.nazev;
  end;
 
 procedure TF_JCEdit.HlavniOpenForm;
@@ -397,7 +397,7 @@ var JC:TJC;
    end;
   if (JCDb.IsJC(Self.SE_ID.Value, Self.OpenIndex)) then
    begin
-    Application.MessageBox('JC s tÌmto ID jiû existuje !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('JC s t√≠mto ID ji≈æ existuje !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (CB_Navestidlo.ItemIndex = -1) then
@@ -427,12 +427,12 @@ var JC:TJC;
    end;
   if (Self.CHB_Trat.Checked) and (Self.CB_TratBlok.ItemIndex < 0) then
    begin
-    Application.MessageBox('Vyberte traù!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte tra≈•!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CHB_Trat.Checked) and (Self.CB_TratSmer.ItemIndex < 0) then
    begin
-    Application.MessageBox('Vyberte smÏr trati!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte smƒõr trati!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -502,7 +502,7 @@ var JC:TJC;
          if (Assigned(prejezd.uzaviraci)) then
            prejezd.uzaviraci.Free();
 
-         Application.MessageBox(PChar('Napoda¯ilo se naparsovat p¯ejezd "' + line + '":'+#13#10+E.Message),
+         Application.MessageBox(PChar('Napoda≈ôilo se naparsovat p≈ôejezd "' + line + '":'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
          Exit;
         end;
@@ -528,7 +528,7 @@ var JC:TJC;
       except
        on E:Exception do
         begin
-         Application.MessageBox(PChar('Napoda¯ilo se naparsovat odvrat "' + line + '":'+#13#10+E.Message),
+         Application.MessageBox(PChar('Napoda≈ôilo se naparsovat odvrat "' + line + '":'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
          Exit;
         end;
@@ -550,7 +550,7 @@ var JC:TJC;
       except
        on E:Exception do
         begin
-         Application.MessageBox(PChar('Napoda¯ilo se naparsovat redukci "' + line + '":'+#13#10+E.Message),
+         Application.MessageBox(PChar('Napoda≈ôilo se naparsovat redukci "' + line + '":'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
          Exit;
         end;
@@ -572,14 +572,14 @@ var JC:TJC;
       except
        on E:Exception do
         begin
-         Application.MessageBox(PChar('Napoda¯ilo se naparsovat z·mek ' + line + ':'+#13#10+E.Message),
+         Application.MessageBox(PChar('Napoda≈ôilo se naparsovat z√°mek ' + line + ':'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
          Exit;
         end;
       end;
      end;
 
-    // VariantnÌ body
+    // Variantn√≠ body
     if (not Assigned(JCData.vb)) then JCData.vb := TList<Integer>.Create();
     JCData.vb.Clear();
     parsed.Clear();
@@ -592,7 +592,7 @@ var JC:TJC;
       except
        on E:Exception do
         begin
-         Application.MessageBox(PChar('Napoda¯ilo se naparsovat variatnÌ bod ' + item + ':'+#13#10+E.Message),
+         Application.MessageBox(PChar('Napoda≈ôilo se naparsovat variatn√≠ bod ' + item + ':'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
          Exit;
         end;
@@ -609,11 +609,11 @@ var JC:TJC;
     // nova JC
     try
      JC := JCDb.AddJC(Self.JCData);
-     if (JC = nil) then raise Exception.Create('JC nevytvo¯ena');
+     if (JC = nil) then raise Exception.Create('JC nevytvo≈ôena');
     except
      on E:Exception do
       begin
-       Application.MessageBox(PChar('P¯id·v·nÌ JC skonËilo s chybou'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+       Application.MessageBox(PChar('P≈ôid√°v√°n√≠ JC skonƒçilo s chybou'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
        Exit;
       end;
     end;
@@ -635,7 +635,7 @@ var Pozice,i:Integer;
  begin
   Pozice := LV_Useky.ItemIndex;
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazat zaver useku '+Blky.GetBlkName(Self.Useky[Pozice])+'?'),'Maz·nÌ zaveru useku', MB_YESNO OR MB_ICONQUESTION) = mrYes then
+  if Application.MessageBox(PChar('Opravdu chcete smazat zaver useku '+Blky.GetBlkName(Self.Useky[Pozice])+'?'),'Maz√°n√≠ zaveru useku', MB_YESNO OR MB_ICONQUESTION) = mrYes then
    begin
     Self.Useky.Delete(pozice);
     LV_Useky.Items.Delete(Pozice);
@@ -659,7 +659,7 @@ var cyklus,Pozice:Integer;
  begin
   Pozice := LV_Zavery.ItemIndex;
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazat zaver vyybky '+Blky.GetBlkName(Self.Vyhybky[Pozice].Blok)+'?'),'Maz·nÌ zaveru vyhybky', MB_YESNO OR MB_ICONQUESTION) = mrYes then
+  if Application.MessageBox(PChar('Opravdu chcete smazat zaver vyybky '+Blky.GetBlkName(Self.Vyhybky[Pozice].Blok)+'?'),'Maz√°n√≠ zaveru vyhybky', MB_YESNO OR MB_ICONQUESTION) = mrYes then
    begin
     Self.Vyhybky.Delete(pozice);
     LV_Zavery.Items.Delete(Pozice);
@@ -716,12 +716,12 @@ var Vypustit:TArI;
     if (JCData.DalsiNNavaznostTyp > 1) then
      begin
       Blky.NactiBlokyDoObjektu(CB_DalsiNNavaznost,@CB_DalsiNNavaznostPolozky, @Vypustit, obls, 3, JCData.DalsiNNavaznost);
-      CB_DalsiNNavaznost.Items.Add('é·dn· n·vaznost');
-      CB_DalsiNNavaznost.Items.Add('Traù');
+      CB_DalsiNNavaznost.Items.Add('≈Ω√°dn√° n√°vaznost');
+      CB_DalsiNNavaznost.Items.Add('Tra≈•');
      end else begin
       Blky.NactiBlokyDoObjektu(CB_DalsiNNavaznost,@CB_DalsiNNavaznostPolozky, @Vypustit, obls, 3, -1);
-      CB_DalsiNNavaznost.Items.Add('é·dn· n·vaznost');
-      CB_DalsiNNavaznost.Items.Add('Traù');
+      CB_DalsiNNavaznost.Items.Add('≈Ω√°dn√° n√°vaznost');
+      CB_DalsiNNavaznost.Items.Add('Tra≈•');
       CB_DalsiNNavaznost.ItemIndex := JCData.DalsiNNavaznostTyp+Length(CB_DalsiNNavaznostPolozky);
      end;
 

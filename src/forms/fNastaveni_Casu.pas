@@ -1,4 +1,4 @@
-unit fNastaveni_Casu;
+Ôªøunit fNastaveni_Casu;
 
 {
   Okno nastaveni modeloveho casu.
@@ -55,7 +55,7 @@ procedure TF_ModCasSet.B_OKClick(Sender: TObject);
 
     if (StrToFloat(ME_Nasobic.Text) >= 10) then
      begin
-      Application.MessageBox('N·sobiË zadejte v rozsahu 0-9.9','Nelze nastavit cas',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('N√°sobiƒç zadejte v rozsahu 0-9.9','Nelze nastavit cas',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
 
@@ -65,7 +65,7 @@ procedure TF_ModCasSet.B_OKClick(Sender: TObject);
 
     Self.Close();
   except
-   Application.MessageBox('Zad·na neplatn· data', 'Nelze nasatvit Ëas', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Zad√°na neplatn√° data', 'Nelze nasatvit ƒças', MB_OK OR MB_ICONWARNING);
   end;
 
  end;

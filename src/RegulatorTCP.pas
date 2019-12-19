@@ -1,4 +1,4 @@
-unit RegulatorTCP;
+Ôªøunit RegulatorTCP;
 
 // Trida TTCPRegulator se stara o komunikaci s regulatory -- klienty.
 //  napr. regulator Jerry.
@@ -77,7 +77,7 @@ begin
    try
      if (parsed[4] = '') then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uûivatel odhl·öen');
+       Self.ClientAuthorise(Sender, false, nil, 'U≈æivatel odhl√°≈°en');
        Exit();
       end;
 
@@ -86,20 +86,20 @@ begin
      // kontrola existence uzivatele
      if (not Assigned(user)) then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uûivatel '+parsed[4]+' neexistuje !');
+       Self.ClientAuthorise(Sender, false, nil, 'U≈æivatel '+parsed[4]+' neexistuje !');
        Exit();
       end;
 
      // kontrola BANu uzivatele
      if (user.ban) then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uûivatel '+user.id+' m· BAN !');
+       Self.ClientAuthorise(Sender, false, nil, 'U≈æivatel '+user.id+' m√° BAN !');
        Exit();
       end;
 
      if (not user.regulator) then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uûivatel '+user.id+' nem· pr·vo k ¯ÌzenÌ lokomotiv !');
+       Self.ClientAuthorise(Sender, false, nil, 'U≈æivatel '+user.id+' nem√° pr√°vo k ≈ô√≠zen√≠ lokomotiv !');
        Exit();
       end;
 
@@ -108,18 +108,18 @@ begin
       begin
        Self.ClientAuthorise(Sender, true, user);
       end else begin
-       Self.ClientAuthorise(Sender, false, nil, 'äpatnÈ heslo');
+       Self.ClientAuthorise(Sender, false, nil, '≈†patn√© heslo');
       end;
    except
     // error pri parsovani -> oznamime chybu
-    Self.ClientAuthorise(Sender, false, nil, 'NeplatnÈ argumenty');
+    Self.ClientAuthorise(Sender, false, nil, 'Neplatn√© argumenty');
    end;
   end;
 
  // kontrola autorizace (dalsi prikazy jsou podmineny existujicim pristupem)
  if (not (Sender.Data as TTCPORsRef).regulator) then
   begin
-   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Uûivatel neuatorizov·n!');
+   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;U≈æivatel neuatorizov√°n!');
    Exit();
   end;
 
@@ -132,23 +132,23 @@ begin
    try
      if ((Sender.Data as TTCPORsRef).regulator_zadost <> nil) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;é·dost jiû probÌh·');
+       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;≈Ω√°dost ji≈æ prob√≠h√°');
        Exit();
       end;
      ORs.GetORByIndex(ORs.GetORIndex(parsed[4]), OblR);
      if (OblR = nil) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Tato oblast ¯ÌzenÌ neexistuje');
+       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Tato oblast ≈ô√≠zen√≠ neexistuje');
        Exit();
       end;
      if (OblR.reg_please <> nil) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Do oblasti ¯ÌzenÌ jiû probÌh· û·dost');
+       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Do oblasti ≈ô√≠zen√≠ ji≈æ prob√≠h√° ≈æ√°dost');
        Exit();
       end;
      if (((Sender.Data as TTCPORsRef).ping_unreachable) or (not (Sender.Data as TTCPORsRef).PingComputed())) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Za¯ÌzenÌ neodpovÌd· na ping');
+       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Za≈ô√≠zen√≠ neodpov√≠d√° na ping');
        Exit();
       end;
 
@@ -160,7 +160,7 @@ begin
 
      ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok');
    except
-    ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Nespr·vn˝ form·t p¯Ìkazu');
+    ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Nespr√°vn√Ω form√°t p≈ô√≠kazu');
    end;
   end
 
@@ -171,7 +171,7 @@ begin
 
    (Sender.Data as TTCPORsRef).regulator_zadost.LokoCancel(Sender);
    (Sender.Data as TTCPORsRef).regulator_zadost := nil;
-   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok;é·dost zruöena');
+   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok;≈Ω√°dost zru≈°ena');
   end;
 end;
 
@@ -204,7 +204,7 @@ begin
  try
    HV := HVDb.HVozidla[StrToInt(parsed[2])];
  except
-   Self.ClientError(Sender, 'Nespr·vn˝ form·t adresy loko');
+   Self.ClientError(Sender, 'Nespr√°vn√Ω form√°t adresy loko');
    Exit();
  end;
 
@@ -233,7 +233,7 @@ begin
  if (parsed[3] = 'RELEASE') then
   begin
    // regulator ukoncuje rizeni LOKO
-   Self.RemoveLok(Sender, HV, 'Loko odhl·öeno');
+   Self.RemoveLok(Sender, HV, 'Loko odhl√°≈°eno');
    Exit();
   end;
 
@@ -249,7 +249,7 @@ begin
        for i := 0 to HV.Stav.regulators.Count-1 do
          if (not HV.Stav.regulators[i].root) then
           begin
-           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Loko je otev¯enÈ v jinÈm regul·toru');
+           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Loko je otev≈ôen√© v jin√©m regul√°toru');
            Exit();
           end;
 
@@ -258,14 +258,14 @@ begin
          if (not HV.IsReg(Sender)) then
           begin
            // Uzivatel nema na hnaci vozidlo narok
-           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Na toto hnacÌ vozidlo nem·te n·rok');
+           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Na toto hnac√≠ vozidlo nem√°te n√°rok');
            Exit();
           end;
         end else begin
          // kontrola tokenu
          if ((not HV.IsToken(parsed[4]))) then
           begin
-           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;äpatn˝ token');
+           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;≈†patn√Ω token');
            Exit();
           end;
         end;
@@ -278,7 +278,7 @@ begin
      Exit();
 
    except
-    ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Nespr·vn˝ form·t p¯Ìkazu');
+    ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Nespr√°vn√Ω form√°t p≈ô√≠kazu');
    end;
   end;//PLEASE
 
@@ -287,7 +287,7 @@ begin
  // je tento regulator uz v seznamu regulatoru?
  if (not HV.IsReg(Sender)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' neautorizov·no');
+   ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' neautorizov√°no');
    Exit();
   end;
 
@@ -529,7 +529,7 @@ var i:Integer;
 begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;stolen;Loko ukradeno ovladaËem');
+     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;stolen;Loko ukradeno ovladaƒçem');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -585,7 +585,7 @@ begin
    except
      on E:Exception do
       begin
-       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;P¯evzetÌ z centr·ly se nezda¯ilo :'+E.Message);
+       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;P≈ôevzet√≠ z centr√°ly se nezda≈ôilo :'+E.Message);
        HV.Stav.regulators.Remove(reg);
       end;
    end;
@@ -600,7 +600,7 @@ begin
 
      if (timeout > 3000) then
       begin
-       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;P¯evzetÌ z centr·ly se nezda¯ilo');
+       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;P≈ôevzet√≠ z centr√°ly se nezda≈ôilo');
        HV.Stav.regulators.Remove(reg);
        Exit();
       end;

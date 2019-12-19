@@ -1,4 +1,4 @@
-unit fBlkIR;
+﻿unit fBlkIR;
 
 interface
 
@@ -74,7 +74,7 @@ procedure TF_BlkIR.NewBlkOpenForm;
   Self.SE_Port.Value    := 0;
   Self.SE_moduleExit(Self);
 
-  F_BlkIR.Caption       := 'Editovat data nov�ho bloku';
+  F_BlkIR.Caption       := 'Editovat data nového bloku';
   F_BlkIR.ActiveControl := E_Nazev;
  end;
 

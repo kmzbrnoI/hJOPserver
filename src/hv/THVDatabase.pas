@@ -1,4 +1,4 @@
-unit THVDatabase;
+ï»¿unit THVDatabase;
 
 {
   Trida THVDb je databaze hnacich vozidel.
@@ -253,9 +253,9 @@ var i, index:Integer;
     stav:THVStav;
 begin
  if (addr > 9999) then
-   raise EInvalidAddress.Create('Neplatná adresa lokomotivy ' + IntToStr(addr));
+   raise EInvalidAddress.Create('NeplatnÃ¡ adresa lokomotivy ' + IntToStr(addr));
  if (Self.HVs[addr] <> nil) then
-   raise ELocoExists.Create('Lokomotiva s adresou ' + IntToStr(addr) + ' ji existuje');
+   raise ELocoExists.Create('Lokomotiva s adresou ' + IntToStr(addr) + ' jiÅ¾ existuje');
 
  // pokud neexistuje, pridame ji
 
@@ -322,7 +322,7 @@ begin
 
  if (Self.HVozidla[HV.adresa] <> nil) then
   begin
-   raise Exception.Create('HV '+IntToStr(HV.adresa)+' ji existuje');
+   raise Exception.Create('HV '+IntToStr(HV.adresa)+' jiÅ¾ existuje');
    HV.Free();
    Exit();
   end;
@@ -367,9 +367,9 @@ begin
  if (Self.HVs[addr] = nil) then
    raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
  if (Self.HVs[addr].Stav.souprava > -1) then
-   raise ELocoOnSpr.Create('Lokomotiva je na soupravì!');
+   raise ELocoOnSpr.Create('Lokomotiva je na soupravÄ›!');
  if ((Self.HVs[addr].Slot.prevzato) or (Self.HVs[addr].Slot.stolen)) then
-   raise ELocoPrevzato.Create('Lokomotiva pøevzata do øízení poèítaèe');
+   raise ELocoPrevzato.Create('Lokomotiva pÅ™evzata do Å™Ã­zenÃ­ poÄÃ­taÄe');
 
  index := Self.HVs[addr].index;
  FreeAndNil(Self.HVs[addr]);

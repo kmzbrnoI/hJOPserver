@@ -1,4 +1,4 @@
-unit Zasobnik;
+ï»¿unit Zasobnik;
 
 // Tato unita implementuje tridu TORStack, ktera resi zasobnik jizdnich cest pro
 //   jednu oblast rizeni
@@ -206,14 +206,14 @@ begin
  i := Self.FindCmdIndexById(id);
  if (i = -1) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s tímto ID v zásobníku neexistuje!');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s tÃ­mto ID v zÃ¡sobnÃ­ku neexistuje!');
    Exit();
   end;
 
  try
   if ((i = 0) and (Self.stack[i].ClassType = TORStackCmdJC) and (((Self.stack[i] as TORSTackCmdJC).JC as TJC).staveni)) then
    begin
-    ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze smazat JC, která se staví');
+    ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze smazat JC, kterÃ¡ se stavÃ­');
     Exit();
    end;
  except
@@ -236,7 +236,7 @@ begin
  i := Self.FindCmdIndexById(fromId);
  if (i = -1) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s výchozím ID v zásobníku neexistuje!');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s vÃ½chozÃ­m ID v zÃ¡sobnÃ­ku neexistuje!');
    Exit();
   end;
 
@@ -251,7 +251,7 @@ begin
      j := Self.FindCmdIndexById(toId);
      if (j = -1) then
       begin
-       ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s cílovým ID v zásobníku neexistuje!');
+       ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s cÃ­lovÃ½m ID v zÃ¡sobnÃ­ku neexistuje!');
        Self.stack.Insert(i, tmp);
        Exit();
       end;
@@ -296,8 +296,8 @@ var description:string;
 begin
  if (Self.stack.Count >= _MAX_STACK_JC) then
   begin
-   writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - zásobník je plný, nelze pøidat další pøíkaz', WR_STACK);
-   raise Exception.Create('Zásobník je plný');
+   writelog('ZÃ¡sobnÃ­k OÅ˜ '+(Self.OblR as TOR).id+' - zÃ¡sobnÃ­k je plnÃ½, nelze pÅ™idat dalÅ¡Ã­ pÅ™Ã­kaz', WR_STACK);
+   raise Exception.Create('ZÃ¡sobnÃ­k je plnÃ½');
   end;
 
  max := 0;
@@ -310,7 +310,7 @@ begin
  description := Self.GetStackString(cmd);
  Self.stack.Add(cmd);
  (Self.OblR as TOR).BroadcastData('ZAS;ADD;'+IntToStr(cmd.id)+'|'+description);
- writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - : pøidán pøíkaz ' + description + ', id = '+IntToStr(cmd.id), WR_STACK);
+ writelog('ZÃ¡sobnÃ­k OÅ˜ '+(Self.OblR as TOR).id+' - : pÅ™idÃ¡n pÅ™Ã­kaz ' + description + ', id = '+IntToStr(cmd.id), WR_STACK);
  (Self.OblR as TOR).changed := true;
 end;
 
@@ -372,11 +372,11 @@ begin
   PV : begin
     (Self.OblR as TOR).BroadcastData('ZAS;PV');
     Self.UPOenabled := false;
-    writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - PV', WR_STACK);
+    writelog('ZÃ¡sobnÃ­k OÅ˜ '+(Self.OblR as TOR).id+' - PV', WR_STACK);
   end;
   VZ : begin
     (Self.OblR as TOR).BroadcastData('ZAS;VZ');
-    writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - VZ', WR_STACK);
+    writelog('ZÃ¡sobnÃ­k OÅ˜ '+(Self.OblR as TOR).id+' - VZ', WR_STACK);
   end;
  end;//case
 
@@ -411,7 +411,7 @@ begin
  except
   on e:Exception do
    begin
-    AppEvents.LogException(E, 'Zásobník OØ '+(Self.OblR as TOR).id+' - update exception, mažu pøíkaz ze zásobníku');
+    AppEvents.LogException(E, 'ZÃ¡sobnÃ­k OÅ˜ '+(Self.OblR as TOR).id+' - update exception, maÅ¾u pÅ™Ã­kaz ze zÃ¡sobnÃ­ku');
     Self.RemoveFromStack(0);
    end;
  end;
@@ -473,7 +473,7 @@ begin
 
  // zadne bariery -> stavim jizdni cestu
 
- writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - JC '+JC.nazev+' : podmínky splnìny, stavím', WR_STACK);
+ writelog('ZÃ¡sobnÃ­k OÅ˜ '+(Self.OblR as TOR).id+' - JC '+JC.nazev+' : podmÃ­nky splnÄ›ny, stavÃ­m', WR_STACK);
 
  // pokud nejsou zadne bariery, stavime jizdni cestu
  (Self.OblR as TOR).BroadcastData('ZAS;FIRST;0');
@@ -599,8 +599,8 @@ begin
  for i := 0 to Self.stack.Count-1 do
   if ((Self.stack[i].ClassType = TORStackCmdJC) and ((Self.stack[i] as TORStackCmdJC).JC = JC)) then
    begin
-    writelog('Zásobník OØ '+(Self.OblR as TOR).id+' - JC '+((Self.stack[i] as TORStackCmdJC).JC as TJC).nazev+
-        ' : smazána ze zásobníku, id = '+IntToStr(Self.stack[i].id), WR_STACK);
+    writelog('ZÃ¡sobnÃ­k OÅ˜ '+(Self.OblR as TOR).id+' - JC '+((Self.stack[i] as TORStackCmdJC).JC as TJC).nazev+
+        ' : smazÃ¡na ze zÃ¡sobnÃ­ku, id = '+IntToStr(Self.stack[i].id), WR_STACK);
     Self.RemoveFromStack(i);
     Exit();
    end;
@@ -692,7 +692,7 @@ begin
     end;
 
  except
-  Result := 'neexistující pøíkaz';
+  Result := 'neexistujÃ­cÃ­ pÅ™Ã­kaz';
  end;
 end;
 

@@ -1,4 +1,4 @@
-unit fHoukEvsUsek;
+ï»¿unit fHoukEvsUsek;
 
 {
   Okno TF_HoukEvsUsek umoznuje editovat houkaci udalosti technologickeho
@@ -81,7 +81,7 @@ begin
  formL.FillFromHouks(Blk.GetSettings().houkEvL);
  formS.FillFromHouks(Blk.GetSettings().houkEvS);
 
- Self.Caption := 'Houkací události úseku ' + Blk.name;
+ Self.Caption := 'HoukacÃ­ udÃ¡losti Ãºseku ' + Blk.name;
  Self.ActiveControl := B_Apply;
  Self.ShowModal();
 end;
@@ -100,13 +100,13 @@ var s:TBlkUsekSettings;
 begin
  if (not formL.InputValid()) then
   begin
-   Application.MessageBox('Nìjaká událost v lichém smìru je špatnì zadaná!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('NÄ›jakÃ¡ udÃ¡lost v lichÃ©m smÄ›ru je Å¡patnÄ› zadanÃ¡!', 'Nelze uloÅ¾it data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
 
  if (not formS.InputValid()) then
   begin
-   Application.MessageBox('Nìjaká událost v sudém smìru je špatnì zadaná!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('NÄ›jakÃ¡ udÃ¡lost v sudÃ©m smÄ›ru je Å¡patnÄ› zadanÃ¡!', 'Nelze uloÅ¾it data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
 

@@ -1,4 +1,4 @@
-unit TBlok;
+Ôªøunit TBlok;
 
 //unita, ktera definuje technologicky blok jako abstraktni tridu
 
@@ -431,16 +431,16 @@ end;
 
 class function TBlk.BlkTypeFromStr(typ:string):Byte;
 begin
- if (typ = 'vyhybka') or (typ = 'v˝hybka') then Result := _BLK_VYH
- else if (typ = 'usek') or (typ = '˙sek') then Result := _BLK_USEK
+ if (typ = 'vyhybka') or (typ = 'v√Ωhybka') then Result := _BLK_VYH
+ else if (typ = 'usek') or (typ = '√∫sek') then Result := _BLK_USEK
  else if (typ = 'ir') then Result := _BLK_IR
  else if (typ = 'navestidlo') then Result := _BLK_NAV
- else if (typ = 'prejezd') or (typ = 'p¯ejezd') then Result := _BLK_PREJEZD
- else if (typ = 'trat') or (typ = 'traù') then Result := _BLK_TRAT
- else if (typ = 'uvazka') or (typ = '˙vazka') then Result := _BLK_UVAZKA
- else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovaË') then Result := _BLK_ROZP
- else if (typ = 'tratUsek') or (typ = 'traù⁄sek') or (typ = 'tu') or (typ = 'TU') then Result := _BLK_TU
- else if (typ = 'vystup') or (typ = 'v˝stup') then Result := _BLK_VYSTUP
+ else if (typ = 'prejezd') or (typ = 'p≈ôejezd') then Result := _BLK_PREJEZD
+ else if (typ = 'trat') or (typ = 'tra≈•') then Result := _BLK_TRAT
+ else if (typ = 'uvazka') or (typ = '√∫vazka') then Result := _BLK_UVAZKA
+ else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovaƒç') then Result := _BLK_ROZP
+ else if (typ = 'tratUsek') or (typ = 'tra≈•√ösek') or (typ = 'tu') or (typ = 'TU') then Result := _BLK_TU
+ else if (typ = 'vystup') or (typ = 'v√Ωstup') then Result := _BLK_VYSTUP
  else raise ETypeNotFound.Create('Blok typu '+typ+' neexistuje');
 end;
 

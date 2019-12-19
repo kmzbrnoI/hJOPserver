@@ -1,4 +1,4 @@
-unit fFuncsSet;
+Ôªøunit fFuncsSet;
 
 interface
 
@@ -38,12 +38,12 @@ procedure TF_FuncsSet.B_ApplyClick(Sender: TObject);
 begin
  if (not TrkSystem.openned) then
   begin
-   Application.MessageBox('Aplikace nenÌ p¯ipojena k centr·le', 'Nelze pokraËovat', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Aplikace nen√≠ p≈ôipojena k centr√°le', 'Nelze pokraƒçovat', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
  if (Self.CB_Vyznam.Text = '') then
   begin
-   Application.MessageBox('VyplÚte v˝znam funkce', 'Nelze pokraËovat', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Vypl≈àte v√Ωznam funkce', 'Nelze pokraƒçovat', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
 

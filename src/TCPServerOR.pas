@@ -1,4 +1,4 @@
-unit TCPServerOR;
+Ôªøunit TCPServerOR;
 
 {
   TCP server pro komunikaci s panely, regulatory a obecne se vsemi klienty.
@@ -233,7 +233,7 @@ begin
  if (Self.tcpServer.Active) then Exit();
 
  F_Main.S_Server.Brush.Color := clGray;
- F_Main.LogStatus('Panel server: spouötÏnÌ...');
+ F_Main.LogStatus('Panel server: spou≈°tƒõn√≠...');
 
  Self.tcpServer.DefaultPort := port;
  Self.fport := port;
@@ -244,7 +244,7 @@ begin
   on E:Exception do
    begin
     F_Main.S_Server.Brush.Color := clRed;
-    F_Main.LogStatus('ERR: Panel server: chyba p¯i startov·nÌ serveru : '+E.Message);
+    F_Main.LogStatus('ERR: Panel server: chyba p≈ôi startov√°n√≠ serveru : '+E.Message);
     raise;
    end;
  end;
@@ -253,7 +253,7 @@ begin
  Self.pingTimer.Enabled := true;
 
  F_Main.S_Server.Brush.Color := clLime;
- F_Main.LogStatus('Panel server: spuötÏn');
+ F_Main.LogStatus('Panel server: spu≈°tƒõn');
 
  UDPdisc.SendDiscover();
 
@@ -284,7 +284,7 @@ begin
 
  if (not Self.tcpServer.Active) then Exit();
 
- F_Main.LogStatus('Panel server: vypÌn·m...');
+ F_Main.LogStatus('Panel server: vyp√≠n√°m...');
  F_Main.S_Server.Brush.Color := clGray;
 
  Self.receiveTimer.Enabled := false;
@@ -337,7 +337,7 @@ begin
    if (i = _MAX_OR_CLIENTS) then
     begin
      // tady bych mohl napsat chybovou hlasku
-     Self.SendInfoMsg(AContext, 'P¯ipojeno maximum klient˘');
+     Self.SendInfoMsg(AContext, 'P≈ôipojeno maximum klient≈Ø');
      AContext.Connection.Disconnect();
      Exit();
     end;
@@ -523,7 +523,7 @@ begin
 
    if (not found) then
     begin
-     Self.BottomError(AContext, 'Nepodporovan· verze protokolu.', '-', 'PROTOKOL');
+     Self.BottomError(AContext, 'Nepodporovan√° verze protokolu.', '-', 'PROTOKOL');
      Self.DisconnectClient(AContext);
      Exit();
     end;
@@ -659,7 +659,7 @@ begin
       TrkSystem.CentralStart();
     except
       on E:Exception do
-        Self.BottomError(AContext, E.Message, '-', 'CENTR¡LA');
+        Self.BottomError(AContext, E.Message, '-', 'CENTR√ÅLA');
     end;
    end else if ((parsed[2] = 'STOP') and (TrkSystem.status = TS_ON)) then
     begin
@@ -669,7 +669,7 @@ begin
        TrkSystem.CentralStop();
      except
        on E:Exception do
-         Self.BottomError(AContext, E.Message, '-', 'CENTR¡LA');
+         Self.BottomError(AContext, E.Message, '-', 'CENTR√ÅLA');
      end;
     end;
   end
@@ -754,7 +754,7 @@ begin
            podj.Free();
        end;
      except
-       Self.SendInfoMsg(AContext, 'Nepoda¯ilo se nastavit p¯edvÌdan˝ odjezd!');
+       Self.SendInfoMsg(AContext, 'Nepoda≈ôilo se nastavit p≈ôedv√≠dan√Ω odjezd!');
      end;
 
      TTCPORsRef(AContext.Data).podj_usek := nil;
@@ -804,7 +804,7 @@ begin
 
  if (i = orRef.ORs.Count) then
   begin
-   Self.SendInfoMsg(AContext, 'Neautorizov·no');
+   Self.SendInfoMsg(AContext, 'Neautorizov√°no');
    Exit();
   end;
 
@@ -948,7 +948,7 @@ begin
           (senders[i].ClassType = TBlkVyhybka) or (senders[i].ClassType = TBlkUsek) or (senders[i].ClassType = TBlkNav) or (senders[i].ClassType = TBlkUvazka)) then
        str := str + (senders[i] as TBlk).name + '|'
       else if (senders[i].ClassType = TOR) then
-       str := str + 'StanoviötÏ v˝pravËÌho '+(senders[i] as TOR).Name + '|';
+       str := str + 'Stanovi≈°tƒõ v√Ωpravƒç√≠ho '+(senders[i] as TOR).Name + '|';
      end;
 
  str := str + ';';
@@ -1184,10 +1184,10 @@ begin
  orRef := (Self.clients[index].conn.Data as TTCPORsRef);
 
  case (Self.clients[index].status) of
-  TPanelConnectionStatus.closed    : F_Main.LV_Clients.Items[index].SubItems[0] := 'uzav¯eno';
-  TPanelConnectionStatus.opening   : F_Main.LV_Clients.Items[index].SubItems[0] := 'otevÌr·nÌ';
+  TPanelConnectionStatus.closed    : F_Main.LV_Clients.Items[index].SubItems[0] := 'uzav≈ôeno';
+  TPanelConnectionStatus.opening   : F_Main.LV_Clients.Items[index].SubItems[0] := 'otev√≠r√°n√≠';
   TPanelConnectionStatus.handshake : F_Main.LV_Clients.Items[index].SubItems[0] := 'handshake';
-  TPanelConnectionStatus.opened    : F_Main.LV_Clients.Items[index].SubItems[0] := 'otev¯eno';
+  TPanelConnectionStatus.opened    : F_Main.LV_Clients.Items[index].SubItems[0] := 'otev≈ôeno';
  end;
 
  F_Main.LV_Clients.Items[index].SubItems[1] := Self.clients[index].conn.Connection.Socket.Binding.PeerIP;
@@ -1360,7 +1360,7 @@ end;
 
 procedure TORTCPServer.OnDCCCmdErr(Sender:TObject; Data:Pointer);
 begin
- Self.BottomError(TIdContext(Data), 'Centr·la neodpovÏdÏla na p¯Ìkaz', '-', 'CENTR¡LA');
+ Self.BottomError(TIdContext(Data), 'Centr√°la neodpovƒõdƒõla na p≈ô√≠kaz', '-', 'CENTR√ÅLA');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1389,7 +1389,7 @@ begin
    if ((Self.clients[i] <> nil) and (TTCPORsRef(Self.clients[i].conn.Data).regulator) and
        (TTCPORsRef(Self.clients[i].conn.Data).regulator_user = user)) then
     begin
-     Self.SendLn(Self.clients[i].conn, '-;LOK;G;AUTH;not;Zruöeno opr·vnÏnÌ regul·tor');
+     Self.SendLn(Self.clients[i].conn, '-;LOK;G;AUTH;not;Zru≈°eno opr√°vnƒõn√≠ regul√°tor');
      TCPRegulator.RegDisconnect(Self.clients[i].conn);
     end;
 end;

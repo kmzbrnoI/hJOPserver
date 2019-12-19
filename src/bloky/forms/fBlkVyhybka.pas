@@ -1,4 +1,4 @@
-unit fBlkVyhybka;
+ï»¿unit fBlkVyhybka;
 
 interface
 
@@ -129,7 +129,7 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
   Self.CHB_npMinus.Checked := false;
   Self.CHB_npMinusClick(Self.CHB_npMinus);
 
-  F_BlkVyhybka.Caption := 'Editovat data nového bloku výhybka';
+  F_BlkVyhybka.Caption := 'Editovat data novÃ©ho bloku vÃ½hybka';
   F_BlkVyhybka.ActiveControl := E_Nazev;
  end;
 
@@ -211,7 +211,7 @@ var glob:TBlkSettings;
   for i := 0 to Self.Blk.OblsRizeni.Count-1 do
     obls[i] := Self.Blk.OblsRizeni[i].id;
 
-  F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
+  F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (vÃ½hybka)';
   F_BlkVyhybka.ActiveControl := B_Save;
  end;
 
@@ -381,24 +381,24 @@ var glob:TBlkSettings;
    begin
     if (Self.CB_Zamek.ItemIndex < 0) then
      begin
-      Application.MessageBox('Vyberte zámek !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Vyberte zÃ¡mek !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
     if (Self.CB_Zamek_Poloha.ItemIndex < 0) then
      begin
-      Application.MessageBox('Vyberte polohu výhybky pro uzamèení zámku!','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Vyberte polohu vÃ½hybky pro uzamÄenÃ­ zÃ¡mku!','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end;
   if ((Self.CHB_npPlus.Checked) and (Self.CB_npPlus.ItemIndex < 0)) then
    begin
-    Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu plus!',
+    Application.MessageBox('Vyberte hlÃ­danÃ½ blok neprofilovÃ©ho styku pro polohu plus!',
       'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if ((Self.CHB_npMinus.Checked) and (Self.CB_npMinus.ItemIndex < 0)) then
    begin
-    Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu mínus!',
+    Application.MessageBox('Vyberte hlÃ­danÃ½ blok neprofilovÃ©ho styku pro polohu mÃ­nus!',
       'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
@@ -457,7 +457,7 @@ var glob:TBlkSettings;
   except
     on E:Exception do
      begin
-      Application.MessageBox(PChar(E.Message), 'Nelze uložit', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar(E.Message), 'Nelze uloÅ¾it', MB_OK OR MB_ICONWARNING);
       Exit();
      end;
   end;

@@ -1,4 +1,4 @@
-unit DataSpr;
+ï»¿unit DataSpr;
 
 // TSprTableData - trida starajici se o vyplnovani tabulky souprav
 
@@ -138,8 +138,8 @@ var spr:TSoupravaData;
     Self.LV.Items[line].SubItems[6] := Self.LV.Items[line].SubItems[6] + ' (' + IntToStr(spr.chtenaRychlost) + ' km/h)';
 
   case (spr.smer) of
-   THVStanoviste.lichy: Self.LV.Items[line].SubItems[7] := 'lichý';
-   THVStanoviste.sudy : Self.LV.Items[line].SubItems[7] := 'sudý';
+   THVStanoviste.lichy: Self.LV.Items[line].SubItems[7] := 'lichÃ½';
+   THVStanoviste.sudy : Self.LV.Items[line].SubItems[7] := 'sudÃ½';
   end;
 
   try

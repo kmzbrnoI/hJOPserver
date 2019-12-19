@@ -1,4 +1,4 @@
-unit TBlokUsek;
+Ôªøunit TBlokUsek;
 
 //definice a obsluha technologickeho bloku Usek
 
@@ -323,7 +323,7 @@ begin
 
  if (Boosters[Self.UsekSettings.Zesil] = nil) then
    writelog('WARNING: Blok '+Self.name + ' ('+IntToStr(Self.id)+
-            ') nem· n·vaznost na validnÌ zesilovaË', WR_ERROR);
+            ') nem√° n√°vaznost na validn√≠ zesilovaƒç', WR_ERROR);
 
  Self.UsekStav.Stit         := ini_stat.ReadString(section, 'stit', '');
  Self.UsekStav.Vyl          := ini_stat.ReadString(section, 'vyl' , '');
@@ -339,13 +339,13 @@ begin
    try
      Self.LoadHoukEventToList(Self.UsekSettings.houkEvL, ini_tech, section, 'houkL');
    except
-     writelog('Nepoda¯ilo se naËÌst houkacÌ ud·losti L bloku ' + Self.name, WR_ERROR);
+     writelog('Nepoda≈ôilo se naƒç√≠st houkac√≠ ud√°losti L bloku ' + Self.name, WR_ERROR);
    end;
 
    try
      Self.LoadHoukEventToList(Self.UsekSettings.houkEvS, ini_tech, section, 'houkS');
    except
-     writelog('Nepoda¯ilo se naËÌst houkacÌ ud·losti S bloku ' + Self.name, WR_ERROR);
+     writelog('Nepoda≈ôilo se naƒç√≠st houkac√≠ ud√°losti S bloku ' + Self.name, WR_ERROR);
    end;
 
 
@@ -584,7 +584,7 @@ begin
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
      if ((Self.typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
        for oblr in Self.OblsRizeni do
-         oblr.BlkWriteError(Self, 'Ztr·ta soupravy v ˙seku '+Self.name, 'TECHNOLOGIE');
+         oblr.BlkWriteError(Self, 'Ztr√°ta soupravy v √∫seku '+Self.name, 'TECHNOLOGIE');
      if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := TZaver.nouz;
     end;//if spr_vypadek_time > 3
   end;//if spr_vypadek
@@ -694,7 +694,7 @@ procedure TBlkUsek.SetUsekVyl(Sender:TIDCOntext; vyl:string);
 begin
  if ((self.UsekStav.Vyl <> '') and (vyl = '')) then
   begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'ZruöenÌ v˝luky', TBlky.GetBlksList(Self), nil);
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zru≈°en√≠ v√Ωluky', TBlky.GetBlksList(Self), nil);
   end else begin
    Self.Vyluka := vyl;
   end;
@@ -890,9 +890,9 @@ begin
 
  podm := TPSPodminky.Create();
  for blk in Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]) do
-   podm.Add(TOR.GetPSPodminka(blk, 'Smaz·nÌ soupravy z ˙seku'));
+   podm.Add(TOR.GetPSPodminka(blk, 'Smaz√°n√≠ soupravy z √∫seku'));
  ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
-   'Smaz·nÌ soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev,
+   'Smaz√°n√≠ soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev,
    TBlky.GetBlksList(Self), podm);
 end;
 
@@ -919,7 +919,7 @@ begin
  if (Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]).Count = 1) then
   begin
    Soupravy.RemoveSpr(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
-   ORTCPServer.SendInfoMsg(Sender, 'Souprava odstranÏna');
+   ORTCPServer.SendInfoMsg(Sender, 'Souprava odstranƒõna');
   end else begin
    Self.RemoveSouprava(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
   end;
@@ -931,7 +931,7 @@ begin
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
 
  ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TOR,
-  'UvolnÏnÌ soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev+' z bloku',
+  'Uvolnƒõn√≠ soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev+' z bloku',
   TBlky.GetBlksList(Self), nil);
 end;
 
@@ -966,12 +966,12 @@ begin
  except
   on E: Exception do
    begin
-    ORTCPServer.BottomError(SenderPnl, 'Vlak se nepoda¯ilo p¯evzÌt', (SenderOR as TOR).ShortName, 'TECHNOLOGIE');
+    ORTCPServer.BottomError(SenderPnl, 'Vlak se nepoda≈ôilo p≈ôevz√≠t', (SenderOR as TOR).ShortName, 'TECHNOLOGIE');
     Exit();
    end;
  end;
 
- ORTCPServer.SendInfoMsg(SenderPnl, 'Vlak p¯evzat');
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Vlak p≈ôevzat');
 end;
 
 procedure TBlkUsek.MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -986,10 +986,10 @@ begin
  podm := TPSPodminky.Create();
  for hvaddr in spr.HVs do
    if (HVDb[hvaddr] <> nil) then
-     podm.Add(TOR.GetPSPodminka(HVDb[hvaddr].NiceName(), 'N·silnÈ p¯evzetÌ ¯ÌzenÌ'));
+     podm.Add(TOR.GetPSPodminka(HVDb[hvaddr].NiceName(), 'N√°siln√© p≈ôevzet√≠ ≈ô√≠zen√≠'));
 
  ORTCPServer.Potvr(SenderPnl, Self.PotvrRegVezmiLok, SenderOR as TOR,
-  'NouzovÈ p¯evzetÌ hnacÌch vozidel do automatickÈho ¯ÌzenÌ',
+  'Nouzov√© p≈ôevzet√≠ hnac√≠ch vozidel do automatick√©ho ≈ô√≠zen√≠',
   TBlky.GetBlksList(Self), podm);
 end;
 
@@ -1002,10 +1002,10 @@ begin
 
  try
    spr.ForceRemoveAllRegulators();
-   ORTCPServer.SendInfoMsg(Sender, 'Vlak p¯evzat');
+   ORTCPServer.SendInfoMsg(Sender, 'Vlak p≈ôevzat');
  except
   on E: Exception do
-    ORTCPServer.BottomError(Sender, 'Vlak se nepoda¯ilo p¯evzÌt', TOR(Sender).ShortName, 'TECHNOLOGIE');
+    ORTCPServer.BottomError(Sender, 'Vlak se nepoda≈ôilo p≈ôevz√≠t', TOR(Sender).ShortName, 'TECHNOLOGIE');
  end;
 end;
 
@@ -1027,7 +1027,7 @@ var Blk:TBlk;
 begin
  if ((Self.UsekStav.KonecJC <> TZaver.no) and (not (SenderOR as TOR).vb.Contains(Self))) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'ProbÌh· volba');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Prob√≠h√° volba');
    Exit(true);
   end;
 
@@ -1054,7 +1054,7 @@ var Blk:TBlk;
 begin
  if (Self.UsekStav.KonecJC <> TZaver.no) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'ProbÌh· volba');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Prob√≠h√° volba');
    Exit();
   end;
 
@@ -1093,7 +1093,7 @@ begin
   begin
    if (Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].stanice <> SenderOR) then
     begin
-     ORTCPServer.SendInfoMsg(SenderPnl, 'Loko se nenach·zÌ ve vaöi oblasti ¯ÌzenÌ');
+     ORTCPServer.SendInfoMsg(SenderPnl, 'Loko se nenach√°z√≠ ve va≈°i oblasti ≈ô√≠zen√≠');
      Exit();
     end;
 
@@ -1149,7 +1149,7 @@ begin
    for rcsaddr in Self.UsekSettings.RCSAddrs do
      RCSi.SetInput(rcsaddr.board, rcsaddr.port, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavenÌ RCS vstup˘!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastaven√≠ RCS vstup≈Ø!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1160,7 +1160,7 @@ begin
    for rcsaddr in Self.UsekSettings.RCSAddrs do
      RCSi.SetInput(rcsaddr.board, rcsaddr.port, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavenÌ RCS vstup˘!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastaven√≠ RCS vstup≈Ø!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1175,8 +1175,8 @@ begin
  except
    on E:Exception do
     begin
-     writelog('Nepoda¯ilo se spustit staniËnÌ hl·öenÌ : ' + E.Message, WR_ERROR);
-     ORTCPServer.BottomError(SenderPnl, 'Nepoda¯ilo se spustit staniËnÌ hl·öenÌ!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     writelog('Nepoda≈ôilo se spustit staniƒçn√≠ hl√°≈°en√≠ : ' + E.Message, WR_ERROR);
+     ORTCPServer.BottomError(SenderPnl, 'Nepoda≈ôilo se spustit staniƒçn√≠ hl√°≈°en√≠!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
     end;
  end;
 end;
@@ -1202,8 +1202,8 @@ begin
  except
    on E:Exception do
     begin
-     writelog('Nepoda¯ilo se spustit staniËnÌ hl·öenÌ : ' + E.Message, WR_ERROR);
-     ORTCPServer.BottomError(SenderPnl, 'Nepoda¯ilo se spustit staniËnÌ hl·öenÌ!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     writelog('Nepoda≈ôilo se spustit staniƒçn√≠ hl√°≈°en√≠ : ' + E.Message, WR_ERROR);
+     ORTCPServer.BottomError(SenderPnl, 'Nepoda≈ôilo se spustit staniƒçn√≠ hl√°≈°en√≠!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
     end;
  end;
 end;
@@ -1229,8 +1229,8 @@ begin
  except
    on E:Exception do
     begin
-     writelog('Nepoda¯ilo se spustit staniËnÌ hl·öenÌ : ' + E.Message, WR_ERROR);
-     ORTCPServer.BottomError(SenderPnl, 'Nepoda¯ilo se spustit staniËnÌ hl·öenÌ!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     writelog('Nepoda≈ôilo se spustit staniƒçn√≠ hl√°≈°en√≠ : ' + E.Message, WR_ERROR);
+     ORTCPServer.BottomError(SenderPnl, 'Nepoda≈ôilo se spustit staniƒçn√≠ hl√°≈°en√≠!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
     end;
  end;
 end;
@@ -1280,9 +1280,9 @@ begin
  Result := inherited;
 
  if (Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id) <> nil) then
-   addStr := 'VLOé vlak,'
+   addStr := 'VLO≈Ω vlak,'
  else
-   addStr := 'NOV› vlak,';
+   addStr := 'NOV√ù vlak,';
 
  if (Self.SoupravyFull() and (Self.Soupravs.Count = 1)) then begin
    TTCPORsRef(SenderPnl.Data).spr_menu_index := 0;
@@ -1290,7 +1290,7 @@ begin
  end else begin
    canAdd := ((Self.UsekStav.stanicni_kolej) and
               (( (not Self.SoupravyFull()) and ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0)) ) or // novy vlak
-               ( addStr = 'VLOé vlak,' ) // presun vlaku
+               ( addStr = 'VLO≈Ω vlak,' ) // presun vlaku
               ));
 
    if (canAdd) then
@@ -1364,20 +1364,20 @@ begin
  if (Self.UsekStav.stanicni_kolej) then
    Result := Result + 'EDIT vlak,';
  if ((Self.UsekStav.stanicni_kolej) or (spr_count <= 1)) then
-   Result := Result + '!ZRUä vlak,';
+   Result := Result + '!ZRU≈† vlak,';
  if (spr_count > 1) then
    Result := Result + '!UVOL vlak,';
 
  if (spr.HVs.Count > 0) then
   begin
-   Result := Result + 'RU» vlak,';
+   Result := Result + 'RUƒå vlak,';
    if (TTCPORsRef(SenderPnl.Data).maus) then Result := Result + 'MAUS vlak,';
   end;
 
  if (Self.VlakPresun = sprLocalI) then
-  Result := Result + 'PÿESU“ vlak<,'
+  Result := Result + 'P≈òESU≈á vlak<,'
  else if ((not Self.IsVlakPresun()) and (spr.chtenaRychlost = 0) and (spr.stanice = SenderOR)) then
-   Result := Result + 'PÿESU“ vlak>,';
+   Result := Result + 'P≈òESU≈á vlak>,';
 
  if (spr.ukradeno) then
    Result := Result + 'VEZMI vlak,'
@@ -1393,7 +1393,7 @@ begin
      (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
   begin
    if ((Self.UsekStav.stanicni_kolej) and (spr.hlaseni)) then
-     Result := Result + 'HL¡äENÕ odjezd,';
+     Result := Result + 'HL√Å≈†EN√ç odjezd,';
 
    try
      shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(spr, TOR(SenderOR));
@@ -1403,9 +1403,9 @@ begin
    end;
 
    if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (spr.IsPOdj(shPlay.stanicniKolej)))) then
-     Result := Result + 'HL¡äENÕ p¯Ìjezd,'
+     Result := Result + 'HL√Å≈†EN√ç p≈ô√≠jezd,'
    else if (shPlay.trat <> nil) then
-     Result := Result + 'HL¡äENÕ pr˘jezd,';
+     Result := Result + 'HL√Å≈†EN√ç pr≈Øjezd,';
   end;
 end;
 
@@ -1443,15 +1443,15 @@ var i:Integer;
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
- if (item = 'NOV› vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR, itemindex)
- else if (item = 'VLOé vlak')      then Self.MenuVLOZLokClick(SenderPnl, SenderOR, itemindex)
+ if (item = 'NOV√ù vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR, itemindex)
+ else if (item = 'VLO≈Ω vlak')      then Self.MenuVLOZLokClick(SenderPnl, SenderOR, itemindex)
  else if (item = 'EDIT vlak')      then Self.MenuEditLokClick(SenderPnl, SenderOR)
- else if (item = 'ZRUä vlak')      then Self.MenuDeleteLokClick(SenderPnl, SenderOR)
+ else if (item = 'ZRU≈† vlak')      then Self.MenuDeleteLokClick(SenderPnl, SenderOR)
  else if (item = 'UVOL vlak')      then Self.MenuUVOLLokClick(SenderPnl, SenderOR)
  else if (item = 'VEZMI vlak')     then Self.MenuVEZMILokClick(SenderPnl, SenderOR)
- else if (item = 'PÿESU“ vlak>')   then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true)
- else if (item = 'PÿESU“ vlak<')   then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false)
- else if (item = 'RU» vlak')       then Self.MenuRUCLokClick(SenderPnl, SenderOR)
+ else if (item = 'P≈òESU≈á vlak>')   then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true)
+ else if (item = 'P≈òESU≈á vlak<')   then Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false)
+ else if (item = 'RUƒå vlak')       then Self.MenuRUCLokClick(SenderPnl, SenderOR)
  else if (item = 'MAUS vlak')      then Self.MenuMAUSLokClick(SenderPnl, SenderOR)
  else if (item = 'STIT')           then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'VYL')            then Self.MenuVylClick(SenderPnl, SenderOR)
@@ -1461,9 +1461,9 @@ begin
  else if (item = 'NUZ<')           then Self.MenuNUZStopClick(SenderPnl, SenderOR)
  else if (item = 'OBSAZ')          then Self.MenuObsazClick(SenderPnl, SenderOR)
  else if (item = 'UVOL')           then Self.MenuUvolClick(SenderPnl, SenderOR)
- else if (item = 'HL¡äENÕ odjezd') then Self.MenuHLASENIOdjezdClick(SenderPnl, SenderOR)
- else if (item = 'HL¡äENÕ p¯Ìjezd')then Self.MenuHLASENIPrijezdClick(SenderPnl, SenderOR)
- else if (item = 'HL¡äENÕ pr˘jezd')then Self.MenuHLASENIPrujezdClick(SenderPnl, SenderOR)
+ else if (item = 'HL√Å≈†EN√ç odjezd') then Self.MenuHLASENIOdjezdClick(SenderPnl, SenderOR)
+ else if (item = 'HL√Å≈†EN√ç p≈ô√≠jezd')then Self.MenuHLASENIPrijezdClick(SenderPnl, SenderOR)
+ else if (item = 'HL√Å≈†EN√ç pr≈Øjezd')then Self.MenuHLASENIPrujezdClick(SenderPnl, SenderOR)
  else if (item = 'PODJ')           then Self.MenuPOdjClick(SenderPnl, SenderOR)
  else begin
   // cislo soupravy
@@ -1488,25 +1488,25 @@ begin
 
  if (not Self.UsekStav.stanicni_kolej) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Loko lze p¯esunout pouze na staniËnÌ kolej!');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Loko lze p≈ôesunout pouze na staniƒçn√≠ kolej!');
    Exit(true);
   end;
 
  if ((Self.SoupravyFull()) and (Blk <> Self)) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Do ˙seku se jiû nevejde dalöÌ souprava!');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Do √∫seku se ji≈æ nevejde dal≈°√≠ souprava!');
    Exit(true);
   end;
 
  if ((Self.Zaver > TZaver.no) and (Self.Zaver <> TZaver.posun)) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze p¯esunout na ˙sek se z·vÏrem!');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze p≈ôesunout na √∫sek se z√°vƒõrem!');
    Exit(true);
   end;
 
  if (not Self.CanSprSpeedInsert(sprLocalIndex)) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze vloûit soupravu p¯ed jedoucÌ soupravu!');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze vlo≈æit soupravu p≈ôed jedouc√≠ soupravu!');
    Exit(true);
   end;
 
@@ -1537,7 +1537,7 @@ begin
    end;
   end;
 
- ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+Soupravy.GetSprNameByIndex(spri)+' p¯esunuta na '+Self.GlobalSettings.name+'.');
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+Soupravy.GetSprNameByIndex(spri)+' p≈ôesunuta na '+Self.GlobalSettings.name+'.');
 
  if (Blky.GetBlkWithSpr(spri).Count = 1) then
    Soupravy[spri].front := Self;
@@ -1867,7 +1867,7 @@ begin
  if (Self.Soupravs.Contains(souprava)) then
    raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
  if (not Self.CanSprSpeedInsert(localSprIndex)) then
-   raise ERunningSpr.Create('Nelze vloûit soupravu p¯ed jedoucÌ soupravu!');
+   raise ERunningSpr.Create('Nelze vlo≈æit soupravu p≈ôed jedouc√≠ soupravu!');
 
  Self.UsekStav.soupravy.Insert(localSprIndex, souprava);
  Self.UsekStav.SprPredict := -1;
@@ -1977,7 +1977,7 @@ var spr:Integer;
 begin
  if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.SprPredict)) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava jiû nenÌ na ˙seku!');
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava ji≈æ nen√≠ na √∫seku!');
    Exit();
   end;
 

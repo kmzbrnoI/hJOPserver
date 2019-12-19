@@ -1,4 +1,4 @@
-unit fBlkNavEvent;
+Ôªøunit fBlkNavEvent;
 
 interface
 
@@ -84,7 +84,7 @@ begin
  if (first) then
   begin
    Self.E_Spr.Enabled        := false;
-   Self.E_Spr.Text           := 'glob·lnÌ ud·lost';
+   Self.E_Spr.Text           := 'glob√°ln√≠ ud√°lost';
    Self.SE_MinLength.Value   := -1;
    Self.SE_MaxLength.Value   := -1;
    Self.SE_MinLength.Enabled := false;
@@ -124,7 +124,7 @@ begin
  if (first) then
   begin
    Self.E_Spr.Enabled        := false;
-   Self.E_Spr.Text           := 'glob·lnÌ ud·lost';
+   Self.E_Spr.Text           := 'glob√°ln√≠ ud√°lost';
    Self.SE_MinLength.Value   := -1;
    Self.SE_MaxLength.Value   := -1;
    Self.SE_MinLength.Enabled := false;
@@ -182,10 +182,10 @@ end;
 function TF_BlkNavEvent.Check():string;
 begin
   if (not Self.fZast.InputValid()) then
-    Exit('Vyberte zastavovacÌ ud·lost!');
+    Exit('Vyberte zastavovac√≠ ud√°lost!');
 
   if ((Self.CHB_Zpomalit.Checked) and (not Self.fZpom.InputValid())) then
-    Exit('Vyberte zpomalovacÌ ud·lost!');
+    Exit('Vyberte zpomalovac√≠ ud√°lost!');
 
   if ((CB_ZpomalitKmH.ItemIndex = -1) and (CHB_Zpomalit.Checked)) then
     Exit('Vyberte rychlost, na kterou se ma zpomalit!');

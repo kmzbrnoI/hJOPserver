@@ -1,12 +1,12 @@
-//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     HHHHH            H
+Ôªø//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     HHHHH            H
 //H                                                        H      H      H    H   H    H    H          H H
-//H   N·zev : hJOPserver                                   H      H      H   H     H   H     H        H   H
-//H   JmÈno tv˘rce : Jan Hor·Ëek                           H      HHHHHHHH   H     H   H    H        H     H
-//H   Autorsk· pr·va : Jan Hor·Ëek 2008-2016               H      H      H   H     H   HHHHH        HHHHHHHHH
+//H   N√°zev : hJOPserver                                   H      H      H   H     H   H     H        H   H
+//H   Jm√©no tv≈Ørce : Jan Hor√°ƒçek                           H      HHHHHHHH   H     H   H    H        H     H
+//H   Autorsk√° pr√°va : Jan Hor√°ƒçek 2008-2016               H      H      H   H     H   HHHHH        HHHHHHHHH
 //H                                                        H      H      H   H     H   H HH        H         H
 //H                                                        H      H      H    H   H    H   HH     H           H
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     H     HH   H           H
-//ZaË·tek tvorby : z·¯Ì 2008
+//Zaƒç√°tek tvorby : z√°≈ô√≠ 2008
 
 // JCL_DEBUG_EXPERT_INSERTJDBG ON
 // JCL_DEBUG_EXPERT_DELETEMAPFILE ON
@@ -157,7 +157,7 @@ uses
   // povolena je jen jedna instance
   if (ZkontrolujSpusteno) then
    begin
-    Application.MessageBox('hJOPserver jiû spuötÏn, povolena pouze jedna instance', 'Jiû spuötÏn', MB_ICONWARNING OR MB_OK);
+    Application.MessageBox('hJOPserver ji≈æ spu≈°tƒõn, povolena pouze jedna instance', 'Ji≈æ spu≈°tƒõn', MB_ICONWARNING OR MB_OK);
     halt(0);
    end;
 
@@ -175,9 +175,9 @@ uses
   Application.CreateForm(TF_FuncsSet, F_FuncsSet);
   Application.CreateForm(TF_BlkTUZastEvent, F_BlkTUZastEvent);
   Application.CreateForm(TF_HoukEvsUsek, F_HoukEvsUsek);
-  F_Splash.AddStav('Vytv·¯Ìm hlavnÌ okno');
+  F_Splash.AddStav('Vytv√°≈ô√≠m hlavn√≠ okno');
   F_Main.CreateSystem;
-  F_Splash.AddStav('Vytv·¯Ìm vedlejöÌ okna');
+  F_Splash.AddStav('Vytv√°≈ô√≠m vedlej≈°√≠ okna');
   Application.CreateForm(TF_JCEdit, F_JCEdit);
   Application.CreateForm(TF_RychlostiEdit, F_RychlostiEdit);
   Application.CreateForm(TF_BlkUsek, F_BlkUsek);
@@ -194,7 +194,7 @@ uses
   Application.CreateForm(TF_SystemInfo, F_SystemInfo);
   Application.CreateForm(TF_Admin, F_Admin);
   Application.CreateForm(TF_Options, F_Options);
-  F_Splash.AddStav('Vytv·¯Ìm vedlejöÌ okna');
+  F_Splash.AddStav('Vytv√°≈ô√≠m vedlej≈°√≠ okna');
   Application.CreateForm(TF_Tester, F_Tester);
   Application.CreateForm(TF_ZesilovacEdit, F_ZesilovacEdit);
   Application.CreateForm(TF_BlkTrat, F_BlkTrat);
@@ -206,7 +206,7 @@ uses
   F_Main.OnStart;
   F_splash.Close;
 
-  F_Main.LogStatus('Program spuötÏn');
+  F_Main.LogStatus('Program spu≈°tƒõn');
   SystemCritical.IsCritical := true;
 
   Application.Run;

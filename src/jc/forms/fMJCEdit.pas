@@ -1,4 +1,4 @@
-unit fMJCEdit;
+Ôªøunit fMJCEdit;
 
 interface
 
@@ -164,7 +164,7 @@ begin
  Self.UpdateJCCb();
  Self.UpdateVBCb();
 
- Self.Caption := 'Editovat sloûenou jÌzdnÌ cestu '+Self.openMJC.Nazev;
+ Self.Caption := 'Editovat slo≈æenou j√≠zdn√≠ cestu '+Self.openMJC.Nazev;
 end;
 
 procedure TF_MJCEdit.NewOpenForm();
@@ -178,7 +178,7 @@ begin
 
  Self.E_VCNazev.Text := '';
  Self.ActiveControl := CB_JC_Add;
- Self.Caption := 'Nov· sloûen· jÌzdnÌ cesta';
+ Self.Caption := 'Nov√° slo≈æen√° j√≠zdn√≠ cesta';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -300,18 +300,18 @@ var data:TMultiJCProp;
 begin
  if (Self.JCs.Count < 2) then
   begin
-   Application.MessageBox('Sloûen· JC musÌ obsahovat alespoÚ 2 JC', 'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Slo≈æen√° JC mus√≠ obsahovat alespo≈à 2 JC', 'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
  if (Self.E_VCNazev.Text = '') then
   begin
-   Application.MessageBox('VyplÚte n·zev sloûenÈ JC', 'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Vypl≈àte n√°zev slo≈æen√© JC', 'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
  check := MultiJCDb.GetJCByID(Self.SE_ID.Value);
  if ((check <> nil) and (check <> Self.openMJC)) then
   begin
-   Application.MessageBox('Sloûen· jÌzdnÌ cesta s tÌmto ID jiû existuje', 'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Slo≈æen√° j√≠zdn√≠ cesta s t√≠mto ID ji≈æ existuje', 'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
    Exit();
   end;
 
@@ -328,7 +328,7 @@ begin
    except
      on E:Exception do
       begin
-       Application.MessageBox(PChar('Nepoda¯ilo se p¯idat sloûenou JC'+#13#10+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+       Application.MessageBox(PChar('Nepoda≈ôilo se p≈ôidat slo≈æenou JC'+#13#10+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
        Exit();
       end;
    end;

@@ -1,4 +1,4 @@
-unit Verze;
+ï»¿unit Verze;
 
 interface
 
@@ -22,7 +22,7 @@ var
   pinfo: ^VS_FIXEDFILEINFO;
   Major, Minor, Release: word;
 begin
-  Result:='Není dostupná';
+  Result:='NenÃ­ dostupnÃ¡';
   size := GetFileVersionInfoSize(Pointer(FileName), handle);
   if size > 0 then begin
     GetMem(buffer, size);

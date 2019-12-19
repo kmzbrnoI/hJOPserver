@@ -1,4 +1,4 @@
-unit TBlokZamek;
+ï»¿unit TBlokZamek;
 
 //definice a obsluha technologickeho bloku Zamek
 
@@ -218,7 +218,7 @@ end;
 
 procedure TBlkZamek.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závìru', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'ZruÅ¡enÃ­ nouzovÃ©ho zÃ¡vÄ›ru', TBlky.GetBlksList(Self), nil);
 end;
 
 procedure TBlkZamek.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);

@@ -1,4 +1,4 @@
-unit TBlokTrat;
+Ôªøunit TBlokTrat;
 
 {
  Definice a obsluha technologickeho bloku Trat
@@ -595,7 +595,7 @@ begin
  if (not spr.IsTimeDefined()) then
    spr.time := timeHelper.hJOPnow();
 
- writelog('Traù '+Self.GlobalSettings.name+ ' : p¯id·na souprava '+Soupravy[spr.souprava].nazev, WR_SPRPREDAT);
+ writelog('Tra≈• '+Self.GlobalSettings.name+ ' : p≈ôid√°na souprava '+Soupravy[spr.souprava].nazev, WR_SPRPREDAT);
 
  Self.Change();
 end;
@@ -614,7 +614,7 @@ begin
  if (Self.IsSpr(spr)) then
   begin
    Self.TratStav.soupravy.Delete(Self.GetSprIndex(spr));
-   writelog('Traù '+Self.GlobalSettings.name+ ' : smaz·na souprava '+Soupravy[spr].nazev, WR_SPRPREDAT);
+   writelog('Tra≈• '+Self.GlobalSettings.name+ ' : smaz√°na souprava '+Soupravy[spr].nazev, WR_SPRPREDAT);
    toChange := true;
   end;
 
@@ -660,7 +660,7 @@ begin
    end;//BtoA
  end;//case
 
- writelog('Traù '+Self.GlobalSettings.name+ ' : souprava '+Soupravy[spr].nazev+' : stanice zmÏnÏna na '+(Soupravy[spr].stanice as TOR).Name, WR_SPRPREDAT);
+ writelog('Tra≈• '+Self.GlobalSettings.name+ ' : souprava '+Soupravy[spr].nazev+' : stanice zmƒõnƒõna na '+(Soupravy[spr].stanice as TOR).Name, WR_SPRPREDAT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1064,14 +1064,14 @@ end;
 function TBlkTrat.GetLastUsek(smer:TTratSmer):TBlk;
 begin
  if (Self.TratSettings.Useky.Count < 1) then
-   raise Exception.Create('Traù nem· û·dn˝ ˙sek!');
+   raise Exception.Create('Tra≈• nem√° ≈æ√°dn√Ω √∫sek!');
 
  if (smer = TTratSmer.AtoB) then
    Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1], Result)
  else if (smer = TTratSmer.BtoA) then
    Blky.GetBlkByID(Self.TratSettings.Useky[0], Result)
  else
-   raise Exception.Create('Traù nem· û·dn˝ smÏr!');
+   raise Exception.Create('Tra≈• nem√° ≈æ√°dn√Ω smƒõr!');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

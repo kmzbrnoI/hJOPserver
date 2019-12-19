@@ -1,4 +1,4 @@
-unit Logging;
+Ôªøunit Logging;
 
 // tato unita zajistuje logovani
 
@@ -61,21 +61,21 @@ function GetLogColor(LogTyp:Integer):TColor;
 function GetWriteLogTyp(Typ:Integer):string;
  begin
   case Typ of
-   WR_MESSAGE:   Result := 'Zpr·va';
+   WR_MESSAGE:   Result := 'Zpr√°va';
    WR_ERROR:     Result := 'Chyba';
-   WR_AUTREZ:    Result := 'Automatick˝ reûim';
-   WR_VC:        Result := 'JÌzdnÌ cesty';
+   WR_AUTREZ:    Result := 'Automatick√Ω re≈æim';
+   WR_VC:        Result := 'J√≠zdn√≠ cesty';
    WR_DATA:      Result := 'Data';
    WR_RCS:       Result := 'RCS';
    WR_SYSTEM:    Result := 'SYSTEM';
    WR_CONSOLE:   Result := 'Konzole';
-   WR_SPRPREDAT: Result := 'P¯ed·v·nÌ souprav';
-   WR_USERS:     Result := 'UûivatelÈ';
-   WR_TRAT:      Result := 'Traù';
-   WR_STACK:     Result := 'Z·sobnÌk JC';
+   WR_SPRPREDAT: Result := 'P≈ôed√°v√°n√≠ souprav';
+   WR_USERS:     Result := 'U≈æivatel√©';
+   WR_TRAT:      Result := 'Tra≈•';
+   WR_STACK:     Result := 'Z√°sobn√≠k JC';
    WR_PT:        Result := 'PT server';
   else//case
-   Result := 'Nezn·m˝ typ';
+   Result := 'Nezn√°m√Ω typ';
   end;//else case
  end;
 

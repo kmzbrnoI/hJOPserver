@@ -1,9 +1,9 @@
-unit FunkceVyznam;
+ï»¿unit FunkceVyznam;
 
 {
   Trida TFuncsVyznam, resp. jeji instance FuncsFyznam si udrzuje seznam vyznamu
   funkci hnacich vozidel platnych pro cele kolejiste. Polozkami senzmau jsou
-  napriklad "houkaèka dlouhá", "trubka vlakvedoucího", ...
+  napriklad "houkaÄka dlouhÃ¡", "trubka vlakvedoucÃ­ho", ...
 
   Vyznamy jsou udrzovany v jednoduchem senzamu "vyznamy".
 }

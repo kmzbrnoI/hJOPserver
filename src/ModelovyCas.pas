@@ -1,4 +1,4 @@
-unit ModelovyCas;
+﻿unit ModelovyCas;
 
 {
   Tato unta se stara o modelovy cas.
@@ -197,7 +197,7 @@ begin
  Self.last_sync := Now;
 
  F_Main.P_Time_modelovy.Caption := TimeToStr(Self.time);
- F_Main.P_Zrychleni.Caption := strSpeed + '�';
+ F_Main.P_Zrychleni.Caption := strSpeed + '×';
  F_Main.CheckNasobicWidth();
 
  ORTCPServer.BroadcastData(Self.GetTCPString());

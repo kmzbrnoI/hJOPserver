@@ -1,4 +1,4 @@
-unit TBlokTratUsek;
+Ôªøunit TBlokTratUsek;
 
 // Definice a obsluha technologickeho bloku Tratovy usek
 // Tratovy usek dedi z Useku
@@ -275,7 +275,7 @@ begin
  Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
  if (Self.TUSettings.rychlost < 10) then
-   writelog('WARNING: traùov˝ ˙sek '+Self.name + ' ('+IntToStr(Self.id)+') nem· korektnÏ zadanou traùovou rychlost', WR_ERROR);
+   writelog('WARNING: tra≈•ov√Ω √∫sek '+Self.name + ' ('+IntToStr(Self.id)+') nem√° korektnƒõ zadanou tra≈•ovou rychlost', WR_ERROR);
 
  // nacitani zastavky
  if (Assigned(Self.TUSettings.Zastavka.soupravy)) then Self.TUSettings.Zastavka.soupravy.Free();
@@ -588,7 +588,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 4, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 1;
-        Soupravy.soupravy[Self.Souprava].ToggleHouk('trubka vlakvedoucÌho');
+        Soupravy.soupravy[Self.Souprava].ToggleHouk('trubka vlakvedouc√≠ho');
        end;
     end;
 
@@ -596,7 +596,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 2, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 2;
-        Soupravy.soupravy[Self.Souprava].ToggleHouk('zav¯enÌ dve¯Ì');
+        Soupravy.soupravy[Self.Souprava].ToggleHouk('zav≈ôen√≠ dve≈ô√≠');
        end;
     end;
    end;
@@ -604,7 +604,7 @@ begin
    // cekam na timeout na rozjeti vlaku
    if (Now > Self.TUStav.zast_run_time) then
     begin
-     Soupravy.soupravy[Self.Souprava].ToggleHouk('houkaËka kr·tk·');
+     Soupravy.soupravy[Self.Souprava].ToggleHouk('houkaƒçka kr√°tk√°');
      Self.ZastRunTrain();
     end;
   end;
@@ -665,7 +665,7 @@ begin
      end;//case
     end else begin
      // pokud v zastavce osuprava stoji, lze ji rozjet
-     Result := Result + 'JEœ vlak,';
+     Result := Result + 'JEƒé vlak,';
     end;
   end;
 
@@ -803,15 +803,15 @@ begin
  podm := TPSPodminky.Create();
  if (Self.IsSouprava()) then
   begin
-   podm.Add(TOR.GetPSPodminka(Self, 'Smaz·nÌ soupravy '+Soupravy[Self.Souprava].nazev+' z ˙seku'));
+   podm.Add(TOR.GetPSPodminka(Self, 'Smaz√°n√≠ soupravy '+Soupravy[Self.Souprava].nazev+' z √∫seku'));
    if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsSprInMoreTUs(Self.Souprava))) then
-     podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smaz·nÌ soupravy '+Soupravy[Self.Souprava].nazev+' z tratÏ'));
+     podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smaz√°n√≠ soupravy '+Soupravy[Self.Souprava].nazev+' z tratƒõ'));
    if (Blky.GetBlkWithSpr(Self.Souprava).Count = 1) then
-     podm.Add(TOR.GetPSPodminka(Self, 'Smaz·nÌ soupravy '+Soupravy[Self.Souprava].nazev+' z kolejiötÏ'));
+     podm.Add(TOR.GetPSPodminka(Self, 'Smaz√°n√≠ soupravy '+Soupravy[Self.Souprava].nazev+' z koleji≈°tƒõ'));
   end;
 
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR,
-                   'ZruöenÌ poruchy blokovÈ podmÌnky', TBlky.GetBlksList(Self), podm);
+                   'Zru≈°en√≠ poruchy blokov√© podm√≠nky', TBlky.GetBlksList(Self), podm);
 end;
 
 procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
@@ -841,7 +841,7 @@ procedure TBlkTU.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:str
 begin
  if (Self.Stav.Stav <= TUsekStav.none) then Exit();
 
- if (item = 'JEœ vlak')   then Self.MenuJEDLokClick(SenderPnl, SenderOR)
+ if (item = 'JEƒé vlak')   then Self.MenuJEDLokClick(SenderPnl, SenderOR)
  else if (item = 'ZAST>') then Self.MenuZastClick(SenderPnl, SenderOR, true)
  else if (item = 'ZAST<') then Self.MenuZastClick(SenderPnl, SenderOR, false)
  else if (item = 'RBP') then Self.MenuRBPClick(SenderPnl, SenderOR)

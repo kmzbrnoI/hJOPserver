@@ -1,4 +1,4 @@
-unit fRegulator;
+Ôªøunit fRegulator;
 
 interface
 
@@ -126,8 +126,8 @@ begin
  except
    on E:Exception do
     begin
-     Application.MessageBox(PChar('Nepoda¯ilo se nastavit RU»:'+#13#10+E.Message),
-         'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar('Nepoda≈ôilo se nastavit RUƒå:'+#13#10+E.Message),
+         'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
     end;
  end;
 end;
@@ -175,7 +175,7 @@ procedure TF_DigiReg.OpenForm(HV:THV);
       Self.LokoComOK(Self, nil);
    end else begin
     Self.L_ComStatus.Font.Color := clSIlver;
-    Self.L_ComStatus.Caption    := 'loko odhl·öeno';
+    Self.L_ComStatus.Caption    := 'loko odhl√°≈°eno';
    end;
 
   Self.Show();
@@ -190,7 +190,7 @@ begin
   TrkSystem.PrevzitLoko(Self.OpenHV);
  except
   on E:Exception do
-    Application.MessageBox(PChar('P¯evzetÌ HV se nezda¯ilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox(PChar('P≈ôevzet√≠ HV se nezda≈ôilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
 end;
 
@@ -209,7 +209,7 @@ procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
   except
    on E:Exception do
     begin
-     Application.MessageBox(PChar('Odhl·öenÌ HV se nezda¯ilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+     Application.MessageBox(PChar('Odhl√°≈°en√≠ HV se nezda≈ôilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
   end;
@@ -242,8 +242,8 @@ var tmp:THV;
      on E:Exception do
       begin
        Self.OpenHV := tmp;
-       Application.MessageBox(PChar('Lokomotivu se nepoda¯ilo odhl·sit:'+#13#10+E.Message),
-           'Varov·nÌ', MB_OK OR MB_ICONWARNING);
+       Application.MessageBox(PChar('Lokomotivu se nepoda≈ôilo odhl√°sit:'+#13#10+E.Message),
+           'Varov√°n√≠', MB_OK OR MB_ICONWARNING);
       end;
     end;
    end;
@@ -340,7 +340,7 @@ begin
   TPomStatus.progr    : Self.L_POM.Caption := 'progr';
   TPomStatus.error    : Self.L_POM.Caption := 'error';
   TPomStatus.pc       : Self.L_POM.Caption := 'automat';
-  TPomStatus.released : Self.L_POM.Caption := 'ruËnÌ';
+  TPomStatus.released : Self.L_POM.Caption := 'ruƒçn√≠';
  end;//case
 
  CHB_svetla.Checked := Slot.funkce[0];
@@ -487,7 +487,7 @@ begin
      break;
 
  if (i = Self._MAX_FORMS) then
-   raise ERCMaxWindows.Create('Otev¯en maxim·lnÌ poËet oken regul·tor˘!');
+   raise ERCMaxWindows.Create('Otev≈ôen maxim√°ln√≠ poƒçet oken regul√°tor≈Ø!');
 
  Self.forms.data[i].OpenForm(HV);
 end;

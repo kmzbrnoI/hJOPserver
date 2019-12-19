@@ -1,4 +1,4 @@
-unit fTester;
+ï»¿unit fTester;
 
 interface
 
@@ -180,7 +180,7 @@ var i:Integer;
            notYetScanned : stateStr := '?';
           end;
 
-          F_Tester.LB_Changes.Items.Add('Zmìna:: RCS:'+Format('%3d' ,[RCSAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
+          F_Tester.LB_Changes.Items.Add('ZmÄ›na:: RCS:'+Format('%3d' ,[RCSAddr])+', port: '+Format('%2d' ,[i])+', state:'+stateStr);
           Beep;
          end;//if (InputState <> LastState)
        end;//if F_Tester.CHB_LogZmeny.Checked
@@ -307,7 +307,7 @@ var oldColor:TColor;
     end;
   except
     on E:Exception do
-      Application.MessageBox(PChar('Nelze nastavít výstup:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Nelze nastavÃ­t vÃ½stup:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
   end;
  end;
 

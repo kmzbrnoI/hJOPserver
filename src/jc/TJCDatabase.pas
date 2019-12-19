@@ -1,4 +1,4 @@
-unit TJCDatabase;
+Ôªøunit TJCDatabase;
 
 {
   TJCDb je databaze jizdnich cest.
@@ -116,7 +116,7 @@ var ini:TMemIniFile;
     sections:TStrings;
     JC:TJC;
 begin
- writelog('NaËÌt·m JC - '+filename, WR_DATA);
+ writelog('Naƒç√≠t√°m JC - '+filename, WR_DATA);
 
  Self.ffilename := filename;
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -138,7 +138,7 @@ begin
      except
        on E:Exception do
         begin
-         AppEvents.LogException(E, 'JC '+JC.nazev+' se nepoda¯ilo naËÌst');
+         AppEvents.LogException(E, 'JC '+JC.nazev+' se nepoda≈ôilo naƒç√≠st');
          JC.Free();
         end;
      end;
@@ -151,7 +151,7 @@ begin
  end;
 
  Self.FillJCsStartNav();
- writelog('NaËteno '+IntToStr(Self.JCs.Count)+' JC', WR_DATA);
+ writelog('Naƒçteno '+IntToStr(Self.JCs.Count)+' JC', WR_DATA);
 end;
 
 // save data to ini file:
@@ -159,7 +159,7 @@ procedure TJCDb.SaveData(const filename:string);
 var ini:TMemIniFile;
     JC:TJC;
 begin
- writelog('Ukl·d·m JC - '+filename, WR_DATA);
+ writelog('Ukl√°d√°m JC - '+filename, WR_DATA);
 
  DeleteFile(PChar(filename));
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -172,7 +172,7 @@ begin
    ini.Free();
  end;
 
- writelog('JC uloûeny', WR_DATA);
+ writelog('JC ulo≈æeny', WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ begin
       if (not log_err_flag) then
        AppEvents.LogException(E, 'JC '+JC.nazev + ' update error');
       if (JC.staveni) then
-        JC.CancelStaveni('VyjÌmka', true)
+        JC.CancelStaveni('Vyj√≠mka', true)
       else
         JC.RusJCWithoutBlk();
      end;
@@ -288,7 +288,7 @@ noJC:
    if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
 
  (EndBlk as TBlkUsek).KonecJC := TZaver.no;
- ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v z·vÏrovÈ tabulce');
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v z√°vƒõrov√© tabulce');
  writelog('Nelze postavit JC -  nenalezena v zaverove tabulce',WR_VC);
  end;
 
@@ -302,7 +302,7 @@ var JC:TJC;
 begin
  // kontrola existence JC stejneho ID
  if (Self.IsJC(JCData.id)) then
-   raise EJCIdAlreadyExists.Create('ID jÌzdnÌ cesty '+IntToStr(JCData.id)+' jiû pouûito');
+   raise EJCIdAlreadyExists.Create('ID j√≠zdn√≠ cesty '+IntToStr(JCData.id)+' ji≈æ pou≈æito');
 
  index := Self.FindPlaceForNewJC(JCData.id);
  JC := TJC.Create(JCData);
@@ -619,7 +619,7 @@ begin
       begin
        JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
        for oblr in (tmpBlk as TBlkNav).OblsRizeni do
-         oblr.BlkWriteError(Self, 'Chyba povolovacÌ n·vÏsti '+tmpblk.name, 'TECHNOLOGIE');
+         oblr.BlkWriteError(Self, 'Chyba povolovac√≠ n√°vƒõsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
     end;//for i
   end;//if jcindex <> -1

@@ -1,4 +1,4 @@
-unit fBlkZamek;
+﻿unit fBlkZamek;
 
 interface
 
@@ -77,7 +77,7 @@ var glob:TBlkSettings;
   E_Nazev.Text          := glob.name;
   SE_ID.Value           := glob.id;
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (z�mek)';
+  Self.Caption := 'Editovat data bloku '+glob.name+' (zámek)';
   Self.ActiveControl := Self.B_Save;
  end;
 

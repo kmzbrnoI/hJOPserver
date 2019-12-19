@@ -1,4 +1,4 @@
-unit fAbout;
+ï»¿unit fAbout;
 
 interface
 
@@ -61,7 +61,7 @@ procedure TF_About.FormShow(Sender: TObject);
   except
     on E:Exception do
      begin
-      Self.L_VRCSDriver.Caption := 'nelze získat';
+      Self.L_VRCSDriver.Caption := 'nelze zÃ­skat';
       AppEvents.LogException(e, 'RCS.GetDllVersion');
      end;
   end;
@@ -70,11 +70,11 @@ procedure TF_About.FormShow(Sender: TObject);
     if (RCSi.Opened) then
       Self.L_VRCSUSB.Caption := RCSi.GetDeviceVersion()
     else
-      Self.L_VRCSUSB.Caption := 'zaøízení uzavøeno';
+      Self.L_VRCSUSB.Caption := 'zaÅ™Ã­zenÃ­ uzavÅ™eno';
   except
     on E:Exception do
      begin
-      Self.L_VRCSUSB.Caption := 'nelze získat';
+      Self.L_VRCSUSB.Caption := 'nelze zÃ­skat';
       AppEvents.LogException(e, 'RCS.GetDeviceVersion');
      end;
   end;

@@ -1,4 +1,4 @@
-unit fBlkVyhybkaSysVars;
+﻿unit fBlkVyhybkaSysVars;
 
 interface
 
@@ -86,7 +86,7 @@ begin
  Self.OpenBlk := blk;
  Self.myUpdate();
 
- Self.Caption := 'Technologick� vlastnosti bloku '+blk.name;
+ Self.Caption := 'Technologické vlastnosti bloku '+blk.name;
  Self.Show();
 end;
 

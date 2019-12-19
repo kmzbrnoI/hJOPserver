@@ -1,4 +1,4 @@
-unit TBlokPrejezd;
+Ôªøunit TBlokPrejezd;
 
 // definice a obsluha technologickeho bloku Prejezd
 
@@ -299,14 +299,14 @@ begin
    if ((Self.Zaver) and (Self.PrjStav.basicStav = TBlkPrjBasicStav.uzavreno)) then
     begin
      for oblr in Self.OblsRizeni do
-      oblr.BlkWriteError(Self, 'Ztr·ta dohledu na p¯ejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+      oblr.BlkWriteError(Self, 'Ztr√°ta dohledu na p≈ôejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
      JCDb.RusJC(Self);
     end;
 
    if ((new_stav = TBlkPrjBasicStav.none) and (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled)) then
     begin
      for oblr in Self.OblsRizeni do
-      oblr.BlkWriteError(Self, 'Porucha p¯ejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+      oblr.BlkWriteError(Self, 'Porucha p≈ôejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
     end;
 
    if (Self.PrjStav.basicStav = disabled) then
@@ -325,7 +325,7 @@ begin
    if (Now > Self.PrjStav.uzavStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
      for oblr in Self.OblsRizeni do
-      oblr.BlkWriteError(Self, Self.GlobalSettings.name+' uzav¯en dÈle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROV¡NÕ');
+      oblr.BlkWriteError(Self, Self.GlobalSettings.name+' uzav≈ôen d√©le, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROV√ÅN√ç');
      Self.PrjStav.uzavStart := now;
     end;
   end;
@@ -513,14 +513,14 @@ procedure TBlkPrejezd.UPOZUZClick(Sender:TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZUZCallBack,
     (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-    'ZruöenÌ uzav¯enÌ p¯ejezdu', TBlky.GetBlksList(Self), nil);
+    'Zru≈°en√≠ uzav≈ôen√≠ p≈ôejezdu', TBlky.GetBlksList(Self), nil);
 end;
 
 procedure TBlkPrejezd.UPONOTClick(Sender:TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZNOTCallBack,
     (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-    'NouzovÈ otev¯enÌ p¯ejezdu', TBlky.GetBlksList(Self), nil);
+    'Nouzov√© otev≈ôen√≠ p≈ôejezdu', TBlky.GetBlksList(Self), nil);
 end;
 
 procedure TBlkPrejezd.UPOZNOTClick(Sender:TObject);
@@ -538,7 +538,7 @@ begin
  try
    RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavenÌ RCS vstup˘!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastaven√≠ RCS vstup≈Ø!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -547,7 +547,7 @@ begin
  try
    RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavenÌ RCS vstup˘!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastaven√≠ RCS vstup≈Ø!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -695,7 +695,7 @@ begin
  try
   if (Self.Stitek <> '') then
    begin
-    item[0] := GetUPOLine('äTÕTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    item[0] := GetUPOLine('≈†T√çTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
     lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
 
     try

@@ -1,4 +1,4 @@
-unit fBlkSH;
+Ôªøunit fBlkSH;
 
 interface
 
@@ -83,8 +83,8 @@ var LI:TListItem;
 begin
  if (Self.CB_Prj_Add.ItemIndex = -1) then
   begin
-   Application.MessageBox('Je t¯eba vybrat p¯ejezd k p¯id·nÌ!',
-                          'Nelze p¯idat p¯ejezd', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Je t≈ôeba vybrat p≈ôejezd k p≈ôid√°n√≠!',
+                          'Nelze p≈ôidat p≈ôejezd', MB_OK OR MB_ICONWARNING);
    Exit;
   end;
 
@@ -116,14 +116,14 @@ var glob:TBlkSettings;
 begin
  if (Self.E_Name.Text = '') then
   begin
-   Application.MessageBox('VyplÚte n·zev souËtovÈ hl·sky!','Nelze uloûit data',
+   Application.MessageBox('Vypl≈àte n√°zev souƒçtov√© hl√°sky!','Nelze ulo≈æit data',
                           MB_OK OR MB_ICONWARNING);
    Exit;
   end;
  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
   begin
-   Application.MessageBox('ID jiû bylo definov·no na jinÈm bloku!',
-                          'Nelze uloûit data', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('ID ji≈æ bylo definov√°no na jin√©m bloku!',
+                          'Nelze ulo≈æit data', MB_OK OR MB_ICONWARNING);
    Exit;
   end;
 
@@ -137,7 +137,7 @@ begin
    Blk := Blky.Add(_BLK_SH, glob) as TBlkSH;
    if (Blk = nil) then
     begin
-     Application.MessageBox('Nepoda¯ilo se p¯idat blok!', 'Nelze uloûit data',
+     Application.MessageBox('Nepoda≈ôilo se p≈ôidat blok!', 'Nelze ulo≈æit data',
                             MB_OK OR MB_ICONWARNING);
      Exit;
     end;
@@ -196,7 +196,7 @@ begin
    LI.Caption := Blky.GetBlkName(prjid);
   end;
 
- Self.Caption := 'SouËtov· hl·ska '+glob.name;
+ Self.Caption := 'Souƒçtov√° hl√°ska '+glob.name;
  Self.ActiveControl := Self.B_save_P;
 end;
 
@@ -205,7 +205,7 @@ begin
  E_Name.Text := '';
  SE_ID.Value := Blky.GetBlkID(Blky.Cnt-1)+1;
 
- Self.Caption := 'Nov· souËtov· hl·ska';
+ Self.Caption := 'Nov√° souƒçtov√° hl√°ska';
  Self.ActiveControl := Self.E_Name;
 end;
 

@@ -1,4 +1,4 @@
-unit TechnologieRCS;
+Ôªøunit TechnologieRCS;
 
 {
  Technologie RCS: rozhrani pro pouzivani Railroad Control System.
@@ -174,7 +174,7 @@ begin
 
  TRCSIFace(Self).LoadLib(filename, _CONFIG_PATH + '\' + ChangeFileExt(libName, '.ini'));
 
- writelog('NaËtena knihovna '+ libName, WR_RCS);
+ writelog('Naƒçtena knihovna '+ libName, WR_RCS);
 
  // kontrola bindnuti vsech eventu
 
@@ -191,7 +191,7 @@ begin
    for tmp in Self.unbound do
      str := str + tmp + ', ';
    str := LeftStr(str, Length(str)-2);
-   F_Main.LogStatus('ERR: RCS: nepoda¯ilo se sv·zat n·sledujÌcÌ funkce : ' + str);
+   F_Main.LogStatus('ERR: RCS: nepoda≈ôilo se sv√°zat n√°sleduj√≠c√≠ funkce : ' + str);
   end;
 end;
 
@@ -245,7 +245,7 @@ begin
     Self.LoadLib(fLibDir + '\' + lib);
   except
     on E:Exception do
-      writeLog('Nelze naËÌst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message, WR_ERROR);
+      writeLog('Nelze naƒç√≠st knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message, WR_ERROR);
   end;
 end;
 

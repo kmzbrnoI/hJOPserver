@@ -1,4 +1,4 @@
-unit TBlokVyhybka;
+Ôªøunit TBlokVyhybka;
 
 {
  Definice a obsluha technologickeho bloku vyhybka.
@@ -393,7 +393,7 @@ var Blk:TBlk;
     spojka_old:Integer;
 begin
  if (data.spojka = Self.GlobalSettings.id) then
-   raise ESpojka.Create('Nelze mÌt spojku s·m se sebou!');
+   raise ESpojka.Create('Nelze m√≠t spojku s√°m se sebou!');
  spojka_old := Self.VyhSettings.spojka;
 
  Self.VyhSettings.spojka := data.spojka;
@@ -421,7 +421,7 @@ begin
        if (spojka_settings.spojka <> -1) then
         begin
          Self.VyhSettings.spojka := -1;
-         raise ESpojka.Create('Na v˝hybce je jiû jin· spojka!');
+         raise ESpojka.Create('Na v√Ωhybce je ji≈æ jin√° spojka!');
         end;
 
        spojka_settings.spojka := self.GlobalSettings.id;
@@ -472,7 +472,7 @@ procedure TBlkVyhybka.SetVyhVyl(Sender:TIDCOntext; vyl:string);
 begin
  if ((self.VyhStav.Vyl <> '') and (vyl = '')) then
   begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'ZruöenÌ v˝luky', TBlky.GetBlksList(Self), nil);
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zru≈°en√≠ v√Ωluky', TBlky.GetBlksList(Self), nil);
   end else begin
    Self.Vyluka := vyl;
   end;
@@ -538,7 +538,7 @@ var iplus,iminus: TRCSInputState;
      and (Self.Zaver <> TZaver.staveni)) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'NenÌ koncov· poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Nen√≠ koncov√° poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -580,7 +580,7 @@ var iplus,iminus: TRCSInputState;
           ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> plus))) then
        begin
         for oblr in Self.OblsRizeni do
-          oblr.BlkWriteError(Self, 'Ztr·ta dohledu na v˝hybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+          oblr.BlkWriteError(Self, 'Ztr√°ta dohledu na v√Ωhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
         JCDb.RusJC(Self);
        end;//if Blokovani
       Self.VyhStav.poloha := plus;
@@ -622,7 +622,7 @@ var iplus,iminus: TRCSInputState;
           ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> minus))) then
        begin
         for oblr in Self.OblsRizeni do
-          oblr.BlkWriteError(Self, 'Ztr·ta dohledu na v˝hybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+          oblr.BlkWriteError(Self, 'Ztr√°ta dohledu na v√Ωhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
         JCDb.RusJC(Self);
        end;//if Blokovani
       Self.VyhStav.poloha := minus;
@@ -641,7 +641,7 @@ var iplus,iminus: TRCSInputState;
          and (Self.VyhStav.polohaOld <> both)) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'NenÌ koncov· poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Nen√≠ koncov√° poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -705,14 +705,14 @@ begin
         ((spojka <> nil) and ((Integer(spojka.Zaver) > 0) and (spojka.Zaver <> TZaver.staveni) or (spojka.vyhZaver)))) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Nelze p¯estavit '+Self.GlobalSettings.name+' - pod z·vÏrem', 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Nelze p≈ôestavit '+Self.GlobalSettings.name+' - pod z√°vƒõrem', 'TECHNOLOGIE');
       if (Assigned(callback_err)) then callback_err(self);
       Exit(4);
      end;
     if (((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and (spojka.Obsazeno = TUsekStav.obsazeno))) and (not nouz)) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Nelze p¯estavit '+Self.GlobalSettings.name+' - obsazeno', 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Nelze p≈ôestavit '+Self.GlobalSettings.name+' - obsazeno', 'TECHNOLOGIE');
       if (Assigned(callback_err)) then callback_err(self);
       Exit(5);
      end;
@@ -730,7 +730,7 @@ begin
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board,Self.VyhSettings.RCSAddrs[3].port, 0);
    except
      for oblr in Self.OblsRizeni do
-       oblr.BlkWriteError(Self, 'Nelze p¯estavit '+Self.GlobalSettings.name+' - v˝jimka RCS SetOutput', 'TECHNOLOGIE');
+       oblr.BlkWriteError(Self, 'Nelze p≈ôestavit '+Self.GlobalSettings.name+' - v√Ωjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
    end;
 
@@ -747,7 +747,7 @@ begin
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 1);
    except
      for oblr in Self.OblsRizeni do
-       oblr.BlkWriteError(Self, 'Nelze p¯estavit '+Self.GlobalSettings.name+' - v˝jimka RCS SetOutput', 'TECHNOLOGIE');
+       oblr.BlkWriteError(Self, 'Nelze p≈ôestavit '+Self.GlobalSettings.name+' - v√Ωjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
    end;
 
@@ -894,8 +894,8 @@ begin
 
  Blky.GetBlkByID(Self.UsekID, Blk);
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-                    'NouzovÈ stavÏnÌ do polohy plus', TBlky.GetBlksList(Self),
-                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazen˝ kolejov˝ ˙sek')));
+                    'Nouzov√© stavƒõn√≠ do polohy plus', TBlky.GetBlksList(Self),
+                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazen√Ω kolejov√Ω √∫sek')));
 end;
 
 procedure TBlkVyhybka.UPONSMinusClick(Sender:TObject);
@@ -906,8 +906,8 @@ begin
 
  Blky.GetBlkByID(Self.UsekID, Blk);
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-                    'NouzovÈ stavÏnÌ do polohy mÌnus', TBlky.GetBlksList(Self),
-                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazen˝ kolejov˝ ˙sek')));
+                    'Nouzov√© stavƒõn√≠ do polohy m√≠nus', TBlky.GetBlksList(Self),
+                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazen√Ω kolejov√Ω √∫sek')));
 end;
 
 procedure TBlkVyhybka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -935,7 +935,7 @@ end;
 
 procedure TBlkVyhybka.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'ZruöenÌ nouzovÈho z·vÏru', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zru≈°en√≠ nouzov√©ho z√°vƒõru', TBlky.GetBlksList(Self), nil);
 end;
 
 procedure TBlkVyhybka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
@@ -991,7 +991,7 @@ begin
  if (rights >= TORControlRights.superuser) then
   begin
    Result := Result + '-,';
-   if (Self.redukce_menu) then Result := Result + '*ZRUä REDUKCI,';
+   if (Self.redukce_menu) then Result := Result + '*ZRU≈† REDUKCI,';
   end;
 end;
 
@@ -1021,7 +1021,7 @@ begin
  else if (item = 'VYL')  then Self.MenuVylClick(SenderPnl, SenderOR)
  else if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR)
  else if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR)
- else if (item = 'ZRUä REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
+ else if (item = 'ZRU≈† REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1153,7 +1153,7 @@ procedure TBlkVyhybka.PanelStaveniErr(Sender:TObject);
 begin
   if ((Assigned(Self.VyhStav.staveniPanel)) and (Assigned(Self.VyhStav.staveniOR))) then
    begin
-    ORTCPServer.BottomError(Self.VyhStav.staveniPanel, 'Nep¯estavena '+Self.GlobalSettings.name, (Self.VyhStav.staveniOR as TOR).ShortName, 'TECHNOLOGIE');
+    ORTCPServer.BottomError(Self.VyhStav.staveniPanel, 'Nep≈ôestavena '+Self.GlobalSettings.name, (Self.VyhStav.staveniOR as TOR).ShortName, 'TECHNOLOGIE');
     Self.VyhStav.staveniPanel := nil;
     Self.VyhStav.staveniOR    := nil;
    end;
@@ -1357,7 +1357,7 @@ begin
  try
   if (Self.Stitek <> '') then
    begin
-    item[0] := GetUPOLine('äTÕTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    item[0] := GetUPOLine('≈†T√çTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
     lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
 
     try
@@ -1373,7 +1373,7 @@ begin
 
   if (Self.Vyluka <> '') then
    begin
-    item[0] := GetUPOLine('V›LUKA '+Self.GlobalSettings.name, taCenter, clBlack, clOlive);
+    item[0] := GetUPOLine('V√ùLUKA '+Self.GlobalSettings.name, taCenter, clBlack, clOlive);
     lines := GetLines(Self.Vyluka, _UPO_LINE_LEN);
 
     try

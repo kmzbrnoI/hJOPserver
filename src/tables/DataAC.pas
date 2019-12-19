@@ -1,4 +1,4 @@
-unit DataAC;
+ï»¿unit DataAC;
 
 // TACTableData - trida resici vypis AC do tabulky
 
@@ -67,10 +67,10 @@ begin
   begin
    AC := ACDb.ACs[i];
 
-   if ((Self.LV.Items[i].SubItems[0] = 'nepøipraven') and (AC.ready)) then
-     Self.LV.Items[i].SubItems[0] := 'pøipraven';
-   if ((Self.LV.Items[i].SubItems[0] = 'pøipraven') and (not AC.ready)) then
-     Self.LV.Items[i].SubItems[0] := 'nepøipraven';
+   if ((Self.LV.Items[i].SubItems[0] = 'nepÅ™ipraven') and (AC.ready)) then
+     Self.LV.Items[i].SubItems[0] := 'pÅ™ipraven';
+   if ((Self.LV.Items[i].SubItems[0] = 'pÅ™ipraven') and (not AC.ready)) then
+     Self.LV.Items[i].SubItems[0] := 'nepÅ™ipraven';
 
    if ((not AC.changed) and (not force)) then continue;
 
@@ -78,13 +78,13 @@ begin
    Self.LV.Items[i].Caption := AC.name;
 
    if (AC.running) then
-     Self.LV.Items[i].SubItems[0] := 'spuštìn'
+     Self.LV.Items[i].SubItems[0] := 'spuÅ¡tÄ›n'
    else if (AC.paused) then
      Self.LV.Items[i].SubItems[0] := 'pozastaven'
    else if (AC.ready) then
-     Self.LV.Items[i].SubItems[0] := 'pøipraven'
+     Self.LV.Items[i].SubItems[0] := 'pÅ™ipraven'
    else
-     Self.LV.Items[i].SubItems[0] := 'nepøipraven';
+     Self.LV.Items[i].SubItems[0] := 'nepÅ™ipraven';
 
    Self.LV.Items[i].SubItems[1] := AC.krk_filename;
 

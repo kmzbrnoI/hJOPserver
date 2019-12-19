@@ -1,4 +1,4 @@
-unit fBlkTU;
+ï»¿unit fBlkTU;
 
 interface
 
@@ -290,7 +290,7 @@ var glob:TBlkSettings;
   Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
   Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (traovı úsek)';
+  Self.Caption := 'Editovat data bloku '+glob.name+' (traÅ¥ovÃ½ Ãºsek)';
   Self.ActiveControl := Self.B_OK;
  end;
 
@@ -435,7 +435,7 @@ var glob:TBlkSettings;
       TUsettings.Zastavka.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)), StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
       TUsettings.zastavka.soupravy.Free();
-      Application.MessageBox('Nesprávnì zadanı èas èekání v zastávce', 'Nelze uloit data', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('NesprÃ¡vnÄ› zadanÃ½ Äas ÄekÃ¡nÃ­ v zastÃ¡vce', 'Nelze uloÅ¾it data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
    end;

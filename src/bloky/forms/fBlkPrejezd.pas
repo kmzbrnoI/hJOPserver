@@ -1,4 +1,4 @@
-unit fBlkPrejezd;
+ï»¿unit fBlkPrejezd;
 
 interface
 
@@ -103,12 +103,12 @@ var glob:TBlkSettings;
  begin
   if (Self.E_Prj_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplòte název pøejezdu', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('VyplÅˆte nÃ¡zev pÅ™ejezdu', 'Nelze uloÅ¾it data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
-    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID jiÅ¾ bylo definovÃ¡no na jinÃ©m bloku!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -122,7 +122,7 @@ var glob:TBlkSettings;
     Blk := Blky.Add(_BLK_PREJEZD, glob) as TBlkPrejezd;
     if (Blk = nil) then
      begin
-      Application.MessageBox('Nepodaøilo se pøidat blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('NepodaÅ™ilo se pÅ™idat blok!', 'Nelze uloÅ¾it data', MB_OK OR MB_ICONWARNING);
       Exit();
      end;
    end else begin
@@ -211,7 +211,7 @@ var glob:TBlkSettings;
 
   Self.SE_RCS_boardExit(Self);
 
-  Self.Caption := 'Pøejezd '+glob.name;
+  Self.Caption := 'PÅ™ejezd '+glob.name;
   Self.ActiveControl := Self.B_save_P;
  end;
 
@@ -233,7 +233,7 @@ procedure TF_BlkPrejezd.NewOpenForm;
   SE_vst_anulace_port.Value := 0;
   Self.SE_RCS_boardExit(Self);
 
-  Self.Caption := 'Nový pøejezd';
+  Self.Caption := 'NovÃ½ pÅ™ejezd';
   Self.ActiveControl := Self.E_Prj_Nazev;
  end;
 

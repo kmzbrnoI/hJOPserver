@@ -1,4 +1,4 @@
-unit BoosterDb;
+ï»¿unit BoosterDb;
 
 //this unit defines booster database as a class
 
@@ -93,7 +93,7 @@ var ini:TMemIniFile;
     id:string;
     booster:TBooster;
 begin
- writelog('Naèítám zesilovaèe: '+inifilename, WR_DATA);
+ writelog('NaÄÃ­tÃ¡m zesilovaÄe: '+inifilename, WR_DATA);
 
  Self.Clear();
 
@@ -102,7 +102,7 @@ begin
  except
    on E:Exception do
     begin
-     AppEvents.LogException(E, 'Naèítám zesilovaèe: nelze otevrit soubor bloku');
+     AppEvents.LogException(E, 'NaÄÃ­tÃ¡m zesilovaÄe: nelze otevrit soubor bloku');
      Exit();
     end;
  end;
@@ -114,12 +114,12 @@ begin
   begin
    if (id = '') then
     begin
-     writelog('WARNING: prázdnı primární klíè zesilovaèe - pøeskakuji', WR_ERROR);
+     writelog('WARNING: prÃ¡zdnÃ½ primÃ¡rnÃ­ klÃ­Ä zesilovaÄe - pÅ™eskakuji', WR_ERROR);
      continue;
     end;
    if (Self.db.ContainsKey(id)) then
     begin
-     writelog('WARNING: duplicita primárního klíèe zesilovaèe ('+id+') - pøeskakuji', WR_ERROR);
+     writelog('WARNING: duplicita primÃ¡rnÃ­ho klÃ­Äe zesilovaÄe ('+id+') - pÅ™eskakuji', WR_ERROR);
      continue;
     end;
 
@@ -139,7 +139,7 @@ begin
      on e:Exception do
       begin
        if (Assigned(booster)) then booster.Free();
-       AppEvents.LogException(E, 'Chyba pøi zeilovaèe '+id);
+       AppEvents.LogException(E, 'Chyba pÅ™i zeilovaÄe '+id);
        continue;
       end;
    end;
@@ -152,14 +152,14 @@ begin
 
  ZesTableData.LoadToTable();
 
- writelog('Naèteno '+IntToStr(Self.Count)+' zesilovaèù', WR_DATA);
+ writelog('NaÄteno '+IntToStr(Self.Count)+' zesilovaÄÅ¯', WR_DATA);
 end;
 
 procedure TBoosterDb.SaveToFile(inifilename:string);
 var ini:TMemIniFile;
     booster:TBooster;
 begin
- writelog('Ukládám zesilovaèe...', WR_DATA);
+ writelog('UklÃ¡dÃ¡m zesilovaÄe...', WR_DATA);
 
  try
    DeleteFile(PChar(inifilename));
@@ -178,7 +178,7 @@ begin
  ini.UpdateFile();
  ini.Free();
 
- writelog('Uloeno zesilovaèù: '+IntToStr(Self.Count), WR_DATA);
+ writelog('UloÅ¾eno zesilovaÄÅ¯: '+IntToStr(Self.Count), WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ end;
 procedure TBoosterDb.Add(new:TBooster);
 begin
  if (Self.db.ContainsKey(new.id)) then
-   raise BoosterExistsException.Create('Zesilovaè s ID '+new.id+' ji existuje');
+   raise BoosterExistsException.Create('ZesilovaÄ s ID '+new.id+' jiÅ¾ existuje');
 
  Self.db.Add(new.id, new);
 

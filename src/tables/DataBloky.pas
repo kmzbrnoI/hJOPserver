@@ -1,4 +1,4 @@
-unit DataBloky;
+ï»¿unit DataBloky;
 
 // TBlkTableData - trida resici zobrazovani tavulky bloku
 
@@ -73,7 +73,7 @@ end;
 procedure TBlokyTableData.UpdateTable();
 var i:Integer;
 begin
-  F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blky.Cnt)+' blokù';
+  F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blky.Cnt)+' blokÅ¯';
 
   for i := 0 to Blky.Cnt-1 do
    if ((Self.changed[i]) or (Self.reload)) then
@@ -113,7 +113,7 @@ var j, spr:integer;
    _BLK_VYH:begin
       Self.LV.Items[line].ImageIndex := 0;
       s_vyh := (Blk as TBlkVyhybka).GetSettings();
-      Self.LV.Items[line].SubItems.Strings[0] := 'Vıhybka';
+      Self.LV.Items[line].SubItems.Strings[0] := 'VÃ½hybka';
 
       case ((Blk as TBlkVyhybka).Poloha) of
        TVyhPoloha.disabled:Self.LV.Items[line].SubItems[3] := 'disabled';
@@ -135,7 +135,7 @@ var j, spr:integer;
       else
         Self.LV.Items[line].ImageIndex := 3;
 
-      Self.LV.Items[line].SubItems[0] := 'Úsek';
+      Self.LV.Items[line].SubItems[0] := 'Ãšsek';
 
       str := '';
       for spr in (Blk as TBlkUsek).Soupravs do
@@ -180,7 +180,7 @@ var j, spr:integer;
    _BLK_NAV:begin
       Self.LV.Items[line].ImageIndex := 5;
       s_nav := (Blk as TBlkNav).GetSettings();
-      Self.LV.Items[line].SubItems[0] := 'Návìstidlo';
+      Self.LV.Items[line].SubItems[0] := 'NÃ¡vÄ›stidlo';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
@@ -194,16 +194,16 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_PREJEZD:begin
       Self.LV.Items[line].ImageIndex := 7;
-      Self.LV.Items[line].SubItems[0] := 'Pøejezd';
+      Self.LV.Items[line].SubItems[0] := 'PÅ™ejezd';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
       case ((Blk as TBlkPrejezd).Stav.basicStav) of
         TBlkPrjBasicStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
         TBlkPrjBasicStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
-        TBlkPrjBasicStav.otevreno : Self.LV.Items[line].SubItems[3] := 'otevøeno';
-        TBlkPrjBasicStav.vystraha : Self.LV.Items[line].SubItems[3] := 'vıstraha';
-        TBlkPrjBasicStav.uzavreno : Self.LV.Items[line].SubItems[3] := 'uzavøeno';
+        TBlkPrjBasicStav.otevreno : Self.LV.Items[line].SubItems[3] := 'otevÅ™eno';
+        TBlkPrjBasicStav.vystraha : Self.LV.Items[line].SubItems[3] := 'vÃ½straha';
+        TBlkPrjBasicStav.uzavreno : Self.LV.Items[line].SubItems[3] := 'uzavÅ™eno';
         TBlkPrjBasicStav.anulace  : Self.LV.Items[line].SubItems[3] := 'anulace';
       end;//case obsazeno
 
@@ -216,7 +216,7 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_TRAT:begin
       Self.LV.Items[line].ImageIndex := 8;
-      Self.LV.Items[line].SubItems[0] := 'Tra';
+      Self.LV.Items[line].SubItems[0] := 'TraÅ¥';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
@@ -224,20 +224,20 @@ var j, spr:integer;
         Self.LV.Items[line].SubItems[3] := 'obsazeno';
       end else begin
         if ((Blk as TBlkTrat).Zaver) then begin
-          Self.LV.Items[line].SubItems[3] := 'závìr'
+          Self.LV.Items[line].SubItems[3] := 'zÃ¡vÄ›r'
         end else begin
           if ((Blk as TBlkTrat).ZAK) then begin
             Self.LV.Items[line].SubItems[3] := 'ZAK'
           end else begin
 
            if ((Blk as TBlkTrat).Zadost) then
-            Self.LV.Items[line].SubItems[3] := 'ádost'
+            Self.LV.Items[line].SubItems[3] := 'Å¾Ã¡dost'
            else
             case ((Blk as TBlkTrat).Smer) of
              TTratSmer.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
-             TTratSmer.AtoB     : Self.LV.Items[line].SubItems[3] := 'smìr A->B';
-             TTratSmer.BtoA     : Self.LV.Items[line].SubItems[3] := 'smìr B->A';
-             TTratSmer.zadny    : Self.LV.Items[line].SubItems[3] := 'smìr ádnı'
+             TTratSmer.AtoB     : Self.LV.Items[line].SubItems[3] := 'smÄ›r A->B';
+             TTratSmer.BtoA     : Self.LV.Items[line].SubItems[3] := 'smÄ›r B->A';
+             TTratSmer.zadny    : Self.LV.Items[line].SubItems[3] := 'smÄ›r Å¾Ã¡dnÃ½'
             end;//case
           end;
         end;
@@ -255,7 +255,7 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_UVAZKA:begin
       Self.LV.Items[line].ImageIndex := 9;
-      Self.LV.Items[line].SubItems[0] := 'Úvazka';
+      Self.LV.Items[line].SubItems[0] := 'Ãšvazka';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
@@ -272,16 +272,16 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_ZAMEK:begin
       Self.LV.Items[line].ImageIndex := 10;
-      Self.LV.Items[line].SubItems[0] := 'Zámek';
+      Self.LV.Items[line].SubItems[0] := 'ZÃ¡mek';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
       if ((Blk as TBlkZamek).Stav.enabled) then
        begin
         if ((Blk as TBlkZamek).klicUvolnen) then
-          Self.LV.Items[line].SubItems[3] := 'klíè uvolnìn'
+          Self.LV.Items[line].SubItems[3] := 'klÃ­Ä uvolnÄ›n'
         else
-          Self.LV.Items[line].SubItems[3] := 'klíè zamknut';
+          Self.LV.Items[line].SubItems[3] := 'klÃ­Ä zamknut';
        end else
         Self.LV.Items[line].SubItems[3] := 'disabled';
 
@@ -293,7 +293,7 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_ROZP:begin
       Self.LV.Items[line].ImageIndex := 11;
-      Self.LV.Items[line].SubItems[0] := 'Rozpojovaè';
+      Self.LV.Items[line].SubItems[0] := 'RozpojovaÄ';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
@@ -311,7 +311,7 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_TU:begin
       Self.LV.Items[line].ImageIndex := 2;
-      Self.LV.Items[line].SubItems[0] := 'Traovı úsek';
+      Self.LV.Items[line].SubItems[0] := 'TraÅ¥ovÃ½ Ãºsek';
 
       str := '';
       for spr in (Blk as TBlkUsek).Soupravs do
@@ -335,7 +335,7 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_VYSTUP:begin
       Self.LV.Items[line].ImageIndex := 12;
-      Self.LV.Items[line].SubItems[0] := 'Logickı vıstup';
+      Self.LV.Items[line].SubItems[0] := 'LogickÃ½ vÃ½stup';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
@@ -353,7 +353,7 @@ var j, spr:integer;
  /////////////////////////////////////////////////////
    _BLK_SH:begin
       Self.LV.Items[line].ImageIndex := -1;
-      Self.LV.Items[line].SubItems[0] := 'Souètová hláska';
+      Self.LV.Items[line].SubItems[0] := 'SouÄtovÃ¡ hlÃ¡ska';
 
       Self.LV.Items[line].SubItems[2] := '---';
 

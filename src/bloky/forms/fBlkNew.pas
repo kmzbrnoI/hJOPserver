@@ -1,4 +1,4 @@
-unit fBlkNew;
+﻿unit fBlkNew;
 
 interface
 
@@ -39,7 +39,7 @@ procedure TF_BlkNew.B_SaveClick(Sender: TObject);
 begin
  if (RG_NewTyp.ItemIndex = -1) then
   begin
-   Application.MessageBox('Vyberte typ bloku', 'Nelze vytvo�it blok', MB_OK OR MB_ICONWARNING);
+   Application.MessageBox('Vyberte typ bloku', 'Nelze vytvořit blok', MB_OK OR MB_ICONWARNING);
    Exit;
   end;
 

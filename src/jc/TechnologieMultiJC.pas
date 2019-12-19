@@ -1,4 +1,4 @@
-unit TechnologieMultiJC;
+﻿unit TechnologieMultiJC;
 
 {
   Technologie slozenych jizdnich cest.
@@ -119,7 +119,7 @@ begin
    Self.fproperties.id    := StrToInt(section);
  except
    on E:EConvertError do
-     raise EInvalidID.Create('Neplatn� id mJC : '+section);
+     raise EInvalidID.Create('Neplatné id mJC : '+section);
  end;
 
  Self.fproperties.Nazev := ini.ReadString (section, 'Nazev', section);
