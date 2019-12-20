@@ -695,7 +695,7 @@ begin
      if (Blk.typ <> _BLK_NAV) then continue;
      if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[0]) and
          (Blk.OblsRizeni[0] = Self.uvazkaA.OblsRizeni[0]) and
-         ((BlkTU = nil) or (TBlkNav(Blk).UsekID <> BlkTU.GetSettings.navLid))) then
+         ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navLid))) then
       begin
        Self.fNavLichy := Blk;
        break;
@@ -725,7 +725,7 @@ begin
      if (Blk.typ <> _BLK_NAV) then continue;
      if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
          (Blk.OblsRizeni[0] = Self.uvazkaB.OblsRizeni[0]) and
-         ((BlkTU = nil) or (TBlkNav(Blk).UsekID <> BlkTU.GetSettings.navSid))) then
+         ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navSid))) then
       begin
        Self.fNavSudy := Blk;
        break;
