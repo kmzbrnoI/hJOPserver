@@ -676,8 +676,12 @@ begin
         end else begin
          if (((Sender as TBlkNav).Navest <> TBlkNav._NAV_PRIVOL) and ((Sender as TBlkNav).canRNZ)) then
            fg := clTeal
-         else
-           fg := $A0A0A0;
+         else if ((Sender as TBlkNav).autoblok) then begin
+           if ((Sender as TBlkNav).IsPovolovaciNavest()) then
+             fg := clLime
+           else
+             fg := $A0A0A0;
+         end else  fg := $A0A0A0;
         end;
       end;// else privolavacka
 
