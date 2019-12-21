@@ -20,10 +20,10 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_DependencyCheckOutputName>..\output\hJOPserver.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\..\..\KMZ\hJOP\xn\server\hJOPserver.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls</DCC_UsePackage>
-			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
+			<DCC_ExeOutput>d:\UsersData\vlak\KMZ\hJOP\xn\server\</DCC_ExeOutput>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
 			<DCC_RangeChecking>true</DCC_RangeChecking>
@@ -293,8 +293,8 @@
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">16</VersionInfo>
-						<VersionInfo Name="Release">6</VersionInfo>
-						<VersionInfo Name="Build">1</VersionInfo>
+						<VersionInfo Name="Release">7</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -306,7 +306,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">4.16.6.1</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.16.7.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2019</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>

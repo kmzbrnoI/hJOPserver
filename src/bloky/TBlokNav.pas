@@ -1251,7 +1251,7 @@ begin
      Result := Result + '-,*ZRUŠ REDUKCI,';
 
  // DEBUG: jednoduche nastaveni IR pri knihovne simulator
- if (RCSi.IsSimulatorMode()) then
+ if (RCSi.simulation) then
   begin
    if ((Self.NavSettings.events.Count > 0) and (Self.NavSettings.events[0].zastaveni.typ = TRREvType.rrtIR)) then
     begin

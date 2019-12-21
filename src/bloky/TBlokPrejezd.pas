@@ -591,7 +591,7 @@ begin
 
  // pokud mame knihovnu simulator, muzeme ridit stav useku
  //  DEBUG nastroj
- if (RCSi.IsSimulatorMode()) then
+ if (RCSi.simulation) then
   begin
    Result := Result + '-,';
    if ((Self.Stav.basicStav = TBlkPrjBasicStav.uzavreno) or (Self.Stav.basicStav = TBlkPrjBasicStav.vystraha)) then

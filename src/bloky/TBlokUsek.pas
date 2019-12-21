@@ -1331,7 +1331,7 @@ begin
 
  // pokud mame knihovnu simulator, muzeme ridit stav useku
  //  DEBUG nastroj
- if (RCSi.IsSimulatorMode()) then
+ if (RCSi.simulation) then
   begin
    Result := Result + '-,';
 

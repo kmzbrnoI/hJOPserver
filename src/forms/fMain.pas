@@ -1435,7 +1435,7 @@ begin
  Self.A_RCS_Stop.Enabled  := ready and started;
 
  try
-   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (RCSi.IsSimulatorMode())) then
+   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (RCSi.simulation)) then
      RCSi.InputSim();
  except
    on E:Exception do

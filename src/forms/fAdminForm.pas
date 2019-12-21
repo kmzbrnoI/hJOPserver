@@ -102,7 +102,7 @@ var ini:TMemIniFile;
   end;
 
  try
-   if ((RCSi.ready) and (Self.CHB_SimInput.Checked) and (RCSi.IsSimulatorMode())) then
+   if ((RCSi.ready) and (Self.CHB_SimInput.Checked) and (RCSi.simulation)) then
      RCSi.InputSim();
  except
    on E:Exception do
@@ -171,7 +171,7 @@ end;
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
  begin
-  if (RCSi.IsSimulatorMode()) then
+  if (RCSi.simulation) then
    begin
     try
       RCSi.InputSim();
@@ -208,7 +208,7 @@ procedure TJCSimulator.OnTimer(Sender:TObject);
 var i:Integer;
     JC:TJC;
 begin
- if ((not GetFunctions.GetSystemStart()) or (not RCSi.IsSimulatorMode())) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
  for i := 0 to JCDb.Count-1 do
   begin
@@ -283,7 +283,7 @@ procedure TTratSimulator.OnTimer(Sender:TObject);
 var i:Integer;
     Blk:TBlk;
 begin
- if ((not GetFunctions.GetSystemStart()) or (not RCSi.IsSimulatorMode())) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
  for i := 0 to Blky.Cnt-1 do
   begin
@@ -358,7 +358,7 @@ var i:Integer;
     blk:TBlk;
 begin
  try
-   if ((not GetFunctions.GetSystemStart()) or (not RCSi.IsSimulatorMode())) then Exit;
+   if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
    for i := 0 to Blky.Cnt-1 do
     begin

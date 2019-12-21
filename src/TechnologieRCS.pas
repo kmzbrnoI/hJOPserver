@@ -106,8 +106,6 @@ type
       function GetModuleInputsCountSafe(Module:Cardinal):Cardinal;
       function GetModuleOutputsCountSafe(Module:Cardinal):Cardinal;
 
-      function IsSimulatorMode():boolean;
-
       property generalError:boolean read fGeneralError;
       class function RCSAddr(board:Cardinal; port:Byte):TRCSAddr;
 
@@ -417,13 +415,6 @@ begin
  except
    Result := false;
  end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TRCS.IsSimulatorMode():boolean;
-begin
- Result := (LowerCase(ExtractFileName(Self.Lib)) = 'simulator.dll');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
