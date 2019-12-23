@@ -1025,8 +1025,8 @@ var blk:TBLkTU;
 begin
  if (Self.Trat = nil) or (TBlkTrat(Self.Trat).smer = TTratSmer.zadny) then Exit(nil);
 
- blk := Self;
- while ((blk <> nil) and (blk.sectMaster <> nil)) do
+ blk := Self.nextTU;
+ while ((blk <> nil) and (blk.sectMaster <> blk)) do
    blk := blk.nextTU;
 
  if (blk <> nil) then
@@ -1146,7 +1146,7 @@ begin
      TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_STUJ
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
-     if ((Self.nextNav = nil) or (TBlkNav(Self.nextNav).Navest = 0)) then
+     if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest())) then
        TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VYSTRAHA
       else
        TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
