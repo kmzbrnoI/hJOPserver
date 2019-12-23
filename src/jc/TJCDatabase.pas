@@ -20,6 +20,7 @@ type
     ffilename:string;
 
      function GetCount():Word;
+     function GetItem(i: Integer):TJC;
      function FindPlaceForNewJC(id:Integer):Integer;
      procedure FillJCsStartNav();
 
@@ -75,6 +76,10 @@ type
 
      property Count:Word read GetCount;
      property filename:string read ffilename;
+
+     function GetEnumerator():TEnumerator<TJC>;
+     property Items[index : integer] : TJC read GetItem; default;
+
 
   end;
 
@@ -828,6 +833,18 @@ end;
 function TJCDb.IsAnyPCAvailable(nav:TBlkNav):Boolean;
 begin
  Result := Self.IsAnyJCAvailable(nav, TJCType.posun);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJCDb.GetItem(i: Integer):TJC;
+begin
+  Result := Self.JCs[i];
+end;
+
+function TJCDb.GetEnumerator():TEnumerator<TJC>;
+begin
+ Result := Self.JCs.GetEnumerator();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

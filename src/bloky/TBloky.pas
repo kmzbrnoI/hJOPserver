@@ -122,7 +122,6 @@ type
     procedure NouzZaverZrusen(Sender:TBlk);
 
     function GetEnumerator():TEnumerator<TBlk>;
-
     property Items[index : integer] : TBlk read GetItem; default;
     property count:Integer read GetCount;
 
