@@ -685,8 +685,7 @@ end;
 //  - mit blok_pred_id hranicni blok trati
 //  - nebyl navestidlo autobloku druheho useku trati
 function TBlkTrat.GetNavLichy():TBlk;
-var i:Integer;
-    Blk:TBlk;
+var Blk:TBlk;
     BlkTU:TBlkTU;
 begin
  if ((Self.fNavLichy = nil) or ((Self.fNavLichy as TBlkNav).UsekID <> Self.TratSettings.Useky[0])) then
@@ -714,8 +713,7 @@ end;
 
 // vrati hranicni navestidlo trati na jejim konci
 function TBlkTrat.GetNavSudy():TBlk;
-var i:Integer;
-    Blk:TBlk;
+var Blk:TBlk;
     BlkTU:TBlkTU;
 begin
  if ((Self.fNavSudy = nil) or ((Self.fNavSudy as TBlkNav).UsekID <> Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1])) then

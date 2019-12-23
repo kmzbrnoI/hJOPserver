@@ -51,6 +51,7 @@ const
 
 type
   TJCType = (vlak = 1, posun = 2, nouz = 3);
+  TJCNextNavType = (zadna = 0, trat = 1, blok = 2);
 
   // jedna bariera ve staveni jizdni cesty:
   TJCBariera = record
@@ -115,11 +116,8 @@ type
    id:Integer;                                                                  // id jizdni cesty
    NavestidloBlok:Integer;                                                      // ID navestidla, od ktereho JC zacina
    TypCesty:TJCType;                                                            // typ JC (vlakova, posunova)
-   DalsiNNavaznost:Integer;                                                     // ID bloku dalsiho navestidla
-   DalsiNNavaznostTyp:Byte;                                                     // typ dalsi navaznosti
-                                                                                  // 0 = navaznost do trati
-                                                                                  // 1 = navaznost neexistuje
-                                                                                  // 2 = blok navestidla, blok ID je pak ulozeno v \DalsiNNavaznost
+   DalsiNavaznost:TJCNextNavType;                                                         // typ dalsi navaznosti
+   DalsiNavestidlo:Integer;                                                     // ID bloku dalsiho navestidla
    Vyhybky  : TList<TJCVyhZaver>;
    Useky    : TList<Integer>;
    Odvraty  : TList<TJCOdvratZaver>;
@@ -2619,12 +2617,12 @@ var Nav,DalsiNav:TBlkNav;
      end;//case posun
 
      TJcType.vlak : begin
-      Blky.GetBlkByID(Self.fproperties.DalsiNNavaznost, TBlk(DalsiNav));
-      if ((Self.fproperties.DalsiNNavaznostTyp = 1) or ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest()))) then
+      Blky.GetBlkByID(Self.fproperties.DalsiNavestidlo, TBlk(DalsiNav));
+      if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.zadna) or ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest()))) then
        begin
         // na dalsim navestidle lze jet
         if (Self.data.odbocka) then begin
-          if ((Self.fproperties.DalsiNNavaznostTyp = 2) and (DalsiNav <> nil) and
+          if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and (DalsiNav <> nil) and
               ((DalsiNav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
                ((DalsiNav.Navest = TBlkNav._NAV_40_OCEK_40)) or
                (DalsiNav.Navest = TBlkNav._NAV_VOLNO_40))) then
@@ -2632,7 +2630,7 @@ var Nav,DalsiNav:TBlkNav;
           else
             Navest := TBlkNav._NAV_VOLNO_40;
         end else begin
-          if ((Self.fproperties.DalsiNNavaznostTyp = 2) and (DalsiNav <> nil) and
+          if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and (DalsiNav <> nil) and
               ((DalsiNav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
                ((DalsiNav.Navest = TBlkNav._NAV_40_OCEK_40)) or
                (DalsiNav.Navest = TBlkNav._NAV_VOLNO_40))) then
@@ -2671,8 +2669,8 @@ begin
  Self.fproperties.id                  := StrToInt(section);
  Self.fproperties.NavestidloBlok      := ini.ReadInteger(section, 'Nav', -1);
  Self.fproperties.TypCesty            := TJCType(ini.ReadInteger(section, 'Typ', -1));
- Self.fproperties.DalsiNNavaznost     := ini.ReadInteger(section, 'DalsiN', 0);
- Self.fproperties.DalsiNNavaznostTyp  := ini.ReadInteger(section, 'DalsiNTyp', 0);
+ Self.fproperties.DalsiNavaznost      := TJCNextNavType(ini.ReadInteger(section, 'DalsiNTyp', 0));
+ Self.fproperties.DalsiNavestidlo     := ini.ReadInteger(section, 'DalsiN', 0);
  Self.fproperties.RychlostDalsiN      := ini.ReadInteger(section, 'RychDalsiN', 0);
  Self.fproperties.RychlostNoDalsiN    := ini.ReadInteger(section, 'RychNoDalsiN', 0);
  Self.fproperties.Trat                := ini.ReadInteger(section, 'Trat', -1);
@@ -2790,8 +2788,10 @@ begin
  ini.WriteString (section, 'Nazev', Self.fproperties.Nazev);
  ini.WriteInteger(section, 'Nav', Self.fproperties.NavestidloBlok);
  ini.WriteInteger(section, 'Typ', Integer(Self.fproperties.TypCesty));
- ini.WriteInteger(section, 'DalsiN', Self.fproperties.DalsiNNavaznost);
- ini.WriteInteger(section, 'DalsiNTyp', Self.fproperties.DalsiNNavaznostTyp);
+ if (Self.fproperties.DalsiNavaznost <> TJCNextNavType.zadna) then
+   ini.WriteInteger(section, 'DalsiNTyp', Integer(Self.fproperties.DalsiNavaznost));
+ if (Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) then
+   ini.WriteInteger(section, 'DalsiN', Self.fproperties.DalsiNavestidlo);
  ini.WriteInteger(section, 'RychDalsiN', Self.fproperties.RychlostDalsiN);
  ini.WriteInteger(section, 'RychNoDalsiN', Self.fproperties.RychlostNoDalsiN);
 

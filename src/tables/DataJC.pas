@@ -107,15 +107,15 @@ begin
   TJCType.nouz  : Self.LV.Items[line].SubItems[7] := 'NC';
  end;
 
- if (JCData.DalsiNNavaznostTyp = 0) then
+ if (JCData.DalsiNavaznost = TJCNextNavType.zadna) then
   begin
    Self.LV.Items[line].SubItems[8] := 'Zadna navaznost';
   end else begin
-   if (JCData.DalsiNNavaznostTyp = 1) then
+   if (JCData.DalsiNavaznost = TJCNextNavType.trat) then
     begin
      Self.LV.Items[line].SubItems[8] := 'Trat';
     end else begin
-     Self.LV.Items[line].SubItems[8] := Blky.GetBlkName(JCData.DalsiNNavaznost);
+     Self.LV.Items[line].SubItems[8] := Blky.GetBlkName(JCData.DalsiNavestidlo);
     end;//else DalsiNNavaznostTyp = 1
   end;//else DalsiNNavaznostTyp = 0
 

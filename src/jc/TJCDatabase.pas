@@ -535,7 +535,7 @@ begin
   for JC in Self.JCs do
    begin
     if ((JC.data.TypCesty = TJCType.posun) or
-        (JC.data.DalsiNNavaznost <> fJC.data.NavestidloBlok)) then continue;
+        (JC.data.DalsiNavestidlo <> fJC.data.NavestidloBlok)) then continue;
 
     Blky.GetBlkByID(JC.data.NavestidloBlok, nav);
 
