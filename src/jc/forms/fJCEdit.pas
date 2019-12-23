@@ -711,13 +711,15 @@ procedure TF_JCEdit.LV_UsekyChange(Sender: TObject; Item: TListItem;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
 var Vypustit:TArI;
-    cyklus, i:Integer;
+    i:Integer;
     obls:TArStr;
     Useky:TArI;
+    navestidlo:TBlkNav;
  begin
   if (CB_Navestidlo.ItemIndex <> -1) then
    begin
     JCData.NavestidloBlok := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
+    Blky.GetBlkByID(JCData.NavestidloBlok, TBlk(navestidlo));
     Self.MakeObls(obls);
     SetLength(Vypustit,1);
     Vypustit[0] := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
@@ -728,13 +730,23 @@ var Vypustit:TArI;
 
     Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
 
-    SetLength(Vypustit,0);
-    for cyklus := 0 to Self.Vyhybky.Count-1 do
+    SetLength(Vypustit, 0);
+    for i := 0 to Self.Vyhybky.Count-1 do
      begin
       SetLength(Vypustit, Length(Vypustit)+1);
-      Vypustit[cyklus] := Self.Vyhybky[cyklus].Blok;
-     end;//for cyklus
+      Vypustit[i] := Self.Vyhybky[i].Blok;
+     end;
     Blky.NactiBlokyDoObjektu(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, @Vypustit, obls, 0, -1);
+
+    // typ JC
+    if (Self.NewVC) then
+     begin
+      case (navestidlo.SymbolType) of
+        TBlkNavSymbol.hlavni : Self.CB_TypCesty.ItemIndex := 0;
+        TBlkNavSymbol.seradovaci : Self.CB_TypCesty.ItemIndex := 1;
+      end;
+     end;
+
    end;//if CB_Navestidlo.ItemIndex <> -1
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
