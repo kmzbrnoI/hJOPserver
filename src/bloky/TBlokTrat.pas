@@ -18,7 +18,7 @@ const
   _MAX_TRAT_SPR = 6;
 
 type
- TTratZZ  = (souhlas = 0, bezsouhas = 1, nabidka = 2);                          // typ tratoveho zabezpecovaciho zarizeni
+ TTratZZ  = (souhlas = 0, nabidka = 2);                                         // typ tratoveho zabezpecovaciho zarizeni
  TTratSmer = (disabled = -1, zadny = 0, AtoB = 1, BtoA = 2);                    // mozne smery trati; disabled = cely blok trati je disabled
  TTratNavestidla = (autoblok = 0, hradlo = 1);
 
@@ -102,8 +102,6 @@ type
     procedure SetTratZaver(Zaver:boolean);
     procedure SetTratZadost(Zadost:boolean);
     procedure SetSprPredict(Spr:TBlkTratSouprava);
-
-    procedure UpdateBezsouhlasSmer();                                           // resi padani smeru trati v pripade bezsouhlsove trati
 
     procedure SetBP(state:boolean);
 
@@ -239,7 +237,9 @@ begin
 
  Self.TratSettings.uvazkaA  := ini_tech.ReadInteger(section, 'uvazkaA', -1);
  Self.TratSettings.uvazkaB  := ini_tech.ReadInteger(section, 'uvazkaB', -1);
- Self.TratSettings.zabzar   := TTratZZ(ini_tech.ReadInteger(section, 'zabzar', 0));
+ i := ini_tech.ReadInteger(section, 'zabzar', 0);
+ if (i = 1) then i := 2;
+ Self.TratSettings.zabzar := TTratZZ(i);
  Self.TratSettings.navestidla := TTratNavestidla(ini_tech.ReadInteger(section, 'navestidla', 0));
 
  Self.file_smer := TTratSmer(ini_stat.ReadInteger(section, 'smer', 1));
@@ -344,9 +344,6 @@ begin
  if ((Self.Zadost) and (Self.Obsazeno)) then
    Self.Zadost := false;
 
- // zachovat poradi volani techto dvou funkci !
- Self.UpdateBezsouhlasSmer();
-
  (Self.uvazkaA as TBlkUvazka).ChangeFromTrat();
  (Self.uvazkaB as TBlkUvazka).ChangeFromTrat();
 
@@ -362,9 +359,6 @@ begin
 
  if ((Self.Zadost) and (Self.Obsazeno)) then
    Self.Zadost := false;
-
- // zachovat poradi volani techto dvou funkci !
- Self.UpdateBezsouhlasSmer();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -541,20 +535,6 @@ begin
    if (TBlkTU(Blk).poruchaBP) then Exit(true);
   end;//for i
  Exit(false);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-// resi, ze pokud je trat odobsazena, tak se smer vrati do bezsouhlaseho
-// tohleto tady opravdu musi byt - predavani souprav v BP tuto funkci nenahrazuje !
-// jedine tato funkce totiz resi pad zmeru trati v pripade zruseni jizdni cesty vedouci na ni
-procedure TBlkTrat.UpdateBezsouhlasSmer();
-begin
- if (((Self.GetSettings().zabzar = TTratZZ.bezsouhas)) and
-     (not Self.Zaver) and (not Self.Obsazeno) and (not Self.ZAK) and
-     ((Self.Smer = TTratSmer.AtoB) or (Self.Smer = TTratSmer.BtoA)) and
-     (not Self.RBPCan) and (Self.TratStav.soupravy.Count = 0) and (not Self.nouzZaver)) then
-  Self.Smer := TTratSmer.zadny;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

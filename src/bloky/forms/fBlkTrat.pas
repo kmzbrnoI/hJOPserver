@@ -162,7 +162,11 @@ var glob:TBlkSettings;
     vypust[i] := settings.Useky[i];
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, _BLK_TU, -1);
 
-  Self.CB_Trat_ZabZar.ItemIndex := Integer(settings.zabzar);
+  case (settings.zabzar) of
+   TTratZZ.souhlas : Self.CB_Trat_ZabZar.ItemIndex := 0;
+   TTratZZ.nabidka : Self.CB_Trat_ZabZar.ItemIndex := 1;
+  end;
+
   Self.CB_Navestidla.ItemIndex := Integer(settings.navestidla);
 
   for i := 0 to settings.Useky.Count-1 do
@@ -348,7 +352,12 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
 
   TratSettings.uvazkaA := Self.SE_UA_id.Value;
   TratSettings.uvazkaB := Self.SE_UB_id.Value;
-  TratSettings.zabzar := TTratZZ(Self.CB_Trat_ZabZar.ItemIndex);
+
+  case (Self.CB_Trat_ZabZar.ItemIndex) of
+   0 : TratSettings.zabzar := TTratZZ.souhlas;
+   1 : TratSettings.zabzar := TTratZZ.nabidka;
+  end;
+
   TratSettings.navestidla := TTratNavestidla(Self.CB_Navestidla.ItemIndex);
 
   TratSettings.Useky.Clear();

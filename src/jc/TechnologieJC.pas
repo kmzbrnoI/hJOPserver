@@ -877,8 +877,7 @@ begin
       bariery.Add(Self.JCBariera(_JCB_TRAT_NESOUHLAS, blk, Self.fproperties.Trat));
 
     if ((not TBlkTrat(blk).SameUserControlsBothUvazka()) or ((blk as TBlkTrat).nouzZaver)) then
-      if ((((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or ((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka) or
-          (((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.bezsouhas) and ((blk as TBlkTrat).nouzZaver)))
+      if ((((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.souhlas) or ((blk as TBlkTrat).GetSettings().zabzar = TTratZZ.nabidka))
           and (Self.fproperties.TratSmer <> (blk as TBlkTrat).Smer)) then
         bariery.Add(Self.JCBariera(_JCB_TRAT_NESOUHLAS, blk, Self.fproperties.Trat));
 
@@ -1919,14 +1918,6 @@ var i,j:Integer;
      begin
       Blky.GetBlkByID(Self.fproperties.Trat, TBlk(trat));
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(tu));
-
-      if ((trat.GetSettings.zabzar = TTratZZ.bezsouhas) and (not trat.ZAK) and
-        (not trat.Zaver) and (tu.sectReady) and (not trat.Zadost) and
-        (trat.Smer <> Self.fproperties.TratSmer)) then
-         begin
-          writelog('Krok 101: trat: nastaven smer', WR_VC);
-          trat.Smer := Self.fproperties.TratSmer;
-         end;
 
       // pokud v trati neni zavedena blokova podminka, zavedeme ji
       if ((Self.fproperties.TypCesty = TJCType.vlak) and (trat.Smer = Self.data.TratSmer) and (not trat.BP)) then
@@ -3659,10 +3650,7 @@ begin
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZAVER, blk, Self.fproperties.Trat));
     if (trat.Zadost) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_ZADOST, blk, Self.fproperties.Trat));
-    if (((trat.GetSettings().zabzar = TTratZZ.souhlas) or
-         (trat.GetSettings().zabzar = TTratZZ.nabidka) or
-         ((trat.GetSettings().zabzar = TTratZZ.bezsouhas) and (trat.nouzZaver)))
-        and (Self.fproperties.TratSmer <> trat.Smer)) then
+    if (Self.fproperties.TratSmer <> trat.Smer) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_NESOUHLAS, blk, Self.fproperties.Trat));
     if ((not trat.BP) and (Self.fproperties.TypCesty = TJCType.vlak)) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_NO_BP, blk, Self.fproperties.Trat));

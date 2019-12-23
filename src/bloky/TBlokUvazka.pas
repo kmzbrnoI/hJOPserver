@@ -423,9 +423,6 @@ begin
      Result := Result + '-,';
   end;// case TTratZZ.souhlas
 
-  TTratZZ.bezsouhas:begin
-  end;
-
   TTratZZ.nabidka:begin
 
    if ((not Self.zadost) and (trat.Zadost)) then
@@ -570,8 +567,7 @@ var trat:TBlkTrat;
 begin
  trat := TBlkTrat(Self.parent);
  if ((trat.Obsazeno) or (trat.Zaver) or
-    (trat.ZAK) or (trat.nouzZaver) or
-    (trat.RBPCan) or (trat.GetSettings().zabzar = TTratZZ.bezsouhas)) then Exit(false);
+     (trat.ZAK) or (trat.nouzZaver) or (trat.RBPCan)) then Exit(false);
 
  if (trat.IsFirstUvazka(Self)) then
   begin

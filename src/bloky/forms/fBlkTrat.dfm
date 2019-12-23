@@ -388,7 +388,6 @@ object F_BlkTrat: TF_BlkTrat
       TabOrder = 2
       Items.Strings = (
         'pouze souhlasov'#253' stav'
-        'bezsouhlasov'#253' stav bez nab'#237'dky'
         'bezsouhlasov'#253' stav s nab'#237'dkou')
     end
     object CB_Navestidla: TComboBox
