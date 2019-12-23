@@ -1844,64 +1844,44 @@ var fg, bg: TColor;
 begin
  Result := inherited;
 
- if (Self.Navest = TBlkNav._NAV_DISABLED) then
+ case (Self.ZacatekVolba) of
+  TBlkNavVolba.none : bg := clBlack;
+  TBlkNavVolba.VC   : bg := clGreen;
+  TBlkNavVolba.PC   : bg := clWhite;
+  TBlkNavVolba.NC,
+  TBlkNavVolba.PP   : bg := clTeal;
+ else
+  bg := clBlack;
+ end;
+
+ case (Self.Navest) of
+  _NAV_STUJ: begin
+    if (Self.canRNZ) then
+      fg := clTeal
+    else
+      fg := $A0A0A0;
+  end;
+  _NAV_CHANGING, _NAV_ZHASNUTO: begin
+    fg := clBlack;
+    if (bg = clBlack) then
+      bg := $A0A0A0;
+  end;
+  _NAV_VOLNO, _NAV_VYSTRAHA, _NAV_OCEK_40, _NAV_VOLNO_40,
+  _NAV_VYSTRAHA_40, _NAV_40_OCEK_40: fg := clLime;
+  _NAV_PRIVOL, _NAV_POSUN_ZAJ, _NAV_POSUN_NEZAJ: fg := clWhite;
+  _NAV_VSE: fg := clYellow;
+ else
+  fg := clBlack;
+  bg := clFuchsia;
+ end;
+
+ if (Self.ZAM) then
   begin
-   fg := clBlack;
-   bg := clFuchsia;
-  end else if (Self.Navest = TBlkNav._NAV_CHANGING) then begin
-   fg := clBlack;
-   case (Self.ZacatekVolba) of
-    TBlkNavVolba.none : bg := $A0A0A0;
-    TBlkNavVolba.VC   : bg := clGreen;
-    TBlkNavVolba.PC   : bg := clWhite;
-    TBlkNavVolba.NC,
-    TBlkNavVolba.PP   : bg := clTeal;
-   else
-    bg := clBlack;
+   case (Self.SymbolType) of
+    0 : fg := clRed;
+    1 : fg := clBlue;
    end;
-  end else begin
-   if (Self.Navest = TBlkNav._NAV_PRIVOL) then
-    begin
-     fg := clWhite;
-    end else begin
-     if ((Self.DNjc <> nil) and (Self.Navest > TBlkNav._NAV_STUJ)) then
-      begin
-        case (Self.DNjc.data.TypCesty) of
-         TJCType.vlak  : fg := clLime;
-         TJCType.posun : fg := clWhite;
-        else
-         fg := clAqua;
-        end;
-      end else begin
-       if ((Self.Navest <> TBlkNav._NAV_PRIVOL) and (Self.canRNZ)) then
-         fg := clTeal
-       else if (Self.autoblok) then begin
-         if (Self.IsPovolovaciNavest()) then
-           fg := clLime
-         else
-           fg := $A0A0A0;
-       end else  fg := $A0A0A0;
-      end;
-    end;// else privolavacka
-
-   if (Self.ZAM) then
-    begin
-     case (Self.SymbolType) of
-      0 : fg := clRed;
-      1 : fg := clBlue;
-     end;
-    end;
-
-   case (Self.ZacatekVolba) of
-    TBlkNavVolba.none : bg := clBlack;
-    TBlkNavVolba.VC   : bg := clGreen;
-    TBlkNavVolba.PC   : bg := clWhite;
-    TBlkNavVolba.NC,
-    TBlkNavVolba.PP   : bg := clTeal;
-   else
-    bg := clBlack;
-   end;
-  end;//else Navest = -1
+  end;
 
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
                     PrevodySoustav.ColorToStr(bg) + ';' +
