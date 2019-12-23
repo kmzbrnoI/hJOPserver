@@ -881,7 +881,10 @@ begin
       end;
     end;
    Blky.SprPrediction(Self);
-  end;//if Self.DNjc <> nil
+  end;
+
+ if ((Self.autoblok) and (not zam) and (Self.UsekPred <> nil) and (TBlkTU(Self.UsekPred).Trat <> nil)) then
+   TBlkTrat(TBlkTU(Self.UsekPred).Trat).ChangeUseky();
 
  Self.Change();
 end;
