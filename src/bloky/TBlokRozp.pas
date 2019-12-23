@@ -57,6 +57,7 @@ type
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    function PanelStateString():string; override;
 
     function GetSettings():TBlkRozpSettings;
     procedure SetSettings(data:TBlkRozpSettings);
@@ -70,7 +71,7 @@ type
 
 implementation
 
-uses TechnologieRCS, TCPServerOR;
+uses TechnologieRCS, TCPServerOR, Prevody, Graphics;
 
 constructor TBlkRozp.Create(index:Integer);
 begin
@@ -244,6 +245,27 @@ begin
  except
 
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkRozp.PanelStateString():string;
+var fg, bg: TColor;
+begin
+ Result := inherited;
+
+ bg := clBlack;
+ case (Self.status) of
+   TRozpStatus.disabled     : fg := clFuchsia;
+   TRozpStatus.not_selected : fg := $A0A0A0;
+   TRozpStatus.mounting     : fg := clYellow;
+   TRozpStatus.active       : fg := clLime;
+ else
+   fg := clFuchsia;
+ end;
+
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
+                    PrevodySoustav.ColorToStr(bg) + ';0;';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

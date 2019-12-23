@@ -128,6 +128,7 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    function PanelStateString():string; override;
 
     procedure PanelZUZCallBack(Sender:TIdContext; success:boolean);
     procedure PanelZNOTCallBack(Sender:TIdContext; success:boolean);
@@ -138,7 +139,7 @@ type
 implementation
 
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics, TBlokSouctovaHlaska, TCPORsRef;
+     Graphics, TBlokSouctovaHlaska, TCPORsRef, Prevody;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin
@@ -748,6 +749,37 @@ begin
    Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSOutputs.NOtevrit.board);
 
  Self.PrjStav.rcsModules.Sort();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkPrejezd.PanelStateString():string;
+var fg, bg: TColor;
+begin
+ Result := inherited;
+
+ bg := clBlack;
+ if (Self.Stitek <> '') then bg := clTeal;
+
+ if (Self.NOtevreni) then fg := clRed
+ else if (Self.UZ) then fg := clWhite
+ else fg := $A0A0A0;
+
+ case (Self.Stav.basicStav) of
+   TBlkPrjBasicStav.disabled : begin
+     fg := clBlack;
+     bg := clFuchsia;
+   end;
+
+   TBlkPrjBasicStav.none : begin
+     fg := clBlack;
+     bg := clRed;
+   end;
+ end;
+
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
+                    PrevodySoustav.ColorToStr(bg) + ';0;' +
+                    IntToStr(Integer(Self.Stav.basicStav)) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

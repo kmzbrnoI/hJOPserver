@@ -108,8 +108,8 @@ type
    // u bloku, kde je zadouci osetrovat kliknuti na panel, je doporuceno ji pretizit,
    //   jinak je doporuceno ji vubec neimplementovat
    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); virtual;
-
    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); virtual;
+   function PanelStateString():string; virtual;
 
    // Tyto procedury vraci json objekt do \json, z dedicich bloku
    // je nutno volat inherited.
@@ -351,6 +351,11 @@ end;
 procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  // This function should be empty.
+end;
+
+function TBlk.PanelStateString():string;
+begin
+ Result := IntToStr(Self.typ)+';'+IntToStr(Self.id)+';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

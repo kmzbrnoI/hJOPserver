@@ -193,6 +193,7 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    function PanelStateString():string; override;
 
     //PT:
 
@@ -209,7 +210,7 @@ type
 implementation
 
 uses TBloky, GetSystems, TechnologieRCS, fMain, TJCDatabase, UPO, Graphics,
-      TCPServerOR, TBlokZamek, PTUtils, RCS, changeEvent, TCPORsRef;
+      TCPServerOR, TBlokZamek, PTUtils, RCS, changeEvent, TCPORsRef, Prevody;
 
 constructor TBlkVyhybka.Create(index:Integer);
 begin
@@ -1398,6 +1399,68 @@ end;
 procedure TBlkVyhybka.SetSpojkaNoPropag(spojka:Integer);
 begin
  Self.VyhSettings.spojka := spojka;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVyhybka.PanelStateString():string;
+var fg, bg: TColor;
+    Blk:TBlk;
+begin
+ Result := inherited;
+
+ // Popredi
+ if (not Self.vyhZaver) then
+  begin
+   case (Self.Obsazeno) of
+    TUsekStav.disabled: fg := clFuchsia;
+    TUsekStav.none    : fg := $A0A0A0;
+    TUsekStav.uvolneno: fg := $A0A0A0;
+    TUsekStav.obsazeno: fg := clRed;
+   else
+    fg := clFuchsia;
+   end;
+
+   if (Self.Obsazeno = TUsekStav.uvolneno) then
+    begin
+     case (Self.Zaver) of
+      vlak   : fg := clLime;
+      posun  : fg := clWhite;
+      nouz   : fg := clAqua;
+      ab     : fg := $707070;
+     end;//case
+
+     // je soucasti vybarveneho neprofiloveho useku
+     Blky.GetBlkByID(Self.UsekID, Blk);
+     if ((Blk <> nil) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU))
+         and (fg = $A0A0A0) and (TBlkUsek(Blk).IsNeprofilJC)) then
+       fg := clYellow;
+    end;
+
+   // do profilu vyhybky zasahuje obsazeny usek
+   if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokPlus <> nil) and (Self.Poloha = TVyhPoloha.plus) and
+       (TBlkUsek(Self.npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
+     fg := clYellow;
+
+   // do profilu vyhybky zasahuje obsazeny usek
+   if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokMinus <> nil) and (Self.Poloha = TVyhPoloha.minus) and
+       (TBlkUsek(Self.npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
+     fg := clYellow;
+
+  end else begin
+   // nouzovy zaver vyhybky ma prioritu i nad obsazenim useku
+   fg := clAqua;
+  end;
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+
+ // Pozadi
+ bg := clBlack;
+ if (Self.Stitek <> '') then bg := clTeal;
+ if (Self.Vyluka <> '') then bg := clOlive;
+
+ Result := Result + PrevodySoustav.ColorToStr(bg) + ';' +
+                    IntToStr(PrevodySoustav.BoolToInt(Self.NUZ)) + ';' +
+                    IntToStr(Integer(Self.Poloha))+';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

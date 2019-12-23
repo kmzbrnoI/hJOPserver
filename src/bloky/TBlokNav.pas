@@ -252,6 +252,7 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    function PanelStateString():string; override;
 
     //PT:
 
@@ -279,10 +280,10 @@ type
 
 implementation
 
-uses TechnologieRCS, TBloky, TBlokUsek, TJCDatabase, TCPServerOR,
+uses TechnologieRCS, TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
       GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
       TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
-      predvidanyOdjezd;
+      predvidanyOdjezd, Prevody;
 
 constructor TBlkNav.Create(index:Integer);
 begin
@@ -1834,6 +1835,78 @@ end;
 function TBlkNav.IsChanging():boolean;
 begin
  Result := (Self.Navest = _NAV_CHANGING);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkNav.PanelStateString():string;
+var fg, bg: TColor;
+begin
+ Result := inherited;
+
+ if (Self.Navest = TBlkNav._NAV_DISABLED) then
+  begin
+   fg := clBlack;
+   bg := clFuchsia;
+  end else if (Self.Navest = TBlkNav._NAV_CHANGING) then begin
+   fg := clBlack;
+   case (Self.ZacatekVolba) of
+    TBlkNavVolba.none : bg := $A0A0A0;
+    TBlkNavVolba.VC   : bg := clGreen;
+    TBlkNavVolba.PC   : bg := clWhite;
+    TBlkNavVolba.NC,
+    TBlkNavVolba.PP   : bg := clTeal;
+   else
+    bg := clBlack;
+   end;
+  end else begin
+   if (Self.Navest = TBlkNav._NAV_PRIVOL) then
+    begin
+     fg := clWhite;
+    end else begin
+     if ((Self.DNjc <> nil) and (Self.Navest > TBlkNav._NAV_STUJ)) then
+      begin
+        case (Self.DNjc.data.TypCesty) of
+         TJCType.vlak  : fg := clLime;
+         TJCType.posun : fg := clWhite;
+        else
+         fg := clAqua;
+        end;
+      end else begin
+       if ((Self.Navest <> TBlkNav._NAV_PRIVOL) and (Self.canRNZ)) then
+         fg := clTeal
+       else if (Self.autoblok) then begin
+         if (Self.IsPovolovaciNavest()) then
+           fg := clLime
+         else
+           fg := $A0A0A0;
+       end else  fg := $A0A0A0;
+      end;
+    end;// else privolavacka
+
+   if (Self.ZAM) then
+    begin
+     case (Self.SymbolType) of
+      0 : fg := clRed;
+      1 : fg := clBlue;
+     end;
+    end;
+
+   case (Self.ZacatekVolba) of
+    TBlkNavVolba.none : bg := clBlack;
+    TBlkNavVolba.VC   : bg := clGreen;
+    TBlkNavVolba.PC   : bg := clWhite;
+    TBlkNavVolba.NC,
+    TBlkNavVolba.PP   : bg := clTeal;
+   else
+    bg := clBlack;
+   end;
+  end;//else Navest = -1
+
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
+                    PrevodySoustav.ColorToStr(bg) + ';' +
+                    IntToStr(PrevodySoustav.BoolToInt(Self.Navest = 8)) + ';' +
+                    IntToStr(PrevodySoustav.BoolToInt(Self.AB)) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

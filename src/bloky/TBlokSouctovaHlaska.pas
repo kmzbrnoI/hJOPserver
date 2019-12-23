@@ -72,13 +72,15 @@ type
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
                          Button:TPanelButton; rights:TORCOntrolRights;
                          params:string = ''); override;
+    function PanelStateString():string; override;
+
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
 
 implementation
 
-uses TBlokPrejezd, TBloky, TOblsRizeni;
+uses TBlokPrejezd, TBloky, TOblsRizeni, Graphics, Prevody;
 
 constructor TBlkSH.Create(index:Integer);
 begin
@@ -340,6 +342,37 @@ begin
    if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
      TBlkPrejezd(prj).RemoveSH(Self);
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkSH.PanelStateString():string;
+var fg: TColor;
+begin
+ Result := inherited;
+
+ // n.o. rail
+ fg := clTeal;
+ if (Self.anulace) then
+   fg := clWhite;
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+ Result := Result + PrevodySoustav.ColorToStr(clBlack) + ';0;';
+
+ // left rectangle
+ fg := clGreen;
+ if ((Self.porucha) or (Self.nouzoveOT)) then
+   fg := clRed;
+ if (not Self.komunikace) then
+   fg := clFuchsia;
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+
+ // right rectangle
+ fg := clBlack;
+ if (Self.uzavreno) then
+   fg := $A0A0A0;
+ if (Self.UZ) then
+   fg := clWhite;
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

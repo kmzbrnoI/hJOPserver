@@ -91,13 +91,15 @@ type
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    function PanelStateString():string; override;
+
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging,
+uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, Graphics, Prevody,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, TBlokVyhybka;
 
@@ -403,6 +405,28 @@ begin
 
  if (not Self.nouzZaver) then
    Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkZamek.PanelStateString():string;
+var fg, bg: TColor;
+begin
+ Result := inherited;
+
+ if (Self.stitek <> '') then bg := clTeal
+ else bg := clBlack;
+
+ if (Self.porucha) then begin
+  fg := bg;
+  bg := clBlue;
+ end
+ else if (Self.klicUvolnen) then fg := clBlue
+ else if (Self.nouzZaver) then fg := clAqua
+ else fg := $A0A0A0;
+
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+ Result := Result + PrevodySoustav.ColorToStr(bg) + ';0;';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

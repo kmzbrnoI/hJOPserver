@@ -109,6 +109,7 @@ type
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure ShowUvazkaSprMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; spr_index:Integer);
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    function PanelStateString():string; override;
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +117,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, UPO, Graphics,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek, Prevody;
 
 constructor TBlkUvazka.Create(index:Integer);
 begin
@@ -628,6 +629,44 @@ begin
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOUTSClick, nil)
  else
    Self.UPOUTSClick(SenderPnl);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUvazka.PanelStateString():string;
+var fg, bg: TColor;
+    trat: TBlkTrat;
+begin
+ Result := inherited;
+
+ trat := TBlkTrat(Self.parent);
+ if (trat.Smer = TTratSmer.disabled) then
+  begin
+   fg := clBlack;
+   bg := clFuchsia;
+  end else begin
+   if (Self.Stitek <> '') then bg := clTeal
+   else bg := clBlack;
+
+   if (trat.RBPCan) then fg := clRed
+   else if (trat.Zaver) then fg := clBlue
+   else if (trat.nouzZaver) then fg := clAqua
+   else if (trat.Obsazeno) then fg := clBlue
+   else fg := $A0A0A0;
+  end;
+
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
+                    PrevodySoustav.ColorToStr(bg) + ';' +
+                    IntToStr(PrevodySoustav.BoolToInt(trat.Zadost)) + ';';
+
+ case (trat.Smer) of
+  TTratSmer.disabled, TTratSmer.zadny
+                     : Result := Result + '0;';
+  TTratSmer.AtoB     : Result := Result + '1;';
+  TTratSmer.BtoA     : Result := Result + '2;';
+ end;//case
+
+ Result := Result + trat.GetSprList(',') + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

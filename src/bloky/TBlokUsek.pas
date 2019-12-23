@@ -247,6 +247,7 @@ type
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     procedure PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
     function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
+    function PanelStateString():string; override;
 
     //PT:
 
@@ -263,7 +264,8 @@ implementation
 uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
-    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef;
+    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
+    Graphics, Prevody;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -2130,6 +2132,136 @@ begin
  end;
 
  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.PanelStateString():string;
+var fg, bg, nebarVetve, sfg, sbg: TColor;
+    Blk: TBlk;
+    souprava, i: Integer;
+begin
+ // Pro blok trati se vola take
+ Result := IntToStr(_BLK_USEK)+';'+IntToStr(Self.id)+';';;
+
+ nebarVetve := $A0A0A0;
+
+ if (Self.Obsazeno = TUsekStav.disabled) then
+  begin
+   Result := Result + PrevodySoustav.ColorToStr(clFuchsia) + ';' + PrevodySoustav.ColorToStr(clBlack) +
+     ';0;0;' + PrevodySoustav.ColorToStr(clBlack);
+  end else begin
+   // --- Popredi ---
+
+   case (Self.Obsazeno) of
+    TUsekStav.none     : fg := $A0A0A0;
+    TUsekStav.uvolneno : fg := $A0A0A0;
+    TUsekStav.obsazeno : fg := clRed;
+   else
+    fg := clFuchsia;
+   end;
+
+   // zobrazeni zakazu odjezdu do trati
+   if ((fg = $A0A0A0) and (Self.typ = _BLK_TU) and (TBlkTU(Self).InTrat > -1)) then
+    begin
+     Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
+     if ((Blk <> nil) and (Blk.typ = _BLK_TRAT)) then
+       if ((Blk as TBlkTrat).ZAK) then
+         fg := clBlue;
+    end;
+
+   // neprofilove deleni v useku
+   if ((fg = $A0A0A0) and (Self.IsNeprofilJC())) then
+     fg := clYellow;
+
+   // zaver
+   if (((Self.Obsazeno) = TUsekStav.uvolneno) and (Self.typ = _BLK_USEK) and
+       (Self.GetSettings().RCSAddrs.Count > 0)) then
+    begin
+     case (Self.Zaver) of
+      TZaver.vlak   : fg := clLime;
+      TZaver.posun  : fg := clWhite;
+      TZaver.nouz   : fg := clAqua;
+      TZaver.ab     : fg := $707070;
+     end;//case
+    end;
+
+   // porucha BP v trati
+   if ((Self.typ = _BLK_TU) and (TBlkTU(Self).poruchaBP)) then fg := clAqua;
+
+   if (fg = clYellow) then
+     nebarVetve := clYellow;
+
+   Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+
+   // --- Pozadi ---
+
+   bg := clBlack;
+   if (Self.Stitek <> '') then bg := clTeal;
+   if (Self.Vyluka <> '') then bg := clOlive;
+
+   if (not Self.DCC) then bg := clMaroon;
+   if (Self.ZesZkrat = TBoosterSignal.error) then bg := clFuchsia;
+   if ((Self.ZesNapajeni <> TBoosterSignal.ok) or
+      (Self.ZesZkrat = TBoosterSignal.undef)) then bg := clBlue;
+
+   Result := Result + PrevodySoustav.ColorToStr(bg) + ';';
+
+
+   Result := Result + IntToStr(PrevodySoustav.BoolToInt(Self.NUZ)) + ';' +
+                      IntToStr(Integer(Self.KonecJC)) + ';' +
+                      PrevodySoustav.ColorToStr(nebarVetve) + ';';
+
+   // seznam souprav
+   Result := Result + '{';
+   for i := 0 to Self.Soupravs.Count-1 do
+    begin
+     souprava := Self.Soupravs[i];
+     sfg := fg;
+     sbg := bg;
+
+     if (Self.Obsazeno = uvolneno) then
+       sfg := clAqua;
+
+     Result := Result + '(' + Soupravy[souprava].nazev + ';' +
+                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.smer_L)) +
+                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.smer_S)) + ';';
+
+     if ((Soupravy[souprava].cilovaOR = Self) and (sbg = clBlack)) then
+       sbg := clSilver;
+
+     // predvidany odjezd
+     if (Soupravy[souprava].IsPOdj(Self)) then
+       predvidanyOdjezd.GetPOdjColors(Soupravy[souprava].GetPOdj(Self), sfg, sbg);
+
+     Result := Result + PrevodySoustav.ColorToStr(sfg) + ';' +
+                        PrevodySoustav.ColorToStr(sbg) + ';';
+
+     if (Self.vlakPresun = i) then
+      Result := Result + PrevodySoustav.ColorToStr(clYellow) + ';';
+
+     Result := Result + ')';
+    end;
+
+   // predpovidana souprava
+   if (Self.SprPredict > -1) then
+    begin
+     // predvidany odjezd
+     sfg := fg;
+     sbg := bg;
+
+     if (Soupravy[Self.SprPredict].IsPOdj(Self)) then
+       predvidanyOdjezd.GetPOdjColors(Soupravy[Self.SprPredict].GetPOdj(Self), sfg, sbg);
+
+     Result := Result + '(' + Soupravy.GetSprNameByIndex(Self.SprPredict) + ';' +
+                '00;' +
+                PrevodySoustav.ColorToStr(sfg) + ';' +
+                PrevodySoustav.ColorToStr(sbg) + ';)';
+    end;
+
+   Result := Result + '}';
+  end;
+
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
