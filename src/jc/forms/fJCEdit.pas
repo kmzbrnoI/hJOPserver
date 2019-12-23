@@ -59,6 +59,7 @@ type
     CHB_Advanced: TCheckBox;
     M_Redukce: TMemo;
     M_Zamky: TMemo;
+    CHB_Odbocka: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_NewZaverAddClick(Sender: TObject);
     procedure B_NewUsekClick(Sender: TObject);
@@ -99,6 +100,7 @@ type
    procedure FillVyhybky();
    procedure FillUseky();
    function VyhybkaIndex(id:Integer):Integer;
+   function IsAnyVyhMinus():boolean;
 
    procedure MakeObls(var obls:TArStr);
   public
@@ -164,6 +166,7 @@ procedure TF_JCEdit.EmptyJCOpenForm();
   Self.M_Redukce.Clear();
   Self.M_Zamky.Clear();
   Self.E_VB.Text := '';
+  Self.CHB_Odbocka.Checked := false;
 
   Self.CHB_Trat.Checked := false;
   Self.CHB_TratClick(Self.CHB_Trat);
@@ -210,6 +213,7 @@ var prjz:TJCPrjZaver;
   Self.Useky.Clear();
   Self.Useky.AddRange(JCData.Useky);
   Self.FillUseky();
+  Self.CHB_Odbocka.Checked := JCData.odbocka;
 
   Self.M_Prj.Clear();
   for prjz in JCData.Prejezdy do
@@ -265,6 +269,7 @@ procedure TF_JCEdit.HlavniOpenForm;
 procedure TF_JCEdit.B_NewZaverAddClick(Sender: TObject);
 var vyh:TJCVyhZaver;
     vyhIndex:Integer;
+    updateOdbocka:boolean;
  begin
   if (CB_NewZaverBlok.ItemIndex = -1) then
    begin
@@ -277,6 +282,8 @@ var vyh:TJCVyhZaver;
     Exit;
    end;
 
+  updateOdbocka := (Self.CHB_Odbocka.Checked = Self.IsAnyVyhMinus());
+
   vyh.Blok   := Blky.GetBlkID(CB_NewVyhybkaPolozky[CB_NewZaverBlok.ItemIndex]);
   vyh.Poloha := TVyhPoloha(CB_NewZaverPoloha.ItemIndex);
 
@@ -287,6 +294,8 @@ var vyh:TJCVyhZaver;
     Self.Vyhybky.Add(vyh);
 
   Self.FillVyhybky();
+  if (updateOdbocka) then
+    Self.CHB_Odbocka.Checked := Self.IsAnyVyhMinus();
  end;
 
 procedure TF_JCEdit.B_NewUsekClick(Sender: TObject);
@@ -415,13 +424,14 @@ var JC:TJC;
    end;
 
   //samotne ukladani dat
-  JCData.Nazev             := E_VCNazev.Text;
-  JCData.id                := SE_ID.Value;
-  JCData.NavestidloBlok    := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
-  JCData.TypCesty          := TJCType(CB_TypCesty.ItemIndex+1);
+  JCData.Nazev := E_VCNazev.Text;
+  JCData.id := SE_ID.Value;
+  JCData.NavestidloBlok := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
+  JCData.TypCesty := TJCType(CB_TypCesty.ItemIndex+1);
 
-  JCData.RychlostDalsiN    := CB_Rychlost_DalsiN.ItemIndex;
-  JCData.RychlostNoDalsiN  := CB_Rychlost_NoDalsiN.ItemIndex;
+  JCData.RychlostDalsiN := CB_Rychlost_DalsiN.ItemIndex;
+  JCData.RychlostNoDalsiN := CB_Rychlost_NoDalsiN.ItemIndex;
+  JCData.odbocka := Self.CHB_Odbocka.Checked;
 
   if (Self.CHB_Trat.Checked) then
    begin
@@ -912,6 +922,15 @@ begin
 
  Self.MakeObls(obls);
  Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, _BLK_USEK, -1, _BLK_TU);
+end;
+
+function TF_JCEdit.IsAnyVyhMinus():boolean;
+var vyhZaver:TJCVyhZaver;
+begin
+ for vyhZaver in Self.Vyhybky do
+   if (vyhZaver.Poloha = TVyhPoloha.minus) then
+     Exit(true);
+ Result := false;
 end;
 
 end.//unit
