@@ -184,15 +184,14 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.UpdateJCCb();
-var i, j:Integer;
+var j:Integer;
     inList:Boolean;
     JC:TJC;
 begin
  SetLength(CB_JC_ids, JCDb.Count);    // velikost pole trochu prezeneme, ale to nevadi
  Self.CB_JC_Add.Clear();
- for i := 0 to JCDb.Count-1 do
+ for JC in JCDb do
   begin
-   JC := JCDb.GetJCByIndex(i);
    inList := false;
    for j := 0 to Self.JCs.Count-1 do
      if (JC.id = Self.JCs[j]) then

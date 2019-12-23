@@ -205,17 +205,13 @@ begin
 end;
 
 procedure TJCSimulator.OnTimer(Sender:TObject);
-var i:Integer;
-    JC:TJC;
+var JC:TJC;
 begin
  if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
- for i := 0 to JCDb.Count-1 do
-  begin
-   JC := JCDb.GetJCByIndex(i);
+ for JC in JCDb do
    if (JC.stav.RozpadBlok > -1) then
      Self.UpdateJC(JC);
-  end;
 end;
 
 procedure TJCSimulator.UpdateJC(JC:TJC);
