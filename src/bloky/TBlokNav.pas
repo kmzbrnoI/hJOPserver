@@ -424,6 +424,9 @@ end;
 
 procedure TBlkNav.Enable();
 begin
+ if (Self.Navest <> _NAV_DISABLED) then
+   Exit(); // skip already enabled block
+
  try
    if ((Self.NavSettings.RCSAddrs.Count > 0) and
        (not RCSi.IsModule(Self.NavSettings.RCSAddrs[0].board))) then

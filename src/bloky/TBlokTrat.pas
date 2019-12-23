@@ -160,6 +160,7 @@ type
 
     procedure CallChangeToTU();
     procedure UpdateSprPredict();
+    function NavestProtismer():Integer;
 
     function SameUserControlsBothUvazka():boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
                                                                                 // kdyz je true, do trati neni potreba zadat
@@ -189,6 +190,8 @@ type
     property navSudy:TBlk read GetNavSudy;                                      // hranicni navestidlo trati blize konci trati
 
     property ready:boolean read GetReady;                                       // jsou vsechny tratove useky "ready"? typicky se pouziva jako flag moznosti zmeny smeru trati
+    property zabzar: TTratZZ read TratSettings.zabzar;
+    property navestidla:TTratNavestidla read TratSettings.navestidla;
 
  end;//class TBlkTrat
 
@@ -1172,6 +1175,18 @@ begin
 
  for addr in Soupravy[Self.souprava].HVs do
    Result := Result + HVDb.HVozidla[addr].Data.Nazev + '|';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.NavestProtismer():Integer;
+begin
+ case (Self.navestidla) of
+  TTratNavestidla.autoblok: Result := TBlkNav._NAV_ZHASNUTO;
+  TTratNavestidla.hradlo: Result := TBlkNav._NAV_STUJ;
+ else
+  Result := TBlkNav._NAV_ZHASNUTO;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

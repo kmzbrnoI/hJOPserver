@@ -422,9 +422,21 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.Enable();
+var blk:TBlkNav;
 begin
  inherited;
  Self.fTUStav.poruchaBP := false;
+
+ // Aktiaovovat navestidla rucne, aby se rovnou nastavily navesti v trati
+ Blky.GetBlkByID(Self.TUSettings.navLid, TBlk(Blk));
+ if ((blk <> nil) and (blk.typ = _BLK_NAV)) then
+   blk.Enable();
+
+ Blky.GetBlkByID(Self.TUSettings.navSid, TBlk(Blk));
+ if ((blk <> nil) and (blk.typ = _BLK_NAV)) then
+   blk.Enable();
+
+ Self.UpdateNavest();
 end;
 
 procedure TBlkTU.Disable();
@@ -1098,37 +1110,28 @@ begin
  // NASTAVOVANI NAVESTI AUTOBLOKU:
 
  // nejprve zhasneme navestidla v nespravnem smeru
- case (TBlkTrat(Self.Trat).Smer) of
-   TTratSmer.AtoB  : begin
+ if ((TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) or (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny)) then
+  begin
     if (Self.TUSettings.navSid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
+      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then
+        TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
      end;
-   end;
+  end;
 
-   TTratSmer.BtoA  : begin
+ if ((TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) or (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny)) then
+  begin
     if (Self.TUSettings.navLid > -1) then
      begin
       Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
+      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then
+        TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
      end;
-   end;
+  end;
 
-   TTratSmer.zadny : begin
-    if (Self.TUSettings.navSid > -1) then
-     begin
-      Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
-     end;
-    if (Self.TUSettings.navLid > -1) then
-     begin
-      Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then TBlkNav(Blk).Navest := TBlkNav._NAV_ZHASNUTO;
-     end;
+  if (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny) then
     Exit();
-   end;
-  end;//case
 
  // zrusit jizdni cestu muzeme pouze u sekce na kraji trati (v trati se rusi
  //   navest autobloku)
@@ -1142,7 +1145,7 @@ begin
   begin
    if (not Self.sectReady) then
     begin
-     // sekce obsazena -> navetidlo na STUJ
+     // sekce obsazena -> navestidlo na STUJ
      TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_STUJ
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
