@@ -157,7 +157,7 @@ procedure TF_JCEdit.EmptyJCOpenForm();
   CB_Rychlost_NoDalsiN.ItemIndex  := 4;
   CB_Rychlost_DalsiN.ItemIndex    := 4;
   CB_NavestidloChange(Self);
-  Self.Caption  := 'Editovat data nové jízdní cesty';
+  Self.Caption := 'Vytvořit novou jízdní cestu';
   LV_Useky.Clear();
   Self.FillVyhybky();
 
@@ -256,7 +256,10 @@ var prjz:TJCPrjZaver;
   Self.E_VB.Text := LeftStr(Self.E_VB.Text, Length(Self.E_VB.Text) - 2);
 
   CB_NavestidloChange(Self);
-  Self.Caption := 'Editovat data jízdní cesty '+JCData.nazev;
+  if (Self.mNewJC) then
+    Self.Caption := 'Vytvořit novou jízdní cestu'
+  else
+    Self.Caption := 'Upravit jízdní cestu '+JCData.nazev;
  end;
 
 procedure TF_JCEdit.HlavniOpenForm;
