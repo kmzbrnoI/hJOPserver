@@ -193,7 +193,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       MaxValue = 0
-      MinValue = -1
+      MinValue = 0
       TabOrder = 5
       Value = 0
     end
@@ -207,7 +207,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Margins.Right = 2
       Margins.Bottom = 2
       MaxValue = 0
-      MinValue = -1
+      MinValue = 0
       TabOrder = 7
       Value = 0
     end
@@ -326,7 +326,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Width = 194
     Height = 21
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
     OnChange = CB_SpojkaChange
   end
@@ -354,7 +354,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 189
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 0
     end
     object CHB_Zamek: TCheckBox
@@ -401,7 +401,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 284
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CHB_npMinus: TCheckBox
@@ -419,7 +419,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 284
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 3
     end
   end
