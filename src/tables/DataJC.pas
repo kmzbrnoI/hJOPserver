@@ -109,11 +109,11 @@ begin
 
  if (JCData.DalsiNavaznost = TJCNextNavType.zadna) then
   begin
-   Self.LV.Items[line].SubItems[8] := 'Zadna navaznost';
+   Self.LV.Items[line].SubItems[8] := 'û·dnÈ';
   end else begin
    if (JCData.DalsiNavaznost = TJCNextNavType.trat) then
     begin
-     Self.LV.Items[line].SubItems[8] := 'Trat';
+     Self.LV.Items[line].SubItems[8] := 'traù';
     end else begin
      Self.LV.Items[line].SubItems[8] := Blky.GetBlkName(JCData.DalsiNavestidlo);
     end;//else DalsiNNavaznostTyp = 1
