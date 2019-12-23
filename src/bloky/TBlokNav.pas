@@ -1860,6 +1860,11 @@ begin
       fg := clTeal
     else
       fg := $A0A0A0;
+   if (Self.ZAM) then
+     case (Self.SymbolType) of
+      0 : fg := clRed;
+      1 : fg := clBlue;
+     end;
   end;
   _NAV_CHANGING, _NAV_ZHASNUTO: begin
     fg := clBlack;
@@ -1874,14 +1879,6 @@ begin
   fg := clBlack;
   bg := clFuchsia;
  end;
-
- if (Self.ZAM) then
-  begin
-   case (Self.SymbolType) of
-    0 : fg := clRed;
-    1 : fg := clBlue;
-   end;
-  end;
 
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
                     PrevodySoustav.ColorToStr(bg) + ';' +
