@@ -21,7 +21,6 @@ type
     B_NewZaverAdd: TButton;
     GB_Useky: TGroupBox;
     CHB_NewBlok: TGroupBox;
-    Label12: TLabel;
     CB_NewUsek: TComboBox;
     B_NewUsek: TButton;
     LV_Useky: TListView;
@@ -98,6 +97,7 @@ type
    procedure UpdateNextNav();
    procedure UpdateVyhybkyFromUseky();
    procedure FillVyhybky();
+   procedure FillUseky();
    function VyhybkaIndex(id:Integer):Integer;
 
    procedure MakeObls(var obls:TArStr);
@@ -169,9 +169,7 @@ procedure TF_JCEdit.NewVCOpenForm;
  end;
 
 procedure TF_JCEdit.NormalOpenForm();
-var cyklus:Integer;
-    LI:TListItem;
-    prjz:TJCPrjZaver;
+var prjz:TJCPrjZaver;
     tmp:string;
     blokid:integer;
     odvrat:TJCOdvratZaver;
@@ -208,14 +206,9 @@ var cyklus:Integer;
   Self.Vyhybky.AddRange(JCData.Vyhybky);
   Self.FillVyhybky();
 
-  LV_Useky.Clear;
   Self.Useky.Clear();
-  for cyklus := 0 to JCData.Useky.Count-1 do
-   begin
-    LI := LV_Useky.Items.Add;
-    LI.Caption := Blky.GetBlkName(JCData.Useky[cyklus]);
-    Self.Useky.Add(JCData.Useky[cyklus]);
-   end;//for cyklus
+  Self.Useky.AddRange(JCData.Useky);
+  Self.FillUseky();
 
   Self.M_Prj.Clear();
   for prjz in JCData.Prejezdy do
@@ -303,23 +296,16 @@ var LI:TListItem;
  begin
   if (CB_NewUsek.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte blok !','Nelze pridat usek',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vyberte úsek!', 'Nelze přidat úsek', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
 
-  //samotne pridavani zaveru
-  Self.Useky.Add(Blky.GetBlkID(CB_NewUsekPolozky[CB_NewUsek.ItemIndex]));
+  if (Self.LV_Useky.ItemIndex = -1) then
+    Self.Useky.Add(Blky.GetBlkID(CB_NewUsekPolozky[CB_NewUsek.ItemIndex]))
+  else
+    Self.Useky[Self.LV_Useky.ItemIndex] := Blky.GetBlkID(CB_NewUsekPolozky[CB_NewUsek.ItemIndex]);
 
-  LI := Self.LV_Useky.Items.Add();
-  LI.Caption := Blky.GetBlkIndexName(CB_NewUsekPolozky[CB_NewUsek.ItemIndex]);
-
-  SetLength(Useky, Self.Useky.Count);
-  for i := 0 to Self.Useky.Count-1 do
-    Useky[i] := Self.Useky[i];
-
-  Self.MakeObls(obls);
-  Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
-
+  Self.FillUseky();
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
   Self.UpdateNextNav();
   Self.UpdateVyhybkyFromUseky();
@@ -622,28 +608,17 @@ var JC:TJC;
  end;
 
 procedure TF_JCEdit.B_ZaveryUseku_DeleteClick(Sender: TObject);
-var Pozice,i:Integer;
-    obls:TArStr;
-    Useky:TArI;
+var i:Integer;
  begin
-  Pozice := LV_Useky.ItemIndex;
-  Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazat zaver useku '+Blky.GetBlkName(Self.Useky[Pozice])+'?'),'Mazání zaveru useku', MB_YESNO OR MB_ICONQUESTION) = mrYes then
+  i := LV_Useky.ItemIndex;
+  if (Application.MessageBox(PChar('Opravdu chcete smazat úsek '+Blky.GetBlkName(Self.Useky[i])+'z JC?'),
+                             'Mazání úseku', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    begin
-    Self.Useky.Delete(pozice);
-    LV_Useky.Items.Delete(Pozice);
-
-    Self.MakeObls(obls);
-
-    SetLength(Useky, Self.Useky.Count);
-    for i := 0 to Self.Useky.Count-1 do
-      Useky[i] := Self.Useky[i];
-
-    Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
-   end;//if MessageBox
+    Self.Useky.Delete(i);
+    Self.FillUseky();
+   end;
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
-
   Self.UpdateNextNav();
  end;
 
@@ -687,40 +662,34 @@ var i: Integer;
 
 procedure TF_JCEdit.LV_UsekyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
+var i:Integer;
  begin
-  if (LV_Useky.ItemIndex <> -1) then
-   begin
-    B_ZaveryUseku_Delete.Enabled := true;
-   end else begin
-    B_ZaveryUseku_Delete.Enabled := false;
-   end;
+  B_ZaveryUseku_Delete.Enabled := (LV_Useky.ItemIndex <> -1);
   B_ZaveryVyhybek_Delete.Enabled := false;
+
+  if (Self.LV_Useky.Selected = nil) then
+   begin
+    Self.CB_NewZaverBlok.ItemIndex := -1;
+    Exit();
+   end;
+
+  for i := 0 to Length(Self.CB_NewUsekPolozky)-1 do
+    if (Blky.GetBlkID(Self.CB_NewUsekPolozky[i]) = Self.Useky[Self.LV_Useky.ItemIndex]) then
+      Self.CB_NewUsek.ItemIndex := i;
  end;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
 var Vypustit:TArI;
-    i:Integer;
-    obls:TArStr;
-    Useky:TArI;
     navestidlo:TBlkNav;
  begin
   if (CB_Navestidlo.ItemIndex <> -1) then
    begin
     JCData.NavestidloBlok := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
     Blky.GetBlkByID(JCData.NavestidloBlok, TBlk(navestidlo));
-    Self.MakeObls(obls);
-    SetLength(Vypustit,1);
-    Vypustit[0] := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
 
-    SetLength(Useky, Self.Useky.Count);
-    for i := 0 to Self.Useky.Count-1 do
-      Useky[i] := Self.Useky[i];
-
-    Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, @Useky, obls, _BLK_USEK, -1, _BLK_TU);
-
+    Self.FillUseky();
     Self.FillVyhybky();
 
-    // typ JC
     if (Self.NewVC) then
      begin
       case (navestidlo.SymbolType) of
@@ -930,6 +899,23 @@ begin
   if (Self.Vyhybky[i].Blok = id) then
     Exit(i);
  Result := -1;
+end;
+
+procedure TF_JCEdit.FillUseky();
+var i:Integer;
+    LI:TListItem;
+    obls:TArStr;
+begin
+ Self.LV_Useky.Clear();
+ for i := 0 to Self.Useky.Count-1 do
+  begin
+   LI := LV_Useky.Items.Add();
+   LI.Caption := IntToStr(i+1);
+   LI.SubItems.Add(Blky.GetBlkName(Self.Useky[i]));
+  end;
+
+ Self.MakeObls(obls);
+ Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, _BLK_USEK, -1, _BLK_TU);
 end;
 
 end.//unit

@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editace vlakove cesty [nazev]'
-  ClientHeight = 473
+  ClientHeight = 470
   ClientWidth = 922
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_07: TLabel
     Left = 8
-    Top = 384
+    Top = 377
     Width = 81
     Height = 13
     Margins.Left = 2
@@ -65,7 +65,7 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_10: TLabel
     Left = 7
-    Top = 414
+    Top = 407
     Width = 136
     Height = 13
     Margins.Left = 2
@@ -76,7 +76,7 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_12: TLabel
     Left = 7
-    Top = 446
+    Top = 439
     Width = 170
     Height = 13
     Margins.Left = 2
@@ -131,7 +131,7 @@ object F_JCEdit: TF_JCEdit
           Width = 20
         end
         item
-          Caption = 'Blok'
+          Caption = 'V'#253'hybka'
           Width = 150
         end
         item
@@ -245,7 +245,7 @@ object F_JCEdit: TF_JCEdit
     Left = 7
     Top = 122
     Width = 329
-    Height = 250
+    Height = 243
     Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
     Margins.Left = 2
     Margins.Top = 2
@@ -257,31 +257,21 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 4
     object CHB_NewBlok: TGroupBox
       Left = 2
-      Top = 195
+      Top = 192
       Width = 325
-      Height = 53
+      Height = 49
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
       Align = alBottom
-      Caption = ' Nov'#253' '#250'sek '
+      Caption = ' P'#345'idat/upravit '#250'sek '
       TabOrder = 2
-      object Label12: TLabel
-        Left = 8
-        Top = 16
-        Width = 27
-        Height = 13
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Caption = 'Blok :'
-      end
+      ExplicitTop = 199
       object CB_NewUsek: TComboBox
-        Left = 56
+        Left = 10
         Top = 16
-        Width = 145
+        Width = 250
         Height = 21
         Margins.Left = 2
         Margins.Top = 2
@@ -292,22 +282,22 @@ object F_JCEdit: TF_JCEdit
         TabOrder = 0
       end
       object B_NewUsek: TButton
-        Left = 210
+        Left = 264
         Top = 16
-        Width = 107
-        Height = 25
+        Width = 53
+        Height = 22
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'P'#345'idat nov'#253' '#250'sek'
+        Caption = 'Ok'
         TabOrder = 1
         OnClick = B_NewUsekClick
       end
     end
     object LV_Useky: TListView
       Left = 2
-      Top = 56
+      Top = 53
       Width = 325
       Height = 139
       Margins.Left = 2
@@ -317,7 +307,11 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Columns = <
         item
-          Caption = 'Blok'
+          Caption = '#'
+          Width = 20
+        end
+        item
+          Caption = #218'sek'
           Width = 250
         end>
       GridLines = True
@@ -326,6 +320,7 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_UsekyChange
+      ExplicitTop = 56
     end
     object B_ZaveryUseku_Delete: TButton
       Left = 112
@@ -402,7 +397,7 @@ object F_JCEdit: TF_JCEdit
   end
   object CB_DalsiNav: TComboBox
     Left = 136
-    Top = 384
+    Top = 377
     Width = 201
     Height = 21
     Margins.Left = 2
@@ -415,7 +410,7 @@ object F_JCEdit: TF_JCEdit
   end
   object CB_Rychlost_DalsiN: TComboBox
     Left = 191
-    Top = 446
+    Top = 439
     Width = 145
     Height = 21
     Margins.Left = 2
@@ -440,7 +435,7 @@ object F_JCEdit: TF_JCEdit
   end
   object CB_Rychlost_NoDalsiN: TComboBox
     Left = 191
-    Top = 414
+    Top = 407
     Width = 145
     Height = 21
     Margins.Left = 2
