@@ -38,6 +38,8 @@ type
     CB_Trat_ZabZar: TComboBox;
     Label7: TLabel;
     LV_Useky: TListView;
+    Label8: TLabel;
+    CB_Navestidla: TComboBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
     procedure LV_UsekyChange(Sender: TObject; Item: TListItem;
@@ -115,10 +117,11 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.SE_UB_id.Value    := Blky.GetBlkID(Blky.Cnt-1)+3;
 
   Self.CB_Trat_ZabZar.ItemIndex := -1;
+  Self.CB_Navestidla.ItemIndex := -1;
 
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, _BLK_TU, -1);
 
-  Self.Caption := 'Editace noveho bloku';
+  Self.Caption := 'Editace nového bloku';
   Self.ActiveControl := Self.E_Trat_Name;
  end;
 
@@ -160,6 +163,7 @@ var glob:TBlkSettings;
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, _BLK_TU, -1);
 
   Self.CB_Trat_ZabZar.ItemIndex := Integer(settings.zabzar);
+  Self.CB_Navestidla.ItemIndex := Integer(settings.navestidla);
 
   for i := 0 to settings.Useky.Count-1 do
    begin
@@ -248,8 +252,8 @@ procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
 var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     TratSettings:TBlkTratSettings;
     UvazkaSettings:TBlkUvazkaSettings;
-    i:Integer;
     trat,uvazkaA,uvazkaB:Integer;
+    LI:TListItem;
  begin
   if (Self.NewBlk) then
    begin
@@ -285,6 +289,11 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
   if (Self.CB_Trat_ZabZar.ItemIndex < 0) then
    begin
     Application.MessageBox('Vyberte typ zabezpečovacího zařízení trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Exit;
+   end;
+  if (Self.CB_Navestidla.ItemIndex < 0) then
+   begin
+    Application.MessageBox('Vyberte chování návěstidel trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -337,13 +346,14 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
     Self.UvazkaB.SetGlobalSettings(glob_uvB);
    end;
 
-  TratSettings.uvazkaA  := Self.SE_UA_id.Value;
-  TratSettings.uvazkaB  := Self.SE_UB_id.Value;
-  TratSettings.zabzar   := TTratZZ(Self.CB_Trat_ZabZar.ItemIndex);
+  TratSettings.uvazkaA := Self.SE_UA_id.Value;
+  TratSettings.uvazkaB := Self.SE_UB_id.Value;
+  TratSettings.zabzar := TTratZZ(Self.CB_Trat_ZabZar.ItemIndex);
+  TratSettings.navestidla := TTratNavestidla(Self.CB_Navestidla.ItemIndex);
 
   TratSettings.Useky.Clear();
-  for i := 0 to Self.LV_Useky.Items.Count-1 do
-   TratSettings.Useky.Add(StrToInt(Self.LV_Useky.Items.Item[i].Caption));
+  for LI in Self.LV_Useky.Items do
+    TratSettings.Useky.Add(StrToInt(LI.Caption));
   Self.Trat.SetSettings(TratSettings);
 
   UvazkaSettings.parent := Self.SE_Trat_ID.Value;
@@ -352,7 +362,7 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
   UvazkaSettings.parent := Self.SE_Trat_ID.Value;
   Self.UvazkaB.SetSettings(UvazkaSettings);
 
-  Self.Close;
+  Self.Close();
   Self.Trat.Change();
 end;
 

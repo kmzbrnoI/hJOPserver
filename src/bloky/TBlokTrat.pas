@@ -20,11 +20,13 @@ const
 type
  TTratZZ  = (souhlas = 0, bezsouhas = 1, nabidka = 2);                          // typ tratoveho zabezpecovaciho zarizeni
  TTratSmer = (disabled = -1, zadny = 0, AtoB = 1, BtoA = 2);                    // mozne smery trati; disabled = cely blok trati je disabled
+ TTratNavestidla = (autoblok = 0, hradlo = 1);
 
  //technologicka nastaveni trati
  TBlkTratSettings = record
   uvazkaA, uvazkaB:Integer;                                                     // reference na ID bloku trati
   zabzar:TTratZZ;                                                               // typ tratoveho zabezpecovaciho zarizeni
+  navestidla:TTratNavestidla;                                                   // typ navestidel v trati
   Useky:TList<integer>;                                                         // reference na ID bloku v trati
  end;
 
@@ -235,6 +237,7 @@ begin
  Self.TratSettings.uvazkaA  := ini_tech.ReadInteger(section, 'uvazkaA', -1);
  Self.TratSettings.uvazkaB  := ini_tech.ReadInteger(section, 'uvazkaB', -1);
  Self.TratSettings.zabzar   := TTratZZ(ini_tech.ReadInteger(section, 'zabzar', 0));
+ Self.TratSettings.navestidla := TTratNavestidla(ini_tech.ReadInteger(section, 'navestidla', 0));
 
  Self.file_smer := TTratSmer(ini_stat.ReadInteger(section, 'smer', 1));
 
@@ -273,6 +276,7 @@ begin
  ini_tech.WriteInteger(section, 'uvazkaA', Self.TratSettings.uvazkaA);
  ini_tech.WriteInteger(section, 'uvazkaB', Self.TratSettings.uvazkaB);
  ini_tech.WriteInteger(section, 'zabzar', Integer(Self.TratSettings.zabzar));
+ ini_tech.WriteInteger(section, 'navestidla', Integer(Self.TratSettings.navestidla));
 
  str := '';
  for i := 0 to Self.TratSettings.Useky.Count-1 do

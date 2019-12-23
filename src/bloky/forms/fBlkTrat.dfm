@@ -5,7 +5,7 @@ object F_BlkTrat: TF_BlkTrat
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editace trate'
-  ClientHeight = 404
+  ClientHeight = 426
   ClientWidth = 706
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,7 +21,7 @@ object F_BlkTrat: TF_BlkTrat
   TextHeight = 13
   object B_Save: TButton
     Left = 624
-    Top = 368
+    Top = 394
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -35,7 +35,7 @@ object F_BlkTrat: TF_BlkTrat
   end
   object B_Storno: TButton
     Left = 547
-    Top = 368
+    Top = 394
     Width = 73
     Height = 25
     Margins.Left = 2
@@ -216,7 +216,7 @@ object F_BlkTrat: TF_BlkTrat
     Left = 8
     Top = 8
     Width = 337
-    Height = 385
+    Height = 410
     Caption = ' Tra'#357' '
     TabOrder = 0
     object L_Name: TLabel
@@ -252,6 +252,17 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Bottom = 2
       Caption = 'Typ zab. za'#345'. :'
     end
+    object Label8: TLabel
+      Left = 17
+      Top = 101
+      Width = 53
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'N'#225'v'#283'stidla:'
+    end
     object SE_Trat_ID: TSpinEdit
       Left = 104
       Top = 49
@@ -279,8 +290,8 @@ object F_BlkTrat: TF_BlkTrat
       TabOrder = 0
     end
     object GB_TratBlk: TGroupBox
-      Left = 16
-      Top = 100
+      Left = 17
+      Top = 132
       Width = 306
       Height = 269
       Margins.Left = 2
@@ -288,7 +299,7 @@ object F_BlkTrat: TF_BlkTrat
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = ' Tra'#357'ov'#233' bloky (ve sm'#283'ru trati) '
-      TabOrder = 3
+      TabOrder = 4
       object B_Blk_Delete: TButton
         Left = 113
         Top = 21
@@ -338,7 +349,7 @@ object F_BlkTrat: TF_BlkTrat
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
         end
       end
@@ -379,6 +390,22 @@ object F_BlkTrat: TF_BlkTrat
         'pouze souhlasov'#253' stav'
         'bezsouhlasov'#253' stav bez nab'#237'dky'
         'bezsouhlasov'#253' stav s nab'#237'dkou')
+    end
+    object CB_Navestidla: TComboBox
+      Left = 104
+      Top = 100
+      Width = 216
+      Height = 21
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 3
+      Items.Strings = (
+        'autoblok'
+        'hradlo')
     end
   end
 end
