@@ -95,13 +95,13 @@ end;
 procedure TF_BlkUsek.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.Cnt);
+  OpenForm(Blky.count);
  end;
 
 procedure TF_BlkUsek.NewBlkOpenForm;
  begin
   E_Nazev.Text               := '';
-  SE_ID.Value                := Blky.GetBlkID(Blky.Cnt-1)+1;
+  SE_ID.Value                := Blky.GetBlkID(Blky.count-1)+1;
   E_Delka.Text               := '0';
   CHB_SmycBlok.Checked       := false;
   Self.CB_Zesil.ItemIndex    := -1;

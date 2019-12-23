@@ -70,7 +70,7 @@ end;
 procedure TF_BlkVystup.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
-  SE_ID.Value           := Blky.GetBlkID(Blky.Cnt-1)+1;
+  SE_ID.Value           := Blky.GetBlkID(Blky.count-1)+1;
   Self.SE_module.Value  := 1;
   Self.SE_port.Value    := 0;
   Self.SE_moduleExit(Self);
@@ -112,7 +112,7 @@ procedure TF_BlkVystup.HlavniOpenForm;
 procedure TF_BlkVystup.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.Cnt);
+  OpenForm(Blky.count);
  end;
 
 procedure TF_BlkVystup.B_StornoClick(Sender: TObject);

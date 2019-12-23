@@ -785,8 +785,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.PanelNUZ(Sender:TIdContext);
-var i:Integer;
-    Blk:TBlk;
+var Blk:TBlk;
     podminky:TList<TPSPodminka>;
     oblr:TOR;
 begin
@@ -799,9 +798,8 @@ begin
 
  podminky := TList<TPSPodminka>.Create();
  // zjisteni jmen bloku:
- for i := 0 to Blky.Cnt-1 do
+ for blk in Blky do
   begin
-   Blky.GetBlkByIndex(i, Blk);
    if (Blk.typ <> _BLK_USEK) then continue;
    if (not (Blk as TBlkUsek).NUZ) then continue;
 
@@ -1041,8 +1039,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.NUZ_PS(Sender:TIdContext; success:boolean);
-var i:Integer;
-    JC:TJC;
+var JC:TJC;
     Blk:TBlk;
     usek:TBlkUsek;
     nav:TBlkNav;
@@ -1053,9 +1050,8 @@ begin
  Self.ORStav.NUZtimer := true;
 
  // ruseni pripadnych jiznich cest:
- for i := 0 to Blky.Cnt-1 do
+ for blk in Blky do
   begin
-   Blky.GetBlkByIndex(i, Blk);
    if (Blk.typ <> _BLK_USEK) then continue;
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;
@@ -2031,14 +2027,12 @@ begin
 end;
 
 procedure TOR.NUZcancelPrematureEvents();
-var i:Integer;
-    blk:TBlk;
+var blk:TBlk;
     usek:TBlkUsek;
     oblr:TOR;
 begin
- for i := 0 to Blky.Cnt-1 do
+ for blk in Blky do
   begin
-   Blky.GetBlkByIndex(i, Blk);
    if (Blk.typ <> _BLK_USEK) then continue;
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;

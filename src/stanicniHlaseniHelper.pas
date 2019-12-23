@@ -36,7 +36,6 @@ uses TBloky, TBlok, TBlokTratUsek;
 
 function CanPlayPrijezdSH(spr:TSouprava; OblR:TOR):TSHToPlay;
 var blksWithSpr:TList<TBlkUsek>;
-    i:Integer;
     blk:TBlk;
     blkUsek:TBlkUsek;
     inTrat:TBlkTrat;
@@ -52,9 +51,8 @@ begin
 
    // ziskame seznam bloku na kterych je souprava predpovidana v dane stanici
    // ziskame trat, ve ktere se aktualne souprava nachazi
-   for i := 0 to Blky.Cnt-1 do
+   for blk in Blky do
     begin
-     Blky.GetBlkByIndex(i, blk);
      inOR := Blk.OblsRizeni.Contains(OblR);
 
      // trate z aktualni stanice kontrolujeme cele

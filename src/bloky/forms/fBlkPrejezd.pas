@@ -218,7 +218,7 @@ var glob:TBlkSettings;
 procedure TF_BlkPrejezd.NewOpenForm;
  begin
   E_prj_Nazev.Text := '';
-  SE_ID.Value := Blky.GetBlkID(Blky.Cnt-1)+1;
+  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
   SE_vyst_open_board.Value  := 0;
   SE_vyst_open_port.Value  := 0;
   SE_vyst_close_board.Value := 0;
@@ -247,7 +247,7 @@ end;
 procedure TF_BlkPrejezd.NewBlkCreate;
  begin
   Self.NewBlk := true;
-  OpenForm(Blky.Cnt);
+  OpenForm(Blky.count);
  end;
 
 end.//unit

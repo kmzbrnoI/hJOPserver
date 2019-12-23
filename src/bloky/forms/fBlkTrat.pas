@@ -103,7 +103,7 @@ var Blk:TBlk;
 procedure TF_BlkTrat.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.Cnt);
+  OpenForm(Blky.count);
  end;
 
 procedure TF_BlkTrat.NewBlkOpenForm;
@@ -112,9 +112,9 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.E_UA_name.Text    := '';
   Self.E_UB_name.Text    := '';
 
-  Self.SE_Trat_ID.Value  := Blky.GetBlkID(Blky.Cnt-1)+1;
-  Self.SE_UA_id.Value    := Blky.GetBlkID(Blky.Cnt-1)+2;
-  Self.SE_UB_id.Value    := Blky.GetBlkID(Blky.Cnt-1)+3;
+  Self.SE_Trat_ID.Value  := Blky.GetBlkID(Blky.count-1)+1;
+  Self.SE_UA_id.Value    := Blky.GetBlkID(Blky.count-1)+2;
+  Self.SE_UB_id.Value    := Blky.GetBlkID(Blky.count-1)+3;
 
   Self.CB_Trat_ZabZar.ItemIndex := -1;
   Self.CB_Navestidla.ItemIndex := -1;

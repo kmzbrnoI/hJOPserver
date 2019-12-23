@@ -1948,12 +1948,10 @@ begin
 end;
 
 procedure TReset.ZakladniPolohaVyhybek;
-var i:Integer;
-    Blk:TBlk;
+var Blk:TBlk;
  begin
-  for i := 0 to Blky.Cnt-1 do
+  for blk in Blky do
    begin
-    Blky.GetBlkByIndex(i,Blk);
     if (Blk.typ <> _BLK_VYH) then continue;
     (Blk as TBlkVyhybka).SetPoloha(plus);
    end;//for cyklus

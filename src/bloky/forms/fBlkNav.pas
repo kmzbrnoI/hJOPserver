@@ -102,7 +102,7 @@ procedure TF_BlkNav.OpenForm(BlokIndex:Integer);
 procedure TF_BlkNav.NewBlkOpenForm();
  begin
   E_Nazev.Text             := '';
-  SE_ID.Value              := Blky.GetBlkID(Blky.Cnt-1)+1;
+  SE_ID.Value              := Blky.GetBlkID(Blky.count-1)+1;
   SE_Delay.Value           := TBlkNav._NAV_DEFAULT_DELAY;
   CHB_Zamknuto.Checked     := false;
   Self.L_UsekID.Caption    := 'bude zobrazen priste';
@@ -193,7 +193,7 @@ procedure TF_BlkNav.HlavniOpenForm();
 procedure TF_BlkNav.NewBlkCreate();
  begin
   NewBlk := true;
-  OpenForm(Blky.Cnt);
+  OpenForm(Blky.count);
  end;
 
 procedure TF_BlkNav.B_StornoClick(Sender: TObject);

@@ -1484,33 +1484,32 @@ begin
        // je postaveno -> zkontrlolujeme, jestli je postaveno dalsi navestidlo
        if ((spr.chtenaRychlost > 0) and (spr.smer <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
-       if (Self.DNjc.data.DalsiNNavaznostTyp = 2) then
-        begin
-         // zjistime dalsi navestidlo
-         Blky.GetBlkByID(Self.DNjc.data.DalsiNNavaznost, nav);
+       case (Self.DNjc.data.DalsiNavaznost) of
+         TJCNextNavType.blok: begin
+           Blky.GetBlkByID(Self.DNjc.data.DalsiNavestidlo, nav);
 
-         if ((nav <> nil) and (nav.typ = _BLK_NAV) and ((nav as TBlkNav).IsPovolovaciNavest())) then
-          begin
-            // dalsi navestilo je na VOLNO
-            if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
-              spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
-          end else begin
-            // dalsi navestidlo je na STUJ
-            if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
-              spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
-          end;
-        end else begin
-         if (Self.DNjc.data.DalsiNNavaznostTyp = 1) then
-          begin
-           // navaznost na trat
+           if ((nav <> nil) and (nav.typ = _BLK_NAV) and ((nav as TBlkNav).IsPovolovaciNavest())) then
+            begin
+              // dalsi navestilo je na VOLNO
+              if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+                spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
+            end else begin
+              // dalsi navestidlo je na STUJ
+              if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+                spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
+            end;
+         end;
+
+         TJCNextNavType.trat: begin
            if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
              spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
-          end else begin
-           // navaznost nikam
+         end;
+
+         TJCNextNavType.zadna: begin
            if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
              spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
           end;
-        end;
+       end;
 
        // kontorla prehravani stanicniho hlaseni
        spr.CheckSh(Self);

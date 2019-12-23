@@ -280,14 +280,12 @@ begin
 end;
 
 procedure TTratSimulator.OnTimer(Sender:TObject);
-var i:Integer;
-    Blk:TBlk;
+var Blk:TBlk;
 begin
  if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
- for i := 0 to Blky.Cnt-1 do
+ for Blk in Blky do
   begin
-   Blky.GetBlkByIndex(i, Blk);
    if (Blk.typ <> _BLK_TRAT) then continue;
    if (((Blk as TBlkTrat).BP) and ((Blk as TBlkTrat).Obsazeno) and
        ((TBlkTrat(Blk).Smer = TTratSmer.AtoB) or (TBlkTrat(Blk).Smer = TTratSmer.BtoA))) then
@@ -354,15 +352,13 @@ begin
 end;
 
 procedure TVyhSimulator.OnTimer(Sender:TObject);
-var i:Integer;
-    blk:TBlk;
+var blk:TBlk;
 begin
  try
    if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
-   for i := 0 to Blky.Cnt-1 do
+   for blk in Blky do
     begin
-     Blky.GetBlkByIndex(i, blk);
      if (blk.typ <> _BLK_VYH) then continue;
      if (((blk as TBlkVyhybka).StaveniPlus) or ((blk as TBlkVyhybka).StaveniMinus)) then
       begin

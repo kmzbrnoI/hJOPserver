@@ -696,9 +696,8 @@ begin
    else
      BlkTU := nil;
 
-   for i := 0 to Blky.Cnt-1 do
+   for blk in Blky do
     begin
-     Blky.GetBlkByIndex(i, Blk);
      if (Blk.typ <> _BLK_NAV) then continue;
      if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[0]) and
          (Blk.OblsRizeni[0] = Self.uvazkaA.OblsRizeni[0]) and
@@ -726,9 +725,8 @@ begin
    else
      BlkTU := nil;
 
-   for i := 0 to Blky.Cnt-1 do
+   for blk in Blky do
     begin
-     Blky.GetBlkByIndex(i, Blk);
      if (Blk.typ <> _BLK_NAV) then continue;
      if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
          (Blk.OblsRizeni[0] = Self.uvazkaB.OblsRizeni[0]) and

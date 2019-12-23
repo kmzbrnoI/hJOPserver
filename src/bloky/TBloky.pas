@@ -41,6 +41,7 @@ type
 
     function FindPlaceForNewBlk(id:Integer):Integer;
     procedure UpdateBlkIndexes();             // aktualizuje indexy vsech bloku, pouziva se pri nacitani dat
+    function GetItem(i: Integer):TBlk;
 
   public
     constructor Create();
@@ -54,7 +55,7 @@ type
     function Add(typ:Integer; glob:TBlkSettings):TBlk;
     procedure Delete(index:Integer);
 
-    function GetBlkByIndex(index:integer;var Blk:TBlk):Integer;
+    function GetBlkByIndex(index:integer; var Blk:TBlk):Integer;
     function SetBlk(index:integer;data:TBlk):Integer;
 
     //enable/disable all block (on screen)
@@ -120,7 +121,11 @@ type
 
     procedure NouzZaverZrusen(Sender:TBlk);
 
-    property Cnt:Integer read GetCount;
+    function GetEnumerator():TEnumerator<TBlk>;
+
+    property Items[index : integer] : TBlk read GetItem; default;
+    property count:Integer read GetCount;
+
     property fstatus:string read ffstatus;
     property blky_file:string read ffile;
     property enabled:boolean read fenabled;
@@ -276,7 +281,7 @@ begin
  for Blk in Self.data do
    Blk.AfterLoad();
 
- writelog('Načteno bloků: '+IntToStr(Self.Cnt), WR_DATA);
+ writelog('Načteno bloků: '+IntToStr(Self.count), WR_DATA);
 end;
 
 //save all blocks to the file
@@ -302,7 +307,7 @@ begin
  ini.UpdateFile();
  FreeAndNil(ini);
 
- writelog('Ulozeno bloku: '+IntToStr(Self.Cnt), WR_DATA);
+ writelog('Uloženo bloků: '+IntToStr(Self.count), WR_DATA);
 
  Self.SaveStatToFile(Self.fstatus);
 end;
@@ -311,7 +316,7 @@ procedure TBlky.SaveStatToFile(const stat_filename:string);
 var ini:TMemIniFile;
     i:Integer;
 begin
- writelog('Ukladam stavy bloku...', WR_DATA);
+ writelog('Ukládám stavy bloků...', WR_DATA);
 
  try
    DeleteFile(PChar(stat_filename));
@@ -337,7 +342,7 @@ begin
  ini.UpdateFile();
  FreeAndNil(ini);
 
- writelog('Ulozen status bloku: '+IntToStr(Self.Cnt), WR_DATA);
+ writelog('Uložen stav bloků: '+IntToStr(Self.count), WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -711,7 +716,7 @@ var spr:Integer;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
-var cyklus,i:Integer;
+var bloki,i:Integer;
     Priradit:Boolean;
     Pocet:Integer;
     Blk:TBlk;
@@ -724,9 +729,9 @@ var cyklus,i:Integer;
   CB.Clear;
   CB.Enabled := true;
 
-  for cyklus := 0 to Blky.Cnt-1 do
+  for bloki := 0 to Blky.count-1 do
    begin
-    Blky.GetBlkByIndex(cyklus,Blk);
+    blk := Blky[bloki];
     glob := Blk.GetGlobalSettings();
 
     if ((glob.typ <> BlokTyp) and (glob.typ <> BlokTyp2)) then continue;
@@ -771,7 +776,7 @@ var cyklus,i:Integer;
     if (Polozky <> nil) then
      begin
       SetLength(Polozky^,Length(Polozky^)+1);
-      Polozky^[Length(Polozky^)-1] := cyklus;
+      Polozky^[Length(Polozky^)-1] := bloki;
      end;
     CB.Items.Add(glob.name);
     if (glob.id = BlokID) then CB.ItemIndex := Pocet;
@@ -1057,6 +1062,18 @@ begin
  for Blk in Self.data do
    if ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) then
      TBlkUsek(Blk).ClearPOdj();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlky.GetItem(i: Integer):TBlk;
+begin
+ Result := Self.data[i];
+end;
+
+function TBlky.GetEnumerator():TEnumerator<TBlk>;
+begin
+ Result := Self.data.GetEnumerator();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

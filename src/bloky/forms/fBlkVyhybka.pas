@@ -105,7 +105,7 @@ end;
 procedure TF_BlkVyhybka.NewBlkOpenForm;
  begin
   E_Nazev.Text := '';
-  SE_ID.Value  := Blky.GetBlkID(Blky.Cnt-1)+1;
+  SE_ID.Value  := Blky.GetBlkID(Blky.count-1)+1;
 
   SE_VystPlus_port.Value := 0;
   SE_VystPlus_module.Value := 1;
@@ -270,7 +270,7 @@ var spojka_vypust:TArI;
 procedure TF_BlkVyhybka.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.Cnt);
+  OpenForm(Blky.count);
  end;
 
 procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);

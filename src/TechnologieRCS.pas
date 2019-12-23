@@ -194,14 +194,12 @@ begin
 end;
 
 procedure TRCS.InputSim();
-var i:integer;
-    Blk:TBlk;
+var Blk:TBlk;
     booster:TBooster;
 begin
  //nastaveni vyhybek do +
- for i := 0 to Blky.Cnt-1 do
+ for blk in Blky do
   begin
-   Blky.GetBlkByIndex(i, Blk);
    if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).GetSettings().RCSAddrs.Count > 0)) then
      Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
    if (Blk.typ = _BLK_PREJEZD) then
@@ -221,12 +219,10 @@ end;
 
 //simulace obaszeni useku, na kterem je souprava
 procedure TRCS.SoupravaUsekSim;
-var i:Integer;
-    Blk:TBlk;
+var Blk:TBlk;
 begin
- for i := 0 to Blky.Cnt-1 do
+ for blk in Blky do
   begin
-   Blky.GetBlkByIndex(i,Blk);
    if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then continue;
    if (((Blk as TBlkUsek).IsSouprava()) and ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
      Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port,1);

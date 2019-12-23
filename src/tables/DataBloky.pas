@@ -45,7 +45,7 @@ constructor TBlokyTableData.Create(LV:TListView);
 begin
  inherited Create();
  Self.LV := LV;
- SetLength(Self.changed, Blky.Cnt);
+ SetLength(Self.changed, Blky.count);
 end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ var i,j :Integer;
 begin
  Self.LV.Clear();
 
- for i := 0 to Blky.Cnt-1 do
+ for i := 0 to Blky.count-1 do
   begin
    LI := Self.LV.Items.Add;
    LI.Caption := '---';
@@ -73,9 +73,9 @@ end;
 procedure TBlokyTableData.UpdateTable();
 var i:Integer;
 begin
-  F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blky.Cnt)+' bloků';
+  F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blky.count)+' bloků';
 
-  for i := 0 to Blky.Cnt-1 do
+  for i := 0 to Blky.count-1 do
    if ((Self.changed[i]) or (Self.reload)) then
     begin
      Self.UpdateLine(i);
@@ -374,7 +374,7 @@ var j, spr:integer;
 
 procedure TBlokyTableData.BlkChange(line:Integer);
 begin
- if ((line > -1) and (line < Blky.Cnt)) then
+ if ((line > -1) and (line < Blky.count)) then
   Self.changed[line] := true;
 end;
 
@@ -399,7 +399,7 @@ begin
    LI.SubItems.Add('---');
  Self.UpdateLine(index);
 
- F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.Cnt);
+ F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.count);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -59,7 +59,7 @@ procedure TF_BlkZamek.OpenForm(BlokIndex:Integer);
 procedure TF_BlkZamek.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
-  SE_ID.Value           := Blky.GetBlkID(Blky.Cnt-1)+1;
+  SE_ID.Value           := Blky.GetBlkID(Blky.count-1)+1;
 
   Self.Caption := 'Editovat data noveho bloku';
   Self.ActiveControl := Self.E_Nazev;
@@ -89,7 +89,7 @@ procedure TF_BlkZamek.HlavniOpenForm;
 procedure TF_BlkZamek.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.Cnt);
+  OpenForm(Blky.count);
  end;
 
 procedure TF_BlkZamek.B_StornoClick(Sender: TObject);
