@@ -131,6 +131,7 @@ type
    Trat:Integer;                                                                // ID trati, na kterou JC navazuje; pokud JC nenavazuje na trat, je \Trat = -1
    TratSmer:TtratSmer;                                                          // pozadovany smer navazujici trate
    RychlostNoDalsiN,RychlostDalsiN:Byte;                                        // rychlost v JC pri dalsim navestidle navestici NEdovolujici navest, rychlost v JC pri dalsim navestidle navesticim dovolujici navest
+   odbocka:Boolean;                                                             // jestli cesta vede do odbocky
   end;
 
   ENavChanged = procedure(Sender:TObject; origNav:TBlk) of object;
@@ -2622,7 +2623,7 @@ var Nav,DalsiNav:TBlkNav;
       if ((Self.fproperties.DalsiNNavaznostTyp = 1) or ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest()))) then
        begin
         // na dalsim navestidle lze jet
-        if (Self.IsAnyVyhMinus()) then begin
+        if (Self.data.odbocka) then begin
           if ((Self.fproperties.DalsiNNavaznostTyp = 2) and (DalsiNav <> nil) and
               ((DalsiNav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
                ((DalsiNav.Navest = TBlkNav._NAV_40_OCEK_40)) or
@@ -2643,7 +2644,7 @@ var Nav,DalsiNav:TBlkNav;
        end else begin
         // na dalsim navestidle je na STUJ
 
-        if (Self.IsAnyVyhMinus()) then
+        if (Self.data.odbocka) then
           Navest := TBlkNav._NAV_VYSTRAHA_40
         else
           Navest := TBlkNav._NAV_VYSTRAHA;
@@ -2774,6 +2775,12 @@ begin
    sl.Free();
    sl2.Free();
  end;
+
+ if (ini.ValueExists(section, 'odbocka')) then
+   Self.fproperties.odbocka := ini.ReadBool(section, 'odbocka', false)
+ else
+   Self.fproperties.odbocka := Self.IsAnyVyhMinus();
+
 end;
 
 procedure TJC.SaveData(ini:TMemIniFile; section:string);
@@ -2787,6 +2794,11 @@ begin
  ini.WriteInteger(section, 'DalsiNTyp', Self.fproperties.DalsiNNavaznostTyp);
  ini.WriteInteger(section, 'RychDalsiN', Self.fproperties.RychlostDalsiN);
  ini.WriteInteger(section, 'RychNoDalsiN', Self.fproperties.RychlostNoDalsiN);
+
+ if (Self.fproperties.odbocka = Self.IsAnyVyhMinus) then
+   ini.DeleteKey(section, 'odbocka')
+ else
+   ini.WriteBool(section, 'odbocka', Self.fproperties.odbocka);
 
  if (Self.fproperties.Trat > -1) then
   begin

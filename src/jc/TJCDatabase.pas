@@ -544,7 +544,7 @@ begin
 
     if (my_nav.IsPovolovaciNavest()) then
      begin
-      if (JC.IsAnyVyhMinus()) then begin
+      if (JC.data.odbocka) then begin
         if ((my_nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
             (my_nav.Navest = TBlkNav._NAV_40_OCEK_40) or
             (my_nav.Navest = TBlkNav._NAV_VOLNO_40)) then
@@ -562,7 +562,7 @@ begin
 
      end else begin
 
-      if (JC.IsAnyVyhMinus()) then
+      if (JC.data.odbocka) then
         (nav as TBlkNav).Navest := TBlkNav._NAV_VYSTRAHA_40
       else
         (nav as TBlkNav).Navest := TBlkNav._NAV_VYSTRAHA;
