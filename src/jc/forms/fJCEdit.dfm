@@ -108,16 +108,16 @@ object F_JCEdit: TF_JCEdit
     Left = 345
     Top = 7
     Width = 265
-    Height = 281
+    Height = 261
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Z'#225'v'#283'ry v'#253'hybek '
+    Caption = ' V'#253'hybky '
     TabOrder = 8
     object LV_Zavery: TListView
       Left = 2
-      Top = 48
+      Top = 54
       Width = 261
       Height = 134
       Margins.Left = 2
@@ -141,19 +141,21 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_ZaveryChange
+      ExplicitTop = 48
     end
     object CHB_NewZaver: TGroupBox
       Left = 2
-      Top = 182
+      Top = 188
       Width = 261
-      Height = 97
+      Height = 71
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
       Align = alBottom
-      Caption = ' Z'#225'v'#283'r nov'#233' vyh'#253'bky '
+      Caption = ' P'#345'idat/upravit v'#253'hybku '
       TabOrder = 2
+      ExplicitTop = 208
       object Label10: TLabel
         Left = 8
         Top = 16
@@ -208,29 +210,29 @@ object F_JCEdit: TF_JCEdit
           '-')
       end
       object B_NewZaverAdd: TButton
-        Left = 56
-        Top = 64
-        Width = 147
-        Height = 25
+        Left = 205
+        Top = 16
+        Width = 49
+        Height = 45
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Pridat nov'#253' z'#225'v'#283'r v'#253'hybky'
+        Caption = 'Ok'
         TabOrder = 2
         OnClick = B_NewZaverAddClick
       end
     end
     object B_ZaveryVyhybek_Delete: TButton
       Left = 80
-      Top = 16
+      Top = 17
       Width = 105
       Height = 25
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Smazat z'#225'v'#283'r'
+      Caption = 'Smazat v'#253'hybku'
       Enabled = False
       TabOrder = 1
       OnClick = B_ZaveryVyhybek_DeleteClick
@@ -469,8 +471,8 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 14
   end
   object GB_trat: TGroupBox
-    Left = 347
-    Top = 291
+    Left = 345
+    Top = 273
     Width = 262
     Height = 105
     Caption = ' N'#225'vaznost na tra'#357' '
@@ -646,8 +648,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object CHB_Advanced: TCheckBox
-    Left = 347
-    Top = 408
+    Left = 349
+    Top = 386
     Width = 261
     Height = 17
     Caption = 'Zobrazit pokro'#269'il'#225' nastaven'#237
