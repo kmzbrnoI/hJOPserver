@@ -1887,7 +1887,12 @@ end;
 
 procedure TF_Main.B_VC_AddClick(Sender: TObject);
 begin
-  F_JCEdit.NewVCCreate();
+  if ((Self.LV_JC.Selected <> nil) and
+      (Application.MessageBox(PChar('Chcete použít JC ' + JCDb[Self.LV_JC.ItemIndex].nazev + ' jako šablonu pro vytvoření nové JC?'),
+                              'Nová JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1) = mrYes)) then
+    F_JCEdit.NewJC(Self.LV_JC.ItemIndex)
+  else
+    F_JCEdit.NewJC(-1);
 end;
 
 procedure TF_Main.B_VC_deleteClick(Sender: TObject);
@@ -2576,7 +2581,7 @@ end;
 procedure TF_Main.LV_JCDblClick(Sender: TObject);
 begin
   if (LV_JC.Selected <> nil) then
-    F_JCEdit.OpenForm(LV_JC.ItemIndex);
+    F_JCEdit.EditJC(LV_JC.ItemIndex);
 end;
 
 procedure TF_Main.LV_JCKeyPress(Sender: TObject; var Key: Char);

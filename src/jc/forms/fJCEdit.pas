@@ -78,7 +78,7 @@ type
     procedure CHB_AdvancedClick(Sender: TObject);
   private
    OpenIndex:Integer;
-   NewVC:Boolean;
+   mNewJC:Boolean;
    CB_NavestidloPolozky:TArI;
    CB_DalsiNavPolozky:TArI;
    CB_NewUsekPolozky:TArI;
@@ -89,9 +89,9 @@ type
    Useky:TList<Integer>;
    Vyhybky:TList<TJCVyhZaver>;
 
-   procedure NewVCOpenForm;
-   procedure NormalOpenForm;
-   procedure HlavniOpenForm;
+   procedure EmptyJCOpenForm();
+   procedure NormalOpenForm();
+   procedure HlavniOpenForm();
 
    procedure UpdateJCName();
    procedure UpdateNextNav();
@@ -102,8 +102,9 @@ type
 
    procedure MakeObls(var obls:TArStr);
   public
-   procedure OpenForm(VCIndex:Integer);
-   procedure NewVCCreate;
+   procedure EditJC(JCIndex:Integer);
+   procedure NewJC(templateIndex:Integer);
+
   end;
 
 var
@@ -121,7 +122,7 @@ procedure TF_JCEdit.B_StornoClick(Sender: TObject);
   Self.Close;
  end;
 
-procedure TF_JCEdit.NewVCOpenForm;
+procedure TF_JCEdit.EmptyJCOpenForm();
  begin
   Self.OpenIndex := -1;
 
@@ -289,10 +290,6 @@ var vyh:TJCVyhZaver;
  end;
 
 procedure TF_JCEdit.B_NewUsekClick(Sender: TObject);
-var LI:TListItem;
-    obls:TArStr;
-    Useky:TArI;
-    i:Integer;
  begin
   if (CB_NewUsek.ItemIndex = -1) then
    begin
@@ -314,8 +311,8 @@ var LI:TListItem;
 procedure TF_JCEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
  begin
   OpenIndex := -1;
-  NewVC     := false;
-  CanClose  := true;
+  mNewJC := false;
+  CanClose := true;
  end;
 
 procedure TF_JCEdit.FormCreate(Sender: TObject);
@@ -330,23 +327,25 @@ begin
  Self.Vyhybky.Free();
 end;
 
-procedure TF_JCEdit.OpenForm(VCIndex:Integer);
+procedure TF_JCEdit.EditJC(JCIndex:Integer);
  begin
-  OpenIndex := VCIndex;
+  OpenIndex := JCIndex;
   HlavniOpenForm;
-  if (NewVC) then
+  if (JCIndex = -1) then
    begin
-    NewVCOpenForm;
+    EmptyJCOpenForm();
    end else begin
-    NormalOpenForm;
+    NormalOpenForm();
    end;
+  if (mNewJC) then
+    Self.SE_ID.Value := Self.SE_ID.Value + 1;
   Self.ShowModal();
  end;
 
-procedure TF_JCEdit.NewVCCreate;
+procedure TF_JCEdit.NewJC(templateIndex:Integer);
  begin
-  NewVC := true;
-  OpenForm(-1);
+  mNewJC := true;
+  EditJC(templateIndex);
  end;
 
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
@@ -442,18 +441,18 @@ var JC:TJC;
    JCData.DalsiNavestidlo := Blky.GetBlkID(CB_DalsiNavPolozky[CB_DalsiNav.ItemIndex-2]);
   end;
 
-  if (not Assigned(JCData.Vyhybky)) then JCData.Vyhybky := TList<TJCVyhZaver>.Create();
+  if (not Assigned(JCData.Vyhybky) or (mNewJC)) then JCData.Vyhybky := TList<TJCVyhZaver>.Create();
   JCData.Vyhybky.Clear();
   JCData.Vyhybky.AddRange(Self.Vyhybky);
 
-  if (not Assigned(JCData.Useky)) then JCData.Useky := TList<Integer>.Create();
+  if (not Assigned(JCData.Useky) or (mNewJC)) then JCData.Useky := TList<Integer>.Create();
   JCData.Useky.Clear();
   JCData.Useky.AddRange(Self.Useky);
 
   parsed := TStringList.Create();
   try
     // Prejezdy
-    if (not Assigned(JCData.Prejezdy)) then JCData.Prejezdy := TList<TJCPrjZaver>.Create();
+    if (not Assigned(JCData.Prejezdy) or (mNewJC)) then JCData.Prejezdy := TList<TJCPrjZaver>.Create();
     for prejezd in JCData.Prejezdy do
       prejezd.uzaviraci.Free();
     JCData.Prejezdy.Clear();
@@ -489,7 +488,7 @@ var JC:TJC;
      end;
 
     // Odvraty
-    if (not Assigned(JCData.Odvraty)) then JCData.Odvraty := TList<TJCOdvratZaver>.Create();
+    if (not Assigned(JCData.Odvraty) or (mNewJC)) then JCData.Odvraty := TList<TJCOdvratZaver>.Create();
     JCData.Odvraty.Clear();
     for line in Self.M_Odvraty.Lines do
      begin
@@ -515,7 +514,7 @@ var JC:TJC;
      end;
 
     // Redukce
-    if (not Assigned(JCData.Prisl)) then JCData.Prisl := TList<TJCRefZaver>.Create();
+    if (not Assigned(JCData.Prisl) or (mNewJC)) then JCData.Prisl := TList<TJCRefZaver>.Create();
     JCData.Prisl.Clear();
     for line in Self.M_Redukce.Lines do
      begin
@@ -537,7 +536,7 @@ var JC:TJC;
      end;
 
     // Zamky
-    if (not Assigned(JCData.zamky)) then JCData.zamky := TList<TJCRefZaver>.Create();
+    if (not Assigned(JCData.zamky) or (mNewJC)) then JCData.zamky := TList<TJCRefZaver>.Create();
     JCData.zamky.Clear();
     for line in Self.M_Zamky.Lines do
      begin
@@ -559,7 +558,7 @@ var JC:TJC;
      end;
 
     // Variantní body
-    if (not Assigned(JCData.vb)) then JCData.vb := TList<Integer>.Create();
+    if (not Assigned(JCData.vb) or (mNewJC)) then JCData.vb := TList<Integer>.Create();
     JCData.vb.Clear();
     parsed.Clear();
     ExtractStrings([','], [], PChar(StringReplace(Self.E_VB.Text, ' ', '', [rfReplaceAll])), parsed);
@@ -583,12 +582,10 @@ var JC:TJC;
   end;
 
 
-  if (OpenIndex < 0) then
+  if (mNewJC) then
    begin
-    // nova JC
     try
-     JC := JCDb.AddJC(Self.JCData);
-     if (JC = nil) then raise Exception.Create('JC nevytvořena');
+     JCDb.AddJC(Self.JCData);
     except
      on E:Exception do
       begin
@@ -600,7 +597,7 @@ var JC:TJC;
    end else begin
     // update existujici JC
     JC := JCDb.GetJCByIndex(OpenIndex);
-    JC.data  := Self.JCData;
+    JC.data := Self.JCData;
     JCTableData.UpdateLine(JC.index);
    end;
 
@@ -679,8 +676,7 @@ var i:Integer;
  end;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
-var Vypustit:TArI;
-    navestidlo:TBlkNav;
+var navestidlo:TBlkNav;
  begin
   if (CB_Navestidlo.ItemIndex <> -1) then
    begin
@@ -690,7 +686,7 @@ var Vypustit:TArI;
     Self.FillUseky();
     Self.FillVyhybky();
 
-    if (Self.NewVC) then
+    if (Self.mNewJC) then
      begin
       case (navestidlo.SymbolType) of
         TBlkNavSymbol.hlavni : Self.CB_TypCesty.ItemIndex := 0;
