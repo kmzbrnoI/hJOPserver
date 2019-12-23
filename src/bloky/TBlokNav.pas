@@ -1281,24 +1281,24 @@ end;
 class function TBlkNav.NavestToString(Navest:Integer):string;
  begin
   case (Navest) of
-   -2:Result  := 'Stavění...';
-   -1:Result  := 'Disabled';
-    0:Result  := 'Stůj/Posun zakázán';
-    1:Result  := 'Volno';
-    2:Result  := 'Výstraha';
-    3:Result  := 'Očekávejte 40 km/h';
+   -2:Result  := 'stavění...';
+   -1:Result  := 'disabled';
+    0:Result  := 'stůj/posun zakázán';
+    1:Result  := 'volno';
+    2:Result  := 'výstraha';
+    3:Result  := 'očekávejte 40 km/h';
     4:Result  := '40 km/h a volno';
-    5:Result  := 'Svítí vše (Rezerva)';
+    5:Result  := 'svítí vše (Rezerva)';
     6:Result  := '40 km/h a výstraha';
     7:Result  := '40 km/h a očekávejte 40 km/h';
-    8:Result  := 'Přivolávací návěst';
-    9:Result  := 'Dovolen zajištěný posun';
-    10:Result := 'Dovolen nezajištěný posun';
-    11:Result := 'Opakování návěsti volno';
-    12:Result := 'Opakování návěsti výstraha';
-    13:Result := 'Návěstidlo zhaslé';
-    14:Result := 'Opakování návěsti očekávejte 40 km/h';
-    15:Result := 'Opakování návěsti výstraha a 40 km/h';
+    8:Result  := 'přivolávací návěst';
+    9:Result  := 'dovolen zajištěný posun';
+    10:Result := 'dovolen nezajištěný posun';
+    11:Result := 'opakování návěsti volno';
+    12:Result := 'opakování návěsti výstraha';
+    13:Result := 'návěstidlo zhaslé';
+    14:Result := 'opakování návěsti očekávejte 40 km/h';
+    15:Result := 'opakování návěsti výstraha a 40 km/h';
    else//case
     Result := 'Jiná návěst';
    end;//else case
