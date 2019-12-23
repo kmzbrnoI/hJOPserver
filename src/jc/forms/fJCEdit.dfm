@@ -127,13 +127,16 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Columns = <
         item
+          Caption = '#'
+          Width = 20
+        end
+        item
           Caption = 'Blok'
-          Width = 160
+          Width = 150
         end
         item
           Alignment = taCenter
           Caption = 'Poloha'
-          Width = 75
         end>
       GridLines = True
       ReadOnly = True

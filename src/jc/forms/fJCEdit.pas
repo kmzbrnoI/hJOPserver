@@ -905,10 +905,12 @@ var i:Integer;
     LI: TListItem;
 begin
  Self.LV_Zavery.Clear();
- for zaver in Self.Vyhybky do
+ for i := 0 to Self.Vyhybky.Count-1 do
   begin
+   zaver := Self.Vyhybky[i];
    LI := LV_Zavery.Items.Add();
-   LI.Caption := Blky.GetBlkName(zaver.Blok);
+   LI.Caption := IntToStr(i+1);
+   LI.SubItems.Add(Blky.GetBlkName(zaver.Blok));
    case (zaver.Poloha) of
     TVyhPoloha.plus: LI.SubItems.Add('+');
     TVyhPoloha.minus: LI.SubItems.Add('-');
