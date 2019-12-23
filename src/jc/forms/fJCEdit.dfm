@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editace vlakove cesty [nazev]'
-  ClientHeight = 472
+  ClientHeight = 473
   ClientWidth = 922
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_07: TLabel
     Left = 8
-    Top = 129
+    Top = 384
     Width = 81
     Height = 13
     Margins.Left = 2
@@ -65,25 +65,25 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_10: TLabel
     Left = 7
-    Top = 159
-    Width = 157
+    Top = 414
+    Width = 136
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Rychlost v cest'#283' (dal'#353#237' N = Stuj) :'
+    Caption = 'Rychlost (dal'#353#237' n'#225'v. na st'#367'j) :'
   end
   object L_VC_12: TLabel
     Left = 7
-    Top = 191
-    Width = 166
+    Top = 446
+    Width = 170
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Rychlost v cest'#283' (dal'#353#237' N = Volno) :'
+    Caption = 'Rychlost (dal'#353#237' n'#225'v. povoluje j'#237'zdu) :'
   end
   object Label3: TLabel
     Left = 8
@@ -94,7 +94,7 @@ object F_JCEdit: TF_JCEdit
   end
   object E_VCNazev: TEdit
     Left = 136
-    Top = 8
+    Top = 7
     Width = 201
     Height = 21
     Margins.Left = 2
@@ -186,7 +186,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 0
       end
       object CB_NewZaverPoloha: TComboBox
@@ -237,8 +237,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object GB_Useky: TGroupBox
-    Left = 8
-    Top = 216
+    Left = 7
+    Top = 122
     Width = 329
     Height = 250
     Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
@@ -246,10 +246,10 @@ object F_JCEdit: TF_JCEdit
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Z'#225'v'#283'ry '#250'sek'#367' '
+    Caption = ' '#218'seky '
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 7
+    TabOrder = 4
     object CHB_NewBlok: TGroupBox
       Left = 2
       Top = 195
@@ -283,7 +283,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 0
       end
       object B_NewUsek: TButton
@@ -374,7 +374,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
@@ -395,9 +395,9 @@ object F_JCEdit: TF_JCEdit
       'Vlakov'#225' cesta'
       'Posunov'#225' cesta')
   end
-  object CB_DalsiNNavaznost: TComboBox
+  object CB_DalsiNav: TComboBox
     Left = 136
-    Top = 129
+    Top = 384
     Width = 201
     Height = 21
     Margins.Left = 2
@@ -405,12 +405,12 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
-    TabOrder = 4
+    ItemHeight = 13
+    TabOrder = 5
   end
   object CB_Rychlost_DalsiN: TComboBox
     Left = 191
-    Top = 191
+    Top = 446
     Width = 145
     Height = 21
     Margins.Left = 2
@@ -419,7 +419,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Style = csDropDownList
     ItemHeight = 13
-    TabOrder = 6
+    TabOrder = 7
     Items.Strings = (
       '0 km/h'
       '10 km/h'
@@ -435,7 +435,7 @@ object F_JCEdit: TF_JCEdit
   end
   object CB_Rychlost_NoDalsiN: TComboBox
     Left = 191
-    Top = 159
+    Top = 414
     Width = 145
     Height = 21
     Margins.Left = 2
@@ -444,7 +444,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Style = csDropDownList
     ItemHeight = 13
-    TabOrder = 5
+    TabOrder = 6
     Items.Strings = (
       '0 km/h'
       '10 km/h'
@@ -504,7 +504,7 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CB_TratSmer: TComboBox
