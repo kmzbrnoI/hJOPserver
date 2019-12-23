@@ -12,6 +12,7 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
 type
  TBlkNavVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
  TBlkNavOutputType = (scom = 0, binary = 1);
+ TBlkNavSymbol = (unknown = -1, hlavni = 0, seradovaci = 1);
 
  ENoEvents = class(Exception);
 
@@ -67,7 +68,7 @@ type
 
  // vlastnosti navestidla ziskane ze souboru .spnl (od reliefu, resp. z Mergeru)
  TBlkNavRel = record
-  SymbolType:Byte;                               // typ navestidla: 0 = VC&PC, 1=PC
+  SymbolType:TBlkNavSymbol;                      // typ navestidla
   UsekID:Integer;                                // ID useku pred navestidlem
   smer:THVStanoviste;                            // smer navetidla (lichy X sudy)
  end;
@@ -228,7 +229,7 @@ type
 
     class function NavestToString(navest:Integer):string;
 
-    property SymbolType:Byte read NavRel.SymbolType;
+    property SymbolType:TBlkNavSymbol read NavRel.SymbolType;
     property UsekID:Integer read NavRel.UsekID write SetUsekPredID;
     property Smer:THVStanoviste read NavRel.smer write NavRel.smer;
 
@@ -339,7 +340,7 @@ begin
        if (Self.ORsRef <> nil) then
          Self.ORsRef.Free();
        Self.ORsRef := ORs.ParseORs(str[0]);
-       Self.NavRel.SymbolType  := StrToInt(str[1]);
+       Self.NavRel.SymbolType := TBlkNavSymbol(StrToInt(str[1]));
 
        // 0 = navestidlo v lichem smeru. 1 = navestidlo v sudem smeru
        if (str[2] = '0') then
@@ -349,7 +350,7 @@ begin
 
        Self.NavRel.UsekID      := StrToInt(str[3]);
       end else begin
-       Self.NavRel.SymbolType := 0;
+       Self.NavRel.SymbolType := TBlkNavSymbol.unknown;
        Self.NavRel.smer       := THVStanoviste.lichy;
        Self.NavRel.UsekID     := -1;
       end;
@@ -358,6 +359,7 @@ begin
    end;
   end else begin
     Self.ORsRef.Clear();
+    Self.NavRel.SymbolType := TBlkNavSymbol.unknown;
   end;
 
  // Nacitani zastavovacich a zpomaovacich udalosti
@@ -899,7 +901,7 @@ end;
 procedure TBlkNav.MenuVCStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
 begin
- if (Self.NavRel.SymbolType = 1) then Exit;
+ if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit();
  if ((SenderOR as TOR).stack.volba = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
        (JCDb.FindOnlyStaveniJC(Self.id) > -1)) then Exit;
@@ -1021,7 +1023,7 @@ procedure TBlkNav.MenuPNStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
     oblr:TOR;
 begin
- if (Self.NavRel.SymbolType = 1) then Exit;
+ if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit;
  if ((SenderOR as TOR).stack.volba = PV) then
    if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then Exit;
 
@@ -1199,7 +1201,7 @@ begin
      TBlkNavVolba.PP : Result := Result + 'PP<,';
     else
       //2 = VC, 3= PC
-      if (Self.NavRel.SymbolType <> 1) then
+      if (Self.NavRel.SymbolType = TBlkNavSymbol.hlavni) then
        begin
         if ((JCDb.IsAnyVCAvailable(Self)) or ((SenderOR as TOR).stack.volba = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
           Result := Result + 'VC>,';
@@ -1364,7 +1366,7 @@ var Usek, Nav:TBlk;
 begin
  if (Self.NavSettings.events.Count = 0) then Exit();
  Usek := Self.UsekPred;
- if (Self.NavRel.SymbolType = 1) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
+ if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
  if ((Usek = nil) or ((Usek.typ <> _BLK_USEK) and (Usek.typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
@@ -1868,8 +1870,8 @@ begin
       fg := $A0A0A0;
    if (Self.ZAM) then
      case (Self.SymbolType) of
-      0 : fg := clRed;
-      1 : fg := clBlue;
+      TBlkNavSymbol.hlavni : fg := clRed;
+      TBlkNavSymbol.seradovaci : fg := clBlue;
      end;
   end;
   _NAV_CHANGING, _NAV_ZHASNUTO: begin
