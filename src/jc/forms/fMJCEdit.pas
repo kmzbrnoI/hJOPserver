@@ -43,6 +43,7 @@ type
     procedure B_VB_RemoveClick(Sender: TObject);
   private
     openMJC:TMultiJC;
+    new:boolean;
 
      JCs:TList<Integer>;
      vb:TList<Integer>;
@@ -54,12 +55,13 @@ type
     procedure UpdateVBCb();
 
     procedure NormalOpenForm();
-    procedure NewOpenForm();
+    procedure EmptyOpenForm();
 
     procedure MakeObls(var obls:TArStr);
 
   public
-    procedure OpenForm(mJC:TMultiJC);
+    procedure EditMJC(mJC:TMultiJC);
+    procedure NewMJC(template:TMultiJC);
   end;
 
 var
@@ -77,6 +79,7 @@ uses TJCDatabase, TechnologieJC, TBlok, TBlokUsek, TOblRizeni,
 procedure TF_MJCEdit.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
  Self.openMJC := nil;
+ Self.new := false;
  Self.JCs.Clear();
  Self.vb.Clear();
 end;
@@ -84,6 +87,7 @@ end;
 procedure TF_MJCEdit.FormCreate(Sender: TObject);
 begin
  Self.openMJC := nil;
+ Self.new := false;
  Self.JCs := TList<Integer>.Create();
  Self.vb  := TList<Integer>.Create();
 end;
@@ -108,7 +112,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_MJCEdit.OpenForm(mJC:TMultiJC);
+procedure TF_MJCEdit.EditMJC(mJC:TMultiJC);
 begin
  Self.openMJC := mJC;
 
@@ -122,40 +126,50 @@ begin
  Self.LV_VBs.Clear();
 
  if (mJC = nil) then
-  Self.NewOpenForm()
+  Self.EmptyOpenForm()
  else
   Self.NormalOpenForm();
 
  Self.ShowModal();
 end;
 
+procedure TF_MJCEdit.NewMJC(template:TMultiJC);
+begin
+ Self.new := true;
+ Self.EditMJC(template);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.NormalOpenForm();
-var i:Integer;
+var jcid, vbi:Integer;
     LI:TListItem;
     JC:TJC;
     Blk:TBlk;
 begin
- Self.SE_ID.Value    := Self.openMJC.id;
+ if (Self.new) then
+   Self.SE_ID.Value := Self.openMJC.id+1
+ else
+   Self.SE_ID.Value := Self.openMJC.id;
+
  Self.E_VCNazev.Text := Self.openMJC.Nazev;
 
- for i := 0 to Self.openMJC.data.JCs.Count-1 do
+ for jcid in Self.openMJC.data.JCs do
   begin
-   JC := JCDb.GetJCByID(Self.openMJC.data.JCs[i]);
+   JC := JCDb.GetJCByID(jcid);
    if (JC = nil) then continue;
    LI := Self.LV_JCs.Items.Add;
    LI.Caption := JC.nazev;
-   Self.JCs.Add(Self.openMJC.data.JCs[i]);
+   Self.JCs.Add(jcid);
   end;
 
- for i := 0 to Self.openMJC.data.vb.Count-1 do
+ for vbi in Self.openMJC.data.vb do
   begin
-   Blky.GetBlkByID(Self.openMJC.data.vb[i], Blk);
+   Blky.GetBlkByID(vbi, Blk);
    if (Blk = nil) then continue;
    LI := Self.LV_VBs.Items.Add;
    LI.Caption := Blk.GetGlobalSettings.name;
-   Self.vb.Add(Self.openMJC.data.vb[i]);
+   Self.vb.Add(vbi);
   end;
 
  Self.B_VB_New.Enabled  := (Self.JCs.Count > 0);
@@ -164,12 +178,19 @@ begin
  Self.UpdateJCCb();
  Self.UpdateVBCb();
 
- Self.Caption := 'Editovat složenou jízdní cestu '+Self.openMJC.Nazev;
+ if (Self.new) then
+   Self.Caption := 'Nová složená jízdní cesta'
+ else
+   Self.Caption := 'Upravit složenou jízdní cestu '+Self.openMJC.Nazev;
 end;
 
-procedure TF_MJCEdit.NewOpenForm();
+procedure TF_MJCEdit.EmptyOpenForm();
 begin
- Self.SE_ID.Value       := MultiJCDb.Items[MultiJCDb.Count-1].id + 1;
+ if (MultiJCDb.Count > 0) then
+   Self.SE_ID.Value := MultiJCDb.Items[MultiJCDb.Count-1].id + 1
+ else
+   Self.SE_ID.Value := 1;
+
  Self.B_VB_New.Enabled  := false;
  Self.CB_VB_New.Enabled := false;
 
@@ -317,10 +338,10 @@ begin
  data.id    := Self.SE_ID.Value;
  data.Nazev := Self.E_VCNazev.Text;
 
- if (Self.openMJC = nil) then
+ if (Self.new) then
   begin
-   data.JCs   := nil;          // dulezite pro pridavani JC
-   data.vb    := nil;
+   data.JCs := nil;          // dulezite pro pridavani JC
+   data.vb := nil;
 
    try
      Self.openMJC := MultiJCDb.Add(data);

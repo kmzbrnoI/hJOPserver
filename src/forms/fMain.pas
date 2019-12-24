@@ -1805,7 +1805,12 @@ end;
 
 procedure TF_Main.B_mJC_AddClick(Sender: TObject);
 begin
- F_MJCEdit.OpenForm(nil);
+  if ((Self.LV_MultiJC.Selected <> nil) and
+      (Application.MessageBox(PChar('Chcete použít složenou JC ' + MultiJCDb[Self.LV_MultiJC.ItemIndex].nazev + ' jako šablonu pro vytvoření nové složené JC?'),
+                              'Nová složená JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1) = mrYes)) then
+    F_MJCEdit.NewMJC(MultiJCDb[Self.LV_MultiJC.ItemIndex])
+  else
+    F_MJCEdit.NewMJC(nil);
 end;
 
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
@@ -2640,7 +2645,7 @@ end;
 procedure TF_Main.LV_MultiJCDblClick(Sender: TObject);
 begin
  if (Self.LV_MultiJC.Selected <> nil) then
-   F_MJCEdit.OpenForm(MultiJCDb[Self.LV_MultiJC.ItemIndex]);
+   F_MJCEdit.EditMJC(MultiJCDb[Self.LV_MultiJC.ItemIndex]);
 end;
 
 procedure TF_Main.LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
