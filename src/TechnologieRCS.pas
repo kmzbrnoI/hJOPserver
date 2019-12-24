@@ -259,6 +259,12 @@ procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; er
 begin
  writelog('RCS ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_RCS);
 
+ if ((errValue = RCS_NOT_OPENED) and (SystemData.Status = TSystemStatus.starting)) then
+  begin
+   F_Main.LogStatus('ERR: ' + errMsg);
+   SystemData.Status := TSystemStatus.null;
+  end;
+
  if (errAddr = 255) then
   begin
    //errors on main board (RCS-USB)
