@@ -59,9 +59,9 @@ type
      function FindPostavenaJCWithTrat(trat_id:Integer):Integer;
      function FindPostavenaJCWithZamek(zam_id:Integer):TArI;
 
-     // jakmile dojde k postaveni cesty fJC, muze dojit k ovlivneni nejakeho navestidla pred ni
+     // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
      // tato fce zajisti, ze k ovlivneni dojde
-     procedure CheckNNavaznost(fJC:TJC);
+     procedure CheckNNavaznost(nav:TBlkNav);
 
      procedure RusAllJC();
      procedure RusJC(Blk:TBlk);     // rusi cestu, ve ktere je zadany blok
@@ -526,51 +526,45 @@ end;
 
 //jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
 //se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak
-procedure TJCDb.CheckNNavaznost(fJC:TJC);
+procedure TJCDb.CheckNNavaznost(nav:TBlkNav);
 var JC:TJC;
-    nav:TBlk;
-    my_nav:TBlkNav;
+    next_nav:TBlkNav;
 begin
-  if (fJC.data.TypCesty = TJCType.posun) then Exit;
-
-  Blky.GetBlkByID(fJC.data.NavestidloBlok, nav);
-  if (nav = nil) then Exit;
-  my_nav := (nav as TBlkNav);
-
   for JC in Self.JCs do
    begin
     if ((JC.data.TypCesty = TJCType.posun) or
-        (JC.data.DalsiNavestidlo <> fJC.data.NavestidloBlok)) then continue;
+        (JC.data.DalsiNavaznost <> TJCNextNavType.blok) or
+        (JC.data.DalsiNavestidlo <> nav.id)) then continue;
 
-    Blky.GetBlkByID(JC.data.NavestidloBlok, nav);
+    Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(next_nav));
 
-    if (not (nav as TBlkNav).IsPovolovaciNavest()) then continue;
-    if ((nav as TBlkNav).changing) then continue;
+    if (not next_nav.IsPovolovaciNavest()) then continue;
+    if (next_nav.changing) then continue;
 
-    if (my_nav.IsPovolovaciNavest()) then
+    if (nav.IsPovolovaciNavest()) then
      begin
       if (JC.data.odbocka) then begin
-        if ((my_nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
-            (my_nav.Navest = TBlkNav._NAV_40_OCEK_40) or
-            (my_nav.Navest = TBlkNav._NAV_VOLNO_40)) then
+        if ((nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
+            (nav.Navest = TBlkNav._NAV_40_OCEK_40) or
+            (nav.Navest = TBlkNav._NAV_VOLNO_40)) then
           (nav as TBlkNav).Navest := TBlkNav._NAV_40_OCEK_40
         else
-          (nav as TBlkNav).Navest := TBlkNav._NAV_VOLNO_40;
+          next_nav.Navest := TBlkNav._NAV_VOLNO_40;
        end else begin
-        if ((my_nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
-             (my_nav.Navest = TBlkNav._NAV_40_OCEK_40) or
-             (my_nav.Navest = TBlkNav._NAV_VOLNO_40)) then
-          (nav as TBlkNav).Navest := TBlkNav._NAV_OCEK_40
+        if ((nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
+             (nav.Navest = TBlkNav._NAV_40_OCEK_40) or
+             (nav.Navest = TBlkNav._NAV_VOLNO_40)) then
+          next_nav.Navest := TBlkNav._NAV_OCEK_40
         else
-          (nav as TBlkNav).Navest := TBlkNav._NAV_VOLNO;
+          next_nav.Navest := TBlkNav._NAV_VOLNO;
        end;
 
      end else begin
 
       if (JC.data.odbocka) then
-        (nav as TBlkNav).Navest := TBlkNav._NAV_VYSTRAHA_40
+        next_nav.Navest := TBlkNav._NAV_VYSTRAHA_40
       else
-        (nav as TBlkNav).Navest := TBlkNav._NAV_VYSTRAHA;
+        next_nav.Navest := TBlkNav._NAV_VYSTRAHA;
 
      end;
    end;//for i

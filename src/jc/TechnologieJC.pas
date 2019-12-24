@@ -2191,10 +2191,9 @@ var Nav:TBlk;
      end;
    end;
 
-  Self.Krok             := 0;
-  Self.RozpadBlok       := -5;
+  Self.Krok := 0;
+  Self.RozpadBlok := -5;
   Self.RozpadRuseniBlok := -5;
-  JCDb.CheckNNavaznost(Self);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2609,11 +2608,14 @@ var Nav,DalsiNav:TBlkNav;
 
      TJcType.vlak : begin
       Blky.GetBlkByID(Self.fproperties.DalsiNavestidlo, TBlk(DalsiNav));
-      if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.zadna) or ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest()))) then
+      if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.zadna) or
+          (Self.fproperties.DalsiNavaznost = TJCNextNavType.trat) or
+          ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and
+           ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest())))) then
        begin
         // na dalsim navestidle lze jet
         if (Self.data.odbocka) then begin
-          if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and (DalsiNav <> nil) and
+          if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and
               ((DalsiNav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
                ((DalsiNav.Navest = TBlkNav._NAV_40_OCEK_40)) or
                (DalsiNav.Navest = TBlkNav._NAV_VOLNO_40))) then
@@ -2621,7 +2623,7 @@ var Nav,DalsiNav:TBlkNav;
           else
             Navest := TBlkNav._NAV_VOLNO_40;
         end else begin
-          if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and (DalsiNav <> nil) and
+          if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and
               ((DalsiNav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
                ((DalsiNav.Navest = TBlkNav._NAV_40_OCEK_40)) or
                (DalsiNav.Navest = TBlkNav._NAV_VOLNO_40))) then

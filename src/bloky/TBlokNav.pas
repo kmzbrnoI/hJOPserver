@@ -784,8 +784,7 @@ begin
   end;
 
  Self.UpdateRychlostSpr(true);
- if (Self.DNjc <> nil) then
-   JCDb.CheckNNavaznost(Self.DNjc);
+ JCDb.CheckNNavaznost(Self);
  Self.Change();
 end;
 
@@ -876,7 +875,6 @@ begin
       begin
        Self.DNjc.RozpadBlok := -2;
        Self.DNjc.STUJ();
-       JCDb.CheckNNavaznost(Self.DNjc);
       end;
     end else begin
      if ((Self.DNjc.RozpadBlok = -2) and (not Self.RCinProgress())) then
@@ -944,7 +942,6 @@ begin
  if (Self.DNjc = nil) then Exit();
 
  Self.DNjc.STUJ();
- JCDb.CheckNNavaznost(Self.DNjc);
  Blky.SprPrediction(Self);
 end;
 
