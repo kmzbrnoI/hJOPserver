@@ -81,6 +81,7 @@ type
       Shift: TShiftState);
     procedure LV_VyhybkyKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure CB_TratBlokChange(Sender: TObject);
   private
    OpenIndex:Integer;
    mNewJC:Boolean;
@@ -721,6 +722,13 @@ var navestidlo:TBlkNav;
   Self.UpdateNextNav();
  end;
 
+procedure TF_JCEdit.CB_TratBlokChange(Sender: TObject);
+begin
+ if (Self.CHB_Trat.Checked) then
+   Self.JCData.Trat := Blky.GetBlkID(Self.CB_TratPolozky[Self.CB_TratBlok.ItemIndex]);
+ UpdateNextNav();
+end;
+
 procedure TF_JCEdit.CB_TypChange(Sender: TObject);
  begin
   CB_Rychlost_Volno.Enabled := (JCData.TypCesty <> TJCType.posun);
@@ -792,6 +800,7 @@ var vypustit:TArI;
     blk:TBlk;
     i:Integer;
     navestidlo:TBlkNav;
+    trat:TBlkTrat;
 begin
  Self.CB_Dalsi_Nav.Clear();
  Self.CB_Dalsi_Nav.Items.Add('Žádné návěstidlo');
@@ -813,11 +822,16 @@ begin
 
  if (Self.Useky.Count > 0) then
   begin
+   if (Self.JCData.Trat > -1) then
+     Blky.GetBlkByID(Self.JCData.Trat, TBlk(trat));
+
    SetLength(CB_DalsiNavPolozky, 0);
    for i := 0 to Blky.count-1 do
     begin
      blk := Blky[i];
-     if ((blk.typ = _BLK_NAV) and ((TBlkNav(blk).UsekPred = nil) or (TBlkNav(blk).UsekPred.id = Self.Useky[Self.Useky.Count-1]))) then
+     if ((blk.typ = _BLK_NAV) and
+         ((TBlkNav(blk).UsekPred = nil) or (TBlkNav(blk).UsekPred.id = Self.Useky[Self.Useky.Count-1]) or
+          (trat.HasAutoblokNav(blk)))) then
       begin
        Self.CB_Dalsi_Nav.Items.Add(blk.name);
        SetLength(CB_DalsiNavPolozky, Length(CB_DalsiNavPolozky)+1);
@@ -827,17 +841,17 @@ begin
       end;
     end;
 
-    if (Self.CB_Dalsi_Nav.ItemIndex = -1) then
-     begin
-      Blky.GetBlkByID(JCData.DalsiNavestidlo, blk);
-      if (blk <> nil) then
-       begin
-        Self.CB_Dalsi_Nav.Items.Add(blk.name);
-        SetLength(CB_DalsiNavPolozky, Length(CB_DalsiNavPolozky)+1);
-        CB_DalsiNavPolozky[Length(CB_DalsiNavPolozky)-1] := JCData.DalsiNavestidlo;
-        Self.CB_Dalsi_Nav.ItemIndex := Self.CB_Dalsi_Nav.Items.Count-1;
-       end;
-     end;
+   if (Self.CB_Dalsi_Nav.ItemIndex = -1) then
+    begin
+     Blky.GetBlkByID(JCData.DalsiNavestidlo, blk);
+     if (blk <> nil) then
+      begin
+       Self.CB_Dalsi_Nav.Items.Add(blk.name);
+       SetLength(CB_DalsiNavPolozky, Length(CB_DalsiNavPolozky)+1);
+       CB_DalsiNavPolozky[Length(CB_DalsiNavPolozky)-1] := JCData.DalsiNavestidlo;
+       Self.CB_Dalsi_Nav.ItemIndex := Self.CB_Dalsi_Nav.Items.Count-1;
+      end;
+    end;
   end else begin
    Blky.NactiBlokyDoObjektu(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @vypustit, obls, _BLK_NAV, JCData.DalsiNavestidlo);
    Self.CB_Dalsi_Nav.Items.Insert(0, 'Žádné návěstidlo');

@@ -127,6 +127,8 @@ type
 
     function GetTrat():TBlk;                                                    // vrati blok trati, ve kterem je TU, viz property \Trat
     function GetNavKryci():TBlk;                                                // vrati kryci navestidlo TU, jinak nil (pokud blok neni v aktualnim smeru trati kryty zadnym navestidlem)
+    function GetNavKryciL():TBlk;
+    function GetNavKryciS():TBlk;
     function GetTratReady():boolean;                                            // vrati, jestli je trat zpusobila prace: jestli existuje a ma smer AtoB nebo BtoA, viz property \tratSmer
     function GetPrevTU():TBlkTU;                                                // vrati predchozi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \prevTU
     function GetNextTU():TBlkTU;                                                // vrati dalsi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \nextTU
@@ -201,6 +203,8 @@ type
 
     property Trat:TBlk read GetTrat;
     property navKryci:TBlk read GetNavKryci;
+    property navKryciL:TBlk read GetNavKryciL;
+    property navKryciS:TBlk read GetNavKryciS;
     property tratReady:boolean read GetTratReady;
 
     property prevTU:TBlkTU read GetPrevTU;
@@ -886,6 +890,16 @@ begin
  if (((Self.fNavKryci = nil) and (navPrevID <> -1)) or ((Self.fNavKryci <> nil) and (Self.fNavKryci.id <> navPrevID))) then
    Blky.GetBlkByID(navPrevID, Self.fNavKryci);
  Result := Self.fNavKryci;
+end;
+
+function TBlkTU.GetNavKryciL():TBlk;
+begin
+ Blky.GetBlkByID(Self.TUSettings.navLid, Result);
+end;
+
+function TBlkTU.GetNavKryciS():TBlk;
+begin
+ Blky.GetBlkByID(Self.TUSettings.navSid, Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

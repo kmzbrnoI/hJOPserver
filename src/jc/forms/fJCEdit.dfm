@@ -319,7 +319,6 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_UsekyChange
       OnKeyDown = LV_UsekyKeyDown
-      ExplicitTop = 49
     end
     object B_Usek_Del: TButton
       Left = 112
@@ -505,6 +504,7 @@ object F_JCEdit: TF_JCEdit
       Style = csDropDownList
       ItemHeight = 13
       TabOrder = 1
+      OnChange = CB_TratBlokChange
     end
     object CB_TratSmer: TComboBox
       Left = 64

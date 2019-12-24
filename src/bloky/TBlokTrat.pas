@@ -166,6 +166,7 @@ type
     function ChangesSprDir():boolean;                                           // vraci true prave tehdy, kdyz se v trati meni smer soupravy
     function GetSprUsek(spr_id:Integer):TSprUsek;
     function GetLastUsek(smer:TTratSmer):TBlk; overload;
+    function HasAutoblokNav(blk:TBlk):boolean;
 
     property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
     property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
@@ -1163,6 +1164,22 @@ begin
  else
   Result := TBlkNav._NAV_ZHASNUTO;
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrat.HasAutoblokNav(blk:TBlk):boolean;
+var usekid: Integer;
+    usek: TBlkTU;
+begin
+ for usekid in Self.TratSettings.Useky do
+  begin
+   Blky.GetBlkByID(usekid, TBlk(usek));
+   if (usek.typ <> _BLK_TU) then continue;
+   if ((blk = usek.navKryciL) or (blk = usek.navKryciS)) then
+     Exit(true);
+  end;
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
