@@ -92,7 +92,7 @@ object F_JCEdit: TF_JCEdit
     Height = 13
     Caption = 'ID:'
   end
-  object E_VCNazev: TEdit
+  object E_Name: TEdit
     Left = 136
     Top = 7
     Width = 201
@@ -115,7 +115,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = ' V'#253'hybky '
     TabOrder = 8
-    object LV_Zavery: TListView
+    object LV_Vyhybky: TListView
       Left = 2
       Top = 54
       Width = 261
@@ -143,8 +143,8 @@ object F_JCEdit: TF_JCEdit
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
-      OnChange = LV_ZaveryChange
-      OnKeyDown = LV_ZaveryKeyDown
+      OnChange = LV_VyhybkyChange
+      OnKeyDown = LV_VyhybkyKeyDown
     end
     object CHB_NewZaver: TGroupBox
       Left = 2
@@ -377,7 +377,7 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
-  object CB_TypCesty: TComboBox
+  object CB_Typ: TComboBox
     Left = 136
     Top = 97
     Width = 201
@@ -389,12 +389,12 @@ object F_JCEdit: TF_JCEdit
     Style = csDropDownList
     ItemHeight = 13
     TabOrder = 3
-    OnChange = CB_TypCestyChange
+    OnChange = CB_TypChange
     Items.Strings = (
       'Vlakov'#225' cesta'
       'Posunov'#225' cesta')
   end
-  object CB_DalsiNav: TComboBox
+  object CB_Dalsi_Nav: TComboBox
     Left = 136
     Top = 377
     Width = 201
@@ -407,7 +407,7 @@ object F_JCEdit: TF_JCEdit
     ItemHeight = 13
     TabOrder = 5
   end
-  object CB_Rychlost_DalsiN: TComboBox
+  object CB_Rychlost_Volno: TComboBox
     Left = 191
     Top = 439
     Width = 145
@@ -432,7 +432,7 @@ object F_JCEdit: TF_JCEdit
       '90 km/h'
       '100 km/h')
   end
-  object CB_Rychlost_NoDalsiN: TComboBox
+  object CB_Rychlost_Stuj: TComboBox
     Left = 191
     Top = 407
     Width = 145
@@ -508,7 +508,7 @@ object F_JCEdit: TF_JCEdit
     end
     object CB_TratSmer: TComboBox
       Left = 64
-      Top = 64
+      Top = 66
       Width = 145
       Height = 21
       Style = csDropDownList

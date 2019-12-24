@@ -10,9 +10,9 @@ uses
 type
   TF_JCEdit = class(TForm)
     L_VC_01: TLabel;
-    E_VCNazev: TEdit;
+    E_Name: TEdit;
     GB_ZaveryVyhybek: TGroupBox;
-    LV_Zavery: TListView;
+    LV_Vyhybky: TListView;
     CHB_NewZaver: TGroupBox;
     Label10: TLabel;
     Label11: TLabel;
@@ -30,13 +30,13 @@ type
     B_Storno: TButton;
     L_VC_02: TLabel;
     CB_Navestidlo: TComboBox;
-    CB_TypCesty: TComboBox;
+    CB_Typ: TComboBox;
     L_VC_11: TLabel;
     L_VC_07: TLabel;
-    CB_DalsiNav: TComboBox;
+    CB_Dalsi_Nav: TComboBox;
     L_VC_10: TLabel;
-    CB_Rychlost_DalsiN: TComboBox;
-    CB_Rychlost_NoDalsiN: TComboBox;
+    CB_Rychlost_Volno: TComboBox;
+    CB_Rychlost_Stuj: TComboBox;
     L_VC_12: TLabel;
     CHB_AutoName: TCheckBox;
     GB_trat: TGroupBox;
@@ -67,19 +67,19 @@ type
     procedure B_SaveClick(Sender: TObject);
     procedure B_Usek_DelClick(Sender: TObject);
     procedure B_Vyh_DelClick(Sender: TObject);
-    procedure LV_ZaveryChange(Sender: TObject; Item: TListItem;
+    procedure LV_VyhybkyChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure LV_UsekyChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure CB_NavestidloChange(Sender: TObject);
-    procedure CB_TypCestyChange(Sender: TObject);
+    procedure CB_TypChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CHB_TratClick(Sender: TObject);
     procedure CHB_AdvancedClick(Sender: TObject);
     procedure LV_UsekyKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure LV_ZaveryKeyDown(Sender: TObject; var Key: Word;
+    procedure LV_VyhybkyKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
    OpenIndex:Integer;
@@ -149,17 +149,17 @@ procedure TF_JCEdit.EmptyJCOpenForm();
   Self.Useky.Clear();
   Self.Vyhybky.Clear();
 
-  E_VCNazev.Text := '';
+  E_Name.Text := '';
   if (JCDb.Count > 0) then
     SE_ID.Value := JCDb.GetJCByIndex(JCDb.Count-1).id + 1
   else
     SE_ID.Value := 1;
   Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, _BLK_NAV, -1);
 
-  CB_TypCesty.ItemIndex           := -1;
-  CB_DalsiNav.ItemIndex           := -1;
-  CB_Rychlost_NoDalsiN.ItemIndex  := 4;
-  CB_Rychlost_DalsiN.ItemIndex    := 4;
+  CB_Typ.ItemIndex := -1;
+  CB_Dalsi_Nav.ItemIndex := -1;
+  CB_Rychlost_Stuj.ItemIndex := 4;
+  CB_Rychlost_Volno.ItemIndex := 4;
   CB_NavestidloChange(Self);
   Self.Caption := 'Vytvořit novou jízdní cestu';
   LV_Useky.Clear();
@@ -189,23 +189,14 @@ var prjz:TJCPrjZaver;
   Blky.NactiBlokyDoObjektu(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, _BLK_NAV, JCData.NavestidloBlok);
   CB_NavestidloChange(Self);
 
-  E_VCNazev.Text := JCData.Nazev;
-  SE_ID.Value    := JCData.id;
+  E_Name.Text:= JCData.Nazev;
+  SE_ID.Value := JCData.id;
 
-  CB_TypCesty.ItemIndex           := Integer(JCData.TypCesty)-1;
-  CB_Rychlost_DalsiN.ItemIndex    := JCData.RychlostDalsiN;
-  CB_Rychlost_NoDalsiN.ItemIndex  := JCData.RychlostNoDalsiN;
+  CB_Typ.ItemIndex := Integer(JCData.TypCesty)-1;
+  CB_Rychlost_Volno.ItemIndex := JCData.RychlostDalsiN;
+  CB_Rychlost_Stuj.ItemIndex := JCData.RychlostNoDalsiN;
 
-  if (JCData.TypCesty = TJCType.posun) then
-   begin
-    CB_Rychlost_DalsiN.Enabled      := false;
-    CB_Rychlost_NoDalsiN.Enabled    := false;
-    CB_Rychlost_DalsiN.ItemIndex    := 4;
-    CB_Rychlost_NoDalsiN.ItemIndex  := 4;
-   end else begin
-    CB_Rychlost_DalsiN.Enabled      := true;
-    CB_Rychlost_NoDalsiN.Enabled    := true;
-   end;
+  Self.CB_TypChange(Self.CB_Typ);
 
   Self.CHB_Trat.Checked := (JCData.Trat > -1);
   Self.CHB_TratClick(Self.CHB_Trat);
@@ -269,8 +260,7 @@ var prjz:TJCPrjZaver;
 procedure TF_JCEdit.HlavniOpenForm;
  begin
   Self.CHB_AdvancedClick(Self.CHB_Advanced);
-
-  Self.ActiveControl := Self.E_VCNazev;
+  Self.ActiveControl := Self.E_Name;
  end;
 
 procedure TF_JCEdit.B_Vyh_AddClick(Sender: TObject);
@@ -374,7 +364,7 @@ var JC:TJC;
     refz:TJCRefZaver;
     vyhZaver: TJCVyhZaver;
  begin
-  if (E_VCNazev.Text = '') then
+  if (E_Name.Text = '') then
    begin
     Application.MessageBox('Vyplňte název jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -389,25 +379,25 @@ var JC:TJC;
     Application.MessageBox('Vyberte návestidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (CB_TypCesty.ItemIndex = -1) then
+  if (CB_Typ.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte typ jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (CB_DalsiNav.ItemIndex = -1) then
+  if (CB_Dalsi_Nav.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte dalěá návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (CB_Rychlost_DalsiN.ItemIndex = -1) then
+  if (CB_Rychlost_Volno.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při postaveném dalším návěstidle!',
                            'Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (CB_Rychlost_NoDalsiN.ItemIndex = -1) then
+  if (CB_Rychlost_Stuj.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při dalěím návěstidle na stůj!',
+    Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při dalším návěstidle na stůj!',
                            'Nelze ulozit data',MB_OK OR MB_ICONWARNING);
     Exit;
    end;
@@ -431,13 +421,13 @@ var JC:TJC;
    end;
 
   //samotne ukladani dat
-  JCData.Nazev := E_VCNazev.Text;
+  JCData.Nazev := E_Name.Text;
   JCData.id := SE_ID.Value;
   JCData.NavestidloBlok := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
-  JCData.TypCesty := TJCType(CB_TypCesty.ItemIndex+1);
+  JCData.TypCesty := TJCType(CB_Typ.ItemIndex+1);
 
-  JCData.RychlostDalsiN := CB_Rychlost_DalsiN.ItemIndex;
-  JCData.RychlostNoDalsiN := CB_Rychlost_NoDalsiN.ItemIndex;
+  JCData.RychlostDalsiN := CB_Rychlost_Volno.ItemIndex;
+  JCData.RychlostNoDalsiN := CB_Rychlost_Stuj.ItemIndex;
   JCData.odbocka := Self.CHB_Odbocka.Checked;
 
   if (Self.CHB_Trat.Checked) then
@@ -449,13 +439,13 @@ var JC:TJC;
     Self.JCData.TratSmer := TTratSmer.zadny;
    end;
 
-  if (CB_DalsiNav.ItemIndex = 0) then begin
+  if (CB_Dalsi_Nav.ItemIndex = 0) then begin
    JCData.DalsiNavaznost := TJCNextNavType.zadna;
-  end else if (CB_DalsiNav.ItemIndex = 1) then begin
+  end else if (CB_Dalsi_Nav.ItemIndex = 1) then begin
    JCData.DalsiNavaznost := TJCNextNavType.trat;
   end else begin
    JCData.DalsiNavaznost := TJCNextNavType.blok;
-   JCData.DalsiNavestidlo := Blky.GetBlkID(CB_DalsiNavPolozky[CB_DalsiNav.ItemIndex-2]);
+   JCData.DalsiNavestidlo := Blky.GetBlkID(CB_DalsiNavPolozky[CB_Dalsi_Nav.ItemIndex-2]);
   end;
 
   if (not Assigned(JCData.Vyhybky) or (mNewJC)) then JCData.Vyhybky := TList<TJCVyhZaver>.Create();
@@ -638,30 +628,30 @@ var i:Integer;
 
 procedure TF_JCEdit.B_Vyh_DelClick(Sender: TObject);
  begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat výhybku '+Blky.GetBlkName(Self.Vyhybky[LV_Zavery.ItemIndex].Blok)+' z JC?'),
+  if (Application.MessageBox(PChar('Opravdu chcete smazat výhybku '+Blky.GetBlkName(Self.Vyhybky[LV_Vyhybky.ItemIndex].Blok)+' z JC?'),
       'Mazání výhybky', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    begin
-    Self.Vyhybky.Delete(Self.LV_Zavery.ItemIndex);
+    Self.Vyhybky.Delete(Self.LV_Vyhybky.ItemIndex);
     Self.FillVyhybky();
    end;
  end;
 
-procedure TF_JCEdit.LV_ZaveryChange(Sender: TObject; Item: TListItem;
+procedure TF_JCEdit.LV_VyhybkyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 var i: Integer;
     vyh:TJCVyhZaver;
  begin
-  B_Vyh_Del.Enabled := (LV_Zavery.ItemIndex <> -1);
+  B_Vyh_Del.Enabled := (LV_Vyhybky.ItemIndex <> -1);
   B_Usek_Del.Enabled := false;
 
-  if (Self.LV_Zavery.Selected = nil) then
+  if (Self.LV_Vyhybky.Selected = nil) then
    begin
     Self.CB_NewZaverBlok.ItemIndex := -1;
     Self.CB_NewZaverPoloha.ItemIndex := 0;
     Exit();
    end;
 
-  vyh := Self.Vyhybky[Self.LV_Zavery.ItemIndex];
+  vyh := Self.Vyhybky[Self.LV_Vyhybky.ItemIndex];
 
   for i := 0 to Length(Self.CB_NewVyhybkaPolozky)-1 do
     if (Blky.GetBlkID(Self.CB_NewVyhybkaPolozky[i]) = vyh.Blok) then
@@ -674,7 +664,7 @@ var i: Integer;
   end;
  end;
 
-procedure TF_JCEdit.LV_ZaveryKeyDown(Sender: TObject; var Key: Word;
+procedure TF_JCEdit.LV_VyhybkyKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
  if ((Key = VK_DELETE) and (Self.B_Vyh_Del.Enabled)) then
@@ -720,8 +710,8 @@ var navestidlo:TBlkNav;
     if (Self.mNewJC) then
      begin
       case (navestidlo.SymbolType) of
-        TBlkNavSymbol.hlavni : Self.CB_TypCesty.ItemIndex := 0;
-        TBlkNavSymbol.seradovaci : Self.CB_TypCesty.ItemIndex := 1;
+        TBlkNavSymbol.hlavni : Self.CB_Typ.ItemIndex := 0;
+        TBlkNavSymbol.seradovaci : Self.CB_Typ.ItemIndex := 1;
       end;
      end;
 
@@ -731,17 +721,15 @@ var navestidlo:TBlkNav;
   Self.UpdateNextNav();
  end;
 
-procedure TF_JCEdit.CB_TypCestyChange(Sender: TObject);
+procedure TF_JCEdit.CB_TypChange(Sender: TObject);
  begin
-  if (CB_TypCesty.ItemIndex = 1) then
+  CB_Rychlost_Volno.Enabled := (JCData.TypCesty <> TJCType.posun);
+  CB_Rychlost_Stuj.Enabled := (JCData.TypCesty <> TJCType.posun);
+
+  if (JCData.TypCesty = TJCType.posun) then
    begin
-    CB_Rychlost_DalsiN.Enabled      := false;
-    CB_Rychlost_NoDalsiN.Enabled    := false;
-    CB_Rychlost_DalsiN.ItemIndex    := 4;
-    CB_Rychlost_NoDalsiN.ItemIndex  := 4;
-   end else begin
-    CB_Rychlost_DalsiN.Enabled      := true;
-    CB_Rychlost_NoDalsiN.Enabled    := true;
+    CB_Rychlost_Volno.ItemIndex := 4;
+    CB_Rychlost_Stuj.ItemIndex := 4;
    end;
  end;
 
@@ -792,10 +780,10 @@ end;
 procedure TF_JCEdit.UpdateJCName();
 begin
  if ((Self.CB_Navestidlo.ItemIndex <> -1)) then
-   Self.E_VCNazev.Text := Blky.GetBlkName(Self.JCData.NavestidloBlok) + ' > ';
+   Self.E_Name.Text := Blky.GetBlkName(Self.JCData.NavestidloBlok) + ' > ';
 
  if (Self.Useky.Count <> 0) then
-   Self.E_VCNazev.Text := Self.E_VCNazev.Text + Blky.GetBlkName(Self.Useky[Self.Useky.Count-1]);
+   Self.E_Name.Text := Self.E_Name.Text + Blky.GetBlkName(Self.Useky[Self.Useky.Count-1]);
 end;
 
 procedure TF_JCEdit.UpdateNextNav();
@@ -805,18 +793,18 @@ var vypustit:TArI;
     i:Integer;
     navestidlo:TBlkNav;
 begin
- Self.CB_DalsiNav.Clear();
- Self.CB_DalsiNav.Items.Add('Žádné návěstidlo');
- Self.CB_DalsiNav.Items.Add('Trať');
+ Self.CB_Dalsi_Nav.Clear();
+ Self.CB_Dalsi_Nav.Items.Add('Žádné návěstidlo');
+ Self.CB_Dalsi_Nav.Items.Add('Trať');
 
  if (JCData.NavestidloBlok = -1) then
   begin
-   Self.CB_DalsiNav.ItemIndex := -1;
-   Self.CB_DalsiNav.Enabled := false;
+   Self.CB_Dalsi_Nav.ItemIndex := -1;
+   Self.CB_Dalsi_Nav.Enabled := false;
    Exit();
   end;
 
- Self.CB_DalsiNav.Enabled := true;
+ Self.CB_Dalsi_Nav.Enabled := true;
  Blky.GetBlkByID(JCData.NavestidloBlok, TBlk(navestidlo));
 
  SetLength(vypustit, 1);
@@ -831,35 +819,35 @@ begin
      blk := Blky[i];
      if ((blk.typ = _BLK_NAV) and ((TBlkNav(blk).UsekPred = nil) or (TBlkNav(blk).UsekPred.id = Self.Useky[Self.Useky.Count-1]))) then
       begin
-       Self.CB_DalsiNav.Items.Add(blk.name);
+       Self.CB_Dalsi_Nav.Items.Add(blk.name);
        SetLength(CB_DalsiNavPolozky, Length(CB_DalsiNavPolozky)+1);
        CB_DalsiNavPolozky[Length(CB_DalsiNavPolozky)-1] := i;
        if (blk.id = JCData.DalsiNavestidlo) then
-         Self.CB_DalsiNav.ItemIndex := Self.CB_DalsiNav.Items.Count-1;
+         Self.CB_Dalsi_Nav.ItemIndex := Self.CB_Dalsi_Nav.Items.Count-1;
       end;
     end;
 
-    if (Self.CB_DalsiNav.ItemIndex = -1) then
+    if (Self.CB_Dalsi_Nav.ItemIndex = -1) then
      begin
       Blky.GetBlkByID(JCData.DalsiNavestidlo, blk);
       if (blk <> nil) then
        begin
-        Self.CB_DalsiNav.Items.Add(blk.name);
+        Self.CB_Dalsi_Nav.Items.Add(blk.name);
         SetLength(CB_DalsiNavPolozky, Length(CB_DalsiNavPolozky)+1);
         CB_DalsiNavPolozky[Length(CB_DalsiNavPolozky)-1] := JCData.DalsiNavestidlo;
-        Self.CB_DalsiNav.ItemIndex := Self.CB_DalsiNav.Items.Count-1;
+        Self.CB_Dalsi_Nav.ItemIndex := Self.CB_Dalsi_Nav.Items.Count-1;
        end;
      end;
   end else begin
-   Blky.NactiBlokyDoObjektu(CB_DalsiNav, @CB_DalsiNavPolozky, @vypustit, obls, _BLK_NAV, JCData.DalsiNavestidlo);
-   Self.CB_DalsiNav.Items.Insert(0, 'Žádné návěstidlo');
-   Self.CB_DalsiNav.Items.Insert(1, 'Trať');
+   Blky.NactiBlokyDoObjektu(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @vypustit, obls, _BLK_NAV, JCData.DalsiNavestidlo);
+   Self.CB_Dalsi_Nav.Items.Insert(0, 'Žádné návěstidlo');
+   Self.CB_Dalsi_Nav.Items.Insert(1, 'Trať');
   end;
 
  if (JCData.DalsiNavaznost = TJCNextNavType.zadna) then
-   Self.CB_DalsiNav.ItemIndex := 0
+   Self.CB_Dalsi_Nav.ItemIndex := 0
  else if (JCData.DalsiNavaznost = TJCNextNavType.trat) then
-   Self.CB_DalsiNav.ItemIndex := 1;
+   Self.CB_Dalsi_Nav.ItemIndex := 1;
 end;
 
 procedure TF_JCEdit.UpdateVyhybkyFromUseky();
@@ -900,11 +888,11 @@ var i:Integer;
     zaver: TJCVyhZaver;
     LI: TListItem;
 begin
- Self.LV_Zavery.Clear();
+ Self.LV_Vyhybky.Clear();
  for i := 0 to Self.Vyhybky.Count-1 do
   begin
    zaver := Self.Vyhybky[i];
-   LI := LV_Zavery.Items.Add();
+   LI := LV_Vyhybky.Items.Add();
    LI.Caption := IntToStr(i+1);
    LI.SubItems.Add(Blky.GetBlkName(zaver.Blok));
    case (zaver.Poloha) of
