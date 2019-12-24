@@ -18,14 +18,14 @@ type
     Label11: TLabel;
     CB_NewZaverBlok: TComboBox;
     CB_NewZaverPoloha: TComboBox;
-    B_NewZaverAdd: TButton;
+    B_Vyh_Add: TButton;
     GB_Useky: TGroupBox;
     CHB_NewBlok: TGroupBox;
     CB_NewUsek: TComboBox;
-    B_NewUsek: TButton;
+    B_Usek_Add: TButton;
     LV_Useky: TListView;
-    B_ZaveryVyhybek_Delete: TButton;
-    B_ZaveryUseku_Delete: TButton;
+    B_Vyh_Del: TButton;
+    B_Usek_Del: TButton;
     B_Save: TButton;
     B_Storno: TButton;
     L_VC_02: TLabel;
@@ -61,12 +61,12 @@ type
     M_Zamky: TMemo;
     CHB_Odbocka: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
-    procedure B_NewZaverAddClick(Sender: TObject);
-    procedure B_NewUsekClick(Sender: TObject);
+    procedure B_Vyh_AddClick(Sender: TObject);
+    procedure B_Usek_AddClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_SaveClick(Sender: TObject);
-    procedure B_ZaveryUseku_DeleteClick(Sender: TObject);
-    procedure B_ZaveryVyhybek_DeleteClick(Sender: TObject);
+    procedure B_Usek_DelClick(Sender: TObject);
+    procedure B_Vyh_DelClick(Sender: TObject);
     procedure LV_ZaveryChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure LV_UsekyChange(Sender: TObject; Item: TListItem;
@@ -77,6 +77,10 @@ type
     procedure FormCreate(Sender: TObject);
     procedure CHB_TratClick(Sender: TObject);
     procedure CHB_AdvancedClick(Sender: TObject);
+    procedure LV_UsekyKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_ZaveryKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
    OpenIndex:Integer;
    mNewJC:Boolean;
@@ -269,7 +273,7 @@ procedure TF_JCEdit.HlavniOpenForm;
   Self.ActiveControl := Self.E_VCNazev;
  end;
 
-procedure TF_JCEdit.B_NewZaverAddClick(Sender: TObject);
+procedure TF_JCEdit.B_Vyh_AddClick(Sender: TObject);
 var vyh:TJCVyhZaver;
     vyhIndex:Integer;
     updateOdbocka:boolean;
@@ -301,7 +305,7 @@ var vyh:TJCVyhZaver;
     Self.CHB_Odbocka.Checked := Self.IsAnyVyhMinus();
  end;
 
-procedure TF_JCEdit.B_NewUsekClick(Sender: TObject);
+procedure TF_JCEdit.B_Usek_AddClick(Sender: TObject);
  begin
   if (CB_NewUsek.ItemIndex = -1) then
    begin
@@ -617,7 +621,7 @@ var JC:TJC;
   Self.Close();
  end;
 
-procedure TF_JCEdit.B_ZaveryUseku_DeleteClick(Sender: TObject);
+procedure TF_JCEdit.B_Usek_DelClick(Sender: TObject);
 var i:Integer;
  begin
   i := LV_Useky.ItemIndex;
@@ -632,7 +636,7 @@ var i:Integer;
   Self.UpdateNextNav();
  end;
 
-procedure TF_JCEdit.B_ZaveryVyhybek_DeleteClick(Sender: TObject);
+procedure TF_JCEdit.B_Vyh_DelClick(Sender: TObject);
  begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat výhybku '+Blky.GetBlkName(Self.Vyhybky[LV_Zavery.ItemIndex].Blok)+' z JC?'),
       'Mazání výhybky', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
@@ -647,8 +651,8 @@ procedure TF_JCEdit.LV_ZaveryChange(Sender: TObject; Item: TListItem;
 var i: Integer;
     vyh:TJCVyhZaver;
  begin
-  B_ZaveryVyhybek_Delete.Enabled := (LV_Zavery.ItemIndex <> -1);
-  B_ZaveryUseku_Delete.Enabled := false;
+  B_Vyh_Del.Enabled := (LV_Zavery.ItemIndex <> -1);
+  B_Usek_Del.Enabled := false;
 
   if (Self.LV_Zavery.Selected = nil) then
    begin
@@ -670,12 +674,19 @@ var i: Integer;
   end;
  end;
 
+procedure TF_JCEdit.LV_ZaveryKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+ if ((Key = VK_DELETE) and (Self.B_Vyh_Del.Enabled)) then
+   B_Vyh_DelClick(B_Vyh_Del);
+end;
+
 procedure TF_JCEdit.LV_UsekyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 var i:Integer;
  begin
-  B_ZaveryUseku_Delete.Enabled := (LV_Useky.ItemIndex <> -1);
-  B_ZaveryVyhybek_Delete.Enabled := false;
+  B_Usek_Del.Enabled := (LV_Useky.ItemIndex <> -1);
+  B_Vyh_Del.Enabled := false;
 
   if (Self.LV_Useky.Selected = nil) then
    begin
@@ -687,6 +698,13 @@ var i:Integer;
     if (Blky.GetBlkID(Self.CB_NewUsekPolozky[i]) = Self.Useky[Self.LV_Useky.ItemIndex]) then
       Self.CB_NewUsek.ItemIndex := i;
  end;
+
+procedure TF_JCEdit.LV_UsekyKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+ if ((Key = VK_DELETE) and (Self.B_Usek_Del.Enabled)) then
+   B_Usek_DelClick(B_Usek_Del);
+end;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
 var navestidlo:TBlkNav;

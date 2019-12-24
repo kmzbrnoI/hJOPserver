@@ -144,7 +144,7 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_ZaveryChange
-      ExplicitTop = 48
+      OnKeyDown = LV_ZaveryKeyDown
     end
     object CHB_NewZaver: TGroupBox
       Left = 2
@@ -158,7 +158,6 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit v'#253'hybku '
       TabOrder = 2
-      ExplicitTop = 208
       object Label10: TLabel
         Left = 8
         Top = 16
@@ -212,7 +211,7 @@ object F_JCEdit: TF_JCEdit
           '+'
           '-')
       end
-      object B_NewZaverAdd: TButton
+      object B_Vyh_Add: TButton
         Left = 205
         Top = 16
         Width = 49
@@ -223,10 +222,10 @@ object F_JCEdit: TF_JCEdit
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 2
-        OnClick = B_NewZaverAddClick
+        OnClick = B_Vyh_AddClick
       end
     end
-    object B_ZaveryVyhybek_Delete: TButton
+    object B_Vyh_Del: TButton
       Left = 80
       Top = 17
       Width = 105
@@ -238,7 +237,7 @@ object F_JCEdit: TF_JCEdit
       Caption = 'Smazat v'#253'hybku'
       Enabled = False
       TabOrder = 1
-      OnClick = B_ZaveryVyhybek_DeleteClick
+      OnClick = B_Vyh_DelClick
     end
   end
   object GB_Useky: TGroupBox
@@ -267,7 +266,6 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit '#250'sek '
       TabOrder = 2
-      ExplicitTop = 199
       object CB_NewUsek: TComboBox
         Left = 10
         Top = 16
@@ -281,7 +279,7 @@ object F_JCEdit: TF_JCEdit
         ItemHeight = 13
         TabOrder = 0
       end
-      object B_NewUsek: TButton
+      object B_Usek_Add: TButton
         Left = 264
         Top = 16
         Width = 53
@@ -292,7 +290,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 1
-        OnClick = B_NewUsekClick
+        OnClick = B_Usek_AddClick
       end
     end
     object LV_Useky: TListView
@@ -320,9 +318,10 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_UsekyChange
-      ExplicitTop = 56
+      OnKeyDown = LV_UsekyKeyDown
+      ExplicitTop = 49
     end
-    object B_ZaveryUseku_Delete: TButton
+    object B_Usek_Del: TButton
       Left = 112
       Top = 18
       Width = 105
@@ -334,7 +333,7 @@ object F_JCEdit: TF_JCEdit
       Caption = 'Smazat '#250'sek'
       Enabled = False
       TabOrder = 1
-      OnClick = B_ZaveryUseku_DeleteClick
+      OnClick = B_Usek_DelClick
     end
   end
   object B_Save: TButton
