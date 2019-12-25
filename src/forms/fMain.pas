@@ -208,16 +208,6 @@ type
     P_MJC_Left: TPanel;
     E_Dataload_multiJC: TEdit;
     LV_MultiJC: TListView;
-    GB_Centrala: TGroupBox;
-    Label3: TLabel;
-    Label4: TLabel;
-    L_CS_FW: TLabel;
-    L_CS_ID: TLabel;
-    B_CS_Ver_Update: TButton;
-    Label5: TLabel;
-    L_CS_LI_FW: TLabel;
-    Label6: TLabel;
-    L_CS_UpdateTime: TLabel;
     B_mJC_Add: TButton;
     B_mJC_Remove: TButton;
     LV_AC_Kroky: TListView;
@@ -250,9 +240,6 @@ type
     A_PT_Stop: TAction;
     MI_Houk: TMenuItem;
     MI_RCS_Update: TMenuItem;
-    Label8: TLabel;
-    SE_LI_Addr: TSpinEdit;
-    B_Set_LI_Addr: TButton;
     TS_AB: TTabSheet;
     Panel4: TPanel;
     LV_AB: TListView;
@@ -376,7 +363,6 @@ type
     procedure B_RemoveStackClick(Sender: TObject);
     procedure LV_MultiJCCustomDrawItem(Sender: TCustomListView; Item: TListItem;
       State: TCustomDrawState; var DefaultDraw: Boolean);
-    procedure B_CS_Ver_UpdateClick(Sender: TObject);
     procedure LV_MultiJCChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure B_mJC_AddClick(Sender: TObject);
@@ -410,7 +396,6 @@ type
     procedure MI_HoukClick(Sender: TObject);
     procedure B_AC_ReloadClick(Sender: TObject);
     procedure MI_RCS_UpdateClick(Sender: TObject);
-    procedure B_Set_LI_AddrClick(Sender: TObject);
     procedure B_AB_DeleteClick(Sender: TObject);
     procedure LV_ABChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
@@ -473,11 +458,6 @@ type
 
     procedure UpdateRCSLibsList();
     procedure UpdateSystemButtons();
-
-    procedure SetLIAddrOk(Sender:TObject; Data:Pointer);
-    procedure SetLIAddrErr(Sender:TObject; Data:Pointer);
-    procedure GetCSVersionOk(Sender:TObject; Data:Pointer);
-    procedure GetCSVersionErr(Sender:TObject; Data:Pointer);
 
     procedure CheckNasobicWidth();
   end;//public
@@ -1729,20 +1709,6 @@ begin
  end;
 end;
 
-procedure TF_Main.B_CS_Ver_UpdateClick(Sender: TObject);
-begin
- Self.SE_LI_Addr.Value := 0;
- Self.SE_LI_Addr.Enabled := false;
- Self.B_Set_LI_Addr.Enabled := false;
- Self.B_CS_Ver_Update.Enabled := false;
-
- TrkSystem.callback_ok := TTrakce.GenerateCallback(Self.GetCSVersionOk);
- TrkSystem.callback_err := TTrakce.GenerateCallback(Self.GetCSVersionErr);
- TrkSystem.GetCSVersion();
- TrkSystem.GetLIVersion();
- TrkSystem.GetLIAddress();
-end;
-
 procedure TF_Main.B_HVStats_ExportClick(Sender: TObject);
 var fn:string;
 begin
@@ -1828,51 +1794,6 @@ begin
  if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+OblR.Name+' ?'),
                             'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    OblR.stack.ClearStack();
-end;
-
-procedure TF_Main.GetCSVersionOk(Sender:TObject; Data:Pointer);
-begin
- Self.B_CS_Ver_Update.Enabled := true;
-end;
-
-procedure TF_Main.GetCSVersionErr(Sender:TObject; Data:Pointer);
-begin
- Self.B_CS_Ver_Update.Enabled := true;
- Application.MessageBox('Nepodařilo se zjistit informace o centrále!', 'Varování', MB_OK OR MB_ICONWARNING);
-end;
-
-procedure TF_Main.B_Set_LI_AddrClick(Sender: TObject);
-begin
- if (Self.SE_LI_Addr.Value = 0) then
-  begin
-   Application.MessageBox('Adresa LI musí být v rozsahu 1-31', 'Nelze pokračovat!', MB_ICONERROR OR MB_OK);
-   Exit();
-  end;
-
- if (Application.MessageBox('Opravdu změnit adresu LI?', 'Otázka', MB_YESNO OR MB_DEFBUTTON2 OR MB_ICONQUESTION) <> mrYes) then
-   Exit();
-
- Self.B_Set_LI_Addr.Enabled := false;
- Self.SE_LI_Addr.Enabled := false;
-
- TrkSystem.callback_ok := TTrakce.GenerateCallback(Self.SetLIAddrOk);
- TrkSystem.callback_err := TTrakce.GenerateCallback(Self.SetLIAddrErr);
- TrkSystem.SetLIAddress(Self.SE_LI_Addr.Value);
-end;
-
-procedure TF_Main.SetLIAddrOk(Sender:TObject; Data:Pointer);
-begin
- Self.B_Set_LI_Addr.Enabled := true;
- Self.SE_LI_Addr.Enabled := true;
- Application.MessageBox('Adresa LI nastavena, aktuální adresa je zobrazena v políčku "Adresa LI".',
-                        'Ok', MB_OK OR MB_ICONINFORMATION);
-end;
-
-procedure TF_Main.SetLIAddrErr(Sender:TObject; Data:Pointer);
-begin
- Self.B_Set_LI_Addr.Enabled := true;
- Self.SE_LI_Addr.Enabled := true;
- Application.MessageBox('Nepodařilo se nastavit adresu LI!', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.B_User_AddClick(Sender: TObject);
@@ -2151,10 +2072,8 @@ procedure TF_Main.RepaintObjects;
   P_Time.Left:=P_Time_modelovy.Left-P_Time.Width-5;
   P_Date.Left:=P_Time.Left-P_Date.Width-5;
 
-  GB_Centrala.Top := TS_Technologie.ClientHeight - GB_Centrala.Height - 15;
-  GB_Connected_Panels.Height := GB_Centrala.Top - GB_Connected_Panels.Top - 10;
+  GB_Connected_Panels.Height := TS_Technologie.Height - GB_Connected_Panels.Top - 10;
 
-  GB_Centrala.Width := TS_Technologie.ClientWidth - 2*GB_Centrala.Left;
   GB_Connected_Panels.Width := TS_Technologie.ClientWidth - 2*GB_Connected_Panels.Left;
   GB_Log.Width := TS_Technologie.Width - GB_Log.Left - GB_stav_technologie.Left;
 end;

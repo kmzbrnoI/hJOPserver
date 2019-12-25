@@ -3792,108 +3792,6 @@ object F_Main: TF_Main
           OnDrawItem = LB_LogDrawItem
         end
       end
-      object GB_Centrala: TGroupBox
-        Left = 16
-        Top = 418
-        Width = 800
-        Height = 84
-        Caption = ' Centr'#225'la '
-        TabOrder = 3
-        object Label3: TLabel
-          Left = 16
-          Top = 24
-          Width = 100
-          Height = 13
-          Caption = 'Verze FW v centr'#225'le:'
-        end
-        object Label4: TLabel
-          Left = 155
-          Top = 24
-          Width = 54
-          Height = 13
-          Caption = 'ID centr'#225'ly:'
-        end
-        object L_CS_FW: TLabel
-          Left = 16
-          Top = 40
-          Width = 43
-          Height = 13
-          Caption = 'nezn'#225'm'#225
-        end
-        object L_CS_ID: TLabel
-          Left = 155
-          Top = 40
-          Width = 43
-          Height = 13
-          Caption = 'nezn'#225'm'#233
-        end
-        object Label5: TLabel
-          Left = 262
-          Top = 24
-          Width = 42
-          Height = 13
-          Caption = 'Verze LI:'
-        end
-        object L_CS_LI_FW: TLabel
-          Left = 262
-          Top = 40
-          Width = 43
-          Height = 13
-          Caption = 'nezn'#225'm'#225
-        end
-        object Label6: TLabel
-          Left = 571
-          Top = 24
-          Width = 70
-          Height = 13
-          Caption = 'Aktualizov'#225'no:'
-        end
-        object L_CS_UpdateTime: TLabel
-          Left = 571
-          Top = 40
-          Width = 25
-          Height = 13
-          Caption = 'nikdy'
-        end
-        object Label8: TLabel
-          Left = 385
-          Top = 24
-          Width = 48
-          Height = 13
-          Caption = 'Adresa LI:'
-        end
-        object B_CS_Ver_Update: TButton
-          Left = 704
-          Top = 43
-          Width = 75
-          Height = 25
-          Caption = 'Aktualizovat'
-          Enabled = False
-          TabOrder = 0
-          OnClick = B_CS_Ver_UpdateClick
-        end
-        object SE_LI_Addr: TSpinEdit
-          Left = 385
-          Top = 40
-          Width = 64
-          Height = 22
-          Enabled = False
-          MaxValue = 31
-          MinValue = 0
-          TabOrder = 1
-          Value = 0
-        end
-        object B_Set_LI_Addr: TButton
-          Left = 455
-          Top = 40
-          Width = 66
-          Height = 22
-          Caption = 'Zm'#283'nit'
-          Enabled = False
-          TabOrder = 2
-          OnClick = B_Set_LI_AddrClick
-        end
-      end
     end
     object TS_Bloky: TTabSheet
       Margins.Left = 2
@@ -3902,10 +3800,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Bloky: TListView
         Left = 0
         Top = 40
@@ -4108,10 +4002,6 @@ object F_Main: TF_Main
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_HV: TListView
         Left = 0
         Top = 40
@@ -4353,10 +4243,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Soupravy'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Soupravy: TListView
         Left = 0
         Top = 40
@@ -4520,10 +4406,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Oblasti '#345#237'zen'#237
       ImageIndex = 16
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stanice: TListView
         Left = 0
         Top = 40
@@ -4645,10 +4527,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Zesilova'#269'e'
       ImageIndex = 20
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
@@ -4868,10 +4746,6 @@ object F_Main: TF_Main
       Caption = 'AC'
       ParentShowHint = False
       ShowHint = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_AC_Db: TListView
         Left = 0
         Top = 40
@@ -5212,10 +5086,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'#233
       ImageIndex = 23
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Users: TListView
         Left = 0
         Top = 40
@@ -5381,10 +5251,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav RCS modul'#367
       ImageIndex = -1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_Stav_RCS: TListView
         Left = 0
         Top = 24
@@ -5482,10 +5348,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'J'#237'zdn'#237' cesty'
       ImageIndex = 24
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_VC_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -5690,10 +5552,6 @@ object F_Main: TF_Main
     object TS_MultiJC: TTabSheet
       Caption = 'Slo'#382'en'#233' j'#237'zdn'#237' cesty'
       ImageIndex = 12
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 0
@@ -5831,10 +5689,6 @@ object F_Main: TF_Main
     object TS_AB: TTabSheet
       Caption = 'AB'
       ImageIndex = 14
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel4: TPanel
         Left = 0
         Top = 0
@@ -5918,10 +5772,6 @@ object F_Main: TF_Main
     object TS_FuncsVyznam: TTabSheet
       Caption = 'V'#253'znamy funkc'#237
       ImageIndex = 13
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object M_funcsVyznam: TMemo
         Left = 0
         Top = 40
@@ -5971,10 +5821,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Prim'#225'rn'#237' LOG'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log: TListView
         Left = 0
         Top = 24
@@ -6061,10 +5907,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'LOG komunikace s centr'#225'lou'
       ImageIndex = 14
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log_lnet: TListView
         Left = 0
         Top = 26
@@ -6137,7 +5979,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
           OnChange = CB_centrala_loglevel_fileChange
           Items.Strings = (
@@ -6154,7 +5996,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 1
           OnChange = CB_centrala_loglevel_tableChange
           Items.Strings = (
@@ -6413,7 +6255,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403400410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010136001403440410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8279,7 +8121,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D002803B8041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D002803BC041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8820,7 +8662,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D802040410000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802080410000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

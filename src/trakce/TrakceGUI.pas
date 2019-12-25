@@ -955,9 +955,6 @@ begin
  F_Main.LogStatus('Centrála: připojeno');
  F_Main.S_Intellibox_connect.Brush.Color := clLime;
  F_Main.A_All_Loko_Prevzit.Enabled := true;
- F_Main.B_CS_Ver_Update.Enabled    := true;
- F_Main.B_Set_LI_Addr.Enabled      := true;
- F_Main.SE_LI_Addr.Enabled         := true;
  F_Main.UpdateSystemButtons();
 
  F_Main.A_DCC_Go.Enabled   := true;
@@ -998,10 +995,6 @@ begin
  F_Main.A_All_Loko_Prevzit.Enabled  := false;
  F_Main.A_All_Loko_Odhlasit.Enabled := false;
  F_Main.B_HV_Add.Enabled            := true;
- F_Main.B_CS_Ver_Update.Enabled     := false;
- F_Main.B_Set_LI_Addr.Enabled       := false;
- F_Main.SE_LI_Addr.Enabled          := false;
- F_Main.SE_LI_Addr.Value            := 0;
  F_Main.UpdateSystemButtons();
 
  // zavrit vsechny regulatory
@@ -1814,25 +1807,15 @@ end;
 
 procedure TTrkGUI.GotCSVersion(Sender:TObject; version:TCSVersion);
 begin
- F_Main.L_CS_FW.Caption := IntToStr(version.major) + '.' + IntToStr(version.minor);
- F_Main.L_CS_ID.Caption := IntToStr(version.id);
- F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd. mm. yyyy hh:nn:ss', Now);
  F_Main.LogStatus('FW v centrále: '+IntToStr(version.major) + '.' + IntToStr(version.minor) + ', id: '+IntToStr(version.id));
 end;
 
 procedure TTrkGUI.GotLIVersion(Sender:TObject; version:TLIVersion);
 begin
- F_Main.L_CS_LI_FW.Caption := 'HW: ' + IntToStr(version.hw_major) + '.' + IntToStr(version.hw_minor) +
-                              ', SW: ' + IntToStr(version.sw_major) + '.' + IntToStr(version.sw_minor);
- F_Main.L_CS_UpdateTime.Caption := FormatDateTime('dd. mm. yyyy hh:nn:ss', Now);
- F_Main.LogStatus('FW v LI: '+F_Main.L_CS_LI_FW.Caption);
 end;
 
 procedure TTrkGUI.GotLIAddress(Sender:TObject; addr:Byte);
 begin
- F_Main.SE_LI_Addr.Value := addr;
- F_Main.SE_LI_Addr.Enabled := true;
- F_Main.B_Set_LI_Addr.Enabled := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
