@@ -141,7 +141,6 @@ uses
   timeHelper in 'helpers\timeHelper.pas',
   TechnologieAB in 'TechnologieAB.pas',
   DataAB in 'tables\DataAB.pas',
-  Simulator in 'trakce\Simulator.pas',
   TCPORsRef in 'TCPORsRef.pas',
   fBlkNav in 'bloky\forms\fBlkNav.pas';
 

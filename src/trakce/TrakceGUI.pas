@@ -391,8 +391,8 @@ type
 implementation
 
 uses fMain, fSettings, XpressNET, TechnologieRCS, fRegulator, SprDb, Souprava,
-    GetSystems, THVDatabase, fAdminForm, DataHV, Simulator, Prevody, TBloky,
-    RegulatorTCP, TCPServerOR, fFuncsSet;
+    GetSystems, THVDatabase, fAdminForm, DataHV, Prevody, TBloky, RegulatorTCP,
+    TCPServerOR, fFuncsSet;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -456,7 +456,7 @@ begin
  case (system) of
   TRS_LocoNET   : ;
   TRS_XpressNET : Self.Trakce := TXpressNET.Create();
-  TRS_Simulator : Self.Trakce := TSimulator.Create();
+  TRS_Simulator : ;
  end;//case
 
  Self.Trakce.OnLog                := Self.TrkLog;
