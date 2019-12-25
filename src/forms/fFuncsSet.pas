@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses fMain, Trakce;
+uses fMain, TechnologieTrakce;
 
 {$R *.dfm}
 
@@ -36,7 +36,7 @@ uses fMain, Trakce;
 
 procedure TF_FuncsSet.B_ApplyClick(Sender: TObject);
 begin
- if (not TrkSystem.openned) then
+ if (not TrakceI.connected) then
   begin
    Application.MessageBox('Aplikace není připojena k centrále', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
    Exit();
@@ -56,9 +56,9 @@ begin
 
  Application.ProcessMessages();
 
- TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.FuncsSetOK);
- TrkSystem.callback_err := TTrakce.GenerateCallback(Self.FuncsSetOK);
- TrkSystem.LoksSetFunc(Self.CB_Vyznam.Text, (Self.RG_Stav.ItemIndex = 1));
+{ TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.FuncsSetOK);
+ TrkSystem.callback_err := TTrakce.GenerateCallback(Self.FuncsSetOK); TODO }
+ TrakceI.LoksSetFunc(Self.CB_Vyznam.Text, (Self.RG_Stav.ItemIndex = 1));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

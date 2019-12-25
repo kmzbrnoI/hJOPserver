@@ -265,7 +265,7 @@ uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
     TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
-    Graphics, Prevody;
+    Graphics, Prevody, TechnologieTrakce;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -771,7 +771,7 @@ end;
 procedure TBlkUsek.SetZesDCC(state:TBoosterSignal);
 begin
  if (state = TBoosterSignal.undef) then
-   Self.SetCentralaDCC(TrkSystem.status = Ttrk_status.TS_ON)
+   Self.SetCentralaDCC(TrakceI.TrackStatus = tsOn)
  else
    Self.SetDCC(state = TBoosterSignal.ok);
 end;

@@ -47,7 +47,8 @@ var
 implementation
 
 uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb, TCPORsRef,
-     Souprava, fRegulator, TrakceGUI, fMain, Prevody, TOblRizeni, TOblsRizeni;
+     Souprava, fRegulator, fMain, Prevody, TOblRizeni, TOblsRizeni,
+     TechnologieTrakce;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,20 +186,6 @@ var HV:THV;
     Func:TFunkce;
     LokResponseData:Pointer;
 begin
-{
- Prikazy od klienta:
-  -:LOK;addr;PLEASE;token               - zadost o rizeni konkertni lokomotivy; token neni potreba pripojovat v pripade, kdy loko uz mame autorizovane a bylo nam ukradeno napriklad mysi
-  -;LOK;addr;RELEASE                    - uvolneni lokomotivy z rizeni regulatoru
-  -;LOK;addr;SP;sp_km/h                 - nastaveni rychlosti lokomotivy
-  -;LOK;addr;SPD;sp_km/h;dir ()         - nastaveni rychlosti a smeru lokomotivy
-  -;LOK;addr;D;dir ()                   - nastaveni smeru lokomotivy
-  -;LOK;addr;F;F_left-F_right;states    - nastaveni funkci lokomotivy
-    napr.; or;LOK;F;0-4;00010 nastavi F3 a ostatni F vypne
-  -;LOK;addr;STOP;                      - nouzove zastaveni
-  -;LOK;addr;TOTAL;[0,1]                - nastaveni totalniho rizeni hnaciho vozidla
-  -;LOK;addr:ASK                        - tazani se na existenci HV s adresou \addr; pokud existuje, chci o nem vedet data
-}
-
  parsed[3] := UpperCase(parsed[3]);
 
  try
@@ -291,7 +278,7 @@ begin
    Exit();
   end;
 
- if (HV.Slot.stolen) then
+ if (HV.stolen) then
   begin
    ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' ukradeno, nenastavuji');
    Exit();
@@ -304,14 +291,11 @@ begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   try
-     TrkSystem.LokSetSpeed(Sender, HV, StrToInt(parsed[4]));
-   except
-     Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;
+   HV.SetSpeed(StrToInt(parsed[4]),
+               TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+               TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+               Sender);
   end
 
  else if (parsed[3] = 'SPD') then
@@ -319,14 +303,11 @@ begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   try
-     TrkSystem.LokSetSpeed(Sender, HV, StrToInt(parsed[4]), StrToInt(parsed[5]));
-   except
-     Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;
+   HV.SetSpeedDir(StrToInt(parsed[4]), parsed[5] = '1',
+                  TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                  TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                  Sender);
   end
 
  else if (parsed[3] = 'SP-S') then
@@ -334,14 +315,11 @@ begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   try
-     TrkSystem.LokSetDirectSpeed(Sender, HV, StrToInt(parsed[4]));
-   except
-     Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;
+   HV.SetSpeedStepDir(StrToInt(parsed[4]), HV.direction,
+                      TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                      TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                      Sender);
   end
 
  else if (parsed[3] = 'SPD-S') then
@@ -349,14 +327,11 @@ begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   try
-     TrkSystem.LokSetDirectSpeed(Sender, HV, StrToInt(parsed[4]), StrToInt(parsed[5]));
-   except
-     Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;
+   HV.SetSpeedStepDir(StrToInt(parsed[4]), parsed[5] = '1',
+                      TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                      TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                      Sender);
   end
 
  else if (parsed[3] = 'D') then
@@ -364,14 +339,11 @@ begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   try
-     TrkSystem.LokSetDirectSpeed(Sender, HV, HV.Slot.speed, StrToInt(parsed[4]));
-   except
-     Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;
+   HV.SetDirection(parsed[4] = '1',
+                   TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                   TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                   Sender);
   end
 
  else if (parsed[3] = 'F') then
@@ -385,21 +357,21 @@ begin
     right := left;
    data.Free();
 
-   Func := HV.Slot.funkce;
+   Func := HV.slotFunkce;
    for i := left to right do
      Func[i] := PrevodySoustav.StrToBool(parsed[5][i-left+1]);
 
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
+{   TrkSystem.callback_ok  := TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData); TODO
+   TrkSystem.callback_err := TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData);
 
    try
      TrkSystem.LokSetFunc(Sender, HV, Func);
    except
      Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;
+   end;                          }
   end
 
  else if (parsed[3] = 'STOP') then
@@ -407,14 +379,10 @@ begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-   TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.PanelLOKResponseOK, LokResponseData);
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.PanelLOKResponseErr, LokResponseData);
 
-   try
-     TrkSystem.EmergencyStopLoko(Sender, HV);
-   except
-     Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;
+   HV.EmergencyStop(TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                    TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                    Sender);
   end
 
  else if (parsed[3] = 'TOTAL') then
@@ -471,7 +439,7 @@ begin
 //  -;LOK;RESP;ADDR;[ok, err]; info
  try
   HV := HVDb.HVozidla[TLokResponseData(Data^).addr];
-  speed := TrkSystem.GetStepSpeed(HV.Slot.speed);
+  speed := HV.realSpeed;
   if (speed > HV.Data.maxRychlost) then
     speed := HV.Data.maxRychlost;
 
@@ -503,7 +471,7 @@ var i:Integer;
 begin
  func := '';
  for i := 0 to _HV_FUNC_MAX do
-  case (HV.Slot.funkce[i]) of
+  case (HV.slotFunkce[i]) of
    false : func := func + '0';
    true  : func := func + '1';
   end;//case
@@ -519,7 +487,9 @@ var i:Integer;
 begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';SPD;'+IntToStr(TrkSystem.GetStepSpeed(HV.Slot.speed))+';'+IntToStr(HV.Slot.speed)+';'+IntToStr(HV.Slot.smer)+';');
+     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';SPD;'+
+                        IntToStr(HV.realSpeed)+';'+IntToStr(HV.speedStep)+';'+
+                        IntToStr(prevodySoustav.BoolToInt(HV.direction))+';');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -577,11 +547,11 @@ begin
   end;
 
  // Je loko prevzato?
- if (not HV.Slot.prevzato) then
+ if (not HV.acquired) then
   begin
    // ne -> prevzit loko
    try
-     TrkSystem.PrevzitLoko(HV);
+     HV.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
    except
      on E:Exception do
       begin
@@ -592,7 +562,7 @@ begin
 
    // timeout 3000ms = 3s
    timeout := 0;
-   while ((not HV.Slot.Prevzato) or (HV.Slot.pom = TPomStatus.progr) or (HV.Slot.pom = TPomStatus.error)) do
+   while ((not HV.acquired) or (HV.pom = TPomStatus.progr) or (HV.pom = TPomStatus.error)) do
     begin
      Sleep(1);
      timeout := timeout + 1;

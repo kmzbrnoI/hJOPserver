@@ -51,8 +51,8 @@ type
 
 implementation
 
-uses ownStrUtils, TrakceGUI, Souprava, TBlokUsek, SprDb, fMain, THnaciVozidlo,
-      Trakce, THVDatabase;
+uses ownStrUtils, TechnologieTrakce, Souprava, TBlokUsek, SprDb, fMain,
+     THnaciVozidlo, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 

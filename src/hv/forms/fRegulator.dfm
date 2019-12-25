@@ -355,7 +355,7 @@ object F_DigiReg: TF_DigiReg
     TabOrder = 12
     OnClick = B_STOPClick
   end
-  object CHB_DojezdIgnorate: TCheckBox
+  object CHB_Total: TCheckBox
     Left = 7
     Top = 129
     Width = 97
@@ -366,7 +366,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'Tot'#225'ln'#237' '#345#237'zen'#237
     TabOrder = 13
-    OnClick = CHB_DojezdIgnorateClick
+    OnClick = CHB_TotalClick
   end
   object CHB_f9: TCheckBox
     Tag = 9

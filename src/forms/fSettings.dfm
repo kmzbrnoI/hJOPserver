@@ -100,7 +100,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Centrala
+    ActivePage = TS_Options
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -112,10 +112,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Konfigurace'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_ON_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -329,10 +325,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Snadn'#233' spu'#353't'#283'n'#237
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_SS: TPanel
         Left = 0
         Top = 0
@@ -382,7 +374,7 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
         end
         object GB_SS_Vystupy: TGroupBox
@@ -821,10 +813,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Rychlosti'
       ImageIndex = 25
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_DigiRych: TListView
         Left = 0
         Top = 0
@@ -850,207 +838,6 @@ object F_Options: TF_Options
         TabOrder = 0
         ViewStyle = vsReport
         OnDblClick = LV_DigiRychDblClick
-      end
-    end
-    object TS_Centrala: TTabSheet
-      Caption = 'Centr'#225'la'
-      ImageIndex = 3
-      object GB_Centrala: TGroupBox
-        Left = 114
-        Top = 96
-        Width = 303
-        Height = 265
-        TabOrder = 0
-        object B_Save: TButton
-          Left = 205
-          Top = 227
-          Width = 80
-          Height = 24
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          Caption = 'Pou'#382#237't'
-          Default = True
-          TabOrder = 0
-          OnClick = B_SaveClick
-        end
-        object GB_TrackSystem: TGroupBox
-          Left = 19
-          Top = 21
-          Width = 267
-          Height = 196
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          Caption = ' Komunikace s centr'#225'lou  '
-          TabOrder = 1
-          object Label3: TLabel
-            Left = 13
-            Top = 16
-            Width = 62
-            Height = 13
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Typ rozhran'#237':'
-          end
-          object Label4: TLabel
-            Left = 13
-            Top = 46
-            Width = 46
-            Height = 13
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Baudrate:'
-          end
-          object Label5: TLabel
-            Left = 13
-            Top = 74
-            Width = 45
-            Height = 13
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Data-bity:'
-          end
-          object Label6: TLabel
-            Left = 13
-            Top = 104
-            Width = 44
-            Height = 13
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Stop-bity:'
-          end
-          object Label7: TLabel
-            Left = 13
-            Top = 133
-            Width = 22
-            Height = 13
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Port:'
-          end
-          object Label2: TLabel
-            Left = 13
-            Top = 164
-            Width = 58
-            Height = 13
-            Caption = #344#237'zen'#237' toku:'
-          end
-          object CB_TrackSystem: TComboBox
-            Left = 104
-            Top = 16
-            Width = 150
-            Height = 21
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Style = csDropDownList
-            ItemHeight = 13
-            TabOrder = 0
-            OnChange = CB_TrackSystemChange
-            Items.Strings = (
-              'LI100F (XpressNET)'
-              'Simul'#225'tor')
-          end
-          object CCB_BaudRate: TComComboBox
-            Left = 104
-            Top = 46
-            Width = 150
-            Height = 21
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            ComProperty = cpBaudRate
-            Text = 'Custom'
-            Style = csDropDownList
-            ItemHeight = 13
-            ItemIndex = 0
-            TabOrder = 1
-          end
-          object CCB_DataBits: TComComboBox
-            Left = 104
-            Top = 74
-            Width = 150
-            Height = 21
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            ComProperty = cpDataBits
-            Text = '5'
-            Style = csDropDownList
-            ItemHeight = 13
-            ItemIndex = 0
-            TabOrder = 2
-          end
-          object CCB_StopBits: TComComboBox
-            Left = 104
-            Top = 104
-            Width = 150
-            Height = 21
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            ComProperty = cpStopBits
-            Text = '1'
-            Style = csDropDownList
-            ItemHeight = 13
-            ItemIndex = 0
-            TabOrder = 3
-          end
-          object CCB_Port: TComComboBox
-            Left = 104
-            Top = 133
-            Width = 150
-            Height = 21
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            ComProperty = cpPort
-            Text = 'COM1'
-            Style = csDropDownList
-            ItemHeight = 13
-            ItemIndex = 0
-            TabOrder = 4
-          end
-          object B_PortRefresh: TButton
-            Left = 50
-            Top = 132
-            Width = 49
-            Height = 23
-            Caption = 'Obnovit'
-            TabOrder = 5
-            OnClick = B_PortRefreshClick
-          end
-          object CCB_FC: TComComboBox
-            Left = 103
-            Top = 164
-            Width = 150
-            Height = 21
-            ComProperty = cpFlowControl
-            Text = 'Hardware'
-            Style = csDropDownList
-            ItemHeight = 13
-            ItemIndex = 0
-            TabOrder = 6
-          end
-        end
       end
     end
   end
@@ -1084,7 +871,6 @@ object F_Options: TF_Options
       'Konfigurace|*.ini|Soupravy|*.ini|Prejezdy|*.ini|Bloky|*.ini|Stan' +
       'ice|-.ini|MTB|*.ini|Automaticke rezimy|*.ini|Zesilovace|*.ini|Tr' +
       'ate|*.ini|Vysvetlivky|*.csv'
-    InitialDir = 'D:\Users\Vlak\Delphi'
     Options = [ofHideReadOnly, ofExtensionDifferent, ofEnableSizing]
     Title = 'Ulo'#382'it konfiguracn'#237' soubor'
     Left = 792

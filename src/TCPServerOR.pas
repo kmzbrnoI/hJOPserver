@@ -147,7 +147,7 @@ var
 implementation
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
-      TBlokPrejezd, Logging, ModelovyCas, SprDb,
+      TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, DateUtils;
 
@@ -278,7 +278,7 @@ var iA:integer;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
-   TrkSystem.TurnOffFunctions(F_Main.OnSoundDisabled);
+   TrakceI.TurnOffFunctions(F_Main.OnSoundDisabled);
    Exit();
   end;
 
@@ -316,7 +316,7 @@ begin
  UDPdisc.SendDiscover();
 
  if (SystemData.Status = stopping) then
-   TrkSystem.TurnOffFunctions(F_Main.OnSoundDisabled);
+   TrakceI.TurnOffFunctions(F_Main.OnSoundDisabled);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -538,9 +538,9 @@ begin
    ORTCPServer.GUIQueueLineToRefresh(orRef.index);
    ModCas.SendTimeToPanel(AContext);
 
-   if (TrkSystem.status = Ttrk_status.TS_ON) then
+   if (TrakceI.TrackStatus() = tsOn) then
      Self.SendLn(AContext, '-;DCC;GO')
-   else if ((Self.DCCStopped <> nil) or (TrkSystem.status <> Ttrk_status.TS_OFF)) then
+   else if ((Self.DCCStopped <> nil) or (TrakceI.TrackStatus() <> tsOff)) then
      Self.SendLn(AContext, '-;DCC;DISABLED')
    else
      Self.SendLn(AContext, '-;DCC;STOP');
@@ -653,20 +653,18 @@ begin
 
  else if (parsed[1] = 'DCC') then
   begin
-   if ((parsed[2] = 'GO') and (TrkSystem.status <> TS_ON)) then begin
-    TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCCmdErr, AContext);
+   if ((parsed[2] = 'GO') and (TrakceI.TrackStatus() <> tsOn)) then begin
     try
-      TrkSystem.CentralStart();
+      TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCCmdErr, AContext));
     except
       on E:Exception do
         Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
     end;
-   end else if ((parsed[2] = 'STOP') and (TrkSystem.status = TS_ON)) then
+   end else if ((parsed[2] = 'STOP') and (TrakceI.TrackStatus() = tsOn)) then
     begin
      Self.DCCStopped := AContext;
-     TrkSystem.callback_err := TTrakce.GenerateCallback(Self.OnDCCCmdErr, AContext);
      try
-       TrkSystem.CentralStop();
+       TrakceI.SetTrackStatus(tsOff, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCCmdErr, AContext));
      except
        on E:Exception do
          Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
@@ -1349,7 +1347,7 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if (Assigned(Self.clients[i])) then
    begin
-    if ((Self.DCCStopped = Self.clients[i].conn) and (TrkSystem.status = Ttrk_status.TS_OFF)) then
+    if ((Self.DCCStopped = Self.clients[i].conn) and (TrakceI.TrackStatus = tsOff)) then
       Self.SendLn(Self.clients[i].conn, '-;DCC;STOP')
     else
       Self.SendLn(Self.clients[i].conn, '-;DCC;DISABLED');

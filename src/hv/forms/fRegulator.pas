@@ -25,7 +25,7 @@ type
     B_STOP: TButton;
     Label7: TLabel;
     Label8: TLabel;
-    CHB_DojezdIgnorate: TCheckBox;
+    CHB_Total: TCheckBox;
     CHB_f9: TCheckBox;
     CHB_f10: TCheckBox;
     CHB_f12: TCheckBox;
@@ -53,22 +53,20 @@ type
     procedure S_StatusMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure T_SpeedTimer(Sender: TObject);
-    procedure CHB_DojezdIgnorateClick(Sender: TObject);
+    procedure CHB_TotalClick(Sender: TObject);
   private
 
    speed:Integer;
 
    procedure SetElemntsState(state:boolean);
-
-   procedure LokoComOK(Sender:TObject; data:Pointer);
-   procedure LokoComErr(Sender:TObject; data:Pointer);
+   procedure AcquireFailed(Sender:TObject; data:Pointer);
 
   public
    OpenHV:THV;
 
    procedure OpenForm(HV:THV);
 
-   procedure ConnectChange();
+   procedure LocoChanged();
    procedure Stolen();
    procedure UpdateElements();
 
@@ -97,7 +95,7 @@ type
     procedure Open(HV:THV);
 
     procedure UpdateElements(Sender:TObject; addr:Word);
-    procedure ConnectChange(addr:Word);
+    procedure LocoChanged(addr:Word);
     procedure Stolen(addr:Word);
     function IsLoko(HV:THV):boolean;
 
@@ -114,15 +112,15 @@ implementation
 
 {$R *.dfm}
 
-uses fMain, Trakce;
+uses fMain, Trakce, Prevody, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_DigiReg.CHB_DojezdIgnorateClick(Sender: TObject);
+procedure TF_DigiReg.CHB_TotalClick(Sender: TObject);
 begin
  try
   if (Self.OpenHV <> nil) then
-    Self.OpenHV.ruc := Self.CHB_DojezdIgnorate.Checked;
+    Self.OpenHV.ruc := Self.CHB_Total.Checked;
  except
    on E:Exception do
     begin
@@ -133,65 +131,24 @@ begin
 end;
 
 procedure TF_DigiReg.CHB_svetlaClick(Sender: TObject);
-var func:TFunkce;
  begin
-  if (not OpenHV.slot.Prevzato) then Exit;
-
-  TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
-  TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
-
-  Func := OpenHV.Slot.funkce;
-  Func[(Sender as TCheckBox).Tag] := (Sender as TCheckBox).Checked;
-
-  try
-    TrkSystem.LokSetFunc(Self, OpenHV, Func);
-  except
-    Self.LokoComErr(Self, nil);
-  end;
+  OpenHV.SetSingleFunc(TCheckBox(Sender).Tag, TCheckBox(Sender).Checked,
+                       TTrakce.Callback(), TTrakce.Callback());
  end;
 
 procedure TF_DigiReg.OpenForm(HV:THV);
  begin
-  CHB_DojezdIgnorate.Checked := HV.ruc;
+  CHB_Total.Checked := HV.ruc;
   Self.OpenHV := HV;
-
-  case (TrkSystem.TrkSystem) of
-   TTrk_system.TRS_XpressNET:begin
-     //u XpressNetu nema smysl odhlasovat loko
-     Self.B_OdhlLoko.Visible := false;
-   end;
-  else
-   Self.B_OdhlLoko.Visible := true;
-  end;
-
-  Self.UpdateElements();
-  Self.SetElemntSState(((Self.OpenHV.Slot.prevzato) and ((Self.OpenHV.Slot.pom = pc) or (Self.OpenHV.Slot.pom = released))));
-
-  if (HV.Slot.prevzato) then
-   begin
-    if (HV.Slot.com_err) then
-      Self.LokoComErr(Self, nil)
-     else
-      Self.LokoComOK(Self, nil);
-   end else begin
-    Self.L_ComStatus.Font.Color := clSIlver;
-    Self.L_ComStatus.Caption    := 'loko odhlášeno';
-   end;
+  Self.LocoChanged();
+  Self.T_Speed.Enabled := true;
 
   Self.Show();
-  Self.T_Speed.Enabled := true;
  end;
 
 procedure TF_DigiReg.B_PrevzitLokoClick(Sender: TObject);
 begin
- TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
- TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
- try
-  TrkSystem.PrevzitLoko(Self.OpenHV);
- except
-  on E:Exception do
-    Application.MessageBox(PChar('Převzetí HV se nezdařilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
- end;
+ Self.OpenHV.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback(Self.AcquireFailed));
 end;
 
 procedure TF_DigiReg.B_IdleClick(Sender: TObject);
@@ -202,20 +159,7 @@ end;
 
 procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
  begin
-  TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
-  TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
-  try
-   TrkSystem.OdhlasitLoko(Self.OpenHV);
-  except
-   on E:Exception do
-    begin
-     Application.MessageBox(PChar('Odhlášení HV se nezdařilo !'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
-     Exit();
-    end;
-  end;
-
-  Self.SetElemntsState(false);
-  Self.UpdateElements();
+  Self.OpenHV.TrakceRelease(TTrakce.Callback());
  end;
 
 procedure TF_DigiReg.FormCreate(Sender: TObject);
@@ -233,7 +177,7 @@ var tmp:THV;
     Self.OpenHV := nil;
 
     try
-      if ((tmp.Slot.prevzato) and (tmp.Stav.regulators.Count = 0)) then
+      if ((tmp.acquired) and (tmp.Stav.regulators.Count = 0)) then
        begin
         tmp.ruc := false;
         tmp.CheckRelease();
@@ -251,17 +195,14 @@ var tmp:THV;
   Self.T_Speed.Enabled := false;
  end;
 
+procedure TF_DigiReg.AcquireFailed(Sender:TObject; data:Pointer);
+begin
+ Application.MessageBox('Převezetí lokomotivy se nedařilo!', 'Chyba', MB_OK OR MB_ICONWARNING);
+end;
+
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);
  begin
-  TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
-  TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
-
-  try
-    TrkSystem.EmergencyStopLoko(Self, Self.OpenHV);
-  except
-    Self.LokoComErr(Self, nil);
-  end;
-
+  Self.OpenHV.EmergencyStop(TTrakce.Callback(), TTrakce.Callback());
   Self.UpdateElements();
  end;
 
@@ -272,9 +213,25 @@ procedure TF_DigiReg.RG_SmerClick(Sender: TObject);
  end;
 
 //zavola se po zadosti o prevezeti, pokud je lokomotiva volna
-procedure TF_DigiReg.ConnectChange();
+procedure TF_DigiReg.LocoChanged();
 begin
- Self.SetElemntsState(((Self.OpenHV.Slot.prevzato) and ((Self.OpenHV.Slot.pom = pc) or (Self.OpenHV.Slot.pom = released))));
+ Self.SetElemntsState(((Self.OpenHV.acquired) and ((Self.OpenHV.pom = pc) or (Self.OpenHV.pom = released))));
+
+ if (Self.OpenHV.acquired) then
+  begin
+   if (Self.OpenHV.trakceError) then
+    begin
+     Self.L_ComStatus.Font.Color := clRed;
+     Self.L_ComStatus.Caption := 'loko NEKOMUNIKUJE';
+    end else begin
+     Self.L_ComStatus.Font.Color := clGreen;
+     Self.L_ComStatus.Caption := 'loko KOMUNIKUJE';
+    end;
+  end else begin
+   Self.L_ComStatus.Font.Color := clSIlver;
+   Self.L_ComStatus.Caption    := 'loko odhlášeno';
+  end;
+
  Self.UpdateElements();
 end;
 
@@ -297,38 +254,30 @@ procedure TF_DigiReg.SetElemntsState(state:boolean);
   CHB_f10.Enabled := state;
   CHB_f11.Enabled := state;
   CHB_f12.Enabled := state;
-  CHB_DojezdIgnorate.Enabled := state;
+  CHB_Total.Enabled := state;
  end;
 
 procedure TF_DIgiReg.UpdateElements();
-var Slot:TSlot;
-    data:THVData;
+var funkce:TFunkce;
 begin
- data := Self.OpenHV.data;
- Slot := Self.OpenHV.Slot;
+ TB_reg.Position := OpenHV.speedStep;
 
- TB_reg.Position := Slot.speed;
+ Self.L_stupen.Caption := IntToStr(OpenHV.speedStep)+' / '+IntToStr(OpenHV.slot.maxSpeed);
+ Self.L_speed.Caption  := IntToStr(OpenHV.realSpeed);
 
- Self.L_stupen.Caption := IntToStr(Slot.speed)+' / '+IntToStr(Slot.maxsp);
- Self.L_speed.Caption  := IntToStr(TrkSystem.GetStepSpeed(Slot.speed));
-
- RG_Smer.ItemIndex      := Slot.Smer;
+ RG_Smer.ItemIndex := Integer(OpenHV.direction);
  Self.L_address.Caption := IntToStr(OpenHV.Adresa);
- Self.Caption           := data.Nazev+' ('+data.Oznaceni+') : '+IntToStr(OpenHV.Adresa);
- B_PrevzitLoko.Enabled  := ((not Slot.prevzato) or (Slot.pom = error));
- B_OdhlLoko.Enabled     := Slot.Prevzato;
- CHB_DojezdIgnorate.Checked := Self.OpenHV.ruc;
+ Self.Caption := OpenHV.Nazev+' ('+OpenHV.data.Oznaceni+') : '+IntToStr(OpenHV.adresa);
+ B_PrevzitLoko.Enabled := ((not OpenHV.acquired) or (OpenHV.pom = error));
+ B_OdhlLoko.Enabled := OpenHV.acquired;
+ CHB_Total.Checked := OpenHV.ruc;
+ Self.L_mine.Caption := PrevodySoustav.BoolToStr(OpenHV.acquired);
 
- if (Slot.prevzato) then
-   Self.L_mine.Caption  := 'ano'
- else
-   Self.L_mine.Caption := 'ne';
-
- if ((Slot.prevzato) and ((Slot.pom = pc) or (Slot.pom = released))) then
+ if ((OpenHV.acquired) and ((OpenHV.pom = pc) or (OpenHV.pom = released))) then
   begin
    Self.S_Status.Brush.Color := clGreen;
   end else begin
-   if ((Slot.stolen) or (Slot.pom = progr)) then
+   if ((OpenHV.stolen) or (OpenHV.pom = progr)) then
     begin
      Self.S_Status.Brush.Color := clYellow;
     end else begin
@@ -336,26 +285,27 @@ begin
     end;
   end;
 
- case (slot.pom) of
+ case (OpenHV.pom) of
   TPomStatus.progr    : Self.L_POM.Caption := 'progr';
   TPomStatus.error    : Self.L_POM.Caption := 'error';
   TPomStatus.pc       : Self.L_POM.Caption := 'automat';
   TPomStatus.released : Self.L_POM.Caption := 'ruční';
  end;//case
 
- CHB_svetla.Checked := Slot.funkce[0];
- CHB_f1.Checked  := Slot.funkce[1];
- CHB_f2.Checked  := Slot.funkce[2];
- CHB_f3.Checked  := Slot.funkce[3];
- CHB_f4.Checked  := Slot.funkce[4];
- CHB_f5.Checked  := Slot.funkce[5];
- CHB_f6.Checked  := Slot.funkce[6];
- CHB_f7.Checked  := Slot.funkce[7];
- CHB_f8.Checked  := Slot.funkce[8];
- CHB_f9.Checked  := Slot.funkce[9];
- CHB_f10.Checked := Slot.funkce[10];
- CHB_f11.Checked := Slot.funkce[11];
- CHB_f12.Checked := Slot.funkce[12];
+ funkce := OpenHV.slotFunkce;
+ CHB_svetla.Checked := funkce[0];
+ CHB_f1.Checked  := funkce[1];
+ CHB_f2.Checked  := funkce[2];
+ CHB_f3.Checked  := funkce[3];
+ CHB_f4.Checked  := funkce[4];
+ CHB_f5.Checked  := funkce[5];
+ CHB_f6.Checked  := funkce[6];
+ CHB_f7.Checked  := funkce[7];
+ CHB_f8.Checked  := funkce[8];
+ CHB_f9.Checked  := funkce[9];
+ CHB_f10.Checked := funkce[10];
+ CHB_f11.Checked := funkce[11];
+ CHB_f12.Checked := funkce[12];
 end;
 
 procedure TF_DIgiReg.Stolen();
@@ -368,40 +318,32 @@ end;
 procedure TF_DigiReg.S_StatusMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
- if (not Self.OpenHV.Slot.prevzato) then
+ if (Self.B_PrevzitLoko.Enabled) then
   Self.B_PrevzitLokoClick(self);
 end;
 
 procedure TF_DigiReg.T_SpeedTimer(Sender: TObject);
 begin
-  if (Self.OpenHV = nil) then Exit();
-  if (not OpenHV.slot.Prevzato) then Exit();
-  if (Self.speed = Self.TB_reg.Position) then Exit();
+ if (Self.OpenHV = nil) then Exit();
+ if (Self.speed = Self.TB_reg.Position) then Exit();
 
-  TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.LokoComOK);
-  TrkSystem.callback_err := TTrakce.GenerateCallback(Self.LokoComErr);
+ OpenHV.SetSpeedStepDir(TB_reg.Position, RG_Smer.ItemIndex = 1,
+                        TTrakce.Callback(), TTrakce.Callback());
 
-  try
-    TrkSystem.LokSetDirectSpeed(Self, OpenHV, TB_reg.Position, RG_Smer.ItemIndex);
-  except
-    Self.LokoComErr(Self, nil);
-  end;
-
-  Self.L_stupen.Caption := IntToStr(TB_Reg.Position)+' / '+IntToStr(OpenHV.Slot.maxsp);
-  Self.L_speed.Caption  := IntToStr(TrkSystem.GetStepSpeed(TB_reg.Position));
-
-  Self.speed := Self.TB_reg.Position;
+ Self.L_stupen.Caption := IntToStr(TB_Reg.Position)+' / '+IntToStr(OpenHV.slot.maxSpeed);
+ Self.L_speed.Caption  := IntToStr(OpenHV.realSpeed);
+ Self.speed := Self.TB_reg.Position;
 end;
 
 // vyvola se, pokud je me okynko aktivni a je nad nim stiskla klavesa
 procedure TF_DigiReg.MyKeyPress(key:Integer);
 begin
- if (not Self.OpenHV.Slot.prevzato) then
+ if (not Self.OpenHV.acquired) then
   begin
    if (key = VK_RETURN) then
      if (Self.ActiveControl <> Self.B_PrevzitLoko) then
        Self.B_PrevzitLokoClick(Self);
-   Exit;
+   Exit();
   end;
 
  Self.TB_reg.SetFocus();
@@ -425,18 +367,6 @@ begin
   73: Self.B_IdleClick(Self);   // 'i'
  end;
 
-end;
-
-procedure TF_DigiReg.LokoComOK(Sender:TObject; data:Pointer);
-begin
- Self.L_ComStatus.Font.Color := clGreen;
- Self.L_ComStatus.Caption := 'loko KOMUNIKUJE';
-end;
-
-procedure TF_DigiReg.LokoComErr(Sender:TObject; data:Pointer);
-begin
- Self.L_ComStatus.Font.Color := clRed;
- Self.L_ComStatus.Caption := 'loko NEKOMUNIKUJE';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -464,12 +394,12 @@ begin
  frm.UpdateElements();
 end;
 
-procedure TRegulatorCollector.ConnectChange(addr:Word);
+procedure TRegulatorCollector.LocoChanged(addr:Word);
 var frm:TF_DigiReg;
 begin
  frm := Self.GetForm(addr);
  if (frm = nil) then Exit;
- frm.ConnectChange();
+ frm.LocoChanged();
 end;
 
 procedure TRegulatorCollector.Open(HV:THV);
@@ -499,7 +429,7 @@ begin
  for i := 0 to Self._MAX_FORMS-1 do
   begin
    if (Self.forms.data[i].OpenHV = nil) then continue;
-   if (Self.forms.data[i].OpenHV.Slot.adresa = addr) then
+   if (Self.forms.data[i].OpenHV.adresa = addr) then
      Exit(Self.forms.data[i]);
   end;//for
 end;

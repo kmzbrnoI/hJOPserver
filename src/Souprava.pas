@@ -129,7 +129,7 @@ implementation
 uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokNav,
       fRegulator, Trakce, fMain, TBlokTratUsek, stanicniHlaseniHelper,
-      stanicniHlaseni;
+      stanicniHlaseni, TechnologieTrakce, Prevody;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -388,7 +388,7 @@ begin
        if (new.Contains(addr)) then
          raise Exception.Create('Duplicitní loko!');
 
-       if ((not HVDb.HVozidla[addr].Slot.prevzato) or (HVDb.HVozidla[addr].Slot.stolen)) then
+       if ((not HVDb.HVozidla[addr].acquired) or (HVDb.HVozidla[addr].stolen)) then
         begin
          // pripravit funkce:
          max_func := Min(Length(hv[8]), _HV_FUNC_MAX);
@@ -396,14 +396,14 @@ begin
            HVDb.HVozidla[addr].Stav.funkce[j] := (hv[8][j+1] = '1');
 
          try
-           TrkSystem.PrevzitLoko(HVDb.HVozidla[addr]);
+           HVDb.HVozidla[addr].TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
          except
            on E:Exception do
              raise Exception.Create('PrevzitLoko exception : '+E.Message);
          end;
 
          timeout := 0;
-         while (not HVDb.HVozidla[addr].Slot.prevzato_full) do
+         while (not HVDb.HVozidla[addr].acquired) do
           begin
            Sleep(1);
            timeout := timeout + 1;
@@ -424,7 +424,7 @@ begin
            else
              Func[j] := HVDb.HVozidla[addr].Stav.funkce[j];
 
-         TrkSystem.LokSetFunc(Self, HVDb.HVozidla[addr], Func);
+//          TrakceI.LokSetFunc(Self, HVDb.HVozidla[addr], Func); TODO
         end;
 
        HVDb.HVozidla[addr].Data.Poznamka := hv[3];
@@ -510,7 +510,7 @@ end;
 procedure TSouprava.ReleaseAllLoko();
 var addr:Integer;
 begin
- if ((not Assigned(HVDb)) or (not Assigned(TrkSystem))) then Exit();
+ if ((not Assigned(HVDb)) or (not Assigned(TrakceI))) then Exit();
 
  for addr in Self.HVs do
   begin
@@ -537,7 +537,7 @@ end;
 
 procedure TSouprava.SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
 var addr:Integer;
-    smer:Integer;
+    direction:boolean;
 begin
  if ((TBlk(Self.front).typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
    TBlkTU(Self.front).rychUpdate := false;
@@ -557,26 +557,21 @@ begin
 
  for addr in Self.HVs do
   begin
-   if (not HVDb.HVozidla[addr].Slot.prevzato) then continue;
-   
-   if (HVDb.HVozidla[addr].ruc) then
+   if (HVDb[addr].ruc) then
     begin      // pokud je loko prevzato na rucni rizeni, ignoruji ho
      writelog('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', WR_MESSAGE);
      continue;
     end;
 
-   TrkSystem.callback_err := TTrakce.GenerateCallback(Self.HVComErr);
-   smer := (Integer(dir) xor Integer(HVDb.HVozidla[addr].Stav.StanovisteA));
+   direction := PrevodySoustav.IntToBool(Integer(dir) xor Integer(HVDb[addr].stav.StanovisteA));
 
-   if (not HVDb.HVozidla[addr].Slot.stolen) then begin
-     try
-       TrkSystem.LokSetSpeed(Self, HVDb.HVozidla[addr], Self.data.rychlost, smer)
-     except
-       on E:Exception do
-         AppEvents.LogException(E, 'TSouprava.SetRychlostSmer');
-     end;
-   end else
-    writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
+   try
+     HVDb.HVozidla[addr].SetSpeedDir(Self.data.rychlost, direction,
+                                     TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
+   except
+     on E:Exception do
+       AppEvents.LogException(E, 'TSouprava.SetRychlostSmer');
+   end;
   end;
 
  if ((speed > 0) and (Assigned(Self.front)) and
@@ -615,7 +610,7 @@ function TSouprava.IsUkradeno():boolean;
 var addr:Integer;
 begin
  for addr in Self.HVs do
-  if (HVDb.HVozidla[addr].Slot.stolen) then
+  if (HVDb.HVozidla[addr].stolen) then
     Exit(true);
  Result := false;
 end;
@@ -629,10 +624,10 @@ begin
  taken := false;
  for addr in Self.HVs do
   begin
-   if (HVDb.HVozidla[addr].Slot.stolen) then
+   if (HVDb.HVozidla[addr].stolen) then
     begin
      try
-       TrkSystem.PrevzitLoko(HVDb.HVozidla[addr]);
+       HVDb.HVozidla[addr].TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
      except
        on E:Exception do
          raise Exception.Create('PrevzitLoko exception : '+E.Message);
@@ -640,7 +635,7 @@ begin
      taken := true;
 
      timeout := 0;
-     while (not HVDb.HVozidla[addr].Slot.Prevzato) do
+     while (not HVDb.HVozidla[addr].acquired) do
       begin
        Sleep(1);
        timeout := timeout + 1;
@@ -673,14 +668,16 @@ begin
  // pricteme delku tohoto useku k front:
  for addr in Self.HVs do
   begin
-   case (HVDb.HVozidla[addr].Slot.smer) of
-    0 : begin
-      HVDb.HVozidla[addr].Stav.najeto_vpred.Metru := HVDb.HVozidla[addr].Stav.najeto_vpred.Metru + (front as TBlkUsek).GetSettings().Lenght/100;
-      Inc(HVDb.HVozidla[addr].Stav.najeto_vpred.Bloku);
+   case (HVDb[addr].direction) of
+    false : begin
+      HVDb[addr].Stav.najeto_vpred.Metru := HVDb[addr].Stav.najeto_vpred.Metru +
+                                            (front as TBlkUsek).GetSettings().Lenght/100;
+      Inc(HVDb[addr].Stav.najeto_vpred.Bloku);
     end;
-    1 : begin
-      HVDb.HVozidla[addr].Stav.najeto_vzad.Metru := HVDb.HVozidla[addr].Stav.najeto_vzad.Metru + (front as TBlkUsek).GetSettings().Lenght/100;
-      Inc(HVDb.HVozidla[addr].Stav.najeto_vzad.Bloku);
+    true : begin
+      HVDb[addr].Stav.najeto_vzad.Metru := HVDb[addr].Stav.najeto_vzad.Metru +
+                                           (front as TBlkUsek).GetSettings().Lenght/100;
+      Inc(HVDb[addr].Stav.najeto_vzad.Bloku);
     end;//case 1
    end;//case
 
@@ -766,8 +763,7 @@ begin
      (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
    Exit();
 
- dir := HVDb.HVozidla[Self.HVs[0]].Slot.smer xor
-        Integer(HVDb.HVozidla[Self.HVs[0]].Stav.StanovisteA);
+ dir := Integer(HVDb[Self.HVs[0]].direction) xor Integer(HVDb[Self.HVs[0]].Stav.StanovisteA); // TODO: test this
 
  if (dir = Integer(Self.smer)) then Exit();
  for i := 1 to Self.HVs.Count-1 do

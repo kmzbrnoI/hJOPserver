@@ -90,7 +90,7 @@ procedure THVTableData.UpdateLine(HV:THV);
 var line:Integer;
     data:THVData;
     stav:THVStav;
-    slot:TSlot;
+    slot:TTrkLocoInfo;
     i:Integer;
     str:string;
  begin
@@ -138,14 +138,14 @@ var line:Integer;
   else
     Self.LV.Items[line].SubItems[18] := '-';
 
-  case (slot.pom) of
+  case (stav.pom) of
    TPomStatus.progr    : Self.LV.Items[line].SubItems[17] := 'progr';
    TPomStatus.error    : Self.LV.Items[line].SubItems[17] := 'error';
    TPomStatus.pc       : Self.LV.Items[line].SubItems[17] := 'automat';
    TPomStatus.released : Self.LV.Items[line].SubItems[17] := 'ruční';
   end;//case
 
- if (not HV.Slot.Prevzato) then
+ if (not stav.acquired) then
   begin
    // neprevzato
    Self.LV.Items[line].SubItems[8]  := '---';
@@ -157,33 +157,33 @@ var line:Integer;
    Self.LV.Items[line].SubItems[14]  := '???? ????';
    Self.LV.Items[line].SubItems[15]  := '???? ????';
 
-   if (slot.stolen) then
+   if (stav.stolen) then
      Self.LV.Items[line].SubItems[16] := 'ukradeno'
    else
      Self.LV.Items[line].SubItems[16] := '---';
   end else begin
    // prevzato
 
-   Self.LV.Items[line].SubItems[8] := IntToStr(TrkSystem.GetStepSpeed(Slot.speed)) + 'km/h / '+IntToStr(Slot.speed)+' st';
-   Self.LV.Items[line].SubItems[9] := IntToStr(Slot.smer);
-   Self.LV.Items[line].SubItems[10] := IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[0]));
+   Self.LV.Items[line].SubItems[8] := IntToStr(hv.realSpeed) + 'km/h / '+IntToStr(Slot.speed)+' st';
+   Self.LV.Items[line].SubItems[9] := IntToStr(PrevodySoustav.BoolToInt(Slot.direction));
+   Self.LV.Items[line].SubItems[10] := IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[0]));
 
    str := '';
-   for i := 1 to 4 do str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
+   for i := 1 to 4 do str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
    Self.LV.Items[line].SubItems[11] := str;
 
    str := '';
-   for i := 5 to 8 do str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
+   for i := 5 to 8 do str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
    Self.LV.Items[line].SubItems[12] := str;
 
    str := '';
-   for i := 9 to 12 do str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
+   for i := 9 to 12 do str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
    Self.LV.Items[line].SubItems[13] := str;
 
    str := '';
    for i := 13 to 20 do
     begin
-     str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
+     str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
      if (i = 16) then str := str + ' ';
     end;
    Self.LV.Items[line].SubItems[14] := str;
@@ -191,12 +191,12 @@ var line:Integer;
    str := '';
    for i := 21 to 28 do
     begin
-     str := str + IntToStr(PrevodySoustav.BoolToInt(Slot.funkce[i]));
+     str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
      if (i = 24) then str := str + ' ';
     end;
    Self.LV.Items[line].SubItems[15] := str;
 
-   if (slot.com_err) then
+   if (stav.trakceError) then
      Self.LV.Items[line].SubItems[16] := 'COM ERROR!'
    else
      Self.LV.Items[line].SubItems[16] := 'PC';

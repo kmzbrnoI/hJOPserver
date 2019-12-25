@@ -20,10 +20,10 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_DependencyCheckOutputName>..\..\..\KMZ\hJOP\xn\server\hJOPserver.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\output\hJOPserver.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls</DCC_UsePackage>
-			<DCC_ExeOutput>d:\UsersData\vlak\KMZ\hJOP\xn\server\</DCC_ExeOutput>
+			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
 			<DCC_RangeChecking>true</DCC_RangeChecking>
@@ -253,9 +253,10 @@
 			<DCCReference Include="tables\DataAB.pas"/>
 			<DCCReference Include="TCPORsRef.pas"/>
 			<DCCReference Include="bloky\forms\fBlkNav.pas"/>
-			<DCCReference Include="TrakceGUI.pas"/>
 			<DCCReference Include="trakce\Trakce.pas"/>
 			<DCCReference Include="trakce\TrakceErrors.pas"/>
+			<DCCReference Include="TechnologieTrakce.pas"/>
+			<DCCReference Include="fMainTrakce.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

@@ -45,6 +45,8 @@ const
 type
   // v jakem smeru se nachazi stanoviste A
   THVStanoviste = (lichy = 0, sudy = 1);
+  TFunkce = array[0.._HV_FUNC_MAX] of boolean;
+  TPomStatus = (released = 0, pc = 1, progr = 2, error = 3);
 
   // trida hnaciho vozidla
   THVClass = (parni = 0, diesel = 1, motor = 2, elektro = 3);
@@ -102,6 +104,10 @@ type
    tokens:TList<THVToken>;                             // aktualni seznam tokenu -- jedno HV muze mit prideleno vice tokenu
    ruc:boolean;                                        // jestli je hnaciho vozidlo v rucnim rizeni
    last_used:TDateTime;                                // cas posledniho pouzivani loko
+   acquired:Boolean;
+   stolen:Boolean;
+   pom:TPomStatus;
+   trakceError:Boolean;
   end;
 
   THV = class                                       // HNACI VOZIDLO
@@ -119,13 +125,20 @@ type
      procedure UpdateFuncDict();
      procedure SetSouprava(new:Integer);
 
+     function GetSlotFunkce():TFunkce;
+     function GetRealSpeed():Integer;
+
+     procedure TrakceCallbackOk(Sender:TObject);
+     procedure TrakceCallbackErr(Sender:TObject);
+     procedure SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
+
    public
 
-    index:Word;                                        // index v seznamu vsech hnacich vozidel
-    Data:THVData;                                      // data HV (viz vyse)
-    Stav:THVStav;                                      // stav HV (viz vyse)
-    Slot:TSlot;                                        // slot HV (viz trakcni tridy)
-    changed:boolean;                                   // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
+    index:Word; // index v seznamu vsech hnacich vozidel
+    data:THVData;
+    stav:THVStav;
+    slot:TTrkLocoInfo;
+    changed:boolean; // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
 
      constructor Create(data_ini:TMemIniFile; state_ini:TMemIniFile; section:string); overload;
      constructor Create(adresa:Word; data:THVData; stav:THVStav); overload;
@@ -150,15 +163,26 @@ type
      procedure UpdateAllRegulators();
      procedure ForceRemoveAllRegulators();
 
-     function GetToken():string;                       // ziskani tokenu
-     function IsToken(str:string):boolean;             // overeni tokenu
-     procedure RemoveToken(token:string);              // smazani tokenu
-     procedure UpdateTokenTimeout();                   // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
+     function GetToken():string;
+     function IsToken(str:string):boolean;
+     procedure RemoveToken(token:string);
+     procedure UpdateTokenTimeout(); // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
 
      function CanPlayHouk(sound:string):boolean;       // vraci true pokud je povoleno prehravani zvuku
      procedure CheckRelease();
      procedure RecordUseNow();
      function NiceName():string;
+
+     procedure SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil);
+     procedure SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+     procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+     procedure SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+     procedure EmergencyStop(ok: TCb; err: TCb; Sender:TObject = nil);
+     procedure CSReset();
+
+     procedure TrakceAcquire(ok: TCb; err: TCb);
+     procedure TrakceRelease(ok: TCb);
 
      class function CharToHVFuncType(c:char):THVFuncType;
      class function HVFuncTypeToChar(t:THVFuncType):char;
@@ -168,18 +192,26 @@ type
      procedure GetPtState(json:TJsonObject);
      procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
 
-     property adresa:Word read fadresa;                // adresa HV
-     property ruc:boolean read Stav.ruc write SetRuc;  // rucni rizeni HV
+     property adresa:Word read fadresa;
+     property nazev:string read data.nazev;
+     property ruc:boolean read stav.ruc write SetRuc;
      property funcDict:TDictionary<string, Integer> read m_funcDict;
-     property souprava:Integer read Stav.souprava write SetSouprava;
-
+     property souprava:Integer read stav.souprava write SetSouprava;
+     property speedStep:Byte read slot.speed;
+     property realSpeed:Integer read GetRealSpeed;
+     property direction:boolean read slot.direction;
+     property acquired:boolean read stav.acquired;
+     property stolen:boolean read stav.stolen;
+     property pom:TPomStatus read stav.pom;
+     property trakceError:Boolean read stav.trakceError;
+     property slotFunkce:TFunkce read GetSlotFunkce;
   end;//THV
 
 
 implementation
 
 uses ownStrUtils, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
-      RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv;
+      RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -190,8 +222,9 @@ begin
  Self.Stav.regulators := TList<THVRegulator>.Create();
  Self.Stav.tokens     := TList<THVToken>.Create();
 
- Self.Stav.souprava := -1;
- Self.Stav.stanice  := nil;
+ Self.stav.souprava := -1;
+ Self.stav.stanice := nil;
+ Self.CSReset();
 
  Self.data.POMtake    := TList<THVPomCV>.Create;
  Self.data.POMrelease := TList<THVPomCV>.Create;
@@ -1091,6 +1124,183 @@ begin
    Result := 'M'
  else
    Result := 'P';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil);
+begin
+ Self.SetSpeedDir(speed, Self.slot.direction, ok, err, Sender);
+end;
+
+procedure THV.SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+begin
+ Self.SetSpeedDir(Self.slot.speed, dir, ok, err, Sender);
+end;
+
+procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+begin
+ Self.SetSpeedStepDir(TrakceI.SpeedStep(speed), direction, ok, err, Sender);
+end;
+
+procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+var dirOld:Boolean;
+    stepsOld:Byte;
+begin
+ if ((Self.direction = direction) and (Self.speedStep = speedStep)) then Exit();
+ if (not Self.acquired) then Exit();
+
+ dirOld := Self.direction;
+ stepsOld := Self.speedStep;
+
+ Self.slot.direction := direction;
+ Self.slot.speed := speedStep;
+
+ if (Self.stolen) then
+  begin
+   writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
+   Exit();
+  end;
+
+ try
+   // TODO: handle ok and err callbacks and call it in custom callbacks
+
+   TrakceI.LokSetSpeed(Self.adresa, Self.slot.speed, Self.direction,
+                       TTrakce.Callback(Self.TrakceCallbackOk),
+                       TTrakce.Callback(Self.TrakceCallbackErr));
+ except
+   on E:Exception do
+    begin
+     Self.TrakceCallbackErr(Self);
+     AppEvents.LogException(E, 'THV.SetSpeedDir');
+    end;
+ end;
+
+ Self.SlotChanged(Sender, stepsOld <> speedStep, dirOld <> direction);
+end;
+
+procedure THV.SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+begin
+ if (Self.slotFunkce[func] = state) then Exit();
+ if (not Self.acquired) then Exit();
+
+ if (Self.stolen) then
+  begin
+   writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+   Exit();
+  end;
+
+ if (state) then
+  Self.slot.funkce := Self.slot.funkce or (1 shl func)
+ else
+  Self.slot.funkce := Self.slot.funkce and (not (1 shl func));
+
+ try
+   TrakceI.LocoSetSingleFunc(Self.adresa, func, state,
+                             TTrakce.Callback(Self.TrakceCallbackOk),
+                             TTrakce.Callback(Self.TrakceCallbackErr));
+ except
+   on E:Exception do
+    begin
+     Self.TrakceCallbackErr(Self);
+     AppEvents.LogException(E, 'THV.SetSingleFunc');
+    end;
+ end;
+
+ TCPRegulator.LokUpdateFunc(Self, Sender);
+ RegCollector.UpdateElements(Sender, Self.addr);
+ Self.changed := true;
+end;
+
+procedure THV.EmergencyStop(ok: TCb; err: TCb; Sender:TObject = nil);
+begin
+ if (not Self.acquired) then Exit();
+
+ Self.Slot.speed := 0;
+
+ try
+   TrakceI.LocoEmergencyStop(Self.adresa,
+                             TTrakce.Callback(Self.TrakceCallbackOk),
+                             TTrakce.Callback(Self.TrakceCallbackErr));
+ except
+   on E:Exception do
+    begin
+     Self.TrakceCallbackErr(Self);
+     AppEvents.LogException(E, 'THV.EmergencyStop');
+    end;
+ end;
+
+ Self.SlotChanged(Sender, true, false);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.CSReset();
+begin
+ Self.stav.acquired := false;
+ Self.stav.stolen := false;
+ Self.stav.pom := TPomStatus.released;
+ Self.stav.trakceError := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.TrakceCallbackOk(Sender:TObject);
+begin
+ if (not Self.stav.trakceError) then Exit();
+ Self.stav.trakceError := false;
+ Self.changed := true;
+end;
+
+procedure THV.TrakceCallbackErr(Sender:TObject);
+begin
+ if (Self.stav.trakceError) then Exit();
+ Self.stav.trakceError := true;
+ Self.changed := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THV.GetSlotFunkce():TFunkce;
+var i: Integer;
+    functions: Cardinal;
+begin
+ functions := Self.Slot.functions;
+ for i := 0 to 31 do
+  begin
+   Result[i] := (functions AND $1 > 0);
+   functions := (functions shr 1);
+  end;
+end;
+
+function THV.GetRealSpeed():Integer;
+begin
+ Result := TrakceI.GetStepSpeed(Self.slot.speed);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
+begin
+ TCPRegulator.LokUpdateSpeed(Self, Sender);
+ RegCollector.UpdateElements(Sender, Self.addr);
+ Self.changed := true;
+
+ if ((dir) and (Self.souprava > -1)) then
+   if ((Sender <> Soupravy[Self.souprava]) and (Soupravy[Self.souprava] <> nil)) then
+     Soupravy[Self.souprava].LokDirChanged();
+     // Soupravy[HV.Stav.souprava] <> nil muze nastat pri aktualizaci HV na souprave,
+     // coz se dede prave tady
+end;
+
+procedure THV.TrakceAcquire(ok: TCb; err: TCb);
+begin
+
+end;
+
+procedure THV.TrakceRelease(ok: TCb);
+begin
+
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

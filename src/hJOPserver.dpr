@@ -140,9 +140,10 @@ uses
   DataAB in 'tables\DataAB.pas',
   TCPORsRef in 'TCPORsRef.pas',
   fBlkNav in 'bloky\forms\fBlkNav.pas',
-  TrakceGUI in 'TrakceGUI.pas',
   Trakce in 'trakce\Trakce.pas',
-  TrakceErrors in 'trakce\TrakceErrors.pas';
+  TrakceErrors in 'trakce\TrakceErrors.pas',
+  TechnologieTrakce in 'TechnologieTrakce.pas',
+  fMainTrakce in 'fMainTrakce.pas';
 
 {$R *.res}
 

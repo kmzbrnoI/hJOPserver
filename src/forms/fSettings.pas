@@ -82,27 +82,10 @@ type
     SE_SS_In_Reset: TSpinEdit;
     CHB_SS_Enable: TCheckBox;
     SE_SS_RCSAdr: TSpinEdit;
-    TS_Centrala: TTabSheet;
-    GB_Centrala: TGroupBox;
-    B_Save: TButton;
-    GB_TrackSystem: TGroupBox;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
-    Label7: TLabel;
-    CB_TrackSystem: TComboBox;
-    CCB_BaudRate: TComComboBox;
-    CCB_DataBits: TComComboBox;
-    CCB_StopBits: TComComboBox;
-    CCB_Port: TComComboBox;
-    B_PortRefresh: TButton;
     GB_Autosave: TGroupBox;
     CHB_Autosave: TCheckBox;
     ME_autosave_period: TMaskEdit;
     Label1: TLabel;
-    CCB_FC: TComComboBox;
-    Label2: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure PM_log_deleteClick(Sender: TObject);
@@ -117,11 +100,8 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure LV_DigiRychDblClick(Sender: TObject);
     procedure CHB_SS_EnableClick(Sender: TObject);
-    procedure B_SaveClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
-    procedure B_PortRefreshClick(Sender: TObject);
     procedure CHB_AutosaveClick(Sender: TObject);
-    procedure CB_TrackSystemChange(Sender: TObject);
   private
 
   public
@@ -129,10 +109,6 @@ type
     procedure StartLogWrite;
     procedure NactiSSDoObjektu;
     procedure UlozDataDoSSzObjektu;
-
-    procedure NactiCentralaData();
-    procedure UlozCentralaData();
-    procedure RefreshTrackSystemEnabled();
 
   end;
 
@@ -148,8 +124,7 @@ uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
   TechnologieJC, FileSystem, TBloky, TBlok,
   TBlokVyhybka, TBlokNav, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,
   SnadnSpusteni, TBlokPrejezd, fBlkPrejezd, TJCDatabase, THVDatabase,
-  Logging, DataBloky, DataJC, DataRCS, Trakce,
-  ModelovyCas, ACDatabase, TrakceGUI;
+  Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas, ACDatabase;
 
 {$R *.dfm}
 
@@ -204,19 +179,11 @@ begin
    Self.ME_autosave_period.Text := FormatDateTime('nn:ss', data.autosave_period);
    Self.CHB_Autosave.Checked := Data.autosave;
   end;
- if (PC_1.ActivePage = TS_Centrala)   then Self.NactiCentralaData();
-
 end;
 
 procedure TF_Options.B_OKClick(Sender: TObject);
 begin
  Self.Close();
-end;
-
-procedure TF_Options.B_PortRefreshClick(Sender: TObject);
-begin
- EnumComPorts(Self.CCB_Port.Items);
- Self.CCB_Port.Text := TrkSystem.COM;
 end;
 
 procedure TF_Options.B_pouzitClick(Sender: TObject);
@@ -251,8 +218,7 @@ begin
  CHB_SS_Enable.Left   := (PC_1.Width div 2) - (CHB_SS_Enable.Width div 2);
  L_SS_01.Left         := SE_SS_RCSAdr.Left;
  L_SS_02.Left         := SE_SS_RCSAdr.Left;
- GB_Centrala.Left     := (PC_1.Width div 2) - (GB_Centrala.Width div 2);
-
+ 
  B_SS_Save.Left := P_SS.Width-B_SS_Save.Width-10;
  B_SS_Save.Top  := P_SS.Height-B_SS_Save.Height-10;
 end;
@@ -325,23 +291,6 @@ var IgnoraceRCS:TArI;
   SE_SS_Out_Stop.Value       := data.OUT_Stop;
   SE_SS_Out_Opakovani.Value  := data.OUT_Repeat;
  end;
-
-procedure TF_Options.CB_TrackSystemChange(Sender: TObject);
-begin
- Self.RefreshTrackSystemEnabled();
-end;
-
-procedure TF_Options.RefreshTrackSystemEnabled();
-begin
- Self.CB_TrackSystem.Enabled := not TrkSystem.openned;
- Self.CCB_BaudRate.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
- Self.CCB_DataBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
- Self.CCB_StopBits.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
- Self.CCB_Port.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
- Self.CCB_FC.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
- Self.B_PortRefresh.Enabled := (Self.CB_TrackSystem.ItemIndex = 0) and (not TrkSystem.openned);
- Self.B_Save.Enabled := not TrkSystem.openned;
-end;
 
 procedure TF_Options.CHB_AutosaveClick(Sender: TObject);
 begin
@@ -425,11 +374,6 @@ var data:TSSData;
   SS.SetData(data);
  end;
 
-procedure TF_Options.B_SaveClick(Sender: TObject);
-begin
- Self.UlozCentralaData();
-end;
-
 procedure TF_Options.B_SS_SaveClick(Sender: TObject);
  begin
   UlozDataDoSSzObjektu;
@@ -458,47 +402,6 @@ procedure TF_Options.LV_DigiRychDblClick(Sender: TObject);
   if (LV_DigiRych.Selected <> nil) then F_RychlostiEdit.OpenForm(LV_DigiRych.ItemIndex);
  end;
 
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Options.NactiCentralaData();
-begin
- Self.CB_TrackSystem.ItemIndex := Integer(TrkSystem.TrkSystem)-1;
- Self.CCB_BaudRate.ItemIndex  := Integer(TrkSystem.BaudRate);
- Self.CCB_DataBits.ItemIndex  := Integer(TrkSystem.DataBits);
- Self.CCB_StopBits.ItemIndex  := Integer(TrkSystem.StopBits);
- Self.CCB_FC.ItemIndex        := Integer(TrkSystem.FlowControl);
- Self.CCB_Port.Text           := TrkSystem.COM;
- Self.CB_TrackSystemChange(Self.CB_TrackSystem);
-end;
-
-procedure TF_Options.UlozCentralaData();
-begin
- try
-   TrkSystem.TrkSystem := Ttrk_system(Self.CB_TrackSystem.ItemIndex+1);
- except
-   on E:TrakceGUI.EOpened do
-    begin
-     Self.NactiCentralaData();
-     Application.MessageBox('Nelze změnit trakční systém při připojeném trakčním systému!', 'Chyba!', MB_OK OR MB_ICONERROR);
-     Exit();
-    end;
-   on E:Exception do
-    begin
-     Self.NactiCentralaData();
-     Application.MessageBox(PChar(E.Message), 'Chyba!', MB_OK OR MB_ICONERROR);
-     Exit();
-    end;
- end;
-
- if (TrkSystem.TrkSystem <> TRS_Simulator) then
-  begin
-   TrkSystem.BaudRate    := TBaudRate(Self.CCB_BaudRate.ItemIndex);
-   TrkSystem.DataBits    := TDataBits(Self.CCB_DataBits.ItemIndex);
-   TrkSystem.StopBits    := TStopBits(Self.CCB_StopBits.ItemIndex);
-   TrkSystem.FlowControl := TFlowControl(Self.CCB_FC.ItemIndex);
-   TrkSystem.COM         := Self.CCB_Port.Text;
-  end;
-end;
 ////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

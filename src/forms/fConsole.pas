@@ -34,7 +34,7 @@ var
 
 implementation
 
-uses fMain, fSettings, TechnologieRCS, GetSystems, Verze,
+uses fMain, fSettings, TechnologieRCS, GetSystems, Verze, TechnologieTrakce,
      Logging, TBlok, TBlokUsek, TBLokVyhybka, TBLoky;
 
 {$R *.dfm}
@@ -92,7 +92,7 @@ begin
         begin
          M_console.Lines.Add('Pripojuji se k centrale...');
          try
-           TrkSystem.Open();
+           TrakceI.Connect();
          except
            on E:Exception do
             begin
@@ -109,7 +109,7 @@ begin
          M_console.Lines.Add('Odpojuji se od cntraly...');
 
          try
-           TrkSystem.Close();
+           TrakceI.Disconnect();
          except
            on E:Exception do
             begin

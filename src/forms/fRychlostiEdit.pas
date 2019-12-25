@@ -28,14 +28,14 @@ var
 
 implementation
 
-uses fMain, fSettings;
+uses fMain, fSettings, TechnologieTrakce;
 
 {$R *.dfm}
 
 procedure TF_RychlostiEdit.OpenForm(Stupen:Integer);
  begin
   OpenIndex := Stupen;
-  SE_Rychlost.Value := TrkSystem.GetStepSpeed(stupen);
+  SE_Rychlost.Value := TrakceI.GetStepSpeed(stupen);
   F_RychlostiEdit.Caption := 'Editovat stupeň '+IntToStr(Stupen);
   Self.ActiveControl := Self.SE_Rychlost;
   F_RychlostiEdit.ShowModal;
@@ -54,7 +54,7 @@ procedure TF_RychlostiEdit.B_StornoClick(Sender: TObject);
 
 procedure TF_RychlostiEdit.B_SaveClick(Sender: TObject);
  begin
-  TrkSystem.SetSpetSpeed(OpenIndex,SE_Rychlost.Value);
+  TrakceI.SetStepSpeed(OpenIndex,SE_Rychlost.Value);
   F_Options.LV_DigiRych.Items[OpenIndex].SubItems.Strings[0] := IntToStr(SE_Rychlost.Value)+' km/h';
   F_RychlostiEdit.Close;
  end;
