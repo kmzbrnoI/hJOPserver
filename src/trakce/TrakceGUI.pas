@@ -252,17 +252,6 @@ type
      //   Nouzzove jsou uvolnena takove HV, ktera jsou pri BeforeClose jeste prevzata.
      procedure NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
 
-     // callback pri zjistovani verze centraly
-     procedure GotCSVersionOK(Sender:TObject; Data:Pointer);
-     procedure GotCSVersionErr(Sender:TObject; Data:Pointer);
-
-     // callback pri zjistovani verze LI
-     procedure GotLIVersionOK(Sender:TObject; Data:Pointer);
-     procedure GotLIVersionErr(Sender:TObject; Data:Pointer);
-
-     // callback pri zjistovani adresy LI
-     procedure GotLIAddrErr(Sender:TObject; Data:Pointer);
-
      procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
      procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
 
@@ -1357,9 +1346,9 @@ begin
  F_Main.LogStatus('Centrála: komunikuje');
 
  F_Main.LogStatus('Zjišťuji verzi FW v centrále...');
- Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
+{ Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
  Self.callback_err := TTrakce.GenerateCallback(Self.GotCSVersionErr);
- Self.GetCSVersion();
+ Self.GetCSVersion(); }
 end;
 
 procedure TTrkGUI.InitStopErr(Sender:TObject; Data:Pointer);
@@ -1377,9 +1366,9 @@ begin
  Self.finitok := true;
  F_Main.LogStatus('Centrála: komunikuje');
 
- Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
+{ Self.callback_ok  := TTrakce.GenerateCallback(Self.GotCSVersionOK);
  Self.callback_err := TTrakce.GenerateCallback(Self.GotCSVersionErr);
- Self.GetCSVersion();
+ Self.GetCSVersion(); }
 
  if (SystemData.Status = starting) then
   begin
@@ -1941,48 +1930,6 @@ procedure TTrkGUI.NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
 begin
  HVDb.HVozidla[Integer(data^)].Slot.prevzato      := false;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrkGUI.GotCSVersionOK(Sender:TObject; Data:Pointer);
-begin
- Self.callback_ok  := TTrakce.GenerateCallback(Self.GotLIVersionOK);
- Self.callback_err := TTrakce.GenerateCallback(Self.GotLIVersionErr);
- Self.GetLIVersion();
-
- Self.callback_err := TTrakce.GenerateCallback(Self.GotLIAddrErr);
- Self.GetLIAddress();
-end;
-
-procedure TTrkGUI.GotCSVersionErr(Sender:TObject; Data:Pointer);
-begin
- F_Main.LogStatus('WARN: Centrála nepodvěděla na požadavek o verzi centrály, pokračuji...');
- Self.GotCSVersionOK(Self, data);
-end;
-
-procedure TTrkGUI.GotLIVersionOK(Sender:TObject; Data:Pointer);
-begin
- if (SystemData.Status = starting) then
-  begin
-   if (Self.Trakce.TrackStatus <> Ttrk_status.TS_ON) then
-     F_Main.A_DCC_GoExecute(self)
-    else
-     F_Main.A_All_Loko_PrevzitExecute(nil);
-  end;
-end;
-
-procedure TTrkGUI.GotLIVersionErr(Sender:TObject; Data:Pointer);
-begin
- F_Main.LogStatus('WARN: Centrála neodpověděla na požadavek o verzi LI, pokračuji...');
- Self.GotLIVersionOK(Self, data);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrkGUI.GotLIAddrErr(Sender:TObject; Data:Pointer);
-begin
- F_Main.LogStatus('WARN: Centrála neodpověděla na požadavek o adresu LI');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
