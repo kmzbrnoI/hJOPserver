@@ -4,3 +4,6 @@
 [submodule "src/rcs"]
 	path = src/rcs
 	url = git@github.com:kmzbrnoI/rcs-delphi
+[submodule "src/trakce"]
+	path = src/trakce
+	url = https://github.com/kmzbrnoI/trakce-delphi

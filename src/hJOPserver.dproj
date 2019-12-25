@@ -127,9 +127,6 @@
 			<DCCReference Include="forms\fConsole.pas">
 				<Form>F_Console</Form>
 			</DCCReference>
-			<DCCReference Include="trakce\Trakce.pas"/>
-			<DCCReference Include="trakce\XpressNET.pas"/>
-			<DCCReference Include="trakce\TrakceGUI.pas"/>
 			<DCCReference Include="bloky\TBlok.pas"/>
 			<DCCReference Include="bloky\TBloky.pas"/>
 			<DCCReference Include="bloky\TBlokVyhybka.pas"/>
@@ -256,6 +253,9 @@
 			<DCCReference Include="tables\DataAB.pas"/>
 			<DCCReference Include="TCPORsRef.pas"/>
 			<DCCReference Include="bloky\forms\fBlkNav.pas"/>
+			<DCCReference Include="TrakceGUI.pas"/>
+			<DCCReference Include="trakce\Trakce.pas"/>
+			<DCCReference Include="trakce\TrakceErrors.pas"/>
 			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

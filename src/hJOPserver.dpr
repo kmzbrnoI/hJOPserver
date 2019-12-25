@@ -46,9 +46,6 @@ uses
   TechnologieJC in 'jc\TechnologieJC.pas',
   FileSystem in 'FileSystem.pas',
   fConsole in 'forms\fConsole.pas' {F_Console},
-  Trakce in 'trakce\Trakce.pas',
-  XpressNET in 'trakce\XpressNET.pas',
-  TrakceGUI in 'trakce\TrakceGUI.pas',
   TBlok in 'bloky\TBlok.pas',
   TBloky in 'bloky\TBloky.pas',
   TBlokVyhybka in 'bloky\TBlokVyhybka.pas',
@@ -142,7 +139,10 @@ uses
   TechnologieAB in 'TechnologieAB.pas',
   DataAB in 'tables\DataAB.pas',
   TCPORsRef in 'TCPORsRef.pas',
-  fBlkNav in 'bloky\forms\fBlkNav.pas';
+  fBlkNav in 'bloky\forms\fBlkNav.pas',
+  TrakceGUI in 'TrakceGUI.pas',
+  Trakce in 'trakce\Trakce.pas',
+  TrakceErrors in 'trakce\TrakceErrors.pas';
 
 {$R *.res}
 
