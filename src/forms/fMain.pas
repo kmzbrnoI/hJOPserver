@@ -275,7 +275,6 @@ type
     procedure T_konfliktyTimer(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure L_DateDblClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure PM_SaveFormPosClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
@@ -520,10 +519,9 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
 
 {$R *.dfm}
 
-procedure TF_Main.FormCreate(Sender: TObject);
- begin
-  //vse presunuto do Form1.CreateSystem kvuli splash oknu
- end;
+////////////////////////////////////////////////////////////////////////////////
+// RCS BEGIN
+////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.MI_RCS_libClick(Sender: TObject);
 var fn:string;
@@ -548,382 +546,39 @@ var fn:string;
   Screen.Cursor := crDefault;
  end;
 
-procedure TF_Main.PM_TesterClick(Sender: TObject);
+procedure TF_Main.UpdateRCSLibsList();
+var SR:TSearchRec;
+    item:TMenuItem;
  begin
-  F_Tester.Show;
- end;
+  Self.MI_RCS_Libs.Clear();
 
-procedure TF_Main.P_Time_modelovyDblClick(Sender: TObject);
-begin
- ModCas.started := not ModCas.started;
-end;
-
-procedure TF_Main.P_ZrychleniDblClick(Sender: TObject);
-begin
- F_ModCasSet.OpenForm();
-end;
-
-procedure TF_Main.PM_NastaveniClick(Sender: TObject);
- begin
-  F_Options.Show;
- end;
-
-procedure TF_Main.PM_PropertiesClick(Sender: TObject);
-begin
- if (LV_HV.Selected <> nil) then
-   F_HVEdit.OpenForm(HVDB.HVozidla[Integer(LV_HV.Selected.Data^)]);
-end;
-
-procedure TF_Main.PC_1Change(Sender: TObject);
-begin
- Self.DisableRemoveButtons();
-
- if (PC_1.ActivePage = TS_VC)         then JCTableData.UpdateTable;
- if (PC_1.ActivePage = TS_MultiJC)    then MultiJCTableData.UpdateTable;
- if (PC_1.ActivePage = TS_Users)      then UsersTableData.UpdateTable;
- if (PC_1.ActivePage = TS_Bloky)      then BlokyTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Zesilovace) then ZesTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Soupravy)   then SprTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Aut_Rezimy) then ACTAbleData.UpdateTable(true);
- if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Stanice)    then ORsTableData.UpdateTable(true);
- if (PC_1.ActivePage = TS_Technologie) then ORTCPServer.GUIRefreshTable(); 
-end;
-
-procedure TF_Main.PM_BlokyPopup(Sender: TObject);
-var i:Integer;
-begin
- if (Self.LV_Bloky.Selected = nil) then
-  begin
-   for i := 0 to (Sender as TPopUpMenu).Items.Count-1 do
-    (Sender as TPopUpMenu).Items.Items[i].Enabled := false;
-  end else begin
-   for i := 0 to (Sender as TPopUpMenu).Items.Count-1 do
-    (Sender as TPopUpMenu).Items.Items[i].Enabled := true;
-  end;
-end;
-
-procedure TF_Main.Timer1Timer(Sender: TObject);
- begin
-  try
-    ACDb.Update();
-    SS.Update();
-    DetekujAutSpusteniSystemu;
-    Blky.Update();
-    VypisDatumCas();
-    ModCas.Update();
-    JCDb.Update();
-    MultiJCDb.Update();
-    Boosters.Update();
-    ORs.Update();
-    UpdateCallMethod();
-    RCSd.Update();
-    TrakceI.Update();
-    ABlist.Update();
-  except
-   on E: Exception do
-    begin
-     if (not log_err_flag) then
-       AppEvents.LogException(E, 'Main timer exception');
-    end;
-  end;
- end;
-
-procedure TF_Main.PM_ResetVClick(Sender: TObject);
- begin
-  ResetData.ZakladniPolohaVyhybek;
- end;
-
-procedure TF_Main.PM_RegulatorClick(Sender: TObject);
-begin
- if (Self.LV_HV.Selected = nil) then Exit;
-
- if (TrakceI.ConnectedSafe()) then
-  begin
-   try
-    RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
-   except
-    on E:Exception do
-      Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
-   end;
-  end;//if
-end;
-
-procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-var ci:TCloseInfo;
- begin
-  if (NUZClose) then
+  // prohledavani adresare a nacitani soubor *.2lok
+  // najdeme prvni soubor
+  if (FindFirst(RCSi.libDir+'\*.dll', faAnyFile, SR) = 0) then
    begin
-    CanClose := true;
-    Exit();
-   end;
-  ci := GetFunctions.CanClose();
-  if (Integer(ci) > 0) then CanClose := false;
-
-  case (ci) of
-    TCloseInfo.ci_system_changing : begin
-      writelog('Pokus o zavření okna při zapínání nebo vypínání systémů', WR_ERROR);
-      Application.MessageBox(PChar('Technologie právě zapíná nebo vypíná systémy, aplikaci nelze momentálně zavřít.'+
-              #13#10+'Nouzové ukončení programu lze provést spuštěním příkazu "app-exit" v konzoli')
-              , 'Nelze ukončit program', MB_OK OR MB_ICONWARNING);
-    end;
-
-    TCloseInfo.ci_system_started : begin
-      writelog('Pokus o zavření okna bez ukončení komunikace se systémy', WR_ERROR);
-      if (Application.MessageBox('Program není odpojen od systémů, odpojit od systémů?',
-        'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
-          F_Main.A_System_StopExecute(Self);
-    end;
-
-    TCloseInfo.ci_rcs : begin
-      writelog('Pokus o zavření okna bez uzavření RCS', WR_ERROR);
-      if (Application.MessageBox('Program není odpojen od RCS, odpojit?',
-          'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
-       begin
-        try
-          if (RCSi.Started) then RCSi.Stop()
-          else if (RCSi.Opened) then RCSi.Close();
-        except
-          on E:Exception do
-            Application.MessageBox(PChar('Nastala výjimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
-        end;
-       end;
-    end;
-
-    TCloseInfo.ci_server : begin
-      writelog('Pokus o zavření okna bez vypnutí panel serveru', WR_ERROR);
-      if (Application.MessageBox('PanelServer stále běží, vypnout?',
-          'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
-       ORTCPServer.Stop();
-    end;
-
-    TCloseInfo.ci_trakce : begin
-      writelog('Pokus o zavření okna bez odpojení od centrály', WR_ERROR);
-      if (Application.MessageBox('Program není odpojen od centrály, odpojit?',
-          'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
-        TrakceI.Disconnect();
-    end;
-
-    TCloseInfo.ci_yes : begin
-      if (CloseMessage) then
-       begin
-        CanClose := (Application.Messagebox('Opravdu chcete ukončit program?', 'hJOPserver',
-            MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES);
-       end else begin//CloseMessage
-        CloseMessage := true;
-        CanClose     := true;
-       end;//else CloseMessage
-    end;
-
-  end;//case
- end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Main.AE_1Message(var Msg: tagMSG; var Handled: Boolean);
-begin
- Handled := false;
-
- if (Msg.Message = runningMsg) then
-  begin
-   Application.Restore;
-   SetForeGroundWindow(F_Main.Handle);
-   Handled := true;
-  end;
-
- // STISK KLAVESY
- case (msg.message) of
-   WM_KEYDOWN: begin
-       Handled := false;
-       RegCollector.KeyPress(msg.wParam, Handled);
-       if (Handled) then Exit;
-
-       case (msg.wParam) of
-         VK_F9:begin
-            try
-              RCSi.HideConfigDialog();
-            except
-              on E:Exception do
-                Application.MessageBox(PChar('Nelze skrýt konfigurační dialog RCS : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
-            end;
-         end;
-
-         VK_ESCAPE:if (F_About.Showing) then F_About.Close;
-
-         VK_F4:begin
-            // zobrazeni debug okna
-            F_Admin.Show();
-            Handled := true;
-         end;
-        end;//case
-   end;
- end;
-end;
-
-procedure TF_Main.WMPowerBroadcast(var Msg: TMessage);
-begin
- case (msg.WParam) of
-    PBT_APMQUERYSUSPEND: begin
-       msg.Result := BROADCAST_QUERY_DENY;
-     end;
-
-    PBT_APMSUSPEND: begin
-       // windows is going to sleep -> disconnect all devices
-       if (TrakceI.ConnectedSafe()) then
-        begin
-         ORTCPServer.Stop();
-         try
-           TrakceI.EmergencyStop();
-           TrakceI.FastResetLocos();
-           TrakceI.Disconnect();
-         except
-
-         end;
-        end;
-
-       try
-         if (RCSi.Started) then RCSi.Stop();
-         if (RCSi.Opened) then RCSi.Close();
-       except
-
-       end;
-     end;
-
- end;//case
-end;
-
-procedure TF_Main.WMQueryEndSession(var Msg: TWMQueryEndSession);
-begin
- if (GetFunctions.CanClose() <> ci_yes) then
-  begin
-   Msg.Result := 0;
- end else begin
-   Msg.Result := 1;
-   CloseMessage := false;
-   NUZClose     := true;
- end;
- inherited;
-end;
-
-procedure TF_Main.WMEndSession(var Msg: TWMEndSession);
-begin
- if (Msg.EndSession = True) then
-  begin
-   if (TrakceI.ConnectedSafe()) then
-    begin
-     ORTCPServer.Stop();
-     try
-       TrakceI.EmergencyStop();
-       TrakceI.FastResetLocos();
-       TrakceI.Disconnect();
-     except
-
-     end;
-    end;
-
-   try
-     if (RCSi.Started) then RCSi.Stop();
-     if (RCSi.Opened) then RCSi.Close();
-   except
-
-   end;
-
-   CloseMessage := false;
-   NUZClose     := true;
-   F_Main.Close();
-  end;
- inherited;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Main.A_All_Loko_OdhlasitExecute(Sender: TObject);
-begin
- F_Main.LogStatus('Loko: odhlašuji...');
- Application.ProcessMessages();
- F_Main.S_lok_prevzato.Brush.Color := clBlue;
-
- try
-   TrakceI.ReleaseAllLocos();
- except
-   on E:Exception do
-    begin
-     Application.MessageBox(PChar('Nepodařilo se odhlásit lokomotivy:'+#13#10+E.Message),
-            'Varování', MB_OK OR MB_ICONWARNING);
-    end;
- end;
-end;
-
-procedure TF_Main.A_All_Loko_PrevzitExecute(Sender: TObject);
-begin
- F_Main.LogStatus('Loko: přebírám...');
- Application.ProcessMessages();
- F_Main.S_lok_prevzato.Brush.Color := clBlue;
- TrakceI.AcquireAllLocos();
-end;
-
-procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
-begin
- if ((SystemData.Status = starting) and (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn)) then
-  begin
-   Self.A_All_Loko_PrevzitExecute(Self);
-   Exit();
-  end;
-
- Self.LogStatus('DCC: zapínám');
-
- try
-   TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCGoError));
- except
-   on E:Exception do
-    begin
-     Application.MessageBox(PChar('Chyba při DCC GO:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
-     Self.LogStatus('DCC: START: ERR '+E.Message);
-    end;
- end;
-end;
-
-procedure TF_Main.A_DCC_StopExecute(Sender: TObject); //DCC stop
-begin
-  Self.LogStatus('DCC: vypínám');
-
-  try
-    TrakceI.SetTrackStatus(tsOff, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCStopError));
-  except
-    on E:Exception do
+    if ((SR.Attr AND faDirectory) = 0) then
      begin
-      Application.MessageBox(PChar('Chyba při DCC STOP:'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
-      Self.LogStatus('DCC: STOP: ERR '+E.Message);
+      item := TMenuItem.Create(Self.MI_RCS_Libs);
+      item.Caption := SR.Name;
+      item.OnClick := Self.MI_RCS_libClick;
+      Self.MI_RCS_Libs.Add(item);
      end;
-  end;
-end;
 
-procedure TF_Main.A_FuncsSetExecute(Sender: TObject);
-begin
- F_FuncsSet.Show();
-end;
+    // hledame dalsi soubory
+    while (FindNext(SR) = 0) do
+     begin
+      if ((SR.Attr AND faDirectory) = 0) then
+       begin
+        item := TMenuItem.Create(Self.MI_RCS_Libs);
+        item.Caption := SR.Name;
+        item.OnClick := Self.MI_RCS_libClick;
+        Self.MI_RCS_Libs.Add(item);
+       end;
+     end;
 
-procedure TF_Main.OnDCCGoError(Sender:TObject; Data:Pointer);
-begin
- SystemData.Status := TSystemStatus.null;
- Self.UpdateSystemButtons();
- F_Main.A_DCC_Go.Enabled       := true;
- F_Main.A_DCC_Stop.Enabled     := true;
- F_Main.S_Intellibox_go.Brush.Color  := clGray;
- Self.LogStatus('DCC: START: ERR: cenrála neodpověděla na příkaz');
- Application.MessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
+    SysUtils.FindClose(SR);
+   end;
 end;
-
-procedure TF_Main.OnDCCStopError(Sender:TObject; Data:Pointer);
-begin
- Self.LogStatus('DCC: STOP: ERR: cenrála neodpověděla na příkaz');
- Self.UpdateSystemButtons();
- F_Main.A_DCC_Go.Enabled       := true;
- F_Main.A_DCC_Stop.Enabled     := true;
- F_Main.S_Intellibox_go.Brush.Color  := clGray;
- Application.MessageBox('Centrála neodpověděla na příkaz DCC STOP', 'Varování', MB_OK OR MB_ICONWARNING);
-end;
-
 
 procedure TF_Main.A_lib_cfgExecute(Sender: TObject);
 begin
@@ -1100,57 +755,6 @@ begin
   end;
 end;
 
-procedure TF_Main.A_PanelServer_StartExecute(Sender: TObject);
-begin
- if ((SystemData.Status = starting) and (not Blky.enabled)) then Blky.Enable();
-
- try
-   ORTCPServer.Start();
-   Self.A_PanelServer_Start.Enabled := false;
-   Self.A_PanelServer_Stop.Enabled  := true;
-   Self.UpdateSystemButtons();
- except
-   on E : Exception do
-    begin
-     SystemData.Status := TSystemStatus.null;
-     Self.UpdateSystemButtons();
-     Application.MessageBox(PChar('Chyba při zapínání serveru:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
-     Exit();
-    end;
- end;
-end;
-
-procedure TF_Main.A_PanelServer_StopExecute(Sender: TObject);
-begin
- ORTCPServer.Stop();
-
- Self.A_PanelServer_Start.Enabled := true;
- Self.A_PanelServer_Stop.Enabled  := false;
- Self.UpdateSystemButtons();
-end;
-
-procedure TF_Main.A_PT_StartExecute(Sender: TObject);
-begin
- try
-   PtServer.Start();
- except
-   on E:Exception do
-     Application.MessageBox(PChar('Nelze nastartovat PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
- end;
-end;
-
-procedure TF_Main.A_PT_StopExecute(Sender: TObject);
-begin
- try
-   PtServer.Stop();
- except
-   on E:Exception do
-     Application.MessageBox(PChar('Nelze zastavit PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
- end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
 //--- events from RCS lib begin ---
 procedure TF_Main.OnRCSStart(Sender:TObject);
 begin
@@ -1212,7 +816,7 @@ begin
     ini.Free();
   end;
 
-  if (F_Tester.Showing) then F_Tester.Close();  
+  if (F_Tester.Showing) then F_Tester.Close();
 
   F_Main.S_RCS_Start.Brush.Color := clRed;
 
@@ -1433,6 +1037,642 @@ end;
 //--- events from RCS lib end ---
 
 ////////////////////////////////////////////////////////////////////////////////
+// RCS END
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// TRAKCE BEGIN
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.A_Trk_ConnectExecute(Sender: TObject);
+begin
+ if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
+  begin
+   Self.A_DCC_GoExecute(Self);
+   Exit();
+  end;
+
+ try
+   TrakceI.Connect();
+ except
+   on E:Exception do
+    begin
+     TrakceI.Log(llErrors, 'OPEN: error: ' + E.Message);
+     Self.OnTrkAfterClose(Self);
+     if (SystemData.Status = TSystemStatus.starting) then
+      begin
+       SystemData.Status := TSystemStatus.null;
+       F_Main.A_System_Start.Enabled := true;
+       F_Main.A_System_Stop.Enabled := true;
+      end;
+
+     F_Main.A_Trk_Connect.Enabled := true;
+     F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
+     F_Main.S_Intellibox_connect.Brush.Color := clRed;
+     Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
+                            'Chyba', MB_OK OR MB_ICONERROR);
+    end;
+ end;
+
+ Application.ProcessMessages();
+end;
+
+procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
+var addr:Integer;
+begin
+ if ((SystemData.Status = stopping) and (not TrakceI.ConnectedSafe())) then
+  begin
+   F_Main.A_RCS_StopExecute(nil);
+   Exit();
+  end;
+
+ // TODO: move this to some loco reset?
+ for addr := 0 to _MAX_ADDR-1 do
+  begin
+   if (HVDb[addr] <> nil) then
+    begin
+     HVDb[addr].stav.stolen := false;
+     HVDb[addr].stav.acquired := false;
+    end;
+  end;
+
+ try
+   TrakceI.Disconnect();
+ except
+   on E:Exception do
+    begin
+     TrakceI.Log(llErrors, 'CLOSE: error: ' + E.Message);
+     Application.MessageBox(PChar('Chyba pri uzavírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
+                            'Chyba', MB_OK OR MB_ICONERROR);
+    end;
+ end;
+
+ Application.ProcessMessages();
+end;
+
+procedure TF_Main.A_All_Loko_OdhlasitExecute(Sender: TObject);
+begin
+ F_Main.LogStatus('Loko: odhlašuji...');
+ Application.ProcessMessages();
+ F_Main.S_lok_prevzato.Brush.Color := clBlue;
+
+ try
+   TrakceI.ReleaseAllLocos();
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Nepodařilo se odhlásit lokomotivy:'+#13#10+E.Message),
+            'Varování', MB_OK OR MB_ICONWARNING);
+    end;
+ end;
+end;
+
+procedure TF_Main.A_All_Loko_PrevzitExecute(Sender: TObject);
+begin
+ F_Main.LogStatus('Loko: přebírám...');
+ Application.ProcessMessages();
+ F_Main.S_lok_prevzato.Brush.Color := clBlue;
+ TrakceI.AcquireAllLocos();
+end;
+
+procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
+begin
+ if ((SystemData.Status = starting) and (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn)) then
+  begin
+   Self.A_All_Loko_PrevzitExecute(Self);
+   Exit();
+  end;
+
+ Self.LogStatus('DCC: zapínám');
+
+ try
+   TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCGoError));
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Chyba při DCC GO:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+     Self.LogStatus('DCC: START: ERR '+E.Message);
+    end;
+ end;
+end;
+
+procedure TF_Main.A_DCC_StopExecute(Sender: TObject); //DCC stop
+begin
+  Self.LogStatus('DCC: vypínám');
+
+  try
+    TrakceI.SetTrackStatus(tsOff, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCStopError));
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar('Chyba při DCC STOP:'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
+      Self.LogStatus('DCC: STOP: ERR '+E.Message);
+     end;
+  end;
+end;
+
+procedure TF_Main.A_FuncsSetExecute(Sender: TObject);
+begin
+ F_FuncsSet.Show();
+end;
+
+procedure TF_Main.OnDCCGoError(Sender:TObject; Data:Pointer);
+begin
+ SystemData.Status := TSystemStatus.null;
+ Self.UpdateSystemButtons();
+ F_Main.A_DCC_Go.Enabled       := true;
+ F_Main.A_DCC_Stop.Enabled     := true;
+ F_Main.S_Intellibox_go.Brush.Color  := clGray;
+ Self.LogStatus('DCC: START: ERR: cenrála neodpověděla na příkaz');
+ Application.MessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
+end;
+
+procedure TF_Main.OnDCCStopError(Sender:TObject; Data:Pointer);
+begin
+ Self.LogStatus('DCC: STOP: ERR: cenrála neodpověděla na příkaz');
+ Self.UpdateSystemButtons();
+ F_Main.A_DCC_Go.Enabled       := true;
+ F_Main.A_DCC_Stop.Enabled     := true;
+ F_Main.S_Intellibox_go.Brush.Color  := clGray;
+ Application.MessageBox('Centrála neodpověděla na příkaz DCC STOP', 'Varování', MB_OK OR MB_ICONWARNING);
+end;
+
+procedure TF_Main.OnTrkBeforeOpen(Sender: TObject);
+begin
+ F_Main.A_Trk_Connect.Enabled       := false;
+ F_Main.A_Trk_Disconnect.Enabled    := false;
+ F_Main.A_System_Start.Enabled := false;
+ F_Main.A_System_Stop.Enabled := false;
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'Připojování...';
+ F_Main.S_Intellibox_connect.Brush.Color := clBlue;
+ F_Main.LogStatus('Centrála: připojování...');
+ F_Main.B_HV_Add.Enabled    := false;
+ F_Main.B_HV_Delete.Enabled := false;
+ Application.ProcessMessages();
+end;
+
+procedure TF_Main.OnTrkAfterOpen(Sender: TObject);
+begin
+// Self.TrkLog(self, tllCommand, 'OPEN OK');
+ F_Main.A_Trk_Connect.Enabled       := false;
+ F_Main.A_Trk_Disconnect.Enabled    := true;
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála připojena';
+ F_Main.LogStatus('Centrála: připojeno');
+ F_Main.S_Intellibox_connect.Brush.Color := clLime;
+ F_Main.A_All_Loko_Prevzit.Enabled := true;
+ F_Main.UpdateSystemButtons();
+
+ F_Main.A_DCC_Go.Enabled   := true;
+ F_Main.A_DCC_Stop.Enabled := true;
+ F_Main.A_FuncsSet.Enabled := true;
+
+ Application.ProcessMessages();
+end;
+
+procedure TF_Main.OnTrkBeforeClose(Sender: TObject);
+begin
+ F_Main.A_Trk_Connect.Enabled       := false;
+ F_Main.A_Trk_Disconnect.Enabled    := false;
+ F_Main.A_System_Start.Enabled := false;
+ F_Main.A_System_Stop.Enabled := false;
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
+ F_Main.LogStatus('Centrála: odpojování...');
+ F_Main.S_Intellibox_connect.Brush.Color := clBlue;
+ F_Main.G_Loko_Prevzato.Progress := 0;
+ F_Main.S_lok_prevzato.Brush.Color := clRed;
+ Application.ProcessMessages();
+end;
+
+procedure TF_Main.OnTrkAfterClose(Sender: TObject);
+var addr:Integer;
+begin
+// Self.TrkLog(self, tllCommand, 'CLOSE OK');
+ F_Main.A_Trk_Connect.Enabled       := true;
+ F_Main.A_Trk_Disconnect.Enabled    := false;
+ F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála odpojena';
+ F_Main.LogStatus('Centrála: odpojena');
+ F_Main.S_Intellibox_connect.Brush.Color := clRed;
+ F_Main.A_All_Loko_Prevzit.Enabled  := false;
+ F_Main.A_All_Loko_Odhlasit.Enabled := false;
+ F_Main.B_HV_Add.Enabled            := true;
+ F_Main.UpdateSystemButtons();
+
+ // zavrit vsechny regulatory
+ RegCollector.CloseAll();
+
+ HVTableData.LoadToTable();
+
+ F_Main.S_Intellibox_go.Brush.Color := clGray;
+ F_Main.A_DCC_Go.Enabled   := false;
+ F_Main.A_DCC_Stop.Enabled := false;
+ F_Main.A_FuncsSet.Enabled := false;
+ if (F_FuncsSet.Showing) then F_FuncsSet.Close();
+
+ for addr := 0 to _MAX_ADDR-1 do
+  if (HVDb[addr] <> nil) then
+    HVDb[addr].CSReset();
+
+ Application.ProcessMessages();
+
+ if (SystemData.Status = stopping) then
+   Exit(); // TODO
+end;
+
+procedure TF_Main.CB_centrala_loglevel_fileChange(Sender: TObject);
+begin
+// TrkSystem.logfile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex); TODO
+end;
+
+procedure TF_Main.CB_centrala_loglevel_tableChange(Sender: TObject);
+begin
+// TrkSystem.logtable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex); TODO
+end;
+
+
+////////////////////////////////////////////////////////////////////////////////
+//centrala events:
+
+procedure TF_Main.OnCentralaDCCChange(Sender:TObject; state:boolean);
+begin
+ Blky.SetDCC(state);
+
+ if (state) then
+  begin
+   //je DCC
+   F_Main.S_Intellibox_go.Brush.Color  := clLime;
+   Self.LogStatus('DCC: go');
+
+   if (TrakceI.ConnectedSafe()) then
+    begin
+     F_Main.A_DCC_Go.Enabled   := false;
+     F_Main.A_DCC_Stop.Enabled := true;
+    end;
+
+   if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
+     F_Main.A_All_Loko_PrevzitExecute(nil);
+
+   ORTCPServer.DCCStart();
+  end else begin
+
+   ORs.BroadcastPlaySound(_SND_CHYBA, false, TORControlRights.write);
+
+   //neni DCC
+   F_Main.S_Intellibox_go.Brush.Color  := clRed;
+   Self.LogStatus('DCC: stop');
+
+   if (TrakceI.ConnectedSafe()) then
+    begin
+     F_Main.A_DCC_Go.Enabled   := true;
+     F_Main.A_DCC_Stop.Enabled := false;
+    end;
+
+   ORTCPServer.DCCStop();
+  end;//else state
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// TRAKCE END
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.Timer1Timer(Sender: TObject);
+ begin
+  try
+    ACDb.Update();
+    SS.Update();
+    DetekujAutSpusteniSystemu;
+    Blky.Update();
+    VypisDatumCas();
+    ModCas.Update();
+    JCDb.Update();
+    MultiJCDb.Update();
+    Boosters.Update();
+    ORs.Update();
+    UpdateCallMethod();
+    RCSd.Update();
+    TrakceI.Update();
+    ABlist.Update();
+  except
+   on E: Exception do
+    begin
+     if (not log_err_flag) then
+       AppEvents.LogException(E, 'Main timer exception');
+    end;
+  end;
+ end;
+
+procedure TF_Main.PM_TesterClick(Sender: TObject);
+ begin
+  F_Tester.Show;
+ end;
+
+procedure TF_Main.P_Time_modelovyDblClick(Sender: TObject);
+begin
+ ModCas.started := not ModCas.started;
+end;
+
+procedure TF_Main.P_ZrychleniDblClick(Sender: TObject);
+begin
+ F_ModCasSet.OpenForm();
+end;
+
+procedure TF_Main.PM_NastaveniClick(Sender: TObject);
+ begin
+  F_Options.Show;
+ end;
+
+procedure TF_Main.PM_PropertiesClick(Sender: TObject);
+begin
+ if (LV_HV.Selected <> nil) then
+   F_HVEdit.OpenForm(HVDB.HVozidla[Integer(LV_HV.Selected.Data^)]);
+end;
+
+procedure TF_Main.PC_1Change(Sender: TObject);
+begin
+ Self.DisableRemoveButtons();
+
+ if (PC_1.ActivePage = TS_VC)         then JCTableData.UpdateTable;
+ if (PC_1.ActivePage = TS_MultiJC)    then MultiJCTableData.UpdateTable;
+ if (PC_1.ActivePage = TS_Users)      then UsersTableData.UpdateTable;
+ if (PC_1.ActivePage = TS_Bloky)      then BlokyTableData.UpdateTable();
+ if (PC_1.ActivePage = TS_Zesilovace) then ZesTableData.UpdateTable();
+ if (PC_1.ActivePage = TS_Soupravy)   then SprTableData.UpdateTable();
+ if (PC_1.ActivePage = TS_Aut_Rezimy) then ACTAbleData.UpdateTable(true);
+ if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
+ if (PC_1.ActivePage = TS_Stanice)    then ORsTableData.UpdateTable(true);
+ if (PC_1.ActivePage = TS_Technologie) then ORTCPServer.GUIRefreshTable(); 
+end;
+
+procedure TF_Main.PM_BlokyPopup(Sender: TObject);
+var i:Integer;
+begin
+ if (Self.LV_Bloky.Selected = nil) then
+  begin
+   for i := 0 to (Sender as TPopUpMenu).Items.Count-1 do
+    (Sender as TPopUpMenu).Items.Items[i].Enabled := false;
+  end else begin
+   for i := 0 to (Sender as TPopUpMenu).Items.Count-1 do
+    (Sender as TPopUpMenu).Items.Items[i].Enabled := true;
+  end;
+end;
+
+procedure TF_Main.PM_ResetVClick(Sender: TObject);
+ begin
+  ResetData.ZakladniPolohaVyhybek;
+ end;
+
+procedure TF_Main.PM_RegulatorClick(Sender: TObject);
+begin
+ if (Self.LV_HV.Selected = nil) then Exit;
+
+ if (TrakceI.ConnectedSafe()) then
+  begin
+   try
+    RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
+   except
+    on E:Exception do
+      Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+   end;
+  end;//if
+end;
+
+procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var ci:TCloseInfo;
+ begin
+  if (NUZClose) then
+   begin
+    CanClose := true;
+    Exit();
+   end;
+  ci := GetFunctions.CanClose();
+  if (Integer(ci) > 0) then CanClose := false;
+
+  case (ci) of
+    TCloseInfo.ci_system_changing : begin
+      writelog('Pokus o zavření okna při zapínání nebo vypínání systémů', WR_ERROR);
+      Application.MessageBox(PChar('Technologie právě zapíná nebo vypíná systémy, aplikaci nelze momentálně zavřít.'+
+              #13#10+'Nouzové ukončení programu lze provést spuštěním příkazu "app-exit" v konzoli')
+              , 'Nelze ukončit program', MB_OK OR MB_ICONWARNING);
+    end;
+
+    TCloseInfo.ci_system_started : begin
+      writelog('Pokus o zavření okna bez ukončení komunikace se systémy', WR_ERROR);
+      if (Application.MessageBox('Program není odpojen od systémů, odpojit od systémů?',
+        'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+          F_Main.A_System_StopExecute(Self);
+    end;
+
+    TCloseInfo.ci_rcs : begin
+      writelog('Pokus o zavření okna bez uzavření RCS', WR_ERROR);
+      if (Application.MessageBox('Program není odpojen od RCS, odpojit?',
+          'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+       begin
+        try
+          if (RCSi.Started) then RCSi.Stop()
+          else if (RCSi.Opened) then RCSi.Close();
+        except
+          on E:Exception do
+            Application.MessageBox(PChar('Nastala výjimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+        end;
+       end;
+    end;
+
+    TCloseInfo.ci_server : begin
+      writelog('Pokus o zavření okna bez vypnutí panel serveru', WR_ERROR);
+      if (Application.MessageBox('PanelServer stále běží, vypnout?',
+          'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+       ORTCPServer.Stop();
+    end;
+
+    TCloseInfo.ci_trakce : begin
+      writelog('Pokus o zavření okna bez odpojení od centrály', WR_ERROR);
+      if (Application.MessageBox('Program není odpojen od centrály, odpojit?',
+          'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
+        TrakceI.Disconnect();
+    end;
+
+    TCloseInfo.ci_yes : begin
+      if (CloseMessage) then
+       begin
+        CanClose := (Application.Messagebox('Opravdu chcete ukončit program?', 'hJOPserver',
+            MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES);
+       end else begin//CloseMessage
+        CloseMessage := true;
+        CanClose     := true;
+       end;//else CloseMessage
+    end;
+
+  end;//case
+ end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.AE_1Message(var Msg: tagMSG; var Handled: Boolean);
+begin
+ Handled := false;
+
+ if (Msg.Message = runningMsg) then
+  begin
+   Application.Restore;
+   SetForeGroundWindow(F_Main.Handle);
+   Handled := true;
+  end;
+
+ // STISK KLAVESY
+ case (msg.message) of
+   WM_KEYDOWN: begin
+       Handled := false;
+       RegCollector.KeyPress(msg.wParam, Handled);
+       if (Handled) then Exit;
+
+       case (msg.wParam) of
+         VK_F9:begin
+            try
+              RCSi.HideConfigDialog();
+            except
+              on E:Exception do
+                Application.MessageBox(PChar('Nelze skrýt konfigurační dialog RCS : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+            end;
+         end;
+
+         VK_ESCAPE:if (F_About.Showing) then F_About.Close;
+
+         VK_F4:begin
+            // zobrazeni debug okna
+            F_Admin.Show();
+            Handled := true;
+         end;
+        end;//case
+   end;
+ end;
+end;
+
+procedure TF_Main.WMPowerBroadcast(var Msg: TMessage);
+begin
+ case (msg.WParam) of
+    PBT_APMQUERYSUSPEND: begin
+       msg.Result := BROADCAST_QUERY_DENY;
+     end;
+
+    PBT_APMSUSPEND: begin
+       // windows is going to sleep -> disconnect all devices
+       if (TrakceI.ConnectedSafe()) then
+        begin
+         ORTCPServer.Stop();
+         try
+           TrakceI.EmergencyStop();
+           TrakceI.FastResetLocos();
+           TrakceI.Disconnect();
+         except
+
+         end;
+        end;
+
+       try
+         if (RCSi.Started) then RCSi.Stop();
+         if (RCSi.Opened) then RCSi.Close();
+       except
+
+       end;
+     end;
+
+ end;//case
+end;
+
+procedure TF_Main.WMQueryEndSession(var Msg: TWMQueryEndSession);
+begin
+ if (GetFunctions.CanClose() <> ci_yes) then
+  begin
+   Msg.Result := 0;
+ end else begin
+   Msg.Result := 1;
+   CloseMessage := false;
+   NUZClose     := true;
+ end;
+ inherited;
+end;
+
+procedure TF_Main.WMEndSession(var Msg: TWMEndSession);
+begin
+ if (Msg.EndSession = True) then
+  begin
+   if (TrakceI.ConnectedSafe()) then
+    begin
+     ORTCPServer.Stop();
+     try
+       TrakceI.EmergencyStop();
+       TrakceI.FastResetLocos();
+       TrakceI.Disconnect();
+     except
+
+     end;
+    end;
+
+   try
+     if (RCSi.Started) then RCSi.Stop();
+     if (RCSi.Opened) then RCSi.Close();
+   except
+
+   end;
+
+   CloseMessage := false;
+   NUZClose     := true;
+   F_Main.Close();
+  end;
+ inherited;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.A_PanelServer_StartExecute(Sender: TObject);
+begin
+ if ((SystemData.Status = starting) and (not Blky.enabled)) then Blky.Enable();
+
+ try
+   ORTCPServer.Start();
+   Self.A_PanelServer_Start.Enabled := false;
+   Self.A_PanelServer_Stop.Enabled  := true;
+   Self.UpdateSystemButtons();
+ except
+   on E : Exception do
+    begin
+     SystemData.Status := TSystemStatus.null;
+     Self.UpdateSystemButtons();
+     Application.MessageBox(PChar('Chyba při zapínání serveru:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+     Exit();
+    end;
+ end;
+end;
+
+procedure TF_Main.A_PanelServer_StopExecute(Sender: TObject);
+begin
+ ORTCPServer.Stop();
+
+ Self.A_PanelServer_Start.Enabled := true;
+ Self.A_PanelServer_Stop.Enabled  := false;
+ Self.UpdateSystemButtons();
+end;
+
+procedure TF_Main.A_PT_StartExecute(Sender: TObject);
+begin
+ try
+   PtServer.Start();
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Nelze nastartovat PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
+end;
+
+procedure TF_Main.A_PT_StopExecute(Sender: TObject);
+begin
+ try
+   PtServer.Stop();
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Nelze zastavit PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.A_SaveStavExecute(Sender: TObject);
 var ini:TMemIniFile;
@@ -1503,6 +1743,13 @@ begin
       AppEvents.LogException(E, 'Save RCS');
   end;
 
+  try
+    TrakceI.SaveToFile(ini_lib);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'Save Trakce');
+  end;
+
   ini_lib.WriteBool('Log', 'main-file', Self.CHB_Mainlog_File.Checked);
   ini_lib.WriteBool('Log', 'main-table', Self.CHB_Mainlog_Table.Checked);
   ini_lib.WriteBool('Log', 'rcs', Self.CHB_rcslog.Checked);
@@ -1523,7 +1770,7 @@ begin
   end;
 end;
 
-procedure TF_Main.A_System_StartExecute(Sender: TObject);      //system start
+procedure TF_Main.A_System_StartExecute(Sender: TObject);
 begin
  Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
 
@@ -1540,7 +1787,7 @@ begin
  Self.A_RCS_OpenExecute(nil);
 end;
 
-procedure TF_Main.A_System_StopExecute(Sender: TObject);       //system stop
+procedure TF_Main.A_System_StopExecute(Sender: TObject);
 begin
  Self.A_System_Stop.Enabled := false;
 
@@ -1575,74 +1822,6 @@ begin
    sleep(1);
   end;
  Self.call_method := method;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Main.A_Trk_ConnectExecute(Sender: TObject);
-begin
- if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
-  begin
-   Self.A_DCC_GoExecute(Self);
-   Exit();
-  end;
-
- try
-   TrakceI.Connect();
- except
-   on E:Exception do
-    begin
-     TrakceI.Log(llErrors, 'OPEN: error: ' + E.Message);
-     Self.OnTrkAfterClose(Self);
-     if (SystemData.Status = TSystemStatus.starting) then
-      begin
-       SystemData.Status := TSystemStatus.null;
-       F_Main.A_System_Start.Enabled := true;
-       F_Main.A_System_Stop.Enabled := true;
-      end;
-
-     F_Main.A_Trk_Connect.Enabled := true;
-     F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
-     F_Main.S_Intellibox_connect.Brush.Color := clRed;
-     Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
-                            'Chyba', MB_OK OR MB_ICONERROR);
-    end;
- end;
-
- Application.ProcessMessages();
-end;
-
-procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
-var addr:Integer;
-begin
- if ((SystemData.Status = stopping) and (not TrakceI.ConnectedSafe())) then
-  begin
-   F_Main.A_RCS_StopExecute(nil);
-   Exit();
-  end;
-
- // TODO: move this to some loco reset?
- for addr := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[addr] <> nil) then
-    begin
-     HVDb[addr].stav.stolen := false;
-     HVDb[addr].stav.acquired := false;
-    end;
-  end;
-
- try
-   TrakceI.Disconnect();
- except
-   on E:Exception do
-    begin
-     TrakceI.Log(llErrors, 'CLOSE: error: ' + E.Message);
-     Application.MessageBox(PChar('Chyba pri uzavírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
-                            'Chyba', MB_OK OR MB_ICONERROR);
-    end;
- end;
-
- Application.ProcessMessages();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1710,7 +1889,6 @@ var pozice:Integer;
    end;//if MesageBox
 end;
 
-// ulozeni zmen fyznamu funkci z Mema do struktury programu
 procedure TF_Main.B_ChangeClick(Sender: TObject);
 var data:string;
     i:Integer;
@@ -1944,7 +2122,7 @@ end;
 procedure TF_Main.T_functionTimer(Sender: TObject);
 begin
  try
-   Vytizeni.DetekujVytizeniProcesoru;
+   Vytizeni.DetekujVytizeniProcesoru();
 
    // update tables
    if (Self.Showing) then
@@ -2006,16 +2184,6 @@ procedure TF_Main.FreeVars;
   Blky.Free();
  end;
 
-procedure TF_Main.CB_centrala_loglevel_fileChange(Sender: TObject);
-begin
-// TrkSystem.logfile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex); TODO
-end;
-
-procedure TF_Main.CB_centrala_loglevel_tableChange(Sender: TObject);
-begin
-// TrkSystem.logtable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex); TODO
-end;
-
 procedure TF_Main.CHB_rcslogClick(Sender: TObject);
 begin
  RCSi.log := Self.CHB_rcslog.Checked;
@@ -2072,7 +2240,7 @@ begin
  end;
 end;
 
-procedure TF_Main.CreateClasses;
+procedure TF_Main.CreateClasses();
  begin
   ini_lib        := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
   ResetData      := TReset.Create;
@@ -2098,7 +2266,7 @@ procedure TF_Main.CreateClasses;
   Blky := TBlky.Create();
  end;
 
-procedure TF_Main.RepaintObjects;
+procedure TF_Main.RepaintObjects();
  begin
   SB1.Panels.Items[0].Width:=F_Main.ClientWidth-SB1.Panels.Items[1].Width-SB1.Panels.Items[2].Width-
   SB1.Panels.Items[3].Width-SB1.Panels.Items[4].Width-SB1.Panels.Items[5].Width;
@@ -2219,7 +2387,7 @@ begin
   end;
 end;
 
-procedure TF_Main.LoadIniLibData;
+procedure TF_Main.LoadIniLibData();
  begin
   Self.CHB_Mainlog_File.Checked := ini_lib.ReadBool('Log','main-file', true);
   Self.CHB_Mainlog_Table.Checked := ini_lib.ReadBool('Log','main-table', true);
@@ -2227,18 +2395,18 @@ procedure TF_Main.LoadIniLibData;
   RCSi.log := Self.CHB_rcslog.Checked;
  end;
 
-procedure TF_Main.SetStartVars;
+procedure TF_Main.SetStartVars();
  begin
   CloseMessage := true;
  end;
 
-procedure TVytizeni.DetekujVytizeniProcesoru;
+procedure TVytizeni.DetekujVytizeniProcesoru();
  begin
   CollectCPUData;
   Vytizeni.Gauge.Progress := Round(GetCPUUsage(GetCPUCount-1)*100);
  end;
 
-procedure TF_Main.DetekujAutSpusteniSystemu;
+procedure TF_Main.DetekujAutSpusteniSystemu();
  begin
   if (KomunikacePocitani <> 0) then
    begin
@@ -2267,7 +2435,7 @@ procedure TF_Main.DetekujAutSpusteniSystemu;
    end;//if KomunikacePocitani <> -1
  end;
 
-procedure TF_Main.VypisDatumCas;
+procedure TF_Main.VypisDatumCas();
  begin
   P_Date.Caption := FormatDateTime('dd. mm. yyyy', Now);
   P_Time.Caption := FormatDateTime('hh:mm:ss', Now);
@@ -2306,7 +2474,7 @@ begin
   end;
 end;
 
-procedure TF_Main.OnStart;
+procedure TF_Main.OnStart();
  begin
   Vytizeni.DrawCPUGauge;
 
@@ -2375,7 +2543,7 @@ procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);
   F_Main.SaveFormPosition;
  end;
 
-procedure TF_Main.CreateSystem;
+procedure TF_Main.CreateSystem();
  begin
   Randomize;
 
@@ -2413,7 +2581,7 @@ procedure TF_Main.CreateSystem;
   RepaintObjects;
  end;
 
-procedure TVytizeni.DrawCPUGauge;
+procedure TVytizeni.DrawCPUGauge();
 var cyklus:Integer;
  begin
   Gauge := TGauge.Create(F_Main.SB1);
@@ -2461,48 +2629,6 @@ procedure TF_Main.PM_ConsoleClick(Sender: TObject);
  begin
   F_Console.Show;
  end;
-
-////////////////////////////////////////////////////////////////////////////////
-//centrala events:
-
-procedure TF_Main.OnCentralaDCCChange(Sender:TObject; state:boolean);
-begin
- Blky.SetDCC(state);
-
- if (state) then
-  begin
-   //je DCC
-   F_Main.S_Intellibox_go.Brush.Color  := clLime;
-   Self.LogStatus('DCC: go');
-
-   if (TrakceI.ConnectedSafe()) then
-    begin
-     F_Main.A_DCC_Go.Enabled   := false;
-     F_Main.A_DCC_Stop.Enabled := true;
-    end;
-
-   if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
-     F_Main.A_All_Loko_PrevzitExecute(nil);
-
-   ORTCPServer.DCCStart();
-  end else begin
-
-   ORs.BroadcastPlaySound(_SND_CHYBA, false, TORControlRights.write);
-
-   //neni DCC
-   F_Main.S_Intellibox_go.Brush.Color  := clRed;
-   Self.LogStatus('DCC: stop');
-
-   if (TrakceI.ConnectedSafe()) then
-    begin
-     F_Main.A_DCC_Go.Enabled   := true;
-     F_Main.A_DCC_Stop.Enabled := false;
-    end;
-
-   ORTCPServer.DCCStop();
-  end;//else state
-
-end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2951,7 +3077,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.DisableRemoveButtons;
+procedure TF_Main.DisableRemoveButtons();
  begin
   B_BlkDelete.Enabled       := false;
   B_HV_Delete.Enabled       := false;
@@ -3059,42 +3185,6 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.UpdateRCSLibsList();
-var SR:TSearchRec;
-    item:TMenuItem;
- begin
-  Self.MI_RCS_Libs.Clear();
-
-  // prohledavani adresare a nacitani soubor *.2lok
-  // najdeme prvni soubor
-  if (FindFirst(RCSi.libDir+'\*.dll', faAnyFile, SR) = 0) then
-   begin
-    if ((SR.Attr AND faDirectory) = 0) then
-     begin
-      item := TMenuItem.Create(Self.MI_RCS_Libs);
-      item.Caption := SR.Name;
-      item.OnClick := Self.MI_RCS_libClick;
-      Self.MI_RCS_Libs.Add(item);
-     end;
-
-    // hledame dalsi soubory
-    while (FindNext(SR) = 0) do
-     begin
-      if ((SR.Attr AND faDirectory) = 0) then
-       begin
-        item := TMenuItem.Create(Self.MI_RCS_Libs);
-        item.Caption := SR.Name;
-        item.OnClick := Self.MI_RCS_libClick;
-        Self.MI_RCS_Libs.Add(item);
-       end;
-     end;
-
-    SysUtils.FindClose(SR);
-   end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
 procedure TF_Main.UpdateSystemButtons();
 begin
  Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.ConnectedSafe())
@@ -3118,89 +3208,6 @@ begin
    Self.P_Zrychleni.Width := _SMALL;
    Self.FormResize(Self);
   end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Main.OnTrkBeforeOpen(Sender: TObject);
-begin
- F_Main.A_Trk_Connect.Enabled       := false;
- F_Main.A_Trk_Disconnect.Enabled    := false;
- F_Main.A_System_Start.Enabled := false;
- F_Main.A_System_Stop.Enabled := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Připojování...';
- F_Main.S_Intellibox_connect.Brush.Color := clBlue;
- F_Main.LogStatus('Centrála: připojování...');
- F_Main.B_HV_Add.Enabled    := false;
- F_Main.B_HV_Delete.Enabled := false;
- Application.ProcessMessages();
-end;
-
-procedure TF_Main.OnTrkAfterOpen(Sender: TObject);
-begin
-// Self.TrkLog(self, tllCommand, 'OPEN OK');
- F_Main.A_Trk_Connect.Enabled       := false;
- F_Main.A_Trk_Disconnect.Enabled    := true;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála připojena';
- F_Main.LogStatus('Centrála: připojeno');
- F_Main.S_Intellibox_connect.Brush.Color := clLime;
- F_Main.A_All_Loko_Prevzit.Enabled := true;
- F_Main.UpdateSystemButtons();
-
- F_Main.A_DCC_Go.Enabled   := true;
- F_Main.A_DCC_Stop.Enabled := true;
- F_Main.A_FuncsSet.Enabled := true;
-
- Application.ProcessMessages();
-end;
-
-procedure TF_Main.OnTrkBeforeClose(Sender: TObject);
-begin
- F_Main.A_Trk_Connect.Enabled       := false;
- F_Main.A_Trk_Disconnect.Enabled    := false;
- F_Main.A_System_Start.Enabled := false;
- F_Main.A_System_Stop.Enabled := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
- F_Main.LogStatus('Centrála: odpojování...');
- F_Main.S_Intellibox_connect.Brush.Color := clBlue;
- F_Main.G_Loko_Prevzato.Progress := 0;
- F_Main.S_lok_prevzato.Brush.Color := clRed;
- Application.ProcessMessages();
-end;
-
-procedure TF_Main.OnTrkAfterClose(Sender: TObject);
-var addr:Integer;
-begin
-// Self.TrkLog(self, tllCommand, 'CLOSE OK');
- F_Main.A_Trk_Connect.Enabled       := true;
- F_Main.A_Trk_Disconnect.Enabled    := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála odpojena';
- F_Main.LogStatus('Centrála: odpojena');
- F_Main.S_Intellibox_connect.Brush.Color := clRed;
- F_Main.A_All_Loko_Prevzit.Enabled  := false;
- F_Main.A_All_Loko_Odhlasit.Enabled := false;
- F_Main.B_HV_Add.Enabled            := true;
- F_Main.UpdateSystemButtons();
-
- // zavrit vsechny regulatory
- RegCollector.CloseAll();
-
- HVTableData.LoadToTable();
-
- F_Main.S_Intellibox_go.Brush.Color := clGray;
- F_Main.A_DCC_Go.Enabled   := false;
- F_Main.A_DCC_Stop.Enabled := false;
- F_Main.A_FuncsSet.Enabled := false;
- if (F_FuncsSet.Showing) then F_FuncsSet.Close();
-
- for addr := 0 to _MAX_ADDR-1 do
-  if (HVDb[addr] <> nil) then
-    HVDb[addr].CSReset();
-
- Application.ProcessMessages();
-
- if (SystemData.Status = stopping) then
-
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
