@@ -127,9 +127,10 @@ type
 
      function GetSlotFunkce():TFunkce;
      function GetRealSpeed():Integer;
+     function GetStACurrentDirection():Boolean;
 
-     procedure TrakceCallbackOk(Sender:TObject);
-     procedure TrakceCallbackErr(Sender:TObject);
+     procedure TrakceCallbackOk(Sender:TObject; data:Pointer);
+     procedure TrakceCallbackErr(Sender:TObject; data:Pointer);
      procedure SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
 
    public
@@ -173,16 +174,23 @@ type
      procedure RecordUseNow();
      function NiceName():string;
 
-     procedure SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil);
-     procedure SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil);
-     procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
-     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+     procedure SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil); overload;
+     procedure SetSpeed(speed:Integer; Sender: TObject = nil); overload;
+     procedure SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
+     procedure SetDirection(dir:boolean; Sender: TObject = nil); overload;
+     procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
+     procedure SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil); overload;
+     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
+     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil); overload;
      procedure SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
      procedure EmergencyStop(ok: TCb; err: TCb; Sender:TObject = nil);
      procedure CSReset();
 
      procedure TrakceAcquire(ok: TCb; err: TCb);
      procedure TrakceRelease(ok: TCb);
+
+     procedure SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
+     procedure SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
 
      class function CharToHVFuncType(c:char):THVFuncType;
      class function HVFuncTypeToChar(t:THVFuncType):char;
@@ -200,6 +208,7 @@ type
      property speedStep:Byte read slot.speed;
      property realSpeed:Integer read GetRealSpeed;
      property direction:boolean read slot.direction;
+     property stACurrentDirection:boolean read GetStACurrentDirection;
      property acquired:boolean read stav.acquired;
      property stolen:boolean read stav.stolen;
      property pom:TPomStatus read stav.pom;
@@ -568,7 +577,10 @@ begin
 
  Result := Result + IntToStr(Integer(Self.Stav.StanovisteA)) + '|';
 
- if (Self.Slot.prevzato) then func := Self.Slot.funkce else func := Self.Stav.funkce;
+ if (Self.acquired) then
+   func := Self.slotFunkce
+ else
+   func := Self.Stav.funkce;
 
  for i := 0 to _HV_FUNC_MAX do
   begin
@@ -579,8 +591,8 @@ begin
   end;
 
  Result := Result + '|' + IntToStr(Self.Slot.speed) + '|' +
-           IntToStr(TrkSystem.GetStepSpeed(Self.Slot.speed)) + '|' +
-           IntToStr(Self.Slot.smer) + '|' + Self.Stav.stanice.id + '|';
+           IntToStr(TrakceI.GetStepSpeed(Self.Slot.speed)) + '|' +
+           IntToStr(PrevodySoustav.BoolToInt(Self.direction)) + '|' + Self.Stav.stanice.id + '|';
 
  if (mode = TLokStringMode.full) then
   begin
@@ -762,9 +774,9 @@ begin
  else
   spr := '-';
 
- if (Self.Slot.stolen) then
+ if (Self.acquired) then
   begin
-   // loko ukradeno Rocomysi
+   // loko ukradeno ovladacem
    Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';MM. '+IntToStr(Self.adresa)+' ('+spr+')');
    Exit();
   end else begin
@@ -861,16 +873,16 @@ begin
    // loko je uvedeno do rucniho rizeni
 
    // nastavit POM rucniho rizeni
-   if ((Self.Slot.prevzato) and (Self.Slot.pom <> TPomStatus.released)) then // neprevzatym vozidlum je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
-     TrkSystem.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released);
+   if ((Self.acquired) and (Self.pom <> TPomStatus.released)) then // neprevzatym vozidlum je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
+     TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released);
   end else begin
    // loko je vyjmuto z rucniho rizeni
 
    if (Self.Stav.souprava > -1) then
     begin
      // POM automatu
-     if (Self.Slot.pom <> TPomStatus.pc) then
-       TrkSystem.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc);
+     if (Self.pom <> TPomStatus.pc) then
+       TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc);
 
      Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
     end else begin
@@ -880,7 +892,7 @@ begin
   end;
 
  if (RegCollector.IsLoko(Self)) then
-   RegCollector.UpdateElements(Self, Self.Slot.adresa);
+   RegCollector.UpdateElements(Self, Self.adresa);
  TCPRegulator.LokUpdateRuc(Self);
 
  // aktualizace informaci do panelu
@@ -947,13 +959,13 @@ procedure THV.GetPtState(json:TJsonObject);
 var i:Integer;
     stavFunkci:string;
 begin
- json['rychlostStupne'] := Self.Slot.speed;
- json['rychlostKmph']   := TrkSystem.GetStepSpeed(Self.Slot.speed);
- json['smer']           := Self.Slot.smer;
+ json['rychlostStupne'] := Self.speedStep;
+ json['rychlostKmph']   := Self.realSpeed;
+ json['smer']           := Self.direction;
 
  stavFunkci := '';
  for i := 0 to _HV_FUNC_MAX do
-   stavFunkci := stavFunkci + IntToStr(PrevodySoustav.BoolToInt(Self.Slot.funkce[i]));
+   stavFunkci := stavFunkci + IntToStr(PrevodySoustav.BoolToInt(Self.slotFunkce[i]));
  json['stavFunkci'] := stavFunkci;
 
  case (Self.Stav.StanovisteA) of
@@ -976,7 +988,7 @@ var speed, dir, i:Integer;
 begin
  dir := 0;
 
- if ((not Self.Slot.prevzato) or (Self.Slot.stolen)) then
+ if ((not Self.acquired) or (Self.stolen)) then
   begin
    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Loko neprevzato');
    Exit();
@@ -997,21 +1009,21 @@ begin
 
    if (reqJson.Contains('smer')) then
     begin
-     TrkSystem.LokSetDirectSpeed(Self, Self, speed, dir);
+     Self.SetSpeedStepDir(speed, PrevodySoustav.IntToBool(dir));
     end else
-     TrkSystem.LokSetDirectSpeed(Self, Self, speed, Self.Slot.smer);
+     Self.SetSpeedStepDir(speed, Self.direction);
   end else if (reqJson.Contains('rychlostKmph')) then
   begin
    speed := StrToInt(reqJson['rychlostKmph']);
 
    if (reqJson.Contains('smer')) then
     begin
-     TrkSystem.LokSetSpeed(Self, Self, speed, dir);
+     Self.SetSpeedDir(speed, PrevodySoustav.IntToBool(dir));
     end else
-     TrkSystem.LokSetSpeed(Self, Self, speed, Self.Slot.smer);
+     Self.SetSpeedDir(speed, Self.direction);
   end else if (reqJson.Contains('smer')) then
   begin
-   TrkSystem.LokSetDirectSpeed(Self, Self, Self.Slot.speed, dir);
+   Self.SetSpeedStepDir(Self.speedStep, PrevodySoustav.IntToBool(dir));
   end;
 
  if (reqJson.Contains('stavFunkci')) then
@@ -1021,9 +1033,9 @@ begin
      if (i < Length(reqJson.S['stavFunkci'])) then
        noveFunkce[i] := PrevodySoustav.StrToBool(reqJson.S['stavFunkci'][i+1])
      else
-       noveFunkce[i] := Self.Slot.funkce[i];
+       noveFunkce[i] := Self.slotFunkce[i];
     end;
-   TrkSystem.LokSetFunc(Self, Self, noveFunkce);
+//   TrkSystem.LokSetFunc(Self, Self, noveFunkce); TODO
   end;
 
  Self.GetPtState(respJson.O['lokStav']);
@@ -1044,7 +1056,7 @@ end;
 
 function THV.CanPlayHouk(sound:string):boolean;
 begin
- Result := ((Self.Stav.regulators.Count = 0) and (not Self.Slot.stolen) and
+ Result := ((Self.Stav.regulators.Count = 0) and (not Self.stolen) and
            ((not Self.funcDict.ContainsKey('zvuk')) or (Self.Stav.funkce[Self.funcDict['zvuk']])) and
            (Self.funcDict.ContainsKey(sound)));
 end;
@@ -1054,10 +1066,10 @@ end;
 procedure THV.CheckRelease();
 begin
  if ((Self.Stav.souprava = -1) and (not Self.ruc) and (Self.Stav.regulators.Count = 0) and
-     (not RegCollector.IsLoko(Self)) and (Self.Slot.prevzato)) then
+     (not RegCollector.IsLoko(Self)) and (Self.acquired)) then
   begin
-   TrkSystem.LokSetSpeed(nil, Self, 0, Self.Slot.smer);
-   TrkSystem.OdhlasitLoko(Self);
+   Self.SetSpeed(0);
+   Self.TrakceRelease(TrakceI.Callback());
   end;
 end;
 
@@ -1133,9 +1145,19 @@ begin
  Self.SetSpeedDir(speed, Self.slot.direction, ok, err, Sender);
 end;
 
+procedure THV.SetSpeed(speed:Integer; Sender: TObject = nil);
+begin
+ Self.SetSpeed(speed, TrakceI.Callback(), TrakceI.Callback(), Sender);
+end;
+
 procedure THV.SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
  Self.SetSpeedDir(Self.slot.speed, dir, ok, err, Sender);
+end;
+
+procedure THV.SetDirection(dir:boolean; Sender: TObject = nil);
+begin
+ Self.SetDirection(dir, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
 procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
@@ -1143,10 +1165,16 @@ begin
  Self.SetSpeedStepDir(TrakceI.SpeedStep(speed), direction, ok, err, Sender);
 end;
 
+procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil);
+begin
+ Self.SetSpeedDir(speed, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
+end;
+
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
 var dirOld:Boolean;
     stepsOld:Byte;
 begin
+ // TODO: use callbacks
  if ((Self.direction = direction) and (Self.speedStep = speedStep)) then Exit();
  if (not Self.acquired) then Exit();
 
@@ -1158,25 +1186,30 @@ begin
 
  if (Self.stolen) then
   begin
-   writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
+   writelog('LOKO '+Self.nazev+' ukradena, nenastavuji rychlost', WR_MESSAGE);
    Exit();
   end;
 
  try
    // TODO: handle ok and err callbacks and call it in custom callbacks
 
-   TrakceI.LokSetSpeed(Self.adresa, Self.slot.speed, Self.direction,
-                       TTrakce.Callback(Self.TrakceCallbackOk),
-                       TTrakce.Callback(Self.TrakceCallbackErr));
+   TrakceI.LocoSetSpeed(Self.adresa, Self.slot.speed, Self.direction,
+                        TTrakce.Callback(Self.TrakceCallbackOk),
+                        TTrakce.Callback(Self.TrakceCallbackErr));
  except
    on E:Exception do
     begin
-     Self.TrakceCallbackErr(Self);
+     Self.TrakceCallbackErr(Self, nil);
      AppEvents.LogException(E, 'THV.SetSpeedDir');
     end;
  end;
 
  Self.SlotChanged(Sender, stepsOld <> speedStep, dirOld <> direction);
+end;
+
+procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil);
+begin
+ Self.SetSpeedStepDir(speedStep, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
 procedure THV.SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
@@ -1186,29 +1219,29 @@ begin
 
  if (Self.stolen) then
   begin
-   writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    Exit();
   end;
 
  if (state) then
-  Self.slot.funkce := Self.slot.funkce or (1 shl func)
+  Self.slot.functions := Self.slot.functions or (1 shl func)
  else
-  Self.slot.funkce := Self.slot.funkce and (not (1 shl func));
+  Self.slot.functions := Self.slot.functions and (not (1 shl func));
 
  try
-   TrakceI.LocoSetSingleFunc(Self.adresa, func, state,
+   TrakceI.LocoSetSingleFunc(Self.adresa, func, Self.slot.functions,
                              TTrakce.Callback(Self.TrakceCallbackOk),
                              TTrakce.Callback(Self.TrakceCallbackErr));
  except
    on E:Exception do
     begin
-     Self.TrakceCallbackErr(Self);
+     Self.TrakceCallbackErr(Self, nil);
      AppEvents.LogException(E, 'THV.SetSingleFunc');
     end;
  end;
 
  TCPRegulator.LokUpdateFunc(Self, Sender);
- RegCollector.UpdateElements(Sender, Self.addr);
+ RegCollector.UpdateElements(Sender, Self.adresa);
  Self.changed := true;
 end;
 
@@ -1225,7 +1258,7 @@ begin
  except
    on E:Exception do
     begin
-     Self.TrakceCallbackErr(Self);
+     Self.TrakceCallbackErr(Self, nil);
      AppEvents.LogException(E, 'THV.EmergencyStop');
     end;
  end;
@@ -1245,14 +1278,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.TrakceCallbackOk(Sender:TObject);
+procedure THV.TrakceCallbackOk(Sender:TObject; data:Pointer);
 begin
  if (not Self.stav.trakceError) then Exit();
  Self.stav.trakceError := false;
  Self.changed := true;
 end;
 
-procedure THV.TrakceCallbackErr(Sender:TObject);
+procedure THV.TrakceCallbackErr(Sender:TObject; data:Pointer);
 begin
  if (Self.stav.trakceError) then Exit();
  Self.stav.trakceError := true;
@@ -1283,10 +1316,10 @@ end;
 procedure THV.SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
 begin
  TCPRegulator.LokUpdateSpeed(Self, Sender);
- RegCollector.UpdateElements(Sender, Self.addr);
+ RegCollector.UpdateElements(Sender, Self.adresa);
  Self.changed := true;
 
- if ((dir) and (Self.souprava > -1)) then
+ if ((dirChanged) and (Self.souprava > -1)) then
    if ((Sender <> Soupravy[Self.souprava]) and (Soupravy[Self.souprava] <> nil)) then
      Soupravy[Self.souprava].LokDirChanged();
      // Soupravy[HV.Stav.souprava] <> nil muze nastat pri aktualizaci HV na souprave,
@@ -1295,12 +1328,39 @@ end;
 
 procedure THV.TrakceAcquire(ok: TCb; err: TCb);
 begin
+ TrakceI.Log(llCommands, 'PUT: Loco Acquire: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.RecordUseNow();
 
+ try
+//   TrakceI.LocoAcquire(Self.adresa);
+ except
+   on E:Exception do
+    begin
+
+    end;
+ end;
 end;
 
 procedure THV.TrakceRelease(ok: TCb);
 begin
 
+end;
+
+procedure THV.SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
+begin
+
+end;
+
+procedure THV.SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THV.GetStACurrentDirection():Boolean;
+begin
+ Result := Self.direction xor PrevodySoustav.IntToBool(Integer(Self.Stav.StanovisteA));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

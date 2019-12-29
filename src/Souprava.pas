@@ -757,18 +757,17 @@ end;
 
 procedure TSouprava.LokDirChanged();
 var i:Integer;
-    dir:Integer;
+    dir:Boolean;
 begin
  if ((Self.chtenaRychlost <> 0) or (Self.data.smer_L xor Self.data.smer_S) or
      (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
    Exit();
 
- dir := Integer(HVDb[Self.HVs[0]].direction) xor Integer(HVDb[Self.HVs[0]].Stav.StanovisteA); // TODO: test this
+ dir := HVDb[Self.HVs[0]].stACurrentDirection;
 
- if (dir = Integer(Self.smer)) then Exit();
+ if (dir = PrevodySoustav.IntToBool(Integer(Self.smer))) then Exit();
  for i := 1 to Self.HVs.Count-1 do
-   if (dir <> (HVDb.HVozidla[Self.HVs[i]].Slot.smer xor
-              Integer(HVDb.HVozidla[Self.HVs[i]].Stav.StanovisteA))) then
+   if (dir <> HVDb[Self.HVs[i]].stACurrentDirection) then
      Exit();
 
  // vsechna hv nastavena do opacneho smeru -> zmenit smer soupravy
@@ -787,7 +786,7 @@ begin
   begin
    HV := HVDb.HVozidla[addr];
    if (HV.CanPlayHouk(desc)) then
-     TrkSystem.LokFuncToggle(Self, HV, HV.funcDict[desc]);
+     TrakceI.LokFuncToggle(Self, HV, HV.funcDict[desc]);
   end;
 end;
 
@@ -803,15 +802,12 @@ begin
 
  for addr in Self.HVs do
   begin
-   HV := HVDb.HVozidla[addr];
+   HV := HVDb[addr];
 
    if (HV.CanPlayHouk(desc)) then
     begin
-     func := HV.Stav.funkce;
-     func[HV.funcDict[desc]] := state;
-
      try
-       TrkSystem.LokSetFunc(Self, HV, func);
+       HV.SetFunction(HV.funcDict[desc], state, Self);
      except
 
      end;
@@ -980,7 +976,7 @@ function TSouprava.GetMaxRychlostStupen():Cardinal;
 begin
  // vraci rychlost <= max rychlosti takovou, ze pro ni mame prirazeni stupne
  // tj. tuto rychlost lze skutene nastavit
- Result := TrkSystem.NearestLowerSpeed(Self.maxRychlost);
+ Result := TrakceI.NearestLowerSpeed(Self.maxRychlost);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

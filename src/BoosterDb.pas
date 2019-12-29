@@ -59,7 +59,7 @@ var Boosters:TBoosterDb;
 
 implementation
 
-uses TBloky, fMain, Trakce, appEv, logging, DataZesilovac;
+uses TBloky, fMain, TechnologieTrakce, appEv, logging, DataZesilovac, Trakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -245,7 +245,7 @@ procedure TBoosterDb.ControlBeep();
 var zkrat:boolean;
     booster:TBooster;
 begin
- if (TrkSystem.status <> TS_ON) then Exit;
+ if (TrakceI.TrackStatusSafe() <> TTrkStatus.tsOn) then Exit;
 
  zkrat := false;
  for booster in Self.db.Values do

@@ -638,7 +638,7 @@ procedure TF_Main.PM_RegulatorClick(Sender: TObject);
 begin
  if (Self.LV_HV.Selected = nil) then Exit;
 
- if (TrakceI.connected) then
+ if (TrakceI.ConnectedSafe()) then
   begin
    try
     RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
@@ -769,12 +769,12 @@ begin
 
     PBT_APMSUSPEND: begin
        // windows is going to sleep -> disconnect all devices
-       if (TrakceI.connected) then
+       if (TrakceI.ConnectedSafe()) then
         begin
          ORTCPServer.Stop();
          try
-//           TrakceI.EmergencyStop(); TODO
-           TrakceI.FastResetLoko();
+           TrakceI.EmergencyStop();
+           TrakceI.FastResetLocos();
            TrakceI.Disconnect();
          except
 
@@ -809,13 +809,13 @@ procedure TF_Main.WMEndSession(var Msg: TWMEndSession);
 begin
  if (Msg.EndSession = True) then
   begin
-   if (TrakceI.connected) then
+   if (TrakceI.ConnectedSafe()) then
     begin
      ORTCPServer.Stop();
      try
-//       TrakceI.EmergencyStop(); TODO
-       TrakceI.FastResetLoko();
-       TrakceI.Close(true);
+       TrakceI.EmergencyStop();
+       TrakceI.FastResetLocos();
+       TrakceI.Disconnect();
      except
 
      end;
@@ -844,7 +844,7 @@ begin
  F_Main.S_lok_prevzato.Brush.Color := clBlue;
 
  try
-   TrakceI.OdhlasitAll();
+   TrakceI.ReleaseAllLocos();
  except
    on E:Exception do
     begin
@@ -859,22 +859,28 @@ begin
  F_Main.LogStatus('Loko: přebírám...');
  Application.ProcessMessages();
  F_Main.S_lok_prevzato.Brush.Color := clBlue;
- TrakceI.PrevzitAll();
+ TrakceI.AcquireAllLocos();
 end;
 
 procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
 begin
-  Self.LogStatus('DCC: zapínám');
-
-  try
-    TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCGoError));
-  except
-    on E:Exception do
-     begin
-      Application.MessageBox(PChar('Chyba při DCC GO:'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
-      Self.LogStatus('DCC: START: ERR '+E.Message);
-     end;
+ if ((SystemData.Status = starting) and (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn)) then
+  begin
+   Self.A_All_Loko_PrevzitExecute(Self);
+   Exit();
   end;
+
+ Self.LogStatus('DCC: zapínám');
+
+ try
+   TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCGoError));
+ except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Chyba při DCC GO:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+     Self.LogStatus('DCC: START: ERR '+E.Message);
+    end;
+ end;
 end;
 
 procedure TF_Main.A_DCC_StopExecute(Sender: TObject); //DCC stop
@@ -1575,12 +1581,27 @@ end;
 
 procedure TF_Main.A_Trk_ConnectExecute(Sender: TObject);
 begin
+ if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
+  begin
+   Self.A_DCC_GoExecute(Self);
+   Exit();
+  end;
+
  try
    TrakceI.Connect();
  except
    on E:Exception do
     begin
-     F_Main.A_Trk_Connect.Enabled          := true;
+     TrakceI.Log(llErrors, 'OPEN: error: ' + E.Message);
+     Self.OnTrkAfterClose(Self);
+     if (SystemData.Status = TSystemStatus.starting) then
+      begin
+       SystemData.Status := TSystemStatus.null;
+       F_Main.A_System_Start.Enabled := true;
+       F_Main.A_System_Stop.Enabled := true;
+      end;
+
+     F_Main.A_Trk_Connect.Enabled := true;
      F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
      F_Main.S_Intellibox_connect.Brush.Color := clRed;
      Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
@@ -1592,12 +1613,30 @@ begin
 end;
 
 procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
+var addr:Integer;
 begin
+ if ((SystemData.Status = stopping) and (not TrakceI.ConnectedSafe())) then
+  begin
+   F_Main.A_RCS_StopExecute(nil);
+   Exit();
+  end;
+
+ // TODO: move this to some loco reset?
+ for addr := 0 to _MAX_ADDR-1 do
+  begin
+   if (HVDb[addr] <> nil) then
+    begin
+     HVDb[addr].stav.stolen := false;
+     HVDb[addr].stav.acquired := false;
+    end;
+  end;
+
  try
    TrakceI.Disconnect();
  except
    on E:Exception do
     begin
+     TrakceI.Log(llErrors, 'CLOSE: error: ' + E.Message);
      Application.MessageBox(PChar('Chyba pri uzavírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
                             'Chyba', MB_OK OR MB_ICONERROR);
     end;
@@ -2436,13 +2475,13 @@ begin
    F_Main.S_Intellibox_go.Brush.Color  := clLime;
    Self.LogStatus('DCC: go');
 
-   if (TrakceI.Connected) then
+   if (TrakceI.ConnectedSafe()) then
     begin
      F_Main.A_DCC_Go.Enabled   := false;
      F_Main.A_DCC_Stop.Enabled := true;
     end;
 
-   if ((SystemData.Status = starting) and (TrakceI.isInitOk)) then
+   if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
      F_Main.A_All_Loko_PrevzitExecute(nil);
 
    ORTCPServer.DCCStart();
@@ -2454,7 +2493,7 @@ begin
    F_Main.S_Intellibox_go.Brush.Color  := clRed;
    Self.LogStatus('DCC: stop');
 
-   if (TrakceI.Connected) then
+   if (TrakceI.ConnectedSafe()) then
     begin
      F_Main.A_DCC_Go.Enabled   := true;
      F_Main.A_DCC_Stop.Enabled := false;
@@ -2839,7 +2878,7 @@ end;
 procedure TF_Main.LV_HVChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
- B_HV_Delete.Enabled := (LV_HV.Selected <> nil) and (not TrakceI.Connected);
+ B_HV_Delete.Enabled := (LV_HV.Selected <> nil) and (not TrakceI.ConnectedSafe());
 end;
 
 procedure TF_Main.LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem;
@@ -2860,7 +2899,7 @@ procedure TF_Main.LV_HVDblClick(Sender: TObject);
 begin
  if (LV_HV.Selected = nil) then Exit();
 
- if (TrakceI.Connected) then
+ if (TrakceI.ConnectedSafe()) then
   begin
    try
     RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
@@ -3058,9 +3097,9 @@ end;
 
 procedure TF_Main.UpdateSystemButtons();
 begin
- Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.Connected)
+ Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.ConnectedSafe())
     or (Self.A_All_Loko_Prevzit.Enabled) or (not ORTCPServer.openned));
- Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrakceI.Connected)
+ Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrakceI.ConnectedSafe())
     or (ORTCPServer.openned);
 end;
 

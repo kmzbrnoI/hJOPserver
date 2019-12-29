@@ -368,7 +368,7 @@ begin
    raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
  if (Self.HVs[addr].Stav.souprava > -1) then
    raise ELocoOnSpr.Create('Lokomotiva je na soupravě!');
- if ((Self.HVs[addr].Slot.prevzato) or (Self.HVs[addr].Slot.stolen)) then
+ if ((Self.HVs[addr].acquired) or (Self.HVs[addr].stolen)) then
    raise ELocoPrevzato.Create('Lokomotiva převzata do řízení počítače');
 
  index := Self.HVs[addr].index;

@@ -36,7 +36,7 @@ uses fMain, TechnologieTrakce;
 
 procedure TF_FuncsSet.B_ApplyClick(Sender: TObject);
 begin
- if (not TrakceI.connected) then
+ if (not TrakceI.ConnectedSafe()) then
   begin
    Application.MessageBox('Aplikace není připojena k centrále', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
    Exit();

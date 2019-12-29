@@ -1537,8 +1537,10 @@ begin
 
    HVDb.HVozidla[addr].UpdateFromPanelString(str);
 
-   if ((HVDb.HVozidla[addr].Slot.prevzato) and (not HVDb.HVozidla[addr].Slot.stolen)) then
-     TrkSystem.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+   if ((HVDb[addr].acquired) and (not HVDb[addr].stolen)) then
+     begin
+//     TrkSystem.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce); TODO
+    end;
  except
    on e:Exception do
     begin

@@ -538,9 +538,9 @@ begin
    ORTCPServer.GUIQueueLineToRefresh(orRef.index);
    ModCas.SendTimeToPanel(AContext);
 
-   if (TrakceI.TrackStatus() = tsOn) then
+   if (TrakceI.TrackStatusSafe() = tsOn) then
      Self.SendLn(AContext, '-;DCC;GO')
-   else if ((Self.DCCStopped <> nil) or (TrakceI.TrackStatus() <> tsOff)) then
+   else if ((Self.DCCStopped <> nil) or (TrakceI.TrackStatusSafe() <> tsOff)) then
      Self.SendLn(AContext, '-;DCC;DISABLED')
    else
      Self.SendLn(AContext, '-;DCC;STOP');
@@ -653,14 +653,14 @@ begin
 
  else if (parsed[1] = 'DCC') then
   begin
-   if ((parsed[2] = 'GO') and (TrakceI.TrackStatus() <> tsOn)) then begin
+   if ((parsed[2] = 'GO') and (TrakceI.TrackStatusSafe() <> tsOn)) then begin
     try
       TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCCmdErr, AContext));
     except
       on E:Exception do
         Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
     end;
-   end else if ((parsed[2] = 'STOP') and (TrakceI.TrackStatus() = tsOn)) then
+   end else if ((parsed[2] = 'STOP') and (TrakceI.TrackStatusSafe() = tsOn)) then
     begin
      Self.DCCStopped := AContext;
      try
@@ -1347,7 +1347,7 @@ begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
   if (Assigned(Self.clients[i])) then
    begin
-    if ((Self.DCCStopped = Self.clients[i].conn) and (TrakceI.TrackStatus = tsOff)) then
+    if ((Self.DCCStopped = Self.clients[i].conn) and (TrakceI.TrackStatusSafe() = tsOff)) then
       Self.SendLn(Self.clients[i].conn, '-;DCC;STOP')
     else
       Self.SendLn(Self.clients[i].conn, '-;DCC;DISABLED');

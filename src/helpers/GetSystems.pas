@@ -24,16 +24,15 @@ var
 
 implementation
 
-uses fMain,
-     fAdminForm, TechnologieRCS, fSettings, TBLoky, TOblsRizeni, Logging,
-     TCPServerOR;
+uses fMain, fAdminForm, TechnologieRCS, fSettings, TBLoky, TOblsRizeni, Logging,
+     TCPServerOR, TechnologieTrakce;
 
 
 function TGetFunctions.CanClose():TCloseInfo;
 begin
   if (SystemData.Status <> TSystemStatus.null) then Exit(TCloseInfo.ci_system_changing);
   if (GetFunctions.GetSystemStart) then Exit(TCloseInfo.ci_system_started);
-  if (TrkSystem.openned) then Exit(TCloseInfo.ci_trakce);
+  if (TrakceI.ConnectedSafe()) then Exit(TCloseInfo.ci_trakce);
   if (ORTCPServer.openned) then Exit(TCloseInfo.ci_server);
 
   try
@@ -50,7 +49,7 @@ end;
 function TGetFunctions.GetSystemStart:Boolean;
  begin
   try
-    Result := ((TrkSystem.openned) and (RCSi.ready) and (ORTCPServer.openned) and (RCSi.NoExStarted));
+    Result := ((TrakceI.ConnectedSafe()) and (RCSi.ready) and (ORTCPServer.openned) and (RCSi.NoExStarted));
   except
     Result := false;
   end;

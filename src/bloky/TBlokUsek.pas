@@ -771,7 +771,7 @@ end;
 procedure TBlkUsek.SetZesDCC(state:TBoosterSignal);
 begin
  if (state = TBoosterSignal.undef) then
-   Self.SetCentralaDCC(TrakceI.TrackStatus = tsOn)
+   Self.SetCentralaDCC(TrakceI.TrackStatusSafe() = tsOn)
  else
    Self.SetDCC(state = TBoosterSignal.ok);
 end;
