@@ -367,11 +367,11 @@ var LV_Log:TListItem;
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
 
-  if (Self.LogObj.Items.Count > _MAX_LOGTABLE_ITEMS) then
-    Self.LogObj.Clear();
-
   if ((logLevel <= Self.logLevelTable) and (Self.LogObj <> nil)) then
    begin
+    if (Self.LogObj.Items.Count > _MAX_LOGTABLE_ITEMS) then
+      Self.LogObj.Clear();
+
     try
       LV_Log := Self.LogObj.Items.Insert(0);
       LV_Log.Caption := xTime;

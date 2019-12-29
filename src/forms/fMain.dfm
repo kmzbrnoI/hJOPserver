@@ -6117,7 +6117,7 @@ object F_Main: TF_Main
         Caption = '-'
       end
       object MI_RCS_Options: TMenuItem
-        Action = A_lib_cfg
+        Action = A_RCS_lib_cfg
         Bitmap.Data = {
           06030000424D060300000000000036000000280000000F0000000F0000000100
           180000000000D002000000000000000000000000000000000000EC00EC010101
@@ -6179,7 +6179,7 @@ object F_Main: TF_Main
         Caption = '-'
       end
       object MI_Trk_Options: TMenuItem
-        Caption = 'Nastaven'#237
+        Action = A_Trk_Lib_Cfg
       end
       object N13: TMenuItem
         Caption = '-'
@@ -6189,6 +6189,7 @@ object F_Main: TF_Main
       end
       object MI_Trk_Update: TMenuItem
         Caption = 'Aktualizovat seznam knihoven'
+        OnClick = MI_Trk_UpdateClick
       end
       object N4: TMenuItem
         Caption = '-'
@@ -8984,11 +8985,11 @@ object F_Main: TF_Main
       ShortCut = 118
       OnExecute = A_RCS_StopExecute
     end
-    object A_lib_cfg: TAction
+    object A_RCS_lib_cfg: TAction
       Hint = 'Otev'#345#237't konfiguraci knihovny'
       ImageIndex = 18
       ShortCut = 16452
-      OnExecute = A_lib_cfgExecute
+      OnExecute = A_RCS_lib_cfgExecute
     end
     object A_DCC_Go: TAction
       Enabled = False
@@ -9081,6 +9082,10 @@ object F_Main: TF_Main
       Caption = 'Stop'
       Enabled = False
       OnExecute = A_PT_StopExecute
+    end
+    object A_Trk_Lib_Cfg: TAction
+      Caption = 'Nastaven'#237
+      OnExecute = A_Trk_Lib_CfgExecute
     end
   end
   object PM_HV: TPopupMenu

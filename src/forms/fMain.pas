@@ -88,7 +88,7 @@ type
     AL_Main: TActionList;
     A_RCS_Go: TAction;
     A_RCS_Stop: TAction;
-    A_lib_cfg: TAction;
+    A_RCS_lib_cfg: TAction;
     A_DCC_Go: TAction;
     A_DCC_Stop: TAction;
     A_System_Start: TAction;
@@ -266,10 +266,12 @@ type
     N13: TMenuItem;
     MI_Trk_Libs: TMenuItem;
     MI_Trk_Update: TMenuItem;
+    A_Trk_Lib_Cfg: TAction;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
+    procedure MI_Trk_libClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure AE_1Message(var Msg: tagMSG;
       var Handled: Boolean);
@@ -286,7 +288,7 @@ type
     procedure PM_ConsoleClick(Sender: TObject);
     procedure A_RCS_GoExecute(Sender: TObject);
     procedure A_RCS_StopExecute(Sender: TObject);
-    procedure A_lib_cfgExecute(Sender: TObject);
+    procedure A_RCS_lib_cfgExecute(Sender: TObject);
     procedure A_DCC_GoExecute(Sender: TObject);
     procedure A_DCC_StopExecute(Sender: TObject);
     procedure A_System_StartExecute(Sender: TObject);
@@ -404,6 +406,8 @@ type
       Change: TItemChange);
     procedure CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
     procedure CHB_rcslogClick(Sender: TObject);
+    procedure A_Trk_Lib_CfgExecute(Sender: TObject);
+    procedure MI_Trk_UpdateClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -419,25 +423,28 @@ type
   public
     KomunikacePocitani:Shortint;
 
-    procedure CreateSystem;                                                     // inicializace SW
-    procedure CreateClasses;                                                    // vytvoreni objektu
-    procedure FreeVars;                                                         // zniceni objektu
-    procedure SetStartVars;                                                     // inicializace promennych
+    procedure CreateSystem();
+    procedure CreateClasses();
+    procedure FreeVars();
+    procedure SetStartVars();
 
-    procedure CloseForm;                                                        // ukonceni aplikace
-    procedure RepaintObjects;                                                   // prekresleni objektu podle rozmeru okna
-    procedure LoadIniLibData;                                                   // nacteni ini_lib dat
-    procedure DetekujAutSpusteniSystemu;                                        // detekuje aut. spusteni systemu po zapnuti programu
-    procedure OnStart;                                                          // spusti se pri startu SW
-    procedure SaveFormPosition;                                                 // ulozi pozici a stav F_Main
-
-    procedure VypisDatumCas;                                                    // aktualizuje datum a cas ve F_Main
-
-    procedure LogStatus(str:string);                                            // vypise info do LB_Log
-    procedure DisableRemoveButtons();                                           // znemozni pouziti mazacich tlacitek, typicky se vola po startu systemu
+    procedure CloseForm();
+    procedure RepaintObjects();
+    procedure LoadIniLibData();
+    procedure DetekujAutSpusteniSystemu();
+    procedure OnStart();
+    procedure SaveFormPosition();
+    procedure VypisDatumCas();
+    procedure LogStatus(str:string);
+    procedure DisableRemoveButtons();
     procedure UpdateACButtons();
+    procedure SetCallMethod(Method:TNotifyEvent);
+    procedure OnSoundDisabled(Sender:TObject);
+    procedure CreateCfgDirs();
+    procedure UpdateSystemButtons();
+    procedure CheckNasobicWidth();
 
-    // RCS events:
+    // RCS
     procedure OnRCSStart(Sender:TObject);
     procedure OnRCSScanned(Sender:TObject);
     procedure OnRCSStop(Sender:TObject);
@@ -449,25 +456,19 @@ type
     procedure OnRCSErrStop(Sender:TObject; errMsg:string);
     procedure OnRCSReady(Sender:TObject; ready:boolean);
 
-    // Trakce events:
+    procedure UpdateRCSLibsList();
+
+    // Trakce
     procedure OnTrkBeforeOpen(Sender: TObject);
     procedure OnTrkAfterOpen(Sender: TObject);
     procedure OnTrkBeforeClose(Sender: TObject);
     procedure OnTrkAfterClose(Sender: TObject);
 
+    procedure UpdateTrkLibsList();
     procedure OnCentralaDCCChange(Sender:TObject; state:boolean);
     procedure OnDCCGoError(Sender:TObject; Data:Pointer);
     procedure OnDCCStopError(Sender:TObject; Data:Pointer);
 
-    procedure SetCallMethod(Method:TNotifyEvent);
-    procedure OnSoundDisabled(Sender:TObject);
-
-    procedure CreateCfgDirs();
-
-    procedure UpdateRCSLibsList();
-    procedure UpdateSystemButtons();
-
-    procedure CheckNasobicWidth();
   end;//public
 
  TVytizeni=class                                                                // vytizeni procesoru programem
@@ -554,38 +555,31 @@ var fn:string;
 procedure TF_Main.UpdateRCSLibsList();
 var SR:TSearchRec;
     item:TMenuItem;
+
+    procedure AddLib(name: string);
+    begin
+     item := TMenuItem.Create(Self.MI_RCS_Libs);
+     item.Caption := name;
+     item.OnClick := Self.MI_RCS_libClick;
+     Self.MI_RCS_Libs.Add(item);
+    end;
  begin
   Self.MI_RCS_Libs.Clear();
 
-  // prohledavani adresare a nacitani soubor *.2lok
-  // najdeme prvni soubor
   if (FindFirst(RCSi.libDir+'\*.dll', faAnyFile, SR) = 0) then
    begin
     if ((SR.Attr AND faDirectory) = 0) then
-     begin
-      item := TMenuItem.Create(Self.MI_RCS_Libs);
-      item.Caption := SR.Name;
-      item.OnClick := Self.MI_RCS_libClick;
-      Self.MI_RCS_Libs.Add(item);
-     end;
+      AddLib(SR.Name);
 
-    // hledame dalsi soubory
     while (FindNext(SR) = 0) do
-     begin
       if ((SR.Attr AND faDirectory) = 0) then
-       begin
-        item := TMenuItem.Create(Self.MI_RCS_Libs);
-        item.Caption := SR.Name;
-        item.OnClick := Self.MI_RCS_libClick;
-        Self.MI_RCS_Libs.Add(item);
-       end;
-     end;
+        AddLib(SR.Name);
 
     SysUtils.FindClose(SR);
    end;
 end;
 
-procedure TF_Main.A_lib_cfgExecute(Sender: TObject);
+procedure TF_Main.A_RCS_lib_cfgExecute(Sender: TObject);
 begin
  if (not RCSi.HasDialog()) then
   begin
@@ -1048,6 +1042,90 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // TRAKCE BEGIN
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.MI_Trk_libClick(Sender: TObject);
+var fn:string;
+ begin
+  fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+
+  Screen.Cursor := crHourGlass;
+  TrakceI.Log(llInfo, 'Změna knihovny -> ' + fn);
+  try
+    TrakceI.LoadLib(TrakceI.libDir + '\' + fn);
+    Self.LogStatus('Trakce: načteno ' + fn);
+  except
+    on E:Exception do
+     begin
+      Screen.Cursor := crDefault;
+      Application.MessageBox(PChar('Nelze načíst knihovnu ' + fn + ':'+#13#10+
+          E.Message), 'Nelze načíst knihovnu', MB_OK OR MB_ICONWARNING);
+      Exit();
+     end;
+  end;
+  Screen.Cursor := crDefault;
+ end;
+
+procedure TF_Main.UpdateTrkLibsList();
+var SR:TSearchRec;
+    item:TMenuItem;
+
+    procedure AddLib(name: string);
+    begin
+     item := TMenuItem.Create(Self.MI_Trk_Libs);
+     item.Caption := name;
+     item.OnClick := Self.MI_Trk_libClick;
+     Self.MI_Trk_Libs.Add(item);
+    end;
+ begin
+  Self.MI_Trk_Libs.Clear();
+
+  if (FindFirst(TrakceI.libDir+'\*.dll', faAnyFile, SR) = 0) then
+   begin
+    if ((SR.Attr AND faDirectory) = 0) then
+      AddLib(SR.Name);
+
+    while (FindNext(SR) = 0) do
+      if ((SR.Attr AND faDirectory) = 0) then
+        AddLib(SR.Name);
+
+    SysUtils.FindClose(SR);
+   end;
+end;
+
+procedure TF_Main.A_Trk_Lib_CfgExecute(Sender: TObject);
+begin
+ if (not TrakceI.HasDialog()) then
+  begin
+   Application.MessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
+   Exit();
+  end;
+
+ Screen.Cursor := crHourGlass;
+ try
+   TrakceI.ShowConfigDialog();
+ except
+   on E:Exception do
+    begin
+     Screen.Cursor := crDefault;
+     Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog: ' + E.Message),
+                            'Varování', MB_OK OR MB_ICONWARNING);
+     Exit();
+    end;
+ end;
+ Screen.Cursor := crDefault;
+end;
+
+procedure TF_Main.MI_Trk_UpdateClick(Sender: TObject);
+begin
+ try
+   Self.UpdateTrkLibsList();
+   Application.MessageBox('Seznam knihoven úspěšně aktualizován.', 'Info', MB_OK OR MB_ICONINFORMATION);
+ except
+   on E:Exception do
+     Application.MessageBox(PChar('Seznam knihoven se nepodařilo aktualizovat:'+#13#10 + E.Message),
+        'Chyba', MB_OK OR MB_ICONWARNING);
+ end;
+end;
 
 procedure TF_Main.A_Trk_ConnectExecute(Sender: TObject);
 begin
@@ -2509,6 +2587,7 @@ procedure TF_Main.OnStart();
   F_Main.T_konflikty.Enabled := true;
 
   Self.UpdateRCSLibsList();
+  Self.UpdateTrkLibsList();
 
   if (not CloseMessage) then
    begin
