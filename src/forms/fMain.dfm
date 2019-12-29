@@ -6169,36 +6169,51 @@ object F_Main: TF_Main
     end
     object MI_Centrala: TMenuItem
       Caption = #344#237'zen'#237' j'#237'zdy'
-      object PM_Int_connect: TMenuItem
+      object MI_Trk_connect: TMenuItem
         Action = A_Trk_Connect
       end
-      object PM_Int_Disconnect: TMenuItem
+      object MI_Trk_Disconnect: TMenuItem
         Action = A_Trk_Disconnect
+      end
+      object N12: TMenuItem
+        Caption = '-'
+      end
+      object MI_Trk_Options: TMenuItem
+        Caption = 'Nastaven'#237
+      end
+      object N13: TMenuItem
+        Caption = '-'
+      end
+      object MI_Trk_Libs: TMenuItem
+        Caption = 'Na'#269#237'st knihovnu'
+      end
+      object MI_Trk_Update: TMenuItem
+        Caption = 'Aktualizovat seznam knihoven'
       end
       object N4: TMenuItem
         Caption = '-'
       end
-      object PM_Int_run: TMenuItem
+      object MI_DCC_on: TMenuItem
         Action = A_DCC_Go
         Caption = 'DCC start'
       end
-      object PM_Int_Stop: TMenuItem
+      object MI_DCC_Off: TMenuItem
         Action = A_DCC_Stop
         Caption = 'DCC stop'
       end
       object N5: TMenuItem
         Caption = '-'
       end
-      object PM_AllLokPrevzit: TMenuItem
+      object MI_Loco_Acquire: TMenuItem
         Action = A_All_Loko_Prevzit
       end
-      object PM_AllLokOdpojit: TMenuItem
+      object MI_Loco_Release: TMenuItem
         Action = A_All_Loko_Odhlasit
       end
       object N10: TMenuItem
         Caption = '-'
       end
-      object PM_FuncsSet: TMenuItem
+      object MI_Trk_Func_Vyzn: TMenuItem
         Action = A_FuncsSet
       end
     end

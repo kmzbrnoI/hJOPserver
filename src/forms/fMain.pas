@@ -50,11 +50,11 @@ type
     M_Help: TMenuItem;
     PM_Help_RP: TMenuItem;
     MI_Centrala: TMenuItem;
-    PM_Int_run: TMenuItem;
-    PM_Int_Stop: TMenuItem;
-    PM_Int_Disconnect: TMenuItem;
+    MI_DCC_on: TMenuItem;
+    MI_DCC_Off: TMenuItem;
+    MI_Trk_Disconnect: TMenuItem;
     N4: TMenuItem;
-    PM_Int_connect: TMenuItem;
+    MI_Trk_connect: TMenuItem;
     M_Zobrazeni: TMenuItem;
     PM_SB1: TMenuItem;
     T_function: TTimer;
@@ -70,8 +70,8 @@ type
     P_Zrychleni: TPanel;
     IL_Menu: TImageList;
     SPD_Save: TSavePictureDialog;
-    PM_AllLokPrevzit: TMenuItem;
-    PM_AllLokOdpojit: TMenuItem;
+    MI_Loco_Acquire: TMenuItem;
+    MI_Loco_Release: TMenuItem;
     P_DCC: TPanel;
     SB_Loconet_Start: TSpeedButton;
     SB_Loconet_Stop: TSpeedButton;
@@ -219,7 +219,7 @@ type
     MI_Disconnect: TMenuItem;
     G_Loko_Prevzato: TGauge;
     N10: TMenuItem;
-    PM_FuncsSet: TMenuItem;
+    MI_Trk_Func_Vyzn: TMenuItem;
     A_FuncsSet: TAction;
     TS_FuncsVyznam: TTabSheet;
     M_funcsVyznam: TMemo;
@@ -261,6 +261,11 @@ type
     CHB_RCS_Show_Only_Active: TCheckBox;
     N11: TMenuItem;
     CHB_rcslog: TCheckBox;
+    N12: TMenuItem;
+    MI_Trk_Options: TMenuItem;
+    N13: TMenuItem;
+    MI_Trk_Libs: TMenuItem;
+    MI_Trk_Update: TMenuItem;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
