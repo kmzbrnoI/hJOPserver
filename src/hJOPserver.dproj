@@ -255,9 +255,9 @@
 			<DCCReference Include="bloky\forms\fBlkNav.pas"/>
 			<DCCReference Include="trakce\Trakce.pas"/>
 			<DCCReference Include="trakce\TrakceErrors.pas"/>
-			<DCCReference Include="TechnologieTrakce.pas"/>
-			<DCCReference Include="fMainTrakce.pas"/>
-			<None Include="ModelSupport_hJOPserver\default.txaPackage"/>
+			<DCCReference Include="TechnologieTrakce.pas">
+				<Form>$R *.res</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
