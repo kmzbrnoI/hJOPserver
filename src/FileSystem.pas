@@ -99,14 +99,24 @@ var read,read2:string;
   writelog('Načteno '+IntToStr(HVDb.cnt)+' hnacích vozidel',WR_DATA);
 
   F_Splash.AddStav('Načítám RCS');
-  writelog('Nacitam RCS...', WR_DATA);
+  writelog('Načítám RCS...', WR_DATA);
   try
     RCSi.LoadFromFile(ini_lib);
   except
     on E:Exception do
       AppEvents.LogException(E);
   end;
-  writelog('RCS nacteno',WR_DATA);
+  writelog('RCS načteno', WR_DATA);
+
+  F_Splash.AddStav('Načítám trakci...');
+  writelog('Načítám trakci...', WR_DATA);
+  try
+    TrakceI.LoadFromFile(ini_lib);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+  writelog('Trakce načtena', WR_DATA);
 
   F_Splash.AddStav('Načítám databázi zesilovačů');
   read := ini_lib.ReadString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', 'data\zesilovace.ini');
@@ -209,6 +219,13 @@ var tmpStr:string;
 
   try
     RCSi.SaveToFile(ini_lib);
+  except
+    on E:Exception do
+      AppEvents.LogException(E);
+  end;
+
+  try
+    TrakceI.SaveToFile(ini_lib);
   except
     on E:Exception do
       AppEvents.LogException(E);

@@ -9,7 +9,7 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, CPort, Trakce, ComCtrls, Graphics, Forms, Windows,
-  THnaciVozidlo, Generics.Collections, Contnrs;
+  THnaciVozidlo, Generics.Collections, Contnrs, IniFiles;
 
 const
   // maximalni rychlost pro rychlostni tabulku
@@ -113,10 +113,14 @@ type
   TTrakce = class(TTrakceIFace)
    private const
      _DEF_LOGLEVEL = TTrkLogLevel.llInfo;
+     _DEFAULT_LIB = 'xpressnet.dll';
+     _INIFILE_SECTNAME = 'XN';
+
 
    private
-     LogObj:TListView;
+     fLibDir:string;
      aReady:boolean;
+     LogObj:TListView;
      SpeedTable:array [0.._MAX_SPEED] of Cardinal;
      turnoff_callback:TNotifyEvent;                                             // callback volany po prikazu TurnOff
                                                                                 //   Prikaz TurnOff zapina F0 a vypina vsechny vyssi funkce
@@ -125,11 +129,14 @@ type
      //events definition
      FOnLog: TLogEvent;                                                         // log event
 
-     flogfile : TTrkLogLevel;
-     flogtable: TTrkLogLevel;
+     mLogLevelFile : TTrkLogLevel;
+     mLogLevelTable: TTrkLogLevel;
      finitok  : boolean;                                                        // je true, pokud po otevreni seriaku centrala zakomujikovala (tj. odpovedela na prikaz)
                                                                                 // pri .Open se nastavuje na false
      procedure LoadLib(filename:string);
+
+     procedure SetLoglevelFile(ll:TTrkLogLevel);
+     procedure SetLoglevelTable(ll:TTrkLogLevel);
 
      //////////////////////////////////////
 
@@ -200,9 +207,6 @@ type
 //     procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
 //     procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
 
-     procedure SetLoglevelFile(ll:TTrkLogLevel);
-     procedure SetLoglevelTable(ll:TTrkLogLevel);
-
      procedure LoadSpeedTableToTable(var LVRych:TListView);
 //     procedure UpdateSpeedDir(HV:THV; Sender:TObject; speed:boolean; dir:boolean);
 
@@ -234,6 +238,8 @@ type
 
      procedure Log(loglevel:TTrkLogLevel; msg:string);
 
+     procedure LoadFromFile(ini:TMemIniFile);
+     procedure SaveToFile(ini:TMemIniFile);
 
      procedure LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);
 
@@ -260,9 +266,11 @@ type
      function NearestLowerSpeed(speed:Cardinal):Cardinal;
 
      property OnLog: TLogEvent read FOnLog write FOnLog;
-     property logfile:TTrkLogLevel read flogfile write SetLoglevelFile;
-     property logtable:TTrkLogLevel read flogtable write SetLoglevelTable;
+     property logLevelFile: TTrkLogLevel read mLogLevelFile write SetLoglevelFile;
+     property logLevelTable: TTrkLogLevel read mLogLevelTable write SetLoglevelTable;
+
      property ready:boolean read aready;
+     property libDir:string read fLibDir;
 
   end;//TTrkGUI
 
@@ -283,14 +291,14 @@ constructor TTrakce.Create();
 begin
  inherited;
 
- Self.flogfile  := _DEF_LOGLEVEL;
- Self.flogtable := _DEF_LOGLEVEL;
+ Self.mLogLevelFile := _DEF_LOGLEVEL;
+ Self.mLogLevelTable := _DEF_LOGLEVEL;
  Self.LogObj := nil;
  Self.aReady := false;
 
  Self.Log(llInfo, 'BEGIN '+
-                  'loglevel_file='+LogLevelToString(Self.logfile)+
-                  ', loglevel_table='+LogLevelToString(Self.logtable)
+                  'loglevel_file='+LogLevelToString(Self.logLevelFile)+
+                  ', loglevel_table='+LogLevelToString(Self.logLevelTable)
  );
 
  Self.turnoff_callback := nil;
@@ -354,7 +362,7 @@ var LV_Log:TListItem;
     output:string;
     b:Byte;
  begin
-  if ((logLevel > Self.logfile) and (logLevel > Self.logtable)) then Exit;
+  if ((logLevel > Self.logLevelFile) and (logLevel > Self.logLevelTable)) then Exit();
 
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
@@ -362,7 +370,7 @@ var LV_Log:TListItem;
   if (Self.LogObj.Items.Count > _MAX_LOGTABLE_ITEMS) then
     Self.LogObj.Clear();
 
-  if (logLevel <= Self.logtable) then
+  if ((logLevel <= Self.logLevelTable) and (Self.LogObj <> nil)) then
    begin
     try
       LV_Log := Self.LogObj.Items.Insert(0);
@@ -372,9 +380,9 @@ var LV_Log:TListItem;
     except
 
     end;
-   end;//if Self.logtable
+   end;
 
-  if (logLevel <= Self.logfile) then
+  if (logLevel <= Self.logLevelFile) then
    begin
     try
       AssignFile(f, _LOG_PATH+'\'+xDate+'.log');
@@ -402,6 +410,32 @@ begin
 
  if (handled) then Exit;
  Self.Log(lvl, msg);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrakce.LoadFromFile(ini:TMemIniFile);
+var lib:string;
+begin
+  fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
+  lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEFAULT_LIB);
+  Self.mLogLevelFile := TTrkLogLevel(ini.ReadInteger(_INIFILE_SECTNAME, 'loglevelFile', Integer(_DEF_LOGLEVEL)));
+  Self.mLogLevelTable := TTrkLogLevel(ini.ReadInteger(_INIFILE_SECTNAME, 'loglevelTable', Integer(_DEF_LOGLEVEL)));
+
+  try
+    Self.LoadLib(fLibDir + '\' + lib);
+  except
+    on E:Exception do
+      Self.Log(llErrors, 'Nelze načíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message);
+  end;
+end;
+
+procedure TTrakce.SaveToFile(ini:TMemIniFile);
+begin
+  if (Self.Lib <> '') then
+    ini.WriteString(_INIFILE_SECTNAME, 'lib', ExtractFileName(Self.Lib));
+  ini.WriteInteger(_INIFILE_SECTNAME, 'loglevelFile', Integer(Self.logLevelFile));
+  ini.WriteInteger(_INIFILE_SECTNAME, 'loglevelTable', Integer(Self.logLevelTable));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -808,13 +842,13 @@ end;                                        }
 
 procedure TTrakce.SetLoglevelFile(ll:TTrkLogLevel);
 begin
- Self.flogfile := ll;
+ Self.mLogLevelFile := ll;
  Log(llCommands, 'NEW loglevel_file = '+LogLevelToString(ll));
 end;
 
 procedure TTrakce.SetLoglevelTable(ll:TTrkLogLevel);
 begin
- Self.flogtable := ll;
+ Self.mLogLevelTable := ll;
  Log(llCommands, 'NEW loglevel_table = '+LogLevelToString(ll));
 end;
 
