@@ -79,5 +79,11 @@ begin
  Result := IntToHex(GetRValue(Color), 2) + IntToHex(GetGValue(Color), 2) + IntToHex(GetBValue(Color), 2);
 end;
 
+////////////////////////////////////////////////////////////////////////////////
+
+initialization
+  PrevodySoustav := TPrevody.Create();
+finalization
+  FreeAndNil(PrevodySoustav);
 
 end.//uses

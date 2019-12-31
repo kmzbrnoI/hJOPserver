@@ -55,4 +55,11 @@ function TGetFunctions.GetSystemStart:Boolean;
   end;
  end;
 
+////////////////////////////////////////////////////////////////////////////////
+
+initialization
+  GetFunctions := TGetFunctions.Create();
+finalization
+  FreeAndNil(GetFunctions);
+
 end.//uses

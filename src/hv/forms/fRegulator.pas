@@ -471,6 +471,8 @@ end;
 function TRegulatorCollector.IsLoko(HV:THV):boolean;
 var i:Integer;
 begin
+ if (Self = nil) then Exit(false);
+ 
  for i := 0 to _MAX_FORMS-1 do
    if ((Self.forms.data[i] <> nil) and (Self.forms.data[i].OpenHV = HV)) then
      Exit(true);
@@ -483,6 +485,6 @@ initialization
   RegCollector := TRegulatorCollector.Create();
 
 finalization
-  RegCollector.Free;
+  FreeAndNil(RegCollector);
 
 end.//unit

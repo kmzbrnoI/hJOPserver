@@ -1077,4 +1077,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+initialization
+  Blky := TBlky.Create();
+finalization
+  FreeAndNil(Blky);
+
 end.//unit

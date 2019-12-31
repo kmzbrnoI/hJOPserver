@@ -2247,7 +2247,7 @@ begin
   end;
 end;
 
-procedure TF_Main.FreeVars;
+procedure TF_Main.FreeVars();
  begin
   ResetData.Free;
 
@@ -2325,14 +2325,7 @@ end;
 
 procedure TF_Main.CreateClasses();
  begin
-  ini_lib        := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
-  ResetData      := TReset.Create;
-  Vytizeni       := TVytizeni.Create;
-  LogData        := TLogData.Create;
-  SystemData     := TSystem.Create;
-  GetFunctions   := TGetFunctions.Create;
-  PrevodySoustav := TPrevody.Create;
-  Boosters       := TBoosterDb.Create();
+  ini_lib := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
 
   ACTableData    := TACTableData.Create(Self.LV_AC_Db);
   JCTableData    := TJCTableData.Create(Self.LV_JC);
@@ -2344,9 +2337,6 @@ procedure TF_Main.CreateClasses();
   ZesTableData   := TZesTableData.Create(Self.LV_Zesilovace);
   ORsTableData   := TORsTableData.Create(Self.LV_Stanice);
   MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
-
-  ORs := TORs.Create();
-  Blky := TBlky.Create();
  end;
 
 procedure TF_Main.RepaintObjects();

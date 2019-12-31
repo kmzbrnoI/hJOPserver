@@ -317,4 +317,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+initialization
+  Boosters := TBoosterDb.Create();
+finalization
+  FreeAndNil(Boosters);
+
 end.//unit
