@@ -58,14 +58,12 @@ type
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TTrkLocoInfo; var handled:boolean) of object;
   TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
 
-  // passed as a callaback parameter when programming POM
+  // passed as a parameter to callback when programming POM
   TPOMCallback = record
     locoAddr:Word;
     toProgram:TList<THVPomCV>;
     index:Integer; // index of currently programmed CV in list 'toProgram'
     callback_ok, callback_err:TCommandCallback;
-    new:TPomStatus;
-    // TODO pokud dojde pri programovani POMu k chybe, je do HV.Slot.pom ulozeno TPomStatus.error
   end;
 
   {
@@ -212,7 +210,7 @@ type
      function SetStepSpeed(step:byte; sp:Integer):Byte;
 
      procedure LoksSetFunc(vyznam:string; state:boolean);
-     procedure POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus; ok: TCb; err: TCb);
+     procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
      procedure AcquireAllLocos();
      procedure ReleaseAllLocos();
@@ -1022,83 +1020,64 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-// zapsat seznam vsech cv v listu
-procedure TTrakce.POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus; ok: TCb; err: TCb);
-var data:Pointer;
-begin
- // vytvorime si callback
-{ GetMem(data, sizeof(TPOMCallback));
- TPOMCallback(data^).addr := HV.adresa;
- TPOMCallback(data^).list := list;
- TPOMCallback(data^).callback_ok  := Self.Trakce.callback_ok;
- TPOMCallback(data^).callback_err := Self.Trakce.callback_err;
- TPOMCallback(data^).index := 0;
- TPOMCallback(data^).new   := new;
-
- HV.Slot.pom := progr;
- HV.changed  := true;
-
- if (list.Count < 1) then
-  begin
-   Self.callback_err := TTrakce.GenerateCallback(nil);
-   Self.callback_ok  := TTrakce.GenerateCallback(nil);
-   Self.POMCvWroteOK(Self, data);
-  end else begin
-   // callback pro jednotlive pom
-   Self.callback_err := TTrakce.GenerateCallback(Self.POMCvWroteErr, data);
-   Self.callback_ok  := TTrakce.GenerateCallback(Self.POMCvWroteOK, data);
-
-   try
-     Self.POMWriteCV(Sender, HV, list[0].cv, list[0].data);
-   except
-     Self.POMCvWroteErr(Self, data);
-   end;
-  end; }
-end;
-
+// POM
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.POMCvWroteOK(Sender:TObject; Data:Pointer);
+procedure TTrakce.POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
+var data: ^TPomCallback;
 begin
-{ if (TPOMCallback(data^).index >= (TPOMCallback(data^).list.Count-1)) then
+ if (toProgram.Count = 0) then
   begin
-   // posledni data -> zavolame OK event
-
-   if (Assigned(HVDb[TPOMCallback(data^).addr])) then
-    begin
-     HVDb[TPOMCallback(data^).addr].Slot.pom := TPOMCallback(data^).new;
-     HVDb[TPOMCallback(data^).addr].changed := true;
-     RegCollector.ConnectChange(TPOMCallback(data^).addr);
-    end;
-
-   if (Assigned(TPOMCallback(data^).callback_ok.callback)) then
-     TPOMCallback(data^).callback_ok.callback(Self, TPOMCallback(data^).callback_ok.data);
-   FreeMem(data);
-  end else begin
-   // odesleme dalsi data
-   TPOMCallback(data^).index := TPOMCallback(data^).index+1;
-
-   Self.callback_err := TTrakce.GenerateCallback(Self.POMCvWroteErr, data);
-   Self.callback_ok  := TTrakce.GenerateCallback(Self.POMCvWroteOK, data);
-   Self.POMWriteCV(Sender, HVDB[TPOMCallback(data^).addr], TPOMCallback(data^).list[TPOMCallback(data^).index].cv,
-                   TPOMCallback(data^).list[TPOMCallback(data^).index].data);
-  end;// else konec dat }
-end;
-
-// pokud pri POMu nastane chyba, zavolame Error callback a ukoncime programovani
-procedure TTrakce.POMCvWroteErr(Sender:TObject; Data:Pointer);
-begin
-{ if (Assigned(HVDb[TPOMCallback(data^).addr])) then
-  begin
-   HVDb[TPOMCallback(data^).addr].Slot.pom := TPomStatus.error;
-   HVDb[TPOMCallback(data^).addr].changed  := true;
-   RegCollector.ConnectChange(TPOMCallback(data^).addr);
+   if (Assigned(ok.callback)) then
+     ok.callback(Self, ok.data);
+   Exit();
   end;
 
- if (Assigned(TPOMCallback(data^).callback_err.callback)) then
-  TPOMCallback(data^).callback_err.callback(Self, TPOMCallback(data^).callback_err.data);
- FreeMem(data); }
+ GetMem(data, sizeof(TPOMCallback));
+ data^.locoAddr := addr;
+ data^.toProgram := toProgram;
+ data^.callback_ok := ok;
+ data^.callback_err := err;
+ data^.index := 0;
+
+ try
+   Self.POMWriteCV(addr, toProgram[0].cv, toProgram[0].data,
+                   TTrakce.Callback(Self.POMCvWroteOK, data),
+                   TTrakce.Callback(Self.POMCvWroteErr, data));
+ except
+   Self.POMCvWroteErr(Self, data);
+ end;
+end;
+
+procedure TTrakce.POMCvWroteOK(Sender:TObject; Data:Pointer);
+var pomData: ^TPomCallback;
+begin
+ pomData := Data;
+
+ if (pomData.index >= (pomData.toProgram.Count-1)) then
+  begin
+   // last POM
+   if (Assigned(pomData.callback_ok.callback)) then
+     pomData.callback_ok.callback(Self, pomData.callback_ok.data);
+   FreeMem(data);
+  end else begin
+   // send next data
+   pomData.index := pomData.index+1;
+
+   Self.POMWriteCV(pomData.locoAddr, pomData.toProgram[pomData.index].cv,
+                   pomData.toProgram[pomData.index].Data,
+                   TTrakce.Callback(Self.POMCvWroteOK, data),
+                   TTrakce.Callback(Self.POMCvWroteErr, data));
+  end;
+end;
+
+procedure TTrakce.POMCvWroteErr(Sender:TObject; Data:Pointer);
+var pomData: ^TPomCallback;
+begin
+ pomData := Data;
+ if (Assigned(pomData.callback_err.callback)) then
+   pomData.callback_err.callback(Self, pomData.callback_err.data);
+ FreeMem(data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

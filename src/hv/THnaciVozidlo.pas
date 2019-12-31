@@ -121,6 +121,9 @@ type
      acquiredOk:TCommandCallback;
      acquiredErr:TCommandCallback;
      releasedOk:TCommandCallback;
+     pomOk:TCommandCallback;
+     pomErr:TCommandCallback;
+     pomTarget:TPomStatus;
 
      procedure LoadData(ini:TMemIniFile; section:string);
      procedure LoadState(ini:TMemIniFile; section:string);
@@ -144,6 +147,9 @@ type
 
      procedure TrakceReleased(Sender:TObject; data:Pointer);
      procedure TrakceReleasedPOM(Sender:TObject; data:Pointer);
+
+     procedure TrakcePOMOK(Sender:TObject; data:Pointer);
+     procedure TrakcePOMErr(Sender:TObject; data:Pointer);
 
    public
 
@@ -204,6 +210,8 @@ type
      procedure SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
      procedure SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
      procedure StavFunctionsToSlotFunctions(ok: TCb; err: TCb);
+
+     procedure SetPom(pom:TPomStatus; ok: TCb; err: TCb);
 
      class function CharToHVFuncType(c:char):THVFuncType;
      class function HVFuncTypeToChar(t:THVFuncType):char;
@@ -893,16 +901,16 @@ begin
    // loko je uvedeno do rucniho rizeni
 
    // nastavit POM rucniho rizeni
-   if ((Self.acquired) and (Self.pom <> TPomStatus.released)) then // neprevzatym vozidlum je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
-     TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
+{   if ((Self.acquired) and (Self.pom <> TPomStatus.released)) then // neprevzatym vozidlum je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
+     TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback()); } // TODO
   end else begin
    // loko je vyjmuto z rucniho rizeni
 
    if (Self.Stav.souprava > -1) then
     begin
      // POM automatu
-     if (Self.pom <> TPomStatus.pc) then
-       TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
+{     if (Self.pom <> TPomStatus.pc) then
+       TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback()); } // TODO
 
      Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
     end else begin
@@ -1441,16 +1449,16 @@ end;
 
 procedure THV.TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
 begin
- // Set POM TODO
  Self.Stav.ruc := (RegCollector.IsLoko(Self)) or (Self.ruc);
  Self.changed := true;
+
  if (Self.Stav.ruc) then
   begin
    // manual control
-   TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
+   Self.SetPom(TPomStatus.released, TTrakce.Callback(Self.TrakceAcquiredPOMSet), TTrakce.Callback(Self.TrakceAcquiredErr));
   end else begin
    // automatic control
-   TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
+   Self.SetPom(TPomStatus.pc, TTrakce.Callback(Self.TrakceAcquiredPOMSet), TTrakce.Callback(Self.TrakceAcquiredErr));
   end;
 end;
 
@@ -1487,9 +1495,8 @@ begin
  Self.RecordUseNow();
  Self.changed := true;
 
- // TODO: call POM release with both TrakceReleasedPOM callbacks
  if (Self.pom <> TPomStatus.released) then
-   TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback())
+   Self.SetPom(TPomStatus.released, TTrakce.Callback(Self.TrakceReleasedPOM), TTrakce.Callback(Self.TrakceReleasedPOM))
  else
    Self.TrakceReleasedPOM(Self, nil);
 end;
@@ -1511,6 +1518,48 @@ begin
  Self.changed := true;
  if (Assigned(Self.releasedOk.callback)) then
    Self.releasedOk.callback(Self, Self.releasedOk.data);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// POM
+
+
+procedure THV.SetPom(pom:TPomStatus; ok: TCb; err: TCb);
+var toProgram:TList<THVPomCV>;
+begin
+ Self.pomOk := ok;
+ Self.pomErr := pomErr;
+ Self.pomTarget := pom;
+ Self.stav.pom := TPomStatus.progr;
+ Self.changed := true;
+
+ if (pom = TPomStatus.pc) then
+   toProgram := Self.data.POMtake
+ else if (pom = TPomStatus.released) then
+   toProgram := Self.data.POMrelease
+ else
+   raise Exception.Create('Invalid POM!');
+
+ TrakceI.POMWriteCVs(Self.adresa, toProgram,
+                     TTrakce.Callback(Self.TrakcePOMOK), TTrakce.Callback(Self.TrakcePOMErr));
+end;
+
+procedure THV.TrakcePOMOK(Sender:TObject; data:Pointer);
+begin
+ Self.stav.pom := Self.pomTarget;
+ Self.changed := true;
+ RegCollector.LocoChanged(Self.adresa);
+ if (Assigned(Self.pomOk.callback)) then
+   Self.pomOk.callback(Self, Self.pomOk.data);
+end;
+
+procedure THV.TrakcePOMErr(Sender:TObject; data:Pointer);
+begin
+ Self.stav.pom := TPomStatus.error;
+ Self.changed := true;
+ RegCollector.LocoChanged(Self.adresa);
+ if (Assigned(Self.pomErr.callback)) then
+   Self.pomOk.callback(Self, Self.pomErr.data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
