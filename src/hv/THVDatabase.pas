@@ -38,6 +38,11 @@ type
 
     fdefault_or:Integer;
     fLoksDir:string;
+    eAcquiredOk: TNotifyEvent;
+    eAcquiredErr: TNotifyEvent;
+    eReleasedOk: TNotifyEvent;
+    mAcquiring: Boolean;
+    mReleasing: Boolean;
 
      procedure Clear();
      procedure LoadFile(filename:string; stateini:TMemIniFile);
@@ -46,6 +51,10 @@ type
 
      procedure CreateIndex();
      function GetItem(index:Integer):THV;
+
+     procedure AcquiredOk(Sender: TObject; Data: Pointer);
+     procedure AcquiredErr(Sender: TObject; Data: Pointer);
+     procedure ReleasedOk(Sender: TObject; Data: Pointer);
 
    public
 
@@ -69,10 +78,16 @@ type
      function FilenameForLok(addr:Word):string; overload;
      function FilenameForLok(hv:THV):string; overload;
 
+     procedure CSReset();
+     procedure TrakceAcquireAllUsed(ok: TNotifyEvent; err: TNotifyEvent);
+     procedure TrakceReleaseAllUsed(ok: TNotifyEvent);
+
      property cnt:Word read GetCnt;              // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
      property HVozidla:THVArray read HVs;
      property default_or:Integer read fdefault_or write fdefault_or;
      property loksDir:string read fLoksDir;
+     property acquiring:boolean read mAcquiring;
+     property releasing:boolean read mReleasing;
 
      property Items[index : integer] : THV read GetItem; default;
 
@@ -83,7 +98,7 @@ var
 
 implementation
 
-uses fSettings, fMain, DataHV, TOblRizeni, appEv;
+uses fSettings, fMain, DataHV, TOblRizeni, appEv, Trakce, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +108,8 @@ begin
  inherited Create();
 
  Self.fdefault_or := _DEFAULT_OR;
+ Self.mAcquiring := false;
+ Self.mReleasing := false;
 
  // ukazatele nastavit na nil
  for i := 0 to _MAX_ADDR-1 do
@@ -489,6 +506,102 @@ end;
 function THVDb.GetItem(index:Integer):THV;
 begin
  Result := Self.HVs[index];
+end;
+
+procedure THVDb.CSReset();
+var addr:Word;
+begin
+ Self.mAcquiring := false;
+ Self.mReleasing := false;
+ for addr := 0 to _MAX_ADDR-1 do
+   if (HVDb[addr] <> nil) then
+     HVDb[addr].CSReset();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Trakce
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THVDb.TrakceAcquireAllUsed(ok: TNotifyEvent; err: TNotifyEvent);
+begin
+ Self.mAcquiring := true;
+ Self.mReleasing := false;
+ Self.eAcquiredOk := ok;
+ Self.eAcquiredErr := err;
+
+ Self.AcquiredOk(Self, Pointer(0));
+end;
+
+procedure THVDb.AcquiredOk(Sender: TObject; Data: Pointer);
+var addr: Word;
+begin
+ addr := Word(Data);
+
+ if (not Self.mAcquiring) then
+   Exit();
+
+ while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].ShouldAcquire()))) do
+   Inc(addr);
+
+ if (addr = _MAX_ADDR) then
+  begin
+   Self.mAcquiring := false;
+   if (Assigned(Self.eAcquiredOk)) then
+     Self.eAcquiredOk(Self);
+   Exit();
+  end;
+
+ data := Pointer(addr+1);
+ try
+   HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.AcquiredOk, data), TTrakce.Callback(Self.AcquiredErr, data));
+ except
+   Self.AcquiredErr(Self, data);
+ end;
+end;
+
+procedure THVDb.AcquiredErr(Sender: TObject; Data: Pointer);
+begin
+ Self.mAcquiring := false;
+ TrakceI.Log(llErrors, 'ERR: LOKO '+ IntToStr(Word(data)) + ' se nepodařilo převzít');
+ F_Main.LogStatus('LOKO: loko '+ IntToStr(Word(data)) + ' se nepodařilo převzít');
+ if (Assigned(Self.eAcquiredErr)) then
+   Self.eAcquiredErr(Self);
+end;
+
+procedure THVDb.TrakceReleaseAllUsed(ok: TNotifyEvent);
+begin
+ Self.mAcquiring := false;
+ Self.mReleasing := true;
+ Self.eReleasedOk := ok;
+
+ Self.ReleasedOk(Self, Pointer(0));
+end;
+
+procedure THVDb.ReleasedOk(Sender: TObject; Data: Pointer);
+var addr: Word;
+begin
+ addr := Word(Data);
+
+ if (not Self.mReleasing) then
+   Exit();
+
+ while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired))) do
+   Inc(addr);
+
+ if (addr = _MAX_ADDR) then
+  begin
+   Self.mReleasing := false;
+   if (Assigned(Self.eReleasedOk)) then
+     Self.eReleasedOk(Self);
+   Exit();
+  end;
+
+ data := Pointer(addr+1);
+ try
+   HVDb[addr].TrakceRelease(TTrakce.Callback(Self.ReleasedOk, data));
+ except
+   Self.ReleasedOk(Self, data);
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

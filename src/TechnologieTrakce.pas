@@ -212,8 +212,6 @@ type
      procedure LoksSetFunc(vyznam:string; state:boolean);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
-     procedure AcquireAllLocos();
-     procedure ReleaseAllLocos();
      procedure FastResetLocos();
 
      procedure TurnOffFunctions(callback:TNotifyEvent);
@@ -552,11 +550,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.AcquireAllLocos();
+{procedure TTrakce.AcquireAllLocos();
 var i:Integer;
     data:Pointer;
     k_prevzeti:Integer;
-begin
+begin}
 { k_prevzeti := 0;
  for i := 0 to _MAX_ADDR-1 do
   begin
@@ -569,36 +567,14 @@ begin
  F_Main.G_Loko_Prevzato.Progress  := 0;
  F_Main.G_Loko_Prevzato.ForeColor := clBlue;
 
- for i := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[i] = nil) then continue;
-   if ((HVDb[i].Slot.Prevzato) and (HVDb[i].Slot.pom = pc)) then continue;
-   if (HVDb[i].Stav.souprava > -1) then
-    begin
-     GetMem(data, sizeof(integer));
-     Integer(data^) := i;
-     Self.callback_err := TTrakce.GenerateCallback(Self.PrebiraniUpdateErr, data);
-     Self.callback_ok  := TTrakce.GenerateCallback(Self.PrebiraniUpdateOK, data);
-     try
-       Self.PrevzitLoko(HVDb[i]);
-     except
-       Self.PrebiraniUpdateErr(self, data);
-     end;
-     Exit();
-    end;
-  end;
-
- F_Main.LogStatus('Loko: žádné loko k převzetí');
  F_Main.G_Loko_Prevzato.MaxValue := 1;
  F_Main.G_Loko_Prevzato.Progress := 1;
- Self.AllPrevzato(); }
-end;
 
 procedure TTrakce.ReleaseAllLocos();
 var i:Integer;
     data:Pointer;
     k_odhlaseni:Integer;
-begin
+begin}
 { k_odhlaseni := 0;
  for i := 0 to _MAX_ADDR-1 do
   begin
@@ -610,25 +586,10 @@ begin
  F_Main.G_Loko_Prevzato.Progress  := F_Main.G_Loko_Prevzato.MaxValue;
  F_Main.G_Loko_Prevzato.ForeColor := clBlue;
 
- for i := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[i] = nil) then continue;
-   if (HVDb[i].Slot.Prevzato) then
-    begin
-     GetMem(data, sizeof(integer));
-     Integer(data^) := i;
-     Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateErr, data);
-     Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateOK, data);
-     Self.OdhlasitLoko(HVDb[i]);
-     Exit();
-    end;
-  end;
-
  F_Main.LogStatus('Loko: žádné loko k odhlášení');
  F_Main.G_Loko_Prevzato.MaxValue := 1;
  F_Main.G_Loko_Prevzato.Progress := 0;
  Self.AllOdhlaseno(); }
-end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -765,49 +726,10 @@ begin
  F_Main.G_Loko_Prevzato.Progress := F_Main.G_Loko_Prevzato.Progress + 1;
  F_Main.G_Loko_Prevzato.ForeColor := clBlue;
 
- for i := Integer(data^) to _MAX_ADDR-1 do
-  begin
-   if ((HVDb[i] = nil) or ((HVDb[i].Slot.Prevzato) and ((HVDb[i].Slot.pom = released) or (HVDb[i].Slot.pom = pc)))) then continue;
-   if (HVDb[i].Stav.souprava > -1) then
-    begin
-     Integer(data^) := i;
-     Self.callback_err := TTrakce.GenerateCallback(Self.PrebiraniUpdateErr, data);
-     Self.callback_ok  := TTrakce.GenerateCallback(Self.PrebiraniUpdateOK, data);
-     try
-       Self.PrevzitLoko(HVDb[i]);
-     except
-       Self.PrebiraniUpdateErr(self, data);
-     end;
-     Exit();
-    end;
-  end;
-
  // zadne dalsi loko k prevzeti
- FreeMem(data);
  Application.ProcessMessages();
  F_Main.LogStatus('Loko: všechna loko převzata');
  Self.AllPrevzato();
-end;
-
-procedure TTrakce.PrebiraniUpdateErr(Sender:TObject; Data:Pointer);
-begin
- Self.Log(tllError, 'ERR: LOKO '+ IntToStr(Integer(data^)) + ' se nepodařilo převzít');
- F_Main.LogStatus('LOKO: loko '+ IntToStr(Integer(data^)) + ' se nepodařilo převzít');
-
- F_Main.G_Loko_Prevzato.ForeColor := clRed;
-
- F_Main.S_lok_prevzato.Brush.Color  := clRed; 
- F_Main.A_All_Loko_Prevzit.Enabled  := true;
- 
- if (SystemData.Status = TSystemStatus.starting) then
-  begin
-   SystemData.Status := TSystemStatus.null;
-   F_Main.A_System_Start.Enabled := true;
-   F_Main.A_System_Stop.Enabled  := true;
-  end;
-
- Application.MessageBox(PChar('LOKO '+ IntToStr(Integer(data^)) + ' se nepodařilo převzít'), 'Chyba', MB_OK OR MB_ICONWARNING);
- FreeMem(data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -819,32 +741,6 @@ begin
  F_Main.G_Loko_Prevzato.Progress := F_Main.G_Loko_Prevzato.Progress - 1;
  F_Main.G_Loko_Prevzato.ForeColor := clBlue;
 
- // loko odhlaseno -> najdeme dalsi k odhlaseni a naprogramujeme POM
- for i := Integer(data^) to _MAX_ADDR-1 do
-  begin
-   if (HVDb[i] = nil) then continue;
-   if (HVDb[i].Slot.Prevzato) then
-    begin
-     Integer(data^) := i;
-     Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateErr, data);
-     Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateOK, data);
-     try
-       Self.OdhlasitLoko(HVDb[i]);
-     except
-       on E:Exception do
-        begin
-         Self.callback_err := TTrakce.GenerateCallback(nil);
-         Self.callback_ok  := TTrakce.GenerateCallback(nil);
-         FreeMem(data);
-         F_Main.LogStatus('Výjimka: ' + E.Message);
-        end;
-     end;
-     Exit();
-    end;
-  end;
-
- // zadne dalsi loko k odhlaseni
- FreeMem(data);
  F_Main.LogStatus('Loko: všechna loko odhlášena');
  Application.ProcessMessages();
  Self.AllOdhlaseno();
@@ -859,36 +755,6 @@ begin
  HVDb[Integer(data^)].Slot.prevzato := false;
  HVDb[Integer(data^)].Slot.prevzato_full := false;
  Self.OdhlasovaniUpdateOK(Self, data);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrakce.AllPrevzato();
-begin
- F_Main.S_lok_prevzato.Brush.Color := clLime;
-
- F_Main.A_All_Loko_Prevzit.Enabled  := false;
- F_Main.A_All_Loko_Odhlasit.Enabled := true;
-
- F_Main.G_Loko_Prevzato.Progress  := HVDb.cnt;
- F_Main.G_Loko_Prevzato.ForeColor := clLime;
-
- if (SystemData.Status = starting) then
-   F_Main.A_PanelServer_StartExecute(nil);
-end;
-
-procedure TTrakce.AllOdhlaseno();
-begin
- F_Main.S_lok_prevzato.Brush.Color := clRed;
-
- F_Main.A_All_Loko_Prevzit.Enabled  := true;
- F_Main.A_All_Loko_Odhlasit.Enabled := false;
-
- F_Main.G_Loko_Prevzato.Progress  := 0;
- F_Main.G_Loko_Prevzato.ForeColor := clBlue;
-
- if (SystemData.Status = stopping) then
-   F_Main.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

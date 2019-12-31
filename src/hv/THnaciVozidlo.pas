@@ -191,6 +191,7 @@ type
      procedure CheckRelease();
      procedure RecordUseNow();
      function NiceName():string;
+     function ShouldAcquire():boolean;
 
      procedure SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil); overload;
      procedure SetSpeed(speed:Integer; Sender: TObject = nil); overload;
@@ -1134,6 +1135,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function THV.ShouldAcquire():boolean;
+begin
+ Result := ((Self.souprava > -1) and ((not Self.acquired) or ((Self.pom = released) or (Self.pom = pc))));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure THV.ForceRemoveAllRegulators();
 var i:Integer;
 begin
@@ -1201,10 +1209,21 @@ end;
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
 var dirOld:Boolean;
     stepsOld:Byte;
+    cbOk, cbErr: ^TCB;
 begin
  // TODO: use callbacks
- if ((Self.direction = direction) and (Self.speedStep = speedStep)) then Exit();
- if (not Self.acquired) then Exit();
+ if ((Self.direction = direction) and (Self.speedStep = speedStep)) then
+  begin
+   if (Assigned(ok.callback)) then
+     ok.callback(Self, ok.data);
+   Exit();
+  end;
+ if ((not Self.acquired) and (not Self.acquiring)) then
+  begin
+   if (Assigned(ok.callback)) then
+     ok.callback(Self, ok.data);
+   Exit();
+  end;
 
  dirOld := Self.direction;
  stepsOld := Self.speedStep;
@@ -1218,12 +1237,18 @@ begin
    Exit();
   end;
 
- try
-   // TODO: handle ok and err callbacks and call it in custom callbacks
+ GetMem(cbOk, sizeof(TCb));
+ GetMem(cbErr, sizeof(TCb));
 
+ ok.other := Pointer(cbErr);
+ err.other := Pointer(cbOk);
+ cbOk^ := ok;
+ cbErr^ := err;
+
+ try
    TrakceI.LocoSetSpeed(Self.adresa, Self.slot.speed, Self.direction,
-                        TTrakce.Callback(Self.TrakceCallbackOk),
-                        TTrakce.Callback(Self.TrakceCallbackErr));
+                        TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
+                        TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
    on E:Exception do
     begin
@@ -1308,14 +1333,36 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THV.TrakceCallbackOk(Sender:TObject; data:Pointer);
+var cb: ^TCB;
 begin
+ if (data <> nil) then
+  begin
+   cb := data;
+   if (Assigned(cb.callback)) then
+     cb.callback(Self, cb.data);
+   if (Assigned(cb.other)) then
+     FreeMem(cb.other);
+   FreeMem(cb);
+  end;
+
  if (not Self.stav.trakceError) then Exit();
  Self.stav.trakceError := false;
  Self.changed := true;
 end;
 
 procedure THV.TrakceCallbackErr(Sender:TObject; data:Pointer);
+var cb: ^TCB;
 begin
+ if (data <> nil) then
+  begin
+   cb := data;
+   if (Assigned(cb.callback)) then
+     cb.callback(Self, cb.data);
+   if (Assigned(cb.other)) then
+     FreeMem(cb.other);
+   FreeMem(cb);
+  end;
+
  if (Self.stav.trakceError) then Exit();
  Self.stav.trakceError := true;
  Self.changed := true;

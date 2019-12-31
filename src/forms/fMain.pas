@@ -469,6 +469,10 @@ type
     procedure OnDCCGoError(Sender:TObject; Data:Pointer);
     procedure OnDCCStopError(Sender:TObject; Data:Pointer);
 
+    procedure OnTrkAllAcquired(Sender:TObject);
+    procedure OnTrkAcquireError(Sender:TObject);
+    procedure OnTrkAllReleased(Sender:TObject);
+
   end;//public
 
  TVytizeni=class                                                                // vytizeni procesoru programem
@@ -1146,7 +1150,6 @@ begin
 end;
 
 procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
-var addr:Integer;
 begin
  if ((SystemData.Status = stopping) and (not TrakceI.ConnectedSafe())) then
   begin
@@ -1168,29 +1171,67 @@ begin
  Application.ProcessMessages();
 end;
 
-procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
-begin
- F_Main.LogStatus('Loko: odhlašuji...');
- Application.ProcessMessages();
- F_Main.S_locos_acquired.Brush.Color := clBlue;
-
- try
-   TrakceI.ReleaseAllLocos();
- except
-   on E:Exception do
-    begin
-     Application.MessageBox(PChar('Nepodařilo se odhlásit lokomotivy:'+#13#10+E.Message),
-            'Varování', MB_OK OR MB_ICONWARNING);
-    end;
- end;
-end;
 
 procedure TF_Main.A_Locos_AcquireExecute(Sender: TObject);
 begin
  F_Main.LogStatus('Loko: přebírám...');
  Application.ProcessMessages();
  F_Main.S_locos_acquired.Brush.Color := clBlue;
- TrakceI.AcquireAllLocos();
+
+ HVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError);
+end;
+
+procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
+begin
+ F_Main.LogStatus('Loko: odhlašuji...');
+ Application.ProcessMessages();
+ F_Main.S_locos_acquired.Brush.Color := clBlue;
+ HVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased);
+end;
+
+procedure TF_Main.OnTrkAllAcquired(Sender:TObject);
+begin
+ Self.S_locos_acquired.Brush.Color := clLime;
+
+ Self.A_Locos_Acquire.Enabled := false;
+ Self.A_Locos_Release.Enabled := true;
+
+ Self.G_Loko_Prevzato.Progress := HVDb.cnt;
+ Self.G_Loko_Prevzato.ForeColor := clLime;
+
+ if (SystemData.Status = starting) then
+   F_Main.A_PanelServer_StartExecute(nil);
+end;
+
+procedure TF_Main.OnTrkAcquireError(Sender:TObject);
+begin
+ Self.G_Loko_Prevzato.ForeColor := clRed;
+
+ Self.S_locos_acquired.Brush.Color := clRed;
+ Self.A_Locos_Acquire.Enabled := true;
+
+ if (SystemData.Status = TSystemStatus.starting) then
+  begin
+   SystemData.Status := TSystemStatus.null;
+   F_Main.A_System_Start.Enabled := true;
+   F_Main.A_System_Stop.Enabled  := true;
+  end;
+
+ Application.MessageBox('Nepodařilo se převzít všechny lokomotivy, více informací v logu.', 'Chyba', MB_OK OR MB_ICONWARNING);
+end;
+
+procedure TF_Main.OnTrkAllReleased(Sender:TObject);
+begin
+ Self.S_locos_acquired.Brush.Color := clRed;
+
+ Self.A_Locos_Acquire.Enabled  := true;
+ Self.A_Locos_Release.Enabled := false;
+
+ Self.G_Loko_Prevzato.Progress  := 0;
+ Self.G_Loko_Prevzato.ForeColor := clBlue;
+
+ if (SystemData.Status = stopping) then
+   F_Main.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
 end;
 
 procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
@@ -1298,7 +1339,6 @@ begin
 end;
 
 procedure TF_Main.OnTrkAfterClose(Sender: TObject);
-var addr:Integer;
 begin
  Self.A_Trk_Connect.Enabled := true;
  Self.A_Trk_Disconnect.Enabled := false;
@@ -1319,10 +1359,7 @@ begin
  Self.A_FuncsSet.Enabled := false;
  if (F_FuncsSet.Showing) then F_FuncsSet.Close();
 
- for addr := 0 to _MAX_ADDR-1 do
-  if (HVDb[addr] <> nil) then
-    HVDb[addr].CSReset();
-
+ HVDb.CSReset();
  Application.ProcessMessages();
 
  if (SystemData.Status = stopping) then
