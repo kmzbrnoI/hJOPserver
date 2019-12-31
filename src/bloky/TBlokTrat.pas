@@ -1151,7 +1151,7 @@ begin
    Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|';
 
  for addr in Soupravy[Self.souprava].HVs do
-   Result := Result + HVDb.HVozidla[addr].Data.Nazev + '|';
+   Result := Result + HVDb[addr].Data.Nazev + '|';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

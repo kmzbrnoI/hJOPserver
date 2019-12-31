@@ -1450,7 +1450,7 @@ procedure TF_Main.PM_NastaveniClick(Sender: TObject);
 procedure TF_Main.PM_PropertiesClick(Sender: TObject);
 begin
  if (LV_HV.Selected <> nil) then
-   F_HVEdit.OpenForm(HVDB.HVozidla[Integer(LV_HV.Selected.Data^)]);
+   F_HVEdit.OpenForm(HVDB[Integer(LV_HV.Selected.Data^)]);
 end;
 
 procedure TF_Main.PC_1Change(Sender: TObject);
@@ -1494,7 +1494,7 @@ begin
  if (TrakceI.ConnectedSafe()) then
   begin
    try
-    RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
+    RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
    except
     on E:Exception do
       Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
@@ -3074,13 +3074,13 @@ begin
  if (TrakceI.ConnectedSafe()) then
   begin
    try
-    RegCollector.Open(HVDb.HVozidla[StrToInt(Self.LV_HV.Selected.Caption)]);
+    RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
    except
     on E:Exception do
       Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
    end;
   end else begin
-   F_HVEdit.OpenForm(HVDB.HVozidla[Integer(LV_HV.Selected.Data^)]);
+   F_HVEdit.OpenForm(HVDB[Integer(LV_HV.Selected.Data^)]);
   end;
 end;
 

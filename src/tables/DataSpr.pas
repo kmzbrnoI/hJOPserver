@@ -108,8 +108,8 @@ var spr:TSoupravaData;
   Self.LV.Items[line].SubItems[0] := spr.nazev;
 
   if (spr.HVs.Count > 0) then
-   Self.LV.Items[line].SubItems[1] := IntToStr(HVDb.HVozidla[spr.HVs[0]].adresa) + ' : ' +
-       HVDb.HVozidla[spr.HVs[0]].Data.Nazev + ' ('+HVDb.HVozidla[spr.HVs[0]].Data.Oznaceni+')'
+   Self.LV.Items[line].SubItems[1] := IntToStr(HVDb[spr.HVs[0]].adresa) + ' : ' +
+       HVDb[spr.HVs[0]].Data.Nazev + ' ('+HVDb[spr.HVs[0]].Data.Oznaceni+')'
   else
    Self.LV.Items[line].SubItems[1] := '-';
 

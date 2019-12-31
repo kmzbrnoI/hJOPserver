@@ -320,7 +320,7 @@ begin
     end;//on e:Exception
  end;
 
- if (Self.HVozidla[HV.adresa] <> nil) then
+ if (Self[HV.adresa] <> nil) then
   begin
    raise Exception.Create('HV '+IntToStr(HV.adresa)+' již existuje');
    HV.Free();
