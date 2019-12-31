@@ -965,47 +965,6 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// callback funkce pri odhlasovani hnaciho vozidla a pri programovani POM pri odhlasovani:
-
-procedure TTrakce.OdhlasenoOK(Sender:TObject; Data:Pointer);
-begin
- // loko odhlaseno a POM nastaveno -> volame OK callback
- if (Assigned(TPrevzitCallback(data^).callback_ok.callback)) then
-   TPrevzitCallback(data^).callback_ok.callback(Self, TPrevzitCallback(data^).callback_ok.data);
- FreeMem(data);
-end;
-
-procedure TTrakce.OdhlasenoErr(Sender:TObject; Data:Pointer);
-begin
- // POM nastaveno, ale loko neodhlaseno -> volame error callback
- if (Assigned(TPrevzitCallback(data^).callback_err.callback)) then
-   TPrevzitCallback(data^).callback_err.callback(Self, TPrevzitCallback(data^).callback_err.data);
- FreeMem(data);
-end;
-
-procedure TTrakce.OdhlasenoPOMOK(Sender:TObject; Data:Pointer);
-begin
- // release POM uspesne naprogramovano -> odhlasit loko
- if (Assigned(HVDb.HVozidla[TPrevzitCallback(data^).addr])) then
-  begin
-   HVDb.HVozidla[TPrevzitCallback(data^).addr].changed := true;
-   RegCollector.ConnectChange(TPrevzitCallback(data^).addr);
-  end;
-
- Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasenoOK, data);
- Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasenoErr, data);
- Self.Trakce.LokFromMyControl(TPrevzitCallback(data^).addr);
-end;
-
-procedure TTrakce.OdhlasenoPOMErr(Sender:TObject; Data:Pointer);
-begin
- // release POM error -> zavolat error callback
- if (Assigned(TPrevzitCallback(data^).callback_err.callback)) then
-   TPrevzitCallback(data^).callback_err.callback(Self, TPrevzitCallback(data^).callback_err.data);
- FreeMem(data);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.AllPrevzato();
 begin

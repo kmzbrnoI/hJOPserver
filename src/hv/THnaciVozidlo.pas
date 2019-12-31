@@ -120,6 +120,7 @@ type
      m_funcDict:TDictionary<string, Integer>;          // mapovani vyznamu funkci na cisla funkci
      acquiredOk:TCommandCallback;
      acquiredErr:TCommandCallback;
+     releasedOk:TCommandCallback;
 
      procedure LoadData(ini:TMemIniFile; section:string);
      procedure LoadState(ini:TMemIniFile; section:string);
@@ -140,6 +141,9 @@ type
      procedure TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
      procedure TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
      procedure TrakceAcquiredErr(Sender:TObject; data:Pointer);
+
+     procedure TrakceReleased(Sender:TObject; data:Pointer);
+     procedure TrakceReleasedPOM(Sender:TObject; data:Pointer);
 
    public
 
@@ -1343,28 +1347,6 @@ begin
      // coz se dede prave tady
 end;
 
-procedure THV.TrakceAcquire(ok: TCb; err: TCb);
-begin
- TrakceI.Log(llCommands, 'PUT: Loco Acquire: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
- Self.RecordUseNow();
- Self.stav.acquiring := false;
- Self.acquiredOk := ok;
- Self.acquiredErr := err;
-
- try
-   TrakceI.LocoAcquire(Self.adresa, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
- except
-   Self.TrakceAcquiredErr(Self, nil);
- end;
-end;
-
-procedure THV.TrakceRelease(ok: TCb);
-begin
- TrakceI.Log(llCommands, 'PUT: Loco Release: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
-
- // TODO
-end;
-
 procedure THV.SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
 begin
 
@@ -1395,6 +1377,25 @@ begin
  except
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// ACQUIRING
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.TrakceAcquire(ok: TCb; err: TCb);
+begin
+ TrakceI.Log(llCommands, 'PUT: Loco Acquire: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.RecordUseNow();
+ Self.stav.acquiring := false;
+ Self.acquiredOk := ok;
+ Self.acquiredErr := err;
+
+ try
+   TrakceI.LocoAcquire(Self.adresa, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
+ except
+   Self.TrakceAcquiredErr(Self, nil);
  end;
 end;
 
@@ -1467,6 +1468,42 @@ begin
  Self.stav.acquiring := false;
  if (Assigned(Self.acquiredErr.callback)) then
    Self.acquiredErr.callback(Self, Self.acquiredErr.data);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// RELEASING
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.TrakceRelease(ok: TCb);
+begin
+ TrakceI.Log(llCommands, 'PUT: Loco Release: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.releasedOk := ok;
+ Self.Stav.ruc := false;
+ Self.RecordUseNow();
+
+ // TODO: call POM release with both TrakceReleasedPOM callbacks
+ if (Self.pom <> TPomStatus.released) then
+   TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback())
+ else
+   Self.TrakceReleasedPOM(Self, nil);
+end;
+
+procedure THV.TrakceReleasedPOM(Sender:TObject; data:Pointer);
+begin
+ // POM done (ww do not care is successfully or unsuccessfully)
+ try
+  TrakceI.LocoRelease(Self.adresa, TTrakce.Callback(Self.TrakceReleased));
+ except
+   Self.TrakceReleased(Self, nil);
+ end;
+end;
+
+procedure THV.TrakceReleased(Sender:TObject; data:Pointer);
+begin
+ TrakceI.Log(llCommands, 'Loco Successfully Released: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.stav.acquired := false;
+ if (Assigned(Self.releasedOk.callback)) then
+   Self.releasedOk.callback(Self, Self.releasedOk.data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
