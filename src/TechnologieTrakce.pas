@@ -408,10 +408,10 @@ end;
 procedure TTrakce.TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
 begin
  Self.Log(lvl, msg);
- if ((Self.opening) and (Assigned(Self.OnOpenError))) then
+ if ((Self.opening) and (lvl = llErrors) and (Assigned(Self.OnOpenError))) then
   begin
-   Self.OnOpenError(Self, msg);
    Self.opening := false;
+   Self.OnOpenError(Self, msg);
   end;
 end;
 

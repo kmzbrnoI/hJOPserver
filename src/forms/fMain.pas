@@ -1134,20 +1134,11 @@ begin
  except
    on E:Exception do
     begin
-     TrakceI.Log(llErrors, 'OPEN: error: ' + E.Message);
-     Self.OnTrkAfterClose(Self);
-     if (SystemData.Status = TSystemStatus.starting) then
+     if (TrakceI.opening) then
       begin
-       SystemData.Status := TSystemStatus.null;
-       F_Main.A_System_Start.Enabled := true;
-       F_Main.A_System_Stop.Enabled := true;
+       Self.OnTrkErrOpen(Self, E.Message);
+       Self.OnTrkAfterClose(Self);
       end;
-
-     F_Main.A_Trk_Connect.Enabled := true;
-     F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
-     F_Main.S_Trakce_Connected.Brush.Color := clRed;
-     Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
-                            'Chyba', MB_OK OR MB_ICONERROR);
     end;
  end;
 
@@ -1290,7 +1281,6 @@ end;
 
 procedure TF_Main.OnTrkAfterOpen(Sender: TObject);
 begin
-// Self.TrkLog(self, tllCommand, 'OPEN OK');
  Self.A_Trk_Connect.Enabled := false;
  Self.A_Trk_Disconnect.Enabled := true;
  Self.SB1.Panels.Items[_SB_INT].Text := 'Centrála připojena';
@@ -1298,9 +1288,6 @@ begin
  Self.S_Trakce_Connected.Brush.Color := clLime;
  Self.A_Locos_Acquire.Enabled := true;
  Self.UpdateSystemButtons();
-
- Self.A_DCC_Go.Enabled := true;
- Self.A_DCC_Stop.Enabled := true;
  Self.A_FuncsSet.Enabled := true;
 
  Application.ProcessMessages();
@@ -1359,6 +1346,14 @@ end;
 
 procedure TF_Main.OnTrkErrOpen(Sender:TObject; errMsg:string);
 begin
+ if (SystemData.Status = TSystemStatus.starting) then
+  begin
+   SystemData.Status := TSystemStatus.null;
+   F_Main.A_System_Start.Enabled := true;
+   F_Main.A_System_Stop.Enabled := true;
+  end;
+
+ TrakceI.opening := false;
  Self.LogStatus('ERR: Trakce OPEN FAIL: '+errMsg);
  Application.MessageBox(PChar('Při otevírání Trakce nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;
@@ -2625,6 +2620,7 @@ procedure TF_Main.CreateSystem();
   TrakceI.AfterClose := Self.OnTrkAfterClose;
   TrakceI.OnReady := Self.OnTrkReady;
   TrakceI.OnTrackStatusChanged := Self.OnTrkStatusChange;
+  TrakceI.OnOpenError := Self.OnTrkErrOpen;
 
   TrakceI.LogObj := Self.LV_log_lnet;
 
