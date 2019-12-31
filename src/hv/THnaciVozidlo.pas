@@ -1388,9 +1388,10 @@ procedure THV.TrakceAcquire(ok: TCb; err: TCb);
 begin
  TrakceI.Log(llCommands, 'PUT: Loco Acquire: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.RecordUseNow();
- Self.stav.acquiring := false;
+ Self.stav.acquiring := true;
  Self.acquiredOk := ok;
  Self.acquiredErr := err;
+ Self.changed := true;
 
  try
    TrakceI.LocoAcquire(Self.adresa, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
@@ -1404,6 +1405,7 @@ var i:Integer;
     direction:Boolean;
 begin
  Self.slot := LocoInfo;
+ Self.changed := true;
 
  // pokud ma souprava jasne dany smer, nastavime ho
  // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
@@ -1441,6 +1443,7 @@ procedure THV.TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
 begin
  // Set POM TODO
  Self.Stav.ruc := (RegCollector.IsLoko(Self)) or (Self.ruc);
+ Self.changed := true;
  if (Self.Stav.ruc) then
   begin
    // manual control
@@ -1457,6 +1460,7 @@ begin
  TrakceI.Log(llCommands, 'Loco Fully Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.acquired := true;
  Self.stav.acquiring := false;
+ Self.changed := true;
 
  if (Assigned(Self.acquiredOk.callback)) then
    Self.acquiredOk.callback(Self, Self.acquiredOk.data);
@@ -1466,6 +1470,7 @@ procedure THV.TrakceAcquiredErr(Sender:TObject; data:Pointer);
 begin
  TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.acquiring := false;
+ Self.changed := true;
  if (Assigned(Self.acquiredErr.callback)) then
    Self.acquiredErr.callback(Self, Self.acquiredErr.data);
 end;
@@ -1480,6 +1485,7 @@ begin
  Self.releasedOk := ok;
  Self.Stav.ruc := false;
  Self.RecordUseNow();
+ Self.changed := true;
 
  // TODO: call POM release with both TrakceReleasedPOM callbacks
  if (Self.pom <> TPomStatus.released) then
@@ -1502,6 +1508,7 @@ procedure THV.TrakceReleased(Sender:TObject; data:Pointer);
 begin
  TrakceI.Log(llCommands, 'Loco Successfully Released: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.acquired := false;
+ Self.changed := true;
  if (Assigned(Self.releasedOk.callback)) then
    Self.releasedOk.callback(Self, Self.releasedOk.data);
 end;
