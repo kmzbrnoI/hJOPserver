@@ -54,7 +54,7 @@ const
 
 type
   TReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
-  TLogEvent = procedure(Sender:TObject; lvl:TTrkLogLevel; msg:string; var handled:boolean) of object;
+  TErrorEvent = procedure (Sender:TObject; errMsg:string) of object;
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TTrkLocoInfo; var handled:boolean) of object;
   TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
 
@@ -121,19 +121,16 @@ type
    private
      fLibDir:string;
      aReady:boolean;
-     LogObj:TListView;
      SpeedTable:array [0.._MAX_SPEED] of Cardinal;
      turnoff_callback:TNotifyEvent;                                             // callback volany po prikazu TurnOff
                                                                                 //   Prikaz TurnOff zapina F0 a vypina vsechny vyssi funkce
                                                                                 //   pouziva se pri vypinani systemu (pro vypnuti otravnych zvuku zvukovych dekoderu)
 
-     //events definition
-     FOnLog: TLogEvent;                                                         // log event
-     fOnReady : TReadyEvent;
+     eOnReady : TReadyEvent;
+     eOnOpenError : TErrorEvent;
 
      mLogLevelFile : TTrkLogLevel;
      mLogLevelTable: TTrkLogLevel;
-     finitok  : boolean;                                                        // je true, pokud po otevreni seriaku centrala zakomujikovala (tj. odpovedela na prikaz)
                                                                                 // pri .Open se nastavuje na false
      procedure LoadLib(filename:string);
 
@@ -193,9 +190,6 @@ type
 //     procedure AllPrevzato();                                                   // je volana, pokud jsou vsechny loko prevzaty (primarni vyuziti = interakce s GUI)
 //     procedure AllOdhlaseno();                                                  // je volana, pokud jsou vsechny loko odhlaseny (primarni vyuziti = interakce s GUI)
 
-     procedure OnTrackStatusChange(Sender: TObject);                            // event volany z .Trakce pri zmene TrackStatus (napr. CENTRAL-STOP, SERVICE, ...)
-                                                                                // novy status je k dispozici v .Trakce.TrackStatus
-
      procedure TurnOffFunctions_cmdOK(Sender:TObject; Data:Pointer);            // OK callback pro prikaz TurnOff
 
      // eventy spojene se zapisem jednotlivych POM:
@@ -234,6 +228,7 @@ type
 
     DCCGoTime:TDateTime;
     toggleQueue:TQueue<THVFunc>;
+    LogObj:TListView;
 
      constructor Create();
      destructor Destroy(); override;
@@ -267,8 +262,8 @@ type
 
      function NearestLowerSpeed(speed:Cardinal):Cardinal;
 
-     property OnLog: TLogEvent read FOnLog write FOnLog;
-     property OnReady:TReadyEvent read fOnReady write fOnReady;
+     property OnReady:TReadyEvent read eOnReady write eOnReady;
+     property OnOpenError:TErrorEvent read eOnOpenError write eOnOpenError;
 
      property logLevelFile: TTrkLogLevel read mLogLevelFile write SetLoglevelFile;
      property logLevelTable: TTrkLogLevel read mLogLevelTable write SetLoglevelTable;
@@ -310,7 +305,7 @@ begin
 
  Self.toggleQueue := TQueue<THVFunc>.Create();
 
- // TODO: assign events
+ TTrakceIFace(Self).OnLog := Self.TrkLog;
 end;
 
 destructor TTrakce.Destroy();
@@ -411,13 +406,13 @@ var LV_Log:TListItem;
 end;
 
 procedure TTrakce.TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
-var handled:boolean;
 begin
- handled := false;
- if (Assigned(Self.FOnLog)) then Self.FOnLog(self, lvl, msg, handled);
-
- if (handled) then Exit;
  Self.Log(lvl, msg);
+ if ((Self.opening) and (Assigned(Self.OnOpenError))) then
+  begin
+   Self.OnOpenError(Self, msg);
+   Self.opening := false;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -852,6 +847,10 @@ procedure TTrakce.SetLoglevelFile(ll:TTrkLogLevel);
 begin
  Self.mLogLevelFile := ll;
  Log(llCommands, 'NEW loglevel_file = '+LogLevelToString(ll));
+
+ if ((ll > llNo) and (not DirectoryExists(_LOG_PATH))) then
+   if (not SysUtils.ForceDirectories(ExpandFileName(_LOG_PATH))) then
+     Log(llErrors, 'Nelze vytvořit složku '+_LOG_PATH);
 end;
 
 procedure TTrakce.SetLoglevelTable(ll:TTrkLogLevel);
@@ -1136,15 +1135,6 @@ begin
    HVDb.HVozidla[addr].changed := true;
   end;
 end;        }
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrakce.OnTrackStatusChange(Sender: TObject);
-begin
- if (Self.TrackStatus() = tsOn) then
-   Self.DCCGoTime := Now;
- F_Main.OnCentralaDCCChange(Self, Self.TrackStatus() = tsOn); // TODO: do more nicely
-end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls,
+  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
   inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage,
   ExtDlgs,  Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
   DateUtils, ShellApi, ActiveX, ShlObj, ComObj, TechnologieTrakce, BoosterDb;
@@ -95,8 +95,8 @@ type
     A_System_Stop: TAction;
     A_Trk_Connect: TAction;
     A_Trk_Disconnect: TAction;
-    A_All_Loko_Prevzit: TAction;
-    A_All_Loko_Odhlasit: TAction;
+    A_Locos_Acquire: TAction;
+    A_Locos_Release: TAction;
     MI_PanelServer: TMenuItem;
     A_PanelServer_Start: TAction;
     A_PanelServer_Stop: TAction;
@@ -167,8 +167,8 @@ type
     GB_stav_technologie: TGroupBox;
     S_RCS_open: TShape;
     S_RCS_start: TShape;
-    S_Intellibox_connect: TShape;
-    S_Intellibox_go: TShape;
+    S_Trakce_Connected: TShape;
+    S_DCC: TShape;
     S_Server: TShape;
     L_StavS_1: TLabel;
     L_StavS_2: TLabel;
@@ -179,7 +179,7 @@ type
     LB_Log: TListBox;
     MI_File: TMenuItem;
     MI_Save_config: TMenuItem;
-    S_lok_prevzato: TShape;
+    S_locos_acquired: TShape;
     Label1: TLabel;
     PM_HV: TPopupMenu;
     PM_Properties: TMenuItem;
@@ -295,8 +295,8 @@ type
     procedure A_System_StopExecute(Sender: TObject);
     procedure A_Trk_ConnectExecute(Sender: TObject);
     procedure A_Trk_DisconnectExecute(Sender: TObject);
-    procedure A_All_Loko_PrevzitExecute(Sender: TObject);
-    procedure A_All_Loko_OdhlasitExecute(Sender: TObject);
+    procedure A_Locos_AcquireExecute(Sender: TObject);
+    procedure A_Locos_ReleaseExecute(Sender: TObject);
     procedure A_PanelServer_StartExecute(Sender: TObject);
     procedure A_PanelServer_StopExecute(Sender: TObject);
     procedure A_RCS_OpenExecute(Sender: TObject);
@@ -425,8 +425,6 @@ type
 
     procedure CreateSystem();
     procedure CreateClasses();
-    procedure FreeVars();
-    procedure SetStartVars();
 
     procedure CloseForm();
     procedure RepaintObjects();
@@ -463,9 +461,11 @@ type
     procedure OnTrkAfterOpen(Sender: TObject);
     procedure OnTrkBeforeClose(Sender: TObject);
     procedure OnTrkAfterClose(Sender: TObject);
+    procedure OnTrkReady(Sender: TObject; ready: Boolean);
+    procedure OnTrkErrOpen(Sender:TObject; errMsg:string);
+    procedure OnTrkStatusChange(Sender:TObject; trkStatus: TTrkStatus);
 
     procedure UpdateTrkLibsList();
-    procedure OnCentralaDCCChange(Sender:TObject; state:boolean);
     procedure OnDCCGoError(Sender:TObject; Data:Pointer);
     procedure OnDCCStopError(Sender:TObject; Data:Pointer);
 
@@ -484,10 +484,6 @@ type
    procedure ZakladniPolohaVyhybek();
  end;
 
- TLogData=class
-   procedure CreateLogDirectories();
- end;
-
  TSystemStatus = (null, starting, stopping);                                    // stav startovani / vypinani systemu
  TSystem=class
    Status:TSystemStatus;                                                        // aktualni stav systemu
@@ -497,20 +493,18 @@ var
   F_Main: TF_Main;
 
   ResetData:TReset;
-  LogData:TLogData;
-  Vytizeni:TVytizeni;                                                           // zobrazeni vytizeni procesoru
-  SystemData:TSystem;                                                           // zapinani / vypinani systemu
+  Vytizeni:TVytizeni;
+  SystemData:TSystem;
 
   ini_lib:TMemInifile;                                                          // objekt pro pristup k ini_lib souboru
   Log:boolean;                                                                  // flag logovani do tabulky ve F_Main
-
-  CloseMessage:Boolean;                                                         // flag ptain se uzivatele na ukonceni SW
+  CloseMessage:Boolean;                                                         // flag ptani se uzivatele na ukonceni SW
   NUZClose:Boolean;                                                             // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
 
 implementation
 
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
-     fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Trakce,
+     fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni, AC,
@@ -1151,7 +1145,7 @@ begin
 
      F_Main.A_Trk_Connect.Enabled := true;
      F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojeno';
-     F_Main.S_Intellibox_connect.Brush.Color := clRed;
+     F_Main.S_Trakce_Connected.Brush.Color := clRed;
      Application.MessageBox(PChar('Chyba při otevírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
                             'Chyba', MB_OK OR MB_ICONERROR);
     end;
@@ -1193,11 +1187,11 @@ begin
  Application.ProcessMessages();
 end;
 
-procedure TF_Main.A_All_Loko_OdhlasitExecute(Sender: TObject);
+procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
 begin
  F_Main.LogStatus('Loko: odhlašuji...');
  Application.ProcessMessages();
- F_Main.S_lok_prevzato.Brush.Color := clBlue;
+ F_Main.S_locos_acquired.Brush.Color := clBlue;
 
  try
    TrakceI.ReleaseAllLocos();
@@ -1210,11 +1204,11 @@ begin
  end;
 end;
 
-procedure TF_Main.A_All_Loko_PrevzitExecute(Sender: TObject);
+procedure TF_Main.A_Locos_AcquireExecute(Sender: TObject);
 begin
  F_Main.LogStatus('Loko: přebírám...');
  Application.ProcessMessages();
- F_Main.S_lok_prevzato.Brush.Color := clBlue;
+ F_Main.S_locos_acquired.Brush.Color := clBlue;
  TrakceI.AcquireAllLocos();
 end;
 
@@ -1222,7 +1216,7 @@ procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
 begin
  if ((SystemData.Status = starting) and (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn)) then
   begin
-   Self.A_All_Loko_PrevzitExecute(Self);
+   Self.A_Locos_AcquireExecute(Self);
    Exit();
   end;
 
@@ -1263,9 +1257,9 @@ procedure TF_Main.OnDCCGoError(Sender:TObject; Data:Pointer);
 begin
  SystemData.Status := TSystemStatus.null;
  Self.UpdateSystemButtons();
- F_Main.A_DCC_Go.Enabled       := true;
- F_Main.A_DCC_Stop.Enabled     := true;
- F_Main.S_Intellibox_go.Brush.Color  := clGray;
+ Self.A_DCC_Go.Enabled       := true;
+ Self.A_DCC_Stop.Enabled     := true;
+ Self.S_DCC.Brush.Color  := clGray;
  Self.LogStatus('DCC: START: ERR: cenrála neodpověděla na příkaz');
  Application.MessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
@@ -1274,81 +1268,78 @@ procedure TF_Main.OnDCCStopError(Sender:TObject; Data:Pointer);
 begin
  Self.LogStatus('DCC: STOP: ERR: cenrála neodpověděla na příkaz');
  Self.UpdateSystemButtons();
- F_Main.A_DCC_Go.Enabled       := true;
- F_Main.A_DCC_Stop.Enabled     := true;
- F_Main.S_Intellibox_go.Brush.Color  := clGray;
+ Self.A_DCC_Go.Enabled       := true;
+ Self.A_DCC_Stop.Enabled     := true;
+ Self.S_DCC.Brush.Color  := clGray;
  Application.MessageBox('Centrála neodpověděla na příkaz DCC STOP', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.OnTrkBeforeOpen(Sender: TObject);
 begin
- F_Main.A_Trk_Connect.Enabled       := false;
- F_Main.A_Trk_Disconnect.Enabled    := false;
- F_Main.A_System_Start.Enabled := false;
- F_Main.A_System_Stop.Enabled := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Připojování...';
- F_Main.S_Intellibox_connect.Brush.Color := clBlue;
- F_Main.LogStatus('Centrála: připojování...');
- F_Main.B_HV_Add.Enabled    := false;
- F_Main.B_HV_Delete.Enabled := false;
+ Self.A_Trk_Connect.Enabled := false;
+ Self.A_Trk_Disconnect.Enabled := false;
+ Self.A_System_Start.Enabled := false;
+ Self.A_System_Stop.Enabled := false;
+ Self.SB1.Panels.Items[_SB_INT].Text := 'Připojování...';
+ Self.S_Trakce_Connected.Brush.Color := clBlue;
+ Self.LogStatus('Centrála: připojování...');
+ Self.B_HV_Add.Enabled := false;
+ Self.B_HV_Delete.Enabled := false;
  Application.ProcessMessages();
 end;
 
 procedure TF_Main.OnTrkAfterOpen(Sender: TObject);
 begin
 // Self.TrkLog(self, tllCommand, 'OPEN OK');
- F_Main.A_Trk_Connect.Enabled       := false;
- F_Main.A_Trk_Disconnect.Enabled    := true;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála připojena';
- F_Main.LogStatus('Centrála: připojeno');
- F_Main.S_Intellibox_connect.Brush.Color := clLime;
- F_Main.A_All_Loko_Prevzit.Enabled := true;
- F_Main.UpdateSystemButtons();
+ Self.A_Trk_Connect.Enabled := false;
+ Self.A_Trk_Disconnect.Enabled := true;
+ Self.SB1.Panels.Items[_SB_INT].Text := 'Centrála připojena';
+ Self.LogStatus('Centrála: připojeno');
+ Self.S_Trakce_Connected.Brush.Color := clLime;
+ Self.A_Locos_Acquire.Enabled := true;
+ Self.UpdateSystemButtons();
 
- F_Main.A_DCC_Go.Enabled   := true;
- F_Main.A_DCC_Stop.Enabled := true;
- F_Main.A_FuncsSet.Enabled := true;
+ Self.A_DCC_Go.Enabled := true;
+ Self.A_DCC_Stop.Enabled := true;
+ Self.A_FuncsSet.Enabled := true;
 
  Application.ProcessMessages();
 end;
 
 procedure TF_Main.OnTrkBeforeClose(Sender: TObject);
 begin
- F_Main.A_Trk_Connect.Enabled       := false;
- F_Main.A_Trk_Disconnect.Enabled    := false;
- F_Main.A_System_Start.Enabled := false;
- F_Main.A_System_Stop.Enabled := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
- F_Main.LogStatus('Centrála: odpojování...');
- F_Main.S_Intellibox_connect.Brush.Color := clBlue;
- F_Main.G_Loko_Prevzato.Progress := 0;
- F_Main.S_lok_prevzato.Brush.Color := clRed;
+ Self.A_Trk_Connect.Enabled := false;
+ Self.A_Trk_Disconnect.Enabled := false;
+ Self.A_System_Start.Enabled := false;
+ Self.A_System_Stop.Enabled := false;
+ Self.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
+ Self.LogStatus('Centrála: odpojování...');
+ Self.S_Trakce_Connected.Brush.Color := clBlue;
+ Self.G_Loko_Prevzato.Progress := 0;
+ Self.S_locos_acquired.Brush.Color := clRed;
  Application.ProcessMessages();
 end;
 
 procedure TF_Main.OnTrkAfterClose(Sender: TObject);
 var addr:Integer;
 begin
-// Self.TrkLog(self, tllCommand, 'CLOSE OK');
- F_Main.A_Trk_Connect.Enabled       := true;
- F_Main.A_Trk_Disconnect.Enabled    := false;
- F_Main.SB1.Panels.Items[_SB_INT].Text := 'Centrála odpojena';
- F_Main.LogStatus('Centrála: odpojena');
- F_Main.S_Intellibox_connect.Brush.Color := clRed;
- F_Main.A_All_Loko_Prevzit.Enabled  := false;
- F_Main.A_All_Loko_Odhlasit.Enabled := false;
- F_Main.B_HV_Add.Enabled            := true;
- F_Main.UpdateSystemButtons();
+ Self.A_Trk_Connect.Enabled := true;
+ Self.A_Trk_Disconnect.Enabled := false;
+ Self.SB1.Panels.Items[_SB_INT].Text := 'Centrála odpojena';
+ Self.LogStatus('Centrála: odpojena');
+ Self.S_Trakce_Connected.Brush.Color := clRed;
+ Self.A_Locos_Acquire.Enabled := false;
+ Self.A_Locos_Release.Enabled := false;
+ Self.B_HV_Add.Enabled := true;
+ Self.UpdateSystemButtons();
 
- // zavrit vsechny regulatory
  RegCollector.CloseAll();
-
  HVTableData.LoadToTable();
 
- F_Main.S_Intellibox_go.Brush.Color := clGray;
- F_Main.A_DCC_Go.Enabled   := false;
- F_Main.A_DCC_Stop.Enabled := false;
- F_Main.A_FuncsSet.Enabled := false;
+ Self.S_DCC.Brush.Color := clGray;
+ Self.A_DCC_Go.Enabled   := false;
+ Self.A_DCC_Stop.Enabled := false;
+ Self.A_FuncsSet.Enabled := false;
  if (F_FuncsSet.Showing) then F_FuncsSet.Close();
 
  for addr := 0 to _MAX_ADDR-1 do
@@ -1361,28 +1352,36 @@ begin
    Exit(); // TODO
 end;
 
+procedure TF_Main.OnTrkReady(Sender: TObject; ready: Boolean);
+begin
+ Self.A_Trk_Connect.Enabled := ready and (not TrakceI.ConnectedSafe());
+end;
+
+procedure TF_Main.OnTrkErrOpen(Sender:TObject; errMsg:string);
+begin
+ Self.LogStatus('ERR: Trakce OPEN FAIL: '+errMsg);
+ Application.MessageBox(PChar('Při otevírání Trakce nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
+end;
+
 procedure TF_Main.CB_centrala_loglevel_fileChange(Sender: TObject);
 begin
-// TrkSystem.logfile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex); TODO
+ TrakceI.logLevelFile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex);
 end;
 
 procedure TF_Main.CB_centrala_loglevel_tableChange(Sender: TObject);
 begin
-// TrkSystem.logtable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex); TODO
+ TrakceI.logLevelTable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
 end;
 
-
-////////////////////////////////////////////////////////////////////////////////
-//centrala events:
-
-procedure TF_Main.OnCentralaDCCChange(Sender:TObject; state:boolean);
+procedure TF_Main.OnTrkStatusChange(Sender:TObject; trkStatus: TTrkStatus);
 begin
- Blky.SetDCC(state);
+ Blky.SetDCC(trkStatus = TTrkStatus.tsOn);
 
- if (state) then
+ if (trkStatus = TTrkStatus.tsOn) then
   begin
    //je DCC
-   F_Main.S_Intellibox_go.Brush.Color  := clLime;
+   TrakceI.DCCGoTime := Now;
+   F_Main.S_DCC.Brush.Color := clLime;
    Self.LogStatus('DCC: go');
 
    if (TrakceI.ConnectedSafe()) then
@@ -1392,7 +1391,7 @@ begin
     end;
 
    if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
-     F_Main.A_All_Loko_PrevzitExecute(nil);
+     F_Main.A_Locos_AcquireExecute(nil);
 
    ORTCPServer.DCCStart();
   end else begin
@@ -1400,7 +1399,7 @@ begin
    ORs.BroadcastPlaySound(_SND_CHYBA, false, TORControlRights.write);
 
    //neni DCC
-   F_Main.S_Intellibox_go.Brush.Color  := clRed;
+   F_Main.S_DCC.Brush.Color := clRed;
    Self.LogStatus('DCC: stop');
 
    if (TrakceI.ConnectedSafe()) then
@@ -2247,26 +2246,6 @@ begin
   end;
 end;
 
-procedure TF_Main.FreeVars();
- begin
-  ResetData.Free;
-
-  Vytizeni.Free;
-  LogData.Free;
-
-  SystemData.Free;
-  GetFunctions.Free;
-  PrevodySoustav.Free;
-
-  ini_lib.UpdateFile;
-  FreeAndNil(ini_lib);
-
-  Boosters.Free;
-
-  ORs.Free();
-  Blky.Free();
- end;
-
 procedure TF_Main.CHB_rcslogClick(Sender: TObject);
 begin
  RCSi.log := Self.CHB_rcslog.Checked;
@@ -2278,7 +2257,7 @@ begin
    RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
 end;
 
-procedure TF_Main.CloseForm;
+procedure TF_Main.CloseForm();
  begin
   WriteLog('########## Probíhá ukončování hJOPserver ##########', WR_MESSAGE);
 
@@ -2290,25 +2269,16 @@ procedure TF_Main.CloseForm;
   VyhSimulator.timer.Enabled := false;
 
   Self.A_SaveStavExecute(Self);
+  TrakceI.LogObj := nil;
 
   try
-    FreeVars();
+    ini_lib.UpdateFile();
+    FreeAndNil(ini_lib);
   except
     on E:Exception do
-      AppEvents.LogException(E, 'FreeVars');
+      AppEvents.LogException(E, 'ini_lib save');
   end;
   WriteLog('###############################################', WR_MESSAGE);
- end;
-
-procedure TLogData.CreateLogDirectories();
- begin
-  if not DirectoryExists(Logging._LOG_PATH) then
-    if not SysUtils.ForceDirectories(ExpandFileName(Logging._LOG_PATH)) then
-      writelog('ERR: Nelze vytvořit složku '+Logging._LOG_PATH, WR_ERROR);
-
-{  if not DirectoryExists(TrakceGUI._LOG_PATH) then                            TODO
-    if not SysUtils.ForceDirectories(ExpandFileName(TrakceGUI._LOG_PATH)) then
-      writelog('ERR: Nelze vytvořit složku '+TrakceGUI._LOG_PATH, WR_ERROR); }
  end;
 
 procedure TF_Main.CreateCfgDirs();
@@ -2468,11 +2438,6 @@ procedure TF_Main.LoadIniLibData();
   RCSi.log := Self.CHB_rcslog.Checked;
  end;
 
-procedure TF_Main.SetStartVars();
- begin
-  CloseMessage := true;
- end;
-
 procedure TVytizeni.DetekujVytizeniProcesoru();
  begin
   CollectCPUData;
@@ -2579,11 +2544,14 @@ procedure TF_Main.OnStart();
   Self.UpdateRCSLibsList();
   Self.UpdateTrkLibsList();
 
+  Self.CB_centrala_loglevel_file.ItemIndex := Integer(TrakceI.logLevelFile);
+  Self.CB_centrala_loglevel_table.ItemIndex := Integer(TrakceI.logLevelTable);
+
   if (not CloseMessage) then
    begin
-    F_Main.Close;
-    Exit;
-   end;//if not CloseMessage
+    F_Main.Close();
+    Exit();
+   end;
  end;
 
 procedure TF_Main.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -2619,26 +2587,28 @@ procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);
 
 procedure TF_Main.CreateSystem();
  begin
-  Randomize;
+  Randomize();
 
   if (not FileExists(_INIDATA_FN)) then
     Self.CreateCfgDirs();
 
   F_splash.AddStav('Vytvářím datové struktury');
-  CreateClasses;
+  CreateClasses();
   F_splash.AddStav('Načítám ini_lib data');
-  LoadIniLibData;
+  LoadIniLibData();
   F_splash.AddStav('Vytvářím složky logů');
 
   try
-    LogData.CreateLogDirectories();
+    if not DirectoryExists(Logging._LOG_PATH) then
+      if not SysUtils.ForceDirectories(ExpandFileName(Logging._LOG_PATH)) then
+        writelog('ERR: Nelze vytvořit složku '+Logging._LOG_PATH, WR_ERROR);
   except
     on e:Exception do
       AppEvents.LogException(E);
   end;
 
   QueryPerformanceFrequency(Vytizeni.LPc);
-  SetStartVars;
+  CloseMessage := true;
 
   // assign RCS events:
   RCSi.AfterOpen  := Self.OnRCSOpen;
@@ -2647,6 +2617,16 @@ procedure TF_Main.CreateSystem();
   RCSi.AfterStop  := Self.OnRCSStop;
   RCSi.OnScanned  := Self.OnRCSScanned;
   RCSi.OnReady    := Self.ONRCSReady;
+
+  // assign Trakce events:
+  TrakceI.BeforeOpen := Self.OnTrkBeforeOpen;
+  TrakceI.AfterOpen := Self.OnTrkAfterOpen;
+  TrakceI.BeforeClose := Self.OnTrkBeforeClose;
+  TrakceI.AfterClose := Self.OnTrkAfterClose;
+  TrakceI.OnReady := Self.OnTrkReady;
+  TrakceI.OnTrackStatusChanged := Self.OnTrkStatusChange;
+
+  TrakceI.LogObj := Self.LV_log_lnet;
 
   FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
 
@@ -3225,7 +3205,7 @@ end;
 
 procedure TF_Main.OnSoundDisabled(Sender:TObject);
 begin
- Self.A_All_Loko_OdhlasitExecute(Self);
+ Self.A_Locos_ReleaseExecute(Self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3262,7 +3242,7 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
  Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.ConnectedSafe())
-    or (Self.A_All_Loko_Prevzit.Enabled) or (not ORTCPServer.openned));
+    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned));
  Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrakceI.ConnectedSafe())
     or (ORTCPServer.openned);
 end;
@@ -3285,5 +3265,15 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+initialization
+  ResetData := TReset.Create();
+  Vytizeni := TVytizeni.Create();
+  SystemData := TSystem.Create();
+
+finalization
+  FreeAndNil(ResetData);
+  FreeAndNil(Vytizeni);
+  FreeAndNil(SystemData);
 
 end.//unit
