@@ -53,6 +53,7 @@ const
   _LOG_PATH = 'log\trakce';
 
 type
+  TReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
   TLogEvent = procedure(Sender:TObject; lvl:TTrkLogLevel; msg:string; var handled:boolean) of object;
   TGetSpInfoEvent = procedure(Sender: TObject; Slot:TTrkLocoInfo; var handled:boolean) of object;
   TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
@@ -128,6 +129,7 @@ type
 
      //events definition
      FOnLog: TLogEvent;                                                         // log event
+     fOnReady : TReadyEvent;
 
      mLogLevelFile : TTrkLogLevel;
      mLogLevelTable: TTrkLogLevel;
@@ -266,6 +268,8 @@ type
      function NearestLowerSpeed(speed:Cardinal):Cardinal;
 
      property OnLog: TLogEvent read FOnLog write FOnLog;
+     property OnReady:TReadyEvent read fOnReady write fOnReady;
+
      property logLevelFile: TTrkLogLevel read mLogLevelFile write SetLoglevelFile;
      property logLevelTable: TTrkLogLevel read mLogLevelTable write SetLoglevelTable;
 
@@ -334,7 +338,10 @@ begin
    raise Exception.Create('Library file not found, not loading');
 
  if (Self.ready) then
+  begin
    Self.aReady := false;
+   if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
+  end;
 
  TTrakceIFace(Self).LoadLib(filename);
 
@@ -344,6 +351,7 @@ begin
  if (Self.unbound.Count = 0) then
   begin
    Self.aReady := true;
+   if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
   end else begin
    str := '';
    for tmp in Self.unbound do
