@@ -108,6 +108,7 @@ type
    stolen:Boolean;
    pom:TPomStatus;
    trakceError:Boolean;
+   acquiring:Boolean;
   end;
 
   THV = class                                       // HNACI VOZIDLO
@@ -117,6 +118,8 @@ type
 
      fadresa:Word;                                     // adresa je read-only !
      m_funcDict:TDictionary<string, Integer>;          // mapovani vyznamu funkci na cisla funkci
+     acquiredOk:TCommandCallback;
+     acquiredErr:TCommandCallback;
 
      procedure LoadData(ini:TMemIniFile; section:string);
      procedure LoadState(ini:TMemIniFile; section:string);
@@ -132,6 +135,11 @@ type
      procedure TrakceCallbackOk(Sender:TObject; data:Pointer);
      procedure TrakceCallbackErr(Sender:TObject; data:Pointer);
      procedure SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
+     procedure TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
+     procedure TrakceAcquiredDirection(Sender: TObject; data: Pointer);
+     procedure TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
+     procedure TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
+     procedure TrakceAcquiredErr(Sender:TObject; data:Pointer);
 
    public
 
@@ -191,6 +199,7 @@ type
 
      procedure SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
      procedure SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
+     procedure StavFunctionsToSlotFunctions(ok: TCb; err: TCb);
 
      class function CharToHVFuncType(c:char):THVFuncType;
      class function HVFuncTypeToChar(t:THVFuncType):char;
@@ -213,7 +222,8 @@ type
      property stolen:boolean read stav.stolen;
      property pom:TPomStatus read stav.pom;
      property trakceError:Boolean read stav.trakceError;
-     property slotFunkce:TFunkce read GetSlotFunkce;
+     property slotFunkce:TFunkce read GetSlotFunkce; // TODO: enahce speed
+     property acquiring:boolean read stav.acquiring;
   end;//THV
 
 
@@ -235,8 +245,11 @@ begin
  Self.stav.stanice := nil;
  Self.CSReset();
 
- Self.data.POMtake    := TList<THVPomCV>.Create;
- Self.data.POMrelease := TList<THVPomCV>.Create;
+ Self.data.POMtake    := TList<THVPomCV>.Create();
+ Self.data.POMrelease := TList<THVPomCV>.Create();
+
+ Self.acquiredOk := TTrakce.Callback();
+ Self.acquiredErr := TTrakce.Callback();
 
  Self.m_funcDict := TDictionary<string, Integer>.Create();
 
@@ -259,6 +272,9 @@ begin
  Self.fadresa := adresa;
  Self.Data    := data;
  Self.Stav    := stav;
+
+ Self.acquiredOk := TTrakce.Callback();
+ Self.acquiredErr := TTrakce.Callback();
 
  Self.m_funcDict := TDictionary<string, Integer>.Create();
  Self.UpdateFuncDict();
@@ -874,7 +890,7 @@ begin
 
    // nastavit POM rucniho rizeni
    if ((Self.acquired) and (Self.pom <> TPomStatus.released)) then // neprevzatym vozidlum je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
-     TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released);
+     TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
   end else begin
    // loko je vyjmuto z rucniho rizeni
 
@@ -882,7 +898,7 @@ begin
     begin
      // POM automatu
      if (Self.pom <> TPomStatus.pc) then
-       TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc);
+       TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
 
      Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
     end else begin
@@ -1270,6 +1286,7 @@ end;
 
 procedure THV.CSReset();
 begin
+ Self.stav.acquiring := false;
  Self.stav.acquired := false;
  Self.stav.stolen := false;
  Self.stav.pom := TPomStatus.released;
@@ -1330,20 +1347,22 @@ procedure THV.TrakceAcquire(ok: TCb; err: TCb);
 begin
  TrakceI.Log(llCommands, 'PUT: Loco Acquire: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.RecordUseNow();
+ Self.stav.acquiring := false;
+ Self.acquiredOk := ok;
+ Self.acquiredErr := err;
 
  try
-//   TrakceI.LocoAcquire(Self.adresa);
+   TrakceI.LocoAcquire(Self.adresa, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
  except
-   on E:Exception do
-    begin
-
-    end;
+   Self.TrakceAcquiredErr(Self, nil);
  end;
 end;
 
 procedure THV.TrakceRelease(ok: TCb);
 begin
+ TrakceI.Log(llCommands, 'PUT: Loco Release: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
 
+ // TODO
 end;
 
 procedure THV.SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
@@ -1354,6 +1373,100 @@ end;
 procedure THV.SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
 begin
 
+end;
+
+procedure THV.StavFunctionsToSlotFunctions(ok: TCb; err: TCb);
+var i:Integer;
+    funcMask:Cardinal;
+    funcState:Cardinal;
+begin
+ funcMask := 0;
+ funcState := 0;
+ for i := 0 to _HV_FUNC_MAX do
+  begin
+   if (Self.stav.funkce[i]) then
+     funcState := funcState or (1 shl i);
+   if (Self.stav.funkce[i] <> Self.slotFunkce[i]) then
+     funcMask := funcMask or (1 shl i);
+  end;
+
+ try
+   TrakceI.LocoSetFunc(Self.adresa, funcMask, funcState, ok, err);
+ except
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+ end;
+end;
+
+procedure THV.TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
+var i:Integer;
+    direction:Boolean;
+begin
+ Self.slot := LocoInfo;
+
+ // pokud ma souprava jasne dany smer, nastavime ho
+ // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
+ if ((Self.souprava > -1) and
+     (Soupravy[Self.souprava].sdata.smer_L xor Soupravy[Self.souprava].sdata.smer_S)) then
+  begin
+   // souprava ma zadany prave jeden smer
+   direction := ((Soupravy[Self.souprava].smer = THVStanoviste.sudy) xor (Self.stav.StanovisteA = THVStanoviste.sudy));
+   if ((direction = Self.direction) and (Self.speedStep = 0)) then
+    begin
+     // smer ok
+     Self.TrakceAcquiredDirection(Sender, nil);
+    end else begin
+     // smer nok -> aktualizovat smer
+     try
+       Self.SetDirection(direction,
+                         TTrakce.Callback(Self.TrakceAcquiredDirection),
+                         TTrakce.Callback(Self.TrakceAcquiredErr));
+     except
+       Self.TrakceAcquiredErr(Self, nil);
+     end;
+    end;
+  end else
+   Self.TrakceAcquiredDirection(Sender, nil);
+end;
+
+procedure THV.TrakceAcquiredDirection(Sender: TObject; data: Pointer);
+begin
+ // Set functions as we wish
+ Self.StavFunctionsToSlotFunctions(TTrakce.Callback(Self.TrakceAcquiredFunctionsSet),
+                                   TTrakce.Callback(Self.TrakceAcquiredErr));
+end;
+
+procedure THV.TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
+begin
+ // Set POM TODO
+ Self.Stav.ruc := (RegCollector.IsLoko(Self)) or (Self.ruc);
+ if (Self.Stav.ruc) then
+  begin
+   // manual control
+   TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
+  end else begin
+   // automatic control
+   TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
+  end;
+end;
+
+procedure THV.TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
+begin
+ // Everything done
+ TrakceI.Log(llCommands, 'Loco Fully Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.stav.acquired := true;
+ Self.stav.acquiring := false;
+
+ if (Assigned(Self.acquiredOk.callback)) then
+   Self.acquiredOk.callback(Self, Self.acquiredOk.data);
+end;
+
+procedure THV.TrakceAcquiredErr(Sender:TObject; data:Pointer);
+begin
+ TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.stav.acquiring := false;
+ if (Assigned(Self.acquiredErr.callback)) then
+   Self.acquiredErr.callback(Self, Self.acquiredErr.data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

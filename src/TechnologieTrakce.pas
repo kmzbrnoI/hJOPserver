@@ -251,7 +251,7 @@ type
 //     procedure LocoRelease(HV:THV);
 
      procedure LoksSetFunc(vyznam:string; state:boolean);
-     procedure POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus);
+     procedure POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus; ok: TCb; err: TCb);
 
      procedure AcquireAllLocos();
      procedure ReleaseAllLocos();
@@ -965,83 +965,6 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// callback funkce pri prebirani jednoho HV a pri programovani POM (pri prebirani):
-
-procedure TTrakce.PrevzatoErr(Sender:TObject; Data:Pointer);
-begin
- // loko se nepodarilo prevzit -> zavolat error callback
- if (Assigned(TPrevzitCallback(data^).callback_err.callback)) then
-   TPrevzitCallback(data^).callback_err.callback(Self, TPrevzitCallback(data^).callback_err.data);
- FreeMem(data);
-end;
-
-procedure TTrakce.PrevzatoPOMOK(Sender:TObject; Data:Pointer);
-begin
- // HV konecne kompletne prevzato
- HVDb.HVozidla[TPrevzitCallback(data^).addr].Slot.prevzato_full := true;
-
- // volame OK callback
- if (Assigned(TPrevzitCallback(data^).callback_ok.callback)) then
-   TPrevzitCallback(data^).callback_ok.callback(Self, TPrevzitCallback(data^).callback_ok.data);
- FreeMem(data);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrakce.PrevzatoFunc1328OK(Sender:TObject; Data:Pointer);
-var i:Integer;
-    HV:THV;
-    smer:Integer;
-begin
- HV := HVDb.HVozidla[TPrevzitCallback(data^).addr];
-
- // nacetli jsme stav funkci 13-28 -> stav ulozime do slotu
- for i := 13 to 28 do
-   HV.Slot.funkce[i] := Self.Trakce.Slot.funkce[i];
-
- // pokud ma souprava jasne dany smer, nastavime ho
- // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
- if ((HV.Stav.souprava > -1) and
-     (Soupravy[HV.Stav.souprava].sdata.smer_L xor Soupravy[HV.Stav.souprava].sdata.smer_S)) then
-  begin
-   // souprava ma zadany prave jeden smer
-   smer := (Integer(Soupravy[HV.Stav.souprava].smer) xor Integer(HV.Stav.StanovisteA));
-   if ((smer = HV.Slot.smer) and (HV.Slot.speed = 0)) then
-    begin
-     // smer ok
-     Self.PrevzatoSmerOK(Sender, Data);
-     Exit();
-    end else begin
-     // smer nok -> aktualizovat smer
-     Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoSmerOK, data);
-     Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, data);
-
-     try
-       Self.LokSetDirectSpeed(nil, HV, 0, smer);
-     except
-       Self.PrevzatoErr(Self, data);
-     end;
-    end;
-  end else
-   Self.PrevzatoSmerOK(Sender, Data);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrakce.PrevzatoSmerOK(Sender:TObject; Data:Pointer);
-begin
- // nastavime funkce tak, jak je chceme my
- Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFuncOK, data);
- Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoFuncErr, data);
-
- try
-   Self.LokSetFunc(nil, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.funkce);
- except
-   Self.PrevzatoFuncErr(Self, data);
- end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
 // callback funkce pri odhlasovani hnaciho vozidla a pri programovani POM pri odhlasovani:
 
 procedure TTrakce.OdhlasenoOK(Sender:TObject; Data:Pointer);
@@ -1243,7 +1166,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // zapsat seznam vsech cv v listu
-procedure TTrakce.POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus);
+procedure TTrakce.POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus; ok: TCb; err: TCb);
 var data:Pointer;
 begin
  // vytvorime si callback
@@ -1425,31 +1348,8 @@ end;}
 ////////////////////////////////////////////////////////////////////////////////
 // callbacky pri nastavovani funkci hnaciho vozidla pri prebirani:
 
-{procedure TTrakce.PrevzatoFuncOK(Sender:TObject; Data:Pointer);
-begin
- // HV prevzato a funkce nastaveny -> nastavit POM
- Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoPOMOK, data);
- Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, data);
 
- if ((RegCollector.IsLoko(HVDb.HVozidla[TPrevzitCallback(data^).addr])) or (HVDb.HVozidla[TPrevzitCallback(data^).addr].ruc)) then
-  begin
-   // rucni rizeni
-   HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.ruc := true;
-   Self.POMWriteCVs(Self, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Data.POMrelease, TPomStatus.released);
-  end else begin
-   // rizeni automatem
-   HVDb.HVozidla[TPrevzitCallback(data^).addr].Stav.ruc := false;
-   Self.POMWriteCVs(Self, HVDb.HVozidla[TPrevzitCallback(data^).addr], HVDb.HVozidla[TPrevzitCallback(data^).addr].Data.POMtake, TPomStatus.pc);
-  end;
-end;
-
-procedure TTrakce.PrevzatoFuncErr(Sender:TObject; Data:Pointer);
-begin
- // loko prevzato, ale funkce se nepodarilo nastavit -> error callback
- Self.Log(tllWarning, 'WARN: LOKO '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodařilo nastavit funkce');
- F_Main.LogStatus('WARN: loko '+ IntToStr(TPrevzitCallback(data^).addr) + ' se nepodařilo nastavit funkce');
- Self.PrevzatoFuncOK(Self, data);
-end;}
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 // callbacky hromadneho nastavovani funkci dle vyznamu:
