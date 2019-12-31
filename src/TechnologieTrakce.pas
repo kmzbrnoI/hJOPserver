@@ -423,7 +423,7 @@ begin
    for i := 0 to _HV_FUNC_MAX do
     if ((HVDb[addr].Data.funcVyznam[i] = vyznam) and (HVDb[addr].slotFunkce[i] <> state)) then
       begin
-       HVDb.HVozidla[addr].Stav.funkce[i] := state;
+       HVDb[addr].Stav.funkce[i] := state;
 
        GetMem(cb, sizeof(TFuncsCallback));
        TFuncsCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
@@ -436,7 +436,7 @@ begin
        Self.callback_err := TTrakce.GenerateCallback(Self.LoksSetFuncErr, cb);
 
        try
-         Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
+         Self.LokSetFunc(Self, HVDb[addr], HVDb[addr].Stav.funkce);
        except
          Self.LoksSetFuncErr(Self, cb);
        end;
@@ -562,9 +562,9 @@ begin
 { k_prevzeti := 0;
  for i := 0 to _MAX_ADDR-1 do
   begin
-   if (HVDb.HVozidla[i] = nil) then continue;
-   if ((HVDb.HVozidla[i].Slot.Prevzato) and (HVDb.HVozidla[i].Slot.pom = pc)) then continue;
-   if (HVDb.HVozidla[i].Stav.souprava > -1) then Inc(k_prevzeti);
+   if (HVDb[i] = nil) then continue;
+   if ((HVDb[i].Slot.Prevzato) and (HVDb[i].Slot.pom = pc)) then continue;
+   if (HVDb[i].Stav.souprava > -1) then Inc(k_prevzeti);
   end;
 
  F_Main.G_Loko_Prevzato.MaxValue  := k_prevzeti;
@@ -573,16 +573,16 @@ begin
 
  for i := 0 to _MAX_ADDR-1 do
   begin
-   if (HVDb.HVozidla[i] = nil) then continue;
-   if ((HVDb.HVozidla[i].Slot.Prevzato) and (HVDb.HVozidla[i].Slot.pom = pc)) then continue;
-   if (HVDb.HVozidla[i].Stav.souprava > -1) then
+   if (HVDb[i] = nil) then continue;
+   if ((HVDb[i].Slot.Prevzato) and (HVDb[i].Slot.pom = pc)) then continue;
+   if (HVDb[i].Stav.souprava > -1) then
     begin
      GetMem(data, sizeof(integer));
      Integer(data^) := i;
      Self.callback_err := TTrakce.GenerateCallback(Self.PrebiraniUpdateErr, data);
      Self.callback_ok  := TTrakce.GenerateCallback(Self.PrebiraniUpdateOK, data);
      try
-       Self.PrevzitLoko(HVDb.HVozidla[i]);
+       Self.PrevzitLoko(HVDb[i]);
      except
        Self.PrebiraniUpdateErr(self, data);
      end;
@@ -604,8 +604,8 @@ begin
 { k_odhlaseni := 0;
  for i := 0 to _MAX_ADDR-1 do
   begin
-   if (HVDb.HVozidla[i] = nil) then continue;
-   if (HVDb.HVozidla[i].Slot.Prevzato) then Inc(k_odhlaseni);
+   if (HVDb[i] = nil) then continue;
+   if (HVDb[i].Slot.Prevzato) then Inc(k_odhlaseni);
   end;
 
  F_Main.G_Loko_Prevzato.MaxValue  := k_odhlaseni;
@@ -614,14 +614,14 @@ begin
 
  for i := 0 to _MAX_ADDR-1 do
   begin
-   if (HVDb.HVozidla[i] = nil) then continue;
-   if (HVDb.HVozidla[i].Slot.Prevzato) then
+   if (HVDb[i] = nil) then continue;
+   if (HVDb[i].Slot.Prevzato) then
     begin
      GetMem(data, sizeof(integer));
      Integer(data^) := i;
      Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateErr, data);
      Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateOK, data);
-     Self.OdhlasitLoko(HVDb.HVozidla[i]);
+     Self.OdhlasitLoko(HVDb[i]);
      Exit();
     end;
   end;
@@ -658,40 +658,40 @@ var data2:Pointer;
     reg:THVRegulator;
 begin
  // existuje u nas HV vubec ?
- if (HVDb.HVozidla[addr] = nil) then Exit;
+ if (HVDb[addr] = nil) then Exit;
 
  //nastavit vlastnosti
  case (code) of
    TConnect_code.TC_Connected:begin
 
      // 1) aktualizace slotu
-     HVDb.HVozidla[addr].Slot := Self.Trakce.Slot;
-     HVDb.HVozidla[addr].Slot.prevzato_full := false;
-     HVDb.HVozidla[addr].Slot.Prevzato := true;
-     HVDb.HVozidla[addr].Slot.stolen   := false;
-     Self.TrkLog(self, tllCommand, 'GET LOCO DATA: loko '+HVDb.HVozidla[addr].data.Nazev+' ('+IntToSTr(addr)+')');
-     HVDb.HVozidla[addr].changed := true;
+     HVDb[addr].Slot := Self.Trakce.Slot;
+     HVDb[addr].Slot.prevzato_full := false;
+     HVDb[addr].Slot.Prevzato := true;
+     HVDb[addr].Slot.stolen   := false;
+     Self.TrkLog(self, tllCommand, 'GET LOCO DATA: loko '+HVDb[addr].data.Nazev+' ('+IntToSTr(addr)+')');
+     HVDb[addr].changed := true;
 
      // 2) priprava POM (POM zatim neprogramujeme, jen si pripravime flag)
-     HVDb.HVozidla[addr].Slot.pom := progr;
+     HVDb[addr].Slot.pom := progr;
 
      // 3) pokracujeme v prebirani, dalsi faze je ziskani stavu funkci 13-28
 
      // 4) aktualni stav zpropagujeme do celeho programu
-     if (HVDb.HVozidla[addr].Stav.souprava > -1) then
-       Blky.ChangeUsekWithSpr(HVDb.HVozidla[addr].Stav.souprava);
+     if (HVDb[addr].Stav.souprava > -1) then
+       Blky.ChangeUsekWithSpr(HVDb[addr].Stav.souprava);
 
      RegCollector.ConnectChange(addr);
-     HVDb.HVozidla[addr].UpdateRuc();
+     HVDb[addr].UpdateRuc();
 
      // odesleme do regulatoru info o uspesne autorizaci
      // to je dobre tehdy, kdyz je loko prebirano z centraly
-     if (HVDb.HVozidla[addr].ruc) then
-       for reg in HVDb.HVozidla[addr].Stav.regulators do
-         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;total;{'+HVDb.HVozidla[addr].GetPanelLokString()+'}{') // TODO: remove {
+     if (HVDb[addr].ruc) then
+       for reg in HVDb[addr].Stav.regulators do
+         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;total;{'+HVDb[addr].GetPanelLokString()+'}{') // TODO: remove {
      else
-       for reg in HVDb.HVozidla[addr].Stav.regulators do
-         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;ok;{'+HVDb.HVozidla[addr].GetPanelLokString()+'}{'); // TODO: remove {
+       for reg in HVDb[addr].Stav.regulators do
+         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;ok;{'+HVDb[addr].GetPanelLokString()+'}{'); // TODO: remove {
 
      if (data <> nil) then
       begin
@@ -715,31 +715,31 @@ begin
    end;
 
    TConnect_code.TC_Disconnected:begin
-     HVDb.HVozidla[addr].Slot.Prevzato  := false;
+     HVDb[addr].Slot.Prevzato  := false;
    end;//TC_Connected
 
    TConnect_code.TC_Stolen:begin
-     if (not HVDb.HVozidla[addr].Slot.prevzato) then Exit();    // tato situace muze nastat, kdyz odhlasime HV a pak si ho vezme Rocomouse
+     if (not HVDb[addr].Slot.prevzato) then Exit();    // tato situace muze nastat, kdyz odhlasime HV a pak si ho vezme Rocomouse
                                                                 // odhlaseni HV totiz fakticky nerekne centrale, ze ji odhlasujeme
 
-     HVDb.HVozidla[addr].Slot.Prevzato  := false;
-     HVDb.HVozidla[addr].Slot.stolen    := true;
+     HVDb[addr].Slot.Prevzato  := false;
+     HVDb[addr].Slot.stolen    := true;
      RegCollector.Stolen(addr);
 
-     TCPRegulator.LokStolen(HVDb.HVozidla[addr]);
+     TCPRegulator.LokStolen(HVDb[addr]);
 
-     if (HVDb.HVozidla[addr].Stav.souprava > -1) then
-       Blky.ChangeUsekWithSpr(HVDb.HVozidla[addr].Stav.souprava);
+     if (HVDb[addr].Stav.souprava > -1) then
+       Blky.ChangeUsekWithSpr(HVDb[addr].Stav.souprava);
 
-     HVDb.HVozidla[addr].UpdateRuc();
+     HVDb[addr].UpdateRuc();
 
      // zapiseme POM rucniho rizeni
-     Self.POMWriteCVs(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Data.POMrelease, TPomStatus.released);
+     Self.POMWriteCVs(Self, HVDb[addr], HVDb[addr].Data.POMrelease, TPomStatus.released);
    end;//TC_Connected
 
  end;//case
 
- HVDb.HVozidla[addr].changed := true;
+ HVDb[addr].changed := true;
 end;                                        }
 
 procedure TTrakce.SetLoglevelFile(ll:TTrkLogLevel);
@@ -769,14 +769,14 @@ begin
 
  for i := Integer(data^) to _MAX_ADDR-1 do
   begin
-   if ((HVDb.HVozidla[i] = nil) or ((HVDb.HVozidla[i].Slot.Prevzato) and ((HVDb.HVozidla[i].Slot.pom = released) or (HVDb.HVozidla[i].Slot.pom = pc)))) then continue;
-   if (HVDb.HVozidla[i].Stav.souprava > -1) then
+   if ((HVDb[i] = nil) or ((HVDb[i].Slot.Prevzato) and ((HVDb[i].Slot.pom = released) or (HVDb[i].Slot.pom = pc)))) then continue;
+   if (HVDb[i].Stav.souprava > -1) then
     begin
      Integer(data^) := i;
      Self.callback_err := TTrakce.GenerateCallback(Self.PrebiraniUpdateErr, data);
      Self.callback_ok  := TTrakce.GenerateCallback(Self.PrebiraniUpdateOK, data);
      try
-       Self.PrevzitLoko(HVDb.HVozidla[i]);
+       Self.PrevzitLoko(HVDb[i]);
      except
        Self.PrebiraniUpdateErr(self, data);
      end;
@@ -824,14 +824,14 @@ begin
  // loko odhlaseno -> najdeme dalsi k odhlaseni a naprogramujeme POM
  for i := Integer(data^) to _MAX_ADDR-1 do
   begin
-   if (HVDb.HVozidla[i] = nil) then continue;
-   if (HVDb.HVozidla[i].Slot.Prevzato) then
+   if (HVDb[i] = nil) then continue;
+   if (HVDb[i].Slot.Prevzato) then
     begin
      Integer(data^) := i;
      Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateErr, data);
      Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasovaniUpdateOK, data);
      try
-       Self.OdhlasitLoko(HVDb.HVozidla[i]);
+       Self.OdhlasitLoko(HVDb[i]);
      except
        on E:Exception do
         begin
@@ -858,8 +858,8 @@ begin
  Self.Log(tllError, 'WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodařilo odhlásit');
  F_Main.LogStatus('WARN: Loko '+IntToStr(Integer(data^))+ ' se nepodařilo odhlásit');
  F_Main.G_Loko_Prevzato.ForeColor := clRed;
- HVDb.HVozidla[Integer(data^)].Slot.prevzato := false;
- HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false;
+ HVDb[Integer(data^)].Slot.prevzato := false;
+ HVDb[Integer(data^)].Slot.prevzato_full := false;
  Self.OdhlasovaniUpdateOK(Self, data);
 end;
 
@@ -897,23 +897,23 @@ end;
 
 procedure TTrakce.LokComErr(Sender:TObject; addr:Integer);
 begin
- if (not Assigned(HVDb.HVozidla[addr])) then Exit();
+ if (not Assigned(HVDb[addr])) then Exit();
 
- if (not HVDb.HVozidla[addr].Slot.com_err) then
+ if (not HVDb[addr].Slot.com_err) then
   begin
-   HVDb.HVozidla[addr].Slot.com_err := true;
-   HVDb.HVozidla[addr].changed := true;
+   HVDb[addr].Slot.com_err := true;
+   HVDb[addr].changed := true;
   end;
 end;
 
 procedure TTrakce.LokComOK(Sender:TObject; addr:Integer);
 begin
- if (not Assigned(HVDb.HVozidla[addr])) then Exit();
+ if (not Assigned(HVDb[addr])) then Exit();
 
- if (HVDb.HVozidla[addr].Slot.com_err) then
+ if (HVDb[addr].Slot.com_err) then
   begin
-   HVDb.HVozidla[addr].Slot.com_err := false;
-   HVDb.HVozidla[addr].changed := true;
+   HVDb[addr].Slot.com_err := false;
+   HVDb[addr].changed := true;
   end;
 end;        }
 
@@ -949,15 +949,15 @@ begin
      GetMem(addr, 3);
      Integer(addr^) := i;
 
-     newfuncs := HVDb.HVozidla[i].Stav.funkce;
+     newfuncs := HVDb[i].Stav.funkce;
      newfuncs[func] := false;
 
 {     Self.callback_err := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
      Self.callback_ok  := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
 
      try
-       Self.LokSetFunc(Self, HVDb.HVozidla[i], newfuncs);
-       HVDb.HVozidla[i].Stav.funkce[func] := true;
+       Self.LokSetFunc(Self, HVDb[i], newfuncs);
+       HVDb[i].Stav.funkce[func] := true;
      except
        Self.TurnOffFunctions_cmdOK(Self, addr);
      end; }
@@ -996,14 +996,14 @@ begin
 
      Integer(data^) := i;
 
-     newfuncs := HVDb.HVozidla[i].Stav.funkce;
+     newfuncs := HVDb[i].Stav.funkce;
      newfuncs[func] := false;
 
 {     Self.callback_err := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, data);
      Self.callback_ok  := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, data);
 
-     Self.LokSetFunc(Self, HVDb.HVozidla[i], newfuncs);
-     HVDb.HVozidla[i].Stav.funkce[func] := true; }
+     Self.LokSetFunc(Self, HVDb[i], newfuncs);
+     HVDb[i].Stav.funkce[func] := true; }
 
      Exit();
     end;
@@ -1065,10 +1065,10 @@ begin
   begin
    // posledni data -> zavolame OK event
 
-   if (Assigned(HVDb.HVozidla[TPOMCallback(data^).addr])) then
+   if (Assigned(HVDb[TPOMCallback(data^).addr])) then
     begin
-     HVDb.HVozidla[TPOMCallback(data^).addr].Slot.pom := TPOMCallback(data^).new;
-     HVDb.HVozidla[TPOMCallback(data^).addr].changed := true;
+     HVDb[TPOMCallback(data^).addr].Slot.pom := TPOMCallback(data^).new;
+     HVDb[TPOMCallback(data^).addr].changed := true;
      RegCollector.ConnectChange(TPOMCallback(data^).addr);
     end;
 
@@ -1081,7 +1081,7 @@ begin
 
    Self.callback_err := TTrakce.GenerateCallback(Self.POMCvWroteErr, data);
    Self.callback_ok  := TTrakce.GenerateCallback(Self.POMCvWroteOK, data);
-   Self.POMWriteCV(Sender, HVDB.HVozidla[TPOMCallback(data^).addr], TPOMCallback(data^).list[TPOMCallback(data^).index].cv,
+   Self.POMWriteCV(Sender, HVDB[TPOMCallback(data^).addr], TPOMCallback(data^).list[TPOMCallback(data^).index].cv,
                    TPOMCallback(data^).list[TPOMCallback(data^).index].data);
   end;// else konec dat }
 end;
@@ -1089,10 +1089,10 @@ end;
 // pokud pri POMu nastane chyba, zavolame Error callback a ukoncime programovani
 procedure TTrakce.POMCvWroteErr(Sender:TObject; Data:Pointer);
 begin
-{ if (Assigned(HVDb.HVozidla[TPOMCallback(data^).addr])) then
+{ if (Assigned(HVDb[TPOMCallback(data^).addr])) then
   begin
-   HVDb.HVozidla[TPOMCallback(data^).addr].Slot.pom := TPomStatus.error;
-   HVDb.HVozidla[TPOMCallback(data^).addr].changed  := true;
+   HVDb[TPOMCallback(data^).addr].Slot.pom := TPomStatus.error;
+   HVDb[TPOMCallback(data^).addr].changed  := true;
    RegCollector.ConnectChange(TPOMCallback(data^).addr);
   end;
 
@@ -1105,8 +1105,8 @@ end;
 
 procedure TTrakce.NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
 begin
-{ HVDb.HVozidla[Integer(data^)].Slot.prevzato      := false;
- HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false; }
+{ HVDb[Integer(data^)].Slot.prevzato      := false;
+ HVDb[Integer(data^)].Slot.prevzato_full := false; }
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1118,21 +1118,21 @@ begin
 { GetMem(data, sizeof(integer));
  for i := 0 to _MAX_ADDR-1 do
   begin
-   if (HVDb.HVozidla[i] = nil) then continue;
+   if (HVDb[i] = nil) then continue;
 
    try
-     if (HVDb.HVozidla[i].Slot.prevzato) then
+     if (HVDb[i].Slot.prevzato) then
       begin
        Integer(data^) := i;
        Self.callback_err := TTrakce.GenerateCallback(Self.NouzReleaseCallbackErr, data);
        try
-         Self.OdhlasitLoko(HVDb.HVozidla[i]);
+         Self.OdhlasitLoko(HVDb[i]);
        except
          on E:Exception do
            FreeMem(data);
        end;
       end;
-     while (HVDb.HVozidla[i].Slot.prevzato) do
+     while (HVDb[i].Slot.prevzato) do
       begin
        sleep(1);
        Application.ProcessMessages;

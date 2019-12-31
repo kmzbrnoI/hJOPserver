@@ -1118,7 +1118,7 @@ begin
  str := (SenderOR as TOR).id + ';LOK-TOKEN;OK;';
  for addr in Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].HVs do
   begin
-   HV := HVDb.HVozidla[addr];
+   HV := HVDb[addr];
    str := str + '[' + IntToStr(HV.adresa) + '|' + HV.GetToken() + ']';
   end;//for i
 
@@ -1136,7 +1136,7 @@ begin
  str := (SenderOR as TOR).id + ';MAUS;{';
  for addr in Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].HVs do
   begin
-   HV := HVDb.HVozidla[addr];
+   HV := HVDb[addr];
    str := str + IntToStr(HV.adresa) + '|';
   end;//for i
  str := str + '}';

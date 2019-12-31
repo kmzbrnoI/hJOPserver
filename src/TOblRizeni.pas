@@ -719,8 +719,8 @@ begin
 
  // zjistime RUC u vsech hnacich vozidel
  for addr := 0 to _MAX_ADDR-1 do
-  if ((HVDb.HVozidla[addr] <> nil) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
-    HVDb.HVozidla[addr].UpdateRuc(false);
+  if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.stanice = Self)) then
+    HVDb[addr].UpdateRuc(false);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -868,8 +868,8 @@ begin
 
  str := Self.id + ';HV-LIST;{';
  for addr := 0 to _MAX_ADDR-1 do
-   if ((Assigned(HVDb.HVozidla[addr])) and (HVDb.HVozidla[addr].Stav.stanice = Self)) then
-    str := str + '[{' + HVDb.HVozidla[addr].GetPanelLokString(full) + '}]';
+   if ((Assigned(HVDb[addr])) and (HVDb[addr].Stav.stanice = Self)) then
+    str := str + '[{' + HVDb[addr].GetPanelLokString(full) + '}]';
  str := str + '}';
  ORTCPServer.SendLn(Sender, str);
 end;
@@ -950,24 +950,24 @@ begin
    ORTCPServer.SendInfoMsg(Sender, 'Tato OR neexistuje!');
    Exit;
   end;
- if (not Assigned(HVDb.HVozidla[lok_addr])) then
+ if (not Assigned(HVDb[lok_addr])) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' neexistuje!');
    Exit;
   end;
- if (HVDb.HVozidla[lok_addr].Stav.souprava > -1) then
+ if (HVDb[lok_addr].Stav.souprava > -1) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' přiřazeno soupravě '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[lok_addr].Stav.souprava)+'!');
+   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' přiřazeno soupravě '+Soupravy.GetSprNameByIndex(HVDb[lok_addr].Stav.souprava)+'!');
    Exit;
   end;
- if (HVDb.HVozidla[lok_addr].Stav.stanice <> Self) then
+ if (HVDb[lok_addr].Stav.stanice <> Self) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' nepatří této stanici!');
    Exit;
   end;
 
  ORs.GetORByIndex(n_or, new);
- HVDb.HVozidla[lok_addr].PredejStanici(new);
+ HVDb[lok_addr].PredejStanici(new);
  ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' předáno stanici '+new.Name);
 end;
 
@@ -1486,12 +1486,12 @@ begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit;
   end;
- if (HVDb.HVozidla[addr] = nil) then
+ if (HVDb[addr] = nil) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'Loko neexsituje');
    Exit();
   end;
- if (HVDb.HVozidla[addr].Stav.stanice <> self) then
+ if (HVDb[addr].Stav.stanice <> self) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'Loko se nenachází ve stanici '+Self.Name);
    Exit();
@@ -1524,22 +1524,22 @@ begin
    ExtractStringsEx(['|'], [], str, data);
    addr := StrToInt(data[4]);
    data.Free();
-   if (HVDb.HVozidla[addr] = nil) then
+   if (HVDb[addr] = nil) then
     begin
      ORTCPServer.SendInfoMsg(Sender, 'Loko neexistuje');
      Exit();
     end;
-   if (HVDb.HVozidla[addr].Stav.stanice <> self) then
+   if (HVDb[addr].Stav.stanice <> self) then
     begin
      ORTCPServer.SendInfoMsg(Sender, 'Loko se nenachází ve stanici '+Self.Name);
      Exit();
     end;
 
-   HVDb.HVozidla[addr].UpdateFromPanelString(str);
+   HVDb[addr].UpdateFromPanelString(str);
 
    if ((HVDb[addr].acquired) and (not HVDb[addr].stolen)) then
      begin
-//     TrkSystem.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce); TODO
+//     TrkSystem.LokSetFunc(Self, HVDb[addr], HVDb[addr].Stav.funkce); TODO
     end;
  except
    on e:Exception do
@@ -1634,7 +1634,7 @@ begin
      // zkontrolujeme vsechna LOKO
      for i := 0 to data.Count-1 do
       begin
-       HV := HVDb.HVozidla[StrToInt(data[i])];
+       HV := HVDb[StrToInt(data[i])];
        // kontrola existence loko
        if (HV = nil) then
         begin
@@ -1662,7 +1662,7 @@ begin
      line := Self.id+';LOK-TOKEN;OK;';
      for i := 0 to data.Count-1 do
       begin
-       HV := HVDb.HVozidla[StrToInt(data[i])];
+       HV := HVDb[StrToInt(data[i])];
        line := line + '[' + IntToStr(HV.adresa) + '|' + HV.GetToken() + ']';
       end;//for i
      ORTCPServer.SendLn(Sender, line);
@@ -1693,7 +1693,7 @@ begin
      // zkontrolujeme vsechna LOKO
      for i := 0 to data.Count-1 do
       begin
-       HV := HVDb.HVozidla[StrToInt(data[i])];
+       HV := HVDb[StrToInt(data[i])];
        // kontrola existence loko
        if (HV = nil) then
         begin
@@ -1729,7 +1729,7 @@ begin
      // lokomotivy priradime regulatoru
      for i := 0 to data.Count-1 do
       begin
-       HV := HVDb.HVozidla[StrToInt(data[i])];
+       HV := HVDb[StrToInt(data[i])];
        TCPRegulator.LokToRegulator(Self.ORStav.reg_please, HV);
       end;//for i
 
@@ -1791,11 +1791,11 @@ begin
        // vsechny soupravy na useku
        for j := 0 to (Blk as TBlkUsek).Soupravs.Count-1 do
          for addr in Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[j]].HVs do
-           line := line + '[{' + HVDb.HVozidla[addr].GetPanelLokString() + '}]';
+           line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end else begin
        // konkretni souprava
        for addr in Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[spri]].HVs do
-         line := line + '[{' + HVDb.HVozidla[addr].GetPanelLokString() + '}]';
+         line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end;
 
      line := line + '}';

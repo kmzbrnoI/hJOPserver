@@ -51,10 +51,10 @@ begin
 
  for i := 0 to _MAX_ADDR-1 do
   begin
-   if (HVDb.HVozidla[i] = nil) then continue;
+   if (HVDb[i] = nil) then continue;
 
    GetMem(addr, 3);
-   Integer(addr^) := HVDb.HVozidla[i].adresa;
+   Integer(addr^) := HVDb[i].adresa;
    LI := Self.LV.Items.Add;
    LI.Caption := IntToStr(i);
    LI.Data := addr;
@@ -62,7 +62,7 @@ begin
    for j := 0 to Self.LV.Columns.Count-2 do
      LI.SubItems.Add('');
 
-   Self.UpdateLine(HVDb.HVozidla[i]);
+   Self.UpdateLine(HVDb[i]);
   end;
 end;
 
@@ -73,11 +73,11 @@ var i:Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
   begin
-   if (not Assigned(HVDb.HVozidla[i])) then continue;
-   if ((HVDb.HVozidla[i].changed) or (Self.reload)) then
+   if (not Assigned(HVDb[i])) then continue;
+   if ((HVDb[i].changed) or (Self.reload)) then
     begin
-     Self.UpdateLine(HVDb.HVozidla[i]);
-     Self.LV.UpdateItems(HVDb.HVozidla[i].index, HVDb.HVozidla[i].index);
+     Self.UpdateLine(HVDb[i]);
+     Self.LV.UpdateItems(HVDb[i].index, HVDb[i].index);
     end;
   end;//for i
 

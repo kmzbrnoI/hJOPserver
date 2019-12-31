@@ -189,7 +189,7 @@ begin
  parsed[3] := UpperCase(parsed[3]);
 
  try
-   HV := HVDb.HVozidla[StrToInt(parsed[2])];
+   HV := HVDb[StrToInt(parsed[2])];
  except
    Self.ClientError(Sender, 'Nesprávný formát adresy loko');
    Exit();
@@ -438,7 +438,7 @@ var speed:Cardinal;
 begin
 //  -;LOK;RESP;ADDR;[ok, err]; info
  try
-  HV := HVDb.HVozidla[TLokResponseData(Data^).addr];
+  HV := HVDb[TLokResponseData(Data^).addr];
   speed := HV.realSpeed;
   if (speed > HV.Data.maxRychlost) then
     speed := HV.Data.maxRychlost;
@@ -611,8 +611,8 @@ procedure TTCPRegulator.RegDisconnect(reg:TIdContext);
 var addr:Integer;
 begin
  for addr := 0 to _MAX_ADDR-1 do
-   if ((HVDb.HVozidla[addr] <> nil) and (HVDb.HVozidla[addr].Stav.regulators.Count > 0)) then
-     HVDb.HVozidla[addr].RemoveRegulator(reg);
+   if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.regulators.Count > 0)) then
+     HVDb[addr].RemoveRegulator(reg);
 
  TTCPORsRef(reg.Data).regulator := false;
  TTCPORsRef(reg.Data).regulator_user := nil;

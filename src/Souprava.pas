@@ -201,9 +201,9 @@ begin
    for s in data do
     begin
      addr := StrToInt(s);
-     if (Assigned(HVDb.HVozidla[addr])) then
+     if (Assigned(HVDb[addr])) then
       begin
-       HVDb.HVozidla[addr].souprava := Self.index;
+       HVDb[addr].souprava := Self.index;
        Self.data.HVs.Add(addr);
       end;
     end;
@@ -283,7 +283,7 @@ begin
  Result := Result + ';' + IntToStr(Self.data.delka) + ';' + Self.data.typ + ';{';
 
  for addr in Self.HVs do
-   Result := Result + '[{' + HVDb.HVozidla[addr].GetPanelLokString() + '}]';
+   Result := Result + '[{' + HVDb[addr].GetPanelLokString() + '}]';
  Result := Result + '};';
 
  if (Self.vychoziOR <> nil) then
@@ -379,31 +379,31 @@ begin
        ExtractStringsEx(['|'], [], s, hv);
        addr := StrToInt(hv[4]);
 
-       if (not Assigned(HVDb.HVozidla[addr])) then
+       if (not Assigned(HVDb[addr])) then
          Exit();
 
-       if ((HVDb.HVozidla[addr].souprava > -1) and (HVDb.HVozidla[addr].souprava <> Self.index)) then
-         raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena soupravě '+Soupravy.GetSprNameByIndex(HVDb.HVozidla[addr].souprava));
+       if ((HVDb[addr].souprava > -1) and (HVDb[addr].souprava <> Self.index)) then
+         raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena soupravě '+Soupravy.GetSprNameByIndex(HVDb[addr].souprava));
 
        if (new.Contains(addr)) then
          raise Exception.Create('Duplicitní loko!');
 
-       if ((not HVDb.HVozidla[addr].acquired) or (HVDb.HVozidla[addr].stolen)) then
+       if ((not HVDb[addr].acquired) or (HVDb[addr].stolen)) then
         begin
          // pripravit funkce:
          max_func := Min(Length(hv[8]), _HV_FUNC_MAX);
          for j := 0 to max_func do
-           HVDb.HVozidla[addr].Stav.funkce[j] := (hv[8][j+1] = '1');
+           HVDb[addr].Stav.funkce[j] := (hv[8][j+1] = '1');
 
          try
-           HVDb.HVozidla[addr].TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
+           HVDb[addr].TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
          except
            on E:Exception do
              raise Exception.Create('PrevzitLoko exception : '+E.Message);
          end;
 
          timeout := 0;
-         while (not HVDb.HVozidla[addr].acquired) do
+         while (not HVDb[addr].acquired) do
           begin
            Sleep(1);
            timeout := timeout + 1;
@@ -422,14 +422,14 @@ begin
            if (j < Length(hv[8])) then
              Func[j] := (hv[8][j+1] = '1')
            else
-             Func[j] := HVDb.HVozidla[addr].Stav.funkce[j];
+             Func[j] := HVDb[addr].Stav.funkce[j];
 
-//          TrakceI.LokSetFunc(Self, HVDb.HVozidla[addr], Func); TODO
+//          TrakceI.LokSetFunc(Self, HVDb[addr], Func); TODO
         end;
 
-       HVDb.HVozidla[addr].Data.Poznamka := hv[3];
-       HVDb.HVozidla[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
-       HVDb.HVozidla[addr].souprava := Self.index;
+       HVDb[addr].Data.Poznamka := hv[3];
+       HVDb[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
+       HVDb[addr].souprava := Self.index;
 
        new.Add(addr);
       end;
@@ -495,7 +495,7 @@ begin
      if (not keep.Contains(old_addr)) then
       begin
        // vozidlo, ktere neni v novem seznamu -> uvolnit
-       HVDb.HVozidla[old_addr].souprava := -1;
+       HVDb[old_addr].souprava := -1;
       end;
     end;
  finally
@@ -514,10 +514,10 @@ begin
 
  for addr in Self.HVs do
   begin
-   if (not Assigned(HVDb.HVozidla[addr])) then
+   if (not Assigned(HVDb[addr])) then
      continue;
 
-   HVDb.HVozidla[addr].souprava := -1;
+   HVDb[addr].souprava := -1;
   end;
 end;
 
@@ -528,7 +528,7 @@ var addr:Integer;
 begin
  Self.data.OblRizeni := OblRizeni;
  for addr in Self.HVs do
-   HVDb.HVozidla[addr].PredejStanici(OblRizeni as TOR);
+   HVDb[addr].PredejStanici(OblRizeni as TOR);
  Self.Data.hlaseniPrehrano := false;
  Self.changed := true;
 end;
@@ -566,7 +566,7 @@ begin
    direction := PrevodySoustav.IntToBool(Integer(dir) xor Integer(HVDb[addr].stav.StanovisteA));
 
    try
-     HVDb.HVozidla[addr].SetSpeedDir(Self.data.rychlost, direction,
+     HVDb[addr].SetSpeedDir(Self.data.rychlost, direction,
                                      TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
    except
      on E:Exception do
@@ -610,7 +610,7 @@ function TSouprava.IsUkradeno():boolean;
 var addr:Integer;
 begin
  for addr in Self.HVs do
-  if (HVDb.HVozidla[addr].stolen) then
+  if (HVDb[addr].stolen) then
     Exit(true);
  Result := false;
 end;
@@ -624,10 +624,10 @@ begin
  taken := false;
  for addr in Self.HVs do
   begin
-   if (HVDb.HVozidla[addr].stolen) then
+   if (HVDb[addr].stolen) then
     begin
      try
-       HVDb.HVozidla[addr].TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
+       HVDb[addr].TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
      except
        on E:Exception do
          raise Exception.Create('PrevzitLoko exception : '+E.Message);
@@ -635,7 +635,7 @@ begin
      taken := true;
 
      timeout := 0;
-     while (not HVDb.HVozidla[addr].acquired) do
+     while (not HVDb[addr].acquired) do
       begin
        Sleep(1);
        timeout := timeout + 1;
@@ -681,7 +681,7 @@ begin
     end;//case 1
    end;//case
 
-   HVDb.HVozidla[addr].changed := true;
+   HVDb[addr].changed := true;
   end;//for
 
  Self.changed := true;
@@ -704,9 +704,9 @@ begin
  // zmenit orintaci stanoviste A hnacich vozidel
  for addr in Self.HVs do
   begin
-   case (HVDb.HVozidla[addr].Stav.StanovisteA) of
-    THVStanoviste.lichy : HVDb.HVozidla[addr].Stav.StanovisteA := THVStanoviste.sudy;
-    THVStanoviste.sudy  : HVDb.HVozidla[addr].Stav.StanovisteA := THVStanoviste.lichy;
+   case (HVDb[addr].Stav.StanovisteA) of
+    THVStanoviste.lichy : HVDb[addr].Stav.StanovisteA := THVStanoviste.sudy;
+    THVStanoviste.sudy  : HVDb[addr].Stav.StanovisteA := THVStanoviste.lichy;
    end;//case
   end;//for i
 
@@ -784,7 +784,7 @@ begin
 
  for addr in Self.HVs do
   begin
-   HV := HVDb.HVozidla[addr];
+   HV := HVDb[addr];
    if (HV.CanPlayHouk(desc)) then
      TrakceI.LokFuncToggle(Self, HV, HV.funcDict[desc]);
   end;

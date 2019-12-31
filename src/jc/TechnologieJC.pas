@@ -940,7 +940,7 @@ begin
    // kontrola rucniho rizeni lokomotiv
    if (Self.fproperties.TypCesty = TJCType.vlak) then
      for addr in spr.HVs do
-       if ((HVDb.HVozidla[addr].stolen) or (HVDb.HVozidla[addr].ruc)) then
+       if ((HVDb[addr].stolen) or (HVDb[addr].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, addr));
          flag := true;
@@ -949,7 +949,7 @@ begin
    // pokud jsou jen nektere lokomotivy rizene rucne
    if (flag) then
      for addr in spr.HVs do
-       if ((not HVDb.HVozidla[addr].stolen) and (not HVDb.HVozidla[addr].ruc)) then
+       if ((not HVDb[addr].stolen) and (not HVDb[addr].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_NOT_ALL_RUC));
          break;
@@ -3235,7 +3235,7 @@ begin
   _JCB_HV_RUC : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Hnací vozidlo v ručním řízení');
-    Result[2] := GetUPOLine(IntToStr(Bariera.param) + ' : ' + HVDb.HVozidla[Bariera.param].Data.Nazev);
+    Result[2] := GetUPOLine(IntToStr(Bariera.param) + ' : ' + HVDb[Bariera.param].Data.Nazev);
   end;
 
   _JCB_HV_NOT_ALL_RUC : begin

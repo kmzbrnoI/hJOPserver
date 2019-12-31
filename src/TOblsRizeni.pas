@@ -230,8 +230,8 @@ begin
 
  // vymazeme vsechny otevrene regulatory u klientu
  for i := 0 to _MAX_ADDR-1 do
-  if (Assigned(HVDb.HVozidla[i])) then
-    HVDb.HVozidla[i].Stav.regulators.Clear();
+  if (Assigned(HVDb[i])) then
+    HVDb[i].Stav.regulators.Clear();
 end;
 
 procedure TORs.SendORList(Context:TIdContext);

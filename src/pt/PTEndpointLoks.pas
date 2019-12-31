@@ -45,12 +45,12 @@ begin
 
    for addr := 0 to _MAX_ADDR-1 do
     begin
-     if (HVDb.HVozidla[addr] <> nil) then
+     if (HVDb[addr] <> nil) then
       begin
        if ((aktivni = 0) or
-          ((aktivni = 1) and (not HVdb.HVozidla[addr].acquired)) or
-          ((aktivni = 2) and (HVdb.HVozidla[addr].acquired))) then
-         HVDb.HVozidla[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('stav') and PTUtils.HttpParamToBool(params['stav']));
+          ((aktivni = 1) and (not HVdb[addr].acquired)) or
+          ((aktivni = 2) and (HVdb[addr].acquired))) then
+         HVDb[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('stav') and PTUtils.HttpParamToBool(params['stav']));
       end;
     end;
  finally

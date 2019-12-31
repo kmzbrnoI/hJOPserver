@@ -1154,16 +1154,6 @@ begin
    Exit();
   end;
 
- // TODO: move this to some loco reset?
- for addr := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[addr] <> nil) then
-    begin
-     HVDb[addr].stav.stolen := false;
-     HVDb[addr].stav.acquired := false;
-    end;
-  end;
-
  try
    TrakceI.Disconnect();
  except

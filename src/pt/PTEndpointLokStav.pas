@@ -57,13 +57,13 @@ begin
       end;
    end;
 
-   if ((lokoAddr > 9999) or (HVDb.HVozidla[lokoAddr] = nil)) then
+   if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje', 'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
      Exit();
     end;
 
-   HVDb.HVozidla[lokoAddr].GetPtState(respJson.O['lokStav']);
+   HVDb[lokoAddr].GetPtState(respJson.O['lokStav']);
  finally
    re.Free();
    params.Free();
@@ -96,7 +96,7 @@ begin
       end;
    end;
 
-   if ((lokoAddr > 9999) or (HVDb.HVozidla[lokoAddr] = nil)) then
+   if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje', 'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
      Exit();
@@ -108,7 +108,7 @@ begin
      Exit();
     end;
 
-   HVDb.HVozidla[lokoAddr].PostPtState(reqJson['lokStav'], respJson);
+   HVDb[lokoAddr].PostPtState(reqJson['lokStav'], respJson);
  finally
    re.Free();
    params.Free();
