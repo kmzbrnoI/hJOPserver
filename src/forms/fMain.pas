@@ -1857,6 +1857,12 @@ begin
    Self.LogStatus('ERR: Systém nelze spustit, RCS není připraveno k zapnutí systému');
    Exit();
   end;
+ if (not TrakceI.ready) then
+  begin
+   Application.MessageBox(PChar('Systém nelze spustit, Trakce není připravena k zapnutí systému'+#13#10+'Možné příčiny:'+#13#10+' - nenačtena validní knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+   Self.LogStatus('ERR: Systém nelze spustit, Trakce není připravena k zapnutí systému');
+   Exit();
+  end;
 
  Self.LogStatus('Zapínám systémy...');
  SystemData.Status := starting;
