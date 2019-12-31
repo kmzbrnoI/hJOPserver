@@ -2734,14 +2734,14 @@ begin
  case (StrToIntDef(Item.SubItems.Strings[0],0)) of
   1:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
   2:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-  3:begin
+  4,5:begin
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then
        (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_BLUE;
      if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then
        (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
     end;//case 2
-  4,5:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+  3,6:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
  end;//case
 end;
 

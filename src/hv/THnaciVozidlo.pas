@@ -1328,7 +1328,7 @@ var i: Integer;
     functions: Cardinal;
 begin
  functions := Self.Slot.functions;
- for i := 0 to 31 do
+ for i := 0 to _HV_FUNC_MAX do
   begin
    Result[i] := (functions AND $1 > 0);
    functions := (functions shr 1);
@@ -1378,6 +1378,13 @@ begin
      funcState := funcState or (1 shl i);
    if (Self.stav.funkce[i] <> Self.slotFunkce[i]) then
      funcMask := funcMask or (1 shl i);
+  end;
+
+ if (funcMask = 0) then
+  begin
+   if (Assigned(ok.callback)) then
+     ok.callback(Self, ok.data);
+   Exit();
   end;
 
  try
@@ -1469,6 +1476,7 @@ begin
  Self.stav.acquired := true;
  Self.stav.acquiring := false;
  Self.changed := true;
+ RegCollector.LocoChanged(Self.adresa);
 
  if (Assigned(Self.acquiredOk.callback)) then
    Self.acquiredOk.callback(Self, Self.acquiredOk.data);
@@ -1479,6 +1487,7 @@ begin
  TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.acquiring := false;
  Self.changed := true;
+ RegCollector.LocoChanged(Self.adresa);
  if (Assigned(Self.acquiredErr.callback)) then
    Self.acquiredErr.callback(Self, Self.acquiredErr.data);
 end;
@@ -1516,6 +1525,7 @@ begin
  TrakceI.Log(llCommands, 'Loco Successfully Released: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.acquired := false;
  Self.changed := true;
+ RegCollector.LocoChanged(Self.adresa);
  if (Assigned(Self.releasedOk.callback)) then
    Self.releasedOk.callback(Self, Self.releasedOk.data);
 end;

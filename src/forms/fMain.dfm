@@ -5943,6 +5943,7 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_log_lnetCustomDrawItem
         OnDblClick = LV_log_lnetDblClick
+        ExplicitTop = 27
       end
       object Panel3: TPanel
         Left = 0
@@ -5985,9 +5986,10 @@ object F_Main: TF_Main
             '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
             '1 '#8211' chyby'
             '2 '#8211' varov'#225'n'#237
-            '3 '#8211' p'#345#237'kazy'
-            '4 '#8211' data'
-            '5 '#8211' debug')
+            '3 '#8211' informace '
+            '4 '#8211' p'#345#237'kazy'
+            '5 '#8211' data'
+            '6 '#8211' debug')
         end
         object CB_centrala_loglevel_table: TComboBox
           Left = 380
@@ -6002,9 +6004,10 @@ object F_Main: TF_Main
             '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
             '1 '#8211' chyby'
             '2 '#8211' varov'#225'n'#237
-            '3 '#8211' p'#345#237'kazy'
-            '4 '#8211' data'
-            '5 '#8211' debug')
+            '3 '#8211' informace'
+            '4 '#8211' p'#345#237'kazy'
+            '5 '#8211' data'
+            '6 '#8211' debug')
         end
       end
     end
