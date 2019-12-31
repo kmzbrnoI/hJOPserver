@@ -144,48 +144,12 @@ type
      procedure NouzReleaseLoko();
 //     procedure LokComErr(Sender:TObject; addr:Integer);                         // event oznamujici chybu komunikace s danou lokomotivou (je volan paralelne s error callback eventem, ale jen pro urcite prikazy - pro prikazy tykajici se rizeni konkretni lokomotivy).
 //     procedure LokComOK(Sender:TObject; addr:Integer);                          // event potvrzujici komunikaci s danym HV (je volan pokazde, pokud centrala odpovi na prikaz o nasatveni dat HV)
-                                                                                // je protipol predchoziho eventu
-
-     // eventy z .Trakce pri zapinani systemu (tj. odpoved na priklad GET-STATUS)
-//     procedure InitStatErr(Sender:TObject; Data:Pointer);
-//    procedure InitStatOK(Sender:TObject; Data:Pointer);
-
-     // event z .Tracke pri ozivovani systemu po neuspesnem prikazu GET-STATUS
-     // oziveni - prikaz DCC STOP; tyto eventy tedy odpovidaji inicializacnimu prikazu STOP
-//     procedure InitStopErr(Sender:TObject; Data:Pointer);
-//     procedure InitStopOK(Sender:TObject; Data:Pointer);
-
-     // Obecne nastaveni callback komunikacnich eventu
-     // Tyto funkce nastavi callback eventy do .Trakce
-//     procedure SetCallbackErr(callback_err:TCommandCallback);
-//     procedure SetCallbackOK(callback_ok:TCommandCallback);
 
      // eventy z komunikace s centralou pri prebirani a odhlasovani HV (tj. prebirani a odhlasovani VSECH LOKO)
 //     procedure PrebiraniUpdateOK(Sender:TObject; Data:Pointer);                 // loko uspesne prevzato
 //     procedure PrebiraniUpdateErr(Sender:TObject; Data:Pointer);                // prevzeti se nazdarilo (napr. centrala neodpovedela na prikaz o prevzeti, na POM ...)
 //     procedure OdhlasovaniUpdateOK(Sender:TObject; Data:Pointer);               // loko uspesne uvolneno
 //     procedure OdhlasovaniUpdateErr(Sender:TObject; Data:Pointer);              // uvolneni loko se nezdarilo (napr. centrala nedopovedela na POM, ...)
-
-     // eventy spojene s jednotlivymi fazemi prebirani HV
-//     procedure AcquireErr(Sender:TObject; Data:Pointer);
-
-//     procedure AcquiredFunc1328(Sender:TObject; Data:Pointer);
-//     procedure AcquiredDirection(Sender:TObject; Data:Pointer);
-//     procedure AcquiredPOM(Sender:TObject; Data:Pointer);
-//     procedure AcquiredFunc(Sender:TObject; Data:Pointer);
-//     procedure AcquireFuncErr(Sender:TObject; Data:Pointer);
-
-     // eventy spojene s jedntlivymi fazemi odhlasovani loko:
-//     procedure Released(Sender:TObject; Data:Pointer);
-//     procedure ReleaseErr(Sender:TObject; Data:Pointer);
-//     procedure ReleasePOMOK(Sender:TObject; Data:Pointer);
-//     procedure ReleasePOMErr(Sender:TObject; Data:Pointer);
-
-     // callbacky spojene s nastavovanim funkci:
-     // Funkce nastavujeme po jednotlivych sadach.
-     // K nastaveni dalsi sady dojde az po uspesnem nastaveni sady predchozi - tj. prichodu prikazu OK z centraly, resp. zavolani OK callbacku
-//     procedure FuncOK(Sender:TObject; Data:Pointer);
-//     procedure FuncErr(Sender:TObject; Data:Pointer);
 
 //     procedure AllPrevzato();                                                   // je volana, pokud jsou vsechny loko prevzaty (primarni vyuziti = interakce s GUI)
 //     procedure AllOdhlaseno();                                                  // je volana, pokud jsou vsechny loko odhlaseny (primarni vyuziti = interakce s GUI)
@@ -224,7 +188,7 @@ type
           a dojde ke zmene rychlosti v OR1, je infroamce o zmene rychlosti
           odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
           vsak do OR1 (tomu prijde napriklad OK, ci error callback)
-    }
+     }
 
     DCCGoTime:TDateTime;
     toggleQueue:TQueue<THVFunc>;
@@ -246,9 +210,6 @@ type
      function SpeedStep(kmph:Cardinal):Cardinal;
      function GetStepSpeed(step:byte):Integer;
      function SetStepSpeed(step:byte; sp:Integer):Byte;
-
-//     procedure LocoAcquire(HV:THV);
-//     procedure LocoRelease(HV:THV);
 
      procedure LoksSetFunc(vyznam:string; state:boolean);
      procedure POMWriteCVs(Sender:TObject; HV:THV; list:TList<THVPomCV>; new:TPomStatus; ok: TCb; err: TCb);
@@ -590,68 +551,6 @@ begin
  Self.SpeedTable[step] := sp;
  Result := 0;
 end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-{ procedure TTrakce.LocoAcquire(HV:THV);
-var cb:Pointer;
-begin
- if (not Self.openned) then
-  begin
-   Self.Log(tllError, 'ERR: COM not openned');
-   raise ENotOpenned.Create('COM not openned');
-  end;
-
- Self.TrkLog(self, tllCommand, 'PUT: LOK-2-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
- HV.Slot.prevzato_full := false;
- HV.RecordUseNow();
-
- GetMem(cb, sizeof(TPrevzitCallback));
- TPrevzitCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
- TPrevzitCallback(cb^).callback_err := Self.Trakce.callback_err;
- TPrevzitCallback(cb^).addr         := HV.adresa;
-
- if (not HV.Slot.prevzato) then
-  begin
-   // ok callback neni potreba, protoze se vola ConnectChange
-   Self.callback_ok  := TTrakce.GenerateCallback(nil, cb);    // cb tu ale presto musi byt (je potreba v ConnectChange)
-   Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, cb);
-   Self.Trakce.Lok2MyControl(HV.Adresa);
-  end else begin
-   Self.callback_err := TTrakce.GenerateCallback(nil);
-   Self.callback_ok  := TTrakce.GenerateCallback(nil);
-   Self.ConnectChange(Self, HV.adresa, Tconnect_code.TC_Connected, cb);
-  end;
-end;
-
-procedure TTrakce.LocoRelease(HV:THV);
-var cb:Pointer;
-begin
- if (not Self.openned) then
-  begin
-   Self.Log(tllError, 'ERR: COM not openned');
-   raise ENotOpenned.Create('COM not openned');
-  end;
-
- Self.TrkLog(self, tllCommand, 'PUT: LOK-FROM-MYCONTROL: '+HV.data.Nazev+' ('+IntToStr(HV.Adresa)+')');
-
- GetMem(cb, sizeof(TPrevzitCallback));
- TPrevzitCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
- TPrevzitCallback(cb^).callback_err := Self.Trakce.callback_err;
- TPrevzitCallback(cb^).addr         := HV.adresa;
-
- Self.callback_ok  := TTrakce.GenerateCallback(Self.OdhlasenoPOMOK, cb);
- Self.callback_err := TTrakce.GenerateCallback(Self.OdhlasenoPOMErr, cb);
-
- // nenastavovat HV.ruc, POM si tady delame sami !!
- HV.Stav.ruc := false;
- HV.RecordUseNow();
-
- if (HV.Slot.pom <> TPomStatus.released) then
-   Self.POMWriteCVs(Self, HV, HV.Data.POMrelease, TPomStatus.released)
- else
-   Self.OdhlasenoPOMOK(Self, cb);
-end; }
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1209,146 +1108,6 @@ begin
 { HVDb.HVozidla[Integer(data^)].Slot.prevzato      := false;
  HVDb.HVozidla[Integer(data^)].Slot.prevzato_full := false; }
 end;
-
-////////////////////////////////////////////////////////////////////////////////
-// callbacky pri nastavovani funkci hnacicho vozidel (F0-Fn)
-// data jsou TFuncCallback
-
-{procedure TTrakce.FuncOK(Sender:TObject; Data:Pointer);
-var i:Integer;
-    func:Byte;
-    sada:Integer;
-    s:string;
-begin }
-{ if (TFuncCallback(data^).sady.Count < 1) then
-  begin
-   // vsechny sady nastaveny
-   TFuncCallback(data^).sady.Free();
-   if (Assigned(TFuncCallback(data^).callback_ok.callback)) then
-      TFuncCallback(data^).callback_ok.callback(Self, TFuncCallback(data^).callback_ok.data);
-   FreeMem(data);
-  end else begin
-   // nastavit dalsi sadu
-
-   // vypocet func bytu pro jednotlive sady separatne:
-   sada := TFuncCallback(data^).sady[0].index;
-   case (sada) of
-    0:begin
-       for i := 0 to 4 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 0-4: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
-
-       func := 0;
-       for i := 0 to 3 do if (TFuncCallback(data^).sady[0].func[i+1]) then func := func or (1 shl (i+1));
-       if (TFuncCallback(data^).sady[0].func[0]) then func := func or 1;
-    end;
-
-    1: begin
-       for i := 0 to 3 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 5-8: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
-
-       func := 0;
-       for i := 0 to 3 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
-    end;
-
-    2: begin
-       for i := 0 to 3 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 9-12: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
-
-       func := 0;
-       for i := 0 to 3 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
-    end;
-
-    3: begin
-       for i := 0 to 7 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 13-20: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
-
-       func := 0;
-       for i := 0 to 7 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
-    end;
-
-    4: begin
-       for i := 0 to 7 do s := s + IntToStr(PrevodySoustav.BoolToInt(TFuncCallback(data^).sady[0].func[i]));
-       Self.TrkLog(self, tllCommand, 'PUT: LOK FUNC 21-28: '+HVDb.HVozidla[TFuncCallback(data^).addr].Data.Nazev+' ('+IntToStr(TFuncCallback(data^).addr)+') : '+s);
-
-       func := 0;
-       for i := 0 to 7 do if (TFuncCallback(data^).sady[0].func[i]) then func := func or (1 shl i);
-    end;
-
-   else
-    // neznama sada -> konec
-    TFuncCallback(data^).sady.Free();
-    if (Assigned(TFuncCallback(data^).callback_ok.callback)) then
-       TFuncCallback(data^).callback_ok.callback(Self, TFuncCallback(data^).callback_ok.data);
-    FreeMem(data);
-    Exit();
-   end;
-
-   TFuncCallback(data^).sady.Delete(0);     // prvni sada zpracovana
-   Self.callback_ok  := TTrakce.GenerateCallback(Self.FuncOK, data);
-   Self.callback_err := TTrakce.GenerateCallback(Self.FuncErr, data);
-
-   try
-     Self.Trakce.LokSetFunc(TFuncCallback(data^).addr, sada, func);
-   except
-     Self.FuncErr(Self, data);
-   end;
-  end;          }
-//end;
-
-{procedure TTrakce.FuncErr(Sender:TObject; Data:Pointer);
-begin
- // chyba pri nastavovani funkci -> zavolame error callback
- TFuncCallback(data^).sady.Free();
- if (Assigned(TFuncCallback(data^).callback_err.callback)) then
-    TFuncCallback(data^).callback_err.callback(Self, TFuncCallback(data^).callback_err.data);
- FreeMem(data);
-end;}
-
-////////////////////////////////////////////////////////////////////////////////
-// callbacky pri nastavovani funkci hnaciho vozidla pri prebirani:
-
-
-{
-
-////////////////////////////////////////////////////////////////////////////////
-// callbacky hromadneho nastavovani funkci dle vyznamu:
-//    napr. zapni "zvuk" vsech hnacich vozidel
-
-{procedure TTrakce.LoksSetFuncOK(Sender:TObject; Data:Pointer);
-var addr, i:Integer;
-begin
- for addr := TFuncsCallback(data^).addr+1 to _MAX_ADDR-1 do
-  begin
-   if ((HVDb.HVozidla[addr] = nil) or (not HVDb.HVozidla[addr].Slot.prevzato)) then continue;
-
-   for i := 0 to _HV_FUNC_MAX do
-    if ((HVDb.HVozidla[addr].Data.funcVyznam[i] = TFuncsCallback(data^).vyznam) and (HVDb.HVozidla[addr].Slot.funkce[i] <> TFuncsCallback(data^).state)) then
-      begin
-       HVDb.HVozidla[addr].Stav.funkce[i] := TFuncsCallback(data^).state;
-       TFuncsCallback(data^).addr := addr;
-
-       Self.callback_ok  := TTrakce.GenerateCallback(Self.LoksSetFuncOK, data);
-       Self.callback_err := TTrakce.GenerateCallback(Self.LoksSetFuncErr, data);
-
-       try
-         Self.LokSetFunc(Self, HVDb.HVozidla[addr], HVDb.HVozidla[addr].Stav.funkce);
-       except
-         Self.LoksSetFuncErr(Self, data);
-       end;
-
-       Exit();
-      end;//if vyznam = vyznam
-  end;//for i
-
- if (Assigned(TFuncsCallback(data^).callback_ok.callback)) then TFuncsCallback(data^).callback_ok.callback(Self, TFuncsCallback(data^).callback_ok.data);
- FreeMem(data);
-end;
-
-procedure TTrakce.LoksSetFuncErr(Sender:TObject; Data:Pointer);
-begin
- // sem lze pridat oznameni chyby
- Self.LoksSetFuncOK(Sender, Data);
-end;}
 
 ////////////////////////////////////////////////////////////////////////////////
 
