@@ -210,9 +210,7 @@ type
      procedure TrakceRelease(ok: TCb);
      procedure TrakceStolen();
 
-     procedure SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
-     procedure SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
-     procedure StavFunctionsToSlotFunctions(ok: TCb; err: TCb);
+     procedure StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
 
      procedure SetPom(pom:TPomStatus; ok: TCb; err: TCb);
 
@@ -1294,6 +1292,7 @@ begin
  else
    Self.slot.functions := Self.slot.functions and (not (1 shl func));
 
+ Self.stav.funkce[func] := state;
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
 
  try
@@ -1416,17 +1415,7 @@ begin
      // coz se dede prave tady
 end;
 
-procedure THV.SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
-begin
-
-end;
-
-procedure THV.SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
-begin
-
-end;
-
-procedure THV.StavFunctionsToSlotFunctions(ok: TCb; err: TCb);
+procedure THV.StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
 var i:Integer;
     funcMask:Cardinal;
     funcState:Cardinal;
@@ -1448,12 +1437,18 @@ begin
    Exit();
   end;
 
+ Self.slot.functions := funcState;
+
  try
    TrakceI.LocoSetFunc(Self.adresa, funcMask, funcState, ok, err);
  except
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
  end;
+
+ TCPRegulator.LokUpdateFunc(Self, Sender);
+ RegCollector.UpdateElements(Sender, Self.adresa);
+ Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

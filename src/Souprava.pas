@@ -803,15 +803,8 @@ begin
  for addr in Self.HVs do
   begin
    HV := HVDb[addr];
-
    if (HV.CanPlayHouk(desc)) then
-    begin
-     try
-       HV.SetFunction(HV.funcDict[desc], state, Self);
-     except
-
-     end;
-    end;
+     HV.SetSingleFunc(HV.funcDict[desc], state, TTrakce.Callback(), TTrakce.Callback(), Self);
   end;
 end;
 

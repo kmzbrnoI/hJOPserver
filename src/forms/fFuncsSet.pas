@@ -17,7 +17,8 @@ type
     procedure B_ApplyClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
-     procedure FuncsSetOK(Sender:TObject; Data:Pointer);
+     procedure FuncsSetOk(Sender:TObject; Data:Pointer);
+     procedure FuncsSetErr(Sender:TObject; Data:Pointer);
   public
      procedure UpdateFuncsList(items:TStrings);
   end;
@@ -56,15 +57,14 @@ begin
 
  Application.ProcessMessages();
 
-{ TrkSystem.callback_ok  := TTrakce.GenerateCallback(Self.FuncsSetOK);
- TrkSystem.callback_err := TTrakce.GenerateCallback(Self.FuncsSetOK); TODO }
- TrakceI.LoksSetFunc(Self.CB_Vyznam.Text, (Self.RG_Stav.ItemIndex = 1));
+ TrakceI.LoksSetFunc(Self.CB_Vyznam.Text, (Self.RG_Stav.ItemIndex = 1),
+                     TTrakce.Callback(Self.FuncsSetOk), TTrakce.Callback(Self.FuncsSetErr));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // callback uspesneho nastaveni funkci:
 
-procedure TF_FuncsSet.FuncsSetOK(Sender:TObject; Data:Pointer);
+procedure TF_FuncsSet.FuncsSetOk(Sender:TObject; Data:Pointer);
 begin
  Self.B_Apply.Enabled   := true;
  Self.RG_Stav.Enabled   := true;
@@ -74,11 +74,22 @@ begin
  Self.L_Status.Caption    := 'Funkce nastaveny';
 end;
 
+procedure TF_FuncsSet.FuncsSetErr(Sender:TObject; Data:Pointer);
+begin
+ Self.B_Apply.Enabled   := true;
+ Self.RG_Stav.Enabled   := true;
+ Self.CB_Vyznam.Enabled := true;
+
+ Self.L_Status.Font.Color := clRed;
+ Self.L_Status.Caption    := 'Funkce se nepodařilo nastavit!';
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_FuncsSet.FormShow(Sender: TObject);
 begin
- if (Self.L_Status.Caption = 'Funkce nastaveny') then Self.L_Status.Caption := '';
+ if (Self.L_Status.Caption = 'Funkce nastaveny') then
+   Self.L_Status.Caption := '';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

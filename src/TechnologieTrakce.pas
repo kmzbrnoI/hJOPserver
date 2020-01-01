@@ -82,11 +82,11 @@ type
   end;
 
   // pri hromadnem nastavovani funkci dle vyznamu (napr. vypnout vsechna "svetla") se do callbacku predavaji tato data
-  TFuncsCallback = record
-    addr:Word;                                                                  // adresa lokomotivy
-    vyznam:string;                                                              // vyznam funkce, kterou nastavujeme
-    state:boolean;                                                              // novy stav funkce
-    callback_ok, callback_err:TCommandCallback;                                 // globalni callbacky
+  TSetDescFuncsCallback = record
+    addr:Word;
+    description:string;
+    state:boolean;
+    callback_ok, callback_err:TCommandCallback;
   end;
 
   // reprezenatce jedne funkci sady
@@ -163,8 +163,8 @@ type
      //   Nouzzove jsou uvolnena takove HV, ktera jsou pri BeforeClose jeste prevzata.
      procedure NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
 
-//     procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
-//     procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
+     procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
+     procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
 
      procedure LoadSpeedTableToTable(var LVRych:TListView);
 //     procedure UpdateSpeedDir(HV:THV; Sender:TObject; speed:boolean; dir:boolean);
@@ -210,7 +210,7 @@ type
      function GetStepSpeed(step:byte):Integer;
      function SetStepSpeed(step:byte; sp:Integer):Byte;
 
-     procedure LoksSetFunc(vyznam:string; state:boolean);
+     procedure LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
      procedure FastResetLocos();
@@ -415,41 +415,62 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+// LoksSetFunc
+////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LoksSetFunc(vyznam:string; state:boolean);
-var addr, i:Integer;
-    cb:Pointer;
+procedure TTrakce.LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
+var cb: ^TSetDescFuncsCallback;
 begin
-{ for addr := 0 to _MAX_ADDR-1 do
+ GetMem(cb, sizeof(TSetDescFuncsCallback));
+ cb^.callback_ok := ok;
+ cb^.callback_err := err;
+ cb^.addr := 0;
+ cb^.description := description;
+ cb^.state := state;
+
+ Self.LoksSetFuncOK(Self, cb);
+end;
+
+procedure TTrakce.LoksSetFuncOK(Sender:TObject; Data:Pointer);
+var addr: Word;
+    cb: ^TSetDescFuncsCallback;
+begin
+ cb := Data;
+ addr := cb^.addr;
+
+ if (not Self.ConnectedSafe()) then
+   Exit();
+
+ while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired) or
+        (not HVDb[addr].funcDict.ContainsKey(cb^.description)) or
+        (HVDb[addr].slotFunkce[HVDb[addr].funcDict[cb^.description]] = cb^.state))) do
+   Inc(addr);
+
+ if (addr = _MAX_ADDR) then
   begin
-   if ((HVDb[addr] = nil) or (not HVDb[addr].acquired)) then continue;
+   if (Assigned(cb^.callback_ok.callback)) then
+     cb^.callback_ok.callback(Self, cb^.callback_ok.data);
+   FreeMem(cb);
+   Exit();
+  end;
 
-   for i := 0 to _HV_FUNC_MAX do
-    if ((HVDb[addr].Data.funcVyznam[i] = vyznam) and (HVDb[addr].slotFunkce[i] <> state)) then
-      begin
-       HVDb[addr].Stav.funkce[i] := state;
+ cb^.addr := addr+1;
+ try
+   HVDb[addr].SetSingleFunc(HVDb[addr].funcDict[cb^.description], cb^.state,
+                            TTrakce.Callback(Self.LoksSetFuncOK, cb),
+                            TTrakce.Callback(Self.LoksSetFuncErr, cb));
+ except
+   Self.LoksSetFuncErr(Self, cb);
+ end;
+end;
 
-       GetMem(cb, sizeof(TFuncsCallback));
-       TFuncsCallback(cb^).callback_ok  := Self.Trakce.callback_ok;
-       TFuncsCallback(cb^).callback_err := Self.Trakce.callback_err;
-       TFuncsCallback(cb^).addr         := addr;
-       TFuncsCallback(cb^).vyznam       := vyznam;
-       TFuncsCallback(cb^).state        := state;
-
-       Self.callback_ok  := TTrakce.GenerateCallback(Self.LoksSetFuncOK, cb);
-       Self.callback_err := TTrakce.GenerateCallback(Self.LoksSetFuncErr, cb);
-
-       try
-         Self.LokSetFunc(Self, HVDb[addr], HVDb[addr].Stav.funkce);
-       except
-         Self.LoksSetFuncErr(Self, cb);
-       end;
-
-       Exit();
-      end;//if vyznam = vyznam
-  end;//for i
-
- if (Assigned(Self.Trakce.callback_ok.callback)) then Self.Trakce.callback_ok.callback(Self, Self.Trakce.callback_ok.data); }
+procedure TTrakce.LoksSetFuncErr(Sender:TObject; Data:Pointer);
+var cb: ^TSetDescFuncsCallback;
+begin
+ cb := Data;
+ if (Assigned(cb^.callback_err.callback)) then
+   cb^.callback_err.callback(Self, cb^.callback_err.data);
+ FreeMem(cb);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
