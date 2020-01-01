@@ -376,9 +376,9 @@ begin
   begin
    // vypocet smeru ze sipky
    if (Self.data.smer_L) then
-     Self.smer := THVStanoviste.lichy
+     Self.data.smer := THVStanoviste.lichy
    else
-     Self.smer := THVStanoviste.sudy;
+     Self.data.smer := THVStanoviste.sudy;
   end;
 
  hvs := TStringList.Create();
@@ -478,6 +478,7 @@ begin
    acq^.err.callback(Self, acq^.err.data);
  acq^.toAcquire.Free();
  FreeMem(acq);
+ Self.changed := true;
 end;
 
 procedure TSouprava.AllLocoAcquiredOk(newLoks: TList<Integer>);
@@ -590,7 +591,7 @@ begin
 
    try
      HVDb[addr].SetSpeedDir(Self.data.rychlost, direction,
-                                     TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
+                            TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
    except
      on E:Exception do
        AppEvents.LogException(E, 'TSouprava.SetRychlostSmer');
