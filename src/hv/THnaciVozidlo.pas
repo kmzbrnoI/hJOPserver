@@ -138,9 +138,10 @@ type
 
      procedure TrakceCallbackOk(Sender:TObject; data:Pointer);
      procedure TrakceCallbackErr(Sender:TObject; data:Pointer);
+     procedure TrakceCallbackCallEv(cb:PTCb);
      procedure SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
-     procedure TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
-     procedure TrakceAcquiredDirection(Sender: TObject; data: Pointer);
+     procedure TrakceAcquired(Sender: TObject; LocoInfo:TTrkLocoInfo);
+     procedure TrakceAcquiredDirection(Sender: TObject; data:Pointer);
      procedure TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
      procedure TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
      procedure TrakceAcquiredErr(Sender:TObject; data:Pointer);
@@ -1209,9 +1210,8 @@ end;
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
 var dirOld:Boolean;
     stepsOld:Byte;
-    cbOk, cbErr: ^TCB;
+    cbOk, cbErr: PTCB;
 begin
- // TODO: use callbacks
  if ((Self.direction = direction) and (Self.speedStep = speedStep)) then
   begin
    if (Assigned(ok.callback)) then
@@ -1220,8 +1220,8 @@ begin
   end;
  if ((not Self.acquired) and (not Self.acquiring)) then
   begin
-   if (Assigned(ok.callback)) then
-     ok.callback(Self, ok.data);
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
    Exit();
   end;
 
@@ -1234,16 +1234,12 @@ begin
  if (Self.stolen) then
   begin
    writelog('LOKO '+Self.nazev+' ukradena, nenastavuji rychlost', WR_MESSAGE);
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
    Exit();
   end;
 
- GetMem(cbOk, sizeof(TCb));
- GetMem(cbErr, sizeof(TCb));
-
- ok.other := Pointer(cbErr);
- err.other := Pointer(cbOk);
- cbOk^ := ok;
- cbErr^ := err;
+ TrakceI.Callbacks(ok, err, cbOk, cbErr);
 
  try
    TrakceI.LocoSetSpeed(Self.adresa, Self.slot.speed, Self.direction,
@@ -1252,7 +1248,7 @@ begin
  except
    on E:Exception do
     begin
-     Self.TrakceCallbackErr(Self, nil);
+     Self.TrakceCallbackErr(Self, cbErr);
      AppEvents.LogException(E, 'THV.SetSpeedDir');
     end;
  end;
@@ -1266,29 +1262,44 @@ begin
 end;
 
 procedure THV.SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+var cbOk, cbErr: PTCb;
 begin
- if (Self.slotFunkce[func] = state) then Exit();
- if (not Self.acquired) then Exit();
+ if (Self.slotFunkce[func] = state) then
+  begin
+   if (Assigned(ok.callback)) then
+     ok.callback(Self, ok.data);
+   Exit();
+  end;
+ if ((not Self.acquired) and (not Self.acquiring)) then
+  begin
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+   Exit();
+  end;
 
  if (Self.stolen) then
   begin
    writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
    Exit();
   end;
 
  if (state) then
-  Self.slot.functions := Self.slot.functions or (1 shl func)
+   Self.slot.functions := Self.slot.functions or (1 shl func)
  else
-  Self.slot.functions := Self.slot.functions and (not (1 shl func));
+   Self.slot.functions := Self.slot.functions and (not (1 shl func));
+
+ TrakceI.Callbacks(ok, err, cbOk, cbErr);
 
  try
    TrakceI.LocoSetSingleFunc(Self.adresa, func, Self.slot.functions,
-                             TTrakce.Callback(Self.TrakceCallbackOk),
-                             TTrakce.Callback(Self.TrakceCallbackErr));
+                             TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
+                             TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
    on E:Exception do
     begin
-     Self.TrakceCallbackErr(Self, nil);
+     Self.TrakceCallbackErr(Self, cbErr);
      AppEvents.LogException(E, 'THV.SetSingleFunc');
     end;
  end;
@@ -1299,19 +1310,26 @@ begin
 end;
 
 procedure THV.EmergencyStop(ok: TCb; err: TCb; Sender:TObject = nil);
+var cbOk, cbErr: PTCb;
 begin
- if (not Self.acquired) then Exit();
+ if (not Self.acquired) then
+  begin
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+   Exit();
+  end;
 
  Self.Slot.speed := 0;
+ TrakceI.Callbacks(ok, err, cbOk, cbErr);
 
  try
    TrakceI.LocoEmergencyStop(Self.adresa,
-                             TTrakce.Callback(Self.TrakceCallbackOk),
-                             TTrakce.Callback(Self.TrakceCallbackErr));
+                             TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
+                             TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
    on E:Exception do
     begin
-     Self.TrakceCallbackErr(Self, nil);
+     Self.TrakceCallbackErr(Self, cbErr);
      AppEvents.LogException(E, 'THV.EmergencyStop');
     end;
  end;
@@ -1333,39 +1351,31 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THV.TrakceCallbackOk(Sender:TObject; data:Pointer);
-var cb: ^TCB;
 begin
- if (data <> nil) then
-  begin
-   cb := data;
-   if (Assigned(cb.callback)) then
-     cb.callback(Self, cb.data);
-   if (Assigned(cb.other)) then
-     FreeMem(cb.other);
-   FreeMem(cb);
-  end;
-
+ Self.TrakceCallbackCallEv(data);
  if (not Self.stav.trakceError) then Exit();
  Self.stav.trakceError := false;
  Self.changed := true;
 end;
 
 procedure THV.TrakceCallbackErr(Sender:TObject; data:Pointer);
-var cb: ^TCB;
 begin
- if (data <> nil) then
+ Self.TrakceCallbackCallEv(data);
+ if (Self.stav.trakceError) then Exit();
+ Self.stav.trakceError := true;
+ Self.changed := true;
+end;
+
+procedure THV.TrakceCallbackCallEv(cb:PTCb);
+begin
+ if (cb <> nil) then
   begin
-   cb := data;
    if (Assigned(cb.callback)) then
      cb.callback(Self, cb.data);
    if (Assigned(cb.other)) then
      FreeMem(cb.other);
    FreeMem(cb);
   end;
-
- if (Self.stav.trakceError) then Exit();
- Self.stav.trakceError := true;
- Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
