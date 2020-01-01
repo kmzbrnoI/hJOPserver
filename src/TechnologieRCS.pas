@@ -7,9 +7,7 @@
  touto sbernici ale muze byt klidne i XpressNET.
 
  Vsechny ostatni casti programu by mely volat metody tridy TRCS, ktera interaguje
- s RCS. Trida TRCS v sobe skryva interakci s TCSIFace. Trida TRCS pomerne <= TODO: tohle neni pravda
- intenzivne interaguje s dalsimi technologickymi prvku hJOPserveru -- je tedy
- nedilnou soucasti serveru.
+ s RCS. Trida TRCS v sobe skryva interakci s TCSIFace.
 
  Pricip:
   - na zacatku vytvorime tridy pro vsechny existujici moduly RCS

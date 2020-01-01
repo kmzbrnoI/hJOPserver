@@ -349,29 +349,28 @@ begin
  else if (parsed[3] = 'F') then
   begin
    data := TStringList.Create();
-   ExtractStrings(['-'], [], PChar(parsed[4]), data);
-   left := StrToInt(data[0]);
-   if (data.Count > 1) then
-    right := StrToInt(data[1])
-   else
-    right := left;
-   data.Free();
+   try
+     ExtractStrings(['-'], [], PChar(parsed[4]), data);
+     left := StrToInt(data[0]);
+     if (data.Count > 1) then
+      right := StrToInt(data[1])
+     else
+      right := left;
+   finally
+     data.Free();
+   end;
 
    Func := HV.slotFunkce;
    for i := left to right do
      Func[i] := PrevodySoustav.StrToBool(parsed[5][i-left+1]);
+   HV.stav.funkce := Func;
 
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.adresa;
    TLokResponseData(LokResponseData^).conn := Sender;
-{   TrkSystem.callback_ok  := TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData); TODO
-   TrkSystem.callback_err := TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData);
-
-   try
-     TrkSystem.LokSetFunc(Sender, HV, Func);
-   except
-     Self.PanelLOKResponseErr(Self, LokResponseData);
-   end;                          }
+   HV.StavFunctionsToSlotFunctions(TTrakce.Callback(PanelLOKResponseOK, LokResponseData),
+                                   TTrakce.Callback(PanelLOKResponseErr, LokResponseData),
+                                   Sender);
   end
 
  else if (parsed[3] = 'STOP') then

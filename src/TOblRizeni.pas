@@ -285,7 +285,7 @@ uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokNav, fMain, Booster,
      TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
      Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User, TCPORsRef,
      fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava,
-     TBlokSouctovaHlaska, predvidanyOdjezd, changeEvent;
+     TBlokSouctovaHlaska, predvidanyOdjezd, changeEvent, TechnologieTrakce;
 
 constructor TOR.Create(index:Integer);
 begin
@@ -1538,19 +1538,17 @@ begin
    HVDb[addr].UpdateFromPanelString(str);
 
    if ((HVDb[addr].acquired) and (not HVDb[addr].stolen)) then
-     begin
-//     TrkSystem.LokSetFunc(Self, HVDb[addr], HVDb[addr].Stav.funkce); TODO
-    end;
+     HVDb[addr].StavFunctionsToSlotFunctions(TTrakce.Callback(), TTrakce.Callback());
  except
    on e:Exception do
     begin
-     ORTCPServer.SendInfoMsg(Sender, e.Message);
+     ORTCPServer.BottomError(Sender, e.Message, Self.ShortName, 'TRAKCE');
      if (Assigned(data)) then data.Free();
      Exit();
     end;
  end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' aktualizováno');
+ ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(Integer(Data))+' aktualizováno');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
