@@ -267,6 +267,7 @@ type
     MI_Trk_Libs: TMenuItem;
     MI_Trk_Update: TMenuItem;
     A_Trk_Lib_Cfg: TAction;
+    A_Turnoff_Functions: TAction;
     procedure Timer1Timer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -408,6 +409,7 @@ type
     procedure CHB_rcslogClick(Sender: TObject);
     procedure A_Trk_Lib_CfgExecute(Sender: TObject);
     procedure MI_Trk_UpdateClick(Sender: TObject);
+    procedure A_Turnoff_FunctionsExecute(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -437,7 +439,6 @@ type
     procedure DisableRemoveButtons();
     procedure UpdateACButtons();
     procedure SetCallMethod(Method:TNotifyEvent);
-    procedure OnSoundDisabled(Sender:TObject);
     procedure CreateCfgDirs();
     procedure UpdateSystemButtons();
     procedure CheckNasobicWidth();
@@ -474,6 +475,7 @@ type
     procedure OnTrkAllReleased(Sender:TObject);
     procedure OnTrkLocoAcquired(Sender:TObject);
     procedure OnTrkLocoReleased(Sender:TObject);
+    procedure OnTrkAllFunctionTurnedOff(Sender:TObject);
 
   end;//public
 
@@ -1453,6 +1455,20 @@ begin
   end;//else state
 end;
 
+procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);
+begin
+ Self.LogStatus('Vypínám zvuky hnacích vozidel...');
+ Application.ProcessMessages();
+ TrakceI.TurnOffFunctions(Self.OnTrkAllFunctionTurnedOff);
+end;
+
+procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender:TObject);
+begin
+ Self.LogStatus('Zvuky všech hnacích vozidel vypnuty');
+ Application.ProcessMessages();
+ Self.A_Locos_ReleaseExecute(Self);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // TRAKCE END
 ////////////////////////////////////////////////////////////////////////////////
@@ -1683,7 +1699,6 @@ begin
          ORTCPServer.Stop();
          try
            TrakceI.EmergencyStop();
-           TrakceI.FastResetLocos();
            TrakceI.Disconnect();
          except
 
@@ -1723,7 +1738,6 @@ begin
      ORTCPServer.Stop();
      try
        TrakceI.EmergencyStop();
-       TrakceI.FastResetLocos();
        TrakceI.Disconnect();
      except
 
@@ -3247,13 +3261,6 @@ begin
      LI.SubItems.Add('Kontrola stavu návěstidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+
                      '; navest:'+IntToStr(AC.kroky[i].Params[1]));
   end;//for i
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Main.OnSoundDisabled(Sender:TObject);
-begin
- Self.A_Locos_ReleaseExecute(Self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

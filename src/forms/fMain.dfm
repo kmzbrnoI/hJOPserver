@@ -9039,6 +9039,10 @@ object F_Main: TF_Main
       Caption = 'Nastaven'#237
       OnExecute = A_Trk_Lib_CfgExecute
     end
+    object A_Turnoff_Functions: TAction
+      Caption = 'Vypnout funkce p'#345'i vyp'#237'n'#225'n'#237
+      OnExecute = A_Turnoff_FunctionsExecute
+    end
   end
   object PM_HV: TPopupMenu
     OnPopup = PM_HVPopup

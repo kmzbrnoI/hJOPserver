@@ -153,7 +153,7 @@ type
 //     procedure AllPrevzato();                                                   // je volana, pokud jsou vsechny loko prevzaty (primarni vyuziti = interakce s GUI)
 //     procedure AllOdhlaseno();                                                  // je volana, pokud jsou vsechny loko odhlaseny (primarni vyuziti = interakce s GUI)
 
-     procedure TurnOffFunctions_cmdOK(Sender:TObject; Data:Pointer);            // OK callback pro prikaz TurnOff
+     procedure TurnedOffFunction(Sender:TObject; Data:Pointer);
 
      // eventy spojene se zapisem jednotlivych POM:
      procedure POMCvWroteOK(Sender:TObject; Data:Pointer);
@@ -212,8 +212,6 @@ type
 
      procedure LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
-
-     procedure FastResetLocos();
 
      procedure TurnOffFunctions(callback:TNotifyEvent);
      procedure Update();
@@ -316,6 +314,8 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+// Logging
+////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.Log(logLevel:TTrkLogLevel; msg:string);
 var LV_Log:TListItem;
@@ -364,6 +364,26 @@ var LV_Log:TListItem;
    end;
 end;
 
+procedure TTrakce.SetLoglevelFile(ll:TTrkLogLevel);
+begin
+ Self.mLogLevelFile := ll;
+ Log(llCommands, 'NEW loglevel_file = '+LogLevelToString(ll));
+
+ if ((ll > llNo) and (not DirectoryExists(_LOG_PATH))) then
+   if (not SysUtils.ForceDirectories(ExpandFileName(_LOG_PATH))) then
+     Log(llErrors, 'Nelze vytvořit složku '+_LOG_PATH);
+end;
+
+procedure TTrakce.SetLoglevelTable(ll:TTrkLogLevel);
+begin
+ Self.mLogLevelTable := ll;
+ Log(llCommands, 'NEW loglevel_table = '+LogLevelToString(ll));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Trakce events
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TTrakce.TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
 begin
  Self.Log(lvl, msg);
@@ -380,6 +400,8 @@ begin
    HVDb[addr].TrakceStolen();
 end;
 
+////////////////////////////////////////////////////////////////////////////////
+// Load/save
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.LoadFromFile(ini:TMemIniFile);
@@ -475,6 +497,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Speed table
+////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.LoadSpeedTable(filename:string;var LVRych:TListView);
 var i, j:Integer;
@@ -578,183 +601,50 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-{procedure TTrakce.AcquireAllLocos();
-var i:Integer;
-    data:Pointer;
-    k_prevzeti:Integer;
-begin}
-{ k_prevzeti := 0;
- for i := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[i] = nil) then continue;
-   if ((HVDb[i].Slot.Prevzato) and (HVDb[i].Slot.pom = pc)) then continue;
-   if (HVDb[i].Stav.souprava > -1) then Inc(k_prevzeti);
-  end;
-
- F_Main.G_Loko_Prevzato.MaxValue  := k_prevzeti;
- F_Main.G_Loko_Prevzato.Progress  := 0;
- F_Main.G_Loko_Prevzato.ForeColor := clBlue;
-
- F_Main.G_Loko_Prevzato.MaxValue := 1;
- F_Main.G_Loko_Prevzato.Progress := 1;
-
-procedure TTrakce.ReleaseAllLocos();
-var i:Integer;
-    data:Pointer;
-    k_odhlaseni:Integer;
-begin}
-{ k_odhlaseni := 0;
- for i := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[i] = nil) then continue;
-   if (HVDb[i].Slot.Prevzato) then Inc(k_odhlaseni);
-  end;
-
- F_Main.G_Loko_Prevzato.MaxValue  := k_odhlaseni;
- F_Main.G_Loko_Prevzato.Progress  := F_Main.G_Loko_Prevzato.MaxValue;
- F_Main.G_Loko_Prevzato.ForeColor := clBlue;
-
- F_Main.LogStatus('Loko: žádné loko k odhlášení');
- F_Main.G_Loko_Prevzato.MaxValue := 1;
- F_Main.G_Loko_Prevzato.Progress := 0;
- Self.AllOdhlaseno(); }
-
+// TurnOffFunctions
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.FastResetLocos();
-var i:Integer;
-begin
- for i := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[i] = nil) then continue;
-   if (HVDb[i].acquired) then
-    begin
-     HVDb[i].stav.acquired := false;
-     HVDb[i].stav.pom := TPomStatus.released;
-    end;
-  end;
-{ Self.AllOdhlaseno(); }
-end;
-
-procedure TTrakce.SetLoglevelFile(ll:TTrkLogLevel);
-begin
- Self.mLogLevelFile := ll;
- Log(llCommands, 'NEW loglevel_file = '+LogLevelToString(ll));
-
- if ((ll > llNo) and (not DirectoryExists(_LOG_PATH))) then
-   if (not SysUtils.ForceDirectories(ExpandFileName(_LOG_PATH))) then
-     Log(llErrors, 'Nelze vytvořit složku '+_LOG_PATH);
-end;
-
-procedure TTrakce.SetLoglevelTable(ll:TTrkLogLevel);
-begin
- Self.mLogLevelTable := ll;
- Log(llCommands, 'NEW loglevel_table = '+LogLevelToString(ll));
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-// tato funkce je volana pri vypnuti systemu / vypne u vsech hnacich vozidel zvuk
-// zvuk si ale zapamatuje jako zaply pro pristi nabeh systemu
+// This function is called when hJOPserver is turning systems off
+// It stops sound on all locos, howveer sound remaing saved as 'on' so it is
+// automatically turned on on the next start.
 procedure TTrakce.TurnOffFunctions(callback:TNotifyEvent);
-var i, j:Integer;
-    func:Integer;
-    newfuncs:TFunkce;
-    addr:Pointer;
 begin
- if (Assigned(Self.turnoff_callback)) then Exit();
  Self.turnoff_callback := callback;
-
- F_Main.LogStatus('Vypínám zvuky hnacích vozidel...');
- Application.ProcessMessages();
-
- for i := 0 to _MAX_ADDR-1 do
-  begin
-   if ((HVDb[i] <> nil) and (HVDb[i].acquired) and (not HVDb[i].stolen)) then
-    begin
-     func := -1;
-     for j := 0 to _HV_FUNC_MAX do
-      if ((HVDb[i].Data.funcVyznam[j] = 'zvuk') and (HVDb[i].slotFunkce[j])) then
-       begin
-        func := j;
-        break;
-       end;
-     if (func = -1) then continue;
-
-     GetMem(addr, 3);
-     Integer(addr^) := i;
-
-     newfuncs := HVDb[i].Stav.funkce;
-     newfuncs[func] := false;
-
-{     Self.callback_err := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
-     Self.callback_ok  := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, addr);
-
-     try
-       Self.LokSetFunc(Self, HVDb[i], newfuncs);
-       HVDb[i].Stav.funkce[func] := true;
-     except
-       Self.TurnOffFunctions_cmdOK(Self, addr);
-     end; }
-
-     Exit();
-    end;
-  end;//for i
-
- // no loco
- if Assigned(Self.turnoff_callback) then
-  begin
-   Self.turnoff_callback(Self);
-   Self.turnoff_callback := nil;
-  end;
+ Self.TurnedOffFunction(Self, Pointer(0));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.TurnOffFunctions_cmdOK(Sender:TObject; Data:Pointer);
-var i, j:Integer;
-    func:Integer;
-    newfuncs:TFunkce;
+procedure TTrakce.TurnedOffFunction(Sender:TObject; Data:Pointer);
+var addr: Word;
 begin
- for i := Integer(data^)+1 to _MAX_ADDR-1 do
+ addr := Word(Data);
+
+ if (not Self.ConnectedSafe()) then
+   Exit();
+
+ while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired) or
+        (not HVDb[addr].funcDict.ContainsKey('zvuk')) or
+        (HVDb[addr].slotFunkce[HVDb[addr].funcDict['zvuk']] = false))) do
+   Inc(addr);
+
+ if (addr = _MAX_ADDR) then
   begin
-   if ((HVDb[i] <> nil) and (HVDb[i].acquired) and (not HVDb[i].stolen)) then
-    begin
-     func := -1;
-     for j := 0 to _HV_FUNC_MAX do
-      if ((HVDb[i].Data.funcVyznam[j] = 'zvuk') and (HVDb[i].slotFunkce[j])) then
-       begin
-        func := j;
-        break;
-       end;
-     if (func = -1) then continue;
-
-     Integer(data^) := i;
-
-     newfuncs := HVDb[i].Stav.funkce;
-     newfuncs[func] := false;
-
-{     Self.callback_err := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, data);
-     Self.callback_ok  := Trakce.GenerateCallback(Self.TurnOffFunctions_cmdOK, data);
-
-     Self.LokSetFunc(Self, HVDb[i], newfuncs);
-     HVDb[i].Stav.funkce[func] := true; }
-
-     Exit();
-    end;
-  end;//for i
-
- // no further loco
- F_Main.LogStatus('Zvuky všech hnacích vozidel vypnuty');
- Application.ProcessMessages();
-
- FreeMem(data);
- if Assigned(Self.turnoff_callback) then
-  begin
-   Self.turnoff_callback(Self);
+   if (Assigned(Self.turnoff_callback)) then
+     Self.turnoff_callback(Self);
    Self.turnoff_callback := nil;
+   Exit();
   end;
+
+ data := Pointer(addr+1);
+ try
+   HVDb[addr].SetSingleFunc(HVDb[addr].funcDict['zvuk'], false,
+                            TTrakce.Callback(Self.TurnedOffFunction, data),
+                            TTrakce.Callback(Self.TurnedOffFunction, data));
+   HVDb[addr].Stav.funkce[HVDb[addr].funcDict['zvuk']] := true;
+ except
+   Self.TurnedOffFunction(Self, data);
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

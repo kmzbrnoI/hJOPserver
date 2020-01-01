@@ -278,7 +278,7 @@ var iA:integer;
 begin
  if ((SystemData.Status = stopping) and (not Self.openned)) then
   begin
-   TrakceI.TurnOffFunctions(F_Main.OnSoundDisabled);
+   F_Main.A_Turnoff_FunctionsExecute(Self);
    Exit();
   end;
 
@@ -316,7 +316,7 @@ begin
  UDPdisc.SendDiscover();
 
  if (SystemData.Status = stopping) then
-   TrakceI.TurnOffFunctions(F_Main.OnSoundDisabled);
+   F_Main.A_Turnoff_FunctionsExecute(Self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
