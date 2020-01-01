@@ -40,7 +40,7 @@
 
  Prebirani lokomotivy:
   1) Zavolat locoAcquire do Trakce (zjisti vsechny informace o lokomotive)
-  2) Nastavit spravny smer loko (vzhledem k souprave)
+  2) Nastavit spravny smer loko a rychlost loko (vzhledem k souprave nebo aktualni)
   3) Nastavit funkce na pzadovane hodnoty
   4) Naprogramovat POM
   Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
@@ -1227,13 +1227,13 @@ var dirOld:Boolean;
     stepsOld:Byte;
     cbOk, cbErr: PTCB;
 begin
- if ((Self.direction = direction) and (Self.speedStep = speedStep)) then
+ if ((Self.direction = direction) and (Self.speedStep = speedStep) and (not Self.acquiring)) then
   begin
    if (Assigned(ok.callback)) then
      ok.callback(Self, ok.data);
    Exit();
   end;
- if (Self.stolen) then
+ if ((Self.stolen) and (not Self.acquiring)) then
   begin
    writelog('LOKO '+Self.nazev+' ukradena, nenastavuji rychlost', WR_MESSAGE);
    if (Assigned(err.callback)) then
@@ -1286,7 +1286,7 @@ begin
      ok.callback(Self, ok.data);
    Exit();
   end;
- if (Self.stolen) then
+ if ((Self.stolen) and (not Self.acquiring)) then
   begin
    writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
@@ -1332,7 +1332,7 @@ var i:Integer;
     funcMask:Cardinal;
     funcState:Cardinal;
 begin
- if (Self.stolen) then
+ if ((Self.stolen) and (not Self.acquiring)) then
   begin
    writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
@@ -1503,6 +1503,7 @@ end;
 
 procedure THV.TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
 var direction:Boolean;
+    speedStep:Integer;
 begin
  Self.slot := LocoInfo;
  Self.changed := true;
@@ -1514,27 +1515,25 @@ begin
   begin
    // souprava ma zadany prave jeden smer
    direction := ((Soupravy[Self.souprava].smer = THVStanoviste.sudy) xor (Self.stav.StanovisteA = THVStanoviste.sudy));
-   if ((direction = Self.direction) and (Self.speedStep = 0)) then
-    begin
-     // smer ok
-     Self.TrakceAcquiredDirection(Sender, nil);
-    end else begin
-     // smer nok -> aktualizovat smer
-     try
-       Self.SetDirection(direction,
-                         TTrakce.Callback(Self.TrakceAcquiredDirection),
-                         TTrakce.Callback(Self.TrakceAcquiredErr));
-     except
-       Self.TrakceAcquiredErr(Self, nil);
-     end;
-    end;
-  end else
-   Self.TrakceAcquiredDirection(Sender, nil);
+   speedStep := TrakceI.SpeedStep(Soupravy[Self.souprava].rychlost);
+  end else begin
+   direction := Self.slot.direction;
+   if (Self.stolen) then
+     speedStep := Self.slot.speed
+   else
+     speedStep := 0;
+  end;
+
+ // Vzdy nastavit smer, protoze tim prevezmeme loko z rizeni jineho ovladace
+ Self.SetSpeedStepDir(speedStep, direction,
+                      TTrakce.Callback(Self.TrakceAcquiredDirection),
+                      TTrakce.Callback(Self.TrakceAcquiredErr));
 end;
 
 procedure THV.TrakceAcquiredDirection(Sender: TObject; data: Pointer);
 begin
  // Set functions as we wish
+ Self.stav.stolen := false;
  Self.StavFunctionsToSlotFunctions(TTrakce.Callback(Self.TrakceAcquiredFunctionsSet),
                                    TTrakce.Callback(Self.TrakceAcquiredErr));
 end;
