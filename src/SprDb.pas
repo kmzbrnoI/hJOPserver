@@ -172,7 +172,6 @@ end;
 
 procedure TSprDb.AddSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
 var i:Integer;
-    nav:TBlk;
 begin
  i := Self.GetEmptySpaceForSpr();
 

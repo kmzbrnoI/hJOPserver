@@ -958,9 +958,10 @@ begin
    // kontrola smeru soupravy
    if (Self.fproperties.TypCesty = TJCType.vlak) then
     begin
-     if (((TBlkNav(Blk2).Smer = THVStanoviste.lichy) and (not spr.sdata.smer_L)) or
-         ((TBlkNav(Blk2).Smer = THVStanoviste.sudy) and (not spr.sdata.smer_S))) then
-       bariery.Add(Self.JCBariera(_JCB_SPR_SMER, nil, spr.index));
+     if (spr.sdata.smer_L or spr.sdata.smer_S) then
+       if (((TBlkNav(Blk2).Smer = THVStanoviste.lichy) and (not spr.sdata.smer_L)) or
+           ((TBlkNav(Blk2).Smer = THVStanoviste.sudy) and (not spr.sdata.smer_S))) then
+         bariery.Add(Self.JCBariera(_JCB_SPR_SMER, nil, spr.index));
     end;
 
   end;
