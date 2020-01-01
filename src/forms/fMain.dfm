@@ -4254,7 +4254,7 @@ object F_Main: TF_Main
         Align = alClient
         Columns = <
           item
-            Caption = 'Index'
+            Caption = '#'
             Width = 40
           end
           item
@@ -4417,7 +4417,7 @@ object F_Main: TF_Main
         Align = alClient
         Columns = <
           item
-            Caption = 'Index'
+            Caption = '#'
             Width = 40
           end
           item
@@ -5097,7 +5097,7 @@ object F_Main: TF_Main
         Align = alClient
         Columns = <
           item
-            Caption = 'Index'
+            Caption = '#'
             Width = 40
           end
           item
