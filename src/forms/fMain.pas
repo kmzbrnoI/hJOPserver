@@ -1328,6 +1328,7 @@ begin
  Self.LogStatus('Centrála: připojování...');
  Self.B_HV_Add.Enabled := false;
  Self.B_HV_Delete.Enabled := false;
+ Self.MI_Trk_Libs.Enabled := false;
  Application.ProcessMessages();
 end;
 
@@ -1371,6 +1372,7 @@ begin
  Self.B_HV_Add.Enabled := true;
  Self.S_locos_acquired.Brush.Color := clRed;
  Self.G_locos_acquired.Progress := 0;
+ Self.MI_Trk_Libs.Enabled := true;
  Self.UpdateSystemButtons();
 
  RegCollector.CloseAll();
