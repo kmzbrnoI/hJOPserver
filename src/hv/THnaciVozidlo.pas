@@ -695,10 +695,6 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|-|stanovisteA|funkce|rychlost_stupne|
-//   rychlost_kmph|smer|orid|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
-//   {vyznam-F0;vyznam-F1;...}|typy_funkci
-// na miste znaku - obvykle byva souprava, pri nacitani hnaciho vozidla tuto polozku nemenime -> je tam pomlcka
 procedure THV.UpdateFromPanelString(data:string);
 var str, str2, str3:TStrings;
     i:Integer;
@@ -1036,7 +1032,7 @@ var speed, dir, i:Integer;
 begin
  dir := 0;
 
- if ((not Self.acquired) or (Self.stolen)) then
+ if (not Self.acquired) then
   begin
    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Loko neprevzato');
    Exit();
@@ -1237,6 +1233,13 @@ begin
      ok.callback(Self, ok.data);
    Exit();
   end;
+ if (Self.stolen) then
+  begin
+   writelog('LOKO '+Self.nazev+' ukradena, nenastavuji rychlost', WR_MESSAGE);
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+   Exit();
+  end;
  if ((not Self.acquired) and (not Self.acquiring)) then
   begin
    if (Assigned(err.callback)) then
@@ -1249,14 +1252,6 @@ begin
 
  Self.slot.direction := direction;
  Self.slot.speed := speedStep;
-
- if (Self.stolen) then
-  begin
-   writelog('LOKO '+Self.nazev+' ukradena, nenastavuji rychlost', WR_MESSAGE);
-   if (Assigned(err.callback)) then
-     err.callback(Self, err.data);
-   Exit();
-  end;
 
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
  TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': rychlostní stupeň: ' + IntToStr(speedStep) +
@@ -1291,16 +1286,15 @@ begin
      ok.callback(Self, ok.data);
    Exit();
   end;
- if ((not Self.acquired) and (not Self.acquiring)) then
+ if (Self.stolen) then
   begin
+   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
   end;
-
- if (Self.stolen) then
+ if ((not Self.acquired) and (not Self.acquiring)) then
   begin
-   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
@@ -1338,16 +1332,15 @@ var i:Integer;
     funcMask:Cardinal;
     funcState:Cardinal;
 begin
- if ((not Self.acquired) and (not Self.acquiring)) then
+ if (Self.stolen) then
   begin
+   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
   end;
-
- if (Self.stolen) then
+ if ((not Self.acquired) and (not Self.acquiring)) then
   begin
-   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
@@ -1620,9 +1613,9 @@ end;
 
 procedure THV.TrakceReleasedPOM(Sender:TObject; data:Pointer);
 begin
- // POM done (ww do not care is successfully or unsuccessfully)
+ // POM done (we do not care is successfully or unsuccessfully)
  try
-  TrakceI.LocoRelease(Self.adresa, TTrakce.Callback(Self.TrakceReleased));
+   TrakceI.LocoRelease(Self.adresa, TTrakce.Callback(Self.TrakceReleased));
  except
    Self.TrakceReleased(Self, nil);
  end;
@@ -1645,7 +1638,7 @@ procedure THV.SetPom(pom:TPomStatus; ok: TCb; err: TCb);
 var toProgram:TList<THVPomCV>;
 begin
  Self.pomOk := ok;
- Self.pomErr := pomErr;
+ Self.pomErr := err;
  Self.pomTarget := pom;
  Self.stav.pom := TPomStatus.progr;
  Self.changed := true;

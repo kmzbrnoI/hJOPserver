@@ -168,6 +168,10 @@ type
 
       procedure SetIndex(newIndex:Integer);
 
+      procedure PanelSprChangeOk(Sender:TObject; Data:Pointer);
+      procedure PanelSprChangeErr(Sender:TObject; Data:Pointer);
+      procedure PanelSprCreateErr(Sender:TObject; Data:Pointer);
+
     public
 
       stack:TORStack;                                                           // zasobnik povelu
@@ -876,7 +880,6 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;hnaci vozidla
 procedure TOR.PanelSprChange(Sender:TIdContext; spr:TStrings);
 var usek:TBlkUsek;
     souprava:TSouprava;
@@ -896,9 +899,11 @@ begin
 
  try
   if (TTCPORsRef(Sender.Data).spr_new_usek_index > -1) then
-   // nova souprava
-   Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self,
-     (TTCPORsRef(Sender.Data).spr_new_usek_index))
+    // nova souprava
+    Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self,
+                             (TTCPORsRef(Sender.Data).spr_new_usek_index),
+                             TTrakce.Callback(Self.PanelSprChangeOk, Sender),
+                             TTrakce.Callback(Self.PanelSprCreateErr, Sender))
   else begin
 
    // editace soupravy
@@ -917,18 +922,36 @@ begin
      Exit();
     end;
 
-   TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, usek, Self)
+   TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, usek, Self,
+                                                       TTrakce.Callback(Self.PanelSprChangeOk, Sender),
+                                                       TTrakce.Callback(Self.PanelSprChangeErr, Sender))
   end;
  except
   on E: Exception do
-   begin
     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;'+E.Message);
-    Exit();
-   end;
  end;
+end;
 
- TTCPORsRef(Sender.Data).ResetSpr();
- ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ACK;');
+procedure TOR.PanelSprChangeOk(Sender:TObject; Data:Pointer);
+var tcpSender: TIdContext;
+begin
+ tcpSender := Data;
+ TTCPORsRef(tcpSender.data).ResetSpr();
+ ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ACK;');
+end;
+
+procedure TOR.PanelSprChangeErr(Sender:TObject; Data:Pointer);
+var tcpSender: TIdContext;
+begin
+ tcpSender := Data;
+ ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ERR;Nepodařilo se převzít lokomotivy z centrály!');
+end;
+
+procedure TOR.PanelSprCreateErr(Sender:TObject; Data:Pointer);
+var tcpSender: TIdContext;
+begin
+ tcpSender := Data;
+ ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ERR;Souprava založena, ale nepodařilo se převízt lokomotivy z centrály!');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1537,7 +1560,7 @@ begin
 
    HVDb[addr].UpdateFromPanelString(str);
 
-   if ((HVDb[addr].acquired) and (not HVDb[addr].stolen)) then
+   if (HVDb[addr].acquired) then
      HVDb[addr].StavFunctionsToSlotFunctions(TTrakce.Callback(), TTrakce.Callback());
  except
    on e:Exception do

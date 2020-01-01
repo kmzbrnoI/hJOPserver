@@ -71,7 +71,7 @@ begin
      Self.UpdateLine(i);
      Self.LV.UpdateItems(i, i);
     end else begin
-     if ((Assigned(Soupravy.soupravy[i])) and (Soupravy.soupravy[i].changed)) then
+     if ((Assigned(Soupravy[i])) and (Soupravy[i].changed)) then
       begin
        Self.UpdateLine(i);
        Self.LV.UpdateItems(i, i);
@@ -89,7 +89,7 @@ var spr:TSoupravaData;
     i:Integer;
     str:string;
  begin
-  if (not Assigned(Soupravy.soupravy[line])) then
+  if (not Assigned(Soupravy[line])) then
    begin
     Self.LV.Items[line].Caption := '';
 
@@ -99,9 +99,9 @@ var spr:TSoupravaData;
     Exit();
    end;
 
-  Soupravy.soupravy[line].changed := false;
+  Soupravy[line].changed := false;
 
-  spr := Soupravy.soupravy[line].sdata;
+  spr := Soupravy[line].sdata;
 
   Self.LV.Items[line].Caption := IntToStr(line);
 

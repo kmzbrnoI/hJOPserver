@@ -4,7 +4,7 @@
 
 interface
 
-uses SysUtils, Souprava, IniFiles, Classes, Windows, Forms;
+uses SysUtils, Souprava, IniFiles, Classes, Windows, Forms, Trakce;
 
 const
   _MAX_SPR = 128;
@@ -19,6 +19,7 @@ type
 
       function GetCount():Integer;
       function GetItem(index:Integer):TSouprava;
+      function GetEmptySpaceForSpr():Integer;
 
    public
       soupravy:array [0.._MAX_SPR] of TSouprava;
@@ -29,7 +30,7 @@ type
       procedure LoadData(const filename:string);
       procedure SaveData(const filename:string);
 
-      procedure AddSprFromPanel(spr:TStrings; usek:TObject; OblR:TObject; sprUsekIndex:Integer);
+      procedure AddSprFromPanel(spr:TStrings; usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
       procedure RemoveSpr(index:Integer);
 
       function GetSprNameByIndex(index:Integer):string;
@@ -169,33 +170,27 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.AddSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; sprUsekIndex:Integer);
+procedure TSprDb.AddSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
 var i:Integer;
     nav:TBlk;
 begin
- for i := 0 to _MAX_SPR-1 do
-  if (Self.soupravy[i] = nil) then
+ i := Self.GetEmptySpaceForSpr();
+
+ try
+  Self.soupravy[i] := TSouprava.Create(spr, Usek, i, OblR, ok, err);
+  if (Assigned(Usek)) then          // toto musi byt tady, nikoliv v konstruktoru
    begin
-    try
-      Self.soupravy[i] := TSouprava.Create(spr, Usek, i, OblR);
-      if (Assigned(Usek)) then          // toto musi byt tady, nikoliv v konstruktoru
-       begin
-        (Usek as TBlkUsek).AddSouprava(sprUsekIndex, i);
-        (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
-        for nav in (Usek as TBlkUsek).NavJCRef do
-          (nav as TBlkNav).UpdateRychlostSpr(true);
-       end;
-      Exit();
-    except
-     on E: Exception do
-      begin
-       FreeAndNil(Self.soupravy[i]);
-       SprTableData.reload := true;
-       raise Exception.Create(E.Message);
-       Exit();
-      end;
-    end;
+    (Usek as TBlkUsek).AddSouprava(sprUsekIndex, i);
+    (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
    end;
+ except
+  on E: Exception do
+   begin
+    FreeAndNil(Self.soupravy[i]);
+    SprTableData.reload := true;
+    raise Exception.Create(E.Message);
+   end;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,6 +245,17 @@ begin
  for i := 0 to _MAX_SPR-1 do
   if (Self.soupravy[i] <> nil) then
     Self.soupravy[i].ClearPOdj();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TSprDb.GetEmptySpaceForSpr():Integer;
+var i:Integer;
+begin
+ for i := 0 to _MAX_SPR do
+   if (Self.soupravy[i] = nil) then
+     Exit(i);
+ raise Exception.Create('Založen maximální počet souprav!');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

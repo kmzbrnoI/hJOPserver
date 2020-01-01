@@ -1813,7 +1813,7 @@ begin
  if (Self.UsekStav.soupravy.Count < 1) then
    Result := -1
  else
-   Result := Self.UsekStav[0];
+   Result := Self.UsekStav.soupravy[0];
 end;
 
 function TBlkUsek.GetSoupravaS():Integer;
@@ -1821,7 +1821,7 @@ begin
  if (Self.UsekStav.soupravy.Count < 1) then
    Result := -1
  else
-   Result := Self.UsekStav[Self.UsekStav.soupravy.Count-1];
+   Result := Self.UsekStav.soupravy[Self.UsekStav.soupravy.Count-1];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

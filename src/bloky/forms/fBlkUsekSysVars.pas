@@ -130,7 +130,7 @@ procedure TF_BlkUsek_tech.B_SaveDataClick(Sender: TObject);
 procedure TF_BlkUsek_tech.B_SprAddClick(Sender: TObject);
 begin
  if ((Self.SE_SprAdd_Index.Value < 0) or (Self.SE_SprAdd_Index.Value >= _MAX_SPR) or
-     (Soupravy.soupravy[Self.SE_SprAdd_Index.Value] = nil)) then Exit();
+     (Soupravy[Self.SE_SprAdd_Index.Value] = nil)) then Exit();
  
  try
    Self.Blk.AddSoupravaS(Self.SE_SprAdd_Index.Value);
