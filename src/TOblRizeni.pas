@@ -1430,8 +1430,8 @@ begin
 
  Result := '{';
  for i := 0 to _MAX_SPR-1 do
-   if ((Assigned(Soupravy.soupravy[i])) and (Soupravy.soupravy[i].stanice = Self)) then
-    Result := Result + '[{' + Soupravy.soupravy[i].GetPanelString() + '}]';
+   if ((Assigned(Soupravy[i])) and (Soupravy[i].stanice = Self)) then
+    Result := Result + '[{' + Soupravy[i].GetPanelString() + '}]';
  Result := Result + '}';
 end;
 
@@ -1446,7 +1446,7 @@ begin
    Exit();
   end;
 
- if ((Soupravy.soupravy[spr_index] <> nil) and (Soupravy.soupravy[spr_index].stanice = Self)) then
+ if ((Soupravy[spr_index] <> nil) and (Soupravy[spr_index].stanice = Self)) then
   begin
    Soupravy.RemoveSpr(spr_index);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava smazána');
@@ -1788,11 +1788,11 @@ begin
       begin
        // vsechny soupravy na useku
        for j := 0 to (Blk as TBlkUsek).Soupravs.Count-1 do
-         for addr in Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[j]].HVs do
+         for addr in Soupravy[(Blk as TBlkUsek).Soupravs[j]].HVs do
            line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end else begin
        // konkretni souprava
-       for addr in Soupravy.soupravy[(Blk as TBlkUsek).Soupravs[spri]].HVs do
+       for addr in Soupravy[(Blk as TBlkUsek).Soupravs[spri]].HVs do
          line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end;
 

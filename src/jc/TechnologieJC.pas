@@ -935,7 +935,7 @@ begin
  if ((Blk as TBlkUsek).IsSouprava()) then
   begin
    flag := false;
-   spr := Soupravy.soupravy[Self.GetSoupravaIndex(Blk2, Blk)];
+   spr := Soupravy[Self.GetSoupravaIndex(Blk2, Blk)];
 
    // kontrola rucniho rizeni lokomotiv
    if (Self.fproperties.TypCesty = TJCType.vlak) then
@@ -1719,7 +1719,7 @@ var i,j:Integer;
       // nastavit front blok soupravy
       usek := navestidlo.UsekPred as TBlkUsek;
       if (usek.IsSouprava()) then
-        Soupravy.soupravy[Self.GetSoupravaIndex(Navestidlo, usek)].front := usek;
+        Soupravy[Self.GetSoupravaIndex(Navestidlo, usek)].front := usek;
 
       if (not usek.NavJCRef.Contains(Navestidlo)) then
         usek.NavJCRef.Add(Navestidlo);
@@ -2033,7 +2033,7 @@ var i,j:Integer;
             tuAdd := (trat.GetLastUsek(Self.data.TratSmer) as TBlkTU);
             trat.SprChangeOR(spri, Self.data.TratSmer);
             if (trat.ChangesSprDir()) then
-              Soupravy.soupravy[spri].ChangeSmer();
+              Soupravy[spri].ChangeSmer();
           end;
          end else begin
           if ((not lastUsek.IsSouprava()) and (trat.BP) and (trat.Smer = Self.data.TratSmer)) then
@@ -2554,7 +2554,7 @@ var UsekActual,UsekDalsi,Nav:TBlk;
 
   (UsekDalsi as TBlkUsek).zpomalovani_ready := true;
   (UsekDalsi as TBlkUsek).AddSoupravaL(spri);
-  Soupravy.soupravy[(UsekDalsi as TBlkUsek).Souprava].front := UsekDalsi;
+  Soupravy[(UsekDalsi as TBlkUsek).Souprava].front := UsekDalsi;
   (UsekDalsi as TBlkUsek).houk_ev_enabled := true;
   writelog('JC '+Self.nazev+': predana souprava '+Soupravy.GetSprNameByIndex((UsekDalsi as TBlkUsek).Souprava)+
       ' z bloku '+UsekActual.name+' do bloku '+UsekDalsi.name,WR_SPRPREDAT);
@@ -2570,16 +2570,16 @@ begin
    // kontrola zmeny vychozi a cilove stanice
    for oblr in blk.OblsRizeni do
     begin
-     if (oblr = Soupravy.soupravy[(Blk as TBlkUsek).Souprava].cilovaOR) then
+     if (oblr = Soupravy[(Blk as TBlkUsek).Souprava].cilovaOR) then
       begin
-       Soupravy.soupravy[(Blk as TBlkUsek).Souprava].InterChangeStanice(false);
+       Soupravy[(Blk as TBlkUsek).Souprava].InterChangeStanice(false);
        break;
       end;
     end;
 
-   Soupravy.soupravy[(Blk as TBlkUsek).Souprava].ChangeSmer();
+   Soupravy[(Blk as TBlkUsek).Souprava].ChangeSmer();
    writelog('Obsazen smyckovy usek '+Blk.name+ ' - menim smer loko v souprave '+
-      Soupravy.soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
+      Soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
   end;//if
 end;
 
@@ -3280,7 +3280,7 @@ begin
   _JCB_SPR_SMER : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Jízda proti směru soupravy');
-    Result[2] := GetUPOLine('Soprava ' + Soupravy.soupravy[Bariera.param].nazev);
+    Result[2] := GetUPOLine('Soprava ' + Soupravy[Bariera.param].nazev);
   end;
 
  else

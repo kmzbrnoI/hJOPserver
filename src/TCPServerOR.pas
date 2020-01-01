@@ -683,7 +683,7 @@ begin
  else if (parsed[1] = 'SPR-REMOVE') then
   begin
    i := Soupravy.GetSprIndexByName(parsed[2]);
-   if (i >= 0) then (Soupravy.soupravy[i].stanice as TOR).PanelRemoveSpr(AContext, i);
+   if (i >= 0) then (Soupravy[i].stanice as TOR).PanelRemoveSpr(AContext, i);
 
    tmp := '';
    for oblr in orRef.ORs do

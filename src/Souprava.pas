@@ -320,14 +320,14 @@ begin
    // zkontrolujeme, jestli nejaka souprava s timto cislem uz nahodou neexistuje
    for i := 0 to _MAX_SPR-1 do
     begin
-     if (soupravy.soupravy[i] = nil) then continue;
+     if (soupravy[i] = nil) then continue;
 
-     if ((Soupravy.soupravy[i].nazev = spr[0]) and (Soupravy.soupravy[i] <> Self)) then
+     if ((Soupravy[i].nazev = spr[0]) and (Soupravy[i] <> Self)) then
       begin
-       if (Soupravy.soupravy[i].stanice <> nil) then
-         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' již existuje v OŘ '+(Soupravy.soupravy[i].stanice as TOR).Name)
+       if (Soupravy[i].stanice <> nil) then
+         raise Exception.Create('Souprava '+Soupravy[i].nazev+' již existuje v OŘ '+(Soupravy[i].stanice as TOR).Name)
        else
-         raise Exception.Create('Souprava '+Soupravy.soupravy[i].nazev+' již existuje');
+         raise Exception.Create('Souprava '+Soupravy[i].nazev+' již existuje');
 
        Exit();
       end;

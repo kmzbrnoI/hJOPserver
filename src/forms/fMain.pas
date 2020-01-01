@@ -2123,9 +2123,9 @@ end;
 
 procedure TF_Main.B_lok_deleteClick(Sender: TObject);
 begin
- if (not Assigned(Soupravy.soupravy[Self.LV_Soupravy.ItemIndex])) then Exit();
+ if (not Assigned(Soupravy[Self.LV_Soupravy.ItemIndex])) then Exit();
 
- if (Application.MessageBox(PChar('Opravdu smazat soupravu '+Soupravy.soupravy[Self.LV_Soupravy.ItemIndex].nazev+'?'),
+ if (Application.MessageBox(PChar('Opravdu smazat soupravu '+Soupravy[Self.LV_Soupravy.ItemIndex].nazev+'?'),
                             '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   Soupravy.RemoveSpr(Self.LV_Soupravy.ItemIndex);
 end;
@@ -2858,7 +2858,7 @@ end;
 procedure TF_Main.LV_SoupravyDblClick(Sender: TObject);
 begin
  if (Self.LV_Soupravy.Selected <> nil) then
-  Soupravy.soupravy[Self.LV_Soupravy.ItemIndex].VezmiVlak();
+  Soupravy[Self.LV_Soupravy.ItemIndex].VezmiVlak();
 end;
 
 procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem;

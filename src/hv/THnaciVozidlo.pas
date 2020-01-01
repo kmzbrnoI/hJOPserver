@@ -817,7 +817,7 @@ procedure THV.UpdateRuc(send_remove:boolean = true);
 var spr:string;
 begin
  if (Self.Stav.souprava > -1) then
-  spr := Soupravy.soupravy[Self.Stav.souprava].nazev
+  spr := Soupravy[Self.Stav.souprava].nazev
  else
   spr := '-';
 

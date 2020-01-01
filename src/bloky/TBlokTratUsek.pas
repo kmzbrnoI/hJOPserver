@@ -501,17 +501,17 @@ begin
   begin
    // cekam na obsazeni IR
    if ((not Self.TUStav.zast_enabled) or (Self.TUStav.zast_passed) or
-      (Soupravy.soupravy[Self.Souprava].delka > Self.TUSettings.Zastavka.max_delka) or (Soupravy.soupravy[Self.Souprava].front <> self)) then Exit();
+      (Soupravy[Self.Souprava].delka > Self.TUSettings.Zastavka.max_delka) or (Soupravy[Self.Souprava].front <> self)) then Exit();
 
    // kontrola spravneho smeru
-   if (((Soupravy.soupravy[Self.Souprava].smer = THVSTanoviste.lichy) and (not Self.TUSettings.zastavka.ev_lichy.enabled)) or
-       ((Soupravy.soupravy[Self.Souprava].smer = THVSTanoviste.sudy) and (not Self.TUSettings.zastavka.ev_sudy.enabled))) then Exit();
+   if (((Soupravy[Self.Souprava].smer = THVSTanoviste.lichy) and (not Self.TUSettings.zastavka.ev_lichy.enabled)) or
+       ((Soupravy[Self.Souprava].smer = THVSTanoviste.sudy) and (not Self.TUSettings.zastavka.ev_sudy.enabled))) then Exit();
 
    // kontrola typu soupravy:
    found := false;
    for i := 0 to Self.TUSettings.Zastavka.soupravy.Count-1 do
     begin
-     if (Self.TUSettings.Zastavka.soupravy[i] = Soupravy.soupravy[Self.Souprava].typ) then
+     if (Self.TUSettings.Zastavka.soupravy[i] = Soupravy[Self.Souprava].typ) then
       begin
        found := true;
        break;
@@ -523,7 +523,7 @@ begin
    // zpomalovani pred zastavkou:
    if (Self.fTUStav.zast_zpom_ready) then
     begin
-     case (Soupravy.soupravy[Self.Souprava].smer) of
+     case (Soupravy[Self.Souprava].smer) of
       THVSTanoviste.lichy : begin
         if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
          begin
@@ -531,10 +531,10 @@ begin
             Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Register();
 
           if ((Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) and
-              (Soupravy.soupravy[Self.Souprava].chtenaRychlost > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
+              (Soupravy[Self.Souprava].chtenaRychlost > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
-            Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
+            Soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
             Self.fTUStav.zast_zpom_ready := false;
             Self.rychUpdate := false;
             Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
@@ -548,10 +548,10 @@ begin
           if (not Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.enabled) then
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Register();
 
-          if ((Soupravy.soupravy[Self.Souprava].chtenaRychlost > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
+          if ((Soupravy[Self.Souprava].chtenaRychlost > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
-            Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
+            Soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
             Self.fTUStav.zast_zpom_ready := false;
             Self.rychUpdate := false;
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Unregister();
@@ -563,7 +563,7 @@ begin
 
 
    // zastavovani v zastavce
-   case (Soupravy.soupravy[Self.Souprava].smer) of
+   case (Soupravy[Self.Souprava].smer) of
     THVSTanoviste.lichy : begin
       if (not Self.TUSettings.zastavka.ev_lichy.zastaveni.enabled) then
         Self.TUSettings.zastavka.ev_lichy.zastaveni.Register();
@@ -592,7 +592,7 @@ begin
 
    // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
    //  pokud se souprava rozjede, koncim zastavku
-   if (Soupravy.soupravy[Self.Souprava].chtenaRychlost <> 0) then
+   if (Soupravy[Self.Souprava].chtenaRychlost <> 0) then
     begin
      Self.fTUStav.zast_stopped := false;
      Self.Change();  // change je dulezite volat kvuli menu
@@ -604,7 +604,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 4, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 1;
-        Soupravy.soupravy[Self.Souprava].ToggleHouk('trubka vlakvedoucího');
+        Soupravy[Self.Souprava].ToggleHouk('trubka vlakvedoucího');
        end;
     end;
 
@@ -612,7 +612,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 2, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 2;
-        Soupravy.soupravy[Self.Souprava].ToggleHouk('zavření dveří');
+        Soupravy[Self.Souprava].ToggleHouk('zavření dveří');
        end;
     end;
    end;
@@ -620,7 +620,7 @@ begin
    // cekam na timeout na rozjeti vlaku
    if (Now > Self.TUStav.zast_run_time) then
     begin
-     Soupravy.soupravy[Self.Souprava].ToggleHouk('houkačka krátká');
+     Soupravy[Self.Souprava].ToggleHouk('houkačka krátká');
      Self.ZastRunTrain();
     end;
   end;
@@ -635,9 +635,9 @@ begin
  Self.fTUStav.zast_run_time := Now+Self.TUSettings.Zastavka.delay;
 
  try
-   Self.fTUStav.zast_rych := Soupravy.soupravy[Self.Souprava].rychlost;
-   Soupravy.soupravy[Self.Souprava].rychlost := 0;
-   Soupravy.soupravy[Self.Souprava].SetSpeedBuffer(@Self.fTUStav.zast_rych);
+   Self.fTUStav.zast_rych := Soupravy[Self.Souprava].rychlost;
+   Soupravy[Self.Souprava].rychlost := 0;
+   Soupravy[Self.Souprava].SetSpeedBuffer(@Self.fTUStav.zast_rych);
  except
 
  end;
@@ -652,8 +652,8 @@ begin
  Self.fTUStav.zast_sound_step := 0;
 
  try
-   Soupravy.soupravy[Self.Souprava].SetSpeedBuffer(nil);
-   Soupravy.soupravy[Self.Souprava].rychlost := Self.TUStav.zast_rych;
+   Soupravy[Self.Souprava].SetSpeedBuffer(nil);
+   Soupravy[Self.Souprava].rychlost := Self.TUStav.zast_rych;
  except
 
  end;
@@ -740,7 +740,7 @@ begin
      (Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
   begin
    // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
-   Soupravy.soupravy[Self.Souprava].ChangeSmer();
+   Soupravy[Self.Souprava].ChangeSmer();
   end;
 
  // kontrola zmeny OR trati, ve ktere jen jeden blok
@@ -769,7 +769,7 @@ begin
   begin
    // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
    // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
-   Soupravy.soupravy[old_spr].SetSpeedBuffer(nil);
+   Soupravy[old_spr].SetSpeedBuffer(nil);
    Self.fTUStav.zast_stopped := false;
   end;
 
@@ -958,7 +958,7 @@ begin
    if ((not Self.IsSouprava()) and (Self.prevTU.IsSouprava())) then
     begin
      // mezi useky je potreba predat soupravu
-     Soupravy.soupravy[Self.prevTU.Souprava].front := Self;
+     Soupravy[Self.prevTU.Souprava].front := Self;
      Self.AddSoupravaL(Self.prevTU.Souprava);
      Self.zpomalovani_ready := true;
      Self.houk_ev_enabled := true;
@@ -1189,9 +1189,9 @@ begin
    if (Self.fTUStav.sprRychUpdateIter = 0) then
     begin
      if ((Self.IsSouprava()) and (Self.zpomalovani_ready) and
-        (Soupravy.soupravy[Self.Souprava].chtenaRychlost > 0) and
-        (Soupravy.soupravy[Self.Souprava].chtenaRychlost <> Self.TUSettings.rychlost)) then
-       Soupravy.soupravy[Self.Souprava].rychlost := Self.TUSettings.rychlost;
+        (Soupravy[Self.Souprava].chtenaRychlost > 0) and
+        (Soupravy[Self.Souprava].chtenaRychlost <> Self.TUSettings.rychlost)) then
+       Soupravy[Self.Souprava].rychlost := Self.TUSettings.rychlost;
     end;
   end;
 end;
