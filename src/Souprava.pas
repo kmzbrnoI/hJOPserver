@@ -437,6 +437,15 @@ var acq: ^TSoupravaAcquire;
 begin
  acq := Data;
 
+ if (not Self.acquiring) then
+  begin
+   Self.AllLocoAcquiredOk(acq^.toAcquire);
+   if (Assigned(acq^.err.callback)) then
+     acq^.err.callback(Self, acq^.err.data);
+   FreeMem(acq);
+   Exit();
+  end;
+
  if (acq^.nextAcquire >= acq^.toAcquire.Count) then
   begin
    Self.AllLocoAcquiredOk(acq^.toAcquire);
@@ -463,6 +472,7 @@ procedure TSouprava.LocoAcquiredErr(Sender: TObject; Data: Pointer);
 var acq: ^TSoupravaAcquire;
 begin
  acq := Data;
+ Self.fAcquiring := false;
  if (Assigned(acq^.err.callback)) then
    acq^.err.callback(Self, acq^.err.data);
  acq^.toAcquire.Free();
@@ -472,6 +482,7 @@ end;
 procedure TSouprava.AllLocoAcquiredOk(newLoks: TList<Integer>);
 var nav:TBlk;
 begin
+ Self.fAcquiring := false;
  Self.UvolV(Self.HVs, newLoks);
  Self.data.HVs.Free();
  Self.data.HVs := newLoks;

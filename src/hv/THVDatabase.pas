@@ -543,7 +543,12 @@ begin
    Self.eLocoAcquired(Self);
 
  if (not Self.mAcquiring) then
+  begin
+   Self.mAcquiring := false;
+   if (Assigned(Self.eAcquiredErr)) then
+     Self.eAcquiredErr(Self);
    Exit();
+  end;
 
  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].ShouldAcquire()))) do
    Inc(addr);
@@ -592,7 +597,12 @@ begin
    Self.eLocoReleased(Self);
 
  if (not Self.mReleasing) then
+  begin
+   Self.mReleasing := false;
+   if (Assigned(Self.eReleasedOk)) then
+     Self.eReleasedOk(Self);
    Exit();
+  end;
 
  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired))) do
    Inc(addr);

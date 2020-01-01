@@ -546,7 +546,12 @@ begin
  addr := Word(Data);
 
  if (not Self.ConnectedSafe()) then
+  begin
+   if (Assigned(Self.turnoff_callback)) then
+     Self.turnoff_callback(Self);
+   Self.turnoff_callback := nil;
    Exit();
+  end;
 
  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired) or
         (not HVDb[addr].funcDict.ContainsKey('zvuk')) or
