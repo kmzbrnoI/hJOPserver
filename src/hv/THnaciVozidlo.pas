@@ -208,6 +208,7 @@ type
 
      procedure TrakceAcquire(ok: TCb; err: TCb);
      procedure TrakceRelease(ok: TCb);
+     procedure TrakceStolen();
 
      procedure SetFunction(func: Integer; state: Boolean; Sender: TObject = nil);
      procedure SetSlotFunction(func: Integer; state: Boolean; Sender: TObject = nil);
@@ -1530,6 +1531,8 @@ begin
 end;
 
 procedure THV.TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
+var reg:THVRegulator;
+    state:string;
 begin
  // Everything done
  TrakceI.Log(llCommands, 'Loco Fully Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
@@ -1537,6 +1540,20 @@ begin
  Self.stav.acquiring := false;
  Self.changed := true;
  RegCollector.LocoChanged(Self.adresa);
+
+ if (Self.souprava > -1) then
+   Blky.ChangeUsekWithSpr(Self.souprava);
+
+ Self.UpdateRuc();
+
+ // odesleme do regulatoru info o uspesne autorizaci
+ // to je dobre tehdy, kdyz je loko prebirano z centraly
+ if (Self.ruc) then
+   state := 'total'
+ else
+   state := 'ok';
+ for reg in Self.Stav.regulators do
+   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.adresa)+';AUTH;'+state+';{'+Self.GetPanelLokString()+'}');
 
  if (Assigned(Self.acquiredOk.callback)) then
    Self.acquiredOk.callback(Self, Self.acquiredOk.data);
@@ -1593,7 +1610,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // POM
 
-
 procedure THV.SetPom(pom:TPomStatus; ok: TCb; err: TCb);
 var toProgram:TList<THVPomCV>;
 begin
@@ -1630,6 +1646,27 @@ begin
  RegCollector.LocoChanged(Self.adresa);
  if (Assigned(Self.pomErr.callback)) then
    Self.pomOk.callback(Self, Self.pomErr.data);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.TrakceStolen();
+begin
+ // tato situace muze nastat, kdyz odhlasime HV a pak si ho vezme Rocomouse
+ if (not Self.acquired) then
+   Exit();
+
+ Self.stav.acquired := false;
+ Self.stav.stolen := true;
+ RegCollector.Stolen(Self.adresa);
+
+ TCPRegulator.LokStolen(Self);
+ if (Self.souprava > -1) then
+   Blky.ChangeUsekWithSpr(Self.souprava);
+ Self.UpdateRuc();
+
+ Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
+ Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

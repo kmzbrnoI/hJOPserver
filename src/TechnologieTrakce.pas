@@ -137,7 +137,8 @@ type
 
      //////////////////////////////////////
 
-     procedure TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);            // logovaci event z .Trakce
+     procedure TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
+     procedure TrkLocoStolen(Sender: TObject; addr: Word);
 
      procedure NouzReleaseLoko();
 //     procedure LokComErr(Sender:TObject; addr:Integer);                         // event oznamujici chybu komunikace s danou lokomotivou (je volan paralelne s error callback eventem, ale jen pro urcite prikazy - pro prikazy tykajici se rizeni konkretni lokomotivy).
@@ -263,6 +264,7 @@ begin
  Self.toggleQueue := TQueue<THVFunc>.Create();
 
  TTrakceIFace(Self).OnLog := Self.TrkLog;
+ TTrakceIFace(Self).OnLocoStolen := Self.TrkLocoStolen;
 end;
 
 destructor TTrakce.Destroy();
@@ -370,6 +372,12 @@ begin
    Self.opening := false;
    Self.OnOpenError(Self, msg);
   end;
+end;
+
+procedure TTrakce.TrkLocoStolen(Sender: TObject; addr: Word);
+begin
+ if (HVDb[addr] <> nil) then
+   HVDb[addr].TrakceStolen();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -607,99 +615,6 @@ begin
   end;
 { Self.AllOdhlaseno(); }
 end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-//event s TTrakce, ktery se zavola pri uspesnem pripojeni ci odhlaseni loko
-// v DATA jsou ulozena data callbacku, ktery prislusi prikazu pro prevzeti
-{ procedure TTrakce.ConnectChange(Sender: TObject; addr:Integer; code:TConnect_code; data:Pointer);
-var data2:Pointer;
-    reg:THVRegulator;
-begin
- // existuje u nas HV vubec ?
- if (HVDb[addr] = nil) then Exit;
-
- //nastavit vlastnosti
- case (code) of
-   TConnect_code.TC_Connected:begin
-
-     // 1) aktualizace slotu
-     HVDb[addr].Slot := Self.Trakce.Slot;
-     HVDb[addr].Slot.prevzato_full := false;
-     HVDb[addr].Slot.Prevzato := true;
-     HVDb[addr].Slot.stolen   := false;
-     Self.TrkLog(self, tllCommand, 'GET LOCO DATA: loko '+HVDb[addr].data.Nazev+' ('+IntToSTr(addr)+')');
-     HVDb[addr].changed := true;
-
-     // 2) priprava POM (POM zatim neprogramujeme, jen si pripravime flag)
-     HVDb[addr].Slot.pom := progr;
-
-     // 3) pokracujeme v prebirani, dalsi faze je ziskani stavu funkci 13-28
-
-     // 4) aktualni stav zpropagujeme do celeho programu
-     if (HVDb[addr].Stav.souprava > -1) then
-       Blky.ChangeUsekWithSpr(HVDb[addr].Stav.souprava);
-
-     RegCollector.ConnectChange(addr);
-     HVDb[addr].UpdateRuc();
-
-     // odesleme do regulatoru info o uspesne autorizaci
-     // to je dobre tehdy, kdyz je loko prebirano z centraly
-     if (HVDb[addr].ruc) then
-       for reg in HVDb[addr].Stav.regulators do
-         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;total;{'+HVDb[addr].GetPanelLokString()+'}{') // TODO: remove {
-     else
-       for reg in HVDb[addr].Stav.regulators do
-         ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(addr)+';AUTH;ok;{'+HVDb[addr].GetPanelLokString()+'}{'); // TODO: remove {
-
-     if (data <> nil) then
-      begin
-       data2 := data;
-      end else begin
-       GetMem(data2, sizeof(TPrevzitCallback));
-       TPrevzitCallback(data2^).addr := addr;
-       TPrevzitCallback(data2^).callback_ok  := TTrakce.GenerateCallback(nil);
-       TPrevzitCallback(data2^).callback_err := TTrakce.GenerateCallback(nil);
-      end;
-
-     // 5) nacteme stav funkci 13-28
-     Self.callback_ok  := TTrakce.GenerateCallback(Self.PrevzatoFunc1328OK, data2);
-     Self.callback_err := TTrakce.GenerateCallback(Self.PrevzatoErr, data2);
-     Self.Trakce.LokGetFunctions(addr, 13);
-   end;//TC_Connected
-
-   TConnect_code.TC_Unavailable:begin
-     // tato funkce neni na XpressNETu podporovana, proto neni dodelana
-     RegCollector.ConnectChange(addr);
-   end;
-
-   TConnect_code.TC_Disconnected:begin
-     HVDb[addr].Slot.Prevzato  := false;
-   end;//TC_Connected
-
-   TConnect_code.TC_Stolen:begin
-     if (not HVDb[addr].Slot.prevzato) then Exit();    // tato situace muze nastat, kdyz odhlasime HV a pak si ho vezme Rocomouse
-                                                                // odhlaseni HV totiz fakticky nerekne centrale, ze ji odhlasujeme
-
-     HVDb[addr].Slot.Prevzato  := false;
-     HVDb[addr].Slot.stolen    := true;
-     RegCollector.Stolen(addr);
-
-     TCPRegulator.LokStolen(HVDb[addr]);
-
-     if (HVDb[addr].Stav.souprava > -1) then
-       Blky.ChangeUsekWithSpr(HVDb[addr].Stav.souprava);
-
-     HVDb[addr].UpdateRuc();
-
-     // zapiseme POM rucniho rizeni
-     Self.POMWriteCVs(Self, HVDb[addr], HVDb[addr].Data.POMrelease, TPomStatus.released);
-   end;//TC_Connected
-
- end;//case
-
- HVDb[addr].changed := true;
-end;                                        }
 
 procedure TTrakce.SetLoglevelFile(ll:TTrkLogLevel);
 begin
