@@ -236,7 +236,8 @@ type
      property stolen:boolean read stav.stolen;
      property pom:TPomStatus read stav.pom;
      property trakceError:Boolean read stav.trakceError;
-     property slotFunkce:TFunkce read GetSlotFunkce; // TODO: enahce speed
+     property slotFunkce:TFunkce read GetSlotFunkce;
+     property stavFunkce:TFunkce read stav.funkce;
      property acquiring:boolean read stav.acquiring;
   end;//THV
 
@@ -903,18 +904,19 @@ begin
    // loko je uvedeno do rucniho rizeni
 
    // nastavit POM rucniho rizeni
-{   if ((Self.acquired) and (Self.pom <> TPomStatus.released)) then // neprevzatym vozidlum je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
-     TrakceI.POMWriteCVs(Self, Self, Self.Data.POMrelease, TPomStatus.released, TTrakce.Callback(), TTrakce.Callback()); } // TODO
+   // neprevzatym HV je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
+   if ((Self.acquired) and (Self.pom <> TPomStatus.released)) then
+     Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
   end else begin
    // loko je vyjmuto z rucniho rizeni
 
    if (Self.Stav.souprava > -1) then
     begin
      // POM automatu
-{     if (Self.pom <> TPomStatus.pc) then
-       TrakceI.POMWriteCVs(Self, Self, Self.Data.POMtake, TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback()); } // TODO
+     if (Self.pom <> TPomStatus.pc) then
+       Self.SetPom(TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
 
-     Soupravy.soupravy[Self.Stav.souprava].rychlost := Soupravy.soupravy[Self.Stav.souprava].rychlost;    // tento prikaz nastavi rychlost
+     Soupravy[Self.souprava].rychlost := Soupravy[Self.souprava].rychlost; // tento prikaz nastavi rychlost
     end else begin
      // loko neni na souprave -> zkusit odhlasit
      Self.CheckRelease();
@@ -1063,9 +1065,10 @@ begin
      if (i < Length(reqJson.S['stavFunkci'])) then
        noveFunkce[i] := PrevodySoustav.StrToBool(reqJson.S['stavFunkci'][i+1])
      else
-       noveFunkce[i] := Self.slotFunkce[i];
+       noveFunkce[i] := Self.Stav.funkce[i];
     end;
-//   TrkSystem.LokSetFunc(Self, Self, noveFunkce); TODO
+   Self.Stav.funkce := noveFunkce;
+   Self.StavFunctionsToSlotFunctions(TTrakce.Callback(), TTrakce.Callback());
   end;
 
  Self.GetPtState(respJson.O['lokStav']);
