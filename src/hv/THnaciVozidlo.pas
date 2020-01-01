@@ -936,7 +936,7 @@ begin
   end;
 
  if (RegCollector.IsLoko(Self)) then
-   RegCollector.UpdateElements(Self, Self.adresa);
+   RegCollector.LocoChanged(Self, Self.adresa);
  TCPRegulator.LokUpdateRuc(Self);
 
  // aktualizace informaci do panelu
@@ -1323,7 +1323,7 @@ begin
  end;
 
  TCPRegulator.LokUpdateFunc(Self, Sender);
- RegCollector.UpdateElements(Sender, Self.adresa);
+ RegCollector.LocoChanged(Sender, Self.adresa);
  Self.changed := true;
 end;
 
@@ -1374,7 +1374,7 @@ begin
  end;
 
  TCPRegulator.LokUpdateFunc(Self, Sender);
- RegCollector.UpdateElements(Sender, Self.adresa);
+ RegCollector.LocoChanged(Sender, Self.adresa);
  Self.changed := true;
 end;
 
@@ -1422,17 +1422,21 @@ end;
 procedure THV.TrakceCallbackOk(Sender:TObject; data:Pointer);
 begin
  Self.TrakceCallbackCallEv(data);
+
  if (not Self.stav.trakceError) then Exit();
  Self.stav.trakceError := false;
  Self.changed := true;
+ RegCollector.LocoChanged(Self, Self.adresa);
 end;
 
 procedure THV.TrakceCallbackErr(Sender:TObject; data:Pointer);
 begin
  Self.TrakceCallbackCallEv(data);
+
  if (Self.stav.trakceError) then Exit();
  Self.stav.trakceError := true;
  Self.changed := true;
+ RegCollector.LocoChanged(Self, Self.adresa);
 end;
 
 procedure THV.TrakceCallbackCallEv(cb:PTCb);
@@ -1471,7 +1475,7 @@ end;
 procedure THV.SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
 begin
  TCPRegulator.LokUpdateSpeed(Self, Sender);
- RegCollector.UpdateElements(Sender, Self.adresa);
+ RegCollector.LocoChanged(Sender, Self.adresa);
  Self.changed := true;
 
  if ((dirChanged) and (Self.souprava > -1)) then
@@ -1562,7 +1566,7 @@ begin
  Self.stav.acquired := true;
  Self.stav.acquiring := false;
  Self.changed := true;
- RegCollector.LocoChanged(Self.adresa);
+ RegCollector.LocoChanged(Self, Self.adresa);
 
  if (Self.souprava > -1) then
    Blky.ChangeUsekWithSpr(Self.souprava);
@@ -1587,7 +1591,7 @@ begin
  TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.acquiring := false;
  Self.changed := true;
- RegCollector.LocoChanged(Self.adresa);
+ RegCollector.LocoChanged(Self, Self.adresa);
  if (Assigned(Self.acquiredErr.callback)) then
    Self.acquiredErr.callback(Self, Self.acquiredErr.data);
 end;
@@ -1625,7 +1629,7 @@ begin
  TrakceI.Log(llCommands, 'Loco Successfully Released: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.acquired := false;
  Self.changed := true;
- RegCollector.LocoChanged(Self.adresa);
+ RegCollector.LocoChanged(Self, Self.adresa);
  if (Assigned(Self.releasedOk.callback)) then
    Self.releasedOk.callback(Self, Self.releasedOk.data);
 end;
@@ -1659,7 +1663,7 @@ begin
    Self.stav.trakceError := false;
  Self.stav.pom := Self.pomTarget;
  Self.changed := true;
- RegCollector.LocoChanged(Self.adresa);
+ RegCollector.LocoChanged(Self, Self.adresa);
  if (Assigned(Self.pomOk.callback)) then
    Self.pomOk.callback(Self, Self.pomOk.data);
 end;
@@ -1669,7 +1673,7 @@ begin
  Self.stav.pom := TPomStatus.error;
  Self.stav.trakceError := true;
  Self.changed := true;
- RegCollector.LocoChanged(Self.adresa);
+ RegCollector.LocoChanged(Self, Self.adresa);
  if (Assigned(Self.pomErr.callback)) then
    Self.pomOk.callback(Self, Self.pomErr.data);
 end;
@@ -1684,7 +1688,7 @@ begin
 
  Self.stav.acquired := false;
  Self.stav.stolen := true;
- RegCollector.Stolen(Self.adresa);
+ RegCollector.LocoChanged(Self, Self.adresa);
 
  TCPRegulator.LokStolen(Self);
  if (Self.souprava > -1) then

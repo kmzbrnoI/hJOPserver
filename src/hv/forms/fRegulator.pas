@@ -65,11 +65,7 @@ type
    OpenHV:THV;
 
    procedure OpenForm(HV:THV);
-
-   procedure LocoChanged();
-   procedure Stolen();
-   procedure UpdateElements();
-
+   procedure LocoChanged(Sender:TObject);
    procedure MyKeyPress(key:Integer);
   end;
 
@@ -94,9 +90,7 @@ type
 
     procedure Open(HV:THV);
 
-    procedure UpdateElements(Sender:TObject; addr:Word);
-    procedure LocoChanged(addr:Word);
-    procedure Stolen(addr:Word);
+    procedure LocoChanged(Sender:TObject; addr:Word);
     function IsLoko(HV:THV):boolean;
 
     procedure KeyPress(key:Integer; var handled:boolean);
@@ -133,14 +127,14 @@ end;
 procedure TF_DigiReg.CHB_svetlaClick(Sender: TObject);
  begin
   OpenHV.SetSingleFunc(TCheckBox(Sender).Tag, TCheckBox(Sender).Checked,
-                       TTrakce.Callback(), TTrakce.Callback());
+                       TTrakce.Callback(), TTrakce.Callback(), Self);
  end;
 
 procedure TF_DigiReg.OpenForm(HV:THV);
  begin
   CHB_Total.Checked := HV.ruc;
   Self.OpenHV := HV;
-  Self.LocoChanged();
+  Self.LocoChanged(nil);
   Self.T_Speed.Enabled := true;
 
   Self.Show();
@@ -205,8 +199,7 @@ end;
 
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);
 begin
- Self.OpenHV.EmergencyStop(TTrakce.Callback(), TTrakce.Callback());
- Self.UpdateElements();
+ Self.OpenHV.EmergencyStop(TTrakce.Callback(), TTrakce.Callback(), Self);
 end;
 
 procedure TF_DigiReg.RG_SmerClick(Sender: TObject);
@@ -215,8 +208,8 @@ begin
  Self.T_SpeedTimer(Self);
 end;
 
-//zavola se po zadosti o prevezeti, pokud je lokomotiva volna
-procedure TF_DigiReg.LocoChanged();
+procedure TF_DigiReg.LocoChanged(Sender:TObject);
+var funkce:TFunkce;
 begin
  Self.SetElemntsState(((Self.OpenHV.acquired) and ((Self.OpenHV.pom = pc) or (Self.OpenHV.pom = released))));
 
@@ -232,10 +225,59 @@ begin
     end;
   end else begin
    Self.L_ComStatus.Font.Color := clSIlver;
-   Self.L_ComStatus.Caption    := 'loko odhlášeno';
+   Self.L_ComStatus.Caption := 'loko odhlášeno';
   end;
 
- Self.UpdateElements();
+ if (Sender <> Self) then
+   TB_reg.Position := OpenHV.speedStep;
+
+ Self.L_stupen.Caption := IntToStr(OpenHV.speedStep)+' / '+IntToStr(OpenHV.slot.maxSpeed);
+ Self.L_speed.Caption  := IntToStr(OpenHV.realSpeed);
+
+ RG_Smer.ItemIndex := Integer(OpenHV.direction);
+ Self.L_address.Caption := IntToStr(OpenHV.Adresa);
+ Self.Caption := OpenHV.Nazev+' ('+OpenHV.data.Oznaceni+') : '+IntToStr(OpenHV.adresa);
+ B_PrevzitLoko.Enabled := not OpenHV.acquired or OpenHV.stav.trakceError;
+ B_OdhlLoko.Enabled := OpenHV.acquired;
+ CHB_Total.Checked := OpenHV.ruc;
+ Self.L_mine.Caption := PrevodySoustav.BoolToStr(OpenHV.acquired);
+
+ if ((OpenHV.acquired) and ((OpenHV.pom = pc) or (OpenHV.pom = released))) then
+  begin
+   Self.S_Status.Brush.Color := clGreen;
+  end else begin
+   if ((OpenHV.stolen) or (OpenHV.pom = progr) or (OpenHV.acquiring)) then
+    begin
+     Self.S_Status.Brush.Color := clYellow;
+    end else begin
+     Self.S_Status.Brush.Color := clRed;
+    end;
+  end;
+
+ case (OpenHV.pom) of
+  TPomStatus.progr    : Self.L_POM.Caption := 'progr';
+  TPomStatus.error    : Self.L_POM.Caption := 'error';
+  TPomStatus.pc       : Self.L_POM.Caption := 'automat';
+  TPomStatus.released : Self.L_POM.Caption := 'ruční';
+ end;
+
+ if (Sender <> Self) then
+  begin
+   funkce := OpenHV.slotFunkce;
+   CHB_svetla.Checked := funkce[0];
+   CHB_f1.Checked  := funkce[1];
+   CHB_f2.Checked  := funkce[2];
+   CHB_f3.Checked  := funkce[3];
+   CHB_f4.Checked  := funkce[4];
+   CHB_f5.Checked  := funkce[5];
+   CHB_f6.Checked  := funkce[6];
+   CHB_f7.Checked  := funkce[7];
+   CHB_f8.Checked  := funkce[8];
+   CHB_f9.Checked  := funkce[9];
+   CHB_f10.Checked := funkce[10];
+   CHB_f11.Checked := funkce[11];
+   CHB_f12.Checked := funkce[12];
+  end;
 end;
 
 procedure TF_DigiReg.SetElemntsState(state:boolean);
@@ -260,64 +302,6 @@ begin
  CHB_Total.Enabled := state;
 end;
 
-procedure TF_DIgiReg.UpdateElements();
-var funkce:TFunkce;
-begin
- TB_reg.Position := OpenHV.speedStep;
-
- Self.L_stupen.Caption := IntToStr(OpenHV.speedStep)+' / '+IntToStr(OpenHV.slot.maxSpeed);
- Self.L_speed.Caption  := IntToStr(OpenHV.realSpeed);
-
- RG_Smer.ItemIndex := Integer(OpenHV.direction);
- Self.L_address.Caption := IntToStr(OpenHV.Adresa);
- Self.Caption := OpenHV.Nazev+' ('+OpenHV.data.Oznaceni+') : '+IntToStr(OpenHV.adresa);
- B_PrevzitLoko.Enabled := not OpenHV.acquired;
- B_OdhlLoko.Enabled := OpenHV.acquired;
- CHB_Total.Checked := OpenHV.ruc;
- Self.L_mine.Caption := PrevodySoustav.BoolToStr(OpenHV.acquired);
-
- if ((OpenHV.acquired) and ((OpenHV.pom = pc) or (OpenHV.pom = released))) then
-  begin
-   Self.S_Status.Brush.Color := clGreen;
-  end else begin
-   if ((OpenHV.stolen) or (OpenHV.pom = progr) or (OpenHV.acquiring)) then
-    begin
-     Self.S_Status.Brush.Color := clYellow;
-    end else begin
-     Self.S_Status.Brush.Color := clRed;
-    end;
-  end;
-
- case (OpenHV.pom) of
-  TPomStatus.progr    : Self.L_POM.Caption := 'progr';
-  TPomStatus.error    : Self.L_POM.Caption := 'error';
-  TPomStatus.pc       : Self.L_POM.Caption := 'automat';
-  TPomStatus.released : Self.L_POM.Caption := 'ruční';
- end;//case
-
- funkce := OpenHV.slotFunkce;
- CHB_svetla.Checked := funkce[0];
- CHB_f1.Checked  := funkce[1];
- CHB_f2.Checked  := funkce[2];
- CHB_f3.Checked  := funkce[3];
- CHB_f4.Checked  := funkce[4];
- CHB_f5.Checked  := funkce[5];
- CHB_f6.Checked  := funkce[6];
- CHB_f7.Checked  := funkce[7];
- CHB_f8.Checked  := funkce[8];
- CHB_f9.Checked  := funkce[9];
- CHB_f10.Checked := funkce[10];
- CHB_f11.Checked := funkce[11];
- CHB_f12.Checked := funkce[12];
-end;
-
-procedure TF_DIgiReg.Stolen();
-begin
- // nekdo mi ukradl hnaci vozidlo
- Self.SetElemntsState(false);
- Self.UpdateElements();
-end;
-
 procedure TF_DigiReg.S_StatusMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -331,10 +315,10 @@ begin
  if (Self.speed = Self.TB_reg.Position) then Exit();
 
  OpenHV.SetSpeedStepDir(TB_reg.Position, RG_Smer.ItemIndex = 1,
-                        TTrakce.Callback(), TTrakce.Callback());
+                        TTrakce.Callback(), TTrakce.Callback(), Self);
 
  Self.L_stupen.Caption := IntToStr(TB_Reg.Position)+' / '+IntToStr(OpenHV.slot.maxSpeed);
- Self.L_speed.Caption  := IntToStr(OpenHV.realSpeed);
+ Self.L_speed.Caption := IntToStr(OpenHV.realSpeed);
  Self.speed := Self.TB_reg.Position;
 end;
 
@@ -379,30 +363,22 @@ var i:Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    Self.forms.data[i] := TF_DigiReg.Create(nil);
-end;//ctor
+end;
 
 destructor TRegulatorCollector.Destroy();
 var i:Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    if (Assigned(Self.forms.data[i])) then
-     FreeAndNil(Self.forms.data[i]);
-end;//dtor
-
-procedure TRegulatorCollector.UpdateElements(Sender:TObject; addr:Word);
-var frm:TF_DigiReg;
-begin
- frm := Self.GetForm(addr);
- if ((frm = nil) or (Sender = frm)) then Exit;
- frm.UpdateElements();
+      FreeAndNil(Self.forms.data[i]);
 end;
 
-procedure TRegulatorCollector.LocoChanged(addr:Word);
+procedure TRegulatorCollector.LocoChanged(Sender:TObject; addr:Word);
 var frm:TF_DigiReg;
 begin
  frm := Self.GetForm(addr);
  if (frm = nil) then Exit;
- frm.LocoChanged();
+ frm.LocoChanged(Sender);
 end;
 
 procedure TRegulatorCollector.Open(HV:THV);
@@ -442,15 +418,6 @@ var i:Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    Self.forms.data[i].Close;
-end;
-
-procedure TRegulatorCollector.Stolen(addr:Word);
-var frm:TF_DigiReg;
-begin
- frm := Self.GetForm(addr);
- if (frm = nil) then Exit;
-
- frm.Stolen();
 end;
 
 procedure TRegulatorCollector.KeyPress(key:Integer; var handled:boolean);
