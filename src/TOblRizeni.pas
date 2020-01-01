@@ -136,7 +136,7 @@ type
 
       // prace s databazi pripojenych panelu:
       procedure PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string);
-      procedure PnlDRemove(Panel:TIdContext);
+      procedure PnlDRemove(Panel:TIdContext; contextDestroyed: boolean = false);
       function PnlDGetRights(Panel:TIdContext):TORControlRights;
       function PnlDGetIndex(Panel:TIdContext):Integer;
 
@@ -187,7 +187,7 @@ type
       procedure LoadStat(ini:TMemIniFile; section:string);
       procedure SaveStat(ini:TMemIniFile; section:string);
 
-      procedure RemoveClient(Panel:TIdContext);                                 // smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
+      procedure RemoveClient(Panel:TIdContext; contextDestroyed: boolean = false);// smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
 
       procedure Update();                                                       // pravidelna aktualizace stavu OR - napr. mereni casu
       procedure DisconnectPanels();                                             // vyhodi vsechny autorizovane panely z teto OR
@@ -536,7 +536,7 @@ begin
 end;
 
 //mazani 1 panelu z databaze
-procedure TOR.PnlDRemove(Panel:TIdContext);
+procedure TOR.PnlDRemove(Panel:TIdContext; contextDestroyed: boolean = false);
 var i:Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
@@ -549,8 +549,9 @@ begin
   end;//for i
 
  // a samozrejme se musime smazat z oblasti rizeni
- if ((Panel.Data as TTCPORsRef).ORs.Contains(Self)) then
-   (Panel.Data as TTCPORsRef).ORs.Remove(Self);
+ if (not contextDestroyed) then
+   if ((Panel.Data as TTCPORsRef).ORs.Contains(Self)) then
+     (Panel.Data as TTCPORsRef).ORs.Remove(Self);
 end;
 
 //ziskani prav daneho panelu z databaze
@@ -1114,9 +1115,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.RemoveClient(Panel:TIdContext);
+procedure TOR.RemoveClient(Panel:TIdContext; contextDestroyed: boolean = false);
 begin
- Self.PnlDRemove(Panel);
+ Self.PnlDRemove(Panel, contextDestroyed);
  Self.stack.OnDisconnect(Panel);
 end;
 

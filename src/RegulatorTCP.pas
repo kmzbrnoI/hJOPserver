@@ -36,7 +36,7 @@ TTCPRegulator = class
     procedure LokUpdateRuc(HV:THV);
 
     procedure LokToRegulator(Regulator:TIDContext; HV:THV);
-    procedure RegDisconnect(reg:TIdContext);
+    procedure RegDisconnect(reg:TIdContext; contextDestroyed: boolean = false);
     procedure RemoveLok(Regulator:TIDContext; HV:THV; info:string);
 
 end;
@@ -606,16 +606,19 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // odhlasit vsechna hnaci vozidla regulatoru
 
-procedure TTCPRegulator.RegDisconnect(reg:TIdContext);
+procedure TTCPRegulator.RegDisconnect(reg:TIdContext; contextDestroyed: boolean = false);
 var addr:Integer;
 begin
  for addr := 0 to _MAX_ADDR-1 do
    if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.regulators.Count > 0)) then
      HVDb[addr].RemoveRegulator(reg);
 
- TTCPORsRef(reg.Data).regulator := false;
- TTCPORsRef(reg.Data).regulator_user := nil;
- TTCPORsRef(reg.Data).regulator_loks.Clear();
+ if (not contextDestroyed) then
+  begin
+   TTCPORsRef(reg.Data).regulator := false;
+   TTCPORsRef(reg.Data).regulator_user := nil;
+   TTCPORsRef(reg.Data).regulator_loks.Clear();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

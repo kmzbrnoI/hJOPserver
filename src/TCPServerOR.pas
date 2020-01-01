@@ -28,6 +28,7 @@ const
 
 type
   TPanelConnectionStatus = (closed, opening, handshake, opened);
+  TTCPEvent = (evMessage, evDisconnect);
 
   EInvalidButton = class(Exception);
 
@@ -42,7 +43,9 @@ type
 
   TTCPReceived = class
     AContext: TIdContext;
+    orsRef: TTCPORsRef;
     parsed: TStrings;
+    event: TTCPEvent;
 
     constructor Create();
     destructor Destroy(); override;
@@ -70,6 +73,7 @@ type
 
      procedure OnTcpServerConnect(AContext: TIdContext);                        // event pripojeni klienta z TIdTCPServer
      procedure OnTcpServerDisconnect(AContext: TIdContext);                     // event odpojeni klienta z TIdTCPServer
+     procedure OnTcpServerDisconnectMainThread(AContext: TIdContext; ORsRef: TTCPORsRef);
      procedure OnTcpServerExecute(AContext: TIdContext);                        // event akce klienta z TIdTCPServer
 
      procedure ParseGlobal(AContext: TIdContext; parsed: TStrings);             // parsinag dat s globalnim prefixem: "-;"
@@ -156,7 +160,7 @@ uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
 constructor TTCPReceived.Create();
 begin
  inherited;
- Self.parsed := TStringList.Create;
+ Self.parsed := TStringList.Create();
 end;
 
 destructor TTCPReceived.Destroy();
@@ -287,8 +291,8 @@ begin
  F_Main.LogStatus('Panel server: vypínám...');
  F_Main.S_Server.Brush.Color := clGray;
 
- Self.receiveTimer.Enabled := false;
  Self.pingTimer.Enabled := false;
+ Self.receiveTimer.Enabled := false;
 
  with Self.tcpServer.Contexts.LockList do
     try
@@ -309,10 +313,9 @@ begin
 
  Self.tcpServer.Active := false;
 
+ Self.ProcessReceivedMessages();
  ORTCPServer.GUIRefreshTable();
-
  F_Main.S_Server.Brush.Color := clRed;
-
  UDPdisc.SendDiscover();
 
  if (SystemData.Status = stopping) then
@@ -330,8 +333,8 @@ begin
    AContext.Connection.IOHandler.DefStringEncoding := TIdEncoding.enUTF8;
 
    for i := 0 to _MAX_OR_CLIENTS-1 do
-    if (Self.clients[i] = nil) then
-     break;
+     if (Self.clients[i] = nil) then
+       break;
 
    // na serveru neni misto -> odpojit klienta
    if (i = _MAX_OR_CLIENTS) then
@@ -350,70 +353,90 @@ begin
  end;
 end;
 
-// Udalost vyvolana pri odpojeni klienta
 procedure TORTCPServer.OnTcpServerDisconnect(AContext: TIdContext);
-var i:Integer;
-    oblr:TOR;
+var received: TTCPReceived;
+    i: Integer;
 begin
  Self.tcpServer.Contexts.LockList();
-
  try
-   // vymazeme klienta ze vsech oblasti rizeni
-   for i := (AContext.Data as TTCPORsRef).ORs.Count-1 downto 0 do // do range-based for!
-     (AContext.Data as TTCPORsRef).ORs[i].RemoveClient(AContext);
-
-   // ukoncime probihajici potvrzovaci sekvenci
-   if (Assigned(TTCPORsRef(AContext.Data).potvr)) then
-    begin
-     TTCPORsRef(AContext.Data).potvr(AContext, false);
-     TTCPORsRef(AContext.Data).potvr := nil;
-    end;
-
-   // ukoncime pripadne UPO
-   if (Assigned(TTCPORsRef(AContext.Data).UPO_Esc)) then
-    begin
-     TTCPORsRef(AContext.Data).UPO_Esc(Self);
-     TTCPORsRef(AContext.Data).UPO_Esc := nil;
-     TTCPORsRef(AContext.Data).UPO_OK  := nil;
-     TTCPORsRef(AContext.Data).UPO_ref := nil;
-    end;
-
-   // vymazeme klienta z databaze klientu
    for i := 0 to _MAX_OR_CLIENTS-1 do
-    if ((Assigned(Self.clients[i])) and (AContext = Self.clients[i].conn)) then
-     begin
-      // zrusime pripadnou zadost o lokomotivu
-      if ((Self.clients[i].conn.Data as TTCPORsRef).regulator_zadost <> nil) then
-        (Self.clients[i].conn.Data as TTCPORsRef).regulator_zadost.LokoCancel(Self.clients[i].conn);
-
-      // odpojeni vsech pripadne neodpojenych regulatoru
-      if ((Self.clients[i].conn.Data as TTCPORsRef).regulator) then
-        TCPRegulator.RegDisconnect(Self.clients[i].conn);
-
-      FreeAndNil(Self.clients[i]);
-      break;
-     end;
-
-    // vymazeme klienta z RCS debuggeru
-    RCSd.RemoveClient(AContext);
-
-    // odpoji se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
-    if (Self.DCCStopped = AContext) then
-     begin
-      Self.DCCStopped := nil;
-      Self.BroadcastData('-;DCC;STOP');
-     end;
-
-    for oblr in TTCPORsRef(AContext.Data).st_hlaseni do
-      if (Assigned(oblr.hlaseni)) then
-        oblr.hlaseni.ClientDisconnect(AContext);
-
-    // aktualizujeme radek v tabulce klientu ve F_Main
-    if (Self.tcpServer.Active) then
-      ORTCPServer.GUIQueueLineToRefresh(i);
+    begin
+     if ((Assigned(Self.clients[i])) and (AContext = Self.clients[i].conn)) then
+      begin
+       FreeAndNil(Self.clients[i]);
+       Break;
+      end;
+    end;
  finally
    Self.tcpServer.Contexts.UnlockList();
  end;
+
+ receivedLock.Acquire();
+ try
+   received := TTCPReceived.Create();
+   received.AContext := AContext;
+   received.event := evDisconnect;
+   received.orsRef := TTCPORsRef(AContext.Data);
+   Self.received.Enqueue(received);
+   AContext.data := nil;
+ finally
+   receivedLock.Release();
+ end;
+end;
+
+procedure TORTCPServer.OnTcpServerDisconnectMainThread(AContext: TIdContext; ORsRef: TTCPORsRef);
+var i:Integer;
+    oblr:TOR;
+begin
+ // Warning: AContext is destroyed, only address is left.
+ // vymazeme klienta ze vsech oblasti rizeni
+ for oblr in ORsRef.ORs do
+   oblr.RemoveClient(AContext, true);
+ ORsRef.ORs.Clear();
+
+ // ukoncime probihajici potvrzovaci sekvenci
+ if (Assigned(ORsRef.potvr)) then
+  begin
+   ORsRef.potvr(AContext, false);
+   ORsRef.potvr := nil;
+  end;
+
+ // ukoncime pripadne UPO
+ if (Assigned(ORsRef.UPO_Esc)) then
+  begin
+   ORsRef.UPO_Esc(Self);
+   ORsRef.UPO_Esc := nil;
+   ORsRef.UPO_OK  := nil;
+   ORsRef.UPO_ref := nil;
+  end;
+
+ // zrusime pripadnou zadost o lokomotivu
+ if (ORsRef.regulator_zadost <> nil) then
+   ORsRef.regulator_zadost.LokoCancel(AContext);
+
+ // odpojeni vsech pripadne neodpojenych regulatoru
+ if (ORsRef.regulator) then
+   TCPRegulator.RegDisconnect(AContext, true);
+
+ // vymazeme klienta z RCS debuggeru
+ RCSd.RemoveClient(AContext);
+
+ // odpojil se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
+ if (Self.DCCStopped = AContext) then
+  begin
+   Self.DCCStopped := nil;
+   Self.BroadcastData('-;DCC;STOP');
+  end;
+
+ for oblr in ORsRef.st_hlaseni do
+   if (Assigned(oblr.hlaseni)) then
+     oblr.hlaseni.ClientDisconnect(AContext);
+
+ ORsRef.Free();
+
+ // aktualizujeme radek v tabulce klientu ve F_Main
+ if (Self.tcpServer.Active) then
+   ORTCPServer.GUIRefreshTable();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -437,6 +460,8 @@ begin
  try
    received := TTCPReceived.Create();
    received.AContext := AContext;
+   received.event := evMessage;
+   received.orsRef := TTCPOrsRef(AContext.Data);
 
    data := AContext.Connection.IOHandler.ReadLn();
    ExtractStringsEx([';'], [#13, #10], data, received.parsed);
@@ -471,10 +496,16 @@ begin
     begin
      received := Self.received.Extract();
      try
-      if (received.parsed[0] = '-') then
-        Self.ParseGlobal(received.AContext, received.parsed)
-      else
-        Self.ParseOR(received.AContext, received.parsed);
+      case (received.event) of
+        evMessage: begin
+          if (received.parsed[0] = '-') then
+            Self.ParseGlobal(received.AContext, received.parsed)
+          else
+            Self.ParseOR(received.AContext, received.parsed);
+        end;
+
+        evDisconnect: Self.OnTcpServerDisconnectMainThread(received.AContext, received.orsRef);
+      end;
      except
 
      end;
