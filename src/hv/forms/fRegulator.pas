@@ -148,6 +148,7 @@ procedure TF_DigiReg.OpenForm(HV:THV);
 
 procedure TF_DigiReg.B_PrevzitLokoClick(Sender: TObject);
 begin
+ Self.B_PrevzitLoko.Enabled := false;
  Self.OpenHV.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback(Self.AcquireFailed));
 end;
 
@@ -158,14 +159,15 @@ begin
 end;
 
 procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
- begin
-  Self.OpenHV.TrakceRelease(TTrakce.Callback());
- end;
+begin
+ Self.B_OdhlLoko.Enabled := false;
+ Self.OpenHV.TrakceRelease(TTrakce.Callback());
+end;
 
 procedure TF_DigiReg.FormCreate(Sender: TObject);
- begin
-  Self.OpenHV := nil;
- end;
+begin
+ Self.OpenHV := nil;
+end;
 
 procedure TF_DigiReg.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
@@ -197,20 +199,21 @@ var tmp:THV;
 
 procedure TF_DigiReg.AcquireFailed(Sender:TObject; data:Pointer);
 begin
+ Self.B_PrevzitLoko.Enabled := true;
  Application.MessageBox('Převezetí lokomotivy se nedařilo!', 'Chyba', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);
- begin
-  Self.OpenHV.EmergencyStop(TTrakce.Callback(), TTrakce.Callback());
-  Self.UpdateElements();
- end;
+begin
+ Self.OpenHV.EmergencyStop(TTrakce.Callback(), TTrakce.Callback());
+ Self.UpdateElements();
+end;
 
 procedure TF_DigiReg.RG_SmerClick(Sender: TObject);
- begin
-  Self.speed := -1;
-  Self.T_SpeedTimer(Self);
- end;
+begin
+ Self.speed := -1;
+ Self.T_SpeedTimer(Self);
+end;
 
 //zavola se po zadosti o prevezeti, pokud je lokomotiva volna
 procedure TF_DigiReg.LocoChanged();
@@ -236,26 +239,26 @@ begin
 end;
 
 procedure TF_DigiReg.SetElemntsState(state:boolean);
- begin
-  TB_reg.Enabled  := state;
-  RG_Smer.Enabled := state;
-  B_STOP.Enabled  := state;
-  B_idle.Enabled  := state;
-  CHB_svetla.Enabled := state;
-  CHB_f1.Enabled  := state;
-  CHB_f2.Enabled  := state;
-  CHB_f3.Enabled  := state;
-  CHB_f4.Enabled  := state;
-  CHB_f5.Enabled  := state;
-  CHB_f6.Enabled  := state;
-  CHB_f7.Enabled  := state;
-  CHB_f8.Enabled  := state;
-  CHB_f9.Enabled  := state;
-  CHB_f10.Enabled := state;
-  CHB_f11.Enabled := state;
-  CHB_f12.Enabled := state;
-  CHB_Total.Enabled := state;
- end;
+begin
+ TB_reg.Enabled  := state;
+ RG_Smer.Enabled := state;
+ B_STOP.Enabled  := state;
+ B_idle.Enabled  := state;
+ CHB_svetla.Enabled := state;
+ CHB_f1.Enabled  := state;
+ CHB_f2.Enabled  := state;
+ CHB_f3.Enabled  := state;
+ CHB_f4.Enabled  := state;
+ CHB_f5.Enabled  := state;
+ CHB_f6.Enabled  := state;
+ CHB_f7.Enabled  := state;
+ CHB_f8.Enabled  := state;
+ CHB_f9.Enabled  := state;
+ CHB_f10.Enabled := state;
+ CHB_f11.Enabled := state;
+ CHB_f12.Enabled := state;
+ CHB_Total.Enabled := state;
+end;
 
 procedure TF_DIgiReg.UpdateElements();
 var funkce:TFunkce;
