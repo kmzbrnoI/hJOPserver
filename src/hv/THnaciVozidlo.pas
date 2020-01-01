@@ -1656,6 +1656,8 @@ end;
 
 procedure THV.TrakcePOMOK(Sender:TObject; data:Pointer);
 begin
+ if (Self.stav.trakceError) then
+   Self.stav.trakceError := false;
  Self.stav.pom := Self.pomTarget;
  Self.changed := true;
  RegCollector.LocoChanged(Self.adresa);
@@ -1666,6 +1668,7 @@ end;
 procedure THV.TrakcePOMErr(Sender:TObject; data:Pointer);
 begin
  Self.stav.pom := TPomStatus.error;
+ Self.stav.trakceError := true;
  Self.changed := true;
  RegCollector.LocoChanged(Self.adresa);
  if (Assigned(Self.pomErr.callback)) then

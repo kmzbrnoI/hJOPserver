@@ -271,7 +271,7 @@ begin
  RG_Smer.ItemIndex := Integer(OpenHV.direction);
  Self.L_address.Caption := IntToStr(OpenHV.Adresa);
  Self.Caption := OpenHV.Nazev+' ('+OpenHV.data.Oznaceni+') : '+IntToStr(OpenHV.adresa);
- B_PrevzitLoko.Enabled := ((not OpenHV.acquired) or (OpenHV.pom = error));
+ B_PrevzitLoko.Enabled := not OpenHV.acquired;
  B_OdhlLoko.Enabled := OpenHV.acquired;
  CHB_Total.Checked := OpenHV.ruc;
  Self.L_mine.Caption := PrevodySoustav.BoolToStr(OpenHV.acquired);
@@ -280,7 +280,7 @@ begin
   begin
    Self.S_Status.Brush.Color := clGreen;
   end else begin
-   if ((OpenHV.stolen) or (OpenHV.pom = progr)) then
+   if ((OpenHV.stolen) or (OpenHV.pom = progr) or (OpenHV.acquiring)) then
     begin
      Self.S_Status.Brush.Color := clYellow;
     end else begin

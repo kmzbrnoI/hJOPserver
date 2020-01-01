@@ -1369,6 +1369,8 @@ begin
  Self.A_Locos_Acquire.Enabled := false;
  Self.A_Locos_Release.Enabled := false;
  Self.B_HV_Add.Enabled := true;
+ Self.S_locos_acquired.Brush.Color := clRed;
+ Self.G_locos_acquired.Progress := 0;
  Self.UpdateSystemButtons();
 
  RegCollector.CloseAll();
@@ -3129,10 +3131,10 @@ begin
  if (Item.SubItems.Count > 17) then
   begin
    if ((Item.SubItems.Strings[16] = 'COM ERROR!') or (Item.SubItems.Strings[17] = 'error')) then
-     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
-   if (Item.SubItems.Strings[16] = 'PC') then
-     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-   if ((Item.SubItems.Strings[16] = 'ukradeno') or (Item.SubItems.Strings[17] = 'progr')) then
+     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED
+   else if (Item.SubItems.Strings[16] = 'PC') then
+     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN
+   else if ((Item.SubItems.Strings[16] = 'ukradeno') or (Item.SubItems.Strings[17] = 'progr')) then
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
   end;
 end;
