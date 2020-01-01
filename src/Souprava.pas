@@ -422,6 +422,7 @@ begin
    acq^.toAcquire := new;
    acq^.nextAcquire := 0;
 
+   Self.fAcquiring := true;
    Self.LocoAcquiredOk(Self, acq);
  except
    new.Free();
