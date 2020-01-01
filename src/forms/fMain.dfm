@@ -3734,7 +3734,7 @@ object F_Main: TF_Main
           Margins.Bottom = 2
           Caption = 'Loko p'#345'evzaty'
         end
-        object G_Loko_Prevzato: TGauge
+        object G_locos_acquired: TGauge
           Left = 114
           Top = 109
           Width = 67

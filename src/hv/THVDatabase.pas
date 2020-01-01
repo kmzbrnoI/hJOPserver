@@ -41,6 +41,7 @@ type
     eAcquiredOk: TNotifyEvent;
     eAcquiredErr: TNotifyEvent;
     eReleasedOk: TNotifyEvent;
+    eLocoAcquired, eLocoReleased: TNotifyEvent;
     mAcquiring: Boolean;
     mReleasing: Boolean;
 
@@ -79,8 +80,8 @@ type
      function FilenameForLok(hv:THV):string; overload;
 
      procedure CSReset();
-     procedure TrakceAcquireAllUsed(ok: TNotifyEvent; err: TNotifyEvent);
-     procedure TrakceReleaseAllUsed(ok: TNotifyEvent);
+     procedure TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
+     procedure TrakceReleaseAllUsed(ok: TNotifyEvent = nil; locoReleased: TNotifyEvent = nil);
 
      property cnt:Word read GetCnt;              // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
      property HVozidla:THVArray read HVs;
@@ -522,12 +523,13 @@ end;
 // Trakce
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.TrakceAcquireAllUsed(ok: TNotifyEvent; err: TNotifyEvent);
+procedure THVDb.TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
 begin
  Self.mAcquiring := true;
  Self.mReleasing := false;
  Self.eAcquiredOk := ok;
  Self.eAcquiredErr := err;
+ Self.eLocoAcquired := locoAcquired;
 
  Self.AcquiredOk(Self, Pointer(0));
 end;
@@ -536,6 +538,9 @@ procedure THVDb.AcquiredOk(Sender: TObject; Data: Pointer);
 var addr: Word;
 begin
  addr := Word(Data);
+
+ if ((addr <> 0) and (Assigned(Self.eLocoAcquired))) then
+   Self.eLocoAcquired(Self);
 
  if (not Self.mAcquiring) then
    Exit();
@@ -568,11 +573,12 @@ begin
    Self.eAcquiredErr(Self);
 end;
 
-procedure THVDb.TrakceReleaseAllUsed(ok: TNotifyEvent);
+procedure THVDb.TrakceReleaseAllUsed(ok: TNotifyEvent = nil; locoReleased: TNotifyEvent = nil);
 begin
  Self.mAcquiring := false;
  Self.mReleasing := true;
  Self.eReleasedOk := ok;
+ Self.eLocoReleased := locoReleased;
 
  Self.ReleasedOk(Self, Pointer(0));
 end;
@@ -581,6 +587,9 @@ procedure THVDb.ReleasedOk(Sender: TObject; Data: Pointer);
 var addr: Word;
 begin
  addr := Word(Data);
+
+ if ((addr <> 0) and (Assigned(Self.eLocoReleased))) then
+   Self.eLocoReleased(Self);
 
  if (not Self.mReleasing) then
    Exit();

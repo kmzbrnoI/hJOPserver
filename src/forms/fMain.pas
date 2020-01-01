@@ -217,7 +217,7 @@ type
     SB_AC_Repeat: TSpeedButton;
     PM_Clients: TPopupMenu;
     MI_Disconnect: TMenuItem;
-    G_Loko_Prevzato: TGauge;
+    G_locos_acquired: TGauge;
     N10: TMenuItem;
     MI_Trk_Func_Vyzn: TMenuItem;
     A_FuncsSet: TAction;
@@ -472,6 +472,8 @@ type
     procedure OnTrkAllAcquired(Sender:TObject);
     procedure OnTrkAcquireError(Sender:TObject);
     procedure OnTrkAllReleased(Sender:TObject);
+    procedure OnTrkLocoAcquired(Sender:TObject);
+    procedure OnTrkLocoReleased(Sender:TObject);
 
   end;//public
 
@@ -1171,33 +1173,39 @@ begin
  Application.ProcessMessages();
 end;
 
-
 procedure TF_Main.A_Locos_AcquireExecute(Sender: TObject);
+var addr:Cardinal;
 begin
  F_Main.LogStatus('Loko: přebírám...');
- Application.ProcessMessages();
  F_Main.S_locos_acquired.Brush.Color := clBlue;
+ F_Main.G_locos_acquired.ForeColor := clBlue;
 
- HVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError);
+ F_Main.G_locos_acquired.MaxValue := 0;
+ for addr := 0 to THVDatabase._MAX_ADDR-1 do
+   if (HVDb[addr] <> nil) and (HVDb[addr].ShouldAcquire()) then
+     F_Main.G_locos_acquired.MaxValue := F_Main.G_locos_acquired.MaxValue + 1;
+
+ HVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError, Self.OnTrkLocoAcquired);
 end;
 
 procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
 begin
  F_Main.LogStatus('Loko: odhlašuji...');
- Application.ProcessMessages();
  F_Main.S_locos_acquired.Brush.Color := clBlue;
- HVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased);
+ F_Main.G_locos_acquired.ForeColor := clBlue;
+ HVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
 end;
 
 procedure TF_Main.OnTrkAllAcquired(Sender:TObject);
 begin
- Self.S_locos_acquired.Brush.Color := clLime;
+ F_Main.LogStatus('Loko: všechna loko převzata');
 
+ Self.S_locos_acquired.Brush.Color := clLime;
  Self.A_Locos_Acquire.Enabled := false;
  Self.A_Locos_Release.Enabled := true;
 
- Self.G_Loko_Prevzato.Progress := HVDb.cnt;
- Self.G_Loko_Prevzato.ForeColor := clLime;
+ Self.G_locos_acquired.Progress := HVDb.cnt;
+ Self.G_locos_acquired.ForeColor := clLime;
 
  if (SystemData.Status = starting) then
    F_Main.A_PanelServer_StartExecute(nil);
@@ -1205,8 +1213,7 @@ end;
 
 procedure TF_Main.OnTrkAcquireError(Sender:TObject);
 begin
- Self.G_Loko_Prevzato.ForeColor := clRed;
-
+ Self.G_locos_acquired.ForeColor := clRed;
  Self.S_locos_acquired.Brush.Color := clRed;
  Self.A_Locos_Acquire.Enabled := true;
 
@@ -1222,16 +1229,28 @@ end;
 
 procedure TF_Main.OnTrkAllReleased(Sender:TObject);
 begin
+ F_Main.LogStatus('Loko: všechna loko odhlášena');
+
  Self.S_locos_acquired.Brush.Color := clRed;
 
  Self.A_Locos_Acquire.Enabled  := true;
  Self.A_Locos_Release.Enabled := false;
 
- Self.G_Loko_Prevzato.Progress  := 0;
- Self.G_Loko_Prevzato.ForeColor := clBlue;
+ Self.G_locos_acquired.Progress  := 0;
+ Self.G_locos_acquired.ForeColor := clBlue;
 
  if (SystemData.Status = stopping) then
    F_Main.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
+end;
+
+procedure TF_Main.OnTrkLocoAcquired(Sender:TObject);
+begin
+ Self.G_locos_acquired.Progress := Self.G_locos_acquired.Progress + 1;
+end;
+
+procedure TF_Main.OnTrkLocoReleased(Sender:TObject);
+begin
+ Self.G_locos_acquired.Progress := Self.G_locos_acquired.Progress - 1;
 end;
 
 procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
@@ -1333,7 +1352,7 @@ begin
  Self.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
  Self.LogStatus('Centrála: odpojování...');
  Self.S_Trakce_Connected.Brush.Color := clBlue;
- Self.G_Loko_Prevzato.Progress := 0;
+ Self.G_locos_acquired.Progress := 0;
  Self.S_locos_acquired.Brush.Color := clRed;
  Application.ProcessMessages();
 end;
@@ -1363,7 +1382,7 @@ begin
  Application.ProcessMessages();
 
  if (SystemData.Status = stopping) then
-   Exit(); // TODO
+   Self.A_RCS_StopExecute(Self);
 end;
 
 procedure TF_Main.OnTrkReady(Sender: TObject; ready: Boolean);
