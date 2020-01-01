@@ -1242,6 +1242,8 @@ begin
   end;
 
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
+ TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': rychlostní stupeň: ' + IntToStr(speedStep) +
+             ', směr: ' + IntToStr(PrevodySoustav.BoolToInt(direction)));
 
  try
    TrakceI.LocoSetSpeed(Self.adresa, Self.slot.speed, Self.direction,
@@ -1294,6 +1296,8 @@ begin
 
  Self.stav.funkce[func] := state;
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
+ TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': F' + IntToStr(func) +
+             ': ' + IntToStr(PrevodySoustav.BoolToInt(state)));
 
  try
    TrakceI.LocoSetSingleFunc(Self.adresa, func, Self.slot.functions,
@@ -1305,6 +1309,58 @@ begin
      Self.TrakceCallbackErr(Self, cbErr);
      AppEvents.LogException(E, 'THV.SetSingleFunc');
     end;
+ end;
+
+ TCPRegulator.LokUpdateFunc(Self, Sender);
+ RegCollector.UpdateElements(Sender, Self.adresa);
+ Self.changed := true;
+end;
+
+procedure THV.StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
+var i:Integer;
+    funcMask:Cardinal;
+    funcState:Cardinal;
+begin
+ if ((not Self.acquired) and (not Self.acquiring)) then
+  begin
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+   Exit();
+  end;
+
+ if (Self.stolen) then
+  begin
+   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+   Exit();
+  end;
+
+ funcMask := 0;
+ funcState := 0;
+ for i := 0 to _HV_FUNC_MAX do
+  begin
+   if (Self.stav.funkce[i]) then
+     funcState := funcState or (1 shl i);
+   if (Self.stav.funkce[i] <> Self.slotFunkce[i]) then
+     funcMask := funcMask or (1 shl i);
+  end;
+
+ if (funcMask = 0) then
+  begin
+   if (Assigned(ok.callback)) then
+     ok.callback(Self, ok.data);
+   Exit();
+  end;
+
+ TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': změna více funkcí');
+ Self.slot.functions := funcState;
+
+ try
+   TrakceI.LocoSetFunc(Self.adresa, funcMask, funcState, ok, err);
+ except
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
  end;
 
  TCPRegulator.LokUpdateFunc(Self, Sender);
@@ -1413,42 +1469,6 @@ begin
      Soupravy[Self.souprava].LokDirChanged();
      // Soupravy[HV.Stav.souprava] <> nil muze nastat pri aktualizaci HV na souprave,
      // coz se dede prave tady
-end;
-
-procedure THV.StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
-var i:Integer;
-    funcMask:Cardinal;
-    funcState:Cardinal;
-begin
- funcMask := 0;
- funcState := 0;
- for i := 0 to _HV_FUNC_MAX do
-  begin
-   if (Self.stav.funkce[i]) then
-     funcState := funcState or (1 shl i);
-   if (Self.stav.funkce[i] <> Self.slotFunkce[i]) then
-     funcMask := funcMask or (1 shl i);
-  end;
-
- if (funcMask = 0) then
-  begin
-   if (Assigned(ok.callback)) then
-     ok.callback(Self, ok.data);
-   Exit();
-  end;
-
- Self.slot.functions := funcState;
-
- try
-   TrakceI.LocoSetFunc(Self.adresa, funcMask, funcState, ok, err);
- except
-   if (Assigned(err.callback)) then
-     err.callback(Self, err.data);
- end;
-
- TCPRegulator.LokUpdateFunc(Self, Sender);
- RegCollector.UpdateElements(Sender, Self.adresa);
- Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
