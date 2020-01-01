@@ -793,7 +793,6 @@ end;
 procedure TSouprava.SetHoukState(desc:string; state:boolean);
 var addr:Integer;
     HV:THV;
-    func:TFunkce;
 begin
  if (state) then
    writelog('Souprava ' + Self.nazev + ' : aktivuji funkci ' + desc, WR_MESSAGE)

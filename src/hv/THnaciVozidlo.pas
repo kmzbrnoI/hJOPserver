@@ -27,6 +27,23 @@
       dispecera. Pokud ho tedy naprikald dispecer vyda strojvedoucimu, strojvedouci
       na jeho zaklade muze prevzit rizeni loko. Token patri vzdy ke konkretni
       loko a ma omezenou casovou platnost na nekolik minut.
+
+ Pozn.
+   Vsechny funkce spojene s nastavovanim dat HV maji parametr Sender
+   kam je vhodne dat bud konkretni regulator, nebo OR v pripade
+     regulatoru klienta.
+   Informace o zmene dat HV je pak volana do vsech systemu mimo Senderu.
+   Tedy napriklad, pokud je loko otevrene v 5 regulatorech a jeste na serveru
+     a dojde ke zmene rychlosti v OR1, je informace o zmene rychlosti
+     odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
+     vsak do OR1 (tomu prijde napriklad OK, ci error callback)
+
+ Prebirani lokomotivy:
+  1) Zavolat locoAcquire do Trakce (zjisti vsechny informace o lokomotive)
+  2) Nastavit spravny smer loko (vzhledem k souprave)
+  3) Nastavit funkce na pzadovane hodnoty
+  4) Naprogramovat POM
+  Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
 }
 
 interface
@@ -1492,8 +1509,7 @@ begin
 end;
 
 procedure THV.TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
-var i:Integer;
-    direction:Boolean;
+var direction:Boolean;
 begin
  Self.slot := LocoInfo;
  Self.changed := true;

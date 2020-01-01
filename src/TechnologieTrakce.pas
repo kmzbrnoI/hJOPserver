@@ -1,8 +1,13 @@
 ﻿unit TechnologieTrakce;
 
 {
- Trida TTrakce zpristupnuje rizeni trakce zbytku programu. Rizeni trakce je
- reseno dynamicky linkovanou knihovnou.
+ TTrakce class (and its singleton instance TrakceI) accesses Trakce function
+ to the rest of the appliaction. This class is designed to be minimal. It works
+ with loco addresses, not with instances of THV. This class is supposed to
+ be used as accessor and helper. All important functions (like set speed or
+ functions) should be called on instance of THV directly.
+
+ This class is very simillar to TRCS.
 }
 
 interface
@@ -12,11 +17,9 @@ uses
   THnaciVozidlo, Generics.Collections, Contnrs, IniFiles;
 
 const
-  // maximalni rychlost pro rychlostni tabulku
+  // max speed step for speed table
   _MAX_SPEED = 28;
 
-  // tato rychlostni tabulka je pouzita v pripade, kdy selze nacitani
-  // souboru s rychlostni tabulkou:
   _DEFAULT_SPEED_TABLE : array [0.._MAX_SPEED] of Cardinal = (
     0,
     1,
@@ -55,8 +58,6 @@ const
 type
   TReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
   TErrorEvent = procedure (Sender:TObject; errMsg:string) of object;
-  TGetSpInfoEvent = procedure(Sender: TObject; Slot:TTrkLocoInfo; var handled:boolean) of object;
-  TGetFInfoEvent = procedure(Sender: TObject; Addr:Integer; func:TFunkce; var handled:boolean) of object;
 
   // passed as a parameter to callback when programming POM
   TPOMCallback = record
@@ -66,22 +67,7 @@ type
     callback_ok, callback_err:TCommandCallback;
   end;
 
-  {
-   Pri prebirani lokomotivy se do callbacku jednotlivych cinnosti ukladaji tato data:
-    prebirani lokomotivy =
-      1) prevzit loko z centraly
-      2) nastavit funkce na pozadovane hodnoty
-      3) naprogarmovat POM
-      4) zavolat OK callback
-        - Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
-        - Chyba pri nastavovani funkci je oznamena pouze jako WARNING (error callback neni volan).
-  }
-  TAcquireCallback = record
-    addr:Word;                                                                  // adresa lokomotivy
-    callback_ok, callback_err:TCommandCallback;                                 // globalni callbacky
-  end;
-
-  // pri hromadnem nastavovani funkci dle vyznamu (napr. vypnout vsechna "svetla") se do callbacku predavaji tato data
+  // Set functions of all locomotives based on description
   TSetDescFuncsCallback = record
     addr:Word;
     description:string;
@@ -89,21 +75,8 @@ type
     callback_ok, callback_err:TCommandCallback;
   end;
 
-  // reprezenatce jedne funkci sady
-  TFuncCBSada = record
-    func:array[0..15] of boolean;                                               // funkce v sade
-    index:Integer;                                                              // index sady (pro xpressnet: 0:F0-F4, 1:F5-F8, 2:F9-12)
-  end;
-
-  // pri programovani funkci si udrzuji nasledujici data (v callback datech jednotlivych procesu)
-  TFuncCallback = record
-    addr:Word;                                                                  // adresa lokomotivy
-    callback_ok, callback_err:TCommandCallback;                                 // globalni callbacky
-    sady:TList<TFuncCBSada>;                                                    // seznam jednotlivych sad, kazda sada obsahuje funkce k naprogramovani
-  end;
-
-  // zaznam toggleQueue
-  THVFunc = record
+  // toggleQueue record
+  THVToggleFunc = record
     HV:THV;
     fIndex:Cardinal;
     time:TDateTime;
@@ -120,77 +93,41 @@ type
      fLibDir:string;
      aReady:boolean;
      SpeedTable:array [0.._MAX_SPEED] of Cardinal;
-     turnoff_callback:TNotifyEvent;                                             // callback volany po prikazu TurnOff
-                                                                                //   Prikaz TurnOff zapina F0 a vypina vsechny vyssi funkce
-                                                                                //   pouziva se pri vypinani systemu (pro vypnuti otravnych zvuku zvukovych dekoderu)
+     turnoff_callback:TNotifyEvent;
 
      eOnReady : TReadyEvent;
      eOnOpenError : TErrorEvent;
 
      mLogLevelFile : TTrkLogLevel;
      mLogLevelTable: TTrkLogLevel;
-                                                                                // pri .Open se nastavuje na false
+
      procedure LoadLib(filename:string);
 
      procedure SetLoglevelFile(ll:TTrkLogLevel);
      procedure SetLoglevelTable(ll:TTrkLogLevel);
 
-     //////////////////////////////////////
-
      procedure TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
      procedure TrkLocoStolen(Sender: TObject; addr: Word);
 
-     procedure NouzReleaseLoko();
-//     procedure LokComErr(Sender:TObject; addr:Integer);                         // event oznamujici chybu komunikace s danou lokomotivou (je volan paralelne s error callback eventem, ale jen pro urcite prikazy - pro prikazy tykajici se rizeni konkretni lokomotivy).
-//     procedure LokComOK(Sender:TObject; addr:Integer);                          // event potvrzujici komunikaci s danym HV (je volan pokazde, pokud centrala odpovi na prikaz o nasatveni dat HV)
-
-     // eventy z komunikace s centralou pri prebirani a odhlasovani HV (tj. prebirani a odhlasovani VSECH LOKO)
-//     procedure PrebiraniUpdateOK(Sender:TObject; Data:Pointer);                 // loko uspesne prevzato
-//     procedure PrebiraniUpdateErr(Sender:TObject; Data:Pointer);                // prevzeti se nazdarilo (napr. centrala neodpovedela na prikaz o prevzeti, na POM ...)
-//     procedure OdhlasovaniUpdateOK(Sender:TObject; Data:Pointer);               // loko uspesne uvolneno
-//     procedure OdhlasovaniUpdateErr(Sender:TObject; Data:Pointer);              // uvolneni loko se nezdarilo (napr. centrala nedopovedela na POM, ...)
-
-//     procedure AllPrevzato();                                                   // je volana, pokud jsou vsechny loko prevzaty (primarni vyuziti = interakce s GUI)
-//     procedure AllOdhlaseno();                                                  // je volana, pokud jsou vsechny loko odhlaseny (primarni vyuziti = interakce s GUI)
-
      procedure TurnedOffFunction(Sender:TObject; Data:Pointer);
 
-     // eventy spojene se zapisem jednotlivych POM:
      procedure POMCvWroteOK(Sender:TObject; Data:Pointer);
      procedure POMCvWroteErr(Sender:TObject; Data:Pointer);
-
-     // chyba pri nouzovem uvolnovani HV
-     //   Nouzzove jsou uvolnena takove HV, ktera jsou pri BeforeClose jeste prevzata.
-     procedure NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
 
      procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
      procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
 
      procedure LoadSpeedTableToTable(var LVRych:TListView);
-//     procedure UpdateSpeedDir(HV:THV; Sender:TObject; speed:boolean; dir:boolean);
 
      procedure CheckToggleQueue();
      procedure FlushToggleQueue();
-     procedure ProcessHVFunc(hvFunc:THVFunc);
-     class function HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVFunc;
+     procedure ProcessToggleFunc(hvFunc:THVToggleFunc);
+     class function HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVToggleFunc;
 
    public
 
-
-     {
-      Pozn.
-        Vsechny funkce spojene s nastavovanim dat HV maji parametr Sender
-        kam je vhodne dat bud konkretni regulator, nebo OR v pripade
-          regulatoru klienta.
-        Informace o zmene dat HV je pak volana do vsech systemu mimo Senderu.
-        Tedy napriklad, pokud je loko otevrene v 5 regulatorech a jeste na serveru
-          a dojde ke zmene rychlosti v OR1, je infroamce o zmene rychlosti
-          odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
-          vsak do OR1 (tomu prijde napriklad OK, ci error callback)
-     }
-
     DCCGoTime:TDateTime;
-    toggleQueue:TQueue<THVFunc>;
+    toggleQueue:TQueue<THVToggleFunc>;
     LogObj:TListView;
 
      constructor Create();
@@ -227,12 +164,10 @@ type
      property ready:boolean read aready;
      property libDir:string read fLibDir;
 
-  end;//TTrkGUI
+  end;
 
 var
   TrakceI: TTrakce;
-
-////////////////////////////////////////////////////////////////////////////////
 
 implementation
 
@@ -259,7 +194,7 @@ begin
  Self.turnoff_callback := nil;
  Self.DCCGoTime := Now;
 
- Self.toggleQueue := TQueue<THVFunc>.Create();
+ Self.toggleQueue := TQueue<THVToggleFunc>.Create();
 
  TTrakceIFace(Self).OnLog := Self.TrkLog;
  TTrakceIFace(Self).OnLocoStolen := Self.TrkLocoStolen;
@@ -429,14 +364,6 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrakce.LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);
-begin
- HV.SetSingleFunc(fIndex, true, TrakceI.Callback(), TrakceI.Callback(), Sender);
- Self.toggleQueue.Enqueue(HVFunc(HV, fIndex, Now+EncodeTime(0, 0, 0, 500)));
-end;
-
-////////////////////////////////////////////////////////////////////////////////
 // LoksSetFunc
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -508,7 +435,7 @@ var i, j:Integer;
     AssignFile(myFile, filename);
     Reset(myFile);
   except
-    Log(llErrors, 'Chyba pri nacitani souboru s rychlostmi - nepodarilo se pristoupit k souboru! Pouzivam vychozi rychlostni tabulku.');
+    Log(llErrors, 'Chyba při načítání souboru s rychlostmi: nepodařilo se přistoupit k souboru! Používám výchozi rychlostní tabulku.');
 
     // nacteme vychozi rychlostni tabulku
     for i := 0 to _MAX_SPEED do
@@ -522,7 +449,7 @@ var i, j:Integer;
    begin
     if (Eof(myFile)) then
      begin
-      Log(llErrors, 'Chyba pri nacitani souboru s rychlostmi - prilis malo radku! Doplnuji vychozi rychlostni tabulkou.');
+      Log(llErrors, 'Chyba při načítání souboru s rychlostmi: příliš málo řádků! Doplňuji výchozí rychlostní tabulkou.');
       CloseFile(myFile);
       for j := i to _MAX_SPEED do
         Self.SpeedTable[j] := _DEFAULT_SPEED_TABLE[j];
@@ -540,7 +467,7 @@ var i, j:Integer;
          end;
       end;
      end;
-   end;//while
+   end;
 
   CloseFile(myFile);
   Self.LoadSpeedTableToTable(LVRych);
@@ -584,8 +511,8 @@ begin
  for i := 0 to  _MAX_SPEED do
   if (Self.SpeedTable[i] = kmph) then
     Exit(i);
- Exit(1); // v pripade nenalezeni rychlosti vraci nouzovy STOP
-end;//fucntion
+ Exit(1); // emergency stop
+end;
 
 function TTrakce.GetStepSpeed(step:byte):Integer;
 begin
@@ -612,8 +539,6 @@ begin
  Self.turnoff_callback := callback;
  Self.TurnedOffFunction(Self, Pointer(0));
 end;
-
-////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.TurnedOffFunction(Sender:TObject; Data:Pointer);
 var addr: Word;
@@ -709,49 +634,14 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-procedure TTrakce.NouzReleaseCallbackErr(Sender:TObject; Data:Pointer);
-begin
-{ HVDb[Integer(data^)].Slot.prevzato      := false;
- HVDb[Integer(data^)].Slot.prevzato_full := false; }
-end;
-
+// Function toggling
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.NouzReleaseLoko();
-var i:Integer;
-    data:Pointer;
+procedure TTrakce.LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);
 begin
-{ GetMem(data, sizeof(integer));
- for i := 0 to _MAX_ADDR-1 do
-  begin
-   if (HVDb[i] = nil) then continue;
-
-   try
-     if (HVDb[i].Slot.prevzato) then
-      begin
-       Integer(data^) := i;
-       Self.callback_err := TTrakce.GenerateCallback(Self.NouzReleaseCallbackErr, data);
-       try
-         Self.OdhlasitLoko(HVDb[i]);
-       except
-         on E:Exception do
-           FreeMem(data);
-       end;
-      end;
-     while (HVDb[i].Slot.prevzato) do
-      begin
-       sleep(1);
-       Application.ProcessMessages;
-      end;
-   except
-
-   end;
-  end;
- FreeMem(data);             }
+ HV.SetSingleFunc(fIndex, true, TrakceI.Callback(), TrakceI.Callback(), Sender);
+ Self.toggleQueue.Enqueue(HVFunc(HV, fIndex, Now+EncodeTime(0, 0, 0, 500)));
 end;
-
-////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.CheckToggleQueue();
 begin
@@ -760,7 +650,7 @@ begin
  if (Now >= Self.toggleQueue.Peek.time) then
   begin
    try
-     Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+     Self.ProcessToggleFunc(Self.toggleQueue.Dequeue());
    except
 
    end;
@@ -772,26 +662,20 @@ begin
  while (Self.toggleQueue.Count > 0) do
   begin
    try
-     Self.ProcessHVFunc(Self.toggleQueue.Dequeue());
+     Self.ProcessToggleFunc(Self.toggleQueue.Dequeue());
    except
 
    end;
   end;
 end;
 
-procedure TTrakce.ProcessHVFunc(hvFunc:THVFunc);
-var funkce:TFunkce;
+procedure TTrakce.ProcessToggleFunc(hvFunc:THVToggleFunc);
 begin
  if (hvFunc.HV = nil) then Exit();
-
-{ funkce := hvFunc.HV.Slot.funkce;
- funkce[hvFunc.fIndex] := false;
- Self.LokSetFunc(Self, hvFunc.HV, funkce); }
+ hvFunc.HV.SetSingleFunc(hvFunc.fIndex, false, TTrakce.Callback(), TTrakce.Callback());
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-///
-class function TTrakce.HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVFunc;
+class function TTrakce.HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVToggleFunc;
 begin
  Result.HV := HV;
  Result.fIndex := fIndex;
@@ -823,4 +707,4 @@ initialization
 finalization
   TrakceI.Free();
 
-end.//unit
+end.
