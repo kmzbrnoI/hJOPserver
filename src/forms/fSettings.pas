@@ -17,13 +17,6 @@ type
     B_pouzit: TButton;
     B_OK: TButton;
 
-    //Log
-    M_log: TMenuItem;
-    PM_log_delete: TMenuItem;
-
-    //TPopupMenu/TMainMenu
-    MM_Options: TMainMenu;
-
     //TOpenDisalog/TSaveDialog
     OD_Open: TOpenDialog;
     SD_Save: TSaveDialog;
@@ -88,7 +81,6 @@ type
     Label1: TLabel;
 
     procedure FormCreate(Sender: TObject);
-    procedure PM_log_deleteClick(Sender: TObject);
     procedure PC_1Change(Sender: TObject);
     procedure B_pouzitClick(Sender: TObject);
     procedure PM_Data_SaveClick(Sender: TObject);
@@ -97,7 +89,6 @@ type
     procedure B_SS_SaveClick(Sender: TObject);
     procedure LB_TimerClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure LV_DigiRychDblClick(Sender: TObject);
     procedure CHB_SS_EnableClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
@@ -129,38 +120,6 @@ uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
 procedure TF_Options.FormCreate(Sender: TObject);
 begin
  PC_1.ActivePageIndex := 0;
-end;
-
-procedure TF_Options.PM_log_deleteClick(Sender: TObject);
-var s: TSearchRec;
-    i: integer;
-begin
- i := FindFirst(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\program\*.log', 0, s);
- while (i=0) do begin
-   DeleteFile(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\program\'+s.Name);
-   i := FindNext(s);
- end;
- FindClose(s);
- i := FindFirst(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\net\*.log', 0, s);
- while (i=0) do begin
-   DeleteFile(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\net\'+s.Name);
-   i := FindNext(s);
- end;
- FindClose(s);
- i := FindFirst(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\lnet\*.log', 0, s);
- while (i=0) do begin
-   DeleteFile(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\lnet\'+s.Name);
-   i := FindNext(s);
- end;
- FindClose(s);
- i := FindFirst(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\login\*.log', 0, s);
- while (i=0) do begin
-   DeleteFile(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'log\login\'+s.Name);
-   i := FindNext(s);
- end;
- FindClose(s);
- writelog('Smazány soubory LOG',WR_MESSAGE);
- Application.Messagebox('Soubory log smazany','Informace',MB_OK OR MB_ICONINFORMATION OR MB_DEFBUTTON1);
 end;
 
 procedure TF_Options.PC_1Change(Sender: TObject);
@@ -380,13 +339,7 @@ procedure TF_Options.LB_TimerClick(Sender: TObject);
 
 procedure TF_Options.FormShow(Sender: TObject);
  begin
-  writelog('Zobrazeno okno nastaveni',WR_MESSAGE);
   Self.PC_1Change(Self);
- end;
-
-procedure TF_Options.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
-  writelog('Skryto okno nastaveni',WR_MESSAGE);
  end;
 
 procedure TF_Options.LV_DigiRychDblClick(Sender: TObject);

@@ -9,10 +9,6 @@ object F_Options: TF_Options
   ClientHeight = 529
   ClientWidth = 555
   Color = clBtnFace
-  Constraints.MaxHeight = 585
-  Constraints.MaxWidth = 1625
-  Constraints.MinHeight = 574
-  Constraints.MinWidth = 500
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
   Font.Height = -11
@@ -56,10 +52,8 @@ object F_Options: TF_Options
     000000000000000000000000000000000000000000000000000000000000FFE0
     0000FFC00000FF800000FF000000FE000000FC010000FC030000C0070000800F
     0000001F0000007F0000007F0000307F0000707F0000C0FF0000C1FF0000}
-  Menu = MM_Options
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   OnShow = FormShow
@@ -112,10 +106,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Konfigurace'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_ON_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -329,10 +319,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Snadn'#233' spu'#353't'#283'n'#237
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_SS: TPanel
         Left = 0
         Top = 0
@@ -382,7 +368,7 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
         end
         object GB_SS_Vystupy: TGroupBox
@@ -850,19 +836,6 @@ object F_Options: TF_Options
         TabOrder = 0
         ViewStyle = vsReport
         OnDblClick = LV_DigiRychDblClick
-      end
-    end
-  end
-  object MM_Options: TMainMenu
-    Images = F_Main.IL_Menu
-    Left = 760
-    Top = 608
-    object M_log: TMenuItem
-      Caption = 'Log'
-      object PM_log_delete: TMenuItem
-        Caption = 'Smazat soubory log'
-        ImageIndex = 42
-        OnClick = PM_log_deleteClick
       end
     end
   end
