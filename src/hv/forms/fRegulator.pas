@@ -59,6 +59,7 @@ type
    speed:Integer;
 
    procedure SetElemntsState(state:boolean);
+   procedure Acquired(Sender:TObject; data:Pointer);
    procedure AcquireFailed(Sender:TObject; data:Pointer);
 
   public
@@ -66,7 +67,7 @@ type
 
    procedure OpenForm(HV:THV);
    procedure LocoChanged(Sender:TObject);
-   procedure MyKeyPress(key:Integer);
+   procedure MyKeyPress(key:Integer; var handled: boolean);
   end;
 
  ///////////////////////////////////////////////////////////////////////////////
@@ -138,12 +139,14 @@ procedure TF_DigiReg.OpenForm(HV:THV);
   Self.T_Speed.Enabled := true;
 
   Self.Show();
+  if (Self.TB_reg.Enabled) then
+    Self.TB_reg.SetFocus();
  end;
 
 procedure TF_DigiReg.B_PrevzitLokoClick(Sender: TObject);
 begin
  Self.B_PrevzitLoko.Enabled := false;
- Self.OpenHV.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback(Self.AcquireFailed));
+ Self.OpenHV.TrakceAcquire(TTrakce.Callback(Self.Acquired), TTrakce.Callback(Self.AcquireFailed));
 end;
 
 procedure TF_DigiReg.B_IdleClick(Sender: TObject);
@@ -190,6 +193,11 @@ var tmp:THV;
 
   Self.T_Speed.Enabled := false;
  end;
+
+procedure TF_DigiReg.Acquired(Sender:TObject; data:Pointer);
+begin
+ Self.TB_Reg.SetFocus();
+end;
 
 procedure TF_DigiReg.AcquireFailed(Sender:TObject; data:Pointer);
 begin
@@ -323,7 +331,7 @@ begin
 end;
 
 // vyvola se, pokud je me okynko aktivni a je nad nim stiskla klavesa
-procedure TF_DigiReg.MyKeyPress(key:Integer);
+procedure TF_DigiReg.MyKeyPress(key:Integer; var handled: boolean);
 begin
  if (not Self.OpenHV.acquired) then
   begin
@@ -333,8 +341,7 @@ begin
    Exit();
   end;
 
- Self.TB_reg.SetFocus();
-
+ handled := true;
  case (key) of
   VK_NUMPAD0 : Self.CHB_svetla.Checked := not Self.CHB_svetla.Checked;
   VK_NUMPAD1 : Self.CHB_f1.Checked := not Self.CHB_f1.Checked;
@@ -352,6 +359,8 @@ begin
 
   83: Self.B_STOPClick(Self);   // 's'
   73: Self.B_IdleClick(Self);   // 'i'
+ else
+  handled := false;
  end;
 
 end;
@@ -429,9 +438,8 @@ begin
   begin
    if ((Self.forms.data[i] <> nil) and (Self.forms.data[i].Active)) then
     begin
-     Self.forms.data[i].MyKeyPress(key);
-     handled := true;
-     Exit;
+     Self.forms.data[i].MyKeyPress(key, handled);
+     Exit();
     end;
   end;
 end;
