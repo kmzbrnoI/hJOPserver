@@ -41,7 +41,7 @@ procedure TF_splash.FormCreate(Sender: TObject);
 
 procedure TF_splash.FormShow(Sender: TObject);
  begin
-  ST_Version.Caption  := 'Verze '+NactiVerzi(Application.ExeName);
+  ST_Version.Caption := 'Verze '+NactiVerzi(Application.ExeName);
   L_BuildTime.Caption := GetLastBuildDate+'  '+GetLastBuildTime;
  end;
 

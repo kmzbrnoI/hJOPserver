@@ -185,7 +185,7 @@ object F_splash: TF_splash
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Max = 21
+    Max = 17
     Smooth = True
     TabOrder = 2
   end

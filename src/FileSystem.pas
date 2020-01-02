@@ -66,7 +66,7 @@ end;
 procedure TData.CompleteLoadFromFile(inidata: TMemIniFile);
 var read,read2:string;
  begin
-  F_Splash.AddStav('Načítám konfiguraci');
+  F_Splash.AddStav('Načítám konfiguraci...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
   try
     Konfigurace.LoadCfgFromFile(read);
@@ -77,7 +77,7 @@ var read,read2:string;
 
   F_Options.CHB_Log_console.Checked := inidata.ReadBool('Log', 'console', true);
 
-  F_Splash.AddStav('Načítám uživatele');
+  F_Splash.AddStav('Načítám uživatele...');
   try
     UsrDB.LoadAll(
       inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'users', 'data\users.ini'),
@@ -88,7 +88,7 @@ var read,read2:string;
       AppEvents.LogException(E, E.Message);
   end;
 
-  F_Splash.AddStav('Načítám stanice (soubor *.spnl)');
+  F_Splash.AddStav('Načítám stanice (soubor *.spnl)...');
   read  := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'spnl', 'data\stanice.spnl');
   read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'or', 'stav\or.ini');
   try
@@ -101,7 +101,7 @@ var read,read2:string;
   end;
   F_Main.E_dataload_spnl.Text := read;
 
-  F_Splash.AddStav('Načítám hnací vozidla');
+  F_Splash.AddStav('Načítám hnací vozidla...');
   F_Main.E_dataload_HV_dir.Text := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'lok', 'lok');
   F_Main.E_dataload_HV_state.Text := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'lok', 'stav\lok.ini');
   writelog('Načítám hnací vozidla - '+F_Main.E_dataload_HV_dir.Text+'\*', WR_DATA);
@@ -113,7 +113,7 @@ var read,read2:string;
   end;
   writelog('Načteno '+IntToStr(HVDb.cnt)+' hnacích vozidel',WR_DATA);
 
-  F_Splash.AddStav('Načítám RCS');
+  F_Splash.AddStav('Načítám RCS...');
   writelog('Načítám RCS...', WR_DATA);
   try
     RCSi.LoadFromFile(inidata);
@@ -133,7 +133,7 @@ var read,read2:string;
   end;
   writelog('Trakce načtena', WR_DATA);
 
-  F_Splash.AddStav('Načítám databázi zesilovačů');
+  F_Splash.AddStav('Načítám databázi zesilovačů...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', 'data\zesilovace.ini');
   try
     Boosters.LoadFromFile(read);
@@ -143,7 +143,7 @@ var read,read2:string;
   end;
   F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
 
-  F_Splash.AddStav('Načítám soupravy');
+  F_Splash.AddStav('Načítám soupravy...');
   read := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', 'stav\soupravy.ini');
   try
     Soupravy.LoadData(read);
@@ -154,7 +154,7 @@ var read,read2:string;
   F_Main.E_dataload_soupr.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), read);
 
   //nacitani bloku
-  F_Splash.AddStav('Načítám databázi bloků');
+  F_Splash.AddStav('Načítám databázi bloků...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'bloky', 'data\bloky.ini');
   read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'bloky', 'stav\bloky.ini');
   try
@@ -168,7 +168,7 @@ var read,read2:string;
 
   Soupravy.UpdateFront();
 
-  F_Splash.AddStav('Načítám databázi jizdních cest');
+  F_Splash.AddStav('Načítám databázi jizdních cest...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'JC', 'data\JC.ini');
   try
     JCDb.LoadData(read);
@@ -177,7 +177,7 @@ var read,read2:string;
       AppEvents.LogException(E);
   end;
 
-  F_Splash.AddStav('Načítám databázi složených jizdních cest');
+  F_Splash.AddStav('Načítám databázi složených jizdních cest...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'mJC', 'data\mJC.ini');
   try
     MultiJCDb.LoadData(read);
@@ -187,7 +187,7 @@ var read,read2:string;
   end;
   F_Main.E_Dataload_multiJC.Text := MultiJCDb.filename;
 
-  F_Splash.AddStav('Načítám databázi automatických režimů');
+  F_Splash.AddStav('Načítám databázi automatických režimů...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'AC', 'AC');
   read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'AC', 'stav\AC.ini');
   try
@@ -199,7 +199,7 @@ var read,read2:string;
   end;
   F_Main.E_dataload_AC.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.dirname);
 
-  F_Splash.AddStav('Načítám databázi FormData');
+  F_Splash.AddStav('Načítám databázi FormData...');
   read := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'forms', 'stav\forms.ini');
   try
     FormData.LoadFormData(read);
@@ -208,7 +208,7 @@ var read,read2:string;
       AppEvents.LogException(E);
   end;
 
-  F_Splash.AddStav('Načítám vedlejší databáze');
+  F_Splash.AddStav('Načítám vedlejší databáze...');
   TrakceI.LoadSpeedTable('data\rychlosti.csv',F_Options.LV_DigiRych);
   try
     F_Admin.LoadData;
