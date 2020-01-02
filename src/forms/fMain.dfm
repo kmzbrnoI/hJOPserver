@@ -9087,6 +9087,7 @@ object F_Main: TF_Main
     end
     object A_Trk_Lib_Cfg: TAction
       Caption = 'Nastaven'#237
+      ImageIndex = 18
       ShortCut = 16466
       OnExecute = A_Trk_Lib_CfgExecute
     end
