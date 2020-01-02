@@ -138,10 +138,10 @@ begin
 
      if (pole_dat[0] = 'app-exit') then
       begin
-       NUZClose     := true;
-       CloseMessage := false;
-       F_Main.Close;
-       Exit;
+       F_Main.NUZClose := true;
+       F_Main.CloseMessage := false;
+       F_Main.Close();
+       Exit();
       end;
 
       if (pole_dat[0] = 'nuz') then

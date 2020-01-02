@@ -16,6 +16,7 @@ uses
   Forms,
   Windows,
   SysUtils,
+  IniFiles,
   fTester in 'forms\fTester.pas' {F_Tester},
   fMain in 'forms\fMain.pas' {F_Main},
   fSettings in 'forms\fSettings.pas' {F_Options},
@@ -147,24 +148,30 @@ uses
 
 {$R *.res}
 
+var
+  inidata: TMemIniFile;
+
  begin
+  F_Main := nil;
   Application.OnException := AppEvents.OnAppException;
 
+  Randomize();
   SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
   DecimalSeparator := '.';
 
-  // povolena je jen jedna instance
   if (ZkontrolujSpusteno) then
    begin
     Application.MessageBox('hJOPserver již spuštěn, povolena pouze jedna instance', 'Již spuštěn', MB_ICONWARNING OR MB_OK);
     halt(0);
    end;
 
-  Application.Initialize;
+  Application.Initialize();
   Application.Title := 'hJOPserver';
   Application.CreateForm(TF_Main, F_Main);
   Application.CreateForm(TF_Splash, F_Splash);
+  F_Splash.AddStav('Vytvářím okna...');
+
   Application.CreateForm(TF_Console, F_Console);
   Application.CreateForm(TF_BlkVyh_tech, F_BlkVyh_tech);
   Application.CreateForm(TF_UserEdit, F_UserEdit);
@@ -175,9 +182,6 @@ uses
   Application.CreateForm(TF_FuncsSet, F_FuncsSet);
   Application.CreateForm(TF_BlkTUZastEvent, F_BlkTUZastEvent);
   Application.CreateForm(TF_HoukEvsUsek, F_HoukEvsUsek);
-  F_Splash.AddStav('Vytvářím hlavní okno');
-  F_Main.CreateSystem;
-  F_Splash.AddStav('Vytvářím vedlejší okna');
   Application.CreateForm(TF_JCEdit, F_JCEdit);
   Application.CreateForm(TF_RychlostiEdit, F_RychlostiEdit);
   Application.CreateForm(TF_BlkUsek, F_BlkUsek);
@@ -194,7 +198,6 @@ uses
   Application.CreateForm(TF_SystemInfo, F_SystemInfo);
   Application.CreateForm(TF_Admin, F_Admin);
   Application.CreateForm(TF_Options, F_Options);
-  F_Splash.AddStav('Vytvářím vedlejší okna');
   Application.CreateForm(TF_Tester, F_Tester);
   Application.CreateForm(TF_ZesilovacEdit, F_ZesilovacEdit);
   Application.CreateForm(TF_BlkTrat, F_BlkTrat);
@@ -203,13 +206,32 @@ uses
   Application.CreateForm(TF_HVEdit, F_HVEdit);
   Application.CreateForm(TF_ModCasSet, F_ModCasSet);
   Application.CreateForm(TF_About, F_About);
-  F_Main.OnStart;
-  F_splash.Close;
+
+  LogInit();
+  if (not FileExists(_INIDATA_FN)) then
+    Data.CreateCfgDirs();
+
+  F_splash.AddStav('Načítám data...');
+  try
+    inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
+    try
+      Data.CompleteLoadFromFile(inidata);
+    finally
+      inidata.UpdateFile();
+      inidata.Free();
+    end;
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'CompleteLoadFromFile');
+  end;
+
+  F_Main.OnStart();
+  F_splash.Close();
 
   F_Main.LogStatus('Program spuštěn');
   SystemCritical.IsCritical := true;
 
-  Application.Run;
+  Application.Run();
 
   //zniceni Mutexu pri ukonceni
   if (Mutex <> 0) then CloseHandle(Mutex);

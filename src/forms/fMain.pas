@@ -412,6 +412,7 @@ type
     procedure A_Turnoff_FunctionsExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -427,9 +428,9 @@ type
 
   public
     KomunikacePocitani:Shortint;
-
-    procedure CreateSystem();
-    procedure CreateClasses();
+    CloseMessage:Boolean; // jestli se ptat uzivatele na ukonceni SW
+    NUZClose:Boolean; // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
+    sb1Log: Boolean;
 
     procedure CloseForm();
     procedure RepaintObjects();
@@ -442,7 +443,6 @@ type
     procedure DisableRemoveButtons();
     procedure UpdateACButtons();
     procedure SetCallMethod(Method:TNotifyEvent);
-    procedure CreateCfgDirs();
     procedure UpdateSystemButtons();
     procedure CheckNasobicWidth();
 
@@ -489,12 +489,7 @@ type
 
 var
   F_Main: TF_Main;
-  SystemData:TSystem;
-
-  ini_lib:TMemInifile;                                                          // objekt pro pristup k ini_lib souboru
-  Log:boolean;                                                                  // flag logovani do tabulky ve F_Main
-  CloseMessage:Boolean;                                                         // flag ptani se uzivatele na ukonceni SW
-  NUZClose:Boolean;                                                             // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
+  SystemData: TSystem;
 
 implementation
 
@@ -1549,7 +1544,7 @@ end;
 procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var ci:TCloseInfo;
  begin
-  if (NUZClose) then
+  if (Self.NUZClose) then
    begin
     CanClose := true;
     Exit();
@@ -1602,14 +1597,13 @@ var ci:TCloseInfo;
     end;
 
     TCloseInfo.ci_yes : begin
-      if (CloseMessage) then
+      if (Self.CloseMessage) then
        begin
         CanClose := (Application.Messagebox('Opravdu chcete ukončit program?', 'hJOPserver',
             MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYES);
-       end else begin//CloseMessage
-        CloseMessage := true;
-        CanClose     := true;
-       end;//else CloseMessage
+       end else begin
+        CanClose := true;
+       end;
     end;
 
   end;//case
@@ -1617,7 +1611,45 @@ var ci:TCloseInfo;
 
 procedure TF_Main.FormCreate(Sender: TObject);
 begin
+ Self.CloseMessage := true;
  Self.mCpuLoad := TCPuLoad.Create();
+
+ ACTableData := TACTableData.Create(Self.LV_AC_Db);
+ JCTableData := TJCTableData.Create(Self.LV_JC);
+ ABTableData := TABTableData.Create(Self.LV_AB);
+ UsersTableData := TUsersTableData.Create(Self.LV_Users);
+ RCSTableData := TRCSTableData.Create(Self.LV_Stav_RCS);
+ SprTableData := TSprTableData.Create(Self.LV_Soupravy);
+ HVTableData := THVTableData.Create(Self.LV_HV);
+ ZesTableData := TZesTableData.Create(Self.LV_Zesilovace);
+ ORsTableData := TORsTableData.Create(Self.LV_Stanice);
+ MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
+
+ // assign RCS events:
+ RCSi.AfterOpen  := Self.OnRCSOpen;
+ RCSi.AfterClose := Self.OnRCSClose;
+ RCSi.AfterStart := Self.OnRCSStart;
+ RCSi.AfterStop  := Self.OnRCSStop;
+ RCSi.OnScanned  := Self.OnRCSScanned;
+ RCSi.OnReady    := Self.ONRCSReady;
+
+ // assign Trakce events:
+ TrakceI.BeforeOpen := Self.OnTrkBeforeOpen;
+ TrakceI.AfterOpen := Self.OnTrkAfterOpen;
+ TrakceI.BeforeClose := Self.OnTrkBeforeClose;
+ TrakceI.AfterClose := Self.OnTrkAfterClose;
+ TrakceI.OnReady := Self.OnTrkReady;
+ TrakceI.OnTrackStatusChanged := Self.OnTrkStatusChange;
+ TrakceI.OnOpenError := Self.OnTrkErrOpen;
+
+ TrakceI.LogObj := Self.LV_log_lnet;
+
+ FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
+
+ Self.LoadIniLibData();
+
+ F_Main.Caption := 'hJOPserver – v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
+ F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 end;
 
 procedure TF_Main.FormDestroy(Sender: TObject);
@@ -1705,8 +1737,8 @@ begin
    Msg.Result := 0;
  end else begin
    Msg.Result := 1;
-   CloseMessage := false;
-   NUZClose     := true;
+   Self.CloseMessage := false;
+   Self.NUZClose := true;
  end;
  inherited;
 end;
@@ -1733,8 +1765,8 @@ begin
 
    end;
 
-   CloseMessage := false;
-   NUZClose     := true;
+   Self.CloseMessage := false;
+   Self.NUZClose := true;
    F_Main.Close();
   end;
  inherited;
@@ -1856,22 +1888,34 @@ begin
   end;
 
   try
-    RCSi.SaveToFile(ini_lib);
+    ini := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
+    try
+      try
+        RCSi.SaveToFile(ini);
+      except
+        on E:Exception do
+          AppEvents.LogException(E, 'Save RCS');
+      end;
+
+      try
+        TrakceI.SaveToFile(ini);
+      except
+        on E:Exception do
+          AppEvents.LogException(E, 'Save Trakce');
+      end;
+
+      ini.WriteBool('Log', 'main-file', Self.CHB_Mainlog_File.Checked);
+      ini.WriteBool('Log', 'main-table', Self.CHB_Mainlog_Table.Checked);
+      ini.WriteBool('Log', 'rcs', Self.CHB_rcslog.Checked);
+
+    finally
+      ini.UpdateFile();
+      ini.Free();
+    end;
   except
     on E:Exception do
-      AppEvents.LogException(E, 'Save RCS');
+      AppEvents.LogException(E, 'Save cfg');
   end;
-
-  try
-    TrakceI.SaveToFile(ini_lib);
-  except
-    on E:Exception do
-      AppEvents.LogException(E, 'Save Trakce');
-  end;
-
-  ini_lib.WriteBool('Log', 'main-file', Self.CHB_Mainlog_File.Checked);
-  ini_lib.WriteBool('Log', 'main-table', Self.CHB_Mainlog_Table.Checked);
-  ini_lib.WriteBool('Log', 'rcs', Self.CHB_rcslog.Checked);
 
   try
     ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text), TEncoding.UTF8);
@@ -2271,10 +2315,10 @@ end;
 
 procedure TF_Main.T_konfliktyTimer(Sender: TObject);
 begin
- if (log) then                                              //zapis do SB1 - cekani 0,5 s
+ if (Self.sb1Log) then                                              //zapis do SB1 - cekani 0,5 s
   begin
-   F_Main.SB1.Panels.Items[_SB_LOG].Text:='';
-   log:=false;
+   F_Main.SB1.Panels.Items[_SB_LOG].Text := '';
+   Self.sb1Log := false;
   end;
 end;
 
@@ -2303,42 +2347,7 @@ procedure TF_Main.CloseForm();
   Self.A_SaveStavExecute(Self);
   TrakceI.LogObj := nil;
 
-  try
-    ini_lib.UpdateFile();
-    FreeAndNil(ini_lib);
-  except
-    on E:Exception do
-      AppEvents.LogException(E, 'ini_lib save');
-  end;
   WriteLog('###############################################', WR_MESSAGE);
- end;
-
-procedure TF_Main.CreateCfgDirs();
-begin
- try
-   CreateDir('data');
-   CreateDir('lok');
-   CreateDir('stav');
- except
-   on e:Exception do
-     AppEvents.LogException(E);
- end;
-end;
-
-procedure TF_Main.CreateClasses();
- begin
-  ini_lib := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
-
-  ACTableData    := TACTableData.Create(Self.LV_AC_Db);
-  JCTableData    := TJCTableData.Create(Self.LV_JC);
-  ABTableData    := TABTableData.Create(Self.LV_AB);
-  UsersTableData := TUsersTableData.Create(Self.LV_Users);
-  RCSTableData   := TRCSTableData.Create(Self.LV_Stav_RCS);
-  SprTableData   := TSprTableData.Create(Self.LV_Soupravy);
-  HVTableData    := THVTableData.Create(Self.LV_HV);
-  ZesTableData   := TZesTableData.Create(Self.LV_Zesilovace);
-  ORsTableData   := TORsTableData.Create(Self.LV_Stanice);
-  MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
  end;
 
 procedure TF_Main.RepaintObjects();
@@ -2360,6 +2369,11 @@ procedure TF_Main.FormResize(Sender: TObject);
  begin
   RepaintObjects;
  end;
+
+procedure TF_Main.FormShow(Sender: TObject);
+begin
+ Self.RepaintObjects();
+end;
 
 procedure TF_Main.L_DateDblClick(Sender: TObject);
 begin
@@ -2408,13 +2422,28 @@ begin
 end;
 
 procedure TF_Main.MI_Save_configClick(Sender: TObject);
+var inidata: TMemIniFIle;
 begin
-  Application.ProcessMessages;
+  Application.ProcessMessages();
   Screen.Cursor := crHourGlass;
 
-  Data.CompleteSaveToFile;
+  try
+    inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
+    try
+      Data.CompleteSaveToFile(inidata);
+    finally
+      inidata.UpdateFile();
+      inidata.Free();
+    end;
+  except
+    on E:Exception do
+     begin
+      AppEvents.LogException(E, 'TF_Main.MI_Save_configClick');
+      Application.MessageBox(PChar('Výjimka: '+E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
+     end;
+  end;
 
-  Screen.Cursor := crDefault;
+ Screen.Cursor := crDefault;
 end;
 
 procedure TF_Main.MI_TechPropClick(Sender: TObject);
@@ -2463,11 +2492,17 @@ begin
 end;
 
 procedure TF_Main.LoadIniLibData();
+var inidata: TMemIniFile;
  begin
-  Self.CHB_Mainlog_File.Checked := ini_lib.ReadBool('Log','main-file', true);
-  Self.CHB_Mainlog_Table.Checked := ini_lib.ReadBool('Log','main-table', true);
-  Self.CHB_rcslog.Checked := ini_lib.ReadBool('Log', 'rcs', false);
-  RCSi.log := Self.CHB_rcslog.Checked;
+  inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
+  try
+    Self.CHB_Mainlog_File.Checked := inidata.ReadBool('Log','main-file', true);
+    Self.CHB_Mainlog_Table.Checked := inidata.ReadBool('Log','main-table', true);
+    Self.CHB_rcslog.Checked := inidata.ReadBool('Log', 'rcs', false);
+    RCSi.log := Self.CHB_rcslog.Checked;
+  finally
+    inidata.Free();
+  end;
  end;
 
 procedure TF_Main.DetekujAutSpusteniSystemu();
@@ -2545,7 +2580,11 @@ procedure TF_Main.OnStart();
   writelog('Spuštěn hJOPserver v'+NactiVerzi(application.ExeName), WR_MESSAGE);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
 
-  if (not CloseMessage) then F_Main.Close;
+  if (not Self.CloseMessage) then
+   begin
+    Self.Close();
+    Exit();
+   end;
 
   F_splash.PB_Prubeh.Position := F_splash.PB_Prubeh.Max;
   F_Splash.AddStav('Téměř spuštěno...');
@@ -2561,11 +2600,11 @@ procedure TF_Main.OnStart();
   ORTCPServer.GUIInitTable();
   ModCas.UpdateGUIColors();
 
-  F_Main.Visible := true;
+  Self.Visible := true;
 
-  F_Main.Timer1.Enabled := true;
-  F_Main.T_function.Enabled := true;
-  F_Main.T_konflikty.Enabled := true;
+  Self.Timer1.Enabled := true;
+  Self.T_function.Enabled := true;
+  Self.T_konflikty.Enabled := true;
 
   Self.UpdateRCSLibsList();
   Self.UpdateTrkLibsList();
@@ -2573,9 +2612,9 @@ procedure TF_Main.OnStart();
   Self.CB_centrala_loglevel_file.ItemIndex := Integer(TrakceI.logLevelFile);
   Self.CB_centrala_loglevel_table.ItemIndex := Integer(TrakceI.logLevelTable);
 
-  if (not CloseMessage) then
+  if (not Self.CloseMessage) then
    begin
-    F_Main.Close();
+    Self.Close();
     Exit();
    end;
  end;
@@ -2609,56 +2648,6 @@ var ini:TMemIniFile;
 procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);
  begin
   F_Main.SaveFormPosition;
- end;
-
-procedure TF_Main.CreateSystem();
- begin
-  Randomize();
-
-  if (not FileExists(_INIDATA_FN)) then
-    Self.CreateCfgDirs();
-
-  F_splash.AddStav('Vytvářím datové struktury');
-  CreateClasses();
-  F_splash.AddStav('Načítám ini_lib data');
-  LoadIniLibData();
-  F_splash.AddStav('Vytvářím složky logů');
-
-  try
-    if not DirectoryExists(Logging._LOG_PATH) then
-      if not SysUtils.ForceDirectories(ExpandFileName(Logging._LOG_PATH)) then
-        writelog('ERR: Nelze vytvořit složku '+Logging._LOG_PATH, WR_ERROR);
-  except
-    on e:Exception do
-      AppEvents.LogException(E);
-  end;
-
-  CloseMessage := true;
-
-  // assign RCS events:
-  RCSi.AfterOpen  := Self.OnRCSOpen;
-  RCSi.AfterClose := Self.OnRCSClose;
-  RCSi.AfterStart := Self.OnRCSStart;
-  RCSi.AfterStop  := Self.OnRCSStop;
-  RCSi.OnScanned  := Self.OnRCSScanned;
-  RCSi.OnReady    := Self.ONRCSReady;
-
-  // assign Trakce events:
-  TrakceI.BeforeOpen := Self.OnTrkBeforeOpen;
-  TrakceI.AfterOpen := Self.OnTrkAfterOpen;
-  TrakceI.BeforeClose := Self.OnTrkBeforeClose;
-  TrakceI.AfterClose := Self.OnTrkAfterClose;
-  TrakceI.OnReady := Self.OnTrkReady;
-  TrakceI.OnTrackStatusChanged := Self.OnTrkStatusChange;
-  TrakceI.OnOpenError := Self.OnTrkErrOpen;
-
-  TrakceI.LogObj := Self.LV_log_lnet;
-
-  FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
-
-  F_Main.Caption := 'hJOPserver – v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
-  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
-  RepaintObjects;
  end;
 
 procedure TF_Main.FormPaint(Sender: TObject);

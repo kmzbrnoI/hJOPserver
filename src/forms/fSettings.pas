@@ -106,7 +106,6 @@ type
 
   public
 
-    procedure StartLogWrite;
     procedure NactiSSDoObjektu;
     procedure UlozDataDoSSzObjektu;
 
@@ -114,7 +113,6 @@ type
 
 var
   F_Options: TF_Options;
-  Sounds_znovunacteni:boolean;
 
 implementation
 
@@ -130,13 +128,7 @@ uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
 
 procedure TF_Options.FormCreate(Sender: TObject);
 begin
- //Zapis do logu o startu programu
- StartLogWrite;
- //Nacteni dat ze souboru do promennych programu
- F_splash.AddStav('Načítám data');
- Data.CompleteLoadFromFile;
- //Nastaveni PageIndexe na 0
- PC_1.ActivePageIndex:=0;
+ PC_1.ActivePageIndex := 0;
 end;
 
 procedure TF_Options.PM_log_deleteClick(Sender: TObject);
@@ -187,11 +179,18 @@ begin
 end;
 
 procedure TF_Options.B_pouzitClick(Sender: TObject);
+var inidata: TMemIniFile;
  begin
-  Application.ProcessMessages;
+  Application.ProcessMessages();
   Screen.Cursor := crHourGlass;
 
-  Data.CompleteSaveToFile;
+  inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
+  try
+    Data.CompleteSaveToFile(inidata);
+  finally
+    inidata.UpdateFile();
+    inidata.Free();
+  end;
 
   Screen.Cursor := crDefault;
   F_Options.ActiveControl := B_OK;
@@ -200,13 +199,6 @@ procedure TF_Options.B_pouzitClick(Sender: TObject);
 procedure TF_Options.PM_Data_SaveClick(Sender: TObject);
  begin
   B_pouzitClick(self);
- end;
-
-procedure TF_Options.StartLogWrite;
- begin
-  WriteLog('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$',WR_MESSAGE);
-  WriteLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
-  WriteLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',WR_MESSAGE);
  end;
 
 procedure TF_Options.FormResize(Sender: TObject);

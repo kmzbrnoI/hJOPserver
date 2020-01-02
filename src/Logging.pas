@@ -28,13 +28,14 @@ const
 
 procedure writeLog(Text:string; Typ:Integer); overload;
 procedure writeLog(Text:TStrings; Typ:Integer); overload;
+procedure LogInit();
 
 var
   log_err_flag:boolean;              // pokud je posledni log chyba, je zde true, jinak je zde false
 
 implementation
 
-uses fSettings, fMain, GetSystems;
+uses fSettings, fMain, GetSystems, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -88,6 +89,8 @@ var LV:TListItem;
     b:Byte;
     output:string;
  begin
+  if (F_Main = nil) then Exit();
+
   DateTimeToString(xDate, 'yy_mm_dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
   if (multiline) then
@@ -109,7 +112,7 @@ var LV:TListItem;
     if (not multiline) then
      begin
       F_Main.SB1.Panels.Items[_SB_LOG].Text := text;
-      Log := true;
+      F_Main.sb1Log := true;
      end;
   except
 
@@ -150,6 +153,24 @@ begin
  intWriteLog(Text[0], Typ, false);
  for i := 1 to Text.Count-1 do
    intWriteLog(' -> '+Text[i], Typ, true);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure LogInit();
+begin
+ try
+   if not DirectoryExists(_LOG_PATH) then
+     if not SysUtils.ForceDirectories(ExpandFileName(_LOG_PATH)) then
+       writelog('ERR: Nelze vytvořit složku '+_LOG_PATH, WR_ERROR);
+ except
+   on e:Exception do
+     AppEvents.LogException(E);
+ end;
+
+ WriteLog('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', WR_MESSAGE);
+ WriteLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
+ WriteLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', WR_MESSAGE);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
