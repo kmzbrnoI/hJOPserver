@@ -1018,7 +1018,7 @@ var fn:string;
   try
     TrakceI.LoadLib(TrakceI.libDir + '\' + fn);
     Self.LogStatus('Trakce: načteno ' + fn);
-    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := TrakceI.Lib;
+    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
   except
     on E:Exception do
      begin
@@ -2617,7 +2617,7 @@ procedure TF_Main.OnStart();
   if (TrakceI.Lib = '') then
     F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
   else
-    F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := TrakceI.Lib;
+    F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
 
   if (not Self.CloseMessage) then
    begin
