@@ -91,7 +91,7 @@ type
     procedure SetUsekNUZ(nuz:boolean);
     procedure SetUsekZaver(Zaver:TZaver);
     procedure SetUsekStit(stit:string);
-    procedure SetUsekVyl(vyl:string); overload;
+    procedure mSetUsekVyl(vyl:string);
     procedure SetSprPredict(sprcesta:Integer);
     procedure SetKonecJC(konecjc:TZaver);
     procedure SetVlakPresun(presun:Integer);
@@ -191,7 +191,7 @@ type
     function GetSettings():TBlkUsekSettings;
     procedure SetSettings(data:TBlkUsekSettings);
 
-    procedure SetUsekVyl(Sender:TIDCOntext; vyl:string); overload;
+    procedure SetUsekVyl(Sender:TIDCOntext; vyl:string);
 
     procedure AddNeprofilJC(id:Integer);
     procedure RemoveNeprofilJC(id:Integer);
@@ -218,7 +218,7 @@ type
     property NUZ:boolean read UsekStav.NUZ write SetUsekNUZ;
     property Zaver:TZaver read UsekStav.Zaver write SetUsekZaver;
     property Stitek:string read UsekStav.Stit write SetUsekStit;
-    property Vyluka:string read UsekStav.Vyl write SetUsekVyl;
+    property Vyluka:string read UsekStav.Vyl write mSetUsekVyl;
     property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property NavJCRef:TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
@@ -680,7 +680,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.SetUsekVyl(vyl:string);
+procedure TBlkUsek.mSetUsekVyl(vyl:string);
 begin
  Self.UsekStav.Vyl := vyl;
  Self.Change();

@@ -41,7 +41,7 @@ type
     last_call:TDateTime;
 
     procedure SetDateTime(dt:TDateTime);
-    procedure SetTime(time:TTime); overload;
+    procedure mSetTime(time:TTime);
     procedure SetSpeed(speed:Real);
     procedure SetStarted(started:boolean);
     procedure SetUsed(used:boolean);
@@ -64,13 +64,13 @@ type
      procedure Update();
 
      procedure SendTimeToPanel(AContext:TIDContext);
-     procedure SetTime(time:TTime; speed:Real); overload;
+     procedure SetTime(time:TTime; speed:Real);
      procedure UpdateGUIColors();
      procedure Parse(parsed:TStrings);
 
      property dateTime:TDateTime read fdateTime write SetDateTime;
      property date:TDate read GetDate;
-     property time:TTime read GetTime write SetTime;
+     property time:TTime read GetTime write mSetTime;
      property speed:Real read fspeed write SetSpeed;
      property started:boolean read fstarted write SetStarted;
      property used:boolean read fused write SetUsed;
@@ -121,7 +121,7 @@ begin
   end;
 end;
 
-procedure TModCas.SetTime(time:TTime);
+procedure TModCas.mSetTime(time:TTime);
 begin
  if ((Self.fdateTime <> Self.date + time) and (not Self.started)) then
   begin

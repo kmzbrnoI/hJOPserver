@@ -120,7 +120,8 @@ type
     property NOtevreni:boolean read PrjStav.PC_NOT write SetNOT;
     property UZ:boolean read PrjStav.PC_UZ write SetUZ;
 
-    property Stitek:string read PrjStav.Stit write SetStit;
+    property Stitek:string read PrjStav.stit write SetStit;
+    property Vyluka:string read PrjStav.vyl write SetVyl;
 
     property Zaver:boolean read GetZaver write SetZaver;
 

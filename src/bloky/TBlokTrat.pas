@@ -116,7 +116,7 @@ type
     function GetSprIndex(spr:Integer):Integer;
     function SprTUsCount(spr:Integer):Integer;
 
-    function GetLastUsek():TBlk; overload;
+    function mGetLastUsek():TBlk;
     function GetVyluka():boolean;
 
   public
@@ -165,7 +165,7 @@ type
 
     function ChangesSprDir():boolean;                                           // vraci true prave tehdy, kdyz se v trati meni smer soupravy
     function GetSprUsek(spr_id:Integer):TSprUsek;
-    function GetLastUsek(smer:TTratSmer):TBlk; overload;
+    function GetLastUsek(smer:TTratSmer):TBlk;
     function HasAutoblokNav(blk:TBlk):boolean;
 
     property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
@@ -181,7 +181,7 @@ type
     property Zadost:boolean read TratStav.zadost write SetTratZadost;           // flag probihajici zadosti o tratovy souhlas
     property BP:boolean read TratStav.BP write SetBP;                           // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty, rusi se pri uvolneni posledni soupravy z trati
     property SprPredict:TBlkTratSouprava read TratStav.SprPredict write SetSprPredict; // predpovidana souprava do trati
-    property lastUsek:TBlk read GetLastUsek;                                    // posledni usek trati (smerove zavisle)
+    property lastUsek:TBlk read mGetLastUsek;                                   // posledni usek trati (smerove zavisle)
     property vyluka:boolean read GetVyluka;
 
     // vrati hranicni navestidla
@@ -1040,7 +1040,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetLastUsek():TBlk;
+function TBlkTrat.mGetLastUsek():TBlk;
 begin
  Result := Self.GetLastUsek(Self.smer);
 end;

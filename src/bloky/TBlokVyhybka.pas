@@ -88,7 +88,7 @@ type
     function GetObsazeno():TUsekStav;
 
     procedure SetVyhStit(stit:string);
-    procedure SetVyhVyl(vyl:string); overload;
+    procedure mSetVyhVyl(vyl:string);
 
     function GetRedukceMenu():boolean;
 
@@ -161,7 +161,7 @@ type
     procedure SetSettings(data:TBlkVyhSettings);
 
     function SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false; callback_ok:TNotifyEvent = nil; callback_err:TNotifyEvent = nil):Integer;
-    procedure SetVyhVyl(Sender:TIDContext; vyl:string); overload;
+    procedure SetVyhVyl(Sender:TIDContext; vyl:string);
     procedure SetSpojkaNoPropag(spojka:Integer);
 
     procedure RedukujMenu();
@@ -177,7 +177,7 @@ type
     property Zaver:TZaver read GetZaver;
     property Obsazeno:TUsekStav read GetObsazeno;
     property Stitek:string read VyhStav.Stit write SetVyhStit;
-    property Vyluka:string read VyhStav.Vyl write SetVyhVyl;
+    property Vyluka:string read VyhStav.Vyl write mSetVyhVyl;
     property redukce_menu:boolean read GetRedukceMenu;
     property UsekID:Integer read VyhRel.UsekID;
     property vyhZaver:boolean read GetVyhZaver write SetVyhZaver;
@@ -457,7 +457,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkVyhybka.SetVyhVyl(vyl:string);
+procedure TBlkVyhybka.mSetVyhVyl(vyl:string);
 begin
  Self.VyhStav.vyl := vyl;
  Self.Change();

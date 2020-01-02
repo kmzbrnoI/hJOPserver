@@ -135,7 +135,7 @@ type
     function GetEvent(ev:TBlkNavSprEvent; short:boolean = false):string;
     function RCinProgress():boolean;
 
-    procedure SetNavest(navest:Integer); overload;
+    procedure mSetNavest(navest:Integer);
 
     function GetAB():boolean;
     procedure SetAB(ab:boolean);
@@ -209,7 +209,7 @@ type
     procedure Change(now:boolean = false); override;
 
     procedure JCZrusNavest();   // zahrnuje cas na pad navesti
-    procedure SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent); overload;
+    procedure SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent);
 
     //----- Nav own functions -----
 
@@ -234,7 +234,7 @@ type
     property Smer:THVStanoviste read NavRel.smer write NavRel.smer;
 
     //stavove promenne
-    property Navest:Integer read NavStav.Navest write SetNavest;
+    property Navest:Integer read NavStav.Navest write mSetNavest;
     property ZacatekVolba:TBlkNavVolba read NavStav.ZacatekVolba write SetZacatekVolba;
     property AB:boolean read GetAB write SetAB;
     property ABJC:TJC read NavStav.ABJC write SetABJC;
@@ -752,7 +752,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkNav.SetNavest(navest:Integer);
+procedure TBlkNav.mSetNavest(navest:Integer);
 begin
  Self.SetNavest(navest, TNotifyEvent(nil), TNotifyEvent(nil));
 end;
