@@ -817,7 +817,7 @@ begin
  else
   spr := '-';
 
- if (Self.acquired) then
+ if (Self.stolen) then
   begin
    // loko ukradeno ovladacem
    Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';MM. '+IntToStr(Self.adresa)+' ('+spr+')');
