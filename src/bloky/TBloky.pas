@@ -120,6 +120,7 @@ type
     procedure GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ:Integer = -1);
 
     procedure NouzZaverZrusen(Sender:TBlk);
+    procedure ZakladniPolohaVyhybek();
 
     function GetEnumerator():TEnumerator<TBlk>;
     property Items[index : integer] : TBlk read GetItem; default;
@@ -1074,6 +1075,16 @@ function TBlky.GetEnumerator():TEnumerator<TBlk>;
 begin
  Result := Self.data.GetEnumerator();
 end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.ZakladniPolohaVyhybek();
+var blk:TBlk;
+ begin
+  for blk in Self.data do
+    if (Blk.typ = _BLK_VYH) then
+      (Blk as TBlkVyhybka).SetPoloha(plus);
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

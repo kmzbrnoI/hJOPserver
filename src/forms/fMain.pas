@@ -488,10 +488,6 @@ type
    procedure ResizeCPUGauge;                                                      // meni pozici Gauge pri zmene velikosti okna
  end;
 
- TReset=class
-   procedure ZakladniPolohaVyhybek();
- end;
-
  TSystemStatus = (null, starting, stopping);                                    // stav startovani / vypinani systemu
  TSystem=class
    Status:TSystemStatus;                                                        // aktualni stav systemu
@@ -500,7 +496,6 @@ type
 var
   F_Main: TF_Main;
 
-  ResetData:TReset;
   Vytizeni:TVytizeni;
   SystemData:TSystem;
 
@@ -1540,7 +1535,8 @@ end;
 
 procedure TF_Main.PM_ResetVClick(Sender: TObject);
  begin
-  ResetData.ZakladniPolohaVyhybek;
+  Blky.ZakladniPolohaVyhybek();
+  writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
  end;
 
 procedure TF_Main.PM_RegulatorClick(Sender: TObject);
@@ -2222,17 +2218,6 @@ begin
     (Sender as TPopUpMenu).Items.Items[i].Enabled := true;
   end;
 end;
-
-procedure TReset.ZakladniPolohaVyhybek;
-var Blk:TBlk;
- begin
-  for blk in Blky do
-   begin
-    if (Blk.typ <> _BLK_VYH) then continue;
-    (Blk as TBlkVyhybka).SetPoloha(plus);
-   end;//for cyklus
-  writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
- end;
 
 procedure TF_Main.PM_SB1Click(Sender: TObject);
 begin
@@ -3306,12 +3291,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 initialization
-  ResetData := TReset.Create();
   Vytizeni := TVytizeni.Create();
   SystemData := TSystem.Create();
 
 finalization
-  FreeAndNil(ResetData);
   FreeAndNil(Vytizeni);
   FreeAndNil(SystemData);
 
