@@ -237,7 +237,10 @@ begin
     Self.LoadLib(fLibDir + '\' + lib);
   except
     on E:Exception do
-      writeLog('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message, WR_ERROR);
+     begin
+      F_Main.LogStatus('ERR: RCS: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
+      writeLog('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, WR_ERROR);
+     end;
   end;
 end;
 

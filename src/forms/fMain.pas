@@ -10,12 +10,12 @@ uses
   DateUtils, ShellApi, ActiveX, ShlObj, ComObj, TechnologieTrakce, BoosterDb;
 
 const
- _SB_LOG      = 0;
- _SB_RCS      = 1;
- _SB_INT      = 2;
- _SB_POZICE   = 3;
+ _SB_LOG = 0;
+ _SB_RCS = 1;
+ _SB_TRAKCE_STAV = 2;
+ _SB_TRAKCE_LIB = 3;
  _SB_SBERNICE = 4;
- _SB_PROC     = 5;
+ _SB_PROC = 5;
 
  _INIDATA_FN = 'inidata.ini';
 
@@ -1014,9 +1014,11 @@ var fn:string;
 
   Screen.Cursor := crHourGlass;
   TrakceI.Log(llInfo, 'Změna knihovny -> ' + fn);
+  Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-';
   try
     TrakceI.LoadLib(TrakceI.libDir + '\' + fn);
     Self.LogStatus('Trakce: načteno ' + fn);
+    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := TrakceI.Lib;
   except
     on E:Exception do
      begin
@@ -1285,7 +1287,7 @@ begin
  Self.A_Trk_Disconnect.Enabled := false;
  Self.A_System_Start.Enabled := false;
  Self.A_System_Stop.Enabled := false;
- Self.SB1.Panels.Items[_SB_INT].Text := 'Připojování...';
+ Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Připojování...';
  Self.S_Trakce_Connected.Brush.Color := clBlue;
  Self.LogStatus('Centrála: připojování...');
  Self.B_HV_Add.Enabled := false;
@@ -1298,7 +1300,7 @@ procedure TF_Main.OnTrkAfterOpen(Sender: TObject);
 begin
  Self.A_Trk_Connect.Enabled := false;
  Self.A_Trk_Disconnect.Enabled := true;
- Self.SB1.Panels.Items[_SB_INT].Text := 'Centrála připojena';
+ Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Centrála připojena';
  Self.LogStatus('Centrála: připojeno');
  Self.S_Trakce_Connected.Brush.Color := clLime;
  Self.A_Locos_Acquire.Enabled := true;
@@ -1314,7 +1316,7 @@ begin
  Self.A_Trk_Disconnect.Enabled := false;
  Self.A_System_Start.Enabled := false;
  Self.A_System_Stop.Enabled := false;
- Self.SB1.Panels.Items[_SB_INT].Text := 'Odpojování...';
+ Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Odpojování...';
  Self.LogStatus('Centrála: odpojování...');
  Self.S_Trakce_Connected.Brush.Color := clBlue;
  Self.G_locos_acquired.Progress := 0;
@@ -1326,7 +1328,7 @@ procedure TF_Main.OnTrkAfterClose(Sender: TObject);
 begin
  Self.A_Trk_Connect.Enabled := true;
  Self.A_Trk_Disconnect.Enabled := false;
- Self.SB1.Panels.Items[_SB_INT].Text := 'Centrála odpojena';
+ Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Centrála odpojena';
  Self.LogStatus('Centrála: odpojena');
  Self.S_Trakce_Connected.Brush.Color := clRed;
  Self.A_Locos_Acquire.Enabled := false;
@@ -2611,6 +2613,11 @@ procedure TF_Main.OnStart();
 
   Self.CB_centrala_loglevel_file.ItemIndex := Integer(TrakceI.logLevelFile);
   Self.CB_centrala_loglevel_table.ItemIndex := Integer(TrakceI.logLevelTable);
+
+  if (TrakceI.Lib = '') then
+    F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
+  else
+    F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := TrakceI.Lib;
 
   if (not Self.CloseMessage) then
    begin

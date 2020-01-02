@@ -3482,7 +3482,7 @@ object F_Main: TF_Main
       end
       item
         Alignment = taCenter
-        Text = 'XpressNET'
+        Text = '-'
         Width = 100
       end
       item

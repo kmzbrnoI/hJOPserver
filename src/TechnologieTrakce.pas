@@ -233,7 +233,6 @@ begin
  TTrakceIFace(Self).LoadLib(filename);
 
  Log(llInfo, 'Načtena knihovna '+ libName);
- F_Main.SB1.Panels.Items[3].Text := libName;
 
  if (Self.unbound.Count = 0) then
   begin
@@ -351,7 +350,10 @@ begin
     Self.LoadLib(fLibDir + '\' + lib);
   except
     on E:Exception do
+     begin
       Self.Log(llErrors, 'Nelze načíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message);
+      F_Main.LogStatus('ERR: Trakce: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
+     end;
   end;
 end;
 
