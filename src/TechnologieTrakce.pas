@@ -86,7 +86,7 @@ type
    private const
      _DEF_LOGLEVEL = TTrkLogLevel.llInfo;
      _DEFAULT_LIB = 'xpressnet.dll';
-     _INIFILE_SECTNAME = 'XN';
+     _INIFILE_SECTNAME = 'Trakce';
 
 
    private
