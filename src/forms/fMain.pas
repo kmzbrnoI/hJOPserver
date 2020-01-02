@@ -797,7 +797,6 @@ begin
 end;
 
 procedure TF_Main.OnRCSStop(Sender:TObject);
-var ini:TMemIniFile;
 begin
   if (Blky.enabled) then
    begin
@@ -807,15 +806,6 @@ begin
 
   ModCas.started := false;
   Self.UpdateSystemButtons();
-
-  //vynulovani RunErroru
-  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  try
-    ini.WriteInteger('SystemCfg', 'RunError', 0);
-  finally
-    ini.UpdateFile();
-    ini.Free();
-  end;
 
   if (F_Tester.Showing) then F_Tester.Close();
 
@@ -963,7 +953,6 @@ begin
 end;
 
 procedure TF_Main.OnRCSErrStart(Sender:TObject; errMsg:string);
-var ini:TMemIniFile;
 begin
   A_RCS_Close.Enabled := true;
   Self.UpdateSystemButtons();
@@ -973,15 +962,6 @@ begin
   S_RCS_Start.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
-
-  //defaultni hodnota padu
-  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  try
-    ini.WriteInteger('SystemCfg','RunError',0);
-  finally
-    ini.UpdateFile();
-    ini.Free();
-  end;
 
   Self.LogStatus('ERR: RCS START FAIL: '+errMsg);
   writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR);
