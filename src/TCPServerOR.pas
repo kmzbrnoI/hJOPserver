@@ -385,8 +385,7 @@ begin
 end;
 
 procedure TORTCPServer.OnTcpServerDisconnectMainThread(AContext: TIdContext; ORsRef: TTCPORsRef);
-var i:Integer;
-    oblr:TOR;
+var oblr:TOR;
 begin
  // Warning: AContext is destroyed, only address is left.
  // vymazeme klienta ze vsech oblasti rizeni
