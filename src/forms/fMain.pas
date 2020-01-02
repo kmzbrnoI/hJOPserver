@@ -5,8 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
-  inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage,
-  ExtDlgs,  Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
+  inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage, cpuLoad,
+  ExtDlgs, Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
   DateUtils, ShellApi, ActiveX, ShlObj, ComObj, TechnologieTrakce, BoosterDb;
 
 const
@@ -410,9 +410,12 @@ type
     procedure A_Trk_Lib_CfgExecute(Sender: TObject);
     procedure MI_Trk_UpdateClick(Sender: TObject);
     procedure A_Turnoff_FunctionsExecute(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
+    mCpuLoad: TCpuLoad;
 
     procedure UpdateCallMethod();
     procedure LoadACKroky();
@@ -479,15 +482,6 @@ type
 
   end;//public
 
- TVytizeni=class                                                                // vytizeni procesoru programem
-  Gauge:TGauge;                                                                   // objekt ve F_Main, co ktereho se kresli vytizeni
-  GraphPos:Integer;                                                               // pozice v grafu procesoru
-  LPa,LPb,LPc:Int64;                                                              // cteni procesoru
-   procedure DetekujVytizeniProcesoru;                                            // vykresli vytizeni procesoru
-   procedure DrawCPUGauge;                                                        // vytvori objekt Gauge a umisti ho na spravne misto
-   procedure ResizeCPUGauge;                                                      // meni pozici Gauge pri zmene velikosti okna
- end;
-
  TSystemStatus = (null, starting, stopping);                                    // stav startovani / vypinani systemu
  TSystem=class
    Status:TSystemStatus;                                                        // aktualni stav systemu
@@ -495,8 +489,6 @@ type
 
 var
   F_Main: TF_Main;
-
-  Vytizeni:TVytizeni;
   SystemData:TSystem;
 
   ini_lib:TMemInifile;                                                          // objekt pro pristup k ini_lib souboru
@@ -1623,6 +1615,16 @@ var ci:TCloseInfo;
   end;//case
  end;
 
+procedure TF_Main.FormCreate(Sender: TObject);
+begin
+ Self.mCpuLoad := TCPuLoad.Create();
+end;
+
+procedure TF_Main.FormDestroy(Sender: TObject);
+begin
+ Self.mCpuLoad.Free();
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.AE_1Message(var Msg: tagMSG; var Handled: Boolean);
@@ -2234,7 +2236,7 @@ end;
 procedure TF_Main.T_functionTimer(Sender: TObject);
 begin
  try
-   Vytizeni.DetekujVytizeniProcesoru();
+   mCpuLoad.Refresh();
 
    // update tables
    if (Self.Showing) then
@@ -2468,12 +2470,6 @@ procedure TF_Main.LoadIniLibData();
   RCSi.log := Self.CHB_rcslog.Checked;
  end;
 
-procedure TVytizeni.DetekujVytizeniProcesoru();
- begin
-  CollectCPUData;
-  Vytizeni.Gauge.Progress := Round(GetCPUUsage(GetCPUCount-1)*100);
- end;
-
 procedure TF_Main.DetekujAutSpusteniSystemu();
  begin
   if (KomunikacePocitani <> 0) then
@@ -2544,7 +2540,7 @@ end;
 
 procedure TF_Main.OnStart();
  begin
-  Vytizeni.DrawCPUGauge;
+  mCpuLoad.DrawCPUGauge();
 
   writelog('Spuštěn hJOPserver v'+NactiVerzi(application.ExeName), WR_MESSAGE);
   writelog('----------------------------------------------------------------',WR_MESSAGE);
@@ -2637,7 +2633,6 @@ procedure TF_Main.CreateSystem();
       AppEvents.LogException(E);
   end;
 
-  QueryPerformanceFrequency(Vytizeni.LPc);
   CloseMessage := true;
 
   // assign RCS events:
@@ -2666,42 +2661,10 @@ procedure TF_Main.CreateSystem();
   RepaintObjects;
  end;
 
-procedure TVytizeni.DrawCPUGauge();
-var cyklus:Integer;
- begin
-  Gauge := TGauge.Create(F_Main.SB1);
-  Gauge.Parent := F_Main.SB1;
-  Gauge.Visible := true;
-  Gauge.Left := 0;
-  for cyklus := 0 to _SB_PROC-1 do
-   begin
-    Gauge.Left := Gauge.Left+F_Main.SB1.Panels.Items[cyklus].Width;
-   end;//for cyklus
-  Gauge.Left := Gauge.Left + 30;
-  Gauge.Top := 3;
-  Gauge.Height := 16;
-  Gauge.Width := F_Main.SB1.Panels.Items[_SB_PROC].Width-30;
-  Gauge.Color := clWhite;
-  Gauge.ForeColor := clLime;
- end;
-
 procedure TF_Main.FormPaint(Sender: TObject);
- begin
-  Vytizeni.ResizeCPUGauge;
- end;
-
-procedure TVytizeni.ResizeCPUGauge;
-var cyklus,Zleva:Integer;
- begin
-  Gauge.Parent  := F_Main.SB1;
-  Zleva := 0;
-  for cyklus := 0 to _SB_PROC-1 do
-   begin
-    Zleva := Zleva + F_Main.SB1.Panels.Items[cyklus].Width;
-   end;//for cyklus
-  Zleva := Zleva + 30;
-  Gauge.Left := Zleva;
- end;
+begin
+ mCpuLoad.ResizeCPUGauge();
+end;
 
 procedure TF_Main.PM_ClientsPopup(Sender: TObject);
 var i:Integer;
@@ -3291,11 +3254,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 initialization
-  Vytizeni := TVytizeni.Create();
   SystemData := TSystem.Create();
 
 finalization
-  FreeAndNil(Vytizeni);
   FreeAndNil(SystemData);
 
 end.//unit

@@ -142,7 +142,8 @@ uses
   fBlkNav in 'bloky\forms\fBlkNav.pas',
   Trakce in 'trakce\Trakce.pas',
   TrakceErrors in 'trakce\TrakceErrors.pas',
-  TechnologieTrakce in 'TechnologieTrakce.pas';
+  TechnologieTrakce in 'TechnologieTrakce.pas' {$R *.res},
+  CpuLoad in 'CpuLoad.pas';
 
 {$R *.res}
 

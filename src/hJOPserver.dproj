@@ -258,6 +258,7 @@
 			<DCCReference Include="TechnologieTrakce.pas">
 				<Form>$R *.res</Form>
 			</DCCReference>
+			<DCCReference Include="CpuLoad.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

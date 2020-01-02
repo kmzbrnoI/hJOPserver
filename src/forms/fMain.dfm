@@ -3133,6 +3133,8 @@ object F_Main: TF_Main
   OldCreateOrder = False
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnPaint = FormPaint
   OnResize = FormResize
   PixelsPerInch = 96
@@ -5958,10 +5960,6 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'LOG komunikace s centr'#225'lou'
       ImageIndex = 14
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_log_lnet: TListView
         Left = 0
         Top = 26
@@ -6035,7 +6033,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
           OnChange = CB_centrala_loglevel_fileChange
           Items.Strings = (
@@ -6053,7 +6051,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 1
           OnChange = CB_centrala_loglevel_tableChange
           Items.Strings = (
