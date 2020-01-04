@@ -152,7 +152,7 @@ procedure TF_JCEdit.EmptyJCOpenForm();
 
   E_Name.Text := '';
   if (JCDb.Count > 0) then
-    SE_ID.Value := JCDb.GetJCByIndex(JCDb.Count-1).id + 1
+    SE_ID.Value := JCDb[JCDb.Count-1].id
   else
     SE_ID.Value := 1;
   Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, _BLK_NAV, -1);
