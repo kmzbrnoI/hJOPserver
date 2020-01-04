@@ -7,7 +7,7 @@
 interface
 
 uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
-     Classes, IdContext, Generics.Collections, JsonDataObjects,
+     Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
      TOblRizeni;
 
 type
@@ -137,6 +137,8 @@ type
     procedure StitVylUPO(SenderPnl:TIdContext; SenderOR:TObject;
         UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
 
+    class function CombineSpojkaInputs(first: TRCSInputState; second: TRCSInputState):TRCSInputState;
+
   public
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -210,7 +212,7 @@ type
 implementation
 
 uses TBloky, GetSystems, TechnologieRCS, fMain, TJCDatabase, UPO, Graphics,
-      TCPServerOR, TBlokZamek, PTUtils, RCS, changeEvent, TCPORsRef, Prevody;
+      TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, Prevody;
 
 constructor TBlkVyhybka.Create(index:Integer);
 begin
@@ -491,24 +493,46 @@ end;
 
 procedure TBlkVyhybka.UpdatePoloha();
 var iplus,iminus: TRCSInputState;
+    spojkaPlus, spojkaMinus: TRCSInputState;
     Blk:TBlk;
     oblr:TOR;
+    spojka: TBlkVyhybka;
  begin
   if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit();
+
+  Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
+  if ((spojka <> nil) and (spojka.typ <> _BLK_VYH)) then
+    Exit();
 
   //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
   try
     iplus  := RCSi.GetInput(Self.VyhSettings.RCSAddrs[0]);
     iminus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[1]);
   except
-    iplus  := failure;
-    iminus := failure;
+    iplus  := TRCSInputState.failure;
+    iminus := TRCSInputState.failure;
   end;
+
+  if ((spojka <> nil) and (iplus <> TRCSInputState.failure) and (iminus <> TRCSInputState.failure)) then
+   begin
+    try
+      spojkaPlus := RCSi.GetInput(spojka.VyhSettings.RCSAddrs[0]);
+      spojkaMinus := RCSi.GetInput(spojka.VyhSettings.RCSAddrs[1]);
+    except
+      spojkaPlus := failure;
+      spojkaMinus := failure;
+    end;
+
+    iplus := CombineSpojkaInputs(iplus, spojkaPlus);
+    iminus := CombineSpojkaInputs(iminus, spojkaMinus);
+   end;
 
   try
     if ((iplus = failure) or (iminus = failure) or
         (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[2].board)) or
-        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[3].board))) then
+        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[3].board)) or
+        ((spojka <> nil) and ((not RCSi.IsModule(spojka.VyhSettings.RCSAddrs[2].board)) or
+                             (not RCSi.IsModule(spojka.VyhSettings.RCSAddrs[2].board))))) then
      begin
       if (Self.Stav.poloha <> TVyhPoloha.disabled) then
        begin
@@ -733,10 +757,12 @@ begin
      if (Assigned(callback_err)) then callback_err(self);
    end;
 
-   if (Self.VyhStav.poloha <> plus) then Self.VyhStav.staveni_plus := true;
+   if (Self.VyhStav.poloha <> plus) then
+     Self.VyhStav.staveni_plus := true;
    Self.VyhStav.staveni_minus := false;
 
-   if (Self.VyhStav.Poloha = minus) then Self.VyhStav.poloha := none;
+   if (Self.VyhStav.Poloha = minus) then
+     Self.VyhStav.poloha := none;
   end;
 
  if (new = minus) then
@@ -751,9 +777,11 @@ begin
    end;
 
    Self.VyhStav.staveni_plus  := false;
-   if (Self.VyhStav.poloha <> minus) then Self.VyhStav.staveni_minus := true;
+   if (Self.VyhStav.poloha <> minus) then
+     Self.VyhStav.staveni_minus := true;
 
-   if (Self.VyhStav.Poloha = plus) then Self.VyhStav.poloha := none;
+   if (Self.VyhStav.Poloha = plus) then
+     Self.VyhStav.poloha := none;
   end;
 
  Self.VyhStav.staveniErrCallback := callback_Err;
@@ -1459,6 +1487,21 @@ begin
  Result := Result + PrevodySoustav.ColorToStr(bg) + ';' +
                     IntToStr(PrevodySoustav.BoolToInt(Self.NUZ)) + ';' +
                     IntToStr(Integer(Self.Poloha))+';';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TBlkVyhybka.CombineSpojkaInputs(first: TRCSInputState; second: TRCSInputState):TRCSInputState;
+begin
+ if ((first = TRCSInputState.failure) or (second = TRCSInputState.failure)) then
+   Exit(TRCSInputState.failure);
+ if ((first = TRCSInputState.unavailableModule) or (second = TRCSInputState.unavailableModule)) then
+   Exit(TRCSInputState.unavailableModule);
+ if ((first = TRCSInputState.unavailablePort) or (second = TRCSInputState.unavailablePort)) then
+   Exit(TRCSInputState.unavailablePort);
+ if ((first = TRCSInputState.isOn) and (second = TRCSInputState.isOn)) then
+   Exit(TRCSInputState.isOn);
+ Result := TRCSInputState.isOff;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

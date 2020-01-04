@@ -331,7 +331,6 @@ procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
     settings, spojkaSettings:TBlkVyhSettings;
     vyh:TBlkVyhybka;
-    addr: TRCSAddr;
  begin
   if (E_Nazev.Text = '') then
    begin

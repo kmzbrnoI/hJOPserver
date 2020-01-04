@@ -349,6 +349,7 @@ end;
 
 procedure TVyhSimulator.OnTimer(Sender:TObject);
 var blk:TBlk;
+    vyh:TBlkVyhybka;
 begin
  try
    if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
@@ -356,27 +357,27 @@ begin
    for blk in Blky do
     begin
      if (blk.typ <> _BLK_VYH) then continue;
-     if (((blk as TBlkVyhybka).StaveniPlus) or ((blk as TBlkVyhybka).StaveniMinus)) then
+     vyh := TBlkVyhybka(blk);
+
+     if ((vyh.StaveniPlus) or (vyh.StaveniMinus)) then
       begin
        // po 1 sekunde nastavime vstup aktualni polohy na 0
-       if (((blk as TBlkVyhybka).Stav.poloha_real <> TVyhPoloha.none) and ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
+       if ((vyh.Stav.poloha_real <> TVyhPoloha.none) and (vyh.Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
         begin
-         if ((blk as TBlkVyhybka).StaveniPlus) then
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[1].port, 0)
+         if (vyh.StaveniPlus) then
+          RCSi.SetInput(vyh.GetSettings.RCSAddrs[1].board, vyh.GetSettings.RCSAddrs[1].port, 0)
          else
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[0].port, 0);
+          RCSi.SetInput(vyh.GetSettings.RCSAddrs[0].board, vyh.GetSettings.RCSAddrs[0].port, 0);
         end;//if koncova poloha
 
        // po 3 sekundach oznamime koncovou polohu
-       if ((blk as TBlkVyhybka).Stav.staveniStart+EncodeTime(0, 0, 3, 0) < Now) then
+       if (vyh.Stav.staveniStart+EncodeTime(0, 0, 3, 0) < Now) then
         begin
-         if ((blk as TBlkVyhybka).StaveniPlus) then
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[0].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[0].port, 1)
+         if (vyh.StaveniPlus) then
+          RCSi.SetInput(vyh.GetSettings.RCSAddrs[0].board, vyh.GetSettings.RCSAddrs[0].port, 1)
          else
-          RCSi.SetInput((blk as TBlkVyhybka).GetSettings.RCSAddrs[1].board, (blk as TBlkVyhybka).GetSettings.RCSAddrs[1].port, 1);
+          RCSi.SetInput(vyh.GetSettings.RCSAddrs[1].board, vyh.GetSettings.RCSAddrs[1].port, 1);
         end;//if koncova poloha
-
-       Exit();
       end;
     end;
  except
