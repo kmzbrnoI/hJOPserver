@@ -615,11 +615,12 @@ var JC:TJC;
 procedure TF_JCEdit.B_Usek_DelClick(Sender: TObject);
 var i:Integer;
  begin
-  i := LV_Useky.ItemIndex;
-  if (Application.MessageBox(PChar('Opravdu chcete smazat úsek '+Blky.GetBlkName(Self.Useky[i])+'z JC?'),
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z JC?'),
                              'Mazání úseku', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    begin
-    Self.Useky.Delete(i);
+    for i := Self.LV_Useky.Items.Count-1 downto 0 do
+      if (Self.LV_Useky.Items[i].Selected) then
+        Self.Useky.Delete(i);
     Self.FillUseky();
    end;
 
@@ -628,11 +629,14 @@ var i:Integer;
  end;
 
 procedure TF_JCEdit.B_Vyh_DelClick(Sender: TObject);
+var i: Integer;
  begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat výhybku '+Blky.GetBlkName(Self.Vyhybky[LV_Vyhybky.ItemIndex].Blok)+' z JC?'),
-      'Mazání výhybky', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané výhybky z JC?'),
+      'Mazání výhybek', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    begin
-    Self.Vyhybky.Delete(Self.LV_Vyhybky.ItemIndex);
+    for i := Self.LV_Vyhybky.Items.Count-1 downto 0 do
+      if (Self.LV_Vyhybky.Items[i].Selected) then
+        Self.Vyhybky.Delete(i);
     Self.FillVyhybky();
    end;
  end;
@@ -645,7 +649,7 @@ var i: Integer;
   B_Vyh_Del.Enabled := (LV_Vyhybky.ItemIndex <> -1);
   B_Usek_Del.Enabled := false;
 
-  if (Self.LV_Vyhybky.Selected = nil) then
+  if ((Self.LV_Vyhybky.Selected = nil) or (Self.LV_Vyhybky.ItemIndex >= Self.Vyhybky.Count)) then
    begin
     Self.CB_NewZaverBlok.ItemIndex := -1;
     Self.CB_NewZaverPoloha.ItemIndex := 0;
@@ -679,7 +683,7 @@ var i:Integer;
   B_Usek_Del.Enabled := (LV_Useky.ItemIndex <> -1);
   B_Vyh_Del.Enabled := false;
 
-  if (Self.LV_Useky.Selected = nil) then
+  if ((Self.LV_Useky.Selected = nil) or (Self.LV_Useky.ItemIndex >= Self.Useky.Count)) then
    begin
     Self.CB_NewZaverBlok.ItemIndex := -1;
     Exit();

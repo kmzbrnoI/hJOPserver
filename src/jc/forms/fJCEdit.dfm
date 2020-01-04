@@ -139,6 +139,7 @@ object F_JCEdit: TF_JCEdit
           Caption = 'Poloha'
         end>
       GridLines = True
+      MultiSelect = True
       ReadOnly = True
       RowSelect = True
       TabOrder = 0
@@ -313,6 +314,7 @@ object F_JCEdit: TF_JCEdit
           Width = 250
         end>
       GridLines = True
+      MultiSelect = True
       ReadOnly = True
       RowSelect = True
       TabOrder = 0
