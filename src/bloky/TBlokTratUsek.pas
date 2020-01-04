@@ -734,13 +734,32 @@ begin
  if (((Self.TUSettings.zastavka.ev_lichy.enabled) or (Self.TUSettings.zastavka.ev_sudy.enabled)) and
      (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
 
- // zmena smeru soupravy nastava vzdy v poslednim bloku trati (nejblize konci)
- if ((Self.Trat <> nil) and (TBlkTrat(Self.Trat).ChangesSprDir()) and
-     (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0) and
-     (Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[TBlkTrat(Self.Trat).GetSettings().Useky.Count-1])) then
+ // Zmena smeru soupravy muze nastat na zacatku i konci trati
+ // tak, aby souprava byla vzdy rizeni spravnymi nasvestidly.
+ // Souprava ve smeru A-->B vzdy jeden v lichem smeru
+
+ if ((Self.Trat <> nil) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
   begin
-   // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
-   Soupravy[Self.Souprava].ChangeSmer();
+   if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
+    begin
+     if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do trati
+       if (Soupravy[Self.Souprava].smer <> THVStanoviste.lichy) then
+         Soupravy[Self.Souprava].ChangeSmer();
+     end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
+       if (Soupravy[Self.Souprava].smer <> TBlkNav(TBlkTrat(Self.Trat).navLichy).Smer) then
+         Soupravy[Self.Souprava].ChangeSmer();
+     end;
+    end;
+   if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[TBlkTrat(Self.Trat).GetSettings().Useky.Count-1])) then
+    begin
+     if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do trati
+       if ((Soupravy[Self.Souprava].smer <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
+         Soupravy[Self.Souprava].ChangeSmer();
+     end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
+       if (Soupravy[Self.Souprava].smer <> TBlkNav(TBlkTrat(Self.Trat).navSudy).Smer) then
+         Soupravy[Self.Souprava].ChangeSmer();
+     end;
+    end;
   end;
 
  // kontrola zmeny OR trati, ve ktere jen jeden blok

@@ -725,6 +725,8 @@ procedure TSouprava.ChangeSmer();
 var addr:Integer;
     tmp:boolean;
 begin
+ writelog('Souprava '+ Self.nazev + ' : změna směru', WR_SPRPREDAT);
+
  // zmenit orintaci stanoviste A hnacich vozidel
  for addr in Self.HVs do
   begin
@@ -744,8 +746,6 @@ begin
   THVStanoviste.lichy : Self.smer := THVStanoviste.sudy;
   THVStanoviste.sudy  : Self.smer := THVStanoviste.lichy;
  end;//case
-
- writelog('Souprava '+ Self.nazev + ' : zmena smeru', WR_SPRPREDAT);
 
  if (Self.front <> nil) then
    (Self.front as TBlkUsek).Change();  // kvuli sipce

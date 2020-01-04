@@ -1360,6 +1360,7 @@ var Usek, Nav:TBlk;
     spr:TSouprava;
     navEv:TBlkNavSprEvent;
     i:Integer;
+    trat:TBlkTrat;
 begin
  if (Self.NavSettings.events.Count = 0) then Exit();
  Usek := Self.UsekPred;
@@ -1389,18 +1390,20 @@ begin
    Exit();
   end;
 
- if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and
-     ((TBlkTrat(TBlkTU(Usek).Trat)).ChangesSprDir())) then
+ if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil)) then
   begin
-   // pokud se jedna o navestidlo, u ktereho se meni smer trati, a vlak jede v
-   // trati ve smeru B --> A, navestidlo neni aktivni (tj. koncim funkci)
-   if ((Self = TBlkTrat(TBlkTU(Usek).Trat).navSudy) and
-       (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.BtoA)) then
+   trat := TBlkTrat(TBlkTU(Usek).Trat);
+
+   // Ignoruji krajni navestidla trati, ktera jsou proti smeru trati
+   if ((trat.Smer = TTratSmer.AtoB) and (Self = trat.navLichy)) then
+     Exit();
+   if ((trat.Smer = TTratSmer.BtoA) and (Self = trat.navSudy)) then
      Exit();
 
-   // podobne pokud se jedna o posledni navestidlo autobloku, ignoruji jej ve smeru A --> B
-   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.AtoB) and
-       (TBlkTU(Usek).id = TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky[TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky.Count-1])) then
+   // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontetu zmeny smeru soupravy)
+   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.AtoB) and (Self.Smer = THVStanoviste.sudy)) then
+     Exit();
+   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.BtoA) and (Self.Smer = THVStanoviste.lichy)) then
      Exit();
   end;
 
