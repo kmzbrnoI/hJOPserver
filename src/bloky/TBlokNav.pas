@@ -1393,14 +1393,14 @@ begin
      ((TBlkTrat(TBlkTU(Usek).Trat)).ChangesSprDir())) then
   begin
    // pokud se jedna o navestidlo, u ktereho se meni smer trati, a vlak jede v
-   // trati ve smeru A --> B, navestidlo neni aktivni (tj. koncim funkci)
-   if ((Self = TBlkTrat(TBlkTU(Usek).Trat).navLichy) and
-       (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.AtoB)) then
+   // trati ve smeru B --> A, navestidlo neni aktivni (tj. koncim funkci)
+   if ((Self = TBlkTrat(TBlkTU(Usek).Trat).navSudy) and
+       (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.BtoA)) then
      Exit();
 
-   // podobne pokud se jedna o prvni navestidlo autobloku, ignoruji jej ve smeru B --> A
-   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.BtoA) and
-       (TBlkTU(Usek).id = TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky[0])) then
+   // podobne pokud se jedna o posledni navestidlo autobloku, ignoruji jej ve smeru A --> B
+   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.AtoB) and
+       (TBlkTU(Usek).id = TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky[TBlkTrat(TBlkTU(Usek).Trat).GetSettings().Useky.Count-1])) then
      Exit();
   end;
 

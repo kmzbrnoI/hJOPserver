@@ -734,10 +734,10 @@ begin
  if (((Self.TUSettings.zastavka.ev_lichy.enabled) or (Self.TUSettings.zastavka.ev_sudy.enabled)) and
      (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
 
- // zmena smeru soupravy nastava vzdy v 1. bloku trati (nejblize zacatku)
+ // zmena smeru soupravy nastava vzdy v poslednim bloku trati (nejblize konci)
  if ((Self.Trat <> nil) and (TBlkTrat(Self.Trat).ChangesSprDir()) and
      (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0) and
-     (Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
+     (Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[TBlkTrat(Self.Trat).GetSettings().Useky.Count-1])) then
   begin
    // navestidla na koncich trati jsou ve stejnem smeru -> zmenit smer soupravy, hnacich vozidel v ni a sipek
    Soupravy[Self.Souprava].ChangeSmer();
