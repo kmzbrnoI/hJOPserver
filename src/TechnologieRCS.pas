@@ -28,6 +28,7 @@ type
   TRCSAddr = record                                                             // jedno fyzicke RCS spojeni
    board:Cardinal;                                                                // cislo desky
    port:Byte;                                                                     // cislo portu
+   class operator Equal(a, b: TRCSAddr): Boolean;
   end;
 
   TRCSBoard = class                                                               // jedna RCS deska
@@ -485,6 +486,13 @@ end;
 function TRCS.GetOutput(addr:TRCSAddr):Integer;
 begin
  Result := Self.GetOutput(addr.board, addr.port);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class operator TRCSAddr.Equal(a, b: TRCSAddr): Boolean;
+begin
+ Result := ((a.board = b.board) and (a.port = b.port));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
