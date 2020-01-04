@@ -82,6 +82,7 @@ type
     procedure LV_VyhybkyKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure CB_TratBlokChange(Sender: TObject);
+    procedure CB_Dalsi_NavChange(Sender: TObject);
   private
    OpenIndex:Integer;
    mNewJC:Boolean;
@@ -440,14 +441,7 @@ var JC:TJC;
     Self.JCData.TratSmer := TTratSmer.zadny;
    end;
 
-  if (CB_Dalsi_Nav.ItemIndex = 0) then begin
-   JCData.DalsiNavaznost := TJCNextNavType.zadna;
-  end else if (CB_Dalsi_Nav.ItemIndex = 1) then begin
-   JCData.DalsiNavaznost := TJCNextNavType.trat;
-  end else begin
-   JCData.DalsiNavaznost := TJCNextNavType.blok;
-   JCData.DalsiNavestidlo := Blky.GetBlkID(CB_DalsiNavPolozky[CB_Dalsi_Nav.ItemIndex-2]);
-  end;
+  Self.CB_Dalsi_NavChange(Self.CB_Dalsi_Nav);
 
   if (not Assigned(JCData.Vyhybky) or (mNewJC)) then JCData.Vyhybky := TList<TJCVyhZaver>.Create();
   JCData.Vyhybky.Clear();
@@ -699,6 +693,18 @@ procedure TF_JCEdit.LV_UsekyKeyDown(Sender: TObject; var Key: Word;
 begin
  if ((Key = VK_DELETE) and (Self.B_Usek_Del.Enabled)) then
    B_Usek_DelClick(B_Usek_Del);
+end;
+
+procedure TF_JCEdit.CB_Dalsi_NavChange(Sender: TObject);
+begin
+ if (CB_Dalsi_Nav.ItemIndex = 0) then begin
+  JCData.DalsiNavaznost := TJCNextNavType.zadna;
+ end else if (CB_Dalsi_Nav.ItemIndex = 1) then begin
+  JCData.DalsiNavaznost := TJCNextNavType.trat;
+ end else begin
+  JCData.DalsiNavaznost := TJCNextNavType.blok;
+  JCData.DalsiNavestidlo := Blky.GetBlkID(CB_DalsiNavPolozky[CB_Dalsi_Nav.ItemIndex-2]);
+ end;
 end;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);

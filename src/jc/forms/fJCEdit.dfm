@@ -338,7 +338,7 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object B_Save: TButton
-    Left = 535
+    Left = 533
     Top = 440
     Width = 75
     Height = 25
@@ -407,6 +407,7 @@ object F_JCEdit: TF_JCEdit
     Style = csDropDownList
     ItemHeight = 13
     TabOrder = 5
+    OnChange = CB_Dalsi_NavChange
   end
   object CB_Rychlost_Volno: TComboBox
     Left = 191
