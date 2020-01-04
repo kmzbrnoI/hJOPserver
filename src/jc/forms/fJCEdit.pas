@@ -823,7 +823,9 @@ begin
  if (Self.Useky.Count > 0) then
   begin
    if (Self.JCData.Trat > -1) then
-     Blky.GetBlkByID(Self.JCData.Trat, TBlk(trat));
+     Blky.GetBlkByID(Self.JCData.Trat, TBlk(trat))
+   else
+     trat := nil;
 
    SetLength(CB_DalsiNavPolozky, 0);
    for i := 0 to Blky.count-1 do
@@ -831,7 +833,7 @@ begin
      blk := Blky[i];
      if ((blk.typ = _BLK_NAV) and
          ((TBlkNav(blk).UsekPred = nil) or (TBlkNav(blk).UsekPred.id = Self.Useky[Self.Useky.Count-1]) or
-          (trat.HasAutoblokNav(blk)))) then
+          ((trat <> nil) and (trat.HasAutoblokNav(blk))))) then
       begin
        Self.CB_Dalsi_Nav.Items.Add(blk.name);
        SetLength(CB_DalsiNavPolozky, Length(CB_DalsiNavPolozky)+1);
