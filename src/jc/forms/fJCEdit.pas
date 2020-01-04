@@ -731,6 +731,7 @@ end;
 
 procedure TF_JCEdit.CB_TypChange(Sender: TObject);
  begin
+  Self.JCData.TypCesty := TJCType(Self.CB_Typ.ItemIndex+1);
   CB_Rychlost_Volno.Enabled := (JCData.TypCesty <> TJCType.posun);
   CB_Rychlost_Stuj.Enabled := (JCData.TypCesty <> TJCType.posun);
 
