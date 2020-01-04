@@ -77,9 +77,9 @@ object F_MJCEdit: TF_MJCEdit
     TabOrder = 3
     object GB_JC_New: TGroupBox
       Left = 2
-      Top = 195
+      Top = 201
       Width = 325
-      Height = 53
+      Height = 47
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -88,9 +88,9 @@ object F_MJCEdit: TF_MJCEdit
       Caption = ' Nov'#225' JC  '
       TabOrder = 1
       object CB_JC_Add: TComboBox
-        Left = 16
+        Left = 9
         Top = 16
-        Width = 217
+        Width = 251
         Height = 21
         Margins.Left = 2
         Margins.Top = 2
@@ -101,15 +101,15 @@ object F_MJCEdit: TF_MJCEdit
         TabOrder = 0
       end
       object B_JC_Add: TButton
-        Left = 245
-        Top = 16
-        Width = 69
-        Height = 25
+        Left = 264
+        Top = 15
+        Width = 54
+        Height = 23
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'P'#345'idat'
+        Caption = 'Ok'
         TabOrder = 1
         OnClick = B_JC_AddClick
       end
@@ -118,7 +118,7 @@ object F_MJCEdit: TF_MJCEdit
       Left = 2
       Top = 56
       Width = 325
-      Height = 139
+      Height = 145
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -135,6 +135,7 @@ object F_MJCEdit: TF_MJCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_JCsChange
+      ExplicitTop = 52
     end
     object B_JC_Remove: TButton
       Left = 112
@@ -166,9 +167,9 @@ object F_MJCEdit: TF_MJCEdit
     TabOrder = 4
     object GroupBox2: TGroupBox
       Left = 2
-      Top = 195
+      Top = 201
       Width = 325
-      Height = 53
+      Height = 47
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -177,9 +178,9 @@ object F_MJCEdit: TF_MJCEdit
       Caption = ' Nov'#253' VB  '
       TabOrder = 1
       object CB_VB_New: TComboBox
-        Left = 16
+        Left = 10
         Top = 16
-        Width = 217
+        Width = 250
         Height = 21
         Margins.Left = 2
         Margins.Top = 2
@@ -190,15 +191,15 @@ object F_MJCEdit: TF_MJCEdit
         TabOrder = 0
       end
       object B_VB_New: TButton
-        Left = 246
-        Top = 16
-        Width = 69
-        Height = 25
+        Left = 264
+        Top = 15
+        Width = 54
+        Height = 23
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'P'#345'idat'
+        Caption = 'Ok'
         TabOrder = 1
         OnClick = B_VB_NewClick
       end
@@ -207,7 +208,7 @@ object F_MJCEdit: TF_MJCEdit
       Left = 2
       Top = 56
       Width = 325
-      Height = 139
+      Height = 145
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2

@@ -100,14 +100,36 @@ end;
 
 procedure TF_MJCEdit.LV_JCsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
+var i: Integer;
 begin
  Self.B_JC_Remove.Enabled := (Self.LV_JCs.Selected <> nil);
+
+ if ((Self.LV_JCs.Selected = nil) or (Self.LV_JCs.ItemIndex >= Self.JCs.Count)) then
+  begin
+   Self.CB_JC_Add.ItemIndex := -1;
+   Exit();
+  end;
+
+ for i := 0 to Length(Self.CB_JC_ids)-1 do
+   if (Self.CB_JC_ids[i] = Self.JCs[Self.LV_JCs.ItemIndex]) then
+     Self.CB_JC_Add.ItemIndex := i;
 end;
 
 procedure TF_MJCEdit.LV_VBsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
+var i: Integer;
 begin
  Self.B_VB_Remove.Enabled := (Self.LV_VBs.Selected <> nil);
+
+ if ((Self.LV_VBs.Selected = nil) or (Self.LV_VBs.ItemIndex >= Self.vb.Count)) then
+  begin
+   Self.CB_VB_New.ItemIndex := -1;
+   Exit();
+  end;
+
+ for i := 0 to Length(Self.CB_VB_indexes)-1 do
+   if (Blky.GetBlkID(Self.CB_VB_indexes[i]) = Self.vb[Self.LV_VBs.ItemIndex]) then
+     Self.CB_VB_New.ItemIndex := i;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -205,24 +227,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.UpdateJCCb();
-var j:Integer;
-    inList:Boolean;
-    JC:TJC;
+var JC:TJC;
 begin
- SetLength(CB_JC_ids, JCDb.Count);    // velikost pole trochu prezeneme, ale to nevadi
+ SetLength(CB_JC_ids, JCDb.Count);
  Self.CB_JC_Add.Clear();
  for JC in JCDb do
   begin
-   inList := false;
-   for j := 0 to Self.JCs.Count-1 do
-     if (JC.id = Self.JCs[j]) then
-      begin
-       inList := true;
-       break;
-      end;
-
-   if (inList) then continue;
-
    Self.CB_JC_Add.Items.Add(JC.nazev);
    Self.CB_JC_ids[Self.CB_JC_Add.Items.Count-1] := JC.id;
   end;
@@ -230,13 +240,9 @@ end;
 
 procedure TF_MJCEdit.UpdateVBCb();
 var obls:TArStr;
-    Vypustit:TArI;
-    i:Integer;
 begin
- SetLength(Vypustit, Self.vb.Count);
- for i := 0 to Self.vb.Count-1 do vypustit[i] := Self.vb[i];
  Self.MakeObls(obls);
- Blky.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, @Vypustit, obls, _BLK_USEK, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, nil, obls, _BLK_USEK, -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,13 +279,20 @@ procedure TF_MJCEdit.B_JC_AddClick(Sender: TObject);
 var LI:TListItem;
 begin
  if (Self.CB_JC_Add.ItemIndex < 0) then Exit();
- Self.JCs.Add(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]);
- LI := Self.LV_JCs.Items.Add;
+
+ if (Self.LV_JCs.ItemIndex = -1) then
+  begin
+   Self.JCs.Add(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]);
+   LI := Self.LV_JCs.Items.Add();
+  end else begin
+   Self.JCs[Self.LV_JCs.ItemIndex] := Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex];
+   LI := Self.LV_JCs.Items[Self.LV_JCs.ItemIndex];
+  end;
+
  LI.Caption := JCDb.GetJCByID(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]).nazev;
- Self.UpdateJCCb();
  if (Self.JCs.Count = 1) then
   begin
-   Self.B_VB_New.Enabled  := true;
+   Self.B_VB_New.Enabled := true;
    Self.CB_VB_New.Enabled := true;
    Self.UpdateVBCb();    // protoze se vytvori oblasti rizeni
   end;
@@ -298,10 +311,17 @@ procedure TF_MJCEdit.B_VB_NewClick(Sender: TObject);
 var LI:TListItem;
 begin
  if (Self.CB_VB_New.ItemIndex < 0) then Exit();
- Self.vb.Add(Blky.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]));
- LI := Self.LV_VBs.Items.Add;
+
+ if (Self.LV_VBs.ItemIndex = -1) then
+  begin
+   Self.vb.Add(Blky.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]));
+   LI := Self.LV_VBs.Items.Add();
+  end else begin
+   Self.vb[Self.LV_VBs.ItemIndex] := Blky.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
+   LI := Self.LV_VBs.Items[Self.LV_VBs.ItemIndex];
+  end;
+
  LI.Caption := Blky.GetBlkIndexName(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
- Self.UpdateVBCb();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
