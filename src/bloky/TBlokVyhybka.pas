@@ -426,8 +426,6 @@ begin
         end;
 
        spojka_settings.spojka := self.GlobalSettings.id;
-       spojka_settings.RCSAddrs.Clear();
-       spojka_settings.RCSAddrs.AddRange(data.RCSAddrs);
        (Blk as TBlkVyhybka).SetSettings(spojka_settings);
       end;
     end;

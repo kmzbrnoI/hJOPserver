@@ -5,7 +5,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (vyhybka)'
-  ClientHeight = 329
+  ClientHeight = 362
   ClientWidth = 641
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -80,7 +80,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 150
+    Top = 127
     Width = 304
     Height = 172
     Margins.Left = 2
@@ -88,7 +88,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' v'#253'hybky - RCS '
-    TabOrder = 5
+    TabOrder = 3
     object L_Vyh05: TLabel
       Left = 151
       Top = 16
@@ -273,8 +273,8 @@ object F_BlkVyhybka: TF_BlkVyhybka
     end
   end
   object B_Storno: TButton
-    Left = 475
-    Top = 297
+    Left = 479
+    Top = 330
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -282,12 +282,12 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 5
     OnClick = B_StornoClick
   end
   object B_Save: TButton
-    Left = 554
-    Top = 297
+    Left = 558
+    Top = 330
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -296,7 +296,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 6
+    TabOrder = 4
     OnClick = B_SaveClick
   end
   object LB_Stanice: TListBox
@@ -311,32 +311,13 @@ object F_BlkVyhybka: TF_BlkVyhybka
     ItemHeight = 13
     TabOrder = 2
   end
-  object CHB_Spojka: TCheckBox
-    Left = 15
-    Top = 125
-    Width = 64
-    Height = 17
-    Caption = 'Spojka'
-    TabOrder = 3
-    OnClick = CHB_SpojkaClick
-  end
-  object CB_Spojka: TComboBox
-    Left = 118
-    Top = 123
-    Width = 194
-    Height = 21
-    Style = csDropDownList
-    ItemHeight = 13
-    TabOrder = 4
-    OnChange = CB_SpojkaChange
-  end
   object GB_Zamek: TGroupBox
-    Left = 326
-    Top = 8
+    Left = 329
+    Top = 87
     Width = 304
     Height = 83
     Caption = ' Z'#225'mek '
-    TabOrder = 8
+    TabOrder = 6
     object Label2: TLabel
       Left = 12
       Top = 46
@@ -380,12 +361,12 @@ object F_BlkVyhybka: TF_BlkVyhybka
     end
   end
   object GB_Neprofil: TGroupBox
-    Left = 326
-    Top = 103
+    Left = 329
+    Top = 182
     Width = 304
     Height = 138
     Caption = ' Neprofilov'#233' styky '
-    TabOrder = 9
+    TabOrder = 7
     object CHB_npPlus: TCheckBox
       Left = 12
       Top = 24
@@ -420,6 +401,48 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Height = 21
       Style = csDropDownList
       ItemHeight = 13
+      TabOrder = 3
+    end
+  end
+  object GB_Spojka: TGroupBox
+    Left = 329
+    Top = 8
+    Width = 304
+    Height = 73
+    Caption = ' Spojka '
+    TabOrder = 8
+    object CHB_Spojka: TCheckBox
+      Left = 16
+      Top = 22
+      Width = 64
+      Height = 17
+      Caption = 'Spojka'
+      TabOrder = 0
+      OnClick = CHB_SpojkaClick
+    end
+    object CB_Spojka: TComboBox
+      Left = 107
+      Top = 18
+      Width = 187
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 1
+    end
+    object CHB_Spojka_Common_In: TCheckBox
+      Left = 138
+      Top = 46
+      Width = 81
+      Height = 17
+      Caption = 'Stejn'#233' vstupy'
+      TabOrder = 2
+    end
+    object CHB_Spojka_Common_Out: TCheckBox
+      Left = 16
+      Top = 46
+      Width = 97
+      Height = 17
+      Caption = 'Stejn'#233' v'#253'stupy'
       TabOrder = 3
     end
   end

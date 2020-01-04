@@ -27,8 +27,6 @@ type
     B_Save: TButton;
     L_Usek03: TLabel;
     LB_Stanice: TListBox;
-    CHB_Spojka: TCheckBox;
-    CB_Spojka: TComboBox;
     SE_VystPlus_module: TSpinEdit;
     SE_VystMinus_module: TSpinEdit;
     SE_VstPlus_module: TSpinEdit;
@@ -44,12 +42,16 @@ type
     CB_npPlus: TComboBox;
     CHB_npMinus: TCheckBox;
     CB_npMinus: TComboBox;
+    GB_Spojka: TGroupBox;
+    CHB_Spojka: TCheckBox;
+    CB_Spojka: TComboBox;
+    CHB_Spojka_Common_In: TCheckBox;
+    CHB_Spojka_Common_Out: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_SpojkaClick(Sender: TObject);
     procedure CHB_ZamekClick(Sender: TObject);
-    procedure CB_SpojkaChange(Sender: TObject);
     procedure CHB_npPlusClick(Sender: TObject);
     procedure CHB_npMinusClick(Sender: TObject);
     procedure SE_moduleExit(Sender: TObject);
@@ -117,7 +119,9 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
   SE_VstMinus_module.Value := 1;
   Self.SE_moduleExit(Self);
 
-  Self.CHB_Spojka.Checked  := false;
+  Self.CHB_Spojka.Checked := false;
+  Self.CHB_Spojka_Common_In.Checked := false;
+  Self.CHB_Spojka_Common_Out.Checked := false;
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
 
   Self.CHB_Zamek.Checked  := false;
@@ -136,9 +140,10 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
 procedure TF_BlkVyhybka.NormalOpenForm;
 var glob:TBlkSettings;
     i:Integer;
-    settings:TBlkVyhSettings;
+    spojkaSettings, settings:TBlkVyhSettings;
     obls:TArStr;
     oblr:TOR;
+    vyh:TBlkVyhybka;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
@@ -150,12 +155,19 @@ var glob:TBlkSettings;
 
   settings := Blk.GetSettings();
 
-  if (settings.spojka > -1) then
-    Self.CHB_Spojka.Checked := true
-   else
-    Self.CHB_Spojka.Checked := false;
-
+  Self.CHB_Spojka.Checked := (settings.spojka > -1);
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
+
+  Blky.GetBlkByID(settings.spojka, TBlk(vyh));
+  if ((vyh <> nil) and (vyh.typ = _BLK_VYH)) then
+   begin
+    spojkaSettings := vyh.GetSettings();
+
+    Self.CHB_Spojka_Common_In.Checked := (spojkaSettings.RCSAddrs.Count >= 2) and (settings.RCSAddrs.Count >= 2) and
+      (spojkaSettings.RCSAddrs[0] = settings.RCSAddrs[0]) and (spojkaSettings.RCSAddrs[1] = settings.RCSAddrs[1]);
+    Self.CHB_Spojka_Common_Out.Checked := (spojkaSettings.RCSAddrs.Count >= 4) and (settings.RCSAddrs.Count >= 4) and
+      (spojkaSettings.RCSAddrs[2] = settings.RCSAddrs[2]) and (spojkaSettings.RCSAddrs[3] = settings.RCSAddrs[3]);
+   end;
 
   Self.CHB_Zamek.Checked := (settings.zamek > -1);
   if (settings.zamek > -1) then
@@ -165,7 +177,7 @@ var glob:TBlkSettings;
   //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni RCS_board = [0])
   if (settings.RCSAddrs.Count > 0) then
    begin
-    SE_VstPlus_module.Value  := settings.RCSAddrs[0].board;
+    SE_VstPlus_module.Value := settings.RCSAddrs[0].board;
     SE_VstPlus_port.Value := settings.RCSAddrs[0].port;
    end else begin
     SE_VstPlus_module.Value  := 0;
@@ -174,7 +186,7 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 1) then
    begin
-    SE_VstMinus_module.Value  := settings.RCSAddrs[1].board;
+    SE_VstMinus_module.Value := settings.RCSAddrs[1].board;
     SE_VstMinus_port.Value := settings.RCSAddrs[1].port;
    end else begin
     SE_VstMinus_module.Value  := 0;
@@ -183,7 +195,7 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 2) then
    begin
-    SE_VystPlus_module.Value  := settings.RCSAddrs[2].board;
+    SE_VystPlus_module.Value := settings.RCSAddrs[2].board;
     SE_VystPlus_port.Value := settings.RCSAddrs[2].port;
    end else begin
     SE_VystPlus_module.Value  := 0;
@@ -192,7 +204,7 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 3) then
    begin
-    SE_VystMinus_module.Value  := settings.RCSAddrs[3].board;
+    SE_VystMinus_module.Value := settings.RCSAddrs[3].board;
     SE_VystMinus_port.Value := settings.RCSAddrs[3].port;
    end else begin
     SE_VystMinus_module.Value  := 0;
@@ -278,54 +290,6 @@ procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
   F_BlkVyhybka.Close;
  end;
 
-procedure TF_BlkVyhybka.CB_SpojkaChange(Sender: TObject);
-var Blk:TBlk;
-    rcs:TRCSAddrs;
-begin
- if ((not Self.CHB_Spojka.Checked) or (Self.CB_Spojka.ItemIndex = -1)) then Exit();
-
- Blky.GetBlkByIndex(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex], Blk);
- if ((Blk = nil) or (Blk.GetGlobalSettings.typ <> _BLK_VYH)) then Exit();
-
- rcs := TBlkVyhybka(Blk).GetSettings().RCSAddrs;
-
- if (rcs.Count > 0) then
-  begin
-   SE_VstPlus_module.Value  := rcs[0].board;
-   SE_VstPlus_port.Value := rcs[0].port;
-  end else begin
-   SE_VstPlus_module.Value  := 0;
-   SE_VstPlus_port.Value := 0;
-  end;
-
- if (rcs.Count > 1) then
-  begin
-   SE_VstMinus_module.Value  := rcs[1].board;
-   SE_VstMinus_port.Value := rcs[1].port;
-  end else begin
-   SE_VstMinus_module.Value  := 0;
-   SE_VstMinus_port.Value := 0;
-  end;
-
- if (rcs.Count > 2) then
-  begin
-   SE_VystPlus_module.Value  := rcs[2].board;
-   SE_VystPlus_port.Value := rcs[2].port;
-  end else begin
-   SE_VystPlus_module.Value  := 0;
-   SE_VystPlus_port.Value := 0;
-  end;
-
- if (rcs.Count > 3) then
-  begin
-   SE_VystMinus_module.Value  := rcs[3].board;
-   SE_VystMinus_port.Value := rcs[3].port;
-  end else begin
-   SE_VystMinus_module.Value  := 0;
-   SE_VystMinus_port.Value := 0;
-  end;
-end;
-
 procedure TF_BlkVyhybka.CHB_npMinusClick(Sender: TObject);
 begin
  Self.CB_npMinus.Enabled := Self.CHB_npMinus.Checked;
@@ -342,8 +306,13 @@ end;
 
 procedure TF_BlkVyhybka.CHB_SpojkaClick(Sender: TObject);
 begin
- Self.CB_Spojka.Enabled := (Sender as TCheckBox).Checked;
- if (not (Sender as TCheckBox).Checked) then
+ Self.CB_Spojka.Enabled := Self.CHB_Spojka.Checked;
+ Self.CHB_Spojka_Common_In.Enabled := Self.CHB_Spojka.Checked;
+ Self.CHB_Spojka_Common_Out.Enabled := Self.CHB_Spojka.Checked;
+ Self.CHB_Spojka_Common_In.Checked := Self.CHB_Spojka.Checked;
+ Self.CHB_Spojka_Common_Out.Checked := Self.CHB_Spojka.Checked;
+
+ if (not Self.CHB_Spojka.Checked) then
    Self.CB_Spojka.ItemIndex := -1;
 end;
 
@@ -360,7 +329,9 @@ end;
 
 procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
-    settings:TBlkVyhSettings;
+    settings, spojkaSettings:TBlkVyhSettings;
+    vyh:TBlkVyhybka;
+    addr: TRCSAddr;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -404,9 +375,9 @@ var glob:TBlkSettings;
    end;
 
 
-  glob.name     := E_Nazev.Text;
-  glob.id       := SE_ID.Value;
-  glob.typ      := _BLK_VYH;
+  glob.name := E_Nazev.Text;
+  glob.id := SE_ID.Value;
+  glob.typ := _BLK_VYH;
 
   if (NewBlk) then
    begin
@@ -429,9 +400,42 @@ var glob:TBlkSettings;
   settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VystMinus_module.Value, SE_VystMinus_port.Value));
 
   if (Self.CHB_Spojka.Checked) then
-   settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex])
-  else
-   settings.spojka := -1;
+   begin
+    settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex]);
+
+    Blky.GetBlkByID(settings.spojka, TBlk(vyh));
+    if ((blk = nil) or (blk.typ <> _BLK_VYH)) then
+     begin
+      Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
+      Exit();
+     end;
+
+    spojkaSettings := vyh.GetSettings();
+
+    if ((spojkaSettings.spojka <> -1) and (spojkaSettings.spojka <> glob.id)) then
+     begin
+      Application.MessageBox('Na spojkové výhybce je již jiná spojka!', 'Varování', MB_OK OR MB_ICONWARNING);
+      Exit();
+     end;
+
+    while (spojkaSettings.RCSAddrs.Count < 4) do
+      spojkaSettings.RCSAddrs.Add(TRCS.RCSAddr(0, 0));
+
+    if (Self.CHB_Spojka_Common_Out.Checked) then
+     begin
+      spojkaSettings.RCSAddrs[2] := settings.RCSAddrs[2];
+      spojkaSettings.RCSAddrs[3] := settings.RCSAddrs[3];
+     end;
+    if (Self.CHB_Spojka_Common_In.Checked) then
+     begin
+      spojkaSettings.RCSAddrs[0] := settings.RCSAddrs[0];
+      spojkaSettings.RCSAddrs[1] := settings.RCSAddrs[1];
+     end;
+
+    vyh.SetSettings(spojkaSettings);
+   end else begin
+    settings.spojka := -1;
+   end;
 
   if (Self.CHB_Zamek.Checked) then
    begin
@@ -472,4 +476,6 @@ procedure TF_BlkVyhybka.FormClose(Sender: TObject;
   NewBlk     := false;
   OpenIndex  := -1;
   BlokyTableData.UpdateTable;
- end;end.//unit
+ end;
+
+end.//unit
