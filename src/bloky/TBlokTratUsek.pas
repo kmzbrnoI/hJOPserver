@@ -1126,22 +1126,22 @@ begin
  // nejprve zhasneme navestidla v nespravnem smeru
  if ((TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) or (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny)) then
   begin
-    if (Self.TUSettings.navSid > -1) then
-     begin
-      Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
-      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then
-        TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
-     end;
+   if (Self.TUSettings.navSid > -1) then
+    begin
+     Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
+     if (Blk <> nil) then
+       TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
+    end;
   end;
 
  if ((TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) or (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny)) then
   begin
-    if (Self.TUSettings.navLid > -1) then
-     begin
-      Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
-      if ((Blk <> nil) and (TBlkNav(Blk).Navest >= 0)) then
-        TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
-     end;
+   if (Self.TUSettings.navLid > -1) then
+    begin
+     Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
+     if (Blk <> nil) then
+       TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
+    end;
   end;
 
   if (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny) then

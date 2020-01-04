@@ -680,7 +680,7 @@ begin
  if (navest = _NAV_PRIVOL) then
    Self.NavStav.privol_start := Now;
 
- if (Self.NavStav.Navest = navest) then
+ if ((Self.NavStav.Navest = navest) or ((Self.changing) and (Self.NavStav.cilova_navest = navest))) then
   begin
    if (Assigned(changeCallbackOk)) then
      changeCallbackOk(Self);
