@@ -712,6 +712,6 @@ end;
 initialization
   TrakceI := TTrakce.Create();
 finalization
-  TrakceI.Free();
+  // Free in hJOPserver.dpr, because we must gurantee preload gets destructed after all shared libraries
 
 end.

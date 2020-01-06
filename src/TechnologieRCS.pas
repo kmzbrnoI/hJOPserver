@@ -500,6 +500,6 @@ end;
 initialization
   RCSi := TRCS.Create();
 finalization
- RCSi.Free();
+  // Free in hJOPserver.dpr, because we must gurantee preload gets destructed after all shared libraries
 
 end.//unit

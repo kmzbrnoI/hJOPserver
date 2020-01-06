@@ -2,7 +2,7 @@
 //H                                                        H      H      H    H   H    H    H          H H
 //H   Název : hJOPserver                                   H      H      H   H     H   H     H        H   H
 //H   Jméno tvůrce : Jan Horáček                           H      HHHHHHHH   H     H   H    H        H     H
-//H   Autorská práva : Jan Horáček 2008-2016               H      H      H   H     H   HHHHH        HHHHHHHHH
+//H   Autorská práva : Jan Horáček 2008-2020               H      H      H   H     H   HHHHH        HHHHHHHHH
 //H                                                        H      H      H   H     H   H HH        H         H
 //H                                                        H      H      H    H   H    H   HH     H           H
 //HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     H     HH   H           H
@@ -17,6 +17,7 @@ uses
   Windows,
   SysUtils,
   IniFiles,
+  libPreload in 'libPreload.pas',
   fTester in 'forms\fTester.pas' {F_Tester},
   fMain in 'forms\fMain.pas' {F_Main},
   fSettings in 'forms\fSettings.pas' {F_Options},
@@ -211,9 +212,17 @@ var
   if (not FileExists(_INIDATA_FN)) then
     Data.CreateCfgDirs();
 
-  F_splash.AddStav('Načítám data...');
   try
     inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
+    F_splash.AddStav('Načítám preload knihovny...');
+    try
+      preload.Preload(inidata, 'LD_Preload');
+    except
+      on E:Exception do
+        AppEvents.LogException(E, 'LoadPreloadLibs');
+    end;
+
+    F_splash.AddStav('Načítám data...');
     try
       Data.CompleteLoadFromFile(inidata);
     finally
@@ -233,8 +242,10 @@ var
 
   Application.Run();
 
-  //zniceni Mutexu pri ukonceni
-  if (Mutex <> 0) then CloseHandle(Mutex);
+  FreeAndNil(TrakceI);
+  FreeAndNil(RCSi);
+  if (Mutex <> 0) then
+    CloseHandle(Mutex);
  end.
 //08.06.2009 -  9 649 radku
 //03.07.2009 - 13 006 radku

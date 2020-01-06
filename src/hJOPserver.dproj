@@ -53,6 +53,7 @@
 			<DelphiCompile Include="hJOPserver.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
+			<DCCReference Include="libPreload.pas"/>
 			<DCCReference Include="forms\fTester.pas">
 				<Form>F_Tester</Form>
 			</DCCReference>
