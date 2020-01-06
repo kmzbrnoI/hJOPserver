@@ -1153,7 +1153,7 @@ end;
 
 function THV.ShouldAcquire():boolean;
 begin
- Result := ((Self.souprava > -1) and ((not Self.acquired) or ((Self.pom = released) or (Self.pom = pc))));
+ Result := ((Self.souprava > -1) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
