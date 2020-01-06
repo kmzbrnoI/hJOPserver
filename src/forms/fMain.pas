@@ -1150,6 +1150,8 @@ begin
  for addr := 0 to THVDatabase._MAX_ADDR-1 do
    if (HVDb[addr] <> nil) and (HVDb[addr].ShouldAcquire()) then
      F_Main.G_locos_acquired.MaxValue := F_Main.G_locos_acquired.MaxValue + 1;
+ if (F_Main.G_locos_acquired.MaxValue = 0) then
+   F_Main.G_locos_acquired.MaxValue := 1;
 
  HVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError, Self.OnTrkLocoAcquired);
 end;
@@ -1171,6 +1173,9 @@ begin
  Self.A_Locos_Release.Enabled := true;
 
  Self.G_locos_acquired.Progress := HVDb.cnt;
+ if (F_Main.G_locos_acquired.MaxValue = 0) then
+   F_Main.G_locos_acquired.Progress := 1;
+
  Self.G_locos_acquired.ForeColor := clLime;
 
  if (SystemData.Status = starting) then
