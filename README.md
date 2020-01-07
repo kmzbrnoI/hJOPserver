@@ -12,8 +12,9 @@ Description of whole hJOP project is available in Czech at
 
 ## Using
 
-Executable Windows files could be downloaded in [Releases](releases) section.
-This project is nowadays distributed in x86 (32-bit) version only.
+Executable Windows files could be downloaded in
+[Releases](https://github.com/kmzbrnoI/hJOPserver/releases) section.  This
+project is nowadays distributed in x86 (32-bit) version only.
 
 ## Basic information
 
@@ -24,7 +25,7 @@ hJOPserver connects to the model railroad via 2 dynamic libraries:
 
 It creates TCP server for connecting of the model railroad operators ([API
 specification](https://github.com/kmzbrnoI/hJOPserver/wiki/panelServer)), it
-creates UDP discover server ([API
+creates *UDP discover server* ([API
 specification](https://github.com/kmzbrnoI/hJOPserver/wiki/udpDiscover)) and it
 also features a *PT server* ([API
 specification](https://github.com/kmzbrnoI/hJOPserver/wiki/ptServer)), which is
@@ -46,6 +47,8 @@ non-free.
 
 This repository has (due to historical reasons) all commit messages in czech
 language.
+
+Main project file: [`src/hJOPserver.dpr`](src/hJOPserver.dpr)
 
 ### Special components & libraries
 
