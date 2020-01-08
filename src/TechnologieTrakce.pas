@@ -87,7 +87,7 @@ type
      _DEF_LOGLEVEL = TTrkLogLevel.llInfo;
      _DEF_LIB = 'xpressnet.dll';
      _INIFILE_SECTNAME = 'Trakce';
-     _DEF_CONFIG_PATH = 'conf-lib';
+     _DEF_CONFIG_PATH = 'lib-conf';
 
    private
      fLibDir:string;

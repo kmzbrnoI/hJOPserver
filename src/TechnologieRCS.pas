@@ -49,7 +49,7 @@ type
    private const
      _DEFAULT_LIB = 'simulator.dll';
      _INIFILE_SECTNAME = 'RCS';
-     _DEFAULT_CONFIG_PATH = 'conf-lib';
+     _DEFAULT_CONFIG_PATH = 'lib-conf';
      _MODULE_DEFAULT_IO = 16;
 
    private
