@@ -20,10 +20,10 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_DependencyCheckOutputName>..\..\..\KMZ\hJOP\xn\server\hJOPserver.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\output\hJOPserver.exe</DCC_DependencyCheckOutputName>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls</DCC_UsePackage>
-			<DCC_ExeOutput>d:\UsersData\vlak\KMZ\hJOP\xn\server\</DCC_ExeOutput>
+			<DCC_ExeOutput>..\output\</DCC_ExeOutput>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
 			<DCC_RangeChecking>true</DCC_RangeChecking>
@@ -307,7 +307,7 @@
 					</VersionInfo>
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
-						<VersionInfoKeys Name="FileDescription">hJOP technologicky server</VersionInfoKeys>
+						<VersionInfoKeys Name="FileDescription">hJOP technologický server</VersionInfoKeys>
 						<VersionInfoKeys Name="FileVersion">5.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2020</VersionInfoKeys>
