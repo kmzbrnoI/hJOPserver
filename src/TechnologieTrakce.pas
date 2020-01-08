@@ -85,9 +85,9 @@ type
   TTrakce = class(TTrakceIFace)
    private const
      _DEF_LOGLEVEL = TTrkLogLevel.llInfo;
-     _DEFAULT_LIB = 'xpressnet.dll';
+     _DEF_LIB = 'xpressnet.dll';
      _INIFILE_SECTNAME = 'Trakce';
-     _CONFIG_PATH = 'trakce';
+     _DEF_CONFIG_PATH = 'conf-lib';
 
    private
      fLibDir:string;
@@ -100,6 +100,7 @@ type
 
      mLogLevelFile : TTrkLogLevel;
      mLogLevelTable: TTrkLogLevel;
+     mConfigDir: string;
 
      procedure SetLoglevelFile(ll:TTrkLogLevel);
      procedure SetLoglevelTable(ll:TTrkLogLevel);
@@ -163,6 +164,7 @@ type
 
      property ready:boolean read aready;
      property libDir:string read fLibDir;
+     property configDir:string read mConfigDir;
 
   end;
 
@@ -181,9 +183,7 @@ constructor TTrakce.Create();
 begin
  inherited;
 
- if not DirectoryExists(_CONFIG_PATH) then
-   CreateDir(_CONFIG_PATH);
-
+ Self.mConfigDir := _DEF_CONFIG_PATH;
  Self.mLogLevelFile := _DEF_LOGLEVEL;
  Self.mLogLevelTable := _DEF_LOGLEVEL;
  Self.LogObj := nil;
@@ -233,7 +233,10 @@ begin
    if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
   end;
 
- TTrakceIFace(Self).LoadLib(filename, _CONFIG_PATH + '\' + ChangeFileExt(libName, '.ini'));
+ if not DirectoryExists(Self.configDir) then
+   CreateDir(Self.configDir);
+
+ TTrakceIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
  Log(llInfo, 'Načtena knihovna '+ libName);
 
@@ -345,9 +348,10 @@ procedure TTrakce.LoadFromFile(ini:TMemIniFile);
 var lib:string;
 begin
   fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
-  lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEFAULT_LIB);
+  lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEF_LIB);
   Self.mLogLevelFile := TTrkLogLevel(ini.ReadInteger(_INIFILE_SECTNAME, 'loglevelFile', Integer(_DEF_LOGLEVEL)));
   Self.mLogLevelTable := TTrkLogLevel(ini.ReadInteger(_INIFILE_SECTNAME, 'loglevelTable', Integer(_DEF_LOGLEVEL)));
+  Self.mConfigDir := ini.ReadString(_INIFILE_SECTNAME, 'configDir', _DEF_CONFIG_PATH);
 
   try
     Self.LoadLib(fLibDir + '\' + lib);

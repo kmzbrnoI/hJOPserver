@@ -49,7 +49,7 @@ type
    private const
      _DEFAULT_LIB = 'simulator.dll';
      _INIFILE_SECTNAME = 'RCS';
-     _CONFIG_PATH = 'rcs';
+     _DEFAULT_CONFIG_PATH = 'conf-lib';
      _MODULE_DEFAULT_IO = 16;
 
    private
@@ -57,6 +57,7 @@ type
      aReady:boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
      fGeneralError:boolean;                                 // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
      fLibDir:string;
+     mConfigDir: string;
 
      //events to the main program
      fOnReady : TRCSReadyEvent;
@@ -114,6 +115,7 @@ type
       property OnReady:TRCSReadyEvent read fOnReady write fOnReady;
       property ready:boolean read aready;
       property libDir:string read fLibDir;
+      property configDir:string read mConfigDir;
       property maxModuleAddr:Cardinal read GetMaxModuleAddr;
       property maxModuleAddrSafe:Cardinal read GetMaxModuleAddrSafe;
   end;
@@ -133,9 +135,6 @@ begin
  inherited;
 
  Self.boards := TObjectDictionary<Cardinal, TRCSBoard>.Create();
-
- if not DirectoryExists(_CONFIG_PATH) then
-   CreateDir(_CONFIG_PATH);
 
  Self.log := false;
  Self.aReady := false;
@@ -169,7 +168,10 @@ begin
    if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
   end;
 
- TRCSIFace(Self).LoadLib(filename, _CONFIG_PATH + '\' + ChangeFileExt(libName, '.ini'));
+ if not DirectoryExists(Self.configDir) then
+   CreateDir(Self.configDir);
+
+ TRCSIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
  writelog('Načtena knihovna '+ libName, WR_RCS);
 
@@ -231,8 +233,9 @@ end;
 procedure TRCS.LoadFromFile(ini:TMemIniFile);
 var lib:string;
 begin
-  fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
+  Self.fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
   lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEFAULT_LIB);
+  Self.mConfigDir := ini.ReadString(_INIFILE_SECTNAME, 'configDir', _DEFAULT_CONFIG_PATH);
 
   try
     Self.LoadLib(fLibDir + '\' + lib);
