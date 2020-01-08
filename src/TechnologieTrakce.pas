@@ -87,7 +87,7 @@ type
      _DEF_LOGLEVEL = TTrkLogLevel.llInfo;
      _DEFAULT_LIB = 'xpressnet.dll';
      _INIFILE_SECTNAME = 'Trakce';
-
+     _CONFIG_PATH = 'trakce';
 
    private
      fLibDir:string;
@@ -100,8 +100,6 @@ type
 
      mLogLevelFile : TTrkLogLevel;
      mLogLevelTable: TTrkLogLevel;
-
-     procedure LoadLib(filename:string);
 
      procedure SetLoglevelFile(ll:TTrkLogLevel);
      procedure SetLoglevelTable(ll:TTrkLogLevel);
@@ -132,6 +130,8 @@ type
 
      constructor Create();
      destructor Destroy(); override;
+
+     procedure LoadLib(filename:string);
 
      procedure Log(loglevel:TTrkLogLevel; msg:string);
 
@@ -180,6 +180,9 @@ uses fMain, fSettings, TechnologieRCS, fRegulator, SprDb, Souprava,
 constructor TTrakce.Create();
 begin
  inherited;
+
+ if not DirectoryExists(_CONFIG_PATH) then
+   CreateDir(_CONFIG_PATH);
 
  Self.mLogLevelFile := _DEF_LOGLEVEL;
  Self.mLogLevelTable := _DEF_LOGLEVEL;
@@ -230,7 +233,7 @@ begin
    if (Assigned(Self.OnReady)) then Self.OnReady(Self, Self.aReady);
   end;
 
- TTrakceIFace(Self).LoadLib(filename);
+ TTrakceIFace(Self).LoadLib(filename, _CONFIG_PATH + '\' + ChangeFileExt(libName, '.ini'));
 
  Log(llInfo, 'Načtena knihovna '+ libName);
 
