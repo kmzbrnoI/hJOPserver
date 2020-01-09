@@ -582,8 +582,13 @@ begin
  for addr in Self.HVs do
   begin
    if (HVDb[addr].ruc) then
-    begin      // pokud je loko prevzato na rucni rizeni, ignoruji ho
+    begin
      writelog('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', WR_MESSAGE);
+     continue;
+    end;
+   if (HVDb[addr].stolen) then
+    begin
+     writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
      continue;
     end;
 
