@@ -1514,7 +1514,7 @@ begin
 
  // pokud ma souprava jasne dany smer, nastavime ho
  // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
- if ((Self.souprava > -1) and
+ if ((Self.souprava > -1) and (not Self.ruc) and
      (Soupravy[Self.souprava].sdata.smer_L xor Soupravy[Self.souprava].sdata.smer_S)) then
   begin
    // souprava ma zadany prave jeden smer
