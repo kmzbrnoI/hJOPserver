@@ -271,8 +271,6 @@ var new_stav:TBlkPrjBasicStav;
     oblr:TOR;
     module:Cardinal;
 begin
- if (not (GetFunctions.GetSystemStart())) then Exit;
-
  available := true;
  try
    for module in Self.PrjStav.rcsModules do

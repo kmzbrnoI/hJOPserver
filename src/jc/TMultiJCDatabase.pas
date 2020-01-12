@@ -207,8 +207,6 @@ end;
 procedure TMultiJCDb.Update();
 var i:Integer;
 begin
- if (not GetFunctions.GetSystemStart) then Exit;
-
  for i := 0 to Self.JCs.Count-1 do
   begin
    try

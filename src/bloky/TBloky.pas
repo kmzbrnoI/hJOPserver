@@ -474,7 +474,7 @@ end;
 procedure TBlky.Update();
 var i:Integer;
 begin
- if ((not (GetFunctions.GetSystemStart())) or (RCSi.generalError)) then Exit();
+ if (not Self.enabled) then Exit();
 
  for i := 0 to Self.Data.Count-1 do
   begin

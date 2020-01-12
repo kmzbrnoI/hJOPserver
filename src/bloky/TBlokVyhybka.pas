@@ -769,9 +769,16 @@ function TBlkVyhybka.SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boole
 var spojka:TBlkVyhybka;
     oblr:TOR;
 begin
-  if (not GetFunctions.GetSystemStart) then Exit(1);
-  if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit(2);
-  if ((new <> plus) and (new <> minus)) then Exit(3);
+  if (Self.VyhSettings.RCSAddrs.Count < 4) then
+   begin
+    if (Assigned(callback_err)) then callback_err(self);
+    Exit(2);
+   end;
+  if ((new <> plus) and (new <> minus)) then
+   begin
+    if (Assigned(callback_err)) then callback_err(self);
+    Exit(3);
+   end;
 
   // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
   // k zacykleni pri staveni spojek.
@@ -815,6 +822,7 @@ begin
      for oblr in Self.OblsRizeni do
        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
+     Exit(6);
    end;
 
    if (Self.VyhStav.poloha <> plus) then
@@ -834,6 +842,7 @@ begin
      for oblr in Self.OblsRizeni do
        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
      if (Assigned(callback_err)) then callback_err(self);
+     Exit(6);
    end;
 
    Self.VyhStav.staveni_plus  := false;

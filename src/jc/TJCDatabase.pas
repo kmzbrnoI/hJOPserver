@@ -185,8 +185,6 @@ end;
 procedure TJCDb.Update();
 var JC:TJC;
 begin
- if (not GetFunctions.GetSystemStart) then Exit;
-
  for JC in Self.JCs do
   begin
    try
