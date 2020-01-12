@@ -363,8 +363,12 @@ procedure TJCDb.RusAllJC();
 var JC:TJC;
 begin
  for JC in Self.JCs do
+  begin
    if (JC.postaveno) then
-     JC.RusJC();
+     JC.RusJC()
+   else if (JC.staveni) then
+     JC.CancelStaveni('Nouzové rušení stavění JC', true);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
