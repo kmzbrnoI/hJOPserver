@@ -290,6 +290,7 @@ type
 
       function KontrolaPodminek(NC:boolean = false):TJCBariery;
       function IsAnyVyhMinus():boolean;
+      procedure ClientDisconnect(AContext: TIDContext);
 
       property data:TJCprop read fproperties write SetProperties;
       property stav:TJCStaveni read fstaveni;
@@ -3844,5 +3845,11 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.ClientDisconnect(AContext: TIDContext);
+begin
+ if (Self.fstaveni.SenderPnl = AContext) then
+   Self.fstaveni.SenderPnl := nil;
+end;
 
 end.//unit

@@ -153,7 +153,7 @@ implementation
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover, DateUtils;
+      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -386,6 +386,7 @@ end;
 
 procedure TORTCPServer.OnTcpServerDisconnectMainThread(AContext: TIdContext; ORsRef: TTCPORsRef);
 var oblr:TOR;
+    jc:TJC;
 begin
  // Warning: AContext is destroyed, only address is left.
  // vymazeme klienta ze vsech oblasti rizeni
@@ -430,6 +431,10 @@ begin
  for oblr in ORsRef.st_hlaseni do
    if (Assigned(oblr.hlaseni)) then
      oblr.hlaseni.ClientDisconnect(AContext);
+
+ for jc in JCdb do
+   if (jc.stav.SenderPnl = AContext) then
+     jc.ClientDisconnect(AContext);
 
  ORsRef.Free();
 
