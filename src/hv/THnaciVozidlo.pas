@@ -1227,6 +1227,12 @@ var dirOld:Boolean;
     stepsOld:Byte;
     cbOk, cbErr: PTCB;
 begin
+ if ((not Self.acquired) and (not Self.acquiring)) then
+  begin
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+   Exit();
+  end;
  if ((Self.direction = direction) and (Self.speedStep = speedStep) and (not Self.acquiring)) then
   begin
    if (Assigned(ok.callback)) then
@@ -1236,12 +1242,6 @@ begin
  if ((Self.stolen) and (not Self.acquiring)) then
   begin
    writelog('LOKO '+Self.nazev+' ukradena, nenastavuji rychlost', WR_MESSAGE);
-   if (Assigned(err.callback)) then
-     err.callback(Self, err.data);
-   Exit();
-  end;
- if ((not Self.acquired) and (not Self.acquiring)) then
-  begin
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
@@ -1280,6 +1280,12 @@ end;
 procedure THV.SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
 var cbOk, cbErr: PTCb;
 begin
+ if ((not Self.acquired) and (not Self.acquiring)) then
+  begin
+   if (Assigned(err.callback)) then
+     err.callback(Self, err.data);
+   Exit();
+  end;
  if (Self.slotFunkce[func] = state) then
   begin
    if (Assigned(ok.callback)) then
@@ -1289,12 +1295,6 @@ begin
  if ((Self.stolen) and (not Self.acquiring)) then
   begin
    writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
-   if (Assigned(err.callback)) then
-     err.callback(Self, err.data);
-   Exit();
-  end;
- if ((not Self.acquired) and (not Self.acquiring)) then
-  begin
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
@@ -1332,15 +1332,15 @@ var i:Integer;
     funcMask:Cardinal;
     funcState:Cardinal;
 begin
- if ((Self.stolen) and (not Self.acquiring)) then
+ if ((not Self.acquired) and (not Self.acquiring)) then
   begin
-   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
   end;
- if ((not Self.acquired) and (not Self.acquiring)) then
+ if ((Self.stolen) and (not Self.acquiring)) then
   begin
+   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
