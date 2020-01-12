@@ -4,7 +4,7 @@ unit TBlokRozp;
 
 interface
 
-uses IniFiles, TBlok, StrUtils, Classes, TOblsRizeni, SysUtils,
+uses IniFiles, TBlok, StrUtils, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
       IdContext, TOblRizeni;
 
 type
@@ -37,6 +37,10 @@ type
    procedure SetStatus(status:TRozpStatus);
    procedure UpdateOutput();
 
+   procedure Mount();
+   procedure Activate();
+   procedure Prolong();
+
   public
     constructor Create(index:Integer);
     destructor Destroy(); override;
@@ -65,13 +69,19 @@ type
     property stav:TBlkRozpStav read RozpStav;
     property status:TRozpStatus read RozpStav.status write SetStatus;
 
+    //PT:
+
+    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
+    procedure GetPtState(json:TJsonObject); override;
+    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+
  end;//class TBlkRozp
 
 ////////////////////////////////////////////////////////////////////////////////
 
 implementation
 
-uses TechnologieRCS, TCPServerOR, Prevody, Graphics;
+uses TechnologieRCS, TCPServerOR, Prevody, Graphics, PTUtils;
 
 constructor TBlkRozp.Create(index:Integer);
 begin
@@ -186,21 +196,10 @@ begin
 
    ENTER: begin
      case (Self.status) of
-       TRozpStatus.not_selected : begin
-         // vybrat rozpojovac
-         Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
-         Self.status := TRozpStatus.mounting;
-       end;
-       TRozpStatus.mounting     : begin
-         // zapnout rozpojovac
-         Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
-         Self.status := TRozpStatus.active;
-       end;
-       TRozpStatus.active       : begin
-         // prodlouzit dobu rozpojovace
-         Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
-       end;
-     end;//case
+       TRozpStatus.not_selected : Self.Mount();
+       TRozpStatus.mounting     : Self.Activate();
+       TRozpStatus.active       : Self.Prolong();
+     end;
     end;//case TPanelButton.left
 
    ESCAPE: begin
@@ -266,6 +265,67 @@ begin
 
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
                     PrevodySoustav.ColorToStr(bg) + ';0;';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkRozp.Mount();
+begin
+ Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
+ Self.status := TRozpStatus.mounting;
+end;
+
+procedure TBlkRozp.Activate();
+begin
+ Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
+ Self.status := TRozpStatus.active;
+end;
+
+procedure TBlkRozp.Prolong();
+begin
+ Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkRozp.GetPtData(json:TJsonObject; includeState:boolean);
+begin
+ inherited;
+ TBlk.RCStoJSON(Self.RozpSettings.RCSAddrs[0], json['rcs']);
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkRozp.GetPtState(json:TJsonObject);
+begin
+ case (Self.status) of
+  TRozpStatus.disabled: json['stav'] := 'vypnuto';
+  TRozpStatus.not_selected: json['stav'] := 'not_selected';
+  TRozpStatus.mounting: json['stav'] := 'mounting';
+  TRozpStatus.active: json['stav'] := 'active';
+ end;
+end;
+
+procedure TBlkRozp.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+begin
+ if (reqJson.Contains('stav')) then
+  begin
+   if (Self.status = TRozpStatus.disabled) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze nastavit neaktivni rozpojovac');
+     inherited;
+     Exit();
+    end;
+
+   if (reqJson.S['stav'] = 'mounting') then
+     Self.Mount()
+   else if (reqJson.S['stav'] = 'active') then
+     Self.Activate()
+   else if (reqJson.S['stav'] = 'not_selected') then
+     Self.status := TRozpStatus.not_selected;
+  end;
+
+ inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
