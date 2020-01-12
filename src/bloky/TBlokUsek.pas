@@ -461,6 +461,22 @@ begin
  Self.UsekStav.StavOld := none;
  Self.UsekStav.sekce.Clear();
  Self.UsekStav.neprofilJCcheck.Clear();
+
+ if (Boosters.ContainsKey(Self.UsekSettings.Zesil)) then
+  begin
+   if (Boosters[Self.UsekSettings.Zesil].isDCCdetection) then
+     Self.UsekStav.DCC := (Boosters[Self.UsekSettings.Zesil].DCC = TBoosterSignal.ok)
+   else
+     Self.UsekStav.DCC := (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn);
+
+   Self.UsekStav.napajeni := Boosters[Self.UsekSettings.Zesil].napajeni;
+   Self.UsekStav.zkrat := Boosters[Self.UsekSettings.Zesil].zkrat;
+  end else begin
+   Self.UsekStav.DCC := (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn);
+   Self.UsekStav.napajeni := TBoosterSignal.undef;
+   Self.UsekStav.zkrat := TBoosterSignal.undef;
+  end;
+
  Self.Update();
  //change event will be called in Update();
 end;
