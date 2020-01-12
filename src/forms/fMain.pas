@@ -812,7 +812,10 @@ begin
 
   RCSTableData.UpdateTable();
 
-  if ((F_Main.Showing) and (F_Main.PC_1.ActivePage = F_Main.TS_Bloky)) then BlokyTableData.UpdateTable;
+  if ((F_Main.Showing) and (F_Main.PC_1.ActivePage = F_Main.TS_Bloky)) then
+    BlokyTableData.UpdateTable();
+
+  ORTCPServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
 
   if (SystemData.Status = stopping) then
    Self.A_RCS_CloseExecute(nil);
@@ -888,6 +891,8 @@ begin
 
  Self.LogStatus('RCS: uzavřeno');
  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
+
+ ORTCPServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
 
  if (SystemData.Status = stopping) then
   begin
@@ -1356,6 +1361,10 @@ begin
  HVDb.CSReset();
  Application.ProcessMessages();
 
+ // no clinets shoudl be connected
+ // when disconnect called with clients connected, fatal error happened
+ ORTCPServer.BroadcastBottomError('Výpadek systému řízení trakce, ztráta kontroly nad jízdou!', 'TECHNOLOGIE');
+
  if (SystemData.Status = stopping) then
    Self.A_RCS_StopExecute(Self);
 end;
@@ -1783,7 +1792,8 @@ end;
 
 procedure TF_Main.A_PanelServer_StartExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (not Blky.enabled)) then Blky.Enable();
+ if ((SystemData.Status = starting) and (not Blky.enabled)) then
+   Blky.Enable();
 
  try
    ORTCPServer.Start();
@@ -3230,7 +3240,7 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
  Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.ConnectedSafe())
-    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned));
+    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned) or (not Blky.enabled));
  Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrakceI.ConnectedSafe())
     or (ORTCPServer.openned);
 end;

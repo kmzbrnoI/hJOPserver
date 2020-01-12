@@ -279,7 +279,6 @@ begin
       F_Main.A_System_Start.Enabled := true;
       F_Main.A_System_Stop.Enabled  := true;
       writelog('RCS FTDI Error - '+IntToStr(errValue), WR_ERROR);
-      ORTCPServer.BroadcastBottomError('RCS FTDI error', 'TECHNOLOGIE');
     end;
    end;//case
   end else begin
