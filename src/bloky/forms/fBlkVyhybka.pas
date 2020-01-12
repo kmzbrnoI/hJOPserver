@@ -47,6 +47,7 @@ type
     CB_Spojka: TComboBox;
     CHB_Spojka_Common_In: TCheckBox;
     CHB_Spojka_Common_Out: TCheckBox;
+    CHB_Feedback: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -55,6 +56,7 @@ type
     procedure CHB_npPlusClick(Sender: TObject);
     procedure CHB_npMinusClick(Sender: TObject);
     procedure SE_moduleExit(Sender: TObject);
+    procedure CHB_FeedbackClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkVyhybka;
@@ -104,7 +106,7 @@ begin
  Self.SE_VstMinus_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_VstMinus_module.Value))-1, 0);
 end;
 
-procedure TF_BlkVyhybka.NewBlkOpenForm;
+procedure TF_BlkVyhybka.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value  := Blky.GetBlkID(Blky.count-1)+1;
@@ -133,11 +135,14 @@ procedure TF_BlkVyhybka.NewBlkOpenForm;
   Self.CHB_npMinus.Checked := false;
   Self.CHB_npMinusClick(Self.CHB_npMinus);
 
+  Self.CHB_Feedback.Checked := true;
+  Self.CHB_FeedbackClick(Self.CHB_Feedback);
+
   F_BlkVyhybka.Caption := 'Editovat data nového bloku výhybka';
   F_BlkVyhybka.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkVyhybka.NormalOpenForm;
+procedure TF_BlkVyhybka.NormalOpenForm();
 var glob:TBlkSettings;
     i:Integer;
     spojkaSettings, settings:TBlkVyhSettings;
@@ -212,6 +217,9 @@ var glob:TBlkSettings;
    end;
 
   Self.SE_moduleExit(Self);
+
+  Self.CHB_Feedback.Checked := settings.detekcePolohy;
+  Self.CHB_FeedbackClick(Self.CHB_Feedback);
 
   Self.CHB_npPlus.Checked := (settings.npPlus > -1);
   Self.CHB_npPlusClick(Self.CHB_npPlus);
@@ -289,6 +297,22 @@ procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
  begin
   F_BlkVyhybka.Close;
  end;
+
+procedure TF_BlkVyhybka.CHB_FeedbackClick(Sender: TObject);
+begin
+ Self.SE_VstPlus_module.Enabled := Self.CHB_Feedback.Checked;
+ Self.SE_VstPlus_port.Enabled := Self.CHB_Feedback.Checked;
+ Self.SE_VstMinus_module.Enabled := Self.CHB_Feedback.Checked;
+ Self.SE_VstMinus_port.Enabled := Self.CHB_Feedback.Checked;
+
+ if (not Self.CHB_Feedback.Checked) then
+  begin
+   Self.SE_VstPlus_module.Value := 0;
+   Self.SE_VstPlus_port.Value := 0;
+   Self.SE_VstMinus_module.Value := 0;
+   Self.SE_VstMinus_port.Value := 0;
+  end;
+end;
 
 procedure TF_BlkVyhybka.CHB_npMinusClick(Sender: TObject);
 begin
@@ -438,22 +462,24 @@ var glob:TBlkSettings;
 
   if (Self.CHB_Zamek.Checked) then
    begin
-     settings.zamek := Blky.GetBlkID(Self.CB_ZamekData[Self.CB_Zamek.ItemIndex]);
-     settings.zamekPoloha := TVyhPoloha(Self.CB_Zamek_Poloha.ItemIndex);
+    settings.zamek := Blky.GetBlkID(Self.CB_ZamekData[Self.CB_Zamek.ItemIndex]);
+    settings.zamekPoloha := TVyhPoloha(Self.CB_Zamek_Poloha.ItemIndex);
    end else begin
-     settings.zamek := -1;
-     settings.zamekPoloha := TVyhPoloha.none;
+    settings.zamek := -1;
+    settings.zamekPoloha := TVyhPoloha.none;
    end;
 
   if (Self.CHB_npPlus.Checked) then
-   settings.npPlus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npPlus.ItemIndex])
+    settings.npPlus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npPlus.ItemIndex])
   else
-   settings.npPlus := -1;
+    settings.npPlus := -1;
 
   if (Self.CHB_npMinus.Checked) then
-   settings.npMinus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npMinus.ItemIndex])
+    settings.npMinus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npMinus.ItemIndex])
   else
-   settings.npMinus := -1;
+    settings.npMinus := -1;
+
+  settings.detekcePolohy := Self.CHB_Feedback.Checked;
 
   try
     Self.Blk.SetSettings(settings);

@@ -15,19 +15,21 @@ type
  ESpojka = class(Exception);
 
  TBlkVyhSettings = record
-  RCSAddrs:TRCSAddrs;     // poradi(0..3): vst+,vst-,vyst+,vyst-
+  RCSAddrs:TRCSAddrs;     // vstup+, vstup-, vystup+, vystup-
   spojka:Integer;         // reference na id vyhybky ve spojce
                           // pokud jsou obe vyhybky ve spojce, maji reference na sebe navzajem
                           // zmena RCS vstupu a vystupu v nastaveni jedne vyhybky ovlivnuje druhou
-                          // POZOR: jedna data ulozena na dvou mistech, pri nacitani se nekontroluje koherence; SOUBOR MUSI BYT KOHERENTNI (tj. obe vyhybky musi mit navaznosti vzdy na tu druhou)
+                          // POZOR: jedna data ulozena na dvou mistech, pri nacitani se nekontroluje konzistence
+                          // SOUBOR MUSI BYT KONZISTENTNI (tj. kazda vyhybka musi mit navaznosti na tu druhou)
   zamek:Integer;          // pokud ma vyhybka navaznost na zamek, je zde id bloku zamku; jinak -1
   zamekPoloha:TVyhPoloha; // poloha, v jake se vyhybka musi nachazet pro uzamceni zamku
   npPlus:Integer;         // id neprofiloveho useku pro polohu plus (-1 pokud neni)
   npMinus:Integer;        // id neprofiloveho useku pro polohu minus (-1 pokud neni)
+  detekcePolohy:Boolean;
  end;
 
  TBlkVyhStav = record
-  poloha,polohaOld,poloha_real:TVyhPoloha;    // poloha_real je skutecna poloha, kterou aktualne zobrazuji RCS vstupy
+  poloha,polohaOld,polohaReal,polohaSave:TVyhPoloha; // polohaReal je skutecna poloha, kterou aktualne zobrazuji RCS vstupy
   stit,vyl:string;                            // stitek a vyluka vyhybky
   staveni_minus,staveni_plus:Boolean;         // stavi se zrovna vyhybka do polohy plus, ci minus?
   locked: boolean;                            // skutecny zamek na vystupu - jestli je RCS vystup zamknut
@@ -45,13 +47,19 @@ type
   UsekID:Integer;
  end;
 
+ TBlkVyhInputs = record
+  plus: TRCSInputState;
+  minus: TRCSInputState;
+  constructor Create(plus, minus: TRCSInputState);
+ end;
+
  TBlkVyhybka = class(TBlk)
   const
    //defaultni stav
    _def_vyh_stav:TBlkVyhStav = (
     poloha : disabled;
     polohaOld : disabled;
-    poloha_real : disabled;
+    polohaReal : disabled;
     stit : '';
     vyl : '';
     staveni_minus : false;
@@ -66,7 +74,8 @@ type
     staveniOR: nil;
    );
 
-   _VYH_STAVENI_TIMEOUT_SEC = 10;            // timeout na staveni vyhybky je 10 sekund
+   _VYH_STAVENI_TIMEOUT_SEC = 10; // timeout na staveni vyhybky je 10 sekund
+   _VYH_STAVENI_MOCK_SEC = 2;
 
   private
    VyhSettings:TBlkVyhSettings;
@@ -75,7 +84,7 @@ type
 
    NullOutput:record
      enabled:boolean;
-     NullOutputTime:System.TDateTime;      //500ms to null outputs
+     NullOutputTime:System.TDateTime; // 500ms to null outputs
    end;
 
    fzamek:TBlk;
@@ -126,10 +135,12 @@ type
 
     function GetVyhZaver():boolean;
     procedure SetVyhZaver(zaver:boolean);
+    function MockInputs():TBlkVyhInputs;
 
     function GetZamek():TBlk;
     function GetNpPlus():TBlk;
     function GetNpMinus():TBlk;
+    function GetDetekcePolohy():Boolean;
 
     procedure NpObsazChange(Sender:TObject; data:Integer);
     procedure MapNpEvents();
@@ -171,6 +182,7 @@ type
 
     procedure NullVyhZaver();
     procedure DecreaseNouzZaver(amount:Cardinal);
+    function GetInputs():TBlkVyhInputs;
 
     property Stav:TBlkVyhStav read VyhStav;
 
@@ -186,6 +198,7 @@ type
     property zamek:TBlk read GetZamek;
     property npBlokPlus:TBlk read GetNpPlus;
     property npBlokMinus:TBlk read GetNpMinus;
+    property detekcePolohy:Boolean read GetDetekcePolohy;
 
     property StaveniPlus:Boolean read VyhStav.staveni_plus write VyhStav.staveni_plus;
     property StaveniMinus:Boolean read VyhStav.staveni_minus write VyhStav.staveni_minus;
@@ -204,6 +217,7 @@ type
     procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
     class function PolohaToStr(poloha:TVyhPoloha):string;
+    class function StrToPoloha(c: string):TVyhPoloha;
 
  end;
 
@@ -232,21 +246,26 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkVyhybka.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
 var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.VyhSettings.RCSAddrs    := Self.LoadRCS(ini_tech,section);
- Self.VyhSettings.spojka      := ini_tech.ReadInteger(section, 'spojka', -1);
- Self.VyhSettings.zamek       := ini_tech.ReadInteger(section, 'zamek', -1);
+ Self.VyhSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
+ Self.VyhSettings.spojka := ini_tech.ReadInteger(section, 'spojka', -1);
+ Self.VyhSettings.zamek := ini_tech.ReadInteger(section, 'zamek', -1);
  Self.VyhSettings.zamekPoloha := TVyhPoloha(ini_tech.ReadInteger(section, 'zamek-pol', 0));
+ Self.VyhSettings.detekcePolohy := ini_tech.ReadBool(section, 'detekcePolohy', true);
 
- Self.VyhSettings.npPlus  := ini_tech.ReadInteger(section, 'npPlus', -1);
+ Self.VyhSettings.npPlus := ini_tech.ReadInteger(section, 'npPlus', -1);
  Self.VyhSettings.npMinus := ini_tech.ReadInteger(section, 'npMinus', -1);
 
  Self.VyhStav.Stit := ini_stat.ReadString(section, 'stit', '');
  Self.VyhStav.Vyl  := ini_stat.ReadString(section, 'vyl', '');
+
+ Self.VyhStav.polohaSave := Self.StrToPoloha(ini_stat.ReadString(section, 'poloha', '+'));
+ if ((Self.VyhStav.polohaSave <> TVyhPoloha.plus) and (Self.VyhStav.polohaSave <> TVyhPoloha.minus)) then
+   Self.VyhStav.polohaSave := TVyhPoloha.plus;
 
  if (ini_rel <> nil) then
   begin
@@ -273,9 +292,9 @@ end;
 
 procedure TBlkVyhybka.SaveData(ini_tech:TMemIniFile;const section:string);
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
 
- Self.SaveRCS(ini_tech,section,Self.VyhSettings.RCSAddrs);
+ Self.SaveRCS(ini_tech, section, Self.VyhSettings.RCSAddrs);
 
  if (Self.VyhSettings.spojka > -1) then
    ini_tech.WriteInteger(section, 'spojka', Self.VyhSettings.spojka);
@@ -291,15 +310,32 @@ begin
    ini_tech.WriteInteger(section, 'zamek', Self.VyhSettings.zamek);
    ini_tech.WriteInteger(section, 'zamek-pol', Integer(Self.VyhSettings.zamekPoloha));
   end;
+
+ if (not Self.detekcePolohy) then
+   ini_tech.WriteBool(section, 'detekcePolohy', false);
 end;
 
 procedure TBlkVyhybka.SaveStatus(ini_stat:TMemIniFile;const section:string);
+var poloha: TVyhPoloha;
 begin
  if (Self.VyhStav.stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.VyhStav.Stit);
 
  if (Self.VyhStav.vyl <> '') then
    ini_stat.WriteString(section, 'vyl', Self.VyhStav.Vyl);
+
+ if (not Self.detekcePolohy) then
+  begin
+   if (Self.Poloha > TVyhPoloha.disabled) then
+     poloha := Self.Poloha
+   else
+     poloha := Self.VyhStav.polohaSave;
+
+   if ((Self.StaveniMinus) or (poloha = TVyhPoloha.minus)) then
+     ini_stat.WriteString(section, 'poloha', '-')
+   else
+     ini_stat.WriteString(section, 'poloha', '+')
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -312,16 +348,26 @@ begin
    if (not RCSi.IsModule(rcsaddr.board)) then
      Exit();
 
- Self.VyhStav.poloha := none;
+ if (Self.detekcePolohy) then
+   Self.VyhStav.poloha := none
+ else
+   Self.VyhStav.poloha := Self.VyhStav.polohaSave;
+
  Self.VyhStav.redukuji_spojku := false;
  Self.MapNpEvents();
- Self.Update();       //update will call Change()
+ Self.Update(); //update will call Change()
 end;
 
 procedure TBlkVyhybka.Disable();
 begin
+ if (Self.StaveniPlus) then
+   Self.VyhStav.polohaSave := TVyhPoloha.plus
+ else if (Self.StaveniMinus) then
+   Self.VyhStav.polohaSave := TVyhPoloha.minus
+ else
+   Self.VyhStav.polohaSave := Self.VyhStav.poloha;
+
  Self.VyhStav.poloha := disabled;
- Self.VyhStav.redukuji_spojku := false;
  Self.Change(true);
 end;
 
@@ -329,6 +375,10 @@ procedure TBlkVyhybka.Reset();
 begin
  Self.VyhStav.redukuji_spojku := false;
  Self.VyhStav.redukce_menu := 0;
+ Self.VyhStav.staveni_plus := false;
+ Self.VyhStav.staveni_minus := false;
+ Self.VyhStav.locked := false;
+ Self.VyhStav.vyhZaver := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -491,9 +541,21 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TBlkVyhybka.GetInputs():TBlkVyhInputs;
+begin
+ if (Self.detekcePolohy) then
+  begin
+   Result.plus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[0]);
+   Result.minus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[1]);
+  end else begin
+   Result := Self.MockInputs();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TBlkVyhybka.UpdatePoloha();
-var iplus,iminus: TRCSInputState;
-    spojkaPlus, spojkaMinus: TRCSInputState;
+var inp, spojkaInp: TBlkVyhInputs;
     Blk:TBlk;
     oblr:TOR;
     spojka: TBlkVyhybka;
@@ -506,33 +568,31 @@ var iplus,iminus: TRCSInputState;
 
   //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
   try
-    iplus  := RCSi.GetInput(Self.VyhSettings.RCSAddrs[0]);
-    iminus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[1]);
+    inp := Self.GetInputs();
   except
-    iplus  := TRCSInputState.failure;
-    iminus := TRCSInputState.failure;
+    inp.plus := TRCSInputState.failure;
+    inp.minus := TRCSInputState.failure;
   end;
 
-  if ((spojka <> nil) and (iplus <> TRCSInputState.failure) and (iminus <> TRCSInputState.failure)) then
+  if ((spojka <> nil) and (inp.plus <> TRCSInputState.failure) and (inp.minus <> TRCSInputState.failure)) then
    begin
     try
-      spojkaPlus := RCSi.GetInput(spojka.VyhSettings.RCSAddrs[0]);
-      spojkaMinus := RCSi.GetInput(spojka.VyhSettings.RCSAddrs[1]);
+      spojkaInp := spojka.GetInputs();
     except
-      spojkaPlus := failure;
-      spojkaMinus := failure;
+      spojkaInp.plus := TRCSInputState.failure;
+      spojkaInp.minus := TRCSInputState.failure;
     end;
 
-    iplus := CombineSpojkaInputs(iplus, spojkaPlus);
-    iminus := CombineSpojkaInputs(iminus, spojkaMinus);
+    inp.plus := CombineSpojkaInputs(inp.plus, spojkaInp.plus);
+    inp.minus := CombineSpojkaInputs(inp.minus, spojkaInp.minus);
    end;
 
   try
-    if ((iplus = failure) or (iminus = failure) or
+    if ((inp.plus = failure) or (inp.minus = failure) or
         (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[2].board)) or
         (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[3].board)) or
         ((spojka <> nil) and ((not RCSi.IsModule(spojka.VyhSettings.RCSAddrs[2].board)) or
-                             (not RCSi.IsModule(spojka.VyhSettings.RCSAddrs[2].board))))) then
+                              (not RCSi.IsModule(spojka.VyhSettings.RCSAddrs[2].board))))) then
      begin
       if (Self.Stav.poloha <> TVyhPoloha.disabled) then
        begin
@@ -551,11 +611,11 @@ var iplus,iminus: TRCSInputState;
   end;
 
 
-  if ((iplus = isOff) and (iminus = isOff)) then
+  if ((inp.plus = isOff) and (inp.minus = isOff)) then
    begin
     Self.VyhStav.poloha := none;
 
-    if ((Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and ((Integer(Self.Zaver) > 0) or (Self.vyhZaver) or
+    if ((Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and ((Integer(Self.Zaver) > 0) or (Self.vyhZaver) or
       ((Self.redukce_menu) and (not Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus)) or
       ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
      and (Self.Zaver <> TZaver.staveni)) then
@@ -565,10 +625,10 @@ var iplus,iminus: TRCSInputState;
       JCDb.RusJC(Self);
      end;//if Blokovani
 
-    Self.VyhStav.poloha_real := none;
+    Self.VyhStav.polohaReal := none;
    end;
 
-  if ((iplus = isOn) and (iminus = isOff)) then
+  if ((inp.plus = isOn) and (inp.minus = isOff)) then
    begin
     //je-li plus vstup 1
     if (Self.VyhStav.staveni_minus) then Exit;
@@ -593,7 +653,7 @@ var iplus,iminus: TRCSInputState;
       Self.VyhStav.staveniErrCallback := nil;
      end;
 
-    if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and (iminus <> isOn)) then
+    if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and (inp.minus <> isOn)) then
      begin
       // sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze +
       // TZaver.staveni je specialni druh zaveru, ktery neumoznuje zmenu stavu vyhybky uzivatelem, ale zaroven nekrici, pokud se zmeni skutecny stav
@@ -609,10 +669,10 @@ var iplus,iminus: TRCSInputState;
       Self.VyhStav.poloha := plus;
      end;
 
-    Self.VyhStav.poloha_real := plus;
+    Self.VyhStav.polohaReal := plus;
    end;
 
-  if ((iminus = isOn) and (iplus = isOff)) then
+  if ((inp.minus = isOn) and (inp.plus = isOff)) then
    begin
     //je-li minus vstup 1
     if (Self.VyhStav.staveni_plus) then Exit;
@@ -637,7 +697,7 @@ var iplus,iminus: TRCSInputState;
       Self.VyhStav.staveniErrCallback := nil;
      end;
 
-    if ((not Self.VyhStav.staveni_minus) and (Self.VyhStav.poloha <> Self.VyhStav.poloha_real) and (iplus <> isOn)) then
+    if ((not Self.VyhStav.staveni_minus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and (inp.plus <> isOn)) then
      begin
       //sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze -
       // redukce menu se tady nekontroluje, protoze vyhybka se z koncove polohy musi vzdy dostat do nepolohy
@@ -651,11 +711,11 @@ var iplus,iminus: TRCSInputState;
       Self.VyhStav.poloha := minus;
      end;
 
-    Self.VyhStav.poloha_real := minus;
+    Self.VyhStav.polohaReal := minus;
    end;
 
   //2 polohy zaroven = deje se neco divneho
-  if ((iplus = isOn) and (iminus = isOn)) then
+  if ((inp.plus = isOn) and (inp.minus = isOn)) then
    begin
     Self.VyhStav.poloha := both;
 
@@ -668,7 +728,7 @@ var iplus,iminus: TRCSInputState;
       JCDb.RusJC(Self);
      end;//if Blokovani
 
-    Self.VyhStav.poloha_real := both;
+    Self.VyhStav.polohaReal := both;
    end;
  end;
 
@@ -1213,6 +1273,11 @@ begin
  Result := Self.fnpMinus;
 end;
 
+function TBlkVyhybka.GetDetekcePolohy():Boolean;
+begin
+ Result := (Self.VyhSettings.detekcePolohy) and (Self.VyhSettings.RCSAddrs.Count >= 2);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // pokud je na vyhybku zamek, vyhybka ma nespravnou polohu a klic je v zamku, vyhlasime poruchu zamku
@@ -1296,6 +1361,16 @@ begin
  else
   Result := '';
  end;
+end;
+
+class function TBlkVyhybka.StrToPoloha(c: string):TVyhPoloha;
+begin
+ if (c = '+') then
+   Result := TVyhPoloha.plus
+ else if (c = '-') then
+   Result := TVyhPoloha.minus
+ else
+   Result := TVyhPoloha.none;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1502,6 +1577,30 @@ begin
  if ((first = TRCSInputState.isOn) and (second = TRCSInputState.isOn)) then
    Exit(TRCSInputState.isOn);
  Result := TRCSInputState.isOff;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVyhybka.MockInputs():TBlkVyhInputs;
+begin
+ if (Self.Poloha = TVyhPoloha.plus) then
+   Exit(TBlkVyhInputs.Create(isOn, isOff))
+ else if (Self.Poloha = TVyhPoloha.minus) then
+   Exit(TBlkVyhInputs.Create(isOff, isOn))
+ else if ((Self.StaveniPlus) and (Now > Self.VyhStav.staveniStart+EncodeTime(0, 0, _VYH_STAVENI_MOCK_SEC, 0))) then
+   Exit(TBlkVyhInputs.Create(isOn, isOff))
+ else if ((Self.StaveniMinus) and (Now > Self.VyhStav.staveniStart+EncodeTime(0, 0, _VYH_STAVENI_MOCK_SEC, 0))) then
+   Exit(TBlkVyhInputs.Create(isOff, isOn))
+ else
+   Exit(TBlkVyhInputs.Create(isOff, isOff));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+constructor TBlkVyhInputs.Create(plus, minus: TRCSInputState);
+begin
+ Self.plus := plus;
+ Self.minus := minus;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

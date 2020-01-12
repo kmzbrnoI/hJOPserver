@@ -362,7 +362,7 @@ begin
      if ((vyh.StaveniPlus) or (vyh.StaveniMinus)) then
       begin
        // po 1 sekunde nastavime vstup aktualni polohy na 0
-       if ((vyh.Stav.poloha_real <> TVyhPoloha.none) and (vyh.Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
+       if ((vyh.Stav.polohaReal <> TVyhPoloha.none) and (vyh.Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
         begin
          if (vyh.StaveniPlus) then
           RCSi.SetInput(vyh.GetSettings.RCSAddrs[1].board, vyh.GetSettings.RCSAddrs[1].port, 0)

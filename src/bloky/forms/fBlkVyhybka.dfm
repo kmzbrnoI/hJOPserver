@@ -82,7 +82,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
     Left = 7
     Top = 127
     Width = 304
-    Height = 172
+    Height = 193
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -270,6 +270,15 @@ object F_BlkVyhybka: TF_BlkVyhybka
       TabOrder = 6
       Value = 1
       OnExit = SE_moduleExit
+    end
+    object CHB_Feedback: TCheckBox
+      Left = 8
+      Top = 166
+      Width = 153
+      Height = 17
+      Caption = 'V'#253'hybka m'#225' detekci polohy'
+      TabOrder = 8
+      OnClick = CHB_FeedbackClick
     end
   end
   object B_Storno: TButton
