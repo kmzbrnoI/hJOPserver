@@ -242,9 +242,12 @@ begin
 
  for i := 0 to data.Count-1 do
   begin
-   ini.WriteInteger(section, 'RCSb'+IntToStr(i), data[i].board);
-   ini.WriteInteger(section, 'RCSp'+IntToStr(i), data[i].port);
-  end;//for i
+   if ((data[i].board > 0) or (data[i].port > 0)) then
+    begin
+     ini.WriteInteger(section, 'RCSb'+IntToStr(i), data[i].board);
+     ini.WriteInteger(section, 'RCSp'+IntToStr(i), data[i].port);
+    end;
+  end;
 end;
 
 procedure TBlk.Change(now:boolean = false);
