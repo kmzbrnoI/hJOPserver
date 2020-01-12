@@ -359,7 +359,7 @@ begin
      if (blk.typ <> _BLK_VYH) then continue;
      vyh := TBlkVyhybka(blk);
 
-     if ((vyh.StaveniPlus) or (vyh.StaveniMinus)) then
+     if (((vyh.StaveniPlus) or (vyh.StaveniMinus)) and (vyh.detekcePolohy)) then
       begin
        // po 1 sekunde nastavime vstup aktualni polohy na 0
        if ((vyh.Stav.polohaReal <> TVyhPoloha.none) and (vyh.Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then

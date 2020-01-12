@@ -201,7 +201,7 @@ begin
  //nastaveni vyhybek do +
  for blk in Blky do
   begin
-   if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).GetSettings().RCSAddrs.Count > 0)) then
+   if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).detekcePolohy)) then
      Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
    if (Blk.typ = _BLK_PREJEZD) then
      Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
