@@ -163,7 +163,7 @@ procedure TBlkIR.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.RCStoJSON(Self.IRSettings.RCSAddrs[0], json['rcs'].O['rcs']);
+ TBlk.RCStoJSON(Self.IRSettings.RCSAddrs[0], json['rcs']);
 
  if (includeState) then
    Self.GetPtState(json['blokStav']);
