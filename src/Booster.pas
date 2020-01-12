@@ -191,8 +191,6 @@ begin
 
  ini.WriteInteger(section, 'dcc_module', Self.Settings.RCS.DCC.board);
  ini.WriteInteger(section, 'dcc_port', Self.Settings.RCS.DCC.port);
-
- ini.UpdateFile();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +202,8 @@ begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  //if not a power, not a overload
- if (Self.napajeni = TBoosterSignal.error) then Exit(TBoosterSignal.undef);
+ if (Self.napajeni = TBoosterSignal.error) then
+   Exit(TBoosterSignal.undef);
 
  try
    val := RCSi.GetInput(Self.Settings.RCS.Zkrat);
