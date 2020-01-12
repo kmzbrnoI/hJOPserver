@@ -1325,6 +1325,12 @@ procedure TBlkVyhybka.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
  if (reqJson.Contains('poloha')) then
   begin
+   if (Self.Poloha = TVyhPoloha.disabled) then
+    begin
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit neaktivni vyhybku');
+     inherited;
+     Exit();
+    end;
    if ((Self.Zaver > TZaver.no) or (Self.vyhZaver)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit vyhybku pod zaverem');
