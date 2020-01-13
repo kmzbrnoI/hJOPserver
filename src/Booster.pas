@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses GetSystems, fMain, RCS;
+uses GetSystems, fMain, RCS, TechnologieTrakce, Trakce;
 
 {
   Format datoveho souboru: .ini soubor, kazdy SPAX ma svou sekci
@@ -250,7 +250,18 @@ begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  // DCC nemusi byt detekovano (to se pozna tak, ze RCS board = 0)
- if (Self.Settings.RCS.DCC.board = 0) then Exit(TBoosterSignal.undef);
+ if (Self.Settings.RCS.DCC.board = 0) then
+  begin
+   case (TrakceI.TrackStatusSafe()) of
+     TTrkStatus.tsUnknown: Exit(TBoosterSignal.undef);
+     TTrkStatus.tsOff: Exit(TBoosterSignal.error);
+     TTrkStatus.tsOn: Exit(TBoosterSignal.ok);
+     TTrkStatus.tsProgramming: Exit(TBoosterSignal.error);
+   else
+     Exit(TBoosterSignal.undef);
+   end;
+  end;
+
  try
    val := RCSi.GetInput(Self.Settings.RCS.DCC);
  except
