@@ -43,6 +43,8 @@ type
 
     function GetDefined():boolean;
     function GetDCCDetection():boolean;
+    function GetShortcutDetection():boolean;
+    function GetPowerDetection():boolean;
 
   public
 
@@ -60,6 +62,8 @@ type
     property DCC:TBoosterSignal read GetDCC;
 
     property defined:boolean read GetDefined;
+    property isShortcutDetection:boolean read GetShortcutDetection;
+    property isPowerDetection:boolean read GetPowerDetection;
     property isDCCdetection:boolean read GetDCCDetection;
 
     property bSettings:TBoosterSettings read settings write settings;
@@ -160,7 +164,7 @@ begin
 
  Self.Settings.RCS.Zkrat.board := ini.ReadInteger(section, 'zkr_module', 0);
  if (Self.Settings.RCS.Zkrat.board = 0) then
-   Self.Settings.RCS.Zkrat.board  := ini.ReadInteger(section, 'zkr_mtb', 0);
+   Self.Settings.RCS.Zkrat.board := ini.ReadInteger(section, 'zkr_mtb', 0);
  Self.Settings.RCS.Zkrat.port := ini.ReadInteger(section, 'zkr_port', 0);
 
  Self.Settings.RCS.Napajeni.board := ini.ReadInteger(section, 'nap_module', 0);
@@ -168,10 +172,10 @@ begin
    Self.Settings.RCS.Napajeni.board := ini.ReadInteger(section, 'nap_mtb', 0);
  Self.Settings.RCS.Napajeni.port := ini.ReadInteger(section, 'nap_port', 0);
 
- Self.Settings.RCS.DCC.board  := ini.ReadInteger(section, 'dcc_module', 0);
+ Self.Settings.RCS.DCC.board := ini.ReadInteger(section, 'dcc_module', 0);
  if (Self.Settings.RCS.DCC.board = 0) then
-   Self.Settings.RCS.DCC.board  := ini.ReadInteger(section, 'dcc_mtb', 0);
- Self.Settings.RCS.DCC.port   := ini.ReadInteger(section, 'dcc_port', 0);
+   Self.Settings.RCS.DCC.board := ini.ReadInteger(section, 'dcc_mtb', 0);
+ Self.Settings.RCS.DCC.port := ini.ReadInteger(section, 'dcc_port', 0);
 
  RCSi.SetNeeded(Self.Settings.RCS.Napajeni.board);
  RCSi.SetNeeded(Self.Settings.RCS.Zkrat.board);
@@ -183,14 +187,23 @@ begin
  ini.WriteString(section, 'name', Self.Settings.Name);
  ini.WriteInteger(section, 'class', Integer(Self.Settings.bclass));
 
- ini.WriteInteger(section, 'zkr_module', Self.Settings.RCS.Zkrat.board);
- ini.WriteInteger(section, 'zkr_port', Self.Settings.RCS.Zkrat.port);
+ if (Self.isShortcutDetection) then
+  begin
+   ini.WriteInteger(section, 'zkr_module', Self.Settings.RCS.Zkrat.board);
+   ini.WriteInteger(section, 'zkr_port', Self.Settings.RCS.Zkrat.port);
+  end;
 
- ini.WriteInteger(section, 'nap_module', Self.Settings.RCS.Napajeni.board);
- ini.WriteInteger(section, 'nap_port', Self.Settings.RCS.Napajeni.port);
+ if (Self.isPowerDetection) then
+  begin
+   ini.WriteInteger(section, 'nap_module', Self.Settings.RCS.Napajeni.board);
+   ini.WriteInteger(section, 'nap_port', Self.Settings.RCS.Napajeni.port);
+  end;
 
- ini.WriteInteger(section, 'dcc_module', Self.Settings.RCS.DCC.board);
- ini.WriteInteger(section, 'dcc_port', Self.Settings.RCS.DCC.port);
+ if (Self.isDCCdetection) then
+  begin
+   ini.WriteInteger(section, 'dcc_module', Self.Settings.RCS.DCC.board);
+   ini.WriteInteger(section, 'dcc_port', Self.Settings.RCS.DCC.port);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +218,7 @@ begin
  if (Self.napajeni = TBoosterSignal.error) then
    Exit(TBoosterSignal.undef);
 
- if (Self.settings.RCS.Zkrat.board = 0) then
+ if (not Self.isShortcutDetection) then
    Exit(TBoosterSignal.ok);
 
  try
@@ -227,7 +240,7 @@ var val:TRCSInputState;
 begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
- if (Self.settings.RCS.Napajeni.board = 0) then
+ if (not Self.isPowerDetection) then
    Exit(TBoosterSignal.ok);
 
  try
@@ -250,7 +263,7 @@ begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
  // DCC nemusi byt detekovano (to se pozna tak, ze RCS board = 0)
- if (Self.Settings.RCS.DCC.board = 0) then
+ if (not Self.isDCCdetection) then
   begin
    case (TrakceI.TrackStatusSafe()) of
      TTrkStatus.tsUnknown: Exit(TBoosterSignal.undef);
@@ -288,6 +301,16 @@ end;
 function TBooster.GetDCCDetection():boolean;
 begin
  Result := (Self.Settings.RCS.DCC.board > 0);
+end;
+
+function TBooster.GetShortcutDetection():boolean;
+begin
+ Result := (Self.Settings.RCS.Zkrat.board > 0);
+end;
+
+function TBooster.GetPowerDetection():boolean;
+begin
+ Result := (Self.Settings.RCS.Napajeni.board > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
