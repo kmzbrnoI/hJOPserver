@@ -205,6 +205,9 @@ begin
  if (Self.napajeni = TBoosterSignal.error) then
    Exit(TBoosterSignal.undef);
 
+ if (Self.settings.RCS.Zkrat.board = 0) then
+   Exit(TBoosterSignal.ok);
+
  try
    val := RCSi.GetInput(Self.Settings.RCS.Zkrat);
  except
@@ -223,6 +226,9 @@ function TBooster.GetNapajeni():TBoosterSignal;
 var val:TRCSInputState;
 begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
+
+ if (Self.settings.RCS.Napajeni.board = 0) then
+   Exit(TBoosterSignal.ok);
 
  try
    val := RCSi.GetInput(Self.Settings.RCS.Napajeni);
