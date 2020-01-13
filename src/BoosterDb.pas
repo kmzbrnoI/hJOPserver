@@ -222,19 +222,19 @@ end;
 
 procedure TBoosterDb.OnZkratChange(Sender:TObject; state:TBoosterSignal);
 begin
- Blky.SetZesZkrat(TBooster(Sender).id, state);
+ Blky.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 
 procedure TBoosterDb.OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
 begin
- Blky.SetZesNapajeni(TBooster(Sender).id, state);
+ Blky.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 
 procedure TBoosterDb.OnDCCChange(Sender:TObject; state:TBoosterSignal);
 begin
- Blky.SetZesDCC(TBooster(Sender).id, state);
+ Blky.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 

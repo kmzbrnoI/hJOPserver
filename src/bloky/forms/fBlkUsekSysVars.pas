@@ -68,8 +68,8 @@ var spr:Integer;
    true  : CB_NUZ.ItemIndex := 1;
   end;
 
-  CB_Zes_Zkrat.ItemIndex := Integer(Self.Blk.ZesZkrat)+1;
-  CB_Zes_Napajeni.ItemIndex := Integer(Self.Blk.ZesNapajeni)+1;
+  CB_Zes_Zkrat.ItemIndex := Integer(Self.Blk.zkrat)+1;
+  CB_Zes_Napajeni.ItemIndex := Integer(Self.Blk.napajeni)+1;
 
   case (Self.Blk.NUZ) of
    false : CB_NUZ.ItemIndex := 0;
@@ -103,8 +103,8 @@ var Blk:TBlk;
   Blky.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
   if (Self.Blk.NavJCRef.Count = 0) then
     Self.Blk.NavJCRef.Clear();
-  Self.Blk.ZesZkrat := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
-  Self.Blk.ZesNapajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
+  Self.Blk.zkrat := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
+  Self.Blk.napajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
   Self.Blk.Vyluka := M_Vyluka.Text;
   Self.Blk.Stitek := M_Stitek.Text;
  end;

@@ -1400,8 +1400,6 @@ end;
 
 procedure TF_Main.OnTrkStatusChange(Sender:TObject; trkStatus: TTrkStatus);
 begin
- Blky.SetDCC(trkStatus = TTrkStatus.tsOn);
-
  if (trkStatus = TTrkStatus.tsOn) then
   begin
    //je DCC

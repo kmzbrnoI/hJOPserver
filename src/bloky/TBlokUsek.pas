@@ -54,7 +54,7 @@ type
   spr_vypadek:boolean;      // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
   spr_vypadek_time:Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
                             // pro reseni timeoutu jsou tyto 2 promenne
-  DCCGoTime:TDateTime;      // cas kdy doslo k zpanuti DCC
+  zkratSenseTime:TDateTime; // cas, kdy ma dojit k detekci zkratu
   currentHoukEv:Integer;    // index aktualni houkaci udalosti
   neprofilJCcheck:TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
   soupravy:TList<Integer>;        // seznam souprav na useku ve smeru L --> S
@@ -96,10 +96,8 @@ type
     procedure SetKonecJC(konecjc:TZaver);
     procedure SetVlakPresun(presun:Integer);
 
-    procedure SetZesZkrat(state:TBoosterSignal);
-    procedure SetZesNap(state:TBoosterSignal);
-    procedure SetZesDCC(state:TBoosterSignal);
-    procedure SetCentralaDCC(state:boolean);
+    procedure SetNapajeni(state:TBoosterSignal);
+    procedure SetZkrat(state:TBoosterSignal);
     procedure SetDCC(state:boolean);
 
     procedure MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
@@ -149,10 +147,10 @@ type
     function GetUsekSpr():Integer;
 
     procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
-
     function CanSprSpeedInsert(index:Integer):boolean;
-
     function IsStujForSpr(spr:Integer):boolean;
+    function RealZesZkrat():TBoosterSignal;
+
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -190,6 +188,8 @@ type
 
     function GetSettings():TBlkUsekSettings;
     procedure SetSettings(data:TBlkUsekSettings);
+
+    procedure OnBoosterChange();
 
     procedure SetUsekVyl(Sender:TIDCOntext; vyl:string);
 
@@ -229,11 +229,9 @@ type
     property SoupravaS:Integer read GetSoupravaS;
     property Soupravs:TList<Integer> read UsekStav.Soupravy;
 
-    property ZesZkrat:TBoosterSignal read UsekStav.Zkrat write SetZesZkrat;
-    property ZesNapajeni:TBoosterSignal read UsekStav.Napajeni write SetZesNap;
-    property ZesDCC:TBoosterSignal write SetZesDCC;
-    property CentralaDCC:boolean write SetCentralaDCC;
-    property DCC:boolean read UsekStav.DCC;
+    property zkrat:TBoosterSignal read UsekStav.Zkrat write SetZkrat;
+    property napajeni:TBoosterSignal read UsekStav.Napajeni write SetNapajeni;
+    property DCC:boolean read UsekStav.DCC write SetDCC;
 
     property VlakPresun:Integer read UsekStav.vlakPresun write SetVlakPresun;
     property zpomalovani_ready:boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
@@ -462,28 +460,20 @@ begin
  Self.UsekStav.sekce.Clear();
  Self.UsekStav.neprofilJCcheck.Clear();
 
- if (Boosters.ContainsKey(Self.UsekSettings.Zesil)) then
-  begin
-   if (Boosters[Self.UsekSettings.Zesil].isDCCdetection) then
-     Self.UsekStav.DCC := (Boosters[Self.UsekSettings.Zesil].DCC = TBoosterSignal.ok)
-   else
-     Self.UsekStav.DCC := (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn);
-
-   Self.UsekStav.napajeni := Boosters[Self.UsekSettings.Zesil].napajeni;
-   Self.UsekStav.zkrat := Boosters[Self.UsekSettings.Zesil].zkrat;
-  end else begin
-   Self.UsekStav.DCC := (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn);
-   Self.UsekStav.napajeni := TBoosterSignal.undef;
-   Self.UsekStav.zkrat := TBoosterSignal.undef;
-  end;
+ Self.OnBoosterChange();
 
  Self.Update();
  //change event will be called in Update();
 end;
 
 procedure TBlkUsek.Disable();
+var oblr: TOR;
 begin
  inherited;
+
+ if (Self.UsekStav.zkrat = TBoosterSignal.error) then
+   for oblr in Self.ORsRef do
+     oblr.ZKratBlkCnt := oblr.ZKratBlkCnt - 1;
 
  Self.UsekStav.Stav       := disabled;
  Self.UsekStav.StavOld    := disabled;
@@ -519,7 +509,7 @@ var i, spr:Integer;
     usekStav:TUsekStav;
     oblr:TOR;
 begin
- if (((Self.ZesZkrat = TBoosterSignal.error) or (Self.ZesNapajeni = TBoosterSignal.error)) and (not Self.frozen)) then
+ if (((Self.zkrat = TBoosterSignal.error) or (Self.napajeni = TBoosterSignal.error)) and (not Self.frozen)) then
   begin
    Self.Freeze();
    Exit();
@@ -527,17 +517,19 @@ begin
 
  if (Self.frozen) then
   begin
-   if (((not Self.DCC) or (Self.ZesNapajeni = TBoosterSignal.error)
-        or (Now < Self.Stav.DCCGoTime+EncodeTime(0, 0, 1, 0)))
-       and (Self.ZesZkrat = TBoosterSignal.error)) then
-    begin
-     Self.UsekStav.zkrat := TBoosterSignal.ok;
-     for oblr in Self.ORsRef do
-       oblr.ZKratBlkCnt := oblr.ZKratBlkCnt - 1;
-     Self.Change(true);
-    end;
-   if ((Self.DCC) and (Self.ZesZkrat <> TBoosterSignal.error) and (Self.ZesNapajeni <> TBoosterSignal.error) and
-       (Now > Self.Stav.DCCGoTime+EncodeTime(0, 0, 1, 0))) then Self.UnFreeze();
+   if ((Self.zkrat <> TBoosterSignal.error) and (Self.RealZesZkrat() = TBoosterSignal.error) and
+       (Self.napajeni = TBoosterSignal.ok) and (Now > Self.Stav.zkratSenseTime)) then
+     Self.zkrat := TBoosterSignal.error;
+
+   if (((not Self.DCC) or (Self.napajeni = TBoosterSignal.error)
+        or (Now < Self.Stav.zkratSenseTime))
+       and (Self.zkrat = TBoosterSignal.error)) then
+     Self.zkrat := TBoosterSignal.ok;
+
+   if ((Self.DCC) and (Self.zkrat <> TBoosterSignal.error) and (Self.napajeni <> TBoosterSignal.error) and
+       (Now > Self.Stav.zkratSenseTime)) then
+     Self.UnFreeze();
+   inherited Update();
    Exit();
   end;
 
@@ -571,7 +563,7 @@ begin
         for spr in Self.Soupravs do
           Soupravy[spr].rychlost := 0;
 
-        Self.Change(true);
+        Self.Change();
        end;
       Exit();
     end;
@@ -740,20 +732,40 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.SetZesZkrat(state:TBoosterSignal);
+procedure TBlkUsek.OnBoosterChange();
+begin
+ if (Boosters.ContainsKey(Self.UsekSettings.Zesil)) then
+  begin
+   Self.DCC := (Boosters[Self.UsekSettings.Zesil].DCC = TBoosterSignal.ok);
+   Self.napajeni := Boosters[Self.UsekSettings.Zesil].napajeni;
+   Self.zkrat := Boosters[Self.UsekSettings.Zesil].zkrat;
+  end else begin
+   Self.DCC := (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn);
+   Self.napajeni := TBoosterSignal.undef;
+   Self.zkrat := TBoosterSignal.undef;
+  end;
+end;
+
+procedure TBlkUsek.SetZkrat(state:TBoosterSignal);
 var oblr:TOR;
 begin
+ if (Self.Obsazeno = TUsekStav.disabled) then
+   Exit();
+
  if (Self.frozen) then
    Self.last_zes_zkrat := state;
 
+ if (Self.UsekStav.zkrat = state) then
+   Exit();
+
  if ((state = TBoosterSignal.error) and (not Self.frozen) and
-     ((not Self.DCC) or (Self.ZesNapajeni = TBoosterSignal.error) or
-      (Now < Self.Stav.DCCGoTime+EncodeTime(0, 0, 1, 0)))) then
+     ((not Self.DCC) or (Self.napajeni = TBoosterSignal.error) or
+      (Now < Self.Stav.zkratSenseTime))) then
   begin
-   if (Self.ZesZkrat <> TBoosterSignal.ok) then
+   if (Self.zkrat <> TBoosterSignal.ok) then
     begin
      Self.UsekStav.zkrat := TBoosterSignal.ok;
-     Self.Change(true);
+     Self.Change();
     end;
    Self.Freeze();
    Exit();
@@ -762,57 +774,48 @@ begin
  if (state = TBoosterSignal.error) then
   begin
    // do OR oznamime, ze nastal zkrat, pak se prehraje zvuk v klientech...
-   if (not Self.frozen) then
-     for oblr in Self.ORsRef do
-      oblr.ZKratBlkCnt := oblr.ZKratBlkCnt + 1;
+   for oblr in Self.ORsRef do
+    oblr.ZKratBlkCnt := oblr.ZkratBlkCnt + 1;
   end else begin
    if (Self.UsekStav.zkrat = TBoosterSignal.error) then
      for oblr in Self.ORsRef do
-       oblr.ZKratBlkCnt := oblr.ZKratBlkCnt - 1;
+       oblr.ZKratBlkCnt := oblr.ZkratBlkCnt - 1;
   end;
 
- if (Self.UsekStav.zkrat <> state) then
-  begin
-   Self.UsekStav.zkrat := state;
-   Self.Change(true);
-  end;
+ Self.UsekStav.zkrat := state;
+ Self.Change();
 end;
 
-procedure TBlkUsek.SetZesNap(state:TBoosterSignal);
+procedure TBlkUsek.SetNapajeni(state:TBoosterSignal);
 begin
+ if (Self.Obsazeno = TUsekStav.disabled) then
+   Exit();
+ if (Self.UsekStav.napajeni = state) then
+   Exit();
+
  Self.UsekStav.napajeni := state;
- Self.Change(true);
-end;
 
-procedure TBlkUsek.SetZesDCC(state:TBoosterSignal);
-begin
- if (state = TBoosterSignal.undef) then
-   Self.SetCentralaDCC(TrakceI.TrackStatusSafe() = tsOn)
- else
-   Self.SetDCC(state = TBoosterSignal.ok);
-end;
+ if (state = TBoosterSignal.ok) then
+   Self.UsekStav.zkratSenseTime := Now+EncodeTime(0, 0, 1, 0);
 
-procedure TBlkUsek.SetCentralaDCC(state:boolean);
-var booster:TBooster;
-begin
- booster := Boosters[Self.UsekSettings.Zesil];
- if ((booster = nil) or (not booster.isDCCdetection) or (booster.DCC = TBoosterSignal.undef)) then
-   Self.SetDCC(state);
+ Self.Change();
 end;
 
 procedure TBlkUsek.SetDCC(state:boolean);
 begin
- // tady probiha kontrola old a new
- if (state = Self.Stav.DCC) then Exit();
+ if (Self.Obsazeno = TUsekStav.disabled) then
+   Exit();
+ if (state = Self.Stav.DCC) then
+   Exit();
 
  // doslo ke zmene DCC
  Self.UsekStav.DCC := state;
  if (state) then
-   Self.UsekStav.DCCGoTime := Now
+   Self.UsekStav.zkratSenseTime := Now+EncodeTime(0, 0, 1, 0)
  else
    Self.Freeze();
 
- Self.Change(true);
+ Self.Change();
 end;
 
 procedure TBlkUsek.SetVlakPresun(presun:Integer);
@@ -829,7 +832,7 @@ begin
  if (Self.frozen) then Exit();
 
  inherited;
- Self.last_zes_zkrat := Self.ZesZkrat;
+ Self.last_zes_zkrat := Self.zkrat;
 end;
 
 procedure TBlkUsek.UnFreeze();
@@ -837,9 +840,9 @@ begin
  if (not Self.frozen) then Exit();
 
  inherited;
- if (Self.ZesZkrat <> Self.last_zes_zkrat) then
+ if (Self.zkrat <> Self.last_zes_zkrat) then
   begin
-   Self.ZesZkrat := Self.last_zes_zkrat;
+   Self.zkrat := Self.last_zes_zkrat;
    Self.Change();
   end;
 end;
@@ -1607,8 +1610,8 @@ begin
    end;
   end;
 
- json['napajeni'] := (Self.ZesNapajeni = TBoosterSignal.ok);
- json['zkrat']    := (Self.ZesZkrat = TBoosterSignal.error);
+ json['napajeni'] := (Self.napajeni = TBoosterSignal.ok);
+ json['zkrat']    := (Self.zkrat = TBoosterSignal.error);
  json['dcc']      := Self.DCC;
 
  if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
@@ -2217,9 +2220,9 @@ begin
    if (Self.Vyluka <> '') then bg := clOlive;
 
    if (not Self.DCC) then bg := clMaroon;
-   if (Self.ZesZkrat = TBoosterSignal.error) then bg := clFuchsia;
-   if ((Self.ZesNapajeni <> TBoosterSignal.ok) or
-      (Self.ZesZkrat = TBoosterSignal.undef)) then bg := clBlue;
+   if (Self.zkrat = TBoosterSignal.error) then bg := clFuchsia;
+   if ((Self.napajeni <> TBoosterSignal.ok) or
+      (Self.zkrat = TBoosterSignal.undef)) then bg := clBlue;
 
    Result := Result + PrevodySoustav.ColorToStr(bg) + ';';
 
@@ -2278,6 +2281,18 @@ begin
    Result := Result + '}';
   end;
 
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.RealZesZkrat():TBoosterSignal;
+begin
+ if (Boosters.ContainsKey(Self.UsekSettings.Zesil)) then
+  begin
+   Result := Boosters[Self.UsekSettings.Zesil].zkrat;
+  end else begin
+   Result := TBoosterSignal.ok;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

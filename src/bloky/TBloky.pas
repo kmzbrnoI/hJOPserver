@@ -85,10 +85,7 @@ type
     //true = existuje, false = neexistuje
     function IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
 
-    procedure SetZesZkrat(zesilID:string; state:TBoosterSignal);                // pokud je na zesilovaci zmenen zkrat
-    procedure SetZesNapajeni(zesilID:string; state:TBoosterSignal);             // pokud je na zesilovaci zmeneno napajeni
-    procedure SetZesDCC(zesilID:string; state:TBoosterSignal);                  // pokud je zmenen stav privodniho DCC pred zesilovacem
-    procedure SetDCC(state:boolean);                          //vola se pri zmene stavu DCC (zapnuto X vypnuto)
+    procedure OnBoosterChange(booster: string);
 
     procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
 
@@ -627,52 +624,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//pokud je na zesilovaci zmenen zkrat
-procedure TBlky.SetZesZkrat(zesilID:string; state:TBoosterSignal);
-var i:Integer;
+procedure TBlky.OnBoosterChange(booster: string);
+var blk:TBlk;
 begin
- for i := 0 to Self.Data.Count-1 do
-  begin
-   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
-
-   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
-     (Self.Data[i] as TBlkUsek).ZesZkrat := state;
-  end;//for i
-end;
-
-//pokud je na zesilovaci zmeneno napajeni
-procedure TBlky.SetZesNapajeni(zesilID:string; state:TBoosterSignal);
-var i:Integer;
-begin
- for i := 0 to Self.Data.Count-1 do
-  begin
-   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
-
-   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
-     (Self.Data[i] as TBlkUsek).ZesNapajeni := state;
-  end;//for i
-end;
-
-//pokud je na zesilovaci zmeneno napajeni
-procedure TBlky.SetZesDCC(zesilID:string; state:TBoosterSignal);
-var i:Integer;
-begin
- for i := 0 to Self.Data.Count-1 do
-  begin
-   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
-
-   if ((Self.Data[i] as TBlkUsek).GetSettings().Zesil = zesilID) then
-     (Self.Data[i] as TBlkUsek).ZesDCC := state;
-  end;//for i
-end;
-
-//vola se pri zmene stavu DCC z centraly
-procedure TBlky.SetDCC(state:boolean);
-var i:Integer;
-begin
- for i := 0 to Self.Data.Count-1 do
-   if ((Self.data[i].typ = _BLK_USEK) or (Self.data[i].typ = _BLK_TU)) then
-     TBlkUsek(Self.data[i]).CentralaDCC := state;
+ for blk in Self.data do
+   if ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) then
+     if ((booster = '') or (TBlkUsek(blk).GetSettings().Zesil = booster)) then
+       TBlkUsek(blk).OnBoosterChange();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
