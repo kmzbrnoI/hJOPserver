@@ -3,7 +3,7 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlokVystup, Generics.Collections,
   IBUtils;
 

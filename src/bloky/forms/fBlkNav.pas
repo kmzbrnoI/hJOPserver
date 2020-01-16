@@ -3,10 +3,10 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlokNav, IBUtils,
   fBlkNavEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
-  StrUtils, TBloky;
+  TBloky;
 
 type
   TF_BlkNav = class(TForm)
@@ -79,8 +79,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBlok, TOblRizeni,
-      TBLokUsek, DataBloky, fSettings, TBlokPrejezd;
+uses GetSystems, FileSystem, TechnologieRCS, TBlok, TOblRizeni, DataBloky;
 
 {$R *.dfm}
 

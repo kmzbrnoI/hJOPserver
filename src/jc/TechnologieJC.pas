@@ -39,7 +39,7 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok, IbUtils,
   IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO, TBlokVyhybka,
   TOblRizeni, changeEvent, changeEventCaller;
@@ -311,7 +311,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, fSettings, THnaciVozidlo, Souprava,
+uses GetSystems, TechnologieRCS, THnaciVozidlo, Souprava,
      TBlokNav, TBlokUsek, TOblsRizeni, timeHelper,
      TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, SprDb,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;

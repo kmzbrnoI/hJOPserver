@@ -3,9 +3,9 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, Spin, TechnologieJC,
-  Generics.Collections, TBloky, StrUtils;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ComCtrls, Spin, TechnologieJC, Generics.Collections, TBloky,
+  StrUtils;
 
 type
   TF_JCEdit = class(TForm)
@@ -121,7 +121,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TBlok, TOblsRizeni,
-      TBlokNav, fSettings, TJCDatabase, DataJC, TBlokTrat, TBlokVyhybka;
+      TBlokNav, TJCDatabase, DataJC, TBlokTrat, TBlokVyhybka;
 
 {$R *.dfm}
 

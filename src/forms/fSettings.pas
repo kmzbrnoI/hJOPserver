@@ -3,12 +3,9 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, inifiles, Menus, ComCtrls, TabNotBk,
-  ExtCtrls, Mask, Gauges, StrUtils, Registry, Grids, jpeg, ShellAPI,
-  ShlObj, ToolWin, winsock, Buttons, IdBaseComponent,
-  IdComponent, IdIPWatch, fMain, CPort, CPortCtl, AC, THnaciVozidlo,
-  TechnologieRCS;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Spin, inifiles, Menus, ComCtrls, ExtCtrls, Mask, StrUtils, Buttons,
+  fMain, AC, TechnologieRCS;
 
 type
 
@@ -107,12 +104,12 @@ var
 
 implementation
 
-uses  fTester, fNastaveni_Casu, fAbout, Verze, fZesilovacEdit, fHVEdit,
-  fSystemInfo, fBlkUsek, fBlkVyhybka, fBlkIR, fBlkNav, fBlkNew,
-  fAdminForm, fJCEdit, fRychlostiEdit, fSplash, GetSystems, Prevody,
-  TechnologieJC, FileSystem, TBloky, TBlok,
-  TBlokVyhybka, TBlokNav, TBlokUsek, TBlokIR, TOblsRizeni, BoosterDb,
-  SnadnSpusteni, TBlokPrejezd, fBlkPrejezd, TJCDatabase, THVDatabase,
+uses
+
+  fAdminForm, fRychlostiEdit, GetSystems, Prevody,
+  FileSystem, TBloky,
+  TOblsRizeni, BoosterDb,
+  SnadnSpusteni, TJCDatabase, THVDatabase,
   Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas, ACDatabase;
 
 {$R *.dfm}

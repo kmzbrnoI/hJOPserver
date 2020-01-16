@@ -35,7 +35,7 @@ var
 
 implementation
 
-uses fSettings, fMain, GetSystems, appEv;
+uses fMain, GetSystems, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 

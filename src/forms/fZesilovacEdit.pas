@@ -3,8 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, fMain, Booster, IBUtils;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ExtCtrls, Spin, fMain, Booster, IBUtils;
 
 type
   TF_ZesilovacEdit = class(TForm)
@@ -56,7 +56,7 @@ var
 
 implementation
 
-uses GetSystems, fSettings, TechnologieRCS, BoosterDb, FileSystem, DataZesilovac,
+uses GetSystems, TechnologieRCS, BoosterDb, FileSystem, DataZesilovac,
     TBloky;
 
 {$R *.dfm}

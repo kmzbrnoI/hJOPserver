@@ -135,7 +135,6 @@ object F_MJCEdit: TF_MJCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_JCsChange
-      ExplicitTop = 52
     end
     object B_JC_Remove: TButton
       Left = 112

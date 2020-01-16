@@ -3,9 +3,9 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, fSettings, IBUtils,
-  fBlkUsekSysVars, TBloky, TBlok, TBlokUsek, Mask, StrUtils, Generics.Collections;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils,
+  TBloky, TBlok, TBlokUsek, Generics.Collections;
 
 type
   TF_BlkUsek = class(TForm)
@@ -65,7 +65,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
+uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky,
      Booster, TOblRizeni;
 
 {$R *.dfm}

@@ -6,7 +6,7 @@
 
 interface
 
-uses Generics.Collections, Classes, IdContext, SysUtils, UPO;
+uses Generics.Collections, Classes, IdContext, SysUtils;
 
 type
   TORStackVolba = (PV = 0, VZ = 1);

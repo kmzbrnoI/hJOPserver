@@ -56,7 +56,7 @@ object F_HoukEv: TF_HoukEv
     Top = 75
     Width = 145
     Height = 21
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 2
   end
 end

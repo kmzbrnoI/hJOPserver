@@ -3,8 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, TBlokTrat;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Spin, TBlokTrat;
 
 type
   TF_BlkTrat_tech = class(TForm)

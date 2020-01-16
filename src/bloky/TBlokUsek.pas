@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
-     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, rrEvent,
+     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni,
      stanicniHlaseni, changeEvent, predvidanyOdjezd;
 
 type
@@ -260,8 +260,8 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
-    TBlokIR, Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase,
+    Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, Prevody, TechnologieTrakce;
 

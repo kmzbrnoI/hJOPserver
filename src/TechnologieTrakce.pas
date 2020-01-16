@@ -13,8 +13,8 @@
 interface
 
 uses
-  SysUtils, Classes, StrUtils, CPort, Trakce, ComCtrls, Graphics, Forms, Windows,
-  THnaciVozidlo, Generics.Collections, Contnrs, IniFiles;
+  SysUtils, Classes, StrUtils, Trakce, ComCtrls, THnaciVozidlo,
+  Generics.Collections, IniFiles;
 
 const
   // max speed step for speed table
@@ -173,9 +173,9 @@ var
 
 implementation
 
-uses fMain, fSettings, TechnologieRCS, fRegulator, SprDb, Souprava,
+uses fMain, TechnologieRCS, fRegulator, SprDb,
     GetSystems, THVDatabase, fAdminForm, DataHV, Prevody, TBloky, RegulatorTCP,
-    TCPServerOR, fFuncsSet;
+    TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -32,8 +32,8 @@ unit UDPdiscover;
 
 interface
 
-uses IdUDPServer, IdUDPClient, Classes, IdSocketHandle, SysUtils,
-      Generics.Collections, ExtCtrls;
+uses IdUDPServer, Classes, IdSocketHandle, SysUtils, Generics.Collections,
+     ExtCtrls;
 
 const
   _DISC_DEFAULT_PORT = 5880;

@@ -3,8 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, TBlokTratUsek, TOblsRizeni, TBloky, frrEv;
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  ExtCtrls, TBlokTratUsek, TOblsRizeni, TBloky, frrEv;
 
 type
   TF_BlkTUZastEvent = class(TForm)
@@ -34,8 +34,6 @@ var
   F_BlkTUZastEvent: TF_BlkTUZastEvent;
 
 implementation
-
-uses TBlok, TBlokIR;
 
 {$R *.dfm}
 

@@ -7,8 +7,6 @@ unit changeEventCaller;
 
 interface
 
-uses changeEvent;
-
 type
  TNPCallerData = record
    usekId:Integer;

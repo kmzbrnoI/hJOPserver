@@ -3,10 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, inifiles, Menus, ComCtrls, TabNotBk,
-  ExtCtrls, Mask, Gauges, StrUtils, Registry, Grids, jpeg, ShellAPI,
-  ShlObj, ToolWin, CPortCtl, CPort, winsock, Buttons;
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  Menus, ComCtrls, ExtCtrls, Buttons;
 
 type
   TF_BlkNew = class(TForm)
@@ -24,7 +22,7 @@ var
 
 implementation
 
-uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkNav, fMain, fSettings, fBlkSH,
+uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkNav, fMain, fBlkSH,
       TBloky, fBlkPrejezd, fBlkTrat, fBlkZamek, fBlkRozp, fBlkTU, fBlkVystup;
 
 {$R *.dfm}

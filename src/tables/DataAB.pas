@@ -7,7 +7,7 @@ unit DataAB;
 
 interface
 
-uses ComCtrls, SysUtils, StrUtils, TechnologieJC, Generics.Collections;
+uses ComCtrls, SysUtils, TechnologieJC, Generics.Collections;
 
 type
   TABGuiOpType = (opAdd, opDelete, opClear);

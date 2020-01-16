@@ -3,9 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections,
-  IBUtils;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections, IBUtils;
 
 type
   TF_BlkPrejezd = class(TForm)
@@ -65,7 +64,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, fSettings, TOblsRizeni, TOblRizeni,
+uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni,
      TBlok, FileSystem, DataBloky;
 
 {$R *.dfm}

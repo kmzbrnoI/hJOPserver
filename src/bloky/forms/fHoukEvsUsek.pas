@@ -11,8 +11,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, TBlokUsek, fhoukEvs, StdCtrls, ExtCtrls;
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, TBlokUsek,
+  fhoukEvs, StdCtrls, ExtCtrls;
 
 type
   TF_HoukEvsUsek = class(TForm)

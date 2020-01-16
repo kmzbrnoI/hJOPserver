@@ -3,9 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, IniFiles, StdCtrls, ComCtrls, Gauges, ExtCtrls, TechnologieJC,
-  TBlokTrat;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, IniFiles, StdCtrls, ComCtrls, ExtCtrls, TechnologieJC, TBlokTrat;
 
 type
   TJCSimulator = class

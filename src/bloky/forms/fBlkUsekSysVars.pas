@@ -3,7 +3,7 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, TBloky, TBlok, TBlokUsek, Spin;
 
 type
@@ -54,7 +54,7 @@ var
 
 implementation
 
-uses fSettings, fMain, Prevody, fBlkUsek, TechnologieJC, SprDb, Booster;
+uses fMain, Prevody, SprDb, Booster;
 
 {$R *.dfm}
 

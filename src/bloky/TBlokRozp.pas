@@ -4,7 +4,7 @@ unit TBlokRozp;
 
 interface
 
-uses IniFiles, TBlok, StrUtils, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
+uses IniFiles, TBlok, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
       IdContext, TOblRizeni;
 
 type

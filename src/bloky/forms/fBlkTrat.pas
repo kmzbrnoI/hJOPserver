@@ -3,9 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ComCtrls, TBlokTrat, TBlokUvazka,
-  Generics.Collections, TBloky;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Spin, ComCtrls, TBlokTrat, TBlokUvazka, Generics.Collections, TBloky;
 
 type
   TF_BlkTrat = class(TForm)

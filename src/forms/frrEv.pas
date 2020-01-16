@@ -10,8 +10,8 @@ unit frrEv;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, rrEvent, TBloky, Mask, StrUtils;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, rrEvent, TBloky, Mask, StrUtils;
 
 type
   TF_RREv = class(TForm)

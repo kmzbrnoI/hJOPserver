@@ -5,9 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
-  inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage, cpuLoad,
-  ExtDlgs, Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
-  DateUtils, ShellApi, ActiveX, ShlObj, ComObj, TechnologieTrakce, BoosterDb;
+  inifiles, ActnList, AppEvnts, adCpuUsage, cpuLoad, ExtDlgs, Gauges, StrUtils,
+  ComObj, TechnologieTrakce, BoosterDb;
 
 const
  _SB_LOG = 0;

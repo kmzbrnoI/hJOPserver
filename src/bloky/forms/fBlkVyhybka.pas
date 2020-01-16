@@ -3,9 +3,9 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Spin, StdCtrls, ExtCtrls, fMain, fBlkUsek, TBlokVyhybka, IBUtils,
-  TBloky, Generics.Collections;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  Spin, StdCtrls, ExtCtrls, fMain, TBlokVyhybka, IBUtils, TBloky,
+  Generics.Collections;
 
 type
   TF_BlkVyhybka = class(TForm)
@@ -78,7 +78,7 @@ var
 
 implementation
 
-uses Prevody, GetSystems, FileSystem, TechnologieRCS, TBlok, fBlkVyhybkaSysVars,
+uses Prevody, GetSystems, FileSystem, TechnologieRCS, TBlok,
     DataBloky, TOblRizeni;
 
 {$R *.dfm}

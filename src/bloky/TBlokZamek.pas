@@ -4,8 +4,8 @@
 
 interface
 
-uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
-     IdContext, Generics.Collections, TOblRizeni;
+uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
+     Generics.Collections, TOblRizeni;
 
 type
 
@@ -99,9 +99,9 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, Graphics, Prevody,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Zasobnik,
-    TBlokIR, TBlokVyhybka;
+uses GetSystems, TechnologieRCS, TBloky, Graphics, Prevody,
+    TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase,
+    TBlokVyhybka;
 
 constructor TBlkZamek.Create(index:Integer);
 begin

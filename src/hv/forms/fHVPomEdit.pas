@@ -3,8 +3,7 @@ unit fHVPomEdit;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin;
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, Spin;
 
 type
   TF_HV_Pom = class(TForm)

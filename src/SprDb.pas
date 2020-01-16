@@ -52,7 +52,7 @@ var
 
 implementation
 
-uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, TBlokNav, appEv, TBlok,
+uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, appEv, TBlok,
      TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////

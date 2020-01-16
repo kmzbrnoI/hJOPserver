@@ -12,9 +12,9 @@
 
 interface
 
-uses Types, IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
+uses IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
       IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms,
-      Generics.Collections, Zasobnik, Messages, Windows, Generics.Defaults;
+      Generics.Collections, Zasobnik, Windows, Generics.Defaults;
 
 const
   _MAX_CON_PNL = 16;                                                            // maximalni pocet pripojenych panelu k jedne oblasti rizeni
@@ -284,12 +284,12 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokVyhybka, TBlokUsek, TBlokNav, fMain, Booster,
-     TechnologieJC, TBlokPrejezd, TJCDatabase, Prevody, TCPServerOR,
-     TBlokUvazka, TBlokTrat, TOblsRizeni, TBlok, THVDatabase, SprDb,
-     Logging, UserDb, THnaciVozidlo, Trakce, TBlokZamek, User, TCPORsRef,
-     fRegulator, TBlokRozp, RegulatorTCP, ownStrUtils, TBlokTratUsek, Souprava,
-     TBlokSouctovaHlaska, predvidanyOdjezd, changeEvent, TechnologieTrakce;
+uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain,
+     TechnologieJC, TJCDatabase, Prevody, TCPServerOR,
+     TOblsRizeni, TBlok, THVDatabase, SprDb,
+     UserDb, THnaciVozidlo, Trakce, User, TCPORsRef,
+     fRegulator, RegulatorTCP, ownStrUtils, Souprava,
+     changeEvent, TechnologieTrakce;
 
 constructor TOR.Create(index:Integer);
 begin

@@ -52,7 +52,7 @@ type
 implementation
 
 uses ownStrUtils, TechnologieTrakce, Souprava, TBlokUsek, SprDb, fMain,
-     THnaciVozidlo, THVDatabase;
+     THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 

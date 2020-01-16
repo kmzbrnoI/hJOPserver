@@ -99,7 +99,7 @@ var
 
 implementation
 
-uses fSettings, fMain, DataHV, TOblRizeni, appEv, Trakce, TechnologieTrakce;
+uses fMain, DataHV, TOblRizeni, appEv, Trakce, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 

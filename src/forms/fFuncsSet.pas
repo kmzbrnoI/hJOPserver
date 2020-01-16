@@ -3,8 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  ExtCtrls;
 
 type
   TF_FuncsSet = class(TForm)

@@ -3,9 +3,9 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, Gauges, THnaciVozidlo, ComCtrls,
-  Generics.Collections, Buttons;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  ExtCtrls, StdCtrls, Spin, THnaciVozidlo, ComCtrls, Generics.Collections,
+  Buttons;
 
 type
   TF_HVEdit = class(TForm)
@@ -68,7 +68,7 @@ var
 
 implementation
 
-uses fMain, FileSystem, fSettings, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
+uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
       fHVPomEdit, TBloky;
 
 {$R *.dfm}

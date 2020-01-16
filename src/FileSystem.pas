@@ -3,9 +3,9 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, IniFiles, ComCtrls, ExtCtrls, StdCtrls, StrUtils,
-  fMain, Trakce, TechnologieTrakce, AC, TJCDatabase;
+  fMain, Trakce, TechnologieTrakce, TJCDatabase;
 
 const
   _INIDATA_PATHS_DATA_SECTION = 'PathsData';
@@ -45,9 +45,9 @@ var
 implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
-     TechnologieRCS, Verze, fHVEdit, TechnologieJC, fConsole, TOblsRizeni, TBloky,
-     TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni, BoosterDb,
-     Booster, SnadnSpusteni, TBlokPrejezd, THVDatabase, TCPServerPT,
+     TechnologieRCS, TOblsRizeni, TBloky,
+     BoosterDb,
+     SnadnSpusteni, THVDatabase, TCPServerPT,
      Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv;
 

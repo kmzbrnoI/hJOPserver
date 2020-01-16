@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, houkEvent,
+uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo,
      Generics.Collections, predvidanyOdjezd, TBlok, Trakce;
 
 const

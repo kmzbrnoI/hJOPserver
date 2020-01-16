@@ -5,7 +5,7 @@
 
 interface
 
-uses Classes, IdContext, AnsiStrings, StrUtils, SysUtils, Forms, THnaciVozidlo;
+uses Classes, IdContext, AnsiStrings, SysUtils, Forms, THnaciVozidlo;
 
 type
 
@@ -47,8 +47,7 @@ var
 implementation
 
 uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb, TCPORsRef,
-     Souprava, fRegulator, fMain, Prevody, TOblRizeni, TOblsRizeni,
-     TechnologieTrakce;
+     fRegulator, fMain, Prevody, TOblRizeni, TOblsRizeni, TechnologieTrakce;
 
 
 ////////////////////////////////////////////////////////////////////////////////

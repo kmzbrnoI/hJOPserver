@@ -4,8 +4,8 @@
 
 interface
 
-uses IniFiles, TechnologieRCS, SysUtils, TOblsRizeni,
-      Generics.Collections, IdContext, JsonDataObjects, TOblRizeni, changeEvent;
+uses IniFiles, TechnologieRCS, SysUtils, TOblsRizeni, Generics.Collections,
+     IdContext, JsonDataObjects, TOblRizeni, changeEvent;
 
 const
  //typy bloku
@@ -141,8 +141,8 @@ type
 
 implementation
 
-uses TBloky, TBlokVyhybka, TBlokPrejezd, TBlokNav, TBlokTrat, TBlokUsek,
-      DataBloky, TBlokZamek, appEv;
+uses TBloky,
+      DataBloky, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 

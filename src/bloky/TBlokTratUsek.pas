@@ -40,8 +40,8 @@ Jak to funguje:
 
 interface
 
-uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext,
-      Generics.Collections, TOblRizeni, rrEvent;
+uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, rrEvent,
+      Generics.Collections, TOblRizeni;
 
 type
  TBlkTUZastEvents = record                                                      // cidla zastavky v jednom smeru
@@ -219,8 +219,8 @@ type
 
 implementation
 
-uses SprDb, TBloky, TBlokIR, TCPServerOR, TBlokTrat, TBlokNav,
-      TJCDatabase, Prevody, logging, THnaciVozidlo;
+uses SprDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase, Prevody,
+     logging, THnaciVozidlo;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, TBlok, TechnologieJC, Menus, TOblsRizeni, SysUtils, Classes,
+uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
      IdContext, StrUtils, TOblRizeni, Generics.Collections;
 
 type
@@ -116,7 +116,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, UPO, Graphics,
+uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek, Prevody;
 
 constructor TBlkUvazka.Create(index:Integer);

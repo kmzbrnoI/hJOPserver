@@ -3,9 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlokIR, Generics.Collections,
-  IBUtils;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  ExtCtrls, StdCtrls, Spin, fMain, TBlokIR, Generics.Collections, IBUtils;
 
 type
   TF_BlkIR = class(TForm)

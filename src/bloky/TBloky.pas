@@ -16,7 +16,7 @@ interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
        Generics.Collections, Classes, IdContext, IBUtils,
-      JsonDataObjects, Booster;
+      JsonDataObjects;
 
 type
  TArI  = array of Integer;

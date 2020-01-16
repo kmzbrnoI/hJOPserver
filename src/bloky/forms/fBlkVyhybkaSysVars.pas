@@ -3,8 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, TBlokVyhybka, Spin;
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  TBlokVyhybka, Spin;
 
 type
   TF_BlkVyh_tech = class(TForm)
@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses TBlokUsek, Prevody;
+uses Prevody;
 
 {$R *.dfm}
 

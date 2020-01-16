@@ -8,7 +8,7 @@ unit fhoukEv;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, houkEvent, frrEv, ExtCtrls;
 
 type

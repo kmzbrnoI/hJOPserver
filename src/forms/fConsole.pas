@@ -3,11 +3,11 @@ unit fConsole;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls,
-  inifiles, ActnList, AppEvnts, Mask, ScktComp, ToolWin, adCpuUsage,
-  ExtDlgs,  Gauges, Registry, StrUtils, mmsystem, Grids, Spin, ValEdit,
-  DateUtils, ShellApi, ActiveX, ShlObj, ComObj;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, StdCtrls, Menus, Buttons, ComCtrls,
+  ActnList, AppEvnts, adCpuUsage,
+
+  ComObj;
 
 const
  _CONSOLE_V = '1.6';
@@ -34,8 +34,8 @@ var
 
 implementation
 
-uses fMain, fSettings, TechnologieRCS, GetSystems, Verze, TechnologieTrakce,
-     Logging, TBlok, TBlokUsek, TBLokVyhybka, TBLoky;
+uses fMain, fSettings, TechnologieRCS, GetSystems, TechnologieTrakce,
+     Logging, TBlok, TBlokUsek, TBLoky;
 
 {$R *.dfm}
 

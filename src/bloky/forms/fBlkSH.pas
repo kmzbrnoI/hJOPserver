@@ -3,7 +3,7 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, Spin, StdCtrls, TBlokSouctovaHlaska, TBloky, ComCtrls,
   Generics.Collections;
 
@@ -57,8 +57,8 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, fSettings, TOblsRizeni, TOblRizeni,
-     TBlok, FileSystem, DataBloky;
+uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni, TBlok, FileSystem,
+     DataBloky;
 
 {$R *.dfm}
 

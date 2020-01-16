@@ -3,9 +3,9 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Menus, Spin, ExtCtrls, Buttons, ColorGrd,
-  ComCtrls, TabNotBk, Gauges, fMain, TBloky, Generics.Collections;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Menus, ExtCtrls, Buttons, ComCtrls, fMain, TBloky,
+  Generics.Collections;
 
 type
   TF_Tester = class(TForm)

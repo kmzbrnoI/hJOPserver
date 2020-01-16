@@ -3,9 +3,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, TBlokNav, TBlok, TOblRizeni, TOblsRizeni,
-  TBloky, ExtCtrls, frrEv;
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, Spin,
+  TBlokNav, TOblsRizeni, TBloky, ExtCtrls, frrEv;
 
 type
   TF_BlkNavEvent = class(TForm)
@@ -47,7 +46,7 @@ var
 
 implementation
 
-uses TBlokUsek;
+
 
 {$R *.dfm}
 

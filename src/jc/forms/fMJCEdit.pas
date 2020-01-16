@@ -3,7 +3,7 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, TechnologieMultiJC, Generics.Collections,
   Spin, TBloky;
 
@@ -71,7 +71,7 @@ implementation
 
 {$R *.dfm}
 
-uses TJCDatabase, TechnologieJC, TBlok, TBlokUsek, TOblRizeni,
+uses TJCDatabase, TechnologieJC, TBlok, TOblRizeni,
       TBlokNav, TMultiJCDatabase, DataMultiJC;
 
 ////////////////////////////////////////////////////////////////////////////////

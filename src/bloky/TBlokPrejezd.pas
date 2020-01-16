@@ -4,8 +4,8 @@
 
 interface
 
-uses IniFiles, TBlok, TechnologieJC, SysUtils, Menus, TOblsRizeni,
-     Classes, TechnologieRCS, IdContext, TOblRizeni, Generics.Collections;
+uses IniFiles, TBlok, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
+     IdContext, TOblRizeni, Generics.Collections;
 
 type
  TBlkPrjRCSInputs = record
@@ -140,7 +140,7 @@ type
 implementation
 
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics, TBlokSouctovaHlaska, TCPORsRef, Prevody;
+     Graphics, TCPORsRef, Prevody;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin

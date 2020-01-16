@@ -12,7 +12,7 @@
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
-     IdContext, Generics.Collections;
+     Generics.Collections;
 
 const
   _MAX_TRAT_SPR = 6;

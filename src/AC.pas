@@ -5,7 +5,7 @@
 
 interface
 
-uses Classes, fMain, IniFiles, SysUtils, TBlok, TechnologieJC, TBloky,
+uses Classes, fMain, SysUtils, TBlok, TechnologieJC, TBloky,
      TBlokUsek, ComCtrls, Prevody, Windows, Generics.Collections,
      ownStrUtils, StrUtils, IdContext;
 
@@ -94,7 +94,7 @@ type
 
 implementation
 
-uses fSettings, GetSystems, TJCDatabase, Logging,
+uses GetSystems, TJCDatabase, Logging,
       TOblRizeni, TOblsRizeni, TBlokNav, TBlokTrat, Zasobnik;
 
 ////////////////////////////////////////////////////////////////////////////////

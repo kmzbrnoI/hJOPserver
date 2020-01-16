@@ -7,8 +7,8 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Mask, DateUtils, StrUtils;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ExtCtrls, Mask, StrUtils;
 
 type
   TF_ModCasSet = class(TForm)

@@ -3,8 +3,8 @@ unit GetSystems;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, IdGlobal, IdHash, IdHashMessageDigest;
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, IdGlobal;
 
 type
  TCloseInfo = ( ci_yes = 0,
@@ -24,7 +24,7 @@ var
 
 implementation
 
-uses fMain, fAdminForm, TechnologieRCS, fSettings, TBLoky, TOblsRizeni, Logging,
+uses fMain, fAdminForm, TechnologieRCS, TBLoky, TOblsRizeni,
      TCPServerOR, TechnologieTrakce;
 
 

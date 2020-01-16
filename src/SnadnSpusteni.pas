@@ -4,7 +4,7 @@ unit SnadnSpusteni;
 
 interface
 
-uses Classes, IniFiles, StrUtils, SysUtils;
+uses Classes, IniFiles;
 
 type
   TSSData = record
@@ -45,8 +45,8 @@ var
 
 implementation
 
-uses GetSystems, TBlok, AC, TechnologieRCS, fMain, TBloky,
-     Logging, ACDatabase, Prevody, RCS;
+uses GetSystems, AC, TechnologieRCS, fMain, TBloky,
+     ACDatabase, Prevody, RCS;
 
 ////////////////////////////////////////////////////////////////////////////////
 

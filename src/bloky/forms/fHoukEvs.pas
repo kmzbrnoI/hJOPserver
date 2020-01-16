@@ -8,9 +8,9 @@ unit fHoukEvs;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, CloseTabSheet, Themes, houkEvent, Generics.Collections,
-  fhoukEv, StdCtrls, Buttons;
+  fhoukEv, Buttons, StdCtrls;
 
 type
   TF_HoukEvs = class(TForm)

@@ -41,15 +41,15 @@
  Prebirani lokomotivy:
   1) Zavolat locoAcquire do Trakce (zjisti vsechny informace o lokomotive)
   2) Nastavit spravny smer loko a rychlost loko (vzhledem k souprave nebo aktualni)
-  3) Nastavit funkce na pzadovane hodnoty
+  3) Nastavit funkce na pozadovane hodnoty
   4) Naprogramovat POM
   Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
 }
 
 interface
 
-uses Trakce, TBlok, Classes, StrUtils, SysUtils, TOblRizeni,
-      Generics.Collections, IdContext, IniFiles, IBUtils, JsonDataObjects;
+uses Trakce, Classes, SysUtils, TOblRizeni, Generics.Collections, IdContext,
+     IniFiles, IBUtils, JsonDataObjects;
 
 const
   _HV_FUNC_MAX       = 28;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
