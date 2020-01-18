@@ -1615,7 +1615,15 @@ begin
    Exit(TBlkVyhInputs.Create(isOn, isOff))
  else if ((Self.StaveniMinus) and (Now > Self.VyhStav.staveniStart+EncodeTime(0, 0, _VYH_STAVENI_MOCK_SEC, 0))) then
    Exit(TBlkVyhInputs.Create(isOff, isOn))
- else
+ else if (Self.Poloha = TVyhPoloha.disabled) then begin
+   // proper booting of spojka
+   if (Self.VyhStav.polohaSave = TVyhPoloha.plus) then
+     Exit(TBlkVyhInputs.Create(isOn, isOff))
+   else if (Self.VyhStav.polohaSave = TVyhPoloha.minus) then
+     Exit(TBlkVyhInputs.Create(isOff, isOn))
+   else
+     Exit(TBlkVyhInputs.Create(isOff, isOff));
+ end else
    Exit(TBlkVyhInputs.Create(isOff, isOff));
 end;
 
