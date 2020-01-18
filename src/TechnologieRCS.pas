@@ -213,8 +213,10 @@ begin
  //defaultni stav zesilovacu
  for booster in Boosters.sorted do
   begin
-   Self.SetInput(booster.bSettings.RCS.Napajeni.board, booster.bSettings.RCS.Napajeni.port, 0);
-   Self.SetInput(booster.bSettings.RCS.Zkrat.board, booster.bSettings.RCS.Zkrat.port, 0);
+   if (booster.isPowerDetection) then
+     Self.SetInput(booster.bSettings.RCS.Napajeni.board, booster.bSettings.RCS.Napajeni.port, 0);
+   if (booster.isShortcutDetection) then
+     Self.SetInput(booster.bSettings.RCS.Zkrat.board, booster.bSettings.RCS.Zkrat.port, 0);
   end;
 end;
 
