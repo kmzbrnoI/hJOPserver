@@ -230,7 +230,8 @@ begin
     ini.ReadInteger(section, prefix+'p'+IntToStr(i), 0)
    );
    Result.Add(rcsAddr);
-   RCSi.SetNeeded(rcsAddr.board);
+   if ((rcsAddr.board > 0) or (rcsAddr.port > 0)) then
+     RCSi.SetNeeded(rcsAddr.board);
   end;
 end;
 
