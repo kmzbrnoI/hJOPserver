@@ -342,11 +342,20 @@ end;
 
 procedure TBlkVyhybka.Enable();
 var rcsaddr:TRCSAddr;
+    i:Integer;
 begin
- if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit;
- for rcsaddr in Self.VyhSettings.RCSAddrs do
-   if (not RCSi.IsModule(rcsaddr.board)) then
-     Exit();
+ if (Self.VyhSettings.RCSAddrs.Count < 4) then
+   Exit();
+ if (Self.detekcePolohy) then
+  begin
+   for rcsaddr in Self.VyhSettings.RCSAddrs do
+     if (not RCSi.IsModule(rcsaddr.board)) then
+       Exit();
+  end else begin
+   for i := 2 to Self.VyhSettings.RCSAddrs.Count-1 do
+     if (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[i].board)) then
+       Exit();
+  end;
 
  if (Self.detekcePolohy) then
    Self.VyhStav.poloha := none
