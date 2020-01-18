@@ -177,8 +177,10 @@ begin
    Self.Settings.RCS.DCC.board := ini.ReadInteger(section, 'dcc_mtb', 0);
  Self.Settings.RCS.DCC.port := ini.ReadInteger(section, 'dcc_port', 0);
 
- RCSi.SetNeeded(Self.Settings.RCS.Napajeni.board);
- RCSi.SetNeeded(Self.Settings.RCS.Zkrat.board);
+ if (Self.isPowerDetection) then
+   RCSi.SetNeeded(Self.Settings.RCS.Napajeni.board);
+ if (Self.isShortcutDetection) then
+   RCSi.SetNeeded(Self.Settings.RCS.Zkrat.board);
 end;
 
 //save data to the file
