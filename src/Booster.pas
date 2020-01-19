@@ -41,7 +41,7 @@ type
     function GetNapajeni():TBoosterSignal;
     function GetDCC():TBoosterSignal;
 
-    function GetDefined():boolean;
+    function GetRCSPresent():boolean;
     function GetDCCDetection():boolean;
     function GetShortcutDetection():boolean;
     function GetPowerDetection():boolean;
@@ -61,7 +61,7 @@ type
     property napajeni:TBoosterSignal read GetNapajeni;
     property DCC:TBoosterSignal read GetDCC;
 
-    property defined:boolean read GetDefined;
+    property rcsPresent:boolean read GetRCSPresent;
     property isShortcutDetection:boolean read GetShortcutDetection;
     property isPowerDetection:boolean read GetPowerDetection;
     property isDCCdetection:boolean read GetDCCDetection;
@@ -293,9 +293,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBooster.GetDefined():boolean;
+function TBooster.GetRCSPresent():boolean;
 begin
- Result := ((RCSi.IsModule(Self.Settings.RCS.Zkrat.board)) and (RCSi.IsModule(Self.Settings.RCS.Napajeni.board)));
+ Result := (((not Self.isShortcutDetection) or RCSi.IsModule(Self.Settings.RCS.Zkrat.board)) and
+            ((not Self.isPowerDetection) or RCSi.IsModule(Self.Settings.RCS.Napajeni.board)) and
+            ((not Self.isDCCdetection) or RCSi.IsModule(Self.Settings.RCS.DCC.board)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

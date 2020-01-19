@@ -3102,7 +3102,7 @@ end;
 procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((not RCSi.NoExStarted()) or (not Boosters.sorted[Item.Index].defined)) then
+ if ((not RCSi.NoExStarted()) or (not Boosters.sorted[Item.Index].rcsPresent)) then
   begin
    LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
   end else begin
