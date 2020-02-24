@@ -216,6 +216,7 @@ begin
    Self.receivedLock.Release();
    Self.receivedLock.Free();
 
+   Self.receiveTimer.Free();
    Self.pingTimer.Free();
  finally
    inherited;
@@ -491,9 +492,10 @@ end;
 procedure TORTCPServer.ProcessReceivedMessages();
 var received:TTCPReceived;
 begin
- receivedLock.Acquire();
  if (not Assigned(Self.received)) then
    Exit(); // everything is shutting down
+
+ receivedLock.Acquire();
 
  try
    while (Self.received.Count > 0) do
