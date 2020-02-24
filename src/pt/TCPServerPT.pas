@@ -22,7 +22,7 @@ interface
 
 uses SysUtils, Classes, Graphics, PTEndpoint, Generics.Collections, SyncObjs,
      IdHttpServer, IdSocketHandle, IdContext, IdCustomHTTPServer, IdComponent,
-     JsonDataObjects, PTUtils;
+     JsonDataObjects, PTUtils, ExtCtrls;
 
 const
   _PT_DEFAULT_PORT = 5823;
@@ -30,10 +30,22 @@ const
   _PT_COMPACT_RESPONSE = false;
   _PT_CONTENT_TYPE = 'application/json';
   _PT_DESCRIPTION = 'ptServer v1.1.0';
+  _RECEIVE_CHECK_PERIOD_MS = 15;
 
 type
 
   EPTActive = class(Exception);
+
+  TPtReceived = class
+    AContext: TIdContext;
+    ARequestInfo: TIdHTTPRequestInfo;
+    reqJson, respJson:TJsonObject;
+    endpoint: TPTEndpoint;
+    processed: boolean;
+
+    constructor Create();
+    destructor Destroy(); override;
+  end;
 
   TPtServer = class
    private
@@ -41,7 +53,10 @@ type
     endpoints: TObjectList<TPTEndpoint>;
 
     httpServer: TIdHTTPServer;
-    readLock:TCriticalSection;
+
+    receiveTimer:TTimer;                                                        // must be executed in main thread synchronously!
+    received:TObjectQueue<TPtReceived>;                                         // locked by receivedLock!
+    receivedLock:TCriticalSection;
 
     Fcompact:boolean;
 
@@ -55,6 +70,9 @@ type
     procedure httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
       var respJson:TJsonObject);
 
+    procedure ProcessReceivedMessages();
+    procedure OnReceiveTimerTick(Sender: TObject);
+
     procedure httpAfterBind(Sender:TObject);
     procedure httpStatus(ASender: TObject; const AStatus: TIdStatus;
       const AStatusText: string);
@@ -63,6 +81,8 @@ type
 
     function GetPort():Word;
     procedure SetPort(new:Word);
+
+    function GetEndpoint(path:string):TPTEndpoint;
 
    public
 
@@ -88,6 +108,24 @@ uses Logging, appEv, fMain,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+constructor TPtReceived.Create();
+begin
+ inherited;
+ Self.processed := false;
+ Self.reqJson := nil;
+ Self.respJson := TJsonObject.Create();
+end;
+
+destructor TPtReceived.Destroy();
+begin
+ if (Self.reqJson <> nil) then
+   Self.reqJson.Free();
+ Self.respJson.Free();
+ inherited;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 constructor TPtServer.Create();
 var bindings:TIdSocketHandles;
     binding:TIdSocketHandle;
@@ -102,7 +140,8 @@ begin
  binding := bindings.Add();
  binding.SetBinding('0.0.0.0', _PT_DEFAULT_PORT);
 
- Self.readLock := TCriticalSection.Create();
+ Self.received := TObjectQueue<TPtReceived>.Create();
+ Self.receivedLock := TCriticalSection.Create();
 
  Self.httpServer := TIdHTTPServer.Create(nil);
  Self.httpServer.Bindings := bindings;
@@ -122,6 +161,11 @@ begin
  // endpoints
  Self.endpoints := TObjectList<TPTEndpoint>.Create();
 
+ Self.receiveTimer := TTimer.Create(nil);
+ Self.receiveTimer.Enabled := false;
+ Self.receiveTimer.Interval := _RECEIVE_CHECK_PERIOD_MS;
+ Self.receiveTimer.OnTimer := Self.OnReceiveTimerTick;
+
  // sem doplnit seznam vsech endpointu:
  Self.endpoints.Add(TPTEndpointBlok.Create());
  Self.endpoints.Add(TPTEndpointBloky.Create());
@@ -138,12 +182,14 @@ begin
    if (Self.httpServer.Active) then
     Self.httpServer.Active := false;
    Self.httpServer.Free();
-   Self.readLock.Free();
- except
 
+   Self.receivedLock.Acquire(); // wait for everything to end
+   FreeAndNil(Self.received);
+   Self.receivedLock.Release();
+   FreeAndNil(Self.receivedLock);
+ finally
+   inherited;
  end;
-
- inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,6 +205,7 @@ begin
 
  try
   Self.httpServer.Active := true;
+  Self.receiveTimer.Enabled := true;
  except
   on E:Exception do
    begin
@@ -172,6 +219,7 @@ end;
 procedure TPtServer.Stop();
 begin
  Self.httpServer.Active := false;
+ Self.receiveTimer.Enabled := false;
 
  writeLog('PT server zastaven', WR_PT);
 
@@ -187,85 +235,123 @@ end;
 
 procedure TPtServer.httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   AResponseInfo: TIdHTTPResponseInfo);
-var reqJson, respJson:TJsonObject;
-    endpoint:TPTEndpoint;
-    found:boolean;
+var received:TPtReceived;
 begin
- Self.readLock.Acquire();
-
+ received := TPtReceived.Create();
  try
-   respJson := TJsonObject.Create();
+   AResponseInfo.ContentType := 'application/json; charset=utf-8';
 
-   try
-     // vybereme vhodny endpoint
-     found := false;
-     for endpoint in Self.endpoints do
-      begin
-       if (endpoint.EndpointMatch(ARequestInfo.Document)) then
-        begin
-         found := true;
-         case (ARequestInfo.CommandType) of
-          hcGET: endpoint.OnGET(AContext, ARequestInfo, respJson);
-          hcPOST, hcPUT: begin
-             if (ARequestInfo.ContentType <> _PT_CONTENT_TYPE) then
-              begin
-               PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '406', 'Not acceptable', 'S timto content-type si neumim poradit');
-               found := true;
-               break;
-              end;
+   received.AContext := AContext;
+   received.ARequestInfo := ARequestInfo;
+   received.endpoint := Self.GetEndpoint(ARequestInfo.Document);
 
-             reqJson := TJsonObject.ParseFromStream(ARequestInfo.PostStream, TEncoding.UTF8) as TJsonObject;
+   if (received.endpoint = nil) then
+    begin
+     Self.httpSinkEndpoint(AContext, ARequestInfo, received.respJson);
+     received.processed := true;
+    end else begin
+     case (ARequestInfo.CommandType) of
+      hcGET: ;
+      hcPOST, hcPUT: begin
+         if (ARequestInfo.ContentType <> _PT_CONTENT_TYPE) then
+          begin
+           PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '406', 'Not acceptable',
+                                 'S timto content-type si neumim poradit');
+           received.processed := true;
+          end else begin
+           received.reqJson := TJsonObject.ParseFromStream(ARequestInfo.PostStream, TEncoding.UTF8) as TJsonObject;
 
-             if (reqJson = nil) then
-              begin
-               PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad request', 'Navalidni JSON objekt v pozadavku');
-               found := true;
-               break;
-              end;
-
-             case (ARequestInfo.CommandType) of
-               hcPOST: endpoint.OnPOST(AContext, ARequestInfo, respJson, reqJson);
-               hcPUT : endpoint.OnPUT(AContext, ARequestInfo, respJson, reqJson);
-             end;
-             reqJson.Free();
+           if (received.reqJson = nil) then
+            begin
+             PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '400', 'Bad request',
+                                   'Navalidni JSON objekt v pozadavku');
+             received.processed := true;
+            end;
           end;
-         else
-          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
-          found := true;
-         end;
-         break;
-        end;
       end;
-
-     // zadny endpoint nenzalezen -> sink
-     if (not found) then
-       Self.httpSinkEndpoint(AContext, ARequestInfo, respJson);
-
-     // vytvoreni odpovedi
-     AResponseInfo.ContentType := 'application/json; charset=utf-8';
-     AResponseInfo.ContentStream := TStringStream.Create();
-     AResponseInfo.FreeContentStream := true;
-     respJson.SaveToStream(AResponseInfo.ContentStream, Self.compact, TEncoding.UTF8);
-
-   except
-    on Eorig:Exception do
-     begin
-      try
-        AResponseInfo.ContentType := 'application/json; charset=utf-8';
-        AResponseInfo.ContentStream := TStringStream.Create();
-        AResponseInfo.FreeContentStream := true;
-        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Request exception', Eorig.Message);
-        respJson.SaveToStream(AResponseInfo.ContentStream, _PT_COMPACT_RESPONSE, TEncoding.UTF8);
-      except
-        AResponseInfo.ContentText := '{"errors":["title":"Server general error"]}';
-      end;
+     else
+      PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '405', 'Method not allowed',
+                            'S touto HTTP metodou si neumim poradit');
+      received.processed := true;
      end;
-   end;
- finally
-   respJson.Free();
-   Self.readLock.Release();
+
+     if (not received.processed) then
+      begin
+       Self.receivedLock.Acquire();
+       try
+         Self.received.Enqueue(received);
+       finally
+         Self.receivedLock.Release();
+       end;
+      end;
+    end;
+ except
+   received.Free();
+   AResponseInfo.ContentText := '{"errors":["title":"Server general error"]}';
+   Exit();
  end;
 
+ // Wait for finishing of the command to send response
+ while ((not received.processed) and (Self.received <> nil)) do
+   Sleep(_RECEIVE_CHECK_PERIOD_MS); // sleep in its own thread
+
+ if (Self.receivedLock <> nil) then
+   Self.receivedLock.Acquire();
+ try
+   AResponseInfo.ContentStream := TStringStream.Create();
+   AResponseInfo.FreeContentStream := true;
+   received.respJson.SaveToStream(AResponseInfo.ContentStream, Self.compact, TEncoding.UTF8);
+ finally
+   received.Free();
+   if (Self.receivedLock <> nil) then
+     Self.receivedLock.Release();
+ end;
+end;
+
+function TPtServer.GetEndpoint(path:string):TPTEndpoint;
+var endpoint:TPTEndpoint;
+begin
+ Result := nil;
+ for endpoint in Self.endpoints do
+   if (endpoint.EndpointMatch(path)) then
+     Exit(endpoint);
+end;
+
+procedure TPtServer.OnReceiveTimerTick(Sender: TObject);
+begin
+ Self.ProcessReceivedMessages();
+end;
+
+procedure TPtServer.ProcessReceivedMessages();
+var received:TPtReceived;
+begin
+ if (not Assigned(Self.received)) then
+   Exit(); // everything is shutting down
+
+ receivedLock.Acquire();
+
+ try
+   while (Self.received.Count > 0) do
+    begin
+     received := Self.received.Extract();
+     try
+       case (received.ARequestInfo.CommandType) of
+         hcGet: received.endpoint.OnGET(received.AContext, received.ARequestInfo, received.respJson);
+         hcPOST: received.endpoint.OnPOST(received.AContext, received.ARequestInfo,
+                                          received.respJson, received.reqJson);
+         hcPUT : received.endpoint.OnPUT(received.AContext, received.ARequestInfo,
+                                         received.respJson, received.reqJson);
+       end;
+     except
+      on Eorig:Exception do
+        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '500', 'Request exception', Eorig.Message);
+     end;
+
+     received.processed := true;
+    end;
+ finally
+   receivedLock.Release();
+ end;
 end;
 
 procedure TPtServer.httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
