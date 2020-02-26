@@ -189,11 +189,6 @@ begin
  Self.LogObj := nil;
  Self.aReady := false;
 
- Self.Log(llInfo, 'BEGIN '+
-                  'loglevel_file='+LogLevelToString(Self.logLevelFile)+
-                  ', loglevel_table='+LogLevelToString(Self.logLevelTable)
- );
-
  Self.turnoff_callback := nil;
  Self.DCCGoTime := Now;
 
