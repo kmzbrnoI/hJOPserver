@@ -45,6 +45,7 @@ type
   DCC:boolean;              // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
   stanicni_kolej:boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
   cislo_koleje:string;      // cislo koleje, pokud je stanicni
+  spr_pos:boolean;          // jestli je v panelu alespon jeden specialni symbol pro cislo koleje
   vlakPresun:Integer;       // index soupravy, ktera se presouva, v ramci lokalniho seznamu souprav na useku; zadny presun = -1
 
   zpomalovani_ready:boolean;          // pri predani soupravy do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
@@ -150,6 +151,7 @@ type
     function CanSprSpeedInsert(index:Integer):boolean;
     function IsStujForSpr(spr:Integer):boolean;
     function RealZesZkrat():TBoosterSignal;
+    function CanStandSouprava():boolean;
 
 
   protected
@@ -353,12 +355,14 @@ begin
     begin
      //parsing *.spnl
      str.Clear();
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('U',IntToStr(Self.GlobalSettings.id),'')),str);
-     if (str.Count < 1) then Exit;
+     ExtractStringsEx([';'], [], ini_rel.ReadString('U', IntToStr(Self.GlobalSettings.id), ''), str);
 
-     if (Self.ORsRef <> nil) then
-       Self.ORsRef.Free();
-     Self.ORsRef := ORs.ParseORs(str[0]);
+     if (str.Count >= 1) then
+      begin
+       if (Self.ORsRef <> nil) then
+         Self.ORsRef.Free();
+       Self.ORsRef := ORs.ParseORs(str[0]);
+      end;
 
      if (str.Count >= 2) then
       begin
@@ -368,6 +372,9 @@ begin
        else
          Self.UsekStav.cislo_koleje := '';
       end;
+
+     if (str.Count >= 4) then
+       Self.UsekStav.spr_pos := (str[3] = '1');
 
      if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxSpr <> 1)) then
        Self.UsekSettings.maxSpr := 1;
@@ -1309,7 +1316,7 @@ begin
    TTCPORsRef(SenderPnl.Data).spr_menu_index := 0;
    Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0) + '-,';
  end else begin
-   canAdd := ((Self.UsekStav.stanicni_kolej) and
+   canAdd := ((Self.CanStandSouprava()) and
               (( (not Self.SoupravyFull()) and ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0)) ) or // novy vlak
                ( addStr = 'VLOŽ vlak,' ) // presun vlaku
               ));
@@ -1382,9 +1389,9 @@ begin
  spr := Soupravy[Self.Soupravs[sprLocalI]];
  spr_count := Blky.GetBlkWithSpr(Self.Soupravs[sprLocalI]).Count;
 
- if (Self.UsekStav.stanicni_kolej) then
+ if (Self.CanStandSouprava()) then
    Result := Result + 'EDIT vlak,';
- if ((Self.UsekStav.stanicni_kolej) or (spr_count <= 1)) then
+ if ((Self.CanStandSouprava()) or (spr_count <= 1)) then
    Result := Result + '!ZRUŠ vlak,';
  if (spr_count > 1) then
    Result := Result + '!UVOL vlak,';
@@ -1407,7 +1414,7 @@ begin
      Result := Result + '!VEZMI vlak,';
  end;
 
- if (Self.UsekStav.stanicni_kolej) then
+ if (Self.CanStandSouprava()) then
    Result := Result + 'PODJ,';
 
  if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
@@ -1507,7 +1514,7 @@ begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
  if (Blk = nil) then Exit(false);
 
- if (not Self.UsekStav.stanicni_kolej) then
+ if (not Self.CanStandSouprava()) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Loko lze přesunout pouze na staniční kolej!');
    Exit(true);
@@ -2296,6 +2303,11 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.CanStandSouprava():boolean;
+begin
+ Result := (Self.UsekStav.stanicni_kolej or Self.UsekStav.spr_pos);
+end;
 
 end.//unit
 
