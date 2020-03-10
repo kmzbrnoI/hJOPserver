@@ -153,7 +153,7 @@ type
     function RealZesZkrat():TBoosterSignal;
     function CanStandSouprava():boolean;
     function CanBeNextVB(vbs: TList<TObject>; start: TBlk):boolean;
-
+    function CanBeKC(vbs: TList<TObject>; start: TBlk):boolean;
 
   protected
    UsekSettings:TBlkUsekSettings;
@@ -1359,9 +1359,12 @@ begin
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then
   begin
-   Result := Result + '-,KC,';
+   if ((Self.CanBeKC((SenderOR as TOR).vb, blk)) or Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
+     Result := Result + '-,';
+   if (Self.CanBeKC((SenderOR as TOR).vb, blk)) then
+     Result := Result + 'KC,';
    if (Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
-    Result := Result + 'VB,';
+     Result := Result + 'VB,';
   end;
 
  // pokud mame knihovnu simulator, muzeme ridit stav useku
@@ -2335,6 +2338,12 @@ begin
  finally
    vbs_plus_me.Free();
  end;
+end;
+
+function TBlkUsek.CanBeKC(vbs: TList<TObject>; start: TBlk):boolean;
+begin
+ Result := ((JCDb.FindJC(start as TBlkNav, vbs, Self) <> nil) or
+            (MultiJCDb.FindMJC(start as TBlkNav, vbs, Self) <> nil));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
