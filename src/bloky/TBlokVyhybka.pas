@@ -412,6 +412,9 @@ end;
 
 function TBlkVyhybka.GetZaver():TZaver;
 begin
+ if (Self.VyhRel.UsekID = -1) then
+   Exit(TZaver.no);
+
  if (((Self.fparent = nil) and (Self.VyhRel.UsekID <> -1)) or ((Self.fparent.id <> Self.VyhRel.UsekID))) then
    Blky.GetBlkByID(Self.VyhRel.UsekID, Self.fparent);
  if (Self.fparent <> nil) then
