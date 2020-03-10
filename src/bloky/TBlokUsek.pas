@@ -1099,8 +1099,8 @@ begin
  case ((Blk as TBlkNav).ZacatekVolba) of
   TBlkNavVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
   TBlkNavVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
- else
-  Exit(); // nouzova cesta nemuze mit variantni body
+  TBlkNavVolba.NC : Self.UsekStav.KonecJC := TZaver.nouz;
+  TBlkNavVolba.PP : Self.UsekStav.KonecJC := TZaver.nouz;
  end;
 
  (SenderOR as TOR).vb.Add(Self);
