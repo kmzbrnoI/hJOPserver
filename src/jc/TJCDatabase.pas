@@ -75,6 +75,7 @@ type
      function IsAnyPCAvailable(nav:TBlkNav):Boolean;
 
      function FindJC(startNav:TBlkNav; vb: TList<TObject>; EndBlk:TBlk):TJC; overload;
+     function IsAnyJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
 
      property Count:Word read GetCount;
      property filename:string read ffilename;
@@ -265,9 +266,7 @@ end;
 
 //toto se vola zvnejsi, kdyz chceme postavit jakoukoliv JC
 procedure TJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject);
-var j:Integer;
-    Blk:TBlk;
-    oblr:TOR;
+var oblr:TOR;
     startNav:TBlkNav;
     senderOblr:TOR;
     jc:TJC;
@@ -299,7 +298,7 @@ begin
   end else begin
 
    // kontrola staveni slozene jizdni cesty
-   if (startNav.ZacatekVolba <> TBlkNavVolba.NC) then
+   if ((startNav.ZacatekVolba = TBlkNavVolba.VC) or (startNav.ZacatekVolba = TBlkNavVolba.PC)) then
      if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
 
    (EndBlk as TBlkUsek).KonecJC := TZaver.no;
@@ -854,6 +853,42 @@ end;
 function TJCDb.GetEnumerator():TEnumerator<TJC>;
 begin
  Result := Self.JCs.GetEnumerator();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TJCDb.IsAnyJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
+var jc: TJC;
+    j: Integer;
+    error: boolean;
+begin
+ // startNav musi mit navolenou volbu, aby tato funkce fungovala.
+
+ if (not Self.JCsStartNav.ContainsKey(startNav)) then
+   Exit(false);
+
+ for jc in Self.JCsStartNav[startNav] do
+  begin
+   if (JC.navestidlo <> startNav) then continue;
+
+   if ((Integer(startNav.ZacatekVolba) = Integer(jc.data.TypCesty)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.data.TypCesty = TJCType.vlak)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.data.TypCesty = TJCType.posun))) then
+    begin
+     // kontrola variantnich bodu:
+     if (vb.Count > jc.data.vb.Count) then continue;
+
+     error := false;
+     for j := 0 to vb.Count-1 do
+       if (jc.data.vb[j] <> (vb[j] as TBlk).id) then
+         error := true;
+     if (error) then continue;        
+
+     Exit(true);
+    end;
+  end;
+
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

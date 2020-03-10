@@ -152,6 +152,7 @@ type
     function IsStujForSpr(spr:Integer):boolean;
     function RealZesZkrat():TBoosterSignal;
     function CanStandSouprava():boolean;
+    function CanBeNextVB(vbs: TList<TObject>; start: TBlk):boolean;
 
 
   protected
@@ -265,7 +266,7 @@ uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
-    Graphics, Prevody, TechnologieTrakce;
+    Graphics, Prevody, TechnologieTrakce, TMultiJCDatabase;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -1089,11 +1090,17 @@ begin
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk = nil) then Exit();
 
+ if (not Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
+  begin
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Není variantním bodem žádné JC');
+   Exit();
+  end;
+
  case ((Blk as TBlkNav).ZacatekVolba) of
   TBlkNavVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
   TBlkNavVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
  else
-  Exit();     // nouzova cesta nemuze mit variantni body
+  Exit(); // nouzova cesta nemuze mit variantni body
  end;
 
  (SenderOR as TOR).vb.Add(Self);
@@ -1353,7 +1360,7 @@ begin
  if (Blk <> nil) then
   begin
    Result := Result + '-,KC,';
-   if (not (SenderOR as TOR).vb.Contains(Self)) then
+   if (Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
     Result := Result + 'VB,';
   end;
 
@@ -2308,6 +2315,29 @@ function TBlkUsek.CanStandSouprava():boolean;
 begin
  Result := (Self.UsekStav.stanicni_kolej or Self.UsekStav.spr_pos);
 end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.CanBeNextVB(vbs: TList<TObject>; start: TBlk):boolean;
+var vbs_plus_me:TList<TObject>;
+begin
+ if (vbs.Contains(Self)) then
+   Exit(false);
+
+ vbs_plus_me := TList<TObject>.Create();
+
+ try
+   vbs_plus_me.AddRange(vbs);
+   vbs_plus_me.Add(Self);
+
+   Result := ((JCDb.IsAnyJCWithPrefix(start as TBlkNav, vbs_plus_me)) or
+              (MultiJCDb.IsAnyMJCWithPrefix(start as TBlkNav, vbs_plus_me)));
+ finally
+   vbs_plus_me.Free();
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit
 

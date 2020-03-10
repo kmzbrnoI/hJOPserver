@@ -8,7 +8,7 @@
 interface
 
 uses TechnologieMultiJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, Generics.Defaults;
+      Generics.Collections, Classes, Generics.Defaults, TBlokNav;
 
 type
   MutiJCExistsException = class(Exception);
@@ -35,6 +35,8 @@ type
      function GetJCIndexByID(id:Integer):Integer;
 
      function StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject):boolean;   // vraci true, pokud nasel prislusnou cestu
+     function FindMJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TMultiJC;
+     function IsAnyMJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
 
      function Add(data:TMultiJCProp):TMultiJC;
      procedure Remove(index:Integer);
@@ -53,7 +55,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBloky, TBlokNav, TBlokUsek, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, TBloky, TBlokUsek, TOblRizeni, TCPServerOR,
       DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -329,6 +331,43 @@ begin
 
  Self.JCs.Insert(pos, tmp);
  MultiJCTableData.AddJC(pos);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TMultiJCDb.IsAnyMJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
+var mjc: TMultiJC;
+    jc: TJC;
+    j: Integer;
+    error: boolean;
+begin
+ // startNav musi mit navolenou volbu, aby tato funkce fungovala.
+
+ for mjc in Self.JCs do
+  begin
+   if (mjc.data.JCs.Count < 2) then continue;
+
+   jc := JCDb.GetJCByID(mjc.data.JCs[0]);
+   if (JC = nil) then continue;
+   if (Integer(startNav.ZacatekVolba) <> Integer(JC.data.TypCesty)) then
+     continue;
+
+   if (JC.data.NavestidloBlok <> startNav.id) then
+     continue;
+
+   // kontrola variantnich bodu
+   if (vb.Count > mjc.data.vb.Count) then continue;
+
+   error := false;
+   for j := 0 to vb.Count-1 do
+     if (mjc.data.vb[j] <> (vb[j] as TBlk).id) then
+       error := true;
+   if (error) then continue;
+
+   Exit(true);
+  end;
+
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
