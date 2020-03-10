@@ -8,7 +8,7 @@ interface
 
 uses
   IniFiles, TechnologieJC, Generics.Collections, TBloky, IdContext, SysUtils,
-  Classes, Generics.Defaults, Math;
+  Classes, Generics.Defaults, Math, TBlok, TBlokNav;
 
 type
 
@@ -59,6 +59,7 @@ type
       procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject);
       procedure RusStaveni();
 
+      function Match(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):Boolean;
 
       property data:TMultiJCprop read fproperties write fproperties;
       property stav:TMultiJCStaveni read fstaveni;
@@ -71,7 +72,7 @@ type
 
 implementation
 
-uses TBlok, TJCDatabase, TBlokNav, TBlokUsek, TOblRizeni;
+uses TJCDatabase, TBlokUsek, TOblRizeni;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -264,6 +265,39 @@ begin
      Result := CompareValue(mJC1.id, mJC2.id);
     end
  );
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TMultiJC.Match(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):Boolean;
+var jc: TJC;
+    j: Integer;
+begin
+ if (Self.data.JCs.Count < 2) then Exit(false);
+
+ jc := JCDb.GetJCByID(Self.data.JCs[0]);
+ if (JC = nil) then Exit(false);
+
+ if (JC.data.NavestidloBlok <> startNav.id) then
+   Exit(false);
+
+ // posledni blok musi byt posledni blok posledni jizdni cesty
+ JC := JCDb.GetJCByID(Self.data.JCs[Self.data.JCs.Count-1]);
+ if (JC.data.Useky[JC.data.Useky.Count-1] <> endBlk.id) then Exit(false);
+
+ // kontrola variantnich bodu
+ if (vb.Count <> Self.data.vb.Count) then Exit(false);
+ for j := 0 to vb.Count-1 do
+   if (Self.data.vb[j] <> (vb[j] as TBlk).id) then Exit(false);
+
+ JC := JCDb.GetJCByID(Self.data.JCs[0]);
+ if (Integer(startNav.ZacatekVolba) <> Integer(JC.data.TypCesty)) then
+   Exit(false);
+
+ for j := 0 to Self.data.JCs.Count-1 do
+   if (JCDb.GetJCByID(Self.data.JCs[j]) = nil) then Exit(false);
+
+ Exit(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

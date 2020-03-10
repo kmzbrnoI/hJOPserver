@@ -47,7 +47,7 @@ type
      function GetJCByID(id:integer):TJC;
 
      // najde JC, ktera je postavena, ci prave stavena !
-     function FindJC(NavestidloBlokID:Integer;Staveni:Boolean = false):Integer;
+     function FindJC(NavestidloBlokID:Integer;Staveni:Boolean = false):Integer; overload;
      function FindOnlyStaveniJC(NavestidloBlokID:Integer):Integer;
      function IsJC(id:Integer; ignore_index:Integer = -1):boolean;
 
@@ -73,6 +73,8 @@ type
      function IsAnyJCAvailable(nav:TBlkNav; typ:TJCType):Boolean;
      function IsAnyVCAvailable(nav:TBlkNav):Boolean;
      function IsAnyPCAvailable(nav:TBlkNav):Boolean;
+
+     function FindJC(startNav:TBlkNav; vb: TList<TObject>; EndBlk:TBlk):TJC; overload;
 
      property Count:Word read GetCount;
      property filename:string read ffilename;
@@ -228,6 +230,39 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TJCDb.FindJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TJC;
+var jc:TJC;
+    blk: TBlk;
+    j: Integer;
+begin
+ if (not Self.JCsStartNav.ContainsKey(startNav)) then
+   Exit(nil);
+
+ for jc in Self.JCsStartNav[startNav] do
+  begin
+   if (JC.navestidlo <> startNav) then continue;
+
+   Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], blk);
+   if (blk <> endBlk) then continue;
+
+   if ((Integer(startNav.ZacatekVolba) = Integer(jc.data.TypCesty)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.data.TypCesty = TJCType.vlak)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.data.TypCesty = TJCType.posun))) then
+    begin
+     // kontrola variantnich bodu:
+     if (jc.data.vb.Count <> vb.Count) then continue;
+     for j := 0 to jc.data.vb.Count-1 do
+       if (jc.data.vb[j] <> (vb[j] as TBlk).id) then continue;
+
+     Exit(jc);
+    end;
+  end;
+
+ Result := nil;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 //toto se vola zvnejsi, kdyz chceme postavit jakoukoliv JC
 procedure TJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject);
 var j:Integer;
@@ -236,63 +271,41 @@ var j:Integer;
     startNav:TBlkNav;
     senderOblr:TOR;
     jc:TJC;
-label noJC;
 begin
  startNav := StartBlk as TBlkNav;
  senderOblr := SenderOR as TOR;
 
- if (not Self.JCsStartNav.ContainsKey(startNav)) then
-   goto noJC;
+ jc := Self.FindJC(StartNav, SenderOblr.vb, EndBlk);
 
- for jc in Self.JCsStartNav[startNav] do
+ if (jc <> nil) then
   begin
-   if (JC.navestidlo <> StartBlk) then continue;
+   // v pripade nouzove cesty klik na DK opet prevest na klienta
+   if (startNav.ZacatekVolba = TBlkNavVolba.NC) then
+     for oblr in startNav.OblsRizeni do
+       oblr.ORDKClickClient();
 
-   Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], Blk);
-   if (Blk <> EndBlk) then continue;
-
-   if ((Integer(startNav.ZacatekVolba) = Integer(jc.data.TypCesty)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.data.TypCesty = TJCType.vlak)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.data.TypCesty = TJCType.posun))) then
+   if (SenderOblr.stack.volba = TORStackVolba.VZ) then
     begin
-     // nasli jsme jizdni cestu, kterou hledame
+     SenderOblr.stack.AddJC(jc, SenderPnl, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
 
-     // jeste kontrola variantnich bodu:
-     if (jc.data.vb.Count <> SenderOblr.vb.Count) then continue;
-     for j := 0 to jc.data.vb.Count-1 do
-      if (jc.data.vb[j] <> (SenderOblr.vb[j] as TBlk).id) then continue;
-
-     // v pripade nouzove cesty klik na DK opet prevest na klienta
-     if (startNav.ZacatekVolba = TBlkNavVolba.NC) then
-       for oblr in startNav.OblsRizeni do
-         oblr.ORDKClickClient();
-
-
-     if (SenderOblr.stack.volba = TORStackVolba.VZ) then
-      begin
-       SenderOblr.stack.AddJC(jc, SenderPnl, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
-
-       // zrusime zacatek, konec a variantni body
-       startNav.ZacatekVolba := TBlkNavVOlba.none;
-       (EndBlk as TBlkUsek).KonecJC        := TZaver.no;
-       SenderOblr.ClearVb();
-      end else begin
-       SenderOblr.vb.Clear();            // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
-       jc.StavJC(SenderPnl, SenderOR, nil, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
-      end;
-
-     Exit;
+     // zrusime zacatek, konec a variantni body
+     startNav.ZacatekVolba := TBlkNavVOlba.none;
+     (EndBlk as TBlkUsek).KonecJC := TZaver.no;
+     SenderOblr.ClearVb();
+    end else begin
+     SenderOblr.vb.Clear(); // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
+     jc.StavJC(SenderPnl, SenderOR, nil, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
     end;
-  end;//for i
+  end else begin
 
-noJC:
- // kontrola staveni slozene jizdni cesty
- if (startNav.ZacatekVolba <> TBlkNavVolba.NC) then
-   if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
+   // kontrola staveni slozene jizdni cesty
+   if (startNav.ZacatekVolba <> TBlkNavVolba.NC) then
+     if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
 
- (EndBlk as TBlkUsek).KonecJC := TZaver.no;
- ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
- writelog('Nelze postavit JC -  nenalezena v zaverove tabulce',WR_VC);
+   (EndBlk as TBlkUsek).KonecJC := TZaver.no;
+   ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
+   writelog('Nelze postavit JC -  nenalezena v zaverove tabulce', WR_VC);
+  end;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////

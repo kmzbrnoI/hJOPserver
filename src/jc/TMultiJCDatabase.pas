@@ -232,62 +232,42 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject):boolean;
-var i, j:Integer;
-    Blk:TBlk;
-    JC:TJC;
-    flag:boolean;
+function TMultiJCDb.FindMJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TMultiJC;
+var mjc: TMultiJC;
 begin
- for i := 0 to Self.JCs.Count-1 do
+ // startNav musi mit navolenou volbu, aby tato funkce fungovala.
+
+ for mjc in Self.JCs do
+   if (mjc.Match(startNav, vb, endBlk)) then
+     Exit(mjc);
+
+ Result := nil;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TMultiJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject):boolean;
+var mJC: TMultiJC;
+    j: Integer;
+begin
+ mJC := Self.FindMJC(startBlk as TBlkNav, (SenderOR as TOR).vb, endBlk);
+ Result := (mJC <> nil);
+
+ if (mJC <> nil) then
   begin
-   if (Self.JCs[i].data.JCs.Count < 2) then continue;
-
-   JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[0]);
-   if (JC = nil) then continue;
-
-   Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
-   if (Blk <> StartBlk) then continue;
-
-   // posledni blok musi byt poseldni blok posledni jizdni cesty
-   JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[Self.JCs[i].data.JCs.Count-1]);
-   Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Blk);
-   if (Blk <> EndBlk) then continue;
-
-   // kontrola variantnich bodu
-   flag := true;
-   if (Self.JCs[i].data.vb.Count <> (SenderOR as TOR).vb.Count) then continue;
-   for j := 0 to Self.JCs[i].data.vb.Count-1 do
-     if (Self.JCs[i].data.vb[j] <> ((SenderOR as TOR).vb[j] as TBlk).id) then flag := false;
-   if (not flag) then continue;
-
-   JC := JCDb.GetJCByID(Self.JCs[i].data.JCs[0]);
-   if ((Integer((StartBlk as TBlkNav).ZacatekVolba) = Integer(JC.data.TypCesty)) or
-      (((StartBlk as TBlkNav).ZacatekVolba = TBlkNavVolba.NC) and (JC.data.TypCesty = TJCType.vlak))) then
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) then
     begin
-     // nasli jsme jizdni cestu, kterou hledame
+     // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
+     for j := 0 to mJC.data.JCs.Count-1 do
+       (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false);
 
-     // kontrola existence vsech jizdnich cest v dane slozene jizdni ceste
-     for j := 0 to Self.JCs[i].data.JCs.Count-1 do
-      if (JCDb.GetJCByID(Self.JCs[i].data.JCs[j]) = nil) then Exit(false);
-
-     if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) then
-      begin
-       // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
-       for j := 0 to Self.JCs[i].data.JCs.Count-1 do
-         (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(Self.JCs[i].data.JCs[j]), SenderPnl, false);
-
-       (StartBlk as TBlkNav).ZacatekVolba := TBlkNavVOlba.none;
-       (EndBlk as TBlkUsek).KonecJC        := TZaver.no;
-       (SenderOR as TOR).ClearVb();
-      end else begin
-       Self.JCs[i].StavJC(SenderPnl, SenderOR);
-      end;
-
-     Exit(true);
+     (StartBlk as TBlkNav).ZacatekVolba := TBlkNavVOlba.none;
+     (EndBlk as TBlkUsek).KonecJC := TZaver.no;
+     (SenderOR as TOR).ClearVb();
+    end else begin
+     mJC.StavJC(SenderPnl, SenderOR);
     end;
-  end;//for i
-
- Result := false;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
