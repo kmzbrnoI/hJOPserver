@@ -17,6 +17,7 @@ type
  TBlkRozpStav = record
   status:TRozpStatus;
   finish:TDateTime;
+  mtbFailed:Boolean;
  end;
 
  TBlkRozp = class(TBlk)
@@ -24,6 +25,7 @@ type
    //defaultni stav
    _def_rozp_stav:TBlkRozpStav = (
       status : disabled;
+      mtbFailed: false;
    );
 
   private const
@@ -142,12 +144,20 @@ end;
 
 procedure TBlkRozp.Enable();
 begin
- Self.status := TRozpStatus.not_selected;
+ if ((RCSi.IsModule(Self.RozpSettings.RCSAddrs[0].board)) and
+     (not RCSi.IsModuleFailure(Self.RozpSettings.RCSAddrs[0].board))) then
+ begin
+  Self.RozpStav.mtbFailed := false;
+  Self.status := TRozpStatus.not_selected;
+ end else begin
+  Self.RozpStav.mtbFailed := true;
+ end;
 end;
 
 procedure TBlkRozp.Disable();
 begin
  Self.status := TRozpStatus.disabled;
+ Self.RozpStav.mtbFailed := false;
  Self.Change(true);
 end;
 
@@ -155,7 +165,21 @@ end;
 
 procedure TBlkRozp.Update();
 begin
+ if ((Self.status <> TRozpStatus.disabled) and (RCSi.IsModuleFailure(Self.RozpSettings.RCSAddrs[0].board))) then
+  begin
+   Self.status := TRozpStatus.disabled;
+   Self.RozpStav.mtbFailed := true;
+  end;
+
  case (Self.status) of
+   TRozpStatus.disabled : begin
+      if ((Self.RozpStav.mtbFailed) and (RCSi.IsModule(Self.RozpSettings.RCSAddrs[0].board)) and
+          (not RCSi.IsModuleFailure(Self.RozpSettings.RCSAddrs[0].board))) then
+       begin
+        Self.RozpStav.mtbFailed := false;
+        Self.status := TRozpStatus.not_selected;
+       end;
+   end;
    TRozpStatus.mounting : begin
       if (Now > Self.RozpStav.finish) then
        begin
@@ -242,7 +266,8 @@ begin
    else
      RCSi.SetOutput(Self.RozpSettings.RCSAddrs[0].board, Self.RozpSettings.RCSAddrs[0].port, 0);
  except
-
+  Self.RozpStav.mtbFailed := true;
+  Self.status := TRozpStatus.disabled;
  end;
 end;
 
