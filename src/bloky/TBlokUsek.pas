@@ -526,7 +526,7 @@ begin
  if (Self.frozen) then
   begin
    if ((Self.zkrat <> TBoosterSignal.error) and (Self.RealZesZkrat() = TBoosterSignal.error) and
-       (Self.napajeni = TBoosterSignal.ok) and (Now > Self.Stav.zkratSenseTime)) then
+       (Self.napajeni = TBoosterSignal.ok) and (Now > Self.Stav.zkratSenseTime) and (Self.DCC)) then
      Self.zkrat := TBoosterSignal.error;
 
    if (((not Self.DCC) or (Self.napajeni = TBoosterSignal.error)
