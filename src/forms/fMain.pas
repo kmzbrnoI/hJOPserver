@@ -1176,10 +1176,7 @@ begin
  Self.A_Locos_Acquire.Enabled := false;
  Self.A_Locos_Release.Enabled := true;
 
- Self.G_locos_acquired.Progress := HVDb.cnt;
- if (F_Main.G_locos_acquired.MaxValue = 0) then
-   F_Main.G_locos_acquired.Progress := 1;
-
+ Self.G_locos_acquired.Progress := Self.G_locos_acquired.MaxValue;
  Self.G_locos_acquired.ForeColor := clLime;
 
  if (SystemData.Status = starting) then
