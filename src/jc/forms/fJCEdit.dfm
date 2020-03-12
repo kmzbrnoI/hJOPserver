@@ -537,7 +537,7 @@ object F_JCEdit: TF_JCEdit
     Left = 617
     Top = 8
     Width = 297
-    Height = 389
+    Height = 370
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
     TabOrder = 14
     object Label4: TLabel
@@ -554,23 +554,16 @@ object F_JCEdit: TF_JCEdit
       Height = 13
       Caption = 'Odvraty:'
     end
-    object Label6: TLabel
-      Left = 8
-      Top = 207
-      Width = 147
-      Height = 13
-      Caption = 'Bloky, na nich'#382' zav'#233'st redukci:'
-    end
     object Label7: TLabel
-      Left = 8
-      Top = 268
+      Left = 9
+      Top = 207
       Width = 35
       Height = 13
       Caption = 'Z'#225'mky:'
     end
     object Label8: TLabel
-      Left = 8
-      Top = 332
+      Left = 9
+      Top = 301
       Width = 71
       Height = 13
       Caption = 'Variantn'#237' body:'
@@ -606,8 +599,8 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 1
     end
     object E_VB: TEdit
-      Left = 8
-      Top = 351
+      Left = 9
+      Top = 320
       Width = 281
       Height = 21
       Hint = 'Form'#225't: id blok'#367' odd'#283'len'#253'ch '#269#225'rkami'
@@ -616,26 +609,11 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 2
       Text = 'E_VB'
     end
-    object M_Redukce: TMemo
-      Left = 8
-      Top = 224
-      Width = 281
-      Height = 36
-      Hint = 
-        'Form'#225't: na ka'#382'd'#233'm '#345#225'dku jeden blok: id bloku, id referen'#269'n'#237'ho bl' +
-        'oku'
-      Lines.Strings = (
-        'M_Redukce')
-      ParentShowHint = False
-      ScrollBars = ssVertical
-      ShowHint = True
-      TabOrder = 3
-    end
     object M_Zamky: TMemo
-      Left = 8
-      Top = 288
+      Left = 9
+      Top = 227
       Width = 281
-      Height = 36
+      Height = 62
       Hint = 
         'Form'#225't: na ka'#382'd'#233'm '#345#225'dku jeden blok: id bloku, id referen'#269'n'#237'ho bl' +
         'oku'
@@ -644,7 +622,7 @@ object F_JCEdit: TF_JCEdit
       ParentShowHint = False
       ScrollBars = ssVertical
       ShowHint = True
-      TabOrder = 4
+      TabOrder = 3
     end
   end
   object CHB_Advanced: TCheckBox

@@ -149,28 +149,22 @@ begin
   end;//for j
  Self.LV.Items[line].SubItems[11] := str;
 
- // prislusenstvi
- str := '';
- for j := 0 to JCData.Prisl.Count-1 do
-   str := str + '(' + Blky.GetBlkName(JCData.Prisl[j].Blok)+', '+Blky.GetBlkName(JCData.Prisl[j].ref_blk)+' )';
- Self.LV.Items[line].SubItems[12] := str;
-
  if (JCData.Trat > -1) then
-  Self.LV.Items[line].SubItems[13] := Blky.GetBlkName(JCData.Trat)
+  Self.LV.Items[line].SubItems[12] := Blky.GetBlkName(JCData.Trat)
  else
-  Self.LV.Items[line].SubItems[13] := '';
+  Self.LV.Items[line].SubItems[12] := '';
 
  // prejezdy
  str := '';
  for j := 0 to JCData.Prejezdy.Count-1 do
    str := str + Blky.GetBlkName(JCData.Prejezdy[j].Prejezd)+'; ';
- Self.LV.Items[line].SubItems[14] := LeftStr(str, Length(str)-2);
+ Self.LV.Items[line].SubItems[13] := LeftStr(str, Length(str)-2);
 
  // podminky zamky
  str := '';
  for j := 0 to JCData.zamky.Count-1 do
    str := str + '('+Blky.GetBlkName(JCData.zamky[j].Blok)+' : ' + Blky.GetBlkName(JCData.zamky[j].ref_blk) + ')';
- Self.LV.Items[line].SubItems[15] := str;
+ Self.LV.Items[line].SubItems[14] := str;
 
  // neprofilove useky
  str := '';
@@ -186,7 +180,7 @@ begin
     end else
      str := str + '?, ';
   end;
- Self.LV.Items[line].SubItems[16] := LeftStr(str, Length(str)-2);
+ Self.LV.Items[line].SubItems[15] := LeftStr(str, Length(str)-2);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

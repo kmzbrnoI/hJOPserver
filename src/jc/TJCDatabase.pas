@@ -54,7 +54,6 @@ type
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
      function FindPostavenaJCWithVyhybka(vyh_id:Integer):TArI;
      function FindPostavenaJCWithUsek(usek_id:Integer):Integer;
-     function FindPostavenaJCWithPrisl(blk_id:Integer):TArI;
      function FindPostavenaJCWithPrj(blk_id:Integer):Integer;
      function FindPostavenaJCWithTrat(trat_id:Integer):Integer;
      function FindPostavenaJCWithZamek(zam_id:Integer):TArI;
@@ -467,26 +466,6 @@ begin
     for j := 0 to Self.JCs[i].data.Useky.Count-1 do
       if (Self.JCs[i].data.Useky[j] = usek_id) then
         Exit(i);
-   end;//for i
-end;
-
-function TJCDB.FindPostavenaJCWithPrisl(blk_id:Integer):TArI;
-var i,j:Integer;
-begin
-  SetLength(Result, 0);
-
-  for i := 0 to Self.JCs.Count-1 do
-   begin
-    if (not Self.JCs[i].postaveno) then continue;
-
-    for j := 0 to Self.JCs[i].data.Prisl.Count-1 do
-     begin
-      if (Self.JCs[i].data.Prisl[j].Blok = blk_id) then
-       begin
-        SetLength(Result, Length(Result)+1);
-        Result[Length(Result)-1] := i;
-       end;
-     end;//for j
    end;//for i
 end;
 

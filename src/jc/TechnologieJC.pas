@@ -121,7 +121,6 @@ type
    Vyhybky  : TList<TJCVyhZaver>;
    Useky    : TList<Integer>;
    Odvraty  : TList<TJCOdvratZaver>;
-   Prisl    : TList<TJCRefZaver>;
    Prejezdy : TList<TJCPrjZaver>;
    zamky    : TList<TJCRefZaver>;                                               // zamky, ktere musi byt uzamcene
    vb:TList<Integer>;                                                           // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
@@ -333,7 +332,6 @@ begin
  Self.fproperties.Vyhybky  := TList<TJCVyhZaver>.Create();
  Self.fproperties.Useky    := TList<Integer>.Create();
  Self.fproperties.Odvraty  := TList<TJCOdvratZaver>.Create();
- Self.fproperties.Prisl    := TList<TJCRefZaver>.Create();
  Self.fproperties.Prejezdy := TList<TJCPrjZaver>.Create();
 end;//ctor
 
@@ -348,7 +346,6 @@ begin
  if (not Assigned(Self.fproperties.zamky))    then Self.fproperties.zamky := TList<TJCRefZaver>.Create();
  if (not Assigned(Self.fproperties.vb))       then Self.fproperties.vb := TList<Integer>.Create();
  if (not Assigned(Self.fproperties.Odvraty))  then Self.fproperties.Odvraty := TList<TJCOdvratZaver>.Create();
- if (not Assigned(Self.fproperties.Prisl))    then Self.fproperties.Prisl := TList<TJCRefZaver>.Create();
  if (not Assigned(Self.fproperties.Prejezdy)) then Self.fproperties.Prejezdy := TList<TJCPrjZaver>.Create();
  if (not Assigned(Self.fproperties.Vyhybky))  then Self.fproperties.Vyhybky := TList<TJCVyhZaver>.Create();
  if (not Assigned(Self.fproperties.Useky))    then Self.fproperties.Useky := TList<Integer>.Create();
@@ -364,7 +361,6 @@ begin
  if (Assigned(Self.fproperties.Vyhybky))  then Self.fproperties.Vyhybky.Free();
  if (Assigned(Self.fproperties.Useky))    then Self.fproperties.Useky.Free();
  if (Assigned(Self.fproperties.Odvraty))  then Self.fproperties.Odvraty.Free();
- if (Assigned(Self.fproperties.Prisl))    then Self.fproperties.Prisl.Free();
  for i := 0 to Self.fproperties.Prejezdy.Count-1 do Self.fproperties.Prejezdy[i].uzaviraci.Free();
  if (Assigned(Self.fproperties.Prejezdy)) then Self.fproperties.Prejezdy.Free();
 
@@ -377,7 +373,7 @@ end;//ctor
 // vraci List prblemu (tzv. bariery), ktere definuji to, proc jizdni cestu nelze postavit (tedy vraci vsechny nesplnene podminky)
 // tzv. kriticke bariery jsou vzdy na zacatu Listu
 function TJC.KontrolaPodminek(NC:boolean = false):TJCBariery;
-var i,j:Integer;
+var i:Integer;
     Blk,blk2:TBlk;
     privol:TBlksList;
     vyhZaver:TJCVyhZaver;
@@ -482,21 +478,6 @@ begin
     if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.disabled) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
-      Exit;
-     end;
-   end;//for i
-
-  // kontrola existence bloku prislusenstvi
-  for refZaver in Self.fproperties.Prisl do
-   begin
-    if (Blky.GetBlkByID(refZaver.ref_blk, blk) <> 0) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
-      Exit;
-     end;
-    if (Blky.GetBlkByID(refZaver.Blok, blk) <> 0) then
-     begin
-      Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.Blok));
       Exit;
      end;
    end;//for i
@@ -1555,23 +1536,6 @@ var i,j:Integer;
 
 
    12:begin
-       writelog('Krok 12 : nastavuji redukci menu prislusenstvi',WR_VC);
-
-       for refZaver in Self.fproperties.Prisl do
-        begin
-         Blky.GetBlkByID(refZaver.Blok, Blk);
-
-         case (Blk.typ) of
-           _BLK_NAV:begin
-             writelog('Krok 12 : návěstidlo '+Blk.name+' - redukuji menu', WR_VC);
-             TBlkNav(Blk).RedukujMenu();
-             Blky.GetBlkByID(refZaver.ref_blk, Blk);
-             TBlkUsek(Blk).AddChangeEvent(TBlkUsek(Blk).EventsOnZaverReleaseOrAB,
-               CreateChangeEvent(ceCaller.NullNavMenuReduction, refZaver.Blok));
-           end;// _BLK_NAV
-         end;//case
-        end;
-
        // prejezdy
        uzavren_glob := false;
        for i := 0 to Self.fproperties.Prejezdy.Count-1 do
@@ -2706,18 +2670,6 @@ begin
      Self.fproperties.Odvraty.Add(odvrat);
     end;//for i
 
-   // nacteni prislusenstvi
-   sl.Clear();
-   ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'prisl', '')), sl);
-   cnt := (sl.Count div 2);
-   Self.fproperties.Prisl.Clear();
-   for i := 0 to cnt-1 do
-    begin
-     ref.Blok    := StrToInt(sl[i*2]);
-     ref.ref_blk := StrToInt(sl[(i*2)+1]);
-     Self.fproperties.Prisl.Add(ref);
-    end;//for i
-
    //format dat prejezdu:
    // (...),(...),(...) jsou jednotlive prejezdy
    // konkretni popis toho, co ma byt na miste tecek:
@@ -2821,13 +2773,6 @@ begin
    line := line + '(' + IntToStr(Self.fproperties.Odvraty[i].Blok) + ',' + IntToStr(Integer(Self.fproperties.Odvraty[i].Poloha)) + ',' + IntToStr(Self.fproperties.Odvraty[i].ref_blk)+ ')';
  if (line <> '') then
    ini.WriteString(section, 'odvraty', line);
-
- // prislusenstvi
- line := '';
- for i := 0 to Self.fproperties.Prisl.Count-1 do
-   line := line + '(' + IntToStr(Self.fproperties.Prisl[i].Blok) + ',' + IntToStr(Self.fproperties.Prisl[i].ref_blk)+ ')';
- if (line <> '') then
-   ini.WriteString(section, 'prisl', line);
 
  // prejezdy
  line := '';

@@ -19,7 +19,6 @@ type
    procedure NullPrejezdZaver(Sender:TObject; data:Integer);
    procedure NullTratZaver(Sender:TObject; data:Integer);
    procedure NullVyhybkaMenuReduction(Sender:TObject; data:Integer);
-   procedure NullNavMenuReduction(Sender:TObject; data:Integer);
    procedure RemoveUsekNeprofil(Sender:TObject; data:Integer);
  end;
 
@@ -27,7 +26,7 @@ var ceCaller: TChangeEventCaller;
 
 implementation
 
-uses TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokZamek, TBlokNav, TBlokPrejezd,
+uses TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokZamek, TBlokPrejezd,
      TBlokTrat;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,15 +77,6 @@ begin
  if ((blk = nil) or (blk.typ <> _BLK_VYH)) then Exit();
 
  TBlkVyhybka(Blk).ZrusRedukciMenu();
-end;
-
-procedure TChangeEventCaller.NullNavMenuReduction(Sender:TObject; data:Integer);
-var blk:TBlk;
-begin
- Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> _BLK_NAV)) then Exit();
-
- TBlkNav(Blk).ZrusRedukciMenu();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

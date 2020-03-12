@@ -216,9 +216,6 @@ type
     function GetSettings():TBlkNavSettings;
     procedure SetSettings(data:TBlkNavSettings);
 
-    procedure RedukujMenu();
-    procedure ZrusRedukciMenu();
-
     procedure UpdateRychlostSpr(force:boolean = false);
     procedure AddBlkToRnz(blkId:Integer; change:boolean = true);
     procedure RemoveBlkFromRnz(blkId:Integer);
@@ -1300,27 +1297,6 @@ class function TBlkNav.NavestToString(Navest:Integer):string;
     Result := 'Jiná návěst';
    end;//else case
  end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkNav.RedukujMenu();
-begin
- Self.NavStav.redukce_menu := Self.NavStav.redukce_menu + 1;
-
- // prave zacala redukce
- if (Self.NavStav.redukce_menu = 1) then
-  Self.Change();
-end;
-
-procedure TBlkNav.ZrusRedukciMenu();
-begin
- if (Self.NavStav.redukce_menu > 0) then
-  Self.NavStav.redukce_menu := Self.NavStav.redukce_menu - 1;
-
- // prave skoncila redukce
- if (Self.NavStav.redukce_menu = 0) then
-  Self.Change();
-end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

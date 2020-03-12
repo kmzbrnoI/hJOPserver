@@ -52,12 +52,10 @@ type
     M_Prj: TMemo;
     Label5: TLabel;
     M_Odvraty: TMemo;
-    Label6: TLabel;
     Label7: TLabel;
     E_VB: TEdit;
     Label8: TLabel;
     CHB_Advanced: TCheckBox;
-    M_Redukce: TMemo;
     M_Zamky: TMemo;
     CHB_Odbocka: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
@@ -143,7 +141,6 @@ procedure TF_JCEdit.EmptyJCOpenForm();
   Self.JCData.Vyhybky  := nil;
   Self.JCData.Useky    := nil;
   Self.JCData.Odvraty  := nil;
-  Self.JCData.Prisl    := nil;
   Self.JCData.Prejezdy := nil;
   Self.JCData.vb       := nil;
   Self.JCData.zamky    := nil;
@@ -169,7 +166,6 @@ procedure TF_JCEdit.EmptyJCOpenForm();
 
   Self.M_Prj.Clear();
   Self.M_Odvraty.Clear();
-  Self.M_Redukce.Clear();
   Self.M_Zamky.Clear();
   Self.E_VB.Text := '';
   Self.CHB_Odbocka.Checked := false;
@@ -238,10 +234,6 @@ var prjz:TJCPrjZaver;
 
     Self.M_Odvraty.Lines.Add(tmp);
    end;
-
-  Self.M_Redukce.Clear();
-  for jcref in JCData.Prisl do
-    Self.M_Redukce.Lines.Add(IntToStr(jcref.Blok) + ', ' + IntToStr(jcref.ref_blk));
 
   Self.M_Zamky.Clear();
   for jcref in JCData.zamky do
@@ -509,28 +501,6 @@ var JC:TJC;
        on E:Exception do
         begin
          Application.MessageBox(PChar('Napodařilo se naparsovat odvrat "' + line + '":'+#13#10+E.Message),
-                                'Chyba', MB_OK OR MB_ICONWARNING);
-         Exit;
-        end;
-      end;
-     end;
-
-    // Redukce
-    if (not Assigned(JCData.Prisl) or (mNewJC)) then JCData.Prisl := TList<TJCRefZaver>.Create();
-    JCData.Prisl.Clear();
-    for line in Self.M_Redukce.Lines do
-     begin
-      parsed.Clear();
-      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
-
-      try
-        refz.Blok := StrToInt(parsed[0]);
-        refz.ref_blk := StrToInt(parsed[1]);
-        JCData.Prisl.Add(refz);
-      except
-       on E:Exception do
-        begin
-         Application.MessageBox(PChar('Napodařilo se naparsovat redukci "' + line + '":'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
          Exit;
         end;
