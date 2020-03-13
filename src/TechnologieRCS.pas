@@ -201,22 +201,30 @@ begin
  //nastaveni vyhybek do +
  for blk in Blky do
   begin
-   if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).detekcePolohy)) then
-     Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
-   if (Blk.typ = _BLK_PREJEZD) then
-     Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
-   if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava()) and
-       ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
-     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
+   try
+     if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).detekcePolohy)) then
+       Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
+     if (Blk.typ = _BLK_PREJEZD) then
+       Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
+     if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava()) and
+         ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
+       Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
+   except
+
+   end;
   end;//for cyklus
 
  //defaultni stav zesilovacu
  for booster in Boosters.sorted do
   begin
-   if (booster.isPowerDetection) then
-     Self.SetInput(booster.bSettings.RCS.Napajeni.board, booster.bSettings.RCS.Napajeni.port, 0);
-   if (booster.isShortcutDetection) then
-     Self.SetInput(booster.bSettings.RCS.Zkrat.board, booster.bSettings.RCS.Zkrat.port, 0);
+   try
+     if (booster.isPowerDetection) then
+       Self.SetInput(booster.bSettings.RCS.Napajeni.board, booster.bSettings.RCS.Napajeni.port, 0);
+     if (booster.isShortcutDetection) then
+       Self.SetInput(booster.bSettings.RCS.Zkrat.board, booster.bSettings.RCS.Zkrat.port, 0);
+   except
+
+   end;
   end;
 end;
 
