@@ -2623,6 +2623,7 @@ var sl,sl2:TStrings;
     odvrat:TJCOdvratZaver;
     ref:TJCRefZaver;
     prj:TJCPrjZaver;
+    sect_size:Integer;
 begin
  Self.fproperties.Nazev := ini.ReadString(section, 'nazev', section);
  Self.fproperties.id := StrToInt(section);
@@ -2648,25 +2649,27 @@ begin
    // nacteni zaveru vyhybek:
    sl.Clear();
    ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vyhybky', '')), sl);
-   cnt := (sl.Count div 2);
+   sect_size := 2;
+   cnt := (sl.Count div sect_size);
    Self.fproperties.Vyhybky.Clear();
    for i := 0 to cnt-1 do
     begin
-     vyhZaver.Blok   := StrToInt(sl[i*2]);
-     vyhZaver.Poloha := TVyhPoloha(StrToInt(sl[(i*2)+1]));
+     vyhZaver.Blok := StrToInt(sl[i*sect_size]);
+     vyhZaver.Poloha := TVyhPoloha(StrToInt(sl[(i*sect_size)+1]));
      Self.fproperties.Vyhybky.Add(vyhZaver);
     end;//for i
 
    // nacteni odvratu:
    sl.Clear();
    ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'odvraty', '')), sl);
-   cnt := (sl.Count div 3);
+   sect_size := 3;
+   cnt := (sl.Count div sect_size);
    Self.fproperties.Odvraty.Clear();
    for i := 0 to cnt-1 do
     begin
-     odvrat.Blok    := StrToInt(sl[i*2]);
-     odvrat.Poloha  := TVyhPoloha(StrToInt(sl[(i*2)+1]));
-     odvrat.ref_blk := StrToInt(sl[(i*2)+2]);
+     odvrat.Blok := StrToInt(sl[i*sect_size]);
+     odvrat.Poloha := TVyhPoloha(StrToInt(sl[(i*sect_size)+1]));
+     odvrat.ref_blk := StrToInt(sl[(i*sect_size)+2]);
      Self.fproperties.Odvraty.Add(odvrat);
     end;//for i
 
