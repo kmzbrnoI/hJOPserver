@@ -15,12 +15,15 @@ type
 
   TMultiJCDb = class
    private
-    JCs:TObjectList<TMultiJC>;                                                        // seznam slozenych jizdnich cest serazeny podle jejich id vzestupne
+    JCs:TObjectList<TMultiJC>; // seznam slozenych jizdnich cest serazeny podle jejich id vzestupne
+    JCsStartNav:TObjectDictionary<TBlkNav, TList<TMultiJC>>;
+
 
     ffilename:string;
 
      function GetJCCnt():Word;
      function GetItem(index:Integer):TMultiJC;
+     procedure FillJCsStartNav();
 
    public
 
@@ -40,7 +43,9 @@ type
 
      function Add(data:TMultiJCProp):TMultiJC;
      procedure Remove(index:Integer);
+
      procedure IDChanged(previousIndex:Integer);
+     procedure NavChanged(Sender:TObject; origNav:TBlk);
 
      property filename:string read ffilename;
 
@@ -68,11 +73,13 @@ constructor TMultiJCDb.Create();
 begin
  inherited Create();
  Self.JCs := TObjectList<TMultiJC>.Create(TMultiJC.IdComparer());
+ Self.JCsStartNav := TObjectDictionary<TBlkNav, TList<TMultiJC>>.Create();
 end;//ctor
 
 destructor TMultiJCDb.Destroy();
 begin
  Self.JCs.Free();
+ Self.JCsStartNav.Free();
  inherited Destroy();
 end;//dtor
 
@@ -136,12 +143,12 @@ begin
    Inc(i);
   end;
 
-
- ini.Free;
+ ini.Free();
  sections.Free();
  writelog('Načteno '+IntToStr(Self.JCs.Count)+' složených JC', WR_DATA);
 
  MultiJCTableData.LoadToTable();
+ Self.FillJCsStartNav();
 end;
 
 // save data to ini file:
@@ -237,9 +244,10 @@ end;
 function TMultiJCDb.FindMJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TMultiJC;
 var mjc: TMultiJC;
 begin
- // startNav musi mit navolenou volbu, aby tato funkce fungovala.
+ if (not Self.JCsStartNav.ContainsKey(startNav)) then
+   Exit(nil);
 
- for mjc in Self.JCs do
+ for mjc in Self.JCsStartNav[startNav] do
    if (mjc.Match(startNav, vb, endBlk)) then
      Exit(mjc);
 
@@ -287,6 +295,8 @@ begin
 
  mJC := TMultiJC.Create(data);
  Self.JCs.Insert(pos, mJC);
+
+ Self.NavChanged(mJC, nil);
  MultiJCTableData.AddJC(pos);
  Result := mJC;
 end;
@@ -295,6 +305,10 @@ procedure TMultiJCDb.Remove(index:Integer);
 begin
  if ((index < Self.JCs.Count) and (not Self.JCs[index].staveni)) then
   begin
+   if (Self.JCs[index].StartNav <> nil) then
+     if (Self.JCsStartNav.ContainsKey(Self.JCs[index].StartNav())) then
+       Self.JCsStartNav[Self.JCs[index].StartNav()].Remove(Self.JCs[index]);
+
    Self.JCs.Delete(index);
    MultiJCTableData.RemoveJC(index);
   end;
@@ -342,8 +356,10 @@ var mjc: TMultiJC;
     error: boolean;
 begin
  // startNav musi mit navolenou volbu, aby tato funkce fungovala.
+ if (not Self.JCsStartNav.ContainsKey(startNav)) then
+   Exit(False);
 
- for mjc in Self.JCs do
+ for mjc in Self.JCsStartNav[startNav] do
   begin
    if (mjc.data.JCs.Count < 2) then continue;
 
@@ -368,6 +384,50 @@ begin
   end;
 
  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJCDb.FillJCsStartNav();
+var mJC:TMultiJC;
+begin
+ Self.JCsStartNav.Clear();
+ for mJC in Self.JCs do
+  begin
+   if (mJC.StartNav() <> nil) then
+    begin
+     if (not Self.JCsStartNav.ContainsKey(mJC.StartNav())) then
+       Self.JCsStartNav.Add(mJC.StartNav(), TList<TMultiJC>.Create());
+     Self.JCsStartNav[mJC.StartNav()].Add(mJC);
+    end;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJCDb.NavChanged(Sender:TObject; origNav:TBlk);
+var nav:TBlkNav;
+    mJC:TMultiJC;
+begin
+ nav := origNav as TBlkNav;
+ mJC := Sender as TMultiJC;
+
+ if (origNav <> nil) then
+  begin
+   if (Self.JCsStartNav.ContainsKey(nav)) then
+     if (Self.JCsStartNav[nav].Contains(mJC)) then
+       Self.JCsStartNav[nav].Remove(mJC);
+  end;
+
+ if (mJC.data.JCs.Count > 0) then
+  begin
+   if (mJC.StartNav() <> nil) then
+    begin
+     if (not Self.JCsStartNav.ContainsKey(mJC.StartNav())) then
+       Self.JCsStartNav.Add(mJC.StartNav(), TList<TMultiJC>.Create());
+     Self.JCsStartNav[mJC.StartNav()].Add(mJC);
+    end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
