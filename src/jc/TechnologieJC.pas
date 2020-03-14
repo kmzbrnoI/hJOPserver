@@ -2624,16 +2624,16 @@ var sl,sl2:TStrings;
     ref:TJCRefZaver;
     prj:TJCPrjZaver;
 begin
- Self.fproperties.Nazev               := ini.ReadString(section, 'Nazev', section);
- Self.fproperties.id                  := StrToInt(section);
- Self.fproperties.NavestidloBlok      := ini.ReadInteger(section, 'Nav', -1);
- Self.fproperties.TypCesty            := TJCType(ini.ReadInteger(section, 'Typ', -1));
- Self.fproperties.DalsiNavaznost      := TJCNextNavType(ini.ReadInteger(section, 'DalsiNTyp', 0));
- Self.fproperties.DalsiNavestidlo     := ini.ReadInteger(section, 'DalsiN', 0);
- Self.fproperties.RychlostDalsiN      := ini.ReadInteger(section, 'RychDalsiN', 0);
- Self.fproperties.RychlostNoDalsiN    := ini.ReadInteger(section, 'RychNoDalsiN', 0);
- Self.fproperties.Trat                := ini.ReadInteger(section, 'Trat', -1);
- Self.fproperties.TratSmer            := TTratSmer(ini.ReadInteger(section, 'TratSmer', 0));
+ Self.fproperties.Nazev := ini.ReadString(section, 'nazev', section);
+ Self.fproperties.id := StrToInt(section);
+ Self.fproperties.NavestidloBlok := ini.ReadInteger(section, 'nav', -1);
+ Self.fproperties.TypCesty := TJCType(ini.ReadInteger(section, 'typ', -1));
+ Self.fproperties.DalsiNavaznost := TJCNextNavType(ini.ReadInteger(section, 'dalsiNTyp', 0));
+ Self.fproperties.DalsiNavestidlo := ini.ReadInteger(section, 'dalsiN', 0);
+ Self.fproperties.RychlostDalsiN := ini.ReadInteger(section, 'rychDalsiN', 0);
+ Self.fproperties.RychlostNoDalsiN := ini.ReadInteger(section, 'rychNoDalsiN', 0);
+ Self.fproperties.Trat := ini.ReadInteger(section, 'trat', -1);
+ Self.fproperties.TratSmer := TTratSmer(ini.ReadInteger(section, 'tratSmer', 0));
 
  // nacteni zaveru useku:
  sl  := TStringList.Create();
@@ -2732,15 +2732,15 @@ procedure TJC.SaveData(ini:TMemIniFile; section:string);
 var line:string;
     i,j:Integer;
 begin
- ini.WriteString (section, 'Nazev', Self.fproperties.Nazev);
- ini.WriteInteger(section, 'Nav', Self.fproperties.NavestidloBlok);
- ini.WriteInteger(section, 'Typ', Integer(Self.fproperties.TypCesty));
+ ini.WriteString (section, 'nazev', Self.fproperties.Nazev);
+ ini.WriteInteger(section, 'nav', Self.fproperties.NavestidloBlok);
+ ini.WriteInteger(section, 'typ', Integer(Self.fproperties.TypCesty));
  if (Self.fproperties.DalsiNavaznost <> TJCNextNavType.zadna) then
-   ini.WriteInteger(section, 'DalsiNTyp', Integer(Self.fproperties.DalsiNavaznost));
+   ini.WriteInteger(section, 'dalsiNTyp', Integer(Self.fproperties.DalsiNavaznost));
  if (Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) then
-   ini.WriteInteger(section, 'DalsiN', Self.fproperties.DalsiNavestidlo);
- ini.WriteInteger(section, 'RychDalsiN', Self.fproperties.RychlostDalsiN);
- ini.WriteInteger(section, 'RychNoDalsiN', Self.fproperties.RychlostNoDalsiN);
+   ini.WriteInteger(section, 'dalsiN', Self.fproperties.DalsiNavestidlo);
+ ini.WriteInteger(section, 'rychDalsiN', Self.fproperties.RychlostDalsiN);
+ ini.WriteInteger(section, 'rychNoDalsiN', Self.fproperties.RychlostNoDalsiN);
 
  if (Self.fproperties.odbocka = Self.IsAnyVyhMinus) then
    ini.DeleteKey(section, 'odbocka')
@@ -2749,8 +2749,8 @@ begin
 
  if (Self.fproperties.Trat > -1) then
   begin
-   ini.WriteInteger(section, 'Trat', Self.fproperties.Trat);
-   ini.WriteInteger(section, 'TratSmer', Integer(Self.fproperties.TratSmer));
+   ini.WriteInteger(section, 'trat', Self.fproperties.Trat);
+   ini.WriteInteger(section, 'tratSmer', Integer(Self.fproperties.TratSmer));
   end;
 
  // useky

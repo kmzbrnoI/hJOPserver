@@ -117,13 +117,13 @@ var sl:TStrings;
     i:Integer;
 begin
  try
-   Self.fproperties.id    := StrToInt(section);
+   Self.fproperties.id := StrToInt(section);
  except
    on E:EConvertError do
      raise EInvalidID.Create('Neplatné id mJC : '+section);
  end;
 
- Self.fproperties.Nazev := ini.ReadString (section, 'Nazev', section);
+ Self.fproperties.Nazev := ini.ReadString(section, 'nazev', section);
 
  Self.fproperties.JCs.Clear();
  Self.fproperties.vb.Clear();
@@ -148,7 +148,7 @@ var i:Integer;
 begin
  section := IntToStr(Self.id);
 
- ini.WriteString(section, 'Nazev', Self.fproperties.Nazev);
+ ini.WriteString(section, 'nazev', Self.fproperties.Nazev);
 
  str := '';
  for i := 0 to Self.data.JCs.Count-1 do
