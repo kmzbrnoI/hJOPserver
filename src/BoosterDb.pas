@@ -172,7 +172,7 @@ begin
     end;
  end;
 
- for booster in Self.db.Values do
+ for booster in Self.sortedKeys do
    booster.SaveDataToFile(ini, booster.id);
 
  ini.UpdateFile();
