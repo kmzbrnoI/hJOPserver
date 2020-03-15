@@ -1408,7 +1408,7 @@ begin
  // ZPOMALOVANI
  if ((navEv.zpomaleni.enabled) and (spr.chtenaRychlost > navEv.zpomaleni.speed) and
      ((Usek as TBlkUsek).zpomalovani_ready) and
-     ((not Assigned(Self.DNjc)) or (not Self.IsPovolovaciNavest()) or (spr.IsPOdj(Usek))) and
+     ((not Self.IsPovolovaciNavest()) or (spr.IsPOdj(Usek))) and
      (spr.smer = Self.NavRel.smer)) then
   begin
    if (not navEv.zpomaleni.ev.enabled) then
