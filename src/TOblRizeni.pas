@@ -664,12 +664,12 @@ begin
 
    // kontrola pripojeni dalsich panelu
    // pokud chce panel zapisovat, musime zkontrolovat, jestli uz nahodou neni nejaky panel s pravy zapisovat, pripojeny
-   if (UserRights < TORCOntrolRights.superuser) then
+   if (rights = TORCOntrolRights.write) then
     begin
      // pokud jsme superuser, pripojenost dalsich panelu nekontrolujeme
      for i := 0 to Self.Connected.Count-1 do
       begin
-       if ((Self.Connected[i].Rights > read) and (Self.Connected[i].Panel <> Sender) and (Self.Connected[i].Rights < superuser)) then
+       if ((Self.Connected[i].Rights = write) and (Self.Connected[i].Panel <> Sender)) then
         begin
          // pokud se pripojuje stejny uzivatel, prevezme rizeni z jiz pripojene OR
          //  jiny uzivatel rizeni prevzit nemuze
@@ -683,7 +683,7 @@ begin
            ORTCPServer.GUIQueueLineToRefresh(i);
           end else begin
            rights := TORControlRights.read;
-           msg := 'Panel již připojen !';
+           msg := 'Panel již připojen!';
            break;
           end;
         end;
