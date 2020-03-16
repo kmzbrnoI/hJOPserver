@@ -308,7 +308,10 @@ var jc:TJC;
 begin
  if (Self.data.JCs.Count > 0) then begin
    jc := JCDb.GetJCByID(Self.data.JCs[0]);
-   Result := jc.navestidlo as TBlkNav;
+   if (jc = nil) then
+     Result := nil
+   else
+     Result := jc.navestidlo as TBlkNav;
  end else
    Result := nil
 end;
