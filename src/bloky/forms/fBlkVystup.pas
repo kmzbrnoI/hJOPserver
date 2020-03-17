@@ -126,6 +126,7 @@ procedure TF_BlkVystup.B_StornoClick(Sender: TObject);
 procedure TF_BlkVystup.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkVystupSettings;
+    another: TBlk;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -138,6 +139,14 @@ var glob:TBlkSettings;
     Exit;
    end;
 
+  another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.output);
+  if (another <> nil) then
+   begin
+    if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
+                               'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+      Exit();
+   end;
+
   glob.name     := E_Nazev.Text;
   glob.id       := SE_ID.Value;
   glob.typ      := _BLK_VYSTUP;
@@ -145,12 +154,15 @@ var glob:TBlkSettings;
   if (NewBlk) then
    begin
     glob.poznamka := '';
-    Blk := Blky.Add(_BLK_VYSTUP, glob) as TBlkVystup;
-    if (Blk = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+      Blk := Blky.Add(_BLK_USEK, glob) as TBlkVystup;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob.poznamka := Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);

@@ -99,6 +99,11 @@ end;
 procedure TF_BlkPrejezd.B_save_PClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkPrjSettings;
+    addrs: TList<TRCSAddr>;
+    another: TBlk;
+    typ: TRCSIOType;
+    i: Integer;
+    messages: string;
  begin
   if (Self.E_Prj_Nazev.Text = '') then
    begin
@@ -118,39 +123,70 @@ var glob:TBlkSettings;
   if (NewBlk) then
    begin
     glob.poznamka := '';
-    Blk := Blky.Add(_BLK_PREJEZD, glob) as TBlkPrejezd;
-    if (Blk = nil) then
-     begin
-      Application.MessageBox('Nepodařilo se přidat blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit();
-     end;
+    try
+      Blk := Blky.Add(_BLK_USEK, glob) as TBlkPrejezd;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob.poznamka := Self.Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);
    end;
 
-  settings.RCSOutputs.NOtevrit.board := Self.SE_vyst_open_board.Value;
-  settings.RCSOutputs.NOtevrit.port := Self.SE_vyst_open_port.Value;
+  addrs := TList<TRCSAddr>.Create();
+  try
+    settings.RCSOutputs.NOtevrit.board := Self.SE_vyst_open_board.Value;
+    settings.RCSOutputs.NOtevrit.port := Self.SE_vyst_open_port.Value;
+    addrs.Add(settings.RCSOutputs.NOtevrit);
 
-  settings.RCSOutputs.Zavrit.board := Self.SE_vyst_close_board.Value;
-  settings.RCSOutputs.Zavrit.port := Self.SE_vyst_close_port.Value;
+    settings.RCSOutputs.Zavrit.board := Self.SE_vyst_close_board.Value;
+    settings.RCSOutputs.Zavrit.port := Self.SE_vyst_close_port.Value;
+    addrs.Add(settings.RCSOutputs.Zavrit);
 
-  settings.RCSInputs.Otevreno.board := SE_vst_open_board.Value;
-  settings.RCSInputs.Otevreno.port := SE_vst_open_port.Value;
+    settings.RCSInputs.Otevreno.board := SE_vst_open_board.Value;
+    settings.RCSInputs.Otevreno.port := SE_vst_open_port.Value;
+    addrs.Add(settings.RCSInputs.Otevreno);
 
-  settings.RCSInputs.Zavreno.board := SE_vst_close_board.Value;
-  settings.RCSInputs.Zavreno.port := SE_vst_close_port.Value;
+    settings.RCSInputs.Zavreno.board := SE_vst_close_board.Value;
+    settings.RCSInputs.Zavreno.port := SE_vst_close_port.Value;
+    addrs.Add(settings.RCSInputs.Zavreno);
 
-  settings.RCSInputs.Vystraha.board := SE_vst_vystraha_board.Value;
-  settings.RCSInputs.Vystraha.port := SE_vst_vystraha_port.Value;
+    settings.RCSInputs.Vystraha.board := SE_vst_vystraha_board.Value;
+    settings.RCSInputs.Vystraha.port := SE_vst_vystraha_port.Value;
+    addrs.Add(settings.RCSInputs.Vystraha);
 
-  settings.RCSInputs.Anulace.board := SE_vst_anulace_board.Value;
-  settings.RCSInputs.Anulace.port := SE_vst_anulace_port.Value;
+    settings.RCSInputs.Anulace.board := SE_vst_anulace_board.Value;
+    settings.RCSInputs.Anulace.port := SE_vst_anulace_port.Value;
+    addrs.Add(settings.RCSInputs.Anulace);
 
-  Self.Blk.SetSettings(settings);
+    Self.Blk.SetSettings(settings);
 
-  Self.Close();
-  Self.Blk.Change();
+    messages := '';
+    for i := 0 to addrs.Count-1 do
+     begin
+      if (i < 2) then
+        typ := TRCSIOType.output
+      else
+        typ := TRCSIOType.input;
+
+      another := Blky.AnotherBlockUsesRCS(addrs[i], Self.Blk, typ);
+      if (another <> nil) then
+        messages := messages + 'Blok '+another.name+' využívá také RCS adresu '+
+                    IntToStr(addrs[i].board)+':'+IntToStr(addrs[i].port)+'.'+#13#10;
+     end;
+
+    if (messages <> '') then
+      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+
+    Self.Close();
+    Self.Blk.Change();
+  finally
+    addrs.Free();
+  end;
  end;
 
 procedure TF_BlkPrejezd.B_StornoClick(Sender: TObject);

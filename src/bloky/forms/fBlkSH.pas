@@ -134,13 +134,15 @@ begin
  if (NewBlk) then
   begin
    glob.poznamka := '';
-   Blk := Blky.Add(_BLK_SH, glob) as TBlkSH;
-   if (Blk = nil) then
-    begin
-     Application.MessageBox('Nepodařilo se přidat blok!', 'Nelze uložit data',
-                            MB_OK OR MB_ICONWARNING);
-     Exit;
-    end;
+   try
+     Blk := Blky.Add(_BLK_USEK, glob) as TBlkSH;
+   except
+     on E:Exception do
+      begin
+       Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+       Exit();
+      end;
+   end;
   end else begin
    glob.poznamka := Self.Blk.poznamka;
    Self.Blk.SetGlobalSettings(glob);

@@ -137,7 +137,7 @@ var glob:TBlkSettings;
     Exit;
    end;
 
-  another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk);
+  another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.input);
   if (another <> nil) then
    begin
     if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
@@ -153,12 +153,15 @@ var glob:TBlkSettings;
   if (NewBlk) then
    begin
     glob.poznamka := '';
-    Blk := Blky.Add(_BLK_IR, glob) as TBlkIR;
-    if (Blk = nil) then
-     begin
-      Application.MessageBox('Nepodařilo se přidat blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+      Blk := Blky.Add(_BLK_USEK, glob) as TBlkIR;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob.poznamka := Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);

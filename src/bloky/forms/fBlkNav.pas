@@ -246,6 +246,7 @@ var glob:TBlkSettings;
     settings:TBlkNavSettings;
     i: Integer;
     str:string;
+    another: TBlk;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -257,10 +258,21 @@ var glob:TBlkSettings;
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if ((Self.CHB_RCS_Output.Checked) and (CB_Typ.ItemIndex = -1)) then
+  if (Self.CHB_RCS_Output.Checked) then
    begin
-    Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    if (CB_Typ.ItemIndex = -1) then
+     begin
+      Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      Exit;
+     end;
+
+    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule.Value, SE_RCSPort.Value), Self.Blk, TRCSIOType.output);
+    if (another <> nil) then
+     begin
+      if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
+                                 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+        Exit();
+     end;
    end;
 
   for i := 0 to Self.eventForms.Count-1 do
@@ -280,12 +292,15 @@ var glob:TBlkSettings;
   if (NewBlk) then
    begin
     glob.poznamka := '';
-    Blk := Blky.Add(_BLK_NAV, glob) as TBlkNav;
-    if (Blk = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+      Blk := Blky.Add(_BLK_USEK, glob) as TBlkNav;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob.poznamka := Self.Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);

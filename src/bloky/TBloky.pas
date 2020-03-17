@@ -15,8 +15,8 @@
 interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
-       Generics.Collections, Classes, IdContext, IBUtils,
-      JsonDataObjects;
+     Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
+     JsonDataObjects;
 
 type
  TArI  = array of Integer;
@@ -120,6 +120,8 @@ type
     procedure NouzZaverZrusen(Sender:TBlk);
     procedure ZakladniPolohaVyhybek();
 
+    function AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
+
     function GetEnumerator():TEnumerator<TBlk>;
     property Items[index : integer] : TBlk read GetItem; default;
     property count:Integer read GetCount;
@@ -135,7 +137,7 @@ var
 implementation
 
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokNav, fMain, TBlokPrejezd,
-      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TechnologieRCS,
+      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
       TBlokTratUsek, appEv, TBlokVystup, PTUtils, TBlokSouctovaHlaska,
       TechnologieAB;
@@ -351,7 +353,8 @@ var Blk:TBlk;
     i, index:Integer;
 begin
  // kontrola existence bloku stejneho ID
- if (Self.IsBlok(glob.id)) then Exit(nil);
+ if (Self.IsBlok(glob.id)) then
+   raise Exception.Create('Blok tohoto ID již existuje!');
 
  index := Self.FindPlaceForNewBlk(glob.id);
 
@@ -1055,6 +1058,17 @@ begin
    Result := 255 // max value defined in TechnologieRCS.TRCSAddr.port
  else
    Result := tmpMax;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlky.AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
+var blk: TBlk;
+begin
+ for blk in Self.data do
+   if (blk <> me) and (blk.UsesRCS(addr, typ)) then
+     Exit(blk);
+ Result := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

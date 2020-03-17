@@ -319,26 +319,17 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
 
   if (NewBlk) then
    begin
-    Self.Trat := Blky.Add(_BLK_TRAT, glob_trat) as TBlkTrat;
-    if (Self.Trat = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok trať !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
-
-    Self.UvazkaA  := Blky.Add(_BLK_UVAZKA, glob_uvA) as TBlkUvazka;
-    if (Self.UvazkaA = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok úvazka A !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
-
-    Self.UvazkaB  := Blky.Add(_BLK_UVAZKA, glob_uvB) as TBlkUvazka;
-    if (Self.UvazkaB = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok úvazka B !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+      Self.Trat := Blky.Add(_BLK_USEK, glob_trat) as TBlkTrat;
+      Self.UvazkaA := Blky.Add(_BLK_USEK, glob_trat) as TBlkUvazka;
+      Self.UvazkaB  := Blky.Add(_BLK_UVAZKA, glob_uvB) as TBlkUvazka;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob_trat.poznamka := Self.Trat.poznamka;
     glob_uvA.poznamka  := Self.UvazkaA.poznamka;

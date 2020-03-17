@@ -371,6 +371,10 @@ procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
     settings, spojkaSettings:TBlkVyhSettings;
     vyh:TBlkVyhybka;
+    another: TBlk;
+    typ: TRCSIOType;
+    i: Integer;
+    messages: string;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -420,12 +424,15 @@ var glob:TBlkSettings;
 
   if (NewBlk) then
    begin
-    Blk := Blky.Add(_BLK_VYH, glob) as TBlkVyhybka;
-    if (Blk = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+      Blk := Blky.Add(_BLK_USEK, glob) as TBlkVyhybka;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob.poznamka := Self.Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);
@@ -506,6 +513,23 @@ var glob:TBlkSettings;
       Exit();
      end;
   end;
+
+  messages := '';
+  for i := 0 to settings.RCSAddrs.Count-1 do
+   begin
+    if (i < 2) then
+      typ := TRCSIOType.input
+    else
+      typ := TRCSIOType.output;
+
+    another := Blky.AnotherBlockUsesRCS(settings.RCSAddrs[i], Self.Blk, typ);
+    if (another <> nil) then
+      messages := messages + 'Blok '+another.name+' využívá také RCS adresu '+
+                  IntToStr(settings.RCSAddrs[i].board)+':'+IntToStr(settings.RCSAddrs[i].port)+'.'+#13#10;
+   end;
+
+  if (messages <> '') then
+    Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
 
   Self.Close();
   Self.Blk.Change();

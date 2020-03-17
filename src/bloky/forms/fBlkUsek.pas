@@ -270,25 +270,27 @@ procedure TF_BlkUsek.B_StornoClick(Sender: TObject);
 procedure TF_BlkUsek.B_OKClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkUsekSettings;
+    addr: TRCSAddr;
+    another: TBlk;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CB_Zesil.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte zesilovac, kteremu patri blok !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (E_Delka.Text = '0') then
+  if (StrToFloatDef(E_Delka.Text, 0) = 0) then
    begin
-    Application.MessageBox('Delka useku nemuze byt nulova !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Délka úseku nemůže být nulová!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -299,12 +301,16 @@ var glob:TBlkSettings;
   if (NewBlk) then
    begin
     glob.poznamka := '';
-    Blk := Blky.Add(_BLK_USEK, glob) as TBlkUsek;
-    if (Blk = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+
+    try
+      Blk := Blky.Add(_BLK_USEK, glob) as TBlkUsek;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob.poznamka := Self.Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);
@@ -332,7 +338,15 @@ var glob:TBlkSettings;
 
   Self.Blk.SetSettings(settings);
 
-  F_BlkUsek.Close;
+  for addr in settings.RCSAddrs do
+   begin
+    another := Blky.AnotherBlockUsesRCS(addr, Self.Blk, TRCSIOType.input);
+    if (another <> nil) then
+      Application.MessageBox(PChar('Varování: blok '+another.name+' využívá také RCS adresu '+IntToStr(addr.board)+':'+IntToStr(addr.port)),
+                             'Varování', MB_OK OR MB_ICONWARNING);
+   end;
+
+  F_BlkUsek.Close();
   Self.Blk.Change();
  end;
 

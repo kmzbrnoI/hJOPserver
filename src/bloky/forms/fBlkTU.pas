@@ -398,12 +398,15 @@ var glob:TBlkSettings;
   if (NewBlk) then
    begin
     glob.poznamka := '';
-    Blk := Blky.Add(_BLK_TU, glob) as TBlkTU;
-    if (Blk = nil) then
-     begin
-      Application.MessageBox('Nepodarilo se pridat blok !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-      Exit;
-     end;
+    try
+      Blk := Blky.Add(_BLK_USEK, glob) as TBlkTU;
+    except
+      on E:Exception do
+       begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Exit();
+       end;
+    end;
    end else begin
     glob.poznamka := Self.Blk.poznamka;
     Self.Blk.SetGlobalSettings(glob);
