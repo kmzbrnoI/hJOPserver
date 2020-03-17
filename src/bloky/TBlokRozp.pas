@@ -5,7 +5,7 @@ unit TBlokRozp;
 interface
 
 uses IniFiles, TBlok, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
-      IdContext, TOblRizeni;
+     IdContext, TOblRizeni, TechnologieRCS;
 
 type
  TRozpStatus = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
@@ -55,6 +55,7 @@ type
     //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     //update states
     procedure Update(); override;
@@ -83,7 +84,7 @@ type
 
 implementation
 
-uses TechnologieRCS, TCPServerOR, Prevody, Graphics, PTUtils;
+uses TCPServerOR, Prevody, Graphics, PTUtils;
 
 constructor TBlkRozp.Create(index:Integer);
 begin
@@ -160,6 +161,11 @@ begin
  Self.status := TRozpStatus.disabled;
  Self.RozpStav.rcsFailed := false;
  Self.Change(true);
+end;
+
+function TBlkRozp.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ Result := ((portType = TRCSIOType.output) and (Self.RozpSettings.RCSAddrs.Contains(addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-      TOblRizeni, StrUtils, JsonDataObjects;
+      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS;
 
 type
  TBlkNavVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -203,6 +203,7 @@ type
     //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     //update states
     procedure Update(); override;
@@ -278,10 +279,10 @@ type
 
 implementation
 
-uses TechnologieRCS, TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
-      GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
-      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
-      predvidanyOdjezd, Prevody;
+uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
+     GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
+     TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
+     predvidanyOdjezd, Prevody;
 
 constructor TBlkNav.Create(index:Integer);
 begin
@@ -452,6 +453,11 @@ begin
  Self.NavStav.RCtimer := -1;
  Self.UnregisterAllEvents();
  Self.Change(true);
+end;
+
+function TBlkNav.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ Result := ((portType = TRCSIOType.output) and (Self.NavSettings.RCSAddrs.Contains(addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -10,7 +10,7 @@ unit TBlokVystup;
 
 interface
 
-uses IniFiles,TBlok;
+uses IniFiles, TBlok, TechnologieRCS;
 
 type
 
@@ -44,6 +44,7 @@ type
     //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     //----- Vystup own functions -----
 
@@ -57,8 +58,6 @@ type
 ////////////////////////////////////////////////////////////////////////////////
 
 implementation
-
-uses TechnologieRCS;
 
 constructor TBlkVystup.Create(index:Integer);
 begin
@@ -121,6 +120,11 @@ begin
 
    end;
   end;
+end;
+
+function TBlkVystup.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ Result := ((portType = TRCSIOType.output) and (Self.VystupSettings.RCSAddrs.Contains(addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

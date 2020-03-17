@@ -4,7 +4,7 @@ unit TBlokIR;
 
 interface
 
-uses IniFiles, TBlok, JsonDataObjects;
+uses IniFiles, TBlok, JsonDataObjects, TechnologieRCS;
 
 type
  TIRStav = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -42,6 +42,7 @@ type
     //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     //update states
     procedure Update(); override;
@@ -63,7 +64,7 @@ type
 
 implementation
 
-uses TechnologieRCS, RCS;
+uses RCS;
 
 constructor TBlkIR.Create(index:Integer);
 begin
@@ -112,6 +113,11 @@ begin
  Self.IRStav.Stav    := disabled;
  Self.IRStav.StavOld := disabled;
  Self.Change(true);
+end;
+
+function TBlkIR.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ Result := ((portType = TRCSIOType.input) and (Self.IRSettings.RCSAddrs.Contains(addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

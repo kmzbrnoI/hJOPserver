@@ -16,11 +16,12 @@
 
 interface
 
-uses SysUtils, Classes, IniFiles, Generics.Collections, RCS;
+uses SysUtils, Classes, IniFiles, Generics.Collections, RCS, Generics.Defaults;
 
 type
   TRCSReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
   TRCSBoardChangeEvent = procedure (Sender:TObject; board:Cardinal) of object;
+  TRCSIOType = (input = 0, output = 1);
 
   //////////////////////////////////////////////////////////////
 
@@ -119,6 +120,8 @@ type
       property maxModuleAddr:Cardinal read GetMaxModuleAddr;
       property maxModuleAddrSafe:Cardinal read GetMaxModuleAddrSafe;
   end;
+
+function RCSAddrComparer():IComparer<TRCSAddr>;
 
 var
   RCSi:TRCS;
@@ -505,6 +508,26 @@ end;
 class operator TRCSAddr.Equal(a, b: TRCSAddr): Boolean;
 begin
  Result := ((a.board = b.board) and (a.port = b.port));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function RCSAddrComparer():IComparer<TRCSAddr>;
+begin
+ Result := TComparer<TRCSAddr>.Construct(
+  function(const Left, Right: TRCSAddr): Integer
+   begin
+    if (left.board < right.board) then
+      Exit(-1);
+    if (left.board > right.board) then
+      Exit(1);
+    if (left.port < right.port) then
+      Exit(-1);
+    if (left.port > right.port) then
+      Exit(1);
+    Result := 0;
+   end
+ );
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

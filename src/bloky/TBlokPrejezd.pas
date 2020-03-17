@@ -102,6 +102,7 @@ type
     //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     //update states
     procedure Update(); override;
@@ -261,6 +262,18 @@ begin
  Self.PrjStav.basicStav := disabled;
  Self.PrjStav.shs.Clear();
  Self.Change(true);
+end;
+
+function TBlkPrejezd.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ Result := (((portType = TRCSIOType.input) and ((addr = Self.PrjSettings.RCSInputs.Zavreno) or
+                                                (addr = Self.PrjSettings.RCSInputs.Otevreno) or
+                                                (addr = Self.PrjSettings.RCSInputs.Vystraha) or
+                                                (addr = Self.PrjSettings.RCSInputs.Anulace)))
+            or
+            ((portType = TRCSIOType.output) and ((addr = Self.PrjSettings.RCSOutputs.Zavrit) or
+                                                 (addr = Self.PrjSettings.RCSOutputs.NOtevrit)))
+           );
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

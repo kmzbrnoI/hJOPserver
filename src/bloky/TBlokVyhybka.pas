@@ -8,7 +8,7 @@ interface
 
 uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
      Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
-     TOblRizeni;
+     TOblRizeni, TechnologieRCS;
 
 type
  TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
@@ -163,6 +163,7 @@ type
     procedure Enable(); override;
     procedure Disable(); override;
     procedure Reset(); override;
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     //update states
     procedure Update(); override;
@@ -225,7 +226,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, TechnologieRCS, fMain, TJCDatabase, UPO, Graphics,
+uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics,
       TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, Prevody;
 
 constructor TBlkVyhybka.Create(index:Integer);
@@ -388,6 +389,19 @@ begin
  Self.VyhStav.staveni_minus := false;
  Self.VyhStav.locked := false;
  Self.VyhStav.vyhZaver := 0;
+end;
+
+function TBlkVyhybka.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ if ((portType = TRCSIOType.input) and (Self.VyhSettings.RCSAddrs.Count >= 2) and
+     ((Self.VyhSettings.RCSAddrs[0] = addr) or (Self.VyhSettings.RCSAddrs[1] = addr))) then
+   Exit(True);
+
+ if ((portType = TRCSIOType.output) and (Self.VyhSettings.RCSAddrs.Count >= 4) and
+     ((Self.VyhSettings.RCSAddrs[2] = addr) or (Self.VyhSettings.RCSAddrs[3] = addr))) then
+   Exit(True);
+
+ Result := False;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

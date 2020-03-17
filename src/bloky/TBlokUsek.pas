@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
      IdContext, Generics.Collections, JsonDataObjects, TOblRizeni,
-     stanicniHlaseni, changeEvent, predvidanyOdjezd;
+     stanicniHlaseni, changeEvent, predvidanyOdjezd, TechnologieRCS;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
@@ -183,6 +183,7 @@ type
     procedure Enable(); override;
     procedure Disable(); override;
     procedure Reset(); override;
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     //update states
     procedure Update(); override;
@@ -265,7 +266,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
+uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
@@ -509,6 +510,11 @@ begin
  Self.EventsOnUvol.Clear();
  Self.EventsOnZaverReleaseOrAB.Clear();
  Self.Zaver := TZaver.no;
+end;
+
+function TBlkUsek.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ Result := ((portType = TRCSIOType.input) and (Self.UsekSettings.RCSAddrs.Contains(addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

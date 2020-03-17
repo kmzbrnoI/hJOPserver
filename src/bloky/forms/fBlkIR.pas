@@ -86,7 +86,7 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
-    if (settings.RCSAddrs[0].board > Self.SE_module.MaxValue) then
+    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_module.MaxValue)) then
       Self.SE_module.MaxValue := 0;
     Self.SE_port.MaxValue := 0;
     Self.SE_module.Value := settings.RCSAddrs[0].board;
@@ -124,21 +124,31 @@ procedure TF_BlkIR.B_StornoClick(Sender: TObject);
 procedure TF_BlkIR.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkIRSettings;
+    another: TBlk;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
-  glob.name     := E_Nazev.Text;
-  glob.id       := SE_ID.Value;
-  glob.typ      := _BLK_IR;
+  another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk);
+  if (another <> nil) then
+   begin
+    if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
+                               'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+      Exit();
+   end;
+
+
+  glob.name := E_Nazev.Text;
+  glob.id := SE_ID.Value;
+  glob.typ := _BLK_IR;
 
   if (NewBlk) then
    begin
@@ -146,7 +156,7 @@ var glob:TBlkSettings;
     Blk := Blky.Add(_BLK_IR, glob) as TBlkIR;
     if (Blk = nil) then
      begin
-      Application.MessageBox('Nepodarilo se pridat blok !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Nepodařilo se přidat blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end else begin

@@ -149,7 +149,7 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
-    if (settings.RCSAddrs[0].board > Self.SE_RCSmodule.MaxValue) then
+    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_RCSmodule.MaxValue)) then
       Self.SE_RCSmodule.MaxValue := 0;
     Self.SE_RCSPort.MaxValue := 0;
 

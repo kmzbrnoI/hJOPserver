@@ -100,6 +100,8 @@ type
    procedure Freeze(); virtual;
    procedure UnFreeze(); virtual;
 
+   function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; virtual;
+
    // zobrazuje menu, vraci string urcujici menu
    // kazdy blok ma sve zakladni menu, ktere obsahuje pouze hlavicku s jeho nazvem a oddelovac
    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; virtual;
@@ -213,7 +215,7 @@ var i, count:Integer;
     rcsAddr:TRCSAddr;
     prefix:string;
 begin
- Result := TList<TechnologieRCS.TRCSAddr>.Create();
+ Result := TList<TechnologieRCS.TRCSAddr>.Create(RCSAddrComparer);
 
  prefix := 'RCS';
  count := ini.ReadInteger(section, prefix+'cnt', 0);
@@ -271,6 +273,11 @@ end;
 procedure TBlk.UnFreeze();
 begin
  Self.ffrozen := false;
+end;
+
+function TBlk.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
