@@ -87,13 +87,13 @@ procedure TF_BlkPrejezd.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkPrejezd.SE_RCS_boardExit(Sender: TObject);
 begin
- Self.SE_vyst_open_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vyst_open_board.Value))-1, 0);
- Self.SE_vyst_close_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vyst_close_board.Value))-1, 0);
+ Self.SE_vyst_open_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_open_board.Value, Self.SE_vyst_open_port.Value);
+ Self.SE_vyst_close_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_close_board.Value, Self.SE_vyst_close_port.Value);
 
- Self.SE_vst_close_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_close_board.Value))-1, 0);
- Self.SE_vst_open_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_open_board.Value))-1, 0);
- Self.SE_vst_vystraha_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_vystraha_board.Value))-1, 0);
- Self.SE_vst_anulace_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_vst_anulace_board.Value))-1, 0);
+ Self.SE_vst_close_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_close_board.Value, Self.SE_vst_close_port.Value);
+ Self.SE_vst_open_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_open_board.Value, Self.SE_vst_open_port.Value);
+ Self.SE_vst_vystraha_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_vystraha_board.Value, Self.SE_vst_vystraha_port.Value);
+ Self.SE_vst_anulace_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_anulace_board.Value, Self.SE_vst_anulace_port.Value);
 end;
 
 procedure TF_BlkPrejezd.B_save_PClick(Sender: TObject);
@@ -190,23 +190,53 @@ var glob:TBlkSettings;
   E_Prj_Nazev.Text := glob.name;
   SE_ID.Value := glob.id;
 
+  if (settings.RCSOutputs.NOtevrit.board > Cardinal(Self.SE_vyst_open_board.MaxValue)) then
+    Self.SE_vyst_open_board.MaxValue := 0;
+  Self.SE_vyst_open_port.MaxValue := 0;
+
   SE_vyst_open_board.Value := settings.RCSOutputs.NOtevrit.board;
   SE_vyst_open_port.Value := settings.RCSOutputs.NOtevrit.port;
+
+
+  if (settings.RCSOutputs.Zavrit.board > Cardinal(Self.SE_vyst_close_board.MaxValue)) then
+    Self.SE_vyst_close_board.MaxValue := 0;
+  Self.SE_vyst_close_port.MaxValue := 0;
 
   SE_vyst_close_board.Value := settings.RCSOutputs.Zavrit.board;
   SE_vyst_close_port.Value := settings.RCSOutputs.Zavrit.port;
 
+
+  if (settings.RCSInputs.Otevreno.board > Cardinal(Self.SE_vst_open_board.MaxValue)) then
+    Self.SE_vst_open_board.MaxValue := 0;
+  Self.SE_vst_open_port.MaxValue := 0;
+
   SE_vst_open_board.Value := settings.RCSInputs.Otevreno.board;
   SE_vst_open_port.Value := settings.RCSInputs.Otevreno.port;
+
+
+  if (settings.RCSInputs.Zavreno.board > Cardinal(Self.SE_vst_close_board.MaxValue)) then
+    Self.SE_vst_close_board.MaxValue := 0;
+  Self.SE_vst_close_port.MaxValue := 0;
 
   SE_vst_close_board.Value := settings.RCSInputs.Zavreno.board;
   SE_vst_close_port.Value := settings.RCSInputs.Zavreno.port;
 
+
+  if (settings.RCSInputs.Vystraha.board > Cardinal(Self.SE_vst_vystraha_board.MaxValue)) then
+    Self.SE_vst_vystraha_board.MaxValue := 0;
+  Self.SE_vst_vystraha_port.MaxValue := 0;
+
   SE_vst_vystraha_board.Value := settings.RCSInputs.Vystraha.board;
   SE_vst_vystraha_port.Value := settings.RCSInputs.Vystraha.port;
 
+
+  if (settings.RCSInputs.Anulace.board > Cardinal(Self.SE_vst_anulace_board.MaxValue)) then
+    Self.SE_vst_anulace_board.MaxValue := 0;
+  Self.SE_vst_anulace_port.MaxValue := 0;
+
   SE_vst_anulace_board.Value  := settings.RCSInputs.Anulace.board;
   SE_vst_anulace_port.Value  := settings.RCSInputs.Anulace.port;
+
 
   Self.SE_RCS_boardExit(Self);
 

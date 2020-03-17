@@ -100,10 +100,10 @@ procedure TF_BlkVyhybka.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkVyhybka.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_VystPlus_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_VystPlus_module.Value))-1, 0);
- Self.SE_VystMinus_port.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_VystMinus_module.Value))-1, 0);
- Self.SE_VstPlus_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_VstPlus_module.Value))-1, 0);
- Self.SE_VstMinus_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_VstMinus_module.Value))-1, 0);
+ Self.SE_VystPlus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VystPlus_module.Value, Self.SE_VystPlus_port.Value);
+ Self.SE_VystMinus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VystMinus_module.Value, Self.SE_VystMinus_port.Value);
+ Self.SE_VstPlus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VstPlus_module.Value, Self.SE_VstPlus_port.Value);
+ Self.SE_VstMinus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VstMinus_module.Value, Self.SE_VstMinus_port.Value);
 end;
 
 procedure TF_BlkVyhybka.NewBlkOpenForm();
@@ -182,6 +182,10 @@ var glob:TBlkSettings;
   //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni RCS_board = [0])
   if (settings.RCSAddrs.Count > 0) then
    begin
+    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_VstPlus_module.MaxValue)) then
+      Self.SE_VstPlus_module.MaxValue := 0;
+    Self.SE_VstPlus_port.MaxValue := 0;
+
     SE_VstPlus_module.Value := settings.RCSAddrs[0].board;
     SE_VstPlus_port.Value := settings.RCSAddrs[0].port;
    end else begin
@@ -191,6 +195,10 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 1) then
    begin
+    if (settings.RCSAddrs[1].board > Cardinal(Self.SE_VstMinus_module.MaxValue)) then
+      Self.SE_VstMinus_module.MaxValue := 0;
+    Self.SE_VstMinus_port.MaxValue := 0;
+
     SE_VstMinus_module.Value := settings.RCSAddrs[1].board;
     SE_VstMinus_port.Value := settings.RCSAddrs[1].port;
    end else begin
@@ -200,6 +208,10 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 2) then
    begin
+    if (settings.RCSAddrs[2].board > Cardinal(Self.SE_VystPlus_module.MaxValue)) then
+      Self.SE_VystPlus_module.MaxValue := 0;
+    Self.SE_VystPlus_port.MaxValue := 0;
+
     SE_VystPlus_module.Value := settings.RCSAddrs[2].board;
     SE_VystPlus_port.Value := settings.RCSAddrs[2].port;
    end else begin
@@ -209,6 +221,10 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 3) then
    begin
+    if (settings.RCSAddrs[3].board > Cardinal(Self.SE_VystMinus_module.MaxValue)) then
+      Self.SE_VystMinus_module.MaxValue := 0;
+    Self.SE_VystMinus_port.MaxValue := 0;
+
     SE_VystMinus_module.Value := settings.RCSAddrs[3].board;
     SE_VystMinus_port.Value := settings.RCSAddrs[3].port;
    end else begin

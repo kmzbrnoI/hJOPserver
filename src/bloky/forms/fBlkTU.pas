@@ -113,10 +113,10 @@ procedure TF_BlkTU.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkTU.SE_RCS_BoardExit(Sender: TObject);
 begin
- Self.SE_Port1.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board1.Value))-1, 0);
- Self.SE_Port2.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board2.Value))-1, 0);
- Self.SE_Port3.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board3.Value))-1, 0);
- Self.SE_Port4.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Board4.Value))-1, 0);
+ Self.SE_Port1.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
+ Self.SE_Port2.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
+ Self.SE_Port3.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
+ Self.SE_Port4.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
 end;
 
 procedure TF_BlkTU.NewBlkCreate;
@@ -218,6 +218,10 @@ var glob:TBlkSettings;
 
   if (Usettings.RCSAddrs.Count > 0) then
    begin
+    if (Usettings.RCSAddrs[0].board > Cardinal(Self.SE_Board1.MaxValue)) then
+      Self.SE_Board1.MaxValue := 0;
+    Self.SE_Port1.MaxValue := 0;
+
     Self.SE_Port1.Value  := Usettings.RCSAddrs[0].port;
     Self.SE_Board1.Value := Usettings.RCSAddrs[0].board;
    end else begin
@@ -227,6 +231,10 @@ var glob:TBlkSettings;
 
   if (Usettings.RCSAddrs.Count > 1) then
    begin
+    if (Usettings.RCSAddrs[1].board > Cardinal(Self.SE_Board2.MaxValue)) then
+      Self.SE_Board2.MaxValue := 0;
+    Self.SE_Port2.MaxValue := 0;
+
     Self.SE_Port2.Value  := Usettings.RCSAddrs[1].port;
     Self.SE_Board2.Value := Usettings.RCSAddrs[1].board;
    end else begin
@@ -236,6 +244,10 @@ var glob:TBlkSettings;
 
   if (Usettings.RCSAddrs.Count > 2) then
    begin
+    if (Usettings.RCSAddrs[2].board > Cardinal(Self.SE_Board3.MaxValue)) then
+      Self.SE_Board3.MaxValue := 0;
+    Self.SE_Port3.MaxValue := 0;
+
     Self.SE_Port3.Value  := Usettings.RCSAddrs[2].port;
     Self.SE_Board3.Value := Usettings.RCSAddrs[2].board;
    end else begin
@@ -245,6 +257,10 @@ var glob:TBlkSettings;
 
   if (Usettings.RCSAddrs.Count > 3) then
    begin
+    if (Usettings.RCSAddrs[3].board > Cardinal(Self.SE_Board4.MaxValue)) then
+      Self.SE_Board4.MaxValue := 0;
+    Self.SE_Port4.MaxValue := 0;
+
     Self.SE_Port4.Value  := Usettings.RCSAddrs[3].port;
     Self.SE_Board4.Value := Usettings.RCSAddrs[3].board;
    end else begin

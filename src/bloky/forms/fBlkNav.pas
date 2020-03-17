@@ -149,6 +149,10 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
+    if (settings.RCSAddrs[0].board > Self.SE_RCSmodule.MaxValue) then
+      Self.SE_RCSmodule.MaxValue := 0;
+    Self.SE_RCSPort.MaxValue := 0;
+
     Self.SE_RCSmodule.Value := settings.RCSAddrs[0].board;
     SE_RCSPort.Value := settings.RCSAddrs[0].port;
     CB_Typ.ItemIndex := Integer(settings.OutputType);
@@ -481,7 +485,7 @@ end;
 
 procedure TF_BlkNav.SE_RCSmoduleExit(Sender: TObject);
 begin
- Self.SE_RCSport.MaxValue := Max(Integer(RCSi.GetModuleOutputsCountSafe(Self.SE_RCSmodule.Value))-1, 0);
+ Self.SE_RCSport.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCSmodule.Value, Self.SE_RCSport.Value);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -112,6 +112,7 @@ type
     procedure ClearPOdj();
 
     class function GetBlksList(first:TObject = nil; second:TObject = nil; third:TObject = nil):TBlksList;
+    class function SEPortMaxValue(addr: Integer; currentValue: Integer):Integer;
 
     // vrati vsechny bloky do JSON objektu PTserveru
     procedure GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ:Integer = -1);
@@ -1043,6 +1044,18 @@ var blk:TBlk;
     if (Blk.typ = _BLK_VYH) then
       (Blk as TBlkVyhybka).SetPoloha(plus);
  end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TBlky.SEPortMaxValue(addr: Integer; currentValue: Integer): Integer;
+var tmpMax: Integer;
+begin
+ tmpMax := Max(Integer(RCSi.GetModuleInputsCountSafe(addr))-1, 0);
+ if (currentValue > tmpMax) then
+   Result := 0
+ else
+   Result := tmpMax;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 

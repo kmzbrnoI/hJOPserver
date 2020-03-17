@@ -62,7 +62,7 @@ procedure TF_BlkIR.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkIR.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_module.Value))-1, 0);
+ Self.SE_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
 procedure TF_BlkIR.NewBlkOpenForm;
@@ -86,6 +86,9 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
+    if (settings.RCSAddrs[0].board > Self.SE_module.MaxValue) then
+      Self.SE_module.MaxValue := 0;
+    Self.SE_port.MaxValue := 0;
     Self.SE_module.Value := settings.RCSAddrs[0].board;
     Self.SE_Port.Value := settings.RCSAddrs[0].port;
    end else begin
