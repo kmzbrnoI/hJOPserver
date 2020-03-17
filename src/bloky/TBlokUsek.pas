@@ -101,6 +101,9 @@ type
     procedure SetZkrat(state:TBoosterSignal);
     procedure SetDCC(state:boolean);
 
+    procedure XVezmiVlakOk(Sender: TObject; Data: Pointer);
+    procedure XVezmiVlakErr(Sender: TObject; Data: Pointer);
+
     procedure MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
     procedure MenuEditLokClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -985,22 +988,24 @@ begin
   end;
 end;
 
+procedure TBlkUsek.XVezmiVlakOk(Sender: TObject; Data: Pointer);
+begin
+ ORTCPServer.SendInfoMsg(TIdContext(Data), 'Vlak převzat');
+end;
+
+procedure TBlkUsek.XVezmiVlakErr(Sender: TObject; Data: Pointer);
+begin
+ ORTCPServer.BottomError(TIdContext(Data), 'Vlak se nepodařilo převzít', '', 'TECHNOLOGIE');
+end;
+
 procedure TBlkUsek.MenuXVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
+var souprava: TSouprava;
 begin
  if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
 
- try
-   Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].VezmiVlak();
- except
-  on E: Exception do
-   begin
-    ORTCPServer.BottomError(SenderPnl, 'Vlak se nepodařilo převzít', (SenderOR as TOR).ShortName, 'TECHNOLOGIE');
-    Exit();
-   end;
- end;
-
- ORTCPServer.SendInfoMsg(SenderPnl, 'Vlak převzat');
+ souprava := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
+ souprava.VezmiVlak(TTrakce.Callback(Self.XVezmiVlakOk, SenderPnl), TTrakce.Callback(Self.XVezmiVlakErr, SenderPnl));
 end;
 
 procedure TBlkUsek.MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);

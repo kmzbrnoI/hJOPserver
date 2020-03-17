@@ -19,6 +19,11 @@ type
     nextAcquire: Integer;
   end;
 
+  TVezmi = record
+    ok, err: TCb;
+    nextVezmi: Integer;
+  end;
+
   TSoupravaData = record
    nazev:string;
    pocet_vozu:Word;
@@ -60,6 +65,9 @@ type
     procedure LocoAcquiredErr(Sender: TObject; Data: Pointer);
     procedure AllLocoAcquiredOk(newLoks: TList<Integer>);
 
+    procedure VezmiVlakOk(Sender: TObject; Data: Pointer);
+    procedure VezmiVlakErr(Sender: TObject; Data: Pointer);
+
     procedure ReleaseAllLoko();
 
     procedure SetOR(OblRizeni:TObject);
@@ -86,7 +94,7 @@ type
     function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
     procedure UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
     procedure SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
-    procedure VezmiVlak();
+    procedure VezmiVlak(ok: TCb; err: TCb);
     procedure UpdateFront();
     procedure ChangeSmer();
     procedure InterChangeStanice(change_ev:Boolean = true);
@@ -646,38 +654,58 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.VezmiVlak();
-var addr, timeout:Integer;
-    taken:boolean;
+procedure TSouprava.VezmiVlak(ok: TCb; err: TCb);
+var vezmi: ^TVezmi;
 begin
- taken := false;
- for addr in Self.HVs do
+ GetMem(vezmi, sizeof(TVezmi));
+ vezmi^.ok := ok;
+ vezmi^.err := err;
+
+ vezmi^.nextVezmi := 0;
+ while ((vezmi^.nextVezmi < Self.HVs.Count) and (not HVDb[Self.HVs[vezmi^.nextVezmi]].stolen)) do
+   Inc(vezmi^.nextVezmi);
+
+ Self.VezmiVlakOk(Self, vezmi);
+end;
+
+procedure TSouprava.VezmiVlakOk(Sender: TObject; Data: Pointer);
+var vezmi: ^TVezmi;
+    addr: Integer;
+begin
+ vezmi := Data;
+
+ if (vezmi^.nextVezmi >= Self.HVs.Count) then
   begin
-   if (HVDb[addr].stolen) then
-    begin
-     try
-       HVDb[addr].TrakceAcquire(TTrakce.Callback(), TTrakce.Callback()); // TODO?
-     except
-       on E:Exception do
-         raise Exception.Create('TrakceAcquire exception : '+E.Message);
-     end;
-     taken := true;
-
-     timeout := 0;
-     while (not HVDb[addr].acquired) do
-      begin
-       Sleep(1);
-       timeout := timeout + 1;
-       Application.ProcessMessages();
-
-       if (timeout > 1000) then  //timeout 1 sec
-         raise Exception.Create('Loko '+ IntToStr(addr) +' nepřevzato');
-      end;//while
-    end;//stolen
-  end;//for i
-
- if (taken) then
+   Self.changed := true;
    Self.SetRychlostSmer(Self.rychlost, Self.smer);
+   if (Assigned(vezmi^.ok.callback)) then
+     vezmi^.ok.callback(Self, vezmi^.ok.data);
+   FreeMem(vezmi);
+   Exit();
+  end;
+
+ addr := Self.HVs[vezmi^.nextVezmi];
+
+ vezmi^.nextVezmi := vezmi^.nextVezmi + 1;
+ while ((vezmi^.nextVezmi < Self.HVs.Count) and (not HVDb[Self.HVs[vezmi^.nextVezmi]].stolen)) do
+   Inc(vezmi^.nextVezmi);
+
+ try
+   HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.VezmiVlakOk, vezmi),
+                            TTrakce.Callback(Self.VezmiVlakErr, vezmi));
+ except
+   Self.VezmiVlakErr(Sender, vezmi);
+ end;
+end;
+
+procedure TSouprava.VezmiVlakErr(Sender: TObject; Data: Pointer);
+var vezmi: ^TVezmi;
+begin
+ vezmi := Data;
+ if (Assigned(vezmi^.err.callback)) then
+   vezmi^.err.callback(Self, vezmi^.err.data);
+ FreeMem(vezmi);
+ Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
