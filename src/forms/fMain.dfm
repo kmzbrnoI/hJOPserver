@@ -4107,6 +4107,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        MultiSelect = True
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False

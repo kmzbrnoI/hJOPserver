@@ -2132,21 +2132,36 @@ begin
 end;
 
 procedure TF_Main.B_HV_DeleteClick(Sender: TObject);
-var addr:Word;
+var hvs: string;
+    LI: TListItem;
+    i: Integer;
+    addr:Word;
 begin
- if (Self.LV_HV.Selected = nil) then Exit(); 
+ if (Self.LV_HV.Selected = nil) then Exit();
 
- addr := Integer(LV_HV.Selected.Data^);
+ hvs := Self.LVSelectedTexts(Self.LV_HV, 'HV', 'HV');
 
- if (Application.MessageBox(PChar('Opravdu chcete smazat HV '+IntToStr(addr)+'?'),
-                            'Mazání HV', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) <> mrYes) then Exit();
-
- try
-   HVDb.Remove(addr);
- except
-   on E:Exception do
-     Application.MessageBox(PChar('Operace se nezdařila:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
- end;
+ if (Application.MessageBox(PChar('Opravdu smazat '+hvs+'?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+   for i := Self.LV_HV.Items.Count-1 downto 0 do
+    begin
+     LI := Self.LV_HV.Items[i];
+     if (LI.Selected) then
+      begin
+       addr := Integer(LI.Data^);
+       try
+         HVDb.Remove(addr);
+       except
+         on E:Exception do
+          begin
+           Application.MessageBox(PChar('Mazání HV '+IntToStr(addr)+' se nezdařilo:'+#13#10+E.Message),
+                                  'Chyba', MB_OK OR MB_ICONWARNING);
+           Exit();
+          end;
+       end;
+      end;
+    end;
+  end;
 end;
 
 procedure TF_Main.B_JC_ResetClick(Sender: TObject);
