@@ -5,7 +5,7 @@ object F_Admin: TF_Admin
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Testovac'#237' rozhran'#237' programu'
-  ClientHeight = 137
+  ClientHeight = 153
   ClientWidth = 417
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -33,7 +33,7 @@ object F_Admin: TF_Admin
   end
   object B_Save: TButton
     Left = 337
-    Top = 104
+    Top = 121
     Width = 73
     Height = 25
     Margins.Left = 2
@@ -41,7 +41,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Ulo'#382'it data'
-    TabOrder = 1
+    TabOrder = 7
     OnClick = B_SaveClick
   end
   object CHB_SimInput: TCheckBox
@@ -54,7 +54,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'InputSim automaticky'
-    TabOrder = 2
+    TabOrder = 1
     OnClick = CHB_SimInputClick
   end
   object CHB_SimSoupravaUsek: TCheckBox
@@ -67,7 +67,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat obsazen'#237' '#250'seku soupravou'
-    TabOrder = 3
+    TabOrder = 2
     OnClick = CHB_SimSoupravaUsekClick
   end
   object CHB_JC_Simulator: TCheckBox
@@ -80,7 +80,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'JC simul'#225'tor'
-    TabOrder = 4
+    TabOrder = 3
     OnClick = CHB_JC_SimulatorClick
   end
   object CHB_Trat_Sim: TCheckBox
@@ -93,7 +93,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Tra'#357' simul'#225'tor'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = CHB_Trat_SimClick
   end
   object CHB_SimVyhybky: TCheckBox
@@ -106,7 +106,16 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat stav'#283'n'#237' v'#253'hybek'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = CHB_SimVyhybkyClick
+  end
+  object CHB_Zaver: TCheckBox
+    Left = 8
+    Top = 126
+    Width = 137
+    Height = 17
+    Caption = 'Zobrazovat z'#225'v'#283'ry blok'#367
+    TabOrder = 6
+    OnClick = CHB_ZaverClick
   end
 end

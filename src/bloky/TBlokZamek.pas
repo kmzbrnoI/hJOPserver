@@ -99,9 +99,8 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, Graphics, Prevody,
-    TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase,
-    TBlokVyhybka;
+uses GetSystems, TechnologieRCS, TBloky, Graphics, Prevody, Diagnostics,
+    TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka;
 
 constructor TBlkZamek.Create(index:Integer);
 begin
@@ -286,9 +285,18 @@ end;
 procedure TBlkZamek.SetZaver(new:boolean);
 begin
  if (new) then
-  Inc(Self.ZamekStav.Zaver)
- else
-  if (Self.ZamekStav.Zaver > 0) then Dec(Self.ZamekStav.Zaver);
+  begin
+   Inc(Self.ZamekStav.Zaver);
+   if (Self.ZamekStav.Zaver = 1) then
+     Self.Change();
+  end else begin
+    if (Self.ZamekStav.Zaver > 0) then
+     begin
+      Dec(Self.ZamekStav.Zaver);
+      if (Self.ZamekStav.Zaver = 0) then
+        Self.Change();
+     end;
+  end;
 end;
 
 function TBlkZamek.GetNouzZaver():boolean;
@@ -416,6 +424,9 @@ begin
 
  if (Self.stitek <> '') then bg := clTeal
  else bg := clBlack;
+
+ if ((diag.showZaver) and (Self.Zaver)) then
+   bg := clGreen;
 
  if (Self.porucha) then begin
   fg := bg;

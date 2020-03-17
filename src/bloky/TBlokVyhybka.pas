@@ -226,7 +226,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics,
+uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics,
       TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, Prevody;
 
 constructor TBlkVyhybka.Create(index:Integer);
@@ -1599,6 +1599,8 @@ begin
  bg := clBlack;
  if (Self.Stitek <> '') then bg := clTeal;
  if (Self.Vyluka <> '') then bg := clOlive;
+ if ((diag.showZaver) and (Self.Zaver > TZaver.no)) then
+   bg := clGreen;
 
  Result := Result + PrevodySoustav.ColorToStr(bg) + ';' +
                     IntToStr(PrevodySoustav.BoolToInt(Self.NUZ)) + ';' +
