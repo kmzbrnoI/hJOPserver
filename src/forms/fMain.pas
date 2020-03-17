@@ -348,7 +348,6 @@ type
     procedure LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem;
       State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure CB_centrala_loglevel_fileChange(Sender: TObject);
-    procedure LV_SoupravyDblClick(Sender: TObject);
     procedure LB_LogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect;
       State: TOwnerDrawState);
     procedure B_User_AddClick(Sender: TObject);
@@ -444,6 +443,7 @@ type
     procedure SetCallMethod(Method:TNotifyEvent);
     procedure UpdateSystemButtons();
     procedure CheckNasobicWidth();
+    function SoupravySelectedCount():Integer;
 
     // RCS
     procedure OnRCSStart(Sender:TObject);
@@ -2159,12 +2159,40 @@ begin
 end;
 
 procedure TF_Main.B_lok_deleteClick(Sender: TObject);
+var sprs: string;
+    LI: TListItem;
+    count: Integer;
+    i: Integer;
 begin
+ if (Self.LV_Soupravy.Selected = nil) then Exit();
  if (not Assigned(Soupravy[Self.LV_Soupravy.ItemIndex])) then Exit();
 
- if (Application.MessageBox(PChar('Opravdu smazat soupravu '+Soupravy[Self.LV_Soupravy.ItemIndex].nazev+'?'),
-                            '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-  Soupravy.RemoveSpr(Self.LV_Soupravy.ItemIndex);
+ sprs := '';
+ count := 0;
+ for LI in Self.LV_Soupravy.Items do
+  begin
+   if ((LI.Selected) and (LI.Caption <> '')) then
+    begin
+     sprs := sprs + Soupravy[LI.Index].nazev + ', ';
+     Inc(count);
+    end;
+  end;
+ sprs := LeftStr(sprs, Length(sprs)-2);
+
+ if (count = 1) then
+   sprs := 'soupravu ' + sprs
+ else
+   sprs := 'soupravy ' + sprs;
+
+ if (Application.MessageBox(PChar('Opravdu smazat '+sprs+'?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+   for i := Self.LV_Soupravy.Items.Count-1 downto 0 do
+    begin
+     LI := Self.LV_Soupravy.Items[i];
+     if ((LI.Selected) and (LI.Caption <> '')) then
+       Soupravy.RemoveSpr(LI.Index);
+    end;
+  end;
 end;
 
 procedure TF_Main.B_mJC_AddClick(Sender: TObject);
@@ -2789,13 +2817,12 @@ end;
 procedure TF_Main.LV_SoupravyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
- Self.B_lok_delete.Enabled := (Self.LV_Soupravy.Selected <> nil) and (Self.LV_Soupravy.Selected.Caption <> '');
-end;
+ Self.B_lok_delete.Enabled := (Self.SoupravySelectedCount() > 0);
 
-procedure TF_Main.LV_SoupravyDblClick(Sender: TObject);
-begin
- if (Self.LV_Soupravy.Selected <> nil) then
-  Soupravy[Self.LV_Soupravy.ItemIndex].VezmiVlak();
+ if (Self.SoupravySelectedCount() > 1) then
+   Self.B_lok_delete.Caption := 'Smazat soupravy'
+ else
+   Self.B_lok_delete.Caption := 'Smazat soupravu';
 end;
 
 procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem;
@@ -3254,6 +3281,17 @@ begin
    Self.P_Zrychleni.Width := _SMALL;
    Self.FormResize(Self);
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TF_Main.SoupravySelectedCount():Integer;
+var LI: TListItem;
+begin
+ Result := 0;
+ for LI in Self.LV_Soupravy.Items do
+   if ((LI.Selected) and (LI.Caption <> '')) then
+     Inc(Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
