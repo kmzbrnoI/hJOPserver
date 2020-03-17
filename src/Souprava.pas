@@ -668,13 +668,10 @@ begin
       begin
        Sleep(1);
        timeout := timeout + 1;
-       Application.ProcessMessages;
+       Application.ProcessMessages();
 
        if (timeout > 1000) then  //timeout 1 sec
-        begin
          raise Exception.Create('Loko '+ IntToStr(addr) +' nepřevzato');
-         Exit();
-        end;
       end;//while
     end;//stolen
   end;//for i
