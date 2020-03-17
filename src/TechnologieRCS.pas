@@ -129,7 +129,7 @@ var
 
 implementation
 
-uses fMain, fAdminForm, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
+uses fMain, diagnostics, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
      BoosterDb, TBlokPrejezd, RCSErrors, TOblsRizeni,
      Logging, TCPServerOR, SprDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
@@ -209,7 +209,7 @@ begin
        Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
      if (Blk.typ = _BLK_PREJEZD) then
        Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
-     if ((F_Admin.CHB_SimSoupravaUsek.Checked) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava()) and
+     if ((diag.simSoupravaObsaz) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava()) and
          ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
        Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
    except

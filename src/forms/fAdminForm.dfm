@@ -47,14 +47,15 @@ object F_Admin: TF_Admin
   object CHB_SimInput: TCheckBox
     Left = 8
     Top = 39
-    Width = 65
+    Width = 121
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'InputSim'
+    Caption = 'InputSim automaticky'
     TabOrder = 2
+    OnClick = CHB_SimInputClick
   end
   object CHB_SimSoupravaUsek: TCheckBox
     Left = 8
@@ -67,6 +68,7 @@ object F_Admin: TF_Admin
     Margins.Bottom = 2
     Caption = 'Simulovat obsazen'#237' '#250'seku soupravou'
     TabOrder = 3
+    OnClick = CHB_SimSoupravaUsekClick
   end
   object CHB_JC_Simulator: TCheckBox
     Left = 8

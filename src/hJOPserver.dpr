@@ -145,7 +145,9 @@ uses
   Trakce in 'trakce\Trakce.pas',
   TrakceErrors in 'trakce\TrakceErrors.pas',
   TechnologieTrakce in 'TechnologieTrakce.pas' {$R *.res},
-  CpuLoad in 'CpuLoad.pas';
+  CpuLoad in 'CpuLoad.pas',
+  Diagnostics in 'Diagnostics.pas',
+  Simulation in 'Simulation.pas';
 
 {$R *.res}
 

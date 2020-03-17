@@ -173,9 +173,8 @@ var
 
 implementation
 
-uses fMain, TechnologieRCS, fRegulator, SprDb,
-    GetSystems, THVDatabase, fAdminForm, DataHV, Prevody, TBloky, RegulatorTCP,
-    TCPServerOR;
+uses fMain, TechnologieRCS, fRegulator, SprDb, GetSystems, THVDatabase, DataHV,
+    Prevody, TBloky, RegulatorTCP, TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 

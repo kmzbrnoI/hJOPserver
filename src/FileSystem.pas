@@ -44,11 +44,9 @@ var
 
 implementation
 
-uses fSettings, fSplash, fAdminForm, GetSystems, Prevody,
-     TechnologieRCS, TOblsRizeni, TBloky,
-     BoosterDb,
-     SnadnSpusteni, THVDatabase, TCPServerPT,
-     Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
+uses fSettings, fSplash, fAdminForm, GetSystems, Prevody, Diagnostics,
+     TechnologieRCS, TOblsRizeni, TBloky, BoosterDb, SnadnSpusteni, THVDatabase,
+     TCPServerPT, Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv;
 
 procedure TData.CreateCfgDirs();
@@ -210,12 +208,6 @@ var read,read2:string;
 
   F_Splash.AddStav('Načítám vedlejší databáze...');
   TrakceI.LoadSpeedTable('data\rychlosti.csv',F_Options.LV_DigiRych);
-  try
-    F_Admin.LoadData;
-  except
-    on E:Exception do
-      AppEvents.LogException(E);
-  end;
  end;
 
 procedure TData.CompleteSaveToFile(inidata: TMemIniFile);
@@ -319,7 +311,7 @@ var tmpStr:string;
   end;
 
   try
-    F_Admin.SaveData;
+    F_Admin.B_SaveClick(Self);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -425,6 +417,14 @@ var str:string;
          ini.ReadString('PanelServer', 'nazev', ''),
          ini.ReadString('PanelServer', 'popis', ''));
 
+    try
+      diag.LoadData(ini, 'AdminData');
+      F_Admin.LoadData(ini);
+    except
+      on E:Exception do
+        AppEvents.LogException(E);
+    end;
+
     writelog('Konfigurace načtena', WR_DATA);
   finally
     ini.Free();
@@ -441,9 +441,6 @@ var ini:TMemIniFile;
 
     ini.WriteInteger('SystemCfg', 'TimerInterval', F_Options.LB_Timer.ItemIndex);
     ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
-
-    ini.WriteInteger('AdminData', 'FormLeft', F_Admin.Left);
-    ini.WriteInteger('AdminData', 'FormTop', F_Admin.Top);
 
     ini.WriteInteger('PanelServer', 'port', ORTCPServer.port);
     ini.WriteString('PanelServer', 'nazev', UDPdisc.name);

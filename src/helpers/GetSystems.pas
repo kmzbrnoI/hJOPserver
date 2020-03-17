@@ -24,8 +24,7 @@ var
 
 implementation
 
-uses fMain, fAdminForm, TechnologieRCS, TBLoky, TOblsRizeni,
-     TCPServerOR, TechnologieTrakce;
+uses fMain, TechnologieRCS, TBLoky, TOblsRizeni, TCPServerOR, TechnologieTrakce;
 
 
 function TGetFunctions.CanClose():TCloseInfo;

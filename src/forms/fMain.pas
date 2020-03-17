@@ -494,7 +494,7 @@ var
 implementation
 
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
-     fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm,
+     fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni, AC,
@@ -505,7 +505,8 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase, TBlokRozp,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
-     AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors, TechnologieAB;
+     AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors, TechnologieAB,
+     Diagnostics;
 
 {$R *.dfm}
 
@@ -994,7 +995,7 @@ begin
  Self.A_RCS_Stop.Enabled  := ready and started;
 
  try
-   if ((ready) and (F_Admin.CHB_SimInput.Checked) and (RCSi.simulation)) then
+   if ((ready) and (diag.simInputs) and (RCSi.simulation)) then
      RCSi.InputSim();
  except
    on E:Exception do
@@ -2683,6 +2684,14 @@ procedure TF_Main.OnStart();
     F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
   else
     F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
+
+  try
+    if ((RCSi.ready) and (diag.simInputs) and (RCSi.simulation)) then
+      RCSi.InputSim();
+  except
+    on E:Exception do
+      writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
+  end;
 
   if (not Self.CloseMessage) then
    begin

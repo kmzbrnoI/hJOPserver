@@ -104,13 +104,9 @@ var
 
 implementation
 
-uses
-
-  fAdminForm, fRychlostiEdit, GetSystems, Prevody,
-  FileSystem, TBloky,
-  TOblsRizeni, BoosterDb,
-  SnadnSpusteni, TJCDatabase, THVDatabase,
-  Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas, ACDatabase;
+uses fRychlostiEdit, GetSystems, Prevody, FileSystem, TBloky,
+     TOblsRizeni, BoosterDb, SnadnSpusteni, TJCDatabase, THVDatabase,
+     Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas, ACDatabase;
 
 {$R *.dfm}
 

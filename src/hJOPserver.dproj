@@ -260,6 +260,8 @@
 				<Form>$R *.res</Form>
 			</DCCReference>
 			<DCCReference Include="CpuLoad.pas"/>
+			<DCCReference Include="Diagnostics.pas"/>
+			<DCCReference Include="Simulation.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
