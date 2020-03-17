@@ -45,7 +45,6 @@ end;//ctor
 procedure THVTableData.LoadToTable();
 var i, j:Integer;
     LI:TListItem;
-    addr:Pointer;
 begin
  Self.LV.Clear();
 
@@ -53,11 +52,9 @@ begin
   begin
    if (HVDb[i] = nil) then continue;
 
-   GetMem(addr, 3);
-   Integer(addr^) := HVDb[i].adresa;
    LI := Self.LV.Items.Add;
    LI.Caption := IntToStr(i);
-   LI.Data := addr;
+   LI.Data := Pointer(Integer(HVDb[i].adresa));
 
    for j := 0 to Self.LV.Columns.Count-2 do
      LI.SubItems.Add('');

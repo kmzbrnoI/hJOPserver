@@ -1499,7 +1499,7 @@ procedure TF_Main.PM_NastaveniClick(Sender: TObject);
 procedure TF_Main.PM_PropertiesClick(Sender: TObject);
 begin
  if (LV_HV.Selected <> nil) then
-   F_HVEdit.OpenForm(HVDB[Integer(LV_HV.Selected.Data^)]);
+   F_HVEdit.OpenForm(HVDB[Integer(LV_HV.Selected.Data)]);
 end;
 
 procedure TF_Main.PC_1Change(Sender: TObject);
@@ -2148,7 +2148,7 @@ begin
      LI := Self.LV_HV.Items[i];
      if (LI.Selected) then
       begin
-       addr := Integer(LI.Data^);
+       addr := Integer(LI.Data);
        try
          HVDb.Remove(addr);
        except
@@ -3141,7 +3141,7 @@ begin
       Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
    end;
   end else begin
-   F_HVEdit.OpenForm(HVDB[Integer(LV_HV.Selected.Data^)]);
+   F_HVEdit.OpenForm(HVDB[Integer(LV_HV.Selected.Data)]);
   end;
 end;
 
