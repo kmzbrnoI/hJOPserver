@@ -2206,10 +2206,39 @@ begin
 end;
 
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
+var mjcs: string;
+    LI: TListItem;
+    count: Integer;
+    i: Integer;
 begin
- if ((Self.LV_MultiJC.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat složenou jízdní cestu '+MultiJCDb[Self.LV_MultiJC.ItemIndex].Nazev),
-                                                                   'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
-   MultiJCDb.Remove(Self.LV_MultiJC.ItemIndex);
+ if (Self.LV_MultiJC.Selected = nil) then Exit();
+
+ mjcs := '';
+ count := 0;
+ for LI in Self.LV_MultiJC.Items do
+  begin
+   if (LI.Selected) then
+    begin
+     mjcs := mjcs + LI.Caption + ', ';
+     Inc(count);
+    end;
+  end;
+ mjcs := LeftStr(mjcs, Length(mjcs)-2);
+
+ if (count = 1) then
+   mjcs := 'cestu ' + mjcs
+ else
+   mjcs := 'cesty ' + mjcs;
+
+ if (Application.MessageBox(PChar('Opravdu smazat '+mjcs+'?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+   for i := Self.LV_MultiJC.Items.Count-1 downto 0 do
+    begin
+     LI := Self.LV_MultiJC.Items[i];
+     if (LI.Selected) then
+       MultiJCDb.Remove(LI.Index);
+    end;
+  end;
 end;
 
 procedure TF_Main.B_RemoveStackClick(Sender: TObject);
@@ -2789,6 +2818,11 @@ procedure TF_Main.LV_MultiJCChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
  Self.B_mJC_Remove.Enabled := (Self.LV_MultiJC.Selected <> nil);
+
+ if (Self.LV_MultiJC.SelCount > 1) then
+   Self.B_mJC_Remove.Caption := 'Smazat cesty'
+ else
+   Self.B_mJC_Remove.Caption := 'Smazat cestu';
 end;
 
 procedure TF_Main.LV_MultiJCCustomDrawItem(Sender: TCustomListView;
