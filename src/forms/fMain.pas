@@ -2246,21 +2246,36 @@ begin
 end;
 
 procedure TF_Main.B_VC_deleteClick(Sender: TObject);
-var jc:TJC;
+var jcs: string;
+    LI: TListItem;
+    i: Integer;
+    jc: TJC;
 begin
- jc := JCDb.GetJCByIndex(LV_JC.ItemIndex);
- if (Application.MessageBox(PChar('Opravdu chcete smazat jízdní cestu '+jc.nazev+' ?'),
-                            'Mazání jízdní cesty', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
-  begin
-   try
-     if (ABlist.Contains(jc)) then
-       ABlist.Remove(jc);
+ if (Self.LV_JC.Selected = nil) then Exit();
 
-     JCDb.RemoveJC(LV_JC.ItemIndex);
-   except
-     on E:Exception do
-       Application.MessageBox(PChar('Nelze smazat JC'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
-   end;
+ jcs := Self.LVSelectedTexts(Self.LV_JC, 'cestu', 'cesty');
+
+ if (Application.MessageBox(PChar('Opravdu smazat '+jcs+'?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+   for i := Self.LV_JC.Items.Count-1 downto 0 do
+    begin
+     LI := Self.LV_JC.Items[i];
+     if (LI.Selected) then
+      begin
+       try
+         jc := JCDb.GetJCByIndex(LI.Index);
+         if (ABlist.Contains(jc)) then
+           ABlist.Remove(jc);
+         JCDb.RemoveJC(LI.Index);
+       except
+         on E:Exception do
+          begin
+           Application.MessageBox(PChar('Nelze smazat JC'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+           Exit();
+          end;
+       end;
+      end;
+    end;
   end;
 end;
 
@@ -2714,18 +2729,12 @@ procedure TF_Main.PM_ConsoleClick(Sender: TObject);
 procedure TF_Main.LV_JCChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
-  if (LV_JC.Selected <> nil) then
-   begin
-    B_VC_delete.Enabled := true;
+ B_VC_delete.Enabled := (LV_JC.Selected <> nil);
 
-    if (JCDb.GetJCByIndex(LV_JC.ItemIndex).staveni) then
-      B_JC_Reset.Enabled := true
-    else
-      B_JC_Reset.Enabled := false;
-   end else begin
-    B_VC_delete.Enabled   := false;
-    B_JC_Reset.Enabled    := false;
-   end;
+ if (LV_JC.Selected <> nil) then
+   B_JC_Reset.Enabled := JCDb.GetJCByIndex(LV_JC.ItemIndex).staveni
+ else
+   B_JC_Reset.Enabled := false;
 end;
 
 procedure TF_Main.LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem;
