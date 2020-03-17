@@ -444,6 +444,7 @@ type
     procedure UpdateSystemButtons();
     procedure CheckNasobicWidth();
     function SoupravySelectedCount():Integer;
+    function LVSelectedTexts(LV: TListView; single: string; multiple: string):string;
 
     // RCS
     procedure OnRCSStart(Sender:TObject);
@@ -2161,28 +2162,12 @@ end;
 procedure TF_Main.B_lok_deleteClick(Sender: TObject);
 var sprs: string;
     LI: TListItem;
-    count: Integer;
     i: Integer;
 begin
  if (Self.LV_Soupravy.Selected = nil) then Exit();
  if (not Assigned(Soupravy[Self.LV_Soupravy.ItemIndex])) then Exit();
 
- sprs := '';
- count := 0;
- for LI in Self.LV_Soupravy.Items do
-  begin
-   if ((LI.Selected) and (LI.Caption <> '')) then
-    begin
-     sprs := sprs + Soupravy[LI.Index].nazev + ', ';
-     Inc(count);
-    end;
-  end;
- sprs := LeftStr(sprs, Length(sprs)-2);
-
- if (count = 1) then
-   sprs := 'soupravu ' + sprs
- else
-   sprs := 'soupravy ' + sprs;
+ sprs := Self.LVSelectedTexts(Self.LV_Soupravy, 'soupravu', 'soupravy');
 
  if (Application.MessageBox(PChar('Opravdu smazat '+sprs+'?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
@@ -2208,27 +2193,11 @@ end;
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
 var mjcs: string;
     LI: TListItem;
-    count: Integer;
     i: Integer;
 begin
  if (Self.LV_MultiJC.Selected = nil) then Exit();
 
- mjcs := '';
- count := 0;
- for LI in Self.LV_MultiJC.Items do
-  begin
-   if (LI.Selected) then
-    begin
-     mjcs := mjcs + LI.Caption + ', ';
-     Inc(count);
-    end;
-  end;
- mjcs := LeftStr(mjcs, Length(mjcs)-2);
-
- if (count = 1) then
-   mjcs := 'cestu ' + mjcs
- else
-   mjcs := 'cesty ' + mjcs;
+ mjcs := Self.LVSelectedTexts(Self.LV_MultiJC, 'cestu', 'cesty');
 
  if (Application.MessageBox(PChar('Opravdu smazat '+mjcs+'?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
@@ -3326,6 +3295,30 @@ begin
  for LI in Self.LV_Soupravy.Items do
    if ((LI.Selected) and (LI.Caption <> '')) then
      Inc(Result);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TF_Main.LVSelectedTexts(LV: TListView; single: string; multiple: string):string;
+var LI: TListItem;
+    count: Integer;
+begin
+ Result := '';
+ count := 0;
+ for LI in LV.Items do
+  begin
+   if (LI.Selected) then
+    begin
+     Result := Result + LI.Caption + ', ';
+     Inc(count);
+    end;
+  end;
+ Result := LeftStr(Result, Length(Result)-2);
+
+ if (count = 1) then
+   Result := single + ' ' + Result
+ else
+   Result := multiple + ' ' + Result;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
