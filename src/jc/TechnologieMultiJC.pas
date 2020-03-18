@@ -281,19 +281,18 @@ begin
 
  if (JC.data.NavestidloBlok <> startNav.id) then
    Exit(false);
+ if (Integer(startNav.ZacatekVolba) <> Integer(JC.data.TypCesty)) then
+   Exit(false);
 
  // posledni blok musi byt posledni blok posledni jizdni cesty
  JC := JCDb.GetJCByID(Self.data.JCs[Self.data.JCs.Count-1]);
+ if (JC = nil) then Exit(false);
  if (JC.data.Useky[JC.data.Useky.Count-1] <> endBlk.id) then Exit(false);
 
  // kontrola variantnich bodu
  if (vb.Count <> Self.data.vb.Count) then Exit(false);
  for j := 0 to vb.Count-1 do
    if (Self.data.vb[j] <> (vb[j] as TBlk).id) then Exit(false);
-
- JC := JCDb.GetJCByID(Self.data.JCs[0]);
- if (Integer(startNav.ZacatekVolba) <> Integer(JC.data.TypCesty)) then
-   Exit(false);
 
  for j := 0 to Self.data.JCs.Count-1 do
    if (JCDb.GetJCByID(Self.data.JCs[j]) = nil) then Exit(false);
