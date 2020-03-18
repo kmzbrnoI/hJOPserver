@@ -1142,7 +1142,7 @@ begin
    if (Self.intentionalLocked) then Result := Result + '*ZRUŠ REDUKCI,';
   end;
 
- if (RCSi.simulation) then
+ if ((RCSi.simulation) and (Self.detekcePolohy)) then
   begin
    Result := Result + '-,';
    if (Self.Poloha <> TVyhPoloha.plus) then
