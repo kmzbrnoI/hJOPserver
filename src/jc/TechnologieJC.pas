@@ -829,7 +829,7 @@ begin
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
         else if ((Blk2 as TBlkVyhybka).outputLocked) then
-          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk2.id));
 
         if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
           bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
@@ -1034,7 +1034,7 @@ begin
       if ((Blk2 as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
       else if ((Blk2 as TBlkVyhybka).outputLocked) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk2.id));
      end;
    end;//for i
 
@@ -1096,7 +1096,7 @@ begin
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
         else if ((Blk2 as TBlkVyhybka).outputLocked) then
-          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id))
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk2.id))
        end;
      end;
    end;//for i
