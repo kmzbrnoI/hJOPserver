@@ -135,6 +135,9 @@ type
     procedure UPONSMinusClick(Sender:TObject);
 
     procedure MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminPolPlusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminPolMinusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminNepolCLick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure PanelPotvrSekvNSPlus(Sender:TIdContext; success:boolean);
     procedure PanelPotvrSekvNSMinus(Sender:TIdContext; success:boolean);
@@ -1080,6 +1083,36 @@ begin
  Self.Change();
 end;
 
+procedure TBlkVyhybka.MenuAdminPolPlusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ try
+   RCSi.SetInput(Self.VyhSettings.RCSAddrs[0], 1);
+   RCSi.SetInput(Self.VyhSettings.RCSAddrs[1], 0);
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
+end;
+
+procedure TBlkVyhybka.MenuAdminPolMinusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ try
+   RCSi.SetInput(Self.VyhSettings.RCSAddrs[0], 0);
+   RCSi.SetInput(Self.VyhSettings.RCSAddrs[1], 1);
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
+end;
+
+procedure TBlkVyhybka.MenuAdminNepolCLick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ try
+   RCSi.SetInput(Self.VyhSettings.RCSAddrs[0], 0);
+   RCSi.SetInput(Self.VyhSettings.RCSAddrs[1], 0);
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
@@ -1121,6 +1154,17 @@ begin
    Result := Result + '-,';
    if (Self.intentionalLocked) then Result := Result + '*ZRUŠ REDUKCI,';
   end;
+
+ if (RCSi.simulation) then
+  begin
+   Result := Result + '-,';
+   if (Self.Poloha <> TVyhPoloha.plus) then
+     Result := Result + '*POL+,';
+   if (Self.Poloha <> TVyhPoloha.minus) then
+     Result := Result + '*POL-,';
+   if (Self.Poloha <> TVyhPoloha.none) then
+     Result := Result + '*NEPOL,';
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1149,7 +1193,10 @@ begin
  else if (item = 'VYL')  then Self.MenuVylClick(SenderPnl, SenderOR)
  else if (item = 'ZAV>') then Self.MenuZAVEnableClick(SenderPnl, SenderOR)
  else if (item = 'ZAV<') then Self.MenuZAVDisableClick(SenderPnl, SenderOR)
- else if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
+ else if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR)
+ else if (item = 'POL+') then Self.MenuAdminPolPlusCLick(SenderPnl, SenderOR)
+ else if (item = 'POL-') then Self.MenuAdminPolMinusCLick(SenderPnl, SenderOR)
+ else if (item = 'NEPOL') then Self.MenuAdminNepolCLick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
