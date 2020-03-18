@@ -266,7 +266,7 @@ type
 
 implementation
 
-uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils,
+uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
@@ -682,11 +682,11 @@ var old:TZaver;
 begin
  if (Zaver = Self.Zaver) then Exit();
 
- if ((Integer(Self.UsekStav.Zaver) > 0) and ((Zaver = TZaver.no) or (Zaver = TZaver.ab))) then
+ if ((Self.UsekStav.Zaver > TZaver.no) and ((Zaver = TZaver.no) or (Zaver = TZaver.ab))) then
    Self.NUZ := false;
 
  old := Self.Zaver;
- Self.UsekStav.Zaver      := Zaver;
+ Self.UsekStav.Zaver := Zaver;
  Self.UsekStav.SprPredict := -1;
 
  if ((old > TZaver.no) and (zaver = TZaver.no)) then
@@ -695,7 +695,7 @@ begin
    Self.CallChangeEvents(Self.EventsOnZaverReleaseOrAb);
 
  // staveci zavery se do panelu neposilaji, protoze jsou mi k nicemu
- if (Self.Zaver <> TZaver.staveni) or (old <> TZaver.no) then
+ if ((Self.Zaver <> TZaver.staveni) or (old <> TZaver.no) or (diag.showZaver)) then
    Self.Change();
 end;
 
@@ -2229,7 +2229,8 @@ begin
       TZaver.vlak   : fg := clLime;
       TZaver.posun  : fg := clWhite;
       TZaver.nouz   : fg := clAqua;
-      TZaver.ab     : fg := $707070;
+      TZaver.ab     : if (diag.showZaver) then fg := $707070 else fg := $A0A0A0;
+      TZaver.staveni: if (diag.showZaver) then fg := clBlue;
      end;//case
     end;
 
