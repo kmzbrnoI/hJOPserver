@@ -1051,7 +1051,7 @@ end;
 procedure TORTCPServer.BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
 begin
  Self.SendLn(AContext, '-;BOTTOMERR;'+err+';'+stanice+';'+tech+';');
- writelog(tech + ' : ' + stanice + ' : ' + err, WR_ERROR);
+ writelog(tech + ': ' + stanice + ': ' + err, WR_ERROR);
 end;
 
 procedure TORTCPServer.UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
