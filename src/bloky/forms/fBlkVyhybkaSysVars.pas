@@ -101,7 +101,7 @@ begin
  Self.CB_Stav_Plus.ItemIndex  := PrevodySoustav.BoolToInt(Self.OpenBlk.StaveniPlus);
  Self.CB_Stav_Minus.ItemIndex := PrevodySoustav.BoolToInt(Self.OpenBlk.StaveniMinus);
 
- Self.CB_Locked.ItemIndex     := PrevodySoustav.BoolToInt(Self.OpenBlk.Stav.locked);
+ Self.CB_Locked.ItemIndex     := PrevodySoustav.BoolToInt(Self.OpenBlk.Stav.outputLocked);
  Self.SE_Redukce.Value        := Self.OpenBlk.Stav.redukce_menu;
 
  Self.B_CancelRedukce.Enabled := Self.OpenBlk.redukce_menu;

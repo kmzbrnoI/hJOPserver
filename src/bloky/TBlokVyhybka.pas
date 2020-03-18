@@ -32,7 +32,7 @@ type
   poloha,polohaOld,polohaReal,polohaSave:TVyhPoloha; // polohaReal je skutecna poloha, kterou aktualne zobrazuji RCS vstupy
   stit,vyl:string;                            // stitek a vyluka vyhybky
   staveni_minus,staveni_plus:Boolean;         // stavi se zrovna vyhybka do polohy plus, ci minus?
-  locked: boolean;                            // skutecny zamek na vystupu - jestli je RCS vystup zamknut
+  outputLocked: boolean;                      // skutecny zamek na vystupu - jestli je RCS vystup zamknut
   redukce_menu:Integer;                       // redukovane menu = zamcena vyhybka; 0 = neredukovano, jinak pocet bloku, kolik redukuje
   redukuji_spojku:boolean;                    // jestli redukuji vyhybku ve spojce
   vyhZaver:Cardinal;                          // pocet bloku, ktere na vyhybku udelily nouzovy zaver
@@ -64,7 +64,7 @@ type
     vyl : '';
     staveni_minus : false;
     staveni_plus : false;
-    locked : false;
+    outputLocked : false;
     redukce_menu: 0;
     vyhZaver: 0;
     staveniErrCallback: nil;
@@ -200,6 +200,7 @@ type
     property npBlokPlus:TBlk read GetNpPlus;
     property npBlokMinus:TBlk read GetNpMinus;
     property detekcePolohy:Boolean read GetDetekcePolohy;
+    property outputLocked:Boolean read VyhStav.outputLocked;
 
     property StaveniPlus:Boolean read VyhStav.staveni_plus write VyhStav.staveni_plus;
     property StaveniMinus:Boolean read VyhStav.staveni_minus write VyhStav.staveni_minus;
@@ -387,7 +388,7 @@ begin
  Self.VyhStav.redukce_menu := 0;
  Self.VyhStav.staveni_plus := false;
  Self.VyhStav.staveni_minus := false;
- Self.VyhStav.locked := false;
+ Self.VyhStav.outputLocked := false;
  Self.VyhStav.vyhZaver := 0;
 end;
 
@@ -888,7 +889,7 @@ begin
    Self.NullOutput.enabled := true;
    Self.NullOutput.NullOutputTime := Now+EncodeTime(0, 0, 0, 500);
   end else begin
-   Self.VyhStav.locked := true;
+   Self.VyhStav.outputLocked := true;
   end;
 
  if (Self.VyhSettings.spojka > -1) then
@@ -910,7 +911,7 @@ var spojka:TBlkVyhybka;
 begin
  Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
  if ((spojka = nil) or (((spojka.Zaver = TZaver.no) or (spojka.Zaver = TZaver.staveni)) and
-     (not spojka.vyhZaver) and (not spojka.Stav.locked))) then
+     (not spojka.vyhZaver) and (not spojka.Stav.outputLocked))) then
   begin
    try
      if (RCSi.Started) then
@@ -923,7 +924,7 @@ begin
    end;
   end;
 
- Self.VyhStav.locked := false;
+ Self.VyhStav.outputLocked := false;
 
  Self.Change();
 end;
@@ -1168,8 +1169,8 @@ var changed:boolean;
 begin
  changed := false;
 
- if (not Self.VyhStav.locked) and ((Self.VyhStav.redukce_menu > 0) or (Self.Zaver <> TZaver.no) or (Self.vyhZaver) or
-  ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen))) then
+ if (not Self.VyhStav.outputLocked) and ((Self.VyhStav.redukce_menu > 0) or (Self.Zaver <> TZaver.no) or (Self.vyhZaver) or
+    ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen))) then
   begin
    // pokud je vyhybka redukovana, nebo je na ni zaver a je v koncove poloze a neni zamkla, zamkneme ji
    if (Self.VyhStav.poloha = TVyhPoloha.plus) then begin
@@ -1207,7 +1208,7 @@ begin
     end;
   end;
 
- if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (Self.VyhStav.locked) and (Self.VyhStav.redukce_menu = 0) and
+ if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (Self.VyhStav.outputLocked) and (Self.VyhStav.redukce_menu = 0) and
      ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen))) then
   begin
    Self.Unlock();
