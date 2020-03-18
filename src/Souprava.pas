@@ -587,6 +587,9 @@ begin
    Exit();
   end;
 
+ if ((TBlk(Self.front).typ = _BLK_TU) and (TBlkTU(Self.front).Trat <> nil)) then
+   TBlkTU(Self.front).Trat.Change();
+
  for addr in Self.HVs do
   begin
    if (HVDb[addr].ruc) then

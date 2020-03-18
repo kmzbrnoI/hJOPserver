@@ -1122,6 +1122,7 @@ function TBlkTratSouprava.SerializeForPanel(trat:TBlk; sprPredict:Boolean = fals
 var addr, usek:Integer;
     porucha_bp:Boolean;
     blk:TBlk;
+    stopsInHalt: Boolean;
 begin
  // Pozor, souprava muze byt ve vice usecich a mit poruchu BP jen v jednom z nich
  porucha_bp := false;
@@ -1133,12 +1134,16 @@ begin
        porucha_bp := true;
   end;
 
+ blk := Soupravy[Self.souprava].front as TBlk;
+ stopsInHalt := ((blk <> nil) and (blk.typ = _BLK_TU) and (TBlkTU(blk).TUStav.zast_stopped));
 
  Result := Soupravy.GetSprNameByIndex(Self.souprava) + '|';
  if (sprPredict) then
    Result := Result + PrevodySoustav.ColorToStr(clYellow) + '|'
  else if (porucha_bp) then
    Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|'
+ else if ((Soupravy[Self.souprava].rychlost = 0) and (not stopsInHalt)) then
+   Result := Result + PrevodySoustav.ColorToStr(clRed) + '|'
  else
    Result := Result + PrevodySoustav.ColorToStr(clWhite) + '|';
 
