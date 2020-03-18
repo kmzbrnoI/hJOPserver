@@ -1,7 +1,6 @@
 ﻿unit TBlokNav;
 
 //definice a obsluha technologickeho bloku Navestidlo
-// Pritomnost redukce menu u bloku navestidla znamena, ze z tohoto bloku nelze zacit jizdni cestu.
 
 interface
 
@@ -50,7 +49,6 @@ type
   navest_old:Integer;                            // behem staveni obsahuje byvalou navest
   ABJC:TJC;                                      // odkaz na automaticky stavenou JC
   ZAM:Boolean;                                   // navestidlo zamkle z panelu
-  redukce_menu:Integer;                          // kolik bloků mě redukuje
   dn_jc_ref,privol_ref:TJC;                      // reference na aktualni JC na navestidle (resp. NC)
 
   padani:boolean;                                // zde je true, pokud navestidlo pada do STUJ (ma zpozdeny pad) a jeste nespadlo
@@ -166,7 +164,6 @@ type
 
     // DEBUG menu:
     procedure MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:boolean);
-    procedure MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure UpdatePadani();
     procedure UpdatePrivol();
@@ -1094,12 +1091,6 @@ begin
   end;
 end;
 
-procedure TBlkNav.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
-begin
- Self.NavStav.redukce_menu := 0;
- Self.Change();
-end;
-
 procedure TBlkNav.MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:boolean);
 var Blk:TBlk;
 begin
@@ -1174,8 +1165,6 @@ begin
  else if (item = 'IR>')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, true)
  else if (item = 'IR<')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, false)
  else if (item = 'KC')   then Self.MenuKCDKClick   (SenderPnl, SenderOR);
-
- if (item = 'ZRUŠ REDUKCI') then Self.MenuAdminREDUKClick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1254,10 +1243,6 @@ begin
 
  if ((Self.Navest <> 8) and (Self.CanIDoRNZ)) then
   Result := Result + '!RNZ,';
-
- if (rights >= TORControlRights.superuser) then
-   if (Self.NavStav.redukce_menu > 0) then
-     Result := Result + '-,*ZRUŠ REDUKCI,';
 
  // DEBUG: jednoduche nastaveni IR pri knihovne simulator
  if (RCSi.simulation) then
