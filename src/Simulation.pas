@@ -90,7 +90,9 @@ var i:Integer;
     UsekSet:TBlkUsekSettings;
 begin
  try
-   if ((JC.stav.RozpadBlok = 1) and (JC.stav.RozpadRuseniBlok = -1)) then
+   if (JC.stav.RozpadBlok < 0) then Exit();
+
+   if (((JC.stav.RozpadBlok = 1) or (JC.stav.RozpadBlok >= JC.data.Useky.Count)) and (JC.stav.RozpadRuseniBlok = -1)) then
     begin
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
      Blky.GetBlkByID((Nav as TBlkNav).UsekID, Blk);
@@ -104,20 +106,24 @@ begin
       end;
     end;//uvolnit usek pred navestidlem
 
-   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) or (JC.stav.RozpadBlok = JC.data.Useky.Count)) and
+   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) or (JC.stav.RozpadBlok >= JC.data.Useky.Count)) and
        (JC.stav.RozpadRuseniBlok >= 0)) then
     begin
+     if (JC.stav.RozpadRuseniBlok >= JC.data.Useky.Count) then Exit();
+
      // uvolnit RozpadRuseniBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
      for i := 0 to UsekSet.RCSAddrs.Count-1 do
-      RCSi.SetInput(UsekSet.RCSAddrs[i].board, UsekSet.RCSAddrs[i].port, 0);
+       RCSi.SetInput(UsekSet.RCSAddrs[i].board, UsekSet.RCSAddrs[i].port, 0);
     end else begin
      // obsadit RozpadBlok
+     if (JC.stav.RozpadBlok >= JC.data.Useky.Count) then Exit();
+
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
      if (UsekSet.RCSAddrs.Count > 0) then
-      RCSi.SetInput(UsekSet.RCSAddrs[0].board, UsekSet.RCSAddrs[0].port, 1);
+       RCSi.SetInput(UsekSet.RCSAddrs[0].board, UsekSet.RCSAddrs[0].port, 1);
     end;//else
  except
 
