@@ -718,7 +718,7 @@ begin
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
-      else if (TBlkVyhybka(Blk).redukce_menu) then
+      else if (TBlkVyhybka(Blk).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.id));
      end;
 
@@ -729,7 +729,9 @@ begin
     if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha)) then
      begin
       if ((Blk2 as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
+      else if (TBlkVyhybka(Blk2).outputLocked) then
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk.id));
 
       if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
@@ -794,7 +796,7 @@ begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
-      else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
+      else if ((Blk as TBlkVyhybka).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, odvratZaver.Blok));
 
       if ((Blk as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
@@ -825,7 +827,9 @@ begin
          end;
 
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
-          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
+        else if ((Blk2 as TBlkVyhybka).outputLocked) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
 
         if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
           bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
@@ -1017,7 +1021,7 @@ begin
      begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
-      else if (TBlkVyhybka(Blk).redukce_menu) then
+      else if (TBlkVyhybka(Blk).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.id));
      end;
 
@@ -1028,7 +1032,9 @@ begin
     if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha)) then
      begin
       if ((Blk2 as TBlkVyhybka).vyhZaver) then
-        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
+        bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
+      else if ((Blk2 as TBlkVyhybka).outputLocked) then
+        bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
      end;
    end;//for i
 
@@ -1060,7 +1066,7 @@ begin
       if ((Blk as TBlkVyhybka).vyhZaver) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
-      else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).redukce_menu)) then
+      else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).outputLocked)) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, odvratZaver.Blok));
      end;//if poloha <> Poloha
 
@@ -1088,7 +1094,9 @@ begin
          end;
 
         if ((Blk2 as TBlkVyhybka).vyhZaver) then
-          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
+          bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
+        else if ((Blk2 as TBlkVyhybka).outputLocked) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id))
        end;
      end;
    end;//for i
@@ -1430,11 +1438,6 @@ var i,j:Integer;
        begin
         odvratZaver := Self.fproperties.Odvraty[i];
 
-        // pridani zruseni redukce
-        Blky.GetBlkByID(odvratZaver.ref_blk, TBlk(usek));
-        usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
-          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, odvratZaver.Blok));
-
         // nastaveni odvratu
         Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
         if (vyhybka.Poloha <> TVyhPoloha(odvratZaver.Poloha)) then
@@ -1448,7 +1451,13 @@ var i,j:Integer;
           Inc(stavim);
          end;
 
-        vyhybka.RedukujMenu();
+        vyhybka.IntentionalLock();
+
+        // pridani zruseni redukce
+        Blky.GetBlkByID(odvratZaver.ref_blk, TBlk(usek));
+        usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
+          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, odvratZaver.Blok));
+
         vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
                           true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        end;
@@ -3313,6 +3322,7 @@ procedure TJC.VyhPrestavenaJCPC(Sender:TObject);
 var i:Integer;
     Blk:TBlk;
     odvrat:Integer;
+    usek: TBlkUsek;
 begin
  { Pozor: muze se stat, ze nektera z vyhybek, ktere jeste nejsou prestavovany,
    je behem staveni JC prestavena externim zdrojem. Je treba na to pamatovat.
@@ -3352,7 +3362,12 @@ begin
      Blky.GetBlkByID(Self.fproperties.Odvraty[i].Blok, Blk);
      if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Odvraty[i].Poloha)) then
       begin
-       TBlkVyhybka(Blk).RedukujMenu();
+       TBlkVyhybka(Blk).IntentionalLock();
+
+       Blky.GetBlkByID(Self.fproperties.Odvraty[i].ref_blk, TBlk(usek));
+       usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
+         CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, Self.fproperties.Odvraty[i].Blok));
+
        TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha),
                                   true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        Self.fstaveni.nextVyhybka := i+1;

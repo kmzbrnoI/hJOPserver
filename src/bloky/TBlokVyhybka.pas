@@ -10,6 +10,16 @@ uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
      Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
      TOblRizeni, TechnologieRCS;
 
+{
+ Jak funguje interntionalLock:
+ Tohle se uplatnuje jen u vyhybek odvratu. Tyto vyhybky nemusi byt v usecich JC,
+ takze nemaji zadnou informaci o tom, kdy maji byt drzeny a kdy se ma drzeni
+ zrusit. Jedna vyhybka muze byt v odvratech vice postavenych JC, proto se pocita,
+ kolikrat je vyhybka drzena (VyhStav.intentionalLocks), jakmile je hodnota 0,
+ dojde k odblokovaniv vyhybky. Pri odblokovani pozor na to, ze muse byt nenulove
+ intentionalLocks vyhybky ve spojce, v takovem pripade vyhybku neodblokovavat.
+}
+
 type
  TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
  ESpojka = class(Exception);
@@ -33,8 +43,7 @@ type
   stit,vyl:string;                            // stitek a vyluka vyhybky
   staveni_minus,staveni_plus:Boolean;         // stavi se zrovna vyhybka do polohy plus, ci minus?
   outputLocked: boolean;                      // skutecny zamek na vystupu - jestli je RCS vystup zamknut
-  redukce_menu:Integer;                       // redukovane menu = zamcena vyhybka; 0 = neredukovano, jinak pocet bloku, kolik redukuje
-  redukuji_spojku:boolean;                    // jestli redukuji vyhybku ve spojce
+  intentionalLocks:Integer;
   vyhZaver:Cardinal;                          // pocet bloku, ktere na vyhybku udelily nouzovy zaver
 
   staveniErrCallback, staveniOKCallback:TNotifyEvent;     // callback eventy pro koncovou polohu vyhybky (resp. timeout prestavovani)
@@ -65,7 +74,7 @@ type
     staveni_minus : false;
     staveni_plus : false;
     outputLocked : false;
-    redukce_menu: 0;
+    intentionalLocks: 0;
     vyhZaver: 0;
     staveniErrCallback: nil;
     staveniOKCallback: nil;
@@ -99,13 +108,13 @@ type
     procedure SetVyhStit(stit:string);
     procedure mSetVyhVyl(vyl:string);
 
-    function GetRedukceMenu():boolean;
+    function GetIntentionalLock():boolean;
 
     procedure UpdatePoloha();
     procedure UpdateStaveniTimeout();
     procedure UpdateZamek();
-
     procedure Unlock();
+    function ZamekLocked():Boolean;
 
     procedure CheckNullOutput();
 
@@ -141,6 +150,9 @@ type
     function GetNpPlus():TBlk;
     function GetNpMinus():TBlk;
     function GetDetekcePolohy():Boolean;
+    function GetSpojka():TBlkVyhybka;
+    function ShouldBeLocked():boolean;
+    function MeOrSpojkaZaverStaveni():boolean;
 
     procedure NpObsazChange(Sender:TObject; data:Integer);
     procedure MapNpEvents();
@@ -178,8 +190,8 @@ type
     procedure SetVyhVyl(Sender:TIDContext; vyl:string);
     procedure SetSpojkaNoPropag(spojka:Integer);
 
-    procedure RedukujMenu();
-    procedure ZrusRedukciMenu();
+    procedure IntentionalLock();
+    procedure IntentionalUnlock();
 
     procedure NullVyhZaver();
     procedure DecreaseNouzZaver(amount:Cardinal);
@@ -193,7 +205,7 @@ type
     property Obsazeno:TUsekStav read GetObsazeno;
     property Stitek:string read VyhStav.Stit write SetVyhStit;
     property Vyluka:string read VyhStav.Vyl write mSetVyhVyl;
-    property redukce_menu:boolean read GetRedukceMenu;
+    property intentionalLocked:boolean read GetIntentionalLock;
     property UsekID:Integer read VyhRel.UsekID;
     property vyhZaver:boolean read GetVyhZaver write SetVyhZaver;
     property zamek:TBlk read GetZamek;
@@ -201,6 +213,7 @@ type
     property npBlokMinus:TBlk read GetNpMinus;
     property detekcePolohy:Boolean read GetDetekcePolohy;
     property outputLocked:Boolean read VyhStav.outputLocked;
+    property spojka: TBlkVyhybka read GetSpojka;
 
     property StaveniPlus:Boolean read VyhStav.staveni_plus write VyhStav.staveni_plus;
     property StaveniMinus:Boolean read VyhStav.staveni_minus write VyhStav.staveni_minus;
@@ -364,7 +377,6 @@ begin
  else
    Self.VyhStav.poloha := Self.VyhStav.polohaSave;
 
- Self.VyhStav.redukuji_spojku := false;
  Self.MapNpEvents();
  Self.Update(); //update will call Change()
 end;
@@ -384,8 +396,7 @@ end;
 
 procedure TBlkVyhybka.Reset();
 begin
- Self.VyhStav.redukuji_spojku := false;
- Self.VyhStav.redukce_menu := 0;
+ Self.VyhStav.intentionalLocks := 0;
  Self.VyhStav.staveni_plus := false;
  Self.VyhStav.staveni_minus := false;
  Self.VyhStav.outputLocked := false;
@@ -558,12 +569,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetRedukceMenu():boolean;
+function TBlkVyhybka.GetIntentionalLock():boolean;
 begin
- if (Self.VyhStav.redukce_menu > 0) then
-  Result := true
- else
-  Result := false;
+ Result := (Self.VyhStav.intentionalLocks > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -642,9 +650,9 @@ var inp, spojkaInp: TBlkVyhInputs;
    begin
     Self.VyhStav.poloha := none;
 
-    if ((Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and ((Integer(Self.Zaver) > 0) or (Self.vyhZaver) or
-      ((Self.redukce_menu) and (not Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus)) or
-      ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
+    if ((Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and ((Self.Zaver > TZaver.no) or (Self.vyhZaver) or
+      ((Self.intentionalLocked) and (not Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus)) or
+      (Self.ZamekLocked()))
      and (Self.Zaver <> TZaver.staveni)) then
      begin
       for oblr in Self.OblsRizeni do
@@ -680,14 +688,14 @@ var inp, spojkaInp: TBlkVyhInputs;
       Self.VyhStav.staveniErrCallback := nil;
      end;
 
-    if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and (inp.minus <> isOn)) then
+    if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal)) then
      begin
       // sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze +
       // TZaver.staveni je specialni druh zaveru, ktery neumoznuje zmenu stavu vyhybky uzivatelem, ale zaroven nekrici, pokud se zmeni skutecny stav
       // pouziva se pri staveni JC: vyhybky nechame prestavit, usekum (resp. vyhybkam) ukamzite delime tento zaver a cekame na koncove polohy
 
-      if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TZaver.staveni)) or
-          ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> plus))) then
+      if (((Self.ShouldBeLocked()) and (not Self.MeOrSpojkaZaverStaveni())) or
+          (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> plus))) then
        begin
         for oblr in Self.OblsRizeni do
           oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
@@ -724,12 +732,12 @@ var inp, spojkaInp: TBlkVyhInputs;
       Self.VyhStav.staveniErrCallback := nil;
      end;
 
-    if ((not Self.VyhStav.staveni_minus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and (inp.plus <> isOn)) then
+    if ((not Self.VyhStav.staveni_minus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal)) then
      begin
       //sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze -
       // redukce menu se tady nekontroluje, protoze vyhybka se z koncove polohy musi vzdy dostat do nepolohy
-      if ((((Integer(Self.Zaver) > 0) or (Self.vyhZaver)) and (Self.Zaver <> TZaver.staveni)) or
-          ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (Self.VyhSettings.zamekPoloha <> minus))) then
+      if (((Self.ShouldBeLocked()) and (not Self.MeOrSpojkaZaverStaveni())) or
+          (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> minus))) then
        begin
         for oblr in Self.OblsRizeni do
           oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
@@ -746,9 +754,8 @@ var inp, spojkaInp: TBlkVyhInputs;
    begin
     Self.VyhStav.poloha := both;
 
-    if (((((Integer(Self.Zaver) > 0) or (Self.vyhZaver) or ((Self.redukce_menu) and (not Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus)))
-      and (Self.Zaver <> TZaver.staveni)) or ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen)))
-         and (Self.VyhStav.polohaOld <> both)) then
+    if ((((Self.ShouldBeLocked()) and (Self.Zaver <> TZaver.staveni)) or (Self.ZamekLocked()))
+        and (Self.VyhStav.polohaOld <> both)) then
      begin
       for oblr in Self.OblsRizeni do
         oblr.BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
@@ -810,7 +817,7 @@ begin
   // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
   // k zacykleni pri staveni spojek.
   Self.UpdatePoloha();
-  Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
+  spojka := Self.spojka;
 
   if (new <> Self.VyhStav.poloha) then
    begin
@@ -892,11 +899,12 @@ begin
    Self.VyhStav.outputLocked := true;
   end;
 
- if (Self.VyhSettings.spojka > -1) then
+ if (spojka <> nil) then
   begin
    // pokud se jedna o spojku, volame SetPoloha i na spojku
-   if ((spojka <> nil) and (spojka.typ = _BLK_VYH) and
-       ((spojka.Stav.staveni_plus <> Self.VyhStav.staveni_plus) or (spojka.Stav.staveni_minus <> Self.VyhStav.staveni_minus))) then
+   if ((spojka.Stav.staveni_plus <> Self.VyhStav.staveni_plus) or
+       (spojka.Stav.staveni_minus <> Self.VyhStav.staveni_minus) or
+       ((zamek) and (not spojka.outputLocked))) then
      spojka.SetPoloha(new, zamek, nouz);
   end;
 
@@ -909,22 +917,21 @@ end;
 procedure TBlkVyhybka.Unlock();
 var spojka:TBlkVyhybka;
 begin
- Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
- if ((spojka = nil) or (((spojka.Zaver = TZaver.no) or (spojka.Zaver = TZaver.staveni)) and
-     (not spojka.vyhZaver) and (not spojka.Stav.outputLocked))) then
-  begin
-   try
-     if (RCSi.Started) then
-      begin
-       RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
-       RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 0);
-      end;
-   except
+ try
+   if ((Self.outputLocked) and (RCSi.Started)) then
+    begin
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
+     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 0);
+    end;
+ except
 
-   end;
-  end;
+ end;
 
  Self.VyhStav.outputLocked := false;
+
+ spojka := Self.spojka;
+ if ((spojka <> nil) and (spojka.outputLocked)) then
+   spojka.Unlock();
 
  Self.Change();
 end;
@@ -1069,7 +1076,7 @@ end;
 
 procedure TBlkVyhybka.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.VyhStav.redukce_menu := 0;
+ Self.VyhStav.intentionalLocks := 0;
  Self.Change();
 end;
 
@@ -1083,9 +1090,7 @@ begin
 
  Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
 
- if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (not Self.redukce_menu) and
-    ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen)) and
-  ((spojka = nil) or ((spojka.Zaver = TZaver.no) and (not spojka.vyhZaver)))) then
+ if (not Self.ShouldBeLocked()) then
   begin
    // na vyhybce neni zaver a menu neni redukovane
 
@@ -1114,7 +1119,7 @@ begin
  if (rights >= TORControlRights.superuser) then
   begin
    Result := Result + '-,';
-   if (Self.redukce_menu) then Result := Result + '*ZRUŠ REDUKCI,';
+   if (Self.intentionalLocked) then Result := Result + '*ZRUŠ REDUKCI,';
   end;
 end;
 
@@ -1165,12 +1170,10 @@ end;
 
 procedure TBlkVyhybka.Change(now:boolean = false);
 var changed:boolean;
-    blk:TBlk;
 begin
  changed := false;
 
- if (not Self.VyhStav.outputLocked) and ((Self.VyhStav.redukce_menu > 0) or (Self.Zaver <> TZaver.no) or (Self.vyhZaver) or
-    ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen))) then
+ if (not Self.VyhStav.outputLocked) and (Self.ShouldBeLocked()) then
   begin
    // pokud je vyhybka redukovana, nebo je na ni zaver a je v koncove poloze a neni zamkla, zamkneme ji
    if (Self.VyhStav.poloha = TVyhPoloha.plus) then begin
@@ -1183,33 +1186,7 @@ begin
    end;
   end;
 
-  // kontrola spojky:
-  //  pokud je na me vyhybce zaver, redukuji menu vyhybky ve spojce
-  if (Self.VyhSettings.spojka > -1) then
-  begin
-   // pokud je na vyhybce spojka
-   if ((Self.Zaver <> TZaver.no) or (Self.vyhZaver)) then
-    begin
-     // zaver
-     if (not Self.VyhStav.redukuji_spojku) then
-      begin
-       Blky.GetBlkByID(Self.VyhSettings.spojka, blk);
-       Self.VyhStav.redukuji_spojku := true;
-       TBlkVyhybka(blk).RedukujMenu();
-      end;
-    end else begin
-     // zaver neni
-     if (Self.VyhStav.redukuji_spojku) then
-      begin
-       Blky.GetBlkByID(Self.VyhSettings.spojka, blk);
-       Self.VyhStav.redukuji_spojku := false;
-       TBlkVyhybka(blk).ZrusRedukciMenu();
-      end;
-    end;
-  end;
-
- if ((Self.Zaver = TZaver.no) and (not Self.vyhZaver) and (Self.VyhStav.outputLocked) and (Self.VyhStav.redukce_menu = 0) and
-     ((Self.zamek = nil) or ((Self.zamek as TBlkZamek).klicUvolnen))) then
+ if ((not Self.ShouldBeLocked()) and (Self.VyhStav.outputLocked)) then
   begin
    Self.Unlock();
    changed := true;
@@ -1220,22 +1197,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.RedukujMenu();
+procedure TBlkVyhybka.IntentionalLock();
 begin
- Self.VyhStav.redukce_menu := Self.VyhStav.redukce_menu + 1;
+ Inc(Self.VyhStav.intentionalLocks);
 
- // prave zacala redukce
- if (Self.VyhStav.redukce_menu = 1) then
+ if (Self.VyhStav.intentionalLocks = 1) then
   Self.Change();
 end;
 
-procedure TBlkVyhybka.ZrusRedukciMenu();
+procedure TBlkVyhybka.IntentionalUnlock();
 begin
- if (Self.VyhStav.redukce_menu > 0) then
-  Self.VyhStav.redukce_menu := Self.VyhStav.redukce_menu - 1;
+ if (Self.VyhStav.intentionalLocks > 0) then
+  Dec(Self.VyhStav.intentionalLocks);
 
- // prave skoncila redukce
- if (Self.VyhStav.redukce_menu = 0) then
+ if (Self.VyhStav.intentionalLocks = 0) then
   Self.Change();
 end;
 
@@ -1319,8 +1294,8 @@ end;
 // pokud je na vyhybku zamek, vyhybka ma nespravnou polohu a klic je v zamku, vyhlasime poruchu zamku
 procedure TBlkVyhybka.UpdateZamek();
 begin
- if ((Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen) and (not (Self.zamek as TBlkZamek).nouzZaver) and
-  (Self.Poloha <> Self.VyhSettings.zamekPoloha) and (not (Self.zamek as TBlkZamek).porucha)) then
+ if (Self.ZamekLocked() and (not (Self.zamek as TBlkZamek).nouzZaver) and
+     (Self.Poloha <> Self.VyhSettings.zamekPoloha) and (not (Self.zamek as TBlkZamek).porucha)) then
    (Self.zamek as TBlkZamek).porucha := true;
 end;
 
@@ -1367,9 +1342,9 @@ begin
      inherited;
      Exit();
     end;
-   if ((Self.Zaver > TZaver.no) or (Self.vyhZaver)) then
+   if (Self.outputLocked) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit vyhybku pod zaverem');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit zamcenou vyhybku');
      inherited;
      Exit();
     end;
@@ -1605,8 +1580,8 @@ begin
    if (Self.Zaver > TZaver.no) then
      bg := clGreen
    else if (Self.VyhStav.outputLocked) then
-     bg := clYellow
-   else if (Self.redukce_menu) then
+     bg := clBlue
+   else if (Self.ShouldBeLocked()) then
      bg := clOlive;
   end;
 
@@ -1660,6 +1635,37 @@ constructor TBlkVyhInputs.Create(plus, minus: TRCSInputState);
 begin
  Self.plus := plus;
  Self.minus := minus;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVyhybka.GetSpojka():TBlkVyhybka;
+begin
+ Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(Result));
+ if ((Result <> nil) and (Result.typ <> _BLK_VYH)) then
+   Result := nil;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVyhybka.ShouldBeLocked():boolean;
+begin
+ Result := (Self.Zaver > TZaver.no) or (Self.vyhZaver) or (Self.intentionalLocked) or
+           (Self.ZamekLocked());
+
+ if (Self.spojka <> nil) then
+   Result := Result or (Self.spojka.Zaver > TZaver.no) or (Self.spojka.vyhZaver) or
+                       (Self.spojka.intentionalLocked) or (Self.spojka.ZamekLocked());
+end;
+
+function TBlkVyhybka.ZamekLocked():Boolean;
+begin
+ Result := (Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen);
+end;
+
+function TBlkVyhybka.MeOrSpojkaZaverStaveni():boolean;
+begin
+ Result := (Self.Zaver = TZaver.staveni) or ((Self.spojka <> nil) and (Self.spojka.Zaver = TZaver.staveni));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

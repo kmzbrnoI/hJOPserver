@@ -61,7 +61,7 @@ end;
 
 procedure TF_BlkVyh_tech.B_CancelRedukceClick(Sender: TObject);
 begin
- Self.OpenBlk.ZrusRedukciMenu();
+ Self.OpenBlk.IntentionalUnlock();
  Self.myUpdate();
 end;
 
@@ -102,9 +102,9 @@ begin
  Self.CB_Stav_Minus.ItemIndex := PrevodySoustav.BoolToInt(Self.OpenBlk.StaveniMinus);
 
  Self.CB_Locked.ItemIndex     := PrevodySoustav.BoolToInt(Self.OpenBlk.Stav.outputLocked);
- Self.SE_Redukce.Value        := Self.OpenBlk.Stav.redukce_menu;
+ Self.SE_Redukce.Value        := Self.OpenBlk.Stav.intentionalLocks;
 
- Self.B_CancelRedukce.Enabled := Self.OpenBlk.redukce_menu;
+ Self.B_CancelRedukce.Enabled := Self.OpenBlk.intentionalLocked;
 end;
 
 procedure TF_BlkVyh_tech.myApply();

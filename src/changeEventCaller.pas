@@ -76,7 +76,7 @@ begin
  Blky.GetBlkByID(data, blk);
  if ((blk = nil) or (blk.typ <> _BLK_VYH)) then Exit();
 
- TBlkVyhybka(Blk).ZrusRedukciMenu();
+ TBlkVyhybka(Blk).IntentionalUnlock();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
