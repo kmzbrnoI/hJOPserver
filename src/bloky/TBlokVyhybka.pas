@@ -154,7 +154,7 @@ type
     function GetNpMinus():TBlk;
     function GetDetekcePolohy():Boolean;
     function GetSpojka():TBlkVyhybka;
-    function ShouldBeLocked():boolean;
+    function ShouldBeLocked(withZamek: boolean = true):boolean;
     function MeOrSpojkaZaverStaveni():boolean;
 
     procedure NpObsazChange(Sender:TObject; data:Integer);
@@ -594,7 +594,6 @@ end;
 
 procedure TBlkVyhybka.UpdatePoloha();
 var inp, spojkaInp: TBlkVyhInputs;
-    Blk:TBlk;
     oblr:TOR;
     spojka: TBlkVyhybka;
  begin
@@ -659,7 +658,7 @@ var inp, spojkaInp: TBlkVyhInputs;
      and (Self.Zaver <> TZaver.staveni)) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -669,19 +668,17 @@ var inp, spojkaInp: TBlkVyhInputs;
   if ((inp.plus = isOn) and (inp.minus = isOff)) then
    begin
     //je-li plus vstup 1
-    if (Self.VyhStav.staveni_minus) then Exit;
-    
-    if (Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus) then
+    Self.VyhStav.polohaReal := plus;
+    if (Self.VyhStav.staveni_minus) then Exit();
+
+    if (Self.VyhStav.staveni_plus) then
      begin
       Self.VyhStav.poloha := plus;
       Self.VyhStav.staveni_plus := false;
 
       // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
-      if (Self.VyhSettings.spojka > -1) then
-       begin
-        Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-        if (Blk <> nil) then Blk.Update();
-       end;
+      if (Self.spojka <> nil) then
+        Self.spojka.Update();
 
       if (Assigned(Self.VyhStav.staveniOKCallback)) then
        begin
@@ -689,43 +686,36 @@ var inp, spojkaInp: TBlkVyhInputs;
         Self.VyhStav.staveniOKCallback := nil;
        end;
       Self.VyhStav.staveniErrCallback := nil;
-     end;
-
-    if ((not Self.VyhStav.staveni_plus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal)) then
-     begin
-      // sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze +
-      // TZaver.staveni je specialni druh zaveru, ktery neumoznuje zmenu stavu vyhybky uzivatelem, ale zaroven nekrici, pokud se zmeni skutecny stav
-      // pouziva se pri staveni JC: vyhybky nechame prestavit, usekum (resp. vyhybkam) ukamzite delime tento zaver a cekame na koncove polohy
-
-      if (((Self.ShouldBeLocked()) and (not Self.MeOrSpojkaZaverStaveni())) or
-          (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> plus))) then
+     end else begin
+      if (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) then
        begin
-        for oblr in Self.OblsRizeni do
-          oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
-        JCDb.RusJC(Self);
-       end;//if Blokovani
-      Self.VyhStav.poloha := plus;
-     end;
+        // sem se dostaneme, pokud se vyhybka poprve nalezne neocekavane v poloze +
+        Self.VyhStav.poloha := plus;
 
-    Self.VyhStav.polohaReal := plus;
+        if ((Self.ShouldBeLocked(false)) or (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> plus))) then
+         begin
+          for oblr in Self.OblsRizeni do
+            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+          JCDb.RusJC(Self);
+         end;
+       end;
+     end;
    end;
 
   if ((inp.minus = isOn) and (inp.plus = isOff)) then
    begin
     //je-li minus vstup 1
-    if (Self.VyhStav.staveni_plus) then Exit;
+    Self.VyhStav.polohaReal := minus;
+    if (Self.VyhStav.staveni_plus) then Exit();
 
-    if (Self.VyhStav.staveni_minus) and (not Self.VyhStav.staveni_plus) then
+    if (Self.VyhStav.staveni_minus) then
      begin
       Self.VyhStav.poloha := minus;
       Self.VyhStav.staveni_minus := false;
 
       // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
-      if (Self.VyhSettings.spojka > -1) then
-       begin
-        Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-        if (Blk <> nil) then Blk.Update();
-       end;
+      if (Self.spojka <> nil) then
+        Self.spojka.Update();
 
       if (Assigned(Self.VyhStav.staveniOKCallback)) then
        begin
@@ -733,23 +723,20 @@ var inp, spojkaInp: TBlkVyhInputs;
         Self.VyhStav.staveniOKCallback := nil;
        end;
       Self.VyhStav.staveniErrCallback := nil;
-     end;
-
-    if ((not Self.VyhStav.staveni_minus) and (Self.VyhStav.poloha <> Self.VyhStav.polohaReal)) then
-     begin
-      //sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze -
-      // redukce menu se tady nekontroluje, protoze vyhybka se z koncove polohy musi vzdy dostat do nepolohy
-      if (((Self.ShouldBeLocked()) and (not Self.MeOrSpojkaZaverStaveni())) or
-          (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> minus))) then
+     end else begin
+      if (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) then
        begin
-        for oblr in Self.OblsRizeni do
-          oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
-        JCDb.RusJC(Self);
-       end;//if Blokovani
-      Self.VyhStav.poloha := minus;
-     end;
+        //sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze -
+        Self.VyhStav.poloha := minus;
 
-    Self.VyhStav.polohaReal := minus;
+        if ((Self.ShouldBeLocked(false)) or (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> minus))) then
+         begin
+          for oblr in Self.OblsRizeni do
+            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+          JCDb.RusJC(Self);
+         end;
+       end;
+     end;
    end;
 
   //2 polohy zaroven = deje se neco divneho
@@ -761,7 +748,7 @@ var inp, spojkaInp: TBlkVyhInputs;
         and (Self.VyhStav.polohaOld <> both)) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Není koncová poloha : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -1695,14 +1682,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.ShouldBeLocked():boolean;
+function TBlkVyhybka.ShouldBeLocked(withZamek: boolean):boolean;
 begin
  Result := (Self.Zaver > TZaver.no) or (Self.vyhZaver) or (Self.intentionalLocked) or
-           (Self.ZamekLocked());
+           ((withZamek) and (Self.ZamekLocked()));
 
  if (Self.spojka <> nil) then
    Result := Result or (Self.spojka.Zaver > TZaver.no) or (Self.spojka.vyhZaver) or
-                       (Self.spojka.intentionalLocked) or (Self.spojka.ZamekLocked());
+                       (Self.spojka.intentionalLocked) or ((withZamek) and (Self.spojka.ZamekLocked()));
 end;
 
 function TBlkVyhybka.ZamekLocked():Boolean;
