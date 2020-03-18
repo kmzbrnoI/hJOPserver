@@ -1599,8 +1599,15 @@ begin
  bg := clBlack;
  if (Self.Stitek <> '') then bg := clTeal;
  if (Self.Vyluka <> '') then bg := clOlive;
- if ((diag.showZaver) and (Self.Zaver > TZaver.no)) then
-   bg := clGreen;
+ if (diag.showZaver) then
+  begin
+   if (Self.Zaver > TZaver.no) then
+     bg := clGreen
+   else if (Self.VyhStav.outputLocked) then
+     bg := clYellow
+   else if (Self.redukce_menu) then
+     bg := clOlive;
+  end;
 
  Result := Result + PrevodySoustav.ColorToStr(bg) + ';' +
                     IntToStr(PrevodySoustav.BoolToInt(Self.NUZ)) + ';' +
