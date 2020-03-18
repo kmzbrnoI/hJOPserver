@@ -141,7 +141,7 @@ type
 implementation
 
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics, TCPORsRef, Prevody;
+     Graphics, TCPORsRef, Prevody, Diagnostics;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin
@@ -772,6 +772,9 @@ begin
 
  bg := clBlack;
  if (Self.Stitek <> '') then bg := clTeal;
+
+ if ((diag.showZaver) and (Self.Zaver)) then
+   bg := clGreen;
 
  if (Self.NOtevreni) then fg := clRed
  else if (Self.UZ) then fg := clWhite
