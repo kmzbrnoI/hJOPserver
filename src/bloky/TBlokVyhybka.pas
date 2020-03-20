@@ -155,7 +155,6 @@ type
     function GetDetekcePolohy():Boolean;
     function GetSpojka():TBlkVyhybka;
     function ShouldBeLocked(withZamek: boolean = true):boolean;
-    function MeOrSpojkaZaverStaveni():boolean;
 
     procedure NpObsazChange(Sender:TObject; data:Integer);
     procedure MapNpEvents();
@@ -1695,11 +1694,6 @@ end;
 function TBlkVyhybka.ZamekLocked():Boolean;
 begin
  Result := (Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen);
-end;
-
-function TBlkVyhybka.MeOrSpojkaZaverStaveni():boolean;
-begin
- Result := (Self.Zaver = TZaver.staveni) or ((Self.spojka <> nil) and (Self.spojka.Zaver = TZaver.staveni));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
