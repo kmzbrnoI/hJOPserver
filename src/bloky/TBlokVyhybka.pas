@@ -155,6 +155,7 @@ type
     function GetDetekcePolohy():Boolean;
     function GetSpojka():TBlkVyhybka;
     function ShouldBeLocked(withZamek: boolean = true):boolean;
+    function ShouldBeLockedIgnoreStaveni():boolean;
 
     procedure NpObsazChange(Sender:TObject; data:Integer);
     procedure MapNpEvents();
@@ -758,7 +759,6 @@ var inp, spojkaInp: TBlkVyhInputs;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVyhybka.UpdateStaveniTimeout();
-var Blk:TBlk;
 begin
  if ((not Self.StaveniPlus) and (not Self.StaveniMinus)) then Exit();
 
@@ -769,11 +769,8 @@ begin
    Self.StaveniMinus := false;
 
    // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
-   if (Self.VyhSettings.spojka > -1) then
-    begin
-     Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-     if (Blk <> nil) then Blk.Update();
-    end;
+   if (Self.spojka <> nil) then
+     spojka.Update();
 
    if (Assigned(Self.VyhStav.staveniErrCallback)) then
     begin
@@ -783,7 +780,6 @@ begin
    Self.VyhStav.staveniOKCallback  := nil;
    Self.Change();
   end;
-
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -814,18 +810,17 @@ begin
     // zamknout ji muzeme kdykoliv
 
     // pokud se nerovna moje poloha, nerovna se i poloha spojky -> obsazenost na spojce apod. je problem
-    if ((Integer(Self.Zaver) > 0) and (Self.Zaver <> TZaver.staveni) or (Self.vyhZaver) or
-        ((spojka <> nil) and ((Integer(spojka.Zaver) > 0) and (spojka.Zaver <> TZaver.staveni) or (spojka.vyhZaver)))) then
+    if (Self.ShouldBeLockedIgnoreStaveni()) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - pod závěrem', 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - zamčena', 'TECHNOLOGIE');
       if (Assigned(callback_err)) then callback_err(self);
       Exit(4);
      end;
     if (((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and (spojka.Obsazeno = TUsekStav.obsazeno))) and (not nouz)) then
      begin
       for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - obsazeno', 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - obsazena', 'TECHNOLOGIE');
       if (Assigned(callback_err)) then callback_err(self);
       Exit(5);
      end;
@@ -876,9 +871,9 @@ begin
      Self.VyhStav.poloha := none;
   end;
 
- Self.VyhStav.staveniErrCallback := callback_Err;
- Self.VyhStav.staveniOKCallback  := callback_OK;
- Self.VyhStav.staveniStart       := Now;
+ Self.VyhStav.staveniErrCallback := callback_err;
+ Self.VyhStav.staveniOKCallback := callback_ok;
+ Self.VyhStav.staveniStart := Now;
 
  if (not zamek) then
   begin
@@ -1040,16 +1035,10 @@ begin
 end;
 
 procedure TBlkVyhybka.MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
-var Blk:TBlk;
 begin
  Self.vyhZaver := true;
-
- if (Self.VyhSettings.spojka > -1) then
-  begin
-   Blky.GetBlkByID(Self.VyhSettings.spojka, Blk);
-   if ((Assigned(Blk)) and (Blk.typ = _BLK_VYH)) then
-    (Blk as TBlkVyhybka).vyhZaver := true;
-  end;
+ if (Self.spojka <> nil) then
+   Self.spojka.vyhZaver := true;
 end;
 
 procedure TBlkVyhybka.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1689,6 +1678,16 @@ begin
  if (Self.spojka <> nil) then
    Result := Result or (Self.spojka.Zaver > TZaver.no) or (Self.spojka.vyhZaver) or
                        (Self.spojka.intentionalLocked) or ((withZamek) and (Self.spojka.ZamekLocked()));
+end;
+
+function TBlkVyhybka.ShouldBeLockedIgnoreStaveni():boolean;
+begin
+ Result := ((Self.Zaver > TZaver.no) and (Self.Zaver <> TZaver.staveni)) or
+           (Self.vyhZaver) or (Self.intentionalLocked) or (Self.ZamekLocked());
+
+ if (Self.spojka <> nil) then
+   Result := Result or ((Self.spojka.Zaver > TZaver.no) and (Self.spojka.Zaver <> TZaver.staveni)) or
+                        (Self.spojka.vyhZaver) or (Self.spojka.intentionalLocked) or (Self.spojka.ZamekLocked());
 end;
 
 function TBlkVyhybka.ZamekLocked():Boolean;
