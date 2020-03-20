@@ -1044,8 +1044,10 @@ procedure TBlky.ZakladniPolohaVyhybek();
 var blk:TBlk;
  begin
   for blk in Self.data do
-    if (Blk.typ = _BLK_VYH) then
-      (Blk as TBlkVyhybka).SetPoloha(plus);
+    if ((Blk.typ = _BLK_VYH) and (TBlkVyhybka(Blk).Poloha <> TVyhPoloha.plus) and (not TBlkVyhybka(Blk).outputLocked) and
+        (TBlkVyhybka(Blk).Obsazeno <> TUsekStav.obsazeno) and
+        ((TBlkVyhybka(Blk).spojka = nil) or (TBlkVyhybka(Blk).spojka.Obsazeno <> TUsekStav.obsazeno))) then
+      TBlkVyhybka(Blk).SetPoloha(plus);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////

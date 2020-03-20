@@ -1534,8 +1534,14 @@ end;
 
 procedure TF_Main.PM_ResetVClick(Sender: TObject);
  begin
-  Blky.ZakladniPolohaVyhybek();
-  writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
+  if (Application.MessageBox('Pozor: tato operace zaráz přestaví všechny výhybky na kolejišti, '+
+                             'což může způsobit přetížení napájecích zdrojů. Chcete skutečně pokračovat?', 'Otázka',
+                             MB_YESNO OR MB_ICONWARNING OR MB_DEFBUTTON2) = mrYes) then
+   begin
+    Blky.ZakladniPolohaVyhybek();
+    writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
+    Application.MessageBox('Výhybky přestaveny do záklaních poloh.', 'Informace', MB_OK OR MB_ICONINFORMATION);
+   end;
  end;
 
 procedure TF_Main.PM_RegulatorClick(Sender: TObject);
