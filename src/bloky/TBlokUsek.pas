@@ -319,28 +319,35 @@ end;//dtor
 procedure TBlkUsek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 var str:TStrings;
     s:string;
+    sprIndex: Integer;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
  Self.UsekSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
- Self.UsekSettings.Lenght   := ini_tech.ReadFloat(section,'delka',0);
- Self.UsekSettings.Zesil    := ini_tech.ReadString(section,'zesil','');
- Self.UsekSettings.SmcUsek  := ini_tech.ReadBool(section, 'smc', false);
- Self.UsekSettings.maxSpr   := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_SPR);
+ Self.UsekSettings.Lenght := ini_tech.ReadFloat(section,'delka',0);
+ Self.UsekSettings.Zesil := ini_tech.ReadString(section,'zesil','');
+ Self.UsekSettings.SmcUsek := ini_tech.ReadBool(section, 'smc', false);
+ Self.UsekSettings.maxSpr := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_SPR);
 
  if (Boosters[Self.UsekSettings.Zesil] = nil) then
    writelog('WARNING: Blok '+Self.name + ' ('+IntToStr(Self.id)+
             ') nemá návaznost na validní zesilovač', WR_ERROR);
 
- Self.UsekStav.Stit         := ini_stat.ReadString(section, 'stit', '');
- Self.UsekStav.Vyl          := ini_stat.ReadString(section, 'vyl' , '');
+ Self.UsekStav.Stit := ini_stat.ReadString(section, 'stit', '');
+ Self.UsekStav.Vyl := ini_stat.ReadString(section, 'vyl' , '');
 
  str := TStringList.Create();
  try
    Self.UsekStav.soupravy.Clear();
    ExtractStringsEx([','], [], ini_stat.ReadString(section, 'spr' , ''), str);
    for s in str do
-     Self.UsekStav.soupravy.Add(Soupravy.GetSprIndexByName(s));
+    begin
+     sprIndex := Soupravy.GetSprIndexByName(s);
+     if (sprIndex > -1) then
+       Self.UsekStav.soupravy.Add(sprIndex)
+     else
+       writelog('WARNING: souprava '+s+' na bloku '+Self.name+' neexistuje, mažu soupravu', WR_DATA);
+    end;
 
    // houkaci udalosti
    try
