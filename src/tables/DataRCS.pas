@@ -66,7 +66,7 @@ var i, j:integer;
         continue;
 
     LI := Self.LV.Items.Add();
-    LI.Caption := IntToStr(i);
+    LI.Caption := IntToStr(i) + ' (0x' + IntToHex(i, 2) + ')';
     for j := 0 to Self.LV.Columns.Count-1 do
       LI.SubItems.Add('');
 
@@ -101,7 +101,7 @@ var LI:TListItem;
 begin
  line := Self.GetLineForNewBoard(addr);
  LI := Self.LV.Items.Insert(line);
- LI.Caption := IntToStr(addr);
+ LI.Caption := IntToStr(addr) + ' (0x' + IntToHex(i, 2) + ')';
  for i := 0 to Self.LV.Columns.Count-1 do
    LI.SubItems.Add('');
 
