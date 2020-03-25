@@ -66,6 +66,7 @@ var i, j:integer;
         continue;
 
     LI := Self.LV.Items.Add();
+    LI.Data := Pointer(i);
     LI.Caption := IntToStr(i) + ' (0x' + IntToHex(i, 2) + ')';
     for j := 0 to Self.LV.Columns.Count-1 do
       LI.SubItems.Add('');
@@ -81,7 +82,7 @@ procedure TRCSTableData.UpdateTable();
 var item: TListItem;
 begin
  for item in Self.LV.Items do
-   Self.UpdateBoard(StrToInt(item.Caption));
+   Self.UpdateBoard(Integer(item.Data));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,6 +102,7 @@ var LI:TListItem;
 begin
  line := Self.GetLineForNewBoard(addr);
  LI := Self.LV.Items.Insert(line);
+ LI.Data := Pointer(addr);
  LI.Caption := IntToStr(addr) + ' (0x' + IntToHex(i, 2) + ')';
  for i := 0 to Self.LV.Columns.Count-1 do
    LI.SubItems.Add('');
