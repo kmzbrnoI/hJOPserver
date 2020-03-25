@@ -471,7 +471,11 @@ begin
  Self.Stav.StanovisteA := THVStanoviste(ini.ReadInteger(section, 'stanoviste_a', 0));
 
  try
-   Self.Stav.last_used := StrToDateTime(ini.ReadString(section, 'last_used', ''));
+   str := ini.ReadString(section, 'last_used', '');
+   if (str <> '') then
+     Self.Stav.last_used := StrToDateTime(str)
+   else
+     Self.Stav.last_used := 0;
  except
    Self.Stav.last_used := 0;
  end;
