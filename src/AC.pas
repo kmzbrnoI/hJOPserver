@@ -540,7 +540,7 @@ var cmd:integer;
 
           // stavit JC
           if (OblR.stack.volba = TORStackVolba.VZ) then
-            OblR.stack.AddJC(JC, panel, false)
+            OblR.stack.AddJC(JC, panel, false, false)
           else
             JC.StavJC(panel, OblR);
 

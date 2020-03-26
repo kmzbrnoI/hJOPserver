@@ -1070,7 +1070,7 @@ end;
 
 // pokud volba nebyla uspesna, vraci false a v tom pripade je vyvolano menu
 function TBlkUsek.MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
-var Blk:TBlk;
+var nav:TBlkNav;
 begin
  if ((Self.UsekStav.KonecJC <> TZaver.no) and (not (SenderOR as TOR).vb.Contains(Self))) then
   begin
@@ -1080,17 +1080,17 @@ begin
 
  if ((SenderOR as TOR).vb.Contains(Self)) then (SenderOR as TOR).vb.Remove(self);
 
- Blk := Blky.GetBlkNavZacatekVolba((SenderOR as TOR).id);
- if (Blk = nil) then Exit(false);
+ nav := Blky.GetBlkNavZacatekVolba((SenderOR as TOR).id) as TBlkNav;
+ if (nav = nil) then Exit(false);
 
- case ((Blk as TBlkNav).ZacatekVolba) of
+ case (nav.ZacatekVolba) of
   TBlkNavVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
   TBlkNavVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
   TBlkNavVolba.NC, TBlkNavVolba.PP
                    : Self.UsekStav.KonecJC := TZaver.nouz;
  end;//case
 
- JCDb.StavJC(Blk, Self, SenderPnl, SenderOR);
+ JCDb.StavJC(nav, Self, SenderPnl, SenderOR, nav.ZacatekAB);
 
  Self.Change();
  Result := true;

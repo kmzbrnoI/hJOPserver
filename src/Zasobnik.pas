@@ -22,6 +22,7 @@ type
    JC:TObject;
    nouz:boolean;
    Pnl:TIDContext;
+   ab:boolean;
   end;
 
   // povel k zapnuti zadosti o tratovy souhlas
@@ -85,7 +86,7 @@ type
       destructor Destroy(); override;
 
       procedure ParseCommand(SenderPnl:TIdContext; data:TStrings);
-      procedure AddJC(JC:TObject; SenderPnl:TIDContext; nouz:boolean);
+      procedure AddJC(JC:TObject; SenderPnl:TIDContext; nouz:boolean; ab:boolean);
       procedure AddZTS(uvazka:TObject; SenderPnl:TIDContext);
       procedure AddUTS(uvazka:TObject; SenderPnl:TIDContext);
 
@@ -280,7 +281,7 @@ begin
 
  if (Self.stack[0].ClassType = TORStackCmdJC) then begin
    cmd := (Self.stack[0] as TORSTackCmdJC);
-   (cmd.JC as TJC).StavJC(SenderPnl, Self.OblR, Self, cmd.nouz);
+   (cmd.JC as TJC).StavJC(SenderPnl, Self.OblR, Self, cmd.nouz, false, cmd.ab);
   end else if (Self.stack[0].ClassType = TORStackCmdZTS) then
    ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkUvazka).DoZTS(SenderPnl, Self.OblR)
   else if (Self.stack[0].ClassType = TORStackCmdUTS) then
@@ -317,13 +318,14 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // Pridani jizdni cesty do zasobniku:
-procedure TORStack.AddJC(JC:TObject; SenderPnl:TIDContext; nouz:boolean);
+procedure TORStack.AddJC(JC:TObject; SenderPnl:TIDContext; nouz:boolean; ab:boolean);
 var cmd:TORStackCmdJC;
 begin
  cmd := TORStackCmdJC.Create();
- cmd.JC   := JC;
- cmd.Pnl  := SenderPnl;
+ cmd.JC := JC;
+ cmd.Pnl := SenderPnl;
  cmd.nouz := nouz;
+ cmd.ab := ab;
 
  try
   Self.AddCmd(cmd);
@@ -477,7 +479,7 @@ begin
 
  // pokud nejsou zadne bariery, stavime jizdni cestu
  (Self.OblR as TOR).BroadcastData('ZAS;FIRST;0');
- JC.StavJC(cmd.Pnl, Self.OblR, Self);
+ JC.StavJC(cmd.Pnl, Self.OblR, Self, false, false, cmd.ab);
  Self.UPOenabled := false;
  bariery.Free();
 end;

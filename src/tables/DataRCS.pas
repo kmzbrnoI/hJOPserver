@@ -103,7 +103,7 @@ begin
  line := Self.GetLineForNewBoard(addr);
  LI := Self.LV.Items.Insert(line);
  LI.Data := Pointer(addr);
- LI.Caption := IntToStr(addr) + ' (0x' + IntToHex(i, 2) + ')';
+ LI.Caption := IntToStr(addr) + ' (0x' + IntToHex(addr, 2) + ')';
  for i := 0 to Self.LV.Columns.Count-1 do
    LI.SubItems.Add('');
 

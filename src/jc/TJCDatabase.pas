@@ -37,7 +37,7 @@ type
      procedure UpdateJCIndexes();
 
      procedure Update();
-     procedure StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject);
+     procedure StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter: Boolean);
 
      function AddJC(JCdata:TJCprop):TJC;
      procedure RemoveJC(index:Integer);
@@ -264,7 +264,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se vola zvnejsi, kdyz chceme postavit jakoukoliv JC
-procedure TJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject);
+procedure TJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter: Boolean);
 var oblr:TOR;
     startNav:TBlkNav;
     senderOblr:TOR;
@@ -284,7 +284,12 @@ begin
 
    if (SenderOblr.stack.volba = TORStackVolba.VZ) then
     begin
-     SenderOblr.stack.AddJC(jc, SenderPnl, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
+     SenderOblr.stack.AddJC(
+      jc,
+      SenderPnl,
+      (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP),
+      abAfter
+     );
 
      // zrusime zacatek, konec a variantni body
      startNav.ZacatekVolba := TBlkNavVOlba.none;
@@ -292,13 +297,20 @@ begin
      SenderOblr.ClearVb();
     end else begin
      SenderOblr.vb.Clear(); // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
-     jc.StavJC(SenderPnl, SenderOR, nil, (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP));
+     jc.StavJC(
+       SenderPnl,
+       SenderOR,
+       nil,
+       (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP),
+       false,
+       abAfter
+     );
     end;
   end else begin
 
    // kontrola staveni slozene jizdni cesty
    if ((startNav.ZacatekVolba = TBlkNavVolba.VC) or (startNav.ZacatekVolba = TBlkNavVolba.PC)) then
-     if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR)) then Exit();
+     if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR, abAfter)) then Exit();
 
    (EndBlk as TBlkUsek).KonecJC := TZaver.no;
    ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');

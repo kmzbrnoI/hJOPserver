@@ -37,7 +37,7 @@ type
      function GetJCByID(id:Integer):TMultiJC;
      function GetJCIndexByID(id:Integer):Integer;
 
-     function StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject):boolean;   // vraci true, pokud nasel prislusnou cestu
+     function StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter:Boolean):boolean;
      function FindMJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TMultiJC;
      function IsAnyMJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
 
@@ -256,7 +256,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject):boolean;
+function TMultiJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter:Boolean):boolean;
 var mJC: TMultiJC;
     j: Integer;
 begin
@@ -269,7 +269,7 @@ begin
     begin
      // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
      for j := 0 to mJC.data.JCs.Count-1 do
-       (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false);
+       (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false, abAfter);
 
      (StartBlk as TBlkNav).ZacatekVolba := TBlkNavVOlba.none;
      (EndBlk as TBlkUsek).KonecJC := TZaver.no;

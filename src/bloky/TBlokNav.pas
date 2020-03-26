@@ -43,7 +43,8 @@ type
 
  // stav bloku Nav
  TBlkNavStav = record
-  ZacatekVolba:TBlkNavVolba;                     // nazatek volby jidni cesty
+  ZacatekVolba:TBlkNavVolba;                     // zacatek volby jidni cesty
+  ZacatekAB:Boolean;                             // jestli je zacatek volby JC v rezimu AB
   Navest:Integer;                                // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
   cilova_navest:Integer;                         // navest, ktera ma byt nastavena
   navest_old:Integer;                            // behem staveni obsahuje byvalou navest
@@ -77,6 +78,7 @@ type
    //defaultni stav
    _def_Nav_stav:TBlkNavStav = (
      ZacatekVolba : none;
+     ZacatekAB : false;
      Navest : -1;
      ABJC : nil;
      ZAM : false;
@@ -231,6 +233,7 @@ type
     //stavove promenne
     property Navest:Integer read NavStav.Navest write mSetNavest;
     property ZacatekVolba:TBlkNavVolba read NavStav.ZacatekVolba write SetZacatekVolba;
+    property ZacatekAB:Boolean read NavStav.ZacatekAB;
     property AB:boolean read GetAB write SetAB;
     property ABJC:TJC read NavStav.ABJC write SetABJC;
     property ZAM:boolean read NavStav.ZAM write SetZAM;
@@ -849,7 +852,7 @@ end;
 procedure TBlkNav.SetAB(ab:boolean);
 begin
  if (ab) then
-   raise EInvalidOperation.Create('You can only disable AB via SetAB!');
+   raise EInvalidOperation.Create('You can only enable AB via SetABJC!');
 
  if (Self.AB and (not ab)) then
    Self.ABJC := nil;
@@ -859,6 +862,8 @@ procedure TBlkNav.SetZacatekVolba(typ:TBlkNavVolba);
 begin
  if (Self.NavStav.ZacatekVolba = typ) then Exit();
  Self.NavStav.ZacatekVolba := typ;
+ if (typ = TBlkNavVolba.none) then
+   Self.NavStav.ZacatekAB := false;
  Self.Change();
 end;
 
@@ -911,6 +916,7 @@ begin
    TOR(SenderOR).ClearVb(); // smazeme dosavadni seznam variantnich bodu
   end;
  Self.ZacatekVolba := TBlkNavVolba.VC;
+ Self.NavStav.ZacatekAB := false;
 end;
 
 procedure TBlkNav.MenuVCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -928,6 +934,7 @@ begin
  Blk := BLky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
  Self.ZacatekVolba := TBlkNavVolba.PC;
+ Self.NavStav.ZacatekAB := false;
 end;
 
 procedure TBlkNav.MenuPCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -995,12 +1002,20 @@ end;
 
 procedure TBlkNav.MenuABStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.ABJC := Self.DNjc;
+ if (Self.DNjc <> nil) then
+   Self.ABJC := Self.DNjc
+ else begin
+   Self.MenuVCStartClick(SenderPnl, SenderOR);
+   Self.NavStav.ZacatekAB := true;
+ end;
 end;
 
 procedure TBlkNav.MenuABStopClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.ABJC := nil;
+ if (Self.ABJC <> nil) then
+   Self.ABJC := nil
+ else
+   Self.MenuVCStopClick(SenderPnl, SenderOR);
 end;
 
 procedure TBlkNav.MenuLockClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1179,12 +1194,16 @@ begin
  if (Self.NavSettings.zamknuto) then Exit();
 
  if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-        (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8) and (not Self.AB))
+        (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> _NAV_PRIVOL) and (not Self.AB))
       or ((SenderOR as TOR).stack.volba = VZ)) and
      (not Self.autoblok)) then
   begin
     case (Self.NavStav.ZacatekVolba) of
-     TBlkNavVolba.VC : Result := Result + 'VC<,';
+     TBlkNavVolba.VC :
+       if (Self.ZacatekAB) then
+         Result := Result + 'AB<,'
+       else
+         Result := Result + 'VC<,';
      TBlkNavVolba.PC : Result := Result + 'PC<,';
      TBlkNavVolba.NC : Result := Result + 'PN<,';
      TBlkNavVolba.PP : Result := Result + 'PP<,';
@@ -1193,7 +1212,11 @@ begin
       if (Self.NavRel.SymbolType = TBlkNavSymbol.hlavni) then
        begin
         if ((JCDb.IsAnyVCAvailable(Self)) or ((SenderOR as TOR).stack.volba = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
+         begin
           Result := Result + 'VC>,';
+          if (Self.DNjc = nil) then
+            Result := Result + 'AB>,';
+         end;
         Result := Result + '!PN>,';
        end;
       if (JCDb.IsAnyPC(Self)) then
@@ -1207,20 +1230,20 @@ begin
     Result := Result + '-,';
   end;
 
- if ((Self.Navest > 0) and (not Self.autoblok)) then
+ if ((Self.Navest > _NAV_STUJ) and (not Self.autoblok)) then
    Result := Result + 'STUJ,';
 
- if (Self.Navest = 8) then
+ if (Self.Navest = _NAV_PRIVOL) then
    Result := Result + '!PPN,';
 
  if (Self.DNjc <> nil) then
   begin
    // bud je cesta primo postavena, nebo je zrusena, ale podminky jsou vyhovujici pro DN
    // plati jen pro postavenou JC
-   if ((not Self.ZAM) and (Self.Navest = 0) and (Self.DNjc.CanDN())) then
+   if ((not Self.ZAM) and (Self.Navest = _NAV_STUJ) and (Self.DNjc.CanDN())) then
      Result := Result + 'DN,';
 
-   if (((Self.Navest > 0) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1))
+   if (((Self.Navest > _NAV_STUJ) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1))
        and (not Self.RCinProgress())) then
     begin
      Result := Result + 'RC,';
@@ -1235,13 +1258,12 @@ begin
  if (Self.AB) then
    Result := Result + 'AB<,';
 
- //7=ZAM
  if (Self.NavStav.ZAM) then
    Result := Result + 'ZAM<,'
-  else
+ else
    Result := Result + 'ZAM>,';
 
- if ((Self.Navest <> 8) and (Self.CanIDoRNZ)) then
+ if ((Self.Navest <> _NAV_PRIVOL) and (Self.CanIDoRNZ)) then
   Result := Result + '!RNZ,';
 
  // DEBUG: jednoduche nastaveni IR pri knihovne simulator

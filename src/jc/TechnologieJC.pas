@@ -108,6 +108,7 @@ type
    ncBarieryCntLast:Integer;                                                    // posledni pocet barier ve staveni nouzove cesty
    nextVyhybka:Integer;                                                         // vyhybka, ktera se ma stavit jako dalsi
                                                                                 // po postaveni vsechn vyhybek plynule prechazi do indexu seznamu odvratu
+   ab:Boolean;
   end;
 
   // vlastnosti jizdni cesty nemenici se se stavem:
@@ -196,7 +197,8 @@ type
     _def_jc_staveni : TJCStaveni = (
      Krok : 0;
      RozpadBlok : -5;
-     RozpadRuseniBlok : -5
+     RozpadRuseniBlok : -5;
+     ab: false;
     );
 
    private
@@ -280,7 +282,7 @@ type
       procedure SaveData(ini:TMemIniFile; section:string);
 
       procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject;                  // pozadavek o postaveni jizdni cesty
-          from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false);
+          from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false; abAfter:Boolean = false);
 
 
       function CanDN():boolean;                                                 // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
@@ -1142,7 +1144,7 @@ end;
 // tato fce ma za ukol zkontrolovat vstupni podminky jizdni cesty
 // tato funkce jeste nic nenastavuje!
 procedure TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject; from_stack:TObject = nil;
-                     nc:boolean = false; fromAB:boolean = false);
+                     nc:boolean = false; fromAB:boolean = false; abAfter: Boolean = false);
 var i:Integer;
     bariery:TJCBariery;
     bariera:TJCBariera;
@@ -1157,9 +1159,10 @@ var i:Integer;
    Self.fstaveni.TimeOut := Now + EncodeTime(0, 0, _JC_TIMEOUT_SEC, 0);
 
   Self.fstaveni.from_stack := from_stack;
-  Self.fstaveni.SenderOR   := SenderOR;
-  Self.fstaveni.SenderPnl  := SenderPnl;
-  Self.fstaveni.nc         := nc;
+  Self.fstaveni.SenderOR := SenderOR;
+  Self.fstaveni.SenderPnl := SenderPnl;
+  Self.fstaveni.nc := nc;
+  Self.fstaveni.ab := (abAfter) and (Self.fproperties.TypCesty = TJCType.vlak);
 
   writelog('JC '+Self.Nazev+' - požadavek na stavění, kontroluji podmínky', WR_VC);
 
@@ -1760,6 +1763,9 @@ var i,j:Integer;
 
       navestidlo.PropagatePOdjToTrat();
 
+      if ((Self.fstaveni.ab) and (not navestidlo.AB)) then
+        navestidlo.ABJC := Self;
+
       writelog('Postavena JC '+Self.Nazev, WR_VC);
    end;//case 16
 
@@ -2069,6 +2075,7 @@ begin
  Self.fstaveni.nextVyhybka := -1;
  Self.Krok := 0;
  Self.fstaveni.nc := false;
+ Self.fstaveni.ab := false;
  Self.RusZacatekJC();
  Self.RusVBJC();
  Self.RusKonecJC();
