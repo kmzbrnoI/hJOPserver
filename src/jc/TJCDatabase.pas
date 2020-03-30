@@ -196,7 +196,7 @@ begin
        JC.UsekyRusNC();
 
 
-     if (JC.Staveni) then
+     if ((JC.Staveni) or (JC.Krok = _JC_KROK_CEKANI_POSLEDNI_USEK)) then
       begin
        JC.UpdateStaveni();
        JC.UpdateTimeOut();
@@ -619,7 +619,7 @@ begin
 
      jc := JCDb.GetJCByIndex(jcs[i]);
      Blky.GetBlkByID(JCDb.GetJCByIndex(jcs[i]).data.NavestidloBlok, tmpblk);
-     if ((TBlkNav(tmpblk).Navest > 0) and (TBlkNav(tmpblk).DNjc = jc)) then
+     if (TBlkNav(tmpblk).DNjc = jc) then
       begin
        JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
        for oblr in (tmpBlk as TBlkNav).OblsRizeni do
