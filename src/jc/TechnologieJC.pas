@@ -49,6 +49,25 @@ const
   _NC_TIMEOUT_MIN = 1;                                                          // timeout pro staveni nouzove cesty (vlakove i posunove) v minutach
   _JC_MAX_VYH_STAVENI = 4;                                                      // kolik vyhybek se muze stavit zaroven v JC
 
+  _KROK_DEFAULT = 0;
+  _KROK_KRIT_BARIERY = 1;
+  _KROK_POTVR_BARIERY = 5;
+  _KROK_POTVR_SEKV = 6;
+
+  _JC_KROK_INIT = 10;
+  _JC_KROK_CEKANI_VYHYBKA_POLOHA = 11;
+  _JC_KROK_ZAVRIT_PREJEZDY = 12;
+  _JC_KROK_CEKANI_PREJEZDY = 13;
+  _JC_KROK_FINALNI_ZAVER = 14;
+  _JC_KROK_CEKANI_NAVESTIDLO = 15;
+  _JC_KROK_FINISH = 16;
+
+  _NC_KROK_INIT = 100;
+  _NC_KROK_BARIERA_UPDATE = 101;
+  _NC_KROK_BARIERY_POTVRZENY = 102;
+  _NC_KROK_CEKANI_NAVESTIDLO = 103;
+  _NC_KROK_FINISH = 104;
+
 type
   TJCType = (vlak = 1, posun = 2, nouz = 3);
   TJCNextNavType = (zadna = 0, trat = 1, blok = 2);
@@ -108,7 +127,8 @@ type
    ncBarieryCntLast:Integer;                                                    // posledni pocet barier ve staveni nouzove cesty
    nextVyhybka:Integer;                                                         // vyhybka, ktera se ma stavit jako dalsi
                                                                                 // po postaveni vsechn vyhybek plynule prechazi do indexu seznamu odvratu
-   ab:Boolean;
+   ab:Boolean;                                                                  // po postaveni JC automaticky zavest AB
+   prjWasClosed:Boolean;                                                        // jiz byl vydan povel k zavreni prejezdu
   end;
 
   // vlastnosti jizdni cesty nemenici se se stavem:
@@ -195,10 +215,11 @@ type
 
    private const
     _def_jc_staveni : TJCStaveni = (
-     Krok : 0;
+     Krok : _KROK_DEFAULT;
      RozpadBlok : -5;
      RozpadRuseniBlok : -5;
      ab: false;
+     prjWasClosed: false;
     );
 
    private
@@ -207,6 +228,7 @@ type
      fOnIdChanged: TNotifyEvent;
      fOnNavChanged: ENavChanged;
 
+      procedure SetInitKrok();
       procedure SetProperties(prop:TJCProp);
 
       procedure RusZacatekJC();
@@ -1163,74 +1185,68 @@ var i:Integer;
   Self.fstaveni.SenderPnl := SenderPnl;
   Self.fstaveni.nc := nc;
   Self.fstaveni.ab := (abAfter) and (Self.fproperties.TypCesty = TJCType.vlak);
+  Self.fstaveni.prjWasClosed := false;
 
   writelog('JC '+Self.Nazev+' - požadavek na stavění, kontroluji podmínky', WR_VC);
 
   bariery := Self.KontrolaPodminek(Self.fstaveni.nc);
-
-  // ignorujeme AB zaver pokud je staveno z AB seznamu
-  if (fromAB) then
-    for i := bariery.Count-1 downto 0 do
-      if (bariery[i].typ = _JCB_USEK_AB) then
-        bariery.Delete(i);
-
   upo := TList<TUPOItem>.Create;
+  try
+    // ignorujeme AB zaver pokud je staveno z AB seznamu
+    if (fromAB) then
+      for i := bariery.Count-1 downto 0 do
+        if (bariery[i].typ = _JCB_USEK_AB) then
+          bariery.Delete(i);
 
-  // existuji kriticke bariery?
-  critical := false;
-  for bariera in bariery do
-   begin
-    if ((Self.CriticalBariera(bariera.typ)) or (not Self.WarningBariera(bariera.typ))) then
+
+    // existuji kriticke bariery?
+    critical := false;
+    for bariera in bariery do
      begin
-      critical := true;
-      upo.Add(Self.JCBarieraToMessage(bariera));
+      if ((Self.CriticalBariera(bariera.typ)) or (not Self.WarningBariera(bariera.typ))) then
+       begin
+        critical := true;
+        upo.Add(Self.JCBarieraToMessage(bariera));
+       end;
      end;
-   end;
 
-  if (critical) then
-   begin
-    // kriticke bariey existuji -> oznamim je
-    Self.Krok := 1;
-    writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' bariér, ukončuji stavění', WR_VC);
-    ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
+    if (critical) then
+     begin
+      // kriticke bariey existuji -> oznamim je
+      Self.Krok := _KROK_KRIT_BARIERY;
+      writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' bariér, ukončuji stavění', WR_VC);
+      ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
+      Exit();
+     end else begin
+      // bariery k potvrzeni
+      if ((bariery.Count > 0) or ((nc) and (from_stack <> nil))) then
+       begin
+        writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' warning bariér, žádám potvrzení...', WR_VC);
+        for i := 0 to bariery.Count-1 do
+         upo.Add(Self.JCBarieraToMessage(bariery[i]));
+
+        // pokud se jedna o NC ze zasobniku, zobrazuji jeste upozorneni na NC
+        if ((nc) and (from_stack <> nil)) then
+         begin
+          item[0] := GetUPOLine('Pozor !', taCenter, clYellow, $A0A0A0);
+          item[1] := GetUPOLine('Stavění nouzové cesty.');
+          item[2] := GetUPOLine('');
+          upo.Add(item);
+         end;
+
+        ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
+        Self.Krok := _KROK_POTVR_BARIERY;
+        Exit();
+       end;
+     end;
+
+    // v jzdni ceste nejsou zadne bariery -> stavim
+    writelog('JC '+Self.Nazev+' : žádné bariéry, stavím', WR_VC);
+    Self.SetInitKrok();
+  finally
     bariery.Free();
     upo.Free();
-    Exit();
-   end else begin
-    // bariery k potvrzeni
-    if ((bariery.Count > 0) or ((nc) and (from_stack <> nil))) then
-     begin
-      writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' warning bariér, žádám potvrzení...', WR_VC);
-      for i := 0 to bariery.Count-1 do
-       upo.Add(Self.JCBarieraToMessage(bariery[i]));
-
-      // pokud se jedna o NC ze zasobniku, zobrazuji jeste upozorneni na NC
-      if ((nc) and (from_stack <> nil)) then
-       begin
-        item[0] := GetUPOLine('Pozor !', taCenter, clYellow, $A0A0A0);
-        item[1] := GetUPOLine('Stavění nouzové cesty.');
-        item[2] := GetUPOLine('');
-        upo.Add(item);
-       end;
-
-      ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
-      Self.Krok := 5;
-      bariery.Free();
-      upo.Free();
-      Exit();
-     end;
-   end;
-
-  // v jzdni ceste nejsou zadne bariery -> stavim
-  writelog('JC '+Self.Nazev+' : žádné bariéry, stavím', WR_VC);
-
-  if (Self.fstaveni.nc) then
-    Self.Krok := 100
-  else
-    Self.Krok := 10;
-
-  bariery.Free();
-  upo.Free();
+  end;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1242,7 +1258,7 @@ var
     i:Integer;
 begin
  // pro potvrzovaci sekvenci vyluky by mel byt krok '6'
- if (Self.Krok <> 6) then Exit;
+ if (Self.Krok <> _KROK_POTVR_SEKV) then Exit;
 
  if (not success) then
   begin
@@ -1273,11 +1289,8 @@ begin
    Exit();
   end;
 
- writelog('JC '+Self.Nazev+' : krok 2 : povrzovaci sekvence OK',WR_VC);
- if (Self.fstaveni.nc) then
-   Self.Krok := 100
- else
-   Self.Krok := 10;
+ writelog('JC '+Self.Nazev+' : krok 2 : povrzovaci sekvence OK', WR_VC);
+ Self.SetInitKrok();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1337,22 +1350,19 @@ begin
      ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.PS_vylCallback, (Self.fstaveni.SenderOR as TOR),
         'Jízdní cesta s potvrzením', TBlky.GetBlksList(nav, usek), podm);
 
-   Self.Krok := 6;
+   Self.Krok := _KROK_POTVR_SEKV;
   end else begin
    // ne, takoveto bariery neexistuji -> stavim jizdni cestu
-   if (Self.fstaveni.nc) then
-     Self.Krok := 100
-   else
-     Self.Krok := 10;
+   Self.SetInitKrok();
   end;
 end;//proceudre
 
 procedure TJC.UPO_EscCallback(Sender:TObject);
 begin
- if (Self.Krok = 5) then
+ if (Self.Krok = _KROK_POTVR_BARIERY) then
   begin
    Self.CancelStaveni();
-   Self.Krok := 0;
+   Self.Krok := _KROK_DEFAULT;
   end;
 end;
 
@@ -1365,7 +1375,7 @@ var i,j:Integer;
     blk:TBlk;
     aZaver:TJCType;
     neprofil:TBlkUsek;
-    uzavren,uzavren_glob:boolean;
+    uzavren,anyUzavren:boolean;
     str:string;
     npCall:^TNPCallerData;
     spri:Integer;
@@ -1397,7 +1407,7 @@ var i,j:Integer;
   // staveni vlakovych a posunovych cest:
 
   case (Self.Krok) of
-   10:begin
+   _JC_KROK_INIT:begin
       // nejprve priradime uvolneni zaveru posledniho bloku uvolneni zaveru predposledniho bloku
       if (Self.fproperties.Useky.Count > 1) then
        begin
@@ -1479,12 +1489,12 @@ var i,j:Integer;
         zamek.Zaver := true;
        end;
 
-      Self.Krok := 11;
+      Self.Krok := _JC_KROK_CEKANI_VYHYBKA_POLOHA;
       writelog('Krok 11 : vyhybky: poloha: detekce',WR_VC);
      end;//case 0
 
 
-   11:begin
+   _JC_KROK_CEKANI_VYHYBKA_POLOHA:begin
       for vyhZaver in Self.fproperties.Vyhybky do
        begin
         Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
@@ -1543,13 +1553,14 @@ var i,j:Integer;
          end;
        end;
 
-      Self.Krok := 12;
+      Self.Krok := _JC_KROK_ZAVRIT_PREJEZDY;
      end;//case 1
 
 
-   12:begin
+   _JC_KROK_ZAVRIT_PREJEZDY:begin
        // prejezdy
-       uzavren_glob := false;
+       Self.fstaveni.prjWasClosed := true;
+       anyUzavren := false;
        for i := 0 to Self.fproperties.Prejezdy.Count-1 do
         begin
          prjZaver := Self.fproperties.Prejezdy[i];
@@ -1575,7 +1586,7 @@ var i,j:Integer;
              CreateChangeEvent(ceCaller.NullPrejezdZaver, prjZaver.Prejezd));
 
            uzavren := true;
-           uzavren_glob := true;
+           anyUzavren := true;
           end else begin
 
            // vlakova cesta:
@@ -1594,7 +1605,7 @@ var i,j:Integer;
                  CreateChangeEvent(ceCaller.NullPrejezdZaver, prjZaver.Prejezd));
 
                uzavren := true;
-               uzavren_glob := true;
+               anyUzavren := true;
                break;
               end;
             end;//for j
@@ -1614,15 +1625,15 @@ var i,j:Integer;
           end;
         end;//for i
 
-      if (uzavren_glob) then
-       Self.Krok := 13
+      if (anyUzavren) then
+       Self.Krok := _JC_KROK_CEKANI_PREJEZDY
       else
-       Self.Krok := 14;
+       Self.Krok := _JC_KROK_FINALNI_ZAVER;
 
      end;
 
 
-   13:begin
+   _JC_KROK_CEKANI_PREJEZDY:begin
        // kontrola stavu prejezdu
        for prjZaver in Self.fproperties.Prejezdy do
         begin
@@ -1635,11 +1646,11 @@ var i,j:Integer;
          writelog('Krok 13 : prejezd '+prejezd.name+' uzavren', WR_VC);
         end;//for i
 
-      Self.Krok := 14;
+      Self.Krok := _JC_KROK_FINALNI_ZAVER;
      end;
 
 
-   14:begin
+   _JC_KROK_FINALNI_ZAVER:begin
       writelog('Krok 14 : useky: nastavit validni zaver', WR_VC);
 
       aZaver := Self.fproperties.TypCesty;
@@ -1666,30 +1677,30 @@ var i,j:Integer;
       if (Self.PorusenaKritickaPodminka()) then
        begin
         // Nepostavit navestidlo!
-        Self.Krok := 16;
+        Self.Krok := _JC_KROK_FINISH;
         Exit();
        end;
 
       if (navestidlo.ZAM) then
        begin
         writelog('Krok 14 : navestidlo: zamkle na STUJ',WR_VC);
-        Self.Krok := 16;
+        Self.Krok := _JC_KROK_FINISH;
        end else begin
         writelog('Krok 14 : navestidlo: stavim...', WR_VC);
         Self.NastavNav();
-        Self.Krok := 15;
+        Self.Krok := _JC_KROK_CEKANI_NAVESTIDLO;
        end;
    end;// case 14
 
-   15:begin
+   _JC_KROK_CEKANI_NAVESTIDLO:begin
      if (navestidlo.Navest > TBlkNav._NAV_STUJ) then
       begin
        writelog('Krok 15 : navestidlo postaveno', WR_VC);
-       Self.Krok := 16;
+       Self.Krok := _JC_KROK_FINISH;
       end;
    end;
 
-   16:begin
+   _JC_KROK_FINISH:begin
       Self.RusZacatekJC();
       Self.RusVBJC();
       Self.RusKonecJC();
@@ -1703,7 +1714,7 @@ var i,j:Integer;
         usek.NavJCRef.Add(Navestidlo);
 
       navestidlo.DNjc := Self;
-      Self.Krok := 0;
+      Self.Krok := _KROK_DEFAULT;
 
       // kdyby nastala nize chyba, musi byt moznost JC smazat ze zasobniku
       if (Self.fstaveni.from_stack <> nil) then
@@ -1772,7 +1783,7 @@ var i,j:Integer;
    ///////////////////////////////////////////////////////////////////////////
    // staveni nouzovych cest:
 
-   100:begin
+   _NC_KROK_INIT:begin
     // vsem usekum nastavime staveci zaver:
     writelog('Krok 100: useky: nastavuji staveci zavery', WR_VC);
     for usekZaver in Self.fproperties.Useky do
@@ -1868,10 +1879,10 @@ var i,j:Integer;
 
     Self.fstaveni.ncBarieryCntLast := -1;   // tady je potreba mit cislo < 0
 
-    Self.Krok := 101;
+    Self.Krok := _NC_KROK_BARIERA_UPDATE;
    end;//case 100
 
-   101:begin
+   _NC_KROK_BARIERA_UPDATE:begin
     // prubezne kontroluji podminky a zobrazuji potvrzovaci sekvenci
 
     // zjistime aktualni bariery:
@@ -1915,7 +1926,7 @@ var i,j:Integer;
      end;
    end;
 
-   102:begin
+   _NC_KROK_BARIERY_POTVRZENY:begin
     // potrvzovaci sekvence potvrzena -> stavim navestidlo, ...
 
     Self.fstaveni.nextVyhybka := -1;
@@ -1933,25 +1944,25 @@ var i,j:Integer;
      begin
       Self.NastavNav();
       writelog('Krok 102 : navestidlo: nastavuji na privolavaci navest...', WR_VC);
-      Self.Krok := 103;
+      Self.Krok := _NC_KROK_CEKANI_NAVESTIDLO;
      end else
-      Self.Krok := 104;
+      Self.Krok := _NC_KROK_FINISH;
    end;
 
-   103:begin
+   _NC_KROK_CEKANI_NAVESTIDLO:begin
      if (navestidlo.Navest = TBlkNav._NAV_PRIVOL) then
       begin
        writelog('Krok 103 : navestidlo postaveno', WR_VC);
-       Self.Krok := 104;
+       Self.Krok := _NC_KROK_FINISH;
       end;
    end;
 
-   104:begin
+   _NC_KROK_FINISH:begin
     Self.RusZacatekJC();
     Self.RusVBJC();
     Self.RusKonecJC();
 
-    Self.Krok := 0;
+    Self.Krok := _KROK_DEFAULT;
 
     // pokud je cesta ze zasobniku, smazeme ji odtam
     if (Self.fstaveni.from_stack <> nil) then
@@ -2073,9 +2084,10 @@ begin
   end;
 
  Self.fstaveni.nextVyhybka := -1;
- Self.Krok := 0;
+ Self.Krok := _KROK_DEFAULT;
  Self.fstaveni.nc := false;
  Self.fstaveni.ab := false;
+ Self.fstaveni.prjWasClosed := false;
  Self.RusZacatekJC();
  Self.RusVBJC();
  Self.RusKonecJC();
@@ -2173,7 +2185,7 @@ var Nav:TBlk;
      end;
    end;
 
-  Self.Krok := 0;
+  Self.Krok := _KROK_DEFAULT;
   Self.RozpadBlok := -5;
   Self.RozpadRuseniBlok := -5;
  end;
@@ -2993,8 +3005,10 @@ begin
  writelog('DN JC '+Self.nazev, WR_VC);
  Self.fstaveni.TimeOut := Now + EncodeTime(0, 0, _JC_TIMEOUT_SEC, 0);
 
- // tohleto je finta, jak vykonat jen posledni krok staveni JC
- Self.Krok := 14;
+ if (Self.fstaveni.prjWasClosed) then
+   Self.Krok := _JC_KROK_ZAVRIT_PREJEZDY
+ else
+   Self.Krok := _JC_KROK_FINALNI_ZAVER;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3671,8 +3685,8 @@ var i:Integer;
 begin
  if (success) then
   begin
-   if (Self.Krok = 101) then
-     Self.Krok := 102;
+   if (Self.Krok = _NC_KROK_BARIERA_UPDATE) then
+     Self.Krok := _NC_KROK_BARIERY_POTVRZENY;
   end else begin
    Self.CancelStaveni();
 
@@ -3821,5 +3835,17 @@ begin
  if (Self.fstaveni.SenderPnl = AContext) then
    Self.fstaveni.SenderPnl := nil;
 end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.SetInitKrok();
+begin
+ if (Self.fstaveni.nc) then
+   Self.Krok := _NC_KROK_INIT
+ else
+   Self.Krok := _JC_KROK_INIT;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit
