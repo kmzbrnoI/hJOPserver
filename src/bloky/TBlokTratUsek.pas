@@ -220,7 +220,7 @@ type
 implementation
 
 uses SprDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase, Prevody,
-     logging, THnaciVozidlo;
+     logging, THnaciVozidlo, TechnologieJC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1133,8 +1133,9 @@ end;
 // zruseni navesti do trati v pripade nahleho obsazeni prvni sekce trati.
 
 procedure TBlkTU.UpdateNavest();
-var
-    Blk:TBlk;
+var Blk:TBlk;
+    jcs:TArI;
+    jc:TJC;
 begin
  // kontrola zruseni navesti jizdni cesty pri obsazeni sekce trati:
  // tato metoda je volana vzdy pouze u sectMastera (tj. krajniho bloku sekce)
@@ -1170,7 +1171,16 @@ begin
  //   navest autobloku)
  if ((Self.prevTU = nil) and (Self.sectObsazeno = TUsekStav.obsazeno)
      and (TBlkTrat(Self.Trat).Zaver)) then
-   JCDb.RusJC(Self);
+  begin
+   SetLength(jcs, 1);
+   jcs[0] := JCDb.FindPostavenaJCWithUsek(Blk.id);
+   if (jcs[0] > -1) then
+    begin
+     jc := JCDb.GetJCByID(jcs[0]);
+     if (not jc.waitForLastUsekOrTratObsaz) then
+       JCDb.RusJC(Self);
+    end;
+  end;
 
  // nastavime kryci navestidlo
  if ((Self.navKryci <> nil) and (not TBlkNav(Self.navKryci).ZAM) and
