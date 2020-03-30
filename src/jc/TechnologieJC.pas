@@ -1245,11 +1245,12 @@ var i:Integer;
       // kriticke bariey existuji -> oznamim je
       Self.Krok := _KROK_KRIT_BARIERY;
       writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' bariér, ukončuji stavění', WR_VC);
-      ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
+      if (SenderPnl <> nil) then
+        ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
       Exit();
      end else begin
       // bariery k potvrzeni
-      if ((bariery.Count > 0) or ((nc) and (from_stack <> nil))) then
+      if (((bariery.Count > 0) or ((nc) and (from_stack <> nil))) and (SenderPnl <> nil)) then
        begin
         writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' warning bariér, žádám potvrzení...', WR_VC);
         for i := 0 to bariery.Count-1 do
