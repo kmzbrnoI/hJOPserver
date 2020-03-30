@@ -130,7 +130,7 @@ type
                                                                                 // po postaveni vsechn vyhybek plynule prechazi do indexu seznamu odvratu
    ab:Boolean;                                                                  // po postaveni JC automaticky zavest AB
    prjWasClosed:Boolean;                                                        // jiz byl vydan povel k zavreni prejezdu
-   lastUsekObsaz:Boolean;                                                       // je obsazen posledni usek JC, nestavit navestidlo a nezavirat prejezdy
+   lastUsekOrTratObsaz:Boolean;                                                 // je obsazen posledni usek JC, nestavit navestidlo a nezavirat prejezdy
   end;
 
   // vlastnosti jizdni cesty nemenici se se stavem:
@@ -178,7 +178,7 @@ type
     _JCB_USEK_SOUPRAVA           = 23;
     _JCB_USEK_STITEK             = 24;
     _JCB_USEK_AB                 = 25;
-    _JCB_USEK_LAST_OBSAZENO      = 26;
+    _JCB_USEK_LAST_OBSAZENO      = 26;  // povoleno postaveni JC
 
     _JCB_VYHYBKA_KONC_POLOHA     = 30;
     _JCB_VYHYBKA_VYLUKA          = 31;
@@ -196,9 +196,10 @@ type
     _JCB_ODVRAT_OBSAZENA         = 61;
     _JCB_ODVRAT_KONC_POLOHA      = 62;
 
+    _JCB_TRAT_NEPRIPRAVENA       = 69;
     _JCB_TRAT_ZAK                = 70;
     _JCB_TRAT_ZAVER              = 71;
-    _JCB_TRAT_OBSAZENO           = 72;
+    _JCB_TRAT_OBSAZENO           = 72;  // povoleno postaveni JC
     _JCB_TRAT_ZADOST             = 73;
     _JCB_TRAT_NESOUHLAS          = 74;
     _JCB_TRAT_NO_BP              = 75;
@@ -875,10 +876,13 @@ begin
     if (Self.fproperties.TypCesty = TJCType.vlak) then
      begin
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
-      if (not TBlkTU(blk).sectReady) then
+      if (TBlkTU(blk).sectObsazeno = TUsekStav.obsazeno) then
        begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
+       end else if (not TBlkTU(blk).sectReady) then begin
+        Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+        bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
        end;
      end;
 
@@ -901,10 +905,10 @@ begin
 
     if (Self.fproperties.TratSmer <> (blk as TBlkTrat).Smer) then
      begin
-      // trat beze smeru, do ktere bud dle predchozi podminky povoleno vjet -> trat s automatickou zmenou souhlasu
+      // trat beze smeru, do ktere bude dle predchozi podminky povoleno vjet -> trat s automatickou zmenou souhlasu
       // -> kontrola volnosti vsech useku trati (protoze nastane zmena smeru)
       if (not TBlkTrat(Blk).ready) then
-        bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
+        bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
      end;
 
     // kontrola stitku uvazky v nasi OR:
@@ -1194,7 +1198,7 @@ var i:Integer;
   Self.fstaveni.nc := nc;
   Self.fstaveni.ab := (abAfter) and (Self.fproperties.TypCesty = TJCType.vlak);
   Self.fstaveni.prjWasClosed := false;
-  Self.fstaveni.lastUsekObsaz := false;
+  Self.fstaveni.lastUsekOrTratObsaz := false;
 
   writelog('JC '+Self.Nazev+' - požadavek na stavění, kontroluji podmínky', WR_VC);
 
@@ -1212,8 +1216,8 @@ var i:Integer;
     critical := false;
     for bariera in bariery do
      begin
-      if (bariera.typ = _JCB_USEK_LAST_OBSAZENO) then
-        Self.fstaveni.lastUsekObsaz := true;
+      if ((bariera.typ = _JCB_USEK_LAST_OBSAZENO) or (bariera.typ = _JCB_TRAT_OBSAZENO)) then
+        Self.fstaveni.lastUsekOrTratObsaz := true;
 
       if ((Self.CriticalBariera(bariera.typ)) or (not Self.WarningBariera(bariera.typ))) then
        begin
@@ -3114,7 +3118,7 @@ begin
   _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_ZAMCENA, _JCB_VYHYBKA_NOUZ_ZAVER,
   _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA,
   _JCB_ODVRAT_ZAMCENA, _JCB_ODVRAT_OBSAZENA, _JCB_ODVRAT_KONC_POLOHA,
-  _JCB_TRAT_ZAVER, _JCB_TRAT_OBSAZENO, _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS,
+  _JCB_TRAT_ZAVER, _JCB_TRAT_NEPRIPRAVENA, _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS,
   _JCB_ZAMEK_NEUZAMCEN, _JCB_VYHYBKA_NESPAVNA_POLOHA:
   begin
     Result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
@@ -3154,9 +3158,14 @@ begin
   _JCB_ODVRAT_KONC_POLOHA      : Result[1] := GetUPOLine('Není koncová poloha');
 
   _JCB_TRAT_ZAVER              : Result[1] := GetUPOLine('Závěr');
-  _JCB_TRAT_OBSAZENO           : Result[1] := GetUPOLine('Obsazena');
   _JCB_TRAT_ZADOST             : Result[1] := GetUPOLine('Probíhá žádost');
   _JCB_TRAT_NESOUHLAS          : Result[1] := GetUPOLine('Nesouhlas');
+  _JCB_TRAT_NEPRIPRAVENA       : Result[1] := GetUPOLine('Nepovoluje odjezd');
+  _JCB_TRAT_OBSAZENO : begin
+    Result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
+    Result[1] := GetUPOLine('Trať obsazena');
+    Result[2] := GetUPOLine(Bariera.blok.name);
+  end;
 
   _JCB_ZAMEK_NEUZAMCEN         : Result[1] := GetUPOLine('Neuzamčen');
   _JCB_ZAMEK_NOUZ_ZAVER        : Result[1] := GetUPOLine('Není nouzový závěr');
@@ -3321,7 +3330,7 @@ begin
   end;
   _JCB_USEK_STITEK, _JCB_USEK_VYLUKA, _JCB_VYHYBKA_STITEK, _JCB_VYHYBKA_VYLUKA, _JCB_PREJEZD_STITEK,
   _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC, _JCB_SPR_SMER, _JCB_TRAT_STITEK,
-  _JCB_USEK_LAST_OBSAZENO:
+  _JCB_USEK_LAST_OBSAZENO, _JCB_TRAT_OBSAZENO:
             Result := true;
  else
   Result := false;
@@ -3645,7 +3654,7 @@ begin
       if (not TBlkTU(blk).sectReady) then
        begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
-        bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
+        bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
        end;
      end;
 
@@ -3748,7 +3757,7 @@ begin
     _JCB_TRAT_ZAK                : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Zákaz odjezdu'));
     _JCB_TRAT_NOT_ZAK            : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nezaveden zákaz odjezdu'));
     _JCB_TRAT_ZAVER              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Závěr'));
-    _JCB_TRAT_OBSAZENO           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Obsazeno'));
+    _JCB_TRAT_NEPRIPRAVENA       : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nepovoluje odjezd'));
     _JCB_TRAT_ZADOST             : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Probíhá žádost'));
     _JCB_TRAT_NESOUHLAS          : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Nesouhlas'));
     _JCB_TRAT_NO_BP              : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Bloková podmínka nezavedena'));
@@ -3833,7 +3842,7 @@ begin
         _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP,
         _JCB_NAV_NOT_USEK, _JCB_USEK_OBSAZENO, _JCB_USEK_SOUPRAVA, _JCB_USEK_AB,
         _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_NESPAVNA_POLOHA, _JCB_PREJEZD_NOUZOVE_OTEVREN,
-        _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAK, _JCB_TRAT_OBSAZENO,
+        _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAK, _JCB_TRAT_NEPRIPRAVENA,
         _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN:
           Exit(true);
       end;
