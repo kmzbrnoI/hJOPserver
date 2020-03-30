@@ -2455,7 +2455,11 @@ begin
         Nav.JCZrusNavest();
        end;
 
-      TBlkUsek(Usek).Zaver := no;
+      if (Self.AB) then
+        TBlkUsek(Usek).Zaver := TZaver.AB
+      else
+        TBlkUsek(Usek).Zaver := TZaver.no;
+
       Self.RozpadRuseniBlok := 1;
 
       if ((Self.fproperties.TypCesty = TJCType.vlak) and (Usek.IsSouprava())) then
@@ -2522,7 +2526,11 @@ begin
     if (Self.fproperties.Useky.Count = 1) then
      begin
       Blky.GetBlkByID(Self.fproperties.Useky[0], TBlk(Usek));
-      Usek.Zaver := no;
+
+      if (Self.AB) then
+        Usek.Zaver := TZaver.AB
+      else
+        Usek.Zaver := TZaver.no;
 
       Usek := Nav.UsekPred as TBlkUsek;
       spri := Self.GetSoupravaIndex(Nav, Usek);
