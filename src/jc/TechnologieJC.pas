@@ -61,6 +61,7 @@ const
   _JC_KROK_FINALNI_ZAVER = 14;
   _JC_KROK_CEKANI_NAVESTIDLO = 15;
   _JC_KROK_FINISH = 16;
+  _JC_KROK_CEKANI_POSLEDNI_USEK = 20;
 
   _NC_KROK_INIT = 100;
   _NC_KROK_BARIERA_UPDATE = 101;
@@ -129,6 +130,7 @@ type
                                                                                 // po postaveni vsechn vyhybek plynule prechazi do indexu seznamu odvratu
    ab:Boolean;                                                                  // po postaveni JC automaticky zavest AB
    prjWasClosed:Boolean;                                                        // jiz byl vydan povel k zavreni prejezdu
+   lastUsekObsaz:Boolean;                                                       // je obsazen posledni usek JC, nestavit navestidlo a nezavirat prejezdy
   end;
 
   // vlastnosti jizdni cesty nemenici se se stavem:
@@ -176,6 +178,7 @@ type
     _JCB_USEK_SOUPRAVA           = 23;
     _JCB_USEK_STITEK             = 24;
     _JCB_USEK_AB                 = 25;
+    _JCB_USEK_LAST_OBSAZENO      = 26;
 
     _JCB_VYHYBKA_KONC_POLOHA     = 30;
     _JCB_VYHYBKA_VYLUKA          = 31;
@@ -691,7 +694,16 @@ begin
      begin
       // kontrola disabled jiz probehla
       if ((Blk as TBlkUsek).Obsazeno <> TUsekStav.uvolneno) then
-        bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.id));
+       begin
+        if ((i = Self.fproperties.Useky.Count-1) and (Self.fproperties.Useky.Count > 1)) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_LAST_OBSAZENO, Blk, Blk.id))
+        else
+          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.id));
+       end else begin
+        // souprava
+        if ((Blk as TBlkUsek).IsSouprava()) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.id));
+       end;
      end;//if
 
     // zaver
@@ -702,10 +714,6 @@ begin
       else
         bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk, Blk.id));
      end;
-
-    // souprava
-    if (((Blk as TBlkUsek).IsSouprava()) and (Self.fproperties.TypCesty = TJCType.vlak)) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.id));
 
     // vyluka
     if ((Blk as TBlkUsek).Vyluka <> '') then
@@ -1186,6 +1194,7 @@ var i:Integer;
   Self.fstaveni.nc := nc;
   Self.fstaveni.ab := (abAfter) and (Self.fproperties.TypCesty = TJCType.vlak);
   Self.fstaveni.prjWasClosed := false;
+  Self.fstaveni.lastUsekObsaz := false;
 
   writelog('JC '+Self.Nazev+' - požadavek na stavění, kontroluji podmínky', WR_VC);
 
@@ -1203,6 +1212,9 @@ var i:Integer;
     critical := false;
     for bariera in bariery do
      begin
+      if (bariera.typ = _JCB_USEK_LAST_OBSAZENO) then
+        Self.fstaveni.lastUsekObsaz := true;
+
       if ((Self.CriticalBariera(bariera.typ)) or (not Self.WarningBariera(bariera.typ))) then
        begin
         critical := true;
@@ -3209,6 +3221,12 @@ begin
     end;
   end;
 
+  _JCB_USEK_LAST_OBSAZENO : begin
+    Result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
+    Result[1] := GetUPOLine('Kolejový úsek obsazen');
+    Result[2] := GetUPOLine(Bariera.blok.name);
+  end;
+
   _JCB_PRIVOLAVACKA : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Svítí přivolávací návěst');
@@ -3302,7 +3320,8 @@ begin
       end;
   end;
   _JCB_USEK_STITEK, _JCB_USEK_VYLUKA, _JCB_VYHYBKA_STITEK, _JCB_VYHYBKA_VYLUKA, _JCB_PREJEZD_STITEK,
-  _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC, _JCB_SPR_SMER, _JCB_TRAT_STITEK:
+  _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC, _JCB_SPR_SMER, _JCB_TRAT_STITEK,
+  _JCB_USEK_LAST_OBSAZENO:
             Result := true;
  else
   Result := false;
