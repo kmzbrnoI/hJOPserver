@@ -1553,7 +1553,10 @@ var i,j:Integer;
          end;
        end;
 
-      Self.Krok := _JC_KROK_ZAVRIT_PREJEZDY;
+      if (navestidlo.ZAM) then
+        Self.Krok := _JC_KROK_FINALNI_ZAVER
+      else
+        Self.Krok := _JC_KROK_ZAVRIT_PREJEZDY;
      end;//case 1
 
 
@@ -2998,7 +3001,7 @@ begin
  Result := true;
 end;
 
-// DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
+// DN provede zbytek staveni JC (prejezdy, finalizace)
 // tato procedura predpoklada, ze podminky pro DN jsou splneny
 procedure TJC.DN();
 begin
@@ -3006,9 +3009,9 @@ begin
  Self.fstaveni.TimeOut := Now + EncodeTime(0, 0, _JC_TIMEOUT_SEC, 0);
 
  if (Self.fstaveni.prjWasClosed) then
-   Self.Krok := _JC_KROK_ZAVRIT_PREJEZDY
+   Self.Krok := _JC_KROK_FINALNI_ZAVER
  else
-   Self.Krok := _JC_KROK_FINALNI_ZAVER;
+   Self.Krok := _JC_KROK_ZAVRIT_PREJEZDY;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
