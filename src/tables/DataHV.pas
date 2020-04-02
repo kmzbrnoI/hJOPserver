@@ -142,7 +142,7 @@ var line:Integer;
    TPomStatus.released : Self.LV.Items[line].SubItems[17] := 'ruční';
   end;//case
 
- if (not stav.acquired) then
+ if ((not stav.acquired) and (not stav.stolen)) then
   begin
    // neprevzato
    Self.LV.Items[line].SubItems[8]  := '---';
@@ -153,11 +153,7 @@ var line:Integer;
    Self.LV.Items[line].SubItems[13]  := '????';
    Self.LV.Items[line].SubItems[14]  := '???? ????';
    Self.LV.Items[line].SubItems[15]  := '???? ????';
-
-   if (stav.stolen) then
-     Self.LV.Items[line].SubItems[16] := 'ukradeno'
-   else
-     Self.LV.Items[line].SubItems[16] := '---';
+   Self.LV.Items[line].SubItems[16] := '---';
   end else begin
    // prevzato
 
@@ -195,6 +191,8 @@ var line:Integer;
 
    if (stav.trakceError) then
      Self.LV.Items[line].SubItems[16] := 'COM ERROR!'
+   else if (stav.stolen) then
+     Self.LV.Items[line].SubItems[16] := 'ukradeno'
    else
      Self.LV.Items[line].SubItems[16] := 'PC';
   end;//else not prevzato
