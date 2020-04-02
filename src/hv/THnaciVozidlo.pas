@@ -647,8 +647,7 @@ begin
      Result := Result + '0';
   end;
 
- Result := Result + '|' + IntToStr(Self.Slot.speed) + '|' +
-           IntToStr(TrakceI.GetStepSpeed(Self.Slot.speed)) + '|' +
+ Result := Result + '|' + IntToStr(Self.Slot.speed) + '|' + IntToStr(Self.realSpeed) + '|' +
            IntToStr(PrevodySoustav.BoolToInt(Self.direction)) + '|' + Self.Stav.stanice.id + '|';
 
  if (mode = TLokStringMode.full) then
@@ -1479,6 +1478,8 @@ end;
 function THV.GetRealSpeed():Integer;
 begin
  Result := TrakceI.GetStepSpeed(Self.slot.speed);
+ if (Result > Self.data.maxRychlost) then
+   Result := Self.data.maxRychlost;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
