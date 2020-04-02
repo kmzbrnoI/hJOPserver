@@ -29,7 +29,7 @@ const
 type
 
   TF_Main = class(TForm)
-    Timer1: TTimer;
+    T_Main: TTimer;
     Menu_1: TMainMenu;
     MI_RCS: TMenuItem;
     MI_RCS_Go: TMenuItem;
@@ -56,12 +56,12 @@ type
     MI_Trk_connect: TMenuItem;
     M_Zobrazeni: TMenuItem;
     PM_SB1: TMenuItem;
-    T_function: TTimer;
+    T_GUI_refresh: TTimer;
     MI_System: TMenuItem;
     PM_Central_Start: TMenuItem;
     PM_Central_Stop: TMenuItem;
     N5: TMenuItem;
-    T_konflikty: TTimer;
+    T_clear_log_msg: TTimer;
     P_Pozadi: TPanel;
     P_Date: TPanel;
     P_Time: TPanel;
@@ -267,7 +267,7 @@ type
     MI_Trk_Update: TMenuItem;
     A_Trk_Lib_Cfg: TAction;
     A_Turnoff_Functions: TAction;
-    procedure Timer1Timer(Sender: TObject);
+    procedure T_MainTimer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
@@ -278,8 +278,8 @@ type
     procedure PM_TesterClick(Sender: TObject);
     procedure PM_Help_RPClick(Sender: TObject);
     procedure PM_SB1Click(Sender: TObject);
-    procedure T_functionTimer(Sender: TObject);
-    procedure T_konfliktyTimer(Sender: TObject);
+    procedure T_GUI_refreshTimer(Sender: TObject);
+    procedure T_clear_log_msgTimer(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure L_DateDblClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -1451,7 +1451,7 @@ end;
 // TRAKCE END
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.Timer1Timer(Sender: TObject);
+procedure TF_Main.T_MainTimer(Sender: TObject);
  begin
   try
     ACDb.Update();
@@ -2351,7 +2351,7 @@ begin
   end;
 end;
 
-procedure TF_Main.T_functionTimer(Sender: TObject);
+procedure TF_Main.T_GUI_refreshTimer(Sender: TObject);
 begin
  try
    mCpuLoad.Refresh();
@@ -2387,7 +2387,7 @@ begin
   end;
 end;
 
-procedure TF_Main.T_konfliktyTimer(Sender: TObject);
+procedure TF_Main.T_clear_log_msgTimer(Sender: TObject);
 begin
  if (Self.sb1Log) then                                              //zapis do SB1 - cekani 0,5 s
   begin
@@ -2411,9 +2411,9 @@ procedure TF_Main.CloseForm();
  begin
   WriteLog('########## Probíhá ukončování hJOPserver ##########', WR_MESSAGE);
 
-  Self.Timer1.Enabled := false;
-  Self.T_function.Enabled := false;
-  self.T_konflikty.Enabled := false;
+  Self.T_Main.Enabled := false;
+  Self.T_GUI_refresh.Enabled := false;
+  self.T_clear_log_msg.Enabled := false;
   JCSimulator.timer.Enabled := false;
   TratSimulator.timer.Enabled := false;
   VyhSimulator.timer.Enabled := false;
@@ -2676,9 +2676,9 @@ procedure TF_Main.OnStart();
 
   Self.Visible := true;
 
-  Self.Timer1.Enabled := true;
-  Self.T_function.Enabled := true;
-  Self.T_konflikty.Enabled := true;
+  Self.T_Main.Enabled := true;
+  Self.T_GUI_refresh.Enabled := true;
+  Self.T_clear_log_msg.Enabled := true;
 
   Self.UpdateRCSLibsList();
   Self.UpdateTrkLibsList();

@@ -122,10 +122,11 @@ type
    ruc:boolean;                                        // jestli je hnaciho vozidlo v rucnim rizeni
    last_used:TDateTime;                                // cas posledniho pouzivani loko
    acquired:Boolean;
-   stolen:Boolean;
+   stolen:Boolean;                                     // is false if stolen
    pom:TPomStatus;
    trakceError:Boolean;
    acquiring:Boolean;
+   updating:Boolean;
   end;
 
   THV = class                                       // HNACI VOZIDLO
@@ -135,8 +136,8 @@ type
 
      fadresa:Word;                                     // adresa je read-only !
      m_funcDict:TDictionary<string, Integer>;          // mapovani vyznamu funkci na cisla funkci
-     acquiredOk:TCommandCallback;
-     acquiredErr:TCommandCallback;
+     acquiredOk:TCommandCallback;                      // also used for Update callback
+     acquiredErr:TCommandCallback;                     // also used for Update callback
      releasedOk:TCommandCallback;
      pomOk:TCommandCallback;
      pomErr:TCommandCallback;
@@ -156,12 +157,15 @@ type
      procedure TrakceCallbackOk(Sender:TObject; data:Pointer);
      procedure TrakceCallbackErr(Sender:TObject; data:Pointer);
      procedure TrakceCallbackCallEv(cb:PTCb);
-     procedure SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
+     procedure SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean; funcChanged:boolean);
      procedure TrakceAcquired(Sender: TObject; LocoInfo:TTrkLocoInfo);
      procedure TrakceAcquiredDirection(Sender: TObject; data:Pointer);
      procedure TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
      procedure TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
      procedure TrakceAcquiredErr(Sender:TObject; data:Pointer);
+
+     procedure TrakceUpdated(Sender: TObject; LocoInfo:TTrkLocoInfo);
+     procedure TrakceUpdatedErr(Sender:TObject; data:Pointer);
 
      procedure TrakceReleased(Sender:TObject; data:Pointer);
      procedure TrakceReleasedPOM(Sender:TObject; data:Pointer);
@@ -226,6 +230,7 @@ type
      procedure TrakceAcquire(ok: TCb; err: TCb);
      procedure TrakceRelease(ok: TCb);
      procedure TrakceStolen();
+     procedure TrakceUpdateState(ok: TCb; err: TCb);
 
      procedure StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
 
@@ -255,6 +260,7 @@ type
      property slotFunkce:TFunkce read GetSlotFunkce;
      property stavFunkce:TFunkce read stav.funkce;
      property acquiring:boolean read stav.acquiring;
+     property updating:boolean read stav.updating;
   end;//THV
 
 
@@ -1273,7 +1279,7 @@ begin
     end;
  end;
 
- Self.SlotChanged(Sender, stepsOld <> speedStep, dirOld <> direction);
+ Self.SlotChanged(Sender, stepsOld <> speedStep, dirOld <> direction, false);
 end;
 
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil);
@@ -1407,7 +1413,7 @@ begin
     end;
  end;
 
- Self.SlotChanged(Sender, true, false);
+ Self.SlotChanged(Sender, true, false, false);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1415,6 +1421,7 @@ end;
 procedure THV.CSReset();
 begin
  Self.stav.acquiring := false;
+ Self.stav.updating := false;
  Self.stav.acquired := false;
  Self.stav.stolen := false;
  Self.stav.pom := TPomStatus.released;
@@ -1476,9 +1483,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean);
+procedure THV.SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean; funcChanged:boolean);
 begin
- TCPRegulator.LokUpdateSpeed(Self, Sender);
+ if (speedChanged or dirChanged) then
+   TCPRegulator.LokUpdateSpeed(Self, Sender);
+ if (funcChanged) then
+   TCPRegulator.LokUpdateFunc(Self, Sender);
+
  RegCollector.LocoChanged(Sender, Self.adresa);
  Self.changed := true;
 
@@ -1680,6 +1691,63 @@ begin
  RegCollector.LocoChanged(Self, Self.adresa);
  if (Assigned(Self.pomErr.callback)) then
    Self.pomOk.callback(Self, Self.pomErr.data);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// UPDATE STATE
+
+procedure THV.TrakceUpdateState(ok: TCb; err: TCb);
+begin
+ if (Self.acquiring) then
+   raise Exception.Create('Cannot update locoinfo when acquiring!');
+ if (Self.updating) then
+   raise Exception.Create('Update already in progress!');
+
+ TrakceI.Log(llCommands, 'PUT: Loco Update Info: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.acquiredOk := ok;
+ Self.acquiredErr := err;
+ Self.stav.updating := true;
+
+ try
+   TrakceI.LocoAcquire(Self.adresa, Self.TrakceUpdated, TTrakce.Callback(Self.TrakceUpdatedErr));
+ except
+   Self.TrakceUpdatedErr(Self, nil);
+ end;
+end;
+
+procedure THV.TrakceUpdated(Sender: TObject; LocoInfo:TTrkLocoInfo);
+var slotOld: TTrkLocoInfo;
+begin
+ TrakceI.Log(llCommands, 'Loco Updated: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+
+ slotOld := Self.slot;
+ Self.slot := LocoInfo;
+ Self.stav.updating := false;
+ Self.stav.trakceError := false;
+
+ if (slotOld <> Self.slot) then
+  begin
+   Self.SlotChanged(
+     Sender,
+     slotOld.speed <> Self.slot.speed,
+     slotOld.direction <> Self.slot.direction,
+     slotOld.functions <> Self.slot.functions
+   );
+  end;
+
+ if (Assigned(Self.acquiredOk.callback)) then
+   Self.acquiredOk.callback(Self, Self.acquiredOk.data);
+end;
+
+procedure THV.TrakceUpdatedErr(Sender:TObject; data:Pointer);
+begin
+ TrakceI.Log(llCommands, 'ERR: Loco Not Updated: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ Self.stav.updating := false;
+ Self.stav.trakceError := true;
+ Self.changed := true;
+ RegCollector.LocoChanged(Self, Self.adresa);
+ if (Assigned(Self.acquiredErr.callback)) then
+   Self.acquiredErr.callback(Self, Self.acquiredErr.data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

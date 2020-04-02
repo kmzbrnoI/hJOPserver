@@ -12,12 +12,13 @@
 
 interface
 
-uses SysUtils, THnaciVozidlo, Classes, IdContext, IniFiles, Windows;
+uses SysUtils, THnaciVozidlo, Classes, IdContext, IniFiles, Windows, ExtCtrls;
 
 const
  _MAX_ADDR = 10000;
  _DEFAULT_OR = 0;
  _FILE_SUFFIX = '.2lok';
+ _LOCO_UPDATE_TIME_MS = 2000;
 
 type
 
@@ -44,6 +45,7 @@ type
     eLocoAcquired, eLocoReleased: TNotifyEvent;
     mAcquiring: Boolean;
     mReleasing: Boolean;
+    tLocoUpdate: TTimer; // always running
 
      procedure Clear();
      procedure LoadFile(filename:string; stateini:TMemIniFile);
@@ -56,6 +58,8 @@ type
      procedure AcquiredOk(Sender: TObject; Data: Pointer);
      procedure AcquiredErr(Sender: TObject; Data: Pointer);
      procedure ReleasedOk(Sender: TObject; Data: Pointer);
+
+     procedure OnTLocoUpdate(Sender: TObject);
 
    public
 
@@ -108,6 +112,11 @@ var i: Integer;
 begin
  inherited Create();
 
+ Self.tLocoUpdate := TTimer.Create(nil);
+ Self.tLocoUpdate.Interval := _LOCO_UPDATE_TIME_MS;
+ Self.tLocoUpdate.OnTimer := Self.OnTLocoUpdate;
+ Self.tLocoUpdate.Enabled := true;
+
  Self.fdefault_or := _DEFAULT_OR;
  Self.mAcquiring := false;
  Self.mReleasing := false;
@@ -119,9 +128,9 @@ end;//ctor
 
 destructor THVDb.Destroy();
 begin
+ Self.tLocoUpdate.Free();
  Self.Clear();
-
- inherited Destroy();
+ inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -621,6 +630,26 @@ begin
  except
    Self.ReleasedOk(Self, data);
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THVDb.OnTLocoUpdate(Sender: TObject);
+var addr:Word;
+begin
+  for addr := 0 to _MAX_ADDR-1 do
+   begin
+    if (Self.HVs[addr] = nil) then continue;
+
+    try
+      if ((Self.HVs[addr].stolen) and (not Self.HVs[addr].acquiring) and (not Self.HVs[addr].updating)) then
+        Self.HVs[addr].TrakceUpdateState(TTrakce.Callback(), TTrakce.Callback());
+    except
+      on E:Exception do
+        AppEvents.LogException(E, 'HVDb.OnTLocoUpdate');
+    end;
+   end;
+
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
