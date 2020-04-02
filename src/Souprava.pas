@@ -714,33 +714,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.SetFront(front:TObject);
-var addr:Integer;
 begin
  if (Self.data.front = front) then Exit();
 
  if (Assigned(Self.data.front)) then
    (Self.data.front as TBlkUsek).zpomalovani_ready := false;
  Self.data.front := front;
-
- // pricteme delku tohoto useku k front:
- for addr in Self.HVs do
-  begin
-   case (HVDb[addr].direction) of
-    false : begin
-      HVDb[addr].Stav.najeto_vpred.Metru := HVDb[addr].Stav.najeto_vpred.Metru +
-                                            (front as TBlkUsek).GetSettings().Lenght/100;
-      Inc(HVDb[addr].Stav.najeto_vpred.Bloku);
-    end;
-    true : begin
-      HVDb[addr].Stav.najeto_vzad.Metru := HVDb[addr].Stav.najeto_vzad.Metru +
-                                           (front as TBlkUsek).GetSettings().Lenght/100;
-      Inc(HVDb[addr].Stav.najeto_vzad.Bloku);
-    end;//case 1
-   end;//case
-
-   HVDb[addr].changed := true;
-  end;//for
-
  Self.changed := true;
 end;
 

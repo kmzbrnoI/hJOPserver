@@ -4087,15 +4087,7 @@ object F_Main: TF_Main
           end
           item
             Alignment = taRightJustify
-            Caption = 'Najeto vp'#345'ed blok'#367
-          end
-          item
-            Alignment = taRightJustify
             Caption = 'Najeto vzad metr'#367
-          end
-          item
-            Alignment = taRightJustify
-            Caption = 'Najeto vzad blok'#367
           end
           item
             Caption = 'Naposledy pou'#382'ito'

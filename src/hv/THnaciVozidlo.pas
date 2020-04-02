@@ -94,11 +94,6 @@ type
    funcType:array[0.._HV_FUNC_MAX] of THVFuncType;     // typy funkci hnaciho vozidla
   end;
 
-  THVNajeto = record                                // kolik bloku a metru hnaciho vozidlo najelo (vedeme si statistiky)
-   Metru:Real;
-   Bloku:Cardinal;
-  end;
-
   THVRegulator = record                             // jeden regulator -- klient -- je z pohledu hnaciho vozidla reprezentovan
     conn:TIdContext;                                   // fyzickym spojenim k tomu regulatoru -- klientu a
     root:boolean;                                      // tages, jestli je uzivatel za timto regulatorem root
@@ -112,8 +107,8 @@ type
   THVStav = record                                  // stav hanciho vozidla -- je menen za behu programu
    StanovisteA:THVStanoviste;                          // umisteni stanoviste A: 0 = lichy; 1 = sudy
 
-   najeto_vpred:THVNajeto;                             // statistiky najeti smerem vpred
-   najeto_vzad:THVNajeto;                              // statistiky najeti smerem vzad
+   traveled_forward:Real;                              // in meters
+   traveled_backward:Real;                             // in meters
    funkce:TFunkce;                                     // stav funkci tak, jak je chceme; uklada se do souboru
    souprava:Integer;                                   // index soupravy, na ktere je hnaci vozidlo
    stanice:TOR;                                        // oblast rizeni, ve ktere se nachazi HV
@@ -127,6 +122,7 @@ type
    trakceError:Boolean;
    acquiring:Boolean;
    updating:Boolean;
+   lastUpdated:TTime;
   end;
 
   THV = class                                       // HNACI VOZIDLO
@@ -151,7 +147,7 @@ type
      procedure SetSouprava(new:Integer);
 
      function GetSlotFunkce():TFunkce;
-     function GetRealSpeed():Integer;
+     function GetRealSpeed():Cardinal;
      function GetStACurrentDirection():Boolean;
 
      procedure TrakceCallbackOk(Sender:TObject; data:Pointer);
@@ -192,7 +188,7 @@ type
 
      procedure UpdateFromPanelString(data:string);     // nacteni informaci o HV z klienta
 
-     procedure RemoveStats();                          // smaz statistiky najeto
+     procedure ResetStats();
      function ExportStats():string;                    // export najetych statistik hnaciho vozidla
 
      function PredejStanici(st:TOR):Integer;           // predej HV jine stanici
@@ -214,6 +210,7 @@ type
      procedure RecordUseNow();
      function NiceName():string;
      function ShouldAcquire():boolean;
+     procedure UpdateTraveled(period:Cardinal);
 
      procedure SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil); overload;
      procedure SetSpeed(speed:Integer; Sender: TObject = nil); overload;
@@ -250,7 +247,7 @@ type
      property funcDict:TDictionary<string, Integer> read m_funcDict;
      property souprava:Integer read stav.souprava write SetSouprava;
      property speedStep:Byte read slot.speed;
-     property realSpeed:Integer read GetRealSpeed;
+     property realSpeed:Cardinal read GetRealSpeed;
      property direction:boolean read slot.direction;
      property stACurrentDirection:boolean read GetStACurrentDirection;
      property acquired:boolean read stav.acquired;
@@ -261,6 +258,7 @@ type
      property stavFunkce:TFunkce read stav.funkce;
      property acquiring:boolean read stav.acquiring;
      property updating:boolean read stav.updating;
+     property lastUpdated:TTime read stav.lastUpdated;
   end;//THV
 
 
@@ -326,10 +324,7 @@ constructor THV.Create(panel_str:string; Sender:TOR);
 begin
  inherited Create();
 
- Self.Stav.najeto_vpred.Metru := 0;
- Self.Stav.najeto_vpred.Bloku := 0;
- Self.Stav.najeto_vzad.Metru  := 0;
- Self.Stav.najeto_vzad.Bloku  := 0;
+ Self.ResetStats();
 
  Self.Stav.regulators := TList<THVRegulator>.Create();
  Self.Stav.tokens     := TList<THVToken>.Create();
@@ -468,11 +463,8 @@ begin
  else
   ORs.GetORByIndex(HVDb.default_or, Self.Stav.stanice);
 
- Self.Stav.najeto_vpred.Metru := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
- Self.Stav.najeto_vpred.Bloku := ini.ReadInteger(section, 'najeto_vpred_bloku', 0);
-
- Self.Stav.najeto_vzad.Metru := ini.ReadFloat(section, 'najeto_vzad_metru', 0);
- Self.Stav.najeto_vzad.Bloku := ini.ReadInteger(section, 'najeto_vzad_bloku', 0);
+ Self.Stav.traveled_forward := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
+ Self.Stav.traveled_backward := ini.ReadFloat(section, 'najeto_vzad_metru', 0);
 
  Self.Stav.StanovisteA := THVStanoviste(ini.ReadInteger(section, 'stanoviste_a', 0));
 
@@ -570,11 +562,8 @@ begin
  else
    ini.WriteString(addr, 'stanice', '');
 
- ini.WriteFloat(addr, 'najeto_vpred_metru', Self.Stav.najeto_vpred.Metru);
- ini.WriteInteger(addr, 'najeto_vpred_bloku', Self.Stav.najeto_vpred.Bloku);
-
- ini.WriteFloat(addr, 'najeto_vzad_metru', Self.Stav.najeto_vzad.Metru);
- ini.WriteInteger(addr, 'najeto_vzad_bloku', Self.Stav.najeto_vzad.Bloku);
+ ini.WriteFloat(addr, 'najeto_vpred_metru', Self.Stav.traveled_forward);
+ ini.WriteFloat(addr, 'najeto_vzad_metru', Self.Stav.traveled_backward);
 
  ini.WriteInteger(addr, 'stanoviste_a', Integer(Self.Stav.StanovisteA));
 
@@ -595,21 +584,18 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.RemoveStats();
+procedure THV.ResetStats();
 begin
- Self.Stav.najeto_vpred.Metru := 0;
- Self.Stav.najeto_vpred.Bloku := 0;
- Self.Stav.najeto_vzad.Metru  := 0;
- Self.Stav.najeto_vzad.Bloku  := 0;
+ Self.Stav.traveled_forward := 0;
+ Self.Stav.traveled_backward := 0;
 end;
 
-// format vystupnich dat: adresa;nazev;majitel;najeto_metru_vpres;majeto_bloku_vpred;najeto_metru_vzad;najeto_bloku_vzad
+// format vystupnich dat: adresa;nazev;majitel;najeto_metru_vpred;najeto_metru_vzad
 function THV.ExportStats():string;
 begin
- Result := IntToStr(Self.adresa) + ';' + Self.Data.Nazev + ';' +
-           Self.Data.Majitel + ';' + Format('%5.2f',[Self.Stav.najeto_vpred.Metru]) + ';' +
-           IntToStr(Self.Stav.najeto_vpred.Bloku) + ';' + Format('%5.2f',[Self.Stav.najeto_vzad.Metru]) + ';' +
-           IntToStr(Self.Stav.najeto_vzad.Bloku);
+ Result := IntToStr(Self.adresa) + ';' + Self.Data.Nazev + ';' + Self.Data.Majitel + ';' +
+           Format('%5.2f', [Self.Stav.traveled_forward]) + ';' +
+           Format('%5.2f', [Self.Stav.traveled_backward]) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1026,11 +1012,8 @@ begin
   THVStanoviste.sudy  : json['stanovisteA'] := 'S';
  end;
 
- json.O['najetoVpred'].F['metru'] := Self.Stav.najeto_vpred.Metru;
- json.O['najetoVpred'].I['bloku'] := Self.Stav.najeto_vpred.Bloku;
-
- json.O['najetoVzad'].F['metru'] := Self.Stav.najeto_vzad.Metru;
- json.O['najetoVzad'].I['bloku'] := Self.Stav.najeto_vzad.Bloku;
+ json.F['najetoVpred'] := Self.Stav.traveled_forward;
+ json.F['najetoVzad'] := Self.Stav.traveled_backward;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1421,6 +1404,7 @@ procedure THV.CSReset();
 begin
  Self.stav.acquiring := false;
  Self.stav.updating := false;
+ Self.stav.lastUpdated := 0;
  Self.stav.acquired := false;
  Self.stav.stolen := false;
  Self.stav.pom := TPomStatus.released;
@@ -1475,9 +1459,15 @@ begin
   end;
 end;
 
-function THV.GetRealSpeed():Integer;
+function THV.GetRealSpeed():Cardinal;
+var Res:Integer;
 begin
- Result := TrakceI.GetStepSpeed(Self.slot.speed);
+ Res := TrakceI.GetStepSpeed(Self.slot.speed);
+ if (Res < 0) then
+   Result := 0
+ else
+   Result := Cardinal(Res);
+
  if (Result > Self.data.maxRychlost) then
    Result := Self.data.maxRychlost;
 end;
@@ -1725,6 +1715,7 @@ begin
  Self.slot := LocoInfo;
  Self.stav.updating := false;
  Self.stav.trakceError := false;
+ Self.stav.lastUpdated := Now;
 
  if (slotOld <> Self.slot) then
   begin
@@ -1745,6 +1736,7 @@ begin
  TrakceI.Log(llCommands, 'ERR: Loco Not Updated: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
  Self.stav.updating := false;
  Self.stav.trakceError := true;
+ Self.stav.lastUpdated := Now;
  Self.changed := true;
  RegCollector.LocoChanged(Self, Self.adresa);
  if (Assigned(Self.acquiredErr.callback)) then
@@ -1777,6 +1769,20 @@ end;
 function THV.GetStACurrentDirection():Boolean;
 begin
  Result := Self.direction xor PrevodySoustav.IntToBool(Integer(Self.Stav.StanovisteA));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.UpdateTraveled(period:Cardinal);
+begin
+ if (Self.speedStep = 0) then Exit();
+
+ if (Self.direction = _LOCO_DIR_FORWARD) then
+   Self.stav.traveled_forward := Self.stav.traveled_forward + (Self.realSpeed * period / 3.6)
+ else
+   Self.stav.traveled_backward := Self.stav.traveled_backward + (Self.realSpeed * period / 3.6);
+
+ Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

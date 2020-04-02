@@ -287,7 +287,7 @@ procedure TF_HVEdit.B_NajetoDeleteClick(Sender: TObject);
  begin
   if (Self.OpenHV = nil) then Exit;
 
-  OpenHV.RemoveStats();
+  OpenHV.ResetStats();
   HVTableData.UpdateLine(Self.OpenHV);
 
   Application.MessageBox('Operace proběhla úspěšne', 'OK', MB_OK OR MB_ICONINFORMATION);

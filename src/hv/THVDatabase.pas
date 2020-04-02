@@ -18,7 +18,7 @@ const
  _MAX_ADDR = 10000;
  _DEFAULT_OR = 0;
  _FILE_SUFFIX = '.2lok';
- _LOCO_UPDATE_TIME_MS = 2000;
+ _LOCO_UPDATE_TIME_MS = 1000;
 
 type
 
@@ -287,11 +287,9 @@ begin
  // pokud neexistuje, pridame ji
 
  stav.StanovisteA := StanovisteA;
- stav.najeto_vpred.Metru := 0;
- stav.najeto_vpred.Bloku := 0;
- stav.najeto_vzad.Metru  := 0;
- stav.najeto_vzad.Bloku  := 0;
- stav.stanice            := (OblR as TOR);
+ stav.traveled_forward := 0;
+ stav.traveled_backward := 0;
+ stav.stanice := (OblR as TOR);
 
  stav.souprava := -1;
  stav.ruc := false;
@@ -474,7 +472,7 @@ var i:Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
    if (Assigned(self.HVs[i])) then
-     Self.HVs[i].RemoveStats();
+     Self.HVs[i].ResetStats();
  HVTableData.reload := true;
  HVTableData.UpdateTable();
 end;
@@ -642,8 +640,11 @@ begin
     if (Self.HVs[addr] = nil) then continue;
 
     try
-      if ((Self.HVs[addr].stolen) and (not Self.HVs[addr].acquiring) and (not Self.HVs[addr].updating)) then
+      if ((Self.HVs[addr].stolen) and (not Self.HVs[addr].acquiring) and (not Self.HVs[addr].updating) and
+          (Now > Self.HVs[addr].lastUpdated+EncodeTime(0, 0, _LOCO_UPDATE_TIME_MS div 1000, _LOCO_UPDATE_TIME_MS mod 1000))) then
         Self.HVs[addr].TrakceUpdateState(TTrakce.Callback(), TTrakce.Callback());
+
+      Self.HVs[addr].UpdateTraveled(_LOCO_UPDATE_TIME_MS div 1000);
     except
       on E:Exception do
         AppEvents.LogException(E, 'HVDb.OnTLocoUpdate');

@@ -118,10 +118,8 @@ var line:Integer;
    sudy  : Self.LV.Items[line].SubItems[5] := 'sudý';
   end;//case
 
-  Self.LV.Items[line].SubItems[19]  := Format('%5.2f',[stav.najeto_vpred.Metru]);
-  Self.LV.Items[line].SubItems[20]  := IntToStr(stav.najeto_vpred.Bloku);
-  Self.LV.Items[line].SubItems[21]  := Format('%5.2f',[stav.najeto_vzad.Metru]);
-  Self.LV.Items[line].SubItems[22]  := IntToStr(stav.najeto_vzad.Bloku);
+  Self.LV.Items[line].SubItems[19] := Format('%5.2f',[stav.traveled_forward]);
+  Self.LV.Items[line].SubItems[20] := Format('%5.2f',[stav.traveled_backward]);
 
   if (stav.stanice <> nil) then
     Self.LV.Items[line].SubItems[6] := stav.stanice.Name
@@ -198,11 +196,11 @@ var line:Integer;
   end;//else not prevzato
 
   if (stav.souprava > -1) then
-    Self.LV.Items[line].SubItems[23] := 'teď'
+    Self.LV.Items[line].SubItems[21] := 'teď'
   else if (stav.last_used > 0) then
-    Self.LV.Items[line].SubItems[23] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
+    Self.LV.Items[line].SubItems[21] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
   else
-    Self.LV.Items[line].SubItems[23] := '-';
+    Self.LV.Items[line].SubItems[21] := '-';
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
