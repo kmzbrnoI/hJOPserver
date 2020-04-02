@@ -2377,7 +2377,7 @@ begin
     end;
 
     HVDb.UpdateTokenTimeout();
-    Data.UpdateAutosave();
+    Config.UpdateAutosave();
   except
    on E: Exception do
     begin
@@ -2504,7 +2504,7 @@ begin
   try
     inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
     try
-      Data.CompleteSaveToFile(inidata);
+      Config.CompleteSaveToFile(inidata);
     finally
       inidata.UpdateFile();
       inidata.Free();

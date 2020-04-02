@@ -212,7 +212,7 @@ var
 
   LogInit();
   if (not FileExists(_INIDATA_FN)) then
-    Data.CreateCfgDirs();
+    Config.CreateCfgDirs();
 
   try
     inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
@@ -226,7 +226,7 @@ var
 
     F_splash.AddStav('Načítám data...');
     try
-      Data.CompleteLoadFromFile(inidata);
+      Config.CompleteLoadFromFile(inidata);
     finally
       inidata.UpdateFile();
       inidata.Free();

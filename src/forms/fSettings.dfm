@@ -81,7 +81,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'OK'
+    Caption = 'Zav'#345#237't'
     TabOrder = 1
     OnClick = B_OKClick
   end
@@ -94,7 +94,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Options
+    ActivePage = TS_SS
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -106,10 +106,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Konfigurace'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_ON_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -123,6 +119,7 @@ object F_Options: TF_Options
         BevelOuter = bvNone
         ParentColor = True
         TabOrder = 0
+        ExplicitTop = -2
         object GB_ON_1: TGroupBox
           Left = 8
           Top = 8
@@ -155,12 +152,12 @@ object F_Options: TF_Options
           Left = 8
           Top = 64
           Width = 329
-          Height = 345
+          Height = 289
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = ' Nastaven'#237' syst'#233'mu '
+          Caption = ' V'#353'eobecn'#233' nastaven'#237'  '
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clBlack
           Font.Height = -11
@@ -199,7 +196,7 @@ object F_Options: TF_Options
             Left = 8
             Top = 69
             Width = 313
-            Height = 72
+            Height = 52
             Margins.Left = 2
             Margins.Top = 2
             Margins.Right = 2
@@ -221,20 +218,20 @@ object F_Options: TF_Options
           end
           object GB_Autosave: TGroupBox
             Left = 8
-            Top = 145
+            Top = 127
             Width = 313
             Height = 72
             Caption = ' Automatick'#233' ulo'#382'en'#237' stavu koleji'#353't'#283' '
             TabOrder = 2
             object Label1: TLabel
-              Left = 16
+              Left = 14
               Top = 40
               Width = 77
               Height = 13
               Caption = 'Perioda (mm:ss):'
             end
             object CHB_Autosave: TCheckBox
-              Left = 16
+              Left = 14
               Top = 16
               Width = 57
               Height = 17
@@ -265,6 +262,43 @@ object F_Options: TF_Options
               TabOrder = 1
               Text = '00:00'
               OnExit = CHB_AutosaveClick
+            end
+          end
+          object GB_Scale: TGroupBox
+            Left = 8
+            Top = 205
+            Width = 313
+            Height = 72
+            Caption = ' M'#283#345#237'tko koleji'#353't'#283' '
+            TabOrder = 3
+            object Label2: TLabel
+              Left = 14
+              Top = 20
+              Width = 217
+              Height = 13
+              Caption = 'Pro v'#253'po'#269'et ujet'#233' vzd'#225'lenosti hnac'#237'ch vozidel'
+            end
+            object Label3: TLabel
+              Left = 17
+              Top = 39
+              Width = 14
+              Height = 20
+              Caption = '1:'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clBlack
+              Font.Height = -16
+              Font.Name = 'MS Sans Serif'
+              Font.Style = []
+              ParentFont = False
+            end
+            object E_Scale: TEdit
+              Left = 36
+              Top = 39
+              Width = 55
+              Height = 21
+              NumbersOnly = True
+              TabOrder = 0
+              Text = '1'
             end
           end
         end
@@ -323,10 +357,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Snadn'#233' spu'#353't'#283'n'#237
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object P_SS: TPanel
         Left = 0
         Top = 0
@@ -376,7 +406,7 @@ object F_Options: TF_Options
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
         end
         object GB_SS_Vystupy: TGroupBox
@@ -815,10 +845,6 @@ object F_Options: TF_Options
       Margins.Bottom = 2
       Caption = 'Rychlosti'
       ImageIndex = 25
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV_DigiRych: TListView
         Left = 0
         Top = 0
@@ -846,27 +872,5 @@ object F_Options: TF_Options
         OnDblClick = LV_DigiRychDblClick
       end
     end
-  end
-  object OD_Open: TOpenDialog
-    FileName = 'konfigurace.ini'
-    Filter = 
-      'Konfigurace|*.ini|Soupravy|*.ini|Prejezdy|*.ini|Bloky|*.ini|Stan' +
-      'ice|*.ini|MTB|*.ini|Automaticke rezimy|*.ini|Zesilovace|*.ini|Tr' +
-      'ate|*.ini|Vysvetlivky|*.csv'
-    InitialDir = 'D:\Users\Vlak\Delphi'
-    Title = 'Nac'#237'st konfiguracn'#237' soubor'
-    Left = 824
-    Top = 608
-  end
-  object SD_Save: TSaveDialog
-    FileName = 'konfigurace.ini'
-    Filter = 
-      'Konfigurace|*.ini|Soupravy|*.ini|Prejezdy|*.ini|Bloky|*.ini|Stan' +
-      'ice|-.ini|MTB|*.ini|Automaticke rezimy|*.ini|Zesilovace|*.ini|Tr' +
-      'ate|*.ini|Vysvetlivky|*.csv'
-    Options = [ofHideReadOnly, ofExtensionDifferent, ofEnableSizing]
-    Title = 'Ulo'#382'it konfiguracn'#237' soubor'
-    Left = 792
-    Top = 608
   end
 end

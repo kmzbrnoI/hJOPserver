@@ -3,9 +3,7 @@
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, IniFiles, ComCtrls, ExtCtrls, StdCtrls, StrUtils,
-  fMain, Trakce, TechnologieTrakce, TJCDatabase;
+  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils;
 
 const
   _INIDATA_PATHS_DATA_SECTION = 'PathsData';
@@ -14,9 +12,7 @@ const
 type
   EFileNotFound = class(Exception);
 
-  TData=class
-   autosave:boolean;
-   autosave_period:TTime;
+  TConfig=class
    autosave_next:TDateTime;
 
     procedure CreateCfgDirs();
@@ -25,7 +21,11 @@ type
     procedure UpdateAutosave();
   end;
 
-  TKonfigurace=class
+  TGlobalConfig=class
+   autosave:boolean;
+   autosave_period:TTime;
+   scale:Cardinal;
+
     procedure LoadCfgFromFile(IniLoad:string);
     procedure SaveCfgToFile(IniSave:string);
   end;
@@ -37,19 +37,19 @@ type
   end;
 
 var
-  Data:TData;
-  Konfigurace:TKonfigurace;
+  Config:TConfig;
+  GlobalConfig:TGlobalConfig;
   FormData:TFormData;
-
 
 implementation
 
-uses fSettings, fSplash, fAdminForm, GetSystems, Prevody, Diagnostics,
+uses fSettings, fSplash, fAdminForm, GetSystems, Prevody, Diagnostics, fMain,
      TechnologieRCS, TOblsRizeni, TBloky, BoosterDb, SnadnSpusteni, THVDatabase,
      TCPServerPT, Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
-     DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv;
+     DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv, Trakce,
+     TechnologieTrakce, TJCDatabase;
 
-procedure TData.CreateCfgDirs();
+procedure TConfig.CreateCfgDirs();
 begin
  try
    CreateDir('data');
@@ -61,13 +61,13 @@ begin
  end;
 end;
 
-procedure TData.CompleteLoadFromFile(inidata: TMemIniFile);
+procedure TConfig.CompleteLoadFromFile(inidata: TMemIniFile);
 var read,read2:string;
  begin
   F_Splash.AddStav('Načítám konfiguraci...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
   try
-    Konfigurace.LoadCfgFromFile(read);
+    GlobalConfig.LoadCfgFromFile(read);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -210,7 +210,7 @@ var read,read2:string;
   TrakceI.LoadSpeedTable('data\rychlosti.csv',F_Options.LV_DigiRych);
  end;
 
-procedure TData.CompleteSaveToFile(inidata: TMemIniFile);
+procedure TConfig.CompleteSaveToFile(inidata: TMemIniFile);
 var tmpStr:string;
  begin
   inidata.EraseSection(_INIDATA_PATHS_DATA_SECTION);
@@ -239,7 +239,7 @@ var tmpStr:string;
   end;
 
   try
-    Konfigurace.SaveCfgToFile(F_Options.E_dataload.Text);
+    GlobalConfig.SaveCfgToFile(F_Options.E_dataload.Text);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -352,7 +352,7 @@ var tmpStr:string;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TKonfigurace.LoadCfgFromFile(IniLoad:string);
+procedure TGlobalConfig.LoadCfgFromFile(IniLoad:string);
 var str:string;
     ini:TMemIniFile;
  begin
@@ -360,10 +360,6 @@ var str:string;
   F_Options.E_dataload.Text := IniLoad;
   ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
   try
-    //nastaveni defaultnich cest pro Open/Save dialogy
-    F_Options.OD_Open.InitialDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\';
-    F_Options.SD_Save.InitialDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))+'data\';
-
     //nacitani dat o programu - left, top...
     case ini.ReadInteger('Application','WState',0) of
      0:begin
@@ -379,10 +375,11 @@ var str:string;
     end;//case
 
     //nactitani dalsich dat
-    F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg','TimerInterval',4);
+    F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg', 'TimerInterval', 4);
     F_Options.LB_TimerClick(Self);
-    F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg','AutSpusteni',false);
+    F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
     if (F_Options.CHB_povolit_spusteni.Checked) then F_Main.KomunikacePocitani := 1;
+    GlobalConfig.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
     //nacitani modeloveho casu
     ModCas.LoadData(ini);
@@ -402,11 +399,11 @@ var str:string;
 
     // autosave
 
-    Data.autosave := ini.ReadBool('autosave', 'enabled', true);
+    GlobalConfig.autosave := ini.ReadBool('autosave', 'enabled', true);
     str := ini.ReadString('autosave', 'period', '00:30');
-    Data.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
-    if (data.autosave) then
-      Data.autosave_next := Now + Data.autosave_period;
+    GlobalConfig.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
+    if (GlobalConfig.autosave) then
+      Config.autosave_next := Now + GlobalConfig.autosave_period;
 
     // nacteni vyznamu funkci
     FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
@@ -431,7 +428,7 @@ var str:string;
   end;
  end;
 
-procedure TKonfigurace.SaveCfgToFile(IniSave:string);
+procedure TGlobalConfig.SaveCfgToFile(IniSave:string);
 var ini:TMemIniFile;
  begin
   ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
@@ -441,6 +438,7 @@ var ini:TMemIniFile;
 
     ini.WriteInteger('SystemCfg', 'TimerInterval', F_Options.LB_Timer.ItemIndex);
     ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
+    ini.WriteInteger('SystemCfg', 'scale', GlobalConfig.scale);
 
     ini.WriteInteger('PanelServer', 'port', ORTCPServer.port);
     ini.WriteString('PanelServer', 'nazev', UDPdisc.name);
@@ -452,8 +450,8 @@ var ini:TMemIniFile;
     SS.SaveData(ini);
 
     // autosave
-    ini.WriteBool('autosave', 'enabled', Data.autosave);
-    ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Data.autosave_period));
+    ini.WriteBool('autosave', 'enabled', GlobalConfig.autosave);
+    ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', GlobalConfig.autosave_period));
 
     // ulozeni vyznamu funkci
     ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
@@ -529,9 +527,9 @@ var i, j:Integer;
 ////////////////////////////////////////////////////////////////////////////////
 
 // autosave se stara a prubezne ukladani stavu kolejiste do souboru (nikoliv cele konfigurace!)
-procedure TData.UpdateAutosave();
+procedure TConfig.UpdateAutosave();
 begin
- if ((Self.autosave) and (Now > Self.autosave_next)) then
+ if ((GlobalConfig.autosave) and (Now > Self.autosave_next)) then
   begin
    try
      F_Main.A_SaveStavExecute(Self);
@@ -539,23 +537,21 @@ begin
      on E:Exception do
        AppEvents.LogException(E, 'Vyjimka pri ukladani stavu kolejiste');
    end;
-   Self.autosave_next := Now + Self.autosave_period;
+   Self.autosave_next := Now + GlobalConfig.autosave_period;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//************KONEC UNITY************
-
 initialization
-  Data                := TData.Create;
-  Konfigurace         := TKonfigurace.Create;
-  FormData            := TFormData.Create;
+  GlobalConfig := TGlobalConfig.Create();
+  Config := TConfig.Create();
+  FormData := TFormData.Create();
 
 finalization
-  FreeAndNil(Data);
-  FreeAndNil(Konfigurace);
   FreeAndNil(FormData);
+  FreeAndNil(Config);
+  FreeAndNil(GlobalConfig);
 
 
 end.//unit

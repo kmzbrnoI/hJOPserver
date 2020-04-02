@@ -13,10 +13,6 @@ type
     //Ukladani
     B_pouzit: TButton;
     B_OK: TButton;
-
-    //TOpenDisalog/TSaveDialog
-    OD_Open: TOpenDialog;
-    SD_Save: TSaveDialog;
     PC_1: TPageControl;
     TS_Options: TTabSheet;
     P_ON_Pozadi: TPanel;
@@ -76,6 +72,10 @@ type
     CHB_Autosave: TCheckBox;
     ME_autosave_period: TMaskEdit;
     Label1: TLabel;
+    GB_Scale: TGroupBox;
+    Label2: TLabel;
+    E_Scale: TEdit;
+    Label3: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure PC_1Change(Sender: TObject);
@@ -117,11 +117,12 @@ end;
 
 procedure TF_Options.PC_1Change(Sender: TObject);
 begin
- if (PC_1.ActivePage = TS_SS)         then NactiSSDoObjektu;
- if (PC_1.ActivePage = TS_Options)    then
+ if (PC_1.ActivePage = TS_SS) then NactiSSDoObjektu();
+ if (PC_1.ActivePage = TS_Options) then
   begin
-   Self.ME_autosave_period.Text := FormatDateTime('nn:ss', data.autosave_period);
-   Self.CHB_Autosave.Checked := Data.autosave;
+   Self.ME_autosave_period.Text := FormatDateTime('nn:ss', GlobalConfig.autosave_period);
+   Self.CHB_Autosave.Checked := GlobalConfig.autosave;
+   Self.E_Scale.Text := IntToStr(GlobalConfig.scale);
   end;
 end;
 
@@ -133,12 +134,22 @@ end;
 procedure TF_Options.B_pouzitClick(Sender: TObject);
 var inidata: TMemIniFile;
  begin
+  try
+    GlobalConfig.scale := StrToInt(Self.E_Scale.Text);
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar('Nepodařilo se načíst měřítko:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      Exit();
+     end;
+  end;
+
   Application.ProcessMessages();
   Screen.Cursor := crHourGlass;
 
   inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
   try
-    Data.CompleteSaveToFile(inidata);
+    Config.CompleteSaveToFile(inidata);
   finally
     inidata.UpdateFile();
     inidata.Free();
@@ -238,13 +249,14 @@ var IgnoraceRCS:TArI;
 
 procedure TF_Options.CHB_AutosaveClick(Sender: TObject);
 begin
- Data.autosave := Self.CHB_Autosave.Checked;
+ GlobalConfig.autosave := Self.CHB_Autosave.Checked;
  if (Self.CHB_Autosave.Checked) then
   begin
    try
-    Data.autosave_period := EncodeTime(0, StrToInt(LeftStr(ME_autosave_period.Text, 2)), StrToInt(Copy(ME_autosave_period.Text, 4, 2)), 0);
+    GlobalConfig.autosave_period := EncodeTime(0, StrToInt(LeftStr(ME_autosave_period.Text, 2)),
+                                               StrToInt(Copy(ME_autosave_period.Text, 4, 2)), 0);
    except
-    Data.autosave := false;
+    GlobalConfig.autosave := false;
    end;
   end;
 end;
