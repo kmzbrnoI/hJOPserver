@@ -337,37 +337,32 @@ var glob:TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CB_Zesil.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte zesilovac, kteremu patri blok !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
-  if (E_Delka.Text = '0') then
-   begin
-    Application.MessageBox('Delka useku nemuze byt nulova !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CB_Speed.ItemIndex < 0) then
    begin
-    Application.MessageBox('Vyberte rychlost v tratovem useku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte rychlost v traťovém úseku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if ((Self.CHB_NavL.Checked) and (Self.CB_NavL.ItemIndex = -1)) then
    begin
-    Application.MessageBox('Vyberte navestidlo kryjici usek v lichem smeru !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte návěstidlo kryjící úsek v lichém směru!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if ((Self.CHB_NavS.Checked) and (Self.CB_NavS.ItemIndex = -1)) then
    begin
-    Application.MessageBox('Vyberte navestidlo kryjici usek v sudem smeru !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte návěstidlo kryjící úsek v sudém směru!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -376,7 +371,7 @@ var glob:TBlkSettings;
     str := Self.zastLichy.Check();
     if (str <> '') then
      begin
-      Application.MessageBox(PChar('Zastavovaci udalost zastavky v lichem smeru: '+#13#10+str),'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Zastavovací událost zastávky v lichém směru:'+#13#10+str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end;
@@ -386,7 +381,7 @@ var glob:TBlkSettings;
     str := Self.zastSudy.Check();
     if (str <> '') then
      begin
-      Application.MessageBox(PChar('Zastavovaci udalost zastavky v sudem smeru: '+#13#10+str),'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Zastavovací událost zastávky v sudém směru:'+#13#10+str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end;
@@ -453,7 +448,7 @@ var glob:TBlkSettings;
       TUsettings.Zastavka.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)), StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
       TUsettings.zastavka.soupravy.Free();
-      Application.MessageBox('Nesprávně zadaný čas čekání v zastávce', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
    end;

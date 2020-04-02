@@ -100,11 +100,11 @@ procedure TF_BlkUsek.NewBlkCreate;
 
 procedure TF_BlkUsek.NewBlkOpenForm;
  begin
-  E_Nazev.Text               := '';
-  SE_ID.Value                := Blky.GetBlkID(Blky.count-1)+1;
-  E_Delka.Text               := '0';
-  CHB_SmycBlok.Checked       := false;
-  Self.CB_Zesil.ItemIndex    := -1;
+  E_Nazev.Text := '';
+  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  E_Delka.Text := '0';
+  CHB_SmycBlok.Checked := false;
+  Self.CB_Zesil.ItemIndex := -1;
   Self.SE_SprCnt.Enabled := true;
   Self.SE_SprCnt.Value := 1;
 
@@ -146,7 +146,7 @@ var glob:TBlkSettings;
   if (Assigned(Self.Blk)) then settings := Self.Blk.GetSettings();
 
   Self.SE_SprCnt.Value := settings.maxSpr;
-  Self.SE_SprCnt.Enabled := Self.Blk.Stav.stanicni_kolej;
+  Self.SE_SprCnt.Enabled := Self.Blk.Stav.stanicni_kolej or Self.Blk.Stav.spr_pos;
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D2.Checked := false;
@@ -286,11 +286,6 @@ var glob:TBlkSettings;
   if (Self.CB_Zesil.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
-  if (StrToFloatDef(E_Delka.Text, 0) = 0) then
-   begin
-    Application.MessageBox('Délka úseku nemůže být nulová!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
