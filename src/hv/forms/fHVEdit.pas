@@ -290,7 +290,7 @@ procedure TF_HVEdit.B_NajetoDeleteClick(Sender: TObject);
   OpenHV.ResetStats();
   HVTableData.UpdateLine(Self.OpenHV);
 
-  Application.MessageBox('Operace proběhla úspěšne', 'OK', MB_OK OR MB_ICONINFORMATION);
+  Application.MessageBox('Operace proběhla úspěšně.', 'OK', MB_OK OR MB_ICONINFORMATION);
  end;
 
 procedure TF_HVEdit.HlavniOpenForm;

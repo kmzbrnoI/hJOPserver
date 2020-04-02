@@ -49,7 +49,7 @@
 interface
 
 uses Trakce, Classes, SysUtils, TOblRizeni, Generics.Collections, IdContext,
-     IniFiles, IBUtils, JsonDataObjects;
+     IniFiles, IBUtils, JsonDataObjects, FileSystem;
 
 const
   _HV_FUNC_MAX       = 28;   // maximalni funkcni cislo; funkce zacinaji na cisle 0
@@ -1778,9 +1778,9 @@ begin
  if (Self.speedStep = 0) then Exit();
 
  if (Self.direction = _LOCO_DIR_FORWARD) then
-   Self.stav.traveled_forward := Self.stav.traveled_forward + (Self.realSpeed * period / 3.6)
+   Self.stav.traveled_forward := Self.stav.traveled_forward + (Self.realSpeed * period / (3.6 * GlobalConfig.scale))
  else
-   Self.stav.traveled_backward := Self.stav.traveled_backward + (Self.realSpeed * period / 3.6);
+   Self.stav.traveled_backward := Self.stav.traveled_backward + (Self.realSpeed * period / (3.6 * GlobalConfig.scale));
 
  Self.changed := true;
 end;
