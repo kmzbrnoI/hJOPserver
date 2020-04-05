@@ -1,4 +1,4 @@
-﻿//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     HHHHH            H
+//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     HHHHH            H
 //H                                                        H      H      H    H   H    H    H          H H
 //H   Název : hJOPserver                                   H      H      H   H     H   H     H        H   H
 //H   Jméno tvůrce : Jan Horáček                           H      HHHHHHHH   H     H   H    H        H     H
@@ -149,7 +149,7 @@ uses
   CpuLoad in 'CpuLoad.pas',
   Diagnostics in 'Diagnostics.pas',
   Simulation in 'Simulation.pas',
-  PTEndpointJCs in 'PTEndpointJCs.pas',
+  PTEndpointJCs in 'pt\PTEndpointJCs.pas',
   PTEndpointJCStav in 'pt\PTEndpointJCStav.pas';
 
 {$R *.res}
