@@ -16,7 +16,7 @@ uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
 
 const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
-  _MAX_OR_CLIENTS = 32;                                                         // maximalni pocet klientu
+  _MAX_OR_CLIENTS = 64;                                                         // maximalni pocet klientu
   _PING_TIMER_PERIOD_MS = 250;
   _RECEIVE_CHECK_PERIOD_MS = 15;
 
