@@ -308,8 +308,12 @@ type
       procedure LoadData(ini:TMemIniFile; section:string);
       procedure SaveData(ini:TMemIniFile; section:string);
 
-      procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject;                  // pozadavek o postaveni jizdni cesty
-          from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false; abAfter:Boolean = false);
+      function StavJC(SenderPnl:TIdContext; SenderOR:TObject; bariery_out:TJCBariery;
+          from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false;
+          abAfter:Boolean = false):Integer; overload;
+      function StavJC(SenderPnl:TIdContext; SenderOR:TObject;
+          from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false;
+          abAfter:Boolean = false):Integer; overload;
 
 
       function CanDN():boolean;                                                 // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
@@ -1191,8 +1195,9 @@ end;
 // stavi konkretni jizdni cestu
 // tato fce ma za ukol zkontrolovat vstupni podminky jizdni cesty
 // tato funkce jeste nic nenastavuje!
-procedure TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject; from_stack:TObject = nil;
-                     nc:boolean = false; fromAB:boolean = false; abAfter: Boolean = false);
+function TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject; bariery_out:TJCBariery;
+                    from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false;
+                    abAfter: Boolean = false):Integer;
 var i:Integer;
     bariery:TJCBariery;
     bariera:TJCBariera;
@@ -1225,7 +1230,6 @@ var i:Integer;
         if (bariery[i].typ = _JCB_USEK_AB) then
           bariery.Delete(i);
 
-
     // existuji kriticke bariery?
     critical := false;
     for bariera in bariery do
@@ -1247,7 +1251,7 @@ var i:Integer;
       writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' bariér, ukončuji stavění', WR_VC);
       if (SenderPnl <> nil) then
         ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
-      Exit();
+      Exit(1);
      end else begin
       // bariery k potvrzeni
       if (((bariery.Count > 0) or ((nc) and (from_stack <> nil))) and (SenderPnl <> nil)) then
@@ -1267,7 +1271,7 @@ var i:Integer;
 
         ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
         Self.Krok := _KROK_POTVR_BARIERY;
-        Exit();
+        Exit(0);
        end;
      end;
 
@@ -1275,10 +1279,21 @@ var i:Integer;
     writelog('JC '+Self.Nazev+' : žádné bariéry, stavím', WR_VC);
     Self.SetInitKrok();
   finally
+    if (bariery_out <> nil) then
+      bariery_out.AddRange(bariery);
     bariery.Free();
     upo.Free();
   end;
+
+  Result := 0;
  end;
+
+function TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject;
+  from_stack:TObject = nil; nc:boolean = false; fromAB:boolean = false;
+  abAfter:Boolean = false):Integer;
+begin
+ Result := Self.StavJC(SenderPnl, SenderOR, nil, from_stack, nc, fromAB, abAfter);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
