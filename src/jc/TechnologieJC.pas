@@ -42,7 +42,7 @@ uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok, IbUtils,
   IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO, TBlokVyhybka,
-  TOblRizeni, changeEvent, changeEventCaller;
+  TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 
 const
   _JC_TIMEOUT_SEC = 20;                                                         // timeout pro staveni jizdni cesty (vlakove i posunove v sekundach)
@@ -323,6 +323,10 @@ type
       function KontrolaPodminek(NC:boolean = false):TJCBariery;
       function IsAnyVyhMinus():boolean;
       procedure ClientDisconnect(AContext: TIDContext);
+
+      procedure GetPtData(json:TJsonObject; includeStaveni:boolean);
+      procedure GetPtStaveni(json:TJsonObject);
+      procedure PostPtStav(reqJson:TJsonObject; respJson:TJsonObject);
 
       property data:TJCprop read fproperties write SetProperties;
       property stav:TJCStaveni read fstaveni;
@@ -1247,10 +1251,12 @@ var i:Integer;
     if (critical) then
      begin
       // kriticke bariey existuji -> oznamim je
-      Self.Krok := _KROK_KRIT_BARIERY;
       writelog('JC '+Self.Nazev+' : celkem '+IntToStr(bariery.Count)+' bariér, ukončuji stavění', WR_VC);
       if (SenderPnl <> nil) then
+       begin
+        Self.Krok := _KROK_KRIT_BARIERY;
         ORTCPServer.UPO(Self.fstaveni.SenderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
+       end;
       Exit(1);
      end else begin
       // bariery k potvrzeni
@@ -3955,6 +3961,139 @@ end;
 function TJC.GetWaitForLastUsekOrTratObsaz():Boolean;
 begin
  Result := (Self.Krok = _JC_KROK_CEKANI_POSLEDNI_USEK);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.GetPtData(json:TJsonObject; includeStaveni:boolean);
+var vyhZaver: TJCVyhZaver;
+    odvratZaver: TJCOdvratZaver;
+    newObj: TJsonObject;
+    usek: Integer;
+    prjZaver: TJCPrjZaver;
+    refZaver: TJCRefZaver;
+begin
+ json['nazev'] := Self.fproperties.Nazev;
+ json['id'] := Self.fproperties.id;
+ json['navId'] := Self.fproperties.NavestidloBlok;
+ case (Self.fproperties.TypCesty) of
+  TJCType.vlak: json['typ'] := 'VC';
+  TJCType.posun: json['typ'] := 'PC';
+ end;
+ case (Self.fproperties.DalsiNavaznost) of
+  TJCNextNavType.zadna: json['dalsiNav'] := '-';
+  TJCNextNavType.trat: json['dalsiNav'] := 'trat';
+  TJCNextNavType.blok: begin
+    json['dalsiNav'] := 'blok';
+    json['dalsiNavId'] := Self.fproperties.DalsiNavestidlo;
+  end;
+ end;
+
+ for vyhZaver in Self.fproperties.Vyhybky do
+  begin
+   newObj := json.A['vyhybky'].AddObject();
+   newObj['blok'] := vyhZaver.Blok;
+   case (vyhZaver.Poloha) of
+    TVyhPoloha.plus: newObj['poloha'] := '+';
+    TVyhPoloha.minus: newObj['poloha'] := '-';
+   end;
+  end;
+
+ for usek in Self.fproperties.Useky do
+   json.A['useky'].Add(usek);
+
+ for odvratZaver in Self.fproperties.Odvraty do
+  begin
+   newObj := json.A['odvraty'].AddObject();
+   newObj['blok'] := odvratZaver.Blok;
+   case (odvratZaver.Poloha) of
+    TVyhPoloha.plus: newObj['poloha'] := '+';
+    TVyhPoloha.minus: newObj['poloha'] := '-';
+   end;
+   newObj['refBlk'] := odvratZaver.ref_blk;
+  end;
+
+ for prjZaver in Self.fproperties.Prejezdy do
+  begin
+   newObj := json.A['prejezdy'].AddObject();
+   newObj['prejezd'] := prjZaver.Prejezd;
+   newObj['oteviraci'] := prjZaver.oteviraci;
+   for usek in prjZaver.uzaviraci do
+     newObj.A['uzaviraci'].Add(usek);
+  end;
+
+ for refZaver in Self.fproperties.zamky do
+  begin
+   newObj := json.A['zamky'].AddObject();
+   newObj['zamek'] := refZaver.Blok;
+   newObj['refUsek'] := refZaver.ref_blk;
+  end;
+
+ for usek in Self.fproperties.vb do
+   json.A['vb'].Add(usek);
+
+ if (Self.fproperties.Trat <> -1) then
+  begin
+   json['trat'] := Self.fproperties.Trat;
+   json['tratSmer'] := Integer(Self.fproperties.TratSmer);
+  end;
+
+ json['rychlostDalsiN'] := Self.fproperties.RychlostDalsiN;
+ json['rychlostNoDalsiN'] := Self.fproperties.RychlostNoDalsiN;
+ json['odbocka'] := Self.fproperties.odbocka;
+
+ if (includeStaveni) then
+   Self.GetPtStaveni(json['staveni']);
+end;
+
+procedure TJC.GetPtStaveni(json:TJsonObject);
+begin
+ json['staveni'] := Self.staveni;
+ json['postaveno'] := Self.postaveno;
+ json['krok'] := Self.fstaveni.Krok;
+ json['rozpadBlok'] := Self.fstaveni.RozpadBlok;
+ json['rozpadRuseniBlok'] := Self.fstaveni.RozpadRuseniBlok;
+ json['ab'] := Self.AB;
+end;
+
+procedure TJC.PostPtStav(reqJson:TJsonObject; respJson:TJsonObject);
+var bariery:TJCBariery;
+    bariera:TJCBariera;
+    ok: Integer;
+    jsonObj: TJsonObject;
+    upoItem: TUPOItem;
+begin
+ if ((Self.navestidlo = nil) or (TBlkNav(Self.navestidlo).OblsRizeni.Count = 0)) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Návěstidlo není v OŘ');
+   Exit();
+  end;
+
+ bariery := TJCBariery.Create();
+ try
+   ok := Self.StavJC(nil, TBlkNav(Self.navestidlo).OblsRizeni[0], bariery);
+   respJson['success'] := (ok = 0);
+
+   for bariera in bariery do
+    begin
+     jsonObj := respJson.A['bariery'].AddObject();
+     jsonObj['typ'] := bariera.typ;
+     if (bariera.blok <> nil) then
+       jsonObj['blok'] := bariera.blok.id;
+     jsonObj['param'] := bariera.param;
+     if (CriticalBariera(bariera.typ)) then
+       jsonObj['type'] := 'critical'
+     else if (WarningBariera(bariera.typ)) then
+       jsonObj['type'] := 'warning'
+     else
+       jsonObj['type'] := 'standard';
+
+     upoItem := JCBarieraToMessage(bariera);
+     jsonObj['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
+    end;
+ finally
+   bariery.Free();
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

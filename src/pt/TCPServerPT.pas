@@ -103,8 +103,9 @@ var
 implementation
 
 uses Logging, appEv, fMain,
-      PTEndpointBlok, PTEndpointBloky, PTEndpointBlokStav,
-      PTEndpointLok, PTEndpointLoks, PTEndpointLokStav;
+      PTEndpointBlok, PTEndpointBloky, PTEndpointBlokStav, PTEndpointJC,
+      PTEndpointLok, PTEndpointLoks, PTEndpointLokStav, PTEndpointJCs,
+      PTEndpointJCStav;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -173,6 +174,9 @@ begin
  Self.endpoints.Add(TPTEndpointLok.Create());
  Self.endpoints.Add(TPTEndpointLoks.Create());
  Self.endpoints.Add(TPTEndpointLokStav.Create());
+ Self.endpoints.Add(TPTEndpointJCs.Create());
+ Self.endpoints.Add(TPTEndpointJC.Create());
+ Self.endpoints.Add(TPTEndpointJCStav.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();

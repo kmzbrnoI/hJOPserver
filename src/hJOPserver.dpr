@@ -117,6 +117,7 @@ uses
   PTEndpoint in 'pt\PTEndpoint.pas',
   PTEndpointBlok in 'pt\PTEndpointBlok.pas',
   PTEndpointBloky in 'pt\PTEndpointBloky.pas',
+  PTEndpointJC in 'pt\PTEndpointJC.pas',
   PTUtils in 'pt\PTUtils.pas',
   PTEndpointLok in 'pt\PTEndpointLok.pas',
   PTEndpointLoks in 'pt\PTEndpointLoks.pas',
@@ -147,7 +148,9 @@ uses
   TechnologieTrakce in 'TechnologieTrakce.pas' {$R *.res},
   CpuLoad in 'CpuLoad.pas',
   Diagnostics in 'Diagnostics.pas',
-  Simulation in 'Simulation.pas';
+  Simulation in 'Simulation.pas',
+  PTEndpointJCs in 'PTEndpointJCs.pas',
+  PTEndpointJCStav in 'pt\PTEndpointJCStav.pas';
 
 {$R *.res}
 

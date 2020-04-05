@@ -221,6 +221,7 @@
 			<DCCReference Include="pt\PTEndpoint.pas"/>
 			<DCCReference Include="pt\PTEndpointBlok.pas"/>
 			<DCCReference Include="pt\PTEndpointBloky.pas"/>
+			<DCCReference Include="pt\PTEndpointJC.pas"/>
 			<DCCReference Include="pt\PTUtils.pas"/>
 			<DCCReference Include="pt\PTEndpointLok.pas"/>
 			<DCCReference Include="pt\PTEndpointLoks.pas"/>
@@ -262,6 +263,8 @@
 			<DCCReference Include="CpuLoad.pas"/>
 			<DCCReference Include="Diagnostics.pas"/>
 			<DCCReference Include="Simulation.pas"/>
+			<DCCReference Include="PTEndpointJCs.pas"/>
+			<DCCReference Include="pt\PTEndpointJCStav.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
