@@ -6,6 +6,7 @@ uses Character, SysUtils, Classes;
 
 function RemoveWhiteSpace(const s: string): string;
 procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
+function RandomToken(len: Cardinal): string;
 
 implementation
 
@@ -67,6 +68,17 @@ var i: word;
    end;
 
   if (s <> '') then Strings.Add(s);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function RandomToken(len: Cardinal): string;
+var i:Integer;
+const _ALL: string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTVUWXYZ0123456789';
+begin
+ Result := '';
+ for i := 0 to len-1 do
+   Result := Result + _ALL[Random(Length(_ALL))+1];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

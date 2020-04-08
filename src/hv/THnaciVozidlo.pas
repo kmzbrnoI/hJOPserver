@@ -853,18 +853,8 @@ end;
 
 function THV.GetToken():string;
 var token:THVToken;
-    all:string;
-    i:Integer;
-    len:Integer;
 begin
- // generace tokenu
- all := 'abcdefghijklmnopqrstuvwxyz0123456789';
- len := Length(all);
-
- token.token := '';
- for i := 0 to _TOKEN_LEN-1 do
-   token.token := token.token + all[Random(len)+1];
-
+ token.token := RandomToken(_TOKEN_LEN);
  token.timeout := Now + EncodeTime(0, _TOKEN_TIMEOUT_MIN, 0, 0);
  Result := token.token;
  Self.Stav.tokens.Add(token);
