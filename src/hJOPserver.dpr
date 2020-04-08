@@ -151,7 +151,8 @@ uses
   Simulation in 'Simulation.pas',
   PTEndpointJCs in 'pt\PTEndpointJCs.pas',
   PTEndpointJCStav in 'pt\PTEndpointJCStav.pas',
-  TBlokAC in 'TBlokAC.pas';
+  TBlokAC in 'bloky\TBlokAC.pas',
+  fBlkAC in 'bloky\forms\fBlkAC.pas' {F_BlkAC};
 
 {$R *.res}
 
@@ -177,6 +178,7 @@ var
   Application.Title := 'hJOPserver';
   Application.CreateForm(TF_Main, F_Main);
   Application.CreateForm(TF_Splash, F_Splash);
+  Application.CreateForm(TF_BlkAC, F_BlkAC);
   F_Splash.AddStav('Vytvářím okna...');
 
   Application.CreateForm(TF_Console, F_Console);

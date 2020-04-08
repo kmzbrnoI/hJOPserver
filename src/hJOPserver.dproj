@@ -265,7 +265,10 @@
 			<DCCReference Include="Simulation.pas"/>
 			<DCCReference Include="pt\PTEndpointJCs.pas"/>
 			<DCCReference Include="pt\PTEndpointJCStav.pas"/>
-			<DCCReference Include="TBlokAC.pas"/>
+			<DCCReference Include="bloky\TBlokAC.pas"/>
+			<DCCReference Include="bloky\forms\fBlkAC.pas">
+				<Form>F_BlkAC</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

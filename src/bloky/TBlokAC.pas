@@ -65,6 +65,9 @@ type
     procedure Enable(); override;
     procedure Disable(); override;
 
+    function GetSettings():TBlkACSettings;
+    procedure SetSettings(data: TBlkACSettings);
+
     // update states
     procedure Update(); override;
     procedure Change(now:boolean = false); override;
@@ -177,6 +180,19 @@ begin
 
  Self.m_state.enabled := false;
  Self.Change(true);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkAC.GetSettings():TBlkACSettings;
+begin
+ Result := Self.m_settings;
+end;
+
+procedure TBlkAC.SetSettings(data: TBlkACSettings);
+begin
+ Self.m_settings := data;
+ Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@ var
 
 implementation
 
-uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkNav, fMain, fBlkSH,
+uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkNav, fMain, fBlkSH, fBlkAC,
       TBloky, fBlkPrejezd, fBlkTrat, fBlkZamek, fBlkRozp, fBlkTU, fBlkVystup;
 
 {$R *.dfm}
@@ -55,6 +55,7 @@ begin
   8 : F_BlkTU.NewBlkCreate();
   9 : F_BlkVystup.NewBlkCreate();
   10: F_BlkSH.NewBlkCreate();
+  11: F_BlkAC.NewBlkCreate();
  end;
 end;
 

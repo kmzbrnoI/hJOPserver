@@ -506,7 +506,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase, TBlokRozp,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
      AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors, TechnologieAB,
-     Diagnostics;
+     Diagnostics, TBlokAC, fBlkAC;
 
 {$R *.dfm}
 
@@ -3076,6 +3076,20 @@ var Blk:TBlk;
     end;
   end;
 
+  //////////////////////
+  _BLK_AC:begin
+    if (TBlkAC(Blk).enabled) then
+     begin
+      if (not TBlkAC(Blk).stopped) then
+        LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
+      else if (TBlkAC(Blk).clientConnected) then
+        LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
+      else
+        LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+     end else
+      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+  end;
+
   end;//case
 end;
 
@@ -3097,6 +3111,7 @@ var Blk:TBlk;
    _BLK_TU      : F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_VYSTUP  : F_BlkVystup.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_SH      : F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
+   _BLK_AC      : F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
   end;//case
 end;
 

@@ -37,7 +37,7 @@ implementation
 
 uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokNav, TBlokIR, TBlokPrejezd,
       fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp, TBlokVystup,
-      TBlokSouctovaHlaska;
+      TBlokSouctovaHlaska, TBlokAC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -365,6 +365,32 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[5] := '';
       Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_SH
+
+ /////////////////////////////////////////////////////
+   _BLK_AC:begin
+      Self.LV.Items[line].ImageIndex := -1;
+      Self.LV.Items[line].SubItems[0] := 'AC';
+
+      Self.LV.Items[line].SubItems[2] := '---';
+
+      if (TBlkAC(Blk).enabled) then
+       begin
+        case (TBlkAC(Blk).acState) of
+          TACState.stopped: begin
+            if (TBlkAC(Blk).clientConnected) then
+              Self.LV.Items[line].SubItems[3] := 'zastaven'
+            else
+              Self.LV.Items[line].SubItems[3] := 'klient nepřipojen';
+          end;
+          TACState.running: Self.LV.Items[line].SubItems[3] := 'běží';
+          TACState.paused: Self.LV.Items[line].SubItems[3] := 'pozastaven';
+        end;
+       end else
+        Self.LV.Items[line].SubItems[3] := 'disabled';
+
+      Self.LV.Items[line].SubItems[5] := '---';
+      Self.LV.Items[line].SubItems[7] := '---';
+   end;//_BLK_ZAMEK
 
   end;//case BLOK_VYSTUP
 
