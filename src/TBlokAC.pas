@@ -9,21 +9,39 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
 
 type
 
- TBlkACStav = record
+ TACState = (stopped = 0, running = 1, paused = 2);
 
+ TBlkACSettings = record
+   accessToken: string;
  end;
+
+ TBlkACState = record
+  enabled: boolean;
+  client: TIdContext;
+  state: TACState;
+ end;
+
+ TBlkACException = class(Exception);
 
  // zamek ma zaver, pokud jakakoliv vyhybka, kterou obsluhuje, ma zaver
 
  TBlkAC = class(TBlk)
   const
    //defaultni stav
-   _def_ac_stav:TBlkACStav = (
-
+   _def_ac_state:TBlkACState = (
+     enabled: false;
+     client: nil;
+     state: TACState.stopped;
    );
 
   private
-   ACStav:TBlkACStav;
+   m_state: TBlkACState;
+   m_settings: TBlkACSettings;
+
+    function GetStopped():boolean;
+    function GetRunning():boolean;
+    function GetPaused():boolean;
+    function GetClientConnected():boolean;
 
     procedure MenuSTARTClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuSTOPClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -35,30 +53,46 @@ type
     constructor Create(index:Integer);
     destructor Destroy(); override;
 
-    //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    // load/save data
+    procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
+    procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
+    procedure SaveStatus(ini_stat:TMemIniFile; const section:string); override;
 
-    //enable or disable symbol on relief
+    // enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
 
-    //update states
+    // update states
     procedure Update(); override;
-    procedure Change(now:boolean = false); override;               // change do zamku je volano pri zmene zaveru jakekoliv vyhybky, kterou zaver obsluhuje
+    procedure Change(now:boolean = false); override;
 
-    //----- Ac own functions -----
+    // ----- AC own functions -----
 
-    property Stav:TBlkACStav read ACStav;
+    procedure Start();
+    procedure Stop();
+    procedure Pause();
 
-    //GUI:
+    procedure OnClientDisconnect(client: TIdContext);
+
+    property state:TBlkACState read m_state;
+    property enabled:boolean read m_state.enabled;
+    property stopped:boolean read GetStopped;
+    property running:boolean read GetRunning;
+    property paused:boolean read GetPaused;
+    property acState:TACState read m_state.state;
+    property clientConnected:boolean read GetClientConnected;
+    property client:TIdContext read m_state.client;
+
+    // GUI:
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton;
+                         rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
 
  end;//class TBlkUsek
+
+// TODO: remove just overloaded functions
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +106,7 @@ begin
  inherited Create(index);
 
  Self.GlobalSettings.typ := _BLK_AC;
- Self.ACStav := _def_ac_stav;
+ Self.m_state := _def_ac_state;
 end;//ctor
 
 destructor TBlkAC.Destroy();
@@ -82,12 +116,12 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkAC.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkAC.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
 var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- // TODO load data here
+ Self.m_settings.accessToken := ini_tech.ReadString(section, 'accessToken', '');
 
  if (ini_rel <> nil) then
   begin
@@ -107,12 +141,13 @@ begin
   end;
 end;
 
-procedure TBlkAC.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkAC.SaveData(ini_tech:TMemIniFile; const section:string);
 begin
  inherited SaveData(ini_tech, section);
+ ini_tech.WriteString(section, 'accessToken', Self.m_settings.accessToken);
 end;
 
-procedure TBlkAC.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkAC.SaveStatus(ini_stat:TMemIniFile; const section:string);
 begin
  // TODO
 end;
@@ -122,10 +157,19 @@ end;
 procedure TBlkAC.Enable();
 begin
  inherited Change();
+ Self.m_state.enabled := true;
 end;
 
 procedure TBlkAC.Disable();
 begin
+ try
+   if (Self.running) then
+     Self.Stop();
+ except
+
+ end;
+
+ Self.m_state.enabled := false;
  Self.Change(true);
 end;
 
@@ -146,22 +190,48 @@ end;
 
 procedure TBlkAC.MenuSTARTClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
-
+ try
+   Self.Start();
+ except
+   on E:Exception do
+     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+ end;
 end;
 
 procedure TBlkAC.MenuSTOPClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
-
+ try
+   Self.Stop();
+ except
+   on E:Exception do
+     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+ end;
 end;
 
 procedure TBlkAC.MenuPAUZAClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
-
+ try
+   Self.Pause();
+ except
+   on E:Exception do
+     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+ end;
 end;
 
 procedure TBlkAC.MenuPOKRACClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
+ if (not Self.paused) then
+  begin
+   ORTCPServer.BottomError(SenderPnl, 'AC není v režimu pauza!', TOR(SenderOR).ShortName, 'AC');
+   Exit();
+  end;
 
+ try
+   Self.Start();
+ except
+   on E:Exception do
+     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,14 +239,25 @@ end;
 function TBlkAC.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
  Result := inherited;
+
+ if ((Self.m_state.client <> nil) and (Self.stopped)) then
+   Result := Result + 'START,';
+
+ if (Self.paused) then
+   Result := Result + 'POKRAÈ,';
+ if (Self.running) then
+   Result := Result + 'PAUZA,';
+ if (not Self.stopped) then
+   Result := Result + 'STOP,';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkAC.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkAC.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton;
+                            rights:TORCOntrolRights; params:string = '');
 begin
-// if (Self.Stav.enabled) then
-//   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+ if (Self.enabled) then
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,24 +265,111 @@ end;
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkAC.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
-// if (not Self.Stav.enabled) then Exit();
+ if (not Self.enabled) then Exit();
 
-{ if      (item = 'UK')   then Self.MenuUKClick(SenderPnl, SenderOR)
- else if (item = 'ZUK')  then Self.MenuZUKClick(SenderPnl, SenderOR) }
+ if      (item = 'START')  then Self.MenuSTARTClick(SenderPnl, SenderOR)
+ else if (item = 'STOP')   then Self.MenuSTOPClick(SenderPnl, SenderOR)
+ else if (item = 'PAUZA')  then Self.MenuPAUZAClick(SenderPnl, SenderOR)
+ else if (item = 'POKRAÈ') then Self.MenuPOKRACClick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkAC.PanelStateString():string;
 var fg, bg: TColor;
+    flash: boolean;
 begin
  Result := inherited;
 
  bg := clBlack;
  fg := $A0A0A0;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
- Result := Result + PrevodySoustav.ColorToStr(bg) + ';0;';
+ case (Self.m_state.state) of
+  TACState.running: fg := clYellow;
+  TACState.paused: fg := clYellow;
+ end;
+
+ if (Self.stopped) then
+  begin
+   if (Self.clientConnected) then
+     fg := $A0A0A0
+   else
+     fg := clFuchsia;
+  end;
+
+ flash := Self.running;
+
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';'
+                  + PrevodySoustav.ColorToStr(bg) + ';'
+                  + IntToStr(PrevodySoustav.BoolToInt(flash)) + ';';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkAC.GetStopped():boolean;
+begin
+ Result := (Self.m_state.state = TACState.stopped);
+end;
+
+function TBlkAC.GetRunning():boolean;
+begin
+ Result := (Self.m_state.state = TACState.running);
+end;
+
+function TBlkAC.GetPaused():boolean;
+begin
+ Result := (Self.m_state.state = TACState.paused);
+end;
+
+function TBlkAC.GetClientConnected():boolean;
+begin
+ Result := (Self.m_state.client <> nil);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkAC.Start();
+begin
+ if ((Self.m_state.state <> TACState.stopped) and (Self.m_state.state <> TACState.paused)) then
+   TBlkACException.Create('Nelze spustit bìžící AC!');
+ if (Self.m_state.client = nil) then
+   TBlkACException.Create('AC nelze spustit bez pøipojeného klienta!');
+
+ if (Self.paused) then
+   ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;RESUME')
+ else
+   ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;START');
+
+ Self.m_state.state := TACState.running;
+ Self.Change();
+end;
+
+procedure TBlkAC.Stop();
+begin
+ if (Self.m_state.state <> TACState.running) then
+   TBlkACException.Create('Nelze zastavit nespuštìné AC!');
+
+ Self.m_state.state := TACState.stopped;
+ ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;STOP');
+ Self.Change();
+end;
+
+procedure TBlkAC.Pause();
+begin
+ if (Self.m_state.state <> TACState.running) then
+   TBlkACException.Create('Nelze pozastavit nespuštìné AC!');
+
+ Self.m_state.state := TACState.paused;
+ ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;PAUSE');
+ Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkAC.OnClientDisconnect(client: TIdContext);
+begin
+ // TODO
+ Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
