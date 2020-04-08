@@ -153,7 +153,7 @@ implementation
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC;
+      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -795,6 +795,19 @@ begin
      TTCPORsRef(AContext.Data).podj_usek := nil;
      TTCPORsRef(AContext.Data).podj_sprid := -1;
     end;
+ end else if (parsed[1] = 'AC') then
+  begin
+   if (parsed.Count < 3) then Exit();
+   if (parsed[2] = '-') then
+    asm nop; end // TODO
+   else begin
+    i := StrToInt(parsed[2]);
+    Blky.GetBlkByID(i, blk);
+    if ((blk <> nil) and (blk.typ = _BLK_AC)) then
+      TBlkAC(blk).ClientParse(AContext, parsed)
+    else
+      Self.SendLn(AContext, '-;AC;'+parsed[2]+';ERR;Neplatné id AC');
+   end;
   end;
 
 end;

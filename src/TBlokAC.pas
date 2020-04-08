@@ -43,6 +43,9 @@ type
     function GetPaused():boolean;
     function GetClientConnected():boolean;
 
+    procedure SendLn(text: string); overload;
+    procedure SendLn(recipient: TIdContext; text: string); overload;
+
     procedure MenuSTARTClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuSTOPClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPAUZAClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -72,7 +75,9 @@ type
     procedure Stop();
     procedure Pause();
 
-    procedure OnClientDisconnect(client: TIdContext);
+    procedure SendClientControl();
+    procedure OnClientDisconnect();
+    procedure ClientParse(Sender: TIdContext; parsed: TStrings);
 
     property state:TBlkACState read m_state;
     property enabled:boolean read m_state.enabled;
@@ -99,7 +104,8 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, Graphics, Prevody, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka;
+    TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka,
+    TCPServerPT;
 
 constructor TBlkAC.Create(index:Integer);
 begin
@@ -335,6 +341,12 @@ begin
  if (Self.m_state.client = nil) then
    TBlkACException.Create('AC nelze spustit bez pøipojeného klienta!');
 
+ try
+   PtServer.AccessTokenAdd(Self.m_settings.accessToken);
+ except
+   raise TBlkACException.Create('Nepodaøilo se pøidat pøístupový token!');
+ end;
+
  if (Self.paused) then
    ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;RESUME')
  else
@@ -349,8 +361,14 @@ begin
  if (Self.m_state.state <> TACState.running) then
    TBlkACException.Create('Nelze zastavit nespuštìné AC!');
 
+ try
+   PtServer.AccessTokenRemove(Self.m_settings.accessToken);
+ except
+
+ end;
+
  Self.m_state.state := TACState.stopped;
- ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;STOP');
+ Self.SendClientControl();
  Self.Change();
 end;
 
@@ -359,17 +377,90 @@ begin
  if (Self.m_state.state <> TACState.running) then
    TBlkACException.Create('Nelze pozastavit nespuštìné AC!');
 
+ try
+   PtServer.AccessTokenRemove(Self.m_settings.accessToken);
+ except
+
+ end;
+
  Self.m_state.state := TACState.paused;
- ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;PAUSE');
+ Self.SendClientControl();
  Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkAC.OnClientDisconnect(client: TIdContext);
+procedure TBlkAC.ClientParse(Sender: TIdContext; parsed: TStrings);
 begin
- // TODO
+ if (parsed.Count < 4) then Exit();
+
+ if ((parsed.Count >= 5) and (UpperCase(parsed[3]) = 'LOGIN')) then
+  begin
+   if (Self.client <> nil) then
+    begin
+     Self.SendLn(Sender, 'AUTH;nok;1;Klient již pøihlášen');
+     Exit();
+    end else if (parsed[4] = Self.m_settings.accessToken) then
+     Self.SendLn(Sender, 'AUTH;ok;')
+    else
+     Self.SendLn(Sender, 'AUTH;nok;2;Neplatný pøístupový token');
+  end;
+
+ if ((Self.client = nil) or (Self.client <> Sender)) then Exit();
+
+ if (parsed[3] = 'LOGOUT') then begin
+   if (Self.running) then
+     Self.Stop();
+   Self.SendLn(Sender, 'AUTH;logout;');
+   Self.m_state.client := nil;
+   Self.Change();
+ end else if ((parsed[3] = 'CONTROL') and (parsed.Count >= 5) and (parsed[4] = 'DONE')) then begin
+   if (Self.running) then
+     Self.Stop();
+ end else if ((parsed[3] = 'CONTROL') and (parsed.Count >= 7) and (parsed[4] = 'ERROR')) then begin
+   // TODO
+ end;
+end;
+
+procedure TBlkAC.OnClientDisconnect();
+begin
+ if (client <> Self.client) then Exit();
+
+ Self.m_state.client := nil;
+ if (Self.running) then
+   Self.Stop();
+
  Self.Change();
+end;
+
+procedure TBlkAC.SendClientControl();
+var state:string;
+begin
+ if (Self.client = nil) then Exit();
+
+ case (Self.m_state.state) of
+  TACState.stopped: state := 'STOP';
+  TACState.running: state := 'START';
+  TACState.paused: state := 'PAUSE';
+ else
+  state := 'UNKNOWN';
+ end;
+
+ ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;'+state);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkAC.SendLn(text: string);
+begin
+ if (Self.client = nil) then
+   raise TBlkACException.Create('Nezle odeslat data neexistujícímu klientovi!');
+ Self.SendLn(Self.client, text);
+end;
+
+procedure TBlkAC.SendLn(recipient: TIdContext; text: string);
+begin
+ ORTCPServer.SendLn(recipient, '-;AC;'+IntToStr(Self.id)+';'+text);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
