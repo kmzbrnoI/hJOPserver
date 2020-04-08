@@ -19,16 +19,18 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+
   private
    NewBlk:Boolean;
    Blk:TBlkZamek;
+
   public
-   CanMonitor:Boolean;
    OpenIndex:Integer;
+
    procedure OpenForm(BlokIndex:Integer);
-   procedure NewBlkOpenForm;
-   procedure NormalOpenForm;
-   procedure HlavniOpenForm;
+   procedure NewBlkOpenForm();
+   procedure NormalOpenForm();
+   procedure HlavniOpenForm();
    procedure NewBlkCreate;
   end;
 
@@ -58,10 +60,10 @@ procedure TF_BlkZamek.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkZamek.NewBlkOpenForm;
  begin
-  E_Nazev.Text          := '';
-  SE_ID.Value           := Blky.GetBlkID(Blky.count-1)+1;
+  E_Nazev.Text := '';
+  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
 
-  Self.Caption := 'Editovat data noveho bloku';
+  Self.Caption := 'Editovat data nového bloku';
   Self.ActiveControl := Self.E_Nazev;
  end;
 
@@ -81,12 +83,12 @@ var glob:TBlkSettings;
   Self.ActiveControl := Self.B_Save;
  end;
 
-procedure TF_BlkZamek.HlavniOpenForm;
+procedure TF_BlkZamek.HlavniOpenForm();
  begin
   Self.LB_Stanice.Clear();
  end;
 
-procedure TF_BlkZamek.NewBlkCreate;
+procedure TF_BlkZamek.NewBlkCreate();
  begin
   NewBlk := true;
   OpenForm(Blky.count);
@@ -94,7 +96,7 @@ procedure TF_BlkZamek.NewBlkCreate;
 
 procedure TF_BlkZamek.B_StornoClick(Sender: TObject);
  begin
-  Self.Close;
+  Self.Close();
  end;
 
 procedure TF_BlkZamek.B_SaveClick(Sender: TObject);
@@ -102,24 +104,24 @@ var glob:TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
 
-  glob.name     := E_Nazev.Text;
-  glob.id       := SE_ID.Value;
-  glob.typ      := _BLK_ZAMEK;
+  glob.name := E_Nazev.Text;
+  glob.id := SE_ID.Value;
+  glob.typ := _BLK_ZAMEK;
 
   if (NewBlk) then
    begin
     glob.poznamka := '';
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkZamek;
+      Blk := Blky.Add(_BLK_ZAMEK, glob) as TBlkZamek;
     except
       on E:Exception do
        begin
@@ -138,9 +140,8 @@ var glob:TBlkSettings;
 
 procedure TF_BlkZamek.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  NewBlk     := false;
-  OpenIndex  := -1;
-  CanMonitor := false;
+  NewBlk := false;
+  OpenIndex := -1;
   BlokyTableData.UpdateTable;
  end;
 
