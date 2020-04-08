@@ -263,8 +263,9 @@
 			<DCCReference Include="CpuLoad.pas"/>
 			<DCCReference Include="Diagnostics.pas"/>
 			<DCCReference Include="Simulation.pas"/>
-			<DCCReference Include="PTEndpointJCs.pas"/>
+			<DCCReference Include="pt\PTEndpointJCs.pas"/>
 			<DCCReference Include="pt\PTEndpointJCStav.pas"/>
+			<DCCReference Include="TBlokAC.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

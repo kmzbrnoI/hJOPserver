@@ -137,7 +137,7 @@ var
 implementation
 
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokNav, fMain, TBlokPrejezd,
-      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka,
+      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TBlokAC,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
       TBlokTratUsek, appEv, TBlokVystup, PTUtils, TBlokSouctovaHlaska,
       TechnologieAB;
@@ -251,6 +251,7 @@ begin
         _BLK_TU       : Blk := TBlkTU.Create(-1);
         _BLK_VYSTUP   : Blk := TBlkVystup.Create(-1);
         _BLK_SH       : Blk := TBlkSH.Create(-1);
+        _BLK_AC       : Blk := TBlkAC.Create(-1);
 
        else//case
          continue;
@@ -371,6 +372,7 @@ begin
   _BLK_TU       : Blk := TBlkTU.Create(index);
   _BLK_VYSTUP   : Blk := TBlkVystup.Create(index);
   _BLK_SH       : Blk := TBlkSH.Create(index);
+  _BLK_AC       : Blk := TBlkAC.Create(index);
  else//case
   Exit(nil);
  end;

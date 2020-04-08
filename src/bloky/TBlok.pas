@@ -21,6 +21,7 @@ const
  _BLK_TU      = 9;            // tratovy usek
  _BLK_VYSTUP  = 10;           // logicky vystup
  _BLK_SH      = 11;           // souctova hlaska
+ _BLK_AC      = 12;           // automatic control
 
  //if the block is disbled, this is is its state
  _BLK_DISABLED = -5;
