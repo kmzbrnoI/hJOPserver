@@ -416,32 +416,33 @@ begin
     begin
      Self.SendLn(Sender, 'AUTH;nok;1;Klient již pøihlášen');
      Exit();
-    end else if (parsed[4] = Self.m_settings.accessToken) then
-     Self.SendLn(Sender, 'AUTH;ok;')
-    else
-     Self.SendLn(Sender, 'AUTH;nok;2;Neplatný pøístupový token');
+    end else if (parsed[4] <> Self.m_settings.accessToken) then
+     Self.SendLn(Sender, 'AUTH;nok;2;Neplatný pøístupový token')
+    else begin
+     Self.m_state.client := Sender;
+     Self.SendLn(Sender, 'AUTH;ok;');
+     Self.Change();
+    end;
   end;
 
  if ((Self.client = nil) or (Self.client <> Sender)) then Exit();
 
- if (parsed[3] = 'LOGOUT') then begin
+ if (UpperCase(parsed[3]) = 'LOGOUT') then begin
    if (Self.running) then
      Self.Stop();
    Self.SendLn(Sender, 'AUTH;logout;');
    Self.m_state.client := nil;
    Self.Change();
- end else if ((parsed[3] = 'CONTROL') and (parsed.Count >= 5) and (parsed[4] = 'DONE')) then begin
+ end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 5) and (UpperCase(parsed[4]) = 'DONE')) then begin
    if (Self.running) then
      Self.Stop();
- end else if ((parsed[3] = 'CONTROL') and (parsed.Count >= 7) and (parsed[4] = 'ERROR')) then begin
+ end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 7) and (UpperCase(parsed[4]) = 'ERROR')) then begin
    // TODO
  end;
 end;
 
 procedure TBlkAC.OnClientDisconnect();
 begin
- if (client <> Self.client) then Exit();
-
  Self.m_state.client := nil;
  if (Self.running) then
    Self.Stop();

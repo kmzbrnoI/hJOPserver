@@ -422,6 +422,8 @@ begin
  // vymazeme klienta z RCS debuggeru
  RCSd.RemoveClient(AContext);
 
+ Blky.OnClientDisconnect(AContext);
+
  // odpojil se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
  if (Self.DCCStopped = AContext) then
   begin

@@ -122,6 +122,8 @@ type
 
     function AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
 
+    procedure OnClientDisconnect(client: TIdContext);
+
     function GetEnumerator():TEnumerator<TBlk>;
     property Items[index : integer] : TBlk read GetItem; default;
     property count:Integer read GetCount;
@@ -1073,6 +1075,16 @@ begin
    if (blk <> me) and (blk.UsesRCS(addr, typ)) then
      Exit(blk);
  Result := nil;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.OnClientDisconnect(client: TIdContext);
+var blk:TBlk;
+begin
+ for blk in Self.data do
+   if ((blk.typ = _BLK_AC) and (TBlkAC(blk).client = client)) then
+     TBlkAC(blk).OnClientDisconnect();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
