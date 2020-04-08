@@ -51,6 +51,7 @@ type
    private
     // seznam endpointu PTserveru, PTserver instanciuje vsechny endpointy v konstruktoru
     endpoints: TObjectList<TPTEndpoint>;
+    accessTokens: TDictionary<string, boolean>;
 
     httpServer: TIdHTTPServer;
 
@@ -91,6 +92,10 @@ type
 
      procedure Start();
      procedure Stop();
+
+     procedure AccessTokenAdd(token:string);
+     procedure AccessTokenRemove(token:string);
+     function IsAccessToken(token:string):boolean;
 
       property openned:boolean read IsOpenned;
       property port:Word read GetPort write SetPort;
@@ -143,6 +148,7 @@ begin
 
  Self.received := TObjectQueue<TPtReceived>.Create();
  Self.receivedLock := TCriticalSection.Create();
+ Self.accessTokens := TDictionary<string, boolean>.Create();
 
  Self.httpServer := TIdHTTPServer.Create(nil);
  Self.httpServer.Bindings := bindings;
@@ -191,6 +197,7 @@ begin
    FreeAndNil(Self.received);
    Self.receivedLock.Release();
    FreeAndNil(Self.receivedLock);
+   Self.accessTokens.Free();
  finally
    inherited;
  end;
@@ -419,9 +426,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+procedure TPtServer.AccessTokenAdd(token:string);
+begin
+ Self.accessTokens.Add(token, true);
+end;
 
-////////////////////////////////////////////////////////////////////////////////
+procedure TPtServer.AccessTokenRemove(token:string);
+begin
+ Self.accessTokens.Remove(token);
+end;
+
+function TPtServer.IsAccessToken(token:string):boolean;
+begin
+ Result := Self.accessTokens.ContainsKey(token);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
