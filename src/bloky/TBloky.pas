@@ -142,7 +142,7 @@ uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokNav, fMain, TBlokPrejezd,
       TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TBlokAC,
       DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
       TBlokTratUsek, appEv, TBlokVystup, PTUtils, TBlokSouctovaHlaska,
-      TechnologieAB;
+      TechnologieAB, ACBlocks;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -196,6 +196,8 @@ begin
  if (obl_rizeni.Count > 0) then
    for oblr in obl_rizeni do
      oblr.BlkChange(Sender);
+
+ ACBlk.OnBlkChange(TBlk(Sender).id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

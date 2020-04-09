@@ -269,6 +269,7 @@
 			<DCCReference Include="bloky\forms\fBlkAC.pas">
 				<Form>F_BlkAC</Form>
 			</DCCReference>
+			<DCCReference Include="ACBlocks.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

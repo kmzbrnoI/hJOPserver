@@ -153,7 +153,7 @@ implementation
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC;
+      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -322,6 +322,7 @@ begin
  ORTCPServer.GUIRefreshTable();
  F_Main.S_Server.Brush.Color := clRed;
  UDPdisc.SendDiscover();
+ ACBlk.RemoveAllClients();
 
  if (SystemData.Status = stopping) then
    F_Main.A_Turnoff_FunctionsExecute(Self);
@@ -427,6 +428,7 @@ begin
  RCSd.RemoveClient(AContext);
 
  Blky.OnClientDisconnect(AContext);
+ ACBlk.OnClientDisconnect(AContext);
 
  // odpojil se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
  if (Self.DCCStopped = AContext) then
@@ -804,9 +806,10 @@ begin
  end else if (parsed[1] = 'AC') then
   begin
    if (parsed.Count < 3) then Exit();
-   if (parsed[2] = '-') then
-    asm nop; end // TODO
-   else begin
+   if (parsed[2] = '-') then begin
+    if ((parsed.Count >= 4) and (UpperCase(parsed[3]) = 'BLOCKS')) then
+      ACBlk.ParseBlocksMessage(AContext, parsed);
+   end else begin
     i := StrToInt(parsed[2]);
     Blky.GetBlkByID(i, blk);
     if ((blk <> nil) and (blk.typ = _BLK_AC)) then
