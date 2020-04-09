@@ -26,14 +26,15 @@ type
    autosave_period:TTime;
    scale:Cardinal;
 
-    procedure LoadCfgFromFile(IniLoad:string);
-    procedure SaveCfgToFile(IniSave:string);
+    procedure LoadCfgFromFile(filename: string);
+    procedure LoadCfgPtServer(ini: TMemIniFile);
+    procedure SaveCfgToFile(filename: string);
   end;
 
   TFormData=class
    aFile:String;
-    procedure LoadFormData(IniLoad:string);
-    procedure SaveFormData(IniSave:string);
+    procedure LoadFormData(filename:string);
+    procedure SaveFormData(filename:string);
   end;
 
 var
@@ -65,6 +66,7 @@ procedure TConfig.CompleteLoadFromFile(inidata: TMemIniFile);
 var read,read2:string;
  begin
   F_Splash.AddStav('Načítám konfiguraci...');
+
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
   try
     GlobalConfig.LoadCfgFromFile(read);
@@ -151,7 +153,6 @@ var read,read2:string;
   end;
   F_Main.E_dataload_soupr.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), read);
 
-  //nacitani bloku
   F_Splash.AddStav('Načítám databázi bloků...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'bloky', 'data\bloky.ini');
   read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'bloky', 'stav\bloky.ini');
@@ -317,7 +318,7 @@ var tmpStr:string;
       AppEvents.LogException(E);
   end;
 
-  WriteLog('Kompletni ukladani dat dokonceno',WR_DATA);
+  WriteLog('Kompletní ukládání dat dokončeno',WR_DATA);
 
   try
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Options.E_dataload.Text);
@@ -352,64 +353,52 @@ var tmpStr:string;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TGlobalConfig.LoadCfgFromFile(IniLoad:string);
+procedure TGlobalConfig.LoadCfgFromFile(filename: string);
 var str:string;
     ini:TMemIniFile;
  begin
-  writelog('Načítám konfiguraci - '+IniLoad, WR_DATA);
-  F_Options.E_dataload.Text := IniLoad;
-  ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
+  writelog('Načítám globální konfiguraci: '+filename, WR_DATA);
+  F_Options.E_dataload.Text := filename;
+
+  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   try
-    //nacitani dat o programu - left, top...
     case ini.ReadInteger('Application','WState',0) of
      0:begin
         F_Main.WindowState := wsMaximized;
        end;
      1:begin
-        F_Main.Left   := ini.ReadInteger('Application', 'Left',200);
-        F_Main.Top    := ini.ReadInteger('Application', 'Top',200);
-        F_Main.Height := ini.ReadInteger('Application', 'Heigth',500);
-        F_Main.Width  := ini.ReadInteger('Application', 'Width',1125);
+        F_Main.Left   := ini.ReadInteger('Application', 'Left', 200);
+        F_Main.Top    := ini.ReadInteger('Application', 'Top', 200);
+        F_Main.Height := ini.ReadInteger('Application', 'Heigth', 500);
+        F_Main.Width  := ini.ReadInteger('Application', 'Width', 1125);
         F_Main.WindowState := wsNormal;
        end;
     end;//case
 
-    //nactitani dalsich dat
     F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg', 'TimerInterval', 4);
     F_Options.LB_TimerClick(Self);
     F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
-    if (F_Options.CHB_povolit_spusteni.Checked) then F_Main.KomunikacePocitani := 1;
+    if (F_Options.CHB_povolit_spusteni.Checked) then
+      F_Main.KomunikacePocitani := 1;
     GlobalConfig.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
-    //nacitani modeloveho casu
     ModCas.LoadData(ini);
-
     SS.LoadData(ini);
+    FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
+    F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
 
     ORTCPServer.port := ini.ReadInteger('PanelServer', 'port', _PANEL_DEFAULT_PORT);
 
-    try
-      PtServer.port := ini.ReadInteger('PTServer', 'port', _PT_DEFAULT_PORT);
-    except
-      on E:EPTActive do
-        writeLog('PT ERR: '+E.Message, WR_PT);
-    end;
-
-    PtServer.compact := ini.ReadBool('PTServer', 'compact', _PT_COMPACT_RESPONSE);
+    Self.LoadCfgPtServer(ini);
 
     // autosave
-
     GlobalConfig.autosave := ini.ReadBool('autosave', 'enabled', true);
     str := ini.ReadString('autosave', 'period', '00:30');
     GlobalConfig.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
     if (GlobalConfig.autosave) then
       Config.autosave_next := Now + GlobalConfig.autosave_period;
 
-    // nacteni vyznamu funkci
-    FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
-    F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
-
-    // nacteni UDP discovery
+    // UDP discovery
     UDPdisc := TUDPDiscover.Create(_DISC_DEFAULT_PORT,
          ini.ReadString('PanelServer', 'nazev', ''),
          ini.ReadString('PanelServer', 'popis', ''));
@@ -422,16 +411,48 @@ var str:string;
         AppEvents.LogException(E);
     end;
 
-    writelog('Konfigurace načtena', WR_DATA);
+    writelog('Globální konfigurace načtena', WR_DATA);
   finally
     ini.Free();
   end;
  end;
 
-procedure TGlobalConfig.SaveCfgToFile(IniSave:string);
+procedure TGlobalConfig.LoadCfgPtServer(ini: TMemIniFile);
+var strs: TStringList;
+    key, str: string;
+ begin
+  try
+    PtServer.port := ini.ReadInteger('PTServer', 'port', _PT_DEFAULT_PORT);
+  except
+    on E:EPTActive do
+      writeLog('PT ERR: '+E.Message, WR_PT);
+  end;
+
+  PtServer.compact := ini.ReadBool('PTServer', 'compact', _PT_COMPACT_RESPONSE);
+
+  strs := TStringList.Create();
+  try
+    ini.ReadSection('PTServerStaticTokens', strs);
+    for key in strs do
+     begin
+      try
+        str := ini.ReadString('PTServerStaticTokens', key, '');
+        if (str <> '') then
+          PtServer.AccessTokenAdd(str);
+      except
+        on E:Exception do
+          writelog('PTserver: nepodařilo se přidat token '+str+' ('+E.Message+')', WR_ERROR);
+      end;
+     end;
+  finally
+    strs.Free();
+  end;
+ end;
+
+procedure TGlobalConfig.SaveCfgToFile(filename:string);
 var ini:TMemIniFile;
  begin
-  ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
+  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
   try
     ModCas.SaveData(ini);
@@ -440,20 +461,11 @@ var ini:TMemIniFile;
     ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
     ini.WriteInteger('SystemCfg', 'scale', GlobalConfig.scale);
 
-    ini.WriteInteger('PanelServer', 'port', ORTCPServer.port);
-    ini.WriteString('PanelServer', 'nazev', UDPdisc.name);
-    ini.WriteString('PanelServer', 'popis', UDPdisc.description);
-
-    ini.WriteInteger('PTServer', 'port', PtServer.port);
-    ini.WriteBool('PTServer', 'compact', PtServer.compact);
-
     SS.SaveData(ini);
 
-    // autosave
     ini.WriteBool('autosave', 'enabled', GlobalConfig.autosave);
     ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', GlobalConfig.autosave_period));
 
-    // ulozeni vyznamu funkci
     ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
     ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
   finally
@@ -464,17 +476,17 @@ var ini:TMemIniFile;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TFormData.LoadFormData(IniLoad:String);
+procedure TFormData.LoadFormData(filename:String);
 var j:Integer;
     objs:TStrings;
     obj, rawObj:String;
     aComponent:TComponent;
     ini:TMemIniFile;
  begin
-  writelog('Načítám FormData - '+IniLoad,WR_DATA);
+  writelog('Načítám FormData: '+filename, WR_DATA);
 
-  ini := TMemIniFile.Create(IniLoad, TEncoding.UTF8);
-  FormData.aFile := IniLoad;
+  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+  FormData.aFile := filename;
   objs := TStringList.Create();
   try
     ini.GetStrings(objs); // "[LV_xy]" (must cut "[]")
@@ -501,12 +513,12 @@ var j:Integer;
   writelog('FormData úspěšně načtena', WR_DATA);
  end;
 
-procedure TFormData.SaveFormData(IniSave:String);
+procedure TFormData.SaveFormData(filename:String);
 var i, j:Integer;
     ini:TMemIniFile;
  begin
-  DeleteFile(IniSave);
-  ini := TMemIniFile.Create(IniSave, TEncoding.UTF8);
+  DeleteFile(filename);
+  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
   try
     for i := 0 to F_Options.ComponentCount-1 do
@@ -552,7 +564,6 @@ finalization
   FreeAndNil(FormData);
   FreeAndNil(Config);
   FreeAndNil(GlobalConfig);
-
 
 end.//unit
 
