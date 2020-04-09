@@ -151,7 +151,7 @@ var
 implementation
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
-      TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce,
+      TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC;
 
@@ -264,9 +264,13 @@ begin
 
  if (SystemData.Status = starting) then
   begin
-   F_Main.LogStatus('System: start OK');
-   SystemData.Status := null;
-   F_Main.UpdateSystemButtons();
+   if (GlobalConfig.ptAutoStart) then
+     F_Main.A_PT_StartExecute(Self)
+   else begin
+     F_Main.LogStatus('System: start OK');
+     SystemData.Status := null;
+     F_Main.UpdateSystemButtons();
+   end;
   end;
 end;
 

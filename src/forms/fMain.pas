@@ -1824,22 +1824,39 @@ end;
 
 procedure TF_Main.A_PT_StartExecute(Sender: TObject);
 begin
+ if (SystemData.Status = TSystemStatus.starting) then
+   Self.LogStatus('PT server: spouštění...');
+
  try
    PtServer.Start();
+   if (SystemData.Status = TSystemStatus.starting) then
+    begin
+     Self.LogStatus('PT server: spuštěn');
+     Self.LogStatus('System: start OK');
+    end;
  except
    on E:Exception do
      Application.MessageBox(PChar('Nelze nastartovat PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
+
+ if (SystemData.Status = TSystemStatus.starting) then
+   SystemData.Status := null;
+ Self.UpdateSystemButtons();
 end;
 
 procedure TF_Main.A_PT_StopExecute(Sender: TObject);
 begin
+ if (SystemData.Status = TSystemStatus.stopping) then
+   Self.LogStatus('PT server: vypínání...');
+
  try
    PtServer.Stop();
  except
    on E:Exception do
      Application.MessageBox(PChar('Nelze zastavit PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
+
+ Self.UpdateSystemButtons();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1988,11 +2005,11 @@ begin
 
  Application.ProcessMessages();
 
+ if (PtServer.openned) then Self.A_PT_StopExecute(nil);
+
  Self.LogStatus('Odpojuji panely...');
  ORs.DisconnectPanels();
-
  Self.A_PanelServer_StopExecute(nil);
- if (PtServer.openned) then Self.A_PT_StopExecute(nil);
 
  JCDb.RusAllJC();
  Blky.Disable();
@@ -2699,6 +2716,9 @@ procedure TF_Main.OnStart();
       writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
   end;
 
+  Self.S_PTServer.Visible := (GlobalConfig.ptAutoStart);
+  Self.L_PTServer.Visible := (GlobalConfig.ptAutoStart);
+
   if (not Self.CloseMessage) then
    begin
     Self.Close();
@@ -3318,9 +3338,10 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
  Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.ConnectedSafe())
-    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned) or (not Blky.enabled));
+    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned) or (not Blky.enabled) or
+       ((GlobalConfig.ptAutoStart) and (not PtServer.openned)));
  Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrakceI.ConnectedSafe())
-    or (ORTCPServer.openned);
+    or (ORTCPServer.openned) or (PtServer.openned);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

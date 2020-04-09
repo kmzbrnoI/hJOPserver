@@ -25,6 +25,7 @@ type
    autosave:boolean;
    autosave_period:TTime;
    scale:Cardinal;
+   ptAutoStart:Boolean;
 
     procedure LoadCfgFromFile(filename: string);
     procedure LoadCfgPtServer(ini: TMemIniFile);
@@ -420,23 +421,25 @@ var str:string;
 procedure TGlobalConfig.LoadCfgPtServer(ini: TMemIniFile);
 var strs: TStringList;
     key, str: string;
+const _SECTION = 'PTServer';
  begin
   try
-    PtServer.port := ini.ReadInteger('PTServer', 'port', _PT_DEFAULT_PORT);
+    PtServer.port := ini.ReadInteger(_SECTION, 'port', _PT_DEFAULT_PORT);
   except
     on E:EPTActive do
       writeLog('PT ERR: '+E.Message, WR_PT);
   end;
 
-  PtServer.compact := ini.ReadBool('PTServer', 'compact', _PT_COMPACT_RESPONSE);
+  PtServer.compact := ini.ReadBool(_SECTION, 'compact', _PT_COMPACT_RESPONSE);
+  Self.ptAutoStart := ini.ReadBool(_SECTION, 'autoStart', false);
 
   strs := TStringList.Create();
   try
-    ini.ReadSection('PTServerStaticTokens', strs);
+    ini.ReadSection(_SECTION+'StaticTokens', strs);
     for key in strs do
      begin
       try
-        str := ini.ReadString('PTServerStaticTokens', key, '');
+        str := ini.ReadString(_SECTION+'StaticTokens', key, '');
         if (str <> '') then
           PtServer.AccessTokenAdd(key, str);
       except
