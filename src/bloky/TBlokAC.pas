@@ -42,6 +42,7 @@ type
     function GetRunning():boolean;
     function GetPaused():boolean;
     function GetClientConnected():boolean;
+    function PtUsername():string;
 
     procedure SendLn(text: string); overload;
     procedure SendLn(recipient: TIdContext; text: string); overload;
@@ -358,7 +359,7 @@ begin
    TBlkACException.Create('AC nelze spustit bez pøipojeného klienta!');
 
  try
-   PtServer.AccessTokenAdd(Self.m_settings.accessToken);
+   PtServer.AccessTokenAdd(Self.PtUsername(), Self.m_settings.accessToken);
  except
    raise TBlkACException.Create('Nepodaøilo se pøidat pøístupový token!');
  end;
@@ -378,7 +379,7 @@ begin
    TBlkACException.Create('Nelze zastavit nespuštìné AC!');
 
  try
-   PtServer.AccessTokenRemove(Self.m_settings.accessToken);
+   PtServer.AccessTokenRemove(Self.PtUsername());
  except
 
  end;
@@ -394,7 +395,7 @@ begin
    TBlkACException.Create('Nelze pozastavit nespuštìné AC!');
 
  try
-   PtServer.AccessTokenRemove(Self.m_settings.accessToken);
+   PtServer.AccessTokenRemove(Self.PtUsername());
  except
 
  end;
@@ -478,6 +479,13 @@ end;
 procedure TBlkAC.SendLn(recipient: TIdContext; text: string);
 begin
  ORTCPServer.SendLn(recipient, '-;AC;'+IntToStr(Self.id)+';'+text);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkAC.PtUsername():string;
+begin
+ Result := IntToStr(Self.id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -51,7 +51,7 @@ type
    private
     // seznam endpointu PTserveru, PTserver instanciuje vsechny endpointy v konstruktoru
     endpoints: TObjectList<TPTEndpoint>;
-    accessTokens: TDictionary<string, boolean>;
+    accessTokens: TDictionary<string, string>;
 
     httpServer: TIdHTTPServer;
 
@@ -93,9 +93,9 @@ type
      procedure Start();
      procedure Stop();
 
-     procedure AccessTokenAdd(token:string);
-     procedure AccessTokenRemove(token:string);
-     function IsAccessToken(token:string):boolean;
+     procedure AccessTokenAdd(login: string; token:string);
+     procedure AccessTokenRemove(login: string);
+     function HasAccess(login:string):boolean;
 
       property openned:boolean read IsOpenned;
       property port:Word read GetPort write SetPort;
@@ -148,7 +148,7 @@ begin
 
  Self.received := TObjectQueue<TPtReceived>.Create();
  Self.receivedLock := TCriticalSection.Create();
- Self.accessTokens := TDictionary<string, boolean>.Create();
+ Self.accessTokens := TDictionary<string, string>.Create();
 
  Self.httpServer := TIdHTTPServer.Create(nil);
  Self.httpServer.Bindings := bindings;
@@ -264,12 +264,22 @@ begin
      case (ARequestInfo.CommandType) of
       hcGET: ;
       hcPOST, hcPUT: begin
-         if (ARequestInfo.ContentType <> _PT_CONTENT_TYPE) then
+         if ((not ARequestInfo.AuthExists) or (not Self.accessTokens.ContainsKey(ARequestInfo.AuthUsername)) or
+             (Self.accessTokens[ARequestInfo.AuthUsername] <> ARequestInfo.AuthPassword)) then
+          begin
+           AResponseInfo.ResponseNo := 401;
+           PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '401', 'Unauthorized',
+                                 'Neexitující/neplatný autorizační token');
+           received.processed := true;
+          end;
+         if ((not received.processed) and (ARequestInfo.ContentType <> _PT_CONTENT_TYPE)) then
           begin
            PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '406', 'Not acceptable',
                                  'S timto content-type si neumim poradit');
            received.processed := true;
-          end else begin
+          end;
+         if (not received.processed) then
+          begin
            received.reqJson := TJsonObject.ParseFromStream(ARequestInfo.PostStream, TEncoding.UTF8) as TJsonObject;
 
            if (received.reqJson = nil) then
@@ -426,19 +436,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPtServer.AccessTokenAdd(token:string);
+procedure TPtServer.AccessTokenAdd(login: string; token:string);
 begin
- Self.accessTokens.Add(token, true);
+ Self.accessTokens.Add(login, token);
 end;
 
-procedure TPtServer.AccessTokenRemove(token:string);
+procedure TPtServer.AccessTokenRemove(login: string);
 begin
- Self.accessTokens.Remove(token);
+ Self.accessTokens.Remove(login);
 end;
 
-function TPtServer.IsAccessToken(token:string):boolean;
+function TPtServer.HasAccess(login:string):boolean;
 begin
- Result := Self.accessTokens.ContainsKey(token);
+ Result := Self.accessTokens.ContainsKey(login);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

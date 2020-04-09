@@ -438,7 +438,7 @@ var strs: TStringList;
       try
         str := ini.ReadString('PTServerStaticTokens', key, '');
         if (str <> '') then
-          PtServer.AccessTokenAdd(str);
+          PtServer.AccessTokenAdd(key, str);
       except
         on E:Exception do
           writelog('PTserver: nepodařilo se přidat token '+str+' ('+E.Message+')', WR_ERROR);
