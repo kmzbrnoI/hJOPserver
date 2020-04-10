@@ -56,7 +56,7 @@ begin
      Exit();
     end;
 
-   JC.PostPtStav(nil, respJson);
+   JC.PostPtStav(reqJson, respJson);
  finally
    re.Free();
  end;

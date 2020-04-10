@@ -276,6 +276,8 @@ type
       function GetNav():TBlk;
       function GetWaitForLastUsekOrTratObsaz():Boolean;
 
+      procedure BarieraToJson(const bariera: TJCBariera; result: TJsonObject);
+
    public
 
      index:Integer;                                                             // index v tabulce jizdni cest ve F_Main
@@ -4057,11 +4059,10 @@ begin
 end;
 
 procedure TJC.PostPtStav(reqJson:TJsonObject; respJson:TJsonObject);
-var bariery:TJCBariery;
-    bariera:TJCBariera;
+var bariery: TJCBariery;
+    bariera: TJCBariera;
     ok: Integer;
-    jsonObj: TJsonObject;
-    upoItem: TUPOItem;
+    ab: Boolean;
 begin
  if ((Self.navestidlo = nil) or (TBlkNav(Self.navestidlo).OblsRizeni.Count = 0)) then
   begin
@@ -4069,33 +4070,37 @@ begin
    Exit();
   end;
 
+ ab := (reqJson.Contains('ab') and reqJson.B['ab']);
+
  bariery := TJCBariery.Create();
  try
-   ok := Self.StavJC(nil, TBlkNav(Self.navestidlo).OblsRizeni[0], bariery);
+   ok := Self.StavJC(nil, TBlkNav(Self.navestidlo).OblsRizeni[0], bariery, nil, false, false, ab);
    respJson['success'] := (ok = 0);
-
    for bariera in bariery do
-    begin
-     jsonObj := respJson.A['bariery'].AddObject();
-     jsonObj['typ'] := bariera.typ;
-     if (bariera.blok <> nil) then
-       jsonObj['blok'] := bariera.blok.id;
-     jsonObj['param'] := bariera.param;
-     if (CriticalBariera(bariera.typ)) then
-       jsonObj['type'] := 'critical'
-     else if (WarningBariera(bariera.typ)) then
-       jsonObj['type'] := 'warning'
-     else
-       jsonObj['type'] := 'standard';
-
-     upoItem := JCBarieraToMessage(bariera);
-     jsonObj['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
-    end;
+     Self.BarieraToJson(bariera, respJson.A['bariery'].AddObject());
  finally
    bariery.Free();
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.BarieraToJson(const bariera: TJCBariera; result: TJsonObject);
+var upoItem: TUPOItem;
+begin
+ result['typ'] := bariera.typ;
+ if (bariera.blok <> nil) then
+   result['blok'] := bariera.blok.id;
+ result['param'] := bariera.param;
+ if (CriticalBariera(bariera.typ)) then
+   result['type'] := 'critical'
+ else if (WarningBariera(bariera.typ)) then
+   result['type'] := 'warning'
+ else
+   result['type'] := 'standard';
+
+ upoItem := JCBarieraToMessage(bariera);
+ result['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
+end;
 
 end.//unit
