@@ -365,9 +365,9 @@ begin
  end;
 
  if (Self.paused) then
-   ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;RESUME')
+   ORTCPServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;RESUME')
  else
-   ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;START');
+   ORTCPServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;START');
 
  Self.m_state.state := TACState.running;
  Self.Change();
@@ -429,7 +429,7 @@ begin
  if ((Self.client = nil) or (Self.client <> Sender)) then Exit();
 
  if (UpperCase(parsed[3]) = 'LOGOUT') then begin
-   if (Self.running) then
+   if (not Self.stopped) then
      Self.Stop();
    Self.SendLn(Sender, 'AUTH;logout;');
    Self.m_state.client := nil;
@@ -445,7 +445,7 @@ end;
 procedure TBlkAC.OnClientDisconnect();
 begin
  Self.m_state.client := nil;
- if (Self.running) then
+ if (not Self.stopped) then
    Self.Stop();
 
  Self.Change();
@@ -464,7 +464,7 @@ begin
   state := 'UNKNOWN';
  end;
 
- ORTCPServer.SendLn(Self.client, '-;AC;CONTROL;'+state);
+ ORTCPServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;'+state);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
