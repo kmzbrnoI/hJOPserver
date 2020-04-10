@@ -6,24 +6,27 @@ interface
 
 uses Classes, IniFiles;
 
+const
+  _INIFILE_SECTION = 'Snadne Spusteni';
+
 type
   TSSData = record
    enabled:boolean;
-   RCSAdr:Smallint;                                  //adresa RCS
-   AutRezim:Smallint;                                //pri klepnuti na zelene tlacitko spustit aut rezim...
-   IN_Start:Smallint;                                //tlacitko na zapnuti
-   IN_Pause:Smallint;                                //tlacitko na pozastaveni
-   IN_Stop:Smallint;                                 //talcitko na vypnuti
-   IN_Repeat:Smallint;                               //tlacitko na opakovani
-   IN_Reset:Smallint;                                //tlacitko na reset
-   OUT_Ready:Smallint;                               //indikace pripraveno
-   OUT_Start:Smallint;                               //indikace spusteno
-   OUT_Pause:Smallint;                               //indikace pozastaveno
-   OUT_Stop:Smallint;                                //indikace vypnuto
-   OUT_Repeat:Smallint;                              //indikace opakovani
+   RCSAdr:Smallint;
+   AC_id:Integer;
+   IN_Start:Smallint;
+   IN_Pause:Smallint;
+   IN_Stop:Smallint;
+   IN_Repeat:Smallint;
+   IN_Reset:Smallint;
+   OUT_Ready:Smallint;
+   OUT_Start:Smallint;
+   OUT_Pause:Smallint;
+   OUT_Stop:Smallint;
+   OUT_Repeat:Smallint;
   end;
 
-  TSS=class                            //adresy krabicky snadne spusteni
+  TSS = class
    private
     config:TSSData;
     RepeatDown:Boolean;
@@ -32,7 +35,6 @@ type
 
      procedure Update();
 
-     //filesystem i/o
      procedure LoadData(ini:TMemIniFile);
      procedure SaveData(ini:TMemIniFile);
 
@@ -41,70 +43,71 @@ type
   end;
 
 var
-  SS : TSS;
+  SS: TSS;
 
 implementation
 
-uses GetSystems, AC, TechnologieRCS, fMain, TBloky,
-     ACDatabase, Prevody, RCS;
+uses TechnologieRCS, TBloky, Prevody, RCS, TBlokAC, TBlok;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSS.LoadData(ini:TMemIniFile);
 begin
- Self.config.enabled  := ini.ReadBool('Snadne Spusteni', 'enabled', false);
- Self.config.RCSAdr   := ini.ReadInteger('Snadne Spusteni', 'RCSAdr', -1);
+ Self.config.enabled := ini.ReadBool(_INIFILE_SECTION, 'enabled', false);
+ Self.config.RCSAdr := ini.ReadInteger(_INIFILE_SECTION, 'RCSAdr', -1);
  if (Self.config.RCSAdr = -1) then //backward compatibility
-   Self.config.RCSAdr := ini.ReadInteger('Snadne Spusteni', 'MtbAdr', -1);
- Self.config.AutRezim := ini.ReadInteger('Snadne Spusteni', 'AutRezim', -1);
+   Self.config.RCSAdr := ini.ReadInteger(_INIFILE_SECTION, 'MtbAdr', -1);
+ Self.config.AC_id := ini.ReadInteger(_INIFILE_SECTION, 'AutRezim', -1);
 
- Self.config.IN_Start       := ini.ReadInteger('Snadne Spusteni', 'IN_Start',-1);
- Self.config.IN_Pause       := ini.ReadInteger('Snadne Spusteni', 'IN_Pause',-1);
- Self.config.IN_Stop        := ini.ReadInteger('Snadne Spusteni', 'IN_Stop',-1);
- Self.config.IN_Repeat      := ini.ReadInteger('Snadne Spusteni', 'IN_Repeat',-1);
- Self.config.IN_Reset       := ini.ReadInteger('Snadne Spusteni', 'IN_Reset',-1);
+ Self.config.IN_Start := ini.ReadInteger(_INIFILE_SECTION, 'IN_Start', -1);
+ Self.config.IN_Pause := ini.ReadInteger(_INIFILE_SECTION, 'IN_Pause', -1);
+ Self.config.IN_Stop := ini.ReadInteger(_INIFILE_SECTION, 'IN_Stop', -1);
+ Self.config.IN_Repeat := ini.ReadInteger(_INIFILE_SECTION, 'IN_Repeat', -1);
+ Self.config.IN_Reset := ini.ReadInteger(_INIFILE_SECTION, 'IN_Reset', -1);
 
- Self.config.OUT_Ready       := ini.ReadInteger('Snadne Spusteni', 'OUT_Ready',-1);
- Self.config.OUT_Start       := ini.ReadInteger('Snadne Spusteni', 'OUT_Start',-1);
- Self.config.OUT_Pause       := ini.ReadInteger('Snadne Spusteni', 'OUT_Pause',-1);
- Self.config.OUT_Stop        := ini.ReadInteger('Snadne Spusteni', 'OUT_Stop',-1);
- Self.config.OUT_Repeat      := ini.ReadInteger('Snadne Spusteni', 'OUT_Repeat',-1);
+ Self.config.OUT_Ready := ini.ReadInteger(_INIFILE_SECTION, 'OUT_Ready', -1);
+ Self.config.OUT_Start := ini.ReadInteger(_INIFILE_SECTION, 'OUT_Start', -1);
+ Self.config.OUT_Pause := ini.ReadInteger(_INIFILE_SECTION, 'OUT_Pause', -1);
+ Self.config.OUT_Stop := ini.ReadInteger(_INIFILE_SECTION, 'OUT_Stop', -1);
+ Self.config.OUT_Repeat := ini.ReadInteger(_INIFILE_SECTION, 'OUT_Repeat', -1);
 end;
 
 procedure TSS.SaveData(ini:TMemIniFile);
 begin
- ini.WriteBool('Snadne Spusteni', 'enabled',Self.config.enabled);
- ini.WriteInteger('Snadne Spusteni', 'RCSAdr',Self.config.RCSAdr);
- ini.WriteInteger('Snadne Spusteni', 'AutRezim',Self.config.AutRezim);
+ ini.WriteBool(_INIFILE_SECTION, 'enabled', Self.config.enabled);
+ ini.WriteInteger(_INIFILE_SECTION, 'RCSAdr', Self.config.RCSAdr);
+ ini.WriteInteger(_INIFILE_SECTION, 'AutRezim', Self.config.AC_id);
 
- ini.WriteInteger('Snadne Spusteni', 'IN_Start',Self.config.IN_Start);
- ini.WriteInteger('Snadne Spusteni', 'IN_Pause',Self.config.IN_Pause);
- ini.WriteInteger('Snadne Spusteni', 'IN_Stop',Self.config.IN_Stop);
- ini.WriteInteger('Snadne Spusteni', 'IN_Repeat',Self.config.IN_Repeat);
- ini.WriteInteger('Snadne Spusteni', 'IN_Reset',Self.config.IN_Reset);
+ ini.WriteInteger(_INIFILE_SECTION, 'IN_Start', Self.config.IN_Start);
+ ini.WriteInteger(_INIFILE_SECTION, 'IN_Pause', Self.config.IN_Pause);
+ ini.WriteInteger(_INIFILE_SECTION, 'IN_Stop', Self.config.IN_Stop);
+ ini.WriteInteger(_INIFILE_SECTION, 'IN_Repeat', Self.config.IN_Repeat);
+ ini.WriteInteger(_INIFILE_SECTION, 'IN_Reset', Self.config.IN_Reset);
 
- ini.WriteInteger('Snadne Spusteni', 'OUT_Ready',Self.config.OUT_Ready);
- ini.WriteInteger('Snadne Spusteni', 'OUT_Start',Self.config.OUT_Start);
- ini.WriteInteger('Snadne Spusteni', 'OUT_Stop',Self.config.OUT_Stop);
- ini.WriteInteger('Snadne Spusteni', 'OUT_Repeat',Self.config.OUT_Repeat);
+ ini.WriteInteger(_INIFILE_SECTION, 'OUT_Ready', Self.config.OUT_Ready);
+ ini.WriteInteger(_INIFILE_SECTION, 'OUT_Start', Self.config.OUT_Start);
+ ini.WriteInteger(_INIFILE_SECTION, 'OUT_Stop', Self.config.OUT_Stop);
+ ini.WriteInteger(_INIFILE_SECTION, 'OUT_Repeat', Self.config.OUT_Repeat);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSS.Update();
-var AC:TAC;
+var blk: TBlk;
+    AC: TBlkAC;
  begin
-  if ((not Self.config.enabled) or (not GetFunctions.GetSystemStart)
-      or (Self.config.AutRezim >= ACDb.ACs.Count)) then Exit;
+  if ((not Self.config.enabled) or (not RCSi.NoExStarted())) then Exit();
 
-  AC := ACDb.ACs[Self.config.AutRezim];
+  Blky.GetBlkById(Self.config.AC_id, blk);
+  if ((blk = nil) or (blk.typ <> _BLK_AC)) then Exit();
+  AC := TBlkAC(blk);
 
   if ((not RCSi.IsModule(Self.config.RCSAdr)) or (RCSi.IsModuleFailure(Self.config.RCSAdr))) then Exit();
 
-  //vstupy:
+  // inputs
 
   try
-    if ((Self.config.IN_Start > -1) and (not AC.running) and (AC.ready)
+    if ((Self.config.IN_Start > -1) and (not AC.running) and (AC.clientConnected)
       and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Start) = isOn)) then
         AC.Start();
 
@@ -123,8 +126,9 @@ var AC:TAC;
         if (not Self.RepeatDown) then
          begin
           Self.RepeatDown := true;
-          AC.repeating := not AC.repeating;
-         end;//if not Self.config.RepeatDown
+          // TODO: change repeating
+          // AC.repeating := not AC.repeating;
+         end;
        end else begin
         if (Self.RepeatDown) then Self.RepeatDown := false;
        end;
@@ -132,26 +136,27 @@ var AC:TAC;
 
     if ((Self.config.IN_Reset > -1) and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Reset) = isOn)) then
      begin
-      // reset zatim neimplementovan
+      // TODO: reset
      end;
 
 
-    // vystupy;
+    // outputs
 
     if (Self.config.OUT_Ready > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.ready)));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.clientConnected)));
 
     if (Self.config.OUT_Start > -1) then
       RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
 
     if (Self.config.OUT_Pause > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (AC.ACKrok > -1)));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (not AC.paused)));
 
     if (Self.config.OUT_Stop > -1) then
       RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
 
-    if (Self.config.OUT_Repeat > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating));
+    // TODO: repeating
+    { if (Self.config.OUT_Repeat > -1) then
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating)); }
 
   except
 

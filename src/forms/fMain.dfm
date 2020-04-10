@@ -3802,6 +3802,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Bloky: TListView
         Left = 0
         Top = 40
@@ -4004,6 +4008,10 @@ object F_Main: TF_Main
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_HV: TListView
         Left = 0
         Top = 40
@@ -4238,6 +4246,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Soupravy'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Soupravy: TListView
         Left = 0
         Top = 40
@@ -4401,6 +4413,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Oblasti '#345#237'zen'#237
       ImageIndex = 16
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Stanice: TListView
         Left = 0
         Top = 40
@@ -4522,6 +4538,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Zesilova'#269'e'
       ImageIndex = 20
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
@@ -4733,347 +4753,6 @@ object F_Main: TF_Main
         end
       end
     end
-    object TS_Aut_Rezimy: TTabSheet
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'AC'
-      ParentShowHint = False
-      ShowHint = False
-      object LV_AC_Db: TListView
-        Left = 0
-        Top = 40
-        Width = 1289
-        Height = 145
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Align = alTop
-        Columns = <
-          item
-            Caption = 'N'#225'zev'
-            Width = 150
-          end
-          item
-            Alignment = taCenter
-            Caption = 'Status'
-            Width = 90
-          end
-          item
-            Caption = 'Soubor'
-            Width = 500
-          end
-          item
-            Caption = 'Kolikr'#225't spu'#353't'#283'n'
-          end
-          item
-            Caption = 'Kolikr'#225't dokon'#269'en'
-          end>
-        DoubleBuffered = True
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        GridLines = True
-        ReadOnly = True
-        RowSelect = True
-        ParentDoubleBuffered = False
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = False
-        TabOrder = 0
-        ViewStyle = vsReport
-        OnChange = LV_AC_DbChange
-        OnCustomDrawItem = LV_AC_DbCustomDrawItem
-      end
-      object Panel1: TPanel
-        Left = 0
-        Top = 0
-        Width = 1289
-        Height = 40
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Align = alTop
-        BevelOuter = bvNone
-        Color = clWhite
-        ParentBackground = False
-        TabOrder = 1
-        object P_AC_Left: TPanel
-          Left = 0
-          Top = 0
-          Width = 473
-          Height = 40
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          Align = alLeft
-          BevelOuter = bvNone
-          Color = clWhite
-          TabOrder = 0
-          object SB_AC_Play: TSpeedButton
-            Left = 322
-            Top = 8
-            Width = 29
-            Height = 23
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Glyph.Data = {
-              36040000424D3604000000000000360000002800000010000000100000000100
-              2000000000000004000000000000000000000000000000000000FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF0000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF0000FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF0000FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF000000FF0000FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF000000FF000000FF
-              0000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF000000FF000000FF
-              000000FF0000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF000000FF000000FF
-              000000FF000000FF0000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF000000FF000000FF
-              000000FF0000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF000000FF000000FF
-              0000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF000000FF0000FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF000000FF0000FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF000000FF0000FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000FF0000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
-            OnClick = SB_AC_PlayClick
-          end
-          object SB_AC_Stop: TSpeedButton
-            Left = 355
-            Top = 8
-            Width = 31
-            Height = 23
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Glyph.Data = {
-              36040000424D3604000000000000360000002800000010000000100000000100
-              2000000000000004000000000000000000000000000000000000FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000
-              FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
-            OnClick = SB_AC_StopClick
-          end
-          object SB_AC_Pause: TSpeedButton
-            Left = 391
-            Top = 8
-            Width = 32
-            Height = 23
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Glyph.Data = {
-              36040000424D3604000000000000360000002800000010000000100000000100
-              2000000000000004000000000000000000000000000000000000FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00
-              FF00FF000000FF000000FF000000FF000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
-            OnClick = SB_AC_PauseClick
-          end
-          object SB_AC_Repeat: TSpeedButton
-            Left = 427
-            Top = 8
-            Width = 30
-            Height = 23
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            AllowAllUp = True
-            GroupIndex = 6328
-            Glyph.Data = {
-              36040000424D3604000000000000360000002800000010000000100000000100
-              2000000000000004000000000000000000000000000000000000FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF0000000000FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF000000000000000000FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF0000000000000000000000000000000000FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF000000000000000000000000000000000000000000000000000000
-              0000FF00FF000000000000000000FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF0000000000000000000000000000000000000000000000000000000000FF00
-              FF00FF00FF00000000000000000000000000FF00FF00FF00FF00FF00FF00FF00
-              FF000000000000000000FF00FF00FF00FF000000000000000000FF00FF00FF00
-              FF00FF00FF00FF00FF000000000000000000FF00FF00FF00FF00FF00FF000000
-              00000000000000000000FF00FF00FF00FF0000000000FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00000000000000000000000000FF00FF00FF00FF000000
-              000000000000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF000000000000000000FF00FF00FF00FF000000
-              000000000000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF000000000000000000FF00FF00FF00FF000000
-              00000000000000000000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00000000000000000000000000FF00FF00FF00FF00FF00
-              FF000000000000000000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF000000000000000000FF00FF00FF00FF00FF00FF00FF00
-              FF0000000000000000000000000000000000FF00FF00FF00FF00FF00FF00FF00
-              FF0000000000000000000000000000000000FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF0000000000000000000000000000000000000000000000
-              00000000000000000000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF000000000000000000000000000000
-              0000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
-              FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
-            OnClick = SB_AC_RepeatClick
-          end
-          object E_dataload_AC: TEdit
-            Left = 9
-            Top = 9
-            Width = 197
-            Height = 21
-            Hint = 'cesta k souboru automatick'#253'ch re'#382'imu'
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentColor = True
-            ParentFont = False
-            TabOrder = 0
-          end
-          object B_AC_Reload: TButton
-            Left = 211
-            Top = 8
-            Width = 96
-            Height = 23
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Znovuna'#269#237'st AC'
-            Enabled = False
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ImageIndex = 44
-            ParentFont = False
-            TabOrder = 1
-            OnClick = B_AC_ReloadClick
-          end
-        end
-      end
-      object LV_AC_Kroky: TListView
-        Left = 0
-        Top = 185
-        Width = 1289
-        Height = 429
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Align = alClient
-        Columns = <
-          item
-            Caption = 'Krok'
-            Width = 40
-          end
-          item
-            Caption = 'Popis'
-            Width = 1000
-          end>
-        DoubleBuffered = True
-        Enabled = False
-        GridLines = True
-        ReadOnly = True
-        RowSelect = True
-        ParentDoubleBuffered = False
-        TabOrder = 2
-        ViewStyle = vsReport
-        OnCustomDrawItem = LV_AC_KrokyCustomDrawItem
-      end
-    end
     object TS_Users: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
@@ -5081,6 +4760,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'U'#382'ivatel'#233
       ImageIndex = 23
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Users: TListView
         Left = 0
         Top = 40
@@ -5246,6 +4929,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav RCS modul'#367
       ImageIndex = -1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_Stav_RCS: TListView
         Left = 0
         Top = 24
@@ -5343,6 +5030,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'J'#237'zdn'#237' cesty'
       ImageIndex = 24
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object P_VC_Pozadi: TPanel
         Left = 0
         Top = 0
@@ -5545,6 +5236,10 @@ object F_Main: TF_Main
     object TS_MultiJC: TTabSheet
       Caption = 'Slo'#382'en'#233' j'#237'zdn'#237' cesty'
       ImageIndex = 12
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 0
@@ -5683,6 +5378,10 @@ object F_Main: TF_Main
     object TS_AB: TTabSheet
       Caption = 'AB'
       ImageIndex = 14
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel4: TPanel
         Left = 0
         Top = 0
@@ -5766,6 +5465,10 @@ object F_Main: TF_Main
     object TS_FuncsVyznam: TTabSheet
       Caption = 'V'#253'znamy funkc'#237
       ImageIndex = 13
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object M_funcsVyznam: TMemo
         Left = 0
         Top = 40
@@ -5815,6 +5518,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Prim'#225'rn'#237' LOG'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_log: TListView
         Left = 0
         Top = 24
@@ -5901,6 +5608,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'LOG komunikace s centr'#225'lou'
       ImageIndex = 14
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_log_lnet: TListView
         Left = 0
         Top = 26
@@ -5973,7 +5684,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 0
           OnChange = CB_centrala_loglevel_fileChange
           Items.Strings = (
@@ -5991,7 +5702,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 1
           OnChange = CB_centrala_loglevel_tableChange
           Items.Strings = (
@@ -6267,7 +5978,7 @@ object F_Main: TF_Main
     Left = 1080
     Top = 456
     Bitmap = {
-      494C010136001403780410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101360014037C0410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000E0000000010020000000000000E0
       00000000000000000000000000000000000000000000B5B5DE006B6BB500CECE
       E700000000000000000000000000000000000000000000000000000000000000
@@ -8133,7 +7844,7 @@ object F_Main: TF_Main
     Left = 1176
     Top = 456
     Bitmap = {
-      494C01010D002803F0041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010D002803F4041000100080808000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000008080800080808000808080008080
       8000808080008080800080808000808080008080800080808000808080008080
@@ -8674,7 +8385,7 @@ object F_Main: TF_Main
     Left = 1128
     Top = 456
     Bitmap = {
-      494C01010600D8023C0410000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600D802400410000E0000000000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001C0000000100200000000000001C
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

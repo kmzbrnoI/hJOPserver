@@ -48,7 +48,7 @@ implementation
 uses fSettings, fSplash, fAdminForm, GetSystems, Prevody, Diagnostics, fMain,
      TechnologieRCS, TOblsRizeni, TBloky, BoosterDb, SnadnSpusteni, THVDatabase,
      TCPServerPT, Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
-     DataBloky, ACDatabase, FunkceVyznam, UDPDiscover, appEv, Trakce,
+     DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,
      TechnologieTrakce, TJCDatabase;
 
 procedure TConfig.CreateCfgDirs();
@@ -187,18 +187,6 @@ var read,read2:string;
   end;
   F_Main.E_Dataload_multiJC.Text := MultiJCDb.filename;
 
-  F_Splash.AddStav('Načítám databázi automatických režimů...');
-  read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'AC', 'AC');
-  read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'AC', 'stav\AC.ini');
-  try
-    ACDb.LoadFromDir(read);
-    ACDb.LoadStatFromFile(read2);
-  except
-    on E:Exception do
-      AppEvents.LogException(E);
-  end;
-  F_Main.E_dataload_AC.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), ACDb.dirname);
-
   F_Splash.AddStav('Načítám databázi FormData...');
   read := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'forms', 'stav\forms.ini');
   try
@@ -242,13 +230,6 @@ var tmpStr:string;
 
   try
     GlobalConfig.SaveCfgToFile(F_Options.E_dataload.Text);
-  except
-    on E:Exception do
-      AppEvents.LogException(E);
-  end;
-
-  try
-    ACDb.SaveStatToFile(ACDb.statfilename);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -332,8 +313,6 @@ var tmpStr:string;
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', UsrDB.filenameData);
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'users', UsrDB.filenameStat);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'AC', ACDb.dirname);
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'AC', ACDb.statfilename);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_HV_dir.Text);
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_HV_state.Text);
     inidata.WriteBool('Log', 'console', F_Options.CHB_Log_console.Checked);

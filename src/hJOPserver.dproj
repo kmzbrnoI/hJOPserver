@@ -141,7 +141,6 @@
 			<DCCReference Include="bloky\forms\fBlkVyhybkaSysVars.pas">
 				<Form>F_BlkVyh_tech</Form>
 			</DCCReference>
-			<DCCReference Include="AC.pas"/>
 			<DCCReference Include="SnadnSpusteni.pas"/>
 			<DCCReference Include="jc\TJCDatabase.pas"/>
 			<DCCReference Include="hv\THVDatabase.pas"/>
@@ -151,7 +150,6 @@
 			<DCCReference Include="tables\DataRCS.pas"/>
 			<DCCReference Include="tables\DataHV.pas"/>
 			<DCCReference Include="tables\DataJC.pas"/>
-			<DCCReference Include="tables\DataAC.pas"/>
 			<DCCReference Include="tables\DataBloky.pas"/>
 			<DCCReference Include="tables\DataZesilovac.pas"/>
 			<DCCReference Include="tables\DataORs.pas"/>
@@ -189,7 +187,6 @@
 			<DCCReference Include="jc\forms\fMJCEdit.pas">
 				<Form>F_MJCEdit</Form>
 			</DCCReference>
-			<DCCReference Include="ACDatabase.pas"/>
 			<DCCReference Include="helpers\ownStrUtils.pas"/>
 			<DCCReference Include="bloky\TBlokRozp.pas"/>
 			<DCCReference Include="bloky\forms\fBlkRozp.pas">

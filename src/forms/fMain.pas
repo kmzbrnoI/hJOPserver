@@ -140,11 +140,6 @@ type
     L_Zes_Nedetekovano: TLabel;
     P_Zes_Left: TPanel;
     E_dataload_zes: TEdit;
-    TS_Aut_Rezimy: TTabSheet;
-    LV_AC_Db: TListView;
-    Panel1: TPanel;
-    P_AC_Left: TPanel;
-    E_dataload_AC: TEdit;
     TS_Users: TTabSheet;
     LV_Users: TListView;
     P_Users_pozadi: TPanel;
@@ -208,12 +203,6 @@ type
     LV_MultiJC: TListView;
     B_mJC_Add: TButton;
     B_mJC_Remove: TButton;
-    LV_AC_Kroky: TListView;
-    B_AC_Reload: TButton;
-    SB_AC_Play: TSpeedButton;
-    SB_AC_Stop: TSpeedButton;
-    SB_AC_Pause: TSpeedButton;
-    SB_AC_Repeat: TSpeedButton;
     PM_Clients: TPopupMenu;
     MI_Disconnect: TMenuItem;
     G_locos_acquired: TGauge;
@@ -304,8 +293,6 @@ type
     procedure LV_ClientsCustomDrawItem(Sender: TCustomListView; Item: TListItem;
       State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure PC_1Change(Sender: TObject);
-    procedure LV_AC_DbChange(Sender: TObject; Item: TListItem;
-      Change: TItemChange);
     procedure LV_ZesilovaceDblClick(Sender: TObject);
     procedure B_zes_addClick(Sender: TObject);
     procedure B_zes_deleteClick(Sender: TObject);
@@ -372,14 +359,6 @@ type
     procedure B_mJC_AddClick(Sender: TObject);
     procedure B_mJC_RemoveClick(Sender: TObject);
     procedure LV_MultiJCDblClick(Sender: TObject);
-    procedure LV_AC_DbCustomDrawItem(Sender: TCustomListView;
-      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
-    procedure SB_AC_PlayClick(Sender: TObject);
-    procedure SB_AC_StopClick(Sender: TObject);
-    procedure SB_AC_PauseClick(Sender: TObject);
-    procedure SB_AC_RepeatClick(Sender: TObject);
-    procedure LV_AC_KrokyCustomDrawItem(Sender: TCustomListView;
-      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure PM_ClientsPopup(Sender: TObject);
     procedure MI_DisconnectClick(Sender: TObject);
     procedure A_FuncsSetExecute(Sender: TObject);
@@ -398,7 +377,6 @@ type
     procedure LV_Stav_RCSCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure MI_HoukClick(Sender: TObject);
-    procedure B_AC_ReloadClick(Sender: TObject);
     procedure MI_RCS_UpdateClick(Sender: TObject);
     procedure B_AB_DeleteClick(Sender: TObject);
     procedure LV_ABChange(Sender: TObject; Item: TListItem;
@@ -417,7 +395,6 @@ type
     mCpuLoad: TCpuLoad;
 
     procedure UpdateCallMethod();
-    procedure LoadACKroky();
     procedure OnFuncsVyznamChange(Sender:TObject);
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
@@ -439,7 +416,6 @@ type
     procedure VypisDatumCas();
     procedure LogStatus(str:string);
     procedure DisableRemoveButtons();
-    procedure UpdateACButtons();
     procedure SetCallMethod(Method:TNotifyEvent);
     procedure UpdateSystemButtons();
     procedure CheckNasobicWidth();
@@ -497,13 +473,13 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
-     TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni, AC,
+     TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni,
      SnadnSpusteni, TBlokSouctovaHlaska, TBlokPrejezd, TJCDatabase, Logging,
-     TCPServerOR, DataAC, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
+     TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
      fBlkNav, fBlkTrat, TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
-     TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, ACDatabase, TBlokRozp,
+     TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlokRozp,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
      AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors, TechnologieAB,
      Diagnostics, TBlokAC, fBlkAC;
@@ -706,8 +682,6 @@ end;
 
 procedure TF_Main.A_RCS_StopExecute(Sender: TObject);
 begin
- ACDb.StopAllACs();
-
  if ((SystemData.Status = stopping) and (not RCSi.NoExStarted)) then
   begin
    F_Main.A_RCS_CloseExecute(nil);
@@ -767,10 +741,6 @@ begin
 
   writelog('----- RCS SCANNED -----', WR_RCS);
   Self.LogStatus('RCS: moduly naskenovány');
-
-  // aktualizace ovladacich prvku AC
-  if (F_Main.LV_AC_Db.Selected <> nil) then
-    F_Main.LV_AC_DbChange(F_Main.LV_AC_Db, F_Main.LV_AC_Db.Selected, TItemChange.ctText);
 
   // inicialziace osvetleni
   ORs.InitOsv();
@@ -1454,7 +1424,6 @@ end;
 procedure TF_Main.T_MainTimer(Sender: TObject);
  begin
   try
-    ACDb.Update();
     SS.Update();
     DetekujAutSpusteniSystemu;
     Blky.Update();
@@ -1513,7 +1482,6 @@ begin
  if (PC_1.ActivePage = TS_Bloky)      then BlokyTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Zesilovace) then ZesTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Soupravy)   then SprTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Aut_Rezimy) then ACTAbleData.UpdateTable(true);
  if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Stanice)    then ORsTableData.UpdateTable(true);
  if (PC_1.ActivePage = TS_Technologie) then ORTCPServer.GUIRefreshTable(); 
@@ -1632,7 +1600,6 @@ begin
  Self.CloseMessage := true;
  Self.mCpuLoad := TCPuLoad.Create();
 
- ACTableData := TACTableData.Create(Self.LV_AC_Db);
  JCTableData := TJCTableData.Create(Self.LV_JC);
  ABTableData := TABTableData.Create(Self.LV_AB);
  UsersTableData := TUsersTableData.Create(Self.LV_Users);
@@ -1917,13 +1884,6 @@ begin
   end;
 
   try
-    ACDb.SaveStatToFile(ACDb.statfilename);
-  except
-    on E:Exception do
-      AppEvents.LogException(E, 'Save AC stats');
-  end;
-
-  try
     ini := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
     try
       try
@@ -2052,23 +2012,6 @@ begin
       Application.MessageBox(PChar('Chyba při mazání:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
    end;
   end;
-end;
-
-procedure TF_Main.B_AC_ReloadClick(Sender: TObject);
-begin
- try
-   ACDb.LoadFromDir(F_Main.E_dataload_AC.Text);
-   ACDb.LoadStatFromFile(ACDb.statfilename);
- except
-   on E:Exception do
-    begin
-     Application.MessageBox(PChar(E.Message), 'Chyba při načítání AC', MB_OK OR MB_ICONWARNING);
-     Exit();
-    end;
- end;
-
- Application.MessageBox(PChar('AC úspěšně načteny z adresáře "' + ACDb.dirname + '".' + #13#10 + 'Více informací v logu.'),
-                        'Hotovo', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_Main.B_BlkAddClick(Sender: TObject);
@@ -2376,11 +2319,6 @@ begin
    // update tables
    if (Self.Showing) then
     begin
-     if (F_Main.PC_1.ActivePage = F_Main.TS_Aut_Rezimy) then
-      begin
-       ACTableData.UpdateTable();
-       Self.UpdateACButtons();
-      end;
      if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then BlokyTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then SprTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then ZesTableData.UpdateTable();
@@ -2630,39 +2568,6 @@ procedure TF_Main.VypisDatumCas();
   P_Date.Caption := FormatDateTime('dd. mm. yyyy', Now);
   P_Time.Caption := FormatDateTime('hh:mm:ss', Now);
  end;
-
-procedure TF_Main.SB_AC_PauseClick(Sender: TObject);
-begin
- if (Self.LV_AC_Db.Selected <> nil) then
-  begin
-   ACDb.ACs[Self.LV_AC_Db.ItemIndex].Pause();
-   Self.LV_AC_DbChange(Self.LV_AC_Db, Self.LV_AC_Db.Selected, TItemChange.ctText);
-  end;
-end;
-
-procedure TF_Main.SB_AC_PlayClick(Sender: TObject);
-begin
- if (Self.LV_AC_Db.Selected <> nil) then
-  begin
-   ACDb.ACs[Self.LV_AC_Db.ItemIndex].Start();
-   Self.LV_AC_DbChange(Self.LV_AC_Db, Self.LV_AC_Db.Selected, TItemChange.ctText);
-  end;
-end;
-
-procedure TF_Main.SB_AC_RepeatClick(Sender: TObject);
-begin
- if (Self.LV_AC_Db.Selected <> nil) then
-   ACDb.ACs[Self.LV_AC_Db.ItemIndex].repeating := Self.SB_AC_Repeat.Down;
-end;
-
-procedure TF_Main.SB_AC_StopClick(Sender: TObject);
-begin
- if (Self.LV_AC_Db.Selected <> nil) then
-  begin
-   ACDb.ACs[Self.LV_AC_Db.ItemIndex].Stop();
-   Self.LV_AC_DbChange(Self.LV_AC_Db, Self.LV_AC_Db.Selected, TItemChange.ctText);
-  end;
-end;
 
 procedure TF_Main.OnStart();
  begin
@@ -2950,33 +2855,6 @@ begin
  Self.B_AB_Delete.Enabled := (Self.LV_AB.Selected <> nil);
 end;
 
-procedure TF_Main.LV_AC_DbChange(Sender: TObject; Item: TListItem;
-  Change: TItemChange);
-begin
- Self.UpdateACButtons();
- Self.LoadACKroky();
-end;
-
-procedure TF_Main.LV_AC_DbCustomDrawItem(Sender: TCustomListView;
-  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
-begin
- if (Item.SubItems.Strings[1] = 'running') then
-   Self.LV_AC_Db.Canvas.Brush.Color := $FFFFAA
- else if (Item.SubItems.Strings[1] = 'ready') then
-   Self.LV_AC_Db.Canvas.Brush.Color := $AAFFAA
- else
-   Self.LV_AC_Db.Canvas.Brush.Color := $FFFFFF;
-end;
-
-procedure TF_Main.LV_AC_KrokyCustomDrawItem(Sender: TCustomListView;
-  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
-begin
- if ((Self.LV_AC_Db.Selected = nil) or (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok <> Item.Index)) then
-   Self.LV_AC_Kroky.Canvas.Brush.Color := _TABLE_COLOR_WHITE
- else
-   Self.LV_AC_Kroky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-end;
-
 procedure TF_Main.LV_BlokyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
@@ -3236,20 +3114,15 @@ end;
 
 procedure TF_Main.DisableRemoveButtons();
  begin
-  B_BlkDelete.Enabled       := false;
-  B_HV_Delete.Enabled       := false;
-  B_lok_delete.Enabled      := false;
-  B_zes_delete.Enabled      := false;
-  B_User_Delete.Enabled     := false;
-  B_VC_delete.Enabled       := false;
-  B_JC_Reset.Enabled        := false;
-  B_RemoveStack.Enabled     := false;
-  B_mJC_Remove.Enabled      := false;
-
-  Self.SB_AC_Play.Enabled   := false;
-  Self.SB_AC_Stop.Enabled   := false;
-  Self.SB_AC_Pause.Enabled  := false;
-  Self.SB_AC_Repeat.Enabled := false;
+  B_BlkDelete.Enabled := false;
+  B_HV_Delete.Enabled := false;
+  B_lok_delete.Enabled := false;
+  B_zes_delete.Enabled := false;
+  B_User_Delete.Enabled := false;
+  B_VC_delete.Enabled := false;
+  B_JC_Reset.Enabled := false;
+  B_RemoveStack.Enabled := false;
+  B_mJC_Remove.Enabled := false;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3265,72 +3138,6 @@ begin
     Self.call_method := nil;
     ev(self);
    end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Main.LoadACKroky();
-var i:Integer;
-    AC:TAC;
-    LI:TListItem;
-begin
- Self.LV_AC_Kroky.Clear();
- Self.LV_AC_Kroky.Enabled := (Self.LV_AC_Db.Selected <> nil);
- if (Self.LV_AC_Db.Selected = nil) then Exit();
- AC := ACDb.ACs[Self.LV_AC_Db.ItemIndex];
-
- for i := 0 to AC.kroky.Count-1 do
-  begin
-   LI := Self.LV_AC_Kroky.Items.Add;
-   LI.Caption := IntToStr(i+1);
-
-   if (AC.kroky[i].command = _AC_CMDTYPE_END) then
-     LI.SubItems.Add('----- Ukončení AC -----');
-   if (AC.kroky[i].command = _AC_CMDTYPE_JC) then
-     LI.SubItems.Add('Vlakoáa cesta '+JCDb.GetJCByID(AC.kroky[i].Params[0]).Nazev);
-   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 1)) then
-     LI.SubItems.Add('Čekání na obsazení úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if ((AC.kroky[i].command = _AC_CMDTYPE_USEK) and (AC.kroky[i].Params[1] = 0)) then
-     LI.SubItems.Add('Čekání na uvolnění úseku '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if (AC.kroky[i].command = _AC_CMDTYPE_OSV) then
-     LI.SubItems.Add('Změna osvětlení ve stanici '+ORs.GetORNameByIndex(AC.kroky[i].Params[0]));
-   if (AC.kroky[i].command = _AC_CMDTYPE_TRAT) then
-     LI.SubItems.Add('Nastavení směru trati '+Blky.GetBlkName(AC.kroky[i].Params[0]));
-   if  (AC.kroky[i].command = _AC_CMDTYPE_DELAY) then
-     LI.SubItems.Add('Prodleva '+IntToStr(AC.kroky[i].Params[0])+' sekund');
-   if  (AC.kroky[i].command = _AC_CMDTYPE_NAV) then
-     LI.SubItems.Add('Kontrola stavu návěstidla '+Blky.GetBlkName(AC.kroky[i].Params[0])+
-                     '; navest:'+IntToStr(AC.kroky[i].Params[1]));
-  end;//for i
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TF_Main.UpdateACButtons();
-begin
- B_AC_Reload.Enabled := not ACDb.acRunning;
-
- if (LV_AC_Db.Selected <> nil) then
-  begin
-   if (ACDb.ACs[Self.LV_AC_Db.ItemIndex].running) then
-    begin
-     Self.SB_AC_Play.Enabled   := not ACDb.ACs[Self.LV_AC_Db.ItemIndex].running;
-     Self.SB_AC_Stop.Enabled   := true;
-     Self.SB_AC_Pause.Enabled  := ACDb.ACs[Self.LV_AC_Db.ItemIndex].running;
-     Self.SB_AC_Repeat.Enabled := true;
-     Self.SB_AC_Repeat.Down    := ACDb.ACs[Self.LV_AC_Db.ItemIndex].repeating;
-    end else begin
-     Self.SB_AC_Play.Enabled   := ACDb.ACs[Self.LV_AC_Db.ItemIndex].ready or ACDb.ACs[Self.LV_AC_Db.ItemIndex].paused;
-     Self.SB_AC_Stop.Enabled   := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
-     Self.SB_AC_Pause.Enabled  := false;
-     Self.SB_AC_Repeat.Enabled := (ACDb.ACs[Self.LV_AC_Db.ItemIndex].ACKrok > -1);
-    end;
-  end else begin
-   Self.SB_AC_Play.Enabled   := false;
-   Self.SB_AC_Stop.Enabled   := false;
-   Self.SB_AC_Pause.Enabled  := false;
-   Self.SB_AC_Repeat.Enabled := false;
-  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

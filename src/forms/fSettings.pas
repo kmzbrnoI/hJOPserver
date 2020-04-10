@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Spin, inifiles, Menus, ComCtrls, ExtCtrls, Mask, StrUtils, Buttons,
-  fMain, AC, TechnologieRCS;
+  fMain, TechnologieRCS, TBloky;
 
 type
 
@@ -91,6 +91,7 @@ type
     procedure B_OKClick(Sender: TObject);
     procedure CHB_AutosaveClick(Sender: TObject);
   private
+    cb_ac_arri: TArI;
 
   public
 
@@ -104,9 +105,9 @@ var
 
 implementation
 
-uses fRychlostiEdit, GetSystems, Prevody, FileSystem, TBloky,
+uses fRychlostiEdit, GetSystems, Prevody, FileSystem, TBlok,
      TOblsRizeni, BoosterDb, SnadnSpusteni, TJCDatabase, THVDatabase,
-     Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas, ACDatabase;
+     Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas;
 
 {$R *.dfm}
 
@@ -180,30 +181,20 @@ end;
 
 procedure TF_Options.NactiSSDoObjektu();
 var IgnoraceRCS:TArI;
-    i:Integer;
     data:TSSData;
  begin
   data := SS.GetData();
 
-  SetLength(IgnoraceRCS,2);
+  SetLength(IgnoraceRCS, 2);
   IgnoraceRCS[0] := 3;
   IgnoraceRCS[1] := 4;
 
   Self.SE_SS_RCSAdr.Value := data.RCSAdr;
 
-  F_Options.CB_SS_AutRezimy.Clear;
-  for i := 0 to ACDb.ACs.Count-1 do
-    F_Options.CB_SS_AutRezimy.Items.Add(ACDb.ACs[i].name);
-  F_Options.CB_SS_AutRezimy.ItemIndex := data.AutRezim;
+  F_Options.CB_SS_AutRezimy.Clear();
+  Blky.NactiBlokyDoObjektu(Self.CB_SS_AutRezimy, @Self.cb_ac_arri, nil, nil, _BLK_AC, data.AC_id);
 
-  if (ACDb.ACs.Count = 0) then
-   begin
-    Self.CHB_SS_Enable.Enabled := false;
-    Self.CHB_SS_Enable.Checked := false
-   end else begin
-    Self.CHB_SS_Enable.Enabled := true;
-    Self.CHB_SS_Enable.Checked := data.enabled;
-   end;
+  Self.CHB_SS_Enable.Checked := data.enabled;
   Self.CHB_SS_EnableClick(self);
 
   //nacitani enablovani IN zacatek
@@ -312,8 +303,8 @@ var data:TSSData;
  begin
   data.enabled := Self.CHB_SS_Enable.Checked;
 
-  data.RCSAdr         := Self.SE_SS_RCSAdr.Value;
-  data.AutRezim       := CB_SS_AutRezimy.ItemIndex;
+  data.RCSAdr := Self.SE_SS_RCSAdr.Value;
+  data.AC_id := Blky.GetBlkID(Self.cb_ac_arri[Self.CB_SS_AutRezimy.ItemIndex]);
 
   if (CHB_SS_In_Start.Checked)  then data.IN_Start  := Self.SE_SS_In_Start.Value else data.IN_Start := -1;
   if (CHB_SS_In_Pause.Checked)  then data.IN_Pause  := Self.SE_SS_In_Pause.Value else data.IN_Pause := -1;
