@@ -24,16 +24,17 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
   private
-   NewBlk:Boolean;
-   Blk:TBlkIR;
+   NewBlk: Boolean;
+   Blk: TBlkIR;
+
   public
-   CanMonitor:Boolean;
    OpenIndex:Integer;
-   procedure OpenForm(BlokIndex:Integer);
-   procedure NewBlkOpenForm;
-   procedure NormalOpenForm;
-   procedure HlavniOpenForm;
-   procedure NewBlkCreate;
+
+    procedure OpenForm(BlokIndex:Integer);
+    procedure NewBlkOpenForm();
+    procedure NormalOpenForm();
+    procedure HlavniOpenForm();
+    procedure NewBlkCreate();
   end;
 
 var
@@ -53,11 +54,11 @@ procedure TF_BlkIR.OpenForm(BlokIndex:Integer);
 
   if (NewBlk) then
    begin
-    NewBlkOpenForm;
+    NewBlkOpenForm();
    end else begin
-    NormalOpenForm;
+    NormalOpenForm();
    end;
-  F_BlkIR.ShowModal;
+  F_BlkIR.ShowModal();
  end;
 
 procedure TF_BlkIR.SE_moduleExit(Sender: TObject);
@@ -67,13 +68,13 @@ end;
 
 procedure TF_BlkIR.NewBlkOpenForm;
  begin
-  E_Nazev.Text          := '';
-  SE_ID.Value           := Blky.GetBlkID(Blky.count-1)+1;
-  Self.SE_module.Value  := 1;
-  Self.SE_Port.Value    := 0;
+  E_Nazev.Text := '';
+  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  Self.SE_module.Value := 1;
+  Self.SE_Port.Value := 0;
   Self.SE_moduleExit(Self);
 
-  F_BlkIR.Caption       := 'Editovat data nového bloku';
+  F_BlkIR.Caption := 'Editovat data nového bloku';
   F_BlkIR.ActiveControl := E_Nazev;
  end;
 
@@ -118,7 +119,7 @@ procedure TF_BlkIR.NewBlkCreate;
 
 procedure TF_BlkIR.B_StornoClick(Sender: TObject);
  begin
-  F_BlkIR.Close;
+  F_BlkIR.Close();
  end;
 
 procedure TF_BlkIR.B_SaveClick(Sender: TObject);
@@ -167,23 +168,19 @@ var glob:TBlkSettings;
     Self.Blk.SetGlobalSettings(glob);
    end;
 
-  //ukladani dat
-
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value));
 
   Self.Blk.SetSettings(settings);
 
-  F_BlkIR.Close;
-
+  Self.Close();
   Self.Blk.Change();
  end;
 
 procedure TF_BlkIR.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  NewBlk     := false;
-  OpenIndex  := -1;
-  CanMonitor := false;
+  NewBlk := false;
+  OpenIndex := -1;
   BlokyTableData.UpdateTable;
  end;
 
