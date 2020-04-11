@@ -19,6 +19,7 @@ type
   enabled: boolean;
   client: TIdContext;
   state: TACState;
+  lines: TStrings;
  end;
 
  TBlkACException = class(Exception);
@@ -51,10 +52,14 @@ type
     procedure MenuSTOPClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPAUZAClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuPOKRACClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuSTAVClick(SenderPnl:TIdContext; SenderOR:TObject);
+
+    procedure PanelShowState(pnl: TIdContext; OblR: TOR);
 
   public
 
     constructor Create(index:Integer);
+    destructor Destroy(); override;
 
     // load/save data
     procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
@@ -113,7 +118,14 @@ begin
 
  Self.GlobalSettings.typ := _BLK_AC;
  Self.m_state := _def_ac_state;
-end;//ctor
+ Self.m_state.lines := TStringList.Create();
+end;
+
+destructor TBlkAC.Destroy();
+begin
+ Self.m_state.lines.Free();
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -225,6 +237,11 @@ begin
  end;
 end;
 
+procedure TBlkAC.MenuSTAVClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.PanelShowState(SenderPnl, SenderOR as TOR);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkAC.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
@@ -240,6 +257,8 @@ begin
    Result := Result + 'PAUZA,';
  if (not Self.stopped) then
    Result := Result + 'STOP,';
+
+ Result := Result + 'STAV?,';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,7 +280,8 @@ begin
  if      (item = 'START')  then Self.MenuSTARTClick(SenderPnl, SenderOR)
  else if (item = 'STOP')   then Self.MenuSTOPClick(SenderPnl, SenderOR)
  else if (item = 'PAUZA')  then Self.MenuPAUZAClick(SenderPnl, SenderOR)
- else if (item = 'POKRAÈ') then Self.MenuPOKRACClick(SenderPnl, SenderOR);
+ else if (item = 'POKRAÈ') then Self.MenuPOKRACClick(SenderPnl, SenderOR)
+ else if (item = 'STAV?')  then Self.MenuSTAVClick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -454,6 +474,25 @@ end;
 function TBlkAC.PtUsername():string;
 begin
  Result := IntToStr(Self.id);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkAC.PanelShowState(pnl: TIdContext; OblR: TOR);
+var podm: TList<TPSPodminka>;
+begin
+ podm := TList<TPSPodminka>.Create();
+ if (Self.clientConnected) then
+   podm.Add(TOR.GetPSPodminka('Klient: pøipojen', ''))
+ else
+   podm.Add(TOR.GetPSPodminka('Klient: nepøipojen', ''));
+ case (Self.acState) of
+   TACState.stopped: podm.Add(TOR.GetPSPodminka('AC: zastaven', ''));
+   TACState.running: podm.Add(TOR.GetPSPodminka('AC: bìží', ''));
+   TACState.paused: podm.Add(TOR.GetPSPodminka('AC: pozastaven', ''))
+ end;
+
+ ORTCPServer.PotvrOrInfo(pnl, 'IS', nil, OblR, 'Zobrazení stavu AC', TBlky.GetBlksList(Self), podm)
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
