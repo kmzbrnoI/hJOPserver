@@ -102,8 +102,14 @@ type
      procedure Stitek(AContext: TIdContext; Blk:TBlk; stit:string);
      procedure Vyluka(AContext: TIdContext; Blk:TBlk; vyl:string);
      procedure Menu(AContext: TIdContext; Blk:TBlk; OblR:TOR; menu:string);
-     procedure Potvr(AContext: TIdContext; callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList; podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
+     procedure Potvr(AContext: TIdContext; callback:TPSCallback; stanice:TOR;
+                     udalost:string; senders:TBlksList; podminky:TPSPodminky;
+                     free_senders:boolean = true; free_podm:boolean = true);
+     procedure PotvrOrInfo(AContext: TIdContext; mode: string; callback:TPSCallback; stanice:TOR;
+                           udalost:string; senders:TBlksList; podminky:TPSPodminky;
+                           free_senders:boolean = true; free_podm:boolean = true);
      procedure PotvrClose(AContext: TIdContext; msg:string = '');
+     procedure PotvrOrInfoClose(AContext: TIdContext; mode: string; msg:string = '');
      procedure UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
      procedure CancelUPO(AContext: TIdContext; ref:TObject);
      procedure POdj(AContext: TIdContext; SenderBlk:TBlk; SenderSprId:Integer;
@@ -992,7 +998,16 @@ begin
  end;
 end;
 
-procedure TORTCPServer.Potvr(AContext: TIdContext; callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList; podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
+procedure TORTCPServer.Potvr(AContext: TIdContext;
+  callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList;
+  podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
+begin
+ Self.PotvrOrInfo(AContext, 'PS', callback, stanice, udalost, senders, podminky, free_senders, free_podm);
+end;
+
+procedure TORTCPServer.PotvrOrInfo(AContext: TIdContext; mode: string;
+  callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList;
+  podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
 var str:string;
     i:Integer;
 begin
@@ -1016,7 +1031,7 @@ begin
 
  try
    (AContext.Data as TTCPORsRef).potvr := callback;
-    Self.SendLn(AContext, '-;PS;'+stanice.Name+';'+udalost+';'+str);
+   Self.SendLn(AContext, '-;'+UpperCase(mode)+';'+stanice.Name+';'+udalost+';'+str);
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := udalost;
  except
 
@@ -1028,14 +1043,19 @@ end;
 
 procedure TORTCPServer.PotvrClose(AContext: TIdContext; msg:string = '');
 begin
+ Self.PotvrOrInfoClose(AContext, 'PS', msg);
+end;
+
+procedure TORTCPServer.PotvrOrInfoClose(AContext: TIdContext; mode: string; msg:string = '');
+begin
  try
    (AContext.Data as TTCPORsRef).potvr := nil;
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := '';
 
    if (msg <> '') then
-    Self.SendLn(AContext, '-;PS-CLOSE;'+msg)
+    Self.SendLn(AContext, '-;'+UpperCase(mode)+'-CLOSE;'+msg)
    else
-    Self.SendLn(AContext, '-;PS-CLOSE;');
+    Self.SendLn(AContext, '-;'+UpperCase(mode)+'-CLOSE;');
  except
 
  end;
