@@ -20,22 +20,25 @@ type
     B_Storno: TButton;
     B_Save: TButton;
     SE_module: TSpinEdit;
+    CHB_RCS_Enabled: TCheckBox;
+    CHB_Activate_On_Start: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
+    procedure CHB_RCS_EnabledClick(Sender: TObject);
   private
-   NewBlk:Boolean;
-   Blk:TBlkVystup;
+   NewBlk: Boolean;
+   Blk: TBlkVystup;
 
   public
-   CanMonitor:Boolean;
-   OpenIndex:Integer;
-   procedure OpenForm(BlokIndex:Integer);
-   procedure NewBlkOpenForm;
-   procedure NormalOpenForm;
-   procedure HlavniOpenForm;
-   procedure NewBlkCreate;
+   OpenIndex: Integer;
+
+    procedure OpenForm(BlokIndex:Integer);
+    procedure NewBlkOpenForm();
+    procedure NormalOpenForm();
+    procedure HlavniOpenForm();
+    procedure NewBlkCreate();
   end;
 
 var
@@ -50,36 +53,39 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
 procedure TF_BlkVystup.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
-  HlavniOpenForm;
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  HlavniOpenForm();
 
   if (NewBlk) then
    begin
-    NewBlkOpenForm;
+    NewBlkOpenForm();
    end else begin
-    NormalOpenForm;
+    NormalOpenForm();
    end;
-  Self.ShowModal;
+  Self.ShowModal();
  end;
 
 procedure TF_BlkVystup.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_ID.MaxValue := TBlky.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
+ Self.SE_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
-procedure TF_BlkVystup.NewBlkOpenForm;
+procedure TF_BlkVystup.NewBlkOpenForm();
  begin
-  E_Nazev.Text          := '';
-  SE_ID.Value           := Blky.GetBlkID(Blky.count-1)+1;
+  E_Nazev.Text := '';
+  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
   Self.SE_module.Value  := 1;
-  Self.SE_port.Value    := 0;
+  Self.SE_port.Value := 0;
   Self.SE_moduleExit(Self);
+  Self.CHB_RCS_Enabled.Checked := false;
+  Self.CHB_RCS_EnabledClick(Self);
+  Self.CHB_Activate_On_Start.Checked := false;
 
-  Self.Caption := 'Editovat data noveho bloku';
+  Self.Caption := 'Nový blok Výstup';
   Self.ActiveControl := Self.E_Nazev;
  end;
 
-procedure TF_BlkVystup.NormalOpenForm;
+procedure TF_BlkVystup.NormalOpenForm();
 var glob:TBlkSettings;
     settings:TBlkVystupSettings;
  begin
@@ -95,15 +101,18 @@ var glob:TBlkSettings;
     Self.SE_port.Value   := settings.RCSAddrs[0].port;
    end else begin
     Self.SE_module.Value := 0;
-    Self.SE_Port.Value   := 0;
+    Self.SE_Port.Value := 0;
    end;
 
   Self.SE_moduleExit(Self);
 
-  E_Nazev.Text := glob.name;
-  SE_ID.Value  := glob.id;
+  Self.E_Nazev.Text := glob.name;
+  Self.SE_ID.Value := glob.id;
+  Self.CHB_RCS_Enabled.Checked := (settings.RCSAddrs.Count > 0);
+  Self.CHB_RCS_EnabledClick(Self);
+  Self.CHB_Activate_On_Start.Checked := settings.setOutputOnStart;
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (logický výstup)';
+  Self.Caption := 'Upravit blok '+glob.name+' (logický výstup)';
   Self.ActiveControl := Self.B_Save;
  end;
 
@@ -120,8 +129,14 @@ procedure TF_BlkVystup.NewBlkCreate;
 
 procedure TF_BlkVystup.B_StornoClick(Sender: TObject);
  begin
-  Self.Close;
+  Self.Close();
  end;
+
+procedure TF_BlkVystup.CHB_RCS_EnabledClick(Sender: TObject);
+begin
+ Self.SE_module.Enabled := Self.CHB_RCS_Enabled.Checked;
+ Self.SE_port.Enabled := Self.CHB_RCS_Enabled.Checked;
+end;
 
 procedure TF_BlkVystup.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
@@ -130,13 +145,13 @@ var glob:TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
 
   another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.output);
@@ -147,9 +162,9 @@ var glob:TBlkSettings;
       Exit();
    end;
 
-  glob.name     := E_Nazev.Text;
-  glob.id       := SE_ID.Value;
-  glob.typ      := _BLK_VYSTUP;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
+  glob.typ := _BLK_VYSTUP;
 
   if (NewBlk) then
    begin
@@ -168,22 +183,23 @@ var glob:TBlkSettings;
     Self.Blk.SetGlobalSettings(glob);
    end;
 
-  //ukladani dat
+  // ukladani dat
 
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value));
+  if (Self.CHB_RCS_Enabled.Checked) then
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value));
+  settings.setOutputOnStart := Self.CHB_Activate_On_Start.Checked;
 
   Self.Blk.SetSettings(settings);
-  Self.Close;
+  Self.Close();
   Self.Blk.Change();
  end;
 
 procedure TF_BlkVystup.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  NewBlk     := false;
-  OpenIndex  := -1;
-  CanMonitor := false;
-  BlokyTableData.UpdateTable;
+  NewBlk := false;
+  OpenIndex := -1;
+  BlokyTableData.UpdateTable();
  end;
 
 end.//unit

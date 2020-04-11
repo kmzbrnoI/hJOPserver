@@ -86,6 +86,7 @@ begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.VystupSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.LoadORs(ini_rel, 'POM').Free();
+ Self.VystupSettings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
  PushRCStoOR(Self.ORsRef, Self.VystupSettings.RCSAddrs);
 end;
 
@@ -93,6 +94,7 @@ procedure TBlkVystup.SaveData(ini_tech:TMemIniFile; const section:string);
 begin
  inherited SaveData(ini_tech, section);
  Self.SaveRCS(ini_tech,section, Self.VystupSettings.RCSAddrs);
+ ini_tech.WriteBool(section, 'activateOnStart', Self.VystupSettings.setOutputOnStart);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

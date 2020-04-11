@@ -4,7 +4,7 @@ object F_BlkVystup: TF_BlkVystup
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (Logick'#253' v'#253'stup)'
-  ClientHeight = 194
+  ClientHeight = 228
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -67,19 +67,19 @@ object F_BlkVystup: TF_BlkVystup
     Value = 1
   end
   object GB_RCS: TGroupBox
-    Left = 10
-    Top = 66
+    Left = 7
+    Top = 96
     Width = 304
-    Height = 79
+    Height = 98
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' RCS '
-    TabOrder = 2
+    TabOrder = 3
     object L_IR04: TLabel
       Left = 16
-      Top = 16
+      Top = 40
       Width = 63
       Height = 13
       Margins.Left = 2
@@ -90,7 +90,7 @@ object F_BlkVystup: TF_BlkVystup
     end
     object L_IR05: TLabel
       Left = 16
-      Top = 44
+      Top = 68
       Width = 49
       Height = 13
       Margins.Left = 2
@@ -101,7 +101,21 @@ object F_BlkVystup: TF_BlkVystup
     end
     object SE_port: TSpinEdit
       Left = 216
-      Top = 43
+      Top = 67
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
+    object SE_module: TSpinEdit
+      Left = 216
+      Top = 41
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -111,27 +125,22 @@ object F_BlkVystup: TF_BlkVystup
       MaxValue = 0
       MinValue = 0
       TabOrder = 1
-      Value = 0
-    end
-    object SE_module: TSpinEdit
-      Left = 216
-      Top = 17
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 0
       Value = 1
       OnExit = SE_moduleExit
     end
+    object CHB_RCS_Enabled: TCheckBox
+      Left = 16
+      Top = 16
+      Width = 169
+      Height = 17
+      Caption = 'Blok m'#225' v'#253'stup na sb'#283'rnici RCS'
+      TabOrder = 0
+      OnClick = CHB_RCS_EnabledClick
+    end
   end
   object B_Storno: TButton
-    Left = 151
-    Top = 158
+    Left = 148
+    Top = 198
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -139,12 +148,12 @@ object F_BlkVystup: TF_BlkVystup
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 3
+    TabOrder = 4
     OnClick = B_StornoClick
   end
   object B_Save: TButton
-    Left = 240
-    Top = 158
+    Left = 237
+    Top = 198
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -153,7 +162,15 @@ object F_BlkVystup: TF_BlkVystup
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_SaveClick
+  end
+  object CHB_Activate_On_Start: TCheckBox
+    Left = 120
+    Top = 74
+    Width = 129
+    Height = 17
+    Caption = 'Aktivovat blok po startu'
+    TabOrder = 2
   end
 end
