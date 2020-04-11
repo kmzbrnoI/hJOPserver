@@ -169,7 +169,7 @@ end;//dtor
 procedure TBlk.SetGlobalSettings(data:TBlkSettings);
 var id_changed:boolean;
 begin
- id_changed := ((Self.GlobalSettings.id <> data.id) and (Self.GlobalSettings.id <> -1));
+ id_changed := ((Self.id <> data.id) and (Self.id <> -1));
  Self.GlobalSettings := data;
  if (id_Changed) then
   begin
@@ -188,9 +188,9 @@ end;
 
 procedure TBlk.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 begin
- Self.GlobalSettings.name     := ini_tech.ReadString(section, 'nazev', '');
- Self.GlobalSettings.id       := StrToInt(section);
- Self.GlobalSettings.typ      := ini_tech.ReadInteger(section, 'typ', -1);
+ Self.GlobalSettings.name := ini_tech.ReadString(section, 'nazev', '');
+ Self.GlobalSettings.id := StrToInt(section);
+ Self.GlobalSettings.typ := ini_tech.ReadInteger(section, 'typ', -1);
  Self.GlobalSettings.poznamka := ini_tech.ReadString(section, 'pozn', '');
 end;
 
@@ -381,9 +381,9 @@ end;
 
 procedure TBlk.GetPtData(json:TJsonObject; includeState:boolean);
 begin
- json['nazev'] := Self.GlobalSettings.name;
- json['id']    := Self.GlobalSettings.id;
- json['typ']   := TBlk.BlkTypeToStr(Self.GlobalSettings.typ);
+ json['nazev'] := Self.name;
+ json['id'] := Self.id;
+ json['typ'] := TBlk.BlkTypeToStr(Self.typ);
 end;
 
 procedure TBlk.GetPtState(json:TJsonObject);

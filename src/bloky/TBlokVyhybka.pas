@@ -290,7 +290,7 @@ begin
    //parsing *.spnl
    str := TStringList.Create();
    try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('V',IntToStr(Self.GlobalSettings.id),'')),str);
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('V',IntToStr(Self.id),'')),str);
      if (str.Count < 2) then Exit;
 
      if (Self.ORsRef <> nil) then
@@ -486,7 +486,7 @@ var Blk:TBlk;
     spojka_settings:TBlkVyhSettings;
     spojka_old:Integer;
 begin
- if (data.spojka = Self.GlobalSettings.id) then
+ if (data.spojka = Self.id) then
    raise ESpojka.Create('Nelze mít spojku sám se sebou!');
  spojka_old := Self.VyhSettings.spojka;
 
@@ -510,7 +510,7 @@ begin
      Self.VyhSettings.spojka := -1;
     end else begin
      spojka_settings := (Blk as TBlkVyhybka).GetSettings();
-     if (spojka_settings.spojka <> Self.GlobalSettings.id) then
+     if (spojka_settings.spojka <> Self.id) then
       begin
        if (spojka_settings.spojka <> -1) then
         begin
@@ -518,7 +518,7 @@ begin
          raise ESpojka.Create('Na výhybce je již jiná spojka!');
         end;
 
-       spojka_settings.spojka := self.GlobalSettings.id;
+       spojka_settings.spojka := Self.id;
        (Blk as TBlkVyhybka).SetSettings(spojka_settings);
       end;
     end;

@@ -332,7 +332,7 @@ begin
    str := TStringList.Create();
 
    try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('N',IntToStr(Self.GlobalSettings.id),'')),str);
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('N',IntToStr(Self.id),'')),str);
      if (str.Count >= 3) then
       begin
        if (Self.ORsRef <> nil) then
@@ -1037,7 +1037,7 @@ var Blk:TBlk;
 begin
  if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit;
  if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then Exit;
+   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) > -1)) then Exit;
 
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
@@ -1058,7 +1058,7 @@ procedure TBlkNav.MenuPPStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.GlobalSettings.id, false) > -1)) then Exit;
+   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) > -1)) then Exit;
 
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;

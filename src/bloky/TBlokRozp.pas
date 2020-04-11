@@ -63,7 +63,8 @@ type
     //----- Rozpojovac own functions -----
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton;
+                         rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
 
     function GetSettings():TBlkRozpSettings;
@@ -114,7 +115,7 @@ begin
    str := TStringList.Create();
 
    try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('R', IntToStr(Self.GlobalSettings.id), '')), str);
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('R', IntToStr(Self.id), '')), str);
      if (str.Count < 1) then Exit;
 
      if (Self.ORsRef <> nil) then

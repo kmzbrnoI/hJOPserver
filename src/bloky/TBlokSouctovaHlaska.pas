@@ -118,7 +118,7 @@ begin
     begin
      //parsing *.spnl
      data.Clear();
-     ExtractStrings([';'], [], PChar(ini_rel.ReadString('T', IntToStr(Self.GlobalSettings.id), '')), data);
+     ExtractStrings([';'], [], PChar(ini_rel.ReadString('T', IntToStr(Self.id), '')), data);
      if (data.Count > 0) then
       begin
        if (Self.ORsRef <> nil) then

@@ -367,7 +367,7 @@ begin
     begin
      //parsing *.spnl
      str.Clear();
-     ExtractStringsEx([';'], [], ini_rel.ReadString('U', IntToStr(Self.GlobalSettings.id), ''), str);
+     ExtractStringsEx([';'], [], ini_rel.ReadString('U', IntToStr(Self.id), ''), str);
 
      if (str.Count >= 1) then
       begin

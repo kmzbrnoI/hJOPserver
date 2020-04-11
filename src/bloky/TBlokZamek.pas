@@ -99,7 +99,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, Graphics, Prevody, Diagnostics,
+uses GetSystems, TBloky, Graphics, Prevody, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka;
 
 constructor TBlkZamek.Create(index:Integer);
@@ -107,8 +107,8 @@ begin
  inherited Create(index);
 
  Self.GlobalSettings.typ := _BLK_ZAMEK;
- Self.ZamekStav          := _def_zamek_stav;
- Self.last_zaver         := false;
+ Self.ZamekStav := _def_zamek_stav;
+ Self.last_zaver := false;
 end;//ctor
 
 destructor TBlkZamek.Destroy();
@@ -130,7 +130,7 @@ begin
    //parsing *.spnl
    str := TStringList.Create();
    try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('Z', IntToStr(Self.GlobalSettings.id), '')),str);
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('Z', IntToStr(Self.id), '')),str);
      if (str.Count < 1) then Exit;
      if (Self.ORsRef <> nil) then
        Self.ORsRef.Free();
@@ -360,7 +360,7 @@ procedure TBlkZamek.CallChangeToVyh();
 var list:TBlksList;
     i:Integer;
 begin
- list := Blky.GetVyhWithZamek(Self.GlobalSettings.id);
+ list := Blky.GetVyhWithZamek(Self.id);
 
  for i := 0 to list.Count-1 do
   (list[i] as TBlkVyhybka).Change();
@@ -387,7 +387,7 @@ function TBlkZamek.IsRightPoloha():boolean;
 var list:TBlksList;
     i:Integer;
 begin
- list := Blky.GetVyhWithZamek(Self.GlobalSettings.id);
+ list := Blky.GetVyhWithZamek(Self.id);
 
  for i := 0 to list.Count-1 do
    if ((list[i] as TBlkVyhybka).Poloha <> (list[i] as TBlkVyhybka).GetSettings().zamekPoloha) then

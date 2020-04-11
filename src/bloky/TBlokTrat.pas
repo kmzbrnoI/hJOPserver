@@ -837,7 +837,7 @@ begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(blk));
 
    // useku take priradime, ze je v nasi trati
-   (Blk as TBlkTU).InTrat := Self.GlobalSettings.id;
+   (Blk as TBlkTU).InTrat := Self.id;
 
    if (blk.GetSettings().navLid <> -1) then
     begin

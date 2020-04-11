@@ -129,7 +129,7 @@ begin
    //parsing *.spnl
    str := TStringList.Create();
    try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('AC', IntToStr(Self.GlobalSettings.id), '')),str);
+     ExtractStrings([';'],[],PChar(ini_rel.ReadString('AC', IntToStr(Self.id), '')),str);
      if (str.Count < 1) then Exit;
      if (Self.ORsRef <> nil) then
        Self.ORsRef.Free();
