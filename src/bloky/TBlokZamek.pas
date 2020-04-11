@@ -60,7 +60,6 @@ type
   public
 
     constructor Create(index:Integer);
-    destructor Destroy(); override;
 
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
@@ -111,15 +110,9 @@ begin
  Self.last_zaver := false;
 end;//ctor
 
-destructor TBlkZamek.Destroy();
-begin
- inherited Destroy();
-end;//dtor
-
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkZamek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.ZamekStav.Stit := ini_stat.ReadString(section, 'stit', '');

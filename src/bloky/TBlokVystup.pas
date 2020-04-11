@@ -3,34 +3,38 @@ unit TBlokVystup;
 {
   Definice a obsluha technologickeho bloku Vystup.
 
-  Technologicky blok Vystup nastavi po spusteni systemu konkretni vystup RCS modulu
-  do logicke hodnoty "1", pri vypinani systemu ho vrati do logicke hodnoty
-  "0".
+  Technologicky blok Vystup reprezentuje blok s binarnim stavem s moznym
+  vystupem na sbernici RCS.
 }
 
 interface
 
-uses IniFiles, TBlok, TechnologieRCS;
+uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils;
 
 type
 
  TBlkVystupSettings = record
   RCSAddrs:TRCSAddrs;
+  setOutputOnStart:boolean;
  end;
 
  TBlkVystupStav = record
-  enabled:boolean;
+  enabled: boolean;
+  active: boolean;
  end;
 
  TBlkVystup = class(TBlk)
   const
    _def_vystup_stav:TBlkVystupStav = (
      enabled: false;
+     active: false;
    );
 
   private
-   VystupSettings:TBlkVystupSettings;
-   VystupStav:TBlkVystupStav;
+   VystupSettings: TBlkVystupSettings;
+   VystupStav: TBlkVystupStav;
+
+    function GetRCSUsed():boolean;
 
   public
     constructor Create(index:Integer);
@@ -38,12 +42,14 @@ type
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile; const section:string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
     function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+
+    procedure Activate();
+    procedure Deactivate();
 
     //----- Vystup own functions -----
 
@@ -51,12 +57,16 @@ type
     procedure SetSettings(data: TBlkVystupSettings);
 
     property enabled: boolean read VystupStav.enabled;
+    property rcsUsed: boolean read GetRCSUsed;
+    property active: boolean read VystupStav.active;
 
  end;//class TBlkVystup
 
 ////////////////////////////////////////////////////////////////////////////////
 
 implementation
+
+uses TOblsRizeni;
 
 constructor TBlkVystup.Create(index:Integer);
 begin
@@ -67,53 +77,51 @@ end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVystup.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkVystup.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
+var str: TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.VystupSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
+
+ if (ini_rel <> nil) then
+  begin
+   //parsing *.spnl
+   str := TStringList.Create();
+   try
+     ExtractStrings([';'], [], PChar(ini_rel.ReadString('SW', IntToStr(Self.id), '')), str);
+     if (str.Count < 1) then Exit;
+     if (Self.ORsRef <> nil) then
+       Self.ORsRef.Free();
+     Self.ORsRef := ORs.ParseORs(str[0]);
+   finally
+     str.Free();
+   end;
+  end else begin
+   Self.ORsRef.Clear();
+  end;
+
+ PushRCStoOR(Self.ORsRef, Self.VystupSettings.RCSAddrs);
 end;
 
-procedure TBlkVystup.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkVystup.SaveData(ini_tech:TMemIniFile; const section:string);
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
  Self.SaveRCS(ini_tech,section, Self.VystupSettings.RCSAddrs);
-end;
-
-procedure TBlkVystup.SaveStatus(ini_stat:TMemIniFile;const section:string);
-begin
- //
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVystup.Enable();
-var RCSaddr:TRCSAddr;
 begin
  Self.VystupStav.enabled := true;
- for RCSaddr in Self.VystupSettings.RCSAddrs do
-  begin
-   try
-     if ((RCSi.Started) and (RCSi.IsModule(RCSaddr.board)) and (not RCSi.IsModuleFailure(RCSaddr.board))) then
-       RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 1);
-   except
-
-   end;
-  end;
+ if (Self.VystupSettings.setOutputOnStart) then
+   Self.Activate();
 end;
 
 procedure TBlkVystup.Disable();
-var RCSaddr:TRCSAddr;
 begin
  Self.VystupStav.enabled := false;
- for RCSaddr in Self.VystupSettings.RCSAddrs do
-  begin
-   try
-     if ((RCSi.Started) and (RCSi.IsModule(RCSaddr.board)) and (not RCSi.IsModuleFailure(RCSaddr.board))) then
-       RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 0);
-   except
-
-   end;
-  end;
+ Self.VystupStav.active := false;
 end;
 
 function TBlkVystup.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
@@ -134,6 +142,51 @@ begin
    Self.VystupSettings.RCSAddrs.Free();
 
  Self.VystupSettings := data;
+ Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVystup.GetRCSUsed():boolean;
+begin
+ Result := (Self.VystupSettings.RCSAddrs.Count > 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVystup.Activate();
+var RCSaddr:TRCSAddr;
+begin
+ if (Self.active) then Exit();
+ Self.VystupStav.active := true;
+
+ for RCSaddr in Self.VystupSettings.RCSAddrs do
+  begin
+   try
+     RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 1);
+   except
+
+   end;
+  end;
+
+ Self.Change();
+end;
+
+procedure TBlkVystup.Deactivate();
+var RCSaddr:TRCSAddr;
+begin
+ if (not Self.active) then Exit();
+ Self.VystupStav.active := false;
+
+ for RCSaddr in Self.VystupSettings.RCSAddrs do
+  begin
+   try
+     RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 0);
+   except
+
+   end;
+  end;
+
  Self.Change();
 end;
 

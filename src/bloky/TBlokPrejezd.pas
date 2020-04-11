@@ -163,8 +163,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkPrejezd.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
-    oblr:TOR;
+var oblr:TOR;
     defaultModule:Cardinal;
     module:Cardinal;
 begin

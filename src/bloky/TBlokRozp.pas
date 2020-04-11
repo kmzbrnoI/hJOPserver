@@ -45,7 +45,6 @@ type
 
   public
     constructor Create(index:Integer);
-    destructor Destroy(); override;
 
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
@@ -94,11 +93,6 @@ begin
  Self.GlobalSettings.typ := _BLK_ROZP;
  Self.RozpStav           := Self._def_rozp_stav;
 end;//ctor
-
-destructor TBlkRozp.Destroy();
-begin
- inherited Destroy();
-end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
