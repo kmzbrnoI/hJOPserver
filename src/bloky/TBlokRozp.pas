@@ -103,31 +103,11 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRozp.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
  Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
-
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str := TStringList.Create();
-
-   try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('R', IntToStr(Self.id), '')), str);
-     if (str.Count < 1) then Exit;
-
-     if (Self.ORsRef <> nil) then
-       Self.ORsRef.Free();
-     Self.ORsRef := ORs.ParseORs(str[0]);
-   finally
-     str.Free();
-   end;
-  end else begin
-   Self.ORsRef.Clear();
-  end;
-
+ Self.LoadORs(ini_rel, 'R').Free();
  PushRCStoOR(Self.ORsRef, Self.RozpSettings.RCSAddrs);
 end;
 

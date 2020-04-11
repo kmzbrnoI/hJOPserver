@@ -122,26 +122,8 @@ procedure TBlkZamek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,i
 var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
-
  Self.ZamekStav.Stit := ini_stat.ReadString(section, 'stit', '');
-
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str := TStringList.Create();
-   try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('Z', IntToStr(Self.id), '')),str);
-     if (str.Count < 1) then Exit;
-     if (Self.ORsRef <> nil) then
-       Self.ORsRef.Free();
-     Self.ORsRef := ORs.ParseORs(str[0]);
-   finally
-     str.Free();
-   end;
-  end else begin
-   Self.ORsRef.Clear();
-  end;
-
+ Self.LoadORs(ini_rel, 'Z').Free();
 end;
 
 procedure TBlkZamek.SaveData(ini_tech:TMemIniFile;const section:string);

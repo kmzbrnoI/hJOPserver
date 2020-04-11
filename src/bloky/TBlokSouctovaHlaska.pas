@@ -114,20 +114,7 @@ begin
    for str in data do
      Self.settings.prejezdy.Add(StrToInt(str));
 
-   if (ini_rel <> nil) then
-    begin
-     //parsing *.spnl
-     data.Clear();
-     ExtractStrings([';'], [], PChar(ini_rel.ReadString('T', IntToStr(Self.id), '')), data);
-     if (data.Count > 0) then
-      begin
-       if (Self.ORsRef <> nil) then
-         Self.ORsRef.Free();
-       Self.ORsRef := ORs.ParseORs(data[0]);
-      end;
-    end else begin
-     Self.ORsRef.Clear();
-    end;
+   Self.LoadORs(ini_rel, 'T').Free();
  finally
    data.Free();
  end;

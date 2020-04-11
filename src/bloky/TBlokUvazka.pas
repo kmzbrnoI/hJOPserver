@@ -137,32 +137,13 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUvazka.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
  Self.UvazkaSettings.parent := ini_tech.ReadInteger(section, 'parent', -1);
- Self.UvazkaStav.Stit       := ini_stat.ReadString(section, 'stit', '');
+ Self.UvazkaStav.Stit := ini_stat.ReadString(section, 'stit', '');
 
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str := TStringList.Create();
-
-   try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('Uv', IntToStr(Self.id), '')),str);
-     if (str.Count < 1) then Exit;
-
-     if (Self.ORsRef <> nil) then
-       Self.ORsRef.Free();
-     Self.ORsRef := ORs.ParseORs(str[0]);
-   finally
-     str.Free();
-   end;
-  end else begin
-   Self.ORsRef.Clear();
-  end;
-
+ Self.LoadORs(ini_rel, 'Uv').Free();
 end;
 
 procedure TBlkUvazka.SaveData(ini_tech:TMemIniFile;const section:string);

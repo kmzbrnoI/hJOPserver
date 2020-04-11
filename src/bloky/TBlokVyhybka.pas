@@ -243,7 +243,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics,
+uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
       TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, Prevody;
 
 constructor TBlkVyhybka.Create(index:Integer);
@@ -265,7 +265,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVyhybka.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
+var strs: TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -285,25 +285,12 @@ begin
  if ((Self.VyhStav.polohaSave <> TVyhPoloha.plus) and (Self.VyhStav.polohaSave <> TVyhPoloha.minus)) then
    Self.VyhStav.polohaSave := TVyhPoloha.plus;
 
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str := TStringList.Create();
-   try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('V',IntToStr(Self.id),'')),str);
-     if (str.Count < 2) then Exit;
-
-     if (Self.ORsRef <> nil) then
-       Self.ORsRef.Free();
-     Self.ORsRef := ORs.ParseORs(str[0]);
-     Self.VyhRel.UsekID := StrToInt(str[1]);
-   finally
-     str.Free();
-   end;
-  end else begin
-   Self.ORsRef.Clear();
-   Self.VyhRel.UsekID := -1;
-  end;
+ strs := Self.LoadORs(ini_rel, 'V');
+ try
+   Self.VyhRel.UsekID := IfThen(strs.Count >= 2, StrToInt(strs[1]), -1);
+ finally
+   strs.Free();
+ end;
 
  PushRCStoOR(Self.ORsRef, Self.VyhSettings.RCSAddrs);
 end;

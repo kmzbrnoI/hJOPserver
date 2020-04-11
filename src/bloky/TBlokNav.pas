@@ -313,9 +313,9 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
-    i:Integer;
-    s:string;
+var strs: TStrings;
+    i: Integer;
+    s: string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -326,39 +326,26 @@ begin
  Self.NavSettings.OutputType   := TBlkNavOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
  Self.NavSettings.ZpozdeniPadu := ini_tech.ReadInteger(section, 'zpoz', _NAV_DEFAULT_DELAY);
 
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str := TStringList.Create();
+ strs := Self.LoadORs(ini_rel, 'N');
+ try
+   if (strs.Count >= 3) then
+    begin
+     Self.NavRel.SymbolType := TBlkNavSymbol(StrToInt(strs[1]));
 
-   try
-     ExtractStrings([';'],[],PChar(ini_rel.ReadString('N',IntToStr(Self.id),'')),str);
-     if (str.Count >= 3) then
-      begin
-       if (Self.ORsRef <> nil) then
-         Self.ORsRef.Free();
-       Self.ORsRef := ORs.ParseORs(str[0]);
-       Self.NavRel.SymbolType := TBlkNavSymbol(StrToInt(str[1]));
-
-       // 0 = navestidlo v lichem smeru. 1 = navestidlo v sudem smeru
-       if (str[2] = '0') then
-         Self.NavRel.smer := THVStanoviste.lichy
-       else
-         Self.NavRel.smer := THVStanoviste.sudy;
-
-       Self.NavRel.UsekID      := StrToInt(str[3]);
-      end else begin
-       Self.NavRel.SymbolType := TBlkNavSymbol.unknown;
-       Self.NavRel.smer       := THVStanoviste.lichy;
-       Self.NavRel.UsekID     := -1;
-      end;
-   finally
-     str.Free();
-   end;
-  end else begin
-    Self.ORsRef.Clear();
-    Self.NavRel.SymbolType := TBlkNavSymbol.unknown;
-  end;
+     // 0 = navestidlo v lichem smeru. 1 = navestidlo v sudem smeru
+     if (strs[2] = '0') then
+       Self.NavRel.smer := THVStanoviste.lichy
+     else
+       Self.NavRel.smer := THVStanoviste.sudy;
+     Self.NavRel.UsekID := StrToInt(strs[3]);
+    end else begin
+     Self.NavRel.SymbolType := TBlkNavSymbol.unknown;
+     Self.NavRel.smer := THVStanoviste.lichy;
+     Self.NavRel.UsekID := -1;
+    end;
+ finally
+   strs.Free();
+ end;
 
  // Nacitani zastavovacich a zpomaovacich udalosti
  // toto musi byt az po nacteni spnl
@@ -369,13 +356,13 @@ begin
   begin
    // 1) stary zpusob nacitani zastavovacich udalosti (vsechny udalosti ve starem
    //    formatu na jednom radku). Tohle je tady hlavne kvuli zpetne kompatibilite.
-   str := TStringList.Create();
+   strs := TStringList.Create();
    try
-     ExtractStrings(['(', ')'], [], PChar(s), str);
-     for i := 0 to str.Count-1 do
-       Self.NavSettings.events.Add(Self.ParseEvent(str[i], true));
+     ExtractStrings(['(', ')'], [], PChar(s), strs);
+     for i := 0 to strs.Count-1 do
+       Self.NavSettings.events.Add(Self.ParseEvent(strs[i], true));
    finally
-     str.Free();
+     strs.Free();
    end;
 
   end else begin

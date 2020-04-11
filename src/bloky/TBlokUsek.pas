@@ -267,7 +267,7 @@ type
 implementation
 
 uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase,
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, Prevody, TechnologieTrakce, TMultiJCDatabase;
@@ -317,8 +317,8 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
-    s:string;
+var strs: TStrings;
+    s: string;
     sprIndex: Integer;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
@@ -336,11 +336,11 @@ begin
  Self.UsekStav.Stit := ini_stat.ReadString(section, 'stit', '');
  Self.UsekStav.Vyl := ini_stat.ReadString(section, 'vyl' , '');
 
- str := TStringList.Create();
+ strs := TStringList.Create();
  try
    Self.UsekStav.soupravy.Clear();
-   ExtractStringsEx([','], [], ini_stat.ReadString(section, 'spr' , ''), str);
-   for s in str do
+   ExtractStringsEx([','], [], ini_stat.ReadString(section, 'spr' , ''), strs);
+   for s in strs do
     begin
      sprIndex := Soupravy.GetSprIndexByName(s);
      if (sprIndex > -1) then
@@ -361,43 +361,31 @@ begin
    except
      writelog('Nepodařilo se načíst houkací události S bloku ' + Self.name, WR_ERROR);
    end;
+ finally
+   strs.Free();
+ end;
 
-
-   if (ini_rel <> nil) then
+ strs := Self.LoadORs(ini_rel, 'U');
+ try
+   if (strs.Count >= 2) then
     begin
-     //parsing *.spnl
-     str.Clear();
-     ExtractStringsEx([';'], [], ini_rel.ReadString('U', IntToStr(Self.id), ''), str);
-
-     if (str.Count >= 1) then
-      begin
-       if (Self.ORsRef <> nil) then
-         Self.ORsRef.Free();
-       Self.ORsRef := ORs.ParseORs(str[0]);
-      end;
-
-     if (str.Count >= 2) then
-      begin
-       Self.UsekStav.stanicni_kolej := (str[1] = '1');
-       if (str.Count >= 3) then
-         Self.UsekStav.cislo_koleje := str[2]
-       else
-         Self.UsekStav.cislo_koleje := '';
-      end;
-
-     if (str.Count >= 4) then
-       Self.UsekStav.spr_pos := (str[3] = '1');
-
-     if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxSpr <> 1)) then
-       Self.UsekSettings.maxSpr := 1;
-    end else begin
-     Self.ORsRef.Clear();
+     Self.UsekStav.stanicni_kolej := (strs[1] = '1');
+     if (strs.Count >= 3) then
+       Self.UsekStav.cislo_koleje := strs[2]
+     else
+       Self.UsekStav.cislo_koleje := '';
     end;
 
-   PushRCSToOR(Self.ORsRef, Self.UsekSettings.RCSAddrs);
+   if (strs.Count >= 4) then
+     Self.UsekStav.spr_pos := (strs[3] = '1');
+
+   if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxSpr <> 1)) then
+     Self.UsekSettings.maxSpr := 1;
  finally
-   str.Free();
+   strs.Free();
  end;
+
+ PushRCSToOR(Self.ORsRef, Self.UsekSettings.RCSAddrs);
 end;
 
 procedure TBlkUsek.SaveData(ini_tech:TMemIniFile;const section:string);

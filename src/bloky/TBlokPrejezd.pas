@@ -191,23 +191,7 @@ begin
 
  Self.PrjStav.stit := ini_stat.ReadString(section, 'stit', '');
 
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str := TStringList.Create();
-
-   ExtractStringsEx([';'], [], ini_rel.ReadString('PRJ', IntToStr(Self.GlobalSettings.id), ''), str);
-   if (str.Count > 0) then
-    begin
-     if (Self.ORsRef <> nil) then
-       Self.ORsRef.Free();
-     Self.ORsRef := ORs.ParseORs(str[0]);
-    end;
-
-   str.Free();
-  end else begin
-    Self.ORsRef.Clear();
-  end;
+ Self.LoadORs(ini_rel, 'PRJ').Free();
 
  Self.FillRCSModules();
  for oblr in Self.ORsRef do

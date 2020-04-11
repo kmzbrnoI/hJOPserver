@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, TechnologieRCS, SysUtils, TOblsRizeni, Generics.Collections,
-     IdContext, JsonDataObjects, TOblRizeni, changeEvent;
+     IdContext, JsonDataObjects, TOblRizeni, changeEvent, Classes;
 
 const
  //typy bloku
@@ -74,6 +74,7 @@ type
    class procedure PushRCSToOR(ORs:TList<TOR>; RCSs:TRCSAddrs);
 
    procedure CallChangeEvents(var events:TChangeEvents);
+   function LoadORs(ini: TMemIniFile; section: string): TStrings; // user must free result!
 
   public
 
@@ -96,7 +97,7 @@ type
    //update states
    procedure Update(); virtual;
 
-   procedure Change(now:boolean = false); virtual; //will call the change event
+   procedure Change(now:boolean = false); virtual; // will call the change event
 
    procedure Freeze(); virtual;
    procedure UnFreeze(); virtual;
@@ -153,8 +154,8 @@ constructor TBlk.Create(index:Integer);
 begin
  inherited Create();
  Self.GlobalSettings := _def_glob_settings;
- Self.ftable_index   := index;
- Self.ffrozen        := false;
+ Self.ftable_index := index;
+ Self.ffrozen := false;
  Self.ORsRef := TList<TOR>.Create();
 end;//ctor
 
@@ -461,6 +462,26 @@ begin
  else raise ETypeNotFound.Create('Blok typu '+typ+' neexistuje');
 end;
 
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlk.LoadORs(ini: TMemIniFile; section: string): TStrings;
+var strs: TStrings;
+begin
+ if (ini = nil) then
+  begin
+   Self.ORsRef.Clear();
+   Exit(TStringList.Create());
+  end;
+
+ strs := TStringList.Create();
+ ExtractStrings([';'], [], PChar(ini.ReadString(section, IntToStr(Self.id), '')), strs);
+ if (strs.Count < 1) then Exit(strs);
+ if (Self.ORsRef <> nil) then
+   Self.ORsRef.Free();
+ Self.ORsRef := ORs.ParseORs(strs[0]);
+
+ Result := strs;
+end;
 ////////////////////////////////////////////////////////////////////////////////
 
 end.//unit
