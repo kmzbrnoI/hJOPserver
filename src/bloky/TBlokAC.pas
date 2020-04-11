@@ -121,7 +121,7 @@ procedure TBlkAC.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,in
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.m_settings.accessToken := ini_tech.ReadString(section, 'accessToken', '');
- Self.LoadORs(ini_rel, 'AC').Free();
+ Self.LoadORs(ini_rel, 'POM').Free();
 end;
 
 procedure TBlkAC.SaveData(ini_tech:TMemIniFile; const section:string);

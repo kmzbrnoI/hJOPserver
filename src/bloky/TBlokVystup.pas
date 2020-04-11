@@ -73,33 +73,15 @@ begin
  inherited;
  Self.VystupStav := _def_vystup_stav;
  Self.GlobalSettings.typ := _BLK_VYSTUP;
-end;//ctor
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkVystup.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
-var str: TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.VystupSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
-
- if (ini_rel <> nil) then
-  begin
-   //parsing *.spnl
-   str := TStringList.Create();
-   try
-     ExtractStrings([';'], [], PChar(ini_rel.ReadString('SW', IntToStr(Self.id), '')), str);
-     if (str.Count < 1) then Exit;
-     if (Self.ORsRef <> nil) then
-       Self.ORsRef.Free();
-     Self.ORsRef := ORs.ParseORs(str[0]);
-   finally
-     str.Free();
-   end;
-  end else begin
-   Self.ORsRef.Clear();
-  end;
-
+ Self.LoadORs(ini_rel, 'POM').Free();
  PushRCStoOR(Self.ORsRef, Self.VystupSettings.RCSAddrs);
 end;
 
