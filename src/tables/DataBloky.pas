@@ -99,7 +99,7 @@ var j, spr:integer;
 
   glob := Blk.GetGlobalSettings();
 
-  Self.LV.Items[line].Caption             := glob.name;
+  Self.LV.Items[line].Caption := glob.name;
   Self.LV.Items[line].SubItems.Strings[1] := IntToStr(glob.id);
 
   str := '';
@@ -339,12 +339,15 @@ var j, spr:integer;
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      case ((Blk as TBlkVystup).enabled) of
-        false : Self.LV.Items[line].SubItems[3] := 'disabled';
-        true  : Self.LV.Items[line].SubItems[3] := 'enabled';
-      end;//case obsazeno
+      if (TBlkVystup(Blk).enabled) then
+       begin
+        if (TBlkVystup(Blk).active) then
+          Self.LV.Items[line].SubItems[3] := 'aktivní'
+        else
+          Self.LV.Items[line].SubItems[3] := 'neaktivní';
+       end else
+        Self.LV.Items[line].SubItems[3] := 'disabled';
 
-      Self.LV.Items[line].SubItems[4] := '---';
       Self.LV.Items[line].SubItems[5] := '---';
       Self.LV.Items[line].SubItems[6] := '---';
       Self.LV.Items[line].SubItems[7] := '---';

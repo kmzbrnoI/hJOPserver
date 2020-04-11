@@ -9,7 +9,8 @@ unit TBlokVystup;
 
 interface
 
-uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils;
+uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
+     Graphics;
 
 type
 
@@ -51,6 +52,9 @@ type
     procedure Activate();
     procedure Deactivate();
 
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    function PanelStateString():string; override;
+
     //----- Vystup own functions -----
 
     function GetSettings(): TBlkVystupSettings;
@@ -66,7 +70,7 @@ type
 
 implementation
 
-uses TOblsRizeni;
+uses TOblsRizeni, TCPServerOR, Prevody;
 
 constructor TBlkVystup.Create(index:Integer);
 begin
@@ -170,6 +174,50 @@ begin
   end;
 
  Self.Change();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVystup.PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
+                                Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+begin
+ if (not Self.enabled) then Exit();
+
+ if (Button = TPanelButton.F2) then
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
+ else if (Button = TPanelButton.ENTER) then begin
+   try
+     Self.Activate();
+   except
+     ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+   end
+ end else if (Button = TPanelButton.ESCAPE) then begin
+   try
+     Self.Deactivate();
+   except
+     ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+   end
+ end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVystup.PanelStateString():string;
+var fg, bg: TColor;
+begin
+ Result := inherited;
+
+ bg := clBlack;
+
+ if (not Self.enabled) then
+   fg := clFuchsia
+ else if (Self.active) then
+   fg := clYellow
+ else
+   fg := $A0A0A0;
+
+ Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+ Result := Result + PrevodySoustav.ColorToStr(bg) + ';0;';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

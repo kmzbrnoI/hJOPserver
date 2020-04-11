@@ -2960,10 +2960,14 @@ var Blk:TBlk;
 
   //////////////////////
   _BLK_VYSTUP:begin
-    case ((Blk as TBlkVystup).enabled) of
-      false : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-      true  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-    end;
+    if (TBlkVystup(Blk).enabled) then
+     begin
+      if (TBlkVystup(Blk).active) then
+        LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
+      else if (TBlkAC(Blk).clientConnected) then
+        LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE
+     end else
+      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
   end;
 
   //////////////////////
