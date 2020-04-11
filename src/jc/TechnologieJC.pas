@@ -1712,27 +1712,11 @@ var i,j:Integer;
 
       aZaver := Self.fproperties.TypCesty;
 
-      if ((Self.fproperties.TypCesty = TJCType.posun) or (Self.fstaveni.lastUsekOrTratObsaz)) then
-        count := Self.fproperties.Useky.Count-1
-      else
-        count := Self.fproperties.Useky.Count;
-
-      for i := 0 to count-1 do
+      for i := 0 to Self.fproperties.Useky.Count-1 do
        begin
         usekZaver := Self.fproperties.Useky[i];
         Blky.GetBlkByID(usekZaver, TBlk(usek));
         usek.Zaver := TZaver(aZaver);
-
-        // kontrola pritomnosti soupravy na usecich - toto je potreba delat pro dodatecne navesti
-        // mame zaruceno, ze se na usecich vyskytuje maximalne jedna souprava
-        // (to zarucuje kontrola podminek a kontrola DN)
-        if (usek.IsSouprava()) then
-         begin
-          if (Blky.GetBlkWithSpr(usek.Souprava).Count = 1) then
-            Soupravy.RemoveSpr(usek.Souprava)
-          else
-            usek.RemoveSoupravy();
-         end;
        end;
 
       navestidlo.DNjc := Self;
