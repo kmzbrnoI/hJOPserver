@@ -34,12 +34,11 @@ type
 
   public
     constructor Create(index:Integer);
-    destructor Destroy(); override;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
+    procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
+    procedure SaveStatus(ini_stat:TMemIniFile; const section:string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -48,10 +47,10 @@ type
 
     //----- Vystup own functions -----
 
-    function GetSettings():TBlkVystupSettings;
-    procedure SetSettings(data:TBlkVystupSettings);
+    function GetSettings(): TBlkVystupSettings;
+    procedure SetSettings(data: TBlkVystupSettings);
 
-    property enabled : boolean read VystupStav.enabled;
+    property enabled: boolean read VystupStav.enabled;
 
  end;//class TBlkVystup
 
@@ -65,11 +64,6 @@ begin
  Self.VystupStav := _def_vystup_stav;
  Self.GlobalSettings.typ := _BLK_VYSTUP;
 end;//ctor
-
-destructor TBlkVystup.Destroy();
-begin
- inherited;
-end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 

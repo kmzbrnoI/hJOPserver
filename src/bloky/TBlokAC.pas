@@ -55,12 +55,10 @@ type
   public
 
     constructor Create(index:Integer);
-    destructor Destroy(); override;
 
     // load/save data
     procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile; const section:string); override;
 
     // enable or disable symbol on relief
     procedure Enable(); override;
@@ -101,8 +99,6 @@ type
 
  end;//class TBlkUsek
 
-// TODO: remove just overloaded functions
-
 ////////////////////////////////////////////////////////////////////////////////
 
 implementation
@@ -118,11 +114,6 @@ begin
  Self.GlobalSettings.typ := _BLK_AC;
  Self.m_state := _def_ac_state;
 end;//ctor
-
-destructor TBlkAC.Destroy();
-begin
- inherited Destroy();
-end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -155,11 +146,6 @@ procedure TBlkAC.SaveData(ini_tech:TMemIniFile; const section:string);
 begin
  inherited SaveData(ini_tech, section);
  ini_tech.WriteString(section, 'accessToken', Self.m_settings.accessToken);
-end;
-
-procedure TBlkAC.SaveStatus(ini_stat:TMemIniFile; const section:string);
-begin
- // TODO
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
