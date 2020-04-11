@@ -1016,11 +1016,10 @@ begin
    for i := 0 to senders.Count-1 do
     if (Assigned(senders[i])) then
      begin
-      if ((senders[i].ClassType = TBlk) or
-          (senders[i].ClassType = TBlkVyhybka) or (senders[i].ClassType = TBlkUsek) or (senders[i].ClassType = TBlkNav) or (senders[i].ClassType = TBlkUvazka)) then
-       str := str + (senders[i] as TBlk).name + '|'
+      if ((senders[i].ClassType.InheritsFrom(TBlk))) then
+        str := str + (senders[i] as TBlk).name + '|'
       else if (senders[i].ClassType = TOR) then
-       str := str + 'Stanoviště výpravčího '+(senders[i] as TOR).Name + '|';
+        str := str + 'Stanoviště výpravčího '+(senders[i] as TOR).Name + '|';
      end;
 
  str := str + ';';
