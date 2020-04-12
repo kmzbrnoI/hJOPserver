@@ -71,7 +71,7 @@ end;
 
 function TPrevody.StrToColor(str:string):TColor;
 begin
- Result := RGB(StrToInt('$'+LeftStr(str, 2)), StrToInt('$'+Copy(str, 2, 2)), StrToInt('$'+RightStr(str, 2)));
+ Result := RGB(StrToInt('$'+LeftStr(str, 2)), StrToInt('$'+Copy(str, 3, 2)), StrToInt('$'+RightStr(str, 2)));
 end;
 
 function TPrevody.ColorToStr(Color:TColor):string;
