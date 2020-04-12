@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
-     Generics.Collections, TOblRizeni;
+     Generics.Collections, TOblRizeni, JsonDataObjects;
 
 type
 
@@ -91,6 +91,9 @@ type
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
+
+    procedure GetPtData(json: TJsonObject; includeState: boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
 
  end;//class TBlkUsek
 
@@ -413,6 +416,25 @@ begin
 
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
  Result := Result + PrevodySoustav.ColorToStr(bg) + ';0;';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkZamek.GetPtData(json: TJsonObject; includeState: boolean);
+begin
+ inherited;
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkZamek.GetPtState(json: TJsonObject);
+begin
+ json['enabled'] := Self.ZamekStav.enabled;
+ json['klicUvolnen'] := Self.ZamekStav.klicUvolnen;
+ json['nouzZaver'] := Self.ZamekStav.nouzZaver;
+ json['zaver'] := Self.ZamekStav.Zaver;
+ json['stit'] := Self.ZamekStav.stit;
+ json['porucha'] := Self.ZamekStav.porucha;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
