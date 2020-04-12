@@ -21,6 +21,7 @@ type
   state: TACState;
   lines: TStrings;
   fg: TColor;
+  panelsShowingState: TList<TIdContext>;
  end;
 
  TBlkACException = class(Exception);
@@ -59,6 +60,7 @@ type
     procedure MenuSTAVClick(SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure PanelShowState(pnl: TIdContext; OblR: TOR);
+    procedure PanelSTAVClosed(Sender:TIdContext; success:boolean);
 
   public
 
@@ -83,7 +85,7 @@ type
     procedure Pause();
 
     procedure SendClientControl();
-    procedure OnClientDisconnect();
+    procedure OnClientDisconnect(client: TIdContext);
     procedure ClientParse(Sender: TIdContext; parsed: TStrings);
 
     property state:TBlkACState read m_state;
@@ -119,11 +121,13 @@ begin
  Self.GlobalSettings.typ := _BLK_AC;
  Self.m_state := _def_ac_state;
  Self.m_state.lines := TStringList.Create();
+ Self.m_state.panelsShowingState := TList<TIdContext>.Create();
 end;
 
 destructor TBlkAC.Destroy();
 begin
  Self.m_state.lines.Free();
+ Self.m_state.panelsShowingState.Free();
  inherited;
 end;
 
@@ -161,6 +165,7 @@ begin
 
  Self.m_state.enabled := false;
  Self.m_state.lines.Clear();
+ Self.m_state.panelsShowingState.Clear();
  Self.Change(true);
 end;
 
@@ -391,6 +396,7 @@ end;
 procedure TBlkAC.ClientParse(Sender: TIdContext; parsed: TStrings);
 var color: TColor;
     oblr: TOR;
+    panel: TIdContext;
 begin
  if (parsed.Count < 4) then Exit();
 
@@ -423,6 +429,8 @@ begin
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'STATE')) then begin
    Self.m_state.lines.Clear();
    ExtractStringsEx([','], [], parsed[5], Self.m_state.lines);
+   for panel in Self.m_state.panelsShowingState do
+     Self.PanelShowState(panel, nil);
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'FG-COLOR')) then begin
    color := PrevodySoustav.StrToColor(parsed[5]);
    if ((color <> clBlack) and (color <> $A0A0A0) and (color <> clFuchsia)) then
@@ -434,14 +442,18 @@ begin
  end;
 end;
 
-procedure TBlkAC.OnClientDisconnect();
+procedure TBlkAC.OnClientDisconnect(client: TIdContext);
 begin
- Self.m_state.client := nil;
- Self.m_state.lines.Clear();
- if (not Self.stopped) then
-   Self.Stop();
-
- Self.Change();
+ if (Self.client = client) then
+  begin
+   Self.m_state.client := nil;
+   Self.m_state.lines.Clear();
+   if (not Self.stopped) then
+     Self.Stop();
+   Self.Change();
+  end;
+ if (Self.m_state.panelsShowingState.Contains(client)) then
+   Self.m_state.panelsShowingState.Remove(client);
 end;
 
 procedure TBlkAC.SendClientControl();
@@ -501,7 +513,15 @@ begin
  for str in Self.m_state.lines do
    podm.Add(TOR.GetPSPodminka(str, ''));
 
- ORTCPServer.PotvrOrInfo(pnl, 'IS', nil, OblR, 'Zobrazení stavu AC', TBlky.GetBlksList(Self), podm)
+ if (not Self.m_state.panelsShowingState.Contains(pnl)) then
+   Self.m_state.panelsShowingState.Add(pnl);
+ ORTCPServer.PotvrOrInfo(pnl, 'IS', Self.PanelSTAVClosed, OblR, 'Zobrazení stavu AC',
+                         TBlky.GetBlksList(Self), podm)
+end;
+
+procedure TBlkAC.PanelSTAVClosed(Sender:TIdContext; success:boolean);
+begin
+ Self.m_state.panelsShowingState.Remove(Sender);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

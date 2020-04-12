@@ -643,17 +643,12 @@ begin
    orRef.vyluka := nil;
   end
 
- else if (parsed[1] = 'PS') then
+ else if ((parsed[1] = 'PS') or (parsed[1] = 'IS')) then
   begin
    if (not Assigned(orRef.potvr)) then Exit();
 
    F_Main.LV_Clients.Items.Item[orRef.index].SubItems.Strings[9] := '';
-
-   if (parsed[2] = '2') then
-     orRef.potvr(AContext, true)
-   else
-     orRef.potvr(AContext, false);
-
+   orRef.potvr(AContext, (parsed[2] = '2'));
    orRef.potvr := nil;
   end
 
@@ -1008,7 +1003,7 @@ end;
 procedure TORTCPServer.PotvrOrInfo(AContext: TIdContext; mode: string;
   callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList;
   podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
-var str:string;
+var str, station_name: string;
     i:Integer;
 begin
  str := '';
@@ -1028,9 +1023,14 @@ begin
    for i := 0 to podminky.Count-1 do
      str := str + '[' + podminky[i].cil + '|' + podminky[i].podminka + ']';
 
+ if (stanice <> nil) then
+   station_name := stanice.Name
+ else
+   station_name := '-';
+
  try
    (AContext.Data as TTCPORsRef).potvr := callback;
-   Self.SendLn(AContext, '-;'+UpperCase(mode)+';'+stanice.Name+';'+udalost+';'+str);
+   Self.SendLn(AContext, '-;'+UpperCase(mode)+';'+station_name+';'+udalost+';'+str);
    F_Main.LV_Clients.Items.Item[(AContext.Data as TTCPORsRef).index].SubItems.Strings[9] := udalost;
  except
 

@@ -1082,11 +1082,11 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.OnClientDisconnect(client: TIdContext);
-var blk:TBlk;
+var blk: TBlk;
 begin
  for blk in Self.data do
-   if ((blk.typ = _BLK_AC) and (TBlkAC(blk).client = client)) then
-     TBlkAC(blk).OnClientDisconnect();
+   if (blk.typ = _BLK_AC) then
+     TBlkAC(blk).OnClientDisconnect(client);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
