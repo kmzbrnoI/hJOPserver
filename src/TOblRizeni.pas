@@ -202,6 +202,7 @@ type
 
       procedure BroadcastData(data:string; min_rights:TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem oblaati rizeni
       procedure BroadcastGlobalData(data:string; min_rights:TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem "-"
+      procedure BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read; stanice: string = '');
 
       procedure ClearVb();                                                      // smaze aktualni varientni body
 
@@ -1578,19 +1579,30 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.BroadcastData(data:string; min_rights:TORControlRights = read);
-var i:Integer;
+var panel: TORPanel;
 begin
- for i := 0 to Self.Connected.Count-1 do
-   if (Self.Connected[i].Rights >= min_rights) then
-    ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id+';'+data);
+ for panel in Self.Connected do
+   if (panel.Rights >= min_rights) then
+    ORTCPServer.SendLn(panel.Panel, Self.id+';'+data);
 end;
 
 procedure TOR.BroadcastGlobalData(data:string; min_rights:TORControlRights = read);
-var i:Integer;
+var panel: TORPanel;
 begin
- for i := 0 to Self.Connected.Count-1 do
-   if (Self.Connected[i].Rights >= min_rights) then
-    ORTCPServer.SendLn(Self.Connected[i].Panel, '-;'+data);
+ for panel in Self.Connected do
+   if (panel.Rights >= min_rights) then
+    ORTCPServer.SendLn(panel.Panel, '-;'+data);
+end;
+
+procedure TOR.BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read; stanice: string = '');
+var panel: TORPanel;
+begin
+ if (stanice = '') then
+   stanice := Self.ShortName;
+
+ for panel in Self.Connected do
+   if (panel.Rights >= min_rights) then
+    ORTCPServer.BottomError(panel.Panel, err, stanice, tech);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

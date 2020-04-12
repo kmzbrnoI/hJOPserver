@@ -5,7 +5,7 @@ unit TBlokAC;
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
-     Generics.Collections, TOblRizeni;
+     Generics.Collections, TOblRizeni, Graphics;
 
 type
 
@@ -20,6 +20,7 @@ type
   client: TIdContext;
   state: TACState;
   lines: TStrings;
+  fg: TColor;
  end;
 
  TBlkACException = class(Exception);
@@ -33,6 +34,7 @@ type
      enabled: false;
      client: nil;
      state: TACState.stopped;
+     fg: clFuchsia;
    );
 
   private
@@ -44,6 +46,8 @@ type
     function GetPaused():boolean;
     function GetClientConnected():boolean;
     function PtUsername():string;
+
+    procedure SetFgColor(new: TColor);
 
     procedure SendLn(text: string); overload;
     procedure SendLn(recipient: TIdContext; text: string); overload;
@@ -104,7 +108,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, Graphics, Prevody, Diagnostics,
+uses GetSystems, TechnologieRCS, TBloky, Prevody, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka,
     TCPServerPT, ownStrUtils;
 
@@ -280,8 +284,7 @@ begin
  fg := $A0A0A0;
 
  case (Self.m_state.state) of
-  TACState.running: fg := clYellow;
-  TACState.paused: fg := clYellow;
+  TACState.running, TACState.paused: fg := Self.m_state.fg;
  end;
 
  if (Self.stopped) then
@@ -330,6 +333,7 @@ begin
  if (Self.m_state.client = nil) then
    TBlkACException.Create('AC nelze spustit bez pøipojeného klienta!');
 
+ Self.m_state.fg := clYellow;
  Self.m_state.lines.Clear();
 
  try
@@ -382,6 +386,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkAC.ClientParse(Sender: TIdContext; parsed: TStrings);
+var color: TColor;
+    oblr: TOR;
 begin
  if (parsed.Count < 4) then Exit();
 
@@ -413,6 +419,14 @@ begin
      Self.Stop();
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'STATE')) then begin
    ExtractStringsEx([','], [], parsed[5], Self.m_state.lines);
+ end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'FG-COLOR')) then begin
+   color := PrevodySoustav.StrToColor(parsed[5]);
+   if ((color <> clBlack) and (color <> $A0A0A0) and (color <> clFuchsia)) then
+     Self.SetFgColor(color);
+ end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 7) and (UpperCase(parsed[4]) = 'ERROR')) then begin
+   if (UpperCase(parsed[5]) = 'DISPBOTTOM') then
+     for oblr in Self.ORsRef do
+       oblr.BroadcastBottomError(parsed[6], 'AC', TORControlRights.write, Self.name);
  end;
 end;
 
@@ -484,6 +498,15 @@ begin
    podm.Add(TOR.GetPSPodminka(str, ''));
 
  ORTCPServer.PotvrOrInfo(pnl, 'IS', nil, OblR, 'Zobrazení stavu AC', TBlky.GetBlksList(Self), podm)
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkAC.SetFgColor(new: TColor);
+begin
+ if (Self.m_state.fg = new) then Exit();
+ Self.m_state.fg := new;
+ Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
