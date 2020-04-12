@@ -333,8 +333,11 @@ begin
  if (Self.m_state.client = nil) then
    TBlkACException.Create('AC nelze spustit bez pøipojeného klienta!');
 
- Self.m_state.fg := clYellow;
- Self.m_state.lines.Clear();
+ if (not Self.paused) then
+  begin
+   Self.m_state.fg := clYellow;
+   Self.m_state.lines.Clear();
+  end;
 
  try
    PtServer.AccessTokenAdd(Self.PtUsername(), Self.m_settings.accessToken);
@@ -418,6 +421,7 @@ begin
    if (Self.running) then
      Self.Stop();
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'STATE')) then begin
+   Self.m_state.lines.Clear();
    ExtractStringsEx([','], [], parsed[5], Self.m_state.lines);
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'FG-COLOR')) then begin
    color := PrevodySoustav.StrToColor(parsed[5]);
