@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, TBlok, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
-     IdContext, TOblRizeni, Generics.Collections;
+     IdContext, TOblRizeni, Generics.Collections, JsonDataObjects;
 
 type
  TBlkPrjRCSInputs = record
@@ -134,6 +134,9 @@ type
 
     procedure PanelZUZCallBack(Sender:TIdContext; success:boolean);
     procedure PanelZNOTCallBack(Sender:TIdContext; success:boolean);
+
+    procedure GetPtData(json: TJsonObject; includeState: boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -778,6 +781,41 @@ begin
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
                     PrevodySoustav.ColorToStr(bg) + ';0;' +
                     IntToStr(Integer(Self.Stav.basicStav)) + ';';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPrejezd.GetPtData(json: TJsonObject; includeState: boolean);
+begin
+ inherited;
+
+ TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Zavreno, json['rcs']['zavreno']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Otevreno, json['rcs']['otevreno']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Vystraha, json['rcs']['vystraha']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Anulace, json['rcs']['anulace']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.Zavrit, json['rcs']['zavrit']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.NOtevrit, json['rcs']['notevrit']);
+
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkPrejezd.GetPtState(json: TJsonObject);
+begin
+ case (Self.PrjStav.basicStav) of
+   TBlkPrjBasicStav.disabled: json['stav'] := 'disabled';
+   TBlkPrjBasicStav.none: json['stav'] := 'none';
+   TBlkPrjBasicStav.otevreno: json['stav'] := 'otevreno';
+   TBlkPrjBasicStav.vystraha: json['stav'] := 'vystraha';
+   TBlkPrjBasicStav.uzavreno: json['stav'] := 'uzavreno';
+   TBlkPrjBasicStav.anulace: json['stav'] := 'anulace';
+ end;
+
+ json['stit'] := Self.PrjStav.stit;
+ json['vyl'] := Self.PrjStav.vyl;
+ json['PC_NOT'] := Self.PrjStav.PC_NOT;
+ json['PC_UZ'] := Self.PrjStav.PC_UZ;
+ json['zaver'] := Self.PrjStav.zaver;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
