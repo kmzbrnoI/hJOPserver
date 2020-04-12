@@ -15,13 +15,15 @@ uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
 type
 
  TBlkVystupSettings = record
-  RCSAddrs:TRCSAddrs;
-  setOutputOnStart:boolean;
+  RCSAddrs: TRCSAddrs;
+  setOutputOnStart: boolean;
+  nullAfterSec: Integer;
  end;
 
  TBlkVystupStav = record
   enabled: boolean;
   active: boolean;
+  nullTime: TTime;
  end;
 
  TBlkVystup = class(TBlk)
@@ -29,6 +31,7 @@ type
    _def_vystup_stav:TBlkVystupStav = (
      enabled: false;
      active: false;
+     nullTime: 0;
    );
 
   private
@@ -36,6 +39,7 @@ type
    VystupStav: TBlkVystupStav;
 
     function GetRCSUsed():boolean;
+    function IsNullable():boolean;
 
   public
     constructor Create(index:Integer);
@@ -52,6 +56,8 @@ type
     procedure Activate();
     procedure Deactivate();
 
+    procedure Update(); override;
+
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
 
@@ -66,6 +72,7 @@ type
     property enabled: boolean read VystupStav.enabled;
     property rcsUsed: boolean read GetRCSUsed;
     property active: boolean read VystupStav.active;
+    property nullable: boolean read IsNullable;
 
  end;//class TBlkVystup
 
@@ -90,6 +97,7 @@ begin
  Self.VystupSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.LoadORs(ini_rel, 'POM').Free();
  Self.VystupSettings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
+ Self.VystupSettings.nullAfterSec := ini_tech.ReadInteger(section, 'nullTime', 0);
  PushRCStoOR(Self.ORsRef, Self.VystupSettings.RCSAddrs);
 end;
 
@@ -98,6 +106,8 @@ begin
  inherited SaveData(ini_tech, section);
  Self.SaveRCS(ini_tech,section, Self.VystupSettings.RCSAddrs);
  ini_tech.WriteBool(section, 'activateOnStart', Self.VystupSettings.setOutputOnStart);
+ if (Self.nullable) then
+   ini_tech.WriteInteger(section, 'nullTime', Self.VystupSettings.nullAfterSec);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +155,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TBlkVystup.Update();
+begin
+ inherited;
+
+ if ((Self.enabled) and (Self.nullable) and (Self.active) and (Now > Self.VystupStav.nullTime)) then
+   Self.Deactivate();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TBlkVystup.Activate();
 var RCSaddr:TRCSAddr;
 begin
@@ -159,6 +179,10 @@ begin
 
    end;
   end;
+
+ if (Self.nullable) then
+   Self.VystupStav.nullTime := Now +
+      EncodeTime(0, Self.VystupSettings.nullAfterSec div 60, Self.VystupSettings.nullAfterSec mod 60, 0);
 
  Self.Change();
 end;
@@ -235,12 +259,22 @@ begin
  json['setOutputOnStart'] := Self.VystupSettings.setOutputOnStart;
  if (includeState) then
    Self.GetPtState(json['blokStav']);
+ json['nullable'] := Self.nullable;
+ if (Self.nullable) then
+   json['nullTime'] := Self.VystupSettings.nullAfterSec;
 end;
 
 procedure TBlkVystup.GetPtState(json: TJsonObject);
 begin
  json['enabled'] := Self.VystupStav.enabled;
  json['active'] := Self.VystupStav.active;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVystup.IsNullable():boolean;
+begin
+ Result := (Self.VystupSettings.nullAfterSec > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

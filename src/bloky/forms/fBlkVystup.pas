@@ -22,11 +22,14 @@ type
     SE_module: TSpinEdit;
     CHB_RCS_Enabled: TCheckBox;
     CHB_Activate_On_Start: TCheckBox;
+    CHB_Nullable: TCheckBox;
+    SE_Null_Time: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
     procedure CHB_RCS_EnabledClick(Sender: TObject);
+    procedure CHB_NullableClick(Sender: TObject);
   private
    NewBlk: Boolean;
    Blk: TBlkVystup;
@@ -80,6 +83,9 @@ procedure TF_BlkVystup.NewBlkOpenForm();
   Self.CHB_RCS_Enabled.Checked := false;
   Self.CHB_RCS_EnabledClick(Self);
   Self.CHB_Activate_On_Start.Checked := false;
+  Self.CHB_Nullable.Checked := false;
+  Self.CHB_NullableClick(Self);
+  Self.SE_Null_Time.Value := 0;
 
   Self.Caption := 'Nový blok Výstup';
   Self.ActiveControl := Self.E_Nazev;
@@ -111,6 +117,9 @@ var glob:TBlkSettings;
   Self.CHB_RCS_Enabled.Checked := (settings.RCSAddrs.Count > 0);
   Self.CHB_RCS_EnabledClick(Self);
   Self.CHB_Activate_On_Start.Checked := settings.setOutputOnStart;
+  Self.CHB_Nullable.Checked := Self.Blk.nullable;
+  Self.SE_Null_Time.Value := settings.nullAfterSec;
+  Self.CHB_NullableClick(Self);
 
   Self.Caption := 'Upravit blok '+glob.name+' (logický výstup)';
   Self.ActiveControl := Self.B_Save;
@@ -131,6 +140,11 @@ procedure TF_BlkVystup.B_StornoClick(Sender: TObject);
  begin
   Self.Close();
  end;
+
+procedure TF_BlkVystup.CHB_NullableClick(Sender: TObject);
+begin
+ Self.SE_Null_Time.Enabled := Self.CHB_Nullable.Checked;
+end;
 
 procedure TF_BlkVystup.CHB_RCS_EnabledClick(Sender: TObject);
 begin
@@ -189,6 +203,10 @@ var glob:TBlkSettings;
   if (Self.CHB_RCS_Enabled.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value));
   settings.setOutputOnStart := Self.CHB_Activate_On_Start.Checked;
+  if (Self.CHB_Nullable.Checked) then
+    settings.nullAfterSec := Self.SE_Null_Time.Value
+  else
+    settings.nullAfterSec := 0;
 
   Self.Blk.SetSettings(settings);
   Self.Close();
