@@ -11,7 +11,7 @@ type
  TACBlk = class
   private
    blkToClients: TObjectDictionary<Integer, TList<TIdContext>>;
-   clientToBlks: TObjectDictionary<TIdContext, TList<Integer>>;
+   clientToBlks: TObjectDictionary<Pointer, TList<Integer>>;
 
   public
 
@@ -40,8 +40,8 @@ uses ownStrUtils, TCPServerOR, TBloky;
 constructor TACBlk.Create();
 begin
  inherited;
- Self.blkToClients := TObjectDictionary<Integer, TList<TIdContext>>.Create();
- Self.clientToBlks := TObjectDictionary<TIdContext, TList<Integer>>.Create();
+ Self.blkToClients := TObjectDictionary<Integer, TList<TIdContext>>.Create([doOwnsValues]);
+ Self.clientToBlks := TObjectDictionary<Pointer, TList<Integer>>.Create([doOwnsValues]);
 end;
 
 destructor TACBlk.Destroy();
