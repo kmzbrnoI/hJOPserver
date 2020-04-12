@@ -58,23 +58,19 @@ type
 
   public
 
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     // load/save data
-    procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
+    procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
 
     // enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
 
-    function GetSettings():TBlkACSettings;
+    function GetSettings(): TBlkACSettings;
     procedure SetSettings(data: TBlkACSettings);
-
-    // update states
-    procedure Update(); override;
-    procedure Change(now:boolean = false); override;
 
     // ----- AC own functions -----
 
@@ -98,11 +94,11 @@ type
     // GUI:
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton;
+    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton;
                          rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
 
- end;//class TBlkUsek
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -110,7 +106,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, TBloky, Graphics, Prevody, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka,
-    TCPServerPT;
+    TCPServerPT, ownStrUtils;
 
 constructor TBlkAC.Create(index:Integer);
 begin
@@ -146,8 +142,8 @@ end;
 
 procedure TBlkAC.Enable();
 begin
- inherited Change();
  Self.m_state.enabled := true;
+ inherited Change();
 end;
 
 procedure TBlkAC.Disable();
@@ -160,6 +156,7 @@ begin
  end;
 
  Self.m_state.enabled := false;
+ Self.m_state.lines.Clear();
  Self.Change(true);
 end;
 
@@ -174,19 +171,6 @@ procedure TBlkAC.SetSettings(data: TBlkACSettings);
 begin
  Self.m_settings := data;
  Self.Change();
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkAC.Update();
-begin
- inherited Update();
-end;
-
-// change je volan z vyhybky pri zmene zaveru
-procedure TBlkAC.Change(now:boolean = false);
-begin
- inherited Change(now);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -346,6 +330,8 @@ begin
  if (Self.m_state.client = nil) then
    TBlkACException.Create('AC nelze spustit bez pøipojeného klienta!');
 
+ Self.m_state.lines.Clear();
+
  try
    PtServer.AccessTokenAdd(Self.PtUsername(), Self.m_settings.accessToken);
  except
@@ -425,14 +411,15 @@ begin
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 5) and (UpperCase(parsed[4]) = 'DONE')) then begin
    if (Self.running) then
      Self.Stop();
- end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 7) and (UpperCase(parsed[4]) = 'ERROR')) then begin
-   // TODO
+ end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'STATE')) then begin
+   ExtractStringsEx([','], [], parsed[5], Self.m_state.lines);
  end;
 end;
 
 procedure TBlkAC.OnClientDisconnect();
 begin
  Self.m_state.client := nil;
+ Self.m_state.lines.Clear();
  if (not Self.stopped) then
    Self.Stop();
 
@@ -480,6 +467,7 @@ end;
 
 procedure TBlkAC.PanelShowState(pnl: TIdContext; OblR: TOR);
 var podm: TList<TPSPodminka>;
+    str: string;
 begin
  podm := TList<TPSPodminka>.Create();
  if (Self.clientConnected) then
@@ -491,6 +479,9 @@ begin
    TACState.running: podm.Add(TOR.GetPSPodminka('AC: bìží', ''));
    TACState.paused: podm.Add(TOR.GetPSPodminka('AC: pozastaven', ''))
  end;
+
+ for str in Self.m_state.lines do
+   podm.Add(TOR.GetPSPodminka(str, ''));
 
  ORTCPServer.PotvrOrInfo(pnl, 'IS', nil, OblR, 'Zobrazení stavu AC', TBlky.GetBlksList(Self), podm)
 end;
