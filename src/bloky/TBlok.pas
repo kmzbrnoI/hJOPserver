@@ -413,6 +413,8 @@ begin
   _BLK_ROZP    : Result := 'rozpojovac';
   _BLK_TU      : Result := 'tratUsek';
   _BLK_VYSTUP  : Result := 'vystup';
+  _BLK_SH      : Result := 'souctovaHlaska';
+  _BLK_AC      : Result := 'AC';
  else
   Result := 'neznamy';
  end;

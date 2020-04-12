@@ -10,7 +10,7 @@ unit TBlokVystup;
 interface
 
 uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
-     Graphics;
+     Graphics, JsonDataObjects;
 
 type
 
@@ -59,6 +59,9 @@ type
 
     function GetSettings(): TBlkVystupSettings;
     procedure SetSettings(data: TBlkVystupSettings);
+
+    procedure GetPtData(json: TJsonObject; includeState: boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
 
     property enabled: boolean read VystupStav.enabled;
     property rcsUsed: boolean read GetRCSUsed;
@@ -220,6 +223,24 @@ begin
 
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
  Result := Result + PrevodySoustav.ColorToStr(bg) + ';0;';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkVystup.GetPtData(json: TJsonObject; includeState: boolean);
+begin
+ inherited;
+
+ TBlk.RCSstoJSON(Self.VystupSettings.RCSAddrs, json.A['rcs']);
+ json['setOutputOnStart'] := Self.VystupSettings.setOutputOnStart;
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkVystup.GetPtState(json: TJsonObject);
+begin
+ json['enabled'] := Self.VystupStav.enabled;
+ json['active'] := Self.VystupStav.active;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
