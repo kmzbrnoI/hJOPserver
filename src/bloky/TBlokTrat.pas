@@ -11,7 +11,7 @@
 
 interface
 
-uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
+uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, JsonDataObjects,
      Generics.Collections;
 
 const
@@ -167,6 +167,9 @@ type
     function GetSprUsek(spr_id:Integer):TSprUsek;
     function GetLastUsek(smer:TTratSmer):TBlk;
     function HasAutoblokNav(blk:TBlk):boolean;
+
+    procedure GetPtData(json: TJsonObject; includeState: boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
 
     property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
     property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
@@ -1185,6 +1188,42 @@ begin
      Exit(true);
   end;
  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTrat.GetPtData(json: TJsonObject; includeState: boolean);
+var usekid: Integer;
+begin
+ inherited;
+
+ json['uvazkaA'] := Self.TratSettings.uvazkaA;
+ json['uvazkaB'] := Self.TratSettings.uvazkaB;
+ json['zabzar'] := Integer(Self.TratSettings.zabzar);
+ json['navestidla'] := Integer(Self.TratSettings.navestidla);
+ for usekid in Self.TratSettings.Useky do
+   json.A['useky'].Add(usekid);
+
+ if (includeState) then
+   Self.GetPtState(json['blokStav']);
+end;
+
+procedure TBlkTrat.GetPtState(json: TJsonObject);
+var spr: TBlkTratSouprava;
+begin
+ json['zaver'] := Self.TratStav.zaver;
+ json['smer'] := Integer(Self.TratStav.smer);
+ json['zadost'] := Self.TratStav.zadost;
+
+ for spr in Self.TratStav.soupravy do
+  begin
+   if (spr.predict) then
+   else
+     json.A['soupravy'].Add(spr.souprava);
+  end;
+ if (Self.TratStav.SprPredict <> nil) then
+   json['sprPredict'] := Self.TratStav.SprPredict.souprava;
+ json['BP'] := Self.TratStav.BP;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
