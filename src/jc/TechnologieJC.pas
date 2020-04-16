@@ -3456,9 +3456,9 @@ begin
      Blky.GetBlkByID(Self.fproperties.Vyhybky[i].Blok, Blk);
      if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha)) then
       begin
+       Self.fstaveni.nextVyhybka := i+1;
        (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[i].Poloha),
                                       true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
-       Self.fstaveni.nextVyhybka := i+1;
        Exit();
       end;
     end;
@@ -3483,9 +3483,9 @@ begin
        usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, Self.fproperties.Odvraty[i].Blok));
 
+       Self.fstaveni.nextVyhybka := i+Self.fproperties.Vyhybky.Count+1;
        TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[i].Poloha),
                                   true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
-       Self.fstaveni.nextVyhybka := i+1;
        Exit();
       end;
     end;

@@ -1670,11 +1670,11 @@ end;
 function TBlkVyhybka.ShouldBeLockedIgnoreStaveni():boolean;
 begin
  Result := ((Self.Zaver > TZaver.no) and (Self.Zaver <> TZaver.staveni)) or
-           (Self.vyhZaver) or (Self.intentionalLocked) or (Self.ZamekLocked());
+           (Self.vyhZaver) or (Self.ZamekLocked());
 
  if (Self.spojka <> nil) then
    Result := Result or ((Self.spojka.Zaver > TZaver.no) and (Self.spojka.Zaver <> TZaver.staveni)) or
-                        (Self.spojka.vyhZaver) or (Self.spojka.intentionalLocked) or (Self.spojka.ZamekLocked());
+                        (Self.spojka.vyhZaver) or (Self.spojka.ZamekLocked());
 end;
 
 function TBlkVyhybka.ZamekLocked():Boolean;
