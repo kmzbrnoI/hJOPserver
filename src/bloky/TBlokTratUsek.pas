@@ -549,7 +549,7 @@ begin
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Register();
 
           if ((Soupravy[Self.Souprava].chtenaRychlost > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
-              (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.IsTriggerred(Self, true))) then
+              (Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
             Soupravy[Self.Souprava].rychlost := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
             Self.fTUStav.zast_zpom_ready := false;
