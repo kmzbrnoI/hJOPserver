@@ -163,7 +163,7 @@ var glob:TBlkSettings;
    begin
     glob.poznamka := '';
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkRozp;
+      Blk := Blky.Add(_BLK_ROZP, glob) as TBlkRozp;
     except
       on E:Exception do
        begin
