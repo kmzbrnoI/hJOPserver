@@ -47,15 +47,15 @@ type
      function GetJCByID(id:integer):TJC;
 
      // najde JC, ktera je postavena, ci prave stavena !
-     function FindJC(NavestidloBlokID:Integer;Staveni:Boolean = false):Integer; overload;
-     function FindOnlyStaveniJC(NavestidloBlokID:Integer):Integer;
+     function FindJC(NavestidloBlokID:Integer; Staveni:Boolean = false): TJC; overload;
+     function FindOnlyStaveniJC(NavestidloBlokID:Integer): TJC;
      function IsJC(id:Integer; ignore_index:Integer = -1):boolean;
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
      function FindPostavenaJCWithVyhybka(vyh_id:Integer):TArI;
-     function FindPostavenaJCWithUsek(usek_id:Integer):Integer;
-     function FindPostavenaJCWithPrj(blk_id:Integer):Integer;
-     function FindPostavenaJCWithTrat(trat_id:Integer):Integer;
+     function FindPostavenaJCWithUsek(usek_id:Integer):TJC;
+     function FindPostavenaJCWithPrj(blk_id:Integer):TJC;
+     function FindPostavenaJCWithTrat(trat_id:Integer):TJC;
      function FindPostavenaJCWithZamek(zam_id:Integer):TArI;
 
      // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
@@ -91,8 +91,9 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBlokUsek, TOblRizeni, TCPServerOR,
-      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlokVyhybka;
+uses Logging, GetSystems, TBlokUsek, TOblRizeni, TCPServerOR, TBlokTrat,
+      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlokVyhybka,
+      TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TJCDb
@@ -394,22 +395,22 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.FindJC(NavestidloBlokID:Integer; Staveni:Boolean = false):Integer;
-var i:Integer;
+function TJCDb.FindJC(NavestidloBlokID:Integer; Staveni:Boolean = false): TJC;
+var jc: TJC;
  begin
-  for i := 0 to Self.JCs.Count-1 do
-    if (((Self.JCs[i].postaveno) or ((Staveni) and (Self.JCs[i].staveni))) and (Self.JCs[i].data.NavestidloBlok = NavestidloBlokID)) then
-      Exit(i);
-  Exit(-1);
+  for jc in Self.JCs do
+    if (((jc.postaveno) or ((Staveni) and (jc.staveni))) and (jc.data.NavestidloBlok = NavestidloBlokID)) then
+      Exit(jc);
+  Result := nil;
  end;
 
-function TJCDb.FindOnlyStaveniJC(NavestidloBlokID:Integer):Integer;
-var i:Integer;
+function TJCDb.FindOnlyStaveniJC(NavestidloBlokID:Integer): TJC;
+var jc: TJC;
 begin
-  for i := 0 to Self.JCs.Count-1 do
-    if ((Self.JCs[i].staveni) and (Self.JCs[i].data.NavestidloBlok = NavestidloBlokID)) then
-      Exit(i);
-  Exit(-1);
+  for jc in Self.JCs do
+    if ((jc.staveni) and (jc.data.NavestidloBlok = NavestidloBlokID)) then
+      Exit(jc);
+  Result := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -466,44 +467,63 @@ begin
 end;
 
 //vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
-function TJCDB.FindPostavenaJCWithUsek(usek_id:Integer):Integer;
-var i,j:Integer;
+function TJCDB.FindPostavenaJCWithUsek(usek_id:Integer):TJC;
+var jc: TJC;
+    usekid: Integer;
+    trat, tu: TBlk;
 begin
-  Result := -1;
+  Result := nil;
 
-  for i := 0 to Self.JCs.Count-1 do
+  for jc in Self.JCs do
    begin
-    if (not Self.JCs[i].postaveno) then continue;
+    if (not jc.postaveno) then continue;
 
-    for j := 0 to Self.JCs[i].data.Useky.Count-1 do
-      if (Self.JCs[i].data.Useky[j] = usek_id) then
-        Exit(i);
+    for usekid in jc.data.Useky do
+      if (usekid = usek_id) then
+        Exit(jc);
+
+    if (jc.data.Trat > -1) then
+     begin
+      Blky.GetBlkByID(jc.data.Trat, trat);
+      if ((trat <> nil) and (trat.typ = _BLK_TRAT)) then
+       begin
+        for usekid in TBlkTrat(trat).GetSettings().Useky do
+         begin
+          Blky.GetBlkByID(usekid, tu);
+          if ((tu <> nil) and (tu.typ = _BLK_TU)) then
+            if ((TBlkTU(tu).navKryci = nil) and (tu.id = usek_id)) then
+              Exit(jc);
+         end;
+       end;
+     end;
+
    end;//for i
 end;
 
-function TJCDB.FindPostavenaJCWithTrat(trat_id:Integer):Integer;
-var i:Integer;
+function TJCDB.FindPostavenaJCWithTrat(trat_id: Integer): TJC;
+var jc: TJC;
 begin
- for i := 0 to Self.JCs.Count-1 do
+ for jc in Self.JCs do
   begin
-   if (not Self.JCs[i].postaveno) then continue;
-   if (Self.JCs[i].data.Trat = trat_id) then Exit(i);
+   if (not jc.postaveno) then continue;
+   if (jc.data.Trat = trat_id) then Exit(jc);
   end;//for i
 
- Exit(-1);
+ Result := nil;
 end;
 
-function TJCDB.FindPostavenaJCWithPrj(blk_id:Integer):Integer;
-var i,j:Integer;
+function TJCDB.FindPostavenaJCWithPrj(blk_id: Integer): TJC;
+var prj: TJCPrjZaver;
+    jc: TJC;
 begin
- for i := 0 to Self.JCs.Count-1 do
+ for jc in Self.JCs do
   begin
-   if (not Self.JCs[i].postaveno) then continue;
-   for j := 0 to Self.JCs[i].data.Prejezdy.Count-1 do
-     if (Self.JCs[i].data.Prejezdy[j].Prejezd = blk_id) then Exit(i);
+   if (not jc.postaveno) then continue;
+   for prj in jc.data.Prejezdy do
+     if (prj.Prejezd = blk_id) then Exit(jc);
   end;//for i
 
- Exit(-1);
+ Result := nil;
 end;
 
 function TJCDB.FindPostavenaJCWithZamek(zam_id:Integer):TArI;
@@ -581,52 +601,59 @@ end;
 // rusi cestu, ve ktere je zadany blok
 procedure TJCDb.RusJC(Blk:TBlk);
 var tmpblk:TBlk;
-    jcs:TArI;
+    jcis:TArI;
     i:Integer;
     jc:TJC;
     oblr:TOR;
+    jcs: TList<TJC>;
 begin
- case (Blk.typ) of
-  _BLK_VYH     : jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
-  _BLK_PREJEZD : begin
-    SetLength(jcs, 1);
-    jcs[0] := JCDb.FindPostavenaJCWithPrj(Blk.id);
-  end;
-  _BLK_USEK, _BLK_TU: begin
-    SetLength(jcs, 1);
-    jcs[0] := JCDb.FindPostavenaJCWithUsek(Blk.id);
-  end;
+ jcs := TList<TJC>.Create();
+ try
+   case (Blk.typ) of
+    _BLK_VYH     : begin
+      jcis := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
+      for i := 0 to Length(jcis)-1 do
+        jcs.Add(JcDb[jcis[i]]);
+    end;
+    _BLK_PREJEZD : begin
+      jc := JCDb.FindPostavenaJCWithPrj(Blk.id);
+      if (jc <> nil) then jcs.Add(jc);
+    end;
+    _BLK_USEK, _BLK_TU: begin
+      jc := JCDb.FindPostavenaJCWithUsek(Blk.id);
+      if (jc <> nil) then jcs.Add(jc);
+    end;
 
-  _BLK_NAV: begin
-    SetLength(jcs, 1);
-    jcs[0] := JCDb.FindJC(Blk.id);
-  end;
+    _BLK_NAV: begin
+      jc := JCDb.FindJC(Blk.id);
+      if (jc <> nil) then jcs.Add(jc);
+    end;
 
-  _BLK_TRAT: begin
-    SetLength(jcs, 1);
-    jcs[0] := JCDb.FindPostavenaJCWithTrat(Blk.id);
-  end;
+    _BLK_TRAT: begin
+      jc := JCDb.FindPostavenaJCWithTrat(Blk.id);
+      if (jc <> nil) then jcs.Add(jc);
+    end;
 
-  _BLK_ZAMEK: jcs := JCDb.FindPostavenaJCWithZamek(Blk.id);
- end;//case
+    _BLK_ZAMEK: begin
+      jcis := JCDb.FindPostavenaJCWithZamek(Blk.id);
+      for i := 0 to Length(jcis)-1 do
+        jcs.Add(JcDb[jcis[i]]);
+    end;
+   end;//case
 
-
- if (Length(jcs) > 0) then
-  begin
-   for i := 0 to Length(jcs)-1 do
+   for jc in jcs do
     begin
-     if (jcs[i] < 0) then continue;   // toto tady musi byt, protoze napr FindPostavenaJCWithTrat vraci -1, pokud trat nenajde
-
-     jc := JCDb.GetJCByIndex(jcs[i]);
-     Blky.GetBlkByID(JCDb.GetJCByIndex(jcs[i]).data.NavestidloBlok, tmpblk);
+     Blky.GetBlkByID(jc.data.NavestidloBlok, tmpblk);
      if (TBlkNav(tmpblk).DNjc = jc) then
       begin
-       JCDB.GetJCByIndex(jcs[i]).RusJCWithoutBlk();
+       jc.RusJCWithoutBlk();
        for oblr in (tmpBlk as TBlkNav).OblsRizeni do
          oblr.BlkWriteError(Self, 'Chyba povolovací návěsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
-    end;//for i
-  end;//if jcindex <> -1
+    end;
+  finally
+   jcs.Free();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

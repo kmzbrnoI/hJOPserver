@@ -1134,7 +1134,6 @@ end;
 
 procedure TBlkTU.UpdateNavest();
 var Blk:TBlk;
-    jcs:TArI;
     jc:TJC;
 begin
  // kontrola zruseni navesti jizdni cesty pri obsazeni sekce trati:
@@ -1172,14 +1171,9 @@ begin
  if ((Self.prevTU = nil) and (Self.sectObsazeno = TUsekStav.obsazeno)
      and (TBlkTrat(Self.Trat).Zaver)) then
   begin
-   SetLength(jcs, 1);
-   jcs[0] := JCDb.FindPostavenaJCWithUsek(Blk.id);
-   if (jcs[0] > -1) then
-    begin
-     jc := JCDb.GetJCByID(jcs[0]);
-     if (not jc.waitForLastUsekOrTratObsaz) then
-       JCDb.RusJC(Self);
-    end;
+   jc := JCDb.FindPostavenaJCWithUsek(Self.id);
+   if ((jc <> nil) and (not jc.waitForLastUsekOrTratObsaz)) then
+     JCDb.RusJC(Self);
   end;
 
  // nastavime kryci navestidlo

@@ -1086,7 +1086,7 @@ begin
      if (oblr = Self) then
       begin
        usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
-       JC := JcDb.GetJCByIndex(JCDb.FindPostavenaJCWithUsek(Blk.id));
+       JC := JCDb.FindPostavenaJCWithUsek(Blk.id);
 
        if (JC <> nil) then
         begin

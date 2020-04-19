@@ -894,7 +894,7 @@ begin
  if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit();
  if ((SenderOR as TOR).stack.volba = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.id) > -1)) then Exit;
+       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
 
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then
@@ -916,7 +916,7 @@ var Blk:TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.id) > -1)) then Exit;
+       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
 
  Blk := BLky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
@@ -1024,7 +1024,7 @@ var Blk:TBlk;
 begin
  if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit;
  if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) > -1)) then Exit;
+   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
 
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
@@ -1045,7 +1045,7 @@ procedure TBlkNav.MenuPPStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) > -1)) then Exit;
+   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
 
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
@@ -1122,7 +1122,7 @@ begin
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8) and (JCDb.IsAnyVCAvailable(Self)))
+           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> 8) and (JCDb.IsAnyVCAvailable(Self)))
          or (TOR(SenderOR).stack.volba = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.NavSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
@@ -1131,7 +1131,7 @@ begin
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> 8) and (JCDb.IsAnyPCAvailable(Self)))
+           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> 8) and (JCDb.IsAnyPCAvailable(Self)))
          or ((SenderOR as TOR).stack.volba = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.NavSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
@@ -1181,7 +1181,7 @@ begin
  if (Self.NavSettings.zamknuto) then Exit();
 
  if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-        (JCDb.FindOnlyStaveniJC(Self.id) = -1) and (Self.Navest <> _NAV_PRIVOL) and (not Self.AB))
+        (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> _NAV_PRIVOL) and (not Self.AB))
       or ((SenderOR as TOR).stack.volba = VZ)) and
      (not Self.autoblok)) then
   begin

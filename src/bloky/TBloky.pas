@@ -605,7 +605,7 @@ begin
    if (orindex = -1) then continue;
 
    if (((Self.Data[i] as TBlkNav).ZacatekVolba > TBlkNavVolba.none) and
-      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkNav).id) = -1) or
+      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkNav).id) = nil) or
         ((Self.Data[i] as TBlkNav).OblsRizeni[orindex].stack.volba = VZ))) then
      Exit(Self.Data[i]);
   end;//for i
