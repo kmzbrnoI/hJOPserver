@@ -306,6 +306,7 @@ begin
     begin
      for oblr in Self.OblsRizeni do
       oblr.BlkWriteError(Self, 'Porucha přejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+     JCDb.RusJC(Self);
     end;
 
    if (Self.PrjStav.basicStav = disabled) then
