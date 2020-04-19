@@ -52,11 +52,11 @@ type
      function IsJC(id:Integer; ignore_index:Integer = -1):boolean;
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
-     function FindPostavenaJCWithVyhybka(vyh_id:Integer):TArI;
+     function FindPostavenaJCWithVyhybka(vyh_id:Integer):TList<TJC>;
      function FindPostavenaJCWithUsek(usek_id:Integer):TJC;
-     function FindPostavenaJCWithPrj(blk_id:Integer):TJC;
+     function FindPostavenaJCWithPrj(blk_id:Integer):TList<TJC>;
      function FindPostavenaJCWithTrat(trat_id:Integer):TJC;
-     function FindPostavenaJCWithZamek(zam_id:Integer):TArI;
+     function FindPostavenaJCWithZamek(zam_id:Integer):TList<TJC>;
 
      // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
      // tato fce zajisti, ze k ovlivneni dojde
@@ -417,57 +417,47 @@ end;
 
 //vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
 // muze vracet vic jizdnich cest - jeden odvrat muze byt u vic aktualne postavenych JC
-function TJCDB.FindPostavenaJCWithVyhybka(vyh_id:Integer):TArI;
-var i,j:Integer;
-    refz:TJCRefZaver;
-    blk:TBlk;
-    vyh:TBlkVyhybka;
+function TJCDB.FindPostavenaJCWithVyhybka(vyh_id:Integer): TList<TJC>;
+var jc: TJC;
+    vyhz: TJCVyhZaver;
+    odvrz: TJCOdvratZaver;
+    refz: TJCRefZaver;
+    blk: TBlk;
+    vyh: TBlkVyhybka;
 begin
+ Result := TList<TJC>.Create();
+ try
   Blky.GetBlkByID(vyh_id, blk);
   vyh := TBlkVyhybka(blk);
-  SetLength(Result, 0);
 
-  for i := 0 to Self.JCs.Count-1 do
+  for jc in Self.JCs do
    begin
-    if (not Self.JCs[i].postaveno) then continue;
+    if (not jc.postaveno) then continue;
 
     // prime vyhybky
-    for j := 0 to Self.JCs[i].data.Vyhybky.Count-1 do
-     begin
-      if (Self.JCs[i].data.Vyhybky[j].Blok = vyh_id) then
-       begin
-        SetLength(Result, Length(Result)+1);
-        Result[Length(Result)-1] := i;
-       end;
-     end;//for j
+    for vyhz in jc.data.Vyhybky do
+      if (vyhz.Blok = vyh_id) then
+        Result.Add(jc);
 
     // odvraty
-    for j := 0 to Self.JCs[i].data.Odvraty.Count-1 do
-     begin
-      if (Self.JCs[i].data.Odvraty[j].Blok = vyh_id) then
-       begin
-        SetLength(Result, Length(Result)+1);
-        Result[Length(Result)-1] := i;
-       end;
-     end;//for j
+    for odvrz in jc.data.Odvraty do
+      if (odvrz.Blok = vyh_id) then
+        Result.Add(jc);
 
     // zamky
     if ((vyh <> nil) and (vyh.zamek <> nil)) then
-     begin
-      for refz in Self.JCs[i].data.zamky do
-       begin
+      for refz in jc.data.zamky do
         if (refz.Blok = vyh.zamek.id) then
-         begin
-          SetLength(Result, Length(Result)+1);
-          Result[Length(Result)-1] := i;
-         end;
-       end;
-     end;
-   end;//for i
+          Result.Add(jc);
+   end;
+ except
+   Result.Free();
+   raise;
+ end;
 end;
 
 //vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
-function TJCDB.FindPostavenaJCWithUsek(usek_id:Integer):TJC;
+function TJCDB.FindPostavenaJCWithUsek(usek_id:Integer): TJC;
 var jc: TJC;
     usekid: Integer;
     trat, tu: TBlk;
@@ -497,7 +487,7 @@ begin
        end;
      end;
 
-   end;//for i
+   end;
 end;
 
 function TJCDB.FindPostavenaJCWithTrat(trat_id: Integer): TJC;
@@ -507,44 +497,47 @@ begin
   begin
    if (not jc.postaveno) then continue;
    if (jc.data.Trat = trat_id) then Exit(jc);
-  end;//for i
+  end;
 
  Result := nil;
 end;
 
-function TJCDB.FindPostavenaJCWithPrj(blk_id: Integer): TJC;
+function TJCDB.FindPostavenaJCWithPrj(blk_id: Integer): TList<TJC>;
 var prj: TJCPrjZaver;
     jc: TJC;
 begin
- for jc in Self.JCs do
-  begin
-   if (not jc.postaveno) then continue;
-   for prj in jc.data.Prejezdy do
-     if (prj.Prejezd = blk_id) then Exit(jc);
-  end;//for i
-
- Result := nil;
+ Result := TList<TJC>.Create();
+ try
+   for jc in Self.JCs do
+    begin
+     if (not jc.postaveno) then continue;
+     for prj in jc.data.Prejezdy do
+       if (prj.Prejezd = blk_id) then
+         Result.Add(jc);
+    end;
+ except
+   Result.Free();
+   raise;
+ end;
 end;
 
-function TJCDB.FindPostavenaJCWithZamek(zam_id:Integer):TArI;
-var i,j:Integer;
+function TJCDB.FindPostavenaJCWithZamek(zam_id:Integer): TList<TJC>;
+var jc: TJC;
+    zamZav: TJCRefZaver;
 begin
-  SetLength(Result, 0);
-
-  for i := 0 to Self.JCs.Count-1 do
-   begin
-    if (not Self.JCs[i].postaveno) then continue;
-
-    // prime vyhybky
-    for j := 0 to Self.JCs[i].data.zamky.Count-1 do
-     begin
-      if (Self.JCs[i].data.zamky[j].Blok = zam_id) then
-       begin
-        SetLength(Result, Length(Result)+1);
-        Result[Length(Result)-1] := i;
-       end;
-     end;//for j
-   end;//for i
+ Result := TList<TJC>.Create();
+ try
+   for jc in Self.JCs do
+    begin
+     if (not jc.postaveno) then continue;
+     for zamZav in jc.data.zamky do
+       if (zamZav.Blok = zam_id) then
+         Result.Add(jc);
+    end;
+ except
+   Result.Free();
+   raise;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -601,8 +594,6 @@ end;
 // rusi cestu, ve ktere je zadany blok
 procedure TJCDb.RusJC(Blk:TBlk);
 var tmpblk:TBlk;
-    jcis:TArI;
-    i:Integer;
     jc:TJC;
     oblr:TOR;
     jcs: TList<TJC>;
@@ -611,33 +602,28 @@ begin
  try
    case (Blk.typ) of
     _BLK_VYH     : begin
-      jcis := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
-      for i := 0 to Length(jcis)-1 do
-        jcs.Add(JcDb[jcis[i]]);
+      FreeAndNil(jcs);
+      jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
     end;
     _BLK_PREJEZD : begin
-      jc := JCDb.FindPostavenaJCWithPrj(Blk.id);
-      if (jc <> nil) then jcs.Add(jc);
+      FreeAndNil(jcs);
+      jcs := JCDb.FindPostavenaJCWithPrj(Blk.id);
     end;
     _BLK_USEK, _BLK_TU: begin
       jc := JCDb.FindPostavenaJCWithUsek(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-
     _BLK_NAV: begin
       jc := JCDb.FindJC(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-
     _BLK_TRAT: begin
       jc := JCDb.FindPostavenaJCWithTrat(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-
     _BLK_ZAMEK: begin
-      jcis := JCDb.FindPostavenaJCWithZamek(Blk.id);
-      for i := 0 to Length(jcis)-1 do
-        jcs.Add(JcDb[jcis[i]]);
+      FreeAndNil(jcs);
+      jcs := JCDb.FindPostavenaJCWithZamek(Blk.id);
     end;
    end;//case
 
@@ -652,7 +638,8 @@ begin
       end;
     end;
   finally
-   jcs.Free();
+   if (Assigned(jcs)) then
+     jcs.Free();
   end;
 end;
 
