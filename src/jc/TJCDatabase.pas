@@ -630,7 +630,8 @@ begin
    for jc in jcs do
     begin
      Blky.GetBlkByID(jc.data.NavestidloBlok, tmpblk);
-     if (TBlkNav(tmpblk).DNjc = jc) then
+     if ((TBlkNav(tmpblk).DNjc = jc) and
+         ((TBlkNav(tmpblk).Navest > TBlkNav._NAV_STUJ) or (TBlkNav(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
       begin
        jc.RusJCWithoutBlk();
        for oblr in (tmpBlk as TBlkNav).OblsRizeni do
