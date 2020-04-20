@@ -598,7 +598,7 @@ begin
    Self.ORAuthoriseResponse(Sender, TORControlRights.null, 'Úspěšně autorizováno - odpojen', '');
    ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
    if (Self.PnlDGetRights(Sender) >= write) then Self.AuthWriteToRead(Sender);
-   if (Self.PnlDGetIndex(Sender) > -1) then Self.PnlDRemove(Sender);
+   Self.PnlDRemove(Sender);
    Exit();
   end;
 
@@ -636,20 +636,15 @@ begin
  last_rights := Self.PnlDGetRights(Sender);
 
  try
-   if (UserRights < rights) then
+   if (UserRights = TORControlRights.null) then
     begin
-     if (UserRights > TORControlRights.null) then
-      begin
-       Self.PnlDAdd(Sender, UserRights, username);
-       Self.ORAuthoriseResponse(Sender, UserRights, msg, user.fullName)
-      end else begin
-       Self.PnlDRemove(Sender);
-       Self.ORAuthoriseResponse(Sender, UserRights, msg, '')
-      end;
-
+     Self.PnlDRemove(Sender);
+     Self.ORAuthoriseResponse(Sender, UserRights, msg, '');
      ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
-     Exit;
+     Exit();
     end;
+   if (rights > UserRights) then
+     rights := UserRights;
 
    // kontrola vyplych systemu
    if ((not GetFunctions.GetSystemStart) and (rights > read) and (rights < superuser)) then
