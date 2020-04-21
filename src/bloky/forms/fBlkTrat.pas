@@ -320,8 +320,8 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
   if (NewBlk) then
    begin
     try
-      Self.Trat := Blky.Add(_BLK_USEK, glob_trat) as TBlkTrat;
-      Self.UvazkaA := Blky.Add(_BLK_USEK, glob_trat) as TBlkUvazka;
+      Self.Trat := Blky.Add(_BLK_TRAT, glob_trat) as TBlkTrat;
+      Self.UvazkaA := Blky.Add(_BLK_UVAZKA, glob_trat) as TBlkUvazka;
       Self.UvazkaB  := Blky.Add(_BLK_UVAZKA, glob_uvB) as TBlkUvazka;
     except
       on E:Exception do

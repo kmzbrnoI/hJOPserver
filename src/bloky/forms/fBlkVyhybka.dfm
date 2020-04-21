@@ -344,7 +344,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 189
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 0
     end
     object CHB_Zamek: TCheckBox
@@ -391,7 +391,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 284
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
     end
     object CHB_npMinus: TCheckBox
@@ -409,7 +409,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 284
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 3
     end
   end
@@ -435,7 +435,7 @@ object F_BlkVyhybka: TF_BlkVyhybka
       Width = 187
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
     end
     object CHB_Spojka_Common_In: TCheckBox

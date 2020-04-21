@@ -135,7 +135,7 @@ begin
   begin
    glob.poznamka := '';
    try
-     Blk := Blky.Add(_BLK_USEK, glob) as TBlkSH;
+     Blk := Blky.Add(_BLK_SH, glob) as TBlkSH;
    except
      on E:Exception do
       begin

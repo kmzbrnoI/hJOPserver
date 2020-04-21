@@ -155,7 +155,7 @@ var glob:TBlkSettings;
    begin
     glob.poznamka := '';
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkIR;
+      Blk := Blky.Add(_BLK_IR, glob) as TBlkIR;
     except
       on E:Exception do
        begin

@@ -184,7 +184,7 @@ var glob:TBlkSettings;
    begin
     glob.poznamka := '';
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkVystup;
+      Blk := Blky.Add(_BLK_VYSTUP, glob) as TBlkVystup;
     except
       on E:Exception do
        begin

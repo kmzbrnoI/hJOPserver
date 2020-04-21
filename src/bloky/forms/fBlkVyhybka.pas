@@ -425,7 +425,7 @@ var glob:TBlkSettings;
   if (NewBlk) then
    begin
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkVyhybka;
+      Blk := Blky.Add(_BLK_VYH, glob) as TBlkVyhybka;
     except
       on E:Exception do
        begin

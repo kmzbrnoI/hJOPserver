@@ -293,7 +293,7 @@ var glob:TBlkSettings;
    begin
     glob.poznamka := '';
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkNav;
+      Blk := Blky.Add(_BLK_NAV, glob) as TBlkNav;
     except
       on E:Exception do
        begin

@@ -124,7 +124,7 @@ var glob:TBlkSettings;
    begin
     glob.poznamka := '';
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkPrejezd;
+      Blk := Blky.Add(_BLK_PREJEZD, glob) as TBlkPrejezd;
     except
       on E:Exception do
        begin
