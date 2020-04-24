@@ -145,8 +145,7 @@ type
 
 implementation
 
-uses TBloky,
-      DataBloky, appEv;
+uses TBloky, DataBloky, appEv, ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -476,12 +475,16 @@ begin
   end;
 
  strs := TStringList.Create();
- ExtractStrings([';'], [], PChar(ini.ReadString(section, IntToStr(Self.id), '')), strs);
- if (strs.Count < 1) then Exit(strs);
- if (Self.ORsRef <> nil) then
-   Self.ORsRef.Free();
- Self.ORsRef := ORs.ParseORs(strs[0]);
-
+ try
+   ExtractStringsEx([';'], [], ini.ReadString(section, IntToStr(Self.id), ''), strs);
+   if (strs.Count < 1) then Exit(strs);
+   if (Self.ORsRef <> nil) then
+     Self.ORsRef.Free();
+   Self.ORsRef := ORs.ParseORs(strs[0]);
+ except
+  strs.Free();
+  raise;
+ end;
  Result := strs;
 end;
 ////////////////////////////////////////////////////////////////////////////////
