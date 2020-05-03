@@ -14,6 +14,7 @@ type
   Otevreno:TRCSAddr;
   Vystraha:TRCSAddr;
   Anulace:TRCSAddr;
+  anulaceUse: boolean;
  end;
 
  TBlkPrjRCSOutputs = record
@@ -175,7 +176,7 @@ end;//dtor
 
 procedure TBlkPrejezd.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
 var oblr:TOR;
-    defaultModule:Cardinal;
+    defaultModule: Integer;
     module:Cardinal;
     i, notracks: Integer;
     track: TBlkPrjTrack;
@@ -185,7 +186,7 @@ begin
  Self.PrjStav.Stit := '';
  Self.PrjStav.Vyl  := '';
 
- defaultModule := ini_tech.ReadInteger(section, 'RCS', 0); // old file specs for backward compatibility
+ defaultModule := ini_tech.ReadInteger(section, 'RCS', -1); // old file specs for backward compatibility
 
  Self.PrjSettings.RCSInputs.Zavreno := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIzm', defaultModule),
                                                     ini_tech.ReadInteger(section, 'RCSIz', 0));
@@ -193,8 +194,12 @@ begin
                                                      ini_tech.ReadInteger(section, 'RCSIo', 0));
  Self.PrjSettings.RCSInputs.Vystraha := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIvm', defaultModule),
                                                      ini_tech.ReadInteger(section, 'RCSIv', 0));
- Self.PrjSettings.RCSInputs.Anulace := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSam', defaultModule),
-                                                    ini_tech.ReadInteger(section, 'RCSa', 0));
+ Self.PrjSettings.RCSInputs.anulaceUse := (ini_tech.ReadInteger(section, 'RCSam', defaultModule) <> -1);
+ if (Self.PrjSettings.RCSInputs.anulaceUse) then
+  begin
+   Self.PrjSettings.RCSInputs.Anulace := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSam', defaultModule),
+                                                      ini_tech.ReadInteger(section, 'RCSa', 0));
+  end;
 
  Self.PrjSettings.RCSOutputs.Zavrit := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOzm', defaultModule),
                                                     ini_tech.ReadInteger(section, 'RCSOz', 0));
@@ -238,8 +243,11 @@ begin
  ini_tech.WriteInteger(section, 'RCSIo', Self.PrjSettings.RCSInputs.Otevreno.port);
  ini_tech.WriteInteger(section, 'RCSIvm', Self.PrjSettings.RCSInputs.Vystraha.board);
  ini_tech.WriteInteger(section, 'RCSIv', Self.PrjSettings.RCSInputs.Vystraha.port);
- ini_tech.WriteInteger(section, 'RCSam', Self.PrjSettings.RCSInputs.Anulace.board);
- ini_tech.WriteInteger(section, 'RCSa', Self.PrjSettings.RCSInputs.Anulace.port);
+ if (Self.PrjSettings.RCSInputs.anulaceUse) then
+  begin
+   ini_tech.WriteInteger(section, 'RCSam', Self.PrjSettings.RCSInputs.Anulace.board);
+   ini_tech.WriteInteger(section, 'RCSa', Self.PrjSettings.RCSInputs.Anulace.port);
+  end;
 
  ini_tech.WriteInteger(section, 'RCSOzm', Self.PrjSettings.RCSOutputs.Zavrit.board);
  ini_tech.WriteInteger(section, 'RCSOz', Self.PrjSettings.RCSOutputs.Zavrit.port);
@@ -420,7 +428,10 @@ begin
    tmpInputs.Zavreno  := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Zavreno) = isOn);
    tmpInputs.Otevreno := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Otevreno) = isOn);
    tmpInputs.Vystraha := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Vystraha) = isOn);
-   tmpInputs.Anulace  := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Anulace) = isOn);
+   if (Self.PrjSettings.RCSInputs.anulaceUse) then
+     tmpInputs.Anulace := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Anulace) = isOn)
+   else
+     tmpInputs.Anulace := false;
  except
    // prejezd prejde do poruchoveho stavu
    tmpInputs.Zavreno  := false;
@@ -790,8 +801,9 @@ begin
    Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSInputs.Otevreno.board);
  if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSInputs.Vystraha.board)) then
    Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSInputs.Vystraha.board);
- if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSInputs.Anulace.board)) then
-   Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSInputs.Anulace.board);
+ if (Self.PrjSettings.RCSInputs.anulaceUse) then
+   if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSInputs.Anulace.board)) then
+     Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSInputs.Anulace.board);
  if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSOutputs.Zavrit.board)) then
    Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSOutputs.Zavrit.board);
  if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSOutputs.NOtevrit.board)) then

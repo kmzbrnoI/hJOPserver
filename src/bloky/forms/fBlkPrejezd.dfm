@@ -345,7 +345,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Bottom = 2
         MaxValue = 0
         MinValue = 0
-        TabOrder = 7
+        TabOrder = 8
         Value = 0
       end
       object SE_vst_close_board: TSpinEdit
@@ -404,9 +404,17 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Bottom = 2
         MaxValue = 0
         MinValue = 0
-        TabOrder = 6
+        TabOrder = 7
         Value = 0
         OnExit = SE_RCS_boardExit
+      end
+      object CHB_RCS_Anullation: TCheckBox
+        Left = 88
+        Top = 104
+        Width = 16
+        Height = 17
+        TabOrder = 6
+        OnClick = CHB_RCS_AnullationClick
       end
     end
   end

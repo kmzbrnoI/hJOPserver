@@ -60,6 +60,7 @@ type
     CB_Track_Open: TComboBox;
     Label9: TLabel;
     ME_Track_Anul_Time: TMaskEdit;
+    CHB_RCS_Anullation: TCheckBox;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -67,6 +68,7 @@ type
     procedure CHB_JOP_controlClick(Sender: TObject);
     procedure CB_TrackChange(Sender: TObject);
     procedure B_Track_DeleteClick(Sender: TObject);
+    procedure CHB_RCS_AnullationClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkPrejezd;
@@ -185,9 +187,11 @@ var glob:TBlkSettings;
     settings.RCSInputs.Vystraha.port := SE_vst_vystraha_port.Value;
     addrs.Add(settings.RCSInputs.Vystraha);
 
+    settings.RCSInputs.anulaceUse := Self.CHB_RCS_Anullation.Checked;
     settings.RCSInputs.Anulace.board := SE_vst_anulace_board.Value;
     settings.RCSInputs.Anulace.port := SE_vst_anulace_port.Value;
-    addrs.Add(settings.RCSInputs.Anulace);
+    if (Self.CHB_RCS_Anullation.Checked) then
+      addrs.Add(settings.RCSInputs.Anulace);
 
     Self.Blk.SetSettings(settings);
 
@@ -292,6 +296,17 @@ begin
   end;
 end;
 
+procedure TF_BlkPrejezd.CHB_RCS_AnullationClick(Sender: TObject);
+begin
+ Self.SE_vst_anulace_board.Enabled := Self.CHB_RCS_Anullation.Checked;
+ Self.SE_vst_anulace_port.Enabled := Self.CHB_RCS_Anullation.Checked;
+ if (not Self.CHB_RCS_Anullation.Checked) then
+  begin
+   Self.SE_vst_anulace_board.Value := 0;
+   Self.SE_vst_anulace_port.Value := 0;
+  end;
+end;
+
 procedure TF_BlkPrejezd.HlavniOpenForm();
  begin
   SetLength(Self.obls,0);
@@ -364,12 +379,16 @@ var glob:TBlkSettings;
   SE_vst_vystraha_port.Value := settings.RCSInputs.Vystraha.port;
 
 
+  Self.CHB_RCS_Anullation.Checked := settings.RCSInputs.anulaceUse;
+  Self.CHB_RCS_AnullationClick(Self);
   if (settings.RCSInputs.Anulace.board > Cardinal(Self.SE_vst_anulace_board.MaxValue)) then
     Self.SE_vst_anulace_board.MaxValue := 0;
   Self.SE_vst_anulace_port.MaxValue := 0;
-
-  SE_vst_anulace_board.Value := settings.RCSInputs.Anulace.board;
-  SE_vst_anulace_port.Value := settings.RCSInputs.Anulace.port;
+  if (settings.RCSInputs.anulaceUse) then
+   begin
+    SE_vst_anulace_board.Value := settings.RCSInputs.Anulace.board;
+    SE_vst_anulace_port.Value := settings.RCSInputs.Anulace.port;
+   end;
 
   Self.SE_RCS_boardExit(Self);
 
@@ -404,6 +423,8 @@ procedure TF_BlkPrejezd.NewOpenForm;
   SE_vst_close_port.Value := 0;
   SE_vst_vystraha_board.Value := 0;
   SE_vst_vystraha_port.Value := 0;
+  Self.CHB_RCS_Anullation.Checked := true;
+  Self.CHB_RCS_AnullationClick(Self);
   SE_vst_anulace_board.Value := 0;
   SE_vst_anulace_port.Value := 0;
   Self.SE_RCS_boardExit(Self);
