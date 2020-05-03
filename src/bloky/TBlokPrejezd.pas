@@ -220,6 +220,8 @@ begin
  Self.LoadORs(ini_rel, 'PRJ').Free();
 
  Self.FillRCSModules();
+ for module in Self.PrjStav.rcsModules do
+   RCSi.SetNeeded(module);
  for oblr in Self.ORsRef do
    for module in Self.PrjStav.rcsModules do
      oblr.RCSAdd(module);
