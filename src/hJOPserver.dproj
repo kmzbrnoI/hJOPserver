@@ -267,6 +267,7 @@
 				<Form>F_BlkAC</Form>
 			</DCCReference>
 			<DCCReference Include="ACBlocks.pas"/>
+			<DCCReference Include="bloky\TBlokPrejezdLogic.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

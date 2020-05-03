@@ -150,7 +150,8 @@ uses
   PTEndpointJCStav in 'pt\PTEndpointJCStav.pas',
   TBlokAC in 'bloky\TBlokAC.pas',
   fBlkAC in 'bloky\forms\fBlkAC.pas' {F_BlkAC},
-  ACBlocks in 'ACBlocks.pas';
+  ACBlocks in 'ACBlocks.pas',
+  TBlokPrejezdLogic in 'bloky\TBlokPrejezdLogic.pas';
 
 {$R *.res}
 
