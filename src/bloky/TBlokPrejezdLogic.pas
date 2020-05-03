@@ -2,7 +2,7 @@ unit TBlokPrejezdLogic;
 
 interface
 
-uses Generics.Collections, TBlokUsekRefs, IniFiles, Classes;
+uses Generics.Collections, TBlokUsekRefs, IniFiles, Classes, SysUtils, StrUtils;
 
 type
  TBlkPrjTrackState = (
@@ -50,6 +50,8 @@ type
   public
    sections: array[0..4] of TBlkUsekRefs;
    opening: TBlkPrjTrackOpening;
+   anulTime: TTime;
+
    onChanged: TNotifyEvent;
    stateChanged: boolean;
 
@@ -99,12 +101,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkPrjTrack.Load(ini: TMemIniFile; section: string; prefix: string);
+var str: string;
 begin
  Self.leftOut.Parse(ini.ReadString(section, prefix+'-leftOut', ''));
  Self.left.Parse(ini.ReadString(section, prefix+'-left', ''));
  Self.middle.Parse(ini.ReadString(section, prefix+'-middle', ''));
  Self.right.Parse(ini.ReadString(section, prefix+'-right', ''));
  Self.rightOut.Parse(ini.ReadString(section, prefix+'-rightOut', ''));
+ Self.opening := TBlkPrjTrackOpening(ini.ReadInteger(section, prefix+'-opening', 0));
+
+ str := ini.ReadString(section, prefix+'-anulTime', '01:00');
+ Self.anulTime := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
 end;
 
 procedure TBlkPrjTrack.Save(ini: TMemIniFile; section: string; prefix: string);
@@ -119,6 +126,8 @@ begin
    ini.WriteString(section, prefix+'-right', Self.right.ToStr());
  if (Self.rightOut.ToStr() <> '') then
    ini.WriteString(section, prefix+'-rightOut', Self.rightOut.ToStr());
+ ini.WriteInteger(section, prefix+'-opening', Integer(Self.opening));
+ ini.WriteString(section, prefix+'-anulTime', FormatDateTime('nn:ss', Self.anulTime));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

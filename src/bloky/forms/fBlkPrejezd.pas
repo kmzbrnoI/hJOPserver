@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections, IBUtils,
-  TBlokPrejezdLogic;
+  TBlokPrejezdLogic, Mask, StrUtils;
 
 type
   TF_BlkPrejezd = class(TForm)
@@ -56,6 +56,10 @@ type
     E_Track_Right: TEdit;
     Label7: TLabel;
     E_Track_Right_Out: TEdit;
+    Label8: TLabel;
+    CB_Track_Open: TComboBox;
+    Label9: TLabel;
+    ME_Track_Anul_Time: TMaskEdit;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -252,6 +256,8 @@ begin
  Self.E_Track_Middle.Enabled := (Self.CB_Track.ItemIndex <> -1);
  Self.E_Track_Right.Enabled := (Self.CB_Track.ItemIndex <> -1);
  Self.E_Track_Right_Out.Enabled := (Self.CB_Track.ItemIndex <> -1);
+ Self.CB_Track_Open.Enabled := (Self.CB_Track.ItemIndex <> -1);
+ Self.ME_Track_Anul_Time.Enabled := (Self.CB_Track.ItemIndex <> -1);
 
  if ((Self.CB_Track.ItemIndex < Self.CB_Track.Items.Count-1) and (Self.CB_Track.ItemIndex <> -1)) then
   begin
@@ -261,6 +267,8 @@ begin
    Self.E_Track_Middle.Text := Self.tracks[Self.CB_Track.ItemIndex].middle.ToStr();
    Self.E_Track_Right.Text := Self.tracks[Self.CB_Track.ItemIndex].right.ToStr();
    Self.E_Track_Right_Out.Text := Self.tracks[Self.CB_Track.ItemIndex].rightOut.ToStr();
+   Self.CB_Track_Open.ItemIndex := Integer(Self.tracks[Self.CB_Track.ItemIndex].opening);
+   Self.ME_Track_Anul_Time.Text := FormatDateTime('nn:ss', Self.tracks[Self.CB_Track.ItemIndex].anulTime);
   end else begin
    // new track
    Self.E_Track_Left_Out.Text := '';
@@ -268,6 +276,8 @@ begin
    Self.E_Track_Middle.Text := '';
    Self.E_Track_Right.Text := '';
    Self.E_Track_Right_Out.Text := '';
+   Self.CB_Track_Open.ItemIndex := -1;
+   Self.ME_Track_Anul_Time.Text := '00:00';
   end;
 
 end;
@@ -435,6 +445,10 @@ begin
  track.middle.Parse(Self.E_Track_Middle.Text);
  track.right.Parse(Self.E_Track_Right.Text);
  track.rightOut.Parse(Self.E_Track_Right_Out.Text);
+
+ track.opening := TBlkPrjTrackOpening(Self.CB_Track_Open.ItemIndex);
+ track.anulTime := EncodeTime(0, StrToInt(LeftStr(Self.ME_Track_Anul_Time.Text, 2)),
+                              StrToInt(Copy(Self.ME_Track_Anul_Time.Text, 4, 2)), 0);
 end;
 
 end.//unit

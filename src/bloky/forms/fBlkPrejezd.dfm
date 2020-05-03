@@ -4,7 +4,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 417
+  ClientHeight = 434
   ClientWidth = 651
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -64,8 +64,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
     TabOrder = 0
   end
   object B_save_P: TButton
-    Left = 561
-    Top = 385
+    Left = 7
+    Top = 400
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -78,8 +78,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
     OnClick = B_save_PClick
   end
   object B_Storno: TButton
-    Left = 465
-    Top = 385
+    Left = 93
+    Top = 400
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -414,19 +414,19 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Left = 336
     Top = 8
     Width = 307
-    Height = 361
+    Height = 417
     Caption = ' P'#345'ejezd '#345#237'zen'#253' pouze z hJOP '
     TabOrder = 4
     object Label2: TLabel
       Left = 16
-      Top = 48
+      Top = 42
       Width = 26
       Height = 13
       Caption = 'Kolej:'
     end
     object CHB_JOP_control: TCheckBox
       Left = 16
-      Top = 24
+      Top = 19
       Width = 161
       Height = 17
       Caption = #218'seky p'#345'ejezdu '#345#237'zen'#233' z hJOP'
@@ -435,7 +435,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     end
     object CB_Track: TComboBox
       Left = 48
-      Top = 51
+      Top = 42
       Width = 177
       Height = 21
       Style = csDropDownList
@@ -445,7 +445,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     end
     object B_Track_Delete: TButton
       Left = 231
-      Top = 51
+      Top = 42
       Width = 59
       Height = 21
       Caption = 'Smazat'
@@ -454,9 +454,9 @@ object F_BlkPrejezd: TF_BlkPrejezd
     end
     object GB_Track: TGroupBox
       Left = 16
-      Top = 87
+      Top = 69
       Width = 273
-      Height = 264
+      Height = 340
       Caption = ' Kolej 1 '
       TabOrder = 3
       object Label3: TLabel
@@ -482,7 +482,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       end
       object Label6: TLabel
         Left = 16
-        Top = 159
+        Top = 158
         Width = 56
         Height = 13
         Caption = 'Prav'#253' '#250'sek:'
@@ -493,6 +493,20 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Width = 111
         Height = 13
         Caption = 'Prav'#253' vzdalovac'#237' '#250'sek:'
+      end
+      object Label8: TLabel
+        Left = 16
+        Top = 253
+        Width = 89
+        Height = 13
+        Caption = 'Otev'#345#237't p'#345'ejezd p'#345'i:'
+      end
+      object Label9: TLabel
+        Left = 16
+        Top = 303
+        Width = 141
+        Height = 13
+        Caption = 'Mezn'#237' anula'#269'n'#237' doba [mm:ss]:'
       end
       object E_Track_Left_Out: TEdit
         Left = 16
@@ -520,7 +534,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       end
       object E_Track_Right: TEdit
         Left = 16
-        Top = 178
+        Top = 176
         Width = 241
         Height = 21
         TabOrder = 3
@@ -528,12 +542,48 @@ object F_BlkPrejezd: TF_BlkPrejezd
       end
       object E_Track_Right_Out: TEdit
         Left = 16
-        Top = 226
+        Top = 224
         Width = 241
         Height = 21
         TabOrder = 4
         Text = 'Edit2'
       end
+      object ME_Track_Anul_Time: TMaskEdit
+        Left = 168
+        Top = 304
+        Width = 89
+        Height = 24
+        Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        EditMask = '!90:00;1;_'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        MaxLength = 5
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 5
+        Text = '00:00'
+      end
+    end
+    object CB_Track_Open: TComboBox
+      Left = 32
+      Top = 341
+      Width = 241
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 4
+      Items.Strings = (
+        'Uvoln'#283'n'#237' prost'#345'edn'#237'ho '#250'seku'
+        'Obsazen'#237' t'#345'et'#237'ho '#250'seku'
+        'Uvoln'#283'n'#237' vzdalovac'#237'ho '#250'seku')
     end
   end
 end
