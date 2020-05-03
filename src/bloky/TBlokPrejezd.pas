@@ -20,6 +20,7 @@ type
  TBlkPrjRCSOutputs = record
   Zavrit:TRCSAddr;
   NOtevrit:TRCSAddr;
+  NOtevritUse: boolean;
  end;
 
  TBlkPrjSettings = record
@@ -205,8 +206,12 @@ begin
 
  Self.PrjSettings.RCSOutputs.Zavrit := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOzm', defaultModule),
                                                     ini_tech.ReadInteger(section, 'RCSOz', 0));
- Self.PrjSettings.RCSOutputs.NOtevrit := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule),
-                                                      ini_tech.ReadInteger(section, 'RCSOnot', 0));
+ Self.PrjSettings.RCSOutputs.NOtevritUse := (ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule) <> -1);
+ if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
+  begin
+   Self.PrjSettings.RCSOutputs.NOtevrit := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule),
+                                                        ini_tech.ReadInteger(section, 'RCSOnot', 0));
+  end;
 
  Self.tracks.Clear();
  notracks := ini_tech.ReadInteger(section, 'tracks', 0);
@@ -253,8 +258,11 @@ begin
 
  ini_tech.WriteInteger(section, 'RCSOzm', Self.PrjSettings.RCSOutputs.Zavrit.board);
  ini_tech.WriteInteger(section, 'RCSOz', Self.PrjSettings.RCSOutputs.Zavrit.port);
- ini_tech.WriteInteger(section, 'RCSOnotm', Self.PrjSettings.RCSOutputs.NOtevrit.board);
- ini_tech.WriteInteger(section, 'RCSOnot', Self.PrjSettings.RCSOutputs.NOtevrit.port);
+ if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
+  begin
+   ini_tech.WriteInteger(section, 'RCSOnotm', Self.PrjSettings.RCSOutputs.NOtevrit.board);
+   ini_tech.WriteInteger(section, 'RCSOnot', Self.PrjSettings.RCSOutputs.NOtevrit.port);
+  end;
 
  if (Self.tracks.Count > 0) then
    ini_tech.WriteInteger(section, 'tracks', Self.tracks.Count);
@@ -296,12 +304,15 @@ function TBlkPrejezd.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
  Result := (((portType = TRCSIOType.input) and ((addr = Self.PrjSettings.RCSInputs.Zavreno) or
                                                 (addr = Self.PrjSettings.RCSInputs.Otevreno) or
-                                                (addr = Self.PrjSettings.RCSInputs.Vystraha) or
-                                                (addr = Self.PrjSettings.RCSInputs.Anulace)))
+                                                (addr = Self.PrjSettings.RCSInputs.Vystraha)))
             or
-            ((portType = TRCSIOType.output) and ((addr = Self.PrjSettings.RCSOutputs.Zavrit) or
-                                                 (addr = Self.PrjSettings.RCSOutputs.NOtevrit)))
+            ((portType = TRCSIOType.output) and (addr = Self.PrjSettings.RCSOutputs.Zavrit))
            );
+
+ if (Self.PrjSettings.RCSInputs.anulaceUse) then
+   Result := Result or (portType = TRCSIOType.input) and (addr = Self.PrjSettings.RCSInputs.Anulace);
+ if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
+   Result := Result or (portType = TRCSIOType.output) and (addr = Self.PrjSettings.RCSOutputs.NOtevrit);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -452,7 +463,8 @@ begin
      PrevodySoustav.BoolToInt(((Self.PrjStav.PC_UZ) or (Self.Zaver) or (Self.TrackClosed)) and (not Self.PrjStav.PC_NOT))
    );
 
-   RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, PrevodySoustav.BoolToInt(Self.PrjStav.PC_NOT));
+   if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
+     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, PrevodySoustav.BoolToInt(Self.PrjStav.PC_NOT));
  except
 
  end;
@@ -801,8 +813,9 @@ begin
      Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSInputs.Anulace.board);
  if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSOutputs.Zavrit.board)) then
    Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSOutputs.Zavrit.board);
- if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSOutputs.NOtevrit.board)) then
-   Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSOutputs.NOtevrit.board);
+ if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
+   if (not Self.PrjStav.rcsModules.Contains(Self.PrjSettings.RCSOutputs.NOtevrit.board)) then
+     Self.PrjStav.rcsModules.Add(Self.PrjSettings.RCSOutputs.NOtevrit.board);
 
  Self.PrjStav.rcsModules.Sort();
 end;
@@ -855,9 +868,11 @@ begin
  TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Zavreno, json['rcs']['zavreno']);
  TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Otevreno, json['rcs']['otevreno']);
  TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Vystraha, json['rcs']['vystraha']);
- TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Anulace, json['rcs']['anulace']);
+ if (Self.PrjSettings.RCSInputs.anulaceUse) then
+   TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Anulace, json['rcs']['anulace']);
  TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.Zavrit, json['rcs']['zavrit']);
- TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.NOtevrit, json['rcs']['notevrit']);
+ if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
+   TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.NOtevrit, json['rcs']['notevrit']);
 
  if (includeState) then
    Self.GetPtState(json['blokStav']);

@@ -189,7 +189,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Bottom = 2
         MaxValue = 0
         MinValue = 0
-        TabOrder = 1
+        TabOrder = 2
         Value = 0
       end
       object SE_vyst_close_port: TSpinEdit
@@ -203,7 +203,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Bottom = 2
         MaxValue = 0
         MinValue = 0
-        TabOrder = 3
+        TabOrder = 4
         Value = 0
       end
       object SE_vyst_open_board: TSpinEdit
@@ -217,7 +217,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Bottom = 2
         MaxValue = 191
         MinValue = 0
-        TabOrder = 0
+        TabOrder = 1
         Value = 0
         OnExit = SE_RCS_boardExit
       end
@@ -232,9 +232,17 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Bottom = 2
         MaxValue = 191
         MinValue = 0
-        TabOrder = 2
+        TabOrder = 3
         Value = 0
         OnExit = SE_RCS_boardExit
+      end
+      object CHB_RCS_NOT: TCheckBox
+        Left = 108
+        Top = 19
+        Width = 16
+        Height = 17
+        TabOrder = 0
+        OnClick = CHB_RCS_NOTClick
       end
     end
     object GB_Prj_vst: TGroupBox
@@ -409,8 +417,8 @@ object F_BlkPrejezd: TF_BlkPrejezd
         OnExit = SE_RCS_boardExit
       end
       object CHB_RCS_Anullation: TCheckBox
-        Left = 88
-        Top = 104
+        Left = 108
+        Top = 101
         Width = 16
         Height = 17
         TabOrder = 6

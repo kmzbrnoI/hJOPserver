@@ -61,6 +61,7 @@ type
     Label9: TLabel;
     ME_Track_Anul_Time: TMaskEdit;
     CHB_RCS_Anullation: TCheckBox;
+    CHB_RCS_NOT: TCheckBox;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -69,6 +70,7 @@ type
     procedure CB_TrackChange(Sender: TObject);
     procedure B_Track_DeleteClick(Sender: TObject);
     procedure CHB_RCS_AnullationClick(Sender: TObject);
+    procedure CHB_RCS_NOTClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkPrejezd;
@@ -167,9 +169,11 @@ var glob:TBlkSettings;
 
   addrs := TList<TRCSAddr>.Create();
   try
+    settings.RCSOutputs.NOtevritUse := Self.CHB_RCS_NOT.Checked;
     settings.RCSOutputs.NOtevrit.board := Self.SE_vyst_open_board.Value;
     settings.RCSOutputs.NOtevrit.port := Self.SE_vyst_open_port.Value;
-    addrs.Add(settings.RCSOutputs.NOtevrit);
+    if (Self.CHB_RCS_NOT.Checked) then
+      addrs.Add(settings.RCSOutputs.NOtevrit);
 
     settings.RCSOutputs.Zavrit.board := Self.SE_vyst_close_board.Value;
     settings.RCSOutputs.Zavrit.port := Self.SE_vyst_close_port.Value;
@@ -307,6 +311,17 @@ begin
   end;
 end;
 
+procedure TF_BlkPrejezd.CHB_RCS_NOTClick(Sender: TObject);
+begin
+ Self.SE_vyst_open_board.Enabled := Self.CHB_RCS_NOT.Checked;
+ Self.SE_vyst_open_port.Enabled := Self.CHB_RCS_NOT.Checked;
+ if (not Self.CHB_RCS_NOT.Checked) then
+  begin
+   Self.SE_vyst_open_board.Value := 0;
+   Self.SE_vyst_open_port.Value := 0;
+  end;
+end;
+
 procedure TF_BlkPrejezd.HlavniOpenForm();
  begin
   SetLength(Self.obls,0);
@@ -339,12 +354,16 @@ var glob:TBlkSettings;
   E_Prj_Nazev.Text := glob.name;
   SE_ID.Value := glob.id;
 
+  Self.CHB_RCS_NOT.Checked := settings.RCSOutputs.NOtevritUse;
+  Self.CHB_RCS_NOTClick(Self);
   if (settings.RCSOutputs.NOtevrit.board > Cardinal(Self.SE_vyst_open_board.MaxValue)) then
     Self.SE_vyst_open_board.MaxValue := 0;
   Self.SE_vyst_open_port.MaxValue := 0;
-
-  SE_vyst_open_board.Value := settings.RCSOutputs.NOtevrit.board;
-  SE_vyst_open_port.Value := settings.RCSOutputs.NOtevrit.port;
+  if (settings.RCSOutputs.NOtevritUse) then
+   begin
+    SE_vyst_open_board.Value := settings.RCSOutputs.NOtevrit.board;
+    SE_vyst_open_port.Value := settings.RCSOutputs.NOtevrit.port;
+   end;
 
 
   if (settings.RCSOutputs.Zavrit.board > Cardinal(Self.SE_vyst_close_board.MaxValue)) then
@@ -413,8 +432,10 @@ procedure TF_BlkPrejezd.NewOpenForm;
  begin
   E_prj_Nazev.Text := '';
   SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
-  SE_vyst_open_board.Value  := 0;
-  SE_vyst_open_port.Value  := 0;
+  Self.CHB_RCS_NOT.Checked := true;
+  Self.CHB_RCS_NOTClick(Self);
+  SE_vyst_open_board.Value := 0;
+  SE_vyst_open_port.Value := 0;
   SE_vyst_close_board.Value := 0;
   SE_vyst_close_port.Value := 0;
   SE_vst_open_board.Value := 0;
