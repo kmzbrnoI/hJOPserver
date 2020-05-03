@@ -449,7 +449,7 @@ begin
  try
    RCSi.SetOutput(
      Self.PrjSettings.RCSOutputs.Zavrit,
-     PrevodySoustav.BoolToInt((Self.PrjStav.PC_UZ) or (Self.Zaver) or (Self.TrackClosed))
+     PrevodySoustav.BoolToInt(((Self.PrjStav.PC_UZ) or (Self.Zaver) or (Self.TrackClosed)) and (not Self.PrjStav.PC_NOT))
    );
 
    RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, PrevodySoustav.BoolToInt(Self.PrjStav.PC_NOT));
