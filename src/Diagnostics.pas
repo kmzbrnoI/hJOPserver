@@ -10,6 +10,7 @@ type
     showZaver: boolean;
     simSoupravaObsaz: boolean;
     simInputs: boolean;
+    showBlockId: boolean;
 
     constructor Create();
     procedure LoadData(ini: TMemIniFile; section: string);
@@ -29,6 +30,9 @@ constructor TDiagnostics.Create();
 begin
  inherited;
  Self.showZaver := false;
+ Self.simSoupravaObsaz := false;
+ Self.simInputs := false;
+ Self.showBlockId := false;
 end;
 
 procedure TDiagnostics.LoadData(ini: TMemIniFile; section: string);
@@ -36,6 +40,8 @@ begin
  Self.showZaver := ini.ReadBool(section, 'showZaver', false);
  Self.simSoupravaObsaz := ini.ReadBool(section, 'SoupravaUsekSim', false);
  Self.simInputs := ini.ReadBool(section, 'InputSim', false);
+ Self.showBlockId := ini.ReadBool(section, 'showBlockId', false);
+
  JCSimulator.timer.Enabled := ini.ReadBool(section, 'JCsim', false);
  VyhSimulator.timer.Enabled := ini.ReadBool(section, 'VYHsim', false);
  TratSimulator.timer.Enabled := ini.ReadBool(section, 'TRATsim', false);
@@ -55,6 +61,8 @@ begin
    ini.WriteBool(section, 'VYHsim', VyhSimulator.timer.Enabled);
  if (Self.simInputs) then
    ini.WriteBool(section, 'InputSim', Self.simInputs);
+ if (Self.showBlockId) then
+   ini.WriteBool(section, 'showBlockId', Self.showBlockId);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

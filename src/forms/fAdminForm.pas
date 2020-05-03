@@ -16,6 +16,7 @@ type
     CHB_Trat_Sim: TCheckBox;
     CHB_SimVyhybky: TCheckBox;
     CHB_Zaver: TCheckBox;
+    CHB_Show_Block_Id: TCheckBox;
     procedure B_SaveClick(Sender: TObject);
     procedure B_InputSimClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -26,6 +27,7 @@ type
     procedure CHB_SimSoupravaUsekClick(Sender: TObject);
     procedure CHB_SimInputClick(Sender: TObject);
     procedure CHB_ZaverClick(Sender: TObject);
+    procedure CHB_Show_Block_IdClick(Sender: TObject);
   public
    procedure LoadData(ini: TMemIniFile);
    procedure SaveData(ini: TMemIniFile);
@@ -48,6 +50,7 @@ begin
  Self.CHB_Trat_Sim.Checked := TratSimulator.timer.Enabled;
  Self.CHB_SimInput.Checked := diag.simInputs;
  Self.CHB_Zaver.Checked := diag.showZaver;
+ Self.CHB_Show_Block_Id.Checked := diag.showBlockId;
 end;
 
 procedure TF_Admin.SaveData(ini: TMemIniFile);
@@ -75,6 +78,11 @@ end;
 procedure TF_Admin.CHB_JC_SimulatorClick(Sender: TObject);
 begin
  JCSimulator.timer.Enabled := Self.CHB_JC_Simulator.Checked;
+end;
+
+procedure TF_Admin.CHB_Show_Block_IdClick(Sender: TObject);
+begin
+ diag.showBlockId := Self.CHB_Show_Block_Id.Checked;
 end;
 
 procedure TF_Admin.CHB_SimInputClick(Sender: TObject);

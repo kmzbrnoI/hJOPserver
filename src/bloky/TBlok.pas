@@ -145,7 +145,7 @@ type
 
 implementation
 
-uses TBloky, DataBloky, appEv, ownStrUtils;
+uses TBloky, DataBloky, appEv, ownStrUtils, Diagnostics;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -352,7 +352,10 @@ end;
 // kazdy blok ma sve zakladni menu, ktere obsahuje pouze hlavicku s jeho nazvem a oddelovac
 function TBlk.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
- Result := '$'+Self.GlobalSettings.name+',-,';
+ Result := '$'+Self.name+',';
+ if (diag.showBlockId) then
+   Result := Result + '$'+IntToStr(Self.id)+',';
+ Result := Result + '-,'
 end;
 
 procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');

@@ -4,8 +4,8 @@ object F_Admin: TF_Admin
   AlphaBlendValue = 100
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Testovac'#237' rozhran'#237' programu'
-  ClientHeight = 153
+  Caption = 'Diagnostick'#233' rozhran'#237' hJOP'
+  ClientHeight = 175
   ClientWidth = 417
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -32,28 +32,28 @@ object F_Admin: TF_Admin
     OnClick = B_InputSimClick
   end
   object B_Save: TButton
-    Left = 337
-    Top = 121
-    Width = 73
+    Left = 304
+    Top = 143
+    Width = 106
     Height = 25
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Ulo'#382'it data'
-    TabOrder = 7
+    Caption = 'Ulo'#382'it do souboru'
+    TabOrder = 8
     OnClick = B_SaveClick
   end
   object CHB_SimInput: TCheckBox
     Left = 8
     Top = 39
-    Width = 121
+    Width = 233
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'InputSim automaticky'
+    Caption = 'Simulovat stav vstup'#367' automaticky (InputSim)'
     TabOrder = 1
     OnClick = CHB_SimInputClick
   end
@@ -73,49 +73,58 @@ object F_Admin: TF_Admin
   object CHB_JC_Simulator: TCheckBox
     Left = 8
     Top = 74
-    Width = 75
+    Width = 202
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'JC simul'#225'tor'
+    Caption = 'Simulovat pr'#367'jezd vlaku j'#237'zdn'#237' cestou'
     TabOrder = 3
     OnClick = CHB_JC_SimulatorClick
   end
   object CHB_Trat_Sim: TCheckBox
     Left = 8
     Top = 91
-    Width = 97
+    Width = 161
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Tra'#357' simul'#225'tor'
+    Caption = 'Simulovat pr'#367'jezd vlaku trat'#237
     TabOrder = 4
     OnClick = CHB_Trat_SimClick
   end
   object CHB_SimVyhybky: TCheckBox
     Left = 8
     Top = 108
-    Width = 145
+    Width = 249
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Simulovat stav'#283'n'#237' v'#253'hybek'
+    Caption = 'Simulovat koncovou polohu p'#345'i stav'#283'n'#237' v'#253'hybek'
     TabOrder = 5
     OnClick = CHB_SimVyhybkyClick
   end
   object CHB_Zaver: TCheckBox
     Left = 8
     Top = 126
-    Width = 137
+    Width = 201
     Height = 17
-    Caption = 'Zobrazovat z'#225'v'#283'ry blok'#367
+    Caption = 'Zobrazovat diagnostick'#233' z'#225'v'#283'ry blok'#367
     TabOrder = 6
     OnClick = CHB_ZaverClick
+  end
+  object CHB_Show_Block_Id: TCheckBox
+    Left = 8
+    Top = 144
+    Width = 161
+    Height = 17
+    Caption = 'Zobrazovat v menu ID blok'#367
+    TabOrder = 7
+    OnClick = CHB_Show_Block_IdClick
   end
 end
