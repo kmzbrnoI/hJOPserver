@@ -383,7 +383,11 @@ begin
   end;
 
  if (changed) then
+  begin
    Self.UpdateOutputs();
+   if (diag.showZaver) then
+     Self.Change();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -806,8 +810,13 @@ begin
  bg := clBlack;
  if (Self.Stitek <> '') then bg := clTeal;
 
- if ((diag.showZaver) and (Self.Zaver)) then
-   bg := clGreen;
+ if (diag.showZaver) then
+  begin
+   if (Self.Zaver) then
+     bg := clGreen
+   else if (Self.TrackClosed()) then
+     bg := clBlue;
+  end;
 
  if (Self.NOtevreni) then fg := clRed
  else if (Self.UZ) then fg := clWhite
