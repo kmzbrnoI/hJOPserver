@@ -27,7 +27,7 @@ type
   RCSOutputs:TBlkPrjRCSOutputs;
  end;
 
- TBlkPrjBasicStav = (disabled = -5, none = -1, otevreno = 0, vystraha = 1, uzavreno = 2, anulace = 3);
+ TBlkPrjBasicStav = (disabled = -5, none = -1, otevreno = 0, vystraha = 1, uzavreno = 2);
 
  TBlkPrjStav = record
   basicStav: TBlkPrjBasicStav;
@@ -74,6 +74,7 @@ type
     function GetZaver():boolean;
 
     function TrackClosed():boolean;
+    function GetAnulace():boolean;
 
     procedure MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -132,6 +133,7 @@ type
     property Vyluka:string read PrjStav.vyl write SetVyl;
 
     property Zaver:boolean read GetZaver write SetZaver;
+    property Anulace:boolean read GetAnulace;
 
     //GUI:
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
@@ -420,7 +422,6 @@ var tmpInputs: record
       Zavreno:Boolean;
       Otevreno:Boolean;
       Vystraha:Boolean;
-      Anulace:Boolean;
     end;
 begin
  // get data from RCS
@@ -428,21 +429,15 @@ begin
    tmpInputs.Zavreno  := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Zavreno) = isOn);
    tmpInputs.Otevreno := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Otevreno) = isOn);
    tmpInputs.Vystraha := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Vystraha) = isOn);
-   if (Self.PrjSettings.RCSInputs.anulaceUse) then
-     tmpInputs.Anulace := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Anulace) = isOn)
-   else
-     tmpInputs.Anulace := false;
  except
    // prejezd prejde do poruchoveho stavu
    tmpInputs.Zavreno  := false;
    tmpInputs.Otevreno := false;
    tmpInputs.Vystraha := false;
-   tmpInputs.Anulace  := false;
  end;
 
  if (tmpInputs.Zavreno)  then Exit(TBlkPrjBasicStav.uzavreno);
  if (tmpInputs.Vystraha) then Exit(TBlkPrjBasicStav.vystraha);
- if (tmpInputs.Anulace)  then Exit(TBlkPrjBasicStav.anulace);
  if (tmpInputs.Otevreno) then Exit(TBlkPrjBasicStav.otevreno);
 
  // without data
@@ -876,9 +871,9 @@ begin
    TBlkPrjBasicStav.otevreno: json['stav'] := 'otevreno';
    TBlkPrjBasicStav.vystraha: json['stav'] := 'vystraha';
    TBlkPrjBasicStav.uzavreno: json['stav'] := 'uzavreno';
-   TBlkPrjBasicStav.anulace: json['stav'] := 'anulace';
  end;
 
+ json['anulace'] := Self.anulace;
  json['stit'] := Self.PrjStav.stit;
  json['vyl'] := Self.PrjStav.vyl;
  json['PC_NOT'] := Self.PrjStav.PC_NOT;
@@ -895,6 +890,27 @@ begin
    if (track.shouldBeClosed) then
      Exit(true);
  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkPrejezd.GetAnulace():boolean;
+var track: TBlkPrjTrack;
+begin
+ Result := false;
+ if (Self.PrjSettings.RCSInputs.anulaceUse) then
+  begin
+   try
+     Result := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Anulace) = isOn);
+   except
+
+   end;
+  end;
+
+ if (not Result) then
+   for track in Self.tracks do
+     if (track.anullation) then
+       Exit(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -244,7 +244,7 @@ begin
   begin
    Blky.GetBlkByID(prjid, prj);
    if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
-     if (TBlkPrejezd(prj).Stav.basicStav = TBlkPrjBasicStav.anulace) then
+     if (TBlkPrejezd(prj).Anulace) then
        Exit(true);
   end;
 end;

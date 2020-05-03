@@ -204,7 +204,6 @@ var j, spr:integer;
         TBlkPrjBasicStav.otevreno : Self.LV.Items[line].SubItems[3] := 'otevřeno';
         TBlkPrjBasicStav.vystraha : Self.LV.Items[line].SubItems[3] := 'výstraha';
         TBlkPrjBasicStav.uzavreno : Self.LV.Items[line].SubItems[3] := 'uzavřeno';
-        TBlkPrjBasicStav.anulace  : Self.LV.Items[line].SubItems[3] := 'anulace';
       end;//case obsazeno
 
       Self.LV.Items[line].SubItems[5] := (Blk as TBlkPrejezd).Stitek;

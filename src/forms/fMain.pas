@@ -2916,7 +2916,6 @@ var Blk:TBlk;
      TBlkPrjBasicStav.otevreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
      TBlkPrjBasicStav.vystraha : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
      TBlkPrjBasicStav.uzavreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-     TBlkPrjBasicStav.anulace  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
     end;//case Obsazeno
    end;//_BLK_VYH
 
