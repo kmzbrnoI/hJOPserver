@@ -40,6 +40,7 @@ type
 
   private
    mState: TBlkPrjTrackState;
+   anulEnd: TTime;
 
     function mShouldBeClosed(): Boolean;
     function AllFree():boolean;
@@ -207,8 +208,10 @@ begin
     else if (Self.middle.state = TUsekStav.uvolneno) then
      begin
       if (Self.right.state = TUsekStav.obsazeno) then
-        Self.state := tsLROnlyRightOccupied
-      else
+       begin
+        Self.anulEnd := Now + Self.anulTime;
+        Self.state := tsLROnlyRightOccupied;
+       end else
         Self.state := tsFree;
      end;
   end;
@@ -219,8 +222,10 @@ begin
     else if (Self.middle.state = TUsekStav.uvolneno) then
      begin
       if (Self.left.state = TUsekStav.obsazeno) then
+       begin
+        Self.anulEnd := Now + Self.anulTime;
         Self.state := tsRLOnlyLeftOccupied
-      else
+       end else
         Self.state := tsFree;
      end;
   end;
@@ -234,9 +239,8 @@ begin
         Self.state := tsLRRightOutOccupied
       else
         Self.state := tsFree;
-     end;
-
-    // TODO: check anulace time overflow
+     end else if (Now > Self.anulEnd) then
+      Self.state := tsRLRightOccupied;
   end;
 
   tsRLOnlyLeftOccupied: begin
@@ -248,9 +252,8 @@ begin
         Self.state := tsRLLeftOutOccupied
       else
         Self.state := tsFree;
-     end;
-
-    // TODO: check anulace time overflow
+     end else if (Now > Self.anulEnd) then
+      Self.state := tsLRLeftOccupied;
   end;
 
   tsLRRightOutOccupied: begin
