@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections, IBUtils;
+  ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections, IBUtils,
+  TBlokPrejezdLogic;
 
 type
   TF_BlkPrejezd = class(TForm)
@@ -39,19 +40,40 @@ type
     SE_vst_open_board: TSpinEdit;
     SE_vst_vystraha_board: TSpinEdit;
     SE_vst_anulace_board: TSpinEdit;
+    GB_JOP_control: TGroupBox;
+    CHB_JOP_control: TCheckBox;
+    Label2: TLabel;
+    CB_Track: TComboBox;
+    B_Track_Delete: TButton;
+    GB_Track: TGroupBox;
+    Label3: TLabel;
+    E_Track_Left_Out: TEdit;
+    Label4: TLabel;
+    E_Track_Left: TEdit;
+    Label5: TLabel;
+    E_Track_Middle: TEdit;
+    Label6: TLabel;
+    E_Track_Right: TEdit;
+    Label7: TLabel;
+    E_Track_Right_Out: TEdit;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_RCS_boardExit(Sender: TObject);
+    procedure CHB_JOP_controlClick(Sender: TObject);
+    procedure CB_TrackChange(Sender: TObject);
+    procedure B_Track_DeleteClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkPrejezd;
    NewBlk:Boolean;
    obls:TArstr;
+   tracks: TObjectList<TBlkPrjTrack>;
 
-    procedure NormalOpenForm;
-    procedure HlavniOpenForm;
-    procedure NewOpenForm;
+    procedure NormalOpenForm();
+    procedure HlavniOpenForm();
+    procedure NewOpenForm();
+    procedure SaveTracks();
 
   public
 
@@ -73,7 +95,7 @@ procedure TF_BlkPrejezd.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  HlavniOpenForm;
+  HlavniOpenForm();
 
   if (NewBlk) then
    begin
@@ -108,12 +130,12 @@ var glob:TBlkSettings;
   if (Self.E_Prj_Nazev.Text = '') then
    begin
     Application.MessageBox('Vyplňte název přejezdu', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
 
   glob.name := Self.E_Prj_Nazev.Text;
@@ -165,6 +187,24 @@ var glob:TBlkSettings;
 
     Self.Blk.SetSettings(settings);
 
+    try
+      Self.SaveTracks();
+    except
+     on E:Exception do
+      begin
+       Application.MessageBox('Nepodařilo se načíst kolej přejezdu!', 'Chyba', MB_OK OR MB_ICONWARNING);
+       Exit();
+      end;
+    end;
+
+    Self.Blk.tracks.OwnsObjects := false;
+    Self.Blk.tracks.Clear();
+    Self.Blk.tracks.AddRange(Self.tracks);
+    Self.Blk.tracks.OwnsObjects := true;
+    Self.tracks.OwnsObjects := false;
+    Self.tracks.Clear();
+    Self.tracks.OwnsObjects := true;
+
     messages := '';
     for i := 0 to addrs.Count-1 do
      begin
@@ -194,7 +234,55 @@ procedure TF_BlkPrejezd.B_StornoClick(Sender: TObject);
   Self.Close;
  end;
 
-procedure TF_BlkPrejezd.HlavniOpenForm;
+procedure TF_BlkPrejezd.B_Track_DeleteClick(Sender: TObject);
+begin
+ if (Application.MessageBox('Opravdu smazat kolej?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
+   Exit();
+ Self.tracks.Delete(Self.CB_Track.ItemIndex);
+ Self.CB_Track.Items.Delete(Self.CB_Track.ItemIndex);
+ Self.CB_track.ItemIndex := -1;
+ Self.CB_TrackChange(Self);
+end;
+
+procedure TF_BlkPrejezd.CB_TrackChange(Sender: TObject);
+begin
+ Self.B_Track_Delete.Enabled := (Self.CB_Track.ItemIndex <> -1) and (Self.CB_Track.ItemIndex <> Self.CB_Track.Items.Count-1);
+ Self.E_Track_Left_Out.Enabled := (Self.CB_Track.ItemIndex <> -1);
+ Self.E_Track_Left.Enabled := (Self.CB_Track.ItemIndex <> -1);
+ Self.E_Track_Middle.Enabled := (Self.CB_Track.ItemIndex <> -1);
+ Self.E_Track_Right.Enabled := (Self.CB_Track.ItemIndex <> -1);
+ Self.E_Track_Right_Out.Enabled := (Self.CB_Track.ItemIndex <> -1);
+
+ if ((Self.CB_Track.ItemIndex < Self.CB_Track.Items.Count-1) and (Self.CB_Track.ItemIndex <> -1)) then
+  begin
+   // edit existing track
+   Self.E_Track_Left_Out.Text := Self.tracks[Self.CB_Track.ItemIndex].leftOut.ToStr();
+   Self.E_Track_Left.Text := Self.tracks[Self.CB_Track.ItemIndex].left.ToStr();
+   Self.E_Track_Middle.Text := Self.tracks[Self.CB_Track.ItemIndex].middle.ToStr();
+   Self.E_Track_Right.Text := Self.tracks[Self.CB_Track.ItemIndex].right.ToStr();
+   Self.E_Track_Right_Out.Text := Self.tracks[Self.CB_Track.ItemIndex].rightOut.ToStr();
+  end else begin
+   // new track
+   Self.E_Track_Left_Out.Text := '';
+   Self.E_Track_Left.Text := '';
+   Self.E_Track_Middle.Text := '';
+   Self.E_Track_Right.Text := '';
+   Self.E_Track_Right_Out.Text := '';
+  end;
+
+end;
+
+procedure TF_BlkPrejezd.CHB_JOP_controlClick(Sender: TObject);
+begin
+ Self.CB_Track.Enabled := Self.CHB_JOP_control.Checked;
+ if (not Self.CHB_JOP_control.Checked) then
+  begin
+   Self.CB_Track.ItemIndex := -1;
+   Self.CB_TrackChange(Self);
+  end;
+end;
+
+procedure TF_BlkPrejezd.HlavniOpenForm();
  begin
   SetLength(Self.obls,0);
   Self.LB_Stanice.Clear();
@@ -207,7 +295,7 @@ procedure TF_BlkPrejezd.HlavniOpenForm;
   Self.SE_vst_anulace_board.MaxValue := RCSi.maxModuleAddr;
  end;
 
-procedure TF_BlkPrejezd.NormalOpenForm;
+procedure TF_BlkPrejezd.NormalOpenForm();
 var glob:TBlkSettings;
     settings:TBlkPrjSettings;
     i:Integer;
@@ -270,11 +358,23 @@ var glob:TBlkSettings;
     Self.SE_vst_anulace_board.MaxValue := 0;
   Self.SE_vst_anulace_port.MaxValue := 0;
 
-  SE_vst_anulace_board.Value  := settings.RCSInputs.Anulace.board;
-  SE_vst_anulace_port.Value  := settings.RCSInputs.Anulace.port;
-
+  SE_vst_anulace_board.Value := settings.RCSInputs.Anulace.board;
+  SE_vst_anulace_port.Value := settings.RCSInputs.Anulace.port;
 
   Self.SE_RCS_boardExit(Self);
+
+  Self.tracks := TObjectList<TBlkPrjTrack>.Create();
+  Self.tracks.AddRange(Self.Blk.tracks);
+
+  Self.CHB_JOP_control.Checked := (Self.tracks.Count > 0);
+  Self.CHB_JOP_controlClick(Self);
+  Self.CB_Track.Clear();
+  for i := 1 to Self.tracks.Count do
+    Self.CB_Track.Items.Add(IntToStr(i));
+  Self.CB_Track.Items.Add('Přidat další...');
+  if (Self.tracks.Count > 0) then
+    Self.CB_Track.ItemIndex := 0;
+  Self.CB_TrackChange(Self);
 
   Self.Caption := 'Přejezd '+glob.name;
   Self.ActiveControl := Self.B_save_P;
@@ -298,6 +398,8 @@ procedure TF_BlkPrejezd.NewOpenForm;
   SE_vst_anulace_port.Value := 0;
   Self.SE_RCS_boardExit(Self);
 
+  Self.tracks := TObjectList<TBlkPrjTrack>.Create();
+
   Self.Caption := 'Nový přejezd';
   Self.ActiveControl := Self.E_Prj_Nazev;
  end;
@@ -309,10 +411,30 @@ begin
   BlokyTableData.UpdateTable;
 end;
 
-procedure TF_BlkPrejezd.NewBlkCreate;
+procedure TF_BlkPrejezd.NewBlkCreate();
  begin
   Self.NewBlk := true;
   OpenForm(Blky.count);
  end;
+
+procedure TF_BlkPrejezd.SaveTracks();
+var track: TBlkPrjTrack;
+begin
+ if (Self.CB_Track.ItemIndex = -1) then
+   Exit();
+
+ if (Self.CB_Track.ItemIndex = Self.CB_Track.Items.Count-1) then
+  begin
+   track := TBlkPrjTrack.Create();
+   Self.tracks.Add(track);
+  end else
+   track := Self.tracks[Self.CB_Track.ItemIndex];
+
+ track.leftOut.Parse(Self.E_Track_Left_Out.Text);
+ track.left.Parse(Self.E_Track_Left.Text);
+ track.middle.Parse(Self.E_Track_Middle.Text);
+ track.right.Parse(Self.E_Track_Right.Text);
+ track.rightOut.Parse(Self.E_Track_Right_Out.Text);
+end;
 
 end.//unit

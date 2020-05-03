@@ -6,7 +6,7 @@ unit TBlokUsekRefs;
 
 interface
 
-uses TBlokUsekRef, Generics.Collections, Classes, TBlokUsek;
+uses TBlokUsekRef, Generics.Collections, Classes, TBlokUsek, StrUtils;
 
 type
 
@@ -67,7 +67,7 @@ begin
 
  strs := TStringList.Create();
  try
-   ExtractStringsEx([_SEPARATOR], [], str, strs);
+   ExtractStringsEx([_SEPARATOR], [' '], str, strs);
    for _str in strs do
     begin
      ref := TBlkUsekRef.Create(_str);
@@ -94,7 +94,8 @@ var ref: TBlkUsekRef;
 begin
  Result := '';
  for ref in Self.parts do
-   Result := Result + ref.ToStr();
+   Result := Result + ref.ToStr() + _SEPARATOR;
+ Result := LeftStr(Result, Length(Result)-1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

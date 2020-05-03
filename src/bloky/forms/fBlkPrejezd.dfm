@@ -5,7 +5,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
   ClientHeight = 417
-  ClientWidth = 337
+  ClientWidth = 651
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -64,7 +64,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     TabOrder = 0
   end
   object B_save_P: TButton
-    Left = 248
+    Left = 561
     Top = 385
     Width = 82
     Height = 25
@@ -74,11 +74,11 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_save_PClick
   end
   object B_Storno: TButton
-    Left = 152
+    Left = 465
     Top = 385
     Width = 81
     Height = 25
@@ -87,7 +87,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -407,6 +407,132 @@ object F_BlkPrejezd: TF_BlkPrejezd
         TabOrder = 6
         Value = 0
         OnExit = SE_RCS_boardExit
+      end
+    end
+  end
+  object GB_JOP_control: TGroupBox
+    Left = 336
+    Top = 8
+    Width = 307
+    Height = 361
+    Caption = ' P'#345'ejezd '#345#237'zen'#253' pouze z hJOP '
+    TabOrder = 4
+    object Label2: TLabel
+      Left = 16
+      Top = 48
+      Width = 26
+      Height = 13
+      Caption = 'Kolej:'
+    end
+    object CHB_JOP_control: TCheckBox
+      Left = 16
+      Top = 24
+      Width = 161
+      Height = 17
+      Caption = #218'seky p'#345'ejezdu '#345#237'zen'#233' z hJOP'
+      TabOrder = 0
+      OnClick = CHB_JOP_controlClick
+    end
+    object CB_Track: TComboBox
+      Left = 48
+      Top = 51
+      Width = 177
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 1
+      OnChange = CB_TrackChange
+    end
+    object B_Track_Delete: TButton
+      Left = 231
+      Top = 51
+      Width = 59
+      Height = 21
+      Caption = 'Smazat'
+      TabOrder = 2
+      OnClick = B_Track_DeleteClick
+    end
+    object GB_Track: TGroupBox
+      Left = 16
+      Top = 87
+      Width = 273
+      Height = 264
+      Caption = ' Kolej 1 '
+      TabOrder = 3
+      object Label3: TLabel
+        Left = 16
+        Top = 19
+        Width = 107
+        Height = 13
+        Caption = 'Lev'#253' vzdalovac'#237' '#250'sek:'
+      end
+      object Label4: TLabel
+        Left = 16
+        Top = 65
+        Width = 52
+        Height = 13
+        Caption = 'Lev'#253' '#250'sek:'
+      end
+      object Label5: TLabel
+        Left = 16
+        Top = 111
+        Width = 128
+        Height = 13
+        Caption = 'Anula'#269'n'#237' (prost'#345'edn'#237') '#250'sek:'
+      end
+      object Label6: TLabel
+        Left = 16
+        Top = 159
+        Width = 56
+        Height = 13
+        Caption = 'Prav'#253' '#250'sek:'
+      end
+      object Label7: TLabel
+        Left = 16
+        Top = 207
+        Width = 111
+        Height = 13
+        Caption = 'Prav'#253' vzdalovac'#237' '#250'sek:'
+      end
+      object E_Track_Left_Out: TEdit
+        Left = 16
+        Top = 38
+        Width = 241
+        Height = 21
+        TabOrder = 0
+        Text = 'E_Track_Left_Out'
+      end
+      object E_Track_Left: TEdit
+        Left = 16
+        Top = 84
+        Width = 241
+        Height = 21
+        TabOrder = 1
+        Text = 'E_Track_Left'
+      end
+      object E_Track_Middle: TEdit
+        Left = 16
+        Top = 130
+        Width = 241
+        Height = 21
+        TabOrder = 2
+        Text = 'Edit2'
+      end
+      object E_Track_Right: TEdit
+        Left = 16
+        Top = 178
+        Width = 241
+        Height = 21
+        TabOrder = 3
+        Text = 'Edit2'
+      end
+      object E_Track_Right_Out: TEdit
+        Left = 16
+        Top = 226
+        Width = 241
+        Height = 21
+        TabOrder = 4
+        Text = 'Edit2'
       end
     end
   end

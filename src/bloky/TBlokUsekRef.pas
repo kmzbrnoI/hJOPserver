@@ -74,7 +74,7 @@ var strs: TStrings;
 begin
  strs := TStringList.Create();
  try
-   ExtractStringsEx([_SEPARATOR], [], str, strs);
+   ExtractStringsEx([_SEPARATOR], [' '], str, strs);
    if (strs.Count > 0) then
      Self.blockId := StrToInt(strs[0])
    else
