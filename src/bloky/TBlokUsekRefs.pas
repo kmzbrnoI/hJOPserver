@@ -16,9 +16,11 @@ TBlkUsekRefs = class
 
  private
    function GetBlockState():TUsekStav;
+   function GetChanged():boolean;
 
  public
   parts: TObjectList<TBlkUsekRef>;
+  stateOld: TUsekStav;
 
    constructor Create(); overload;
    constructor Create(str: string); overload;
@@ -28,6 +30,7 @@ TBlkUsekRefs = class
    function ToStr(): string;
 
    property state: TUsekStav read GetBlockState;
+   property changed: boolean read GetChanged;
 
 end;
 
@@ -84,8 +87,14 @@ function TBlkUsekRefs.GetBlockState():TUsekStav;
 var ref: TBlkUsekRef;
 begin
  for ref in Self.parts do
+  begin
    if (ref.state <> TUsekStav.uvolneno) then
+    begin
+     Self.stateOld := ref.state;
      Exit(ref.state);
+    end;
+  end;
+ Self.stateOld := TUsekStav.uvolneno;
  Result := TUsekStav.uvolneno;
 end;
 
@@ -96,6 +105,15 @@ begin
  for ref in Self.parts do
    Result := Result + ref.ToStr() + _SEPARATOR;
  Result := LeftStr(Result, Length(Result)-1);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsekRefs.GetChanged():boolean;
+var old: TUsekStav;
+begin
+ old := Self.stateOld;
+ Result := (old <> Self.state);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

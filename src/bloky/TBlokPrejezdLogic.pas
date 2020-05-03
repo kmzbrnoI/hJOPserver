@@ -201,6 +201,8 @@ begin
       Self.state := tsUnexpectedOccupation
     else if (Self.left.state = TUsekStav.uvolneno) then
       Self.state := tsLRMidOccupied
+    else if ((Self.right.changed) and (Self.opening = toLastOccupied)) then
+      Self.stateChanged := true;
   end;
 
   tsRLRightMidOccupied: begin
@@ -208,6 +210,8 @@ begin
       Self.state := tsUnexpectedOccupation
     else if (Self.right.state = TUsekStav.uvolneno) then
       Self.state := tsRLMidOccupied
+    else if ((Self.left.changed) and (Self.opening = toLastOccupied)) then
+      Self.stateChanged := true;
   end;
 
   tsLRMidOccupied: begin
@@ -221,7 +225,8 @@ begin
         Self.state := tsLROnlyRightOccupied;
        end else
         Self.state := tsFree;
-     end;
+     end else if ((Self.right.changed) and (Self.opening = toLastOccupied)) then
+      Self.stateChanged := true;
   end;
 
   tsRLMidOccupied: begin
@@ -235,7 +240,8 @@ begin
         Self.state := tsRLOnlyLeftOccupied
        end else
         Self.state := tsFree;
-     end;
+     end else if ((Self.left.changed) and (Self.opening = toLastOccupied)) then
+      Self.stateChanged := true;
   end;
 
   tsLROnlyRightOccupied: begin
