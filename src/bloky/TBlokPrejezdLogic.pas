@@ -43,7 +43,8 @@ type
    anulEnd: TTime;
 
     function mShouldBeClosed(): Boolean;
-    function AllFree():boolean;
+    function AllFree(): Boolean;
+    function GetAnullation(): Boolean;
 
     procedure UpdateState();
     procedure SetState(new: TBlkPrjTrackState);
@@ -66,6 +67,7 @@ type
 
     property state: TBlkPrjTrackState read mState write SetState;
     property shouldBeClosed: boolean read mShouldBeClosed;
+    property anullation: boolean read GetAnullation;
 
     property leftOut: TBlkUsekRefs read sections[_SECT_LEFT_OUT] write sections[_SECT_LEFT_OUT];
     property left: TBlkUsekRefs read sections[_SECT_LEFT] write sections[_SECT_LEFT];
@@ -174,6 +176,12 @@ begin
      Self.state := tsUnexpectedOccupation;
   end;
 
+  tsUnexpectedOccupation: begin
+    if ((Self.left.state = TUsekStav.uvolneno) and (Self.middle.state = TUsekStav.uvolneno) and
+        (Self.right.state = TUsekStav.uvolneno)) then
+      Self.state := tsFree;
+  end;
+
   tsLRLeftOccupied: begin
     if ((Self.left.state <> TUsekStav.obsazeno) or (Self.right.state <> TUsekStav.uvolneno)) then
       Self.state := tsUnexpectedOccupation
@@ -239,7 +247,7 @@ begin
         Self.state := tsLRRightOutOccupied
       else
         Self.state := tsFree;
-     end else if (Now > Self.anulEnd) then
+     end else if ((Now > Self.anulEnd) and (Self.opening = toMiddleFree)) then
       Self.state := tsRLRightOccupied;
   end;
 
@@ -252,7 +260,7 @@ begin
         Self.state := tsRLLeftOutOccupied
       else
         Self.state := tsFree;
-     end else if (Now > Self.anulEnd) then
+     end else if ((Now > Self.anulEnd) and (Self.opening = toMiddleFree)) then
       Self.state := tsLRLeftOccupied;
   end;
 
@@ -317,6 +325,14 @@ begin
    end;
   end;
  Result := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkPrjTrack.GetAnullation(): Boolean;
+begin
+ Result := (((Self.state = tsRLOnlyLeftOccupied) or (Self.state = tsLROnlyRightOccupied)) and
+            (Self.opening = toMiddleFree));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
