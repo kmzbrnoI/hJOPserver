@@ -5,7 +5,8 @@
 interface
 
 uses IniFiles, TBlok, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
-     IdContext, TOblRizeni, Generics.Collections, JsonDataObjects;
+     IdContext, TOblRizeni, Generics.Collections, JsonDataObjects,
+     TBlokPrejezdLogic;
 
 type
  TBlkPrjRCSInputs = record
@@ -91,6 +92,8 @@ type
     procedure FillRCSModules();
 
   public
+   tracks: TObjectList<TBlkPrjTrack>;
+
     constructor Create(index:Integer);
     destructor Destroy(); override;
 
@@ -144,7 +147,7 @@ type
 implementation
 
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics, TCPORsRef, Prevody, Diagnostics;
+     Graphics, TCPORsRef, Prevody, Diagnostics, appEv;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin
@@ -154,12 +157,14 @@ begin
  Self.PrjStav := Self._def_prj_stav;
  Self.PrjStav.shs := TList<TBlk>.Create();
  Self.PrjStav.rcsModules := TList<Cardinal>.Create();
+ Self.tracks := TObjectList<TBlkPrjTrack>.Create();
 end;//ctor
 
 destructor TBlkPrejezd.Destroy();
 begin
  Self.PrjStav.shs.Free();
  Self.PrjStav.rcsModules.Free();
+ Self.tracks.Free();
  inherited;
 end;//dtor
 
@@ -169,6 +174,8 @@ procedure TBlkPrejezd.LoadData(ini_tech:TMemIniFile; const section:string; ini_r
 var oblr:TOR;
     defaultModule:Cardinal;
     module:Cardinal;
+    i, notracks: Integer;
+    track: TBlkPrjTrack;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -191,6 +198,20 @@ begin
  Self.PrjSettings.RCSOutputs.NOtevrit := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule),
                                                       ini_tech.ReadInteger(section, 'RCSOnot', 0));
 
+ Self.tracks.Clear();
+ notracks := ini_tech.ReadInteger(section, 'tracks', 0);
+ for i := 0 to notracks-1 do
+  begin
+   track := TBlkPrjTrack.Create();
+   try
+     track.Load(ini_tech, section, 'T'+IntToStr(i));
+     Self.tracks.Add(track);
+   except
+     on E:Exception do
+       AppEvents.LogException(E, 'LoadTracks');
+   end;
+  end;
+
  Self.PrjStav.stit := ini_stat.ReadString(section, 'stit', '');
 
  Self.LoadORs(ini_rel, 'PRJ').Free();
@@ -202,6 +223,7 @@ begin
 end;
 
 procedure TBlkPrejezd.SaveData(ini_tech:TMemIniFile;const section:string);
+var i: Integer;
 begin
  inherited SaveData(ini_tech, section);
 
@@ -218,6 +240,11 @@ begin
  ini_tech.WriteInteger(section, 'RCSOz', Self.PrjSettings.RCSOutputs.Zavrit.port);
  ini_tech.WriteInteger(section, 'RCSOnotm', Self.PrjSettings.RCSOutputs.NOtevrit.board);
  ini_tech.WriteInteger(section, 'RCSOnot', Self.PrjSettings.RCSOutputs.NOtevrit.port);
+
+ if (Self.tracks.Count > 0) then
+   ini_tech.WriteInteger(section, 'tracks', Self.tracks.Count);
+ for i := 0 to Self.tracks.Count-1 do
+   Self.tracks[i].Save(ini_tech, section, 'T'+IntToStr(i));
 end;
 
 procedure TBlkPrejezd.SaveStatus(ini_stat:TMemIniFile;const section:string);
