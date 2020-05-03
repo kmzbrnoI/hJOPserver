@@ -32,6 +32,7 @@ type
 
  TBlkPrjStav = record
   basicStav: TBlkPrjBasicStav;
+  anulaceOld: Boolean;
   stit,vyl:string;
   PC_NOT, PC_UZ: boolean;                           // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
   zaver:Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
@@ -89,9 +90,13 @@ type
     procedure UPOZNOTClick(Sender:TObject);
 
     // DEBUG volby:
-    procedure MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminZavreno(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminOtevreno(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminVystraha(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminAnulaceStart(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminAnulaceStop(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl:TIdContext; SenderOR:TObject);
 
     procedure StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
         UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
@@ -290,6 +295,7 @@ begin
  end;
 
  Self.PrjStav.basicStav := TBlkPrjBasicStav.none;
+ Self.PrjStav.anulaceOld := Self.Anulace;
  Self.Change();
 end;
 
@@ -369,6 +375,12 @@ begin
     end;
 
    Self.PrjStav.basicStav := new_stav;
+   Self.Change();
+  end;
+
+ if (Self.PrjStav.anulaceOld <> Self.Anulace) then
+  begin
+   Self.PrjStav.anulaceOld := Self.Anulace;
    Self.Change();
   end;
 
@@ -601,19 +613,34 @@ begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
 end;
 
-procedure TBlkPrejezd.MenuAdminZAVRENOStartClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminZavreno(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.SetSimInputs(true, false, false, SenderPnl, SenderOR);
+end;
+
+procedure TBlkPrejezd.MenuAdminOtevreno(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.SetSimInputs(false, false, true, SenderPnl, SenderOR);
+end;
+
+procedure TBlkPrejezd.MenuAdminVystraha(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.SetSimInputs(false, true, false, SenderPnl, SenderOR);
+end;
+
+procedure TBlkPrejezd.MenuAdminAnulaceStart(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, 1);
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Anulace, 1);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
-procedure TBlkPrejezd.MenuAdminZAVRENOStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminAnulaceStop(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, 0);
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Anulace, 0);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -624,6 +651,17 @@ begin
  Self.PrjStav.zaver := 0;
  Self.UpdateOutputs();
  Self.Change();
+end;
+
+procedure TBlkPrejezd.SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ try
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, PrevodySoustav.BoolToInt(uzavreno));
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Vystraha, PrevodySoustav.BoolToInt(vystraha));
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Otevreno, PrevodySoustav.BoolToInt(otevreno));
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -661,12 +699,15 @@ begin
  //  DEBUG nastroj
  if (RCSi.simulation) then
   begin
-   Result := Result + '-,';
-   if ((Self.Stav.basicStav = TBlkPrjBasicStav.uzavreno) or (Self.Stav.basicStav = TBlkPrjBasicStav.vystraha)) then
-     Result := Result + '*ZAVRENO<'
-   else
-     Result := Result + '*ZAVRENO>';
-  end;//if RCS.lib = 2
+   Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
+   if (Self.PrjSettings.RCSInputs.anulaceUse) then
+    begin
+     if (RCSi.GetInput(Self.PrjSettings.RCSInputs.Anulace) = TRCSInputState.isOn) then
+       Result := Result + '*ANULACE<'
+     else
+       Result := Result + '*ANULACE>';
+    end;
+  end;
 
  if (rights >= TORControlRights.superuser) then
   begin
@@ -696,8 +737,11 @@ begin
  else if (item = 'NOT<')     then Self.MenuZNOTClick(SenderPnl, SenderOR)
  else if (item = 'STIT')     then Self.MenuSTITClick (SenderPnl, SenderOR)
  else if (item = 'NUZ>')     then Self.MenuAdminNUZClick(SenderPnl, SenderOR)
- else if (item = 'ZAVRENO>') then Self.MenuAdminZAVRENOStartClick(SenderPnl, SenderOR)
- else if (item = 'ZAVRENO<') then Self.MenuAdminZAVRENOStopClick(SenderPnl, SenderOR);
+ else if (item = 'ZAVŘENO')  then Self.MenuAdminZavreno(SenderPnl, SenderOR)
+ else if (item = 'OTEVŘENO') then Self.MenuAdminOtevreno(SenderPnl, SenderOR)
+ else if (item = 'VÝSTRAHA') then Self.MenuAdminVystraha(SenderPnl, SenderOR)
+ else if (item = 'ANULACE>') then Self.MenuAdminAnulaceStart(SenderPnl, SenderOR)
+ else if (item = 'ANULACE<') then Self.MenuAdminAnulaceStop(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
