@@ -151,7 +151,9 @@ uses
   TBlokAC in 'bloky\TBlokAC.pas',
   fBlkAC in 'bloky\forms\fBlkAC.pas' {F_BlkAC},
   ACBlocks in 'ACBlocks.pas',
-  TBlokPrejezdLogic in 'bloky\TBlokPrejezdLogic.pas';
+  TBlokPrejezdLogic in 'bloky\TBlokPrejezdLogic.pas',
+  TBlokUsekRef in 'bloky\TBlokUsekRef.pas',
+  TBlokUsekRefs in 'bloky\TBlokUsekRefs.pas';
 
 {$R *.res}
 

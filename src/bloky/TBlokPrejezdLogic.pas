@@ -2,7 +2,7 @@ unit TBlokPrejezdLogic;
 
 interface
 
-uses Generics.Collections, TBlokUsekRefs, IniFiles;
+uses Generics.Collections, TBlokUsekRefs, IniFiles, Classes;
 
 type
  TBlkPrjTrackState = (
@@ -50,6 +50,8 @@ type
   public
    sections: array[0..4] of TBlkUsekRefs;
    opening: TBlkPrjTrackOpening;
+   onChanged: TNotifyEvent;
+   stateChanged: boolean;
 
     constructor Create();
     destructor Destroy(); override;
@@ -80,6 +82,8 @@ constructor TBlkPrjTrack.Create();
 var i: Integer;
 begin
  inherited;
+ Self.onChanged := nil;
+ Self.stateChanged := false;
  for i := 0 to _SECT_COUNT-1 do
    Self.sections[i] := TBlkUsekRefs.Create();
 end;
@@ -122,7 +126,12 @@ end;
 procedure TBlkPrjTrack.SetState(new: TBlkPrjTrackState);
 begin
  if (new <> Self.mState) then
+  begin
    Self.mState := new;
+   Self.stateChanged := true;
+   if (Assigned(Self.onChanged)) then
+     Self.onChanged(Self);
+  end;
 end;
 
 procedure TBlkPrjTrack.Update();
@@ -217,6 +226,8 @@ begin
       else
         Self.state := tsFree;
      end;
+
+    // TODO: check anulace time overflow
   end;
 
   tsRLOnlyLeftOccupied: begin
@@ -229,6 +240,8 @@ begin
       else
         Self.state := tsFree;
      end;
+
+    // TODO: check anulace time overflow
   end;
 
   tsLRRightOutOccupied: begin

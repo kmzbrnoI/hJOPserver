@@ -64,12 +64,15 @@ type
 
     function UpdateInputs():TBlkPrjBasicStav;
     procedure UpdateOutputs();
+    procedure UpdateTracks();
 
     procedure SetNOT(state:boolean);
     procedure SetUZ(state:boolean);
 
     procedure SetZaver(zaver:boolean);
     function GetZaver():boolean;
+
+    function TrackClosed():boolean;
 
     procedure MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -357,7 +360,28 @@ begin
     end;
   end;
 
+ Self.UpdateTracks();
+
  inherited Update();
+end;
+
+procedure TBlkPrejezd.UpdateTracks();
+var track: TBlkPrjTrack;
+    changed: boolean;
+begin
+ changed := false;
+ for track in Self.tracks do
+  begin
+   track.Update();
+   if (track.stateChanged) then
+    begin
+     changed := true;
+     track.stateChanged := false;
+    end;
+  end;
+
+ if (changed) then
+   Self.UpdateOutputs();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -411,19 +435,12 @@ end;
 procedure TBlkPrejezd.UpdateOutputs();
 begin
  try
-   if ((Self.PrjStav.PC_UZ) or (Self.Zaver)) then
-    begin
-     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.Zavrit, 1);
-    end else begin
-     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.Zavrit, 0);
-    end;
+   RCSi.SetOutput(
+     Self.PrjSettings.RCSOutputs.Zavrit,
+     PrevodySoustav.BoolToInt((Self.PrjStav.PC_UZ) or (Self.Zaver) or (Self.TrackClosed))
+   );
 
-   if (Self.PrjStav.PC_NOT) then
-    begin
-     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, 1);
-    end else begin
-     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, 0);
-    end;
+   RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, PrevodySoustav.BoolToInt(Self.PrjStav.PC_NOT));
  except
 
  end;
@@ -844,6 +861,17 @@ begin
  json['PC_NOT'] := Self.PrjStav.PC_NOT;
  json['PC_UZ'] := Self.PrjStav.PC_UZ;
  json['zaver'] := Self.PrjStav.zaver;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkPrejezd.TrackClosed():boolean;
+var track: TBlkPrjTrack;
+begin
+ for track in Self.tracks do
+   if (track.shouldBeClosed) then
+     Exit(true);
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
