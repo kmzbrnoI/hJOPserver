@@ -1197,7 +1197,7 @@ begin
  Self.G_locos_acquired.Progress := Self.G_locos_acquired.Progress - 1;
 end;
 
-procedure TF_Main.A_DCC_GoExecute(Sender: TObject);   //DCC go
+procedure TF_Main.A_DCC_GoExecute(Sender: TObject);
 begin
  if ((SystemData.Status = starting) and (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn)) then
   begin
@@ -1212,13 +1212,14 @@ begin
  except
    on E:Exception do
     begin
+     SystemData.Status := null;
      Application.MessageBox(PChar('Chyba při DCC GO:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
      Self.LogStatus('DCC: START: ERR '+E.Message);
     end;
  end;
 end;
 
-procedure TF_Main.A_DCC_StopExecute(Sender: TObject); //DCC stop
+procedure TF_Main.A_DCC_StopExecute(Sender: TObject);
 begin
   Self.LogStatus('DCC: vypínám');
 
@@ -1377,12 +1378,12 @@ begin
 
    if (TrakceI.ConnectedSafe()) then
     begin
-     F_Main.A_DCC_Go.Enabled   := false;
-     F_Main.A_DCC_Stop.Enabled := true;
+     Self.A_DCC_Go.Enabled := false;
+     Self.A_DCC_Stop.Enabled := true;
     end;
 
    if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
-     F_Main.A_Locos_AcquireExecute(nil);
+     Self.A_Locos_AcquireExecute(nil);
 
    ORTCPServer.DCCStart();
   end else begin
@@ -1390,14 +1391,16 @@ begin
    ORs.BroadcastPlaySound(_SND_CHYBA, false, TORControlRights.write);
 
    //neni DCC
-   F_Main.S_DCC.Brush.Color := clRed;
+   Self.S_DCC.Brush.Color := clRed;
    Self.LogStatus('DCC: stop');
 
    if (TrakceI.ConnectedSafe()) then
     begin
-     F_Main.A_DCC_Go.Enabled   := true;
-     F_Main.A_DCC_Stop.Enabled := false;
+     Self.A_DCC_Go.Enabled := true;
+     Self.A_DCC_Stop.Enabled := false;
     end;
+   if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
+     Self.A_DCC_GoExecute(Self);
 
    ORTCPServer.DCCStop();
   end;//else state
