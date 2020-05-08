@@ -187,7 +187,7 @@ begin
  // kontrola BANu uzivatele
  if (user.ban) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel '+user.id+' má BAN !');
+   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel '+user.username+' má BAN !');
    Exit();
   end;
 

@@ -1322,7 +1322,7 @@ begin
 
  if (orRef.regulator) then begin
   if (Assigned(orRef.regulator_user)) then
-    str := orRef.regulator_user.id
+    str := orRef.regulator_user.username
   else
     str := 'ano';
 

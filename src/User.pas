@@ -23,54 +23,57 @@ const
   _SALT_LEN = 24;
 
 type
-  TUser = class                                                                 // trida reprezentujici uzivatele
+  TUser = class
    private
-    fpasswd:string;                                                             // heslo - hash SHA256
-    fban:boolean;                                                               // flag urcujici ban uzivate
-    freg:boolean;                                                               // flag urcijici moznost autorizovat regulator
-    fid:string;                                                                 // unikatni id
-    fsalt:string;                                                               // sul hesla
+    fusername: string;
+    fpasswd: string;  // SHA256 hash
+    fban: boolean;
+    freg: boolean;
+    fsalt: string;
+    fnote: string;
 
-      procedure SetPasswd(passwd:string);                                       // nastavi heslo, viz \passwd
-      procedure SetBan(state:boolean);                                          // nastavi ban, viz \ban
-      procedure SetReg(state:boolean);                                          // nastavi regulator, viz \regulator
+     procedure SetPasswd(passwd: string);
+     procedure SetBan(state: boolean);
+     procedure SetReg(state: boolean);
 
-      procedure SetId(new:string);
+     procedure SetUserName(new: string);
 
-      function GetFullName():string;                                            // varti jsmeno uzivatele ve formatu: first_name [mezera] lastname
-      class function GenSalt():string;
+     function GetFullName(): string;
+     class function GenSalt(): string;
 
    public
 
-    firstname:string;                                                           // krestni jmeno
-    lastname:string;                                                            // prijmeni
-    root:boolean;                                                               // flag opravneni root
-    OblR: TDictionary<string, TORControlRights>;                                // seznam oblasti rizeni vcetne opravneni
-    lastlogin:TDateTime;                                                        // cas posledniho loginu
+    firstname: string;
+    lastname: string;
+    root: boolean;
+    OblR: TDictionary<string, TORControlRights>;
+    lastlogin: TDateTime;
 
-      constructor Create(); overload;
-      constructor Create(iniData, iniStat:TMemIniFile; section:string); overload;
-      destructor Destroy(); override;
+     constructor Create(); overload;
+     constructor Create(iniData, iniStat: TMemIniFile; section: string); overload;
+     destructor Destroy(); override;
 
-      procedure LoadData(ini:TMemIniFile; section:string);
-      procedure LoadStat(ini:TMemIniFile; section:string);
-      procedure SaveData(ini:TMemIniFile; section:string);
-      procedure SaveStat(ini:TMemIniFile; section:string);
+     procedure LoadData(ini: TMemIniFile; section: string);
+     procedure LoadStat(ini: TMemIniFile; section: string);
+     procedure SaveData(ini: TMemIniFile; section: string);
+     procedure SaveStat(ini: TMemIniFile; section: string);
 
-      function GetRights(OblR:string):TORCOntrolRights;                         // vrati opravneni k dane oblasti rizeni
-      procedure SetRights(OblR:string; rights:TORControlRights);                // nastavi opravneni dane oblasti rizeni
+     function GetRights(OblR: string): TORCOntrolRights;
+     procedure SetRights(OblR: string; rights: TORControlRights);
+     function PasswordMatch(hash: string): Boolean;
+     function LoginMatch(username: string; passwordhash: string): Boolean;
 
-      property id:string read fid write SetId;
-      property password:string read fpasswd write SetPasswd;
-      property ban:boolean read fban write SetBan;
-      property regulator:boolean read freg write SetReg;
-      property fullName:string read GetFullName;
-      property salt:string read fsalt;
-      property login:string read fid write SetId;
+     property username: string read fusername write SetUserName;
+     property password: string read fpasswd write SetPasswd;
+     property ban: boolean read fban write SetBan;
+     property regulator: boolean read freg write SetReg;
+     property fullName: string read GetFullName;
+     property salt: string read fsalt;
 
-      class function ComparePasswd(plain:string; hash:string; salt:string):boolean; // kontroluje shodu hesel; true poku hesla sedi, jinak false
-      class function GenerateHash(plain:AnsiString):string;                     // generuje hash hesla
-      class function NameComparer():IComparer<TUser>;
+     class function ComparePasswd(plain: string; hash: string; salt: string):boolean;
+        // check password match; return true iff match
+     class function GenerateHash(plain:AnsiString):string;
+     class function NameComparer():IComparer<TUser>;
   end;//class TUser
 
 implementation
@@ -107,14 +110,14 @@ var i:Integer;
 begin
  Self.OblR.Clear();
 
- Self.fid       := section;
- Self.fpasswd   := ini.ReadString(section, 'passwd', '');
- Self.root      := ini.ReadBool(section, 'root', false);
+ Self.fusername := section;
+ Self.fpasswd := ini.ReadString(section, 'passwd', '');
+ Self.root := ini.ReadBool(section, 'root', false);
  Self.firstname := ini.ReadString(section, 'fname', '');
- Self.lastname  := ini.ReadString(section, 'lname', '');
- Self.fsalt     := ini.ReadString(section, 'salt', '');
- Self.fban      := ini.ReadBool(section, 'ban', false);
- Self.freg      := ini.ReadBool(section, 'reg', false);
+ Self.lastname := ini.ReadString(section, 'lname', '');
+ Self.fsalt := ini.ReadString(section, 'salt', '');
+ Self.fban := ini.ReadBool(section, 'ban', false);
+ Self.freg := ini.ReadBool(section, 'reg', false);
 
  try
    if (ini.ValueExists(section, 'lastlogin')) then // backward compatibility
@@ -192,7 +195,7 @@ end;
 
 procedure TUser.SetPasswd(passwd:string);
 begin
- // heslo je 2x zahashovane
+ // hash password 2 times
  Self.fsalt := Self.GenSalt();
  Self.fpasswd := TUser.GenerateHash(AnsiString(TUser.GenerateHash(AnsiString(passwd)) + self.fsalt));
 end;
@@ -274,11 +277,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetId(new:string);
+procedure TUser.SetUserName(new:string);
 begin
- if (Self.id <> new) then
+ if (Self.username <> new) then
   begin
-   Self.fid := new;
+   Self.fusername := new;
    UsrDB.Sort();
   end;
 end;
@@ -311,9 +314,21 @@ begin
  Result := TComparer<TUser>.Construct(
     function (const Left, Right: TUser): Integer
       begin
-        Result := CompareStr(Left.id, Right.id, loUserLocale);
+        Result := CompareStr(Left.username, Right.username, loUserLocale);
       end
  );
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TUser.PasswordMatch(hash: string): Boolean;
+begin
+ Result := TUser.ComparePasswd(hash, Self.password, Self.salt);
+end;
+
+function TUser.LoginMatch(username: string; passwordhash: string): Boolean;
+begin
+ Result := (username = Self.username) and (Self.PasswordMatch(passwordhash));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

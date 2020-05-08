@@ -93,13 +93,13 @@ begin
      // kontrola BANu uzivatele
      if (user.ban) then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.id+' má BAN !');
+       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.username+' má BAN !');
        Exit();
       end;
 
      if (not user.regulator) then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.id+' nemá právo k řízení lokomotiv !');
+       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.username+' nemá právo k řízení lokomotiv !');
        Exit();
       end;
 
@@ -400,7 +400,7 @@ begin
  if (state) then
   begin
    if (Assigned(user)) then
-     str := TUser(user).id
+     str := TUser(user).username
    else
      str := 'ano';
 

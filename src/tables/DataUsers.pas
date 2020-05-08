@@ -68,15 +68,15 @@ begin
 end;
 
 procedure TUsersTableData.UpdateLine(line:Integer);
-var User:TUser;
+var user: TUser;
 begin
- User   := UsrDb.GetUser(line);
+ user := UsrDb.GetUser(line);
 
  Self.LV.Items[line].Caption := IntToStr(line);
- Self.LV.Items[line].SubItems[0] := User.id;
- Self.LV.Items[line].SubItems[1] := User.firstname + ' ' + User.lastname;
- Self.LV.Items[line].SubItems[2] := PrevodySoustav.BoolToStr(User.root);
- Self.LV.Items[line].SubItems[3] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
+ Self.LV.Items[line].SubItems[0] := user.username;
+ Self.LV.Items[line].SubItems[1] := user.fullName;
+ Self.LV.Items[line].SubItems[2] := PrevodySoustav.BoolToStr(user.root);
+ Self.LV.Items[line].SubItems[3] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
