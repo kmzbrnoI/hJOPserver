@@ -422,14 +422,8 @@ begin
     Exit();
   end;
 
-  index := Self.ModuleIndexOf(addr);
-  if (index > -1) then
-   begin
-    Self.SendInput(addr);
-    Self.SendOutput(addr);
-   end else begin
-    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Modul není autorizován');
-   end;
+  Self.SendInput(addr);
+  Self.SendOutput(addr);
 
  end else if (parsed[2] = 'INFO') then begin
    ORTCPServer.SendLn(Self.conn, '-;RCSd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
