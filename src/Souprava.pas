@@ -33,9 +33,12 @@ type
     dir_L, dir_S: boolean; // allowed directions
     HVs: TSoupravaHVs; // locomotives (engines)
     station: TObject;
+
     speed: Integer; // real speed passed to locomotives after all limitations
-    wantedSpeed: Integer; // sped wanted by caller, before limitations
+    wantedSpeed: Integer; // speed wanted by caller, before limitations
+    maxSpeed: Cardinal; // max speed in km/h entered by user; maxSpeed = 0 <=> no limitation
     direction: THVStanoviste;
+
     front: TObject; // most forward block train is/was on (always instance of TBlkUsek)
     stationFrom: TObject; // instance of TOR or Nil
     stationTo: TObject; // instance of TOR or Nil
@@ -74,8 +77,8 @@ type
      procedure SetFront(front:TObject);
 
      function IsStolen():boolean;
-     function GetMaxRychlost():Cardinal;
-     function GetMaxRychlostStupen():Cardinal;
+     function GetMaxSpeed():Cardinal;
+     function GetMaxSpeedStep():Cardinal;
 
    public
 
@@ -133,8 +136,8 @@ type
      property announcementPlayed: boolean read data.announcementPlayed;
 
      property HVs: TSoupravaHVs read data.HVs;
-     property maxRychlost: Cardinal read GetMaxRychlost; // pozor, muze byt i rychlost, ke tere nemame stupen!
-     property maxRychlostStupen: Cardinal read GetMaxRychlostStupen; // je vzdy rychlost, ke ktere mame stupen
+     property maxSpeed: Cardinal read GetMaxSpeed; // warning: this could be speed with no speed step
+     property maxSpeedStep: Cardinal read GetMaxSpeedStep;
      property acquiring: Boolean read fAcquiring;
 
      // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
@@ -151,6 +154,20 @@ uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+constructor TSouprava.Create(ini:TMemIniFile; const section:string; index:Integer);
+begin
+ inherited Create();
+ Self.Init(index);
+ Self.LoadFromFile(ini, section);
+end;
+
+constructor TSouprava.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb);
+begin
+ inherited Create();
+ Self.Init(index);
+ Self.UpdateSprFromPanel(panelStr, Usek, OblR, ok, err);
+end;
+
 procedure TSouprava.Init(index:Integer);
 begin
  Self.speedBuffer := nil;
@@ -161,20 +178,6 @@ begin
  Self.data.announcementPlayed := false;
  Self.fAcquiring := false;
 end;
-
-constructor TSouprava.Create(ini:TMemIniFile; const section:string; index:Integer);
-begin
- inherited Create();
- Self.Init(index);
- Self.LoadFromFile(ini, section);
-end;//ctor
-
-constructor TSouprava.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb);
-begin
- inherited Create();
- Self.Init(index);
- Self.UpdateSprFromPanel(panelStr, Usek, OblR, ok, err);
-end;//ctor
 
 destructor TSouprava.Destroy();
 begin
@@ -202,6 +205,7 @@ begin
  Self.data.typ := ini.ReadString(section, 'typ', '');
  Self.filefront := ini.ReadInteger(section, 'front', -1);
  Self.data.direction := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
+ Self.data.maxSpeed := ini.ReadInteger(section, 'maxRychlost', 0);
 
  Self.data.stationFrom := ORs.Get(ini.ReadString(section, 'z', ''));
  Self.data.stationTo := ORs.Get(ini.ReadString(section, 'do', ''));
@@ -251,6 +255,8 @@ begin
  ini.WriteBool(section, 'L', Self.data.dir_L);
  ini.WriteBool(section, 'S', Self.data.dir_S);
  ini.WriteInteger(section, 'smer', Integer(Self.data.direction));
+ if (Self.data.maxSpeed > 0) then
+   ini.WriteInteger(section, 'maxRychlost', Self.data.maxSpeed);
 
  if (Self.data.stationFrom <> nil) then
    ini.WriteString(section, 'z', TOR(Self.data.stationFrom).id)
@@ -283,7 +289,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci string, kterym je definovana souprava, do panelu
-// format dat soupravy: name;carsCount;note;dir_Ldir_S;length;typ;hnaci vozidla;vychozi station;cilova stanice
 function TSouprava.GetPanelString():string;
 var addr:Integer;
 begin
@@ -317,6 +322,11 @@ begin
    Result := Result + '1;'
  else
    Result := Result + '0;';
+
+ if (Self.data.maxSpeed <> 0) then
+   Result := Result + IntToStr(Self.data.maxSpeed) + ';'
+ else
+   Result := Result + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -379,6 +389,11 @@ begin
    Self.data.announcement := (spr[9] = '1')
  else
    Self.data.announcement := TStanicniHlaseni.HlasitSprTyp(Self.typ);
+
+ if ((spr.Count > 10) and (spr[10] <> '')) then
+   Self.data.maxSpeed := StrToInt(spr[10])
+ else
+   Self.data.maxSpeed := 0;
 
  if ((Self.wantedSpeed = 0) and (Self.data.dir_L xor Self.data.dir_S)) then
   begin
@@ -578,8 +593,8 @@ begin
  if (Self.speedBuffer = nil) then
   begin
    Self.data.wantedSpeed := speed;
-   if (speed > Self.maxRychlost) then
-     Self.data.speed := Self.maxRychlost
+   if (speed > Self.maxSpeed) then
+     Self.data.speed := Self.maxSpeed
    else
      Self.data.speed := speed;
   end else begin
@@ -985,26 +1000,36 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSouprava.GetMaxRychlost():Cardinal;
-var addr:Integer;
-    min:Cardinal;
+function TSouprava.GetMaxSpeed():Cardinal;
+var addr: Integer;
+    minimum: Cardinal;
 begin
+
  if (Self.HVs.Count = 0) then
-   Exit(THnaciVozidlo._DEFAUT_MAX_SPEED);
+  begin
+   if (Self.data.maxSpeed > 0) then
+     Result := Min(Self.data.maxSpeed, THnaciVozidlo._DEFAUT_MAX_SPEED)
+   else
+     Result := THnaciVozidlo._DEFAUT_MAX_SPEED;
+  end else begin
+   if (Self.data.maxSpeed > 0) then
+     minimum := Min(Self.data.maxSpeed, HVDb[Self.HVs[0]].Data.maxRychlost)
+   else
+     minimum := HVDb[Self.HVs[0]].Data.maxRychlost;
 
- min := HVDb[Self.HVs[0]].Data.maxRychlost;
- for addr in Self.HVs do
-   if (HVDb[addr].Data.maxRychlost < min) then
-     min := HVDb[addr].Data.maxRychlost;
+   for addr in Self.HVs do
+     if (HVDb[addr].Data.maxRychlost < minimum) then
+       minimum := HVDb[addr].Data.maxRychlost;
 
- Result := min;
+   Result := minimum;
+  end;
 end;
 
-function TSouprava.GetMaxRychlostStupen():Cardinal;
+function TSouprava.GetMaxSpeedStep():Cardinal;
 begin
  // vraci rychlost <= max rychlosti takovou, ze pro ni mame prirazeni stupne
  // tj. tuto rychlost lze skutene nastavit
- Result := TrakceI.NearestLowerSpeed(Self.maxRychlost);
+ Result := TrakceI.NearestLowerSpeed(Self.maxSpeed);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

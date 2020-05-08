@@ -4278,6 +4278,9 @@ object F_Main: TF_Main
             Width = 200
           end
           item
+            Caption = 'Omezen'#237' rychlosti'
+          end
+          item
             Caption = 'Rychlost'
             Width = 60
           end

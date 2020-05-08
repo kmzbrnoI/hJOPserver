@@ -133,46 +133,51 @@ var spr:TSoupravaData;
 
   Self.LV.Items[line].SubItems[5] := IntToStr(spr.carsCount);
 
-  Self.LV.Items[line].SubItems[6] := IntToStr(spr.speed) + ' km/h';
+  if (spr.maxSpeed <> 0) then
+    Self.LV.Items[line].SubItems[6] := IntToStr(spr.maxSpeed) + ' km/h'
+  else
+    Self.LV.Items[line].SubItems[6] := '-';
+
+  Self.LV.Items[line].SubItems[7] := IntToStr(spr.speed) + ' km/h';
   if (spr.speed <> spr.wantedSpeed) then
-    Self.LV.Items[line].SubItems[6] := Self.LV.Items[line].SubItems[6] + ' (' + IntToStr(spr.wantedSpeed) + ' km/h)';
+    Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' (' + IntToStr(spr.wantedSpeed) + ' km/h)';
 
   case (spr.direction) of
-   THVStanoviste.lichy: Self.LV.Items[line].SubItems[7] := 'lichý';
-   THVStanoviste.sudy : Self.LV.Items[line].SubItems[7] := 'sudý';
+   THVStanoviste.lichy: Self.LV.Items[line].SubItems[8] := 'lichý';
+   THVStanoviste.sudy : Self.LV.Items[line].SubItems[8] := 'sudý';
   end;
 
   try
     if (spr.station <> nil) then
-      Self.LV.Items[line].SubItems[8] := (spr.station as TOR).Name
+      Self.LV.Items[line].SubItems[9] := (spr.station as TOR).Name
     else
-      Self.LV.Items[line].SubItems[8] := '-';
+      Self.LV.Items[line].SubItems[9] := '-';
   except
-   Self.LV.Items[line].SubItems[8] := '-';
+   Self.LV.Items[line].SubItems[9] := '-';
   end;
 
   if (spr.front <> nil) then
-    Self.LV.Items[line].SubItems[9] := (spr.front as TBlk).name
+    Self.LV.Items[line].SubItems[10] := (spr.front as TBlk).name
   else
-    Self.LV.Items[line].SubItems[9] := '-';
+    Self.LV.Items[line].SubItems[10] := '-';
 
-  Self.LV.Items[line].SubItems[10] := IntToStr(spr.length);
-  Self.LV.Items[line].SubItems[11] := spr.typ;
+  Self.LV.Items[line].SubItems[11] := IntToStr(spr.length);
+  Self.LV.Items[line].SubItems[12] := spr.typ;
 
   if (spr.stationFrom <> nil) then
-    Self.LV.Items[line].SubItems[12] := TOR(spr.stationFrom).Name
-  else
-    Self.LV.Items[line].SubItems[12] := '-';
-
-  if (spr.stationTo <> nil) then
-    Self.LV.Items[line].SubItems[13] := TOR(spr.stationTo).Name
+    Self.LV.Items[line].SubItems[13] := TOR(spr.stationFrom).Name
   else
     Self.LV.Items[line].SubItems[13] := '-';
 
-  if (spr.announcement) then
-    Self.LV.Items[line].SubItems[14] := 'Ano'
+  if (spr.stationTo <> nil) then
+    Self.LV.Items[line].SubItems[14] := TOR(spr.stationTo).Name
   else
-    Self.LV.Items[line].SubItems[14] := 'Ne';
+    Self.LV.Items[line].SubItems[14] := '-';
+
+  if (spr.announcement) then
+    Self.LV.Items[line].SubItems[15] := 'Ano'
+  else
+    Self.LV.Items[line].SubItems[15] := 'Ne';
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
