@@ -434,7 +434,7 @@ var glob:TBlkSettings;
        end;
     end;
    end else begin
-    glob.poznamka := Self.Blk.poznamka;
+    glob.note := Self.Blk.note;
     Self.Blk.SetGlobalSettings(glob);
    end;
 

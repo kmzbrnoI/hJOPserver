@@ -133,7 +133,7 @@ begin
 
  if (NewBlk) then
   begin
-   glob.poznamka := '';
+   glob.note := '';
    try
      Blk := Blky.Add(_BLK_SH, glob) as TBlkSH;
    except
@@ -144,7 +144,7 @@ begin
       end;
    end;
   end else begin
-   glob.poznamka := Self.Blk.poznamka;
+   glob.note := Self.Blk.note;
    Self.Blk.SetGlobalSettings(glob);
   end;
 

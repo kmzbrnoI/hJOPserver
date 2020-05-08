@@ -295,7 +295,7 @@ var glob:TBlkSettings;
 
   if (NewBlk) then
    begin
-    glob.poznamka := '';
+    glob.note := '';
 
     try
       Blk := Blky.Add(_BLK_USEK, glob) as TBlkUsek;
@@ -307,7 +307,7 @@ var glob:TBlkSettings;
        end;
     end;
    end else begin
-    glob.poznamka := Self.Blk.poznamka;
+    glob.note := Self.Blk.note;
     Self.Blk.SetGlobalSettings(glob);
    end;
 

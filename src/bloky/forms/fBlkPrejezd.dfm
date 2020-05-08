@@ -455,7 +455,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Width = 177
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
       OnChange = CB_TrackChange
     end

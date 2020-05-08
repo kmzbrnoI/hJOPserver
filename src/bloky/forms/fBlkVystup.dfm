@@ -190,6 +190,6 @@ object F_BlkVystup: TF_BlkVystup
     MaxValue = 360
     MinValue = 1
     TabOrder = 4
-    Value = 0
+    Value = 1
   end
 end

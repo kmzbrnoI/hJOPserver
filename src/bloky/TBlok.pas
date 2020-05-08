@@ -39,10 +39,10 @@ type
 
  ///////////////////////////////
  TBlkSettings = record
-  name:string;
-  id:Integer;
-  typ:Byte;
-  poznamka:string;
+  name: string;
+  id: Integer;
+  typ: Integer;
+  note: string;
  end;
 
  TOnBlkChange = procedure(Sender:TObject) of object;
@@ -55,7 +55,7 @@ type
       name: '';
       id: -1;
       typ: 0;
-      poznamka: '';
+      note: '';
     );
   private
    changed:boolean;
@@ -137,10 +137,10 @@ type
    property frozen:boolean read ffrozen;
    property OblsRizeni:TList<TOR> read ORsRef;
 
-   property id:Integer read GlobalSettings.id;
-   property name:string read GlobalSettings.name;
-   property typ:Byte read GlobalSettings.typ;
-   property poznamka:string read GlobalSettings.poznamka;
+   property id: Integer read GlobalSettings.id;
+   property name: string read GlobalSettings.name;
+   property typ: Integer read GlobalSettings.typ;
+   property note: string read GlobalSettings.note;
  end;
 
 implementation
@@ -191,7 +191,7 @@ begin
  Self.GlobalSettings.name := ini_tech.ReadString(section, 'nazev', '');
  Self.GlobalSettings.id := StrToInt(section);
  Self.GlobalSettings.typ := ini_tech.ReadInteger(section, 'typ', -1);
- Self.GlobalSettings.poznamka := ini_tech.ReadString(section, 'pozn', '');
+ Self.GlobalSettings.note := ini_tech.ReadString(section, 'pozn', '');
 end;
 
 procedure TBlk.SaveData(ini_tech:TMemIniFile;const section:string);
@@ -199,8 +199,8 @@ begin
  ini_tech.WriteString(section, 'nazev', Self.GlobalSettings.name);
  ini_tech.WriteInteger(section, 'typ', Self.GlobalSettings.typ);
 
- if (Self.GlobalSettings.poznamka <> '') then
-   ini_tech.WriteString(section, 'pozn', Self.GlobalSettings.poznamka);
+ if (Self.GlobalSettings.note <> '') then
+   ini_tech.WriteString(section, 'pozn', Self.GlobalSettings.note);
 end;
 
 procedure TBlk.SaveStatus(ini_stat:TMemIniFile;const section:string);

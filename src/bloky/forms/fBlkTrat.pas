@@ -331,9 +331,9 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
        end;
     end;
    end else begin
-    glob_trat.poznamka := Self.Trat.poznamka;
-    glob_uvA.poznamka  := Self.UvazkaA.poznamka;
-    glob_uvB.poznamka  := Self.UvazkaB.poznamka;
+    glob_trat.note := Self.Trat.note;
+    glob_uvA.note  := Self.UvazkaA.note;
+    glob_uvB.note  := Self.UvazkaB.note;
 
     Self.Trat.SetGlobalSettings(glob_trat);
     Self.UvazkaA.SetGlobalSettings(glob_uvA);
