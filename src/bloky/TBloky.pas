@@ -806,7 +806,7 @@ begin
 
    if (TBlkNav(nav).IsPovolovaciNavest()) then begin
      if ((not usek.IsSouprava()) or
-         (Soupravy[spr].smer <> TBlkNav(nav).Smer)) then
+         (Soupravy[spr].direction <> TBlkNav(nav).Smer)) then
       spr := usek.SprPredict
    end else
      spr := -1;

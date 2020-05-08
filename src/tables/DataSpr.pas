@@ -105,7 +105,7 @@ var spr:TSoupravaData;
 
   Self.LV.Items[line].Caption := IntToStr(line);
 
-  Self.LV.Items[line].SubItems[0] := spr.nazev;
+  Self.LV.Items[line].SubItems[0] := spr.name;
 
   if (spr.HVs.Count > 0) then
    Self.LV.Items[line].SubItems[1] := IntToStr(HVDb[spr.HVs[0]].adresa) + ' : ' +
@@ -122,29 +122,29 @@ var spr:TSoupravaData;
   else
     Self.LV.Items[line].SubItems[2] := '-';
 
-  Self.LV.Items[line].SubItems[3] := spr.poznamka;
-  if (spr.smer_L) then
+  Self.LV.Items[line].SubItems[3] := spr.note;
+  if (spr.dir_L) then
     Self.LV.Items[line].SubItems[4] := 'L'
   else
     Self.LV.Items[line].SubItems[4] := '';
 
-  if (spr.smer_S) then
+  if (spr.dir_S) then
     Self.LV.Items[line].SubItems[4] := Self.LV.Items[line].SubItems[4] + 'S';
 
-  Self.LV.Items[line].SubItems[5] := IntToStr(spr.pocet_vozu);
+  Self.LV.Items[line].SubItems[5] := IntToStr(spr.carsCount);
 
-  Self.LV.Items[line].SubItems[6] := IntToStr(spr.rychlost) + ' km/h';
-  if (spr.rychlost <> spr.chtenaRychlost) then
-    Self.LV.Items[line].SubItems[6] := Self.LV.Items[line].SubItems[6] + ' (' + IntToStr(spr.chtenaRychlost) + ' km/h)';
+  Self.LV.Items[line].SubItems[6] := IntToStr(spr.speed) + ' km/h';
+  if (spr.speed <> spr.wantedSpeed) then
+    Self.LV.Items[line].SubItems[6] := Self.LV.Items[line].SubItems[6] + ' (' + IntToStr(spr.wantedSpeed) + ' km/h)';
 
-  case (spr.smer) of
+  case (spr.direction) of
    THVStanoviste.lichy: Self.LV.Items[line].SubItems[7] := 'lichý';
    THVStanoviste.sudy : Self.LV.Items[line].SubItems[7] := 'sudý';
   end;
 
   try
-    if (spr.OblRizeni <> nil) then
-      Self.LV.Items[line].SubItems[8] := (spr.OblRizeni as TOR).Name
+    if (spr.station <> nil) then
+      Self.LV.Items[line].SubItems[8] := (spr.station as TOR).Name
     else
       Self.LV.Items[line].SubItems[8] := '-';
   except
@@ -156,20 +156,20 @@ var spr:TSoupravaData;
   else
     Self.LV.Items[line].SubItems[9] := '-';
 
-  Self.LV.Items[line].SubItems[10] := IntToStr(spr.delka);
+  Self.LV.Items[line].SubItems[10] := IntToStr(spr.length);
   Self.LV.Items[line].SubItems[11] := spr.typ;
 
-  if (spr.vychoziOR <> nil) then
-    Self.LV.Items[line].SubItems[12] := TOR(spr.vychoziOR).Name
+  if (spr.stationFrom <> nil) then
+    Self.LV.Items[line].SubItems[12] := TOR(spr.stationFrom).Name
   else
     Self.LV.Items[line].SubItems[12] := '-';
 
-  if (spr.cilovaOR <> nil) then
-    Self.LV.Items[line].SubItems[13] := TOR(spr.cilovaOR).Name
+  if (spr.stationTo <> nil) then
+    Self.LV.Items[line].SubItems[13] := TOR(spr.stationTo).Name
   else
     Self.LV.Items[line].SubItems[13] := '-';
 
-  if (spr.hlaseni) then
+  if (spr.announcement) then
     Self.LV.Items[line].SubItems[14] := 'Ano'
   else
     Self.LV.Items[line].SubItems[14] := 'Ne';

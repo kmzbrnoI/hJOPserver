@@ -444,7 +444,7 @@ begin
   begin
    str := '';
    for spri in Self.Soupravs do
-     str := str + Soupravy[spri].nazev + ',';
+     str := str + Soupravy[spri].name + ',';
    ini_stat.WriteString(section, 'spr' , str);
   end;
 end;
@@ -573,7 +573,7 @@ begin
 
         // zastavime soupravy na useku
         for spr in Self.Soupravs do
-          Soupravy[spr].rychlost := 0;
+          Soupravy[spr].speed := 0;
 
         Self.Change();
        end;
@@ -637,7 +637,7 @@ begin
 
  // reseni zruseni PRESUN soupravy, ktera jede
  if ((Self.IsVlakPresun()) and ((not Self.IsSouprava(Self.Soupravs[Self.VlakPresun])) or
-     (Soupravy[Self.Soupravs[Self.VlakPresun]].chtenaRychlost > 0))) then
+     (Soupravy[Self.Soupravs[Self.VlakPresun]].wantedSpeed > 0))) then
    Self.VlakPresun := -1;
 
  // pousteni houkani na houkaci udalosti
@@ -925,7 +925,7 @@ begin
  for blk in Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]) do
    podm.Add(TOR.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
  ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
-   'Smazání soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev,
+   'Smazání soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].name,
    TBlky.GetBlksList(Self), podm);
 end;
 
@@ -964,7 +964,7 @@ begin
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
 
  ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TOR,
-  'Uvolnění soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].nazev+' z bloku',
+  'Uvolnění soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].name+' z bloku',
   TBlky.GetBlksList(Self), nil);
 end;
 
@@ -976,7 +976,7 @@ begin
 
  spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
 
- if (spr.ukradeno) then
+ if (spr.stolen) then
   begin
    // Prevzit soupravu, ktera byla ukradena.
    Self.MenuXVEZMILokClick(SenderPnl, SenderOR);
@@ -1132,7 +1132,7 @@ begin
 
  if (new_state) then
   begin
-   if (Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].stanice <> SenderOR) then
+   if (Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].station <> SenderOR) then
     begin
      ORTCPServer.SendInfoMsg(SenderPnl, 'Loko se nenachází ve vaši oblasti řízení');
      Exit();
@@ -1302,7 +1302,7 @@ begin
  TTCPORsRef(SenderPnl.Data).spr_menu_index := sprLocalI;
 
  menu := '$'+Self.GlobalSettings.name+',';
- menu := menu + '$Souprava ' + Soupravy[Self.Soupravs[sprLocalI]].nazev + ',-,';
+ menu := menu + '$Souprava ' + Soupravy[Self.Soupravs[sprLocalI]].name + ',-,';
  menu := menu + Self.GetSprMenu(SenderPnl, SenderOr, sprLocalI);
 
  ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), menu);
@@ -1339,7 +1339,7 @@ begin
 
    for spr in Self.Soupravs do
     begin
-     Result := Result + Soupravy[spr].nazev + ',';
+     Result := Result + Soupravy[spr].name + ',';
      if (canAdd) then Result := Result + addStr;
     end;
 
@@ -1420,10 +1420,10 @@ begin
 
  if (Self.VlakPresun = sprLocalI) then
   Result := Result + 'PŘESUŇ vlak<,'
- else if ((not Self.IsVlakPresun()) and (spr.chtenaRychlost = 0) and (spr.stanice = SenderOR)) then
+ else if ((not Self.IsVlakPresun()) and (spr.wantedSpeed = 0) and (spr.station = SenderOR)) then
    Result := Result + 'PŘESUŇ vlak>,';
 
- if (spr.ukradeno) then
+ if (spr.stolen) then
    Result := Result + 'VEZMI vlak,'
  else begin
    if (spr.IsAnyLokoInRegulator()) then
@@ -1434,9 +1434,9 @@ begin
    Result := Result + 'PODJ,';
 
  if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
-     (spr.vychoziOR <> nil) and (spr.cilovaOR <> nil) and (spr.typ <> '')) then
+     (spr.stationFrom <> nil) and (spr.stationTo <> nil) and (spr.typ <> '')) then
   begin
-   if ((Self.UsekStav.stanicni_kolej) and (spr.hlaseni)) then
+   if ((Self.UsekStav.stanicni_kolej) and (spr.announcement)) then
      Result := Result + 'HLÁŠENÍ odjezd,';
 
    try
@@ -1512,7 +1512,7 @@ begin
  else begin
   // cislo soupravy
   for i := 0 to Self.Soupravs.Count-1 do
-    if (item = Soupravy[Self.Soupravs[i]].nazev) then
+    if (item = Soupravy[Self.Soupravs[i]].name) then
      begin
       Self.MenuSOUPRAVA(SenderPnl, SenderOR, i);
       break;
@@ -1641,7 +1641,7 @@ begin
  if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
 
  for spr in Self.Soupravs do
-   json.A['soupravy'].Add(Soupravy[spr].nazev);
+   json.A['soupravy'].Add(Soupravy[spr].name);
 end;
 
 procedure TBlkUsek.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
@@ -1784,7 +1784,7 @@ function TBlkUsek.GetHoukList():TList<THoukEv>;
 begin
  if (not Self.IsSouprava()) then Exit(nil);
 
- if (Soupravy[Self.SoupravaL].smer = THVStanoviste.lichy) then
+ if (Soupravy[Self.SoupravaL].direction = THVStanoviste.lichy) then
    Result := Self.UsekSettings.houkEvL
  else
    Result := Self.UsekSettings.houkEvS;
@@ -1796,11 +1796,11 @@ function TBlkUsek.GetSHSpr(sprLocalIndex:Integer):TSHSpr;
 begin
  if ((sprLocalIndex < 0) or (sprLocalIndex >= Self.Soupravs.Count)) then Exit();
 
- Result.cislo    := Soupravy[Self.Soupravs[sprLocalIndex]].nazev;
+ Result.cislo    := Soupravy[Self.Soupravs[sprLocalIndex]].name;
  Result.typ      := Soupravy[Self.Soupravs[sprLocalIndex]].typ;
  Result.kolej    := Self.UsekStav.cislo_koleje;
- Result.fromORid := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].vychoziOR).id;
- Result.toORid   := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].cilovaOR).id;
+ Result.fromORid := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].stationFrom).id;
+ Result.toORid   := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].stationTo).id;
 
  Result.timeArrive := 0;
 
@@ -2008,8 +2008,8 @@ end;
 function TBlkUsek.CanSprSpeedInsert(index:Integer):boolean;
 begin
  Result := not ((Self.Soupravs.Count > 0) and
-                (((index = 0) and (Soupravy[Self.Soupravs[index]].chtenaRychlost > 0) and (Soupravy[Self.Soupravs[index]].smer = THVStanoviste.sudy)) or
-                 ((index = Self.Soupravs.Count) and (Soupravy[Self.Soupravs[index-1]].chtenaRychlost > 0) and (Soupravy[Self.Soupravs[index-1]].smer = THVStanoviste.lichy))));
+                (((index = 0) and (Soupravy[Self.Soupravs[index]].wantedSpeed > 0) and (Soupravy[Self.Soupravs[index]].direction = THVStanoviste.sudy)) or
+                 ((index = Self.Soupravs.Count) and (Soupravy[Self.Soupravs[index-1]].wantedSpeed > 0) and (Soupravy[Self.Soupravs[index-1]].direction = THVStanoviste.lichy))));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2266,11 +2266,11 @@ begin
      if (Self.Obsazeno = uvolneno) then
        sfg := clAqua;
 
-     Result := Result + '(' + Soupravy[souprava].nazev + ';' +
-                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.smer_L)) +
-                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.smer_S)) + ';';
+     Result := Result + '(' + Soupravy[souprava].name + ';' +
+                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.dir_L)) +
+                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.dir_S)) + ';';
 
-     if ((Soupravy[souprava].cilovaOR = Self) and (sbg = clBlack)) then
+     if ((Soupravy[souprava].stationTo = Self) and (sbg = clBlack)) then
        sbg := clSilver;
 
      // predvidany odjezd

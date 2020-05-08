@@ -805,7 +805,7 @@ procedure THV.UpdateRuc(send_remove:boolean = true);
 var spr:string;
 begin
  if (Self.Stav.souprava > -1) then
-  spr := Soupravy[Self.Stav.souprava].nazev
+  spr := Soupravy[Self.Stav.souprava].name
  else
   spr := '-';
 
@@ -910,7 +910,7 @@ begin
      if (Self.pom <> TPomStatus.pc) then
        Self.SetPom(TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
 
-     Soupravy[Self.souprava].rychlost := Soupravy[Self.souprava].rychlost; // tento prikaz nastavi rychlost
+     Soupravy[Self.souprava].speed := Soupravy[Self.souprava].speed; // tento prikaz nastavi rychlost
     end else begin
      // loko neni na souprave -> zkusit odhlasit
      Self.CheckRelease();
@@ -1508,11 +1508,11 @@ begin
  // pokud ma souprava jasne dany smer, nastavime ho
  // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
  if ((Self.souprava > -1) and (not Self.ruc) and
-     (Soupravy[Self.souprava].sdata.smer_L xor Soupravy[Self.souprava].sdata.smer_S)) then
+     (Soupravy[Self.souprava].sdata.dir_L xor Soupravy[Self.souprava].sdata.dir_S)) then
   begin
    // souprava ma zadany prave jeden smer
-   direction := ((Soupravy[Self.souprava].smer = THVStanoviste.sudy) xor (Self.stav.StanovisteA = THVStanoviste.sudy));
-   speedStep := TrakceI.SpeedStep(Soupravy[Self.souprava].rychlost);
+   direction := ((Soupravy[Self.souprava].direction = THVStanoviste.sudy) xor (Self.stav.StanovisteA = THVStanoviste.sudy));
+   speedStep := TrakceI.SpeedStep(Soupravy[Self.souprava].speed);
   end else begin
    direction := Self.slot.direction;
    if (Self.stolen) then

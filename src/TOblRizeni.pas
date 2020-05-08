@@ -913,7 +913,7 @@ begin
      Exit();
     end;
 
-   if ((souprava.front <> usek) and (souprava.chtenaRychlost > 0)) then
+   if ((souprava.front <> usek) and (souprava.wantedSpeed > 0)) then
     begin
      ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Nelze editovat soupravu, která odjela a je v pohybu');
      Exit();
@@ -1448,7 +1448,7 @@ begin
 
  Result := '{';
  for i := 0 to _MAX_SPR-1 do
-   if ((Assigned(Soupravy[i])) and (Soupravy[i].stanice = Self)) then
+   if ((Assigned(Soupravy[i])) and (Soupravy[i].station = Self)) then
     Result := Result + '[{' + Soupravy[i].GetPanelString() + '}]';
  Result := Result + '}';
 end;
@@ -1464,7 +1464,7 @@ begin
    Exit();
   end;
 
- if ((Soupravy[spr_index] <> nil) and (Soupravy[spr_index].stanice = Self)) then
+ if ((Soupravy[spr_index] <> nil) and (Soupravy[spr_index].station = Self)) then
   begin
    Soupravy.RemoveSpr(spr_index);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava smazána');

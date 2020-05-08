@@ -152,7 +152,7 @@ begin
  if (index < 0) or (index >= _MAX_SPR) then Exit('-');
 
  if (Assigned(Self.soupravy[index])) then
-  Result := Self.soupravy[index].nazev
+  Result := Self.soupravy[index].name
  else
   Result := '-';
 end;
@@ -163,7 +163,7 @@ function TSprDb.GetSprIndexByName(name:string):Integer;
 var i:Integer;
 begin
  for i := 0 to _MAX_SPR-1 do
-  if ((Assigned(Self.soupravy[i])) and (Self.soupravy[i].nazev = name)) then
+  if ((Assigned(Self.soupravy[i])) and (Self.soupravy[i].name = name)) then
    Exit(i);
  Exit(-1);
 end;
@@ -222,9 +222,9 @@ procedure TSprDb.StopAllSpr();
 var i:Integer;
 begin
  for i := 0 to _MAX_SPR-1 do
-  if ((Self.soupravy[i] <> nil) and (Self.soupravy[i].chtenaRychlost <> 0)) then
+  if ((Self.soupravy[i] <> nil) and (Self.soupravy[i].wantedSpeed <> 0)) then
    begin
-    Self.soupravy[i].rychlost := 0;
+    Self.soupravy[i].speed := 0;
     Sleep(3);
    end;
 end;

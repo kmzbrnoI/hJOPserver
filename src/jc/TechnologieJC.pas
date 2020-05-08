@@ -1004,9 +1004,9 @@ begin
    // kontrola smeru soupravy
    if (Self.fproperties.TypCesty = TJCType.vlak) then
     begin
-     if (spr.sdata.smer_L or spr.sdata.smer_S) then
-       if (((TBlkNav(Blk2).Smer = THVStanoviste.lichy) and (not spr.sdata.smer_L)) or
-           ((TBlkNav(Blk2).Smer = THVStanoviste.sudy) and (not spr.sdata.smer_S))) then
+     if (spr.sdata.dir_L or spr.sdata.dir_S) then
+       if (((TBlkNav(Blk2).Smer = THVStanoviste.lichy) and (not spr.sdata.dir_L)) or
+           ((TBlkNav(Blk2).Smer = THVStanoviste.sudy) and (not spr.sdata.dir_S))) then
          bariery.Add(Self.JCBariera(_JCB_SPR_SMER, nil, spr.index));
     end;
 
@@ -2646,7 +2646,7 @@ begin
    // kontrola zmeny vychozi a cilove stanice
    for oblr in blk.OblsRizeni do
     begin
-     if (oblr = Soupravy[(Blk as TBlkUsek).Souprava].cilovaOR) then
+     if (oblr = Soupravy[(Blk as TBlkUsek).Souprava].stationTo) then
       begin
        Soupravy[(Blk as TBlkUsek).Souprava].InterChangeStanice(false);
        break;
@@ -2655,7 +2655,7 @@ begin
 
    Soupravy[(Blk as TBlkUsek).Souprava].ChangeSmer();
    writelog('Obsazen smyckovy usek '+Blk.name+ ' - menim smer loko v souprave '+
-      Soupravy[(Blk as TBlkUsek).Souprava].nazev, WR_SPRPREDAT);
+      Soupravy[(Blk as TBlkUsek).Souprava].name, WR_SPRPREDAT);
   end;//if
 end;
 
@@ -3353,7 +3353,7 @@ begin
   _JCB_SPR_SMER : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Jízda proti směru soupravy');
-    Result[2] := GetUPOLine('Soprava ' + Soupravy[Bariera.param].nazev);
+    Result[2] := GetUPOLine('Soprava ' + Soupravy[Bariera.param].name);
   end;
 
  else

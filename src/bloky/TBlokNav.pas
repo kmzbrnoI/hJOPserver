@@ -1406,10 +1406,10 @@ begin
  ///////////////////////////////////////////////////
 
  // ZPOMALOVANI
- if ((navEv.zpomaleni.enabled) and (spr.chtenaRychlost > navEv.zpomaleni.speed) and
+ if ((navEv.zpomaleni.enabled) and (spr.wantedSpeed > navEv.zpomaleni.speed) and
      ((Usek as TBlkUsek).zpomalovani_ready) and
      ((not Self.IsPovolovaciNavest()) or (spr.IsPOdj(Usek))) and
-     (spr.smer = Self.NavRel.smer)) then
+     (spr.direction = Self.NavRel.smer)) then
   begin
    if (not navEv.zpomaleni.ev.enabled) then
      navEv.zpomaleni.ev.Register();
@@ -1417,7 +1417,7 @@ begin
    if (navEv.zpomaleni.ev.IsTriggerred(Usek, true)) then
     begin
      navEv.zpomaleni.ev.Unregister();
-     spr.rychlost := navEv.zpomaleni.speed;
+     spr.speed := navEv.zpomaleni.speed;
      (Usek as TBlkUsek).zpomalovani_ready := false;
     end;
   end else begin
@@ -1435,10 +1435,10 @@ begin
   begin
    // event se odregistruje automaticky pri zmene
 
-   if ((spr.IsPOdj(Usek)) and (spr.smer = Self.NavRel.smer)) then
+   if ((spr.IsPOdj(Usek)) and (spr.direction = Self.NavRel.smer)) then
     begin
      // predvidany odjezd neuplynul -> zastavit soupravu
-     if (spr.chtenaRychlost <> 0) then
+     if (spr.wantedSpeed <> 0) then
        spr.SetRychlostSmer(0, Self.NavRel.smer);
 
      // souprava je na zastavovaci udalosti -> zacit pocitat cas
@@ -1458,7 +1458,7 @@ begin
      if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani)) then
       begin
        // je postaveno -> zkontrlolujeme, jestli je postaveno dalsi navestidlo
-       if ((spr.chtenaRychlost > 0) and (spr.smer <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
+       if ((spr.wantedSpeed > 0) and (spr.direction <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
        case (Self.DNjc.data.DalsiNavaznost) of
          TJCNextNavType.blok: begin
@@ -1467,22 +1467,22 @@ begin
            if ((nav <> nil) and (nav.typ = _BLK_NAV) and ((nav as TBlkNav).IsPovolovaciNavest())) then
             begin
               // dalsi navestilo je na VOLNO
-              if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+              if ((spr.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
                 spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
             end else begin
               // dalsi navestidlo je na STUJ
-              if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+              if ((spr.wantedSpeed <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
                 spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
             end;
          end;
 
          TJCNextNavType.trat: begin
-           if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+           if ((spr.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
              spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
          end;
 
          TJCNextNavType.zadna: begin
-           if ((spr.chtenaRychlost <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.smer <> Self.NavRel.smer)) then
+           if ((spr.wantedSpeed <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
              spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
           end;
        end;
@@ -1491,12 +1491,12 @@ begin
        spr.CheckSh(Self);
       end else begin
        // neni povolovaci navest -> zastavit LOKO
-       if ((spr.smer = Self.NavRel.smer) and (spr.chtenaRychlost <> 0)) then
+       if ((spr.direction = Self.NavRel.smer) and (spr.wantedSpeed <> 0)) then
          spr.SetRychlostSmer(0, Self.NavRel.smer);
       end;
     end else begin
      // nenalezena jizdni cesta -> muze se jednat o navestidlo v autobloku
-     if (spr.smer = Self.NavRel.smer) then
+     if (spr.direction = Self.NavRel.smer) then
       begin
        if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani) and
            (Self.UsekPred.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
@@ -1505,16 +1505,16 @@ begin
          if (Self.Navest = 1) then
           begin
            // zelena -> rychlost dalsiho useku
-           if (spr.chtenaRychlost <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
+           if (spr.wantedSpeed <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
              spr.SetRychlostSmer(TBlkTU(Self.UsekPred).GetSettings.rychlost, Self.NavRel.smer)
           end else begin
            // vystraha -> 40 km/h
-           if (spr.chtenaRychlost <> 40) then
+           if (spr.wantedSpeed <> 40) then
              spr.SetRychlostSmer(40, Self.NavRel.smer)
           end;
         end else begin
          //  neni povolovaci navest -> zastavit
-         if (spr.chtenaRychlost <> 0) then
+         if (spr.wantedSpeed <> 0) then
            spr.SetRychlostSmer(0, Self.NavRel.smer);
         end;
       end;
@@ -1543,7 +1543,7 @@ begin
 
    // hledame takovy event, ktery odpovida nasi souprave
    for i := 0 to Self.NavSettings.events.Count-1 do
-     if ((spr.delka >= Self.NavSettings.events[i].delka.min) and (spr.delka <= Self.NavSettings.events[i].delka.max)) then
+     if ((spr.sprLength >= Self.NavSettings.events[i].delka.min) and (spr.sprLength <= Self.NavSettings.events[i].delka.max)) then
        for j := 0 to Self.NavSettings.events[i].spr_typ.Count-1 do
          if (spr.typ = Self.NavSettings.events[i].spr_typ[j]) then
            Exit(i);

@@ -586,7 +586,7 @@ begin
  if (not spr.IsTimeDefined()) then
    spr.time := timeHelper.hJOPnow();
 
- writelog('Trať '+Self.GlobalSettings.name+ ' : přidána souprava '+Soupravy[spr.souprava].nazev, WR_SPRPREDAT);
+ writelog('Trať '+Self.GlobalSettings.name+ ' : přidána souprava '+Soupravy[spr.souprava].name, WR_SPRPREDAT);
 
  Self.Change();
 end;
@@ -605,7 +605,7 @@ begin
  if (Self.IsSpr(spr)) then
   begin
    Self.TratStav.soupravy.Delete(Self.GetSprIndex(spr));
-   writelog('Trať '+Self.GlobalSettings.name+ ' : smazána souprava '+Soupravy[spr].nazev, WR_SPRPREDAT);
+   writelog('Trať '+Self.GlobalSettings.name+ ' : smazána souprava '+Soupravy[spr].name, WR_SPRPREDAT);
    toChange := true;
   end;
 
@@ -639,19 +639,20 @@ begin
  case (smer) of
    TTratSmer.AtoB: begin
       if ((Self.uvazkaB as TBlkUvazka).OblsRizeni.Count > 0) then
-        Soupravy[spr].stanice := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
+        Soupravy[spr].station := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
       else
-        Soupravy[spr].stanice := nil;
+        Soupravy[spr].station := nil;
    end;//AtoB
    TTratSmer.BtoA:begin
       if ((Self.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
-        Soupravy[spr].stanice := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
+        Soupravy[spr].station := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
       else
-        Soupravy[spr].stanice := nil;
+        Soupravy[spr].station := nil;
    end;//BtoA
  end;//case
 
- writelog('Trať '+Self.GlobalSettings.name+ ' : souprava '+Soupravy[spr].nazev+' : stanice změněna na '+(Soupravy[spr].stanice as TOR).Name, WR_SPRPREDAT);
+ writelog('Trať '+Self.GlobalSettings.name+ ' : souprava '+Soupravy[spr].name+
+          ' : stanice změněna na '+(Soupravy[spr].station as TOR).Name, WR_SPRPREDAT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1145,7 +1146,7 @@ begin
    Result := Result + PrevodySoustav.ColorToStr(clYellow) + '|'
  else if (porucha_bp) then
    Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|'
- else if ((Soupravy[Self.souprava].rychlost = 0) and (not stopsInHalt)) then
+ else if ((Soupravy[Self.souprava].speed = 0) and (not stopsInHalt)) then
    Result := Result + PrevodySoustav.ColorToStr(clRed) + '|'
  else
    Result := Result + PrevodySoustav.ColorToStr(clWhite) + '|';

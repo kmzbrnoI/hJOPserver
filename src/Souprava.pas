@@ -25,122 +25,122 @@ type
   end;
 
   TSoupravaData = record
-   nazev:string;
-   pocet_vozu:Word;
-   poznamka:string;
-   delka:Integer;     // delka soupravy v centimetrech - podle toho se urcuje zastavovani na blocich
-   typ:string;        // MOs, Os, Mn, Pn, ... - podle toho se urcuje zastavovaci udalost
+    name: string;
+    carsCount: Cardinal;
+    note: string;
+    length: Integer; // length of a train in centimeters
+    typ: string; // MOs, Os, Mn, Pn, ...
+    dir_L, dir_S: boolean; // allowed directions
+    HVs: TSoupravaHVs; // locomotives (engines)
+    station: TObject;
+    speed: Integer; // real speed passed to locomotives after all limitations
+    wantedSpeed: Integer; // sped wanted by caller, before limitations
+    direction: THVStanoviste;
+    front: TObject; // most forward block train is/was on (always instance of TBlkUsek)
+    stationFrom: TObject; // instance of TOR or Nil
+    stationTo: TObject; // instance of TOR or Nil
 
-   // ovlivnuje vybarvovani sipecky
-   smer_L:boolean;
-   smer_S:boolean;
+    announcement: Boolean;
+    announcementPlayed: boolean;
 
-   HVs:TSoupravaHVs; // seznam adres hnacich vozidel na souprave
-
-   OblRizeni:TObject;
-   rychlost:Integer;
-   chtenaRychlost:Integer;
-   smer:THVStanoviste;
-   front:TObject;   // nejprednejsi blok, kde je souprava
-
-   vychoziOR:TObject;
-   cilovaOR:TObject;
-   hlaseni:boolean;
-
-   hlaseniPrehrano:boolean;
-   podj:TDictionary<Integer, TPOdj>;  // id useku : predvidany odjezd
-  end;//TSoupravaData
+    podj: TDictionary<Integer, TPOdj>;  // map track id: podj
+  end;
 
   TSouprava = class
    private
-    data:TSoupravaData;
-    findex:Integer;
-    filefront:Integer;
-    fAcquiring:Boolean;
-    speedBuffer:PInteger;                                                       // pokud tento ukazatel neni nil, rychlost je nastavovana do promenne, na kterou ukazuje a ne primo souprave; to se hodi napriklad v zastavce v TU
+    data: TSoupravaData;
+    findex: Integer;
+    filefront: Integer;
+    fAcquiring: Boolean;
+    speedBuffer: PInteger; // pokud tento ukazatel neni nil, rychlost je nastavovana do promenne, na kterou ukazuje
+                           // a ne primo souprave; to se hodi napriklad v zastavce v TU
 
-    procedure Init(index:Integer);
-    procedure LoadFromFile(ini:TMemIniFile; const section:string);
-    procedure LocoAcquiredOk(Sender: TObject; Data: Pointer);
-    procedure LocoAcquiredErr(Sender: TObject; Data: Pointer);
-    procedure AllLocoAcquiredOk(newLoks: TList<Integer>);
+     procedure Init(index:Integer);
+     procedure LoadFromFile(ini:TMemIniFile; const section:string);
+     procedure LocoAcquiredOk(Sender: TObject; Data: Pointer);
+     procedure LocoAcquiredErr(Sender: TObject; Data: Pointer);
+     procedure AllLocoAcquiredOk(newLoks: TList<Integer>);
 
-    procedure VezmiVlakOk(Sender: TObject; Data: Pointer);
-    procedure VezmiVlakErr(Sender: TObject; Data: Pointer);
+     procedure VezmiVlakOk(Sender: TObject; Data: Pointer);
+     procedure VezmiVlakErr(Sender: TObject; Data: Pointer);
 
-    procedure ReleaseAllLoko();
+     procedure ReleaseAllLoko();
 
-    procedure SetOR(OblRizeni:TObject);
+     procedure SetOR(station: TObject);
 
-    procedure HVComErr(Sender:TObject; Data:Pointer);
-    procedure SetSpeed(speed:Integer);
-    procedure SetSmer(smer:THVStanoviste);
-    procedure SetFront(front:TObject);
+     procedure HVComErr(Sender:TObject; Data:Pointer);
+     procedure SetSpeed(speed:Integer);
+     procedure SetSmer(smer:THVStanoviste);
+     procedure SetFront(front:TObject);
 
-    function IsUkradeno():boolean;
-    function GetMaxRychlost():Cardinal;
-    function GetMaxRychlostStupen():Cardinal;
+     function IsStolen():boolean;
+     function GetMaxRychlost():Cardinal;
+     function GetMaxRychlostStupen():Cardinal;
 
    public
 
-    changed:boolean;
+    changed: Boolean;
 
-    constructor Create(ini:TMemIniFile; const section:string; index:Integer); overload;
-    constructor Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb); overload;
-    destructor Destroy(); override;
+     constructor Create(ini:TMemIniFile; const section:string; index:Integer); overload;
+     constructor Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb); overload;
+     destructor Destroy(); override;
 
-    procedure SaveToFile(ini:TMemIniFile; const section:string);
+     procedure SaveToFile(ini:TMemIniFile; const section:string);
 
-    function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
-    procedure UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
-    procedure SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
-    procedure VezmiVlak(ok: TCb; err: TCb);
-    procedure UpdateFront();
-    procedure ChangeSmer();
-    procedure InterChangeStanice(change_ev:Boolean = true);
-    procedure SetSpeedBuffer(speedBuffer:PInteger);
-    procedure LokDirChanged();
-    procedure CheckSH(nav:TObject);
+     function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
+     procedure UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
+     procedure SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
+     procedure VezmiVlak(ok: TCb; err: TCb);
+     procedure UpdateFront();
+     procedure ChangeSmer();
+     procedure InterChangeStanice(change_ev:Boolean = true);
+     procedure SetSpeedBuffer(speedBuffer:PInteger);
+     procedure LokDirChanged();
+     procedure CheckSH(nav:TObject);
 
-    procedure ToggleHouk(desc:string);
-    procedure SetHoukState(desc:string; state:boolean);
+     procedure ToggleHouk(desc:string);
+     procedure SetHoukState(desc:string; state:boolean);
 
-    procedure AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj); overload;
-    procedure AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj); overload;
-    function IsPOdj(usekid:Integer):Boolean; overload;
-    function IsPOdj(usek:TBlk):Boolean; overload;
-    function GetPOdj(usekid:Integer):TPOdj; overload;
-    function GetPOdj(usek:TBlk):TPOdj; overload;
-    procedure RemovePOdj(usekid:Integer); overload;
-    procedure RemovePOdj(usek:TBlk); overload;
-    procedure ClearPOdj();
-    function IsAnyLokoInRegulator():Boolean;
-    procedure ForceRemoveAllRegulators();
+     procedure AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj); overload;
+     procedure AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj); overload;
+     function IsPOdj(usekid:Integer):Boolean; overload;
+     function IsPOdj(usek:TBlk):Boolean; overload;
+     function GetPOdj(usekid:Integer):TPOdj; overload;
+     function GetPOdj(usek:TBlk):TPOdj; overload;
+     procedure RemovePOdj(usekid:Integer); overload;
+     procedure RemovePOdj(usek:TBlk); overload;
+     procedure ClearPOdj();
+     function IsAnyLokoInRegulator():Boolean;
+     procedure ForceRemoveAllRegulators();
 
-    property nazev:string read data.nazev;
-    property sdata:TSoupravaData read data;
-    property index:Integer read findex;
-    property stanice:TObject read data.OblRizeni write SetOR;
-    property rychlost:Integer read data.rychlost write SetSpeed;
-    property chtenaRychlost:Integer read data.chtenaRychlost;
-    property smer:THVStanoviste read data.smer write SetSmer;
-    property ukradeno:boolean read IsUkradeno;
-    property front:TObject read data.front write SetFront;
-    property delka:Integer read data.delka;
-    property typ:string read data.typ;
-    property vychoziOR:TObject read data.vychoziOR;
-    property cilovaOR:TObject read data.cilovaOR;
-    property hlaseniPrehrano:boolean read data.hlaseniPrehrano;
-    property hlaseni:boolean read data.hlaseni;
-    property HVs:TSoupravaHVs read data.HVs;
-    property maxRychlost:Cardinal read GetMaxRychlost; // pozor, muze byt i rychlost, ke tere nemame stupen!
-    property maxRychlostStupen:Cardinal read GetMaxRychlostStupen; // je vzdy rychlost, ke ktere mame stupen
-    property acquiring:Boolean read fAcquiring;
+     property index: Integer read findex;
+     property sdata: TSoupravaData read data;
 
-    // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
-    class procedure UvolV(old:TSoupravaHVs; new:TSoupravaHVs);
+     property name: string read data.name;
+     property station: TObject read data.station write SetOR;
+     property speed: Integer read data.speed write SetSpeed;
+     property wantedSpeed: Integer read data.wantedSpeed;
+     property direction: THVStanoviste read data.direction write SetSmer;
+     property stolen: boolean read IsStolen;
+     property front: TObject read data.front write SetFront;
+     property sprLength: Integer read data.length;
+     property typ: string read data.typ;
 
-  end;//TSouprava
+     property stationFrom: TObject read data.stationFrom;
+     property stationTo: TObject read data.stationTo;
+
+     property announcement: boolean read data.announcement;
+     property announcementPlayed: boolean read data.announcementPlayed;
+
+     property HVs: TSoupravaHVs read data.HVs;
+     property maxRychlost: Cardinal read GetMaxRychlost; // pozor, muze byt i rychlost, ke tere nemame stupen!
+     property maxRychlostStupen: Cardinal read GetMaxRychlostStupen; // je vzdy rychlost, ke ktere mame stupen
+     property acquiring: Boolean read fAcquiring;
+
+     // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
+     class procedure UvolV(old:TSoupravaHVs; new:TSoupravaHVs);
+
+  end;
 
 implementation
 
@@ -158,7 +158,7 @@ begin
  Self.findex := index;
  Self.data.podj := TDictionary<Integer, TPOdj>.Create();
  Self.data.HVs := TList<Integer>.Create();
- Self.data.hlaseniPrehrano := false;
+ Self.data.announcementPlayed := false;
  Self.fAcquiring := false;
 end;
 
@@ -193,20 +193,20 @@ var addr:Integer;
     data:TStrings;
     s:string;
 begin
- Self.data.nazev := ini.ReadString(section, 'nazev', section);
- Self.data.pocet_vozu := ini.ReadInteger(section, 'vozu', 0);
- Self.data.poznamka := ini.ReadString(section, 'poznamka', '');
- Self.data.smer_L := ini.ReadBool(section, 'L', false);
- Self.data.smer_S := ini.ReadBool(section, 'S', false);
- Self.data.delka := ini.ReadInteger(section, 'delka', 0);
+ Self.data.name := ini.ReadString(section, 'nazev', section);
+ Self.data.carsCount := ini.ReadInteger(section, 'vozu', 0);
+ Self.data.note := ini.ReadString(section, 'note', '');
+ Self.data.dir_L := ini.ReadBool(section, 'L', false);
+ Self.data.dir_S := ini.ReadBool(section, 'S', false);
+ Self.data.length := ini.ReadInteger(section, 'delka', 0);
  Self.data.typ := ini.ReadString(section, 'typ', '');
  Self.filefront := ini.ReadInteger(section, 'front', -1);
- Self.data.smer := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
+ Self.data.direction := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
 
- Self.data.vychoziOR := ORs.Get(ini.ReadString(section, 'z', ''));
- Self.data.cilovaOR := ORs.Get(ini.ReadString(section, 'do', ''));
- Self.data.OblRizeni := ORs.Get(ini.ReadString(section, 'OR', ''));
- Self.data.hlaseni := ini.ReadBool(section, 'hlaseni', false);
+ Self.data.stationFrom := ORs.Get(ini.ReadString(section, 'z', ''));
+ Self.data.stationTo := ORs.Get(ini.ReadString(section, 'do', ''));
+ Self.data.station := ORs.Get(ini.ReadString(section, 'OR', ''));
+ Self.data.announcement := ini.ReadBool(section, 'hlaseni', false);
 
  data := TStringList.Create();
  ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
@@ -238,27 +238,27 @@ procedure TSouprava.SaveToFile(ini:TMemIniFile; const section:string);
 var str:string;
     addr: Integer;
 begin
- ini.WriteString(section, 'nazev', Self.data.nazev);
- ini.WriteInteger(section, 'vozu', Self.data.pocet_vozu);
+ ini.WriteString(section, 'nazev', Self.data.name);
+ ini.WriteInteger(section, 'vozu', Self.data.carsCount);
 
- if (Self.data.poznamka <> '') then
-   ini.WriteString(section, 'poznamka', Self.data.poznamka)
+ if (Self.data.note <> '') then
+   ini.WriteString(section, 'poznamka', Self.data.note)
  else
    ini.DeleteKey(section, 'poznamka');
 
- ini.WriteInteger(section, 'delka', Self.data.delka);
+ ini.WriteInteger(section, 'delka', Self.data.length);
  ini.WriteString(section, 'typ', Self.data.typ);
- ini.WriteBool(section, 'L', Self.data.smer_L);
- ini.WriteBool(section, 'S', Self.data.smer_S);
- ini.WriteInteger(section, 'smer', Integer(Self.data.smer));
+ ini.WriteBool(section, 'L', Self.data.dir_L);
+ ini.WriteBool(section, 'S', Self.data.dir_S);
+ ini.WriteInteger(section, 'smer', Integer(Self.data.direction));
 
- if (Self.data.vychoziOR <> nil) then
-   ini.WriteString(section, 'z', TOR(Self.data.vychoziOR).id)
+ if (Self.data.stationFrom <> nil) then
+   ini.WriteString(section, 'z', TOR(Self.data.stationFrom).id)
  else
    ini.DeleteKey(section, 'z');
 
- if (Self.data.cilovaOR <> nil) then
-   ini.WriteString(section, 'do', TOR(Self.data.cilovaOR).id)
+ if (Self.data.stationTo <> nil) then
+   ini.WriteString(section, 'do', TOR(Self.data.stationTo).id)
  else
    ini.DeleteKey(section, 'do');
 
@@ -267,12 +267,12 @@ begin
  else
    ini.WriteInteger(section, 'front', -1);
 
- if (Self.data.OblRizeni <> nil) then
-   ini.WriteString(section, 'OR', (Self.data.OblRizeni as TOR).id)
+ if (Self.data.station <> nil) then
+   ini.WriteString(section, 'OR', (Self.data.station as TOR).id)
  else
    ini.DeleteKey(section, 'OR');
 
- ini.WriteBool(section, 'hlaseni', Self.data.hlaseni);
+ ini.WriteBool(section, 'hlaseni', Self.data.announcement);
 
  str := '';
  for addr in Self.HVs do
@@ -283,37 +283,37 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci string, kterym je definovana souprava, do panelu
-// format dat soupravy: nazev;pocet_vozu;poznamka;smer_Lsmer_S;delka;typ;hnaci vozidla;vychozi stanice;cilova stanice
+// format dat soupravy: name;carsCount;note;dir_Ldir_S;length;typ;hnaci vozidla;vychozi station;cilova stanice
 function TSouprava.GetPanelString():string;
 var addr:Integer;
 begin
- Result := Self.data.nazev + ';' + IntToStr(Self.data.pocet_vozu) + ';{' + Self.data.poznamka + '};';
+ Result := Self.data.name + ';' + IntToStr(Self.data.carsCount) + ';{' + Self.data.note + '};';
 
- if (Self.data.smer_L) then
+ if (Self.data.dir_L) then
    Result := Result + '1'
  else
    Result := Result + '0';
 
- if (Self.data.smer_S) then
+ if (Self.data.dir_S) then
    Result := Result + '1'
  else
    Result := Result + '0';
 
- Result := Result + ';' + IntToStr(Self.data.delka) + ';' + Self.data.typ + ';{';
+ Result := Result + ';' + IntToStr(Self.data.length) + ';' + Self.data.typ + ';{';
 
  for addr in Self.HVs do
    Result := Result + '[{' + HVDb[addr].GetPanelLokString() + '}]';
  Result := Result + '};';
 
- if (Self.vychoziOR <> nil) then
-   Result := Result + TOR(Self.vychoziOR).id;
+ if (Self.stationFrom <> nil) then
+   Result := Result + TOR(Self.stationFrom).id;
  Result := Result + ';';
 
- if (Self.cilovaOR <> nil) then
-   Result := Result + TOR(Self.cilovaOR).id;
+ if (Self.stationTo <> nil) then
+   Result := Result + TOR(Self.stationTo).id;
  Result := Result + ';';
 
- if (Self.data.hlaseni) then
+ if (Self.data.announcement) then
    Result := Result + '1;'
  else
    Result := Result + '0;';
@@ -337,12 +337,12 @@ begin
   begin
    if (soupravy[i] = nil) then continue;
 
-   if ((Soupravy[i].nazev = spr[0]) and (Soupravy[i] <> Self)) then
+   if ((Soupravy[i].name = spr[0]) and (Soupravy[i] <> Self)) then
     begin
-     if (Soupravy[i].stanice <> nil) then
-       raise Exception.Create('Souprava '+Soupravy[i].nazev+' již existuje v OŘ '+(Soupravy[i].stanice as TOR).Name)
+     if (Soupravy[i].station <> nil) then
+       raise Exception.Create('Souprava '+Soupravy[i].name+' již existuje v OŘ '+(Soupravy[i].station as TOR).Name)
      else
-       raise Exception.Create('Souprava '+Soupravy[i].nazev+' již existuje');
+       raise Exception.Create('Souprava '+Soupravy[i].name+' již existuje');
 
      Exit();
     end;
@@ -357,36 +357,36 @@ begin
 
  Self.changed := true;
 
- Self.data.nazev := spr[0];
- Self.data.pocet_vozu := StrToInt(spr[1]);
- Self.data.poznamka := spr[2];
- Self.data.smer_L := (spr[3][1] = '1');
- Self.data.smer_S := (spr[3][2] = '1');
+ Self.data.name := spr[0];
+ Self.data.carsCount := StrToInt(spr[1]);
+ Self.data.note := spr[2];
+ Self.data.dir_L := (spr[3][1] = '1');
+ Self.data.dir_S := (spr[3][2] = '1');
 
- Self.data.delka := StrToInt(spr[4]);
- Self.data.typ   := spr[5];
+ Self.data.length := StrToInt(spr[4]);
+ Self.data.typ := spr[5];
 
- Self.data.OblRizeni := OblR;
- Self.data.front     := Usek;
+ Self.data.station := OblR;
+ Self.data.front := Usek;
 
  if (spr.Count > 7) then
-   Self.data.vychoziOR := ORs.Get(spr[7]);
+   Self.data.stationFrom := ORs.Get(spr[7]);
 
  if (spr.Count > 8) then
-   Self.data.cilovaOR := ORs.Get(spr[8]);
+   Self.data.stationTo := ORs.Get(spr[8]);
 
  if (spr.Count > 9) then
-   Self.data.hlaseni := (spr[9] = '1')
+   Self.data.announcement := (spr[9] = '1')
  else
-   Self.data.hlaseni := TStanicniHlaseni.HlasitSprTyp(Self.typ);
+   Self.data.announcement := TStanicniHlaseni.HlasitSprTyp(Self.typ);
 
- if ((Self.chtenaRychlost = 0) and (Self.data.smer_L xor Self.data.smer_S)) then
+ if ((Self.wantedSpeed = 0) and (Self.data.dir_L xor Self.data.dir_S)) then
   begin
    // vypocet smeru ze sipky
-   if (Self.data.smer_L) then
-     Self.data.smer := THVStanoviste.lichy
+   if (Self.data.dir_L) then
+     Self.data.direction := THVStanoviste.lichy
    else
-     Self.data.smer := THVStanoviste.sudy;
+     Self.data.direction := THVStanoviste.sudy;
   end;
 
  hvs := TStringList.Create();
@@ -413,7 +413,7 @@ begin
      if (new.Contains(addr)) then
        raise Exception.Create('Duplicitní loko!');
 
-     HVDb[addr].Data.Poznamka := hv[3];
+     HVDb[addr].Data.poznamka := hv[3];
      HVDb[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
      HVDb[addr].souprava := Self.index;
 
@@ -497,7 +497,7 @@ begin
  Self.data.HVs.Free();
  Self.data.HVs := newLoks;
 
- Self.SetRychlostSmer(Self.rychlost, Self.smer);
+ Self.SetRychlostSmer(Self.speed, Self.direction);
  Blky.ChangeSprToTrat(Self.index);
 
  TBlkUsek(Self.front).Change();
@@ -555,13 +555,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetOR(OblRizeni:TObject);
+procedure TSouprava.SetOR(station: TObject);
 var addr:Integer;
 begin
- Self.data.OblRizeni := OblRizeni;
+ Self.data.station := station;
  for addr in Self.HVs do
-   HVDb[addr].PredejStanici(OblRizeni as TOR);
- Self.Data.hlaseniPrehrano := false;
+   HVDb[addr].PredejStanici(station as TOR);
+ Self.Data.announcementPlayed := false;
  Self.changed := true;
 end;
 
@@ -574,14 +574,14 @@ begin
  if ((TBlk(Self.front).typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
    TBlkTU(Self.front).rychUpdate := false;
 
- Self.data.smer := dir;
+ Self.data.direction := dir;
  if (Self.speedBuffer = nil) then
   begin
-   Self.data.chtenaRychlost := speed;
+   Self.data.wantedSpeed := speed;
    if (speed > Self.maxRychlost) then
-     Self.data.rychlost := Self.maxRychlost
+     Self.data.speed := Self.maxRychlost
    else
-     Self.data.rychlost := speed;
+     Self.data.speed := speed;
   end else begin
    Self.speedBuffer^ := speed;
    Exit();
@@ -606,7 +606,7 @@ begin
    direction := PrevodySoustav.IntToBool(Integer(dir) xor Integer(HVDb[addr].stav.StanovisteA));
 
    try
-     HVDb[addr].SetSpeedDir(Self.data.rychlost, direction,
+     HVDb[addr].SetSpeedDir(Self.data.speed, direction,
                             TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
    except
      on E:Exception do
@@ -619,7 +619,7 @@ begin
       ((Self.front as TBlkUsek).Soupravs[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
   (Self.front as TBlkUsek).VlakPresun := -1;
 
- writelog('Souprava ' + Self.nazev + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
+ writelog('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
 
  Self.changed := true;
 end;
@@ -628,26 +628,26 @@ end;
 
 procedure TSouprava.SetSpeed(speed:Integer);
 begin
- Self.SetRychlostSmer(speed, Self.data.smer);
+ Self.SetRychlostSmer(speed, Self.data.direction);
 end;
 
 procedure TSouprava.SetSmer(smer:THVStanoviste);
 begin
- Self.SetRychlostSmer(Self.data.rychlost, smer);
+ Self.SetRychlostSmer(Self.data.speed, smer);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.HVComErr(Sender:TObject; Data:Pointer);
 begin
- if (Self.data.OblRizeni <> nil) then
-   (Self.data.OblRizeni as TOR).BlkWriteError(nil, 'Souprava '+Self.nazev+' nekomunikuje s centrálou', 'CENTRÁLA');
+ if (Self.data.station <> nil) then
+   (Self.data.station as TOR).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSouprava.IsUkradeno():boolean;
-var addr:Integer;
+function TSouprava.IsStolen(): Boolean;
+var addr: Integer;
 begin
  for addr in Self.HVs do
    if (HVDb[addr].stolen) then
@@ -680,7 +680,7 @@ begin
  if (vezmi^.nextVezmi >= Self.HVs.Count) then
   begin
    Self.changed := true;
-   Self.SetRychlostSmer(Self.rychlost, Self.smer);
+   Self.SetRychlostSmer(Self.speed, Self.direction);
    if (Assigned(vezmi^.ok.callback)) then
      vezmi^.ok.callback(Self, vezmi^.ok.data);
    FreeMem(vezmi);
@@ -737,7 +737,7 @@ procedure TSouprava.ChangeSmer();
 var addr:Integer;
     tmp:boolean;
 begin
- writelog('Souprava '+ Self.nazev + ' : změna směru', WR_SPRPREDAT);
+ writelog('Souprava '+ Self.name + ' : změna směru', WR_SPRPREDAT);
 
  // zmenit orintaci stanoviste A hnacich vozidel
  for addr in Self.HVs do
@@ -749,14 +749,14 @@ begin
   end;//for i
 
  // zmenit orientaci sipky soupravy
- tmp              := Self.data.smer_L;
- Self.data.smer_L := Self.data.smer_S;
- Self.data.smer_S := tmp;
+ tmp := Self.data.dir_L;
+ Self.data.dir_L := Self.data.dir_S;
+ Self.data.dir_S := tmp;
 
  // zmenit smer suupravy - dulezite pro zastaveni pred navestidlem
- case (Self.data.smer) of
-  THVStanoviste.lichy : Self.smer := THVStanoviste.sudy;
-  THVStanoviste.sudy  : Self.smer := THVStanoviste.lichy;
+ case (Self.data.direction) of
+  THVStanoviste.lichy : Self.direction := THVStanoviste.sudy;
+  THVStanoviste.sudy  : Self.direction := THVStanoviste.lichy;
  end;//case
 
  if (Self.front <> nil) then
@@ -768,9 +768,9 @@ end;
 procedure TSouprava.InterChangeStanice(change_ev:Boolean = true);
 var tmp:TObject;
 begin
- tmp := Self.data.vychoziOR;
- Self.data.vychoziOR := Self.data.cilovaOR;
- Self.data.cilovaOR := tmp;
+ tmp := Self.data.stationFrom;
+ Self.data.stationFrom := Self.data.stationTo;
+ Self.data.stationTo := tmp;
 
  Self.changed := true;
  if ((Self.front <> nil) and (change_ev)) then
@@ -795,19 +795,19 @@ procedure TSouprava.LokDirChanged();
 var i:Integer;
     dir:Boolean;
 begin
- if ((Self.chtenaRychlost <> 0) or (Self.data.smer_L xor Self.data.smer_S) or
+ if ((Self.wantedSpeed <> 0) or (Self.data.dir_L xor Self.data.dir_S) or
      (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
    Exit();
 
  dir := HVDb[Self.HVs[0]].stACurrentDirection;
 
- if (dir = PrevodySoustav.IntToBool(Integer(Self.smer))) then Exit();
+ if (dir = PrevodySoustav.IntToBool(Integer(Self.direction))) then Exit();
  for i := 1 to Self.HVs.Count-1 do
    if (dir <> HVDb[Self.HVs[i]].stACurrentDirection) then
      Exit();
 
  // vsechna hv nastavena do opacneho smeru -> zmenit smer soupravy
- Self.smer := THVStanoviste(dir);
+ Self.direction := THVStanoviste(dir);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -816,7 +816,7 @@ procedure TSouprava.ToggleHouk(desc:string);
 var addr:Integer;
     HV:THV;
 begin
- writelog('Souprava ' + Self.nazev + ' : aktivuji houkání ' + desc, WR_MESSAGE);
+ writelog('Souprava ' + Self.name + ' : aktivuji houkání ' + desc, WR_MESSAGE);
 
  for addr in Self.HVs do
   begin
@@ -831,9 +831,9 @@ var addr:Integer;
     HV:THV;
 begin
  if (state) then
-   writelog('Souprava ' + Self.nazev + ' : aktivuji funkci ' + desc, WR_MESSAGE)
+   writelog('Souprava ' + Self.name + ' : aktivuji funkci ' + desc, WR_MESSAGE)
  else
-   writelog('Souprava ' + Self.nazev + ' : deaktivuji funkci ' + desc, WR_MESSAGE);
+   writelog('Souprava ' + Self.name + ' : deaktivuji funkci ' + desc, WR_MESSAGE);
 
  for addr in Self.HVs do
   begin
@@ -851,8 +851,8 @@ var mnav:TBlkNav;
     shPlay:TSHToPlay;
     shSpr:TSHSpr;
 begin
- if ((not Self.hlaseni) or (Self.hlaseniPrehrano) or (self.vychoziOR = nil) or
-     (self.cilovaOR = nil) or (Self.typ = '')) then Exit();
+ if ((not Self.announcement) or (Self.announcementPlayed) or (self.stationFrom = nil) or
+     (self.stationTo = nil) or (Self.typ = '')) then Exit();
 
  mnav := TBlkNav(nav);
  if (mnav.OblsRizeni.Count < 1) then Exit();
@@ -867,10 +867,10 @@ begin
      AppEvents.LogException(E, 'CanPlayPrijezdSH');
  end;
 
- shSpr.cislo := Self.nazev;
+ shSpr.cislo := Self.name;
  shSpr.typ   := Self.typ;
- shSpr.fromORid := TOR(Self.vychoziOR).id;
- shSpr.toORid := TOR(Self.cilovaOR).id;
+ shSpr.fromORid := TOR(Self.stationFrom).id;
+ shSpr.toORid := TOR(Self.stationTo).id;
  shSpr.timeArrive := 0;
  shSpr.timeDepart := 0;
 
@@ -885,10 +885,10 @@ begin
  try
    if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (Self.IsPOdj(shPlay.stanicniKolej)))) then begin
      oblr.hlaseni.Prijede(shSpr);
-     Self.data.hlaseniPrehrano := true;
+     Self.data.announcementPlayed := true;
    end else if (shPlay.trat <> nil) then begin
      oblr.hlaseni.Projede(shSpr);
-     Self.data.hlaseniPrehrano := true;
+     Self.data.announcementPlayed := true;
    end;
  except
    on E:Exception do
