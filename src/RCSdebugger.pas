@@ -369,7 +369,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+parsed[2]+';not;Neplatná adresa modulu');
+    ORTCPServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+parsed[2]+';not;Neplatná adresa modulu');
     Exit();
   end;
 
@@ -382,7 +382,7 @@ begin
     Self.modules.Add(module);
     RCSi.AddInputChangeEvent(addr, Self.OnRCSInputChange);
     RCSi.AddOutputChangeEvent(addr, Self.OnRCSOutputChange);
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';ok');
+    ORTCPServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';ok');
     Self.SendInput(addr);
     Self.SendOutput(addr);
    end;
@@ -391,7 +391,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
+    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -401,14 +401,14 @@ begin
     RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange, addr);
     RCSi.RemoveOutputChangeEvent(Self.OnRCSOutputChange, addr);
     Self.modules.Delete(index);
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';not');
+    ORTCPServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';not');
    end;
 
  end else if (parsed[2] = 'SETOUT') then begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
+    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -418,7 +418,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
+    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -428,18 +428,18 @@ begin
     Self.SendInput(addr);
     Self.SendOutput(addr);
    end else begin
-    ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;ERR;Modul není autorizován');
+    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Modul není autorizován');
    end;
 
  end else if (parsed[2] = 'INFO') then begin
-   ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
+   ORTCPServer.SendLn(Self.conn, '-;RCSd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
 
  end else if (parsed[2] = 'LIST') then begin
    str := '';
    for i := 0 to RCSi.maxModuleAddr do
      if ((RCSi.IsModule(i)) or (RCSi.GetNeeded(i))) then
         str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
-   ORTCPServer.SendInfoMsg(Self.conn, '-;RCSd;INFO;{'+str+'}');
+   ORTCPServer.SendLn(Self.conn, '-;RCSd;INFO;{'+str+'}');
  end;
 end;
 
