@@ -264,6 +264,7 @@ type
       class function GetPSPodminky(podm:TPSPodminka):TPSPodminky;
 
       class function NameComparer():IComparer<TOR>;
+      class function IdComparer():IComparer<TOR>;
 
       property NUZtimer:Boolean read ORStav.NUZtimer write ORStav.NUZtimer;
       property NUZblkCnt:Integer read ORStav.NUZblkCnt write SetNUZBlkCnt;
@@ -618,7 +619,7 @@ begin
  if (user.ban) then
   begin
    UserRights := TORControlRights.null;
-   msg := 'Uživatel '+user.id+' má BAN !';
+   msg := 'Uživatel '+user.username+' má BAN !';
   end else
 
  // kontrola opravneni uzivatele pro tento panel
@@ -829,8 +830,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.PanelMessage(Sender:TIdContext; recepient:string; msg:string);
-var orindex, return:Integer;
-    tmp:TOR;
+var return: Integer;
+    oblr: TOR;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -839,15 +840,14 @@ begin
    Exit;
   end;
 
- orindex := ORs.GetORIndex(recepient);
- if (orindex < 0) then
+ oblr := ORs.Get(recepient);
+ if (oblr = nil) then
   begin
    ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';Tato OŘ neexistuje');
    Exit();
   end;
 
- ORs.GetORByIndex(orindex, tmp);
- return := tmp.ORSendMsg(Self, msg);
+ return := oblr.ORSendMsg(Self, msg);
 
  if (return = 1) then
    ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';K této OŘ aktuálně není připojen žádný panel');
@@ -954,8 +954,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.PanelMoveLok(Sender:TIdContext; lok_addr:word; new_or:string);
-var n_or:Integer;
-    new:TOR;
+var new: TOR;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -964,8 +963,8 @@ begin
    Exit;
   end;
 
- n_or := ORs.GetORIndex(new_or);
- if (n_or < 0) then
+ new := ORs.Get(new_or);
+ if (new = nil) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'Tato OR neexistuje!');
    Exit;
@@ -986,7 +985,6 @@ begin
    Exit;
   end;
 
- ORs.GetORByIndex(n_or, new);
  HVDb[lok_addr].PredejStanici(new);
  ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' předáno stanici '+new.Name);
 end;
@@ -1328,7 +1326,7 @@ procedure TOR.UpdateLine(LI:TListItem);
 var str:string;
   i: Integer;
 begin
- LI.Caption := IntToStr(Self.index);
+ LI.Caption := IntToStr(Self.index+1);
  LI.SubItems.Strings[0] := Self.Name;
  LI.SubItems.Strings[1] := Self.ShortName;
  LI.SubItems.Strings[2] := Self.id;
@@ -1853,7 +1851,7 @@ begin
   begin
    user := (Self.reg_please.Data as TTCPORsRef).regulator_user;
    if (user <> nil) then
-     ORTCPServer.SendLn(panel, Self.id+';LOK-REQ;REQ;'+user.id+';'+user.firstname+';'+user.lastname+';');
+     ORTCPServer.SendLn(panel, Self.id+';LOK-REQ;REQ;'+user.username+';'+user.firstname+';'+user.lastname+';');
   end;
 
  if ((Assigned(Self.hlaseni)) and (Self.hlaseni.available)) then
@@ -1912,10 +1910,10 @@ begin
   begin
    // je pripojeny uzivatel s vyssimi opravevnimi, nez jsou mu pridelena?
    rights := TUser(user).GetRights(Self.id);
-   if ((Self.Connected[i].user = TUser(user).id) and ((Self.Connected[i].Rights > rights) or (TUser(user).ban))) then
+   if ((Self.Connected[i].user = TUser(user).username) and ((Self.Connected[i].Rights > rights) or (TUser(user).ban))) then
     begin
      if (TUser(user).ban) then rights := TORControlRights.null;
-     Self.PnlDAdd(Self.Connected[i].Panel, rights, TUser(user).id);
+     Self.PnlDAdd(Self.Connected[i].Panel, rights, TUser(user).username);
      Self.ORAuthoriseResponse(Self.Connected[i].Panel, rights, 'Snížena oprávnění uživatele', '');
     end;
   end;//for i
@@ -1947,7 +1945,7 @@ begin
  Self.ORStav.reg_please := Sender;
 
  //format: or;LOK-REQ;REQ;username;firstname;lastname;comment
- str := 'LOK-REQ;REQ;'+TUser(user).id+';';
+ str := 'LOK-REQ;REQ;'+TUser(user).username+';';
  if (TUser(user).firstname <> '') then str := str + TUser(user).firstname + ';' else str := str + '-;';
  if (TUser(user).lastname <> '') then str := str + TUser(user).lastname + ';' else str := str + '-;';
  if (comment <> '') then str := str + comment + ';' else str := str + '-;';
@@ -2091,6 +2089,16 @@ begin
   function(const Left, Right: TOR): Integer
    begin
     Result := CompareStr(Left.Name, Right.Name, loUserLocale);
+   end
+ );
+end;
+
+class function TOR.IdComparer():IComparer<TOR>;
+begin
+ Result := TComparer<TOR>.Construct(
+  function(const Left, Right: TOR): Integer
+   begin
+    Result := CompareStr(Left.id, Right.id, loUserLocale);
    end
  );
 end;

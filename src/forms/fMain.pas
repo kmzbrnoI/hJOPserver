@@ -2199,7 +2199,7 @@ procedure TF_Main.B_RemoveStackClick(Sender: TObject);
 var OblR:TOR;
 begin
  if (Self.LV_Stanice.Selected = nil) then Exit();
- ORs.GetORByIndex(Self.LV_Stanice.ItemIndex, OblR);
+ OblR := ORs[Self.LV_Stanice.ItemIndex];
  if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+OblR.Name+' ?'),
                             'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    OblR.stack.ClearStack();
@@ -2801,7 +2801,7 @@ var OblR:TOR;
 begin
  if (Self.LV_Stanice.Selected <> nil) then
   begin
-   ORs.GetORByIndex(Self.LV_Stanice.ItemIndex, OblR);
+   OblR := ORs[Self.LV_Stanice.ItemIndex];
    if (OblR.stack.Count > 0) then Self.B_RemoveStack.Enabled := true else Self.B_RemoveStack.Enabled := false;
   end else begin
    Self.B_RemoveStack.Enabled := false;

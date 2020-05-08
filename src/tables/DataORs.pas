@@ -45,7 +45,7 @@ begin
  for i := 0 to ORs.Count-1 do
   begin
    LI := Self.LV.Items.Add;
-   LI.Caption := IntToStr(i+1);
+   LI.Caption := IntToStr(i);
    for j := 0 to Self.LV.Columns.Count-2 do
      LI.SubItems.Add('---');
   end;//for i
@@ -56,15 +56,13 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORsTableData.UpdateTable(force:boolean = false);
-var i:Integer;
-    OblR:TOR;
+var OblR: TOR;
 begin
- for i := 0 to ORs.Count-1 do
+ for OblR in ORs do
   begin
-   ORs.GetORByIndex(i, OblR);
    if ((OblR.changed) or (force)) then
     begin
-     OblR.UpdateLine(Self.LV.Items[i]);
+     OblR.UpdateLine(Self.LV.Items[OblR.index]);
      OblR.changed := false;
     end;
   end;

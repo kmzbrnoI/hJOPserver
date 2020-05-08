@@ -135,7 +135,7 @@ begin
        ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Žádost již probíhá');
        Exit();
       end;
-     ORs.GetORByIndex(ORs.GetORIndex(parsed[4]), OblR);
+     OblR := ORs.Get(parsed[4]);
      if (OblR = nil) then
       begin
        ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Tato oblast řízení neexistuje');

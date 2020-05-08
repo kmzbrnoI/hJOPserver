@@ -208,17 +208,13 @@ begin
 end;
 
 procedure TUsrDb.RemoveUser(index:Integer);
-var oblr:string;
-    OblRRef:TOR;
+var oblr: string;
 begin
  try
    // nejprve je zapotrebi odpojit vsechny pripojene panely
    for oblr in Self.users[index].OblR.Keys do
-    begin
-     ORs.GetORByIndex(ORs.GetORIndex(oblr), OblRRef);
-     if (OblRRef <> nil) then
-       OblRRef.UserDelete(Self.users[index].username);
-    end;
+     if (ORs.Get(oblr) <> nil) then
+       ORs.Get(oblr).UserDelete(Self.users[index].username);
 
    if (Assigned(Self.users[index])) then
      Self.users.Delete(index);

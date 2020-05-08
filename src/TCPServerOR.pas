@@ -826,7 +826,7 @@ end;
 
 procedure TORTCPServer.ParseOR(AContext: TIdContext; parsed: TStrings);
 var i:Integer;
-    oblr:TOR;
+    oblr: TOR;
     btn:TPanelButton;
     orRef:TTCPORsRef;
 begin
@@ -839,7 +839,7 @@ begin
    Exit;
  end else if (parsed[1] = 'SH') then begin
    try
-     oblr := ORs.GetORById(parsed[0]);
+     oblr := ORs.Get(parsed[0]);
      if (Assigned(oblr)) then begin
        if (Assigned(oblr.hlaseni)) then
          oblr.hlaseni.Parse(AContext, oblr, parsed)
@@ -856,11 +856,9 @@ begin
  end;
 
  // vsechna ostatni data pak podlehaji znalosti OR, ktere mam autorizovane, tak z toho vyjdeme
- for i := 0 to orRef.ORs.Count-1 do
-   if (parsed[0] = orRef.ORs[i].id) then
-     break;
 
- if (i = orRef.ORs.Count) then
+ oblr := ORs.Get(parsed[0]);
+ if (oblr = nil) then
   begin
    Self.SendInfoMsg(AContext, 'Neautorizováno');
    Exit();
@@ -869,23 +867,23 @@ begin
  if (parsed[1] = 'NUZ') then
   begin
    if (parsed[2] = '1') then
-     orRef.ORs[i].PanelNUZ(AContext);
+     oblr.PanelNUZ(AContext);
    if (parsed[2] = '0') then
-     orRef.ORs[i].PanelNUZCancel(AContext);
+     oblr.PanelNUZCancel(AContext);
    Exit();
   end
 
  else if (parsed[1] = 'GET-ALL') then
-  orRef.ORs[i].PanelFirstGet(AContext)
+  oblr.PanelFirstGet(AContext)
 
  else if (parsed[1] = 'CLICK') then begin
   try
    btn := Self.StrToPanelButton(parsed[2]);
 
    if (parsed.Count > 4) then
-     orRef.ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
+     oblr.PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
    else
-     orRef.ORs[i].PanelClick(AContext, StrToInt(parsed[3]), btn);
+     oblr.PanelClick(AContext, StrToInt(parsed[3]), btn);
 
    if (btn = ESCAPE) then
      orRef.Escape(AContext);
@@ -895,50 +893,50 @@ begin
   end;
 
  end else if (parsed[1] = 'MSG') then
-   orRef.ORs[i].PanelMessage(ACOntext, parsed[2], parsed[3])
+   oblr.PanelMessage(ACOntext, parsed[2], parsed[3])
 
  else if (parsed[1] = 'HV-LIST') then
-   orRef.ORs[i].PanelHVList(AContext)
+   oblr.PanelHVList(AContext)
 
  else if (parsed[1] = 'SPR-CHANGE') then
   begin
    parsed.Delete(0);
    parsed.Delete(0);
-   orRef.ORs[i].PanelSprChange(AContext, parsed);
+   oblr.PanelSprChange(AContext, parsed);
   end
 
  else if (parsed[1] = 'LOK-MOVE-OR') then
-   orRef.ORs[i].PanelMoveLok(AContext, StrToInt(parsed[2]), parsed[3])
+   oblr.PanelMoveLok(AContext, StrToInt(parsed[2]), parsed[3])
 
  else if (parsed[1] = 'OSV') then
   begin
    if (parsed[2] = 'GET') then
-     orRef.ORs[i].PanelSendOsv(AContext)
+     oblr.PanelSendOsv(AContext)
    else if (parsed[2] = 'SET') then
-   orRef.ORs[i].PanelSetOsv(AContext, parsed[3], PrevodySoustav.StrToBool(parsed[4]));
+   oblr.PanelSetOsv(AContext, parsed[3], PrevodySoustav.StrToBool(parsed[4]));
   end
 
  else if (parsed[1] = 'HV') then
   begin
    if (parsed[2] = 'ADD') then
-     orRef.ORs[i].PanelHVAdd(AContext, parsed[3]);
+     oblr.PanelHVAdd(AContext, parsed[3]);
    if (parsed[2] = 'REMOVE') then
-     orRef.ORs[i].PanelHVRemove(AContext, StrToInt(parsed[3]));
+     oblr.PanelHVRemove(AContext, StrToInt(parsed[3]));
    if (parsed[2] = 'EDIT') then
-     orRef.ORs[i].PanelHVEdit(AContext, parsed[3]);
+     oblr.PanelHVEdit(AContext, parsed[3]);
   end
 
  else if (parsed[1] = 'ZAS') then
-  orRef.ORs[i].PanelZAS(AContext, parsed)
+  oblr.PanelZAS(AContext, parsed)
 
  else if (parsed[1] = 'DK-CLICK') then
-  orRef.ORs[i].PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
+  oblr.PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
 
  else if (parsed[1] = 'LOK-REQ') then
-  orRef.ORs[i].PanelLokoReq(AContext, parsed)
+  oblr.PanelLokoReq(AContext, parsed)
 
  else if (parsed[1] = 'SHP') then
-  orRef.ORs[i].PanelHlaseni(AContext, parsed);
+  oblr.PanelHlaseni(AContext, parsed);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1166,16 +1164,14 @@ end;
 
 procedure TORTCPServer.Auth(AContext: TIdContext; parsed: TStrings);
 var OblR:TOR;
-    i:Integer;
 begin
- i := ORs.GetORIndex(parsed[0]);
- if (i = -1) then
+ OblR := ORs.Get(parsed[0]);
+ if (OblR = nil) then
   begin
    Self.SendInfoMsg(AContext, 'Tato OR neexistuje');
-   Exit;
+   Exit();
   end;
 
- ORs.GetORByIndex(i, OblR);
  if (parsed.Count < 4) then
   OblR.PanelAuthorise(AContext, TORControlRights(StrToInt(parsed[2])), '', '')
  else if (parsed.Count < 5) then

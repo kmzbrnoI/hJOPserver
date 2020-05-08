@@ -454,14 +454,11 @@ end;
 
 procedure THV.LoadState(ini:TMemIniFile; section:string);
 var i:Integer;
-    stanice:Integer;
     str:string;
 begin
- stanice := ORs.GetORIndex(ini.ReadString(section, 'stanice', ''));
- if (stanice <> -1) then
-  ORs.GetORByIndex(stanice, Self.Stav.stanice)
- else
-  ORs.GetORByIndex(HVDb.default_or, Self.Stav.stanice);
+ Self.Stav.stanice := ORs.Get(ini.ReadString(section, 'stanice', ''));
+ if (Self.Stav.stanice = nil) then
+   Self.Stav.stanice := ORs[HVDb.default_or];
 
  Self.Stav.traveled_forward := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
  Self.Stav.traveled_backward := ini.ReadFloat(section, 'najeto_vzad_metru', 0);

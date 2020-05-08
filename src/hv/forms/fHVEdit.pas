@@ -178,7 +178,7 @@ var data:THVData;
     Exit;
    end;
 
-  ORs.GetORByIndex(Self.CB_OR.ItemIndex, OblR);
+  OblR := ORs[Self.CB_OR.ItemIndex];
   if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.souprava > -1) and (Self.OpenHV.Stav.stanice <> OblR)) then
     if (Application.MessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
@@ -232,7 +232,7 @@ var data:THVData;
    begin
      // vytvoreni noveho HV
      data.maxRychlost := _DEFAUT_MAX_SPEED;
-     ORs.GetORByIndex(Self.CB_OR.ItemIndex, OblR);
+     OblR := ORs[Self.CB_OR.ItemIndex];
      try
        HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
      except
@@ -251,7 +251,7 @@ var data:THVData;
      // update HV
      Self.OpenHV.data := data;
 
-     ORs.GetORByIndex(Self.CB_OR.ItemIndex, OblR);
+     OblR := ORs[Self.CB_OR.ItemIndex];
 
      stav := Self.OpenHV.stav;
      stav.StanovisteA := THVStanoviste(CB_Orientace.ItemIndex);

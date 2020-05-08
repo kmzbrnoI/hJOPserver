@@ -29,7 +29,7 @@ var
 
 implementation
 
-uses fMain, UserDb, User, Prevody;
+uses fMain, UserDb, User, Prevody, ownStrUtils, StrUtils, TOblRizeni, TOblsRizeni;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,7 +55,7 @@ begin
    LI.Caption := IntToStr(i);
    for j := 0 to Self.LV.Columns.Count-2 do
      LI.SubItems.Add('');
- end;//for i
+ end;
 
  Self.UpdateTable();
 end;
@@ -69,6 +69,8 @@ end;
 
 procedure TUsersTableData.UpdateLine(line:Integer);
 var user: TUser;
+    str: string;
+    oblr: TOR;
 begin
  user := UsrDb.GetUser(line);
 
@@ -77,6 +79,24 @@ begin
  Self.LV.Items[line].SubItems[1] := user.fullName;
  Self.LV.Items[line].SubItems[2] := PrevodySoustav.BoolToStr(user.root);
  Self.LV.Items[line].SubItems[3] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
+ Self.LV.Items[line].Subitems[5] := EscapeNewline(user.note);
+
+ str := '';
+ for oblr in ORs do
+  begin
+   if ((user.OblR.ContainsKey(oblr.id)) and (user.OblR[oblr.id] > TORControlRights.null)) then
+    begin
+     str := str + oblr.ShortName + ':';
+     case user.OblR[oblr.id] of
+       TORControlRights.read: str := str + 'R';
+       TORControlRights.write: str := str + 'W';
+       TORControlRights.superuser: str := str + 'S';
+     end;
+     str := str + ', ';
+    end;
+  end;
+
+ Self.LV.Items[line].Subitems[4] := LeftStr(str, Length(str)-2);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

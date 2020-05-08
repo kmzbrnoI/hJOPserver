@@ -8,6 +8,9 @@ function RemoveWhiteSpace(const s: string): string;
 procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
 function RandomToken(len: Cardinal): string;
 
+function EscapeNewline(const orig: string): string;
+function DescapeNewline(const orig: string): string;
+
 implementation
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,6 +82,18 @@ begin
  Result := '';
  for i := 0 to len-1 do
    Result := Result + _ALL[Random(Length(_ALL))+1];
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function EscapeNewline(const orig: string): string;
+begin
+ Result :=  StringReplace(orig, #13#10, '\n', [rfReplaceAll]);
+end;
+
+function DescapeNewline(const orig: string): string;
+begin
+ Result := StringReplace(orig, '\n', #13#10, [rfReplaceAll]);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

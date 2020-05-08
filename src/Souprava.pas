@@ -193,20 +193,20 @@ var addr:Integer;
     data:TStrings;
     s:string;
 begin
- Self.data.nazev      := ini.ReadString(section, 'nazev', section);
+ Self.data.nazev := ini.ReadString(section, 'nazev', section);
  Self.data.pocet_vozu := ini.ReadInteger(section, 'vozu', 0);
- Self.data.poznamka   := ini.ReadString(section, 'poznamka', '');
- Self.data.smer_L     := ini.ReadBool(section, 'L', false);
- Self.data.smer_S     := ini.ReadBool(section, 'S', false);
- Self.data.delka      := ini.ReadInteger(section, 'delka', 0);
- Self.data.typ        := ini.ReadString(section, 'typ', '');
- Self.filefront       := ini.ReadInteger(section, 'front', -1);
- Self.data.smer       := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
+ Self.data.poznamka := ini.ReadString(section, 'poznamka', '');
+ Self.data.smer_L := ini.ReadBool(section, 'L', false);
+ Self.data.smer_S := ini.ReadBool(section, 'S', false);
+ Self.data.delka := ini.ReadInteger(section, 'delka', 0);
+ Self.data.typ := ini.ReadString(section, 'typ', '');
+ Self.filefront := ini.ReadInteger(section, 'front', -1);
+ Self.data.smer := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
 
- Self.data.vychoziOR  := ORs.GetORById(ini.ReadString(section, 'z', ''));
- Self.data.cilovaOR   := ORs.GetORById(ini.ReadString(section, 'do', ''));
- Self.data.OblRizeni  := ORs.GetORById(ini.ReadString(section, 'OR', ''));
- Self.data.hlaseni    := ini.ReadBool(section, 'hlaseni', false);
+ Self.data.vychoziOR := ORs.Get(ini.ReadString(section, 'z', ''));
+ Self.data.cilovaOR := ORs.Get(ini.ReadString(section, 'do', ''));
+ Self.data.OblRizeni := ORs.Get(ini.ReadString(section, 'OR', ''));
+ Self.data.hlaseni := ini.ReadBool(section, 'hlaseni', false);
 
  data := TStringList.Create();
  ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
@@ -370,10 +370,10 @@ begin
  Self.data.front     := Usek;
 
  if (spr.Count > 7) then
-   Self.data.vychoziOR := ORs.GetORById(spr[7]);
+   Self.data.vychoziOR := ORs.Get(spr[7]);
 
  if (spr.Count > 8) then
-   Self.data.cilovaOR := ORs.GetORById(spr[8]);
+   Self.data.cilovaOR := ORs.Get(spr[8]);
 
  if (spr.Count > 9) then
    Self.data.hlaseni := (spr[9] = '1')

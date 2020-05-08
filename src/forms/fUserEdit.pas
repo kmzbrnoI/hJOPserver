@@ -27,6 +27,8 @@ type
     CB_Rights: TComboBox;
     CHB_Ban: TCheckBox;
     CHB_Reg: TCheckBox;
+    M_Note: TMemo;
+    Label6: TLabel;
     procedure B_CancelClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure LV_ORsChange(Sender: TObject; Item: TListItem;
@@ -36,7 +38,7 @@ type
     procedure LV_ORsCustomDrawItem(Sender: TCustomListView; Item: TListItem;
       State: TCustomDrawState; var DefaultDraw: Boolean);
   private
-    OpenUser:TUser;
+    openUser:TUser;
     new:boolean;
 
     procedure FillORs();
@@ -69,7 +71,7 @@ begin
   begin
    if (Self.LV_ORs.Items[i].Selected) then
     begin
-     Self.OpenUser.SetRights(Self.LV_ORs.Items[i].Caption, TORControlRights(Self.CB_Rights.ItemIndex));
+     Self.openUser.SetRights(Self.LV_ORs.Items[i].Caption, TORControlRights(Self.CB_Rights.ItemIndex));
      Self.LV_ORs.Items[i].SubItems.Strings[1] := TOR.ORRightsToString(TORControlRights(Self.CB_Rights.ItemIndex));
      TORControlRights(Self.LV_ORs.Items[i].Data^) := TORControlRights(Self.CB_Rights.ItemIndex);
     end;
@@ -103,7 +105,7 @@ begin
    if (Self.LV_ORs.SelCount = 1) then
     begin
      // 1 vybrana polozka
-     if (Self.OpenUser.OblR.TryGetValue(Self.LV_ORs.Selected.Caption, rights)) then
+     if (Self.openUser.OblR.TryGetValue(Self.LV_ORs.Selected.Caption, rights)) then
       Self.CB_Rights.ItemIndex := Integer(rights)
      else
       Self.CB_Rights.ItemIndex := -1;
@@ -112,12 +114,12 @@ begin
 
      for i := 0 to Self.LV_ORs.Items.Count-1 do
        if (Self.LV_ORs.Items[i].Selected) then
-         Self.OpenUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights);
+         Self.openUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights);
 
      for i := 0 to Self.LV_ORs.Items.Count-1 do
        if (Self.LV_ORs.Items[i].Selected) then
         begin
-         Self.OpenUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights2);
+         Self.openUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights2);
          if (rights2 <> rights) then
           begin
            Self.CB_Rights.ItemIndex := -1;
@@ -143,38 +145,40 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TF_UserEdit.OpenForm(User:TUser);
+procedure TF_UserEdit.OpenForm(user:TUser);
 begin
- Self.OpenUser := User;
+ Self.openUser := User;
  Self.FillORs();
 
- Self.E_UserName.Text   := User.id;
- Self.E_FirstName.Text  := User.firstname;
- Self.E_LastName.Text   := User.lastname;
- Self.CHB_root.Checked  := User.root;
- Self.CHB_Ban.Checked   := User.ban;
- Self.CHB_Reg.Checked   := User.regulator;
+ Self.E_userName.Text := user.username;
+ Self.E_FirstName.Text := user.firstname;
+ Self.E_LastName.Text := user.lastname;
+ Self.CHB_root.Checked := user.root;
+ Self.CHB_Ban.Checked := user.ban;
+ Self.CHB_Reg.Checked := user.regulator;
+ Self.M_Note.Text := user.note;
 
- Self.E_Password1.Text  := 'heslo';
- Self.E_Password2.Text  := 'heslo';
+ Self.E_Password1.Text := 'heslo';
+ Self.E_Password2.Text := 'heslo';
 
  Self.ActiveControl := Self.E_UserName;
- Self.Caption := 'Editovat uživatele '+User.id;
+ Self.Caption := 'Upravit uživatele '+user.username;
  Self.ShowModal();
 end;
 
 procedure TF_UserEdit.NewUser();
 begin
  Self.new := true;
- Self.OpenUser := TUser.Create();
+ Self.openUser := TUser.Create();
  Self.FillORs();
 
- Self.E_UserName.Text   := '';
- Self.E_FirstName.Text  := '';
- Self.E_LastName.Text   := '';
- Self.CHB_root.Checked  := false;
- Self.CHB_Ban.Checked   := false;
- Self.CHB_Reg.Checked   := true;
+ Self.E_UserName.Text := '';
+ Self.E_FirstName.Text := '';
+ Self.E_LastName.Text := '';
+ Self.CHB_root.Checked := false;
+ Self.CHB_Ban.Checked := false;
+ Self.CHB_Reg.Checked := true;
+ Self.M_Note.Text := '';
 
  Self.E_Password1.Text  := '';
  Self.E_Password2.Text  := '';
@@ -195,14 +199,14 @@ begin
    Exit();
   end;
 
- if (Self.OpenUser <> nil) then
+ if (Self.openUser <> nil) then
   begin
    if (Self.E_Password1.Text = '') then
     begin
      Application.MessageBox('Heslo nemůže být prázdné!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
      Exit();
     end;
-  end;//if Self.OpenUser <> nil
+  end;
 
  if (Self.E_Password1.Text <> Self.E_Password2.Text) then
   begin
@@ -218,24 +222,25 @@ begin
 
  if (Self.new) then
   begin
-   Self.OpenUser.password  := Self.E_Password1.Text;
-   Self.OpenUser.lastlogin := Now;
+   Self.openUser.password  := Self.E_Password1.Text;
+   Self.openUser.lastlogin := Now;
   end else begin
    if (Self.E_Password1.Text <> 'heslo') then
-     Self.OpenUser.password := Self.E_Password1.Text;
+     Self.openUser.password := Self.E_Password1.Text;
   end;
 
- Self.OpenUser.id        := Self.E_UserName.Text;
- Self.OpenUser.firstname := Self.E_FirstName.Text;
- Self.OpenUser.lastname  := Self.E_LastName.Text;
- Self.OpenUser.root      := Self.CHB_root.Checked;
- Self.OpenUser.ban       := Self.CHB_Ban.Checked;
- Self.OpenUser.regulator := Self.CHB_Reg.Checked;
+ Self.openUser.username := Self.E_UserName.Text;
+ Self.openUser.firstname := Self.E_FirstName.Text;
+ Self.openUser.lastname := Self.E_LastName.Text;
+ Self.openUser.root := Self.CHB_root.Checked;
+ Self.openUser.ban  := Self.CHB_Ban.Checked;
+ Self.openUser.regulator := Self.CHB_Reg.Checked;
+ Self.openUser.note := Self.M_Note.Text;
 
  if (new) then
   begin
    try
-     UsrDB.AddUser(Self.OpenUser);
+     UsrDB.AddUser(Self.openUser);
    except
      on e:Exception do
       begin
@@ -247,7 +252,7 @@ begin
    UsersTableData.UpdateTable();
   end;
 
- index := UsrDB.IndexOf(Self.OpenUser.id);
+ index := UsrDB.IndexOf(Self.openUser.username);
  if (index > -1) then
   begin
    F_Main.LV_Users.Items[index].Selected := true;
@@ -261,19 +266,19 @@ end;
 
 procedure TF_UserEdit.FillORs();
 var LI:TListItem;
-    i:Integer;
     rights:TORCOntrolRights;
     data:Pointer;
+    oblr: TOR;
 begin
  Self.LV_ORs.Clear();
 
- for i := 0 to ORs.Count-1 do
+ for oblr in ORs do
   begin
    LI := Self.LV_ORs.Items.Add;
-   LI.Caption := ORs.GetORIdByIndex(i);
-   LI.SubItems.Add(ORs.GetORNameByIndex(i));
+   LI.Caption := oblr.id;
+   LI.SubItems.Add(oblr.Name);
 
-   if (not Self.OpenUser.OblR.TryGetValue(LI.Caption, rights)) then
+   if (not Self.openUser.OblR.TryGetValue(LI.Caption, rights)) then
     rights := TORCOntrolRights.null;
    LI.SubItems.Add(TOR.ORRightsToString(rights));
 
@@ -284,7 +289,7 @@ begin
   end;
 
  Self.CB_Rights.ItemIndex := -1;
- Self.CB_Rights.Enabled   := false;
+ Self.CB_Rights.Enabled := false;
 
  Self.LV_ORs.Repaint();
 end;

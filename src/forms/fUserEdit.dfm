@@ -4,7 +4,7 @@ object F_UserEdit: TF_UserEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat u'#382'ivatele [user]'
-  ClientHeight = 237
+  ClientHeight = 289
   ClientWidth = 617
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -56,6 +56,13 @@ object F_UserEdit: TF_UserEdit
     Font.Style = []
     ParentFont = False
   end
+  object Label6: TLabel
+    Left = 8
+    Top = 167
+    Width = 52
+    Height = 13
+    Caption = 'Pozn'#225'mka:'
+  end
   object E_UserName: TEdit
     Left = 144
     Top = 8
@@ -85,9 +92,9 @@ object F_UserEdit: TF_UserEdit
   end
   object GB_Password: TGroupBox
     Left = 8
-    Top = 81
+    Top = 89
     Width = 257
-    Height = 80
+    Height = 72
     Caption = ' Heslo '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -157,7 +164,7 @@ object F_UserEdit: TF_UserEdit
   end
   object CHB_root: TCheckBox
     Left = 8
-    Top = 168
+    Top = 264
     Width = 97
     Height = 17
     Caption = 'Opr'#225'vn'#283'n'#237' root'
@@ -167,45 +174,45 @@ object F_UserEdit: TF_UserEdit
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 4
+    TabOrder = 5
   end
   object B_Apply: TButton
-    Left = 190
-    Top = 204
+    Left = 534
+    Top = 259
     Width = 75
     Height = 25
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 5
+    TabOrder = 9
     OnClick = B_ApplyClick
   end
   object B_Cancel: TButton
-    Left = 109
-    Top = 204
+    Left = 453
+    Top = 259
     Width = 75
     Height = 25
     Caption = 'Storno'
-    TabOrder = 6
+    TabOrder = 10
     OnClick = B_CancelClick
   end
   object GroupBox1: TGroupBox
     Left = 280
     Top = 8
     Width = 329
-    Height = 221
-    Caption = ' Opr'#225'vn'#283'n'#237' O'#344' '
+    Height = 245
+    Caption = ' Opr'#225'vn'#283'n'#237' k '#345#237'zen'#237' oblast'#237' '#345#237'zen'#237
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 8
     object LV_ORs: TListView
       Left = 2
       Top = 15
       Width = 325
-      Height = 171
+      Height = 194
       Align = alTop
       Columns = <
         item
@@ -234,8 +241,8 @@ object F_UserEdit: TF_UserEdit
       OnCustomDrawItem = LV_ORsCustomDrawItem
     end
     object CB_Rights: TComboBox
-      Left = 79
-      Top = 192
+      Left = 80
+      Top = 215
       Width = 169
       Height = 21
       Style = csDropDownList
@@ -256,19 +263,29 @@ object F_UserEdit: TF_UserEdit
     end
   end
   object CHB_Ban: TCheckBox
-    Left = 8
-    Top = 191
+    Left = 128
+    Top = 264
     Width = 41
     Height = 17
     Caption = 'Ban'
-    TabOrder = 8
+    TabOrder = 6
   end
   object CHB_Reg: TCheckBox
-    Left = 8
-    Top = 214
+    Left = 196
+    Top = 264
     Width = 69
     Height = 17
     Caption = 'Regul'#225'tor'
-    TabOrder = 9
+    TabOrder = 7
+  end
+  object M_Note: TMemo
+    Left = 8
+    Top = 187
+    Width = 257
+    Height = 71
+    Lines.Strings = (
+      'M_Note')
+    ScrollBars = ssVertical
+    TabOrder = 4
   end
 end

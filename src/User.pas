@@ -30,7 +30,6 @@ type
     fban: boolean;
     freg: boolean;
     fsalt: string;
-    fnote: string;
 
      procedure SetPasswd(passwd: string);
      procedure SetBan(state: boolean);
@@ -47,6 +46,7 @@ type
     lastname: string;
     root: boolean;
     OblR: TDictionary<string, TORControlRights>;
+    note: string;
     lastlogin: TDateTime;
 
      constructor Create(); overload;
@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses TOblsRizeni, TCPServerOR, UserDb;
+uses TOblsRizeni, TCPServerOR, UserDb, ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -118,6 +118,7 @@ begin
  Self.fsalt := ini.ReadString(section, 'salt', '');
  Self.fban := ini.ReadBool(section, 'ban', false);
  Self.freg := ini.ReadBool(section, 'reg', false);
+ Self.note := DescapeNewline(ini.ReadString(section, 'note', ''));
 
  try
    if (ini.ValueExists(section, 'lastlogin')) then // backward compatibility
@@ -153,9 +154,9 @@ begin
 end;
 
 procedure TUser.SaveData(ini:TMemIniFile; section:string);
-var i:Integer;
-    rights:TORControlRights;
+var rights:TORControlRights;
     str:string;
+    oblr: TOR;
 begin
  ini.WriteString(section, 'passwd', Self.fpasswd);
 
@@ -168,6 +169,9 @@ begin
  if (Self.lastname <> '') then
    ini.WriteString(section, 'lname', Self.lastname);
 
+ if (Self.note <> '') then
+   ini.WriteString(section, 'note', EscapeNewline(Self.note));
+
  if (Self.ban) then
    ini.WriteBool(section, 'ban', Self.ban);
 
@@ -178,9 +182,9 @@ begin
    ini.WriteString(section, 'salt', Self.fsalt);
 
  str := '';
- for i := 0 to ORs.Count-1 do
-   if (Self.OblR.TryGetValue(ORs.GetORIdByIndex(i), rights)) then
-     str := str + '(' + ORs.GetORIdByIndex(i) + ';' + IntToStr(Integer(rights)) + ')';
+ for oblr in ORs do
+   if (Self.OblR.TryGetValue(oblr.id, rights)) then
+     str := str + '(' + oblr.id + ';' + IntToStr(Integer(rights)) + ')';
 
  if (str <> '') then
    ini.WriteString(section, 'ORs', str);
@@ -243,8 +247,9 @@ procedure TUser.SetRights(OblR:string; rights:TORControlRights);
 var OblRRef:TOR;
 begin
  Self.OblR.AddOrSetValue(OblR, rights);
- ORs.GetORByIndex(ORs.GetORIndex(OblR), OblRRef);
- if (OblRRef <> nil) then OblRRef.UserUpdateRights(Self);
+ OblRRef := ORs.Get(OblR);
+ if (OblRRef <> nil) then
+   OblRRef.UserUpdateRights(Self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,8 +265,9 @@ begin
    // user prave dostal BAN -> aktualizovat oblasti rizeni
    for oblr in Self.OblR.Keys do
     begin
-     ORs.GetORByIndex(ORs.GetORIndex(oblr), OblRRef);
-     if (OblRRef <> nil) then OblRRef.UserUpdateRights(Self);
+     OblRRef := ORs.Get(oblr);
+     if (OblRRef <> nil) then
+       OblRRef.UserUpdateRights(Self);
     end;
   end;
 end;

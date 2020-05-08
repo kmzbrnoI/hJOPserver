@@ -15,10 +15,10 @@ type
      _SECT_OR = 'OR';                                                           // sekce ini souboru .spnl, ve ktere jsou ulozeny oblasti rizeni
 
    private
-     ORsDatabase:TObjectList<TOR>;                                                    // databaze oblasti rizeni
+     db: TObjectList<TOR>;
      fstat_filename:string;
 
-     function GetORCnt():Integer;                                               // vrati pocet OR
+      function GetORCnt():Integer;
 
    public
       constructor Create();
@@ -27,34 +27,32 @@ type
       procedure LoadData(const filename:string; const stat_filename:string);
       procedure SaveStatus(const filename:string);
 
-      function GetORIndex(const id:string):Integer;
+      function Get(index: Integer): TOR; overload;
+      function Get(id: string): TOR; overload;
+
       function ParseORs(str:string):TList<TOR>;                                 // parsuje seznam oblasti rizeni
       procedure RCSFail(addr:integer);                                          // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
-      function GetORByIndex(index:Integer;var obl:TOR):Byte;
-      function GetORNameByIndex(index:Integer):string;
-      function GetORIdByIndex(index:Integer):string;
-      function GetORShortNameByIndex(index:Integer):string;
-      function GetORById(id:string):TOR;
 
       procedure Update();                                                       // aktualizuje stav OR
       procedure DisconnectPanels();                                             // odpoji vsechny panely dane OR
       procedure SendORList(Context:TIdContext);                                 // odesle seznam vsech OR na spojeni \Context
 
       procedure FillCB(CB:TComboBox; selected:TOR);                             // naplni ComboBox seznamem oblasti rizeni
-
       procedure InitOsv();
-
       procedure BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read);
                                                                                 // broadcast chybove hlasky, ktera ma jit jen panelum,
                                                                                 // kde alespon jeden je minimalne opravneni min_rights
       procedure BroadcastPlaySound(sound_code:Integer; loop:boolean = false; min_rights:TORControlRights = read);
 
-      property Count:Integer read GetORCnt;                                     // vrati seznam oblasti rizeni
+      function GetEnumerator(): TEnumerator<TOR>;
+      property Items[index : integer] : TOR read Get; default;
+      property Count:Integer read GetORCnt;
+
       property status_filename:string read fstat_filename;
   end;//TORs
 
 var
-  ORs:TORs;
+  ORs: TORs;
 
 implementation
 
@@ -65,12 +63,12 @@ uses Prevody, Logging, TCPServerOR, THVDatabase, appEv, FileSystem;
 constructor TORs.Create();
 begin
  inherited;
- Self.ORsDatabase := TObjectList<TOR>.Create();
+ Self.db := TObjectList<TOR>.Create(TOR.IdComparer());
 end;//ctor
 
 destructor TORs.Destroy();
 begin
- Self.ORsDatabase.Free();
+ Self.db.Free();
  inherited Destroy();
 end;//dtor
 
@@ -89,7 +87,7 @@ begin
  if (not FileExists(filename)) then
    raise EFileNotFound.Create('Soubor se stanicemi neexistuje - '+filename);
 
- Self.ORsDatabase.Clear();
+ Self.db.Clear();
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  ini_stat := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
  oblasti := TStringList.Create();
@@ -103,7 +101,7 @@ begin
      try
        OblR.LoadData(ini.ReadString(_SECT_OR, oblasti[i], ''));
        OblR.LoadStat(ini_stat, OblR.id);
-       Self.ORsDatabase.Add(OblR);
+       Self.db.Add(OblR);
      except
        on E:Exception do
         begin
@@ -113,16 +111,16 @@ begin
      end;
     end;
 
-   Self.ORsDatabase.Sort(TOR.NameComparer());
-   for i := 0 to Self.ORsDatabase.Count-1 do
-     Self.ORsDatabase[i].index := i+1;
+   Self.db.Sort();
+   for i := 0 to Self.db.Count-1 do
+     Self.db[i].index := i;
  finally
    oblasti.Free();
    ini.Free();
    ini_stat.Free();
  end;
 
- writelog('Načteno '+IntToStr(Self.ORsDatabase.Count)+' stanic',WR_DATA);
+ writelog('Načteno '+IntToStr(Self.db.Count)+' stanic',WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +132,7 @@ var ini:TMemIniFile;
 begin
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
- for oblr in Self.ORsDatabase do
+ for oblr in Self.db do
   begin
    try
      oblr.SaveStat(ini, oblr.id);
@@ -150,19 +148,6 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//vrati index OR s danym ID (index v databazi ORs)
-function TORs.GetORIndex(const id:string):Integer;
-var i:Integer;
-begin
- for i := 0 to Self.ORsDatabase.Count-1 do
-   if (Self.ORsDatabase[i].id = id) then
-     Exit(i);
-
- Result := -1;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
 //parsing OR stringu
 function TORs.ParseORs(str:string):TList<TOR>;
 var parsed:TStrings;
@@ -174,7 +159,7 @@ begin
 
    Result := TList<TOR>.Create();
    for oblr in parsed do
-     Result.Add(Self.ORsDatabase[Self.GetORIndex(oblr)]);
+     Result.Add(Self.Get(oblr));
  finally
    parsed.Free();
  end;
@@ -182,51 +167,25 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.GetORByIndex(index:Integer; var obl:TOR):Byte;
+function TORs.Get(index: Integer): TOR;
 begin
- if ((index < 0) or (index >= Self.ORsDatabase.Count)) then Exit(1);
- obl := Self.ORsDatabase[index];
- Result := 0;
+ Result := Self.db[index];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.GetORNameByIndex(index:Integer):string;
-begin
- if ((index < 0) or (index >= Self.ORsDatabase.Count)) then
-   Exit('## OR s timto indexem neexistuje ##');
-
- Result := Self.ORsDatabase[index].Name;
-end;
-
-function TORs.GetORIdByIndex(index:Integer):string;
-begin
- if ((index < 0) or (index >= Self.ORsDatabase.Count)) then
-   Exit('## OR s timto indexem neexistuje ##');
-
- Result := Self.ORsDatabase[index].id;
-end;
-
-function TORs.GetORShortNameByIndex(index:Integer):string;
-begin
- if ((index < 0) or (index >= Self.ORsDatabase.Count)) then
-   Exit('## OR s timto indexem neexistuje ##');
-
- Result := Self.ORsDatabase[index].ShortName;
-end;
-
 procedure TORs.Update();
 var i:Integer;
 begin
- for i := 0 to Self.ORsDatabase.Count-1 do
-   Self.ORsDatabase[i].Update();
+ for i := 0 to Self.db.Count-1 do
+   Self.db[i].Update();
 end;
 
 procedure TORs.DisconnectPanels();
 var i:Integer;
 begin
- for i := 0 to Self.ORsDatabase.Count-1 do
-   Self.ORsDatabase[i].DisconnectPanels();
+ for i := 0 to Self.db.Count-1 do
+   Self.db[i].DisconnectPanels();
 
  // vymazeme vsechny otevrene regulatory u klientu
  for i := 0 to _MAX_ADDR-1 do
@@ -239,8 +198,8 @@ var i:Integer;
     str:string;
 begin
  str := '-;OR-LIST;';
- for i := 0 to Self.ORsDatabase.Count-1 do
-   str := str + '[' + Self.ORsDatabase[i].id + ',' + Self.ORsDatabase[i].Name + ']';
+ for i := 0 to Self.db.Count-1 do
+   str := str + '[' + Self.db[i].id + ',' + Self.db[i].Name + ']';
 
  ORTCPServer.SendLn(Context, str);
 end;
@@ -250,7 +209,7 @@ end;
 procedure TORs.RCSFail(addr:integer);
 var OblR:TOR;
 begin
- for OblR in Self.ORsDatabase do
+ for OblR in Self.db do
    OblR.RCSFail(addr);
 end;
 
@@ -260,10 +219,10 @@ procedure TORs.FillCB(CB:TComboBox; selected:TOR);
 var i:Integer;
 begin
  CB.Clear();
- for i := 0 to Self.ORsDatabase.Count-1 do
+ for i := 0 to Self.db.Count-1 do
   begin
-   CB.Items.Add(Self.ORsDatabase[i].Name);
-   if (Self.ORsDatabase[i] = selected) then
+   CB.Items.Add(Self.db[i].Name);
+   if (Self.db[i] = selected) then
     CB.ItemIndex := i;
   end;
 end;
@@ -272,7 +231,7 @@ end;
 
 function TORs.GetORCnt():Integer;
 begin
- Result := Self.ORsDatabase.Count;
+ Result := Self.db.Count;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,7 +239,7 @@ end;
 procedure TORs.InitOsv();
 var oblr:TOR;
 begin
- for oblr in Self.ORsDatabase do oblr.InitOsv();
+ for oblr in Self.db do oblr.InitOsv();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -292,7 +251,7 @@ var OblR:TOR;
     client:TIdContext;
 begin
  clients := TDictionary<TIdContext,Boolean>.Create();
- for OblR in Self.ORsDatabase do
+ for OblR in Self.db do
    for connected in OblR.Connected do
      if (connected.Rights >= min_rights) then
        clients.AddOrSetValue(connected.Panel, true);
@@ -310,7 +269,7 @@ var OblR:TOR;
     client:TIdContext;
 begin
  clients := TDictionary<TIdContext,Boolean>.Create();
- for OblR in Self.ORsDatabase do
+ for OblR in Self.db do
    for connected in OblR.Connected do
      if (connected.Rights >= min_rights) then
        clients.AddOrSetValue(connected.Panel, true);
@@ -323,13 +282,30 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.GetORById(id:string):TOR;
-var OblR:TOR;
+function TORs.Get(id:string): TOR;
+var left, right, mid: Integer;
 begin
- for OblR in Self.ORsDatabase do
-   if (OblR.id = id) then
-     Exit(OblR);
- Exit(nil);
+ left := 0;
+ right := Self.db.Count-1;
+
+ while (left <= right) do
+  begin
+   mid := (left + right) div 2;
+   if (Self.db[mid].id = id) then Exit(Self.db[mid]);
+
+   if (CompareStr(id, Self.db[mid].id, loUserLocale) < 0) then
+     right := mid - 1
+   else
+     left := mid + 1;
+  end;
+ Result := nil;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TORs.GetEnumerator(): TEnumerator<TOR>;
+begin
+ Result := Self.db.GetEnumerator();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -360,12 +360,9 @@ begin
  if (Self.JCs[index].postaveno or Self.JCs[index].staveni) then
    raise Exception.Create('JC postavena, nelze smazat');
 
- for i := 0 to ORs.Count-1 do
-  begin
-   ORs.GetORByIndex(i, OblR);
+ for OblR in ORs do
    if (OblR.stack.IsJCInStack(Self.JCs[index])) then
      raise Exception.Create('JC v zasobniku OR '+OblR.id);
-  end;
 
  if (Self.JCsStartNav.ContainsKey(Self.JCs[index].navestidlo as TBlkNav)) then
    Self.JCsStartNav[Self.JCs[index].navestidlo as TBlkNav].Remove(Self.JCs[index]);
