@@ -20,9 +20,6 @@
   - Kazdy klient muze ovladat 0..n RCS desek.
   - O desku se zada prikazem "PLEASE", uvoluje se prikazem "RELEASE".
   - Pri odpojeni klienta je vymazan jeho TRCSdClient zaznam.
-  - INFO kazde desky jsou nasledujici informace:
-      adresa|nazev|typ|existence|verze_fw
-      (veskera data jsou stringy, existence je [0,1])
 }
 
 interface
@@ -107,15 +104,28 @@ implementation
     -;RCSd;LIST;                                                                zadost o info vsech existujicich RCS
     -;RCSd;INFO;addr                                                            zadost o info konkretniho RCS
 
-  # stav_vstupu, stav_vystupu: az 15 cisel oddelenych "|"
+  # stav_vstupu, stav_vystupu: az 16 cisel oddelenych "|"
     napr. 0|0|0|0|0|0|0|0|0|0|0|0|0|0|0 je RCS se vsemi vystupy v logicke nule
+    vstupy: stavy odpovidaji enumu TRCSInputState
+    vystupy:
     0    = vystup v logicke 0
     1    = vystup v logicke 1
     -2   = RCS neexistuje / vypadek RCS
-    0..n = kod SCom navesti
+    0..n = kod S-COM navesti
+
+  # INFO RCS modulu: texty oddelene znakem "|"
+    napr. 1|Skuhrov město tunel Skuhrov|MTB-UNI|1|4.1|BBBBBBBBBBBBBBBB|SSSSBBBBBBBBBBBB
+    Polozky:
+     * adresa modulu
+     * nazev modulu
+     * typ modulu
+     * jestli je modul fyzicky na sbernici (0 v prpade vypadku modulu)
+     * firmware modulu
+     * typy vstupu (B=binarni vstup, I=IR vstup, -=nedostupny port)
+     * typy vystupu (B=binarni vystup, S=S-COM, -=nedostupny port)
 }
 
-uses TCPServerOR, UserDb, User, RCSErrors;
+uses TCPServerOR, UserDb, User, RCSErrors, RCS;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -246,12 +256,7 @@ var i:Integer;
     max:Cardinal;
 begin
  str := '';
-
- try
-   max := RCSi.GetModuleOutputsCount(addr);
- except
-   max := 16;
- end;
+ max := RCSi.GetModuleOutputsCountSafe(addr);
 
  for i := 0 to max-1 do
   begin
@@ -274,12 +279,7 @@ var i:Integer;
     max:Cardinal;
 begin
  str := '';
-
- try
-   max := RCSi.GetModuleInputsCount(addr);
- except
-   max := 16;
- end;
+ max := RCSi.GetModuleInputsCountSafe(addr);
 
  for i := 0 to max-1 do
   begin
@@ -440,6 +440,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TRCSd.GetRCSInfo(board:Cardinal):string;
+var port: Integer;
 begin
  Result := IntToStr(board) + '|';
 
@@ -471,13 +472,40 @@ begin
  end;
 
  try
-   Result := Result + RCSi.GetModuleFW(board);
+   Result := Result + RCSi.GetModuleFW(board) + '|';
  except
    on E:ERCSInvalidModuleAddr do
      Result := Result + '-|';
    on E:Exception do
      Result := Result + 'Nelze ziskat FW - vyjimka|';
  end;
+
+ for port := 0 to RCSi.GetModuleInputsCountSafe(board)-1 do
+  begin
+   try
+     case (RCSi.GetInputType(board, port)) of
+       TRCSIPortType.iptPlain: Result := Result + 'B';
+       TRCSIPortType.iptIR: Result := Result + 'I';
+     end;
+   except
+    Result := Result + '-';
+   end;
+  end;
+  Result := Result + '|';
+
+ for port := 0 to RCSi.GetModuleOutputsCountSafe(board)-1 do
+  begin
+   try
+     case (RCSi.GetOutputType(board, port)) of
+       TRCSOPortType.optPlain: Result := Result + 'B';
+       TRCSOPortType.optSCom: Result := Result + 'S';
+     end;
+   except
+    Result := Result + '-';
+   end;
+  end;
+  Result := Result + '|';
+
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
