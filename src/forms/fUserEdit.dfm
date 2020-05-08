@@ -259,7 +259,7 @@ object F_UserEdit: TF_UserEdit
         #382#225'dn'#233' opr'#225'vn'#283'n'#237
         'opr'#225'vn'#283'n'#237' ke '#269'ten'#237
         'opr'#225'vn'#283'n'#237' k z'#225'pisu'
-        'superuser')
+        'superu'#382'ivatel')
     end
   end
   object CHB_Ban: TCheckBox

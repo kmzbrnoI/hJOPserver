@@ -3506,7 +3506,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Users
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -4764,21 +4764,25 @@ object F_Main: TF_Main
             Width = 100
           end
           item
+            Caption = 'Opr'#225'vn'#283'n'#237
+            Width = 200
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Regul'#225'tor'
+          end
+          item
             Alignment = taCenter
             Caption = 'root'
             Width = 60
           end
           item
-            Caption = 'Posledn'#237' prihl'#225#353'en'#237
-            Width = 125
-          end
-          item
-            Caption = 'Opr'#225'vn'#283'n'#237
-            Width = 200
-          end
-          item
             Caption = 'Pozn'#225'mka'
             Width = 100
+          end
+          item
+            Caption = 'Posledn'#237' prihl'#225#353'en'#237
+            Width = 125
           end>
         DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET

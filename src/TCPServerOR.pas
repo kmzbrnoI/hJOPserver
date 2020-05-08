@@ -825,8 +825,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.ParseOR(AContext: TIdContext; parsed: TStrings);
-var i:Integer;
-    oblr: TOR;
+var oblr: TOR;
     btn:TPanelButton;
     orRef:TTCPORsRef;
 begin

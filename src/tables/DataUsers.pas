@@ -77,9 +77,10 @@ begin
  Self.LV.Items[line].Caption := IntToStr(line);
  Self.LV.Items[line].SubItems[0] := user.username;
  Self.LV.Items[line].SubItems[1] := user.fullName;
- Self.LV.Items[line].SubItems[2] := PrevodySoustav.BoolToStr(user.root);
- Self.LV.Items[line].SubItems[3] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
+ Self.LV.Items[line].SubItems[3] := PrevodySoustav.BoolToStr(user.regulator);
+ Self.LV.Items[line].SubItems[4] := PrevodySoustav.BoolToStr(user.root);
  Self.LV.Items[line].Subitems[5] := EscapeNewline(user.note);
+ Self.LV.Items[line].SubItems[6] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
 
  str := '';
  for oblr in ORs do
@@ -96,7 +97,7 @@ begin
     end;
   end;
 
- Self.LV.Items[line].Subitems[4] := LeftStr(str, Length(str)-2);
+ Self.LV.Items[line].Subitems[2] := LeftStr(str, Length(str)-2);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
