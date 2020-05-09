@@ -80,7 +80,10 @@ var spr:Integer;
   for spr in Self.Blk.Soupravs do
     Self.LB_Soupravy.Items.Add(IntToStr(spr));
 
-  SE_Souprava_Predict.Value := Blk.SprPredict;
+  if (Blk.SprPredict = nil) then
+    SE_Souprava_Predict.Value := -1
+  else
+    SE_Souprava_Predict.Value := Blk.SprPredict.index;
   SE_NavJCRef.Value := Blk.NavJCRef.Count;
   CB_KonecVC.ItemIndex  := Integer(Self.Blk.KonecJC);
 
@@ -99,7 +102,10 @@ var Blk:TBlk;
   Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
   Self.Blk.NUZ := PrevodySoustav.IntToBool(CB_NUZ.ItemIndex);
   Self.Blk.KonecJC := TZaver(CB_KonecVC.ItemIndex);
-  Self.Blk.SprPredict := SE_Souprava_Predict.Value;
+  if (SE_Souprava_Predict.Value > -1) then
+    Self.Blk.SprPredict := Soupravy[SE_Souprava_Predict.Value]
+  else
+    Self.Blk.SprPredict := nil;
   Blky.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
   if (Self.Blk.NavJCRef.Count = 0) then
     Self.Blk.NavJCRef.Clear();

@@ -198,7 +198,7 @@ procedure TSprDb.RemoveSpr(index:Integer);
 begin
  if (not Assigned(Self.soupravy[index])) then Exit();
 
- Blky.RemoveSpr(index);
+ Blky.RemoveSpr(Self.soupravy[index]);
  ORTCPServer.OnRemoveSpr(Self.soupravy[index]);
  FreeAndNil(Self.soupravy[index]);
  SprTableData.reload := true;

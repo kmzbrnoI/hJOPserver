@@ -48,12 +48,13 @@ implementation
 
 {$R *.dfm}
 
-uses Prevody;
+uses Prevody, SprDb;
 
 procedure TF_BlkTrat_tech.B_AddSprClick(Sender: TObject);
 begin
  try
-   Self.trat.AddSpr(Self.SE_Spr_Add.Value);
+   if (Soupravy[Self.SE_Spr_Add.Value] <> nil) then
+     Self.trat.AddSpr(Soupravy[Self.SE_Spr_Add.Value]);
  except
    on E:Exception do
      Application.MessageBox(PChar('Výjimka:'+#13#10+E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
@@ -81,7 +82,8 @@ end;
 
 procedure TF_BlkTrat_tech.B_RmSprClick(Sender: TObject);
 begin
- Self.trat.RemoveSpr(Self.SE_Spr_Add.Value);
+ if (Soupravy[Self.SE_Spr_Add.Value] <> nil) then
+   Self.trat.RemoveSpr(Soupravy[Self.SE_Spr_Add.Value]);
  Self.Update();
 end;
 
@@ -106,13 +108,13 @@ begin
  Self.CB_Zadost.ItemIndex := PrevodySoustav.BoolToInt(trat.Zadost);
 
  if (trat.SprPredict <> nil) then
-   Self.SE_Souprava.Value := trat.SprPredict.souprava
+   Self.SE_Souprava.Value := trat.SprPredict.soupravai
  else
    Self.SE_Souprava.Value := -1;
 
  Self.E_Soupravy.Text := '';
  for spr in trat.stav.soupravy do
-   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(spr.souprava)+',';
+   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(spr.souprava.index)+',';
 end;
 
 procedure TF_BlkTrat_tech.Save();

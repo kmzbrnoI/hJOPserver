@@ -56,7 +56,7 @@ begin
      inOR := Blk.OblsRizeni.Contains(OblR);
 
      // trate z aktualni stanice kontrolujeme cele
-     if ((not inOR) and (blk.typ = _BLK_TU) and (TBlkUsek(blk).SprPredict = spr.index) and
+     if ((not inOR) and (blk.typ = _BLK_TU) and (TBlkUsek(blk).SprPredict = spr) and
          (TBlkTU(blk).Trat <> nil) and
          (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.OblsRizeni[0] = OblR) or
           ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.OblsRizeni[0] = OblR))) then
@@ -65,10 +65,10 @@ begin
      if (not inOR) then continue;
 
      if (((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) and
-         (TBlkUsek(blk).SprPredict = spr.index)) then
+         (TBlkUsek(blk).SprPredict = spr)) then
        blksWithSpr.Add(TBlkUsek(blk));
 
-     if ((blk.typ = _BLK_TU) and (TBlkUsek(blk).Souprava = spr.index)) then
+     if ((blk.typ = _BLK_TU) and (TBlkUsek(blk).Souprava = spr)) then
        if (TBlkTU(blk).Trat <> nil) then
          inTrat := TBlkTrat(TBlkTU(blk).Trat);
     end;

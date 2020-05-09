@@ -137,7 +137,7 @@ begin
   begin
    Self.m_event.Unregister();
    if (TBlkUsek(Sender).IsSouprava()) then
-     Self.FireEvent(Soupravy[TBlkUsek(Sender).SoupravaL]);
+     Self.FireEvent(TBlkUsek(Sender).SoupravaL);
    Result := true;
   end else
    Result := false

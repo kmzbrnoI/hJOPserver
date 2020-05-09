@@ -297,10 +297,10 @@ var glob:TBlkSettings;
   Self.CHB_NavLClick(CHB_NavL);
   Self.CHB_NavSClick(CHB_NavS);
 
-  if (TUsettings.rychlost >= 20) then
+{  if (TUsettings.rychlost >= 20) then
     Self.CB_Speed.ItemIndex := (TUsettings.rychlost div 10)-2
   else
-    Self.CB_Speed.ItemIndex := -1;
+    Self.CB_Speed.ItemIndex := -1; }
 
   Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
   Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
@@ -427,7 +427,7 @@ var glob:TBlkSettings;
   TUsettings.Zastavka.ev_lichy.enabled  := Self.CHB_Zastavka_Lichy.Checked;
   TUsettings.Zastavka.ev_sudy.enabled   := Self.CHB_Zastavka_Sudy.Checked;
 
-  TUSettings.rychlost := (Self.CB_Speed.ItemIndex + 2) * 10;
+//  TUSettings.rychlost := (Self.CB_Speed.ItemIndex + 2) * 10;
 
   if (Self.CHB_NavL.Checked) then
     TUsettings.navLid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])

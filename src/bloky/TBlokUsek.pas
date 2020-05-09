@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
-     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni,
+     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, Souprava,
      stanicniHlaseni, changeEvent, predvidanyOdjezd, TechnologieRCS;
 
 type
@@ -93,7 +93,8 @@ type
     procedure SetUsekZaver(Zaver:TZaver);
     procedure SetUsekStit(stit:string);
     procedure mSetUsekVyl(vyl:string);
-    procedure SetSprPredict(sprcesta:Integer);
+    function GetSprPredict(): TSouprava;
+    procedure SetSprPredict(spr: TSouprava);
     procedure SetKonecJC(konecjc:TZaver);
     procedure SetVlakPresun(presun:Integer);
 
@@ -146,13 +147,16 @@ type
 
     procedure NeprofilObsaz();
 
-    function GetSoupravaL():Integer;
-    function GetSoupravaS():Integer;
-    function GetUsekSpr():Integer;
+    function GetSoupravaI(): Integer;
+    function GetSouprava(): TSouprava;
+    function GetSoupravaIL(): Integer;
+    function GetSoupravaL(): TSouprava;
+    function GetSoupravaIS(): Integer;
+    function GetSoupravaS(): TSouprava;
 
     procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
     function CanSprSpeedInsert(index:Integer):boolean;
-    function IsStujForSpr(spr:Integer):boolean;
+    function IsStujForSpr(spr: TSouprava):boolean;
     function RealZesZkrat():TBoosterSignal;
     function CanStandSouprava():boolean;
     function CanBeNextVB(vbs: TList<TObject>; start: TBlk):boolean;
@@ -205,12 +209,17 @@ type
     function IsNeprofilJC():boolean;
 
     function IsSouprava():boolean; overload;
-    function IsSouprava(index:Integer):boolean; overload;
-    procedure AddSoupravaL(index:Integer); virtual;
-    procedure AddSoupravaS(index:Integer); virtual;
-    procedure AddSouprava(localSprIndex:Integer; souprava:Integer);
+    function IsSouprava(index:Integer):Boolean; overload;
+    function IsSouprava(spr: TSouprava): Boolean; overload;
+    procedure AddSoupravaL(index:Integer); overload; virtual;
+    procedure AddSoupravaL(spr: TSouprava); overload; virtual;
+    procedure AddSoupravaS(index:Integer); overload; virtual;
+    procedure AddSoupravaS(spr: TSouprava); overload; virtual;
+    procedure AddSouprava(localSprIndex:Integer; souprava: Integer); overload;
+    procedure AddSouprava(localSprIndex:Integer; souprava: TSouprava); overload;
     procedure RemoveSoupravy(); virtual;
-    procedure RemoveSouprava(index:Integer); virtual;
+    procedure RemoveSouprava(index: Integer); overload; virtual;
+    procedure RemoveSouprava(spr: TSouprava); overload; virtual;
     function SoupravyFull():boolean;
 
     function IsVlakPresun():boolean;
@@ -226,15 +235,18 @@ type
     property Zaver:TZaver read UsekStav.Zaver write SetUsekZaver;
     property Stitek:string read UsekStav.Stit write SetUsekStit;
     property Vyluka:string read UsekStav.Vyl write mSetUsekVyl;
-    property SprPredict:Integer read UsekStav.SprPredict write SetSprPredict;
+    property SprPredict: TSouprava read GetSprPredict write SetSprPredict;
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property NavJCRef:TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
     property SekceStav:TList<TUsekStav> read UsekStav.sekce;
 
-    property Souprava:Integer read GetUsekSpr;
-    property SoupravaL:Integer read GetSoupravaL;
-    property SoupravaS:Integer read GetSoupravaS;
-    property Soupravs:TList<Integer> read UsekStav.Soupravy;
+    property SoupravaI: Integer read GetSoupravaI;
+    property Souprava: TSouprava read GetSouprava;
+    property SoupravaIL: Integer read GetSoupravaIL;
+    property SoupravaL: TSouprava read GetSoupravaL;
+    property SoupravaIS: Integer read GetSoupravaIS;
+    property SoupravaS: TSouprava read GetSoupravaS;
+    property Soupravs: TList<Integer> read UsekStav.Soupravy;
 
     property zkrat:TBoosterSignal read UsekStav.Zkrat write SetZkrat;
     property napajeni:TBoosterSignal read UsekStav.Napajeni write SetNapajeni;
@@ -268,7 +280,7 @@ implementation
 
 uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Math,
-    Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv, Souprava,
+    Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, Prevody, TechnologieTrakce, TMultiJCDatabase;
 
@@ -722,13 +734,23 @@ begin
   end;
 end;
 
-procedure TBlkUsek.SetSprPredict(sprcesta:Integer);
-var old:Integer;
+function TBlkUsek.GetSprPredict(): TSouprava;
+begin
+ if (Self.UsekStav.SprPredict = -1) then
+   Exit(nil);
+ Result := Soupravy[Self.UsekStav.SprPredict];
+end;
+
+procedure TBlkUsek.SetSprPredict(spr: TSouprava);
+var old: Integer;
 begin
  old := Self.UsekStav.SprPredict;
- Self.UsekStav.SprPredict := sprcesta;
+ if (spr = nil) then
+   Self.UsekStav.SprPredict := -1
+ else
+   Self.UsekStav.SprPredict := spr.index;
 
- if ((sprcesta = -1) and (old > -1)) then
+ if ((spr = nil) and (old > -1)) then
   begin
    // odstranit predvidany odjezd mazane predpovidane soupravy
    if (Soupravy[old].IsPOdj(Self)) then
@@ -922,7 +944,7 @@ begin
      (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
 
  podm := TPSPodminky.Create();
- for blk in Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]) do
+ for blk in Blky.GetBlkWithSpr(Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]]) do
    podm.Add(TOR.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
  ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
    'Smazání soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].name,
@@ -949,7 +971,7 @@ begin
 
  if (not success) then Exit();
 
- if (Blky.GetBlkWithSpr(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]).Count = 1) then
+ if (Blky.GetBlkWithSpr(Soupravy[Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]]).Count = 1) then
   begin
    Soupravy.RemoveSpr(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava odstraněna');
@@ -1284,8 +1306,8 @@ begin
   begin
    spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
   end else begin
-   if (Self.SprPredict = -1) then Exit();
-   spr := Soupravy[Self.SprPredict];
+   if (Self.SprPredict = nil) then Exit();
+   spr := Self.SprPredict;
   end;
 
  if (spr.IsPOdj(Self)) then
@@ -1347,7 +1369,7 @@ begin
      Result := Result + '-,';
  end;
 
- if ((Self.SprPredict > -1) and (Self.UsekStav.stanicni_kolej)) then
+ if ((Self.SprPredict <> nil) and (Self.UsekStav.stanicni_kolej)) then
    Result := Result + 'PODJ,-,';
 
  Result := Result + 'STIT,VYL,';
@@ -1403,7 +1425,7 @@ var spr:TSouprava;
     spr_count:Integer;
 begin
  spr := Soupravy[Self.Soupravs[sprLocalI]];
- spr_count := Blky.GetBlkWithSpr(Self.Soupravs[sprLocalI]).Count;
+ spr_count := Blky.GetBlkWithSpr(Soupravy[Self.Soupravs[sprLocalI]]).Count;
 
  if (Self.CanStandSouprava()) then
    Result := Result + 'EDIT vlak,';
@@ -1525,7 +1547,7 @@ end;
 // vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
 function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject; sprLocalIndex:Integer):boolean;
 var Blk, Nav:TBlk;
-    spri:Integer;
+    spr: TSouprava;
 begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
  if (Blk = nil) then Exit(false);
@@ -1554,11 +1576,11 @@ begin
    Exit(true);
   end;
 
- spri := TBlkUsek(Blk).Soupravs[TBlkUsek(Blk).VlakPresun];
+ spr := Soupravy[TBlkUsek(Blk).Soupravs[TBlkUsek(Blk).VlakPresun]];
 
  if (Blk = Self) then
   begin
-   Self.UsekStav.soupravy.Insert(sprLocalIndex, spri);
+   Self.UsekStav.soupravy.Insert(sprLocalIndex, spr.index);
 
    if (sprLocalIndex <= Self.VlakPresun) then
      Self.UsekStav.soupravy.Delete(Self.VlakPresun+1)
@@ -1570,8 +1592,8 @@ begin
   end else begin
 
    try
-     Self.AddSouprava(sprLocalIndex, spri);
-     (Blk as TBlkUsek).RemoveSouprava(spri);
+     Self.AddSouprava(sprLocalIndex, spr);
+     (Blk as TBlkUsek).RemoveSouprava(spr);
    except
      on E:Exception do
       begin
@@ -1581,10 +1603,10 @@ begin
    end;
   end;
 
- ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+Soupravy.GetSprNameByIndex(spri)+' přesunuta na '+Self.GlobalSettings.name+'.');
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+spr.name+' přesunuta na '+Self.GlobalSettings.name+'.');
 
- if (Blky.GetBlkWithSpr(spri).Count = 1) then
-   Soupravy[spri].front := Self;
+ if (Blky.GetBlkWithSpr(spr).Count = 1) then
+   spr.front := Self;
 
  for nav in (Blk as TBlkUsek).NavJCRef do
    Blky.SprPrediction(Nav);
@@ -1784,7 +1806,7 @@ function TBlkUsek.GetHoukList():TList<THoukEv>;
 begin
  if (not Self.IsSouprava()) then Exit(nil);
 
- if (Soupravy[Self.SoupravaL].direction = THVStanoviste.lichy) then
+ if (Self.SoupravaL.direction = THVStanoviste.lichy) then
    Result := Self.UsekSettings.houkEvL
  else
    Result := Self.UsekSettings.houkEvS;
@@ -1850,7 +1872,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetSoupravaL():Integer;
+function TBlkUsek.GetSoupravaIL(): Integer;
 begin
  if (Self.UsekStav.soupravy.Count < 1) then
    Result := -1
@@ -1858,12 +1880,28 @@ begin
    Result := Self.UsekStav.soupravy[0];
 end;
 
-function TBlkUsek.GetSoupravaS():Integer;
+function TBlkUsek.GetSoupravaL(): TSouprava;
+begin
+ if (Self.GetSoupravaIL() = -1) then
+   Result := nil
+ else
+   Result := Soupravy[Self.GetSoupravaIL()];
+end;
+
+function TBlkUsek.GetSoupravaIS():Integer;
 begin
  if (Self.UsekStav.soupravy.Count < 1) then
    Result := -1
  else
    Result := Self.UsekStav.soupravy[Self.UsekStav.soupravy.Count-1];
+end;
+
+function TBlkUsek.GetSoupravaS(): TSouprava;
+begin
+ if (Self.GetSoupravaIS() = -1) then
+   Result := nil
+ else
+   Result := Soupravy[Self.GetSoupravaIS()];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1873,9 +1911,14 @@ begin
  Result := (Self.UsekStav.soupravy.Count > 0);
 end;
 
-function TBlkUsek.IsSouprava(index:Integer):boolean;
+function TBlkUsek.IsSouprava(index: Integer): Boolean;
 begin
  Result := Self.UsekStav.soupravy.Contains(index);
+end;
+
+function TBlkUsek.IsSouprava(spr: TSouprava): Boolean;
+begin
+ Result := Self.IsSouprava(spr.index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1904,6 +1947,16 @@ begin
  Self.Change();
 end;
 
+procedure TBlkUsek.AddSoupravaL(spr: TSouprava);
+begin
+ Self.AddSoupravaL(spr.index);
+end;
+
+procedure TBlkUsek.AddSoupravaS(spr: TSouprava);
+begin
+ Self.AddSoupravaS(spr.index);
+end;
+
 procedure TBlkUsek.AddSouprava(localSprIndex:Integer; souprava:Integer);
 begin
  if (Self.SoupravyFull()) then
@@ -1916,6 +1969,11 @@ begin
  Self.UsekStav.soupravy.Insert(localSprIndex, souprava);
  Self.UsekStav.SprPredict := -1;
  Self.Change();
+end;
+
+procedure TBlkUsek.AddSouprava(localSprIndex:Integer; souprava: TSouprava);
+begin
+ Self.AddSouprava(localSprIndex, souprava.index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1962,6 +2020,11 @@ begin
   end;
 end;
 
+procedure TBlkUsek.RemoveSouprava(spr: TSouprava);
+begin
+ Self.RemoveSouprava(spr.index);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkUsek.SoupravyFull():boolean;
@@ -1978,12 +2041,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetUsekSpr():Integer;
+function TBlkUsek.GetSoupravaI(): Integer;
 begin
  if (Self.Soupravs.Count = 0) then Exit(-1)
  else if (Self.Soupravs.Count = 1) then Exit(Self.Soupravs[0])
  else raise EMultipleSprs.Create('Usek ' + Self.name +
    ' obsahuje vice souprav, nelze se proto ptat jen na jednu soupravu!');
+end;
+
+function TBlkUsek.GetSouprava(): TSouprava;
+begin
+ if (Self.GetSoupravaI() = -1) then
+   Result := nil
+ else
+   Result := Soupravy[Self.GetSoupravaI()];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2019,7 +2090,7 @@ var spr:Integer;
     was:boolean;
     nav:TBlk;
 begin
- if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.SprPredict)) then
+ if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.UsekStav.SprPredict)) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava již není na úseku!');
    Exit();
@@ -2048,19 +2119,22 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.CheckPOdjChanged();
-var spr:Integer;
+var spri: Integer;
     shouldChange:boolean;
     podj:TPOdj;
     Nav:TBlk;
     oblr:TOR;
+    spr: TSouprava;
 begin
  shouldChange := false;
 
- for spr in Self.Soupravs do
+ for spri in Self.Soupravs do
   begin
-   if ((Soupravy[spr].IsPOdj(Self)) and (Soupravy[spr].GetPOdj(Self).changed)) then
+   spr := Soupravy[spri];
+
+   if ((spr.IsPOdj(Self)) and (spr.GetPOdj(Self).changed)) then
     begin
-     podj := Soupravy[spr].GetPOdj(Self);
+     podj := spr.GetPOdj(Self);
 
      // prehravani zvukove vystrahy
      if ((not shouldChange) and (Self.IsStujForSpr(spr))) then
@@ -2074,9 +2148,9 @@ begin
             oblr.BlkPlaySound(Self, TORControlRights.write, _SND_NENI_JC);
       end;
 
-     if (Soupravy[spr].GetPOdj(Self).DepRealDelta() < 0) then
+     if (spr.GetPOdj(Self).DepRealDelta() < 0) then
       begin
-       Soupravy[spr].RemovePOdj(Self);
+       spr.RemovePOdj(Self);
 
        // tvrda aktualizace rychlosti soupravy
        if ((spr = Self.SoupravaL) or (spr = Self.SoupravaS)) then
@@ -2087,21 +2161,21 @@ begin
              TBlkNav(nav).UpdateRychlostSpr(true);
         end;
       end else
-       Soupravy[spr].GetPOdj(Self).changed := false;
+       spr.GetPOdj(Self).changed := false;
 
      shouldChange := true;
     end;
   end;
 
- if (Self.SprPredict > -1) then
+ if (Self.SprPredict <> nil) then
   begin
    spr := Self.SprPredict;
-   if ((Soupravy[spr].IsPOdj(Self)) and (Soupravy[spr].GetPOdj(Self).changed)) then
+   if ((spr.IsPOdj(Self)) and (spr.GetPOdj(Self).changed)) then
     begin
-     if (Soupravy[spr].GetPOdj(Self).DepRealDelta() < 0) then
-       Soupravy[spr].RemovePOdj(Self)
+     if (spr.GetPOdj(Self).DepRealDelta() < 0) then
+       spr.RemovePOdj(Self)
      else
-       Soupravy[spr].GetPOdj(Self).changed := false;
+       spr.GetPOdj(Self).changed := false;
 
      shouldChange := true;
     end;
@@ -2129,9 +2203,9 @@ begin
     end;
   end;
 
- if ((Self.SprPredict > -1) and (Soupravy[Self.SprPredict].IsPOdj(Self))) then
+ if ((Self.SprPredict <> nil) and (Self.SprPredict.IsPOdj(Self))) then
   begin
-   Soupravy[Self.SprPredict].RemovePOdj(Self);
+   Self.SprPredict.RemovePOdj(Self);
    change := true;
   end;
 
@@ -2150,9 +2224,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.IsStujForSpr(spr:Integer):boolean;
+function TBlkUsek.IsStujForSpr(spr: TSouprava):boolean;
 begin
- if (not Self.Soupravs.Contains(spr)) then Exit(false);
+ if (not Self.Soupravs.Contains(spr.index)) then Exit(false);
  if (Self.NavJCRef.Count = 0) then Exit(true);
 
  if (Self.NavJCRef.Count = 1) then
@@ -2287,16 +2361,16 @@ begin
     end;
 
    // predpovidana souprava
-   if (Self.SprPredict > -1) then
+   if (Self.SprPredict <> nil) then
     begin
      // predvidany odjezd
      sfg := fg;
      sbg := bg;
 
-     if (Soupravy[Self.SprPredict].IsPOdj(Self)) then
-       predvidanyOdjezd.GetPOdjColors(Soupravy[Self.SprPredict].GetPOdj(Self), sfg, sbg);
+     if (Self.SprPredict.IsPOdj(Self)) then
+       predvidanyOdjezd.GetPOdjColors(Self.SprPredict.GetPOdj(Self), sfg, sbg);
 
-     Result := Result + '(' + Soupravy.GetSprNameByIndex(Self.SprPredict) + ';' +
+     Result := Result + '(' + Self.SprPredict.name + ';' +
                 '00;' +
                 PrevodySoustav.ColorToStr(sfg) + ';' +
                 PrevodySoustav.ColorToStr(sbg) + ';)';

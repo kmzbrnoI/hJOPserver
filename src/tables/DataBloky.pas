@@ -152,7 +152,7 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
       Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
 
-      if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items[line].SubItems[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
+      if ((Blk as TBlkUsek).SprPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).SprPredict.name else
         Self.LV.Items[line].SubItems[7] := '--#--';
    end;//_BLK_VYH
 
@@ -246,7 +246,7 @@ var j, spr:integer;
     Self.LV.Items[line].SubItems[6] := '';
 
     if (Assigned((Blk as TBlkTrat).SprPredict)) then
-      Self.LV.Items[line].SubItems[7] := Soupravy.GetSprNameByIndex((Blk as TBlkTrat).SprPredict.souprava)
+      Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrat).SprPredict.souprava.name
     else
       Self.LV.Items[line].SubItems[7] := '--#--';
    end;//_BLK_TRAT
@@ -327,7 +327,7 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
       Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
 
-      if ((Blk as TBlkUsek).SprPredict > -1) then Self.LV.Items[line].SubItems[7] := Soupravy.GetSprNameByIndex((Blk as TBlkUsek).SprPredict) else
+      if ((Blk as TBlkUsek).SprPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).SprPredict.name else
         Self.LV.Items[line].SubItems[7] := '--#--';
    end;//_BLK_TU
 

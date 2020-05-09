@@ -41,7 +41,7 @@ Jak to funguje:
 interface
 
 uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, rrEvent,
-      Generics.Collections, TOblRizeni;
+      Generics.Collections, TOblRizeni, THnaciVozidlo, Souprava;
 
 type
  TBlkTUZastEvents = record                                                      // cidla zastavky v jednom smeru
@@ -67,7 +67,7 @@ type
    navLid,navSid:Integer;                                                         // odkaz na kryci navestidlo TU v lichem smeru a kryci navestidlo v sudem smeru
                                                                                   // obsahuje id bloku navestidla, pokud neni TU kryty v danem smeru, obsahuje -1
                                                                                   // vyuzivano pro autoblok
-   rychlost:Integer;                                                              // rychlost v tratovem useku
+   rychlosti: TDictionary<Cardinal, Cardinal>;                                     // rychlost v tratovem useku pro danou tridu prechodnosti; trida prechodnosti 0 je fallback v pripade neexistence zaznamu
  end;
 
  TBlkTUStav = record                                                            // stav tratoveho useku
@@ -191,7 +191,10 @@ type
     procedure AddSoupravaL(index:Integer); override;
     procedure AddSoupravaS(index:Integer); override;
     procedure RemoveSoupravy(); override;
-    procedure RemoveSouprava(index:Integer); override;
+    procedure RemoveSouprava(index: Integer); override;
+
+    function Speed(HV: THV): Cardinal; overload;
+    function Speed(spr: TSouprava): Cardinal; overload;
 
     // pro vyznam properties viz hlavicky getteru a setteru
     property TUStav:TBlkTUStav read fTUStav;
@@ -220,7 +223,7 @@ type
 implementation
 
 uses SprDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase, Prevody,
-     logging, THnaciVozidlo, TechnologieJC;
+     logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -231,13 +234,14 @@ begin
  Self.GlobalSettings.typ := _BLK_TU;
  Self.fTUStav := _def_tu_stav;
 
- Self.fTrat        := nil;
- Self.fNavKryci    := nil;
- Self.lsectMaster  := nil;
- Self.lsectUseky   := TList<TBlkTU>.Create();
- Self.ssectMaster  := nil;
- Self.ssectUseky   := TList<TBlkTU>.Create();
- Self.bpInBlk      := false;
+ Self.fTrat := nil;
+ Self.fNavKryci := nil;
+ Self.lsectMaster := nil;
+ Self.lsectUseky := TList<TBlkTU>.Create();
+ Self.ssectMaster := nil;
+ Self.ssectUseky := TList<TBlkTU>.Create();
+ Self.bpInBlk := false;
+ Self.TUSettings.rychlosti := TDictionary<Cardinal, Cardinal>.Create();
 
  Self.TUSettings.zastavka.ev_lichy.zastaveni := nil;
  Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev := nil;
@@ -250,6 +254,7 @@ begin
  Self.lsectUseky.Free();
  Self.ssectUseky.Free();
  Self.TUSettings.Zastavka.soupravy.Free();
+ Self.TUSettings.rychlosti.Free();
 
  if (Assigned(Self.TUSettings.zastavka.ev_lichy.zastaveni)) then
    Self.TUSettings.zastavka.ev_lichy.zastaveni.Free();
@@ -268,17 +273,39 @@ end;//dtor
 // nacte konfiguracni data ze souboru
 
 procedure TBlkTU.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var zastLichy, zastSudy, str:string;
+var zastLichy, zastSudy, str: string;
+    strs, strs2: TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
  Self.TUSettings.navLid := ini_tech.ReadInteger(section, 'navL', -1);
  Self.TUSettings.navSid := ini_tech.ReadInteger(section, 'navS', -1);
 
- Self.TUSettings.rychlost := ini_tech.ReadInteger(section, 'rychlost', -1);
+ Self.TUSettings.rychlosti.Clear();
+ strs := TStringList.Create();
+ strs2 := TStringList.Create();
+ try
+   str := ini_tech.ReadString(section, 'rychlosti', '');
+   if (str = '') then
+    begin
+     Self.TUSettings.rychlosti.Add(0, ini_tech.ReadInteger(section, 'rychlost', 0));
+    end else begin
+     ExtractStringsEx([','], [], str, strs);
+     for str in strs do
+      begin
+       ExtractStringsEx([':'], [], str, strs2);
+       if (strs2.Count = 2) then
+         Self.TUSettings.rychlosti.AddOrSetValue(StrToInt(strs2[0]), StrToInt(strs2[1]));
+      end;
+    end;
+ finally
+   strs.Free();
+   strs2.Free();
+ end;
+
  Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
- if (Self.TUSettings.rychlost < 10) then
+ if ((not Self.TUSettings.rychlosti.ContainsKey(0)) or (Self.TUSettings.rychlosti[0] < 10)) then
    writelog('WARNING: traťový úsek '+Self.name + ' ('+IntToStr(Self.id)+') nemá korektně zadanou traťovou rychlost', WR_ERROR);
 
  // nacitani zastavky
@@ -337,8 +364,9 @@ end;
 
 // ulozi konfiguracni data do souboru
 procedure TBlkTU.SaveData(ini_tech:TMemIniFile;const section:string);
-var str:string;
-    i:Integer;
+var str: string;
+    i: Integer;
+    j: Cardinal;
 begin
  inherited SaveData(ini_tech, section);
 
@@ -348,7 +376,10 @@ begin
  if (Self.TUSettings.navSid <> -1) then
    ini_tech.WriteInteger(section, 'navS', Self.TUSettings.navSid);
 
- ini_tech.WriteInteger(section, 'rychlost', Self.TUSettings.rychlost);
+ str := '';
+ for j in Self.TUSettings.rychlosti.Keys do
+   str := str + IntToStr(j) + ':' + IntToStr(Self.TUSettings.rychlosti[j]) + ',';
+ ini_tech.WriteString(section, 'rychlosti', str);
 
  // ukladani zastavky
  if (Self.TUsettings.Zastavka.ev_lichy.enabled) then
@@ -501,17 +532,17 @@ begin
   begin
    // cekam na obsazeni IR
    if ((not Self.TUStav.zast_enabled) or (Self.TUStav.zast_passed) or
-      (Soupravy[Self.Souprava].sprLength > Self.TUSettings.Zastavka.max_delka) or (Soupravy[Self.Souprava].front <> self)) then Exit();
+      (Self.Souprava.sprLength > Self.TUSettings.Zastavka.max_delka) or (Self.Souprava.front <> self)) then Exit();
 
    // kontrola spravneho smeru
-   if (((Soupravy[Self.Souprava].direction = THVSTanoviste.lichy) and (not Self.TUSettings.zastavka.ev_lichy.enabled)) or
-       ((Soupravy[Self.Souprava].direction = THVSTanoviste.sudy) and (not Self.TUSettings.zastavka.ev_sudy.enabled))) then Exit();
+   if (((Self.Souprava.direction = THVSTanoviste.lichy) and (not Self.TUSettings.zastavka.ev_lichy.enabled)) or
+       ((Self.Souprava.direction = THVSTanoviste.sudy) and (not Self.TUSettings.zastavka.ev_sudy.enabled))) then Exit();
 
    // kontrola typu soupravy:
    found := false;
    for i := 0 to Self.TUSettings.Zastavka.soupravy.Count-1 do
     begin
-     if (Self.TUSettings.Zastavka.soupravy[i] = Soupravy[Self.Souprava].typ) then
+     if (Self.TUSettings.Zastavka.soupravy[i] = Self.Souprava.typ) then
       begin
        found := true;
        break;
@@ -523,7 +554,7 @@ begin
    // zpomalovani pred zastavkou:
    if (Self.fTUStav.zast_zpom_ready) then
     begin
-     case (Soupravy[Self.Souprava].direction) of
+     case (Self.Souprava.direction) of
       THVSTanoviste.lichy : begin
         if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
          begin
@@ -531,10 +562,10 @@ begin
             Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Register();
 
           if ((Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) and
-              (Soupravy[Self.Souprava].wantedSpeed > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
+              (Self.Souprava.wantedSpeed > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
-            Soupravy[Self.Souprava].speed := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
+            Self.Souprava.speed := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
             Self.fTUStav.zast_zpom_ready := false;
             Self.rychUpdate := false;
             Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
@@ -548,10 +579,10 @@ begin
           if (not Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.enabled) then
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Register();
 
-          if ((Soupravy[Self.Souprava].wantedSpeed > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
+          if ((Self.Souprava.wantedSpeed > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
-            Soupravy[Self.Souprava].speed := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
+            Self.Souprava.speed := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
             Self.fTUStav.zast_zpom_ready := false;
             Self.rychUpdate := false;
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Unregister();
@@ -563,7 +594,7 @@ begin
 
 
    // zastavovani v zastavce
-   case (Soupravy[Self.Souprava].direction) of
+   case (Self.Souprava.direction) of
     THVSTanoviste.lichy : begin
       if (not Self.TUSettings.zastavka.ev_lichy.zastaveni.enabled) then
         Self.TUSettings.zastavka.ev_lichy.zastaveni.Register();
@@ -592,7 +623,7 @@ begin
 
    // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
    //  pokud se souprava rozjede, koncim zastavku
-   if (Soupravy[Self.Souprava].wantedSpeed <> 0) then
+   if (Self.Souprava.wantedSpeed <> 0) then
     begin
      Self.fTUStav.zast_stopped := false;
      Self.Change();  // change je dulezite volat kvuli menu
@@ -604,7 +635,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 4, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 1;
-        Soupravy[Self.Souprava].ToggleHouk('trubka vlakvedoucího');
+        Self.Souprava.ToggleHouk('trubka vlakvedoucího');
        end;
     end;
 
@@ -612,7 +643,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 2, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 2;
-        Soupravy[Self.Souprava].ToggleHouk('zavření dveří');
+        Self.Souprava.ToggleHouk('zavření dveří');
        end;
     end;
    end;
@@ -620,7 +651,7 @@ begin
    // cekam na timeout na rozjeti vlaku
    if (Now > Self.TUStav.zast_run_time) then
     begin
-     Soupravy[Self.Souprava].ToggleHouk('houkačka krátká');
+     Self.Souprava.ToggleHouk('houkačka krátká');
      Self.ZastRunTrain();
     end;
   end;
@@ -635,9 +666,9 @@ begin
  Self.fTUStav.zast_run_time := Now+Self.TUSettings.Zastavka.delay;
 
  try
-   Self.fTUStav.zast_rych := Soupravy[Self.Souprava].speed;
-   Soupravy[Self.Souprava].speed := 0;
-   Soupravy[Self.Souprava].SetSpeedBuffer(@Self.fTUStav.zast_rych);
+   Self.fTUStav.zast_rych := Self.Souprava.speed;
+   Self.Souprava.speed := 0;
+   Self.Souprava.SetSpeedBuffer(@Self.fTUStav.zast_rych);
  except
 
  end;
@@ -652,8 +683,8 @@ begin
  Self.fTUStav.zast_sound_step := 0;
 
  try
-   Soupravy[Self.Souprava].SetSpeedBuffer(nil);
-   Soupravy[Self.Souprava].speed := Self.TUStav.zast_rych;
+   Self.Souprava.SetSpeedBuffer(nil);
+   Self.Souprava.speed := Self.TUStav.zast_rych;
  except
 
  end;
@@ -743,21 +774,21 @@ begin
    if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
     begin
      if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do trati
-       if (Soupravy[Self.Souprava].direction <> THVStanoviste.lichy) then
-         Soupravy[Self.Souprava].ChangeSmer();
+       if (Self.Souprava.direction <> THVStanoviste.lichy) then
+         Self.Souprava.ChangeSmer();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Soupravy[Self.Souprava].direction <> TBlkNav(TBlkTrat(Self.Trat).navLichy).Smer) then
-         Soupravy[Self.Souprava].ChangeSmer();
+       if (Self.Souprava.direction <> TBlkNav(TBlkTrat(Self.Trat).navLichy).Smer) then
+         Self.Souprava.ChangeSmer();
      end;
     end;
    if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[TBlkTrat(Self.Trat).GetSettings().Useky.Count-1])) then
     begin
      if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do trati
-       if ((Soupravy[Self.Souprava].direction <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
-         Soupravy[Self.Souprava].ChangeSmer();
+       if ((Self.Souprava.direction <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
+         Self.Souprava.ChangeSmer();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Soupravy[Self.Souprava].direction <> TBlkNav(TBlkTrat(Self.Trat).navSudy).Smer) then
-         Soupravy[Self.Souprava].ChangeSmer();
+       if (Self.Souprava.direction <> TBlkNav(TBlkTrat(Self.Trat).navSudy).Smer) then
+         Self.Souprava.ChangeSmer();
      end;
     end;
   end;
@@ -777,7 +808,7 @@ begin
 end;
 
 procedure TBlkTU.RemoveSouprava(index:Integer);
-var old_spr:Integer;
+var old_spr: TSouprava;
     trat:TBlkTrat;
 begin
  old_spr := Self.Souprava;
@@ -788,7 +819,7 @@ begin
   begin
    // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
    // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
-   Soupravy[old_spr].SetSpeedBuffer(nil);
+   old_spr.SetSpeedBuffer(nil);
    Self.fTUStav.zast_stopped := false;
   end;
 
@@ -838,11 +869,11 @@ begin
  podm := TPSPodminky.Create();
  if (Self.IsSouprava()) then
   begin
-   podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Soupravy[Self.Souprava].name+' z úseku'));
+   podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.Souprava.name+' z úseku'));
    if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsSprInMoreTUs(Self.Souprava))) then
-     podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smazání soupravy '+Soupravy[Self.Souprava].name+' z tratě'));
+     podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smazání soupravy '+Self.Souprava.name+' z tratě'));
    if (Blky.GetBlkWithSpr(Self.Souprava).Count = 1) then
-     podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Soupravy[Self.Souprava].name+' z kolejiště'));
+     podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.Souprava.name+' z kolejiště'));
   end;
 
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR,
@@ -850,18 +881,18 @@ begin
 end;
 
 procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
-var old_spr:Integer;
-    blks:TList<TObject>;
+var old_spr: Integer;
+    blks: TList<TObject>;
 begin
  if (success) then
   begin
-   old_spr := Self.Souprava;
+   old_spr := Self.SoupravaI;
    Self.bpInBlk   := false;
    Self.poruchaBP := false;
    if (Self.IsSouprava()) then
     begin
      Self.RemoveSoupravy();
-     blks := Blky.GetBlkWithSpr(old_spr);
+     blks := Blky.GetBlkWithSpr(Soupravy[old_spr]);
      if (blks.Count = 0) then Soupravy.RemoveSpr(old_spr);
      blks.Free();
     end;
@@ -977,8 +1008,8 @@ begin
    if ((not Self.IsSouprava()) and (Self.prevTU.IsSouprava())) then
     begin
      // mezi useky je potreba predat soupravu
-     Soupravy[Self.prevTU.Souprava].front := Self;
-     Self.AddSoupravaL(Self.prevTU.Souprava);
+     Self.prevTU.Souprava.front := Self;
+     Self.AddSoupravaL(Self.prevTU.SoupravaI);
      Self.zpomalovani_ready := true;
      Self.houk_ev_enabled := true;
      Self.rychUpdate := true;
@@ -1212,9 +1243,9 @@ begin
    if (Self.fTUStav.sprRychUpdateIter = 0) then
     begin
      if ((Self.IsSouprava()) and (Self.zpomalovani_ready) and
-        (Soupravy[Self.Souprava].wantedSpeed > 0) and
-        (Soupravy[Self.Souprava].wantedSpeed <> Self.TUSettings.rychlost)) then
-       Soupravy[Self.Souprava].speed := Self.TUSettings.rychlost;
+        (Self.Souprava.wantedSpeed > 0) and
+        (Self.Souprava.wantedSpeed <> Self.Speed(Self.Souprava))) then
+       Self.Souprava.speed := Self.Speed(Self.Souprava);
     end;
   end;
 end;
@@ -1311,6 +1342,32 @@ begin
    Self.fTUStav.poruchaBP := state;
    Self.Change();
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTU.Speed(HV: THV): Cardinal;
+begin
+ if (Self.TUSettings.rychlosti.ContainsKey(HV.data.prechodnost)) then
+   Result := Self.TUSettings.rychlosti[HV.data.prechodnost]
+ else if (Self.TUSettings.rychlosti.ContainsKey(0)) then
+   Result := Self.TUSettings.rychlosti[0]
+ else
+   Result := 0;
+end;
+
+function TBlkTU.Speed(spr: TSouprava): Cardinal;
+var addr: Word;
+    minSpeed: Cardinal;
+begin
+ if (spr.HVs.Count = 0) then
+   Exit(0);
+
+ minSpeed := Self.Speed(HVDb[spr.HVs[0]]);
+ for addr in spr.HVs do
+   if (Self.Speed(HVDb[addr]) < minSpeed) then
+     minSpeed := Self.Speed(HVDb[addr]);
+ Result := minSpeed;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

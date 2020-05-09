@@ -237,24 +237,24 @@ type
      procedure GetPtState(json:TJsonObject);
      procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
 
-     property adresa:Word read fadresa;
-     property nazev:string read data.nazev;
-     property ruc:boolean read stav.ruc write SetRuc;
-     property funcDict:TDictionary<string, Integer> read m_funcDict;
-     property souprava:Integer read stav.souprava write SetSouprava;
-     property speedStep:Byte read slot.speed;
-     property realSpeed:Cardinal read GetRealSpeed;
-     property direction:boolean read slot.direction;
-     property stACurrentDirection:boolean read GetStACurrentDirection;
-     property acquired:boolean read stav.acquired;
-     property stolen:boolean read stav.stolen;
-     property pom:TPomStatus read stav.pom;
-     property trakceError:Boolean read stav.trakceError;
-     property slotFunkce:TFunkce read GetSlotFunkce;
-     property stavFunkce:TFunkce read stav.funkce;
-     property acquiring:boolean read stav.acquiring;
-     property updating:boolean read stav.updating;
-     property lastUpdated:TTime read stav.lastUpdated;
+     property adresa: Word read fadresa;
+     property nazev: string read data.nazev;
+     property ruc: Boolean read stav.ruc write SetRuc;
+     property funcDict: TDictionary<string, Integer> read m_funcDict;
+     property souprava: Integer read stav.souprava write SetSouprava;
+     property speedStep: Byte read slot.speed;
+     property realSpeed: Cardinal read GetRealSpeed;
+     property direction: Boolean read slot.direction;
+     property stACurrentDirection: Boolean read GetStACurrentDirection;
+     property acquired: Boolean read stav.acquired;
+     property stolen: Boolean read stav.stolen;
+     property pom: TPomStatus read stav.pom;
+     property trakceError: Boolean read stav.trakceError;
+     property slotFunkce: TFunkce read GetSlotFunkce;
+     property stavFunkce: TFunkce read stav.funkce;
+     property acquiring: Boolean read stav.acquiring;
+     property updating: Boolean read stav.updating;
+     property lastUpdated: TTime read stav.lastUpdated;
   end;//THV
 
 
@@ -784,7 +784,7 @@ begin
  Self.changed := true;
 
  if (Self.Stav.souprava > -1) then
-   Blky.ChangeSprToTrat(Self.Stav.souprava);
+   Blky.ChangeSprToTrat(Soupravy[Self.Stav.souprava]);
 
  str.Free();
  str2.Free();
@@ -1558,7 +1558,7 @@ begin
  RegCollector.LocoChanged(Self, Self.adresa);
 
  if (Self.souprava > -1) then
-   Blky.ChangeUsekWithSpr(Self.souprava);
+   Blky.ChangeUsekWithSpr(Soupravy[Self.souprava]);
 
  Self.UpdateRuc();
 
@@ -1740,7 +1740,7 @@ begin
 
  TCPRegulator.LokStolen(Self);
  if (Self.souprava > -1) then
-   Blky.ChangeUsekWithSpr(Self.souprava);
+   Blky.ChangeUsekWithSpr(Soupravy[Self.souprava]);
  Self.UpdateRuc();
 
  Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());

@@ -116,7 +116,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics,
+uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Souprava,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek, Prevody;
 
 constructor TBlkUvazka.Create(index:Integer);
@@ -468,18 +468,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUvazka.ShowUvazkaSprMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; spr_index:Integer);
-var trat:TBlkTrat;
-    usek:TBlokTrat.TSprUsek;
-    spr:Integer;
+var trat: TBlkTrat;
+    blk: TBlk;
+    spr: TSouprava;
 begin
  trat := TBlkTrat(Self.parent);
  if (trat = nil) then Exit();
  if (spr_index >= trat.stav.soupravy.Count) then Exit();
  spr := trat.stav.soupravy[spr_index].souprava;
 
- usek := trat.GetSprUsek(spr);
- if (usek.usek = nil) then Exit();
- TBlkUsek(usek.usek).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
+ blk := trat.GetSprUsek(spr);
+ if (blk = nil) then Exit();
+ TBlkUsek(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

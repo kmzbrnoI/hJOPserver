@@ -69,7 +69,7 @@ var
 implementation
 
 uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
-      fHVPomEdit, TBloky;
+      fHVPomEdit, TBloky, SprDb;
 
 {$R *.dfm}
 
@@ -257,7 +257,7 @@ var data:THVData;
      HVTableData.UpdateLine(OpenHV);
 
      if (stav.souprava > -1) then
-       Blky.ChangeSprToTrat(stav.souprava);
+       Blky.ChangeSprToTrat(Soupravy[stav.souprava]);
    end;
 
   Self.Close();

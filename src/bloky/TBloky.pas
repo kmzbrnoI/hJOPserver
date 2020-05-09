@@ -16,7 +16,7 @@ interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
      Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
-     JsonDataObjects;
+     JsonDataObjects, Souprava;
 
 type
  TArI  = array of Integer;
@@ -91,19 +91,19 @@ type
 
     procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
 
-    procedure RemoveSpr(spr:Integer);
+    procedure RemoveSpr(spr: TSouprava);
     procedure SprPrediction(Nav:TBlk);
 
-    function GetBlkWithSpr(spr:Integer):TBlksList;
+    function GetBlkWithSpr(spr: TSouprava):TBlksList;
     function GetVyhWithZamek(zamekID:integer):TBlksList;
 
     // zavola change na vsechny useky, ktere obsahuji zadanou soupravu
     // pouziva se napriklad pro oznameni ukradeni LOKO
-    procedure ChangeUsekWithSpr(spr:Integer);
+    procedure ChangeUsekWithSpr(spr: TSouprava);
 
     // zavola Change vsech trati, ktere obsahuji danou soupravu
     // pouziva se pri zmene vlastnosti soupravy -> musi se aktualizovat seznam LOKO v trati
-    procedure ChangeSprToTrat(spr:Integer);
+    procedure ChangeSprToTrat(spr: TSouprava);
 
     // volano pri zmene ID bloku na indexu \index
     // -> je potreba zmenit poradi bloku
@@ -166,7 +166,7 @@ procedure TBlky.DestroyBlocks();
 var i:Integer;
 begin
  for i := 0 to Self.data.Count-1 do
-  if (Assigned(Self.Data[i])) then Self.data[i].Free;
+  if (Assigned(Self.Data[i])) then Self.data[i].Free();
  Self.data.Clear();
 end;
 
@@ -177,7 +177,7 @@ end;
 procedure TBlky.BlkChange(Sender:TObject);
 var blkset:TBlkSettings;
     obl_rizeni:TList<TOR>;
-    i:Integer;
+    blk: TBlk;
     oblr:TOR;
 begin
  if ((Sender as TBlk).typ = _BLK_USEK) then
@@ -185,10 +185,10 @@ begin
    // pri jakekoliv zmene useku dojde k Change() na vyhybce
    // navaznost: usek -> vyhybka
    blkset := (Sender as TBlk).GetGlobalSettings();
-   for i := 0 to Self.Data.Count-1 do
-     if (Self.Data[i].typ = _BLK_VYH) then
-       if ((Self.Data[i] as TBlkVyhybka).UsekID = blkset.id) then
-         Self.Data[i].Change();
+   for blk in Self.Data do
+     if (blk.typ = _BLK_VYH) then
+       if ((blk as TBlkVyhybka).UsekID = blkset.id) then
+         blk.Change();
   end;//_BLK_USEK
 
  //zavolame OnChange vsech OR daneho bloku
@@ -291,8 +291,8 @@ end;
 
 //save all blocks to the file
 procedure TBlky.SaveToFile(const tech_filename:string);
-var ini:TMemIniFile;
-    i:Integer;
+var ini: TMemIniFile;
+    blk: TBlk;
 begin
  writelog('Ukladam bloky...', WR_DATA);
 
@@ -307,7 +307,8 @@ begin
     end;
  end;
 
- for i := 0 to Self.Data.Count-1 do Self.Data[i].SaveData(ini, IntToStr(Self.data[i].id));
+ for blk in Self.Data do
+   blk.SaveData(ini, IntToStr(blk.id));
 
  ini.UpdateFile();
  FreeAndNil(ini);
@@ -318,8 +319,8 @@ begin
 end;
 
 procedure TBlky.SaveStatToFile(const stat_filename:string);
-var ini:TMemIniFile;
-    i:Integer;
+var ini: TMemIniFile;
+    blk: TBlk;
 begin
  writelog('Ukládám stavy bloků...', WR_DATA);
 
@@ -334,13 +335,13 @@ begin
     end;
  end;
 
- for i := 0 to Self.Data.Count-1 do
+ for blk in Self.data do
   begin
    try
-     Self.Data[i].SaveStatus(ini, IntToStr(Self.data[i].id));
+     blk.SaveStatus(ini, IntToStr(blk.id));
    except
      on E:Exception do
-       AppEvents.LogException(E, 'Save blok '+Self.data[i].name);
+       AppEvents.LogException(E, 'Save blok '+blk.name);
    end;
   end;
 
@@ -446,52 +447,51 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//enable all blocks
 procedure TBlky.Enable();
-var i:Integer;
+var blk: TBlk;
 begin
- for i := 0 to Self.Data.Count-1 do Self.Data[i].Enable();
+ for blk in Self.data do
+   blk.Enable();
  Self.fenabled := true;
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
 end;
 
-//disable all blocks
 procedure TBlky.Disable();
-var i:Integer;
+var blk: TBlk;
 begin
- for i := 0 to Self.Data.Count-1 do Self.Data[i].Disable();
+ for blk in Self.data do
+   blk.Disable();
  Self.fenabled := false;
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
 end;
 
-// reset all blocks
 procedure TBlky.Reset();
-var i:Integer;
+var blk: TBlk;
 begin
- for i := 0 to Self.Data.Count-1 do Self.Data[i].Reset();
+ for blk in Self.data do
+   blk.Reset();
  BlokyTableData.reload := true;
  BlokyTableData.UpdateTable();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//update all blocks
 procedure TBlky.Update();
-var i:Integer;
+var blk: TBlk;
 begin
  if (not Self.enabled) then Exit();
 
- for i := 0 to Self.Data.Count-1 do
+ for blk in Self.Data do
   begin
    try
-     Self.Data[i].Update();
+     blk.Update();
    except
     on E:Exception do
      begin
       if (not log_err_flag) then
-       AppEvents.LogException(E, 'Blok '+Self.Data[i].name + ' update error');
+       AppEvents.LogException(E, 'Blok '+blk.name + ' update error');
      end;
    end;
   end;
@@ -533,22 +533,24 @@ end;
 
 //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
 procedure TBlky.GetORBlk(OblRizeni_id:string; conn:TIdContext);
-var i:Integer;
+var blk: TBlk;
     obl_rizeni:TList<TOR>;
     oblr:TOR;
 begin
- for i := 0 to Self.Data.Count-1 do
+ for blk in Self.Data do
   begin
    //ziskame vsechny oblasti rizeni prislusnych bloku
-   obl_rizeni := Self.Data[i].OblsRizeni;
+   obl_rizeni := blk.OblsRizeni;
 
    //tyto OR porovname na "OblRizeni:PTOR"
    for oblr in obl_rizeni do
+    begin
      if (oblr.id = OblRizeni_id) then
       begin
-       oblr.BlkChange(Self.data[i], conn);
-       break;
+       oblr.BlkChange(blk, conn);
+       Break;
       end;
+    end;
   end;//for i
 end;
 
@@ -591,43 +593,45 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlky.GetBlkNavZacatekVolba(obl:string):TBlk;
-var i,j:Integer;
+var j:Integer;
     orindex:Integer;
+    blk: TBlk;
 begin
- for i := 0 to Self.Data.Count-1 do
+ for blk in Self.Data do
   begin
-   if (Self.Data[i].typ <> _BLK_NAV) then continue;
+   if (blk.typ <> _BLK_NAV) then continue;
 
    orindex := -1;
-   for j := 0 to (Self.Data[i] as TBlkNav).OblsRizeni.Count-1 do
-     if ((Self.Data[i] as TBlkNav).OblsRizeni[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkNav).OblsRizeni.Count-1 do
+     if ((blk as TBlkNav).OblsRizeni[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
 
-   if (((Self.Data[i] as TBlkNav).ZacatekVolba > TBlkNavVolba.none) and
-      ((JCDb.FindOnlyStaveniJC((Self.Data[i] as TBlkNav).id) = nil) or
-        ((Self.Data[i] as TBlkNav).OblsRizeni[orindex].stack.volba = VZ))) then
-     Exit(Self.Data[i]);
-  end;//for i
+   if (((blk as TBlkNav).ZacatekVolba > TBlkNavVolba.none) and
+      ((JCDb.FindOnlyStaveniJC((blk as TBlkNav).id) = nil) or
+        ((blk as TBlkNav).OblsRizeni[orindex].stack.volba = VZ))) then
+     Exit(blk);
+  end;
 
  Result := nil;
 end;
 
 function TBlky.GetBlkUsekVlakPresun(obl:string):TBlk;
-var i,j:Integer;
+var j:Integer;
     orindex:Integer;
+    blk: TBlk;
 begin
- for i := 0 to Self.Data.Count-1 do
+ for blk in Self.Data do
   begin
-   if ((Self.Data[i].typ <> _BLK_USEK) and (Self.Data[i].typ <> _BLK_TU)) then continue;
+   if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then continue;
 
    orindex := -1;
-   for j := 0 to (Self.Data[i] as TBlkUsek).OblsRizeni.Count-1 do
-     if ((Self.Data[i] as TBlkUsek).OblsRizeni[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkUsek).OblsRizeni.Count-1 do
+     if ((blk as TBlkUsek).OblsRizeni[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
-   if ((Self.Data[i] as TBlkUsek).IsVlakPresun()) then Exit(Self.Data[i]);
-  end;//for i
+   if ((blk as TBlkUsek).IsVlakPresun()) then Exit(blk);
+  end;
 
  Result := nil;
 end;
@@ -647,10 +651,10 @@ end;
 
 // pozn.: NUZ maze soupravy z bloku
 procedure TBlky.NUZ(or_id:string; state:boolean = true);
-var spr:Integer;
-    blk:TBlk;
-    usek:TBlkUsek;
-    oblr:TOR;
+var spri: Integer;
+    blk: TBlk;
+    usek: TBlkUsek;
+    oblr: TOR;
  begin
   for blk in Self.Data do
    begin
@@ -664,9 +668,9 @@ var spr:Integer;
        begin
         if (state) then
          begin
-          for spr in usek.Soupravs do
-            if (Self.GetBlkWithSpr(spr).Count = 1) then
-              Soupravy.RemoveSpr(spr);
+          for spri in usek.Soupravs do
+            if (Self.GetBlkWithSpr(Soupravy[spri]).Count = 1) then
+              Soupravy.RemoveSpr(spri);
 
           if (ABlist.IsUsekInAnyABJC(usek.id)) then
             usek.Zaver := TZaver.ab
@@ -760,56 +764,56 @@ var bloki,i:Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.RemoveSpr(spr:Integer);
-var i:Integer;
+procedure TBlky.RemoveSpr(spr: TSouprava);
+var blk: TBlk;
 begin
- for i := 0 to Self.Data.Count-1 do
+ for blk in Self.data do
   begin
-   if ((Self.Data[i].typ = _BLK_USEK) or (Self.Data[i].typ = _BLK_TU)) then
+   if ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) then
     begin
-     if ((Self.Data[i] as TBlkUsek).IsSouprava(spr)) then
-       (Self.Data[i] as TBlkUsek).RemoveSouprava(spr);
+     if ((blk as TBlkUsek).IsSouprava(spr)) then
+       (blk as TBlkUsek).RemoveSouprava(spr);
 
-     if ((Self.Data[i] as TBlkUsek).SprPredict = spr) then
-       (Self.Data[i] as TBlkUsek).SprPredict := -1;
+     if ((blk as TBlkUsek).SprPredict = spr) then
+       (blk as TBlkUsek).SprPredict := nil;
     end;
-   if (Self.Data[i].typ = _BLK_TRAT) then (Self.Data[i] as TBlkTrat).RemoveSpr(spr);
+   if (blk.typ = _BLK_TRAT) then (blk as TBlkTrat).RemoveSpr(spr);
   end;//for
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkWithSpr(spr:Integer):TBlksList;
-var i:Integer;
+function TBlky.GetBlkWithSpr(spr: TSouprava):TBlksList;
+var blk: TBlk;
 begin
  Result := TList<TObject>.Create();
- for i := 0 to Self.Data.Count-1 do
-   if (((Self.Data[i].typ = _BLK_USEK) or (Self.Data[i].typ = _BLK_TU)) and
-       ((Self.Data[i] as TBlkUsek).IsSouprava(spr))) then
-     Result.Add(Self.Data[i]);
+ for blk in Self.data do
+   if (((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) and
+       ((blk as TBlkUsek).IsSouprava(spr))) then
+     Result.Add(blk);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // predpovidani soupravy na bloky v jizdni ceste
 
 procedure TBlky.SprPrediction(nav:TBlk);
-var usek, startUsek:TBlkUsek;
-    trat:TBlkTrat;
-    spr:Integer;
-    JC:TJC;
+var usek, startUsek: TBlkUsek;
+    trat: TBlkTrat;
+    spr: TSouprava;
+    JC: TJC;
 begin
  try
    // zjistime soupravu pred navestidlem
    usek := TBlkUsek(TBlkNav(nav).UsekPred);
    startUsek := usek;
-   spr := TBlkNav(nav).GetSoupravaIndex(usek);
+   spr := TBlkNav(nav).GetSouprava(usek);
 
    if (TBlkNav(nav).IsPovolovaciNavest()) then begin
      if ((not usek.IsSouprava()) or
-         (Soupravy[spr].direction <> TBlkNav(nav).Smer)) then
+         (spr.direction <> TBlkNav(nav).Smer)) then
       spr := usek.SprPredict
    end else
-     spr := -1;
+     spr := nil;
    JC := TBlkNav(nav).DNjc;
 
    // predpovidame, dokud existuji jizdni cesty
@@ -818,7 +822,7 @@ begin
      // kontrola povolujici navesti
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
      if ((nav = nil) or (nav.typ <> _BLK_NAV) or (not TBlkNav(nav).IsPovolovaciNavest())) then
-       spr := -1;
+       spr := nil;
 
      // zjistime posledni usek jizdni cesty
      Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], TBlk(usek));
@@ -830,9 +834,9 @@ begin
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
        Blky.GetBlkByID(TBlkTU(Usek).InTrat, TBlk(trat));
-       if (spr > -1) then begin
+       if (spr <> nil) then begin
          if ((trat.SprPredict = nil) or (trat.SprPredict.souprava <> spr)) then
-           trat.SprPredict := TBlkTratSouprava.Create(spr);
+           trat.SprPredict := TBlkTratSouprava.Create(spr.index);
        end else begin
          if (trat.SprPredict <> nil) then
            trat.SprPredict := nil;
@@ -884,42 +888,41 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlky.GetNavPrivol(oblR:TOR):TBlksList;
-var i:Integer;
-    moblr:TOR;
+var blk: TBlk;
+    moblr: TOR;
 begin
  Result := TList<TObject>.Create();
- for i := 0 to Self.Data.Count-1 do
+ for blk in Self.data do
   begin
-   if (self.Data[i].typ <> _BLK_NAV) then continue;
-   if ((Self.Data[i] as TBlkNav).Navest <> 8) then continue;
+   if (blk.typ <> _BLK_NAV) then continue;
+   if ((blk as TBlkNav).Navest <> 8) then continue;
 
-   for moblr in (Self.Data[i] as TBlkNav).OblsRizeni do
+   for moblr in (blk as TBlkNav).OblsRizeni do
     if (moblr = oblR) then
      begin
-      Result.Add(self.Data[i]);
+      Result.Add(blk);
       break;
-     end;//if ORs[j] = oblR
-  end;//for i
-
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TBlky.GetVyhWithZamek(zamekID:integer):TBlksList;
-var i:Integer;
-begin
- Result := TBlksList.Create();
- for i := 0 to Self.Data.Count-1 do
-  begin
-   if ((Self.Data[i].typ = _BLK_VYH) and
-      ((Self.Data[i] as TBlkVyhybka).GetSettings().zamek = zamekID)) then
-    Result.Add(Self.Data[i]);
+     end;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ChangeUsekWithSpr(spr:Integer);
+function TBlky.GetVyhWithZamek(zamekID:integer):TBlksList;
+var blk: TBlk;
+begin
+ Result := TBlksList.Create();
+ for blk in Self.data do
+  begin
+   if ((blk.typ = _BLK_VYH) and
+      ((blk as TBlkVyhybka).GetSettings().zamek = zamekID)) then
+    Result.Add(blk);
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlky.ChangeUsekWithSpr(spr: TSouprava);
 var Blks:TBlksList;
     i:Integer;
 begin
@@ -938,12 +941,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ChangeSprToTrat(spr:Integer);
-var i:Integer;
+procedure TBlky.ChangeSprToTrat(spr: TSouprava);
+var blk: TBlk;
 begin
- for i := 0 to Self.data.Count-1 do
-   if ((Self.data[i].typ = _BLK_TRAT) and (Self.data[i] as TBlkTrat).IsSpr(spr, true)) then
-     Self.data[i].Change();
+ for blk in Self.data do
+   if ((blk.typ = _BLK_TRAT) and (blk as TBlkTrat).IsSpr(spr, true)) then
+     blk.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS;
+      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Souprava;
 
 type
  TBlkNavVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -221,7 +221,7 @@ type
     procedure RemoveBlkFromRnz(blkId:Integer);
     procedure RCtimerTimeout();
 
-    function GetSoupravaIndex(usek:TBlk = nil):Integer;
+    function GetSouprava(usek:TBlk = nil): TSouprava;
     procedure PropagatePOdjToTrat();
 
     class function NavestToString(navest:Integer):string;
@@ -280,7 +280,7 @@ type
 implementation
 
 uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
-     GetSystems, Logging, SprDb, Souprava, TBlokIR, Zasobnik, ownStrUtils,
+     GetSystems, Logging, SprDb, TBlokIR, Zasobnik, ownStrUtils,
      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, Prevody;
 
@@ -1356,7 +1356,7 @@ begin
   end;
 
  // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
- spr := Soupravy[Self.GetSoupravaIndex(Usek)];
+ spr := Self.GetSouprava(Usek);
  if (spr.front <> Usek) then
   begin
    // tady musime zrusit registraci eventu, viz vyse
@@ -1505,8 +1505,8 @@ begin
          if (Self.Navest = 1) then
           begin
            // zelena -> rychlost dalsiho useku
-           if (spr.wantedSpeed <> TBlkTU(Self.UsekPred).GetSettings.rychlost) then
-             spr.SetRychlostSmer(TBlkTU(Self.UsekPred).GetSettings.rychlost, Self.NavRel.smer)
+           if (spr.wantedSpeed <> TBlkTU(Self.UsekPred).Speed(spr)) then
+             spr.SetRychlostSmer(TBlkTU(Self.UsekPred).Speed(spr), Self.NavRel.smer)
           end else begin
            // vystraha -> 40 km/h
            if (spr.wantedSpeed <> 40) then
@@ -1539,7 +1539,7 @@ begin
    // na bloku neni zadna souprava
    Result := 0;
   end else begin
-   spr := Soupravy[Self.GetSoupravaIndex(Usek)];
+   spr := Self.GetSouprava(Usek);
 
    // hledame takovy event, ktery odpovida nasi souprave
    for i := 0 to Self.NavSettings.events.Count-1 do
@@ -1751,7 +1751,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.GetSoupravaIndex(usek:TBlk = nil):Integer;
+function TBlkNav.GetSouprava(usek:TBlk = nil): TSouprava;
 begin
  if (usek = nil) then
    Blky.GetBlkByID(Self.UsekID, usek);
@@ -1779,15 +1779,15 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.PropagatePOdjToTrat();
-var spr:Integer;
+var spr: TSouprava;
     trat:TBlk;
     podj:TPOdj;
 begin
- spr := Self.GetSoupravaIndex();
- if (spr = -1) then
+ spr := Self.GetSouprava();
+ if (spr = nil) then
   begin
    spr := TBlkUsek(Self.UsekPred).SprPredict;
-   if (spr = -1) then Exit();
+   if (spr = nil) then Exit();
   end;
 
  if (Self.DNjc = nil) then Exit();
@@ -1796,9 +1796,9 @@ begin
  if (TBlkTrat(trat).SprPredict = nil) then Exit();
  if (TBlkTrat(trat).SprPredict.souprava <> spr) then Exit();
 
- if (Soupravy[spr].IsPOdj(Self.UsekPred)) then
+ if (spr.IsPOdj(Self.UsekPred)) then
   begin
-   podj := Soupravy[spr].GetPOdj(Self.UsekPred);
+   podj := spr.GetPOdj(Self.UsekPred);
    if (not podj.IsDepSet) then Exit();
    if ((TBlkTrat(trat).SprPredict.IsTimeDefined) and (TBlkTrat(trat).SprPredict.time = podj.DepTime())) then Exit();
 
@@ -1806,7 +1806,7 @@ begin
    TBlkTrat(trat).SprPredict.time := podj.DepTime();
    TBlkTrat(trat).Change();
   end else if ((TBlkTrat(trat).SprPredict.predict) and
-               ((not Soupravy[spr].IsPOdj(Self.UsekPred)) or (not Soupravy[spr].GetPOdj(Self.UsekPred).IsDepSet()))) then begin
+               ((not spr.IsPOdj(Self.UsekPred)) or (not spr.GetPOdj(Self.UsekPred).IsDepSet()))) then begin
    TBlkTrat(trat).SprPredict.predict := false;
    TBlkTrat(trat).SprPredict.UndefTime();
    TBlkTrat(trat).Change();

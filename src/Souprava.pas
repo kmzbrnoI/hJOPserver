@@ -513,7 +513,7 @@ begin
  Self.data.HVs := newLoks;
 
  Self.SetRychlostSmer(Self.speed, Self.direction);
- Blky.ChangeSprToTrat(Self.index);
+ Blky.ChangeSprToTrat(Self);
 
  TBlkUsek(Self.front).Change();
 
