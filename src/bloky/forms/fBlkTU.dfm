@@ -4,7 +4,7 @@ object F_BlkTU: TF_BlkTU
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 489
+  ClientHeight = 569
   ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -86,20 +86,9 @@ object F_BlkTU: TF_BlkTU
     Margins.Bottom = 2
     Caption = 'Smy'#269'kov'#253' blok :'
   end
-  object L_Trat3: TLabel
-    Left = 8
-    Top = 207
-    Width = 74
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Rychlost v T'#218' :'
-  end
   object B_OK: TButton
-    Left = 614
-    Top = 452
+    Left = 615
+    Top = 537
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -108,12 +97,12 @@ object F_BlkTU: TF_BlkTU
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 6
+    TabOrder = 10
     OnClick = B_OKClick
   end
   object B_Storno: TButton
-    Left = 535
-    Top = 452
+    Left = 536
+    Top = 537
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -121,7 +110,7 @@ object F_BlkTU: TF_BlkTU
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 11
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -152,7 +141,7 @@ object F_BlkTU: TF_BlkTU
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 237
+    Top = 203
     Width = 305
     Height = 129
     Margins.Left = 2
@@ -160,7 +149,7 @@ object F_BlkTU: TF_BlkTU
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Technologick'#233' vstupy - RCS  '
-    TabOrder = 5
+    TabOrder = 6
     object L_Usek04: TLabel
       Left = 12
       Top = 19
@@ -428,7 +417,7 @@ object F_BlkTU: TF_BlkTU
     Width = 365
     Height = 433
     Caption = ' Zast'#225'vka '
-    TabOrder = 8
+    TabOrder = 9
     object Label5: TLabel
       Left = 16
       Top = 40
@@ -508,10 +497,6 @@ object F_BlkTU: TF_BlkTU
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
     end
     object CHB_Zastavka_Sudy: TCheckBox
@@ -533,15 +518,15 @@ object F_BlkTU: TF_BlkTU
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    TabOrder = 9
+    TabOrder = 5
   end
   object GB_Autoblok: TGroupBox
     Left = 8
-    Top = 371
+    Top = 337
     Width = 304
     Height = 112
     Caption = ' Autoblok '
-    TabOrder = 10
+    TabOrder = 7
     object Label10: TLabel
       Left = 16
       Top = 16
@@ -591,29 +576,63 @@ object F_BlkTU: TF_BlkTU
       TabOrder = 3
     end
   end
-  object CB_Speed: TComboBox
-    Left = 119
-    Top = 207
-    Width = 194
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    ItemHeight = 13
-    TabOrder = 11
-    Items.Strings = (
-      '20 km/h'
-      '30 km/h'
-      '40 km/h'
-      '50 km/h'
-      '60 km/h'
-      '70 km/h'
-      '80 km/h'
-      '90 km/h'
-      '100 km/h'
-      '110 km/h'
-      '120 km/h')
+  object GB_Speed: TGroupBox
+    Left = 8
+    Top = 455
+    Width = 304
+    Height = 105
+    Caption = ' Rychlosti '
+    TabOrder = 8
+    object LV_Speeds: TListView
+      Left = 2
+      Top = 15
+      Width = 200
+      Height = 88
+      Align = alLeft
+      Columns = <
+        item
+          Caption = 'T'#345#237'da p'#345'echodnosti'
+          Width = 110
+        end
+        item
+          Caption = 'Rychlost'
+          Width = 60
+        end>
+      ReadOnly = True
+      RowSelect = True
+      SortType = stBoth
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnChange = LV_SpeedsChange
+    end
+    object SE_prechodnost: TSpinEdit
+      Left = 208
+      Top = 17
+      Width = 85
+      Height = 22
+      MaxValue = 1000
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
+    end
+    object B_speed_apply: TButton
+      Left = 234
+      Top = 74
+      Width = 60
+      Height = 21
+      Caption = 'Pou'#382#237't'
+      TabOrder = 3
+      OnClick = B_speed_applyClick
+    end
+    object SE_speed: TSpinEdit
+      Left = 208
+      Top = 46
+      Width = 85
+      Height = 22
+      MaxValue = 500
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
   end
 end

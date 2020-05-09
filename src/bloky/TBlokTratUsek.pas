@@ -293,6 +293,7 @@ begin
      ExtractStringsEx([','], [], str, strs);
      for str in strs do
       begin
+       strs2.Clear();
        ExtractStringsEx([':'], [], str, strs2);
        if (strs2.Count = 2) then
          Self.TUSettings.rychlosti.AddOrSetValue(StrToInt(strs2[0]), StrToInt(strs2[1]));
@@ -367,6 +368,7 @@ procedure TBlkTU.SaveData(ini_tech:TMemIniFile;const section:string);
 var str: string;
     i: Integer;
     j: Cardinal;
+    speeds: TList<Cardinal>;
 begin
  inherited SaveData(ini_tech, section);
 
@@ -376,10 +378,16 @@ begin
  if (Self.TUSettings.navSid <> -1) then
    ini_tech.WriteInteger(section, 'navS', Self.TUSettings.navSid);
 
- str := '';
- for j in Self.TUSettings.rychlosti.Keys do
-   str := str + IntToStr(j) + ':' + IntToStr(Self.TUSettings.rychlosti[j]) + ',';
- ini_tech.WriteString(section, 'rychlosti', str);
+ speeds := TList<Cardinal>.Create(Self.TUSettings.rychlosti.Keys);
+ try
+   speeds.Sort();
+   str := '';
+   for j in speeds do
+     str := str + IntToStr(j) + ':' + IntToStr(Self.TUSettings.rychlosti[j]) + ',';
+   ini_tech.WriteString(section, 'rychlosti', str);
+ finally
+   speeds.Free();
+ end;
 
  // ukladani zastavky
  if (Self.TUsettings.Zastavka.ev_lichy.enabled) then
@@ -448,7 +456,10 @@ begin
    Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Free();
 
  if (Self.TUSettings.Zastavka.soupravy <> data.Zastavka.soupravy) then
-  Self.TUSettings.Zastavka.soupravy.Free();
+   Self.TUSettings.Zastavka.soupravy.Free();
+
+ if (Self.TUSettings.rychlosti <> data.rychlosti) then
+   Self.TUSettings.rychlosti.Free();
 
  Self.TUSettings := data;
  Self.Change();
@@ -1244,7 +1255,7 @@ begin
     begin
      if ((Self.IsSouprava()) and (Self.zpomalovani_ready) and
         (Self.Souprava.wantedSpeed > 0) and
-        (Self.Souprava.wantedSpeed <> Self.Speed(Self.Souprava))) then
+        (Cardinal(Self.Souprava.wantedSpeed) <> Self.Speed(Self.Souprava))) then
        Self.Souprava.speed := Self.Speed(Self.Souprava);
     end;
   end;

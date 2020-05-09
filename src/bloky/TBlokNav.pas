@@ -1505,7 +1505,7 @@ begin
          if (Self.Navest = 1) then
           begin
            // zelena -> rychlost dalsiho useku
-           if (spr.wantedSpeed <> TBlkTU(Self.UsekPred).Speed(spr)) then
+           if (Cardinal(spr.wantedSpeed) <> TBlkTU(Self.UsekPred).Speed(spr)) then
              spr.SetRychlostSmer(TBlkTU(Self.UsekPred).Speed(spr), Self.NavRel.smer)
           end else begin
            // vystraha -> 40 km/h

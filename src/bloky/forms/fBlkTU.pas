@@ -55,12 +55,15 @@ type
     Label11: TLabel;
     CHB_NavS: TCheckBox;
     CB_NavS: TComboBox;
-    L_Trat3: TLabel;
-    CB_Speed: TComboBox;
     PC_Zastavka: TPageControl;
     TS_Zast_lichy: TTabSheet;
     TS_Zast_sudy: TTabSheet;
     CHB_Zastavka_Sudy: TCheckBox;
+    GB_Speed: TGroupBox;
+    LV_Speeds: TListView;
+    SE_prechodnost: TSpinEdit;
+    B_speed_apply: TButton;
+    SE_speed: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -71,6 +74,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure SE_RCS_BoardExit(Sender: TObject);
+    procedure B_speed_applyClick(Sender: TObject);
+    procedure LV_SpeedsChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
   private
    NewBlk:Boolean;
    Blk:TBlkTU;
@@ -79,9 +85,12 @@ type
    CB_NavLindex, CB_NavSindex: Integer;
    zastLichy, zastSudy: TF_BlkTUZastEvent;
 
-    procedure NewBlkOpenForm;
-    procedure NormalOpenForm;
-    procedure HlavniOpenForm;
+    procedure NewBlkOpenForm();
+    procedure NormalOpenForm();
+    procedure HlavniOpenForm();
+
+    function GetSpeeds(): TDictionary<Cardinal, Cardinal>;
+
   public
     procedure OpenForm(BlokIndex:Integer);
     procedure NewBlkCreate;
@@ -101,14 +110,12 @@ procedure TF_BlkTU.OpenForm(BlokIndex:Integer);
  begin
   Self.OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
-  HlavniOpenForm;
+  Self.HlavniOpenForm();
   if (NewBlk) then
-   begin
-    NewBlkOpenForm;
-   end else begin
-    NormalOpenForm;
-   end;//else NewBlk
-  Self.ShowModal;
+    Self.NewBlkOpenForm()
+  else
+    Self.NormalOpenForm();
+  Self.ShowModal();
  end;
 
 procedure TF_BlkTU.SE_RCS_BoardExit(Sender: TObject);
@@ -119,19 +126,19 @@ begin
  Self.SE_Port4.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
 end;
 
-procedure TF_BlkTU.NewBlkCreate;
+procedure TF_BlkTU.NewBlkCreate();
  begin
   NewBlk := true;
   OpenForm(Blky.count);
  end;
 
-procedure TF_BlkTU.NewBlkOpenForm;
+procedure TF_BlkTU.NewBlkOpenForm();
  begin
-  E_Nazev.Text               := '';
-  SE_ID.Value                := Blky.GetBlkID(Blky.count-1)+1;
-  E_Delka.Text               := '0';
-  CHB_SmycBlok.Checked       := false;
-  Self.CB_Zesil.ItemIndex    := -1;
+  E_Nazev.Text := '';
+  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  E_Delka.Text := '0';
+  CHB_SmycBlok.Checked := false;
+  Self.CB_Zesil.ItemIndex := -1;
 
   Self.SE_Port1.Value  := 0;
   Self.SE_Board1.Value := 1;
@@ -158,7 +165,9 @@ procedure TF_BlkTU.NewBlkOpenForm;
   Self.CB_NavLindex := -1;
   Self.CB_NavSindex := -1;
 
-  Self.CB_Speed.ItemIndex := -1;
+  Self.LV_Speeds.Clear();
+  Self.SE_speed.Value := 0;
+  Self.SE_prechodnost.Value := 0;
 
   Self.zastLichy.OpenEmptyForm();
   Self.zastSudy.OpenEmptyForm();
@@ -167,13 +176,14 @@ procedure TF_BlkTU.NewBlkOpenForm;
   Self.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkTU.NormalOpenForm;
+procedure TF_BlkTU.NormalOpenForm();
 var glob:TBlkSettings;
     TUsettings:TBlkTUSettings;
     Usettings:TBlkUsekSettings;
     i:Integer;
     obls:TArstr;
     oblr:TOR;
+    LI: TListItem;
  begin
   if (Assigned(Self.Blk)) then glob := Self.Blk.GetGlobalSettings();
   E_Nazev.Text := glob.name;
@@ -297,10 +307,13 @@ var glob:TBlkSettings;
   Self.CHB_NavLClick(CHB_NavL);
   Self.CHB_NavSClick(CHB_NavS);
 
-{  if (TUsettings.rychlost >= 20) then
-    Self.CB_Speed.ItemIndex := (TUsettings.rychlost div 10)-2
-  else
-    Self.CB_Speed.ItemIndex := -1; }
+  Self.LV_Speeds.Clear();
+  for i in TUsettings.rychlosti.Keys do
+   begin
+    LI := Self.LV_Speeds.Items.Add();
+    LI.Caption := IntToStr(i);
+    LI.SubItems.Add(IntToStr(TUsettings.rychlosti[i]) + ' km/h');
+   end;
 
   Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
   Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
@@ -324,6 +337,57 @@ var booster:TBooster;
   for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
  end;
 
+procedure TF_BlkTU.LV_SpeedsChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
+var str: string;
+begin
+ if (Self.LV_Speeds.Selected = nil) then
+  begin
+   Self.SE_prechodnost.Value := 0;
+   Self.SE_speed.Value := 0;
+  end else begin
+   Self.SE_prechodnost.Value := StrToInt(Self.LV_Speeds.Selected.Caption);
+   str := Self.LV_Speeds.Selected.SubItems.Strings[0];
+   Self.SE_speed.Value := StrToInt(LeftStr(str, Length(str)-5));
+  end;
+end;
+
+procedure TF_BlkTU.B_speed_applyClick(Sender: TObject);
+var LI: TListItem;
+    i: Integer;
+    prechodnost, speed: Integer;
+begin
+ prechodnost := Self.SE_prechodnost.Value;
+ speed := Self.SE_speed.Value;
+
+ if (speed <= 0) then
+  begin
+   // delete speed
+   for i := 0 to Self.LV_Speeds.Items.Count-1 do
+    begin
+     if (Self.LV_Speeds.Items[i].Caption = IntToStr(prechodnost)) then
+      begin
+       Self.LV_Speeds.Items.Delete(i);
+       Exit();
+      end;
+    end;
+   Exit();
+  end;
+
+ for LI in Self.LV_Speeds.Items do
+  begin
+   if (LI.Caption = IntToStr(prechodnost)) then
+    begin
+     LI.SubItems.Strings[0] := IntToStr(speed) + ' km/h';
+     Exit();
+    end;
+  end;
+
+ LI := Self.LV_Speeds.Items.Add();
+ LI.Caption := IntToStr(prechodnost);
+ LI.SubItems.Add(IntToStr(speed) + ' km/h');
+end;
+
 procedure TF_BlkTU.B_StornoClick(Sender: TObject);
  begin
   Self.Close;
@@ -334,36 +398,32 @@ var glob:TBlkSettings;
     settings:TBlkUsekSettings;
     TUsettings:TBlkTUSettings;
     str:string;
+    speeds: TDictionary<Cardinal, Cardinal>;
  begin
   if (E_Nazev.Text = '') then
    begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Self.CB_Zesil.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
-   end;
-  if (Self.CB_Speed.ItemIndex < 0) then
-   begin
-    Application.MessageBox('Vyberte rychlost v traťovém úseku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if ((Self.CHB_NavL.Checked) and (Self.CB_NavL.ItemIndex = -1)) then
    begin
     Application.MessageBox('Vyberte návěstidlo kryjící úsek v lichém směru!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if ((Self.CHB_NavS.Checked) and (Self.CB_NavS.ItemIndex = -1)) then
    begin
     Application.MessageBox('Vyberte návěstidlo kryjící úsek v sudém směru!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
 
   if (CHB_Zastavka_Lichy.Checked) then
@@ -372,7 +432,7 @@ var glob:TBlkSettings;
     if (str <> '') then
      begin
       Application.MessageBox(PChar('Zastavovací událost zastávky v lichém směru:'+#13#10+str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
    end;
 
@@ -382,13 +442,30 @@ var glob:TBlkSettings;
     if (str <> '') then
      begin
       Application.MessageBox(PChar('Zastavovací událost zastávky v sudém směru:'+#13#10+str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
    end;
 
+  try
+   speeds := Self.GetSpeeds();
+  except
+   on E:Exception do
+    begin
+     Application.MessageBox(PChar('Nepodařilo se načíst rychlosti:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+     Exit();
+    end;
+  end;
+
+  if (speeds.Keys.Count = 0) then
+   begin
+    speeds.Free();
+    Application.MessageBox('Rychlostní tabulka musí mít alespoň jednu rychlost!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+   end;
+
   glob.name := E_Nazev.Text;
-  glob.id   := SE_ID.Value;
-  glob.typ  := _BLK_TU;
+  glob.id := SE_ID.Value;
+  glob.typ := _BLK_TU;
 
   if (NewBlk) then
    begin
@@ -398,6 +475,7 @@ var glob:TBlkSettings;
     except
       on E:Exception do
        begin
+        speeds.Free();
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
        end;
@@ -407,7 +485,7 @@ var glob:TBlkSettings;
     Self.Blk.SetGlobalSettings(glob);
    end;
 
-  //ukladani dat
+  // ukladani dat
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_D1.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board1.Value, Self.SE_Port1.Value));
@@ -418,16 +496,15 @@ var glob:TBlkSettings;
   if (Self.CHB_D4.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
 
-
-  settings.Lenght  := StrToFloatDef(Self.E_Delka.Text,0);
+  settings.Lenght := StrToFloatDef(Self.E_Delka.Text,0);
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;
-  settings.Zesil   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
-  settings.maxSpr  := 1;
+  settings.Zesil := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
+  settings.maxSpr := 1;
 
-  TUsettings.Zastavka.ev_lichy.enabled  := Self.CHB_Zastavka_Lichy.Checked;
-  TUsettings.Zastavka.ev_sudy.enabled   := Self.CHB_Zastavka_Sudy.Checked;
+  TUsettings.Zastavka.ev_lichy.enabled := Self.CHB_Zastavka_Lichy.Checked;
+  TUsettings.Zastavka.ev_sudy.enabled := Self.CHB_Zastavka_Sudy.Checked;
 
-//  TUSettings.rychlost := (Self.CB_Speed.ItemIndex + 2) * 10;
+  TUSettings.rychlosti := speeds;
 
   if (Self.CHB_NavL.Checked) then
     TUsettings.navLid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])
@@ -445,9 +522,11 @@ var glob:TBlkSettings;
     ExtractStringsEx([','], [' '], Self.E_Zast_Spr.Text, TUsettings.Zastavka.soupravy);
     TUsettings.Zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
     try
-      TUsettings.Zastavka.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)), StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
+      TUsettings.Zastavka.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)),
+                                              StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
       TUsettings.zastavka.soupravy.Free();
+      speeds.Free();
       Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -468,7 +547,7 @@ var glob:TBlkSettings;
   Self.Blk.SetSettings(TUsettings);
   (Self.Blk as TBlkUsek).SetSettings(settings);
 
-  Self.Close;
+  Self.Close();
   Self.Blk.Change();
  end;
 
@@ -601,5 +680,18 @@ begin
   end;
 end;
 
+////////////////////////////////////////////////////////////////////////////////
+
+function TF_BlkTU.GetSpeeds(): TDictionary<Cardinal, Cardinal>;
+var LI: TListItem;
+    speed: string;
+begin
+ Result := TDictionary<Cardinal, Cardinal>.Create();
+ for LI in Self.LV_Speeds.Items do
+  begin
+   speed := LeftStr(LI.SubItems.Strings[0], Length(LI.SubItems.Strings[0])-5);
+   Result.Add(StrToInt(LI.Caption), StrToInt(speed));
+  end;
+end;
 
 end.//unit
