@@ -86,6 +86,7 @@ type
    poznamka: string;
    typ: THVType;
    maxRychlost: Cardinal;
+   prechodnost: Cardinal;
 
    POMtake: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
    POMrelease: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
@@ -106,13 +107,12 @@ type
 
   THVStav = record
    stanovisteA: THVStanoviste;
-
    traveled_forward: Real; // in meters
    traveled_backward: Real; // in meters
    funkce: TFunkce; // stav funkci tak, jak je chceme; uklada se do souboru
    souprava: Integer; // index soupravy; -1 pokud neni na souprave
    stanice: TOR;
-   regulators:TList<THVRegulator>; // seznam regulatoru -- klientu
+   regulators: TList<THVRegulator>; // seznam regulatoru -- klientu
    tokens: TList<THVToken>;
    ruc: Boolean;
    last_used: TDateTime;
@@ -301,7 +301,7 @@ begin
  inherited Create();
 
  Self.fadresa := adresa;
- Self.Data    := data;
+ Self.data    := data;
  Self.Stav    := stav;
 
  Self.acquiredOk := TTrakce.Callback();
@@ -310,8 +310,8 @@ begin
  Self.m_funcDict := TDictionary<string, Integer>.Create();
  Self.UpdateFuncDict();
 
- if (not Assigned(Self.Data.POMtake))    then Self.data.POMtake    := TList<THVPomCV>.Create;
- if (not Assigned(Self.Data.POMrelease)) then Self.data.POMrelease := TList<THVPomCV>.Create;
+ if (not Assigned(Self.data.POMtake))    then Self.data.POMtake    := TList<THVPomCV>.Create;
+ if (not Assigned(Self.data.POMrelease)) then Self.data.POMrelease := TList<THVPomCV>.Create;
  if (not Assigned(Self.Stav.regulators)) then Self.Stav.regulators := TList<THVRegulator>.Create();
  if (not Assigned(Self.Stav.tokens))     then Self.Stav.tokens     := TList<THVToken>.Create();
 end;//ctor
@@ -363,16 +363,17 @@ begin
    if ((addr < 0) or (addr > 9999)) then raise Exception.Create('Adresa loko mimo rozsah');
    Self.fadresa := addr;
 
-   Self.Data.Nazev := ini.ReadString(section, 'nazev', section);
-   Self.Data.Majitel := ini.ReadString(section, 'majitel', '');
-   Self.Data.Oznaceni := ini.ReadString(section, 'oznaceni', section);
-   Self.Data.Poznamka := ini.ReadString(section, 'poznamka', '');
-   Self.Data.typ := THVType(ini.ReadInteger(section, 'trida', 0));
-   Self.Data.maxRychlost := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
+   Self.data.Nazev := ini.ReadString(section, 'nazev', section);
+   Self.data.Majitel := ini.ReadString(section, 'majitel', '');
+   Self.data.Oznaceni := ini.ReadString(section, 'oznaceni', section);
+   Self.data.Poznamka := ini.ReadString(section, 'poznamka', '');
+   Self.data.typ := THVType(ini.ReadInteger(section, 'trida', 0));
+   Self.data.maxRychlost := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
+   Self.data.prechodnost := ini.ReadInteger(section, 'prechodnost', 0);
 
    // POM pri prebirani : (cv,data)(cv,data)(...)...
    str := ini.ReadString(section, 'pom_take', '');
-   Self.Data.POMtake.Clear();
+   Self.data.POMtake.Clear();
    strs.Clear();
    ExtractStringsEx([')'], ['('], str, strs);
    for s in strs do
@@ -385,7 +386,7 @@ begin
          pomCV.cv   := StrToInt(strs2[0]);
          if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then continue;
          pomCV.data := StrToInt(strs2[1]);
-         Self.Data.POMtake.Add(pomCV);
+         Self.data.POMtake.Add(pomCV);
        except
          continue;
        end;// except
@@ -394,7 +395,7 @@ begin
 
    // POM pri uvolneni : (cv,data)(cv,data)(...)...
    str := ini.ReadString(section, 'pom_release', '');
-   Self.Data.POMrelease.Clear();
+   Self.data.POMrelease.Clear();
    strs.Clear();
    ExtractStringsEx([')'], ['('], str, strs);
    for s in strs do
@@ -407,7 +408,7 @@ begin
          pomCV.cv   := StrToInt(strs2[0]);
          if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then continue;
          pomCV.data := StrToInt(strs2[1]);
-         Self.Data.POMrelease.Add(pomCV);
+         Self.data.POMrelease.Add(pomCV);
        except
          continue;
        end;// except
@@ -421,9 +422,9 @@ begin
    for i := 0 to _HV_FUNC_MAX do
     begin
      if (i < strs.Count) then
-       Self.Data.funcVyznam[i] := strs[i]
+       Self.data.funcVyznam[i] := strs[i]
       else
-       Self.Data.funcVyznam[i] := '';
+       Self.data.funcVyznam[i] := '';
     end;
    Self.UpdateFuncDict();
 
@@ -433,9 +434,9 @@ begin
     begin
      if (i < Length(str)) then
       begin
-       Self.Data.funcType[i] := CharToHVFuncType(str[i+1]);
+       Self.data.funcType[i] := CharToHVFuncType(str[i+1]);
       end else
-       Self.Data.funcType[i] := THVFuncType.permanent;
+       Self.data.funcType[i] := THVFuncType.permanent;
     end;
 
   except
@@ -490,22 +491,23 @@ begin
 
    addr := IntToStr(Self.adresa);
    ini.EraseSection(addr);
-   ini.WriteString(addr, 'nazev', Self.Data.Nazev);
-   ini.WriteString(addr, 'majitel', Self.Data.Majitel);
-   ini.WriteString(addr, 'oznaceni', Self.Data.Oznaceni);
-   ini.WriteString(addr, 'poznamka', Self.Data.Poznamka);
-   ini.WriteInteger(addr, 'trida', Integer(Self.Data.typ));
-   ini.WriteInteger(addr, 'max_rychlost', Self.Data.maxRychlost);
+   ini.WriteString(addr, 'nazev', Self.data.Nazev);
+   ini.WriteString(addr, 'majitel', Self.data.Majitel);
+   ini.WriteString(addr, 'oznaceni', Self.data.Oznaceni);
+   ini.WriteString(addr, 'poznamka', Self.data.Poznamka);
+   ini.WriteInteger(addr, 'trida', Integer(Self.data.typ));
+   ini.WriteInteger(addr, 'max_rychlost', Self.data.maxRychlost);
+   ini.WriteInteger(addr, 'prechodnost', Self.data.prechodnost);
 
    // POM pri prebirani
    str := '';
-   for pom in Self.Data.POMtake do
+   for pom in Self.data.POMtake do
      str := str + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
    ini.WriteString(addr, 'pom_take', str);
 
    // POM pri uvolneni
    str := '';
-   for pom in Self.Data.POMrelease do
+   for pom in Self.data.POMrelease do
      str := str + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
    ini.WriteString(addr, 'pom_release', str);
 
@@ -513,8 +515,8 @@ begin
    str := '';
    for i := 0 to _HV_FUNC_MAX do
     begin
-     if (Self.Data.funcVyznam[i] <> '') then
-       str := str + '{' + Self.Data.funcVyznam[i] + '};'
+     if (Self.data.funcVyznam[i] <> '') then
+       str := str + '{' + Self.data.funcVyznam[i] + '};'
      else
        str := str + ';';
     end;
@@ -523,7 +525,7 @@ begin
    // typ funkci
    str := '';
    for i := 0 to _HV_FUNC_MAX do
-     str := str + HVFuncTypeToChar(Self.Data.funcType[i]);
+     str := str + HVFuncTypeToChar(Self.data.funcType[i]);
    ini.WriteString(addr, 'func_type', str);
 
  except
@@ -567,7 +569,7 @@ begin
  str := '';
  for i := 0 to _HV_FUNC_MAX do
   begin
-   if ((Self.Stav.funkce[i]) and (Self.Data.funcType[i] <> THVFuncType.momentary)) then
+   if ((Self.Stav.funkce[i]) and (Self.data.funcType[i] <> THVFuncType.momentary)) then
      str := str + '1'
    else
      str := str + '0';
@@ -586,7 +588,7 @@ end;
 // format vystupnich dat: adresa;nazev;majitel;najeto_metru_vpred;najeto_metru_vzad
 function THV.ExportStats():string;
 begin
- Result := IntToStr(Self.adresa) + ';' + Self.Data.Nazev + ';' + Self.Data.Majitel + ';' +
+ Result := IntToStr(Self.adresa) + ';' + Self.data.Nazev + ';' + Self.data.Majitel + ';' +
            Format('%5.2f', [Self.Stav.traveled_forward]) + ';' +
            Format('%5.2f', [Self.Stav.traveled_backward]) + ';';
 end;
@@ -598,13 +600,8 @@ var i:Integer;
     func:TFunkce;
     pomCV:THVPOMCv;
 begin
- // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|typ|souprava|stanovisteA|funkce|rychlost_stupne|
- //   rychlost_kmph|smer|or_id|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
- //   {vyznam-F0;vyznam-F1;...}|typ_funkci|maximalni rychlost
-
- // souprava je bud cislo soupravy, nebo znak '-'
- Result := Self.Data.Nazev + '|' + Self.Data.Majitel + '|' + Self.Data.Oznaceni + '|{' + Self.Data.Poznamka + '}|' +
-           IntToStr(Self.adresa) + '|' + IntToStr(Integer(Self.Data.typ)) + '|';
+ Result := Self.data.Nazev + '|' + Self.data.Majitel + '|' + Self.data.Oznaceni + '|{' + Self.data.Poznamka + '}|' +
+           IntToStr(Self.adresa) + '|' + IntToStr(Integer(Self.data.typ)) + '|';
 
  if (Self.Stav.souprava > -1) then
   Result := Result + Soupravy.GetSprNameByIndex(Self.Stav.souprava) + '|'
@@ -633,12 +630,12 @@ begin
   begin
    // cv-take
    Result := Result + '{';
-   for pomCV in Self.Data.POMtake do
+   for pomCV in Self.data.POMtake do
      Result := Result + '[{' + IntToStr(POMcv.cv) + '|' + IntToStr(POMcv.data) + '}]';
    Result := Result + '}|{';
 
    // cv-release
-   for pomCV in Self.Data.POMrelease do
+   for pomCV in Self.data.POMrelease do
      Result := Result + '[{' + IntToStr(POMcv.cv) + '|' + IntToStr(POMcv.data) + '}]';
    Result := Result + '}';
   end else begin
@@ -649,8 +646,8 @@ begin
  Result := Result + '|{';
  for i := 0 to _HV_FUNC_MAX do
   begin
-   if (Self.Data.funcVyznam[i] <> '') then
-     Result := Result + '{' + Self.Data.funcVyznam[i] + '};'
+   if (Self.data.funcVyznam[i] <> '') then
+     Result := Result + '{' + Self.data.funcVyznam[i] + '};'
    else
      Result := Result + ';';
   end;
@@ -658,10 +655,11 @@ begin
 
  // typy funkci
  for i := 0 to _HV_FUNC_MAX do
-   Result := Result + HVFuncTypeToChar(Self.Data.funcType[i]);
+   Result := Result + HVFuncTypeToChar(Self.data.funcType[i]);
  Result := Result + '|';
 
- Result := Result + IntToStr(Self.Data.maxRychlost) + '|';
+ Result := Result + IntToStr(Self.data.maxRychlost) + '|';
+ Result := Result + IntToStr(Self.data.prechodnost) + '|';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -696,12 +694,12 @@ begin
  ExtractStringsEx(['|'], [], data, str);
 
  try
-  Self.Data.Nazev := str[0];
-  Self.Data.Majitel := str[1];
-  Self.Data.Oznaceni := str[2];
-  Self.Data.Poznamka := str[3];
+  Self.data.Nazev := str[0];
+  Self.data.Majitel := str[1];
+  Self.data.Oznaceni := str[2];
+  Self.data.Poznamka := str[3];
   Self.fadresa := StrToInt(str[4]);
-  Self.Data.typ := THVType(StrToInt(str[5]));
+  Self.data.typ := THVType(StrToInt(str[5]));
   Self.Stav.StanovisteA := THVStanoviste(StrToInt(str[7]));
 
   maxFunc := Min(Length(str[8])-1, _HV_FUNC_MAX);
@@ -713,7 +711,7 @@ begin
    begin
      // pom-take
      str2.Clear();
-     Self.Data.POMtake.Clear();
+     Self.data.POMtake.Clear();
      ExtractStringsEx([']'] , ['['], str[13], str2);
      for tmp in str2 do
       begin
@@ -721,7 +719,7 @@ begin
        ExtractStringsEx(['|'] , [], tmp, str3);
        pomCV.cv   := StrToInt(str3[0]);
        pomCV.data := StrToInt(str3[1]);
-       Self.Data.POMtake.Add(pomCV);
+       Self.data.POMtake.Add(pomCV);
       end;
    end;
 
@@ -729,7 +727,7 @@ begin
    begin
      // pom-release
      str2.Clear();
-     Self.Data.POMrelease.Clear();
+     Self.data.POMrelease.Clear();
      ExtractStringsEx([']'] , ['['], str[14], str2);
      for tmp in str2 do
       begin
@@ -737,7 +735,7 @@ begin
        ExtractStringsEx(['|'] , [], tmp, str3);
        pomCV.cv   := StrToInt(str3[0]);
        pomCV.data := StrToInt(str3[1]);
-       Self.Data.POMrelease.Add(pomCV);
+       Self.data.POMrelease.Add(pomCV);
       end;
    end;
 
@@ -748,12 +746,12 @@ begin
     ExtractStringsEx([';'], [], str[15], str2);
     for i := 0 to _HV_FUNC_MAX do
       if (i < str2.Count) then
-       Self.Data.funcVyznam[i] := str2[i]
+       Self.data.funcVyznam[i] := str2[i]
       else
-       Self.Data.funcVyznam[i] := '';
+       Self.data.funcVyznam[i] := '';
    end else begin
     for i := 0 to _HV_FUNC_MAX do
-      Self.Data.funcVyznam[i] := '';
+      Self.data.funcVyznam[i] := '';
    end;
    Self.UpdateFuncDict();
 
@@ -762,17 +760,19 @@ begin
     // typy funkci
     for i := 0 to _HV_FUNC_MAX do
       if (i < Length(str[16])) then
-       Self.Data.funcType[i] := CharToHVFuncType(str[16][i+1])
+       Self.data.funcType[i] := CharToHVFuncType(str[16][i+1])
       else
-       Self.Data.funcType[i] := THVFuncType.permanent;
+       Self.data.funcType[i] := THVFuncType.permanent;
    end else begin
     for i := 0 to _HV_FUNC_MAX do
-      Self.Data.funcType[i] := THVFuncType.permanent;
+      Self.data.funcType[i] := THVFuncType.permanent;
    end;
 
   if (str.Count > 17) then
-    Self.Data.maxRychlost := StrToInt(str[17]);
+    Self.data.maxRychlost := StrToInt(str[17]);
 
+  if (str.Count > 18) then
+    Self.data.prechodnost := StrToInt(str[18]);
  except
   on e:Exception do
    begin
@@ -948,13 +948,13 @@ var i, lastFunction:Integer;
     types:string;
 begin
  json['adresa']   := Self.adresa;
- json['nazev']    := Self.Data.Nazev;
- json['majitel']  := Self.Data.Majitel;
- json['oznaceni'] := Self.Data.Oznaceni;
- json['maxRychlost'] := Self.Data.maxRychlost;
- if (Self.Data.Poznamka <> '') then json['poznamka'] := Self.Data.Poznamka;
+ json['nazev']    := Self.data.Nazev;
+ json['majitel']  := Self.data.Majitel;
+ json['oznaceni'] := Self.data.Oznaceni;
+ json['maxRychlost'] := Self.data.maxRychlost;
+ if (Self.data.Poznamka <> '') then json['poznamka'] := Self.data.Poznamka;
 
- case (Self.Data.typ) of
+ case (Self.data.typ) of
   THVType.parni   : json['typ'] := 'parni';
   THVType.diesel  : json['typ'] := 'diesel';
   THVType.motor   : json['typ'] := 'motor';
@@ -962,14 +962,14 @@ begin
  end;
 
  lastFunction := _HV_FUNC_MAX;
- while ((lastFunction >= 0) and (Self.Data.funcVyznam[lastFunction] = '')) do
+ while ((lastFunction >= 0) and (Self.data.funcVyznam[lastFunction] = '')) do
    Dec(lastFunction);
 
  types := '';
  for i := 0 to lastFunction do
   begin
-   json.A['vyznamFunkci'].Add(Self.Data.funcVyznam[i]);
-   types := types + HVFuncTypeToChar(Self.Data.funcType[i]);
+   json.A['vyznamFunkci'].Add(Self.data.funcVyznam[i]);
+   types := types + HVFuncTypeToChar(Self.data.funcType[i]);
   end;
  json['typFunkci'] := types;
 
@@ -1068,8 +1068,8 @@ var i:Integer;
 begin
  Self.funcDict.Clear();
  for i := 0 to _HV_FUNC_MAX do
-   if (Self.Data.funcVyznam[i] <> '') then
-     Self.funcDict.AddOrSetValue(Self.Data.funcVyznam[i], i);
+   if (Self.data.funcVyznam[i] <> '') then
+     Self.funcDict.AddOrSetValue(Self.data.funcVyznam[i], i);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1121,7 +1121,7 @@ end;
 
 function THV.NiceName():string;
 begin
- Result := IntToStr(Self.adresa) + ' : ' + Self.Data.Nazev + '(' + Self.Data.Oznaceni + ')';
+ Result := IntToStr(Self.adresa) + ' : ' + Self.data.Nazev + '(' + Self.data.Oznaceni + ')';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

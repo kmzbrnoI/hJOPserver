@@ -1557,16 +1557,15 @@ begin
 
    if (HVDb[addr].acquired) then
      HVDb[addr].StavFunctionsToSlotFunctions(TTrakce.Callback(), TTrakce.Callback());
+
+   ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' aktualizováno');
  except
    on e:Exception do
     begin
      ORTCPServer.BottomError(Sender, e.Message, Self.ShortName, 'TRAKCE');
      if (Assigned(data)) then data.Free();
-     Exit();
     end;
  end;
-
- ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(Integer(Data))+' aktualizováno');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

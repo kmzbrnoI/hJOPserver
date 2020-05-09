@@ -21,90 +21,90 @@ object F_HVEdit: TF_HVEdit
   object L_HV1: TLabel
     Left = 8
     Top = 8
-    Width = 37
+    Width = 34
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev :'
+    Caption = 'N'#225'zev:'
   end
   object L_HV2: TLabel
     Left = 8
     Top = 40
-    Width = 52
+    Width = 49
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Ozna'#269'en'#237' :'
+    Caption = 'Ozna'#269'en'#237':'
   end
   object L_HV3: TLabel
     Left = 8
     Top = 72
-    Width = 36
+    Width = 33
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Majitel :'
+    Caption = 'Majitel:'
   end
   object L_HV4: TLabel
     Left = 8
     Top = 104
-    Width = 56
+    Width = 53
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Pozn'#225'mka :'
+    Caption = 'Pozn'#225'mka:'
   end
   object L_HV5: TLabel
     Left = 8
     Top = 160
+    Width = 60
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'DCC adresa:'
+  end
+  object L_HV7: TLabel
+    Left = 8
+    Top = 192
     Width = 63
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'DCC adresa :'
-  end
-  object L_HV7: TLabel
-    Left = 8
-    Top = 192
-    Width = 66
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanovi'#353't'#283' A :'
+    Caption = 'Stanovi'#353't'#283' A:'
   end
   object L_HV10: TLabel
     Left = 8
     Top = 224
-    Width = 40
+    Width = 21
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Trakce :'
+    Caption = 'Typ:'
   end
   object Label1: TLabel
     Left = 9
     Top = 255
-    Width = 42
+    Width = 39
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Stanice :'
+    Caption = 'Stanice:'
   end
   object Label2: TLabel
     Left = 287

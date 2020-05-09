@@ -74,22 +74,18 @@ uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
 {$R *.dfm}
 
 procedure TF_HVEdit.OpenForm(HV:THV);
- begin
-  OpenHV                 := HV;
-  F_HVEdit.ActiveControl := Self.E_Nazev;
-  HlavniOpenForm();
+begin
+ Self.OpenHV := HV;
+ Self.ActiveControl := Self.E_Nazev;
+ Self.HlavniOpenForm();
 
-  if (HV = nil) then
-   begin
-    // nove HV
-    NewHVOpenForm();
-   end else begin
-    //editace HV
-    NormalOpenForm();
-   end;//else NewHV
+ if (HV = nil) then
+   Self.NewHVOpenForm()
+ else
+   Self.NormalOpenForm();
 
-  F_HVEdit.ShowModal;
- end;
+ Self.ShowModal();
+end;
 
 procedure TF_HVEdit.SB_Rel_AddClick(Sender: TObject);
 var LI:TListItem;
@@ -154,28 +150,28 @@ var data:THVData;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vypiste nazev hnaciho vozidla','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vypište název hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
   if (CB_trida.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte typ hnaciho vozidla','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vyberte typ hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
   if (CB_Orientace.ItemIndex = -1) and (CB_Orientace.Visible) then
    begin
-    Application.MessageBox('Vyberte orientaci hnaciho vozidla !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vyberte směr stanoviště A hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
   if (CB_OR.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte stanici hnaciho vozidla !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vyberte stanici hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
   if ((not Self.E_Addr.ReadOnly) and (Self.E_Addr.text = '')) then
    begin
-    Application.MessageBox('Vyplňte adresu !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
-    Exit;
+    Application.MessageBox('Vyplňte DCC adresu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
    end;
 
   OblR := ORs[Self.CB_OR.ItemIndex];
@@ -184,12 +180,11 @@ var data:THVData;
       Exit();
 
 
-  // samotne ukladani dat
-  data.Nazev      := E_Nazev.Text;
-  data.Majitel    := E_Majitel.Text;
-  data.Oznaceni   := E_Oznaceni.Text;
-  data.Poznamka   := M_Poznamky.Text;
-  data.Trida      := THVClass(CB_trida.ItemIndex);
+  data.nazev := E_Nazev.Text;
+  data.majitel := E_Majitel.Text;
+  data.oznaceni := E_Oznaceni.Text;
+  data.poznamka := M_Poznamky.Text;
+  data.typ := THVType(CB_trida.ItemIndex);
 
   if (Self.OpenHV = nil) then
    begin
@@ -239,7 +234,7 @@ var data:THVData;
        on E:Exception do
         begin
          Application.MessageBox(PChar(E.Message), 'Nelze přidat', MB_OK OR MB_ICONWARNING);
-         Exit;
+         Exit();
         end;
      end;
    end else begin
@@ -335,24 +330,24 @@ begin
   end;
 end;
 
-procedure TF_HVEdit.NormalOpenForm;
+procedure TF_HVEdit.NormalOpenForm();
 var data:THVData;
     stav:THVStav;
     i:Integer;
     LI:TListItem;
  begin
   B_NajetoDelete.Visible := true;
-  E_Addr.ReadOnly        := true;
+  E_Addr.ReadOnly := true;
 
   data := Self.OpenHV.data;
   stav := Self.OpenHV.stav;
 
-  E_Nazev.Text           := data.Nazev;
-  E_Oznaceni.Text        := data.Oznaceni;
-  E_Majitel.Text         := data.Majitel;
-  E_Addr.Text            := IntToStr(Self.OpenHV.adresa);
-  M_Poznamky.Text        := data.Poznamka;
-  CB_trida.ItemIndex     := Integer(data.Trida);
+  E_Nazev.Text := data.Nazev;
+  E_Oznaceni.Text := data.Oznaceni;
+  E_Majitel.Text := data.Majitel;
+  E_Addr.Text := IntToStr(Self.OpenHV.adresa);
+  M_Poznamky.Text := data.Poznamka;
+  CB_trida.ItemIndex := Integer(data.typ);
   CB_Orientace.ItemIndex := Integer(stav.StanovisteA);
 
   Self.LV_Pom_Load.Clear();
@@ -373,20 +368,20 @@ var data:THVData;
 
   ORs.FillCB(Self.CB_OR, stav.stanice);
 
-  F_HVEdit.Caption := 'HV : '+IntToStr(Self.OpenHV.adresa);
+  F_HVEdit.Caption := 'HV '+IntToStr(Self.OpenHV.adresa);
  end;
 
-procedure TF_HVEdit.NewHVOpenForm;
+procedure TF_HVEdit.NewHVOpenForm();
  begin
   B_NajetoDelete.Visible := false;
-  E_Addr.ReadOnly        := false;
+  E_Addr.ReadOnly := false;
 
-  E_Nazev.Text           := '';
-  E_Oznaceni.Text        := '';
-  E_Majitel.Text         := '';
-  E_Addr.Text            := '';
-  M_Poznamky.Text        := '';
-  CB_trida.ItemIndex     := -1;
+  E_Nazev.Text := '';
+  E_Oznaceni.Text := '';
+  E_Majitel.Text := '';
+  E_Addr.Text := '';
+  M_Poznamky.Text := '';
+  CB_trida.ItemIndex := -1;
   CB_Orientace.ItemIndex := -1;
 
   Self.LV_Pom_Load.Clear();
@@ -394,7 +389,7 @@ procedure TF_HVEdit.NewHVOpenForm;
 
   ORs.FillCB(Self.CB_OR, nil);
 
-  F_HVEdit.Caption       := 'Nové HV';
+  F_HVEdit.Caption := 'Nové hnací vozidlo';
  end;
 
 end.//unit
