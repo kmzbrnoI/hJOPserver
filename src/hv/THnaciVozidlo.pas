@@ -65,8 +65,8 @@ type
   TFunkce = array[0.._HV_FUNC_MAX] of boolean;
   TPomStatus = (released = 0, pc = 1, progr = 2, error = 3);
 
-  // trida hnaciho vozidla
-  THVClass = (parni = 0, diesel = 1, motor = 2, elektro = 3);
+  // typ hnaciho vozidla
+  THVType = (parni = 0, diesel = 1, motor = 2, elektro = 3);
 
   // mod posilani dat hnaciho vozidla klientovi
   // full: s POM
@@ -84,7 +84,7 @@ type
    majitel: string;
    oznaceni: string;
    poznamka: string;
-   trida: THVClass;
+   typ: THVType;
    maxRychlost: Cardinal;
 
    POMtake: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
@@ -363,11 +363,11 @@ begin
    if ((addr < 0) or (addr > 9999)) then raise Exception.Create('Adresa loko mimo rozsah');
    Self.fadresa := addr;
 
-   Self.Data.Nazev    := ini.ReadString(section, 'nazev', section);
-   Self.Data.Majitel  := ini.ReadString(section, 'majitel', '');
+   Self.Data.Nazev := ini.ReadString(section, 'nazev', section);
+   Self.Data.Majitel := ini.ReadString(section, 'majitel', '');
    Self.Data.Oznaceni := ini.ReadString(section, 'oznaceni', section);
    Self.Data.Poznamka := ini.ReadString(section, 'poznamka', '');
-   Self.Data.Trida    := THVClass(ini.ReadInteger(section, 'trida', 0));
+   Self.Data.typ := THVType(ini.ReadInteger(section, 'trida', 0));
    Self.Data.maxRychlost := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
 
    // POM pri prebirani : (cv,data)(cv,data)(...)...
@@ -494,7 +494,7 @@ begin
    ini.WriteString(addr, 'majitel', Self.Data.Majitel);
    ini.WriteString(addr, 'oznaceni', Self.Data.Oznaceni);
    ini.WriteString(addr, 'poznamka', Self.Data.Poznamka);
-   ini.WriteInteger(addr, 'trida', Integer(Self.Data.Trida));
+   ini.WriteInteger(addr, 'trida', Integer(Self.Data.typ));
    ini.WriteInteger(addr, 'max_rychlost', Self.Data.maxRychlost);
 
    // POM pri prebirani
@@ -598,13 +598,13 @@ var i:Integer;
     func:TFunkce;
     pomCV:THVPOMCv;
 begin
- // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|trida|souprava|stanovisteA|funkce|rychlost_stupne|
+ // format zapisu: nazev|majitel|oznaceni|poznamka|adresa|typ|souprava|stanovisteA|funkce|rychlost_stupne|
  //   rychlost_kmph|smer|or_id|{[{cv1take|cv1take-value}][{...}]...}|{[{cv1release|cv1release-value}][{...}]...}|
  //   {vyznam-F0;vyznam-F1;...}|typ_funkci|maximalni rychlost
 
  // souprava je bud cislo soupravy, nebo znak '-'
  Result := Self.Data.Nazev + '|' + Self.Data.Majitel + '|' + Self.Data.Oznaceni + '|{' + Self.Data.Poznamka + '}|' +
-           IntToStr(Self.adresa) + '|' + IntToStr(Integer(Self.Data.Trida)) + '|';
+           IntToStr(Self.adresa) + '|' + IntToStr(Integer(Self.Data.typ)) + '|';
 
  if (Self.Stav.souprava > -1) then
   Result := Result + Soupravy.GetSprNameByIndex(Self.Stav.souprava) + '|'
@@ -696,12 +696,12 @@ begin
  ExtractStringsEx(['|'], [], data, str);
 
  try
-  Self.Data.Nazev       := str[0];
-  Self.Data.Majitel     := str[1];
-  Self.Data.Oznaceni    := str[2];
-  Self.Data.Poznamka    := str[3];
-  Self.fadresa          := StrToInt(str[4]);
-  Self.Data.Trida       := THVClass(StrToInt(str[5]));
+  Self.Data.Nazev := str[0];
+  Self.Data.Majitel := str[1];
+  Self.Data.Oznaceni := str[2];
+  Self.Data.Poznamka := str[3];
+  Self.fadresa := StrToInt(str[4]);
+  Self.Data.typ := THVType(StrToInt(str[5]));
   Self.Stav.StanovisteA := THVStanoviste(StrToInt(str[7]));
 
   maxFunc := Min(Length(str[8])-1, _HV_FUNC_MAX);
@@ -954,11 +954,11 @@ begin
  json['maxRychlost'] := Self.Data.maxRychlost;
  if (Self.Data.Poznamka <> '') then json['poznamka'] := Self.Data.Poznamka;
 
- case (Self.Data.Trida) of
-  THVClass.parni   : json['trida'] := 'parni';
-  THVClass.diesel  : json['trida'] := 'diesel';
-  THVClass.motor   : json['trida'] := 'motor';
-  THVClass.elektro : json['trida'] := 'elektro';
+ case (Self.Data.typ) of
+  THVType.parni   : json['typ'] := 'parni';
+  THVType.diesel  : json['typ'] := 'diesel';
+  THVType.motor   : json['typ'] := 'motor';
+  THVType.elektro : json['typ'] := 'elektro';
  end;
 
  lastFunction := _HV_FUNC_MAX;
