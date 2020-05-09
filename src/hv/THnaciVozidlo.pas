@@ -73,76 +73,73 @@ type
   TLokStringMode = (normal = 0, full = 1);
 
   THVPomCV = record                                 // jeden zaznam POM se sklada z
-    cv:Word;                                           // oznaceni CV a
-    data:Byte;                                         // dat, ktera se maji do CV zapsat.
+    cv: Word;                                           // oznaceni CV a
+    data: Byte;                                         // dat, ktera se maji do CV zapsat.
   end;
 
   THVFuncType = (permanent = 0, momentary = 1);
 
-  THVData = record                                  // data hnaciho vozidla (nacitaji se ze souboru, program sam je vicemene nemeni)
-   Nazev:string;                                       // nazev HV
-   Majitel:string;                                     // majitel HV
-   Oznaceni:string;                                    // oznaceni HV
-   Poznamka:String;                                    // poznamka k HV
-   Trida:THVClass;                                     // trida hnaciho vozidla - parni, diesel, motor, elektro
-   maxRychlost:Cardinal;                               // max. rychlsot hnaciho vozidla
+  THVData = record
+   nazev: string;
+   majitel: string;
+   oznaceni: string;
+   poznamka: string;
+   trida: THVClass;
+   maxRychlost: Cardinal;
 
-   POMtake:TList<THVPomCV>;                            // seznam POM pri prevzeti do automatu
-   POMrelease:TList<THVPomCV>;                         // seznam POM pri uvolneni to rucniho rizeni
+   POMtake: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
+   POMrelease: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
 
-   funcVyznam:array[0.._HV_FUNC_MAX] of string;        // seznam popisu funkci hnaciho vozidla
-   funcType:array[0.._HV_FUNC_MAX] of THVFuncType;     // typy funkci hnaciho vozidla
+   funcVyznam: array[0.._HV_FUNC_MAX] of string; // seznam popisu funkci hnaciho vozidla
+   funcType: array[0.._HV_FUNC_MAX] of THVFuncType; // typy funkci hnaciho vozidla
   end;
 
   THVRegulator = record                             // jeden regulator -- klient -- je z pohledu hnaciho vozidla reprezentovan
-    conn:TIdContext;                                   // fyzickym spojenim k tomu regulatoru -- klientu a
-    root:boolean;                                      // tages, jestli je uzivatel za timto regulatorem root
+   conn: TIdContext;                                   // fyzickym spojenim k tomu regulatoru -- klientu a
+   root: boolean;                                      // tages, jestli je uzivatel za timto regulatorem root
   end;
 
   THVToken = record                                 // jeden token opravnujici prevzeti rizeni hnaciho vozidla
-    timeout:TDateTime;                                 // cas expirace tokenu (obvykle 3 minuty od zadosti)
-    token:string;                                      // samotny token
+   timeout: TDateTime;                                 // cas expirace tokenu (obvykle 3 minuty od zadosti)
+   token: string;                                      // samotny token
   end;
 
-  THVStav = record                                  // stav hanciho vozidla -- je menen za behu programu
-   StanovisteA:THVStanoviste;                          // umisteni stanoviste A: 0 = lichy; 1 = sudy
+  THVStav = record
+   stanovisteA: THVStanoviste;
 
-   traveled_forward:Real;                              // in meters
-   traveled_backward:Real;                             // in meters
-   funkce:TFunkce;                                     // stav funkci tak, jak je chceme; uklada se do souboru
-   souprava:Integer;                                   // index soupravy, na ktere je hnaci vozidlo
-   stanice:TOR;                                        // oblast rizeni, ve ktere se nachazi HV
-   regulators:TList<THVRegulator>;                     // seznam regulatoru -- klientu
-   tokens:TList<THVToken>;                             // aktualni seznam tokenu -- jedno HV muze mit prideleno vice tokenu
-   ruc:boolean;                                        // jestli je hnaciho vozidlo v rucnim rizeni
-   last_used:TDateTime;                                // cas posledniho pouzivani loko
-   acquired:Boolean;
-   stolen:Boolean;                                     // is false if stolen
-   pom:TPomStatus;
-   trakceError:Boolean;
-   acquiring:Boolean;
-   updating:Boolean;
-   lastUpdated:TTime;
+   traveled_forward: Real; // in meters
+   traveled_backward: Real; // in meters
+   funkce: TFunkce; // stav funkci tak, jak je chceme; uklada se do souboru
+   souprava: Integer; // index soupravy; -1 pokud neni na souprave
+   stanice: TOR;
+   regulators:TList<THVRegulator>; // seznam regulatoru -- klientu
+   tokens: TList<THVToken>;
+   ruc: Boolean;
+   last_used: TDateTime;
+   acquired: Boolean;
+   stolen: Boolean; // is false if stolen
+   pom: TPomStatus;
+   trakceError: Boolean;
+   acquiring: Boolean;
+   updating: Boolean;
+   lastUpdated: TTime;
   end;
 
-  THV = class                                       // HNACI VOZIDLO
-   private const
-
+  THV = class
    private
-
-     fadresa:Word;                                     // adresa je read-only !
-     m_funcDict:TDictionary<string, Integer>;          // mapovani vyznamu funkci na cisla funkci
-     acquiredOk:TCommandCallback;                      // also used for Update callback
-     acquiredErr:TCommandCallback;                     // also used for Update callback
-     releasedOk:TCommandCallback;
-     pomOk:TCommandCallback;
-     pomErr:TCommandCallback;
-     pomTarget:TPomStatus;
+     fadresa: Word; // read-only!
+     m_funcDict: TDictionary<string, Integer>; // function description to function number map
+     acquiredOk: TCommandCallback; // also used for Update callback
+     acquiredErr: TCommandCallback; // also used for Update callback
+     releasedOk: TCommandCallback;
+     pomOk: TCommandCallback;
+     pomErr: TCommandCallback;
+     pomTarget: TPomStatus;
 
      procedure LoadData(ini:TMemIniFile; section:string);
      procedure LoadState(ini:TMemIniFile; section:string);
-                                                       // nacte data ze souboru
-     procedure SetRuc(state:boolean);                  // nastavi rucni rizeni
+
+     procedure SetRuc(state:boolean);
      procedure UpdateFuncDict();
      procedure SetSouprava(new:Integer);
 
@@ -170,12 +167,11 @@ type
      procedure TrakcePOMErr(Sender:TObject; data:Pointer);
 
    public
-
-    index:Word; // index v seznamu vsech hnacich vozidel
-    data:THVData;
-    stav:THVStav;
-    slot:TTrkLocoInfo;
-    changed:boolean; // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
+    index: Word; // index v seznamu vsech hnacich vozidel
+    data: THVData;
+    stav: THVStav;
+    slot: TTrkLocoInfo;
+    changed: Boolean; // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
 
      constructor Create(data_ini:TMemIniFile; state_ini:TMemIniFile; section:string); overload;
      constructor Create(adresa:Word; data:THVData; stav:THVStav); overload;
@@ -186,17 +182,17 @@ type
      procedure SaveData(const filename:string); overload;
      procedure SaveState(ini:TMemIniFile);
 
-     procedure UpdateFromPanelString(data:string);     // nacteni informaci o HV z klienta
+     procedure UpdateFromPanelString(data:string); // nacteni informaci o HV z klienta
 
      procedure ResetStats();
-     function ExportStats():string;                    // export najetych statistik hnaciho vozidla
+     function ExportStats():string;
 
-     function PredejStanici(st:TOR):Integer;           // predej HV jine stanici
+     function PredejStanici(st:TOR):Integer;
      function GetPanelLokString(mode:TLokStringMode = normal):string; // vrati HV ve standardnim formatu pro klienta
-     procedure UpdateRuc(send_remove:boolean = true);  // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
+     procedure UpdateRuc(send_remove:boolean = true); // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
 
-     procedure RemoveRegulator(conn:TIDContext);       // smaze regulator -- klienta; je volano jen jako callback regulatoru!
-     function IsReg(conn:TIdContext):boolean;          // je na tomto HV tento regulator ?
+     procedure RemoveRegulator(conn:TIDContext); // smaze regulator -- klienta; je volano jen jako callback regulatoru!
+     function IsReg(conn:TIdContext):boolean; // je na tomto HV tento regulator ?
      procedure UpdateAllRegulators();
      procedure ForceRemoveAllRegulators();
 
@@ -205,7 +201,7 @@ type
      procedure RemoveToken(token:string);
      procedure UpdateTokenTimeout(); // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
 
-     function CanPlayHouk(sound:string):boolean;       // vraci true pokud je povoleno prehravani zvuku
+     function CanPlayHouk(sound:string):boolean; // vraci true pokud je povoleno prehravani zvuku
      procedure CheckRelease();
      procedure RecordUseNow();
      function NiceName():string;
