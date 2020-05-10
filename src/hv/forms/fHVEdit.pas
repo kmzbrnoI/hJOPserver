@@ -227,6 +227,7 @@ var data:THVData;
    begin
      // vytvoreni noveho HV
      data.maxRychlost := _DEFAUT_MAX_SPEED;
+     data.prechodnost := 0;
      OblR := ORs[Self.CB_OR.ItemIndex];
      try
        HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
@@ -238,10 +239,11 @@ var data:THVData;
         end;
      end;
    end else begin
-     // vyznamy funkci jednoduse zkopirujeme
+     // neupravovane veci jednoduse zkopirujeme
      data.funcVyznam := Self.OpenHV.Data.funcVyznam;
      data.maxRychlost := Self.OpenHV.Data.maxRychlost;
      data.funcType := Self.OpenHV.Data.funcType;
+     data.prechodnost := Self.OpenHV.data.prechodnost;
 
      // update HV
      Self.OpenHV.data := data;
