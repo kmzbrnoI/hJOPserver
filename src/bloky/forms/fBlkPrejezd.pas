@@ -449,6 +449,8 @@ procedure TF_BlkPrejezd.NewOpenForm;
   SE_vst_anulace_board.Value := 0;
   SE_vst_anulace_port.Value := 0;
   Self.SE_RCS_boardExit(Self);
+  Self.CHB_JOP_control.Checked := false;
+  Self.CHB_JOP_controlClick(Self);
 
   Self.tracks := TObjectList<TBlkPrjTrack>.Create();
 
