@@ -587,7 +587,7 @@ begin
         for spr in Self.Soupravs do
           Soupravy[spr].speed := 0;
 
-        Self.Change();
+        Self.Change(true);
        end;
       Exit();
     end;
