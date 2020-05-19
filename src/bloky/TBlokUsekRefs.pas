@@ -20,7 +20,7 @@ TBlkUsekRefs = class
 
  public
   parts: TObjectList<TBlkUsekRef>;
-  stateOld: TUsekStav;
+  stateLast: TUsekStav;
 
    constructor Create(); overload;
    constructor Create(str: string); overload;
@@ -44,6 +44,7 @@ constructor TBlkUsekRefs.Create();
 begin
  inherited;
  Self.parts := TObjectList<TBlkUsekRef>.Create();
+ Self.stateLast := TUsekStav.uvolneno;
 end;
 
 constructor TBlkUsekRefs.Create(str: string);
@@ -51,6 +52,7 @@ begin
  inherited Create();
  Self.parts := TObjectList<TBlkUsekRef>.Create();
  Self.Parse(str);
+ Self.stateLast := TUsekStav.uvolneno;
 end;
 
 destructor TBlkUsekRefs.Destroy();
@@ -87,14 +89,8 @@ function TBlkUsekRefs.GetBlockState():TUsekStav;
 var ref: TBlkUsekRef;
 begin
  for ref in Self.parts do
-  begin
    if (ref.state <> TUsekStav.uvolneno) then
-    begin
-     Self.stateOld := ref.state;
      Exit(ref.state);
-    end;
-  end;
- Self.stateOld := TUsekStav.uvolneno;
  Result := TUsekStav.uvolneno;
 end;
 
@@ -110,10 +106,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkUsekRefs.GetChanged():boolean;
-var old: TUsekStav;
 begin
- old := Self.stateOld;
- Result := (old <> Self.state);
+ Result := (Self.stateLast <> Self.state);
+ Self.stateLast := Self.state;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
