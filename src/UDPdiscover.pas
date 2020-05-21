@@ -126,9 +126,7 @@ var
   i, j:Integer;
 begin
  try
-   msg := '';
-   for i := 0 to Length(AData)-1 do
-     msg := msg + Chr(AData[i]);
+   msg := TEncoding.UTF8.GetString(AData);
    Self.parsed.Clear();
    ExtractStringsEx([';'], [], msg, parsed);
 
@@ -146,7 +144,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.SendDisc(ABinding: TIdSocketHandle; port:Word);
-var msg:string;
+var msg: string;
+    data: TBytes;
 begin
  if (ABinding.IP = '0.0.0.0') then Exit();
 
@@ -163,7 +162,8 @@ begin
  if (not broadcasts.ContainsKey(ABinding.IP)) then Self.UpdateBindings();
 
  try
-   ABinding.Broadcast(msg, port, broadcasts[ABinding.IP]);
+   data := TEncoding.UTF8.GetBytes(msg);
+   ABinding.Broadcast(data, port, broadcasts[ABinding.IP]);
  except
    on E:Exception do
      writelog('Vyjimka TUDPDiscover.SendDisc : '+E.Message, WR_ERROR);
