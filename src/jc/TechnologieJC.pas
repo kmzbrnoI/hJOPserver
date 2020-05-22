@@ -45,7 +45,9 @@ uses
   TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 
 const
-  _JC_TIMEOUT_SEC = 20;                                                         // timeout pro staveni jizdni cesty (vlakove i posunove v sekundach)
+  _JC_INITPOTVR_TIMEOUT_SEC = 60;                                               // timeout UPO a potvrzeni na zacatku staveni JC
+  _JC_TIMEOUT_SEC = 30;                                                         // timeout pro staveni jizdni cesty (vlakove i posunove v sekundach)
+  _JC_PRJ_TIMEOUT_SEC = 50;                                                     // timeout pri staveni JC pro zavirani prejezdu v ceste
   _NC_TIMEOUT_MIN = 1;                                                          // timeout pro staveni nouzove cesty (vlakove i posunove) v minutach
   _JC_MAX_VYH_STAVENI = 4;                                                      // kolik vyhybek se muze stavit zaroven v JC
 
@@ -1683,9 +1685,11 @@ var i,j:Integer;
         end;//for i
 
       if (anyUzavren) then
-       Self.Krok := _JC_KROK_CEKANI_PREJEZDY
-      else
-       Self.Krok := _JC_KROK_FINALNI_ZAVER;
+       begin
+        Self.Krok := _JC_KROK_CEKANI_PREJEZDY;
+        Self.fstaveni.TimeOut := Now + EncodeTime(0, _JC_PRJ_TIMEOUT_SEC div 60, _JC_PRJ_TIMEOUT_SEC mod 60, 0);
+       end else
+        Self.Krok := _JC_KROK_FINALNI_ZAVER;
 
      end;
 
@@ -2922,7 +2926,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// timeout staveni JC = 40 sekund
+// timeout staveni JC
 procedure TJC.UpdateTimeOut();
 var prejezd:TBlkPrejezd;
     prjZaver:TJCPrjZaver;
