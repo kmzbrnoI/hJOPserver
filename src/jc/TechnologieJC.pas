@@ -2933,7 +2933,11 @@ begin
  if (Now > Self.fstaveni.TimeOut) then
   begin
    case (Self.Krok) of
-    _JC_KROK_CEKANI_PREJEZDY:begin
+    _KROK_POTVR_SEKV: begin
+     if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
+       ORTCPServer.PotvrClose(Self.fstaveni.SenderPnl);
+    end;
+    _JC_KROK_CEKANI_PREJEZDY: begin
       // prejezd(y) neuzavren
       for prjZaver in Self.fproperties.Prejezdy do
        begin
