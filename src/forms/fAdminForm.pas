@@ -48,6 +48,7 @@ begin
  Self.CHB_SimSoupravaUsek.Checked := diag.simSoupravaObsaz;
  Self.CHB_JC_Simulator.Checked := JCSimulator.timer.Enabled;
  Self.CHB_Trat_Sim.Checked := TratSimulator.timer.Enabled;
+ Self.CHB_SimVyhybky.Checked := VyhSimulator.timer.Enabled;
  Self.CHB_SimInput.Checked := diag.simInputs;
  Self.CHB_Zaver.Checked := diag.showZaver;
  Self.CHB_Show_Block_Id.Checked := diag.showBlockId;
