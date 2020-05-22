@@ -1212,11 +1212,7 @@ var i:Integer;
     upo:TUPOItems;
     item:TUPOItem;
  begin
-  // timeout:
-  if (nc) then
-   Self.fstaveni.TimeOut := Now + EncodeTime(0, _NC_TIMEOUT_MIN, 0, 0)
-  else
-   Self.fstaveni.TimeOut := Now + EncodeTime(0, 0, _JC_TIMEOUT_SEC, 0);
+  Self.fstaveni.TimeOut := Now + EncodeTime(0, _JC_INITPOTVR_TIMEOUT_SEC div 60, _JC_INITPOTVR_TIMEOUT_SEC mod 60, 0);
 
   Self.fstaveni.from_stack := from_stack;
   Self.fstaveni.SenderOR := SenderOR;
@@ -3086,7 +3082,7 @@ end;
 procedure TJC.DN();
 begin
  writelog('DN JC '+Self.nazev, WR_VC);
- Self.fstaveni.TimeOut := Now + EncodeTime(0, 0, _JC_TIMEOUT_SEC, 0);
+ Self.fstaveni.TimeOut := Now + EncodeTime(0, _JC_TIMEOUT_SEC div 60, _JC_TIMEOUT_SEC mod 60, 0);
 
  if (Self.fstaveni.prjWasClosed) then
    Self.Krok := _JC_KROK_FINALNI_ZAVER
@@ -3938,9 +3934,13 @@ end;
 procedure TJC.SetInitKrok();
 begin
  if (Self.fstaveni.nc) then
-   Self.Krok := _NC_KROK_INIT
- else
+  begin
+   Self.Krok := _NC_KROK_INIT;
+   Self.fstaveni.TimeOut := Now + EncodeTime(0, _NC_TIMEOUT_MIN, 0, 0);
+  end else begin
    Self.Krok := _JC_KROK_INIT;
+   Self.fstaveni.TimeOut := Now + EncodeTime(0, _JC_TIMEOUT_SEC div 60, _JC_TIMEOUT_SEC mod 60, 0);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
