@@ -579,7 +579,7 @@ object F_JCEdit: TF_JCEdit
       Lines.Strings = (
         'M_Prj')
       ParentShowHint = False
-      ScrollBars = ssVertical
+      ScrollBars = ssBoth
       ShowHint = True
       TabOrder = 0
     end
