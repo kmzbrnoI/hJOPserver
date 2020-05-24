@@ -1179,7 +1179,7 @@ end;
 
 procedure THV.SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
- Self.SetSpeedDir(Self.slot.speed, dir, ok, err, Sender);
+ Self.SetSpeedStepDir(Self.slot.step, dir, ok, err, Sender);
 end;
 
 procedure THV.SetDirection(dir:boolean; Sender: TObject = nil);
