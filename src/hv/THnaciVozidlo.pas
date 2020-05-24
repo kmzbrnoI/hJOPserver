@@ -213,7 +213,7 @@ type
      procedure SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
      procedure SetDirection(dir:boolean; Sender: TObject = nil); overload;
      procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
-     procedure SetSpeedDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil); overload;
+     procedure SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil); overload;
      procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
      procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil); overload;
      procedure SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
@@ -1192,9 +1192,9 @@ begin
  Self.SetSpeedStepDir(TrakceI.Step(speed), direction, ok, err, Sender);
 end;
 
-procedure THV.SetSpeedDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil);
+procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil);
 begin
- Self.SetSpeedDir(speedStep, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
+ Self.SetSpeedDir(speed, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
