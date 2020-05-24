@@ -213,7 +213,7 @@ type
      procedure SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
      procedure SetDirection(dir:boolean; Sender: TObject = nil); overload;
      procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
-     procedure SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil); overload;
+     procedure SetSpeedDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil); overload;
      procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
      procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil); overload;
      procedure SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
@@ -242,7 +242,7 @@ type
      property ruc: Boolean read stav.ruc write SetRuc;
      property funcDict: TDictionary<string, Integer> read m_funcDict;
      property souprava: Integer read stav.souprava write SetSouprava;
-     property speedStep: Byte read slot.speed;
+     property speedStep: Byte read slot.step;
      property realSpeed: Cardinal read GetRealSpeed;
      property direction: Boolean read slot.direction;
      property stACurrentDirection: Boolean read GetStACurrentDirection;
@@ -623,7 +623,7 @@ begin
      Result := Result + '0';
   end;
 
- Result := Result + '|' + IntToStr(Self.Slot.speed) + '|' + IntToStr(Self.realSpeed) + '|' +
+ Result := Result + '|' + IntToStr(Self.Slot.step) + '|' + IntToStr(Self.realSpeed) + '|' +
            IntToStr(PrevodySoustav.BoolToInt(Self.direction)) + '|' + Self.Stav.stanice.id + '|';
 
  if (mode = TLokStringMode.full) then
@@ -1189,12 +1189,12 @@ end;
 
 procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
 begin
- Self.SetSpeedStepDir(TrakceI.SpeedStep(speed), direction, ok, err, Sender);
+ Self.SetSpeedStepDir(TrakceI.Step(speed), direction, ok, err, Sender);
 end;
 
-procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil);
+procedure THV.SetSpeedDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil);
 begin
- Self.SetSpeedDir(speed, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
+ Self.SetSpeedDir(speedStep, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
@@ -1226,14 +1226,14 @@ begin
  stepsOld := Self.speedStep;
 
  Self.slot.direction := direction;
- Self.slot.speed := speedStep;
+ Self.slot.step := speedStep;
 
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
  TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': rychlostní stupeň: ' + IntToStr(speedStep) +
              ', směr: ' + IntToStr(PrevodySoustav.BoolToInt(direction)));
 
  try
-   TrakceI.LocoSetSpeed(Self.adresa, Self.slot.speed, Self.direction,
+   TrakceI.LocoSetSpeed(Self.adresa, Self.slot.step, Self.direction,
                         TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
                         TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
@@ -1363,7 +1363,7 @@ begin
    Exit();
   end;
 
- Self.Slot.speed := 0;
+ Self.Slot.step := 0;
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
 
  try
@@ -1442,15 +1442,9 @@ begin
   end;
 end;
 
-function THV.GetRealSpeed():Cardinal;
-var Res:Integer;
+function THV.GetRealSpeed(): Cardinal;
 begin
- Res := TrakceI.GetStepSpeed(Self.slot.speed);
- if (Res < 0) then
-   Result := 0
- else
-   Result := Cardinal(Res);
-
+ Result := TrakceI.Speed(Self.slot.step);
  if (Result > Self.data.maxRychlost) then
    Result := Self.data.maxRychlost;
 end;
@@ -1508,11 +1502,11 @@ begin
   begin
    // souprava ma zadany prave jeden smer
    direction := ((Soupravy[Self.souprava].direction = THVStanoviste.sudy) xor (Self.stav.StanovisteA = THVStanoviste.sudy));
-   speedStep := TrakceI.SpeedStep(Soupravy[Self.souprava].speed);
+   speedStep := TrakceI.Step(Soupravy[Self.souprava].speed);
   end else begin
    direction := Self.slot.direction;
    if (Self.stolen) then
-     speedStep := Self.slot.speed
+     speedStep := Self.slot.step
    else
      speedStep := 0;
   end;
@@ -1704,7 +1698,7 @@ begin
   begin
    Self.SlotChanged(
      Sender,
-     slotOld.speed <> Self.slot.speed,
+     slotOld.step <> Self.slot.step,
      slotOld.direction <> Self.slot.direction,
      slotOld.functions <> Self.slot.functions
    );

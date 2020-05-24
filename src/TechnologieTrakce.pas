@@ -18,9 +18,9 @@ uses
 
 const
   // max speed step for speed table
-  _MAX_SPEED = 28;
+  _MAX_STEP = 28;
 
-  _DEFAULT_SPEED_TABLE : array [0.._MAX_SPEED] of Cardinal = (
+  _DEFAULT_SPEED_TABLE : array [0.._MAX_STEP] of Cardinal = (
     0,
     1,
     2,
@@ -92,7 +92,7 @@ type
    private
      fLibDir:string;
      aReady:boolean;
-     SpeedTable:array [0.._MAX_SPEED] of Cardinal;
+     SpeedTable:array [0.._MAX_STEP] of Cardinal;
      turnoff_callback:TNotifyEvent;
 
      eOnReady : TReadyEvent;
@@ -144,9 +144,9 @@ type
      procedure LoadSpeedTable(filename:string;var LVRych:TListView);
      procedure SaveSpeedTable(filename:string);
 
-     function SpeedStep(kmph:Cardinal):Cardinal;
-     function GetStepSpeed(step:byte):Integer;
-     function SetStepSpeed(step:byte; sp:Integer):Byte;
+     function Step(kmph: Cardinal): Cardinal;
+     function Speed(step: Cardinal): Cardinal;
+     procedure SetStepSpeed(step:byte; speed:Integer);
 
      procedure LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
@@ -441,20 +441,20 @@ var i, j:Integer;
     Log(llErrors, 'Chyba při načítání souboru s rychlostmi: nepodařilo se přistoupit k souboru! Používám výchozi rychlostní tabulku.');
 
     // nacteme vychozi rychlostni tabulku
-    for i := 0 to _MAX_SPEED do
+    for i := 0 to _MAX_STEP do
       Self.SpeedTable[i] := _DEFAULT_SPEED_TABLE[i];
     Self.LoadSpeedTableToTable(LVRych);
 
     Exit();
   end;
 
-  for i := 0 to _MAX_SPEED do
+  for i := 0 to _MAX_STEP do
    begin
     if (Eof(myFile)) then
      begin
       Log(llErrors, 'Chyba při načítání souboru s rychlostmi: příliš málo řádků! Doplňuji výchozí rychlostní tabulkou.');
       CloseFile(myFile);
-      for j := i to _MAX_SPEED do
+      for j := i to _MAX_STEP do
         Self.SpeedTable[j] := _DEFAULT_SPEED_TABLE[j];
       Self.LoadSpeedTableToTable(LVRych);
       Exit();
@@ -482,7 +482,7 @@ var i:Integer;
 begin
  LVrych.Clear();
 
- for i := 0 to _MAX_SPEED do
+ for i := 0 to _MAX_STEP do
   begin
    LI := LVRych.Items.Add;
    LI.Caption := IntToStr(i);
@@ -502,32 +502,40 @@ var i:Integer;
     Exit();
   end;
 
-  for i := 0 to _MAX_SPEED do
+  for i := 0 to _MAX_STEP do
     WriteLn(myFile, IntToStr(Self.SpeedTable[i]));
 
   CloseFile(myFile);
 end;
 
-function TTrakce.SpeedStep(kmph:Cardinal):Cardinal;
+function TTrakce.Step(kmph: Cardinal): Cardinal;
 var i:Integer;
 begin
- for i := 0 to  _MAX_SPEED do
-  if (Self.SpeedTable[i] = kmph) then
-    Exit(i);
- Exit(1); // emergency stop
+ if (kmph = 0) then
+   Exit(0);
+
+ for i := 0 to _MAX_STEP do
+  begin
+   if (Self.SpeedTable[i] = kmph) then
+     Exit(i)
+   else if (Self.SpeedTable[i] > kmph) then
+     Exit(i-1);
+  end;
+
+ Exit(_MAX_STEP);
 end;
 
-function TTrakce.GetStepSpeed(step:byte):Integer;
+function TTrakce.Speed(step: Cardinal): Cardinal;
 begin
- if (step >  _MAX_SPEED) then Exit(-1);
+ if (step > _MAX_STEP) then Exit(Self.SpeedTable[_MAX_STEP]);
  Result := Self.SpeedTable[step];
 end;
 
-function TTrakce.SetStepSpeed(step:byte;sp:Integer):Byte;
+procedure TTrakce.SetStepSpeed(step:byte; speed:Integer);
 begin
- if (step >  _MAX_SPEED) then Exit(1);
- Self.SpeedTable[step] := sp;
- Result := 0;
+ if (step >  _MAX_STEP) then
+   raise Exception.Create('Invalid speed step: '+IntToStr(step));
+ Self.SpeedTable[step] := speed;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -702,7 +710,7 @@ end;
 function TTrakce.NearestLowerSpeed(speed:Cardinal):Cardinal;
 var stupen:Integer;
 begin
- for stupen := _MAX_SPEED downto 0 do
+ for stupen := _MAX_STEP downto 0 do
    if (Self.SpeedTable[stupen] <= speed) then
      Exit(Self.SpeedTable[stupen]);
  Result := 0;

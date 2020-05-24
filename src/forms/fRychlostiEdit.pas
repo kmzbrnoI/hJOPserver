@@ -18,9 +18,10 @@ type
     procedure SE_RychlostKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
-   OpenIndex:Integer;
+   openStep: Integer;
+
   public
-   procedure OpenForm(Stupen:Integer);
+   procedure OpenForm(step: Cardinal);
   end;
 
 var
@@ -32,11 +33,11 @@ uses fMain, fSettings, TechnologieTrakce;
 
 {$R *.dfm}
 
-procedure TF_RychlostiEdit.OpenForm(Stupen:Integer);
+procedure TF_RychlostiEdit.OpenForm(step: Cardinal);
  begin
-  OpenIndex := Stupen;
-  SE_Rychlost.Value := TrakceI.GetStepSpeed(stupen);
-  F_RychlostiEdit.Caption := 'Editovat stupeň '+IntToStr(Stupen);
+  Self.openStep := step;
+  SE_Rychlost.Value := TrakceI.Speed(step);
+  F_RychlostiEdit.Caption := 'Editovat stupeň '+IntToStr(step);
   Self.ActiveControl := Self.SE_Rychlost;
   F_RychlostiEdit.ShowModal;
  end;
@@ -54,15 +55,23 @@ procedure TF_RychlostiEdit.B_StornoClick(Sender: TObject);
 
 procedure TF_RychlostiEdit.B_SaveClick(Sender: TObject);
  begin
-  TrakceI.SetStepSpeed(OpenIndex,SE_Rychlost.Value);
-  F_Options.LV_DigiRych.Items[OpenIndex].SubItems.Strings[0] := IntToStr(SE_Rychlost.Value)+' km/h';
-  F_RychlostiEdit.Close;
+  try
+    TrakceI.SetStepSpeed(Self.openStep, SE_Rychlost.Value);
+  except
+    on E:Exception do
+     begin
+      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      Exit();
+     end;
+  end;
+  F_Options.LV_DigiRych.Items[Self.openStep].SubItems[0] := IntToStr(Self.SE_Rychlost.Value)+' km/h';
+  Self.Close();
  end;
 
 procedure TF_RychlostiEdit.FormClose(Sender: TObject;
   var Action: TCloseAction);
  begin
-  OpenIndex := -1;
+  Self.openStep := -1;
  end;
 
 end.//unit

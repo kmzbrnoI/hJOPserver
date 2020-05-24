@@ -157,7 +157,7 @@ var line:Integer;
   end else begin
    // prevzato
 
-   Self.LV.Items[line].SubItems[9] := IntToStr(hv.realSpeed) + 'km/h / '+IntToStr(Slot.speed)+' st';
+   Self.LV.Items[line].SubItems[9] := IntToStr(hv.realSpeed) + 'km/h / '+IntToStr(Slot.step)+' st';
    Self.LV.Items[line].SubItems[10] := IntToStr(PrevodySoustav.BoolToInt(Slot.direction));
    Self.LV.Items[line].SubItems[11] := IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[0]));
 
