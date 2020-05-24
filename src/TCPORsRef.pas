@@ -134,25 +134,25 @@ end;
 
 procedure TTCPOrsRef.Reset();
 begin
- Self.stitek      := nil;
- Self.vyluka      := nil;
- Self.potvr       := nil;
- Self.menu        := nil;
- Self.menu_or     := nil;
- Self.UPO_OK      := nil;
- Self.UPO_Esc     := nil;
- Self.UPO_ref     := nil;
+ Self.stitek := nil;
+ Self.vyluka := nil;
+ Self.potvr := nil;
+ Self.menu := nil;
+ Self.menu_or := nil;
+ Self.UPO_OK := nil;
+ Self.UPO_Esc := nil;
+ Self.UPO_ref := nil;
  Self.ResetSpr();
 
- Self.podj_usek   := nil;
- Self.podj_sprid  := -1;
+ Self.podj_usek := nil;
+ Self.podj_sprid := -1;
 
  Self.funcsVyznamReq := false;
  Self.spr_menu_index := -1;
 
- F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[6] := '';
- F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[7] := '';
- F_Main.LV_Clients.Items.Item[Self.index].SubItems.Strings[8] := '';
+ F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
+ F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
+ F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_RIZ] := '';
 end;
 
 procedure TTCPOrsRef.ResetSpr();

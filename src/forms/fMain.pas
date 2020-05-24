@@ -26,6 +26,20 @@ const
  _TABLE_COLOR_WHITE = $FFFFFF;
  _TABLE_COLOR_PINKY = $E2B6FF;
 
+ _LV_CLIENTS_COL_STATE = 0;
+ _LV_CLIENTS_COL_CLIENT = 1;
+ _LV_CLIENTS_COL_PING = 2;
+ _LV_CLIENTS_COL_OR1 = 3;
+ _LV_CLIENTS_COL_OR2 = 4;
+ _LV_CLIENTS_COL_OR3 = 5;
+ _LV_CLIENTS_COL_OR_NEXT = 6;
+ _LV_CLIENTS_COL_MENU = 7;
+ _LV_CLIENTS_COL_STIT = 8;
+ _LV_CLIENTS_COL_RIZ = 9;
+ _LV_CLIENTS_COL_PROTOCOL = 10;
+ _LV_CLIENTS_COL_REGULATOR = 11;
+ _LV_CLIENTS_COL_SH = 12;
+
 type
 
   TF_Main = class(TForm)
@@ -2212,7 +2226,7 @@ end;
 
 procedure TF_Main.B_User_DeleteClick(Sender: TObject);
 begin
- if (Application.MessageBox(PChar('Opravdu smazat uživatele '+Self.LV_Users.Selected.SubItems.Strings[0]+' ?'),
+ if (Application.MessageBox(PChar('Opravdu smazat uživatele '+Self.LV_Users.Selected.SubItems[0]+' ?'),
                             'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
    UsrDB.RemoveUser(Self.LV_Users.ItemIndex);
@@ -2674,7 +2688,7 @@ procedure TF_Main.PM_ClientsPopup(Sender: TObject);
 var i:Integer;
 begin
  for i := 0 to F_Main.PM_Clients.Items.Count-1 do
-  F_Main.PM_Clients.Items.Items[i].Enabled := (F_Main.LV_Clients.Selected <> nil) and (ORTCPServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
+  F_Main.PM_Clients.Items[i].Enabled := (F_Main.LV_Clients.Selected <> nil) and (ORTCPServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
 end;
 
 procedure TF_Main.PM_ConsoleClick(Sender: TObject);
@@ -2700,11 +2714,11 @@ procedure TF_Main.LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem;
 begin
  if (Item.SubItems.Count >= 4) then
   begin
-   if (Item.SubItems.Strings[3] <> '0') then
+   if (Item.SubItems[3] <> '0') then
      Self.LV_JC.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
-   else if (Item.SubItems.Strings[1] = '-6') then
+   else if (Item.SubItems[1] = '-6') then
      Self.LV_JC.Canvas.Brush.Color := clAqua
-   else if (Item.SubItems.Strings[1] <> '-5') then
+   else if (Item.SubItems[1] <> '-5') then
      Self.LV_JC.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
   end;
 end;
@@ -2723,7 +2737,7 @@ end;
 procedure TF_Main.LV_logCustomDrawItem(Sender: TCustomListView; Item: TListItem;
   State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
-   LV_log.Canvas.Brush.Color := TColor(LV_log.Items.Item[Item.Index].Data);
+   LV_log.Canvas.Brush.Color := TColor(LV_log.Items[Item.Index].Data);
 end;
 
 procedure TF_Main.LV_log_lnetCustomDrawItem(Sender: TCustomListView;
@@ -2731,14 +2745,14 @@ procedure TF_Main.LV_log_lnetCustomDrawItem(Sender: TCustomListView;
 begin
  if (Item.SubItems.Count < 2) then Exit();
 
- case (StrToIntDef(Item.SubItems.Strings[0],0)) of
+ case (StrToIntDef(Item.SubItems[0],0)) of
   1:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
   2:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
   4,5:begin
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'GET') then
+     if (LeftStr(Item.SubItems[1], 3) = 'GET') then
        (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_BLUE;
-     if (LeftStr(Item.SubItems.Strings[1], 3) = 'PUT') then
+     if (LeftStr(Item.SubItems[1], 3) = 'PUT') then
        (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN;
     end;//case 2
   3,6:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
@@ -2766,7 +2780,7 @@ procedure TF_Main.LV_MultiJCCustomDrawItem(Sender: TCustomListView;
 begin
  if (Item.SubItems.Count >= 4) then
   begin
-   if (Item.SubItems.Strings[1] <> '-1') then
+   if (Item.SubItems[1] <> '-1') then
      Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
    else
      Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
@@ -2811,7 +2825,7 @@ end;
 procedure TF_Main.LV_Stav_RCSCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((Item.SubItems.Count > 5) and (Item.SubItems.Strings[5] = 'Fail')) then
+ if ((Item.SubItems.Count > 5) and (Item.SubItems[5] = 'Fail')) then
    Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_RED
  else
    Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
@@ -3027,14 +3041,14 @@ end;
 procedure TF_Main.LV_ClientsCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- if ((Item.SubItems[0] = 'uzavřeno') or (Item.SubItems[0] = 'odpojen')) then
+ if ((Item.SubItems[_LV_CLIENTS_COL_STATE] = 'uzavřeno') or (Item.SubItems[_LV_CLIENTS_COL_STATE] = 'odpojen')) then
    Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_WHITE
- else if ((Item.SubItems[0] = 'otevírání') or (Item.SubItems[0] = 'handshake')) then
+ else if ((Item.SubItems[_LV_CLIENTS_COL_STATE] = 'otevírání') or (Item.SubItems[_LV_CLIENTS_COL_STATE] = 'handshake')) then
    Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_GRAY
- else if (Item.SubItems[0] = 'otevřeno') then begin
-   if (Item.SubItems[2] = 'unreachable') then
+ else if (Item.SubItems[_LV_CLIENTS_COL_STATE] = 'otevřeno') then begin
+   if (Item.SubItems[_LV_CLIENTS_COL_PING] = 'unreachable') then
      Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_RED
-   else if (Item.SubItems[2] = '?') then
+   else if (Item.SubItems[_LV_CLIENTS_COL_PING] = '?') then
      Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
    else
      Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
@@ -3053,11 +3067,11 @@ procedure TF_Main.LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem;
 begin
  if (Item.SubItems.Count > 18) then
   begin
-   if ((Item.SubItems.Strings[17] = 'COM ERROR!') or (Item.SubItems.Strings[18] = 'error')) then
+   if ((Item.SubItems[17] = 'COM ERROR!') or (Item.SubItems[18] = 'error')) then
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED
-   else if (Item.SubItems.Strings[17] = 'PC') then
+   else if (Item.SubItems[17] = 'PC') then
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GREEN
-   else if ((Item.SubItems.Strings[17] = 'ukradeno') or (Item.SubItems.Strings[18] = 'progr')) then
+   else if ((Item.SubItems[17] = 'ukradeno') or (Item.SubItems[18] = 'progr')) then
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
   end;
 end;
