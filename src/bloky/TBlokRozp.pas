@@ -61,7 +61,6 @@ type
 
     //----- Rozpojovac own functions -----
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton;
                          rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
@@ -199,22 +198,20 @@ begin
  if (Self.status = TRozpStatus.disabled) then Exit();
 
  case (Button) of
-   F2: Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
    ENTER: begin
      case (Self.status) of
-       TRozpStatus.not_selected : Self.Mount();
-       TRozpStatus.mounting     : Self.Activate();
-       TRozpStatus.active       : Self.Prolong();
+       TRozpStatus.not_selected: Self.Mount();
+       TRozpStatus.mounting: Self.Activate();
+       TRozpStatus.active: Self.Prolong();
      end;
-    end;//case TPanelButton.left
+    end;
 
    ESCAPE: begin
      case (Self.status) of
-       TRozpStatus.mounting     : Self.status := TRozpStatus.not_selected;
-       TRozpStatus.active       : Self.status := TRozpStatus.not_selected;
-     else //case
-       Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+       TRozpStatus.mounting: Self.status := TRozpStatus.not_selected;
+       TRozpStatus.active: Self.status := TRozpStatus.not_selected;
      end;
    end;
  end;//case
@@ -222,12 +219,6 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-//toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
-begin
- if (Self.status = TRozpStatus.disabled) then Exit();
-end;
 
 procedure TBlkRozp.SetStatus(status:TRozpStatus);
 begin
