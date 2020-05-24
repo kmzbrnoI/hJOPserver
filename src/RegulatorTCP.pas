@@ -434,7 +434,6 @@ procedure TTCPRegulator.PanelLOKResponseOK(Sender:TObject; Data:Pointer);
 var speed:Cardinal;
     HV:THV;
 begin
-//  -;LOK;RESP;ADDR;[ok, err]; info
  try
   HV := HVDb[TLokResponseData(Data^).addr];
   speed := HV.realSpeed;
@@ -442,7 +441,7 @@ begin
     speed := HV.Data.maxRychlost;
 
   ORTCPServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+
-      ';RESP;ok;'+IntToStr(speed));
+      ';RESP;ok;;'+IntToStr(speed));
   FreeMem(data);
  except
 
