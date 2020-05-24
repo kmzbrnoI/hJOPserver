@@ -29,8 +29,8 @@ type
    );
 
   private const
-    _MOUNT_TO_ACTIVE_TIME_SEC   = 2;
-    _ACTIVE_TO_DISABLE_TIME_SEC = 5;
+    _MOUNT_TO_ACTIVE_TIME_SEC = 3;
+    _ACTIVE_TO_DISABLE_TIME_SEC = 30;
 
   private
    RozpSettings:TBlkRozpSettings;
