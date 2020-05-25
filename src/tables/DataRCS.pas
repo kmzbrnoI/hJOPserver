@@ -91,7 +91,7 @@ function TRCSTableData.GetLineForNewBoard(addr:Integer):Integer;
 var i:Integer;
 begin
  for i := 0 to Self.LV.Items.Count-1 do
-   if (addr < StrToInt(Self.LV.Items[i].Caption)) then
+   if (addr < Integer(Self.LV.Items[i].Data)) then
      Exit(i);
  Result := Self.LV.Items.Count;
 end;
