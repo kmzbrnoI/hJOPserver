@@ -62,6 +62,10 @@ type
     ME_Track_Anul_Time: TMaskEdit;
     CHB_RCS_Anullation: TCheckBox;
     CHB_RCS_NOT: TCheckBox;
+    Label10: TLabel;
+    CHB_RCS_BP: TCheckBox;
+    SE_vyst_bp_board: TSpinEdit;
+    SE_vyst_bp_port: TSpinEdit;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -71,6 +75,7 @@ type
     procedure B_Track_DeleteClick(Sender: TObject);
     procedure CHB_RCS_AnullationClick(Sender: TObject);
     procedure CHB_RCS_NOTClick(Sender: TObject);
+    procedure CHB_RCS_BPClick(Sender: TObject);
   private
    OpenIndex:Integer;
    Blk:TBlkPrejezd;
@@ -117,8 +122,9 @@ procedure TF_BlkPrejezd.OpenForm(BlokIndex:Integer);
 
 procedure TF_BlkPrejezd.SE_RCS_boardExit(Sender: TObject);
 begin
- Self.SE_vyst_open_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_open_board.Value, Self.SE_vyst_open_port.Value);
  Self.SE_vyst_close_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_close_board.Value, Self.SE_vyst_close_port.Value);
+ Self.SE_vyst_open_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_open_board.Value, Self.SE_vyst_open_port.Value);
+ Self.SE_vyst_bp_board.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_bp_board.Value, Self.SE_vyst_bp_port.Value);
 
  Self.SE_vst_close_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_close_board.Value, Self.SE_vst_close_port.Value);
  Self.SE_vst_open_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_open_board.Value, Self.SE_vst_open_port.Value);
@@ -169,15 +175,21 @@ var glob:TBlkSettings;
 
   addrs := TList<TRCSAddr>.Create();
   try
+    settings.RCSOutputs.Zavrit.board := Self.SE_vyst_close_board.Value;
+    settings.RCSOutputs.Zavrit.port := Self.SE_vyst_close_port.Value;
+    addrs.Add(settings.RCSOutputs.Zavrit);
+
     settings.RCSOutputs.NOtevritUse := Self.CHB_RCS_NOT.Checked;
     settings.RCSOutputs.NOtevrit.board := Self.SE_vyst_open_board.Value;
     settings.RCSOutputs.NOtevrit.port := Self.SE_vyst_open_port.Value;
     if (Self.CHB_RCS_NOT.Checked) then
       addrs.Add(settings.RCSOutputs.NOtevrit);
 
-    settings.RCSOutputs.Zavrit.board := Self.SE_vyst_close_board.Value;
-    settings.RCSOutputs.Zavrit.port := Self.SE_vyst_close_port.Value;
-    addrs.Add(settings.RCSOutputs.Zavrit);
+    settings.RCSOutputs.BlokPozUse := Self.CHB_RCS_BP.Checked;
+    settings.RCSOutputs.BlokPoz.board := Self.SE_vyst_bp_board.Value;
+    settings.RCSOutputs.BlokPoz.port := Self.SE_vyst_bp_port.Value;
+    if (Self.CHB_RCS_BP.Checked) then
+      addrs.Add(settings.RCSOutputs.BlokPoz);
 
     settings.RCSInputs.Otevreno.board := SE_vst_open_board.Value;
     settings.RCSInputs.Otevreno.port := SE_vst_open_port.Value;
@@ -322,17 +334,29 @@ begin
   end;
 end;
 
+procedure TF_BlkPrejezd.CHB_RCS_BPClick(Sender: TObject);
+begin
+ Self.SE_vyst_bp_board.Enabled := Self.CHB_RCS_BP.Checked;
+ Self.SE_vyst_bp_port.Enabled := Self.CHB_RCS_BP.Checked;
+ if (not Self.CHB_RCS_BP.Checked) then
+  begin
+   Self.SE_vyst_bp_board.Value := 0;
+   Self.SE_vyst_bp_port.Value := 0;
+  end;
+end;
+
 procedure TF_BlkPrejezd.HlavniOpenForm();
  begin
   SetLength(Self.obls,0);
   Self.LB_Stanice.Clear();
 
-  Self.SE_vyst_open_board.MaxValue := RCSi.maxModuleAddr;
-  Self.SE_vyst_close_board.MaxValue := RCSi.maxModuleAddr;
-  Self.SE_vst_close_board.MaxValue := RCSi.maxModuleAddr;
-  Self.SE_vst_open_board.MaxValue := RCSi.maxModuleAddr;
-  Self.SE_vst_vystraha_board.MaxValue := RCSi.maxModuleAddr;
-  Self.SE_vst_anulace_board.MaxValue := RCSi.maxModuleAddr;
+  Self.SE_vyst_close_board.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_vyst_open_board.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_vyst_bp_board.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_vst_close_board.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_vst_open_board.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_vst_vystraha_board.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_vst_anulace_board.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
 procedure TF_BlkPrejezd.NormalOpenForm();
@@ -354,6 +378,15 @@ var glob:TBlkSettings;
   E_Prj_Nazev.Text := glob.name;
   SE_ID.Value := glob.id;
 
+
+  if (settings.RCSOutputs.Zavrit.board > Cardinal(Self.SE_vyst_close_board.MaxValue)) then
+    Self.SE_vyst_close_board.MaxValue := 0;
+  Self.SE_vyst_close_port.MaxValue := 0;
+
+  SE_vyst_close_board.Value := settings.RCSOutputs.Zavrit.board;
+  SE_vyst_close_port.Value := settings.RCSOutputs.Zavrit.port;
+
+
   Self.CHB_RCS_NOT.Checked := settings.RCSOutputs.NOtevritUse;
   Self.CHB_RCS_NOTClick(Self);
   if (settings.RCSOutputs.NOtevrit.board > Cardinal(Self.SE_vyst_open_board.MaxValue)) then
@@ -366,12 +399,16 @@ var glob:TBlkSettings;
    end;
 
 
-  if (settings.RCSOutputs.Zavrit.board > Cardinal(Self.SE_vyst_close_board.MaxValue)) then
-    Self.SE_vyst_close_board.MaxValue := 0;
-  Self.SE_vyst_close_port.MaxValue := 0;
-
-  SE_vyst_close_board.Value := settings.RCSOutputs.Zavrit.board;
-  SE_vyst_close_port.Value := settings.RCSOutputs.Zavrit.port;
+  Self.CHB_RCS_BP.Checked := settings.RCSOutputs.BlokPozUse;
+  Self.CHB_RCS_BPClick(Self);
+  if (settings.RCSOutputs.BlokPoz.board > Cardinal(Self.SE_vyst_bp_board.MaxValue)) then
+    Self.SE_vyst_open_board.MaxValue := 0;
+  Self.SE_vyst_bp_port.MaxValue := 0;
+  if (settings.RCSOutputs.BlokPozUse) then
+   begin
+    SE_vyst_bp_board.Value := settings.RCSOutputs.BlokPoz.board;
+    SE_vyst_bp_port.Value := settings.RCSOutputs.BlokPoz.port;
+   end;
 
 
   if (settings.RCSInputs.Otevreno.board > Cardinal(Self.SE_vst_open_board.MaxValue)) then
@@ -428,27 +465,32 @@ var glob:TBlkSettings;
   Self.ActiveControl := Self.B_save_P;
  end;
 
-procedure TF_BlkPrejezd.NewOpenForm;
+procedure TF_BlkPrejezd.NewOpenForm();
  begin
-  E_prj_Nazev.Text := '';
-  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
-  Self.CHB_RCS_NOT.Checked := true;
+  Self.E_prj_Nazev.Text := '';
+  Self.SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+
+  Self.SE_vyst_close_board.Value := 0;
+  Self.SE_vyst_close_port.Value := 0;
+
+  Self.CHB_RCS_NOT.Checked := false;
   Self.CHB_RCS_NOTClick(Self);
-  SE_vyst_open_board.Value := 0;
-  SE_vyst_open_port.Value := 0;
-  SE_vyst_close_board.Value := 0;
-  SE_vyst_close_port.Value := 0;
-  SE_vst_open_board.Value := 0;
-  SE_vst_open_port.Value := 0;
-  SE_vst_close_board.Value := 0;
-  SE_vst_close_port.Value := 0;
-  SE_vst_vystraha_board.Value := 0;
-  SE_vst_vystraha_port.Value := 0;
-  Self.CHB_RCS_Anullation.Checked := true;
+
+  Self.CHB_RCS_BP.Checked := false;
+  Self.CHB_RCS_BPClick(Self);
+
+  Self.SE_vst_open_board.Value := 0;
+  Self.SE_vst_open_port.Value := 0;
+  Self.SE_vst_close_board.Value := 0;
+  Self.SE_vst_close_port.Value := 0;
+  Self.SE_vst_vystraha_board.Value := 0;
+  Self.SE_vst_vystraha_port.Value := 0;
+
+  Self.CHB_RCS_Anullation.Checked := false;
   Self.CHB_RCS_AnullationClick(Self);
-  SE_vst_anulace_board.Value := 0;
-  SE_vst_anulace_port.Value := 0;
+
   Self.SE_RCS_boardExit(Self);
+
   Self.CHB_JOP_control.Checked := false;
   Self.CHB_JOP_controlClick(Self);
 

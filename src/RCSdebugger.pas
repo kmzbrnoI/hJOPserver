@@ -119,7 +119,7 @@ implementation
      * adresa modulu
      * nazev modulu
      * typ modulu
-     * jestli je modul fyzicky na sbernici (0 v prpade vypadku modulu)
+     * jestli je modul fyzicky na sbernici (0 v pripade vypadku modulu)
      * firmware modulu
      * typy vstupu (B=binarni vstup, I=IR vstup, -=nedostupny port)
      * typy vystupu (B=binarni vystup, S=S-COM, -=nedostupny port)

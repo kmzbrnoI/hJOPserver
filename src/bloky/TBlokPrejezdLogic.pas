@@ -43,6 +43,7 @@ type
    anulEnd: TTime;
 
     function mShouldBeClosed(): Boolean;
+    function mPozitiva(): Boolean;
     function AllFree(): Boolean;
     function GetAnullation(): Boolean;
 
@@ -67,6 +68,7 @@ type
 
     property state: TBlkPrjTrackState read mState write SetState;
     property shouldBeClosed: boolean read mShouldBeClosed;
+    property pozitiva: boolean read mPozitiva;
     property anullation: boolean read GetAnullation;
 
     property leftOut: TBlkUsekRefs read sections[_SECT_LEFT_OUT] write sections[_SECT_LEFT_OUT];
@@ -314,6 +316,12 @@ begin
  else
   Result := true;
  end;
+end;
+
+function TBlkPrjTrack.mPozitiva(): Boolean;
+begin
+ Result := (Self.left.state = TUsekStav.uvolneno) and (Self.middle.state = TUsekStav.uvolneno) and
+            (Self.right.state = TUsekStav.uvolneno);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

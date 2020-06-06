@@ -10,22 +10,24 @@ uses IniFiles, TBlok, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
 
 type
  TBlkPrjRCSInputs = record
-  Zavreno:TRCSAddr;
-  Otevreno:TRCSAddr;
-  Vystraha:TRCSAddr;
-  Anulace:TRCSAddr;
-  anulaceUse: boolean;
+  Zavreno: TRCSAddr;
+  Otevreno: TRCSAddr;
+  Vystraha: TRCSAddr;
+  Anulace: TRCSAddr;
+  anulaceUse: Boolean;
  end;
 
  TBlkPrjRCSOutputs = record
-  Zavrit:TRCSAddr;
-  NOtevrit:TRCSAddr;
-  NOtevritUse: boolean;
+  Zavrit: TRCSAddr;
+  NOtevrit: TRCSAddr;
+  NOtevritUse: Boolean;
+  BlokPoz: TRCSAddr;
+  BlokPozUse: Boolean;
  end;
 
  TBlkPrjSettings = record
-  RCSInputs:TBlkPrjRCSInputs;
-  RCSOutputs:TBlkPrjRCSOutputs;
+  RCSInputs: TBlkPrjRCSInputs;
+  RCSOutputs: TBlkPrjRCSOutputs;
  end;
 
  TBlkPrjBasicStav = (disabled = -5, none = -1, otevreno = 0, vystraha = 1, uzavreno = 2);
@@ -76,6 +78,7 @@ type
     function GetZaver():boolean;
 
     function TrackClosed():boolean;
+    function TrackPozitiva():boolean;
     function GetAnulace():boolean;
 
     procedure MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -218,6 +221,13 @@ begin
                                                         ini_tech.ReadInteger(section, 'RCSOnot', 0));
   end;
 
+ Self.PrjSettings.RCSOutputs.BlokPozUse := (ini_tech.ReadInteger(section, 'RCSObpm', defaultModule) <> -1);
+ if (Self.PrjSettings.RCSOutputs.BlokPozUse) then
+  begin
+   Self.PrjSettings.RCSOutputs.BlokPoz := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSObpm', defaultModule),
+                                                       ini_tech.ReadInteger(section, 'RCSObp', 0));
+  end;
+
  Self.tracks.Clear();
  notracks := ini_tech.ReadInteger(section, 'tracks', 0);
  for i := 0 to notracks-1 do
@@ -267,6 +277,11 @@ begin
   begin
    ini_tech.WriteInteger(section, 'RCSOnotm', Self.PrjSettings.RCSOutputs.NOtevrit.board);
    ini_tech.WriteInteger(section, 'RCSOnot', Self.PrjSettings.RCSOutputs.NOtevrit.port);
+  end;
+ if (Self.PrjSettings.RCSOutputs.BlokPozUse) then
+  begin
+   ini_tech.WriteInteger(section, 'RCSObpm', Self.PrjSettings.RCSOutputs.BlokPoz.board);
+   ini_tech.WriteInteger(section, 'RCSObp', Self.PrjSettings.RCSOutputs.BlokPoz.port);
   end;
 
  if (Self.tracks.Count > 0) then
@@ -319,6 +334,8 @@ begin
    Result := Result or (portType = TRCSIOType.input) and (addr = Self.PrjSettings.RCSInputs.Anulace);
  if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
    Result := Result or (portType = TRCSIOType.output) and (addr = Self.PrjSettings.RCSOutputs.NOtevrit);
+ if (Self.PrjSettings.RCSOutputs.BlokPozUse) then
+   Result := Result or (portType = TRCSIOType.output) and (addr = Self.PrjSettings.RCSOutputs.BlokPoz);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -477,6 +494,8 @@ begin
 
    if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
      RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, PrevodySoustav.BoolToInt(Self.PrjStav.PC_NOT));
+   if (Self.PrjSettings.RCSOutputs.BlokPozUse) then
+     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.BlokPoz, PrevodySoustav.BoolToInt(not Self.TrackPozitiva));
  except
 
  end;
@@ -949,6 +968,15 @@ begin
    if (track.shouldBeClosed) then
      Exit(true);
  Result := false;
+end;
+
+function TBlkPrejezd.TrackPozitiva():boolean;
+var track: TBlkPrjTrack;
+begin
+ for track in Self.tracks do
+   if (not track.pozitiva) then
+     Exit(false);
+ Result := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

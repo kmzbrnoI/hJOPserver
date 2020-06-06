@@ -120,7 +120,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
     Left = 8
     Top = 110
     Width = 321
-    Height = 259
+    Height = 285
     Caption = ' RCS '
     TabOrder = 3
     object L_P01: TLabel
@@ -149,7 +149,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       Left = 14
       Top = 32
       Width = 291
-      Height = 79
+      Height = 106
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -158,7 +158,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       TabOrder = 0
       object L_P04: TLabel
         Left = 15
-        Top = 20
+        Top = 48
         Width = 89
         Height = 13
         Margins.Left = 2
@@ -169,7 +169,7 @@ object F_BlkPrejezd: TF_BlkPrejezd
       end
       object L_P05: TLabel
         Left = 15
-        Top = 47
+        Top = 23
         Width = 69
         Height = 13
         Margins.Left = 2
@@ -178,23 +178,20 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Margins.Bottom = 2
         Caption = 'Zav'#345#237't prejezd:'
       end
-      object SE_vyst_open_port: TSpinEdit
-        Left = 208
-        Top = 19
-        Width = 65
-        Height = 22
+      object Label10: TLabel
+        Left = 15
+        Top = 74
+        Width = 89
+        Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 0
-        MinValue = 0
-        TabOrder = 2
-        Value = 0
+        Caption = 'Blokov'#225'n'#237' pozitivy:'
       end
-      object SE_vyst_close_port: TSpinEdit
+      object SE_vyst_open_port: TSpinEdit
         Left = 208
-        Top = 45
+        Top = 47
         Width = 65
         Height = 22
         Margins.Left = 2
@@ -206,24 +203,23 @@ object F_BlkPrejezd: TF_BlkPrejezd
         TabOrder = 4
         Value = 0
       end
-      object SE_vyst_open_board: TSpinEdit
-        Left = 128
-        Top = 19
+      object SE_vyst_close_port: TSpinEdit
+        Left = 208
+        Top = 21
         Width = 65
         Height = 22
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 1
         Value = 0
-        OnExit = SE_RCS_boardExit
       end
-      object SE_vyst_close_board: TSpinEdit
+      object SE_vyst_open_board: TSpinEdit
         Left = 128
-        Top = 45
+        Top = 47
         Width = 65
         Height = 22
         Margins.Left = 2
@@ -236,18 +232,70 @@ object F_BlkPrejezd: TF_BlkPrejezd
         Value = 0
         OnExit = SE_RCS_boardExit
       end
+      object SE_vyst_close_board: TSpinEdit
+        Left = 128
+        Top = 21
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 191
+        MinValue = 0
+        TabOrder = 0
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
       object CHB_RCS_NOT: TCheckBox
         Left = 108
-        Top = 19
+        Top = 47
         Width = 16
         Height = 17
-        TabOrder = 0
+        TabOrder = 2
         OnClick = CHB_RCS_NOTClick
+      end
+      object CHB_RCS_BP: TCheckBox
+        Left = 109
+        Top = 74
+        Width = 16
+        Height = 17
+        TabOrder = 5
+        OnClick = CHB_RCS_BPClick
+      end
+      object SE_vyst_bp_board: TSpinEdit
+        Left = 128
+        Top = 73
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 191
+        MinValue = 0
+        TabOrder = 6
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_vyst_bp_port: TSpinEdit
+        Left = 208
+        Top = 73
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 7
+        Value = 0
       end
     end
     object GB_Prj_vst: TGroupBox
       Left = 14
-      Top = 115
+      Top = 143
       Width = 291
       Height = 134
       Margins.Left = 2
