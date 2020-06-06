@@ -62,7 +62,7 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS, TBlokNav;
+uses TechnologieRCS, Logging, RCS, TBlokNav, RCSErrors;
 
 {$R *.dfm}
 
@@ -100,6 +100,8 @@ var i, val:Integer;
      begin
       try
         val := RCSi.GetOutput(RCSAddr, i);
+        if (val >= RCS_ERRORS_START) then
+          val := -1;
       except
         val := -1;
       end;

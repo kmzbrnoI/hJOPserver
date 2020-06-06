@@ -1366,10 +1366,7 @@ begin
  if ((index < 0) or (index >= Self.ORProp.Osvetleni.Count)) then Exit(false);
 
  try
-   if (RCSi.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1) then
-     Result := true
-   else
-     Result := false;
+   Result := (RCSi.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1);
  except
    Result := false;
  end;
