@@ -303,7 +303,7 @@ var j, spr:integer;
         TRozpStatus.active       : Self.LV.Items[line].SubItems[3] := 'active';
       end;//case
 
-      Self.LV.Items[line].SubItems[5] := '';
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkRozp).stit;
       Self.LV.Items[line].SubItems[7] := '---';
    end;//_BLK_ROZP
 

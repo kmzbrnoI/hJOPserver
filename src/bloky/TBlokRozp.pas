@@ -15,9 +15,10 @@ type
  end;
 
  TBlkRozpStav = record
-  status:TRozpStatus;
-  finish:TDateTime;
-  rcsFailed:Boolean;
+  status: TRozpStatus;
+  finish: TDateTime;
+  rcsFailed: Boolean;
+  stit: string;
  end;
 
  TBlkRozp = class(TBlk)
@@ -26,6 +27,7 @@ type
    _def_rozp_stav:TBlkRozpStav = (
       status : disabled;
       rcsFailed: false;
+      stit : '';
    );
 
   private const
@@ -39,9 +41,13 @@ type
    procedure SetStatus(status:TRozpStatus);
    procedure UpdateOutput();
 
+   procedure SetStit(stit:string);
+
    procedure Mount();
    procedure Activate();
    procedure Prolong();
+
+   procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
 
   public
     constructor Create(index:Integer);
@@ -68,11 +74,14 @@ type
     function GetSettings():TBlkRozpSettings;
     procedure SetSettings(data:TBlkRozpSettings);
 
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
+
     property stav:TBlkRozpStav read RozpStav;
     property status:TRozpStatus read RozpStav.status write SetStatus;
+    property stit:string read RozpStav.stit write SetStit;
 
     //PT:
-
     procedure GetPtData(json:TJsonObject; includeState:boolean); override;
     procedure GetPtState(json:TJsonObject); override;
     procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
@@ -102,6 +111,8 @@ begin
  Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
  Self.LoadORs(ini_rel, 'R').Free();
  PushRCStoOR(Self.ORsRef, Self.RozpSettings.RCSAddrs);
+
+ Self.RozpStav.Stit := ini_stat.ReadString(section, 'stit', '');
 end;
 
 procedure TBlkRozp.SaveData(ini_tech:TMemIniFile;const section:string);
@@ -113,7 +124,8 @@ end;
 
 procedure TBlkRozp.SaveStatus(ini_stat:TMemIniFile;const section:string);
 begin
- //
+ if (Self.RozpStav.Stit <> '') then
+   ini_stat.WriteString(section, 'stit', Self.RozpStav.Stit);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,6 +232,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TBlkRozp.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+begin
+ Result := inherited + 'STIT,';
+end;
+
+procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+begin
+ if (Self.status = TRozpStatus.disabled) then Exit();
+
+ if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TBlkRozp.SetStatus(status:TRozpStatus);
 begin
  if (Self.status <> status) then
@@ -261,6 +287,8 @@ begin
  else
    fg := clFuchsia;
  end;
+
+ if (Self.stit <> '') then bg := clTeal;
 
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
                     PrevodySoustav.ColorToStr(bg) + ';0;';
@@ -325,6 +353,19 @@ begin
   end;
 
  inherited;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkRozp.SetStit(stit:string);
+begin
+ Self.RozpStav.Stit := stit;
+ Self.Change();
+end;
+
+procedure TBlkRozp.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+ ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

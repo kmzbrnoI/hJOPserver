@@ -159,7 +159,8 @@ implementation
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks;
+      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
+      TBlokRozp;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -622,6 +623,7 @@ begin
     _BLK_UVAZKA        : (orRef.stitek as TBlkUvazka).Stitek := tmp;
     _BLK_PREJEZD       : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
     _BLK_ZAMEK         : (orRef.stitek as TBlkZamek).Stitek := tmp;
+    _BLK_ROZP          : (orRef.stitek as TBlkRozp).stit := tmp;
    end;//case
    orRef.stitek := nil;
   end
