@@ -1023,8 +1023,6 @@ var Blk:TBlk;
     oblr:TOR;
 begin
  if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit;
- if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
 
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
