@@ -48,6 +48,8 @@ type
    procedure Prolong();
 
    procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
+   procedure MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+   procedure MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 
   public
     constructor Create(index:Integer);
@@ -234,14 +236,21 @@ end;
 
 function TBlkRozp.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
- Result := inherited + 'STIT,';
+ Result := inherited;
+ if (Self.status = TRozpStatus.active) then
+   Result := Result + 'AKTIV<,'
+ else
+   Result := Result + 'AKTIV>,';
+ Result := Result + 'STIT,';
 end;
 
 procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if (Self.status = TRozpStatus.disabled) then Exit();
 
- if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR);
+ if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
+ else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
+ else if (item = 'AKTIV<') then Self.MenuAktivOffClick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -366,6 +375,16 @@ end;
 procedure TBlkRozp.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
+end;
+
+procedure TBlkRozp.MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.Activate();
+end;
+
+procedure TBlkRozp.MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.status := TRozpStatus.not_selected;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
