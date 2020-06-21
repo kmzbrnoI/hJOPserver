@@ -1,4 +1,4 @@
-unit TBlokVystup;
+unit TBlokIO;
 
 {
   Definice a obsluha technologickeho bloku Vystup.
@@ -14,30 +14,30 @@ uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
 
 type
 
- TBlkVystupSettings = record
+ TBlkIOsettings = record
   RCSAddrs: TRCSAddrs;
   setOutputOnStart: boolean;
   nullAfterSec: Integer;
  end;
 
- TBlkVystupStav = record
+ TBlkIOstate = record
   enabled: boolean;
   active: boolean;
   nullTime: TTime;
   stit: string;
  end;
 
- TBlkVystup = class(TBlk)
+ TBlkIO = class(TBlk)
   const
-   _def_vystup_stav:TBlkVystupStav = (
+   _def_IO_stav:TBlkIOstate = (
      enabled: false;
      active: false;
      nullTime: 0;
    );
 
   private
-   VystupSettings: TBlkVystupSettings;
-   VystupStav: TBlkVystupStav;
+   IOsettings: TBlkIOsettings;
+   IOstate: TBlkIOstate;
 
     function GetRCSUsed():boolean;
     function IsNullable():boolean;
@@ -71,21 +71,21 @@ type
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
 
-    //----- Vystup own functions -----
+    //----- IO own functions -----
 
-    function GetSettings(): TBlkVystupSettings;
-    procedure SetSettings(data: TBlkVystupSettings);
+    function GetSettings(): TBlkIOsettings;
+    procedure SetSettings(data: TBlkIOsettings);
 
     procedure GetPtData(json: TJsonObject; includeState: boolean); override;
     procedure GetPtState(json: TJsonObject); override;
 
-    property enabled: boolean read VystupStav.enabled;
+    property enabled: boolean read IOstate.enabled;
     property rcsUsed: boolean read GetRCSUsed;
-    property active: boolean read VystupStav.active;
+    property active: boolean read IOstate.active;
     property nullable: boolean read IsNullable;
-    property stit:string read VystupStav.stit write SetStit;
+    property stit:string read IOstate.stit write SetStit;
 
- end;//class TBlkVystup
+ end;//class TBlkIO
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,103 +93,103 @@ implementation
 
 uses TOblsRizeni, TCPServerOR, Prevody;
 
-constructor TBlkVystup.Create(index:Integer);
+constructor TBlkIO.Create(index:Integer);
 begin
  inherited;
- Self.VystupStav := _def_vystup_stav;
- Self.GlobalSettings.typ := _BLK_VYSTUP;
+ Self.IOstate := _def_IO_stav;
+ Self.GlobalSettings.typ := _BLK_IO;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVystup.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
+procedure TBlkIO.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
- Self.VystupSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
+ Self.IOsettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.LoadORs(ini_rel, 'POM').Free();
- Self.VystupSettings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
- Self.VystupSettings.nullAfterSec := ini_tech.ReadInteger(section, 'nullTime', 0);
- Self.VystupStav.Stit := ini_stat.ReadString(section, 'stit', '');
- PushRCStoOR(Self.ORsRef, Self.VystupSettings.RCSAddrs);
+ Self.IOsettings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
+ Self.IOsettings.nullAfterSec := ini_tech.ReadInteger(section, 'nullTime', 0);
+ Self.IOstate.Stit := ini_stat.ReadString(section, 'stit', '');
+ PushRCStoOR(Self.ORsRef, Self.IOsettings.RCSAddrs);
 end;
 
-procedure TBlkVystup.SaveData(ini_tech:TMemIniFile; const section:string);
+procedure TBlkIO.SaveData(ini_tech:TMemIniFile; const section:string);
 begin
  inherited SaveData(ini_tech, section);
- Self.SaveRCS(ini_tech,section, Self.VystupSettings.RCSAddrs);
- ini_tech.WriteBool(section, 'activateOnStart', Self.VystupSettings.setOutputOnStart);
+ Self.SaveRCS(ini_tech,section, Self.IOsettings.RCSAddrs);
+ ini_tech.WriteBool(section, 'activateOnStart', Self.IOsettings.setOutputOnStart);
  if (Self.nullable) then
-   ini_tech.WriteInteger(section, 'nullTime', Self.VystupSettings.nullAfterSec);
+   ini_tech.WriteInteger(section, 'nullTime', Self.IOsettings.nullAfterSec);
 end;
 
-procedure TBlkVystup.SaveStatus(ini_stat:TMemIniFile; const section:string);
+procedure TBlkIO.SaveStatus(ini_stat:TMemIniFile; const section:string);
 begin
- if (Self.VystupStav.Stit <> '') then
-   ini_stat.WriteString(section, 'stit', Self.VystupStav.Stit);
+ if (Self.IOstate.Stit <> '') then
+   ini_stat.WriteString(section, 'stit', Self.IOstate.Stit);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVystup.Enable();
+procedure TBlkIO.Enable();
 begin
- Self.VystupStav.enabled := true;
- if (Self.VystupSettings.setOutputOnStart) then
+ Self.IOstate.enabled := true;
+ if (Self.IOsettings.setOutputOnStart) then
    Self.Activate();
 end;
 
-procedure TBlkVystup.Disable();
+procedure TBlkIO.Disable();
 begin
- Self.VystupStav.enabled := false;
- Self.VystupStav.active := false;
+ Self.IOstate.enabled := false;
+ Self.IOstate.active := false;
 end;
 
-function TBlkVystup.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkIO.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
- Result := ((portType = TRCSIOType.output) and (Self.VystupSettings.RCSAddrs.Contains(addr)));
+ Result := ((portType = TRCSIOType.output) and (Self.IOsettings.RCSAddrs.Contains(addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVystup.GetSettings():TBlkVystupSettings;
+function TBlkIO.GetSettings():TBlkIOsettings;
 begin
- Result := Self.VystupSettings;
+ Result := Self.IOsettings;
 end;
 
-procedure TBlkVystup.SetSettings(data:TBlkVystupSettings);
+procedure TBlkIO.SetSettings(data:TBlkIOsettings);
 begin
- if (Self.VystupSettings.RCSAddrs <> data.RCSAddrs) then
-   Self.VystupSettings.RCSAddrs.Free();
+ if (Self.IOsettings.RCSAddrs <> data.RCSAddrs) then
+   Self.IOsettings.RCSAddrs.Free();
 
- Self.VystupSettings := data;
+ Self.IOsettings := data;
  Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVystup.GetRCSUsed():boolean;
+function TBlkIO.GetRCSUsed():boolean;
 begin
- Result := (Self.VystupSettings.RCSAddrs.Count > 0);
+ Result := (Self.IOsettings.RCSAddrs.Count > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVystup.Update();
+procedure TBlkIO.Update();
 begin
  inherited;
 
- if ((Self.enabled) and (Self.nullable) and (Self.active) and (Now > Self.VystupStav.nullTime)) then
+ if ((Self.enabled) and (Self.nullable) and (Self.active) and (Now > Self.IOstate.nullTime)) then
    Self.Deactivate();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVystup.Activate();
+procedure TBlkIO.Activate();
 var RCSaddr:TRCSAddr;
 begin
  if (Self.active) then Exit();
- Self.VystupStav.active := true;
+ Self.IOstate.active := true;
 
- for RCSaddr in Self.VystupSettings.RCSAddrs do
+ for RCSaddr in Self.IOsettings.RCSAddrs do
   begin
    try
      RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 1);
@@ -199,19 +199,19 @@ begin
   end;
 
  if (Self.nullable) then
-   Self.VystupStav.nullTime := Now +
-      EncodeTime(0, Self.VystupSettings.nullAfterSec div 60, Self.VystupSettings.nullAfterSec mod 60, 0);
+   Self.IOstate.nullTime := Now +
+      EncodeTime(0, Self.IOsettings.nullAfterSec div 60, Self.IOsettings.nullAfterSec mod 60, 0);
 
  Self.Change();
 end;
 
-procedure TBlkVystup.Deactivate();
+procedure TBlkIO.Deactivate();
 var RCSaddr:TRCSAddr;
 begin
  if (not Self.active) then Exit();
- Self.VystupStav.active := false;
+ Self.IOstate.active := false;
 
- for RCSaddr in Self.VystupSettings.RCSAddrs do
+ for RCSaddr in Self.IOsettings.RCSAddrs do
   begin
    try
      RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 0);
@@ -225,7 +225,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVystup.PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
+procedure TBlkIO.PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
                                 Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
  if (not Self.enabled) then Exit();
@@ -249,7 +249,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVystup.PanelStateString():string;
+function TBlkIO.PanelStateString():string;
 var fg, bg: TColor;
 begin
  Result := inherited;
@@ -270,35 +270,35 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVystup.GetPtData(json: TJsonObject; includeState: boolean);
+procedure TBlkIO.GetPtData(json: TJsonObject; includeState: boolean);
 begin
  inherited;
 
- TBlk.RCSstoJSON(Self.VystupSettings.RCSAddrs, json.A['rcs']);
- json['setOutputOnStart'] := Self.VystupSettings.setOutputOnStart;
+ TBlk.RCSstoJSON(Self.IOsettings.RCSAddrs, json.A['rcs']);
+ json['setOutputOnStart'] := Self.IOsettings.setOutputOnStart;
  if (includeState) then
    Self.GetPtState(json['blokStav']);
  json['nullable'] := Self.nullable;
  if (Self.nullable) then
-   json['nullTime'] := Self.VystupSettings.nullAfterSec;
+   json['nullTime'] := Self.IOsettings.nullAfterSec;
 end;
 
-procedure TBlkVystup.GetPtState(json: TJsonObject);
+procedure TBlkIO.GetPtState(json: TJsonObject);
 begin
- json['enabled'] := Self.VystupStav.enabled;
- json['active'] := Self.VystupStav.active;
+ json['enabled'] := Self.IOstate.enabled;
+ json['active'] := Self.IOstate.active;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVystup.IsNullable():boolean;
+function TBlkIO.IsNullable():boolean;
 begin
- Result := (Self.VystupSettings.nullAfterSec > 0);
+ Result := (Self.IOsettings.nullAfterSec > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVystup.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkIO.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
  Result := inherited;
  if (Self.active) then
@@ -308,7 +308,7 @@ begin
  Result := Result + 'STIT,';
 end;
 
-procedure TBlkVystup.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkIO.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if (not Self.enabled) then Exit();
 
@@ -317,23 +317,23 @@ begin
  else if (item = 'AKTIV<') then Self.MenuAktivOffClick(SenderPnl, SenderOR);
 end;
 
-procedure TBlkVystup.SetStit(stit:string);
+procedure TBlkIO.SetStit(stit:string);
 begin
- Self.VystupStav.Stit := stit;
+ Self.IOstate.Stit := stit;
  Self.Change();
 end;
 
-procedure TBlkVystup.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkIO.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.stit);
 end;
 
-procedure TBlkVystup.MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkIO.MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.Activate();
 end;
 
-procedure TBlkVystup.MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkIO.MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.Deactivate();
 end;

@@ -1,14 +1,14 @@
-﻿unit fBlkVystup;
+﻿unit fBlkIO;
 
 interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlokVystup, Generics.Collections,
+  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlokIO, Generics.Collections,
   IBUtils;
 
 type
-  TF_BlkVystup = class(TForm)
+  TF_BlkIO = class(TForm)
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
     L_IR02: TLabel;
@@ -32,7 +32,7 @@ type
     procedure CHB_NullableClick(Sender: TObject);
   private
    NewBlk: Boolean;
-   Blk: TBlkVystup;
+   Blk: TBlkIO;
 
   public
    OpenIndex: Integer;
@@ -45,7 +45,7 @@ type
   end;
 
 var
-  F_BlkVystup: TF_BlkVystup;
+  F_BlkIO: TF_BlkIO;
 
 implementation
 
@@ -53,7 +53,7 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkVystup.OpenForm(BlokIndex:Integer);
+procedure TF_BlkIO.OpenForm(BlokIndex:Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -68,12 +68,12 @@ procedure TF_BlkVystup.OpenForm(BlokIndex:Integer);
   Self.ShowModal();
  end;
 
-procedure TF_BlkVystup.SE_moduleExit(Sender: TObject);
+procedure TF_BlkIO.SE_moduleExit(Sender: TObject);
 begin
  Self.SE_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
-procedure TF_BlkVystup.NewBlkOpenForm();
+procedure TF_BlkIO.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
@@ -91,9 +91,9 @@ procedure TF_BlkVystup.NewBlkOpenForm();
   Self.ActiveControl := Self.E_Nazev;
  end;
 
-procedure TF_BlkVystup.NormalOpenForm();
+procedure TF_BlkIO.NormalOpenForm();
 var glob:TBlkSettings;
-    settings:TBlkVystupSettings;
+    settings:TBlkIOsettings;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -121,40 +121,40 @@ var glob:TBlkSettings;
   Self.SE_Null_Time.Value := settings.nullAfterSec;
   Self.CHB_NullableClick(Self);
 
-  Self.Caption := 'Upravit blok '+glob.name+' (logický výstup)';
+  Self.Caption := 'Upravit blok '+glob.name+' (IO)';
   Self.ActiveControl := Self.B_Save;
  end;
 
-procedure TF_BlkVystup.HlavniOpenForm;
+procedure TF_BlkIO.HlavniOpenForm;
  begin
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
-procedure TF_BlkVystup.NewBlkCreate;
+procedure TF_BlkIO.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blky.count);
  end;
 
-procedure TF_BlkVystup.B_StornoClick(Sender: TObject);
+procedure TF_BlkIO.B_StornoClick(Sender: TObject);
  begin
   Self.Close();
  end;
 
-procedure TF_BlkVystup.CHB_NullableClick(Sender: TObject);
+procedure TF_BlkIO.CHB_NullableClick(Sender: TObject);
 begin
  Self.SE_Null_Time.Enabled := Self.CHB_Nullable.Checked;
 end;
 
-procedure TF_BlkVystup.CHB_RCS_EnabledClick(Sender: TObject);
+procedure TF_BlkIO.CHB_RCS_EnabledClick(Sender: TObject);
 begin
  Self.SE_module.Enabled := Self.CHB_RCS_Enabled.Checked;
  Self.SE_port.Enabled := Self.CHB_RCS_Enabled.Checked;
 end;
 
-procedure TF_BlkVystup.B_SaveClick(Sender: TObject);
+procedure TF_BlkIO.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
-    settings:TBlkVystupSettings;
+    settings:TBlkIOsettings;
     another: TBlk;
  begin
   if (E_Nazev.Text = '') then
@@ -178,13 +178,13 @@ var glob:TBlkSettings;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
-  glob.typ := _BLK_VYSTUP;
+  glob.typ := _BLK_IO;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_VYSTUP, glob) as TBlkVystup;
+      Blk := Blky.Add(_BLK_IO, glob) as TBlkIO;
     except
       on E:Exception do
        begin
@@ -213,7 +213,7 @@ var glob:TBlkSettings;
   Self.Blk.Change();
  end;
 
-procedure TF_BlkVystup.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkIO.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   NewBlk := false;
   OpenIndex := -1;

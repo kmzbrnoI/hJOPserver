@@ -209,9 +209,9 @@
 			<DCCReference Include="helpers\USock.pas"/>
 			<DCCReference Include="helpers\appEv.pas"/>
 			<DCCReference Include="helpers\SystemCriticalU.pas"/>
-			<DCCReference Include="bloky\TBlokVystup.pas"/>
-			<DCCReference Include="bloky\forms\fBlkVystup.pas">
-				<Form>F_BlkVystup</Form>
+			<DCCReference Include="bloky\TBlokIO.pas"/>
+			<DCCReference Include="bloky\forms\fBlkIO.pas">
+				<Form>F_BlkIO</Form>
 			</DCCReference>
 			<DCCReference Include="pt\TCPServerPT.pas"/>
 			<DCCReference Include="..\lib\JsonDataObjects\Source\JsonDataObjects.pas"/>

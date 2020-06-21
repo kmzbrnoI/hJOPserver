@@ -19,7 +19,7 @@ const
  _BLK_ZAMEK   = 7;            // vyhybkovy zamek
  _BLK_ROZP    = 8;            // rozpojovac
  _BLK_TU      = 9;            // tratovy usek
- _BLK_VYSTUP  = 10;           // logicky vystup
+ _BLK_IO      = 10;           // logicky vstup/vystup
  _BLK_SH      = 11;           // souctova hlaska
  _BLK_AC      = 12;           // automatic control
 
@@ -414,7 +414,7 @@ begin
   _BLK_ZAMEK   : Result := 'zamek';
   _BLK_ROZP    : Result := 'rozpojovac';
   _BLK_TU      : Result := 'tratUsek';
-  _BLK_VYSTUP  : Result := 'vystup';
+  _BLK_IO      : Result := 'io';
   _BLK_SH      : Result := 'souctovaHlaska';
   _BLK_AC      : Result := 'AC';
  else
@@ -462,7 +462,7 @@ begin
  else if (typ = 'uvazka') or (typ = 'úvazka') then Result := _BLK_UVAZKA
  else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovač') then Result := _BLK_ROZP
  else if (typ = 'tratUsek') or (typ = 'traťÚsek') or (typ = 'tu') or (typ = 'TU') then Result := _BLK_TU
- else if (typ = 'vystup') or (typ = 'výstup') then Result := _BLK_VYSTUP
+ else if (typ = 'io') then Result := _BLK_IO
  else raise ETypeNotFound.Create('Blok typu '+typ+' neexistuje');
 end;
 

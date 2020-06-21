@@ -160,7 +160,7 @@ uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
-      TBlokRozp, TBlokVystup;
+      TBlokRozp, TBlokIO;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -624,7 +624,7 @@ begin
     _BLK_PREJEZD       : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
     _BLK_ZAMEK         : (orRef.stitek as TBlkZamek).Stitek := tmp;
     _BLK_ROZP          : (orRef.stitek as TBlkRozp).stit := tmp;
-    _BLK_VYSTUP        : (orRef.stitek as TBlkVystup).stit := tmp;
+    _BLK_IO            : (orRef.stitek as TBlkIO).stit := tmp;
    end;//case
    orRef.stitek := nil;
   end

@@ -107,8 +107,8 @@ uses
   USock in 'helpers\USock.pas',
   appEv in 'helpers\appEv.pas',
   SystemCriticalU in 'helpers\SystemCriticalU.pas',
-  TBlokVystup in 'bloky\TBlokVystup.pas',
-  fBlkVystup in 'bloky\forms\fBlkVystup.pas' {F_BlkVystup},
+  TBlokIO in 'bloky\TBlokIO.pas',
+  fBlkIO in 'bloky\forms\fBlkIO.pas' {F_BlkIO},
   TCPServerPT in 'pt\TCPServerPT.pas',
   JsonDataObjects in '..\lib\JsonDataObjects\Source\JsonDataObjects.pas',
   PTEndpoint in 'pt\PTEndpoint.pas',
@@ -201,7 +201,7 @@ var
   Application.CreateForm(TF_BlkNew, F_BlkNew);
   Application.CreateForm(TF_BlkPrejezd, F_BlkPrejezd);
   Application.CreateForm(TF_BlkTU, F_BlkTU);
-  Application.CreateForm(TF_BlkVystup, F_BlkVystup);
+  Application.CreateForm(TF_BlkIO, F_BlkIO);
   Application.CreateForm(TF_BlkSH, F_BlkSH);
   Application.CreateForm(TF_AutoStartSystems, F_AutoStartSystems);
   Application.CreateForm(TF_BlkUsek_tech, F_BlkUsek_tech);

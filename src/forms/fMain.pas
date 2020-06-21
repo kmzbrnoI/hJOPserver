@@ -495,7 +495,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlokRozp,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
-     AppEv, fBlkVystup, TBlokVystup, TCPServerPT, RCSErrors, TechnologieAB,
+     AppEv, fBlkIO, TBlokIO, TCPServerPT, RCSErrors, TechnologieAB,
      Diagnostics, TBlokAC, fBlkAC;
 
 {$R *.dfm}
@@ -2975,10 +2975,10 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-  _BLK_VYSTUP:begin
-    if (TBlkVystup(Blk).enabled) then
+  _BLK_IO:begin
+    if (TBlkIO(Blk).enabled) then
      begin
-      if (TBlkVystup(Blk).active) then
+      if (TBlkIO(Blk).active) then
         LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
       else if (TBlkAC(Blk).clientConnected) then
         LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE
@@ -3027,7 +3027,7 @@ var Blk:TBlk;
    _BLK_ZAMEK   : F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_ROZP    : F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_TU      : F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_VYSTUP  : F_BlkVystup.OpenForm(Self.LV_Bloky.ItemIndex);
+   _BLK_IO      : F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_SH      : F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
    _BLK_AC      : F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
   end;//case

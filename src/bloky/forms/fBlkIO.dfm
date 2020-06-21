@@ -1,4 +1,4 @@
-object F_BlkVystup: TF_BlkVystup
+object F_BlkIO: TF_BlkIO
   Left = 869
   Top = 145
   BorderIcons = [biSystemMenu]
