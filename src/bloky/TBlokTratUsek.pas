@@ -1228,12 +1228,17 @@ begin
      TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_STUJ
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
-     if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest())) then
-       TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VYSTRAHA
-     else if (TBlkNav(Self.nextNav).FourtyKmph()) then
-       TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_OCEK_40
-     else
-       TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
+     case (TBlkTrat(Self.Trat).navestidla) of
+       TTratNavestidla.hradlo: TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
+       TTratNavestidla.autoblok: begin
+         if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest())) then
+           TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VYSTRAHA
+         else if (TBlkNav(Self.nextNav).FourtyKmph()) then
+           TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_OCEK_40
+         else
+           TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
+       end;
+     end;
     end;
   end;
 
