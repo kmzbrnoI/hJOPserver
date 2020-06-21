@@ -1220,7 +1220,7 @@ begin
 
  // nastavime kryci navestidlo
  if ((Self.navKryci <> nil) and (not TBlkNav(Self.navKryci).ZAM) and
-     (TBlkNav(Self.navKryci).Navest >= 0)) then
+     (TBlkNav(Self.navKryci).Navest >= TBlkNav._NAV_STUJ)) then
   begin
    if (not Self.sectReady) then
     begin
@@ -1230,7 +1230,9 @@ begin
      // sekce uvolnena -> hledame dalsi navestidlo
      if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest())) then
        TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VYSTRAHA
-      else
+     else if (TBlkNav(Self.nextNav).FourtyKmph()) then
+       TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_OCEK_40
+     else
        TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
     end;
   end;

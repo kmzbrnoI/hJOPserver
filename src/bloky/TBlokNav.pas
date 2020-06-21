@@ -220,6 +220,7 @@ type
     procedure AddBlkToRnz(blkId:Integer; change:boolean = true);
     procedure RemoveBlkFromRnz(blkId:Integer);
     procedure RCtimerTimeout();
+    function FourtyKmph(): Boolean;
 
     function GetSouprava(usek:TBlk = nil): TSouprava;
     procedure PropagatePOdjToTrat();
@@ -1856,6 +1857,19 @@ begin
                     PrevodySoustav.ColorToStr(bg) + ';' +
                     IntToStr(PrevodySoustav.BoolToInt(Self.Navest = 8)) + ';' +
                     IntToStr(PrevodySoustav.BoolToInt(Self.AB)) + ';';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkNav.FourtyKmph(): Boolean;
+var navest: Integer;
+begin
+ if (Self.changing) then
+   navest := Self.NavStav.cilova_navest
+ else
+   navest := Self.Navest;
+ Result := (navest = _NAV_VOLNO_40) or (navest = _NAV_VYSTRAHA_40) or
+           (navest = _NAV_40_OCEK_40) or (navest = _NAV_OPAK_VYSTRAHA_40);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
