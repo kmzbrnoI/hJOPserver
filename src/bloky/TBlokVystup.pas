@@ -24,6 +24,7 @@ type
   enabled: boolean;
   active: boolean;
   nullTime: TTime;
+  stit: string;
  end;
 
  TBlkVystup = class(TBlk)
@@ -41,12 +42,19 @@ type
     function GetRCSUsed():boolean;
     function IsNullable():boolean;
 
+    procedure SetStit(stit:string);
+
+    procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+
   public
     constructor Create(index:Integer);
 
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
     procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
+    procedure SaveStatus(ini_stat:TMemIniFile; const section:string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -60,6 +68,8 @@ type
 
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
+    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
+    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
 
     //----- Vystup own functions -----
 
@@ -73,6 +83,7 @@ type
     property rcsUsed: boolean read GetRCSUsed;
     property active: boolean read VystupStav.active;
     property nullable: boolean read IsNullable;
+    property stit:string read VystupStav.stit write SetStit;
 
  end;//class TBlkVystup
 
@@ -98,6 +109,7 @@ begin
  Self.LoadORs(ini_rel, 'POM').Free();
  Self.VystupSettings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
  Self.VystupSettings.nullAfterSec := ini_tech.ReadInteger(section, 'nullTime', 0);
+ Self.VystupStav.Stit := ini_stat.ReadString(section, 'stit', '');
  PushRCStoOR(Self.ORsRef, Self.VystupSettings.RCSAddrs);
 end;
 
@@ -108,6 +120,12 @@ begin
  ini_tech.WriteBool(section, 'activateOnStart', Self.VystupSettings.setOutputOnStart);
  if (Self.nullable) then
    ini_tech.WriteInteger(section, 'nullTime', Self.VystupSettings.nullAfterSec);
+end;
+
+procedure TBlkVystup.SaveStatus(ini_stat:TMemIniFile; const section:string);
+begin
+ if (Self.VystupStav.Stit <> '') then
+   ini_stat.WriteString(section, 'stit', Self.VystupStav.Stit);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -237,6 +255,7 @@ begin
  Result := inherited;
 
  bg := clBlack;
+ if (Self.stit <> '') then bg := clTeal;
 
  if (not Self.enabled) then
    fg := clFuchsia
@@ -275,6 +294,48 @@ end;
 function TBlkVystup.IsNullable():boolean;
 begin
  Result := (Self.VystupSettings.nullAfterSec > 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkVystup.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+begin
+ Result := inherited;
+ if (Self.active) then
+   Result := Result + 'AKTIV<,'
+ else
+   Result := Result + 'AKTIV>,';
+ Result := Result + 'STIT,';
+end;
+
+procedure TBlkVystup.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+begin
+ if (not Self.enabled) then Exit();
+
+ if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
+ else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
+ else if (item = 'AKTIV<') then Self.MenuAktivOffClick(SenderPnl, SenderOR);
+end;
+
+procedure TBlkVystup.SetStit(stit:string);
+begin
+ Self.VystupStav.Stit := stit;
+ Self.Change();
+end;
+
+procedure TBlkVystup.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+ ORTCPServer.Stitek(SenderPnl, Self, Self.stit);
+end;
+
+procedure TBlkVystup.MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.Activate();
+end;
+
+procedure TBlkVystup.MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+begin
+ Self.Deactivate();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
