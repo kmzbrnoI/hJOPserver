@@ -579,7 +579,7 @@ begin
       // vypadek RCS modulu, ci nespravny argument -> disable blok
       if (Self.UsekStav.Stav <> disabled) then
        begin
-        Self.UsekStav.Stav    := disabled;
+        Self.UsekStav.Stav := disabled;
         Self.UsekStav.StavOld := Self.UsekStav.Stav;
         JCDb.RusJC(Self);
 
@@ -594,8 +594,15 @@ begin
    end;//case
   end;//for i
 
+ Self.UsekStav.Stav := uvolneno; // must be here to update booster state
+
+ if (Self.UsekStav.StavOld = TUsekStav.disabled) then
+  begin
+   // Wake-up from disabled
+   Self.OnBoosterChange();
+  end;
+
  //get current state
- Self.UsekStav.Stav := uvolneno;
  for usekStav in Self.UsekStav.sekce do
   if (usekStav = TUsekStav.obsazeno) then
     Self.UsekStav.Stav := TUsekStav.obsazeno;
