@@ -461,8 +461,7 @@ begin
 
  if (Self.NavSettings.RCSAddrs.Count > 0) then
   begin
-   if ((RCSi.IsModule(Self.NavSettings.RCSAddrs[0].board)) and
-       (not RCSi.IsModuleFailure(Self.NavSettings.RCSAddrs[0].board))) then
+   if (RCSi.IsNonFailedModule(Self.NavSettings.RCSAddrs[0].board)) then
     begin
      if (Self.NavStav.Navest = _NAV_DISABLED) then
       begin

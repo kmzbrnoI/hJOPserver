@@ -134,8 +134,7 @@ end;
 
 procedure TBlkRozp.Enable();
 begin
- if ((RCSi.IsModule(Self.RozpSettings.RCSAddrs[0].board)) and
-     (not RCSi.IsModuleFailure(Self.RozpSettings.RCSAddrs[0].board))) then
+ if (RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board)) then
  begin
   Self.RozpStav.rcsFailed := false;
   Self.status := TRozpStatus.not_selected;
@@ -160,8 +159,7 @@ end;
 
 procedure TBlkRozp.Update();
 begin
- if ((Self.status <> TRozpStatus.disabled) and ((RCSi.IsModuleFailure(Self.RozpSettings.RCSAddrs[0].board)) or
-                                                (not RCSi.IsModule(Self.RozpSettings.RCSAddrs[0].board)))) then
+ if ((Self.status <> TRozpStatus.disabled) and (not RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board))) then
   begin
    Self.status := TRozpStatus.disabled;
    Self.RozpStav.rcsFailed := true;
@@ -169,8 +167,7 @@ begin
 
  case (Self.status) of
    TRozpStatus.disabled : begin
-      if ((Self.RozpStav.rcsFailed) and (RCSi.IsModule(Self.RozpSettings.RCSAddrs[0].board)) and
-          (not RCSi.IsModuleFailure(Self.RozpSettings.RCSAddrs[0].board))) then
+      if ((Self.RozpStav.rcsFailed) and (RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board))) then
        begin
         Self.RozpStav.rcsFailed := false;
         Self.status := TRozpStatus.not_selected;

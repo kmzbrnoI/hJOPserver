@@ -181,7 +181,7 @@ var j, cnt:integer;
   try
     if (RCSi.Opened) then
      begin
-      if (RCSi.IsModule(addr) and (not RCSi.IsModuleFailure(addr))) then
+      if (RCSi.IsNonFailedModule(addr)) then
        begin
         if (RCSi.Started) then
          begin

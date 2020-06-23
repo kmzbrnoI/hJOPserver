@@ -102,7 +102,7 @@ var blk: TBlk;
   if ((blk = nil) or (blk.typ <> _BLK_AC)) then Exit();
   AC := TBlkAC(blk);
 
-  if ((not RCSi.IsModule(Self.config.RCSAdr)) or (RCSi.IsModuleFailure(Self.config.RCSAdr))) then Exit();
+  if (not RCSi.IsNonFailedModule(Self.config.RCSAdr)) then Exit();
 
   // inputs
 

@@ -349,7 +349,7 @@ begin
  available := true;
  try
    for module in Self.PrjStav.rcsModules do
-     available := available and (RCSi.IsModule(module) and (not RCSi.IsModuleFailure(module)));
+     available := available and RCSi.IsNonFailedModule(module);
  except
    available := false;
  end;
