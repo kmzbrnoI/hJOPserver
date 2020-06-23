@@ -10,19 +10,27 @@ unit TBlokIO;
 interface
 
 uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
-     Graphics, JsonDataObjects;
+     Graphics, JsonDataObjects, RCSErrors, RCS;
 
 type
 
  TBlkIOsettings = record
-  RCSAddrs: TRCSAddrs;
-  setOutputOnStart: boolean;
+  isRCSinput: Boolean;
+  RCSinputNeeded: Boolean;
+  RCSinput: TRCSAddr;
+
+  isRCSOutput: Boolean;
+  RCSoutputNeeded: Boolean;
+  RCSoutput: TRCSAddr;
+
+  setOutputOnStart: Boolean;
   nullAfterSec: Integer;
  end;
 
  TBlkIOstate = record
-  enabled: boolean;
-  active: boolean;
+  enabled: Boolean;
+  activeOutput: Boolean;
+  inputState: TRCSInputState;
   nullTime: TTime;
   stit: string;
  end;
@@ -31,7 +39,8 @@ type
   const
    _def_IO_stav:TBlkIOstate = (
      enabled: false;
-     active: false;
+     activeOutput: false;
+     inputState: TRCSInputState.isOff;
      nullTime: 0;
    );
 
@@ -39,14 +48,15 @@ type
    IOsettings: TBlkIOsettings;
    IOstate: TBlkIOstate;
 
-    function GetRCSUsed():boolean;
-    function IsNullable():boolean;
+    function IsNullable(): Boolean;
+    function IsActiveInput(): Boolean;
 
-    procedure SetStit(stit:string);
+    procedure SetStit(stit: string);
 
     procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuInClick(SenderPnl:TIdContext; SenderOR:TObject; target: Boolean);
 
   public
     constructor Create(index:Integer);
@@ -78,11 +88,16 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: boolean); override;
     procedure GetPtState(json: TJsonObject); override;
+    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
-    property enabled: boolean read IOstate.enabled;
-    property rcsUsed: boolean read GetRCSUsed;
-    property active: boolean read IOstate.active;
-    property nullable: boolean read IsNullable;
+    property isRCSoutput: Boolean read IOsettings.isRCSoutput;
+    property isRCSinput: Boolean read IOsettings.isRCSinput;
+    property RCSoutputNeeded: Boolean read IOsettings.RCSoutputNeeded;
+    property RCSinputNeeded: Boolean read IOsettings.RCSinputNeeded;
+    property enabled: Boolean read IOstate.enabled;
+    property activeOutput: Boolean read IOstate.activeOutput;
+    property activeInput: Boolean read IsActiveInput;
+    property nullable: Boolean read IsNullable;
     property stit:string read IOstate.stit write SetStit;
 
  end;//class TBlkIO
@@ -103,20 +118,70 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIO.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
+var strs: TStrings;
+    str: string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
- Self.IOsettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
+
+ Self.IOsettings.isRCSoutput := false;
+ Self.IOsettings.isRCSinput := false;
+
+ strs := TStringList.Create();
+ try
+   ini_tech.ReadSection(section, strs);
+   for str in strs do
+    begin
+     if (str = 'RCSb0') then
+      begin
+       Self.IOsettings.isRCSoutput := true;
+       Self.IOsettings.RCSoutput := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSb0', 0),
+                                                 ini_tech.ReadInteger(section, 'RCSp0', 0));
+       Self.IOsettings.RCSoutputNeeded := ini_tech.ReadBool(section, 'RCSn0', true);
+      end else if (str = 'RCSbi') then begin
+       Self.IOsettings.isRCSinput := true;
+       Self.IOsettings.RCSinput := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSbi', 0),
+                                                ini_tech.ReadInteger(section, 'RCSpi', 0));
+       Self.IOsettings.RCSinputNeeded := ini_tech.ReadBool(section, 'RCSni', true);
+      end;
+    end;
+ finally
+   strs.Free();
+ end;
+
  Self.LoadORs(ini_rel, 'POM').Free();
  Self.IOsettings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
  Self.IOsettings.nullAfterSec := ini_tech.ReadInteger(section, 'nullTime', 0);
- Self.IOstate.Stit := ini_stat.ReadString(section, 'stit', '');
- PushRCStoOR(Self.ORsRef, Self.IOsettings.RCSAddrs);
+ Self.IOstate.stit := ini_stat.ReadString(section, 'stit', '');
+
+ if (Self.isRCSinput) then
+  begin
+   PushRCStoOR(Self.ORsRef, Self.IOsettings.RCSinput);
+   RCSi.SetNeeded(Self.IOsettings.RCSinput.board);
+  end;
+ if (Self.isRCSoutput) then
+  begin
+   PushRCStoOR(Self.ORsRef, Self.IOsettings.RCSoutput);
+   RCSi.SetNeeded(Self.IOsettings.RCSoutput.board);
+  end;
 end;
 
 procedure TBlkIO.SaveData(ini_tech:TMemIniFile; const section:string);
 begin
  inherited SaveData(ini_tech, section);
- Self.SaveRCS(ini_tech,section, Self.IOsettings.RCSAddrs);
+
+ if (Self.isRCSoutput) then
+  begin
+   ini_tech.WriteInteger(section, 'RCSb0', Self.IOsettings.RCSoutput.board);
+   ini_tech.WriteInteger(section, 'RCSp0', Self.IOsettings.RCSoutput.port);
+   ini_tech.WriteBool(section, 'RCSn0', Self.IOsettings.RCSoutputNeeded);
+  end;
+ if (Self.isRCSinput) then
+  begin
+   ini_tech.WriteInteger(section, 'RCSbi', Self.IOsettings.RCSinput.board);
+   ini_tech.WriteInteger(section, 'RCSpi', Self.IOsettings.RCSinput.port);
+   ini_tech.WriteBool(section, 'RCSni', Self.IOsettings.RCSinputNeeded);
+  end;
+
  ini_tech.WriteBool(section, 'activateOnStart', Self.IOsettings.setOutputOnStart);
  if (Self.nullable) then
    ini_tech.WriteInteger(section, 'nullTime', Self.IOsettings.nullAfterSec);
@@ -132,6 +197,14 @@ end;
 
 procedure TBlkIO.Enable();
 begin
+ if ((Self.isRCSoutput) and (Self.RCSoutputNeeded) and (not RCSi.IsNonFailedModule(Self.IOsettings.RCSoutput.board))) then
+   Exit();
+ if ((Self.isRCSinput) and (Self.RCSinputNeeded) and (not RCSi.IsNonFailedModule(Self.IOsettings.RCSinput.board))) then
+   Exit();
+
+ if (Self.isRCSinput) then
+   Self.IOstate.inputState := TRCSInputState.notYetScanned;
+
  Self.IOstate.enabled := true;
  if (Self.IOsettings.setOutputOnStart) then
    Self.Activate();
@@ -140,12 +213,14 @@ end;
 procedure TBlkIO.Disable();
 begin
  Self.IOstate.enabled := false;
- Self.IOstate.active := false;
+ Self.IOstate.activeOutput := false;
+ Self.IOstate.inputState := TRCSInputState.isOff;
 end;
 
 function TBlkIO.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
- Result := ((portType = TRCSIOType.output) and (Self.IOsettings.RCSAddrs.Contains(addr)));
+ Result := (((Self.isRCSoutput) and (portType = TRCSIOType.output) and (Self.IOsettings.RCSoutput = addr)) or
+            ((Self.isRCSinput) and (portType = TRCSIOType.input) and (Self.IOsettings.RCSinput = addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -157,42 +232,63 @@ end;
 
 procedure TBlkIO.SetSettings(data:TBlkIOsettings);
 begin
- if (Self.IOsettings.RCSAddrs <> data.RCSAddrs) then
-   Self.IOsettings.RCSAddrs.Free();
-
  Self.IOsettings := data;
  Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.GetRCSUsed():boolean;
-begin
- Result := (Self.IOsettings.RCSAddrs.Count > 0);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
 procedure TBlkIO.Update();
+var inputState: TRCSInputState;
 begin
  inherited;
 
- if ((Self.enabled) and (Self.nullable) and (Self.active) and (Now > Self.IOstate.nullTime)) then
+ if ((not Self.enabled) and
+     (((not Self.isRCSoutput) or (RCSi.IsNonFailedModule(Self.IOsettings.RCSoutput.board))) or
+      ((not Self.isRCSinput) or (RCSi.IsNonFailedModule(Self.IOsettings.RCSinput.board))))) then
+  begin
+   Self.Enable();
+   Self.Change();
+  end;
+ if ((Self.enabled) and
+     (((Self.isRCSoutput) and (Self.IOsettings.RCSoutputNeeded) and (not RCSi.IsNonFailedModule(Self.IOsettings.RCSoutput.board))) or
+      ((Self.isRCSinput) and (Self.IOsettings.RCSinputNeeded) and (not RCSi.IsNonFailedModule(Self.IOsettings.RCSinput.board))))) then
+  begin
+   Self.Disable();
+   Self.Change(true);
+  end;
+
+ if ((Self.enabled) and (Self.isRCSinput)) then
+  begin
+   try
+     inputState := RCSi.GetInput(Self.IOsettings.RCSinput);
+   except
+     on E: RCSException do
+       inputState := TRCSInputState.failure;
+   end;
+
+   if (inputState <> Self.IOstate.inputState) then
+    begin
+     Self.IOstate.inputState := inputState;
+     Self.Change();
+    end;
+  end;
+
+ if ((Self.enabled) and (Self.nullable) and (Self.activeOutput) and (Now > Self.IOstate.nullTime)) then
    Self.Deactivate();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIO.Activate();
-var RCSaddr:TRCSAddr;
 begin
- if (Self.active) then Exit();
- Self.IOstate.active := true;
+ if (Self.activeOutput) then Exit();
+ Self.IOstate.activeOutput := true;
 
- for RCSaddr in Self.IOsettings.RCSAddrs do
+ if (Self.isRCSoutput) then
   begin
    try
-     RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 1);
+     RCSi.SetOutput(Self.IOsettings.RCSoutput, 1);
    except
 
    end;
@@ -206,15 +302,14 @@ begin
 end;
 
 procedure TBlkIO.Deactivate();
-var RCSaddr:TRCSAddr;
 begin
- if (not Self.active) then Exit();
- Self.IOstate.active := false;
+ if (not Self.activeOutput) then Exit();
+ Self.IOstate.activeOutput := false;
 
- for RCSaddr in Self.IOsettings.RCSAddrs do
+ if (Self.isRCSoutput) then
   begin
    try
-     RCSi.SetOutput(RCSaddr.board, RCSaddr.port, 0);
+     RCSi.SetOutput(Self.IOsettings.RCSoutput, 0);
    except
 
    end;
@@ -259,9 +354,16 @@ begin
 
  if (not Self.enabled) then
    fg := clFuchsia
- else if (Self.active) then
+ else if (Self.activeOutput) then
    fg := clYellow
- else
+ else if (Self.isRCSinput) then begin
+   case (Self.IOstate.inputState) of
+     TRCSInputState.isOff: fg := $A0A0A0;
+     TRCSInputState.isOn: fg := clLime;
+   else
+     fg := clFuchsia;
+   end;
+ end else
    fg := $A0A0A0;
 
  Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
@@ -274,7 +376,11 @@ procedure TBlkIO.GetPtData(json: TJsonObject; includeState: boolean);
 begin
  inherited;
 
- TBlk.RCSstoJSON(Self.IOsettings.RCSAddrs, json.A['rcs']);
+ if (Self.isRCSoutput) then
+   TBlk.RCStoJSON(Self.IOsettings.RCSoutput, json['rcs']['output']);
+ if (Self.isRCSinput) then
+   TBlk.RCStoJSON(Self.IOsettings.RCSinput, json['rcs']['input']);
+
  json['setOutputOnStart'] := Self.IOsettings.setOutputOnStart;
  if (includeState) then
    Self.GetPtState(json['blokStav']);
@@ -286,7 +392,35 @@ end;
 procedure TBlkIO.GetPtState(json: TJsonObject);
 begin
  json['enabled'] := Self.IOstate.enabled;
- json['active'] := Self.IOstate.active;
+ json['activeOutput'] := Self.activeOutput;
+ json['activeInput'] := Self.activeInput;
+end;
+
+procedure TBlkIO.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+begin
+ if (not Self.enabled) then Exit();
+
+ if (reqJson.Contains('activeOutput')) then
+  begin
+   if ((reqJson.B['activeOutput']) and (not Self.activeOutput)) then
+     Self.Activate()
+   else if ((not reqJson.B['activeOutput']) and (Self.activeOutput)) then
+     Self.Deactivate();
+  end;
+
+ if (reqJson.Contains('activeInput') and (not Self.isRCSinput)) then
+  begin
+   if ((reqJson.B['activeInput']) and (not Self.activeInput)) then
+    begin
+     Self.IOstate.inputState := TRCSInputState.isOn;
+     Self.Change();
+    end else if ((not reqJson.B['activeInput']) and (Self.activeInput)) then begin
+     Self.IOstate.inputState := TRCSInputState.isOff;
+     Self.Change();
+    end;
+  end;
+
+ inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,16 +430,29 @@ begin
  Result := (Self.IOsettings.nullAfterSec > 0);
 end;
 
+function TBlkIO.IsActiveInput(): Boolean;
+begin
+ Result := (Self.IOstate.inputState = TRCSInputState.isOn);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkIO.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
  Result := inherited;
- if (Self.active) then
+ if (Self.activeOutput) then
    Result := Result + 'AKTIV<,'
  else
    Result := Result + 'AKTIV>,';
  Result := Result + 'STIT,';
+
+ if ((RCSi.simulation) and (Self.isRCSinput)) then
+  begin
+   if (Self.IsActiveInput) then
+     Result := Result + '-,*IN<,'
+   else
+     Result := Result + '-,*IN>,'
+  end;
 end;
 
 procedure TBlkIO.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
@@ -314,7 +461,9 @@ begin
 
  if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
- else if (item = 'AKTIV<') then Self.MenuAktivOffClick(SenderPnl, SenderOR);
+ else if (item = 'AKTIV<') then Self.MenuAktivOffClick(SenderPnl, SenderOR)
+ else if (item = 'IN<') then Self.MenuInClick(SenderPnl, SenderOR, false)
+ else if (item = 'IN>') then Self.MenuInClick(SenderPnl, SenderOR, true);
 end;
 
 procedure TBlkIO.SetStit(stit:string);
@@ -336,6 +485,15 @@ end;
 procedure TBlkIO.MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.Deactivate();
+end;
+
+procedure TBlkIO.MenuInClick(SenderPnl:TIdContext; SenderOR:TObject; target: Boolean);
+begin
+ try
+   RCSi.SetInput(Self.IOsettings.RCSinput, PrevodySoustav.BoolToInt(target));
+ except
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

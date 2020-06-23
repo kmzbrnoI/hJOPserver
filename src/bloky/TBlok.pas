@@ -71,7 +71,8 @@ type
    class function LoadRCS(ini:TMemIniFile;section:string):TRCSAddrs;
    class procedure SaveRCS(ini:TMemIniFile;section:string;data:TRCSAddrs);
 
-   class procedure PushRCSToOR(ORs:TList<TOR>; RCSs:TRCSAddrs);
+   class procedure PushRCSToOR(ORs: TList<TOR>; RCSs: TRCSAddrs); overload;
+   class procedure PushRCSToOR(ORs: TList<TOR>; RCS: TRCSAddr); overload;
 
    procedure CallChangeEvents(var events:TChangeEvents);
    function LoadORs(ini: TMemIniFile; section: string): TStrings; // user must free result!
@@ -283,13 +284,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.PushRCSToOR(ORs:TList<TOR>; RCSs:TRCSAddrs);
+class procedure TBlk.PushRCSToOR(ORs: TList<TOR>; RCSs: TRCSAddrs);
 var oblr:TOR;
     rcsAddr:TRCSAddr;
 begin
  for oblr in ORs do
    for rcsAddr in RCSs do
      oblr.RCSAdd(rcsAddr.board);
+end;
+
+class procedure TBlk.PushRCSToOR(ORs: TList<TOR>; RCS: TRCSAddr);
+var oblr:TOR;
+begin
+ for oblr in ORs do
+   oblr.RCSAdd(RCS.board);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

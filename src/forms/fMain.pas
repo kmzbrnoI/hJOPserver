@@ -2978,7 +2978,7 @@ var Blk:TBlk;
   _BLK_IO:begin
     if (TBlkIO(Blk).enabled) then
      begin
-      if (TBlkIO(Blk).active) then
+      if ((TBlkIO(Blk).activeOutput) or (TBlkIO(Blk).activeInput)) then
         LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
       else if (TBlkAC(Blk).clientConnected) then
         LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE
