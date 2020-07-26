@@ -37,7 +37,9 @@ TTCPRegulator = class
 
     procedure LokToRegulator(Regulator:TIDContext; HV:THV);
     procedure RegDisconnect(reg:TIdContext; contextDestroyed: boolean = false);
-    procedure RemoveLok(Regulator:TIDContext; HV:THV; info:string);
+    procedure RemoveLok(Regulator:TIdContext; HV:THV; info:string);
+
+    procedure SendExpectedSpeed(reg: TIdContext; HV: THV);
 
 end;
 
@@ -384,7 +386,10 @@ begin
   end
 
  else if (parsed[3] = 'TOTAL') then
-   HV.ruc := (parsed[4] = '1');
+   HV.ruc := (parsed[4] = '1')
+
+ else if (parsed[3] = 'EXPECTED-SPEED') then
+   Self.SendExpectedSpeed(Sender, HV);
 
 end;
 
@@ -405,7 +410,7 @@ begin
      str := 'ano';
 
    F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := str;
-   ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;ok;'+comment)
+   ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;ok;'+comment);
   end else begin
    (conn.Data as TTCPORsRef).regulator_user := nil;
    F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := '';
@@ -583,22 +588,24 @@ begin
 
   // pridani loko do seznamu autorizovanych loko klientem
 
-  pom := false;
-  for tmpHV in TTCPORsRef(Regulator.Data).regulator_loks do
-   begin
-    if (tmpHV = HV) then
-     begin
-      pom := true;
-      break;
-     end;
-   end;
+ pom := false;
+ for tmpHV in TTCPORsRef(Regulator.Data).regulator_loks do
+  begin
+   if (tmpHV = HV) then
+    begin
+     pom := true;
+     break;
+    end;
+  end;
 
-  if (not pom) then
-   begin
-    // pridani nove loko do seznamu
-    TTCPORsRef(Regulator.Data).regulator_loks.Add(HV);
-    ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
-   end;
+ if (not pom) then
+  begin
+   // pridani nove loko do seznamu
+   TTCPORsRef(Regulator.Data).regulator_loks.Add(HV);
+   ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
+  end;
+
+ Self.SendExpectedSpeed(Regulator, HV);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -627,6 +634,13 @@ begin
  TTCPORsRef(Regulator.Data).regulator_loks.Remove(HV);
  ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;release;'+info);
  ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTCPRegulator.SendExpectedSpeed(reg: TIdContext; HV: THV);
+begin
+ ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.adresa)+';EXPECTED-SPEED;'+HV.ExpectedSpeedStr());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

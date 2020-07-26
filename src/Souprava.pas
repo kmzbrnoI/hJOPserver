@@ -607,6 +607,8 @@ begin
 
  for addr in Self.HVs do
   begin
+   HVDb[addr].OnExpectedSpeedChange();
+
    if (HVDb[addr].ruc) then
     begin
      writelog('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', WR_MESSAGE);

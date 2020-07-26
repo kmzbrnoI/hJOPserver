@@ -166,6 +166,9 @@ type
      procedure TrakcePOMOK(Sender:TObject; data:Pointer);
      procedure TrakcePOMErr(Sender:TObject; data:Pointer);
 
+     procedure BroadcastRegulators(msg: string);
+     procedure SendExpectedSpeed();
+
    public
     index: Word; // index v seznamu vsech hnacich vozidel
     data: THVData;
@@ -228,6 +231,10 @@ type
      procedure StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
 
      procedure SetPom(pom:TPomStatus; ok: TCb; err: TCb);
+
+     function IsSouprava(): Boolean;
+     procedure OnExpectedSpeedChange();
+     function ExpectedSpeedStr(): string;
 
      class function CharToHVFuncType(c:char):THVFuncType;
      class function HVFuncTypeToChar(t:THVFuncType):char;
@@ -1115,6 +1122,7 @@ begin
    Self.RecordUseNow();
   end;
 
+ Self.OnExpectedSpeedChange();
  Self.changed := true;
 end;
 
@@ -1542,8 +1550,7 @@ begin
 end;
 
 procedure THV.TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
-var reg:THVRegulator;
-    state:string;
+var state:string;
 begin
  // Everything done
  TrakceI.Log(llCommands, 'Loco Fully Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
@@ -1563,8 +1570,8 @@ begin
    state := 'total'
  else
    state := 'ok';
- for reg in Self.Stav.regulators do
-   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.adresa)+';AUTH;'+state+';{'+Self.GetPanelLokString()+'}');
+
+ Self.BroadcastRegulators('AUTH;'+state+';{'+Self.GetPanelLokString()+'}');
 
  if (Assigned(Self.acquiredOk.callback)) then
    Self.acquiredOk.callback(Self, Self.acquiredOk.data);
@@ -1761,6 +1768,41 @@ begin
    Self.stav.traveled_backward := Self.stav.traveled_backward + (Self.realSpeed * period / (3.6 * GlobalConfig.scale));
 
  Self.changed := true;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THV.IsSouprava(): Boolean;
+begin
+ Result := (Self.souprava > -1);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.OnExpectedSpeedChange();
+begin
+ if (Self.stav.regulators.Count > 0) then
+   Self.SendExpectedSpeed();
+end;
+
+function THV.ExpectedSpeedStr(): string;
+begin
+ if (Self.IsSouprava()) then
+   Result := IntToStr(Soupravy[Self.souprava].speed)
+ else
+   Result :=  '-';
+end;
+
+procedure THV.SendExpectedSpeed();
+begin
+ Self.BroadcastRegulators('EXPECTED-SPEED;'+Self.ExpectedSpeedStr());
+end;
+
+procedure THV.BroadcastRegulators(msg: string);
+var reg: THVRegulator;
+begin
+ for reg in Self.stav.regulators do
+   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.adresa)+';'+msg);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
