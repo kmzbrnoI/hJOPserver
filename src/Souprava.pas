@@ -405,6 +405,9 @@ begin
      Self.data.direction := THVStanoviste.lichy
    else
      Self.data.direction := THVStanoviste.sudy;
+
+   for addr in Self.HVs do
+     HVDb[addr].OnPredictedSignalChange();
   end;
 
  hvs := TStringList.Create();
