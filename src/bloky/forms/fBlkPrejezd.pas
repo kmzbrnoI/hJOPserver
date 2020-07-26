@@ -153,14 +153,14 @@ var glob:TBlkSettings;
    end;
 
   glob.name := Self.E_Prj_Nazev.Text;
-  glob.typ := _BLK_PREJEZD;
-  glob.id  := Self.SE_ID.Value;
+  glob.typ := btPrejezd;
+  glob.id := Self.SE_ID.Value;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_PREJEZD, glob) as TBlkPrejezd;
+      Blk := Blky.Add(btPrejezd, glob) as TBlkPrejezd;
     except
       on E:Exception do
        begin

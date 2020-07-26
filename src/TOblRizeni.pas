@@ -802,7 +802,7 @@ begin
  // zjisteni jmen bloku:
  for blk in Blky do
   begin
-   if (Blk.typ <> _BLK_USEK) then continue;
+   if (Blk.typ <> btUsek) then continue;
    if (not (Blk as TBlkUsek).NUZ) then continue;
 
    for oblr in (Blk as TBlkUsek).OblsRizeni do
@@ -1070,7 +1070,7 @@ begin
  // ruseni pripadnych jiznich cest:
  for blk in Blky do
   begin
-   if (Blk.typ <> _BLK_USEK) then continue;
+   if (Blk.typ <> btUsek) then continue;
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;
 
@@ -1784,7 +1784,7 @@ begin
   begin
    try
      Blky.GetBlkByID(StrToInt(str[3]), Blk);
-     if ((Blk = nil) or ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU))) then
+     if ((Blk = nil) or ((Blk.typ <> btUsek) and (Blk.typ <> btTU))) then
       begin
        ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatný blok');
        Exit();
@@ -2058,7 +2058,7 @@ var blk:TBlk;
 begin
  for blk in Blky do
   begin
-   if (Blk.typ <> _BLK_USEK) then continue;
+   if (Blk.typ <> btUsek) then continue;
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;
    for oblr in usek.OblsRizeni do

@@ -231,7 +231,7 @@ constructor TBlkTU.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_TU;
+ Self.GlobalSettings.typ := btTU;
  Self.fTUStav := _def_tu_stav;
 
  Self.fTrat := nil;
@@ -475,11 +475,11 @@ begin
 
  // Aktiaovovat navestidla rucne, aby se rovnou nastavily navesti v trati
  Blky.GetBlkByID(Self.TUSettings.navLid, TBlk(Blk));
- if ((blk <> nil) and (blk.typ = _BLK_NAV)) then
+ if ((blk <> nil) and (blk.typ = btNav)) then
    blk.Enable();
 
  Blky.GetBlkByID(Self.TUSettings.navSid, TBlk(Blk));
- if ((blk <> nil) and (blk.typ = _BLK_NAV)) then
+ if ((blk <> nil) and (blk.typ = btNav)) then
    blk.Enable();
 
  Self.UpdateNavest();
@@ -1134,7 +1134,7 @@ procedure TBlkTU.CreateNavRefs();
 var Blk:TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_NAV) and (Self.lTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = btNav) and (Self.lTU <> nil)) then
   begin
    TBlkNav(Blk).UsekID := Self.lTU.id;
    TBlkNav(Blk).Smer := THVStanoviste.lichy;
@@ -1142,7 +1142,7 @@ begin
   end;
 
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_NAV) and (Self.sTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = btNav) and (Self.sTU <> nil)) then
   begin
    TBlkNav(Blk).UsekID := Self.sTU.id;
    TBlkNav(Blk).Smer := THVStanoviste.sudy;
@@ -1165,9 +1165,9 @@ begin
  Self.InTrat      := -1;
 
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_NAV)) then TBlkNav(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = btNav)) then TBlkNav(Blk).UsekID := -1;
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.typ = _BLK_NAV)) then TBlkNav(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = btNav)) then TBlkNav(Blk).UsekID := -1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

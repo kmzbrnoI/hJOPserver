@@ -160,8 +160,8 @@ procedure TF_BlkTU.NewBlkOpenForm();
   Self.CHB_Zastavka_Sudy.Checked := false;
   Self.CHB_Zastavka_LichyClick(Self);
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, _BLK_NAV, -1);
-  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, _BLK_NAV, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btNav, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btNav, -1);
   Self.CB_NavLindex := -1;
   Self.CB_NavSindex := -1;
 
@@ -297,8 +297,8 @@ var glob:TBlkSettings;
   Self.CHB_Zastavka_Sudy.Checked  := TUsettings.Zastavka.ev_sudy.enabled;
   Self.CHB_Zastavka_LichyClick(Self);
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, _BLK_NAV, TUsettings.navLid);
-  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, _BLK_NAV, TUsettings.navSid);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btNav, TUsettings.navLid);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btNav, TUsettings.navSid);
   Self.CB_NavLindex := Self.CB_NavL.ItemIndex;
   Self.CB_NavSindex := Self.CB_NavS.ItemIndex;
 
@@ -465,13 +465,13 @@ var glob:TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := _BLK_TU;
+  glob.typ := btTU;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_TU, glob) as TBlkTU;
+      Blk := Blky.Add(btTU, glob) as TBlkTU;
     except
       on E:Exception do
        begin

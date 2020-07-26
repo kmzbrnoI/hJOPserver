@@ -118,7 +118,7 @@ constructor TBlkAC.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_AC;
+ Self.GlobalSettings.typ := btAC;
  Self.m_state := _def_ac_state;
  Self.m_state.lines := TStringList.Create();
  Self.m_state.panelsShowingState := TList<TIdContext>.Create();

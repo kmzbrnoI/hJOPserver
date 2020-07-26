@@ -247,13 +247,13 @@ var glob: TBlkSettings;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
-  glob.typ := _BLK_IO;
+  glob.typ := btIO;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_IO, glob) as TBlkIO;
+      Blk := Blky.Add(btIO, glob) as TBlkIO;
     except
       on E:Exception do
        begin

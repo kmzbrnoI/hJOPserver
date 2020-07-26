@@ -52,7 +52,7 @@ type
     procedure SaveToFile(const tech_filename:string);
     procedure SaveStatToFile(const stat_filename:string);
 
-    function Add(typ:Integer; glob:TBlkSettings):TBlk;
+    function Add(typ: TBlkType; glob:TBlkSettings):TBlk;
     procedure Delete(index:Integer);
 
     function GetBlkByIndex(index:integer; var Blk:TBlk):Integer;
@@ -89,7 +89,7 @@ type
 
     procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
 
-    procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
+    procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp: TBlkType; BlokID:Integer = -1; BlokTyp2:TBlkType = btAny);
 
     procedure RemoveSpr(spr: TSouprava);
     procedure SprPrediction(Nav:TBlk);
@@ -115,7 +115,7 @@ type
     class function SEPortMaxValue(addr: Integer; currentValue: Integer):Integer;
 
     // vrati vsechny bloky do JSON objektu PTserveru
-    procedure GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ:Integer = -1);
+    procedure GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ: TBlkType = btAny);
 
     procedure NouzZaverZrusen(Sender:TBlk);
     procedure ZakladniPolohaVyhybek();
@@ -180,16 +180,16 @@ var blkset:TBlkSettings;
     blk: TBlk;
     oblr:TOR;
 begin
- if ((Sender as TBlk).typ = _BLK_USEK) then
+ if ((Sender as TBlk).typ = btUsek) then
   begin
    // pri jakekoliv zmene useku dojde k Change() na vyhybce
    // navaznost: usek -> vyhybka
    blkset := (Sender as TBlk).GetGlobalSettings();
    for blk in Self.Data do
-     if (blk.typ = _BLK_VYH) then
+     if (blk.typ = btVyhybka) then
        if ((blk as TBlkVyhybka).UsekID = blkset.id) then
          blk.Change();
-  end;//_BLK_USEK
+  end;//btUsek
 
  //zavolame OnChange vsech OR daneho bloku
  obl_rizeni := (Sender as TBlk).OblsRizeni;
@@ -211,6 +211,7 @@ var ini_tech,ini_rel,ini_stat:TMemIniFile;
     Blk:TBlk;
     str:TStrings;
     section:string;
+    typei: Integer;
 begin
  writelog('Načítám bloky: '+tech_filename+ '; '+rel_filename, WR_DATA);
  Self.ffile    := tech_filename;
@@ -242,22 +243,24 @@ begin
          continue;
         end;
 
-       case (ini_tech.ReadInteger(section, 'typ', -1)) of
-        _BLK_VYH      : Blk := TBlkVyhybka.Create(-1);
-        _BLK_USEK     : Blk := TBlkUsek.Create(-1);
-        _BLK_IR       : Blk := TBlkIR.Create(-1);
-        _BLK_NAV      : Blk := TBlkNav.Create(-1);
-        _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(-1);
-        _BLK_TRAT     : Blk := TBlkTrat.Create(-1);
-        _BLK_UVAZKA   : Blk := TBlkUvazka.Create(-1);
-        _BLK_ZAMEK    : Blk := TBlkZamek.Create(-1);
-        _BLK_ROZP     : Blk := TBlkRozp.Create(-1);
-        _BLK_TU       : Blk := TBlkTU.Create(-1);
-        _BLK_IO       : Blk := TBlkIO.Create(-1);
-        _BLK_SH       : Blk := TBlkSH.Create(-1);
-        _BLK_AC       : Blk := TBlkAC.Create(-1);
+       typei := ini_tech.ReadInteger(section, 'typ', -1);
 
-       else//case
+       case (typei) of
+         Integer(btVyhybka)   : Blk := TBlkVyhybka.Create(-1);
+         Integer(btUsek)      : Blk := TBlkUsek.Create(-1);
+         Integer(btIR)        : Blk := TBlkIR.Create(-1);
+         Integer(btNav)       : Blk := TBlkNav.Create(-1);
+         Integer(btPrejezd)   : Blk := TBlkPrejezd.Create(-1);
+         Integer(btTrat)      : Blk := TBlkTrat.Create(-1);
+         Integer(btUvazka)    : Blk := TBlkUvazka.Create(-1);
+         Integer(btZamek)     : Blk := TBlkZamek.Create(-1);
+         Integer(btRozp)      : Blk := TBlkRozp.Create(-1);
+         Integer(btTU)        : Blk := TBlkTU.Create(-1);
+         Integer(btIO)        : Blk := TBlkIO.Create(-1);
+         Integer(btSH)        : Blk := TBlkSH.Create(-1);
+         Integer(btAC)        : Blk := TBlkAC.Create(-1);
+       else
+         writelog('Nenacitam blok ' + section + ' - neznamy typ', WR_ERROR);
          continue;
        end;
 
@@ -354,7 +357,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //add 1 block
-function TBlky.Add(typ:Integer; glob:TBlkSettings):TBlk;
+function TBlky.Add(typ: TBlkType; glob:TBlkSettings):TBlk;
 var Blk:TBlk;
     i, index:Integer;
 begin
@@ -365,19 +368,19 @@ begin
  index := Self.FindPlaceForNewBlk(glob.id);
 
  case (typ) of
-  _BLK_VYH      : Blk := TBlkVyhybka.Create(index);
-  _BLK_USEK     : Blk := TBlkUsek.Create(index);
-  _BLK_IR       : Blk := TBlkIR.Create(index);
-  _BLK_NAV      : Blk := TBlkNav.Create(index);
-  _BLK_PREJEZD  : Blk := TBlkPrejezd.Create(index);
-  _BLK_TRAT     : Blk := TBlkTrat.Create(index);
-  _BLK_UVAZKA   : Blk := TBlkUvazka.Create(index);
-  _BLK_ZAMEK    : Blk := TBlkZamek.Create(index);
-  _BLK_ROZP     : Blk := TBlkRozp.Create(index);
-  _BLK_TU       : Blk := TBlkTU.Create(index);
-  _BLK_IO       : Blk := TBlkIO.Create(index);
-  _BLK_SH       : Blk := TBlkSH.Create(index);
-  _BLK_AC       : Blk := TBlkAC.Create(index);
+  btVyhybka  : Blk := TBlkVyhybka.Create(index);
+  btUsek     : Blk := TBlkUsek.Create(index);
+  btIR       : Blk := TBlkIR.Create(index);
+  btNav      : Blk := TBlkNav.Create(index);
+  btPrejezd  : Blk := TBlkPrejezd.Create(index);
+  bttrat     : Blk := TBlkTrat.Create(index);
+  btUvazka   : Blk := TBlkUvazka.Create(index);
+  btZamek    : Blk := TBlkZamek.Create(index);
+  btRozp     : Blk := TBlkRozp.Create(index);
+  btTU       : Blk := TBlkTU.Create(index);
+  btIO       : Blk := TBlkIO.Create(index);
+  btSH       : Blk := TBlkSH.Create(index);
+  btAC       : Blk := TBlkAC.Create(index);
  else//case
   Exit(nil);
  end;
@@ -401,7 +404,7 @@ begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam bloku');
  if (index >= Self.Data.Count) then raise Exception.Create('Index pretekl seznam bloku');
  tmp := Self.data[index];
- if ((tmp.typ = _BLK_TU) and ((tmp as TBlkTU).InTrat > -1)) then
+ if ((tmp.typ = btTU) and ((tmp as TBlkTU).InTrat > -1)) then
    raise Exception.Create('Tento blok je zaveden jako tratovy usek v trati ID '+IntToStr((tmp as TBlkTU).InTrat));
 
  Self.data.Delete(index);
@@ -411,12 +414,12 @@ begin
    Self.data[i].table_index := Self.data[i].table_index - 1;
 
  // pokud mazeme trat, je potreba smazat i uvazky
- if (tmp.typ = _BLK_TRAT) then
+ if (tmp.typ = btTrat) then
   begin
    Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaA));
    Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaB));
   end;
- if (tmp.typ = _BLK_UVAZKA) then
+ if (tmp.typ = btUvazka) then
   begin
    Blky.GetBlkByID((tmp as TBlkUvazka).GetSettings.parent, Blk);
    if (blk <> nil) then
@@ -599,7 +602,7 @@ var j:Integer;
 begin
  for blk in Self.Data do
   begin
-   if (blk.typ <> _BLK_NAV) then continue;
+   if (blk.typ <> btNav) then continue;
 
    orindex := -1;
    for j := 0 to (blk as TBlkNav).OblsRizeni.Count-1 do
@@ -623,7 +626,7 @@ var j:Integer;
 begin
  for blk in Self.Data do
   begin
-   if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then continue;
+   if ((blk.typ <> btUsek) and (blk.typ <> btTU)) then continue;
 
    orindex := -1;
    for j := 0 to (blk as TBlkUsek).OblsRizeni.Count-1 do
@@ -642,7 +645,7 @@ procedure TBlky.OnBoosterChange(booster: string);
 var blk:TBlk;
 begin
  for blk in Self.data do
-   if ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) then
+   if ((blk.typ = btUsek) or (blk.typ = btTU)) then
      if ((booster = '') or (TBlkUsek(blk).GetSettings().Zesil = booster)) then
        TBlkUsek(blk).OnBoosterChange();
 end;
@@ -658,7 +661,7 @@ var spri: Integer;
  begin
   for blk in Self.Data do
    begin
-    if (blk.typ <> _BLK_USEK) then continue;
+    if (blk.typ <> btUsek) then continue;
     usek := (blk as TBlkUsek);
     if (not usek.NUZ) then continue;
 
@@ -687,7 +690,8 @@ var spri: Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp:Integer; BlokID:Integer = -1; BlokTyp2:Integer = -1);
+procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr;
+                                    BlokTyp: TBlkType; BlokID:Integer = -1; BlokTyp2: TBlkType = btAny);
 var bloki,i:Integer;
     Priradit:Boolean;
     Pocet:Integer;
@@ -713,7 +717,7 @@ var bloki,i:Integer;
       Priradit := false;
       Obl_r := Blk.OblsRizeni;
 
-      if ((glob.typ = _BLK_TRAT) or (glob.typ = _BLK_IR)) then
+      if ((glob.typ = btTrat) or (glob.typ = btIR)) then
          priradit := true
       else begin
         for i := 0 to Length(OblRizeniID)-1 do
@@ -769,7 +773,7 @@ var blk: TBlk;
 begin
  for blk in Self.data do
   begin
-   if ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) then
+   if ((blk.typ = btUsek) or (blk.typ = btTU)) then
     begin
      if ((blk as TBlkUsek).IsSouprava(spr)) then
        (blk as TBlkUsek).RemoveSouprava(spr);
@@ -777,7 +781,7 @@ begin
      if ((blk as TBlkUsek).SprPredict = spr) then
        (blk as TBlkUsek).SprPredict := nil;
     end;
-   if (blk.typ = _BLK_TRAT) then (blk as TBlkTrat).RemoveSpr(spr);
+   if (blk.typ = btTrat) then (blk as TBlkTrat).RemoveSpr(spr);
   end;//for
 end;
 
@@ -788,7 +792,7 @@ var blk: TBlk;
 begin
  Result := TList<TObject>.Create();
  for blk in Self.data do
-   if (((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) and
+   if (((blk.typ = btUsek) or (blk.typ = btTU)) and
        ((blk as TBlkUsek).IsSouprava(spr))) then
      Result.Add(blk);
 end;
@@ -821,7 +825,7 @@ begin
     begin
      // kontrola povolujici navesti
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-     if ((nav = nil) or (nav.typ <> _BLK_NAV) or (not TBlkNav(nav).IsPovolovaciNavest())) then
+     if ((nav = nil) or (nav.typ <> btNav) or (not TBlkNav(nav).IsPovolovaciNavest())) then
        spr := nil;
 
      // zjistime posledni usek jizdni cesty
@@ -830,7 +834,7 @@ begin
      if (usek = startUsek) then
        break; // ochrana proti JC na ovalu
 
-     if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).InTrat > -1)) then
+     if ((Usek.typ = btTU) and (TBlkTU(Usek).InTrat > -1)) then
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
        Blky.GetBlkByID(TBlkTU(Usek).InTrat, TBlk(trat));
@@ -894,7 +898,7 @@ begin
  Result := TList<TObject>.Create();
  for blk in Self.data do
   begin
-   if (blk.typ <> _BLK_NAV) then continue;
+   if (blk.typ <> btNav) then continue;
    if ((blk as TBlkNav).Navest <> ncPrivol) then continue;
 
    for moblr in (blk as TBlkNav).OblsRizeni do
@@ -914,7 +918,7 @@ begin
  Result := TBlksList.Create();
  for blk in Self.data do
   begin
-   if ((blk.typ = _BLK_VYH) and
+   if ((blk.typ = btVyhybka) and
       ((blk as TBlkVyhybka).GetSettings().zamek = zamekID)) then
     Result.Add(blk);
   end;
@@ -945,7 +949,7 @@ procedure TBlky.ChangeSprToTrat(spr: TSouprava);
 var blk: TBlk;
 begin
  for blk in Self.data do
-   if ((blk.typ = _BLK_TRAT) and (blk as TBlkTrat).IsSpr(spr, true)) then
+   if ((blk.typ = btTrat) and (blk as TBlkTrat).IsSpr(spr, true)) then
      blk.Change();
 end;
 
@@ -996,14 +1000,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ:Integer = -1);
+procedure TBlky.GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ: TBlkType = btAny);
 var Blk:TBlk;
 begin
  for Blk in Self.data do
   begin
    try
      if ((stanice <> nil) and (not Blk.IsInOR(stanice))) then continue;
-     if ((typ <> -1) and (Blk.typ <> typ)) then continue;
+     if ((typ <> btAny) and (Blk.typ <> typ)) then continue;
 
      Blk.GetPtData(json.A['bloky'].AddObject, includeState);
    except
@@ -1021,7 +1025,7 @@ procedure TBlky.NouzZaverZrusen(Sender:TBlk);
 var Blk:TBlk;
 begin
  for Blk in Self.data do
-   if (Blk.typ = _BLK_NAV) then
+   if (Blk.typ = btNav) then
      TBlkNav(Blk).RemoveBlkFromRnz(Sender.id);
 end;
 
@@ -1031,7 +1035,7 @@ procedure TBlky.ClearPOdj();
 var Blk:TBlk;
 begin
  for Blk in Self.data do
-   if ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) then
+   if ((Blk.typ = btUsek) or (Blk.typ = btTU)) then
      TBlkUsek(Blk).ClearPOdj();
 end;
 
@@ -1053,7 +1057,7 @@ procedure TBlky.ZakladniPolohaVyhybek();
 var blk:TBlk;
  begin
   for blk in Self.data do
-    if ((Blk.typ = _BLK_VYH) and (TBlkVyhybka(Blk).Poloha <> TVyhPoloha.plus) and (not TBlkVyhybka(Blk).outputLocked) and
+    if ((Blk.typ = btVyhybka) and (TBlkVyhybka(Blk).Poloha <> TVyhPoloha.plus) and (not TBlkVyhybka(Blk).outputLocked) and
         (TBlkVyhybka(Blk).Obsazeno <> TUsekStav.obsazeno) and
         ((TBlkVyhybka(Blk).spojka = nil) or (TBlkVyhybka(Blk).spojka.Obsazeno <> TUsekStav.obsazeno))) then
       TBlkVyhybka(Blk).SetPoloha(plus);
@@ -1088,7 +1092,7 @@ procedure TBlky.OnClientDisconnect(client: TIdContext);
 var blk: TBlk;
 begin
  for blk in Self.data do
-   if (blk.typ = _BLK_AC) then
+   if (blk.typ = btAC) then
      TBlkAC(blk).OnClientDisconnect(client);
 end;
 

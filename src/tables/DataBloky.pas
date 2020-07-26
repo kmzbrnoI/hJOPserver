@@ -110,7 +110,7 @@ var j, spr:integer;
   Self.LV.Items[line].SubItems.Strings[4] := str;
 
   case (glob.typ) of
-   _BLK_VYH: begin
+   btVyhybka: begin
       Self.LV.Items[line].ImageIndex := 0;
       s_vyh := (Blk as TBlkVyhybka).GetSettings();
       Self.LV.Items[line].SubItems.Strings[0] := 'Výhybka';
@@ -129,7 +129,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_USEK: begin
+   btUsek: begin
       if ((Blk as TBlkUsek).Stav.cislo_koleje <> '') then
         Self.LV.Items[line].ImageIndex := 1
       else
@@ -157,7 +157,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_IR: begin
+   btIR: begin
       Self.LV.Items[line].ImageIndex := 4;
       Self.LV.Items[line].SubItems[0] := 'IR';
 
@@ -177,7 +177,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_NAV: begin
+   btNav: begin
       Self.LV.Items[line].ImageIndex := 5;
       s_nav := (Blk as TBlkNav).GetSettings();
       Self.LV.Items[line].SubItems[0] := 'Návěstidlo';
@@ -192,7 +192,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_PREJEZD: begin
+   btPrejezd: begin
       Self.LV.Items[line].ImageIndex := 7;
       Self.LV.Items[line].SubItems[0] := 'Přejezd';
 
@@ -213,7 +213,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_TRAT: begin
+   btTrat: begin
       Self.LV.Items[line].ImageIndex := 8;
       Self.LV.Items[line].SubItems[0] := 'Trať';
 
@@ -252,7 +252,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_UVAZKA: begin
+   btUvazka: begin
       Self.LV.Items[line].ImageIndex := 9;
       Self.LV.Items[line].SubItems[0] := 'Úvazka';
 
@@ -268,7 +268,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_ZAMEK: begin
+   btZamek: begin
       Self.LV.Items[line].ImageIndex := 10;
       Self.LV.Items[line].SubItems[0] := 'Zámek';
 
@@ -288,7 +288,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_ROZP: begin
+   btRozp: begin
       Self.LV.Items[line].ImageIndex := 11;
       Self.LV.Items[line].SubItems[0] := 'Rozpojovač';
 
@@ -306,7 +306,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_TU: begin
+   btTU: begin
       Self.LV.Items[line].ImageIndex := 2;
       Self.LV.Items[line].SubItems[0] := 'Traťový úsek';
 
@@ -330,7 +330,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_IO: begin
+   btIO: begin
       Self.LV.Items[line].ImageIndex := 12;
       Self.LV.Items[line].SubItems[0] := 'IO';
 
@@ -348,7 +348,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_SH: begin
+   btSH: begin
       Self.LV.Items[line].ImageIndex := -1;
       Self.LV.Items[line].SubItems[0] := 'Součtová hláska';
 
@@ -364,7 +364,7 @@ var j, spr:integer;
    end;
 
  /////////////////////////////////////////////////////
-   _BLK_AC: begin
+   btAC: begin
       Self.LV.Items[line].ImageIndex := -1;
       Self.LV.Items[line].SubItems[0] := 'AC';
 

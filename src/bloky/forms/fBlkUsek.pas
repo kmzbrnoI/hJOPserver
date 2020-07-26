@@ -291,14 +291,14 @@ var glob:TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id   := SE_ID.Value;
-  glob.typ  := _BLK_USEK;
+  glob.typ  := btUsek;
 
   if (NewBlk) then
    begin
     glob.note := '';
 
     try
-      Blk := Blky.Add(_BLK_USEK, glob) as TBlkUsek;
+      Blk := Blky.Add(btUsek, glob) as TBlkUsek;
     except
       on E:Exception do
        begin

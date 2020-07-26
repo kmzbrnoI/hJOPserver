@@ -293,7 +293,7 @@ constructor TBlkUsek.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_USEK;
+ Self.GlobalSettings.typ := btUsek;
  Self.UsekStav := _def_usek_stav;
 
  Self.EventsOnObsaz := TChangeEvents.Create();
@@ -628,7 +628,7 @@ begin
      Self.UsekStav.spr_vypadek := false;
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
-     if ((Self.typ = _BLK_TU) or (Self.UsekStav.stanicni_kolej)) then
+     if ((Self.typ = btTU) or (Self.UsekStav.stanicni_kolej)) then
        for oblr in Self.OblsRizeni do
          oblr.BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
      if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := TZaver.nouz;
@@ -1390,7 +1390,7 @@ begin
    Result := Result + '-,NUZ<,';
 
  if ((((not (SenderOR as TOR).NUZtimer) and (Integer(Self.UsekStav.Zaver) > 0) and (Self.UsekStav.Zaver <> TZaver.ab) and
-      (Self.UsekStav.Zaver <> TZaver.staveni) and (Self.typ = _BLK_USEK) and
+      (Self.UsekStav.Zaver <> TZaver.staveni) and (Self.typ = btUsek) and
       (not Self.UsekStav.stanicni_kolej)) or (rights >= superuser)) and
       (not Self.UsekStav.NUZ)) then
    Result := Result + '-,NUZ>,';
@@ -2270,7 +2270,7 @@ var fg, bg, nebarVetve, sfg, sbg: TColor;
     souprava, i: Integer;
 begin
  // Pro blok trati se vola take
- Result := IntToStr(_BLK_USEK)+';'+IntToStr(Self.id)+';';;
+ Result := IntToStr(Integer(btUsek))+';'+IntToStr(Self.id)+';';;
 
  nebarVetve := $A0A0A0;
 
@@ -2290,10 +2290,10 @@ begin
    end;
 
    // zobrazeni zakazu odjezdu do trati
-   if ((fg = $A0A0A0) and (Self.typ = _BLK_TU) and (TBlkTU(Self).InTrat > -1)) then
+   if ((fg = $A0A0A0) and (Self.typ = btTU) and (TBlkTU(Self).InTrat > -1)) then
     begin
      Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
-     if ((Blk <> nil) and (Blk.typ = _BLK_TRAT)) then
+     if ((Blk <> nil) and (Blk.typ = btTrat)) then
        if ((Blk as TBlkTrat).ZAK) then
          fg := clBlue;
     end;
@@ -2303,7 +2303,7 @@ begin
      fg := clYellow;
 
    // zaver
-   if (((Self.Obsazeno) = TUsekStav.uvolneno) and (Self.typ = _BLK_USEK) and
+   if (((Self.Obsazeno) = TUsekStav.uvolneno) and (Self.typ = btUsek) and
        (Self.GetSettings().RCSAddrs.Count > 0)) then
     begin
      case (Self.Zaver) of
@@ -2316,7 +2316,7 @@ begin
     end;
 
    // porucha BP v trati
-   if ((Self.typ = _BLK_TU) and (TBlkTU(Self).poruchaBP)) then fg := clAqua;
+   if ((Self.typ = btTU) and (TBlkTU(Self).poruchaBP)) then fg := clAqua;
 
    if (fg = clYellow) then
      nebarVetve := clYellow;
@@ -2445,7 +2445,7 @@ function TBlkUsek.GetNavL(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blky do
-   if ((blk.typ = _BLK_NAV) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.lichy)) then
+   if ((blk.typ = btNav) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.lichy)) then
      Exit(blk);
  Result := nil;
 end;
@@ -2454,7 +2454,7 @@ function TBlkUsek.GetNavS(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blky do
-   if ((blk.typ = _BLK_NAV) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.sudy)) then
+   if ((blk.typ = btNav) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.sudy)) then
      Exit(blk);
  Result := nil;
 end;

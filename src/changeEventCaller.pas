@@ -35,8 +35,8 @@ procedure TChangeEventCaller.CopyUsekZaver(Sender:TObject; data:Integer);
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or ((blk.typ <> _BLK_USEK) and
-    (blk.typ <> _BLK_TU))) then Exit();
+ if ((blk = nil) or ((blk.typ <> btUsek) and
+    (blk.typ <> btTU))) then Exit();
 
  TBlkUsek(Blk).Zaver := TBlkUsek(Sender).Zaver;
 end;
@@ -45,7 +45,7 @@ procedure TChangeEventCaller.NullZamekZaver(Sender:TObject; data:Integer);
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> _BLK_ZAMEK)) then Exit();
+ if ((blk = nil) or (blk.typ <> btZamek)) then Exit();
 
  TBlkZamek(Blk).Zaver := false;
 end;
@@ -54,7 +54,7 @@ procedure TChangeEventCaller.NullPrejezdZaver(Sender:TObject; data:Integer);
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> _BLK_PREJEZD)) then Exit();
+ if ((blk = nil) or (blk.typ <> btPrejezd)) then Exit();
 
  TBlkPrejezd(Blk).Zaver := false;
 end;
@@ -63,7 +63,7 @@ procedure TChangeEventCaller.NullTratZaver(Sender:TObject; data:Integer);
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> _BLK_TRAT)) then Exit();
+ if ((blk = nil) or (blk.typ <> btTrat)) then Exit();
 
  TBlkTrat(Blk).Zaver := false;
 end;
@@ -74,7 +74,7 @@ procedure TChangeEventCaller.NullVyhybkaMenuReduction(Sender:TObject; data:Integ
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> _BLK_VYH)) then Exit();
+ if ((blk = nil) or (blk.typ <> btVyhybka)) then Exit();
 
  TBlkVyhybka(Blk).IntentionalUnlock();
 end;
@@ -88,8 +88,7 @@ begin
  caller := Pointer(data);
 
  Blky.GetBlkByID(caller.usekId, blk);
- if ((blk = nil) or ((blk.typ <> _BLK_USEK) and
-    (blk.typ <> _BLK_TU))) then Exit();
+ if ((blk = nil) or ((blk.typ <> btUsek) and (blk.typ <> btTU))) then Exit();
 
  TBlkUsek(Blk).RemoveNeprofilJC(caller.jcId);
  FreeMem(caller);

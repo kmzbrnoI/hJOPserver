@@ -81,8 +81,8 @@ var Blk:TBlk;
    begin
     // tato situace nastava v pripade tvorby noveho bloku
     case (Blk.typ) of
-     _BLK_TRAT   : Self.Trat := Blk as TBlkTrat;
-     _BLK_UVAZKA : Self.Trat := (Blk as TBlkUvazka).parent as TBlkTrat;
+     btTrat   : Self.Trat := Blk as TBlkTrat;
+     btUvazka : Self.Trat := (Blk as TBlkUvazka).parent as TBlkTrat;
     end;
     Self.UvazkaA := Self.Trat.uvazkaA as TBlkUvazka;
     Self.UvazkaB := Self.Trat.uvazkaB as TBlkUvazka;
@@ -118,7 +118,7 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.CB_Trat_ZabZar.ItemIndex := -1;
   Self.CB_Navestidla.ItemIndex := -1;
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, _BLK_TU, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btTU, -1);
 
   Self.Caption := 'Editace nového bloku';
   Self.ActiveControl := Self.E_Trat_Name;
@@ -159,7 +159,7 @@ var glob:TBlkSettings;
   SetLength(vypust, settings.Useky.Count);
   for i := 0 to settings.Useky.Count-1 do
     vypust[i] := settings.Useky[i];
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, _BLK_TU, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, btTU, -1);
 
   case (settings.zabzar) of
    TTratZZ.souhlas : Self.CB_Trat_ZabZar.ItemIndex := 0;
@@ -227,7 +227,7 @@ begin
      obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
   end;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_TU, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btTU, -1);
 end;
 
 procedure TF_BlkTrat.B_Blk_DeleteClick(Sender: TObject);
@@ -248,7 +248,7 @@ begin
  for i := 0 to Self.UvazkaB.OblsRizeni.Count-1 do
    obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, _BLK_TU, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btTU, -1);
 end;
 
 procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
@@ -303,26 +303,26 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
   // trat
   glob_trat.name := Self.E_Trat_Name.Text;
   glob_trat.id   := Self.SE_Trat_ID.Value;
-  glob_trat.typ  := _BLK_TRAT;
+  glob_trat.typ  := btTrat;
 
   // uvazka A
   glob_uvA.name := Self.E_UA_name.Text;
   glob_uvA.id   := Self.SE_UA_id.Value;
-  glob_uvA.typ  := _BLK_UVAZKA;
+  glob_uvA.typ  := btUvazka;
 
   // uvazka B
   glob_uvB.name := Self.E_UB_name.Text;
   glob_uvB.id   := Self.SE_UB_id.Value;
-  glob_uvB.typ  := _BLK_UVAZKA;
+  glob_uvB.typ  := btUvazka;
 
   TratSettings.Useky := TList<Integer>.Create();
 
   if (NewBlk) then
    begin
     try
-      Self.Trat := Blky.Add(_BLK_TRAT, glob_trat) as TBlkTrat;
-      Self.UvazkaA := Blky.Add(_BLK_UVAZKA, glob_trat) as TBlkUvazka;
-      Self.UvazkaB  := Blky.Add(_BLK_UVAZKA, glob_uvB) as TBlkUvazka;
+      Self.Trat := Blky.Add(btTrat, glob_trat) as TBlkTrat;
+      Self.UvazkaA := Blky.Add(btUvazka, glob_trat) as TBlkUvazka;
+      Self.UvazkaB  := Blky.Add(btUvazka, glob_uvB) as TBlkUvazka;
     except
       on E:Exception do
        begin

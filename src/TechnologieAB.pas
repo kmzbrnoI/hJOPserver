@@ -81,7 +81,7 @@ begin
   begin
    Blky.GetBlkByID(usek, blk);
    if ((blk <> nil) and
-       ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) and
+       ((blk.typ = btUsek) or (blk.typ = btTU)) and
        (TBlkUsek(blk).Zaver = TZaver.ab)) then
      TBlkUsek(blk).Zaver := TZaver.no;
   end;
@@ -121,7 +121,7 @@ begin
     writelog('DN JC '+JC.nazev+' : podmínky splněny, stavím', WR_STACK);
 
     Blky.GetBlkByID(JC.data.NavestidloBlok, blk);
-    if ((blk = nil) or (blk.typ <> _BLK_NAV) or (TBlkNav(blk).OblsRizeni.Count = 0)) then
+    if ((blk = nil) or (blk.typ <> btNav) or (TBlkNav(blk).OblsRizeni.Count = 0)) then
       Self.Remove(jc);
 
     JC.StavJC(nil, TBlkNav(blk).OblsRizeni[0], nil, false, true);

@@ -171,7 +171,7 @@ begin
  for j := 0 to JCData.Vyhybky.Count-1 do
   begin
    Blky.GetBlkByID(JCData.Vyhybky[j].Blok, Blk);
-   if (Blk <> nil) and (Blk.typ = _BLK_VYH) then
+   if (Blk <> nil) and (Blk.typ = btVyhybka) then
     begin
      if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
        str := str + TBlkVyhybka(Blk).npBlokPlus.name + ', '

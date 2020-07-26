@@ -110,7 +110,7 @@ function TBlkUsekRef.GetBlock():TBlkUsek;
 var blk: TBlk;
 begin
  Blky.GetBlkById(Self.blockId, blk);
- if ((blk = nil) or ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU))) then
+ if ((blk = nil) or ((blk.typ = btUsek) or (blk.typ = btTU))) then
    Result := TBlkUsek(blk)
  else
    Result := nil;

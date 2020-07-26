@@ -108,7 +108,7 @@ constructor TBlkZamek.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_ZAMEK;
+ Self.GlobalSettings.typ := btZamek;
  Self.ZamekStav := _def_zamek_stav;
  Self.last_zaver := false;
 end;//ctor

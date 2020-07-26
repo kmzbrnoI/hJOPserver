@@ -149,13 +149,13 @@ var glob:TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := _BLK_IR;
+  glob.typ := btIR;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_IR, glob) as TBlkIR;
+      Blk := Blky.Add(btIR, glob) as TBlkIR;
     except
       on E:Exception do
        begin

@@ -129,14 +129,14 @@ var glob:TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := _BLK_AC;
+  glob.typ := btAC;
   settings.accessToken := Self.E_AccessToken.Text;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_AC, glob) as TBlkAC;
+      Blk := Blky.Add(btAC, glob) as TBlkAC;
     except
       on E:Exception do
        begin

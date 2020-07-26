@@ -155,15 +155,15 @@ var glob:TBlkSettings;
       Exit();
    end;
 
-  glob.name     := E_Nazev.Text;
-  glob.id       := SE_ID.Value;
-  glob.typ      := _BLK_ROZP;
+  glob.name := E_Nazev.Text;
+  glob.id  := SE_ID.Value;
+  glob.typ := btRozp;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_ROZP, glob) as TBlkRozp;
+      Blk := Blky.Add(btRozp, glob) as TBlkRozp;
     except
       on E:Exception do
        begin

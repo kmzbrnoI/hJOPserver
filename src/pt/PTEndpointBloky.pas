@@ -32,10 +32,10 @@ procedure TPTEndpointBloky.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequ
         var respJson:TJsonObject);
 var params:TDictionary<string, string>;
     stanice:TOR;
-    typ:Integer;
+    typ: TBlkType;
 begin
  stanice := nil;
- typ := -1;
+ typ := btAny;
  params := TDictionary<string, string>.Create();
 
  try

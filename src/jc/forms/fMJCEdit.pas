@@ -242,7 +242,7 @@ procedure TF_MJCEdit.UpdateVBCb();
 var obls:TArStr;
 begin
  Self.MakeObls(obls);
- Blky.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, nil, obls, _BLK_USEK, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, nil, obls, btUsek, -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -258,7 +258,7 @@ begin
    try
      Blky.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok, Blk);
 
-     if ((Blk = nil) or (Blk.typ <> _BLK_NAV)) then
+     if ((Blk = nil) or (Blk.typ <> btNav)) then
       begin
        obls := nil;
        Exit();

@@ -163,7 +163,7 @@ var glob:TBlkSettings;
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
 
   Blky.GetBlkByID(settings.spojka, TBlk(vyh));
-  if ((vyh <> nil) and (vyh.typ = _BLK_VYH)) then
+  if ((vyh <> nil) and (vyh.typ = btVyhybka)) then
    begin
     spojkaSettings := vyh.GetSettings();
 
@@ -271,32 +271,32 @@ var spojka_vypust:TArI;
     spojka_vypust[0] := Self.Blk.id;
 
     // spojka
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, _BLK_VYH, Self.Blk.GetSettings().spojka);
+    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, btVyhybka, Self.Blk.GetSettings().spojka);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.spojka > -1);
 
     // zamek
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, _BLK_ZAMEK, Self.Blk.GetSettings().zamek);
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btZamek, Self.Blk.GetSettings().zamek);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.zamek > -1);
 
     // neprofilove styky +
-    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, _BLK_USEK, Self.Blk.GetSettings().npPlus, _BLK_TU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, btUsek, Self.Blk.GetSettings().npPlus, btTU);
     Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npPlus > -1);
 
     // neprofilove styky -
-    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, _BLK_USEK, Self.Blk.GetSettings().npMinus, _BLK_TU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, btUsek, Self.Blk.GetSettings().npMinus, btTU);
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npMinus > -1);
 
    end else begin
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, _BLK_VYH, -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, btVyhybka, -1);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, _BLK_ZAMEK, -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, btZamek, -1);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, _BLK_USEK, -1, _BLK_TU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, btUsek, -1, btTU);
     Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, _BLK_USEK, -1, _BLK_TU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, btUsek, -1, btTU);
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0);
    end;
 
@@ -419,12 +419,12 @@ var glob:TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := _BLK_VYH;
+  glob.typ := btVyhybka;
 
   if (NewBlk) then
    begin
     try
-      Blk := Blky.Add(_BLK_VYH, glob) as TBlkVyhybka;
+      Blk := Blky.Add(btVyhybka, glob) as TBlkVyhybka;
     except
       on E:Exception do
        begin
@@ -449,7 +449,7 @@ var glob:TBlkSettings;
     settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex]);
 
     Blky.GetBlkByID(settings.spojka, TBlk(vyh));
-    if ((blk = nil) or (blk.typ <> _BLK_VYH)) then
+    if ((blk = nil) or (blk.typ <> btVyhybka)) then
      begin
       Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();

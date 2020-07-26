@@ -158,7 +158,7 @@ begin
 
  for Blk in Blky do
   begin
-   if (Blk.typ <> _BLK_TRAT) then continue;
+   if (Blk.typ <> btTrat) then continue;
    if (((Blk as TBlkTrat).BP) and ((Blk as TBlkTrat).Obsazeno) and
        ((TBlkTrat(Blk).Smer = TTratSmer.AtoB) or (TBlkTrat(Blk).Smer = TTratSmer.BtoA))) then
      Self.UpdateTrat(Blk as TBlkTrat);
@@ -232,7 +232,7 @@ begin
 
    for blk in Blky do
     begin
-     if (blk.typ <> _BLK_VYH) then continue;
+     if (blk.typ <> btVyhybka) then continue;
      vyh := TBlkVyhybka(blk);
 
      if (((vyh.StaveniPlus) or (vyh.StaveniMinus)) and (vyh.detekcePolohy)) then

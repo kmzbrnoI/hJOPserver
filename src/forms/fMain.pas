@@ -2017,7 +2017,7 @@ begin
   begin
    try
      Blky.GetBlkByID(jc.data.NavestidloBlok, blk);
-     if ((blk <> nil) and (Blk.typ = _BLK_NAV) and (TBlkNav(blk).ABJC = jc)) then
+     if ((blk <> nil) and (Blk.typ = btNav) and (TBlkNav(blk).ABJC = jc)) then
       begin
        TBlkNav(blk).ABJC := nil;
        if (ABlist.Contains(jc)) then
@@ -2444,7 +2444,7 @@ var Blk:TBlk;
 begin
  if (Self.LV_Bloky.Selected = nil) then Exit();
  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
- if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then Exit();
+ if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then Exit();
 
  F_HoukEvsUsek.Open(TBlkUsek(Blk));
 end;
@@ -2499,14 +2499,14 @@ var Blk:TBlk;
   if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   _BLK_VYH     : F_BlkVyh_tech.OpenForm(Blk as TBlkVyhybka);
-   _BLK_USEK, _BLK_TU :
+   btVyhybka     : F_BlkVyh_tech.OpenForm(Blk as TBlkVyhybka);
+   btUsek, btTU :
                   F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
-   _BLK_IR      : ;
-   _BLK_NAV     : ;
-   _BLK_PREJEZD : ;
-   _BLK_TRAT    : F_BlkTrat_tech.OpenForm(Blk as TBlkTrat);
-   _BLK_UVAZKA  : ;
+   btIR      : ;
+   btNav     : ;
+   btPrejezd : ;
+   btTrat    : F_BlkTrat_tech.OpenForm(Blk as TBlkTrat);
+   btUvazka  : ;
   end;//case
 end;
 
@@ -2885,59 +2885,59 @@ var Blk:TBlk;
   if (Blky.GetBlkByIndex(Item.Index,Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   _BLK_VYH:begin
+   btVyhybka:begin
     case ((Blk as TBlkVyhybka).Poloha) of
      TVyhPoloha.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TVyhPoloha.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
      TVyhPoloha.plus     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
      TVyhPoloha.minus    : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
      TVyhPoloha.both     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_RED;
-    end;//case poloha
-   end;//_BLK_VYH
+    end;
+   end;
 
   //////////////////////
-   _BLK_USEK, _BLK_TU:begin
+   btUsek, btTU:begin
     case ((Blk as TBlkUsek).Obsazeno) of
      TUsekStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TUsekStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
      TUsekStav.uvolneno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
      TUsekStav.obsazeno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-    end;//case Obsazeno
-   end;//_BLK_VYH
+    end;
+   end;
 
   //////////////////////
-   _BLK_IR:begin
+   btIR:begin
     case ((Blk as TBlkIR).Stav) of
      TIRStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TIRStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
      TIRStav.uvolneno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
      TIRStav.obsazeno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-    end;//case Obsazeno
-   end;//_BLK_VYH
+    end;
+   end;
 
   //////////////////////
-   _BLK_NAV:begin
+   btNav:begin
     if ((Blk as TBlkNav).Navest < ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY  // disabled
     else if ((Blk as TBlkNav).Navest = ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
     else
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-   end;//_BLK_VYH
+   end;
 
   //////////////////////
-   _BLK_PREJEZD:begin
+   btPrejezd:begin
     case ((Blk as TBlkPrejezd).Stav.basicStav) of
      TBlkPrjBasicStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TBlkPrjBasicStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
      TBlkPrjBasicStav.otevreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
      TBlkPrjBasicStav.vystraha : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
      TBlkPrjBasicStav.uzavreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-    end;//case Obsazeno
-   end;//_BLK_VYH
+    end;
+   end;
 
   //////////////////////
-   _BLK_UVAZKA:begin
+   btUvazka:begin
     if (not (Blk as TBlkUvazka).enabled) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
@@ -2945,7 +2945,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   _BLK_TRAT:begin
+   btTrat:begin
     if ((Blk as TBlkTrat).stav.smer = TTratSmer.disabled) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
@@ -2953,7 +2953,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   _BLK_ZAMEK:begin
+   btZamek:begin
     if ((Blk as TBlkZamek).Stav.enabled) then
      begin
       if ((Blk as TBlkZamek).klicUvolnen) then
@@ -2965,7 +2965,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   _BLK_ROZP:begin
+   btRozp:begin
     case ((Blk as TBlkRozp).status) of
       TRozpStatus.disabled     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
       TRozpStatus.not_selected : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
@@ -2975,7 +2975,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-  _BLK_IO:begin
+  btIO:begin
     if (TBlkIO(Blk).enabled) then
      begin
       if ((TBlkIO(Blk).activeOutput) or (TBlkIO(Blk).activeInput)) then
@@ -2987,7 +2987,7 @@ var Blk:TBlk;
   end;
 
   //////////////////////
-  _BLK_SH:begin
+  btSH:begin
     case ((Blk as TBlkSH).enabled) of
       false : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
       true  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
@@ -2995,7 +2995,7 @@ var Blk:TBlk;
   end;
 
   //////////////////////
-  _BLK_AC:begin
+  btAC:begin
     if (TBlkAC(Blk).enabled) then
      begin
       if (not TBlkAC(Blk).stopped) then
@@ -3018,18 +3018,18 @@ var Blk:TBlk;
   if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   _BLK_VYH     : F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_USEK    : F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_IR      : F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_NAV     : F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_PREJEZD : F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_TRAT, _BLK_UVAZKA : F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_ZAMEK   : F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_ROZP    : F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_TU      : F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_IO      : F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_SH      : F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
-   _BLK_AC      : F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
+   btVyhybka: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
+   btUsek: F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
+   btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
+   btNav: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
+   btPrejezd: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
+   btTrat, btUvazka: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
+   btZamek: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
+   btRozp: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
+   btTU: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
+   btIO: F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
+   btSH: F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
+   btAC: F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
   end;//case
 end;
 

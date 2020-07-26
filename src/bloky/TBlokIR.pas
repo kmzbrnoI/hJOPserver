@@ -70,7 +70,7 @@ constructor TBlkIR.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_IR;
+ Self.GlobalSettings.typ := btIR;
  Self.IRStav := Self._def_ir_stav;
 end;//ctor
 

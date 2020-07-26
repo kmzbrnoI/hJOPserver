@@ -56,7 +56,7 @@ begin
      inOR := Blk.OblsRizeni.Contains(OblR);
 
      // trate z aktualni stanice kontrolujeme cele
-     if ((not inOR) and (blk.typ = _BLK_TU) and (TBlkUsek(blk).SprPredict = spr) and
+     if ((not inOR) and (blk.typ = btTU) and (TBlkUsek(blk).SprPredict = spr) and
          (TBlkTU(blk).Trat <> nil) and
          (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.OblsRizeni[0] = OblR) or
           ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.OblsRizeni[0] = OblR))) then
@@ -64,11 +64,11 @@ begin
 
      if (not inOR) then continue;
 
-     if (((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU)) and
+     if (((blk.typ = btUsek) or (blk.typ = btTU)) and
          (TBlkUsek(blk).SprPredict = spr)) then
        blksWithSpr.Add(TBlkUsek(blk));
 
-     if ((blk.typ = _BLK_TU) and (TBlkUsek(blk).Souprava = spr)) then
+     if ((blk.typ = btTU) and (TBlkUsek(blk).Souprava = spr)) then
        if (TBlkTU(blk).Trat <> nil) then
          inTrat := TBlkTrat(TBlkTU(blk).Trat);
     end;
@@ -78,7 +78,7 @@ begin
    for blkUsek in blksWithSpr do
     begin
      // souprava je predpovidana do jine trati nez ve ktere je -> prujezd
-     if ((blkUsek.typ = _BLK_TU) and (TBlkTU(blkUsek).Trat <> inTrat)
+     if ((blkUsek.typ = btTU) and (TBlkTU(blkUsek).Trat <> inTrat)
          and (TBlkTU(blkUsek).Trat <> nil)) then
        Result.trat := TBlkTrat(TBlkTU(blkUsek).Trat);
 

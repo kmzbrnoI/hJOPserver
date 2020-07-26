@@ -211,7 +211,7 @@ constructor TBlkTrat.Create(index:Integer);
 begin
  inherited;
 
- Self.GlobalSettings.typ := _BLK_TRAT;
+ Self.GlobalSettings.typ := btTrat;
  Self.TratStav := _def_trat_stav;
 
  Self.fuvazkaA := nil;
@@ -376,7 +376,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk <> nil) and (Blk.typ = _BLK_TU)) then
+   if ((Blk <> nil) and (Blk.typ = btTU)) then
     Blk.Change();
   end;
 end;
@@ -390,7 +390,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.typ <> _BLK_TU)) then continue;
+   if ((Blk = nil) or (Blk.typ <> btTU)) then continue;
    if ((Blk as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
     Exit(true);
   end;
@@ -684,7 +684,7 @@ begin
 
    for blk in Blky do
     begin
-     if (Blk.typ <> _BLK_NAV) then continue;
+     if (Blk.typ <> btNav) then continue;
      if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[0]) and
          (Blk.OblsRizeni[0] = Self.uvazkaA.OblsRizeni[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navLid))) then
@@ -712,7 +712,7 @@ begin
 
    for blk in Blky do
     begin
-     if (Blk.typ <> _BLK_NAV) then continue;
+     if (Blk.typ <> btNav) then continue;
      if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
          (Blk.OblsRizeni[0] = Self.uvazkaB.OblsRizeni[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navSid))) then
@@ -754,7 +754,7 @@ begin
  for i := Self.TratSettings.Useky.Count-1 downto 0 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.typ <> _BLK_TU)) then
+   if ((Blk = nil) or (Blk.typ <> btTU)) then
     begin
      writelog('Trat '+Self.name+' obsahuje referenci na TU ID '+IntToStr(Self.TratSettings.Useky[i])+', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', WR_ERROR);
      Self.TratSettings.Useky.Delete(i);
@@ -988,7 +988,7 @@ begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
    Blky.GetBlkByID(Self.TratSettings.Useky[i], Blk);
-   if ((Blk = nil) or (Blk.typ <> _BLK_TU)) then Exit(false);
+   if ((Blk = nil) or (Blk.typ <> btTU)) then Exit(false);
    if (not TBlkTU(Blk).ready) then Exit(false);
   end;
  Result := true;
@@ -1031,7 +1031,7 @@ begin
  for usekid in Self.TratSettings.Useky do
   begin
    Blky.GetBlkByID(usekid, blk);
-   if ((blk <> nil) and (blk.typ = _BLK_TU) and (TBlkUsek(blk).Souprava = spr)) then
+   if ((blk <> nil) and (blk.typ = btTU) and (TBlkUsek(blk).Souprava = spr)) then
      Exit(blk);
   end;
 
@@ -1095,7 +1095,7 @@ begin
  for usekid in Self.TratSettings.Useky do
   begin
    Blky.GetBlkByID(usekid, TBlk(usek));
-   if (usek.typ <> _BLK_TU) then continue;
+   if (usek.typ <> btTU) then continue;
    if ((blk = usek.navKryciL) or (blk = usek.navKryciS)) then
      Exit(true);
   end;
@@ -1192,13 +1192,13 @@ begin
  for usek in TBlkTrat(trat).GetSettings().Useky do
   begin
    Blky.GetBlkByID(usek, blk);
-   if ((blk <> nil) and (blk.typ = _BLK_TU)) then
+   if ((blk <> nil) and (blk.typ = btTU)) then
      if (TBlkUsek(blk).Souprava = Self.souprava) and (TBlkTU(blk).poruchaBP) then
        porucha_bp := true;
   end;
 
  blk := Self.souprava.front as TBlk;
- stopsInHalt := ((blk <> nil) and (blk.typ = _BLK_TU) and (TBlkTU(blk).TUStav.zast_stopped));
+ stopsInHalt := ((blk <> nil) and (blk.typ = btTU) and (TBlkTU(blk).TUStav.zast_stopped));
 
  Result := Self.souprava.name + '|';
  if (sprPredict) then

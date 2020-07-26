@@ -115,13 +115,13 @@ var glob:TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := _BLK_ZAMEK;
+  glob.typ := btZamek;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(_BLK_ZAMEK, glob) as TBlkZamek;
+      Blk := Blky.Add(btZamek, glob) as TBlkZamek;
     except
       on E:Exception do
        begin

@@ -471,12 +471,12 @@ begin
     if (jc.data.Trat > -1) then
      begin
       Blky.GetBlkByID(jc.data.Trat, trat);
-      if ((trat <> nil) and (trat.typ = _BLK_TRAT)) then
+      if ((trat <> nil) and (trat.typ = btTrat)) then
        begin
         for usekid in TBlkTrat(trat).GetSettings().Useky do
          begin
           Blky.GetBlkByID(usekid, tu);
-          if ((tu <> nil) and (tu.typ = _BLK_TU)) then
+          if ((tu <> nil) and (tu.typ = btTU)) then
             if ((TBlkTU(tu).navKryci = nil) and (tu.id = usek_id)) then
               Exit(jc);
          end;
@@ -599,27 +599,27 @@ begin
  jcs := TList<TJC>.Create();
  try
    case (Blk.typ) of
-    _BLK_VYH     : begin
+    btVyhybka     : begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
     end;
-    _BLK_PREJEZD : begin
+    btPrejezd : begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithPrj(Blk.id);
     end;
-    _BLK_USEK, _BLK_TU: begin
+    btUsek, btTU: begin
       jc := JCDb.FindPostavenaJCWithUsek(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-    _BLK_NAV: begin
+    btNav: begin
       jc := JCDb.FindJC(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-    _BLK_TRAT: begin
+    btTrat: begin
       jc := JCDb.FindPostavenaJCWithTrat(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-    _BLK_ZAMEK: begin
+    btZamek: begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithZamek(Blk.id);
     end;
@@ -747,7 +747,7 @@ begin
  Self.JCsStartNav.Clear();
  for JC in Self.JCs do
   begin
-   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = _BLK_NAV)) then
+   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = btNav)) then
     begin
      nav := JC.navestidlo as TBlkNav;
      if (not Self.JCsStartNav.ContainsKey(nav)) then
@@ -826,7 +826,7 @@ begin
    if ((jc.data.TypCesty = typ) and (jc.data.Useky.Count > 0)) then
     begin
       Blky.GetBlkByID(jc.data.Useky[0], blk);
-      if ((blk <> nil) and ((blk.typ = _BLK_USEK) or (blk.typ = _BLK_TU))) then
+      if ((blk <> nil) and ((blk.typ = btUsek) or (blk.typ = btTU))) then
        begin
         usek := blk as TBlkUsek;
         if ((usek.Zaver = TZaver.no) and (usek.Obsazeno = TUsekStav.uvolneno)) then

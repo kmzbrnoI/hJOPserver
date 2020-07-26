@@ -592,7 +592,7 @@ procedure TSouprava.SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
 var addr:Integer;
     direction:boolean;
 begin
- if ((TBlk(Self.front).typ = _BLK_TU) and (TBlkTU(Self.front).rychUpdate)) then
+ if ((TBlk(Self.front).typ = btTU) and (TBlkTU(Self.front).rychUpdate)) then
    TBlkTU(Self.front).rychUpdate := false;
 
  Self.data.direction := dir;
@@ -608,7 +608,7 @@ begin
    Exit();
   end;
 
- if ((TBlk(Self.front).typ = _BLK_TU) and (TBlkTU(Self.front).Trat <> nil)) then
+ if ((TBlk(Self.front).typ = btTU) and (TBlkTU(Self.front).Trat <> nil)) then
    TBlkTU(Self.front).Trat.Change();
 
  for addr in Self.HVs do
@@ -1061,7 +1061,7 @@ begin
  if (frontblk = nil) then
    Exit(nil);
 
- if (frontblk.typ = _BLK_TU) then
+ if (frontblk.typ = btTU) then
    Exit(TBlkTU(frontblk).nextNav);
 
  case (Self.direction) of
@@ -1080,7 +1080,7 @@ begin
   TJCNextNavType.zadna: Exit(nil);
   TJCNextNavType.trat: begin
     Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], TBlk(frontblk));
-    if (frontblk <> nil) and (frontblk.typ = _BLK_TU) then
+    if (frontblk <> nil) and (frontblk.typ = btTU) then
      begin
       tu := TBlkTU(frontblk);
       Exit(tu.nextNav);

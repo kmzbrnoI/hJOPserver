@@ -249,7 +249,7 @@ uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
 constructor TBlkVyhybka.Create(index:Integer);
 begin
  inherited Create(index);
- Self.GlobalSettings.typ := _BLK_VYH;
+ Self.GlobalSettings.typ := btVyhybka;
  Self.VyhStav := Self._def_vyh_stav;
  Self.fzamek  := nil;
  Self.fparent := nil;
@@ -445,7 +445,7 @@ var tmpBlk:TBlk;
 begin
  return := Blky.GetBlkByID(Self.VyhRel.UsekID,tmpBlk);
  if (return < 0) then Exit(false);
- if (tmpBlk.typ <> _BLK_USEK) then Exit(false);
+ if (tmpBlk.typ <> btUsek) then Exit(false);
 
  Result := (TBlkUsek(tmpBlk)).NUZ;
 end;
@@ -456,7 +456,7 @@ var tmpBlk:TBlk;
 begin
  return := Blky.GetBlkByID(Self.VyhRel.UsekID,tmpBlk);
  if (return < 0) then Exit(TUsekStav.none);
- if ((tmpBlk.typ <> _BLK_USEK) and (tmpBlk.typ <> _BLK_TU)) then Exit(TUsekStav.none);
+ if ((tmpBlk.typ <> btUsek) and (tmpBlk.typ <> btTU)) then Exit(TUsekStav.none);
 
  Result := (tmpBlk as TBlkUsek).Obsazeno;
 end;
@@ -486,13 +486,13 @@ begin
    if (spojka_old > -1) then
     begin
      Blky.GetBlkByID(spojka_old, Blk);
-     if ((Blk <> nil) and (Blk.typ = _BLK_VYH)) then
+     if ((Blk <> nil) and (Blk.typ = btVyhybka)) then
        (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
     end;
 
    // pridame spojku do druhe vyhybky
    Blky.GetBlkByID(data.spojka, Blk);
-   if ((Blk = nil) or (Blk.typ <> _BLK_VYH)) then
+   if ((Blk = nil) or (Blk.typ <> btVyhybka)) then
     begin
      Self.VyhSettings.spojka := -1;
     end else begin
@@ -514,7 +514,7 @@ begin
    if (spojka_old <> -1) then
     begin
      Blky.GetBlkByID(spojka_old, Blk);
-     if ((Blk <> nil) and (Blk.typ = _BLK_VYH)) then
+     if ((Blk <> nil) and (Blk.typ = btVyhybka)) then
        (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
     end;
   end;
@@ -587,7 +587,7 @@ var inp, spojkaInp: TBlkVyhInputs;
   if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit();
 
   Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
-  if ((spojka <> nil) and (spojka.typ <> _BLK_VYH)) then
+  if ((spojka <> nil) and (spojka.typ <> btVyhybka)) then
     Exit();
 
   //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
@@ -1559,7 +1559,7 @@ begin
 
      // je soucasti vybarveneho neprofiloveho useku
      Blky.GetBlkByID(Self.UsekID, Blk);
-     if ((Blk <> nil) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU))
+     if ((Blk <> nil) and ((Blk.typ = btUsek) or (Blk.typ = btTU))
          and (fg = $A0A0A0) and (TBlkUsek(Blk).IsNeprofilJC)) then
        fg := clYellow;
     end;
@@ -1651,7 +1651,7 @@ end;
 function TBlkVyhybka.GetSpojka():TBlkVyhybka;
 begin
  Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(Result));
- if ((Result <> nil) and (Result.typ <> _BLK_VYH)) then
+ if ((Result <> nil) and (Result.typ <> btVyhybka)) then
    Result := nil;
 end;
 

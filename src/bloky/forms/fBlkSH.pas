@@ -89,7 +89,7 @@ begin
   end;
 
  Blky.GetBlkByIndex(Self.CB_PrjAddData[Self.CB_Prj_Add.ItemIndex], blk);
- if ((blk <> nil) and (blk.typ = _BLK_PREJEZD)) then
+ if ((blk <> nil) and (blk.typ = btPrejezd)) then
   begin
    Self.prejezdy.Add(blk.id);
 
@@ -128,14 +128,14 @@ begin
   end;
 
  glob.name := Self.E_Name.Text;
- glob.typ  := _BLK_SH;
+ glob.typ  := btSH;
  glob.id   := Self.SE_ID.Value;
 
  if (NewBlk) then
   begin
    glob.note := '';
    try
-     Blk := Blky.Add(_BLK_SH, glob) as TBlkSH;
+     Blk := Blky.Add(btSH, glob) as TBlkSH;
    except
      on E:Exception do
       begin
@@ -248,7 +248,7 @@ begin
  for i := 0 to Self.prejezdy.Count-1 do
    ignore[i] := Self.prejezdy[i];
 
- Blky.NactiBlokyDoObjektu(Self.CB_Prj_Add, @Self.CB_PrjAddData, @ignore, nil, _BLK_PREJEZD);
+ Blky.NactiBlokyDoObjektu(Self.CB_Prj_Add, @Self.CB_PrjAddData, @ignore, nil, btPrejezd);
 end;
 
 end.//unit

@@ -618,13 +618,13 @@ begin
 
    if (orRef.stitek = nil) then Exit();
    case (orRef.stitek.typ) of
-    _BLK_USEK, _BLK_TU : (orRef.stitek as TBlkUsek).Stitek := tmp;
-    _BLK_VYH           : (orRef.stitek as TBlkVyhybka).Stitek := tmp;
-    _BLK_UVAZKA        : (orRef.stitek as TBlkUvazka).Stitek := tmp;
-    _BLK_PREJEZD       : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
-    _BLK_ZAMEK         : (orRef.stitek as TBlkZamek).Stitek := tmp;
-    _BLK_ROZP          : (orRef.stitek as TBlkRozp).stit := tmp;
-    _BLK_IO            : (orRef.stitek as TBlkIO).stit := tmp;
+    btUsek, btTU : (orRef.stitek as TBlkUsek).Stitek := tmp;
+    btVyhybka    : (orRef.stitek as TBlkVyhybka).Stitek := tmp;
+    btUvazka     : (orRef.stitek as TBlkUvazka).Stitek := tmp;
+    btPrejezd    : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
+    btZamek      : (orRef.stitek as TBlkZamek).Stitek := tmp;
+    btRozp       : (orRef.stitek as TBlkRozp).stit := tmp;
+    btIO         : (orRef.stitek as TBlkIO).stit := tmp;
    end;//case
    orRef.stitek := nil;
   end
@@ -640,8 +640,8 @@ begin
 
    if (orRef.vyluka = nil) then Exit();
    case (orRef.vyluka.typ) of
-    _BLK_USEK, _BLK_TU : (orRef.vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
-    _BLK_VYH           : (orRef.vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
+    btUsek, btTU : (orRef.vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
+    btVyhybka    : (orRef.vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
    end;//case
    orRef.vyluka := nil;
   end
@@ -762,8 +762,8 @@ begin
   begin
    TTCPORsRef(AContext.Data).maus := (parsed[2] = '1');
    if ((Assigned(TTCPORsRef(AContext.Data).menu)) and
-       ((TTCPORsRef(AContext.Data).menu.typ = _BLK_USEK) or
-        (TTCPORsRef(AContext.Data).menu.typ = _BLK_TU))) then
+       ((TTCPORsRef(AContext.Data).menu.typ = btUsek) or
+        (TTCPORsRef(AContext.Data).menu.typ = btTU))) then
      TTCPORsRef(AContext.Data).menu.Change();
   end
 
@@ -816,7 +816,7 @@ begin
    end else begin
     i := StrToInt(parsed[2]);
     Blky.GetBlkByID(i, blk);
-    if ((blk <> nil) and (blk.typ = _BLK_AC)) then
+    if ((blk <> nil) and (blk.typ = btAC)) then
       TBlkAC(blk).ClientParse(AContext, parsed)
     else
       Self.SendLn(AContext, '-;AC;'+parsed[2]+';ERR;Neplatné id AC');

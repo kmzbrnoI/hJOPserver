@@ -88,7 +88,7 @@ begin
 
  Self.shStav := Self._def_sh_stav;
  Self.settings.prejezdy := TList<Integer>.Create();
- Self.GlobalSettings.typ := _BLK_SH;
+ Self.GlobalSettings.typ := btSH;
 end;
 
 destructor TBlkSH.Destroy();
@@ -182,7 +182,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      Result := Result + prj.name + ','
    else
      Result := Result + '#???,';
@@ -211,7 +211,7 @@ begin
  if ((itemindex-2 >= 0) and (itemindex-2 < Self.settings.prejezdy.Count)) then
   begin
    Blky.GetBlkByID(Self.settings.prejezdy[itemindex-2], prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      ORTCPServer.Menu(SenderPnl, prj, SenderOR as TOR,
                       prj.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write));
   end;
@@ -227,7 +227,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
     begin
      if (TBlkPrejezd(prj).Stav.basicStav = TBlkPrjBasicStav.disabled) then
        Exit(false);
@@ -243,7 +243,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      if (TBlkPrejezd(prj).Anulace) then
        Exit(true);
   end;
@@ -257,7 +257,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      if (TBlkPrejezd(prj).UZ) then
        Exit(true);
   end;
@@ -271,7 +271,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      if (TBlkPrejezd(prj).Stav.basicStav = TBlkPrjBasicStav.uzavreno) then
        Exit(true);
   end;
@@ -285,7 +285,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      if (TBlkPrejezd(prj).Stav.basicStav = TBlkPrjBasicStav.none) then
        Exit(true);
   end;
@@ -299,7 +299,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      if (TBlkPrejezd(prj).NOtevreni) then
        Exit(true);
   end;
@@ -314,7 +314,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      TBlkPrejezd(prj).AddSH(Self);
   end;
 end;
@@ -326,7 +326,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = _BLK_PREJEZD)) then
+   if ((prj <> nil) and (prj.typ = btPrejezd)) then
      TBlkPrejezd(prj).RemoveSH(Self);
   end;
 end;

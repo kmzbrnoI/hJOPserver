@@ -437,7 +437,7 @@ begin
     Exit;
    end;
 
-  if (Blk.typ <> _BLK_NAV) then
+  if (Blk.typ <> btNav) then
    begin
     // blok navestidla neni typu navestidlo
     Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.NavestidloBlok));
@@ -468,7 +468,7 @@ begin
       Exit;
      end;//if
 
-    if (Blk.typ <> _BLK_VYH) then
+    if (Blk.typ <> btVyhybka) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, vyhZaver.Blok));
       Exit;
@@ -510,7 +510,7 @@ begin
       Exit;
      end;//if
 
-    if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then
+    if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, usekZaver));
       Exit;
@@ -535,7 +535,7 @@ begin
      end;
 
     // kontrola typu bloku prejezdu
-    if (blk.typ <> _BLK_PREJEZD) then
+    if (blk.typ <> btPrejezd) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, prjZaver.Prejezd));
       Exit;
@@ -559,7 +559,7 @@ begin
        end;
 
       // kontrola typu oteviraciho bloku
-      if ((blk2.typ <> _BLK_USEK) and (blk2.typ <> _BLK_TU)) then
+      if ((blk2.typ <> btUsek) and (blk2.typ <> btTU)) then
        begin
         Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, prjZaver.oteviraci));
         Exit;
@@ -573,7 +573,7 @@ begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, usekZaver));
           Exit;
          end;
-        if ((blk2.typ <> _BLK_USEK) and (blk2.typ <> _BLK_TU)) then
+        if ((blk2.typ <> btUsek) and (blk2.typ <> btTU)) then
          begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, usekZaver));
           Exit;
@@ -590,7 +590,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.ref_blk));
       Exit;
      end;
-    if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then
+    if ((blk.typ <> btUsek) and (blk.typ <> btTU)) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.ref_blk));
       Exit;
@@ -600,7 +600,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.Blok));
       Exit;
      end;
-    if (blk.typ <> _BLK_VYH) then
+    if (blk.typ <> btVyhybka) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.Blok));
       Exit;
@@ -617,7 +617,7 @@ begin
   if (Self.fproperties.Trat > -1) then
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], blk);
-    if (Blk.typ <> _BLK_TU) then
+    if (Blk.typ <> btTU) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Useky[Self.fproperties.Useky.Count-1]));
       Exit;
@@ -627,7 +627,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Trat));
       Exit;
      end;
-    if (blk.typ <> _BLK_TRAT) then
+    if (blk.typ <> btTrat) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Trat));
       Exit;
@@ -648,7 +648,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.Blok));
       Exit;
      end;
-    if (blk.typ <> _BLK_ZAMEK) then
+    if (blk.typ <> btZamek) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
@@ -658,7 +658,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
       Exit;
      end;
-    if ((blk.typ <> _BLK_USEK) and (blk.typ <> _BLK_TU)) then
+    if ((blk.typ <> btUsek) and (blk.typ <> btTU)) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
@@ -2059,12 +2059,12 @@ var i,j:Integer;
       spr := Self.GetSouprava(Navestidlo, usek);
 
       // a)
-      if ((lastUsek.typ = _BLK_USEK) and (lastUsek.Stav.stanicni_kolej) and
+      if ((lastUsek.typ = btUsek) and (lastUsek.Stav.stanicni_kolej) and
           (not lastUsek.SoupravyFull())) then
        begin
         if (usek.IsSouprava()) then
          begin
-          if ((usek.typ = _BLK_TU) and (TBlkTU(usek).InTrat > -1)) then
+          if ((usek.typ = btTU) and (TBlkTU(usek).InTrat > -1)) then
            begin
             Blky.GetBlkByID((usek as TBlkTU).InTrat, TBlk(trat));
             trat.RemoveSpr(spr);
@@ -2082,12 +2082,12 @@ var i,j:Integer;
        end;
 
       // b)
-      if ((lastUsek.typ = _BLK_TU) and ((lastUsek as TBlkTU).InTrat > -1)) then
+      if ((lastUsek.typ = btTU) and ((lastUsek as TBlkTU).InTrat > -1)) then
         Blky.GetBlkByID((lastUsek as TBlkTU).InTrat, TBlk(trat))
       else
         trat := nil;
 
-      if ((trat <> nil) and (usek.IsSouprava()) and (lastUsek.typ = _BLK_TU) and
+      if ((trat <> nil) and (usek.IsSouprava()) and (lastUsek.typ = btTU) and
           ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
        begin
         tuAdd := nil;
@@ -2185,7 +2185,7 @@ var Blk:TBlk;
  begin
   Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
   if (Blk = nil) then Exit;
-  if (Blk.typ <> _BLK_NAV) then Exit;
+  if (Blk.typ <> btNav) then Exit;
   if ((Blk as TBlkNav).ZacatekVolba = TBlkNavVolba.none) then Exit;
 
   (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
@@ -2211,7 +2211,7 @@ begin
  for vb in Self.data.vb do
   begin
    Blky.GetBlkByID(vb, Blk);
-   if ((Blk <> nil) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU))) then
+   if ((Blk <> nil) and ((Blk.typ = btUsek) or (Blk.typ = btTU))) then
      (Blk as TBLkUsek).KonecJC := TZaver.no;
   end; 
 end;
@@ -2504,7 +2504,7 @@ begin
 
       Self.RozpadRuseniBlok := 0;
 
-      if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
+      if ((Usek.typ = btTU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
         TBlkTU(Usek).UvolnenoZJC();
      end;
    end;
@@ -2549,7 +2549,7 @@ begin
         writelog('JC '+Self.nazev+': smazana souprava '+spr.name+' z bloku '+Usek.name, WR_SPRPREDAT);
        end;
 
-      if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
+      if ((Usek.typ = btTU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
         TBlkTU(Usek).UvolnenoZJC();
      end;
 
@@ -3748,7 +3748,7 @@ begin
     usek := (Self.navestidlo as TBlkNav).UsekPred as TBlkUsek;
     Blky.GetBlkByID(Self.data.Useky[Self.data.Useky.Count-1], TBlk(lastUsek));
 
-    if ((usek.IsSouprava) and (lastUsek.typ = _BLK_TU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
+    if ((usek.IsSouprava) and (lastUsek.typ = btTU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
      begin
       if (trat.vyluka) then
        begin
@@ -3881,7 +3881,7 @@ function TJC.GetAB():boolean;
 var Blk:TBlk;
 begin
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
- Result := ((Blk <> nil) and (Blk.typ = _BLK_NAV) and (TBlkNav(Blk).ABJC = Self));
+ Result := ((Blk <> nil) and (Blk.typ = btNav) and (TBlkNav(Blk).ABJC = Self));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

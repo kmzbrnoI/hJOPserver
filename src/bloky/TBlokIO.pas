@@ -112,7 +112,7 @@ constructor TBlkIO.Create(index:Integer);
 begin
  inherited;
  Self.IOstate := _def_IO_stav;
- Self.GlobalSettings.typ := _BLK_IO;
+ Self.GlobalSettings.typ := btIO;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

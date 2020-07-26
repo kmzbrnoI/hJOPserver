@@ -293,7 +293,7 @@ constructor TBlkNav.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_NAV;
+ Self.GlobalSettings.typ := btNav;
  Self.NavStav := Self._def_nav_stav;
  Self.NavStav.toRnz := TDictionary<Integer, Cardinal>.Create();
  Self.NavSettings.events := TList<TBlkNavSprEvent>.Create();
@@ -494,7 +494,7 @@ procedure TBlkNav.Change(now:boolean = false);
 begin
  // zmenu navesti propagujeme do prilehle trati, kde by mohlo dojit ke zmene
  // navesti autobloku
- if ((Self.UsekPred <> nil) and (Self.UsekPred.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
+ if ((Self.UsekPred <> nil) and (Self.UsekPred.typ = btTU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
    Self.UsekPred.Change();
 
  inherited;
@@ -712,8 +712,8 @@ begin
  // ruseni nouzove jizdni cesty pri padu navestidla do STUJ
  if (navest = ncStuj) then
   begin
-   if ((Self.UsekPred <> nil) and ((Self.UsekPred.typ = _BLK_USEK) or
-       (Self.UsekPred.typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).NavJCRef.Contains(Self))) then
+   if ((Self.UsekPred <> nil) and ((Self.UsekPred.typ = btUsek) or
+       (Self.UsekPred.typ = btTU)) and ((Self.UsekPred as TBlkUsek).NavJCRef.Contains(Self))) then
     (Self.UsekPred as TBlkUsek).NavJCRef.Remove(Self);
 
    if (Assigned(Self.privol)) then
@@ -976,7 +976,7 @@ begin
  JC := Self.DNjc;
 
  Blk := Self.UsekPred;
- if ((Blk = nil) or ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU))) then
+ if ((Blk = nil) or ((Blk.typ <> btUsek) and (Blk.typ <> btTU))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
    Self.NavStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
@@ -1112,7 +1112,7 @@ begin
    if (Self.NavSettings.events[0].zastaveni.typ = TRREvType.rrtIR) then
     begin
      Blky.GetBlkByID(Self.NavSettings.events[0].zastaveni.data.irId, Blk);
-     if ((Blk = nil) or (Blk.typ <> _BLK_IR)) then Exit();
+     if ((Blk = nil) or (Blk.typ <> btIR)) then Exit();
      if (enabled) then
        RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 1)
      else
@@ -1271,7 +1271,7 @@ begin
    if ((Self.NavSettings.events.Count > 0) and (Self.NavSettings.events[0].zastaveni.typ = TRREvType.rrtIR)) then
     begin
      Blky.GetBlkByID(Self.NavSettings.events[0].zastaveni.data.irId, Blk);
-     if ((Blk <> nil) and (Blk.typ = _BLK_IR)) then
+     if ((Blk <> nil) and (Blk.typ = btIR)) then
       begin
        case (TBlkIR(Blk).Stav) of
          TIRStav.uvolneno : Result := Result + '-,*IR>,';
@@ -1353,7 +1353,7 @@ begin
  if (Self.NavSettings.events.Count = 0) then Exit();
  Usek := Self.UsekPred;
  if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
- if ((Usek = nil) or ((Usek.typ <> _BLK_USEK) and (Usek.typ <> _BLK_TU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
+ if ((Usek = nil) or ((Usek.typ <> btUsek) and (Usek.typ <> btTU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
  if (not (Usek as TBlkUsek).IsSouprava()) then
@@ -1378,7 +1378,7 @@ begin
    Exit();
   end;
 
- if ((Usek.typ = _BLK_TU) and (TBlkTU(Usek).Trat <> nil)) then
+ if ((Usek.typ = btTU) and (TBlkTU(Usek).Trat <> nil)) then
   begin
    trat := TBlkTrat(TBlkTU(Usek).Trat);
 
@@ -1476,7 +1476,7 @@ begin
          TJCNextNavType.blok: begin
            Blky.GetBlkByID(Self.DNjc.data.DalsiNavestidlo, nav);
 
-           if ((nav <> nil) and (nav.typ = _BLK_NAV) and ((nav as TBlkNav).IsPovolovaciNavest())) then
+           if ((nav <> nil) and (nav.typ = btNav) and ((nav as TBlkNav).IsPovolovaciNavest())) then
             begin
               // dalsi navestilo je na VOLNO
               if ((spr.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
@@ -1511,7 +1511,7 @@ begin
      if (spr.direction = Self.NavRel.smer) then
       begin
        if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani) and
-           (Self.UsekPred.typ = _BLK_TU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
+           (Self.UsekPred.typ = btTU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
         begin
          if (Cardinal(spr.wantedSpeed) <> TBlkTU(Self.UsekPred).Speed(spr)) then
            spr.SetRychlostSmer(TBlkTU(Self.UsekPred).Speed(spr), Self.NavRel.smer)
@@ -1663,12 +1663,12 @@ begin
    if (blk = nil) then continue;   
 
    case (blk.typ) of
-    _BLK_VYH: begin
+    btVyhybka: begin
        if (TBlkVyhybka(blk).vyhZaver) then
          TBlkVyhybka(blk).DecreaseNouzZaver(toRnz[blkId]);
     end;
 
-    _BLK_ZAMEK: begin
+    btZamek: begin
        if (TBlkZamek(blk).nouzZaver) then
          TBlkZamek(blk).DecreaseNouzZaver(toRnz[blkId]);
     end;

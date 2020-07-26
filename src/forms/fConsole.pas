@@ -155,7 +155,7 @@ begin
           M_console.Lines.Add('Blok s timto id neexistuje');
          end else begin
           case (Blk.typ) of
-           _BLK_USEK, _BLK_TU: begin
+           btUsek, btTU: begin
              (Blk as TBlkUsek).Zaver := TZaver.no;
              M_console.Lines.Add('Zrusen zaver useku '+Blk.name);
            end;

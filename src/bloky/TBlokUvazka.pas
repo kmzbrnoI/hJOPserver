@@ -123,7 +123,7 @@ constructor TBlkUvazka.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_UVAZKA;
+ Self.GlobalSettings.typ := btUvazka;
  Self.UvazkaStav := _def_uvazka_stav;
  Self.fparent := nil;
  Self.fzadost := false;

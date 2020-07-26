@@ -99,7 +99,7 @@ var blk: TBlk;
   if ((not Self.config.enabled) or (not RCSi.NoExStarted())) then Exit();
 
   Blky.GetBlkById(Self.config.AC_id, blk);
-  if ((blk = nil) or (blk.typ <> _BLK_AC)) then Exit();
+  if ((blk = nil) or (blk.typ <> btAC)) then Exit();
   AC := TBlkAC(blk);
 
   if (not RCSi.IsNonFailedModule(Self.config.RCSAdr)) then Exit();

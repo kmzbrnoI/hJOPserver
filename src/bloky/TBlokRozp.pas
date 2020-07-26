@@ -100,7 +100,7 @@ constructor TBlkRozp.Create(index:Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := _BLK_ROZP;
+ Self.GlobalSettings.typ := btRozp;
  Self.RozpStav           := Self._def_rozp_stav;
 end;//ctor
 

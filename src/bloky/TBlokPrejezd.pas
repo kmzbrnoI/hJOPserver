@@ -168,7 +168,7 @@ constructor TBlkPrejezd.Create(index:Integer);
 begin
  inherited;
 
- Self.GlobalSettings.typ := _BLK_PREJEZD;
+ Self.GlobalSettings.typ := btPrejezd;
  Self.PrjStav := Self._def_prj_stav;
  Self.PrjStav.shs := TList<TBlk>.Create();
  Self.PrjStav.rcsModules := TList<Cardinal>.Create();

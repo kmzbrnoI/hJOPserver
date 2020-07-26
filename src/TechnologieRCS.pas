@@ -205,11 +205,11 @@ begin
  for blk in Blky do
   begin
    try
-     if ((Blk.GetGlobalSettings.typ = _BLK_VYH) and ((Blk as TBlkVyhybka).detekcePolohy)) then
+     if ((Blk.GetGlobalSettings.typ = btVyhybka) and ((Blk as TBlkVyhybka).detekcePolohy)) then
        Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
-     if (Blk.typ = _BLK_PREJEZD) then
+     if (Blk.typ = btPrejezd) then
        Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
-     if ((diag.simSoupravaObsaz) and ((Blk.typ = _BLK_USEK) or (Blk.typ = _BLK_TU)) and ((Blk as TBlkUsek).IsSouprava()) and
+     if ((diag.simSoupravaObsaz) and ((Blk.typ = btUsek) or (Blk.typ = btTU)) and ((Blk as TBlkUsek).IsSouprava()) and
          ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
        Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
    except
@@ -237,7 +237,7 @@ var Blk:TBlk;
 begin
  for blk in Blky do
   begin
-   if ((Blk.typ <> _BLK_USEK) and (Blk.typ <> _BLK_TU)) then continue;
+   if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then continue;
    if (((Blk as TBlkUsek).IsSouprava()) and ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
      Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port,1);
   end;
