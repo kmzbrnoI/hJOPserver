@@ -116,6 +116,9 @@ type
      function IsAnyLokoInRegulator():Boolean;
      procedure ForceRemoveAllRegulators();
 
+     function PredictedSignal(): TBlk;
+     procedure OnPredictedSignalChange();
+
      property index: Integer read findex;
      property sdata: TSoupravaData read data;
 
@@ -150,7 +153,7 @@ implementation
 uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokNav,
       fRegulator, fMain, TBlokTratUsek, stanicniHlaseniHelper, stanicniHlaseni,
-      TechnologieTrakce, ownConvert;
+      TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -649,8 +652,12 @@ begin
 end;
 
 procedure TSouprava.SetSmer(smer:THVStanoviste);
+var addr: Integer;
 begin
  Self.SetRychlostSmer(Self.data.speed, smer);
+
+ for addr in Self.HVs do
+   HVDb[addr].OnPredictedSignalChange();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -731,12 +738,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TSouprava.SetFront(front:TObject);
+var addr: Integer;
 begin
  if (Self.data.front = front) then Exit();
 
  if (Assigned(Self.data.front)) then
    (Self.data.front as TBlkUsek).zpomalovani_ready := false;
  Self.data.front := front;
+
+ for addr in Self.HVs do
+   HVDb[addr].OnPredictedSignalChange();
+
  Self.changed := true;
 end;
 
@@ -1036,5 +1048,58 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TSouprava.PredictedSignal(): TBlk;
+var frontblk: TBlkUsek;
+    nav: TBlkNav;
+    jc: TJC;
+    tu: TBlkTU;
+begin
+ frontblk := Self.front as TBlkUsek;
+ if (frontblk = nil) then
+   Exit(nil);
+
+ if (frontblk.typ = _BLK_TU) then
+   Exit(TBlkTU(frontblk).nextNav);
+
+ case (Self.direction) of
+   THVStanoviste.lichy: nav := frontblk.navL as TBlkNav;
+   THVStanoviste.sudy: nav := frontblk.navS as TBlkNav;
+ end;
+
+ if ((nav <> nil) and (nav.SymbolType = TBlkNavSymbol.hlavni)) then
+   Exit(nav);
+
+ jc := JCDb.FindPostavenaJCWithUsek(frontblk.id);
+ if (jc = nil) then
+   Exit(nil);
+
+ case (jc.data.DalsiNavaznost) of
+  TJCNextNavType.zadna: Exit(nil);
+  TJCNextNavType.trat: begin
+    Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], TBlk(frontblk));
+    if (frontblk <> nil) and (frontblk.typ = _BLK_TU) then
+     begin
+      tu := TBlkTU(frontblk);
+      Exit(tu.nextNav);
+     end else
+      Exit(nil);
+  end;
+  TJCNextNavType.blok: begin
+    Blky.GetBlkByID(jc.data.DalsiNavestidlo, TBlk(nav));
+    Exit(nav);
+  end;
+ end;
+
+ Result := nil;
+end;
+
+procedure TSouprava.OnPredictedSignalChange();
+var addr: Integer;
+begin
+ for addr in Self.HVs do
+   HVDb[addr].OnPredictedSignalChange();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

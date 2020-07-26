@@ -40,6 +40,7 @@ TTCPRegulator = class
     procedure RemoveLok(Regulator:TIdContext; HV:THV; info:string);
 
     procedure SendExpectedSpeed(reg: TIdContext; HV: THV);
+    procedure SendPredictedSignal(reg: TIdContext; HV: THV);
 
 end;
 
@@ -389,7 +390,10 @@ begin
    HV.ruc := (parsed[4] = '1')
 
  else if (parsed[3] = 'EXPECTED-SPEED') then
-   Self.SendExpectedSpeed(Sender, HV);
+   Self.SendExpectedSpeed(Sender, HV)
+
+ else if (parsed[3] = 'NAV') then
+   Self.SendPredictedSignal(Sender, HV);
 
 end;
 
@@ -606,6 +610,7 @@ begin
   end;
 
  Self.SendExpectedSpeed(Regulator, HV);
+ Self.SendPredictedSignal(Regulator, HV);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -641,6 +646,11 @@ end;
 procedure TTCPRegulator.SendExpectedSpeed(reg: TIdContext; HV: THV);
 begin
  ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.adresa)+';EXPECTED-SPEED;'+HV.ExpectedSpeedStr());
+end;
+
+procedure TTCPRegulator.SendPredictedSignal(reg: TIdContext; HV: THV);
+begin
+ ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.adresa)+';NAV;'+HV.PredictedSignalStr());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -162,6 +162,9 @@ type
     function CanBeNextVB(vbs: TList<TObject>; start: TBlk):boolean;
     function CanBeKC(vbs: TList<TObject>; start: TBlk):boolean;
 
+    function GetNavL(): TBlk;
+    function GetNavS(): TBlk;
+
   protected
    UsekSettings:TBlkUsekSettings;
 
@@ -239,6 +242,8 @@ type
     property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
     property NavJCRef:TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
     property SekceStav:TList<TUsekStav> read UsekStav.sekce;
+    property navL: TBlk read GetNavL;  // warning: slow getter!
+    property navS: TBLk read GetNavS;  // warning: slow getter!
 
     property SoupravaI: Integer read GetSoupravaI;
     property Souprava: TSouprava read GetSouprava;
@@ -2432,6 +2437,26 @@ function TBlkUsek.CanBeKC(vbs: TList<TObject>; start: TBlk):boolean;
 begin
  Result := ((JCDb.FindJC(start as TBlkNav, vbs, Self) <> nil) or
             (MultiJCDb.FindMJC(start as TBlkNav, vbs, Self) <> nil));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkUsek.GetNavL(): TBlk;
+var blk: TBlk;
+begin
+ for blk in Blky do
+   if ((blk.typ = _BLK_NAV) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.lichy)) then
+     Exit(blk);
+ Result := nil;
+end;
+
+function TBlkUsek.GetNavS(): TBlk;
+var blk: TBlk;
+begin
+ for blk in Blky do
+   if ((blk.typ = _BLK_NAV) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.sudy)) then
+     Exit(blk);
+ Result := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

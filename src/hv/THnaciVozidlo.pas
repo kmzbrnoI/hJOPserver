@@ -168,6 +168,7 @@ type
 
      procedure BroadcastRegulators(msg: string);
      procedure SendExpectedSpeed();
+     procedure SendPredictedSignal();
 
    public
     index: Word; // index v seznamu vsech hnacich vozidel
@@ -233,8 +234,11 @@ type
      procedure SetPom(pom:TPomStatus; ok: TCb; err: TCb);
 
      function IsSouprava(): Boolean;
+
      procedure OnExpectedSpeedChange();
      function ExpectedSpeedStr(): string;
+     procedure OnPredictedSignalChange();
+     function PredictedSignalStr(): string;
 
      class function CharToHVFuncType(c:char):THVFuncType;
      class function HVFuncTypeToChar(t:THVFuncType):char;
@@ -269,7 +273,7 @@ implementation
 
 uses ownStrUtils, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
       RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce,
-      ownConvert;
+      ownConvert, TBlokNav;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1123,6 +1127,7 @@ begin
   end;
 
  Self.OnExpectedSpeedChange();
+ Self.OnPredictedSignalChange();
  Self.changed := true;
 end;
 
@@ -1779,6 +1784,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure THV.BroadcastRegulators(msg: string);
+var reg: THVRegulator;
+begin
+ for reg in Self.stav.regulators do
+   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.adresa)+';'+msg);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure THV.OnExpectedSpeedChange();
 begin
  if (Self.stav.regulators.Count > 0) then
@@ -1798,11 +1812,32 @@ begin
  Self.BroadcastRegulators('EXPECTED-SPEED;'+Self.ExpectedSpeedStr());
 end;
 
-procedure THV.BroadcastRegulators(msg: string);
-var reg: THVRegulator;
+////////////////////////////////////////////////////////////////////////////////
+
+procedure THV.OnPredictedSignalChange();
 begin
- for reg in Self.stav.regulators do
-   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.adresa)+';'+msg);
+ if (Self.stav.regulators.Count > 0) then
+   Self.SendPredictedSignal();
+end;
+
+function THV.PredictedSignalStr(): string;
+var nav: TBlkNav;
+begin
+ if (Self.IsSouprava()) then
+  begin
+   nav := TBlkNav(Soupravy[Self.souprava].PredictedSignal());
+   if (nav <> nil) then
+    begin
+     Result := nav.name + ';' + IntToStr(nav.cilovaNavest);
+    end else
+     Result :=  '-;-';
+  end else
+   Result :=  '-;-';
+end;
+
+procedure THV.SendPredictedSignal();
+begin
+ Self.BroadcastRegulators('NAV;'+Self.PredictedSignalStr());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

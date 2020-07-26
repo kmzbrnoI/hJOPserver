@@ -186,6 +186,7 @@ type
 
     procedure UnregisterAllEvents();
     function IsChanging():boolean;
+    function GetCilovaNavest(): Integer;
 
   public
     constructor Create(index:Integer);
@@ -235,6 +236,7 @@ type
 
     //stavove promenne
     property Navest:Integer read NavStav.Navest write mSetNavest;
+    property cilovaNavest: Integer read GetCilovaNavest;
     property ZacatekVolba:TBlkNavVolba read NavStav.ZacatekVolba write SetZacatekVolba;
     property ZacatekAB:Boolean read NavStav.ZacatekAB;
     property AB:boolean read GetAB write SetAB;
@@ -649,6 +651,7 @@ end;
 
 procedure TBlkNav.SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent);
 var oblr:TOR;
+    spri: Integer;
 begin
  if ((Self.NavStav.Navest = _NAV_DISABLED) or (Self.NavSettings.zamknuto)) then
   begin
@@ -741,6 +744,15 @@ begin
 
  if (not TBlkNav.IsPovolovaciNavest(Self.NavStav.cilova_navest)) then // zastavujeme ihned
    Self.UpdateRychlostSpr(true);
+
+ if (Self.UsekPred <> nil) then
+  begin
+   for spri in TBlkUsek(Self.UsekPred).Soupravs do
+     Soupravy[spri].OnPredictedSignalChange();
+   if (TBlkUsek(Self.UsekPred).SprPredict <> nil) then
+     TBlkUsek(Self.UsekPred).SprPredict.OnPredictedSignalChange();
+  end;
+
  Self.Change();
 end;
 
@@ -1556,14 +1568,8 @@ begin
 end;
 
 function TBlkNav.IsOpakVystraha(): Boolean;
-var navest: Integer;
 begin
- if (Self.changing) then
-   navest := Self.NavStav.cilova_navest
- else
-   navest := Self.Navest;
-
- Result := (navest = _NAV_OPAK_VYSTRAHA) or (navest = _NAV_OPAK_VYSTRAHA_40);
+ Result := (Self.cilovaNavest = _NAV_OPAK_VYSTRAHA) or (Self.cilovaNavest = _NAV_OPAK_VYSTRAHA_40);
 end;
 
 class function TBlkNav.IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean;
@@ -1874,14 +1880,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkNav.FourtyKmph(): Boolean;
-var navest: Integer;
 begin
- if (Self.changing) then
-   navest := Self.NavStav.cilova_navest
- else
-   navest := Self.Navest;
- Result := (navest = _NAV_VOLNO_40) or (navest = _NAV_VYSTRAHA_40) or
-           (navest = _NAV_40_OCEK_40) or (navest = _NAV_OPAK_VYSTRAHA_40);
+ Result := (Self.cilovaNavest = _NAV_VOLNO_40) or (Self.cilovaNavest = _NAV_VYSTRAHA_40) or
+           (Self.cilovaNavest = _NAV_40_OCEK_40) or (Self.cilovaNavest = _NAV_OPAK_VYSTRAHA_40);
 end;
 
 class function TBlkNav.AddOpak(navest: Integer): Integer;
@@ -1894,6 +1895,16 @@ begin
  else
   Result := navest;
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkNav.GetCilovaNavest(): Integer;
+begin
+ if (Self.changing) then
+   Result := Self.NavStav.cilova_navest
+ else
+   Result := Self.NavStav.Navest;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -453,7 +453,6 @@ begin
  end;
 end;
 
-//vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
 function TJCDB.FindPostavenaJCWithUsek(usek_id:Integer): TJC;
 var jc: TJC;
     usekid: Integer;
