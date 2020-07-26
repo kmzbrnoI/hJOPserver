@@ -282,7 +282,7 @@ uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
-    Graphics, Prevody, TechnologieTrakce, TMultiJCDatabase;
+    Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
 
 constructor TBlkUsek.Create(index:Integer);
 begin
@@ -2271,8 +2271,8 @@ begin
 
  if (Self.Obsazeno = TUsekStav.disabled) then
   begin
-   Result := Result + PrevodySoustav.ColorToStr(clFuchsia) + ';' + PrevodySoustav.ColorToStr(clBlack) +
-     ';0;0;' + PrevodySoustav.ColorToStr(clBlack);
+   Result := Result + ownConvert.ColorToStr(clFuchsia) + ';' + ownConvert.ColorToStr(clBlack) +
+     ';0;0;' + ownConvert.ColorToStr(clBlack);
   end else begin
    // --- Popredi ---
 
@@ -2316,7 +2316,7 @@ begin
    if (fg = clYellow) then
      nebarVetve := clYellow;
 
-   Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+   Result := Result + ownConvert.ColorToStr(fg) + ';';
 
    // --- Pozadi ---
 
@@ -2329,12 +2329,12 @@ begin
    if ((Self.napajeni <> TBoosterSignal.ok) or
       (Self.zkrat = TBoosterSignal.undef)) then bg := clBlue;
 
-   Result := Result + PrevodySoustav.ColorToStr(bg) + ';';
+   Result := Result + ownConvert.ColorToStr(bg) + ';';
 
 
-   Result := Result + IntToStr(PrevodySoustav.BoolToInt(Self.NUZ)) + ';' +
+   Result := Result + IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' +
                       IntToStr(Integer(Self.KonecJC)) + ';' +
-                      PrevodySoustav.ColorToStr(nebarVetve) + ';';
+                      ownConvert.ColorToStr(nebarVetve) + ';';
 
    // seznam souprav
    Result := Result + '{';
@@ -2348,8 +2348,8 @@ begin
        sfg := clAqua;
 
      Result := Result + '(' + Soupravy[souprava].name + ';' +
-                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.dir_L)) +
-                              IntToStr(PrevodySoustav.BoolToInt(Soupravy[souprava].sdata.dir_S)) + ';';
+                              IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_L)) +
+                              IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_S)) + ';';
 
      if ((Soupravy[souprava].stationTo = Self) and (sbg = clBlack)) then
        sbg := clSilver;
@@ -2358,11 +2358,11 @@ begin
      if (Soupravy[souprava].IsPOdj(Self)) then
        predvidanyOdjezd.GetPOdjColors(Soupravy[souprava].GetPOdj(Self), sfg, sbg);
 
-     Result := Result + PrevodySoustav.ColorToStr(sfg) + ';' +
-                        PrevodySoustav.ColorToStr(sbg) + ';';
+     Result := Result + ownConvert.ColorToStr(sfg) + ';' +
+                        ownConvert.ColorToStr(sbg) + ';';
 
      if (Self.vlakPresun = i) then
-      Result := Result + PrevodySoustav.ColorToStr(clYellow) + ';';
+      Result := Result + ownConvert.ColorToStr(clYellow) + ';';
 
      Result := Result + ')';
     end;
@@ -2379,8 +2379,8 @@ begin
 
      Result := Result + '(' + Self.SprPredict.name + ';' +
                 '00;' +
-                PrevodySoustav.ColorToStr(sfg) + ';' +
-                PrevodySoustav.ColorToStr(sbg) + ';)';
+                ownConvert.ColorToStr(sfg) + ';' +
+                ownConvert.ColorToStr(sbg) + ';)';
     end;
 
    Result := Result + '}';

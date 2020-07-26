@@ -105,7 +105,7 @@ var
 
 implementation
 
-uses fRychlostiEdit, GetSystems, Prevody, FileSystem, TBlok,
+uses fRychlostiEdit, GetSystems, FileSystem, TBlok,
      TOblsRizeni, BoosterDb, SnadnSpusteni, TJCDatabase, THVDatabase,
      Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas;
 

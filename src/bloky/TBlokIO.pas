@@ -106,7 +106,7 @@ type
 
 implementation
 
-uses TOblsRizeni, TCPServerOR, Prevody;
+uses TOblsRizeni, TCPServerOR, ownConvert;
 
 constructor TBlkIO.Create(index:Integer);
 begin
@@ -366,8 +366,8 @@ begin
  end else
    fg := $A0A0A0;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
- Result := Result + PrevodySoustav.ColorToStr(bg) + ';0;';
+ Result := Result + ownConvert.ColorToStr(fg) + ';';
+ Result := Result + ownConvert.ColorToStr(bg) + ';0;';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -490,7 +490,7 @@ end;
 procedure TBlkIO.MenuInClick(SenderPnl:TIdContext; SenderOR:TObject; target: Boolean);
 begin
  try
-   RCSi.SetInput(Self.IOsettings.RCSinput, PrevodySoustav.BoolToInt(target));
+   RCSi.SetInput(Self.IOsettings.RCSinput, ownConvert.BoolToInt(target));
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;

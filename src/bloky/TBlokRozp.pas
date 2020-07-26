@@ -94,7 +94,7 @@ type
 
 implementation
 
-uses TCPServerOR, Prevody, Graphics, PTUtils;
+uses TCPServerOR, ownConvert, Graphics, PTUtils;
 
 constructor TBlkRozp.Create(index:Integer);
 begin
@@ -296,8 +296,8 @@ begin
 
  if (Self.stit <> '') then bg := clTeal;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
-                    PrevodySoustav.ColorToStr(bg) + ';0;';
+ Result := Result + ownConvert.ColorToStr(fg) + ';' +
+                    ownConvert.ColorToStr(bg) + ';0;';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

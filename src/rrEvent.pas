@@ -16,7 +16,7 @@ unit rrEvent;
 
 interface
 
-uses Classes, SysUtils, Prevody, StrUtils;
+uses Classes, SysUtils, StrUtils;
 
 type
   TRREvType = (rrtUsek = 1, rrtIR = 2, rrtTime = 3);
@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses TBloky, TBlok, TBlokIR, TBlokUsek;
+uses TBloky, TBlok, TBlokIR, TBlokUsek, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -104,12 +104,12 @@ begin
 
    case (Self.m_data.typ) of
      rrtUsek: begin
-       Self.m_data.usekState := PrevodySoustav.StrToBool(strs[1]);
+       Self.m_data.usekState := ownConvert.StrToBool(strs[1]);
        Self.m_data.usekPart := StrToInt(strs[2]);
      end;
 
      rrtIR: begin
-       Self.m_data.irState := PrevodySoustav.StrToBool(strs[1]);
+       Self.m_data.irState := ownConvert.StrToBool(strs[1]);
        Self.m_data.irId := StrToInt(strs[2]);
      end;
 
@@ -134,10 +134,10 @@ begin
  Result := IntToStr(Integer(Self.m_data.typ)) + ';';
 
  case (Self.m_data.typ) of
-   rrtUsek: Result := Result + IntToStr(PrevodySoustav.BoolToInt(m_data.usekState)) + ';' +
+   rrtUsek: Result := Result + IntToStr(ownConvert.BoolToInt(m_data.usekState)) + ';' +
               IntToStr(m_data.usekPart);
 
-   rrtIR  : Result := Result + IntToStr(PrevodySoustav.BoolToInt(m_data.irState)) + ';' +
+   rrtIR  : Result := Result + IntToStr(ownConvert.BoolToInt(m_data.irState)) + ';' +
               IntToStr(m_data.irId);
 
    rrtTime: Result := Result + FormatDateTime('nn:ss.z', m_data.time);

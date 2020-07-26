@@ -162,7 +162,7 @@ type
 implementation
 
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics, TCPORsRef, Prevody, Diagnostics, appEv;
+     Graphics, TCPORsRef, Diagnostics, appEv, ownConvert;
 
 constructor TBlkPrejezd.Create(index:Integer);
 begin
@@ -489,13 +489,13 @@ begin
  try
    RCSi.SetOutput(
      Self.PrjSettings.RCSOutputs.Zavrit,
-     PrevodySoustav.BoolToInt(((Self.PrjStav.PC_UZ) or (Self.Zaver) or (Self.TrackClosed)) and (not Self.PrjStav.PC_NOT))
+     ownConvert.BoolToInt(((Self.PrjStav.PC_UZ) or (Self.Zaver) or (Self.TrackClosed)) and (not Self.PrjStav.PC_NOT))
    );
 
    if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
-     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, PrevodySoustav.BoolToInt(Self.PrjStav.PC_NOT));
+     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.NOtevrit, ownConvert.BoolToInt(Self.PrjStav.PC_NOT));
    if (Self.PrjSettings.RCSOutputs.BlokPozUse) then
-     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.BlokPoz, PrevodySoustav.BoolToInt(not Self.TrackPozitiva));
+     RCSi.SetOutput(Self.PrjSettings.RCSOutputs.BlokPoz, ownConvert.BoolToInt(not Self.TrackPozitiva));
  except
 
  end;
@@ -675,9 +675,9 @@ end;
 procedure TBlkPrejezd.SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, PrevodySoustav.BoolToInt(uzavreno));
-   RCSi.SetInput(Self.PrjSettings.RCSInputs.Vystraha, PrevodySoustav.BoolToInt(vystraha));
-   RCSi.SetInput(Self.PrjSettings.RCSInputs.Otevreno, PrevodySoustav.BoolToInt(otevreno));
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, ownConvert.BoolToInt(uzavreno));
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Vystraha, ownConvert.BoolToInt(vystraha));
+   RCSi.SetInput(Self.PrjSettings.RCSInputs.Otevreno, ownConvert.BoolToInt(otevreno));
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -917,8 +917,8 @@ begin
    end;
  end;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
-                    PrevodySoustav.ColorToStr(bg) + ';0;' +
+ Result := Result + ownConvert.ColorToStr(fg) + ';' +
+                    ownConvert.ColorToStr(bg) + ';0;' +
                     IntToStr(Integer(Self.Stav.basicStav)) + ';';
 end;
 

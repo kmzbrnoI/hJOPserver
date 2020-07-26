@@ -283,7 +283,7 @@ implementation
 uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
      GetSystems, Logging, SprDb, TBlokIR, Zasobnik, ownStrUtils,
      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
-     predvidanyOdjezd, Prevody;
+     predvidanyOdjezd, ownConvert;
 
 constructor TBlkNav.Create(index:Integer);
 begin
@@ -1852,10 +1852,10 @@ begin
   bg := clFuchsia;
  end;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
-                    PrevodySoustav.ColorToStr(bg) + ';' +
-                    IntToStr(PrevodySoustav.BoolToInt(Self.Navest = 8)) + ';' +
-                    IntToStr(PrevodySoustav.BoolToInt(Self.AB)) + ';';
+ Result := Result + ownConvert.ColorToStr(fg) + ';' +
+                    ownConvert.ColorToStr(bg) + ';' +
+                    IntToStr(ownConvert.BoolToInt(Self.Navest = 8)) + ';' +
+                    IntToStr(ownConvert.BoolToInt(Self.AB)) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -101,7 +101,7 @@ type
 
 implementation
 
-uses GetSystems, TBloky, Graphics, Prevody, Diagnostics,
+uses GetSystems, TBloky, Graphics, Diagnostics, ownConvert,
     TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka;
 
 constructor TBlkZamek.Create(index:Integer);
@@ -414,8 +414,8 @@ begin
  else if (Self.nouzZaver) then fg := clAqua
  else fg := $A0A0A0;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
- Result := Result + PrevodySoustav.ColorToStr(bg) + ';0;';
+ Result := Result + ownConvert.ColorToStr(fg) + ';';
+ Result := Result + ownConvert.ColorToStr(bg) + ';0;';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

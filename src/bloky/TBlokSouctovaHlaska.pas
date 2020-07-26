@@ -80,7 +80,7 @@ type
 
 implementation
 
-uses TBlokPrejezd, TBloky, TOblsRizeni, Graphics, Prevody;
+uses TBlokPrejezd, TBloky, TOblsRizeni, Graphics, ownConvert;
 
 constructor TBlkSH.Create(index:Integer);
 begin
@@ -342,8 +342,8 @@ begin
  fg := clTeal;
  if (Self.anulace) then
    fg := clWhite;
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
- Result := Result + PrevodySoustav.ColorToStr(clBlack) + ';0;';
+ Result := Result + ownConvert.ColorToStr(fg) + ';';
+ Result := Result + ownConvert.ColorToStr(clBlack) + ';0;';
 
  // left rectangle
  fg := clGreen;
@@ -351,7 +351,7 @@ begin
    fg := clRed;
  if (not Self.komunikace) then
    fg := clFuchsia;
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+ Result := Result + ownConvert.ColorToStr(fg) + ';';
 
  // right rectangle
  fg := clBlack;
@@ -359,7 +359,7 @@ begin
    fg := $A0A0A0;
  if (Self.UZ) then
    fg := clWhite;
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+ Result := Result + ownConvert.ColorToStr(fg) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

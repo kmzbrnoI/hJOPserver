@@ -116,8 +116,8 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Souprava,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek, Prevody;
+uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Souprava, ownConvert,
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
 constructor TBlkUvazka.Create(index:Integer);
 begin
@@ -632,9 +632,9 @@ begin
    else fg := $A0A0A0;
   end;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';' +
-                    PrevodySoustav.ColorToStr(bg) + ';' +
-                    IntToStr(PrevodySoustav.BoolToInt(trat.Zadost)) + ';';
+ Result := Result + ownConvert.ColorToStr(fg) + ';' +
+                    ownConvert.ColorToStr(bg) + ';' +
+                    IntToStr(ownConvert.BoolToInt(trat.Zadost)) + ';';
 
  case (trat.Smer) of
   TTratSmer.disabled, TTratSmer.zadny

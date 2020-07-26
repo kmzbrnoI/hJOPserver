@@ -45,7 +45,7 @@ var
 
 implementation
 
-uses fSettings, fSplash, fAdminForm, GetSystems, Prevody, Diagnostics, fMain,
+uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
      TechnologieRCS, TOblsRizeni, TBloky, BoosterDb, SnadnSpusteni, THVDatabase,
      TCPServerPT, Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,

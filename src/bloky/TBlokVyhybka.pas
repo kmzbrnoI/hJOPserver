@@ -244,7 +244,7 @@ type
 implementation
 
 uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
-      TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, Prevody;
+      TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, ownConvert;
 
 constructor TBlkVyhybka.Create(index:Integer);
 begin
@@ -1578,7 +1578,7 @@ begin
    // nouzovy zaver vyhybky ma prioritu i nad obsazenim useku
    fg := clAqua;
   end;
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';';
+ Result := Result + ownConvert.ColorToStr(fg) + ';';
 
  // Pozadi
  bg := clBlack;
@@ -1594,8 +1594,8 @@ begin
      bg := clOlive;
   end;
 
- Result := Result + PrevodySoustav.ColorToStr(bg) + ';' +
-                    IntToStr(PrevodySoustav.BoolToInt(Self.NUZ)) + ';' +
+ Result := Result + ownConvert.ColorToStr(bg) + ';' +
+                    IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' +
                     IntToStr(Integer(Self.Poloha))+';';
 end;
 

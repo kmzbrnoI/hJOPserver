@@ -37,7 +37,7 @@ implementation
 
 uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokNav, TBlokIR, TBlokPrejezd,
       fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp, TBlokIO,
-      TBlokSouctovaHlaska, TBlokAC, Prevody;
+      TBlokSouctovaHlaska, TBlokAC, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -337,8 +337,8 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[2] := '---';
 
       if (TBlkIO(Blk).enabled) then
-        Self.LV.Items[line].SubItems[3] := 'I: ' + PrevodySoustav.BoolToStr(TBlkIO(Blk).activeInput) +
-                                           ', O: ' + PrevodySoustav.BoolToStr(TBlkIO(Blk).activeOutput)
+        Self.LV.Items[line].SubItems[3] := 'I: ' + ownConvert.BoolToYesNo(TBlkIO(Blk).activeInput) +
+                                           ', O: ' + ownConvert.BoolToYesNo(TBlkIO(Blk).activeOutput)
       else
         Self.LV.Items[line].SubItems[3] := 'disabled';
 

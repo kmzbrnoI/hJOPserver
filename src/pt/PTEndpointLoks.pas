@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses JclPCRE, PTUtils, THvDatabase, THnaciVozidlo, Prevody;
+uses JclPCRE, PTUtils, THvDatabase, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +41,7 @@ begin
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
    if (params.ContainsKey('aktivni')) then
-     aktivni := PrevodySoustav.BoolToInt(PTUtils.HttpParamToBool(params['aktivni'])) + 1;
+     aktivni := ownConvert.BoolToInt(PTUtils.HttpParamToBool(params['aktivni'])) + 1;
 
    for addr := 0 to _MAX_ADDR-1 do
     begin

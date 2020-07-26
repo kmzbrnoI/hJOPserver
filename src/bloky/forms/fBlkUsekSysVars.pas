@@ -54,7 +54,7 @@ var
 
 implementation
 
-uses fMain, Prevody, SprDb, Booster;
+uses fMain, ownConvert, SprDb, Booster;
 
 {$R *.dfm}
 
@@ -100,7 +100,7 @@ procedure TF_BlkUsek_tech.SavePrmnToProgram;
 var Blk:TBlk;
  begin
   Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
-  Self.Blk.NUZ := PrevodySoustav.IntToBool(CB_NUZ.ItemIndex);
+  Self.Blk.NUZ := ownConvert.IntToBool(CB_NUZ.ItemIndex);
   Self.Blk.KonecJC := TZaver(CB_KonecVC.ItemIndex);
   if (SE_Souprava_Predict.Value > -1) then
     Self.Blk.SprPredict := Soupravy[SE_Souprava_Predict.Value]

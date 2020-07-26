@@ -121,7 +121,7 @@
 				<Form>F_BlkUsek_tech</Form>
 			</DCCReference>
 			<DCCReference Include="helpers\GetSystems.pas"/>
-			<DCCReference Include="helpers\Prevody.pas"/>
+			<DCCReference Include="helpers\ownConvert.pas"/>
 			<DCCReference Include="TechnologieRCS.pas"/>
 			<DCCReference Include="jc\TechnologieJC.pas"/>
 			<DCCReference Include="FileSystem.pas"/>

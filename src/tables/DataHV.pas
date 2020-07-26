@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses THvDatabase, Prevody, fMain, Trakce, SprDb;
+uses THvDatabase, ownConvert, fMain, Trakce, SprDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -158,25 +158,25 @@ var line:Integer;
    // prevzato
 
    Self.LV.Items[line].SubItems[9] := IntToStr(hv.realSpeed) + 'km/h / '+IntToStr(Slot.step)+' st';
-   Self.LV.Items[line].SubItems[10] := IntToStr(PrevodySoustav.BoolToInt(Slot.direction));
-   Self.LV.Items[line].SubItems[11] := IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[0]));
+   Self.LV.Items[line].SubItems[10] := IntToStr(ownConvert.BoolToInt(Slot.direction));
+   Self.LV.Items[line].SubItems[11] := IntToStr(ownConvert.BoolToInt(HV.slotFunkce[0]));
 
    str := '';
-   for i := 1 to 4 do str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
+   for i := 1 to 4 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
    Self.LV.Items[line].SubItems[12] := str;
 
    str := '';
-   for i := 5 to 8 do str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
+   for i := 5 to 8 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
    Self.LV.Items[line].SubItems[13] := str;
 
    str := '';
-   for i := 9 to 12 do str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
+   for i := 9 to 12 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
    Self.LV.Items[line].SubItems[14] := str;
 
    str := '';
    for i := 13 to 20 do
     begin
-     str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
+     str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
      if (i = 16) then str := str + ' ';
     end;
    Self.LV.Items[line].SubItems[15] := str;
@@ -184,7 +184,7 @@ var line:Integer;
    str := '';
    for i := 21 to 28 do
     begin
-     str := str + IntToStr(PrevodySoustav.BoolToInt(HV.slotFunkce[i]));
+     str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
      if (i = 24) then str := str + ' ';
     end;
    Self.LV.Items[line].SubItems[16] := str;

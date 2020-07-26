@@ -43,7 +43,7 @@ uses
   fSystemAutoStart in 'forms\fSystemAutoStart.pas' {F_AutoStartSystems},
   fBlkUsekSysVars in 'bloky\forms\fBlkUsekSysVars.pas' {F_BlkUsek_tech},
   GetSystems in 'helpers\GetSystems.pas',
-  Prevody in 'helpers\Prevody.pas',
+  ownConvert in 'helpers\ownConvert.pas',
   TechnologieRCS in 'TechnologieRCS.pas',
   TechnologieJC in 'jc\TechnologieJC.pas',
   FileSystem in 'FileSystem.pas',

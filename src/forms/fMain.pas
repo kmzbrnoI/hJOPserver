@@ -485,7 +485,7 @@ implementation
 
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
-     fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems, Prevody,
+     fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
      TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni,
      SnadnSpusteni, TBlokSouctovaHlaska, TBlokPrejezd, TJCDatabase, Logging,

@@ -205,7 +205,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokNav, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase,
-    TBlokTratUsek, appEv, timeHelper, Prevody, Graphics;
+    TBlokTratUsek, appEv, timeHelper, ownConvert, Graphics;
 
 constructor TBlkTrat.Create(index:Integer);
 begin
@@ -1202,21 +1202,21 @@ begin
 
  Result := Self.souprava.name + '|';
  if (sprPredict) then
-   Result := Result + PrevodySoustav.ColorToStr(clYellow) + '|'
+   Result := Result + ownConvert.ColorToStr(clYellow) + '|'
  else if (porucha_bp) then
-   Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|'
+   Result := Result + ownConvert.ColorToStr(clAqua) + '|'
  else if ((Self.souprava.speed = 0) and (not stopsInHalt)) then
-   Result := Result + PrevodySoustav.ColorToStr(clRed) + '|'
+   Result := Result + ownConvert.ColorToStr(clRed) + '|'
  else
-   Result := Result + PrevodySoustav.ColorToStr(clWhite) + '|';
+   Result := Result + ownConvert.ColorToStr(clWhite) + '|';
 
  if (Self.mTimeDefined) then
    Result := Result + FormatDateTime('nn', Self.mTime);
  Result := Result + '|';
  if (Self.predict) then
-   Result := Result + PrevodySoustav.ColorToStr(clYellow) + '|'
+   Result := Result + ownConvert.ColorToStr(clYellow) + '|'
  else
-   Result := Result + PrevodySoustav.ColorToStr(clAqua) + '|';
+   Result := Result + ownConvert.ColorToStr(clAqua) + '|';
 
  for addr in Self.souprava.HVs do
    Result := Result + HVDb[addr].Data.Nazev + '|';

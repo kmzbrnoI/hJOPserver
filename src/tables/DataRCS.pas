@@ -1,4 +1,4 @@
-unit DataRCS;
+﻿unit DataRCS;
 
 // TRCSTableData - trida starajici se o vyplnovani tabulky RCS
 
@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses TechnologieRCS, RCS, Prevody;
+uses TechnologieRCS, RCS;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -226,7 +226,7 @@ var j, cnt:integer;
           LI.SubItems[4] := '-';
          end;
 
-        LI.SubItems[5] := 'Ano';
+        LI.SubItems[5] := '✓';
         LI.SubItems[6] := RCSi.GetModuleFW(addr);
        end else begin
         // neexistuje
@@ -235,7 +235,7 @@ var j, cnt:integer;
         if (RCSi.IsModuleFailure(addr)) then
           LI.SubItems[5] := 'Fail'
         else
-          LI.SubItems[5] := 'Ne';
+          LI.SubItems[5] := '';
         LI.SubItems[6] := '-';
        end;
      end else begin

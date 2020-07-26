@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses TechnologieRCS, TBloky, Prevody, RCS, TBlokAC, TBlok;
+uses TechnologieRCS, TBloky, ownConvert, RCS, TBlokAC, TBlok;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -143,20 +143,20 @@ var blk: TBlk;
     // outputs
 
     if (Self.config.OUT_Ready > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Ready, PrevodySoustav.BoolToInt((not AC.running) and (AC.clientConnected)));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Ready, ownConvert.BoolToInt((not AC.running) and (AC.clientConnected)));
 
     if (Self.config.OUT_Start > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Start, PrevodySoustav.BoolToInt(AC.running));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Start, ownConvert.BoolToInt(AC.running));
 
     if (Self.config.OUT_Pause > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Pause, PrevodySoustav.BoolToInt((not AC.running) and (not AC.paused)));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Pause, ownConvert.BoolToInt((not AC.running) and (not AC.paused)));
 
     if (Self.config.OUT_Stop > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Stop, PrevodySoustav.BoolToInt(not AC.running));
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Stop, ownConvert.BoolToInt(not AC.running));
 
     // TODO: repeating
     { if (Self.config.OUT_Repeat > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Repeat, PrevodySoustav.BoolToInt(AC.repeating)); }
+      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Repeat, ownConvert.BoolToInt(AC.repeating)); }
 
   except
 

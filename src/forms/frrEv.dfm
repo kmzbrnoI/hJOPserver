@@ -146,7 +146,7 @@ object F_RREv: TF_RREv
       Width = 129
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
     end
   end

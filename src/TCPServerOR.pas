@@ -11,7 +11,7 @@ interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
-     IdContext, TBlok, Prevody, ComCtrls, IdSync, TBloky, UPO, TCPORsRef,
+     IdContext, TBlok, ComCtrls, IdSync, TBloky, UPO, TCPORsRef,
      User, Souprava, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
@@ -160,7 +160,7 @@ uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
-      TBlokRozp, TBlokIO;
+      TBlokRozp, TBlokIO, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -915,7 +915,7 @@ begin
    if (parsed[2] = 'GET') then
      oblr.PanelSendOsv(AContext)
    else if (parsed[2] = 'SET') then
-   oblr.PanelSetOsv(AContext, parsed[3], PrevodySoustav.StrToBool(parsed[4]));
+   oblr.PanelSetOsv(AContext, parsed[3], ownConvert.StrToBool(parsed[4]));
   end
 
  else if (parsed[1] = 'HV') then
@@ -1121,9 +1121,9 @@ begin
      end;//acse align
 
      if (items[i][j].fg <> clNone) then
-      str := str + PrevodySoustav.ColorToStr(items[i][j].fg) + '|';
+      str := str + ownConvert.ColorToStr(items[i][j].fg) + '|';
      if (items[i][j].bg <> clNone) then
-      str := str + PrevodySoustav.ColorToStr(items[i][j].bg) + '|';
+      str := str + ownConvert.ColorToStr(items[i][j].bg) + '|';
      str := str + items[i][j].str + '}]';
     end;//for j
    str := str + '}]';

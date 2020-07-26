@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses Prevody;
+uses ownConvert;
 
 {$R *.dfm}
 
@@ -98,10 +98,10 @@ begin
  Self.M_Vyluka.Text := Self.OpenBlk.Vyluka;
 
  Self.SE_Zaver.Value := Self.OpenBlk.Stav.vyhZaver;
- Self.CB_Stav_Plus.ItemIndex  := PrevodySoustav.BoolToInt(Self.OpenBlk.StaveniPlus);
- Self.CB_Stav_Minus.ItemIndex := PrevodySoustav.BoolToInt(Self.OpenBlk.StaveniMinus);
+ Self.CB_Stav_Plus.ItemIndex  := ownConvert.BoolToInt(Self.OpenBlk.StaveniPlus);
+ Self.CB_Stav_Minus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.StaveniMinus);
 
- Self.CB_Locked.ItemIndex     := PrevodySoustav.BoolToInt(Self.OpenBlk.Stav.outputLocked);
+ Self.CB_Locked.ItemIndex     := ownConvert.BoolToInt(Self.OpenBlk.Stav.outputLocked);
  Self.SE_Redukce.Value        := Self.OpenBlk.Stav.intentionalLocks;
 
  Self.B_CancelRedukce.Enabled := Self.OpenBlk.intentionalLocked;
@@ -115,8 +115,8 @@ begin
  if (Self.SE_Zaver.Value = 0) then
    Self.OpenBlk.NullVyhZaver();
 
- Self.OpenBlk.StaveniPlus  := PrevodySoustav.IntToBool(CB_Stav_Plus.ItemIndex);
- Self.OpenBlk.StaveniMinus := PrevodySoustav.IntToBool(CB_Stav_Minus.ItemIndex);
+ Self.OpenBlk.StaveniPlus  := ownConvert.IntToBool(CB_Stav_Plus.ItemIndex);
+ Self.OpenBlk.StaveniMinus := ownConvert.IntToBool(CB_Stav_Minus.ItemIndex);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

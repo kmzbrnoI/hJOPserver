@@ -29,7 +29,7 @@ var
 implementation
 
 uses SprDb, Souprava, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
-       TBloky, TBlok, THnaciVozidlo;
+       TBloky, TBlok, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -174,10 +174,7 @@ var spr:TSoupravaData;
   else
     Self.LV.Items[line].SubItems[14] := '-';
 
-  if (spr.announcement) then
-    Self.LV.Items[line].SubItems[15] := 'Ano'
-  else
-    Self.LV.Items[line].SubItems[15] := 'Ne';
+  Self.LV.Items[line].SubItems[15] := ownConvert.BoolToTick(spr.announcement);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////

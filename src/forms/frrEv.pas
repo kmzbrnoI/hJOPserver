@@ -47,7 +47,7 @@ type
 
 implementation
 
-uses TBlok, Prevody;
+uses TBlok, ownConvert;
 
 {$R *.dfm}
 
@@ -86,14 +86,14 @@ begin
  case (ev.typ) of
    rrtUsek: begin
      Self.CB_Typ.ItemIndex := 0;
-     Self.CB_UsekStav.ItemIndex := PrevodySoustav.BoolToInt(ev.data.usekState);
+     Self.CB_UsekStav.ItemIndex := ownConvert.BoolToInt(ev.data.usekState);
      Self.CB_UsekPart.ItemIndex := ev.data.usekPart;
    end;
 
    rrtIR: begin
      Self.CB_Typ.ItemIndex := 1;
      Blky.NactiBlokyDoObjektu(CB_IRId, @CB_IR, nil, nil, _BLK_IR, ev.data.irId);
-     Self.CB_IRStav.ItemIndex := PrevodySoustav.BoolToInt(ev.data.irState);
+     Self.CB_IRStav.ItemIndex := ownConvert.BoolToInt(ev.data.irState);
    end;
 
    rrtTime: begin
@@ -114,13 +114,13 @@ begin
   0: begin
     data.typ := rrtUsek;
     data.usekPart := Self.CB_UsekPart.ItemIndex;
-    data.usekState := PrevodySoustav.IntToBool(Self.CB_UsekStav.ItemIndex);
+    data.usekState := ownConvert.IntToBool(Self.CB_UsekStav.ItemIndex);
   end;
 
   1: begin
     data.typ := rrtIR;
     data.irId := Blky.GetBlkID(CB_IR[Self.CB_IRId.ItemIndex]);
-    data.irState := PrevodySoustav.IntToBool(Self.CB_IRStav.ItemIndex);
+    data.irState := ownConvert.IntToBool(Self.CB_IRStav.ItemIndex);
   end;
 
   2: begin

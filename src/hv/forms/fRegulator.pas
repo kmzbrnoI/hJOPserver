@@ -107,7 +107,7 @@ implementation
 
 {$R *.dfm}
 
-uses fMain, Trakce, Prevody, TechnologieTrakce;
+uses fMain, Trakce, TechnologieTrakce, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -248,7 +248,7 @@ begin
  B_PrevzitLoko.Enabled := not OpenHV.acquired or OpenHV.stav.trakceError;
  B_OdhlLoko.Enabled := OpenHV.acquired;
  CHB_Total.Checked := OpenHV.ruc;
- Self.L_mine.Caption := PrevodySoustav.BoolToStr(OpenHV.acquired);
+ Self.L_mine.Caption := ownConvert.BoolToYesNo(OpenHV.acquired);
 
  if ((OpenHV.acquired) and ((OpenHV.pom = pc) or (OpenHV.pom = released))) then
   begin

@@ -56,7 +56,7 @@ var
 
 implementation
 
-uses Prevody, Logging, TCPServerOR, THVDatabase, appEv, FileSystem;
+uses Logging, TCPServerOR, THVDatabase, appEv, FileSystem;
 
 ////////////////////////////////////////////////////////////////////////////////
 

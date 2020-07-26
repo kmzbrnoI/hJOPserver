@@ -47,7 +47,7 @@ var
 implementation
 
 uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb, TCPORsRef,
-     fRegulator, fMain, Prevody, TOblRizeni, TOblsRizeni, TechnologieTrakce;
+     fRegulator, fMain, TOblRizeni, TOblsRizeni, TechnologieTrakce, ownConvert;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -361,7 +361,7 @@ begin
 
    Func := HV.slotFunkce;
    for i := left to right do
-     Func[i] := PrevodySoustav.StrToBool(parsed[5][i-left+1]);
+     Func[i] := ownConvert.StrToBool(parsed[5][i-left+1]);
    HV.stav.funkce := Func;
 
    GetMem(LokResponseData, SizeOf(TLokResponseData));
@@ -486,7 +486,7 @@ begin
    if (HV.Stav.regulators[i].conn <> exclude) then
      ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';SPD;'+
                         IntToStr(HV.realSpeed)+';'+IntToStr(HV.speedStep)+';'+
-                        IntToStr(prevodySoustav.BoolToInt(HV.direction))+';');
+                        IntToStr(ownConvert.BoolToInt(HV.direction))+';');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

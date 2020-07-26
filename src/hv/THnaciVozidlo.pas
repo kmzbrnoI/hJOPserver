@@ -260,8 +260,9 @@ type
 
 implementation
 
-uses ownStrUtils, Prevody, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
-      RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce;
+uses ownStrUtils, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
+      RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce,
+      ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -475,7 +476,7 @@ begin
  // stav funkci
  str := ini.ReadString(section, 'stav_funkci', '');
  for i := 0 to _HV_FUNC_MAX do
-   Self.Stav.funkce[i] := ((i < Length(str)) and PrevodySoustav.StrToBool(str[i+1]));
+   Self.Stav.funkce[i] := ((i < Length(str)) and ownConvert.StrToBool(str[i+1]));
 end;
 
 procedure THV.SaveData(const filename:string);
@@ -624,7 +625,7 @@ begin
   end;
 
  Result := Result + '|' + IntToStr(Self.Slot.step) + '|' + IntToStr(Self.realSpeed) + '|' +
-           IntToStr(PrevodySoustav.BoolToInt(Self.direction)) + '|' + Self.Stav.stanice.id + '|';
+           IntToStr(ownConvert.BoolToInt(Self.direction)) + '|' + Self.Stav.stanice.id + '|';
 
  if (mode = TLokStringMode.full) then
   begin
@@ -987,7 +988,7 @@ begin
 
  stavFunkci := '';
  for i := 0 to _HV_FUNC_MAX do
-   stavFunkci := stavFunkci + IntToStr(PrevodySoustav.BoolToInt(Self.slotFunkce[i]));
+   stavFunkci := stavFunkci + IntToStr(ownConvert.BoolToInt(Self.slotFunkce[i]));
  json['stavFunkci'] := stavFunkci;
 
  case (Self.Stav.StanovisteA) of
@@ -1028,7 +1029,7 @@ begin
 
    if (reqJson.Contains('smer')) then
     begin
-     Self.SetSpeedStepDir(speed, PrevodySoustav.IntToBool(dir));
+     Self.SetSpeedStepDir(speed, ownConvert.IntToBool(dir));
     end else
      Self.SetSpeedStepDir(speed, Self.direction);
   end else if (reqJson.Contains('rychlostKmph')) then
@@ -1037,12 +1038,12 @@ begin
 
    if (reqJson.Contains('smer')) then
     begin
-     Self.SetSpeedDir(speed, PrevodySoustav.IntToBool(dir));
+     Self.SetSpeedDir(speed, ownConvert.IntToBool(dir));
     end else
      Self.SetSpeedDir(speed, Self.direction);
   end else if (reqJson.Contains('smer')) then
   begin
-   Self.SetSpeedStepDir(Self.speedStep, PrevodySoustav.IntToBool(dir));
+   Self.SetSpeedStepDir(Self.speedStep, ownConvert.IntToBool(dir));
   end;
 
  if (reqJson.Contains('stavFunkci')) then
@@ -1050,7 +1051,7 @@ begin
    for i := 0 to _HV_FUNC_MAX do
     begin
      if (i < Length(reqJson.S['stavFunkci'])) then
-       noveFunkce[i] := PrevodySoustav.StrToBool(reqJson.S['stavFunkci'][i+1])
+       noveFunkce[i] := ownConvert.StrToBool(reqJson.S['stavFunkci'][i+1])
      else
        noveFunkce[i] := Self.Stav.funkce[i];
     end;
@@ -1230,7 +1231,7 @@ begin
 
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
  TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': rychlostní stupeň: ' + IntToStr(speedStep) +
-             ', směr: ' + IntToStr(PrevodySoustav.BoolToInt(direction)));
+             ', směr: ' + IntToStr(ownConvert.BoolToInt(direction)));
 
  try
    TrakceI.LocoSetSpeed(Self.adresa, Self.slot.step, Self.direction,
@@ -1283,7 +1284,7 @@ begin
  Self.stav.funkce[func] := state;
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
  TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': F' + IntToStr(func) +
-             ': ' + IntToStr(PrevodySoustav.BoolToInt(state)));
+             ': ' + IntToStr(ownConvert.BoolToInt(state)));
 
  try
    TrakceI.LocoSetSingleFunc(Self.adresa, func, Self.slot.functions,
@@ -1745,7 +1746,7 @@ end;
 
 function THV.GetStACurrentDirection():Boolean;
 begin
- Result := Self.direction xor PrevodySoustav.IntToBool(Integer(Self.Stav.StanovisteA));
+ Result := Self.direction xor ownConvert.IntToBool(Integer(Self.Stav.StanovisteA));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

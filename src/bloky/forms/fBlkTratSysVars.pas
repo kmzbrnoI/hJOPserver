@@ -48,7 +48,7 @@ implementation
 
 {$R *.dfm}
 
-uses Prevody, SprDb;
+uses ownConvert, SprDb;
 
 procedure TF_BlkTrat_tech.B_AddSprClick(Sender: TObject);
 begin
@@ -103,9 +103,9 @@ end;
 procedure TF_BlkTrat_tech.Update();
 var spr:TBlkTratSouprava;
 begin
- Self.CB_Zaver.ItemIndex  := PrevodySoustav.BoolToInt(trat.Zaver);
+ Self.CB_Zaver.ItemIndex  := ownConvert.BoolToInt(trat.Zaver);
  Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;
- Self.CB_Zadost.ItemIndex := PrevodySoustav.BoolToInt(trat.Zadost);
+ Self.CB_Zadost.ItemIndex := ownConvert.BoolToInt(trat.Zadost);
 
  if (trat.SprPredict <> nil) then
    Self.SE_Souprava.Value := trat.SprPredict.soupravai
@@ -119,9 +119,9 @@ end;
 
 procedure TF_BlkTrat_tech.Save();
 begin
- trat.Zaver  := PrevodySoustav.IntToBool(CB_Zaver.ItemIndex);
+ trat.Zaver  := ownConvert.IntToBool(CB_Zaver.ItemIndex);
  trat.Smer   := TTratSmer(Self.CB_Smer.ItemIndex-1);
- trat.Zadost := PrevodySoustav.IntToBool(CB_Zadost.ItemIndex);
+ trat.Zadost := ownConvert.IntToBool(CB_Zadost.ItemIndex);
 
  if (Self.SE_Souprava.Value = -1) then
    trat.SprPredict := nil

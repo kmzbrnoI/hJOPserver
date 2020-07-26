@@ -287,7 +287,7 @@ implementation
 ////////////////////////////////////////////////////////////////////////////////
 
 uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain,
-     TechnologieJC, TJCDatabase, Prevody, TCPServerOR,
+     TechnologieJC, TJCDatabase, ownConvert, TCPServerOR,
      TOblsRizeni, TBlok, THVDatabase, SprDb,
      UserDb, THnaciVozidlo, Trakce, User, TCPORsRef,
      fRegulator, RegulatorTCP, ownStrUtils, Souprava,
@@ -1386,7 +1386,7 @@ begin
 
  str := Self.id + ';OSV;';
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(PrevodySoustav.BoolToInt(Self.PanelGetOsv(i))) + ']';
+   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(ownConvert.BoolToInt(Self.PanelGetOsv(i))) + ']';
  ORTCPServer.SendLn(Sender, str);
 end;
 
@@ -1405,7 +1405,7 @@ begin
   if (Self.ORProp.Osvetleni[i].name = id) then
    begin
     try
-      RCSi.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, PrevodySoustav.BoolToInt(state));
+      RCSi.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, ownConvert.BoolToInt(state));
       osv := Self.ORProp.Osvetleni[i];
       osv.default_state := state;
       Self.ORProp.Osvetleni[i] := osv;
@@ -1425,7 +1425,7 @@ begin
  try
    for osv in Self.ORProp.Osvetleni do
      if (RCSi.IsModule(osv.board)) then
-       RCSi.SetOutput(osv.board, osv.port, PrevodySoustav.BoolToInt(osv.default_state));
+       RCSi.SetOutput(osv.board, osv.port, ownConvert.BoolToInt(osv.default_state));
  except
 
  end;

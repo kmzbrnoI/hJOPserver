@@ -174,7 +174,7 @@ var
 implementation
 
 uses fMain, TechnologieRCS, fRegulator, SprDb, GetSystems, THVDatabase, DataHV,
-    Prevody, TBloky, RegulatorTCP, TCPServerOR;
+    TBloky, RegulatorTCP, TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 

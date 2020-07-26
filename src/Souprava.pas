@@ -150,7 +150,7 @@ implementation
 uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokNav,
       fRegulator, fMain, TBlokTratUsek, stanicniHlaseniHelper, stanicniHlaseni,
-      TechnologieTrakce, Prevody;
+      TechnologieTrakce, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -618,7 +618,7 @@ begin
      continue;
     end;
 
-   direction := PrevodySoustav.IntToBool(Integer(dir) xor Integer(HVDb[addr].stav.StanovisteA));
+   direction := ownConvert.IntToBool(Integer(dir) xor Integer(HVDb[addr].stav.StanovisteA));
 
    try
      HVDb[addr].SetSpeedDir(Self.data.speed, direction,
@@ -816,7 +816,7 @@ begin
 
  dir := HVDb[Self.HVs[0]].stACurrentDirection;
 
- if (dir = PrevodySoustav.IntToBool(Integer(Self.direction))) then Exit();
+ if (dir = ownConvert.IntToBool(Integer(Self.direction))) then Exit();
  for i := 1 to Self.HVs.Count-1 do
    if (dir <> HVDb[Self.HVs[i]].stACurrentDirection) then
      Exit();

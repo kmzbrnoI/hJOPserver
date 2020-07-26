@@ -110,7 +110,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, Prevody, Diagnostics,
+uses GetSystems, TechnologieRCS, TBloky, ownConvert, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka,
     TCPServerPT, ownStrUtils;
 
@@ -302,9 +302,9 @@ begin
 
  flash := Self.running;
 
- Result := Result + PrevodySoustav.ColorToStr(fg) + ';'
-                  + PrevodySoustav.ColorToStr(bg) + ';'
-                  + IntToStr(PrevodySoustav.BoolToInt(flash)) + ';';
+ Result := Result + ownConvert.ColorToStr(fg) + ';'
+                  + ownConvert.ColorToStr(bg) + ';'
+                  + IntToStr(ownConvert.BoolToInt(flash)) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -432,7 +432,7 @@ begin
    for panel in Self.m_state.panelsShowingState do
      Self.PanelShowState(panel, nil);
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'FG-COLOR')) then begin
-   color := PrevodySoustav.StrToColor(parsed[5]);
+   color := ownConvert.StrToColor(parsed[5]);
    if ((color <> clBlack) and (color <> $A0A0A0) and (color <> clFuchsia)) then
      Self.SetFgColor(color);
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 7) and (UpperCase(parsed[4]) = 'ERROR')) then begin

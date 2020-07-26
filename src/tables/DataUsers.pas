@@ -29,7 +29,8 @@ var
 
 implementation
 
-uses fMain, UserDb, User, Prevody, ownStrUtils, StrUtils, TOblRizeni, TOblsRizeni;
+uses fMain, UserDb, User, ownStrUtils, StrUtils, TOblRizeni, TOblsRizeni,
+      ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -77,8 +78,8 @@ begin
  Self.LV.Items[line].Caption := IntToStr(line);
  Self.LV.Items[line].SubItems[0] := user.username;
  Self.LV.Items[line].SubItems[1] := user.fullName;
- Self.LV.Items[line].SubItems[3] := PrevodySoustav.BoolToStr(user.regulator);
- Self.LV.Items[line].SubItems[4] := PrevodySoustav.BoolToStr(user.root);
+ Self.LV.Items[line].SubItems[3] := ownConvert.BoolToTick(user.regulator);
+ Self.LV.Items[line].SubItems[4] := ownConvert.BoolToTick(user.root);
  Self.LV.Items[line].Subitems[5] := EscapeNewline(user.note);
  Self.LV.Items[line].SubItems[6] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
 

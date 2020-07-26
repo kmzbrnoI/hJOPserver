@@ -222,7 +222,7 @@ type
 
 implementation
 
-uses SprDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase, Prevody,
+uses SprDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase,
      logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
