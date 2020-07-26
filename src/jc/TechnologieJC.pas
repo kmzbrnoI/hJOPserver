@@ -2685,35 +2685,35 @@ var Nav,DalsiNav:TBlkNav;
       if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.zadna) or
           (Self.fproperties.DalsiNavaznost = TJCNextNavType.trat) or
           ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and
-           ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest())))) then
+           ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest()) and (not DalsiNav.IsOpakVystraha())))) then
        begin
-        // na dalsim navestidle lze jet
-        if (Self.data.odbocka) then begin
+        // na dalsim navestidle je navest povolujici jizdu (vyjma PN)
+        if (Self.data.odbocka) then
+         begin
           if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and
-              ((DalsiNav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
-               ((DalsiNav.Navest = TBlkNav._NAV_40_OCEK_40)) or
-               (DalsiNav.Navest = TBlkNav._NAV_VOLNO_40))) then
+              ((DalsiNav.Navest = TBlkNav._NAV_OPAK_OCEK_40) or (DalsiNav.FourtyKmph()))) then
             Navest := TBlkNav._NAV_40_OCEK_40
           else
             Navest := TBlkNav._NAV_VOLNO_40;
-        end else begin
+         end else begin
           if ((Self.fproperties.DalsiNavaznost = TJCNextNavType.blok) and
-              ((DalsiNav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
-               ((DalsiNav.Navest = TBlkNav._NAV_40_OCEK_40)) or
-               (DalsiNav.Navest = TBlkNav._NAV_VOLNO_40))) then
+              ((DalsiNav.Navest = TBlkNav._NAV_OPAK_OCEK_40) or (DalsiNav.FourtyKmph()))) then
             Navest := TBlkNav._NAV_OCEK_40
           else
             Navest := TBlkNav._NAV_VOLNO;
-        end;
+         end;
 
        end else begin
-        // na dalsim navestidle je na STUJ
+        // na dalsim navestidle je STUJ nebo opakoveni navesti vystraha (to je pro nas jako stuj)
 
         if (Self.data.odbocka) then
           Navest := TBlkNav._NAV_VYSTRAHA_40
         else
           Navest := TBlkNav._NAV_VYSTRAHA;
        end;
+
+      if ((Self.fproperties.nzv) and (Navest <> TBlkNav._NAV_VOLNO)) then
+        Navest := TBlkNav.AddOpak(Navest);
      end;//case vlak
 
      end;//case

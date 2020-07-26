@@ -539,11 +539,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
-//se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak
-procedure TJCDb.CheckNNavaznost(nav:TBlkNav);
-var JC:TJC;
-    next_nav:TBlkNav;
+// Jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
+// se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak.
+procedure TJCDb.CheckNNavaznost(nav: TBlkNav);
+var JC: TJC;
+    prev_nav: TBlkNav;
+    navest: Integer;
 begin
   for JC in Self.JCs do
    begin
@@ -551,39 +552,40 @@ begin
         (JC.data.DalsiNavaznost <> TJCNextNavType.blok) or
         (JC.data.DalsiNavestidlo <> nav.id)) then continue;
 
-    Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(next_nav));
+    Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(prev_nav));
 
-    if (not next_nav.IsPovolovaciNavest()) then continue;
-    if (next_nav.changing) then continue;
+    if (not prev_nav.IsPovolovaciNavest()) then continue;
+    if (prev_nav.changing) then continue;
 
-    if (nav.IsPovolovaciNavest()) then
+    if ((nav.IsPovolovaciNavest()) and (not nav.IsOpakVystraha())) then
      begin
-      if (JC.data.odbocka) then begin
-        if ((nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
-            (nav.Navest = TBlkNav._NAV_40_OCEK_40) or
-            (nav.Navest = TBlkNav._NAV_VOLNO_40)) then
-          (nav as TBlkNav).Navest := TBlkNav._NAV_40_OCEK_40
+      if (JC.data.odbocka) then
+       begin
+        if ((nav.FourtyKmph()) or (nav.Navest = TBlkNav._NAV_OPAK_OCEK_40)) then
+          navest := TBlkNav._NAV_40_OCEK_40
         else
-          next_nav.Navest := TBlkNav._NAV_VOLNO_40;
+          navest := TBlkNav._NAV_VOLNO_40;
        end else begin
-        if ((nav.Navest = TBlkNav._NAV_VYSTRAHA_40) or
-             (nav.Navest = TBlkNav._NAV_40_OCEK_40) or
-             (nav.Navest = TBlkNav._NAV_VOLNO_40)) then
-          next_nav.Navest := TBlkNav._NAV_OCEK_40
+        if ((nav.FourtyKmph()) or (nav.Navest = TBlkNav._NAV_OPAK_OCEK_40)) then
+          navest := TBlkNav._NAV_OCEK_40
         else
-          next_nav.Navest := TBlkNav._NAV_VOLNO;
+          navest := TBlkNav._NAV_VOLNO;
        end;
 
      end else begin
 
       if (JC.data.odbocka) then
-        next_nav.Navest := TBlkNav._NAV_VYSTRAHA_40
+        navest := TBlkNav._NAV_VYSTRAHA_40
       else
-        next_nav.Navest := TBlkNav._NAV_VYSTRAHA;
+        navest := TBlkNav._NAV_VYSTRAHA;
 
      end;
-   end;//for i
 
+    if ((JC.data.nzv) and (navest <> TBlkNav._NAV_VOLNO)) then
+      navest := TBlkNav.AddOpak(navest);
+
+    prev_nav.Navest := navest;
+   end;//for i
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses TBlokVyhybka, TJCDatabase, TechnologieJC, TBlok, TBloky, fMain;
+uses TBlokVyhybka, TJCDatabase, TechnologieJC, TBlok, TBloky, fMain, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -181,6 +181,8 @@ begin
      str := str + '?, ';
   end;
  Self.LV.Items[line].SubItems[15] := LeftStr(str, Length(str)-2);
+
+ Self.LV.Items[line].SubItems[16] := ownConvert.BoolToTick(JCData.nzv);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

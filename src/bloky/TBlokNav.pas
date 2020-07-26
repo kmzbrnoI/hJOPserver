@@ -192,6 +192,7 @@ type
     destructor Destroy(); override;
 
     function IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):boolean; overload;
+    function IsOpakVystraha(): Boolean;
     class function IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean; overload;
 
     //load/save data
@@ -221,6 +222,7 @@ type
     procedure RemoveBlkFromRnz(blkId:Integer);
     procedure RCtimerTimeout();
     function FourtyKmph(): Boolean;
+    class function AddOpak(navest: Integer): Integer;
 
     function GetSouprava(usek:TBlk = nil): TSouprava;
     procedure PropagatePOdjToTrat();
@@ -1553,6 +1555,17 @@ begin
    Result := TBlkNav.IsPovolovaciNavest(Self.Navest, jctype);
 end;
 
+function TBlkNav.IsOpakVystraha(): Boolean;
+var navest: Integer;
+begin
+ if (Self.changing) then
+   navest := Self.NavStav.cilova_navest
+ else
+   navest := Self.Navest;
+
+ Result := (navest = _NAV_OPAK_VYSTRAHA) or (navest = _NAV_OPAK_VYSTRAHA_40);
+end;
+
 class function TBlkNav.IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean;
 begin
  if (jcType = TJCType.vlak) then
@@ -1843,8 +1856,8 @@ begin
     if (bg = clBlack) then
       bg := $A0A0A0;
   end;
-  _NAV_VOLNO, _NAV_VYSTRAHA, _NAV_OCEK_40, _NAV_VOLNO_40,
-  _NAV_VYSTRAHA_40, _NAV_40_OCEK_40: fg := clLime;
+  _NAV_VOLNO, _NAV_VYSTRAHA, _NAV_OCEK_40, _NAV_VOLNO_40, _NAV_VYSTRAHA_40, _NAV_40_OCEK_40,
+  _NAV_OPAK_VOLNO, _NAV_OPAK_VYSTRAHA, _NAV_OPAK_OCEK_40, _NAV_OPAK_VYSTRAHA_40: fg := clLime;
   _NAV_PRIVOL, _NAV_POSUN_ZAJ, _NAV_POSUN_NEZAJ: fg := clWhite;
   _NAV_VSE: fg := clYellow;
  else
@@ -1869,6 +1882,18 @@ begin
    navest := Self.Navest;
  Result := (navest = _NAV_VOLNO_40) or (navest = _NAV_VYSTRAHA_40) or
            (navest = _NAV_40_OCEK_40) or (navest = _NAV_OPAK_VYSTRAHA_40);
+end;
+
+class function TBlkNav.AddOpak(navest: Integer): Integer;
+begin
+ case (navest) of
+  _NAV_VOLNO: Result := _NAV_OPAK_VOLNO;
+  _NAV_VYSTRAHA: Result := _NAV_OPAK_VYSTRAHA;
+  _NAV_OCEK_40: Result := _NAV_OPAK_OCEK_40;
+  _NAV_VYSTRAHA_40: Result := _NAV_OPAK_VYSTRAHA_40;
+ else
+  Result := navest;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
