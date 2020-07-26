@@ -2917,9 +2917,9 @@ var Blk:TBlk;
 
   //////////////////////
    _BLK_NAV:begin
-    if ((Blk as TBlkNav).Navest < 0) then
+    if ((Blk as TBlkNav).Navest < ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY  // disabled
-    else if ((Blk as TBlkNav).Navest = 0) then
+    else if ((Blk as TBlkNav).Navest = ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
     else
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;

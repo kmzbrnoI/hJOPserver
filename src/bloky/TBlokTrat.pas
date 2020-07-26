@@ -160,7 +160,7 @@ type
 
     procedure CallChangeToTU();
     procedure UpdateSprPredict();
-    function NavestProtismer():Integer;
+    function NavestProtismer(): Integer;
 
     function SameUserControlsBothUvazka():boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
                                                                                 // kdyz je true, do trati neni potreba zadat
@@ -934,7 +934,7 @@ begin
            last.SprPredict := Blk.SprPredict;
            break;
           end;
-         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = 0)) then
+         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = ncStuj)) then
           begin
            Blky.SprPrediction(Self.navSudy);
            Exit();
@@ -964,7 +964,7 @@ begin
            last.SprPredict := Blk.SprPredict;
            break;
           end;
-         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = 0)) then
+         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = ncStuj)) then
           begin
            Blky.SprPrediction(Self.navLichy);
            Exit();
@@ -1076,13 +1076,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.NavestProtismer():Integer;
+function TBlkTrat.NavestProtismer(): Integer;
 begin
  case (Self.navestidla) of
-  TTratNavestidla.autoblok: Result := TBlkNav._NAV_ZHASNUTO;
-  TTratNavestidla.hradlo: Result := TBlkNav._NAV_STUJ;
+  TTratNavestidla.autoblok: Result := Integer(ncZhasnuto);
+  TTratNavestidla.hradlo: Result := Integer(ncStuj);
  else
-  Result := TBlkNav._NAV_ZHASNUTO;
+  Result := Integer(ncZhasnuto);
  end;
 end;
 

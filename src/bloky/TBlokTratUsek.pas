@@ -1011,7 +1011,7 @@ begin
  // predavani soupravy z predchoziho TU do meho TU
  if ((Self.prevTU <> nil) and (Self.Obsazeno = TUsekStav.obsazeno) and
      (Self.prevTU.Obsazeno = TUsekStav.obsazeno) and
-     ((Self.navKryci = nil) or (TBlkNav(Self.navKryci).Navest > 0))) then
+     ((Self.navKryci = nil) or (TBlkNav(Self.navKryci).IsPovolovaciNavest()))) then
   begin
    // nastala aktivace blokove podminky
    Self.bpInBlk := true;
@@ -1191,7 +1191,7 @@ begin
     begin
      Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
      if (Blk <> nil) then
-       TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
+       TBlkNav(Blk).Navest := TBlkNavCode(TBlkTrat(Self.Trat).NavestProtismer());
     end;
   end;
 
@@ -1201,7 +1201,7 @@ begin
     begin
      Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
      if (Blk <> nil) then
-       TBlkNav(Blk).Navest := TBlkTrat(Self.Trat).NavestProtismer();
+       TBlkNav(Blk).Navest := TBlkNavCode(TBlkTrat(Self.Trat).NavestProtismer());
     end;
   end;
 
@@ -1220,23 +1220,23 @@ begin
 
  // nastavime kryci navestidlo
  if ((Self.navKryci <> nil) and (not TBlkNav(Self.navKryci).ZAM) and
-     (TBlkNav(Self.navKryci).Navest >= TBlkNav._NAV_STUJ)) then
+     (TBlkNav(Self.navKryci).Navest >= ncStuj)) then
   begin
    if (not Self.sectReady) then
     begin
      // sekce obsazena -> navestidlo na STUJ
-     TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_STUJ
+     TBlkNav(Self.navKryci).Navest := ncStuj
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
      case (TBlkTrat(Self.Trat).navestidla) of
-       TTratNavestidla.hradlo: TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
+       TTratNavestidla.hradlo: TBlkNav(Self.navKryci).Navest := ncVolno;
        TTratNavestidla.autoblok: begin
          if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest()) or (TBlkNav(Self.nextNav).IsOpakVystraha())) then
-           TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VYSTRAHA
-         else if ((TBlkNav(Self.nextNav).FourtyKmph()) or (TBlkNav(Self.nextNav).Navest = TBlkNav._NAV_OPAK_OCEK_40)) then
-           TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_OCEK_40
+           TBlkNav(Self.navKryci).Navest := ncVystraha
+         else if ((TBlkNav(Self.nextNav).FourtyKmph()) or (TBlkNav(Self.nextNav).Navest = ncOpakOcek40)) then
+           TBlkNav(Self.navKryci).Navest := ncOcek40
          else
-           TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
+           TBlkNav(Self.navKryci).Navest := ncVolno;
        end;
      end;
     end;

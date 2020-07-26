@@ -543,7 +543,7 @@ end;
 procedure TJCDb.CheckNNavaznost(nav: TBlkNav);
 var JC: TJC;
     prev_nav: TBlkNav;
-    navest: Integer;
+    navest: TBlkNavCode;
 begin
   for JC in Self.JCs do
    begin
@@ -560,27 +560,27 @@ begin
      begin
       if (JC.data.odbocka) then
        begin
-        if ((nav.FourtyKmph()) or (nav.Navest = TBlkNav._NAV_OPAK_OCEK_40)) then
-          navest := TBlkNav._NAV_40_OCEK_40
+        if ((nav.FourtyKmph()) or (nav.Navest = ncOpakOcek40)) then
+          navest := nc40Ocek40
         else
-          navest := TBlkNav._NAV_VOLNO_40;
+          navest := ncVolno40;
        end else begin
-        if ((nav.FourtyKmph()) or (nav.Navest = TBlkNav._NAV_OPAK_OCEK_40)) then
-          navest := TBlkNav._NAV_OCEK_40
+        if ((nav.FourtyKmph()) or (nav.Navest = ncOpakOcek40)) then
+          navest := ncOcek40
         else
-          navest := TBlkNav._NAV_VOLNO;
+          navest := ncVolno;
        end;
 
      end else begin
 
       if (JC.data.odbocka) then
-        navest := TBlkNav._NAV_VYSTRAHA_40
+        navest := ncVystraha40
       else
-        navest := TBlkNav._NAV_VYSTRAHA;
+        navest := ncVystraha;
 
      end;
 
-    if ((JC.data.nzv) and (navest <> TBlkNav._NAV_VOLNO)) then
+    if ((JC.data.nzv) and (navest <> ncVolno)) then
       navest := TBlkNav.AddOpak(navest);
 
     prev_nav.Navest := navest;
@@ -629,7 +629,7 @@ begin
     begin
      Blky.GetBlkByID(jc.data.NavestidloBlok, tmpblk);
      if ((TBlkNav(tmpblk).DNjc = jc) and
-         ((TBlkNav(tmpblk).Navest > TBlkNav._NAV_STUJ) or (TBlkNav(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
+         ((TBlkNav(tmpblk).IsPovolovaciNavest()) or (TBlkNav(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
       begin
        jc.RusJCWithoutBlk();
        for oblr in (tmpBlk as TBlkNav).OblsRizeni do

@@ -895,7 +895,7 @@ begin
  for blk in Self.data do
   begin
    if (blk.typ <> _BLK_NAV) then continue;
-   if ((blk as TBlkNav).Navest <> 8) then continue;
+   if ((blk as TBlkNav).Navest <> ncPrivol) then continue;
 
    for moblr in (blk as TBlkNav).OblsRizeni do
     if (moblr = oblR) then

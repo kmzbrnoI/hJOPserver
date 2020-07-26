@@ -1084,7 +1084,7 @@ begin
        if (JC <> nil) then
         begin
          Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(Nav));
-         if ((Nav.Navest > 0) and (Nav.DNjc = JC)) then
+         if ((Nav.Navest > ncStuj) and (Nav.DNjc = JC)) then
            ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návěsti '+nav.name,
                                    Self.ShortName, 'TECHNOLOGIE');
          JC.RusJCWithoutBlk();

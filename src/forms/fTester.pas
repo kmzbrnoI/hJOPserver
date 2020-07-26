@@ -303,7 +303,7 @@ var oldColor:TColor;
     if (oldColor = clRed) then begin
       RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 1);
     end else if (oldColor = clBlue) then begin
-      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, TBlkNav._NAV_VSE);
+      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, Integer(ncVse));
     end else begin
       RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 0);
     end;

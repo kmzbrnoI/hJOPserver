@@ -12,6 +12,26 @@ type
  TBlkNavVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
  TBlkNavOutputType = (scom = 0, binary = 1);
  TBlkNavSymbol = (unknown = -1, hlavni = 0, seradovaci = 1);
+ TBlkNavCode = (
+   ncChanging = -2,
+   ncDisabled = -1,
+   ncStuj = 0,
+   ncVolno = 1,
+   ncVystraha = 2,
+   ncOcek40 = 3,
+   ncVolno40 = 4,
+   ncVse = 5,
+   ncVystraha40 = 6,
+   nc40Ocek40 = 7,
+   ncPrivol = 8,
+   ncPosunZaj = 9,
+   ncPosunNezaj = 10,
+   ncOpakVolno = 11,
+   ncOpakVystraha = 12,
+   ncZhasnuto = 13,
+   ncOpakOcek40 = 14,
+   ncOpakVystraha40 = 15
+ );
 
  ENoEvents = class(Exception);
 
@@ -45,9 +65,9 @@ type
  TBlkNavStav = record
   ZacatekVolba:TBlkNavVolba;                     // zacatek volby jidni cesty
   ZacatekAB:Boolean;                             // jestli je zacatek volby JC v rezimu AB
-  Navest:Integer;                                // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
-  cilova_navest:Integer;                         // navest, ktera ma byt nastavena
-  navest_old:Integer;                            // behem staveni obsahuje byvalou navest
+  Navest: TBlkNavCode;                           // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
+  cilova_navest: TBlkNavCode;                    // navest, ktera ma byt nastavena
+  navest_old: TBlkNavCode;                       // behem staveni obsahuje byvalou navest
   ABJC:TJC;                                      // odkaz na automaticky stavenou JC
   ZAM:Boolean;                                   // navestidlo zamkle z panelu
   dn_jc_ref,privol_ref:TJC;                      // reference na aktualni JC na navestidle (resp. NC)
@@ -79,7 +99,7 @@ type
    _def_Nav_stav:TBlkNavStav = (
      ZacatekVolba : none;
      ZacatekAB : false;
-     Navest : -1;
+     Navest : ncDisabled;
      ABJC : nil;
      ZAM : false;
      dn_jc_ref : nil;
@@ -95,34 +115,14 @@ type
    _PRIVOL_MIN = 1;
    _PRIVOL_SEC = 30;
 
-   // Kody navesti
-   _NAV_CHANGING = -2;
-   _NAV_DISABLED = -1;
-   _NAV_STUJ = 0;
-   _NAV_VOLNO = 1;
-   _NAV_VYSTRAHA = 2;
-   _NAV_OCEK_40 = 3;
-   _NAV_VOLNO_40 = 4;
-   _NAV_VSE = 5;
-   _NAV_VYSTRAHA_40 = 6;
-   _NAV_40_OCEK_40 = 7;
-   _NAV_PRIVOL = 8;
-   _NAV_POSUN_ZAJ = 9;
-   _NAV_POSUN_NEZAJ = 10;
-   _NAV_OPAK_VOLNO = 11;
-   _NAV_OPAK_VYSTRAHA = 12;
-   _NAV_ZHASNUTO = 13;
-   _NAV_OPAK_OCEK_40 = 14;
-   _NAV_OPAK_VYSTRAHA_40 = 15;
-
    _NAV_DEFAULT_DELAY = 2;
    _NAV_CHANGE_DELAY_MSEC = 1000;
    _NAV_CHANGE_SHORT_DELAY_MSEC = 200;
 
   private
-   NavSettings:TBlkNavSettings;
-   NavStav:TBlkNavStav;
-   NavRel:TBlkNavRel;
+   NavSettings: TBlkNavSettings;
+   NavStav: TBlkNavStav;
+   NavRel: TBlkNavRel;
 
    fUsekPred:TBlk;
    lastEvIndex:Integer;
@@ -135,7 +135,7 @@ type
     function GetEvent(ev:TBlkNavSprEvent; short:boolean = false):string;
     function RCinProgress():boolean;
 
-    procedure mSetNavest(navest:Integer);
+    procedure mSetNavest(navest: TBlkNavCode);
 
     function GetAB():boolean;
     procedure SetAB(ab:boolean);
@@ -186,7 +186,7 @@ type
 
     procedure UnregisterAllEvents();
     function IsChanging():boolean;
-    function GetCilovaNavest(): Integer;
+    function GetCilovaNavest(): TBlkNavCode;
 
   public
     constructor Create(index:Integer);
@@ -194,7 +194,7 @@ type
 
     function IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):boolean; overload;
     function IsOpakVystraha(): Boolean;
-    class function IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean; overload;
+    class function IsPovolovaciNavest(Navest: TBlkNavCode; jctype:TJCType = TJCType.vlak):boolean; overload;
 
     //load/save data
     procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
@@ -211,7 +211,7 @@ type
     procedure Change(now:boolean = false); override;
 
     procedure JCZrusNavest();   // zahrnuje cas na pad navesti
-    procedure SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent);
+    procedure SetNavest(navest: TBlkNavCode; changeCallbackOk, changeCallbackErr: TNotifyEvent);
 
     //----- Nav own functions -----
 
@@ -223,20 +223,20 @@ type
     procedure RemoveBlkFromRnz(blkId:Integer);
     procedure RCtimerTimeout();
     function FourtyKmph(): Boolean;
-    class function AddOpak(navest: Integer): Integer;
+    class function AddOpak(navest: TBlkNavCode): TBlkNavCode;
 
     function GetSouprava(usek:TBlk = nil): TSouprava;
     procedure PropagatePOdjToTrat();
 
-    class function NavestToString(navest:Integer):string;
+    class function NavestToString(navest: TBlkNavCode): string;
 
     property SymbolType:TBlkNavSymbol read NavRel.SymbolType;
     property UsekID:Integer read NavRel.UsekID write SetUsekPredID;
     property Smer:THVStanoviste read NavRel.smer write NavRel.smer;
 
     //stavove promenne
-    property Navest:Integer read NavStav.Navest write mSetNavest;
-    property cilovaNavest: Integer read GetCilovaNavest;
+    property navest: TBlkNavCode read NavStav.Navest write mSetNavest;
+    property cilovaNavest: TBlkNavCode read GetCilovaNavest;
     property ZacatekVolba:TBlkNavVolba read NavStav.ZacatekVolba write SetZacatekVolba;
     property ZacatekAB:Boolean read NavStav.ZacatekAB;
     property AB:boolean read GetAB write SetAB;
@@ -416,7 +416,7 @@ end;
 
 procedure TBlkNav.Enable();
 begin
- if (Self.Navest <> _NAV_DISABLED) then
+ if (Self.Navest <> ncDisabled) then
    Exit(); // skip already enabled block
 
  try
@@ -427,8 +427,8 @@ begin
    Exit();
  end;
 
- Self.NavStav.Navest := _NAV_STUJ;
- Self.NavStav.navest_old := _NAV_STUJ;
+ Self.NavStav.Navest := ncStuj;
+ Self.NavStav.navest_old := ncStuj;
  Self.NavStav.toRnz.Clear();
  Self.UnregisterAllEvents();
  Self.Change();
@@ -436,8 +436,8 @@ end;
 
 procedure TBlkNav.Disable();
 begin
- Self.NavStav.Navest := _NAV_DISABLED;
- Self.NavStav.navest_old := _NAV_DISABLED;
+ Self.NavStav.Navest := ncDisabled;
+ Self.NavStav.navest_old := ncDisabled;
  Self.NavStav.ZacatekVolba := TBlkNavVolba.none;
  Self.AB := false;
  Self.NavStav.ZAM  := false;
@@ -460,25 +460,25 @@ begin
  Self.UpdatePadani();
  Self.UpdateRychlostSpr();
 
- if (Self.Navest = 8) then
+ if (Self.Navest = ncPrivol) then
    Self.UpdatePrivol();
 
  if (Self.NavSettings.RCSAddrs.Count > 0) then
   begin
    if (RCSi.IsNonFailedModule(Self.NavSettings.RCSAddrs[0].board)) then
     begin
-     if (Self.NavStav.Navest = _NAV_DISABLED) then
+     if (Self.NavStav.Navest = ncDisabled) then
       begin
-       Self.NavStav.Navest := _NAV_STUJ;
+       Self.NavStav.Navest := ncStuj;
        Self.Change();
       end;
     end else begin
      if (Self.changing) then
        Self.OnNavestSetError();
 
-     if (Self.NavStav.Navest >= _NAV_STUJ) then
+     if (Self.NavStav.Navest >= ncStuj) then
       begin
-       Self.NavStav.Navest := _NAV_DISABLED;
+       Self.NavStav.Navest := ncDisabled;
        JCDb.RusJC(Self);
        Self.Change();
       end;
@@ -649,18 +649,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 //nastavovani stavovych promennych:
 
-procedure TBlkNav.SetNavest(navest:Integer; changeCallbackOk, changeCallbackErr: TNotifyEvent);
+procedure TBlkNav.SetNavest(navest: TBlkNavCode; changeCallbackOk, changeCallbackErr: TNotifyEvent);
 var oblr:TOR;
     spri: Integer;
 begin
- if ((Self.NavStav.Navest = _NAV_DISABLED) or (Self.NavSettings.zamknuto)) then
+ if ((Self.NavStav.Navest = ncDisabled) or (Self.NavSettings.zamknuto)) then
   begin
    if (Assigned(changeCallbackErr)) then
      changeCallbackErr(Self);
    Exit();
   end;
 
- if ((navest = _NAV_PRIVOL) or (navest = _NAV_STUJ)) then
+ if ((navest = ncPrivol) or (navest = ncStuj)) then
   begin
    // prodlouzeni nebo zruseni privolavaci navesti -> zrusit odpocet v panelu
    if (Self.NavStav.privol_timer_id > 0) then
@@ -672,7 +672,7 @@ begin
    Self.NavStav.privol_timer_id := 0;
   end;
 
- if (navest = _NAV_PRIVOL) then
+ if (navest = ncPrivol) then
    Self.NavStav.privol_start := Now;
 
  if ((Self.NavStav.Navest = navest) or ((Self.changing) and (Self.NavStav.cilova_navest = navest))) then
@@ -690,11 +690,11 @@ begin
       begin
        //scom
        RCSi.SetOutput(Self.NavSettings.RCSAddrs[0].board,
-          Self.NavSettings.RCSAddrs[0].port, navest);
+          Self.NavSettings.RCSAddrs[0].port, Integer(navest));
       end else begin
        //binary
        case (navest) of
-        _NAV_STUJ, _NAV_VSE, _NAV_PRIVOL, _NAV_ZHASNUTO, 16..127:
+        ncStuj, ncVse, ncPrivol, ncZhasnuto:
             RCSi.SetOutput(Self.NavSettings.RCSAddrs[0].board,
                            Self.NavSettings.RCSAddrs[0].port, 0);
        else
@@ -710,7 +710,7 @@ begin
  end;
 
  // ruseni nouzove jizdni cesty pri padu navestidla do STUJ
- if (navest = _NAV_STUJ) then
+ if (navest = ncStuj) then
   begin
    if ((Self.UsekPred <> nil) and ((Self.UsekPred.typ = _BLK_USEK) or
        (Self.UsekPred.typ = _BLK_TU)) and ((Self.UsekPred as TBlkUsek).NavJCRef.Contains(Self))) then
@@ -723,7 +723,7 @@ begin
     end;
   end;
 
- if ((Self.Navest = _NAV_PRIVOL) and (navest = _NAV_STUJ)) then
+ if ((Self.Navest = ncPrivol) and (navest = ncStuj)) then
   begin
    // STUJ po privolavacce -> vypnout zvukovou vyzvu
    for oblr in Self.ORsRef do
@@ -734,7 +734,7 @@ begin
    Self.NavStav.navest_old := Self.Navest;
  Self.NavStav.changeCallbackOk := changeCallbackOk;
  Self.NavStav.changeCallbackErr := changeCallbackErr;
- Self.NavStav.Navest := _NAV_CHANGING;
+ Self.NavStav.Navest := ncChanging;
  Self.NavStav.cilova_navest := navest;
 
  if (Self.NavSettings.RCSAddrs.Count > 0) then
@@ -756,7 +756,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkNav.mSetNavest(navest:Integer);
+procedure TBlkNav.mSetNavest(navest: TBlkNavCode);
 begin
  Self.SetNavest(navest, TNotifyEvent(nil), TNotifyEvent(nil));
 end;
@@ -767,7 +767,7 @@ var tmp:TNotifyEvent;
 begin
  Self.NavStav.Navest := Self.NavStav.cilova_navest;
 
- if (Self.NavStav.cilova_navest = TBlkNav._NAV_PRIVOL) then
+ if (Self.NavStav.cilova_navest = ncPrivol) then
   begin
    // nova navest je privolavacka -> zapnout zvukovou vyzvu
    for oblr in Self.ORsRef do
@@ -806,7 +806,7 @@ begin
   end;
 
  // Jak nastavit aktualni navest?
- Self.NavStav.Navest := _NAV_STUJ;
+ Self.NavStav.Navest := ncStuj;
 
  Self.Change();
 end;
@@ -946,7 +946,7 @@ end;
 procedure TBlkNav.MenuSTUJClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  // poradi musi byt zachovano !
- Self.Navest := _NAV_STUJ;
+ Self.Navest := ncStuj;
  if (Self.DNjc = nil) then Exit();
 
  Self.DNjc.STUJ();
@@ -1022,7 +1022,7 @@ end;
 procedure TBlkNav.MenuLockClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  Self.ZAM := true;
- Self.Navest := _NAV_STUJ;
+ Self.Navest := ncStuj;
 end;
 
 procedure TBlkNav.MenuUnlockClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1057,7 +1057,7 @@ procedure TBlkNav.MenuPPStartClick(SenderPnl:TIdContext; SenderOR:TObject);
 var Blk:TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
-   if ((Self.Navest > 0) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
+   if ((Self.Navest > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
 
  Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
@@ -1127,14 +1127,14 @@ end;
 
 procedure TBlkNav.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
- if (Self.NavStav.Navest = -1) then Exit();
+ if (Self.NavStav.Navest = ncDisabled) then Exit();
 
  case (Button) of
   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> 8) and (JCDb.IsAnyVCAvailable(Self)))
+           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self)))
          or (TOR(SenderOR).stack.volba = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.NavSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
@@ -1143,7 +1143,7 @@ begin
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> 8) and (JCDb.IsAnyPCAvailable(Self)))
+           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)))
          or ((SenderOR as TOR).stack.volba = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.NavSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
@@ -1157,7 +1157,7 @@ end;
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkNav.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
- if (Self.NavStav.Navest = -1) then Exit();
+ if (Self.NavStav.Navest = ncDisabled) then Exit();
 
  if      (item = 'VC>')  then Self.MenuVCStartClick(SenderPnl, SenderOR)
  else if (item = 'VC<')  then Self.MenuVCStopClick (SenderPnl, SenderOR)
@@ -1193,7 +1193,7 @@ begin
  if (Self.NavSettings.zamknuto) then Exit();
 
  if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-        (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> _NAV_PRIVOL) and (not Self.AB))
+        (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> ncPrivol) and (not Self.AB))
       or ((SenderOR as TOR).stack.volba = VZ)) and
      (not Self.autoblok)) then
   begin
@@ -1229,20 +1229,20 @@ begin
     Result := Result + '-,';
   end;
 
- if ((Self.Navest > _NAV_STUJ) and (not Self.autoblok)) then
+ if ((Self.Navest > ncStuj) and (not Self.autoblok)) then
    Result := Result + 'STUJ,';
 
- if (Self.Navest = _NAV_PRIVOL) then
+ if (Self.Navest = ncPrivol) then
    Result := Result + '!PPN,';
 
  if (Self.DNjc <> nil) then
   begin
    // bud je cesta primo postavena, nebo je zrusena, ale podminky jsou vyhovujici pro DN
    // plati jen pro postavenou JC
-   if ((not Self.ZAM) and (Self.Navest = _NAV_STUJ) and (Self.DNjc.CanDN())) then
+   if ((not Self.ZAM) and (Self.Navest = ncStuj) and (Self.DNjc.CanDN())) then
      Result := Result + 'DN,';
 
-   if (((Self.Navest > _NAV_STUJ) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1))
+   if (((Self.Navest > ncStuj) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1))
        and (not Self.RCinProgress())) then
     begin
      Result := Result + 'RC,';
@@ -1262,7 +1262,7 @@ begin
  else
    Result := Result + 'ZAM>,';
 
- if ((Self.Navest <> _NAV_PRIVOL) and (Self.CanIDoRNZ)) then
+ if ((Self.Navest <> ncPrivol) and (Self.CanIDoRNZ)) then
   Result := Result + '!RNZ,';
 
  // DEBUG: jednoduche nastaveni IR pri knihovne simulator
@@ -1284,31 +1284,31 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlkNav.NavestToString(Navest:Integer):string;
- begin
-  case (Navest) of
-   -2:Result  := 'stavění...';
-   -1:Result  := 'disabled';
-    0:Result  := 'stůj/posun zakázán';
-    1:Result  := 'volno';
-    2:Result  := 'výstraha';
-    3:Result  := 'očekávejte 40 km/h';
-    4:Result  := '40 km/h a volno';
-    5:Result  := 'svítí vše (Rezerva)';
-    6:Result  := '40 km/h a výstraha';
-    7:Result  := '40 km/h a očekávejte 40 km/h';
-    8:Result  := 'přivolávací návěst';
-    9:Result  := 'dovolen zajištěný posun';
-    10:Result := 'dovolen nezajištěný posun';
-    11:Result := 'opakování návěsti volno';
-    12:Result := 'opakování návěsti výstraha';
-    13:Result := 'návěstidlo zhaslé';
-    14:Result := 'opakování návěsti očekávejte 40 km/h';
-    15:Result := 'opakování návěsti výstraha a 40 km/h';
-   else//case
+class function TBlkNav.NavestToString(navest: TBlkNavCode):string;
+begin
+  case (navest) of
+   ncChanging: Result  := 'stavění...';
+   ncDisabled: Result  := 'disabled';
+   ncStuj: Result  := 'stůj/posun zakázán';
+   ncVolno: Result  := 'volno';
+   ncVystraha: Result  := 'výstraha';
+   ncOcek40: Result  := 'očekávejte 40 km/h';
+   ncVolno40: Result  := '40 km/h a volno';
+   ncVse: Result  := 'svítí vše (Rezerva)';
+   ncVystraha40:Result  := '40 km/h a výstraha';
+   nc40Ocek40: Result  := '40 km/h a očekávejte 40 km/h';
+   ncPrivol: Result  := 'přivolávací návěst';
+   ncPosunZaj: Result  := 'dovolen zajištěný posun';
+   ncPosunNezaj: Result := 'dovolen nezajištěný posun';
+   ncOpakVolno:Result := 'opakování návěsti volno';
+   ncOpakVystraha:Result := 'opakování návěsti výstraha';
+   ncZhasnuto:Result := 'návěstidlo zhaslé';
+   ncOpakOcek40:Result := 'opakování návěsti očekávejte 40 km/h';
+   NcOpakVystraha40:Result := 'opakování návěsti výstraha a 40 km/h';
+  else
     Result := 'Jiná návěst';
-   end;//else case
- end;
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1320,7 +1320,7 @@ begin
    Self.NavStav.padani_start := Now;
    writelog('Návěstidlo '+Self.GlobalSettings.name+': spoždění pádu '+IntToStr(Self.NavSettings.ZpozdeniPadu)+' s', WR_VC);
   end else begin
-   Self.Navest := _NAV_STUJ;
+   Self.Navest := ncStuj;
   end;
 
  Self.UpdateRychlostSpr(true);
@@ -1332,7 +1332,7 @@ begin
 
  if (Self.NavStav.padani_start + EncodeTime(0, Self.NavSettings.ZpozdeniPadu div 60, Self.NavSettings.ZpozdeniPadu mod 60, 0) < Now) then
   begin
-   Self.Navest := _NAV_STUJ;
+   Self.Navest := ncStuj;
    Self.NavStav.padani := false;
   end;
 end;
@@ -1560,7 +1560,7 @@ end;
 
 function TBlkNav.IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):boolean;
 begin
- if ((Self.Navest = _NAV_CHANGING) and (TBlkNav.IsPovolovaciNavest(Self.NavStav.cilova_navest, jctype))) then
+ if ((Self.Navest = ncChanging) and (TBlkNav.IsPovolovaciNavest(Self.NavStav.cilova_navest, jctype))) then
    // navest se meni na nejakou povolovaci -> ridim se jeste tou starou
    Result := TBlkNav.IsPovolovaciNavest(Self.NavStav.navest_old, jctype)
  else
@@ -1569,20 +1569,21 @@ end;
 
 function TBlkNav.IsOpakVystraha(): Boolean;
 begin
- Result := (Self.cilovaNavest = _NAV_OPAK_VYSTRAHA) or (Self.cilovaNavest = _NAV_OPAK_VYSTRAHA_40);
+ Result := (Self.cilovaNavest = ncOpakVystraha) or (Self.cilovaNavest = ncOpakVystraha40);
 end;
 
-class function TBlkNav.IsPovolovaciNavest(Navest:Integer; jctype:TJCType = TJCType.vlak):boolean;
+class function TBlkNav.IsPovolovaciNavest(Navest: TBlkNavCode; jctype:TJCType = TJCType.vlak):boolean;
 begin
  if (jcType = TJCType.vlak) then
   begin
    case (navest) of
-    1..4, 6, 7, 11, 12, 14, 15: Result := true;
+     ncVolno, ncVystraha, ncOcek40, ncVolno40, ncVystraha40, nc40Ocek40,
+     ncOpakVolno, ncOpakVystraha, ncOpakOcek40, ncOpakVystraha40: Result := true;
    else
     Result := false;
    end;
   end else if (jcType = TJCType.posun) then
-    Result := (navest = _NAV_POSUN_ZAJ) or (navest = _NAV_POSUN_NEZAJ)
+    Result := (navest = ncPosunZaj) or (navest = ncPosunNezaj)
   else
     Result := false;
 end;
@@ -1608,7 +1609,7 @@ begin
  if (Self.NavStav.privol_start+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now) then
   begin
    // pad privolavaci navesti
-   Self.Navest := _NAV_STUJ;
+   Self.Navest := ncStuj;
   end;
 end;
 
@@ -1637,7 +1638,7 @@ begin
  if (success) then
   begin
    Self.NavStav.ZacatekVolba := TBlkNavVolba.none;
-   Self.Navest := _NAV_PRIVOL;
+   Self.Navest := ncPrivol;
   end else begin
    self.ZacatekVolba := TBlkNavVolba.none;
   end;
@@ -1825,7 +1826,7 @@ end;
 
 function TBlkNav.IsChanging():boolean;
 begin
- Result := (Self.Navest = _NAV_CHANGING);
+ Result := (Self.Navest = ncChanging);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1846,7 +1847,7 @@ begin
  end;
 
  case (Self.Navest) of
-  _NAV_STUJ: begin
+  ncStuj: begin
     if (Self.canRNZ) then
       fg := clTeal
     else
@@ -1857,15 +1858,15 @@ begin
       TBlkNavSymbol.seradovaci : fg := clBlue;
      end;
   end;
-  _NAV_CHANGING, _NAV_ZHASNUTO: begin
+  ncChanging, ncZhasnuto: begin
     fg := clBlack;
     if (bg = clBlack) then
       bg := $A0A0A0;
   end;
-  _NAV_VOLNO, _NAV_VYSTRAHA, _NAV_OCEK_40, _NAV_VOLNO_40, _NAV_VYSTRAHA_40, _NAV_40_OCEK_40,
-  _NAV_OPAK_VOLNO, _NAV_OPAK_VYSTRAHA, _NAV_OPAK_OCEK_40, _NAV_OPAK_VYSTRAHA_40: fg := clLime;
-  _NAV_PRIVOL, _NAV_POSUN_ZAJ, _NAV_POSUN_NEZAJ: fg := clWhite;
-  _NAV_VSE: fg := clYellow;
+  ncVolno, ncVystraha, ncOcek40, ncVolno40, ncVystraha40, nc40Ocek40,
+  ncOpakVolno, ncOpakVystraha, ncOpakOcek40, ncOpakVystraha40: fg := clLime;
+  ncPrivol, ncPosunZaj, ncPosunNezaj: fg := clWhite;
+  ncVse: fg := clYellow;
  else
   fg := clBlack;
   bg := clFuchsia;
@@ -1873,7 +1874,7 @@ begin
 
  Result := Result + ownConvert.ColorToStr(fg) + ';' +
                     ownConvert.ColorToStr(bg) + ';' +
-                    IntToStr(ownConvert.BoolToInt(Self.Navest = 8)) + ';' +
+                    IntToStr(ownConvert.BoolToInt(Self.Navest = ncPrivol)) + ';' +
                     IntToStr(ownConvert.BoolToInt(Self.AB)) + ';';
 end;
 
@@ -1881,17 +1882,17 @@ end;
 
 function TBlkNav.FourtyKmph(): Boolean;
 begin
- Result := (Self.cilovaNavest = _NAV_VOLNO_40) or (Self.cilovaNavest = _NAV_VYSTRAHA_40) or
-           (Self.cilovaNavest = _NAV_40_OCEK_40) or (Self.cilovaNavest = _NAV_OPAK_VYSTRAHA_40);
+ Result := (Self.cilovaNavest = ncVolno40) or (Self.cilovaNavest = ncVystraha40) or
+           (Self.cilovaNavest = nc40Ocek40) or (Self.cilovaNavest = ncOpakVystraha40);
 end;
 
-class function TBlkNav.AddOpak(navest: Integer): Integer;
+class function TBlkNav.AddOpak(navest: TBlkNavCode): TBlkNavCode;
 begin
  case (navest) of
-  _NAV_VOLNO: Result := _NAV_OPAK_VOLNO;
-  _NAV_VYSTRAHA: Result := _NAV_OPAK_VYSTRAHA;
-  _NAV_OCEK_40: Result := _NAV_OPAK_OCEK_40;
-  _NAV_VYSTRAHA_40: Result := _NAV_OPAK_VYSTRAHA_40;
+  ncVolno: Result := ncOpakVolno;
+  ncVystraha: Result := ncOpakVystraha;
+  ncOcek40: Result := ncOpakOcek40;
+  ncVystraha40: Result := ncOpakVystraha40;
  else
   Result := navest;
  end;
@@ -1899,7 +1900,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.GetCilovaNavest(): Integer;
+function TBlkNav.GetCilovaNavest(): TBlkNavCode;
 begin
  if (Self.changing) then
    Result := Self.NavStav.cilova_navest

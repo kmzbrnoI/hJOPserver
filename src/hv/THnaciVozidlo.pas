@@ -1828,7 +1828,7 @@ begin
    nav := TBlkNav(Soupravy[Self.souprava].PredictedSignal());
    if (nav <> nil) then
     begin
-     Result := nav.name + ';' + IntToStr(nav.cilovaNavest);
+     Result := nav.name + ';' + IntToStr(Integer(nav.cilovaNavest));
     end else
      Result :=  '-;-';
   end else
