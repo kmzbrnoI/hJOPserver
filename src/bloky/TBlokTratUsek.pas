@@ -1231,9 +1231,9 @@ begin
      case (TBlkTrat(Self.Trat).navestidla) of
        TTratNavestidla.hradlo: TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
        TTratNavestidla.autoblok: begin
-         if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest())) then
+         if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest()) or (TBlkNav(Self.nextNav).IsOpakVystraha())) then
            TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VYSTRAHA
-         else if (TBlkNav(Self.nextNav).FourtyKmph()) then
+         else if ((TBlkNav(Self.nextNav).FourtyKmph()) or (TBlkNav(Self.nextNav).Navest = TBlkNav._NAV_OPAK_OCEK_40)) then
            TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_OCEK_40
          else
            TBlkNav(Self.navKryci).Navest := TBlkNav._NAV_VOLNO;
