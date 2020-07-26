@@ -137,23 +137,24 @@ type
 
   // vlastnosti jizdni cesty nemenici se se stavem:
   TJCprop = record
-   Nazev:string;                                                                // nazev JC
-   id:Integer;                                                                  // id jizdni cesty
-   NavestidloBlok:Integer;                                                      // ID navestidla, od ktereho JC zacina
-   TypCesty:TJCType;                                                            // typ JC (vlakova, posunova)
-   DalsiNavaznost:TJCNextNavType;                                                         // typ dalsi navaznosti
-   DalsiNavestidlo:Integer;                                                     // ID bloku dalsiho navestidla
+   Nazev: string;                                                               // nazev JC
+   id: Integer;                                                                 // id jizdni cesty
+   NavestidloBlok: Integer;                                                     // ID navestidla, od ktereho JC zacina
+   TypCesty: TJCType;                                                           // typ JC (vlakova, posunova)
+   DalsiNavaznost: TJCNextNavType;                                              // typ dalsi navaznosti
+   DalsiNavestidlo: Integer;                                                    // ID bloku dalsiho navestidla
    Vyhybky  : TList<TJCVyhZaver>;
    Useky    : TList<Integer>;
    Odvraty  : TList<TJCOdvratZaver>;
    Prejezdy : TList<TJCPrjZaver>;
    zamky    : TList<TJCRefZaver>;                                               // zamky, ktere musi byt uzamcene
-   vb:TList<Integer>;                                                           // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
+   vb: TList<Integer>;                                                          // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
 
-   Trat:Integer;                                                                // ID trati, na kterou JC navazuje; pokud JC nenavazuje na trat, je \Trat = -1
-   TratSmer:TtratSmer;                                                          // pozadovany smer navazujici trate
-   RychlostNoDalsiN,RychlostDalsiN:Byte;                                        // rychlost v JC pri dalsim navestidle navestici NEdovolujici navest, rychlost v JC pri dalsim navestidle navesticim dovolujici navest
-   odbocka:Boolean;                                                             // jestli cesta vede do odbocky
+   Trat: Integer;                                                               // ID trati, na kterou JC navazuje; pokud JC nenavazuje na trat, je \Trat = -1
+   TratSmer: TtratSmer;                                                         // pozadovany smer navazujici trate
+   RychlostNoDalsiN,RychlostDalsiN: Byte;                                       // rychlost v JC pri dalsim navestidle navestici NEdovolujici navest, rychlost v JC pri dalsim navestidle navesticim dovolujici navest
+   odbocka: Boolean;                                                            // jestli cesta vede do odbocky
+   nzv: Boolean;                                                                // nedostatecna zabrzdna vzdalenost
   end;
 
   ENavChanged = procedure(Sender:TObject; origNav:TBlk) of object;
@@ -2836,6 +2837,7 @@ begin
  else
    Self.fproperties.odbocka := Self.IsAnyVyhMinus();
 
+ Self.fproperties.nzv := ini.ReadBool(section, 'nzv', false)
 end;
 
 procedure TJC.SaveData(ini:TMemIniFile; section:string);
@@ -2856,6 +2858,11 @@ begin
    ini.DeleteKey(section, 'odbocka')
  else
    ini.WriteBool(section, 'odbocka', Self.fproperties.odbocka);
+
+ if (not Self.fproperties.nzv) then
+   ini.DeleteKey(section, 'nzv')
+ else
+   ini.WriteBool(section, 'nzv', true);
 
  if (Self.fproperties.Trat > -1) then
   begin

@@ -348,7 +348,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 12
+    TabOrder = 13
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
@@ -361,7 +361,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 13
+    TabOrder = 14
     OnClick = B_StornoClick
   end
   object CB_Navestidlo: TComboBox
@@ -467,7 +467,7 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 15
+    TabOrder = 16
   end
   object GB_trat: TGroupBox
     Left = 345
@@ -539,7 +539,7 @@ object F_JCEdit: TF_JCEdit
     Width = 297
     Height = 370
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
-    TabOrder = 14
+    TabOrder = 15
     object Label4: TLabel
       Left = 8
       Top = 16
@@ -627,19 +627,27 @@ object F_JCEdit: TF_JCEdit
   end
   object CHB_Advanced: TCheckBox
     Left = 349
-    Top = 413
+    Top = 418
     Width = 164
     Height = 18
     Caption = 'Zobrazit pokro'#269'il'#225' nastaven'#237
-    TabOrder = 11
+    TabOrder = 12
     OnClick = CHB_AdvancedClick
   end
   object CHB_Odbocka: TCheckBox
     Left = 349
-    Top = 391
+    Top = 384
     Width = 97
     Height = 17
     Caption = 'JC do odbo'#269'ky'
     TabOrder = 10
+  end
+  object CHB_NZV: TCheckBox
+    Left = 349
+    Top = 401
+    Width = 185
+    Height = 17
+    Caption = 'Nedostate'#269'n'#225' z'#225'brzdn'#225' vzd'#225'lenost'
+    TabOrder = 11
   end
 end

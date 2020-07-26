@@ -58,6 +58,7 @@ type
     CHB_Advanced: TCheckBox;
     M_Zamky: TMemo;
     CHB_Odbocka: TCheckBox;
+    CHB_NZV: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Vyh_AddClick(Sender: TObject);
     procedure B_Usek_AddClick(Sender: TObject);
@@ -169,6 +170,7 @@ procedure TF_JCEdit.EmptyJCOpenForm();
   Self.M_Zamky.Clear();
   Self.E_VB.Text := '';
   Self.CHB_Odbocka.Checked := false;
+  Self.CHB_NZV.Checked := false;
 
   Self.CHB_Trat.Checked := false;
   Self.CHB_TratClick(Self.CHB_Trat);
@@ -207,6 +209,7 @@ var prjz:TJCPrjZaver;
   Self.Useky.AddRange(JCData.Useky);
   Self.FillUseky();
   Self.CHB_Odbocka.Checked := JCData.odbocka;
+  Self.CHB_NZV.Checked := JCData.nzv;
 
   Self.M_Prj.Clear();
   for prjz in JCData.Prejezdy do
@@ -423,6 +426,7 @@ var JC:TJC;
   JCData.RychlostDalsiN := CB_Rychlost_Volno.ItemIndex;
   JCData.RychlostNoDalsiN := CB_Rychlost_Stuj.ItemIndex;
   JCData.odbocka := Self.CHB_Odbocka.Checked;
+  JCData.nzv := Self.CHB_NZV.Checked;
 
   if (Self.CHB_Trat.Checked) then
    begin
