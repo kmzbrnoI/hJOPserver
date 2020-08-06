@@ -689,14 +689,14 @@ begin
      if (Self.NavSettings.OutputType = scom) then
       begin
        //scom
-       RCSi.SetOutputs(Self.NavSettings.RCSAddrs[0], Integer(navest));
+       RCSi.SetOutputs(Self.NavSettings.RCSAddrs, Integer(navest));
       end else begin
        //binary
        case (navest) of
         ncStuj, ncVse, ncPrivol, ncZhasnuto:
             RCSi.SetOutputs(Self.NavSettings.RCSAddrs, 0);
        else
-        RCSi.SetOutputs(Self.NavSettings.RCSAddrs[0], 1);
+        RCSi.SetOutputs(Self.NavSettings.RCSAddrs, 1);
        end;
       end;//else
     end;

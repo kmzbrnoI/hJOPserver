@@ -4,7 +4,7 @@ object F_BlkNav: TF_BlkNav
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 369
+  ClientHeight = 393
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -116,7 +116,7 @@ object F_BlkNav: TF_BlkNav
     Left = 7
     Top = 187
     Width = 304
-    Height = 123
+    Height = 147
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -124,30 +124,30 @@ object F_BlkNav: TF_BlkNav
     Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
     TabOrder = 4
     object Label3: TLabel
-      Left = 7
-      Top = 41
-      Width = 56
+      Left = 131
+      Top = 38
+      Width = 53
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS modul:'
+      Caption = 'RCS modul'
     end
     object Label4: TLabel
-      Left = 7
-      Top = 64
-      Width = 46
+      Left = 221
+      Top = 38
+      Width = 43
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS port:'
+      Caption = 'RCS port'
     end
     object Label5: TLabel
       Left = 7
-      Top = 89
+      Top = 117
       Width = 61
       Height = 13
       Margins.Left = 2
@@ -156,9 +156,16 @@ object F_BlkNav: TF_BlkNav
       Margins.Bottom = 2
       Caption = 'Typ v'#253'stupu:'
     end
-    object SE_RCSport: TSpinEdit
-      Left = 223
-      Top = 66
+    object Label6: TLabel
+      Left = 8
+      Top = 56
+      Width = 62
+      Height = 13
+      Caption = 'Prvn'#237' v'#253'stup:'
+    end
+    object SE_RCSport1: TSpinEdit
+      Left = 221
+      Top = 55
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -167,12 +174,12 @@ object F_BlkNav: TF_BlkNav
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 2
+      TabOrder = 4
       Value = 0
     end
     object CB_Typ: TComboBox
-      Left = 95
-      Top = 92
+      Left = 93
+      Top = 117
       Width = 201
       Height = 21
       Margins.Left = 2
@@ -181,14 +188,14 @@ object F_BlkNav: TF_BlkNav
       Margins.Bottom = 2
       Style = csDropDownList
       ItemHeight = 13
-      TabOrder = 3
+      TabOrder = 5
       Items.Strings = (
         'S-Com'
         'bin'#225'rn'#237' (0/1)')
     end
-    object SE_RCSmodule: TSpinEdit
-      Left = 223
-      Top = 40
+    object SE_RCSmodule1: TSpinEdit
+      Left = 131
+      Top = 55
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -199,7 +206,7 @@ object F_BlkNav: TF_BlkNav
       MinValue = 0
       TabOrder = 1
       Value = 1
-      OnExit = SE_RCSmoduleExit
+      OnExit = SE_RCSmodule1Exit
     end
     object CHB_RCS_Output: TCheckBox
       Left = 8
@@ -210,10 +217,48 @@ object F_BlkNav: TF_BlkNav
       TabOrder = 0
       OnClick = CHB_RCS_OutputClick
     end
+    object SE_RCSmodule2: TSpinEdit
+      Left = 131
+      Top = 86
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 1
+      OnExit = SE_RCSmodule2Exit
+    end
+    object SE_RCSport2: TSpinEdit
+      Left = 221
+      Top = 85
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object CHB_RCS_Second_Output: TCheckBox
+      Left = 8
+      Top = 85
+      Width = 81
+      Height = 17
+      Caption = 'Druh'#253' v'#253'stup:'
+      TabOrder = 6
+      OnClick = CHB_RCS_Second_OutputClick
+    end
   end
   object B_Storno: TButton
     Left = 85
-    Top = 337
+    Top = 361
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -226,7 +271,7 @@ object F_BlkNav: TF_BlkNav
   end
   object B_Save: TButton
     Left = 7
-    Top = 337
+    Top = 361
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -262,7 +307,7 @@ object F_BlkNav: TF_BlkNav
   end
   object CHB_Zamknuto: TCheckBox
     Left = 8
-    Top = 315
+    Top = 339
     Width = 201
     Height = 17
     Caption = 'N'#225'v'#283'stidlo trvale zamknuto do ST'#366'J'

@@ -17,7 +17,7 @@ type
     GB_RCS: TGroupBox;
     Label3: TLabel;
     Label4: TLabel;
-    SE_RCSport: TSpinEdit;
+    SE_RCSport1: TSpinEdit;
     B_Storno: TButton;
     B_Save: TButton;
     LB_Stanice: TListBox;
@@ -26,13 +26,17 @@ type
     CB_Typ: TComboBox;
     Label1: TLabel;
     L_UsekID: TLabel;
-    SE_RCSmodule: TSpinEdit;
+    SE_RCSmodule1: TSpinEdit;
     Label2: TLabel;
     SE_Delay: TSpinEdit;
     CHB_Zamknuto: TCheckBox;
     PC_Events: TPageControl;
     BB_Event_Add: TBitBtn;
     CHB_RCS_Output: TCheckBox;
+    SE_RCSmodule2: TSpinEdit;
+    SE_RCSport2: TSpinEdit;
+    CHB_RCS_Second_Output: TCheckBox;
+    Label6: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -49,13 +53,15 @@ type
      procedure PageControlCloseButtonDrawTab(Control: TCustomTabControl;
   TabIndex: Integer; const Rect: TRect; Active: Boolean);
     procedure CHB_RCS_OutputClick(Sender: TObject);
-    procedure SE_RCSmoduleExit(Sender: TObject);
+    procedure SE_RCSmodule1Exit(Sender: TObject);
+    procedure SE_RCSmodule2Exit(Sender: TObject);
+    procedure CHB_RCS_Second_OutputClick(Sender: TObject);
 
   private
-   OpenIndex:Integer;
-   Blk:TBlkNav;
-   NewBlk:Boolean;
-   obls:TArstr;   //oblasti rizeni, ve kterych se SCom nachazi
+    OpenIndex:Integer;
+    Blk:TBlkNav;
+    NewBlk:Boolean;
+    obls:TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
 
     eventForms:TList<TF_BlkNavEvent>;
     eventTabSheets:TList<TTabSheet>;
@@ -66,7 +72,6 @@ type
      procedure NormalOpenForm();
      procedure HlavniOpenForm();
      procedure NewBlkOpenForm();
-
 
      procedure OnTabClose(Sender:TObject);
   public
@@ -85,43 +90,45 @@ uses GetSystems, FileSystem, TechnologieRCS, TBlok, TOblRizeni, DataBloky;
 
 procedure TF_BlkNav.OpenForm(BlokIndex:Integer);
  begin
-  OpenIndex := BlokIndex;
+  Self.OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
-  HlavniOpenForm;
+  Self.HlavniOpenForm();
 
-  if (NewBlk) then
-   begin
-    NewBlkOpenForm;
-   end else begin
-    NormalOpenForm;
-   end;
-  Self.ShowModal;
+  if (Self.NewBlk) then
+    Self.NewBlkOpenForm()
+  else
+    Self.NormalOpenForm();
+
+  Self.ShowModal();
  end;
 
 procedure TF_BlkNav.NewBlkOpenForm();
  begin
-  E_Nazev.Text             := '';
-  SE_ID.Value              := Blky.GetBlkID(Blky.count-1)+1;
-  SE_Delay.Value           := TBlkNav._NAV_DEFAULT_DELAY;
-  CHB_Zamknuto.Checked     := false;
-  Self.L_UsekID.Caption    := 'bude zobrazen priste';
+  E_Nazev.Text := '';
+  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  SE_Delay.Value := TBlkNav._NAV_DEFAULT_DELAY;
+  CHB_Zamknuto.Checked := false;
+  Self.L_UsekID.Caption := 'bude zobrazen příště';
 
-  Self.SE_RCSmodule.Value := 1;
-  Self.SE_RCSmoduleExit(Self);
-  Self.SE_RCSPort.Value := 0;
+  Self.SE_RCSmodule1.Value := 1;
+  Self.SE_RCSmodule1Exit(Self);
+  Self.SE_RCSPort1.Value := 0;
   Self.CB_Typ.ItemIndex := -1;
+
+  Self.CHB_RCS_Second_Output.Checked := false;
+  Self.CHB_RCS_Second_OutputClick(Self);
 
   Self.CHB_RCS_Output.Checked := true;
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
 
-  // prvni udalost nepridavame, protoze muze byt navestidlo cestove,
+  // prvni udalost nepridavame, protoze muze byt navestidlo seradovaci,
   // ktere ji nepotrebuje
 
   Self.Caption := 'Editovat data nového bloku návěstidlo';
   Self.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkNav.NormalOpenForm;
+procedure TF_BlkNav.NormalOpenForm();
 var glob:TBlkSettings;
     settings:TBlkNavSettings;
     i:Integer;
@@ -149,17 +156,28 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 0) then
    begin
-    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_RCSmodule.MaxValue)) then
-      Self.SE_RCSmodule.MaxValue := 0;
-    Self.SE_RCSPort.MaxValue := 0;
+    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_RCSmodule1.MaxValue)) then
+      Self.SE_RCSmodule1.MaxValue := 0;
+    Self.SE_RCSPort1.MaxValue := 0;
 
-    Self.SE_RCSmodule.Value := settings.RCSAddrs[0].board;
-    SE_RCSPort.Value := settings.RCSAddrs[0].port;
+    Self.SE_RCSmodule1.Value := settings.RCSAddrs[0].board;
+    SE_RCSPort1.Value := settings.RCSAddrs[0].port;
     CB_Typ.ItemIndex := Integer(settings.OutputType);
    end;
-  Self.SE_RCSmoduleExit(Self);
+  Self.CHB_RCS_Second_Output.Checked := (settings.RCSAddrs.Count > 1);
+  Self.CHB_RCS_Second_OutputClick(Self);
+  if (settings.RCSAddrs.Count > 1) then
+   begin
+    if (settings.RCSAddrs[1].board > Cardinal(Self.SE_RCSmodule2.MaxValue)) then
+      Self.SE_RCSmodule2.MaxValue := 0;
+    Self.SE_RCSPort2.MaxValue := 0;
 
-  CHB_Zamknuto.Checked := settings.zamknuto;
+    Self.SE_RCSmodule2.Value := settings.RCSAddrs[1].board;
+    SE_RCSPort2.Value := settings.RCSAddrs[1].port;
+   end;
+  Self.SE_RCSmodule1Exit(Self);
+
+  Self.CHB_Zamknuto.Checked := settings.zamknuto;
 
   for i := 0 to settings.events.Count-1 do
    begin
@@ -190,7 +208,8 @@ procedure TF_BlkNav.HlavniOpenForm();
  begin
   SetLength(Self.obls, 0);
   Self.LB_Stanice.Clear();
-  Self.SE_RCSmodule.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_RCSmodule1.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_RCSmodule2.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
 procedure TF_BlkNav.NewBlkCreate();
@@ -206,15 +225,29 @@ procedure TF_BlkNav.B_StornoClick(Sender: TObject);
 
 procedure TF_BlkNav.CHB_RCS_OutputClick(Sender: TObject);
 begin
- Self.SE_RCSmodule.Enabled  := Self.CHB_RCS_Output.Checked;
- Self.SE_RCSPort.Enabled := Self.CHB_RCS_Output.Checked;
- Self.CB_Typ.Enabled     := Self.CHB_RCS_Output.Checked;
+ Self.SE_RCSmodule1.Enabled  := Self.CHB_RCS_Output.Checked;
+ Self.SE_RCSPort1.Enabled := Self.CHB_RCS_Output.Checked;
+ Self.CB_Typ.Enabled := Self.CHB_RCS_Output.Checked;
 
  if (not Self.CHB_RCS_Output.Checked) then
   begin
-   Self.SE_RCSmodule.Value  := 1;
-   Self.SE_RCSPort.Value := 0;
+   Self.SE_RCSmodule1.Value := 1;
+   Self.SE_RCSPort1.Value := 0;
    Self.CB_Typ.ItemIndex := -1;
+   Self.CHB_RCS_Second_Output.Checked := false;
+   Self.CHB_RCS_Second_OutputClick(Self);
+  end;
+end;
+
+procedure TF_BlkNav.CHB_RCS_Second_OutputClick(Sender: TObject);
+begin
+ Self.SE_RCSmodule2.Enabled := Self.CHB_RCS_Second_Output.Checked;
+ Self.SE_RCSport2.Enabled := Self.CHB_RCS_Second_Output.Checked;
+ Self.SE_RCSmodule2Exit(Self);
+ if (not Self.CHB_RCS_Second_Output.Checked) then
+  begin
+   Self.SE_RCSmodule2.Value := 1;
+   Self.SE_RCSport2.Value := 0;
   end;
 end;
 
@@ -222,15 +255,15 @@ procedure TF_BlkNav.BB_Event_AddClick(Sender: TObject);
 var eventForm:TF_BlkNavEvent;
     ts:TCloseTabSheet;
 begin
-  ts             := TCloseTabSheet.Create(Self.PC_Events);
+  ts := TCloseTabSheet.Create(Self.PC_Events);
   if (Self.eventForms.Count = 0) then
-    ts.Caption   := 'globální'
+    ts.Caption := 'globální'
   else
-    ts.Caption   := IntToStr(Self.eventForms.Count);
+    ts.Caption := IntToStr(Self.eventForms.Count);
 
   ts.PageControl := Self.PC_Events;
-  ts.OnClose     := Self.OnTabClose;
-  eventForm      := TF_BlkNavEvent.Create(ts);
+  ts.OnClose := Self.OnTabClose;
+  eventForm := TF_BlkNavEvent.Create(ts);
   Self.PC_Events.ActivePage := ts;
 
   eventForm.OpenEmptyForm((Self.eventForms.Count = 0), Self.obls);
@@ -266,14 +299,25 @@ var glob:TBlkSettings;
       Exit;
      end;
 
-    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule.Value, SE_RCSPort.Value), Self.Blk, TRCSIOType.output);
+    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value), Self.Blk, TRCSIOType.output);
     if (another <> nil) then
      begin
-      if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
+      if (Application.MessageBox(PChar('První RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
                                  'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
      end;
    end;
+  if (Self.CHB_RCS_Second_Output.Checked) then
+   begin
+    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value), Self.Blk, TRCSIOType.output);
+    if (another <> nil) then
+     begin
+      if (Application.MessageBox(PChar('Druhá RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
+                                 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+        Exit();
+     end;
+   end;
+
 
   for i := 0 to Self.eventForms.Count-1 do
    begin
@@ -310,9 +354,11 @@ var glob:TBlkSettings;
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_RCS_Output.Checked) then
    begin
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule.Value, SE_RCSPort.Value));
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value));
     settings.OutputType := TBlkNavOutputType(CB_Typ.ItemIndex);
    end;
+  if (Self.CHB_RCS_Second_Output.Checked) then
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value));
 
   settings.ZpozdeniPadu := Self.SE_Delay.Value;
 
@@ -330,8 +376,8 @@ var glob:TBlkSettings;
 procedure TF_BlkNav.FormClose(Sender: TObject; var Action: TCloseAction);
 var i:Integer;
  begin
-  NewBlk     := false;
-  OpenIndex  := -1;
+  Self.NewBlk := false;
+  Self.OpenIndex := -1;
   BlokyTableData.UpdateTable;
 
   for i := 0 to Self.eventForms.Count-1 do
@@ -345,14 +391,14 @@ var i:Integer;
 
 procedure TF_BlkNav.FormCreate(Sender: TObject);
 begin
- eventForms     := TList<TF_BlkNavEvent>.Create();
- eventTabSheets := TList<TTabSheet>.Create();;
+ Self.eventForms := TList<TF_BlkNavEvent>.Create();
+ Self.eventTabSheets := TList<TTabSheet>.Create();;
 end;
 
 procedure TF_BlkNav.FormDestroy(Sender: TObject);
 begin
- eventForms.Free();
- eventTabSheets.Free();
+ Self.eventForms.Free();
+ Self.eventTabSheets.Free();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -498,9 +544,14 @@ begin
   end;
 end;
 
-procedure TF_BlkNav.SE_RCSmoduleExit(Sender: TObject);
+procedure TF_BlkNav.SE_RCSmodule1Exit(Sender: TObject);
 begin
- Self.SE_RCSport.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCSmodule.Value, Self.SE_RCSport.Value);
+ Self.SE_RCSport1.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
+end;
+
+procedure TF_BlkNav.SE_RCSmodule2Exit(Sender: TObject);
+begin
+ Self.SE_RCSport2.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

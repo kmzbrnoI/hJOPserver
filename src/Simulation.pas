@@ -85,8 +85,7 @@ begin
 end;
 
 procedure TJCSimulator.UpdateJC(JC:TJC);
-var i:Integer;
-    Blk, Nav:TBlk;
+var Blk, Nav:TBlk;
     UsekSet:TBlkUsekSettings;
 begin
  try
