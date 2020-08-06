@@ -287,7 +287,10 @@ begin
 
  strs := Self.LoadORs(ini_rel, 'V');
  try
-   Self.VyhRel.UsekID := IfThen(strs.Count >= 2, StrToInt(strs[1]), -1);
+   if (strs.Count >= 2) then
+     Self.VyhRel.UsekID := StrToInt(strs[1])
+   else
+     Self.VyhRel.UsekID := -1;
  finally
    strs.Free();
  end;
