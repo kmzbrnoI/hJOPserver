@@ -19,6 +19,7 @@ uses
 const
   // max speed step for speed table
   _MAX_STEP = 28;
+  _SOUND_FUNC: string = 'zvuk';
 
   _DEFAULT_SPEED_TABLE : array [0.._MAX_STEP] of Cardinal = (
     0,
@@ -108,7 +109,7 @@ type
      procedure TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
      procedure TrkLocoStolen(Sender: TObject; addr: Word);
 
-     procedure TurnedOffFunction(Sender:TObject; Data:Pointer);
+     procedure TurnedOffSound(Sender:TObject; Data:Pointer);
 
      procedure POMCvWroteOK(Sender:TObject; Data:Pointer);
      procedure POMCvWroteErr(Sender:TObject; Data:Pointer);
@@ -151,7 +152,7 @@ type
      procedure LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
-     procedure TurnOffFunctions(callback:TNotifyEvent);
+     procedure TurnOffSound(callback:TNotifyEvent);
      procedure Update();
 
      function NearestLowerSpeed(speed:Cardinal):Cardinal;
@@ -374,6 +375,7 @@ procedure TTrakce.LoksSetFunc(description:string; state:boolean; ok: TCb; err: T
 var cb: ^TSetDescFuncsCallback;
 begin
  GetMem(cb, sizeof(TSetDescFuncsCallback));
+ FillChar(cb^, sizeof(TSetDescFuncsCallback), 0); // for string to avoid access violation when assigning
  cb^.callback_ok := ok;
  cb^.callback_err := err;
  cb^.addr := 0;
@@ -539,19 +541,19 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// TurnOffFunctions
+// TurnOffSound
 ////////////////////////////////////////////////////////////////////////////////
 
 // This function is called when hJOPserver is turning systems off
 // It stops sound on all locos, howveer sound remaing saved as 'on' so it is
 // automatically turned on on the next start.
-procedure TTrakce.TurnOffFunctions(callback:TNotifyEvent);
+procedure TTrakce.TurnOffSound(callback:TNotifyEvent);
 begin
  Self.turnoff_callback := callback;
- Self.TurnedOffFunction(Self, Pointer(0));
+ Self.TurnedOffSound(Self, Pointer(0));
 end;
 
-procedure TTrakce.TurnedOffFunction(Sender:TObject; Data:Pointer);
+procedure TTrakce.TurnedOffSound(Sender:TObject; Data:Pointer);
 var addr: Word;
 begin
  addr := Word(Data);
@@ -565,8 +567,8 @@ begin
   end;
 
  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired) or
-        (not HVDb[addr].funcDict.ContainsKey('zvuk')) or
-        (HVDb[addr].slotFunkce[HVDb[addr].funcDict['zvuk']] = false))) do
+        (not HVDb[addr].funcDict.ContainsKey(_SOUND_FUNC)) or
+        (HVDb[addr].slotFunkce[HVDb[addr].funcDict[_SOUND_FUNC]] = false))) do
    Inc(addr);
 
  if (addr = _MAX_ADDR) then
@@ -579,12 +581,12 @@ begin
 
  data := Pointer(addr+1);
  try
-   HVDb[addr].SetSingleFunc(HVDb[addr].funcDict['zvuk'], false,
-                            TTrakce.Callback(Self.TurnedOffFunction, data),
-                            TTrakce.Callback(Self.TurnedOffFunction, data));
-   HVDb[addr].Stav.funkce[HVDb[addr].funcDict['zvuk']] := true;
+   HVDb[addr].SetSingleFunc(HVDb[addr].funcDict[_SOUND_FUNC], false,
+                            TTrakce.Callback(Self.TurnedOffSound, data),
+                            TTrakce.Callback(Self.TurnedOffSound, data));
+   HVDb[addr].Stav.funkce[HVDb[addr].funcDict[_SOUND_FUNC]] := true;
  except
-   Self.TurnedOffFunction(Self, data);
+   Self.TurnedOffSound(Self, data);
  end;
 end;
 

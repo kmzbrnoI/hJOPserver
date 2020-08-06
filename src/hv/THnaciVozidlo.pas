@@ -1089,7 +1089,7 @@ end;
 function THV.CanPlayHouk(sound:string):boolean;
 begin
  Result := ((Self.Stav.regulators.Count = 0) and (not Self.stolen) and
-           ((not Self.funcDict.ContainsKey('zvuk')) or (Self.Stav.funkce[Self.funcDict['zvuk']])) and
+           ((not Self.funcDict.ContainsKey(_SOUND_FUNC)) or (Self.Stav.funkce[Self.funcDict[_SOUND_FUNC]])) and
            (Self.funcDict.ContainsKey(sound)));
 end;
 

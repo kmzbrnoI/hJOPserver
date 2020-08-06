@@ -83,6 +83,9 @@ type
      function FilenameForLok(addr:Word):string; overload;
      function FilenameForLok(hv:THV):string; overload;
 
+     function AnyAcquiredHVHasActiveFunc(func: string): Boolean;
+     function AllAcquiredHVsHaveActiveFunc(func: string): Boolean;
+
      procedure CSReset();
      procedure TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
      procedure TrakceReleaseAllUsed(ok: TNotifyEvent = nil; locoReleased: TNotifyEvent = nil);
@@ -651,6 +654,32 @@ begin
     end;
    end;
 
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THVDb.AnyAcquiredHVHasActiveFunc(func: string): Boolean;
+var hv: THV;
+begin
+ for hv in Self.HVs do
+  begin
+   if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and
+       (hv.slotFunkce[hv.funcDict[func]])) then
+     Exit(true);
+  end;
+ Result := false;
+end;
+
+function THVDb.AllAcquiredHVsHaveActiveFunc(func: string): Boolean;
+var hv: THV;
+begin
+ for hv in Self.HVs do
+  begin
+   if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and
+       (not hv.slotFunkce[hv.funcDict[func]])) then
+     Exit(false);
+  end;
+ Result := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

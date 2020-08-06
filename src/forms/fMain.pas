@@ -1424,7 +1424,7 @@ procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);
 begin
  Self.LogStatus('Vypínám zvuky hnacích vozidel...');
  Application.ProcessMessages();
- TrakceI.TurnOffFunctions(Self.OnTrkAllFunctionTurnedOff);
+ TrakceI.TurnOffSound(Self.OnTrkAllFunctionTurnedOff);
 end;
 
 procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender:TObject);

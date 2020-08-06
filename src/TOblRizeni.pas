@@ -166,6 +166,9 @@ type
       procedure DkNUZStart(Sender:TIdContext);
       procedure DkNUZStop(Sender:TIdContext);
 
+      procedure DkHvFuncsSetOk(Sender:TObject; Data:Pointer);
+      procedure DkHvFuncsSetErr(Sender:TObject; Data:Pointer);
+
       procedure DkMenuShowOsv(Sender: TIdContext);
       procedure DkMenuShowLok(Sender: TIdContext);
       procedure ShowDkMenu(panel: TIdContext; root: string; menustr: string);
@@ -2046,8 +2049,16 @@ begin
    // Non-root item
    if (rootItem = 'OSV') then
      Self.OsvSet(LeftStr(subItem, Length(subItem)-1), (subItem[Length(subItem)] = '>'))
-   else if (rootItem = 'LOKO') then
-     asm nop; end;
+   else if (rootItem = 'LOKO') then begin
+     if ((subItem = 'ZVUK>') or (subItem = 'ZVUK<')) then
+      begin
+       ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
+       TrakceI.LoksSetFunc(_SOUND_FUNC, (subItem = 'ZVUK>'), TTrakce.Callback(Self.DkHvFuncsSetOk, Sender),
+                           TTrakce.Callback(Self.DkHvFuncsSetErr, Sender));
+      end else if (subItem = 'ZVUK ztlum') then
+        TrakceI.TurnOffSound(nil);
+
+   end;
   end;
 end;
 
@@ -2070,13 +2081,39 @@ end;
 procedure TOR.DkMenuShowLok(Sender: TIdContext);
 var menustr: string;
 begin
- menustr := 'ZVUK>,ZVUK<,ZVUK ztlum,ZVUK obnov';
+ menustr := '-,';
+
+ if (not HVDb.AllAcquiredHVsHaveActiveFunc(_SOUND_FUNC)) then
+   menustr := menustr + 'ZVUK>,';
+ if (HVDb.AnyAcquiredHVHasActiveFunc(_SOUND_FUNC)) then
+   menustr := menustr + 'ZVUK<,ZVUK ztlum';
+
+ // menustr := 'ZVUK ztlum,ZVUK obnov';
+
+ if (menustr = '-,') then
+   menustr := '';
  Self.ShowDkMenu(Sender, 'LOKO', menustr);
 end;
 
 procedure TOR.ShowDkMenu(panel: TIdContext; root: string; menustr: string);
 begin
  ORTCPServer.SendLn(panel, Self.id+';MENU;'+root+';'+menustr);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.DkHvFuncsSetOk(Sender:TObject; Data:Pointer);
+var panel: TIdContext;
+begin
+ panel := TIdContext(Data);
+ ORTCPServer.SendInfoMsg(panel, 'Funkce nastaveny.');
+end;
+
+procedure TOR.DkHvFuncsSetErr(Sender:TObject; Data:Pointer);
+var panel: TIdContext;
+begin
+ panel := TIdContext(Data);
+ ORTCPServer.BottomError(panel, 'Nepodařilo se nastavit zvuky hnacích vozidel!', Self.ShortName, 'Trakce');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
