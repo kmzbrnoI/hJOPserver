@@ -76,9 +76,12 @@ function TPTEndpointBlok.EndpointMatch(path:string):boolean;
 var re: TJclRegEx;
 begin
  re := TJclRegEx.Create();
- re.Compile(_ENDPOINT_MATCH_REGEX, false);
- Result := re.Match(path);
- re.Free();
+ try
+   re.Compile(_ENDPOINT_MATCH_REGEX, false);
+   Result := re.Match(path);
+ finally
+   re.Free();
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
