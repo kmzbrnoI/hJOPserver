@@ -153,7 +153,8 @@ uses
   ACBlocks in 'ACBlocks.pas',
   TBlokPrejezdLogic in 'bloky\TBlokPrejezdLogic.pas',
   TBlokUsekRef in 'bloky\TBlokUsekRef.pas',
-  TBlokUsekRefs in 'bloky\TBlokUsekRefs.pas';
+  TBlokUsekRefs in 'bloky\TBlokUsekRefs.pas',
+  orLighting in 'orLighting.pas';
 
 {$R *.res}
 

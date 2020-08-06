@@ -13,7 +13,7 @@
 interface
 
 uses IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
-      IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms,
+      IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, orLighting,
       Generics.Collections, Zasobnik, Windows, Generics.Defaults;
 
 const
@@ -44,21 +44,12 @@ type
 
   TPSPodminky = TList<TPSPodminka>;
 
-  //1 osvetleni
-  TOsv = record
-   board:Cardinal;                                                              // RCS deska osvetleni
-   port:Byte;                                                                   // RCS port osvetleni
-   name:string;                                                                 // popis osvetleni, max 5 znaku
-
-   default_state:boolean;                                                       // vychozi stav osvetleni - toto je ukladano do souboru a nacitano ze souboru
-  end;
-
  //primarni vlastnosti kazde OR
  TORProp = record
   Name:string;                                                                  // plne jemno oblati rizeni (napr. "Klobouky u Brna")
   ShortName:string;                                                             // zkratka oblasti rizeni (napr. "Klb"), nemusi byt unikatni
   id:string;                                                                    // unikatni ID oblasti rizeni (napr. "Klb")
-  Osvetleni:TList<TOsv>;                                                        // seznam osvetleni OR
+  osvetleni: TObjectList<TORLighting>;                                          // seznam osvetleni OR
  end;
 
  TPSCallback = procedure (Relief:TObject; Panel:TObject;                        // callback potvrzovaci sekvence
@@ -155,8 +146,6 @@ type
 
       procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
 
-      function PanelGetOsv(index:Integer):boolean;                              // vrati stav osvetleni
-
       // tyto funkce jsou volany pri zmene opravenni mezi cteni a zapisem
       // primarni cil = v techto funkcich resit zapinani a vypinani zvuku v panelu
       procedure AuthReadToWrite(panel:TIdContext);
@@ -171,6 +160,12 @@ type
       procedure PanelSprChangeOk(Sender:TObject; Data:Pointer);
       procedure PanelSprChangeErr(Sender:TObject; Data:Pointer);
       procedure PanelSprCreateErr(Sender:TObject; Data:Pointer);
+
+      procedure OsvSet(id:string; state:boolean);
+
+      procedure DkMenuShowOsv(Sender: TIdContext);
+      procedure DkMenuShowLok(Sender: TIdContext);
+      procedure ShowDkMenu(panel: TIdContext; root: string; menustr: string);
 
     public
 
@@ -224,7 +219,7 @@ type
       function LokoPlease(Sender:TIDContext; user:TObject; comment:string):Integer;
       procedure LokoCancel(Sender:TIdContext);
 
-      procedure InitOsv();
+      procedure OsvInit();
 
       //--- komunikace s panely zacatek: ---
       procedure PanelAuthorise(Sender:TIdContext; rights:TORControlRights; username:string; password:string);
@@ -241,13 +236,11 @@ type
       procedure PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
       procedure PanelLokoReq(Sender:TIdContext; str:TStrings);
       procedure PanelHlaseni(Sender:TIDContext; str:TStrings);
+      procedure PanelDkMenuClick(Sender: TIdContext; rootItem, subItem: string);
 
       procedure PanelHVAdd(Sender:TIDContext; str:string);
       procedure PanelHVRemove(Sender:TIDContext; addr:Integer);
       procedure PanelHVEdit(Sender:TIDContext; str:string);
-
-      procedure PanelSendOsv(Sender:TIdContext);
-      procedure PanelSetOsv(Sender:TIdCOntext; id:string; state:boolean);
 
       function PanelGetSprs(Sender:TIdCOntext):string;
       procedure PanelRemoveSpr(Sender:TIDContext; spr_index:Integer);
@@ -299,15 +292,15 @@ begin
 
  Self.findex := index;
 
- Self.ORProp.Osvetleni := TList<TOsv>.Create();
- Self.Connected        := TList<TORPanel>.Create();
+ Self.ORProp.Osvetleni := TObjectList<TOrLighting>.Create();
+ Self.Connected := TList<TORPanel>.Create();
  Self.OR_RCS := TORRCSs.Create();
 
  Self.ORStav.dk_click_callback := nil;
  Self.ORStav.reg_please := nil;
 
- Self.stack   := TORStack.Create(index, Self);
- Self.vb      := TList<TObject>.Create();
+ Self.stack := TORStack.Create(index, Self);
+ Self.vb := TList<TObject>.Create();
  Self.changed := false;
 
  Self.MereniCasu := TList<TMereniCasu>.Create();
@@ -353,13 +346,11 @@ end;
 //na kazdem radku je ulozena jedna oblast rizeni ve formatu:
 //  nazev;nazev_zkratka;id;(osv_RCS|osv_port|osv_name)(osv_RCS|...)...;;
 procedure TOR.LoadData(str:string);
-var data_main,data_osv,data_osv2:TStrings;
-    j:Integer;
-    Osv:TOsv;
+var data_main, osvs: TStrings;
+    osvstr: string;
 begin
  data_main := TStringList.Create();
- data_osv  := TStringList.Create();
- data_osv2 := TStringList.Create();
+ osvs := TStringList.Create();
 
  try
    ExtractStrings([';'],[],PChar(str), data_main);
@@ -367,39 +358,31 @@ begin
    if (data_main.Count < 3) then
      raise Exception.Create('Mene nez 3 parametry v popisu oblasti rizeni');
 
-   Self.ORProp.Name       := data_main[0];
-   Self.ORProp.ShortName  := data_main[1];
-   Self.ORProp.id         := data_main[2];
+   Self.ORProp.Name := data_main[0];
+   Self.ORProp.ShortName := data_main[1];
+   Self.ORProp.id := data_main[2];
 
    Self.ORProp.Osvetleni.Clear();
 
-   data_osv.Clear();
+   osvs.Clear();
    if (data_main.Count > 3) then
     begin
-     ExtractStrings(['(', ')'], [], PChar(data_main[3]), data_osv);
-     for j := 0 to data_osv.Count-1 do
+     ExtractStringsEx(['(', ')'], [], data_main[3], osvs);
+     for osvstr in osvs do
       begin
-       data_osv2.Clear();
-       ExtractStrings(['|'], [], PChar(data_osv[j]), data_osv2);
-
        try
-         Osv.default_state := false;
-         Osv.board := StrToInt(data_osv2[0]);
-         Osv.port  := StrToInt(data_osv2[1]);
-         Osv.name  := data_osv2[2];
-         Self.ORProp.Osvetleni.Add(Osv);
+         Self.ORProp.Osvetleni.Add(TOrLighting.Create(osvstr));
        except
 
        end;
-      end;//for j
+      end;
     end;
 
    Self.hlaseni := TStanicniHlaseni.Create(Self.id);
    Self.hlaseni.OnAvailable := Self.OnHlaseniAvailable;
  finally
    FreeAndNil(data_main);
-   FreeAndNil(data_osv);
-   FreeAndNil(data_osv2);
+   FreeAndNil(osvs);
  end;
 end;
 
@@ -408,25 +391,18 @@ end;
 // nacitani or_stat.ini souboru
 // musi byt volano po LoadData
 procedure TOR.LoadStat(ini:TMemIniFile; section:string);
-var osv:TOsv;
-    i:Integer;
+var osv: TOrLighting;
 begin
- // nacteme stav osvetleni
- for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-  begin
-   osv := Self.ORProp.Osvetleni[i];
+ for osv in Self.ORProp.Osvetleni do
    osv.default_state := ini.ReadBool(section, osv.name, false);
-   Self.ORProp.Osvetleni[i] := osv;
-  end;
 end;
 
 // ukladani or_stat.ini souboru
 procedure TOR.SaveStat(ini:TMemIniFile; section:string);
-var i:Integer;
+var osv: TOrLighting;
 begin
- // zapiseme stav osvetleni
- for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   ini.WriteBool(section, Self.ORProp.Osvetleni[i].name, Self.ORProp.Osvetleni[i].default_state);
+ for osv in Self.ORProp.Osvetleni do
+   ini.WriteBool(section, osv.name, osv.default_state);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1340,7 +1316,8 @@ begin
 
  str := '';
  for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   str := str + '(' + Self.ORProp.Osvetleni[i].name + ' - ' + IntToStr(Self.ORProp.Osvetleni[i].board) + ':' + IntToStr(Self.ORProp.Osvetleni[i].port) + ')';
+   str := str + '(' + Self.ORProp.Osvetleni[i].name + ' - ' + IntToStr(Self.ORProp.Osvetleni[i].rcsAddr.board) + ':' +
+          IntToStr(Self.ORProp.Osvetleni[i].rcsAddr.port) + ')';
  LI.SubItems.Strings[5] := str;
 end;
 
@@ -1360,55 +1337,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// vrati stav jednoho osvetleni
-function TOR.PanelGetOsv(index:Integer):boolean;
+procedure TOR.OsvSet(id:string; state:boolean);
+var osv: TOrLighting;
 begin
- if ((index < 0) or (index >= Self.ORProp.Osvetleni.Count)) then Exit(false);
-
- try
-   Result := (RCSi.GetOutput(Self.ORProp.Osvetleni[index].board, Self.ORProp.Osvetleni[index].port) = 1);
- except
-   Result := false;
- end;
-end;
-
-//  or;OSV;(code;stav)(code;srav) ...        - informace o stavu osvetleni (stav = [0,1])
-procedure TOR.PanelSendOsv(Sender:TIdContext);
-var i:Integer;
-    str:string;
-begin
- //kontrola opravneni klienta
- if (Self.PnlDGetRights(Sender) < read) then
-  begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
-  end;
-
- str := Self.id + ';OSV;';
- for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-   str := str + '[' + Self.ORProp.Osvetleni[i].name + '|' + IntToStr(ownConvert.BoolToInt(Self.PanelGetOsv(i))) + ']';
- ORTCPServer.SendLn(Sender, str);
-end;
-
-procedure TOR.PanelSetOsv(Sender:TIdCOntext; id:string; state:boolean);
-var i:Integer;
-    osv:TOsv;
-begin
- //kontrola opravneni klienta
- if (Self.PnlDGetRights(Sender) < write) then
-  begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
-  end;
-
- for i := 0 to Self.ORProp.Osvetleni.Count-1 do
-  if (Self.ORProp.Osvetleni[i].name = id) then
+ for osv in Self.ORProp.Osvetleni do
+  if (osv.name = id) then
    begin
     try
-      RCSi.SetOutput(Self.ORProp.Osvetleni[i].board, Self.ORProp.Osvetleni[i].port, ownConvert.BoolToInt(state));
-      osv := Self.ORProp.Osvetleni[i];
+      RCSi.SetOutput(osv.rcsAddr, ownConvert.BoolToInt(state));
       osv.default_state := state;
-      Self.ORProp.Osvetleni[i] := osv;
     except
 
     end;
@@ -1417,15 +1354,13 @@ begin
    end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TOR.InitOsv();
-var osv:TOsv;
+procedure TOR.OsvInit();
+var osv: TOrLighting;
 begin
  try
    for osv in Self.ORProp.Osvetleni do
-     if (RCSi.IsModule(osv.board)) then
-       RCSi.SetOutput(osv.board, osv.port, ownConvert.BoolToInt(osv.default_state));
+     if (RCSi.IsModule(osv.rcsAddr.board)) then
+       RCSi.SetOutput(osv.rcsAddr, ownConvert.BoolToInt(osv.default_state));
  except
 
  end;
@@ -2097,6 +2032,62 @@ begin
     Result := CompareStr(Left.id, Right.id, loUserLocale);
    end
  );
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TOR.PanelDkMenuClick(Sender: TIdContext; rootItem, subItem: string);
+begin
+ if (Self.PnlDGetRights(Sender) < write) then
+  begin
+   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   Exit();
+  end;
+
+ if (subItem = '') then
+  begin
+   // Root item
+   if (rootItem = 'OSV') then
+     Self.DkMenuShowOsv(Sender)
+   else if (rootItem = 'LOKO') then
+     asm nop; end
+   else if (rootItem = 'NUZ>') then
+     asm nop; end
+   else if (rootItem = 'NUZ<') then
+     asm nop; end;
+  end else begin
+   // Non-root item
+   if (rootItem = 'OSV') then
+     Self.OsvSet(LeftStr(subItem, Length(subItem)-1), (subItem[Length(subItem)] = '>'))
+   else if (rootItem = 'LOKO') then
+     asm nop; end;
+  end;
+end;
+
+procedure TOR.DkMenuShowOsv(Sender: TIdContext);
+var menustr: string;
+    osv: TOrLighting;
+begin
+ menustr := '$'+Self.Name + ',$Osvětlení,-,';
+ for osv in Self.ORProp.Osvetleni do
+  begin
+   menustr := menustr + osv.name;
+   if (osv.active) then
+     menustr := menustr + '<,'
+   else
+     menustr := menustr + '>,';
+  end;
+ Self.ShowDkMenu(Sender, 'OSV', menustr);
+end;
+
+procedure TOR.DkMenuShowLok(Sender: TIdContext);
+begin
+
+end;
+
+procedure TOR.ShowDkMenu(panel: TIdContext; root: string; menustr: string);
+begin
+ ORTCPServer.SendLn(panel, Self.id+';MENU;'+root+';'+menustr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

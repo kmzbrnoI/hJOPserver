@@ -270,6 +270,7 @@
 			<DCCReference Include="bloky\TBlokPrejezdLogic.pas"/>
 			<DCCReference Include="bloky\TBlokUsekRef.pas"/>
 			<DCCReference Include="bloky\TBlokUsekRefs.pas"/>
+			<DCCReference Include="orLighting.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

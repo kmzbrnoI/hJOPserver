@@ -910,12 +910,12 @@ begin
  else if (parsed[1] = 'LOK-MOVE-OR') then
    oblr.PanelMoveLok(AContext, StrToInt(parsed[2]), parsed[3])
 
- else if (parsed[1] = 'OSV') then
+ else if (parsed[1] = 'MENUCLICK') then
   begin
-   if (parsed[2] = 'GET') then
-     oblr.PanelSendOsv(AContext)
-   else if (parsed[2] = 'SET') then
-   oblr.PanelSetOsv(AContext, parsed[3], ownConvert.StrToBool(parsed[4]));
+   if (parsed.Count > 3) then
+     oblr.PanelDkMenuClick(AContext, parsed[2], parsed[3])
+   else
+     oblr.PanelDkMenuClick(AContext, parsed[2], '');
   end
 
  else if (parsed[1] = 'HV') then
