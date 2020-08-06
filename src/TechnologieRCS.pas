@@ -93,10 +93,12 @@ type
       procedure LoadFromFile(ini:TMemIniFile);
       procedure SaveToFile(ini:TMemIniFile);
 
-      procedure SetOutput(addr:TRCSAddr; state: Integer); overload;
-      function GetInput(addr:TRCSAddr): TRCSInputState; overload;
-      procedure SetInput(addr:TRCSAddr; State:Integer); overload;
-      function GetOutput(addr:TRCSAddr):Integer; overload;
+      procedure SetOutput(addr: TRCSAddr; state: Integer); overload;
+      procedure SetOutputs(addrs: TList<TRCSAddr>; state: Integer); overload;
+      function GetInput(addr: TRCSAddr): TRCSInputState; overload;
+      procedure SetInput(addr: TRCSAddr; state:Integer); overload;
+      procedure SetInputs(addrs: TList<TRCSAddr>; state:Integer); overload;
+      function GetOutput(addr: TRCSAddr): Integer; overload;
 
       procedure AddInputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
       procedure RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
@@ -483,19 +485,33 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.SetInput(addr:TRCSAddr; State:Integer);
+procedure TRCS.SetInput(addr: TRCSAddr; state: Integer);
 begin
  Self.SetInput(addr.board, addr.port, State);
 end;
 
-function TRCS.GetInput(addr:TRCSAddr): TRCSInputState;
+procedure TRCS.SetInputs(addrs: TList<TRCSAddr>; state:Integer);
+var addr: TRCSAddr;
+begin
+ for addr in addrs do
+   Self.SetInput(addr, state);
+end;
+
+function TRCS.GetInput(addr: TRCSAddr): TRCSInputState;
 begin
  Result := Self.GetInput(addr.board, addr.port);
 end;
 
-procedure TRCS.SetOutput(addr:TRCSAddr; State:Integer);
+procedure TRCS.SetOutput(addr: TRCSAddr; state: Integer);
 begin
  Self.SetOutput(addr.board, addr.port, State);
+end;
+
+procedure TRCS.SetOutputs(addrs: TList<TRCSAddr>; state: Integer);
+var addr: TRCSAddr;
+begin
+ for addr in addrs do
+   Self.SetOutput(addr, state);
 end;
 
 function TRCS.GetOutput(addr:TRCSAddr):Integer;

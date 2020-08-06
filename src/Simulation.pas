@@ -100,8 +100,7 @@ begin
      if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.obsazeno) then
       begin
        UsekSet := (Blk as TBlkUsek).GetSettings();
-       for i := 0 to UsekSet.RCSAddrs.Count-1 do
-        RCSi.SetInput(UsekSet.RCSAddrs[i].board, UsekSet.RCSAddrs[i].port, 0);
+       RCSi.SetInputs(UsekSet.RCSAddrs, 0);
        Exit();
       end;
     end;//uvolnit usek pred navestidlem
@@ -114,8 +113,7 @@ begin
      // uvolnit RozpadRuseniBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
      UsekSet := (Blk as TBlkUsek).GetSettings();
-     for i := 0 to UsekSet.RCSAddrs.Count-1 do
-       RCSi.SetInput(UsekSet.RCSAddrs[i].board, UsekSet.RCSAddrs[i].port, 0);
+     RCSi.SetInputs(UsekSet.RCSAddrs, 0);
     end else begin
      // obsadit RozpadBlok
      if (JC.stav.RozpadBlok >= JC.data.Useky.Count) then Exit();
