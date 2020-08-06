@@ -368,7 +368,7 @@ begin
    osvs.Clear();
    if (data_main.Count > 3) then
     begin
-     ExtractStringsEx(['(', ')'], [], data_main[3], osvs);
+     ExtractStringsEx([')'], ['('], data_main[3], osvs);
      for osvstr in osvs do
       begin
        try
@@ -2071,7 +2071,7 @@ procedure TOR.DkMenuShowLok(Sender: TIdContext);
 var menustr: string;
 begin
  menustr := 'ZVUK>,ZVUK<,ZVUK ztlum,ZVUK obnov';
- Self.ShowDkMenu(Sender, 'OSV', menustr);
+ Self.ShowDkMenu(Sender, 'LOKO', menustr);
 end;
 
 procedure TOR.ShowDkMenu(panel: TIdContext; root: string; menustr: string);
