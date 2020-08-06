@@ -114,7 +114,7 @@ var LV:TListItem;
  begin
   if (F_Main = nil) then Exit();
 
-  DateTimeToString(xDate, 'yy_mm_dd', Now);
+  DateTimeToString(xDate, 'yyyy-mm-dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
   if (multiline) then
     xTime := '';

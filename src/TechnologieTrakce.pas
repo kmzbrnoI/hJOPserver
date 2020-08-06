@@ -268,7 +268,7 @@ var LV_Log:TListItem;
  begin
   if ((logLevel > Self.logLevelFile) and (logLevel > Self.logLevelTable)) then Exit();
 
-  DateTimeToString(xDate, 'yy_mm_dd', Now);
+  DateTimeToString(xDate, 'yyyy-mm-dd', Now);
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
 
   if ((logLevel <= Self.logLevelTable) and (Self.LogObj <> nil)) then
