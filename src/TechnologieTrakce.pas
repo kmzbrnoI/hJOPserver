@@ -158,7 +158,7 @@ type
      procedure LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
-     procedure TurnOffSound(callback:TNotifyEvent);
+     procedure TurnOffSound(ok: TCb; err: TCb);
      procedure RestoreSound(ok: TCb; err: TCb);
      procedure Update();
 
@@ -554,46 +554,52 @@ end;
 // This function is called when hJOPserver is turning systems off
 // It stops sound on all locos, howveer sound remaing saved as 'on' so it is
 // automatically turned on on the next start.
-procedure TTrakce.TurnOffSound(callback:TNotifyEvent);
+procedure TTrakce.TurnOffSound(ok: TCb; err: TCb);
+var data: ^TFuncCallback;
 begin
- Self.turnoff_callback := callback;
- Self.TurnedOffSound(Self, Pointer(0));
+ GetMem(data, sizeof(TFuncCallback));
+ data^.callback_ok := ok;
+ data^.callback_err := err;
+ data^.addr := 0;
+
+ Self.TurnedOffSound(Self, data);
 end;
 
 procedure TTrakce.TurnedOffSound(Sender:TObject; Data:Pointer);
-var addr: Word;
+var cb: ^TFuncCallback;
 begin
- addr := Word(Data);
+ cb := Data;
 
  if (not Self.ConnectedSafe()) then
   begin
-   if (Assigned(Self.turnoff_callback)) then
-     Self.turnoff_callback(Self);
-   Self.turnoff_callback := nil;
+   if (Assigned(cb^.callback_err.callback)) then
+     cb^.callback_err.callback(Self, cb^.callback_err.data);
+   FreeMem(data);
    Exit();
   end;
 
- while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired) or
-        (not HVDb[addr].funcDict.ContainsKey(_SOUND_FUNC)) or
-        (HVDb[addr].slotFunkce[HVDb[addr].funcDict[_SOUND_FUNC]] = false))) do
-   Inc(addr);
+ while ((cb^.addr < _MAX_ADDR) and ((HVDb[cb^.addr] = nil) or (not HVDb[cb^.addr].acquired) or
+        (not HVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
+        (HVDb[cb^.addr].slotFunkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
+   Inc(cb^.addr);
 
- if (addr = _MAX_ADDR) then
+ if (cb^.addr = _MAX_ADDR) then
   begin
-   if (Assigned(Self.turnoff_callback)) then
-     Self.turnoff_callback(Self);
-   Self.turnoff_callback := nil;
+   if (Assigned(cb^.callback_ok.callback)) then
+     cb^.callback_ok.callback(Self, cb^.callback_ok.data);
+   FreeMem(data);
    Exit();
   end;
 
- data := Pointer(addr+1);
  try
-   HVDb[addr].SetSingleFunc(HVDb[addr].funcDict[_SOUND_FUNC], false,
-                            TTrakce.Callback(Self.TurnedOffSound, data),
-                            TTrakce.Callback(Self.TurnedOffSound, data));
-   HVDb[addr].Stav.funkce[HVDb[addr].funcDict[_SOUND_FUNC]] := true;
+   HVDb[cb^.addr].SetSingleFunc(HVDb[cb^.addr].funcDict[_SOUND_FUNC], false,
+                                TTrakce.Callback(Self.TurnedOffSound, data),
+                                TTrakce.Callback(Self.TurnedOffSound, data));
+   HVDb[cb^.addr].Stav.funkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] := true;
  except
-   Self.TurnedOffSound(Self, data);
+   if (Assigned(cb^.callback_err.callback)) then
+     cb^.callback_err.callback(Self, cb^.callback_err.data);
+   FreeMem(data);
  end;
 end;
 

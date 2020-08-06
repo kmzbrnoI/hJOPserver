@@ -2057,7 +2057,7 @@ begin
                            TTrakce.Callback(Self.DkHvFuncsSetErr, Sender));
       end else if (subItem = 'ZVUK ztlum') then begin
         ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
-        TrakceI.TurnOffSound(nil)
+        TrakceI.TurnOffSound(TTrakce.Callback(Self.DkHvFuncsSetOk, Sender), TTrakce.Callback(Self.DkHvFuncsSetErr, Sender))
       end else if (subItem = 'ZVUK obnov') then begin
         ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
         TrakceI.RestoreSound(TTrakce.Callback(Self.DkHvFuncsSetOk, Sender), TTrakce.Callback(Self.DkHvFuncsSetErr, Sender));

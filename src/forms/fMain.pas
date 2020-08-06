@@ -468,7 +468,7 @@ type
     procedure OnTrkAllReleased(Sender:TObject);
     procedure OnTrkLocoAcquired(Sender:TObject);
     procedure OnTrkLocoReleased(Sender:TObject);
-    procedure OnTrkAllFunctionTurnedOff(Sender:TObject);
+    procedure OnTrkAllFunctionTurnedOff(Sender:TObject; data: Pointer);
 
   end;//public
 
@@ -1424,10 +1424,11 @@ procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);
 begin
  Self.LogStatus('Vypínám zvuky hnacích vozidel...');
  Application.ProcessMessages();
- TrakceI.TurnOffSound(Self.OnTrkAllFunctionTurnedOff);
+ TrakceI.TurnOffSound(TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff),
+                      TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff));
 end;
 
-procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender:TObject);
+procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender:TObject; data: Pointer);
 begin
  Self.LogStatus('Zvuky všech hnacích vozidel vypnuty');
  Application.ProcessMessages();
