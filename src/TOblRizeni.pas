@@ -283,7 +283,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain,
+uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain, Logging,
      TechnologieJC, TJCDatabase, ownConvert, TCPServerOR,
      TOblsRizeni, TBlok, THVDatabase, SprDb,
      UserDb, THnaciVozidlo, Trakce, User, TCPORsRef,
@@ -491,6 +491,7 @@ begin
      pnl.Rights := rights;
      pnl.user   := user;
      Self.Connected[i] := pnl;
+     authLog('or', 'reauth', user, Self.id + ' :: ' + Self.GetRightsString(rights));
      Exit();
     end;
   end;//for i
@@ -505,6 +506,8 @@ begin
  pnl.Rights := rights;
  pnl.user   := user;
  Self.Connected.Add(pnl);
+
+ authLog('or', 'login', user, Self.id + ' :: ' + Self.GetRightsString(rights));
 
  // pridame referenci na sami sebe do TIDContext
  (Panel.Data as TTCPORsRef).ORs.Add(Self);
@@ -525,6 +528,7 @@ begin
   begin
    if (Self.Connected[i].Panel = Panel) then
     begin
+     authLog('or', 'logout', Self.Connected[i].user, Self.id);
      Self.Connected.Delete(i);
      Break;
     end;

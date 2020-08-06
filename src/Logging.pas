@@ -1,41 +1,66 @@
 ﻿unit Logging;
 
-// tato unita zajistuje logovani
+// This unit provides functions for logging
 
 interface
 
 uses ComCtrls, SysUtils, Graphics, Windows, Classes;
 
 const
-   //konstanty pro writelog
-   WR_MESSAGE     = 0;
-   WR_ERROR       = 1;
-   WR_AUTREZ      = 3;
-   WR_VC          = 4;
-   WR_DATA        = 6;
-   WR_RCS         = 7;
-   WR_SYSTEM      = 8;
-   WR_CONSOLE     = 10;
-   WR_SPRPREDAT   = 11;
-   WR_USERS       = 12;
-   WR_STACK       = 13;
-   WR_TRAT        = 16;
-   WR_PT          = 17;
+   // General log types
+   WR_MESSAGE = 0;
+   WR_ERROR = 1;
+   WR_VC = 4;
+   WR_DATA = 6;
+   WR_RCS = 7;
+   WR_SYSTEM = 8;
+   WR_CONSOLE = 10;
+   WR_SPRPREDAT = 11;
+   WR_USERS = 12;
+   WR_STACK = 13;
+   WR_TRAT = 16;
+   WR_PT = 17;
 
    _MAX_LOGTABLE_ITEMS = 500;
-   _LOG_PATH = 'log\program';
+   _MAIN_LOG_PATH = 'log\program';
+   _AUTH_LOG_PATH = 'log\auth';
 
+
+procedure logInit();
 
 procedure writeLog(Text:string; Typ:Integer); overload;
 procedure writeLog(Text:TStrings; Typ:Integer); overload;
-procedure LogInit();
+
+procedure authLog(system, operation, user, text: string);
 
 var
-  log_err_flag:boolean;              // pokud je posledni log chyba, je zde true, jinak je zde false
+  log_err_flag: Boolean; // true iff last log is an error
+  auth_logging: Boolean; // if logging auth log
 
 implementation
 
 uses fMain, GetSystems, appEv;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure logInit();
+begin
+ try
+   if not DirectoryExists(_MAIN_LOG_PATH) then
+     if not SysUtils.ForceDirectories(ExpandFileName(_MAIN_LOG_PATH)) then
+       writelog('ERR: Nelze vytvořit složku '+_MAIN_LOG_PATH, WR_ERROR);
+   if not DirectoryExists(_AUTH_LOG_PATH) then
+     if not SysUtils.ForceDirectories(ExpandFileName(_AUTH_LOG_PATH)) then
+       writelog('ERR: Nelze vytvořit složku '+_AUTH_LOG_PATH, WR_ERROR);
+ except
+   on e:Exception do
+     AppEvents.LogException(E);
+ end;
+
+ WriteLog('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', WR_MESSAGE);
+ WriteLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
+ WriteLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', WR_MESSAGE);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +69,6 @@ function GetLogColor(LogTyp:Integer):TColor;
   case (LogTyp) of
    WR_MESSAGE    : Result := clWhite;
    WR_ERROR      : Result := fMain._TABLE_COLOR_RED;
-   WR_AUTREZ     : Result := RGB($A0,$FF,$A0);
    WR_VC         : Result := RGB($FF,$FF,$D0);
    WR_DATA       : Result := fMain._TABLE_COLOR_BLUE;
    WR_RCS        : Result := fMain._TABLE_COLOR_GREEN;
@@ -54,9 +78,9 @@ function GetLogColor(LogTyp:Integer):TColor;
    WR_USERS      : Result := RGB($F0,$F0,$D0);
    WR_TRAT       : Result := clHotLight;
    WR_PT         : Result := RGB($F0,$FF,$F0);
-  else//case
+  else
    Result := clWhite;
-  end;//else case
+  end;
  end;
 
 function GetWriteLogTyp(Typ:Integer):string;
@@ -64,7 +88,6 @@ function GetWriteLogTyp(Typ:Integer):string;
   case Typ of
    WR_MESSAGE:   Result := 'Zpráva';
    WR_ERROR:     Result := 'Chyba';
-   WR_AUTREZ:    Result := 'Automatický režim';
    WR_VC:        Result := 'Jízdní cesty';
    WR_DATA:      Result := 'Data';
    WR_RCS:       Result := 'RCS';
@@ -121,8 +144,8 @@ var LV:TListItem;
   try
     if (F_Main.CHB_Mainlog_File.Checked) then
      begin
-      AssignFile(f, _LOG_PATH+'\'+xDate+'.log');
-      if (FileExists(_LOG_PATH+'\'+xDate+'.log')) then
+      AssignFile(f, _MAIN_LOG_PATH+'\'+xDate+'.log');
+      if (FileExists(_MAIN_LOG_PATH+'\'+xDate+'.log')) then
         Append(f)
       else
         Rewrite(f);
@@ -157,22 +180,40 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure LogInit();
-begin
- try
-   if not DirectoryExists(_LOG_PATH) then
-     if not SysUtils.ForceDirectories(ExpandFileName(_LOG_PATH)) then
-       writelog('ERR: Nelze vytvořit složku '+_LOG_PATH, WR_ERROR);
- except
-   on e:Exception do
-     AppEvents.LogException(E);
- end;
+procedure authLog(system, operation, user, text: string);
+var f: TextFile;
+    time, date: string;
+    line: string;
+    b:Byte;
+ begin
+  if (not auth_logging) then Exit();
 
- WriteLog('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', WR_MESSAGE);
- WriteLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
- WriteLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', WR_MESSAGE);
+  DateTimeToString(date, 'yyyy-mm-dd', Now);
+  DateTimeToString(time, 'hh:mm:ss', Now);
+
+  try
+    AssignFile(f, _AUTH_LOG_PATH+'\'+date+'.log');
+    if (FileExists(_AUTH_LOG_PATH+'\'+date+'.log')) then
+      Append(f)
+    else
+      Rewrite(f);
+
+    line := time + ' {' + UpperCase(system) + '} ['+UpperCase(operation)+'] ';
+    if (user <> '') then
+      line := line + '<' + user + '> ';
+    line := line + text + #13#10;
+    for b in TEncoding.UTF8.GetBytes(line) do
+      Write(f, AnsiChar(b));
+
+    CloseFile(f);
+  except
+
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+initialization
+  auth_logging := false;
 
 end.//unit

@@ -270,6 +270,7 @@ type
     MI_Trk_Update: TMenuItem;
     A_Trk_Lib_Cfg: TAction;
     A_Turnoff_Functions: TAction;
+    CHB_Log_Auth: TCheckBox;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -403,6 +404,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure CHB_Log_AuthClick(Sender: TObject);
   private
     KomunikaceGo:TdateTime;
     call_method:TNotifyEvent;
@@ -1921,6 +1923,7 @@ begin
       ini.WriteBool('Log', 'main-file', Self.CHB_Mainlog_File.Checked);
       ini.WriteBool('Log', 'main-table', Self.CHB_Mainlog_Table.Checked);
       ini.WriteBool('Log', 'rcs', Self.CHB_rcslog.Checked);
+      ini.WriteBool('Log', 'auth', Self.CHB_Log_Auth.Checked);
 
     finally
       ini.UpdateFile();
@@ -2369,6 +2372,11 @@ begin
   end;
 end;
 
+procedure TF_Main.CHB_Log_AuthClick(Sender: TObject);
+begin
+ Logging.auth_logging := Self.CHB_Log_Auth.Checked;
+end;
+
 procedure TF_Main.CHB_rcslogClick(Sender: TObject);
 begin
  RCSi.log := Self.CHB_rcslog.Checked;
@@ -2543,10 +2551,12 @@ var inidata: TMemIniFile;
  begin
   inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
   try
-    Self.CHB_Mainlog_File.Checked := inidata.ReadBool('Log','main-file', true);
-    Self.CHB_Mainlog_Table.Checked := inidata.ReadBool('Log','main-table', true);
+    Self.CHB_Mainlog_File.Checked := inidata.ReadBool('Log', 'main-file', true);
+    Self.CHB_Mainlog_Table.Checked := inidata.ReadBool('Log', 'main-table', true);
     Self.CHB_rcslog.Checked := inidata.ReadBool('Log', 'rcs', false);
+    Self.CHB_Log_Auth.Checked := inidata.ReadBool('Log', 'auth', false);
     RCSi.log := Self.CHB_rcslog.Checked;
+    Logging.auth_logging := Self.CHB_Log_Auth.Checked;
   finally
     inidata.Free();
   end;
