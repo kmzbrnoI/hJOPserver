@@ -268,9 +268,9 @@ procedure TBlkRozp.UpdateOutput();
 begin
  try
    if (Self.status = TRozpStatus.active) then
-     RCSi.SetOutput(Self.RozpSettings.RCSAddrs[0].board, Self.RozpSettings.RCSAddrs[0].port, 1)
+     RCSi.SetOutputs(Self.RozpSettings.RCSAddrs, 1)
    else
-     RCSi.SetOutput(Self.RozpSettings.RCSAddrs[0].board, Self.RozpSettings.RCSAddrs[0].port, 0);
+     RCSi.SetOutputs(Self.RozpSettings.RCSAddrs, 0);
  except
   Self.RozpStav.rcsFailed := true;
   Self.status := TRozpStatus.disabled;
