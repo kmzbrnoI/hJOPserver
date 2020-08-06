@@ -315,8 +315,13 @@ var glob:TBlkSettings;
     LI.SubItems.Add(IntToStr(TUsettings.rychlosti[i]) + ' km/h');
    end;
 
-  Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
-  Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
+  if (TUsettings.zastavka <> nil) then
+   begin
+    if (TUsettings.zastavka.ev_lichy <> nil) then
+      Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
+    if (TUsettings.zastavka.ev_sudy <> nil) then
+      Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
+   end;
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (traťový úsek)';
   Self.ActiveControl := Self.B_OK;
@@ -648,7 +653,7 @@ begin
    Self.ME_Zast_Delay.Enabled := true;
    Self.PC_Zastavka.Enabled := true;
 
-   if (Assigned(Self.Blk)) then
+   if ((Assigned(Self.Blk)) and (Self.Blk.GetSettings.zastavka <> nil)) then
     begin
      zast := Self.Blk.GetSettings.Zastavka;
      Self.E_Zast_Spr.Text := Copy(zast.spr_typ_re.Pattern, 2, Length(zast.spr_typ_re.Pattern)-2);
