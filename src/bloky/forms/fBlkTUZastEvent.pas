@@ -63,10 +63,7 @@ end;
 
 procedure TF_BlkTUZastEvent.OpenForm(events: TBlkTUZastEvents);
 begin
- if (events.enabled) then
-   Self.fZast.FillFromRR(events.zastaveni)
- else
-   Self.fZast.ShowEmpty();
+ Self.fZast.FillFromRR(events.zastaveni);
 
  Self.CHB_Zpomal.Checked := events.zpomaleni.enabled;
  if (events.zpomaleni.enabled) then
@@ -118,6 +115,7 @@ end;
 
 function TF_BlkTUZastEvent.GetEvent():TBlkTUZastEvents;
 begin
+ Result := TBlkTUZastEvents.Create();
  Result.zastaveni := fZast.GetRREv();
  Result.zpomaleni.enabled := Self.CHB_Zpomal.Checked;
 
@@ -125,8 +123,6 @@ begin
   begin
    Result.zpomaleni.ev := fZpom.GetRREv();
    Result.zpomaleni.speed := (Self.CB_ZpomalitKmH.ItemIndex+1) * 10;
-  end else begin
-   Result.zpomaleni.ev := nil;
   end;
 end;
 

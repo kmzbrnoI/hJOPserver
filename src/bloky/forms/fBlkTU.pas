@@ -293,8 +293,8 @@ var glob:TBlkSettings;
   E_Delka.Text := FloatToStr(Usettings.Lenght);
   CHB_SmycBlok.Checked := Usettings.SmcUsek;
 
-  Self.CHB_Zastavka_Lichy.Checked := TUsettings.Zastavka.ev_lichy.enabled;
-  Self.CHB_Zastavka_Sudy.Checked  := TUsettings.Zastavka.ev_sudy.enabled;
+  Self.CHB_Zastavka_Lichy.Checked := Assigned(TUsettings.zastavka) and Assigned(TUsettings.Zastavka.ev_lichy);
+  Self.CHB_Zastavka_Sudy.Checked  := Assigned(TUsettings.zastavka) and Assigned(TUsettings.Zastavka.ev_sudy);
   Self.CHB_Zastavka_LichyClick(Self);
 
   Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btNav, TUsettings.navLid);
@@ -501,9 +501,6 @@ var glob:TBlkSettings;
   settings.Zesil := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
   settings.maxSpr := 1;
 
-  TUsettings.Zastavka.ev_lichy.enabled := Self.CHB_Zastavka_Lichy.Checked;
-  TUsettings.Zastavka.ev_sudy.enabled := Self.CHB_Zastavka_Sudy.Checked;
-
   TUSettings.rychlosti := speeds;
 
   if (Self.CHB_NavL.Checked) then
@@ -516,30 +513,33 @@ var glob:TBlkSettings;
   else
     TUsettings.navSid := -1;
 
+
   if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
    begin
-    TUsettings.zastavka.soupravy := TStringList.Create();
-    ExtractStringsEx([','], [' '], Self.E_Zast_Spr.Text, TUsettings.Zastavka.soupravy);
-    TUsettings.Zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
+    TUsettings.zastavka := TBlkTUZastavka.Create();
+    TUsettings.zastavka.spr_typ_re.Compile('^'+Self.E_Zast_Spr.Text+'$', false);
+    TUsettings.zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
     try
       TUsettings.Zastavka.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)),
                                               StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
-      TUsettings.zastavka.soupravy.Free();
       speeds.Free();
+      TUsettings.zastavka.Free();
       Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
-   end;
 
-  if (Self.CHB_Zastavka_Lichy.Checked) then
-    TUsettings.Zastavka.ev_lichy := Self.zastLichy.GetEvent();
+    if (Self.CHB_Zastavka_Lichy.Checked) then
+      TUsettings.Zastavka.ev_lichy := Self.zastLichy.GetEvent()
+    else
+      TUsettings.zastavka.ev_lichy := nil;
 
-  if (Self.CHB_Zastavka_Sudy.Checked) then
-    TUsettings.Zastavka.ev_sudy := Self.zastSudy.GetEvent();
-
-  TUsettings.Zastavka.ev_lichy.enabled := Self.CHB_Zastavka_Lichy.Checked;
-  TUsettings.Zastavka.ev_sudy.enabled  := Self.CHB_Zastavka_Sudy.Checked;
+    if (Self.CHB_Zastavka_Sudy.Checked) then
+      TUsettings.Zastavka.ev_sudy := Self.zastSudy.GetEvent()
+    else
+      TUsettings.zastavka.ev_sudy := nil;
+   end else
+     TUsettings.zastavka := nil;
 
   settings.houkEvL := TBlkUsek(Self.Blk).GetSettings().houkEvL;
   settings.houkEvS := TBlkUsek(Self.Blk).GetSettings().houkEvS;
@@ -639,33 +639,27 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkTU.CHB_Zastavka_LichyClick(Sender: TObject);
-var i:Integer;
-    zast:TBlkTUZastavka;
+var zast: TBlkTUZastavka;
 begin
  if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
   begin
-   Self.E_Zast_Spr.Enabled       := true;
+   Self.E_Zast_Spr.Enabled := true;
    Self.SE_Zast_DelkaSpr.Enabled := true;
-   Self.ME_Zast_Delay.Enabled    := true;
-   Self.PC_Zastavka.Enabled      := true;
+   Self.ME_Zast_Delay.Enabled := true;
+   Self.PC_Zastavka.Enabled := true;
 
    if (Assigned(Self.Blk)) then
     begin
      zast := Self.Blk.GetSettings.Zastavka;
-     Self.E_Zast_Spr.Text := '';
-
-     if (Assigned(zast.soupravy)) then
-       for i := 0 to zast.soupravy.Count-1 do
-         Self.E_Zast_Spr.Text := Self.E_Zast_Spr.Text + zast.soupravy[i] + ', ';
-
-     Self.SE_Zast_DelkaSpr.Value     := zast.max_delka;
-     Self.ME_Zast_Delay.Text         := FormatDateTime('nn:ss', zast.delay);
+     Self.E_Zast_Spr.Text := Copy(zast.spr_typ_re.Pattern, 2, Length(zast.spr_typ_re.Pattern)-2);
+     Self.SE_Zast_DelkaSpr.Value := zast.max_delka;
+     Self.ME_Zast_Delay.Text := FormatDateTime('nn:ss', zast.delay);
     end;
   end else begin
-   Self.E_Zast_Spr.Enabled       := false;
+   Self.E_Zast_Spr.Enabled := false;
    Self.SE_Zast_DelkaSpr.Enabled := false;
-   Self.ME_Zast_Delay.Enabled    := false;
-   Self.PC_Zastavka.Enabled      := false;
+   Self.ME_Zast_Delay.Enabled := false;
+   Self.PC_Zastavka.Enabled := false;
   end;
 
  Self.TS_Zast_lichy.TabVisible := Self.CHB_Zastavka_Lichy.Checked;
@@ -673,10 +667,10 @@ begin
 
  if (((not Self.CHB_Zastavka_Lichy.Checked) and ((not Self.CHB_Zastavka_Sudy.Checked))) or (not Assigned(Self.Blk))) then
   begin
-   Self.E_Zast_Spr.Text            := '';
-   Self.SE_Zast_DelkaSpr.Value     := 0;
-   Self.ME_Zast_Delay.Text         := '00:00';
-   Self.PC_Zastavka.Enabled        := false;
+   Self.E_Zast_Spr.Text := '.*';
+   Self.SE_Zast_DelkaSpr.Value := 0;
+   Self.ME_Zast_Delay.Text := '00:00';
+   Self.PC_Zastavka.Enabled := false;
   end;
 end;
 

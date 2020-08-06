@@ -37,7 +37,7 @@ type
 
  // zastaovoaci a zpomalovaci udalost pro jeden typ soupravy a jeden rozsah delek soupravy
  TBlkNavSprEvent = class
-  spr_typ_re: TJclRegEx;                        // regexp matchujici cely typ soupravy (musi byt match na cely typ!)
+  spr_typ_re: TJclRegEx;                        // regexp matchujici typ soupravy
   delka:record                                  // tato udalost je brana v potaz, pokud ma souprava delku > min && < max
     min:Integer;
     max:Integer;
@@ -55,7 +55,7 @@ type
    destructor Destroy(); override;
 
    procedure Parse(str:string; old:boolean);
-   function ParseSprTypes(types: string): string;
+   class function ParseSprTypes(types: string): string;
    function ToFileStr(short:boolean = false): string;
    class function ParseOldRychEvent(str:string): TRREv;
  end;
@@ -1860,7 +1860,7 @@ begin
  end;
 end;
 
-function TBlkNavSprEvent.ParseSprTypes(types: string): string;
+class function TBlkNavSprEvent.ParseSprTypes(types: string): string;
 var strs: TSTrings;
     str: string;
 begin

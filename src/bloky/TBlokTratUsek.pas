@@ -41,25 +41,38 @@ Jak to funguje:
 interface
 
 uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, rrEvent,
-      Generics.Collections, TOblRizeni, THnaciVozidlo, Souprava;
+      Generics.Collections, TOblRizeni, THnaciVozidlo, Souprava, JclPCRE;
 
 type
- TBlkTUZastEvents = record                                                      // cidla zastavky v jednom smeru
-  enabled: boolean;                                                               // jestli je zastavka v danem smeru povolena
+ TBlkTUZastEvents = class                                                       // cidla zastavky v jednom smeru
   zastaveni: TRREv;                                                               // zastavovaci udalost
   zpomaleni: record                                                               // zpomalovaci udalost
     enabled: boolean;                                                               // povolena zpomalovaci udalost?
     speed: Integer;                                                                 // rychlost z km/h (40, 50, 60...)
     ev: TRREv;                                                                      // udalost
   end;
+
+   constructor Create(); overload;
+   constructor Create(ini_tech: TMemIniFile; const section: string; const prefix: string); overload;
+   destructor Destroy(); override;
+
+   procedure LoadFromFile(ini_tech: TMemIniFile; const section: string; const prefix: string);
+   procedure SaveToFile(ini_tech: TMemIniFile; const section: string; const prefix: string);
  end;
 
- TBlkTUZastavka = record                                                        // zastavka na TU
+ TBlkTUZastavka = class                                                         // zastavka na TU
   ev_lichy:TBlkTUZastEvents;                                                      // odkaz na zastavovaci a zpomalovaci event v lichem smeru
   ev_sudy:TBlkTUZastEvents;                                                       // odkaz na zastavovaci a zpomalovaci event v sudem smeru
-  soupravy:TStrings;                                                              // typy souprav, pro ktere je zastavka
+  spr_typ_re: TJclRegEx;                                                          // regexp matchujici typ soupravy
   max_delka:Integer;                                                              // maximalni delka soupravy pro zastaveni v zastavce
   delay:TTime;                                                                    // cas cekani v zastavce
+
+   constructor Create(); overload;
+   constructor Create(ini_tech: TMemIniFile; const section: string); overload;
+   destructor Destroy(); override;
+
+   procedure LoadFromFile(ini_tech: TMemIniFile; const section: string);
+   procedure SaveToFile(ini_tech: TMemIniFile; const section: string);
  end;
 
  TBlkTUSettings = record                                                        // nastaveni TU
@@ -102,11 +115,6 @@ type
     sprRychUpdateIter : 0;
    );
 
-   _def_tu_zastavka:TBlkTUZastavka = (                                          // zakladni stav zastavky
-    soupravy : nil;
-    max_delka : 0;
-   );
-
   private
    TUSettings:TBlkTUSettings;
    fTUStav:TBlkTUStav;
@@ -147,6 +155,8 @@ type
     function GetRychUpdate:boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
 
     function GetReady():boolean;                                                // jestli je usek pripraveny na vjeti soupravy
+
+    function IsZastavka(): Boolean;
 
     procedure SetPoruchaBP(state:boolean);                                      // nastavi stav poruchy blokove podminky
     procedure AddSouprava(spr:Integer);
@@ -216,6 +226,7 @@ type
     property nextNav:TBlk read GetNextNav;
     property ready:boolean read GetReady;
     property poruchaBP:boolean read fTUStav.poruchaBP write SetPoruchaBP;
+    property zastavka:boolean read IsZastavka;
 
  end;//TBlkUsek
 
@@ -242,29 +253,15 @@ begin
  Self.ssectUseky := TList<TBlkTU>.Create();
  Self.bpInBlk := false;
  Self.TUSettings.rychlosti := TDictionary<Cardinal, Cardinal>.Create();
-
- Self.TUSettings.zastavka.ev_lichy.zastaveni := nil;
- Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev := nil;
- Self.TUSettings.zastavka.ev_sudy.zastaveni := nil;
- Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev := nil;
-end;//ctor
+ Self.TUSettings.zastavka := nil;
+end;
 
 destructor TBlkTU.Destroy();
 begin
  Self.lsectUseky.Free();
  Self.ssectUseky.Free();
- Self.TUSettings.Zastavka.soupravy.Free();
+ Self.TUSettings.zastavka.Free();
  Self.TUSettings.rychlosti.Free();
-
- if (Assigned(Self.TUSettings.zastavka.ev_lichy.zastaveni)) then
-   Self.TUSettings.zastavka.ev_lichy.zastaveni.Free();
- if (Assigned(Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev)) then
-   Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Free();
-
- if (Assigned(Self.TUSettings.zastavka.ev_sudy.zastaveni)) then
-   Self.TUSettings.zastavka.ev_sudy.zastaveni.Free();
- if (Assigned(Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev)) then
-   Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Free();
 
  inherited;
 end;//dtor
@@ -273,7 +270,7 @@ end;//dtor
 // nacte konfiguracni data ze souboru
 
 procedure TBlkTU.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
-var zastLichy, zastSudy, str: string;
+var str: string;
     strs, strs2: TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
@@ -309,64 +306,17 @@ begin
  if ((not Self.TUSettings.rychlosti.ContainsKey(0)) or (Self.TUSettings.rychlosti[0] < 10)) then
    writelog('WARNING: traťový úsek '+Self.name + ' ('+IntToStr(Self.id)+') nemá korektně zadanou traťovou rychlost', WR_ERROR);
 
- // nacitani zastavky
- if (Assigned(Self.TUSettings.Zastavka.soupravy)) then Self.TUSettings.Zastavka.soupravy.Free();
- Self.TUSettings.Zastavka := _def_tu_zastavka;
- Self.TUSettings.Zastavka.soupravy := TStringList.Create();
-
- zastLichy := ini_tech.ReadString(section, 'zast_ev_lichy_zast', '');
- Self.TUsettings.Zastavka.ev_lichy.enabled := (zastLichy <> '');
-
- zastSudy := ini_tech.ReadString(section, 'zast_ev_sudy_zast', '');
- Self.TUsettings.Zastavka.ev_sudy.enabled := (zastSudy <> '');
-
- Self.TUsettings.Zastavka.max_delka := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
- Self.TUsettings.Zastavka.delay     := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
-
- Self.TUsettings.Zastavka.soupravy.Clear();
- ExtractStrings([';'],[],PChar(ini_tech.ReadString(section, 'zast_soupravy', '')), Self.TUsettings.Zastavka.soupravy);
-
- // zastavka v lichem smeru
- if (Self.TUsettings.Zastavka.ev_lichy.enabled) then
-  begin
-   try
-     Self.TUsettings.Zastavka.ev_lichy.zastaveni := TRREv.Create(zastLichy);
-
-     str := ini_tech.ReadString(section, 'zast_ev_lichy_zpom_ev', '');
-     Self.TUsettings.Zastavka.ev_lichy.zpomaleni.enabled := (str <> '');
-     if (Self.TUsettings.Zastavka.ev_lichy.zpomaleni.enabled) then
-      begin
-       Self.TUsettings.Zastavka.ev_lichy.zpomaleni.ev := TRREv.Create(str);
-       Self.TUsettings.Zastavka.ev_lichy.zpomaleni.speed := ini_tech.ReadInteger(section, 'zast_ev_lichy_zpom_sp', 40);
-      end;
-   except
-     Self.TUsettings.Zastavka.ev_lichy.enabled := false;
-   end;
-  end;
-
- // zastavka v sudem smeru
- if (Self.TUsettings.Zastavka.ev_sudy.enabled) then
-  begin
-   try
-     Self.TUsettings.Zastavka.ev_sudy.zastaveni := TRREv.Create(zastSudy);
-
-     str := ini_tech.ReadString(section, 'zast_ev_sudy_zpom_ev', '');
-     Self.TUsettings.Zastavka.ev_sudy.zpomaleni.enabled := (str <> '');
-     if (Self.TUsettings.Zastavka.ev_sudy.zpomaleni.enabled) then
-      begin
-       Self.TUsettings.Zastavka.ev_sudy.zpomaleni.ev := TRREv.Create(str);
-       Self.TUsettings.Zastavka.ev_sudy.zpomaleni.speed := ini_tech.ReadInteger(section, 'zast_ev_sudy_zpom_sp', 40);
-      end;
-   except
-     Self.TUsettings.Zastavka.ev_sudy.enabled := false;
-   end;
-  end;
+ if ((ini_tech.ReadString(section, 'zast_ev_lichy_zast', '') <> '') or
+     (ini_tech.ReadString(section, 'zast_ev_sudy_zast', '') <> '')) then
+   Self.TUSettings.zastavka := TBlkTUZastavka.Create(ini_tech, section)
+ else
+   if (Assigned(Self.TUSettings.zastavka)) then
+     Self.TUSettings.zastavka.Free();
 end;
 
 // ulozi konfiguracni data do souboru
 procedure TBlkTU.SaveData(ini_tech:TMemIniFile;const section:string);
 var str: string;
-    i: Integer;
     j: Cardinal;
     speeds: TList<Cardinal>;
 begin
@@ -389,37 +339,8 @@ begin
    speeds.Free();
  end;
 
- // ukladani zastavky
- if (Self.TUsettings.Zastavka.ev_lichy.enabled) then
-  begin
-   ini_tech.WriteString(section, 'zast_ev_lichy_zast', Self.TUsettings.Zastavka.ev_lichy.zastaveni.GetDefStr());
-   if (Self.TUsettings.Zastavka.ev_lichy.zpomaleni.enabled) then
-    begin
-     ini_tech.WriteString(section, 'zast_ev_lichy_zpom_ev', Self.TUsettings.Zastavka.ev_lichy.zpomaleni.ev.GetDefStr());
-     ini_tech.WriteInteger(section, 'zast_ev_lichy_zpom_sp', Self.TUsettings.Zastavka.ev_lichy.zpomaleni.speed);
-    end;
-  end;
-
- if (Self.TUsettings.Zastavka.ev_sudy.enabled) then
-  begin
-   ini_tech.WriteString(section, 'zast_ev_sudy_zast', Self.TUsettings.Zastavka.ev_sudy.zastaveni.GetDefStr());
-   if (Self.TUsettings.Zastavka.ev_sudy.zpomaleni.enabled) then
-    begin
-     ini_tech.WriteString(section, 'zast_ev_sudy_zpom_ev', Self.TUsettings.Zastavka.ev_sudy.zpomaleni.ev.GetDefStr());
-     ini_tech.WriteInteger(section, 'zast_ev_sudy_zpom_sp', Self.TUsettings.Zastavka.ev_sudy.zpomaleni.speed);
-    end;
-  end;
-
- if ((Self.TUsettings.Zastavka.ev_lichy.enabled) or ((Self.TUsettings.Zastavka.ev_sudy.enabled))) then
-  begin
-   ini_tech.WriteInteger(section, 'zast_max_delka', Self.TUsettings.Zastavka.max_delka);
-   ini_tech.WriteString(section, 'zast_delay', TimeToStr(Self.TUsettings.Zastavka.delay));
-
-   str := '';
-   for i := 0 to Self.TUsettings.Zastavka.soupravy.Count-1 do
-    str := str + Self.TUsettings.Zastavka.soupravy[i] + ';';
-   ini_tech.WriteString(section, 'zast_soupravy', str);
-  end;
+ if (Self.zastavka) then
+   Self.TUSettings.zastavka.SaveToFile(ini_tech, section);
 end;
 
 // ulozi stavova data do souboru
@@ -441,22 +362,8 @@ end;
 
 procedure TBlkTU.SetSettings(data:TBlkTUSettings);
 begin
- if (Self.TUSettings.zastavka.ev_lichy.zastaveni <> data.zastavka.ev_lichy.zastaveni) then
-   Self.TUSettings.zastavka.ev_lichy.zastaveni.Free();
-
- if (Self.TUSettings.zastavka.ev_sudy.zastaveni <> data.zastavka.ev_sudy.zastaveni) then
-   Self.TUSettings.zastavka.ev_sudy.zastaveni.Free();
-
- if ((Assigned(Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev)) and
-     (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev <> data.zastavka.ev_lichy.zpomaleni.ev)) then
-   Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Free();
-
- if ((Assigned(Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev)) and
-     (Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev <> data.zastavka.ev_sudy.zpomaleni.ev)) then
-   Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Free();
-
- if (Self.TUSettings.Zastavka.soupravy <> data.Zastavka.soupravy) then
-   Self.TUSettings.Zastavka.soupravy.Free();
+ if (Self.TUSettings.zastavka <> data.zastavka) and (Assigned(Self.TUSettings.zastavka)) then
+   Self.TUSettings.zastavka.Free();
 
  if (Self.TUSettings.rychlosti <> data.rychlosti) then
    Self.TUSettings.rychlosti.Free();
@@ -498,8 +405,7 @@ procedure TBlkTU.Update();
 begin
  inherited;
 
- if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.IsSouprava()) and
-     ((Self.TUSettings.Zastavka.ev_lichy.enabled) or (Self.TUSettings.Zastavka.ev_sudy.enabled))) then
+ if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.IsSouprava()) and (Self.zastavka)) then
    Self.ZastUpdate();
 
  Self.UpdateSprRych();
@@ -536,8 +442,6 @@ end;
 // aktualizace stavu zastavky
 
 procedure TBlkTU.ZastUpdate();
-var i:Integer;
-    found:boolean;
 begin
  if (not Self.TUStav.zast_stopped) then
   begin
@@ -546,21 +450,12 @@ begin
       (Self.Souprava.sprLength > Self.TUSettings.Zastavka.max_delka) or (Self.Souprava.front <> self)) then Exit();
 
    // kontrola spravneho smeru
-   if (((Self.Souprava.direction = THVSTanoviste.lichy) and (not Self.TUSettings.zastavka.ev_lichy.enabled)) or
-       ((Self.Souprava.direction = THVSTanoviste.sudy) and (not Self.TUSettings.zastavka.ev_sudy.enabled))) then Exit();
+   if (((Self.Souprava.direction = THVSTanoviste.lichy) and (not Assigned(Self.TUSettings.zastavka.ev_lichy))) or
+       ((Self.Souprava.direction = THVSTanoviste.sudy) and (not Assigned(Self.TUSettings.zastavka.ev_sudy)))) then Exit();
 
    // kontrola typu soupravy:
-   found := false;
-   for i := 0 to Self.TUSettings.Zastavka.soupravy.Count-1 do
-    begin
-     if (Self.TUSettings.Zastavka.soupravy[i] = Self.Souprava.typ) then
-      begin
-       found := true;
-       break;
-      end;
-    end;
-
-   if (not found) then Exit();
+   if (Self.TUSettings.zastavka.spr_typ_re.Match(Self.Souprava.typ)) then
+     Exit();
 
    // zpomalovani pred zastavkou:
    if (Self.fTUStav.zast_zpom_ready) then
@@ -710,8 +605,7 @@ begin
  Result := inherited;
 
  // zastavka
- if ((Self.InTrat > -1) and
-     ((Self.TUSettings.Zastavka.ev_lichy.enabled) or (Self.TUSettings.Zastavka.ev_sudy.enabled))) then
+ if ((Self.InTrat > -1) and (Self.zastavka)) then
   begin
    Result := Result + '-,';
    if (not Self.TUStav.zast_stopped) then
@@ -773,8 +667,8 @@ end;
 
 procedure TBlkTU.AddSouprava(spr:Integer);
 begin
- if (((Self.TUSettings.zastavka.ev_lichy.enabled) or (Self.TUSettings.zastavka.ev_sudy.enabled)) and
-     (not Self.fTUStav.zast_zpom_ready)) then Self.fTUStav.zast_zpom_ready := true;
+ if ((Self.zastavka) and (not Self.fTUStav.zast_zpom_ready)) then
+   Self.fTUStav.zast_zpom_ready := true;
 
  // Zmena smeru soupravy muze nastat na zacatku i konci trati
  // tak, aby souprava byla vzdy rizeni spravnymi nasvestidly.
@@ -837,14 +731,18 @@ begin
  Self.fTUStav.zast_passed     := false;
  Self.fTUStav.zast_zpom_ready := false;
 
- if (Self.TUSettings.zastavka.ev_lichy.enabled) then
+ if (Assigned(Self.TUSettings.zastavka.ev_lichy)) then
+  begin
    Self.TUSettings.zastavka.ev_lichy.zastaveni.Unregister();
- if (Self.TUSettings.zastavka.ev_sudy.enabled) then
+   if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
+     Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
+  end;
+ if (Assigned(Self.TUSettings.zastavka.ev_sudy)) then
+  begin
    Self.TUSettings.zastavka.ev_sudy.zastaveni.Unregister();
- if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
-   Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
- if (Self.TUSettings.zastavka.ev_sudy.zpomaleni.enabled) then
-   Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Unregister();
+   if (Self.TUSettings.zastavka.ev_sudy.zpomaleni.enabled) then
+     Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Unregister();
+  end;
 
  // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
  if (Self.Trat <> nil) then
@@ -1390,4 +1288,131 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-end.//unit
+function TBlkTU.IsZastavka(): Boolean;
+begin
+ Result := (Self.TUSettings.zastavka <> nil);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+constructor TBlkTUZastavka.Create();
+begin
+ inherited;
+
+ Self.spr_typ_re := TJclRegEx.Create();
+ Self.spr_typ_re.Compile('.*', false);
+ Self.ev_lichy := nil;
+ Self.ev_sudy := nil;
+end;
+
+constructor TBlkTUZastavka.Create(ini_tech: TMemIniFile; const section: string);
+begin
+ Self.Create();
+ Self.LoadFromFile(ini_tech, section);
+end;
+
+destructor TBlkTUZastavka.Destroy();
+begin
+ Self.spr_typ_re.Free();
+ if (Assigned(Self.ev_lichy)) then
+   Self.ev_lichy.Free();
+ if (Assigned(Self.ev_sudy)) then
+   Self.ev_sudy.Free();
+
+ inherited;
+end;
+
+procedure TBlkTUZastavka.LoadFromFile(ini_tech: TMemIniFile; const section: string);
+var str: string;
+begin
+ str := ini_tech.ReadString(section, 'zast_ev_lichy_zast', '');
+ try
+   if (str <> '') then
+     Self.ev_lichy := TBlkTUZastEvents.Create(ini_tech, section, 'zast_ev_lichy')
+   else
+     if (Assigned(Self.ev_lichy)) then
+       Self.ev_lichy.Free();
+ except
+   Self.ev_lichy := nil;
+ end;
+
+ try
+   str := ini_tech.ReadString(section, 'zast_ev_sudy_zast', '');
+   if (str <> '') then
+     Self.ev_sudy := TBlkTUZastEvents.Create(ini_tech, section, 'zast_ev_sudy')
+   else
+     if (Assigned(Self.ev_sudy)) then
+       Self.ev_sudy.Free();
+ except
+   Self.ev_sudy := nil;
+ end;
+
+ Self.max_delka := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
+ Self.delay := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
+ Self.spr_typ_re.Compile(TBlkNavSprEvent.ParseSprTypes(ini_tech.ReadString(section, 'zast_soupravy', '')), false);
+end;
+
+procedure TBlkTUZastavka.SaveToFile(ini_tech: TMemIniFile; const section: string);
+begin
+ ini_tech.WriteInteger(section, 'zast_max_delka', Self.max_delka);
+ ini_tech.WriteString(section, 'zast_delay', TimeToStr(Self.delay));
+ ini_tech.WriteString(section, 'zast_soupravy', 're:'+Self.spr_typ_re.Pattern);
+ if (Self.ev_lichy <> nil) then
+   Self.ev_lichy.SaveToFile(ini_tech, section, 'zast_ev_lichy');
+ if (Self.ev_sudy <> nil) then
+   Self.ev_sudy.SaveToFile(ini_tech, section, 'zast_ev_sudy');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+constructor TBlkTUZastEvents.Create();
+begin
+ inherited;
+
+ Self.zastaveni := nil;
+ Self.zpomaleni.ev := nil;
+end;
+
+constructor TBlkTUZastEvents.Create(ini_tech: TMemIniFile; const section: string; const prefix: string);
+begin
+ Self.Create();
+ Self.LoadFromFile(ini_tech, section, prefix);
+end;
+
+destructor TBlkTUZastEvents.Destroy();
+begin
+ if (Assigned(Self.zastaveni)) then
+   Self.zastaveni.Free();
+ if (Assigned(Self.zpomaleni.ev)) then
+   Self.zpomaleni.ev.Free();
+
+ inherited;
+end;
+
+procedure TBlkTUZastEvents.LoadFromFile(ini_tech: TMemIniFile; const section: string; const prefix: string);
+var str: string;
+begin
+ Self.zastaveni := TRREv.Create(ini_tech.ReadString(section, prefix+'_zast', ''));
+
+ str := ini_tech.ReadString(section, prefix+'_zpom_ev', '');
+ Self.zpomaleni.enabled := (str <> '');
+ if (Self.zpomaleni.enabled) then
+  begin
+   Self.zpomaleni.ev := TRREv.Create(str);
+   Self.zpomaleni.speed := ini_tech.ReadInteger(section, prefix+'_zpom_sp', 40);
+  end;
+end;
+
+procedure TBlkTUZastEvents.SaveToFile(ini_tech: TMemIniFile; const section: string; const prefix: string);
+begin
+ ini_tech.WriteString(section, prefix+'_zast', Self.zastaveni.GetDefStr());
+ if (Self.zpomaleni.enabled) then
+  begin
+   ini_tech.WriteString(section, prefix+'_zpom_ev', Self.zpomaleni.ev.GetDefStr());
+   ini_tech.WriteInteger(section, prefix+'_zpom_sp', Self.zpomaleni.speed);
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+end.//unitq

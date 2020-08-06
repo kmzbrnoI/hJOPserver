@@ -408,7 +408,7 @@ object F_BlkTU: TF_BlkTU
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object GB_Zastavka: TGroupBox
@@ -421,9 +421,9 @@ object F_BlkTU: TF_BlkTU
     object Label5: TLabel
       Left = 16
       Top = 40
-      Width = 190
+      Width = 180
       Height = 13
-      Caption = 'Pro tyto typy souprav (odd'#283'lujte '#269#225'rkou):'
+      Caption = 'Pro tyto typy souprav (regul'#225'rn'#237' v'#253'raz):'
     end
     object Label6: TLabel
       Left = 16
@@ -493,18 +493,10 @@ object F_BlkTU: TF_BlkTU
       TabOrder = 5
       object TS_Zast_lichy: TTabSheet
         Caption = 'Lich'#253' sm'#283'r'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
     end
     object CHB_Zastavka_Sudy: TCheckBox
@@ -563,7 +555,7 @@ object F_BlkTU: TF_BlkTU
       Width = 280
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 1
     end
     object CHB_NavS: TCheckBox
@@ -580,7 +572,7 @@ object F_BlkTU: TF_BlkTU
       Width = 280
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      ItemHeight = 13
       TabOrder = 3
     end
   end
