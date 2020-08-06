@@ -49,7 +49,7 @@ var
 
 implementation
 
-uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb, TCPORsRef,
+uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb, TCPORsRef, Logging,
      fRegulator, fMain, TOblRizeni, TOblsRizeni, TechnologieTrakce, ownConvert;
 
 
@@ -96,13 +96,13 @@ begin
      // kontrola BANu uzivatele
      if (user.ban) then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.username+' má BAN !');
+       Self.ClientAuthorise(Sender, false, user, 'Uživatel '+user.username+' má BAN !');
        Exit();
       end;
 
      if (not user.regulator) then
       begin
-       Self.ClientAuthorise(Sender, false, nil, 'Uživatel '+user.username+' nemá právo k řízení lokomotiv !');
+       Self.ClientAuthorise(Sender, false, user, 'Uživatel '+user.username+' nemá právo k řízení lokomotiv !');
        Exit();
       end;
 
@@ -111,7 +111,7 @@ begin
       begin
        Self.ClientAuthorise(Sender, true, user);
       end else begin
-       Self.ClientAuthorise(Sender, false, nil, 'Špatné heslo');
+       Self.ClientAuthorise(Sender, false, user, 'Špatné heslo');
       end;
    except
     // error pri parsovani -> oznamime chybu
@@ -414,10 +414,12 @@ begin
      str := 'ano';
 
    F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := str;
+   authLog('reg', 'login', str, 'Login to regulator');
    ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;ok;'+comment);
   end else begin
    (conn.Data as TTCPORsRef).regulator_user := nil;
    F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := '';
+   authLog('reg', 'deny', str, comment);
    ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;not;'+comment);
 
    // odhlasime vsechny prihlasene regulatory
@@ -609,6 +611,7 @@ begin
    ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
   end;
 
+ authLog('reg', 'loco-acquire', TTCPORsRef(Regulator.Data).regulator_user.username, 'Acquire loco '+IntToStr(HV.adresa));
  Self.SendExpectedSpeed(Regulator, HV);
  Self.SendPredictedSignal(Regulator, HV);
 end;
@@ -620,11 +623,17 @@ procedure TTCPRegulator.RegDisconnect(reg:TIdContext; contextDestroyed: boolean 
 var addr:Integer;
 begin
  for addr := 0 to _MAX_ADDR-1 do
+  begin
    if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.regulators.Count > 0)) then
+    begin
+     authLog('reg', 'loco-release', '', 'Release loco '+IntToStr(HVDb[addr].adresa));
      HVDb[addr].RemoveRegulator(reg);
+    end;
+  end;
 
  if (not contextDestroyed) then
   begin
+   authLog('reg', 'logout', TTCPORsRef(reg.Data).regulator_user.username, 'Logout from regulator');
    TTCPORsRef(reg.Data).regulator := false;
    TTCPORsRef(reg.Data).regulator_user := nil;
    TTCPORsRef(reg.Data).regulator_loks.Clear();
@@ -633,12 +642,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.RemoveLok(Regulator:TIDContext; HV:THV; info:string);
+procedure TTCPRegulator.RemoveLok(Regulator:TIdContext; HV:THV; info:string);
 begin
  HV.RemoveRegulator(Regulator);
  TTCPORsRef(Regulator.Data).regulator_loks.Remove(HV);
  ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;release;'+info);
  ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
+ authLog('reg', 'loco-release', TTCPORsRef(Regulator.Data).regulator_user.username, 'Release loco '+IntToStr(HV.adresa));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
