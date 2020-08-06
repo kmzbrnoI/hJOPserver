@@ -866,16 +866,7 @@ begin
    Exit();
   end;
 
- if (parsed[1] = 'NUZ') then
-  begin
-   if (parsed[2] = '1') then
-     oblr.PanelNUZ(AContext);
-   if (parsed[2] = '0') then
-     oblr.PanelNUZCancel(AContext);
-   Exit();
-  end
-
- else if (parsed[1] = 'GET-ALL') then
+ if (parsed[1] = 'GET-ALL') then
   oblr.PanelFirstGet(AContext)
 
  else if (parsed[1] = 'CLICK') then begin

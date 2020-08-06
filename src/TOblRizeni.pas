@@ -163,6 +163,9 @@ type
 
       procedure OsvSet(id:string; state:boolean);
 
+      procedure DkNUZStart(Sender:TIdContext);
+      procedure DkNUZStop(Sender:TIdContext);
+
       procedure DkMenuShowOsv(Sender: TIdContext);
       procedure DkMenuShowLok(Sender: TIdContext);
       procedure ShowDkMenu(panel: TIdContext; root: string; menustr: string);
@@ -226,8 +229,6 @@ type
       procedure PanelFirstGet(Sender:TIdContext);
       procedure PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton; params:string = '');
       procedure PanelEscape(Sender:TIdContext);
-      procedure PanelNUZ(Sender:TIdContext);
-      procedure PanelNUZCancel(Sender:TIdContext);
       procedure PanelMessage(Sender:TIdContext; recepient:string; msg:string);
       procedure PanelHVList(Sender:TIdContext);
       procedure PanelSprChange(Sender:TIdContext; spr:TStrings);
@@ -762,18 +763,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelNUZ(Sender:TIdContext);
+procedure TOR.DkNUZStart(Sender:TIdContext);
 var Blk:TBlk;
     podminky:TList<TPSPodminka>;
     oblr:TOR;
 begin
- //kontrola opravneni klienta
- if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
-  begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
-  end;
-
  podminky := TList<TPSPodminka>.Create();
  // zjisteni jmen bloku:
  for blk in Blky do
@@ -789,15 +783,8 @@ begin
  ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků', TBlky.GetBlksList(Self), podminky);
 end;
 
-procedure TOR.PanelNUZCancel(Sender:TIdContext);
+procedure TOR.DkNUZStop(Sender:TIdContext);
 begin
- //kontrola opravneni klienta
- if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
-  begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
-  end;
-
  Self.NUZcancelPrematureEvents();
  Blky.NUZ(Self.id, false);
  Self.NUZblkCnt := 0; // zastavi mereni casu (melo by zastavit uz volani vyse)
@@ -2050,11 +2037,11 @@ begin
    if (rootItem = 'OSV') then
      Self.DkMenuShowOsv(Sender)
    else if (rootItem = 'LOKO') then
-     asm nop; end
+     Self.DkMenuShowLok(Sender)
    else if (rootItem = 'NUZ>') then
-     asm nop; end
+     Self.DkNUZStart(Sender)
    else if (rootItem = 'NUZ<') then
-     asm nop; end;
+     Self.DkNUZStop(Sender);
   end else begin
    // Non-root item
    if (rootItem = 'OSV') then
@@ -2081,8 +2068,10 @@ begin
 end;
 
 procedure TOR.DkMenuShowLok(Sender: TIdContext);
+var menustr: string;
 begin
-
+ menustr := 'ZVUK>,ZVUK<,ZVUK ztlum,ZVUK obnov';
+ Self.ShowDkMenu(Sender, 'OSV', menustr);
 end;
 
 procedure TOR.ShowDkMenu(panel: TIdContext; root: string; menustr: string);
