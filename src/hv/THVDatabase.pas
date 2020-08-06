@@ -85,6 +85,7 @@ type
 
      function AnyAcquiredHVHasActiveFunc(func: string): Boolean;
      function AllAcquiredHVsHaveActiveFunc(func: string): Boolean;
+     function AnyHvToRestoreFunc(func: string): Boolean;
 
      procedure CSReset();
      procedure TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
@@ -680,6 +681,18 @@ begin
      Exit(false);
   end;
  Result := true;
+end;
+
+function THVDb.AnyHvToRestoreFunc(func: string): Boolean;
+var hv: THV;
+begin
+ for hv in Self.HVs do
+  begin
+   if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and
+       (not hv.slotFunkce[hv.funcDict[func]]) and (hv.stavFunkce[hv.funcDict[func]])) then
+     Exit(true);
+  end;
+ Result := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

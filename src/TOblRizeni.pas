@@ -2055,9 +2055,13 @@ begin
        ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
        TrakceI.LoksSetFunc(_SOUND_FUNC, (subItem = 'ZVUK>'), TTrakce.Callback(Self.DkHvFuncsSetOk, Sender),
                            TTrakce.Callback(Self.DkHvFuncsSetErr, Sender));
-      end else if (subItem = 'ZVUK ztlum') then
-        TrakceI.TurnOffSound(nil);
-
+      end else if (subItem = 'ZVUK ztlum') then begin
+        ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
+        TrakceI.TurnOffSound(nil)
+      end else if (subItem = 'ZVUK obnov') then begin
+        ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
+        TrakceI.RestoreSound(TTrakce.Callback(Self.DkHvFuncsSetOk, Sender), TTrakce.Callback(Self.DkHvFuncsSetErr, Sender));
+      end;
    end;
   end;
 end;
@@ -2087,8 +2091,8 @@ begin
    menustr := menustr + 'ZVUK>,';
  if (HVDb.AnyAcquiredHVHasActiveFunc(_SOUND_FUNC)) then
    menustr := menustr + 'ZVUK<,ZVUK ztlum';
-
- // menustr := 'ZVUK ztlum,ZVUK obnov';
+ if (HVDb.AnyHvToRestoreFunc(_SOUND_FUNC)) then
+   menustr := menustr + 'ZVUK obnov,';
 
  if (menustr = '-,') then
    menustr := '';

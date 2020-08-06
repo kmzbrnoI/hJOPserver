@@ -83,6 +83,11 @@ type
     time:TDateTime;
   end;
 
+  TFuncCallback = record
+    addr: Word;
+    callback_ok, callback_err:TCommandCallback;
+  end;
+
   TTrakce = class(TTrakceIFace)
    private const
      _DEF_LOGLEVEL = TTrkLogLevel.llInfo;
@@ -110,6 +115,7 @@ type
      procedure TrkLocoStolen(Sender: TObject; addr: Word);
 
      procedure TurnedOffSound(Sender:TObject; Data:Pointer);
+     procedure RestoredSound(Sender:TObject; Data:Pointer);
 
      procedure POMCvWroteOK(Sender:TObject; Data:Pointer);
      procedure POMCvWroteErr(Sender:TObject; Data:Pointer);
@@ -153,6 +159,7 @@ type
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
      procedure TurnOffSound(callback:TNotifyEvent);
+     procedure RestoreSound(ok: TCb; err: TCb);
      procedure Update();
 
      function NearestLowerSpeed(speed:Cardinal):Cardinal;
@@ -541,7 +548,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// TurnOffSound
+// TurnOffSound & RestoreSound
 ////////////////////////////////////////////////////////////////////////////////
 
 // This function is called when hJOPserver is turning systems off
@@ -590,6 +597,54 @@ begin
  end;
 end;
 
+procedure TTrakce.RestoreSound(ok: TCb; err: TCb);
+var data: ^TFuncCallback;
+begin
+ GetMem(data, sizeof(TFuncCallback));
+ data^.callback_ok := ok;
+ data^.callback_err := err;
+ data^.addr := 0;
+
+ Self.RestoredSound(Self, data);
+end;
+
+procedure TTrakce.RestoredSound(Sender:TObject; Data:Pointer);
+var cb: ^TFuncCallback;
+begin
+ cb := Data;
+
+ if (not Self.ConnectedSafe()) then
+  begin
+   if (Assigned(cb^.callback_err.callback)) then
+     cb^.callback_err.callback(Self, cb^.callback_err.data);
+   FreeMem(data);
+   Exit();
+  end;
+
+ while ((cb^.addr < _MAX_ADDR) and ((HVDb[cb^.addr] = nil) or (not HVDb[cb^.addr].acquired) or
+        (not HVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
+        (HVDb[cb^.addr].slotFunkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = true) or
+        (HVDb[cb^.addr].stavFunkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
+   Inc(cb^.addr);
+
+ if (cb^.addr = _MAX_ADDR) then
+  begin
+   if (Assigned(cb^.callback_ok.callback)) then
+     cb^.callback_ok.callback(Self, cb^.callback_ok.data);
+   FreeMem(data);
+   Exit();
+  end;
+
+ try
+   HVDb[cb^.addr].SetSingleFunc(HVDb[cb^.addr].funcDict[_SOUND_FUNC], true,
+                                TTrakce.Callback(Self.RestoredSound, data),
+                                TTrakce.Callback(Self.RestoredSound, data));
+ except
+   if (Assigned(cb^.callback_err.callback)) then
+     cb^.callback_err.callback(Self, cb^.callback_err.data);
+   FreeMem(data);
+ end;
+end;
 ////////////////////////////////////////////////////////////////////////////////
 // POM
 ////////////////////////////////////////////////////////////////////////////////
