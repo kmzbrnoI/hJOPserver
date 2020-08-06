@@ -170,9 +170,14 @@ begin
    case (Self.m_data.typ) of
      rrtUsek: begin
        if (Integer(m_data.usekPart) < TBlkUsek(Sender).sekceStav.Count) then
-         Result := ((TBlkUsek(Sender).sekceStav[m_data.usekPart] = TUsekStav.obsazeno) and (m_data.usekState)) or
-                         ((TBlkUsek(Sender).sekceStav[m_data.usekPart] = TUsekStav.uvolneno) and (not m_data.usekState))
-        else
+        begin
+         case (TBlkUsek(Sender).sekceStav[m_data.usekPart]) of
+           TUsekStav.obsazeno: Result := m_data.usekState;
+           TUsekStav.uvolneno: Result := not m_data.usekState;
+         else
+           Result := safeState;
+         end;
+        end else
          Result := safeState;
      end;
 
@@ -180,8 +185,12 @@ begin
        Blky.GetBlkByID(m_data.irId, Blk);
        if (Blk = nil) then Exit(safeState);
        if (Blk.typ <> btIR) then Exit(safeState);
-       Result := ((TBlkIR(Blk).Stav = TIRStav.obsazeno) and (m_data.irState)) or
-                 ((TBlkIR(Blk).Stav = TIRStav.uvolneno) and (not m_data.irState));
+       case (TBlkIR(Blk).Stav) of
+         TIRStav.obsazeno: Result := m_data.irState;
+         TIRStav.uvolneno: Result := not m_data.irState;
+       else
+         Result := safeState;
+       end;
      end;
 
      rrtTime: begin
