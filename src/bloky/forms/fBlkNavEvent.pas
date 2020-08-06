@@ -28,8 +28,6 @@ type
    fZast: TF_RREv;
    fZpom: TF_RREv;
 
-    function GetEvent():TBlkNavSprEvent;
-
   public
     constructor Create(AOwner:TComponent); override;
     destructor Destroy(); override;
@@ -38,7 +36,8 @@ type
     procedure OpenEmptyForm(first:boolean; obls:TArstr);
     function Check():string;
 
-    property event:TBlkNavSprEvent read GetEvent;
+    function GetEvent():TBlkNavSprEvent; // returns new object!
+
   end;
 
 var
@@ -75,7 +74,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkNavEvent.OpenForm(event:TBlkNavSprEvent; first:boolean; obls:TArstr);
-var i:Integer;
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -83,21 +81,18 @@ begin
  if (first) then
   begin
    Self.E_Spr.Enabled        := false;
-   Self.E_Spr.Text           := 'globální událost';
    Self.SE_MinLength.Value   := -1;
    Self.SE_MaxLength.Value   := -1;
    Self.SE_MinLength.Enabled := false;
    Self.SE_MaxLength.Enabled := false;
+   Self.E_Spr.Text := '.*';
   end else begin
    Self.E_Spr.Enabled        := true;
-   Self.E_Spr.Text           := '';
    Self.SE_MinLength.Value   := event.delka.min;
    Self.SE_MaxLength.Value   := event.delka.max;
    Self.SE_MinLength.Enabled := true;
    Self.SE_MaxLength.Enabled := true;
-
-   for i := 0 to event.spr_typ.Count-1 do
-    Self.E_Spr.Text := Self.E_Spr.Text + event.spr_typ[i] + ',';
+   Self.E_Spr.Text := Copy(event.spr_typ_re.Pattern, 2, Length(event.spr_typ_re.Pattern)-2);
   end;
 
  Self.fZast.FillFromRR(event.zastaveni);
@@ -123,14 +118,12 @@ begin
  if (first) then
   begin
    Self.E_Spr.Enabled        := false;
-   Self.E_Spr.Text           := 'globální událost';
    Self.SE_MinLength.Value   := -1;
    Self.SE_MaxLength.Value   := -1;
    Self.SE_MinLength.Enabled := false;
    Self.SE_MaxLength.Enabled := false;
   end else begin
    Self.E_Spr.Enabled        := true;
-   Self.E_Spr.Text           := '';
    Self.SE_MinLength.Value   := 0;
    Self.SE_MaxLength.Value   := 100;
    Self.SE_MinLength.Enabled := true;
@@ -138,6 +131,7 @@ begin
    Self.E_Spr.Text           := '';
   end;
 
+ Self.E_Spr.Text := '.*';
  Self.CB_ZpomalitKmH.ItemIndex := -1;
 
  Self.fZast.ShowEmpty();
@@ -150,9 +144,9 @@ end;
 
 function TF_BlkNavEvent.GetEvent():TBlkNavSprEvent;
 begin
- Result.spr_typ := TStringList.Create();
- if (not Self.first) then
-   ExtractStrings([','], [' '], PChar(Self.E_Spr.Text), Result.spr_typ);
+ Result := TBlkNavSprEvent.Create();
+ if ((not Self.first) and (Self.E_Spr.Text <> '')) then
+   Result.spr_typ_re.Compile('^'+Self.E_Spr.Text+'$', false);
  Result.delka.min := Self.SE_MinLength.Value;
  Result.delka.max := Self.SE_MaxLength.Value;
 

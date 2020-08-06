@@ -63,8 +63,8 @@ type
     NewBlk:Boolean;
     obls:TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
 
-    eventForms:TList<TF_BlkNavEvent>;
-    eventTabSheets:TList<TTabSheet>;
+    eventForms: TObjectList<TF_BlkNavEvent>;
+    eventTabSheets: TObjectList<TTabSheet>;
 
     FCloseButtonMouseDownTab: TCloseTabSheet;
     FCloseButtonShowPushed: Boolean;
@@ -181,9 +181,9 @@ var glob:TBlkSettings;
 
   for i := 0 to settings.events.Count-1 do
    begin
-    ts             := TCloseTabSheet.Create(Self.PC_Events);
+    ts := TCloseTabSheet.Create(Self.PC_Events);
     ts.PageControl := Self.PC_Events;
-    ts.OnClose     := Self.OnTabClose;
+    ts.OnClose := Self.OnTabClose;
     if (i = 0) then
       ts.Caption  := 'globální'
     else
@@ -277,9 +277,9 @@ end;
 procedure TF_BlkNav.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
     settings:TBlkNavSettings;
-    i: Integer;
     str:string;
     another: TBlk;
+    fBlkNavEvent: TF_BlkNavEvent;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -319,15 +319,15 @@ var glob:TBlkSettings;
    end;
 
 
-  for i := 0 to Self.eventForms.Count-1 do
+  for fBlkNavEvent in Self.eventForms do
    begin
-    str := Self.eventForms[i].Check();
+    str := fBlkNavEvent.Check();
     if (str <> '') then
      begin
       Application.MessageBox(PChar(str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
      end;
-   end;//for i
+   end;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
@@ -363,9 +363,9 @@ var glob:TBlkSettings;
   settings.ZpozdeniPadu := Self.SE_Delay.Value;
 
   settings.zamknuto := CHB_Zamknuto.Checked;
-  settings.events := TList<TBlkNavSprEvent>.Create();
-  for i := 0 to Self.eventForms.Count-1 do
-    settings.events.Add(Self.eventForms[i].event);
+  settings.events := TObjectList<TBlkNavSprEvent>.Create();
+  for fBlkNavEvent in Self.eventForms do
+    settings.events.Add(fBlkNavEvent.GetEvent());
 
   Self.Blk.SetSettings(settings);
 
@@ -374,25 +374,19 @@ var glob:TBlkSettings;
  end;
 
 procedure TF_BlkNav.FormClose(Sender: TObject; var Action: TCloseAction);
-var i:Integer;
  begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
   BlokyTableData.UpdateTable;
 
-  for i := 0 to Self.eventForms.Count-1 do
-   begin
-    Self.eventForms[i].Free();
-    Self.eventTabSheets[i].Free();
-   end;
   Self.eventForms.Clear();
   Self.eventTabSheets.Clear();
  end;
 
 procedure TF_BlkNav.FormCreate(Sender: TObject);
 begin
- Self.eventForms := TList<TF_BlkNavEvent>.Create();
- Self.eventTabSheets := TList<TTabSheet>.Create();;
+ Self.eventForms := TObjectList<TF_BlkNavEvent>.Create();
+ Self.eventTabSheets := TObjectList<TTabSheet>.Create();;
 end;
 
 procedure TF_BlkNav.FormDestroy(Sender: TObject);
@@ -571,9 +565,7 @@ begin
   begin
    if (Self.eventTabSheets[i] = Sender) then
     begin
-     Self.eventForms[i].Free();
      Self.eventForms.Delete(i);
-     Self.eventTabSheets[i].Free();
      Self.eventTabSheets.Delete(i);
      Exit();
     end;

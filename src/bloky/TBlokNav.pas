@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Souprava;
+      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Souprava, JclPCRE;
 
 type
  TBlkNavVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -36,8 +36,8 @@ type
  ENoEvents = class(Exception);
 
  // zastaovoaci a zpomalovaci udalost pro jeden typ soupravy a jeden rozsah delek soupravy
- TBlkNavSprEvent = record
-  spr_typ:TStrings;                             // tato udalost je brana v potaz, pokud ma souprava jeden ze zde definovancyh typu (MOs, Os, Mn, Pn, ...)
+ TBlkNavSprEvent = class
+  spr_typ_re: TJclRegEx;                        // regexp matchujici cely typ soupravy (musi byt match na cely typ!)
   delka:record                                  // tato udalost je brana v potaz, pokud ma souprava delku > min && < max
     min:Integer;
     max:Integer;
@@ -49,13 +49,22 @@ type
     speed: Integer;                               // rychlost z km/h (40, 50, 60...)
     ev: TRREv;                                    // udalost
   end;
+
+   constructor Create(); overload;
+   constructor Create(str: string; old: boolean); overload;
+   destructor Destroy(); override;
+
+   procedure Parse(str:string; old:boolean);
+   function ParseSprTypes(types: string): string;
+   function ToFileStr(short:boolean = false): string;
+   class function ParseOldRychEvent(str:string): TRREv;
  end;
 
  // vlastnosti bloku Nav, ktere se ukladaji do databaze bloku
  TBlkNavSettings = record
   RCSAddrs:TRCSAddrs;                            // ve skutecnosti je signifikantni jen jedna adresa - na indexu [0], coz je vystup pro rizeni navestidla
-  OutputType:TBlkNavOutputType;                 // typ vystupu: binarni/SCom
-  events:TList<TBlkNavSprEvent>;                // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
+  OutputType:TBlkNavOutputType;                  // typ vystupu: binarni/SCom
+  events:TObjectList<TBlkNavSprEvent>;           // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
                                                  // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky soupravy
   ZpozdeniPadu:Integer;                          // zpozdeni padu navestidla v sekundach (standartne 0)
   zamknuto:boolean;                              // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
@@ -127,12 +136,6 @@ type
    fUsekPred:TBlk;
    lastEvIndex:Integer;
 
-    function ParseEvent(str:string; old:boolean):TBlkNavSprEvent;
-    function ParseSprTypes(str:string):TStrings;
-    function ParseOldRychEvent(str:string):TRREv;
-
-    function GetSprTypes(sl:TStrings):string;
-    function GetEvent(ev:TBlkNavSprEvent; short:boolean = false):string;
     function RCinProgress():boolean;
 
     procedure mSetNavest(navest: TBlkNavCode);
@@ -271,8 +274,8 @@ type
 //  zamknuti=zamknuti navestidla trvale do STUJ
 
 // format ev: (ev1)(ev2)(ev3)
-// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|spr_typ1;spr_typ2;spr_typ3;...|min_delka|max_delka
-//      spr_typ[1..n], min_delka a max_delka jsou u eventu 0 (globalniho eventu) vynechany
+// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:spr_typ_regexp|min_delka|max_delka
+//      spr_typ, min_delka a max_delka jsou u eventu 0 (globalniho eventu) vynechany
 //      vsechny dalsi eventy jsou specificke -> vyse zminene informace v nich jsou ulozeny
 
 //format RychEvent data: textove ulozeny 1 radek, kde jsou data oddelena ";"
@@ -296,39 +299,32 @@ begin
  Self.GlobalSettings.typ := btNav;
  Self.NavStav := Self._def_nav_stav;
  Self.NavStav.toRnz := TDictionary<Integer, Cardinal>.Create();
- Self.NavSettings.events := TList<TBlkNavSprEvent>.Create();
+ Self.NavSettings.events := TObjectList<TBlkNavSprEvent>.Create();
  Self.fUsekPred := nil;
-end;//ctor
+end;
 
 destructor TBlkNav.Destroy();
-var i:Integer;
 begin
  Self.NavStav.toRnz.Free();
- for i := 0 to Self.NavSettings.events.Count-1 do
-  begin
-   Self.NavSettings.events[i].zastaveni.Free();
-   if (Assigned(Self.NavSettings.events[i].zpomaleni.ev)) then
-     Self.NavSettings.events[i].zpomaleni.ev.Free();
-  end;
  Self.NavSettings.events.Free();
 
  inherited;
-end;//dtor
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 var strs: TStrings;
+    str: string;
     i: Integer;
-    s: string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
  Self.NavSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
 
- Self.NavSettings.zamknuto     := ini_tech.ReadBool(section, 'zamknuti', false);
+ Self.NavSettings.zamknuto := ini_tech.ReadBool(section, 'zamknuti', false);
 
- Self.NavSettings.OutputType   := TBlkNavOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
+ Self.NavSettings.OutputType := TBlkNavOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
  Self.NavSettings.ZpozdeniPadu := ini_tech.ReadInteger(section, 'zpoz', _NAV_DEFAULT_DELAY);
 
  strs := Self.LoadORs(ini_rel, 'N');
@@ -356,16 +352,22 @@ begin
  // toto musi byt az po nacteni spnl
  Self.NavSettings.events.Clear();
 
- s := ini_tech.ReadString(section, 'ev', '');
- if (s <> '') then
+ str := ini_tech.ReadString(section, 'ev', '');
+ if (str <> '') then
   begin
    // 1) stary zpusob nacitani zastavovacich udalosti (vsechny udalosti ve starem
    //    formatu na jednom radku). Tohle je tady hlavne kvuli zpetne kompatibilite.
    strs := TStringList.Create();
    try
-     ExtractStrings(['(', ')'], [], PChar(s), strs);
-     for i := 0 to strs.Count-1 do
-       Self.NavSettings.events.Add(Self.ParseEvent(strs[i], true));
+     ExtractStrings(['(', ')'], [], PChar(str), strs);
+     for str in strs do
+      begin
+       try
+         Self.NavSettings.events.Add(TBlkNavSprEvent.Create(str, true));
+       except
+
+       end;
+      end;
    finally
      strs.Free();
    end;
@@ -374,12 +376,16 @@ begin
    // 2) novy zpusob nacitani zastavovacich udalosti
    //    kazda udalost na samostatnem radku ev1=... ev2=... ...
    i := 0;
-   s := ini_tech.ReadString(section, 'ev'+IntToStr(i), '');
-   while (s <> '') do
+   str := ini_tech.ReadString(section, 'ev'+IntToStr(i), '');
+   while (str <> '') do
     begin
-     Self.NavSettings.events.Add(Self.ParseEvent(s, false));
+     try
+       Self.NavSettings.events.Add(TBlkNavSprEvent.Create(str, false));
+     except
+
+     end;
      Inc(i);
-     s := ini_tech.ReadString(section, 'ev'+IntToStr(i), '');
+     str := ini_tech.ReadString(section, 'ev'+IntToStr(i), '');
     end;
   end;
 
@@ -394,8 +400,7 @@ begin
  Self.SaveRCS(ini_tech, section, Self.NavSettings.RCSAddrs);
 
  for i := 0 to Self.NavSettings.events.Count-1 do
-   ini_tech.WriteString(section, 'ev'+IntToStr(i),
-      Self.GetEvent(Self.NavSettings.events[i], (i = 0)));
+   ini_tech.WriteString(section, 'ev'+IntToStr(i), Self.NavSettings.events[i].ToFileStr(i = 0));
 
  if (Self.NavSettings.RCSAddrs.Count > 0) then
    ini_tech.WriteInteger(section, 'OutType', Integer(Self.NavSettings.OutputType));
@@ -508,142 +513,15 @@ begin
 end;
 
 procedure TBlkNav.SetSettings(data:TBlkNavSettings);
-var ev:TBlkNavSprEvent;
 begin
  if (Self.NavSettings.events <> data.events) then
-  begin
-   // destrukce starych dat
-   for ev in Self.NavSettings.events do
-    begin
-     ev.zastaveni.Free();
-     if (Assigned(ev.zpomaleni.ev)) then
-       ev.zpomaleni.ev.Free();
-    end;
    Self.NavSettings.events.Free();
-  end;
 
  if (Self.NavSettings.RCSAddrs <> data.RCSAddrs) then
    Self.NavSettings.RCSAddrs.Free();
 
  Self.NavSettings := data;
  Self.Change();
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|spr_typ1;spr_typ2;spr_typ3;...|min_delka|max_delka
-function TBlkNav.ParseEvent(str:string; old:boolean):TBlkNavSprEvent;
-var sl, sl2:TStrings;
-begin
- sl := TStringList.Create();
- sl2 := TStringList.Create();
- ExtractStringsEx(['|'], [], PChar(str), sl);
-
- Result.spr_typ := TStringList.Create();
- try
-   Result.delka.min := -1;
-   Result.delka.max := -1;
-
-   if (old) then
-     Result.zastaveni := Self.ParseOldRychEvent(sl[0])
-   else
-     Result.zastaveni := TRREv.Create(sl[0]);
-
-   if ((sl.Count > 1) and (sl[1] <> '') and (LeftStr(sl[1], 2) <> '-1')) then
-    begin
-     ExtractStringsEx([';'], [], sl[1], sl2);
-
-     Result.zpomaleni.enabled := true;
-     if (old) then
-       Result.zpomaleni.ev := Self.ParseOldRychEvent(sl[1])
-     else
-       Result.zpomaleni.ev := TRREv.Create(sl2[0]);
-
-     Result.zpomaleni.speed := StrToInt(sl2[sl2.Count-1]);
-    end else begin
-     Result.zpomaleni.enabled := false;
-     Result.zpomaleni.ev := nil;
-    end;
-
-   if (sl.Count > 2) then
-    begin
-     Result.spr_typ   := ParseSprTypes(sl[2]);
-     Result.delka.min := StrToIntDef(sl[3], -1);
-     Result.delka.max := StrToIntDef(sl[4], -1);
-    end;
- finally
-   sl.Free();
-   sl2.Free();
- end;
-end;
-
-function TBlkNav.ParseSprTypes(str:string):TStrings;
-begin
- Result := TStringList.Create();
- ExtractStrings([';'], [' '], PChar(str), Result);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-//ziskavani zpomalovacich a zastavovaich dat ze souboru (parsing dat)
-//format RychEvent data: textove ulozeny 1 radek, kde jsou data oddelena ";"
-// : typ_zastaveni(0=usek;1=ir);
-//    pro usek nasleduje: usekid;usekpart;speed;
-//    pro ir nasleduje: irid;speed;
-function TBlkNav.ParseOldRychEvent(str:string):TRREv;
-var data:TStrings;
-    rrData:TRREvData;
-begin
- data := TStringList.Create();
-
- try
-   ExtractStringsEx([';'], [], str, data);
-
-   case (data[0][1]) of
-    '0':begin
-      // usek
-      rrData.typ := TRREvType.rrtUsek;
-      rrData.usekState := true;
-      rrData.usekPart := StrToInt(data[2]);
-    end;//case 0
-
-    '1':begin
-      // ir
-      rrData.typ := TRREvType.rrtIR;
-      rrData.irId := StrToInt(data[1]);
-      rrData.irState := true;
-    end;//case 1
-   end;//case
-
-   Result := TRREv.Create(rrData);
- finally
-   data.Free();
- end;
-end;
-
-function TBlkNav.GetSprTypes(sl:TStrings):string;
-var i:Integer;
-begin
- Result := '';
- for i := 0 to sl.Count-1 do
-  Result := Result + sl[i] + ';';
-end;
-
-function TBlkNav.GetEvent(ev:TBlkNavSprEvent; short:boolean = false):string;
-begin
- Result := '{' + ev.zastaveni.GetDefStr() + '}|';
-
- if (ev.zpomaleni.enabled) then
-   Result := Result + '{{' + ev.zpomaleni.ev.GetDefStr() + '};' +
-              IntToStr(ev.zpomaleni.speed) + '}';
- Result := Result + '|';
-
- if (not short) then
-  begin
-   Result := Result + Self.GetSprTypes(ev.spr_typ) + '|' +
-             IntToStr(ev.delka.min) + '|' +
-             IntToStr(ev.delka.max);
-  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1526,9 +1404,10 @@ end;
 // Vraci udalost, na kterou by se melo reagovat podle aktualniho stavu kolejiste.
 
 function TBlkNav.CurrentEventIndex():Integer;
-var i, j:Integer;
+var i:Integer;
     spr:TSouprava;
     Usek:TBlk;
+    event: TBlkNavSprEvent;
 begin
  if (Self.NavSettings.events.Count = 0) then
    raise ENoEvents.Create('No current events!');
@@ -1543,10 +1422,11 @@ begin
 
    // hledame takovy event, ktery odpovida nasi souprave
    for i := 0 to Self.NavSettings.events.Count-1 do
-     if ((spr.sprLength >= Self.NavSettings.events[i].delka.min) and (spr.sprLength <= Self.NavSettings.events[i].delka.max)) then
-       for j := 0 to Self.NavSettings.events[i].spr_typ.Count-1 do
-         if (spr.typ = Self.NavSettings.events[i].spr_typ[j]) then
-           Exit(i);
+    begin
+     event := Self.NavSettings.events[i];
+     if ((spr.sprLength >= event.delka.min) and (spr.sprLength <= event.delka.max) and (event.spr_typ_re.Match(spr.typ))) then
+       Exit(i);
+    end;
 
    // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
    Result := 0;
@@ -1905,6 +1785,161 @@ begin
    Result := Self.NavStav.Navest;
 end;
 
+////////////////////////////////////////////////////////////////////////////////
+
+constructor TBlkNavSprEvent.Create();
+begin
+ inherited;
+
+ Self.spr_typ_re := TJclRegEx.Create();
+ Self.spr_typ_re.Compile('.*', false);
+ Self.zastaveni := nil;
+ Self.zpomaleni.ev := nil;
+end;
+
+constructor TBlkNavSprEvent.Create(str: string; old: boolean);
+begin
+ Self.Create();
+ Self.Parse(str, old);
+end;
+
+destructor TBlkNavSprEvent.Destroy();
+begin
+ Self.spr_typ_re.Free();
+ if (Assigned(Self.zastaveni)) then
+   Self.zastaveni.Free();
+ if (Assigned(Self.zpomaleni.ev)) then
+   Self.zpomaleni.ev.Free();
+
+ inherited;
+end;
+
+// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:spr_typ_regexp|min_delka|max_delka
+procedure TBlkNavSprEvent.Parse(str:string; old:boolean);
+var sl, sl2:TStrings;
+begin
+ sl := TStringList.Create();
+ sl2 := TStringList.Create();
+ ExtractStringsEx(['|'], [], PChar(str), sl);
+
+ Self.spr_typ_re.Compile('.*', false);
+ try
+   Self.delka.min := -1;
+   Self.delka.max := -1;
+
+   if (old) then
+     Self.zastaveni := Self.ParseOldRychEvent(sl[0])
+   else
+     Self.zastaveni := TRREv.Create(sl[0]);
+
+   if ((sl.Count > 1) and (sl[1] <> '') and (LeftStr(sl[1], 2) <> '-1')) then
+    begin
+     ExtractStringsEx([';'], [], sl[1], sl2);
+
+     Self.zpomaleni.enabled := true;
+     if (old) then
+       Self.zpomaleni.ev := Self.ParseOldRychEvent(sl[1])
+     else
+       Self.zpomaleni.ev := TRREv.Create(sl2[0]);
+
+     Self.zpomaleni.speed := StrToInt(sl2[sl2.Count-1]);
+    end else begin
+     Self.zpomaleni.enabled := false;
+     Self.zpomaleni.ev := nil;
+    end;
+
+   if (sl.Count > 2) then
+    begin
+     Self.spr_typ_re.Compile(ParseSprTypes(sl[2]), false);
+     Self.delka.min := StrToIntDef(sl[3], -1);
+     Self.delka.max := StrToIntDef(sl[4], -1);
+    end;
+ finally
+   sl.Free();
+   sl2.Free();
+ end;
+end;
+
+function TBlkNavSprEvent.ParseSprTypes(types: string): string;
+var strs: TSTrings;
+    str: string;
+begin
+ if ((types = '') or (types = ';')) then
+   Result := '^.*$'
+ else if (StartsText('re:', types)) then
+  begin
+   if (types = 're:') then
+     Result := '^.*$'
+   else
+     Result := RightStr(types, Length(types)-3);
+  end else begin
+   // backward-compatibility: manually create regexp
+   Result := '^(';
+   strs := TStringList.Create();
+   try
+     ExtractStringsEx([';'], [' '], types, strs);
+     for str in strs do
+       Result := Result + str + '|';
+   finally
+     strs.Free();
+   end;
+   Result[Length(Result)] := ')';
+   Result := Result + '$';
+ end;
+end;
+
+function TBlkNavSprEvent.ToFileStr(short:boolean = false): string;
+begin
+ Result := '{' + Self.zastaveni.GetDefStr() + '}|';
+
+ if (Self.zpomaleni.enabled) then
+   Result := Result + '{{' + Self.zpomaleni.ev.GetDefStr() + '};' +
+              IntToStr(Self.zpomaleni.speed) + '}';
+ Result := Result + '|';
+
+ if (not short) then
+  begin
+   Result := Result + '{re:' + Self.spr_typ_re.Pattern + '}|' +
+             IntToStr(Self.delka.min) + '|' +
+             IntToStr(Self.delka.max);
+  end;
+end;
+
+//ziskavani zpomalovacich a zastavovaich dat ze souboru (parsing dat)
+//format RychEvent data: textove ulozeny 1 radek, kde jsou data oddelena ";"
+// : typ_zastaveni(0=usek;1=ir);
+//    pro usek nasleduje: usekid;usekpart;speed;
+//    pro ir nasleduje: irid;speed;
+class function TBlkNavSprEvent.ParseOldRychEvent(str:string): TRREv;
+var data:TStrings;
+    rrData:TRREvData;
+begin
+ data := TStringList.Create();
+
+ try
+   ExtractStringsEx([';'], [], str, data);
+
+   case (data[0][1]) of
+    '0':begin
+      // usek
+      rrData.typ := TRREvType.rrtUsek;
+      rrData.usekState := true;
+      rrData.usekPart := StrToInt(data[2]);
+    end;//case 0
+
+    '1':begin
+      // ir
+      rrData.typ := TRREvType.rrtIR;
+      rrData.irId := StrToInt(data[1]);
+      rrData.irState := true;
+    end;//case 1
+   end;//case
+
+   Result := TRREv.Create(rrData);
+ finally
+   data.Free();
+ end;
+end;
 ////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

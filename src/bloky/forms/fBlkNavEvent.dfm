@@ -18,9 +18,9 @@ object F_BlkNavEvent: TF_BlkNavEvent
   object Label1: TLabel
     Left = 8
     Top = 8
-    Width = 247
+    Width = 239
     Height = 13
-    Caption = 'Reagovat na tyto typy souprav: (odd'#283'lujte '#269#225'rkou)'
+    Caption = 'Reagovat na tyto typy souprav: (regul'#225'rn'#237' v'#253'raz)'
   end
   object Label2: TLabel
     Left = 8
