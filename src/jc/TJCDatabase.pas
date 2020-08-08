@@ -235,6 +235,7 @@ function TJCDb.FindJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TJC;
 var jc:TJC;
     blk: TBlk;
     j: Integer;
+    match: Boolean;
 begin
  if (not Self.JCsStartNav.ContainsKey(startNav)) then
    Exit(nil);
@@ -252,8 +253,11 @@ begin
     begin
      // kontrola variantnich bodu:
      if (jc.data.vb.Count <> vb.Count) then continue;
+     match := true;
      for j := 0 to jc.data.vb.Count-1 do
-       if (jc.data.vb[j] <> (vb[j] as TBlk).id) then continue;
+       if (jc.data.vb[j] <> (vb[j] as TBlk).id) then
+         match := false;
+     if (not match) then continue;
 
      Exit(jc);
     end;
