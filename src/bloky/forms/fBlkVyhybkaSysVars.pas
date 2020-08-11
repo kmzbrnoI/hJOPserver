@@ -20,16 +20,16 @@ type
     Label2: TLabel;
     Label7: TLabel;
     CB_Locked: TComboBox;
-    SE_Redukce: TSpinEdit;
+    SE_Locks: TSpinEdit;
     CB_Stav_Plus: TComboBox;
     CB_Stav_Minus: TComboBox;
     SE_Zaver: TSpinEdit;
-    B_CancelRedukce: TButton;
+    B_Unlock: TButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure B_UpdateClick(Sender: TObject);
-    procedure B_CancelRedukceClick(Sender: TObject);
+    procedure B_UnlockClick(Sender: TObject);
   private
     OpenBlk:TBlkVyhybka;
 
@@ -59,7 +59,7 @@ begin
  Self.myUpdate();
 end;
 
-procedure TF_BlkVyh_tech.B_CancelRedukceClick(Sender: TObject);
+procedure TF_BlkVyh_tech.B_UnlockClick(Sender: TObject);
 begin
  Self.OpenBlk.IntentionalUnlock();
  Self.myUpdate();
@@ -98,13 +98,13 @@ begin
  Self.M_Vyluka.Text := Self.OpenBlk.Vyluka;
 
  Self.SE_Zaver.Value := Self.OpenBlk.Stav.vyhZaver;
- Self.CB_Stav_Plus.ItemIndex  := ownConvert.BoolToInt(Self.OpenBlk.StaveniPlus);
+ Self.CB_Stav_Plus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.StaveniPlus);
  Self.CB_Stav_Minus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.StaveniMinus);
 
- Self.CB_Locked.ItemIndex     := ownConvert.BoolToInt(Self.OpenBlk.Stav.outputLocked);
- Self.SE_Redukce.Value        := Self.OpenBlk.Stav.intentionalLocks;
+ Self.CB_Locked.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.Stav.outputLocked);
+ Self.SE_Locks.Value := Self.OpenBlk.Stav.intentionalLocks;
 
- Self.B_CancelRedukce.Enabled := Self.OpenBlk.intentionalLocked;
+ Self.B_Unlock.Enabled := Self.OpenBlk.intentionalLocked;
 end;
 
 procedure TF_BlkVyh_tech.myApply();
@@ -115,7 +115,7 @@ begin
  if (Self.SE_Zaver.Value = 0) then
    Self.OpenBlk.NullVyhZaver();
 
- Self.OpenBlk.StaveniPlus  := ownConvert.IntToBool(CB_Stav_Plus.ItemIndex);
+ Self.OpenBlk.StaveniPlus := ownConvert.IntToBool(CB_Stav_Plus.ItemIndex);
  Self.OpenBlk.StaveniMinus := ownConvert.IntToBool(CB_Stav_Minus.ItemIndex);
 end;
 

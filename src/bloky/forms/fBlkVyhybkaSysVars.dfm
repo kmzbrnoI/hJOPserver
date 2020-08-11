@@ -44,49 +44,49 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
   object L_Usek21: TLabel
     Left = 8
     Top = 24
-    Width = 68
+    Width = 149
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Vlastn'#237' z'#225'v'#283'r :'
+    Caption = 'Po'#269'et ud'#283'len'#253'ch nouz. z'#225'v'#283'r'#367':'
   end
   object L_Usek25: TLabel
     Left = 7
     Top = 101
-    Width = 37
+    Width = 147
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Locked:'
+    Caption = 'RCS v'#253'stup dr'#382'en (zamknuto):'
   end
   object L_Usek20: TLabel
     Left = 7
     Top = 129
-    Width = 118
+    Width = 64
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Po'#269'et redukuj'#237'c'#237'ch blok'#367':'
+    Caption = 'Po'#269'et z'#225'mk'#367':'
   end
   object Label2: TLabel
     Left = 8
     Top = 51
-    Width = 62
+    Width = 112
     Height = 13
-    Caption = 'Stav'#283'n'#237' plus:'
+    Caption = 'Stav'#283'n'#237' do polohy plus:'
   end
   object Label7: TLabel
     Left = 8
     Top = 76
-    Width = 70
+    Width = 120
     Height = 13
-    Caption = 'Stav'#283'n'#237' m'#237'nus:'
+    Caption = 'Stav'#283'n'#237' do polohy m'#237'nus:'
   end
   object B_Update: TButton
     Left = 384
@@ -141,7 +141,7 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
       'Ne'
       'Ano')
   end
-  object SE_Redukce: TSpinEdit
+  object SE_Locks: TSpinEdit
     Left = 176
     Top = 127
     Width = 107
@@ -194,13 +194,13 @@ object F_BlkVyh_tech: TF_BlkVyh_tech
     TabOrder = 8
     Value = 0
   end
-  object B_CancelRedukce: TButton
+  object B_Unlock: TButton
     Left = 176
     Top = 155
     Width = 107
     Height = 25
-    Caption = 'Zru'#353'it redukci menu'
+    Caption = 'Odemknout'
     TabOrder = 9
-    OnClick = B_CancelRedukceClick
+    OnClick = B_UnlockClick
   end
 end
