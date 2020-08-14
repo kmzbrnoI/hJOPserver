@@ -2356,7 +2356,7 @@ begin
                               IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_L)) +
                               IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_S)) + ';';
 
-     if ((Soupravy[souprava].stationTo = Self) and (sbg = clBlack)) then
+     if ((Soupravy[souprava].stationTo = Soupravy[souprava].station) and (sbg = clBlack)) then
        sbg := clSilver;
 
      // predvidany odjezd
