@@ -157,6 +157,8 @@ type
     function GetReady():boolean;                                                // jestli je usek pripraveny na vjeti soupravy
 
     function IsZastavka(): Boolean;
+    function IsZastavkaLichy(): Boolean;
+    function IsZastavkaSudy(): Boolean;
 
     procedure SetPoruchaBP(state:boolean);                                      // nastavi stav poruchy blokove podminky
     procedure AddSouprava(spr:Integer);
@@ -227,6 +229,8 @@ type
     property ready:boolean read GetReady;
     property poruchaBP:boolean read fTUStav.poruchaBP write SetPoruchaBP;
     property zastavka:boolean read IsZastavka;
+    property zastavkaLichy: Boolean read IsZastavkaLichy;
+    property zastavkaSudy: Boolean read IsZastavkaSudy;
 
  end;//TBlkUsek
 
@@ -450,8 +454,8 @@ begin
       (Self.Souprava.sprLength > Self.TUSettings.Zastavka.max_delka) or (Self.Souprava.front <> self)) then Exit();
 
    // kontrola spravneho smeru
-   if (((Self.Souprava.direction = THVSTanoviste.lichy) and (not Assigned(Self.TUSettings.zastavka.ev_lichy))) or
-       ((Self.Souprava.direction = THVSTanoviste.sudy) and (not Assigned(Self.TUSettings.zastavka.ev_sudy)))) then Exit();
+   if (((Self.Souprava.direction = THVSTanoviste.lichy) and (not Self.zastavkaLichy)) or
+       ((Self.Souprava.direction = THVSTanoviste.sudy) and (not Self.zastavkaSudy))) then Exit();
 
    // kontrola typu soupravy:
    if (Self.TUSettings.zastavka.spr_typ_re.Match(Self.Souprava.typ)) then
@@ -728,16 +732,16 @@ begin
    Self.fTUStav.zast_stopped := false;
   end;
 
- Self.fTUStav.zast_passed     := false;
+ Self.fTUStav.zast_passed := false;
  Self.fTUStav.zast_zpom_ready := false;
 
- if (Assigned(Self.TUSettings.zastavka.ev_lichy)) then
+ if (Self.zastavkaLichy) then
   begin
    Self.TUSettings.zastavka.ev_lichy.zastaveni.Unregister();
    if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
      Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
   end;
- if (Assigned(Self.TUSettings.zastavka.ev_sudy)) then
+ if (Self.zastavkaSudy) then
   begin
    Self.TUSettings.zastavka.ev_sudy.zastaveni.Unregister();
    if (Self.TUSettings.zastavka.ev_sudy.zpomaleni.enabled) then
@@ -1291,6 +1295,16 @@ end;
 function TBlkTU.IsZastavka(): Boolean;
 begin
  Result := (Self.TUSettings.zastavka <> nil);
+end;
+
+function TBlkTU.IsZastavkaLichy(): Boolean;
+begin
+ Result := Self.zastavka and Assigned(Self.TUSettings.zastavka.ev_lichy);
+end;
+
+function TBlkTU.IsZastavkaSudy(): Boolean;
+begin
+ Result := Self.zastavka and Assigned(Self.TUSettings.zastavka.ev_sudy);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
