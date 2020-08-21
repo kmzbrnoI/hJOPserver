@@ -458,7 +458,7 @@ begin
        ((Self.Souprava.direction = THVSTanoviste.sudy) and (not Self.zastavkaSudy))) then Exit();
 
    // kontrola typu soupravy:
-   if (Self.TUSettings.zastavka.spr_typ_re.Match(Self.Souprava.typ)) then
+   if (not Self.TUSettings.zastavka.spr_typ_re.Match(Self.Souprava.typ)) then
      Exit();
 
    // zpomalovani pred zastavkou:
