@@ -182,6 +182,9 @@ begin
     (Usek as TBlkUsek).AddSouprava(sprUsekIndex, i);
     (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
    end;
+
+  Self.soupravy[i].OnPredictedSignalChange();
+  Self.soupravy[i].OnExpectedSpeedChange();
  except
   on E: Exception do
    begin

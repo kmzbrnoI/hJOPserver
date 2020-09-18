@@ -118,6 +118,7 @@ type
 
      function PredictedSignal(): TBlk;
      procedure OnPredictedSignalChange();
+     procedure OnExpectedSpeedChange();
 
      property index: Integer read findex;
      property sdata: TSoupravaData read data;
@@ -1101,6 +1102,13 @@ var addr: Integer;
 begin
  for addr in Self.HVs do
    HVDb[addr].OnPredictedSignalChange();
+end;
+
+procedure TSouprava.OnExpectedSpeedChange();
+var addr: Integer;
+begin
+ for addr in Self.HVs do
+   HVDb[addr].OnExpectedSpeedChange();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1779,7 +1779,7 @@ end;
 
 function THV.IsSouprava(): Boolean;
 begin
- Result := (Self.souprava > -1);
+ Result := (Self.souprava > -1) and (Soupravy[Self.souprava] <> nil);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
