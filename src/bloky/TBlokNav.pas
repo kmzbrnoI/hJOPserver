@@ -30,7 +30,8 @@ type
    ncOpakVystraha = 12,
    ncZhasnuto = 13,
    ncOpakOcek40 = 14,
-   ncOpakVystraha40 = 15
+   ncOpakVystraha40 = 15,
+   ncOpak40Ocek40 = 16
  );
 
  ENoEvents = class(Exception);
@@ -1179,7 +1180,8 @@ begin
    ncOpakVystraha:Result := 'opakování návěsti výstraha';
    ncZhasnuto:Result := 'návěstidlo zhaslé';
    ncOpakOcek40:Result := 'opakování návěsti očekávejte 40 km/h';
-   NcOpakVystraha40:Result := 'opakování návěsti výstraha a 40 km/h';
+   ncOpakVystraha40:Result := 'opakování návěsti výstraha a 40 km/h';
+   ncOpak40Ocek40:Result := '40 km/h a opakování návěsti očekávejte 40 km/h';
   else
     Result := 'Jiná návěst';
   end;
@@ -1455,7 +1457,7 @@ begin
   begin
    case (navest) of
      ncVolno, ncVystraha, ncOcek40, ncVolno40, ncVystraha40, nc40Ocek40,
-     ncOpakVolno, ncOpakVystraha, ncOpakOcek40, ncOpakVystraha40: Result := true;
+     ncOpakVolno, ncOpakVystraha, ncOpakOcek40, ncOpakVystraha40, ncOpak40Ocek40: Result := true;
    else
     Result := false;
    end;
@@ -1741,7 +1743,7 @@ begin
       bg := $A0A0A0;
   end;
   ncVolno, ncVystraha, ncOcek40, ncVolno40, ncVystraha40, nc40Ocek40,
-  ncOpakVolno, ncOpakVystraha, ncOpakOcek40, ncOpakVystraha40: fg := clLime;
+  ncOpakVolno, ncOpakVystraha, ncOpakOcek40, ncOpakVystraha40, ncOpak40Ocek40: fg := clLime;
   ncPrivol, ncPosunZaj, ncPosunNezaj: fg := clWhite;
   ncVse: fg := clYellow;
  else
@@ -1760,7 +1762,8 @@ end;
 function TBlkNav.FourtyKmph(): Boolean;
 begin
  Result := (Self.cilovaNavest = ncVolno40) or (Self.cilovaNavest = ncVystraha40) or
-           (Self.cilovaNavest = nc40Ocek40) or (Self.cilovaNavest = ncOpakVystraha40);
+           (Self.cilovaNavest = nc40Ocek40) or (Self.cilovaNavest = ncOpakVystraha40) or
+           (Self.cilovaNavest = ncOpak40Ocek40);
 end;
 
 class function TBlkNav.AddOpak(navest: TBlkNavCode): TBlkNavCode;
@@ -1770,6 +1773,7 @@ begin
   ncVystraha: Result := ncOpakVystraha;
   ncOcek40: Result := ncOpakOcek40;
   ncVystraha40: Result := ncOpakVystraha40;
+  nc40Ocek40: Result := ncOpak40Ocek40;
  else
   Result := navest;
  end;
