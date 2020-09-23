@@ -675,6 +675,8 @@ function TBlkTrat.GetNavLichy():TBlk;
 var Blk:TBlk;
     BlkTU:TBlkTU;
 begin
+ if (Self.TratSettings.Useky.Count = 0) then Exit(nil);
+
  if ((Self.fNavLichy = nil) or ((Self.fNavLichy as TBlkNav).UsekID <> Self.TratSettings.Useky[0])) then
   begin
    if (Self.TratSettings.Useky.Count > 1) then
@@ -703,6 +705,8 @@ function TBlkTrat.GetNavSudy():TBlk;
 var Blk:TBlk;
     BlkTU:TBlkTU;
 begin
+ if (Self.TratSettings.Useky.Count = 0) then Exit(nil);
+
  if ((Self.fNavSudy = nil) or ((Self.fNavSudy as TBlkNav).UsekID <> Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1])) then
   begin
    if (Self.TratSettings.Useky.Count > 1) then
@@ -915,6 +919,7 @@ var Blk, last:TBlkTU;
     i:Integer;
 begin
  if ((Self.Smer <> TTratSmer.AtoB) and (Self.Smer <> TTratSmer.BtoA)) then Exit();
+ if (Self.TratSettings.Useky.Count = 0) then Exit();
 
  case (Self.Smer) of
   TTratSmer.AtoB: begin
