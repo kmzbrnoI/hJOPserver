@@ -349,7 +349,7 @@ object F_BlkTrat: TF_BlkTrat
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
         end
       end

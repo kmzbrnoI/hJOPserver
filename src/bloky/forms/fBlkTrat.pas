@@ -321,7 +321,7 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
    begin
     try
       Self.Trat := Blky.Add(btTrat, glob_trat) as TBlkTrat;
-      Self.UvazkaA := Blky.Add(btUvazka, glob_trat) as TBlkUvazka;
+      Self.UvazkaA := Blky.Add(btUvazka, glob_uvA) as TBlkUvazka;
       Self.UvazkaB  := Blky.Add(btUvazka, glob_uvB) as TBlkUvazka;
     except
       on E:Exception do
