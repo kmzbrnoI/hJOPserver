@@ -1442,7 +1442,7 @@ var i,j:Integer;
     odvratZaver:TJCOdvratZaver;
     refZaver:TJCRefZaver;
     vyhybka:TBlkVyhybka;
-    usek, lastUsek:TBlkUsek;
+    usek, lastUsek, nextUsek:TBlkUsek;
     zamek:TBlkZamek;
     prejezd:TBlkPrejezd;
     navestidlo:TBlkNav;
@@ -1451,6 +1451,8 @@ var i,j:Integer;
     oblr:TOR;
     tuAdd:TBlkTU;
     spr: TSouprava;
+    chEv: TChangeEvent;
+    remEvDataPtr: ^TRemoveEventData;
  begin
   if ((not Self.Staveni) and (Self.Krok <> _JC_KROK_CEKANI_POSLEDNI_USEK)) then Exit;
 
@@ -1467,6 +1469,21 @@ var i,j:Integer;
         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-2], TBlk(usek));
         usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
           CreateChangeEvent(ceCaller.CopyUsekZaver, Self.fproperties.Useky[Self.fproperties.Useky.Count-1]));
+
+        for i := 0 to Self.fproperties.Useky.Count-2 do
+         begin
+          Blky.GetBlkByID(Self.fproperties.Useky[i], TBlk(usek));
+          Blky.GetBlkByID(Self.fproperties.Useky[i+1], TBlk(nextUsek));
+
+          if (usek.Stav.stanicni_kolej) then
+           begin
+            chEv := CreateChangeEvent(ceCaller.CopyUsekZaver, usek.id);
+            TBlk.AddChangeEvent(nextUsek.EventsOnZaverReleaseOrAB, chEv);
+            GetMem(remEvDataPtr, SizeOf(TRemoveEventData));
+            remEvDataPtr^ := TRemoveEventData.Create(nextUsek.EventsOnZaverReleaseOrAB, chEv);
+            TBlk.AddChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(ceCaller.RemoveEvent, Integer(remEvDataPtr)));
+           end;
+         end;
        end;
 
       writelog('Krok 10: useky: nastavuji staveci zavery', WR_VC);

@@ -7,10 +7,18 @@ unit changeEventCaller;
 
 interface
 
+uses changeEvent;
+
 type
  TNPCallerData = record
    usekId:Integer;
    jcId:Integer;
+ end;
+
+ TRemoveEventData = record
+   events: TChangeEvents; // object reference
+   event: TChangeEvent;
+   constructor Create(events: TChangeEvents; event: TChangeEvent);
  end;
 
  TChangeEventCaller = class
@@ -20,6 +28,7 @@ type
    procedure NullTratZaver(Sender:TObject; data:Integer);
    procedure NullVyhybkaMenuReduction(Sender:TObject; data:Integer);
    procedure RemoveUsekNeprofil(Sender:TObject; data:Integer);
+   procedure RemoveEvent(Sender:TObject; data:Integer);
  end;
 
 var ceCaller: TChangeEventCaller;
@@ -92,6 +101,25 @@ begin
 
  TBlkUsek(Blk).RemoveNeprofilJC(caller.jcId);
  FreeMem(caller);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+constructor TRemoveEventData.Create(events: TChangeEvents; event: TChangeEvent);
+begin
+ Self.events := events;
+ Self.event := event;
+end;
+
+procedure TChangeEventCaller.RemoveEvent(Sender:TObject; data:Integer);
+var event: ^TRemoveEventData;
+begin
+ event := Pointer(data);
+
+ if (event.events.Contains(event.event)) then
+   event.events.Remove(event.event);
+
+ FreeMem(event);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
