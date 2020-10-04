@@ -634,8 +634,6 @@ end;
 procedure TBlkTU.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 var Blk:TBlk;
 begin
- if (Self.Stav.Stav <= TUsekStav.none) then Exit();
-
  case (Button) of
   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
@@ -818,8 +816,6 @@ end;
 
 procedure TBlkTU.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
- if (Self.Stav.Stav <= TUsekStav.none) then Exit();
-
  if (item = 'JEĎ vlak')   then Self.MenuJEDLokClick(SenderPnl, SenderOR)
  else if (item = 'ZAST>') then Self.MenuZastClick(SenderPnl, SenderOR, true)
  else if (item = 'ZAST<') then Self.MenuZastClick(SenderPnl, SenderOR, false)
