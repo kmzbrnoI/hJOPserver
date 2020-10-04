@@ -206,18 +206,17 @@ end;
 
 procedure TBlkRozp.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
- if (Self.status = TRozpStatus.disabled) then Exit();
-
  case (Button) of
    F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
    ENTER: begin
      case (Self.status) of
+       TRozpStatus.disabled: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
        TRozpStatus.not_selected: Self.Mount();
        TRozpStatus.mounting: Self.Activate();
        TRozpStatus.active: Self.Prolong();
      end;
-    end;
+   end;
 
    ESCAPE: begin
      case (Self.status) of
@@ -226,7 +225,6 @@ begin
      end;
    end;
  end;//case
-
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -236,15 +234,13 @@ begin
  Result := inherited;
  if (Self.status = TRozpStatus.active) then
    Result := Result + 'AKTIV<,'
- else
+ else if (Self.status <> TRozpStatus.disabled) then
    Result := Result + 'AKTIV>,';
  Result := Result + 'STIT,';
 end;
 
 procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
- if (Self.status = TRozpStatus.disabled) then Exit();
-
  if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV<') then Self.MenuAktivOffClick(SenderPnl, SenderOR);
