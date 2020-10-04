@@ -354,20 +354,17 @@ begin
    available := false;
  end;
 
- if (not available) then
+ if ((not available) and (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled)) then
   begin
-   if (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled) then
-    begin
-     Self.PrjStav.basicStav := TBlkPrjBasicStav.disabled;
-     JCDb.RusJC(Self);
-     Self.Change(true);
-    end;
-   Exit();
+   Self.PrjStav.basicStav := TBlkPrjBasicStav.disabled;
+   JCDb.RusJC(Self);
+   Self.Change(true);
   end;
 
  new_stav := Self.UpdateInputs();
 
- if (Self.PrjStav.basicStav <> new_stav) then
+ if ((Self.PrjStav.basicStav <> new_stav) and
+     ((Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled) or (new_stav <> TBlkPrjBasicStav.none))) then
   begin
    // kontrola necekaneho otevreni prejezdu, pokud je v JC
    // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
@@ -710,7 +707,7 @@ begin
          Result := Result + '!NOT>,';
       end;
     end;
-  end;//if not zaver
+  end;
 
  Result := Result + 'STIT,';
 
@@ -739,7 +736,7 @@ end;
 
 procedure TBlkPrejezd.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
- if ((Button <> TPanelButton.ESCAPE) and (Self.Stav.basicStav <> TBlkPrjBasicStav.disabled)) then
+ if (Button <> TPanelButton.ESCAPE) then
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
@@ -748,8 +745,6 @@ end;
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkPrejezd.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
- if (Self.Stav.basicStav = TBlkPrjBasicStav.disabled) then Exit();
-
  if      (item = 'UZ')       then Self.MenuUZClick  (SenderPnl, SenderOR)
  else if (item = 'ZUZ')      then Self.MenuZUZClick (SenderPnl, SenderOR)
  else if (item = 'NOT>')     then Self.MenuNOTClick (SenderPnl, SenderOR)
@@ -907,12 +902,12 @@ begin
 
  case (Self.Stav.basicStav) of
    TBlkPrjBasicStav.disabled : begin
-     fg := clBlack;
+     fg := bg;
      bg := clFuchsia;
    end;
 
    TBlkPrjBasicStav.none : begin
-     fg := clBlack;
+     fg := bg;
      bg := clRed;
    end;
  end;
