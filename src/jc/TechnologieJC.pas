@@ -466,39 +466,14 @@ begin
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, vyhZaver.Blok));
       Exit;
-     end;//if
+     end;
 
     if (Blk.typ <> btVyhybka) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, vyhZaver.Blok));
       Exit;
      end;
-
-    // blok disabled
-    if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
-      Exit;
-     end;
-
-    // kontrola neprofilovych useku vyhybek pro polohu +
-    if ((vyhZaver.Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
-        (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled)) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
-          TBlkVyhybka(Blk).npBlokPlus.id));
-      Exit;
-     end;
-
-    // kontrola neprofilovych useku vyhybek pro polohu -
-    if ((vyhZaver.Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
-        (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled)) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
-          TBlkVyhybka(Blk).npBlokMinus.id));
-      Exit;
-     end;
-   end;//for i
+   end;
 
   // useky:
   for usekZaver in Self.fproperties.Useky do
@@ -508,21 +483,14 @@ begin
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, usekZaver));
       Exit;
-     end;//if
+     end;
 
     if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, usekZaver));
       Exit;
      end;
-
-    // blok disabled
-    if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
-      Exit;
-     end;
-   end;//for i
+   end;
 
   // kontrola prejezdu
   for prjZaver in Self.fproperties.Prejezdy do
@@ -538,13 +506,6 @@ begin
     if (blk.typ <> btPrejezd) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, prjZaver.Prejezd));
-      Exit;
-     end;
-
-    // blok disabled
-    if ((Blk as TBlkPrejezd).Stav.basicStav = TBlkPrjBasicStav.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
       Exit;
      end;
 
@@ -578,9 +539,9 @@ begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, usekZaver));
           Exit;
          end;
-       end;//for j
+       end;
      end;
-   end;//for i
+   end;
 
   // kontrola odvratu
   for odvratZaver in Self.fproperties.Odvraty do
@@ -605,13 +566,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.Blok));
       Exit;
      end;
-    // blok disabled
-    if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
-      Exit;
-     end;
-   end;//for i
+   end;
 
   // trat
   if (Self.fproperties.Trat > -1) then
@@ -630,12 +585,6 @@ begin
     if (blk.typ <> btTrat) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, Self.fproperties.Trat));
-      Exit;
-     end;
-    // blok disabled
-    if ((Blk as TBlkTrat).stav.smer = TTratSmer.disabled) then
-     begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
       Exit;
      end;
    end;
@@ -693,7 +642,7 @@ var i, usek, cnt, addr:Integer;
     odvratZaver:TJCOdvratZaver;
     refZaver:TJCRefZaver;
 begin
-  // useky:
+  // kontrola useku:
   if (Self.fproperties.Trat > -1) then
     cnt := Self.fproperties.Useky.Count-1
   else
@@ -703,6 +652,9 @@ begin
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
     glob := Blk.GetGlobalSettings();
+
+    if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.disabled) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
     // obsazenost
     if ((i <> Self.fproperties.Useky.Count-1) or (Self.fproperties.TypCesty <> TJCType.posun)) then
@@ -745,8 +697,23 @@ begin
     Blky.GetBlkByID(vyhZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
+    if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
+
+    // kontrola neprofilovych useku vyhybek pro polohu +
+    if ((vyhZaver.Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
+        (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled)) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
+          TBlkVyhybka(Blk).npBlokPlus.id));
+
+    // kontrola neprofilovych useku vyhybek pro polohu -
+    if ((vyhZaver.Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
+        (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled)) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
+          TBlkVyhybka(Blk).npBlokMinus.id));
+
     // kontrola koncove polohy:
-    if ((Integer((Blk as TBlkVyhybka).poloha) < 0) or (Integer((Blk as TBlkVyhybka).poloha) > 1)) then
+    if (((Blk as TBlkVyhybka).poloha = TVyhPoloha.none) or ((Blk as TBlkVyhybka).poloha = TVyhPoloha.both)) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // zaver nema smysl kontrolovat - zaver vyhybek je prakticky zaver useku
@@ -787,33 +754,31 @@ begin
     // kontrola neprofiloveho styku pro polohu +
     if ((vyhZaver.Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
         (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
-     begin
       bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
           TBlkVyhybka(Blk).npBlokPlus.id));
-      Exit;
-     end;
 
     // kontrola neprofiloveho styku pro polohu -
     if ((vyhZaver.Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
         (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
-     begin
       bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
           TBlkVyhybka(Blk).npBlokMinus.id));
-      Exit;
-     end;
    end;//for i
 
   // kontrola prejezdu
   for prjZaver in Self.fproperties.Prejezdy do
    begin
     Blky.GetBlkByID(prjZaver.Prejezd, Blk);
+
+    // blok disabled
+    if ((Blk as TBlkPrejezd).Stav.basicStav = TBlkPrjBasicStav.disabled) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
+
     if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.none) then
      begin
       if ((Blk as TBlkPrejezd).Stav.PC_NOT) then
         bariery.Add(Self.JCBariera(_JCB_PREJEZD_NOUZOVE_OTEVREN, blk, prjZaver.Prejezd));
-     end else begin
+     end else
       bariery.Add(Self.JCBariera(_JCB_PREJEZD_PORUCHA, blk, prjZaver.Prejezd));
-     end;//else NouzoveOtevreni
 
     // kontrola stitku prejezdu:
     if ((Blk as TBlkPrejezd).Stitek <> '') then
@@ -826,9 +791,12 @@ begin
     Blky.GetBlkByID(odvratZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
+    if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
+
     // kontrola koncove polohy:
-    if ((Integer((Blk as TBlkVyhybka).poloha) < 0) or (Integer((Blk as TBlkVyhybka).poloha) > 1)) then
-      bariery.Add(Self.JCBariera(_JCB_ODVRAT_KONC_POLOHA, blk, odvratZaver.Blok));
+    if (((Blk as TBlkVyhybka).poloha = TVyhPoloha.none) or ((Blk as TBlkVyhybka).poloha = TVyhPoloha.both)) then
+      bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola vyluky vyhybky:
     if ((Blk as TBlkVyhybka).Vyluka <> '') then
@@ -882,13 +850,16 @@ begin
           bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
        end;
      end;
-   end;//for i
+   end;
 
   // kontrola trati
   if (Self.fproperties.Trat > -1) then
    begin
     Blky.GetBlkByID(Self.fproperties.Trat, Blk);
     glob := Blk.GetGlobalSettings();
+
+    if ((Blk as TBlkTrat).stav.smer = TTratSmer.disabled) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
     cont := true;
     if ((blk as TBlkTrat).ZAK) then
@@ -1043,8 +1014,6 @@ begin
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
     glob := Blk.GetGlobalSettings();
-
-    // zaver
 
     // zaver
     if ((Blk as TBlkUsek).Zaver <> TZaver.no) then
@@ -1909,43 +1878,46 @@ var i,j:Integer;
     Self.fstaveni.nextVyhybka := -1;
     stavim := 0;
     nextVyhybka := -1;
+
     for i := 0 to Self.fproperties.Vyhybky.Count-1 do
      begin
       vyhZaver := Self.fproperties.Vyhybky[i];
       Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
-      if (vyhybka.Poloha <> TVyhPoloha(vyhZaver.Poloha)) then
+
+      if (vyhybka.Poloha <> TVyhPoloha.disabled) then
        begin
         if (stavim >= _JC_MAX_VYH_STAVENI) then
          begin
-          if (nextVyhybka = -1) then
-            nextVyhybka := i;
-          continue;
+          nextVyhybka := i;
+          break;
          end;
         Inc(stavim);
-       end;
 
-      vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha),
-                        true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+        vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha),
+                          true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+       end;
      end;
 
-    for i := 0 to Self.fproperties.Odvraty.Count-1 do
+    if (nextVyhybka = -1) then
      begin
-      // nastaveni odvratu
-      odvratZaver := Self.fproperties.Odvraty[i];
-      Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
-      if (vyhybka.Poloha <> TVyhPoloha(odvratZaver.Poloha)) then
+      for i := 0 to Self.fproperties.Odvraty.Count-1 do
        begin
-        if (stavim >= _JC_MAX_VYH_STAVENI) then
-         begin
-          if (nextVyhybka = -1) then
-            nextVyhybka := i;
-          continue;
-         end;
-        Inc(stavim);
-       end;
+        odvratZaver := Self.fproperties.Odvraty[i];
+        Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
 
-      vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
-                        true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+        if (vyhybka.Poloha <> TVyhPoloha.disabled) then
+         begin
+          if (stavim >= _JC_MAX_VYH_STAVENI) then
+           begin
+            nextVyhybka := i;
+            break;
+           end;
+          Inc(stavim);
+
+          vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
+                            true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+         end;
+       end;
      end;
 
     Self.fstaveni.nextVyhybka := nextVyhybka;
@@ -3545,7 +3517,7 @@ var Navestidlo, spojka:TBlk;
     Blk:TBlk;
     odvrat:Integer;
 begin
- if ((Self.fstaveni.Krok <> 100) and (Self.fstaveni.Krok <> 101)) then Exit();
+ if ((Self.fstaveni.Krok <> _NC_KROK_INIT) and (Self.fstaveni.Krok <> _NC_KROK_BARIERA_UPDATE)) then Exit();
 
  TBlkVyhybka(Sender).vyhZaver := true;
 
@@ -3563,7 +3535,7 @@ begin
 
  if (Self.fstaveni.nextVyhybka < 0) then Exit();
 
- if (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count) then
+ while (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count) do
   begin
    // stavim dalsi vyhybku
    // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
@@ -3571,26 +3543,37 @@ begin
 
    Blky.GetBlkByID(Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka].Blok, Blk);
    Inc(Self.fstaveni.nextVyhybka);
-   (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
-                                  true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
-  end else begin
-   if (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
+
+   if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha.disabled) then
     begin
-     // nastaveni odvratu
-     // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
-     // tuto udalost.
-
-     odvrat := Self.fstaveni.nextVyhybka - Self.fproperties.Vyhybky.Count;
-
-     Blky.GetBlkByID(Self.fproperties.Odvraty[odvrat].Blok, Blk);
-     Inc(Self.fstaveni.nextVyhybka);
-     TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[odvrat].Poloha),
-                                true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+     (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
+                                    true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+     break;
     end;
   end;
 
- if (Self.fstaveni.nextVyhybka = Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
-   Self.fstaveni.nextVyhybka := -1;
+ while ((Self.fstaveni.nextVyhybka >= Self.fproperties.Vyhybky.Count) and
+        (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count)) do
+  begin
+   // nastaveni odvratu
+   // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
+   // tuto udalost.
+
+   odvrat := Self.fstaveni.nextVyhybka - Self.fproperties.Vyhybky.Count;
+
+   Blky.GetBlkByID(Self.fproperties.Odvraty[odvrat].Blok, Blk);
+   Inc(Self.fstaveni.nextVyhybka);
+
+   if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha.disabled) then
+    begin
+     TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[odvrat].Poloha),
+                                true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+     break;
+    end;
+  end;
+
+  if (Self.fstaveni.nextVyhybka = Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
+    Self.fstaveni.nextVyhybka := -1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3704,9 +3687,8 @@ begin
         if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then
           bariery.Add(Self.JCBariera(_JCB_PREJEZD_NEUZAVREN, blk, Self.fproperties.Prejezdy[i].Prejezd));
        end;
-     end else begin
-      bariery.Add(Self.JCBariera(_JCB_PREJEZD_PORUCHA, blk, Self.fproperties.Prejezdy[i].Prejezd));
-     end;//else NouzoveOtevreni
+     end else
+       bariery.Add(Self.JCBariera(_JCB_PREJEZD_PORUCHA, blk, Self.fproperties.Prejezdy[i].Prejezd));
    end;//for i
 
   // kontrola odvratu
