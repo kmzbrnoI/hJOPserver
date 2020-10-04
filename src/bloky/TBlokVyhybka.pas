@@ -1258,6 +1258,8 @@ begin
  Self.VyhStav.vyhZaver := 0;
  Blky.NouzZaverZrusen(Self);
  Self.Change();
+ if (Self.spojka <> nil) then
+   Self.spojka.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -137,6 +137,7 @@ type
    fUsekPred:TBlk;
    lastEvIndex:Integer;
 
+    function IsEnabled(): Boolean;
     function RCinProgress():boolean;
 
     procedure mSetNavest(navest: TBlkNavCode);
@@ -254,6 +255,7 @@ type
     property canRNZ:boolean read CanIDoRNZ;
     property RCtimer:Integer read NavStav.RCtimer write NavStav.RCtimer;
     property changing:Boolean read IsChanging;
+    property enabled: Boolean read IsEnabled;
 
     //GUI:
 
@@ -1003,14 +1005,12 @@ end;
 
 procedure TBlkNav.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
- if (Self.NavStav.Navest = ncDisabled) then Exit();
-
  case (Button) of
   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self)))
+           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)))
          or (TOR(SenderOR).stack.volba = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.NavSettings.zamknuto) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
@@ -1019,7 +1019,7 @@ begin
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)))
+           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.Navest <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled))
          or ((SenderOR as TOR).stack.volba = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.NavSettings.zamknuto) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
@@ -1033,8 +1033,6 @@ end;
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkNav.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
- if (Self.NavStav.Navest = ncDisabled) then Exit();
-
  if      (item = 'VC>')  then Self.MenuVCStartClick(SenderPnl, SenderOR)
  else if (item = 'VC<')  then Self.MenuVCStopClick (SenderPnl, SenderOR)
  else if (item = 'PC>')  then Self.MenuPCStartClick(SenderPnl, SenderOR)
@@ -1086,7 +1084,7 @@ begin
       //2 = VC, 3= PC
       if (Self.NavRel.SymbolType = TBlkNavSymbol.hlavni) then
        begin
-        if ((JCDb.IsAnyVCAvailable(Self)) or ((SenderOR as TOR).stack.volba = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
+        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.volba = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
          begin
           Result := Result + 'VC>,';
           if (Self.DNjc = nil) then
@@ -1096,7 +1094,7 @@ begin
        end;
       if (JCDb.IsAnyPC(Self)) then
        begin
-        if ((JCDb.IsAnyPCAvailable(Self)) or ((SenderOR as TOR).stack.volba = VZ)) then
+        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.volba = VZ)) then
           Result := Result + 'PC>,';
         Result := Result + 'PP>,';
        end;
@@ -1711,50 +1709,52 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkNav.PanelStateString():string;
-var fg, bg: TColor;
+var fg, bg, okoli: TColor;
 begin
  Result := inherited;
 
  case (Self.ZacatekVolba) of
-  TBlkNavVolba.none : bg := clBlack;
-  TBlkNavVolba.VC   : bg := clGreen;
-  TBlkNavVolba.PC   : bg := clWhite;
+  TBlkNavVolba.none : okoli := clBlack;
+  TBlkNavVolba.VC   : okoli := clGreen;
+  TBlkNavVolba.PC   : okoli := clWhite;
   TBlkNavVolba.NC,
-  TBlkNavVolba.PP   : bg := clTeal;
+  TBlkNavVolba.PP   : okoli := clTeal;
  else
-  bg := clBlack;
+  okoli := clBlack;
  end;
 
+ bg := okoli;
+ fg := $A0A0A0;
+
+ if (Self.ZAM) then
+   case (Self.SymbolType) of
+    TBlkNavSymbol.hlavni : fg := clRed;
+    TBlkNavSymbol.seradovaci : fg := clBlue;
+   end;
+ if (Self.canRNZ) then
+   fg := clTeal;
+
  case (Self.Navest) of
-  ncStuj: begin
-    if (Self.canRNZ) then
-      fg := clTeal
-    else
-      fg := $A0A0A0;
-   if (Self.ZAM) then
-     case (Self.SymbolType) of
-      TBlkNavSymbol.hlavni : fg := clRed;
-      TBlkNavSymbol.seradovaci : fg := clBlue;
-     end;
-  end;
+  ncStuj: begin end;
   ncChanging, ncZhasnuto: begin
     fg := clBlack;
-    if (bg = clBlack) then
-      bg := $A0A0A0;
+    bg := $A0A0A0;
   end;
   ncVolno, ncVystraha, ncOcek40, ncVolno40, ncVystraha40, nc40Ocek40,
   ncOpakVolno, ncOpakVystraha, ncOpakOcek40, ncOpakVystraha40, ncOpak40Ocek40: fg := clLime;
   ncPrivol, ncPosunZaj, ncPosunNezaj: fg := clWhite;
   ncVse: fg := clYellow;
  else
-  fg := clBlack;
+  if (fg = $A0A0A0) then
+    fg := clBlack;
   bg := clFuchsia;
  end;
 
  Result := Result + ownConvert.ColorToStr(fg) + ';' +
                     ownConvert.ColorToStr(bg) + ';' +
                     IntToStr(ownConvert.BoolToInt(Self.Navest = ncPrivol)) + ';' +
-                    IntToStr(ownConvert.BoolToInt(Self.AB)) + ';';
+                    IntToStr(ownConvert.BoolToInt(Self.AB)) + ';' +
+                    ownConvert.ColorToStr(okoli);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1944,6 +1944,14 @@ begin
    data.Free();
  end;
 end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkNav.IsEnabled(): Boolean;
+begin
+ Result := (Self.navest <> TBlkNavCode.ncDisabled);
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

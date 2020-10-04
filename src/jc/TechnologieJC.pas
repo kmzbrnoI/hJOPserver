@@ -444,13 +444,6 @@ begin
     Exit;
    end;
 
-  // blok disabled
-  if ((Blk as TBlkNav).Navest = ncDisabled) then
-   begin
-    Result.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
-    Exit;
-   end;
-
   if ((Blk as TBlkNav).UsekPred = nil) then
    begin
     // blok navestidla pred sebou nema zadny usek
@@ -642,6 +635,11 @@ var i, usek, cnt, addr:Integer;
     odvratZaver:TJCOdvratZaver;
     refZaver:TJCRefZaver;
 begin
+  // navestidlo
+  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
+  if (not (Blk as TBlkNav).enabled) then
+    bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
+
   // kontrola useku:
   if (Self.fproperties.Trat > -1) then
     cnt := Self.fproperties.Useky.Count-1
@@ -1875,46 +1873,21 @@ var i,j:Integer;
     // nastavit vyhybky do pozadovanych poloh:
     writelog('Krok 100: vyhybky: nastavuji do pozadovanych poloh', WR_VC);
 
-    Self.fstaveni.nextVyhybka := -1;
-    stavim := 0;
-    nextVyhybka := -1;
+    Self.fstaveni.nextVyhybka := 0;
 
-    for i := 0 to Self.fproperties.Vyhybky.Count-1 do
+    while ((Self.fstaveni.nextVyhybka <> -1) and (Self.fstaveni.nextVyhybka < _JC_MAX_VYH_STAVENI) and
+           (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count)) do
      begin
-      vyhZaver := Self.fproperties.Vyhybky[i];
+      vyhZaver := Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka];
       Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
 
-      if (stavim >= _JC_MAX_VYH_STAVENI) then
-       begin
-        nextVyhybka := i;
-        break;
-       end;
-      Inc(stavim);
-
-      vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha),
+      Inc(Self.fstaveni.nextVyhybka);
+      vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha), // this call could increase nextVyhybka directly! or even set nextVyhybka = -1
                         true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
      end;
 
-    if (nextVyhybka = -1) then
-     begin
-      for i := 0 to Self.fproperties.Odvraty.Count-1 do
-       begin
-        odvratZaver := Self.fproperties.Odvraty[i];
-        Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
-
-        if (stavim >= _JC_MAX_VYH_STAVENI) then
-         begin
-          nextVyhybka := i;
-          break;
-         end;
-        Inc(stavim);
-
-        vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
-                          true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
-       end;
-     end;
-
-    Self.fstaveni.nextVyhybka := nextVyhybka;
+    // For simplicity solve odvrat just in callback
+    // This may be a little bit slower, but will generally work fine
 
     writelog('Krok 100: prejezdy: uzaviram', WR_VC);
     for prjZaver in Self.fproperties.Prejezdy do
@@ -1998,7 +1971,7 @@ var i,j:Integer;
     navestidlo.privol := Self;
 
     // i pokud je navetidlo ve STUJ, nastavuji navest (to je spravne chovani podle JOP)
-    if (Self.fproperties.TypCesty = TJCType.vlak) then
+    if ((Self.fproperties.TypCesty = TJCType.vlak) and (navestidlo.enabled)) then
      begin
       Self.NastavNav();
       writelog('Krok 102 : navestidlo: nastavuji na privolavaci navest...', WR_VC);
@@ -3540,7 +3513,7 @@ begin
    Inc(Self.fstaveni.nextVyhybka);
 
    (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
-                                  true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+                                  true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC); // may call callback directly!
   end else if ((Self.fstaveni.nextVyhybka >= Self.fproperties.Vyhybky.Count) and
       (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count)) then begin
    // nastaveni odvratu
@@ -3553,7 +3526,7 @@ begin
    Inc(Self.fstaveni.nextVyhybka);
 
    TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[odvrat].Poloha),
-                              true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+                              true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC); // may call callback directly!
   end else if (Self.fstaveni.nextVyhybka = Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
     Self.fstaveni.nextVyhybka := -1;
 end;
@@ -3583,7 +3556,12 @@ var i:Integer;
     usek, lastUsek:TBlkUsek;
     trat:TBlkTrat;
 begin
-  // useky:
+  // kontrola navestidla
+  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk);
+  if (not (Blk as TBlkNav).enabled) then
+    bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
+
+  // kontrola useku
   for i := 0 to Self.fproperties.Useky.Count-1 do
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[i], Blk);
@@ -3591,10 +3569,9 @@ begin
 
     // disabled
     if ((Blk as TBlkUsek).Obsazeno = TUsekStav.disabled) then
-      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id))
 
-    // obsazenost
-    if ((i <> Self.fproperties.Useky.Count-1) or (Self.fproperties.TypCesty <> TJCType.posun)) then
+    else if ((i <> Self.fproperties.Useky.Count-1) or (Self.fproperties.TypCesty <> TJCType.posun)) then
      begin
       if ((Blk as TBlkUsek).Obsazeno <> TUsekStav.uvolneno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.id));
@@ -3795,6 +3772,8 @@ begin
  for i := 0 to bariery.Count-1 do
   begin
    case (bariery[i].typ) of
+    _JCB_BLOK_DISABLED           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Blok neaktivní'));
+
     _JCB_USEK_OBSAZENO           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Úsek obsazen'));
     _JCB_USEK_SOUPRAVA           : Result.Add(TOR.GetPSPodminka(bariery[i].blok, 'Úsek obsahuje soupravu'));
 
