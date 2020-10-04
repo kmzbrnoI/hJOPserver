@@ -174,7 +174,8 @@ begin
    else if ((Self.right.state = TUsekStav.obsazeno) and (Self.middle.state = TUsekStav.uvolneno) and
             (Self.left.state = TUsekStav.uvolneno)) then
      Self.state := tsRLRightOccupied
-   else
+   else if ((Self.left.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno) or
+            (Self.right.state <> TUsekStav.uvolneno)) then
      Self.state := tsUnexpectedOccupation;
   end;
 
