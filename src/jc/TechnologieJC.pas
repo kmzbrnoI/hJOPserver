@@ -2236,7 +2236,7 @@ begin
 
  // kontrola obsazenosti useku pred navestidlem
  Usek := Nav.UsekPred as TBlkUsek;
- if ((Self.RozpadBlok = -1) and ((Usek.Obsazeno <> TUsekStav.obsazeno) or
+ if ((Self.RozpadBlok = -1) and ((Usek.Obsazeno <> TUsekStav.uvolneno) or
      (Usek.GetSettings.RCSAddrs.Count = 0))) then
   begin
    Self.RozpadBlok       := 0;
