@@ -538,6 +538,8 @@ var i, spr:Integer;
     usekStav:TUsekStav;
     oblr:TOR;
 begin
+ inherited Update();
+
  if (((Self.zkrat = TBoosterSignal.error) or (Self.napajeni = TBoosterSignal.error)) and (not Self.frozen)) then
   begin
    Self.Freeze();
@@ -558,7 +560,6 @@ begin
    if ((Self.DCC) and (Self.zkrat <> TBoosterSignal.error) and (Self.napajeni <> TBoosterSignal.error) and
        (Now > Self.Stav.zkratSenseTime)) then
      Self.UnFreeze();
-   inherited Update();
    Exit();
   end;
 
@@ -577,40 +578,22 @@ begin
      state := failure;
    end;
 
+   Self.UsekStav.Stav := uvolneno; // must be here to update booster state
+
    case (state) of
     isOn  : Self.UsekStav.sekce[i] := TUsekStav.obsazeno;
     isOff : Self.UsekStav.sekce[i] := TUsekStav.uvolneno;
-    failure, notYetScanned, unavailableModule, unavailablePort:begin
-      // vypadek RCS modulu, ci nespravny argument -> disable blok
-      if (Self.UsekStav.Stav <> disabled) then
-       begin
-        Self.UsekStav.Stav := disabled;
-        Self.UsekStav.StavOld := Self.UsekStav.Stav;
-        JCDb.RusJC(Self);
-
-        // zastavime soupravy na useku
-        for spr in Self.Soupravs do
-          Soupravy[spr].speed := 0;
-
-        Self.Change(true);
-       end;
-      Exit();
-    end;
-   end;//case
-  end;//for i
-
- Self.UsekStav.Stav := uvolneno; // must be here to update booster state
-
- if (Self.UsekStav.StavOld = TUsekStav.disabled) then
-  begin
-   // Wake-up from disabled
-   Self.OnBoosterChange();
+    failure, notYetScanned, unavailableModule, unavailablePort: begin
+        Self.UsekStav.sekce[i] := TUsekStav.disabled;
+        Self.UsekStav.Stav := TUsekStav.disabled;
+      end;
+   end;
   end;
 
- //get current state
- for usekStav in Self.UsekStav.sekce do
-  if (usekStav = TUsekStav.obsazeno) then
-    Self.UsekStav.Stav := TUsekStav.obsazeno;
+ if (Self.UsekStav.Stav <> TUsekStav.disabled) then
+   for usekStav in Self.UsekStav.sekce do
+    if (usekStav = TUsekStav.obsazeno) then
+      Self.UsekStav.Stav := TUsekStav.obsazeno;
 
  // reseni vypadku soupravy
  // pad soupravy z bloku az po urcitem case - aby se jizdni ceste nechal cas na zpracovani pohybu soupravy
@@ -635,9 +618,28 @@ begin
     end;//if spr_vypadek_time > 3
   end;//if spr_vypadek
 
- //OnChange
+ // OnChange
  if (Self.UsekStav.Stav <> Self.UsekStav.StavOld) then
   begin
+   if (Self.UsekStav.Stav = TUsekStav.disabled) then
+    begin
+     Self.UsekStav.Stav := disabled;
+     Self.UsekStav.StavOld := Self.UsekStav.Stav;
+     JCDb.RusJC(Self);
+
+     // zastavime soupravy na useku
+     for spr in Self.Soupravs do
+       Soupravy[spr].speed := 0;
+
+     Self.Change(true);
+    end;
+
+   if (Self.UsekStav.StavOld = TUsekStav.disabled) then
+    begin
+     // Wake-up from disabled
+     Self.OnBoosterChange();
+    end;
+
    // kontrola udalosti obsazeni
    if (Self.UsekStav.Stav = TUsekStav.obsazeno) then begin
      Self.NeprofilObsaz();
@@ -670,8 +672,6 @@ begin
 
  // kontrola zmeny barev vlivem uplynuti casu predvidaneho odjezdu
  Self.CheckPOdjChanged();
-
- inherited Update();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1492,8 +1492,6 @@ end;
 procedure TBlkUsek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 var Blk:TBlk;
 begin
- if (Self.Stav.Stav <= TUsekStav.none) then Exit();
-
  case (Button) of
   F2: Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params);
 
@@ -1519,8 +1517,6 @@ end;
 procedure TBlkUsek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 var i:Integer;
 begin
- if (Self.Stav.Stav <= TUsekStav.none) then Exit();
-
  if (item = 'NOVÝ vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR, itemindex)
  else if (item = 'VLOŽ vlak')      then Self.MenuVLOZLokClick(SenderPnl, SenderOR, itemindex)
  else if (item = 'EDIT vlak')      then Self.MenuEditLokClick(SenderPnl, SenderOR)
@@ -2274,123 +2270,116 @@ begin
 
  nebarVetve := $A0A0A0;
 
- if (Self.Obsazeno = TUsekStav.disabled) then
+ // --- Popredi ---
+
+ case (Self.Obsazeno) of
+  TUsekStav.disabled : fg := clFuchsia;
+  TUsekStav.none     : fg := $A0A0A0;
+  TUsekStav.uvolneno : fg := $A0A0A0;
+  TUsekStav.obsazeno : fg := clRed;
+ else
+  fg := clFuchsia;
+ end;
+
+ // zobrazeni zakazu odjezdu do trati
+ if ((fg = $A0A0A0) and (Self.typ = btTU) and (TBlkTU(Self).InTrat > -1)) then
   begin
-   Result := Result + ownConvert.ColorToStr(clFuchsia) + ';' + ownConvert.ColorToStr(clBlack) +
-     ';0;0;' + ownConvert.ColorToStr(clFuchsia);
-  end else begin
-   // --- Popredi ---
-
-   case (Self.Obsazeno) of
-    TUsekStav.none     : fg := $A0A0A0;
-    TUsekStav.uvolneno : fg := $A0A0A0;
-    TUsekStav.obsazeno : fg := clRed;
-   else
-    fg := clFuchsia;
-   end;
-
-   // zobrazeni zakazu odjezdu do trati
-   if ((fg = $A0A0A0) and (Self.typ = btTU) and (TBlkTU(Self).InTrat > -1)) then
-    begin
-     Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
-     if ((Blk <> nil) and (Blk.typ = btTrat)) then
-       if ((Blk as TBlkTrat).ZAK) then
-         fg := clBlue;
-    end;
-
-   // neprofilove deleni v useku
-   if ((fg = $A0A0A0) and (Self.IsNeprofilJC())) then
-     fg := clYellow;
-
-   // zaver
-   if (((Self.Obsazeno) = TUsekStav.uvolneno) and (Self.typ = btUsek) and
-       (Self.GetSettings().RCSAddrs.Count > 0)) then
-    begin
-     case (Self.Zaver) of
-      TZaver.vlak   : fg := clLime;
-      TZaver.posun  : fg := clWhite;
-      TZaver.nouz   : fg := clAqua;
-      TZaver.ab     : if (diag.showZaver) then fg := $707070 else fg := $A0A0A0;
-      TZaver.staveni: if (diag.showZaver) then fg := clBlue;
-     end;//case
-    end;
-
-   // porucha BP v trati
-   if ((Self.typ = btTU) and (TBlkTU(Self).poruchaBP)) then fg := clAqua;
-
-   if (fg = clYellow) then
-     nebarVetve := clYellow;
-
-   Result := Result + ownConvert.ColorToStr(fg) + ';';
-
-   // --- Pozadi ---
-
-   bg := clBlack;
-   if (Self.Stitek <> '') then bg := clTeal;
-   if (Self.Vyluka <> '') then bg := clOlive;
-
-   if (not Self.DCC) then bg := clMaroon;
-   if (Self.zkrat = TBoosterSignal.error) then bg := clFuchsia;
-   if ((Self.napajeni <> TBoosterSignal.ok) or
-      (Self.zkrat = TBoosterSignal.undef)) then bg := clBlue;
-
-   Result := Result + ownConvert.ColorToStr(bg) + ';';
-
-
-   Result := Result + IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' +
-                      IntToStr(Integer(Self.KonecJC)) + ';' +
-                      ownConvert.ColorToStr(nebarVetve) + ';';
-
-   // seznam souprav
-   Result := Result + '{';
-   for i := 0 to Self.Soupravs.Count-1 do
-    begin
-     souprava := Self.Soupravs[i];
-     sfg := fg;
-     sbg := bg;
-
-     if (Self.Obsazeno = uvolneno) then
-       sfg := clAqua;
-
-     Result := Result + '(' + Soupravy[souprava].name + ';' +
-                              IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_L)) +
-                              IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_S)) + ';';
-
-     if ((Soupravy[souprava].stationTo = Soupravy[souprava].station) and (sbg = clBlack)) then
-       sbg := clSilver;
-
-     // predvidany odjezd
-     if (Soupravy[souprava].IsPOdj(Self)) then
-       predvidanyOdjezd.GetPOdjColors(Soupravy[souprava].GetPOdj(Self), sfg, sbg);
-
-     Result := Result + ownConvert.ColorToStr(sfg) + ';' +
-                        ownConvert.ColorToStr(sbg) + ';';
-
-     if (Self.vlakPresun = i) then
-      Result := Result + ownConvert.ColorToStr(clYellow) + ';';
-
-     Result := Result + ')';
-    end;
-
-   // predpovidana souprava
-   if (Self.SprPredict <> nil) then
-    begin
-     // predvidany odjezd
-     sfg := fg;
-     sbg := bg;
-
-     if (Self.SprPredict.IsPOdj(Self)) then
-       predvidanyOdjezd.GetPOdjColors(Self.SprPredict.GetPOdj(Self), sfg, sbg);
-
-     Result := Result + '(' + Self.SprPredict.name + ';' +
-                '00;' +
-                ownConvert.ColorToStr(sfg) + ';' +
-                ownConvert.ColorToStr(sbg) + ';)';
-    end;
-
-   Result := Result + '}';
+   Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
+   if ((Blk <> nil) and (Blk.typ = btTrat)) then
+     if ((Blk as TBlkTrat).ZAK) then
+       fg := clBlue;
   end;
 
+ // neprofilove deleni v useku
+ if ((fg = $A0A0A0) and (Self.IsNeprofilJC())) then
+   fg := clYellow;
+
+ // zaver
+ if (((Self.Obsazeno) = TUsekStav.uvolneno) and (Self.typ = btUsek) and
+     (Self.GetSettings().RCSAddrs.Count > 0)) then
+  begin
+   case (Self.Zaver) of
+    TZaver.vlak   : fg := clLime;
+    TZaver.posun  : fg := clWhite;
+    TZaver.nouz   : fg := clAqua;
+    TZaver.ab     : if (diag.showZaver) then fg := $707070 else fg := $A0A0A0;
+    TZaver.staveni: if (diag.showZaver) then fg := clBlue;
+   end;//case
+  end;
+
+ // porucha BP v trati
+ if ((Self.typ = btTU) and (TBlkTU(Self).poruchaBP)) then fg := clAqua;
+
+ if (fg = clYellow) then
+   nebarVetve := clYellow;
+
+ Result := Result + ownConvert.ColorToStr(fg) + ';';
+
+ // --- Pozadi ---
+
+ bg := clBlack;
+ if (Self.Stitek <> '') then bg := clTeal;
+ if (Self.Vyluka <> '') then bg := clOlive;
+
+ if (not Self.DCC) then bg := clMaroon;
+ if (Self.zkrat = TBoosterSignal.error) then bg := clFuchsia;
+ if ((Self.napajeni <> TBoosterSignal.ok) or
+    (Self.zkrat = TBoosterSignal.undef)) then bg := clBlue;
+
+ Result := Result + ownConvert.ColorToStr(bg) + ';';
+
+ Result := Result + IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' +
+                    IntToStr(Integer(Self.KonecJC)) + ';' +
+                    ownConvert.ColorToStr(nebarVetve) + ';';
+
+ // seznam souprav
+ Result := Result + '{';
+ for i := 0 to Self.Soupravs.Count-1 do
+  begin
+   souprava := Self.Soupravs[i];
+   sfg := fg;
+   sbg := bg;
+
+   if (Self.Obsazeno = uvolneno) then
+     sfg := clAqua;
+
+   Result := Result + '(' + Soupravy[souprava].name + ';' +
+                            IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_L)) +
+                            IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_S)) + ';';
+
+   if ((Soupravy[souprava].stationTo = Soupravy[souprava].station) and (sbg = clBlack)) then
+     sbg := clSilver;
+
+   // predvidany odjezd
+   if (Soupravy[souprava].IsPOdj(Self)) then
+     predvidanyOdjezd.GetPOdjColors(Soupravy[souprava].GetPOdj(Self), sfg, sbg);
+
+   Result := Result + ownConvert.ColorToStr(sfg) + ';' +
+                      ownConvert.ColorToStr(sbg) + ';';
+
+   if (Self.vlakPresun = i) then
+    Result := Result + ownConvert.ColorToStr(clYellow) + ';';
+
+   Result := Result + ')';
+  end;
+
+ // predpovidana souprava
+ if (Self.SprPredict <> nil) then
+  begin
+   // predvidany odjezd
+   sfg := fg;
+   sbg := bg;
+
+   if (Self.SprPredict.IsPOdj(Self)) then
+     predvidanyOdjezd.GetPOdjColors(Self.SprPredict.GetPOdj(Self), sfg, sbg);
+
+   Result := Result + '(' + Self.SprPredict.name + ';' +
+              '00;' +
+              ownConvert.ColorToStr(sfg) + ';' +
+              ownConvert.ColorToStr(sbg) + ';)';
+  end;
+
+ Result := Result + '}';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

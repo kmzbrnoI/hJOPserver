@@ -2263,7 +2263,7 @@ begin
 
  // kontrola obsazenosti useku pred navestidlem
  Usek := Nav.UsekPred as TBlkUsek;
- if ((Self.RozpadBlok = -1) and ((Usek.Obsazeno = TUsekStav.obsazeno) or
+ if ((Self.RozpadBlok = -1) and ((Usek.Obsazeno <> TUsekStav.obsazeno) or
      (Usek.GetSettings.RCSAddrs.Count = 0))) then
   begin
    Self.RozpadBlok       := 0;
@@ -2360,8 +2360,8 @@ begin
         end;
 
 
-      end else begin//if Self.RozpadBlok = 0
-       if (Integer(Usek.Zaver) > 0) then
+      end else begin //if Self.RozpadBlok = 0
+       if (Usek.Zaver > TZaver.no) then
         begin
          //pokud jsme na jinem useku, nez RozpadBlok
          if ((Nav.Navest > ncStuj) and (Nav.DNjc = Self)) then
@@ -2427,7 +2427,7 @@ begin
 
   // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony),
   // ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
-  if ((Self.RozpadRuseniBlok = -1) and (Self.fproperties.Useky.Count > 0) and (Self.RozpadBlok > 0)) then
+  if ((Self.RozpadRuseniBlok = -1) and (Self.RozpadBlok > 0)) then
    begin
     Blky.GetBlkByID(Self.fproperties.Useky[0], TBlk(Usek));
 
