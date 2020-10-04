@@ -1144,8 +1144,6 @@ end;
 
 procedure TBlkVyhybka.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
- if (Self.Stav.poloha <= TVyhPoloha.disabled) then Exit();
-
  case (Button) of
   F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end;//case
@@ -1156,8 +1154,6 @@ end;
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkVyhybka.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
- if (Self.Stav.poloha <= TVyhPoloha.disabled) then Exit();
-
  if (item = 'S+')        then Self.MenuPlusClick(SenderPnl, SenderOR)
  else if (item = 'S-')   then Self.MenuMinusClick(SenderPnl, SenderOR)
  else if (item = 'NS+')  then Self.MenuNSPlusClick(SenderPnl, SenderOR)
@@ -1426,6 +1422,8 @@ begin
   begin
    Blky.NouzZaverZrusen(Self);
    Self.Change();
+   if (Self.spojka <> nil) then
+     Self.spojka.Change();
   end;
 end;
 
@@ -1590,6 +1588,10 @@ begin
    // nouzovy zaver vyhybky ma prioritu i nad obsazenim useku
    fg := clAqua;
   end;
+
+ if (Self.Poloha = TVyhPoloha.disabled) then
+   fg := clFuchsia;
+
  Result := Result + ownConvert.ColorToStr(fg) + ';';
 
  // Pozadi
