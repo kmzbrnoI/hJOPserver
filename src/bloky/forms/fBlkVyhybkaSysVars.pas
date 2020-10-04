@@ -101,7 +101,7 @@ begin
  Self.CB_Stav_Plus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.StaveniPlus);
  Self.CB_Stav_Minus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.StaveniMinus);
 
- Self.CB_Locked.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.Stav.outputLocked);
+ Self.CB_Locked.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.outputLocked);
  Self.SE_Locks.Value := Self.OpenBlk.Stav.intentionalLocks;
 
  Self.B_Unlock.Enabled := Self.OpenBlk.intentionalLocked;

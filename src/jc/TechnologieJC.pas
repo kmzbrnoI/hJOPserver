@@ -260,8 +260,8 @@ type
       procedure CritBarieraEsc(Sender:TObject);
 
       // callbacky ne/nastevni polohy vyhybek:
-      procedure VyhNeprestavenaJCPC(Sender:TObject);
-      procedure VyhNeprestavenaNC(Sender:TObject);
+      procedure VyhNeprestavenaJCPC(Sender:TObject; error: TVyhSetError);
+      procedure VyhNeprestavenaNC(Sender:TObject; error: TVyhSetError);
       procedure VyhPrestavenaNC(Sender:TObject);
       procedure VyhPrestavenaJCPC(Sender:TObject);
       procedure NavNepostaveno(Sender:TObject);
@@ -1884,18 +1884,15 @@ var i,j:Integer;
       vyhZaver := Self.fproperties.Vyhybky[i];
       Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
 
-      if (vyhybka.Poloha <> TVyhPoloha.disabled) then
+      if (stavim >= _JC_MAX_VYH_STAVENI) then
        begin
-        if (stavim >= _JC_MAX_VYH_STAVENI) then
-         begin
-          nextVyhybka := i;
-          break;
-         end;
-        Inc(stavim);
-
-        vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha),
-                          true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+        nextVyhybka := i;
+        break;
        end;
+      Inc(stavim);
+
+      vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha),
+                        true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
      end;
 
     if (nextVyhybka = -1) then
@@ -1905,18 +1902,15 @@ var i,j:Integer;
         odvratZaver := Self.fproperties.Odvraty[i];
         Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
 
-        if (vyhybka.Poloha <> TVyhPoloha.disabled) then
+        if (stavim >= _JC_MAX_VYH_STAVENI) then
          begin
-          if (stavim >= _JC_MAX_VYH_STAVENI) then
-           begin
-            nextVyhybka := i;
-            break;
-           end;
-          Inc(stavim);
-
-          vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
-                            true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+          nextVyhybka := i;
+          break;
          end;
+        Inc(stavim);
+
+        vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
+                          true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
        end;
      end;
 
@@ -3494,12 +3488,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.VyhNeprestavenaJCPC(Sender:TObject);
+procedure TJC.VyhNeprestavenaJCPC(Sender:TObject; error: TVyhSetError);
 begin
  if (not Self.staveni) then Exit();
 
  if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
-   ORTCPServer.BottomError(Self.fstaveni.SenderPnl, 'Nepřestavena '+(Sender as TBlkVyhybka).name,
+   ORTCPServer.BottomError(Self.fstaveni.SenderPnl,
+     'Nepřestavena '+(Sender as TBlkVyhybka).name + ': ' + TBlkVyhybka.SetErrorToMsg(error),
      (Self.fstaveni.SenderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
  Self.RusJC();
@@ -3507,7 +3502,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.VyhNeprestavenaNC(Sender:TObject);
+procedure TJC.VyhNeprestavenaNC(Sender:TObject; error: TVyhSetError);
 begin
  Self.VyhPrestavenaNC(Sender);
 end;
@@ -3535,7 +3530,7 @@ begin
 
  if (Self.fstaveni.nextVyhybka < 0) then Exit();
 
- while (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count) do
+ if (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count) then
   begin
    // stavim dalsi vyhybku
    // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
@@ -3544,17 +3539,10 @@ begin
    Blky.GetBlkByID(Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka].Blok, Blk);
    Inc(Self.fstaveni.nextVyhybka);
 
-   if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha.disabled) then
-    begin
-     (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
-                                    true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
-     break;
-    end;
-  end;
-
- while ((Self.fstaveni.nextVyhybka >= Self.fproperties.Vyhybky.Count) and
-        (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count)) do
-  begin
+   (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.Vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
+                                  true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+  end else if ((Self.fstaveni.nextVyhybka >= Self.fproperties.Vyhybky.Count) and
+      (Self.fstaveni.nextVyhybka < Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count)) then begin
    // nastaveni odvratu
    // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
    // tuto udalost.
@@ -3564,15 +3552,9 @@ begin
    Blky.GetBlkByID(Self.fproperties.Odvraty[odvrat].Blok, Blk);
    Inc(Self.fstaveni.nextVyhybka);
 
-   if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha.disabled) then
-    begin
-     TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[odvrat].Poloha),
-                                true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
-     break;
-    end;
-  end;
-
-  if (Self.fstaveni.nextVyhybka = Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
+   TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.Odvraty[odvrat].Poloha),
+                              true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+  end else if (Self.fstaveni.nextVyhybka = Self.fproperties.Vyhybky.Count+Self.fproperties.Odvraty.Count) then
     Self.fstaveni.nextVyhybka := -1;
 end;
 

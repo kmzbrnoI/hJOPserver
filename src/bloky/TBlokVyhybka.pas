@@ -22,7 +22,9 @@ uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
 
 type
  TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
+ TVyhSetError = (vseInvalidPos, vseInvalidRCSConfig, vseLocked, vseOccupied, vseRCS, vseTimeout);
  ESpojka = class(Exception);
+ TVyhSetPolohaErrCb = procedure (Sender: TObject; error: TVyhSetError) of object;
 
  TBlkVyhSettings = record
   RCSAddrs:TRCSAddrs;     // vstup+, vstup-, vystup+, vystup-
@@ -39,14 +41,16 @@ type
  end;
 
  TBlkVyhStav = record
-  poloha,polohaOld,polohaReal,polohaSave:TVyhPoloha; // polohaReal je skutecna poloha, kterou aktualne zobrazuji RCS vstupy
+  poloha, polohaOld, polohaReal: TVyhPoloha;    // polohaReal je skutecna poloha, kterou aktualne zobrazuji RCS vstupy
+  polohaSave: TVyhPoloha;                     // poloha k ulozeni do souboru pro vyhybky bez indikace
+  polohaLock: TVyhPoloha;                     // poloha, do ktere ma byt vyhybka zamknuta; none pokud neni zamek
   stit,vyl:string;                            // stitek a vyluka vyhybky
   staveni_minus,staveni_plus:Boolean;         // stavi se zrovna vyhybka do polohy plus, ci minus?
-  outputLocked: boolean;                      // skutecny zamek na vystupu - jestli je RCS vystup zamknut
   intentionalLocks:Integer;
   vyhZaver:Cardinal;                          // pocet bloku, ktere na vyhybku udelily nouzovy zaver
 
-  staveniErrCallback, staveniOKCallback:TNotifyEvent;     // callback eventy pro koncovou polohu vyhybky (resp. timeout prestavovani)
+  staveniOKCallback: TNotifyEvent;           // callback eventy pro koncovou polohu vyhybky (resp. timeout prestavovani)
+  staveniErrCallback: TVyhSetPolohaErrCb;
   staveniStart:TDateTime;                                 // cas zacatku prestavovani
   staveniPanel:TIDContext;                                // panel, ktery chtel vyhybku prestavit
   staveniOR:TObject;                                      // oblast rizeni, ktera vyzadala staveni vyhybky
@@ -69,15 +73,16 @@ type
     poloha : disabled;
     polohaOld : disabled;
     polohaReal : disabled;
+    polohaSave: none;
+    polohaLock: none;
     stit : '';
     vyl : '';
     staveni_minus : false;
     staveni_plus : false;
-    outputLocked : false;
     intentionalLocks: 0;
     vyhZaver: 0;
-    staveniErrCallback: nil;
     staveniOKCallback: nil;
+    staveniErrCallback: nil;
     staveniStart: 0;
     staveniPanel: nil;
     staveniOR: nil;
@@ -104,6 +109,7 @@ type
     function GetZaver():TZaver;
     function GetNUZ():boolean;
     function GetObsazeno():TUsekStav;
+    function GetOutputLocked(): Boolean;
 
     procedure SetVyhStit(stit:string);
     procedure mSetVyhVyl(vyl:string);
@@ -118,7 +124,7 @@ type
 
     procedure CheckNullOutput();
 
-    procedure PanelStaveniErr(Sender:TObject);
+    procedure PanelStaveniErr(Sender:TObject; error: TVyhSetError);
 
     procedure MenuPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -189,7 +195,8 @@ type
     function GetSettings():TBlkVyhSettings;
     procedure SetSettings(data:TBlkVyhSettings);
 
-    function SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false; callback_ok:TNotifyEvent = nil; callback_err:TNotifyEvent = nil):Integer;
+    procedure SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false;
+        callback_ok:TNotifyEvent = nil; callback_err:TVyhSetPolohaErrCb = nil);
     procedure SetVyhVyl(Sender:TIDContext; vyl:string);
     procedure SetSpojkaNoPropag(spojka:Integer);
 
@@ -199,6 +206,8 @@ type
     procedure NullVyhZaver();
     procedure DecreaseNouzZaver(amount:Cardinal);
     function GetInputs():TBlkVyhInputs;
+
+    class function SetErrorToMsg(error: TVyhSetError): string;
 
     property Stav:TBlkVyhStav read VyhStav;
 
@@ -215,7 +224,7 @@ type
     property npBlokPlus:TBlk read GetNpPlus;
     property npBlokMinus:TBlk read GetNpMinus;
     property detekcePolohy:Boolean read GetDetekcePolohy;
-    property outputLocked:Boolean read VyhStav.outputLocked;
+    property outputLocked:Boolean read GetOutputLocked;
     property spojka: TBlkVyhybka read GetSpojka;
 
     property StaveniPlus:Boolean read VyhStav.staveni_plus write VyhStav.staveni_plus;
@@ -392,7 +401,7 @@ begin
  Self.VyhStav.intentionalLocks := 0;
  Self.VyhStav.staveni_plus := false;
  Self.VyhStav.staveni_minus := false;
- Self.VyhStav.outputLocked := false;
+ Self.VyhStav.polohaLock := TVyhPoloha.none;
  Self.VyhStav.vyhZaver := 0;
 end;
 
@@ -420,6 +429,8 @@ begin
 
  if (Self.VyhStav.poloha <> Self.VyhStav.polohaOld) then
   begin
+   if ((Self.VyhStav.polohaOld = TVyhPoloha.disabled) and (Self.outputLocked)) then // apply lock
+     Self.SetPoloha(Self.VyhStav.polohaLock, true);
    Self.VyhStav.polohaOld := Self.VyhStav.poloha;
    Self.Change();
   end;
@@ -462,6 +473,11 @@ begin
  if ((tmpBlk.typ <> btUsek) and (tmpBlk.typ <> btTU)) then Exit(TUsekStav.none);
 
  Result := (tmpBlk as TBlkUsek).Obsazeno;
+end;
+
+function TBlkVyhybka.GetOutputLocked(): Boolean;
+begin
+ Result := (Self.VyhStav.PolohaLock > TVyhPoloha.none);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -764,7 +780,7 @@ begin
 
    if (Assigned(Self.VyhStav.staveniErrCallback)) then
     begin
-     Self.VyhStav.staveniErrCallback(Self);
+     Self.VyhStav.staveniErrCallback(Self, vseTimeout);
      Self.VyhStav.staveniErrCallback := nil;
     end;
    Self.VyhStav.staveniOKCallback  := nil;
@@ -774,19 +790,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false; callback_ok:TNotifyEvent = nil; callback_err:TNotifyEvent = nil):Integer;
+procedure TBlkVyhybka.SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false;
+      callback_ok:TNotifyEvent = nil; callback_err:TVyhSetPolohaErrCb = nil);
 var spojka:TBlkVyhybka;
-    oblr:TOR;
 begin
   if (Self.VyhSettings.RCSAddrs.Count < 4) then
    begin
-    if (Assigned(callback_err)) then callback_err(self);
-    Exit(2);
+    if (Assigned(callback_err)) then callback_err(self, vseInvalidRCSConfig);
+    Exit();
    end;
   if ((new <> plus) and (new <> minus)) then
    begin
-    if (Assigned(callback_err)) then callback_err(self);
-    Exit(3);
+    if (Assigned(callback_err)) then callback_err(self, vseInvalidPos);
+    Exit();
    end;
 
   // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
@@ -802,17 +818,13 @@ begin
     // pokud se nerovna moje poloha, nerovna se i poloha spojky -> obsazenost na spojce apod. je problem
     if (Self.ShouldBeLockedIgnoreStaveni()) then
      begin
-      for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - zamčena', 'TECHNOLOGIE');
-      if (Assigned(callback_err)) then callback_err(self);
-      Exit(4);
+      if (Assigned(callback_err)) then callback_err(self, vseLocked);
+      Exit();
      end;
     if (((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and (spojka.Obsazeno = TUsekStav.obsazeno))) and (not nouz)) then
      begin
-      for oblr in Self.OblsRizeni do
-        oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - obsazena', 'TECHNOLOGIE');
-      if (Assigned(callback_err)) then callback_err(self);
-      Exit(5);
+      if (Assigned(callback_err)) then callback_err(self, vseOccupied);
+      Exit();
      end;
    end else begin
     // pokud polohu uz mame, zavolame ok callback
@@ -821,16 +833,17 @@ begin
 
  //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
 
+ if (zamek) then
+   Self.VyhStav.polohaLock := new; // before SetOutput to ensure locking of failed RCS modules after restoration
+
  if (new = plus) then
   begin
    try
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board,Self.VyhSettings.RCSAddrs[2].port, 1);
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board,Self.VyhSettings.RCSAddrs[3].port, 0);
    except
-     for oblr in Self.OblsRizeni do
-       oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
-     if (Assigned(callback_err)) then callback_err(self);
-     Exit(6);
+     if (Assigned(callback_err)) then callback_err(self, vseRCS);
+     Exit();
    end;
 
    if (Self.VyhStav.poloha <> plus) then
@@ -847,10 +860,8 @@ begin
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
      RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 1);
    except
-     for oblr in Self.OblsRizeni do
-       oblr.BlkWriteError(Self, 'Nelze přestavit '+Self.GlobalSettings.name+' - výjimka RCS SetOutput', 'TECHNOLOGIE');
-     if (Assigned(callback_err)) then callback_err(self);
-     Exit(6);
+     if (Assigned(callback_err)) then callback_err(self, vseRCS);
+     Exit();
    end;
 
    Self.VyhStav.staveni_plus  := false;
@@ -869,8 +880,6 @@ begin
   begin
    Self.NullOutput.enabled := true;
    Self.NullOutput.NullOutputTime := Now+EncodeTime(0, 0, 0, 500);
-  end else begin
-   Self.VyhStav.outputLocked := true;
   end;
 
  if (spojka <> nil) then
@@ -882,7 +891,6 @@ begin
      spojka.SetPoloha(new, zamek, nouz);
   end;
 
- Result := 0;
  Self.Change();
 end;
 
@@ -901,7 +909,7 @@ begin
 
  end;
 
- Self.VyhStav.outputLocked := false;
+ Self.VyhStav.polohaLock := TVyhPoloha.none;
 
  spojka := Self.spojka;
  if ((spojka <> nil) and (spojka.outputLocked)) then
@@ -1185,7 +1193,7 @@ var changed:boolean;
 begin
  changed := false;
 
- if (not Self.VyhStav.outputLocked) and (Self.ShouldBeLocked()) then
+ if (not Self.outputLocked) and (Self.ShouldBeLocked()) then
   begin
    // pokud je vyhybka redukovana, nebo je na ni zaver a je v koncove poloze a neni zamkla, zamkneme ji
    if (Self.VyhStav.poloha = TVyhPoloha.plus) then begin
@@ -1198,7 +1206,7 @@ begin
    end;
   end;
 
- if ((not Self.ShouldBeLocked()) and (Self.VyhStav.outputLocked)) then
+ if ((not Self.ShouldBeLocked()) and (Self.outputLocked)) then
   begin
    Self.Unlock();
    changed := true;
@@ -1259,11 +1267,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // tato metoda je volana, pokud dojde k timeoutu pri staveni vyhybky z paneli
-procedure TBlkVyhybka.PanelStaveniErr(Sender:TObject);
+procedure TBlkVyhybka.PanelStaveniErr(Sender:TObject; error: TVyhSetError);
 begin
   if ((Assigned(Self.VyhStav.staveniPanel)) and (Assigned(Self.VyhStav.staveniOR))) then
    begin
-    ORTCPServer.BottomError(Self.VyhStav.staveniPanel, 'Nepřestavena '+Self.GlobalSettings.name, (Self.VyhStav.staveniOR as TOR).ShortName, 'TECHNOLOGIE');
+    ORTCPServer.BottomError(Self.VyhStav.staveniPanel, 'Nepřestavena '+Self.GlobalSettings.name + ': ' + Self.SetErrorToMsg(error),
+      (Self.VyhStav.staveniOR as TOR).ShortName, 'TECHNOLOGIE');
     Self.VyhStav.staveniPanel := nil;
     Self.VyhStav.staveniOR    := nil;
    end;
@@ -1591,7 +1600,7 @@ begin
   begin
    if (Self.Zaver > TZaver.no) then
      bg := clGreen
-   else if (Self.VyhStav.outputLocked) then
+   else if (Self.outputLocked) then
      bg := clBlue
    else if (Self.ShouldBeLocked()) then
      bg := clOlive;
@@ -1683,6 +1692,22 @@ end;
 function TBlkVyhybka.ZamekLocked():Boolean;
 begin
  Result := (Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TBlkVyhybka.SetErrorToMsg(error: TVyhSetError): string;
+begin
+ case (error) of
+   vseInvalidPos: Result := 'neplatná poloha';
+   vseInvalidRCSConfig: Result := 'nepklatní konfigurace bloku';
+   vseLocked: Result := 'zamčena';
+   vseOccupied: Result := 'obsazena';
+   vseRCS: Result := 'vyjímka RCS SetOutput';
+   vseTimeout: Result := 'timeout';
+ else
+  Result := 'neznámá chyba';
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
