@@ -2277,7 +2277,7 @@ begin
  if (Self.Obsazeno = TUsekStav.disabled) then
   begin
    Result := Result + ownConvert.ColorToStr(clFuchsia) + ';' + ownConvert.ColorToStr(clBlack) +
-     ';0;0;' + ownConvert.ColorToStr(clBlack);
+     ';0;0;' + ownConvert.ColorToStr(clFuchsia);
   end else begin
    // --- Popredi ---
 
