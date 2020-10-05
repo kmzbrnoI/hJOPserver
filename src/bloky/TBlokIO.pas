@@ -244,7 +244,7 @@ begin
  inherited;
 
  if ((not Self.enabled) and
-     (((not Self.isRCSoutput) or (RCSi.IsNonFailedModule(Self.IOsettings.RCSoutput.board))) or
+     (((not Self.isRCSoutput) or (RCSi.IsNonFailedModule(Self.IOsettings.RCSoutput.board))) and
       ((not Self.isRCSinput) or (RCSi.IsNonFailedModule(Self.IOsettings.RCSinput.board))))) then
   begin
    Self.Enable();
@@ -323,22 +323,28 @@ end;
 procedure TBlkIO.PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
                                 Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
- if (not Self.enabled) then Exit();
-
  if (Button = TPanelButton.F2) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
- else if (Button = TPanelButton.ENTER) then begin
-   try
-     Self.Activate();
-   except
-     ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
-   end
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+
+ if (Button = TPanelButton.ENTER) then begin
+   if (Self.enabled) then
+    begin
+     try
+       Self.Activate();
+     except
+       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     end
+    end else
+     ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end else if (Button = TPanelButton.ESCAPE) then begin
-   try
-     Self.Deactivate();
-   except
-     ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
-   end
+   if (Self.enabled) then
+    begin
+     try
+       Self.Deactivate();
+     except
+       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     end
+    end;
  end;
 end;
 
@@ -440,10 +446,13 @@ end;
 function TBlkIO.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 begin
  Result := inherited;
- if (Self.activeOutput) then
-   Result := Result + 'AKTIV<,'
- else
-   Result := Result + 'AKTIV>,';
+ if (Self.enabled) then
+  begin
+   if (Self.activeOutput) then
+     Result := Result + 'AKTIV<,'
+   else
+     Result := Result + 'AKTIV>,';
+  end;
  Result := Result + 'STIT,';
 
  if ((RCSi.simulation) and (Self.isRCSinput)) then
@@ -457,8 +466,6 @@ end;
 
 procedure TBlkIO.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
- if (not Self.enabled) then Exit();
-
  if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV<') then Self.MenuAktivOffClick(SenderPnl, SenderOR)
