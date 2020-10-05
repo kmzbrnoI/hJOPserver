@@ -51,8 +51,19 @@ begin
 
    LI.Caption := booster.id;
    LI.SubItems.Add(booster.name);
-   LI.SubItems.Add(TBooster.GetBClassString(booster.bSettings.bclass));
-  end;//for i
+   if (booster.isShortcutDetection) then
+     LI.SubItems.Add(booster.bSettings.RCS.Zkrat.ToString())
+   else
+     LI.SubItems.Add('-');
+   if (booster.isPowerDetection) then
+     LI.SubItems.Add(booster.bSettings.RCS.Napajeni.ToString())
+   else
+     LI.SubItems.Add('-');
+   if (booster.isDCCdetection) then
+     LI.SubItems.Add(booster.bSettings.RCS.DCC.ToString())
+   else
+     LI.SubItems.Add('-');
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

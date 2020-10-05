@@ -10,7 +10,6 @@ type
   TF_ZesilovacEdit = class(TForm)
     L_Nazev: TLabel;
     E_Nazev: TEdit;
-    RG_Typ: TRadioGroup;
     B_Save: TButton;
     GB_Zkrat: TGroupBox;
     L_Zkrat_Port: TLabel;
@@ -95,11 +94,6 @@ begin
    Application.MessageBox('Vyplňte id zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
    Exit;
   end;
- if (Self.RG_Typ.ItemIndex < 0) then
-  begin
-   Application.MessageBox('Vyberte typ zesilovače!','Nelze uložit data', MB_OK OR MB_ICONSTOP);
-   Exit;
-  end;
  if (Boosters.ContainsKey(E_ID.Text, Self.open_booster)) then
   begin
    Application.MessageBox('Zesilovač s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
@@ -121,7 +115,6 @@ begin
   end;
 
  settings.Name := E_Nazev.Text;
- settings.bclass := TBoosterClass(RG_Typ.ItemIndex+1);
  settings.id := E_ID.Text;
 
  if (Self.CHB_Zkrat.Checked) then
@@ -211,7 +204,6 @@ var bSettings:TBoosterSettings;
 
   E_ID.Text := bSettings.id;
   E_Nazev.Text := bSettings.Name;
-  RG_Typ.ItemIndex := Integer(bSettings.bclass)-1;
 
   SE_Zkrat_Port.Value := bSettings.RCS.Zkrat.port;
   SE_Napajeni_Port.Value := bSettings.RCS.Napajeni.port;
@@ -245,7 +237,6 @@ var IgnoraceRCS:TArI;
  begin
   E_ID.Text         := '';
   E_Nazev.Text      := '';
-  RG_Typ.ItemIndex  := -1;
 
   SE_Zkrat_Port.Value    := 0;
   SE_Napajeni_Port.Value := 0;

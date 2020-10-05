@@ -10,13 +10,9 @@ uses IniFiles, TechnologieRCS, SysUtils, Generics.Defaults;
 
 type
  TBoosterSignal = (undef = -1, error = 0, ok = 1);
-
- TBoosterClass = (undefinned = -1, default = 0, SPAX = 1);
-
  TBoosterChangeEvent = procedure (Sender:TObject; state:TBoosterSignal) of object;
 
  TBoosterSettings = record
-   bclass:TBoosterClass;                                                        // booster class (spax, bz100)
    Name:string;                                                                 // booster name
    RCS:record                                                                   // RCS inputs
     Zkrat:TRCSAddr;                                                             // overload input
@@ -70,13 +66,11 @@ type
 
     property id:string read Settings.id;
     property name:string read Settings.name;
-    property bclass:TBoosterClass read Settings.bclass;
 
     property OnNapajeniChange:TBoosterChangeEvent read FOnNapajeniChange write FOnNapajeniChange;
     property OnZkratChange:TBoosterChangeEvent read FOnZkratChange write FOnZkratChange;
     property OnDCCChange:TBoosterChangeEvent read FOnDCCChange write FONDCCChange;
 
-    class function GetBClassString(b_type:TBoosterClass):string;          //get booster name as a string
     class function IdComparer():IComparer<TBooster>;
  end;//TBooster
 
@@ -160,7 +154,6 @@ procedure TBooster.LoadDataFromFile(var ini:TMemIniFile;const section:string);
 begin
  Self.Settings.id     := section;
  Self.Settings.Name   := ini.ReadString(section, 'name', 'booster');
- Self.Settings.bclass := TBoosterClass(ini.ReadInteger(section, 'class', 0));
 
  Self.Settings.RCS.Zkrat.board := ini.ReadInteger(section, 'zkr_module', 0);
  if (Self.Settings.RCS.Zkrat.board = 0) then
@@ -187,7 +180,6 @@ end;
 procedure TBooster.SaveDataToFile(var ini:TMemIniFile;const section:string);
 begin
  ini.WriteString(section, 'name', Self.Settings.Name);
- ini.WriteInteger(section, 'class', Integer(Self.Settings.bclass));
 
  if (Self.isShortcutDetection) then
   begin
@@ -315,17 +307,6 @@ end;
 function TBooster.GetPowerDetection():boolean;
 begin
  Result := (Self.Settings.RCS.Napajeni.board > 0);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-class function TBooster.GetBClassString(b_type:TBoosterClass):string;
-begin
- case (b_type) of
-  TBoosterClass.SPAX : Result := 'SPAX';
- else
-  Result := '';
- end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

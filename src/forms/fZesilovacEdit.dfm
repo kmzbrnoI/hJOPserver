@@ -5,7 +5,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Zesilovac [zesilovac]'
-  ClientHeight = 473
+  ClientHeight = 401
   ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -52,23 +52,9 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     MaxLength = 32
     TabOrder = 1
   end
-  object RG_Typ: TRadioGroup
-    Left = 9
-    Top = 64
-    Width = 265
-    Height = 65
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = ' Typ '
-    Items.Strings = (
-      'SPAX')
-    TabOrder = 2
-  end
   object B_Save: TButton
     Left = 198
-    Top = 439
+    Top = 367
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -77,12 +63,12 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 6
+    TabOrder = 5
     OnClick = B_SaveClick
   end
   object GB_Zkrat: TGroupBox
     Left = 9
-    Top = 136
+    Top = 64
     Width = 265
     Height = 100
     Margins.Left = 2
@@ -90,7 +76,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce zkratu '
-    TabOrder = 3
+    TabOrder = 2
     object L_Zkrat_Port: TLabel
       Left = 7
       Top = 60
@@ -154,7 +140,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
   end
   object GB_Napajeni: TGroupBox
     Left = 9
-    Top = 240
+    Top = 168
     Width = 265
     Height = 97
     Margins.Left = 2
@@ -162,12 +148,12 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce v'#253'padku nap'#225'jen'#237' zesilova'#269'e '
-    TabOrder = 4
+    TabOrder = 3
     object L_Napajeni_Port: TLabel
       Left = 7
       Top = 60
       Width = 49
-      Height = 14
+      Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -178,7 +164,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Left = 7
       Top = 36
       Width = 60
-      Height = 14
+      Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -189,7 +175,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Left = 167
       Top = 64
       Width = 89
-      Height = 23
+      Height = 22
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -203,7 +189,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Left = 167
       Top = 38
       Width = 89
-      Height = 23
+      Height = 22
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -226,7 +212,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
   end
   object B_Storno: TButton
     Left = 120
-    Top = 439
+    Top = 367
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -234,12 +220,12 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = B_StornoClick
   end
   object GB_DCC: TGroupBox
     Left = 9
-    Top = 341
+    Top = 269
     Width = 265
     Height = 94
     Margins.Left = 2
@@ -247,7 +233,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce DCC na vstupu zesilova'#269'e '
-    TabOrder = 5
+    TabOrder = 4
     object Label1: TLabel
       Left = 8
       Top = 63
