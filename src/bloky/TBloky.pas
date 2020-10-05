@@ -644,6 +644,8 @@ end;
 procedure TBlky.OnBoosterChange(booster: string);
 var blk:TBlk;
 begin
+ if (not Self.enabled) then Exit();
+
  for blk in Self.data do
    if ((blk.typ = btUsek) or (blk.typ = btTU)) then
      if ((booster = '') or (TBlkUsek(blk).GetSettings().Zesil = booster)) then

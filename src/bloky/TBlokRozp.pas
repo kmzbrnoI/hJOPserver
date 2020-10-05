@@ -133,14 +133,22 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRozp.Enable();
+var rcsaddr: TRCSAddr;
+    enable: Boolean;
 begin
- if (RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board)) then
- begin
-  Self.RozpStav.rcsFailed := false;
-  Self.status := TRozpStatus.not_selected;
- end else begin
-  Self.RozpStav.rcsFailed := true;
+ enable := true;
+ try
+   for rcsaddr in Self.RozpSettings.RCSAddrs do
+     if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
+       enable := false;
+ except
+   enable := false;
  end;
+
+ Self.RozpStav.rcsFailed := not enable;
+
+ if (enable) then
+  Self.status := TRozpStatus.not_selected;
 end;
 
 procedure TBlkRozp.Disable();

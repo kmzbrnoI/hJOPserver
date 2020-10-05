@@ -469,22 +469,27 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.Enable();
-var rcsaddr:TRCSAddr;
+var rcsaddr: TRCSAddr;
+    enable: Boolean;
 begin
+ enable := true;
  try
    for rcsaddr in Self.UsekSettings.RCSAddrs do
-     if (not RCSi.IsModule(rcsaddr.board)) then
-       Exit();
+     if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
+       enable := false;
  except
-   Exit();
+   enable := false;
  end;
 
- Self.UsekStav.Stav    := none;
- Self.UsekStav.StavOld := none;
- Self.UsekStav.sekce.Clear();
- Self.UsekStav.neprofilJCcheck.Clear();
+ if (enable) then
+  begin
+   Self.UsekStav.Stav := none;
+   Self.UsekStav.StavOld := none;
+  end;
 
  Self.OnBoosterChange();
+ Self.UsekStav.sekce.Clear();
+ Self.UsekStav.neprofilJCcheck.Clear();
 
  Self.Update();
  //change event will be called in Update();
@@ -795,9 +800,6 @@ end;
 procedure TBlkUsek.SetZkrat(state:TBoosterSignal);
 var oblr:TOR;
 begin
- if (Self.Obsazeno = TUsekStav.disabled) then
-   Exit();
-
  if (Self.frozen) then
    Self.last_zes_zkrat := state;
 
@@ -834,8 +836,6 @@ end;
 
 procedure TBlkUsek.SetNapajeni(state:TBoosterSignal);
 begin
- if (Self.Obsazeno = TUsekStav.disabled) then
-   Exit();
  if (Self.UsekStav.napajeni = state) then
    Exit();
 
@@ -849,8 +849,6 @@ end;
 
 procedure TBlkUsek.SetDCC(state:boolean);
 begin
- if (Self.Obsazeno = TUsekStav.disabled) then
-   Exit();
  if (state = Self.Stav.DCC) then
    Exit();
 

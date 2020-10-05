@@ -103,14 +103,22 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIR.Enable();
+var enable: Boolean;
 begin
- Self.IRStav.Stav := none;
+ try
+   enable := (Self.IRSettings.RCSAddrs.Count > 0) and (RCSi.IsNonFailedModule(Self.IRSettings.RCSAddrs[0].board));
+ except
+   enable := false;
+ end;
+
+ if (enable) then
+   Self.IRStav.Stav := none;
  Self.Update();   //will call change
 end;
 
 procedure TBlkIR.Disable();
 begin
- Self.IRStav.Stav    := disabled;
+ Self.IRStav.Stav := disabled;
  Self.IRStav.StavOld := disabled;
  Self.Change(true);
 end;

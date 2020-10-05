@@ -423,20 +423,27 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.Enable();
+var rcsaddr: TRCSAddr;
+    enable: Boolean;
 begin
  if (Self.Navest <> ncDisabled) then
    Exit(); // skip already enabled block
 
+ enable := true;
  try
-   if ((Self.NavSettings.RCSAddrs.Count > 0) and
-       (not RCSi.IsModule(Self.NavSettings.RCSAddrs[0].board))) then
-     Exit();
+   for rcsaddr in Self.NavSettings.RCSAddrs do
+     if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
+       enable := false;
  except
-   Exit();
+   enable := false;
  end;
 
- Self.NavStav.Navest := ncStuj;
- Self.NavStav.navest_old := ncStuj;
+ if (enable) then
+  begin
+   Self.NavStav.Navest := ncStuj;
+   Self.NavStav.navest_old := ncStuj;
+  end;
+
  Self.NavStav.toRnz.Clear();
  Self.UnregisterAllEvents();
  Self.Change();

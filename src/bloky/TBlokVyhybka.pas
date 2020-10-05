@@ -360,24 +360,28 @@ end;
 procedure TBlkVyhybka.Enable();
 var rcsaddr:TRCSAddr;
     i:Integer;
+    enable: Boolean;
 begin
- if (Self.VyhSettings.RCSAddrs.Count < 4) then
-   Exit();
+ enable := (Self.VyhSettings.RCSAddrs.Count >= 4);
+
  if (Self.detekcePolohy) then
   begin
    for rcsaddr in Self.VyhSettings.RCSAddrs do
-     if (not RCSi.IsModule(rcsaddr.board)) then
-       Exit();
+     if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
+       enable := false;
   end else begin
    for i := 2 to Self.VyhSettings.RCSAddrs.Count-1 do
-     if (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[i].board)) then
-       Exit();
+     if (not RCSi.IsNonFailedModule(Self.VyhSettings.RCSAddrs[i].board)) then
+       enable := false;
   end;
 
- if (Self.detekcePolohy) then
-   Self.VyhStav.poloha := none
- else
-   Self.VyhStav.poloha := Self.VyhStav.polohaSave;
+ if (enable) then
+  begin
+   if (Self.detekcePolohy) then
+     Self.VyhStav.poloha := none
+   else
+     Self.VyhStav.poloha := Self.VyhStav.polohaSave;
+  end;
 
  Self.MapNpEvents();
  Self.Update(); //update will call Change()

@@ -303,7 +303,7 @@ var module:Cardinal;
 begin
  try
    for module in Self.PrjStav.rcsModules do
-     if (not RCSi.IsModule(module)) then
+     if (not RCSi.IsNonFailedModule(module)) then
        Exit();
  except
    Exit();
