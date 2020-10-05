@@ -1480,6 +1480,8 @@ var i,j:Integer;
           Inc(stavim);
          end;
 
+        // Warning: this may call callback directly
+        // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
         vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha),
                           true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        end;
@@ -1508,6 +1510,8 @@ var i,j:Integer;
         usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
           CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, odvratZaver.Blok));
 
+        // Warning: this may call callback directly
+        // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
         vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
                           true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        end;
@@ -3405,9 +3409,12 @@ var i:Integer;
 begin
  { Pozor: muze se stat, ze nektera z vyhybek, ktere jeste nejsou prestavovany,
    je behem staveni JC prestavena externim zdrojem. Je treba na to pamatovat.
+
    Pozor: i ty vyhybky, ktere pri staveni nebyly explicitne zamknuty, se samy
    zamknou pri udeleni zaveru na usek. Nelze tedy vyhybky rozlisovat podle
    zamknuti.
+
+   Pozor: tato funkce muze volat sama sebe rekurzivne skrze callback.
  }
 
  if (Self.fstaveni.nextVyhybka < 0) then Exit();
