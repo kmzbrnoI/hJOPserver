@@ -570,6 +570,8 @@ begin
      Self.UsekStav.sekce.Add(TUsekStav.none);
   end;
 
+ Self.UsekStav.Stav := uvolneno; // must be here to update booster state
+
  for i := 0 to Self.UsekSettings.RCSAddrs.Count-1 do
   begin
    try
@@ -577,8 +579,6 @@ begin
    except
      state := failure;
    end;
-
-   Self.UsekStav.Stav := uvolneno; // must be here to update booster state
 
    case (state) of
     isOn  : Self.UsekStav.sekce[i] := TUsekStav.obsazeno;
@@ -592,8 +592,8 @@ begin
 
  if (Self.UsekStav.Stav <> TUsekStav.disabled) then
    for usekStav in Self.UsekStav.sekce do
-    if (usekStav = TUsekStav.obsazeno) then
-      Self.UsekStav.Stav := TUsekStav.obsazeno;
+     if (usekStav = TUsekStav.obsazeno) then
+        Self.UsekStav.Stav := TUsekStav.obsazeno;
 
  // reseni vypadku soupravy
  // pad soupravy z bloku az po urcitem case - aby se jizdni ceste nechal cas na zpracovani pohybu soupravy
