@@ -41,7 +41,9 @@ type
 
   public
 
-    constructor Create();
+    constructor Create(); overload;
+    constructor Create(abs: string; rel: string); overload;
+    constructor Create(json: TJsonObject); overload;
     destructor Destroy(); override;
 
     property rel_enabled: boolean read prel_enabled write prel_enabled;
@@ -69,7 +71,7 @@ procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
 
 implementation
 
-uses ModelovyCas, timeHelper;
+uses ModelovyCas, timeHelper, DateUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -79,6 +81,46 @@ begin
  Self.prel_enabled := false;
  Self.pabs_enabled := false;
  Self.porigin_set  := false;
+end;
+
+constructor TPOdj.Create(abs: string; rel: string);
+begin
+ Self.Create();
+
+ if (abs <> '') then
+  begin
+   if (ModCas.used) then
+     Self.abs := ModCas.date + StrToTime(abs)
+   else
+     Self.abs := Date() + StrToTime(abs);
+
+   if (Self.abs < timeHelper.hJOPNow()) then
+     Self.abs := IncDay(Self.abs);
+  end;
+
+ if (rel <> '') then
+   Self.rel := StrToTime('00:'+rel);
+end;
+
+constructor TPOdj.Create(json: TJsonObject);
+var dt: TDateTime;
+begin
+ Self.Create();
+
+ if (json.Contains('absolute')) then
+  begin
+   dt := json.D['absolute'];
+   if (dt < timeHelper.hJopNow()) then
+     raise Exception.Create('Nelze vytvoøit PODJ do minulosti!');
+   Self.abs := dt;
+  end;
+
+ if (json.Contains('relative')) then
+  begin
+   dt := json.D['relative'];
+   ReplaceDate(dt, 0);
+   Self.rel := dt;
+  end;
 end;
 
 destructor TPOdj.Destroy();

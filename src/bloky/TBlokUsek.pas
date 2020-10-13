@@ -267,7 +267,7 @@ type
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    procedure PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
+    procedure POdjChanged(sprId:Integer; var podj:TPOdj);
     function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
     function PanelStateString():string; override;
 
@@ -2091,16 +2091,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.PanelPOdj(SenderPnl:TIdContext; sprId:Integer; var podj:TPOdj);
+procedure TBlkUsek.POdjChanged(sprId:Integer; var podj:TPOdj);
 var spr:Integer;
     was:boolean;
     nav:TBlk;
 begin
  if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.UsekStav.SprPredict)) then
-  begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava již není na úseku!');
-   Exit();
-  end;
+   raise Exception.Create('Souprava již není na úseku!');
 
  was := Soupravy[sprId].IsPOdj(Self);
 
@@ -2113,7 +2110,7 @@ begin
  if ((was) and (not Soupravy[sprId].IsPOdj(Self))) then
   begin
    // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
-   // aktuiualziaci rychlosti pro vsechny NavJCRef bychom nemeli nic pokazit
+   // aktualizaci rychlosti pro vsechny NavJCRef bychom nemeli nic pokazit
    for nav in Self.NavJCRef do
      TBlkNav(nav).UpdateRychlostSpr(true);
   end;

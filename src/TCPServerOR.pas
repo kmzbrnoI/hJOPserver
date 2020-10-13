@@ -159,7 +159,7 @@ implementation
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover, DateUtils, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
+      UDPDiscover, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
       TBlokRozp, TBlokIO, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -545,7 +545,6 @@ var i, j:Integer;
     found:boolean;
     btn:TPanelButton;
     podj: TPOdj;
-    dt: TDateTime;
     oblr:TOR;
     orRef:TTCPORsRef;
 begin
@@ -771,38 +770,18 @@ begin
   begin
    if (TTCPORsRef(AContext.Data).podj_usek <> nil) then
     begin
+     podj := nil;
      try
-       podj := TPodj.Create();
-       try
-         if (parsed[2] <> '') then
-          begin
-           if (ModCas.used) then
-            begin
-             podj.abs := ModCas.date + StrToTime(parsed[2]);
-             if (podj.abs < ModCas.time) then
-               podj.abs := IncDay(podj.abs);
-            end else begin
-             podj.abs := Date() + StrToTime(parsed[2]);
-             dt := Now;
-             ReplaceDate(dt, 0);
-             if (podj.abs < dt) then
-               podj.abs := IncDay(podj.abs);
-            end;
-          end;
-
-         if (parsed[3] <> '') then
-           podj.rel := StrToTime('00:'+parsed[3]);
-
-         (TTCPORsRef(AContext.Data).podj_usek as TBlkUsek).PanelPOdj(
-           AContext, TTCPORsRef(AContext.Data).podj_sprid, podj
-         );
-       finally
-         if (podj <> nil) then
-           podj.Free();
-       end;
+       podj := TPodj.Create(parsed[2], parsed[3]);
+       (TTCPORsRef(AContext.Data).podj_usek as TBlkUsek).POdjChanged(
+         TTCPORsRef(AContext.Data).podj_sprid, podj
+       ); // sets podj to nil if takes ownership
      except
-       Self.SendInfoMsg(AContext, 'Nepodařilo se nastavit předvídaný odjezd!');
+       on E:Exception do
+         Self.SendInfoMsg(AContext, 'Nepodařilo se nastavit předvídaný odjezd: '+E.Message);
      end;
+     if (podj <> nil) then
+       podj.Free();
 
      TTCPORsRef(AContext.Data).podj_usek := nil;
      TTCPORsRef(AContext.Data).podj_sprid := -1;

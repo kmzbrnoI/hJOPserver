@@ -2,7 +2,7 @@ unit ownStrUtils;
 
 interface
 
-uses Character, SysUtils, Classes;
+uses Character, SysUtils, Classes, StrUtils;
 
 function RemoveWhiteSpace(const s: string): string;
 procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
@@ -10,6 +10,8 @@ function RandomToken(len: Cardinal): string;
 
 function EscapeNewline(const orig: string): string;
 function DescapeNewline(const orig: string): string;
+
+function StrTillChar(str: string; char: Char): string;
 
 implementation
 
@@ -88,7 +90,7 @@ end;
 
 function EscapeNewline(const orig: string): string;
 begin
- Result :=  StringReplace(orig, #13#10, '\n', [rfReplaceAll]);
+ Result := StringReplace(orig, #13#10, '\n', [rfReplaceAll]);
 end;
 
 function DescapeNewline(const orig: string): string;
@@ -97,5 +99,15 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function StrTillChar(str: string; char: Char): string;
+var endi: Integer;
+begin
+ endi := 1;
+ while ((endi <= Length(str)) and (str[endi] <> char)) do
+   Inc(endi);
+
+ Result := LeftStr(str, endi-1);
+end;
 
 end.//unit
