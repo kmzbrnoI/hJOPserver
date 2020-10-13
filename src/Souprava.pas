@@ -1117,6 +1117,7 @@ end;
 
 procedure TSouprava.GetPtData(json: TJsonObject);
 var addr: Integer;
+    blkId: Integer;
 begin
  json['name'] := Self.data.name;
  json['carsCount'] := Self.data.carsCount;
@@ -1144,6 +1145,9 @@ begin
  if (Self.data.stationTo <> nil) then
    json['stationTo'] := TOR(Self.data.stationTo).id;
  json['announcement'] := Self.data.announcement;
+
+ for blkId in Self.data.podj.Keys do
+   Self.data.podj[blkId].GetPtData(json.O['podj'].O[IntToStr(blkId)]);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@ unit predvidanyOdjezd;
 
 interface
 
-uses SysUtils, Graphics;
+uses SysUtils, Graphics, JsonDataObjects;
 
 type
   ENoTimeDefined = class(Exception);
@@ -60,6 +60,8 @@ type
     function DepTime():TTime;                                                   // vraci cas (modelovy nebo realny) odjezdu
     procedure RecordOriginNow();
     function GetPhase():TPobjPhase;
+
+    procedure GetPtData(json: TJsonObject);
 
   end;
 
@@ -226,6 +228,16 @@ procedure TPOdj.SetChanged(new:boolean);
 begin
  if (not new) then
    Self.pphase_old := Self.GetPhase();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TPOdj.GetPtData(json: TJsonObject);
+begin
+ if (Self.rel_enabled) then
+   json.D['relative'] := Self.rel;
+ if (Self.abs_enabled) then
+   json.D['absolute'] := Self.abs;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
