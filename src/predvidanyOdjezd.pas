@@ -11,6 +11,7 @@ uses SysUtils, Graphics, JsonDataObjects;
 type
   ENoTimeDefined = class(Exception);
   EOriginNotSet = class(Exception);
+  EInvalidTime = class(Exception);
 
   TPobjPhase = (ppGone, ppSoundLeave, ppGoingToLeave, ppPreparing, ppLongTime,  // faze, ve kterych muze byt cas odjezdu
                 ppTimeNotSet);
@@ -84,6 +85,7 @@ begin
 end;
 
 constructor TPOdj.Create(abs: string; rel: string);
+var dt: TDateTime;
 begin
  Self.Create();
 
@@ -99,7 +101,12 @@ begin
   end;
 
  if (rel <> '') then
-   Self.rel := StrToTime('00:'+rel);
+  begin
+   dt := StrToTime('00:'+rel);
+   if (dt = 0) then
+     raise EInvalidTime.Create('PODJ nemùže být 0s!');
+   Self.rel := dt;
+  end;
 end;
 
 constructor TPOdj.Create(json: TJsonObject);
@@ -111,14 +118,15 @@ begin
   begin
    dt := json.D['absolute'];
    if (dt < timeHelper.hJopNow()) then
-     raise Exception.Create('Nelze vytvoøit PODJ do minulosti!');
+     raise EInvalidTime.Create('Nelze vytvoøit PODJ do minulosti!');
    Self.abs := dt;
   end;
 
  if (json.Contains('relative')) then
   begin
-   dt := json.D['relative'];
-   ReplaceDate(dt, 0);
+   dt := StrToTime('00:'+json.S['relative']);
+   if (dt = 0) then
+     raise EInvalidTime.Create('PODJ nemùže být 0s!');
    Self.rel := dt;
   end;
 end;
@@ -277,7 +285,7 @@ end;
 procedure TPOdj.GetPtData(json: TJsonObject);
 begin
  if (Self.rel_enabled) then
-   json.D['relative'] := Self.rel;
+   json.S['relative'] := FormatDateTime('nn:ss', Self.rel);
  if (Self.abs_enabled) then
    json.D['absolute'] := Self.abs;
 end;
