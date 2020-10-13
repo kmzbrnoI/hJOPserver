@@ -1670,6 +1670,14 @@ begin
 
  for spr in Self.Soupravs do
    json.A['soupravy'].Add(Soupravy[spr].name);
+
+ json['zaver'] := Integer(Self.Stav.Zaver);
+ if (Self.UsekStav.SprPredict > -1) then
+   json['sprPredict'] := Soupravy[Self.UsekStav.SprPredict].name;
+ if (Self.UsekStav.NUZ) then
+   json['nuz'] := true;
+ if (Self.UsekStav.KonecJC <> TZaver.no) then
+   json['konecJC'] := Integer(Self.UsekStav.KonecJC);
 end;
 
 procedure TBlkUsek.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
