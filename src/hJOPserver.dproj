@@ -218,6 +218,7 @@
 			<DCCReference Include="pt\PTEndpoint.pas"/>
 			<DCCReference Include="pt\PTEndpointBlok.pas"/>
 			<DCCReference Include="pt\PTEndpointBloky.pas"/>
+			<DCCReference Include="pt\PTEndpointTrains.pas"/>
 			<DCCReference Include="pt\PTEndpointJC.pas"/>
 			<DCCReference Include="pt\PTUtils.pas"/>
 			<DCCReference Include="pt\PTEndpointLok.pas"/>
@@ -271,6 +272,7 @@
 			<DCCReference Include="bloky\TBlokUsekRef.pas"/>
 			<DCCReference Include="bloky\TBlokUsekRefs.pas"/>
 			<DCCReference Include="orLighting.pas"/>
+			<DCCReference Include="pt\PTEndpointTrain.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

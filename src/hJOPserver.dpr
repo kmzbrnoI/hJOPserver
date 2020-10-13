@@ -114,6 +114,7 @@ uses
   PTEndpoint in 'pt\PTEndpoint.pas',
   PTEndpointBlok in 'pt\PTEndpointBlok.pas',
   PTEndpointBloky in 'pt\PTEndpointBloky.pas',
+  PTEndpointTrains in 'pt\PTEndpointTrains.pas',
   PTEndpointJC in 'pt\PTEndpointJC.pas',
   PTUtils in 'pt\PTUtils.pas',
   PTEndpointLok in 'pt\PTEndpointLok.pas',
@@ -154,7 +155,8 @@ uses
   TBlokPrejezdLogic in 'bloky\TBlokPrejezdLogic.pas',
   TBlokUsekRef in 'bloky\TBlokUsekRef.pas',
   TBlokUsekRefs in 'bloky\TBlokUsekRefs.pas',
-  orLighting in 'orLighting.pas';
+  orLighting in 'orLighting.pas',
+  PTEndpointTrain in 'pt\PTEndpointTrain.pas';
 
 {$R *.res}
 

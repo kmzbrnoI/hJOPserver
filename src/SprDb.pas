@@ -4,7 +4,8 @@
 
 interface
 
-uses SysUtils, Souprava, IniFiles, Classes, Windows, Forms, Trakce;
+uses SysUtils, Souprava, IniFiles, Classes, Windows, Forms, Trakce,
+     JsonDataObjects;
 
 const
   _MAX_SPR = 128;
@@ -40,6 +41,8 @@ type
       procedure StopAllSpr();
       procedure ClearPOdj();
 
+      procedure GetPtData(json:TJsonObject);
+
       property filename:string read ffilename;
 
       property Items[index : integer] : TSouprava read GetItem; default;
@@ -53,7 +56,7 @@ var
 implementation
 
 uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, appEv, TBlok,
-     TCPServerOR;
+     TCPServerOR, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -258,6 +261,25 @@ begin
    if (Self.soupravy[i] = nil) then
      Exit(i);
  raise Exception.Create('Založen maximální počet souprav!');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSprDb.GetPtData(json:TJsonObject);
+var spr: TSouprava;
+begin
+ for spr in Self.soupravy do
+  begin
+   try
+     if (spr <> nil) then
+       spr.GetPtData(json.A['trains'].AddObject);
+   except
+     on E:Exception do
+       PTUtils.PtErrorToJson(json.A['errors'].AddObject,
+        '500', 'Chyba pri nacitani soupravy '+spr.name,
+        E.Message);
+   end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

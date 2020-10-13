@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo,
+uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, JsonDataObjects,
      Generics.Collections, predvidanyOdjezd, TBlok, Trakce;
 
 const
@@ -119,6 +119,8 @@ type
      function PredictedSignal(): TBlk;
      procedure OnPredictedSignalChange();
      procedure OnExpectedSpeedChange();
+
+     procedure GetPtData(json: TJsonObject);
 
      property index: Integer read findex;
      property sdata: TSoupravaData read data;
@@ -1109,6 +1111,39 @@ var addr: Integer;
 begin
  for addr in Self.HVs do
    HVDb[addr].OnExpectedSpeedChange();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TSouprava.GetPtData(json: TJsonObject);
+var addr: Integer;
+begin
+ json['name'] := Self.data.name;
+ json['carsCount'] := Self.data.carsCount;
+ if (Self.data.note <> '') then
+   json['note'] := Self.data.note;
+ json['length'] := Self.data.length;
+ json['type'] := Self.data.typ;
+ json['dirS'] := Self.data.dir_S;
+ json['dirL'] := Self.data.dir_L;
+
+ for addr in Self.data.HVs do
+   json.A['hvs'].Add(addr);
+
+ if (Self.data.station <> nil) then
+   json['station'] := TOR(Self.data.station).id;
+ json['speed'] := Self.data.speed;
+ json['wantedSpeed'] := Self.data.wantedSpeed;
+ if (Self.data.maxSpeed > 0) then
+   json['maxSpeed'] := Self.data.maxSpeed;
+ json['direction'] := Integer(Self.data.direction);
+ if (Self.data.front <> nil) then
+   json['front'] := TBlk(Self.data.front).id;
+ if (Self.data.stationFrom <> nil) then
+   json['stationFrom'] := TOR(Self.data.stationFrom).id;
+ if (Self.data.stationTo <> nil) then
+   json['stationTo'] := TOR(Self.data.stationTo).id;
+ json['announcement'] := Self.data.announcement;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

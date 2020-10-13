@@ -110,7 +110,7 @@ implementation
 uses Logging, appEv, fMain,
       PTEndpointBlok, PTEndpointBloky, PTEndpointBlokStav, PTEndpointJC,
       PTEndpointLok, PTEndpointLoks, PTEndpointLokStav, PTEndpointJCs,
-      PTEndpointJCStav;
+      PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -183,6 +183,8 @@ begin
  Self.endpoints.Add(TPTEndpointJCs.Create());
  Self.endpoints.Add(TPTEndpointJC.Create());
  Self.endpoints.Add(TPTEndpointJCStav.Create());
+ Self.endpoints.Add(TPTEndpointTrains.Create());
+ Self.endpoints.Add(TPTEndpointTrain.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
