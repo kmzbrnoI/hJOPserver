@@ -28,7 +28,7 @@ type
      procedure LoadFromDefString(data:string);
      function IsEnabled():boolean;
 
-     procedure FireEvent(Souprava:TObject);
+     procedure FireEvent(train: TObject);
 
    public
 
@@ -51,7 +51,7 @@ type
 
 implementation
 
-uses ownStrUtils, TechnologieTrakce, Souprava, TBlokUsek, SprDb, fMain,
+uses ownStrUtils, TechnologieTrakce, Train, TBlokUsek, TrainDb, fMain,
      THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,8 +136,8 @@ begin
  if (Self.m_event.IsTriggerred(Sender, false)) then
   begin
    Self.m_event.Unregister();
-   if (TBlkUsek(Sender).IsSouprava()) then
-     Self.FireEvent(TBlkUsek(Sender).SoupravaL);
+   if (TBlkUsek(Sender).IsTrain()) then
+     Self.FireEvent(TBlkUsek(Sender).trainL);
    Result := true;
   end else
    Result := false
@@ -152,12 +152,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THoukEv.FireEvent(Souprava:TObject);
+procedure THoukEv.FireEvent(train:TObject);
 begin
  case (Self.m_funcType) of
-   hftToggle : TSouprava(Souprava).ToggleHouk(Self.m_sound);
-   hftOn     : TSouprava(Souprava).SetHoukState(Self.m_sound, true);
-   hftOff    : TSouprava(Souprava).SetHoukState(Self.m_sound, false);
+   hftToggle : TTrain(train).ToggleHouk(Self.m_sound);
+   hftOn     : TTrain(train).SetHoukState(Self.m_sound, true);
+   hftOff    : TTrain(train).SetHoukState(Self.m_sound, false);
  end;
 end;
 

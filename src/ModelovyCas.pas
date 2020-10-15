@@ -82,7 +82,7 @@ var
 
 implementation
 
-uses TCPServerOR, fMain, SprDb, TBloky;
+uses TCPServerOR, fMain, TrainDb, TBloky;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -288,7 +288,7 @@ begin
        // Nejdriv smazeme pres bloky, pripadne pochybne stavy resime natvrdo
        // smazanim u soupravy. Mazani pres bloky zajisti volani Change().
        Blky.ClearPOdj();
-       Soupravy.ClearPOdj();
+       Trains.ClearPOdj();
       end;
 
      Self.fused := (parsed[5] = '1');

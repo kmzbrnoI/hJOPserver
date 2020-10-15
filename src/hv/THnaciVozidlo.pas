@@ -110,7 +110,7 @@ type
    traveled_forward: Real; // in meters
    traveled_backward: Real; // in meters
    funkce: TFunkce; // stav funkci tak, jak je chceme; uklada se do souboru
-   souprava: Integer; // index soupravy; -1 pokud neni na souprave
+   train: Integer; // index soupravy; -1 pokud neni na souprave
    stanice: TOR;
    regulators: TList<THVRegulator>; // seznam regulatoru -- klientu
    tokens: TList<THVToken>;
@@ -141,7 +141,7 @@ type
 
      procedure SetRuc(state:boolean);
      procedure UpdateFuncDict();
-     procedure SetSouprava(new:Integer);
+     procedure SetTrain(new:Integer);
 
      function GetSlotFunkce():TFunkce;
      function GetRealSpeed():Cardinal;
@@ -252,7 +252,7 @@ type
      property nazev: string read data.nazev;
      property ruc: Boolean read stav.ruc write SetRuc;
      property funcDict: TDictionary<string, Integer> read m_funcDict;
-     property souprava: Integer read stav.souprava write SetSouprava;
+     property train: Integer read stav.train write SetTrain;
      property speedStep: Byte read slot.step;
      property realSpeed: Cardinal read GetRealSpeed;
      property direction: Boolean read slot.direction;
@@ -271,7 +271,7 @@ type
 
 implementation
 
-uses ownStrUtils, TOblsRizeni, THVDatabase, SprDb, DataHV, fRegulator, TBloky,
+uses ownStrUtils, TOblsRizeni, THVDatabase, TrainDb, DataHV, fRegulator, TBloky,
       RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce,
       ownConvert, TBlokNav;
 
@@ -284,7 +284,7 @@ begin
  Self.Stav.regulators := TList<THVRegulator>.Create();
  Self.Stav.tokens     := TList<THVToken>.Create();
 
- Self.stav.souprava := -1;
+ Self.stav.train := -1;
  Self.stav.stanice := nil;
  Self.CSReset();
 
@@ -337,7 +337,7 @@ begin
  Self.Stav.regulators := TList<THVRegulator>.Create();
  Self.Stav.tokens     := TList<THVToken>.Create();
 
- Self.Stav.souprava := -1;
+ Self.Stav.train := -1;
  Self.Stav.stanice  := Sender;
  Self.Stav.last_used := Now;
 
@@ -559,7 +559,7 @@ procedure THV.SaveState(ini:TMemIniFile);
 var i:Integer;
     addr, str:string;
 begin
- if (Self.Stav.souprava > -1) then
+ if (Self.Stav.train > -1) then
    Self.RecordUseNow();
 
  addr := IntToStr(Self.adresa);
@@ -615,8 +615,8 @@ begin
  Result := Self.data.Nazev + '|' + Self.data.Majitel + '|' + Self.data.Oznaceni + '|{' + Self.data.Poznamka + '}|' +
            IntToStr(Self.adresa) + '|' + IntToStr(Integer(Self.data.typ)) + '|';
 
- if (Self.Stav.souprava > -1) then
-  Result := Result + Soupravy.GetSprNameByIndex(Self.Stav.souprava) + '|'
+ if (Self.Stav.train > -1) then
+  Result := Result + Trains.GetTrainNameByIndex(Self.Stav.train) + '|'
  else
   Result := Result + '-|';
 
@@ -795,8 +795,8 @@ begin
 
  Self.changed := true;
 
- if (Self.Stav.souprava > -1) then
-   Blky.ChangeSprToTrat(Soupravy[Self.Stav.souprava]);
+ if (Self.Stav.train > -1) then
+   Blky.ChangeTrainToTrat(Trains[Self.Stav.train]);
 
  str.Free();
  str2.Free();
@@ -810,21 +810,21 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THV.UpdateRuc(send_remove:boolean = true);
-var spr:string;
+var train:string;
 begin
- if (Self.Stav.souprava > -1) then
-  spr := Soupravy[Self.Stav.souprava].name
+ if (Self.Stav.train > -1) then
+  train := Trains[Self.Stav.train].name
  else
-  spr := '-';
+  train := '-';
 
  if (Self.stolen) then
   begin
    // loko ukradeno ovladacem
-   Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';MM. '+IntToStr(Self.adresa)+' ('+spr+')');
+   Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';MM. '+IntToStr(Self.adresa)+' ('+train+')');
    Exit();
   end else begin
    if (Self.ruc) then
-     Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';RUČ. '+IntToStr(Self.adresa)+' ('+spr+')')
+     Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';RUČ. '+IntToStr(Self.adresa)+' ('+train+')')
    else
      // loko neni v rucnim rizeni -> oznamit klientovi
      if (send_remove) then Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.adresa));
@@ -912,13 +912,13 @@ begin
   end else begin
    // loko je vyjmuto z rucniho rizeni
 
-   if (Self.Stav.souprava > -1) then
+   if (Self.Stav.train > -1) then
     begin
      // POM automatu
      if (Self.pom <> TPomStatus.pc) then
        Self.SetPom(TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
 
-     Soupravy[Self.souprava].speed := Soupravy[Self.souprava].speed; // tento prikaz nastavi rychlost
+     Trains[Self.train].speed := Trains[Self.train].speed; // tento prikaz nastavi rychlost
     end else begin
      // loko neni na souprave -> zkusit odhlasit
      Self.CheckRelease();
@@ -1097,7 +1097,7 @@ end;
 
 procedure THV.CheckRelease();
 begin
- if ((Self.Stav.souprava = -1) and (not Self.ruc) and (Self.Stav.regulators.Count = 0) and
+ if ((Self.Stav.train = -1) and (not Self.ruc) and (Self.Stav.regulators.Count = 0) and
      (not RegCollector.IsLoko(Self)) and (Self.acquired)) then
   begin
    Self.SetSpeed(0);
@@ -1113,12 +1113,12 @@ begin
  Self.changed := true;
 end;
 
-procedure THV.SetSouprava(new:Integer);
+procedure THV.SetTrain(new:Integer);
 begin
- if (new = Self.Souprava) then
+ if (new = Self.train) then
    Exit();
 
- Self.Stav.souprava := new;
+ Self.Stav.train := new;
 
  if (new = -1) then
   begin
@@ -1142,7 +1142,7 @@ end;
 
 function THV.ShouldAcquire():boolean;
 begin
- Result := ((Self.souprava > -1) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
+ Result := ((Self.train > -1) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1475,10 +1475,10 @@ begin
  RegCollector.LocoChanged(Sender, Self.adresa);
  Self.changed := true;
 
- if ((dirChanged) and (Self.souprava > -1)) then
-   if ((Sender <> Soupravy[Self.souprava]) and (Soupravy[Self.souprava] <> nil)) then
-     Soupravy[Self.souprava].LokDirChanged();
-     // Soupravy[HV.Stav.souprava] <> nil muze nastat pri aktualizaci HV na souprave,
+ if ((dirChanged) and (Self.train > -1)) then
+   if ((Sender <> Trains[Self.train]) and (Trains[Self.train] <> nil)) then
+     Trains[Self.train].LokDirChanged();
+     // Trains[HV.Stav.train] <> nil muze nastat pri aktualizaci HV na souprave,
      // coz se dede prave tady
 end;
 
@@ -1511,12 +1511,12 @@ begin
 
  // pokud ma souprava jasne dany smer, nastavime ho
  // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
- if ((Self.souprava > -1) and (not Self.ruc) and
-     (Soupravy[Self.souprava].sdata.dir_L xor Soupravy[Self.souprava].sdata.dir_S)) then
+ if ((Self.train > -1) and (not Self.ruc) and
+     (Trains[Self.train].sdata.dir_L xor Trains[Self.train].sdata.dir_S)) then
   begin
    // souprava ma zadany prave jeden smer
-   direction := ((Soupravy[Self.souprava].direction = THVStanoviste.sudy) xor (Self.stav.StanovisteA = THVStanoviste.sudy));
-   speedStep := TrakceI.Step(Soupravy[Self.souprava].speed);
+   direction := ((Trains[Self.train].direction = THVStanoviste.sudy) xor (Self.stav.StanovisteA = THVStanoviste.sudy));
+   speedStep := TrakceI.Step(Trains[Self.train].speed);
   end else begin
    direction := Self.slot.direction;
    if (Self.stolen) then
@@ -1564,8 +1564,8 @@ begin
  Self.changed := true;
  RegCollector.LocoChanged(Self, Self.adresa);
 
- if (Self.souprava > -1) then
-   Blky.ChangeUsekWithSpr(Soupravy[Self.souprava]);
+ if (Self.train > -1) then
+   Blky.ChangeUsekWithTrain(Trains[Self.train]);
 
  Self.UpdateRuc();
 
@@ -1746,8 +1746,8 @@ begin
  RegCollector.LocoChanged(Self, Self.adresa);
 
  TCPRegulator.LokStolen(Self);
- if (Self.souprava > -1) then
-   Blky.ChangeUsekWithSpr(Soupravy[Self.souprava]);
+ if (Self.train > -1) then
+   Blky.ChangeUsekWithTrain(Trains[Self.train]);
  Self.UpdateRuc();
 
  Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
@@ -1779,7 +1779,7 @@ end;
 
 function THV.IsSouprava(): Boolean;
 begin
- Result := (Self.souprava > -1) and (Soupravy[Self.souprava] <> nil);
+ Result := (Self.train > -1) and (Trains[Self.train] <> nil);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1802,7 +1802,7 @@ end;
 function THV.ExpectedSpeedStr(): string;
 begin
  if (Self.IsSouprava()) then
-   Result := IntToStr(Soupravy[Self.souprava].speed)
+   Result := IntToStr(Trains[Self.train].speed)
  else
    Result :=  '-';
 end;
@@ -1825,7 +1825,7 @@ var nav: TBlkNav;
 begin
  if (Self.IsSouprava()) then
   begin
-   nav := TBlkNav(Soupravy[Self.souprava].PredictedSignal());
+   nav := TBlkNav(Trains[Self.train].PredictedSignal());
    if (nav <> nil) then
     begin
      Result := nav.name + ';' + IntToStr(Integer(nav.cilovaNavest));

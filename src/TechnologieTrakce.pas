@@ -181,7 +181,7 @@ var
 
 implementation
 
-uses fMain, TechnologieRCS, fRegulator, SprDb, GetSystems, THVDatabase, DataHV,
+uses fMain, TechnologieRCS, fRegulator, TrainDb, GetSystems, THVDatabase, DataHV,
     TBloky, RegulatorTCP, TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////

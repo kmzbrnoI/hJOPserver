@@ -102,7 +102,7 @@ type
 implementation
 
 uses GetSystems, TBloky, Graphics, Diagnostics, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka;
+    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlokVyhybka;
 
 constructor TBlkZamek.Create(index:Integer);
 begin

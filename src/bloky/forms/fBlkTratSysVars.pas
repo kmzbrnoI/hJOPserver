@@ -48,13 +48,13 @@ implementation
 
 {$R *.dfm}
 
-uses ownConvert, SprDb;
+uses ownConvert, TrainDb;
 
 procedure TF_BlkTrat_tech.B_AddSprClick(Sender: TObject);
 begin
  try
-   if (Soupravy[Self.SE_Spr_Add.Value] <> nil) then
-     Self.trat.AddSpr(Soupravy[Self.SE_Spr_Add.Value]);
+   if (Trains[Self.SE_Spr_Add.Value] <> nil) then
+     Self.trat.AddTrain(Trains[Self.SE_Spr_Add.Value]);
  except
    on E:Exception do
      Application.MessageBox(PChar('Výjimka:'+#13#10+E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
@@ -82,8 +82,8 @@ end;
 
 procedure TF_BlkTrat_tech.B_RmSprClick(Sender: TObject);
 begin
- if (Soupravy[Self.SE_Spr_Add.Value] <> nil) then
-   Self.trat.RemoveSpr(Soupravy[Self.SE_Spr_Add.Value]);
+ if (Trains[Self.SE_Spr_Add.Value] <> nil) then
+   Self.trat.RemoveTrain(Trains[Self.SE_Spr_Add.Value]);
  Self.Update();
 end;
 
@@ -101,20 +101,20 @@ begin
 end;
 
 procedure TF_BlkTrat_tech.Update();
-var spr:TBlkTratSouprava;
+var train:TBlkTratTrain;
 begin
  Self.CB_Zaver.ItemIndex  := ownConvert.BoolToInt(trat.Zaver);
  Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;
  Self.CB_Zadost.ItemIndex := ownConvert.BoolToInt(trat.Zadost);
 
- if (trat.SprPredict <> nil) then
-   Self.SE_Souprava.Value := trat.SprPredict.soupravai
+ if (trat.trainPredict <> nil) then
+   Self.SE_Souprava.Value := trat.trainPredict.traini
  else
    Self.SE_Souprava.Value := -1;
 
  Self.E_Soupravy.Text := '';
- for spr in trat.stav.soupravy do
-   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(spr.souprava.index)+',';
+ for train in trat.stav.trains do
+   Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(train.train.index)+',';
 end;
 
 procedure TF_BlkTrat_tech.Save();
@@ -124,9 +124,9 @@ begin
  trat.Zadost := ownConvert.IntToBool(CB_Zadost.ItemIndex);
 
  if (Self.SE_Souprava.Value = -1) then
-   trat.SprPredict := nil
+   trat.trainPredict := nil
  else
-   trat.SprPredict := TBlkTratSouprava.Create(Self.SE_Souprava.Value);
+   trat.trainPredict := TBlkTratTrain.Create(Self.SE_Souprava.Value);
 end;
 
 end.//unit

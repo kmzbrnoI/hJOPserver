@@ -12,7 +12,7 @@ interface
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
      IdContext, TBlok, ComCtrls, IdSync, TBloky, UPO, TCPORsRef,
-     User, Souprava, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
+     User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
   _PANEL_DEFAULT_PORT = 5896;                                                   // default port, na ktere bezi server
@@ -112,7 +112,7 @@ type
      procedure PotvrOrInfoClose(AContext: TIdContext; mode: string; msg:string = '');
      procedure UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
      procedure CancelUPO(AContext: TIdContext; ref:TObject);
-     procedure POdj(AContext: TIdContext; SenderBlk:TBlk; SenderSprId:Integer;
+     procedure POdj(AContext: TIdContext; SenderBlk:TBlk; SenderTrainId:Integer;
                     podj:TPOdj = nil);
 
      // Tyto funkce take muzou byt volany z oblasti rizeni, protoze nemusi byt
@@ -145,7 +145,7 @@ type
      function GetClient(index:Integer):TORTCPClient;
      procedure DisconnectRegulatorUser(user:TUser);
      function StrToPanelButton(button:string):TPanelButton;
-     procedure OnRemoveSpr(spr:TSouprava);
+     procedure OnRemoveTrain(train:TTrain);
 
       property openned:boolean read IsOpenned;
       property port:Word read fport write fport;
@@ -157,7 +157,7 @@ var
 implementation
 
 uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
-      TBlokPrejezd, Logging, ModelovyCas, SprDb, TechnologieTrakce, FileSystem,
+      TBlokPrejezd, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
       TBlokRozp, TBlokIO, ownConvert;
@@ -724,18 +724,18 @@ begin
   begin
    tmp := '';
    for oblr in orRef.ORs do
-     tmp := tmp + oblr.PanelGetSprs(AContext);
+     tmp := tmp + oblr.PanelGetTrains(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
 
  else if (parsed[1] = 'SPR-REMOVE') then
   begin
-   i := Soupravy.GetSprIndexByName(parsed[2]);
-   if (i >= 0) then (Soupravy[i].station as TOR).PanelRemoveSpr(AContext, i);
+   i := Trains.GetTrainIndexByName(parsed[2]);
+   if (i >= 0) then (Trains[i].station as TOR).PanelRemoveTrain(AContext, i);
 
    tmp := '';
    for oblr in orRef.ORs do
-    tmp := tmp + oblr.PanelGetSprs(AContext);
+    tmp := tmp + oblr.PanelGetTrains(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
 
@@ -774,7 +774,7 @@ begin
      try
        podj := TPodj.Create(parsed[2], parsed[3]);
        (TTCPORsRef(AContext.Data).podj_usek as TBlkUsek).POdjChanged(
-         TTCPORsRef(AContext.Data).podj_sprid, podj
+         TTCPORsRef(AContext.Data).podj_trainid, podj
        ); // sets podj to nil if takes ownership
      except
        on E:Exception do
@@ -784,7 +784,7 @@ begin
        podj.Free();
 
      TTCPORsRef(AContext.Data).podj_usek := nil;
-     TTCPORsRef(AContext.Data).podj_sprid := -1;
+     TTCPORsRef(AContext.Data).podj_trainid := -1;
     end;
  end else if (parsed[1] = 'AC') then
   begin
@@ -874,7 +874,7 @@ begin
   begin
    parsed.Delete(0);
    parsed.Delete(0);
-   oblr.PanelSprChange(AContext, parsed);
+   oblr.PanelTrainChange(AContext, parsed);
   end
 
  else if (parsed[1] = 'LOK-MOVE-OR') then
@@ -1113,7 +1113,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.POdj(AContext: TIdContext; SenderBlk:TBlk;
-                            SenderSprId:Integer; podj:TPOdj = nil);
+                            SenderTrainId:Integer; podj:TPOdj = nil);
 var str:string;
 begin
  str := '-;PODJ;';
@@ -1127,7 +1127,7 @@ begin
  str := str + ';';
 
  (AContext.Data as TTCPORsRef).podj_usek := SenderBlk;
- (AContext.Data as TTCPORsRef).podj_sprid := SenderSprId;
+ (AContext.Data as TTCPORsRef).podj_trainid := SenderTrainId;
 
  Self.SendLn(AContext, str);
 end;
@@ -1476,12 +1476,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORTCPServer.OnRemoveSpr(spr:TSouprava);
+procedure TORTCPServer.OnRemoveTrain(train:TTrain);
 var i:Integer;
 begin
  for i := 0 to _MAX_OR_CLIENTS-1 do
-   if ((Self.clients[i] <> nil) and (TTCPORsRef(Self.clients[i].conn.Data).spr_edit = spr)) then
-     TTCPORsRef(Self.clients[i].conn.Data).ResetSpr();
+   if ((Self.clients[i] <> nil) and (TTCPORsRef(Self.clients[i].conn.Data).train_edit = train)) then
+     TTCPORsRef(Self.clients[i].conn.Data).ResetTrains();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

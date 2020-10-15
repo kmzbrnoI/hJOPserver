@@ -49,7 +49,7 @@ var
 
 implementation
 
-uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, SprDb, TCPORsRef, Logging,
+uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, TrainDb, TCPORsRef, Logging,
      fRegulator, fMain, TOblRizeni, TOblsRizeni, TechnologieTrakce, ownConvert;
 
 
@@ -549,7 +549,7 @@ begin
  if (not pom) then
   begin
    reg.conn := Regulator;
-   HV.ruc   := HV.ruc or (HV.Stav.souprava = -1);
+   HV.ruc   := HV.ruc or (HV.Stav.train = -1);
    reg.root := (Regulator.Data as TTCPORsRef).regulator_user.root;
    HV.Stav.regulators.Add(reg);
   end;

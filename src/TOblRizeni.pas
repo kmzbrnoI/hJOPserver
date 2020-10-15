@@ -157,9 +157,9 @@ type
 
       procedure SetIndex(newIndex:Integer);
 
-      procedure PanelSprChangeOk(Sender:TObject; Data:Pointer);
-      procedure PanelSprChangeErr(Sender:TObject; Data:Pointer);
-      procedure PanelSprCreateErr(Sender:TObject; Data:Pointer);
+      procedure PanelTrainChangeOk(Sender:TObject; Data:Pointer);
+      procedure PanelTrainChangeErr(Sender:TObject; Data:Pointer);
+      procedure PanelTrainCreateErr(Sender:TObject; Data:Pointer);
 
       procedure OsvSet(id:string; state:boolean);
 
@@ -213,8 +213,8 @@ type
           sound:Integer; loop:boolean = false);
       procedure BlkRemoveSound(Sender:TObject; sound:Integer);                  // zrusi prehravani zvuku
       procedure BlkWriteError(Sender:TObject; error:string; system:string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
-      procedure BlkNewSpr(Sender:TObject; Panel:TIdContext; sprUsekIndex:Integer); // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
-      procedure BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TObject);// posle do panelu pozadavek na otevreni dialogu editace soupravy
+      procedure BlkNewTrain(Sender:TObject; Panel:TIdContext; trainUsekIndex:Integer); // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
+      procedure BlkEditTrain(Sender:TObject; Panel:TIdContext; train:TObject);// posle do panelu pozadavek na otevreni dialogu editace soupravy
 
       function ORSendMsg(Sender:TOR; msg:string):Byte;                          // odesle zpravu OR (od jine OR)
 
@@ -234,7 +234,7 @@ type
       procedure PanelEscape(Sender:TIdContext);
       procedure PanelMessage(Sender:TIdContext; recepient:string; msg:string);
       procedure PanelHVList(Sender:TIdContext);
-      procedure PanelSprChange(Sender:TIdContext; spr:TStrings);
+      procedure PanelTrainChange(Sender:TIdContext; trainstr:TStrings);
       procedure PanelMoveLok(Sender:TIdContext; lok_addr:word; new_or:string);
       procedure PanelZAS(Sender:TIdContext; str:TStrings);
       procedure PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
@@ -246,8 +246,8 @@ type
       procedure PanelHVRemove(Sender:TIDContext; addr:Integer);
       procedure PanelHVEdit(Sender:TIDContext; str:string);
 
-      function PanelGetSprs(Sender:TIdCOntext):string;
-      procedure PanelRemoveSpr(Sender:TIDContext; spr_index:Integer);
+      function PanelGetTrains(Sender:TIdCOntext):string;
+      procedure PanelRemoveTrain(Sender:TIDContext; train_index:Integer);
 
       function GetORPanel(conn:TIdContext; var ORPanel:TORPanel):Integer;
       class function GetRightsString(rights:TORControlRights):string;
@@ -283,12 +283,10 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain, Logging,
-     TechnologieJC, TJCDatabase, ownConvert, TCPServerOR,
-     TOblsRizeni, TBlok, THVDatabase, SprDb,
-     UserDb, THnaciVozidlo, Trakce, User, TCPORsRef,
-     fRegulator, RegulatorTCP, ownStrUtils, Souprava,
-     changeEvent, TechnologieTrakce;
+uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain, Logging, TechnologieJC,
+     TJCDatabase, ownConvert, TCPServerOR, TOblsRizeni, TBlok, THVDatabase, TrainDb,
+     UserDb, THnaciVozidlo, Trakce, User, TCPORsRef, fRegulator, RegulatorTCP,
+     ownStrUtils, Train, changeEvent, TechnologieTrakce;
 
 constructor TOR.Create(index:Integer);
 begin
@@ -457,20 +455,20 @@ begin
   ORTCPServer.DeleteSound(Self.Connected[i].Panel, sound);
 end;
 
-procedure TOR.BlkNewSpr(Sender:TObject; Panel:TIdContext; sprUsekIndex:Integer);
+procedure TOR.BlkNewTrain(Sender:TObject; Panel:TIdContext; trainUsekIndex:Integer);
 begin
- TTCPORsRef(Panel.Data).spr_new_usek_index := sprUsekIndex;
- TTCPORsRef(Panel.Data).spr_usek := Sender;
+ TTCPORsRef(Panel.Data).train_new_usek_index := trainUsekIndex;
+ TTCPORsRef(Panel.Data).train_usek := Sender;
  ORTCPServer.SendLn(Panel, Self.id+';SPR-NEW;');
 end;
 
-procedure TOR.BlkEditSpr(Sender:TObject; Panel:TIdContext; Souprava:TObject);
+procedure TOR.BlkEditTrain(Sender:TObject; Panel:TIdContext; train:TObject);
 begin
- TTCPORsRef(Panel.Data).spr_new_usek_index := -1;
- TTCPORsRef(Panel.Data).spr_edit := TSouprava(Souprava);
- TTCPORsRef(Panel.Data).spr_usek := Sender;
+ TTCPORsRef(Panel.Data).train_new_usek_index := -1;
+ TTCPORsRef(Panel.Data).train_edit := TTrain(train);
+ TTCPORsRef(Panel.Data).train_usek := Sender;
 
- ORTCPServer.SendLn(Panel, Self.id+';'+'SPR-EDIT;'+TSouprava(Souprava).GetPanelString());
+ ORTCPServer.SendLn(Panel, Self.id+';'+'SPR-EDIT;'+TTrain(train).GetPanelString());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -847,9 +845,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelSprChange(Sender:TIdContext; spr:TStrings);
+procedure TOR.PanelTrainChange(Sender:TIdContext; trainstr:TStrings);
 var usek:TBlkUsek;
-    souprava:TSouprava;
+    train:TTrain;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -858,40 +856,44 @@ begin
    Exit();
   end;
 
- if ((TTCPORsRef(Sender.Data).spr_new_usek_index = -1) and (TTCPORsRef(Sender.Data).spr_edit = nil)) then
+ if ((TTCPORsRef(Sender.Data).train_new_usek_index = -1) and (TTCPORsRef(Sender.Data).train_edit = nil)) then
   begin
    ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Žádná souprava k editaci / neplatný úsek pro vytvoření soupravy');
    Exit();
   end;
 
  try
-  if (TTCPORsRef(Sender.Data).spr_new_usek_index > -1) then
+  if (TTCPORsRef(Sender.Data).train_new_usek_index > -1) then begin
     // nova souprava
-    Soupravy.AddSprFromPanel(spr, TTCPORsRef(Sender.Data).spr_usek, Self,
-                             (TTCPORsRef(Sender.Data).spr_new_usek_index),
-                             TTrakce.Callback(Self.PanelSprChangeOk, Sender),
-                             TTrakce.Callback(Self.PanelSprCreateErr, Sender))
-  else begin
+    Trains.AddTrainFromPanel(
+      trainstr, TTCPORsRef(Sender.Data).train_usek, Self,
+      (TTCPORsRef(Sender.Data).train_new_usek_index),
+      TTrakce.Callback(Self.PanelTrainChangeOk, Sender),
+      TTrakce.Callback(Self.PanelTrainCreateErr, Sender)
+    );
+  end else begin
 
    // editace soupravy
-   usek := (TTCPORsRef(Sender.Data).spr_usek as TBlkUsek);
-   souprava := TTCPORsRef(Sender.Data).spr_edit;
+   usek := (TTCPORsRef(Sender.Data).train_usek as TBlkUsek);
+   train := TTCPORsRef(Sender.Data).train_edit;
 
-   if (not usek.IsSouprava(TTCPORsRef(Sender.Data).spr_edit.index)) then
+   if (not usek.IsTrain(TTCPORsRef(Sender.Data).train_edit.index)) then
     begin
      ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava již není na úseku');
      Exit();
     end;
 
-   if ((souprava.front <> usek) and (souprava.wantedSpeed > 0)) then
+   if ((train.front <> usek) and (train.wantedSpeed > 0)) then
     begin
      ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Nelze editovat soupravu, která odjela a je v pohybu');
      Exit();
     end;
 
-   TTCPORsRef(Sender.Data).spr_edit.UpdateSprFromPanel(spr, usek, Self,
-                                                       TTrakce.Callback(Self.PanelSprChangeOk, Sender),
-                                                       TTrakce.Callback(Self.PanelSprChangeErr, Sender))
+   TTCPORsRef(Sender.Data).train_edit.UpdateTrainFromPanel(
+      trainstr, usek, Self,
+      TTrakce.Callback(Self.PanelTrainChangeOk, Sender),
+      TTrakce.Callback(Self.PanelTrainChangeErr, Sender)
+   );
   end;
  except
   on E: Exception do
@@ -899,22 +901,22 @@ begin
  end;
 end;
 
-procedure TOR.PanelSprChangeOk(Sender:TObject; Data:Pointer);
+procedure TOR.PanelTrainChangeOk(Sender:TObject; Data:Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
- TTCPORsRef(tcpSender.data).ResetSpr();
+ TTCPORsRef(tcpSender.data).ResetTrains();
  ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ACK;');
 end;
 
-procedure TOR.PanelSprChangeErr(Sender:TObject; Data:Pointer);
+procedure TOR.PanelTrainChangeErr(Sender:TObject; Data:Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
  ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ERR;Nepodařilo se převzít lokomotivy z centrály!');
 end;
 
-procedure TOR.PanelSprCreateErr(Sender:TObject; Data:Pointer);
+procedure TOR.PanelTrainCreateErr(Sender:TObject; Data:Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
@@ -937,22 +939,23 @@ begin
  if (new = nil) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'Tato OR neexistuje!');
-   Exit;
+   Exit();
   end;
  if (not Assigned(HVDb[lok_addr])) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' neexistuje!');
-   Exit;
+   Exit();
   end;
- if (HVDb[lok_addr].Stav.souprava > -1) then
+ if (HVDb[lok_addr].Stav.train > -1) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' přiřazeno soupravě '+Soupravy.GetSprNameByIndex(HVDb[lok_addr].Stav.souprava)+'!');
-   Exit;
+   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' přiřazeno soupravě '+
+        Trains.GetTrainNameByIndex(HVDb[lok_addr].Stav.train)+'!');
+   Exit();
   end;
  if (HVDb[lok_addr].Stav.stanice <> Self) then
   begin
    ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' nepatří této stanici!');
-   Exit;
+   Exit();
   end;
 
  HVDb[lok_addr].PredejStanici(new);
@@ -1362,7 +1365,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TOR.PanelGetSprs(Sender:TIdCOntext):string;
+function TOR.PanelGetTrains(Sender:TIdCOntext):string;
 var i:Integer;
 begin
  //kontrola opravneni klienta
@@ -1373,15 +1376,15 @@ begin
   end;
 
  Result := '{';
- for i := 0 to _MAX_SPR-1 do
-   if ((Assigned(Soupravy[i])) and (Soupravy[i].station = Self)) then
-    Result := Result + '[{' + Soupravy[i].GetPanelString() + '}]';
+ for i := 0 to _MAX_TRAIN-1 do
+   if ((Assigned(Trains[i])) and (Trains[i].station = Self)) then
+    Result := Result + '[{' + Trains[i].GetPanelString() + '}]';
  Result := Result + '}';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelRemoveSpr(Sender:TIDContext; spr_index:integer);
+procedure TOR.PanelRemoveTrain(Sender:TIDContext; train_index:integer);
 begin
  //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
@@ -1390,9 +1393,9 @@ begin
    Exit();
   end;
 
- if ((Soupravy[spr_index] <> nil) and (Soupravy[spr_index].station = Self)) then
+ if ((Trains[train_index] <> nil) and (Trains[train_index].station = Self)) then
   begin
-   Soupravy.RemoveSpr(spr_index);
+   Trains.RemoveTrain(train_index);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava smazána');
    Exit();
   end;
@@ -1555,7 +1558,7 @@ var data:TStrings;
     rights:TORControlRights;
     line:string;
     Blk:TBlk;
-    spri:Integer;
+    traini:Integer;
 begin
 //  or;LOK-REQ;PLEASE;addr1|addr2|...       - zadost o vydani tokenu
 //  or;LOK-REQ;PLEASE-U;blk_id              - zadost o vydani tokenu pro vozidla soupravy na danem techologickem bloku
@@ -1704,7 +1707,7 @@ begin
    Self.ORStav.reg_please := nil;
   end
 
-//  or;LOK-REQ;U-PLEASE;blk_id;spr_index      - zadost o vydani seznamu hnacich vozidel na danem useku
+//  or;LOK-REQ;U-PLEASE;blk_id;train_index      - zadost o vydani seznamu hnacich vozidel na danem useku
 //  mozne odpovedi:
 //    or;LOK-REQ;U-OK;[hv1][hv2]...           - seznamu hnacich vozidel v danem useku
 //    or;LOK-REQ;U-ERR;info                   - chyba odpoved na pozadavek na seznam loko v danem useku
@@ -1719,17 +1722,17 @@ begin
        Exit();
       end;
 
-     if (not (Blk as TBlkUsek).IsSouprava()) then
+     if (not (Blk as TBlkUsek).IsTrain()) then
       begin
        ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Žádná souprava na bloku');
        Exit();
       end;
 
-     spri := -1;
+     traini := -1;
      if (str.Count > 4) then
       begin
-       spri := StrToIntDef(str[4], -1);
-       if ((spri < -1) or (spri >= (Blk as TBlkUsek).Soupravs.Count)) then
+       traini := StrToIntDef(str[4], -1);
+       if ((traini < -1) or (traini >= (Blk as TBlkUsek).trains.Count)) then
         begin
          ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Tato souprava na úseku neexistuje');
          Exit();
@@ -1738,15 +1741,15 @@ begin
 
      // generujeme zpravu s tokeny
      line := Self.id+';LOK-REQ;U-OK;{';
-     if (spri = -1) then
+     if (traini = -1) then
       begin
        // vsechny soupravy na useku
-       for j := 0 to (Blk as TBlkUsek).Soupravs.Count-1 do
-         for addr in Soupravy[(Blk as TBlkUsek).Soupravs[j]].HVs do
+       for j := 0 to (Blk as TBlkUsek).trains.Count-1 do
+         for addr in Trains[(Blk as TBlkUsek).trains[j]].HVs do
            line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end else begin
        // konkretni souprava
-       for addr in Soupravy[(Blk as TBlkUsek).Soupravs[spri]].HVs do
+       for addr in Trains[(Blk as TBlkUsek).trains[traini]].HVs do
          line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end;
 

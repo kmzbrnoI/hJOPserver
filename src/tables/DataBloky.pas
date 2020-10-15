@@ -36,7 +36,7 @@ var
 implementation
 
 uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokNav, TBlokIR, TBlokPrejezd,
-      fMain, TBlokTrat, TBlokUvazka, SprDb, TBlokZamek, TBlokRozp, TBlokIO,
+      fMain, TBlokTrat, TBlokUvazka, TrainDb, TBlokZamek, TBlokRozp, TBlokIO,
       TBlokSouctovaHlaska, TBlokAC, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ begin
 end;//procedyre
 
 procedure TBlokyTableData.UpdateLine(line:Integer);
-var j, spr:integer;
+var j, train:integer;
     Blk:TBlk;
     glob:TBlkSettings;
     s_vyh:TBlkVyhSettings;
@@ -138,8 +138,8 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[0] := 'Úsek';
 
       str := '';
-      for spr in (Blk as TBlkUsek).Soupravs do
-        str := str + Soupravy.GetSprNameByIndex(spr) + ', ';
+      for train in (Blk as TBlkUsek).trains do
+        str := str + Trains.GetTrainNameByIndex(train) + ', ';
       Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2);
 
       case ((Blk as TBlkUsek).Obsazeno) of
@@ -152,7 +152,7 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
       Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
 
-      if ((Blk as TBlkUsek).SprPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).SprPredict.name else
+      if ((Blk as TBlkUsek).trainPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).trainPredict.name else
         Self.LV.Items[line].SubItems[7] := '--#--';
    end;
 
@@ -245,8 +245,8 @@ var j, spr:integer;
     Self.LV.Items[line].SubItems[5] := '';
     Self.LV.Items[line].SubItems[6] := '';
 
-    if (Assigned((Blk as TBlkTrat).SprPredict)) then
-      Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrat).SprPredict.souprava.name
+    if (Assigned((Blk as TBlkTrat).trainPredict)) then
+      Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrat).trainPredict.train.name
     else
       Self.LV.Items[line].SubItems[7] := '--#--';
    end;
@@ -311,8 +311,8 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[0] := 'Traťový úsek';
 
       str := '';
-      for spr in (Blk as TBlkUsek).Soupravs do
-        str := str + Soupravy.GetSprNameByIndex(spr) + ', ';
+      for train in (Blk as TBlkUsek).trains do
+        str := str + Trains.GetTrainNameByIndex(train) + ', ';
       Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2);
 
       case ((Blk as TBlkUsek).Obsazeno) of
@@ -325,7 +325,7 @@ var j, spr:integer;
       Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
       Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
 
-      if ((Blk as TBlkUsek).SprPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).SprPredict.name else
+      if ((Blk as TBlkUsek).trainPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).trainPredict.name else
         Self.LV.Items[line].SubItems[7] := '--#--';
    end;
 

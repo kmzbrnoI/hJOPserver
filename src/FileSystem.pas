@@ -47,7 +47,7 @@ implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
      TechnologieRCS, TOblsRizeni, TBloky, BoosterDb, SnadnSpusteni, THVDatabase,
-     TCPServerPT, Logging, TCPServerOR, SprDb, UserDb, ModelovyCas, TMultiJCDatabase,
+     TCPServerPT, Logging, TCPServerOR, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,
      TechnologieTrakce, TJCDatabase;
 
@@ -147,7 +147,7 @@ var read,read2:string;
   F_Splash.AddStav('Načítám soupravy...');
   read := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', 'stav\soupravy.ini');
   try
-    Soupravy.LoadData(read);
+    Trains.LoadData(read);
   except
     on E:Exception do
       AppEvents.LogException(E);
@@ -166,7 +166,7 @@ var read,read2:string;
   F_Main.E_dataload_block.Text := read;
   BlokyTableData := TBlokyTableData.Create(F_Main.LV_Bloky);
 
-  Soupravy.UpdateFront();
+  Trains.UpdateFront();
 
   F_Splash.AddStav('Načítám databázi jizdních cest...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'JC', 'data\JC.ini');
@@ -257,7 +257,7 @@ var tmpStr:string;
   end;
 
   try
-    Soupravy.SaveData(F_Main.E_dataload_soupr.Text);
+    Trains.SaveData(F_Main.E_dataload_soupr.Text);
   except
     on E:Exception do
       AppEvents.LogException(E);

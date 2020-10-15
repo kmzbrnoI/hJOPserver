@@ -134,7 +134,7 @@ implementation
 
 uses fMain, diagnostics, GetSystems, TBloky, TBlok, TBlokVyhybka, TBlokUsek,
      BoosterDb, TBlokPrejezd, RCSErrors, TOblsRizeni,
-     Logging, TCPServerOR, SprDb, DataRCS, appEv, Booster, StrUtils, fTester;
+     Logging, TCPServerOR, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
 constructor TRCS.Create();
 begin
@@ -212,7 +212,7 @@ begin
        Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
      if (Blk.typ = btPrejezd) then
        Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
-     if ((diag.simSoupravaObsaz) and ((Blk.typ = btUsek) or (Blk.typ = btTU)) and ((Blk as TBlkUsek).IsSouprava()) and
+     if ((diag.simSoupravaObsaz) and ((Blk.typ = btUsek) or (Blk.typ = btTU)) and ((Blk as TBlkUsek).IsTrain()) and
          ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
        Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
    except
@@ -241,7 +241,7 @@ begin
  for blk in Blky do
   begin
    if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then continue;
-   if (((Blk as TBlkUsek).IsSouprava()) and ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
+   if (((Blk as TBlkUsek).IsTrain()) and ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
      Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port,1);
   end;
 end;

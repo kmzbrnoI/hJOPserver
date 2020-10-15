@@ -107,7 +107,7 @@ type
 
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure ShowUvazkaSprMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; spr_index:Integer);
+    procedure ShowUvazkaTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; train_index:Integer);
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
  end;//class TBlkUsek
@@ -116,7 +116,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Souprava, ownConvert,
+uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Train, ownConvert,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
 constructor TBlkUvazka.Create(index:Integer);
@@ -467,17 +467,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.ShowUvazkaSprMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; spr_index:Integer);
+procedure TBlkUvazka.ShowUvazkaTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; train_index:Integer);
 var trat: TBlkTrat;
     blk: TBlk;
-    spr: TSouprava;
+    train: TTrain;
 begin
  trat := TBlkTrat(Self.parent);
  if (trat = nil) then Exit();
- if (spr_index >= trat.stav.soupravy.Count) then Exit();
- spr := trat.stav.soupravy[spr_index].souprava;
+ if (train_index >= trat.stav.trains.Count) then Exit();
+ train := trat.stav.trains[train_index].train;
 
- blk := trat.GetSprUsek(spr);
+ blk := trat.GetTrainUsek(train);
  if (blk = nil) then Exit();
  TBlkUsek(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
 end;
@@ -490,7 +490,7 @@ begin
  if (Button = TPanelButton.ESCAPE) then Exit(); 
 
  if (params <> '') then
-   Self.ShowUvazkaSprMenu(SenderPnl, SenderOR, rights, StrToInt(params))
+   Self.ShowUvazkaTrainMenu(SenderPnl, SenderOR, rights, StrToInt(params))
  else
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
@@ -643,7 +643,7 @@ begin
   TTratSmer.BtoA     : Result := Result + '2;';
  end;//case
 
- Result := Result + trat.GetSprList(',') + ';';
+ Result := Result + trat.GetTrainsList(',') + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Souprava, JclPCRE;
+      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Train, JclPCRE;
 
 type
  TBlkNavVolba = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -37,8 +37,8 @@ type
  ENoEvents = class(Exception);
 
  // zastaovoaci a zpomalovaci udalost pro jeden typ soupravy a jeden rozsah delek soupravy
- TBlkNavSprEvent = class
-  spr_typ_re: TJclRegEx;                        // regexp matchujici typ soupravy
+ TBlkNavTrainEvent = class
+  train_typ_re: TJclRegEx;                        // regexp matchujici typ soupravy
   delka:record                                  // tato udalost je brana v potaz, pokud ma souprava delku > min && < max
     min:Integer;
     max:Integer;
@@ -56,7 +56,7 @@ type
    destructor Destroy(); override;
 
    procedure Parse(str:string; old:boolean);
-   class function ParseSprTypes(types: string): string;
+   class function ParseTrainTypes(types: string): string;
    function ToFileStr(short:boolean = false): string;
    class function ParseOldRychEvent(str:string): TRREv;
  end;
@@ -65,7 +65,7 @@ type
  TBlkNavSettings = record
   RCSAddrs:TRCSAddrs;                            // ve skutecnosti je signifikantni jen jedna adresa - na indexu [0], coz je vystup pro rizeni navestidla
   OutputType:TBlkNavOutputType;                  // typ vystupu: binarni/SCom
-  events:TObjectList<TBlkNavSprEvent>;           // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
+  events:TObjectList<TBlkNavTrainEvent>;         // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
                                                  // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky soupravy
   ZpozdeniPadu:Integer;                          // zpozdeni padu navestidla v sekundach (standartne 0)
   zamknuto:boolean;                              // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
@@ -223,14 +223,14 @@ type
     function GetSettings():TBlkNavSettings;
     procedure SetSettings(data:TBlkNavSettings);
 
-    procedure UpdateRychlostSpr(force:boolean = false);
+    procedure UpdateRychlostTrain(force:boolean = false);
     procedure AddBlkToRnz(blkId:Integer; change:boolean = true);
     procedure RemoveBlkFromRnz(blkId:Integer);
     procedure RCtimerTimeout();
     function FourtyKmph(): Boolean;
     class function AddOpak(navest: TBlkNavCode): TBlkNavCode;
 
-    function GetSouprava(usek:TBlk = nil): TSouprava;
+    function GetTrain(usek:TBlk = nil): TTrain;
     procedure PropagatePOdjToTrat();
 
     class function NavestToString(navest: TBlkNavCode): string;
@@ -277,8 +277,8 @@ type
 //  zamknuti=zamknuti navestidla trvale do STUJ
 
 // format ev: (ev1)(ev2)(ev3)
-// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:spr_typ_regexp|min_delka|max_delka
-//      spr_typ, min_delka a max_delka jsou u eventu 0 (globalniho eventu) vynechany
+// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:train_typ_regexp|min_delka|max_delka
+//      train_typ, min_delka a max_delka jsou u eventu 0 (globalniho eventu) vynechany
 //      vsechny dalsi eventy jsou specificke -> vyse zminene informace v nich jsou ulozeny
 
 //format RychEvent data: textove ulozeny 1 radek, kde jsou data oddelena ";"
@@ -291,7 +291,7 @@ type
 implementation
 
 uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
-     GetSystems, Logging, SprDb, TBlokIR, Zasobnik, ownStrUtils,
+     GetSystems, Logging, TrainDb, TBlokIR, Zasobnik, ownStrUtils,
      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
@@ -302,7 +302,7 @@ begin
  Self.GlobalSettings.typ := btNav;
  Self.NavStav := Self._def_nav_stav;
  Self.NavStav.toRnz := TDictionary<Integer, Cardinal>.Create();
- Self.NavSettings.events := TObjectList<TBlkNavSprEvent>.Create();
+ Self.NavSettings.events := TObjectList<TBlkNavTrainEvent>.Create();
  Self.fUsekPred := nil;
 end;
 
@@ -366,7 +366,7 @@ begin
      for str in strs do
       begin
        try
-         Self.NavSettings.events.Add(TBlkNavSprEvent.Create(str, true));
+         Self.NavSettings.events.Add(TBlkNavTrainEvent.Create(str, true));
        except
 
        end;
@@ -383,7 +383,7 @@ begin
    while (str <> '') do
     begin
      try
-       Self.NavSettings.events.Add(TBlkNavSprEvent.Create(str, false));
+       Self.NavSettings.events.Add(TBlkNavTrainEvent.Create(str, false));
      except
 
      end;
@@ -473,7 +473,7 @@ procedure TBlkNav.Update();
 begin
  Self.UpdateNavestSet();
  Self.UpdatePadani();
- Self.UpdateRychlostSpr();
+ Self.UpdateRychlostTrain();
 
  if (Self.Navest = ncPrivol) then
    Self.UpdatePrivol();
@@ -539,7 +539,7 @@ end;
 
 procedure TBlkNav.SetNavest(navest: TBlkNavCode; changeCallbackOk, changeCallbackErr: TNotifyEvent);
 var oblr:TOR;
-    spri: Integer;
+    traini: Integer;
 begin
  if ((Self.NavStav.Navest = ncDisabled) or (Self.NavSettings.zamknuto)) then
   begin
@@ -628,14 +628,14 @@ begin
    Self.NavStav.changeEnd := Now + EncodeTime(0, 0, _NAV_CHANGE_SHORT_DELAY_MSEC div 1000, _NAV_CHANGE_SHORT_DELAY_MSEC mod 1000);
 
  if (not TBlkNav.IsPovolovaciNavest(Self.NavStav.cilova_navest)) then // zastavujeme ihned
-   Self.UpdateRychlostSpr(true);
+   Self.UpdateRychlostTrain(true);
 
  if (Self.UsekPred <> nil) then
   begin
-   for spri in TBlkUsek(Self.UsekPred).Soupravs do
-     Soupravy[spri].OnPredictedSignalChange();
-   if (TBlkUsek(Self.UsekPred).SprPredict <> nil) then
-     TBlkUsek(Self.UsekPred).SprPredict.OnPredictedSignalChange();
+   for traini in TBlkUsek(Self.UsekPred).trains do
+     Trains[traini].OnPredictedSignalChange();
+   if (TBlkUsek(Self.UsekPred).trainPredict <> nil) then
+     TBlkUsek(Self.UsekPred).trainPredict.OnPredictedSignalChange();
   end;
 
  Self.Change();
@@ -662,7 +662,7 @@ begin
  if (Self.autoblok) then
   begin
    if (TBlkTU(Self.UsekPred).nextTU <> nil) then TBlkTU(Self.UsekPred).nextTU.Change();
-   if (TBlkTU(Self.UsekPred).Trat <> nil) then TBlkTrat(TBlkTU(Self.UsekPred).Trat).UpdateSprPredict();
+   if (TBlkTU(Self.UsekPred).Trat <> nil) then TBlkTrat(TBlkTU(Self.UsekPred).Trat).UpdateTrainPredict();
   end;
 
  if (Assigned(Self.NavStav.changeCallbackOk)) then
@@ -672,7 +672,7 @@ begin
    tmp(Self);
   end;
 
- Self.UpdateRychlostSpr(true);
+ Self.UpdateRychlostTrain(true);
  JCDb.CheckNNavaznost(Self);
  Self.Change();
 end;
@@ -774,7 +774,7 @@ begin
        Self.DNjc.DN();
       end;
     end;
-   Blky.SprPrediction(Self);
+   Blky.TrainPrediction(Self);
   end;
 
  if ((Self.autoblok) and (not zam) and (Self.UsekPred <> nil) and (TBlkTU(Self.UsekPred).Trat <> nil)) then
@@ -835,7 +835,7 @@ begin
  if (Self.DNjc = nil) then Exit();
 
  Self.DNjc.STUJ();
- Blky.SprPrediction(Self);
+ Blky.TrainPrediction(Self);
 end;
 
 procedure TBlkNav.MenuDNClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -849,7 +849,7 @@ begin
   end;
 
  Self.DNjc.DN();
- Blky.SprPrediction(Self);
+ Blky.TrainPrediction(Self);
 end;
 
 procedure TBlkNav.MenuRCClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -883,7 +883,7 @@ begin
 
  Self.AB := false;
  JC.RusJCWithoutBlk();
- Blky.SprPrediction(Self);
+ Blky.TrainPrediction(Self);
 end;
 
 procedure TBlkNav.MenuABStartClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -1205,7 +1205,7 @@ begin
    Self.Navest := ncStuj;
   end;
 
- Self.UpdateRychlostSpr(true);
+ Self.UpdateRychlostTrain(true);
 end;
 
 procedure TBlkNav.UpdatePadani();
@@ -1225,10 +1225,10 @@ end;
 // pozor na padání !
 // force nucene zastavi vlak, resp. nastavi jeho rychlost
 //  metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
-procedure TBlkNav.UpdateRychlostSpr(force:boolean = false);
+procedure TBlkNav.UpdateRychlostTrain(force:boolean = false);
 var Usek, Nav:TBlk;
-    spr:TSouprava;
-    navEv:TBlkNavSprEvent;
+    train:TTrain;
+    navEv:TBlkNavTrainEvent;
     i:Integer;
     trat:TBlkTrat;
 begin
@@ -1238,7 +1238,7 @@ begin
  if ((Usek = nil) or ((Usek.typ <> btUsek) and (Usek.typ <> btTU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
- if (not (Usek as TBlkUsek).IsSouprava()) then
+ if (not (Usek as TBlkUsek).IsTrain()) then
   begin
    // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
    // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
@@ -1250,8 +1250,8 @@ begin
   end;
 
  // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
- spr := Self.GetSouprava(Usek);
- if (spr.front <> Usek) then
+ train := Self.GetTrain(Usek);
+ if (train.front <> Usek) then
   begin
    // tady musime zrusit registraci eventu, viz vyse
    if ((Self.lastEvIndex >= 0) and (Self.lastEvIndex < Self.NavSettings.events.Count)) then
@@ -1300,10 +1300,10 @@ begin
  ///////////////////////////////////////////////////
 
  // ZPOMALOVANI
- if ((navEv.zpomaleni.enabled) and (spr.wantedSpeed > navEv.zpomaleni.speed) and
+ if ((navEv.zpomaleni.enabled) and (train.wantedSpeed > navEv.zpomaleni.speed) and
      ((Usek as TBlkUsek).zpomalovani_ready) and
-     ((not Self.IsPovolovaciNavest()) or (spr.IsPOdj(Usek))) and
-     (spr.direction = Self.NavRel.smer)) then
+     ((not Self.IsPovolovaciNavest()) or (train.IsPOdj(Usek))) and
+     (train.direction = Self.NavRel.smer)) then
   begin
    if (not navEv.zpomaleni.ev.enabled) then
      navEv.zpomaleni.ev.Register();
@@ -1311,7 +1311,7 @@ begin
    if (navEv.zpomaleni.ev.IsTriggerred(Usek, true)) then
     begin
      navEv.zpomaleni.ev.Unregister();
-     spr.speed := navEv.zpomaleni.speed;
+     train.speed := navEv.zpomaleni.speed;
      (Usek as TBlkUsek).zpomalovani_ready := false;
     end;
   end else begin
@@ -1329,16 +1329,16 @@ begin
   begin
    // event se odregistruje automaticky pri zmene
 
-   if ((spr.IsPOdj(Usek)) and (spr.direction = Self.NavRel.smer)) then
+   if ((train.IsPOdj(Usek)) and (train.direction = Self.NavRel.smer)) then
     begin
      // predvidany odjezd neuplynul -> zastavit soupravu
-     if (spr.wantedSpeed <> 0) then
-       spr.SetRychlostSmer(0, Self.NavRel.smer);
+     if (train.wantedSpeed <> 0) then
+       train.SetRychlostSmer(0, Self.NavRel.smer);
 
      // souprava je na zastavovaci udalosti -> zacit pocitat cas
-     if (not spr.GetPOdj(Usek).origin_set) then
+     if (not train.GetPOdj(Usek).origin_set) then
       begin
-       spr.GetPOdj(Usek).RecordOriginNow();
+       train.GetPOdj(Usek).RecordOriginNow();
        TBlkUsek(Usek).PropagatePOdjToTrat();
        Usek.Change();
       end;
@@ -1352,7 +1352,7 @@ begin
      if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani)) then
       begin
        // je postaveno -> zkontrlolujeme, jestli je postaveno dalsi navestidlo
-       if ((spr.wantedSpeed > 0) and (spr.direction <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
+       if ((train.wantedSpeed > 0) and (train.direction <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
        case (Self.DNjc.data.DalsiNavaznost) of
          TJCNextNavType.blok: begin
@@ -1361,46 +1361,46 @@ begin
            if ((nav <> nil) and (nav.typ = btNav) and ((nav as TBlkNav).IsPovolovaciNavest())) then
             begin
               // dalsi navestilo je na VOLNO
-              if ((spr.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
-                spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
+              if ((train.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (train.direction <> Self.NavRel.smer)) then
+                train.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
             end else begin
               // dalsi navestidlo je na STUJ
-              if ((spr.wantedSpeed <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
-                spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
+              if ((train.wantedSpeed <> Self.DNjc.data.RychlostNoDalsiN*10) or (train.direction <> Self.NavRel.smer)) then
+                train.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
             end;
          end;
 
          TJCNextNavType.trat: begin
-           if ((spr.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
-             spr.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
+           if ((train.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (train.direction <> Self.NavRel.smer)) then
+             train.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
          end;
 
          TJCNextNavType.zadna: begin
-           if ((spr.wantedSpeed <> Self.DNjc.data.RychlostNoDalsiN*10) or (spr.direction <> Self.NavRel.smer)) then
-             spr.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
+           if ((train.wantedSpeed <> Self.DNjc.data.RychlostNoDalsiN*10) or (train.direction <> Self.NavRel.smer)) then
+             train.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
           end;
        end;
 
        // kontorla prehravani stanicniho hlaseni
-       spr.CheckSh(Self);
+       train.CheckSh(Self);
       end else begin
        // neni povolovaci navest -> zastavit LOKO
-       if ((spr.direction = Self.NavRel.smer) and (spr.wantedSpeed <> 0)) then
-         spr.SetRychlostSmer(0, Self.NavRel.smer);
+       if ((train.direction = Self.NavRel.smer) and (train.wantedSpeed <> 0)) then
+         train.SetRychlostSmer(0, Self.NavRel.smer);
       end;
     end else begin
      // nenalezena jizdni cesta -> muze se jednat o navestidlo v autobloku
-     if (spr.direction = Self.NavRel.smer) then
+     if (train.direction = Self.NavRel.smer) then
       begin
        if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani) and
            (Self.UsekPred.typ = btTU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
         begin
-         if (Cardinal(spr.wantedSpeed) <> TBlkTU(Self.UsekPred).Speed(spr)) then
-           spr.SetRychlostSmer(TBlkTU(Self.UsekPred).Speed(spr), Self.NavRel.smer)
+         if (Cardinal(train.wantedSpeed) <> TBlkTU(Self.UsekPred).Speed(train)) then
+           train.SetRychlostSmer(TBlkTU(Self.UsekPred).Speed(train), Self.NavRel.smer)
         end else begin
          //  neni povolovaci navest -> zastavit
-         if (spr.wantedSpeed <> 0) then
-           spr.SetRychlostSmer(0, Self.NavRel.smer);
+         if (train.wantedSpeed <> 0) then
+           train.SetRychlostSmer(0, Self.NavRel.smer);
         end;
       end;
     end;
@@ -1412,26 +1412,26 @@ end;
 
 function TBlkNav.CurrentEventIndex():Integer;
 var i:Integer;
-    spr:TSouprava;
+    train:TTrain;
     Usek:TBlk;
-    event: TBlkNavSprEvent;
+    event: TBlkNavTrainEvent;
 begin
  if (Self.NavSettings.events.Count = 0) then
    raise ENoEvents.Create('No current events!');
 
  Usek := Self.UsekPred;
- if (not (Usek as TBlkUsek).IsSouprava()) then
+ if (not (Usek as TBlkUsek).IsTrain()) then
   begin
    // na bloku neni zadna souprava
    Result := 0;
   end else begin
-   spr := Self.GetSouprava(Usek);
+   train := Self.GetTrain(Usek);
 
    // hledame takovy event, ktery odpovida nasi souprave
    for i := 0 to Self.NavSettings.events.Count-1 do
     begin
      event := Self.NavSettings.events[i];
-     if ((spr.sprLength >= event.delka.min) and (spr.sprLength <= event.delka.max) and (event.spr_typ_re.Match(spr.typ))) then
+     if ((train.length >= event.delka.min) and (train.length <= event.delka.max) and (event.train_typ_re.Match(train.typ))) then
        Exit(i);
     end;
 
@@ -1617,7 +1617,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.UnregisterAllEvents();
-var ev:TBlkNavSprEvent;
+var ev:TBlkNavTrainEvent;
 begin
  for ev in Self.NavSettings.events do
   begin
@@ -1644,15 +1644,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.GetSouprava(usek:TBlk = nil): TSouprava;
+function TBlkNav.GetTrain(usek:TBlk = nil): TTrain;
 begin
  if (usek = nil) then
    Blky.GetBlkByID(Self.UsekID, usek);
 
  if (Self.Smer = THVStanoviste.lichy) then
-   Result := TBlkUsek(usek).SoupravaS
+   Result := TBlkUsek(usek).trainSudy
  else
-   Result := TBlkUsek(usek).SoupravaL;
+   Result := TBlkUsek(usek).trainL;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1672,36 +1672,36 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.PropagatePOdjToTrat();
-var spr: TSouprava;
+var train: TTrain;
     trat:TBlk;
     podj:TPOdj;
 begin
- spr := Self.GetSouprava();
- if (spr = nil) then
+ train := Self.GetTrain();
+ if (train = nil) then
   begin
-   spr := TBlkUsek(Self.UsekPred).SprPredict;
-   if (spr = nil) then Exit();
+   train := TBlkUsek(Self.UsekPred).trainPredict;
+   if (train = nil) then Exit();
   end;
 
  if (Self.DNjc = nil) then Exit();
  if (Self.DNjc.data.Trat = -1) then Exit();
  Blky.GetBlkByID(Self.DNjc.data.Trat, trat);
- if (TBlkTrat(trat).SprPredict = nil) then Exit();
- if (TBlkTrat(trat).SprPredict.souprava <> spr) then Exit();
+ if (TBlkTrat(trat).trainPredict = nil) then Exit();
+ if (TBlkTrat(trat).trainPredict.train <> train) then Exit();
 
- if (spr.IsPOdj(Self.UsekPred)) then
+ if (train.IsPOdj(Self.UsekPred)) then
   begin
-   podj := spr.GetPOdj(Self.UsekPred);
+   podj := train.GetPOdj(Self.UsekPred);
    if (not podj.IsDepSet) then Exit();
-   if ((TBlkTrat(trat).SprPredict.IsTimeDefined) and (TBlkTrat(trat).SprPredict.time = podj.DepTime())) then Exit();
+   if ((TBlkTrat(trat).trainPredict.IsTimeDefined) and (TBlkTrat(trat).trainPredict.time = podj.DepTime())) then Exit();
 
-   TBlkTrat(trat).SprPredict.predict := true;
-   TBlkTrat(trat).SprPredict.time := podj.DepTime();
+   TBlkTrat(trat).trainPredict.predict := true;
+   TBlkTrat(trat).trainPredict.time := podj.DepTime();
    TBlkTrat(trat).Change();
-  end else if ((TBlkTrat(trat).SprPredict.predict) and
-               ((not spr.IsPOdj(Self.UsekPred)) or (not spr.GetPOdj(Self.UsekPred).IsDepSet()))) then begin
-   TBlkTrat(trat).SprPredict.predict := false;
-   TBlkTrat(trat).SprPredict.UndefTime();
+  end else if ((TBlkTrat(trat).trainPredict.predict) and
+               ((not train.IsPOdj(Self.UsekPred)) or (not train.GetPOdj(Self.UsekPred).IsDepSet()))) then begin
+   TBlkTrat(trat).trainPredict.predict := false;
+   TBlkTrat(trat).trainPredict.UndefTime();
    TBlkTrat(trat).Change();
   end;
 end;
@@ -1798,25 +1798,25 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlkNavSprEvent.Create();
+constructor TBlkNavTrainEvent.Create();
 begin
  inherited;
 
- Self.spr_typ_re := TJclRegEx.Create();
- Self.spr_typ_re.Compile('.*', false);
+ Self.train_typ_re := TJclRegEx.Create();
+ Self.train_typ_re.Compile('.*', false);
  Self.zastaveni := nil;
  Self.zpomaleni.ev := nil;
 end;
 
-constructor TBlkNavSprEvent.Create(str: string; old: boolean);
+constructor TBlkNavTrainEvent.Create(str: string; old: boolean);
 begin
  Self.Create();
  Self.Parse(str, old);
 end;
 
-destructor TBlkNavSprEvent.Destroy();
+destructor TBlkNavTrainEvent.Destroy();
 begin
- Self.spr_typ_re.Free();
+ Self.train_typ_re.Free();
  if (Assigned(Self.zastaveni)) then
    Self.zastaveni.Free();
  if (Assigned(Self.zpomaleni.ev)) then
@@ -1825,15 +1825,15 @@ begin
  inherited;
 end;
 
-// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:spr_typ_regexp|min_delka|max_delka
-procedure TBlkNavSprEvent.Parse(str:string; old:boolean);
+// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:train_typ_regexp|min_delka|max_delka
+procedure TBlkNavTrainEvent.Parse(str:string; old:boolean);
 var sl, sl2:TStrings;
 begin
  sl := TStringList.Create();
  sl2 := TStringList.Create();
  ExtractStringsEx(['|'], [], PChar(str), sl);
 
- Self.spr_typ_re.Compile('.*', false);
+ Self.train_typ_re.Compile('.*', false);
  try
    Self.delka.min := -1;
    Self.delka.max := -1;
@@ -1861,7 +1861,7 @@ begin
 
    if (sl.Count > 2) then
     begin
-     Self.spr_typ_re.Compile(ParseSprTypes(sl[2]), false);
+     Self.train_typ_re.Compile(ParseTrainTypes(sl[2]), false);
      Self.delka.min := StrToIntDef(sl[3], -1);
      Self.delka.max := StrToIntDef(sl[4], -1);
     end;
@@ -1871,7 +1871,7 @@ begin
  end;
 end;
 
-class function TBlkNavSprEvent.ParseSprTypes(types: string): string;
+class function TBlkNavTrainEvent.ParseTrainTypes(types: string): string;
 var strs: TSTrings;
     str: string;
 begin
@@ -1899,7 +1899,7 @@ begin
  end;
 end;
 
-function TBlkNavSprEvent.ToFileStr(short:boolean = false): string;
+function TBlkNavTrainEvent.ToFileStr(short:boolean = false): string;
 begin
  Result := '{' + Self.zastaveni.GetDefStr() + '}|';
 
@@ -1910,7 +1910,7 @@ begin
 
  if (not short) then
   begin
-   Result := Result + '{re:' + Self.spr_typ_re.Pattern + '}|' +
+   Result := Result + '{re:' + Self.train_typ_re.Pattern + '}|' +
              IntToStr(Self.delka.min) + '|' +
              IntToStr(Self.delka.max);
   end;
@@ -1921,7 +1921,7 @@ end;
 // : typ_zastaveni(0=usek;1=ir);
 //    pro usek nasleduje: usekid;usekpart;speed;
 //    pro ir nasleduje: irid;speed;
-class function TBlkNavSprEvent.ParseOldRychEvent(str:string): TRREv;
+class function TBlkNavTrainEvent.ParseOldRychEvent(str:string): TRREv;
 var data:TStrings;
     rrData:TRREvData;
 begin

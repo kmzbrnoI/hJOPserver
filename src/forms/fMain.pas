@@ -493,7 +493,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      SnadnSpusteni, TBlokSouctovaHlaska, TBlokPrejezd, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
-     fBlkNav, fBlkTrat, TBLokUvazka, SprDb, DataSpr, DataUsers, fUserEdit, UserDb,
+     fBlkNav, fBlkTrat, TBLokUvazka, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlokRozp,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
@@ -770,7 +770,7 @@ begin
   if (Blky.enabled) then
    begin
     Blky.Disable();
-    Soupravy.ClearPOdj();
+    Trains.ClearPOdj();
    end;
 
   ModCas.started := false;
@@ -867,9 +867,9 @@ begin
  if (Blky.enabled) then
   begin
    Blky.Disable();
-   Soupravy.ClearPOdj();
+   Trains.ClearPOdj();
   end;
- Soupravy.StopAllSpr();
+ Trains.StopAllTrains();
 
  F_Main.S_RCS_open.Brush.Color  := clRed;
  F_Main.S_RCS_Start.Brush.Color := clRed;
@@ -1501,7 +1501,7 @@ begin
  if (PC_1.ActivePage = TS_Users)      then UsersTableData.UpdateTable;
  if (PC_1.ActivePage = TS_Bloky)      then BlokyTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Zesilovace) then ZesTableData.UpdateTable();
- if (PC_1.ActivePage = TS_Soupravy)   then SprTableData.UpdateTable();
+ if (PC_1.ActivePage = TS_Soupravy)   then TrainTableData.UpdateTable();
  if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Stanice)    then ORsTableData.UpdateTable(true);
  if (PC_1.ActivePage = TS_Technologie) then ORTCPServer.GUIRefreshTable(); 
@@ -1624,7 +1624,7 @@ begin
  ABTableData := TABTableData.Create(Self.LV_AB);
  UsersTableData := TUsersTableData.Create(Self.LV_Users);
  RCSTableData := TRCSTableData.Create(Self.LV_Stav_RCS);
- SprTableData := TSprTableData.Create(Self.LV_Soupravy);
+ TrainTableData := TTrainTableData.Create(Self.LV_Soupravy);
  HVTableData := THVTableData.Create(Self.LV_HV);
  ZesTableData := TZesTableData.Create(Self.LV_Zesilovace);
  ORsTableData := TORsTableData.Create(Self.LV_Stanice);
@@ -1877,7 +1877,7 @@ begin
   end;
 
   try
-    Soupravy.SaveData(F_Main.E_dataload_soupr.Text+'_');
+    Trains.SaveData(F_Main.E_dataload_soupr.Text+'_');
 
     if (FileExists(F_Main.E_dataload_soupr.Text)) then
       DeleteFile(F_Main.E_dataload_soupr.Text);
@@ -1885,7 +1885,7 @@ begin
     DeleteFile(F_Main.E_dataload_soupr.Text+'_');
   except
     on E:Exception do
-      AppEvents.LogException(E, 'Soupravy.SaveData');
+      AppEvents.LogException(E, 'Trains.SaveData');
   end;
 
   try
@@ -1981,8 +1981,8 @@ begin
  Self.LogStatus('Vypínám systémy...');
  SystemData.Status := stopping;
 
- Self.LogStatus('Zastavuji všechny soupravy...');
- Soupravy.StopAllSpr();
+ Self.LogStatus('Zastavuji všechny Trains...');
+ Trains.StopAllTrains();
 
  Application.ProcessMessages();
 
@@ -1994,7 +1994,7 @@ begin
 
  JCDb.RusAllJC();
  Blky.Disable();
- Soupravy.ClearPOdj();
+ Trains.ClearPOdj();
  Blky.Reset();
 end;
 
@@ -2168,7 +2168,7 @@ var sprs: string;
     i: Integer;
 begin
  if (Self.LV_Soupravy.Selected = nil) then Exit();
- if (not Assigned(Soupravy[Self.LV_Soupravy.ItemIndex])) then Exit();
+ if (not Assigned(Trains[Self.LV_Soupravy.ItemIndex])) then Exit();
 
  sprs := Self.LVSelectedTexts(Self.LV_Soupravy, 'soupravu', 'soupravy');
 
@@ -2178,7 +2178,7 @@ begin
     begin
      LI := Self.LV_Soupravy.Items[i];
      if ((LI.Selected) and (LI.Caption <> '')) then
-       Soupravy.RemoveSpr(LI.Index);
+       Trains.RemoveTrain(LI.Index);
     end;
   end;
 end;
@@ -2341,7 +2341,7 @@ begin
    if (Self.Showing) then
     begin
      if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then BlokyTableData.UpdateTable();
-     if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then SprTableData.UpdateTable();
+     if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then TrainTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then ZesTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_HV) then HVTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_VC) then JCTableData.UpdateTable();

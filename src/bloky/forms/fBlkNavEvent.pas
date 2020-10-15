@@ -32,11 +32,11 @@ type
     constructor Create(AOwner:TComponent); override;
     destructor Destroy(); override;
 
-    procedure OpenForm(event:TBlkNavSprEvent; first:boolean; obls:TArstr);
+    procedure OpenForm(event:TBlkNavTrainEvent; first:boolean; obls:TArstr);
     procedure OpenEmptyForm(first:boolean; obls:TArstr);
     function Check():string;
 
-    function GetEvent():TBlkNavSprEvent; // returns new object!
+    function GetEvent():TBlkNavTrainEvent; // returns new object!
 
   end;
 
@@ -73,7 +73,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNavEvent.OpenForm(event:TBlkNavSprEvent; first:boolean; obls:TArstr);
+procedure TF_BlkNavEvent.OpenForm(event:TBlkNavTrainEvent; first:boolean; obls:TArstr);
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -92,7 +92,7 @@ begin
    Self.SE_MaxLength.Value   := event.delka.max;
    Self.SE_MinLength.Enabled := true;
    Self.SE_MaxLength.Enabled := true;
-   Self.E_Spr.Text := Copy(event.spr_typ_re.Pattern, 2, Length(event.spr_typ_re.Pattern)-2);
+   Self.E_Spr.Text := Copy(event.train_typ_re.Pattern, 2, Length(event.train_typ_re.Pattern)-2);
   end;
 
  Self.fZast.FillFromRR(event.zastaveni);
@@ -142,11 +142,11 @@ begin
 end;
 ///////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkNavEvent.GetEvent():TBlkNavSprEvent;
+function TF_BlkNavEvent.GetEvent():TBlkNavTrainEvent;
 begin
- Result := TBlkNavSprEvent.Create();
+ Result := TBlkNavTrainEvent.Create();
  if ((not Self.first) and (Self.E_Spr.Text <> '')) then
-   Result.spr_typ_re.Compile('^'+Self.E_Spr.Text+'$', false);
+   Result.train_typ_re.Compile('^'+Self.E_Spr.Text+'$', false);
  Result.delka.min := Self.SE_MinLength.Value;
  Result.delka.max := Self.SE_MaxLength.Value;
 

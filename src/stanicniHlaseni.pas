@@ -10,14 +10,14 @@ interface
 uses Generics.Collections, IdContext, Classes, SysUtils;
 
 const
-  _HLASENI_SPRTYP_FORBIDDEN: array [0..5] of string = (
+  _HLASENI_TRAINTYP_FORBIDDEN: array [0..5] of string = (
     'Pn', 'Mn', 'Vn', 'Lv', 'Vle', 'Slu'
   );
 
 type
   TAvailableEvent = procedure (Sender:TObject; available:boolean) of object;
 
-  TSHSpr = record
+  TSHTrain = record
     cislo: string;
     typ: string;
     kolej: string;
@@ -33,7 +33,7 @@ type
     m_orid: string;
 
      procedure BroadcastData(data:string);
-     function SprToStr(spr:TSHSpr):string;
+     function TrainToStr(train:TSHTrain):string;
      function GetAvailable():boolean;
 
    public
@@ -46,12 +46,12 @@ type
      procedure Reset();
      procedure ClientDisconnect(Client:TIdContext);
 
-     procedure Prijede(spr:TSHSpr);
-     procedure Odjede(spr:TSHSpr);
-     procedure Projede(spr:TSHSpr);
+     procedure Prijede(train:TSHTrain);
+     procedure Odjede(train:TSHTrain);
+     procedure Projede(train:TSHTrain);
      procedure Spec(id:string);
 
-     class function HlasitSprTyp(typ:string):boolean;
+     class function HlasitTrainTyp(typ:string):boolean;
 
      property available: boolean read GetAvailable;
 
@@ -151,19 +151,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.Prijede(spr:TSHSpr);
+procedure TStanicniHlaseni.Prijede(train:TSHTrain);
 begin
- Self.BroadcastData('PRIJEDE;{' + Self.SprToStr(spr) + '}');
+ Self.BroadcastData('PRIJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Odjede(spr:TSHSpr);
+procedure TStanicniHlaseni.Odjede(train:TSHTrain);
 begin
- Self.BroadcastData('ODJEDE;{' + Self.SprToStr(spr) + '}');
+ Self.BroadcastData('ODJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Projede(spr:TSHSpr);
+procedure TStanicniHlaseni.Projede(train:TSHTrain);
 begin
- Self.BroadcastData('PROJEDE;{' + Self.SprToStr(spr) + '}');
+ Self.BroadcastData('PROJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
 procedure TStanicniHlaseni.Spec(id:string);
@@ -182,17 +182,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TStanicniHlaseni.SprToStr(spr:TSHSpr):string;
+function TStanicniHlaseni.TrainToStr(train:TSHTrain):string;
 begin
- Result := spr.cislo + ';' + spr.typ + ';' + spr.kolej + ';' + spr.fromORid + ';' +
-             spr.toORid + ';';
+ Result := train.cislo + ';' + train.typ + ';' + train.kolej + ';' + train.fromORid + ';' +
+             train.toORid + ';';
 
- if (spr.timeArrive <> 0) then
-   Result := Result + FormatDateTime('hh:nn', spr.timeArrive);
+ if (train.timeArrive <> 0) then
+   Result := Result + FormatDateTime('hh:nn', train.timeArrive);
 
  Result := Result + ';';
- if (spr.timeDepart <> 0) then
-   Result := Result + FormatDateTime('hh:nn', spr.timeDepart);
+ if (train.timeDepart <> 0) then
+   Result := Result + FormatDateTime('hh:nn', train.timeDepart);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -204,10 +204,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TStanicniHlaseni.HlasitSprTyp(typ:string):boolean;
+class function TStanicniHlaseni.HlasitTrainTyp(typ:string):boolean;
 var s:string;
 begin
- for s in stanicniHlaseni._HLASENI_SPRTYP_FORBIDDEN do
+ for s in stanicniHlaseni._HLASENI_TRAINTYP_FORBIDDEN do
    if (typ = s) then
      Exit(False);
  Result := true;

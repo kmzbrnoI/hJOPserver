@@ -13,6 +13,8 @@ object F_BlkNavEvent: TF_BlkNavEvent
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  ExplicitWidth = 320
+  ExplicitHeight = 240
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel

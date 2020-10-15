@@ -40,7 +40,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok, IbUtils, Souprava,
+  Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok, IbUtils, Train,
   IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO, TBlokVyhybka,
   TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 
@@ -272,7 +272,7 @@ type
 
       function BarieryNCToPotvr(bariery:TJCBariery):TPSPodminky;                // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
 
-      function GetSouprava(nav:TBlk = nil; usek:TBlk = nil): TSouprava; // vraci cislo soupravy na useku pred navestidlem
+      function GetTrain(nav:TBlk = nil; usek:TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
 
       function GetAB():boolean;
       function PorusenaKritickaPodminka():boolean;
@@ -354,7 +354,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, TBlokNav, TBlokUsek, TOblsRizeni,
-     TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, SprDb, timeHelper,
+     TBlokPrejezd, TJCDatabase, Logging, TCPServerOR, TrainDb, timeHelper,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,7 +629,7 @@ var i, usek, cnt, addr:Integer;
     Blk,blk2:TBlk;
     glob:TBlkSettings;
     flag, cont:boolean;
-    spr:TSouprava;
+    train:TTrain;
     prjZaver:TJCPrjZaver;
     vyhZaver:TJCVyhZaver;
     odvratZaver:TJCOdvratZaver;
@@ -666,7 +666,7 @@ begin
           bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk, Blk.id));
        end else begin
         // souprava
-        if ((Blk as TBlkUsek).IsSouprava()) then
+        if ((Blk as TBlkUsek).IsTrain()) then
           bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.id));
        end;
      end;//if
@@ -949,14 +949,14 @@ begin
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Blk2);
  Blk := (Blk2 as TBlkNav).UsekPred;
 
- if ((Blk as TBlkUsek).IsSouprava()) then
+ if ((Blk as TBlkUsek).IsTrain()) then
   begin
    flag := false;
-   spr := Self.GetSouprava(Blk2, Blk);
+   train := Self.GetTrain(Blk2, Blk);
 
    // kontrola rucniho rizeni lokomotiv
    if (Self.fproperties.TypCesty = TJCType.vlak) then
-     for addr in spr.HVs do
+     for addr in train.HVs do
        if ((HVDb[addr].stolen) or (HVDb[addr].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, addr));
@@ -965,7 +965,7 @@ begin
 
    // pokud jsou jen nektere lokomotivy rizene rucne
    if (flag) then
-     for addr in spr.HVs do
+     for addr in train.HVs do
        if ((not HVDb[addr].stolen) and (not HVDb[addr].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_NOT_ALL_RUC));
@@ -975,10 +975,10 @@ begin
    // kontrola smeru soupravy
    if (Self.fproperties.TypCesty = TJCType.vlak) then
     begin
-     if (spr.sdata.dir_L or spr.sdata.dir_S) then
-       if (((TBlkNav(Blk2).Smer = THVStanoviste.lichy) and (not spr.sdata.dir_L)) or
-           ((TBlkNav(Blk2).Smer = THVStanoviste.sudy) and (not spr.sdata.dir_S))) then
-         bariery.Add(Self.JCBariera(_JCB_SPR_SMER, nil, spr.index));
+     if (train.sdata.dir_L or train.sdata.dir_S) then
+       if (((TBlkNav(Blk2).Smer = THVStanoviste.lichy) and (not train.sdata.dir_L)) or
+           ((TBlkNav(Blk2).Smer = THVStanoviste.sudy) and (not train.sdata.dir_S))) then
+         bariery.Add(Self.JCBariera(_JCB_SPR_SMER, nil, train.index));
     end;
 
   end;
@@ -1417,7 +1417,7 @@ var i,j:Integer;
     tu:TBlkTU;
     oblr:TOR;
     tuAdd:TBlkTU;
-    spr: TSouprava;
+    train: TTrain;
     chEv: TChangeEvent;
     remEvDataPtr: ^TRemoveEventData;
  begin
@@ -1743,8 +1743,8 @@ var i,j:Integer;
 
       // nastavit front blok soupravy
       usek := navestidlo.UsekPred as TBlkUsek;
-      if (usek.IsSouprava()) then
-        Self.GetSouprava(Navestidlo, usek).front := usek;
+      if (usek.IsTrain()) then
+        Self.GetTrain(Navestidlo, usek).front := usek;
 
       if (not usek.NavJCRef.Contains(Navestidlo)) then
         usek.NavJCRef.Add(Navestidlo);
@@ -1807,7 +1807,7 @@ var i,j:Integer;
       Self.RozpadRuseniBlok := -2;
 
       if (Self.data.TypCesty = TJCType.vlak) then
-        Blky.SprPrediction(Navestidlo);
+        Blky.TrainPrediction(Navestidlo);
 
       // pokud je cesta ze zasobniku, smazeme ji odtam
       if (Self.fstaveni.from_stack <> nil) then
@@ -1835,7 +1835,7 @@ var i,j:Integer;
          Self.DN();
         end;
       end else begin
-       if ((TBlkUsek(blk).Obsazeno = TUsekStav.uvolneno) and (not TBlkUsek(blk).IsSouprava)) then
+       if ((TBlkUsek(blk).Obsazeno = TUsekStav.uvolneno) and (not TBlkUsek(blk).IsTrain)) then
         begin
          Self.fstaveni.lastUsekOrTratObsaz := false;
          Self.DN();
@@ -2016,27 +2016,27 @@ var i,j:Integer;
      begin
       usek := navestidlo.UsekPred as TBlkUsek;
       Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(lastUsek));
-      spr := Self.GetSouprava(Navestidlo, usek);
+      train := Self.GetTrain(Navestidlo, usek);
 
       // a)
       if ((lastUsek.typ = btUsek) and (lastUsek.Stav.stanicni_kolej) and
-          (not lastUsek.SoupravyFull())) then
+          (not lastUsek.TrainsFull())) then
        begin
-        if (usek.IsSouprava()) then
+        if (usek.IsTrain()) then
          begin
           if ((usek.typ = btTU) and (TBlkTU(usek).InTrat > -1)) then
            begin
             Blky.GetBlkByID((usek as TBlkTU).InTrat, TBlk(trat));
-            trat.RemoveSpr(spr);
+            trat.RemoveTrain(train);
            end;
 
           // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
           if (navestidlo.Smer = THVStanoviste.lichy) then
-            lastUsek.AddSoupravaL(spr)
+            lastUsek.AddTrainL(train)
           else
-            lastUsek.AddSoupravaS(spr);
+            lastUsek.AddTrainS(train);
 
-          usek.RemoveSouprava(spr);
+          usek.RemoveTrain(train);
          end;
         Self.fstaveni.RozpadBlok := -6;
        end;
@@ -2047,7 +2047,7 @@ var i,j:Integer;
       else
         trat := nil;
 
-      if ((trat <> nil) and (usek.IsSouprava()) and (lastUsek.typ = btTU) and
+      if ((trat <> nil) and (usek.IsTrain()) and (lastUsek.typ = btTU) and
           ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
        begin
         tuAdd := nil;
@@ -2055,15 +2055,15 @@ var i,j:Integer;
         if (trat.vyluka) then
          begin
           // Pridat soupravu do posledniho bloku trati
-          if ((trat.stav.soupravy.Count = 0) and ((trat.GetLastUsek(Self.data.TratSmer) as TBlkTU).Zaver = TZaver.no)) then
+          if ((trat.stav.trains.Count = 0) and ((trat.GetLastUsek(Self.data.TratSmer) as TBlkTU).Zaver = TZaver.no)) then
            begin
             tuAdd := (trat.GetLastUsek(Self.data.TratSmer) as TBlkTU);
-            trat.SprChangeOR(spr, Self.data.TratSmer);
-            if (trat.ChangesSprDir()) then
-              spr.ChangeSmer();
+            trat.TrainChangeOR(train, Self.data.TratSmer);
+            if (trat.ChangesTrainDir()) then
+              train.ChangeSmer();
           end;
          end else begin
-          if ((not lastUsek.IsSouprava()) and (trat.BP) and (trat.Smer = Self.data.TratSmer)) then
+          if ((not lastUsek.IsTrain()) and (trat.BP) and (trat.Smer = Self.data.TratSmer)) then
            begin
             // Pridat soupravu do prvniho bloku trati
             tuAdd := (lastUsek as TBlkTU);
@@ -2073,12 +2073,12 @@ var i,j:Integer;
 
         if (tuAdd <> nil) then
          begin
-          trat.AddSpr(TBlkTratSouprava.Create(spr.index));
-          tuAdd.AddSoupravaL(spr); // tady je jedno jestli zavolat L nebo S
+          trat.AddTrain(TBlkTratTrain.Create(train.index));
+          tuAdd.AddTrainL(train); // tady je jedno jestli zavolat L nebo S
                                    // v trati muze byt na jednom useku vzdy jen jedna souprava
                                    // kontrolovano vyse
           trat.Change();
-          usek.RemoveSouprava(spr);
+          usek.RemoveTrain(train);
          end;
        end;
      end;//if typcesty = vlak
@@ -2234,7 +2234,7 @@ var Nav:TBlkNav;
     Blk:TBlk;
     Usek,DalsiUsek:TBlkUsek;
     i:Integer;
-    spr: TSouprava;
+    train: TTrain;
 begin
  Blky.GetBlkByID(Self.fproperties.NavestidloBlok, TBlk(Nav));
 
@@ -2292,10 +2292,10 @@ begin
            if (Self.fproperties.Trat > -1) then
             begin
              Blky.GetBlkByID(Self.fproperties.Trat, Blk);
-             if (TBlkTrat(Blk).SprPredict <> nil) then
+             if (TBlkTrat(Blk).TrainPredict <> nil) then
               begin
-               TBlkTrat(Blk).SprPredict.time := timeHelper.hJOPnow();
-               TBlkTrat(Blk).SprPredict.predict := false;
+               TBlkTrat(Blk).TrainPredict.time := timeHelper.hJOPnow();
+               TBlkTrat(Blk).TrainPredict.predict := false;
                TBlkTrat(Blk).Change();
               end;
             end;
@@ -2320,13 +2320,13 @@ begin
          if (Self.fproperties.TypCesty = TJCType.vlak) then
           begin
            (Blk as TBlkTrat).BP := true;
-           if (Usek.IsSouprava()) then
+           if (Usek.IsTrain()) then
             begin
-             if (((Blk as TBlkTrat).SprPredict <> nil) and
-                 ((Blk as TBlkTrat).SprPredict.souprava = Usek.Souprava)) then
-               (Blk as TBlkTrat).AddSpr((Blk as TBlkTrat).SprPredict)
+             if (((Blk as TBlkTrat).TrainPredict <> nil) and
+                 ((Blk as TBlkTrat).TrainPredict.train = Usek.train)) then
+               (Blk as TBlkTrat).AddTrain((Blk as TBlkTrat).trainPredict)
              else
-               (Blk as TBlkTrat).AddSpr(TBlkTratSouprava.Create(Usek.SoupravaI));
+               (Blk as TBlkTrat).AddTrain(TBlkTratTrain.Create(Usek.TrainI));
             end;
           end;
          (Blk as TBlkTrat).Zaver := false;
@@ -2393,11 +2393,11 @@ begin
 
       Self.RozpadRuseniBlok := Self.RozpadRuseniBlok + 1;
 
-      if ((Self.fproperties.TypCesty = TJCType.vlak) and (Usek.IsSouprava())) then
+      if ((Self.fproperties.TypCesty = TJCType.vlak) and (Usek.IsTrain())) then
        begin
-        writelog('JC '+Self.nazev+': smazana souprava '+Usek.Souprava.name+
+        writelog('JC '+Self.nazev+': smazana souprava '+Usek.Train.name+
           ' z bloku '+Usek.name, WR_SPRPREDAT);
-        Usek.RemoveSoupravy();
+        Usek.RemoveTrains();
        end;
      end;//if Self.RozpadBlok >= 1
    end;//if (cyklus2 = Self.RozpadRuseniBlok)
@@ -2432,19 +2432,19 @@ begin
 
       Self.RozpadRuseniBlok := 1;
 
-      if ((Self.fproperties.TypCesty = TJCType.vlak) and (Usek.IsSouprava())) then
+      if ((Self.fproperties.TypCesty = TJCType.vlak) and (Usek.IsTrain())) then
        begin
         // mazani soupravy z useku pred navestidlem
         Blk := TBlkNav(Nav).UsekPred;
-        spr := Self.GetSouprava(Nav, Blk);
-        if (spr = TBlkUsek(Usek).Souprava) then
+        train := Self.GetTrain(Nav, Blk);
+        if (train = TBlkUsek(Usek).train) then
          begin
-          writelog('JC '+Self.nazev+': smazana souprava '+spr.name+' z bloku '+Blk.name, WR_SPRPREDAT);
-          (Blk as TBlkUsek).RemoveSouprava(spr);
+          writelog('JC '+Self.nazev+': smazana souprava '+train.name+' z bloku '+Blk.name, WR_SPRPREDAT);
+          (Blk as TBlkUsek).RemoveTrain(train);
          end;
 
-        writelog('JC '+Self.nazev+': smazana souprava '+spr.name+' z bloku '+Usek.name, WR_SPRPREDAT);
-        Usek.RemoveSoupravy();
+        writelog('JC '+Self.nazev+': smazana souprava '+train.name+' z bloku '+Usek.name, WR_SPRPREDAT);
+        Usek.RemoveTrains();
        end;
      end;
    end;
@@ -2455,11 +2455,11 @@ begin
     Usek := Nav.UsekPred as TBlkUsek;
     if ((Usek.Obsazeno = TUsekStav.uvolneno) and (Usek.GetSettings.RCSAddrs.Count > 0)) then
      begin
-      if (Usek.IsSouprava() and (Self.fproperties.TypCesty = TJCType.vlak)) then
+      if (Usek.IsTrain() and (Self.fproperties.TypCesty = TJCType.vlak)) then
        begin
-        spr := Self.GetSouprava(nav, Usek);
-        Usek.RemoveSouprava(spr);
-        writelog('JC '+Self.nazev+': smazana souprava '+spr.name+' z bloku '+Usek.name, WR_SPRPREDAT);
+        train := Self.GetTrain(nav, Usek);
+        Usek.RemoveTrain(train);
+        writelog('JC '+Self.nazev+': smazana souprava '+train.name+' z bloku '+Usek.name, WR_SPRPREDAT);
        end;
 
       Self.RozpadRuseniBlok := 0;
@@ -2500,13 +2500,13 @@ begin
         Usek.Zaver := TZaver.no;
 
       Usek := Nav.UsekPred as TBlkUsek;
-      spr := Self.GetSouprava(Nav, Usek);
+      train := Self.GetTrain(Nav, Usek);
 
       // pokud ma cesta jen jeden usek, odstranime soupravu z useku pred navestidlem:
-      if ((Self.fproperties.TypCesty = TJCType.vlak) and (spr <> nil)) then
+      if ((Self.fproperties.TypCesty = TJCType.vlak) and (train <> nil)) then
        begin
-        Usek.RemoveSouprava(spr);
-        writelog('JC '+Self.nazev+': smazana souprava '+spr.name+' z bloku '+Usek.name, WR_SPRPREDAT);
+        Usek.RemoveTrain(train);
+        writelog('JC '+Self.nazev+': smazana souprava '+train.name+' z bloku '+Usek.name, WR_SPRPREDAT);
        end;
 
       if ((Usek.typ = btTU) and (TBlkTU(Usek).Trat <> nil) and (TBlkTU(Usek).bpInBlk)) then
@@ -2556,7 +2556,7 @@ begin
  Blky.GetBlkByID(Self.fproperties.Useky[0], TBlk(first));
 
  if ((first.Obsazeno = TUsekStav.obsazeno) and (TU.Obsazeno = TUsekStav.uvolneno)
-    and (not TU.IsSouprava())) then
+    and (not TU.IsTrain())) then
   begin
    if (TBlkTU(TU).bpInBlk) then
      TBlkTU(TU).UvolnenoZJC();
@@ -2568,29 +2568,29 @@ end;
 //preda soupravu v jizdni ceste dalsimu bloku v poradi
 procedure TJC.PredejDataDalsimuBloku();
 var UsekActual,UsekDalsi,Nav:TBlk;
-    spr: TSouprava;
+    train: TTrain;
  begin
   if (Self.RozpadBlok = 0) then
    begin
     Blky.GetBlkByID(Self.fproperties.NavestidloBlok, Nav);
     UsekActual := (Nav as TBlkNav).UsekPred;
-    spr := Self.GetSouprava(Nav, UsekActual);
-    if ((UsekActual as TBlkUsek).IsSouprava()) then
-      if (spr.front <> UsekActual) then
+    train := Self.GetTrain(Nav, UsekActual);
+    if ((UsekActual as TBlkUsek).IsTrain()) then
+      if (train.front <> UsekActual) then
          Exit();
    end else begin
     Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadBlok-1], UsekActual);
-    spr := TBlkUsek(UsekActual).Souprava;
+    train := TBlkUsek(UsekActual).train;
    end;
 
   Blky.GetBlkByID(Self.fproperties.Useky[Self.RozpadBlok], UsekDalsi);
-  if (not (UsekActual as TBlkUsek).IsSouprava()) then Exit;
+  if (not (UsekActual as TBlkUsek).IsTrain()) then Exit;
 
   (UsekDalsi as TBlkUsek).zpomalovani_ready := true;
-  (UsekDalsi as TBlkUsek).AddSoupravaL(spr);
-  (UsekDalsi as TBlkUsek).Souprava.front := UsekDalsi;
+  (UsekDalsi as TBlkUsek).AddTrainL(train);
+  (UsekDalsi as TBlkUsek).train.front := UsekDalsi;
   (UsekDalsi as TBlkUsek).houk_ev_enabled := true;
-  writelog('JC '+Self.nazev+': predana souprava '+(UsekDalsi as TBlkUsek).Souprava.name+
+  writelog('JC '+Self.nazev+': predana souprava '+(UsekDalsi as TBlkUsek).train.name+
       ' z bloku '+UsekActual.name+' do bloku '+UsekDalsi.name, WR_SPRPREDAT);
 
   Self.CheckSmyckaBlok(UsekDalsi);
@@ -2599,21 +2599,21 @@ var UsekActual,UsekDalsi,Nav:TBlk;
 procedure TJC.CheckSmyckaBlok(blk:TBlk);
 var oblr:TOR;
 begin
- if (((Blk as TBlkUsek).GetSettings().SmcUsek) and ((Blk as TBlkUsek).IsSouprava())) then
+ if (((Blk as TBlkUsek).GetSettings().SmcUsek) and ((Blk as TBlkUsek).IsTrain())) then
   begin
    // kontrola zmeny vychozi a cilove stanice
    for oblr in blk.OblsRizeni do
     begin
-     if (oblr = (Blk as TBlkUsek).Souprava.stationTo) then
+     if (oblr = (Blk as TBlkUsek).train.stationTo) then
       begin
-       (Blk as TBlkUsek).Souprava.InterChangeStanice(false);
+       (Blk as TBlkUsek).train.InterChangeStanice(false);
        break;
       end;
     end;
 
-   (Blk as TBlkUsek).Souprava.ChangeSmer();
+   (Blk as TBlkUsek).train.ChangeSmer();
    writelog('Obsazen smyckovy usek '+Blk.name+ ' - menim smer loko v souprave '+
-      (Blk as TBlkUsek).Souprava.name, WR_SPRPREDAT);
+      (Blk as TBlkUsek).train.name, WR_SPRPREDAT);
   end;//if
 end;
 
@@ -2945,7 +2945,7 @@ end;
 //tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
 function TJC.CanDN():boolean;
 var i:Integer;
-    spr: TSouprava;
+    train: TTrain;
     usekZaver: Integer;
     vyhZaver: TJCVyhZaver;
     odvratZaver: TJCOdvratZaver;
@@ -2958,7 +2958,7 @@ var i:Integer;
     zamek: TBlkZamek;
 begin
  // index soupravy na useku pred navestidlem
- spr := Self.GetSouprava();
+ train := Self.GetTrain();
 
  // zkontrolujeme zavery bloku
  // JC NELZE obnovit z useku, na kterych uplne spadl zaver (do zadneho zaveru)
@@ -2976,15 +2976,15 @@ begin
 
    if (Self.fproperties.TypCesty = TJCType.vlak) then
     begin
-     if (spr = nil) then
+     if (train = nil) then
       begin
        // pred navestidlem neni souprava -> na usecich nesmi byt zadna souprava
-       if (usek.IsSouprava()) then Exit(false);
+       if (usek.IsTrain()) then Exit(false);
       end else begin
        // pred navestidlem je souprava -> na usecich smi byt jen stejna souprava
        // jako pred navestidlem
-       if ((usek.IsSouprava()) and
-           ((usek.Soupravs.Count > 1) or (usek.Souprava <> spr))) then
+       if ((usek.IsTrain()) and
+           ((usek.trains.Count > 1) or (usek.train <> train))) then
          Exit(false);
       end;
     end;
@@ -3321,7 +3321,7 @@ begin
   _JCB_SPR_SMER : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Jízda proti směru soupravy');
-    Result[2] := GetUPOLine('Soprava ' + Soupravy[Bariera.param].name);
+    Result[2] := GetUPOLine('Soprava ' + Trains[Bariera.param].name);
   end;
 
  else
@@ -3585,7 +3585,7 @@ begin
      end;//if
 
     // souprava
-    if (((Blk as TBlkUsek).IsSouprava()) and (Self.fproperties.TypCesty = TJCType.vlak)) then
+    if (((Blk as TBlkUsek).IsTrain()) and (Self.fproperties.TypCesty = TJCType.vlak)) then
       bariery.Add(Self.JCBariera(_JCB_USEK_SOUPRAVA, Blk, Blk.id));
    end;//for i
 
@@ -3713,16 +3713,16 @@ begin
     usek := (Self.navestidlo as TBlkNav).UsekPred as TBlkUsek;
     Blky.GetBlkByID(Self.data.Useky[Self.data.Useky.Count-1], TBlk(lastUsek));
 
-    if ((usek.IsSouprava) and (lastUsek.typ = btTU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
+    if ((usek.IsTrain) and (lastUsek.typ = btTU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
      begin
       if (trat.vyluka) then
        begin
-        if ((trat.stav.soupravy.Count > 0) or ((trat.GetLastUsek(Self.data.TratSmer) as TBlkTU).Zaver <> TZaver.no)) then
+        if ((trat.stav.trains.Count > 0) or ((trat.GetLastUsek(Self.data.TratSmer) as TBlkTU).Zaver <> TZaver.no)) then
           bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRENOS, trat, Self.fproperties.Trat))
         else
           bariery.Add(Self.JCBariera(_JCB_TRAT_PRENOS_NAKONEC, trat, Self.fproperties.Trat));
        end else begin
-        if ((lastUsek.IsSouprava()) or (not trat.BP) or (trat.Smer <> Self.data.TratSmer)) then
+        if ((lastUsek.IsTrain()) or (not trat.BP) or (trat.Smer <> Self.data.TratSmer)) then
           bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRENOS, trat, Self.fproperties.Trat));
        end;
      end;
@@ -3834,12 +3834,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetSouprava(nav:TBlk = nil; usek:TBlk = nil): TSouprava;
+function TJC.GetTrain(nav:TBlk = nil; usek:TBlk = nil): TTrain;
 begin
  if (nav = nil) then
    Blky.GetBlkByID(Self.fproperties.NavestidloBlok, nav);
 
- Result := TBlkNav(nav).GetSouprava(usek);
+ Result := TBlkNav(nav).GetTrain(usek);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

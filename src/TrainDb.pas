@@ -1,29 +1,29 @@
-﻿unit SprDb;
+﻿unit TrainDb;
 
-// databaze souprav
+{ Trains database. }
 
 interface
 
-uses SysUtils, Souprava, IniFiles, Classes, Windows, Forms, Trakce,
+uses SysUtils, Train, IniFiles, Classes, Windows, Forms, Trakce,
      JsonDataObjects;
 
 const
-  _MAX_SPR = 128;
+  _MAX_TRAIN = 128;
 
 type
 
-  TSprDb = class
+  TTrainDb = class
    private
       ffilename:string;
 
-      procedure FreeSpr();
+      procedure FreeTrains();
 
       function GetCount():Integer;
-      function GetItem(index:Integer):TSouprava;
-      function GetEmptySpaceForSpr():Integer;
+      function GetItem(index:Integer): TTrain;
+      function GetEmptySpaceForTrain(): Integer;
 
    public
-      soupravy:array [0.._MAX_SPR] of TSouprava;
+      trains:array [0.._MAX_TRAIN] of TTrain;
 
       constructor Create();
       destructor Destroy(); override;
@@ -31,27 +31,27 @@ type
       procedure LoadData(const filename:string);
       procedure SaveData(const filename:string);
 
-      procedure AddSprFromPanel(spr:TStrings; usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
-      procedure RemoveSpr(index:Integer);
+      procedure AddTrainFromPanel(spr:TStrings; usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
+      procedure RemoveTrain(index:Integer);
 
-      function GetSprNameByIndex(index:Integer):string;
-      function GetSprIndexByName(name:string):Integer;
+      function GetTrainNameByIndex(index:Integer):string;
+      function GetTrainIndexByName(name:string):Integer;
 
       procedure UpdateFront();
-      procedure StopAllSpr();
+      procedure StopAllTrains();
       procedure ClearPOdj();
 
       procedure GetPtData(json:TJsonObject);
 
       property filename:string read ffilename;
 
-      property Items[index : integer] : TSouprava read GetItem; default;
+      property Items[index : integer] : TTrain read GetItem; default;
       property count:Integer read GetCount;
 
-  end;//TSprDb
+  end;//TTrainDb
 
 var
-  Soupravy : TSprDb;
+  Trains: TTrainDb;
 
 implementation
 
@@ -60,34 +60,34 @@ uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, appEv, TBlok,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TSprDb.Create();
+constructor TTrainDb.Create();
 var i:Integer;
 begin
  inherited;
 
- for i := 0 to _MAX_SPR-1 do
-   Self.soupravy[i] := nil;
+ for i := 0 to _MAX_TRAIN-1 do
+   Self.trains[i] := nil;
 end;//ctor
 
-destructor TSprDb.Destroy();
+destructor TTrainDb.Destroy();
 begin
- Self.FreeSpr();
+ Self.FreeTrains();
  inherited;
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.FreeSpr();
+procedure TTrainDb.FreeTrains();
 var i:Integer;
 begin
- for i := 0 to _MAX_SPR-1 do
-  if (Assigned(Self.soupravy[i])) then
-   FreeAndNil(Self.soupravy[i]);
+ for i := 0 to _MAX_TRAIN-1 do
+  if (Assigned(Self.trains[i])) then
+   FreeAndNil(Self.trains[i]);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.LoadData(const filename:string);
+procedure TTrainDb.LoadData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
     sections:TStrings;
@@ -101,10 +101,10 @@ begin
  try
    ini.ReadSections(sections);
 
-   Self.FreeSpr();
+   Self.FreeTrains();
 
    for i := 0 to sections.Count-1 do
-     Self.soupravy[i] := TSouprava.Create(ini, sections[i], i);
+     Self.trains[i] := TTrain.Create(ini, sections[i], i);
 
    writelog('Načteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
  finally
@@ -112,11 +112,11 @@ begin
    FreeAndNil(sections);
  end;
 
- SprTableData.LoadToTable();
+ TrainTableData.LoadToTable();
  HVTableData.LoadToTable();
 end;
 
-procedure TSprDb.SaveData(const filename:string);
+procedure TTrainDb.SaveData(const filename:string);
 var ini:TMemIniFile;
     i:Integer;
 begin
@@ -126,9 +126,9 @@ begin
    DeleteFile(PChar(filename));
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  try
-   for i := 0 to _MAX_SPR-1 do
-     if (Assigned(Self.soupravy[i])) then
-       Self.soupravy[i].SaveToFile(ini, IntToStr(i));
+   for i := 0 to _MAX_TRAIN-1 do
+     if (Assigned(Self.trains[i])) then
+       Self.trains[i].SaveToFile(ini, IntToStr(i));
    ini.UpdateFile();
  finally
    FreeAndNil(ini);
@@ -139,60 +139,60 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSprDb.GetCount():Integer;
+function TTrainDb.GetCount():Integer;
 var i:Integer;
 begin
  Result := 0;
- for i := 0 to _MAX_SPR do
-  if (Assigned(Self.soupravy[i])) then
+ for i := 0 to _MAX_TRAIN do
+  if (Assigned(Self.trains[i])) then
    Inc(Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSprDb.GetSprNameByIndex(index:Integer):string;
+function TTrainDb.GetTrainNameByIndex(index:Integer):string;
 begin
- if (index < 0) or (index >= _MAX_SPR) then Exit('-');
+ if (index < 0) or (index >= _MAX_TRAIN) then Exit('-');
 
- if (Assigned(Self.soupravy[index])) then
-  Result := Self.soupravy[index].name
+ if (Assigned(Self.trains[index])) then
+  Result := Self.trains[index].name
  else
   Result := '-';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSprDb.GetSprIndexByName(name:string):Integer;
+function TTrainDb.GetTrainIndexByName(name:string):Integer;
 var i:Integer;
 begin
- for i := 0 to _MAX_SPR-1 do
-  if ((Assigned(Self.soupravy[i])) and (Self.soupravy[i].name = name)) then
+ for i := 0 to _MAX_TRAIN-1 do
+  if ((Assigned(Self.trains[i])) and (Self.trains[i].name = name)) then
    Exit(i);
  Exit(-1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.AddSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
+procedure TTrainDb.AddTrainFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
 var i:Integer;
 begin
- i := Self.GetEmptySpaceForSpr();
+ i := Self.GetEmptySpaceForTrain();
 
  try
-  Self.soupravy[i] := TSouprava.Create(spr, Usek, i, OblR, ok, err);
+  Self.trains[i] := TTrain.Create(spr, Usek, i, OblR, ok, err);
   if (Assigned(Usek)) then          // toto musi byt tady, nikoliv v konstruktoru
    begin
-    (Usek as TBlkUsek).AddSouprava(sprUsekIndex, i);
+    (Usek as TBlkUsek).AddTrain(sprUsekIndex, i);
     (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
    end;
 
-  Self.soupravy[i].OnPredictedSignalChange();
-  Self.soupravy[i].OnExpectedSpeedChange();
+  Self.trains[i].OnPredictedSignalChange();
+  Self.trains[i].OnExpectedSpeedChange();
  except
   on E: Exception do
    begin
-    FreeAndNil(Self.soupravy[i]);
-    SprTableData.reload := true;
+    FreeAndNil(Self.trains[i]);
+    TrainTableData.reload := true;
     raise Exception.Create(E.Message);
    end;
  end;
@@ -200,75 +200,75 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.RemoveSpr(index:Integer);
+procedure TTrainDb.RemoveTrain(index:Integer);
 begin
- if (not Assigned(Self.soupravy[index])) then Exit();
+ if (not Assigned(Self.trains[index])) then Exit();
 
- Blky.RemoveSpr(Self.soupravy[index]);
- ORTCPServer.OnRemoveSpr(Self.soupravy[index]);
- FreeAndNil(Self.soupravy[index]);
- SprTableData.reload := true;
+ Blky.RemoveTrain(Self.trains[index]);
+ ORTCPServer.OnRemoveTrain(Self.trains[index]);
+ FreeAndNil(Self.trains[index]);
+ TrainTableData.reload := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.UpdateFront();
+procedure TTrainDb.UpdateFront();
 var i:Integer;
 begin
- for i := 0 to _MAX_SPR-1 do
-  if (Self.soupravy[i] <> nil) then
-    Self.soupravy[i].UpdateFront();
+ for i := 0 to _MAX_TRAIN-1 do
+  if (Self.trains[i] <> nil) then
+    Self.trains[i].UpdateFront();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // Tato funkce predpoklada vysokou zatez sbernice do centraly ->
 // schvalne ceka.
-procedure TSprDb.StopAllSpr();
+procedure TTrainDb.StopAllTrains();
 var i:Integer;
 begin
- for i := 0 to _MAX_SPR-1 do
-  if ((Self.soupravy[i] <> nil) and (Self.soupravy[i].wantedSpeed <> 0)) then
+ for i := 0 to _MAX_TRAIN-1 do
+  if ((Self.trains[i] <> nil) and (Self.trains[i].wantedSpeed <> 0)) then
    begin
-    Self.soupravy[i].speed := 0;
+    Self.trains[i].speed := 0;
     Sleep(3);
    end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSprDb.GetItem(index:Integer):TSouprava;
+function TTrainDb.GetItem(index:Integer):TTrain;
 begin
- Result := Self.soupravy[index];
+ Result := Self.trains[index];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.ClearPOdj();
+procedure TTrainDb.ClearPOdj();
 var i:Integer;
 begin
- for i := 0 to _MAX_SPR-1 do
-  if (Self.soupravy[i] <> nil) then
-    Self.soupravy[i].ClearPOdj();
+ for i := 0 to _MAX_TRAIN-1 do
+  if (Self.trains[i] <> nil) then
+    Self.trains[i].ClearPOdj();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSprDb.GetEmptySpaceForSpr():Integer;
+function TTrainDb.GetEmptySpaceForTrain():Integer;
 var i:Integer;
 begin
- for i := 0 to _MAX_SPR do
-   if (Self.soupravy[i] = nil) then
+ for i := 0 to _MAX_TRAIN do
+   if (Self.trains[i] = nil) then
      Exit(i);
  raise Exception.Create('Založen maximální počet souprav!');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprDb.GetPtData(json:TJsonObject);
-var spr: TSouprava;
+procedure TTrainDb.GetPtData(json:TJsonObject);
+var spr: TTrain;
 begin
- for spr in Self.soupravy do
+ for spr in Self.trains do
   begin
    try
      if (spr <> nil) then
@@ -285,8 +285,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 initialization
-  Soupravy := TSprDb.Create();
+  Trains := TTrainDb.Create();
 finalization
-  FreeAndNil(Soupravy);
+  FreeAndNil(Trains);
 
 end.//unit

@@ -69,7 +69,7 @@ var
 implementation
 
 uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
-      fHVPomEdit, TBloky, SprDb;
+      fHVPomEdit, TBloky, TrainDb;
 
 {$R *.dfm}
 
@@ -175,7 +175,7 @@ var data:THVData;
    end;
 
   OblR := ORs[Self.CB_OR.ItemIndex];
-  if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.souprava > -1) and (Self.OpenHV.Stav.stanice <> OblR)) then
+  if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.train > -1) and (Self.OpenHV.Stav.stanice <> OblR)) then
     if (Application.MessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 
@@ -258,8 +258,8 @@ var data:THVData;
 
      HVTableData.UpdateLine(OpenHV);
 
-     if (stav.souprava > -1) then
-       Blky.ChangeSprToTrat(Soupravy[stav.souprava]);
+     if (stav.train > -1) then
+       Blky.ChangeTrainToTrat(Trains[stav.train]);
    end;
 
   Self.Close();

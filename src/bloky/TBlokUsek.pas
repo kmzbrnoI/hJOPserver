@@ -5,17 +5,17 @@
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
-     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, Souprava,
+     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, Train,
      stanicniHlaseni, changeEvent, predvidanyOdjezd, TechnologieRCS;
 
 type
  TUsekStav  = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
 
- ESprFull = class(Exception);
- ESprNotExists = class(Exception);
- EMultipleSprs = class(Exception);
- EDuplicitSprs = class(Exception);
- ERunningSpr   = class(Exception);
+ ETrainFull = class(Exception);
+ ETrainNotExists = class(Exception);
+ EMultipleTrains = class(Exception);
+ EDuplicitTrains = class(Exception);
+ ERunningTrain   = class(Exception);
 
  //technologicka nastaveni useku (delka, RCS moduly, ...)
  TBlkUsekSettings = record
@@ -25,54 +25,54 @@ type
   Zesil:string;           //id zesilovace
   houkEvL:TObjectList<THoukEv>;  //seznam houkacich udalosti pro lichy smer
   houkEvS:TObjectList<THoukEv>;  //seznam houkacich udalosti pro sudy smer
-  maxSpr:Cardinal;        // maximalni pocet souprav v bloku
+  maxTrains:Cardinal;        // maximalni pocet souprav v bloku
  end;
 
  TSekceStav = TList<TUsekStav>;
 
  //aktualni stav useku (obsazeno, ...)
  TBlkUsekStav = record
-  Stav,StavOld:TUsekStav;   // hlavni stav useku a jeho predchozi hodnota (pouzivano v Update())
+  stav, stavOld:TUsekStav;  // hlavni stav useku a jeho predchozi hodnota (pouzivano v Update())
   sekce:TSekceStav;         // obsazenost jednotlivych casti useku
-  Zaver:TZaver;             // zaver na bloku
+  zaver:TZaver;             // zaver na bloku
   NUZ:boolean;              // nouzove uvolneni zaveru
-  KonecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
-  Stit,Vyl:string;          // stitek a vyluka
-  NavJCRef:TList<TBlk>;     // navestidla, ze kterych je z tohoto bloku postavena JC
-  SprPredict:Integer;       // souprava, ktera je na tomto bloku predpovidana
+  konecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
+  stit, vyl:string;         // stitek a vyluka
+  navJCRef:TList<TBlk>;     // navestidla, ze kterych je z tohoto bloku postavena JC
+  trainPredict:Integer;     // souprava, ktera je na tomto bloku predpovidana
   zkrat:TBoosterSignal;     // zkrat zesilovace
   napajeni:TBoosterSignal;  // napajeni zesilovace
   DCC:boolean;              // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
   stanicni_kolej:boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
   cislo_koleje:string;      // cislo koleje, pokud je stanicni
-  spr_pos:boolean;          // jestli je v panelu alespon jeden specialni symbol pro cislo koleje
+  train_pos:boolean;          // jestli je v panelu alespon jeden specialni symbol pro cislo koleje
   vlakPresun:Integer;       // index soupravy, ktera se presouva, v ramci lokalniho seznamu souprav na useku; zadny presun = -1
 
   zpomalovani_ready:boolean;          // pri predani soupravy do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
                                       // to znamena, ze je souprava pripravena ke zpomalovani; navetidlo umozni zpomaleni jen, pokud je tento flag na true
                                       // po zpomaleni si navestidlo flag zrusi
 
-  spr_vypadek:boolean;      // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
-  spr_vypadek_time:Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
+  train_vypadek:boolean;      // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
+  train_vypadek_time:Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
                             // pro reseni timeoutu jsou tyto 2 promenne
   zkratSenseTime:TDateTime; // cas, kdy ma dojit k detekci zkratu
   currentHoukEv:Integer;    // index aktualni houkaci udalosti
   neprofilJCcheck:TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
-  soupravy:TList<Integer>;        // seznam souprav na useku ve smeru L --> S
+  trains: TList<Integer>;        // seznam souprav na useku ve smeru L --> S
  end;
 
  TBlkUsek = class(TBlk)
   const
    //defaultni stav
    _def_usek_stav:TBlkUsekStav = (
-    Stav : disabled;
-    StavOld : disabled;
-    Zaver : no;
+    stav : disabled;
+    stavOld : disabled;
+    zaver : no;
     NUZ : false;
-    KonecJC : no;
-    Stit : '';
-    Vyl : '';
-    SprPredict : -1;
+    konecJC : no;
+    stit : '';
+    vyl : '';
+    trainPredict : -1;
     zkrat : TBoosterSignal.undef;
     napajeni : TBoosterSignal.undef;
     DCC : false;
@@ -83,7 +83,7 @@ type
     currentHoukEv : -1;
    );
 
-   _DEFAULT_MAX_SPR = 1;
+   _DEFAULT_MAX_TRAINS = 1;
 
   private
    UsekStav:TBlkUsekStav;
@@ -93,8 +93,8 @@ type
     procedure SetUsekZaver(Zaver:TZaver);
     procedure SetUsekStit(stit:string);
     procedure mSetUsekVyl(vyl:string);
-    function GetSprPredict(): TSouprava;
-    procedure SetSprPredict(spr: TSouprava);
+    function GetTrainPredict(): TTrain;
+    procedure SetTrainPredict(train: TTrain);
     procedure SetKonecJC(konecjc:TZaver);
     procedure SetVlakPresun(presun:Integer);
 
@@ -143,22 +143,22 @@ type
     function GetHoukEvEnabled():boolean;
     procedure SetHoukEvEnabled(state:boolean);
 
-    function GetSHSpr(sprLocalIndex:Integer):TSHSpr;
+    function GetSHTrain(trainLocalIndex:Integer): TSHTrain;
 
     procedure NeprofilObsaz();
 
-    function GetSoupravaI(): Integer;
-    function GetSouprava(): TSouprava;
-    function GetSoupravaIL(): Integer;
-    function GetSoupravaL(): TSouprava;
-    function GetSoupravaIS(): Integer;
-    function GetSoupravaS(): TSouprava;
+    function GeTTrainI(): Integer;
+    function GeTTrain(): TTrain;
+    function GeTTrainIL(): Integer;
+    function GeTTrainL(): TTrain;
+    function GeTTrainIS(): Integer;
+    function GeTTrainS(): TTrain;
 
     procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
-    function CanSprSpeedInsert(index:Integer):boolean;
-    function IsStujForSpr(spr: TSouprava):boolean;
+    function CanTrainSpeedInsert(index:Integer):boolean;
+    function IsStujForTrain(train: TTrain):boolean;
     function RealZesZkrat():TBoosterSignal;
-    function CanStandSouprava():boolean;
+    function CanStandTrain():boolean;
     function CanBeNextVB(vbs: TList<TObject>; start: TBlk):boolean;
     function CanBeKC(vbs: TList<TObject>; start: TBlk):boolean;
 
@@ -170,7 +170,7 @@ type
 
     procedure MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
     function MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):boolean;
-    function PresunLok(SenderPnl:TIdContext; SenderOR:TObject; sprLocalIndex:Integer):boolean;
+    function PresunLok(SenderPnl:TIdContext; SenderOR:TObject; trainLocalIndex:Integer):boolean;
 
   public
 
@@ -211,53 +211,53 @@ type
     procedure RemoveNeprofilJC(id:Integer);
     function IsNeprofilJC():boolean;
 
-    function IsSouprava():boolean; overload;
-    function IsSouprava(index:Integer):Boolean; overload;
-    function IsSouprava(spr: TSouprava): Boolean; overload;
-    procedure AddSoupravaL(index:Integer); overload; virtual;
-    procedure AddSoupravaL(spr: TSouprava); overload; virtual;
-    procedure AddSoupravaS(index:Integer); overload; virtual;
-    procedure AddSoupravaS(spr: TSouprava); overload; virtual;
-    procedure AddSouprava(localSprIndex:Integer; souprava: Integer); overload;
-    procedure AddSouprava(localSprIndex:Integer; souprava: TSouprava); overload;
-    procedure RemoveSoupravy(); virtual;
-    procedure RemoveSouprava(index: Integer); overload; virtual;
-    procedure RemoveSouprava(spr: TSouprava); overload; virtual;
-    function SoupravyFull():boolean;
+    function IsTrain():boolean; overload;
+    function IsTrain(index:Integer):Boolean; overload;
+    function IsTrain(train: TTrain): Boolean; overload;
+    procedure AddTrainL(index:Integer); overload; virtual;
+    procedure AddTrainL(train: TTrain); overload; virtual;
+    procedure AddTrainS(index:Integer); overload; virtual;
+    procedure AddTrainS(train: TTrain); overload; virtual;
+    procedure AddTrain(localTrainIndex:Integer; train: Integer); overload;
+    procedure AddTrain(localTrainIndex:Integer; train: TTrain); overload;
+    procedure RemoveTrains(); virtual;
+    procedure RemoveTrain(index: Integer); overload; virtual;
+    procedure RemoveTrain(train: TTrain); overload; virtual;
+    function TrainsFull():boolean;
 
     function IsVlakPresun():boolean;
     procedure ClearPOdj();
     procedure PropagatePOdjToTrat();
 
-    procedure MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer);
+    procedure MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer);
 
     property Stav:TBlkUsekStav read UsekStav;
 
-    property Obsazeno:TUsekStav read UsekStav.Stav;
+    property obsazeno:TUsekStav read UsekStav.Stav;
     property NUZ:boolean read UsekStav.NUZ write SetUsekNUZ;
-    property Zaver:TZaver read UsekStav.Zaver write SetUsekZaver;
-    property Stitek:string read UsekStav.Stit write SetUsekStit;
-    property Vyluka:string read UsekStav.Vyl write mSetUsekVyl;
-    property SprPredict: TSouprava read GetSprPredict write SetSprPredict;
-    property KonecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
-    property NavJCRef:TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
-    property SekceStav:TList<TUsekStav> read UsekStav.sekce;
+    property zaver:TZaver read UsekStav.Zaver write SetUsekZaver;
+    property stitek:string read UsekStav.Stit write SetUsekStit;
+    property vyluka:string read UsekStav.Vyl write mSetUsekVyl;
+    property trainPredict: TTrain read GetTrainPredict write SetTrainPredict;
+    property konecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
+    property navJCRef:TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
+    property sekceStav:TList<TUsekStav> read UsekStav.sekce;
     property navL: TBlk read GetNavL;  // warning: slow getter!
     property navS: TBLk read GetNavS;  // warning: slow getter!
 
-    property SoupravaI: Integer read GetSoupravaI;
-    property Souprava: TSouprava read GetSouprava;
-    property SoupravaIL: Integer read GetSoupravaIL;
-    property SoupravaL: TSouprava read GetSoupravaL;
-    property SoupravaIS: Integer read GetSoupravaIS;
-    property SoupravaS: TSouprava read GetSoupravaS;
-    property Soupravs: TList<Integer> read UsekStav.Soupravy;
+    property trainI: Integer read GeTTrainI;
+    property train: TTrain read GeTTrain;
+    property trainIL: Integer read GeTTrainIL;
+    property trainL: TTrain read GeTTrainL;
+    property trainIS: Integer read GeTTrainIS;
+    property trainSudy: TTrain read GeTTrainS;
+    property trains: TList<Integer> read UsekStav.trains;
 
     property zkrat:TBoosterSignal read UsekStav.Zkrat write SetZkrat;
     property napajeni:TBoosterSignal read UsekStav.Napajeni write SetNapajeni;
     property DCC:boolean read UsekStav.DCC write SetDCC;
 
-    property VlakPresun:Integer read UsekStav.vlakPresun write SetVlakPresun;
+    property vlakPresun:Integer read UsekStav.vlakPresun write SetVlakPresun;
     property zpomalovani_ready:boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
     property houk_ev_enabled:boolean read GetHoukEvEnabled write SetHoukEvEnabled;
 
@@ -267,8 +267,8 @@ type
 
     function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    procedure POdjChanged(sprId:Integer; var podj:TPOdj);
-    function GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
+    procedure POdjChanged(trainId:Integer; var podj:TPOdj);
+    function GetTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer):string;
     function PanelStateString():string; override;
 
     //PT:
@@ -284,7 +284,7 @@ type
 implementation
 
 uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, SprDb, THVDatabase, Math,
+    TJCDatabase, fMain, TCPServerOR, TBlokTrat, TrainDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
@@ -303,10 +303,10 @@ begin
  Self.UsekSettings.houkEvL := TObjectList<THoukEv>.Create();
  Self.UsekSettings.houkEvS := TObjectList<THoukEv>.Create();
 
- Self.UsekSettings.maxSpr := _DEFAULT_MAX_SPR;
+ Self.UsekSettings.maxTrains := _DEFAULT_MAX_TRAINS;
 
  Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
- Self.UsekStav.soupravy := TList<Integer>.Create();
+ Self.UsekStav.trains := TList<Integer>.Create();
  Self.UsekStav.NavJCRef := TList<TBlk>.Create();
  Self.UsekStav.sekce := TList<TUsekStav>.Create();
 end;//ctor
@@ -324,7 +324,7 @@ begin
  Self.EventsOnZaverReleaseOrAB.Free();
 
  Self.UsekStav.neprofilJCcheck.Free();
- Self.UsekStav.soupravy.Free();
+ Self.UsekStav.trains.Free();
  Self.UsekStav.NavJCRef.Free();
  Self.UsekStav.sekce.Free();
 
@@ -336,7 +336,7 @@ end;//dtor
 procedure TBlkUsek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
 var strs: TStrings;
     s: string;
-    sprIndex: Integer;
+    trainIndex: Integer;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -344,7 +344,7 @@ begin
  Self.UsekSettings.Lenght := ini_tech.ReadFloat(section,'delka',0);
  Self.UsekSettings.Zesil := ini_tech.ReadString(section,'zesil','');
  Self.UsekSettings.SmcUsek := ini_tech.ReadBool(section, 'smc', false);
- Self.UsekSettings.maxSpr := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_SPR);
+ Self.UsekSettings.maxTrains := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_TRAINS);
 
  if (Boosters[Self.UsekSettings.Zesil] = nil) then
    writelog('WARNING: Blok '+Self.name + ' ('+IntToStr(Self.id)+
@@ -355,13 +355,13 @@ begin
 
  strs := TStringList.Create();
  try
-   Self.UsekStav.soupravy.Clear();
+   Self.UsekStav.trains.Clear();
    ExtractStringsEx([','], [], ini_stat.ReadString(section, 'spr' , ''), strs);
    for s in strs do
     begin
-     sprIndex := Soupravy.GetSprIndexByName(s);
-     if (sprIndex > -1) then
-       Self.UsekStav.soupravy.Add(sprIndex)
+     trainIndex := TrainDb.Trains.GetTrainIndexByName(s);
+     if (trainIndex > -1) then
+       Self.UsekStav.trains.Add(trainIndex)
      else
        writelog('WARNING: souprava '+s+' na bloku '+Self.name+' neexistuje, mažu soupravu', WR_DATA);
     end;
@@ -394,10 +394,10 @@ begin
     end;
 
    if (strs.Count >= 4) then
-     Self.UsekStav.spr_pos := (strs[3] = '1');
+     Self.UsekStav.train_pos := (strs[3] = '1');
 
-   if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxSpr <> 1)) then
-     Self.UsekSettings.maxSpr := 1;
+   if ((not Self.UsekStav.stanicni_kolej) and (Self.UsekSettings.maxTrains <> 1)) then
+     Self.UsekSettings.maxTrains := 1;
  finally
    strs.Free();
  end;
@@ -414,8 +414,8 @@ begin
  ini_tech.WriteFloat(section,'delka', Self.UsekSettings.Lenght);
  ini_tech.WriteString(section,'zesil', Self.UsekSettings.Zesil);
 
- if (Self.UsekSettings.maxSpr <> _DEFAULT_MAX_SPR) then
-   ini_tech.WriteInteger(section, 'maxSpr', Self.UsekSettings.maxSpr);
+ if (Self.UsekSettings.maxTrains <> _DEFAULT_MAX_TRAINS) then
+   ini_tech.WriteInteger(section, 'maxSpr', Self.UsekSettings.maxTrains);
 
  if (Self.UsekSettings.SmcUsek) then
    ini_tech.WriteBool(section, 'smc', Self.UsekSettings.SmcUsek);
@@ -449,7 +449,7 @@ end;
 
 procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
 var str:string;
-    spri:Integer;
+    traini:Integer;
 begin
  if (Self.UsekStav.Stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.UsekStav.Stit);
@@ -457,11 +457,11 @@ begin
  if (Self.UsekStav.Vyl <> '') then
    ini_stat.WriteString(section, 'vyl' , Self.UsekStav.Vyl);
 
- if (Self.IsSouprava()) then
+ if (Self.IsTrain()) then
   begin
    str := '';
-   for spri in Self.Soupravs do
-     str := str + Soupravy[spri].name + ',';
+   for traini in Self.trains do
+     str := str + TrainDb.Trains[traini].name + ',';
    ini_stat.WriteString(section, 'spr' , str);
   end;
 end;
@@ -507,7 +507,7 @@ begin
  Self.UsekStav.Stav       := disabled;
  Self.UsekStav.StavOld    := disabled;
  Self.UsekStav.NUZ        := false;
- Self.UsekStav.SprPredict := -1;
+ Self.UsekStav.TrainPredict := -1;
  Self.UsekStav.KonecJC    := TZaver.no;
  Self.UsekStav.zpomalovani_ready := false;
  Self.houk_ev_enabled     := false;
@@ -538,7 +538,7 @@ end;
 
 //update all local variables
 procedure TBlkUsek.Update();
-var i, spr:Integer;
+var i, train:Integer;
     state:TRCSInputState;
     usekStav:TUsekStav;
     oblr:TOR;
@@ -602,26 +602,26 @@ begin
 
  // reseni vypadku soupravy
  // pad soupravy z bloku az po urcitem case - aby se jizdni ceste nechal cas na zpracovani pohybu soupravy
- if (Self.UsekStav.spr_vypadek) then
+ if (Self.UsekStav.train_vypadek) then
   begin
-   if (not Self.IsSouprava()) then
+   if (not Self.IsTrain()) then
     begin
-     Self.UsekStav.spr_vypadek := false;
+     Self.UsekStav.train_vypadek := false;
      Exit();
     end;
 
-   Inc(Self.UsekStav.spr_vypadek_time);
-   if (Self.UsekStav.spr_vypadek_time > 3) then
+   Inc(Self.UsekStav.train_vypadek_time);
+   if (Self.UsekStav.train_vypadek_time > 3) then
     begin
-     Self.UsekStav.spr_vypadek := false;
+     Self.UsekStav.train_vypadek := false;
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
      if ((Self.typ = btTU) or (Self.UsekStav.stanicni_kolej)) then
        for oblr in Self.OblsRizeni do
          oblr.BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
      if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := TZaver.nouz;
-    end;//if spr_vypadek_time > 3
-  end;//if spr_vypadek
+    end;//if train_vypadek_time > 3
+  end;//if train_vypadek
 
  // OnChange
  if (Self.UsekStav.Stav <> Self.UsekStav.StavOld) then
@@ -633,8 +633,8 @@ begin
      JCDb.RusJC(Self);
 
      // zastavime soupravy na useku
-     for spr in Self.Soupravs do
-       Soupravy[spr].speed := 0;
+     for train in Self.trains do
+       TrainDb.Trains[train].speed := 0;
 
      Self.Change(true);
     end;
@@ -652,23 +652,23 @@ begin
    end else if (Self.UsekStav.Stav = TUsekStav.uvolneno) then
      Self.CallChangeEvents(Self.EventsOnUvol);
 
-   if (Self.IsSouprava()) then
+   if (Self.IsTrain()) then
     begin
      // souprava
      if ((Self.UsekStav.Stav = TUsekStav.uvolneno) and (Self.UsekStav.StavOld = TUsekStav.obsazeno)) then
       begin
-       Self.UsekStav.spr_vypadek      := true;
-       Self.UsekStav.spr_vypadek_time := 0;
+       Self.UsekStav.train_vypadek      := true;
+       Self.UsekStav.train_vypadek_time := 0;
       end;
-    end;//if Spr <> -1
+    end;//if Train <> -1
 
    Self.UsekStav.StavOld := Self.UsekStav.Stav;
    Self.Change();
   end;
 
  // reseni zruseni PRESUN soupravy, ktera jede
- if ((Self.IsVlakPresun()) and ((not Self.IsSouprava(Self.Soupravs[Self.VlakPresun])) or
-     (Soupravy[Self.Soupravs[Self.VlakPresun]].wantedSpeed > 0))) then
+ if ((Self.IsVlakPresun()) and ((not Self.IsTrain(Self.trains[Self.VlakPresun])) or
+     (TrainDb.Trains[Self.trains[Self.VlakPresun]].wantedSpeed > 0))) then
    Self.VlakPresun := -1;
 
  // pousteni houkani na houkaci udalosti
@@ -711,7 +711,7 @@ begin
 
  old := Self.Zaver;
  Self.UsekStav.Zaver := Zaver;
- Self.UsekStav.SprPredict := -1;
+ Self.UsekStav.TrainPredict := -1;
 
  if ((old > TZaver.no) and (zaver = TZaver.no)) then
    Self.CallChangeEvents(Self.EventsOnZaverReleaseOrAb)
@@ -751,27 +751,27 @@ begin
   end;
 end;
 
-function TBlkUsek.GetSprPredict(): TSouprava;
+function TBlkUsek.GetTrainPredict(): TTrain;
 begin
- if (Self.UsekStav.SprPredict = -1) then
+ if (Self.UsekStav.TrainPredict = -1) then
    Exit(nil);
- Result := Soupravy[Self.UsekStav.SprPredict];
+ Result := TrainDb.Trains[Self.UsekStav.TrainPredict];
 end;
 
-procedure TBlkUsek.SetSprPredict(spr: TSouprava);
+procedure TBlkUsek.SetTrainPredict(train: TTrain);
 var old: Integer;
 begin
- old := Self.UsekStav.SprPredict;
- if (spr = nil) then
-   Self.UsekStav.SprPredict := -1
+ old := Self.UsekStav.TrainPredict;
+ if (train = nil) then
+   Self.UsekStav.TrainPredict := -1
  else
-   Self.UsekStav.SprPredict := spr.index;
+   Self.UsekStav.TrainPredict := train.index;
 
- if ((spr = nil) and (old > -1)) then
+ if ((train = nil) and (old > -1)) then
   begin
    // odstranit predvidany odjezd mazane predpovidane soupravy
-   if (Soupravy[old].IsPOdj(Self)) then
-     Soupravy[old].RemovePOdj(Self);
+   if (TrainDb.Trains[old].IsPOdj(Self)) then
+     TrainDb.Trains[old].RemovePOdj(Self);
   end;
 
  Self.Change();
@@ -912,7 +912,7 @@ begin
  Self.UsekSettings := data;
 
  if (not Self.UsekStav.stanicni_kolej) then
-   Self.UsekSettings.maxSpr := 1;
+   Self.UsekSettings.maxTrains := 1;
 
  Self.Change();
 end;
@@ -926,7 +926,7 @@ begin
  (SenderOR as TOR).PanelHVList(SenderPnl);
 
  // pak posleme pozadavek na editaci hnaciho vozidla
- (SenderOR as TOR).BlkNewSpr(Self, SenderPnl, (itemindex-2) div 2);
+ (SenderOR as TOR).BlkNewTrain(Self, SenderPnl, (itemindex-2) div 2);
 end;
 
 procedure TBlkUsek.MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
@@ -936,84 +936,84 @@ end;
 
 procedure TBlkUsek.MenuEditLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  // nejdrive posleme aktualni senam hnacich vozidel
  (SenderOR as TOR).PanelHVList(SenderPnl);
 
  // pak posleme pozadavek na editaci hnaciho vozidla
- (SenderOR as TOR).BlkEditSpr(Self, SenderPnl, Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]]);
+ (SenderOR as TOR).BlkEditTrain(Self, SenderPnl, TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]);
 end;
 
 procedure TBlkUsek.MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 var podm:TPSPodminky;
     blk:TObject;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  podm := TPSPodminky.Create();
- for blk in Blky.GetBlkWithSpr(Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]]) do
+ for blk in Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]) do
    podm.Add(TOR.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
  ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
-   'Smazání soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].name,
+   'Smazání soupravy '+TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].name,
    TBlky.GetBlksList(Self), podm);
 end;
 
 procedure TBlkUsek.PotvrDeleteLok(Sender:TIdContext; success:boolean);
 begin
- if ((TTCPORsRef(Sender.Data).spr_menu_index < 0) or
-     (TTCPORsRef(Sender.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(Sender.Data).train_menu_index < 0) or
+     (TTCPORsRef(Sender.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  if (success) then
   begin
-   if (Self.UsekStav.vlakPresun = TTCPORsRef(Sender.Data).spr_menu_index) then
+   if (Self.UsekStav.vlakPresun = TTCPORsRef(Sender.Data).train_menu_index) then
      Self.UsekStav.VlakPresun := -1;
-   Soupravy.RemoveSpr(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
+   TrainDb.Trains.RemoveTrain(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
   end;
 end;
 
 procedure TBlkUsek.PotvrUvolLok(Sender:TIdContext; success:boolean);
 begin
- if ((TTCPORsRef(Sender.Data).spr_menu_index < 0) or
-     (TTCPORsRef(Sender.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(Sender.Data).train_menu_index < 0) or
+     (TTCPORsRef(Sender.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  if (not success) then Exit();
 
- if (Blky.GetBlkWithSpr(Soupravy[Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]]).Count = 1) then
+ if (Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(Sender.Data).train_menu_index]]).Count = 1) then
   begin
-   Soupravy.RemoveSpr(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
+   TrainDb.Trains.RemoveTrain(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava odstraněna');
   end else begin
-   Self.RemoveSouprava(Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]);
+   Self.RemoveTrain(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
   end;
 end;
 
 procedure TBlkUsek.MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TOR,
-  'Uvolnění soupravy '+Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].name+' z bloku',
+  'Uvolnění soupravy '+TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].name+' z bloku',
   TBlky.GetBlksList(Self), nil);
 end;
 
 procedure TBlkUsek.MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var spr:TSouprava;
+var train:TTrain;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
- spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
+ train := TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]];
 
- if (spr.stolen) then
+ if (train.stolen) then
   begin
    // Prevzit soupravu, ktera byla ukradena.
    Self.MenuXVEZMILokClick(SenderPnl, SenderOR);
   end else begin
-   if (spr.IsAnyLokoInRegulator()) then
+   if (train.IsAnyLokoInRegulator()) then
     begin
      // Nasilim prevzit lokomotivy z regulatoru.
      Self.MenuRegVEZMILokClick(SenderPnl, SenderOR);
@@ -1032,26 +1032,26 @@ begin
 end;
 
 procedure TBlkUsek.MenuXVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var souprava: TSouprava;
+var train: TTrain;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
- souprava := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
- souprava.VezmiVlak(TTrakce.Callback(Self.XVezmiVlakOk, SenderPnl), TTrakce.Callback(Self.XVezmiVlakErr, SenderPnl));
+ train := TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]];
+ train.VezmiVlak(TTrakce.Callback(Self.XVezmiVlakOk, SenderPnl), TTrakce.Callback(Self.XVezmiVlakErr, SenderPnl));
 end;
 
 procedure TBlkUsek.MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
 var podm:TPSPodminky;
-    spr:TSouprava;
+    train:TTrain;
     hvaddr:Integer;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
- spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
+ train := TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]];
 
  podm := TPSPodminky.Create();
- for hvaddr in spr.HVs do
+ for hvaddr in train.HVs do
    if (HVDb[hvaddr] <> nil) then
      podm.Add(TOR.GetPSPodminka(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
 
@@ -1061,14 +1061,14 @@ begin
 end;
 
 procedure TBlkUsek.PotvrRegVezmiLok(Sender:TIdContext; success:boolean);
-var spr:TSouprava;
+var train:TTrain;
 begin
- if ((TTCPORsRef(Sender.Data).spr_menu_index < 0) or
-     (TTCPORsRef(Sender.Data).spr_menu_index >= Self.Soupravs.Count) or (not success)) then Exit();
- spr := Soupravy[Self.Soupravs[TTCPORsRef(Sender.Data).spr_menu_index]];
+ if ((TTCPORsRef(Sender.Data).train_menu_index < 0) or
+     (TTCPORsRef(Sender.Data).train_menu_index >= Self.trains.Count) or (not success)) then Exit();
+ train := TrainDb.Trains[Self.trains[TTCPORsRef(Sender.Data).train_menu_index]];
 
  try
-   spr.ForceRemoveAllRegulators();
+   train.ForceRemoveAllRegulators();
    ORTCPServer.SendInfoMsg(Sender, 'Vlak převzat');
  except
   on E: Exception do
@@ -1159,12 +1159,12 @@ end;
 procedure TBlkUsek.MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
 var Blk:TBlk;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  if (new_state) then
   begin
-   if (Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].station <> SenderOR) then
+   if (TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].station <> SenderOR) then
     begin
      ORTCPServer.SendInfoMsg(SenderPnl, 'Loko se nenachází ve vaši oblasti řízení');
      Exit();
@@ -1172,7 +1172,7 @@ begin
 
    Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
    if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := -1;
-   Self.VlakPresun := TTCPORsRef(SenderPnl.Data).spr_menu_index;
+   Self.VlakPresun := TTCPORsRef(SenderPnl.Data).train_menu_index;
   end else begin
    Self.VlakPresun := -1;
   end;
@@ -1183,11 +1183,11 @@ var addr:Integer;
     str:string;
     HV:THV;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  str := (SenderOR as TOR).id + ';LOK-TOKEN;OK;';
- for addr in Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].HVs do
+ for addr in TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].HVs do
   begin
    HV := HVDb[addr];
    str := str + '[' + IntToStr(HV.adresa) + '|' + HV.GetToken() + ']';
@@ -1201,11 +1201,11 @@ var addr:Integer;
     str:string;
     HV:THV;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  str := (SenderOR as TOR).id + ';MAUS;{';
- for addr in Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]].HVs do
+ for addr in TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].HVs do
   begin
    HV := HVDb[addr];
    str := str + IntToStr(HV.adresa) + '|';
@@ -1239,12 +1239,12 @@ end;
 
 procedure TBlkUsek.MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  try
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
-   TOR(SenderOR).hlaseni.Odjede(Self.GetSHSpr(TTCPORsRef(SenderPnl.Data).spr_menu_index));
+   TOR(SenderOR).hlaseni.Odjede(Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index));
  except
    on E:Exception do
     begin
@@ -1255,23 +1255,23 @@ begin
 end;
 
 procedure TBlkUsek.MenuHLASENIPrijezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-var shSpr:TSHSpr;
+var shTrain:TSHTrain;
     blk:TBlkUsek;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  try
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
 
-   shSpr := Self.GetSHSpr(TTCPORsRef(SenderPnl.Data).spr_menu_index);
+   shTrain := Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index);
    blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
-      Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]],
+      TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]],
       TOR(SenderOR)).stanicniKolej;
    if (blk = nil) then Exit();
 
-   shSpr.kolej := blk.Stav.cislo_koleje;
-   TOR(SenderOR).hlaseni.Prijede(shSpr);
+   shTrain.kolej := blk.Stav.cislo_koleje;
+   TOR(SenderOR).hlaseni.Prijede(shTrain);
  except
    on E:Exception do
     begin
@@ -1282,23 +1282,23 @@ begin
 end;
 
 procedure TBlkUsek.MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-var shSpr:TSHSpr;
+var shTrain:TSHTrain;
     blk:TBlkUsek;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index < 0) or
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index >= Self.Soupravs.Count)) then Exit();
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
+     (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  try
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
 
-   shSpr := Self.GetSHSpr(TTCPORsRef(SenderPnl.Data).spr_menu_index);
+   shTrain := Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index);
    blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
-      Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]],
+      TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]],
       TOR(SenderOR)).stanicniKolej;
 
    if (blk <> nil) then
-     shSpr.kolej := blk.Stav.cislo_koleje;
-   TOR(SenderOR).hlaseni.Projede(shSpr);
+     shTrain.kolej := blk.Stav.cislo_koleje;
+   TOR(SenderOR).hlaseni.Projede(shTrain);
  except
    on E:Exception do
     begin
@@ -1309,33 +1309,33 @@ begin
 end;
 
 procedure TBlkUsek.MenuPOdjClick(SenderPnl:TIdContext; SenderOR:TObject);
-var spr:TSouprava;
+var train:TTrain;
 begin
- if ((TTCPORsRef(SenderPnl.Data).spr_menu_index >= 0) and
-     (TTCPORsRef(SenderPnl.Data).spr_menu_index < Self.Soupravs.Count)) then
+ if ((TTCPORsRef(SenderPnl.Data).train_menu_index >= 0) and
+     (TTCPORsRef(SenderPnl.Data).train_menu_index < Self.trains.Count)) then
   begin
-   spr := Soupravy[Self.Soupravs[TTCPORsRef(SenderPnl.Data).spr_menu_index]];
+   train := TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]];
   end else begin
-   if (Self.SprPredict = nil) then Exit();
-   spr := Self.SprPredict;
+   if (Self.TrainPredict = nil) then Exit();
+   train := Self.TrainPredict;
   end;
 
- if (spr.IsPOdj(Self)) then
-   ORTCPServer.POdj(SenderPnl, Self, spr.index, spr.GetPOdj(Self))
+ if (train.IsPOdj(Self)) then
+   ORTCPServer.POdj(SenderPnl, Self, train.index, train.GetPOdj(Self))
  else
-   ORTCPServer.POdj(SenderPnl, Self, spr.index, nil);
+   ORTCPServer.POdj(SenderPnl, Self, train.index, nil);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer);
+procedure TBlkUsek.MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer);
 var menu:string;
 begin
- TTCPORsRef(SenderPnl.Data).spr_menu_index := sprLocalI;
+ TTCPORsRef(SenderPnl.Data).train_menu_index := trainLocalI;
 
  menu := '$'+Self.GlobalSettings.name+',';
- menu := menu + '$Souprava ' + Soupravy[Self.Soupravs[sprLocalI]].name + ',-,';
- menu := menu + Self.GetSprMenu(SenderPnl, SenderOr, sprLocalI);
+ menu := menu + '$Souprava ' + TrainDb.Trains[Self.trains[trainLocalI]].name + ',-,';
+ menu := menu + Self.GetTrainMenu(SenderPnl, SenderOr, trainLocalI);
 
  ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), menu);
 end;
@@ -1345,7 +1345,7 @@ end;
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkUsek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
 var Blk:TBlk;
-    spr:Integer;
+    train:Integer;
     canAdd:boolean;
     addStr:string;
     usekStav:TUsekStav;
@@ -1357,29 +1357,29 @@ begin
  else
    addStr := 'NOVÝ vlak,';
 
- if (Self.SoupravyFull() and (Self.Soupravs.Count = 1)) then begin
-   TTCPORsRef(SenderPnl.Data).spr_menu_index := 0;
-   Result := Result + Self.GetSprMenu(SenderPnl, SenderOR, 0) + '-,';
+ if (Self.TrainsFull() and (Self.trains.Count = 1)) then begin
+   TTCPORsRef(SenderPnl.Data).train_menu_index := 0;
+   Result := Result + Self.GetTrainMenu(SenderPnl, SenderOR, 0) + '-,';
  end else begin
-   canAdd := ((Self.CanStandSouprava()) and
-              (( (not Self.SoupravyFull()) and ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0)) ) or // novy vlak
+   canAdd := ((Self.CanStandTrain()) and
+              (( (not Self.TrainsFull()) and ((Self.UsekStav.Stav = TUsekStav.obsazeno) or (Self.UsekSettings.RCSAddrs.Count = 0)) ) or // novy vlak
                ( addStr = 'VLOŽ vlak,' ) // presun vlaku
               ));
 
    if (canAdd) then
      Result := Result + addStr;
 
-   for spr in Self.Soupravs do
+   for train in Self.trains do
     begin
-     Result := Result + Soupravy[spr].name + ',';
+     Result := Result + TrainDb.Trains[train].name + ',';
      if (canAdd) then Result := Result + addStr;
     end;
 
-   if ((canAdd) or (Self.Soupravs.Count > 0)) then
+   if ((canAdd) or (Self.trains.Count > 0)) then
      Result := Result + '-,';
  end;
 
- if ((Self.SprPredict <> nil) and (Self.UsekStav.stanicni_kolej)) then
+ if ((Self.TrainPredict <> nil) and (Self.UsekStav.stanicni_kolej)) then
    Result := Result + 'PODJ,-,';
 
  Result := Result + 'STIT,VYL,';
@@ -1429,56 +1429,56 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetSprMenu(SenderPnl:TIdContext; SenderOR:TObject; sprLocalI:Integer):string;
-var spr:TSouprava;
+function TBlkUsek.GetTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer):string;
+var train:TTrain;
     shPlay:stanicniHlaseniHelper.TSHToPlay;
-    spr_count:Integer;
+    train_count:Integer;
 begin
- spr := Soupravy[Self.Soupravs[sprLocalI]];
- spr_count := Blky.GetBlkWithSpr(Soupravy[Self.Soupravs[sprLocalI]]).Count;
+ train := TrainDb.Trains[Self.trains[trainLocalI]];
+ train_count := Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[trainLocalI]]).Count;
 
- if (Self.CanStandSouprava()) then
+ if (Self.CanStandTrain()) then
    Result := Result + 'EDIT vlak,';
- if ((Self.CanStandSouprava()) or (spr_count <= 1)) then
+ if ((Self.CanStandTrain()) or (train_count <= 1)) then
    Result := Result + '!ZRUŠ vlak,';
- if (spr_count > 1) then
+ if (train_count > 1) then
    Result := Result + '!UVOL vlak,';
 
- if (spr.HVs.Count > 0) then
+ if (train.HVs.Count > 0) then
   begin
    Result := Result + 'RUČ vlak,';
    if (TTCPORsRef(SenderPnl.Data).maus) then Result := Result + 'MAUS vlak,';
   end;
 
- if (Self.VlakPresun = sprLocalI) then
+ if (Self.VlakPresun = trainLocalI) then
   Result := Result + 'PŘESUŇ vlak<,'
- else if ((not Self.IsVlakPresun()) and (spr.wantedSpeed = 0) and (spr.station = SenderOR)) then
+ else if ((not Self.IsVlakPresun()) and (train.wantedSpeed = 0) and (train.station = SenderOR)) then
    Result := Result + 'PŘESUŇ vlak>,';
 
- if (spr.stolen) then
+ if (train.stolen) then
    Result := Result + 'VEZMI vlak,'
  else begin
-   if (spr.IsAnyLokoInRegulator()) then
+   if (train.IsAnyLokoInRegulator()) then
      Result := Result + '!VEZMI vlak,';
  end;
 
- if (Self.CanStandSouprava()) then
+ if (Self.CanStandTrain()) then
    Result := Result + 'PODJ,';
 
  if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
-     (spr.stationFrom <> nil) and (spr.stationTo <> nil) and (spr.typ <> '')) then
+     (train.stationFrom <> nil) and (train.stationTo <> nil) and (train.typ <> '')) then
   begin
-   if ((Self.UsekStav.stanicni_kolej) and (spr.announcement)) then
+   if ((Self.UsekStav.stanicni_kolej) and (train.announcement)) then
      Result := Result + 'HLÁŠENÍ odjezd,';
 
    try
-     shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(spr, TOR(SenderOR));
+     shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(train, TOR(SenderOR));
    except
      on E:Exception do
        AppEvents.LogException(E, 'CanPlayPrijezdSH');
    end;
 
-   if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (spr.IsPOdj(shPlay.stanicniKolej)))) then
+   if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (train.IsPOdj(shPlay.stanicniKolej)))) then
      Result := Result + 'HLÁŠENÍ příjezd,'
    else if (shPlay.trat <> nil) then
      Result := Result + 'HLÁŠENÍ průjezd,';
@@ -1495,7 +1495,7 @@ begin
 
   ENTER: begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-      if (((Self.UsekSettings.maxSpr <> 1) and (Self.Soupravs.Count > 0)) or (not Self.PresunLok(SenderPnl, SenderOR, 0))) then
+      if (((Self.UsekSettings.maxTrains <> 1) and (Self.trains.Count > 0)) or (not Self.PresunLok(SenderPnl, SenderOR, 0))) then
         Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params);
   end;
 
@@ -1539,8 +1539,8 @@ begin
  else if (item = 'PODJ')           then Self.MenuPOdjClick(SenderPnl, SenderOR)
  else begin
   // cislo soupravy
-  for i := 0 to Self.Soupravs.Count-1 do
-    if (item = Soupravy[Self.Soupravs[i]].name) then
+  for i := 0 to Self.trains.Count-1 do
+    if (item = TrainDb.Trains[Self.trains[i]].name) then
      begin
       Self.MenuSOUPRAVA(SenderPnl, SenderOR, i);
       break;
@@ -1551,20 +1551,20 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
-function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject; sprLocalIndex:Integer):boolean;
+function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject; trainLocalIndex:Integer):boolean;
 var Blk, Nav:TBlk;
-    spr: TSouprava;
+    train: TTrain;
 begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
  if (Blk = nil) then Exit(false);
 
- if (not Self.CanStandSouprava()) then
+ if (not Self.CanStandTrain()) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Loko lze přesunout pouze na staniční kolej!');
    Exit(true);
   end;
 
- if ((Self.SoupravyFull()) and (Blk <> Self)) then
+ if ((Self.TrainsFull()) and (Blk <> Self)) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Do úseku se již nevejde další souprava!');
    Exit(true);
@@ -1576,30 +1576,30 @@ begin
    Exit(true);
   end;
 
- if (not Self.CanSprSpeedInsert(sprLocalIndex)) then
+ if (not Self.CanTrainSpeedInsert(trainLocalIndex)) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze vložit soupravu před jedoucí soupravu!');
    Exit(true);
   end;
 
- spr := Soupravy[TBlkUsek(Blk).Soupravs[TBlkUsek(Blk).VlakPresun]];
+ train := TrainDb.Trains[TBlkUsek(Blk).trains[TBlkUsek(Blk).VlakPresun]];
 
  if (Blk = Self) then
   begin
-   Self.UsekStav.soupravy.Insert(sprLocalIndex, spr.index);
+   Self.UsekStav.trains.Insert(trainLocalIndex, train.index);
 
-   if (sprLocalIndex <= Self.VlakPresun) then
-     Self.UsekStav.soupravy.Delete(Self.VlakPresun+1)
+   if (trainLocalIndex <= Self.VlakPresun) then
+     Self.UsekStav.trains.Delete(Self.VlakPresun+1)
    else
-     Self.UsekStav.soupravy.Delete(Self.VlakPresun);
+     Self.UsekStav.trains.Delete(Self.VlakPresun);
 
    Self.UsekStav.vlakPresun := -1;
    Self.Change();
   end else begin
 
    try
-     Self.AddSouprava(sprLocalIndex, spr);
-     (Blk as TBlkUsek).RemoveSouprava(spr);
+     Self.AddTrain(trainLocalIndex, train);
+     (Blk as TBlkUsek).RemoveTrain(train);
    except
      on E:Exception do
       begin
@@ -1609,17 +1609,17 @@ begin
    end;
   end;
 
- ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+spr.name+' přesunuta na '+Self.GlobalSettings.name+'.');
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+train.name+' přesunuta na '+Self.GlobalSettings.name+'.');
 
- if (Blky.GetBlkWithSpr(spr).Count = 1) then
-   spr.front := Self;
+ if (Blky.GetBlkWithTrain(train).Count = 1) then
+   train.front := Self;
 
  for nav in (Blk as TBlkUsek).NavJCRef do
-   Blky.SprPrediction(Nav);
+   Blky.TrainPrediction(Nav);
 
  if (Blk <> Self) then
    for nav in Self.NavJCRef do
-     Blky.SprPrediction(Nav);
+     Blky.TrainPrediction(Nav);
 
  Result := true;
 end;
@@ -1641,7 +1641,7 @@ begin
 end;
 
 procedure TBlkUsek.GetPtState(json:TJsonObject);
-var spr:Integer;
+var train:Integer;
     usekStav:TUsekStav;
 begin
  case (Self.Obsazeno) of
@@ -1668,12 +1668,12 @@ begin
  if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
  if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
 
- for spr in Self.Soupravs do
-   json.A['soupravy'].Add(Soupravy[spr].name);
+ for train in Self.trains do
+   json.A['soupravy'].Add(TrainDb.Trains[train].name);
 
  json['zaver'] := Integer(Self.Stav.Zaver);
- if (Self.UsekStav.SprPredict > -1) then
-   json['sprPredict'] := Soupravy[Self.UsekStav.SprPredict].name;
+ if (Self.UsekStav.TrainPredict > -1) then
+   json['trainPredict'] := TrainDb.Trains[Self.UsekStav.TrainPredict].name;
  if (Self.UsekStav.NUZ) then
    json['nuz'] := true;
  if (Self.UsekStav.KonecJC <> TZaver.no) then
@@ -1681,12 +1681,12 @@ begin
 end;
 
 procedure TBlkUsek.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
-var sprStr:string;
-    spr:Integer;
+var trainStr:string;
+    train:Integer;
 begin
  if (reqJson.Contains('soupravy')) then
   begin
-   if (Cardinal(reqJson.A['soupravy'].Count) > Self.UsekSettings.maxSpr) then
+   if (Cardinal(reqJson.A['soupravy'].Count) > Self.UsekSettings.maxTrains) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
                            'Nelze pridat vice souprav, nez je limit useku');
@@ -1694,14 +1694,14 @@ begin
      Exit();
     end;
 
-   Self.RemoveSoupravy();
-   for sprStr in reqJson.A['soupravy'] do
+   Self.RemoveTrains();
+   for trainStr in reqJson.A['soupravy'] do
     begin
-     spr := Soupravy.GetSprIndexByName(sprStr);
-     if (spr > -1) then
+     train := TrainDb.Trains.GetTrainIndexByName(trainStr);
+     if (train > -1) then
       begin
        try
-         Self.AddSoupravaS(spr)
+         Self.AddTrainS(train)
        except
         on E: Exception do
          begin
@@ -1712,7 +1712,7 @@ begin
        end;
       end else
        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
-                             'Souprava ' + sprStr + ' neexistuje, ignoruji.');
+                             'Souprava ' + trainStr + ' neexistuje, ignoruji.');
     end;
   end;
 
@@ -1754,7 +1754,7 @@ var list:TList<THoukEv>;
 begin
  if (Self.UsekStav.currentHoukEv < 0) then Exit();
 
- if (not Self.IsSouprava()) then
+ if (not Self.IsTrain()) then
   begin
    Self.houk_ev_enabled := false;
    Exit();
@@ -1797,7 +1797,7 @@ var houkEv:THoukEv;
 begin
  if (state) then
   begin
-   if (not Self.IsSouprava()) then Exit();
+   if (not Self.IsTrain()) then Exit();
    if (Self.GetHoukList().Count = 0) then Exit();
 
    // aktivace prvni houkaci udalosti
@@ -1818,9 +1818,9 @@ end;
 
 function TBlkUsek.GetHoukList():TList<THoukEv>;
 begin
- if (not Self.IsSouprava()) then Exit(nil);
+ if (not Self.IsTrain()) then Exit(nil);
 
- if (Self.SoupravaL.direction = THVStanoviste.lichy) then
+ if (Self.TrainL.direction = THVStanoviste.lichy) then
    Result := Self.UsekSettings.houkEvL
  else
    Result := Self.UsekSettings.houkEvS;
@@ -1828,21 +1828,21 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetSHSpr(sprLocalIndex:Integer):TSHSpr;
+function TBlkUsek.GetSHTrain(trainLocalIndex:Integer):TSHTrain;
 begin
- if ((sprLocalIndex < 0) or (sprLocalIndex >= Self.Soupravs.Count)) then Exit();
+ if ((trainLocalIndex < 0) or (trainLocalIndex >= Self.trains.Count)) then Exit();
 
- Result.cislo    := Soupravy[Self.Soupravs[sprLocalIndex]].name;
- Result.typ      := Soupravy[Self.Soupravs[sprLocalIndex]].typ;
+ Result.cislo    := TrainDb.Trains[Self.trains[trainLocalIndex]].name;
+ Result.typ      := TrainDb.Trains[Self.trains[trainLocalIndex]].typ;
  Result.kolej    := Self.UsekStav.cislo_koleje;
- Result.fromORid := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].stationFrom).id;
- Result.toORid   := TOR(Soupravy[Self.Soupravs[sprLocalIndex]].stationTo).id;
+ Result.fromORid := TOR(TrainDb.Trains[Self.trains[trainLocalIndex]].stationFrom).id;
+ Result.toORid   := TOR(TrainDb.Trains[Self.trains[trainLocalIndex]].stationTo).id;
 
  Result.timeArrive := 0;
 
- if ((Soupravy[Self.Soupravs[sprLocalIndex]].IsPOdj(Self)) and
-     (Soupravy[Self.Soupravs[sprLocalIndex]].GetPOdj(Self).abs_enabled)) then
-   Result.timeDepart := Soupravy[Self.Soupravs[sprLocalIndex]].GetPOdj(Self).abs
+ if ((TrainDb.Trains[Self.trains[trainLocalIndex]].IsPOdj(Self)) and
+     (TrainDb.Trains[Self.trains[trainLocalIndex]].GetPOdj(Self).abs_enabled)) then
+   Result.timeDepart := TrainDb.Trains[Self.trains[trainLocalIndex]].GetPOdj(Self).abs
  else
    Result.timeDepart := 0;
 end;
@@ -1886,120 +1886,120 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetSoupravaIL(): Integer;
+function TBlkUsek.GeTTrainIL(): Integer;
 begin
- if (Self.UsekStav.soupravy.Count < 1) then
+ if (Self.UsekStav.trains.Count < 1) then
    Result := -1
  else
-   Result := Self.UsekStav.soupravy[0];
+   Result := Self.UsekStav.trains[0];
 end;
 
-function TBlkUsek.GetSoupravaL(): TSouprava;
+function TBlkUsek.GeTTrainL(): TTrain;
 begin
- if (Self.GetSoupravaIL() = -1) then
+ if (Self.GeTTrainIL() = -1) then
    Result := nil
  else
-   Result := Soupravy[Self.GetSoupravaIL()];
+   Result := TrainDb.Trains[Self.GeTTrainIL()];
 end;
 
-function TBlkUsek.GetSoupravaIS():Integer;
+function TBlkUsek.GeTTrainIS():Integer;
 begin
- if (Self.UsekStav.soupravy.Count < 1) then
+ if (Self.UsekStav.trains.Count < 1) then
    Result := -1
  else
-   Result := Self.UsekStav.soupravy[Self.UsekStav.soupravy.Count-1];
+   Result := Self.UsekStav.trains[Self.UsekStav.trains.Count-1];
 end;
 
-function TBlkUsek.GetSoupravaS(): TSouprava;
+function TBlkUsek.GeTTrainS(): TTrain;
 begin
- if (Self.GetSoupravaIS() = -1) then
+ if (Self.GeTTrainIS() = -1) then
    Result := nil
  else
-   Result := Soupravy[Self.GetSoupravaIS()];
+   Result := TrainDb.Trains[Self.GeTTrainIS()];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.IsSouprava():boolean;
+function TBlkUsek.IsTrain():boolean;
 begin
- Result := (Self.UsekStav.soupravy.Count > 0);
+ Result := (Self.UsekStav.trains.Count > 0);
 end;
 
-function TBlkUsek.IsSouprava(index: Integer): Boolean;
+function TBlkUsek.IsTrain(index: Integer): Boolean;
 begin
- Result := Self.UsekStav.soupravy.Contains(index);
+ Result := Self.UsekStav.trains.Contains(index);
 end;
 
-function TBlkUsek.IsSouprava(spr: TSouprava): Boolean;
+function TBlkUsek.IsTrain(train: TTrain): Boolean;
 begin
- Result := Self.IsSouprava(spr.index);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkUsek.AddSoupravaL(index:Integer);
-begin
- if (Self.SoupravyFull()) then
-   raise ESprFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
- if (Self.Soupravs.Contains(index)) then
-   raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
-
- Self.UsekStav.soupravy.Insert(0, index);
- Self.UsekStav.SprPredict := -1;
- Self.Change();
-end;
-
-procedure TBlkUsek.AddSoupravaS(index:Integer);
-begin
- if (Self.SoupravyFull()) then
-   raise ESprFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
- if (Self.Soupravs.Contains(index)) then
-   raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
-
- Self.UsekStav.soupravy.Add(index);
- Self.UsekStav.SprPredict := -1;
- Self.Change();
-end;
-
-procedure TBlkUsek.AddSoupravaL(spr: TSouprava);
-begin
- Self.AddSoupravaL(spr.index);
-end;
-
-procedure TBlkUsek.AddSoupravaS(spr: TSouprava);
-begin
- Self.AddSoupravaS(spr.index);
-end;
-
-procedure TBlkUsek.AddSouprava(localSprIndex:Integer; souprava:Integer);
-begin
- if (Self.SoupravyFull()) then
-   raise ESprFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
- if (Self.Soupravs.Contains(souprava)) then
-   raise EDuplicitSprs.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
- if (not Self.CanSprSpeedInsert(localSprIndex)) then
-   raise ERunningSpr.Create('Nelze vložit soupravu před jedoucí soupravu!');
-
- Self.UsekStav.soupravy.Insert(localSprIndex, souprava);
- Self.UsekStav.SprPredict := -1;
- Self.Change();
-end;
-
-procedure TBlkUsek.AddSouprava(localSprIndex:Integer; souprava: TSouprava);
-begin
- Self.AddSouprava(localSprIndex, souprava.index);
+ Result := Self.IsTrain(train.index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.RemoveSoupravy();
-var spr:Integer;
+procedure TBlkUsek.AddTrainL(index:Integer);
 begin
- for spr in Self.Soupravs do
-   if (Soupravy[spr].IsPOdj(Self)) then
-     Soupravy[spr].RemovePOdj(Self);
+ if (Self.TrainsFull()) then
+   raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
+ if (Self.trains.Contains(index)) then
+   raise EDuplicitTrains.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
 
- Self.UsekStav.soupravy.Clear();
+ Self.UsekStav.trains.Insert(0, index);
+ Self.UsekStav.TrainPredict := -1;
+ Self.Change();
+end;
+
+procedure TBlkUsek.AddTrainS(index:Integer);
+begin
+ if (Self.TrainsFull()) then
+   raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
+ if (Self.trains.Contains(index)) then
+   raise EDuplicitTrains.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
+
+ Self.UsekStav.trains.Add(index);
+ Self.UsekStav.TrainPredict := -1;
+ Self.Change();
+end;
+
+procedure TBlkUsek.AddTrainL(train: TTrain);
+begin
+ Self.AddTrainL(train.index);
+end;
+
+procedure TBlkUsek.AddTrainS(train: TTrain);
+begin
+ Self.AddTrainS(train.index);
+end;
+
+procedure TBlkUsek.AddTrain(localTrainIndex:Integer; train:Integer);
+begin
+ if (Self.TrainsFull()) then
+   raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
+ if (Self.trains.Contains(train)) then
+   raise EDuplicitTrains.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
+ if (not Self.CanTrainSpeedInsert(localTrainIndex)) then
+   raise ERunningTrain.Create('Nelze vložit soupravu před jedoucí soupravu!');
+
+ Self.UsekStav.trains.Insert(localTrainIndex, train);
+ Self.UsekStav.TrainPredict := -1;
+ Self.Change();
+end;
+
+procedure TBlkUsek.AddTrain(localTrainIndex:Integer; train: TTrain);
+begin
+ Self.AddTrain(localTrainIndex, train.index);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkUsek.RemoveTrains();
+var train:Integer;
+begin
+ for train in Self.trains do
+   if (TrainDb.Trains[train].IsPOdj(Self)) then
+     TrainDb.Trains[train].RemovePOdj(Self);
+
+ Self.UsekStav.trains.Clear();
  Self.UsekStav.vlakPresun := -1;
  Self.UsekStav.zpomalovani_ready := false;
  Self.houk_ev_enabled := false;
@@ -2008,42 +2008,42 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.RemoveSouprava(index:Integer);
+procedure TBlkUsek.RemoveTrain(index:Integer);
 begin
- if (Self.UsekStav.soupravy.Contains(index)) then
+ if (Self.UsekStav.trains.Contains(index)) then
   begin
-   if ((Self.IsVlakPresun) and (Self.Soupravs[Self.VlakPresun] = index)) then
+   if ((Self.IsVlakPresun) and (Self.trains[Self.VlakPresun] = index)) then
      Self.UsekStav.vlakPresun := -1;
 
-   Self.UsekStav.soupravy.Remove(index);
+   Self.UsekStav.trains.Remove(index);
 
    // odstranit predvidany odjezd z aktualniho useku
-   if (Soupravy[index].IsPOdj(Self)) then
-     Soupravy[index].RemovePOdj(Self);
+   if (TrainDb.Trains[index].IsPOdj(Self)) then
+     TrainDb.Trains[index].RemovePOdj(Self);
 
    Self.Change();
   end else begin
-   raise ESprNotExists.Create('Souprava ' + IntToStr(index) +
+   raise ETrainNotExists.Create('Souprava ' + IntToStr(index) +
      ' neexistuje na useku ' + Self.name);
   end;
 
- if (not Self.IsSouprava()) then
+ if (not Self.IsTrain()) then
   begin
    Self.UsekStav.zpomalovani_ready := false;
    Self.houk_ev_enabled := false;
   end;
 end;
 
-procedure TBlkUsek.RemoveSouprava(spr: TSouprava);
+procedure TBlkUsek.RemoveTrain(train: TTrain);
 begin
- Self.RemoveSouprava(spr.index);
+ Self.RemoveTrain(train.index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.SoupravyFull():boolean;
+function TBlkUsek.TrainsFull():boolean;
 begin
- Result := (Cardinal(Self.UsekStav.soupravy.Count) >= Self.UsekSettings.maxSpr);
+ Result := (Cardinal(Self.UsekStav.trains.Count) >= Self.UsekSettings.maxTrains);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2055,20 +2055,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetSoupravaI(): Integer;
+function TBlkUsek.GeTTrainI(): Integer;
 begin
- if (Self.Soupravs.Count = 0) then Exit(-1)
- else if (Self.Soupravs.Count = 1) then Exit(Self.Soupravs[0])
- else raise EMultipleSprs.Create('Usek ' + Self.name +
+ if (Self.trains.Count = 0) then Exit(-1)
+ else if (Self.trains.Count = 1) then Exit(Self.trains[0])
+ else raise EMultipleTrains.Create('Usek ' + Self.name +
    ' obsahuje vice souprav, nelze se proto ptat jen na jednu soupravu!');
 end;
 
-function TBlkUsek.GetSouprava(): TSouprava;
+function TBlkUsek.GeTTrain(): TTrain;
 begin
- if (Self.GetSoupravaI() = -1) then
+ if (Self.GeTTrainI() = -1) then
    Result := nil
  else
-   Result := Soupravy[Self.GetSoupravaI()];
+   Result := TrainDb.Trains[Self.GeTTrainI()];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2078,7 +2078,7 @@ var i:Integer;
 begin
  if (params <> '') then begin
    i := StrToIntDef(params, -1);
-   if ((i <> -1) and (i >= 0) and (i < Self.Soupravs.Count)) then
+   if ((i <> -1) and (i >= 0) and (i < Self.trains.Count)) then
      Self.MenuSOUPRAVA(SenderPnl, (SenderOR as TOR), i)
    else
      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -2090,37 +2090,39 @@ end;
 
 // vraci true prave tehdy, kdyz lze vlozit soupravu na pozici index
 // kontroluje, zda-li se nenazime vlozit pred soupravu v pohybu
-function TBlkUsek.CanSprSpeedInsert(index:Integer):boolean;
+function TBlkUsek.CanTrainSpeedInsert(index:Integer):boolean;
 begin
- Result := not ((Self.Soupravs.Count > 0) and
-                (((index = 0) and (Soupravy[Self.Soupravs[index]].wantedSpeed > 0) and (Soupravy[Self.Soupravs[index]].direction = THVStanoviste.sudy)) or
-                 ((index = Self.Soupravs.Count) and (Soupravy[Self.Soupravs[index-1]].wantedSpeed > 0) and (Soupravy[Self.Soupravs[index-1]].direction = THVStanoviste.lichy))));
+ Result := not ((Self.trains.Count > 0) and
+                (((index = 0) and (TrainDb.Trains[Self.trains[index]].wantedSpeed > 0) and
+                  (TrainDb.Trains[Self.trains[index]].direction = THVStanoviste.sudy)) or
+                 ((index = Self.trains.Count) and (TrainDb.Trains[Self.trains[index-1]].wantedSpeed > 0) and
+                  (TrainDb.Trains[Self.trains[index-1]].direction = THVStanoviste.lichy))));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.POdjChanged(sprId:Integer; var podj:TPOdj);
-var spr:Integer;
+procedure TBlkUsek.POdjChanged(trainId:Integer; var podj:TPOdj);
+var train:Integer;
     was:boolean;
     nav:TBlk;
 begin
- if ((not Self.Soupravs.Contains(sprId)) and (sprId <> Self.UsekStav.SprPredict)) then
+ if ((not Self.trains.Contains(trainId)) and (trainId <> Self.UsekStav.TrainPredict)) then
    raise Exception.Create('Souprava již není na úseku!');
 
- was := Soupravy[sprId].IsPOdj(Self);
+ was := TrainDb.Trains[trainId].IsPOdj(Self);
 
- for spr in Self.Soupravs do
-   if (spr = sprId) then
+ for train in Self.trains do
+   if (train = trainId) then
      podj.RecordOriginNow();
 
- Soupravy[sprId].AddOrUpdatePOdj(Self, podj);
+ TrainDb.Trains[trainId].AddOrUpdatePOdj(Self, podj);
 
- if ((was) and (not Soupravy[sprId].IsPOdj(Self))) then
+ if ((was) and (not TrainDb.Trains[trainId].IsPOdj(Self))) then
   begin
    // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
    // aktualizaci rychlosti pro vsechny NavJCRef bychom nemeli nic pokazit
    for nav in Self.NavJCRef do
-     TBlkNav(nav).UpdateRychlostSpr(true);
+     TBlkNav(nav).UpdateRychlostTrain(true);
   end;
 
  Self.PropagatePOdjToTrat();
@@ -2130,25 +2132,25 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.CheckPOdjChanged();
-var spri: Integer;
+var traini: Integer;
     shouldChange:boolean;
     podj:TPOdj;
     Nav:TBlk;
     oblr:TOR;
-    spr: TSouprava;
+    train: TTrain;
 begin
  shouldChange := false;
 
- for spri in Self.Soupravs do
+ for traini in Self.trains do
   begin
-   spr := Soupravy[spri];
+   train := TrainDb.Trains[traini];
 
-   if ((spr.IsPOdj(Self)) and (spr.GetPOdj(Self).changed)) then
+   if ((train.IsPOdj(Self)) and (train.GetPOdj(Self).changed)) then
     begin
-     podj := spr.GetPOdj(Self);
+     podj := train.GetPOdj(Self);
 
      // prehravani zvukove vystrahy
-     if ((not shouldChange) and (Self.IsStujForSpr(spr))) then
+     if ((not shouldChange) and (Self.IsStujForTrain(train))) then
       begin
         if ((podj.phase_old = ppPreparing) and (podj.GetPhase() = ppGoingToLeave)) then
           for oblr in Self.ORsRef do
@@ -2159,34 +2161,34 @@ begin
             oblr.BlkPlaySound(Self, TORControlRights.write, _SND_NENI_JC);
       end;
 
-     if (spr.GetPOdj(Self).DepRealDelta() < 0) then
+     if (train.GetPOdj(Self).DepRealDelta() < 0) then
       begin
-       spr.RemovePOdj(Self);
+       train.RemovePOdj(Self);
 
        // tvrda aktualizace rychlosti soupravy
-       if ((spr = Self.SoupravaL) or (spr = Self.SoupravaS)) then
+       if ((train = Self.trainL) or (train = Self.trainSudy)) then
         begin
          for nav in Self.NavJCRef do
-           if (((TBlkNav(nav).Smer = THVStanoviste.sudy) and (spr = Self.SoupravaL)) or
-               ((TBlkNav(nav).Smer = THVStanoviste.lichy) and (spr = Self.SoupravaS))) then
-             TBlkNav(nav).UpdateRychlostSpr(true);
+           if (((TBlkNav(nav).Smer = THVStanoviste.sudy) and (train = Self.trainL)) or
+               ((TBlkNav(nav).Smer = THVStanoviste.lichy) and (train = Self.trainSudy))) then
+             TBlkNav(nav).UpdateRychlostTrain(true);
         end;
       end else
-       spr.GetPOdj(Self).changed := false;
+       train.GetPOdj(Self).changed := false;
 
      shouldChange := true;
     end;
   end;
 
- if (Self.SprPredict <> nil) then
+ if (Self.TrainPredict <> nil) then
   begin
-   spr := Self.SprPredict;
-   if ((spr.IsPOdj(Self)) and (spr.GetPOdj(Self).changed)) then
+   train := Self.TrainPredict;
+   if ((train.IsPOdj(Self)) and (train.GetPOdj(Self).changed)) then
     begin
-     if (spr.GetPOdj(Self).DepRealDelta() < 0) then
-       spr.RemovePOdj(Self)
+     if (train.GetPOdj(Self).DepRealDelta() < 0) then
+       train.RemovePOdj(Self)
      else
-       spr.GetPOdj(Self).changed := false;
+       train.GetPOdj(Self).changed := false;
 
      shouldChange := true;
     end;
@@ -2200,23 +2202,23 @@ end;
 
 // predvidane odjezdy se mazou pres bloky, aby bloky zavolaly Change().
 procedure TBlkUsek.ClearPOdj();
-var spr:Integer;
+var train:Integer;
     change:boolean;
 begin
  change := false;
 
- for spr in Self.Soupravs do
+ for train in Self.trains do
   begin
-   if (Soupravy[spr].IsPOdj(Self)) then
+   if (TrainDb.Trains[train].IsPOdj(Self)) then
     begin
-     Soupravy[spr].RemovePOdj(Self);
+     TrainDb.Trains[train].RemovePOdj(Self);
      change := true;
     end;
   end;
 
- if ((Self.SprPredict <> nil) and (Self.SprPredict.IsPOdj(Self))) then
+ if ((Self.TrainPredict <> nil) and (Self.TrainPredict.IsPOdj(Self))) then
   begin
-   Self.SprPredict.RemovePOdj(Self);
+   Self.TrainPredict.RemovePOdj(Self);
    change := true;
   end;
 
@@ -2235,27 +2237,27 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.IsStujForSpr(spr: TSouprava):boolean;
+function TBlkUsek.IsStujForTrain(train: TTrain):boolean;
 begin
- if (not Self.Soupravs.Contains(spr.index)) then Exit(false);
+ if (not Self.trains.Contains(train.index)) then Exit(false);
  if (Self.NavJCRef.Count = 0) then Exit(true);
 
  if (Self.NavJCRef.Count = 1) then
   begin
    if (not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) then Exit(true);
    if (TBlkNav(Self.NavJCRef[0]).Smer = THvStanoviste.lichy) then
-     Exit(spr <> Self.SoupravaS)
+     Exit(train <> Self.trainSudy)
    else
-     Exit(spr <> Self.SoupravaL);
+     Exit(train <> Self.trainL);
   end;
 
  if (Self.NavJCRef.Count = 2) then
   begin
-   if ((Self.Soupravs.Count = 1) and (not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) and
+   if ((Self.trains.Count = 1) and (not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) and
         (not TBlkNav(Self.NavJCRef[1]).IsPovolovaciNavest())) then Exit(true);
-   if ((Self.Soupravs.Count >= 2) and ((not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) or
+   if ((Self.trains.Count >= 2) and ((not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) or
         (not TBlkNav(Self.NavJCRef[1]).IsPovolovaciNavest()))) then Exit(true);
-   if ((Self.Soupravs.Count > 2) and (Self.SoupravaL <> spr) and (Self.SoupravaS <> spr)) then Exit(true);
+   if ((Self.trains.Count > 2) and (Self.trainL <> train) and (Self.trainSudy <> train)) then Exit(true);
  end;
 
  Result := false;
@@ -2266,7 +2268,7 @@ end;
 function TBlkUsek.PanelStateString():string;
 var fg, bg, nebarVetve, sfg, sbg: TColor;
     Blk: TBlk;
-    souprava, i: Integer;
+    traini, i: Integer;
 begin
  // Pro blok trati se vola take
  Result := IntToStr(Integer(btUsek))+';'+IntToStr(Self.id)+';';;
@@ -2337,25 +2339,25 @@ begin
 
  // seznam souprav
  Result := Result + '{';
- for i := 0 to Self.Soupravs.Count-1 do
+ for i := 0 to Self.trains.Count-1 do
   begin
-   souprava := Self.Soupravs[i];
+   traini := Self.trains[i];
    sfg := fg;
    sbg := bg;
 
    if (Self.Obsazeno = uvolneno) then
      sfg := clAqua;
 
-   Result := Result + '(' + Soupravy[souprava].name + ';' +
-                            IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_L)) +
-                            IntToStr(ownConvert.BoolToInt(Soupravy[souprava].sdata.dir_S)) + ';';
+   Result := Result + '(' + TrainDb.Trains[traini].name + ';' +
+                            IntToStr(ownConvert.BoolToInt(TrainDb.Trains[traini].sdata.dir_L)) +
+                            IntToStr(ownConvert.BoolToInt(TrainDb.Trains[traini].sdata.dir_S)) + ';';
 
-   if ((Soupravy[souprava].stationTo = Soupravy[souprava].station) and (sbg = clBlack)) then
+   if ((TrainDb.Trains[traini].stationTo = TrainDb.Trains[traini].station) and (sbg = clBlack)) then
      sbg := clSilver;
 
    // predvidany odjezd
-   if (Soupravy[souprava].IsPOdj(Self)) then
-     predvidanyOdjezd.GetPOdjColors(Soupravy[souprava].GetPOdj(Self), sfg, sbg);
+   if (TrainDb.Trains[traini].IsPOdj(Self)) then
+     predvidanyOdjezd.GetPOdjColors(TrainDb.Trains[traini].GetPOdj(Self), sfg, sbg);
 
    Result := Result + ownConvert.ColorToStr(sfg) + ';' +
                       ownConvert.ColorToStr(sbg) + ';';
@@ -2367,16 +2369,16 @@ begin
   end;
 
  // predpovidana souprava
- if (Self.SprPredict <> nil) then
+ if (Self.TrainPredict <> nil) then
   begin
    // predvidany odjezd
    sfg := fg;
    sbg := bg;
 
-   if (Self.SprPredict.IsPOdj(Self)) then
-     predvidanyOdjezd.GetPOdjColors(Self.SprPredict.GetPOdj(Self), sfg, sbg);
+   if (Self.TrainPredict.IsPOdj(Self)) then
+     predvidanyOdjezd.GetPOdjColors(Self.TrainPredict.GetPOdj(Self), sfg, sbg);
 
-   Result := Result + '(' + Self.SprPredict.name + ';' +
+   Result := Result + '(' + Self.TrainPredict.name + ';' +
               '00;' +
               ownConvert.ColorToStr(sfg) + ';' +
               ownConvert.ColorToStr(sbg) + ';)';
@@ -2399,9 +2401,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.CanStandSouprava():boolean;
+function TBlkUsek.CanStandTrain():boolean;
 begin
- Result := (Self.UsekStav.stanicni_kolej or Self.UsekStav.spr_pos);
+ Result := (Self.UsekStav.stanicni_kolej or Self.UsekStav.train_pos);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

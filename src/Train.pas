@@ -1,6 +1,6 @@
-﻿unit Souprava;
+﻿unit Train;
 
-// trida "TSouprava"
+{ This file defines "TTrain" class which represents a single train. }
 
 interface
 
@@ -8,12 +8,12 @@ uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, JsonDataObjects
      Generics.Collections, predvidanyOdjezd, TBlok, Trakce;
 
 const
-  _MAX_SPR_HV = 4;
+  _MAX_TRAIN_HV = 4;
 
 type
-  TSoupravaHVs = TList<Integer>; // seznam adres hnacich vozidel na souprave
+  TTrainHVs = TList<Integer>; // seznam adres hnacich vozidel na souprave
 
-  TSoupravaAcquire = record
+  TTrainAcquire = record
     ok, err: TCb;
     toAcquire: TList<Integer>;
     nextAcquire: Integer;
@@ -24,14 +24,14 @@ type
     nextVezmi: Integer;
   end;
 
-  TSoupravaData = record
+  TTrainData = record
     name: string;
     carsCount: Cardinal;
     note: string;
     length: Integer; // length of a train in centimeters
     typ: string; // MOs, Os, Mn, Pn, ...
     dir_L, dir_S: boolean; // allowed directions
-    HVs: TSoupravaHVs; // locomotives (engines)
+    HVs: TTrainHVs; // locomotives (engines)
     station: TObject;
 
     speed: Integer; // real speed passed to locomotives after all limitations
@@ -49,9 +49,9 @@ type
     podj: TDictionary<Integer, TPOdj>;  // map track id: podj
   end;
 
-  TSouprava = class
+  TTrain = class
    private
-    data: TSoupravaData;
+    data: TTrainData;
     findex: Integer;
     filefront: Integer;
     fAcquiring: Boolean;
@@ -91,7 +91,7 @@ type
      procedure SaveToFile(ini:TMemIniFile; const section:string);
 
      function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
-     procedure UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
+     procedure UpdateTrainFromPanel(train:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
      procedure SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
      procedure VezmiVlak(ok: TCb; err: TCb);
      procedure UpdateFront();
@@ -123,7 +123,7 @@ type
      procedure GetPtData(json: TJsonObject);
 
      property index: Integer read findex;
-     property sdata: TSoupravaData read data;
+     property sdata: TTrainData read data;
 
      property name: string read data.name;
      property station: TObject read data.station write SetOR;
@@ -132,7 +132,7 @@ type
      property direction: THVStanoviste read data.direction write SetSmer;
      property stolen: boolean read IsStolen;
      property front: TObject read data.front write SetFront;
-     property sprLength: Integer read data.length;
+     property length: Integer read data.length;
      property typ: string read data.typ;
 
      property stationFrom: TObject read data.stationFrom;
@@ -141,40 +141,40 @@ type
      property announcement: boolean read data.announcement;
      property announcementPlayed: boolean read data.announcementPlayed;
 
-     property HVs: TSoupravaHVs read data.HVs;
+     property HVs: TTrainHVs read data.HVs;
      property maxSpeed: Cardinal read GetMaxSpeed; // warning: this could be speed with no speed step
      property maxSpeedStep: Cardinal read GetMaxSpeedStep;
      property acquiring: Boolean read fAcquiring;
 
      // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
-     class procedure UvolV(old:TSoupravaHVs; new:TSoupravaHVs);
+     class procedure UvolV(old:TTrainHVs; new:TTrainHVs);
 
   end;
 
 implementation
 
-uses THVDatabase, Logging, ownStrUtils, SprDb, TBlokUsek, DataSpr, appEv,
+uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlokUsek, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokNav,
       fRegulator, fMain, TBlokTratUsek, stanicniHlaseniHelper, stanicniHlaseni,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TSouprava.Create(ini:TMemIniFile; const section:string; index:Integer);
+constructor TTrain.Create(ini:TMemIniFile; const section:string; index:Integer);
 begin
  inherited Create();
  Self.Init(index);
  Self.LoadFromFile(ini, section);
 end;
 
-constructor TSouprava.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb);
+constructor TTrain.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb);
 begin
  inherited Create();
  Self.Init(index);
- Self.UpdateSprFromPanel(panelStr, Usek, OblR, ok, err);
+ Self.UpdateTrainFromPanel(panelStr, Usek, OblR, ok, err);
 end;
 
-procedure TSouprava.Init(index:Integer);
+procedure TTrain.Init(index:Integer);
 begin
  Self.speedBuffer := nil;
  Self.changed := false;
@@ -185,7 +185,7 @@ begin
  Self.fAcquiring := false;
 end;
 
-destructor TSouprava.Destroy();
+destructor TTrain.Destroy();
 begin
  Self.ReleaseAllLoko();
  Self.ClearPOdj();
@@ -197,7 +197,7 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.LoadFromFile(ini:TMemIniFile; const section:string);
+procedure TTrain.LoadFromFile(ini:TMemIniFile; const section:string);
 var addr:Integer;
     data:TStrings;
     s:string;
@@ -221,8 +221,8 @@ begin
  data := TStringList.Create();
  ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
 
- while (data.Count > _MAX_SPR_HV) do
-   data.Delete(_MAX_SPR_HV);
+ while (data.Count > _MAX_TRAIN_HV) do
+   data.Delete(_MAX_TRAIN_HV);
 
  // HV se nacitaji takto prapodivne pro osetreni pripadu, kdy u soupravy je uvedene HV, ktere neexistuje
  Self.data.HVs.Clear();
@@ -232,7 +232,7 @@ begin
      addr := StrToInt(s);
      if (Assigned(HVDb[addr])) then
       begin
-       HVDb[addr].souprava := Self.index;
+       HVDb[addr].train := Self.index;
        Self.data.HVs.Add(addr);
       end;
     end;
@@ -244,7 +244,7 @@ begin
  Self.changed := true;
 end;
 
-procedure TSouprava.SaveToFile(ini:TMemIniFile; const section:string);
+procedure TTrain.SaveToFile(ini:TMemIniFile; const section:string);
 var str:string;
     addr: Integer;
 begin
@@ -295,7 +295,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci string, kterym je definovana souprava, do panelu
-function TSouprava.GetPanelString():string;
+function TTrain.GetPanelString():string;
 var addr:Integer;
 begin
  Result := Self.data.name + ';' + IntToStr(Self.data.carsCount) + ';{' + Self.data.note + '};';
@@ -337,35 +337,35 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.UpdateSprFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
+procedure TTrain.UpdateTrainFromPanel(train:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
 var hvs,hv:TStrings;
     i, j, addr:Integer;
-    new:TSoupravaHVs;
+    new:TTrainHVs;
     max_func:Integer;
     s:string;
-    acq: ^TSoupravaAcquire;
+    acq: ^TTrainAcquire;
 begin
  if (Self.acquiring) then
    raise Exception.Create('Přebírání lokomotiv soupravy již probíhá!');
 
  // zkontrolujeme, jestli nejaka souprava s timto cislem uz nahodou neexistuje
- for i := 0 to _MAX_SPR-1 do
+ for i := 0 to _MAX_TRAIN-1 do
   begin
-   if (soupravy[i] = nil) then continue;
+   if (Trains[i] = nil) then continue;
 
-   if ((Soupravy[i].name = spr[0]) and (Soupravy[i] <> Self)) then
+   if ((Trains[i].name = train[0]) and (Trains[i] <> Self)) then
     begin
-     if (Soupravy[i].station <> nil) then
-       raise Exception.Create('Souprava '+Soupravy[i].name+' již existuje v OŘ '+(Soupravy[i].station as TOR).Name)
+     if (Trains[i].station <> nil) then
+       raise Exception.Create('Souprava '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TOR).Name)
      else
-       raise Exception.Create('Souprava '+Soupravy[i].name+' již existuje');
+       raise Exception.Create('Souprava '+Trains[i].name+' již existuje');
 
      Exit();
     end;
   end;
 
  try
-  StrToInt(spr[0]);
+  StrToInt(train[0]);
  except
    on E:EConvertError do
      raise Exception.Create('Číslo soupravy není validní číslo!');
@@ -373,31 +373,31 @@ begin
 
  Self.changed := true;
 
- Self.data.name := spr[0];
- Self.data.carsCount := StrToInt(spr[1]);
- Self.data.note := spr[2];
- Self.data.dir_L := (spr[3][1] = '1');
- Self.data.dir_S := (spr[3][2] = '1');
+ Self.data.name := train[0];
+ Self.data.carsCount := StrToInt(train[1]);
+ Self.data.note := train[2];
+ Self.data.dir_L := (train[3][1] = '1');
+ Self.data.dir_S := (train[3][2] = '1');
 
- Self.data.length := StrToInt(spr[4]);
- Self.data.typ := spr[5];
+ Self.data.length := StrToInt(train[4]);
+ Self.data.typ := train[5];
 
  Self.data.station := OblR;
  Self.data.front := Usek;
 
- if (spr.Count > 7) then
-   Self.data.stationFrom := ORs.Get(spr[7]);
+ if (train.Count > 7) then
+   Self.data.stationFrom := ORs.Get(train[7]);
 
- if (spr.Count > 8) then
-   Self.data.stationTo := ORs.Get(spr[8]);
+ if (train.Count > 8) then
+   Self.data.stationTo := ORs.Get(train[8]);
 
- if (spr.Count > 9) then
-   Self.data.announcement := (spr[9] = '1')
+ if (train.Count > 9) then
+   Self.data.announcement := (train[9] = '1')
  else
-   Self.data.announcement := TStanicniHlaseni.HlasitSprTyp(Self.typ);
+   Self.data.announcement := TStanicniHlaseni.HlasitTrainTyp(Self.typ);
 
- if ((spr.Count > 10) and (spr[10] <> '')) then
-   Self.data.maxSpeed := StrToInt(spr[10])
+ if ((train.Count > 10) and (train[10] <> '')) then
+   Self.data.maxSpeed := StrToInt(train[10])
  else
    Self.data.maxSpeed := 0;
 
@@ -417,9 +417,9 @@ begin
  hv := TStringList.Create();
  new := TList<Integer>.Create();
  try
-   ExtractStringsEx([']'], ['['], spr[6], hvs);
+   ExtractStringsEx([']'], ['['], train[6], hvs);
 
-   if (hvs.Count > _MAX_SPR_HV) then
+   if (hvs.Count > _MAX_TRAIN_HV) then
      raise Exception.Create('Překročen maximální počet hnacích vozidel na soupravě');
 
    for s in hvs do
@@ -431,24 +431,24 @@ begin
      if (not Assigned(HVDb[addr])) then
        raise Exception.Create('Loko '+IntToStr(addr)+' neexistuje na serveru!');
 
-     if ((HVDb[addr].souprava > -1) and (HVDb[addr].souprava <> Self.index)) then
-       raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena soupravě '+Soupravy.GetSprNameByIndex(HVDb[addr].souprava));
+     if ((HVDb[addr].train > -1) and (HVDb[addr].train <> Self.index)) then
+       raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena soupravě '+Trains.GetTrainNameByIndex(HVDb[addr].train));
 
      if (new.Contains(addr)) then
        raise Exception.Create('Duplicitní loko!');
 
      HVDb[addr].Data.poznamka := hv[3];
      HVDb[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
-     HVDb[addr].souprava := Self.index;
+     HVDb[addr].train := Self.index;
 
-     max_func := Min(Length(hv[8]), _HV_FUNC_MAX);
+     max_func := Min(System.Length(hv[8]), _HV_FUNC_MAX);
      for j := 0 to max_func do
        HVDb[addr].Stav.funkce[j] := (hv[8][j+1] = '1');
 
      new.Add(addr);
     end;
 
-   GetMem(acq, sizeof(TSoupravaAcquire));
+   GetMem(acq, sizeof(TTrainAcquire));
    acq^.ok := ok;
    acq^.err := err;
    acq^.toAcquire := new;
@@ -464,8 +464,8 @@ begin
  hv.Free();
 end;
 
-procedure TSouprava.LocoAcquiredOk(Sender: TObject; Data: Pointer);
-var acq: ^TSoupravaAcquire;
+procedure TTrain.LocoAcquiredOk(Sender: TObject; Data: Pointer);
+var acq: ^TTrainAcquire;
     addr: Integer;
 begin
  acq := Data;
@@ -501,8 +501,8 @@ begin
   end;
 end;
 
-procedure TSouprava.LocoAcquiredErr(Sender: TObject; Data: Pointer);
-var acq: ^TSoupravaAcquire;
+procedure TTrain.LocoAcquiredErr(Sender: TObject; Data: Pointer);
+var acq: ^TTrainAcquire;
 begin
  acq := Data;
  Self.fAcquiring := false;
@@ -513,7 +513,7 @@ begin
  Self.changed := true;
 end;
 
-procedure TSouprava.AllLocoAcquiredOk(newLoks: TList<Integer>);
+procedure TTrain.AllLocoAcquiredOk(newLoks: TList<Integer>);
 var nav:TBlk;
 begin
  Self.fAcquiring := false;
@@ -522,19 +522,19 @@ begin
  Self.data.HVs := newLoks;
 
  Self.SetRychlostSmer(Self.speed, Self.direction);
- Blky.ChangeSprToTrat(Self);
+ Blky.ChangeTrainToTrat(Self);
 
  TBlkUsek(Self.front).Change();
 
  for nav in TBlkUsek(Self.front).NavJCRef do
-   TBlkNav(nav).UpdateRychlostSpr(true);
+   TBlkNav(nav).UpdateRychlostTrain(true);
 
  Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TSouprava.UvolV(old:TSoupravaHVs; new:TSoupravaHVs);
+class procedure TTrain.UvolV(old:TTrainHVs; new:TTrainHVs);
 var new_addr, old_addr:Integer;
     keep:TList<Integer>;
 begin
@@ -551,7 +551,7 @@ begin
      if (not keep.Contains(old_addr)) then
       begin
        // vozidlo, ktere neni v novem seznamu -> uvolnit
-       HVDb[old_addr].souprava := -1;
+       HVDb[old_addr].train := -1;
       end;
     end;
  finally
@@ -563,7 +563,7 @@ end;
 
 // uvolnit vsechna loko
 // pred uvolnenim loko take zastavime
-procedure TSouprava.ReleaseAllLoko();
+procedure TTrain.ReleaseAllLoko();
 var addr:Integer;
 begin
  if ((not Assigned(HVDb)) or (not Assigned(TrakceI))) then Exit();
@@ -573,13 +573,13 @@ begin
    if (not Assigned(HVDb[addr])) then
      continue;
 
-   HVDb[addr].souprava := -1;
+   HVDb[addr].train := -1;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetOR(station: TObject);
+procedure TTrain.SetOR(station: TObject);
 var addr:Integer;
 begin
  Self.data.station := station;
@@ -591,7 +591,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
+procedure TTrain.SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
 var addr:Integer;
     direction:boolean;
 begin
@@ -636,13 +636,13 @@ begin
                             TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
    except
      on E:Exception do
-       AppEvents.LogException(E, 'TSouprava.SetRychlostSmer');
+       AppEvents.LogException(E, 'TTrain.SetRychlostSmer');
    end;
   end;
 
  if ((speed > 0) and (Assigned(Self.front)) and
      ((Self.front as TBlkUsek).IsVlakPresun()) and
-      ((Self.front as TBlkUsek).Soupravs[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
+      ((Self.front as TBlkUsek).trains[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
   (Self.front as TBlkUsek).VlakPresun := -1;
 
  writelog('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
@@ -652,12 +652,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetSpeed(speed:Integer);
+procedure TTrain.SetSpeed(speed:Integer);
 begin
  Self.SetRychlostSmer(speed, Self.data.direction);
 end;
 
-procedure TSouprava.SetSmer(smer:THVStanoviste);
+procedure TTrain.SetSmer(smer:THVStanoviste);
 var addr: Integer;
 begin
  Self.SetRychlostSmer(Self.data.speed, smer);
@@ -668,7 +668,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.HVComErr(Sender:TObject; Data:Pointer);
+procedure TTrain.HVComErr(Sender:TObject; Data:Pointer);
 begin
  if (Self.data.station <> nil) then
    (Self.data.station as TOR).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
@@ -676,7 +676,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSouprava.IsStolen(): Boolean;
+function TTrain.IsStolen(): Boolean;
 var addr: Integer;
 begin
  for addr in Self.HVs do
@@ -687,7 +687,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.VezmiVlak(ok: TCb; err: TCb);
+procedure TTrain.VezmiVlak(ok: TCb; err: TCb);
 var vezmi: ^TVezmi;
 begin
  GetMem(vezmi, sizeof(TVezmi));
@@ -701,7 +701,7 @@ begin
  Self.VezmiVlakOk(Self, vezmi);
 end;
 
-procedure TSouprava.VezmiVlakOk(Sender: TObject; Data: Pointer);
+procedure TTrain.VezmiVlakOk(Sender: TObject; Data: Pointer);
 var vezmi: ^TVezmi;
     addr: Integer;
 begin
@@ -731,7 +731,7 @@ begin
  end;
 end;
 
-procedure TSouprava.VezmiVlakErr(Sender: TObject; Data: Pointer);
+procedure TTrain.VezmiVlakErr(Sender: TObject; Data: Pointer);
 var vezmi: ^TVezmi;
 begin
  vezmi := Data;
@@ -743,7 +743,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetFront(front:TObject);
+procedure TTrain.SetFront(front:TObject);
 var addr: Integer;
 begin
  if (Self.data.front = front) then Exit();
@@ -758,7 +758,7 @@ begin
  Self.changed := true;
 end;
 
-procedure TSouprava.UpdateFront();
+procedure TTrain.UpdateFront();
 var blk:TBlk;
 begin
  Blky.GetBlkByID(Self.filefront, blk);
@@ -768,7 +768,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // zmena smeru pri naslapu na smyckovy blok
-procedure TSouprava.ChangeSmer();
+procedure TTrain.ChangeSmer();
 var addr:Integer;
     tmp:boolean;
 begin
@@ -800,7 +800,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.InterChangeStanice(change_ev:Boolean = true);
+procedure TTrain.InterChangeStanice(change_ev:Boolean = true);
 var tmp:TObject;
 begin
  tmp := Self.data.stationFrom;
@@ -814,7 +814,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.SetSpeedBuffer(speedBuffer:PInteger);
+procedure TTrain.SetSpeedBuffer(speedBuffer:PInteger);
 begin
  Self.speedBuffer := speedBuffer;
 end;
@@ -826,7 +826,7 @@ end;
 // Tato zmena je umoznena jen tehdy pokud nema sipka jednoznacne urceny smer
 // a pokud souprava stoji.
 
-procedure TSouprava.LokDirChanged();
+procedure TTrain.LokDirChanged();
 var i:Integer;
     dir:Boolean;
 begin
@@ -847,7 +847,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.ToggleHouk(desc:string);
+procedure TTrain.ToggleHouk(desc:string);
 var addr:Integer;
     HV:THV;
 begin
@@ -861,7 +861,7 @@ begin
   end;
 end;
 
-procedure TSouprava.SetHoukState(desc:string; state:boolean);
+procedure TTrain.SetHoukState(desc:string; state:boolean);
 var addr:Integer;
     HV:THV;
 begin
@@ -880,11 +880,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.CheckSH(nav:TObject);
+procedure TTrain.CheckSH(nav:TObject);
 var mnav:TBlkNav;
     oblr:TOR;
     shPlay:TSHToPlay;
-    shSpr:TSHSpr;
+    shTrain:TSHTrain;
 begin
  if ((not Self.announcement) or (Self.announcementPlayed) or (self.stationFrom = nil) or
      (self.stationTo = nil) or (Self.typ = '')) then Exit();
@@ -902,27 +902,27 @@ begin
      AppEvents.LogException(E, 'CanPlayPrijezdSH');
  end;
 
- shSpr.cislo := Self.name;
- shSpr.typ   := Self.typ;
- shSpr.fromORid := TOR(Self.stationFrom).id;
- shSpr.toORid := TOR(Self.stationTo).id;
- shSpr.timeArrive := 0;
- shSpr.timeDepart := 0;
+ shTrain.cislo := Self.name;
+ shTrain.typ   := Self.typ;
+ shTrain.fromORid := TOR(Self.stationFrom).id;
+ shTrain.toORid := TOR(Self.stationTo).id;
+ shTrain.timeArrive := 0;
+ shTrain.timeDepart := 0;
 
  if (shPlay.stanicniKolej <> nil) then
   begin
-   shSpr.kolej := shPlay.stanicniKolej.Stav.cislo_koleje;
+   shTrain.kolej := shPlay.stanicniKolej.Stav.cislo_koleje;
 
    if ((Self.IsPOdj(shPlay.stanicniKolej)) and (Self.GetPOdj(shPlay.stanicniKolej).abs_enabled)) then
-     shSpr.timeDepart := Self.GetPOdj(shPlay.stanicniKolej).abs;
+     shTrain.timeDepart := Self.GetPOdj(shPlay.stanicniKolej).abs;
   end;
 
  try
    if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (Self.IsPOdj(shPlay.stanicniKolej)))) then begin
-     oblr.hlaseni.Prijede(shSpr);
+     oblr.hlaseni.Prijede(shTrain);
      Self.data.announcementPlayed := true;
    end else if (shPlay.trat <> nil) then begin
-     oblr.hlaseni.Projede(shSpr);
+     oblr.hlaseni.Projede(shTrain);
      Self.data.announcementPlayed := true;
    end;
  except
@@ -934,7 +934,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Predvidane odjezdy:
 
-procedure TSouprava.AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj);
+procedure TTrain.AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj);
 begin
  if ((not podj.rel_enabled) and (not podj.abs_enabled)) then
   begin
@@ -952,43 +952,43 @@ begin
   end;
 end;
 
-function TSouprava.IsPOdj(usekid:Integer):Boolean;
+function TTrain.IsPOdj(usekid:Integer):Boolean;
 begin
  Result := Self.data.podj.ContainsKey(usekid);
 end;
 
-function TSouprava.GetPOdj(usekid:Integer):TPOdj;
+function TTrain.GetPOdj(usekid:Integer):TPOdj;
 begin
  Result := Self.data.podj[usekid];
 end;
 
-procedure TSouprava.RemovePOdj(usekid:Integer);
+procedure TTrain.RemovePOdj(usekid:Integer);
 begin
  Self.data.podj[usekid].Free();
  Self.data.podj.Remove(usekid);
 end;
 
-procedure TSouprava.AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj);
+procedure TTrain.AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj);
 begin
  Self.AddOrUpdatePOdj(usek.id, podj);
 end;
 
-function TSouprava.IsPOdj(usek:TBlk):Boolean;
+function TTrain.IsPOdj(usek:TBlk):Boolean;
 begin
  Result := Self.IsPOdj(usek.id);
 end;
 
-function TSouprava.GetPOdj(usek:TBlk):TPOdj;
+function TTrain.GetPOdj(usek:TBlk):TPOdj;
 begin
  Result := Self.GetPOdj(usek.id);
 end;
 
-procedure TSouprava.RemovePOdj(usek:TBlk);
+procedure TTrain.RemovePOdj(usek:TBlk);
 begin
  Self.RemovePOdj(usek.id);
 end;
 
-procedure TSouprava.ClearPOdj();
+procedure TTrain.ClearPOdj();
 var podj:TPOdj;
 begin
  for podj in Self.data.podj.Values do
@@ -999,7 +999,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSouprava.IsAnyLokoInRegulator():Boolean;
+function TTrain.IsAnyLokoInRegulator():Boolean;
 var hvaddr:Integer;
 begin
  for hvaddr in Self.HVs do
@@ -1010,7 +1010,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.ForceRemoveAllRegulators();
+procedure TTrain.ForceRemoveAllRegulators();
 var hvaddr:Integer;
 begin
  for hvaddr in Self.HVs do
@@ -1020,7 +1020,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSouprava.GetMaxSpeed():Cardinal;
+function TTrain.GetMaxSpeed():Cardinal;
 var addr: Integer;
     minimum: Cardinal;
 begin
@@ -1045,7 +1045,7 @@ begin
   end;
 end;
 
-function TSouprava.GetMaxSpeedStep():Cardinal;
+function TTrain.GetMaxSpeedStep():Cardinal;
 begin
  // vraci rychlost <= max rychlosti takovou, ze pro ni mame prirazeni stupne
  // tj. tuto rychlost lze skutene nastavit
@@ -1054,7 +1054,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSouprava.PredictedSignal(): TBlk;
+function TTrain.PredictedSignal(): TBlk;
 var frontblk: TBlkUsek;
     nav: TBlkNav;
     jc: TJC;
@@ -1099,14 +1099,14 @@ begin
  Result := nil;
 end;
 
-procedure TSouprava.OnPredictedSignalChange();
+procedure TTrain.OnPredictedSignalChange();
 var addr: Integer;
 begin
  for addr in Self.HVs do
    HVDb[addr].OnPredictedSignalChange();
 end;
 
-procedure TSouprava.OnExpectedSpeedChange();
+procedure TTrain.OnExpectedSpeedChange();
 var addr: Integer;
 begin
  for addr in Self.HVs do
@@ -1115,7 +1115,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSouprava.GetPtData(json: TJsonObject);
+procedure TTrain.GetPtData(json: TJsonObject);
 var addr: Integer;
     blkId: Integer;
 begin

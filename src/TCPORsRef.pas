@@ -2,7 +2,7 @@
 
 interface
 
-uses Generics.Collections, TOblRizeni, TBlok, Classes, Souprava, User,
+uses Generics.Collections, TOblRizeni, TBlok, Classes, Train, User,
      THnaciVozidlo, IdContext, SysUtils;
 
 type
@@ -46,9 +46,9 @@ type
     funcsVyznamReq:boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
     maus:boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
 
-    spr_new_usek_index:Integer;                                                 // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
-    spr_edit:TSouprava;                                                         // souprava, kterou panel edituje
-    spr_usek:TObject;                                                           // usek, na kterem panel edituje soupravu (TBlkUsek)
+    train_new_usek_index:Integer;                                               // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
+    train_edit:TTrain;                                                          // souprava, kterou panel edituje
+    train_usek:TObject;                                                         // usek, na kterem panel edituje soupravu (TBlkUsek)
 
     regulator:boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
     regulator_user:TUser;                                                       // uzivatel, ktery autorizoval regulator
@@ -56,13 +56,13 @@ type
     regulator_loks:TList<THV>;                                                  // seznam lokomotiv v regulatoru
 
     st_hlaseni:TList<TOR>;                                                      // stanice, do kterych je autorizovano stanicni hlaseni
-    spr_menu_index:Integer;                                                     // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
+    train_menu_index:Integer;                                                   // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
 
     soundDict:TDictionary<Integer, Cardinal>;                                   // pro kazdy zvuk obsahuje pocet jeho prehravani
                                                                                 // predpoklada se, ze kazda OR si resi zvuku samostatne, az tady se to spojuje
 
     podj_usek: TBlk;                                                            // data pro editaci predvidaneho odjezdu
-    podj_sprid: Integer;
+    podj_trainid: Integer;
 
     ping_next_id: Cardinal;
     ping_next_send: TDateTime;
@@ -76,7 +76,7 @@ type
 
     procedure Escape(AContext: TIdContext);                                     // volano pri stisku Escape v panelu
     procedure Reset();
-    procedure ResetSpr();
+    procedure ResetTrains();
 
     class function ORPing(id: Cardinal; sent: TDateTime):TORPing;
     function PingComputed():boolean;
@@ -142,24 +142,24 @@ begin
  Self.UPO_OK := nil;
  Self.UPO_Esc := nil;
  Self.UPO_ref := nil;
- Self.ResetSpr();
+ Self.ResetTrains();
 
  Self.podj_usek := nil;
- Self.podj_sprid := -1;
+ Self.podj_trainid := -1;
 
  Self.funcsVyznamReq := false;
- Self.spr_menu_index := -1;
+ Self.train_menu_index := -1;
 
  F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
  F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
  F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_RIZ] := '';
 end;
 
-procedure TTCPOrsRef.ResetSpr();
+procedure TTCPOrsRef.ResetTrains();
 begin
- Self.spr_new_usek_index := -1;
- Self.spr_edit := nil;
- Self.spr_usek := nil;
+ Self.train_new_usek_index := -1;
+ Self.train_edit := nil;
+ Self.train_usek := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

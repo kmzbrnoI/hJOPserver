@@ -54,7 +54,7 @@ var
 
 implementation
 
-uses fMain, ownConvert, SprDb, Booster;
+uses fMain, ownConvert, TrainDb, Booster;
 
 {$R *.dfm}
 
@@ -77,13 +77,13 @@ var spr:Integer;
   end;
 
   Self.LB_Soupravy.Clear();
-  for spr in Self.Blk.Soupravs do
+  for spr in Self.Blk.trains do
     Self.LB_Soupravy.Items.Add(IntToStr(spr));
 
-  if (Blk.SprPredict = nil) then
+  if (Blk.trainPredict = nil) then
     SE_Souprava_Predict.Value := -1
   else
-    SE_Souprava_Predict.Value := Blk.SprPredict.index;
+    SE_Souprava_Predict.Value := Blk.trainPredict.index;
   SE_NavJCRef.Value := Blk.NavJCRef.Count;
   CB_KonecVC.ItemIndex  := Integer(Self.Blk.KonecJC);
 
@@ -103,9 +103,9 @@ var Blk:TBlk;
   Self.Blk.NUZ := ownConvert.IntToBool(CB_NUZ.ItemIndex);
   Self.Blk.KonecJC := TZaver(CB_KonecVC.ItemIndex);
   if (SE_Souprava_Predict.Value > -1) then
-    Self.Blk.SprPredict := Soupravy[SE_Souprava_Predict.Value]
+    Self.Blk.trainPredict := Trains[SE_Souprava_Predict.Value]
   else
-    Self.Blk.SprPredict := nil;
+    Self.Blk.trainPredict := nil;
   Blky.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
   if (Self.Blk.NavJCRef.Count = 0) then
     Self.Blk.NavJCRef.Clear();
@@ -135,11 +135,11 @@ procedure TF_BlkUsek_tech.B_SaveDataClick(Sender: TObject);
 
 procedure TF_BlkUsek_tech.B_SprAddClick(Sender: TObject);
 begin
- if ((Self.SE_SprAdd_Index.Value < 0) or (Self.SE_SprAdd_Index.Value >= _MAX_SPR) or
-     (Soupravy[Self.SE_SprAdd_Index.Value] = nil)) then Exit();
+ if ((Self.SE_SprAdd_Index.Value < 0) or (Self.SE_SprAdd_Index.Value >= _MAX_TRAIN) or
+     (Trains[Self.SE_SprAdd_Index.Value] = nil)) then Exit();
  
  try
-   Self.Blk.AddSoupravaS(Self.SE_SprAdd_Index.Value);
+   Self.Blk.AddTrainS(Self.SE_SprAdd_Index.Value);
    Self.LB_Soupravy.Items.Add(IntToStr(Self.SE_SprAdd_Index.Value));
  except
    on E:Exception do
@@ -153,7 +153,7 @@ begin
  if (Application.MessageBox('Opravdu?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then Exit();
 
  try
-   Self.Blk.RemoveSouprava(StrToInt(Self.LB_Soupravy.Items[Self.LB_Soupravy.ItemIndex]));
+   Self.Blk.RemoveTrain(StrToInt(Self.LB_Soupravy.Items[Self.LB_Soupravy.ItemIndex]));
    Self.LB_Soupravy.Items.Delete(Self.LB_Soupravy.ItemIndex);
  except
    on E:Exception do

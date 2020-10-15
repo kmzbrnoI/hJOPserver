@@ -111,7 +111,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, ownConvert, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, SprDb, THVDatabase, TBlokVyhybka,
+    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlokVyhybka,
     TCPServerPT, ownStrUtils;
 
 constructor TBlkAC.Create(index:Integer);

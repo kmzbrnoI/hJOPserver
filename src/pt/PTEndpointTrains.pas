@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses JclPCRE, PTUtils, SprDb;
+uses JclPCRE, PTUtils, TrainDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ procedure TPTEndpointTrains.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPReq
         var respJson:TJsonObject);
 begin
  try
-   Soupravy.GetPtData(respJson);
+   Trains.GetPtData(respJson);
  finally
 
  end;

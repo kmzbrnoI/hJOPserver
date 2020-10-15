@@ -25,7 +25,7 @@ type
   THVArray = array [0.._MAX_ADDR-1] of THV;
 
   ENoLoco = class(Exception);
-  ELocoOnSpr = class(Exception);
+  ELocoOnTrain = class(Exception);
   ELocoPrevzato = class(Exception);
   EInvalidAddress = class(Exception);
   ELocoExists = class(Exception);
@@ -295,7 +295,7 @@ begin
  stav.traveled_backward := 0;
  stav.stanice := (OblR as TOR);
 
- stav.souprava := -1;
+ stav.train := -1;
  stav.ruc := false;
 
  stav.regulators := nil;
@@ -395,8 +395,8 @@ begin
  // hv neexistuje
  if (Self.HVs[addr] = nil) then
    raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
- if (Self.HVs[addr].Stav.souprava > -1) then
-   raise ELocoOnSpr.Create('Lokomotiva je na soupravě!');
+ if (Self.HVs[addr].Stav.train > -1) then
+   raise ELocoOnTrain.Create('Lokomotiva je na soupravě!');
  if ((Self.HVs[addr].acquired) or (Self.HVs[addr].stolen)) then
    raise ELocoPrevzato.Create('Lokomotiva převzata do řízení počítače');
 

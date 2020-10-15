@@ -12,10 +12,10 @@
 interface
 
 uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, JsonDataObjects,
-     Generics.Collections, Souprava;
+     Generics.Collections, Train;
 
 const
-  _MAX_TRAT_SPR = 6;
+  _MAX_TRAT_TRAINS = 6;
 
 type
  TTratZZ  = (souhlas = 0, nabidka = 2);                                         // typ tratoveho zabezpecovaciho zarizeni
@@ -34,27 +34,27 @@ type
  TBlkTratETimeNotDefined = class(Exception);
 
  // Jedna souprava v trati.
- TBlkTratSouprava = class
+ TBlkTraTTrain = class
   private
     mTime: TTime;
     mTimeDefined: Boolean;
 
      function GetTime():TTime;
      procedure SetTime(time:TTime);
-     function GetSouprava(): TSouprava;
+     function GeTTrain(): TTrain;
 
   public
-    soupravai: Integer;                                                          // index soupravy
+    traini: Integer;                                                          // index soupravy
     predict: Boolean;
 
-     constructor Create(souprava:Integer); overload;
-     constructor Create(souprava:Integer; time:TTime; predict:Boolean = false); overload;
+     constructor Create(train:Integer); overload;
+     constructor Create(train:Integer; time:TTime; predict:Boolean = false); overload;
      function IsTimeDefined():boolean;
      procedure UndefTime();
      property time: TTime read GetTime write SetTime;
-     property souprava: TSouprava read GetSouprava;
+     property train: TTrain read GeTTrain;
 
-     function SerializeForPanel(trat:TBlk; sprPredict:Boolean = false):string;
+     function SerializeForPanel(trat:TBlk; trainPredict:Boolean = false):string;
  end;
 
  //aktualni stav trati
@@ -62,12 +62,12 @@ type
   zaver:boolean;                                                                // aktualni stav zaveru na trati
   smer:TTratSmer;                                                               // aktualni smer trati, reprezentuje i enabled bloku
   zadost:boolean;                                                               // flag probihajici zadosti, zadost vzdy probiha proti aktualnimu smeru trati
-  soupravy:TObjectList<TBlkTratSouprava>;                                       // seznam souprav v trati
-  SprPredict:TBlkTratSouprava;                                                  // predpovidana souprava
+  trains:TObjectList<TBlkTraTTrain>;                                            // seznam souprav v trati
+  trainPredict:TBlkTraTTrain;                                                   // predpovidana souprava
   BP:boolean;                                                                   // jestli je v trati zavedena blokova podminka
  end;
 
- TSprUsek = record
+ TTrainUsek = record
   trat_index:Integer;
   usek:TBlk;
  end;
@@ -79,7 +79,7 @@ type
     zaver: false;
     smer: disabled;
     zadost: false;
-    SprPredict: nil;
+    trainPredict: nil;
    );
 
   private
@@ -101,9 +101,9 @@ type
     function GetNouzZaver():boolean;
 
     procedure SetTratSmer(smer:TTratSmer);
-    procedure SetTratZaver(Zaver:boolean);
-    procedure SetTratZadost(Zadost:boolean);
-    procedure SetSprPredict(Spr:TBlkTratSouprava);
+    procedure SetTratZaver(zaver:boolean);
+    procedure SetTratZadost(zadost:boolean);
+    procedure SetTrainPredict(train:TBlkTraTTrain);
 
     procedure SetBP(state:boolean);
 
@@ -115,8 +115,8 @@ type
     procedure ResetTUs();                                                       // resetuje stav tratoveho useku; tratovy usek zapomene, ze je v nejake trati a stane se neutralnim tratovym usekem, ktery nic nevi
 
     function GetReady():boolean;                                                // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd soupravy, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
-    function GetSprIndex(spr: TSouprava): Integer;
-    function SprTUsCount(spr: TSouprava): Integer;
+    function GetTrainIndex(train: TTrain): Integer;
+    function TrainTUsCount(train: TTrain): Integer;
 
     function mGetLastUsek():TBlk;
     function GetVyluka():boolean;
@@ -146,28 +146,28 @@ type
     procedure SetSettings(data:TBlkTratSettings);
 
     function IsFirstUvazka(uv:TBlk):boolean;
-    procedure SprChangeOR(spr: TSouprava); overload;
-    procedure SprChangeOR(spr: TSouprava; smer:TTratSmer); overload;
+    procedure TrainChangeOR(train: TTrain); overload;
+    procedure TrainChangeOR(train: TTrain; smer:TTratSmer); overload;
 
-    procedure AddSpr(spr: TSouprava); overload;
-    procedure AddSpr(spr: TBlkTratSouprava); overload;
-    function GetSprList(separator: Char):string;
-    procedure RemoveSpr(spr: TSouprava);
+    procedure AddTrain(train: TTrain); overload;
+    procedure AddTrain(train: TBlkTraTTrain); overload;
+    function GetTrainsList(separator: Char):string;
+    procedure RemoveTrain(train: TTrain);
 
-    function IsSpr(spr: TSouprava; predict:boolean = true):boolean;
-    function IsSprInAnyTU(spr: TSouprava):boolean;
-    function IsSprInMoreTUs(spr: TSouprava):boolean;
+    function IsTrain(train: TTrain; predict:boolean = true):boolean;
+    function IsTrainInAnyTU(train: TTrain):boolean;
+    function IsTrainInMoreTUs(train: TTrain):boolean;
 
     procedure CallChangeToTU();
-    procedure UpdateSprPredict();
+    procedure UpdateTrainPredict();
     function NavestProtismer(): Integer;
 
     function SameUserControlsBothUvazka():boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
                                                                                 // kdyz je true, do trati neni potreba zadat
 
-    function ChangesSprDir():boolean;                                           // vraci true prave tehdy, kdyz se v trati meni smer soupravy
-    function GetSprUsek(spr: TSouprava): TBlk;
-    function GetLastUsek(smer:TTratSmer): TBlk;
+    function ChangesTrainDir():boolean;                                         // vraci true prave tehdy, kdyz se v trati meni smer soupravy
+    function GetTrainUsek(train: TTrain): TBlk;
+    function GetLastUsek(smer: TTratSmer): TBlk;
     function HasAutoblokNav(blk:TBlk):boolean;
 
     procedure GetPtData(json: TJsonObject; includeState: boolean); override;
@@ -185,7 +185,7 @@ type
     property nouzZaver:boolean read GetNouzZaver;                               // flag nouzoveho zaveru trati
     property Zadost:boolean read TratStav.zadost write SetTratZadost;           // flag probihajici zadosti o tratovy souhlas
     property BP:boolean read TratStav.BP write SetBP;                           // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty, rusi se pri uvolneni posledni soupravy z trati
-    property SprPredict:TBlkTratSouprava read TratStav.SprPredict write SetSprPredict; // predpovidana souprava do trati
+    property trainPredict: TBlkTraTTrain read TratStav.trainPredict write SetTrainPredict; // predpovidana souprava do trati
     property lastUsek:TBlk read mGetLastUsek;                                   // posledni usek trati (smerove zavisle)
     property vyluka:boolean read GetVyluka;
 
@@ -204,7 +204,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokNav, Logging,
-    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, SprDb, THVDatabase,
+    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, TrainDb, THVDatabase,
     TBlokTratUsek, appEv, timeHelper, ownConvert, Graphics;
 
 constructor TBlkTrat.Create(index:Integer);
@@ -221,12 +221,12 @@ begin
  Self.fNavSudy  := nil;
 
  Self.TratSettings.Useky := TList<Integer>.Create();
- Self.TratStav.soupravy  := TObjectList<TBlkTratSouprava>.Create();
+ Self.TratStav.trains := TObjectList<TBlkTraTTrain>.Create();
 end;//ctor
 
 destructor TBlkTrat.Destroy();
 begin
- Self.TratStav.soupravy.Free();
+ Self.TratStav.trains.Free();
  Self.TratSettings.Useky.Free();
  inherited;
 end;//dtor
@@ -254,11 +254,11 @@ begin
 
  data := TStringList.Create();
  ExtractStrings([',', ';'], [], PChar(ini_stat.ReadString(section, 'spr', '')), data);
- Self.TratStav.soupravy.Clear();
+ Self.TratStav.trains.Clear();
  for i := 0 to data.Count-1 do
   begin
-   index := Soupravy.GetSprIndexByName(data[i]);
-   if (index > -1) then Self.TratStav.soupravy.Add(TBlkTratSouprava.Create(index));
+   index := Trains.GetTrainIndexByName(data[i]);
+   if (index > -1) then Self.TratStav.trains.Add(TBlkTraTTrain.Create(index));
   end;
  data.Free();
 
@@ -303,8 +303,8 @@ begin
    ini_stat.WriteBool(section, 'BP', Self.TratStav.BP);
 
  str := '';
- for i := 0 to Self.TratStav.soupravy.Count-1 do
-   str := str + Self.TratStav.soupravy[i].souprava.name + ';';
+ for i := 0 to Self.TratStav.trains.Count-1 do
+   str := str + Self.TratStav.trains[i].train.name + ';';
 
  if (str <> '') then
    ini_stat.WriteString(section, 'spr', str);
@@ -322,7 +322,7 @@ procedure TBlkTrat.Disable();
 begin
  if (Self.Smer <> TTratSmer.disabled) then
    Self.file_smer := Self.Smer;
- Self.SprPredict    := nil;
+ Self.TrainPredict := nil;
  Self.TratStav.Smer := TTratSmer.disabled;
  Self.Change(true);
 end;
@@ -331,7 +331,7 @@ procedure TBlkTrat.Reset();
 begin
  Self.Zaver  := false;
  Self.Zadost := false;
- Self.SprPredict := nil;
+ Self.TrainPredict := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,10 +425,10 @@ begin
  if (Self.TratStav.zaver <> Zaver) then
   begin
    Self.TratStav.zaver := zaver;
-   Self.SprPredict := nil;
+   Self.TrainPredict := nil;
    Self.Change();
   end else begin
-   Self.SprPredict := nil;
+   Self.TrainPredict := nil;
   end;
 end;
 
@@ -464,15 +464,15 @@ begin
  Self.Change();
 end;
 
-procedure TBlkTrat.SetSprPredict(Spr:TBlkTratSouprava);
+procedure TBlkTrat.SetTrainPredict(train: TBlkTraTTrain);
 begin
- if (Self.TratStav.SprPredict = Spr) then Exit();
+ if (Self.TratStav.TrainPredict = train) then Exit();
 
- if (Self.TratStav.SprPredict <> nil) then
-   FreeAndNil(Self.TratStav.SprPredict);
+ if (Self.TratStav.TrainPredict <> nil) then
+   FreeAndNil(Self.TratStav.TrainPredict);
 
- if (Spr <> nil) then
-   Self.TratStav.SprPredict := Spr;
+ if (train <> nil) then
+   Self.TratStav.trainPredict := train;
 
  Self.Change();
 end;
@@ -569,45 +569,45 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrat.AddSpr(spr: TSouprava);
+procedure TBlkTrat.AddTrain(train: TTrain);
 begin
- Self.AddSpr(TBlkTratSouprava.Create(spr.index, timeHelper.hJOPnow()));
+ Self.AddTrain(TBlkTraTTrain.Create(train.index, timeHelper.hJOPnow()));
 end;
 
-procedure TBlkTrat.AddSpr(spr:TBlkTratSouprava);
+procedure TBlkTrat.AddTrain(train: TBlkTraTTrain);
 begin
- if (Self.TratStav.soupravy.Count >= _MAX_TRAT_SPR) then
+ if (Self.TratStav.trains.Count >= _MAX_TRAT_TRAINS) then
    raise TBlkTratEFull.Create('Trat je plna!');
 
- Self.TratStav.soupravy.Add(spr);
- if (spr <> Self.SprPredict) then
-   Self.SprPredict := nil // will also Free
+ Self.TratStav.trains.Add(train);
+ if (train <> Self.trainPredict) then
+   Self.trainPredict := nil // will also Free
  else
-   Self.TratStav.SprPredict := nil; // will not Free
+   Self.TratStav.trainPredict := nil; // will not Free
 
- if (not spr.IsTimeDefined()) then
-   spr.time := timeHelper.hJOPnow();
+ if (not train.IsTimeDefined()) then
+   train.time := timeHelper.hJOPnow();
 
- writelog('Trať '+Self.GlobalSettings.name+ ' : přidána souprava '+spr.souprava.name, WR_SPRPREDAT);
+ writelog('Trať '+Self.GlobalSettings.name+ ' : přidána souprava '+train.train.name, WR_SPRPREDAT);
 
  Self.Change();
 end;
 
-procedure TBlkTrat.RemoveSpr(spr: TSouprava);
+procedure TBlkTrat.RemoveTrain(train: TTrain);
 var toChange:boolean;
 begin
  toChange := false;
 
- if ((Self.SprPredict <> nil) and (Self.SprPredict.souprava = spr)) then
+ if ((Self.trainPredict <> nil) and (Self.trainPredict.train = train)) then
   begin
-   Self.SprPredict := nil;
+   Self.trainPredict := nil;
    toChange := true;
   end;
 
- if (Self.IsSpr(spr)) then
+ if (Self.IsTrain(train)) then
   begin
-   Self.TratStav.soupravy.Delete(Self.GetSprIndex(spr));
-   writelog('Trať '+Self.GlobalSettings.name+ ' : smazána souprava '+spr.name, WR_SPRPREDAT);
+   Self.TratStav.trains.Delete(Self.GetTrainIndex(train));
+   writelog('Trať '+Self.GlobalSettings.name+ ' : smazána souprava '+train.name, WR_SPRPREDAT);
    toChange := true;
   end;
 
@@ -617,44 +617,44 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetSprList(separator:Char):string;
-var spr:TBlkTratSouprava;
+function TBlkTrat.GetTrainsList(separator:Char):string;
+var train:TBlkTraTTrain;
 begin
  Result := '';
 
- for spr in Self.TratStav.soupravy do
-   Result := Result + spr.SerializeForPanel(Self) + separator;
+ for train in Self.TratStav.trains do
+   Result := Result + train.SerializeForPanel(Self) + separator;
 
- if (Self.SprPredict <> nil) then
-   Result := Result + Self.SprPredict.SerializeForPanel(Self, true) + separator;
+ if (Self.trainPredict <> nil) then
+   Result := Result + Self.trainPredict.SerializeForPanel(Self, true) + separator;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrat.SprChangeOR(spr: TSouprava);
+procedure TBlkTrat.TrainChangeOR(train: TTrain);
 begin
- Self.SprChangeOR(spr, Self.Smer);
+ Self.TrainChangeOR(train, Self.Smer);
 end;
 
-procedure TBlkTrat.SprChangeOR(spr: TSouprava; smer:TTratSmer);
+procedure TBlkTrat.TrainChangeOR(train: TTrain; smer:TTratSmer);
 begin
  case (smer) of
    TTratSmer.AtoB: begin
       if ((Self.uvazkaB as TBlkUvazka).OblsRizeni.Count > 0) then
-        spr.station := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
+        train.station := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
       else
-        spr.station := nil;
+        train.station := nil;
    end;//AtoB
    TTratSmer.BtoA:begin
       if ((Self.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
-        spr.station := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
+        train.station := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
       else
-        spr.station := nil;
+        train.station := nil;
    end;//BtoA
  end;//case
 
- writelog('Trať '+Self.GlobalSettings.name+ ' : souprava '+spr.name+
-          ' : stanice změněna na '+(spr.station as TOR).Name, WR_SPRPREDAT);
+ writelog('Trať '+Self.GlobalSettings.name+ ' : souprava '+train.name+
+          ' : stanice změněna na '+(train.station as TOR).Name, WR_SPRPREDAT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -732,19 +732,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.IsSpr(spr: TSouprava; predict:boolean = true):boolean;
+function TBlkTrat.IsTrain(train: TTrain; predict:boolean = true):boolean;
 begin
- Result := ((Self.GetSprIndex(spr) > -1) or
-            ((predict) and (Self.SprPredict <> nil) and (Self.SprPredict.souprava = spr)));
+ Result := ((Self.GetTrainIndex(train) > -1) or
+            ((predict) and (Self.trainPredict <> nil) and (Self.trainPredict.train = train)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetSprIndex(spr: TSouprava): Integer;
+function TBlkTrat.GetTrainIndex(train: TTrain): Integer;
 var i:Integer;
 begin
- for i := 0 to Self.TratStav.soupravy.Count-1 do
-   if (Self.TratStav.soupravy[i].souprava = spr) then
+ for i := 0 to Self.TratStav.trains.Count-1 do
+   if (Self.TratStav.trains[i].train = train) then
      Exit(i);
  Exit(-1);
 end;
@@ -774,7 +774,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.SprTUsCount(spr: TSouprava): Integer;
+function TBlkTrat.TrainTUsCount(train: TTrain): Integer;
 var usek:Integer;
     Blk:TBlk;
 begin
@@ -782,19 +782,19 @@ begin
  for usek in Self.TratSettings.Useky do
   begin
    Blky.GetBlkByID(usek, Blk);
-   if (TBlkTU(Blk).IsSouprava(spr)) then
+   if (TBlkTU(Blk).IsTrain(train)) then
      Inc(Result);
   end;
 end;
 
-function TBlkTrat.IsSprInAnyTU(spr: TSouprava): Boolean;
+function TBlkTrat.IsTrainInAnyTU(train: TTrain): Boolean;
 begin
- Result := (Self.SprTUsCount(spr) > 0);
+ Result := (Self.TrainTUsCount(train) > 0);
 end;
 
-function TBlkTrat.IsSprInMoreTUs(spr: TSouprava): Boolean;
+function TBlkTrat.IsTrainInMoreTUs(train: TTrain): Boolean;
 begin
- Result := (Self.SprTUsCount(spr) > 1);
+ Result := (Self.TrainTUsCount(train) > 1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -914,7 +914,7 @@ end;
 // aktualizace predpovidane soupravy na posledni usek trati
 // volano pri uvolneni posledniho useku trati, nebo RBP
 
-procedure TBlkTrat.UpdateSprPredict();
+procedure TBlkTrat.UpdateTrainPredict();
 var Blk, last:TBlkTU;
     i:Integer;
 begin
@@ -924,62 +924,62 @@ begin
  case (Self.Smer) of
   TTratSmer.AtoB: begin
        Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1], TBlk(last));
-       last.SprPredict := nil;
-       if (last.IsSouprava()) then Exit();
+       last.trainPredict := nil;
+       if (last.IsTrain()) then Exit();
        for i := Self.TratSettings.Useky.Count-2 downto 0 do
         begin
          Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(Blk));
-         if (Blk.IsSouprava()) then
+         if (Blk.IsTrain()) then
           begin
-           last.SprPredict := Blk.Souprava;
+           last.trainPredict := Blk.train;
            break;
           end;
-         if (Blk.SprPredict <> nil) then
+         if (Blk.trainPredict <> nil) then
           begin
-           last.SprPredict := Blk.SprPredict;
+           last.trainPredict := Blk.trainPredict;
            break;
           end;
          if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = ncStuj)) then
           begin
-           Blky.SprPrediction(Self.navSudy);
+           Blky.TrainPrediction(Self.navSudy);
            Exit();
           end;
         end;
 
-       if ((last.SprPredict = nil) and (Self.SprPredict <> nil)) then
-         last.SprPredict := Self.SprPredict.souprava;
+       if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
+         last.trainPredict := Self.trainPredict.train;
        if (Self.navSudy <> nil) then
-         Blky.SprPrediction(Self.navSudy);
+         Blky.trainPrediction(Self.navSudy);
   end;
 
   TTratSmer.BtoA: begin
        Blky.GetBlkByID(Self.TratSettings.Useky[0], TBlk(last));
-       last.SprPredict := nil;
-       if (last.IsSouprava()) then Exit();
+       last.trainPredict := nil;
+       if (last.IsTrain()) then Exit();
        for i := 1 to Self.TratSettings.Useky.Count-1 do
         begin
          Blky.GetBlkByID(Self.TratSettings.Useky[i], TBlk(Blk));
-         if (Blk.IsSouprava()) then
+         if (Blk.IsTrain()) then
           begin
-           last.SprPredict := Blk.Souprava;
+           last.trainPredict := Blk.train;
            break;
           end;
-         if (Blk.SprPredict <> nil) then
+         if (Blk.trainPredict <> nil) then
           begin
-           last.SprPredict := Blk.SprPredict;
+           last.trainPredict := Blk.trainPredict;
            break;
           end;
          if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = ncStuj)) then
           begin
-           Blky.SprPrediction(Self.navLichy);
+           Blky.TrainPrediction(Self.navLichy);
            Exit();
           end;
         end;
 
-       if ((last.SprPredict = nil) and (Self.SprPredict <> nil)) then
-         last.SprPredict := Self.SprPredict.souprava;
+       if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
+         last.trainPredict := Self.trainPredict.train;
        if (Self.navLichy <> nil) then
-         Blky.SprPrediction(Self.navLichy);
+         Blky.TrainPrediction(Self.navLichy);
   end;
  end;//case
 end;
@@ -1021,7 +1021,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.ChangesSprDir():boolean;
+function TBlkTrat.ChangesTrainDir():boolean;
 begin
  Result := (Assigned(Self.navLichy)) and (Assigned(Self.navSudy)) and
     (TBlkNav(Self.navLichy).Smer = TBlkNav(Self.navSudy).Smer);
@@ -1029,14 +1029,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetSprUsek(spr: TSouprava): TBlk;
+function TBlkTrat.GetTrainUsek(train: TTrain): TBlk;
 var usekid: Integer;
     blk: TBlk;
 begin
  for usekid in Self.TratSettings.Useky do
   begin
    Blky.GetBlkByID(usekid, blk);
-   if ((blk <> nil) and (blk.typ = btTU) and (TBlkUsek(blk).Souprava = spr)) then
+   if ((blk <> nil) and (blk.typ = btTU) and (TBlkUsek(blk).train = train)) then
      Exit(blk);
   end;
 
@@ -1126,67 +1126,64 @@ begin
 end;
 
 procedure TBlkTrat.GetPtState(json: TJsonObject);
-var spr: TBlkTratSouprava;
+var train: TBlkTraTTrain;
 begin
  json['zaver'] := Self.TratStav.zaver;
  json['smer'] := Integer(Self.TratStav.smer);
  json['zadost'] := Self.TratStav.zadost;
 
- for spr in Self.TratStav.soupravy do
-  begin
-   if (spr.predict) then
-   else
-     json.A['soupravy'].Add(spr.souprava.name);
-  end;
- if (Self.TratStav.SprPredict <> nil) then
-   json['sprPredict'] := Self.TratStav.SprPredict.souprava;
+ for train in Self.TratStav.trains do
+   if (not train.predict) then
+     json.A['soupravy'].Add(train.train.name);
+ if (Self.TratStav.trainPredict <> nil) then
+   json['sprPredict'] := Self.TratStav.trainPredict.train;
  json['BP'] := Self.TratStav.BP;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-// TBlkTratSouprava
+// TBlkTraTTrain
 
-constructor TBlkTratSouprava.Create(souprava:Integer);
+constructor TBlkTraTTrain.Create(train:Integer);
 begin
  inherited Create();
- Self.soupravai := souprava;
+ Self.traini := train;
  Self.mTimeDefined := false;
  Self.predict := false;
 end;
 
-constructor TBlkTratSouprava.Create(souprava:Integer; time:TTime; predict:Boolean = false);
+constructor TBlkTraTTrain.Create(train:Integer; time:TTime; predict:Boolean = false);
 begin
  inherited Create();
- Self.soupravai := souprava;
+ Self.traini := train;
  Self.time := time;
  Self.predict := predict;
 end;
 
-function TBlkTratSouprava.GetTime():TTime;
+function TBlkTraTTrain.GetTime():TTime;
 begin
  if (not Self.IsTimeDefined()) then
    raise TBlkTratETimeNotDefined.Create('Time not defined!');
  Result := Self.mTime;
 end;
 
-procedure TBlkTratSouprava.SetTime(time:TTime);
+procedure TBlkTraTTrain.SetTime(time:TTime);
 begin
  Self.mTimeDefined := true;
  Self.mTime := time;
 end;
 
-function TBlkTratSouprava.IsTimeDefined():boolean;
+function TBlkTraTTrain.IsTimeDefined():boolean;
 begin
  Result := Self.mTimeDefined;
 end;
 
-procedure TBlkTratSouprava.UndefTime();
+procedure TBlkTraTTrain.UndefTime();
 begin
  Self.mTimeDefined := false;
 end;
 
-function TBlkTratSouprava.SerializeForPanel(trat:TBlk; sprPredict:Boolean = false):string;
+function TBlkTraTTrain.SerializeForPanel(trat:TBlk; trainPredict:Boolean = false):string;
 var addr, usek:Integer;
     porucha_bp:Boolean;
     blk:TBlk;
@@ -1198,19 +1195,19 @@ begin
   begin
    Blky.GetBlkByID(usek, blk);
    if ((blk <> nil) and (blk.typ = btTU)) then
-     if (TBlkUsek(blk).Souprava = Self.souprava) and (TBlkTU(blk).poruchaBP) then
+     if (TBlkUsek(blk).train = Self.train) and (TBlkTU(blk).poruchaBP) then
        porucha_bp := true;
   end;
 
- blk := Self.souprava.front as TBlk;
+ blk := Self.train.front as TBlk;
  stopsInHalt := ((blk <> nil) and (blk.typ = btTU) and (TBlkTU(blk).TUStav.zast_stopped));
 
- Result := Self.souprava.name + '|';
- if (sprPredict) then
+ Result := Self.train.name + '|';
+ if (trainPredict) then
    Result := Result + ownConvert.ColorToStr(clYellow) + '|'
  else if (porucha_bp) then
    Result := Result + ownConvert.ColorToStr(clAqua) + '|'
- else if ((Self.souprava.speed = 0) and (not stopsInHalt)) then
+ else if ((Self.train.speed = 0) and (not stopsInHalt)) then
    Result := Result + ownConvert.ColorToStr(clRed) + '|'
  else
    Result := Result + ownConvert.ColorToStr(clWhite) + '|';
@@ -1223,15 +1220,15 @@ begin
  else
    Result := Result + ownConvert.ColorToStr(clAqua) + '|';
 
- for addr in Self.souprava.HVs do
+ for addr in Self.train.HVs do
    Result := Result + HVDb[addr].Data.Nazev + '|';
 end;
 
-function TBlkTratSouprava.GetSouprava(): TSouprava;
+function TBlkTraTTrain.GeTTrain(): TTrain;
 begin
- if (Self.soupravai = -1) then
+ if (Self.traini = -1) then
    Exit(nil);
- Result := Soupravy[Self.soupravaI];
+ Result := Trains[Self.trainI];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

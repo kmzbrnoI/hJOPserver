@@ -16,7 +16,7 @@ interface
 
 uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
      Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
-     JsonDataObjects, Souprava;
+     JsonDataObjects, Train;
 
 type
  TArI  = array of Integer;
@@ -91,19 +91,19 @@ type
 
     procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp: TBlkType; BlokID:Integer = -1; BlokTyp2:TBlkType = btAny);
 
-    procedure RemoveSpr(spr: TSouprava);
-    procedure SprPrediction(Nav:TBlk);
+    procedure RemoveTrain(train: TTrain);
+    procedure TrainPrediction(Nav:TBlk);
 
-    function GetBlkWithSpr(spr: TSouprava):TBlksList;
+    function GetBlkWithTrain(train: TTrain):TBlksList;
     function GetVyhWithZamek(zamekID:integer):TBlksList;
 
     // zavola change na vsechny useky, ktere obsahuji zadanou soupravu
     // pouziva se napriklad pro oznameni ukradeni LOKO
-    procedure ChangeUsekWithSpr(spr: TSouprava);
+    procedure ChangeUsekWithTrain(train: TTrain);
 
     // zavola Change vsech trati, ktere obsahuji danou soupravu
     // pouziva se pri zmene vlastnosti soupravy -> musi se aktualizovat seznam LOKO v trati
-    procedure ChangeSprToTrat(spr: TSouprava);
+    procedure ChangeTrainToTrat(train: TTrain);
 
     // volano pri zmene ID bloku na indexu \index
     // -> je potreba zmenit poradi bloku
@@ -140,7 +140,7 @@ implementation
 
 uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokNav, fMain, TBlokPrejezd,
       TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TBlokAC,
-      DataBloky, SprDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
+      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
       TBlokTratUsek, appEv, TBlokIO, PTUtils, TBlokSouctovaHlaska,
       TechnologieAB, ACBlocks;
 
@@ -656,7 +656,7 @@ end;
 
 // pozn.: NUZ maze soupravy z bloku
 procedure TBlky.NUZ(or_id:string; state:boolean = true);
-var spri: Integer;
+var traini: Integer;
     blk: TBlk;
     usek: TBlkUsek;
     oblr: TOR;
@@ -673,16 +673,16 @@ var spri: Integer;
        begin
         if (state) then
          begin
-          for spri in usek.Soupravs do
-            if (Self.GetBlkWithSpr(Soupravy[spri]).Count = 1) then
-              Soupravy.RemoveSpr(spri);
+          for traini in usek.trains do
+            if (Self.GetBlkWithTrain(Trains[traini]).Count = 1) then
+              Trains.RemoveTrain(traini);
 
           if (ABlist.IsUsekInAnyABJC(usek.id)) then
             usek.Zaver := TZaver.ab
           else
             usek.Zaver := TZaver.no;
 
-          usek.RemoveSoupravy();
+          usek.RemoveTrains();
          end else
           usek.NUZ := false;
        end;
@@ -770,56 +770,56 @@ var bloki,i:Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.RemoveSpr(spr: TSouprava);
+procedure TBlky.RemoveTrain(train: TTrain);
 var blk: TBlk;
 begin
  for blk in Self.data do
   begin
    if ((blk.typ = btUsek) or (blk.typ = btTU)) then
     begin
-     if ((blk as TBlkUsek).IsSouprava(spr)) then
-       (blk as TBlkUsek).RemoveSouprava(spr);
+     if ((blk as TBlkUsek).IsTrain(train)) then
+       (blk as TBlkUsek).RemoveTrain(train);
 
-     if ((blk as TBlkUsek).SprPredict = spr) then
-       (blk as TBlkUsek).SprPredict := nil;
+     if ((blk as TBlkUsek).trainPredict = train) then
+       (blk as TBlkUsek).trainPredict := nil;
     end;
-   if (blk.typ = btTrat) then (blk as TBlkTrat).RemoveSpr(spr);
+   if (blk.typ = btTrat) then (blk as TBlkTrat).RemoveTrain(train);
   end;//for
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkWithSpr(spr: TSouprava):TBlksList;
+function TBlky.GetBlkWithTrain(train: TTrain):TBlksList;
 var blk: TBlk;
 begin
  Result := TList<TObject>.Create();
  for blk in Self.data do
    if (((blk.typ = btUsek) or (blk.typ = btTU)) and
-       ((blk as TBlkUsek).IsSouprava(spr))) then
+       ((blk as TBlkUsek).IsTrain(train))) then
      Result.Add(blk);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // predpovidani soupravy na bloky v jizdni ceste
 
-procedure TBlky.SprPrediction(nav:TBlk);
+procedure TBlky.TrainPrediction(nav:TBlk);
 var usek, startUsek: TBlkUsek;
     trat: TBlkTrat;
-    spr: TSouprava;
+    train: TTrain;
     JC: TJC;
 begin
  try
    // zjistime soupravu pred navestidlem
    usek := TBlkUsek(TBlkNav(nav).UsekPred);
    startUsek := usek;
-   spr := TBlkNav(nav).GetSouprava(usek);
+   train := TBlkNav(nav).GeTTrain(usek);
 
    if (TBlkNav(nav).IsPovolovaciNavest()) then begin
-     if ((not usek.IsSouprava()) or
-         (spr.direction <> TBlkNav(nav).Smer)) then
-      spr := usek.SprPredict
+     if ((not usek.IsTrain()) or
+         (train.direction <> TBlkNav(nav).Smer)) then
+      train := usek.trainPredict
    end else
-     spr := nil;
+     train := nil;
    JC := TBlkNav(nav).DNjc;
 
    // predpovidame, dokud existuji jizdni cesty
@@ -828,7 +828,7 @@ begin
      // kontrola povolujici navesti
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
      if ((nav = nil) or (nav.typ <> btNav) or (not TBlkNav(nav).IsPovolovaciNavest())) then
-       spr := nil;
+       train := nil;
 
      // zjistime posledni usek jizdni cesty
      Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], TBlk(usek));
@@ -840,17 +840,17 @@ begin
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
        Blky.GetBlkByID(TBlkTU(Usek).InTrat, TBlk(trat));
-       if (spr <> nil) then begin
-         if ((trat.SprPredict = nil) or (trat.SprPredict.souprava <> spr)) then
-           trat.SprPredict := TBlkTratSouprava.Create(spr.index);
+       if (train <> nil) then begin
+         if ((trat.trainPredict = nil) or (trat.trainPredict.train <> train)) then
+           trat.trainPredict := TBlkTraTTrain.Create(train.index);
        end else begin
-         if (trat.SprPredict <> nil) then
-           trat.SprPredict := nil;
+         if (trat.trainPredict <> nil) then
+           trat.trainPredict := nil;
        end;
 
        // v trati jsou jiz soupravy -> konec predpovidani
-       if (trat.stav.soupravy.Count > 0) then Exit();
-       trat.UpdateSprPredict();
+       if (trat.stav.trains.Count > 0) then Exit();
+       trat.UpdateTrainPredict();
 
        case (trat.Smer) of
         TTratSmer.AtoB : Blky.GetBlkByID(trat.GetSettings().Useky[trat.GetSettings().Useky.Count-1], TBlk(usek));
@@ -858,11 +858,11 @@ begin
        end;//case
 
        // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
-       if (usek.SprPredict <> spr) then Exit();
+       if (usek.trainPredict <> train) then Exit();
       end;
 
      // do useku vlozime predpovidnou soupravu
-     usek.SprPredict := spr;
+     usek.trainPredict := train;
 
      // zjistime, jeslti je nejake navestidlo u tohoto useku postaveno na volno
      if (usek.NavJCRef.Count = 0) then
@@ -928,11 +928,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ChangeUsekWithSpr(spr: TSouprava);
+procedure TBlky.ChangeUsekWithTrain(train: TTrain);
 var Blks:TBlksList;
     i:Integer;
 begin
- Blks := Self.GetBlkWithSpr(spr);
+ Blks := Self.GetBlkWithTrain(train);
  for i := 0 to Blks.Count-1 do
   (Blks[i] as TBlk).Change();
  Blks.Free();
@@ -947,11 +947,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ChangeSprToTrat(spr: TSouprava);
+procedure TBlky.ChangeTrainToTrat(train: TTrain);
 var blk: TBlk;
 begin
  for blk in Self.data do
-   if ((blk.typ = btTrat) and (blk as TBlkTrat).IsSpr(spr, true)) then
+   if ((blk.typ = btTrat) and (blk as TBlkTrat).IsTrain(train, true)) then
      blk.Change();
 end;
 

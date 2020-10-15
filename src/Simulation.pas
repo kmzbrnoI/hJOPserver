@@ -175,7 +175,7 @@ begin
     begin
      Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
      if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
-         (TU.prevTU.Souprava = TU.Souprava)) then
+         (TU.prevTU.train = TU.train)) then
       begin
        RCSi.SetInput(TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0].board, TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0].port, 0);
        Exit();

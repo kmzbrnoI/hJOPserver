@@ -1,19 +1,19 @@
 ﻿unit DataSpr;
 
-// TSprTableData - trida starajici se o vyplnovani tabulky souprav
+// TTrainTableData - trida starajici se o vyplnovani tabulky souprav
 
 interface
 
 uses ComCtrls, SysUtils, StrUtils;
 
 type
-  TSprTableData=class
+  TTrainTableData=class
     private
-      LV:TListView;
+      LV: TListView;
 
     public
 
-     reload:boolean;
+     reload: Boolean;
 
       procedure LoadToTable();
       procedure UpdateLine(line:integer);
@@ -23,17 +23,17 @@ type
   end;
 
 var
-   SprTableData:TSprTableData;
+   TrainTableData: TTrainTableData;
 
 
 implementation
 
-uses SprDb, Souprava, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
+uses TrainDb, Train, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
        TBloky, TBlok, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TSprTableData.Create(LV:TListView);
+constructor TTrainTableData.Create(LV:TListView);
 begin
  inherited Create();
  Self.reload := false;
@@ -42,13 +42,13 @@ end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprTableData.LoadToTable();
+procedure TTrainTableData.LoadToTable();
 var i, j:integer;
     LI:TListItem;
  begin
   Self.LV.Clear();
 
-  for i := 0 to _MAX_SPR-1 do
+  for i := 0 to _MAX_TRAIN-1 do
    begin
     LI := Self.LV.Items.Add();
     LI.Caption := IntToStr(i);
@@ -61,17 +61,17 @@ var i, j:integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprTableData.UpdateTable();
+procedure TTrainTableData.UpdateTable();
 var i:Integer;
 begin
- for i := 0 to _MAX_SPR-1 do
+ for i := 0 to _MAX_TRAIN-1 do
   begin
    if (Self.reload) then
     begin
      Self.UpdateLine(i);
      Self.LV.UpdateItems(i, i);
     end else begin
-     if ((Assigned(Soupravy[i])) and (Soupravy[i].changed)) then
+     if ((Assigned(Trains[i])) and (Trains[i].changed)) then
       begin
        Self.UpdateLine(i);
        Self.LV.UpdateItems(i, i);
@@ -84,12 +84,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSprTableData.UpdateLine(line:integer);
-var spr:TSoupravaData;
+procedure TTrainTableData.UpdateLine(line:integer);
+var train:TTrainData;
     i:Integer;
     str:string;
  begin
-  if (not Assigned(Soupravy[line])) then
+  if (not Assigned(Trains[line])) then
    begin
     Self.LV.Items[line].Caption := '';
 
@@ -99,82 +99,82 @@ var spr:TSoupravaData;
     Exit();
    end;
 
-  Soupravy[line].changed := false;
+  Trains[line].changed := false;
 
-  spr := Soupravy[line].sdata;
+  train := Trains[line].sdata;
 
   Self.LV.Items[line].Caption := IntToStr(line);
 
-  Self.LV.Items[line].SubItems[0] := spr.name;
+  Self.LV.Items[line].SubItems[0] := train.name;
 
-  if (spr.HVs.Count > 0) then
-   Self.LV.Items[line].SubItems[1] := IntToStr(HVDb[spr.HVs[0]].adresa) + ' : ' +
-       HVDb[spr.HVs[0]].Data.Nazev + ' ('+HVDb[spr.HVs[0]].Data.Oznaceni+')'
+  if (train.HVs.Count > 0) then
+   Self.LV.Items[line].SubItems[1] := IntToStr(HVDb[train.HVs[0]].adresa) + ' : ' +
+       HVDb[train.HVs[0]].Data.Nazev + ' ('+HVDb[train.HVs[0]].Data.Oznaceni+')'
   else
    Self.LV.Items[line].SubItems[1] := '-';
 
   str := '';
-  for i := 1 to spr.HVS.Count-1 do
-      str := str + IntToStr(spr.HVs[i]) + ', ';
+  for i := 1 to train.HVS.Count-1 do
+      str := str + IntToStr(train.HVs[i]) + ', ';
 
   if (str <> '') then
     Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2)
   else
     Self.LV.Items[line].SubItems[2] := '-';
 
-  Self.LV.Items[line].SubItems[3] := spr.note;
-  if (spr.dir_L) then
+  Self.LV.Items[line].SubItems[3] := train.note;
+  if (train.dir_L) then
     Self.LV.Items[line].SubItems[4] := 'L'
   else
     Self.LV.Items[line].SubItems[4] := '';
 
-  if (spr.dir_S) then
+  if (train.dir_S) then
     Self.LV.Items[line].SubItems[4] := Self.LV.Items[line].SubItems[4] + 'S';
 
-  Self.LV.Items[line].SubItems[5] := IntToStr(spr.carsCount);
+  Self.LV.Items[line].SubItems[5] := IntToStr(train.carsCount);
 
-  if (spr.maxSpeed <> 0) then
-    Self.LV.Items[line].SubItems[6] := IntToStr(spr.maxSpeed) + ' km/h'
+  if (train.maxSpeed <> 0) then
+    Self.LV.Items[line].SubItems[6] := IntToStr(train.maxSpeed) + ' km/h'
   else
     Self.LV.Items[line].SubItems[6] := '-';
 
-  Self.LV.Items[line].SubItems[7] := IntToStr(spr.speed) + ' km/h';
-  if (spr.speed <> spr.wantedSpeed) then
-    Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' (' + IntToStr(spr.wantedSpeed) + ' km/h)';
+  Self.LV.Items[line].SubItems[7] := IntToStr(train.speed) + ' km/h';
+  if (train.speed <> train.wantedSpeed) then
+    Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' (' + IntToStr(train.wantedSpeed) + ' km/h)';
 
-  case (spr.direction) of
+  case (train.direction) of
    THVStanoviste.lichy: Self.LV.Items[line].SubItems[8] := 'lichý';
    THVStanoviste.sudy : Self.LV.Items[line].SubItems[8] := 'sudý';
   end;
 
   try
-    if (spr.station <> nil) then
-      Self.LV.Items[line].SubItems[9] := (spr.station as TOR).Name
+    if (train.station <> nil) then
+      Self.LV.Items[line].SubItems[9] := (train.station as TOR).Name
     else
       Self.LV.Items[line].SubItems[9] := '-';
   except
    Self.LV.Items[line].SubItems[9] := '-';
   end;
 
-  if (spr.front <> nil) then
-    Self.LV.Items[line].SubItems[10] := (spr.front as TBlk).name
+  if (train.front <> nil) then
+    Self.LV.Items[line].SubItems[10] := (train.front as TBlk).name
   else
     Self.LV.Items[line].SubItems[10] := '-';
 
-  Self.LV.Items[line].SubItems[11] := IntToStr(spr.length);
-  Self.LV.Items[line].SubItems[12] := spr.typ;
+  Self.LV.Items[line].SubItems[11] := IntToStr(train.length);
+  Self.LV.Items[line].SubItems[12] := train.typ;
 
-  if (spr.stationFrom <> nil) then
-    Self.LV.Items[line].SubItems[13] := TOR(spr.stationFrom).Name
+  if (train.stationFrom <> nil) then
+    Self.LV.Items[line].SubItems[13] := TOR(train.stationFrom).Name
   else
     Self.LV.Items[line].SubItems[13] := '-';
 
-  if (spr.stationTo <> nil) then
-    Self.LV.Items[line].SubItems[14] := TOR(spr.stationTo).Name
+  if (train.stationTo <> nil) then
+    Self.LV.Items[line].SubItems[14] := TOR(train.stationTo).Name
   else
     Self.LV.Items[line].SubItems[14] := '-';
 
-  Self.LV.Items[line].SubItems[15] := ownConvert.BoolToTick(spr.announcement);
+  Self.LV.Items[line].SubItems[15] := ownConvert.BoolToTick(train.announcement);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +182,6 @@ var spr:TSoupravaData;
 initialization
 
 finalization
- SprTableData.Free();
+ TrainTableData.Free();
 
 end.//unit

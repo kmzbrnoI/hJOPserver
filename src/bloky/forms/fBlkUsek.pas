@@ -145,8 +145,8 @@ var glob:TBlkSettings;
 
   if (Assigned(Self.Blk)) then settings := Self.Blk.GetSettings();
 
-  Self.SE_SprCnt.Value := settings.maxSpr;
-  Self.SE_SprCnt.Enabled := Self.Blk.Stav.stanicni_kolej or Self.Blk.Stav.spr_pos;
+  Self.SE_SprCnt.Value := settings.maxTrains;
+  Self.SE_SprCnt.Enabled := Self.Blk.Stav.stanicni_kolej or Self.Blk.Stav.train_pos;
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D2.Checked := false;
@@ -329,7 +329,7 @@ var glob:TBlkSettings;
   settings.houkEvL := Self.Blk.GetSettings().houkEvL;
   settings.houkEvS := Self.Blk.GetSettings().houkEvS;
 
-  settings.maxSpr := Self.SE_SprCnt.Value;
+  settings.maxTrains := Self.SE_SprCnt.Value;
 
   Self.Blk.SetSettings(settings);
 

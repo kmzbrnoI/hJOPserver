@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses THvDatabase, ownConvert, fMain, Trakce, SprDb;
+uses THvDatabase, ownConvert, fMain, Trakce, TrainDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -130,8 +130,8 @@ var line:Integer;
 
   Self.LV.Items[line].SubItems[8] := IntToStr(data.maxRychlost) + ' km/h';
 
-  if (stav.souprava > -1) then
-    Self.LV.Items[line].SubItems[19] := Soupravy.GetSprNameByIndex(stav.souprava)
+  if (stav.train > -1) then
+    Self.LV.Items[line].SubItems[19] := Trains.GetTrainNameByIndex(stav.train)
   else
     Self.LV.Items[line].SubItems[19] := '-';
 
@@ -197,7 +197,7 @@ var line:Integer;
      Self.LV.Items[line].SubItems[17] := 'PC';
   end;//else not prevzato
 
-  if (stav.souprava > -1) then
+  if (stav.train > -1) then
     Self.LV.Items[line].SubItems[22] := 'teď'
   else if (stav.last_used > 0) then
     Self.LV.Items[line].SubItems[22] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)

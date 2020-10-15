@@ -363,7 +363,7 @@ var glob:TBlkSettings;
   settings.ZpozdeniPadu := Self.SE_Delay.Value;
 
   settings.zamknuto := CHB_Zamknuto.Checked;
-  settings.events := TObjectList<TBlkNavSprEvent>.Create();
+  settings.events := TObjectList<TBlkNavTrainEvent>.Create();
   for fBlkNavEvent in Self.eventForms do
     settings.events.Add(fBlkNavEvent.GetEvent());
 

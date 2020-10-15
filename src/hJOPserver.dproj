@@ -155,8 +155,8 @@
 			<DCCReference Include="tables\DataORs.pas"/>
 			<DCCReference Include="bloky\TBlokTrat.pas"/>
 			<DCCReference Include="bloky\TBlokUvazka.pas"/>
-			<DCCReference Include="Souprava.pas"/>
-			<DCCReference Include="SprDb.pas"/>
+			<DCCReference Include="Train.pas"/>
+			<DCCReference Include="TrainDb.pas"/>
 			<DCCReference Include="tables\DataSpr.pas"/>
 			<DCCReference Include="User.pas"/>
 			<DCCReference Include="UserDb.pas"/>

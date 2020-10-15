@@ -504,7 +504,7 @@ var glob:TBlkSettings;
   settings.Lenght := StrToFloatDef(Self.E_Delka.Text,0);
   settings.SmcUsek := Self.CHB_SmycBlok.Checked;
   settings.Zesil := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
-  settings.maxSpr := 1;
+  settings.maxTrains := 1;
 
   TUSettings.rychlosti := speeds;
 

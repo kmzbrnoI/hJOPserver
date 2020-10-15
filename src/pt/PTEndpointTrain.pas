@@ -7,7 +7,7 @@ unit PTEndpointTrain;
 interface
 
 uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
-  Generics.Collections, Souprava;
+  Generics.Collections, Train;
 
 
 type
@@ -24,13 +24,13 @@ type
         var respJson:TJsonObject): TDictionary<string, Integer>;
 
       procedure OnGETTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject; train: TSouprava);
+        var respJson:TJsonObject; train: TTrain);
       procedure OnPUTTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject; const reqJson:TJsonObject; train: TSouprava);
+        var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
       procedure OnGETPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject; train: TSouprava; podjId: Integer);
+        var respJson:TJsonObject; train: TTrain; podjId: Integer);
       procedure OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject; const reqJson:TJsonObject; train: TSouprava; podjId: Integer);
+        var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain; podjId: Integer);
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -44,7 +44,7 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, SprDb, StrUtils, ownStrUtils, predvidanyOdjezd, TBloky,
+uses PTUtils, JclPCRE, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, TBloky,
       TBlok, TBlokUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ begin
  urlSuffix := RightStr(ARequestInfo.Document, Length(ARequestInfo.Document)-Length('/trains/'));
  trainName := strTillChar(urlSuffix, '/');
 
- trainIndex := Soupravy.GetSprIndexByName(trainName);
+ trainIndex := Trains.GetTrainIndexByName(trainName);
  Result.AddOrSetValue('type', _ET_NONE);
  if (trainIndex = -1) then
   begin
@@ -93,22 +93,22 @@ begin
  dict := Self.CommonGetPut(AContext, ARequestInfo, respJson);
  try
    if (dict['type'] = _ET_TRAIN) then
-     Self.OnGETTrain(AContext, ARequestInfo, respJson, Soupravy[dict['train']])
+     Self.OnGETTrain(AContext, ARequestInfo, respJson, Trains[dict['train']])
    else if (dict['type'] = _ET_PODJ) then
-     Self.OnGETPodj(AContext, ARequestInfo, respJson, Soupravy[dict['train']], dict['podj']);
+     Self.OnGETPodj(AContext, ARequestInfo, respJson, Trains[dict['train']], dict['podj']);
  finally
    dict.Free();
  end;
 end;
 
 procedure TPTEndpointTrain.OnGETTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-  var respJson:TJsonObject; train: TSouprava);
+  var respJson:TJsonObject; train: TTrain);
 begin
  train.GetPtData(respJson.O['train']);
 end;
 
 procedure TPTEndpointTrain.OnGETPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-  var respJson:TJsonObject; train: TSouprava; podjId: Integer);
+  var respJson:TJsonObject; train: TTrain; podjId: Integer);
 begin
  if (not train.IsPOdj(podjId)) then
   begin
@@ -128,22 +128,22 @@ begin
  dict := Self.CommonGetPut(AContext, ARequestInfo, respJson);
  try
    if (dict['type'] = _ET_TRAIN) then
-     Self.OnPUTTrain(AContext, ARequestInfo, respJson, reqJson, Soupravy[dict['train']])
+     Self.OnPUTTrain(AContext, ARequestInfo, respJson, reqJson, Trains[dict['train']])
    else if (dict['type'] = _ET_PODJ) then
-     Self.OnPUTPodj(AContext, ARequestInfo, respJson, reqJson, Soupravy[dict['train']], dict['podj']);
+     Self.OnPUTPodj(AContext, ARequestInfo, respJson, reqJson, Trains[dict['train']], dict['podj']);
  finally
    dict.Free();
  end;
 end;
 
 procedure TPTEndpointTrain.OnPUTTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-  var respJson:TJsonObject; const reqJson:TJsonObject; train: TSouprava);
+  var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
 begin
  PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Unupported', 'Tato funkce zatím není podporována');
 end;
 
 procedure TPTEndpointTrain.OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-  var respJson:TJsonObject; const reqJson:TJsonObject; train: TSouprava; podjId: Integer);
+  var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain; podjId: Integer);
 var podj: TPodj;
     blk: TBlk;
 begin

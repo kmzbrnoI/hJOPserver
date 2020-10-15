@@ -41,7 +41,7 @@ Jak to funguje:
 interface
 
 uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, rrEvent,
-      Generics.Collections, TOblRizeni, THnaciVozidlo, Souprava, JclPCRE;
+      Generics.Collections, TOblRizeni, THnaciVozidlo, Train, JclPCRE;
 
 type
  TBlkTUZastEvents = class                                                       // cidla zastavky v jednom smeru
@@ -61,11 +61,11 @@ type
  end;
 
  TBlkTUZastavka = class                                                         // zastavka na TU
-  ev_lichy:TBlkTUZastEvents;                                                      // odkaz na zastavovaci a zpomalovaci event v lichem smeru
-  ev_sudy:TBlkTUZastEvents;                                                       // odkaz na zastavovaci a zpomalovaci event v sudem smeru
+  ev_lichy: TBlkTUZastEvents;                                                     // odkaz na zastavovaci a zpomalovaci event v lichem smeru
+  ev_sudy: TBlkTUZastEvents;                                                      // odkaz na zastavovaci a zpomalovaci event v sudem smeru
   spr_typ_re: TJclRegEx;                                                          // regexp matchujici typ soupravy
-  max_delka:Integer;                                                              // maximalni delka soupravy pro zastaveni v zastavce
-  delay:TTime;                                                                    // cas cekani v zastavce
+  max_delka: Integer;                                                             // maximalni delka soupravy pro zastaveni v zastavce
+  delay: TTime;                                                                   // cas cekani v zastavce
 
    constructor Create(); overload;
    constructor Create(ini_tech: TMemIniFile; const section: string); overload;
@@ -76,28 +76,28 @@ type
  end;
 
  TBlkTUSettings = record                                                        // nastaveni TU
-   zastavka:TBlkTUZastavka;                                                       // odkaz na zastavku
-   navLid,navSid:Integer;                                                         // odkaz na kryci navestidlo TU v lichem smeru a kryci navestidlo v sudem smeru
+   zastavka: TBlkTUZastavka;                                                      // odkaz na zastavku
+   navLid,navSid: Integer;                                                        // odkaz na kryci navestidlo TU v lichem smeru a kryci navestidlo v sudem smeru
                                                                                   // obsahuje id bloku navestidla, pokud neni TU kryty v danem smeru, obsahuje -1
                                                                                   // vyuzivano pro autoblok
    rychlosti: TDictionary<Cardinal, Cardinal>;                                     // rychlost v tratovem useku pro danou tridu prechodnosti; trida prechodnosti 0 je fallback v pripade neexistence zaznamu
  end;
 
  TBlkTUStav = record                                                            // stav tratoveho useku
-  inTrat:Integer;                                                                 // tady je ulozeno id bloku trati, v jake se blok nachazi; pokud se nenachazi v trati -> -1
+  inTrat: Integer;                                                                // tady je ulozeno id bloku trati, v jake se blok nachazi; pokud se nenachazi v trati -> -1
 
-  zast_stopped:boolean;                                                           // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
-  zast_run_time:TDateTime;                                                        // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
-  zast_rych:Integer;                                                              // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
-  zast_enabled:boolean;                                                           // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
-  zast_passed:boolean;                                                            // tady je ulozeno true, pokud souprava zastavku jiz projela
-  zast_zpom_ready:boolean;                                                        // jestli je TU pripraveny ke zpomalovani soupravy v zastavce
-  zast_sound_step:Cardinal;                                                       // krok prehravani zvuku
+  zast_stopped: Boolean;                                                          // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
+  zast_run_time: TDateTime;                                                       // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
+  zast_rych: Integer;                                                             // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
+  zast_enabled: Boolean;                                                          // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
+  zast_passed: Boolean;                                                           // tady je ulozeno true, pokud souprava zastavku jiz projela
+  zast_zpom_ready: Boolean;                                                       // jestli je TU pripraveny ke zpomalovani soupravy v zastavce
+  zast_sound_step: Cardinal;                                                      // krok prehravani zvuku
                                                                                     // 0 = pripraveno, 1 = prehrana pistalka vypravciho, 2 = prehrano zavreni dveri, 3 = prehrana houkacka
 
-  bpInBlk:boolean;                                                                // jestli je v useku zavedena blokova podminka
+  bpInBlk: Boolean;                                                               // jestli je v useku zavedena blokova podminka
                                                                                   // bpInBlk = kontroluji obsazeni bloku, pri uvolneni useku bez predani dale vyhlasit poruchu BP
-  poruchaBP:boolean;                                                              // jestli nastala porucha blokove podminky
+  poruchaBP: Boolean;                                                             // jestli nastala porucha blokove podminky
   sprRychUpdateIter:Integer;                                                      // pocet zbyvajicich iteraci do nastaveni rychlost soupravy
  end;
 
@@ -116,10 +116,10 @@ type
    );
 
   private
-   TUSettings:TBlkTUSettings;
-   fTUStav:TBlkTUStav;
+   TUSettings: TBlkTUSettings;
+   fTUStav: TBlkTUStav;
 
-   fNavKryci, fTrat : TBlk;                                                     // odkaz na kryci navestidla v lichem a sudem smeru
+   fNavKryci, fTrat: TBlk;                                                      // odkaz na kryci navestidla v lichem a sudem smeru
                                                                                 // pro pristup k temto blokum pouzivat property bez f, toto jsou pouze pomocne promenne!
 
     procedure ZastUpdate();                                                     // technologie zastavky (rizeni zastavovani z rozjizdeni vlaku)
@@ -127,29 +127,29 @@ type
     procedure ZastStopTrain();                                                  // rozjet vlak ze zastavky
 
     // kliky v menu TU:
-    procedure MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
-    procedure MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuZastClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
+    procedure MenuJEDLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRBPClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure UpdateBP();                                                       // technologie blokove podminky, resi veskere predavani souprav mezi TU a sekcemi TU
 
-    function GetTrat():TBlk;                                                    // vrati blok trati, ve kterem je TU, viz property \Trat
-    function GetNavKryci():TBlk;                                                // vrati kryci navestidlo TU, jinak nil (pokud blok neni v aktualnim smeru trati kryty zadnym navestidlem)
-    function GetNavKryciL():TBlk;
-    function GetNavKryciS():TBlk;
-    function GetTratReady():boolean;                                            // vrati, jestli je trat zpusobila prace: jestli existuje a ma smer AtoB nebo BtoA, viz property \tratSmer
-    function GetPrevTU():TBlkTU;                                                // vrati predchozi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \prevTU
-    function GetNextTU():TBlkTU;                                                // vrati dalsi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \nextTU
-    function GetSectObsazeno():TUsekStav;                                       // vrati stav obsazeni cele sekce, mozne volat pouze u Section Masteru
+    function GetTrat(): TBlk;                                                   // vrati blok trati, ve kterem je TU, viz property \Trat
+    function GetNavKryci(): TBlk;                                               // vrati kryci navestidlo TU, jinak nil (pokud blok neni v aktualnim smeru trati kryty zadnym navestidlem)
+    function GetNavKryciL(): TBlk;
+    function GetNavKryciS(): TBlk;
+    function GetTratReady(): Boolean;                                           // vrati, jestli je trat zpusobila prace: jestli existuje a ma smer AtoB nebo BtoA, viz property \tratSmer
+    function GetPrevTU(): TBlkTU;                                               // vrati predchozi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \prevTU
+    function GetNextTU(): TBlkTU;                                               // vrati dalsi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \nextTU
+    function GetSectObsazeno(): TUsekStav;                                      // vrati stav obsazeni cele sekce, mozne volat pouze u Section Masteru
                                                                                 // POZOR: tato metoda, resp property \sectObsazeno by mela byt pouzivana VELMI OPATRNE, casto je vhodnejsi property \sectReady, ktera zahrnuje i poruchu BP
-    function GetSectMaster():TBlkTU;                                            // vrati sectMaster kazdeho TU, pokud je TU sam sobe sectMaster, obsahuje referenci na self, viz property \sectMaster
-    function GetNextNav():TBlk;                                                 // vrati dalsi navestidlo v trati, v krajnim pripade az hranicni navestidlo cele trati podle aktualniho smeru trati, viz property \nextNav
-    function GetSectReady():boolean;                                            // vrati, zda-li je sekce pripravena pro vjezd vlaku do ni, viz property \sectReady, mozne volat pouze u sectMaster
+    function GetSectMaster(): TBlkTU;                                           // vrati sectMaster kazdeho TU, pokud je TU sam sobe sectMaster, obsahuje referenci na self, viz property \sectMaster
+    function GetNextNav(): TBlk;                                                // vrati dalsi navestidlo v trati, v krajnim pripade az hranicni navestidlo cele trati podle aktualniho smeru trati, viz property \nextNav
+    function GetSectReady(): Boolean;                                           // vrati, zda-li je sekce pripravena pro vjezd vlaku do ni, viz property \sectReady, mozne volat pouze u sectMaster
 
-    procedure PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);            // callback potvrzovaci sekvence RBP
+    procedure PanelPotvrSekvRBP(Sender: TIdContext; success: boolean);          // callback potvrzovaci sekvence RBP
 
     procedure UpdateNavest();                                                   // aktualizuje navest krycich navestidel
-    procedure UpdateSprRych();                                                  // aktualizuje rychlost soupravy v TU (pocita s \sprRychUpdateIter)
+    procedure UpdateTrainRych();                                                  // aktualizuje rychlost soupravy v TU (pocita s \sprRychUpdateIter)
 
     procedure SetRychUpdate(state:boolean);                                     // nastavi \sprRychUpdateIter
     function GetRychUpdate:boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
@@ -161,7 +161,7 @@ type
     function IsZastavkaSudy(): Boolean;
 
     procedure SetPoruchaBP(state:boolean);                                      // nastavi stav poruchy blokove podminky
-    procedure AddSouprava(spr:Integer);
+    procedure AddTrain(spr:Integer);
 
   public
    lTU, sTU: TBlkTU;                                                            // reference na tratovy usek blize zacatku trati (lTU) a TU blize konci trati (sTU), tyto refence nastavuje trat pri inicializaci, nebo zmene konfigurace trati
@@ -175,13 +175,13 @@ type
     constructor Create(index:Integer);
     destructor Destroy(); override;
 
-    function GetSettings():TBlkTUSettings; overload;
-    procedure SetSettings(data:TBlkTUSettings); overload;
+    function GetSettings(): TBlkTUSettings; overload;
+    procedure SetSettings(data: TBlkTUSettings); overload;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section :string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     procedure Enable(); override;
     procedure Disable(); override;
@@ -190,9 +190,9 @@ type
     procedure Change(now:boolean = false); override;
     procedure ChangeFromTrat();                                                 // aktualizace TU z trati, vola se zejemna pri zmene smeru a jeho ucel je nastavit navestidla autobloku podle smeru trati
 
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item:string; itemindex: Integer); override;
 
     procedure CreateNavRefs();                                                  // navestidlum autobloku nastavi UsekPred a smer
     procedure RemoveTURefs();                                                   // zrusi UsekPred navetidlum autobloku
@@ -200,35 +200,35 @@ type
     procedure UvolnenoZJC();                                                    // obsah useku (ne nutne souprava!) byl prevzat z krajniho useku trati jizdni cestou
                                                                                 // tato metoda ma smysl pouze pro krajni TU trati a resi radne odstraneni obsahu useku z trati
 
-    procedure AddSoupravaL(index:Integer); override;
-    procedure AddSoupravaS(index:Integer); override;
-    procedure RemoveSoupravy(); override;
-    procedure RemoveSouprava(index: Integer); override;
+    procedure AddTrainL(index: Integer); override;
+    procedure AddTrainS(index: Integer); override;
+    procedure RemoveTrains(); override;
+    procedure RemoveTrain(index: Integer); override;
 
     function Speed(HV: THV): Cardinal; overload;
-    function Speed(spr: TSouprava): Cardinal; overload;
+    function Speed(spr: TTrain): Cardinal; overload;
 
     // pro vyznam properties viz hlavicky getteru a setteru
-    property TUStav:TBlkTUStav read fTUStav;
-    property InTrat:Integer read fTUStav.InTrat write fTUStav.InTrat;
-    property bpInBlk:boolean read fTUStav.bpInBlk write fTUStav.bpInBlk;
-    property sectObsazeno:TUsekStav read GetSectObsazeno;
-    property sectReady:boolean read GetSectReady;
-    property rychUpdate:boolean read GetRychUpdate write SetRychUpdate;
+    property TUStav: TBlkTUStav read fTUStav;
+    property InTrat: Integer read fTUStav.InTrat write fTUStav.InTrat;
+    property bpInBlk: Boolean read fTUStav.bpInBlk write fTUStav.bpInBlk;
+    property sectObsazeno: TUsekStav read GetSectObsazeno;
+    property sectReady: Boolean read GetSectReady;
+    property rychUpdate: Boolean read GetRychUpdate write SetRychUpdate;
 
-    property Trat:TBlk read GetTrat;
-    property navKryci:TBlk read GetNavKryci;
-    property navKryciL:TBlk read GetNavKryciL;
-    property navKryciS:TBlk read GetNavKryciS;
-    property tratReady:boolean read GetTratReady;
+    property trat: TBlk read GetTrat;
+    property navKryci: TBlk read GetNavKryci;
+    property navKryciL: TBlk read GetNavKryciL;
+    property navKryciS: TBlk read GetNavKryciS;
+    property tratReady: Boolean read GetTratReady;
 
-    property prevTU:TBlkTU read GetPrevTU;
-    property nextTU:TBlkTU read GetNextTU;
-    property sectMaster:TBlkTU read GetSectMaster;
-    property nextNav:TBlk read GetNextNav;
-    property ready:boolean read GetReady;
-    property poruchaBP:boolean read fTUStav.poruchaBP write SetPoruchaBP;
-    property zastavka:boolean read IsZastavka;
+    property prevTU: TBlkTU read GetPrevTU;
+    property nextTU: TBlkTU read GetNextTU;
+    property sectMaster: TBlkTU read GetSectMaster;
+    property nextNav: TBlk read GetNextNav;
+    property ready: Boolean read GetReady;
+    property poruchaBP: Boolean read fTUStav.poruchaBP write SetPoruchaBP;
+    property zastavka: Boolean read IsZastavka;
     property zastavkaLichy: Boolean read IsZastavkaLichy;
     property zastavkaSudy: Boolean read IsZastavkaSudy;
 
@@ -237,7 +237,7 @@ type
 
 implementation
 
-uses SprDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase,
+uses TrainDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase,
      logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,10 +409,10 @@ procedure TBlkTU.Update();
 begin
  inherited;
 
- if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.IsSouprava()) and (Self.zastavka)) then
+ if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.IsTrain()) and (Self.zastavka)) then
    Self.ZastUpdate();
 
- Self.UpdateSprRych();
+ Self.UpdateTrainRych();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -451,20 +451,20 @@ begin
   begin
    // cekam na obsazeni IR
    if ((not Self.TUStav.zast_enabled) or (Self.TUStav.zast_passed) or
-      (Self.Souprava.sprLength > Self.TUSettings.Zastavka.max_delka) or (Self.Souprava.front <> self)) then Exit();
+      (Self.train.length > Self.TUSettings.Zastavka.max_delka) or (Self.train.front <> self)) then Exit();
 
    // kontrola spravneho smeru
-   if (((Self.Souprava.direction = THVSTanoviste.lichy) and (not Self.zastavkaLichy)) or
-       ((Self.Souprava.direction = THVSTanoviste.sudy) and (not Self.zastavkaSudy))) then Exit();
+   if (((Self.train.direction = THVSTanoviste.lichy) and (not Self.zastavkaLichy)) or
+       ((Self.train.direction = THVSTanoviste.sudy) and (not Self.zastavkaSudy))) then Exit();
 
    // kontrola typu soupravy:
-   if (not Self.TUSettings.zastavka.spr_typ_re.Match(Self.Souprava.typ)) then
+   if (not Self.TUSettings.zastavka.spr_typ_re.Match(Self.train.typ)) then
      Exit();
 
    // zpomalovani pred zastavkou:
    if (Self.fTUStav.zast_zpom_ready) then
     begin
-     case (Self.Souprava.direction) of
+     case (Self.train.direction) of
       THVSTanoviste.lichy : begin
         if (Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) then
          begin
@@ -472,10 +472,10 @@ begin
             Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Register();
 
           if ((Self.TUSettings.zastavka.ev_lichy.zpomaleni.enabled) and
-              (Self.Souprava.wantedSpeed > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
+              (Self.train.wantedSpeed > Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
-            Self.Souprava.speed := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
+            Self.train.speed := Self.TUSettings.zastavka.ev_lichy.zpomaleni.speed;
             Self.fTUStav.zast_zpom_ready := false;
             Self.rychUpdate := false;
             Self.TUSettings.zastavka.ev_lichy.zpomaleni.ev.Unregister();
@@ -489,10 +489,10 @@ begin
           if (not Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.enabled) then
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Register();
 
-          if ((Self.Souprava.wantedSpeed > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
+          if ((Self.train.wantedSpeed > Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed) and
               (Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.IsTriggerred(Self, true))) then
            begin
-            Self.Souprava.speed := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
+            Self.train.speed := Self.TUSettings.zastavka.ev_sudy.zpomaleni.speed;
             Self.fTUStav.zast_zpom_ready := false;
             Self.rychUpdate := false;
             Self.TUSettings.zastavka.ev_sudy.zpomaleni.ev.Unregister();
@@ -504,7 +504,7 @@ begin
 
 
    // zastavovani v zastavce
-   case (Self.Souprava.direction) of
+   case (Self.train.direction) of
     THVSTanoviste.lichy : begin
       if (not Self.TUSettings.zastavka.ev_lichy.zastaveni.enabled) then
         Self.TUSettings.zastavka.ev_lichy.zastaveni.Register();
@@ -533,7 +533,7 @@ begin
 
    // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
    //  pokud se souprava rozjede, koncim zastavku
-   if (Self.Souprava.wantedSpeed <> 0) then
+   if (Self.train.wantedSpeed <> 0) then
     begin
      Self.fTUStav.zast_stopped := false;
      Self.Change();  // change je dulezite volat kvuli menu
@@ -545,7 +545,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 4, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 1;
-        Self.Souprava.ToggleHouk('trubka vlakvedoucího');
+        Self.train.ToggleHouk('trubka vlakvedoucího');
        end;
     end;
 
@@ -553,7 +553,7 @@ begin
       if (Now >= Self.TUStav.zast_run_time - EncodeTime(0, 0, 2, 0)) then
        begin
         Self.fTUStav.zast_sound_step := 2;
-        Self.Souprava.ToggleHouk('zavření dveří');
+        Self.train.ToggleHouk('zavření dveří');
        end;
     end;
    end;
@@ -561,7 +561,7 @@ begin
    // cekam na timeout na rozjeti vlaku
    if (Now > Self.TUStav.zast_run_time) then
     begin
-     Self.Souprava.ToggleHouk('houkačka krátká');
+     Self.train.ToggleHouk('houkačka krátká');
      Self.ZastRunTrain();
     end;
   end;
@@ -576,9 +576,9 @@ begin
  Self.fTUStav.zast_run_time := Now+Self.TUSettings.Zastavka.delay;
 
  try
-   Self.fTUStav.zast_rych := Self.Souprava.speed;
-   Self.Souprava.speed := 0;
-   Self.Souprava.SetSpeedBuffer(@Self.fTUStav.zast_rych);
+   Self.fTUStav.zast_rych := Self.train.speed;
+   Self.train.speed := 0;
+   Self.train.SetSpeedBuffer(@Self.fTUStav.zast_rych);
  except
 
  end;
@@ -593,8 +593,8 @@ begin
  Self.fTUStav.zast_sound_step := 0;
 
  try
-   Self.Souprava.SetSpeedBuffer(nil);
-   Self.Souprava.speed := Self.TUStav.zast_rych;
+   Self.train.SetSpeedBuffer(nil);
+   Self.train.speed := Self.TUStav.zast_rych;
  except
 
  end;
@@ -655,19 +655,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.AddSoupravaL(index: Integer);
+procedure TBlkTU.AddTrainL(index: Integer);
 begin
  inherited;
- Self.AddSouprava(index);
+ Self.AddTrain(index);
 end;
 
-procedure TBlkTU.AddSoupravaS(index: Integer);
+procedure TBlkTU.AddTrainS(index: Integer);
 begin
  inherited;
- Self.AddSouprava(index);
+ Self.AddTrain(index);
 end;
 
-procedure TBlkTU.AddSouprava(spr:Integer);
+procedure TBlkTU.AddTrain(spr:Integer);
 begin
  if ((Self.zastavka) and (not Self.fTUStav.zast_zpom_ready)) then
    Self.fTUStav.zast_zpom_ready := true;
@@ -681,44 +681,44 @@ begin
    if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
     begin
      if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do trati
-       if (Self.Souprava.direction <> THVStanoviste.lichy) then
-         Self.Souprava.ChangeSmer();
+       if (Self.train.direction <> THVStanoviste.lichy) then
+         Self.train.ChangeSmer();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Self.Souprava.direction <> TBlkNav(TBlkTrat(Self.Trat).navLichy).Smer) then
-         Self.Souprava.ChangeSmer();
+       if (Self.train.direction <> TBlkNav(TBlkTrat(Self.Trat).navLichy).Smer) then
+         Self.train.ChangeSmer();
      end;
     end;
    if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[TBlkTrat(Self.Trat).GetSettings().Useky.Count-1])) then
     begin
      if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do trati
-       if ((Self.Souprava.direction <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
-         Self.Souprava.ChangeSmer();
+       if ((Self.train.direction <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
+         Self.train.ChangeSmer();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Self.Souprava.direction <> TBlkNav(TBlkTrat(Self.Trat).navSudy).Smer) then
-         Self.Souprava.ChangeSmer();
+       if (Self.train.direction <> TBlkNav(TBlkTrat(Self.Trat).navSudy).Smer) then
+         Self.train.ChangeSmer();
      end;
     end;
   end;
 
  // kontrola zmeny OR trati, ve ktere jen jeden blok
  if (((Self.Trat as TBlkTrat).Smer >= TTratSmer.AtoB) and (Self.prevTU = nil) and (Self.nextTU = nil)) then
-   TBlkTrat(Self.Trat).SprChangeOR(Self.Souprava);
+   TBlkTrat(Self.Trat).TrainChangeOR(Self.train);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.RemoveSoupravy();
+procedure TBlkTU.RemoveTrains();
 var spr:Integer;
 begin
- for spr in Self.Soupravs do
-   Self.RemoveSouprava(spr);
+ for spr in Self.trains do
+   Self.RemoveTrain(spr);
 end;
 
-procedure TBlkTU.RemoveSouprava(index:Integer);
-var old_spr: TSouprava;
+procedure TBlkTU.RemoveTrain(index:Integer);
+var old_spr: TTrain;
     trat:TBlkTrat;
 begin
- old_spr := Self.Souprava;
+ old_spr := Self.train;
 
  inherited;
 
@@ -752,8 +752,8 @@ begin
    trat := TBlkTrat(Self.Trat);
 
    // souprava vyjela z trate -> odstranit z trate
-   if (not trat.IsSprInAnyTU(old_spr)) then
-     trat.RemoveSpr(old_spr);
+   if (not trat.IsTrainInAnyTU(old_spr)) then
+     trat.RemoveTrain(old_spr);
 
    // zavolame uvolneni posledniho TU z jizdni cesty
    Self.UvolnenoZJC();
@@ -778,13 +778,13 @@ procedure TBlkTU.MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
 var podm:TPSPodminky;
 begin
  podm := TPSPodminky.Create();
- if (Self.IsSouprava()) then
+ if (Self.IsTrain()) then
   begin
-   podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.Souprava.name+' z úseku'));
-   if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsSprInMoreTUs(Self.Souprava))) then
-     podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smazání soupravy '+Self.Souprava.name+' z tratě'));
-   if (Blky.GetBlkWithSpr(Self.Souprava).Count = 1) then
-     podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.Souprava.name+' z kolejiště'));
+   podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z úseku'));
+   if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsTrainInMoreTUs(Self.train))) then
+     podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smazání soupravy '+Self.train.name+' z tratě'));
+   if (Blky.GetBlkWithTrain(Self.train).Count = 1) then
+     podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z kolejiště'));
   end;
 
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR,
@@ -792,19 +792,19 @@ begin
 end;
 
 procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
-var old_spr: Integer;
+var old_train: Integer;
     blks: TList<TObject>;
 begin
  if (success) then
   begin
-   old_spr := Self.SoupravaI;
+   old_train := Self.trainI;
    Self.bpInBlk   := false;
    Self.poruchaBP := false;
-   if (Self.IsSouprava()) then
+   if (Self.IsTrain()) then
     begin
-     Self.RemoveSoupravy();
-     blks := Blky.GetBlkWithSpr(Soupravy[old_spr]);
-     if (blks.Count = 0) then Soupravy.RemoveSpr(old_spr);
+     Self.RemoveTrains();
+     blks := Blky.GetBlkWithTrain(TrainDb.Trains[old_train]);
+     if (blks.Count = 0) then TrainDb.Trains.RemoveTrain(old_train);
      blks.Free();
     end;
 
@@ -914,11 +914,11 @@ begin
    // nastala aktivace blokove podminky
    Self.bpInBlk := true;
 
-   if ((not Self.IsSouprava()) and (Self.prevTU.IsSouprava())) then
+   if ((not Self.IsTrain()) and (Self.prevTU.IsTrain())) then
     begin
      // mezi useky je potreba predat soupravu
-     Self.prevTU.Souprava.front := Self;
-     Self.AddSoupravaL(Self.prevTU.SoupravaI);
+     Self.prevTU.train.front := Self;
+     Self.AddTrainL(Self.prevTU.trainI);
      Self.zpomalovani_ready := true;
      Self.houk_ev_enabled := true;
      Self.rychUpdate := true;
@@ -927,17 +927,17 @@ begin
       begin
        // souprava vstoupila do posledniho bloku trati
        // zmena stanic soupravy a hnacich vozidel v ni
-       TBlkTrat(Self.Trat).SprChangeOR(Self.Souprava);
+       TBlkTrat(Self.Trat).TrainChangeOR(Self.train);
       end;
     end;//if predavam soupravu
   end;
 
  // uvolnovani soupravy z TU (pokud je jiz predana do dalsiho TU)
- if ((Self.bpInBlk) and (Self.nextTU <> nil) and (Self.nextTU.Souprava = Self.Souprava) and
+ if ((Self.bpInBlk) and (Self.nextTU <> nil) and (Self.nextTU.train = Self.train) and
      (Self.Obsazeno = TusekStav.Uvolneno) and (Self.nextTU.Obsazeno = TUsekStav.obsazeno)) then
   begin
-   Self.bpInBlk  := false;
-   Self.RemoveSoupravy();
+   Self.bpInBlk := false;
+   Self.RemoveTrains();
    if (not TBlkTrat(Self.Trat).Obsazeno) then TBlkTrat(Self.Trat).BP := false;   
   end;
 
@@ -1151,17 +1151,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.UpdateSprRych();
+procedure TBlkTU.UpdateTrainRych();
 begin
  if (Self.fTUStav.sprRychUpdateIter > 0) then
   begin
    Dec(Self.fTUStav.sprRychUpdateIter);
    if (Self.fTUStav.sprRychUpdateIter = 0) then
     begin
-     if ((Self.IsSouprava()) and (Self.zpomalovani_ready) and
-        (Self.Souprava.wantedSpeed > 0) and
-        (Cardinal(Self.Souprava.wantedSpeed) <> Self.Speed(Self.Souprava))) then
-       Self.Souprava.speed := Self.Speed(Self.Souprava);
+     if ((Self.IsTrain()) and (Self.zpomalovani_ready) and
+        (Self.train.wantedSpeed > 0) and
+        (Cardinal(Self.train.wantedSpeed) <> Self.Speed(Self.train))) then
+       Self.train.speed := Self.Speed(Self.train);
     end;
   end;
 end;
@@ -1195,13 +1195,13 @@ begin
  Self.poruchaBP := false;
 
  if (((trat.GetSettings().zabzar = TTratZZ.nabidka))
-     and (not trat.Zaver) and (not trat.Obsazeno) and (not trat.RBPCan) and (Trat.stav.soupravy.Count = 0) and (not trat.nouzZaver)) then
+     and (not trat.Zaver) and (not trat.Obsazeno) and (not trat.RBPCan) and (Trat.stav.trains.Count = 0) and (not trat.nouzZaver)) then
   trat.Smer := TTratSmer.zadny;
 
  // pokud je trat uplne volna, zrusime blokovou podminku
  if (not trat.Obsazeno) then trat.BP := false;
 
- trat.UpdateSprPredict();
+ trat.UpdateTrainPredict();
  trat.Change();
 end;
 
@@ -1236,7 +1236,7 @@ begin
  { zaver u prvniho bloku trati nekontrolujeme, protoze tuto metodu vyuziva JC
    pri staveni, ktera na prvni usek dava nouzovy zaver pri staveni }
  for blk in sectUseky do
-   if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.IsSouprava())
+   if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.IsTrain())
     or (blk.poruchaBP)) then Exit(false);
  Result := true;
 end;
@@ -1245,7 +1245,7 @@ end;
 
 function TBlkTU.GetReady():boolean;
 begin
- Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.IsSouprava())
+ Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.IsTrain())
   and (not Self.poruchaBP));
 end;
 
@@ -1272,7 +1272,7 @@ begin
    Result := 0;
 end;
 
-function TBlkTU.Speed(spr: TSouprava): Cardinal;
+function TBlkTU.Speed(spr: TTrain): Cardinal;
 var addr: Word;
     minSpeed: Cardinal;
 begin
@@ -1359,7 +1359,7 @@ begin
 
  Self.max_delka := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
  Self.delay := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
- Self.spr_typ_re.Compile(TBlkNavSprEvent.ParseSprTypes(ini_tech.ReadString(section, 'zast_soupravy', '')), false);
+ Self.spr_typ_re.Compile(TBlkNavTrainEvent.ParseTrainTypes(ini_tech.ReadString(section, 'zast_soupravy', '')), false);
 end;
 
 procedure TBlkTUZastavka.SaveToFile(ini_tech: TMemIniFile; const section: string);
