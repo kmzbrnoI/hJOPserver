@@ -192,9 +192,9 @@ var prjz:TJCPrjZaver;
   E_Name.Text:= JCData.Nazev;
   SE_ID.Value := JCData.id;
 
-  CB_Typ.ItemIndex := Integer(JCData.TypCesty)-1;
-  CB_Rychlost_Volno.ItemIndex := JCData.RychlostDalsiN;
-  CB_Rychlost_Stuj.ItemIndex := JCData.RychlostNoDalsiN;
+  CB_Typ.ItemIndex := Integer(JCData.typ)-1;
+  CB_Rychlost_Volno.ItemIndex := JCData.speedGo;
+  CB_Rychlost_Stuj.ItemIndex := JCData.speedStop;
 
   Self.CB_TypChange(Self.CB_Typ);
 
@@ -421,10 +421,10 @@ var JC:TJC;
   JCData.Nazev := E_Name.Text;
   JCData.id := SE_ID.Value;
   JCData.NavestidloBlok := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
-  JCData.TypCesty := TJCType(CB_Typ.ItemIndex+1);
+  JCData.typ := TJCType(CB_Typ.ItemIndex+1);
 
-  JCData.RychlostDalsiN := CB_Rychlost_Volno.ItemIndex;
-  JCData.RychlostNoDalsiN := CB_Rychlost_Stuj.ItemIndex;
+  JCData.speedGo := CB_Rychlost_Volno.ItemIndex;
+  JCData.speedStop := CB_Rychlost_Stuj.ItemIndex;
   JCData.odbocka := Self.CHB_Odbocka.Checked;
   JCData.nzv := Self.CHB_NZV.Checked;
 
@@ -715,11 +715,11 @@ end;
 
 procedure TF_JCEdit.CB_TypChange(Sender: TObject);
  begin
-  Self.JCData.TypCesty := TJCType(Self.CB_Typ.ItemIndex+1);
-  CB_Rychlost_Volno.Enabled := (JCData.TypCesty <> TJCType.posun);
-  CB_Rychlost_Stuj.Enabled := (JCData.TypCesty <> TJCType.posun);
+  Self.JCData.typ := TJCType(Self.CB_Typ.ItemIndex+1);
+  CB_Rychlost_Volno.Enabled := (JCData.typ <> TJCType.posun);
+  CB_Rychlost_Stuj.Enabled := (JCData.typ <> TJCType.posun);
 
-  if (JCData.TypCesty = TJCType.posun) then
+  if (JCData.typ = TJCType.posun) then
    begin
     CB_Rychlost_Volno.ItemIndex := 4;
     CB_Rychlost_Stuj.ItemIndex := 4;

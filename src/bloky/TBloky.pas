@@ -823,7 +823,7 @@ begin
    JC := TBlkNav(nav).DNjc;
 
    // predpovidame, dokud existuji jizdni cesty
-   while ((JC <> nil) and (JC.data.TypCesty = TJCType.vlak) and (JC.stav.RozpadBlok <= 0)) do
+   while ((JC <> nil) and (JC.data.typ = TJCType.vlak) and (JC.stav.RozpadBlok <= 0)) do
     begin
      // kontrola povolujici navesti
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);

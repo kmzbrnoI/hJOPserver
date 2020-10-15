@@ -677,7 +677,7 @@ begin
      if ((cmd as TORStackCmdJC).nouz) then
         Result := 'NC  '+ ((cmd as TORStackCmdJC).JC as TJC).nazev
      else
-       case (((cmd as TORStackCmdJC).JC as TJC).data.TypCesty) of
+       case (((cmd as TORStackCmdJC).JC as TJC).data.typ) of
         TJCType.vlak  : Result := 'VC  '+ ((cmd as TORStackCmdJC).JC as TJC).nazev;
         TJCType.posun : Result := 'PC  '+ ((cmd as TORStackCmdJC).JC as TJC).nazev;
        end;//case

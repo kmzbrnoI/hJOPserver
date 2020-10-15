@@ -100,7 +100,7 @@ begin
  Self.LV.Items[line].SubItems[2] := IntToStr(JC.stav.RozpadRuseniBlok);
  Self.LV.Items[line].SubItems[3] := IntToStr(JC.stav.Krok);
 
- case (JCData.TypCesty) of
+ case (JCData.typ) of
   TJCType.vlak  : Self.LV.Items[line].SubItems[7] := 'VC';
   TJCType.posun : Self.LV.Items[line].SubItems[7] := 'PC';
   TJCType.nouz  : Self.LV.Items[line].SubItems[7] := 'NC';
@@ -135,8 +135,8 @@ begin
    str := str + Blky.GetBlkName(JCData.Useky[j])+'; ';
  Self.LV.Items[line].SubItems[6] := LeftStr(str, Length(str)-2);
 
- Self.LV.Items[line].SubItems[9]  := IntToStr(JCData.RychlostDalsiN * 10)+' km/h';
- Self.LV.Items[line].SubItems[10] := IntToStr(JCData.RychlostNoDalsiN * 10)+' km/h';
+ Self.LV.Items[line].SubItems[9]  := IntToStr(JCData.speedGo * 10)+' km/h';
+ Self.LV.Items[line].SubItems[10] := IntToStr(JCData.speedStop * 10)+' km/h';
 
  // odvraty
  str := '';
