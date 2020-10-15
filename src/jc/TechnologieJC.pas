@@ -154,7 +154,7 @@ type
 
    trat: Integer;                                                               // ID trati, na kterou JC navazuje; pokud JC nenavazuje na trat, je \Trat = -1
    tratSmer: TtratSmer;
-   speedGo, speedStop: Cardinal;                                                // rychlost v JC pri dalsim navestidle navestici dovolujici a NEdovolujici navest
+   speedGo, speedStop: Integer;                                                 // rychlost v JC pri dalsim navestidle navestici dovolujici a NEdovolujici navest
    odbocka: Boolean;
    nzv: Boolean;                                                                // nedostatecna zabrzdna vzdalenost
   end;
@@ -2706,8 +2706,8 @@ begin
  Self.fproperties.typ := TJCType(ini.ReadInteger(section, 'typ', -1));
  Self.fproperties.dalsiNavaznost := TJCNextNavType(ini.ReadInteger(section, 'dalsiNTyp', 0));
  Self.fproperties.dalsiNavestidlo := ini.ReadInteger(section, 'dalsiN', 0);
- Self.fproperties.speedGo := ini.ReadInteger(section, 'rychDalsiN', 0);
- Self.fproperties.speedStop := ini.ReadInteger(section, 'rychNoDalsiN', 0);
+ Self.fproperties.speedGo := ini.ReadInteger(section, 'rychDalsiN', 0)*10;
+ Self.fproperties.speedStop := ini.ReadInteger(section, 'rychNoDalsiN', 0)*10;
  Self.fproperties.Trat := ini.ReadInteger(section, 'trat', -1);
  Self.fproperties.TratSmer := TTratSmer(ini.ReadInteger(section, 'tratSmer', 0));
 
@@ -2818,8 +2818,8 @@ begin
    ini.WriteInteger(section, 'dalsiNTyp', Integer(Self.fproperties.dalsiNavaznost));
  if (Self.fproperties.dalsiNavaznost = TJCNextNavType.blok) then
    ini.WriteInteger(section, 'dalsiN', Self.fproperties.dalsiNavestidlo);
- ini.WriteInteger(section, 'rychDalsiN', Self.fproperties.speedGo);
- ini.WriteInteger(section, 'rychNoDalsiN', Self.fproperties.speedStop);
+ ini.WriteInteger(section, 'rychDalsiN', Self.fproperties.speedGo div 10);
+ ini.WriteInteger(section, 'rychNoDalsiN', Self.fproperties.speedStop div 10);
 
  if (Self.fproperties.odbocka = Self.IsAnyVyhMinus) then
    ini.DeleteKey(section, 'odbocka')

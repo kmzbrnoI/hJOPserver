@@ -1362,23 +1362,23 @@ begin
                (not train.IsPOdj(Self.DNjc.lastUsek))) then
             begin
               // na konci JC budeme stat
-              if ((train.wantedSpeed <> Self.DNjc.data.speedGo*10) or (train.direction <> Self.NavRel.smer)) then
-                train.SetRychlostSmer(Self.DNjc.data.speedGo*10, Self.NavRel.smer);
+              if ((train.wantedSpeed <> Self.DNjc.data.speedGo) or (train.direction <> Self.NavRel.smer)) then
+                train.SetRychlostSmer(Self.DNjc.data.speedGo, Self.NavRel.smer);
             end else begin
               // na konci JC jedeme dal
-              if ((train.wantedSpeed <> Self.DNjc.data.speedStop*10) or (train.direction <> Self.NavRel.smer)) then
-                train.SetRychlostSmer(Self.DNjc.data.speedStop*10, Self.NavRel.smer);
+              if ((train.wantedSpeed <> Self.DNjc.data.speedStop) or (train.direction <> Self.NavRel.smer)) then
+                train.SetRychlostSmer(Self.DNjc.data.speedStop, Self.NavRel.smer);
             end;
          end;
 
          TJCNextNavType.trat: begin
-           if ((train.wantedSpeed <> Self.DNjc.data.speedGo*10) or (train.direction <> Self.NavRel.smer)) then
-             train.SetRychlostSmer(Self.DNjc.data.speedGo*10, Self.NavRel.smer);
+           if ((train.wantedSpeed <> Self.DNjc.data.speedGo) or (train.direction <> Self.NavRel.smer)) then
+             train.SetRychlostSmer(Self.DNjc.data.speedGo, Self.NavRel.smer);
          end;
 
          TJCNextNavType.zadna: begin
-           if ((train.wantedSpeed <> Self.DNjc.data.speedStop*10) or (train.direction <> Self.NavRel.smer)) then
-             train.SetRychlostSmer(Self.DNjc.data.speedStop*10, Self.NavRel.smer);
+           if ((train.wantedSpeed <> Self.DNjc.data.speedStop) or (train.direction <> Self.NavRel.smer)) then
+             train.SetRychlostSmer(Self.DNjc.data.speedStop, Self.NavRel.smer);
           end;
        end;
 

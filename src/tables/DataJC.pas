@@ -135,8 +135,8 @@ begin
    str := str + Blky.GetBlkName(JCData.Useky[j])+'; ';
  Self.LV.Items[line].SubItems[6] := LeftStr(str, Length(str)-2);
 
- Self.LV.Items[line].SubItems[9]  := IntToStr(JCData.speedGo * 10)+' km/h';
- Self.LV.Items[line].SubItems[10] := IntToStr(JCData.speedStop * 10)+' km/h';
+ Self.LV.Items[line].SubItems[9]  := IntToStr(JCData.speedGo)+' km/h';
+ Self.LV.Items[line].SubItems[10] := IntToStr(JCData.speedStop)+' km/h';
 
  // odvraty
  str := '';

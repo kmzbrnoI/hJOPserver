@@ -193,8 +193,8 @@ var prjz:TJCPrjZaver;
   Self.SE_ID.Value := JCData.id;
 
   Self.CB_Typ.ItemIndex := Integer(JCData.typ)-1;
-  Self.CB_Rychlost_Volno.ItemIndex := JCData.speedGo;
-  Self.CB_Rychlost_Stuj.ItemIndex := JCData.speedStop;
+  Self.CB_Rychlost_Volno.ItemIndex := JCData.speedGo div 10;
+  Self.CB_Rychlost_Stuj.ItemIndex := JCData.speedStop div 10;
 
   Self.CB_TypChange(Self.CB_Typ);
 
@@ -423,8 +423,8 @@ var JC:TJC;
   JCData.NavestidloBlok := Blky.GetBlkID(Self.CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
   JCData.typ := TJCType(Self.CB_Typ.ItemIndex+1);
 
-  JCData.speedGo := Self.CB_Rychlost_Volno.ItemIndex;
-  JCData.speedStop := Self.CB_Rychlost_Stuj.ItemIndex;
+  JCData.speedGo := Self.CB_Rychlost_Volno.ItemIndex*10;
+  JCData.speedStop := Self.CB_Rychlost_Stuj.ItemIndex*10;
   JCData.odbocka := Self.CHB_Odbocka.Checked;
   JCData.nzv := Self.CHB_NZV.Checked;
 
