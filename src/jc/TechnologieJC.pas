@@ -278,6 +278,7 @@ type
       function PorusenaKritickaPodminka():boolean;
       function GetNav():TBlk;
       function GetWaitForLastUsekOrTratObsaz():Boolean;
+      function GetLastUsek(): TBlk;
 
       procedure BarieraToJson(const bariera: TJCBariera; result: TJsonObject);
 
@@ -341,6 +342,7 @@ type
       property id:Integer read fproperties.id write fproperties.id;
       property AB:boolean read GetAB;
       property waitForLastUsekOrTratObsaz:boolean read GetWaitForLastUsekOrTratObsaz;
+      property lastUsek: TBlk read GetLastUsek;
 
       property RozpadBlok:Integer read fstaveni.RozpadBlok write SetRozpadBlok;
       property RozpadRuseniBlok:Integer read fstaveni.RozpadRuseniBlok write SetRozpadRuseniBlok;
@@ -435,6 +437,13 @@ begin
     // blok navestidla neexistuje
     Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.NavestidloBlok));
     Exit;
+   end;
+
+  if (Self.lastUsek = nil) then
+   begin
+    // neexistuje ani jeden usek nebo je posledni usek nevalidni
+    Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, 0));
+    Exit();
    end;
 
   if (Blk.typ <> btNav) then
@@ -564,10 +573,9 @@ begin
   // trat
   if (Self.fproperties.Trat > -1) then
    begin
-    Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], blk);
-    if (Blk.typ <> btTU) then
+    if (Self.lastUsek.typ <> btTU) then
      begin
-      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.Useky[Self.fproperties.Useky.Count-1]));
+      Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Self.lastUsek, Self.lastUsek.id));
       Exit;
      end;
     if (Blky.GetBlkByID(Self.fproperties.Trat, blk) <> 0) then
@@ -893,12 +901,11 @@ begin
 
     if ((cont) and (Self.fproperties.TypCesty = TJCType.vlak)) then
      begin
-      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
-      if (TBlkTU(blk).sectObsazeno = TUsekStav.obsazeno) then
+      if (TBlkTU(Self.lastUsek).sectObsazeno = TUsekStav.obsazeno) then
        begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
-       end else if (not TBlkTU(blk).sectReady) then begin
+       end else if (not TBlkTU(Self.lastUsek).sectReady) then begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
        end;
@@ -1320,7 +1327,7 @@ var
     bariery:TJCBariery;
     critical:boolean;
     i:Integer;
-    nav, usek:TBlk;
+    nav:TBlk;
     podm:TList<TPSPodminka>;
 begin
  if (Self.Krok <> _KROK_POTVR_BARIERY) then Exit();
@@ -1363,11 +1370,10 @@ begin
    // ano, takoveto bariery existuji -> potvrzovaci sekvence
    writelog('JC '+Self.Nazev+' : bariéry s potvrzovací sekvencí, žádám potvrzení...', WR_VC);
    Blky.GetBlkByID(Self.fproperties.NavestidloBlok, nav);
-   Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], usek);
 
    if (Self.fstaveni.SenderPnl <> nil) and (Self.fstaveni.SenderOR <> nil) then
      ORTCPServer.Potvr(Self.fstaveni.SenderPnl, Self.PS_vylCallback, (Self.fstaveni.SenderOR as TOR),
-        'Jízdní cesta s potvrzením', TBlky.GetBlksList(nav, usek), podm);
+        'Jízdní cesta s potvrzením', TBlky.GetBlksList(nav, Self.lastUsek), podm);
 
    Self.Krok := _KROK_POTVR_SEKV;
   end else begin
@@ -1409,12 +1415,11 @@ var i,j:Integer;
     odvratZaver:TJCOdvratZaver;
     refZaver:TJCRefZaver;
     vyhybka:TBlkVyhybka;
-    usek, lastUsek, nextUsek:TBlkUsek;
+    usek, nextUsek:TBlkUsek;
     zamek:TBlkZamek;
     prejezd:TBlkPrejezd;
     navestidlo:TBlkNav;
     trat:TBlkTrat;
-    tu:TBlkTU;
     oblr:TOR;
     tuAdd:TBlkTU;
     train: TTrain;
@@ -1435,7 +1440,7 @@ var i,j:Integer;
        begin
         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-2], TBlk(usek));
         usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
-          CreateChangeEvent(ceCaller.CopyUsekZaver, Self.fproperties.Useky[Self.fproperties.Useky.Count-1]));
+          CreateChangeEvent(ceCaller.CopyUsekZaver, Self.lastUsek.id));
 
         for i := 0 to Self.fproperties.Useky.Count-2 do
          begin
@@ -1773,8 +1778,6 @@ var i,j:Integer;
         Exit();
        end;
 
-      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(lastUsek));
-
       // trat
       // zruseni redukce posledniho bloku jizdni cesty je navazano na zruseni zaveru trati
       // -> jakmile dojde ke zruseni zaveru posledniho bloku, dojde ke zruseni zaveru trati
@@ -1796,7 +1799,7 @@ var i,j:Integer;
         trat.Smer := Self.fproperties.TratSmer;
 
         // zruseni zaveru posledniho bloku JC priradime zruseni zaveru trati
-        lastUsek.AddChangeEvent(lastUsek.EventsOnZaverReleaseOrAB,
+        Self.lastUsek.AddChangeEvent(TBlkUsek(Self.lastUsek).EventsOnZaverReleaseOrAB,
           CreateChangeEvent(ceCaller.NullTratZaver, Self.fproperties.Trat));
        end;
 
@@ -1825,7 +1828,7 @@ var i,j:Integer;
    end;
 
    _JC_KROK_CEKANI_POSLEDNI_USEK: begin
-     Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], blk);
+     blk := Self.lastUsek;
 
      if (Self.fproperties.Trat > -1) then
       begin
@@ -1927,7 +1930,6 @@ var i,j:Integer;
     // kontrolujeme rozdilnost seznamu:
     if (Self.fstaveni.ncBariery.Count <> Self.fstaveni.ncBarieryCntLast) then
      begin
-      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(lastUsek));
       writelog('Krok 101: zmena potvr., odesilam aktualni seznam', WR_VC);
       if (Self.fproperties.TypCesty = TJCType.vlak) then
         str := 'Zapnutí přivolávací návěsti'
@@ -1944,7 +1946,6 @@ var i,j:Integer;
     if (Self.fproperties.Trat > -1) then
      begin
       Blky.GetBlkByID(Self.fproperties.Trat, TBlk(trat));
-      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(tu));
 
       // pokud v trati neni zavedena blokova podminka, zavedeme ji
       if ((Self.fproperties.TypCesty = TJCType.vlak) and (trat.Smer = Self.data.TratSmer) and (not trat.BP)) then
@@ -2015,12 +2016,11 @@ var i,j:Integer;
     if (Self.fproperties.TypCesty = TJCType.vlak) then
      begin
       usek := navestidlo.UsekPred as TBlkUsek;
-      Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(lastUsek));
       train := Self.GetTrain(Navestidlo, usek);
 
       // a)
-      if ((lastUsek.typ = btUsek) and (lastUsek.Stav.stanicni_kolej) and
-          (not lastUsek.TrainsFull())) then
+      if ((lastUsek.typ = btUsek) and (TBlkUsek(Self.lastUsek).Stav.stanicni_kolej) and
+          (not TBlkusek(Self.lastUsek).TrainsFull())) then
        begin
         if (usek.IsTrain()) then
          begin
@@ -2032,9 +2032,9 @@ var i,j:Integer;
 
           // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
           if (navestidlo.Smer = THVStanoviste.lichy) then
-            lastUsek.AddTrainL(train)
+            TBlkUsek(Self.lastUsek).AddTrainL(train)
           else
-            lastUsek.AddTrainS(train);
+            TBlkUsek(Self.lastUsek).AddTrainS(train);
 
           usek.RemoveTrain(train);
          end;
@@ -2063,7 +2063,7 @@ var i,j:Integer;
               train.ChangeSmer();
           end;
          end else begin
-          if ((not lastUsek.IsTrain()) and (trat.BP) and (trat.Smer = Self.data.TratSmer)) then
+          if ((not TBlkUsek(Self.lastUsek).IsTrain()) and (trat.BP) and (trat.Smer = Self.data.TratSmer)) then
            begin
             // Pridat soupravu do prvniho bloku trati
             tuAdd := (lastUsek as TBlkTU);
@@ -2157,11 +2157,9 @@ var Blk:TBlk;
 
 //rusi konec jizdni cesty
 procedure TJC.RusKonecJC();
-var usek:TBlkUsek;
  begin
-  Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(usek));
-  if (usek = nil) then Exit;
-  usek.KonecJC := no;
+  if (Self.lastUsek <> nil) then
+    TBlkUsek(Self.lastUsek).KonecJC := no;
  end;
 
 procedure TJC.RusVBJC();
@@ -2307,8 +2305,7 @@ begin
        // pokud jsme v predposlednim useku a posledni je nedetekovany, posuneme RozpadBlok jeste o jeden usek, aby se cesta mohla zrusit
        if (i = Self.fproperties.Useky.Count-2) then
         begin
-         Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], Blk);
-         if ((Blk as TBLkUsek).GetSettings().RCSAddrs.Count = 0) then
+         if (TBlkUsek(Self.lastUsek).GetSettings().RCSAddrs.Count = 0) then
            Self.RozpadBlok := Self.RozpadBlok + 1;
         end;
 
@@ -3028,9 +3025,8 @@ begin
  if (Self.fproperties.Trat > -1) then
   begin
    Blky.GetBlkByID(Self.fproperties.Trat, TBlk(trat));
-   Blky.GetBlkByID(Self.fproperties.Useky[Self.fproperties.Useky.Count-1], TBlk(usek));
    if (trat.Zadost) then Exit(false);
-   if ((((not (TBlkTU(usek).sectReady)) or (trat.ZAK)) and (Self.fproperties.TypCesty = TJCType.vlak)) or
+   if ((((not (TBlkTU(Self.lastUsek).sectReady)) or (trat.ZAK)) and (Self.fproperties.TypCesty = TJCType.vlak)) or
        (trat.RBPCan) or (trat.Smer <> Self.fproperties.TratSmer)) then
      Exit(false);
   end;
@@ -3711,7 +3707,7 @@ begin
       bariery.Add(Self.JCBariera(_JCB_TRAT_NO_BP, blk, Self.fproperties.Trat));
 
     usek := (Self.navestidlo as TBlkNav).UsekPred as TBlkUsek;
-    Blky.GetBlkByID(Self.data.Useky[Self.data.Useky.Count-1], TBlk(lastUsek));
+    lastUsek := TBlkUsek(Self.lastUsek);
 
     if ((usek.IsTrain) and (lastUsek.typ = btTU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
      begin
@@ -4064,6 +4060,15 @@ begin
 
  upoItem := JCBarieraToMessage(bariera);
  result['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
+end;
+
+function TJC.GetLastUsek(): TBlk;
+begin
+ if (Self.data.Useky.Count = 0) then
+   Exit(nil);
+ Blky.GetBlkByID(Self.data.Useky[Self.data.Useky.Count-1], Result);
+ if (Result.typ <> btUsek) and (Result.typ <> btTU) then
+   Result := nil;
 end;
 
 end.//unit

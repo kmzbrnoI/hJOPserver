@@ -1351,20 +1351,21 @@ begin
      // je JC -> je postaveno?
      if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani)) then
       begin
-       // je postaveno -> zkontrlolujeme, jestli je postaveno dalsi navestidlo
+       // je postaveno -> zkontrolujeme, jestli budeme na konci zastavovat
        if ((train.wantedSpeed > 0) and (train.direction <> Self.NavRel.smer)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
        case (Self.DNjc.data.DalsiNavaznost) of
          TJCNextNavType.blok: begin
            Blky.GetBlkByID(Self.DNjc.data.DalsiNavestidlo, nav);
 
-           if ((nav <> nil) and (nav.typ = btNav) and ((nav as TBlkNav).IsPovolovaciNavest())) then
+           if ((nav <> nil) and (nav.typ = btNav) and (TBlkNav(nav).IsPovolovaciNavest()) and
+               (not train.IsPOdj(Self.DNjc.lastUsek))) then
             begin
-              // dalsi navestilo je na VOLNO
+              // na konci JC budeme stat
               if ((train.wantedSpeed <> Self.DNjc.data.RychlostDalsiN*10) or (train.direction <> Self.NavRel.smer)) then
                 train.SetRychlostSmer(Self.DNjc.data.RychlostDalsiN*10, Self.NavRel.smer);
             end else begin
-              // dalsi navestidlo je na STUJ
+              // na konci JC jedeme dal
               if ((train.wantedSpeed <> Self.DNjc.data.RychlostNoDalsiN*10) or (train.direction <> Self.NavRel.smer)) then
                 train.SetRychlostSmer(Self.DNjc.data.RychlostNoDalsiN*10, Self.NavRel.smer);
             end;
@@ -1381,7 +1382,7 @@ begin
           end;
        end;
 
-       // kontorla prehravani stanicniho hlaseni
+       // kontrola prehravani stanicniho hlaseni
        train.CheckSh(Self);
       end else begin
        // neni povolovaci navest -> zastavit LOKO

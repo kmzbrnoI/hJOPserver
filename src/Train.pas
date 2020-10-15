@@ -975,6 +975,7 @@ end;
 
 function TTrain.IsPOdj(usek:TBlk):Boolean;
 begin
+ if (usek = nil) then Exit(false);
  Result := Self.IsPOdj(usek.id);
 end;
 
