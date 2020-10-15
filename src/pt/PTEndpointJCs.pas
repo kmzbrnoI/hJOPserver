@@ -44,7 +44,7 @@ begin
      except
        on E:Exception do
          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject,
-          '500', 'Chyba pri nacitani JC '+IntToStr(JC.id)+' : '+JC.nazev,
+          '500', 'Chyba pri nacitani JC '+IntToStr(JC.id)+' : '+JC.name,
           E.Message);
      end;
 

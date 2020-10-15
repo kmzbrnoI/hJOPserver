@@ -92,7 +92,7 @@ begin
    case (op.typ) of
     opAdd: begin
       LI := Self.LV.Items.Add();
-      LI.Caption := op.jc.nazev;
+      LI.Caption := op.jc.name;
     end;
 
     opDelete: if (op.index < Self.LV.Items.Count) then

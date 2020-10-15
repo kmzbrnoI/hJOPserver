@@ -281,7 +281,7 @@ begin
 
  if (JC.data.NavestidloBlok <> startNav.id) then
    Exit(false);
- if (Integer(startNav.ZacatekVolba) <> Integer(JC.data.typ)) then
+ if (Integer(startNav.ZacatekVolba) <> Integer(JC.typ)) then
    Exit(false);
 
  // posledni blok musi byt posledni blok posledni jizdni cesty

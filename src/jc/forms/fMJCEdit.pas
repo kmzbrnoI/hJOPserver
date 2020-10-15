@@ -181,7 +181,7 @@ begin
    JC := JCDb.GetJCByID(jcid);
    if (JC = nil) then continue;
    LI := Self.LV_JCs.Items.Add;
-   LI.Caption := JC.nazev;
+   LI.Caption := JC.name;
    Self.JCs.Add(jcid);
   end;
 
@@ -233,7 +233,7 @@ begin
  Self.CB_JC_Add.Clear();
  for JC in JCDb do
   begin
-   Self.CB_JC_Add.Items.Add(JC.nazev);
+   Self.CB_JC_Add.Items.Add(JC.name);
    Self.CB_JC_ids[Self.CB_JC_Add.Items.Count-1] := JC.id;
   end;
 end;
@@ -289,7 +289,7 @@ begin
    LI := Self.LV_JCs.Items[Self.LV_JCs.ItemIndex];
   end;
 
- LI.Caption := JCDb.GetJCByID(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]).nazev;
+ LI.Caption := JCDb.GetJCByID(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]).name;
  if (Self.JCs.Count = 1) then
   begin
    Self.B_VB_New.Enabled := true;

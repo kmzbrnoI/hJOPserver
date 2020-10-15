@@ -100,7 +100,7 @@ begin
  for i := 0 to mJCData.JCs.Count-1 do
   begin
    if (JCDb.GetJCByID(mJCData.JCs[i]) <> nil) then
-     str := str + '(' + JCDb.GetJCByID(mJCData.JCs[i]).nazev + '), '
+     str := str + '(' + JCDb.GetJCByID(mJCData.JCs[i]).name + '), '
    else
      str := str + '(neexistujici JC), ';
   end;

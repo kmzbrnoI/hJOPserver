@@ -365,7 +365,7 @@ begin
 
    jc := JCDb.GetJCByID(mjc.data.JCs[0]);
    if (JC = nil) then continue;
-   if (Integer(startNav.ZacatekVolba) <> Integer(JC.data.typ)) then
+   if (Integer(startNav.ZacatekVolba) <> Integer(JC.typ)) then
      continue;
 
    if (JC.data.NavestidloBlok <> startNav.id) then

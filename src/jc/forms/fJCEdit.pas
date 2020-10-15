@@ -189,12 +189,12 @@ var prjz:TJCPrjZaver;
   Blky.NactiBlokyDoObjektu(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, btNav, JCData.NavestidloBlok);
   CB_NavestidloChange(Self);
 
-  E_Name.Text:= JCData.Nazev;
-  SE_ID.Value := JCData.id;
+  Self.E_Name.Text:= JCData.name;
+  Self.SE_ID.Value := JCData.id;
 
-  CB_Typ.ItemIndex := Integer(JCData.typ)-1;
-  CB_Rychlost_Volno.ItemIndex := JCData.speedGo;
-  CB_Rychlost_Stuj.ItemIndex := JCData.speedStop;
+  Self.CB_Typ.ItemIndex := Integer(JCData.typ)-1;
+  Self.CB_Rychlost_Volno.ItemIndex := JCData.speedGo;
+  Self.CB_Rychlost_Stuj.ItemIndex := JCData.speedStop;
 
   Self.CB_TypChange(Self.CB_Typ);
 
@@ -251,7 +251,7 @@ var prjz:TJCPrjZaver;
   if (Self.mNewJC) then
     Self.Caption := 'Vytvořit novou jízdní cestu'
   else
-    Self.Caption := 'Upravit jízdní cestu '+JCData.nazev;
+    Self.Caption := 'Upravit jízdní cestu '+JCData.name;
  end;
 
 procedure TF_JCEdit.HlavniOpenForm;
@@ -418,13 +418,13 @@ var JC:TJC;
    end;
 
   //samotne ukladani dat
-  JCData.Nazev := E_Name.Text;
-  JCData.id := SE_ID.Value;
-  JCData.NavestidloBlok := Blky.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
-  JCData.typ := TJCType(CB_Typ.ItemIndex+1);
+  JCData.name := Self.E_Name.Text;
+  JCData.id := Self.SE_ID.Value;
+  JCData.NavestidloBlok := Blky.GetBlkID(Self.CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
+  JCData.typ := TJCType(Self.CB_Typ.ItemIndex+1);
 
-  JCData.speedGo := CB_Rychlost_Volno.ItemIndex;
-  JCData.speedStop := CB_Rychlost_Stuj.ItemIndex;
+  JCData.speedGo := Self.CB_Rychlost_Volno.ItemIndex;
+  JCData.speedStop := Self.CB_Rychlost_Stuj.ItemIndex;
   JCData.odbocka := Self.CHB_Odbocka.Checked;
   JCData.nzv := Self.CHB_NZV.Checked;
 

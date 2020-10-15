@@ -2017,7 +2017,7 @@ var blk:TBlk;
     jc:TJC;
 begin
  jc := ABlist[Self.LV_AB.ItemIndex];
- if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+jc.Nazev+'?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
+ if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+jc.name+'?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
   begin
    try
      Blky.GetBlkByID(jc.data.NavestidloBlok, blk);
@@ -2241,7 +2241,7 @@ end;
 procedure TF_Main.B_VC_AddClick(Sender: TObject);
 begin
   if ((Self.LV_JC.Selected <> nil) and
-      (Application.MessageBox(PChar('Chcete použít JC ' + JCDb[Self.LV_JC.ItemIndex].nazev + ' jako šablonu pro vytvoření nové JC?'),
+      (Application.MessageBox(PChar('Chcete použít JC ' + JCDb[Self.LV_JC.ItemIndex].name + ' jako šablonu pro vytvoření nové JC?'),
                               'Nová JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1) = mrYes)) then
     F_JCEdit.NewJC(Self.LV_JC.ItemIndex)
   else

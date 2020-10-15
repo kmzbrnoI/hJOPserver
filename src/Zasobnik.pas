@@ -475,7 +475,7 @@ begin
 
  // zadne bariery -> stavim jizdni cestu
 
- writelog('Zásobník OŘ '+(Self.OblR as TOR).id+' - JC '+JC.nazev+' : podmínky splněny, stavím', WR_STACK);
+ writelog('Zásobník OŘ '+(Self.OblR as TOR).id+' - JC '+JC.name+' : podmínky splněny, stavím', WR_STACK);
 
  // pokud nejsou zadne bariery, stavime jizdni cestu
  (Self.OblR as TOR).BroadcastData('ZAS;FIRST;0');
@@ -601,7 +601,7 @@ begin
  for i := 0 to Self.stack.Count-1 do
   if ((Self.stack[i].ClassType = TORStackCmdJC) and ((Self.stack[i] as TORStackCmdJC).JC = JC)) then
    begin
-    writelog('Zásobník OŘ '+(Self.OblR as TOR).id+' - JC '+((Self.stack[i] as TORStackCmdJC).JC as TJC).nazev+
+    writelog('Zásobník OŘ '+(Self.OblR as TOR).id+' - JC '+((Self.stack[i] as TORStackCmdJC).JC as TJC).name+
         ' : smazána ze zásobníku, id = '+IntToStr(Self.stack[i].id), WR_STACK);
     Self.RemoveFromStack(i);
     Exit();
@@ -675,11 +675,11 @@ begin
    if (cmd.ClassType = TORStackCmdJC) then
     begin
      if ((cmd as TORStackCmdJC).nouz) then
-        Result := 'NC  '+ ((cmd as TORStackCmdJC).JC as TJC).nazev
+        Result := 'NC  '+ ((cmd as TORStackCmdJC).JC as TJC).name
      else
-       case (((cmd as TORStackCmdJC).JC as TJC).data.typ) of
-        TJCType.vlak  : Result := 'VC  '+ ((cmd as TORStackCmdJC).JC as TJC).nazev;
-        TJCType.posun : Result := 'PC  '+ ((cmd as TORStackCmdJC).JC as TJC).nazev;
+       case (((cmd as TORStackCmdJC).JC as TJC).typ) of
+        TJCType.vlak  : Result := 'VC  '+ ((cmd as TORStackCmdJC).JC as TJC).name;
+        TJCType.posun : Result := 'PC  '+ ((cmd as TORStackCmdJC).JC as TJC).name;
        end;//case
     end
 

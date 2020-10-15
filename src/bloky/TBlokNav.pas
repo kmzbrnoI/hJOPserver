@@ -872,7 +872,7 @@ begin
      Self.NavStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 2, 0));
     end else begin
      // pokud je obsazen, zalezi na typu jizdni cesty
-     case (JC.data.typ) of
+     case (JC.typ) of
       TJCType.vlak  : Self.NavStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
       TJCType.posun : Self.NavStav.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
      else
@@ -1129,7 +1129,7 @@ begin
      Result := Result + 'RC,';
 
      // AB lze jen u vlakove cesty
-     if ((Self.DNjc.data.typ = TJCType.vlak) and (not Self.AB)) then
+     if ((Self.DNjc.typ = TJCType.vlak) and (not Self.AB)) then
        Result := Result + 'AB>,';
     end;
  end;
@@ -1346,7 +1346,7 @@ begin
      Exit();
     end;
 
-   if ((Assigned(Self.DNjc)) and (Self.DNjc.data.typ = TJCType.vlak)) then
+   if ((Assigned(Self.DNjc)) and (Self.DNjc.typ = TJCType.vlak)) then
     begin
      // je JC -> je postaveno?
      if ((Self.IsPovolovaciNavest()) and (not Self.NavStav.padani)) then

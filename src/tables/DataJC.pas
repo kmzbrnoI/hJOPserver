@@ -92,7 +92,7 @@ begin
  JC.changed := false;
 
  Self.LV.Items[line].Caption := IntToStr(JCData.id);
- Self.LV.Items[line].SubItems[0] := JCData.Nazev;
+ Self.LV.Items[line].SubItems[0] := JCData.name;
  Self.LV.Items[line].SubItems[4] := Blky.GetBlkName(JCData.NavestidloBlok);
 
  // stav:

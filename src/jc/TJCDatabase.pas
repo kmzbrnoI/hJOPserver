@@ -146,7 +146,7 @@ begin
      except
        on E:Exception do
         begin
-         AppEvents.LogException(E, 'JC '+JC.nazev+' se nepodařilo načíst');
+         AppEvents.LogException(E, 'JC '+JC.name+' se nepodařilo načíst');
          JC.Free();
         end;
      end;
@@ -206,7 +206,7 @@ begin
     on E:Exception do
      begin
       if (not log_err_flag) then
-       AppEvents.LogException(E, 'JC '+JC.nazev + ' update error');
+       AppEvents.LogException(E, 'JC '+JC.name + ' update error');
       if (JC.staveni) then
         JC.CancelStaveni('Vyjímka', true)
       else
@@ -247,9 +247,9 @@ begin
    Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], blk);
    if (blk <> endBlk) then continue;
 
-   if ((Integer(startNav.ZacatekVolba) = Integer(jc.data.typ)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.data.typ = TJCType.vlak)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.data.typ = TJCType.posun))) then
+   if ((Integer(startNav.ZacatekVolba) = Integer(jc.typ)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.typ = TJCType.vlak)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.typ = TJCType.posun))) then
     begin
      // kontrola variantnich bodu:
      if (jc.data.vb.Count <> vb.Count) then continue;
@@ -551,7 +551,7 @@ var JC: TJC;
 begin
   for JC in Self.JCs do
    begin
-    if ((JC.data.typ = TJCType.posun) or
+    if ((JC.typ = TJCType.posun) or
         (JC.data.dalsiNavaznost <> TJCNextNavType.blok) or
         (JC.data.dalsiNavestidlo <> nav.id)) then continue;
 
@@ -798,7 +798,7 @@ begin
  if (not Self.JCsStartNav.ContainsKey(nav)) then
    Exit(false);
  for jc in Self.JCsStartNav[nav] do
-   if (jc.data.typ = TJCType.vlak) then
+   if (jc.typ = TJCType.vlak) then
       Exit(true);
  Result := false;
 end;
@@ -809,7 +809,7 @@ begin
  if (not Self.JCsStartNav.ContainsKey(nav)) then
    Exit(false);
  for jc in Self.JCsStartNav[nav] do
-   if (jc.data.typ = TJCType.posun) then
+   if (jc.typ = TJCType.posun) then
       Exit(true);
  Result := false;
 end;
@@ -827,7 +827,7 @@ begin
    Exit(false);
  for jc in Self.JCsStartNav[nav] do
   begin
-   if ((jc.data.typ = typ) and (jc.data.Useky.Count > 0)) then
+   if ((jc.typ = typ) and (jc.data.Useky.Count > 0)) then
     begin
       Blky.GetBlkByID(jc.data.Useky[0], blk);
       if ((blk <> nil) and ((blk.typ = btUsek) or (blk.typ = btTU))) then
@@ -879,9 +879,9 @@ begin
   begin
    if (JC.navestidlo <> startNav) then continue;
 
-   if ((Integer(startNav.ZacatekVolba) = Integer(jc.data.typ)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.data.typ = TJCType.vlak)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.data.typ = TJCType.posun))) then
+   if ((Integer(startNav.ZacatekVolba) = Integer(jc.typ)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.typ = TJCType.vlak)) or
+      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.typ = TJCType.posun))) then
     begin
      // kontrola variantnich bodu:
      if (vb.Count > jc.data.vb.Count) then continue;
