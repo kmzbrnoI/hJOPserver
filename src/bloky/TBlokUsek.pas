@@ -2105,6 +2105,7 @@ procedure TBlkUsek.POdjChanged(trainId:Integer; var podj:TPOdj);
 var train:Integer;
     was:boolean;
     nav:TBlk;
+    jc: TJC;
 begin
  if ((not Self.trains.Contains(trainId)) and (trainId <> Self.UsekStav.TrainPredict)) then
    raise Exception.Create('Souprava již není na úseku!');
@@ -2124,6 +2125,12 @@ begin
    for nav in Self.NavJCRef do
      TBlkNav(nav).UpdateRychlostTrain(true);
   end;
+
+ // Pri zruseni / zavedei PODJ aktualizovat rychlsot loko, ktera prijizdi,
+ // protoze muze dojit ke zmene rychlosti
+ jc := JCDb.FindPostavenaJCWithUsek(Self.id);
+  if (jc <> nil) then
+    TBlkNav(jc.navestidlo).UpdateRychlostTrain(true);
 
  Self.PropagatePOdjToTrat();
  Self.Change();
