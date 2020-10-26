@@ -176,6 +176,7 @@ type
     _JCB_PRIVOLAVACKA            = 5;
 
     _JCB_NAV_NOT_USEK            = 10;
+    _JCB_NAV_NAVEST              = 11;
 
     _JCB_USEK_OBSAZENO           = 20;
     _JCB_USEK_ZAVER              = 21;
@@ -653,6 +654,9 @@ begin
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
   if (not (Blk as TBlkNav).enabled) then
     bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
+
+  if (TBlkNav(Blk).navest <> ncStuj) then
+    bariery.Add(Self.JCBariera(_JCB_NAV_NAVEST, Blk, Blk.id));
 
   // kontrola useku:
   if (Self.fproperties.Trat > -1) then
@@ -2350,7 +2354,7 @@ begin
        if (Usek.Zaver > TZaver.no) then
         begin
          //pokud jsme na jinem useku, nez RozpadBlok
-         if ((Nav.Navest > ncStuj) and (Nav.DNjc = Self)) then
+         if ((Nav.cilovaNavest > ncStuj) and (Nav.DNjc = Self)) then
           begin
            if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
              ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Chyba povolovací návěsti '+Nav.name,
@@ -3149,7 +3153,7 @@ begin
 
 
  case (Bariera.typ) of
-  _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_NAV_NOT_USEK, _JCB_BLOK_NOT_EXIST,
+  _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_NAV_NOT_USEK, _JCB_NAV_NAVEST, _JCB_BLOK_NOT_EXIST,
   _JCB_USEK_OBSAZENO, _JCB_USEK_ZAVER, _JCB_USEK_AB, _JCB_USEK_SOUPRAVA,
   _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_ZAMCENA, _JCB_VYHYBKA_NOUZ_ZAVER,
   _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA,
@@ -3175,6 +3179,7 @@ begin
   _JCB_BLOK_NOT_TYP            : Result[1] := GetUPOLine('Blok není správného typu');
 
   _JCB_NAV_NOT_USEK            : Result[1] := GetUPOLine('Není úsek před návěstidlem');
+  _JCB_NAV_NAVEST              : Result[1] := GetUPOLine('Není základní návěst');
 
   _JCB_USEK_OBSAZENO           : Result[1] := GetUPOLine('Úsek obsazen');
   _JCB_USEK_ZAVER              : Result[1] := GetUPOLine('Úsek zapevněn');
