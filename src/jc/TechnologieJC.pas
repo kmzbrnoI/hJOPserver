@@ -2054,6 +2054,7 @@ var i,j:Integer;
             TBlkUsek(Self.lastUsek).AddTrainS(train);
 
           usek.RemoveTrain(train);
+          train.front := Self.lastUsek;
          end;
         Self.fstaveni.rozpadBlok := -6;
        end;
@@ -2096,6 +2097,7 @@ var i,j:Integer;
                                    // kontrolovano vyse
           trat.Change();
           usek.RemoveTrain(train);
+          train.front := tuAdd;
          end;
        end;
      end;//if typ = vlak
