@@ -929,38 +929,37 @@ end;
 procedure TOR.PanelMoveLok(Sender:TIdContext; lok_addr:word; new_or:string);
 var new: TOR;
 begin
- //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;Přístup odepřen');
    Exit;
   end;
 
  new := ORs.Get(new_or);
  if (new = nil) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'Tato OR neexistuje!');
+   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;Tato OR neexistuje!');
    Exit();
   end;
  if (not Assigned(HVDb[lok_addr])) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' neexistuje!');
+   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;HV neexistuje!');
    Exit();
   end;
  if (HVDb[lok_addr].Stav.train > -1) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' přiřazeno soupravě '+
-        Trains.GetTrainNameByIndex(HVDb[lok_addr].Stav.train)+'!');
+   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;HV přiřazeno soupravě '+
+               Trains.GetTrainNameByIndex(HVDb[lok_addr].Stav.train)+'!');
    Exit();
   end;
  if (HVDb[lok_addr].Stav.stanice <> Self) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' nepatří této stanici!');
+   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;HV nepatří této stanici!');
    Exit();
   end;
 
  HVDb[lok_addr].PredejStanici(new);
- ORTCPServer.SendInfoMsg(Sender, 'HV '+IntToStr(lok_addr)+' předáno stanici '+new.Name);
+ Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';OK');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1407,11 +1406,10 @@ end;
 procedure TOR.PanelHVAdd(Sender:TIDContext; str:string);
 var HV: THV;
 begin
- //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Self.SendLn(Sender, 'HV;ADD;-;ERR;Přístup odepřen');
+   Exit();
   end;
 
  try
@@ -1419,7 +1417,7 @@ begin
  except
    on e:Exception do
     begin
-     ORTCPServer.SendInfoMsg(Sender, e.Message);
+     Self.SendLn(Sender, 'HV;ADD;-;ERR;'+e.Message);
      Exit();
     end;
  end;
@@ -1429,20 +1427,19 @@ end;
 
 procedure TOR.PanelHVRemove(Sender:TIDContext; addr:Integer);
 begin
- //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';ERR;Přístup odepřen');
+   Exit();
   end;
  if (HVDb[addr] = nil) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'Loko neexsituje');
+   Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';ERR;Loko neexsituje');
    Exit();
   end;
  if (HVDb[addr].Stav.stanice <> self) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, 'Loko se nenachází ve stanici '+Self.Name);
+   Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';ERR;Loko se nenachází ve stanici '+Self.Name);
    Exit();
   end;
 
@@ -1450,37 +1447,37 @@ begin
    HVDb.Remove(addr);
  except
    on E:Exception do
-     ORTCPServer.SendInfoMsg(Sender, 'Nelze smazat loko - '+E.Message)
+     Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';ERR;'+E.Message);
  end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' smazáno');
+ Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';OK');
 end;
 
 procedure TOR.PanelHVEdit(Sender:TIDContext; str:string);
 var data:TStrings;
     addr:Integer;
 begin
- //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   Self.SendLn(Sender, 'HV;EDIT;-;ERR;Přístup odepřen');
    Exit;
   end;
 
  data := nil;
+ data := TStringList.Create();
+ addr := 0;
  try
-   data := TStringList.Create();
    ExtractStringsEx(['|'], [], str, data);
    addr := StrToInt(data[4]);
    data.Free();
    if (HVDb[addr] = nil) then
     begin
-     ORTCPServer.SendInfoMsg(Sender, 'Loko neexistuje');
+     Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';ERR;Loko neexistuje');
      Exit();
     end;
    if (HVDb[addr].Stav.stanice <> self) then
     begin
-     ORTCPServer.SendInfoMsg(Sender, 'Loko se nenachází ve stanici '+Self.Name);
+     Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';ERR;Loko se nenachází ve stanici '+Self.Name);
      Exit();
     end;
 
@@ -1489,11 +1486,11 @@ begin
    if (HVDb[addr].acquired) then
      HVDb[addr].StavFunctionsToSlotFunctions(TTrakce.Callback(), TTrakce.Callback());
 
-   ORTCPServer.SendInfoMsg(Sender, 'Loko '+IntToStr(addr)+' aktualizováno');
+   Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';OK');
  except
    on e:Exception do
     begin
-     ORTCPServer.BottomError(Sender, e.Message, Self.ShortName, 'TRAKCE');
+     Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';ERR;'+E.Message);
      if (Assigned(data)) then data.Free();
     end;
  end;
