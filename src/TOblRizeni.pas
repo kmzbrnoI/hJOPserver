@@ -145,6 +145,7 @@ type
       procedure RCSUpdate();                                                    // posila souhrnne zpravy panelu o vypadku RCS modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
 
       procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
+      procedure SendLn(panel: TIdContext; str: string);
 
       // tyto funkce jsou volany pri zmene opravenni mezi cteni a zapisem
       // primarni cil = v techto funkcich resit zapinani a vypinani zvuku v panelu
@@ -416,14 +417,14 @@ var msg:string;
 begin
  if (Self.Connected.Count = 0) then Exit();
 
- msg := Self.id + ';CHANGE;' + TBlk(Sender).PanelStateString();
+ msg := 'CHANGE;' + TBlk(Sender).PanelStateString();
 
  for orPanel in Self.Connected do
   begin
    if (orPanel.Rights < TORControlRights.read) then continue;
    if ((specificClient <> nil) and (orPanel.Panel <> specificClient)) then continue;
 
-   ORTCPServer.SendLn(orPanel.Panel, msg);
+   Self.SendLn(orPanel.Panel, msg);
 
    // aktualizace menu
    if ((orPanel.Panel.Data as TTCPORsRef).menu = Sender) then
@@ -459,7 +460,7 @@ procedure TOR.BlkNewTrain(Sender:TObject; Panel:TIdContext; trainUsekIndex:Integ
 begin
  TTCPORsRef(Panel.Data).train_new_usek_index := trainUsekIndex;
  TTCPORsRef(Panel.Data).train_usek := Sender;
- ORTCPServer.SendLn(Panel, Self.id+';SPR-NEW;');
+ Self.SendLn(Panel, 'SPR-NEW;');
 end;
 
 procedure TOR.BlkEditTrain(Sender:TObject; Panel:TIdContext; train:TObject);
@@ -468,7 +469,7 @@ begin
  TTCPORsRef(Panel.Data).train_edit := TTrain(train);
  TTCPORsRef(Panel.Data).train_usek := Sender;
 
- ORTCPServer.SendLn(Panel, Self.id+';'+'SPR-EDIT;'+TTrain(train).GetPanelString());
+ Self.SendLn(Panel, 'SPR-EDIT;'+TTrain(train).GetPanelString());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -811,14 +812,14 @@ begin
  oblr := ORs.Get(recepient);
  if (oblr = nil) then
   begin
-   ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';Tato OŘ neexistuje');
+   Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';Tato OŘ neexistuje');
    Exit();
   end;
 
  return := oblr.ORSendMsg(Self, msg);
 
  if (return = 1) then
-   ORTCPServer.SendLn(Sender, Self.id + ';MSG-ERR;' + recepient + ';K této OŘ aktuálně není připojen žádný panel');
+   Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';K této OŘ aktuálně není připojen žádný panel');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -835,12 +836,12 @@ begin
    Exit;
   end;
 
- str := Self.id + ';HV-LIST;{';
+ str := 'HV-LIST;{';
  for addr := 0 to _MAX_ADDR-1 do
    if ((Assigned(HVDb[addr])) and (HVDb[addr].Stav.stanice = Self)) then
     str := str + '[{' + HVDb[addr].GetPanelLokString(full) + '}]';
  str := str + '}';
- ORTCPServer.SendLn(Sender, str);
+ Self.SendLn(Sender, str);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -858,7 +859,7 @@ begin
 
  if ((TTCPORsRef(Sender.Data).train_new_usek_index = -1) and (TTCPORsRef(Sender.Data).train_edit = nil)) then
   begin
-   ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Žádná souprava k editaci / neplatný úsek pro vytvoření soupravy');
+   Self.SendLn(Sender, 'SPR-EDIT-ERR;Žádná souprava k editaci / neplatný úsek pro vytvoření soupravy');
    Exit();
   end;
 
@@ -879,13 +880,13 @@ begin
 
    if (not usek.IsTrain(TTCPORsRef(Sender.Data).train_edit.index)) then
     begin
-     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Souprava již není na úseku');
+     Self.SendLn(Sender, 'SPR-EDIT-ERR;Souprava již není na úseku');
      Exit();
     end;
 
    if ((train.front <> usek) and (train.wantedSpeed > 0)) then
     begin
-     ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;Nelze editovat soupravu, která odjela a je v pohybu');
+     Self.SendLn(Sender, 'SPR-EDIT-ERR;Nelze editovat soupravu, která odjela a je v pohybu');
      Exit();
     end;
 
@@ -897,7 +898,7 @@ begin
   end;
  except
   on E: Exception do
-    ORTCPServer.SendLn(Sender, Self.id+';SPR-EDIT-ERR;'+E.Message);
+    Self.SendLn(Sender, 'SPR-EDIT-ERR;'+E.Message);
  end;
 end;
 
@@ -906,21 +907,21 @@ var tcpSender: TIdContext;
 begin
  tcpSender := Data;
  TTCPORsRef(tcpSender.data).ResetTrains();
- ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ACK;');
+ Self.SendLn(tcpSender, 'SPR-EDIT-ACK;');
 end;
 
 procedure TOR.PanelTrainChangeErr(Sender:TObject; Data:Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
- ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ERR;Nepodařilo se převzít lokomotivy z centrály!');
+ Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Nepodařilo se převzít lokomotivy z centrály!');
 end;
 
 procedure TOR.PanelTrainCreateErr(Sender:TObject; Data:Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
- ORTCPServer.SendLn(tcpSender, Self.id+';SPR-EDIT-ERR;Souprava založena, ale nepodařilo se převízt lokomotivy z centrály!');
+ Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Souprava založena, ale nepodařilo se převízt lokomotivy z centrály!');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1077,7 +1078,7 @@ end;
 
 procedure TOR.ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string; username:string);
 begin
- ORTCPServer.SendLn(Panel, Self.id+';AUTH;'+IntToStr(Integer(Rights))+';'+msg+';'+username);
+ Self.SendLn(Panel, 'AUTH;'+IntToStr(Integer(Rights))+';'+msg+';'+username);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1238,7 +1239,7 @@ begin
  for i := 0 to Self.Connected.Count-1 do
    if (Self.Connected[i].Rights >= TORControlRights.write) then
     begin
-     ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id + ';MSG;' + Sender.id + ';{'+msg+'}');
+     Self.SendLn(Self.Connected[i].Panel, 'MSG;' + Sender.id + ';{'+msg+'}');
      Result := 0;
     end;
 end;
@@ -1504,7 +1505,7 @@ var panel: TORPanel;
 begin
  for panel in Self.Connected do
    if (panel.Rights >= min_rights) then
-    ORTCPServer.SendLn(panel.Panel, Self.id+';'+data);
+    Self.SendLn(panel.Panel, data);
 end;
 
 procedure TOR.BroadcastGlobalData(data:string; min_rights:TORControlRights = read);
@@ -1593,7 +1594,7 @@ begin
        // kontrola existence loko
        if (HV = nil) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' neexistuje');
+         Self.SendLn(Sender, 'LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' neexistuje');
          Exit();
         end;
 
@@ -1601,30 +1602,30 @@ begin
        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
        if ((HV.Stav.stanice <> Self) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' se nenachází ve stanici');
+         Self.SendLn(Sender, 'LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' se nenachází ve stanici');
          Exit();
         end;
 
        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
        if ((HV.Stav.regulators.Count > 0) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' již otevřeno v regulátoru');
+         Self.SendLn(Sender, 'LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' již otevřeno v regulátoru');
          Exit();
         end;
       end;//for i
 
      // kontrola OK -> generujeme zpravu z tokeny a zpravu odesleme
-     line := Self.id+';LOK-TOKEN;OK;';
+     line := 'LOK-TOKEN;OK;';
      for i := 0 to data.Count-1 do
       begin
        HV := HVDb[StrToInt(data[i])];
        line := line + '[' + IntToStr(HV.adresa) + '|' + HV.GetToken() + ']';
       end;//for i
-     ORTCPServer.SendLn(Sender, line);
+     Self.SendLn(Sender, line);
 
      data.Free();
    except
-     ORTCPServer.SendLn(Sender, Self.id+';LOK-TOKEN;ERR;Neplatný formát argumentů');
+     Self.SendLn(Sender, 'LOK-TOKEN;ERR;Neplatný formát argumentů');
    end;
   end
 
@@ -1638,7 +1639,7 @@ begin
      // nejdriv musi probihat zadost o loko
      if (Self.ORStav.reg_please = nil) then
       begin
-       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Neprobíhá žádná žádost z regulátoru');
+       Self.SendLn(Sender, 'LOK-REQ;ERR;Neprobíhá žádná žádost z regulátoru');
        Exit();
       end;
 
@@ -1652,7 +1653,7 @@ begin
        // kontrola existence loko
        if (HV = nil) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Loko '+data[i]+' neexistuje');
+         Self.SendLn(Sender, 'LOK-REQ;ERR;Loko '+data[i]+' neexistuje');
          Exit();
         end;
 
@@ -1660,26 +1661,26 @@ begin
        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
        if ((HV.Stav.stanice <> Self) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Loko '+data[i]+' se nenachází ve stanici');
+         Self.SendLn(Sender, 'LOK-REQ;ERR;Loko '+data[i]+' se nenachází ve stanici');
          Exit();
         end;
 
        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
        if ((HV.Stav.regulators.Count > 0) and (rights < TORControlRights.superuser)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Loko '+data[i]+' již otevřeno v regulátoru');
+         Self.SendLn(Sender, 'LOK-REQ;ERR;Loko '+data[i]+' již otevřeno v regulátoru');
          Exit();
         end;
       end;//for i
 
 
      // kontrola OK -> odesleme panelu zpravu o tom, ze je vse OK
-     ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;OK;');
+     Self.SendLn(Sender, 'LOK-REQ;OK;');
 
      // vsem ostatnim panelum jeste posleme, ze doslo ke zruseni zadosti
      for i := 0 to Self.Connected.Count-1 do
        if ((Self.Connected[i].Rights >= TORControlRights.read) and (Self.Connected[i].Panel <> Sender)) then
-        ORTCPServer.SendLn(Self.Connected[i].Panel, Self.id+';LOK-REQ;CANCEL;');
+        Self.SendLn(Self.Connected[i].Panel, 'LOK-REQ;CANCEL;');
 
      // lokomotivy priradime regulatoru
      for i := 0 to data.Count-1 do
@@ -1694,7 +1695,7 @@ begin
 
      data.Free();
    except
-     ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;ERR;Neplatný formát argumentů');
+     Self.SendLn(Sender, 'LOK-REQ;ERR;Neplatný formát argumentů');
    end;
   end
 
@@ -1718,13 +1719,13 @@ begin
      Blky.GetBlkByID(StrToInt(str[3]), Blk);
      if ((Blk = nil) or ((Blk.typ <> btUsek) and (Blk.typ <> btTU))) then
       begin
-       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatný blok');
+       Self.SendLn(Sender, 'LOK-REQ;U-ERR;Neplatný blok');
        Exit();
       end;
 
      if (not (Blk as TBlkUsek).IsTrain()) then
       begin
-       ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Žádná souprava na bloku');
+       Self.SendLn(Sender, 'LOK-REQ;U-ERR;Žádná souprava na bloku');
        Exit();
       end;
 
@@ -1734,13 +1735,13 @@ begin
        traini := StrToIntDef(str[4], -1);
        if ((traini < -1) or (traini >= (Blk as TBlkUsek).trains.Count)) then
         begin
-         ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Tato souprava na úseku neexistuje');
+         Self.SendLn(Sender, 'LOK-REQ;U-ERR;Tato souprava na úseku neexistuje');
          Exit();
         end;
       end;
 
      // generujeme zpravu s tokeny
-     line := Self.id+';LOK-REQ;U-OK;{';
+     line := 'LOK-REQ;U-OK;{';
      if (traini = -1) then
       begin
        // vsechny soupravy na useku
@@ -1754,10 +1755,10 @@ begin
       end;
 
      line := line + '}';
-     ORTCPServer.SendLn(Sender, line);
+     Self.SendLn(Sender, line);
 
    except
-     ORTCPServer.SendLn(Sender, Self.id+';LOK-REQ;U-ERR;Neplatný formát argumentů');
+     Self.SendLn(Sender, 'LOK-REQ;U-ERR;Neplatný formát argumentů');
    end;
   end;
 end;
@@ -1770,23 +1771,28 @@ var user:TUser;
 begin
  // kliknuti na dopravni kancelar
  if (Assigned(Self.ORStav.dk_click_callback)) then
-   ORTCPServer.SendLn(panel, Self.id+';DK-CLICK;1')
+   Self.SendLn(panel, 'DK-CLICK;1')
  else
-   ORTCPServer.SendLn(panel, Self.id+';DK-CLICK;0');
+   Self.SendLn(panel, 'DK-CLICK;0');
 
  // pripradna zadost o lokomotivu
  if (Self.reg_please <> nil) then
   begin
    user := (Self.reg_please.Data as TTCPORsRef).regulator_user;
    if (user <> nil) then
-     ORTCPServer.SendLn(panel, Self.id+';LOK-REQ;REQ;'+user.username+';'+user.firstname+';'+user.lastname+';');
+     Self.SendLn(panel, 'LOK-REQ;REQ;'+user.username+';'+user.firstname+';'+user.lastname+';');
   end;
 
  if ((Assigned(Self.hlaseni)) and (Self.hlaseni.available)) then
-   ORTCPServer.SendLn(panel, Self.id+';SHP;AVAILABLE;1');
+   Self.SendLn(panel, 'SHP;AVAILABLE;1');
 
  if ((Self.NUZblkCnt > 0) and (not Self.NUZtimer)) then
-   ORTCPServer.SendLn(panel, Self.id + ';NUZ;1;');
+   Self.SendLn(panel, 'NUZ;1;');
+end;
+
+procedure TOR.SendLn(panel: TIdContext; str: string);
+begin
+ ORTCPServer.SendLn(panel, Self.id + ';' + str);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2108,7 +2114,7 @@ end;
 
 procedure TOR.ShowDkMenu(panel: TIdContext; root: string; menustr: string);
 begin
- ORTCPServer.SendLn(panel, Self.id+';MENU;'+root+';'+menustr);
+ Self.SendLn(panel, 'MENU;'+root+';'+menustr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
