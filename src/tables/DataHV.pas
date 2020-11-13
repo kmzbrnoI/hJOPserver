@@ -107,10 +107,12 @@ var line:Integer;
   Self.LV.Items[line].SubItems[3] := data.Poznamka;
 
   case (data.typ) of
-   THVType.parni   : Self.LV.Items[line].SubItems[4] := 'parní';
+   THVType.other   : Self.LV.Items[line].SubItems[4] := 'jiný';
+   THVType.steam   : Self.LV.Items[line].SubItems[4] := 'parní';
    THVType.diesel  : Self.LV.Items[line].SubItems[4] := 'diesel';
    THVType.motor   : Self.LV.Items[line].SubItems[4] := 'motor';
-   THVType.elektro : Self.LV.Items[line].SubItems[4] := 'elektro';
+   THVType.electro : Self.LV.Items[line].SubItems[4] := 'elektro';
+   THVType.car     : Self.LV.Items[line].SubItems[4] := 'vůz';
   end;//case
 
   Self.LV.Items[line].SubItems[5] := IntToStr(data.prechodnost);

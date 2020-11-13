@@ -381,10 +381,12 @@ object F_HVEdit: TF_HVEdit
     ItemHeight = 13
     TabOrder = 6
     Items.Strings = (
-      'Parn'#237
-      'Diesel'
-      'Motor'
-      'Elektro')
+      'parn'#237
+      'diesel'
+      'motor'
+      'elektro'
+      'v'#367'z'
+      'jin'#253)
   end
   object E_Addr: TEdit
     Left = 96

@@ -184,7 +184,10 @@ var data:THVData;
   data.majitel := E_Majitel.Text;
   data.oznaceni := E_Oznaceni.Text;
   data.poznamka := M_Poznamky.Text;
-  data.typ := THVType(CB_trida.ItemIndex);
+  if (CB_Trida.ItemIndex = CB_Trida.Items.Count-1) then
+    data.typ := THVType.other
+  else
+    data.typ := THVType(CB_trida.ItemIndex);
 
   if (Self.OpenHV = nil) then
    begin
@@ -344,13 +347,16 @@ var data:THVData;
   data := Self.OpenHV.data;
   stav := Self.OpenHV.stav;
 
-  E_Nazev.Text := data.Nazev;
-  E_Oznaceni.Text := data.Oznaceni;
-  E_Majitel.Text := data.Majitel;
-  E_Addr.Text := IntToStr(Self.OpenHV.adresa);
-  M_Poznamky.Text := data.Poznamka;
-  CB_trida.ItemIndex := Integer(data.typ);
-  CB_Orientace.ItemIndex := Integer(stav.StanovisteA);
+  Self.E_Nazev.Text := data.Nazev;
+  Self.E_Oznaceni.Text := data.Oznaceni;
+  Self.E_Majitel.Text := data.Majitel;
+  Self.E_Addr.Text := IntToStr(Self.OpenHV.adresa);
+  Self.M_Poznamky.Text := data.Poznamka;
+  if (data.typ = THVType.other) then
+    Self.CB_trida.ItemIndex := CB_Trida.Items.Count-1
+  else
+    Self.CB_trida.ItemIndex := Integer(data.typ);
+  Self.CB_Orientace.ItemIndex := Integer(stav.StanovisteA);
 
   Self.LV_Pom_Load.Clear();
   for i := 0 to data.POMtake.Count-1 do
@@ -375,16 +381,16 @@ var data:THVData;
 
 procedure TF_HVEdit.NewHVOpenForm();
  begin
-  B_NajetoDelete.Visible := false;
-  E_Addr.ReadOnly := false;
+  Self.B_NajetoDelete.Visible := false;
+  Self.E_Addr.ReadOnly := false;
 
-  E_Nazev.Text := '';
-  E_Oznaceni.Text := '';
-  E_Majitel.Text := '';
-  E_Addr.Text := '';
-  M_Poznamky.Text := '';
-  CB_trida.ItemIndex := -1;
-  CB_Orientace.ItemIndex := -1;
+  Self.E_Nazev.Text := '';
+  Self.E_Oznaceni.Text := '';
+  Self.E_Majitel.Text := '';
+  Self.E_Addr.Text := '';
+  Self.M_Poznamky.Text := '';
+  Self.CB_trida.ItemIndex := -1;
+  Self.CB_Orientace.ItemIndex := -1;
 
   Self.LV_Pom_Load.Clear();
   Self.LV_Pom_Release.Clear();

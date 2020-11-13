@@ -66,7 +66,7 @@ type
   TPomStatus = (released = 0, pc = 1, progr = 2, error = 3);
 
   // typ hnaciho vozidla
-  THVType = (parni = 0, diesel = 1, motor = 2, elektro = 3);
+  THVType = (other = -1, steam = 0, diesel = 1, motor = 2, electro = 3, car = 4);
 
   // mod posilani dat hnaciho vozidla klientovi
   // full: s POM
@@ -967,10 +967,12 @@ begin
  if (Self.data.Poznamka <> '') then json['poznamka'] := Self.data.Poznamka;
 
  case (Self.data.typ) of
-  THVType.parni   : json['typ'] := 'parni';
+  THVType.other   : json['typ'] := 'other';
+  THVType.steam   : json['typ'] := 'steam';
   THVType.diesel  : json['typ'] := 'diesel';
   THVType.motor   : json['typ'] := 'motor';
-  THVType.elektro : json['typ'] := 'elektro';
+  THVType.electro : json['typ'] := 'electro';
+  THVType.car     : json['typ'] := 'car';
  end;
 
  lastFunction := _HV_FUNC_MAX;
