@@ -291,7 +291,7 @@ begin
  if (parsed[3] = 'SP') then
   begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.adresa;
+   TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
 
    HV.SetSpeed(StrToInt(parsed[4]),
@@ -303,7 +303,7 @@ begin
  else if (parsed[3] = 'SPD') then
   begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.adresa;
+   TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
 
    HV.SetSpeedDir(StrToInt(parsed[4]), parsed[5] = '1',
@@ -315,7 +315,7 @@ begin
  else if (parsed[3] = 'SP-S') then
   begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.adresa;
+   TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
 
    HV.SetSpeedStepDir(StrToInt(parsed[4]), HV.direction,
@@ -327,7 +327,7 @@ begin
  else if (parsed[3] = 'SPD-S') then
   begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.adresa;
+   TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
 
    HV.SetSpeedStepDir(StrToInt(parsed[4]), parsed[5] = '1',
@@ -339,7 +339,7 @@ begin
  else if (parsed[3] = 'D') then
   begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.adresa;
+   TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
 
    HV.SetDirection(parsed[4] = '1',
@@ -368,7 +368,7 @@ begin
    HV.stav.funkce := Func;
 
    GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.adresa;
+   TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
    HV.StavFunctionsToSlotFunctions(TTrakce.Callback(PanelLOKResponseOK, LokResponseData),
                                    TTrakce.Callback(PanelLOKResponseErr, LokResponseData),
@@ -378,7 +378,7 @@ begin
  else if (parsed[3] = 'STOP') then
   begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.adresa;
+   TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
 
    HV.EmergencyStop(TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
@@ -448,8 +448,8 @@ begin
  try
   HV := HVDb[TLokResponseData(Data^).addr];
   speed := HV.realSpeed;
-  if (speed > HV.Data.maxRychlost) then
-    speed := HV.Data.maxRychlost;
+  if (speed > HV.Data.maxSpeed) then
+    speed := HV.Data.maxSpeed;
 
   ORTCPServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+
       ';RESP;ok;;'+IntToStr(speed));
@@ -486,7 +486,7 @@ begin
 
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
+     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
 end;
 
 //  or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
@@ -495,7 +495,7 @@ var i:Integer;
 begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';SPD;'+
+     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';SPD;'+
                         IntToStr(HV.realSpeed)+';'+IntToStr(HV.speedStep)+';'+
                         IntToStr(ownConvert.BoolToInt(HV.direction))+';');
 end;
@@ -507,7 +507,7 @@ var i:Integer;
 begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;stolen;Loko ukradeno ovladačem');
+     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';AUTH;stolen;Loko ukradeno ovladačem');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -522,7 +522,7 @@ begin
    state := '0';
 
  for i := 0 to HV.Stav.regulators.Count-1 do
-   ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.adresa)+';TOTAL;'+state);
+   ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';TOTAL;'+state);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -563,7 +563,7 @@ begin
    except
      on E:Exception do
       begin
-       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;Převzetí z centrály se nezdařilo :'+E.Message);
+       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo :'+E.Message);
        HV.Stav.regulators.Remove(reg);
       end;
    end;
@@ -578,7 +578,7 @@ begin
 
      if (timeout > 3000) then
       begin
-       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;not;Převzetí z centrály se nezdařilo');
+       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo');
        HV.Stav.regulators.Remove(reg);
        Exit();
       end;
@@ -587,9 +587,9 @@ begin
    // odpoved na pozadavek o autorizaci rizeni hnaciho vozidla
    // kdyz loko prebirame, je odesilana automaticky
    if (HV.ruc) then
-     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;total;{'+HV.GetPanelLokString()+'}')
+     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;total;{'+HV.GetPanelLokString()+'}')
    else
-     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;ok;{'+HV.GetPanelLokString()+'}');
+     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;ok;{'+HV.GetPanelLokString()+'}');
   end;
 
   // pridani loko do seznamu autorizovanych loko klientem
@@ -611,7 +611,7 @@ begin
    ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
   end;
 
- authLog('reg', 'loco-acquire', TTCPORsRef(Regulator.Data).regulator_user.username, 'Acquire loco '+IntToStr(HV.adresa));
+ authLog('reg', 'loco-acquire', TTCPORsRef(Regulator.Data).regulator_user.username, 'Acquire loco '+IntToStr(HV.addr));
  Self.SendExpectedSpeed(Regulator, HV);
  Self.SendPredictedSignal(Regulator, HV);
 end;
@@ -626,7 +626,7 @@ begin
   begin
    if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.regulators.Count > 0)) then
     begin
-     authLog('reg', 'loco-release', '', 'Release loco '+IntToStr(HVDb[addr].adresa));
+     authLog('reg', 'loco-release', '', 'Release loco '+IntToStr(HVDb[addr].addr));
      HVDb[addr].RemoveRegulator(reg);
     end;
   end;
@@ -646,21 +646,21 @@ procedure TTCPRegulator.RemoveLok(Regulator:TIdContext; HV:THV; info:string);
 begin
  HV.RemoveRegulator(Regulator);
  TTCPORsRef(Regulator.Data).regulator_loks.Remove(HV);
- ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.adresa)+';AUTH;release;'+info);
+ ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;release;'+info);
  ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
- authLog('reg', 'loco-release', TTCPORsRef(Regulator.Data).regulator_user.username, 'Release loco '+IntToStr(HV.adresa));
+ authLog('reg', 'loco-release', TTCPORsRef(Regulator.Data).regulator_user.username, 'Release loco '+IntToStr(HV.addr));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPRegulator.SendExpectedSpeed(reg: TIdContext; HV: THV);
 begin
- ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.adresa)+';EXPECTED-SPEED;'+HV.ExpectedSpeedStr());
+ ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.addr)+';EXPECTED-SPEED;'+HV.ExpectedSpeedStr());
 end;
 
 procedure TTCPRegulator.SendPredictedSignal(reg: TIdContext; HV: THV);
 begin
- ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.adresa)+';NAV;'+HV.PredictedSignalStr());
+ ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.addr)+';NAV;'+HV.PredictedSignalStr());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

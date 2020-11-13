@@ -180,10 +180,10 @@ var data:THVData;
       Exit();
 
 
-  data.nazev := E_Nazev.Text;
-  data.majitel := E_Majitel.Text;
-  data.oznaceni := E_Oznaceni.Text;
-  data.poznamka := M_Poznamky.Text;
+  data.name := E_Nazev.Text;
+  data.owner := E_Majitel.Text;
+  data.designation := E_Oznaceni.Text;
+  data.note := M_Poznamky.Text;
   if (CB_Trida.ItemIndex = CB_Trida.Items.Count-1) then
     data.typ := THVType.other
   else
@@ -229,8 +229,8 @@ var data:THVData;
   if (Self.OpenHV = nil) then
    begin
      // vytvoreni noveho HV
-     data.maxRychlost := _DEFAUT_MAX_SPEED;
-     data.prechodnost := 0;
+     data.maxSpeed := _DEFAUT_MAX_SPEED;
+     data.transience := 0;
      OblR := ORs[Self.CB_OR.ItemIndex];
      try
        HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
@@ -244,9 +244,9 @@ var data:THVData;
    end else begin
      // neupravovane veci jednoduse zkopirujeme
      data.funcVyznam := Self.OpenHV.Data.funcVyznam;
-     data.maxRychlost := Self.OpenHV.Data.maxRychlost;
+     data.maxSpeed := Self.OpenHV.Data.maxSpeed;
      data.funcType := Self.OpenHV.Data.funcType;
-     data.prechodnost := Self.OpenHV.data.prechodnost;
+     data.transience := Self.OpenHV.data.transience;
 
      // update HV
      Self.OpenHV.data := data;
@@ -347,11 +347,11 @@ var data:THVData;
   data := Self.OpenHV.data;
   stav := Self.OpenHV.stav;
 
-  Self.E_Nazev.Text := data.Nazev;
-  Self.E_Oznaceni.Text := data.Oznaceni;
-  Self.E_Majitel.Text := data.Majitel;
-  Self.E_Addr.Text := IntToStr(Self.OpenHV.adresa);
-  Self.M_Poznamky.Text := data.Poznamka;
+  Self.E_Nazev.Text := data.name;
+  Self.E_Oznaceni.Text := data.designation;
+  Self.E_Majitel.Text := data.owner;
+  Self.E_Addr.Text := IntToStr(Self.OpenHV.addr);
+  Self.M_Poznamky.Text := data.note;
   if (data.typ = THVType.other) then
     Self.CB_trida.ItemIndex := CB_Trida.Items.Count-1
   else
@@ -376,7 +376,7 @@ var data:THVData;
 
   ORs.FillCB(Self.CB_OR, stav.stanice);
 
-  F_HVEdit.Caption := 'HV '+IntToStr(Self.OpenHV.adresa);
+  F_HVEdit.Caption := 'HV '+IntToStr(Self.OpenHV.addr);
  end;
 
 procedure TF_HVEdit.NewHVOpenForm();

@@ -54,7 +54,7 @@ begin
 
    LI := Self.LV.Items.Add;
    LI.Caption := IntToStr(i);
-   LI.Data := Pointer(Integer(HVDb[i].adresa));
+   LI.Data := Pointer(Integer(HVDb[i].addr));
 
    for j := 0 to Self.LV.Columns.Count-2 do
      LI.SubItems.Add('');
@@ -100,11 +100,11 @@ var line:Integer;
   stav := HV.stav;
   slot := HV.Slot;
 
-  Self.LV.Items[line].Caption := IntToStr(HV.adresa);
-  Self.LV.Items[line].SubItems[0] := data.Nazev;
-  Self.LV.Items[line].SubItems[1] := data.Oznaceni;
-  Self.LV.Items[line].SubItems[2] := data.Majitel;
-  Self.LV.Items[line].SubItems[3] := data.Poznamka;
+  Self.LV.Items[line].Caption := IntToStr(HV.addr);
+  Self.LV.Items[line].SubItems[0] := data.name;
+  Self.LV.Items[line].SubItems[1] := data.designation;
+  Self.LV.Items[line].SubItems[2] := data.owner;
+  Self.LV.Items[line].SubItems[3] := data.note;
 
   case (data.typ) of
    THVType.other   : Self.LV.Items[line].SubItems[4] := 'jiný';
@@ -115,7 +115,7 @@ var line:Integer;
    THVType.car     : Self.LV.Items[line].SubItems[4] := 'vůz';
   end;//case
 
-  Self.LV.Items[line].SubItems[5] := IntToStr(data.prechodnost);
+  Self.LV.Items[line].SubItems[5] := IntToStr(data.transience);
 
   case (stav.StanovisteA) of
    lichy : Self.LV.Items[line].SubItems[6] := 'lichý';
@@ -130,7 +130,7 @@ var line:Integer;
   else
     Self.LV.Items[line].SubItems[7] := '';
 
-  Self.LV.Items[line].SubItems[8] := IntToStr(data.maxRychlost) + ' km/h';
+  Self.LV.Items[line].SubItems[8] := IntToStr(data.maxSpeed) + ' km/h';
 
   if (stav.train > -1) then
     Self.LV.Items[line].SubItems[19] := Trains.GetTrainNameByIndex(stav.train)
@@ -217,9 +217,9 @@ begin
  LI := Self.LV.Items.Insert(line);
 
  GetMem(addr, 3);
- Integer(addr^) := HV.adresa;
+ Integer(addr^) := HV.addr;
  LI.Data := addr;
- LI.Caption := IntToStr(HV.adresa);    // = adresa
+ LI.Caption := IntToStr(HV.addr);    // = adresa
 
  for i := 0 to Self.LV.Columns.Count-1 do
   LI.Subitems.Add('');

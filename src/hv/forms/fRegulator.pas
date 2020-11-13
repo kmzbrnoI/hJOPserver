@@ -243,8 +243,8 @@ begin
  Self.L_speed.Caption  := IntToStr(OpenHV.realSpeed);
 
  RG_Smer.ItemIndex := Integer(OpenHV.direction);
- Self.L_address.Caption := IntToStr(OpenHV.Adresa);
- Self.Caption := OpenHV.Nazev+' ('+OpenHV.data.Oznaceni+') : '+IntToStr(OpenHV.adresa);
+ Self.L_address.Caption := IntToStr(OpenHV.addr);
+ Self.Caption := OpenHV.name+' ('+OpenHV.data.designation+') : '+IntToStr(OpenHV.addr);
  B_PrevzitLoko.Enabled := not OpenHV.acquired or OpenHV.stav.trakceError;
  B_OdhlLoko.Enabled := OpenHV.acquired;
  CHB_Total.Checked := OpenHV.ruc;
@@ -417,7 +417,7 @@ begin
  for i := 0 to Self._MAX_FORMS-1 do
   begin
    if (Self.forms.data[i].OpenHV = nil) then continue;
-   if (Self.forms.data[i].OpenHV.adresa = addr) then
+   if (Self.forms.data[i].OpenHV.addr = addr) then
      Exit(Self.forms.data[i]);
   end;//for
 end;

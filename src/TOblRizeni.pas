@@ -1405,6 +1405,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.PanelHVAdd(Sender:TIDContext; str:string);
+var HV: THV;
 begin
  //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
@@ -1414,7 +1415,7 @@ begin
   end;
 
  try
-   HVDb.Add(str, Self);
+   HV := HVDb.Add(str, Self);
  except
    on e:Exception do
     begin
@@ -1423,7 +1424,7 @@ begin
     end;
  end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Loko přidáno');
+ Self.SendLn(Sender, 'HV;ADD;'+HV.addrStr+';OK');
 end;
 
 procedure TOR.PanelHVRemove(Sender:TIDContext; addr:Integer);
@@ -1619,7 +1620,7 @@ begin
      for i := 0 to data.Count-1 do
       begin
        HV := HVDb[StrToInt(data[i])];
-       line := line + '[' + IntToStr(HV.adresa) + '|' + HV.GetToken() + ']';
+       line := line + '[' + IntToStr(HV.addr) + '|' + HV.GetToken() + ']';
       end;//for i
      Self.SendLn(Sender, line);
 

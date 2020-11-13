@@ -70,8 +70,8 @@ type
      procedure SaveData(const dirname:string);
      procedure SaveState(const statefn:string);
 
-     procedure Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject); overload;
-     procedure Add(panel_str:string; SenderOR:TObject); overload;
+     function Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject): THV; overload;
+     function Add(panel_str:string; SenderOR:TObject): THV; overload;
      procedure Remove(addr:Word);
 
      procedure RemoveRegulator(conn:TIDContext);
@@ -179,11 +179,11 @@ begin
 
      if (aHV = nil) then continue;     
 
-     if (Self.HVs[aHV.adresa] <> nil) then
+     if (Self.HVs[aHV.addr] <> nil) then
       begin
        FreeAndNil(aHv);
       end else begin
-       Self.HVs[aHV.adresa] := aHV;
+       Self.HVs[aHV.addr] := aHV;
       end;
     end;//for sect in sections
  except
@@ -279,7 +279,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject);
+function THVDb.Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject): THV;
 var i, index:Integer;
     stav:THVStav;
 begin
@@ -331,10 +331,12 @@ begin
   end;
 
  // aktualizujeme tabulky:
- HVTableData.AddHV(Self.HVs[addr].index, Self.HVs[addr])
+ HVTableData.AddHV(Self.HVs[addr].index, Self.HVs[addr]);
+
+ Result := Self.HVs[addr];
 end;
 
-procedure THVDb.Add(panel_str:string; SenderOR:TObject);
+function THVDb.Add(panel_str:string; SenderOR:TObject): THV;
 var HV:THV;
     index, i:Integer;
 begin
@@ -349,22 +351,22 @@ begin
     end;//on e:Exception
  end;
 
- if (Self[HV.adresa] <> nil) then
+ if (Self[HV.addr] <> nil) then
   begin
-   raise Exception.Create('HV '+IntToStr(HV.adresa)+' již existuje');
+   raise Exception.Create('HV '+IntToStr(HV.addr)+' již existuje');
    HV.Free();
    Exit();
   end;
 
- Self.HVs[HV.adresa] := HV;
+ Self.HVs[HV.addr] := HV;
 
  // ------- update indexu: ------
 
  // najdeme nejblizsi spodni index
  index := -1;
- if (HV.adresa > 0) then
+ if (HV.addr > 0) then
   begin
-   for i := HV.adresa-1 downto 0 do
+   for i := HV.addr-1 downto 0 do
     begin
      if (Self.HVs[i] <> nil) then
       begin
@@ -378,15 +380,17 @@ begin
  HV.Index := index+1;
 
  // vsem HV nad nasim hv zvysime index o 1
- if (HV.adresa < _MAX_ADDR-1) then
+ if (HV.addr < _MAX_ADDR-1) then
   begin
-   for i := HV.adresa+1 to _MAX_ADDR-1 do
+   for i := HV.addr+1 to _MAX_ADDR-1 do
     if (Self.HVs[i] <> nil) then
       Self.HVs[i].index := Self.HVs[i].index + 1;
   end;//if
 
  // aktualizujeme tabulky:
  HVTableData.AddHV(HV.index, HV);
+
+ Result := HV;
 end;
 
 procedure THVDb.Remove(addr:Word);
@@ -510,7 +514,7 @@ end;
 
 function THVDb.FilenameForLok(hv:THV):string;
 begin
- Result := Self.FilenameForLok(hv.adresa);
+ Result := Self.FilenameForLok(hv.addr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1221,7 +1221,7 @@ begin
    Result := Result + ownConvert.ColorToStr(clAqua) + '|';
 
  for addr in Self.train.HVs do
-   Result := Result + HVDb[addr].Data.Nazev + '|';
+   Result := Result + HVDb[addr].name + '|';
 end;
 
 function TBlkTraTTrain.GeTTrain(): TTrain;

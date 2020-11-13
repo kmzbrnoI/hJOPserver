@@ -1264,8 +1264,8 @@ end;
 
 function TBlkTU.Speed(HV: THV): Cardinal;
 begin
- if (Self.TUSettings.rychlosti.ContainsKey(HV.data.prechodnost)) then
-   Result := Self.TUSettings.rychlosti[HV.data.prechodnost]
+ if (Self.TUSettings.rychlosti.ContainsKey(HV.data.transience)) then
+   Result := Self.TUSettings.rychlosti[HV.data.transience]
  else if (Self.TUSettings.rychlosti.ContainsKey(0)) then
    Result := Self.TUSettings.rychlosti[0]
  else

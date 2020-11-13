@@ -437,7 +437,7 @@ begin
      if (new.Contains(addr)) then
        raise Exception.Create('Duplicitní loko!');
 
-     HVDb[addr].Data.poznamka := hv[3];
+     HVDb[addr].Data.note := hv[3];
      HVDb[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
      HVDb[addr].train := Self.index;
 
@@ -1034,13 +1034,13 @@ begin
      Result := THnaciVozidlo._DEFAUT_MAX_SPEED;
   end else begin
    if (Self.data.maxSpeed > 0) then
-     minimum := Min(Self.data.maxSpeed, HVDb[Self.HVs[0]].Data.maxRychlost)
+     minimum := Min(Self.data.maxSpeed, HVDb[Self.HVs[0]].Data.maxSpeed)
    else
-     minimum := HVDb[Self.HVs[0]].Data.maxRychlost;
+     minimum := HVDb[Self.HVs[0]].Data.maxSpeed;
 
    for addr in Self.HVs do
-     if (HVDb[addr].Data.maxRychlost < minimum) then
-       minimum := HVDb[addr].Data.maxRychlost;
+     if (HVDb[addr].Data.maxSpeed < minimum) then
+       minimum := HVDb[addr].Data.maxSpeed;
 
    Result := minimum;
   end;

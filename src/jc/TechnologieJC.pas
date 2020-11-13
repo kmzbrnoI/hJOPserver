@@ -3288,7 +3288,7 @@ begin
   _JCB_HV_RUC : begin
     Result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
     Result[1] := GetUPOLine('Hnací vozidlo v ručním řízení');
-    Result[2] := GetUPOLine(IntToStr(Bariera.param) + ' : ' + HVDb[Bariera.param].Data.nazev);
+    Result[2] := GetUPOLine(IntToStr(Bariera.param) + ' : ' + HVDb[Bariera.param].name);
   end;
 
   _JCB_HV_NOT_ALL_RUC : begin

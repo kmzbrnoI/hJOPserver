@@ -80,13 +80,13 @@ type
   THVFuncType = (permanent = 0, momentary = 1);
 
   THVData = record
-   nazev: string;
-   majitel: string;
-   oznaceni: string;
-   poznamka: string;
+   name: string;
+   owner: string;
+   designation: string;
+   note: string;
    typ: THVType;
-   maxRychlost: Cardinal;
-   prechodnost: Cardinal;
+   maxSpeed: Cardinal;
+   transience: Cardinal;
 
    POMtake: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
    POMrelease: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
@@ -127,7 +127,7 @@ type
 
   THV = class
    private
-     fadresa: Word; // read-only!
+     faddr: Word; // read-only!
      m_funcDict: TDictionary<string, Integer>; // function description to function number map
      acquiredOk: TCommandCallback; // also used for Update callback
      acquiredErr: TCommandCallback; // also used for Update callback
@@ -169,6 +169,8 @@ type
      procedure BroadcastRegulators(msg: string);
      procedure SendExpectedSpeed();
      procedure SendPredictedSignal();
+
+     function GetAddrStr(): String;
 
    public
     index: Word; // index v seznamu vsech hnacich vozidel
@@ -248,8 +250,9 @@ type
      procedure GetPtState(json:TJsonObject);
      procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
 
-     property adresa: Word read fadresa;
-     property nazev: string read data.nazev;
+     property addr: Word read faddr;
+     property addrStr: String read GetAddrStr;
+     property name: string read data.name;
      property ruc: Boolean read stav.ruc write SetRuc;
      property funcDict: TDictionary<string, Integer> read m_funcDict;
      property train: Integer read stav.train write SetTrain;
@@ -312,7 +315,7 @@ constructor THV.Create(adresa:Word; data:THVData; stav:THVStav);
 begin
  inherited Create();
 
- Self.fadresa := adresa;
+ Self.faddr   := adresa;
  Self.data    := data;
  Self.Stav    := stav;
 
@@ -373,15 +376,15 @@ begin
   try
    addr := StrToInt(section);
    if ((addr < 0) or (addr > 9999)) then raise Exception.Create('Adresa loko mimo rozsah');
-   Self.fadresa := addr;
+   Self.faddr := addr;
 
-   Self.data.Nazev := ini.ReadString(section, 'nazev', section);
-   Self.data.Majitel := ini.ReadString(section, 'majitel', '');
-   Self.data.Oznaceni := ini.ReadString(section, 'oznaceni', section);
-   Self.data.Poznamka := ini.ReadString(section, 'poznamka', '');
+   Self.data.name := ini.ReadString(section, 'nazev', section);
+   Self.data.owner := ini.ReadString(section, 'majitel', '');
+   Self.data.designation := ini.ReadString(section, 'oznaceni', section);
+   Self.data.note := ini.ReadString(section, 'poznamka', '');
    Self.data.typ := THVType(ini.ReadInteger(section, 'trida', 0));
-   Self.data.maxRychlost := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
-   Self.data.prechodnost := ini.ReadInteger(section, 'prechodnost', 0);
+   Self.data.maxSpeed := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
+   Self.data.transience := ini.ReadInteger(section, 'prechodnost', 0);
 
    // POM pri prebirani : (cv,data)(cv,data)(...)...
    str := ini.ReadString(section, 'pom_take', '');
@@ -501,15 +504,15 @@ begin
  try
    ini.WriteString('global', 'version', _LOK_VERSION_SAVE);
 
-   addr := IntToStr(Self.adresa);
+   addr := IntToStr(Self.addr);
    ini.EraseSection(addr);
-   ini.WriteString(addr, 'nazev', Self.data.Nazev);
-   ini.WriteString(addr, 'majitel', Self.data.Majitel);
-   ini.WriteString(addr, 'oznaceni', Self.data.Oznaceni);
-   ini.WriteString(addr, 'poznamka', Self.data.Poznamka);
+   ini.WriteString(addr, 'nazev', Self.data.name);
+   ini.WriteString(addr, 'majitel', Self.data.owner);
+   ini.WriteString(addr, 'oznaceni', Self.data.designation);
+   ini.WriteString(addr, 'poznamka', Self.data.note);
    ini.WriteInteger(addr, 'trida', Integer(Self.data.typ));
-   ini.WriteInteger(addr, 'max_rychlost', Self.data.maxRychlost);
-   ini.WriteInteger(addr, 'prechodnost', Self.data.prechodnost);
+   ini.WriteInteger(addr, 'max_rychlost', Self.data.maxSpeed);
+   ini.WriteInteger(addr, 'prechodnost', Self.data.transience);
 
    // POM pri prebirani
    str := '';
@@ -562,7 +565,7 @@ begin
  if (Self.Stav.train > -1) then
    Self.RecordUseNow();
 
- addr := IntToStr(Self.adresa);
+ addr := IntToStr(Self.addr);
 
  if (Self.Stav.stanice <> nil) then
    ini.WriteString(addr, 'stanice', Self.Stav.stanice.id)
@@ -600,7 +603,7 @@ end;
 // format vystupnich dat: adresa;nazev;majitel;najeto_metru_vpred;najeto_metru_vzad
 function THV.ExportStats():string;
 begin
- Result := IntToStr(Self.adresa) + ';' + Self.data.Nazev + ';' + Self.data.Majitel + ';' +
+ Result := IntToStr(Self.addr) + ';' + Self.data.name + ';' + Self.data.owner + ';' +
            Format('%5.2f', [Self.Stav.traveled_forward]) + ';' +
            Format('%5.2f', [Self.Stav.traveled_backward]) + ';';
 end;
@@ -612,8 +615,8 @@ var i:Integer;
     func:TFunkce;
     pomCV:THVPOMCv;
 begin
- Result := Self.data.Nazev + '|' + Self.data.Majitel + '|' + Self.data.Oznaceni + '|{' + Self.data.Poznamka + '}|' +
-           IntToStr(Self.adresa) + '|' + IntToStr(Integer(Self.data.typ)) + '|';
+ Result := Self.data.name + '|' + Self.data.owner + '|' + Self.data.designation + '|{' + Self.data.note + '}|' +
+           IntToStr(Self.addr) + '|' + IntToStr(Integer(Self.data.typ)) + '|';
 
  if (Self.Stav.train > -1) then
   Result := Result + Trains.GetTrainNameByIndex(Self.Stav.train) + '|'
@@ -670,8 +673,8 @@ begin
    Result := Result + HVFuncTypeToChar(Self.data.funcType[i]);
  Result := Result + '|';
 
- Result := Result + IntToStr(Self.data.maxRychlost) + '|';
- Result := Result + IntToStr(Self.data.prechodnost) + '|';
+ Result := Result + IntToStr(Self.data.maxSpeed) + '|';
+ Result := Result + IntToStr(Self.data.transience) + '|';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -679,7 +682,7 @@ end;
 function THV.PredejStanici(st:TOR):Integer;
 begin
  // zruseni RUC u stare stanice
- Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.adresa));
+ Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.addr));
 
  // zmena stanice
  Self.Stav.stanice := st;
@@ -706,11 +709,11 @@ begin
  ExtractStringsEx(['|'], [], data, str);
 
  try
-  Self.data.Nazev := str[0];
-  Self.data.Majitel := str[1];
-  Self.data.Oznaceni := str[2];
-  Self.data.Poznamka := str[3];
-  Self.fadresa := StrToInt(str[4]);
+  Self.data.name := str[0];
+  Self.data.owner := str[1];
+  Self.data.designation := str[2];
+  Self.data.note := str[3];
+  Self.faddr := StrToInt(str[4]);
   Self.data.typ := THVType(StrToInt(str[5]));
   Self.Stav.StanovisteA := THVStanoviste(StrToInt(str[7]));
 
@@ -781,10 +784,10 @@ begin
    end;
 
   if (str.Count > 17) then
-    Self.data.maxRychlost := StrToInt(str[17]);
+    Self.data.maxSpeed := StrToInt(str[17]);
 
   if (str.Count > 18) then
-    Self.data.prechodnost := StrToInt(str[18]);
+    Self.data.transience := StrToInt(str[18]);
  except
   on e:Exception do
    begin
@@ -820,14 +823,14 @@ begin
  if (Self.stolen) then
   begin
    // loko ukradeno ovladacem
-   Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';MM. '+IntToStr(Self.adresa)+' ('+train+')');
+   Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.addr)+';MM. '+IntToStr(Self.addr)+' ('+train+')');
    Exit();
   end else begin
    if (Self.ruc) then
-     Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.adresa)+';RUČ. '+IntToStr(Self.adresa)+' ('+train+')')
+     Self.Stav.stanice.BroadcastData('RUC;'+IntToStr(Self.addr)+';RUČ. '+IntToStr(Self.addr)+' ('+train+')')
    else
      // loko neni v rucnim rizeni -> oznamit klientovi
-     if (send_remove) then Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.adresa));
+     if (send_remove) then Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.addr));
   end;
 
 end;
@@ -926,7 +929,7 @@ begin
   end;
 
  if (RegCollector.IsLoko(Self)) then
-   RegCollector.LocoChanged(Self, Self.adresa);
+   RegCollector.LocoChanged(Self, Self.addr);
  TCPRegulator.LokUpdateRuc(Self);
 
  // aktualizace informaci do panelu
@@ -959,12 +962,12 @@ procedure THV.GetPtData(json:TJsonObject; includeState:boolean);
 var i, lastFunction:Integer;
     types:string;
 begin
- json['adresa']   := Self.adresa;
- json['nazev']    := Self.data.Nazev;
- json['majitel']  := Self.data.Majitel;
- json['oznaceni'] := Self.data.Oznaceni;
- json['maxRychlost'] := Self.data.maxRychlost;
- if (Self.data.Poznamka <> '') then json['poznamka'] := Self.data.Poznamka;
+ json['adresa']   := Self.addr;
+ json['nazev']    := Self.data.name;
+ json['majitel']  := Self.data.owner;
+ json['oznaceni'] := Self.data.designation;
+ json['maxRychlost'] := Self.data.maxSpeed;
+ if (Self.data.note <> '') then json['poznamka'] := Self.data.note;
 
  case (Self.data.typ) of
   THVType.other   : json['typ'] := 'other';
@@ -1137,7 +1140,7 @@ end;
 
 function THV.NiceName():string;
 begin
- Result := IntToStr(Self.adresa) + ' : ' + Self.data.Nazev + '(' + Self.data.Oznaceni + ')';
+ Result := IntToStr(Self.addr) + ' : ' + Self.data.name + '(' + Self.data.designation + ')';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1232,7 +1235,7 @@ begin
   end;
  if ((Self.stolen) and (not Self.acquiring)) then
   begin
-   writelog('LOKO '+Self.nazev+' ukradena, nenastavuji rychlost', WR_MESSAGE);
+   writelog('LOKO '+Self.name+' ukradena, nenastavuji rychlost', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
@@ -1245,11 +1248,11 @@ begin
  Self.slot.step := speedStep;
 
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
- TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': rychlostní stupeň: ' + IntToStr(speedStep) +
+ TrakceI.Log(llCommands, 'Loko ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) +
              ', směr: ' + IntToStr(ownConvert.BoolToInt(direction)));
 
  try
-   TrakceI.LocoSetSpeed(Self.adresa, Self.slot.step, Self.direction,
+   TrakceI.LocoSetSpeed(Self.addr, Self.slot.step, Self.direction,
                         TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
                         TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
@@ -1285,7 +1288,7 @@ begin
   end;
  if ((Self.stolen) and (not Self.acquiring)) then
   begin
-   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+   writelog('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
@@ -1298,11 +1301,11 @@ begin
 
  Self.stav.funkce[func] := state;
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
- TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': F' + IntToStr(func) +
+ TrakceI.Log(llCommands, 'Loko ' + Self.name + ': F' + IntToStr(func) +
              ': ' + IntToStr(ownConvert.BoolToInt(state)));
 
  try
-   TrakceI.LocoSetSingleFunc(Self.adresa, func, Self.slot.functions,
+   TrakceI.LocoSetSingleFunc(Self.addr, func, Self.slot.functions,
                              TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
                              TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
@@ -1314,7 +1317,7 @@ begin
  end;
 
  TCPRegulator.LokUpdateFunc(Self, Sender);
- RegCollector.LocoChanged(Sender, Self.adresa);
+ RegCollector.LocoChanged(Sender, Self.addr);
  Self.changed := true;
 end;
 
@@ -1331,7 +1334,7 @@ begin
   end;
  if ((Self.stolen) and (not Self.acquiring)) then
   begin
-   writelog('LOKO ' + Self.nazev + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+   writelog('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', WR_MESSAGE);
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
    Exit();
@@ -1354,18 +1357,18 @@ begin
    Exit();
   end;
 
- TrakceI.Log(llCommands, 'Loko ' + Self.nazev + ': změna více funkcí');
+ TrakceI.Log(llCommands, 'Loko ' + Self.name + ': změna více funkcí');
  Self.slot.functions := funcState;
 
  try
-   TrakceI.LocoSetFunc(Self.adresa, funcMask, funcState, ok, err);
+   TrakceI.LocoSetFunc(Self.addr, funcMask, funcState, ok, err);
  except
    if (Assigned(err.callback)) then
      err.callback(Self, err.data);
  end;
 
  TCPRegulator.LokUpdateFunc(Self, Sender);
- RegCollector.LocoChanged(Sender, Self.adresa);
+ RegCollector.LocoChanged(Sender, Self.addr);
  Self.changed := true;
 end;
 
@@ -1383,7 +1386,7 @@ begin
  TrakceI.Callbacks(ok, err, cbOk, cbErr);
 
  try
-   TrakceI.LocoEmergencyStop(Self.adresa,
+   TrakceI.LocoEmergencyStop(Self.addr,
                              TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
                              TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
@@ -1419,7 +1422,7 @@ begin
  if (not Self.stav.trakceError) then Exit();
  Self.stav.trakceError := false;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
 end;
 
 procedure THV.TrakceCallbackErr(Sender:TObject; data:Pointer);
@@ -1429,7 +1432,7 @@ begin
  if (Self.stav.trakceError) then Exit();
  Self.stav.trakceError := true;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
 end;
 
 procedure THV.TrakceCallbackCallEv(cb:PTCb);
@@ -1461,8 +1464,8 @@ end;
 function THV.GetRealSpeed(): Cardinal;
 begin
  Result := TrakceI.Speed(Self.slot.step);
- if (Result > Self.data.maxRychlost) then
-   Result := Self.data.maxRychlost;
+ if (Result > Self.data.maxSpeed) then
+   Result := Self.data.maxSpeed;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1474,7 +1477,7 @@ begin
  if (funcChanged) then
    TCPRegulator.LokUpdateFunc(Self, Sender);
 
- RegCollector.LocoChanged(Sender, Self.adresa);
+ RegCollector.LocoChanged(Sender, Self.addr);
  Self.changed := true;
 
  if ((dirChanged) and (Self.train > -1)) then
@@ -1490,7 +1493,7 @@ end;
 
 procedure THV.TrakceAcquire(ok: TCb; err: TCb);
 begin
- TrakceI.Log(llCommands, 'PUT: Loco Acquire: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'PUT: Loco Acquire: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.RecordUseNow();
  Self.stav.acquiring := true;
  Self.acquiredOk := ok;
@@ -1498,7 +1501,7 @@ begin
  Self.changed := true;
 
  try
-   TrakceI.LocoAcquire(Self.adresa, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
+   TrakceI.LocoAcquire(Self.addr, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
  except
    Self.TrakceAcquiredErr(Self, nil);
  end;
@@ -1560,11 +1563,11 @@ procedure THV.TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
 var state:string;
 begin
  // Everything done
- TrakceI.Log(llCommands, 'Loco Fully Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'Loco Fully Acquired: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.stav.acquired := true;
  Self.stav.acquiring := false;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
 
  if (Self.train > -1) then
    Blky.ChangeUsekWithTrain(Trains[Self.train]);
@@ -1586,10 +1589,10 @@ end;
 
 procedure THV.TrakceAcquiredErr(Sender:TObject; data:Pointer);
 begin
- TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.stav.acquiring := false;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
  if (Assigned(Self.acquiredErr.callback)) then
    Self.acquiredErr.callback(Self, Self.acquiredErr.data);
 end;
@@ -1600,7 +1603,7 @@ end;
 
 procedure THV.TrakceRelease(ok: TCb);
 begin
- TrakceI.Log(llCommands, 'PUT: Loco Release: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'PUT: Loco Release: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.releasedOk := ok;
  Self.Stav.ruc := false;
  Self.RecordUseNow();
@@ -1616,7 +1619,7 @@ procedure THV.TrakceReleasedPOM(Sender:TObject; data:Pointer);
 begin
  // POM done (we do not care is successfully or unsuccessfully)
  try
-   TrakceI.LocoRelease(Self.adresa, TTrakce.Callback(Self.TrakceReleased));
+   TrakceI.LocoRelease(Self.addr, TTrakce.Callback(Self.TrakceReleased));
  except
    Self.TrakceReleased(Self, nil);
  end;
@@ -1624,10 +1627,10 @@ end;
 
 procedure THV.TrakceReleased(Sender:TObject; data:Pointer);
 begin
- TrakceI.Log(llCommands, 'Loco Successfully Released: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'Loco Successfully Released: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.stav.acquired := false;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
  if (Assigned(Self.releasedOk.callback)) then
    Self.releasedOk.callback(Self, Self.releasedOk.data);
 end;
@@ -1651,7 +1654,7 @@ begin
  else
    raise Exception.Create('Invalid POM!');
 
- TrakceI.POMWriteCVs(Self.adresa, toProgram,
+ TrakceI.POMWriteCVs(Self.addr, toProgram,
                      TTrakce.Callback(Self.TrakcePOMOK), TTrakce.Callback(Self.TrakcePOMErr));
 end;
 
@@ -1661,7 +1664,7 @@ begin
    Self.stav.trakceError := false;
  Self.stav.pom := Self.pomTarget;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
  if (Assigned(Self.pomOk.callback)) then
    Self.pomOk.callback(Self, Self.pomOk.data);
 end;
@@ -1671,7 +1674,7 @@ begin
  Self.stav.pom := TPomStatus.error;
  Self.stav.trakceError := true;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
  if (Assigned(Self.pomErr.callback)) then
    Self.pomOk.callback(Self, Self.pomErr.data);
 end;
@@ -1686,13 +1689,13 @@ begin
  if (Self.updating) then
    raise Exception.Create('Update already in progress!');
 
- TrakceI.Log(llCommands, 'PUT: Loco Update Info: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'PUT: Loco Update Info: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.acquiredOk := ok;
  Self.acquiredErr := err;
  Self.stav.updating := true;
 
  try
-   TrakceI.LocoAcquire(Self.adresa, Self.TrakceUpdated, TTrakce.Callback(Self.TrakceUpdatedErr));
+   TrakceI.LocoAcquire(Self.addr, Self.TrakceUpdated, TTrakce.Callback(Self.TrakceUpdatedErr));
  except
    Self.TrakceUpdatedErr(Self, nil);
  end;
@@ -1701,7 +1704,7 @@ end;
 procedure THV.TrakceUpdated(Sender: TObject; LocoInfo:TTrkLocoInfo);
 var slotOld: TTrkLocoInfo;
 begin
- TrakceI.Log(llCommands, 'Loco Updated: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'Loco Updated: '+Self.name+' ('+IntToStr(Self.addr)+')');
 
  slotOld := Self.slot;
  Self.slot := LocoInfo;
@@ -1725,12 +1728,12 @@ end;
 
 procedure THV.TrakceUpdatedErr(Sender:TObject; data:Pointer);
 begin
- TrakceI.Log(llCommands, 'ERR: Loco Not Updated: '+Self.Nazev+' ('+IntToStr(Self.Adresa)+')');
+ TrakceI.Log(llCommands, 'ERR: Loco Not Updated: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.stav.updating := false;
  Self.stav.trakceError := true;
  Self.stav.lastUpdated := Now;
  Self.changed := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
  if (Assigned(Self.acquiredErr.callback)) then
    Self.acquiredErr.callback(Self, Self.acquiredErr.data);
 end;
@@ -1745,7 +1748,7 @@ begin
 
  Self.stav.acquired := false;
  Self.stav.stolen := true;
- RegCollector.LocoChanged(Self, Self.adresa);
+ RegCollector.LocoChanged(Self, Self.addr);
 
  TCPRegulator.LokStolen(Self);
  if (Self.train > -1) then
@@ -1790,7 +1793,7 @@ procedure THV.BroadcastRegulators(msg: string);
 var reg: THVRegulator;
 begin
  for reg in Self.stav.regulators do
-   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.adresa)+';'+msg);
+   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.addr)+';'+msg);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1840,6 +1843,13 @@ end;
 procedure THV.SendPredictedSignal();
 begin
  Self.BroadcastRegulators('NAV;'+Self.PredictedSignalStr());
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function THV.GetAddrStr(): String;
+begin
+ Result := IntToStr(Self.addr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

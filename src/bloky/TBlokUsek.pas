@@ -1190,7 +1190,7 @@ begin
  for addr in TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].HVs do
   begin
    HV := HVDb[addr];
-   str := str + '[' + IntToStr(HV.adresa) + '|' + HV.GetToken() + ']';
+   str := str + '[' + IntToStr(HV.addr) + '|' + HV.GetToken() + ']';
   end;//for i
 
  ORTCPServer.SendLn(SenderPnl, str);
@@ -1208,7 +1208,7 @@ begin
  for addr in TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].HVs do
   begin
    HV := HVDb[addr];
-   str := str + IntToStr(HV.adresa) + '|';
+   str := str + IntToStr(HV.addr) + '|';
   end;//for i
  str := str + '}';
 

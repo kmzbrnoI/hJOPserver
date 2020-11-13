@@ -1298,7 +1298,7 @@ begin
    begin
     str := str + ': ';
     for HV in orRef.regulator_loks do
-      str := str + IntToStr(HV.adresa) + ', ';
+      str := str + IntToStr(HV.addr) + ', ';
     str := LeftStr(str, Length(str)-2);
    end;
 

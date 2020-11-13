@@ -108,8 +108,8 @@ var train:TTrainData;
   Self.LV.Items[line].SubItems[0] := train.name;
 
   if (train.HVs.Count > 0) then
-   Self.LV.Items[line].SubItems[1] := IntToStr(HVDb[train.HVs[0]].adresa) + ' : ' +
-       HVDb[train.HVs[0]].Data.Nazev + ' ('+HVDb[train.HVs[0]].Data.Oznaceni+')'
+   Self.LV.Items[line].SubItems[1] := IntToStr(HVDb[train.HVs[0]].addr) + ' : ' +
+       HVDb[train.HVs[0]].name + ' ('+HVDb[train.HVs[0]].data.designation+')'
   else
    Self.LV.Items[line].SubItems[1] := '-';
 
