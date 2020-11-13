@@ -197,19 +197,6 @@ begin
    Exit();
  end;
 
- if (parsed[3] = 'ASK') then
-  begin
-   // dotaz na existenci hnaciho vozidla
-   if (HV <> nil) then
-    begin
-      ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';FOUND;{'+HV.GetPanelLokString()+'}');
-    end else begin
-      ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';NOT-FOUND');
-    end;
-
-   Exit();
-  end;
-
  if (not Assigned(HV)) then
   begin
    Self.ClientError(Sender, 'Loko neexistuje');

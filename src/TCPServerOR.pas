@@ -160,7 +160,7 @@ uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
       TBlokPrejezd, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
-      TBlokRozp, TBlokIO, ownConvert;
+      TBlokRozp, TBlokIO, ownConvert, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -786,6 +786,7 @@ begin
      TTCPORsRef(AContext.Data).podj_usek := nil;
      TTCPORsRef(AContext.Data).podj_trainid := -1;
     end;
+
  end else if (parsed[1] = 'AC') then
   begin
    if (parsed.Count < 3) then Exit();
@@ -800,7 +801,13 @@ begin
     else
       Self.SendLn(AContext, '-;AC;'+parsed[2]+';ERR;Neplatné id AC');
    end;
-  end;
+ end else if (parsed[1] = 'HV') and (parsed[2] = 'ASK') then begin
+   i := StrToInt(parsed[3]);
+   if (HVDb[i] <> nil) then
+     ORTCPServer.SendLn(AContext, '-;HV;ASK;'+IntToStr(i)+';FOUND;{'+HVDb[i].GetPanelLokString()+'}')
+   else
+     ORTCPServer.SendLn(AContext, '-;HV;ASK;'+IntToStr(i)+';NOT-FOUND');
+ end;
 
 end;
 
@@ -867,18 +874,12 @@ begin
  end else if (parsed[1] = 'MSG') then
    oblr.PanelMessage(ACOntext, parsed[2], parsed[3])
 
- else if (parsed[1] = 'HV-LIST') then
-   oblr.PanelHVList(AContext)
-
  else if (parsed[1] = 'SPR-CHANGE') then
   begin
    parsed.Delete(0);
    parsed.Delete(0);
    oblr.PanelTrainChange(AContext, parsed);
   end
-
- else if (parsed[1] = 'LOK-MOVE-OR') then
-   oblr.PanelMoveLok(AContext, StrToInt(parsed[2]), parsed[3])
 
  else if (parsed[1] = 'MENUCLICK') then
   begin
@@ -891,11 +892,15 @@ begin
  else if (parsed[1] = 'HV') then
   begin
    if (parsed[2] = 'ADD') then
-     oblr.PanelHVAdd(AContext, parsed[3]);
-   if (parsed[2] = 'REMOVE') then
-     oblr.PanelHVRemove(AContext, StrToInt(parsed[3]));
-   if (parsed[2] = 'EDIT') then
-     oblr.PanelHVEdit(AContext, parsed[3]);
+     oblr.PanelHVAdd(AContext, parsed[3])
+   else if (parsed[2] = 'REMOVE') then
+     oblr.PanelHVRemove(AContext, StrToInt(parsed[3]))
+   else if (parsed[2] = 'EDIT') then
+     oblr.PanelHVEdit(AContext, parsed[3])
+   else if (parsed[2] = 'MOVE') then
+     oblr.PanelMoveLok(AContext, StrToInt(parsed[3]), parsed[4])
+   else if (parsed[2] = 'LIST') then
+     oblr.PanelHVList(AContext)
   end
 
  else if (parsed[1] = 'ZAS') then

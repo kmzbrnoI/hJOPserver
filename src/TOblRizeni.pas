@@ -836,7 +836,7 @@ begin
    Exit;
   end;
 
- str := 'HV-LIST;{';
+ str := 'HV;LIST;{';
  for addr := 0 to _MAX_ADDR-1 do
    if ((Assigned(HVDb[addr])) and (HVDb[addr].Stav.stanice = Self)) then
     str := str + '[{' + HVDb[addr].GetPanelLokString(full) + '}]';
@@ -931,35 +931,35 @@ var new: TOR;
 begin
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
   begin
-   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;Přístup odepřen');
+   Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;Přístup odepřen');
    Exit;
   end;
 
  new := ORs.Get(new_or);
  if (new = nil) then
   begin
-   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;Tato OR neexistuje!');
+   Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;Tato OR neexistuje!');
    Exit();
   end;
  if (not Assigned(HVDb[lok_addr])) then
   begin
-   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;HV neexistuje!');
+   Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;HV neexistuje!');
    Exit();
   end;
  if (HVDb[lok_addr].Stav.train > -1) then
   begin
-   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;HV přiřazeno soupravě '+
+   Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;HV přiřazeno soupravě '+
                Trains.GetTrainNameByIndex(HVDb[lok_addr].Stav.train)+'!');
    Exit();
   end;
  if (HVDb[lok_addr].Stav.stanice <> Self) then
   begin
-   Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';ERR;HV nepatří této stanici!');
+   Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;HV nepatří této stanici!');
    Exit();
   end;
 
  HVDb[lok_addr].PredejStanici(new);
- Self.SendLn(Sender, 'LOK-MOVE-OR;'+IntToStr(lok_addr)+';OK');
+ Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';OK');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
