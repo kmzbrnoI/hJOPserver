@@ -591,13 +591,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
+procedure TTrain.SetSpeedDirection(speed:Cardinal; dir:THVStanoviste);
 var addr:Integer;
-    direction:boolean;
+    direction: Boolean;
+    dir_changed: Boolean;
 begin
  if ((TBlk(Self.front).typ = btTU) and (TBlkTU(Self.front).rychUpdate)) then
    TBlkTU(Self.front).rychUpdate := false;
 
+ dir_changed := (Self.direction <> dir);
  Self.data.direction := dir;
  if (Self.speedBuffer = nil) then
   begin
@@ -617,6 +619,8 @@ begin
  for addr in Self.HVs do
   begin
    HVDb[addr].OnExpectedSpeedChange();
+   if (dir_changed) then
+     HVDb[addr].OnPredictedSignalChange();
 
    if (HVDb[addr].ruc) then
     begin
@@ -646,7 +650,6 @@ begin
   (Self.front as TBlkUsek).VlakPresun := -1;
 
  writelog('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
-
  Self.changed := true;
 end;
 
@@ -660,10 +663,7 @@ end;
 procedure TTrain.SetSmer(smer:THVStanoviste);
 var addr: Integer;
 begin
- Self.SetRychlostSmer(Self.data.speed, smer);
-
- for addr in Self.HVs do
-   HVDb[addr].OnPredictedSignalChange();
+ Self.SetSpeedDirection(Self.data.speed, direction);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
