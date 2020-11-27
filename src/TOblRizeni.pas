@@ -2112,7 +2112,7 @@ end;
 
 procedure TOR.ShowDkMenu(panel: TIdContext; root: string; menustr: string);
 begin
- Self.SendLn(panel, 'MENU;'+root+';'+menustr);
+ Self.SendLn(panel, 'MENU;'+root+';{'+menustr+'}');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
