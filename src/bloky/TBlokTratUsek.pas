@@ -682,20 +682,20 @@ begin
     begin
      if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do trati
        if (Self.train.direction <> THVStanoviste.lichy) then
-         Self.train.ChangeSmer();
+         Self.train.ChangeDirection();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
        if (Self.train.direction <> TBlkNav(TBlkTrat(Self.Trat).navLichy).Smer) then
-         Self.train.ChangeSmer();
+         Self.train.ChangeDirection();
      end;
     end;
    if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[TBlkTrat(Self.Trat).GetSettings().Useky.Count-1])) then
     begin
      if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do trati
        if ((Self.train.direction <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
-         Self.train.ChangeSmer();
+         Self.train.ChangeDirection();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
        if (Self.train.direction <> TBlkNav(TBlkTrat(Self.Trat).navSudy).Smer) then
-         Self.train.ChangeSmer();
+         Self.train.ChangeDirection();
      end;
     end;
   end;

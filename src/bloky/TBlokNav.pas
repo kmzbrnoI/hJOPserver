@@ -1333,7 +1333,7 @@ begin
     begin
      // predvidany odjezd neuplynul -> zastavit soupravu
      if (train.wantedSpeed <> 0) then
-       train.SetRychlostSmer(0, Self.NavRel.smer);
+       train.SetSpeedDirection(0, Self.NavRel.smer);
 
      // souprava je na zastavovaci udalosti -> zacit pocitat cas
      if (not train.GetPOdj(Usek).origin_set) then
@@ -1363,22 +1363,22 @@ begin
             begin
               // na konci JC budeme stat
               if ((train.wantedSpeed <> Self.DNjc.data.speedGo) or (train.direction <> Self.NavRel.smer)) then
-                train.SetRychlostSmer(Self.DNjc.data.speedGo, Self.NavRel.smer);
+                train.SetSpeedDirection(Self.DNjc.data.speedGo, Self.NavRel.smer);
             end else begin
               // na konci JC jedeme dal
               if ((train.wantedSpeed <> Self.DNjc.data.speedStop) or (train.direction <> Self.NavRel.smer)) then
-                train.SetRychlostSmer(Self.DNjc.data.speedStop, Self.NavRel.smer);
+                train.SetSpeedDirection(Self.DNjc.data.speedStop, Self.NavRel.smer);
             end;
          end;
 
          TJCNextNavType.trat: begin
            if ((train.wantedSpeed <> Self.DNjc.data.speedGo) or (train.direction <> Self.NavRel.smer)) then
-             train.SetRychlostSmer(Self.DNjc.data.speedGo, Self.NavRel.smer);
+             train.SetSpeedDirection(Self.DNjc.data.speedGo, Self.NavRel.smer);
          end;
 
          TJCNextNavType.zadna: begin
            if ((train.wantedSpeed <> Self.DNjc.data.speedStop) or (train.direction <> Self.NavRel.smer)) then
-             train.SetRychlostSmer(Self.DNjc.data.speedStop, Self.NavRel.smer);
+             train.SetSpeedDirection(Self.DNjc.data.speedStop, Self.NavRel.smer);
           end;
        end;
 
@@ -1387,7 +1387,7 @@ begin
       end else begin
        // neni povolovaci navest -> zastavit LOKO
        if ((train.direction = Self.NavRel.smer) and (train.wantedSpeed <> 0)) then
-         train.SetRychlostSmer(0, Self.NavRel.smer);
+         train.SetSpeedDirection(0, Self.NavRel.smer);
       end;
     end else begin
      // nenalezena jizdni cesta -> muze se jednat o navestidlo v autobloku
@@ -1397,11 +1397,11 @@ begin
            (Self.UsekPred.typ = btTU) and (TBlkTU(Self.UsekPred).InTrat > -1)) then
         begin
          if (Cardinal(train.wantedSpeed) <> TBlkTU(Self.UsekPred).Speed(train)) then
-           train.SetRychlostSmer(TBlkTU(Self.UsekPred).Speed(train), Self.NavRel.smer)
+           train.SetSpeedDirection(TBlkTU(Self.UsekPred).Speed(train), Self.NavRel.smer)
         end else begin
          //  neni povolovaci navest -> zastavit
          if (train.wantedSpeed <> 0) then
-           train.SetRychlostSmer(0, Self.NavRel.smer);
+           train.SetSpeedDirection(0, Self.NavRel.smer);
         end;
       end;
     end;

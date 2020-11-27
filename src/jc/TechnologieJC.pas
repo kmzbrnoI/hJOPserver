@@ -2078,7 +2078,7 @@ var i,j:Integer;
             tuAdd := (trat.GetLastUsek(Self.data.TratSmer) as TBlkTU);
             trat.TrainChangeOR(train, Self.data.TratSmer);
             if (trat.ChangesTrainDir()) then
-              train.ChangeSmer();
+              train.ChangeDirection();
           end;
          end else begin
           if ((not TBlkUsek(Self.lastUsek).IsTrain()) and (trat.BP) and (trat.Smer = Self.data.TratSmer)) then
@@ -2624,7 +2624,7 @@ begin
       end;
     end;
 
-   (Blk as TBlkUsek).train.ChangeSmer();
+   (Blk as TBlkUsek).train.ChangeDirection();
    Self.Log('Obsazen smyckovy usek '+Blk.name+ ' - menim smer loko v souprave '+
       (Blk as TBlkUsek).train.name, WR_SPRPREDAT);
   end;//if

@@ -1038,7 +1038,7 @@ begin
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  train := TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]];
- train.VezmiVlak(TTrakce.Callback(Self.XVezmiVlakOk, SenderPnl), TTrakce.Callback(Self.XVezmiVlakErr, SenderPnl));
+ train.Acquire(TTrakce.Callback(Self.XVezmiVlakOk, SenderPnl), TTrakce.Callback(Self.XVezmiVlakErr, SenderPnl));
 end;
 
 procedure TBlkUsek.MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);

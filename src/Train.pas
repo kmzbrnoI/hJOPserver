@@ -64,8 +64,8 @@ type
      procedure LocoAcquiredErr(Sender: TObject; Data: Pointer);
      procedure AllLocoAcquiredOk(newLoks: TList<Integer>);
 
-     procedure VezmiVlakOk(Sender: TObject; Data: Pointer);
-     procedure VezmiVlakErr(Sender: TObject; Data: Pointer);
+     procedure AcquireOk(Sender: TObject; Data: Pointer);
+     procedure AcquireErr(Sender: TObject; Data: Pointer);
 
      procedure ReleaseAllLoko();
 
@@ -73,7 +73,7 @@ type
 
      procedure HVComErr(Sender:TObject; Data:Pointer);
      procedure SetSpeed(speed:Integer);
-     procedure SetSmer(smer:THVStanoviste);
+     procedure SetDirection(direction:THVStanoviste);
      procedure SetFront(front:TObject);
 
      function IsStolen():boolean;
@@ -92,10 +92,10 @@ type
 
      function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
      procedure UpdateTrainFromPanel(train:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
-     procedure SetRychlostSmer(speed:Cardinal; dir:THVStanoviste);
-     procedure VezmiVlak(ok: TCb; err: TCb);
+     procedure SetSpeedDirection(speed:Cardinal; dir:THVStanoviste);
+     procedure Acquire(ok: TCb; err: TCb);
      procedure UpdateFront();
-     procedure ChangeSmer();
+     procedure ChangeDirection();
      procedure InterChangeStanice(change_ev:Boolean = true);
      procedure SetSpeedBuffer(speedBuffer:PInteger);
      procedure LokDirChanged();
@@ -129,7 +129,7 @@ type
      property station: TObject read data.station write SetOR;
      property speed: Integer read data.speed write SetSpeed;
      property wantedSpeed: Integer read data.wantedSpeed;
-     property direction: THVStanoviste read data.direction write SetSmer;
+     property direction: THVStanoviste read data.direction write SetDirection;
      property stolen: boolean read IsStolen;
      property front: TObject read data.front write SetFront;
      property length: Integer read data.length;
@@ -521,7 +521,7 @@ begin
  Self.data.HVs.Free();
  Self.data.HVs := newLoks;
 
- Self.SetRychlostSmer(Self.speed, Self.direction);
+ Self.SetSpeedDirection(Self.speed, Self.direction);
  Blky.ChangeTrainToTrat(Self);
 
  TBlkUsek(Self.front).Change();
@@ -640,7 +640,7 @@ begin
                             TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
    except
      on E:Exception do
-       AppEvents.LogException(E, 'TTrain.SetRychlostSmer');
+       AppEvents.LogException(E, 'TTrain.SetSpeedDirection');
    end;
   end;
 
@@ -657,11 +657,10 @@ end;
 
 procedure TTrain.SetSpeed(speed:Integer);
 begin
- Self.SetRychlostSmer(speed, Self.data.direction);
+ Self.SetSpeedDirection(speed, Self.data.direction);
 end;
 
-procedure TTrain.SetSmer(smer:THVStanoviste);
-var addr: Integer;
+procedure TTrain.SetDirection(direction:THVStanoviste);
 begin
  Self.SetSpeedDirection(Self.data.speed, direction);
 end;
@@ -687,7 +686,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.VezmiVlak(ok: TCb; err: TCb);
+procedure TTrain.Acquire(ok: TCb; err: TCb);
 var vezmi: ^TVezmi;
 begin
  GetMem(vezmi, sizeof(TVezmi));
@@ -698,10 +697,10 @@ begin
  while ((vezmi^.nextVezmi < Self.HVs.Count) and (not HVDb[Self.HVs[vezmi^.nextVezmi]].stolen)) do
    Inc(vezmi^.nextVezmi);
 
- Self.VezmiVlakOk(Self, vezmi);
+ Self.AcquireOk(Self, vezmi);
 end;
 
-procedure TTrain.VezmiVlakOk(Sender: TObject; Data: Pointer);
+procedure TTrain.AcquireOk(Sender: TObject; Data: Pointer);
 var vezmi: ^TVezmi;
     addr: Integer;
 begin
@@ -710,7 +709,7 @@ begin
  if (vezmi^.nextVezmi >= Self.HVs.Count) then
   begin
    Self.changed := true;
-   Self.SetRychlostSmer(Self.speed, Self.direction);
+   Self.SetSpeedDirection(Self.speed, Self.direction);
    if (Assigned(vezmi^.ok.callback)) then
      vezmi^.ok.callback(Self, vezmi^.ok.data);
    FreeMem(vezmi);
@@ -724,14 +723,14 @@ begin
    Inc(vezmi^.nextVezmi);
 
  try
-   HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.VezmiVlakOk, vezmi),
-                            TTrakce.Callback(Self.VezmiVlakErr, vezmi));
+   HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.AcquireOk, vezmi),
+                            TTrakce.Callback(Self.AcquireErr, vezmi));
  except
-   Self.VezmiVlakErr(Sender, vezmi);
+   Self.AcquireErr(Sender, vezmi);
  end;
 end;
 
-procedure TTrain.VezmiVlakErr(Sender: TObject; Data: Pointer);
+procedure TTrain.AcquireErr(Sender: TObject; Data: Pointer);
 var vezmi: ^TVezmi;
 begin
  vezmi := Data;
@@ -768,7 +767,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // zmena smeru pri naslapu na smyckovy blok
-procedure TTrain.ChangeSmer();
+procedure TTrain.ChangeDirection();
 var addr:Integer;
     tmp:boolean;
 begin
