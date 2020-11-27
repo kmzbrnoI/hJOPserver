@@ -159,7 +159,7 @@ type
     function IsTrainInMoreTUs(train: TTrain):boolean;
 
     procedure CallChangeToTU();
-    procedure UpdateTrainPredict();
+    procedure UpdateTrainPredict(call_prediction: Boolean = true);
     function NavestProtismer(): Integer;
 
     function SameUserControlsBothUvazka():boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
@@ -914,7 +914,7 @@ end;
 // aktualizace predpovidane soupravy na posledni usek trati
 // volano pri uvolneni posledniho useku trati, nebo RBP
 
-procedure TBlkTrat.UpdateTrainPredict();
+procedure TBlkTrat.UpdateTrainPredict(call_prediction: Boolean = true);
 var Blk, last:TBlkTU;
     i:Integer;
 begin
@@ -948,7 +948,7 @@ begin
 
        if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
          last.trainPredict := Self.trainPredict.train;
-       if (Self.navSudy <> nil) then
+       if ((call_prediction) and (Self.navSudy <> nil)) then
          Blky.trainPrediction(Self.navSudy);
   end;
 
@@ -978,7 +978,7 @@ begin
 
        if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
          last.trainPredict := Self.trainPredict.train;
-       if (Self.navLichy <> nil) then
+       if ((call_prediction) and (Self.navLichy <> nil)) then
          Blky.TrainPrediction(Self.navLichy);
   end;
  end;//case

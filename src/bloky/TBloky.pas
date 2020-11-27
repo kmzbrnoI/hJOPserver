@@ -833,8 +833,7 @@ begin
      // zjistime posledni usek jizdni cesty
      Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], TBlk(usek));
 
-     if (usek = startUsek) then
-       break; // ochrana proti JC na ovalu
+     if (usek = startUsek) then Exit();
 
      if ((Usek.typ = btTU) and (TBlkTU(Usek).InTrat > -1)) then
       begin
@@ -850,7 +849,7 @@ begin
 
        // v trati jsou jiz soupravy -> konec predpovidani
        if (trat.stav.trains.Count > 0) then Exit();
-       trat.UpdateTrainPredict();
+       trat.UpdateTrainPredict(false);
 
        case (trat.Smer) of
         TTratSmer.AtoB : Blky.GetBlkByID(trat.GetSettings().Useky[trat.GetSettings().Useky.Count-1], TBlk(usek));
@@ -858,7 +857,7 @@ begin
        end;//case
 
        // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
-       if (usek.trainPredict <> train) then Exit();
+       if ((usek.trainPredict <> train) or (usek = startUsek)) then Exit();
       end;
 
      // do useku vlozime predpovidnou soupravu
