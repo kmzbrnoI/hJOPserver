@@ -974,7 +974,7 @@ begin
    // kontrola rucniho rizeni lokomotiv
    if (Self.typ = TJCType.vlak) then
      for addr in train.HVs do
-       if ((HVDb[addr].stolen) or (HVDb[addr].ruc)) then
+       if ((HVDb[addr].data.typ <> THVType.car) and ((HVDb[addr].stolen) or (HVDb[addr].ruc))) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_RUC, nil, addr));
          flag := true;
@@ -983,7 +983,7 @@ begin
    // pokud jsou jen nektere lokomotivy rizene rucne
    if (flag) then
      for addr in train.HVs do
-       if ((not HVDb[addr].stolen) and (not HVDb[addr].ruc)) then
+       if ((HVDb[addr].data.typ <> THVType.car) and (not HVDb[addr].stolen) and (not HVDb[addr].ruc)) then
         begin
          bariery.Add(Self.JCBariera(_JCB_HV_NOT_ALL_RUC));
          break;
