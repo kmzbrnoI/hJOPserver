@@ -1635,6 +1635,10 @@ begin
  json['delka'] := Self.UsekSettings.Lenght;
  if (Self.UsekSettings.SmcUsek) then json['smyckaUsek'] := Self.UsekSettings.SmcUsek;
  json['zesilovac'] := Self.UsekSettings.Zesil;
+ json['maxSouprav'] := Self.UsekSettings.maxTrains;
+ json['stanicniKolej'] := Self.UsekStav.stanicni_kolej;
+ if (Self.UsekStav.cislo_koleje <> '') then
+   json['cisloKoleje'] := Self.UsekStav.cislo_koleje;
 
  if (includeState) then
    Self.GetPtState(json['blokStav']);

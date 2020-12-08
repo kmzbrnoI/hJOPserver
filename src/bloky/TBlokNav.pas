@@ -1634,6 +1634,10 @@ procedure TBlkNav.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
+ json['symbolTyp'] := Integer(Self.NavRel.SymbolType);
+ json['usek'] := Self.NavRel.UsekID;
+ json['smer'] := Integer(Self.NavRel.smer);
+
  if (includeState) then
    Self.GetPtState(json['blokStav']);
 end;
