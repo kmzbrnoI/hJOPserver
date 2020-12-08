@@ -815,6 +815,9 @@ end;
 procedure THV.UpdateRuc(send_remove:boolean = true);
 var train:string;
 begin
+ if (Self.data.typ = THVType.car) then
+   Exit(); // do not report cars
+
  if (Self.Stav.train > -1) then
   train := Trains[Self.Stav.train].name
  else

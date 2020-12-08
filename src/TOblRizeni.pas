@@ -704,8 +704,8 @@ begin
 
  // zjistime RUC u vsech hnacich vozidel
  for addr := 0 to _MAX_ADDR-1 do
-  if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.stanice = Self)) then
-    HVDb[addr].UpdateRuc(false);
+   if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.stanice = Self)) then
+     HVDb[addr].UpdateRuc(false);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
