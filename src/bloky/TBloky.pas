@@ -180,7 +180,7 @@ var blkset:TBlkSettings;
     blk: TBlk;
     oblr:TOR;
 begin
- if ((Sender as TBlk).typ = btUsek) then
+ if (((Sender as TBlk).typ = btUsek) or ((Sender as TBlk).typ = btTU)) then
   begin
    // pri jakekoliv zmene useku dojde k Change() na vyhybce
    // navaznost: usek -> vyhybka
