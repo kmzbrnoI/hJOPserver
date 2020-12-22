@@ -392,10 +392,13 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlk.GetPtData(json:TJsonObject; includeState:boolean);
+var oblr: TOR;
 begin
  json['nazev'] := Self.name;
  json['id'] := Self.id;
  json['typ'] := TBlk.BlkTypeToStr(Self.typ);
+ for oblr in Self.OblsRizeni do
+   json.A['ors'].Add(oblr.id);
 end;
 
 procedure TBlk.GetPtState(json:TJsonObject);
