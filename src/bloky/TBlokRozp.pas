@@ -86,7 +86,7 @@ type
     //PT:
     procedure GetPtData(json:TJsonObject; includeState:boolean); override;
     procedure GetPtState(json:TJsonObject); override;
-    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
  end;//class TBlkRozp
 
@@ -343,7 +343,7 @@ begin
  end;
 end;
 
-procedure TBlkRozp.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkRozp.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
  if (reqJson.Contains('stav')) then
   begin

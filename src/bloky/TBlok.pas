@@ -121,7 +121,7 @@ type
    // je nutno volat inherited.
    procedure GetPtData(json: TJsonObject; includeState: boolean); virtual;
    procedure GetPtState(json: TJsonObject); virtual;
-   procedure PostPtState(reqJson: TJsonObject; respJson: TJsonObject); virtual;
+   procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); virtual;
 
    function IsInOR(OblR:TObject):boolean;
 
@@ -406,7 +406,7 @@ begin
  // This function should be empty.
 end;
 
-procedure TBlk.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlk.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
  Self.GetPtState(respJson.O['blokStav']);
 end;

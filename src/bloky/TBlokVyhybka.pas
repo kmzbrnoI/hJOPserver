@@ -241,7 +241,7 @@ type
 
     procedure GetPtData(json:TJsonObject; includeState:boolean); override;
     procedure GetPtState(json:TJsonObject); override;
-    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
     class function PolohaToStr(poloha:TVyhPoloha):string;
     class function StrToPoloha(c: string):TVyhPoloha;
@@ -1355,7 +1355,7 @@ begin
  if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
 end;
 
-procedure TBlkVyhybka.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkVyhybka.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
  if (reqJson.Contains('poloha')) then
   begin

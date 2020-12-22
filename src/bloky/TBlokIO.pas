@@ -88,7 +88,7 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: boolean); override;
     procedure GetPtState(json: TJsonObject); override;
-    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
     property isRCSoutput: Boolean read IOsettings.isRCSoutput;
     property isRCSinput: Boolean read IOsettings.isRCSinput;
@@ -402,7 +402,7 @@ begin
  json['activeInput'] := Self.activeInput;
 end;
 
-procedure TBlkIO.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkIO.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
  if (not Self.enabled) then Exit();
 

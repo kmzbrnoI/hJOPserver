@@ -108,7 +108,7 @@ begin
     end;
 
    Blky.GetBlkByID(blokId, Blk);
-   Blk.PostPtState(reqJson['blokStav'], respJson);
+   Blk.PutPtState(reqJson['blokStav'], respJson);
  finally
    re.Free();
  end;

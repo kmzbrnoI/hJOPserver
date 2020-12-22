@@ -275,7 +275,7 @@ type
 
     procedure GetPtData(json:TJsonObject; includeState:boolean); override;
     procedure GetPtState(json:TJsonObject); override;
-    procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
  end;//class TBlkUsek
 
@@ -1684,7 +1684,7 @@ begin
    json['konecJC'] := Integer(Self.UsekStav.KonecJC);
 end;
 
-procedure TBlkUsek.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkUsek.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 var trainStr:string;
     train:Integer;
 begin
