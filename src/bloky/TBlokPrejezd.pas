@@ -980,7 +980,7 @@ function TBlkPrejezd.GetAnulace():boolean;
 var track: TBlkPrjTrack;
 begin
  Result := false;
- if (Self.PrjSettings.RCSInputs.anulaceUse) then
+ if (Self.PrjSettings.RCSInputs.anulaceUse and RCSi.Started) then
   begin
    try
      Result := (RCSi.GetInput(Self.PrjSettings.RCSInputs.Anulace) = isOn);
