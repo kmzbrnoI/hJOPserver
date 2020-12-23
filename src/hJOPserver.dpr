@@ -156,7 +156,8 @@ uses
   TBlokUsekRef in 'bloky\TBlokUsekRef.pas',
   TBlokUsekRefs in 'bloky\TBlokUsekRefs.pas',
   orLighting in 'orLighting.pas',
-  PTEndpointTrain in 'pt\PTEndpointTrain.pas';
+  PTEndpointTrain in 'pt\PTEndpointTrain.pas',
+  IfThenElse in 'helpers\IfThenElse.pas';
 
 {$R *.res}
 
