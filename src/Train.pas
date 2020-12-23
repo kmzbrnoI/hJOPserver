@@ -384,7 +384,6 @@ begin
        ExtractStringsEx(['|'], [], s, hv);
        straddr := hv[4];
        hvobj := json['hvs'].O[straddr];
-       hvobj['addr'] := StrToInt(straddr);
        hvobj['note'] := hv[3];
        hvobj['sta'] := StrToInt(hv[7]);
        hvobj['func'] := hv[8];
@@ -481,7 +480,7 @@ begin
    for addrhv in train.O['hvs'] do
     begin
      hv := addrhv.Value;
-     addr := hv.I['addr'];
+     addr := StrToInt(addrhv.Name);
 
      if (not Assigned(HVDb[addr])) then
        raise Exception.Create('Loko '+IntToStr(addr)+' neexistuje na serveru!');
@@ -1186,6 +1185,7 @@ begin
  json['dirS'] := Self.data.dir_S;
  json['dirL'] := Self.data.dir_L;
 
+ json.A['hvs'];
  for addr in Self.data.HVs do
    json.A['hvs'].Add(addr);
 
@@ -1209,16 +1209,29 @@ begin
 end;
 
 procedure TTrain.PutPtData(reqJson:TJsonObject; respJson:TJsonObject);
-var json: TJsonObject;
-    hvs: TJsonArray;
+var hvs: TList<Integer>;
     hvaddr: Integer;
-    straddr: string;
 begin
- json := reqJson['train'];
- hvs := json.A['hvs'];
- for hvaddr in hvs do
-   json.O['hvs'].O[IntToStr(hvaddr)];
- Self.UpdateTrainFromJson(json, TTrakce.Callback(), TTrakce.Callback());
+ hvs := TList<Integer>.Create();
+
+ if (not reqJson.Contains('name')) then
+   reqJson['name'] := Self.name;
+ if (not reqJson.Contains('hvs')) then
+   for hvaddr in Self.HVs do
+     reqJson.A['hvs'].Add(hvaddr);
+
+ try
+   for hvaddr in reqJson.A['hvs'] do
+     hvs.Add(hvaddr);
+   reqJson.Remove('hvs');
+   for hvaddr in hvs do
+     reqJson.O['hvs'].O[IntToStr(hvaddr)];
+ finally
+   hvs.Free();
+ end;
+
+ Self.UpdateTrainFromJson(reqJson, TTrakce.Callback(), TTrakce.Callback());
+ Self.GetPtData(respJson['train']);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
