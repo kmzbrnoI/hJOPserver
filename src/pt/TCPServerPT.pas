@@ -265,7 +265,7 @@ begin
     end else begin
      case (ARequestInfo.CommandType) of
       hcGET: ;
-      hcPOST, hcPUT: begin
+      hcPOST, hcPUT, hcDELETE: begin
          if ((not ARequestInfo.AuthExists) or (not Self.accessTokens.ContainsKey(ARequestInfo.AuthUsername)) or
              (Self.accessTokens[ARequestInfo.AuthUsername] <> ARequestInfo.AuthPassword)) then
           begin
@@ -364,6 +364,8 @@ begin
                                           received.respJson, received.reqJson);
          hcPUT : received.endpoint.OnPUT(received.AContext, received.ARequestInfo,
                                          received.respJson, received.reqJson);
+         hcDELETE: received.endpoint.OnDELETE(received.AContext, received.ARequestInfo,
+                                              received.respJson, received.reqJson);
        end;
      except
       on Eorig:Exception do

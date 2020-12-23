@@ -17,6 +17,8 @@ type
         var respJson:TJsonObject; const reqJson:TJsonObject); virtual;
       procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject); virtual;
+      procedure OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject); virtual;
 
       function EndpointMatch(path:string):boolean; virtual; abstract;
   end;
@@ -38,6 +40,12 @@ begin
 end;
 
 procedure TPTEndpoint.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject);
+begin
+ PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
+end;
+
+procedure TPTEndpoint.OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject);
 begin
  PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
