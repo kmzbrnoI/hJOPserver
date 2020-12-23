@@ -273,6 +273,7 @@
 			<DCCReference Include="bloky\TBlokUsekRefs.pas"/>
 			<DCCReference Include="orLighting.pas"/>
 			<DCCReference Include="pt\PTEndpointTrain.pas"/>
+			<DCCReference Include="helpers\IfThenElse.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

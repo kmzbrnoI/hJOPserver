@@ -80,6 +80,8 @@ type
      function GetMaxSpeed():Cardinal;
      function GetMaxSpeedStep():Cardinal;
 
+     procedure UpdateTrainFromJson(train:TJsonObject; ok:TCb; err:TCb);
+
    public
 
     changed: Boolean;
@@ -91,7 +93,7 @@ type
      procedure SaveToFile(ini:TMemIniFile; const section:string);
 
      function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
-     procedure UpdateTrainFromPanel(train:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
+     procedure UpdateTrainFromPanel(train:TStrings; usek:TObject; oblr:TObject; ok:TCb; err:TCb);
      procedure SetSpeedDirection(speed:Cardinal; dir:THVStanoviste);
      procedure Acquire(ok: TCb; err: TCb);
      procedure UpdateFront();
@@ -121,6 +123,7 @@ type
      procedure OnExpectedSpeedChange();
 
      procedure GetPtData(json: TJsonObject);
+     procedure PutPtData(reqJson:TJsonObject; respJson:TJsonObject);
 
      property index: Integer read findex;
      property sdata: TTrainData read data;
@@ -156,7 +159,7 @@ implementation
 uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlokUsek, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokNav,
       fRegulator, fMain, TBlokTratUsek, stanicniHlaseniHelper, stanicniHlaseni,
-      TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC;
+      TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -338,11 +341,70 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.UpdateTrainFromPanel(train:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
-var hvs,hv:TStrings;
-    i, j, addr:Integer;
-    new:TTrainHVs;
-    max_func:Integer;
-    s:string;
+var json: TJsonObject;
+    hvs, hv: TStrings;
+    s, straddr: string;
+    hvobj: TJsonObject;
+begin
+ json := TJsonObject.Create();
+ try
+   json['name'] := train[0];
+   json['carsCount'] := train[1];
+   json['note'] := train[2];
+   json['dirL'] := train[3][1] = '1';
+   json['dirS'] := train[3][2] = '1';
+   json['length'] := train[4];
+   json['type'] := train[5];
+   json['station'] := TOR(OblR).id;
+   json['front'] := TBlk(usek).id;
+
+   if (train.Count > 7) then
+     json['stationFrom'] := train[7];
+   if (train.Count > 8) then
+     json['stationTo'] := train[8];
+
+   if (train.Count > 9) then
+     json['announcement'] := (train[9] = '1')
+   else
+     json['announcement'] := TStanicniHlaseni.HlasitTrainTyp(json.S['type']);
+
+   if ((train.Count > 10) and (train[10] <> '')) then
+     json['maxSpeed'] := StrToInt(train[10])
+   else
+     json['maxSpeed'] := 0;
+
+   hvs := TStringList.Create();
+   hv := TStringList.Create();
+   try
+     ExtractStringsEx([']'], ['['], train[6], hvs);
+
+     for s in hvs do
+      begin
+       hv.Clear();
+       ExtractStringsEx(['|'], [], s, hv);
+       straddr := hv[4];
+       hvobj := json['hvs'].O[straddr];
+       hvobj['addr'] := StrToInt(straddr);
+       hvobj['note'] := hv[3];
+       hvobj['sta'] := StrToInt(hv[7]);
+       hvobj['func'] := hv[8];
+      end;
+   finally
+     hvs.Free();
+     hv.Free();
+   end;
+
+   Self.UpdateTrainFromJson(json, ok, err);
+ finally
+   json.Free();
+ end;
+end;
+
+procedure TTrain.UpdateTrainFromJson(train:TJsonObject; ok:TCb; err:TCb);
+var addrhv: TJsonNameValuePair;
+    hv: TJsonObject;
+    i, addr, max_func:Integer;
+    new: TTrainHVs;
     acq: ^TTrainAcquire;
 begin
  if (Self.acquiring) then
@@ -353,53 +415,51 @@ begin
   begin
    if (Trains[i] = nil) then continue;
 
-   if ((Trains[i].name = train[0]) and (Trains[i] <> Self)) then
+   if ((Trains[i].name = train['name']) and (Trains[i] <> Self)) then
     begin
      if (Trains[i].station <> nil) then
-       raise Exception.Create('Souprava '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TOR).Name)
-     else
-       raise Exception.Create('Souprava '+Trains[i].name+' již existuje');
-
-     Exit();
+       raise Exception.Create('Souprava '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TOR).Name);
+     raise Exception.Create('Souprava '+Trains[i].name+' již existuje');
     end;
   end;
 
  try
-  StrToInt(train[0]);
+  StrToInt(train['name']);
  except
    on E:EConvertError do
      raise Exception.Create('Číslo soupravy není validní číslo!');
  end;
 
  Self.changed := true;
+ Self.data.name := train['name'];
 
- Self.data.name := train[0];
- Self.data.carsCount := StrToInt(train[1]);
- Self.data.note := train[2];
- Self.data.dir_L := (train[3][1] = '1');
- Self.data.dir_S := (train[3][2] = '1');
+ if (train.Contains('carsCount')) then
+   Self.data.carsCount := StrToInt(train['carsCount']);
+ if (train.Contains('note')) then
+   Self.data.note := train['note'];
+ if (train.Contains('dirL')) then
+   Self.data.dir_L := train.B['dirL'];
+ if (train.Contains('dirS')) then
+   Self.data.dir_S := train.B['dirS'];
+ if (train.Contains('length')) then
+   Self.data.length := train['length'];
+ if (train.Contains('type')) then
+   Self.data.typ := train['type'];
+ if (train.Contains('station')) then
+   Self.data.station := ORs.Get(train.S['station']);
+ if (train.Contains('front')) then
+   Blky.GetBlkByID(train['front'], TBlk(Self.data.front));
 
- Self.data.length := StrToInt(train[4]);
- Self.data.typ := train[5];
+ if (train.Contains('stationFrom')) then
+   Self.data.stationFrom := ORs.Get(train.S['stationFrom']);
+ if (train.Contains('stationTo')) then
+   Self.data.stationTo := ORs.Get(train.S['stationTo']);
 
- Self.data.station := OblR;
- Self.data.front := Usek;
+ if (train.Contains('announcement')) then
+   Self.data.announcement := train['announcement'];
 
- if (train.Count > 7) then
-   Self.data.stationFrom := ORs.Get(train[7]);
-
- if (train.Count > 8) then
-   Self.data.stationTo := ORs.Get(train[8]);
-
- if (train.Count > 9) then
-   Self.data.announcement := (train[9] = '1')
- else
-   Self.data.announcement := TStanicniHlaseni.HlasitTrainTyp(Self.typ);
-
- if ((train.Count > 10) and (train[10] <> '')) then
-   Self.data.maxSpeed := StrToInt(train[10])
- else
-   Self.data.maxSpeed := 0;
+ if (train.Contains('maxSpeed')) then
+   Self.data.maxSpeed := StrToInt(train['maxSpeed']);
 
  if ((Self.wantedSpeed = 0) and (Self.data.dir_L xor Self.data.dir_S)) then
   begin
@@ -413,20 +473,15 @@ begin
      HVDb[addr].OnPredictedSignalChange();
   end;
 
- hvs := TStringList.Create();
- hv := TStringList.Create();
+ if (train.O['hvs'].Count > _MAX_TRAIN_HV) then
+   raise Exception.Create('Překročen maximální počet hnacích vozidel na soupravě');
+
  new := TList<Integer>.Create();
  try
-   ExtractStringsEx([']'], ['['], train[6], hvs);
-
-   if (hvs.Count > _MAX_TRAIN_HV) then
-     raise Exception.Create('Překročen maximální počet hnacích vozidel na soupravě');
-
-   for s in hvs do
+   for addrhv in train.O['hvs'] do
     begin
-     hv.Clear();
-     ExtractStringsEx(['|'], [], s, hv);
-     addr := StrToInt(hv[4]);
+     hv := addrhv.Value;
+     addr := hv.I['addr'];
 
      if (not Assigned(HVDb[addr])) then
        raise Exception.Create('Loko '+IntToStr(addr)+' neexistuje na serveru!');
@@ -437,13 +492,19 @@ begin
      if (new.Contains(addr)) then
        raise Exception.Create('Duplicitní loko!');
 
-     HVDb[addr].Data.note := hv[3];
-     HVDb[addr].Stav.StanovisteA := THVStanoviste(StrToInt(hv[7]));
+     if (hv.Contains('note')) then
+       HVDb[addr].Data.note := hv['note'];
+     if (hv.Contains('sta')) then
+       HVDb[addr].Stav.StanovisteA := THVStanoviste(hv.I['sta']);
+
      HVDb[addr].train := Self.index;
 
-     max_func := Min(System.Length(hv[8]), _HV_FUNC_MAX);
-     for j := 0 to max_func do
-       HVDb[addr].Stav.funkce[j] := (hv[8][j+1] = '1');
+     if (hv.Contains('func')) then
+      begin
+       max_func := Min(System.Length(hv.S['func']), _HV_FUNC_MAX);
+       for i := 0 to max_func do
+         HVDb[addr].Stav.funkce[i] := (hv.S['func'][i+1] = '1');
+      end;
 
      new.Add(addr);
     end;
@@ -459,9 +520,6 @@ begin
  except
    new.Free();
  end;
-
- hvs.Free();
- hv.Free();
 end;
 
 procedure TTrain.LocoAcquiredOk(Sender: TObject; Data: Pointer);
@@ -1148,6 +1206,19 @@ begin
 
  for blkId in Self.data.podj.Keys do
    Self.data.podj[blkId].GetPtData(json.O['podj'].O[IntToStr(blkId)]);
+end;
+
+procedure TTrain.PutPtData(reqJson:TJsonObject; respJson:TJsonObject);
+var json: TJsonObject;
+    hvs: TJsonArray;
+    hvaddr: Integer;
+    straddr: string;
+begin
+ json := reqJson['train'];
+ hvs := json.A['hvs'];
+ for hvaddr in hvs do
+   json.O['hvs'].O[IntToStr(hvaddr)];
+ Self.UpdateTrainFromJson(json, TTrakce.Callback(), TTrakce.Callback());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

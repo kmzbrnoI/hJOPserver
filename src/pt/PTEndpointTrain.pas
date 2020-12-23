@@ -139,7 +139,13 @@ end;
 procedure TPTEndpointTrain.OnPUTTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
 begin
- PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Unupported', 'Tato funkce zatím není podporována');
+ if (not reqJson.Contains('train')) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce train');
+   Exit();
+  end;
+
+ train.PutPtData(reqJson.O['train'], respJson);
 end;
 
 procedure TPTEndpointTrain.OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -147,6 +153,12 @@ procedure TPTEndpointTrain.OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTP
 var podj: TPodj;
     blk: TBlk;
 begin
+ if (not reqJson.Contains('podj')) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce podj');
+   Exit();
+  end;
+
  podj := nil;
  try
    try
