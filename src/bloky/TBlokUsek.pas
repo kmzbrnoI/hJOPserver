@@ -970,7 +970,7 @@ begin
   begin
    if (Self.UsekStav.vlakPresun = TTCPORsRef(Sender.Data).train_menu_index) then
      Self.UsekStav.VlakPresun := -1;
-   TrainDb.Trains.RemoveTrain(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
+   TrainDb.Trains.Remove(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
   end;
 end;
 
@@ -983,7 +983,7 @@ begin
 
  if (Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(Sender.Data).train_menu_index]]).Count = 1) then
   begin
-   TrainDb.Trains.RemoveTrain(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
+   TrainDb.Trains.Remove(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava odstraněna');
   end else begin
    Self.RemoveTrain(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);

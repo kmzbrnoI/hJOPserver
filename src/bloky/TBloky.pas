@@ -675,7 +675,7 @@ var traini: Integer;
          begin
           for traini in usek.trains do
             if (Self.GetBlkWithTrain(Trains[traini]).Count = 1) then
-              Trains.RemoveTrain(traini);
+              Trains.Remove(traini);
 
           if (ABlist.IsUsekInAnyABJC(usek.id)) then
             usek.Zaver := TZaver.ab

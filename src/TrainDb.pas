@@ -31,8 +31,9 @@ type
       procedure LoadData(const filename:string);
       procedure SaveData(const filename:string);
 
-      procedure AddTrainFromPanel(spr:TStrings; usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
-      procedure RemoveTrain(index:Integer);
+      function Add(train: TStrings; usek: TObject; oblr: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain; overload;
+      function Add(train: TJsonObject; ok: TCb; err: TCb): TTrain; overload;
+      procedure Remove(index:Integer);
 
       function GetTrainNameByIndex(index:Integer):string;
       function GetTrainIndexByName(name:string):Integer;
@@ -173,14 +174,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrainDb.AddTrainFromPanel(spr:TStrings; Usek:TObject; OblR:TObject; sprUsekIndex:Integer; ok: TCb; err: TCb);
+function TTrainDb.Add(train: TStrings; usek: TObject; oblr: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain;
 var i:Integer;
 begin
  i := Self.GetEmptySpaceForTrain();
 
  try
-  Self.trains[i] := TTrain.Create(spr, Usek, i, OblR, ok, err);
-  if (Assigned(Usek)) then          // toto musi byt tady, nikoliv v konstruktoru
+  Self.trains[i] := TTrain.Create(train, i, usek, oblr, ok, err);
+  if (Assigned(usek)) then          // toto musi byt tady, nikoliv v konstruktoru
    begin
     (Usek as TBlkUsek).AddTrain(sprUsekIndex, i);
     (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
@@ -188,19 +189,52 @@ begin
 
   Self.trains[i].OnPredictedSignalChange();
   Self.trains[i].OnExpectedSpeedChange();
+  Result := Self.trains[i];
  except
   on E: Exception do
    begin
-    FreeAndNil(Self.trains[i]);
+    if (Assigned(Self.trains[i])) then
+      FreeAndNil(Self.trains[i]);
     TrainTableData.reload := true;
-    raise Exception.Create(E.Message);
+    raise;
+   end;
+ end;
+end;
+
+function TTrainDb.Add(train: TJsonObject; ok: TCb; err: TCb): TTrain;
+var i: Integer;
+    usek: TBlk;
+begin
+ i := Self.GetEmptySpaceForTrain();
+ Blky.GetBlkByID(train['front'], usek);
+ if (train.Contains('createPos')) then
+   train.I['createPos'] := 0;
+
+ try
+  Self.trains[i] := TTrain.Create(train, i, ok, err);
+  if (Assigned(usek)) then          // toto musi byt tady, nikoliv v konstruktoru
+   begin
+    (usek as TBlkUsek).AddTrain(train.I['createPos'], i);
+    (usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
+   end;
+
+  Self.trains[i].OnPredictedSignalChange();
+  Self.trains[i].OnExpectedSpeedChange();
+  Result := Self.trains[i];
+ except
+  on E: Exception do
+   begin
+    if (Assigned(Self.trains[i])) then
+      FreeAndNil(Self.trains[i]);
+    TrainTableData.reload := true;
+    raise;
    end;
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrainDb.RemoveTrain(index:Integer);
+procedure TTrainDb.Remove(index:Integer);
 begin
  if (not Assigned(Self.trains[index])) then Exit();
 

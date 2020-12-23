@@ -2178,7 +2178,7 @@ begin
     begin
      LI := Self.LV_Soupravy.Items[i];
      if ((LI.Selected) and (LI.Caption <> '')) then
-       Trains.RemoveTrain(LI.Index);
+       Trains.Remove(LI.Index);
     end;
   end;
 end;

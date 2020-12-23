@@ -804,7 +804,7 @@ begin
     begin
      Self.RemoveTrains();
      blks := Blky.GetBlkWithTrain(TrainDb.Trains[old_train]);
-     if (blks.Count = 0) then TrainDb.Trains.RemoveTrain(old_train);
+     if (blks.Count = 0) then TrainDb.Trains.Remove(old_train);
      blks.Free();
     end;
 

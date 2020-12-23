@@ -81,13 +81,15 @@ type
      function GetMaxSpeedStep():Cardinal;
 
      procedure UpdateTrainFromJson(train:TJsonObject; ok:TCb; err:TCb);
+     class procedure PtHVsListToDict(train: TJsonObject);
 
    public
 
     changed: Boolean;
 
-     constructor Create(ini:TMemIniFile; const section:string; index:Integer); overload;
-     constructor Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb); overload;
+     constructor Create(ini: TMemIniFile; const section: string; index: Integer); overload;
+     constructor Create(panelStr: TStrings; index: Integer; usek: TObject; oblr: TObject; ok: TCb; err: TCb); overload;
+     constructor Create(train: TJsonObject; index: Integer; ok: TCb; err: TCb); overload;
      destructor Destroy(); override;
 
      procedure SaveToFile(ini:TMemIniFile; const section:string);
@@ -170,11 +172,25 @@ begin
  Self.LoadFromFile(ini, section);
 end;
 
-constructor TTrain.Create(panelStr:TStrings; Usek:TObject; index:Integer; OblR:TObject; ok: TCb; err: TCb);
+constructor TTrain.Create(panelStr:TStrings; index: Integer; usek:TObject; oblr:TObject; ok: TCb; err: TCb);
 begin
  inherited Create();
  Self.Init(index);
- Self.UpdateTrainFromPanel(panelStr, Usek, OblR, ok, err);
+ Self.UpdateTrainFromPanel(panelStr, usek, oblr, ok, err);
+end;
+
+constructor TTrain.Create(train:TJsonObject; index:Integer; ok: TCb; err: TCb);
+begin
+ inherited Create();
+ Self.Init(index);
+
+ if (not train.Contains('station')) then
+   raise Exception.Create('Vlak musí obsahovat pole "station"!');
+ if (not train.Contains('front')) then
+   raise Exception.Create('Vlak musí obsahovat pole "front"!');
+
+ TTrain.PtHVsListToDict(train);
+ Self.UpdateTrainFromJson(train, ok, err);
 end;
 
 procedure TTrain.Init(index:Integer);
@@ -196,7 +212,7 @@ begin
  Self.data.HVs.Free();
 
  inherited;
-end;//dtor
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1209,29 +1225,33 @@ begin
 end;
 
 procedure TTrain.PutPtData(reqJson:TJsonObject; respJson:TJsonObject);
-var hvs: TList<Integer>;
-    hvaddr: Integer;
+var hvaddr: Integer;
 begin
- hvs := TList<Integer>.Create();
-
  if (not reqJson.Contains('name')) then
    reqJson['name'] := Self.name;
  if (not reqJson.Contains('hvs')) then
    for hvaddr in Self.HVs do
      reqJson.A['hvs'].Add(hvaddr);
 
+ TTrain.PtHVsListToDict(reqJson);
+ Self.UpdateTrainFromJson(reqJson, TTrakce.Callback(), TTrakce.Callback());
+ Self.GetPtData(respJson['train']);
+end;
+
+class procedure TTrain.PtHVsListToDict(train: TJsonObject);
+var hvs: TList<Integer>;
+    hvaddr: Integer;
+begin
+ hvs := TList<Integer>.Create();
  try
-   for hvaddr in reqJson.A['hvs'] do
+   for hvaddr in train.A['hvs'] do
      hvs.Add(hvaddr);
-   reqJson.Remove('hvs');
+   train.Remove('hvs');
    for hvaddr in hvs do
-     reqJson.O['hvs'].O[IntToStr(hvaddr)];
+     train.O['hvs'].O[IntToStr(hvaddr)];
  finally
    hvs.Free();
  end;
-
- Self.UpdateTrainFromJson(reqJson, TTrakce.Callback(), TTrakce.Callback());
- Self.GetPtData(respJson['train']);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

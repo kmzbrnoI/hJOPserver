@@ -37,6 +37,8 @@ type
         var respJson:TJsonObject); override;
       procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject); override;
+      procedure OnPOST(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject); override;
 
       function EndpointMatch(path:string):boolean; override;
 
@@ -45,7 +47,7 @@ type
 implementation
 
 uses PTUtils, JclPCRE, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, TBloky,
-      TBlok, TBlokUsek;
+      TBlok, TBlokUsek, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -183,6 +185,23 @@ begin
    if (podj <> nil) then
      podj.Free();
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TPTEndpointTrain.OnPOST(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+  var respJson:TJsonObject; const reqJson:TJsonObject);
+var train: TTrain;
+begin
+
+ if (not reqJson.Contains('train')) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce train');
+   Exit();
+  end;
+
+ train := Trains.Add(reqJson['train'], TTrakce.Callback(), TTrakce.Callback());
+ train.GetPtData(respJson.O['train']);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

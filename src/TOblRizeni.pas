@@ -866,7 +866,7 @@ begin
  try
   if (TTCPORsRef(Sender.Data).train_new_usek_index > -1) then begin
     // nova souprava
-    Trains.AddTrainFromPanel(
+    Trains.Add(
       trainstr, TTCPORsRef(Sender.Data).train_usek, Self,
       (TTCPORsRef(Sender.Data).train_new_usek_index),
       TTrakce.Callback(Self.PanelTrainChangeOk, Sender),
@@ -874,7 +874,7 @@ begin
     );
   end else begin
 
-   // editace soupravy
+   // uprava soupravy
    usek := (TTCPORsRef(Sender.Data).train_usek as TBlkUsek);
    train := TTCPORsRef(Sender.Data).train_edit;
 
@@ -1395,7 +1395,7 @@ begin
 
  if ((Trains[train_index] <> nil) and (Trains[train_index].station = Self)) then
   begin
-   Trains.RemoveTrain(train_index);
+   Trains.Remove(train_index);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava smazána');
    Exit();
   end;
