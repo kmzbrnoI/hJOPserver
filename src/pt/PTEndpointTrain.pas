@@ -39,6 +39,8 @@ type
         var respJson:TJsonObject; const reqJson:TJsonObject); override;
       procedure OnPOST(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject); override;
+      procedure OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject); override;
 
       function EndpointMatch(path:string):boolean; override;
 
@@ -193,7 +195,6 @@ procedure TPTEndpointTrain.OnPOST(AContext: TIdContext; ARequestInfo: TIdHTTPReq
   var respJson:TJsonObject; const reqJson:TJsonObject);
 var train: TTrain;
 begin
-
  if (not reqJson.Contains('train')) then
   begin
    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce train');
@@ -202,6 +203,23 @@ begin
 
  train := Trains.Add(reqJson['train'], TTrakce.Callback(), TTrakce.Callback());
  train.GetPtData(respJson.O['train']);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TPTEndpointTrain.OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+  var respJson:TJsonObject; const reqJson:TJsonObject);
+var dict: TDictionary<string, Integer>;
+begin
+ dict := Self.CommonGetPut(AContext, ARequestInfo, respJson);
+ try
+   if (dict['type'] = _ET_TRAIN) then
+     Trains.Remove(Trains[dict['train']].index)
+   else if (dict['type'] = _ET_PODJ) then
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
+ finally
+   dict.Free();
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
