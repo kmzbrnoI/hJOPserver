@@ -110,7 +110,8 @@ implementation
 uses Logging, appEv, fMain,
       PTEndpointBlok, PTEndpointBloky, PTEndpointBlokStav, PTEndpointJC,
       PTEndpointLok, PTEndpointLoks, PTEndpointLokStav, PTEndpointJCs,
-      PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain;
+      PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain, PTEndpointUsers,
+      PTEndpointUser;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -185,6 +186,9 @@ begin
  Self.endpoints.Add(TPTEndpointJCStav.Create());
  Self.endpoints.Add(TPTEndpointTrains.Create());
  Self.endpoints.Add(TPTEndpointTrain.Create());
+ Self.endpoints.Add(TPTEndpointUsers.Create());
+ Self.endpoints.Add(TPTEndpointUser.Create());
+ Self.endpoints.Add(TPTEndpointUserAuth.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
@@ -263,17 +267,20 @@ begin
      Self.httpSinkEndpoint(AContext, ARequestInfo, received.respJson);
      received.processed := true;
     end else begin
+
+     if ((received.endpoint.AuthRequired(ARequestInfo.CommandType)) and
+         ((not ARequestInfo.AuthExists) or (not Self.accessTokens.ContainsKey(ARequestInfo.AuthUsername)) or
+         (Self.accessTokens[ARequestInfo.AuthUsername] <> ARequestInfo.AuthPassword))) then
+      begin
+       AResponseInfo.ResponseNo := 401;
+       PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '401', 'Unauthorized',
+                             'Neexitující/neplatný autorizační token');
+       received.processed := true;
+      end;
+
      case (ARequestInfo.CommandType) of
       hcGET: ;
       hcPOST, hcPUT, hcDELETE: begin
-         if ((not ARequestInfo.AuthExists) or (not Self.accessTokens.ContainsKey(ARequestInfo.AuthUsername)) or
-             (Self.accessTokens[ARequestInfo.AuthUsername] <> ARequestInfo.AuthPassword)) then
-          begin
-           AResponseInfo.ResponseNo := 401;
-           PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '401', 'Unauthorized',
-                                 'Neexitující/neplatný autorizační token');
-           received.processed := true;
-          end;
          if ((not received.processed) and (ARequestInfo.ContentType <> _PT_CONTENT_TYPE)) then
           begin
            PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '406', 'Not acceptable',
@@ -310,7 +317,7 @@ begin
     end;
  except
    received.Free();
-   AResponseInfo.ContentText := '{"errors":["title":"Server general error"]}';
+   AResponseInfo.ContentText := '{"errors":[{"title":"Server general error"}]}';
    Exit();
  end;
 

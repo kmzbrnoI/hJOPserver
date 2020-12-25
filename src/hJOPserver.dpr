@@ -157,7 +157,9 @@ uses
   TBlokUsekRefs in 'bloky\TBlokUsekRefs.pas',
   orLighting in 'orLighting.pas',
   PTEndpointTrain in 'pt\PTEndpointTrain.pas',
-  IfThenElse in 'helpers\IfThenElse.pas';
+  IfThenElse in 'helpers\IfThenElse.pas',
+  PTEndpointUsers in 'pt\PTEndpointUsers.pas',
+  PTEndpointUser in 'pt\PTEndpointUser.pas';
 
 {$R *.res}
 

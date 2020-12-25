@@ -215,7 +215,7 @@ begin
  try
    if (dict['type'] = _ET_TRAIN) then
      Trains.Remove(Trains[dict['train']].index)
-   else if (dict['type'] = _ET_PODJ) then
+   else
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
  finally
    dict.Free();

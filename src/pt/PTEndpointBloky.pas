@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses JclPCRE, TBloky, PTUtils, TOblRizeni, TOblsRizeni, TBlok;
+uses TBloky, PTUtils, TOblRizeni, TOblsRizeni, TBlok;
 
 ////////////////////////////////////////////////////////////////////////////////
 

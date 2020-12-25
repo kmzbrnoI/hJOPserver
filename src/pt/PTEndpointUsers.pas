@@ -1,7 +1,7 @@
-unit PTEndpointTrains;
+unit PTEndpointUsers;
 
 {
-  Endpoint PTserveru /trains/.
+  Endpoint PTserveru /users/.
 }
 
 interface
@@ -10,29 +10,29 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
      Generics.Collections;
 
 type
-  TPTEndpointTrains = class(TPTEndpoint)
+  TPTEndpointUsers = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/trains/?$';
+      _ENDPOINT_MATCH_REGEX = '^/users/?$';
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject); override;
 
-      function EndpointMatch(path: string): boolean; override;
+      function EndpointMatch(path:string):boolean; override;
 
   end;
 
 implementation
 
-uses TrainDb;
+uses UserDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPTEndpointTrains.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+procedure TPTEndpointUsers.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
 begin
  try
-   Trains.GetPtData(respJson);
+   UsrDB.GetPtData(respJson);
  finally
 
  end;
@@ -40,7 +40,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointTrains.EndpointMatch(path:string):boolean;
+function TPTEndpointUsers.EndpointMatch(path:string):boolean;
 begin
  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;

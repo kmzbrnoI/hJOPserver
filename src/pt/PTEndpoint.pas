@@ -10,6 +10,9 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects;
 
 type
   TPTEndpoint = class
+    private const
+      _ENDPOINT_MATCH_REGEX = '';
+
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject); virtual;
@@ -20,12 +23,14 @@ type
       procedure OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject); virtual;
 
-      function EndpointMatch(path:string):boolean; virtual; abstract;
+      function EndpointMatch(path: string): boolean; virtual; abstract;
+      function AuthRequired(cmdType: THTTPCommandType): Boolean; virtual;
+      class function PatternMatch(path: string; pattern: string): boolean;
   end;
 
 implementation
 
-uses PTUtils;
+uses PTUtils, JclPCRE;
 
 procedure TPTEndpoint.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
@@ -49,6 +54,23 @@ procedure TPTEndpoint.OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPReques
         var respJson:TJsonObject; const reqJson:TJsonObject);
 begin
  PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
+end;
+
+function TPTEndpoint.AuthRequired(cmdType: THTTPCommandType): Boolean;
+begin
+ Result := (cmdType = hcPOST) or (cmdType = hcPUT) or (cmdType = hcDELETE);
+end;
+
+class function TPTEndpoint.PatternMatch(path: string; pattern: string): boolean;
+var re: TJclRegEx;
+begin
+ re := TJclRegEx.Create();
+ try
+   re.Compile(pattern, false);
+   Result := re.Match(path);
+ finally
+   re.Free();
+ end;
 end;
 
 end.

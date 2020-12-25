@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses JclPCRE, PTUtils, THvDatabase, THnaciVozidlo, ownConvert;
+uses PTUtils, THvDatabase, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 

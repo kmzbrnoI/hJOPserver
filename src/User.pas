@@ -17,7 +17,7 @@ unit User;
 interface
 
 uses IniFiles, Generics.Collections, DCPsha256, SysUtils, Classes,
-     Generics.Defaults, TOblRizeni, Windows;
+     Generics.Defaults, TOblRizeni, Windows, JsonDataObjects;
 
 const
   _SALT_LEN = 24;
@@ -69,6 +69,8 @@ type
      property regulator: boolean read freg write SetReg;
      property fullName: string read GetFullName;
      property salt: string read fsalt;
+
+     procedure GetPtData(json: TJsonObject);
 
      class function ComparePasswd(plain: string; hash: string; salt: string):boolean;
         // check password match; return true iff match
@@ -335,6 +337,33 @@ end;
 function TUser.LoginMatch(username: string; passwordhash: string): Boolean;
 begin
  Result := (username = Self.username) and (Self.PasswordMatch(passwordhash));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TUser.GetPtData(json: TJsonObject);
+var orrights: TPair<string, TORControlRights>;
+begin
+ json['username'] := Self.username;
+ json['firstname'] := Self.firstname;
+ json['lastname'] := Self.lastname;
+ json['root'] := Self.root;
+ json['note'] := Self.note;
+ json['lastlogin'] := Self.lastlogin;
+ json['ban'] := Self.ban;
+ json['regulator'] := Self.regulator;
+
+ json.O['ors'];
+ for orrights in Self.OblR do
+  begin
+   case (orrights.Value) of
+     TORControlRights.read: json['ors'].O[orrights.Key] := 'read';
+     TORControlRights.write: json['ors'].O[orrights.Key] := 'write';
+     TORControlRights.superuser: json['ors'].O[orrights.Key] := 'superuser';
+   else
+     json['ors'].O[orrights.Key] := 'null';
+   end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

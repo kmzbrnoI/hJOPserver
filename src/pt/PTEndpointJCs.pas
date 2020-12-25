@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses JclPCRE, PTUtils, TechnologieJC, TJCDatabase;
+uses PTUtils, TechnologieJC, TJCDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 

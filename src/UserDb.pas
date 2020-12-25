@@ -8,7 +8,7 @@
 interface
 
 uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows,
-     Generics.Defaults, TOblRizeni;
+     Generics.Defaults, TOblRizeni, JsonDataObjects;
 
 type
   TUsrDb = class
@@ -40,6 +40,9 @@ type
 
      function GetUser(index:Integer):TUser; overload;
      function GetUser(username:string):TUser; overload;
+
+     procedure GetPtData(json: TJsonObject);
+
      property count:Integer read GetCount;
      property filenameData:string read ffilenameData;
      property filenameStat:string read ffilenameStat;
@@ -51,7 +54,7 @@ var
 
 implementation
 
-uses Logging, DataUsers, TOblsRizeni, appEv;
+uses Logging, DataUsers, TOblsRizeni, appEv, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -283,6 +286,25 @@ begin
      left := mid + 1;
   end;
  Result := -1;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TUsrDb.GetPtData(json: TJsonObject);
+var user: TUser;
+begin
+ json.A['users'];
+
+ for user in Self.users do
+  begin
+   try
+     user.GetPtData(json.A['users'].AddObject);
+   except
+     on E:Exception do
+       PTUtils.PtErrorToJson(json.A['errors'].AddObject,
+        '500', 'Chyba pri nacitani uzivatele '+user.username, E.Message);
+   end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
