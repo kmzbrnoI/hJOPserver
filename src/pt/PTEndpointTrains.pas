@@ -18,7 +18,7 @@ type
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject); override;
 
-      function EndpointMatch(path:string):boolean; override;
+      function EndpointMatch(path: string): boolean; override;
 
   end;
 
@@ -41,15 +41,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPTEndpointTrains.EndpointMatch(path:string):boolean;
-var re: TJclRegEx;
 begin
- re := TJclRegEx.Create();
- try
-   re.Compile(_ENDPOINT_MATCH_REGEX, false);
-   Result := re.Match(path);
- finally
-   re.Free();
- end;
+ Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

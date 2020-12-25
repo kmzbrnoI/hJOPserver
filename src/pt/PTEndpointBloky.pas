@@ -63,12 +63,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPTEndpointBloky.EndpointMatch(path:string):boolean;
-var re: TJclRegEx;
 begin
- re := TJclRegEx.Create();
- re.Compile(_ENDPOINT_MATCH_REGEX, false);
- Result := re.Match(path);
- re.Free();
+ Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -65,15 +65,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPTEndpointJCStav.EndpointMatch(path:string):boolean;
-var re: TJclRegEx;
 begin
- re := TJclRegEx.Create();
- try
-   re.Compile(_ENDPOINT_MATCH_REGEX, false);
-   Result := re.Match(path);
- finally
-   re.Free();
- end;
+ Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
