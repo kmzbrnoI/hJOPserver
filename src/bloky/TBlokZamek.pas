@@ -10,12 +10,12 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
 type
 
  TBlkZamekStav = record
-  enabled:boolean;
-  klicUvolnen:boolean;
+  enabled:Boolean;
+  klicUvolnen:Boolean;
   nouzZaver:Cardinal;    // tady je ulozeny pocet bloku, ktere mi daly nouzovy zaver
   Zaver:Integer;        // tady je ulozeny pocet bloku, ktere mi daly zaver
   stit:string;
-  porucha:boolean;
+  porucha:Boolean;
  end;
 
  // zamek ma zaver, pokud jakakoliv vyhybka, kterou obsluhuje, ma zaver
@@ -35,7 +35,7 @@ type
 
   private
    ZamekStav:TBlkZamekStav;
-   last_zaver:boolean;      // tady je ulozena posledni hodnota zaveru (aby mohlo byt rozponano, kdy volat Change)
+   last_zaver:Boolean;      // tady je ulozena posledni hodnota zaveru (aby mohlo byt rozponano, kdy volat Change)
 
     procedure MenuUKClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZUKClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -43,17 +43,17 @@ type
     procedure MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    function GetZaver():boolean;
-    function GetNouzZaver():boolean;
-    function IsRightPoloha():boolean;   // vraci true, pokud jsou vyhybky s timto zamkem v poloze pro zamknuti
+    function GetZaver():Boolean;
+    function GetNouzZaver():Boolean;
+    function IsRightPoloha():Boolean;   // vraci true, pokud jsou vyhybky s timto zamkem v poloze pro zamknuti
 
-    procedure SetNouzZaver(new:boolean);
+    procedure SetNouzZaver(new:Boolean);
     procedure SetStit(stit:string);
-    procedure SetPorucha(new:boolean);
-    procedure SetZaver(new:boolean);
+    procedure SetPorucha(new:Boolean);
+    procedure SetZaver(new:Boolean);
 
-    procedure SetKlicUvolnen(new:boolean);
-    procedure PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
+    procedure SetKlicUvolnen(new:Boolean);
+    procedure PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
 
     procedure CallChangeToVyh();
 
@@ -72,7 +72,7 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:boolean = false); override;               // change do zamku je volano pri zmene zaveru jakekoliv vyhybky, kterou zaver obsluhuje
+    procedure Change(now:Boolean = false); override;               // change do zamku je volano pri zmene zaveru jakekoliv vyhybky, kterou zaver obsluhuje
 
 
     //----- zamek own functions -----
@@ -80,11 +80,11 @@ type
     procedure DecreaseNouzZaver(amount:Cardinal);
 
     property Stav:TBlkZamekStav read ZamekStav;
-    property Zaver:boolean read GetZaver write SetZaver;
-    property nouzZaver:boolean read GetNouzZaver write SetNouzZaver;
+    property Zaver:Boolean read GetZaver write SetZaver;
+    property nouzZaver:Boolean read GetNouzZaver write SetNouzZaver;
     property stitek:string read ZamekStav.stit write SetStit;
-    property klicUvolnen:boolean read ZamekStav.klicUvolnen write SetKlicUvolnen;
-    property porucha:boolean read ZamekStav.porucha write SetPorucha;
+    property klicUvolnen:Boolean read ZamekStav.klicUvolnen write SetKlicUvolnen;
+    property porucha:Boolean read ZamekStav.porucha write SetPorucha;
 
     //GUI:
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
@@ -92,7 +92,7 @@ type
     procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
 
-    procedure GetPtData(json: TJsonObject; includeState: boolean); override;
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
 
  end;//class TBlkUsek
@@ -163,7 +163,7 @@ begin
 end;
 
 // change je volan z vyhybky pri zmene zaveru
-procedure TBlkZamek.Change(now:boolean = false);
+procedure TBlkZamek.Change(now:Boolean = false);
 begin
  // porucha zamku -> zrusit postavenou JC
  if ((Self.Zaver) and ((Self.klicUvolnen) or (Self.porucha))) then
@@ -200,7 +200,7 @@ begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkZamek.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
+procedure TBlkZamek.PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
 begin
  if (success) then
   begin
@@ -255,12 +255,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkZamek.GetZaver():boolean;
+function TBlkZamek.GetZaver():Boolean;
 begin
  Result := (Self.ZamekStav.Zaver > 0);
 end;
 
-procedure TBlkZamek.SetZaver(new:boolean);
+procedure TBlkZamek.SetZaver(new:Boolean);
 begin
  if (new) then
   begin
@@ -277,12 +277,12 @@ begin
   end;
 end;
 
-function TBlkZamek.GetNouzZaver():boolean;
+function TBlkZamek.GetNouzZaver():Boolean;
 begin
  Result := (Self.Stav.nouzZaver > 0);
 end;
 
-procedure TBlkZamek.SetNouzZaver(new:boolean);
+procedure TBlkZamek.SetNouzZaver(new:Boolean);
 begin
  if (new) then
   begin
@@ -321,7 +321,7 @@ begin
   end;
 end;
 
-procedure TBlkZamek.SetKlicUvolnen(new:boolean);
+procedure TBlkZamek.SetKlicUvolnen(new:Boolean);
 begin
  if (new <> Self.klicUvolnen) then
   begin
@@ -348,7 +348,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkZamek.SetPorucha(new:boolean);
+procedure TBlkZamek.SetPorucha(new:Boolean);
 begin
  if (Self.ZamekStav.porucha <> new) then
   begin
@@ -361,7 +361,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkZamek.IsRightPoloha():boolean;
+function TBlkZamek.IsRightPoloha():Boolean;
 var list:TBlksList;
     i:Integer;
 begin
@@ -420,7 +420,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkZamek.GetPtData(json: TJsonObject; includeState: boolean);
+procedure TBlkZamek.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
  if (includeState) then

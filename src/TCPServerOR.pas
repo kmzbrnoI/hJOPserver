@@ -80,7 +80,7 @@ type
      procedure ParseOR(AContext: TIdContext; parsed: TStrings);                 // parsing dat s prefixem konkretni oblasti rizeni
      procedure Auth(AContext: TIdContext; parsed: TStrings);                    // pozadavek na autorizaci OR, data se ziskavaji z \parsed
 
-     function IsOpenned():boolean;                                              // je server zapnut?
+     function IsOpenned():Boolean;                                              // je server zapnut?
 
      procedure OnDCCCmdErr(Sender:TObject; Data:Pointer);                       // event chyby komunikace s lokomotivou v automatu
      procedure CheckPing(Sender:TObject);
@@ -104,13 +104,13 @@ type
      procedure Menu(AContext: TIdContext; Blk:TBlk; OblR:TOR; menu:string);
      procedure Potvr(AContext: TIdContext; callback:TPSCallback; stanice:TOR;
                      udalost:string; senders:TBlksList; podminky:TPSPodminky;
-                     free_senders:boolean = true; free_podm:boolean = true);
+                     free_senders:Boolean = true; free_podm:Boolean = true);
      procedure PotvrOrInfo(AContext: TIdContext; mode: string; callback:TPSCallback; stanice:TOR;
                            udalost:string; senders:TBlksList; podminky:TPSPodminky;
-                           free_senders:boolean = true; free_podm:boolean = true);
+                           free_senders:Boolean = true; free_podm:Boolean = true);
      procedure PotvrClose(AContext: TIdContext; msg:string = '');
      procedure PotvrOrInfoClose(AContext: TIdContext; mode: string; msg:string = '');
-     procedure UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
+     procedure UPO(AContext: TIdContext; items:TUPOItems; critical:Boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
      procedure CancelUPO(AContext: TIdContext; ref:TObject);
      procedure POdj(AContext: TIdContext; SenderBlk:TBlk; SenderTrainId:Integer;
                     podj:TPOdj = nil);
@@ -122,7 +122,7 @@ type
      // a prehravani meni jen pokud se pocitadlo mezi z 0 na 1 resp. z 1 na 0.
      //  To je k tomu, aby ruzne OR mohly volat tyto funkce bez dali kontroly nezavisle.
      //  Priority prehravani zvuku resi klient.
-     procedure PlaySound(AContext: TIdContext; code:Integer; loop:boolean = false);
+     procedure PlaySound(AContext: TIdContext; code:Integer; loop:Boolean = false);
      procedure DeleteSound(AContext: TIdContext; code:Integer);
 
      procedure BottomError(AContext: TIdContext; err:string; stanice:string; tech:string);
@@ -134,7 +134,7 @@ type
      procedure SendLn(AContext:TIDContext; str:string);
 
      procedure GUIInitTable();
-     procedure GUIRefreshLine(index:Integer; repaint:boolean = true);
+     procedure GUIRefreshLine(index:Integer; repaint:Boolean = true);
      procedure GUIQueueLineToRefresh(lineindex:Integer);
      procedure GUIRefreshTable();
      procedure GUIRefreshFromQueue();
@@ -147,7 +147,7 @@ type
      function StrToPanelButton(button:string):TPanelButton;
      procedure OnRemoveTrain(train:TTrain);
 
-      property openned:boolean read IsOpenned;
+      property openned:Boolean read IsOpenned;
       property port:Word read fport write fport;
   end;//TPanelTCPClient
 
@@ -542,7 +542,7 @@ procedure TORTCPServer.ParseGlobal(AContext: TIdContext; parsed: TStrings);
 var i, j:Integer;
     tmp:string;
     blk:TBlk;
-    found:boolean;
+    found:Boolean;
     btn:TPanelButton;
     podj: TPOdj;
     oblr:TOR;
@@ -925,7 +925,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORTCPServer.IsOpenned():boolean;
+function TORTCPServer.IsOpenned():Boolean;
 begin
  Result := Self.tcpServer.Active;
 end;
@@ -970,14 +970,14 @@ end;
 
 procedure TORTCPServer.Potvr(AContext: TIdContext;
   callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList;
-  podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
+  podminky:TPSPodminky; free_senders:Boolean = true; free_podm:Boolean = true);
 begin
  Self.PotvrOrInfo(AContext, 'PS', callback, stanice, udalost, senders, podminky, free_senders, free_podm);
 end;
 
 procedure TORTCPServer.PotvrOrInfo(AContext: TIdContext; mode: string;
   callback:TPSCallback; stanice:TOR; udalost:string; senders:TBlksList;
-  podminky:TPSPodminky; free_senders:boolean = true; free_podm:boolean = true);
+  podminky:TPSPodminky; free_senders:Boolean = true; free_podm:Boolean = true);
 var str, station_name: string;
     i:Integer;
 begin
@@ -1035,7 +1035,7 @@ begin
  end;
 end;
 
-procedure TORTCPServer.PlaySound(AContext: TIdContext; code:Integer; loop:boolean = false);
+procedure TORTCPServer.PlaySound(AContext: TIdContext; code:Integer; loop:Boolean = false);
 begin
  if ((not TTCPORsRef(AContext.Data).soundDict.ContainsKey(code)) or (TTCPORsRef(AContext.Data).soundDict[code] = 0)) then
   begin
@@ -1070,7 +1070,7 @@ begin
  writelog(tech + ': ' + stanice + ': ' + err, WR_ERROR);
 end;
 
-procedure TORTCPServer.UPO(AContext: TIdContext; items:TUPOItems; critical:boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
+procedure TORTCPServer.UPO(AContext: TIdContext; items:TUPOItems; critical:Boolean; callbackOK:TNotifyEvent; callbackEsc:TNotifyEvent; ref:TObject);
 var str:string;
     i, j:Integer;
 begin
@@ -1201,7 +1201,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORTCPServer.GUIRefreshLine(index:Integer; repaint:boolean = true);
+procedure TORTCPServer.GUIRefreshLine(index:Integer; repaint:Boolean = true);
 var i:Integer;
     str:string;
     ORPanel:TORPanel;

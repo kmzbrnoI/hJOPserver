@@ -16,7 +16,7 @@ type
  end;
 
  TBlkACState = record
-  enabled: boolean;
+  enabled: Boolean;
   client: TIdContext;
   state: TACState;
   lines: TStrings;
@@ -281,7 +281,7 @@ end;
 
 function TBlkAC.PanelStateString(): string;
 var fg, bg: TColor;
-    flash: boolean;
+    flash: Boolean;
 begin
  Result := inherited;
 

@@ -105,7 +105,7 @@ function GetWriteLogTyp(Typ:Integer):string;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure intWriteLog(Text:string; Typ:integer; multiline:boolean = false);
+procedure intWriteLog(Text:string; Typ:integer; multiline:Boolean = false);
 var LV:TListItem;
     f:TextFile;
     xTime,xDate:string;

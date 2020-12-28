@@ -448,7 +448,7 @@ type
     procedure OnRCSErrClose(Sender:TObject; errMsg:string);
     procedure OnRCSErrStart(Sender:TObject; errMsg:string);
     procedure OnRCSErrStop(Sender:TObject; errMsg:string);
-    procedure OnRCSReady(Sender:TObject; ready:boolean);
+    procedure OnRCSReady(Sender:TObject; ready:Boolean);
 
     procedure UpdateRCSLibsList();
 
@@ -960,8 +960,8 @@ begin
   writelog('----- RCS STOP FAIL - '+errMsg+' -----', WR_ERROR);
 end;
 
-procedure TF_Main.OnRCSReady(Sender:TObject; ready:boolean);
-var started, opened: boolean;
+procedure TF_Main.OnRCSReady(Sender:TObject; ready:Boolean);
+var started, opened: Boolean;
 begin
  try
    started := RCSi.Started;

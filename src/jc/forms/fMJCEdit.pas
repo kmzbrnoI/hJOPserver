@@ -43,7 +43,7 @@ type
     procedure B_VB_RemoveClick(Sender: TObject);
   private
     openMJC:TMultiJC;
-    new:boolean;
+    new:Boolean;
 
      JCs:TList<Integer>;
      vb:TList<Integer>;

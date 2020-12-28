@@ -95,8 +95,8 @@ type
      property HVozidla:THVArray read HVs;
      property default_or:Integer read fdefault_or write fdefault_or;
      property loksDir:string read fLoksDir;
-     property acquiring:boolean read mAcquiring;
-     property releasing:boolean read mReleasing;
+     property acquiring:Boolean read mAcquiring;
+     property releasing:Boolean read mReleasing;
 
      property Items[index : integer] : THV read GetItem; default;
 

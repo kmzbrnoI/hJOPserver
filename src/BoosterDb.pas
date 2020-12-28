@@ -47,7 +47,7 @@ type
       procedure Update();
       procedure SyncStructures();
 
-      function ContainsKey(key:string; ignore:TBooster = nil):boolean;
+      function ContainsKey(key:string; ignore:TBooster = nil):Boolean;
 
       property Items[index : string] : TBooster read GetItem; default;
       property Count : integer read GetCount;
@@ -242,7 +242,7 @@ end;
 
 //controls beeping
 procedure TBoosterDb.ControlBeep();
-var zkrat:boolean;
+var zkrat:Boolean;
     booster:TBooster;
 begin
  if (TrakceI.TrackStatusSafe() <> TTrkStatus.tsOn) then Exit;
@@ -297,7 +297,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBoosterDb.ContainsKey(key:string; ignore:TBooster = nil):boolean;
+function TBoosterDb.ContainsKey(key:string; ignore:TBooster = nil):Boolean;
 begin
  if (Self.db.ContainsKey(key)) then
    Result := (ignore <> Self[key])

@@ -49,7 +49,7 @@ type
      // najde JC, ktera je postavena, ci prave stavena !
      function FindJC(NavestidloBlokID:Integer; Staveni:Boolean = false): TJC; overload;
      function FindOnlyStaveniJC(NavestidloBlokID:Integer): TJC;
-     function IsJC(id:Integer; ignore_index:Integer = -1):boolean;
+     function IsJC(id:Integer; ignore_index:Integer = -1):Boolean;
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
      function FindPostavenaJCWithVyhybka(vyh_id:Integer):TList<TJC>;
@@ -667,7 +667,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsJC(id:Integer; ignore_index:Integer = -1):boolean;
+function TJCDb.IsJC(id:Integer; ignore_index:Integer = -1):Boolean;
 var index:Integer;
 begin
  index := Self.GetJCIndex(id);
@@ -868,7 +868,7 @@ end;
 function TJCDb.IsAnyJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
 var jc: TJC;
     j: Integer;
-    error: boolean;
+    error: Boolean;
 begin
  // startNav musi mit navolenou volbu, aby tato funkce fungovala.
 

@@ -26,7 +26,7 @@ type
     m_funcType: THoukFuncType;
 
      procedure LoadFromDefString(data:string);
-     function IsEnabled():boolean;
+     function IsEnabled():Boolean;
 
      procedure FireEvent(train: TObject);
 
@@ -40,9 +40,9 @@ type
 
      procedure Register();
      procedure Unregister();
-     function CheckTriggerred(Sender:TObject):boolean; // returns true when event triggerred
+     function CheckTriggerred(Sender:TObject):Boolean; // returns true when event triggerred
 
-     property enabled: boolean read IsEnabled;
+     property enabled: Boolean read IsEnabled;
      property sound: string read m_sound;
      property funcType: THoukFuncType read m_funcType;
      property event: TRREv read m_event;
@@ -131,7 +131,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THoukEv.CheckTriggerred(Sender:TObject):boolean;
+function THoukEv.CheckTriggerred(Sender:TObject):Boolean;
 begin
  if (Self.m_event.IsTriggerred(Sender, false)) then
   begin
@@ -145,7 +145,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THoukEv.IsEnabled():boolean;
+function THoukEv.IsEnabled():Boolean;
 begin
  Result := Self.m_event.enabled;
 end;

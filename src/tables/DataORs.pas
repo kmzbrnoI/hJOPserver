@@ -14,7 +14,7 @@ type
     public
 
       procedure LoadToTable();
-      procedure UpdateTable(force:boolean = false);
+      procedure UpdateTable(force:Boolean = false);
 
       constructor Create(LV:TListView);
   end;
@@ -55,7 +55,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORsTableData.UpdateTable(force:boolean = false);
+procedure TORsTableData.UpdateTable(force:Boolean = false);
 var OblR: TOR;
 begin
  for OblR in ORs do

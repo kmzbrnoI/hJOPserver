@@ -22,7 +22,7 @@ type
   end;
 
   TGlobalConfig=class
-   autosave:boolean;
+   autosave:Boolean;
    autosave_period:TTime;
    scale:Cardinal;
    ptAutoStart:Boolean;

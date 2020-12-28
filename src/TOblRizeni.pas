@@ -53,7 +53,7 @@ type
  end;
 
  TPSCallback = procedure (Relief:TObject; Panel:TObject;                        // callback potvrzovaci sekvence
-                          success:boolean) of object;
+                          success:Boolean) of object;
  TBlkCallback = procedure (SenderPnl:TIDContext; SenderOR:TObject;              // callback kliku na dopravni kacelar
                            Button:TPanelButton) of object;
 
@@ -76,7 +76,7 @@ type
 
  // stav OR
  TORStav = record
-  NUZtimer:boolean;                                                             // probiha ruseni useku NUZ?
+  NUZtimer:Boolean;                                                             // probiha ruseni useku NUZ?
   NUZblkCnt:Integer;                                                            // kolik bloku ma zaplych NUZ
   NUZmerCasuID:Integer;                                                         // ID mereni casu NUZ
   ZkratBlkCnt:Integer;                                                          // kolik bloku je ve zkratu (vyuzivano pro prehravani zvuku)
@@ -89,14 +89,14 @@ type
 
  // jedno RCS oblasti rizeni
  TORRCS = class
-  failed:boolean;                                                               // jestli RCS v OR selhalo (nekomunikuje)
-  constructor Create(failed:boolean = false);
+  failed:Boolean;                                                               // jestli RCS v OR selhalo (nekomunikuje)
+  constructor Create(failed:Boolean = false);
  end;
 
  // seznam RCS modulu v OR
  TORRCSs = class
   modules: TObjectDictionary<Cardinal, TORRCS>;
-  failure:boolean;                                                              // jestli doslo k selhani jakohokoliv RCS modulu v OR
+  failure:Boolean;                                                              // jestli doslo k selhani jakohokoliv RCS modulu v OR
   last_failure_time:TDateTime;                                                  // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani RCS modulu pro dispecera)
 
   constructor Create();
@@ -127,12 +127,12 @@ type
 
       // prace s databazi pripojenych panelu:
       procedure PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string);
-      procedure PnlDRemove(Panel:TIdContext; contextDestroyed: boolean = false);
+      procedure PnlDRemove(Panel:TIdContext; contextDestroyed: Boolean = false);
       function PnlDGetRights(Panel:TIdContext):TORControlRights;
       function PnlDGetIndex(Panel:TIdContext):Integer;
 
       procedure NUZTimeOut(Sender:TObject);                                     // callback ubehnuti mereni casu pro ruseni nouzovych zaveru bloku
-      procedure NUZ_PS(Sender:TIdContext; success:boolean);                     // callback potvrzovaci sekvence NUZ
+      procedure NUZ_PS(Sender:TIdContext; success:Boolean);                     // callback potvrzovaci sekvence NUZ
 
       procedure ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string; username:string);
 
@@ -152,7 +152,7 @@ type
       procedure AuthReadToWrite(panel:TIdContext);
       procedure AuthWriteToRead(panel:TIdContext);
 
-      procedure OnHlaseniAvailable(Sender:TObject; available:boolean);
+      procedure OnHlaseniAvailable(Sender:TObject; available:Boolean);
       procedure NUZPrematureZaverRelease(Sender:TObject; data:Integer);
       procedure NUZcancelPrematureEvents();
 
@@ -162,7 +162,7 @@ type
       procedure PanelTrainChangeErr(Sender:TObject; Data:Pointer);
       procedure PanelTrainCreateErr(Sender:TObject; Data:Pointer);
 
-      procedure OsvSet(id:string; state:boolean);
+      procedure OsvSet(id:string; state:Boolean);
 
       procedure DkNUZStart(Sender:TIdContext);
       procedure DkNUZStop(Sender:TIdContext);
@@ -177,7 +177,7 @@ type
     public
 
       stack:TORStack;                                                           // zasobnik povelu
-      changed:boolean;                                                          // jestli doslo ke zmene OR - true znamena aktualizaci tabulky
+      changed:Boolean;                                                          // jestli doslo ke zmene OR - true znamena aktualizaci tabulky
       vb:TList<TObject>;                                                        // seznam variantnich bodu, ktere jsou aktualne "naklikle"; zde je ulozen seznam bloku
       Connected:TList<TORPanel>;                                                // seznam pripojenych panelu
       hlaseni:TStanicniHlaseni;                                                 // technologie stanicnich hlaseni
@@ -189,7 +189,7 @@ type
       procedure LoadStat(ini:TMemIniFile; section:string);
       procedure SaveStat(ini:TMemIniFile; section:string);
 
-      procedure RemoveClient(Panel:TIdContext; contextDestroyed: boolean = false);// smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
+      procedure RemoveClient(Panel:TIdContext; contextDestroyed: Boolean = false);// smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
 
       procedure Update();                                                       // pravidelna aktualizace stavu OR - napr. mereni casu
       procedure DisconnectPanels();                                             // vyhodi vsechny autorizovane panely z teto OR
@@ -211,7 +211,7 @@ type
       //--- komunikace s technologickymi bloky ---
       procedure BlkChange(Sender:TObject; specificClient:TIDContext = nil);     // doslo ke zmene bloku v OR, je potreba propagovat zmenu do panelu
       procedure BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights;       // prehraje zvuk
-          sound:Integer; loop:boolean = false);
+          sound:Integer; loop:Boolean = false);
       procedure BlkRemoveSound(Sender:TObject; sound:Integer);                  // zrusi prehravani zvuku
       procedure BlkWriteError(Sender:TObject; error:string; system:string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
       procedure BlkNewTrain(Sender:TObject; Panel:TIdContext; trainUsekIndex:Integer); // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
@@ -337,7 +337,7 @@ begin
  inherited;
 end;
 
-constructor TORRCS.Create(failed:boolean = false);
+constructor TORRCS.Create(failed:Boolean = false);
 begin
  inherited Create();
  Self.failed := failed;
@@ -441,7 +441,7 @@ begin
     ORTCPServer.BottomError(Self.Connected[i].Panel, error, Self.ShortName, system);
 end;
 
-procedure TOR.BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights; sound:Integer; loop:boolean = false);
+procedure TOR.BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights; sound:Integer; loop:Boolean = false);
 var i:Integer;
 begin
  for i := 0 to Self.Connected.COunt-1 do
@@ -520,7 +520,7 @@ begin
 end;
 
 //mazani 1 panelu z databaze
-procedure TOR.PnlDRemove(Panel:TIdContext; contextDestroyed: boolean = false);
+procedure TOR.PnlDRemove(Panel:TIdContext; contextDestroyed: Boolean = false);
 var i:Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
@@ -1029,7 +1029,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.NUZ_PS(Sender:TIdContext; success:boolean);
+procedure TOR.NUZ_PS(Sender:TIdContext; success:Boolean);
 var JC:TJC;
     Blk:TBlk;
     usek:TBlkUsek;
@@ -1082,7 +1082,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.RemoveClient(Panel:TIdContext; contextDestroyed: boolean = false);
+procedure TOR.RemoveClient(Panel:TIdContext; contextDestroyed: Boolean = false);
 begin
  Self.PnlDRemove(Panel, contextDestroyed);
  Self.stack.OnDisconnect(Panel);
@@ -1334,7 +1334,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.OsvSet(id:string; state:boolean);
+procedure TOR.OsvSet(id:string; state:Boolean);
 var osv: TOrLighting;
 begin
  for osv in Self.ORProp.Osvetleni do
@@ -1950,7 +1950,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.OnHlaseniAvailable(Sender:TObject; available:boolean);
+procedure TOR.OnHlaseniAvailable(Sender:TObject; available:Boolean);
 begin
  if (available) then
    Self.BroadcastData('SHP;AVAILABLE;1')

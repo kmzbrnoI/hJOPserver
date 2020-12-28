@@ -30,7 +30,7 @@ type
     procedure FillFromHouk(ev:THoukEv);
     procedure ShowEmpty();
     function GetHoukEv():THoukEv;
-    function InputValid():boolean;
+    function InputValid():Boolean;
 
   end;
 
@@ -94,7 +94,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_HoukEv.InputValid():boolean;
+function TF_HoukEv.InputValid():Boolean;
 begin
  Result := Self.fRREv.InputValid() and (Self.CB_Action.ItemIndex > -1);
 end;

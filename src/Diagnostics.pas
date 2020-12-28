@@ -7,10 +7,10 @@ uses IniFiles, SysUtils;
 type
   TDiagnostics = class
   public
-    showZaver: boolean;
-    simSoupravaObsaz: boolean;
-    simInputs: boolean;
-    showBlockId: boolean;
+    showZaver: Boolean;
+    simSoupravaObsaz: Boolean;
+    simInputs: Boolean;
+    showBlockId: Boolean;
 
     constructor Create();
     procedure LoadData(ini: TMemIniFile; section: string);

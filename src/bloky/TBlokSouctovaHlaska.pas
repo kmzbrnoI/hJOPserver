@@ -9,7 +9,7 @@ uses IniFiles, TBlok, Menus, SysUtils, Classes, IdContext, Generics.Collections,
 
 type
  TBlkSHStav = record
-  enabled:boolean;
+  enabled:Boolean;
  end;
 
  TBlkSHSettings = record
@@ -26,12 +26,12 @@ type
    settings:TBlkSHSettings;
    shStav:TBlkSHStav;
 
-    function GetKomunikace():boolean;
-    function GetAnulace():boolean;
-    function GetUZ():boolean;
-    function GetUzavreno():boolean;
-    function GetPorucha():boolean;
-    function GetNOT():boolean;
+    function GetKomunikace():Boolean;
+    function GetAnulace():Boolean;
+    function GetUZ():Boolean;
+    function GetUzavreno():Boolean;
+    function GetPorucha():Boolean;
+    function GetNOT():Boolean;
 
     procedure CreateReferences();
     procedure RemoveReferences();
@@ -55,14 +55,14 @@ type
     //----- souctova hlaska own functions -----
 
     property stav:TBlkSHStav read shStav;
-    property enabled:boolean read shStav.enabled;
+    property enabled:Boolean read shStav.enabled;
 
-    property komunikace:boolean read GetKomunikace;
-    property anulace:boolean read GetAnulace;
-    property UZ:boolean read GetUZ;
-    property uzavreno:boolean read GetUzavreno;
-    property porucha:boolean read GetPorucha;
-    property nouzoveOT:boolean read GetNOT;
+    property komunikace:Boolean read GetKomunikace;
+    property anulace:Boolean read GetAnulace;
+    property UZ:Boolean read GetUZ;
+    property uzavreno:Boolean read GetUzavreno;
+    property porucha:Boolean read GetPorucha;
+    property nouzoveOT:Boolean read GetNOT;
 
     //GUI:
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject;
@@ -219,7 +219,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSH.GetKomunikace():boolean;
+function TBlkSH.GetKomunikace():Boolean;
 var prjid:Integer;
     prj:TBlk;
 begin
@@ -235,7 +235,7 @@ begin
   end;
 end;
 
-function TBlkSH.GetAnulace():boolean;
+function TBlkSH.GetAnulace():Boolean;
 var prjid:Integer;
     prj:TBlk;
 begin
@@ -249,7 +249,7 @@ begin
   end;
 end;
 
-function TBlkSH.GetUZ():boolean;
+function TBlkSH.GetUZ():Boolean;
 var prjid:Integer;
     prj:TBlk;
 begin
@@ -263,7 +263,7 @@ begin
   end;
 end;
 
-function TBlkSH.GetUzavreno():boolean;
+function TBlkSH.GetUzavreno():Boolean;
 var prjid:Integer;
     prj:TBlk;
 begin
@@ -277,7 +277,7 @@ begin
   end;
 end;
 
-function TBlkSH.GetPorucha():boolean;
+function TBlkSH.GetPorucha():Boolean;
 var prjid:Integer;
     prj:TBlk;
 begin
@@ -291,7 +291,7 @@ begin
   end;
 end;
 
-function TBlkSH.GetNOT():boolean;
+function TBlkSH.GetNOT():Boolean;
 var prjid:Integer;
     prj:TBlk;
 begin

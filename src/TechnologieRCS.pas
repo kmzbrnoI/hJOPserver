@@ -19,7 +19,7 @@ interface
 uses SysUtils, Classes, IniFiles, Generics.Collections, RCS, Generics.Defaults;
 
 type
-  TRCSReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
+  TRCSReadyEvent = procedure (Sender:TObject; ready:Boolean) of object;
   TRCSBoardChangeEvent = procedure (Sender:TObject; board:Cardinal) of object;
   TRCSIOType = (input = 0, output = 1);
 
@@ -34,7 +34,7 @@ type
   end;
 
   TRCSBoard = class                                                               // jedna RCS deska
-    needed:boolean;                                                               // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
+    needed:Boolean;                                                               // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
     inputChangedEv:TList<TRCSBoardChangeEvent>;
     outputChangedEv:TList<TRCSBoardChangeEvent>;
 
@@ -56,8 +56,8 @@ type
 
    private
      boards:TObjectDictionary<Cardinal, TRCSBoard>;
-     aReady:boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
-     fGeneralError:boolean;                                 // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
+     aReady:Boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
+     fGeneralError:Boolean;                                 // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
      fLibDir:string;
      mConfigDir: string;
 
@@ -75,7 +75,7 @@ type
       function GetMaxModuleAddrSafe():Cardinal;
 
    public
-     log:boolean;
+     log:Boolean;
 
       constructor Create();
       destructor Destroy; override;
@@ -85,11 +85,11 @@ type
       procedure InputSim();                                                     // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
       procedure SoupravaUsekSim();                                              // nastavit RCS vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
 
-      function NoExStarted():boolean;
-      function NoExOpened():boolean;
+      function NoExStarted():Boolean;
+      function NoExOpened():Boolean;
 
-      procedure SetNeeded(RCSAdr:Cardinal; state:boolean = true);
-      function GetNeeded(RCSAdr:Cardinal):boolean;
+      procedure SetNeeded(RCSAdr:Cardinal; state:Boolean = true);
+      function GetNeeded(RCSAdr:Cardinal):Boolean;
 
       procedure LoadFromFile(ini:TMemIniFile);
       procedure SaveToFile(ini:TMemIniFile);
@@ -110,14 +110,14 @@ type
       function GetModuleInputsCountSafe(Module:Cardinal):Cardinal;
       function GetModuleOutputsCountSafe(Module:Cardinal):Cardinal;
 
-      property generalError:boolean read fGeneralError;
+      property generalError:Boolean read fGeneralError;
       class function RCSAddr(board:Cardinal; port:Byte):TRCSAddr;
 
       //events
       property AfterClose:TNotifyEvent read fAfterClose write fAfterClose;
 
       property OnReady:TRCSReadyEvent read fOnReady write fOnReady;
-      property ready:boolean read aready;
+      property ready:Boolean read aready;
       property libDir:string read fLibDir;
       property configDir:string read mConfigDir;
       property maxModuleAddr:Cardinal read GetMaxModuleAddr;
@@ -342,14 +342,14 @@ end;
 //----- events from dll end -----
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.SetNeeded(RCSAdr:Cardinal; state:boolean = true);
+procedure TRCS.SetNeeded(RCSAdr:Cardinal; state:Boolean = true);
 begin
  if (not Self.boards.ContainsKey(RCSAdr)) then
    Self.boards.Add(RCSAdr, TRCSBoard.Create());
  Self.boards[RCSAdr].needed := state
 end;
 
-function TRCS.GetNeeded(RCSAdr:Cardinal):boolean;
+function TRCS.GetNeeded(RCSAdr:Cardinal):Boolean;
 begin
  if (Self.boards.ContainsKey(RCSAdr)) then
    Result := Self.boards[RCSAdr].needed
@@ -421,7 +421,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRCS.NoExStarted():boolean;
+function TRCS.NoExStarted():Boolean;
 begin
  try
    Result := Self.Started();
@@ -430,7 +430,7 @@ begin
  end;
 end;
 
-function TRCS.NoExOpened():boolean;
+function TRCS.NoExOpened():Boolean;
 begin
  try
    Result := Self.Opened();

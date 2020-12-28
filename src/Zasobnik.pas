@@ -20,9 +20,9 @@ type
   // povel ke staveni jizdni cesty
   TORStackCmdJC = class(TORStackCmd)
    JC:TObject;
-   nouz:boolean;
+   nouz:Boolean;
    Pnl:TIDContext;
-   ab:boolean;
+   ab:Boolean;
   end;
 
   // povel k zapnuti zadosti o tratovy souhlas
@@ -45,21 +45,21 @@ type
     fvolba:TORStackVolba;
     fhint:string;
     stack:TList<TORStackCmd>;
-    fUPOenabled:boolean;
+    fUPOenabled:Boolean;
     EZs:TList<TIdContext>; // klienti, kteri maji otevrenou editaci zasobniku
 
       // obsluzne funkce jednotlivych pozadavku z panelu
       procedure ORCmdPV(SenderPnl:TIdContext);
       procedure ORCmdVZ(SenderPnl:TIdContext);
-      procedure ORCmdEZ(SenderPnl:TIdContext; show:boolean);
+      procedure ORCmdEZ(SenderPnl:TIdContext; show:Boolean);
       procedure ORCmdRM(SenderPnl:TIdContext; id:Integer);
-      procedure ORCmdSWITCH(SenderPnl:TIdContext; fromId:Integer; toId:Integer; listend:boolean = false);
+      procedure ORCmdSWITCH(SenderPnl:TIdContext; fromId:Integer; toId:Integer; listend:Boolean = false);
       procedure ORCmdUPO(SenderPnl:TIdContext);
 
       // zmena volby a hintu
       procedure SetVolba(volba:TORStackVolba);
       procedure SetHint(hint:string);
-      procedure SetUPOEnabled(enabled:boolean);
+      procedure SetUPOEnabled(enabled:Boolean);
 
       // odeslani seznamu jizdnich cest v zasobniku do prislusne oblasti rizeni
       procedure SendList(connection:TIdContext);
@@ -75,7 +75,7 @@ type
       procedure ZpracujZTS(cmd:TORStackCmdZTS);
       procedure ZpracujUTS(cmd:TORStackCmdUTS);
 
-      procedure SetFirstEnabled(enabled:boolean);
+      procedure SetFirstEnabled(enabled:Boolean);
 
       function FindCmdIndexById(id:Integer):Integer;
 
@@ -86,7 +86,7 @@ type
       destructor Destroy(); override;
 
       procedure ParseCommand(SenderPnl:TIdContext; data:TStrings);
-      procedure AddJC(JC:TObject; SenderPnl:TIDContext; nouz:boolean; ab:boolean);
+      procedure AddJC(JC:TObject; SenderPnl:TIDContext; nouz:Boolean; ab:Boolean);
       procedure AddZTS(uvazka:TObject; SenderPnl:TIDContext);
       procedure AddUTS(uvazka:TObject; SenderPnl:TIDContext);
 
@@ -102,13 +102,13 @@ type
       procedure ClearStack();                   // mazani zasobniku je volano pri vypnuti systemu
       function GetList():string;
 
-      function IsJCInStack(JC:TObject):boolean;
+      function IsJCInStack(JC:TObject):Boolean;
 
       property volba:TORStackVolba read fvolba write SetVolba;
       property hint:string read fhint write SetHint;
-      property UPOenabled:boolean read fUPOenabled write SetUPOEnabled;
+      property UPOenabled:Boolean read fUPOenabled write SetUPOEnabled;
       property Count:Integer read GetCount;
-      property firstEnabled:boolean write SetFirstEnabled;
+      property firstEnabled:Boolean write SetFirstEnabled;
       property index:Integer read findex write findex;
 
   end;//TORStack
@@ -187,7 +187,7 @@ begin
  Self.volba := VZ;
 end;
 
-procedure TORStack.ORCmdEZ(SenderPnl:TIdContext; show:boolean);
+procedure TORStack.ORCmdEZ(SenderPnl:TIdContext; show:Boolean);
 begin
  if (show) then
   begin
@@ -224,7 +224,7 @@ begin
  Self.RemoveFromStack(i, SenderPnl);
 end;
 
-procedure TORStack.ORCmdSWITCH(SenderPnl:TIdContext; fromId:Integer; toId:Integer; listend:boolean = false);
+procedure TORStack.ORCmdSWITCH(SenderPnl:TIdContext; fromId:Integer; toId:Integer; listend:Boolean = false);
 var i, j:Integer;
     tmp:TORStackCmd;
 begin
@@ -318,7 +318,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // Pridani jizdni cesty do zasobniku:
-procedure TORStack.AddJC(JC:TObject; SenderPnl:TIDContext; nouz:boolean; ab:boolean);
+procedure TORStack.AddJC(JC:TObject; SenderPnl:TIDContext; nouz:Boolean; ab:Boolean);
 var cmd:TORStackCmdJC;
 begin
  cmd := TORStackCmdJC.Create();
@@ -624,7 +624,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORStack.IsJCInStack(JC:TObject):boolean;
+function TORStack.IsJCInStack(JC:TObject):Boolean;
 var i:Integer;
 begin
  for i := 0 to Self.stack.Count-1 do
@@ -635,7 +635,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORStack.SetUPOEnabled(enabled:boolean);
+procedure TORStack.SetUPOEnabled(enabled:Boolean);
 begin
  if (Self.fUPOenabled = enabled) then Exit();
 
@@ -707,7 +707,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TORStack.SetFirstEnabled(enabled:boolean);
+procedure TORStack.SetFirstEnabled(enabled:Boolean);
 begin
  if (enabled) then
   (Self.OblR as TOR).BroadcastData('ZAS;FIRST;1')

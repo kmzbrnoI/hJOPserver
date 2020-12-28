@@ -39,7 +39,7 @@ var blksWithTrain:TList<TBlkUsek>;
     blk:TBlk;
     blkUsek:TBlkUsek;
     inTrat:TBlkTrat;
-    inOR:boolean;
+    inOR:Boolean;
 begin
  blksWithTrain := TList<TBlkUsek>.Create();
 

@@ -43,7 +43,7 @@ type
 
      procedure FillFromHouks(evs:TList<THoukEv>);
      function GetHoukEvs():TObjectList<THoukEv>;
-     function InputValid():boolean;
+     function InputValid():Boolean;
 
   end;
 
@@ -105,7 +105,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_HoukEvs.InputValid():boolean;
+function TF_HoukEvs.InputValid():Boolean;
 var form:TF_HoukEv;
 begin
  for form in Self.forms do

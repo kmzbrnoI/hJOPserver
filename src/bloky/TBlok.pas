@@ -59,13 +59,13 @@ type
       note: '';
     );
   private
-   changed:boolean;
+   changed:Boolean;
 
   protected
    GlobalSettings:TBlkSettings;
    FOnChange:TOnBlkChange;  // childs can call the event
    ftable_index:Integer;
-   ffrozen:boolean;
+   ffrozen:Boolean;
    ORsRef:TList<TOR>;          // ve kterych OR se blok nachazi
 
    //loading and saving RCS
@@ -99,7 +99,7 @@ type
    //update states
    procedure Update(); virtual;
 
-   procedure Change(now: boolean = false); virtual; // will call the change event
+   procedure Change(now: Boolean = false); virtual; // will call the change event
 
    procedure Freeze(); virtual;
    procedure UnFreeze(); virtual;
@@ -119,11 +119,11 @@ type
 
    // Tyto procedury vraci json objekt do \json, z dedicich bloku
    // je nutno volat inherited.
-   procedure GetPtData(json: TJsonObject; includeState: boolean); virtual;
+   procedure GetPtData(json: TJsonObject; includeState: Boolean); virtual;
    procedure GetPtState(json: TJsonObject); virtual;
    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); virtual;
 
-   function IsInOR(OblR:TObject):boolean;
+   function IsInOR(OblR:TObject):Boolean;
 
    class procedure AddChangeEvent(var events: TChangeEvents; func: TChangeEvent);
    class procedure RemoveChangeEvent(var events: TChangeEvents; func: TChangeEvent);
@@ -136,7 +136,7 @@ type
    //if some local variable is changed, this event is called to the program
    property OnChange: TOnBlkChange read FOnChange write FOnChange;
    property table_index: Integer read ftable_index write ftable_index;
-   property frozen: boolean read ffrozen;
+   property frozen: Boolean read ffrozen;
    property OblsRizeni: TList<TOR> read ORsRef;
 
    property id: Integer read GlobalSettings.id;
@@ -169,7 +169,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlk.SetGlobalSettings(data:TBlkSettings);
-var id_changed:boolean;
+var id_changed:Boolean;
 begin
  id_changed := ((Self.id <> data.id) and (Self.id <> -1));
  Self.GlobalSettings := data;
@@ -256,7 +256,7 @@ begin
   end;
 end;
 
-procedure TBlk.Change(now:boolean = false);
+procedure TBlk.Change(now:Boolean = false);
 begin
  if (now) then
   begin
@@ -391,7 +391,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlk.GetPtData(json:TJsonObject; includeState:boolean);
+procedure TBlk.GetPtData(json:TJsonObject; includeState:Boolean);
 var oblr: TOR;
 begin
  json['name'] := Self.name;
@@ -456,7 +456,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlk.IsInOR(OblR:TObject):boolean;
+function TBlk.IsInOR(OblR:TObject):Boolean;
 begin
  Result := Self.OblsRizeni.Contains(OblR as TOR);
 end;

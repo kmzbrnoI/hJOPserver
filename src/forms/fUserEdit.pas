@@ -39,7 +39,7 @@ type
       State: TCustomDrawState; var DefaultDraw: Boolean);
   private
     openUser:TUser;
-    new:boolean;
+    new:Boolean;
 
     procedure FillORs();
 

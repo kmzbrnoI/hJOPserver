@@ -198,7 +198,7 @@ type
     function GetSettings(): TBlkTurnoutSettings;
     procedure SetSettings(data: TBlkTurnoutSettings);
 
-    procedure SetPosition(new: TTurnoutPosition; lock: boolean = false; nouz: boolean = false;
+    procedure SetPosition(new: TTurnoutPosition; lock: Boolean = false; nouz: Boolean = false;
         callback_ok:TNotifyEvent = nil; callback_err: TTurnoutSetPosErrCb = nil);
     procedure SetLockout(Sender: TIDContext; lockout: string); overload;
     procedure SetCouplingNoPropag(coupling: Integer);
@@ -215,12 +215,12 @@ type
     property state: TBlkTurnoutState read m_state;
 
     property position: TTurnoutPosition read m_state.position;
-    property NUZ:boolean read GetNUZ;
+    property NUZ:Boolean read GetNUZ;
     property zaver: TZaver read GetZaver;
     property occupied: TUsekStav read GetOccupied;
     property note: string read m_state.note write SetNote;
     property lockout: string read m_state.lockout write SetLockout;
-    property intentionalLocked: boolean read GetIntentionalLock;
+    property intentionalLocked: Boolean read GetIntentionalLock;
     property trackID: Integer read m_spnl.track;
     property emLock: Boolean read IsEmergencyLock write SetEmergencyLock;
     property lock: TBlk read GetLock;
@@ -460,7 +460,7 @@ begin
    Result := TZaver.no;
 end;
 
-function TBlkTurnout.GetNUZ():boolean;
+function TBlkTurnout.GetNUZ():Boolean;
 var tmpBlk:TBlk;
     return:Integer;
 begin
@@ -794,7 +794,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.SetPosition(new: TTurnoutPosition; lock: boolean = false; nouz: boolean = false;
+procedure TBlkTurnout.SetPosition(new: TTurnoutPosition; lock: Boolean = false; nouz: Boolean = false;
       callback_ok: TNotifyEvent = nil; callback_err: TTurnoutSetPosErrCb = nil);
 var coupling: TBlkTurnout;
 begin
@@ -1047,7 +1047,7 @@ begin
     'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkTurnout.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
+procedure TBlkTurnout.PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
 begin
  if (success) then
    Self.ResetEmLocks();
@@ -1172,13 +1172,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.PanelPotvrSekvNSPlus(Sender:TIdContext; success:boolean);
+procedure TBlkTurnout.PanelPotvrSekvNSPlus(Sender:TIdContext; success:Boolean);
 begin
  if (not success) then Exit();
  Self.SetPosition(plus, false, true, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkTurnout.PanelPotvrSekvNSMinus(Sender:TIdContext; success:boolean);
+procedure TBlkTurnout.PanelPotvrSekvNSMinus(Sender:TIdContext; success:Boolean);
 begin
  if (not success) then Exit();
  Self.SetPosition(minus, false, true, nil, Self.PanelMovingErr);
@@ -1186,8 +1186,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.Change(now:boolean = false);
-var changed:boolean;
+procedure TBlkTurnout.Change(now:Boolean = false);
+var changed:Boolean;
 begin
  changed := false;
 
@@ -1324,7 +1324,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // PT:
 
-procedure TBlkTurnout.GetPtData(json:TJsonObject; includeState:boolean);
+procedure TBlkTurnout.GetPtData(json:TJsonObject; includeState:Boolean);
 begin
  inherited;
 
@@ -1680,7 +1680,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.ShouldBeLocked(withZamek: boolean):boolean;
+function TBlkTurnout.ShouldBeLocked(withZamek: Boolean):Boolean;
 begin
  Result := (Self.Zaver > TZaver.no) or (Self.emLock) or (Self.intentionalLocked) or
            ((withZamek) and (Self.LockLocked()));
@@ -1690,7 +1690,7 @@ begin
                        (Self.coupling.intentionalLocked) or ((withZamek) and (Self.coupling.LockLocked()));
 end;
 
-function TBlkTurnout.ShouldBeLockedIgnoreStaveni():boolean;
+function TBlkTurnout.ShouldBeLockedIgnoreStaveni():Boolean;
 begin
  Result := ((Self.Zaver > TZaver.no) and (Self.Zaver <> TZaver.staveni)) or
            (Self.emLock) or (Self.LockLocked());

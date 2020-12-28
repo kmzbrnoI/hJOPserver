@@ -84,7 +84,7 @@ type
     property stit:string read RozpStav.stit write SetStit;
 
     //PT:
-    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
+    procedure GetPtData(json:TJsonObject; includeState:Boolean); override;
     procedure GetPtState(json:TJsonObject); override;
     procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
@@ -325,7 +325,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.GetPtData(json:TJsonObject; includeState:boolean);
+procedure TBlkRozp.GetPtData(json:TJsonObject; includeState:Boolean);
 begin
  inherited;
  TBlk.RCStoJSON(Self.RozpSettings.RCSAddrs[0], json['rcs']);

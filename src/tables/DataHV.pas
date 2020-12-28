@@ -13,7 +13,7 @@ type
 
     public
 
-     reload:boolean;
+     reload:Boolean;
 
       procedure LoadToTable();
       procedure UpdateLine(HV:THV);

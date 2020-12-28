@@ -23,9 +23,9 @@ type
       procedure OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject); virtual;
 
-      function EndpointMatch(path: string): boolean; virtual; abstract;
+      function EndpointMatch(path: string): Boolean; virtual; abstract;
       function AuthRequired(cmdType: THTTPCommandType): Boolean; virtual;
-      class function PatternMatch(path: string; pattern: string): boolean;
+      class function PatternMatch(path: string; pattern: string): Boolean;
   end;
 
 implementation
@@ -61,7 +61,7 @@ begin
  Result := (cmdType = hcPOST) or (cmdType = hcPUT) or (cmdType = hcDELETE);
 end;
 
-class function TPTEndpoint.PatternMatch(path: string; pattern: string): boolean;
+class function TPTEndpoint.PatternMatch(path: string; pattern: string): Boolean;
 var re: TJclRegEx;
 begin
  re := TJclRegEx.Create();

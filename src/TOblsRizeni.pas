@@ -42,7 +42,7 @@ type
       procedure BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read);
                                                                                 // broadcast chybove hlasky, ktera ma jit jen panelum,
                                                                                 // kde alespon jeden je minimalne opravneni min_rights
-      procedure BroadcastPlaySound(sound_code:Integer; loop:boolean = false; min_rights:TORControlRights = read);
+      procedure BroadcastPlaySound(sound_code:Integer; loop:Boolean = false; min_rights:TORControlRights = read);
 
       function GetEnumerator(): TEnumerator<TOR>;
       property Items[index : integer] : TOR read Get; default;
@@ -263,7 +263,7 @@ begin
  clients.Free();
 end;
 
-procedure TORs.BroadcastPlaySound(sound_code:Integer; loop:boolean = false; min_rights:TORControlRights = read);
+procedure TORs.BroadcastPlaySound(sound_code:Integer; loop:Boolean = false; min_rights:TORControlRights = read);
 var OblR:TOR;
     connected:TORPanel;
     clients:TDictionary<TIdContext,Boolean>; // set

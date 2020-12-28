@@ -8,7 +8,7 @@ type
   TOrLighting = class
    name: string;
    rcsAddr: TRCSAddr;
-   default_state: boolean;
+   default_state: Boolean;
 
     constructor Create(spnlitem: string);
     procedure Parse(spnlitem: string);

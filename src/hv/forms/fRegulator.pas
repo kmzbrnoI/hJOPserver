@@ -58,7 +58,7 @@ type
 
    speed:Integer;
 
-   procedure SetElemntsState(state:boolean);
+   procedure SetElemntsState(state:Boolean);
    procedure Acquired(Sender:TObject; data:Pointer);
    procedure AcquireFailed(Sender:TObject; data:Pointer);
 
@@ -67,7 +67,7 @@ type
 
    procedure OpenForm(HV:THV);
    procedure LocoChanged(Sender:TObject);
-   procedure MyKeyPress(key:Integer; var handled: boolean);
+   procedure MyKeyPress(key:Integer; var handled: Boolean);
   end;
 
  ///////////////////////////////////////////////////////////////////////////////
@@ -92,9 +92,9 @@ type
     procedure Open(HV:THV);
 
     procedure LocoChanged(Sender:TObject; addr:Word);
-    function IsLoko(HV:THV):boolean;
+    function IsLoko(HV:THV):Boolean;
 
-    procedure KeyPress(key:Integer; var handled:boolean);
+    procedure KeyPress(key:Integer; var handled:Boolean);
 
     procedure CloseAll();
 
@@ -288,7 +288,7 @@ begin
   end;
 end;
 
-procedure TF_DigiReg.SetElemntsState(state:boolean);
+procedure TF_DigiReg.SetElemntsState(state:Boolean);
 begin
  TB_reg.Enabled  := state;
  RG_Smer.Enabled := state;
@@ -331,7 +331,7 @@ begin
 end;
 
 // vyvola se, pokud je me okynko aktivni a je nad nim stiskla klavesa
-procedure TF_DigiReg.MyKeyPress(key:Integer; var handled: boolean);
+procedure TF_DigiReg.MyKeyPress(key:Integer; var handled: Boolean);
 begin
  if (not Self.OpenHV.acquired) then
   begin
@@ -429,7 +429,7 @@ begin
    Self.forms.data[i].Close;
 end;
 
-procedure TRegulatorCollector.KeyPress(key:Integer; var handled:boolean);
+procedure TRegulatorCollector.KeyPress(key:Integer; var handled:Boolean);
 var i:Integer;
 begin
  if (handled) then Exit;
@@ -446,7 +446,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRegulatorCollector.IsLoko(HV:THV):boolean;
+function TRegulatorCollector.IsLoko(HV:THV):Boolean;
 var i:Integer;
 begin
  if (Self = nil) then Exit(false);

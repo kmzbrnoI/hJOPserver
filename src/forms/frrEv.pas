@@ -38,10 +38,10 @@ type
     procedure FillFromRR(ev:TRREv);
     procedure ShowEmpty();
     function GetRREv():TRREv;
-    function InputValid():boolean;
+    function InputValid():Boolean;
 
   protected
-    procedure SetEnabled(state:boolean); override;
+    procedure SetEnabled(state:Boolean); override;
 
   end;
 
@@ -135,7 +135,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_RREv.InputValid():boolean;
+function TF_RREv.InputValid():Boolean;
 begin
  if (Self.CB_Typ.ItemIndex < 0) then Exit(false);
 
@@ -149,7 +149,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_RREv.SetEnabled(state:boolean);
+procedure TF_RREv.SetEnabled(state:Boolean);
 begin
  inherited;
 

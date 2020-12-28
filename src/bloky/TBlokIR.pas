@@ -54,7 +54,7 @@ type
 
     //PT:
 
-    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
+    procedure GetPtData(json:TJsonObject; includeState:Boolean); override;
     procedure GetPtState(json:TJsonObject); override;
 
     property Stav:TIRStav read IRStav.Stav;
@@ -173,7 +173,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkIR.GetPtData(json:TJsonObject; includeState:boolean);
+procedure TBlkIR.GetPtData(json:TJsonObject; includeState:Boolean);
 begin
  inherited;
 

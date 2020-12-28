@@ -27,13 +27,13 @@ type
    private
     fusername: string;
     fpasswd: string;  // SHA256 hash
-    fban: boolean;
-    freg: boolean;
+    fban: Boolean;
+    freg: Boolean;
     fsalt: string;
 
      procedure SetPasswd(passwd: string);
-     procedure SetBan(state: boolean);
-     procedure SetReg(state: boolean);
+     procedure SetBan(state: Boolean);
+     procedure SetReg(state: Boolean);
 
      procedure SetUserName(new: string);
 
@@ -44,7 +44,7 @@ type
 
     firstname: string;
     lastname: string;
-    root: boolean;
+    root: Boolean;
     OblR: TDictionary<string, TORControlRights>;
     note: string;
     lastlogin: TDateTime;
@@ -65,14 +65,14 @@ type
 
      property username: string read fusername write SetUserName;
      property password: string read fpasswd write SetPasswd;
-     property ban: boolean read fban write SetBan;
-     property regulator: boolean read freg write SetReg;
+     property ban: Boolean read fban write SetBan;
+     property regulator: Boolean read freg write SetReg;
      property fullName: string read GetFullName;
      property salt: string read fsalt;
 
      procedure GetPtData(json: TJsonObject);
 
-     class function ComparePasswd(plain: string; hash: string; salt: string):boolean;
+     class function ComparePasswd(plain: string; hash: string; salt: string):Boolean;
         // check password match; return true iff match
      class function GenerateHash(plain:AnsiString):string;
      class function NameComparer():IComparer<TUser>;
@@ -221,7 +221,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TUser.ComparePasswd(plain:string; hash:string; salt:string):boolean;
+class function TUser.ComparePasswd(plain:string; hash:string; salt:string):Boolean;
 begin
  Result := (hash = TUser.GenerateHash(AnsiString(LowerCase(plain + salt))));
 end;
@@ -256,7 +256,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetBan(state:boolean);
+procedure TUser.SetBan(state:Boolean);
 var oblr:string;
     OblRRef:TOR;
 begin
@@ -276,7 +276,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetReg(state:boolean);
+procedure TUser.SetReg(state:Boolean);
 begin
  if (Self.freg = state) then Exit();
  Self.freg := state;

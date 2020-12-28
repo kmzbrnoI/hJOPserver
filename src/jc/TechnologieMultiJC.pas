@@ -41,11 +41,11 @@ type
      fstaveni: TMultiJCStaveni;
      staveno:TJC;     // zde je ulozena JC, ktera se aktualne stavi
 
-     function GetStaveni():boolean;
+     function GetStaveni():Boolean;
 
    public
 
-     changed:boolean;
+     changed:Boolean;
 
       constructor Create(); overload;
       constructor Create(data:TMultiJCprop); overload;
@@ -65,7 +65,7 @@ type
       property data:TMultiJCprop read fproperties write fproperties;
       property stav:TMultiJCStaveni read fstaveni;
       property Nazev:string read fproperties.Nazev;
-      property staveni:boolean read GetStaveni;
+      property staveni:Boolean read GetStaveni;
       property id:Integer read fproperties.id;
 
       class function IdComparer():IComparer<TMultiJC>;
@@ -251,7 +251,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.GetStaveni():boolean;
+function TMultiJC.GetStaveni():Boolean;
 begin
  Result := (Self.fstaveni.JCIndex > -1);
 end;

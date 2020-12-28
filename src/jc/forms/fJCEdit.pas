@@ -105,7 +105,7 @@ type
    procedure FillVyhybky();
    procedure FillUseky();
    function VyhybkaIndex(id:Integer):Integer;
-   function IsAnyVyhMinus():boolean;
+   function IsAnyVyhMinus():Boolean;
 
    procedure MakeObls(var obls:TArStr);
   public
@@ -263,7 +263,7 @@ procedure TF_JCEdit.HlavniOpenForm;
 procedure TF_JCEdit.B_Vyh_AddClick(Sender: TObject);
 var vyh:TJCVyhZaver;
     vyhIndex:Integer;
-    updateOdbocka:boolean;
+    updateOdbocka:Boolean;
  begin
   if (CB_NewZaverBlok.ItemIndex = -1) then
    begin
@@ -934,7 +934,7 @@ begin
  Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btUsek, -1, btTU);
 end;
 
-function TF_JCEdit.IsAnyVyhMinus():boolean;
+function TF_JCEdit.IsAnyVyhMinus():Boolean;
 var vyhZaver:TJCVyhZaver;
 begin
  for vyhZaver in Self.Vyhybky do

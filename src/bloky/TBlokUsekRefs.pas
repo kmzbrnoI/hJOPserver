@@ -16,7 +16,7 @@ TBlkUsekRefs = class
 
  private
    function GetBlockState():TUsekStav;
-   function GetChanged():boolean;
+   function GetChanged():Boolean;
 
  public
   parts: TObjectList<TBlkUsekRef>;
@@ -30,7 +30,7 @@ TBlkUsekRefs = class
    function ToStr(): string;
 
    property state: TUsekStav read GetBlockState;
-   property changed: boolean read GetChanged;
+   property changed: Boolean read GetChanged;
 
 end;
 
@@ -105,7 +105,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsekRefs.GetChanged():boolean;
+function TBlkUsekRefs.GetChanged():Boolean;
 begin
  Result := (Self.stateLast <> Self.state);
  Self.stateLast := Self.state;

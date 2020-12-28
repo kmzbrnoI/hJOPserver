@@ -41,7 +41,7 @@ type
     ARequestInfo: TIdHTTPRequestInfo;
     reqJson, respJson:TJsonObject;
     endpoint: TPTEndpoint;
-    processed: boolean;
+    processed: Boolean;
 
     constructor Create();
     destructor Destroy(); override;
@@ -59,7 +59,7 @@ type
     received:TObjectQueue<TPtReceived>;                                         // locked by receivedLock!
     receivedLock:TCriticalSection;
 
-    Fcompact:boolean;
+    Fcompact:Boolean;
 
     // http server events
     procedure httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -78,7 +78,7 @@ type
     procedure httpStatus(ASender: TObject; const AStatus: TIdStatus;
       const AStatusText: string);
 
-    function IsOpenned():boolean;
+    function IsOpenned():Boolean;
 
     function GetPort():Word;
     procedure SetPort(new:Word);
@@ -95,11 +95,11 @@ type
 
      procedure AccessTokenAdd(login: string; token:string);
      procedure AccessTokenRemove(login: string);
-     function HasAccess(login:string):boolean;
+     function HasAccess(login:string):Boolean;
 
-      property openned:boolean read IsOpenned;
+      property openned:Boolean read IsOpenned;
       property port:Word read GetPort write SetPort;
-      property compact:boolean read Fcompact write Fcompact;
+      property compact:Boolean read Fcompact write Fcompact;
   end;
 
 var
@@ -402,7 +402,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPtServer.IsOpenned():boolean;
+function TPtServer.IsOpenned():Boolean;
 begin
  Result := Self.httpServer.Active;
 end;
@@ -460,7 +460,7 @@ begin
  Self.accessTokens.Remove(login);
 end;
 
-function TPtServer.HasAccess(login:string):boolean;
+function TPtServer.HasAccess(login:string):Boolean;
 begin
  Result := Self.accessTokens.ContainsKey(login);
 end;

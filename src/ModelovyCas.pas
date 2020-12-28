@@ -35,16 +35,16 @@ type
    private
     fdateTime:TDateTime;
     fspeed:Real;
-    fstarted:boolean;
-    fused:boolean;
+    fstarted:Boolean;
+    fused:Boolean;
     last_sync:TDateTime;
     last_call:TDateTime;
 
     procedure SetDateTime(dt:TDateTime);
     procedure mSetTime(time:TTime);
     procedure SetSpeed(speed:Real);
-    procedure SetStarted(started:boolean);
-    procedure SetUsed(used:boolean);
+    procedure SetStarted(started:Boolean);
+    procedure SetUsed(used:Boolean);
 
     function GetStrSpeed():string;
     procedure SetStrSpeed(speed:string);
@@ -72,8 +72,8 @@ type
      property date:TDate read GetDate;
      property time:TTime read GetTime write mSetTime;
      property speed:Real read fspeed write SetSpeed;
-     property started:boolean read fstarted write SetStarted;
-     property used:boolean read fused write SetUsed;
+     property started:Boolean read fstarted write SetStarted;
+     property used:Boolean read fused write SetUsed;
      property strSpeed:string read GetStrSpeed write SetStrSpeed;
   end;//class TModCas
 
@@ -143,7 +143,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetStarted(started:boolean);
+procedure TModCas.SetStarted(started:Boolean);
 begin
  if (started <> Self.fstarted) then
   begin
@@ -155,7 +155,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetUsed(used:boolean);
+procedure TModCas.SetUsed(used:Boolean);
 begin
  if (used <> Self.fused) then
   begin

@@ -21,7 +21,7 @@ TBlkUsekRef = class
   _SEPARATOR: Char = ':';
 
  private
-   function MIsPart(): boolean;
+   function MIsPart(): Boolean;
    procedure Parse(str: string);
    function GetBlock():TBlkUsek;
    function GetBlockState():TUsekStav;
@@ -35,7 +35,7 @@ TBlkUsekRef = class
    constructor Create(str: string); overload;
    function ToStr(): string;
 
-   property isPart: boolean read MIsPart;
+   property isPart: Boolean read MIsPart;
    property block: TBlkUsek read GetBlock;
    property state: TUsekStav read GetBlockState;
 
@@ -88,7 +88,7 @@ begin
  end;
 end;
 
-function TBlkUsekRef.MIsPart(): boolean;
+function TBlkUsekRef.MIsPart(): Boolean;
 begin
  Result := (Self.partId <> _EMPTY_PARTID);
 end;

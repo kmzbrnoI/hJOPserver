@@ -47,7 +47,7 @@ type
  TBlkTUZastEvents = class                                                       // cidla zastavky v jednom smeru
   zastaveni: TRREv;                                                               // zastavovaci udalost
   zpomaleni: record                                                               // zpomalovaci udalost
-    enabled: boolean;                                                               // povolena zpomalovaci udalost?
+    enabled: Boolean;                                                               // povolena zpomalovaci udalost?
     speed: Integer;                                                                 // rychlost z km/h (40, 50, 60...)
     ev: TRREv;                                                                      // udalost
   end;
@@ -146,21 +146,21 @@ type
     function GetNextNav(): TBlk;                                                // vrati dalsi navestidlo v trati, v krajnim pripade az hranicni navestidlo cele trati podle aktualniho smeru trati, viz property \nextNav
     function GetSectReady(): Boolean;                                           // vrati, zda-li je sekce pripravena pro vjezd vlaku do ni, viz property \sectReady, mozne volat pouze u sectMaster
 
-    procedure PanelPotvrSekvRBP(Sender: TIdContext; success: boolean);          // callback potvrzovaci sekvence RBP
+    procedure PanelPotvrSekvRBP(Sender: TIdContext; success: Boolean);          // callback potvrzovaci sekvence RBP
 
     procedure UpdateNavest();                                                   // aktualizuje navest krycich navestidel
     procedure UpdateTrainRych();                                                  // aktualizuje rychlost soupravy v TU (pocita s \sprRychUpdateIter)
 
-    procedure SetRychUpdate(state:boolean);                                     // nastavi \sprRychUpdateIter
-    function GetRychUpdate:boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
+    procedure SetRychUpdate(state:Boolean);                                     // nastavi \sprRychUpdateIter
+    function GetRychUpdate:Boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
 
-    function GetReady():boolean;                                                // jestli je usek pripraveny na vjeti soupravy
+    function GetReady():Boolean;                                                // jestli je usek pripraveny na vjeti soupravy
 
     function IsZastavka(): Boolean;
     function IsZastavkaLichy(): Boolean;
     function IsZastavkaSudy(): Boolean;
 
-    procedure SetPoruchaBP(state:boolean);                                      // nastavi stav poruchy blokove podminky
+    procedure SetPoruchaBP(state:Boolean);                                      // nastavi stav poruchy blokove podminky
     procedure AddTrain(spr:Integer);
 
   public
@@ -187,7 +187,7 @@ type
     procedure Disable(); override;
 
     procedure Update(); override;
-    procedure Change(now:boolean = false); override;
+    procedure Change(now:Boolean = false); override;
     procedure ChangeFromTrat();                                                 // aktualizace TU z trati, vola se zejemna pri zmene smeru a jeho ucel je nastavit navestidla autobloku podle smeru trati
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
@@ -418,7 +418,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // zmena stavu bloku
 
-procedure TBlkTU.Change(now:boolean = false);
+procedure TBlkTU.Change(now:Boolean = false);
 begin
  inherited;
 
@@ -762,7 +762,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:boolean);
+procedure TBlkTU.MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:Boolean);
 begin
  if (not Self.TUStav.zast_stopped) then
    Self.fTUStav.zast_enabled := new_state;
@@ -791,7 +791,7 @@ begin
                    'Zrušení poruchy blokové podmínky', TBlky.GetBlksList(Self), podm);
 end;
 
-procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:boolean);
+procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:Boolean);
 var old_train: Integer;
     blks: TList<TObject>;
 begin
@@ -863,7 +863,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetTratReady():boolean;
+function TBlkTU.GetTratReady():Boolean;
 begin
  Result := ((Self.Trat <> nil) and ((TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) or (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA)));
 end;
@@ -1168,12 +1168,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetRychUpdate:boolean;
+function TBlkTU.GetRychUpdate:Boolean;
 begin
  Result := (Self.fTUStav.sprRychUpdateIter > 0);
 end;
 
-procedure TBlkTU.SetRychUpdate(state:boolean);
+procedure TBlkTU.SetRychUpdate(state:Boolean);
 begin
  if ((state) and (Self.fTUStav.sprRychUpdateIter = 0)) then Self.fTUStav.sprRychUpdateIter := 2;
  if ((not state) and (Self.fTUStav.sprRychUpdateIter > 0)) then Self.fTUStav.sprRychUpdateIter := 0;
@@ -1210,7 +1210,7 @@ end;
 //  1) zadny usek sekce neni obsazen
 //  2) vsechny useky sekce jsou bez soupravy
 
-function TBlkTU.GetSectReady():boolean;
+function TBlkTU.GetSectReady():Boolean;
 var blk:TBlkTU;
     sectUseky:TList<TBlkTU>;
 begin
@@ -1243,7 +1243,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetReady():boolean;
+function TBlkTU.GetReady():Boolean;
 begin
  Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.IsTrain())
   and (not Self.poruchaBP));
@@ -1251,7 +1251,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.SetPoruchaBP(state:boolean);
+procedure TBlkTU.SetPoruchaBP(state:Boolean);
 begin
  if (Self.poruchaBP <> state) then
   begin

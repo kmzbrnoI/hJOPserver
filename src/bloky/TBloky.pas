@@ -32,7 +32,7 @@ type
 
    ffstatus:string;
    ffile:string;
-   fenabled:boolean;
+   fenabled:Boolean;
 
     procedure DestroyBlocks();
     procedure BlkChange(Sender:TObject);
@@ -83,11 +83,11 @@ type
     //kontroluje, zda-li blok s timto ID uz nahadou existuje
     //pri hledani vynechava blok s indexem index
     //true = existuje, false = neexistuje
-    function IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
+    function IsBlok(id:Integer; ignore_index:Integer = -1):Boolean;
 
     procedure OnBoosterChange(booster: string);
 
-    procedure NUZ(or_id:string; state:boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
+    procedure NUZ(or_id:string; state:Boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
 
     procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp: TBlkType; BlokID:Integer = -1; BlokTyp2:TBlkType = btAny);
 
@@ -115,7 +115,7 @@ type
     class function SEPortMaxValue(addr: Integer; currentValue: Integer):Integer;
 
     // vrati vsechny bloky do JSON objektu PTserveru
-    procedure GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ: TBlkType = btAny);
+    procedure GetPtData(json:TJsonObject; includeState:Boolean; stanice:TOR = nil; typ: TBlkType = btAny);
 
     procedure NouzZaverZrusen(Sender:TBlk);
     procedure ZakladniPolohaVyhybek();
@@ -130,7 +130,7 @@ type
 
     property fstatus:string read ffstatus;
     property blky_file:string read ffile;
-    property enabled:boolean read fenabled;
+    property enabled:Boolean read fenabled;
  end;//class TBlky
 
 var
@@ -562,7 +562,7 @@ end;
 //kontroluje, zda-li blok s timto ID uz nahodou existuje
 //pri hledani vynechava blok s indexem index
 //true = existuje, false = neexistuje
-function TBlky.IsBlok(id:Integer; ignore_index:Integer = -1):boolean;
+function TBlky.IsBlok(id:Integer; ignore_index:Integer = -1):Boolean;
 var index:Integer;
 begin
  index := Self.GetBlkIndex(id);
@@ -655,7 +655,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // pozn.: NUZ maze soupravy z bloku
-procedure TBlky.NUZ(or_id:string; state:boolean = true);
+procedure TBlky.NUZ(or_id:string; state:Boolean = true);
 var traini: Integer;
     blk: TBlk;
     usek: TBlkUsek;
@@ -1001,7 +1001,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.GetPtData(json:TJsonObject; includeState:boolean; stanice:TOR = nil; typ: TBlkType = btAny);
+procedure TBlky.GetPtData(json:TJsonObject; includeState:Boolean; stanice:TOR = nil; typ: TBlkType = btAny);
 var Blk:TBlk;
 begin
  for Blk in Self.data do

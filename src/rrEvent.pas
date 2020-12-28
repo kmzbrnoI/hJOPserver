@@ -25,12 +25,12 @@ type
     case typ : TRREvType of
       rrtUsek: (
         usekPart: Cardinal;
-        usekState: boolean;
+        usekState: Boolean;
       );
 
       rrtIR: (
         irId: Cardinal;
-        irState: boolean;
+        irState: Boolean;
       );
 
       rrtTime: (
@@ -40,7 +40,7 @@ type
 
   TRREvState = record
     triggerTime: TDateTime;
-    enabled: boolean;
+    enabled: Boolean;
   end;
 
   TRREv = class
@@ -61,9 +61,9 @@ type
      procedure Unregister();
 
      // Sender must be a valid "Usek" blok.
-     function IsTriggerred(Sender:TObject; safeState: boolean):boolean;
+     function IsTriggerred(Sender:TObject; safeState: Boolean):Boolean;
 
-     property enabled: boolean read m_state.enabled;
+     property enabled: Boolean read m_state.enabled;
      property data: TRREvData read m_data;
      property typ: TRREvType read m_data.typ;
 
@@ -161,7 +161,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRREv.IsTriggerred(Sender:TObject; safeState: boolean):boolean;
+function TRREv.IsTriggerred(Sender:TObject; safeState: Boolean):Boolean;
 var Blk:TBlk;
 begin
  if (not Self.enabled) then Exit(false);

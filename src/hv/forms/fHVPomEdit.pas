@@ -19,7 +19,7 @@ type
   private
     { Private declarations }
   public
-    saved:boolean;
+    saved:Boolean;
 
     procedure OpenForm(cv:Integer; val:Byte);
   end;

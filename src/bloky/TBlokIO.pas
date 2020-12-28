@@ -53,10 +53,10 @@ type
 
     procedure SetStit(stit: string);
 
-    procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuInClick(SenderPnl:TIdContext; SenderOR:TObject; target: Boolean);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuInClick(SenderPnl: TIdContext; SenderOR: TObject; target: Boolean);
 
   public
     constructor Create(index:Integer);
@@ -86,7 +86,7 @@ type
     function GetSettings(): TBlkIOsettings;
     procedure SetSettings(data: TBlkIOsettings);
 
-    procedure GetPtData(json: TJsonObject; includeState: boolean); override;
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
     procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
 
@@ -378,7 +378,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkIO.GetPtData(json: TJsonObject; includeState: boolean);
+procedure TBlkIO.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
 
@@ -431,7 +431,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.IsNullable():boolean;
+function TBlkIO.IsNullable():Boolean;
 begin
  Result := (Self.IOsettings.nullAfterSec > 0);
 end;

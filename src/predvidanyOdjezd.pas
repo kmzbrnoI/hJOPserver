@@ -23,9 +23,9 @@ type
    prel: TTime;
    pabs: TTime;
    porigin: TTime;
-   prel_enabled: boolean;
-   pabs_enabled: boolean;
-   porigin_set: boolean;
+   prel_enabled: Boolean;
+   pabs_enabled: Boolean;
+   porigin_set: Boolean;
    pphase_old: TPobjPhase;
 
     function GetRel():TTime;
@@ -37,8 +37,8 @@ type
     function GetOrigin():TTime;
     procedure SetOrigin(new:TTime);
 
-    function IsChanged():boolean;
-    procedure SetChanged(new:boolean);
+    function IsChanged():Boolean;
+    procedure SetChanged(new:Boolean);
 
   public
 
@@ -47,18 +47,18 @@ type
     constructor Create(json: TJsonObject); overload;
     destructor Destroy(); override;
 
-    property rel_enabled: boolean read prel_enabled write prel_enabled;
-    property abs_enabled: boolean read pabs_enabled write pabs_enabled;
-    property origin_set: boolean read porigin_set;
+    property rel_enabled: Boolean read prel_enabled write prel_enabled;
+    property abs_enabled: Boolean read pabs_enabled write pabs_enabled;
+    property origin_set: Boolean read porigin_set;
     property phase_old: TPobjPhase read pphase_old;
 
-    property changed: boolean read IsChanged write SetChanged;                  // vraci true pokud je zmena faze
+    property changed: Boolean read IsChanged write SetChanged;                  // vraci true pokud je zmena faze
 
     property rel: TTime read GetRel write SetRel;
     property abs: TTime read GetAbs write SetAbs;
     property origin: TTime read GetOrigin write SetOrigin;
 
-    function IsDepSet():boolean;                                                // vraci jestli je mozno spocitat cas do odjezdu
+    function IsDepSet():Boolean;                                                // vraci jestli je mozno spocitat cas do odjezdu
     function DepRealDelta():TTime;                                              // vraci realny cas do odjezdu
     function DepTime():TTime;                                                   // vraci cas (modelovy nebo realny) odjezdu
     procedure RecordOriginNow();
@@ -168,7 +168,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPOdj.IsDepSet():boolean;
+function TPOdj.IsDepSet():Boolean;
 begin
  Result := (not Self.prel_enabled) or (Self.origin_set);
 end;
@@ -269,12 +269,12 @@ begin
   end;
 end;
 
-function TPOdj.IsChanged():boolean;
+function TPOdj.IsChanged():Boolean;
 begin
  Result := (Self.pphase_old <> Self.GetPhase());
 end;
 
-procedure TPOdj.SetChanged(new:boolean);
+procedure TPOdj.SetChanged(new:Boolean);
 begin
  if (not new) then
    Self.pphase_old := Self.GetPhase();

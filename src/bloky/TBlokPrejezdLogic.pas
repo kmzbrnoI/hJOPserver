@@ -56,7 +56,7 @@ type
    anulTime: TTime;
 
    onChanged: TNotifyEvent;
-   stateChanged: boolean;
+   stateChanged: Boolean;
 
     constructor Create();
     destructor Destroy(); override;
@@ -67,9 +67,9 @@ type
     procedure Update();
 
     property state: TBlkPrjTrackState read mState write SetState;
-    property shouldBeClosed: boolean read mShouldBeClosed;
-    property pozitiva: boolean read mPozitiva;
-    property anullation: boolean read GetAnullation;
+    property shouldBeClosed: Boolean read mShouldBeClosed;
+    property pozitiva: Boolean read mPozitiva;
+    property anullation: Boolean read GetAnullation;
 
     property leftOut: TBlkUsekRefs read sections[_SECT_LEFT_OUT] write sections[_SECT_LEFT_OUT];
     property left: TBlkUsekRefs read sections[_SECT_LEFT] write sections[_SECT_LEFT];
@@ -327,7 +327,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrjTrack.AllFree():boolean;
+function TBlkPrjTrack.AllFree():Boolean;
 var i: Integer;
 begin
  for i := 0 to _SECT_COUNT-1 do

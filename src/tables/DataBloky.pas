@@ -11,11 +11,11 @@ type
     private
       LV:TListView;
 
-      changed:array of boolean;
+      changed:array of Boolean;
 
     public
 
-     reload:boolean;
+     reload:Boolean;
 
       procedure LoadTable();
       procedure UpdateTable();

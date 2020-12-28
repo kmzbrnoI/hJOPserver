@@ -10,7 +10,7 @@ type
   TZesTableData=class
     private
       LV:TListView;
-      changed:boolean;
+      changed:Boolean;
 
     public
 

@@ -57,7 +57,7 @@ const
   _LOG_PATH = 'log\trakce';
 
 type
-  TReadyEvent = procedure (Sender:TObject; ready:boolean) of object;
+  TReadyEvent = procedure (Sender:TObject; ready:Boolean) of object;
   TErrorEvent = procedure (Sender:TObject; errMsg:string) of object;
 
   // passed as a parameter to callback when programming POM
@@ -72,7 +72,7 @@ type
   TSetDescFuncsCallback = record
     addr:Word;
     description:string;
-    state:boolean;
+    state:Boolean;
     callback_ok, callback_err:TCommandCallback;
   end;
 
@@ -97,7 +97,7 @@ type
 
    private
      fLibDir:string;
-     aReady:boolean;
+     aReady:Boolean;
      SpeedTable:array [0.._MAX_STEP] of Cardinal;
      turnoff_callback:TNotifyEvent;
 
@@ -155,7 +155,7 @@ type
      function Speed(step: Cardinal): Cardinal;
      procedure SetStepSpeed(step:byte; speed:Integer);
 
-     procedure LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
+     procedure LoksSetFunc(description:string; state:Boolean; ok: TCb; err: TCb);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
      procedure TurnOffSound(ok: TCb; err: TCb);
@@ -170,7 +170,7 @@ type
      property logLevelFile: TTrkLogLevel read mLogLevelFile write SetLoglevelFile;
      property logLevelTable: TTrkLogLevel read mLogLevelTable write SetLoglevelTable;
 
-     property ready:boolean read aready;
+     property ready:Boolean read aready;
      property libDir:string read fLibDir;
      property configDir:string read mConfigDir;
 
@@ -378,7 +378,7 @@ end;
 // LoksSetFunc
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LoksSetFunc(description:string; state:boolean; ok: TCb; err: TCb);
+procedure TTrakce.LoksSetFunc(description:string; state:Boolean; ok: TCb; err: TCb);
 var cb: ^TSetDescFuncsCallback;
 begin
  GetMem(cb, sizeof(TSetDescFuncsCallback));

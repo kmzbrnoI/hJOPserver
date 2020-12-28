@@ -18,7 +18,7 @@ type
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject); override;
 
-      function EndpointMatch(path:string):boolean; override;
+      function EndpointMatch(path:string):Boolean; override;
 
   end;
 
@@ -30,7 +30,7 @@ type
       procedure OnPOST(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject); override;
 
-      function EndpointMatch(path:string):boolean; override;
+      function EndpointMatch(path:string):Boolean; override;
       function AuthRequired(cmdType: THTTPCommandType): Boolean; override;
 
   end;
@@ -62,7 +62,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointUser.EndpointMatch(path:string):boolean;
+function TPTEndpointUser.EndpointMatch(path:string):Boolean;
 begin
  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
@@ -97,7 +97,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointUserAuth.EndpointMatch(path:string):boolean;
+function TPTEndpointUserAuth.EndpointMatch(path:string):Boolean;
 begin
  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;

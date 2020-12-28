@@ -29,7 +29,7 @@ uses SysUtils, TechnologieRCS, Generics.Collections, Classes, IdContext;
 type
   TRCSdModule = record
     addr:Integer;
-    output_changed, input_changed: boolean;
+    output_changed, input_changed: Boolean;
   end;
 
   // jeden RCSd klient

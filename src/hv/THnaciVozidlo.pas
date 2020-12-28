@@ -62,7 +62,7 @@ const
 type
   // v jakem smeru se nachazi stanoviste A
   THVStanoviste = (lichy = 0, sudy = 1);
-  TFunkce = array[0.._HV_FUNC_MAX] of boolean;
+  TFunkce = array[0.._HV_FUNC_MAX] of Boolean;
   TPomStatus = (released = 0, pc = 1, progr = 2, error = 3);
 
   // typ hnaciho vozidla
@@ -97,7 +97,7 @@ type
 
   THVRegulator = record                             // jeden regulator -- klient -- je z pohledu hnaciho vozidla reprezentovan
    conn: TIdContext;                                   // fyzickym spojenim k tomu regulatoru -- klientu a
-   root: boolean;                                      // tages, jestli je uzivatel za timto regulatorem root
+   root: Boolean;                                      // tages, jestli je uzivatel za timto regulatorem root
   end;
 
   THVToken = record                                 // jeden token opravnujici prevzeti rizeni hnaciho vozidla
@@ -139,7 +139,7 @@ type
      procedure LoadData(ini:TMemIniFile; section:string);
      procedure LoadState(ini:TMemIniFile; section:string);
 
-     procedure SetRuc(state:boolean);
+     procedure SetRuc(state:Boolean);
      procedure UpdateFuncDict();
      procedure SetTrain(new:Integer);
 
@@ -150,7 +150,7 @@ type
      procedure TrakceCallbackOk(Sender:TObject; data:Pointer);
      procedure TrakceCallbackErr(Sender:TObject; data:Pointer);
      procedure TrakceCallbackCallEv(cb:PTCb);
-     procedure SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean; funcChanged:boolean);
+     procedure SlotChanged(Sender:TObject; speedChanged:Boolean; dirChanged:Boolean; funcChanged:Boolean);
      procedure TrakceAcquired(Sender: TObject; LocoInfo:TTrkLocoInfo);
      procedure TrakceAcquiredDirection(Sender: TObject; data:Pointer);
      procedure TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
@@ -195,29 +195,29 @@ type
 
      function PredejStanici(st:TOR):Integer;
      function GetPanelLokString(mode:TLokStringMode = normal):string; // vrati HV ve standardnim formatu pro klienta
-     procedure UpdateRuc(send_remove:boolean = true); // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
+     procedure UpdateRuc(send_remove:Boolean = true); // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
 
      procedure RemoveRegulator(conn:TIDContext); // smaze regulator -- klienta; je volano jen jako callback regulatoru!
-     function IsReg(conn:TIdContext):boolean; // je na tomto HV tento regulator ?
+     function IsReg(conn:TIdContext):Boolean; // je na tomto HV tento regulator ?
      procedure UpdateAllRegulators();
      procedure ForceRemoveAllRegulators();
 
      function GetToken():string;
-     function IsToken(str:string):boolean;
+     function IsToken(str:string):Boolean;
      procedure RemoveToken(token:string);
      procedure UpdateTokenTimeout(); // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
 
-     function CanPlayHouk(sound:string):boolean; // vraci true pokud je povoleno prehravani zvuku
+     function CanPlayHouk(sound:string):Boolean; // vraci true pokud je povoleno prehravani zvuku
      procedure CheckRelease();
      procedure RecordUseNow();
      function NiceName():string;
-     function ShouldAcquire():boolean;
+     function ShouldAcquire():Boolean;
      procedure UpdateTraveled(period:Cardinal);
 
      procedure SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil); overload;
      procedure SetSpeed(speed:Integer; Sender: TObject = nil); overload;
-     procedure SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
-     procedure SetDirection(dir:boolean; Sender: TObject = nil); overload;
+     procedure SetDirection(dir:Boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
+     procedure SetDirection(dir:Boolean; Sender: TObject = nil); overload;
      procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
      procedure SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil); overload;
      procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
@@ -246,7 +246,7 @@ type
      class function HVFuncTypeToChar(t:THVFuncType):char;
 
      //PT:
-     procedure GetPtData(json:TJsonObject; includeState:boolean);
+     procedure GetPtData(json:TJsonObject; includeState:Boolean);
      procedure GetPtState(json:TJsonObject);
      procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
 
@@ -812,7 +812,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateRuc(send_remove:boolean = true);
+procedure THV.UpdateRuc(send_remove:Boolean = true);
 var train:string;
 begin
  if (Self.data.typ = THVType.car) then
@@ -871,7 +871,7 @@ begin
  Self.Stav.tokens.Add(token);
 end;
 
-function THV.IsToken(str:string):boolean;
+function THV.IsToken(str:string):Boolean;
 var token:THVToken;
 begin
  for token in Self.Stav.tokens do
@@ -902,7 +902,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // timto prikazem je lokomotive zapinano / vypinano rucni rizeni
-procedure THV.SetRuc(state:boolean);
+procedure THV.SetRuc(state:Boolean);
 begin
  if (Self.Stav.ruc = state) then Exit();
  Self.Stav.ruc := state;
@@ -941,7 +941,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.IsReg(conn:TIdContext):boolean;
+function THV.IsReg(conn:TIdContext):Boolean;
 var reg:THVRegulator;
 begin
  for reg in Self.Stav.regulators do
@@ -961,7 +961,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.GetPtData(json:TJsonObject; includeState:boolean);
+procedure THV.GetPtData(json:TJsonObject; includeState:Boolean);
 var i, lastFunction:Integer;
     types:string;
 begin
@@ -1094,7 +1094,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.CanPlayHouk(sound:string):boolean;
+function THV.CanPlayHouk(sound:string):Boolean;
 begin
  Result := ((Self.Stav.regulators.Count = 0) and (not Self.stolen) and
            ((not Self.funcDict.ContainsKey(_SOUND_FUNC)) or (Self.Stav.funkce[Self.funcDict[_SOUND_FUNC]])) and
@@ -1148,7 +1148,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.ShouldAcquire():boolean;
+function THV.ShouldAcquire():Boolean;
 begin
  Result := ((Self.train > -1) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
 end;
@@ -1199,12 +1199,12 @@ begin
  Self.SetSpeed(speed, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
-procedure THV.SetDirection(dir:boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure THV.SetDirection(dir:Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
  Self.SetSpeedStepDir(Self.slot.step, dir, ok, err, Sender);
 end;
 
-procedure THV.SetDirection(dir:boolean; Sender: TObject = nil);
+procedure THV.SetDirection(dir:Boolean; Sender: TObject = nil);
 begin
  Self.SetDirection(dir, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
@@ -1473,7 +1473,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.SlotChanged(Sender:TObject; speedChanged:boolean; dirChanged:boolean; funcChanged:boolean);
+procedure THV.SlotChanged(Sender:TObject; speedChanged:Boolean; dirChanged:Boolean; funcChanged:Boolean);
 begin
  if (speedChanged or dirChanged) then
    TCPRegulator.LokUpdateSpeed(Self, Sender);

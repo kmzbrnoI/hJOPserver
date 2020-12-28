@@ -6,7 +6,7 @@ uses Generics.Collections, TOblRizeni, TBlok, Classes, Train, User,
      THnaciVozidlo, IdContext, SysUtils;
 
 type
-  TPSCallback = procedure (Sender:TIdContext; success:boolean) of object;
+  TPSCallback = procedure (Sender:TIdContext; success:Boolean) of object;
 
   TORPing = record
     id: Cardinal;
@@ -43,14 +43,14 @@ type
     UPO_OK, UPO_Esc:TNotifyEvent;                                               // callbacky manipulace s upozornenim vlevo dole
     UPO_ref:TObject;                                                            //
     index:Integer;                                                              // index spojeni v tabulce ve F_Main
-    funcsVyznamReq:boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
-    maus:boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
+    funcsVyznamReq:Boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
+    maus:Boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
 
     train_new_usek_index:Integer;                                               // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
     train_edit:TTrain;                                                          // souprava, kterou panel edituje
     train_usek:TObject;                                                         // usek, na kterem panel edituje soupravu (TBlkUsek)
 
-    regulator:boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
+    regulator:Boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
     regulator_user:TUser;                                                       // uzivatel, ktery autorizoval regulator
     regulator_zadost:TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
     regulator_loks:TList<THV>;                                                  // seznam lokomotiv v regulatoru
@@ -79,7 +79,7 @@ type
     procedure ResetTrains();
 
     class function ORPing(id: Cardinal; sent: TDateTime):TORPing;
-    function PingComputed():boolean;
+    function PingComputed():Boolean;
     procedure PingUpdate(AContext:TIdContext);
     procedure PongReceived(id:Cardinal);
 
@@ -172,7 +172,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTCPOrsRef.PingComputed():boolean;
+function TTCPOrsRef.PingComputed():Boolean;
 begin
  Result := (Self.ping_received.Count > 0);
 end;

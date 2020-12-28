@@ -27,11 +27,11 @@ type
 
      procedure Add(jc:TJC);
      procedure Remove(jc:TJC);
-     function Contains(jc:TJC):boolean;
+     function Contains(jc:TJC):Boolean;
 
      procedure Update();
 
-     function IsUsekInAnyABJC(usekid:Integer):boolean;
+     function IsUsekInAnyABJC(usekid:Integer):Boolean;
 
      property Items[index : integer]: TJC read GetItem; default;
   end;
@@ -92,7 +92,7 @@ begin
  ABTableData.DeleteJC(i);
 end;
 
-function TABlist.Contains(jc:TJC):boolean;
+function TABlist.Contains(jc:TJC):Boolean;
 begin
  Result := Self.JCs.Contains(jc);
 end;
@@ -150,7 +150,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TABlist.IsUsekInAnyABJC(usekid:Integer):boolean;
+function TABlist.IsUsekInAnyABJC(usekid:Integer):Boolean;
 var jc:TJC;
     id:Integer;
 begin

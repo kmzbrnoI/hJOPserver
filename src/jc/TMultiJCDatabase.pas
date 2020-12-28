@@ -37,7 +37,7 @@ type
      function GetJCByID(id:Integer):TMultiJC;
      function GetJCIndexByID(id:Integer):Integer;
 
-     function StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter:Boolean):boolean;
+     function StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter:Boolean):Boolean;
      function FindMJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TMultiJC;
      function IsAnyMJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
 
@@ -256,7 +256,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter:Boolean):boolean;
+function TMultiJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter:Boolean):Boolean;
 var mJC: TMultiJC;
     j: Integer;
 begin
@@ -353,7 +353,7 @@ function TMultiJCDb.IsAnyMJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boo
 var mjc: TMultiJC;
     jc: TJC;
     j: Integer;
-    error: boolean;
+    error: Boolean;
 begin
  // startNav musi mit navolenou volbu, aby tato funkce fungovala.
  if (not Self.JCsStartNav.ContainsKey(startNav)) then

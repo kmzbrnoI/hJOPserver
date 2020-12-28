@@ -16,10 +16,10 @@ type
 
  //aktualni stav useku (obsazeno, ...)
  TBlkUvazkaStav = record
-  enabled:boolean;
-  ZAK:boolean;
+  enabled:Boolean;
+  ZAK:Boolean;
   stit:string;
-  nouzZaver:boolean;
+  nouzZaver:Boolean;
  end;
 
  TBlkUvazka = class(TBlk)
@@ -35,13 +35,13 @@ type
    UvazkaSettings:TBlkUvazkaSettings;
    UvazkaStav:TBlkUvazkaStav;
    fparent:TBlk;
-   fzadost:boolean;
+   fzadost:Boolean;
 
     function GetParent():TBlk;
 
     procedure SetUvazkaStit(stit:string);
-    procedure SetUvazkaZAK(ZAK:boolean);
-    procedure SetNouzZaver(nouz:boolean);
+    procedure SetUvazkaZAK(ZAK:Boolean);
+    procedure SetNouzZaver(nouz:Boolean);
 
     procedure MenuZTSOnClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZTSOffClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -53,15 +53,15 @@ type
     procedure MenuZAVOnClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
 
-    procedure PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
-    procedure PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
+    procedure PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
+    procedure PanelPotvrSekvZAK(Sender:TIdContext; success:Boolean);
 
     procedure UPOZTSOnClick(Sender:TObject);
     procedure UPOUTSClick(Sender:TObject);
     procedure UPOOTSClick(Sender:TObject);
     procedure UPOZAKOnClick(Sender:TObject);
 
-    procedure SetZadost(zadost:boolean);
+    procedure SetZadost(zadost:Boolean);
 
     procedure StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
         UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
@@ -81,7 +81,7 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:boolean = false); override;
+    procedure Change(now:Boolean = false); override;
     procedure ChangeFromTrat();
 
     //----- usek own functions -----
@@ -93,15 +93,15 @@ type
     procedure SetSettings(data:TBlkUvazkaSettings);
 
     procedure UdelSouhlas();
-    function CanZTS():boolean;
+    function CanZTS():Boolean;
 
     property Stitek:string read UvazkaStav.Stit write SetUvazkaStit;
-    property ZAK:boolean read UvazkaStav.ZAK write SetUvazkaZAK;
-    property enabled:boolean read UvazkaStav.enabled;
+    property ZAK:Boolean read UvazkaStav.ZAK write SetUvazkaZAK;
+    property enabled:Boolean read UvazkaStav.enabled;
 
     property parent:TBlk read GetParent;
-    property zadost:boolean read fzadost write SetZadost;
-    property nouzZaver:boolean read UvazkaStav.nouzZaver write SetNouzZaver;
+    property zadost:Boolean read fzadost write SetZadost;
+    property nouzZaver:Boolean read UvazkaStav.nouzZaver write SetNouzZaver;
 
     //GUI:
 
@@ -182,7 +182,7 @@ begin
  inherited Update();
 end;
 
-procedure TBlkUvazka.Change(now:boolean = false);
+procedure TBlkUvazka.Change(now:Boolean = false);
 begin
  inherited Change(now);
  (Self.parent as TBlkTrat).ChangeFromUv(Self);
@@ -205,8 +205,8 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUvazka.SetUvazkaZAK(ZAK:boolean);
-var old:boolean;
+procedure TBlkUvazka.SetUvazkaZAK(ZAK:Boolean);
+var old:Boolean;
 begin
  old := Self.UvazkaStav.ZAK;
  Self.UvazkaStav.ZAK := ZAK;
@@ -311,12 +311,12 @@ begin
 end;
 
 
-procedure TBlkUvazka.PanelPotvrSekvZAK(Sender:TIdContext; success:boolean);
+procedure TBlkUvazka.PanelPotvrSekvZAK(Sender:TIdContext; success:Boolean);
 begin
  if (success) then Self.ZAK := false;
 end;
 
-procedure TBlkUvazka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
+procedure TBlkUvazka.PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
 begin
  if (success) then Self.nouzZaver := false;
 end;
@@ -522,7 +522,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetZadost(zadost:boolean);
+procedure TBlkUvazka.SetZadost(zadost:Boolean);
 begin
  // tohleto poradi nastvovani je dulezite
  if (zadost) then Self.fzadost := zadost;
@@ -532,7 +532,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetNouzZaver(nouz:boolean);
+procedure TBlkUvazka.SetNouzZaver(nouz:Boolean);
 begin
  if (Self.UvazkaStav.nouzZaver = nouz) then Exit();
 
@@ -543,7 +543,7 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 
 // Takto zasobnik zjistuje, jestli muze zacit zadost:
-function TBlkUvazka.CanZTS():boolean;
+function TBlkUvazka.CanZTS():Boolean;
 var trat:TBlkTrat;
 begin
  trat := TBlkTrat(Self.parent);

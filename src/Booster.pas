@@ -37,10 +37,10 @@ type
     function GetNapajeni():TBoosterSignal;
     function GetDCC():TBoosterSignal;
 
-    function GetRCSPresent():boolean;
-    function GetDCCDetection():boolean;
-    function GetShortcutDetection():boolean;
-    function GetPowerDetection():boolean;
+    function GetRCSPresent():Boolean;
+    function GetDCCDetection():Boolean;
+    function GetShortcutDetection():Boolean;
+    function GetPowerDetection():Boolean;
 
   public
 
@@ -57,10 +57,10 @@ type
     property napajeni:TBoosterSignal read GetNapajeni;
     property DCC:TBoosterSignal read GetDCC;
 
-    property rcsPresent:boolean read GetRCSPresent;
-    property isShortcutDetection:boolean read GetShortcutDetection;
-    property isPowerDetection:boolean read GetPowerDetection;
-    property isDCCdetection:boolean read GetDCCDetection;
+    property rcsPresent:Boolean read GetRCSPresent;
+    property isShortcutDetection:Boolean read GetShortcutDetection;
+    property isPowerDetection:Boolean read GetPowerDetection;
+    property isDCCdetection:Boolean read GetDCCDetection;
 
     property bSettings:TBoosterSettings read settings write settings;
 
@@ -285,7 +285,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBooster.GetRCSPresent():boolean;
+function TBooster.GetRCSPresent():Boolean;
 begin
  Result := (((not Self.isShortcutDetection) or RCSi.IsModule(Self.Settings.RCS.Zkrat.board)) and
             ((not Self.isPowerDetection) or RCSi.IsModule(Self.Settings.RCS.Napajeni.board)) and
@@ -294,17 +294,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBooster.GetDCCDetection():boolean;
+function TBooster.GetDCCDetection():Boolean;
 begin
  Result := (Self.Settings.RCS.DCC.board > 0);
 end;
 
-function TBooster.GetShortcutDetection():boolean;
+function TBooster.GetShortcutDetection():Boolean;
 begin
  Result := (Self.Settings.RCS.Zkrat.board > 0);
 end;
 
-function TBooster.GetPowerDetection():boolean;
+function TBooster.GetPowerDetection():Boolean;
 begin
  Result := (Self.Settings.RCS.Napajeni.board > 0);
 end;

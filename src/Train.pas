@@ -30,7 +30,7 @@ type
     note: string;
     length: Integer; // length of a train in centimeters
     typ: string; // MOs, Os, Mn, Pn, ...
-    dir_L, dir_S: boolean; // allowed directions
+    dir_L, dir_S: Boolean; // allowed directions
     HVs: TTrainHVs; // locomotives (engines)
     station: TObject;
 
@@ -44,7 +44,7 @@ type
     stationTo: TObject; // instance of TOR or Nil
 
     announcement: Boolean;
-    announcementPlayed: boolean;
+    announcementPlayed: Boolean;
 
     podj: TDictionary<Integer, TPOdj>;  // map track id: podj
   end;
@@ -76,7 +76,7 @@ type
      procedure SetDirection(direction:THVStanoviste);
      procedure SetFront(front:TObject);
 
-     function IsStolen():boolean;
+     function IsStolen():Boolean;
      function GetMaxSpeed():Cardinal;
      function GetMaxSpeedStep():Cardinal;
 
@@ -106,7 +106,7 @@ type
      procedure CheckSH(nav:TObject);
 
      procedure ToggleHouk(desc:string);
-     procedure SetHoukState(desc:string; state:boolean);
+     procedure SetHoukState(desc:string; state:Boolean);
 
      procedure AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj); overload;
      procedure AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj); overload;
@@ -135,7 +135,7 @@ type
      property speed: Integer read data.speed write SetSpeed;
      property wantedSpeed: Integer read data.wantedSpeed;
      property direction: THVStanoviste read data.direction write SetDirection;
-     property stolen: boolean read IsStolen;
+     property stolen: Boolean read IsStolen;
      property front: TObject read data.front write SetFront;
      property length: Integer read data.length;
      property typ: string read data.typ;
@@ -143,8 +143,8 @@ type
      property stationFrom: TObject read data.stationFrom;
      property stationTo: TObject read data.stationTo;
 
-     property announcement: boolean read data.announcement;
-     property announcementPlayed: boolean read data.announcementPlayed;
+     property announcement: Boolean read data.announcement;
+     property announcementPlayed: Boolean read data.announcementPlayed;
 
      property HVs: TTrainHVs read data.HVs;
      property maxSpeed: Cardinal read GetMaxSpeed; // warning: this could be speed with no speed step
@@ -842,7 +842,7 @@ end;
 // zmena smeru pri naslapu na smyckovy blok
 procedure TTrain.ChangeDirection();
 var addr:Integer;
-    tmp:boolean;
+    tmp:Boolean;
 begin
  writelog('Souprava '+ Self.name + ' : změna směru', WR_SPRPREDAT);
 
@@ -933,7 +933,7 @@ begin
   end;
 end;
 
-procedure TTrain.SetHoukState(desc:string; state:boolean);
+procedure TTrain.SetHoukState(desc:string; state:Boolean);
 var addr:Integer;
     HV:THV;
 begin

@@ -20,7 +20,7 @@ type
       procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject); override;
 
-      function EndpointMatch(path:string):boolean; override;
+      function EndpointMatch(path:string):Boolean; override;
 
   end;
 
@@ -116,7 +116,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointBlokStav.EndpointMatch(path:string):boolean;
+function TPTEndpointBlokStav.EndpointMatch(path:string):Boolean;
 begin
  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;

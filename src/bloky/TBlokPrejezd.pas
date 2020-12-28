@@ -36,7 +36,7 @@ type
   basicStav: TBlkPrjBasicStav;
   anulaceOld: Boolean;
   stit,vyl:string;
-  PC_NOT, PC_UZ: boolean;                           // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
+  PC_NOT, PC_UZ: Boolean;                           // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
   zaver:Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
   uzavStart:TDateTime;
   shs:TList<TBlk>;                                  // seznam souctovych hlasek, kam hlasi prejezd stav
@@ -71,15 +71,15 @@ type
     procedure UpdateOutputs();
     procedure UpdateTracks();
 
-    procedure SetNOT(state:boolean);
-    procedure SetUZ(state:boolean);
+    procedure SetNOT(state:Boolean);
+    procedure SetUZ(state:Boolean);
 
-    procedure SetZaver(zaver:boolean);
-    function GetZaver():boolean;
+    procedure SetZaver(zaver:Boolean);
+    function GetZaver():Boolean;
 
-    function TrackClosed():boolean;
-    function TrackPozitiva():boolean;
-    function GetAnulace():boolean;
+    function TrackClosed():Boolean;
+    function TrackPozitiva():Boolean;
+    function GetAnulace():Boolean;
 
     procedure MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
     procedure MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
@@ -123,7 +123,7 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:boolean = false); override;
+    procedure Change(now:Boolean = false); override;
 
     //----- prejezd own functions -----
 
@@ -135,14 +135,14 @@ type
 
     property Stav:TBlkPrjStav read PrjStav;
 
-    property NOtevreni:boolean read PrjStav.PC_NOT write SetNOT;
-    property UZ:boolean read PrjStav.PC_UZ write SetUZ;
+    property NOtevreni:Boolean read PrjStav.PC_NOT write SetNOT;
+    property UZ:Boolean read PrjStav.PC_UZ write SetUZ;
 
     property Stitek:string read PrjStav.stit write SetStit;
     property Vyluka:string read PrjStav.vyl write SetVyl;
 
-    property Zaver:boolean read GetZaver write SetZaver;
-    property Anulace:boolean read GetAnulace;
+    property Zaver:Boolean read GetZaver write SetZaver;
+    property Anulace:Boolean read GetAnulace;
 
     //GUI:
     procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
@@ -150,10 +150,10 @@ type
     procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
     function PanelStateString():string; override;
 
-    procedure PanelZUZCallBack(Sender:TIdContext; success:boolean);
-    procedure PanelZNOTCallBack(Sender:TIdContext; success:boolean);
+    procedure PanelZUZCallBack(Sender:TIdContext; success:Boolean);
+    procedure PanelZNOTCallBack(Sender:TIdContext; success:Boolean);
 
-    procedure GetPtData(json: TJsonObject; includeState: boolean); override;
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
  end;
 
@@ -342,7 +342,7 @@ end;
 
 procedure TBlkPrejezd.Update();
 var new_stav:TBlkPrjBasicStav;
-    available:boolean;
+    available:Boolean;
     oblr:TOR;
     module:Cardinal;
 begin
@@ -416,7 +416,7 @@ end;
 
 procedure TBlkPrejezd.UpdateTracks();
 var track: TBlkPrjTrack;
-    changed: boolean;
+    changed: Boolean;
 begin
  changed := false;
  for track in Self.tracks do
@@ -439,7 +439,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.Change(now:boolean = false);
+procedure TBlkPrejezd.Change(now:Boolean = false);
 var sh:TBlk;
 begin
  inherited;
@@ -527,7 +527,7 @@ begin
  Self.UpdateOutputs();
 end;
 
-procedure TBlkPrejezd.SetNOT(state:boolean);
+procedure TBlkPrejezd.SetNOT(state:Boolean);
 begin
  if ((Self.Zaver) and (state)) then Exit();
 
@@ -542,7 +542,7 @@ begin
  Self.UpdateOutputs();
 end;
 
-procedure TBlkPrejezd.SetUZ(state:boolean);
+procedure TBlkPrejezd.SetUZ(state:Boolean);
 begin
  if (state) then
   begin
@@ -761,20 +761,20 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //zavola se pri uspesnem zvladnuti potvrzovaci sekvence
-procedure TBlkPrejezd.PanelZNOTCallBack(Sender:TIdContext; success:boolean);
+procedure TBlkPrejezd.PanelZNOTCallBack(Sender:TIdContext; success:Boolean);
 begin
  if (not success) then Exit();
  Self.Notevreni := true;
 end;
 
-procedure TBlkPrejezd.PanelZUZCallBack(Sender:TIdContext; success:boolean);
+procedure TBlkPrejezd.PanelZUZCallBack(Sender:TIdContext; success:Boolean);
 begin
  if (success) then Self.UZ := false; 
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.SetZaver(zaver:boolean);
+procedure TBlkPrejezd.SetZaver(zaver:Boolean);
 begin
  if (zaver) then
   begin
@@ -804,7 +804,7 @@ begin
   end;
 end;
 
-function TBlkPrejezd.GetZaver():boolean;
+function TBlkPrejezd.GetZaver():Boolean;
 begin
  Result := (Self.PrjStav.zaver > 0);
 end;
@@ -919,7 +919,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.GetPtData(json: TJsonObject; includeState: boolean);
+procedure TBlkPrejezd.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
 
@@ -956,7 +956,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.TrackClosed():boolean;
+function TBlkPrejezd.TrackClosed():Boolean;
 var track: TBlkPrjTrack;
 begin
  for track in Self.tracks do
@@ -965,7 +965,7 @@ begin
  Result := false;
 end;
 
-function TBlkPrejezd.TrackPozitiva():boolean;
+function TBlkPrejezd.TrackPozitiva():Boolean;
 var track: TBlkPrjTrack;
 begin
  for track in Self.tracks do
@@ -976,7 +976,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.GetAnulace():boolean;
+function TBlkPrejezd.GetAnulace():Boolean;
 var track: TBlkPrjTrack;
 begin
  Result := false;

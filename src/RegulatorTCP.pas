@@ -20,7 +20,7 @@ TTCPRegulator = class
     procedure ParseGlobal(Sender:TIdContext; parsed:TStrings);
     procedure ParseLoko(Sender:TIdContext; parsed:TStrings);
 
-    procedure ClientAuthorise(conn:TIdContext; state:boolean; user:TObject; comment:string='');
+    procedure ClientAuthorise(conn:TIdContext; state:Boolean; user:TObject; comment:string='');
     procedure ClientError(conn:TIdContext; error:string);
 
     procedure PanelLOKResponseOK(Sender:TObject; Data:Pointer);
@@ -36,7 +36,7 @@ TTCPRegulator = class
     procedure LokUpdateRuc(HV:THV);
 
     procedure LokToRegulator(Regulator:TIDContext; HV:THV);
-    procedure RegDisconnect(reg:TIdContext; contextDestroyed: boolean = false);
+    procedure RegDisconnect(reg:TIdContext; contextDestroyed: Boolean = false);
     procedure RemoveLok(Regulator:TIdContext; HV:THV; info:string);
 
     procedure SendExpectedSpeed(reg: TIdContext; HV: THV);
@@ -387,7 +387,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // je volano, pokud chceme rict klientovi, ze jsme mu zmenili stav autorizace
-procedure TTCPRegulator.ClientAuthorise(conn:TIdContext; state:boolean; user:TObject; comment:string='');
+procedure TTCPRegulator.ClientAuthorise(conn:TIdContext; state:Boolean; user:TObject; comment:string='');
 var str:string;
 begin
  (conn.Data as TTCPORsRef).regulator := state;
@@ -516,7 +516,7 @@ end;
 
 // prirazeni lokomotivy regulatoru
 procedure TTCPRegulator.LokToRegulator(Regulator:TIDContext; HV:THV);
-var pom:boolean;
+var pom:Boolean;
     i:Integer;
     reg:THVRegulator;
     timeout:Integer;
@@ -606,7 +606,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // odhlasit vsechna hnaci vozidla regulatoru
 
-procedure TTCPRegulator.RegDisconnect(reg:TIdContext; contextDestroyed: boolean = false);
+procedure TTCPRegulator.RegDisconnect(reg:TIdContext; contextDestroyed: Boolean = false);
 var addr:Integer;
 begin
  for addr := 0 to _MAX_ADDR-1 do

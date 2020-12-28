@@ -15,7 +15,7 @@ const
   );
 
 type
-  TAvailableEvent = procedure (Sender:TObject; available:boolean) of object;
+  TAvailableEvent = procedure (Sender:TObject; available:Boolean) of object;
 
   TSHTrain = record
     cislo: string;
@@ -34,7 +34,7 @@ type
 
      procedure BroadcastData(data:string);
      function TrainToStr(train:TSHTrain):string;
-     function GetAvailable():boolean;
+     function GetAvailable():Boolean;
 
    public
     OnAvailable: TAvailableEvent;
@@ -51,9 +51,9 @@ type
      procedure Projede(train:TSHTrain);
      procedure Spec(id:string);
 
-     class function HlasitTrainTyp(typ:string):boolean;
+     class function HlasitTrainTyp(typ:string):Boolean;
 
-     property available: boolean read GetAvailable;
+     property available: Boolean read GetAvailable;
 
 end;
 
@@ -197,14 +197,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TStanicniHlaseni.GetAvailable():boolean;
+function TStanicniHlaseni.GetAvailable():Boolean;
 begin
  Result := (Self.m_clients.Count > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TStanicniHlaseni.HlasitTrainTyp(typ:string):boolean;
+class function TStanicniHlaseni.HlasitTrainTyp(typ:string):Boolean;
 var s:string;
 begin
  for s in stanicniHlaseni._HLASENI_TRAINTYP_FORBIDDEN do

@@ -11,7 +11,7 @@ const
 
 type
   TSSData = record
-   enabled:boolean;
+   enabled:Boolean;
    RCSAdr:Smallint;
    AC_id:Integer;
    IN_Start:Smallint;
