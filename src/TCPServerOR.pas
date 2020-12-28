@@ -621,7 +621,7 @@ begin
     btTurnout    : (orRef.stitek as TBlkTurnout).note := tmp;
     btUvazka     : (orRef.stitek as TBlkUvazka).Stitek := tmp;
     btPrejezd    : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
-    btZamek      : (orRef.stitek as TBlkZamek).Stitek := tmp;
+    btLock       : (orRef.stitek as TBlkLock).note := tmp;
     btRozp       : (orRef.stitek as TBlkRozp).stit := tmp;
     btIO         : (orRef.stitek as TBlkIO).note := tmp;
    end;//case

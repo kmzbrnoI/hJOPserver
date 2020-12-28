@@ -275,7 +275,7 @@ var spojka_vypust: TArI;
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.coupling > -1);
 
     // zamek
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btZamek, Self.Blk.GetSettings().lock);
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btLock, Self.Blk.GetSettings().lock);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.lock > -1);
 
     // neprofilove styky +
@@ -290,7 +290,7 @@ var spojka_vypust: TArI;
     Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, btTurnout, -1);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, btZamek, -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, btLock, -1);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);
 
     Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, btUsek, -1, btTU);

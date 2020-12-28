@@ -1,4 +1,4 @@
-unit TechnologieJC;
+﻿unit TechnologieJC;
 
 {
   Kompletni technologie jizdnich cest.
@@ -605,7 +605,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.Blok));
       Exit;
      end;
-    if (blk.typ <> btZamek) then
+    if (blk.typ <> btLock) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
@@ -958,7 +958,7 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
-    if ((Blk as TBlkZamek).klicUvolnen) then
+    if ((Blk as TBlkLock).keyReleased) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.id));
    end;//for i
 
@@ -1433,7 +1433,7 @@ var i, j: Integer;
     refZaver: TJCRefZaver;
     vyhybka: TBlkTurnout;
     usek, nextUsek: TBlkUsek;
-    zamek: TBlkZamek;
+    zamek: TBlkLock;
     prejezd: TBlkPrejezd;
     navestidlo: TBlkNav;
     trat: TBlkTrat;
@@ -1928,7 +1928,7 @@ var i, j: Integer;
     for refZaver in Self.fproperties.zamky do
      begin
       Blky.GetBlkByID(refZaver.Blok, TBlk(zamek));
-      zamek.nouzZaver := true;
+      zamek.emLock := true;
       navestidlo.AddBlkToRnz(zamek.id, false);
      end;
 
@@ -2968,7 +2968,7 @@ var i: Integer;
     vyhybka: TBlkTurnout;
     prejezd: TBlkPrejezd;
     trat: TBlkTrat;
-    zamek: TBlkZamek;
+    zamek: TBlkLock;
 begin
  // index soupravy na useku pred navestidlem
  train := Self.GetTrain();
@@ -3053,7 +3053,7 @@ begin
     Blky.GetBlkByID(refZaver.Blok, TBlk(zamek));
 
     // kontrola uzamceni
-    if (zamek.klicUvolnen) then
+    if (zamek.keyReleased) then
       Exit(false);
    end;//for i
 
@@ -3747,11 +3747,11 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
-    if ((Blk as TBlkZamek).klicUvolnen) then
+    if ((Blk as TBlkLock).keyReleased) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NEUZAMCEN, blk, blk.id));
 
     // kontrola uzamceni
-    if (not (Blk as TBlkZamek).nouzZaver) then
+    if (not (Blk as TBlkLock).emLock) then
       bariery.Add(Self.JCBariera(_JCB_ZAMEK_NOUZ_ZAVER, blk, blk.id));
    end;//for i
 end;

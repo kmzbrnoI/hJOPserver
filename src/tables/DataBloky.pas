@@ -268,22 +268,22 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btZamek: begin
+   btLock: begin
       Self.LV.Items[line].ImageIndex := 10;
       Self.LV.Items[line].SubItems[0] := 'Zámek';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      if ((Blk as TBlkZamek).Stav.enabled) then
+      if ((Blk as TBlkLock).state.enabled) then
        begin
-        if ((Blk as TBlkZamek).klicUvolnen) then
+        if ((Blk as TBlkLock).keyReleased) then
           Self.LV.Items[line].SubItems[3] := 'klíč uvolněn'
         else
           Self.LV.Items[line].SubItems[3] := 'klíč zamknut';
        end else
         Self.LV.Items[line].SubItems[3] := 'disabled';
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkZamek).Stitek;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkLock).note;
       Self.LV.Items[line].SubItems[7] := '---';
    end;
 

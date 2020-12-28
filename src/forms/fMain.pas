@@ -2964,10 +2964,10 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btZamek: begin
-    if ((Blk as TBlkZamek).Stav.enabled) then
+   btLock: begin
+    if ((Blk as TBlkLock).state.enabled) then
      begin
-      if ((Blk as TBlkZamek).klicUvolnen) then
+      if ((Blk as TBlkLock).keyReleased) then
        LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY
       else
        LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
@@ -3035,7 +3035,7 @@ var Blk: TBlk;
    btNav: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
    btPrejezd: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
    btTrat, btUvazka: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
-   btZamek: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
+   btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    btRozp: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    btTU: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
    btIO: F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);

@@ -54,9 +54,9 @@ procedure TChangeEventCaller.NullZamekZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> btZamek)) then Exit();
+ if ((blk = nil) or (blk.typ <> btLock)) then Exit();
 
- TBlkZamek(Blk).Zaver := false;
+ TBlkLock(Blk).Zaver := false;
 end;
 
 procedure TChangeEventCaller.NullPrejezdZaver(Sender: TObject; data: Integer);

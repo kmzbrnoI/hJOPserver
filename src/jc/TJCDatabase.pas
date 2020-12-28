@@ -1,4 +1,4 @@
-unit TJCDatabase;
+﻿unit TJCDatabase;
 
 {
   TJCDb je databaze jizdnich cest.
@@ -623,7 +623,7 @@ begin
       jc := JCDb.FindPostavenaJCWithTrat(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-    btZamek: begin
+    btLock: begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithZamek(Blk.id);
     end;

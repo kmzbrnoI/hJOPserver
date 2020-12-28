@@ -1,4 +1,4 @@
-unit TBlokVyhybka;
+﻿unit TBlokVyhybka;
 
 { TURNOUT technological block definition. }
 
@@ -1316,9 +1316,9 @@ end;
 // pokud je na vyhybku zamek, vyhybka ma nespravnou polohu a klic je v zamku, vyhlasime poruchu zamku
 procedure TBlkTurnout.UpdateLock();
 begin
- if (Self.LockLocked() and (not (Self.lock as TBlkZamek).nouzZaver) and
-     (Self.position <> Self.m_settings.lockPosition) and (not (Self.lock as TBlkZamek).porucha)) then
-   (Self.lock as TBlkZamek).porucha := true;
+ if (Self.LockLocked() and (not (Self.lock as TBlkLock).emLock) and
+     (Self.position <> Self.m_settings.lockPosition) and (not (Self.lock as TBlkLock).error)) then
+   (Self.lock as TBlkLock).error := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1702,7 +1702,7 @@ end;
 
 function TBlkTurnout.LockLocked(): Boolean;
 begin
- Result := (Self.lock <> nil) and (not (Self.lock as TBlkZamek).klicUvolnen);
+ Result := (Self.lock <> nil) and (not (Self.lock as TBlkLock).keyReleased);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1711,7 +1711,7 @@ class function TBlkTurnout.SetErrorToMsg(error: TTurnoutSetError): string;
 begin
  case (error) of
    vseInvalidPos: Result := 'neplatná poloha';
-   vseInvalidRCSConfig: Result := 'nepklatní konfigurace bloku';
+   vseInvalidRCSConfig: Result := 'neplatná konfigurace bloku';
    vseLocked: Result := 'zamčena';
    vseOccupied: Result := 'obsazena';
    vseRCS: Result := 'vyjímka RCS SetOutput';

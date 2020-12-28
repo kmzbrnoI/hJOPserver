@@ -1,4 +1,4 @@
-unit fBlkZamek;
+﻿unit fBlkZamek;
 
 interface
 
@@ -22,7 +22,7 @@ type
 
   private
    NewBlk: Boolean;
-   Blk: TBlkZamek;
+   Blk: TBlkLock;
 
   public
    OpenIndex: Integer;
@@ -115,13 +115,13 @@ var glob: TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := btZamek;
+  glob.typ := btLock;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btZamek, glob) as TBlkZamek;
+      Blk := Blky.Add(btLock, glob) as TBlkLock;
     except
       on E: Exception do
        begin

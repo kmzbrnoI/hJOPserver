@@ -1,4 +1,4 @@
-unit TBloky;
+﻿unit TBloky;
 
 //tato unita definuje tridu, ktera se stara o vsechny bloky
 //tedy jsou v ni ulozeny  vsechny bloky
@@ -253,7 +253,7 @@ begin
          Integer(btPrejezd)   : Blk := TBlkPrejezd.Create(-1);
          Integer(btTrat)      : Blk := TBlkTrat.Create(-1);
          Integer(btUvazka)    : Blk := TBlkUvazka.Create(-1);
-         Integer(btZamek)     : Blk := TBlkZamek.Create(-1);
+         Integer(btLock)      : Blk := TBlkLock.Create(-1);
          Integer(btRozp)      : Blk := TBlkRozp.Create(-1);
          Integer(btTU)        : Blk := TBlkTU.Create(-1);
          Integer(btIO)        : Blk := TBlkIO.Create(-1);
@@ -375,7 +375,7 @@ begin
   btPrejezd  : Blk := TBlkPrejezd.Create(index);
   bttrat     : Blk := TBlkTrat.Create(index);
   btUvazka   : Blk := TBlkUvazka.Create(index);
-  btZamek    : Blk := TBlkZamek.Create(index);
+  btLock     : Blk := TBlkLock.Create(index);
   btRozp     : Blk := TBlkRozp.Create(index);
   btTU       : Blk := TBlkTU.Create(index);
   btIO       : Blk := TBlkIO.Create(index);

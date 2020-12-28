@@ -1553,9 +1553,9 @@ begin
          TBlkTurnout(blk).DecreaseEmergencyLock(toRnz[blkId]);
     end;
 
-    btZamek: begin
-       if (TBlkZamek(blk).nouzZaver) then
-         TBlkZamek(blk).DecreaseNouzZaver(toRnz[blkId]);
+    btLock: begin
+       if (TBlkLock(blk).emLock) then
+         TBlkLock(blk).DecreaseNouzZaver(toRnz[blkId]);
     end;
    end;
   end;

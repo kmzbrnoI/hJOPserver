@@ -1,4 +1,4 @@
-unit TBlok;
+﻿unit TBlok;
 
 //unita, ktera definuje technologicky blok jako abstraktni tridu
 
@@ -26,7 +26,7 @@ type
    btPrejezd = 4,
    btTrat = 5,
    btUvazka = 6,
-   btZamek = 7,
+   btLock = 7,
    btRozp = 8,
    btTU = 9,
    btIO = 10,
@@ -423,7 +423,7 @@ begin
   btPrejezd: Result := 'crossing';
   btTrat: Result := 'railway';
   btUvazka: Result := 'harness';
-  btZamek: Result := 'lock';
+  btLock: Result := 'lock';
   btRozp: Result := 'disconnector';
   btTU: Result := 'railwayTrack';
   btIO: Result := 'io';
