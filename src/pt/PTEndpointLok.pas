@@ -61,7 +61,7 @@ begin
      Exit();
     end;
 
-   HVDb[lokoAddr].GetPtData(respJson.O['lok'], params.ContainsKey('stav') and (PTUtils.HttpParamToBool(params['stav'])));
+   HVDb[lokoAddr].GetPtData(respJson.O['lok'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
  finally
    re.Free();
    params.Free();

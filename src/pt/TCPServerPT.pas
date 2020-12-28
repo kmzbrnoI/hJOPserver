@@ -29,7 +29,7 @@ const
   _PT_MAX_CONNECTIONS = 10;
   _PT_COMPACT_RESPONSE = false;
   _PT_CONTENT_TYPE = 'application/json';
-  _PT_DESCRIPTION = 'ptServer v2.2.0';
+  _PT_DESCRIPTION = 'ptServer v3.0.0';
   _RECEIVE_CHECK_PERIOD_MS = 15;
 
 type

@@ -12,7 +12,7 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 type
   TPTEndpointLokStav = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/lokStav/(\d+)/?$';
+      _ENDPOINT_MATCH_REGEX = '^/lokState/(\d+)/?$';
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -52,18 +52,20 @@ begin
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy', re.Captures[0] + ' neni validni adresa lokmotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy',
+          re.Captures[0] + ' neni validni adresa lokmotivy');
        Exit();
       end;
    end;
 
    if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje', 'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje',
+        'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
      Exit();
     end;
 
-   HVDb[lokoAddr].GetPtState(respJson.O['lokStav']);
+   HVDb[lokoAddr].GetPtState(respJson.O['lokState']);
  finally
    re.Free();
    params.Free();
@@ -91,14 +93,16 @@ begin
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy', re.Captures[0] + ' neni validni adresa lokmotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400',
+          'Nevalidni adresa lokmotivy', re.Captures[0] + ' neni validni adresa lokmotivy');
        Exit();
       end;
    end;
 
    if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje', 'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje',
+        'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
      Exit();
     end;
 

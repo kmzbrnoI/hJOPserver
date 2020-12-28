@@ -40,8 +40,8 @@ begin
  try
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
-   if (params.ContainsKey('aktivni')) then
-     aktivni := ownConvert.BoolToInt(PTUtils.HttpParamToBool(params['aktivni'])) + 1;
+   if (params.ContainsKey('active')) then
+     aktivni := ownConvert.BoolToInt(PTUtils.HttpParamToBool(params['active'])) + 1;
 
    for addr := 0 to _MAX_ADDR-1 do
     begin
@@ -50,7 +50,7 @@ begin
        if ((aktivni = 0) or
           ((aktivni = 1) and (not HVdb[addr].acquired)) or
           ((aktivni = 2) and (HVdb[addr].acquired))) then
-         HVDb[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('stav') and PTUtils.HttpParamToBool(params['stav']));
+         HVDb[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']));
       end;
     end;
  finally

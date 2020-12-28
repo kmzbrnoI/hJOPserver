@@ -63,7 +63,7 @@ begin
      Exit();
     end;
 
-   JC.GetPtData(respJson.O['jc'], params.ContainsKey('stav') and (PTUtils.HttpParamToBool(params['stav'])));
+   JC.GetPtData(respJson.O['jc'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
  finally
    re.Free();
    params.Free();

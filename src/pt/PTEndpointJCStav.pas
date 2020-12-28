@@ -12,7 +12,7 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 type
   TPTEndpointJCStav = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/jc/(\d+)/stav/?$';
+      _ENDPOINT_MATCH_REGEX = '^/jc/(\d+)/activate/?$';
 
     public
       procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;

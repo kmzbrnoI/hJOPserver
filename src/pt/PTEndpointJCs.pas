@@ -40,7 +40,7 @@ begin
    for JC in JCDb do
     begin
      try
-       JC.GetPtData(respJson.A['jc'].AddObject, params.ContainsKey('stav') and PTUtils.HttpParamToBool(params['stav']));
+       JC.GetPtData(respJson.A['jc'].AddObject, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']));
      except
        on E:Exception do
          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject,

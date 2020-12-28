@@ -1010,7 +1010,7 @@ begin
      if ((stanice <> nil) and (not Blk.IsInOR(stanice))) then continue;
      if ((typ <> btAny) and (Blk.typ <> typ)) then continue;
 
-     Blk.GetPtData(json.A['bloky'].AddObject, includeState);
+     Blk.GetPtData(json.A['blocks'].AddObject, includeState);
    except
      on E:Exception do
        PTUtils.PtErrorToJson(json.A['errors'].AddObject,
