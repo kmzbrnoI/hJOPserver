@@ -1,4 +1,4 @@
-unit TCPServerOR;
+﻿unit TCPServerOR;
 
 {
   TCP server pro komunikaci s panely, regulatory a obecne se vsemi klienty.
@@ -623,7 +623,7 @@ begin
     btPrejezd    : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
     btZamek      : (orRef.stitek as TBlkZamek).Stitek := tmp;
     btRozp       : (orRef.stitek as TBlkRozp).stit := tmp;
-    btIO         : (orRef.stitek as TBlkIO).stit := tmp;
+    btIO         : (orRef.stitek as TBlkIO).note := tmp;
    end;//case
    orRef.stitek := nil;
   end

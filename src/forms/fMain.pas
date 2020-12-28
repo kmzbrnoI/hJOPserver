@@ -2918,11 +2918,11 @@ var Blk: TBlk;
 
   //////////////////////
    btIR: begin
-    case ((Blk as TBlkIR).Stav) of
-     TIRStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-     TIRStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-     TIRStav.uvolneno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-     TIRStav.obsazeno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+    case ((Blk as TBlkIR).occupied) of
+     TIROccupationState.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TIROccupationState.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TIROccupationState.free     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TIROccupationState.occupied : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
     end;
    end;
 

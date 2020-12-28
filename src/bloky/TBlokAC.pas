@@ -67,11 +67,9 @@ type
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
-    // load/save data
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
 
-    // enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
 

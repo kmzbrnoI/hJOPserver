@@ -1,4 +1,4 @@
-unit DataBloky;
+﻿unit DataBloky;
 
 // TBlkTableData - trida resici zobrazovani tavulky bloku
 
@@ -163,11 +163,11 @@ var j, train: integer;
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      case ((Blk as TBlkIR).Stav) of
-        TIRStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
-        TIRStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
-        TIRStav.uvolneno : Self.LV.Items[line].SubItems[3] := '---';
-        TIRStav.obsazeno : Self.LV.Items[line].SubItems[3] := '+++';
+      case ((Blk as TBlkIR).occupied) of
+        TIROccupationState.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TIROccupationState.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TIROccupationState.free     : Self.LV.Items[line].SubItems[3] := '---';
+        TIROccupationState.occupied : Self.LV.Items[line].SubItems[3] := '+++';
       end;//case
 
       Self.LV.Items[line].SubItems[4] := '---';
@@ -342,7 +342,7 @@ var j, train: integer;
       else
         Self.LV.Items[line].SubItems[3] := 'disabled';
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkIO).stit;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkIO).note;
       Self.LV.Items[line].SubItems[6] := '---';
       Self.LV.Items[line].SubItems[7] := '---';
    end;

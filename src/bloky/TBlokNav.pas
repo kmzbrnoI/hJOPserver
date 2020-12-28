@@ -1,4 +1,4 @@
-unit TBlokNav;
+﻿unit TBlokNav;
 
 //definice a obsluha technologickeho bloku Navestidlo
 
@@ -1154,9 +1154,9 @@ begin
      Blky.GetBlkByID(Self.NavSettings.events[0].zastaveni.data.irId, Blk);
      if ((Blk <> nil) and (Blk.typ = btIR)) then
       begin
-       case (TBlkIR(Blk).Stav) of
-         TIRStav.uvolneno : Result := Result + '-,*IR>,';
-         TIRStav.obsazeno : Result := Result + '-,*IR<,';
+       case (TBlkIR(Blk).occupied) of
+         TIROccupationState.free     : Result := Result + '-,*IR>,';
+         TIROccupationState.occupied : Result := Result + '-,*IR<,';
        end;//case
       end;
     end;

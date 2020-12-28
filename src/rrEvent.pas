@@ -185,9 +185,9 @@ begin
        Blky.GetBlkByID(m_data.irId, Blk);
        if (Blk = nil) then Exit(safeState);
        if (Blk.typ <> btIR) then Exit(safeState);
-       case (TBlkIR(Blk).Stav) of
-         TIRStav.obsazeno: Result := m_data.irState;
-         TIRStav.uvolneno: Result := not m_data.irState;
+       case (TBlkIR(Blk).occupied) of
+         TIROccupationState.occupied : Result := m_data.irState;
+         TIROccupationState.free     : Result := not m_data.irState;
        else
          Result := safeState;
        end;
