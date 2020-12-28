@@ -229,7 +229,7 @@ var prjz:TJCPrjZaver;
   for odvrat in JCData.Odvraty do
    begin
     tmp := IntToStr(odvrat.Blok) + ', ';
-    if (odvrat.Poloha = TVyhPoloha.plus) then
+    if (odvrat.Poloha = TTurnoutPosition.plus) then
       tmp := tmp + '+, '
     else
       tmp := tmp + '-, ';
@@ -279,7 +279,7 @@ var vyh:TJCVyhZaver;
   updateOdbocka := (Self.CHB_Odbocka.Checked = Self.IsAnyVyhMinus());
 
   vyh.Blok   := Blky.GetBlkID(CB_NewVyhybkaPolozky[CB_NewZaverBlok.ItemIndex]);
-  vyh.Poloha := TVyhPoloha(CB_NewZaverPoloha.ItemIndex);
+  vyh.Poloha := TTurnoutPosition(CB_NewZaverPoloha.ItemIndex);
 
   vyhIndex := Self.VyhybkaIndex(vyh.Blok);
   if (vyhIndex > -1) then
@@ -410,7 +410,7 @@ var JC:TJC;
    end;
   for vyhZaver in Self.Vyhybky do
    begin
-    if ((vyhZaver.Poloha <> TVyhPoloha.plus) and ((vyhZaver.Poloha <> TVyhPoloha.minus))) then
+    if ((vyhZaver.Poloha <> TTurnoutPosition.plus) and ((vyhZaver.Poloha <> TTurnoutPosition.minus))) then
      begin
       Application.MessageBox('Je třeba vybrat polohy všech výhybek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -496,9 +496,9 @@ var JC:TJC;
       try
         odvrat.Blok := StrToInt(parsed[0]);
         if (parsed[1] = '+') then
-          odvrat.Poloha := TVyhPoloha.plus
+          odvrat.Poloha := TTurnoutPosition.plus
         else
-          odvrat.Poloha := TVyhPoloha.minus;
+          odvrat.Poloha := TTurnoutPosition.minus;
         odvrat.ref_blk := StrToInt(parsed[2]);
         JCData.Odvraty.Add(odvrat);
       except
@@ -630,8 +630,8 @@ var i: Integer;
     if (Blky.GetBlkID(Self.CB_NewVyhybkaPolozky[i]) = vyh.Blok) then
       Self.CB_NewZaverBlok.ItemIndex := i;
   case (vyh.Poloha) of
-   TVyhPoloha.plus: Self.CB_NewZaverPoloha.ItemIndex := 0;
-   TVyhPoloha.minus: Self.CB_NewZaverPoloha.ItemIndex := 1;
+   TTurnoutPosition.plus: Self.CB_NewZaverPoloha.ItemIndex := 0;
+   TTurnoutPosition.minus: Self.CB_NewZaverPoloha.ItemIndex := 1;
   else
    Self.CB_NewZaverPoloha.ItemIndex := -1;
   end;
@@ -861,8 +861,8 @@ begin
  try
    for blk in blky do
     begin
-     if (blk.typ <> btVyhybka) then continue;
-     if (Self.Useky.Contains(TBlkVyhybka(blk).UsekID)) then
+     if (blk.typ <> btTurnout) then continue;
+     if (Self.Useky.Contains(TBlkTurnout(blk).trackID)) then
        toAdd.Add(blk.id);
     end;
 
@@ -873,7 +873,7 @@ begin
    for blkid in toAdd do
     begin
      vyhZaver.Blok := blkid;
-     vyhZaver.Poloha := TVyhPoloha.none;
+     vyhZaver.Poloha := TTurnoutPosition.none;
      Self.Vyhybky.Add(vyhZaver);
     end;
 
@@ -897,15 +897,15 @@ begin
    LI.Caption := IntToStr(i+1);
    LI.SubItems.Add(Blky.GetBlkName(zaver.Blok));
    case (zaver.Poloha) of
-    TVyhPoloha.plus: LI.SubItems.Add('+');
-    TVyhPoloha.minus: LI.SubItems.Add('-');
+    TTurnoutPosition.plus: LI.SubItems.Add('+');
+    TTurnoutPosition.minus: LI.SubItems.Add('-');
    else
     LI.SubItems.Add('?');
    end;
   end;
 
  Self.MakeObls(obls);
- Blky.NactiBlokyDoObjektu(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, obls, btVyhybka);
+ Blky.NactiBlokyDoObjektu(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, obls, btTurnout);
 end;
 
 function TF_JCEdit.VyhybkaIndex(id:Integer):Integer;
@@ -938,7 +938,7 @@ function TF_JCEdit.IsAnyVyhMinus():boolean;
 var vyhZaver:TJCVyhZaver;
 begin
  for vyhZaver in Self.Vyhybky do
-   if (vyhZaver.Poloha = TVyhPoloha.minus) then
+   if (vyhZaver.Poloha = TTurnoutPosition.minus) then
      Exit(true);
  Result := false;
 end;

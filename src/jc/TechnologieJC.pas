@@ -86,13 +86,13 @@ type
   // zaver vyhybky v jizdni ceste
   TJCVyhZaver=record
    Blok:Integer;                                                                // odkaz na blok (ID bloku)
-   Poloha:TVyhPoloha;                                                           // chtena poloha vyhybky
+   Poloha: TTurnoutPosition;                                                    // chtena poloha vyhybky
   end;
 
   // zaver odvratove vyhybky v jizdni ceste
   TJCOdvratZaver=record
    Blok:Integer;                                                                // odkaz na blok (ID bloku)
-   Poloha:TVyhPoloha;                                                           // chtena poloha vyhybky
+   Poloha: TTurnoutPosition;                                                    // chtena poloha vyhybky
    ref_blk:Integer;                                                             // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
@@ -263,8 +263,8 @@ type
       procedure CritBarieraEsc(Sender:TObject);
 
       // callbacky ne/nastevni polohy vyhybek:
-      procedure VyhNeprestavenaJCPC(Sender:TObject; error: TVyhSetError);
-      procedure VyhNeprestavenaNC(Sender:TObject; error: TVyhSetError);
+      procedure VyhNeprestavenaJCPC(Sender:TObject; error: TTurnoutSetError);
+      procedure VyhNeprestavenaNC(Sender:TObject; error: TTurnoutSetError);
       procedure VyhPrestavenaNC(Sender:TObject);
       procedure VyhPrestavenaJCPC(Sender:TObject);
       procedure NavNepostaveno(Sender:TObject);
@@ -477,7 +477,7 @@ begin
       Exit;
      end;
 
-    if (Blk.typ <> btVyhybka) then
+    if (Blk.typ <> btTurnout) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, vyhZaver.Blok));
       Exit;
@@ -570,7 +570,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.Blok));
       Exit;
      end;
-    if (blk.typ <> btVyhybka) then
+    if (blk.typ <> btTurnout) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.Blok));
       Exit;
@@ -713,71 +713,71 @@ begin
     Blky.GetBlkByID(vyhZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
-    if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
+    if (TBlkTurnout(Blk).position = TTurnoutPosition.disabled) then
       bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
     // kontrola neprofilovych useku vyhybek pro polohu +
-    if ((vyhZaver.Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
-        (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled)) then
-      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
-          TBlkVyhybka(Blk).npBlokPlus.id));
+    if ((vyhZaver.Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil) and
+        (TBlkUsek(TBlkTurnout(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled)) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokPlus,
+          TBlkTurnout(Blk).npBlokPlus.id));
 
     // kontrola neprofilovych useku vyhybek pro polohu -
-    if ((vyhZaver.Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
-        (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled)) then
-      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
-          TBlkVyhybka(Blk).npBlokMinus.id));
+    if ((vyhZaver.Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil) and
+        (TBlkUsek(TBlkTurnout(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled)) then
+      bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokMinus,
+          TBlkTurnout(Blk).npBlokMinus.id));
 
     // kontrola koncove polohy:
-    if (((Blk as TBlkVyhybka).poloha = TVyhPoloha.none) or ((Blk as TBlkVyhybka).poloha = TVyhPoloha.both)) then
+    if ((TBlkTurnout(Blk).position = TTurnoutPosition.none) or (TBlkTurnout(Blk).position = TTurnoutPosition.both)) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // zaver nema smysl kontrolovat - zaver vyhybek je prakticky zaver useku
     // proto ho staci zkontrolovat jen u useku
 
     // kontrola vyluky vyhybky:
-    if ((Blk as TBlkVyhybka).Vyluka <> '') then
+    if (TBlkTurnout(Blk).lockout <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
-    if ((Blk as TBlkVyhybka).Stitek <> '') then
+    if (TBlkTurnout(Blk).note <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
-    if ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha) then
+    if (TBlkTurnout(Blk).position <> vyhZaver.Poloha) then
      begin
-      if ((Blk as TBlkVyhybka).vyhZaver) then
+      if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
-      else if (TBlkVyhybka(Blk).outputLocked) then
+      else if (TBlkTurnout(Blk).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.id));
      end;
 
     // kontrola spojky
-    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     // pokud nemam ja polohu, predpokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku neni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
-    if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha)) then
+    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> vyhZaver.Poloha)) then
      begin
-      if ((Blk2 as TBlkVyhybka).vyhZaver) then
+      if (TBlkTurnout(Blk2).emLock) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
-      else if (TBlkVyhybka(Blk2).outputLocked) then
+      else if (TBlkTurnout(Blk2).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk.id));
 
-      if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
+      if (TBlkTurnout(Blk2).occupied = TUsekStav.obsazeno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
      end;
 
     // kontrola neprofiloveho styku pro polohu +
-    if ((vyhZaver.Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil) and
-        (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
-          TBlkVyhybka(Blk).npBlokPlus.id));
+    if ((vyhZaver.Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil) and
+        (TBlkUsek(TBlkTurnout(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
+      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkTurnout(Blk).npBlokPlus,
+          TBlkTurnout(Blk).npBlokPlus.id));
 
     // kontrola neprofiloveho styku pro polohu -
-    if ((vyhZaver.Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil) and
-        (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
-      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
-          TBlkVyhybka(Blk).npBlokMinus.id));
+    if ((vyhZaver.Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil) and
+        (TBlkUsek(TBlkTurnout(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
+      bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkTurnout(Blk).npBlokMinus,
+          TBlkTurnout(Blk).npBlokMinus.id));
    end;//for i
 
   // kontrola prejezdu
@@ -807,62 +807,62 @@ begin
     Blky.GetBlkByID(odvratZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
-    if ((Blk as TBlkVyhybka).Stav.poloha = TVyhPoloha.disabled) then
+    if (TBlkTurnout(Blk).position = TTurnoutPosition.disabled) then
       bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
     // kontrola koncove polohy:
-    if (((Blk as TBlkVyhybka).poloha = TVyhPoloha.none) or ((Blk as TBlkVyhybka).poloha = TVyhPoloha.both)) then
+    if ((TBlkTurnout(Blk).position = TTurnoutPosition.none) or (TBlkTurnout(Blk).position = TTurnoutPosition.both)) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola vyluky vyhybky:
-    if ((Blk as TBlkVyhybka).Vyluka <> '') then
+    if (TBlkTurnout(Blk).lockout <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
-    if ((Blk as TBlkVyhybka).Stitek <> '') then
+    if (TBlkTurnout(Blk).note <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
-    if ((Blk as TBlkVyhybka).poloha <> odvratZaver.Poloha) then
+    if (TBlkTurnout(Blk).position <> odvratZaver.Poloha) then
      begin
-      if ((Blk as TBlkVyhybka).vyhZaver) then
+      if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
-      else if ((Blk as TBlkVyhybka).outputLocked) then
+      else if (TBlkTurnout(Blk).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, odvratZaver.Blok));
 
-      if ((Blk as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
+      if (TBlkTurnout(Blk).occupied = TUsekStav.obsazeno) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_OBSAZENA, blk, odvratZaver.Blok));
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
-    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     if (Blk2 <> nil) then
      begin
       // kontrola vyluky vyhybky:
-      if ((Blk2 as TBlkVyhybka).Vyluka <> '') then
+      if (TBlkTurnout(Blk2).lockout <> '') then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.id));
 
       // kontrola stitku vyhybky:
-      if ((Blk2 as TBlkVyhybka).Stitek <> '') then
+      if (TBlkTurnout(Blk2).note <> '') then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
-      if ((Blk as TBlkVyhybka).Poloha <> odvratZaver.Poloha) then
+      if (TBlkTurnout(Blk).position <> odvratZaver.Poloha) then
        begin
-        if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
+        if (TBlkTurnout(Blk2).zaver > TZaver.no) then
          begin
-          if ((Blk2 as TBlkVyhybka).Zaver = TZaver.ab) then
+          if (TBlkTurnout(Blk2).zaver = TZaver.ab) then
             bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.id))
           else
             bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
          end;
 
-        if ((Blk2 as TBlkVyhybka).vyhZaver) then
+        if (TBlkTurnout(Blk2).emLock) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
-        else if ((Blk2 as TBlkVyhybka).outputLocked) then
+        else if (TBlkTurnout(Blk2).outputLocked) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk2.id));
 
-        if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
+        if (TBlkTurnout(Blk2).occupied = TUsekStav.obsazeno) then
           bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
        end;
      end;
@@ -1055,31 +1055,31 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
-    if ((Blk as TBlkVyhybka).Vyluka <> '') then
+    if (TBlkTurnout(Blk).lockout <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
-    if ((Blk as TBlkVyhybka).Stitek <> '') then
+    if (TBlkTurnout(Blk).note <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
-    if ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha) then
+    if (TBlkTurnout(Blk).position <> vyhZaver.Poloha) then
      begin
-      if ((Blk as TBlkVyhybka).vyhZaver) then
+      if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
-      else if (TBlkVyhybka(Blk).outputLocked) then
+      else if (TBlkTurnout(Blk).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk, Blk.id));
      end;
 
     // kontrola spojky
-    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     // pokud nemam ja polohu, prespokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku eni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
-    if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> vyhZaver.Poloha)) then
+    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> vyhZaver.Poloha)) then
      begin
-      if ((Blk2 as TBlkVyhybka).vyhZaver) then
+      if (TBlkTurnout(Blk2).emLock) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
-      else if ((Blk2 as TBlkVyhybka).outputLocked) then
+      else if (TBlkTurnout(Blk2).outputLocked) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk2.id));
      end;
    end;//for i
@@ -1100,48 +1100,48 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
-    if ((Blk as TBlkVyhybka).Vyluka <> '') then
+    if (TBlkTurnout(Blk).lockout <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk, Blk.id));
 
     // kontrola stitku vyhybky:
-    if ((Blk as TBlkVyhybka).Stitek <> '') then
+    if (TBlkTurnout(Blk).note <> '') then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
-    if ((Blk as TBlkVyhybka).poloha <> odvratZaver.Poloha) then
+    if (TBlkTurnout(Blk).position <> odvratZaver.Poloha) then
      begin
-      if ((Blk as TBlkVyhybka).vyhZaver) then
+      if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
-      else if (((Blk as TBlkVyhybka).Zaver <> TZaver.no) or ((Blk as TBlkVyhybka).outputLocked)) then
+      else if ((TBlkTurnout(Blk).Zaver <> TZaver.no) or (TBlkTurnout(Blk).outputLocked)) then
         bariery.Add(Self.JCBariera(_JCB_ODVRAT_ZAMCENA, blk, odvratZaver.Blok));
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
-    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     if (blk2 <> nil) then
      begin
       // kontrola vyluky vyhybky:
-      if ((Blk2 as TBlkVyhybka).Vyluka <> '') then
+      if (TBlkTurnout(Blk2).lockout <> '') then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_VYLUKA, Blk2, Blk2.id));
 
       // kontrola stitku vyhybky:
-      if ((Blk2 as TBlkVyhybka).Stitek <> '') then
+      if (TBlkTurnout(Blk2).note <> '') then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
-      if ((Blk as TBlkVyhybka).Poloha <> odvratZaver.Poloha) then
+      if (TBlkTurnout(Blk).position <> odvratZaver.Poloha) then
        begin
-        if ((Blk2 as TBlkVyhybka).Zaver > TZaver.no) then
+        if (TBlkTurnout(Blk2).zaver > TZaver.no) then
          begin
-          if ((Blk2 as TBlkVyhybka).Zaver = TZaver.ab) then
+          if (TBlkTurnout(Blk2).zaver = TZaver.ab) then
             bariery.Add(Self.JCBariera(_JCB_USEK_AB, Blk2, Blk2.id))
           else
             bariery.Add(Self.JCBariera(_JCB_USEK_ZAVER, Blk2, Blk2.id));
          end;
 
-        if ((Blk2 as TBlkVyhybka).vyhZaver) then
+        if (TBlkTurnout(Blk2).emLock) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
-        else if ((Blk2 as TBlkVyhybka).outputLocked) then
+        else if (TBlkTurnout(Blk2).outputLocked) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_ZAMCENA, Blk2, Blk2.id))
        end;
      end;
@@ -1431,7 +1431,7 @@ var i,j:Integer;
     vyhZaver:TJCVyhZaver;
     odvratZaver:TJCOdvratZaver;
     refZaver:TJCRefZaver;
-    vyhybka:TBlkVyhybka;
+    vyhybka:TBlkTurnout;
     usek, nextUsek:TBlkUsek;
     zamek:TBlkZamek;
     prejezd:TBlkPrejezd;
@@ -1491,7 +1491,7 @@ var i,j:Integer;
         vyhZaver := Self.fproperties.vyhybky[i];
 
         Blky.GetBlkByID(Self.fproperties.vyhybky[i].Blok, TBlk(vyhybka));
-        if (vyhybka.Poloha <> TVyhPoloha(vyhZaver.Poloha)) then
+        if (vyhybka.position <> TTurnoutPosition(vyhZaver.Poloha)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
            begin
@@ -1504,8 +1504,8 @@ var i,j:Integer;
 
         // Warning: this may call callback directly
         // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
-        vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha),
-                          true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
+        vyhybka.SetPosition(TTurnoutPosition(vyhZaver.Poloha),
+                            true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        end;
 
       for i := 0 to Self.fproperties.odvraty.Count-1 do
@@ -1514,7 +1514,7 @@ var i,j:Integer;
 
         // nastaveni odvratu
         Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
-        if (vyhybka.Poloha <> TVyhPoloha(odvratZaver.Poloha)) then
+        if (vyhybka.position <> TTurnoutPosition(odvratZaver.Poloha)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
            begin
@@ -1534,8 +1534,8 @@ var i,j:Integer;
 
         // Warning: this may call callback directly
         // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
-        vyhybka.SetPoloha(TVyhPoloha(odvratZaver.Poloha),
-                          true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
+        vyhybka.SetPosition(TTurnoutPosition(odvratZaver.Poloha),
+                            true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        end;
 
       Self.fstaveni.nextVyhybka := nextVyhybka;
@@ -1561,13 +1561,13 @@ var i,j:Integer;
       for vyhZaver in Self.fproperties.vyhybky do
        begin
         Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
-        if (vyhybka.Poloha <> vyhZaver.Poloha) then
+        if (vyhybka.position <> vyhZaver.Poloha) then
           Exit;
        end;
       for odvratZaver in Self.fproperties.odvraty do
        begin
         Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
-        if (vyhybka.Poloha <> odvratZaver.Poloha) then
+        if (vyhybka.position <> odvratZaver.Poloha) then
           Exit;
        end;
 
@@ -1587,9 +1587,9 @@ var i,j:Integer;
         neprofil := nil;
         Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
 
-        if ((vyhZaver.Poloha = TVyhPoloha.plus) and (vyhybka.npBlokPlus <> nil)) then
+        if ((vyhZaver.Poloha = TTurnoutPosition.plus) and (vyhybka.npBlokPlus <> nil)) then
           neprofil := TBlkUsek(vyhybka.npBlokPlus)
-        else if ((vyhZaver.Poloha = TVyhPoloha.minus) and (vyhybka.npBlokMinus <> nil)) then
+        else if ((vyhZaver.Poloha = TTurnoutPosition.minus) and (vyhybka.npBlokMinus <> nil)) then
           neprofil := TBlkUsek(vyhybka.npBlokMinus);
 
         if (neprofil <> nil) then
@@ -1606,7 +1606,7 @@ var i,j:Integer;
 
           neprofil.AddNeprofilJC(Self.fproperties.id);
 
-          Blky.GetBlkByID(vyhybka.UsekID, TBlk(usek));
+          Blky.GetBlkByID(vyhybka.trackID, TBlk(usek));
 
           npCall := GetMemory(SizeOf(TNPCallerData));
           npCall.usekId := neprofil.id;
@@ -1906,8 +1906,8 @@ var i,j:Integer;
       Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
 
       Inc(Self.fstaveni.nextVyhybka);
-      vyhybka.SetPoloha(TVyhPoloha(vyhZaver.Poloha), // this call could increase nextVyhybka directly! or even set nextVyhybka = -1
-                        true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
+      vyhybka.SetPosition(TTurnoutPosition(vyhZaver.Poloha), // this call could increase nextVyhybka directly! or even set nextVyhybka = -1
+                          true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC);
      end;
 
     // For simplicity solve odvrat just in callback
@@ -2736,7 +2736,7 @@ begin
    for i := 0 to cnt-1 do
     begin
      vyhZaver.Blok := StrToInt(sl[i*sect_size]);
-     vyhZaver.Poloha := TVyhPoloha(StrToInt(sl[(i*sect_size)+1]));
+     vyhZaver.Poloha := TTurnoutPosition(StrToInt(sl[(i*sect_size)+1]));
      Self.fproperties.vyhybky.Add(vyhZaver);
     end;//for i
 
@@ -2749,7 +2749,7 @@ begin
    for i := 0 to cnt-1 do
     begin
      odvrat.Blok := StrToInt(sl[i*sect_size]);
-     odvrat.Poloha := TVyhPoloha(StrToInt(sl[(i*sect_size)+1]));
+     odvrat.Poloha := TTurnoutPosition(StrToInt(sl[(i*sect_size)+1]));
      odvrat.ref_blk := StrToInt(sl[(i*sect_size)+2]);
      Self.fproperties.odvraty.Add(odvrat);
     end;//for i
@@ -2965,7 +2965,7 @@ var i:Integer;
     prjZaver: TJCPrjZaver;
     refZaver: TJCRefZaver;
     usek: TBlkUsek;
-    vyhybka: TBlkVyhybka;
+    vyhybka: TBlkTurnout;
     prejezd: TBlkPrejezd;
     trat: TBlkTrat;
     zamek: TBlkZamek;
@@ -3007,15 +3007,15 @@ begin
  for vyhZaver in Self.fproperties.vyhybky do
   begin
    Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
-   if (vyhybka.Poloha <> vyhZaver.Poloha) then Exit(false);
+   if (vyhybka.position <> vyhZaver.Poloha) then Exit(false);
 
    // kontrola neprofiloveho styku pro polohu +
-   if ((vyhZaver.Poloha = TVyhPoloha.plus) and (vyhybka.npBlokPlus <> nil) and
+   if ((vyhZaver.Poloha = TTurnoutPosition.plus) and (vyhybka.npBlokPlus <> nil) and
        (TBlkUsek(vyhybka.npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
      Exit(false);
 
    // kontrola neprofiloveho styku pro polohu -
-   if ((vyhZaver.Poloha = TVyhPoloha.minus) and (vyhybka.npBlokMinus <> nil) and
+   if ((vyhZaver.Poloha = TTurnoutPosition.minus) and (vyhybka.npBlokMinus <> nil) and
        (TBlkUsek(vyhybka.npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
      Exit(false);
   end;//for i
@@ -3024,7 +3024,7 @@ begin
  for odvratZaver in Self.fproperties.odvraty do
   begin
    Blky.GetBlkByID(odvratZaver.Blok, TBlk(vyhybka));
-   if (vyhybka.Poloha <> odvratZaver.Poloha) then Exit(false);
+   if (vyhybka.position <> odvratZaver.Poloha) then Exit(false);
   end;//for i
 
  // zkontrolujeme poruchy prejezdu
@@ -3227,7 +3227,7 @@ begin
 
   _JCB_USEK_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
-    lines := GetLines((Bariera.blok as TBlkUsek).Stitek, _UPO_LINE_LEN);
+    lines := GetLines(TBlkUsek(Bariera.blok).Stitek, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
       if (lines.Count > 1) then
@@ -3239,7 +3239,7 @@ begin
 
   _JCB_VYHYBKA_VYLUKA : begin
     Result[0] := GetUPOLine('VÝLUKA '+Bariera.blok.name, taCenter, clBlack, clOlive);
-    lines := GetLines((Bariera.blok as TBlkVyhybka).Vyluka, _UPO_LINE_LEN);
+    lines := GetLines(TBlkTurnout(Bariera.blok).lockout, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
       if (lines.Count > 1) then
@@ -3251,7 +3251,7 @@ begin
 
   _JCB_VYHYBKA_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
-    lines := GetLines((Bariera.blok as TBlkVyhybka).Stitek, _UPO_LINE_LEN);
+    lines := GetLines(TBlkTurnout(Bariera.blok).note, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
       if (lines.Count > 1) then
@@ -3263,7 +3263,7 @@ begin
 
   _JCB_PREJEZD_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
-    lines := GetLines((Bariera.blok as TBlkPrejezd).Stitek, _UPO_LINE_LEN);
+    lines := GetLines(TBlkPrejezd(Bariera.blok).Stitek, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
       if (lines.Count > 1) then
@@ -3437,11 +3437,11 @@ begin
    for i := Self.fstaveni.nextVyhybka to Self.fproperties.vyhybky.Count-1 do
     begin
      Blky.GetBlkByID(Self.fproperties.vyhybky[i].Blok, Blk);
-     if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.vyhybky[i].Poloha)) then
+     if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.fproperties.vyhybky[i].Poloha)) then
       begin
        Self.fstaveni.nextVyhybka := i+1;
-       (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.vyhybky[i].Poloha),
-                                      true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
+       TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.fproperties.vyhybky[i].Poloha),
+                                    true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        Exit();
       end;
     end;
@@ -3458,17 +3458,17 @@ begin
     begin
      // nastaveni odvratu
      Blky.GetBlkByID(Self.fproperties.odvraty[i].Blok, Blk);
-     if ((Blk as TBlkVyhybka).Poloha <> TVyhPoloha(Self.fproperties.odvraty[i].Poloha)) then
+     if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.fproperties.odvraty[i].Poloha)) then
       begin
-       TBlkVyhybka(Blk).IntentionalLock();
+       TBlkTurnout(Blk).IntentionalLock();
 
        Blky.GetBlkByID(Self.fproperties.odvraty[i].ref_blk, TBlk(usek));
        usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB,
          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, Self.fproperties.odvraty[i].Blok));
 
        Self.fstaveni.nextVyhybka := i+Self.fproperties.vyhybky.Count+1;
-       TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.odvraty[i].Poloha),
-                                  true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
+       TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.fproperties.odvraty[i].Poloha),
+                                    true, false, Self.VyhPrestavenaJCPC, Self.VyhNeprestavenaJCPC);
        Exit();
       end;
     end;
@@ -3480,13 +3480,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.VyhNeprestavenaJCPC(Sender:TObject; error: TVyhSetError);
+procedure TJC.VyhNeprestavenaJCPC(Sender:TObject; error: TTurnoutSetError);
 begin
  if (not Self.staveni) then Exit();
 
  if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
    ORTCPServer.BottomError(Self.fstaveni.senderPnl,
-     'Nepřestavena '+(Sender as TBlkVyhybka).name + ': ' + TBlkVyhybka.SetErrorToMsg(error),
+     'Nepřestavena '+(Sender as TBlkTurnout).name + ': ' + TBlkTurnout.SetErrorToMsg(error),
      (Self.fstaveni.senderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelStaveni('', true);
  Self.RusJC();
@@ -3494,7 +3494,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.VyhNeprestavenaNC(Sender:TObject; error: TVyhSetError);
+procedure TJC.VyhNeprestavenaNC(Sender:TObject; error: TTurnoutSetError);
 begin
  Self.VyhPrestavenaNC(Sender);
 end;
@@ -3506,16 +3506,16 @@ var Navestidlo, spojka:TBlk;
 begin
  if ((Self.fstaveni.krok <> _NC_KROK_INIT) and (Self.fstaveni.krok <> _NC_KROK_BARIERA_UPDATE)) then Exit();
 
- TBlkVyhybka(Sender).vyhZaver := true;
+ TBlkTurnout(Sender).emLock := true;
 
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Navestidlo);
  TBlkNav(Navestidlo).AddBlkToRnz(TBlk(Sender).id, false);
 
- if (TBlkVyhybka(Sender).GetSettings().spojka > -1) then
+ if (TBlkTurnout(Sender).GetSettings().coupling > -1) then
   begin
-   Blky.GetBlkByID(TBlkVyhybka(Sender).GetSettings().spojka, spojka);
-   TBlkVyhybka(spojka).vyhZaver := true;
-   TBlkNav(Navestidlo).AddBlkToRnz(TBlkVyhybka(Sender).GetSettings().spojka, false);
+   Blky.GetBlkByID(TBlkTurnout(Sender).GetSettings().coupling, spojka);
+   TBlkTurnout(spojka).emLock := true;
+   TBlkNav(Navestidlo).AddBlkToRnz(TBlkTurnout(Sender).GetSettings().coupling, false);
   end;
 
  // staveni dalsich vyhybek
@@ -3531,8 +3531,8 @@ begin
    Blky.GetBlkByID(Self.fproperties.vyhybky[Self.fstaveni.nextVyhybka].Blok, Blk);
    Inc(Self.fstaveni.nextVyhybka);
 
-   (Blk as TBlkVyhybka).SetPoloha(TVyhPoloha(Self.fproperties.vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
-                                  true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC); // may call callback directly!
+   TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.fproperties.vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
+                                true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC); // may call callback directly!
   end else if ((Self.fstaveni.nextVyhybka >= Self.fproperties.vyhybky.Count) and
       (Self.fstaveni.nextVyhybka < Self.fproperties.vyhybky.Count+Self.fproperties.odvraty.Count)) then begin
    // nastaveni odvratu
@@ -3544,8 +3544,8 @@ begin
    Blky.GetBlkByID(Self.fproperties.odvraty[odvrat].Blok, Blk);
    Inc(Self.fstaveni.nextVyhybka);
 
-   TBlkVyhybka(Blk).SetPoloha(TVyhPoloha(Self.fproperties.odvraty[odvrat].Poloha),
-                              true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC); // may call callback directly!
+   TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.fproperties.odvraty[odvrat].Poloha),
+                                true, false, Self.VyhPrestavenaNC, Self.VyhNeprestavenaNC); // may call callback directly!
   end else if (Self.fstaveni.nextVyhybka = Self.fproperties.vyhybky.Count+Self.fproperties.odvraty.Count) then
     Self.fstaveni.nextVyhybka := -1;
 end;
@@ -3608,46 +3608,46 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // kontrola polohy:
-    if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.vyhybky[i].Poloha) then
+    if (TBlkTurnout(Blk).position <> Self.fproperties.vyhybky[i].Poloha) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru:
-    if (not (Blk as TBlkVyhybka).vyhZaver) then
+    if (not TBlkTurnout(Blk).emLock) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id));
 
     // kontrola spojky
-    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
-    if ((blk2 <> nil) and ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.vyhybky[i].Poloha)) then
+    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
+    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> Self.fproperties.vyhybky[i].Poloha)) then
      begin
-      if (not (Blk2 as TBlkVyhybka).vyhZaver) then
+      if (not TBlkTurnout(Blk2).emLock) then
         bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
 
-      if ((Blk2 as TBlkVyhybka).Obsazeno = TUsekStav.obsazeno) then
+      if (TBlkTurnout(Blk2).occupied = TUsekStav.obsazeno) then
         bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, Blk2, Blk2.id));
      end;
 
     // kontrola neprofiloveho styku pro polohu +
-    if ((Self.fproperties.vyhybky[i].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
+    if ((Self.fproperties.vyhybky[i].Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil)) then
      begin
-      if (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled) then
-        bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokPlus,
-            TBlkVyhybka(Blk).npBlokPlus.id))
+      if (TBlkUsek(TBlkTurnout(Blk).npBlokPlus).Obsazeno = TUsekStav.disabled) then
+        bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokPlus,
+            TBlkTurnout(Blk).npBlokPlus.id))
       else
-        if (TBlkUsek(TBlkVyhybka(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno) then
-          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokPlus,
-              TBlkVyhybka(Blk).npBlokPlus.id));
+        if (TBlkUsek(TBlkTurnout(Blk).npBlokPlus).Obsazeno <> TUsekStav.uvolneno) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkTurnout(Blk).npBlokPlus,
+              TBlkTurnout(Blk).npBlokPlus.id));
      end;
 
     // kontrola neprofiloveho styku pro polohu -
-    if ((Self.fproperties.vyhybky[i].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
+    if ((Self.fproperties.vyhybky[i].Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil)) then
      begin
-      if (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled) then
-        bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkVyhybka(Blk).npBlokMinus,
-            TBlkVyhybka(Blk).npBlokMinus.id))
+      if (TBlkUsek(TBlkTurnout(Blk).npBlokMinus).Obsazeno = TUsekStav.disabled) then
+        bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokMinus,
+            TBlkTurnout(Blk).npBlokMinus.id))
       else
-        if (TBlkUsek(TBlkVyhybka(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno) then
-          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkVyhybka(Blk).npBlokMinus,
-              TBlkVyhybka(Blk).npBlokMinus.id));
+        if (TBlkUsek(TBlkTurnout(Blk).npBlokMinus).Obsazeno <> TUsekStav.uvolneno) then
+          bariery.Add(Self.JCBariera(_JCB_USEK_OBSAZENO, TBlkTurnout(Blk).npBlokMinus,
+              TBlkTurnout(Blk).npBlokMinus.id));
      end;
    end;//for i
 
@@ -3676,20 +3676,20 @@ begin
     glob := Blk.GetGlobalSettings();
 
     // kontrola polohy:
-    if ((Blk as TBlkVyhybka).poloha <> Self.fproperties.odvraty[i].Poloha) then
+    if (TBlkTurnout(Blk).position <> Self.fproperties.odvraty[i].Poloha) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru:
-    if (not (Blk as TBlkVyhybka).vyhZaver) then
+    if (not TBlkTurnout(Blk).emLock) then
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id));
 
     // kontrola spojky odvratu
-    Blky.GetBlkByID((Blk as TBlkVyhybka).GetSettings.spojka, Blk2);
+    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     if (blk2 <> nil) then
      begin
       // kontrola spravneho uzamceni odvratu
-      if ((Blk as TBlkVyhybka).Poloha <> Self.fproperties.odvraty[i].Poloha) then
-        if (not (Blk2 as TBlkVyhybka).vyhZaver) then
+      if (TBlkTurnout(Blk).position <> Self.fproperties.odvraty[i].Poloha) then
+        if (not TBlkTurnout(Blk2).emLock) then
           bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
      end;
    end;//for i
@@ -3869,7 +3869,7 @@ function TJC.IsAnyVyhMinus():boolean;
 var vyh:TJCVyhZaver;
 begin
  for vyh in Self.fproperties.vyhybky do
-   if (vyh.Poloha = TVyhPoloha.minus) then
+   if (vyh.Poloha = TTurnoutPosition.minus) then
      Exit(true);
  Result := false;
 end;
@@ -3971,8 +3971,8 @@ begin
    newObj := json.A['vyhybky'].AddObject();
    newObj['blok'] := vyhZaver.Blok;
    case (vyhZaver.Poloha) of
-    TVyhPoloha.plus: newObj['poloha'] := '+';
-    TVyhPoloha.minus: newObj['poloha'] := '-';
+    TTurnoutPosition.plus: newObj['poloha'] := '+';
+    TTurnoutPosition.minus: newObj['poloha'] := '-';
    end;
   end;
 
@@ -3984,8 +3984,8 @@ begin
    newObj := json.A['odvraty'].AddObject();
    newObj['blok'] := odvratZaver.Blok;
    case (odvratZaver.Poloha) of
-    TVyhPoloha.plus: newObj['poloha'] := '+';
-    TVyhPoloha.minus: newObj['poloha'] := '-';
+    TTurnoutPosition.plus: newObj['poloha'] := '+';
+    TTurnoutPosition.minus: newObj['poloha'] := '-';
    end;
    newObj['refBlk'] := odvratZaver.ref_blk;
   end;

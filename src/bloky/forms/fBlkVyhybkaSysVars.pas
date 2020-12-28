@@ -31,7 +31,7 @@ type
     procedure B_UpdateClick(Sender: TObject);
     procedure B_UnlockClick(Sender: TObject);
   private
-    OpenBlk:TBlkVyhybka;
+    OpenBlk:TBlkTurnout;
 
      procedure myUpdate();
      procedure myApply();
@@ -39,7 +39,7 @@ type
   private const
 
   public
-     procedure OpenForm(blk:TBlkVyhybka);
+     procedure OpenForm(blk:TBlkTurnout);
   end;
 
 var
@@ -81,7 +81,7 @@ begin
  Self.OpenBlk := nil;
 end;
 
-procedure TF_BlkVyh_tech.OpenForm(blk:TBlkVyhybka);
+procedure TF_BlkVyh_tech.OpenForm(blk:TBlkTurnout);
 begin
  Self.OpenBlk := blk;
  Self.myUpdate();
@@ -94,29 +94,29 @@ end;
 
 procedure TF_BlkVyh_tech.myUpdate();
 begin
- Self.M_Stitek.Text := Self.OpenBlk.Stitek;
- Self.M_Vyluka.Text := Self.OpenBlk.Vyluka;
+ Self.M_Stitek.Text := Self.OpenBlk.note;
+ Self.M_Vyluka.Text := Self.OpenBlk.lockout;
 
- Self.SE_Zaver.Value := Self.OpenBlk.Stav.vyhZaver;
- Self.CB_Stav_Plus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.StaveniPlus);
- Self.CB_Stav_Minus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.StaveniMinus);
+ Self.SE_Zaver.Value := Self.OpenBlk.state.locks;
+ Self.CB_Stav_Plus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.movingPlus);
+ Self.CB_Stav_Minus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.movingMinus);
 
  Self.CB_Locked.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.outputLocked);
- Self.SE_Locks.Value := Self.OpenBlk.Stav.intentionalLocks;
+ Self.SE_Locks.Value := Self.OpenBlk.state.intentionalLocks;
 
  Self.B_Unlock.Enabled := Self.OpenBlk.intentionalLocked;
 end;
 
 procedure TF_BlkVyh_tech.myApply();
 begin
- Self.OpenBlk.Stitek := Self.M_Stitek.Text;
- Self.OpenBlk.Vyluka := Self.M_Vyluka.Text;
+ Self.OpenBlk.note := Self.M_Stitek.Text;
+ Self.OpenBlk.lockout := Self.M_Vyluka.Text;
 
  if (Self.SE_Zaver.Value = 0) then
-   Self.OpenBlk.NullVyhZaver();
+   Self.OpenBlk.ResetEmLocks();
 
- Self.OpenBlk.StaveniPlus := ownConvert.IntToBool(CB_Stav_Plus.ItemIndex);
- Self.OpenBlk.StaveniMinus := ownConvert.IntToBool(CB_Stav_Minus.ItemIndex);
+ Self.OpenBlk.movingPlus := ownConvert.IntToBool(CB_Stav_Plus.ItemIndex);
+ Self.OpenBlk.movingMinus := ownConvert.IntToBool(CB_Stav_Minus.ItemIndex);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

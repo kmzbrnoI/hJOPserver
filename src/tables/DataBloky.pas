@@ -87,12 +87,12 @@ begin
 end;//procedyre
 
 procedure TBlokyTableData.UpdateLine(line:Integer);
-var j, train:integer;
-    Blk:TBlk;
-    glob:TBlkSettings;
-    s_vyh:TBlkVyhSettings;
-    s_nav:TBlkNavSettings;
-    str:string;
+var j, train: integer;
+    Blk: TBlk;
+    glob: TBlkSettings;
+    s_vyh: TBlkTurnoutSettings;
+    s_nav: TBlkNavSettings;
+    str: string;
  begin
   Blky.GetBlkByIndex(line, Blk);
   if (Blk = nil) then Exit();
@@ -110,21 +110,21 @@ var j, train:integer;
   Self.LV.Items[line].SubItems.Strings[4] := str;
 
   case (glob.typ) of
-   btVyhybka: begin
+   btTurnout: begin
       Self.LV.Items[line].ImageIndex := 0;
-      s_vyh := (Blk as TBlkVyhybka).GetSettings();
+      s_vyh := (Blk as TBlkTurnout).GetSettings();
       Self.LV.Items[line].SubItems.Strings[0] := 'Výhybka';
 
-      case ((Blk as TBlkVyhybka).Poloha) of
-       TVyhPoloha.disabled:Self.LV.Items[line].SubItems[3] := 'disabled';
-       TVyhPoloha.none    :Self.LV.Items[line].SubItems[3] := 'none';
-       TVyhPoloha.plus    :Self.LV.Items[line].SubItems[3] := '+';
-       TVyhPoloha.minus   :Self.LV.Items[line].SubItems[3] := '-';
-       TVyhPoloha.both    :Self.LV.Items[line].SubItems[3] := '+-';
+      case ((Blk as TBlkTurnout).position) of
+       TTurnoutPosition.disabled: Self.LV.Items[line].SubItems[3] := 'disabled';
+       TTurnoutPosition.none    : Self.LV.Items[line].SubItems[3] := 'none';
+       TTurnoutPosition.plus    : Self.LV.Items[line].SubItems[3] := '+';
+       TTurnoutPosition.minus   : Self.LV.Items[line].SubItems[3] := '-';
+       TTurnoutPosition.both    : Self.LV.Items[line].SubItems[3] := '+-';
       end;//case poloha
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkVyhybka).Stitek;
-      Self.LV.Items[line].SubItems[6] := (Blk as TBlkVyhybka).Vyluka;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkTurnout).note;
+      Self.LV.Items[line].SubItems[6] := (Blk as TBlkTurnout).lockout;
       Self.LV.Items[line].SubItems[7] := '---';
    end;
 

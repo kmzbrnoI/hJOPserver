@@ -618,7 +618,7 @@ begin
    if (orRef.stitek = nil) then Exit();
    case (orRef.stitek.typ) of
     btUsek, btTU : (orRef.stitek as TBlkUsek).Stitek := tmp;
-    btVyhybka    : (orRef.stitek as TBlkVyhybka).Stitek := tmp;
+    btTurnout    : (orRef.stitek as TBlkTurnout).note := tmp;
     btUvazka     : (orRef.stitek as TBlkUvazka).Stitek := tmp;
     btPrejezd    : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
     btZamek      : (orRef.stitek as TBlkZamek).Stitek := tmp;
@@ -640,7 +640,7 @@ begin
    if (orRef.vyluka = nil) then Exit();
    case (orRef.vyluka.typ) of
     btUsek, btTU : (orRef.vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
-    btVyhybka    : (orRef.vyluka as TBlkVyhybka).SetVyhVyl(AContext, tmp);
+    btTurnout    : (orRef.vyluka as TBlkTurnout).SetLockout(AContext, tmp);
    end;//case
    orRef.vyluka := nil;
   end

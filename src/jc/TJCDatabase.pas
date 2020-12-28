@@ -424,12 +424,12 @@ var jc: TJC;
     odvrz: TJCOdvratZaver;
     refz: TJCRefZaver;
     blk: TBlk;
-    vyh: TBlkVyhybka;
+    vyh: TBlkTurnout;
 begin
  Result := TList<TJC>.Create();
  try
   Blky.GetBlkByID(vyh_id, blk);
-  vyh := TBlkVyhybka(blk);
+  vyh := TBlkTurnout(blk);
 
   for jc in Self.JCs do
    begin
@@ -446,9 +446,9 @@ begin
         Result.Add(jc);
 
     // zamky
-    if ((vyh <> nil) and (vyh.zamek <> nil)) then
+    if ((vyh <> nil) and (vyh.lock <> nil)) then
       for refz in jc.data.zamky do
-        if (refz.Blok = vyh.zamek.id) then
+        if (refz.Blok = vyh.lock.id) then
           Result.Add(jc);
    end;
  except
@@ -603,11 +603,11 @@ begin
  jcs := TList<TJC>.Create();
  try
    case (Blk.typ) of
-    btVyhybka     : begin
+    btTurnout: begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
     end;
-    btPrejezd : begin
+    btPrejezd: begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithPrj(Blk.id);
     end;

@@ -1,4 +1,4 @@
-unit TBlokNav;
+﻿unit TBlokNav;
 
 //definice a obsluha technologickeho bloku Navestidlo
 
@@ -1548,9 +1548,9 @@ begin
    if (blk = nil) then continue;   
 
    case (blk.typ) of
-    btVyhybka: begin
-       if (TBlkVyhybka(blk).vyhZaver) then
-         TBlkVyhybka(blk).DecreaseNouzZaver(toRnz[blkId]);
+    btTurnout: begin
+       if (TBlkTurnout(blk).emLock) then
+         TBlkTurnout(blk).DecreaseEmergencyLock(toRnz[blkId]);
     end;
 
     btZamek: begin

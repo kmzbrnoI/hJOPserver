@@ -19,7 +19,7 @@ type
 
  TBlkType = (
    btAny = -1,
-   btVyhybka = 0,
+   btTurnout = 0,
    btUsek = 1,
    btIr = 2,
    btNav = 3,
@@ -416,18 +416,18 @@ end;
 class function TBlk.BlkTypeToStr(typ: TBlkType): string;
 begin
  case (typ) of
-  btVyhybka: Result := 'vyhybka';
-  btUsek: Result := 'usek';
+  btTurnout: Result := 'turnout';
+  btUsek: Result := 'track';
   btIR: Result := 'ir';
-  btNav: Result := 'navestidlo';
-  btPrejezd: Result := 'prejezd';
-  btTrat: Result := 'trat';
-  btUvazka: Result := 'uvazka';
-  btZamek: Result := 'zamek';
-  btRozp: Result := 'rozpojovac';
-  btTU: Result := 'tratUsek';
+  btNav: Result := 'signal';
+  btPrejezd: Result := 'crossing';
+  btTrat: Result := 'railway';
+  btUvazka: Result := 'harness';
+  btZamek: Result := 'lock';
+  btRozp: Result := 'disconnector';
+  btTU: Result := 'railwayTrack';
   btIO: Result := 'io';
-  btSH: Result := 'souctovaHlaska';
+  btSH: Result := 'crossingsSummary';
   btAC: Result := 'AC';
  else
   Result := 'neznamy';
@@ -465,15 +465,15 @@ end;
 
 class function TBlk.BlkTypeFromStr(typ:string): TBlkType;
 begin
- if (typ = 'vyhybka') or (typ = 'výhybka') then Result := btVyhybka
- else if (typ = 'usek') or (typ = 'úsek') then Result := btUsek
+ if (typ = 'vyhybka') or (typ = 'výhybka') or (typ = 'turnout') then Result := btTurnout
+ else if (typ = 'usek') or (typ = 'úsek') or (typ = 'track') then Result := btUsek
  else if (typ = 'ir') then Result := btIR
- else if (typ = 'navestidlo') then Result := btNav
- else if (typ = 'prejezd') or (typ = 'přejezd') then Result := btPrejezd
- else if (typ = 'trat') or (typ = 'trať') then Result := btTrat
- else if (typ = 'uvazka') or (typ = 'úvazka') then Result := btUvazka
- else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovač') then Result := btRozp
- else if (typ = 'tratUsek') or (typ = 'traťÚsek') or (typ = 'tu') or (typ = 'TU') then Result := btTU
+ else if (typ = 'navestidlo') or (typ = 'signal') then Result := btNav
+ else if (typ = 'prejezd') or (typ = 'přejezd') or (typ = 'crossing') then Result := btPrejezd
+ else if (typ = 'trat') or (typ = 'trať') or (typ = 'railway') then Result := btTrat
+ else if (typ = 'uvazka') or (typ = 'úvazka') or (typ = 'harness') then Result := btUvazka
+ else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovač') or (typ = 'disconnector') then Result := btRozp
+ else if (typ = 'tratUsek') or (typ = 'traťÚsek') or (typ = 'tu') or (typ = 'TU') or (typ = 'railwayTrack') then Result := btTU
  else if (typ = 'io') then Result := btIO
  else raise ETypeNotFound.Create('Blok typu '+typ+' neexistuje');
 end;

@@ -83,9 +83,9 @@ procedure TChangeEventCaller.NullVyhybkaMenuReduction(Sender:TObject; data:Integ
 var blk:TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> btVyhybka)) then Exit();
+ if ((blk = nil) or (blk.typ <> btTurnout)) then Exit();
 
- TBlkVyhybka(Blk).IntentionalUnlock();
+ TBlkTurnout(Blk).IntentionalUnlock();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

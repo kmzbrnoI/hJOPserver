@@ -2508,7 +2508,7 @@ var Blk:TBlk;
   if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   btVyhybka     : F_BlkVyh_tech.OpenForm(Blk as TBlkVyhybka);
+   btTurnout: F_BlkVyh_tech.OpenForm(Blk as TBlkTurnout);
    btUsek, btTU :
                   F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
    btIR      : ;
@@ -2896,18 +2896,18 @@ var Blk:TBlk;
   if (Blky.GetBlkByIndex(Item.Index,Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   btVyhybka:begin
-    case ((Blk as TBlkVyhybka).Poloha) of
-     TVyhPoloha.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-     TVyhPoloha.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-     TVyhPoloha.plus     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-     TVyhPoloha.minus    : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-     TVyhPoloha.both     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_RED;
+   btTurnout: begin
+    case ((Blk as TBlkTurnout).position) of
+     TTurnoutPosition.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TTurnoutPosition.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TTurnoutPosition.plus     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TTurnoutPosition.minus    : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TTurnoutPosition.both     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_RED;
     end;
    end;
 
   //////////////////////
-   btUsek, btTU:begin
+   btUsek, btTU :begin
     case ((Blk as TBlkUsek).Obsazeno) of
      TUsekStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TUsekStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
@@ -2917,7 +2917,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btIR:begin
+   btIR: begin
     case ((Blk as TBlkIR).Stav) of
      TIRStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TIRStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
@@ -2927,7 +2927,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btNav:begin
+   btNav: begin
     if ((Blk as TBlkNav).Navest < ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY  // disabled
     else if ((Blk as TBlkNav).Navest = ncStuj) then
@@ -2937,7 +2937,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btPrejezd:begin
+   btPrejezd: begin
     case ((Blk as TBlkPrejezd).Stav.basicStav) of
      TBlkPrjBasicStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TBlkPrjBasicStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
@@ -2948,7 +2948,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btUvazka:begin
+   btUvazka: begin
     if (not (Blk as TBlkUvazka).enabled) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
@@ -2956,7 +2956,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btTrat:begin
+   btTrat: begin
     if ((Blk as TBlkTrat).stav.smer = TTratSmer.disabled) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
@@ -2964,7 +2964,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btZamek:begin
+   btZamek: begin
     if ((Blk as TBlkZamek).Stav.enabled) then
      begin
       if ((Blk as TBlkZamek).klicUvolnen) then
@@ -2976,7 +2976,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btRozp:begin
+   btRozp: begin
     case ((Blk as TBlkRozp).status) of
       TRozpStatus.disabled     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
       TRozpStatus.not_selected : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
@@ -2986,7 +2986,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-  btIO:begin
+  btIO: begin
     if (TBlkIO(Blk).enabled) then
      begin
       if ((TBlkIO(Blk).activeOutput) or (TBlkIO(Blk).activeInput)) then
@@ -2998,7 +2998,7 @@ var Blk:TBlk;
   end;
 
   //////////////////////
-  btSH:begin
+  btSH: begin
     case ((Blk as TBlkSH).enabled) of
       false : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
       true  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
@@ -3006,7 +3006,7 @@ var Blk:TBlk;
   end;
 
   //////////////////////
-  btAC:begin
+  btAC: begin
     if (TBlkAC(Blk).enabled) then
      begin
       if (not TBlkAC(Blk).stopped) then
@@ -3029,7 +3029,7 @@ var Blk:TBlk;
   if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   btVyhybka: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
+   btTurnout: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
    btUsek: F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
    btNav: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);

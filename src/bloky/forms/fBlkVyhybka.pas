@@ -59,7 +59,7 @@ type
     procedure CHB_FeedbackClick(Sender: TObject);
   private
    OpenIndex:Integer;
-   Blk:TBlkVyhybka;
+   Blk:TBlkTurnout;
    NewBlk:Boolean;
    CB_SpojkaData:TArI;
    CB_ZamekData:TArI;
@@ -144,10 +144,10 @@ procedure TF_BlkVyhybka.NewBlkOpenForm();
 procedure TF_BlkVyhybka.NormalOpenForm();
 var glob:TBlkSettings;
     i:Integer;
-    spojkaSettings, settings:TBlkVyhSettings;
+    spojkaSettings, settings: TBlkTurnoutSettings;
     obls:TArStr;
     oblr:TOR;
-    vyh:TBlkVyhybka;
+    vyh:TBlkTurnout;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
@@ -159,11 +159,11 @@ var glob:TBlkSettings;
 
   settings := Blk.GetSettings();
 
-  Self.CHB_Spojka.Checked := (settings.spojka > -1);
+  Self.CHB_Spojka.Checked := (settings.coupling > -1);
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
 
-  Blky.GetBlkByID(settings.spojka, TBlk(vyh));
-  if ((vyh <> nil) and (vyh.typ = btVyhybka)) then
+  Blky.GetBlkByID(settings.coupling, TBlk(vyh));
+  if ((vyh <> nil) and (vyh.typ = btTurnout)) then
    begin
     spojkaSettings := vyh.GetSettings();
 
@@ -173,20 +173,20 @@ var glob:TBlkSettings;
       (spojkaSettings.RCSAddrs[2] = settings.RCSAddrs[2]) and (spojkaSettings.RCSAddrs[3] = settings.RCSAddrs[3]);
    end;
 
-  Self.CHB_Zamek.Checked := (settings.zamek > -1);
-  if (settings.zamek > -1) then
-    Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.zamekPoloha);
+  Self.CHB_Zamek.Checked := (settings.lock > -1);
+  if (settings.lock > -1) then
+    Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.lockPosition);
   Self.CHB_ZamekClick(Self.CHB_Zamek);
 
   //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni RCS_board = [0])
   if (settings.RCSAddrs.Count > 0) then
    begin
-    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_VstPlus_module.MaxValue)) then
+    if (Self.Blk.rcsInPlus.board > Cardinal(Self.SE_VstPlus_module.MaxValue)) then
       Self.SE_VstPlus_module.MaxValue := 0;
     Self.SE_VstPlus_port.MaxValue := 0;
 
-    SE_VstPlus_module.Value := settings.RCSAddrs[0].board;
-    SE_VstPlus_port.Value := settings.RCSAddrs[0].port;
+    SE_VstPlus_module.Value := Self.Blk.rcsInPlus.board;
+    SE_VstPlus_port.Value := Self.Blk.rcsInPlus.port;
    end else begin
     SE_VstPlus_module.Value  := 0;
     SE_VstPlus_port.Value := 0;
@@ -194,12 +194,12 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 1) then
    begin
-    if (settings.RCSAddrs[1].board > Cardinal(Self.SE_VstMinus_module.MaxValue)) then
+    if (Self.Blk.rcsInMinus.board > Cardinal(Self.SE_VstMinus_module.MaxValue)) then
       Self.SE_VstMinus_module.MaxValue := 0;
     Self.SE_VstMinus_port.MaxValue := 0;
 
-    SE_VstMinus_module.Value := settings.RCSAddrs[1].board;
-    SE_VstMinus_port.Value := settings.RCSAddrs[1].port;
+    SE_VstMinus_module.Value := Self.Blk.rcsInMinus.board;
+    SE_VstMinus_port.Value := Self.Blk.rcsInMinus.port;
    end else begin
     SE_VstMinus_module.Value  := 0;
     SE_VstMinus_port.Value := 0;
@@ -207,12 +207,12 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 2) then
    begin
-    if (settings.RCSAddrs[2].board > Cardinal(Self.SE_VystPlus_module.MaxValue)) then
+    if (Self.Blk.rcsOutPlus.board > Cardinal(Self.SE_VystPlus_module.MaxValue)) then
       Self.SE_VystPlus_module.MaxValue := 0;
     Self.SE_VystPlus_port.MaxValue := 0;
 
-    SE_VystPlus_module.Value := settings.RCSAddrs[2].board;
-    SE_VystPlus_port.Value := settings.RCSAddrs[2].port;
+    SE_VystPlus_module.Value := Self.Blk.rcsOutPlus.board;
+    SE_VystPlus_port.Value := Self.Blk.rcsOutPlus.port;
    end else begin
     SE_VystPlus_module.Value  := 0;
     SE_VystPlus_port.Value := 0;
@@ -220,12 +220,12 @@ var glob:TBlkSettings;
 
   if (settings.RCSAddrs.Count > 3) then
    begin
-    if (settings.RCSAddrs[3].board > Cardinal(Self.SE_VystMinus_module.MaxValue)) then
+    if (Self.Blk.rcsOutMinus.board > Cardinal(Self.SE_VystMinus_module.MaxValue)) then
       Self.SE_VystMinus_module.MaxValue := 0;
     Self.SE_VystMinus_port.MaxValue := 0;
 
-    SE_VystMinus_module.Value := settings.RCSAddrs[3].board;
-    SE_VystMinus_port.Value := settings.RCSAddrs[3].port;
+    SE_VystMinus_module.Value := Self.Blk.rcsOutMinus.board;
+    SE_VystMinus_port.Value := Self.Blk.rcsOutMinus.port;
    end else begin
     SE_VystMinus_module.Value  := 0;
     SE_VystMinus_port.Value := 0;
@@ -233,7 +233,7 @@ var glob:TBlkSettings;
 
   Self.SE_moduleExit(Self);
 
-  Self.CHB_Feedback.Checked := settings.detekcePolohy;
+  Self.CHB_Feedback.Checked := settings.posDetection;
   Self.CHB_FeedbackClick(Self.CHB_Feedback);
 
   Self.CHB_npPlus.Checked := (settings.npPlus > -1);
@@ -271,12 +271,12 @@ var spojka_vypust:TArI;
     spojka_vypust[0] := Self.Blk.id;
 
     // spojka
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, btVyhybka, Self.Blk.GetSettings().spojka);
-    Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.spojka > -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, btTurnout, Self.Blk.GetSettings().coupling);
+    Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.coupling > -1);
 
     // zamek
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btZamek, Self.Blk.GetSettings().zamek);
-    Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.zamek > -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btZamek, Self.Blk.GetSettings().lock);
+    Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.lock > -1);
 
     // neprofilove styky +
     Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, btUsek, Self.Blk.GetSettings().npPlus, btTU);
@@ -287,7 +287,7 @@ var spojka_vypust:TArI;
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npMinus > -1);
 
    end else begin
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, btVyhybka, -1);
+    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, btTurnout, -1);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0);
 
     Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, btZamek, -1);
@@ -368,8 +368,8 @@ end;
 
 procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
 var glob:TBlkSettings;
-    settings, spojkaSettings:TBlkVyhSettings;
-    vyh:TBlkVyhybka;
+    settings, spojkaSettings: TBlkTurnoutSettings;
+    vyh:TBlkTurnout;
     another: TBlk;
     typ: TRCSIOType;
     i: Integer;
@@ -419,12 +419,12 @@ var glob:TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := btVyhybka;
+  glob.typ := btTurnout;
 
   if (NewBlk) then
    begin
     try
-      Blk := Blky.Add(btVyhybka, glob) as TBlkVyhybka;
+      Blk := Blky.Add(btTurnout, glob) as TBlkTurnout;
     except
       on E:Exception do
        begin
@@ -446,10 +446,10 @@ var glob:TBlkSettings;
 
   if (Self.CHB_Spojka.Checked) then
    begin
-    settings.spojka := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex]);
+    settings.coupling := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex]);
 
-    Blky.GetBlkByID(settings.spojka, TBlk(vyh));
-    if ((blk = nil) or (blk.typ <> btVyhybka)) then
+    Blky.GetBlkByID(settings.coupling, TBlk(vyh));
+    if ((blk = nil) or (blk.typ <> btTurnout)) then
      begin
       Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -457,7 +457,7 @@ var glob:TBlkSettings;
 
     spojkaSettings := vyh.GetSettings();
 
-    if ((spojkaSettings.spojka <> -1) and (spojkaSettings.spojka <> glob.id)) then
+    if ((spojkaSettings.coupling <> -1) and (spojkaSettings.coupling <> glob.id)) then
      begin
       Application.MessageBox('Na spojkové výhybce je již jiná spojka!', 'Varování', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -479,16 +479,16 @@ var glob:TBlkSettings;
 
     vyh.SetSettings(spojkaSettings);
    end else begin
-    settings.spojka := -1;
+    settings.coupling := -1;
    end;
 
   if (Self.CHB_Zamek.Checked) then
    begin
-    settings.zamek := Blky.GetBlkID(Self.CB_ZamekData[Self.CB_Zamek.ItemIndex]);
-    settings.zamekPoloha := TVyhPoloha(Self.CB_Zamek_Poloha.ItemIndex);
+    settings.lock := Blky.GetBlkID(Self.CB_ZamekData[Self.CB_Zamek.ItemIndex]);
+    settings.lockPosition := TTurnoutPosition(Self.CB_Zamek_Poloha.ItemIndex);
    end else begin
-    settings.zamek := -1;
-    settings.zamekPoloha := TVyhPoloha.none;
+    settings.lock := -1;
+    settings.lockPosition := TTurnoutPosition.none;
    end;
 
   if (Self.CHB_npPlus.Checked) then
@@ -501,7 +501,7 @@ var glob:TBlkSettings;
   else
     settings.npMinus := -1;
 
-  settings.detekcePolohy := Self.CHB_Feedback.Checked;
+  settings.posDetection := Self.CHB_Feedback.Checked;
 
   try
     Self.Blk.SetSettings(settings);

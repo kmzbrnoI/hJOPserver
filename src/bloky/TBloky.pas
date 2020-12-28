@@ -186,8 +186,8 @@ begin
    // navaznost: usek -> vyhybka
    blkset := (Sender as TBlk).GetGlobalSettings();
    for blk in Self.Data do
-     if (blk.typ = btVyhybka) then
-       if ((blk as TBlkVyhybka).UsekID = blkset.id) then
+     if (blk.typ = btTurnout) then
+       if ((blk as TBlkTurnout).trackID = blkset.id) then
          blk.Change();
   end;//btUsek
 
@@ -246,7 +246,7 @@ begin
        typei := ini_tech.ReadInteger(section, 'typ', -1);
 
        case (typei) of
-         Integer(btVyhybka)   : Blk := TBlkVyhybka.Create(-1);
+         Integer(btTurnout)   : Blk := TBlkTurnout.Create(-1);
          Integer(btUsek)      : Blk := TBlkUsek.Create(-1);
          Integer(btIR)        : Blk := TBlkIR.Create(-1);
          Integer(btNav)       : Blk := TBlkNav.Create(-1);
@@ -368,7 +368,7 @@ begin
  index := Self.FindPlaceForNewBlk(glob.id);
 
  case (typ) of
-  btVyhybka  : Blk := TBlkVyhybka.Create(index);
+  btTurnout  : Blk := TBlkTurnout.Create(index);
   btUsek     : Blk := TBlkUsek.Create(index);
   btIR       : Blk := TBlkIR.Create(index);
   btNav      : Blk := TBlkNav.Create(index);
@@ -919,8 +919,8 @@ begin
  Result := TBlksList.Create();
  for blk in Self.data do
   begin
-   if ((blk.typ = btVyhybka) and
-      ((blk as TBlkVyhybka).GetSettings().zamek = zamekID)) then
+   if ((blk.typ = btTurnout) and
+      ((blk as TBlkTurnout).GetSettings().lock = zamekID)) then
     Result.Add(blk);
   end;
 end;
@@ -1058,10 +1058,10 @@ procedure TBlky.ZakladniPolohaVyhybek();
 var blk:TBlk;
  begin
   for blk in Self.data do
-    if ((Blk.typ = btVyhybka) and (TBlkVyhybka(Blk).Poloha <> TVyhPoloha.plus) and (not TBlkVyhybka(Blk).outputLocked) and
-        (TBlkVyhybka(Blk).Obsazeno <> TUsekStav.obsazeno) and
-        ((TBlkVyhybka(Blk).spojka = nil) or (TBlkVyhybka(Blk).spojka.Obsazeno <> TUsekStav.obsazeno))) then
-      TBlkVyhybka(Blk).SetPoloha(plus);
+    if ((Blk.typ = btTurnout) and (TBlkTurnout(Blk).position <> TTurnoutPosition.plus) and (not TBlkTurnout(Blk).outputLocked) and
+        (TBlkTurnout(Blk).occupied <> TUsekStav.obsazeno) and
+        ((TBlkTurnout(Blk).coupling = nil) or (TBlkTurnout(Blk).coupling.occupied <> TUsekStav.obsazeno))) then
+      TBlkTurnout(Blk).SetPosition(plus);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////

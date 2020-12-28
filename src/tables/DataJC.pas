@@ -123,8 +123,8 @@ begin
  for j := 0 to JCData.Vyhybky.Count-1 do
   begin
    case (JCData.Vyhybky[j].Poloha) of
-     TVyhPoloha.plus  : str := str + '(' + Blky.GetBlkName(JCData.Vyhybky[j].Blok)+', +)';
-     TVyhPoloha.minus : str := str + '(' + Blky.GetBlkName(JCData.Vyhybky[j].Blok)+', -)';
+     TTurnoutPosition.plus  : str := str + '(' + Blky.GetBlkName(JCData.Vyhybky[j].Blok)+', +)';
+     TTurnoutPosition.minus : str := str + '(' + Blky.GetBlkName(JCData.Vyhybky[j].Blok)+', -)';
    end;
   end;//for j
  Self.LV.Items[line].SubItems[5] := str;
@@ -143,8 +143,8 @@ begin
  for j := 0 to JCData.Odvraty.Count-1 do
   begin
    case (JCData.Odvraty[j].Poloha) of
-     TVyhPoloha.plus  : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', +, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+')';
-     TVyhPoloha.minus : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', -, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+')';
+     TTurnoutPosition.plus  : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', +, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+')';
+     TTurnoutPosition.minus : str := str + '(' + Blky.GetBlkName(JCData.Odvraty[j].Blok)+', -, '+Blky.GetBlkName(JCData.Odvraty[j].ref_blk)+')';
    end;
   end;//for j
  Self.LV.Items[line].SubItems[11] := str;
@@ -171,12 +171,12 @@ begin
  for j := 0 to JCData.Vyhybky.Count-1 do
   begin
    Blky.GetBlkByID(JCData.Vyhybky[j].Blok, Blk);
-   if (Blk <> nil) and (Blk.typ = btVyhybka) then
+   if (Blk <> nil) and (Blk.typ = btTurnout) then
     begin
-     if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.plus) and (TBlkVyhybka(Blk).npBlokPlus <> nil)) then
-       str := str + TBlkVyhybka(Blk).npBlokPlus.name + ', '
-     else if ((JCData.Vyhybky[j].Poloha = TVyhPoloha.minus) and (TBlkVyhybka(Blk).npBlokMinus <> nil)) then
-       str := str + TBlkVyhybka(Blk).npBlokMinus.name + ', ';
+     if ((JCData.Vyhybky[j].Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil)) then
+       str := str + TBlkTurnout(Blk).npBlokPlus.name + ', '
+     else if ((JCData.Vyhybky[j].Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil)) then
+       str := str + TBlkTurnout(Blk).npBlokMinus.name + ', ';
     end else
      str := str + '?, ';
   end;

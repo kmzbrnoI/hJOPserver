@@ -1,8 +1,6 @@
 ﻿unit TBlokVyhybka;
 
-{
- Definice a obsluha technologickeho bloku vyhybka.
-}
+{ TURNOUT technological block definition. }
 
 interface
 
@@ -11,7 +9,7 @@ uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
      TOblRizeni, TechnologieRCS;
 
 {
- Jak funguje interntionalLock:
+ Jak funguje intentionalLock:
  Tohle se uplatnuje jen u vyhybek odvratu. Tyto vyhybky nemusi byt v usecich JC,
  takze nemaji zadnou informaci o tom, kdy maji byt drzeny a kdy se ma drzeni
  zrusit. Jedna vyhybka muze byt v odvratech vice postavenych JC, proto se pocita,
@@ -21,230 +19,239 @@ uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
 }
 
 type
- TVyhPoloha = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
- TVyhSetError = (vseInvalidPos, vseInvalidRCSConfig, vseLocked, vseOccupied, vseRCS, vseTimeout);
- ESpojka = class(Exception);
- TVyhSetPolohaErrCb = procedure (Sender: TObject; error: TVyhSetError) of object;
+ TTurnoutPosition = (disabled = -5, none = -1, plus = 0, minus = 1, both = 2);
+ TTurnoutSetError = (vseInvalidPos, vseInvalidRCSConfig, vseLocked, vseOccupied, vseRCS, vseTimeout);
+ ECoupling = class(Exception);
+ TTurnoutSetPosErrCb = procedure (Sender: TObject; error: TTurnoutSetError) of object;
 
- TBlkVyhSettings = record
-  RCSAddrs:TRCSAddrs;     // vstup+, vstup-, vystup+, vystup-
-  spojka:Integer;         // reference na id vyhybky ve spojce
-                          // pokud jsou obe vyhybky ve spojce, maji reference na sebe navzajem
-                          // zmena RCS vstupu a vystupu v nastaveni jedne vyhybky ovlivnuje druhou
-                          // POZOR: jedna data ulozena na dvou mistech, pri nacitani se nekontroluje konzistence
-                          // SOUBOR MUSI BYT KONZISTENTNI (tj. kazda vyhybka musi mit navaznosti na tu druhou)
-  zamek:Integer;          // pokud ma vyhybka navaznost na zamek, je zde id bloku zamku; jinak -1
-  zamekPoloha:TVyhPoloha; // poloha, v jake se vyhybka musi nachazet pro uzamceni zamku
-  npPlus:Integer;         // id neprofiloveho useku pro polohu plus (-1 pokud neni)
-  npMinus:Integer;        // id neprofiloveho useku pro polohu minus (-1 pokud neni)
-  detekcePolohy:Boolean;
+ TBlkTurnoutSettings = record
+  RCSAddrs: TRCSAddrs;     // order: in+, in-, out+, out-
+  coupling: Integer;       // coupling turnout id (-1 in case of none); Both coupling turnouts reference each other.
+  lock: Integer;           // lock id in case of turnout refering to lock, -1 in case of none
+  lockPosition: TTurnoutPosition;
+  npPlus: Integer;         // id of non-profile block for position +
+  npMinus: Integer;        // id of non-profile block for position -
+  posDetection: Boolean;
  end;
 
- TBlkVyhStav = record
-  poloha, polohaOld, polohaReal: TVyhPoloha;    // polohaReal je skutecna poloha, kterou aktualne zobrazuji RCS vstupy
-  polohaSave: TVyhPoloha;                     // poloha k ulozeni do souboru pro vyhybky bez indikace
-  polohaLock: TVyhPoloha;                     // poloha, do ktere ma byt vyhybka zamknuta; none pokud neni zamek
-  stit,vyl:string;                            // stitek a vyluka vyhybky
-  staveni_minus,staveni_plus:Boolean;         // stavi se zrovna vyhybka do polohy plus, ci minus?
-  intentionalLocks:Integer;
-  vyhZaver:Cardinal;                          // pocet bloku, ktere na vyhybku udelily nouzovy zaver
+ TBlkTurnoutState = record
+  position, positionOld, positionReal, positionSave, positionLock: TTurnoutPosition;
+                                             // position = current reporting
+                                             // old = last position
+                                             // real = state based only on current state of RCS inputs
+                                             // save = position to save to file in case of posDetection = false
+                                             // lock = in which position to lock turnout in case of lock
+  note, lockout: string;
+  movingPlus, movingMinus: Boolean;
+  intentionalLocks: Integer;
+  locks: Cardinal;                           // n.o. blocks who gave emergency lock
 
-  staveniOKCallback: TNotifyEvent;           // callback eventy pro koncovou polohu vyhybky (resp. timeout prestavovani)
-  staveniErrCallback: TVyhSetPolohaErrCb;
-  staveniStart:TDateTime;                                 // cas zacatku prestavovani
-  staveniPanel:TIDContext;                                // panel, ktery chtel vyhybku prestavit
-  staveniOR:TObject;                                      // oblast rizeni, ktera vyzadala staveni vyhybky
+  movingOKCallback: TNotifyEvent;
+  movingErrCallback: TTurnoutSetPosErrCb;
+  movingStart: TDateTime;
+  movingPanel: TIDContext;
+  movingOR: TObject;
  end;
 
- TBlkVyhybkaRel = record
-  UsekID:Integer;
+ TBlkTurnoutSpnl = record
+  track: Integer;
  end;
 
- TBlkVyhInputs = record
+ TBlkTurnoutInputs = record
   plus: TRCSInputState;
   minus: TRCSInputState;
   constructor Create(plus, minus: TRCSInputState);
  end;
 
- TBlkVyhybka = class(TBlk)
+ TBlkTurnout = class(TBlk)
   const
-   //defaultni stav
-   _def_vyh_stav:TBlkVyhStav = (
-    poloha : disabled;
-    polohaOld : disabled;
-    polohaReal : disabled;
-    polohaSave: none;
-    polohaLock: none;
-    stit : '';
-    vyl : '';
-    staveni_minus : false;
-    staveni_plus : false;
+   _def_vyh_stav:TBlkTurnoutState = ( // default state
+    position : disabled;
+    positionOld : disabled;
+    positionReal : disabled;
+    positionSave: none;
+    positionLock: none;
+    note : '';
+    lockout : '';
+    movingPlus : false;
+    movingMinus : false;
     intentionalLocks: 0;
-    vyhZaver: 0;
-    staveniOKCallback: nil;
-    staveniErrCallback: nil;
-    staveniStart: 0;
-    staveniPanel: nil;
-    staveniOR: nil;
+    locks: 0;
+    movingOKCallback: nil;
+    movingErrCallback: nil;
+    movingStart: 0;
+    movingPanel: nil;
+    movingOR: nil;
    );
 
-   _VYH_STAVENI_TIMEOUT_SEC = 10; // timeout na staveni vyhybky je 10 sekund
-   _VYH_STAVENI_MOCK_SEC = 2;
+   _T_MOVING_TIMEOUT_SEC = 10;
+   _T_MOVING_MOCK_SEC = 2;
+
+   _TI_INPLUS = 0;
+   _TI_INMINUS = 1;
+   _TI_OUTPLUS = 2;
+   _TI_OUTMINUS = 3;
 
   private
-   VyhSettings:TBlkVyhSettings;
-   VyhStav:TBlkVyhStav;
-   VyhRel:TBlkVyhybkaRel;
+   m_settings: TBlkTurnoutSettings;
+   m_state: TBlkTurnoutState;
+   m_spnl: TBlkTurnoutSpnl;
 
-   NullOutput:record
-     enabled:boolean;
-     NullOutputTime:System.TDateTime; // 500ms to null outputs
+   m_nullOutput: record
+     enabled: Boolean;
+     NullOutputTime: System.TDateTime; // 500ms to null outputs
    end;
 
-   fzamek:TBlk;
-   fparent:TBlk;
-   fnpPlus:TBlk;
-   fnpMinus:TBlk;
+   m_lock: TBlk;
+   m_parent: TBlk;
+   m_npPlus: TBlk;
+   m_npMinus: TBlk;
 
-    function GetZaver():TZaver;
-    function GetNUZ():boolean;
-    function GetObsazeno():TUsekStav;
+    function GetZaver(): TZaver;
+    function GetNUZ(): Boolean;
+    function GetOccupied(): TUsekStav;
     function GetOutputLocked(): Boolean;
 
-    procedure SetVyhStit(stit:string);
-    procedure mSetVyhVyl(vyl:string);
+    procedure SetNote(note: string);
+    procedure SetLockout(lockout: string); overload;
 
-    function GetIntentionalLock():boolean;
+    function GetIntentionalLock(): Boolean;
 
-    procedure UpdatePoloha();
-    procedure UpdateStaveniTimeout();
-    procedure UpdateZamek();
+    procedure UpdatePosition();
+    procedure UpdateMovingTimeout();
+    procedure UpdateLock();
     procedure Unlock();
-    function ZamekLocked():Boolean;
+    function LockLocked(): Boolean;
 
     procedure CheckNullOutput();
 
-    procedure PanelStaveniErr(Sender:TObject; error: TVyhSetError);
+    procedure PanelMovingErr(Sender: TObject; error: TTurnoutSetError);
 
-    procedure MenuPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuNSPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuNSMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuPlusClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuMinusClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuNSPlusClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuNSMinusClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure UPOPlusClick(Sender:TObject);
-    procedure UPOMinusClick(Sender:TObject);
-    procedure UPONSPlusClick(Sender:TObject);
-    procedure UPONSMinusClick(Sender:TObject);
+    procedure UPOPlusClick(Sender: TObject);
+    procedure UPOMinusClick(Sender: TObject);
+    procedure UPONSPlusClick(Sender: TObject);
+    procedure UPONSMinusClick(Sender: TObject);
 
-    procedure MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminPolPlusCLick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminPolMinusCLick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminNepolCLick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminREDUKClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminPolPlusCLick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminPolMinusCLick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminNepolCLick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure PanelPotvrSekvNSPlus(Sender:TIdContext; success:boolean);
-    procedure PanelPotvrSekvNSMinus(Sender:TIdContext; success:boolean);
-    procedure PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
+    procedure PanelPotvrSekvNSPlus(Sender: TIdContext; success: Boolean);
+    procedure PanelPotvrSekvNSMinus(Sender: TIdContext; success: Boolean);
+    procedure PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 
-    procedure ORVylukaNull(Sender:TIdContext; success:boolean);
+    procedure ORVylukaNull(Sender: TIdContext; success: Boolean);
 
-    function GetVyhZaver():boolean;
-    procedure SetVyhZaver(zaver:boolean);
-    function MockInputs():TBlkVyhInputs;
+    function IsEmergencyLock(): Boolean;
+    procedure SetEmergencyLock(zaver: Boolean);
+    function MockInputs(): TBlkTurnoutInputs;
 
-    function GetZamek():TBlk;
-    function GetNpPlus():TBlk;
-    function GetNpMinus():TBlk;
-    function GetDetekcePolohy():Boolean;
-    function GetSpojka():TBlkVyhybka;
-    function ShouldBeLocked(withZamek: boolean = true):boolean;
-    function ShouldBeLockedIgnoreStaveni():boolean;
+    function GetLock(): TBlk;
+    function GetNpPlus(): TBlk;
+    function GetNpMinus(): TBlk;
+    function IsPositionDetection(): Boolean;
+    function GetCoupling(): TBlkTurnout;
+    function ShouldBeLocked(withZamek: Boolean = true): Boolean;
+    function ShouldBeLockedIgnoreStaveni(): Boolean;
 
-    procedure NpObsazChange(Sender:TObject; data:Integer);
+    procedure NpObsazChange(Sender: TObject; data: Integer);
     procedure MapNpEvents();
 
-    procedure StitVylUPO(SenderPnl:TIdContext; SenderOR:TObject;
-        UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
+    procedure StitVylUPO(SenderPnl: TIdContext; SenderOR: TObject;
+        UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
 
-    class function CombineSpojkaInputs(first: TRCSInputState; second: TRCSInputState):TRCSInputState;
+    class function CombineCouplingInputs(first: TRCSInputState; second: TRCSInputState):TRCSInputState;
+
+    function GetRCSInPlus(): TRCSAddr;
+    function GetRCSInMinus(): TRCSAddr;
+    function GetRCSOutPlus(): TRCSAddr;
+    function GetRCSOutMinus(): TRCSAddr;
 
   public
     constructor Create(index:Integer);
     destructor Destroy(); override;
 
-    //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
-    //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
     procedure Reset(); override;
     function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
-    //update states
     procedure Update(); override;
-    procedure Change(now:boolean = false); override;
+    procedure Change(now: Boolean = false); override;
 
-    //----- vyhybka own functions -----
+    //----- turnout-specific functions -----
 
-    function GetSettings():TBlkVyhSettings;
-    procedure SetSettings(data:TBlkVyhSettings);
+    function GetSettings(): TBlkTurnoutSettings;
+    procedure SetSettings(data: TBlkTurnoutSettings);
 
-    procedure SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false;
-        callback_ok:TNotifyEvent = nil; callback_err:TVyhSetPolohaErrCb = nil);
-    procedure SetVyhVyl(Sender:TIDContext; vyl:string);
-    procedure SetSpojkaNoPropag(spojka:Integer);
+    procedure SetPosition(new: TTurnoutPosition; lock: boolean = false; nouz: boolean = false;
+        callback_ok:TNotifyEvent = nil; callback_err: TTurnoutSetPosErrCb = nil);
+    procedure SetLockout(Sender: TIDContext; lockout: string); overload;
+    procedure SetCouplingNoPropag(coupling: Integer);
 
     procedure IntentionalLock();
     procedure IntentionalUnlock();
 
-    procedure NullVyhZaver();
-    procedure DecreaseNouzZaver(amount:Cardinal);
-    function GetInputs():TBlkVyhInputs;
+    procedure ResetEmLocks();
+    procedure DecreaseEmergencyLock(amount: Cardinal);
+    function GetInputs(): TBlkTurnoutInputs;
 
-    class function SetErrorToMsg(error: TVyhSetError): string;
+    class function SetErrorToMsg(error: TTurnoutSetError): string;
 
-    property Stav:TBlkVyhStav read VyhStav;
+    property state: TBlkTurnoutState read m_state;
 
-    property Poloha:TVyhPoloha read VyhStav.poloha;
+    property position: TTurnoutPosition read m_state.position;
     property NUZ:boolean read GetNUZ;
-    property Zaver:TZaver read GetZaver;
-    property Obsazeno:TUsekStav read GetObsazeno;
-    property Stitek:string read VyhStav.Stit write SetVyhStit;
-    property Vyluka:string read VyhStav.Vyl write mSetVyhVyl;
-    property intentionalLocked:boolean read GetIntentionalLock;
-    property UsekID:Integer read VyhRel.UsekID;
-    property vyhZaver:boolean read GetVyhZaver write SetVyhZaver;
-    property zamek:TBlk read GetZamek;
-    property npBlokPlus:TBlk read GetNpPlus;
-    property npBlokMinus:TBlk read GetNpMinus;
-    property detekcePolohy:Boolean read GetDetekcePolohy;
-    property outputLocked:Boolean read GetOutputLocked;
-    property spojka: TBlkVyhybka read GetSpojka;
+    property zaver: TZaver read GetZaver;
+    property occupied: TUsekStav read GetOccupied;
+    property note: string read m_state.note write SetNote;
+    property lockout: string read m_state.lockout write SetLockout;
+    property intentionalLocked: boolean read GetIntentionalLock;
+    property trackID: Integer read m_spnl.track;
+    property emLock: Boolean read IsEmergencyLock write SetEmergencyLock;
+    property lock: TBlk read GetLock;
+    property npBlokPlus: TBlk read GetNpPlus;
+    property npBlokMinus: TBlk read GetNpMinus;
+    property posDetection: Boolean read IsPositionDetection;
+    property outputLocked: Boolean read GetOutputLocked;
+    property coupling: TBlkTurnout read GetCoupling;
 
-    property StaveniPlus:Boolean read VyhStav.staveni_plus write VyhStav.staveni_plus;
-    property StaveniMinus:Boolean read VyhStav.staveni_minus write VyhStav.staveni_minus;
+    property movingPlus:Boolean read m_state.movingPlus write m_state.movingPlus;
+    property movingMinus:Boolean read m_state.movingMinus write m_state.movingMinus;
 
-    //GUI:
+    property rcsInPlus: TRCSAddr read GetRCSInPlus;
+    property rcsInMinus: TRCSAddr read GetRCSInMinus;
+    property rcsOutPlus: TRCSAddr read GetRCSOutPlus;
+    property rcsOutMinus: TRCSAddr read GetRCSOutMinus;
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
+    // Panel:
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights):string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
+        Button:TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
     function PanelStateString():string; override;
 
-    //PT:
+    // PT:
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
-    procedure GetPtData(json:TJsonObject; includeState:boolean); override;
-    procedure GetPtState(json:TJsonObject); override;
-    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
-
-    class function PolohaToStr(poloha:TVyhPoloha):string;
-    class function StrToPoloha(c: string):TVyhPoloha;
+    class function PositionToStr(position: TTurnoutPosition):string;
+    class function StrToPosition(c: string): TTurnoutPosition;
 
  end;
 
@@ -253,170 +260,166 @@ type
 implementation
 
 uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
-      TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, ownConvert;
+      TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, ownConvert,
+      IfThenElse;
 
-constructor TBlkVyhybka.Create(index:Integer);
+constructor TBlkTurnout.Create(index: Integer);
 begin
  inherited Create(index);
- Self.GlobalSettings.typ := btVyhybka;
- Self.VyhStav := Self._def_vyh_stav;
- Self.fzamek  := nil;
- Self.fparent := nil;
- Self.fnpPlus := nil;
- Self.fnpMinus := nil;
+ Self.GlobalSettings.typ := btTurnout;
+ Self.m_state := Self._def_vyh_stav;
+ Self.m_lock := nil;
+ Self.m_parent := nil;
+ Self.m_npPlus := nil;
+ Self.m_npMinus := nil;
 end;//ctor
 
-destructor TBlkVyhybka.Destroy();
+destructor TBlkTurnout.Destroy();
 begin
  inherited Destroy();
 end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
+procedure TBlkTurnout.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 var strs: TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.VyhSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
- Self.VyhSettings.spojka := ini_tech.ReadInteger(section, 'spojka', -1);
- Self.VyhSettings.zamek := ini_tech.ReadInteger(section, 'zamek', -1);
- Self.VyhSettings.zamekPoloha := TVyhPoloha(ini_tech.ReadInteger(section, 'zamek-pol', 0));
- Self.VyhSettings.detekcePolohy := ini_tech.ReadBool(section, 'detekcePolohy', true);
+ Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech,section);
+ Self.m_settings.coupling := ini_tech.ReadInteger(section, 'spojka', -1);
+ Self.m_settings.lock := ini_tech.ReadInteger(section, 'zamek', -1);
+ Self.m_settings.lockPosition := TTurnoutPosition(ini_tech.ReadInteger(section, 'zamek-pol', 0));
+ Self.m_settings.posDetection := ini_tech.ReadBool(section, 'detekcePolohy', true);
 
- Self.VyhSettings.npPlus := ini_tech.ReadInteger(section, 'npPlus', -1);
- Self.VyhSettings.npMinus := ini_tech.ReadInteger(section, 'npMinus', -1);
+ Self.m_settings.npPlus := ini_tech.ReadInteger(section, 'npPlus', -1);
+ Self.m_settings.npMinus := ini_tech.ReadInteger(section, 'npMinus', -1);
 
- Self.VyhStav.Stit := ini_stat.ReadString(section, 'stit', '');
- Self.VyhStav.Vyl  := ini_stat.ReadString(section, 'vyl', '');
+ Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
+ Self.m_state.lockout := ini_stat.ReadString(section, 'vyl', '');
 
- Self.VyhStav.polohaSave := Self.StrToPoloha(ini_stat.ReadString(section, 'poloha', '+'));
- if ((Self.VyhStav.polohaSave <> TVyhPoloha.plus) and (Self.VyhStav.polohaSave <> TVyhPoloha.minus)) then
-   Self.VyhStav.polohaSave := TVyhPoloha.plus;
+ Self.m_state.positionSave := Self.StrToPosition(ini_stat.ReadString(section, 'poloha', '+'));
+ if ((Self.m_state.positionSave <> TTurnoutPosition.plus) and (Self.m_state.positionSave <> TTurnoutPosition.minus)) then
+   Self.m_state.positionSave := TTurnoutPosition.plus;
 
  strs := Self.LoadORs(ini_rel, 'V');
  try
-   if (strs.Count >= 2) then
-     Self.VyhRel.UsekID := StrToInt(strs[1])
-   else
-     Self.VyhRel.UsekID := -1;
+  Self.m_spnl.track := ite(strs.Count >= 2, StrToInt(strs[1]), -1);
  finally
    strs.Free();
  end;
 
- PushRCStoOR(Self.ORsRef, Self.VyhSettings.RCSAddrs);
+ PushRCStoOR(Self.ORsRef, Self.m_settings.RCSAddrs);
 end;
 
-procedure TBlkVyhybka.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkTurnout.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
  inherited SaveData(ini_tech, section);
 
- Self.SaveRCS(ini_tech, section, Self.VyhSettings.RCSAddrs);
+ Self.SaveRCS(ini_tech, section, Self.m_settings.RCSAddrs);
 
- if (Self.VyhSettings.spojka > -1) then
-   ini_tech.WriteInteger(section, 'spojka', Self.VyhSettings.spojka);
+ if (Self.m_settings.coupling > -1) then
+   ini_tech.WriteInteger(section, 'spojka', Self.m_settings.coupling);
 
- if (Self.VyhSettings.npPlus > -1) then
-   ini_tech.WriteInteger(section, 'npPlus', Self.VyhSettings.npPlus);
+ if (Self.m_settings.npPlus > -1) then
+   ini_tech.WriteInteger(section, 'npPlus', Self.m_settings.npPlus);
 
- if (Self.VyhSettings.npMinus > -1) then
-   ini_tech.WriteInteger(section, 'npMinus', Self.VyhSettings.npMinus);
+ if (Self.m_settings.npMinus > -1) then
+   ini_tech.WriteInteger(section, 'npMinus', Self.m_settings.npMinus);
 
- if (Self.VyhSettings.zamek > -1) then
+ if (Self.m_settings.lock > -1) then
   begin
-   ini_tech.WriteInteger(section, 'zamek', Self.VyhSettings.zamek);
-   ini_tech.WriteInteger(section, 'zamek-pol', Integer(Self.VyhSettings.zamekPoloha));
+   ini_tech.WriteInteger(section, 'zamek', Self.m_settings.lock);
+   ini_tech.WriteInteger(section, 'zamek-pol', Integer(Self.m_settings.lockPosition));
   end;
 
- if (not Self.detekcePolohy) then
+ if (not Self.posDetection) then
    ini_tech.WriteBool(section, 'detekcePolohy', false);
 end;
 
-procedure TBlkVyhybka.SaveStatus(ini_stat:TMemIniFile;const section:string);
-var poloha: TVyhPoloha;
+procedure TBlkTurnout.SaveStatus(ini_stat: TMemIniFile; const section: string);
+var position: TTurnoutPosition;
 begin
- if (Self.VyhStav.stit <> '') then
-   ini_stat.WriteString(section, 'stit', Self.VyhStav.Stit);
+ if (Self.m_state.note <> '') then
+   ini_stat.WriteString(section, 'stit', Self.m_state.note);
 
- if (Self.VyhStav.vyl <> '') then
-   ini_stat.WriteString(section, 'vyl', Self.VyhStav.Vyl);
+ if (Self.m_state.lockout <> '') then
+   ini_stat.WriteString(section, 'vyl', Self.m_state.lockout);
 
- if (not Self.detekcePolohy) then
+ if (not Self.posDetection) then
   begin
-   if (Self.Poloha > TVyhPoloha.disabled) then
-     poloha := Self.Poloha
+   if (Self.position > TTurnoutPosition.disabled) then
+     position := Self.position
    else
-     poloha := Self.VyhStav.polohaSave;
+     position := Self.m_state.positionSave;
 
-   if ((Self.StaveniMinus) or (poloha = TVyhPoloha.minus)) then
-     ini_stat.WriteString(section, 'poloha', '-')
-   else
-     ini_stat.WriteString(section, 'poloha', '+')
+   ini_stat.WriteString(section, 'poloha',
+    ite((Self.movingMinus) or (position = TTurnoutPosition.minus), '-', '+'));
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.Enable();
-var rcsaddr:TRCSAddr;
-    i:Integer;
+procedure TBlkTurnout.Enable();
+var rcsaddr: TRCSAddr;
+    i: Integer;
     enable: Boolean;
 begin
- enable := (Self.VyhSettings.RCSAddrs.Count >= 4);
+ enable := (Self.m_settings.RCSAddrs.Count >= 4);
 
- if (Self.detekcePolohy) then
+ if (Self.posDetection) then
   begin
-   for rcsaddr in Self.VyhSettings.RCSAddrs do
+   for rcsaddr in Self.m_settings.RCSAddrs do
      if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
        enable := false;
   end else begin
-   for i := 2 to Self.VyhSettings.RCSAddrs.Count-1 do
-     if (not RCSi.IsNonFailedModule(Self.VyhSettings.RCSAddrs[i].board)) then
+   for i := 2 to Self.m_settings.RCSAddrs.Count-1 do
+     if (not RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[i].board)) then
        enable := false;
   end;
 
  if (enable) then
   begin
-   if (Self.detekcePolohy) then
-     Self.VyhStav.poloha := none
+   if (Self.posDetection) then
+     Self.m_state.position := none
    else
-     Self.VyhStav.poloha := Self.VyhStav.polohaSave;
+     Self.m_state.position := Self.m_state.positionSave;
   end;
 
  Self.MapNpEvents();
  Self.Update(); //update will call Change()
 end;
 
-procedure TBlkVyhybka.Disable();
+procedure TBlkTurnout.Disable();
 begin
- if (Self.StaveniPlus) then
-   Self.VyhStav.polohaSave := TVyhPoloha.plus
- else if (Self.StaveniMinus) then
-   Self.VyhStav.polohaSave := TVyhPoloha.minus
+ if (Self.movingPlus) then
+   Self.m_state.positionSave := TTurnoutPosition.plus
+ else if (Self.movingMinus) then
+   Self.m_state.positionSave := TTurnoutPosition.minus
  else
-   Self.VyhStav.polohaSave := Self.VyhStav.poloha;
+   Self.m_state.positionSave := Self.m_state.position;
 
- Self.VyhStav.poloha := disabled;
+ Self.m_state.position := disabled;
  Self.Change(true);
 end;
 
-procedure TBlkVyhybka.Reset();
+procedure TBlkTurnout.Reset();
 begin
- Self.VyhStav.intentionalLocks := 0;
- Self.VyhStav.staveni_plus := false;
- Self.VyhStav.staveni_minus := false;
- Self.VyhStav.polohaLock := TVyhPoloha.none;
- Self.VyhStav.vyhZaver := 0;
+ Self.m_state.intentionalLocks := 0;
+ Self.m_state.movingPlus := false;
+ Self.m_state.movingMinus := false;
+ Self.m_state.positionLock := TTurnoutPosition.none;
+ Self.m_state.locks := 0;
 end;
 
-function TBlkVyhybka.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkTurnout.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
- if ((portType = TRCSIOType.input) and (Self.VyhSettings.RCSAddrs.Count >= 2) and
-     ((Self.VyhSettings.RCSAddrs[0] = addr) or (Self.VyhSettings.RCSAddrs[1] = addr))) then
+ if ((portType = TRCSIOType.input) and (Self.m_settings.RCSAddrs.Count >= 2) and
+     ((Self.rcsInPlus = addr) or (Self.rcsInMinus = addr))) then
    Exit(True);
 
- if ((portType = TRCSIOType.output) and (Self.VyhSettings.RCSAddrs.Count >= 4) and
-     ((Self.VyhSettings.RCSAddrs[2] = addr) or (Self.VyhSettings.RCSAddrs[3] = addr))) then
+ if ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Count >= 4) and
+     ((Self.rcsOutPlus = addr) or (Self.rcsOutMinus = addr))) then
    Exit(True);
 
  Result := False;
@@ -424,18 +427,18 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.Update();
+procedure TBlkTurnout.Update();
 begin
  Self.CheckNullOutput();
- Self.UpdatePoloha();
- Self.UpdateStaveniTimeout();
- Self.UpdateZamek();
+ Self.UpdatePosition();
+ Self.UpdateMovingTimeout();
+ Self.UpdateLock();
 
- if (Self.VyhStav.poloha <> Self.VyhStav.polohaOld) then
+ if (Self.m_state.position <> Self.m_state.positionOld) then
   begin
-   if ((Self.VyhStav.polohaOld = TVyhPoloha.disabled) and (Self.outputLocked)) then // apply lock
-     Self.SetPoloha(Self.VyhStav.polohaLock, true);
-   Self.VyhStav.polohaOld := Self.VyhStav.poloha;
+   if ((Self.m_state.positionOld = TTurnoutPosition.disabled) and (Self.outputLocked)) then // apply lock
+     Self.SetPosition(Self.m_state.positionLock, true);
+   Self.m_state.positionOld := Self.m_state.position;
    Self.Change();
   end;
 
@@ -444,107 +447,107 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetZaver():TZaver;
+function TBlkTurnout.GetZaver():TZaver;
 begin
- if (Self.VyhRel.UsekID = -1) then
+ if (Self.m_spnl.track = -1) then
    Exit(TZaver.no);
 
- if (((Self.fparent = nil) and (Self.VyhRel.UsekID <> -1)) or ((Self.fparent.id <> Self.VyhRel.UsekID))) then
-   Blky.GetBlkByID(Self.VyhRel.UsekID, Self.fparent);
- if (Self.fparent <> nil) then
-   Result := (Self.fparent as TBlkUsek).Zaver
+ if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or ((Self.m_parent.id <> Self.m_spnl.track))) then
+   Blky.GetBlkByID(Self.m_spnl.track, Self.m_parent);
+ if (Self.m_parent <> nil) then
+   Result := (Self.m_parent as TBlkUsek).Zaver
  else
    Result := TZaver.no;
 end;
 
-function TBlkVyhybka.GetNUZ():boolean;
+function TBlkTurnout.GetNUZ():boolean;
 var tmpBlk:TBlk;
     return:Integer;
 begin
- return := Blky.GetBlkByID(Self.VyhRel.UsekID,tmpBlk);
+ return := Blky.GetBlkByID(Self.m_spnl.track,tmpBlk);
  if (return < 0) then Exit(false);
  if (tmpBlk.typ <> btUsek) then Exit(false);
 
  Result := (TBlkUsek(tmpBlk)).NUZ;
 end;
 
-function TBlkVyhybka.GetObsazeno():TUsekStav;
-var tmpBlk:TBlk;
-    return:Integer;
+function TBlkTurnout.GetOccupied(): TUsekStav;
+var tmpBlk: TBlk;
+    return: Integer;
 begin
- return := Blky.GetBlkByID(Self.VyhRel.UsekID,tmpBlk);
+ return := Blky.GetBlkByID(Self.m_spnl.track,tmpBlk);
  if (return < 0) then Exit(TUsekStav.none);
  if ((tmpBlk.typ <> btUsek) and (tmpBlk.typ <> btTU)) then Exit(TUsekStav.none);
 
  Result := (tmpBlk as TBlkUsek).Obsazeno;
 end;
 
-function TBlkVyhybka.GetOutputLocked(): Boolean;
+function TBlkTurnout.GetOutputLocked(): Boolean;
 begin
- Result := (Self.VyhStav.PolohaLock > TVyhPoloha.none);
+ Result := (Self.m_state.positionLock > TTurnoutPosition.none);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetSettings():TBlkVyhSettings;
+function TBlkTurnout.GetSettings(): TBlkTurnoutSettings;
 begin
- Result := Self.VyhSettings;
+ Result := Self.m_settings;
 end;
 
-procedure TBlkVyhybka.SetSettings(data:TBlkVyhSettings);
-var Blk:TBlk;
-    spojka_settings:TBlkVyhSettings;
-    spojka_old:Integer;
+procedure TBlkTurnout.SetSettings(data: TBlkTurnoutSettings);
+var Blk: TBlk;
+    coupling_settings: TBlkTurnoutSettings;
+    coupling_old: Integer;
 begin
- if (data.spojka = Self.id) then
-   raise ESpojka.Create('Nelze mít spojku sám se sebou!');
- spojka_old := Self.VyhSettings.spojka;
+ if (data.coupling = Self.id) then
+   raise ECoupling.Create('Nelze mít spojku sám se sebou!');
+ coupling_old := Self.m_settings.coupling;
 
- Self.VyhSettings.spojka := data.spojka;
+ Self.m_settings.coupling := data.coupling;
 
  // kontrola navaznosti spojky
- if (data.spojka > -1) then
+ if (data.coupling > -1) then
   begin
    // zkontrolujeme, pokud spojka uz neexistovala a pokud ano, tak ji smazeme
-   if (spojka_old > -1) then
+   if (coupling_old > -1) then
     begin
-     Blky.GetBlkByID(spojka_old, Blk);
-     if ((Blk <> nil) and (Blk.typ = btVyhybka)) then
-       (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
+     Blky.GetBlkByID(coupling_old, Blk);
+     if ((Blk <> nil) and (Blk.typ = btTurnout)) then
+       (Blk as TBlkTurnout).SetCouplingNoPropag(-1);
     end;
 
    // pridame spojku do druhe vyhybky
-   Blky.GetBlkByID(data.spojka, Blk);
-   if ((Blk = nil) or (Blk.typ <> btVyhybka)) then
+   Blky.GetBlkByID(data.coupling, Blk);
+   if ((Blk = nil) or (Blk.typ <> btTurnout)) then
     begin
-     Self.VyhSettings.spojka := -1;
+     Self.m_settings.coupling := -1;
     end else begin
-     spojka_settings := (Blk as TBlkVyhybka).GetSettings();
-     if (spojka_settings.spojka <> Self.id) then
+     coupling_settings := (Blk as TBlkTurnout).GetSettings();
+     if (coupling_settings.coupling <> Self.id) then
       begin
-       if (spojka_settings.spojka <> -1) then
+       if (coupling_settings.coupling <> -1) then
         begin
-         Self.VyhSettings.spojka := -1;
-         raise ESpojka.Create('Na výhybce je již jiná spojka!');
+         Self.m_settings.coupling := -1;
+         raise ECoupling.Create('Na výhybce je již jiná spojka!');
         end;
 
-       spojka_settings.spojka := Self.id;
-       (Blk as TBlkVyhybka).SetSettings(spojka_settings);
+       coupling_settings.coupling := Self.id;
+       (Blk as TBlkTurnout).SetSettings(coupling_settings);
       end;
     end;
   end else begin
    // odebereme spojku z druhe vyhybky
-   if (spojka_old <> -1) then
+   if (coupling_old <> -1) then
     begin
-     Blky.GetBlkByID(spojka_old, Blk);
-     if ((Blk <> nil) and (Blk.typ = btVyhybka)) then
-       (Blk as TBlkVyhybka).SetSpojkaNoPropag(-1);
+     Blky.GetBlkByID(coupling_old, Blk);
+     if ((Blk <> nil) and (Blk.typ = btTurnout)) then
+       (Blk as TBlkTurnout).SetCouplingNoPropag(-1);
     end;
   end;
 
- if (data.RCSAddrs <> Self.VyhSettings.RCSAddrs) then
-   Self.VyhSettings.RCSAddrs.Free();
- Self.VyhSettings := data;
+ if (data.RCSAddrs <> Self.m_settings.RCSAddrs) then
+   Self.m_settings.RCSAddrs.Free();
+ Self.m_settings := data;
 
  Self.MapNpEvents();
  Self.Change();
@@ -552,49 +555,47 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.SetVyhStit(stit:string);
+procedure TBlkTurnout.SetNote(note: string);
 begin
- Self.VyhStav.stit := Stit;
+ Self.m_state.note := note;
  Self.Change();
 end;
 
-procedure TBlkVyhybka.mSetVyhVyl(vyl:string);
+procedure TBlkTurnout.SetLockout(lockout: string);
 begin
- Self.VyhStav.vyl := vyl;
+ Self.m_state.lockout := lockout;
  Self.Change();
 end;
 
-procedure TBlkVyhybka.ORVylukaNull(Sender:TIdContext; success:boolean);
+procedure TBlkTurnout.ORVylukaNull(Sender: TIdContext; success: Boolean);
 begin
  if (success) then
-  Self.Vyluka := '';
+   Self.lockout := '';
 end;
 
-procedure TBlkVyhybka.SetVyhVyl(Sender:TIDCOntext; vyl:string);
+procedure TBlkTurnout.SetLockout(Sender: TIDCOntext; lockout: string);
 begin
- if ((self.VyhStav.Vyl <> '') and (vyl = '')) then
-  begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
-  end else begin
-   Self.Vyluka := vyl;
-  end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TBlkVyhybka.GetIntentionalLock():boolean;
-begin
- Result := (Self.VyhStav.intentionalLocks > 0);
+ if ((self.m_state.lockout <> '') and (lockout = '')) then
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil)
+ else
+   Self.lockout := lockout;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetInputs():TBlkVyhInputs;
+function TBlkTurnout.GetIntentionalLock(): Boolean;
 begin
- if (Self.detekcePolohy) then
+ Result := (Self.m_state.intentionalLocks > 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTurnout.GetInputs(): TBlkTurnoutInputs;
+begin
+ if (Self.posDetection) then
   begin
-   Result.plus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[0]);
-   Result.minus := RCSi.GetInput(Self.VyhSettings.RCSAddrs[1]);
+   Result.plus := RCSi.GetInput(Self.rcsInPlus);
+   Result.minus := RCSi.GetInput(Self.rcsInMinus);
   end else begin
    Result := Self.MockInputs();
   end;
@@ -602,15 +603,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.UpdatePoloha();
-var inp, spojkaInp: TBlkVyhInputs;
-    oblr:TOR;
-    spojka: TBlkVyhybka;
+procedure TBlkTurnout.UpdatePosition();
+var inp, couplingInp: TBlkTurnoutInputs;
+    oblr: TOR;
+    coupling: TBlkTurnout;
  begin
-  if (Self.VyhSettings.RCSAddrs.Count < 4) then Exit();
+  if (Self.m_settings.RCSAddrs.Count < 4) then Exit();
 
-  Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
-  if ((spojka <> nil) and (spojka.typ <> btVyhybka)) then
+  Blky.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
+  if ((coupling <> nil) and (coupling.typ <> btTurnout)) then
     Exit();
 
   //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
@@ -621,37 +622,36 @@ var inp, spojkaInp: TBlkVyhInputs;
     inp.minus := TRCSInputState.failure;
   end;
 
-  if ((spojka <> nil) and (inp.plus <> TRCSInputState.failure) and (inp.minus <> TRCSInputState.failure)) then
+  if ((coupling <> nil) and (inp.plus <> TRCSInputState.failure) and (inp.minus <> TRCSInputState.failure)) then
    begin
     try
-      spojkaInp := spojka.GetInputs();
+      couplingInp := coupling.GetInputs();
     except
-      spojkaInp.plus := TRCSInputState.failure;
-      spojkaInp.minus := TRCSInputState.failure;
+      couplingInp.plus := TRCSInputState.failure;
+      couplingInp.minus := TRCSInputState.failure;
     end;
 
-    inp.plus := CombineSpojkaInputs(inp.plus, spojkaInp.plus);
-    inp.minus := CombineSpojkaInputs(inp.minus, spojkaInp.minus);
+    inp.plus := CombineCouplingInputs(inp.plus, couplingInp.plus);
+    inp.minus := CombineCouplingInputs(inp.minus, couplingInp.minus);
    end;
 
   try
     if ((inp.plus = failure) or (inp.minus = failure) or
-        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[2].board)) or
-        (not RCSi.IsModule(Self.VyhSettings.RCSAddrs[3].board)) or
-        ((spojka <> nil) and ((not RCSi.IsModule(spojka.VyhSettings.RCSAddrs[2].board)) or
-                              (not RCSi.IsModule(spojka.VyhSettings.RCSAddrs[2].board))))) then
+        (not RCSi.IsModule(Self.rcsOutPlus.board)) or (not RCSi.IsModule(Self.rcsOutMinus.board)) or
+        ((coupling <> nil) and ((not RCSi.IsModule(coupling.rcsOutPlus.board)) or
+                              (not RCSi.IsModule(coupling.rcsOutMinus.board))))) then
      begin
-      if (Self.Stav.poloha <> TVyhPoloha.disabled) then
+      if (Self.state.position <> TTurnoutPosition.disabled) then
        begin
-        Self.VyhStav.poloha := TVyhPoloha.disabled;
+        Self.m_state.position := TTurnoutPosition.disabled;
         JCDb.RusJC(Self);
        end;
       Exit();
      end;
   except
-    if (Self.Stav.poloha <> TVyhPoloha.disabled) then
+    if (Self.state.position <> TTurnoutPosition.disabled) then
      begin
-      Self.VyhStav.poloha := TVyhPoloha.disabled;
+      Self.m_state.position := TTurnoutPosition.disabled;
       JCDb.RusJC(Self);
      end;
     Exit();
@@ -660,11 +660,11 @@ var inp, spojkaInp: TBlkVyhInputs;
 
   if ((inp.plus = isOff) and (inp.minus = isOff)) then
    begin
-    Self.VyhStav.poloha := none;
+    Self.m_state.position := none;
 
-    if ((Self.VyhStav.poloha <> Self.VyhStav.polohaReal) and ((Self.Zaver > TZaver.no) or (Self.vyhZaver) or
-      ((Self.intentionalLocked) and (not Self.VyhStav.staveni_plus) and (not Self.VyhStav.staveni_minus)) or
-      (Self.ZamekLocked()))
+    if ((Self.m_state.position <> Self.m_state.positionReal) and ((Self.Zaver > TZaver.no) or (Self.emLock) or
+      ((Self.intentionalLocked) and (not Self.m_state.movingPlus) and (not Self.m_state.movingMinus)) or
+      (Self.LockLocked()))
      and (Self.Zaver <> TZaver.staveni)) then
      begin
       for oblr in Self.OblsRizeni do
@@ -672,37 +672,37 @@ var inp, spojkaInp: TBlkVyhInputs;
       JCDb.RusJC(Self);
      end;//if Blokovani
 
-    Self.VyhStav.polohaReal := none;
+    Self.m_state.positionReal := none;
    end;
 
   if ((inp.plus = isOn) and (inp.minus = isOff)) then
    begin
     //je-li plus vstup 1
-    Self.VyhStav.polohaReal := plus;
-    if (Self.VyhStav.staveni_minus) then Exit();
+    Self.m_state.positionReal := plus;
+    if (Self.m_state.movingMinus) then Exit();
 
-    if (Self.VyhStav.staveni_plus) then
+    if (Self.m_state.movingPlus) then
      begin
-      Self.VyhStav.poloha := plus;
-      Self.VyhStav.staveni_plus := false;
+      Self.m_state.position := plus;
+      Self.m_state.movingPlus := false;
 
       // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
-      if (Self.spojka <> nil) then
-        Self.spojka.Update();
+      if (Self.coupling <> nil) then
+        Self.coupling.Update();
 
-      if (Assigned(Self.VyhStav.staveniOKCallback)) then
+      if (Assigned(Self.m_state.movingOKCallback)) then
        begin
-        Self.VyhStav.staveniOKCallback(Self);
-        Self.VyhStav.staveniOKCallback := nil;
+        Self.m_state.movingOKCallback(Self);
+        Self.m_state.movingOKCallback := nil;
        end;
-      Self.VyhStav.staveniErrCallback := nil;
+      Self.m_state.movingErrCallback := nil;
      end else begin
-      if (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) then
+      if (Self.m_state.position <> Self.m_state.positionReal) then
        begin
         // sem se dostaneme, pokud se vyhybka poprve nalezne neocekavane v poloze +
-        Self.VyhStav.poloha := plus;
+        Self.m_state.position := plus;
 
-        if ((Self.ShouldBeLocked(false)) or (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> plus))) then
+        if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> plus))) then
          begin
           for oblr in Self.OblsRizeni do
             oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
@@ -715,31 +715,31 @@ var inp, spojkaInp: TBlkVyhInputs;
   if ((inp.minus = isOn) and (inp.plus = isOff)) then
    begin
     //je-li minus vstup 1
-    Self.VyhStav.polohaReal := minus;
-    if (Self.VyhStav.staveni_plus) then Exit();
+    Self.m_state.positionReal := minus;
+    if (Self.m_state.movingPlus) then Exit();
 
-    if (Self.VyhStav.staveni_minus) then
+    if (Self.m_state.movingMinus) then
      begin
-      Self.VyhStav.poloha := minus;
-      Self.VyhStav.staveni_minus := false;
+      Self.m_state.position := minus;
+      Self.m_state.movingMinus := false;
 
       // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
-      if (Self.spojka <> nil) then
-        Self.spojka.Update();
+      if (Self.coupling <> nil) then
+        Self.coupling.Update();
 
-      if (Assigned(Self.VyhStav.staveniOKCallback)) then
+      if (Assigned(Self.m_state.movingOKCallback)) then
        begin
-        Self.VyhStav.staveniOKCallback(Self);
-        Self.VyhStav.staveniOKCallback := nil;
+        Self.m_state.movingOKCallback(Self);
+        Self.m_state.movingOKCallback := nil;
        end;
-      Self.VyhStav.staveniErrCallback := nil;
+      Self.m_state.movingErrCallback := nil;
      end else begin
-      if (Self.VyhStav.poloha <> Self.VyhStav.polohaReal) then
+      if (Self.m_state.position <> Self.m_state.positionReal) then
        begin
         //sem se dostaneme, pokud se vyhybka nalezne neocekavane v poloze -
-        Self.VyhStav.poloha := minus;
+        Self.m_state.position := minus;
 
-        if ((Self.ShouldBeLocked(false)) or (Self.ZamekLocked() and (Self.VyhSettings.zamekPoloha <> minus))) then
+        if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> minus))) then
          begin
           for oblr in Self.OblsRizeni do
             oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
@@ -752,53 +752,53 @@ var inp, spojkaInp: TBlkVyhInputs;
   //2 polohy zaroven = deje se neco divneho
   if ((inp.plus = isOn) and (inp.minus = isOn)) then
    begin
-    Self.VyhStav.poloha := both;
+    Self.m_state.position := both;
 
-    if ((((Self.ShouldBeLocked()) and (Self.Zaver <> TZaver.staveni)) or (Self.ZamekLocked()))
-        and (Self.VyhStav.polohaOld <> both)) then
+    if ((((Self.ShouldBeLocked()) and (Self.Zaver <> TZaver.staveni)) or (Self.LockLocked()))
+        and (Self.m_state.positionOld <> both)) then
      begin
       for oblr in Self.OblsRizeni do
         oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
-    Self.VyhStav.polohaReal := both;
+    Self.m_state.positionReal := both;
    end;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.UpdateStaveniTimeout();
+procedure TBlkTurnout.UpdateMovingTimeout();
 begin
- if ((not Self.StaveniPlus) and (not Self.StaveniMinus)) then Exit();
+ if ((not Self.movingPlus) and (not Self.movingMinus)) then Exit();
 
  // timeout
- if (Now > Self.VyhStav.staveniStart+EncodeTime(0, 0, _VYH_STAVENI_TIMEOUT_SEC, 0)) then
+ if (Now > Self.m_state.movingStart+EncodeTime(0, 0, _T_MOVING_TIMEOUT_SEC, 0)) then
   begin
-   Self.StaveniPlus  := false;
-   Self.StaveniMinus := false;
+   Self.movingPlus := false;
+   Self.movingMinus := false;
 
    // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
-   if (Self.spojka <> nil) then
-     spojka.Update();
+   if (Self.coupling <> nil) then
+     Self.coupling.Update();
 
-   if (Assigned(Self.VyhStav.staveniErrCallback)) then
+   if (Assigned(Self.m_state.movingErrCallback)) then
     begin
-     Self.VyhStav.staveniErrCallback(Self, vseTimeout);
-     Self.VyhStav.staveniErrCallback := nil;
+     Self.m_state.movingErrCallback(Self, vseTimeout);
+     Self.m_state.movingErrCallback := nil;
     end;
-   Self.VyhStav.staveniOKCallback  := nil;
+   Self.m_state.movingOKCallback  := nil;
    Self.Change();
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.SetPoloha(new:TVyhPoloha; zamek:boolean = false; nouz:boolean = false;
-      callback_ok:TNotifyEvent = nil; callback_err:TVyhSetPolohaErrCb = nil);
-var spojka:TBlkVyhybka;
+procedure TBlkTurnout.SetPosition(new: TTurnoutPosition; lock: boolean = false; nouz: boolean = false;
+      callback_ok: TNotifyEvent = nil; callback_err: TTurnoutSetPosErrCb = nil);
+var coupling: TBlkTurnout;
 begin
-  if (Self.VyhSettings.RCSAddrs.Count < 4) then
+  if (Self.m_settings.RCSAddrs.Count < 4) then
    begin
     if (Assigned(callback_err)) then callback_err(self, vseInvalidRCSConfig);
     Exit();
@@ -811,10 +811,10 @@ begin
 
   // V tomto momente je klicove ziskat aktualni polohu vyhybky, jinak by mohlo dojit
   // k zacykleni pri staveni spojek.
-  Self.UpdatePoloha();
-  spojka := Self.spojka;
+  Self.UpdatePosition();
+  coupling := Self.coupling;
 
-  if (new <> Self.VyhStav.poloha) then
+  if (new <> Self.m_state.position) then
    begin
     // vstupni podminky se kontroluji jen pro pripad, kdy chceme vyhybku opravdu prestavit
     // zamknout ji muzeme kdykoliv
@@ -825,7 +825,7 @@ begin
       if (Assigned(callback_err)) then callback_err(self, vseLocked);
       Exit();
      end;
-    if (((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and (spojka.Obsazeno = TUsekStav.obsazeno))) and (not nouz)) then
+    if (((Self.occupied = TUsekStav.obsazeno) or ((coupling <> nil) and (coupling.occupied = TUsekStav.obsazeno))) and (not nouz)) then
      begin
       if (Assigned(callback_err)) then callback_err(self, vseOccupied);
       Exit();
@@ -837,62 +837,62 @@ begin
 
  //RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
 
- if (zamek) then
-   Self.VyhStav.polohaLock := new; // before SetOutput to ensure locking of failed RCS modules after restoration
+ if (lock) then
+   Self.m_state.positionLock := new; // before SetOutput to ensure locking of failed RCS modules after restoration
 
  if (new = plus) then
   begin
    try
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board,Self.VyhSettings.RCSAddrs[2].port, 1);
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board,Self.VyhSettings.RCSAddrs[3].port, 0);
+     RCSi.SetOutput(Self.rcsOutPlus, 1);
+     RCSi.SetOutput(Self.rcsOutMinus, 0);
    except
      if (Assigned(callback_err)) then callback_err(self, vseRCS);
      Exit();
    end;
 
-   if (Self.VyhStav.poloha <> plus) then
-     Self.VyhStav.staveni_plus := true;
-   Self.VyhStav.staveni_minus := false;
+   if (Self.m_state.position <> plus) then
+     Self.m_state.movingPlus := true;
+   Self.m_state.movingMinus := false;
 
-   if (Self.VyhStav.Poloha = minus) then
-     Self.VyhStav.poloha := none;
+   if (Self.m_state.position = minus) then
+     Self.m_state.position := none;
   end;
 
  if (new = minus) then
   begin
    try
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 1);
+     RCSi.SetOutput(Self.rcsOutPlus, 0);
+     RCSi.SetOutput(Self.rcsOutMinus, 1);
    except
      if (Assigned(callback_err)) then callback_err(self, vseRCS);
      Exit();
    end;
 
-   Self.VyhStav.staveni_plus  := false;
-   if (Self.VyhStav.poloha <> minus) then
-     Self.VyhStav.staveni_minus := true;
+   Self.m_state.movingPlus  := false;
+   if (Self.m_state.position <> minus) then
+     Self.m_state.movingMinus := true;
 
-   if (Self.VyhStav.Poloha = plus) then
-     Self.VyhStav.poloha := none;
+   if (Self.m_state.position = plus) then
+     Self.m_state.position := none;
   end;
 
- Self.VyhStav.staveniErrCallback := callback_err;
- Self.VyhStav.staveniOKCallback := callback_ok;
- Self.VyhStav.staveniStart := Now;
+ Self.m_state.movingErrCallback := callback_err;
+ Self.m_state.movingOKCallback := callback_ok;
+ Self.m_state.movingStart := Now;
 
- if (not zamek) then
+ if (not lock) then
   begin
-   Self.NullOutput.enabled := true;
-   Self.NullOutput.NullOutputTime := Now+EncodeTime(0, 0, 0, 500);
+   Self.m_nullOutput.enabled := true;
+   Self.m_nullOutput.NullOutputTime := Now+EncodeTime(0, 0, 0, 500);
   end;
 
- if (spojka <> nil) then
+ if (coupling <> nil) then
   begin
-   // pokud se jedna o spojku, volame SetPoloha i na spojku
-   if ((spojka.Stav.staveni_plus <> Self.VyhStav.staveni_plus) or
-       (spojka.Stav.staveni_minus <> Self.VyhStav.staveni_minus) or
-       ((zamek) and (not spojka.outputLocked))) then
-     spojka.SetPoloha(new, zamek, nouz);
+   // pokud se jedna o spojku, volame SetPosition i na spojku
+   if ((coupling.state.movingPlus <> Self.m_state.movingPlus) or
+       (coupling.state.movingMinus <> Self.m_state.movingMinus) or
+       ((lock) and (not coupling.outputLocked))) then
+     coupling.SetPosition(new, lock, nouz);
   end;
 
  Self.Change();
@@ -900,55 +900,53 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.Unlock();
-var spojka:TBlkVyhybka;
+procedure TBlkTurnout.Unlock();
+var coupling: TBlkTurnout;
 begin
  try
    if ((Self.outputLocked) and (RCSi.Started)) then
     begin
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board, Self.VyhSettings.RCSAddrs[2].port, 0);
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board, Self.VyhSettings.RCSAddrs[3].port, 0);
+     RCSi.SetOutput(Self.rcsOutPlus, 0);
+     RCSi.SetOutput(Self.rcsOutMinus, 0);
     end;
  except
 
  end;
 
- Self.VyhStav.polohaLock := TVyhPoloha.none;
+ Self.m_state.positionLock := TTurnoutPosition.none;
 
- spojka := Self.spojka;
- if ((spojka <> nil) and (spojka.outputLocked)) then
-   spojka.Unlock();
+ coupling := Self.coupling;
+ if ((coupling <> nil) and (coupling.outputLocked)) then
+   coupling.Unlock();
 
  Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.CheckNullOutput();
+procedure TBlkTurnout.CheckNullOutput();
 begin
- if (not Self.NullOutput.enabled) then Exit;
+ if (not Self.m_nullOutput.enabled) then Exit;
 
- if (Now >= Self.NullOutput.NullOutputTime) then
+ if (Now >= Self.m_nullOutput.NullOutputTime) then
   begin
    try
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[2].board,Self.VyhSettings.RCSAddrs[2].port,0);
-     RCSi.SetOutput(Self.VyhSettings.RCSAddrs[3].board,Self.VyhSettings.RCSAddrs[3].port,0);
+     RCSi.SetOutput(Self.rcsOutPlus, 0);
+     RCSi.SetOutput(Self.rcsOutMinus, 0);
    except
 
    end;
 
-   Self.NullOutput.enabled := false;
+   Self.m_nullOutput.enabled := false;
    Self.Change();
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-//gui: menu
-//dynamicke funkce
 
-procedure TBlkVyhybka.MenuPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+ if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOPlusClick, nil)
  else begin
    TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
@@ -956,9 +954,9 @@ begin
  end;
 end;
 
-procedure TBlkVyhybka.MenuMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+ if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOMinusClick, nil)
  else begin
    TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
@@ -966,9 +964,9 @@ begin
  end;
 end;
 
-procedure TBlkVyhybka.MenuNSPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuNSPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+ if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSPlusClick, nil)
  else begin
    TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
@@ -976,9 +974,9 @@ begin
  end;
 end;
 
-procedure TBlkVyhybka.MenuNSMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuNSMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- if ((Self.Stitek <> '') or (Self.Vyluka <> '')) then
+ if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSMinusClick, nil)
  else begin
    TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
@@ -986,105 +984,106 @@ begin
  end;
 end;
 
-procedure TBlkVyhybka.UPOPlusClick(Sender:TObject);
+procedure TBlkTurnout.UPOPlusClick(Sender:TObject);
 begin
- Self.VyhStav.staveniPanel := TIdContext(Sender);
- Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingPanel := TIdContext(Sender);
+ Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
- Self.SetPoloha(TVyhPoloha.plus, false, false, nil, Self.PanelStaveniErr);
+ Self.SetPosition(TTurnoutPosition.plus, false, false, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkVyhybka.UPOMinusClick(Sender:TObject);
+procedure TBlkTurnout.UPOMinusClick(Sender:TObject);
 begin
- Self.VyhStav.staveniPanel := TIdContext(Sender);
- Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingPanel := TIdContext(Sender);
+ Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
- Self.SetPoloha(TVyhPoloha.minus, false, false, nil, Self.PanelStaveniErr);
+ Self.SetPosition(TTurnoutPosition.minus, false, false, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkVyhybka.UPONSPlusClick(Sender:TObject);
+procedure TBlkTurnout.UPONSPlusClick(Sender:TObject);
 var Blk:TBlk;
 begin
- Self.VyhStav.staveniPanel := TIdContext(Sender);
- Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingPanel := TIdContext(Sender);
+ Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
- Blky.GetBlkByID(Self.UsekID, Blk);
+ Blky.GetBlkByID(Self.trackID, Blk);
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
                     'Nouzové stavění do polohy plus', TBlky.GetBlksList(Self),
                     TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
-procedure TBlkVyhybka.UPONSMinusClick(Sender:TObject);
+procedure TBlkTurnout.UPONSMinusClick(Sender:TObject);
 var Blk:TBlk;
 begin
- Self.VyhStav.staveniPanel := TIdContext(Sender);
- Self.VyhStav.staveniOR    := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingPanel := TIdContext(Sender);
+ Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
- Blky.GetBlkByID(Self.UsekID, Blk);
+ Blky.GetBlkByID(Self.trackID, Blk);
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
                     'Nouzové stavění do polohy mínus', TBlky.GetBlksList(Self),
                     TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
-procedure TBlkVyhybka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.stit);
+ ORTCPServer.Stitek(SenderPnl, Self, Self.state.note);
 end;
 
-procedure TBlkVyhybka.MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Vyluka(SenderPnl, Self, Self.Stav.vyl);
+ ORTCPServer.Vyluka(SenderPnl, Self, Self.state.lockout);
 end;
 
-procedure TBlkVyhybka.MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.vyhZaver := true;
- if (Self.spojka <> nil) then
-   Self.spojka.vyhZaver := true;
+ Self.emLock := true;
+ if (Self.coupling <> nil) then
+   Self.coupling.emLock := true;
 end;
 
-procedure TBlkVyhybka.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR),
+    'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkVyhybka.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
+procedure TBlkTurnout.PanelPotvrSekvZAV(Sender:TIdContext; success:boolean);
 begin
  if (success) then
-   Self.NullVyhZaver();
+   Self.ResetEmLocks();
 end;
 
-procedure TBlkVyhybka.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
- Self.VyhStav.intentionalLocks := 0;
+ Self.m_state.intentionalLocks := 0;
  Self.Change();
 end;
 
-procedure TBlkVyhybka.MenuAdminPolPlusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminPolPlusCLick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.VyhSettings.RCSAddrs[0], 1);
-   RCSi.SetInput(Self.VyhSettings.RCSAddrs[1], 0);
+   RCSi.SetInput(Self.rcsInPlus, 1);
+   RCSi.SetInput(Self.rcsInMinus, 0);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
-procedure TBlkVyhybka.MenuAdminPolMinusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminPolMinusCLick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.VyhSettings.RCSAddrs[0], 0);
-   RCSi.SetInput(Self.VyhSettings.RCSAddrs[1], 1);
+   RCSi.SetInput(Self.rcsInPlus, 0);
+   RCSi.SetInput(Self.rcsInMinus, 1);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
-procedure TBlkVyhybka.MenuAdminNepolCLick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminNepolCLick(SenderPnl:TIdContext; SenderOR:TObject);
 begin
  try
-   RCSi.SetInput(Self.VyhSettings.RCSAddrs[0], 0);
-   RCSi.SetInput(Self.VyhSettings.RCSAddrs[1], 0);
+   RCSi.SetInput(Self.rcsInPlus, 0);
+   RCSi.SetInput(Self.rcsInMinus, 0);
  except
    ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -1092,38 +1091,37 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//vytvoreni menu pro potreby konkretniho bloku:
-function TBlkVyhybka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
-var spojka:TBlkVyhybka;
+function TBlkTurnout.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+var coupling: TBlkTurnout;
 begin
  Result := inherited;
 
- Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(spojka));
+ Blky.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
 
  if (not Self.ShouldBeLocked()) then
   begin
    // na vyhybce neni zaver a menu neni redukovane
 
-   if ((Self.Obsazeno = TUsekStav.obsazeno) or ((spojka <> nil) and (spojka.Obsazeno = TUsekStav.obsazeno))) then
+   if ((Self.occupied = TUsekStav.obsazeno) or ((coupling <> nil) and (coupling.occupied = TUsekStav.obsazeno))) then
     begin
-     if (Self.VyhStav.poloha = plus) then Result := Result + '!NS-,';
-     if (Self.VyhStav.poloha = minus) then Result := Result + '!NS+,';
-     if ((Self.VyhStav.poloha = both) or (Self.VyhStav.poloha = none)) then
+     if (Self.m_state.position = plus) then Result := Result + '!NS-,';
+     if (Self.m_state.position = minus) then Result := Result + '!NS+,';
+     if ((Self.m_state.position = both) or (Self.m_state.position = none)) then
       Result := Result + '!NS+,!NS-,-,';
     end else begin
-     if (Self.VyhStav.poloha = plus) then Result := Result + 'S-,';
-     if (Self.VyhStav.poloha = minus) then Result := Result + 'S+,';
-     if ((Self.VyhStav.poloha = both) or (Self.VyhStav.poloha = none)) then
+     if (Self.m_state.position = plus) then Result := Result + 'S-,';
+     if (Self.m_state.position = minus) then Result := Result + 'S+,';
+     if ((Self.m_state.position = both) or (Self.m_state.position = none)) then
       Result := Result + 'S+,S-,-,';
     end;
   end;
 
  Result := Result + 'STIT,VYL,';
 
- if (Self.vyhZaver) then
+ if (Self.emLock) then
   Result := Result + '!ZAV<,'
  else
-  if ((Self.Poloha = TVyhPoloha.plus) or (Self.Poloha = TVyhPoloha.minus)) then
+  if ((Self.position = TTurnoutPosition.plus) or (Self.position = TTurnoutPosition.minus)) then
     Result := Result + 'ZAV>,';
 
  if (rights >= TORControlRights.superuser) then
@@ -1132,21 +1130,21 @@ begin
    if (Self.intentionalLocked) then Result := Result + '*ZRUŠ REDUKCI,';
   end;
 
- if ((RCSi.simulation) and (Self.detekcePolohy)) then
+ if ((RCSi.simulation) and (Self.posDetection)) then
   begin
    Result := Result + '-,';
-   if (Self.Poloha <> TVyhPoloha.plus) then
+   if (Self.position <> TTurnoutPosition.plus) then
      Result := Result + '*POL+,';
-   if (Self.Poloha <> TVyhPoloha.minus) then
+   if (Self.position <> TTurnoutPosition.minus) then
      Result := Result + '*POL-,';
-   if (Self.Poloha <> TVyhPoloha.none) then
+   if (Self.position <> TTurnoutPosition.none) then
      Result := Result + '*NEPOL,';
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkTurnout.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
 begin
  case (Button) of
   F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1156,7 +1154,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkVyhybka.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkTurnout.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
 begin
  if (item = 'S+')        then Self.MenuPlusClick(SenderPnl, SenderOR)
  else if (item = 'S-')   then Self.MenuMinusClick(SenderPnl, SenderOR)
@@ -1174,21 +1172,21 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.PanelPotvrSekvNSPlus(Sender:TIdContext; success:boolean);
+procedure TBlkTurnout.PanelPotvrSekvNSPlus(Sender:TIdContext; success:boolean);
 begin
  if (not success) then Exit();
- Self.SetPoloha(plus, false, true, nil, Self.PanelStaveniErr);
+ Self.SetPosition(plus, false, true, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkVyhybka.PanelPotvrSekvNSMinus(Sender:TIdContext; success:boolean);
+procedure TBlkTurnout.PanelPotvrSekvNSMinus(Sender:TIdContext; success:boolean);
 begin
  if (not success) then Exit();
- Self.SetPoloha(minus, false, true, nil, Self.PanelStaveniErr);
+ Self.SetPosition(minus, false, true, nil, Self.PanelMovingErr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.Change(now:boolean = false);
+procedure TBlkTurnout.Change(now:boolean = false);
 var changed:boolean;
 begin
  changed := false;
@@ -1196,12 +1194,12 @@ begin
  if (not Self.outputLocked) and (Self.ShouldBeLocked()) then
   begin
    // pokud je vyhybka redukovana, nebo je na ni zaver a je v koncove poloze a neni zamkla, zamkneme ji
-   if (Self.VyhStav.poloha = TVyhPoloha.plus) then begin
-    Self.SetPoloha(TVyhPoloha.plus, true);
+   if (Self.m_state.position = TTurnoutPosition.plus) then begin
+    Self.SetPosition(TTurnoutPosition.plus, true);
     changed := true;
    end;
-   if (Self.VyhStav.poloha = TVyhPoloha.minus) then begin
-    Self.SetPoloha(TVyhPoloha.minus, true);
+   if (Self.m_state.position = TTurnoutPosition.minus) then begin
+    Self.SetPosition(TTurnoutPosition.minus, true);
     changed := true;
    end;
   end;
@@ -1217,39 +1215,39 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.IntentionalLock();
+procedure TBlkTurnout.IntentionalLock();
 begin
- Inc(Self.VyhStav.intentionalLocks);
+ Inc(Self.m_state.intentionalLocks);
 
- if (Self.VyhStav.intentionalLocks = 1) then
+ if (Self.m_state.intentionalLocks = 1) then
   Self.Change();
 end;
 
-procedure TBlkVyhybka.IntentionalUnlock();
+procedure TBlkTurnout.IntentionalUnlock();
 begin
- if (Self.VyhStav.intentionalLocks > 0) then
-  Dec(Self.VyhStav.intentionalLocks);
+ if (Self.m_state.intentionalLocks > 0) then
+  Dec(Self.m_state.intentionalLocks);
 
- if (Self.VyhStav.intentionalLocks = 0) then
+ if (Self.m_state.intentionalLocks = 0) then
   Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetVyhZaver():boolean;
+function TBlkTurnout.IsEmergencyLock(): Boolean;
 begin
- Result := (Self.Stav.vyhZaver > 0);
+ Result := (Self.state.locks > 0);
 end;
 
-procedure TBlkVyhybka.SetVyhZaver(zaver:boolean);
+procedure TBlkTurnout.SetEmergencyLock(zaver: Boolean);
 begin
  if (zaver) then
   begin
-   Inc(Self.VyhStav.vyhZaver);
-   if (Self.VyhStav.vyhZaver = 1) then Self.Change();
+   Inc(Self.m_state.locks);
+   if (Self.m_state.locks = 1) then Self.Change();
   end else begin
-   if (Self.Stav.vyhZaver > 0) then Dec(Self.VyhStav.vyhZaver);
-   if (Self.Stav.vyhZaver = 0) then
+   if (Self.state.locks > 0) then Dec(Self.m_state.locks);
+   if (Self.state.locks = 0) then
     begin
      Self.Change();
      Blky.NouzZaverZrusen(Self);
@@ -1257,109 +1255,114 @@ begin
   end;
 end;
 
-procedure TBlkVyhybka.NullVyhZaver();
+procedure TBlkTurnout.ResetEmLocks();
 begin
- Self.VyhStav.vyhZaver := 0;
+ Self.m_state.locks := 0;
  Blky.NouzZaverZrusen(Self);
  Self.Change();
- if (Self.spojka <> nil) then
-   Self.spojka.Change();
+ if (Self.coupling <> nil) then
+   Self.coupling.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // tato metoda je volana, pokud dojde k timeoutu pri staveni vyhybky z paneli
-procedure TBlkVyhybka.PanelStaveniErr(Sender:TObject; error: TVyhSetError);
+procedure TBlkTurnout.PanelMovingErr(Sender: TObject; error: TTurnoutSetError);
 begin
-  if ((Assigned(Self.VyhStav.staveniPanel)) and (Assigned(Self.VyhStav.staveniOR))) then
+  if ((Assigned(Self.m_state.movingPanel)) and (Assigned(Self.m_state.movingOR))) then
    begin
-    ORTCPServer.BottomError(Self.VyhStav.staveniPanel, 'Nepřestavena '+Self.GlobalSettings.name + ': ' + Self.SetErrorToMsg(error),
-      (Self.VyhStav.staveniOR as TOR).ShortName, 'TECHNOLOGIE');
-    Self.VyhStav.staveniPanel := nil;
-    Self.VyhStav.staveniOR    := nil;
+    ORTCPServer.BottomError(Self.m_state.movingPanel, 'Nepřestavena '+Self.GlobalSettings.name + ': ' + Self.SetErrorToMsg(error),
+      (Self.m_state.movingOR as TOR).ShortName, 'TECHNOLOGIE');
+    Self.m_state.movingPanel := nil;
+    Self.m_state.movingOR := nil;
    end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetZamek():TBlk;
+function TBlkTurnout.GetLock(): TBlk;
 begin
- if (((Self.fzamek = nil) and (Self.VyhSettings.zamek <> -1)) or ((Self.fzamek <> nil) and (Self.fzamek.id <> Self.VyhSettings.zamek))) then
-   Blky.GetBlkByID(Self.VyhSettings.zamek, Self.fzamek);
- Result := Self.fzamek;
+ if (((Self.m_lock = nil) and (Self.m_settings.lock <> -1)) or
+     ((Self.m_lock <> nil) and (Self.m_lock.id <> Self.m_settings.lock))) then
+   Blky.GetBlkByID(Self.m_settings.lock, Self.m_lock);
+ Result := Self.m_lock;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetNpPlus():TBlk;
+function TBlkTurnout.GetNpPlus():TBlk;
 begin
- if (((Self.fnpPlus = nil) and (Self.VyhSettings.npPlus <> -1)) or
-     ((Self.fnpPlus <> nil) and (Self.fnpPlus.id <> Self.VyhSettings.npPlus))) then
-   Blky.GetBlkByID(Self.VyhSettings.npPlus, Self.fnpPlus);
- Result := Self.fnpPlus;
+ if (((Self.m_npPlus = nil) and (Self.m_settings.npPlus <> -1)) or
+     ((Self.m_npPlus <> nil) and (Self.m_npPlus.id <> Self.m_settings.npPlus))) then
+   Blky.GetBlkByID(Self.m_settings.npPlus, Self.m_npPlus);
+ Result := Self.m_npPlus;
 end;
 
-function TBlkVyhybka.GetNpMinus():TBlk;
+function TBlkTurnout.GetNpMinus():TBlk;
 begin
- if (((Self.fnpMinus = nil) and (Self.VyhSettings.npMinus <> -1)) or
-     ((Self.fnpMinus <> nil) and (Self.fnpMinus.id <> Self.VyhSettings.npMinus))) then
-   Blky.GetBlkByID(Self.VyhSettings.npMinus, Self.fnpMinus);
- Result := Self.fnpMinus;
+ if (((Self.m_npMinus = nil) and (Self.m_settings.npMinus <> -1)) or
+     ((Self.m_npMinus <> nil) and (Self.m_npMinus.id <> Self.m_settings.npMinus))) then
+   Blky.GetBlkByID(Self.m_settings.npMinus, Self.m_npMinus);
+ Result := Self.m_npMinus;
 end;
 
-function TBlkVyhybka.GetDetekcePolohy():Boolean;
+function TBlkTurnout.IsPositionDetection(): Boolean;
 begin
- Result := (Self.VyhSettings.detekcePolohy) and (Self.VyhSettings.RCSAddrs.Count >= 2);
+ Result := (Self.m_settings.posDetection) and (Self.m_settings.RCSAddrs.Count >= 2);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // pokud je na vyhybku zamek, vyhybka ma nespravnou polohu a klic je v zamku, vyhlasime poruchu zamku
-procedure TBlkVyhybka.UpdateZamek();
+procedure TBlkTurnout.UpdateLock();
 begin
- if (Self.ZamekLocked() and (not (Self.zamek as TBlkZamek).nouzZaver) and
-     (Self.Poloha <> Self.VyhSettings.zamekPoloha) and (not (Self.zamek as TBlkZamek).porucha)) then
-   (Self.zamek as TBlkZamek).porucha := true;
+ if (Self.LockLocked() and (not (Self.lock as TBlkZamek).nouzZaver) and
+     (Self.position <> Self.m_settings.lockPosition) and (not (Self.lock as TBlkZamek).porucha)) then
+   (Self.lock as TBlkZamek).porucha := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PT:
 
-procedure TBlkVyhybka.GetPtData(json:TJsonObject; includeState:boolean);
+procedure TBlkTurnout.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[0], json['rcs'].O['in+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[1], json['rcs'].O['in-']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[2], json['rcs'].O['out+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[3], json['rcs'].O['out-']);
-
- json['track'] := Self.VyhRel.UsekID;
-
- if (Self.VyhSettings.spojka > -1) then
-   json['second'] := Self.VyhSettings.spojka;
- if (Self.VyhSettings.zamek > -1) then
+ if (Self.posDetection) then
   begin
-   json['lock'] := Self.VyhSettings.zamek;
-   json['lockPosition'] := PolohaToStr(Self.VyhSettings.zamekPoloha);
+   TBlk.RCStoJSON(Self.rcsInPlus, json['rcs'].O['in+']);
+   TBlk.RCStoJSON(Self.rcsInMinus, json['rcs'].O['in-']);
+  end;
+
+ TBlk.RCStoJSON(Self.rcsOutPlus, json['rcs'].O['out+']);
+ TBlk.RCStoJSON(Self.rcsOutMinus, json['rcs'].O['out-']);
+
+ json['track'] := Self.m_spnl.track;
+
+ if (Self.m_settings.coupling > -1) then
+   json['coupling'] := Self.m_settings.coupling;
+ if (Self.m_settings.lock > -1) then
+  begin
+   json['lock'] := Self.m_settings.lock;
+   json['lockPosition'] := PositionToStr(Self.m_settings.lockPosition);
   end;
 
  if (includeState) then
    Self.GetPtState(json['blockState']);
 end;
 
-procedure TBlkVyhybka.GetPtState(json:TJsonObject);
+procedure TBlkTurnout.GetPtState(json:TJsonObject);
 begin
- json['position'] := PolohaToStr(Self.Poloha);
- if (Self.Stitek <> '') then json['note'] := Self.Stitek;
- if (Self.Vyluka <> '') then json['lockout'] := Self.Vyluka;
+ json['position'] := PositionToStr(Self.position);
+ if (Self.note <> '') then json['note'] := Self.note;
+ if (Self.lockout <> '') then json['lockout'] := Self.lockout;
 end;
 
-procedure TBlkVyhybka.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkTurnout.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
  if (reqJson.Contains('position')) then
   begin
-   if (Self.Poloha = TVyhPoloha.disabled) then
+   if (Self.position = TTurnoutPosition.disabled) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit neaktivni vyhybku');
      inherited;
@@ -1371,7 +1374,7 @@ begin
      inherited;
      Exit();
     end;
-   if (Self.Obsazeno = TUsekStav.obsazeno) then
+   if (Self.occupied = TUsekStav.obsazeno) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit obsazenou vyhybku');
      inherited;
@@ -1380,9 +1383,9 @@ begin
 
    // nastaveni polohy vyhybky
    if (reqJson.S['position'] = '+') then
-     Self.SetPoloha(TVyhPoloha.plus)
+     Self.SetPosition(TTurnoutPosition.plus)
    else if (reqJson.S['position'] = '-') then
-     Self.SetPoloha(TVyhPoloha.minus);
+     Self.SetPosition(TTurnoutPosition.minus);
   end;
 
  inherited;
@@ -1390,52 +1393,52 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlkVyhybka.PolohaToStr(poloha:TVyhPoloha):string;
+class function TBlkTurnout.PositionToStr(position: TTurnoutPosition): string;
 begin
- case (poloha) of
-  TVyhPoloha.plus     : Result := '+';
-  TVyhPoloha.minus    : Result := '-';
-  TVyhPoloha.disabled : Result := 'off';
-  TVyhPoloha.none     : Result := 'none';
-  TVyhPoloha.both     : Result := 'both';
+ case (position) of
+  TTurnoutPosition.plus     : Result := '+';
+  TTurnoutPosition.minus    : Result := '-';
+  TTurnoutPosition.disabled : Result := 'off';
+  TTurnoutPosition.none     : Result := 'none';
+  TTurnoutPosition.both     : Result := 'both';
  else
   Result := '';
  end;
 end;
 
-class function TBlkVyhybka.StrToPoloha(c: string):TVyhPoloha;
+class function TBlkTurnout.StrToPosition(c: string): TTurnoutPosition;
 begin
  if (c = '+') then
-   Result := TVyhPoloha.plus
+   Result := TTurnoutPosition.plus
  else if (c = '-') then
-   Result := TVyhPoloha.minus
+   Result := TTurnoutPosition.minus
  else
-   Result := TVyhPoloha.none;
+   Result := TTurnoutPosition.none;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.DecreaseNouzZaver(amount:Cardinal);
+procedure TBlkTurnout.DecreaseEmergencyLock(amount: Cardinal);
 begin
- if (Self.VyhStav.vyhZaver = 0) then Exit();
+ if (Self.m_state.locks = 0) then Exit();
 
- if (amount > Self.VyhStav.vyhZaver) then
-   Self.VyhStav.vyhZaver := 0
+ if (amount > Self.m_state.locks) then
+   Self.m_state.locks := 0
  else
-   Self.VyhStav.vyhZaver := Self.VyhStav.vyhZaver - amount;
+   Self.m_state.locks := Self.m_state.locks - amount;
 
- if (not Self.vyhZaver) then
+ if (not Self.emLock) then
   begin
    Blky.NouzZaverZrusen(Self);
    Self.Change();
-   if (Self.spojka <> nil) then
-     Self.spojka.Change();
+   if (Self.coupling <> nil) then
+     Self.coupling.Change();
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.NpObsazChange(Sender:TObject; data:Integer);
+procedure TBlkTurnout.NpObsazChange(Sender:TObject; data:Integer);
 begin
  if ((data = 0) and (Sender = Self.npBlokPlus)) then
   begin
@@ -1447,7 +1450,7 @@ begin
      TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnObsaz,
        CreateChangeEvent(Self.NpObsazChange, 0));
 
-   if (Self.Poloha = TVyhPoloha.plus) then Self.Change();
+   if (Self.position = TTurnoutPosition.plus) then Self.Change();
 
   end else if ((data = 1) and (Sender = Self.npBlokMinus)) then begin
    // zmena bloku pro polohu -
@@ -1458,13 +1461,13 @@ begin
      TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnObsaz,
        CreateChangeEvent(Self.NpObsazChange, 1));
 
-   if (Self.Poloha = TVyhPoloha.minus) then Self.Change();
+   if (Self.position = TTurnoutPosition.minus) then Self.Change();
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.MapNpEvents();
+procedure TBlkTurnout.MapNpEvents();
 begin
  // namapovani udalosti obsazeni a uvolneni neprofiloveho useku pro polohu +
  if (Self.npBlokPlus <> nil) then
@@ -1491,7 +1494,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.StitVylUPO(SenderPnl:TIdContext; SenderOR:TObject;
+procedure TBlkTurnout.StitVylUPO(SenderPnl:TIdContext; SenderOR:TObject;
       UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
 var upo:TUPOItems;
     item:TUPOItem;
@@ -1499,10 +1502,10 @@ var upo:TUPOItems;
 begin
  upo := TList<TUPOItem>.Create;
  try
-  if (Self.Stitek <> '') then
+  if (Self.note <> '') then
    begin
     item[0] := GetUPOLine('ŠTÍTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
-    lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
+    lines := GetLines(Self.note, _UPO_LINE_LEN);
 
     try
       item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -1515,10 +1518,10 @@ begin
    upo.Add(item);
   end;
 
-  if (Self.Vyluka <> '') then
+  if (Self.lockout <> '') then
    begin
     item[0] := GetUPOLine('VÝLUKA '+Self.GlobalSettings.name, taCenter, clBlack, clOlive);
-    lines := GetLines(Self.Vyluka, _UPO_LINE_LEN);
+    lines := GetLines(Self.lockout, _UPO_LINE_LEN);
 
     try
       item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -1539,23 +1542,23 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkVyhybka.SetSpojkaNoPropag(spojka:Integer);
+procedure TBlkTurnout.SetCouplingNoPropag(coupling: Integer);
 begin
- Self.VyhSettings.spojka := spojka;
+ Self.m_settings.coupling := coupling;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.PanelStateString():string;
+function TBlkTurnout.PanelStateString():string;
 var fg, bg: TColor;
     Blk:TBlk;
 begin
  Result := inherited;
 
  // Popredi
- if (not Self.vyhZaver) then
+ if (not Self.emLock) then
   begin
-   case (Self.Obsazeno) of
+   case (Self.occupied) of
     TUsekStav.disabled: fg := clFuchsia;
     TUsekStav.none    : fg := $A0A0A0;
     TUsekStav.uvolneno: fg := $A0A0A0;
@@ -1564,7 +1567,7 @@ begin
     fg := clFuchsia;
    end;
 
-   if (Self.Obsazeno = TUsekStav.uvolneno) then
+   if (Self.occupied = TUsekStav.uvolneno) then
     begin
      case (Self.Zaver) of
       vlak   : fg := clLime;
@@ -1574,19 +1577,19 @@ begin
      end;//case
 
      // je soucasti vybarveneho neprofiloveho useku
-     Blky.GetBlkByID(Self.UsekID, Blk);
+     Blky.GetBlkByID(Self.trackID, Blk);
      if ((Blk <> nil) and ((Blk.typ = btUsek) or (Blk.typ = btTU))
          and (fg = $A0A0A0) and (TBlkUsek(Blk).IsNeprofilJC)) then
        fg := clYellow;
     end;
 
    // do profilu vyhybky zasahuje obsazeny usek
-   if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokPlus <> nil) and (Self.Poloha = TVyhPoloha.plus) and
+   if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokPlus <> nil) and (Self.position = TTurnoutPosition.plus) and
        (TBlkUsek(Self.npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
      fg := clYellow;
 
    // do profilu vyhybky zasahuje obsazeny usek
-   if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokMinus <> nil) and (Self.Poloha = TVyhPoloha.minus) and
+   if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokMinus <> nil) and (Self.position = TTurnoutPosition.minus) and
        (TBlkUsek(Self.npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
      fg := clYellow;
 
@@ -1595,15 +1598,15 @@ begin
    fg := clAqua;
   end;
 
- if (Self.Poloha = TVyhPoloha.disabled) then
+ if (Self.position = TTurnoutPosition.disabled) then
    fg := clFuchsia;
 
  Result := Result + ownConvert.ColorToStr(fg) + ';';
 
  // Pozadi
  bg := clBlack;
- if (Self.Stitek <> '') then bg := clTeal;
- if (Self.Vyluka <> '') then bg := clOlive;
+ if (Self.note <> '') then bg := clTeal;
+ if (Self.lockout <> '') then bg := clOlive;
  if (diag.showZaver) then
   begin
    if (Self.Zaver > TZaver.no) then
@@ -1616,12 +1619,12 @@ begin
 
  Result := Result + ownConvert.ColorToStr(bg) + ';' +
                     IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' +
-                    IntToStr(Integer(Self.Poloha))+';';
+                    IntToStr(Integer(Self.position))+';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlkVyhybka.CombineSpojkaInputs(first: TRCSInputState; second: TRCSInputState):TRCSInputState;
+class function TBlkTurnout.CombineCouplingInputs(first: TRCSInputState; second: TRCSInputState): TRCSInputState;
 begin
  if ((first = TRCSInputState.failure) or (second = TRCSInputState.failure)) then
    Exit(TRCSInputState.failure);
@@ -1636,31 +1639,31 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.MockInputs():TBlkVyhInputs;
+function TBlkTurnout.MockInputs(): TBlkTurnoutInputs;
 begin
- if (Self.Poloha = TVyhPoloha.plus) then
-   Exit(TBlkVyhInputs.Create(isOn, isOff))
- else if (Self.Poloha = TVyhPoloha.minus) then
-   Exit(TBlkVyhInputs.Create(isOff, isOn))
- else if ((Self.StaveniPlus) and (Now > Self.VyhStav.staveniStart+EncodeTime(0, 0, _VYH_STAVENI_MOCK_SEC, 0))) then
-   Exit(TBlkVyhInputs.Create(isOn, isOff))
- else if ((Self.StaveniMinus) and (Now > Self.VyhStav.staveniStart+EncodeTime(0, 0, _VYH_STAVENI_MOCK_SEC, 0))) then
-   Exit(TBlkVyhInputs.Create(isOff, isOn))
- else if (Self.Poloha = TVyhPoloha.disabled) then begin
-   // proper booting of spojka
-   if (Self.VyhStav.polohaSave = TVyhPoloha.plus) then
-     Exit(TBlkVyhInputs.Create(isOn, isOff))
-   else if (Self.VyhStav.polohaSave = TVyhPoloha.minus) then
-     Exit(TBlkVyhInputs.Create(isOff, isOn))
+ if (Self.position = TTurnoutPosition.plus) then
+   Exit(TBlkTurnoutInputs.Create(isOn, isOff))
+ else if (Self.position = TTurnoutPosition.minus) then
+   Exit(TBlkTurnoutInputs.Create(isOff, isOn))
+ else if ((Self.movingPlus) and (Now > Self.m_state.movingStart+EncodeTime(0, 0, _T_MOVING_MOCK_SEC, 0))) then
+   Exit(TBlkTurnoutInputs.Create(isOn, isOff))
+ else if ((Self.movingMinus) and (Now > Self.m_state.movingStart+EncodeTime(0, 0, _T_MOVING_MOCK_SEC, 0))) then
+   Exit(TBlkTurnoutInputs.Create(isOff, isOn))
+ else if (Self.position = TTurnoutPosition.disabled) then begin
+   // proper booting of coupling
+   if (Self.m_state.positionSave = TTurnoutPosition.plus) then
+     Exit(TBlkTurnoutInputs.Create(isOn, isOff))
+   else if (Self.m_state.positionSave = TTurnoutPosition.minus) then
+     Exit(TBlkTurnoutInputs.Create(isOff, isOn))
    else
-     Exit(TBlkVyhInputs.Create(isOff, isOff));
+     Exit(TBlkTurnoutInputs.Create(isOff, isOff));
  end else
-   Exit(TBlkVyhInputs.Create(isOff, isOff));
+   Exit(TBlkTurnoutInputs.Create(isOff, isOff));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlkVyhInputs.Create(plus, minus: TRCSInputState);
+constructor TBlkTurnoutInputs.Create(plus, minus: TRCSInputState);
 begin
  Self.plus := plus;
  Self.minus := minus;
@@ -1668,43 +1671,43 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.GetSpojka():TBlkVyhybka;
+function TBlkTurnout.GetCoupling(): TBlkTurnout;
 begin
- Blky.GetBlkByID(Self.VyhSettings.spojka, TBlk(Result));
- if ((Result <> nil) and (Result.typ <> btVyhybka)) then
+ Blky.GetBlkByID(Self.m_settings.coupling, TBlk(Result));
+ if ((Result <> nil) and (Result.typ <> btTurnout)) then
    Result := nil;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkVyhybka.ShouldBeLocked(withZamek: boolean):boolean;
+function TBlkTurnout.ShouldBeLocked(withZamek: boolean):boolean;
 begin
- Result := (Self.Zaver > TZaver.no) or (Self.vyhZaver) or (Self.intentionalLocked) or
-           ((withZamek) and (Self.ZamekLocked()));
+ Result := (Self.Zaver > TZaver.no) or (Self.emLock) or (Self.intentionalLocked) or
+           ((withZamek) and (Self.LockLocked()));
 
- if (Self.spojka <> nil) then
-   Result := Result or (Self.spojka.Zaver > TZaver.no) or (Self.spojka.vyhZaver) or
-                       (Self.spojka.intentionalLocked) or ((withZamek) and (Self.spojka.ZamekLocked()));
+ if (Self.coupling <> nil) then
+   Result := Result or (Self.coupling.Zaver > TZaver.no) or (Self.coupling.emLock) or
+                       (Self.coupling.intentionalLocked) or ((withZamek) and (Self.coupling.LockLocked()));
 end;
 
-function TBlkVyhybka.ShouldBeLockedIgnoreStaveni():boolean;
+function TBlkTurnout.ShouldBeLockedIgnoreStaveni():boolean;
 begin
  Result := ((Self.Zaver > TZaver.no) and (Self.Zaver <> TZaver.staveni)) or
-           (Self.vyhZaver) or (Self.ZamekLocked());
+           (Self.emLock) or (Self.LockLocked());
 
- if (Self.spojka <> nil) then
-   Result := Result or ((Self.spojka.Zaver > TZaver.no) and (Self.spojka.Zaver <> TZaver.staveni)) or
-                        (Self.spojka.vyhZaver) or (Self.spojka.ZamekLocked());
+ if (Self.coupling <> nil) then
+   Result := Result or ((Self.coupling.Zaver > TZaver.no) and (Self.coupling.Zaver <> TZaver.staveni)) or
+                        (Self.coupling.emLock) or (Self.coupling.LockLocked());
 end;
 
-function TBlkVyhybka.ZamekLocked():Boolean;
+function TBlkTurnout.LockLocked():Boolean;
 begin
- Result := (Self.zamek <> nil) and (not (Self.zamek as TBlkZamek).klicUvolnen);
+ Result := (Self.lock <> nil) and (not (Self.lock as TBlkZamek).klicUvolnen);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlkVyhybka.SetErrorToMsg(error: TVyhSetError): string;
+class function TBlkTurnout.SetErrorToMsg(error: TTurnoutSetError): string;
 begin
  case (error) of
    vseInvalidPos: Result := 'neplatná poloha';
@@ -1716,6 +1719,28 @@ begin
  else
   Result := 'neznámá chyba';
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkTurnout.GetRCSInPlus(): TRCSAddr;
+begin
+ Result := Self.m_settings.RCSAddrs[_TI_INPLUS];
+end;
+
+function TBlkTurnout.GetRCSInMinus(): TRCSAddr;
+begin
+ Result := Self.m_settings.RCSAddrs[_TI_INMINUS];
+end;
+
+function TBlkTurnout.GetRCSOutPlus(): TRCSAddr;
+begin
+ Result := Self.m_settings.RCSAddrs[_TI_OUTPLUS];
+end;
+
+function TBlkTurnout.GetRCSOutMinus(): TRCSAddr;
+begin
+ Result := Self.m_settings.RCSAddrs[_TI_OUTMINUS];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

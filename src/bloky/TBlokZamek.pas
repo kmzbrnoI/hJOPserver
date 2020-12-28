@@ -341,7 +341,7 @@ begin
  list := Blky.GetVyhWithZamek(Self.id);
 
  for i := 0 to list.Count-1 do
-  (list[i] as TBlkVyhybka).Change();
+  (list[i] as TBlkTurnout).Change();
 
  list.Free();
 end;
@@ -368,7 +368,7 @@ begin
  list := Blky.GetVyhWithZamek(Self.id);
 
  for i := 0 to list.Count-1 do
-   if ((list[i] as TBlkVyhybka).Poloha <> (list[i] as TBlkVyhybka).GetSettings().zamekPoloha) then
+   if (TBlkTurnout(list[i]).position <> (list[i] as TBlkTurnout).GetSettings().lockPosition) then
     begin
      list.Free();
      Exit(false);

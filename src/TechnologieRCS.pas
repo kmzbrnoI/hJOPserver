@@ -208,13 +208,13 @@ begin
  for blk in Blky do
   begin
    try
-     if ((Blk.GetGlobalSettings.typ = btVyhybka) and ((Blk as TBlkVyhybka).detekcePolohy)) then
-       Self.SetInput((Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].board, (Blk as TBlkVyhybka).GetSettings().RCSAddrs[0].port,1);
+     if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
+       Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
      if (Blk.typ = btPrejezd) then
-       Self.SetInput((Blk as TBlkPrejezd).GetSettings().RCSInputs.Otevreno, 1);
+       Self.SetInput(TBlkPrejezd(Blk).GetSettings().RCSInputs.Otevreno, 1);
      if ((diag.simSoupravaObsaz) and ((Blk.typ = btUsek) or (Blk.typ = btTU)) and ((Blk as TBlkUsek).IsTrain()) and
          ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
-       Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port, 1);
+       Self.SetInput(TBlkUsek(Blk).GetSettings().RCSAddrs[0], 1);
    except
 
    end;
@@ -225,9 +225,9 @@ begin
   begin
    try
      if (booster.isPowerDetection) then
-       Self.SetInput(booster.bSettings.RCS.Napajeni.board, booster.bSettings.RCS.Napajeni.port, 0);
+       Self.SetInput(booster.bSettings.RCS.Napajeni, 0);
      if (booster.isShortcutDetection) then
-       Self.SetInput(booster.bSettings.RCS.Zkrat.board, booster.bSettings.RCS.Zkrat.port, 0);
+       Self.SetInput(booster.bSettings.RCS.Zkrat, 0);
    except
 
    end;
@@ -242,7 +242,7 @@ begin
   begin
    if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then continue;
    if (((Blk as TBlkUsek).IsTrain()) and ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
-     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0].board, (Blk as TBlkUsek).GetSettings().RCSAddrs[0].port,1);
+     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0], 1);
   end;
 end;
 

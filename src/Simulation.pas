@@ -222,34 +222,34 @@ end;
 
 procedure TVyhSimulator.OnTimer(Sender:TObject);
 var blk:TBlk;
-    vyh:TBlkVyhybka;
+    vyh:TBlkTurnout;
 begin
  try
    if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
    for blk in Blky do
     begin
-     if (blk.typ <> btVyhybka) then continue;
-     vyh := TBlkVyhybka(blk);
+     if (blk.typ <> btTurnout) then continue;
+     vyh := TBlkTurnout(blk);
 
-     if (((vyh.StaveniPlus) or (vyh.StaveniMinus)) and (vyh.detekcePolohy)) then
+     if (((vyh.movingPlus) or (vyh.movingMinus)) and (vyh.posDetection)) then
       begin
        // po 1 sekunde nastavime vstup aktualni polohy na 0
-       if ((vyh.Stav.polohaReal <> TVyhPoloha.none) and (vyh.Stav.staveniStart+EncodeTime(0, 0, 1, 0) < Now)) then
+       if ((vyh.state.positionReal <> TTurnoutPosition.none) and (vyh.state.movingStart+EncodeTime(0, 0, 1, 0) < Now)) then
         begin
-         if (vyh.StaveniPlus) then
-          RCSi.SetInput(vyh.GetSettings.RCSAddrs[1].board, vyh.GetSettings.RCSAddrs[1].port, 0)
+         if (vyh.movingPlus) then
+          RCSi.SetInput(vyh.rcsInMinus, 0)
          else
-          RCSi.SetInput(vyh.GetSettings.RCSAddrs[0].board, vyh.GetSettings.RCSAddrs[0].port, 0);
+          RCSi.SetInput(vyh.rcsInPlus, 0);
         end;//if koncova poloha
 
        // po 3 sekundach oznamime koncovou polohu
-       if (vyh.Stav.staveniStart+EncodeTime(0, 0, 3, 0) < Now) then
+       if (vyh.state.movingStart+EncodeTime(0, 0, 3, 0) < Now) then
         begin
-         if (vyh.StaveniPlus) then
-          RCSi.SetInput(vyh.GetSettings.RCSAddrs[0].board, vyh.GetSettings.RCSAddrs[0].port, 1)
+         if (vyh.movingMinus) then
+          RCSi.SetInput(vyh.rcsInPlus, 1)
          else
-          RCSi.SetInput(vyh.GetSettings.RCSAddrs[1].board, vyh.GetSettings.RCSAddrs[1].port, 1);
+          RCSi.SetInput(vyh.rcsInMinus, 1);
         end;//if koncova poloha
       end;
     end;
@@ -261,9 +261,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 initialization
-  JCSimulator   := TJCSimulator.Create();
+  JCSimulator := TJCSimulator.Create();
   TratSimulator := TTratSimulator.Create();
-  VyhSimulator  := TVYhSimulator.Create();
+  VyhSimulator := TVYhSimulator.Create();
 
 finalization
   FreeAndNil(JCSimulator);
