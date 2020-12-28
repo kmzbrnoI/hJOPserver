@@ -42,25 +42,25 @@ type
    m_state: TBlkACState;
    m_settings: TBlkACSettings;
 
-    function GetStopped():boolean;
-    function GetRunning():boolean;
-    function GetPaused():boolean;
-    function GetClientConnected():boolean;
-    function PtUsername():string;
+    function GetStopped(): Boolean;
+    function GetRunning(): Boolean;
+    function GetPaused(): Boolean;
+    function GetClientConnected(): Boolean;
+    function PtUsername(): string;
 
     procedure SetFgColor(new: TColor);
 
     procedure SendLn(text: string); overload;
     procedure SendLn(recipient: TIdContext; text: string); overload;
 
-    procedure MenuSTARTClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuSTOPClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPAUZAClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPOKRACClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuSTAVClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuSTARTClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTOPClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPAUZAClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPOKRACClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTAVClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure PanelShowState(pnl: TIdContext; OblR: TOR);
-    procedure PanelSTAVClosed(Sender:TIdContext; success:boolean);
+    procedure PanelSTAVClosed(Sender: TIdContext; success: Boolean);
 
   public
 
@@ -68,8 +68,8 @@ type
     destructor Destroy(); override;
 
     // load/save data
-    procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat: TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel,ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
 
     // enable or disable symbol on relief
     procedure Enable(); override;
@@ -88,20 +88,20 @@ type
     procedure OnClientDisconnect(client: TIdContext);
     procedure ClientParse(Sender: TIdContext; parsed: TStrings);
 
-    property state:TBlkACState read m_state;
-    property enabled:boolean read m_state.enabled;
-    property stopped:boolean read GetStopped;
-    property running:boolean read GetRunning;
-    property paused:boolean read GetPaused;
-    property acState:TACState read m_state.state;
-    property clientConnected:boolean read GetClientConnected;
-    property client:TIdContext read m_state.client;
+    property state: TBlkACState read m_state;
+    property enabled: Boolean read m_state.enabled;
+    property stopped: Boolean read GetStopped;
+    property running: Boolean read GetRunning;
+    property paused: Boolean read GetPaused;
+    property acState: TACState read m_state.state;
+    property clientConnected: Boolean read GetClientConnected;
+    property client: TIdContext read m_state.client;
 
     // GUI:
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton;
-                         rights:TORCOntrolRights; params:string = ''); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights):string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
+                         rights: TORCOntrolRights; params: string = ''); override;
     function PanelStateString():string; override;
 
  end;
@@ -114,7 +114,7 @@ uses GetSystems, TechnologieRCS, TBloky, ownConvert, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlokVyhybka,
     TCPServerPT, ownStrUtils;
 
-constructor TBlkAC.Create(index:Integer);
+constructor TBlkAC.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -133,14 +133,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkAC.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
+procedure TBlkAC.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.m_settings.accessToken := ini_tech.ReadString(section, 'accessToken', '');
  Self.LoadORs(ini_rel, 'POM').Free();
 end;
 
-procedure TBlkAC.SaveData(ini_tech:TMemIniFile; const section:string);
+procedure TBlkAC.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
  inherited SaveData(ini_tech, section);
  ini_tech.WriteString(section, 'accessToken', Self.m_settings.accessToken);
@@ -171,7 +171,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkAC.GetSettings():TBlkACSettings;
+function TBlkAC.GetSettings(): TBlkACSettings;
 begin
  Result := Self.m_settings;
 end;
@@ -184,7 +184,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkAC.MenuSTARTClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkAC.MenuSTARTClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    Self.Start();
@@ -194,7 +194,7 @@ begin
  end;
 end;
 
-procedure TBlkAC.MenuSTOPClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkAC.MenuSTOPClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    Self.Stop();
@@ -204,7 +204,7 @@ begin
  end;
 end;
 
-procedure TBlkAC.MenuPAUZAClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkAC.MenuPAUZAClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    Self.Pause();
@@ -214,7 +214,7 @@ begin
  end;
 end;
 
-procedure TBlkAC.MenuPOKRACClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkAC.MenuPOKRACClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (not Self.paused) then
   begin
@@ -230,14 +230,14 @@ begin
  end;
 end;
 
-procedure TBlkAC.MenuSTAVClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkAC.MenuSTAVClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.PanelShowState(SenderPnl, SenderOR as TOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkAC.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkAC.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights):string;
 begin
  Result := inherited;
 
@@ -256,8 +256,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkAC.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton;
-                            rights:TORCOntrolRights; params:string = '');
+procedure TBlkAC.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
+                            rights: TORCOntrolRights; params: string = '');
 begin
  if (Self.enabled) then
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -266,7 +266,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkAC.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkAC.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if (not Self.enabled) then Exit();
 
@@ -279,7 +279,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkAC.PanelStateString():string;
+function TBlkAC.PanelStateString(): string;
 var fg, bg: TColor;
     flash: boolean;
 begin
@@ -309,22 +309,22 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkAC.GetStopped():boolean;
+function TBlkAC.GetStopped(): Boolean;
 begin
  Result := (Self.m_state.state = TACState.stopped);
 end;
 
-function TBlkAC.GetRunning():boolean;
+function TBlkAC.GetRunning(): Boolean;
 begin
  Result := (Self.m_state.state = TACState.running);
 end;
 
-function TBlkAC.GetPaused():boolean;
+function TBlkAC.GetPaused(): Boolean;
 begin
  Result := (Self.m_state.state = TACState.paused);
 end;
 
-function TBlkAC.GetClientConnected():boolean;
+function TBlkAC.GetClientConnected(): Boolean;
 begin
  Result := (Self.m_state.client <> nil);
 end;
@@ -457,7 +457,7 @@ begin
 end;
 
 procedure TBlkAC.SendClientControl();
-var state:string;
+var state: string;
 begin
  if (Self.client = nil) then Exit();
 
@@ -488,7 +488,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkAC.PtUsername():string;
+function TBlkAC.PtUsername(): string;
 begin
  Result := IntToStr(Self.id);
 end;
@@ -519,7 +519,7 @@ begin
                          TBlky.GetBlksList(Self), podm)
 end;
 
-procedure TBlkAC.PanelSTAVClosed(Sender:TIdContext; success:boolean);
+procedure TBlkAC.PanelSTAVClosed(Sender: TIdContext; success: Boolean);
 begin
  Self.m_state.panelsShowingState.Remove(Sender);
 end;
