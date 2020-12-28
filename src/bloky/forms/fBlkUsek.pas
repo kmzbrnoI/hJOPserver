@@ -1,4 +1,4 @@
-﻿unit fBlkUsek;
+unit fBlkUsek;
 
 interface
 
@@ -48,15 +48,15 @@ type
     procedure CHB_D1Click(Sender: TObject);
     procedure SE_RCS_BoardExit(Sender: TObject);
   private
-   NewBlk:Boolean;
-   Blk:TBlkUsek;
-   OpenIndex:Integer;
+   NewBlk: Boolean;
+   Blk: TBlkUsek;
+   OpenIndex: Integer;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
     procedure HlavniOpenForm;
   public
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkCreate;
   end;
 
@@ -70,10 +70,10 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky,
 
 {$R *.dfm}
 
-procedure TF_BlkUsek.OpenForm(BlokIndex:Integer);
+procedure TF_BlkUsek.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
   if (NewBlk) then
    begin
@@ -126,11 +126,11 @@ procedure TF_BlkUsek.NewBlkOpenForm;
  end;
 
 procedure TF_BlkUsek.NormalOpenForm;
-var glob:TBlkSettings;
-    settings:TBlkUsekSettings;
-    i:Integer;
-    obls:TArstr;
-    oblr:TOR;
+var glob: TBlkSettings;
+    settings: TBlkUsekSettings;
+    i: Integer;
+    obls: TArstr;
+    oblr: TOR;
  begin
   if (Assigned(Self.Blk)) then glob := Self.Blk.GetGlobalSettings();
   E_Nazev.Text := glob.name;
@@ -139,7 +139,7 @@ var glob:TBlkSettings;
   for oblr in Self.Blk.OblsRizeni do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
-  SetLength(obls,Self.Blk.OblsRizeni.Count);
+  SetLength(obls, Self.Blk.OblsRizeni.Count);
   for i := 0 to Self.Blk.OblsRizeni.Count-1 do
     obls[i] := Self.Blk.OblsRizeni[i].id;
 
@@ -248,7 +248,7 @@ var glob:TBlkSettings;
  end;
 
 procedure TF_BlkUsek.HlavniOpenForm;
-var booster:TBooster;
+var booster: TBooster;
  begin
   Self.LB_Stanice.Clear();
 
@@ -268,8 +268,8 @@ procedure TF_BlkUsek.B_StornoClick(Sender: TObject);
  end;
 
 procedure TF_BlkUsek.B_OKClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkUsekSettings;
+var glob: TBlkSettings;
+    settings: TBlkUsekSettings;
     addr: TRCSAddr;
     another: TBlk;
  begin
@@ -278,7 +278,7 @@ var glob:TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -300,7 +300,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btUsek, glob) as TBlkUsek;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
@@ -355,22 +355,22 @@ procedure TF_BlkUsek.FormClose(Sender: TObject; var Action: TCloseAction);
 procedure TF_BlkUsek.CHB_D1Click(Sender: TObject);
  begin
   case ((Sender as TCheckBox).Tag) of
-   1:begin
+   1: begin
     Self.SE_Port1.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board1.Enabled := (Sender as TCheckBox).Checked;
    end;
 
-   2:begin
+   2: begin
     Self.SE_Port2.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board2.Enabled := (Sender as TCheckBox).Checked;
    end;
 
-   3:begin
+   3: begin
     Self.SE_Port3.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board3.Enabled := (Sender as TCheckBox).Checked;
    end;
 
-   4:begin
+   4: begin
     Self.SE_Port4.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board4.Enabled := (Sender as TCheckBox).Checked;
    end;

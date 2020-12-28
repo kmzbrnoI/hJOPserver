@@ -6,9 +6,9 @@ uses Gauges, Graphics, adCpuUsage, Windows;
 
 type
  TCpuLoad = class
-  Gauge:TGauge;
-  GraphPos:Integer;
-  LPa,LPb,LPc:Int64;
+  Gauge: TGauge;
+  GraphPos: Integer;
+  LPa, LPb, LPc: Int64;
 
    constructor Create();
    procedure Refresh();
@@ -33,7 +33,7 @@ begin
 end;
 
 procedure TCpuLoad.DrawCPUGauge();
-var cyklus:Integer;
+var cyklus: Integer;
 begin
  Gauge := TGauge.Create(F_Main.SB1);
  Gauge.Parent := F_Main.SB1;
@@ -52,7 +52,7 @@ begin
 end;
 
 procedure TCpuLoad.ResizeCPUGauge();
-var cyklus,Zleva:Integer;
+var cyklus, Zleva: Integer;
 begin
  Gauge.Parent  := F_Main.SB1;
  Zleva := 0;

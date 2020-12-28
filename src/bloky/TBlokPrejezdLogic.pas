@@ -327,7 +327,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrjTrack.AllFree():Boolean;
+function TBlkPrjTrack.AllFree(): Boolean;
 var i: Integer;
 begin
  for i := 0 to _SECT_COUNT-1 do

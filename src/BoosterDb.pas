@@ -1,4 +1,4 @@
-﻿unit BoosterDb;
+unit BoosterDb;
 
 //this unit defines booster database as a class
 
@@ -15,39 +15,39 @@ type
     _BEEP_INTERVAL = 1;                                //in seconds
 
    private
-     db:TDictionary<string, TBooster>;
-     sortedKeys:TList<TBooster>;
+     db: TDictionary<string, TBooster>;
+     sortedKeys: TList<TBooster>;
 
-     Beep:record                                        //beep on overload
-       NextBeep:TDateTime;                                //time of next beep
+     Beep: record                                        //beep on overload
+       NextBeep: TDateTime;                                //time of next beep
      end;
 
       //events from TBooster; those events direct call blk methods
-      procedure OnZkratChange(Sender:TObject; state:TBoosterSignal);
-      procedure OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
-      procedure OnDCCChange(Sender:TObject; state:TBoosterSignal);
+      procedure OnZkratChange(Sender: TObject; state: TBoosterSignal);
+      procedure OnNapajeniChange(Sender: TObject; state: TBoosterSignal);
+      procedure OnDCCChange(Sender: TObject; state: TBoosterSignal);
 
       procedure ControlBeep();
 
       procedure Clear();
-      function GetCount():Integer;
-      function GetItem(key:string):TBooster;
+      function GetCount(): Integer;
+      function GetItem(key: string): TBooster;
 
    public
 
-      constructor Create(inifilename:string = '');
+      constructor Create(inifilename: string = '');
       destructor Destroy(); override;
 
-      procedure Add(new:TBooster);
-      procedure Remove(id:string);
+      procedure Add(new: TBooster);
+      procedure Remove(id: string);
 
-      procedure LoadFromFile(inifilename:string);
-      procedure SaveToFile(inifilename:string);
+      procedure LoadFromFile(inifilename: string);
+      procedure SaveToFile(inifilename: string);
 
       procedure Update();
       procedure SyncStructures();
 
-      function ContainsKey(key:string; ignore:TBooster = nil):Boolean;
+      function ContainsKey(key: string; ignore: TBooster = nil): Boolean;
 
       property Items[index : string] : TBooster read GetItem; default;
       property Count : integer read GetCount;
@@ -55,7 +55,7 @@ type
 
   end;//TBoosterDb
 
-var Boosters:TBoosterDb;
+var Boosters: TBoosterDb;
 
 implementation
 
@@ -67,7 +67,7 @@ uses TBloky, fMain, TechnologieTrakce, appEv, logging, DataZesilovac, Trakce;
 //  ini file
 //  [id1] ... [id2] ... [id3] ...
 
-constructor TBoosterDb.Create(inifilename:string = '');
+constructor TBoosterDb.Create(inifilename: string = '');
 begin
  inherited Create();
  Self.db := TDictionary<string, TBooster>.Create();
@@ -87,11 +87,11 @@ end;
 //files
 
 //reads all sections
-procedure TBoosterDb.LoadFromFile(inifilename:string);
-var ini:TMemIniFile;
-    sections:TStrings;
-    id:string;
-    booster:TBooster;
+procedure TBoosterDb.LoadFromFile(inifilename: string);
+var ini: TMemIniFile;
+    sections: TStrings;
+    id: string;
+    booster: TBooster;
 begin
  writelog('Načítám zesilovače: '+inifilename, WR_DATA);
 
@@ -100,7 +100,7 @@ begin
  try
    ini := TMemIniFile.Create(inifilename, TEncoding.UTF8);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      AppEvents.LogException(E, 'Načítám zesilovače: nelze otevrit soubor bloku');
      Exit();
@@ -136,7 +136,7 @@ begin
 
      Self.sortedKeys.Add(booster);
    except
-     on e:Exception do
+     on e: Exception do
       begin
        if (Assigned(booster)) then booster.Free();
        AppEvents.LogException(E, 'Chyba při zeilovače '+id);
@@ -155,9 +155,9 @@ begin
  writelog('Načteno '+IntToStr(Self.Count)+' zesilovačů', WR_DATA);
 end;
 
-procedure TBoosterDb.SaveToFile(inifilename:string);
-var ini:TMemIniFile;
-    booster:TBooster;
+procedure TBoosterDb.SaveToFile(inifilename: string);
+var ini: TMemIniFile;
+    booster: TBooster;
 begin
  writelog('Ukládám zesilovače...', WR_DATA);
 
@@ -165,7 +165,7 @@ begin
    DeleteFile(PChar(inifilename));
    ini := TMemIniFile.Create(inifilename, TEncoding.UTF8);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      AppEvents.LogException(E, 'Ukladam zesilovace: nelze otevrit vystupni soubor');
      Exit();
@@ -184,7 +184,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 //db operations
 
-procedure TBoosterDb.Add(new:TBooster);
+procedure TBoosterDb.Add(new: TBooster);
 begin
  if (Self.db.ContainsKey(new.id)) then
    raise BoosterExistsException.Create('Zesilovač s ID '+new.id+' již existuje');
@@ -199,7 +199,7 @@ begin
  Self.sortedKeys.Sort();
 end;
 
-procedure TBoosterDb.Remove(id:string);
+procedure TBoosterDb.Remove(id: string);
 begin
  if (Self.db.ContainsKey(id)) then
   begin
@@ -211,7 +211,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBoosterDb.Update();
-var booster:TBooster;
+var booster: TBooster;
 begin
  for booster in Self.db.Values do booster.Update();
 
@@ -220,19 +220,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBoosterDb.OnZkratChange(Sender:TObject; state:TBoosterSignal);
+procedure TBoosterDb.OnZkratChange(Sender: TObject; state: TBoosterSignal);
 begin
  Blky.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 
-procedure TBoosterDb.OnNapajeniChange(Sender:TObject; state:TBoosterSignal);
+procedure TBoosterDb.OnNapajeniChange(Sender: TObject; state: TBoosterSignal);
 begin
  Blky.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 
-procedure TBoosterDb.OnDCCChange(Sender:TObject; state:TBoosterSignal);
+procedure TBoosterDb.OnDCCChange(Sender: TObject; state: TBoosterSignal);
 begin
  Blky.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
@@ -242,8 +242,8 @@ end;
 
 //controls beeping
 procedure TBoosterDb.ControlBeep();
-var zkrat:Boolean;
-    booster:TBooster;
+var zkrat: Boolean;
+    booster: TBooster;
 begin
  if (TrakceI.TrackStatusSafe() <> TTrkStatus.tsOn) then Exit;
 
@@ -260,17 +260,17 @@ begin
  if (not zkrat) then Exit;
 
  if (Self.Beep.NextBeep < Now) then
-   Self.Beep.NextBeep := Now+EncodeTime(0,0,Self._BEEP_INTERVAL,0);
+   Self.Beep.NextBeep := Now+EncodeTime(0,0, Self._BEEP_INTERVAL,0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBoosterDb.GetCount():Integer;
+function TBoosterDb.GetCount(): Integer;
 begin
  Result := Self.db.Count;
 end;
 
-function TBoosterDb.GetItem(key:string):TBooster;
+function TBoosterDb.GetItem(key: string): TBooster;
 begin
  if (Self.db.ContainsKey(key)) then
    Result := Self.db.Items[key]
@@ -281,7 +281,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBoosterDb.SyncStructures();
-var id:string;
+var id: string;
 begin
  for id in Self.db.Keys do
   begin
@@ -297,7 +297,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBoosterDb.ContainsKey(key:string; ignore:TBooster = nil):Boolean;
+function TBoosterDb.ContainsKey(key: string; ignore: TBooster = nil): Boolean;
 begin
  if (Self.db.ContainsKey(key)) then
    Result := (ignore <> Self[key])
@@ -308,7 +308,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBoosterDb.Clear();
-var booster:TBooster;
+var booster: TBooster;
 begin
  for booster in Self.db.Values do booster.Free();
  Self.db.Clear();

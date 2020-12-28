@@ -1,4 +1,4 @@
-﻿unit Train;
+unit Train;
 
 { This file defines "TTrain" class which represents a single train. }
 
@@ -58,8 +58,8 @@ type
     speedBuffer: PInteger; // pokud tento ukazatel neni nil, rychlost je nastavovana do promenne, na kterou ukazuje
                            // a ne primo souprave; to se hodi napriklad v zastavce v TU
 
-     procedure Init(index:Integer);
-     procedure LoadFromFile(ini:TMemIniFile; const section:string);
+     procedure Init(index: Integer);
+     procedure LoadFromFile(ini: TMemIniFile; const section: string);
      procedure LocoAcquiredOk(Sender: TObject; Data: Pointer);
      procedure LocoAcquiredErr(Sender: TObject; Data: Pointer);
      procedure AllLocoAcquiredOk(newLoks: TList<Integer>);
@@ -71,16 +71,16 @@ type
 
      procedure SetOR(station: TObject);
 
-     procedure HVComErr(Sender:TObject; Data:Pointer);
-     procedure SetSpeed(speed:Integer);
-     procedure SetDirection(direction:THVStanoviste);
-     procedure SetFront(front:TObject);
+     procedure HVComErr(Sender: TObject; Data: Pointer);
+     procedure SetSpeed(speed: Integer);
+     procedure SetDirection(direction: THVStanoviste);
+     procedure SetFront(front: TObject);
 
-     function IsStolen():Boolean;
-     function GetMaxSpeed():Cardinal;
-     function GetMaxSpeedStep():Cardinal;
+     function IsStolen(): Boolean;
+     function GetMaxSpeed(): Cardinal;
+     function GetMaxSpeedStep(): Cardinal;
 
-     procedure UpdateTrainFromJson(train:TJsonObject; ok:TCb; err:TCb);
+     procedure UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
      class procedure PtHVsListToDict(train: TJsonObject);
 
    public
@@ -92,32 +92,32 @@ type
      constructor Create(train: TJsonObject; index: Integer; ok: TCb; err: TCb); overload;
      destructor Destroy(); override;
 
-     procedure SaveToFile(ini:TMemIniFile; const section:string);
+     procedure SaveToFile(ini: TMemIniFile; const section: string);
 
-     function GetPanelString():string;   // vraci string, kterym je definovana souprava, do panelu
-     procedure UpdateTrainFromPanel(train:TStrings; usek:TObject; oblr:TObject; ok:TCb; err:TCb);
-     procedure SetSpeedDirection(speed:Cardinal; dir:THVStanoviste);
+     function GetPanelString(): string;   // vraci string, kterym je definovana souprava, do panelu
+     procedure UpdateTrainFromPanel(train: TStrings; usek: TObject; oblr: TObject; ok: TCb; err: TCb);
+     procedure SetSpeedDirection(speed: Cardinal; dir: THVStanoviste);
      procedure Acquire(ok: TCb; err: TCb);
      procedure UpdateFront();
      procedure ChangeDirection();
-     procedure InterChangeStanice(change_ev:Boolean = true);
-     procedure SetSpeedBuffer(speedBuffer:PInteger);
+     procedure InterChangeStanice(change_ev: Boolean = true);
+     procedure SetSpeedBuffer(speedBuffer: PInteger);
      procedure LokDirChanged();
-     procedure CheckSH(nav:TObject);
+     procedure CheckSH(nav: TObject);
 
-     procedure ToggleHouk(desc:string);
-     procedure SetHoukState(desc:string; state:Boolean);
+     procedure ToggleHouk(desc: string);
+     procedure SetHoukState(desc: string; state: Boolean);
 
-     procedure AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj); overload;
-     procedure AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj); overload;
-     function IsPOdj(usekid:Integer):Boolean; overload;
-     function IsPOdj(usek:TBlk):Boolean; overload;
-     function GetPOdj(usekid:Integer):TPOdj; overload;
-     function GetPOdj(usek:TBlk):TPOdj; overload;
-     procedure RemovePOdj(usekid:Integer); overload;
-     procedure RemovePOdj(usek:TBlk); overload;
+     procedure AddOrUpdatePOdj(usekid: Integer; var podj: TPOdj); overload;
+     procedure AddOrUpdatePOdj(usek: TBlk; var podj: TPOdj); overload;
+     function IsPOdj(usekid: Integer): Boolean; overload;
+     function IsPOdj(usek: TBlk): Boolean; overload;
+     function GetPOdj(usekid: Integer): TPOdj; overload;
+     function GetPOdj(usek: TBlk): TPOdj; overload;
+     procedure RemovePOdj(usekid: Integer); overload;
+     procedure RemovePOdj(usek: TBlk); overload;
      procedure ClearPOdj();
-     function IsAnyLokoInRegulator():Boolean;
+     function IsAnyLokoInRegulator(): Boolean;
      procedure ForceRemoveAllRegulators();
 
      function PredictedSignal(): TBlk;
@@ -125,7 +125,7 @@ type
      procedure OnExpectedSpeedChange();
 
      procedure GetPtData(json: TJsonObject);
-     procedure PutPtData(reqJson:TJsonObject; respJson:TJsonObject);
+     procedure PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
 
      property index: Integer read findex;
      property sdata: TTrainData read data;
@@ -152,7 +152,7 @@ type
      property acquiring: Boolean read fAcquiring;
 
      // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
-     class procedure UvolV(old:TTrainHVs; new:TTrainHVs);
+     class procedure UvolV(old: TTrainHVs; new: TTrainHVs);
 
   end;
 
@@ -165,21 +165,21 @@ uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlokUsek, DataSpr, appEv,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTrain.Create(ini:TMemIniFile; const section:string; index:Integer);
+constructor TTrain.Create(ini: TMemIniFile; const section: string; index: Integer);
 begin
  inherited Create();
  Self.Init(index);
  Self.LoadFromFile(ini, section);
 end;
 
-constructor TTrain.Create(panelStr:TStrings; index: Integer; usek:TObject; oblr:TObject; ok: TCb; err: TCb);
+constructor TTrain.Create(panelStr: TStrings; index: Integer; usek: TObject; oblr: TObject; ok: TCb; err: TCb);
 begin
  inherited Create();
  Self.Init(index);
  Self.UpdateTrainFromPanel(panelStr, usek, oblr, ok, err);
 end;
 
-constructor TTrain.Create(train:TJsonObject; index:Integer; ok: TCb; err: TCb);
+constructor TTrain.Create(train: TJsonObject; index: Integer; ok: TCb; err: TCb);
 begin
  inherited Create();
  Self.Init(index);
@@ -193,7 +193,7 @@ begin
  Self.UpdateTrainFromJson(train, ok, err);
 end;
 
-procedure TTrain.Init(index:Integer);
+procedure TTrain.Init(index: Integer);
 begin
  Self.speedBuffer := nil;
  Self.changed := false;
@@ -216,10 +216,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.LoadFromFile(ini:TMemIniFile; const section:string);
-var addr:Integer;
-    data:TStrings;
-    s:string;
+procedure TTrain.LoadFromFile(ini: TMemIniFile; const section: string);
+var addr: Integer;
+    data: TStrings;
+    s: string;
 begin
  Self.data.name := ini.ReadString(section, 'nazev', section);
  Self.data.carsCount := ini.ReadInteger(section, 'vozu', 0);
@@ -263,8 +263,8 @@ begin
  Self.changed := true;
 end;
 
-procedure TTrain.SaveToFile(ini:TMemIniFile; const section:string);
-var str:string;
+procedure TTrain.SaveToFile(ini: TMemIniFile; const section: string);
+var str: string;
     addr: Integer;
 begin
  ini.WriteString(section, 'nazev', Self.data.name);
@@ -314,8 +314,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci string, kterym je definovana souprava, do panelu
-function TTrain.GetPanelString():string;
-var addr:Integer;
+function TTrain.GetPanelString(): string;
+var addr: Integer;
 begin
  Result := Self.data.name + ';' + IntToStr(Self.data.carsCount) + ';{' + Self.data.note + '};';
 
@@ -356,7 +356,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.UpdateTrainFromPanel(train:TStrings; Usek:TObject; OblR:TObject; ok:TCb; err:TCb);
+procedure TTrain.UpdateTrainFromPanel(train: TStrings; Usek: TObject; OblR: TObject; ok: TCb; err: TCb);
 var json: TJsonObject;
     hvs, hv: TStrings;
     s, straddr: string;
@@ -415,10 +415,10 @@ begin
  end;
 end;
 
-procedure TTrain.UpdateTrainFromJson(train:TJsonObject; ok:TCb; err:TCb);
+procedure TTrain.UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
 var addrhv: TJsonNameValuePair;
     hv: TJsonObject;
-    i, addr, max_func:Integer;
+    i, addr, max_func: Integer;
     new: TTrainHVs;
     acq: ^TTrainAcquire;
 begin
@@ -441,7 +441,7 @@ begin
  try
   StrToInt(train['name']);
  except
-   on E:EConvertError do
+   on E: EConvertError do
      raise Exception.Create('Číslo soupravy není validní číslo!');
  end;
 
@@ -587,7 +587,7 @@ begin
 end;
 
 procedure TTrain.AllLocoAcquiredOk(newLoks: TList<Integer>);
-var nav:TBlk;
+var nav: TBlk;
 begin
  Self.fAcquiring := false;
  Self.UvolV(Self.HVs, newLoks);
@@ -607,9 +607,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TTrain.UvolV(old:TTrainHVs; new:TTrainHVs);
-var new_addr, old_addr:Integer;
-    keep:TList<Integer>;
+class procedure TTrain.UvolV(old: TTrainHVs; new: TTrainHVs);
+var new_addr, old_addr: Integer;
+    keep: TList<Integer>;
 begin
  keep := TList<Integer>.Create();
 
@@ -637,7 +637,7 @@ end;
 // uvolnit vsechna loko
 // pred uvolnenim loko take zastavime
 procedure TTrain.ReleaseAllLoko();
-var addr:Integer;
+var addr: Integer;
 begin
  if ((not Assigned(HVDb)) or (not Assigned(TrakceI))) then Exit();
 
@@ -653,7 +653,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.SetOR(station: TObject);
-var addr:Integer;
+var addr: Integer;
 begin
  Self.data.station := station;
  for addr in Self.HVs do
@@ -664,8 +664,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetSpeedDirection(speed:Cardinal; dir:THVStanoviste);
-var addr:Integer;
+procedure TTrain.SetSpeedDirection(speed: Cardinal; dir: THVStanoviste);
+var addr: Integer;
     direction: Boolean;
     dir_changed: Boolean;
 begin
@@ -712,7 +712,7 @@ begin
      HVDb[addr].SetSpeedDir(Self.data.speed, direction,
                             TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
    except
-     on E:Exception do
+     on E: Exception do
        AppEvents.LogException(E, 'TTrain.SetSpeedDirection');
    end;
   end;
@@ -728,19 +728,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetSpeed(speed:Integer);
+procedure TTrain.SetSpeed(speed: Integer);
 begin
  Self.SetSpeedDirection(speed, Self.data.direction);
 end;
 
-procedure TTrain.SetDirection(direction:THVStanoviste);
+procedure TTrain.SetDirection(direction: THVStanoviste);
 begin
  Self.SetSpeedDirection(Self.data.speed, direction);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.HVComErr(Sender:TObject; Data:Pointer);
+procedure TTrain.HVComErr(Sender: TObject; Data: Pointer);
 begin
  if (Self.data.station <> nil) then
    (Self.data.station as TOR).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
@@ -815,7 +815,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetFront(front:TObject);
+procedure TTrain.SetFront(front: TObject);
 var addr: Integer;
 begin
  if (Self.data.front = front) then Exit();
@@ -831,7 +831,7 @@ begin
 end;
 
 procedure TTrain.UpdateFront();
-var blk:TBlk;
+var blk: TBlk;
 begin
  Blky.GetBlkByID(Self.filefront, blk);
  Self.front := blk;
@@ -841,8 +841,8 @@ end;
 
 // zmena smeru pri naslapu na smyckovy blok
 procedure TTrain.ChangeDirection();
-var addr:Integer;
-    tmp:Boolean;
+var addr: Integer;
+    tmp: Boolean;
 begin
  writelog('Souprava '+ Self.name + ' : změna směru', WR_SPRPREDAT);
 
@@ -872,8 +872,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.InterChangeStanice(change_ev:Boolean = true);
-var tmp:TObject;
+procedure TTrain.InterChangeStanice(change_ev: Boolean = true);
+var tmp: TObject;
 begin
  tmp := Self.data.stationFrom;
  Self.data.stationFrom := Self.data.stationTo;
@@ -886,7 +886,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetSpeedBuffer(speedBuffer:PInteger);
+procedure TTrain.SetSpeedBuffer(speedBuffer: PInteger);
 begin
  Self.speedBuffer := speedBuffer;
 end;
@@ -899,8 +899,8 @@ end;
 // a pokud souprava stoji.
 
 procedure TTrain.LokDirChanged();
-var i:Integer;
-    dir:Boolean;
+var i: Integer;
+    dir: Boolean;
 begin
  if ((Self.wantedSpeed <> 0) or (Self.data.dir_L xor Self.data.dir_S) or
      (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
@@ -919,9 +919,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.ToggleHouk(desc:string);
-var addr:Integer;
-    HV:THV;
+procedure TTrain.ToggleHouk(desc: string);
+var addr: Integer;
+    HV: THV;
 begin
  writelog('Souprava ' + Self.name + ' : aktivuji houkání ' + desc, WR_MESSAGE);
 
@@ -933,9 +933,9 @@ begin
   end;
 end;
 
-procedure TTrain.SetHoukState(desc:string; state:Boolean);
-var addr:Integer;
-    HV:THV;
+procedure TTrain.SetHoukState(desc: string; state: Boolean);
+var addr: Integer;
+    HV: THV;
 begin
  if (state) then
    writelog('Souprava ' + Self.name + ' : aktivuji funkci ' + desc, WR_MESSAGE)
@@ -952,11 +952,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.CheckSH(nav:TObject);
-var mnav:TBlkNav;
-    oblr:TOR;
-    shPlay:TSHToPlay;
-    shTrain:TSHTrain;
+procedure TTrain.CheckSH(nav: TObject);
+var mnav: TBlkNav;
+    oblr: TOR;
+    shPlay: TSHToPlay;
+    shTrain: TSHTrain;
 begin
  if ((not Self.announcement) or (Self.announcementPlayed) or (self.stationFrom = nil) or
      (self.stationTo = nil) or (Self.typ = '')) then Exit();
@@ -970,7 +970,7 @@ begin
  try
    shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(self, oblr);
  except
-   on E:Exception do
+   on E: Exception do
      AppEvents.LogException(E, 'CanPlayPrijezdSH');
  end;
 
@@ -998,7 +998,7 @@ begin
      Self.data.announcementPlayed := true;
    end;
  except
-   on E:Exception do
+   on E: Exception do
      AppEvents.LogException(E, 'Prehravani hlaseni');
  end;
 end;
@@ -1006,7 +1006,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Predvidane odjezdy:
 
-procedure TTrain.AddOrUpdatePOdj(usekid:Integer; var podj:TPOdj);
+procedure TTrain.AddOrUpdatePOdj(usekid: Integer; var podj: TPOdj);
 begin
  if ((not podj.rel_enabled) and (not podj.abs_enabled)) then
   begin
@@ -1024,45 +1024,45 @@ begin
   end;
 end;
 
-function TTrain.IsPOdj(usekid:Integer):Boolean;
+function TTrain.IsPOdj(usekid: Integer): Boolean;
 begin
  Result := Self.data.podj.ContainsKey(usekid);
 end;
 
-function TTrain.GetPOdj(usekid:Integer):TPOdj;
+function TTrain.GetPOdj(usekid: Integer): TPOdj;
 begin
  Result := Self.data.podj[usekid];
 end;
 
-procedure TTrain.RemovePOdj(usekid:Integer);
+procedure TTrain.RemovePOdj(usekid: Integer);
 begin
  Self.data.podj[usekid].Free();
  Self.data.podj.Remove(usekid);
 end;
 
-procedure TTrain.AddOrUpdatePOdj(usek:TBlk; var podj:TPOdj);
+procedure TTrain.AddOrUpdatePOdj(usek: TBlk; var podj: TPOdj);
 begin
  Self.AddOrUpdatePOdj(usek.id, podj);
 end;
 
-function TTrain.IsPOdj(usek:TBlk):Boolean;
+function TTrain.IsPOdj(usek: TBlk): Boolean;
 begin
  if (usek = nil) then Exit(false);
  Result := Self.IsPOdj(usek.id);
 end;
 
-function TTrain.GetPOdj(usek:TBlk):TPOdj;
+function TTrain.GetPOdj(usek: TBlk): TPOdj;
 begin
  Result := Self.GetPOdj(usek.id);
 end;
 
-procedure TTrain.RemovePOdj(usek:TBlk);
+procedure TTrain.RemovePOdj(usek: TBlk);
 begin
  Self.RemovePOdj(usek.id);
 end;
 
 procedure TTrain.ClearPOdj();
-var podj:TPOdj;
+var podj: TPOdj;
 begin
  for podj in Self.data.podj.Values do
    podj.Free();
@@ -1072,8 +1072,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrain.IsAnyLokoInRegulator():Boolean;
-var hvaddr:Integer;
+function TTrain.IsAnyLokoInRegulator(): Boolean;
+var hvaddr: Integer;
 begin
  for hvaddr in Self.HVs do
    if (HVDb[hvaddr].Stav.regulators.Count > 0) then
@@ -1084,7 +1084,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.ForceRemoveAllRegulators();
-var hvaddr:Integer;
+var hvaddr: Integer;
 begin
  for hvaddr in Self.HVs do
    if (HVDb[hvaddr].Stav.regulators.Count > 0) then
@@ -1093,7 +1093,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrain.GetMaxSpeed():Cardinal;
+function TTrain.GetMaxSpeed(): Cardinal;
 var addr: Integer;
     minimum: Cardinal;
 begin
@@ -1118,7 +1118,7 @@ begin
   end;
 end;
 
-function TTrain.GetMaxSpeedStep():Cardinal;
+function TTrain.GetMaxSpeedStep(): Cardinal;
 begin
  // vraci rychlost <= max rychlosti takovou, ze pro ni mame prirazeni stupne
  // tj. tuto rychlost lze skutene nastavit
@@ -1224,7 +1224,7 @@ begin
    Self.data.podj[blkId].GetPtData(json.O['podj'].O[IntToStr(blkId)]);
 end;
 
-procedure TTrain.PutPtData(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TTrain.PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
 var hvaddr: Integer;
 begin
  if (not reqJson.Contains('name')) then

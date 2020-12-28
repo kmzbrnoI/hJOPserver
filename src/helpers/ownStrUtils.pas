@@ -43,7 +43,7 @@ end;
 procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
 var i: word;
     s: string;
-    plain_cnt:Integer;
+    plain_cnt: Integer;
  begin
   s := '';
   plain_cnt := 0;
@@ -78,7 +78,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function RandomToken(len: Cardinal): string;
-var i:Integer;
+var i: Integer;
 const _ALL: string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTVUWXYZ0123456789';
 begin
  Result := '';

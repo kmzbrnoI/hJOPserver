@@ -45,30 +45,30 @@ type
   TUDPDiscover = class
     private
       UDPserver : TIdUDPServer;
-      fPort:Word;
-      fName, fDescription:string;
-      parsed:TStrings;
-      broadcasts:TDictionary<string, string>;
-      updateBindTimer:TTimer;
+      fPort: Word;
+      fName, fDescription: string;
+      parsed: TStrings;
+      broadcasts: TDictionary<string, string>;
+      updateBindTimer: TTimer;
 
        procedure OnUDPServerRead(AThread: TIdUDPListenerThread;
         AData: TBytes; ABinding: TIdSocketHandle);
-       procedure SendDisc(ABinding: TIdSocketHandle; port:Word);
+       procedure SendDisc(ABinding: TIdSocketHandle; port: Word);
 
-       procedure SetName(name:string);
-       procedure SetDescription(desc:string);
+       procedure SetName(name: string);
+       procedure SetDescription(desc: string);
        procedure UpdateBindings();
-       procedure OnUpdateBindTimer(Sender:TObject);
+       procedure OnUpdateBindTimer(Sender: TObject);
 
     public
-       constructor Create(port:Word; name:string; description:string);
+       constructor Create(port: Word; name: string; description: string);
        destructor Destroy(); override;
 
        procedure SendDiscover();
 
-       property port:Word read fPort write fPort;
-       property name:string read fName write SetName;
-       property description:string read fDescription write SetDescription;
+       property port: Word read fPort write fPort;
+       property name: string read fName write SetName;
+       property description: string read fDescription write SetDescription;
 
   end;
 
@@ -81,7 +81,7 @@ uses TCPServerOR, ownStrUtils, Logging, USock;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TUDPDiscover.Create(port:Word; name:string; description:string);
+constructor TUDPDiscover.Create(port: Word; name: string; description: string);
 begin
  inherited Create();
 
@@ -101,7 +101,7 @@ begin
    Self.UDPserver.OnUDPRead := Self.OnUDPServerRead;
    Self.SendDiscover();
  except
-   on E:Exception do
+   on E: Exception do
     begin
      writelog('Nelze vytvorit discover UDPserver : '+E.Message, WR_ERROR);
     end;
@@ -123,7 +123,7 @@ procedure TUDPDiscover.OnUDPServerRead(AThread: TIdUDPListenerThread;
   AData: TBytes; ABinding: TIdSocketHandle);
 var
   Msg: String;
-  i, j:Integer;
+  i, j: Integer;
 begin
  try
    msg := TEncoding.UTF8.GetString(AData);
@@ -137,13 +137,13 @@ begin
          Self.SendDisc(ABinding, Self.port+i);
     end;
  except
-  on E:Exception do
+  on E: Exception do
     writelog('Vyjimka TUDPDiscover.OnUDPServerRead : '+E.Message, WR_ERROR);
  end;
 end;
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUDPDiscover.SendDisc(ABinding: TIdSocketHandle; port:Word);
+procedure TUDPDiscover.SendDisc(ABinding: TIdSocketHandle; port: Word);
 var msg: string;
     data: TBytes;
 begin
@@ -165,21 +165,21 @@ begin
    data := TEncoding.UTF8.GetBytes(msg);
    ABinding.Broadcast(data, port, broadcasts[ABinding.IP]);
  except
-   on E:Exception do
+   on E: Exception do
      writelog('Vyjimka TUDPDiscover.SendDisc : '+E.Message, WR_ERROR);
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUDPDiscover.SetName(name:string);
+procedure TUDPDiscover.SetName(name: string);
 begin
  if (Self.fName = name) then Exit();
  Self.fName := name;
  Self.SendDiscover();
 end;
 
-procedure TUDPDiscover.SetDescription(desc:string);
+procedure TUDPDiscover.SetDescription(desc: string);
 begin
  if (Self.fDescription = desc) then Exit();
  Self.fDescription := desc;
@@ -212,7 +212,7 @@ begin
 
    Self.UDPserver.Active := true;
  except
-  on E:Exception do
+  on E: Exception do
     writelog('Vyjimka TUDPDiscover.UpdateBindings : '+E.Message, WR_ERROR);
  end;
 end;
@@ -220,7 +220,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.SendDiscover();
-var i, j, k:Integer;
+var i, j, k: Integer;
 begin
  Self.UpdateBindings();
 
@@ -232,7 +232,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUDPDiscover.OnUpdateBindTimer(Sender:TObject);
+procedure TUDPDiscover.OnUpdateBindTimer(Sender: TObject);
 begin
  Self.UpdateBindings();
 end;

@@ -52,18 +52,18 @@ begin
 end;
 
 procedure TF_Console.B_OK_consoleClick(Sender: TObject);
-var pole_dat:TStrings;
-    Blk:TBlk;
+var pole_dat: TStrings;
+    Blk: TBlk;
 begin
  pole_dat := TStringList.Create;
 
  try
-   ExtractStrings([' ','(',')'], [],PChar(LowerCase(E_console.Text)),pole_dat);
+   ExtractStrings([' ','(',')'], [], PChar(LowerCase(E_console.Text)), pole_dat);
 
    M_console.Lines.Strings[M_console.Lines.Count-1] := M_console.Lines.Strings[M_console.Lines.Count-1] + E_console.Text;
 
    if (F_Options.CHB_Log_console.Checked) then
-     writelog('Console: '+E_console.Text,WR_CONSOLE);
+     writelog('Console: '+E_console.Text, WR_CONSOLE);
 
    if (pole_dat.Count <> 0) then
     begin
@@ -94,7 +94,7 @@ begin
          try
            TrakceI.Connect();
          except
-           on E:Exception do
+           on E: Exception do
             begin
              M_console.Lines.Add(E.Message);
              Exit();
@@ -111,7 +111,7 @@ begin
          try
            TrakceI.Disconnect();
          except
-           on E:Exception do
+           on E: Exception do
             begin
              M_console.Lines.Add(E.Message);
              Exit();
@@ -166,7 +166,7 @@ begin
        end;
     end;//Count <> 0
  except
-   on E:Exception do
+   on E: Exception do
      M_Console.Lines.Add('Exception : ' + E.Message);
  end;
 

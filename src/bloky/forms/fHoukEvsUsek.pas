@@ -1,4 +1,4 @@
-﻿unit fHoukEvsUsek;
+unit fHoukEvsUsek;
 
 {
   Okno TF_HoukEvsUsek umoznuje editovat houkaci udalosti technologickeho
@@ -25,16 +25,16 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
   private
-   blk:TBlkUsek;
-   formL:TF_HoukEvs;
-   formS:TF_HoukEvs;
+   blk: TBlkUsek;
+   formL: TF_HoukEvs;
+   formS: TF_HoukEvs;
 
   public
 
-     constructor Create(AOwner:TComponent); override;
+     constructor Create(AOwner: TComponent); override;
      destructor Destroy(); override;
 
-     procedure Open(Blk:TBlkUsek);
+     procedure Open(Blk: TBlkUsek);
 
   end;
 
@@ -47,7 +47,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_HoukEvsUsek.Create(AOwner:TComponent);
+constructor TF_HoukEvsUsek.Create(AOwner: TComponent);
 begin
  inherited;
 
@@ -74,7 +74,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEvsUsek.Open(Blk:TBlkUsek);
+procedure TF_HoukEvsUsek.Open(Blk: TBlkUsek);
 begin
  Self.blk := Blk;
 
@@ -96,7 +96,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEvsUsek.B_ApplyClick(Sender: TObject);
-var s:TBlkUsekSettings;
+var s: TBlkUsekSettings;
 begin
  if (not formL.InputValid()) then
   begin

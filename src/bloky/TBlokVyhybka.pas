@@ -1,4 +1,4 @@
-﻿unit TBlokVyhybka;
+unit TBlokVyhybka;
 
 { TURNOUT technological block definition. }
 
@@ -65,7 +65,7 @@ type
 
  TBlkTurnout = class(TBlk)
   const
-   _def_vyh_stav:TBlkTurnoutState = ( // default state
+   _def_vyh_stav: TBlkTurnoutState = ( // default state
     position : disabled;
     positionOld : disabled;
     positionReal : disabled;
@@ -170,7 +170,7 @@ type
     procedure StitVylUPO(SenderPnl: TIdContext; SenderOR: TObject;
         UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
 
-    class function CombineCouplingInputs(first: TRCSInputState; second: TRCSInputState):TRCSInputState;
+    class function CombineCouplingInputs(first: TRCSInputState; second: TRCSInputState): TRCSInputState;
 
     function GetRCSInPlus(): TRCSAddr;
     function GetRCSInMinus(): TRCSAddr;
@@ -178,7 +178,7 @@ type
     function GetRCSOutMinus(): TRCSAddr;
 
   public
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
@@ -199,7 +199,7 @@ type
     procedure SetSettings(data: TBlkTurnoutSettings);
 
     procedure SetPosition(new: TTurnoutPosition; lock: Boolean = false; nouz: Boolean = false;
-        callback_ok:TNotifyEvent = nil; callback_err: TTurnoutSetPosErrCb = nil);
+        callback_ok: TNotifyEvent = nil; callback_err: TTurnoutSetPosErrCb = nil);
     procedure SetLockout(Sender: TIDContext; lockout: string); overload;
     procedure SetCouplingNoPropag(coupling: Integer);
 
@@ -215,7 +215,7 @@ type
     property state: TBlkTurnoutState read m_state;
 
     property position: TTurnoutPosition read m_state.position;
-    property NUZ:Boolean read GetNUZ;
+    property NUZ: Boolean read GetNUZ;
     property zaver: TZaver read GetZaver;
     property occupied: TUsekStav read GetOccupied;
     property note: string read m_state.note write SetNote;
@@ -230,8 +230,8 @@ type
     property outputLocked: Boolean read GetOutputLocked;
     property coupling: TBlkTurnout read GetCoupling;
 
-    property movingPlus:Boolean read m_state.movingPlus write m_state.movingPlus;
-    property movingMinus:Boolean read m_state.movingMinus write m_state.movingMinus;
+    property movingPlus: Boolean read m_state.movingPlus write m_state.movingPlus;
+    property movingMinus: Boolean read m_state.movingMinus write m_state.movingMinus;
 
     property rcsInPlus: TRCSAddr read GetRCSInPlus;
     property rcsInMinus: TRCSAddr read GetRCSInMinus;
@@ -240,17 +240,17 @@ type
 
     // Panel:
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights):string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
-        Button:TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
-    function PanelStateString():string; override;
+        Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function PanelStateString(): string; override;
 
     // PT:
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
     procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
-    class function PositionToStr(position: TTurnoutPosition):string;
+    class function PositionToStr(position: TTurnoutPosition): string;
     class function StrToPosition(c: string): TTurnoutPosition;
 
  end;
@@ -286,7 +286,7 @@ var strs: TStrings;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech,section);
+ Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.m_settings.coupling := ini_tech.ReadInteger(section, 'spojka', -1);
  Self.m_settings.lock := ini_tech.ReadInteger(section, 'zamek', -1);
  Self.m_settings.lockPosition := TTurnoutPosition(ini_tech.ReadInteger(section, 'zamek-pol', 0));
@@ -447,7 +447,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.GetZaver():TZaver;
+function TBlkTurnout.GetZaver(): TZaver;
 begin
  if (Self.m_spnl.track = -1) then
    Exit(TZaver.no);
@@ -460,11 +460,11 @@ begin
    Result := TZaver.no;
 end;
 
-function TBlkTurnout.GetNUZ():Boolean;
-var tmpBlk:TBlk;
-    return:Integer;
+function TBlkTurnout.GetNUZ(): Boolean;
+var tmpBlk: TBlk;
+    return: Integer;
 begin
- return := Blky.GetBlkByID(Self.m_spnl.track,tmpBlk);
+ return := Blky.GetBlkByID(Self.m_spnl.track, tmpBlk);
  if (return < 0) then Exit(false);
  if (tmpBlk.typ <> btUsek) then Exit(false);
 
@@ -475,7 +475,7 @@ function TBlkTurnout.GetOccupied(): TUsekStav;
 var tmpBlk: TBlk;
     return: Integer;
 begin
- return := Blky.GetBlkByID(Self.m_spnl.track,tmpBlk);
+ return := Blky.GetBlkByID(Self.m_spnl.track, tmpBlk);
  if (return < 0) then Exit(TUsekStav.none);
  if ((tmpBlk.typ <> btUsek) and (tmpBlk.typ <> btTU)) then Exit(TUsekStav.none);
 
@@ -944,7 +944,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.MenuPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuPlusClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOPlusClick, nil)
@@ -954,7 +954,7 @@ begin
  end;
 end;
 
-procedure TBlkTurnout.MenuMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuMinusClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOMinusClick, nil)
@@ -964,7 +964,7 @@ begin
  end;
 end;
 
-procedure TBlkTurnout.MenuNSPlusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuNSPlusClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSPlusClick, nil)
@@ -974,7 +974,7 @@ begin
  end;
 end;
 
-procedure TBlkTurnout.MenuNSMinusClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuNSMinusClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSMinusClick, nil)
@@ -984,7 +984,7 @@ begin
  end;
 end;
 
-procedure TBlkTurnout.UPOPlusClick(Sender:TObject);
+procedure TBlkTurnout.UPOPlusClick(Sender: TObject);
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
@@ -992,7 +992,7 @@ begin
  Self.SetPosition(TTurnoutPosition.plus, false, false, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkTurnout.UPOMinusClick(Sender:TObject);
+procedure TBlkTurnout.UPOMinusClick(Sender: TObject);
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
@@ -1000,8 +1000,8 @@ begin
  Self.SetPosition(TTurnoutPosition.minus, false, false, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkTurnout.UPONSPlusClick(Sender:TObject);
-var Blk:TBlk;
+procedure TBlkTurnout.UPONSPlusClick(Sender: TObject);
+var Blk: TBlk;
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
@@ -1012,8 +1012,8 @@ begin
                     TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
-procedure TBlkTurnout.UPONSMinusClick(Sender:TObject);
-var Blk:TBlk;
+procedure TBlkTurnout.UPONSMinusClick(Sender: TObject);
+var Blk: TBlk;
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
@@ -1024,42 +1024,42 @@ begin
                     TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
-procedure TBlkTurnout.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.state.note);
 end;
 
-procedure TBlkTurnout.MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Vyluka(SenderPnl, Self, Self.state.lockout);
 end;
 
-procedure TBlkTurnout.MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.emLock := true;
  if (Self.coupling <> nil) then
    Self.coupling.emLock := true;
 end;
 
-procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR),
     'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkTurnout.PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
+procedure TBlkTurnout.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 begin
  if (success) then
    Self.ResetEmLocks();
 end;
 
-procedure TBlkTurnout.MenuAdminREDUKClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminREDUKClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.m_state.intentionalLocks := 0;
  Self.Change();
 end;
 
-procedure TBlkTurnout.MenuAdminPolPlusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminPolPlusCLick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    RCSi.SetInput(Self.rcsInPlus, 1);
@@ -1069,7 +1069,7 @@ begin
  end;
 end;
 
-procedure TBlkTurnout.MenuAdminPolMinusCLick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminPolMinusCLick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    RCSi.SetInput(Self.rcsInPlus, 0);
@@ -1079,7 +1079,7 @@ begin
  end;
 end;
 
-procedure TBlkTurnout.MenuAdminNepolCLick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTurnout.MenuAdminNepolCLick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    RCSi.SetInput(Self.rcsInPlus, 0);
@@ -1091,7 +1091,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkTurnout.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 var coupling: TBlkTurnout;
 begin
  Result := inherited;
@@ -1144,7 +1144,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkTurnout.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  case (Button) of
   F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1154,7 +1154,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkTurnout.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkTurnout.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if (item = 'S+')        then Self.MenuPlusClick(SenderPnl, SenderOR)
  else if (item = 'S-')   then Self.MenuMinusClick(SenderPnl, SenderOR)
@@ -1172,13 +1172,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.PanelPotvrSekvNSPlus(Sender:TIdContext; success:Boolean);
+procedure TBlkTurnout.PanelPotvrSekvNSPlus(Sender: TIdContext; success: Boolean);
 begin
  if (not success) then Exit();
  Self.SetPosition(plus, false, true, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkTurnout.PanelPotvrSekvNSMinus(Sender:TIdContext; success:Boolean);
+procedure TBlkTurnout.PanelPotvrSekvNSMinus(Sender: TIdContext; success: Boolean);
 begin
  if (not success) then Exit();
  Self.SetPosition(minus, false, true, nil, Self.PanelMovingErr);
@@ -1186,8 +1186,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.Change(now:Boolean = false);
-var changed:Boolean;
+procedure TBlkTurnout.Change(now: Boolean = false);
+var changed: Boolean;
 begin
  changed := false;
 
@@ -1290,7 +1290,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.GetNpPlus():TBlk;
+function TBlkTurnout.GetNpPlus(): TBlk;
 begin
  if (((Self.m_npPlus = nil) and (Self.m_settings.npPlus <> -1)) or
      ((Self.m_npPlus <> nil) and (Self.m_npPlus.id <> Self.m_settings.npPlus))) then
@@ -1298,7 +1298,7 @@ begin
  Result := Self.m_npPlus;
 end;
 
-function TBlkTurnout.GetNpMinus():TBlk;
+function TBlkTurnout.GetNpMinus(): TBlk;
 begin
  if (((Self.m_npMinus = nil) and (Self.m_settings.npMinus <> -1)) or
      ((Self.m_npMinus <> nil) and (Self.m_npMinus.id <> Self.m_settings.npMinus))) then
@@ -1324,7 +1324,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // PT:
 
-procedure TBlkTurnout.GetPtData(json:TJsonObject; includeState:Boolean);
+procedure TBlkTurnout.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
 
@@ -1351,14 +1351,14 @@ begin
    Self.GetPtState(json['blockState']);
 end;
 
-procedure TBlkTurnout.GetPtState(json:TJsonObject);
+procedure TBlkTurnout.GetPtState(json: TJsonObject);
 begin
  json['position'] := PositionToStr(Self.position);
  if (Self.note <> '') then json['note'] := Self.note;
  if (Self.lockout <> '') then json['lockout'] := Self.lockout;
 end;
 
-procedure TBlkTurnout.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkTurnout.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
 begin
  if (reqJson.Contains('position')) then
   begin
@@ -1438,7 +1438,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.NpObsazChange(Sender:TObject; data:Integer);
+procedure TBlkTurnout.NpObsazChange(Sender: TObject; data: Integer);
 begin
  if ((data = 0) and (Sender = Self.npBlokPlus)) then
   begin
@@ -1494,11 +1494,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.StitVylUPO(SenderPnl:TIdContext; SenderOR:TObject;
-      UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
-var upo:TUPOItems;
-    item:TUPOItem;
-    lines:TStrings;
+procedure TBlkTurnout.StitVylUPO(SenderPnl: TIdContext; SenderOR: TObject;
+      UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
+var upo: TUPOItems;
+    item: TUPOItem;
+    lines: TStrings;
 begin
  upo := TList<TUPOItem>.Create;
  try
@@ -1549,9 +1549,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.PanelStateString():string;
+function TBlkTurnout.PanelStateString(): string;
 var fg, bg: TColor;
-    Blk:TBlk;
+    Blk: TBlk;
 begin
  Result := inherited;
 
@@ -1680,7 +1680,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.ShouldBeLocked(withZamek: Boolean):Boolean;
+function TBlkTurnout.ShouldBeLocked(withZamek: Boolean): Boolean;
 begin
  Result := (Self.Zaver > TZaver.no) or (Self.emLock) or (Self.intentionalLocked) or
            ((withZamek) and (Self.LockLocked()));
@@ -1690,7 +1690,7 @@ begin
                        (Self.coupling.intentionalLocked) or ((withZamek) and (Self.coupling.LockLocked()));
 end;
 
-function TBlkTurnout.ShouldBeLockedIgnoreStaveni():Boolean;
+function TBlkTurnout.ShouldBeLockedIgnoreStaveni(): Boolean;
 begin
  Result := ((Self.Zaver > TZaver.no) and (Self.Zaver <> TZaver.staveni)) or
            (Self.emLock) or (Self.LockLocked());
@@ -1700,7 +1700,7 @@ begin
                         (Self.coupling.emLock) or (Self.coupling.LockLocked());
 end;
 
-function TBlkTurnout.LockLocked():Boolean;
+function TBlkTurnout.LockLocked(): Boolean;
 begin
  Result := (Self.lock <> nil) and (not (Self.lock as TBlkZamek).klicUvolnen);
 end;

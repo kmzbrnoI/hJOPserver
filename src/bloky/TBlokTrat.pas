@@ -1,4 +1,4 @@
-﻿unit TBlokTrat;
+unit TBlokTrat;
 
 {
  Definice a obsluha technologickeho bloku Trat
@@ -24,10 +24,10 @@ type
 
  //technologicka nastaveni trati
  TBlkTratSettings = record
-  uvazkaA, uvazkaB:Integer;                                                     // reference na ID bloku trati
-  zabzar:TTratZZ;                                                               // typ tratoveho zabezpecovaciho zarizeni
-  navestidla:TTratNavestidla;                                                   // typ navestidel v trati
-  Useky:TList<integer>;                                                         // reference na ID bloku v trati
+  uvazkaA, uvazkaB: Integer;                                                     // reference na ID bloku trati
+  zabzar: TTratZZ;                                                               // typ tratoveho zabezpecovaciho zarizeni
+  navestidla: TTratNavestidla;                                                   // typ navestidel v trati
+  Useky: TList<integer>;                                                         // reference na ID bloku v trati
  end;
 
  TBlkTratEFull = class(Exception);
@@ -39,43 +39,43 @@ type
     mTime: TTime;
     mTimeDefined: Boolean;
 
-     function GetTime():TTime;
-     procedure SetTime(time:TTime);
+     function GetTime(): TTime;
+     procedure SetTime(time: TTime);
      function GeTTrain(): TTrain;
 
   public
     traini: Integer;                                                          // index soupravy
     predict: Boolean;
 
-     constructor Create(train:Integer); overload;
-     constructor Create(train:Integer; time:TTime; predict:Boolean = false); overload;
-     function IsTimeDefined():Boolean;
+     constructor Create(train: Integer); overload;
+     constructor Create(train: Integer; time: TTime; predict: Boolean = false); overload;
+     function IsTimeDefined(): Boolean;
      procedure UndefTime();
      property time: TTime read GetTime write SetTime;
      property train: TTrain read GeTTrain;
 
-     function SerializeForPanel(trat:TBlk; trainPredict:Boolean = false):string;
+     function SerializeForPanel(trat: TBlk; trainPredict: Boolean = false): string;
  end;
 
  //aktualni stav trati
  TBlkTratStav = record
-  zaver:Boolean;                                                                // aktualni stav zaveru na trati
-  smer:TTratSmer;                                                               // aktualni smer trati, reprezentuje i enabled bloku
-  zadost:Boolean;                                                               // flag probihajici zadosti, zadost vzdy probiha proti aktualnimu smeru trati
-  trains:TObjectList<TBlkTraTTrain>;                                            // seznam souprav v trati
-  trainPredict:TBlkTraTTrain;                                                   // predpovidana souprava
-  BP:Boolean;                                                                   // jestli je v trati zavedena blokova podminka
+  zaver: Boolean;                                                                // aktualni stav zaveru na trati
+  smer: TTratSmer;                                                               // aktualni smer trati, reprezentuje i enabled bloku
+  zadost: Boolean;                                                               // flag probihajici zadosti, zadost vzdy probiha proti aktualnimu smeru trati
+  trains: TObjectList<TBlkTraTTrain>;                                            // seznam souprav v trati
+  trainPredict: TBlkTraTTrain;                                                   // predpovidana souprava
+  BP: Boolean;                                                                   // jestli je v trati zavedena blokova podminka
  end;
 
  TTrainUsek = record
-  trat_index:Integer;
-  usek:TBlk;
+  trat_index: Integer;
+  usek: TBlk;
  end;
 
  TBlkTrat = class(TBlk)
   const
    //defaultni stav
-   _def_trat_stav:TBlkTratStav = (
+   _def_trat_stav: TBlkTratStav = (
     zaver: false;
     smer: disabled;
     zadost: false;
@@ -83,52 +83,52 @@ type
    );
 
   private
-   TratSettings:TBlkTratSettings;
-   TratStav:TBlkTratStav;
+   TratSettings: TBlkTratSettings;
+   TratStav: TBlkTratStav;
 
-   file_smer:TTratSmer;
+   file_smer: TTratSmer;
 
    fuvazkaA, fuvazkaB: TBlk;                                                    // tady si ukladame reference na skutecne bloky, ktere si vytvarime az pri prvnim pristupu k uvazce pres \uvazkaA a \uvazkaB
    fNavLichy, fNavSudy: TBlk;                                                   // analogicky funguji krajni navestidla trati, viz \navLichy a \navSudy
                                                                                 // fNavLichy je navestidlo u stanice blize pocatku trati, fNavSudy navestidlo u stanice blize konce trati
 
-    function GetUvazkaA():TBlk;
-    function GetUvazkaB():TBlk;
+    function GetUvazkaA(): TBlk;
+    function GetUvazkaB(): TBlk;
 
-    function GetObsazeno():Boolean;
-    function GetZAK():Boolean;
-    function GetRBP():Boolean;
-    function GetNouzZaver():Boolean;
+    function GetObsazeno(): Boolean;
+    function GetZAK(): Boolean;
+    function GetRBP(): Boolean;
+    function GetNouzZaver(): Boolean;
 
-    procedure SetTratSmer(smer:TTratSmer);
-    procedure SetTratZaver(zaver:Boolean);
-    procedure SetTratZadost(zadost:Boolean);
-    procedure SetTrainPredict(train:TBlkTraTTrain);
+    procedure SetTratSmer(smer: TTratSmer);
+    procedure SetTratZaver(zaver: Boolean);
+    procedure SetTratZadost(zadost: Boolean);
+    procedure SetTrainPredict(train: TBlkTraTTrain);
 
-    procedure SetBP(state:Boolean);
+    procedure SetBP(state: Boolean);
 
-    function GetNavLichy():TBlk;
-    function GetNavSudy():TBlk;
+    function GetNavLichy(): TBlk;
+    function GetNavSudy(): TBlk;
 
     procedure CheckTUExist();                                                   // zkontroluje existenci vsech bloku, ktere maji v trati byt; nevalidni bloky z trati smaze a provede o tom zapis do LOGu
     procedure InitTUs();                                                        // inicializuje tratove useky - oznami jim, ze jsou v trati a provede mnoho dalsich veci, viz telo metody
     procedure ResetTUs();                                                       // resetuje stav tratoveho useku; tratovy usek zapomene, ze je v nejake trati a stane se neutralnim tratovym usekem, ktery nic nevi
 
-    function GetReady():Boolean;                                                // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd soupravy, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
+    function GetReady(): Boolean;                                                // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd soupravy, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
     function GetTrainIndex(train: TTrain): Integer;
     function TrainTUsCount(train: TTrain): Integer;
 
-    function mGetLastUsek():TBlk;
-    function GetVyluka():Boolean;
+    function mGetLastUsek(): TBlk;
+    function GetVyluka(): Boolean;
 
   public
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     procedure Enable(); override;
     procedure Disable(); override;
@@ -136,66 +136,66 @@ type
     procedure AfterLoad(); override;
 
     //update states
-    procedure Change(now:Boolean = false); override;
-    procedure ChangeFromUv(Sender:TBlk);
+    procedure Change(now: Boolean = false); override;
+    procedure ChangeFromUv(Sender: TBlk);
     procedure ChangeUseky();
 
     //----- trat own functions -----
 
-    function GetSettings():TBlkTratSettings;
-    procedure SetSettings(data:TBlkTratSettings);
+    function GetSettings(): TBlkTratSettings;
+    procedure SetSettings(data: TBlkTratSettings);
 
-    function IsFirstUvazka(uv:TBlk):Boolean;
+    function IsFirstUvazka(uv: TBlk): Boolean;
     procedure TrainChangeOR(train: TTrain); overload;
-    procedure TrainChangeOR(train: TTrain; smer:TTratSmer); overload;
+    procedure TrainChangeOR(train: TTrain; smer: TTratSmer); overload;
 
     procedure AddTrain(train: TTrain); overload;
     procedure AddTrain(train: TBlkTraTTrain); overload;
-    function GetTrainsList(separator: Char):string;
+    function GetTrainsList(separator: Char): string;
     procedure RemoveTrain(train: TTrain);
 
-    function IsTrain(train: TTrain; predict:Boolean = true):Boolean;
-    function IsTrainInAnyTU(train: TTrain):Boolean;
-    function IsTrainInMoreTUs(train: TTrain):Boolean;
+    function IsTrain(train: TTrain; predict: Boolean = true): Boolean;
+    function IsTrainInAnyTU(train: TTrain): Boolean;
+    function IsTrainInMoreTUs(train: TTrain): Boolean;
 
     procedure CallChangeToTU();
     procedure UpdateTrainPredict(call_prediction: Boolean = true);
     function NavestProtismer(): Integer;
 
-    function SameUserControlsBothUvazka():Boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
+    function SameUserControlsBothUvazka(): Boolean;                              // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
                                                                                 // kdyz je true, do trati neni potreba zadat
 
-    function ChangesTrainDir():Boolean;                                         // vraci true prave tehdy, kdyz se v trati meni smer soupravy
+    function ChangesTrainDir(): Boolean;                                         // vraci true prave tehdy, kdyz se v trati meni smer soupravy
     function GetTrainUsek(train: TTrain): TBlk;
     function GetLastUsek(smer: TTratSmer): TBlk;
-    function HasAutoblokNav(blk:TBlk):Boolean;
+    function HasAutoblokNav(blk: TBlk): Boolean;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
 
-    property uvazkaA:TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
-    property uvazkaB:TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
-    property RBPCan:Boolean read GetRBP;                                        // vraci, jestli v trati doslo k poruse uplne blokove podminky, resp. jesli je mozno ji zrusit
+    property uvazkaA: TBlk read GetUvazkaA;                                      // blok uvazky blize zacatku trati
+    property uvazkaB: TBlk read GetUvazkaB;                                      // blok uvazky blize konci trati
+    property RBPCan: Boolean read GetRBP;                                        // vraci, jestli v trati doslo k poruse uplne blokove podminky, resp. jesli je mozno ji zrusit
 
-    property stav:TBlkTratStav read TratStav;                                   // kompletni stav trati
-    property Obsazeno:Boolean read GetObsazeno;                                 // flag obsazenosti trati
-    property Smer:TTratSmer read TratStav.smer write SetTratSmer;               // aktualni smer trati, reprezentuje i enabled celeho bloku
-    property Zaver:Boolean read TratStav.zaver write SetTratZaver;              // flag klasickeho zaveru trati (typicky od vlakove cesty)
-    property ZAK:Boolean read GetZAK;                                           // flag zakazu odjezdu do trati
-    property nouzZaver:Boolean read GetNouzZaver;                               // flag nouzoveho zaveru trati
-    property Zadost:Boolean read TratStav.zadost write SetTratZadost;           // flag probihajici zadosti o tratovy souhlas
-    property BP:Boolean read TratStav.BP write SetBP;                           // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty, rusi se pri uvolneni posledni soupravy z trati
+    property stav: TBlkTratStav read TratStav;                                   // kompletni stav trati
+    property Obsazeno: Boolean read GetObsazeno;                                 // flag obsazenosti trati
+    property Smer: TTratSmer read TratStav.smer write SetTratSmer;               // aktualni smer trati, reprezentuje i enabled celeho bloku
+    property Zaver: Boolean read TratStav.zaver write SetTratZaver;              // flag klasickeho zaveru trati (typicky od vlakove cesty)
+    property ZAK: Boolean read GetZAK;                                           // flag zakazu odjezdu do trati
+    property nouzZaver: Boolean read GetNouzZaver;                               // flag nouzoveho zaveru trati
+    property Zadost: Boolean read TratStav.zadost write SetTratZadost;           // flag probihajici zadosti o tratovy souhlas
+    property BP: Boolean read TratStav.BP write SetBP;                           // blokova podminka - zavedeni a zruseni; blokova podminka se zavadi obsazenim prvniho useku trati z jizdni cesty, rusi se pri uvolneni posledni soupravy z trati
     property trainPredict: TBlkTraTTrain read TratStav.trainPredict write SetTrainPredict; // predpovidana souprava do trati
-    property lastUsek:TBlk read mGetLastUsek;                                   // posledni usek trati (smerove zavisle)
-    property vyluka:Boolean read GetVyluka;
+    property lastUsek: TBlk read mGetLastUsek;                                   // posledni usek trati (smerove zavisle)
+    property vyluka: Boolean read GetVyluka;
 
     // vrati hranicni navestidla
-    property navLichy:TBlk read GetNavLichy;                                    // hranicni navestidlo trati blize zacatku trati
-    property navSudy:TBlk read GetNavSudy;                                      // hranicni navestidlo trati blize konci trati
+    property navLichy: TBlk read GetNavLichy;                                    // hranicni navestidlo trati blize zacatku trati
+    property navSudy: TBlk read GetNavSudy;                                      // hranicni navestidlo trati blize konci trati
 
-    property ready:Boolean read GetReady;                                       // jsou vsechny tratove useky "ready"? typicky se pouziva jako flag moznosti zmeny smeru trati
+    property ready: Boolean read GetReady;                                       // jsou vsechny tratove useky "ready"? typicky se pouziva jako flag moznosti zmeny smeru trati
     property zabzar: TTratZZ read TratSettings.zabzar;
-    property navestidla:TTratNavestidla read TratSettings.navestidla;
+    property navestidla: TTratNavestidla read TratSettings.navestidla;
 
  end;//class TBlkTrat
 
@@ -207,7 +207,7 @@ uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokNav, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, TrainDb, THVDatabase,
     TBlokTratUsek, appEv, timeHelper, ownConvert, Graphics;
 
-constructor TBlkTrat.Create(index:Integer);
+constructor TBlkTrat.Create(index: Integer);
 begin
  inherited;
 
@@ -233,11 +233,11 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrat.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
-var str:TStrings;
-    i:Integer;
-    data:TStrings;
-    index:Integer;
+procedure TBlkTrat.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
+var str: TStrings;
+    i: Integer;
+    data: TStrings;
+    index: Integer;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -276,9 +276,9 @@ begin
  str.Free();
 end;
 
-procedure TBlkTrat.SaveData(ini_tech:TMemIniFile;const section:string);
-var str:string;
-    i:Integer;
+procedure TBlkTrat.SaveData(ini_tech: TMemIniFile; const section: string);
+var str: string;
+    i: Integer;
 begin
  inherited SaveData(ini_tech, section);
 
@@ -293,9 +293,9 @@ begin
  ini_tech.WriteString(section, 'useky', str)
 end;
 
-procedure TBlkTrat.SaveStatus(ini_stat:TMemIniFile;const section:string);
-var i:Integer;
-    str:string;
+procedure TBlkTrat.SaveStatus(ini_stat: TMemIniFile; const section: string);
+var i: Integer;
+    str: string;
 begin
  ini_stat.WriteInteger(section, 'smer', Integer(Self.file_smer));
 
@@ -343,7 +343,7 @@ begin
 end;
 
 // change je vyvolano i pri zmene obsazenosti jakehokoliv useku v trati
-procedure TBlkTrat.Change(now:Boolean = false);
+procedure TBlkTrat.Change(now: Boolean = false);
 begin
  inherited Change(now);
 
@@ -356,7 +356,7 @@ begin
  inherited Update();
 end;
 
-procedure TBlkTrat.ChangeFromUv(Sender:TBlk);
+procedure TBlkTrat.ChangeFromUv(Sender: TBlk);
 begin
  if (Sender = Self.uvazkaA) then
   (Self.uvazkaB as TBlkUvazka).ChangeFromTrat();
@@ -370,8 +370,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTrat.ChangeUseky();
-var i:Integer;
-    Blk:TBlk;
+var i: Integer;
+    Blk: TBlk;
 begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
@@ -383,9 +383,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetObsazeno():Boolean;
-var i:Integer;
-    Blk:TBlk;
+function TBlkTrat.GetObsazeno(): Boolean;
+var i: Integer;
+    Blk: TBlk;
 begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
@@ -398,7 +398,7 @@ begin
  Result := false;
 end;
 
-function TBlkTrat.GetZAK():Boolean;
+function TBlkTrat.GetZAK(): Boolean;
 begin
  if ((Self.uvazkaA = nil) or (Self.uvazkaB = nil)) then Exit(false); 
  if (((Self.uvazkaA as TBlkUvazka).ZAK) or ((Self.uvazkaB as TBlkUvazka).ZAK)) then
@@ -409,7 +409,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrat.SetTratSmer(smer:TTratSmer);
+procedure TBlkTrat.SetTratSmer(smer: TTratSmer);
 begin
  Self.TratStav.smer := smer;
 
@@ -420,7 +420,7 @@ begin
  Self.CallChangeToTU();
 end;
 
-procedure TBlkTrat.SetTratZaver(Zaver:Boolean);
+procedure TBlkTrat.SetTratZaver(Zaver: Boolean);
 begin
  if (Self.TratStav.zaver <> Zaver) then
   begin
@@ -432,9 +432,9 @@ begin
   end;
 end;
 
-procedure TBlkTrat.SetTratZadost(Zadost:Boolean);
-var uvazka:TBlkUvazka;
-    oblr:TOR;
+procedure TBlkTrat.SetTratZadost(Zadost: Boolean);
+var uvazka: TBlkUvazka;
+    oblr: TOR;
 begin
  if (Self.Zadost = Zadost) then Exit(); 
 
@@ -456,7 +456,7 @@ begin
       end;
     end;
  except
-   on E:Exception do
+   on E: Exception do
      AppEvents.LogException(E, 'SetTratZadost');
  end;
 
@@ -479,12 +479,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetSettings():TBlkTratSettings;
+function TBlkTrat.GetSettings(): TBlkTratSettings;
 begin
  Result := Self.TratSettings;
 end;
 
-procedure TBlkTrat.SetSettings(data:TBlkTratSettings);
+procedure TBlkTrat.SetSettings(data: TBlkTratSettings);
 begin
  Self.ResetTUs();
  if (data.Useky <> Self.TratSettings.Useky) then
@@ -505,7 +505,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.IsFirstUvazka(uv:TBlk):Boolean;
+function TBlkTrat.IsFirstUvazka(uv: TBlk): Boolean;
 begin
  if (uv = Self.uvazkaA) then
   Result := true
@@ -515,14 +515,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetUvazkaA():TBlk;
+function TBlkTrat.GetUvazkaA(): TBlk;
 begin
  if (Self.fuvazkaA = nil) then
   Blky.GetBlkByID(Self.TratSettings.uvazkaA, Self.fuvazkaA);
  Result := Self.fuvazkaA;
 end;
 
-function TBlkTrat.GetUvazkaB():TBlk;
+function TBlkTrat.GetUvazkaB(): TBlk;
 begin
  if (Self.fuvazkaB = nil) then
   Blky.GetBlkByID(Self.TratSettings.uvazkaB, Self.fuvazkaB);
@@ -531,9 +531,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetRBP():Boolean;
-var i:Integer;
-    Blk:TBlk;
+function TBlkTrat.GetRBP(): Boolean;
+var i: Integer;
+    Blk: TBlk;
 begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
@@ -548,9 +548,9 @@ end;
 // zavest blokovou podminky lze vzdy, zrusit ji lze jen tehdy, kdyz
 //  na zadnem tratovem useku neni blokova podminka
 
-procedure TBlkTrat.SetBP(state:Boolean);
-var i:Integer;
-    Blk:TBlk;
+procedure TBlkTrat.SetBP(state: Boolean);
+var i: Integer;
+    Blk: TBlk;
 begin
  if (Self.BP = state) then Exit();
 
@@ -594,7 +594,7 @@ begin
 end;
 
 procedure TBlkTrat.RemoveTrain(train: TTrain);
-var toChange:Boolean;
+var toChange: Boolean;
 begin
  toChange := false;
 
@@ -617,8 +617,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetTrainsList(separator:Char):string;
-var train:TBlkTraTTrain;
+function TBlkTrat.GetTrainsList(separator: Char): string;
+var train: TBlkTraTTrain;
 begin
  Result := '';
 
@@ -636,7 +636,7 @@ begin
  Self.TrainChangeOR(train, Self.Smer);
 end;
 
-procedure TBlkTrat.TrainChangeOR(train: TTrain; smer:TTratSmer);
+procedure TBlkTrat.TrainChangeOR(train: TTrain; smer: TTratSmer);
 begin
  case (smer) of
    TTratSmer.AtoB: begin
@@ -645,7 +645,7 @@ begin
       else
         train.station := nil;
    end;//AtoB
-   TTratSmer.BtoA:begin
+   TTratSmer.BtoA: begin
       if ((Self.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
         train.station := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
       else
@@ -659,7 +659,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetNouzZaver():Boolean;
+function TBlkTrat.GetNouzZaver(): Boolean;
 begin
  Result := (Self.uvazkaA as TBlkUvazka).nouzZaver or (Self.uvazkaB as TBlkUvazka).nouzZaver;
 end;
@@ -671,9 +671,9 @@ end;
 //  - byt ve stejne OR, jako uvazka
 //  - mit blok_pred_id hranicni blok trati
 //  - nebyl navestidlo autobloku druheho useku trati
-function TBlkTrat.GetNavLichy():TBlk;
-var Blk:TBlk;
-    BlkTU:TBlkTU;
+function TBlkTrat.GetNavLichy(): TBlk;
+var Blk: TBlk;
+    BlkTU: TBlkTU;
 begin
  if (Self.TratSettings.Useky.Count = 0) then Exit(nil);
 
@@ -701,9 +701,9 @@ begin
 end;
 
 // vrati hranicni navestidlo trati na jejim konci
-function TBlkTrat.GetNavSudy():TBlk;
-var Blk:TBlk;
-    BlkTU:TBlkTU;
+function TBlkTrat.GetNavSudy(): TBlk;
+var Blk: TBlk;
+    BlkTU: TBlkTU;
 begin
  if (Self.TratSettings.Useky.Count = 0) then Exit(nil);
 
@@ -732,7 +732,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.IsTrain(train: TTrain; predict:Boolean = true):Boolean;
+function TBlkTrat.IsTrain(train: TTrain; predict: Boolean = true): Boolean;
 begin
  Result := ((Self.GetTrainIndex(train) > -1) or
             ((predict) and (Self.trainPredict <> nil) and (Self.trainPredict.train = train)));
@@ -741,7 +741,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkTrat.GetTrainIndex(train: TTrain): Integer;
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.TratStav.trains.Count-1 do
    if (Self.TratStav.trains[i].train = train) then
@@ -752,8 +752,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTrat.CheckTUExist();
-var i:Integer;
-    Blk:TBlk;
+var i: Integer;
+    Blk: TBlk;
 begin
  for i := Self.TratSettings.Useky.Count-1 downto 0 do
   begin
@@ -775,8 +775,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkTrat.TrainTUsCount(train: TTrain): Integer;
-var usek:Integer;
-    Blk:TBlk;
+var usek: Integer;
+    Blk: TBlk;
 begin
  Result := 0;
  for usek in Self.TratSettings.Useky do
@@ -802,10 +802,10 @@ end;
 // navestidly autobloku
 
 procedure TBlkTrat.InitTUs();
-var i:Integer;
-    lTU, sTU:TBlkTU;
-    useky:TList<TBlkTU>;
-    blk, sMaster:TBlkTU;
+var i: Integer;
+    lTU, sTU: TBlkTU;
+    useky: TList<TBlkTU>;
+    blk, sMaster: TBlkTU;
 begin
  // 1) nejprve vytvorime navaznosti mezi tratovymi useky:
  //    Kazdemu TU rekneme, jaky TU je vedle neho v lichem smeru (bliz zacatku trati)
@@ -887,8 +887,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTrat.ResetTUs();
-var i:Integer;
-    blk:TBlkTU;
+var i: Integer;
+    blk: TBlkTU;
 begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
@@ -900,8 +900,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTrat.CallChangeToTU();
-var i:Integer;
-    blk:TBlkTU;
+var i: Integer;
+    blk: TBlkTU;
 begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
@@ -915,8 +915,8 @@ end;
 // volano pri uvolneni posledniho useku trati, nebo RBP
 
 procedure TBlkTrat.UpdateTrainPredict(call_prediction: Boolean = true);
-var Blk, last:TBlkTU;
-    i:Integer;
+var Blk, last: TBlkTU;
+    i: Integer;
 begin
  if ((Self.Smer <> TTratSmer.AtoB) and (Self.Smer <> TTratSmer.BtoA)) then Exit();
  if (Self.TratSettings.Useky.Count = 0) then Exit();
@@ -986,9 +986,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetReady():Boolean;
-var i:Integer;
-    Blk:TBlk;
+function TBlkTrat.GetReady(): Boolean;
+var i: Integer;
+    Blk: TBlk;
 begin
  for i := 0 to Self.TratSettings.Useky.Count-1 do
   begin
@@ -1004,8 +1004,8 @@ end;
 // Mazerne nenavazujeme rizeni obou koncu na konkretniho uzivatele, napriklad
 // kvuli staveni ze zasobniku.
 
-function TBlkTrat.SameUserControlsBothUvazka():Boolean;
-var first, second:TORPanel;
+function TBlkTrat.SameUserControlsBothUvazka(): Boolean;
+var first, second: TORPanel;
 begin
  if ((not Assigned(Self.uvazkaA)) or (not Assigned(Self.uvazkaB))) then Exit(false);
  if ((TBlkUvazka(Self.uvazkaA).OblsRizeni.Count <> 1) or (TBlkUvazka(Self.uvazkaB).OblsRizeni.Count <> 1)) then Exit(false);
@@ -1021,7 +1021,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.ChangesTrainDir():Boolean;
+function TBlkTrat.ChangesTrainDir(): Boolean;
 begin
  Result := (Assigned(Self.navLichy)) and (Assigned(Self.navSudy)) and
     (TBlkNav(Self.navLichy).Smer = TBlkNav(Self.navSudy).Smer);
@@ -1045,12 +1045,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.mGetLastUsek():TBlk;
+function TBlkTrat.mGetLastUsek(): TBlk;
 begin
  Result := Self.GetLastUsek(Self.smer);
 end;
 
-function TBlkTrat.GetLastUsek(smer:TTratSmer):TBlk;
+function TBlkTrat.GetLastUsek(smer: TTratSmer): TBlk;
 begin
  if (Self.TratSettings.Useky.Count < 1) then
    raise Exception.Create('Trať nemá žádný úsek!');
@@ -1065,9 +1065,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.GetVyluka():Boolean;
-var blkUsek:TBlkUsek;
-    usek:Integer;
+function TBlkTrat.GetVyluka(): Boolean;
+var blkUsek: TBlkUsek;
+    usek: Integer;
 begin
  for usek in Self.TratSettings.Useky do
   begin
@@ -1093,7 +1093,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrat.HasAutoblokNav(blk:TBlk):Boolean;
+function TBlkTrat.HasAutoblokNav(blk: TBlk): Boolean;
 var usekid: Integer;
     usek: TBlkTU;
 begin
@@ -1144,7 +1144,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // TBlkTraTTrain
 
-constructor TBlkTraTTrain.Create(train:Integer);
+constructor TBlkTraTTrain.Create(train: Integer);
 begin
  inherited Create();
  Self.traini := train;
@@ -1152,7 +1152,7 @@ begin
  Self.predict := false;
 end;
 
-constructor TBlkTraTTrain.Create(train:Integer; time:TTime; predict:Boolean = false);
+constructor TBlkTraTTrain.Create(train: Integer; time: TTime; predict: Boolean = false);
 begin
  inherited Create();
  Self.traini := train;
@@ -1160,20 +1160,20 @@ begin
  Self.predict := predict;
 end;
 
-function TBlkTraTTrain.GetTime():TTime;
+function TBlkTraTTrain.GetTime(): TTime;
 begin
  if (not Self.IsTimeDefined()) then
    raise TBlkTratETimeNotDefined.Create('Time not defined!');
  Result := Self.mTime;
 end;
 
-procedure TBlkTraTTrain.SetTime(time:TTime);
+procedure TBlkTraTTrain.SetTime(time: TTime);
 begin
  Self.mTimeDefined := true;
  Self.mTime := time;
 end;
 
-function TBlkTraTTrain.IsTimeDefined():Boolean;
+function TBlkTraTTrain.IsTimeDefined(): Boolean;
 begin
  Result := Self.mTimeDefined;
 end;
@@ -1183,10 +1183,10 @@ begin
  Self.mTimeDefined := false;
 end;
 
-function TBlkTraTTrain.SerializeForPanel(trat:TBlk; trainPredict:Boolean = false):string;
-var addr, usek:Integer;
-    porucha_bp:Boolean;
-    blk:TBlk;
+function TBlkTraTTrain.SerializeForPanel(trat: TBlk; trainPredict: Boolean = false): string;
+var addr, usek: Integer;
+    porucha_bp: Boolean;
+    blk: TBlk;
     stopsInHalt: Boolean;
 begin
  // Pozor, souprava muze byt ve vice usecich a mit poruchu BP jen v jednom z nich

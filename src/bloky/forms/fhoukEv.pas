@@ -19,18 +19,18 @@ type
     P_Ev: TPanel;
     CB_Func: TComboBox;
   private
-    fRREv:TF_RREv;
+    fRREv: TF_RREv;
 
     procedure FillFuncs();
 
   public
-    constructor Create(AOwner:TComponent); override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
 
-    procedure FillFromHouk(ev:THoukEv);
+    procedure FillFromHouk(ev: THoukEv);
     procedure ShowEmpty();
-    function GetHoukEv():THoukEv;
-    function InputValid():Boolean;
+    function GetHoukEv(): THoukEv;
+    function InputValid(): Boolean;
 
   end;
 
@@ -42,7 +42,7 @@ uses FunkceVyznam;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_HoukEv.Create(AOwner:TComponent);
+constructor TF_HoukEv.Create(AOwner: TComponent);
 begin
  inherited;
  Self.fRREv := TF_RREv.Create(nil);
@@ -58,7 +58,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEv.FillFromHouk(ev:THoukEv);
+procedure TF_HoukEv.FillFromHouk(ev: THoukEv);
 begin
  Self.FillFuncs();
  Self.CB_Func.Text := ev.sound;
@@ -77,7 +77,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEv.FillFuncs();
-var vyzn:TFuncVyznam;
+var vyzn: TFuncVyznam;
 begin
  Self.CB_Func.Clear();
  for vyzn in FuncsFyznam.Items do
@@ -86,7 +86,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_HoukEv.GetHoukEv():THoukEv;
+function TF_HoukEv.GetHoukEv(): THoukEv;
 begin
  Result := THoukEv.Create(Self.fRREv.GetRREv(), Self.CB_Func.Text,
                            THoukFuncType(Self.CB_Action.ItemIndex));
@@ -94,7 +94,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_HoukEv.InputValid():Boolean;
+function TF_HoukEv.InputValid(): Boolean;
 begin
  Result := Self.fRREv.InputValid() and (Self.CB_Action.ItemIndex > -1);
 end;

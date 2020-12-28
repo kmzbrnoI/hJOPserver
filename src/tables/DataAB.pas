@@ -19,20 +19,20 @@ type
 
   TABTableData = class
     private
-     LV:TListView;
-     q:TQueue<TABGuiOp>;
+     LV: TListView;
+     q: TQueue<TABGuiOp>;
 
-      function GetOp(typ:TABGuiOpType; index:Integer; jc:TJC):TABGuiOp;
-      function GetOpAdd(jc:TJC):TABGuiOp;
-      function GetOpDelete(index:Integer):TABGuiOp;
-      function GetOpClear():TABGuiOP;
+      function GetOp(typ: TABGuiOpType; index: Integer; jc: TJC): TABGuiOp;
+      function GetOpAdd(jc: TJC): TABGuiOp;
+      function GetOpDelete(index: Integer): TABGuiOp;
+      function GetOpClear(): TABGuiOP;
 
     public
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
       destructor Destroy(); override;
 
-      procedure AddJC(JC:TJC);
-      procedure DeleteJC(index:Integer);
+      procedure AddJC(JC: TJC);
+      procedure DeleteJC(index: Integer);
       procedure Clear();
       procedure Update();
 
@@ -47,7 +47,7 @@ uses TechnologieAB;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TABTableData.Create(LV:TListView);
+constructor TABTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -62,12 +62,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TABTableData.AddJC(JC:TJC);
+procedure TABTableData.AddJC(JC: TJC);
 begin
  Self.q.Enqueue(Self.GetOpAdd(JC));
 end;
 
-procedure TABTableData.DeleteJC(index:Integer);
+procedure TABTableData.DeleteJC(index: Integer);
 begin
  Self.q.Enqueue(Self.GetOpDelete(index));
 end;
@@ -82,8 +82,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TABTableData.Update();
-var op:TABGuiOp;
-    LI:TListItem;
+var op: TABGuiOp;
+    LI: TListItem;
 begin
  while (Self.q.Count > 0) do
   begin
@@ -106,24 +106,24 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TABTableData.GetOp(typ:TABGuiOpType; index:Integer; jc:TJC):TABGuiOp;
+function TABTableData.GetOp(typ: TABGuiOpType; index: Integer; jc: TJC): TABGuiOp;
 begin
  Result.typ := typ;
  Result.index := index;
  Result.jc := jc;
 end;
 
-function TABTableData.GetOpAdd(jc:TJC):TABGuiOp;
+function TABTableData.GetOpAdd(jc: TJC): TABGuiOp;
 begin
  Result := Self.GetOp(opAdd, 0, jc);
 end;
 
-function TABTableData.GetOpDelete(index:Integer):TABGuiOp;
+function TABTableData.GetOpDelete(index: Integer): TABGuiOp;
 begin
  Result := Self.GetOp(opDelete, index, nil);
 end;
 
-function TABTableData.GetOpClear():TABGuiOP;
+function TABTableData.GetOpClear(): TABGuiOP;
 begin
  Result := Self.GetOp(opClear, 0, nil);
 end;

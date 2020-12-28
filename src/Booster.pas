@@ -10,68 +10,68 @@ uses IniFiles, TechnologieRCS, SysUtils, Generics.Defaults;
 
 type
  TBoosterSignal = (undef = -1, error = 0, ok = 1);
- TBoosterChangeEvent = procedure (Sender:TObject; state:TBoosterSignal) of object;
+ TBoosterChangeEvent = procedure (Sender: TObject; state: TBoosterSignal) of object;
 
  TBoosterSettings = record
-   Name:string;                                                                 // booster name
-   RCS:record                                                                   // RCS inputs
-    Zkrat:TRCSAddr;                                                             // overload input
-    Napajeni:TRCSAddr;                                                          // power input
-    DCC:TRCSAddr;                                                               // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
+   Name: string;                                                                 // booster name
+   RCS: record                                                                   // RCS inputs
+    Zkrat: TRCSAddr;                                                             // overload input
+    Napajeni: TRCSAddr;                                                          // power input
+    DCC: TRCSAddr;                                                               // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
    end;
-   id:string;
+   id: string;
  end;//TBoosterSettings
 
  TBooster = class
   private
-   Settings:TBoosterSettings;
+   Settings: TBoosterSettings;
 
-   ZkratOld, NapajeniOld, DCCOld:TBoosterSignal;                                // old states (used to call events)
+   ZkratOld, NapajeniOld, DCCOld: TBoosterSignal;                                // old states (used to call events)
 
    //events
    FOnNapajeniChange : TBoosterChangeEvent;
    FOnZkratChange    : TBoosterChangeEvent;
    FOnDCCChange      : TBoosterChangeEvent;
 
-    function GetZkrat():TBoosterSignal;
-    function GetNapajeni():TBoosterSignal;
-    function GetDCC():TBoosterSignal;
+    function GetZkrat(): TBoosterSignal;
+    function GetNapajeni(): TBoosterSignal;
+    function GetDCC(): TBoosterSignal;
 
-    function GetRCSPresent():Boolean;
-    function GetDCCDetection():Boolean;
-    function GetShortcutDetection():Boolean;
-    function GetPowerDetection():Boolean;
+    function GetRCSPresent(): Boolean;
+    function GetDCCDetection(): Boolean;
+    function GetShortcutDetection(): Boolean;
+    function GetPowerDetection(): Boolean;
 
   public
 
     constructor Create(); overload;
-    constructor Create(var ini:TMemIniFile;const section:string); overload;
+    constructor Create(var ini: TMemIniFile; const section: string); overload;
     destructor Destroy(); override;
 
     procedure Update();                              //update data; events are controlled only here
 
-    procedure LoadDataFromFile(var ini:TMemIniFile;const section:string);
-    procedure SaveDataToFile(var ini:TMemIniFile;const section:string);
+    procedure LoadDataFromFile(var ini: TMemIniFile; const section: string);
+    procedure SaveDataToFile(var ini: TMemIniFile; const section: string);
 
-    property zkrat:TBoosterSignal read GetZkrat;
-    property napajeni:TBoosterSignal read GetNapajeni;
-    property DCC:TBoosterSignal read GetDCC;
+    property zkrat: TBoosterSignal read GetZkrat;
+    property napajeni: TBoosterSignal read GetNapajeni;
+    property DCC: TBoosterSignal read GetDCC;
 
-    property rcsPresent:Boolean read GetRCSPresent;
-    property isShortcutDetection:Boolean read GetShortcutDetection;
-    property isPowerDetection:Boolean read GetPowerDetection;
-    property isDCCdetection:Boolean read GetDCCDetection;
+    property rcsPresent: Boolean read GetRCSPresent;
+    property isShortcutDetection: Boolean read GetShortcutDetection;
+    property isPowerDetection: Boolean read GetPowerDetection;
+    property isDCCdetection: Boolean read GetDCCDetection;
 
-    property bSettings:TBoosterSettings read settings write settings;
+    property bSettings: TBoosterSettings read settings write settings;
 
-    property id:string read Settings.id;
-    property name:string read Settings.name;
+    property id: string read Settings.id;
+    property name: string read Settings.name;
 
-    property OnNapajeniChange:TBoosterChangeEvent read FOnNapajeniChange write FOnNapajeniChange;
-    property OnZkratChange:TBoosterChangeEvent read FOnZkratChange write FOnZkratChange;
-    property OnDCCChange:TBoosterChangeEvent read FOnDCCChange write FONDCCChange;
+    property OnNapajeniChange: TBoosterChangeEvent read FOnNapajeniChange write FOnNapajeniChange;
+    property OnZkratChange: TBoosterChangeEvent read FOnZkratChange write FOnZkratChange;
+    property OnDCCChange: TBoosterChangeEvent read FOnDCCChange write FONDCCChange;
 
-    class function IdComparer():IComparer<TBooster>;
+    class function IdComparer(): IComparer<TBooster>;
  end;//TBooster
 
 implementation
@@ -104,11 +104,11 @@ begin
 end;//ctor
 
 //ctor
-constructor TBooster.Create(var ini:TMemIniFile;const section:string);
+constructor TBooster.Create(var ini: TMemIniFile; const section: string);
 begin
  Self.Create();
 
- Self.LoadDataFromFile(ini,section);
+ Self.LoadDataFromFile(ini, section);
 end;//ctor
 
 //dtor
@@ -120,7 +120,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBooster.Update();
-var state:TBoosterSignal;
+var state: TBoosterSignal;
 begin
  //update DCC
  state := Self.GetDCC();
@@ -150,7 +150,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //load data from the file
-procedure TBooster.LoadDataFromFile(var ini:TMemIniFile;const section:string);
+procedure TBooster.LoadDataFromFile(var ini: TMemIniFile; const section: string);
 begin
  Self.Settings.id     := section;
  Self.Settings.Name   := ini.ReadString(section, 'name', 'booster');
@@ -177,7 +177,7 @@ begin
 end;
 
 //save data to the file
-procedure TBooster.SaveDataToFile(var ini:TMemIniFile;const section:string);
+procedure TBooster.SaveDataToFile(var ini: TMemIniFile; const section: string);
 begin
  ini.WriteString(section, 'name', Self.Settings.Name);
 
@@ -203,8 +203,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 //gets data from RCS
 
-function TBooster.GetZkrat():TBoosterSignal;
-var val:TRCSInputState;
+function TBooster.GetZkrat(): TBoosterSignal;
+var val: TRCSInputState;
 begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
@@ -229,8 +229,8 @@ begin
    Result := TBoosterSignal.ok;
 end;
 
-function TBooster.GetNapajeni():TBoosterSignal;
-var val:TRCSInputState;
+function TBooster.GetNapajeni(): TBoosterSignal;
+var val: TRCSInputState;
 begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
@@ -251,8 +251,8 @@ begin
    Result := TBoosterSignal.ok;
 end;
 
-function TBooster.GetDCC():TBoosterSignal;
-var val:TRCSInputState;
+function TBooster.GetDCC(): TBoosterSignal;
+var val: TRCSInputState;
 begin
  if ((not RCSi.ready) or (not RCSi.Started)) then Exit(TBoosterSignal.undef);
 
@@ -285,7 +285,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBooster.GetRCSPresent():Boolean;
+function TBooster.GetRCSPresent(): Boolean;
 begin
  Result := (((not Self.isShortcutDetection) or RCSi.IsModule(Self.Settings.RCS.Zkrat.board)) and
             ((not Self.isPowerDetection) or RCSi.IsModule(Self.Settings.RCS.Napajeni.board)) and
@@ -294,24 +294,24 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBooster.GetDCCDetection():Boolean;
+function TBooster.GetDCCDetection(): Boolean;
 begin
  Result := (Self.Settings.RCS.DCC.board > 0);
 end;
 
-function TBooster.GetShortcutDetection():Boolean;
+function TBooster.GetShortcutDetection(): Boolean;
 begin
  Result := (Self.Settings.RCS.Zkrat.board > 0);
 end;
 
-function TBooster.GetPowerDetection():Boolean;
+function TBooster.GetPowerDetection(): Boolean;
 begin
  Result := (Self.Settings.RCS.Napajeni.board > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBooster.IdComparer():IComparer<TBooster>;
+class function TBooster.IdComparer(): IComparer<TBooster>;
 begin
  Result := TComparer<TBooster>.Construct(
   function(const Left, Right: TBooster): Integer

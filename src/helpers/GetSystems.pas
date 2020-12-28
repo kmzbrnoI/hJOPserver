@@ -15,19 +15,19 @@ type
                 ci_trakce = 5);
 
  TGetFunctions=class
-    function GetSystemStart:Boolean;
-    function CanClose():TCloseInfo;
+    function GetSystemStart: Boolean;
+    function CanClose(): TCloseInfo;
  end;
 
 var
- GetFunctions:TGetFunctions;
+ GetFunctions: TGetFunctions;
 
 implementation
 
 uses fMain, TechnologieRCS, TBLoky, TOblsRizeni, TCPServerOR, TechnologieTrakce;
 
 
-function TGetFunctions.CanClose():TCloseInfo;
+function TGetFunctions.CanClose(): TCloseInfo;
 begin
   if (SystemData.Status <> TSystemStatus.null) then Exit(TCloseInfo.ci_system_changing);
   if (GetFunctions.GetSystemStart) then Exit(TCloseInfo.ci_system_started);
@@ -45,7 +45,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TGetFunctions.GetSystemStart:Boolean;
+function TGetFunctions.GetSystemStart: Boolean;
  begin
   try
     Result := ((TrakceI.ConnectedSafe()) and (RCSi.ready) and (ORTCPServer.openned) and (RCSi.NoExStarted));

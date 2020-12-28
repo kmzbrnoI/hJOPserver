@@ -10,19 +10,19 @@ uses ComCtrls, SysUtils;
 type
   TMultiJCTableData=class
     private
-      LV:TListView;
+      LV: TListView;
 
     public
 
       procedure LoadToTable();
       procedure UpdateTable();
 
-      procedure UpdateLine(line:Integer);
+      procedure UpdateLine(line: Integer);
 
-      procedure AddJC(pos:Integer);
-      procedure RemoveJC(index:Integer);
+      procedure AddJC(pos: Integer);
+      procedure RemoveJC(index: Integer);
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
@@ -34,7 +34,7 @@ uses TMultiJCDatabase, TechnologieMultiJC, TBloky, fMain, TJCDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TMultiJCTableData.Create(LV:TListView);
+constructor TMultiJCTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -43,8 +43,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJCTableData.LoadToTable();
-var i, j:Integer;
-    LI:TListItem;
+var i, j: Integer;
+    LI: TListItem;
 begin
  Self.LV.Clear();
 
@@ -65,7 +65,7 @@ begin
 end;
 
 procedure TMultiJCTableData.UpdateTable();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to MultiJCDb.Count-1 do
    if (MultiJCDb[i].changed) then
@@ -79,11 +79,11 @@ begin
     end;
 end;
 
-procedure TMultiJCTableData.UpdateLine(line:Integer);
-var mJCData:TMultiJCprop;
-    mJC:TMultiJC;
-    i:Integer;
-    str:string;
+procedure TMultiJCTableData.UpdateLine(line: Integer);
+var mJCData: TMultiJCprop;
+    mJC: TMultiJC;
+    i: Integer;
+    str: string;
 begin
  mJC     := MultiJCDb[line];
  mJCData := mJC.data;
@@ -115,9 +115,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJCTableData.AddJC(pos:Integer);
-var LI:TListItem;
-    j:Integer;
+procedure TMultiJCTableData.AddJC(pos: Integer);
+var LI: TListItem;
+    j: Integer;
 begin
  LI := Self.LV.Items.Insert(pos);
  LI.Caption := IntToStr(Self.LV.Items.Count);
@@ -127,7 +127,7 @@ begin
  Self.UpdateLine(pos);
 end;
 
-procedure TMultiJCTableData.RemoveJC(index:Integer);
+procedure TMultiJCTableData.RemoveJC(index: Integer);
 begin
  Self.LV.Items.Delete(index);
 end;

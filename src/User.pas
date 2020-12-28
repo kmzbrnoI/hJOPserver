@@ -72,10 +72,10 @@ type
 
      procedure GetPtData(json: TJsonObject);
 
-     class function ComparePasswd(plain: string; hash: string; salt: string):Boolean;
+     class function ComparePasswd(plain: string; hash: string; salt: string): Boolean;
         // check password match; return true iff match
-     class function GenerateHash(plain:AnsiString):string;
-     class function NameComparer():IComparer<TUser>;
+     class function GenerateHash(plain: AnsiString): string;
+     class function NameComparer(): IComparer<TUser>;
   end;//class TUser
 
 implementation
@@ -84,7 +84,7 @@ uses TOblsRizeni, TCPServerOR, UserDb, ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TUser.Create(iniData, iniStat:TMemIniFile; section:string);
+constructor TUser.Create(iniData, iniStat: TMemIniFile; section: string);
 begin
  inherited Create();
  Self.OblR := TDictionary<string, TORControlRights>.Create();
@@ -106,9 +106,9 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.LoadData(ini:TMemIniFile; section:string);
-var i:Integer;
-    data:TStrings;
+procedure TUser.LoadData(ini: TMemIniFile; section: string);
+var i: Integer;
+    data: TStrings;
 begin
  Self.OblR.Clear();
 
@@ -145,7 +145,7 @@ begin
  end;
 end;
 
-procedure TUser.LoadStat(ini:TMemIniFile; section:string);
+procedure TUser.LoadStat(ini: TMemIniFile; section: string);
 begin
  try
    if (ini.ValueExists(section, 'lastlogin')) then
@@ -155,9 +155,9 @@ begin
  end;
 end;
 
-procedure TUser.SaveData(ini:TMemIniFile; section:string);
-var rights:TORControlRights;
-    str:string;
+procedure TUser.SaveData(ini: TMemIniFile; section: string);
+var rights: TORControlRights;
+    str: string;
     oblr: TOR;
 begin
  ini.WriteString(section, 'passwd', Self.fpasswd);
@@ -192,14 +192,14 @@ begin
    ini.WriteString(section, 'ORs', str);
 end;
 
-procedure TUser.SaveStat(ini:TMemIniFile; section:string);
+procedure TUser.SaveStat(ini: TMemIniFile; section: string);
 begin
  ini.WriteString(section, 'lastlogin', DateTimeToStr(Self.lastlogin));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetPasswd(passwd:string);
+procedure TUser.SetPasswd(passwd: string);
 begin
  // hash password 2 times
  Self.fsalt := Self.GenSalt();
@@ -208,8 +208,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUser.GetRights(OblR:string):TORCOntrolRights;
-var rights:TORControlRights;
+function TUser.GetRights(OblR: string): TORCOntrolRights;
+var rights: TORControlRights;
 begin
  if (Self.root) then Exit(TORCOntrolRights.superuser);
 
@@ -221,15 +221,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TUser.ComparePasswd(plain:string; hash:string; salt:string):Boolean;
+class function TUser.ComparePasswd(plain: string; hash: string; salt: string): Boolean;
 begin
  Result := (hash = TUser.GenerateHash(AnsiString(LowerCase(plain + salt))));
 end;
 
-class function TUser.GenerateHash(plain:AnsiString):string;
+class function TUser.GenerateHash(plain: AnsiString): string;
 var hash: TDCP_sha256;
     Digest: array[0..31] of byte;  // RipeMD-160 produces a 160bit digest (20bytes)
-    i:Integer;
+    i: Integer;
 begin
  hash := TDCP_sha256.Create(nil);
  hash.Init();
@@ -245,8 +245,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetRights(OblR:string; rights:TORControlRights);
-var OblRRef:TOR;
+procedure TUser.SetRights(OblR: string; rights: TORControlRights);
+var OblRRef: TOR;
 begin
  Self.OblR.AddOrSetValue(OblR, rights);
  OblRRef := ORs.Get(OblR);
@@ -256,9 +256,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetBan(state:Boolean);
-var oblr:string;
-    OblRRef:TOR;
+procedure TUser.SetBan(state: Boolean);
+var oblr: string;
+    OblRRef: TOR;
 begin
  if (Self.fban = state) then Exit();
  Self.fban := state;
@@ -276,7 +276,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetReg(state:Boolean);
+procedure TUser.SetReg(state: Boolean);
 begin
  if (Self.freg = state) then Exit();
  Self.freg := state;
@@ -285,7 +285,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetUserName(new:string);
+procedure TUser.SetUserName(new: string);
 begin
  if (Self.username <> new) then
   begin
@@ -296,16 +296,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUser.GetFullName():string;
+function TUser.GetFullName(): string;
 begin
  Result := Self.firstname + ' ' + Self.lastname;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TUser.GenSalt():string;
-var all:string;
-    i, len:Integer;
+class function TUser.GenSalt(): string;
+var all: string;
+    i, len: Integer;
 begin
  all := 'abcdefghijklmnopqrstuvwxyz0123456789';
  len := Length(all);
@@ -317,7 +317,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TUser.NameComparer():IComparer<TUser>;
+class function TUser.NameComparer(): IComparer<TUser>;
 begin
  Result := TComparer<TUser>.Construct(
     function (const Left, Right: TUser): Integer

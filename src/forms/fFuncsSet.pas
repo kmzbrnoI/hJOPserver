@@ -1,4 +1,4 @@
-﻿unit fFuncsSet;
+unit fFuncsSet;
 
 interface
 
@@ -17,10 +17,10 @@ type
     procedure B_ApplyClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
-     procedure FuncsSetOk(Sender:TObject; Data:Pointer);
-     procedure FuncsSetErr(Sender:TObject; Data:Pointer);
+     procedure FuncsSetOk(Sender: TObject; Data: Pointer);
+     procedure FuncsSetErr(Sender: TObject; Data: Pointer);
   public
-     procedure UpdateFuncsList(items:TStrings);
+     procedure UpdateFuncsList(items: TStrings);
   end;
 
 var
@@ -64,7 +64,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // callback uspesneho nastaveni funkci:
 
-procedure TF_FuncsSet.FuncsSetOk(Sender:TObject; Data:Pointer);
+procedure TF_FuncsSet.FuncsSetOk(Sender: TObject; Data: Pointer);
 begin
  Self.B_Apply.Enabled   := true;
  Self.RG_Stav.Enabled   := true;
@@ -74,7 +74,7 @@ begin
  Self.L_Status.Caption    := 'Funkce nastaveny';
 end;
 
-procedure TF_FuncsSet.FuncsSetErr(Sender:TObject; Data:Pointer);
+procedure TF_FuncsSet.FuncsSetErr(Sender: TObject; Data: Pointer);
 begin
  Self.B_Apply.Enabled   := true;
  Self.RG_Stav.Enabled   := true;
@@ -94,7 +94,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_FuncsSet.UpdateFuncsList(items:TStrings);
+procedure TF_FuncsSet.UpdateFuncsList(items: TStrings);
 begin
  Self.CB_Vyznam.Clear();
  Self.CB_Vyznam.Items.AddStrings(items);

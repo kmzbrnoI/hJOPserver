@@ -1,4 +1,4 @@
-﻿unit fBlkIO;
+unit fBlkIO;
 
 interface
 
@@ -47,7 +47,7 @@ type
   public
    OpenIndex: Integer;
 
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkOpenForm();
     procedure NormalOpenForm();
     procedure HlavniOpenForm();
@@ -63,7 +63,7 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkIO.OpenForm(BlokIndex:Integer);
+procedure TF_BlkIO.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -117,8 +117,8 @@ procedure TF_BlkIO.NewBlkOpenForm();
  end;
 
 procedure TF_BlkIO.NormalOpenForm();
-var glob:TBlkSettings;
-    settings:TBlkIOsettings;
+var glob: TBlkSettings;
+    settings: TBlkIOsettings;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -255,7 +255,7 @@ var glob: TBlkSettings;
     try
       Blk := Blky.Add(btIO, glob) as TBlkIO;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();

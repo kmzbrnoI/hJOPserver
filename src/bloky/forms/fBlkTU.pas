@@ -1,4 +1,4 @@
-﻿unit fBlkTU;
+unit fBlkTU;
 
 interface
 
@@ -78,10 +78,10 @@ type
     procedure LV_SpeedsChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
   private
-   NewBlk:Boolean;
-   Blk:TBlkTU;
-   OpenIndex:Integer;
-   CB_NavData:TArI;
+   NewBlk: Boolean;
+   Blk: TBlkTU;
+   OpenIndex: Integer;
+   CB_NavData: TArI;
    CB_NavLindex, CB_NavSindex: Integer;
    zastLichy, zastSudy: TF_BlkTUZastEvent;
 
@@ -92,7 +92,7 @@ type
     function GetSpeeds(): TDictionary<Cardinal, Cardinal>;
 
   public
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkCreate;
   end;
 
@@ -106,10 +106,10 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
 
 {$R *.dfm}
 
-procedure TF_BlkTU.OpenForm(BlokIndex:Integer);
+procedure TF_BlkTU.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   Self.HlavniOpenForm();
   if (NewBlk) then
     Self.NewBlkOpenForm()
@@ -177,12 +177,12 @@ procedure TF_BlkTU.NewBlkOpenForm();
  end;
 
 procedure TF_BlkTU.NormalOpenForm();
-var glob:TBlkSettings;
-    TUsettings:TBlkTUSettings;
-    Usettings:TBlkUsekSettings;
-    i:Integer;
-    obls:TArstr;
-    oblr:TOR;
+var glob: TBlkSettings;
+    TUsettings: TBlkTUSettings;
+    Usettings: TBlkUsekSettings;
+    i: Integer;
+    obls: TArstr;
+    oblr: TOR;
     LI: TListItem;
  begin
   if (Assigned(Self.Blk)) then glob := Self.Blk.GetGlobalSettings();
@@ -192,7 +192,7 @@ var glob:TBlkSettings;
   for oblr in Self.Blk.OblsRizeni do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
-  SetLength(obls,Self.Blk.OblsRizeni.Count);
+  SetLength(obls, Self.Blk.OblsRizeni.Count);
   for i := 0 to Self.Blk.OblsRizeni.Count-1 do
     obls[i] := Self.Blk.OblsRizeni[i].id;
 
@@ -328,7 +328,7 @@ var glob:TBlkSettings;
  end;
 
 procedure TF_BlkTU.HlavniOpenForm;
-var booster:TBooster;
+var booster: TBooster;
  begin
   Self.LB_Stanice.Clear();
 
@@ -399,10 +399,10 @@ procedure TF_BlkTU.B_StornoClick(Sender: TObject);
  end;
 
 procedure TF_BlkTU.B_OKClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkUsekSettings;
-    TUsettings:TBlkTUSettings;
-    str:string;
+var glob: TBlkSettings;
+    settings: TBlkUsekSettings;
+    TUsettings: TBlkTUSettings;
+    str: string;
     speeds: TDictionary<Cardinal, Cardinal>;
  begin
   if (E_Nazev.Text = '') then
@@ -410,7 +410,7 @@ var glob:TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -454,7 +454,7 @@ var glob:TBlkSettings;
   try
    speeds := Self.GetSpeeds();
   except
-   on E:Exception do
+   on E: Exception do
     begin
      Application.MessageBox(PChar('Nepodařilo se načíst rychlosti:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
      Exit();
@@ -478,7 +478,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btTU, glob) as TBlkTU;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         speeds.Free();
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -583,22 +583,22 @@ end;
 procedure TF_BlkTU.CHB_D1Click(Sender: TObject);
  begin
   case ((Sender as TCheckBox).Tag) of
-   1:begin
+   1: begin
     Self.SE_Port1.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board1.Enabled := (Sender as TCheckBox).Checked;
    end;
 
-   2:begin
+   2: begin
     Self.SE_Port2.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board2.Enabled := (Sender as TCheckBox).Checked;
    end;
 
-   3:begin
+   3: begin
     Self.SE_Port3.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board3.Enabled := (Sender as TCheckBox).Checked;
    end;
 
-   4:begin
+   4: begin
     Self.SE_Port4.Enabled  := (Sender as TCheckBox).Checked;
     Self.SE_Board4.Enabled := (Sender as TCheckBox).Checked;
    end;

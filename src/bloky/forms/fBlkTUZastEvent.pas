@@ -1,4 +1,4 @@
-﻿unit fBlkTUZastEvent;
+unit fBlkTUZastEvent;
 
 interface
 
@@ -20,13 +20,13 @@ type
    fZpom: TF_RREv;
 
   public
-     constructor Create(AOwner:TComponent); override;
+     constructor Create(AOwner: TComponent); override;
      destructor Destroy(); override;
 
      procedure OpenForm(events: TBlkTUZastEvents);
      procedure OpenEmptyForm();
-     function GetEvent():TBlkTUZastEvents;
-     function Check():string;
+     function GetEvent(): TBlkTUZastEvents;
+     function Check(): string;
 
   end;
 
@@ -39,7 +39,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_BlkTUZastEvent.Create(AOwner:TComponent);
+constructor TF_BlkTUZastEvent.Create(AOwner: TComponent);
 begin
  inherited;
 
@@ -87,7 +87,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkTUZastEvent.Check():string;
+function TF_BlkTUZastEvent.Check(): string;
 begin
   if (not Self.fZast.InputValid()) then
     Exit('Vyberte zastavovací událost!');
@@ -113,7 +113,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkTUZastEvent.GetEvent():TBlkTUZastEvents;
+function TF_BlkTUZastEvent.GetEvent(): TBlkTUZastEvents;
 begin
  Result := TBlkTUZastEvents.Create();
  Result.zastaveni := fZast.GetRREv();

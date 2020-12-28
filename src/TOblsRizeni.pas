@@ -1,4 +1,4 @@
-﻿unit TOblsRizeni;
+unit TOblsRizeni;
 
 {
   Trida TORs sdruzuje oblasti rizeni do databaze.
@@ -16,39 +16,39 @@ type
 
    private
      db: TObjectList<TOR>;
-     fstat_filename:string;
+     fstat_filename: string;
 
-      function GetORCnt():Integer;
+      function GetORCnt(): Integer;
 
    public
       constructor Create();
       destructor Destroy(); override;
 
-      procedure LoadData(const filename:string; const stat_filename:string);
-      procedure SaveStatus(const filename:string);
+      procedure LoadData(const filename: string; const stat_filename: string);
+      procedure SaveStatus(const filename: string);
 
       function Get(index: Integer): TOR; overload;
       function Get(id: string): TOR; overload;
 
-      function ParseORs(str:string):TList<TOR>;                                 // parsuje seznam oblasti rizeni
-      procedure RCSFail(addr:integer);                                          // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
+      function ParseORs(str: string): TList<TOR>;                                 // parsuje seznam oblasti rizeni
+      procedure RCSFail(addr: integer);                                          // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
 
       procedure Update();                                                       // aktualizuje stav OR
       procedure DisconnectPanels();                                             // odpoji vsechny panely dane OR
-      procedure SendORList(Context:TIdContext);                                 // odesle seznam vsech OR na spojeni \Context
+      procedure SendORList(Context: TIdContext);                                 // odesle seznam vsech OR na spojeni \Context
 
-      procedure FillCB(CB:TComboBox; selected:TOR);                             // naplni ComboBox seznamem oblasti rizeni
+      procedure FillCB(CB: TComboBox; selected: TOR);                             // naplni ComboBox seznamem oblasti rizeni
       procedure InitOsv();
-      procedure BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read);
+      procedure BroadcastBottomError(err: string; tech: string; min_rights: TORControlRights = read);
                                                                                 // broadcast chybove hlasky, ktera ma jit jen panelum,
                                                                                 // kde alespon jeden je minimalne opravneni min_rights
-      procedure BroadcastPlaySound(sound_code:Integer; loop:Boolean = false; min_rights:TORControlRights = read);
+      procedure BroadcastPlaySound(sound_code: Integer; loop: Boolean = false; min_rights: TORControlRights = read);
 
       function GetEnumerator(): TEnumerator<TOR>;
       property Items[index : integer] : TOR read Get; default;
-      property Count:Integer read GetORCnt;
+      property Count: Integer read GetORCnt;
 
-      property status_filename:string read fstat_filename;
+      property status_filename: string read fstat_filename;
   end;//TORs
 
 var
@@ -75,13 +75,13 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 //nacitani OR a vytvareni vsech OR
-procedure TORs.LoadData(const filename:string; const stat_filename:string);
-var ini, ini_stat:TMemIniFile;
-    oblasti:TStrings;
-    i:Integer;
-    OblR:TOR;
+procedure TORs.LoadData(const filename: string; const stat_filename: string);
+var ini, ini_stat: TMemIniFile;
+    oblasti: TStrings;
+    i: Integer;
+    OblR: TOR;
 begin
- writelog('Načítám stanice - '+filename,WR_DATA);
+ writelog('Načítám stanice - '+filename, WR_DATA);
  Self.fstat_filename := stat_filename;
 
  if (not FileExists(filename)) then
@@ -103,7 +103,7 @@ begin
        OblR.LoadStat(ini_stat, OblR.id);
        Self.db.Add(OblR);
      except
-       on E:Exception do
+       on E: Exception do
         begin
          AppEvents.LogException(E, 'Nacitam oblast rizeni ' + IntToStr(i));
          OblR.Free();
@@ -120,15 +120,15 @@ begin
    ini_stat.Free();
  end;
 
- writelog('Načteno '+IntToStr(Self.db.Count)+' stanic',WR_DATA);
+ writelog('Načteno '+IntToStr(Self.db.Count)+' stanic', WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ukladani stavu vsech oblasti rizeni
 
-procedure TORs.SaveStatus(const filename:string);
-var ini:TMemIniFile;
-    oblr:TOR;
+procedure TORs.SaveStatus(const filename: string);
+var ini: TMemIniFile;
+    oblr: TOR;
 begin
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
@@ -137,7 +137,7 @@ begin
    try
      oblr.SaveStat(ini, oblr.id);
    except
-     on E:Exception do
+     on E: Exception do
        AppEvents.LogException(E, 'Ukladani stavu OR ' + oblr.id);
    end;
   end;
@@ -149,13 +149,13 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //parsing OR stringu
-function TORs.ParseORs(str:string):TList<TOR>;
-var parsed:TStrings;
-    oblr:string;
+function TORs.ParseORs(str: string): TList<TOR>;
+var parsed: TStrings;
+    oblr: string;
 begin
  parsed := TStringList.Create();
  try
-   ExtractStrings(['|'],[],PChar(str),parsed);
+   ExtractStrings(['|'],[], PChar(str), parsed);
 
    Result := TList<TOR>.Create();
    for oblr in parsed do
@@ -175,14 +175,14 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORs.Update();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.db.Count-1 do
    Self.db[i].Update();
 end;
 
 procedure TORs.DisconnectPanels();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.db.Count-1 do
    Self.db[i].DisconnectPanels();
@@ -193,9 +193,9 @@ begin
     HVDb[i].Stav.regulators.Clear();
 end;
 
-procedure TORs.SendORList(Context:TIdContext);
-var i:Integer;
-    str:string;
+procedure TORs.SendORList(Context: TIdContext);
+var i: Integer;
+    str: string;
 begin
  str := '-;OR-LIST;';
  for i := 0 to Self.db.Count-1 do
@@ -206,8 +206,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORs.RCSFail(addr:integer);
-var OblR:TOR;
+procedure TORs.RCSFail(addr: integer);
+var OblR: TOR;
 begin
  for OblR in Self.db do
    OblR.RCSFail(addr);
@@ -215,8 +215,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORs.FillCB(CB:TComboBox; selected:TOR);
-var i:Integer;
+procedure TORs.FillCB(CB: TComboBox; selected: TOR);
+var i: Integer;
 begin
  CB.Clear();
  for i := 0 to Self.db.Count-1 do
@@ -229,7 +229,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.GetORCnt():Integer;
+function TORs.GetORCnt(): Integer;
 begin
  Result := Self.db.Count;
 end;
@@ -245,13 +245,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORs.BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read);
-var OblR:TOR;
-    connected:TORPanel;
-    clients:TDictionary<TIdContext,Boolean>; // set
-    client:TIdContext;
+procedure TORs.BroadcastBottomError(err: string; tech: string; min_rights: TORControlRights = read);
+var OblR: TOR;
+    connected: TORPanel;
+    clients: TDictionary<TIdContext, Boolean>; // set
+    client: TIdContext;
 begin
- clients := TDictionary<TIdContext,Boolean>.Create();
+ clients := TDictionary<TIdContext, Boolean>.Create();
  for OblR in Self.db do
    for connected in OblR.Connected do
      if (connected.Rights >= min_rights) then
@@ -263,13 +263,13 @@ begin
  clients.Free();
 end;
 
-procedure TORs.BroadcastPlaySound(sound_code:Integer; loop:Boolean = false; min_rights:TORControlRights = read);
-var OblR:TOR;
-    connected:TORPanel;
-    clients:TDictionary<TIdContext,Boolean>; // set
-    client:TIdContext;
+procedure TORs.BroadcastPlaySound(sound_code: Integer; loop: Boolean = false; min_rights: TORControlRights = read);
+var OblR: TOR;
+    connected: TORPanel;
+    clients: TDictionary<TIdContext, Boolean>; // set
+    client: TIdContext;
 begin
- clients := TDictionary<TIdContext,Boolean>.Create();
+ clients := TDictionary<TIdContext, Boolean>.Create();
  for OblR in Self.db do
    for connected in OblR.Connected do
      if (connected.Rights >= min_rights) then
@@ -283,7 +283,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.Get(id:string): TOR;
+function TORs.Get(id: string): TOR;
 var left, right, mid: Integer;
 begin
  left := 0;

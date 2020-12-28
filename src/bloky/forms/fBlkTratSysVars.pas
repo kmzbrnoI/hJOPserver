@@ -1,4 +1,4 @@
-﻿unit fBlkTratSysVars;
+unit fBlkTratSysVars;
 
 interface
 
@@ -33,12 +33,12 @@ type
     procedure B_RmSprClick(Sender: TObject);
     procedure B_AddSprClick(Sender: TObject);
   private
-   trat:TBlkTrat;
+   trat: TBlkTrat;
 
     procedure Update(); reintroduce;
     procedure Save();
   public
-    procedure OpenForm(Blk:TBlkTrat);
+    procedure OpenForm(Blk: TBlkTrat);
   end;
 
 var
@@ -56,7 +56,7 @@ begin
    if (Trains[Self.SE_Spr_Add.Value] <> nil) then
      Self.trat.AddTrain(Trains[Self.SE_Spr_Add.Value]);
  except
-   on E:Exception do
+   on E: Exception do
      Application.MessageBox(PChar('Výjimka:'+#13#10+E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
  end;
 
@@ -92,7 +92,7 @@ begin
  Self.Save();
 end;
 
-procedure TF_BlkTrat_tech.OpenForm(Blk:TBlkTrat);
+procedure TF_BlkTrat_tech.OpenForm(Blk: TBlkTrat);
 begin
  Self.trat := Blk;
  Self.Update();
@@ -101,7 +101,7 @@ begin
 end;
 
 procedure TF_BlkTrat_tech.Update();
-var train:TBlkTratTrain;
+var train: TBlkTratTrain;
 begin
  Self.CB_Zaver.ItemIndex  := ownConvert.BoolToInt(trat.Zaver);
  Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;

@@ -28,17 +28,17 @@ type
    porigin_set: Boolean;
    pphase_old: TPobjPhase;
 
-    function GetRel():TTime;
-    procedure SetRel(new:TTime);
+    function GetRel(): TTime;
+    procedure SetRel(new: TTime);
 
-    function GetAbs():TTime;
-    procedure SetAbs(new:TTime);
+    function GetAbs(): TTime;
+    procedure SetAbs(new: TTime);
 
-    function GetOrigin():TTime;
-    procedure SetOrigin(new:TTime);
+    function GetOrigin(): TTime;
+    procedure SetOrigin(new: TTime);
 
-    function IsChanged():Boolean;
-    procedure SetChanged(new:Boolean);
+    function IsChanged(): Boolean;
+    procedure SetChanged(new: Boolean);
 
   public
 
@@ -58,17 +58,17 @@ type
     property abs: TTime read GetAbs write SetAbs;
     property origin: TTime read GetOrigin write SetOrigin;
 
-    function IsDepSet():Boolean;                                                // vraci jestli je mozno spocitat cas do odjezdu
-    function DepRealDelta():TTime;                                              // vraci realny cas do odjezdu
-    function DepTime():TTime;                                                   // vraci cas (modelovy nebo realny) odjezdu
+    function IsDepSet(): Boolean;                                                // vraci jestli je mozno spocitat cas do odjezdu
+    function DepRealDelta(): TTime;                                              // vraci realny cas do odjezdu
+    function DepTime(): TTime;                                                   // vraci cas (modelovy nebo realny) odjezdu
     procedure RecordOriginNow();
-    function GetPhase():TPobjPhase;
+    function GetPhase(): TPobjPhase;
 
     procedure GetPtData(json: TJsonObject);
 
   end;
 
-procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
+procedure GetPOdjColors(podj: TPOdj; var fg: TColor; var bg: TColor);
 
 implementation
 
@@ -138,28 +138,28 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPOdj.GetRel():TTime;
+function TPOdj.GetRel(): TTime;
 begin
  if (not Self.prel_enabled) then
    raise ENoTimeDefined.Create('No relative time defined!');
  Result := Self.prel;
 end;
 
-procedure TPOdj.SetRel(new:TTime);
+procedure TPOdj.SetRel(new: TTime);
 begin
  Self.prel := new;
  Self.prel_enabled := true;
  Self.pphase_old := Self.GetPhase();
 end;
 
-function TPOdj.GetAbs():TTime;
+function TPOdj.GetAbs(): TTime;
 begin
  if (not Self.pabs_enabled) then
    raise ENoTimeDefined.Create('No absolute time defined!');
  Result := Self.pabs;
 end;
 
-procedure TPOdj.SetAbs(new:TTime);
+procedure TPOdj.SetAbs(new: TTime);
 begin
  Self.pabs := new;
  Self.pabs_enabled := true;
@@ -168,12 +168,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPOdj.IsDepSet():Boolean;
+function TPOdj.IsDepSet(): Boolean;
 begin
  Result := (not Self.prel_enabled) or (Self.origin_set);
 end;
 
-function TPOdj.DepRealDelta():TTime;
+function TPOdj.DepRealDelta(): TTime;
 var rel_elapse, abs_elapse: TTime;
 begin
  if (not Self.IsDepSet()) then
@@ -199,7 +199,7 @@ begin
    Result := 0;
 end;
 
-function TPOdj.DepTime():TTime;
+function TPOdj.DepTime(): TTime;
 var rel_elapse, abs_elapse: TTime;
 begin
  if (not Self.IsDepSet()) then
@@ -232,14 +232,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPOdj.GetOrigin():TTime;
+function TPOdj.GetOrigin(): TTime;
 begin
  if (not Self.porigin_set) then
    raise EOriginNotSet.Create('No origin set!');
  Result := Self.porigin;
 end;
 
-procedure TPOdj.SetOrigin(new:TTime);
+procedure TPOdj.SetOrigin(new: TTime);
 begin
  Self.porigin := new;
  Self.porigin_set := true;
@@ -248,7 +248,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPOdj.GetPhase():TPobjPhase;
+function TPOdj.GetPhase(): TPobjPhase;
 var time: TTime;
 begin
  if (Self.IsDepSet()) then
@@ -269,12 +269,12 @@ begin
   end;
 end;
 
-function TPOdj.IsChanged():Boolean;
+function TPOdj.IsChanged(): Boolean;
 begin
  Result := (Self.pphase_old <> Self.GetPhase());
 end;
 
-procedure TPOdj.SetChanged(new:Boolean);
+procedure TPOdj.SetChanged(new: Boolean);
 begin
  if (not new) then
    Self.pphase_old := Self.GetPhase();
@@ -293,8 +293,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure GetPOdjColors(podj:TPOdj; var fg:TColor; var bg:TColor);
-var tmp:TColor;
+procedure GetPOdjColors(podj: TPOdj; var fg: TColor; var bg: TColor);
+var tmp: TColor;
 begin
  case (podj.GetPhase()) of
    ppPreparing: bg := clBlue;

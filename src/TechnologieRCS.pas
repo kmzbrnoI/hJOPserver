@@ -1,4 +1,4 @@
-﻿unit TechnologieRCS;
+unit TechnologieRCS;
 
 {
  Technologie RCS: rozhrani pro pouzivani Railroad Control System.
@@ -19,24 +19,24 @@ interface
 uses SysUtils, Classes, IniFiles, Generics.Collections, RCS, Generics.Defaults;
 
 type
-  TRCSReadyEvent = procedure (Sender:TObject; ready:Boolean) of object;
-  TRCSBoardChangeEvent = procedure (Sender:TObject; board:Cardinal) of object;
+  TRCSReadyEvent = procedure (Sender: TObject; ready: Boolean) of object;
+  TRCSBoardChangeEvent = procedure (Sender: TObject; board: Cardinal) of object;
   TRCSIOType = (input = 0, output = 1);
 
   //////////////////////////////////////////////////////////////
 
   //toto se pouziva pro identifikaci desky a portu VSUDE v technologii
   TRCSAddr = record                                                             // jedno fyzicke RCS spojeni
-   board:Cardinal;                                                                // cislo desky
-   port:Byte;                                                                     // cislo portu
+   board: Cardinal;                                                                // cislo desky
+   port: Byte;                                                                     // cislo portu
    class operator Equal(a, b: TRCSAddr): Boolean;
    function ToString(): string;
   end;
 
   TRCSBoard = class                                                               // jedna RCS deska
-    needed:Boolean;                                                               // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
-    inputChangedEv:TList<TRCSBoardChangeEvent>;
-    outputChangedEv:TList<TRCSBoardChangeEvent>;
+    needed: Boolean;                                                               // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
+    inputChangedEv: TList<TRCSBoardChangeEvent>;
+    outputChangedEv: TList<TRCSBoardChangeEvent>;
 
     constructor Create();
     destructor Destroy(); override;
@@ -55,10 +55,10 @@ type
      _MODULE_DEFAULT_IO = 16;
 
    private
-     boards:TObjectDictionary<Cardinal, TRCSBoard>;
-     aReady:Boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
-     fGeneralError:Boolean;                                 // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
-     fLibDir:string;
+     boards: TObjectDictionary<Cardinal, TRCSBoard>;
+     aReady: Boolean;                                        // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
+     fGeneralError: Boolean;                                 // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
+     fLibDir: string;
      mConfigDir: string;
 
      //events to the main program
@@ -66,68 +66,68 @@ type
      fAfterClose : TNotifyEvent;
 
       //events from libraly
-      procedure DllAfterClose(Sender:TObject);
+      procedure DllAfterClose(Sender: TObject);
 
-      procedure DllOnLog(Sender: TObject; logLevel:TRCSLogLevel; msg:string);
-      procedure DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg:PChar);
-      procedure DllOnInputChanged(Sender:TObject; module:Cardinal);
-      procedure DllOnOutputChanged(Sender:TObject; module:Cardinal);
-      function GetMaxModuleAddrSafe():Cardinal;
+      procedure DllOnLog(Sender: TObject; logLevel: TRCSLogLevel; msg: string);
+      procedure DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg: PChar);
+      procedure DllOnInputChanged(Sender: TObject; module: Cardinal);
+      procedure DllOnOutputChanged(Sender: TObject; module: Cardinal);
+      function GetMaxModuleAddrSafe(): Cardinal;
 
    public
-     log:Boolean;
+     log: Boolean;
 
       constructor Create();
       destructor Destroy; override;
 
-      procedure LoadLib(filename:string);                                       // nacte knihovnu
+      procedure LoadLib(filename: string);                                       // nacte knihovnu
 
       procedure InputSim();                                                     // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
       procedure SoupravaUsekSim();                                              // nastavit RCS vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
 
-      function NoExStarted():Boolean;
-      function NoExOpened():Boolean;
+      function NoExStarted(): Boolean;
+      function NoExOpened(): Boolean;
 
-      procedure SetNeeded(RCSAdr:Cardinal; state:Boolean = true);
-      function GetNeeded(RCSAdr:Cardinal):Boolean;
+      procedure SetNeeded(RCSAdr: Cardinal; state: Boolean = true);
+      function GetNeeded(RCSAdr: Cardinal): Boolean;
 
-      procedure LoadFromFile(ini:TMemIniFile);
-      procedure SaveToFile(ini:TMemIniFile);
+      procedure LoadFromFile(ini: TMemIniFile);
+      procedure SaveToFile(ini: TMemIniFile);
 
       procedure SetOutput(addr: TRCSAddr; state: Integer); overload;
       procedure SetOutputs(addrs: TList<TRCSAddr>; state: Integer); overload;
       function GetInput(addr: TRCSAddr): TRCSInputState; overload;
-      procedure SetInput(addr: TRCSAddr; state:Integer); overload;
-      procedure SetInputs(addrs: TList<TRCSAddr>; state:Integer); overload;
+      procedure SetInput(addr: TRCSAddr; state: Integer); overload;
+      procedure SetInputs(addrs: TList<TRCSAddr>; state: Integer); overload;
       function GetOutput(addr: TRCSAddr): Integer; overload;
 
-      procedure AddInputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
-      procedure RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
+      procedure AddInputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
+      procedure RemoveInputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
 
-      procedure AddOutputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
-      procedure RemoveOutputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
+      procedure AddOutputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
+      procedure RemoveOutputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
 
-      function GetModuleInputsCountSafe(Module:Cardinal):Cardinal;
-      function GetModuleOutputsCountSafe(Module:Cardinal):Cardinal;
+      function GetModuleInputsCountSafe(Module: Cardinal): Cardinal;
+      function GetModuleOutputsCountSafe(Module: Cardinal): Cardinal;
 
-      property generalError:Boolean read fGeneralError;
-      class function RCSAddr(board:Cardinal; port:Byte):TRCSAddr;
+      property generalError: Boolean read fGeneralError;
+      class function RCSAddr(board: Cardinal; port: Byte): TRCSAddr;
 
       //events
-      property AfterClose:TNotifyEvent read fAfterClose write fAfterClose;
+      property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
 
-      property OnReady:TRCSReadyEvent read fOnReady write fOnReady;
-      property ready:Boolean read aready;
-      property libDir:string read fLibDir;
-      property configDir:string read mConfigDir;
-      property maxModuleAddr:Cardinal read GetMaxModuleAddr;
-      property maxModuleAddrSafe:Cardinal read GetMaxModuleAddrSafe;
+      property OnReady: TRCSReadyEvent read fOnReady write fOnReady;
+      property ready: Boolean read aready;
+      property libDir: string read fLibDir;
+      property configDir: string read mConfigDir;
+      property maxModuleAddr: Cardinal read GetMaxModuleAddr;
+      property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
   end;
 
-function RCSAddrComparer():IComparer<TRCSAddr>;
+function RCSAddrComparer(): IComparer<TRCSAddr>;
 
 var
-  RCSi:TRCS;
+  RCSi: TRCS;
 
 
 implementation
@@ -160,8 +160,8 @@ begin
  inherited;
 end;
 
-procedure TRCS.LoadLib(filename:string);
-var str, tmp, libName:string;
+procedure TRCS.LoadLib(filename: string);
+var str, tmp, libName: string;
 begin
  libName := ExtractFileName(filename);
 
@@ -201,8 +201,8 @@ begin
 end;
 
 procedure TRCS.InputSim();
-var Blk:TBlk;
-    booster:TBooster;
+var Blk: TBlk;
+    booster: TBooster;
 begin
  //nastaveni vyhybek do +
  for blk in Blky do
@@ -236,7 +236,7 @@ end;
 
 //simulace obaszeni useku, na kterem je souprava
 procedure TRCS.SoupravaUsekSim;
-var Blk:TBlk;
+var Blk: TBlk;
 begin
  for blk in Blky do
   begin
@@ -246,8 +246,8 @@ begin
   end;
 end;
 
-procedure TRCS.LoadFromFile(ini:TMemIniFile);
-var lib:string;
+procedure TRCS.LoadFromFile(ini: TMemIniFile);
+var lib: string;
 begin
   Self.fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
   lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEFAULT_LIB);
@@ -256,7 +256,7 @@ begin
   try
     Self.LoadLib(fLibDir + '\' + lib);
   except
-    on E:Exception do
+    on E: Exception do
      begin
       F_Main.LogStatus('ERR: RCS: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
       writeLog('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, WR_ERROR);
@@ -264,19 +264,19 @@ begin
   end;
 end;
 
-procedure TRCS.SaveToFile(ini:TMemIniFile);
+procedure TRCS.SaveToFile(ini: TMemIniFile);
 begin
   if (Self.Lib <> '') then
     ini.WriteString(_INIFILE_SECTNAME, 'lib', ExtractFileName(Self.Lib));
 end;
 
-procedure TRCS.DllAfterClose(Sender:TObject);
+procedure TRCS.DllAfterClose(Sender: TObject);
 begin
  Self.fGeneralError := false;
  if (Assigned(Self.fAfterClose)) then Self.fAfterClose(Self);
 end;//procdure
 
-procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg:PChar);
+procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg: PChar);
 begin
  writelog('RCS ERR: '+errMsg+' ('+IntToStr(errValue)+':'+IntToStr(errAddr)+')', WR_RCS);
 
@@ -306,7 +306,7 @@ begin
   end;//
 end;
 
-procedure TRCS.DllOnLog(Sender: TObject; logLevel:TRCSLogLevel; msg:string);
+procedure TRCS.DllOnLog(Sender: TObject; logLevel: TRCSLogLevel; msg: string);
 begin
  if (not Self.log) then
    Exit();
@@ -317,8 +317,8 @@ begin
    writelog(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_RCS);
 end;
 
-procedure TRCS.DllOnInputChanged(Sender:TObject; module:Cardinal);
-var i:Integer;
+procedure TRCS.DllOnInputChanged(Sender: TObject; module: Cardinal);
+var i: Integer;
 begin
  if (Self.boards.ContainsKey(module)) then
    for i := Self.boards[module].inputChangedEv.Count-1 downto 0 do
@@ -328,8 +328,8 @@ begin
  F_Tester.RCSModuleChanged(module);
 end;
 
-procedure TRCS.DllOnOutputChanged(Sender:TObject; module:Cardinal);
-var i:Integer;
+procedure TRCS.DllOnOutputChanged(Sender: TObject; module: Cardinal);
+var i: Integer;
 begin
  if (Self.boards.ContainsKey(module)) then
    for i := Self.boards[module].outputChangedEv.Count-1 downto 0 do
@@ -342,14 +342,14 @@ end;
 //----- events from dll end -----
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.SetNeeded(RCSAdr:Cardinal; state:Boolean = true);
+procedure TRCS.SetNeeded(RCSAdr: Cardinal; state: Boolean = true);
 begin
  if (not Self.boards.ContainsKey(RCSAdr)) then
    Self.boards.Add(RCSAdr, TRCSBoard.Create());
  Self.boards[RCSAdr].needed := state
 end;
 
-function TRCS.GetNeeded(RCSAdr:Cardinal):Boolean;
+function TRCS.GetNeeded(RCSAdr: Cardinal): Boolean;
 begin
  if (Self.boards.ContainsKey(RCSAdr)) then
    Result := Self.boards[RCSAdr].needed
@@ -375,7 +375,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.AddInputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
+procedure TRCS.AddInputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
 begin
  if (not Self.boards.ContainsKey(board)) then
    Self.boards.Add(board, TRCSBoard.Create());
@@ -383,8 +383,8 @@ begin
    Self.boards[board].inputChangedEv.Add(event);
 end;
 
-procedure TRCS.RemoveInputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
-var rcsBoard:TRCSBoard;
+procedure TRCS.RemoveInputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
+var rcsBoard: TRCSBoard;
 begin
  if (board = -1) then
   begin
@@ -398,7 +398,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.AddOutputChangeEvent(board:Cardinal; event:TRCSBoardChangeEvent);
+procedure TRCS.AddOutputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
 begin
  if (not Self.boards.ContainsKey(board)) then
    Self.boards.Add(board, TRCSBoard.Create());
@@ -406,8 +406,8 @@ begin
    Self.boards[board].outputChangedEv.Add(event);
 end;
 
-procedure TRCS.RemoveOutputChangeEvent(event:TRCSBoardChangeEvent; board:Integer = -1);
-var rcsBoard:TRCSBoard;
+procedure TRCS.RemoveOutputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
+var rcsBoard: TRCSBoard;
 begin
  if (board = -1) then
   begin
@@ -421,7 +421,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRCS.NoExStarted():Boolean;
+function TRCS.NoExStarted(): Boolean;
 begin
  try
    Result := Self.Started();
@@ -430,7 +430,7 @@ begin
  end;
 end;
 
-function TRCS.NoExOpened():Boolean;
+function TRCS.NoExOpened(): Boolean;
 begin
  try
    Result := Self.Opened();
@@ -441,7 +441,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TRCS.RCSAddr(board:Cardinal; port:Byte):TRCSAddr;
+class function TRCS.RCSAddr(board: Cardinal; port: Byte): TRCSAddr;
 begin
  Result.board := board;
  Result.port := port;
@@ -449,7 +449,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRCS.GetMaxModuleAddrSafe():Cardinal;
+function TRCS.GetMaxModuleAddrSafe(): Cardinal;
 begin
  if (not Self.ready) then
    Exit(0);
@@ -462,7 +462,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRCS.GetModuleInputsCountSafe(Module:Cardinal):Cardinal;
+function TRCS.GetModuleInputsCountSafe(Module: Cardinal): Cardinal;
 begin
  if (not Self.ready) then
    Exit(_MODULE_DEFAULT_IO);
@@ -473,7 +473,7 @@ begin
  end;
 end;
 
-function TRCS.GetModuleOutputsCountSafe(Module:Cardinal):Cardinal;
+function TRCS.GetModuleOutputsCountSafe(Module: Cardinal): Cardinal;
 begin
  if (not Self.ready) then
    Exit(_MODULE_DEFAULT_IO);
@@ -491,7 +491,7 @@ begin
  Self.SetInput(addr.board, addr.port, State);
 end;
 
-procedure TRCS.SetInputs(addrs: TList<TRCSAddr>; state:Integer);
+procedure TRCS.SetInputs(addrs: TList<TRCSAddr>; state: Integer);
 var addr: TRCSAddr;
 begin
  for addr in addrs do
@@ -515,7 +515,7 @@ begin
    Self.SetOutput(addr, state);
 end;
 
-function TRCS.GetOutput(addr:TRCSAddr):Integer;
+function TRCS.GetOutput(addr: TRCSAddr): Integer;
 begin
  Result := Self.GetOutput(addr.board, addr.port);
 end;
@@ -534,7 +534,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function RCSAddrComparer():IComparer<TRCSAddr>;
+function RCSAddrComparer(): IComparer<TRCSAddr>;
 begin
  Result := TComparer<TRCSAddr>.Construct(
   function(const Left, Right: TRCSAddr): Integer

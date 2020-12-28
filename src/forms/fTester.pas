@@ -1,4 +1,4 @@
-﻿unit fTester;
+unit fTester;
 
 interface
 
@@ -35,13 +35,13 @@ type
     _NO_OUTPUTS = 16;
 
   private
-   RCSAddr:Integer;
-   CB_RCSAdrData:TList<Cardinal>; // always sorted!
-   SInput:array [0.._NO_INPUTS-1] of TShape;
-   SOutput:array [0.._NO_OUTPUTS-1] of TShape;
+   RCSAddr: Integer;
+   CB_RCSAdrData: TList<Cardinal>; // always sorted!
+   SInput: array [0.._NO_INPUTS-1] of TShape;
+   SOutput: array [0.._NO_OUTPUTS-1] of TShape;
 
-   LInput:array [0.._NO_INPUTS-1] of TLabel;
-   LOutput:array [0.._NO_OUTPUTS-1] of TLabel;
+   LInput: array [0.._NO_INPUTS-1] of TLabel;
+   LOutput: array [0.._NO_OUTPUTS-1] of TLabel;
 
     procedure CreateSInput();
     procedure CreateSOutput();
@@ -53,7 +53,7 @@ type
    procedure UpdateIn();
 
    procedure AfterRCSOpen();
-   procedure RCSModuleChanged(addr:Cardinal);
+   procedure RCSModuleChanged(addr: Cardinal);
 
   end;
 
@@ -72,8 +72,8 @@ procedure TF_Tester.FormShow(Sender: TObject);
  end;
 
 procedure TF_Tester.UpdateOut();
-var i, val:Integer;
-    outCnt:Cardinal;
+var i, val: Integer;
+    outCnt: Cardinal;
  begin
   if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
    begin
@@ -127,11 +127,11 @@ var i, val:Integer;
  end;
 
 procedure TF_Tester.UpdateIn();
-var i:Integer;
-    InputState:TRCSInputState;
-    LastState:TRCSInputState;
-    stateStr:string;
-    inCnt:Cardinal;
+var i: Integer;
+    InputState: TRCSInputState;
+    LastState: TRCSInputState;
+    stateStr: string;
+    inCnt: Cardinal;
  begin
   if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
    begin
@@ -165,10 +165,10 @@ var i:Integer;
       if (F_Tester.CHB_LogZmeny.Checked) then
        begin
         case (SInput[i].Brush.Color) of
-         clRed :LastState := isOff;
-         clLime:LastState := isOn;
-         clGray:LastState := failure;
-         clSilver:LastState := notYetScanned;
+         clRed : LastState := isOff;
+         clLime: LastState := isOn;
+         clGray: LastState := failure;
+         clSilver: LastState := notYetScanned;
         else
          LastState := failure;
         end;
@@ -229,9 +229,9 @@ procedure TF_Tester.FormClose(Sender: TObject; var Action: TCloseAction);
  end;
 
 procedure TF_Tester.CreateSInput();
-var i:Integer;
-    aTop:Integer;
-    L:TLabel;
+var i: Integer;
+    aTop: Integer;
+    L: TLabel;
  begin
   aTop := _S_TOP;
 
@@ -260,9 +260,9 @@ var i:Integer;
  end;
 
 procedure TF_Tester.CreateSOutput();
-var i:Integer;
-    aTop:Integer;
-    L:TLabel;
+var i: Integer;
+    aTop: Integer;
+    L: TLabel;
  begin
   aTop := _S_TOP;
 
@@ -293,7 +293,7 @@ var i:Integer;
 
 procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var oldColor:TColor;
+var oldColor: TColor;
  begin
   if (RCSAddr < 0) then Exit;
   oldColor := (Sender as TShape).Brush.Color;
@@ -308,7 +308,7 @@ var oldColor:TColor;
       RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 0);
     end;
   except
-    on E:Exception do
+    on E: Exception do
       Application.MessageBox(PChar('Nelze nastavít výstup:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
   end;
  end;
@@ -319,7 +319,7 @@ procedure TF_Tester.B_ClearClick(Sender: TObject);
  end;
 
 procedure TF_Tester.FillRCSAddrs();
-var i:Integer;
+var i: Integer;
 begin
  Self.CB_RCSAdrData.Clear();
  Self.CB_RCSAdr.Clear();
@@ -350,8 +350,8 @@ begin
  Self.FillRCSAddrs();
 end;
 
-procedure TF_Tester.RCSModuleChanged(addr:Cardinal);
-var i:Integer;
+procedure TF_Tester.RCSModuleChanged(addr: Cardinal);
+var i: Integer;
 begin
  if (Integer(addr) = Self.RCSAddr) then
   begin

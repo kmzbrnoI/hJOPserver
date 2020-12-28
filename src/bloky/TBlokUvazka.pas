@@ -1,4 +1,4 @@
-﻿unit TBlokUvazka;
+unit TBlokUvazka;
 
 //definice a obsluha technologickeho bloku Usek
 
@@ -11,69 +11,69 @@ type
 
  //technologicka nastaveni useku (delka, RCS moduly, ...)
  TBlkUvazkaSettings = record
-  parent:Integer;       // reference na matersky blok (typu TTrat)
+  parent: Integer;       // reference na matersky blok (typu TTrat)
  end;
 
  //aktualni stav useku (obsazeno, ...)
  TBlkUvazkaStav = record
-  enabled:Boolean;
-  ZAK:Boolean;
-  stit:string;
-  nouzZaver:Boolean;
+  enabled: Boolean;
+  ZAK: Boolean;
+  stit: string;
+  nouzZaver: Boolean;
  end;
 
  TBlkUvazka = class(TBlk)
   const
    //defaultni stav
-   _def_uvazka_stav:TBlkUvazkaStav = (
+   _def_uvazka_stav: TBlkUvazkaStav = (
     enabled: false;
     ZAK : false;
     stit : '';
    );
 
   private
-   UvazkaSettings:TBlkUvazkaSettings;
-   UvazkaStav:TBlkUvazkaStav;
-   fparent:TBlk;
-   fzadost:Boolean;
+   UvazkaSettings: TBlkUvazkaSettings;
+   UvazkaStav: TBlkUvazkaStav;
+   fparent: TBlk;
+   fzadost: Boolean;
 
-    function GetParent():TBlk;
+    function GetParent(): TBlk;
 
-    procedure SetUvazkaStit(stit:string);
-    procedure SetUvazkaZAK(ZAK:Boolean);
-    procedure SetNouzZaver(nouz:Boolean);
+    procedure SetUvazkaStit(stit: string);
+    procedure SetUvazkaZAK(ZAK: Boolean);
+    procedure SetNouzZaver(nouz: Boolean);
 
-    procedure MenuZTSOnClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZTSOffClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuUTSClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuOTSClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAKOnClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAKOffClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAVOnClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZTSOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuUTSClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuOTSClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAKOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
-    procedure PanelPotvrSekvZAK(Sender:TIdContext; success:Boolean);
+    procedure PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
+    procedure PanelPotvrSekvZAK(Sender: TIdContext; success: Boolean);
 
-    procedure UPOZTSOnClick(Sender:TObject);
-    procedure UPOUTSClick(Sender:TObject);
-    procedure UPOOTSClick(Sender:TObject);
-    procedure UPOZAKOnClick(Sender:TObject);
+    procedure UPOZTSOnClick(Sender: TObject);
+    procedure UPOUTSClick(Sender: TObject);
+    procedure UPOOTSClick(Sender: TObject);
+    procedure UPOZAKOnClick(Sender: TObject);
 
-    procedure SetZadost(zadost:Boolean);
+    procedure SetZadost(zadost: Boolean);
 
-    procedure StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
-        UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
+    procedure StitUPO(SenderPnl: TIdContext; SenderOR: TObject;
+        UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
 
   public
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -81,35 +81,35 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:Boolean = false); override;
+    procedure Change(now: Boolean = false); override;
     procedure ChangeFromTrat();
 
     //----- usek own functions -----
 
-    procedure DoZTS(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure DoUTS(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure DoZTS(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure DoUTS(SenderPnl: TIdContext; SenderOR: TObject);
 
-    function GetSettings():TBlkUvazkaSettings;
-    procedure SetSettings(data:TBlkUvazkaSettings);
+    function GetSettings(): TBlkUvazkaSettings;
+    procedure SetSettings(data: TBlkUvazkaSettings);
 
     procedure UdelSouhlas();
-    function CanZTS():Boolean;
+    function CanZTS(): Boolean;
 
-    property Stitek:string read UvazkaStav.Stit write SetUvazkaStit;
-    property ZAK:Boolean read UvazkaStav.ZAK write SetUvazkaZAK;
-    property enabled:Boolean read UvazkaStav.enabled;
+    property Stitek: string read UvazkaStav.Stit write SetUvazkaStit;
+    property ZAK: Boolean read UvazkaStav.ZAK write SetUvazkaZAK;
+    property enabled: Boolean read UvazkaStav.enabled;
 
-    property parent:TBlk read GetParent;
-    property zadost:Boolean read fzadost write SetZadost;
-    property nouzZaver:Boolean read UvazkaStav.nouzZaver write SetNouzZaver;
+    property parent: TBlk read GetParent;
+    property zadost: Boolean read fzadost write SetZadost;
+    property nouzZaver: Boolean read UvazkaStav.nouzZaver write SetNouzZaver;
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure ShowUvazkaTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; train_index:Integer);
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    function PanelStateString():string; override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function PanelStateString(): string; override;
  end;//class TBlkUsek
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ implementation
 uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Train, ownConvert,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
-constructor TBlkUvazka.Create(index:Integer);
+constructor TBlkUvazka.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -136,7 +136,7 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkUvazka.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -146,14 +146,14 @@ begin
  Self.LoadORs(ini_rel, 'Uv').Free();
 end;
 
-procedure TBlkUvazka.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkUvazka.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
 
  ini_tech.WriteInteger(section, 'parent', Self.UvazkaSettings.parent);
 end;
 
-procedure TBlkUvazka.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkUvazka.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
  if (Self.UvazkaStav.stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.UvazkaStav.Stit);
@@ -182,7 +182,7 @@ begin
  inherited Update();
 end;
 
-procedure TBlkUvazka.Change(now:Boolean = false);
+procedure TBlkUvazka.Change(now: Boolean = false);
 begin
  inherited Change(now);
  (Self.parent as TBlkTrat).ChangeFromUv(Self);
@@ -199,14 +199,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetUvazkaStit(stit:string);
+procedure TBlkUvazka.SetUvazkaStit(stit: string);
 begin
  Self.UvazkaStav.Stit := stit;
  Self.Change();
 end;
 
-procedure TBlkUvazka.SetUvazkaZAK(ZAK:Boolean);
-var old:Boolean;
+procedure TBlkUvazka.SetUvazkaZAK(ZAK: Boolean);
+var old: Boolean;
 begin
  old := Self.UvazkaStav.ZAK;
  Self.UvazkaStav.ZAK := ZAK;
@@ -218,12 +218,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUvazka.GetSettings():TBlkUvazkaSettings;
+function TBlkUvazka.GetSettings(): TBlkUvazkaSettings;
 begin
  Result := Self.UvazkaSettings;
 end;
 
-procedure TBlkUvazka.SetSettings(data:TBlkUvazkaSettings);
+procedure TBlkUvazka.SetSettings(data: TBlkUvazkaSettings);
 begin
  Self.UvazkaSettings := data;
  Self.fparent := nil;   // timto se zajisti prepocitani parent pri pristi zadost i nej
@@ -233,7 +233,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 //dynamicke funkce:
 
-procedure TBlkUvazka.MenuZTSOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  case ((SenderOR as TOR).stack.volba) of
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
@@ -241,12 +241,12 @@ begin
  end;
 end;
 
-procedure TBlkUvazka.MenuZTSOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuZTSOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.zadost := false;
 end;
 
-procedure TBlkUvazka.MenuUTSClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuUTSClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  case ((SenderOR as TOR).stack.volba) of
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
@@ -272,7 +272,7 @@ begin
  Self.zadost := false;
 end;
 
-procedure TBlkUvazka.MenuOTSClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuOTSClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOOTSClick, nil)
@@ -280,7 +280,7 @@ begin
    Self.UPOOTSClick(SenderPnl);
 end;
 
-procedure TBlkUvazka.MenuZAKOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuZAKOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOZAKOnClick, nil)
@@ -288,40 +288,40 @@ begin
    Self.UPOZAKOnClick(SenderPnl);
 end;
 
-procedure TBlkUvazka.MenuZAKOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR,
     'Zrušení zákazu odjezdu na trať', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkUvazka.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.UvazkaStav.Stit);
 end;
 
-procedure TBlkUvazka.MenuZAVOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.nouzZaver := true;
 end;
 
-procedure TBlkUvazka.MenuZAVOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR,
     'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
 end;
 
 
-procedure TBlkUvazka.PanelPotvrSekvZAK(Sender:TIdContext; success:Boolean);
+procedure TBlkUvazka.PanelPotvrSekvZAK(Sender: TIdContext; success: Boolean);
 begin
  if (success) then Self.ZAK := false;
 end;
 
-procedure TBlkUvazka.PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
+procedure TBlkUvazka.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 begin
  if (success) then Self.nouzZaver := false;
 end;
 
-procedure TBlkUvazka.UPOZTSOnClick(Sender:TObject);
+procedure TBlkUvazka.UPOZTSOnClick(Sender: TObject);
 begin
  Self.zadost := true;
 
@@ -329,7 +329,7 @@ begin
    Self.ORsRef[0].stack.RemoveZTS(Self);
 end;
 
-procedure TBlkUvazka.UPOUTSClick(Sender:TObject);
+procedure TBlkUvazka.UPOUTSClick(Sender: TObject);
 begin
  Self.UdelSouhlas();
 
@@ -337,14 +337,14 @@ begin
    Self.ORsRef[0].stack.RemoveUTS(Self);
 end;
 
-procedure TBlkUvazka.UPOOTSClick(Sender:TObject);
+procedure TBlkUvazka.UPOOTSClick(Sender: TObject);
 begin
  if ((Self.parent as TBlkTrat).GetSettings.zabzar = TTratZZ.nabidka) then
    (Self.parent as TBlkTrat).smer := TTratSmer.zadny;
  Self.zadost := false;
 end;
 
-procedure TBlkUvazka.UPOZAKOnClick(Sender:TObject);
+procedure TBlkUvazka.UPOZAKOnClick(Sender: TObject);
 begin
  if ((Self.parent as TBlkTrat).Zadost) then
    (Self.parent as TBlkTrat).Zadost := false;
@@ -354,9 +354,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkUvazka.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
-var Blk, Blk2:TBlk;
-    trat:TBlkTrat;
+function TBlkUvazka.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+var Blk, Blk2: TBlk;
+    trat: TBlkTrat;
 begin
  trat := TBlkTrat(Self.parent);
  if (trat = nil) then Exit('-');
@@ -365,7 +365,7 @@ begin
 
  // tratovy zabezpecovaci system
  case (trat.GetSettings().zabzar) of
-  TTratZZ.souhlas:begin
+  TTratZZ.souhlas: begin
 
    if ((not Self.zadost) and (trat.Zadost)) then
      Result := Result + 'UTS,';
@@ -404,7 +404,7 @@ begin
      Result := Result + '-,';
   end;// case TTratZZ.souhlas
 
-  TTratZZ.nabidka:begin
+  TTratZZ.nabidka: begin
 
    if ((not Self.zadost) and (trat.Zadost)) then
      Result := Result + 'UTS,';
@@ -467,7 +467,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.ShowUvazkaTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights; train_index:Integer);
+procedure TBlkUvazka.ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
 var trat: TBlkTrat;
     blk: TBlk;
     train: TTrain;
@@ -484,7 +484,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkUvazka.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  if (TBlkTrat(Self.parent).Smer < TTratSmer.zadny) then Exit();
  if (Button = TPanelButton.ESCAPE) then Exit(); 
@@ -498,7 +498,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkUvazka.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkUvazka.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if      (item = 'ZTS>') then Self.MenuZTSOnClick(SenderPnl, SenderOR)
  else if (item = 'ZTS<') then Self.MenuZTSOffClick(SenderPnl, SenderOR)
@@ -513,7 +513,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-function TBlkUvazka.GetParent():TBlk;
+function TBlkUvazka.GetParent(): TBlk;
 begin
  if (Self.fparent = nil) then
    Blky.GetBlkByID(Self.UvazkaSettings.parent, Self.fparent);
@@ -522,7 +522,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetZadost(zadost:Boolean);
+procedure TBlkUvazka.SetZadost(zadost: Boolean);
 begin
  // tohleto poradi nastvovani je dulezite
  if (zadost) then Self.fzadost := zadost;
@@ -532,7 +532,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetNouzZaver(nouz:Boolean);
+procedure TBlkUvazka.SetNouzZaver(nouz: Boolean);
 begin
  if (Self.UvazkaStav.nouzZaver = nouz) then Exit();
 
@@ -543,8 +543,8 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 
 // Takto zasobnik zjistuje, jestli muze zacit zadost:
-function TBlkUvazka.CanZTS():Boolean;
-var trat:TBlkTrat;
+function TBlkUvazka.CanZTS(): Boolean;
+var trat: TBlkTrat;
 begin
  trat := TBlkTrat(Self.parent);
  if ((trat.Obsazeno) or (trat.Zaver) or
@@ -560,11 +560,11 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
-      UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
-var upo:TUPOItems;
-    item:TUPOItem;
-    lines:TStrings;
+procedure TBlkUvazka.StitUPO(SenderPnl: TIdContext; SenderOR: TObject;
+      UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
+var upo: TUPOItems;
+    item: TUPOItem;
+    lines: TStrings;
 begin
  upo := TList<TUPOItem>.Create;
  try
@@ -592,7 +592,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.DoZTS(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.DoZTS(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOZTSOnClick, nil)
@@ -600,7 +600,7 @@ begin
    Self.UPOZTSOnClick(SenderPnl);
 end;
 
-procedure TBlkUvazka.DoUTS(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUvazka.DoUTS(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOUTSClick, nil)
@@ -610,7 +610,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUvazka.PanelStateString():string;
+function TBlkUvazka.PanelStateString(): string;
 var fg, bg: TColor;
     trat: TBlkTrat;
 begin

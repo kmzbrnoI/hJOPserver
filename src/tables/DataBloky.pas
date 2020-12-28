@@ -1,4 +1,4 @@
-﻿unit DataBloky;
+unit DataBloky;
 
 // TBlkTableData - trida resici zobrazovani tavulky bloku
 
@@ -9,25 +9,25 @@ uses ComCtrls, SysUtils, StrUtils;
 type
   TBlokyTableData=class
     private
-      LV:TListView;
+      LV: TListView;
 
-      changed:array of Boolean;
+      changed: array of Boolean;
 
     public
 
-     reload:Boolean;
+     reload: Boolean;
 
       procedure LoadTable();
       procedure UpdateTable();
-      procedure UpdateLine(line:Integer);
-      procedure BlkChange(line:Integer);
+      procedure UpdateLine(line: Integer);
+      procedure BlkChange(line: Integer);
 
-      procedure BlkRemove(line:Integer);
-      procedure BlkAdd(index:Integer);
+      procedure BlkRemove(line: Integer);
+      procedure BlkAdd(index: Integer);
 
-      procedure BlkMove(source, target:Integer);
+      procedure BlkMove(source, target: Integer);
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
@@ -41,7 +41,7 @@ uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokNav, TBlokIR, TBlokPrejezd,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlokyTableData.Create(LV:TListView);
+constructor TBlokyTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -51,8 +51,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlokyTableData.LoadTable();
-var i,j :Integer;
-    LI:TListItem;
+var i, j : Integer;
+    LI: TListItem;
 begin
  Self.LV.Clear();
 
@@ -71,7 +71,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlokyTableData.UpdateTable();
-var i:Integer;
+var i: Integer;
 begin
   F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blky.count)+' bloků';
 
@@ -86,7 +86,7 @@ begin
   Self.reload := false;
 end;//procedyre
 
-procedure TBlokyTableData.UpdateLine(line:Integer);
+procedure TBlokyTableData.UpdateLine(line: Integer);
 var j, train: integer;
     Blk: TBlk;
     glob: TBlkSettings;
@@ -395,7 +395,7 @@ var j, train: integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.BlkChange(line:Integer);
+procedure TBlokyTableData.BlkChange(line: Integer);
 begin
  if ((line > -1) and (line < Blky.count)) then
   Self.changed[line] := true;
@@ -403,16 +403,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.BlkRemove(line:Integer);
+procedure TBlokyTableData.BlkRemove(line: Integer);
 begin
  Self.LV.Items.Delete(line);
  Self.reload := true;
  Self.UpdateTable();
 end;
 
-procedure TBlokyTableData.BlkAdd(index:Integer);
-var LI:TListItem;
-    j:Integer;
+procedure TBlokyTableData.BlkAdd(index: Integer);
+var LI: TListItem;
+    j: Integer;
 begin
  SetLength(changed, Length(changed)+1);
 
@@ -427,9 +427,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.BlkMove(source, target:Integer);
-var LI:TListItem;
-    i:Integer;
+procedure TBlokyTableData.BlkMove(source, target: Integer);
+var LI: TListItem;
+    i: Integer;
 begin
  Self.LV.Items.Delete(source);
  LI := Self.LV.Items.Insert(target);

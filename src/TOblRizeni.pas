@@ -1,4 +1,4 @@
-﻿unit TOblRizeni;
+unit TOblRizeni;
 
 {
   Tato unita se stara o rizeni Oblasti rizeni (OR, tedy stanic).
@@ -38,66 +38,66 @@ type
 
   // podminky potvrzovaci sekvence
   TPSPodminka = record
-   cil:string;
-   podminka:string;
+   cil: string;
+   podminka: string;
   end;
 
   TPSPodminky = TList<TPSPodminka>;
 
  //primarni vlastnosti kazde OR
  TORProp = record
-  Name:string;                                                                  // plne jemno oblati rizeni (napr. "Klobouky u Brna")
-  ShortName:string;                                                             // zkratka oblasti rizeni (napr. "Klb"), nemusi byt unikatni
-  id:string;                                                                    // unikatni ID oblasti rizeni (napr. "Klb")
+  Name: string;                                                                  // plne jemno oblati rizeni (napr. "Klobouky u Brna")
+  ShortName: string;                                                             // zkratka oblasti rizeni (napr. "Klb"), nemusi byt unikatni
+  id: string;                                                                    // unikatni ID oblasti rizeni (napr. "Klb")
   osvetleni: TObjectList<TORLighting>;                                          // seznam osvetleni OR
  end;
 
- TPSCallback = procedure (Relief:TObject; Panel:TObject;                        // callback potvrzovaci sekvence
-                          success:Boolean) of object;
- TBlkCallback = procedure (SenderPnl:TIDContext; SenderOR:TObject;              // callback kliku na dopravni kacelar
-                           Button:TPanelButton) of object;
+ TPSCallback = procedure (Relief: TObject; Panel: TObject;                        // callback potvrzovaci sekvence
+                          success: Boolean) of object;
+ TBlkCallback = procedure (SenderPnl: TIDContext; SenderOR: TObject;              // callback kliku na dopravni kacelar
+                           Button: TPanelButton) of object;
 
  // jedno mereni casu
  TMereniCasu = record
-  Start:TDateTime;                                                              // cas startu mereni
-  Length:TDateTime;                                                             // delka mereni
-  callback:TNotifyEvent;                                                        // callback pri uplynuti mereni casu
-  id:Integer;                                                                   // id mereni casu (vyuzivano pro komunikaci s pamely)
+  Start: TDateTime;                                                              // cas startu mereni
+  Length: TDateTime;                                                             // delka mereni
+  callback: TNotifyEvent;                                                        // callback pri uplynuti mereni casu
+  id: Integer;                                                                   // id mereni casu (vyuzivano pro komunikaci s pamely)
  end;
 
  //databaze pripojenych panelu
  //kazda OR si pamatuje, jake panely jsou k ni pripojeny a s temito panely komunikuje
  // toto je 1 prvek databaze pripojenych panelu
  TORPanel = record
-  Panel:TIdContext;                                                             // spojeni na klienta
-  Rights:TORControlRights;                                                      // pristupova prava k OR
-  user:string;                                                                  // id uzivatele, ktery se k OR logoval
+  Panel: TIdContext;                                                             // spojeni na klienta
+  Rights: TORControlRights;                                                      // pristupova prava k OR
+  user: string;                                                                  // id uzivatele, ktery se k OR logoval
  end;
 
  // stav OR
  TORStav = record
-  NUZtimer:Boolean;                                                             // probiha ruseni useku NUZ?
-  NUZblkCnt:Integer;                                                            // kolik bloku ma zaplych NUZ
-  NUZmerCasuID:Integer;                                                         // ID mereni casu NUZ
-  ZkratBlkCnt:Integer;                                                          // kolik bloku je ve zkratu (vyuzivano pro prehravani zvuku)
-  ZadostBlkCnt:Integer;                                                         // pocet uvazek, na ktere je zadost o tratovy souhlas (kvuli prehravani zvuku)
-  PrivolavackaBlkCnt:Integer;                                                   // pocet aktivnich privolavacich navesti
-  timerCnt:Integer;                                                             // pocet bezicich timeru
-  dk_click_callback:TBlkCallback;                                               // callback kliku na dopravni kancelar
-  reg_please:TIdCOntext;                                                        // zde je ulozen regulator, ktery danou oblast rizeni zada o prideleni lokomotivy
+  NUZtimer: Boolean;                                                             // probiha ruseni useku NUZ?
+  NUZblkCnt: Integer;                                                            // kolik bloku ma zaplych NUZ
+  NUZmerCasuID: Integer;                                                         // ID mereni casu NUZ
+  ZkratBlkCnt: Integer;                                                          // kolik bloku je ve zkratu (vyuzivano pro prehravani zvuku)
+  ZadostBlkCnt: Integer;                                                         // pocet uvazek, na ktere je zadost o tratovy souhlas (kvuli prehravani zvuku)
+  PrivolavackaBlkCnt: Integer;                                                   // pocet aktivnich privolavacich navesti
+  timerCnt: Integer;                                                             // pocet bezicich timeru
+  dk_click_callback: TBlkCallback;                                               // callback kliku na dopravni kancelar
+  reg_please: TIdCOntext;                                                        // zde je ulozen regulator, ktery danou oblast rizeni zada o prideleni lokomotivy
  end;
 
  // jedno RCS oblasti rizeni
  TORRCS = class
-  failed:Boolean;                                                               // jestli RCS v OR selhalo (nekomunikuje)
-  constructor Create(failed:Boolean = false);
+  failed: Boolean;                                                               // jestli RCS v OR selhalo (nekomunikuje)
+  constructor Create(failed: Boolean = false);
  end;
 
  // seznam RCS modulu v OR
  TORRCSs = class
   modules: TObjectDictionary<Cardinal, TORRCS>;
-  failure:Boolean;                                                              // jestli doslo k selhani jakohokoliv RCS modulu v OR
-  last_failure_time:TDateTime;                                                  // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani RCS modulu pro dispecera)
+  failure: Boolean;                                                              // jestli doslo k selhani jakohokoliv RCS modulu v OR
+  last_failure_time: TDateTime;                                                  // cas posledniho selhani (pouziva se pro vytvareni souhrnnych zprav o selhani RCS modulu pro dispecera)
 
   constructor Create();
   destructor Destroy(); override;
@@ -117,58 +117,58 @@ type
       _R_superuser = 3;                                                         // opravneni superuser, neboli "root"
 
     private
-      findex:Integer;                                                           // index OR v tabulce oblasti rizeni
-      ORProp:TORProp;                                                           // vlastnosti OR
-      ORStav:TORStav;                                                           // stav OR
+      findex: Integer;                                                           // index OR v tabulce oblasti rizeni
+      ORProp: TORProp;                                                           // vlastnosti OR
+      ORStav: TORStav;                                                           // stav OR
 
-      MereniCasu:TList<TMereniCasu>;                                            // seznam mereni casu bezicich v OR
+      MereniCasu: TList<TMereniCasu>;                                            // seznam mereni casu bezicich v OR
 
-      OR_RCS:TORRCSs;                                                           // seznam RCS modulu pritomnych v OR, seznam vsech RCS asociovanych s bloky pritomnych v teto OR
+      OR_RCS: TORRCSs;                                                           // seznam RCS modulu pritomnych v OR, seznam vsech RCS asociovanych s bloky pritomnych v teto OR
 
       // prace s databazi pripojenych panelu:
-      procedure PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string);
-      procedure PnlDRemove(Panel:TIdContext; contextDestroyed: Boolean = false);
-      function PnlDGetRights(Panel:TIdContext):TORControlRights;
-      function PnlDGetIndex(Panel:TIdContext):Integer;
+      procedure PnlDAdd(Panel: TIdContext; rights: TORControlRights; user: string);
+      procedure PnlDRemove(Panel: TIdContext; contextDestroyed: Boolean = false);
+      function PnlDGetRights(Panel: TIdContext): TORControlRights;
+      function PnlDGetIndex(Panel: TIdContext): Integer;
 
-      procedure NUZTimeOut(Sender:TObject);                                     // callback ubehnuti mereni casu pro ruseni nouzovych zaveru bloku
-      procedure NUZ_PS(Sender:TIdContext; success:Boolean);                     // callback potvrzovaci sekvence NUZ
+      procedure NUZTimeOut(Sender: TObject);                                     // callback ubehnuti mereni casu pro ruseni nouzovych zaveru bloku
+      procedure NUZ_PS(Sender: TIdContext; success: Boolean);                     // callback potvrzovaci sekvence NUZ
 
-      procedure ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string; username:string);
+      procedure ORAuthoriseResponse(Panel: TIdContext; Rights: TORControlRights; msg: string; username: string);
 
-      procedure SetNUZBlkCnt(new:Integer);
-      procedure SetZkratBlkCnt(new:Integer);
-      procedure SetZadostBlkCnt(new:Integer);
-      procedure SetPrivolavackaBlkCnt(new:Integer);
-      procedure SetTimerCnt(new:Integer);
+      procedure SetNUZBlkCnt(new: Integer);
+      procedure SetZkratBlkCnt(new: Integer);
+      procedure SetZadostBlkCnt(new: Integer);
+      procedure SetPrivolavackaBlkCnt(new: Integer);
+      procedure SetTimerCnt(new: Integer);
 
       procedure RCSUpdate();                                                    // posila souhrnne zpravy panelu o vypadku RCS modulu (moduly, ktere vypadly hned za sebou - do 500 ms, jsou nahlaseny v jedne chybe)
 
-      procedure SendStatus(panel:TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
+      procedure SendStatus(panel: TIdContext);                                   // odeslani stavu IR do daneho panelu, napr. kam se ma posilat klik na DK, jaky je stav zasobniku atp.; je ovlano pri pripojeni panelu, aby se nastavila OR do spravneho stavu
       procedure SendLn(panel: TIdContext; str: string);
 
       // tyto funkce jsou volany pri zmene opravenni mezi cteni a zapisem
       // primarni cil = v techto funkcich resit zapinani a vypinani zvuku v panelu
-      procedure AuthReadToWrite(panel:TIdContext);
-      procedure AuthWriteToRead(panel:TIdContext);
+      procedure AuthReadToWrite(panel: TIdContext);
+      procedure AuthWriteToRead(panel: TIdContext);
 
-      procedure OnHlaseniAvailable(Sender:TObject; available:Boolean);
-      procedure NUZPrematureZaverRelease(Sender:TObject; data:Integer);
+      procedure OnHlaseniAvailable(Sender: TObject; available: Boolean);
+      procedure NUZPrematureZaverRelease(Sender: TObject; data: Integer);
       procedure NUZcancelPrematureEvents();
 
-      procedure SetIndex(newIndex:Integer);
+      procedure SetIndex(newIndex: Integer);
 
-      procedure PanelTrainChangeOk(Sender:TObject; Data:Pointer);
-      procedure PanelTrainChangeErr(Sender:TObject; Data:Pointer);
-      procedure PanelTrainCreateErr(Sender:TObject; Data:Pointer);
+      procedure PanelTrainChangeOk(Sender: TObject; Data: Pointer);
+      procedure PanelTrainChangeErr(Sender: TObject; Data: Pointer);
+      procedure PanelTrainCreateErr(Sender: TObject; Data: Pointer);
 
-      procedure OsvSet(id:string; state:Boolean);
+      procedure OsvSet(id: string; state: Boolean);
 
-      procedure DkNUZStart(Sender:TIdContext);
-      procedure DkNUZStop(Sender:TIdContext);
+      procedure DkNUZStart(Sender: TIdContext);
+      procedure DkNUZStop(Sender: TIdContext);
 
-      procedure DkHvFuncsSetOk(Sender:TObject; Data:Pointer);
-      procedure DkHvFuncsSetErr(Sender:TObject; Data:Pointer);
+      procedure DkHvFuncsSetOk(Sender: TObject; Data: Pointer);
+      procedure DkHvFuncsSetErr(Sender: TObject; Data: Pointer);
 
       procedure DkMenuShowOsv(Sender: TIdContext);
       procedure DkMenuShowLok(Sender: TIdContext);
@@ -176,108 +176,108 @@ type
 
     public
 
-      stack:TORStack;                                                           // zasobnik povelu
-      changed:Boolean;                                                          // jestli doslo ke zmene OR - true znamena aktualizaci tabulky
-      vb:TList<TObject>;                                                        // seznam variantnich bodu, ktere jsou aktualne "naklikle"; zde je ulozen seznam bloku
-      Connected:TList<TORPanel>;                                                // seznam pripojenych panelu
-      hlaseni:TStanicniHlaseni;                                                 // technologie stanicnich hlaseni
+      stack: TORStack;                                                           // zasobnik povelu
+      changed: Boolean;                                                          // jestli doslo ke zmene OR - true znamena aktualizaci tabulky
+      vb: TList<TObject>;                                                        // seznam variantnich bodu, ktere jsou aktualne "naklikle"; zde je ulozen seznam bloku
+      Connected: TList<TORPanel>;                                                // seznam pripojenych panelu
+      hlaseni: TStanicniHlaseni;                                                 // technologie stanicnich hlaseni
 
-      constructor Create(index:Integer);
+      constructor Create(index: Integer);
       destructor Destroy(); override;
 
-      procedure LoadData(str:string);
-      procedure LoadStat(ini:TMemIniFile; section:string);
-      procedure SaveStat(ini:TMemIniFile; section:string);
+      procedure LoadData(str: string);
+      procedure LoadStat(ini: TMemIniFile; section: string);
+      procedure SaveStat(ini: TMemIniFile; section: string);
 
-      procedure RemoveClient(Panel:TIdContext; contextDestroyed: Boolean = false);// smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
+      procedure RemoveClient(Panel: TIdContext; contextDestroyed: Boolean = false);// smaze klienta \Panel z databze pripojenych panelu, typicky volano pri odpojeni klienta
 
       procedure Update();                                                       // pravidelna aktualizace stavu OR - napr. mereni casu
       procedure DisconnectPanels();                                             // vyhodi vsechny autorizovane panely z teto OR
 
-      function AddMereniCasu(callback:TNotifyEvent; len:TDateTime):Byte;        // prida mereni casu; vrati ID mereni
-      procedure StopMereniCasu(id:Integer);                                     // zastavi mereni casu s danym ID
+      function AddMereniCasu(callback: TNotifyEvent; len: TDateTime): Byte;        // prida mereni casu; vrati ID mereni
+      procedure StopMereniCasu(id: Integer);                                     // zastavi mereni casu s danym ID
 
-      procedure RCSAdd(addr:integer);                                           // prida RCS modul do OR
-      procedure RCSFail(addr:integer);                                          // informuje OR o vypadku RCS
+      procedure RCSAdd(addr: integer);                                           // prida RCS modul do OR
+      procedure RCSFail(addr: integer);                                          // informuje OR o vypadku RCS
 
-      procedure UpdateLine(LI:TListItem);                                       // aktualizuje zaznam v tabulce oblasti rizeni ve F_Main
+      procedure UpdateLine(LI: TListItem);                                       // aktualizuje zaznam v tabulce oblasti rizeni ve F_Main
 
-      procedure BroadcastData(data:string; min_rights:TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem oblaati rizeni
-      procedure BroadcastGlobalData(data:string; min_rights:TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem "-"
-      procedure BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read; stanice: string = '');
+      procedure BroadcastData(data: string; min_rights: TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem oblaati rizeni
+      procedure BroadcastGlobalData(data: string; min_rights: TORControlRights = read); // posle zpravu \data vsem pripojenym panelum s minimalnim opravnenim \min_rights s prefixem "-"
+      procedure BroadcastBottomError(err: string; tech: string; min_rights: TORControlRights = read; stanice: string = '');
 
       procedure ClearVb();                                                      // smaze aktualni varientni body
 
       //--- komunikace s technologickymi bloky ---
-      procedure BlkChange(Sender:TObject; specificClient:TIDContext = nil);     // doslo ke zmene bloku v OR, je potreba propagovat zmenu do panelu
-      procedure BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights;       // prehraje zvuk
-          sound:Integer; loop:Boolean = false);
-      procedure BlkRemoveSound(Sender:TObject; sound:Integer);                  // zrusi prehravani zvuku
-      procedure BlkWriteError(Sender:TObject; error:string; system:string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
-      procedure BlkNewTrain(Sender:TObject; Panel:TIdContext; trainUsekIndex:Integer); // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
-      procedure BlkEditTrain(Sender:TObject; Panel:TIdContext; train:TObject);// posle do panelu pozadavek na otevreni dialogu editace soupravy
+      procedure BlkChange(Sender: TObject; specificClient: TIDContext = nil);     // doslo ke zmene bloku v OR, je potreba propagovat zmenu do panelu
+      procedure BlkPlaySound(Sender: TObject; min_rights: TORCOntrolRights;       // prehraje zvuk
+          sound: Integer; loop: Boolean = false);
+      procedure BlkRemoveSound(Sender: TObject; sound: Integer);                  // zrusi prehravani zvuku
+      procedure BlkWriteError(Sender: TObject; error: string; system: string);     // posle chybovou hlasku do vsech stanic, ktere maji autorizovany zapis
+      procedure BlkNewTrain(Sender: TObject; Panel: TIdContext; trainUsekIndex: Integer); // posle do panelu pozadavek na otevreni dialogu pro novou soupravu
+      procedure BlkEditTrain(Sender: TObject; Panel: TIdContext; train: TObject);// posle do panelu pozadavek na otevreni dialogu editace soupravy
 
-      function ORSendMsg(Sender:TOR; msg:string):Byte;                          // odesle zpravu OR (od jine OR)
+      function ORSendMsg(Sender: TOR; msg: string): Byte;                          // odesle zpravu OR (od jine OR)
 
-      procedure ORDKClickServer(callback:TBlkCallback);                         // klik na DK probehne na server
+      procedure ORDKClickServer(callback: TBlkCallback);                         // klik na DK probehne na server
       procedure ORDKClickClient();                                              // klik na DK probehne na klieta
 
       // volany pri zadosti o poskytnuti loko pro regulator:
-      function LokoPlease(Sender:TIDContext; user:TObject; comment:string):Integer;
-      procedure LokoCancel(Sender:TIdContext);
+      function LokoPlease(Sender: TIDContext; user: TObject; comment: string): Integer;
+      procedure LokoCancel(Sender: TIdContext);
 
       procedure OsvInit();
 
       //--- komunikace s panely zacatek: ---
-      procedure PanelAuthorise(Sender:TIdContext; rights:TORControlRights; username:string; password:string);
-      procedure PanelFirstGet(Sender:TIdContext);
-      procedure PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton; params:string = '');
-      procedure PanelEscape(Sender:TIdContext);
-      procedure PanelMessage(Sender:TIdContext; recepient:string; msg:string);
-      procedure PanelHVList(Sender:TIdContext);
-      procedure PanelTrainChange(Sender:TIdContext; trainstr:TStrings);
-      procedure PanelMoveLok(Sender:TIdContext; lok_addr:word; new_or:string);
-      procedure PanelZAS(Sender:TIdContext; str:TStrings);
-      procedure PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
-      procedure PanelLokoReq(Sender:TIdContext; str:TStrings);
-      procedure PanelHlaseni(Sender:TIDContext; str:TStrings);
+      procedure PanelAuthorise(Sender: TIdContext; rights: TORControlRights; username: string; password: string);
+      procedure PanelFirstGet(Sender: TIdContext);
+      procedure PanelClick(Sender: TIdContext; blokid: Integer; Button: TPanelButton; params: string = '');
+      procedure PanelEscape(Sender: TIdContext);
+      procedure PanelMessage(Sender: TIdContext; recepient: string; msg: string);
+      procedure PanelHVList(Sender: TIdContext);
+      procedure PanelTrainChange(Sender: TIdContext; trainstr: TStrings);
+      procedure PanelMoveLok(Sender: TIdContext; lok_addr: word; new_or: string);
+      procedure PanelZAS(Sender: TIdContext; str: TStrings);
+      procedure PanelDKClick(SenderPnl: TIdContext; Button: TPanelButton);
+      procedure PanelLokoReq(Sender: TIdContext; str: TStrings);
+      procedure PanelHlaseni(Sender: TIDContext; str: TStrings);
       procedure PanelDkMenuClick(Sender: TIdContext; rootItem, subItem: string);
 
-      procedure PanelHVAdd(Sender:TIDContext; str:string);
-      procedure PanelHVRemove(Sender:TIDContext; addr:Integer);
-      procedure PanelHVEdit(Sender:TIDContext; str:string);
+      procedure PanelHVAdd(Sender: TIDContext; str: string);
+      procedure PanelHVRemove(Sender: TIDContext; addr: Integer);
+      procedure PanelHVEdit(Sender: TIDContext; str: string);
 
-      function PanelGetTrains(Sender:TIdCOntext):string;
-      procedure PanelRemoveTrain(Sender:TIDContext; train_index:Integer);
+      function PanelGetTrains(Sender: TIdCOntext): string;
+      procedure PanelRemoveTrain(Sender: TIDContext; train_index: Integer);
 
-      function GetORPanel(conn:TIdContext; var ORPanel:TORPanel):Integer;
-      class function GetRightsString(rights:TORControlRights):string;
+      function GetORPanel(conn: TIdContext; var ORPanel: TORPanel): Integer;
+      class function GetRightsString(rights: TORControlRights): string;
 
-      procedure UserUpdateRights(user:TObject);
-      procedure UserDelete(userid:string);
+      procedure UserUpdateRights(user: TObject);
+      procedure UserDelete(userid: string);
 
-      class function ORRightsToString(rights:TORControlRights):string;
-      class function GetPSPodminka(blok:TObject; podminka:string):TPSPodminka; overload;
-      class function GetPSPodminka(cil:string; podminka:string):TPSPodminka; overload;
-      class function GetPSPodminky(podm:TPSPodminka):TPSPodminky;
+      class function ORRightsToString(rights: TORControlRights): string;
+      class function GetPSPodminka(blok: TObject; podminka: string): TPSPodminka; overload;
+      class function GetPSPodminka(cil: string; podminka: string): TPSPodminka; overload;
+      class function GetPSPodminky(podm: TPSPodminka): TPSPodminky;
 
-      class function NameComparer():IComparer<TOR>;
-      class function IdComparer():IComparer<TOR>;
+      class function NameComparer(): IComparer<TOR>;
+      class function IdComparer(): IComparer<TOR>;
 
-      property NUZtimer:Boolean read ORStav.NUZtimer write ORStav.NUZtimer;
-      property NUZblkCnt:Integer read ORStav.NUZblkCnt write SetNUZBlkCnt;
-      property ZKratBlkCnt:Integer read ORStav.ZKratBlkCnt write SetZkratBlkCnt;
-      property ZadostBlkCnt:Integer read ORStav.ZadostBlkCnt write SetZadostBlkCnt;
-      property PrivolavackaBlkCnt:Integer read ORStav.PrivolavackaBlkCnt write SetPrivolavackaBlkCnt;
-      property TimerCnt:Integer read ORStav.TimerCnt write SetTimerCnt;
-      property reg_please:TIdContext read ORStav.reg_please;
+      property NUZtimer: Boolean read ORStav.NUZtimer write ORStav.NUZtimer;
+      property NUZblkCnt: Integer read ORStav.NUZblkCnt write SetNUZBlkCnt;
+      property ZKratBlkCnt: Integer read ORStav.ZKratBlkCnt write SetZkratBlkCnt;
+      property ZadostBlkCnt: Integer read ORStav.ZadostBlkCnt write SetZadostBlkCnt;
+      property PrivolavackaBlkCnt: Integer read ORStav.PrivolavackaBlkCnt write SetPrivolavackaBlkCnt;
+      property TimerCnt: Integer read ORStav.TimerCnt write SetTimerCnt;
+      property reg_please: TIdContext read ORStav.reg_please;
 
       //--- komunikace s panely konec ---
 
-      property Name:string read ORProp.Name;
-      property ShortName:string read ORProp.ShortName;
-      property id:string read ORProp.id;
-      property index:Integer read findex write SetIndex;
+      property Name: string read ORProp.Name;
+      property ShortName: string read ORProp.ShortName;
+      property id: string read ORProp.id;
+      property index: Integer read findex write SetIndex;
   end;//TOR
 
 implementation
@@ -289,7 +289,7 @@ uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain, Logging, TechnologieJC,
      UserDb, THnaciVozidlo, Trakce, User, TCPORsRef, fRegulator, RegulatorTCP,
      ownStrUtils, Train, changeEvent, TechnologieTrakce;
 
-constructor TOR.Create(index:Integer);
+constructor TOR.Create(index: Integer);
 begin
  inherited Create();
 
@@ -337,7 +337,7 @@ begin
  inherited;
 end;
 
-constructor TORRCS.Create(failed:Boolean = false);
+constructor TORRCS.Create(failed: Boolean = false);
 begin
  inherited Create();
  Self.failed := failed;
@@ -393,7 +393,7 @@ end;
 
 // nacitani or_stat.ini souboru
 // musi byt volano po LoadData
-procedure TOR.LoadStat(ini:TMemIniFile; section:string);
+procedure TOR.LoadStat(ini: TMemIniFile; section: string);
 var osv: TOrLighting;
 begin
  for osv in Self.ORProp.Osvetleni do
@@ -401,7 +401,7 @@ begin
 end;
 
 // ukladani or_stat.ini souboru
-procedure TOR.SaveStat(ini:TMemIniFile; section:string);
+procedure TOR.SaveStat(ini: TMemIniFile; section: string);
 var osv: TOrLighting;
 begin
  for osv in Self.ORProp.Osvetleni do
@@ -411,9 +411,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //tato funkce je vyvolana pri zmene stavu jakehokoliv bloku
-procedure TOR.BlkChange(Sender:TObject; specificClient:TIDContext = nil);
-var msg:string;
-    orPanel:TORPanel;
+procedure TOR.BlkChange(Sender: TObject; specificClient: TIDContext = nil);
+var msg: string;
+    orPanel: TORPanel;
 begin
  if (Self.Connected.Count = 0) then Exit();
 
@@ -433,37 +433,37 @@ begin
   end;
 end;
 
-procedure TOR.BlkWriteError(Sender:TObject; error:string; system:string);
-var i:Integer;
+procedure TOR.BlkWriteError(Sender: TObject; error: string; system: string);
+var i: Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
   if (Self.Connected[i].Rights >= TORControlRights.write) then
     ORTCPServer.BottomError(Self.Connected[i].Panel, error, Self.ShortName, system);
 end;
 
-procedure TOR.BlkPlaySound(Sender:TObject; min_rights:TORCOntrolRights; sound:Integer; loop:Boolean = false);
-var i:Integer;
+procedure TOR.BlkPlaySound(Sender: TObject; min_rights: TORCOntrolRights; sound: Integer; loop: Boolean = false);
+var i: Integer;
 begin
  for i := 0 to Self.Connected.COunt-1 do
   if (Self.Connected[i].Rights >= min_rights) then
    ORTCPServer.PlaySound(Self.Connected[i].Panel, sound, loop);
 end;
 
-procedure TOR.BlkRemoveSound(Sender:TObject; sound:Integer);
-var i:Integer;
+procedure TOR.BlkRemoveSound(Sender: TObject; sound: Integer);
+var i: Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
   ORTCPServer.DeleteSound(Self.Connected[i].Panel, sound);
 end;
 
-procedure TOR.BlkNewTrain(Sender:TObject; Panel:TIdContext; trainUsekIndex:Integer);
+procedure TOR.BlkNewTrain(Sender: TObject; Panel: TIdContext; trainUsekIndex: Integer);
 begin
  TTCPORsRef(Panel.Data).train_new_usek_index := trainUsekIndex;
  TTCPORsRef(Panel.Data).train_usek := Sender;
  Self.SendLn(Panel, 'SPR-NEW;');
 end;
 
-procedure TOR.BlkEditTrain(Sender:TObject; Panel:TIdContext; train:TObject);
+procedure TOR.BlkEditTrain(Sender: TObject; Panel: TIdContext; train: TObject);
 begin
  TTCPORsRef(Panel.Data).train_new_usek_index := -1;
  TTCPORsRef(Panel.Data).train_edit := TTrain(train);
@@ -477,9 +477,9 @@ end;
 
 //pridani 1 prvku do databaze
 //v pripade existence jen zvysime prava
-procedure TOR.PnlDAdd(Panel:TIdContext; rights:TORControlRights; user:string);
-var i:Integer;
-    pnl:TORPanel;
+procedure TOR.PnlDAdd(Panel: TIdContext; rights: TORControlRights; user: string);
+var i: Integer;
+    pnl: TORPanel;
 begin
  for i := 0 to Self.Connected.Count-1 do
   begin
@@ -520,8 +520,8 @@ begin
 end;
 
 //mazani 1 panelu z databaze
-procedure TOR.PnlDRemove(Panel:TIdContext; contextDestroyed: Boolean = false);
-var i:Integer;
+procedure TOR.PnlDRemove(Panel: TIdContext; contextDestroyed: Boolean = false);
+var i: Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
   begin
@@ -541,8 +541,8 @@ end;
 
 //ziskani prav daneho panelu z databaze
 //v pripade nenalezeni panelu v datbazi vracime prava 'no' = zadna
-function TOR.PnlDGetRights(Panel:TIdContext):TORControlRights;
-var index:Integer;
+function TOR.PnlDGetRights(Panel: TIdContext): TORControlRights;
+var index: Integer;
 begin
  index := Self.PnlDGetIndex(Panel);
  if (index < 0) then
@@ -554,8 +554,8 @@ begin
  Result := Self.Connected[index].Rights;
 end;
 
-function TOR.PnlDGetIndex(Panel:TIdContext):Integer;
-var i:Integer;
+function TOR.PnlDGetIndex(Panel: TIdContext): Integer;
+var i: Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
    if (Self.Connected[i].Panel = Panel) then
@@ -568,13 +568,13 @@ end;
 //komunikace s panely:
 
 //touto funkci panel zada o opravneni
-procedure TOR.PanelAuthorise(Sender:TIdContext; rights:TORControlRights; username:string; password:string);
-var i:Integer;
-    UserRights:TORControlRights;
-    msg:string;
-    panel:TORPanel;
-    user:TUser;
-    last_rights:TORControlRights;
+procedure TOR.PanelAuthorise(Sender: TIdContext; rights: TORControlRights; username: string; password: string);
+var i: Integer;
+    UserRights: TORControlRights;
+    msg: string;
+    panel: TORPanel;
+    user: TUser;
+    last_rights: TORControlRights;
 begin
  // panel se chce odpojit -> vyradit z databaze
  if (rights = TORControlRights.null) then
@@ -672,7 +672,7 @@ begin
 
    Self.PnlDAdd(Sender, rights, username);
   except
-    on E:EMaxClients do
+    on E: EMaxClients do
      begin
       ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
       Self.ORAuthoriseResponse(Sender, TORControlRights.null, E.Message, user.fullName);
@@ -689,9 +689,9 @@ begin
 end;
 
 //ziskani stavu vsech bloku v panelu
-procedure TOR.PanelFirstGet(Sender:TIdContext);
-var addr:Integer;
-    rights:TORControlRights;
+procedure TOR.PanelFirstGet(Sender: TIdContext);
+var addr: Integer;
+    rights: TORControlRights;
 begin
  rights := Self.PnlDGetRights(Sender);
  if (rights < read) then
@@ -711,10 +711,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //v panelu je kliknuto na urcity blok
-procedure TOR.PanelClick(Sender:TIdContext; blokid:Integer; Button:TPanelButton; params:string = '');
-var Blk:TBlk;
-    rights:TORCOntrolRights;
-    oblr:TOR;
+procedure TOR.PanelClick(Sender: TIdContext; blokid: Integer; Button: TPanelButton; params: string = '');
+var Blk: TBlk;
+    rights: TORCOntrolRights;
+    oblr: TOR;
 begin
  //kontrola opravneni
  rights := Self.PnlDGetRights(Sender);
@@ -741,8 +741,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelEscape(Sender:TIdContext);
-var Blk:TBlk;
+procedure TOR.PanelEscape(Sender: TIdContext);
+var Blk: TBlk;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -769,10 +769,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.DkNUZStart(Sender:TIdContext);
-var Blk:TBlk;
-    podminky:TList<TPSPodminka>;
-    oblr:TOR;
+procedure TOR.DkNUZStart(Sender: TIdContext);
+var Blk: TBlk;
+    podminky: TList<TPSPodminka>;
+    oblr: TOR;
 begin
  podminky := TList<TPSPodminka>.Create();
  // zjisteni jmen bloku:
@@ -789,7 +789,7 @@ begin
  ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků', TBlky.GetBlksList(Self), podminky);
 end;
 
-procedure TOR.DkNUZStop(Sender:TIdContext);
+procedure TOR.DkNUZStop(Sender: TIdContext);
 begin
  Self.NUZcancelPrematureEvents();
  Blky.NUZ(Self.id, false);
@@ -798,7 +798,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelMessage(Sender:TIdContext; recepient:string; msg:string);
+procedure TOR.PanelMessage(Sender: TIdContext; recepient: string; msg: string);
 var return: Integer;
     oblr: TOR;
 begin
@@ -825,9 +825,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // pozadavek na ziskani sezmu hnacich vozidel
-procedure TOR.PanelHVList(Sender:TIdContext);
-var addr:Integer;
-    str:string;
+procedure TOR.PanelHVList(Sender: TIdContext);
+var addr: Integer;
+    str: string;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_read) then
@@ -846,9 +846,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelTrainChange(Sender:TIdContext; trainstr:TStrings);
-var usek:TBlkUsek;
-    train:TTrain;
+procedure TOR.PanelTrainChange(Sender: TIdContext; trainstr: TStrings);
+var usek: TBlkUsek;
+    train: TTrain;
 begin
  //kontrola opravneni klienta
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -902,7 +902,7 @@ begin
  end;
 end;
 
-procedure TOR.PanelTrainChangeOk(Sender:TObject; Data:Pointer);
+procedure TOR.PanelTrainChangeOk(Sender: TObject; Data: Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
@@ -910,14 +910,14 @@ begin
  Self.SendLn(tcpSender, 'SPR-EDIT-ACK;');
 end;
 
-procedure TOR.PanelTrainChangeErr(Sender:TObject; Data:Pointer);
+procedure TOR.PanelTrainChangeErr(Sender: TObject; Data: Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Nepodařilo se převzít lokomotivy z centrály!');
 end;
 
-procedure TOR.PanelTrainCreateErr(Sender:TObject; Data:Pointer);
+procedure TOR.PanelTrainCreateErr(Sender: TObject; Data: Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
@@ -926,7 +926,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelMoveLok(Sender:TIdContext; lok_addr:word; new_or:string);
+procedure TOR.PanelMoveLok(Sender: TIdContext; lok_addr: word; new_or: string);
 var new: TOR;
 begin
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
@@ -965,7 +965,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.Update();
-var i:Integer;
+var i: Integer;
 begin
  Self.RCSUpdate();
  Self.stack.Update();
@@ -984,9 +984,9 @@ begin
 end;
 
 // vraci id pridaneho mereni
-function TOR.AddMereniCasu(callback:TNotifyEvent; len:TDateTime):Byte;
-var id:Integer;
-    mc:TMereniCasu;
+function TOR.AddMereniCasu(callback: TNotifyEvent; len: TDateTime): Byte;
+var id: Integer;
+    mc: TMereniCasu;
 begin
  if (Self.MereniCasu.Count > 0) then
   id := Self.MereniCasu[Self.MereniCasu.Count-1].id+1
@@ -1005,8 +1005,8 @@ begin
  Result := id;
 end;
 
-procedure TOR.StopMereniCasu(id:Integer);
-var i:Integer;
+procedure TOR.StopMereniCasu(id: Integer);
+var i: Integer;
 begin
  // pridat mereni casu do vsech OR:
  for i := Self.MereniCasu.Count-1 downto 0 do
@@ -1019,7 +1019,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // zavola se, az probehne meerni casu:
-procedure TOR.NUZTimeOut(Sender:TObject);
+procedure TOR.NUZTimeOut(Sender: TObject);
 begin
  Self.NUZcancelPrematureEvents();
  Self.NUZtimer := false;
@@ -1029,12 +1029,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.NUZ_PS(Sender:TIdContext; success:Boolean);
-var JC:TJC;
-    Blk:TBlk;
-    usek:TBlkUsek;
-    nav:TBlkNav;
-    oblr:TOR;
+procedure TOR.NUZ_PS(Sender: TIdContext; success: Boolean);
+var JC: TJC;
+    Blk: TBlk;
+    usek: TBlkUsek;
+    nav: TBlkNav;
+    oblr: TOR;
 begin
  if (not success) then Exit;
 
@@ -1075,14 +1075,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.ORAuthoriseResponse(Panel:TIdContext; Rights:TORControlRights; msg:string; username:string);
+procedure TOR.ORAuthoriseResponse(Panel: TIdContext; Rights: TORControlRights; msg: string; username: string);
 begin
  Self.SendLn(Panel, 'AUTH;'+IntToStr(Integer(Rights))+';'+msg+';'+username);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.RemoveClient(Panel:TIdContext; contextDestroyed: Boolean = false);
+procedure TOR.RemoveClient(Panel: TIdContext; contextDestroyed: Boolean = false);
 begin
  Self.PnlDRemove(Panel, contextDestroyed);
  Self.stack.OnDisconnect(Panel);
@@ -1090,7 +1090,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.SetNUZBlkCnt(new:Integer);
+procedure TOR.SetNUZBlkCnt(new: Integer);
 begin
  if ((Self.ORStav.NUZblkCnt = 0) and (new > 0)) then
   begin
@@ -1114,8 +1114,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.SetZkratBlkCnt(new:Integer);
-var i:Integer;
+procedure TOR.SetZkratBlkCnt(new: Integer);
+var i: Integer;
 begin
  if (new < 0) then Exit(); 
 
@@ -1139,8 +1139,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.SetZadostBlkCnt(new:Integer);
-var i:Integer;
+procedure TOR.SetZadostBlkCnt(new: Integer);
+var i: Integer;
 begin
  if (new < 0) then Exit();
 
@@ -1164,8 +1164,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.SetPrivolavackaBlkCnt(new:Integer);
-var i:Integer;
+procedure TOR.SetPrivolavackaBlkCnt(new: Integer);
+var i: Integer;
 begin
  if (new < 0) then Exit();
 
@@ -1189,8 +1189,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.SetTimerCnt(new:Integer);
-var i:Integer;
+procedure TOR.SetTimerCnt(new: Integer);
+var i: Integer;
 begin
  if (new < 0) then Exit();
 
@@ -1215,8 +1215,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.DisconnectPanels();
-var i:Integer;
-    index:Integer;
+var i: Integer;
+    index: Integer;
 begin
  for i := Self.Connected.Count-1 downto 0 do
   begin
@@ -1231,8 +1231,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TOR.ORSendMsg(Sender:TOR; msg:string):Byte;
-var i:Integer;
+function TOR.ORSendMsg(Sender: TOR; msg: string): Byte;
+var i: Integer;
 begin
  Result := 1;             // defaultne vracime chybu nedorucitelnosti
  for i := 0 to Self.Connected.Count-1 do
@@ -1245,7 +1245,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.RCSAdd(addr:integer);
+procedure TOR.RCSAdd(addr: integer);
 begin
  try
    if (not Self.OR_RCS.modules.ContainsKey(addr)) then
@@ -1255,7 +1255,7 @@ begin
  end;
 end;
 
-procedure TOR.RCSFail(addr:integer);
+procedure TOR.RCSFail(addr: integer);
 begin
  try
    if (not Self.OR_RCS.modules.ContainsKey(addr)) then Exit();
@@ -1268,9 +1268,9 @@ begin
 end;
 
 procedure TOR.RCSUpdate();
-var addr:Integer;
-    str:string;
-    panel:TORPanel;
+var addr: Integer;
+    str: string;
+    panel: TORPanel;
 begin
  if (not Self.OR_RCS.failure) then Exit();
 
@@ -1295,8 +1295,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.UpdateLine(LI:TListItem);
-var str:string;
+procedure TOR.UpdateLine(LI: TListItem);
+var str: string;
   i: Integer;
 begin
  LI.Caption := IntToStr(Self.index);
@@ -1320,7 +1320,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelZAS(Sender:TIdContext; str:TStrings);
+procedure TOR.PanelZAS(Sender: TIdContext; str: TStrings);
 begin
  //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
@@ -1334,7 +1334,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.OsvSet(id:string; state:Boolean);
+procedure TOR.OsvSet(id: string; state: Boolean);
 var osv: TOrLighting;
 begin
  for osv in Self.ORProp.Osvetleni do
@@ -1365,8 +1365,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TOR.PanelGetTrains(Sender:TIdCOntext):string;
-var i:Integer;
+function TOR.PanelGetTrains(Sender: TIdCOntext): string;
+var i: Integer;
 begin
  //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < read) then
@@ -1384,7 +1384,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelRemoveTrain(Sender:TIDContext; train_index:integer);
+procedure TOR.PanelRemoveTrain(Sender: TIDContext; train_index: integer);
 begin
  //kontrola opravneni klienta
  if (Self.PnlDGetRights(Sender) < write) then
@@ -1403,7 +1403,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelHVAdd(Sender:TIDContext; str:string);
+procedure TOR.PanelHVAdd(Sender: TIDContext; str: string);
 var HV: THV;
 begin
  if (Self.PnlDGetRights(Sender) < write) then
@@ -1415,7 +1415,7 @@ begin
  try
    HV := HVDb.Add(str, Self);
  except
-   on e:Exception do
+   on e: Exception do
     begin
      Self.SendLn(Sender, 'HV;ADD;-;ERR;'+e.Message);
      Exit();
@@ -1425,7 +1425,7 @@ begin
  Self.SendLn(Sender, 'HV;ADD;'+HV.addrStr+';OK');
 end;
 
-procedure TOR.PanelHVRemove(Sender:TIDContext; addr:Integer);
+procedure TOR.PanelHVRemove(Sender: TIDContext; addr: Integer);
 begin
  if (Self.PnlDGetRights(Sender) < write) then
   begin
@@ -1446,16 +1446,16 @@ begin
  try
    HVDb.Remove(addr);
  except
-   on E:Exception do
+   on E: Exception do
      Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';ERR;'+E.Message);
  end;
 
  Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';OK');
 end;
 
-procedure TOR.PanelHVEdit(Sender:TIDContext; str:string);
-var data:TStrings;
-    addr:Integer;
+procedure TOR.PanelHVEdit(Sender: TIDContext; str: string);
+var data: TStrings;
+    addr: Integer;
 begin
  if (Self.PnlDGetRights(Sender) < write) then
   begin
@@ -1488,7 +1488,7 @@ begin
 
    Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';OK');
  except
-   on e:Exception do
+   on e: Exception do
     begin
      Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';ERR;'+E.Message);
      if (Assigned(data)) then data.Free();
@@ -1498,7 +1498,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.BroadcastData(data:string; min_rights:TORControlRights = read);
+procedure TOR.BroadcastData(data: string; min_rights: TORControlRights = read);
 var panel: TORPanel;
 begin
  for panel in Self.Connected do
@@ -1506,7 +1506,7 @@ begin
     Self.SendLn(panel.Panel, data);
 end;
 
-procedure TOR.BroadcastGlobalData(data:string; min_rights:TORControlRights = read);
+procedure TOR.BroadcastGlobalData(data: string; min_rights: TORControlRights = read);
 var panel: TORPanel;
 begin
  for panel in Self.Connected do
@@ -1514,7 +1514,7 @@ begin
     ORTCPServer.SendLn(panel.Panel, '-;'+data);
 end;
 
-procedure TOR.BroadcastBottomError(err:string; tech:string; min_rights:TORControlRights = read; stanice: string = '');
+procedure TOR.BroadcastBottomError(err: string; tech: string; min_rights: TORControlRights = read; stanice: string = '');
 var panel: TORPanel;
 begin
  if (stanice = '') then
@@ -1527,7 +1527,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.ORDKClickServer(callback:TBlkCallback);
+procedure TOR.ORDKClickServer(callback: TBlkCallback);
 begin
  Self.ORStav.dk_click_callback := callback;
  Self.BroadcastData('DK-CLICK;1', TORControlRights.write);
@@ -1543,21 +1543,21 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelDKClick(SenderPnl:TIdContext; Button:TPanelButton);
+procedure TOR.PanelDKClick(SenderPnl: TIdContext; Button: TPanelButton);
 begin
  if (Assigned(Self.ORStav.dk_click_callback)) then
    Self.ORStav.dk_click_callback(SenderPnl, Self, Button);
 end;
 
 // Tato procedura parsuje "LOK-REQ" z panelu.
-procedure TOR.PanelLokoReq(Sender:TIdContext; str:TStrings);
-var data:TStrings;
-    i, j, addr:Integer;
-    HV:THV;
-    rights:TORControlRights;
-    line:string;
-    Blk:TBlk;
-    traini:Integer;
+procedure TOR.PanelLokoReq(Sender: TIdContext; str: TStrings);
+var data: TStrings;
+    i, j, addr: Integer;
+    HV: THV;
+    rights: TORControlRights;
+    line: string;
+    Blk: TBlk;
+    traini: Integer;
 begin
 //  or;LOK-REQ;PLEASE;addr1|addr2|...       - zadost o vydani tokenu
 //  or;LOK-REQ;PLEASE-U;blk_id              - zadost o vydani tokenu pro vozidla soupravy na danem techologickem bloku
@@ -1764,8 +1764,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // odesle status oblasti rizeni po prihlaseni klienta
-procedure TOR.SendStatus(panel:TIdContext);
-var user:TUser;
+procedure TOR.SendStatus(panel: TIdContext);
+var user: TUser;
 begin
  // kliknuti na dopravni kancelar
  if (Assigned(Self.ORStav.dk_click_callback)) then
@@ -1796,7 +1796,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.ClearVb();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.vb.Count-1 do
   (Self.vb[i] as TBlkUsek).KonecJC := TZaver.no;
@@ -1805,8 +1805,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TOR.GetORPanel(conn:TIdContext; var ORPanel:TORPanel):Integer;
-var i:Integer;
+function TOR.GetORPanel(conn: TIdContext; var ORPanel: TORPanel): Integer;
+var i: Integer;
 begin
  for i := 0 to Self.Connected.Count-1 do
    if (Self.Connected[i].Panel = conn) then
@@ -1819,7 +1819,7 @@ end;//fucction
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TOR.GetRightsString(rights:TORControlRights):string;
+class function TOR.GetRightsString(rights: TORControlRights): string;
 begin
  case (rights) of
   TORControlRights.null      : Result := 'null';
@@ -1834,9 +1834,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // je volano v pripade, ze dojde ke zmene opravenni za behu programu
-procedure TOR.UserUpdateRights(user:TObject);
-var i:Integer;
-    rights:TORControlRights;
+procedure TOR.UserUpdateRights(user: TObject);
+var i: Integer;
+    rights: TORControlRights;
 begin
  for i := 0 to Self.Connected.Count-1 do
   begin
@@ -1853,8 +1853,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.UserDelete(userid:string);
-var i:Integer;
+procedure TOR.UserDelete(userid: string);
+var i: Integer;
 begin
  for i := Self.Connected.Count-1 downto 0 do
   begin
@@ -1870,8 +1870,8 @@ end;
 
 // vraci 1 pokud zadost jiz probiha
 // vraci 0 pokud prikaz probehl vporadku
-function TOR.LokoPlease(Sender:TIDContext; user:TObject; comment:string):Integer;
-var str:string;
+function TOR.LokoPlease(Sender: TIDContext; user: TObject; comment: string): Integer;
+var str: string;
 begin
  if (Self.ORStav.reg_please <> nil) then Exit(1);
  Self.ORStav.reg_please := Sender;
@@ -1887,7 +1887,7 @@ begin
  Result := 0;
 end;
 
-procedure TOR.LokoCancel(Sender:TIdContext);
+procedure TOR.LokoCancel(Sender: TIdContext);
 begin
  if (Self.ORStav.reg_please = nil) then Exit();
  Self.ORStav.reg_please := nil;
@@ -1897,7 +1897,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.AuthReadToWrite(panel:TIdContext);
+procedure TOR.AuthReadToWrite(panel: TIdContext);
 begin
  if (Self.ZkratBlkCnt > 2) then ORTCPServer.PlaySound(panel, _SND_PRETIZENI, true);
  if (Self.ZadostBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TRAT_ZADOST, true);
@@ -1905,7 +1905,7 @@ begin
  if (Self.TimerCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TIMEOUT, true);
 end;
 
-procedure TOR.AuthWriteToRead(panel:TIdContext);
+procedure TOR.AuthWriteToRead(panel: TIdContext);
 begin
  if (Self.ZkratBlkCnt > 2) then ORTCPServer.DeleteSound(panel, _SND_PRETIZENI);
  if (Self.ZadostBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TRAT_ZADOST);
@@ -1916,7 +1916,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TOR.ORRightsToString(rights:TORControlRights):string;
+class function TOR.ORRightsToString(rights: TORControlRights): string;
 begin
  case (rights) of
   null      : Result := 'žádná oprávnění';
@@ -1930,19 +1930,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TOR.GetPSPodminka(blok:TObject; podminka:string):TPSPodminka;
+class function TOR.GetPSPodminka(blok: TObject; podminka: string): TPSPodminka;
 begin
  Result.cil      := TBlk(blok).name;
  Result.podminka := podminka;
 end;
 
-class function TOR.GetPSPodminka(cil:string; podminka:string):TPSPodminka;
+class function TOR.GetPSPodminka(cil: string; podminka: string): TPSPodminka;
 begin
  Result.cil      := cil;
  Result.podminka := podminka;
 end;
 
-class function TOR.GetPSPodminky(podm:TPSPodminka):TPSPodminky;
+class function TOR.GetPSPodminky(podm: TPSPodminka): TPSPodminky;
 begin
  Result := TList<TPSPodminka>.Create();
  Result.Add(podm);
@@ -1950,7 +1950,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.OnHlaseniAvailable(Sender:TObject; available:Boolean);
+procedure TOR.OnHlaseniAvailable(Sender: TObject; available: Boolean);
 begin
  if (available) then
    Self.BroadcastData('SHP;AVAILABLE;1')
@@ -1960,7 +1960,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.PanelHlaseni(Sender:TIDContext; str:TStrings);
+procedure TOR.PanelHlaseni(Sender: TIDContext; str: TStrings);
 begin
  if (not Assigned(Self.hlaseni)) then Exit();
  if (str.Count < 3) then Exit();
@@ -1981,16 +1981,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.NUZPrematureZaverRelease(Sender:TObject; data:Integer);
+procedure TOR.NUZPrematureZaverRelease(Sender: TObject; data: Integer);
 begin
  if (Self.NUZblkCnt > 0) then
    Self.NUZblkCnt := Self.NUZblkCnt - 1;
 end;
 
 procedure TOR.NUZcancelPrematureEvents();
-var blk:TBlk;
-    usek:TBlkUsek;
-    oblr:TOR;
+var blk: TBlk;
+    usek: TBlkUsek;
+    oblr: TOR;
 begin
  for blk in Blky do
   begin
@@ -2005,7 +2005,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.SetIndex(newIndex:Integer);
+procedure TOR.SetIndex(newIndex: Integer);
 begin
  if (Self.index = newIndex) then
    Exit();
@@ -2015,7 +2015,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TOR.NameComparer():IComparer<TOR>;
+class function TOR.NameComparer(): IComparer<TOR>;
 begin
  Result := TComparer<TOR>.Construct(
   function(const Left, Right: TOR): Integer
@@ -2025,7 +2025,7 @@ begin
  );
 end;
 
-class function TOR.IdComparer():IComparer<TOR>;
+class function TOR.IdComparer(): IComparer<TOR>;
 begin
  Result := TComparer<TOR>.Construct(
   function(const Left, Right: TOR): Integer
@@ -2117,14 +2117,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TOR.DkHvFuncsSetOk(Sender:TObject; Data:Pointer);
+procedure TOR.DkHvFuncsSetOk(Sender: TObject; Data: Pointer);
 var panel: TIdContext;
 begin
  panel := TIdContext(Data);
  ORTCPServer.SendInfoMsg(panel, 'Funkce nastaveny.');
 end;
 
-procedure TOR.DkHvFuncsSetErr(Sender:TObject; Data:Pointer);
+procedure TOR.DkHvFuncsSetErr(Sender: TObject; Data: Pointer);
 var panel: TIdContext;
 begin
  panel := TIdContext(Data);

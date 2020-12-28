@@ -83,17 +83,17 @@ type
     procedure CB_TratBlokChange(Sender: TObject);
     procedure CB_Dalsi_NavChange(Sender: TObject);
   private
-   OpenIndex:Integer;
-   mNewJC:Boolean;
-   CB_NavestidloPolozky:TArI;
-   CB_DalsiNavPolozky:TArI;
-   CB_NewUsekPolozky:TArI;
-   CB_NewVyhybkaPolozky:TArI;
-   CB_TratPolozky:TArI;
-   JCData:TJCprop;
+   OpenIndex: Integer;
+   mNewJC: Boolean;
+   CB_NavestidloPolozky: TArI;
+   CB_DalsiNavPolozky: TArI;
+   CB_NewUsekPolozky: TArI;
+   CB_NewVyhybkaPolozky: TArI;
+   CB_TratPolozky: TArI;
+   JCData: TJCprop;
 
-   Useky:TList<Integer>;
-   Vyhybky:TList<TJCVyhZaver>;
+   Useky: TList<Integer>;
+   Vyhybky: TList<TJCVyhZaver>;
 
    procedure EmptyJCOpenForm();
    procedure NormalOpenForm();
@@ -104,13 +104,13 @@ type
    procedure UpdateVyhybkyFromUseky();
    procedure FillVyhybky();
    procedure FillUseky();
-   function VyhybkaIndex(id:Integer):Integer;
-   function IsAnyVyhMinus():Boolean;
+   function VyhybkaIndex(id: Integer): Integer;
+   function IsAnyVyhMinus(): Boolean;
 
-   procedure MakeObls(var obls:TArStr);
+   procedure MakeObls(var obls: TArStr);
   public
-   procedure EditJC(JCIndex:Integer);
-   procedure NewJC(templateIndex:Integer);
+   procedure EditJC(JCIndex: Integer);
+   procedure NewJC(templateIndex: Integer);
 
   end;
 
@@ -177,12 +177,12 @@ procedure TF_JCEdit.EmptyJCOpenForm();
  end;
 
 procedure TF_JCEdit.NormalOpenForm();
-var prjz:TJCPrjZaver;
-    tmp:string;
-    blokid:integer;
-    odvrat:TJCOdvratZaver;
-    jcref:TJCRefZaver;
-    vb:Integer;
+var prjz: TJCPrjZaver;
+    tmp: string;
+    blokid: integer;
+    odvrat: TJCOdvratZaver;
+    jcref: TJCRefZaver;
+    vb: Integer;
  begin
   JCData := JCDb.GetJCByIndex(OpenIndex).data;
 
@@ -261,18 +261,18 @@ procedure TF_JCEdit.HlavniOpenForm;
  end;
 
 procedure TF_JCEdit.B_Vyh_AddClick(Sender: TObject);
-var vyh:TJCVyhZaver;
-    vyhIndex:Integer;
-    updateOdbocka:Boolean;
+var vyh: TJCVyhZaver;
+    vyhIndex: Integer;
+    updateOdbocka: Boolean;
  begin
   if (CB_NewZaverBlok.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte výhybku!','Nelze pridat zaver',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte výhybku!','Nelze pridat zaver', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (CB_NewZaverPoloha.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte polohu výhybky!','Nelze pridat zaver',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte polohu výhybky!','Nelze pridat zaver', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -330,7 +330,7 @@ begin
  Self.Vyhybky.Free();
 end;
 
-procedure TF_JCEdit.EditJC(JCIndex:Integer);
+procedure TF_JCEdit.EditJC(JCIndex: Integer);
  begin
   OpenIndex := JCIndex;
   HlavniOpenForm;
@@ -345,20 +345,20 @@ procedure TF_JCEdit.EditJC(JCIndex:Integer);
   Self.ShowModal();
  end;
 
-procedure TF_JCEdit.NewJC(templateIndex:Integer);
+procedure TF_JCEdit.NewJC(templateIndex: Integer);
  begin
   mNewJC := true;
   EditJC(templateIndex);
  end;
 
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
-var JC:TJC;
-    i:Integer;
-    line, item:string;
-    parsed:TStrings;
-    odvrat:TJCOdvratZaver;
-    prejezd:TJCPrjZaver;
-    refz:TJCRefZaver;
+var JC: TJC;
+    i: Integer;
+    line, item: string;
+    parsed: TStrings;
+    odvrat: TJCOdvratZaver;
+    prejezd: TJCPrjZaver;
+    refz: TJCRefZaver;
     vyhZaver: TJCVyhZaver;
  begin
   if (E_Name.Text = '') then
@@ -389,13 +389,13 @@ var JC:TJC;
   if (CB_Rychlost_Volno.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při postaveném dalším návěstidle!',
-                           'Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+                           'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (CB_Rychlost_Stuj.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při dalším návěstidle na stůj!',
-                           'Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+                           'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CHB_Trat.Checked) and (Self.CB_TratBlok.ItemIndex < 0) then
@@ -473,7 +473,7 @@ var JC:TJC;
 
         JCData.Prejezdy.Add(prejezd);
       except
-       on E:Exception do
+       on E: Exception do
         begin
          if (Assigned(prejezd.uzaviraci)) then
            prejezd.uzaviraci.Free();
@@ -502,7 +502,7 @@ var JC:TJC;
         odvrat.ref_blk := StrToInt(parsed[2]);
         JCData.Odvraty.Add(odvrat);
       except
-       on E:Exception do
+       on E: Exception do
         begin
          Application.MessageBox(PChar('Napodařilo se naparsovat odvrat "' + line + '":'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -524,7 +524,7 @@ var JC:TJC;
         refz.ref_blk := StrToInt(parsed[1]);
         JCData.zamky.Add(refz);
       except
-       on E:Exception do
+       on E: Exception do
         begin
          Application.MessageBox(PChar('Napodařilo se naparsovat zámek ' + line + ':'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -544,7 +544,7 @@ var JC:TJC;
       try
         JCData.vb.Add(StrToInt(item));
       except
-       on E:Exception do
+       on E: Exception do
         begin
          Application.MessageBox(PChar('Napodařilo se naparsovat variatní bod ' + item + ':'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -563,7 +563,7 @@ var JC:TJC;
     try
      JCDb.AddJC(Self.JCData);
     except
-     on E:Exception do
+     on E: Exception do
       begin
        Application.MessageBox(PChar('Přidávání JC skončilo s chybou'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
        Exit;
@@ -581,7 +581,7 @@ var JC:TJC;
  end;
 
 procedure TF_JCEdit.B_Usek_DelClick(Sender: TObject);
-var i:Integer;
+var i: Integer;
  begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z JC?'),
                              'Mazání úseku', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
@@ -612,7 +612,7 @@ var i: Integer;
 procedure TF_JCEdit.LV_VyhybkyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 var i: Integer;
-    vyh:TJCVyhZaver;
+    vyh: TJCVyhZaver;
  begin
   B_Vyh_Del.Enabled := (LV_Vyhybky.ItemIndex <> -1);
   B_Usek_Del.Enabled := false;
@@ -646,7 +646,7 @@ end;
 
 procedure TF_JCEdit.LV_UsekyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
-var i:Integer;
+var i: Integer;
  begin
   B_Usek_Del.Enabled := (LV_Useky.ItemIndex <> -1);
   B_Vyh_Del.Enabled := false;
@@ -682,7 +682,7 @@ begin
 end;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
-var navestidlo:TBlkNav;
+var navestidlo: TBlkNav;
  begin
   if (CB_Navestidlo.ItemIndex <> -1) then
    begin
@@ -727,7 +727,7 @@ procedure TF_JCEdit.CB_TypChange(Sender: TObject);
  end;
 
 procedure TF_JCEdit.CHB_AdvancedClick(Sender: TObject);
-var gb:TGroupBox;
+var gb: TGroupBox;
 begin
  if (Self.CHB_Advanced.Checked) then
   gb := Self.GB_Advanced
@@ -740,7 +740,7 @@ begin
 end;
 
 procedure TF_JCEdit.CHB_TratClick(Sender: TObject);
-var obls:TArStr;
+var obls: TArStr;
 begin
  Self.CB_TratBlok.Enabled := Self.CHB_Trat.Checked;
  Self.CB_TratSmer.Enabled := Self.CHB_Trat.Checked;
@@ -756,9 +756,9 @@ begin
   end;
 end;
 
-procedure TF_JCEdit.MakeObls(var obls:TArStr);
-var Blk:TBlk;
-    i:Integer;
+procedure TF_JCEdit.MakeObls(var obls: TArStr);
+var Blk: TBlk;
+    i: Integer;
 begin
  Blky.GetBlkByID(JCData.NavestidloBlok, Blk);
 
@@ -780,12 +780,12 @@ begin
 end;
 
 procedure TF_JCEdit.UpdateNextNav();
-var vypustit:TArI;
-    obls:TArStr;
-    blk:TBlk;
-    i:Integer;
-    navestidlo:TBlkNav;
-    trat:TBlkTrat;
+var vypustit: TArI;
+    obls: TArStr;
+    blk: TBlk;
+    i: Integer;
+    navestidlo: TBlkNav;
+    trat: TBlkTrat;
 begin
  Self.CB_Dalsi_Nav.Clear();
  Self.CB_Dalsi_Nav.Items.Add('Žádné návěstidlo');
@@ -884,8 +884,8 @@ begin
 end;
 
 procedure TF_JCEdit.FillVyhybky();
-var i:Integer;
-    obls:TArStr;
+var i: Integer;
+    obls: TArStr;
     zaver: TJCVyhZaver;
     LI: TListItem;
 begin
@@ -908,7 +908,7 @@ begin
  Blky.NactiBlokyDoObjektu(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, obls, btTurnout);
 end;
 
-function TF_JCEdit.VyhybkaIndex(id:Integer):Integer;
+function TF_JCEdit.VyhybkaIndex(id: Integer): Integer;
 var i: Integer;
 begin
  for i := 0 to Self.Vyhybky.Count-1 do
@@ -918,9 +918,9 @@ begin
 end;
 
 procedure TF_JCEdit.FillUseky();
-var i:Integer;
-    LI:TListItem;
-    obls:TArStr;
+var i: Integer;
+    LI: TListItem;
+    obls: TArStr;
 begin
  Self.LV_Useky.Clear();
  for i := 0 to Self.Useky.Count-1 do
@@ -934,8 +934,8 @@ begin
  Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btUsek, -1, btTU);
 end;
 
-function TF_JCEdit.IsAnyVyhMinus():Boolean;
-var vyhZaver:TJCVyhZaver;
+function TF_JCEdit.IsAnyVyhMinus(): Boolean;
+var vyhZaver: TJCVyhZaver;
 begin
  for vyhZaver in Self.Vyhybky do
    if (vyhZaver.Poloha = TTurnoutPosition.minus) then

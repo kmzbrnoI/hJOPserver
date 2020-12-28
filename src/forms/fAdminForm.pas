@@ -1,4 +1,4 @@
-﻿unit fAdminForm;
+unit fAdminForm;
 
 interface
 
@@ -121,7 +121,7 @@ begin
 end;
 
 procedure TF_Admin.FormShow(Sender: TObject);
-var ini:TMemIniFile;
+var ini: TMemIniFile;
 begin
   ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
   try
@@ -140,7 +140,7 @@ procedure TF_Admin.B_InputSimClick(Sender: TObject);
       RCSi.InputSim();
       writelog('Proveden InputSim', WR_RCS);
     except
-      on E:Exception do
+      on E: Exception do
         Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
     end;
    end;

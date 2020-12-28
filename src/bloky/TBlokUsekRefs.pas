@@ -15,8 +15,8 @@ TBlkUsekRefs = class
   _SEPARATOR: Char = ',';
 
  private
-   function GetBlockState():TUsekStav;
-   function GetChanged():Boolean;
+   function GetBlockState(): TUsekStav;
+   function GetChanged(): Boolean;
 
  public
   parts: TObjectList<TBlkUsekRef>;
@@ -85,7 +85,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsekRefs.GetBlockState():TUsekStav;
+function TBlkUsekRefs.GetBlockState(): TUsekStav;
 var ref: TBlkUsekRef;
 begin
  for ref in Self.parts do
@@ -105,7 +105,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsekRefs.GetChanged():Boolean;
+function TBlkUsekRefs.GetChanged(): Boolean;
 begin
  Result := (Self.stateLast <> Self.state);
  Self.stateLast := Self.state;

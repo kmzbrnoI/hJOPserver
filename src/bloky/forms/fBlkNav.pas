@@ -1,4 +1,4 @@
-﻿unit fBlkNav;
+unit fBlkNav;
 
 interface
 
@@ -58,10 +58,10 @@ type
     procedure CHB_RCS_Second_OutputClick(Sender: TObject);
 
   private
-    OpenIndex:Integer;
-    Blk:TBlkNav;
-    NewBlk:Boolean;
-    obls:TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
+    OpenIndex: Integer;
+    Blk: TBlkNav;
+    NewBlk: Boolean;
+    obls: TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
 
     eventForms: TObjectList<TF_BlkNavEvent>;
     eventTabSheets: TObjectList<TTabSheet>;
@@ -73,9 +73,9 @@ type
      procedure HlavniOpenForm();
      procedure NewBlkOpenForm();
 
-     procedure OnTabClose(Sender:TObject);
+     procedure OnTabClose(Sender: TObject);
   public
-     procedure OpenForm(BlokIndex:Integer);
+     procedure OpenForm(BlokIndex: Integer);
      procedure NewBlkCreate;
   end;
 
@@ -88,10 +88,10 @@ uses GetSystems, FileSystem, TechnologieRCS, TBlok, TOblRizeni, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkNav.OpenForm(BlokIndex:Integer);
+procedure TF_BlkNav.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   Self.HlavniOpenForm();
 
   if (Self.NewBlk) then
@@ -129,12 +129,12 @@ procedure TF_BlkNav.NewBlkOpenForm();
  end;
 
 procedure TF_BlkNav.NormalOpenForm();
-var glob:TBlkSettings;
-    settings:TBlkNavSettings;
-    i:Integer;
-    eventForm:TF_BlkNavEvent;
-    ts:TCloseTabSheet;
-    oblr:TOR;
+var glob: TBlkSettings;
+    settings: TBlkNavSettings;
+    i: Integer;
+    eventForm: TF_BlkNavEvent;
+    ts: TCloseTabSheet;
+    oblr: TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -252,8 +252,8 @@ begin
 end;
 
 procedure TF_BlkNav.BB_Event_AddClick(Sender: TObject);
-var eventForm:TF_BlkNavEvent;
-    ts:TCloseTabSheet;
+var eventForm: TF_BlkNavEvent;
+    ts: TCloseTabSheet;
 begin
   ts := TCloseTabSheet.Create(Self.PC_Events);
   if (Self.eventForms.Count = 0) then
@@ -275,9 +275,9 @@ begin
 end;
 
 procedure TF_BlkNav.B_SaveClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkNavSettings;
-    str:string;
+var glob: TBlkSettings;
+    settings: TBlkNavSettings;
+    str: string;
     another: TBlk;
     fBlkNavEvent: TF_BlkNavEvent;
  begin
@@ -286,7 +286,7 @@ var glob:TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -339,7 +339,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btNav, glob) as TBlkNav;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
@@ -402,7 +402,7 @@ procedure TF_BlkNav.PageControlCloseButtonDrawTab(Control: TCustomTabControl;
 var
   CloseBtnSize: Integer;
   PageControl: TPageControl;
-  TabSheet:TCloseTabSheet;
+  TabSheet: TCloseTabSheet;
   TabCaption: TPoint;
   CloseBtnRect: TRect;
   CloseBtnDrawState: Cardinal;
@@ -471,7 +471,7 @@ procedure TF_BlkNav.PageControlCloseButtonMouseDown(Sender: TObject;
 var
   I: Integer;
   PageControl: TPageControl;
-  TabSheet:TCloseTabSheet;
+  TabSheet: TCloseTabSheet;
 begin
   PageControl := Sender as TPageControl;
 
@@ -550,8 +550,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNav.OnTabClose(Sender:TObject);
-var i:Integer;
+procedure TF_BlkNav.OnTabClose(Sender: TObject);
+var i: Integer;
 begin
  if (Self.eventTabSheets.Count <= 1) then
   begin

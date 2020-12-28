@@ -9,14 +9,14 @@ uses ComCtrls, SysUtils;
 type
   TORsTableData=class
     private
-      LV:TListView;
+      LV: TListView;
 
     public
 
       procedure LoadToTable();
-      procedure UpdateTable(force:Boolean = false);
+      procedure UpdateTable(force: Boolean = false);
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
@@ -28,7 +28,7 @@ uses TOblsRizeni, TOblRizeni;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TORsTableData.Create(LV:TListView);
+constructor TORsTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -37,8 +37,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORsTableData.LoadToTable();
-var LI:TListItem;
-    i, j:Integer;
+var LI: TListItem;
+    i, j: Integer;
 begin
  Self.LV.Clear;
 
@@ -55,7 +55,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORsTableData.UpdateTable(force:Boolean = false);
+procedure TORsTableData.UpdateTable(force: Boolean = false);
 var OblR: TOR;
 begin
  for OblR in ORs do

@@ -9,19 +9,19 @@ uses ComCtrls, SysUtils;
 type
   TUsersTableData=class
     private
-      LV:TListView;
+      LV: TListView;
 
     public
 
       procedure LoadToTable();
       procedure UpdateTable();
 
-      procedure UpdateLine(line:Integer);
+      procedure UpdateLine(line: Integer);
 
       procedure AddUser();
-      procedure RemoveUser(index:Integer);
+      procedure RemoveUser(index: Integer);
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
@@ -34,7 +34,7 @@ uses fMain, UserDb, User, ownStrUtils, StrUtils, TOblRizeni, TOblsRizeni,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TUsersTableData.Create(LV:TListView);
+constructor TUsersTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -43,8 +43,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TUsersTableData.LoadToTable();
-var i, j:Integer;
-    LI:TListItem;
+var i, j: Integer;
+    LI: TListItem;
 begin
  F_Main.E_Dataload_Users.text := UsrDB.filenameData;
  F_Main.E_dataload_users_stat.text := UsrDB.filenameStat;
@@ -62,13 +62,13 @@ begin
 end;
 
 procedure TUsersTableData.UpdateTable();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to UsrDB.Count-1 do
    Self.UpdateLine(i);
 end;
 
-procedure TUsersTableData.UpdateLine(line:Integer);
+procedure TUsersTableData.UpdateLine(line: Integer);
 var user: TUser;
     str: string;
     oblr: TOR;
@@ -104,8 +104,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TUsersTableData.AddUser();
-var LI:TListItem;
-    j:Integer;
+var LI: TListItem;
+    j: Integer;
 begin
  LI := Self.LV.Items.Add;
  LI.Caption := IntToStr(Self.LV.Items.Count);
@@ -115,7 +115,7 @@ begin
  Self.UpdateLine(Self.LV.Items.Count-1);
 end;
 
-procedure TUsersTableData.RemoveUser(index:Integer);
+procedure TUsersTableData.RemoveUser(index: Integer);
 begin
  Self.LV.Items.Delete(index);
 end;

@@ -25,22 +25,22 @@ type
     m_sound: string;
     m_funcType: THoukFuncType;
 
-     procedure LoadFromDefString(data:string);
-     function IsEnabled():Boolean;
+     procedure LoadFromDefString(data: string);
+     function IsEnabled(): Boolean;
 
      procedure FireEvent(train: TObject);
 
    public
 
-     constructor Create(data:string); overload;
-     constructor Create(event:TRREv; sound:string; funcType:THoukFuncType); overload;
+     constructor Create(data: string); overload;
+     constructor Create(event: TRREv; sound: string; funcType: THoukFuncType); overload;
      destructor Destroy(); override;
 
-     function GetDefString():string;
+     function GetDefString(): string;
 
      procedure Register();
      procedure Unregister();
-     function CheckTriggerred(Sender:TObject):Boolean; // returns true when event triggerred
+     function CheckTriggerred(Sender: TObject): Boolean; // returns true when event triggerred
 
      property enabled: Boolean read IsEnabled;
      property sound: string read m_sound;
@@ -56,7 +56,7 @@ uses ownStrUtils, TechnologieTrakce, Train, TBlokUsek, TrainDb, fMain,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor THoukEv.Create(data:string);
+constructor THoukEv.Create(data: string);
 begin
  inherited Create();
 
@@ -68,7 +68,7 @@ begin
  end;
 end;
 
-constructor THoukEv.Create(event:TRREv; sound:string; funcType:THoukFuncType);
+constructor THoukEv.Create(event: TRREv; sound: string; funcType: THoukFuncType);
 begin
  inherited Create();
 
@@ -85,8 +85,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THoukEv.LoadFromDefString(data:string);
-var str:TStrings;
+procedure THoukEv.LoadFromDefString(data: string);
+var str: TStrings;
 begin
  str := TStringList.Create();
 
@@ -111,7 +111,7 @@ begin
  end;
 end;
 
-function THoukEv.GetDefString():string;
+function THoukEv.GetDefString(): string;
 begin
  Result := '{' + Self.m_event.GetDefStr() + '};' + IntToStr(Integer(Self.m_funcType)) +
            ';' + Self.m_sound;
@@ -131,7 +131,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THoukEv.CheckTriggerred(Sender:TObject):Boolean;
+function THoukEv.CheckTriggerred(Sender: TObject): Boolean;
 begin
  if (Self.m_event.IsTriggerred(Sender, false)) then
   begin
@@ -145,14 +145,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THoukEv.IsEnabled():Boolean;
+function THoukEv.IsEnabled(): Boolean;
 begin
  Result := Self.m_event.enabled;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THoukEv.FireEvent(train:TObject);
+procedure THoukEv.FireEvent(train: TObject);
 begin
  case (Self.m_funcType) of
    hftToggle : TTrain(train).ToggleHouk(Self.m_sound);

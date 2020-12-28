@@ -9,8 +9,8 @@ uses ComCtrls, SysUtils;
 type
   TZesTableData=class
     private
-      LV:TListView;
-      changed:Boolean;
+      LV: TListView;
+      changed: Boolean;
 
     public
 
@@ -18,7 +18,7 @@ type
       procedure UpdateTable();
       procedure ZesChange();
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
@@ -30,7 +30,7 @@ uses Booster, BoosterDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TZesTableData.Create(LV:TListView);
+constructor TZesTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -40,8 +40,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TZesTableData.LoadToTable();
-var LI:TListItem;
-    booster:TBooster;
+var LI: TListItem;
+    booster: TBooster;
 begin
  Self.LV.Clear();
 

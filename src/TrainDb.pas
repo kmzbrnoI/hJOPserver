@@ -1,4 +1,4 @@
-﻿unit TrainDb;
+unit TrainDb;
 
 { Trains database. }
 
@@ -14,40 +14,40 @@ type
 
   TTrainDb = class
    private
-      ffilename:string;
+      ffilename: string;
 
       procedure FreeTrains();
 
-      function GetCount():Integer;
-      function GetItem(index:Integer): TTrain;
+      function GetCount(): Integer;
+      function GetItem(index: Integer): TTrain;
       function GetEmptySpaceForTrain(): Integer;
 
    public
-      trains:array [0.._MAX_TRAIN] of TTrain;
+      trains: array [0.._MAX_TRAIN] of TTrain;
 
       constructor Create();
       destructor Destroy(); override;
 
-      procedure LoadData(const filename:string);
-      procedure SaveData(const filename:string);
+      procedure LoadData(const filename: string);
+      procedure SaveData(const filename: string);
 
       function Add(train: TStrings; usek: TObject; oblr: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain; overload;
       function Add(train: TJsonObject; ok: TCb; err: TCb): TTrain; overload;
-      procedure Remove(index:Integer);
+      procedure Remove(index: Integer);
 
-      function GetTrainNameByIndex(index:Integer):string;
-      function GetTrainIndexByName(name:string):Integer;
+      function GetTrainNameByIndex(index: Integer): string;
+      function GetTrainIndexByName(name: string): Integer;
 
       procedure UpdateFront();
       procedure StopAllTrains();
       procedure ClearPOdj();
 
-      procedure GetPtData(json:TJsonObject);
+      procedure GetPtData(json: TJsonObject);
 
-      property filename:string read ffilename;
+      property filename: string read ffilename;
 
       property Items[index : integer] : TTrain read GetItem; default;
-      property count:Integer read GetCount;
+      property count: Integer read GetCount;
 
   end;//TTrainDb
 
@@ -62,7 +62,7 @@ uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, appEv, TBlok,
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TTrainDb.Create();
-var i:Integer;
+var i: Integer;
 begin
  inherited;
 
@@ -79,7 +79,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainDb.FreeTrains();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_TRAIN-1 do
   if (Assigned(Self.trains[i])) then
@@ -88,10 +88,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrainDb.LoadData(const filename:string);
-var ini:TMemIniFile;
-    i:Integer;
-    sections:TStrings;
+procedure TTrainDb.LoadData(const filename: string);
+var ini: TMemIniFile;
+    i: Integer;
+    sections: TStrings;
 begin
  writelog('Načítám soupravy: '+filename, WR_DATA);
  Self.ffilename := filename;
@@ -117,9 +117,9 @@ begin
  HVTableData.LoadToTable();
 end;
 
-procedure TTrainDb.SaveData(const filename:string);
-var ini:TMemIniFile;
-    i:Integer;
+procedure TTrainDb.SaveData(const filename: string);
+var ini: TMemIniFile;
+    i: Integer;
 begin
  writelog('Ukládám soupravy: '+filename, WR_DATA);
 
@@ -140,8 +140,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrainDb.GetCount():Integer;
-var i:Integer;
+function TTrainDb.GetCount(): Integer;
+var i: Integer;
 begin
  Result := 0;
  for i := 0 to _MAX_TRAIN do
@@ -151,7 +151,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrainDb.GetTrainNameByIndex(index:Integer):string;
+function TTrainDb.GetTrainNameByIndex(index: Integer): string;
 begin
  if (index < 0) or (index >= _MAX_TRAIN) then Exit('-');
 
@@ -163,8 +163,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrainDb.GetTrainIndexByName(name:string):Integer;
-var i:Integer;
+function TTrainDb.GetTrainIndexByName(name: string): Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_TRAIN-1 do
   if ((Assigned(Self.trains[i])) and (Self.trains[i].name = name)) then
@@ -175,7 +175,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrainDb.Add(train: TStrings; usek: TObject; oblr: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain;
-var i:Integer;
+var i: Integer;
 begin
  i := Self.GetEmptySpaceForTrain();
 
@@ -234,7 +234,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrainDb.Remove(index:Integer);
+procedure TTrainDb.Remove(index: Integer);
 begin
  if (not Assigned(Self.trains[index])) then Exit();
 
@@ -247,7 +247,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainDb.UpdateFront();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_TRAIN-1 do
   if (Self.trains[i] <> nil) then
@@ -259,7 +259,7 @@ end;
 // Tato funkce predpoklada vysokou zatez sbernice do centraly ->
 // schvalne ceka.
 procedure TTrainDb.StopAllTrains();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_TRAIN-1 do
   if ((Self.trains[i] <> nil) and (Self.trains[i].wantedSpeed <> 0)) then
@@ -271,7 +271,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrainDb.GetItem(index:Integer):TTrain;
+function TTrainDb.GetItem(index: Integer): TTrain;
 begin
  Result := Self.trains[index];
 end;
@@ -279,7 +279,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainDb.ClearPOdj();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_TRAIN-1 do
   if (Self.trains[i] <> nil) then
@@ -288,8 +288,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrainDb.GetEmptySpaceForTrain():Integer;
-var i:Integer;
+function TTrainDb.GetEmptySpaceForTrain(): Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_TRAIN do
    if (Self.trains[i] = nil) then
@@ -299,7 +299,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrainDb.GetPtData(json:TJsonObject);
+procedure TTrainDb.GetPtData(json: TJsonObject);
 var spr: TTrain;
 begin
  for spr in Self.trains do
@@ -308,7 +308,7 @@ begin
      if (spr <> nil) then
        spr.GetPtData(json.A['trains'].AddObject);
    except
-     on E:Exception do
+     on E: Exception do
        PTUtils.PtErrorToJson(json.A['errors'].AddObject,
         '500', 'Chyba pri nacitani soupravy '+spr.name,
         E.Message);

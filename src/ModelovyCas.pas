@@ -1,4 +1,4 @@
-﻿unit ModelovyCas;
+unit ModelovyCas;
 
 {
   Tato unta se stara o modelovy cas.
@@ -33,52 +33,52 @@ type
     _SYNC_REAL_MINUTES = 3;
 
    private
-    fdateTime:TDateTime;
-    fspeed:Real;
-    fstarted:Boolean;
-    fused:Boolean;
-    last_sync:TDateTime;
-    last_call:TDateTime;
+    fdateTime: TDateTime;
+    fspeed: Real;
+    fstarted: Boolean;
+    fused: Boolean;
+    last_sync: TDateTime;
+    last_call: TDateTime;
 
-    procedure SetDateTime(dt:TDateTime);
-    procedure mSetTime(time:TTime);
-    procedure SetSpeed(speed:Real);
-    procedure SetStarted(started:Boolean);
-    procedure SetUsed(used:Boolean);
+    procedure SetDateTime(dt: TDateTime);
+    procedure mSetTime(time: TTime);
+    procedure SetSpeed(speed: Real);
+    procedure SetStarted(started: Boolean);
+    procedure SetUsed(used: Boolean);
 
-    function GetStrSpeed():string;
-    procedure SetStrSpeed(speed:string);
+    function GetStrSpeed(): string;
+    procedure SetStrSpeed(speed: string);
 
     procedure BroadcastTime();
-    function GetTCPString():string;
-    function GetDate():TDate;
-    function GetTime():TTime;
+    function GetTCPString(): string;
+    function GetDate(): TDate;
+    function GetTime(): TTime;
 
    public
 
      constructor Create();
 
-     procedure LoadData(var ini:TMemIniFile);
-     procedure SaveData(var ini:TMemIniFile);
+     procedure LoadData(var ini: TMemIniFile);
+     procedure SaveData(var ini: TMemIniFile);
 
      procedure Update();
 
-     procedure SendTimeToPanel(AContext:TIDContext);
-     procedure SetTime(time:TTime; speed:Real);
+     procedure SendTimeToPanel(AContext: TIDContext);
+     procedure SetTime(time: TTime; speed: Real);
      procedure UpdateGUIColors();
-     procedure Parse(parsed:TStrings);
+     procedure Parse(parsed: TStrings);
 
-     property dateTime:TDateTime read fdateTime write SetDateTime;
-     property date:TDate read GetDate;
-     property time:TTime read GetTime write mSetTime;
-     property speed:Real read fspeed write SetSpeed;
-     property started:Boolean read fstarted write SetStarted;
-     property used:Boolean read fused write SetUsed;
-     property strSpeed:string read GetStrSpeed write SetStrSpeed;
+     property dateTime: TDateTime read fdateTime write SetDateTime;
+     property date: TDate read GetDate;
+     property time: TTime read GetTime write mSetTime;
+     property speed: Real read fspeed write SetSpeed;
+     property started: Boolean read fstarted write SetStarted;
+     property used: Boolean read fused write SetUsed;
+     property strSpeed: string read GetStrSpeed write SetStrSpeed;
   end;//class TModCas
 
 var
-  ModCas:TModCas;
+  ModCas: TModCas;
 
 implementation
 
@@ -96,14 +96,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.LoadData(var ini:TMemIniFile);
+procedure TModCas.LoadData(var ini: TMemIniFile);
 begin
  Self.fspeed := ini.ReadFloat('ModCas', 'speed', 5);
  Self.dateTime := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
  Self.fused := ini.ReadBool('ModCas', 'used', true);
 end;
 
-procedure TModCas.SaveData(var ini:TMemIniFile);
+procedure TModCas.SaveData(var ini: TMemIniFile);
 begin
  ini.WriteString('ModCas', 'speed', Self.strSpeed);
  ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
@@ -112,7 +112,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetDateTime(dt:TDateTime);
+procedure TModCas.SetDateTime(dt: TDateTime);
 begin
  if ((Self.fdateTime <> dt) and (not Self.started)) then
   begin
@@ -121,7 +121,7 @@ begin
   end;
 end;
 
-procedure TModCas.mSetTime(time:TTime);
+procedure TModCas.mSetTime(time: TTime);
 begin
  if ((Self.fdateTime <> Self.date + time) and (not Self.started)) then
   begin
@@ -132,7 +132,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetSpeed(speed:Real);
+procedure TModCas.SetSpeed(speed: Real);
 begin
  if ((Self.fspeed <> speed) and (not Self.started)) then
   begin
@@ -143,7 +143,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetStarted(started:Boolean);
+procedure TModCas.SetStarted(started: Boolean);
 begin
  if (started <> Self.fstarted) then
   begin
@@ -155,7 +155,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetUsed(used:Boolean);
+procedure TModCas.SetUsed(used: Boolean);
 begin
  if (used <> Self.fused) then
   begin
@@ -168,7 +168,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TModCas.Update();
-var diff:TTime;
+var diff: TTime;
 begin
  if (not Self.started) then
   begin
@@ -203,14 +203,14 @@ begin
  ORTCPServer.BroadcastData(Self.GetTCPString());
 end;
 
-procedure TModCas.SendTimeToPanel(AContext:TIDContext);
+procedure TModCas.SendTimeToPanel(AContext: TIDContext);
 begin
  ORTCPServer.SendLn(AContext, Self.GetTCPString());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetTime(time:TTime; speed:Real);
+procedure TModCas.SetTime(time: TTime; speed: Real);
 begin
  if (((Self.time <> time) or (Self.fspeed <> speed)) and (not Self.started)) then
   begin
@@ -222,12 +222,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TModCas.GetStrSpeed():string;
+function TModCas.GetStrSpeed(): string;
 begin
  Result := FloatToStrF(Self.speed, ffGeneral, 1, 1);
 end;
 
-procedure TModCas.SetStrSpeed(speed:string);
+procedure TModCas.SetStrSpeed(speed: string);
 begin
  Self.SetSpeed(StrToFloat(speed));
 end;
@@ -257,7 +257,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TModCas.GetTCPString():string;
+function TModCas.GetTCPString(): string;
 begin
  if (Self.started) then
   ORTCPServer.BroadcastData('-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
@@ -271,7 +271,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.Parse(parsed:TStrings);
+procedure TModCas.Parse(parsed: TStrings);
 begin
  parsed[2] := UpperCase(parsed[2]);
 
@@ -301,7 +301,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TModCas.GetDate():TDate;
+function TModCas.GetDate(): TDate;
 var dt: TDateTime;
 begin
  dt := Self.dateTime;
@@ -309,7 +309,7 @@ begin
  Result := dt;
 end;
 
-function TModCas.GetTime():TTime;
+function TModCas.GetTime(): TTime;
 var dt: TDateTime;
 begin
  dt := Self.dateTime;

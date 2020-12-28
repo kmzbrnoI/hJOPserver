@@ -22,7 +22,7 @@ type
     procedure ClientRemoveBlock(client: TIdContext; blkid: Integer);
 
     procedure ParseBlocksMessage(Sender: TIdContext; parsed: TStrings);
-    procedure OnBlkChange(blkid:Integer);
+    procedure OnBlkChange(blkid: Integer);
     procedure OnClientDisconnect(client: TIdContext);
     procedure RemoveAllClients();
 
@@ -77,9 +77,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TACBlk.ParseBlocksMessage(Sender: TIdContext; parsed: TStrings);
-var blks:TStrings;
-    blk, list:string;
-    blkid:integer;
+var blks: TStrings;
+    blk, list: string;
+    blkid: integer;
 begin
  if ((parsed.Count >= 5) and (UpperCase(parsed[3]) = 'BLOCKS')) then
   begin
@@ -96,7 +96,7 @@ begin
          Self.ClientAddBlock(Sender, blkid);
          ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;'+blk+';OK');
        except
-         on E:Exception do
+         on E: Exception do
            ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;'+blk+';ERR;'+E.Message);
        end;
       end;
@@ -133,7 +133,7 @@ begin
   end;
 end;
 
-procedure TACBlk.OnBlkChange(blkid:Integer);
+procedure TACBlk.OnBlkChange(blkid: Integer);
 var client: TIdContext;
 begin
  if (not Self.blkToClients.ContainsKey(blkid)) then Exit();

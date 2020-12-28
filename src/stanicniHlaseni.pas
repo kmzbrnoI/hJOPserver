@@ -15,7 +15,7 @@ const
   );
 
 type
-  TAvailableEvent = procedure (Sender:TObject; available:Boolean) of object;
+  TAvailableEvent = procedure (Sender: TObject; available: Boolean) of object;
 
   TSHTrain = record
     cislo: string;
@@ -32,26 +32,26 @@ type
     m_clients: TList<TIdContext>;
     m_orid: string;
 
-     procedure BroadcastData(data:string);
-     function TrainToStr(train:TSHTrain):string;
-     function GetAvailable():Boolean;
+     procedure BroadcastData(data: string);
+     function TrainToStr(train: TSHTrain): string;
+     function GetAvailable(): Boolean;
 
    public
     OnAvailable: TAvailableEvent;
 
-     constructor Create(orid:string);
+     constructor Create(orid: string);
      destructor Destroy(); override;
 
-     procedure Parse(Sender:TIdContext; SenderOR:TObject; parsed:TStrings);
+     procedure Parse(Sender: TIdContext; SenderOR: TObject; parsed: TStrings);
      procedure Reset();
-     procedure ClientDisconnect(Client:TIdContext);
+     procedure ClientDisconnect(Client: TIdContext);
 
-     procedure Prijede(train:TSHTrain);
-     procedure Odjede(train:TSHTrain);
-     procedure Projede(train:TSHTrain);
-     procedure Spec(id:string);
+     procedure Prijede(train: TSHTrain);
+     procedure Odjede(train: TSHTrain);
+     procedure Projede(train: TSHTrain);
+     procedure Spec(id: string);
 
-     class function HlasitTrainTyp(typ:string):Boolean;
+     class function HlasitTrainTyp(typ: string): Boolean;
 
      property available: Boolean read GetAvailable;
 
@@ -63,7 +63,7 @@ uses TCPServerOR, TOblRizeni, TCPORsRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TStanicniHlaseni.Create(orid:string);
+constructor TStanicniHlaseni.Create(orid: string);
 begin
  inherited Create();
  Self.m_orid := orid;
@@ -79,7 +79,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.Parse(Sender:TIdContext; SenderOR:TObject; parsed:TStrings);
+procedure TStanicniHlaseni.Parse(Sender: TIdContext; SenderOR: TObject; parsed: TStrings);
 begin
  if (parsed.Count < 2) then Exit();
  parsed[2] := UpperCase(parsed[2]);
@@ -139,7 +139,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.ClientDisconnect(Client:TIdContext);
+procedure TStanicniHlaseni.ClientDisconnect(Client: TIdContext);
 begin
  if (Self.m_clients.Contains(Client)) then
   begin
@@ -151,30 +151,30 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.Prijede(train:TSHTrain);
+procedure TStanicniHlaseni.Prijede(train: TSHTrain);
 begin
  Self.BroadcastData('PRIJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Odjede(train:TSHTrain);
+procedure TStanicniHlaseni.Odjede(train: TSHTrain);
 begin
  Self.BroadcastData('ODJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Projede(train:TSHTrain);
+procedure TStanicniHlaseni.Projede(train: TSHTrain);
 begin
  Self.BroadcastData('PROJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Spec(id:string);
+procedure TStanicniHlaseni.Spec(id: string);
 begin
  Self.BroadcastData('SPEC;' + id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.BroadcastData(data:string);
-var client:TIdContext;
+procedure TStanicniHlaseni.BroadcastData(data: string);
+var client: TIdContext;
 begin
  for client in Self.m_clients do
    ORTCPServer.SendLn(client, Self.m_orid + ';SH;' + data);
@@ -182,7 +182,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TStanicniHlaseni.TrainToStr(train:TSHTrain):string;
+function TStanicniHlaseni.TrainToStr(train: TSHTrain): string;
 begin
  Result := train.cislo + ';' + train.typ + ';' + train.kolej + ';' + train.fromORid + ';' +
              train.toORid + ';';
@@ -197,15 +197,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TStanicniHlaseni.GetAvailable():Boolean;
+function TStanicniHlaseni.GetAvailable(): Boolean;
 begin
  Result := (Self.m_clients.Count > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TStanicniHlaseni.HlasitTrainTyp(typ:string):Boolean;
-var s:string;
+class function TStanicniHlaseni.HlasitTrainTyp(typ: string): Boolean;
+var s: string;
 begin
  for s in stanicniHlaseni._HLASENI_TRAINTYP_FORBIDDEN do
    if (typ = s) then

@@ -8,16 +8,16 @@ interface
 
 // Vrati skutecny cas zbyvajici do casu "future". Pokud je zaply modelovy cas,
 // "future" bere v modelovem casu, jinak ve skutecnem.
-function RealDelta(future:TTime):TTime;
+function RealDelta(future: TTime): TTime;
 
 // Vrati aktualni cas podle toho, jestli je aktivni modelovy/skutecny.
-function hJOPnow():TTime;
+function hJOPnow(): TTime;
 
 implementation
 
 uses SysUtils, ModelovyCas;
 
-function RealDelta(future:TTime):TTime;
+function RealDelta(future: TTime): TTime;
 begin
  if (ModCas.used) then
   begin
@@ -27,7 +27,7 @@ begin
   end;
 end;
 
-function hJOPnow():TTime;
+function hJOPnow(): TTime;
 begin
  if (ModCas.used) then
    Result := ModCas.dateTime

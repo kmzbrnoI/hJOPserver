@@ -1,4 +1,4 @@
-﻿unit fBlkZamek;
+unit fBlkZamek;
 
 interface
 
@@ -21,13 +21,13 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
 
   private
-   NewBlk:Boolean;
-   Blk:TBlkZamek;
+   NewBlk: Boolean;
+   Blk: TBlkZamek;
 
   public
-   OpenIndex:Integer;
+   OpenIndex: Integer;
 
-   procedure OpenForm(BlokIndex:Integer);
+   procedure OpenForm(BlokIndex: Integer);
    procedure NewBlkOpenForm();
    procedure NormalOpenForm();
    procedure HlavniOpenForm();
@@ -43,10 +43,10 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky, TOblRizen
 
 {$R *.dfm}
 
-procedure TF_BlkZamek.OpenForm(BlokIndex:Integer);
+procedure TF_BlkZamek.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -68,8 +68,8 @@ procedure TF_BlkZamek.NewBlkOpenForm;
  end;
 
 procedure TF_BlkZamek.NormalOpenForm;
-var glob:TBlkSettings;
-    oblr:TOR;
+var glob: TBlkSettings;
+    oblr: TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
@@ -100,14 +100,14 @@ procedure TF_BlkZamek.B_StornoClick(Sender: TObject);
  end;
 
 procedure TF_BlkZamek.B_SaveClick(Sender: TObject);
-var glob:TBlkSettings;
+var glob: TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -123,7 +123,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btZamek, glob) as TBlkZamek;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();

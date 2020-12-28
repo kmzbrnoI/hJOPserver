@@ -1,4 +1,4 @@
-﻿unit FunkceVyznam;
+unit FunkceVyznam;
 
 {
   Trida TFuncsVyznam, resp. jeji instance FuncsFyznam si udrzuje seznam vyznamu
@@ -16,14 +16,14 @@ type
   TGeneralEvent = procedure(Sender: TObject) of object;
 
   TFuncVyznam = class
-    popis:string;
-    typ:THVFuncType;
+    popis: string;
+    typ: THVFuncType;
 
-    constructor Create(str:string); overload;
-    constructor Create(popis:string; typ:THVFuncType); overload;
-    function GetPanelStr():string;
+    constructor Create(str: string); overload;
+    constructor Create(popis: string; typ: THVFuncType); overload;
+    function GetPanelStr(): string;
 
-    class function Comparer():IComparer<TFuncVyznam>;
+    class function Comparer(): IComparer<TFuncVyznam>;
   end;
 
   TFuncsVyznam = class
@@ -38,14 +38,14 @@ type
        constructor Create();
        destructor Destroy(); override;
 
-       procedure ParseWholeList(data:string);
-       procedure ParseNewItems(data:string);
-       function GetFuncsVyznam():string;
-       function IsVyznam(vyznam:string):Boolean;
-       function GetVyznamIndex(vyznam:string):Integer;
+       procedure ParseWholeList(data: string);
+       procedure ParseNewItems(data: string);
+       function GetFuncsVyznam(): string;
+       function IsVyznam(vyznam: string): Boolean;
+       function GetVyznamIndex(vyznam: string): Integer;
 
-       property Items:TObjectList<TFuncVyznam> read vyznamy;
-       property OnChange:TGeneralEvent read fOnChange write fOnChange;
+       property Items: TObjectList<TFuncVyznam> read vyznamy;
+       property OnChange: TGeneralEvent read fOnChange write fOnChange;
   end;
 
 var
@@ -71,9 +71,9 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TFuncsVyznam.ParseWholeList(data:string);
-var strs:TStrings;
-    str:string;
+procedure TFuncsVyznam.ParseWholeList(data: string);
+var strs: TStrings;
+    str: string;
 begin
  Self.vyznamy.Clear();
  strs := TStringList.Create();
@@ -90,9 +90,9 @@ begin
  if (Assigned(Self.OnChange)) then Self.OnChange(Self);
 end;
 
-procedure TFuncsVyznam.ParseNewItems(data:string);
-var sl:TStrings;
-    str:string;
+procedure TFuncsVyznam.ParseNewItems(data: string);
+var sl: TStrings;
+    str: string;
 begin
  sl := TStringList.Create();
  try
@@ -120,8 +120,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TFuncsVyznam.GetFuncsVyznam():string;
-var i:Integer;
+function TFuncsVyznam.GetFuncsVyznam(): string;
+var i: Integer;
 begin
  Result := '';
  for i := 0 to Self.vyznamy.Count-1 do
@@ -130,8 +130,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TFuncsVyznam.GetVyznamIndex(vyznam:string):Integer;
-var i:Integer;
+function TFuncsVyznam.GetVyznamIndex(vyznam: string): Integer;
+var i: Integer;
 begin
  for i := 0 to Self.vyznamy.Count-1 do
    if (Self.vyznamy[i].popis = vyznam) then
@@ -139,15 +139,15 @@ begin
  Result := -1;
 end;
 
-function TFuncsVyznam.IsVyznam(vyznam:string):Boolean;
+function TFuncsVyznam.IsVyznam(vyznam: string): Boolean;
 begin
  Result := (Self.GetVyznamIndex(vyznam) > -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TFuncVyznam.Create(str:string);
-var strings:TStrings;
+constructor TFuncVyznam.Create(str: string);
+var strings: TStrings;
 begin
  strings := TStringList.Create();
  try
@@ -162,18 +162,18 @@ begin
  end;
 end;
 
-constructor TFuncVyznam.Create(popis:string; typ:THVFuncType);
+constructor TFuncVyznam.Create(popis: string; typ: THVFuncType);
 begin
  Self.popis := popis;
  Self.typ := typ;
 end;
 
-function TFuncVyznam.GetPanelStr():string;
+function TFuncVyznam.GetPanelStr(): string;
 begin
  Result := Self.popis + ':' + THV.HVFuncTypeToChar(Self.typ);
 end;
 
-class function TFuncVyznam.Comparer():IComparer<TFuncVyznam>;
+class function TFuncVyznam.Comparer(): IComparer<TFuncVyznam>;
 begin
  Result := TComparer<TFuncVyznam>.Construct(
   function(const Left, Right: TFuncVyznam): Integer

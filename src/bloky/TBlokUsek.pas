@@ -1,4 +1,4 @@
-﻿unit TBlokUsek;
+unit TBlokUsek;
 
 //definice a obsluha technologickeho bloku Usek
 
@@ -19,52 +19,52 @@ type
 
  //technologicka nastaveni useku (delka, RCS moduly, ...)
  TBlkUsekSettings = record
-  RCSAddrs:TRCSAddrs;
-  Lenght:double;          //delka useku v metrech
-  SmcUsek:Boolean;        //specialni pripad: usek ve smycce
-  Zesil:string;           //id zesilovace
-  houkEvL:TObjectList<THoukEv>;  //seznam houkacich udalosti pro lichy smer
-  houkEvS:TObjectList<THoukEv>;  //seznam houkacich udalosti pro sudy smer
-  maxTrains:Cardinal;        // maximalni pocet souprav v bloku
+  RCSAddrs: TRCSAddrs;
+  Lenght: double;          //delka useku v metrech
+  SmcUsek: Boolean;        //specialni pripad: usek ve smycce
+  Zesil: string;           //id zesilovace
+  houkEvL: TObjectList<THoukEv>;  //seznam houkacich udalosti pro lichy smer
+  houkEvS: TObjectList<THoukEv>;  //seznam houkacich udalosti pro sudy smer
+  maxTrains: Cardinal;        // maximalni pocet souprav v bloku
  end;
 
  TSekceStav = TList<TUsekStav>;
 
  //aktualni stav useku (obsazeno, ...)
  TBlkUsekStav = record
-  stav, stavOld:TUsekStav;  // hlavni stav useku a jeho predchozi hodnota (pouzivano v Update())
-  sekce:TSekceStav;         // obsazenost jednotlivych casti useku
-  zaver:TZaver;             // zaver na bloku
-  NUZ:Boolean;              // nouzove uvolneni zaveru
-  konecJC:TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
-  stit, vyl:string;         // stitek a vyluka
-  navJCRef:TList<TBlk>;     // navestidla, ze kterych je z tohoto bloku postavena JC
-  trainPredict:Integer;     // souprava, ktera je na tomto bloku predpovidana
-  zkrat:TBoosterSignal;     // zkrat zesilovace
-  napajeni:TBoosterSignal;  // napajeni zesilovace
-  DCC:Boolean;              // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
-  stanicni_kolej:Boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
-  cislo_koleje:string;      // cislo koleje, pokud je stanicni
-  train_pos:Boolean;          // jestli je v panelu alespon jeden specialni symbol pro cislo koleje
-  vlakPresun:Integer;       // index soupravy, ktera se presouva, v ramci lokalniho seznamu souprav na useku; zadny presun = -1
+  stav, stavOld: TUsekStav;  // hlavni stav useku a jeho predchozi hodnota (pouzivano v Update())
+  sekce: TSekceStav;         // obsazenost jednotlivych casti useku
+  zaver: TZaver;             // zaver na bloku
+  NUZ: Boolean;              // nouzove uvolneni zaveru
+  konecJC: TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
+  stit, vyl: string;         // stitek a vyluka
+  navJCRef: TList<TBlk>;     // navestidla, ze kterych je z tohoto bloku postavena JC
+  trainPredict: Integer;     // souprava, ktera je na tomto bloku predpovidana
+  zkrat: TBoosterSignal;     // zkrat zesilovace
+  napajeni: TBoosterSignal;  // napajeni zesilovace
+  DCC: Boolean;              // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
+  stanicni_kolej: Boolean;   // pokud je blok stanicni koleji, je zde true, jinak false
+  cislo_koleje: string;      // cislo koleje, pokud je stanicni
+  train_pos: Boolean;          // jestli je v panelu alespon jeden specialni symbol pro cislo koleje
+  vlakPresun: Integer;       // index soupravy, ktera se presouva, v ramci lokalniho seznamu souprav na useku; zadny presun = -1
 
-  zpomalovani_ready:Boolean;          // pri predani soupravy do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
+  zpomalovani_ready: Boolean;          // pri predani soupravy do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
                                       // to znamena, ze je souprava pripravena ke zpomalovani; navetidlo umozni zpomaleni jen, pokud je tento flag na true
                                       // po zpomaleni si navestidlo flag zrusi
 
-  train_vypadek:Boolean;      // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
-  train_vypadek_time:Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
+  train_vypadek: Boolean;      // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
+  train_vypadek_time: Integer; //    to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
                             // pro reseni timeoutu jsou tyto 2 promenne
-  zkratSenseTime:TDateTime; // cas, kdy ma dojit k detekci zkratu
-  currentHoukEv:Integer;    // index aktualni houkaci udalosti
-  neprofilJCcheck:TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
+  zkratSenseTime: TDateTime; // cas, kdy ma dojit k detekci zkratu
+  currentHoukEv: Integer;    // index aktualni houkaci udalosti
+  neprofilJCcheck: TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
   trains: TList<Integer>;        // seznam souprav na useku ve smeru L --> S
  end;
 
  TBlkUsek = class(TBlk)
   const
    //defaultni stav
-   _def_usek_stav:TBlkUsekStav = (
+   _def_usek_stav: TBlkUsekStav = (
     stav : disabled;
     stavOld : disabled;
     zaver : no;
@@ -86,64 +86,64 @@ type
    _DEFAULT_MAX_TRAINS = 1;
 
   private
-   UsekStav:TBlkUsekStav;
-   last_zes_zkrat:TBoosterSignal;  //poziva se na pamatovani posledniho stavu zkratu zesilovace pri vypnuti DCC
+   UsekStav: TBlkUsekStav;
+   last_zes_zkrat: TBoosterSignal;  //poziva se na pamatovani posledniho stavu zkratu zesilovace pri vypnuti DCC
 
-    procedure SetUsekNUZ(nuz:Boolean);
-    procedure SetUsekZaver(Zaver:TZaver);
-    procedure SetUsekStit(stit:string);
-    procedure mSetUsekVyl(vyl:string);
+    procedure SetUsekNUZ(nuz: Boolean);
+    procedure SetUsekZaver(Zaver: TZaver);
+    procedure SetUsekStit(stit: string);
+    procedure mSetUsekVyl(vyl: string);
     function GetTrainPredict(): TTrain;
     procedure SetTrainPredict(train: TTrain);
-    procedure SetKonecJC(konecjc:TZaver);
-    procedure SetVlakPresun(presun:Integer);
+    procedure SetKonecJC(konecjc: TZaver);
+    procedure SetVlakPresun(presun: Integer);
 
-    procedure SetNapajeni(state:TBoosterSignal);
-    procedure SetZkrat(state:TBoosterSignal);
-    procedure SetDCC(state:Boolean);
+    procedure SetNapajeni(state: TBoosterSignal);
+    procedure SetZkrat(state: TBoosterSignal);
+    procedure SetDCC(state: Boolean);
 
     procedure XVezmiVlakOk(Sender: TObject; Data: Pointer);
     procedure XVezmiVlakErr(Sender: TObject; Data: Pointer);
 
-    procedure MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
-    procedure MenuEditLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuXVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuRUCLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuMAUSLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuNUZStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuNUZStopClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:Boolean);
-    procedure MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuHLASENIPrijezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
-    procedure MenuPOdjClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuNewLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
+    procedure MenuEditLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuDeleteLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuUVOLLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuXVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRegVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRUCLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuMAUSLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuNUZStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuNUZStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPRESUNLokClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
+    procedure MenuHLASENIOdjezdClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuHLASENIPrijezdClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuHLASENIPrujezdClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuVLOZLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
+    procedure MenuPOdjClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure PotvrDeleteLok(Sender:TIdContext; success:Boolean);
-    procedure PotvrUvolLok(Sender:TIdContext; success:Boolean);
-    procedure PotvrRegVezmiLok(Sender:TIdContext; success:Boolean);
+    procedure PotvrDeleteLok(Sender: TIdContext; success: Boolean);
+    procedure PotvrUvolLok(Sender: TIdContext; success: Boolean);
+    procedure PotvrRegVezmiLok(Sender: TIdContext; success: Boolean);
 
-    procedure MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuUvolClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure ORVylukaNull(Sender:TIdContext; success:Boolean);
+    procedure ORVylukaNull(Sender: TIdContext; success: Boolean);
 
-    procedure LoadHoukEventToList(list:TList<THoukEv>; ini_tech:TMemIniFile; section:string; prefix:string);
+    procedure LoadHoukEventToList(list: TList<THoukEv>; ini_tech: TMemIniFile; section: string; prefix: string);
     procedure CheckHoukEv();
 
     procedure CheckPOdjChanged();
 
-    function GetHoukList():TList<THoukEv>;
-    function GetHoukEvEnabled():Boolean;
-    procedure SetHoukEvEnabled(state:Boolean);
+    function GetHoukList(): TList<THoukEv>;
+    function GetHoukEvEnabled(): Boolean;
+    procedure SetHoukEvEnabled(state: Boolean);
 
-    function GetSHTrain(trainLocalIndex:Integer): TSHTrain;
+    function GetSHTrain(trainLocalIndex: Integer): TSHTrain;
 
     procedure NeprofilObsaz();
 
@@ -154,37 +154,37 @@ type
     function GeTTrainIS(): Integer;
     function GeTTrainS(): TTrain;
 
-    procedure ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
-    function CanTrainSpeedInsert(index:Integer):Boolean;
-    function IsStujForTrain(train: TTrain):Boolean;
-    function RealZesZkrat():TBoosterSignal;
-    function CanStandTrain():Boolean;
-    function CanBeNextVB(vbs: TList<TObject>; start: TBlk):Boolean;
-    function CanBeKC(vbs: TList<TObject>; start: TBlk):Boolean;
+    procedure ShowProperMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORControlRights; params: string);
+    function CanTrainSpeedInsert(index: Integer): Boolean;
+    function IsStujForTrain(train: TTrain): Boolean;
+    function RealZesZkrat(): TBoosterSignal;
+    function CanStandTrain(): Boolean;
+    function CanBeNextVB(vbs: TList<TObject>; start: TBlk): Boolean;
+    function CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
 
     function GetNavL(): TBlk;
     function GetNavS(): TBlk;
 
   protected
-   UsekSettings:TBlkUsekSettings;
+   UsekSettings: TBlkUsekSettings;
 
-    procedure MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
-    function MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):Boolean;
-    function PresunLok(SenderPnl:TIdContext; SenderOR:TObject; trainLocalIndex:Integer):Boolean;
+    procedure MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject);
+    function MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
+    function PresunLok(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
 
   public
 
-    EventsOnObsaz:TChangeEvents;
-    EventsOnUvol:TChangeEvents;
-    EventsOnZaverReleaseOrAB:TChangeEvents;
+    EventsOnObsaz: TChangeEvents;
+    EventsOnUvol: TChangeEvents;
+    EventsOnZaverReleaseOrAB: TChangeEvents;
 
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -200,48 +200,48 @@ type
 
     //----- usek own functions -----
 
-    function GetSettings():TBlkUsekSettings;
-    procedure SetSettings(data:TBlkUsekSettings);
+    function GetSettings(): TBlkUsekSettings;
+    procedure SetSettings(data: TBlkUsekSettings);
 
     procedure OnBoosterChange();
 
-    procedure SetUsekVyl(Sender:TIDCOntext; vyl:string);
+    procedure SetUsekVyl(Sender: TIDCOntext; vyl: string);
 
-    procedure AddNeprofilJC(id:Integer);
-    procedure RemoveNeprofilJC(id:Integer);
-    function IsNeprofilJC():Boolean;
+    procedure AddNeprofilJC(id: Integer);
+    procedure RemoveNeprofilJC(id: Integer);
+    function IsNeprofilJC(): Boolean;
 
-    function IsTrain():Boolean; overload;
-    function IsTrain(index:Integer):Boolean; overload;
+    function IsTrain(): Boolean; overload;
+    function IsTrain(index: Integer): Boolean; overload;
     function IsTrain(train: TTrain): Boolean; overload;
-    procedure AddTrainL(index:Integer); overload; virtual;
+    procedure AddTrainL(index: Integer); overload; virtual;
     procedure AddTrainL(train: TTrain); overload; virtual;
-    procedure AddTrainS(index:Integer); overload; virtual;
+    procedure AddTrainS(index: Integer); overload; virtual;
     procedure AddTrainS(train: TTrain); overload; virtual;
-    procedure AddTrain(localTrainIndex:Integer; train: Integer); overload;
-    procedure AddTrain(localTrainIndex:Integer; train: TTrain); overload;
+    procedure AddTrain(localTrainIndex: Integer; train: Integer); overload;
+    procedure AddTrain(localTrainIndex: Integer; train: TTrain); overload;
     procedure RemoveTrains(); virtual;
     procedure RemoveTrain(index: Integer); overload; virtual;
     procedure RemoveTrain(train: TTrain); overload; virtual;
-    function TrainsFull():Boolean;
+    function TrainsFull(): Boolean;
 
-    function IsVlakPresun():Boolean;
+    function IsVlakPresun(): Boolean;
     procedure ClearPOdj();
     procedure PropagatePOdjToTrat();
 
-    procedure MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer);
+    procedure MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer);
 
-    property Stav:TBlkUsekStav read UsekStav;
+    property Stav: TBlkUsekStav read UsekStav;
 
-    property obsazeno:TUsekStav read UsekStav.Stav;
-    property NUZ:Boolean read UsekStav.NUZ write SetUsekNUZ;
-    property zaver:TZaver read UsekStav.Zaver write SetUsekZaver;
-    property stitek:string read UsekStav.Stit write SetUsekStit;
-    property vyluka:string read UsekStav.Vyl write mSetUsekVyl;
+    property obsazeno: TUsekStav read UsekStav.Stav;
+    property NUZ: Boolean read UsekStav.NUZ write SetUsekNUZ;
+    property zaver: TZaver read UsekStav.Zaver write SetUsekZaver;
+    property stitek: string read UsekStav.Stit write SetUsekStit;
+    property vyluka: string read UsekStav.Vyl write mSetUsekVyl;
     property trainPredict: TTrain read GetTrainPredict write SetTrainPredict;
-    property konecJC:TZaver read UsekStav.KonecJC write SetKonecJC;
-    property navJCRef:TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
-    property sekceStav:TList<TUsekStav> read UsekStav.sekce;
+    property konecJC: TZaver read UsekStav.KonecJC write SetKonecJC;
+    property navJCRef: TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
+    property sekceStav: TList<TUsekStav> read UsekStav.sekce;
     property navL: TBlk read GetNavL;  // warning: slow getter!
     property navS: TBLk read GetNavS;  // warning: slow getter!
 
@@ -253,29 +253,29 @@ type
     property trainSudy: TTrain read GeTTrainS;
     property trains: TList<Integer> read UsekStav.trains;
 
-    property zkrat:TBoosterSignal read UsekStav.Zkrat write SetZkrat;
-    property napajeni:TBoosterSignal read UsekStav.Napajeni write SetNapajeni;
-    property DCC:Boolean read UsekStav.DCC write SetDCC;
+    property zkrat: TBoosterSignal read UsekStav.Zkrat write SetZkrat;
+    property napajeni: TBoosterSignal read UsekStav.Napajeni write SetNapajeni;
+    property DCC: Boolean read UsekStav.DCC write SetDCC;
 
-    property vlakPresun:Integer read UsekStav.vlakPresun write SetVlakPresun;
-    property zpomalovani_ready:Boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
-    property houk_ev_enabled:Boolean read GetHoukEvEnabled write SetHoukEvEnabled;
+    property vlakPresun: Integer read UsekStav.vlakPresun write SetVlakPresun;
+    property zpomalovani_ready: Boolean read UsekStav.zpomalovani_ready write UsekStav.zpomalovani_ready;
+    property houk_ev_enabled: Boolean read GetHoukEvEnabled write SetHoukEvEnabled;
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    procedure POdjChanged(trainId:Integer; var podj:TPOdj);
-    function GetTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer):string;
-    function PanelStateString():string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    procedure POdjChanged(trainId: Integer; var podj: TPOdj);
+    function GetTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer): string;
+    function PanelStateString(): string; override;
 
     //PT:
 
-    procedure GetPtData(json:TJsonObject; includeState:Boolean); override;
-    procedure GetPtState(json:TJsonObject); override;
-    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
  end;//class TBlkUsek
 
@@ -289,7 +289,7 @@ uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils, Diagnostics,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
 
-constructor TBlkUsek.Create(index:Integer);
+constructor TBlkUsek.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -333,7 +333,7 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkUsek.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 var strs: TStrings;
     s: string;
     trainIndex: Integer;
@@ -405,10 +405,10 @@ begin
  PushRCSToOR(Self.ORsRef, Self.UsekSettings.RCSAddrs);
 end;
 
-procedure TBlkUsek.SaveData(ini_tech:TMemIniFile;const section:string);
-var i:Integer;
+procedure TBlkUsek.SaveData(ini_tech: TMemIniFile; const section: string);
+var i: Integer;
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
 
  Self.SaveRCS(ini_tech, section, Self.UsekSettings.RCSAddrs);
  ini_tech.WriteFloat(section,'delka', Self.UsekSettings.Lenght);
@@ -427,7 +427,7 @@ begin
      try
        ini_tech.WriteString(section, 'houkL'+IntToStr(i), Self.UsekSettings.houkEvL[i].GetDefString());
      except
-       on E:Exception do
+       on E: Exception do
          AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.name);
      end;
     end;
@@ -440,16 +440,16 @@ begin
      try
        ini_tech.WriteString(section, 'houkS'+IntToStr(i), Self.UsekSettings.houkEvS[i].GetDefString());
      except
-       on E:Exception do
+       on E: Exception do
          AppEvents.LogException(E, 'Ukladani houkaci udalosti bloku ' + Self.name);
      end;
     end;
   end;
 end;
 
-procedure TBlkUsek.SaveStatus(ini_stat:TMemIniFile;const section:string);
-var str:string;
-    traini:Integer;
+procedure TBlkUsek.SaveStatus(ini_stat: TMemIniFile; const section: string);
+var str: string;
+    traini: Integer;
 begin
  if (Self.UsekStav.Stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.UsekStav.Stit);
@@ -538,10 +538,10 @@ end;
 
 //update all local variables
 procedure TBlkUsek.Update();
-var i, train:Integer;
-    state:TRCSInputState;
-    usekStav:TUsekStav;
-    oblr:TOR;
+var i, train: Integer;
+    state: TRCSInputState;
+    usekStav: TUsekStav;
+    oblr: TOR;
 begin
  inherited Update();
 
@@ -681,8 +681,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.SetUsekNUZ(nuz:Boolean);
-var oblr:TOR;
+procedure TBlkUsek.SetUsekNUZ(nuz: Boolean);
+var oblr: TOR;
 begin
  if (Self.UsekStav.NUZ = nuz) then Exit(); 
 
@@ -701,8 +701,8 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.SetUsekZaver(Zaver:TZaver);
-var old:TZaver;
+procedure TBlkUsek.SetUsekZaver(Zaver: TZaver);
+var old: TZaver;
 begin
  if (Zaver = Self.Zaver) then Exit();
 
@@ -723,25 +723,25 @@ begin
    Self.Change();
 end;
 
-procedure TBlkUsek.SetUsekStit(stit:string);
+procedure TBlkUsek.SetUsekStit(stit: string);
 begin
  Self.UsekStav.Stit := stit;
  Self.Change();
 end;
 
-procedure TBlkUsek.mSetUsekVyl(vyl:string);
+procedure TBlkUsek.mSetUsekVyl(vyl: string);
 begin
  Self.UsekStav.Vyl := vyl;
  Self.Change();
 end;
 
-procedure TBlkUsek.ORVylukaNull(Sender:TIdContext; success:Boolean);
+procedure TBlkUsek.ORVylukaNull(Sender: TIdContext; success: Boolean);
 begin
  if (success) then
   Self.Vyluka := '';
 end;
 
-procedure TBlkUsek.SetUsekVyl(Sender:TIDCOntext; vyl:string);
+procedure TBlkUsek.SetUsekVyl(Sender: TIDCOntext; vyl: string);
 begin
  if ((self.UsekStav.Vyl <> '') and (vyl = '')) then
   begin
@@ -777,7 +777,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.SetKonecJC(konecjc:TZaver);
+procedure TBlkUsek.SetKonecJC(konecjc: TZaver);
 begin
  Self.UsekStav.KonecJC := konecjc;
  Self.Change();
@@ -797,8 +797,8 @@ begin
   end;
 end;
 
-procedure TBlkUsek.SetZkrat(state:TBoosterSignal);
-var oblr:TOR;
+procedure TBlkUsek.SetZkrat(state: TBoosterSignal);
+var oblr: TOR;
 begin
  if (Self.frozen) then
    Self.last_zes_zkrat := state;
@@ -834,7 +834,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.SetNapajeni(state:TBoosterSignal);
+procedure TBlkUsek.SetNapajeni(state: TBoosterSignal);
 begin
  if (Self.UsekStav.napajeni = state) then
    Exit();
@@ -847,7 +847,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.SetDCC(state:Boolean);
+procedure TBlkUsek.SetDCC(state: Boolean);
 begin
  if (state = Self.Stav.DCC) then
    Exit();
@@ -862,7 +862,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.SetVlakPresun(presun:Integer);
+procedure TBlkUsek.SetVlakPresun(presun: Integer);
 begin
  if (Self.UsekStav.vlakPresun <> presun) then
   begin
@@ -893,12 +893,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetSettings():TBlkUsekSettings;
+function TBlkUsek.GetSettings(): TBlkUsekSettings;
 begin
  Result := Self.UsekSettings;
 end;
 
-procedure TBlkUsek.SetSettings(data:TBlkUsekSettings);
+procedure TBlkUsek.SetSettings(data: TBlkUsekSettings);
 begin
  if (Self.UsekSettings.houkEvL <> data.houkEvL) then
    Self.UsekSettings.houkEvL.Free();
@@ -920,7 +920,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 //dynamicke funkce:
 
-procedure TBlkUsek.MenuNewLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
+procedure TBlkUsek.MenuNewLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
  // nejdrive posleme aktualni seznam hnacich vozidel
  (SenderOR as TOR).PanelHVList(SenderPnl);
@@ -929,12 +929,12 @@ begin
  (SenderOR as TOR).BlkNewTrain(Self, SenderPnl, (itemindex-2) div 2);
 end;
 
-procedure TBlkUsek.MenuVLOZLokClick(SenderPnl:TIdContext; SenderOR:TObject; itemindex:Integer);
+procedure TBlkUsek.MenuVLOZLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
  Self.PresunLok(SenderPnl, SenderOR, (itemindex-2) div 2);
 end;
 
-procedure TBlkUsek.MenuEditLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuEditLokClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -946,9 +946,9 @@ begin
  (SenderOR as TOR).BlkEditTrain(Self, SenderPnl, TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]);
 end;
 
-procedure TBlkUsek.MenuDeleteLokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var podm:TPSPodminky;
-    blk:TObject;
+procedure TBlkUsek.MenuDeleteLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+var podm: TPSPodminky;
+    blk: TObject;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -961,7 +961,7 @@ begin
    TBlky.GetBlksList(Self), podm);
 end;
 
-procedure TBlkUsek.PotvrDeleteLok(Sender:TIdContext; success:Boolean);
+procedure TBlkUsek.PotvrDeleteLok(Sender: TIdContext; success: Boolean);
 begin
  if ((TTCPORsRef(Sender.Data).train_menu_index < 0) or
      (TTCPORsRef(Sender.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -974,7 +974,7 @@ begin
   end;
 end;
 
-procedure TBlkUsek.PotvrUvolLok(Sender:TIdContext; success:Boolean);
+procedure TBlkUsek.PotvrUvolLok(Sender: TIdContext; success: Boolean);
 begin
  if ((TTCPORsRef(Sender.Data).train_menu_index < 0) or
      (TTCPORsRef(Sender.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -990,7 +990,7 @@ begin
   end;
 end;
 
-procedure TBlkUsek.MenuUVOLLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuUVOLLokClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1000,8 +1000,8 @@ begin
   TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkUsek.MenuVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var train:TTrain;
+procedure TBlkUsek.MenuVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+var train: TTrain;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1031,7 +1031,7 @@ begin
  ORTCPServer.BottomError(TIdContext(Data), 'Vlak se nepodařilo převzít', '', 'TECHNOLOGIE');
 end;
 
-procedure TBlkUsek.MenuXVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuXVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
 var train: TTrain;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
@@ -1041,10 +1041,10 @@ begin
  train.Acquire(TTrakce.Callback(Self.XVezmiVlakOk, SenderPnl), TTrakce.Callback(Self.XVezmiVlakErr, SenderPnl));
 end;
 
-procedure TBlkUsek.MenuRegVEZMILokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var podm:TPSPodminky;
-    train:TTrain;
-    hvaddr:Integer;
+procedure TBlkUsek.MenuRegVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+var podm: TPSPodminky;
+    train: TTrain;
+    hvaddr: Integer;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1060,8 +1060,8 @@ begin
   TBlky.GetBlksList(Self), podm);
 end;
 
-procedure TBlkUsek.PotvrRegVezmiLok(Sender:TIdContext; success:Boolean);
-var train:TTrain;
+procedure TBlkUsek.PotvrRegVezmiLok(Sender: TIdContext; success: Boolean);
+var train: TTrain;
 begin
  if ((TTCPORsRef(Sender.Data).train_menu_index < 0) or
      (TTCPORsRef(Sender.Data).train_menu_index >= Self.trains.Count) or (not success)) then Exit();
@@ -1078,19 +1078,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
 end;
 
-procedure TBlkUsek.MenuVylClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Vyluka(SenderPnl, Self, Self.Stav.Vyl);
 end;
 
 // pokud volba nebyla uspesna, vraci false a v tom pripade je vyvolano menu
-function TBlkUsek.MenuKCClick(SenderPnl:TIdContext; SenderOR:TObject):Boolean;
-var nav:TBlkNav;
+function TBlkUsek.MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
+var nav: TBlkNav;
 begin
  if ((Self.UsekStav.KonecJC <> TZaver.no) and (not (SenderOR as TOR).vb.Contains(Self))) then
   begin
@@ -1116,8 +1116,8 @@ begin
  Result := true;
 end;
 
-procedure TBlkUsek.MenuVBClick(SenderPnl:TIdContext; SenderOR:TObject);
-var Blk:TBlk;
+procedure TBlkUsek.MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject);
+var Blk: TBlk;
 begin
  if (Self.UsekStav.KonecJC <> TZaver.no) then
   begin
@@ -1146,18 +1146,18 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.MenuNUZStartClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuNUZStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.NUZ := true;
 end;
 
-procedure TBlkUsek.MenuNUZStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuNUZStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.NUZ := false;
 end;
 
-procedure TBlkUsek.MenuPRESUNLokClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:Boolean);
-var Blk:TBlk;
+procedure TBlkUsek.MenuPRESUNLokClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
+var Blk: TBlk;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1178,10 +1178,10 @@ begin
   end;
 end;
 
-procedure TBlkUsek.MenuRUClokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var addr:Integer;
-    str:string;
-    HV:THV;
+procedure TBlkUsek.MenuRUClokClick(SenderPnl: TIdContext; SenderOR: TObject);
+var addr: Integer;
+    str: string;
+    HV: THV;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1196,10 +1196,10 @@ begin
  ORTCPServer.SendLn(SenderPnl, str);
 end;
 
-procedure TBlkUsek.MenuMAUSlokClick(SenderPnl:TIdContext; SenderOR:TObject);
-var addr:Integer;
-    str:string;
-    HV:THV;
+procedure TBlkUsek.MenuMAUSlokClick(SenderPnl: TIdContext; SenderOR: TObject);
+var addr: Integer;
+    str: string;
+    HV: THV;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1215,8 +1215,8 @@ begin
  ORTCPServer.SendLn(SenderPnl, str);
 end;
 
-procedure TBlkUsek.MenuObsazClick(SenderPnl:TIdContext; SenderOR:TObject);
-var rcsaddr:TRCSAddr;
+procedure TBlkUsek.MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
+var rcsaddr: TRCSAddr;
 begin
  try
    for rcsaddr in Self.UsekSettings.RCSAddrs do
@@ -1226,8 +1226,8 @@ begin
  end;
 end;
 
-procedure TBlkUsek.MenuUvolClick(SenderPnl:TIdContext; SenderOR:TObject);
-var rcsaddr:TRCSAddr;
+procedure TBlkUsek.MenuUvolClick(SenderPnl: TIdContext; SenderOR: TObject);
+var rcsaddr: TRCSAddr;
 begin
  try
    for rcsaddr in Self.UsekSettings.RCSAddrs do
@@ -1237,7 +1237,7 @@ begin
  end;
 end;
 
-procedure TBlkUsek.MenuHLASENIOdjezdClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkUsek.MenuHLASENIOdjezdClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1246,7 +1246,7 @@ begin
    if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
    TOR(SenderOR).hlaseni.Odjede(Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index));
  except
-   on E:Exception do
+   on E: Exception do
     begin
      writelog('Nepodařilo se spustit staniční hlášení : ' + E.Message, WR_ERROR);
      ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
@@ -1254,9 +1254,9 @@ begin
  end;
 end;
 
-procedure TBlkUsek.MenuHLASENIPrijezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-var shTrain:TSHTrain;
-    blk:TBlkUsek;
+procedure TBlkUsek.MenuHLASENIPrijezdClick(SenderPnl: TIdContext; SenderOR: TObject);
+var shTrain: TSHTrain;
+    blk: TBlkUsek;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1273,7 +1273,7 @@ begin
    shTrain.kolej := blk.Stav.cislo_koleje;
    TOR(SenderOR).hlaseni.Prijede(shTrain);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      writelog('Nepodařilo se spustit staniční hlášení : ' + E.Message, WR_ERROR);
      ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
@@ -1281,9 +1281,9 @@ begin
  end;
 end;
 
-procedure TBlkUsek.MenuHLASENIPrujezdClick(SenderPnl:TIdContext; SenderOR:TObject);
-var shTrain:TSHTrain;
-    blk:TBlkUsek;
+procedure TBlkUsek.MenuHLASENIPrujezdClick(SenderPnl: TIdContext; SenderOR: TObject);
+var shTrain: TSHTrain;
+    blk: TBlkUsek;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
@@ -1300,7 +1300,7 @@ begin
      shTrain.kolej := blk.Stav.cislo_koleje;
    TOR(SenderOR).hlaseni.Projede(shTrain);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      writelog('Nepodařilo se spustit staniční hlášení : ' + E.Message, WR_ERROR);
      ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
@@ -1308,8 +1308,8 @@ begin
  end;
 end;
 
-procedure TBlkUsek.MenuPOdjClick(SenderPnl:TIdContext; SenderOR:TObject);
-var train:TTrain;
+procedure TBlkUsek.MenuPOdjClick(SenderPnl: TIdContext; SenderOR: TObject);
+var train: TTrain;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index >= 0) and
      (TTCPORsRef(SenderPnl.Data).train_menu_index < Self.trains.Count)) then
@@ -1328,8 +1328,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.MenuSOUPRAVA(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer);
-var menu:string;
+procedure TBlkUsek.MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer);
+var menu: string;
 begin
  TTCPORsRef(SenderPnl.Data).train_menu_index := trainLocalI;
 
@@ -1343,12 +1343,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkUsek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
-var Blk:TBlk;
-    train:Integer;
-    canAdd:Boolean;
-    addStr:string;
-    usekStav:TUsekStav;
+function TBlkUsek.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+var Blk: TBlk;
+    train: Integer;
+    canAdd: Boolean;
+    addStr: string;
+    usekStav: TUsekStav;
 begin
  Result := inherited;
 
@@ -1429,10 +1429,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetTrainMenu(SenderPnl:TIdContext; SenderOR:TObject; trainLocalI:Integer):string;
-var train:TTrain;
-    shPlay:stanicniHlaseniHelper.TSHToPlay;
-    train_count:Integer;
+function TBlkUsek.GetTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer): string;
+var train: TTrain;
+    shPlay: stanicniHlaseniHelper.TSHToPlay;
+    train_count: Integer;
 begin
  train := TrainDb.Trains[Self.trains[trainLocalI]];
  train_count := Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[trainLocalI]]).Count;
@@ -1474,7 +1474,7 @@ begin
    try
      shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(train, TOR(SenderOR));
    except
-     on E:Exception do
+     on E: Exception do
        AppEvents.LogException(E, 'CanPlayPrijezdSH');
    end;
 
@@ -1487,8 +1487,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
-var Blk:TBlk;
+procedure TBlkUsek.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+var Blk: TBlk;
 begin
  case (Button) of
   F2: Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params);
@@ -1512,8 +1512,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkUsek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
-var i:Integer;
+procedure TBlkUsek.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+var i: Integer;
 begin
  if (item = 'NOVÝ vlak')           then Self.MenuNewLokClick(SenderPnl, SenderOR, itemindex)
  else if (item = 'VLOŽ vlak')      then Self.MenuVLOZLokClick(SenderPnl, SenderOR, itemindex)
@@ -1551,8 +1551,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
-function TBlkUsek.PresunLok(SenderPnl:TIdContext; SenderOR:TObject; trainLocalIndex:Integer):Boolean;
-var Blk, Nav:TBlk;
+function TBlkUsek.PresunLok(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
+var Blk, Nav: TBlk;
     train: TTrain;
 begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
@@ -1601,7 +1601,7 @@ begin
      Self.AddTrain(trainLocalIndex, train);
      (Blk as TBlkUsek).RemoveTrain(train);
    except
-     on E:Exception do
+     on E: Exception do
       begin
        ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
        Exit(true);
@@ -1626,7 +1626,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.GetPtData(json:TJsonObject; includeState:Boolean);
+procedure TBlkUsek.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
 
@@ -1644,9 +1644,9 @@ begin
    Self.GetPtState(json['blockState']);
 end;
 
-procedure TBlkUsek.GetPtState(json:TJsonObject);
-var train:Integer;
-    usekStav:TUsekStav;
+procedure TBlkUsek.GetPtState(json: TJsonObject);
+var train: Integer;
+    usekStav: TUsekStav;
 begin
  case (Self.Obsazeno) of
   TUsekStav.disabled : json['state'] := 'off';
@@ -1684,9 +1684,9 @@ begin
    json['endJC'] := Integer(Self.UsekStav.KonecJC);
 end;
 
-procedure TBlkUsek.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
-var trainStr:string;
-    train:Integer;
+procedure TBlkUsek.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
+var trainStr: string;
+    train: Integer;
 begin
  if (reqJson.Contains('trains')) then
   begin
@@ -1725,9 +1725,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.LoadHoukEventToList(list:TList<THoukEv>; ini_tech:TMemIniFile; section:string; prefix:string);
-var i:Integer;
-    data:string;
+procedure TBlkUsek.LoadHoukEventToList(list: TList<THoukEv>; ini_tech: TMemIniFile; section: string; prefix: string);
+var i: Integer;
+    data: string;
 begin
  try
    i := 0;
@@ -1754,7 +1754,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.CheckHoukEv();
-var list:TList<THoukEv>;
+var list: TList<THoukEv>;
 begin
  if (Self.UsekStav.currentHoukEv < 0) then Exit();
 
@@ -1791,13 +1791,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetHoukEvEnabled():Boolean;
+function TBlkUsek.GetHoukEvEnabled(): Boolean;
 begin
  Result := (Self.UsekStav.currentHoukEv > -1);
 end;
 
-procedure TBlkUsek.SetHoukEvEnabled(state:Boolean);
-var houkEv:THoukEv;
+procedure TBlkUsek.SetHoukEvEnabled(state: Boolean);
+var houkEv: THoukEv;
 begin
  if (state) then
   begin
@@ -1820,7 +1820,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetHoukList():TList<THoukEv>;
+function TBlkUsek.GetHoukList(): TList<THoukEv>;
 begin
  if (not Self.IsTrain()) then Exit(nil);
 
@@ -1832,7 +1832,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.GetSHTrain(trainLocalIndex:Integer):TSHTrain;
+function TBlkUsek.GetSHTrain(trainLocalIndex: Integer): TSHTrain;
 begin
  if ((trainLocalIndex < 0) or (trainLocalIndex >= Self.trains.Count)) then Exit();
 
@@ -1853,7 +1853,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.AddNeprofilJC(id:Integer);
+procedure TBlkUsek.AddNeprofilJC(id: Integer);
 begin
  if (Self.UsekStav.neprofilJCcheck.Contains(id)) then Exit();
 
@@ -1862,7 +1862,7 @@ begin
    Self.Change();
 end;
 
-procedure TBlkUsek.RemoveNeprofilJC(id:Integer);
+procedure TBlkUsek.RemoveNeprofilJC(id: Integer);
 begin
  if (not Self.UsekStav.neprofilJCcheck.Contains(id)) then Exit();
 
@@ -1871,14 +1871,14 @@ begin
    Self.Change();
 end;
 
-function TBlkUsek.IsNeprofilJC():Boolean;
+function TBlkUsek.IsNeprofilJC(): Boolean;
 begin
  Result := (Self.UsekStav.neprofilJCcheck.Count > 0);
 end;
 
 procedure TBlkUsek.NeprofilObsaz();
-var jcid:Integer;
-    jc:TJC;
+var jcid: Integer;
+    jc: TJC;
 begin
  for jcid in Self.UsekStav.neprofilJCcheck do
   begin
@@ -1906,7 +1906,7 @@ begin
    Result := TrainDb.Trains[Self.GeTTrainIL()];
 end;
 
-function TBlkUsek.GeTTrainIS():Integer;
+function TBlkUsek.GeTTrainIS(): Integer;
 begin
  if (Self.UsekStav.trains.Count < 1) then
    Result := -1
@@ -1924,7 +1924,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.IsTrain():Boolean;
+function TBlkUsek.IsTrain(): Boolean;
 begin
  Result := (Self.UsekStav.trains.Count > 0);
 end;
@@ -1941,7 +1941,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.AddTrainL(index:Integer);
+procedure TBlkUsek.AddTrainL(index: Integer);
 begin
  if (Self.TrainsFull()) then
    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
@@ -1953,7 +1953,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.AddTrainS(index:Integer);
+procedure TBlkUsek.AddTrainS(index: Integer);
 begin
  if (Self.TrainsFull()) then
    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
@@ -1975,7 +1975,7 @@ begin
  Self.AddTrainS(train.index);
 end;
 
-procedure TBlkUsek.AddTrain(localTrainIndex:Integer; train:Integer);
+procedure TBlkUsek.AddTrain(localTrainIndex: Integer; train: Integer);
 begin
  if (Self.TrainsFull()) then
    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
@@ -1989,7 +1989,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkUsek.AddTrain(localTrainIndex:Integer; train: TTrain);
+procedure TBlkUsek.AddTrain(localTrainIndex: Integer; train: TTrain);
 begin
  Self.AddTrain(localTrainIndex, train.index);
 end;
@@ -1997,7 +1997,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.RemoveTrains();
-var train:Integer;
+var train: Integer;
 begin
  for train in Self.trains do
    if (TrainDb.Trains[train].IsPOdj(Self)) then
@@ -2012,7 +2012,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.RemoveTrain(index:Integer);
+procedure TBlkUsek.RemoveTrain(index: Integer);
 begin
  if (Self.UsekStav.trains.Contains(index)) then
   begin
@@ -2045,14 +2045,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.TrainsFull():Boolean;
+function TBlkUsek.TrainsFull(): Boolean;
 begin
  Result := (Cardinal(Self.UsekStav.trains.Count) >= Self.UsekSettings.maxTrains);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.IsVlakPresun():Boolean;
+function TBlkUsek.IsVlakPresun(): Boolean;
 begin
  Result := (Self.Stav.vlakPresun > -1);
 end;
@@ -2077,8 +2077,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.ShowProperMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORControlRights; params:string);
-var i:Integer;
+procedure TBlkUsek.ShowProperMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORControlRights; params: string);
+var i: Integer;
 begin
  if (params <> '') then begin
    i := StrToIntDef(params, -1);
@@ -2094,7 +2094,7 @@ end;
 
 // vraci true prave tehdy, kdyz lze vlozit soupravu na pozici index
 // kontroluje, zda-li se nenazime vlozit pred soupravu v pohybu
-function TBlkUsek.CanTrainSpeedInsert(index:Integer):Boolean;
+function TBlkUsek.CanTrainSpeedInsert(index: Integer): Boolean;
 begin
  Result := not ((Self.trains.Count > 0) and
                 (((index = 0) and (TrainDb.Trains[Self.trains[index]].wantedSpeed > 0) and
@@ -2105,10 +2105,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsek.POdjChanged(trainId:Integer; var podj:TPOdj);
-var train:Integer;
-    was:Boolean;
-    nav:TBlk;
+procedure TBlkUsek.POdjChanged(trainId: Integer; var podj: TPOdj);
+var train: Integer;
+    was: Boolean;
+    nav: TBlk;
     jc: TJC;
 begin
  if ((not Self.trains.Contains(trainId)) and (trainId <> Self.UsekStav.TrainPredict)) then
@@ -2144,10 +2144,10 @@ end;
 
 procedure TBlkUsek.CheckPOdjChanged();
 var traini: Integer;
-    shouldChange:Boolean;
-    podj:TPOdj;
-    Nav:TBlk;
-    oblr:TOR;
+    shouldChange: Boolean;
+    podj: TPOdj;
+    Nav: TBlk;
+    oblr: TOR;
     train: TTrain;
 begin
  shouldChange := false;
@@ -2213,8 +2213,8 @@ end;
 
 // predvidane odjezdy se mazou pres bloky, aby bloky zavolaly Change().
 procedure TBlkUsek.ClearPOdj();
-var train:Integer;
-    change:Boolean;
+var train: Integer;
+    change: Boolean;
 begin
  change := false;
 
@@ -2248,7 +2248,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.IsStujForTrain(train: TTrain):Boolean;
+function TBlkUsek.IsStujForTrain(train: TTrain): Boolean;
 begin
  if (not Self.trains.Contains(train.index)) then Exit(false);
  if (Self.NavJCRef.Count = 0) then Exit(true);
@@ -2276,7 +2276,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.PanelStateString():string;
+function TBlkUsek.PanelStateString(): string;
 var fg, bg, nebarVetve, sfg, sbg: TColor;
     Blk: TBlk;
     traini, i: Integer;
@@ -2400,7 +2400,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.RealZesZkrat():TBoosterSignal;
+function TBlkUsek.RealZesZkrat(): TBoosterSignal;
 begin
  if (Boosters.ContainsKey(Self.UsekSettings.Zesil)) then
   begin
@@ -2412,15 +2412,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.CanStandTrain():Boolean;
+function TBlkUsek.CanStandTrain(): Boolean;
 begin
  Result := (Self.UsekStav.stanicni_kolej or Self.UsekStav.train_pos);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsek.CanBeNextVB(vbs: TList<TObject>; start: TBlk):Boolean;
-var vbs_plus_me:TList<TObject>;
+function TBlkUsek.CanBeNextVB(vbs: TList<TObject>; start: TBlk): Boolean;
+var vbs_plus_me: TList<TObject>;
 begin
  if (vbs.Contains(Self)) then
    Exit(false);
@@ -2438,7 +2438,7 @@ begin
  end;
 end;
 
-function TBlkUsek.CanBeKC(vbs: TList<TObject>; start: TBlk):Boolean;
+function TBlkUsek.CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
 begin
  Result := ((JCDb.FindJC(start as TBlkNav, vbs, Self) <> nil) or
             (MultiJCDb.FindMJC(start as TBlkNav, vbs, Self) <> nil));

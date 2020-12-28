@@ -56,18 +56,18 @@ type
     procedure CHB_TotalClick(Sender: TObject);
   private
 
-   speed:Integer;
+   speed: Integer;
 
-   procedure SetElemntsState(state:Boolean);
-   procedure Acquired(Sender:TObject; data:Pointer);
-   procedure AcquireFailed(Sender:TObject; data:Pointer);
+   procedure SetElemntsState(state: Boolean);
+   procedure Acquired(Sender: TObject; data: Pointer);
+   procedure AcquireFailed(Sender: TObject; data: Pointer);
 
   public
-   OpenHV:THV;
+   OpenHV: THV;
 
-   procedure OpenForm(HV:THV);
-   procedure LocoChanged(Sender:TObject);
-   procedure MyKeyPress(key:Integer; var handled: Boolean);
+   procedure OpenForm(HV: THV);
+   procedure LocoChanged(Sender: TObject);
+   procedure MyKeyPress(key: Integer; var handled: Boolean);
   end;
 
  ///////////////////////////////////////////////////////////////////////////////
@@ -79,29 +79,29 @@ type
     _MAX_FORMS = 4;
 
    private
-    forms:record
-     data:array [0.._MAX_FORMS-1] of TF_DigiReg;
+    forms: record
+     data: array [0.._MAX_FORMS-1] of TF_DigiReg;
     end;
 
-     function GetForm(addr:Word):TF_DigiReg;
+     function GetForm(addr: Word): TF_DigiReg;
 
    public
     constructor Create();
     destructor Destroy(); override;
 
-    procedure Open(HV:THV);
+    procedure Open(HV: THV);
 
-    procedure LocoChanged(Sender:TObject; addr:Word);
-    function IsLoko(HV:THV):Boolean;
+    procedure LocoChanged(Sender: TObject; addr: Word);
+    function IsLoko(HV: THV): Boolean;
 
-    procedure KeyPress(key:Integer; var handled:Boolean);
+    procedure KeyPress(key: Integer; var handled: Boolean);
 
     procedure CloseAll();
 
  end;
 
 var
-  RegCollector:TRegulatorCollector;
+  RegCollector: TRegulatorCollector;
 
 implementation
 
@@ -117,7 +117,7 @@ begin
   if (Self.OpenHV <> nil) then
     Self.OpenHV.ruc := Self.CHB_Total.Checked;
  except
-   on E:Exception do
+   on E: Exception do
     begin
      Application.MessageBox(PChar('Nepodařilo se nastavit RUČ:'+#13#10+E.Message),
          'Varování', MB_OK OR MB_ICONWARNING);
@@ -131,7 +131,7 @@ procedure TF_DigiReg.CHB_svetlaClick(Sender: TObject);
                        TTrakce.Callback(), TTrakce.Callback(), Self);
  end;
 
-procedure TF_DigiReg.OpenForm(HV:THV);
+procedure TF_DigiReg.OpenForm(HV: THV);
  begin
   CHB_Total.Checked := HV.ruc;
   Self.OpenHV := HV;
@@ -168,7 +168,7 @@ end;
 
 procedure TF_DigiReg.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
-var tmp:THV;
+var tmp: THV;
  begin
   if (Self.OpenHV <> nil) then
    begin
@@ -182,7 +182,7 @@ var tmp:THV;
         tmp.CheckRelease();
        end;
     except
-     on E:Exception do
+     on E: Exception do
       begin
        Self.OpenHV := tmp;
        Application.MessageBox(PChar('Lokomotivu se nepodařilo odhlásit:'+#13#10+E.Message),
@@ -194,12 +194,12 @@ var tmp:THV;
   Self.T_Speed.Enabled := false;
  end;
 
-procedure TF_DigiReg.Acquired(Sender:TObject; data:Pointer);
+procedure TF_DigiReg.Acquired(Sender: TObject; data: Pointer);
 begin
  Self.TB_Reg.SetFocus();
 end;
 
-procedure TF_DigiReg.AcquireFailed(Sender:TObject; data:Pointer);
+procedure TF_DigiReg.AcquireFailed(Sender: TObject; data: Pointer);
 begin
  Self.B_PrevzitLoko.Enabled := true;
  Application.MessageBox('Převezetí lokomotivy se nedařilo!', 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -216,8 +216,8 @@ begin
  Self.T_SpeedTimer(Self);
 end;
 
-procedure TF_DigiReg.LocoChanged(Sender:TObject);
-var funkce:TFunkce;
+procedure TF_DigiReg.LocoChanged(Sender: TObject);
+var funkce: TFunkce;
 begin
  Self.SetElemntsState(((Self.OpenHV.acquired) and ((Self.OpenHV.pom = pc) or (Self.OpenHV.pom = released))));
 
@@ -288,7 +288,7 @@ begin
   end;
 end;
 
-procedure TF_DigiReg.SetElemntsState(state:Boolean);
+procedure TF_DigiReg.SetElemntsState(state: Boolean);
 begin
  TB_reg.Enabled  := state;
  RG_Smer.Enabled := state;
@@ -331,7 +331,7 @@ begin
 end;
 
 // vyvola se, pokud je me okynko aktivni a je nad nim stiskla klavesa
-procedure TF_DigiReg.MyKeyPress(key:Integer; var handled: Boolean);
+procedure TF_DigiReg.MyKeyPress(key: Integer; var handled: Boolean);
 begin
  if (not Self.OpenHV.acquired) then
   begin
@@ -368,30 +368,30 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TRegulatorCollector.Create();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    Self.forms.data[i] := TF_DigiReg.Create(nil);
 end;
 
 destructor TRegulatorCollector.Destroy();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    if (Assigned(Self.forms.data[i])) then
       FreeAndNil(Self.forms.data[i]);
 end;
 
-procedure TRegulatorCollector.LocoChanged(Sender:TObject; addr:Word);
-var frm:TF_DigiReg;
+procedure TRegulatorCollector.LocoChanged(Sender: TObject; addr: Word);
+var frm: TF_DigiReg;
 begin
  frm := Self.GetForm(addr);
  if (frm = nil) then Exit;
  frm.LocoChanged(Sender);
 end;
 
-procedure TRegulatorCollector.Open(HV:THV);
-var i:Integer;
+procedure TRegulatorCollector.Open(HV: THV);
+var i: Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    if ((Self.forms.data[i].Showing) and (Self.forms.data[i].OpenHV = HV)) then
@@ -410,8 +410,8 @@ begin
  Self.forms.data[i].OpenForm(HV);
 end;
 
-function TRegulatorCollector.GetForm(addr:Word):TF_DigiReg;
-var i:Integer;
+function TRegulatorCollector.GetForm(addr: Word): TF_DigiReg;
+var i: Integer;
 begin
  Result := nil;
  for i := 0 to Self._MAX_FORMS-1 do
@@ -423,14 +423,14 @@ begin
 end;
 
 procedure TRegulatorCollector.CloseAll();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self._MAX_FORMS-1 do
    Self.forms.data[i].Close;
 end;
 
-procedure TRegulatorCollector.KeyPress(key:Integer; var handled:Boolean);
-var i:Integer;
+procedure TRegulatorCollector.KeyPress(key: Integer; var handled: Boolean);
+var i: Integer;
 begin
  if (handled) then Exit;
 
@@ -446,8 +446,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRegulatorCollector.IsLoko(HV:THV):Boolean;
-var i:Integer;
+function TRegulatorCollector.IsLoko(HV: THV): Boolean;
+var i: Integer;
 begin
  if (Self = nil) then Exit(false);
  

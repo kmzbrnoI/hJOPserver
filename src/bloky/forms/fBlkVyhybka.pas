@@ -58,18 +58,18 @@ type
     procedure SE_moduleExit(Sender: TObject);
     procedure CHB_FeedbackClick(Sender: TObject);
   private
-   OpenIndex:Integer;
-   Blk:TBlkTurnout;
-   NewBlk:Boolean;
-   CB_SpojkaData:TArI;
-   CB_ZamekData:TArI;
-   CB_NeprofilData:TArI;
+   OpenIndex: Integer;
+   Blk: TBlkTurnout;
+   NewBlk: Boolean;
+   CB_SpojkaData: TArI;
+   CB_ZamekData: TArI;
+   CB_NeprofilData: TArI;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
     procedure HlavniOpenForm;
   public
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkCreate;
   end;
 
@@ -82,9 +82,9 @@ uses GetSystems, FileSystem, TechnologieRCS, TBlok, DataBloky, TOblRizeni;
 
 {$R *.dfm}
 
-procedure TF_BlkVyhybka.OpenForm(BlokIndex:Integer);
+procedure TF_BlkVyhybka.OpenForm(BlokIndex: Integer);
  begin
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   OpenIndex := BlokIndex;
 
   HlavniOpenForm;
@@ -142,12 +142,12 @@ procedure TF_BlkVyhybka.NewBlkOpenForm();
  end;
 
 procedure TF_BlkVyhybka.NormalOpenForm();
-var glob:TBlkSettings;
-    i:Integer;
+var glob: TBlkSettings;
+    i: Integer;
     spojkaSettings, settings: TBlkTurnoutSettings;
-    obls:TArStr;
-    oblr:TOR;
-    vyh:TBlkTurnout;
+    obls: TArStr;
+    oblr: TOR;
+    vyh: TBlkTurnout;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
@@ -178,7 +178,7 @@ var glob:TBlkSettings;
     Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.lockPosition);
   Self.CHB_ZamekClick(Self.CHB_Zamek);
 
-  //poradi(0..3): vst+,vst-,vyst+,vyst- (referencni RCS_board = [0])
+  //poradi(0..3): vst+, vst-, vyst+, vyst- (referencni RCS_board = [0])
   if (settings.RCSAddrs.Count > 0) then
    begin
     if (Self.Blk.rcsInPlus.board > Cardinal(Self.SE_VstPlus_module.MaxValue)) then
@@ -242,7 +242,7 @@ var glob:TBlkSettings;
   Self.CHB_npMinus.Checked := (settings.npMinus > -1);
   Self.CHB_npMinusClick(Self.CHB_npMinus);
 
-  SetLength(obls,Self.Blk.OblsRizeni.Count);
+  SetLength(obls, Self.Blk.OblsRizeni.Count);
   for i := 0 to Self.Blk.OblsRizeni.Count-1 do
     obls[i] := Self.Blk.OblsRizeni[i].id;
 
@@ -251,9 +251,9 @@ var glob:TBlkSettings;
  end;
 
 procedure TF_BlkVyhybka.HlavniOpenForm;
-var spojka_vypust:TArI;
-    obls:TArStr;
-    i:Integer;
+var spojka_vypust: TArI;
+    obls: TArStr;
+    i: Integer;
  begin
   Self.LB_Stanice.Clear();
 
@@ -264,7 +264,7 @@ var spojka_vypust:TArI;
 
   if (Self.Blk <> nil) then
    begin
-    SetLength(obls,Self.Blk.OblsRizeni.Count);
+    SetLength(obls, Self.Blk.OblsRizeni.Count);
     for i := 0 to Self.Blk.OblsRizeni.Count-1 do
       obls[i] := Self.Blk.OblsRizeni[i].id;
     SetLength(spojka_vypust, 1);
@@ -367,9 +367,9 @@ begin
 end;
 
 procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
-var glob:TBlkSettings;
+var glob: TBlkSettings;
     settings, spojkaSettings: TBlkTurnoutSettings;
-    vyh:TBlkTurnout;
+    vyh: TBlkTurnout;
     another: TBlk;
     typ: TRCSIOType;
     i: Integer;
@@ -377,29 +377,29 @@ var glob:TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if ((Self.CHB_Spojka.Checked) and (Self.CB_Spojka.ItemIndex < 0)) then
    begin
-    Application.MessageBox('Vyberte spojku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte spojku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CHB_Zamek.Checked) then
    begin
     if (Self.CB_Zamek.ItemIndex < 0) then
      begin
-      Application.MessageBox('Vyberte zámek !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Vyberte zámek !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
     if (Self.CB_Zamek_Poloha.ItemIndex < 0) then
      begin
-      Application.MessageBox('Vyberte polohu výhybky pro uzamčení zámku!','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+      Application.MessageBox('Vyberte polohu výhybky pro uzamčení zámku!','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
       Exit;
      end;
    end;
@@ -426,7 +426,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btTurnout, glob) as TBlkTurnout;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
@@ -506,7 +506,7 @@ var glob:TBlkSettings;
   try
     Self.Blk.SetSettings(settings);
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Application.MessageBox(PChar(E.Message), 'Nelze uložit', MB_OK OR MB_ICONWARNING);
       Exit();

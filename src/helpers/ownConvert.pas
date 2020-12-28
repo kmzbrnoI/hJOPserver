@@ -1,4 +1,4 @@
-﻿unit ownConvert;
+unit ownConvert;
 
 interface
 
@@ -10,8 +10,8 @@ function BoolToInt(bool: Boolean): Integer;
 function IntToBool(int: Integer): Boolean;
 function StrToBool(str: string): Boolean;
 
-function StrToColor(str:string):TColor;
-function ColorToStr(color:TColor):string;
+function StrToColor(str: string): TColor;
+function ColorToStr(color: TColor): string;
 
 
 implementation

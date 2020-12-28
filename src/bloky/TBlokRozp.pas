@@ -11,7 +11,7 @@ type
  TRozpStatus = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
 
  TBlkRozpSettings = record
-  RCSAddrs:TRCSAddrs;     //only 1 address
+  RCSAddrs: TRCSAddrs;     //only 1 address
  end;
 
  TBlkRozpStav = record
@@ -24,7 +24,7 @@ type
  TBlkRozp = class(TBlk)
   const
    //defaultni stav
-   _def_rozp_stav:TBlkRozpStav = (
+   _def_rozp_stav: TBlkRozpStav = (
       status : disabled;
       rcsFailed: false;
       stit : '';
@@ -35,29 +35,29 @@ type
     _ACTIVE_TO_DISABLE_TIME_SEC = 30;
 
   private
-   RozpSettings:TBlkRozpSettings;
-   RozpStav:TBlkRozpStav;
+   RozpSettings: TBlkRozpSettings;
+   RozpStav: TBlkRozpStav;
 
-   procedure SetStatus(status:TRozpStatus);
+   procedure SetStatus(status: TRozpStatus);
    procedure UpdateOutput();
 
-   procedure SetStit(stit:string);
+   procedure SetStit(stit: string);
 
    procedure Mount();
    procedure Activate();
    procedure Prolong();
 
-   procedure MenuStitClick(SenderPnl:TIdContext; SenderOR:TObject);
-   procedure MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
-   procedure MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+   procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+   procedure MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+   procedure MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
   public
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -69,24 +69,24 @@ type
 
     //----- Rozpojovac own functions -----
 
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton;
-                         rights:TORCOntrolRights; params:string = ''); override;
-    function PanelStateString():string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
+                         rights: TORCOntrolRights; params: string = ''); override;
+    function PanelStateString(): string; override;
 
-    function GetSettings():TBlkRozpSettings;
-    procedure SetSettings(data:TBlkRozpSettings);
+    function GetSettings(): TBlkRozpSettings;
+    procedure SetSettings(data: TBlkRozpSettings);
 
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
-    property stav:TBlkRozpStav read RozpStav;
-    property status:TRozpStatus read RozpStav.status write SetStatus;
-    property stit:string read RozpStav.stit write SetStit;
+    property stav: TBlkRozpStav read RozpStav;
+    property status: TRozpStatus read RozpStav.status write SetStatus;
+    property stit: string read RozpStav.stit write SetStit;
 
     //PT:
-    procedure GetPtData(json:TJsonObject; includeState:Boolean); override;
-    procedure GetPtState(json:TJsonObject); override;
-    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
  end;//class TBlkRozp
 
@@ -96,7 +96,7 @@ implementation
 
 uses TCPServerOR, ownConvert, Graphics, PTUtils;
 
-constructor TBlkRozp.Create(index:Integer);
+constructor TBlkRozp.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -106,25 +106,25 @@ end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkRozp.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
+ Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.LoadORs(ini_rel, 'R').Free();
  PushRCStoOR(Self.ORsRef, Self.RozpSettings.RCSAddrs);
 
  Self.RozpStav.Stit := ini_stat.ReadString(section, 'stit', '');
 end;
 
-procedure TBlkRozp.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkRozp.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
 
- Self.SaveRCS(ini_tech,section,Self.RozpSettings.RCSAddrs);
+ Self.SaveRCS(ini_tech, section, Self.RozpSettings.RCSAddrs);
 end;
 
-procedure TBlkRozp.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkRozp.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
  if (Self.RozpStav.Stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.RozpStav.Stit);
@@ -196,12 +196,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkRozp.GetSettings():TBlkRozpSettings;
+function TBlkRozp.GetSettings(): TBlkRozpSettings;
 begin
  Result := Self.RozpSettings;
 end;
 
-procedure TBlkRozp.SetSettings(data:TBlkRozpSettings);
+procedure TBlkRozp.SetSettings(data: TBlkRozpSettings);
 begin
  if (Self.RozpSettings.RCSAddrs <> data.RCSAddrs) then
    Self.RozpSettings.RCSAddrs.Free();
@@ -212,7 +212,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkRozp.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  case (Button) of
    F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -237,7 +237,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkRozp.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkRozp.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := inherited;
  if (Self.status = TRozpStatus.active) then
@@ -247,7 +247,7 @@ begin
  Result := Result + 'STIT,';
 end;
 
-procedure TBlkRozp.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkRozp.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
@@ -256,7 +256,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.SetStatus(status:TRozpStatus);
+procedure TBlkRozp.SetStatus(status: TRozpStatus);
 begin
  if (Self.status <> status) then
   begin
@@ -283,7 +283,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkRozp.PanelStateString():string;
+function TBlkRozp.PanelStateString(): string;
 var fg, bg: TColor;
 begin
  Result := inherited;
@@ -325,7 +325,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.GetPtData(json:TJsonObject; includeState:Boolean);
+procedure TBlkRozp.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
  TBlk.RCStoJSON(Self.RozpSettings.RCSAddrs[0], json['rcs']);
@@ -333,7 +333,7 @@ begin
    Self.GetPtState(json['blockState']);
 end;
 
-procedure TBlkRozp.GetPtState(json:TJsonObject);
+procedure TBlkRozp.GetPtState(json: TJsonObject);
 begin
  case (Self.status) of
   TRozpStatus.disabled: json['state'] := 'off';
@@ -343,7 +343,7 @@ begin
  end;
 end;
 
-procedure TBlkRozp.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkRozp.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
 begin
  if (reqJson.Contains('state')) then
   begin
@@ -367,7 +367,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.SetStit(stit:string);
+procedure TBlkRozp.SetStit(stit: string);
 begin
  Self.RozpStav.Stit := stit;
  Self.Change();
@@ -378,12 +378,12 @@ begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
 end;
 
-procedure TBlkRozp.MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkRozp.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.Activate();
 end;
 
-procedure TBlkRozp.MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkRozp.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.status := TRozpStatus.not_selected;
 end;

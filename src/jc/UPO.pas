@@ -18,22 +18,22 @@ type
 
   // jeden radek upozorneni
   TUPOLine = record
-   str:string;                                                                  // text upozorneni
-   fg:TColor;                                                                   // barva popredi (tj. textu)
-   bg:TColor;                                                                   // barva pozadi
-   align:TAlignment;                                                            // zarovnani textu
+   str: string;                                                                  // text upozorneni
+   fg: TColor;                                                                   // barva popredi (tj. textu)
+   bg: TColor;                                                                   // barva pozadi
+   align: TAlignment;                                                            // zarovnani textu
   end;
 
   TUPOItem = array [0.._UPO_LINES-1] of TUPOLine;                               // jedno upozorneni = pole 3 radku
   TUPOItems = TList<TUPOItem>;                                                  // vice upozorneni = senzma upozorneni
 
-  function GetUPOLine(str:string; align:TAlignment = taCenter;                  // vrati TUPOLine na zaklade parametru funkce, slouzi pro jednoduche vytvareni TUPOLine
-      fg:TColor = clNone; bg:TColor = clNone):TUPOLine;
-  function GetLines(str:string; line_length:Integer):TStrings;                  // vrati pcet radku stringu \str v uporneni
+  function GetUPOLine(str: string; align: TAlignment = taCenter;                  // vrati TUPOLine na zaklade parametru funkce, slouzi pro jednoduche vytvareni TUPOLine
+      fg: TColor = clNone; bg: TColor = clNone): TUPOLine;
+  function GetLines(str: string; line_length: Integer): TStrings;                  // vrati pcet radku stringu \str v uporneni
 
 implementation
 
-function GetUPOLine(str:string; align:TAlignment = taCenter; fg:TColor = clNone; bg:TColor = clNone):TUPOLine;
+function GetUPOLine(str: string; align: TAlignment = taCenter; fg: TColor = clNone; bg: TColor = clNone): TUPOLine;
 begin
  Result.str   := str;
  Result.fg    := fg;
@@ -41,8 +41,8 @@ begin
  Result.align := align;
 end;
 
-function GetLines(str:string; line_length:Integer):TStrings;
-var i:Integer;
+function GetLines(str: string; line_length: Integer): TStrings;
+var i: Integer;
 begin
  Result := TStringList.Create();
 

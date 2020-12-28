@@ -1,4 +1,4 @@
-﻿unit THVDatabase;
+unit THVDatabase;
 
 {
   Trida THVDb je databaze hnacich vozidel.
@@ -35,10 +35,10 @@ type
    private
     // index odpovida adrese
     // jednu adresu muze mit pouze jedno vozidlo v Db
-    HVs:THVArray;
+    HVs: THVArray;
 
-    fdefault_or:Integer;
-    fLoksDir:string;
+    fdefault_or: Integer;
+    fLoksDir: string;
     eAcquiredOk: TNotifyEvent;
     eAcquiredErr: TNotifyEvent;
     eReleasedOk: TNotifyEvent;
@@ -48,12 +48,12 @@ type
     tLocoUpdate: TTimer; // always running
 
      procedure Clear();
-     procedure LoadFile(filename:string; stateini:TMemIniFile);
+     procedure LoadFile(filename: string; stateini: TMemIniFile);
 
-     function GetCnt():Word;
+     function GetCnt(): Word;
 
      procedure CreateIndex();
-     function GetItem(index:Integer):THV;
+     function GetItem(index: Integer): THV;
 
      procedure AcquiredOk(Sender: TObject; Data: Pointer);
      procedure AcquiredErr(Sender: TObject; Data: Pointer);
@@ -66,22 +66,22 @@ type
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadFromDir(const dirname:string; const statefn:string);
-     procedure SaveData(const dirname:string);
-     procedure SaveState(const statefn:string);
+     procedure LoadFromDir(const dirname: string; const statefn: string);
+     procedure SaveData(const dirname: string);
+     procedure SaveState(const statefn: string);
 
-     function Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject): THV; overload;
-     function Add(panel_str:string; SenderOR:TObject): THV; overload;
-     procedure Remove(addr:Word);
+     function Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; OblR: TObject): THV; overload;
+     function Add(panel_str: string; SenderOR: TObject): THV; overload;
+     procedure Remove(addr: Word);
 
-     procedure RemoveRegulator(conn:TIDContext);
+     procedure RemoveRegulator(conn: TIDContext);
 
      procedure ClearAllStatistics();
-     procedure ExportStatistics(filename:string);
+     procedure ExportStatistics(filename: string);
 
      procedure UpdateTokenTimeout();
-     function FilenameForLok(addr:Word):string; overload;
-     function FilenameForLok(hv:THV):string; overload;
+     function FilenameForLok(addr: Word): string; overload;
+     function FilenameForLok(hv: THV): string; overload;
 
      function AnyAcquiredHVHasActiveFunc(func: string): Boolean;
      function AllAcquiredHVsHaveActiveFunc(func: string): Boolean;
@@ -91,19 +91,19 @@ type
      procedure TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
      procedure TrakceReleaseAllUsed(ok: TNotifyEvent = nil; locoReleased: TNotifyEvent = nil);
 
-     property cnt:Word read GetCnt;              // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
-     property HVozidla:THVArray read HVs;
-     property default_or:Integer read fdefault_or write fdefault_or;
-     property loksDir:string read fLoksDir;
-     property acquiring:Boolean read mAcquiring;
-     property releasing:Boolean read mReleasing;
+     property cnt: Word read GetCnt;              // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
+     property HVozidla: THVArray read HVs;
+     property default_or: Integer read fdefault_or write fdefault_or;
+     property loksDir: string read fLoksDir;
+     property acquiring: Boolean read mAcquiring;
+     property releasing: Boolean read mReleasing;
 
      property Items[index : integer] : THV read GetItem; default;
 
   end;//THVDb
 
 var
-  HVDb:THVDb;
+  HVDb: THVDb;
 
 implementation
 
@@ -140,7 +140,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THVDb.Clear();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
    if (Self.HVs[i] <> nil) then
@@ -149,11 +149,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.LoadFile(filename:string; stateini:TMemIniFile);
-var aHV:THV;
-    ini:TMemIniFile;
-    sections:TStrings;
-    sect:string;
+procedure THVDb.LoadFile(filename: string; stateini: TMemIniFile);
+var aHV: THV;
+    ini: TMemIniFile;
+    sections: TStrings;
+    sect: string;
 begin
  ini      := nil;
  sections := nil;
@@ -173,7 +173,7 @@ begin
      try
        aHV := THV.Create(ini, stateini, sect);
      except
-       on E:Exception do
+       on E: Exception do
          AppEvents.LogException(E, 'Chyba pri nacitani souboru loko : '+filename + ', sekce '+sect);
      end;
 
@@ -187,7 +187,7 @@ begin
       end;
     end;//for sect in sections
  except
-  on E:Exception do
+  on E: Exception do
    begin
     AppEvents.LogException(E, 'Chyba pri nacitani souboru loko '+filename);
     if (ini <> nil) then ini.Free();
@@ -201,9 +201,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.LoadFromDir(const dirname:string; const statefn:string);
-var SR:TSearchRec;
-    stateIni:TMemIniFile;
+procedure THVDb.LoadFromDir(const dirname: string; const statefn: string);
+var SR: TSearchRec;
+    stateIni: TMemIniFile;
  begin
   Self.fLoksDir := dirname;
   stateIni := TMemIniFile.Create(statefn);
@@ -233,8 +233,8 @@ var SR:TSearchRec;
   end;
 end;
 
-procedure THVDb.SaveData(const dirname:string);
-var i:Integer;
+procedure THVDb.SaveData(const dirname: string);
+var i: Integer;
 begin
  Self.fLoksDir := dirname;
 
@@ -245,16 +245,16 @@ begin
      try
        Self.HVs[i].SaveData(Self.FilenameForLok(Self.HVs[i]));
      except
-       on E:Exception do
+       on E: Exception do
         AppEvents.LogException(E, 'THVDb.SaveData '+IntToStr(i));
      end;
     end;//if <> nil
   end;//for i
 end;
 
-procedure THVDb.SaveState(const statefn:string);
-var i:Integer;
-    stateIni:TMemIniFile;
+procedure THVDb.SaveState(const statefn: string);
+var i: Integer;
+    stateIni: TMemIniFile;
 begin
  stateIni := TMemIniFile.Create(statefn);
 
@@ -266,7 +266,7 @@ begin
        try
          Self.HVs[i].SaveState(stateIni);
        except
-         on E:Exception do
+         on E: Exception do
           AppEvents.LogException(E, 'THVDb.SaveState '+IntToStr(i));
        end;
       end;//if <> nil
@@ -279,9 +279,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THVDb.Add(data:THVData; addr:Word; StanovisteA:THVStanoviste; OblR:TObject): THV;
-var i, index:Integer;
-    stav:THVStav;
+function THVDb.Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; OblR: TObject): THV;
+var i, index: Integer;
+    stav: THVStav;
 begin
  if (addr > 9999) then
    raise EInvalidAddress.Create('Neplatná adresa lokomotivy ' + IntToStr(addr));
@@ -336,19 +336,19 @@ begin
  Result := Self.HVs[addr];
 end;
 
-function THVDb.Add(panel_str:string; SenderOR:TObject): THV;
-var HV:THV;
-    index, i:Integer;
+function THVDb.Add(panel_str: string; SenderOR: TObject): THV;
+var HV: THV;
+    index, i: Integer;
 begin
  try
    HV := THV.Create(panel_str, (SenderOR as TOR));
  except
-   on e:Exception do
+   on e: Exception do
     begin
      raise Exception.Create(e.Message);
      HV.Free();
      Exit();
-    end;//on e:Exception
+    end;//on e: Exception
  end;
 
  if (Self[HV.addr] <> nil) then
@@ -393,8 +393,8 @@ begin
  Result := HV;
 end;
 
-procedure THVDb.Remove(addr:Word);
-var i, index:Integer;
+procedure THVDb.Remove(addr: Word);
+var i, index: Integer;
 begin
  // hv neexistuje
  if (Self.HVs[addr] = nil) then
@@ -424,8 +424,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // spocita pocet hnacich vozidel
-function THVDb.GetCnt():Word;
-var i:Integer;
+function THVDb.GetCnt(): Word;
+var i: Integer;
 begin
  Result := 0;
  for i := 0 to _MAX_ADDR-1 do
@@ -440,7 +440,7 @@ end;
 // update indxu si zajistuji metody Add a remove trosku jinym algoritmem
 //    (neni zapotrebi kontrolovat cele pole)
 procedure THVDb.CreateIndex();
-var i, index:Integer;
+var i, index: Integer;
 begin
  index := 0;
  for i := 0 to _MAX_ADDR-1 do
@@ -455,8 +455,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.RemoveRegulator(conn:TIDContext);
-var i:Integer;
+procedure THVDb.RemoveRegulator(conn: TIDContext);
+var i: Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
    if (Assigned(Self.HVs[i])) then
@@ -466,7 +466,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THVDb.UpdateTokenTimeout();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
    if (Assigned(self.HVs[i])) then
@@ -476,7 +476,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THVDb.ClearAllStatistics();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
    if (Assigned(self.HVs[i])) then
@@ -487,9 +487,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.ExportStatistics(filename:string);
-var f:TextFile;
-    i:Integer;
+procedure THVDb.ExportStatistics(filename: string);
+var f: TextFile;
+    i: Integer;
 begin
   AssignFile(f, filename);
   Rewrite(f);
@@ -507,25 +507,25 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THVDb.FilenameForLok(addr:Word):string;
+function THVDb.FilenameForLok(addr: Word): string;
 begin
  Result := Self.loksDir + '\L_' + IntToStr(addr) + _FILE_SUFFIX;
 end;
 
-function THVDb.FilenameForLok(hv:THV):string;
+function THVDb.FilenameForLok(hv: THV): string;
 begin
  Result := Self.FilenameForLok(hv.addr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THVDb.GetItem(index:Integer):THV;
+function THVDb.GetItem(index: Integer): THV;
 begin
  Result := Self.HVs[index];
 end;
 
 procedure THVDb.CSReset();
-var addr:Word;
+var addr: Word;
 begin
  Self.mAcquiring := false;
  Self.mReleasing := false;
@@ -641,7 +641,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THVDb.OnTLocoUpdate(Sender: TObject);
-var addr:Word;
+var addr: Word;
 begin
   for addr := 0 to _MAX_ADDR-1 do
    begin
@@ -654,7 +654,7 @@ begin
 
       Self.HVs[addr].UpdateTraveled(_LOCO_UPDATE_TIME_MS div 1000);
     except
-      on E:Exception do
+      on E: Exception do
         AppEvents.LogException(E, 'HVDb.OnTLocoUpdate');
     end;
    end;

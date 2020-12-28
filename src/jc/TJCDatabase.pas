@@ -1,4 +1,4 @@
-﻿unit TJCDatabase;
+unit TJCDatabase;
 
 {
   TJCDb je databaze jizdnich cest.
@@ -14,79 +14,79 @@ type
 
   TJCDb = class
    private
-    JCs:TObjectList<TJC>;
-    JCsStartNav:TObjectDictionary<TBlkNav, TList<TJC>>;
+    JCs: TObjectList<TJC>;
+    JCsStartNav: TObjectDictionary<TBlkNav, TList<TJC>>;
 
-    ffilename:string;
+    ffilename: string;
 
-     function GetCount():Word;
-     function GetItem(i: Integer):TJC;
-     function FindPlaceForNewJC(id:Integer):Integer;
+     function GetCount(): Word;
+     function GetItem(i: Integer): TJC;
+     function FindPlaceForNewJC(id: Integer): Integer;
      procedure FillJCsStartNav();
 
-     procedure JCOnIDChanged(Sender:TObject);
-     procedure JCOnNavChanged(Sender:TObject; origNav:TBlk);
+     procedure JCOnIDChanged(Sender: TObject);
+     procedure JCOnNavChanged(Sender: TObject; origNav: TBlk);
 
    public
 
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadData(const filename:string);
-     procedure SaveData(const filename:string);
+     procedure LoadData(const filename: string);
+     procedure SaveData(const filename: string);
      procedure UpdateJCIndexes();
 
      procedure Update();
-     procedure StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter: Boolean);
+     procedure StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
 
-     function AddJC(JCdata:TJCprop):TJC;
-     procedure RemoveJC(index:Integer);
+     function AddJC(JCdata: TJCprop): TJC;
+     procedure RemoveJC(index: Integer);
 
-     function GetJCByIndex(index:Integer):TJC;
-     function GetJCIndex(id:Integer):Integer;
-     function GetJCByID(id:integer):TJC;
+     function GetJCByIndex(index: Integer): TJC;
+     function GetJCIndex(id: Integer): Integer;
+     function GetJCByID(id: integer): TJC;
 
      // najde JC, ktera je postavena, ci prave stavena !
-     function FindJC(NavestidloBlokID:Integer; Staveni:Boolean = false): TJC; overload;
-     function FindOnlyStaveniJC(NavestidloBlokID:Integer): TJC;
-     function IsJC(id:Integer; ignore_index:Integer = -1):Boolean;
+     function FindJC(NavestidloBlokID: Integer; Staveni: Boolean = false): TJC; overload;
+     function FindOnlyStaveniJC(NavestidloBlokID: Integer): TJC;
+     function IsJC(id: Integer; ignore_index: Integer = -1): Boolean;
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
-     function FindPostavenaJCWithVyhybka(vyh_id:Integer):TList<TJC>;
-     function FindPostavenaJCWithUsek(usek_id:Integer):TJC;
-     function FindPostavenaJCWithPrj(blk_id:Integer):TList<TJC>;
-     function FindPostavenaJCWithTrat(trat_id:Integer):TJC;
-     function FindPostavenaJCWithZamek(zam_id:Integer):TList<TJC>;
+     function FindPostavenaJCWithVyhybka(vyh_id: Integer): TList<TJC>;
+     function FindPostavenaJCWithUsek(usek_id: Integer): TJC;
+     function FindPostavenaJCWithPrj(blk_id: Integer): TList<TJC>;
+     function FindPostavenaJCWithTrat(trat_id: Integer): TJC;
+     function FindPostavenaJCWithZamek(zam_id: Integer): TList<TJC>;
 
      // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
      // tato fce zajisti, ze k ovlivneni dojde
-     procedure CheckNNavaznost(nav:TBlkNav);
+     procedure CheckNNavaznost(nav: TBlkNav);
 
      procedure RusAllJC();
-     procedure RusJC(Blk:TBlk);     // rusi cestu, ve ktere je zadany blok
+     procedure RusJC(Blk: TBlk);     // rusi cestu, ve ktere je zadany blok
 
-     function IsAnyJC(nav:TBlkNav):Boolean;
-     function IsAnyVC(nav:TBlkNav):Boolean;
-     function IsAnyPC(nav:TBlkNav):Boolean;
+     function IsAnyJC(nav: TBlkNav): Boolean;
+     function IsAnyVC(nav: TBlkNav): Boolean;
+     function IsAnyPC(nav: TBlkNav): Boolean;
 
-     function IsAnyJCAvailable(nav:TBlkNav; typ:TJCType):Boolean;
-     function IsAnyVCAvailable(nav:TBlkNav):Boolean;
-     function IsAnyPCAvailable(nav:TBlkNav):Boolean;
+     function IsAnyJCAvailable(nav: TBlkNav; typ: TJCType): Boolean;
+     function IsAnyVCAvailable(nav: TBlkNav): Boolean;
+     function IsAnyPCAvailable(nav: TBlkNav): Boolean;
 
-     function FindJC(startNav:TBlkNav; vb: TList<TObject>; EndBlk:TBlk):TJC; overload;
-     function IsAnyJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
+     function FindJC(startNav: TBlkNav; vb: TList<TObject>; EndBlk: TBlk): TJC; overload;
+     function IsAnyJCWithPrefix(startNav: TBlkNav; vb: TList<TObject>): Boolean;
 
-     property Count:Word read GetCount;
-     property filename:string read ffilename;
+     property Count: Word read GetCount;
+     property filename: string read ffilename;
 
-     function GetEnumerator():TEnumerator<TJC>;
+     function GetEnumerator(): TEnumerator<TJC>;
      property Items[index : integer] : TJC read GetItem; default;
 
 
   end;
 
 var
-  JCDb:TJcDb;
+  JCDb: TJcDb;
 
 
 implementation
@@ -118,11 +118,11 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 // load data from ini file
-procedure TJCDb.LoadData(const filename:string);
-var ini:TMemIniFile;
-    i:Integer;
-    sections:TStrings;
-    JC:TJC;
+procedure TJCDb.LoadData(const filename: string);
+var ini: TMemIniFile;
+    i: Integer;
+    sections: TStrings;
+    JC: TJC;
 begin
  writelog('Načítám JC - '+filename, WR_DATA);
 
@@ -144,7 +144,7 @@ begin
        JC.LoadData(ini, sections[i]);
        Self.JCs.Insert(Self.FindPlaceForNewJC(JC.id), JC);
      except
-       on E:Exception do
+       on E: Exception do
         begin
          AppEvents.LogException(E, 'JC '+JC.name+' se nepodařilo načíst');
          JC.Free();
@@ -163,9 +163,9 @@ begin
 end;
 
 // save data to ini file:
-procedure TJCDb.SaveData(const filename:string);
-var ini:TMemIniFile;
-    JC:TJC;
+procedure TJCDb.SaveData(const filename: string);
+var ini: TMemIniFile;
+    JC: TJC;
 begin
  writelog('Ukládám JC - '+filename, WR_DATA);
 
@@ -186,7 +186,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.Update();
-var JC:TJC;
+var JC: TJC;
 begin
  for JC in Self.JCs do
   begin
@@ -203,7 +203,7 @@ begin
        JC.UpdateTimeOut();
       end;
    except
-    on E:Exception do
+    on E: Exception do
      begin
       if (not log_err_flag) then
        AppEvents.LogException(E, 'JC '+JC.name + ' update error');
@@ -218,7 +218,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.GetJCByIndex(index:Integer):TJC;
+function TJCDb.GetJCByIndex(index: Integer): TJC;
 begin
  if ((index < 0) or (index >= Self.JCs.Count)) then
   begin
@@ -231,8 +231,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.FindJC(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):TJC;
-var jc:TJC;
+function TJCDb.FindJC(startNav: TBlkNav; vb: TList<TObject>; endBlk: TBlk): TJC;
+var jc: TJC;
     blk: TBlk;
     j: Integer;
     match: Boolean;
@@ -269,11 +269,11 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se vola zvnejsi, kdyz chceme postavit jakoukoliv JC
-procedure TJCDb.StavJC(StartBlk,EndBlk:TBlk; SenderPnl:TIdContext; SenderOR:TObject; abAfter: Boolean);
-var oblr:TOR;
-    startNav:TBlkNav;
-    senderOblr:TOR;
-    jc:TJC;
+procedure TJCDb.StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
+var oblr: TOR;
+    startNav: TBlkNav;
+    senderOblr: TOR;
+    jc: TJC;
 begin
  startNav := StartBlk as TBlkNav;
  senderOblr := SenderOR as TOR;
@@ -325,11 +325,11 @@ begin
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.AddJC(JCdata:TJCprop):TJC;
-var JC:TJC;
-    index:Integer;
-    i:Integer;
-    nav:TBlkNav;
+function TJCDb.AddJC(JCdata: TJCprop): TJC;
+var JC: TJC;
+    index: Integer;
+    i: Integer;
+    nav: TBlkNav;
 begin
  // kontrola existence JC stejneho ID
  if (Self.IsJC(JCData.id)) then
@@ -355,9 +355,9 @@ begin
  Result := JC;
 end;
 
-procedure TJCDb.RemoveJC(index:Integer);
-var i:Integer;
-    OblR:TOR;
+procedure TJCDb.RemoveJC(index: Integer);
+var i: Integer;
+    OblR: TOR;
 begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam JC');
  if (index >= Self.JCs.Count) then raise Exception.Create('Index pretekl seznam JC');
@@ -383,7 +383,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.RusAllJC();
-var JC:TJC;
+var JC: TJC;
 begin
  for JC in Self.JCs do
   begin
@@ -396,7 +396,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.FindJC(NavestidloBlokID:Integer; Staveni:Boolean = false): TJC;
+function TJCDb.FindJC(NavestidloBlokID: Integer; Staveni: Boolean = false): TJC;
 var jc: TJC;
  begin
   for jc in Self.JCs do
@@ -405,7 +405,7 @@ var jc: TJC;
   Result := nil;
  end;
 
-function TJCDb.FindOnlyStaveniJC(NavestidloBlokID:Integer): TJC;
+function TJCDb.FindOnlyStaveniJC(NavestidloBlokID: Integer): TJC;
 var jc: TJC;
 begin
   for jc in Self.JCs do
@@ -418,7 +418,7 @@ end;
 
 //vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
 // muze vracet vic jizdnich cest - jeden odvrat muze byt u vic aktualne postavenych JC
-function TJCDB.FindPostavenaJCWithVyhybka(vyh_id:Integer): TList<TJC>;
+function TJCDB.FindPostavenaJCWithVyhybka(vyh_id: Integer): TList<TJC>;
 var jc: TJC;
     vyhz: TJCVyhZaver;
     odvrz: TJCOdvratZaver;
@@ -457,7 +457,7 @@ begin
  end;
 end;
 
-function TJCDB.FindPostavenaJCWithUsek(usek_id:Integer): TJC;
+function TJCDB.FindPostavenaJCWithUsek(usek_id: Integer): TJC;
 var jc: TJC;
     usekid: Integer;
     trat, tu: TBlk;
@@ -521,7 +521,7 @@ begin
  end;
 end;
 
-function TJCDB.FindPostavenaJCWithZamek(zam_id:Integer): TList<TJC>;
+function TJCDB.FindPostavenaJCWithZamek(zam_id: Integer): TList<TJC>;
 var jc: TJC;
     zamZav: TJCRefZaver;
 begin
@@ -594,10 +594,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // rusi cestu, ve ktere je zadany blok
-procedure TJCDb.RusJC(Blk:TBlk);
-var tmpblk:TBlk;
-    jc:TJC;
-    oblr:TOR;
+procedure TJCDb.RusJC(Blk: TBlk);
+var tmpblk: TBlk;
+    jc: TJC;
+    oblr: TOR;
     jcs: TList<TJC>;
 begin
  jcs := TList<TJC>.Create();
@@ -648,7 +648,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.GetCount():Word;
+function TJCDb.GetCount(): Word;
 begin
  Result := Self.JCs.Count;
 end;
@@ -656,8 +656,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // najde index pro novou jizdni cestu
-function TJCDb.FindPlaceForNewJC(id:Integer):Integer;
-var i:Integer;
+function TJCDb.FindPlaceForNewJC(id: Integer): Integer;
+var i: Integer;
 begin
  i := Self.JCs.Count-1;
  while ((i >= 0) and (Self.JCs[i].id > id)) do
@@ -667,8 +667,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsJC(id:Integer; ignore_index:Integer = -1):Boolean;
-var index:Integer;
+function TJCDb.IsJC(id: Integer; ignore_index: Integer = -1): Boolean;
+var index: Integer;
 begin
  index := Self.GetJCIndex(id);
  Result := ((index <> -1) and (index <> ignore_index));
@@ -677,8 +677,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Hledame JC se zadanym ID v seznamu bloku pomoci binarniho vyhledavani.
 
-function TJCDb.GetJCIndex(id:Integer):Integer;
-var left, right, mid:Integer;
+function TJCDb.GetJCIndex(id: Integer): Integer;
+var left, right, mid: Integer;
 begin
  left  := 0;
  right := Self.JCs.Count-1;
@@ -698,8 +698,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.GetJCByID(id:integer):TJC;
-var index:Integer;
+function TJCDb.GetJCByID(id: integer): TJC;
+var index: Integer;
 begin
  Result := nil;
  index := Self.GetJCIndex(id);
@@ -708,9 +708,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCDb.JCOnIDChanged(Sender:TObject);
-var new_index, min_index, i, index:Integer;
-    tmp:TJC;
+procedure TJCDb.JCOnIDChanged(Sender: TObject);
+var new_index, min_index, i, index: Integer;
+    tmp: TJC;
 begin
  index := (Sender as TJC).index;
  Self.JCs.OwnsObjects := false;
@@ -736,7 +736,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.UpdateJCIndexes();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.JCs.Count-1 do
    Self.JCs[i].index := i;
@@ -745,8 +745,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.FillJCsStartNav();
-var JC:TJC;
-    nav:TBlkNav;
+var JC: TJC;
+    nav: TBlkNav;
 begin
  Self.JCsStartNav.Clear();
  for JC in Self.JCs do
@@ -763,9 +763,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCDb.JCOnNavChanged(Sender:TObject; origNav:TBlk);
-var nav:TBlkNav;
-    jc:TJC;
+procedure TJCDb.JCOnNavChanged(Sender: TObject; origNav: TBlk);
+var nav: TBlkNav;
+    jc: TJC;
 begin
  nav := origNav as TBlkNav;
  jc := Sender as TJC;
@@ -787,13 +787,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsAnyJC(nav:TBlkNav):Boolean;
+function TJCDb.IsAnyJC(nav: TBlkNav): Boolean;
 begin
  Result := Self.JCsStartNav.ContainsKey(nav) and (Self.JCsStartNav[nav].Count > 0);
 end;
 
-function TJCDb.IsAnyVC(nav:TBlkNav):Boolean;
-var jc:TJC;
+function TJCDb.IsAnyVC(nav: TBlkNav): Boolean;
+var jc: TJC;
 begin
  if (not Self.JCsStartNav.ContainsKey(nav)) then
    Exit(false);
@@ -803,8 +803,8 @@ begin
  Result := false;
 end;
 
-function TJCDb.IsAnyPC(nav:TBlkNav):Boolean;
-var jc:TJC;
+function TJCDb.IsAnyPC(nav: TBlkNav): Boolean;
+var jc: TJC;
 begin
  if (not Self.JCsStartNav.ContainsKey(nav)) then
    Exit(false);
@@ -818,10 +818,10 @@ end;
 // Zjistuje, jestli je mozno postvit z navestidla \nav v aktualni situaci alespon
 // jednu cestu typu \typ.
 
-function TJCDb.IsAnyJCAvailable(nav:TBlkNav; typ:TJCType):Boolean;
-var jc:TJC;
-    blk:TBlk;
-    usek:TBlkUsek;
+function TJCDb.IsAnyJCAvailable(nav: TBlkNav; typ: TJCType): Boolean;
+var jc: TJC;
+    blk: TBlk;
+    usek: TBlkUsek;
 begin
  if (not Self.JCsStartNav.ContainsKey(nav)) then
    Exit(false);
@@ -841,31 +841,31 @@ begin
  Result := false;
 end;
 
-function TJCDb.IsAnyVCAvailable(nav:TBlkNav):Boolean;
+function TJCDb.IsAnyVCAvailable(nav: TBlkNav): Boolean;
 begin
  Result := Self.IsAnyJCAvailable(nav, TJCType.vlak);
 end;
 
-function TJCDb.IsAnyPCAvailable(nav:TBlkNav):Boolean;
+function TJCDb.IsAnyPCAvailable(nav: TBlkNav): Boolean;
 begin
  Result := Self.IsAnyJCAvailable(nav, TJCType.posun);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.GetItem(i: Integer):TJC;
+function TJCDb.GetItem(i: Integer): TJC;
 begin
   Result := Self.JCs[i];
 end;
 
-function TJCDb.GetEnumerator():TEnumerator<TJC>;
+function TJCDb.GetEnumerator(): TEnumerator<TJC>;
 begin
  Result := Self.JCs.GetEnumerator();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsAnyJCWithPrefix(startNav:TBlkNav; vb: TList<TObject>):Boolean;
+function TJCDb.IsAnyJCWithPrefix(startNav: TBlkNav; vb: TList<TObject>): Boolean;
 var jc: TJC;
     j: Integer;
     error: Boolean;

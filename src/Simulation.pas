@@ -8,11 +8,11 @@ type
   TJCSimulator = class
     private
 
-     procedure OnTimer(Sender:TObject);
-     procedure UpdateJC(JC:TJC);
+     procedure OnTimer(Sender: TObject);
+     procedure UpdateJC(JC: TJC);
 
     public
-     timer:TTimer;
+     timer: TTimer;
 
       constructor Create();
       destructor Destroy(); override;
@@ -21,11 +21,11 @@ type
   TTratSimulator = class
     private
 
-     procedure OnTimer(Sender:TObject);
-     procedure UpdateTrat(Trat:TBlkTrat);
+     procedure OnTimer(Sender: TObject);
+     procedure UpdateTrat(Trat: TBlkTrat);
 
     public
-     timer:TTimer;
+     timer: TTimer;
 
       constructor Create();
       destructor Destroy(); override;
@@ -34,10 +34,10 @@ type
   TVyhSimulator = class
     private
 
-     procedure OnTimer(Sender:TObject);
+     procedure OnTimer(Sender: TObject);
 
     public
-     timer:TTimer;
+     timer: TTimer;
 
       constructor Create();
       destructor Destroy(); override;
@@ -74,8 +74,8 @@ begin
  inherited Destroy();
 end;
 
-procedure TJCSimulator.OnTimer(Sender:TObject);
-var JC:TJC;
+procedure TJCSimulator.OnTimer(Sender: TObject);
+var JC: TJC;
 begin
  if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
@@ -84,9 +84,9 @@ begin
      Self.UpdateJC(JC);
 end;
 
-procedure TJCSimulator.UpdateJC(JC:TJC);
-var Blk, Nav:TBlk;
-    UsekSet:TBlkUsekSettings;
+procedure TJCSimulator.UpdateJC(JC: TJC);
+var Blk, Nav: TBlk;
+    UsekSet: TBlkUsekSettings;
 begin
  try
    if (JC.stav.RozpadBlok < 0) then Exit();
@@ -148,8 +148,8 @@ begin
  inherited Destroy();
 end;
 
-procedure TTratSimulator.OnTimer(Sender:TObject);
-var Blk:TBlk;
+procedure TTratSimulator.OnTimer(Sender: TObject);
+var Blk: TBlk;
 begin
  if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
@@ -162,10 +162,10 @@ begin
   end;
 end;
 
-procedure TTratSimulator.UpdateTrat(Trat:TBlkTrat);
-var TU:TBlkTU;
-    TratSet:TBlkTratSettings;
-    i:Integer;
+procedure TTratSimulator.UpdateTrat(Trat: TBlkTrat);
+var TU: TBlkTU;
+    TratSet: TBlkTratSettings;
+    i: Integer;
 begin
  try
    TratSet := Trat.GetSettings();
@@ -220,9 +220,9 @@ begin
  inherited Destroy();
 end;
 
-procedure TVyhSimulator.OnTimer(Sender:TObject);
-var blk:TBlk;
-    vyh:TBlkTurnout;
+procedure TVyhSimulator.OnTimer(Sender: TObject);
+var blk: TBlk;
+    vyh: TBlkTurnout;
 begin
  try
    if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;

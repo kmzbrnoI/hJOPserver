@@ -1,4 +1,4 @@
-﻿unit TechnologieMultiJC;
+unit TechnologieMultiJC;
 
 {
   Technologie slozenych jizdnich cest.
@@ -13,16 +13,16 @@ uses
 type
 
   TMultiJCStaveni = record
-   JCIndex:Integer;
-   SenderOR:TObject;
-   SenderPnl:TIdContext;
+   JCIndex: Integer;
+   SenderOR: TObject;
+   SenderPnl: TIdContext;
   end;
 
   TMultiJCprop = record
-   Nazev:string;
-   JCs:TList<Integer>;
-   vb:TList<Integer>;
-   id:Integer;
+   Nazev: string;
+   JCs: TList<Integer>;
+   vb: TList<Integer>;
+   id: Integer;
   end;
 
   EInvalidID = class(Exception);
@@ -39,36 +39,36 @@ type
    private
      fproperties: TMultiJCprop;
      fstaveni: TMultiJCStaveni;
-     staveno:TJC;     // zde je ulozena JC, ktera se aktualne stavi
+     staveno: TJC;     // zde je ulozena JC, ktera se aktualne stavi
 
-     function GetStaveni():Boolean;
+     function GetStaveni(): Boolean;
 
    public
 
-     changed:Boolean;
+     changed: Boolean;
 
       constructor Create(); overload;
-      constructor Create(data:TMultiJCprop); overload;
+      constructor Create(data: TMultiJCprop); overload;
       destructor Destroy(); override;
 
       procedure UpdateStaveni();
 
-      procedure LoadData(ini:TMemIniFile; section:string);
-      procedure SaveData(ini:TMemIniFile);
+      procedure LoadData(ini: TMemIniFile; section: string);
+      procedure SaveData(ini: TMemIniFile);
 
-      procedure StavJC(SenderPnl:TIdContext; SenderOR:TObject);
+      procedure StavJC(SenderPnl: TIdContext; SenderOR: TObject);
       procedure RusStaveni();
 
-      function Match(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):Boolean;
-      function StartNav():TBlkNav;
+      function Match(startNav: TBlkNav; vb: TList<TObject>; endBlk: TBlk): Boolean;
+      function StartNav(): TBlkNav;
 
-      property data:TMultiJCprop read fproperties write fproperties;
-      property stav:TMultiJCStaveni read fstaveni;
-      property Nazev:string read fproperties.Nazev;
-      property staveni:Boolean read GetStaveni;
-      property id:Integer read fproperties.id;
+      property data: TMultiJCprop read fproperties write fproperties;
+      property stav: TMultiJCStaveni read fstaveni;
+      property Nazev: string read fproperties.Nazev;
+      property staveni: Boolean read GetStaveni;
+      property id: Integer read fproperties.id;
 
-      class function IdComparer():IComparer<TMultiJC>;
+      class function IdComparer(): IComparer<TMultiJC>;
   end;
 
 implementation
@@ -90,7 +90,7 @@ begin
  Self.staveno := nil;
 end;//ctor
 
-constructor TMultiJC.Create(data:TMultiJCprop);
+constructor TMultiJC.Create(data: TMultiJCprop);
 begin
  inherited Create();
 
@@ -113,14 +113,14 @@ end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJC.LoadData(ini:TMemIniFile; section:string);
-var sl:TStrings;
-    i:Integer;
+procedure TMultiJC.LoadData(ini: TMemIniFile; section: string);
+var sl: TStrings;
+    i: Integer;
 begin
  try
    Self.fproperties.id := StrToInt(section);
  except
-   on E:EConvertError do
+   on E: EConvertError do
      raise EInvalidID.Create('Neplatné id mJC : '+section);
  end;
 
@@ -142,10 +142,10 @@ begin
    Self.fproperties.vb.Add(StrToInt(sl[i]));
 end;
 
-procedure TMultiJC.SaveData(ini:TMemIniFile);
-var i:Integer;
-    str:string;
-    section:string;
+procedure TMultiJC.SaveData(ini: TMemIniFile);
+var i: Integer;
+    str: string;
+    section: string;
 begin
  section := IntToStr(Self.id);
 
@@ -167,7 +167,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJC.UpdateStaveni();
-var JC:TJC;
+var JC: TJC;
 begin
  if (Self.staveno.postaveno) then
   begin
@@ -200,8 +200,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject);
-var i:Integer;
+procedure TMultiJC.StavJC(SenderPnl: TIdContext; SenderOR: TObject);
+var i: Integer;
 begin
  for i := 0 to Self.fproperties.JCs.Count-1 do
    if (JCDb.GetJCByID(Self.fproperties.JCs[i]) = nil) then
@@ -222,9 +222,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJC.RusStaveni();
-var JC:TJC;
-    Blk:TBlk;
-    i:Integer;
+var JC: TJC;
+    Blk: TBlk;
+    i: Integer;
 begin
  Self.fstaveni.JCIndex := -1;
  Self.staveno          := nil;
@@ -251,17 +251,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.GetStaveni():Boolean;
+function TMultiJC.GetStaveni(): Boolean;
 begin
  Result := (Self.fstaveni.JCIndex > -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TMultiJC.IdComparer():IComparer<TMultiJC>;
+class function TMultiJC.IdComparer(): IComparer<TMultiJC>;
 begin
  Result := TComparer<TMultiJC>.Construct(
-   function(const mJC1, mJC2:TMultiJC):Integer
+   function(const mJC1, mJC2: TMultiJC): Integer
     begin
      Result := CompareValue(mJC1.id, mJC2.id);
     end
@@ -270,7 +270,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.Match(startNav:TBlkNav; vb: TList<TObject>; endBlk:TBlk):Boolean;
+function TMultiJC.Match(startNav: TBlkNav; vb: TList<TObject>; endBlk: TBlk): Boolean;
 var jc: TJC;
     j: Integer;
 begin
@@ -302,8 +302,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.StartNav():TBlkNav;
-var jc:TJC;
+function TMultiJC.StartNav(): TBlkNav;
+var jc: TJC;
 begin
  if (Self.data.JCs.Count > 0) then begin
    jc := JCDb.GetJCByID(Self.data.JCs[0]);

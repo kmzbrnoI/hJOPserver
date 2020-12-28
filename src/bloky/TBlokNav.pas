@@ -1,4 +1,4 @@
-﻿unit TBlokNav;
+unit TBlokNav;
 
 //definice a obsluha technologickeho bloku Navestidlo
 
@@ -39,9 +39,9 @@ type
  // zastaovoaci a zpomalovaci udalost pro jeden typ soupravy a jeden rozsah delek soupravy
  TBlkNavTrainEvent = class
   train_typ_re: TJclRegEx;                        // regexp matchujici typ soupravy
-  delka:record                                  // tato udalost je brana v potaz, pokud ma souprava delku > min && < max
-    min:Integer;
-    max:Integer;
+  delka: record                                  // tato udalost je brana v potaz, pokud ma souprava delku > min && < max
+    min: Integer;
+    max: Integer;
   end;
 
   zastaveni: TRREv;                             // zastavovaci udalost
@@ -55,58 +55,58 @@ type
    constructor Create(str: string; old: Boolean); overload;
    destructor Destroy(); override;
 
-   procedure Parse(str:string; old:Boolean);
+   procedure Parse(str: string; old: Boolean);
    class function ParseTrainTypes(types: string): string;
-   function ToFileStr(short:Boolean = false): string;
-   class function ParseOldRychEvent(str:string): TRREv;
+   function ToFileStr(short: Boolean = false): string;
+   class function ParseOldRychEvent(str: string): TRREv;
  end;
 
  // vlastnosti bloku Nav, ktere se ukladaji do databaze bloku
  TBlkNavSettings = record
-  RCSAddrs:TRCSAddrs;                            // ve skutecnosti je signifikantni jen jedna adresa - na indexu [0], coz je vystup pro rizeni navestidla
-  OutputType:TBlkNavOutputType;                  // typ vystupu: binarni/SCom
-  events:TObjectList<TBlkNavTrainEvent>;         // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
+  RCSAddrs: TRCSAddrs;                            // ve skutecnosti je signifikantni jen jedna adresa - na indexu [0], coz je vystup pro rizeni navestidla
+  OutputType: TBlkNavOutputType;                  // typ vystupu: binarni/SCom
+  events: TObjectList<TBlkNavTrainEvent>;         // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
                                                  // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky soupravy
-  ZpozdeniPadu:Integer;                          // zpozdeni padu navestidla v sekundach (standartne 0)
-  zamknuto:Boolean;                              // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
+  ZpozdeniPadu: Integer;                          // zpozdeni padu navestidla v sekundach (standartne 0)
+  zamknuto: Boolean;                              // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
  end;
 
  // stav bloku Nav
  TBlkNavStav = record
-  ZacatekVolba:TBlkNavVolba;                     // zacatek volby jidni cesty
-  ZacatekAB:Boolean;                             // jestli je zacatek volby JC v rezimu AB
-  Navest: TBlkNavCode;                           // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
-  cilova_navest: TBlkNavCode;                    // navest, ktera ma byt nastavena
-  navest_old: TBlkNavCode;                       // behem staveni obsahuje byvalou navest
-  ABJC:TJC;                                      // odkaz na automaticky stavenou JC
-  ZAM:Boolean;                                   // navestidlo zamkle z panelu
-  dn_jc_ref,privol_ref:TJC;                      // reference na aktualni JC na navestidle (resp. NC)
+  ZacatekVolba: TBlkNavVolba;                     // zacatek volby jidni cesty
+  ZacatekAB: Boolean;                             // jestli je zacatek volby JC v rezimu AB
+  Navest: TBlkNavCode;                            // aktualni navest dle kodu SCom; pokud je vypla komunikace, -1
+  cilova_navest: TBlkNavCode;                     // navest, ktera ma byt nastavena
+  navest_old: TBlkNavCode;                        // behem staveni obsahuje byvalou navest
+  ABJC: TJC;                                      // odkaz na automaticky stavenou JC
+  ZAM: Boolean;                                   // navestidlo zamkle z panelu
+  dn_jc_ref, privol_ref: TJC;                     // reference na aktualni JC na navestidle (resp. NC)
 
-  padani:Boolean;                                // zde je true, pokud navestidlo pada do STUJ (ma zpozdeny pad) a jeste nespadlo
-  padani_start:TDateTime;                        // start padani
+  padani: Boolean;                                // zde je true, pokud navestidlo pada do STUJ (ma zpozdeny pad) a jeste nespadlo
+  padani_start: TDateTime;                        // start padani
 
-  privol_start:TDateTime;                        // start privolavaci navesti (privolavacka sviti pouze omezeny cas a pak se vypne)
-  privol_timer_id:Integer;                       // id timeru ukonceni privolavacky v panelu, ze ktreho byla JC postavena
-  autoblok:Boolean;
+  privol_start: TDateTime;                        // start privolavaci navesti (privolavacka sviti pouze omezeny cas a pak se vypne)
+  privol_timer_id: Integer;                       // id timeru ukonceni privolavacky v panelu, ze ktreho byla JC postavena
+  autoblok: Boolean;
 
-  toRnz:TDictionary<Integer, Cardinal>;          // seznam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
-  RCtimer:Integer;                               // id timeru, ktery se prave ted pouziva pro ruseni JC
+  toRnz: TDictionary<Integer, Cardinal>;          // seznam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
+  RCtimer: Integer;                               // id timeru, ktery se prave ted pouziva pro ruseni JC
   changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
   changeEnd: TTime;
  end;
 
  // vlastnosti navestidla ziskane ze souboru .spnl (od reliefu, resp. z Mergeru)
  TBlkNavRel = record
-  SymbolType:TBlkNavSymbol;                      // typ navestidla
-  UsekID:Integer;                                // ID useku pred navestidlem
-  smer:THVStanoviste;                            // smer navetidla (lichy X sudy)
+  SymbolType: TBlkNavSymbol;                      // typ navestidla
+  UsekID: Integer;                                // ID useku pred navestidlem
+  smer: THVStanoviste;                            // smer navetidla (lichy X sudy)
  end;
 
  // Blok Nav (Navestidlo)
  TBlkNav = class(TBlk)
   const
    //defaultni stav
-   _def_Nav_stav:TBlkNavStav = (
+   _def_Nav_stav: TBlkNavStav = (
      ZacatekVolba : none;
      ZacatekAB : false;
      Navest : ncDisabled;
@@ -134,43 +134,43 @@ type
    NavStav: TBlkNavStav;
    NavRel: TBlkNavRel;
 
-   fUsekPred:TBlk;
-   lastEvIndex:Integer;
+   fUsekPred: TBlk;
+   lastEvIndex: Integer;
 
     function IsEnabled(): Boolean;
-    function RCinProgress():Boolean;
+    function RCinProgress(): Boolean;
 
     procedure mSetNavest(navest: TBlkNavCode);
 
-    function GetAB():Boolean;
-    procedure SetAB(ab:Boolean);
-    procedure SetABJC(ab:TJC);
+    function GetAB(): Boolean;
+    procedure SetAB(ab: Boolean);
+    procedure SetABJC(ab: TJC);
 
-    procedure SetZacatekVolba(typ:TBlkNavVolba);
-    procedure SetZAM(zam:Boolean);
+    procedure SetZacatekVolba(typ: TBlkNavVolba);
+    procedure SetZAM(zam: Boolean);
 
     // obsluha polozek v menu panelu
-    procedure MenuVCStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuVCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPCStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuSTUJClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuDNClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuRCClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuABStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuABStopClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuLockClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuUnlockClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPNStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPNStopClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPPStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPPStopClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuVCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuVCStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPCStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTUJClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuDNClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuABStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuABStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuLockClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuUnlockClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPNStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPNStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPPStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPPStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuPPNClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRNZClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuKCDKClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     // DEBUG menu:
-    procedure MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:Boolean);
+    procedure MenuAdminStopIR(SenderPnl: TIdContext; SenderOR: TObject; enabled: Boolean);
 
     procedure UpdatePadani();
     procedure UpdatePrivol();
@@ -178,33 +178,33 @@ type
     procedure OnNavestSetOk();
     procedure OnNavestSetError();
 
-    procedure PrivolDKClick(SenderPnl:TIDContext; SenderOR:TObject; Button:TPanelButton);
-    procedure PrivokDKPotvrSekv(Sender:TIdContext; success:Boolean);
-    procedure RNZPotvrSekv(Sender:TIdContext; success:Boolean);
+    procedure PrivolDKClick(SenderPnl: TIDContext; SenderOR: TObject; Button: TPanelButton);
+    procedure PrivokDKPotvrSekv(Sender: TIdContext; success: Boolean);
+    procedure RNZPotvrSekv(Sender: TIdContext; success: Boolean);
 
-    procedure SetUsekPredID(new_id:Integer);
+    procedure SetUsekPredID(new_id: Integer);
 
-    function CurrentEventIndex():Integer;
+    function CurrentEventIndex(): Integer;
 
-    function GetUsekPred():TBlk;
-    function CanIDoRNZ():Boolean;
+    function GetUsekPred(): TBlk;
+    function CanIDoRNZ(): Boolean;
 
     procedure UnregisterAllEvents();
-    function IsChanging():Boolean;
+    function IsChanging(): Boolean;
     function GetCilovaNavest(): TBlkNavCode;
 
   public
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
-    function IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):Boolean; overload;
+    function IsPovolovaciNavest(jctype: TJCType = TJCType.vlak): Boolean; overload;
     function IsOpakVystraha(): Boolean;
-    class function IsPovolovaciNavest(Navest: TBlkNavCode; jctype:TJCType = TJCType.vlak):Boolean; overload;
+    class function IsPovolovaciNavest(Navest: TBlkNavCode; jctype: TJCType = TJCType.vlak): Boolean; overload;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -213,61 +213,61 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:Boolean = false); override;
+    procedure Change(now: Boolean = false); override;
 
     procedure JCZrusNavest();   // zahrnuje cas na pad navesti
     procedure SetNavest(navest: TBlkNavCode; changeCallbackOk, changeCallbackErr: TNotifyEvent);
 
     //----- Nav own functions -----
 
-    function GetSettings():TBlkNavSettings;
-    procedure SetSettings(data:TBlkNavSettings);
+    function GetSettings(): TBlkNavSettings;
+    procedure SetSettings(data: TBlkNavSettings);
 
-    procedure UpdateRychlostTrain(force:Boolean = false);
-    procedure AddBlkToRnz(blkId:Integer; change:Boolean = true);
-    procedure RemoveBlkFromRnz(blkId:Integer);
+    procedure UpdateRychlostTrain(force: Boolean = false);
+    procedure AddBlkToRnz(blkId: Integer; change: Boolean = true);
+    procedure RemoveBlkFromRnz(blkId: Integer);
     procedure RCtimerTimeout();
     function FourtyKmph(): Boolean;
     class function AddOpak(navest: TBlkNavCode): TBlkNavCode;
 
-    function GetTrain(usek:TBlk = nil): TTrain;
+    function GetTrain(usek: TBlk = nil): TTrain;
     procedure PropagatePOdjToTrat();
 
     class function NavestToString(navest: TBlkNavCode): string;
 
-    property SymbolType:TBlkNavSymbol read NavRel.SymbolType;
-    property UsekID:Integer read NavRel.UsekID write SetUsekPredID;
-    property Smer:THVStanoviste read NavRel.smer write NavRel.smer;
+    property SymbolType: TBlkNavSymbol read NavRel.SymbolType;
+    property UsekID: Integer read NavRel.UsekID write SetUsekPredID;
+    property Smer: THVStanoviste read NavRel.smer write NavRel.smer;
 
     //stavove promenne
     property navest: TBlkNavCode read NavStav.Navest write mSetNavest;
     property cilovaNavest: TBlkNavCode read GetCilovaNavest;
-    property ZacatekVolba:TBlkNavVolba read NavStav.ZacatekVolba write SetZacatekVolba;
-    property ZacatekAB:Boolean read NavStav.ZacatekAB;
-    property AB:Boolean read GetAB write SetAB;
-    property ABJC:TJC read NavStav.ABJC write SetABJC;
-    property ZAM:Boolean read NavStav.ZAM write SetZAM;
-    property Lichy:THVStanoviste read NavRel.Smer;
-    property DNjc:TJC read NavStav.dn_jc_ref write NavStav.dn_jc_ref;
-    property privol:TJC read NavStav.privol_ref write NavStav.privol_ref;
-    property UsekPred:TBlk read GetUsekPred;
-    property autoblok:Boolean read NavStav.autoblok write NavStav.autoblok;
-    property canRNZ:Boolean read CanIDoRNZ;
-    property RCtimer:Integer read NavStav.RCtimer write NavStav.RCtimer;
-    property changing:Boolean read IsChanging;
+    property ZacatekVolba: TBlkNavVolba read NavStav.ZacatekVolba write SetZacatekVolba;
+    property ZacatekAB: Boolean read NavStav.ZacatekAB;
+    property AB: Boolean read GetAB write SetAB;
+    property ABJC: TJC read NavStav.ABJC write SetABJC;
+    property ZAM: Boolean read NavStav.ZAM write SetZAM;
+    property Lichy: THVStanoviste read NavRel.Smer;
+    property DNjc: TJC read NavStav.dn_jc_ref write NavStav.dn_jc_ref;
+    property privol: TJC read NavStav.privol_ref write NavStav.privol_ref;
+    property UsekPred: TBlk read GetUsekPred;
+    property autoblok: Boolean read NavStav.autoblok write NavStav.autoblok;
+    property canRNZ: Boolean read CanIDoRNZ;
+    property RCtimer: Integer read NavStav.RCtimer write NavStav.RCtimer;
+    property changing: Boolean read IsChanging;
     property enabled: Boolean read IsEnabled;
 
     //GUI:
 
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    function PanelStateString():string; override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function PanelStateString(): string; override;
 
     //PT:
 
-    procedure GetPtData(json:TJsonObject; includeState:Boolean); override;
-    procedure GetPtState(json:TJsonObject); override;
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
 
  end;//class TBlkNav
 
@@ -277,7 +277,7 @@ type
 //  zamknuti=zamknuti navestidla trvale do STUJ
 
 // format ev: (ev1)(ev2)(ev3)
-// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:train_typ_regexp|min_delka|max_delka
+// format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re: train_typ_regexp|min_delka|max_delka
 //      train_typ, min_delka a max_delka jsou u eventu 0 (globalniho eventu) vynechany
 //      vsechny dalsi eventy jsou specificke -> vyse zminene informace v nich jsou ulozeny
 
@@ -295,7 +295,7 @@ uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
      TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
-constructor TBlkNav.Create(index:Integer);
+constructor TBlkNav.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -316,7 +316,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkNav.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 var strs: TStrings;
     str: string;
     i: Integer;
@@ -395,8 +395,8 @@ begin
  PushRCSToOR(Self.ORsRef, Self.NavSettings.RCSAddrs);
 end;
 
-procedure TBlkNav.SaveData(ini_tech:TMemIniFile;const section:string);
-var i:Integer;
+procedure TBlkNav.SaveData(ini_tech: TMemIniFile; const section: string);
+var i: Integer;
 begin
  inherited SaveData(ini_tech, section);
 
@@ -415,7 +415,7 @@ begin
    ini_tech.WriteBool(section, 'zamknuti', Self.NavSettings.zamknuto);
 end;
 
-procedure TBlkNav.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkNav.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
 
 end;
@@ -505,7 +505,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.Change(now:Boolean = false);
+procedure TBlkNav.Change(now: Boolean = false);
 begin
  // zmenu navesti propagujeme do prilehle trati, kde by mohlo dojit ke zmene
  // navesti autobloku
@@ -517,12 +517,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.GetSettings():TBlkNavSettings;
+function TBlkNav.GetSettings(): TBlkNavSettings;
 begin
  Result := Self.NavSettings;
 end;
 
-procedure TBlkNav.SetSettings(data:TBlkNavSettings);
+procedure TBlkNav.SetSettings(data: TBlkNavSettings);
 begin
  if (Self.NavSettings.events <> data.events) then
    Self.NavSettings.events.Free();
@@ -538,7 +538,7 @@ end;
 //nastavovani stavovych promennych:
 
 procedure TBlkNav.SetNavest(navest: TBlkNavCode; changeCallbackOk, changeCallbackErr: TNotifyEvent);
-var oblr:TOR;
+var oblr: TOR;
     traini: Integer;
 begin
  if ((Self.NavStav.Navest = ncDisabled) or (Self.NavSettings.zamknuto)) then
@@ -647,8 +647,8 @@ begin
 end;
 
 procedure TBlkNav.OnNavestSetOk();
-var tmp:TNotifyEvent;
-    oblr:TOR;
+var tmp: TNotifyEvent;
+    oblr: TOR;
 begin
  Self.NavStav.Navest := Self.NavStav.cilova_navest;
 
@@ -678,7 +678,7 @@ begin
 end;
 
 procedure TBlkNav.OnNavestSetError();
-var tmp:TNotifyEvent;
+var tmp: TNotifyEvent;
 begin
  // Tato funkce zatim neni moc vyuzivana, jedna se o pripravu do budoucna, kdy
  // by melo navestidlo kontrolu navesti (vstup do hJOP).
@@ -703,12 +703,12 @@ begin
    Self.OnNavestSetOk();
 end;
 
-function TBlkNav.GetAB():Boolean;
+function TBlkNav.GetAB(): Boolean;
 begin
  Result := (Self.NavStav.ABJC <> nil);
 end;
 
-procedure TBlkNav.SetABJC(ab:TJC);
+procedure TBlkNav.SetABJC(ab: TJC);
 begin
  if ((ab <> nil) and (Self.ABJC <> nil)) then
    raise EInvalidOperation.Create('Cannot change AB JC, can only enable/disable AB JC!');
@@ -718,7 +718,7 @@ begin
      if (Assigned(ABlist)) then
        ABlist.Remove(Self.ABJC);
    except
-     on E:EABJCNotInList do
+     on E: EABJCNotInList do
        asm nop; end; // ignore exception
    end;
    Self.NavStav.ABJC := nil;
@@ -727,7 +727,7 @@ begin
    try
      ABlist.Add(ab);
    except
-     on E:EABJCAlreadyInList do
+     on E: EABJCAlreadyInList do
        asm nop; end; // ignore exception
    end;
    Self.NavStav.ABJC := ab;
@@ -735,7 +735,7 @@ begin
  end;
 end;
 
-procedure TBlkNav.SetAB(ab:Boolean);
+procedure TBlkNav.SetAB(ab: Boolean);
 begin
  if (ab) then
    raise EInvalidOperation.Create('You can only enable AB via SetABJC!');
@@ -744,7 +744,7 @@ begin
    Self.ABJC := nil;
 end;
 
-procedure TBlkNav.SetZacatekVolba(typ:TBlkNavVolba);
+procedure TBlkNav.SetZacatekVolba(typ: TBlkNavVolba);
 begin
  if (Self.NavStav.ZacatekVolba = typ) then Exit();
  Self.NavStav.ZacatekVolba := typ;
@@ -753,7 +753,7 @@ begin
  Self.Change();
 end;
 
-procedure TBlkNav.SetZAM(zam:Boolean);
+procedure TBlkNav.SetZAM(zam: Boolean);
 begin
  if (Self.NavStav.ZAM = zam) then Exit();
  Self.NavStav.ZAM := zam;
@@ -787,8 +787,8 @@ end;
 //gui: menu
 //dynamicke funkce
 
-procedure TBlkNav.MenuVCStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-var Blk:TBlk;
+procedure TBlkNav.MenuVCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+var Blk: TBlk;
 begin
  if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit();
  if ((SenderOR as TOR).stack.volba = PV) then
@@ -805,13 +805,13 @@ begin
  Self.NavStav.ZacatekAB := false;
 end;
 
-procedure TBlkNav.MenuVCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuVCStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.ZacatekVolba := TBlkNavVolba.none;
 end;
 
-procedure TBlkNav.MenuPCStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-var Blk:TBlk;
+procedure TBlkNav.MenuPCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+var Blk: TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
@@ -823,12 +823,12 @@ begin
  Self.NavStav.ZacatekAB := false;
 end;
 
-procedure TBlkNav.MenuPCStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuPCStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.ZacatekVolba := TBlkNavVolba.none;
 end;
 
-procedure TBlkNav.MenuSTUJClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuSTUJClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  // poradi musi byt zachovano !
  Self.Navest := ncStuj;
@@ -838,7 +838,7 @@ begin
  Blky.TrainPrediction(Self);
 end;
 
-procedure TBlkNav.MenuDNClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuDNClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.DNjc = nil) then Exit();
 
@@ -852,9 +852,9 @@ begin
  Blky.TrainPrediction(Self);
 end;
 
-procedure TBlkNav.MenuRCClick(SenderPnl:TIdContext; SenderOR:TObject);
-var JC:TJC;
-    Blk:TBlk;
+procedure TBlkNav.MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
+var JC: TJC;
+    Blk: TBlk;
 begin
  if ((Self.DNjc = nil) or (Self.RCinProgress())) then Exit;
 
@@ -886,7 +886,7 @@ begin
  Blky.TrainPrediction(Self);
 end;
 
-procedure TBlkNav.MenuABStartClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuABStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.DNjc <> nil) then
    Self.ABJC := Self.DNjc
@@ -896,7 +896,7 @@ begin
  end;
 end;
 
-procedure TBlkNav.MenuABStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuABStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.ABJC <> nil) then
    Self.ABJC := nil
@@ -904,22 +904,22 @@ begin
    Self.MenuVCStopClick(SenderPnl, SenderOR);
 end;
 
-procedure TBlkNav.MenuLockClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuLockClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.ZAM := true;
  Self.Navest := ncStuj;
 end;
 
-procedure TBlkNav.MenuUnlockClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuUnlockClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.ZAM := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.MenuPNStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-var Blk:TBlk;
-    oblr:TOR;
+procedure TBlkNav.MenuPNStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+var Blk: TBlk;
+    oblr: TOR;
 begin
  if (Self.NavRel.SymbolType = TBlkNavSymbol.seradovaci) then Exit;
 
@@ -931,15 +931,15 @@ begin
    oblr.ORDKClickServer(Self.PrivolDKClick);
 end;
 
-procedure TBlkNav.MenuPNStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuPNStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.ZacatekVolba := TBlkNavVolba.none;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.MenuPPStartClick(SenderPnl:TIdContext; SenderOR:TObject);
-var Blk:TBlk;
+procedure TBlkNav.MenuPPStartClick(SenderPnl: TIdContext; SenderOR: TObject);
+var Blk: TBlk;
 begin
  if ((SenderOR as TOR).stack.volba = PV) then
    if ((Self.Navest > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
@@ -949,22 +949,22 @@ begin
  Self.ZacatekVolba := TBlkNavVolba.PP;
 end;
 
-procedure TBlkNav.MenuPPStopClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuPPStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.ZacatekVolba := TBlkNavVolba.none;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.MenuPPNClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkNav.MenuPPNClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Prodloužení doby přivolávací návěsti', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkNav.MenuRNZClick(SenderPnl:TIdContext; SenderOR:TObject);
-var podminky:TList<TPSPodminka>;
-    blkId:Integer;
-    blk:TBlk;
+procedure TBlkNav.MenuRNZClick(SenderPnl: TIdContext; SenderOR: TObject);
+var podminky: TList<TPSPodminka>;
+    blkId: Integer;
+    blk: TBlk;
 begin
  podminky := TList<TPSPodminka>.Create();
 
@@ -978,8 +978,8 @@ begin
  ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závěrů po nouzové cestě', TBlky.GetBlksList(Self), podminky);
 end;
 
-procedure TBlkNav.MenuKCDKClick(SenderPnl:TIdContext; SenderOR:TObject);
-var oblr:TOR;
+procedure TBlkNav.MenuKCDKClick(SenderPnl: TIdContext; SenderOR: TObject);
+var oblr: TOR;
 begin
  if (Self.ZacatekVolba = TBlkNavVolba.NC) then
   begin
@@ -990,8 +990,8 @@ begin
   end;
 end;
 
-procedure TBlkNav.MenuAdminStopIR(SenderPnl:TIdContext; SenderOR:TObject; enabled:Boolean);
-var Blk:TBlk;
+procedure TBlkNav.MenuAdminStopIR(SenderPnl: TIdContext; SenderOR: TObject; enabled: Boolean);
+var Blk: TBlk;
 begin
  try
    if (Self.NavSettings.events[0].zastaveni.typ = TRREvType.rrtIR) then
@@ -1010,7 +1010,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkNav.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  case (Button) of
   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1038,7 +1038,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkNav.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkNav.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if      (item = 'VC>')  then Self.MenuVCStartClick(SenderPnl, SenderOR)
  else if (item = 'VC<')  then Self.MenuVCStopClick (SenderPnl, SenderOR)
@@ -1065,8 +1065,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro konkretni s-com:
-function TBlkNav.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
-var Blk:TBlk;
+function TBlkNav.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+var Blk: TBlk;
 begin
  Result := inherited;
 
@@ -1165,7 +1165,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlkNav.NavestToString(navest: TBlkNavCode):string;
+class function TBlkNav.NavestToString(navest: TBlkNavCode): string;
 begin
   case (navest) of
    ncChanging: Result  := 'stavění...';
@@ -1176,17 +1176,17 @@ begin
    ncOcek40: Result  := 'očekávejte 40 km/h';
    ncVolno40: Result  := '40 km/h a volno';
    ncVse: Result  := 'svítí vše (Rezerva)';
-   ncVystraha40:Result  := '40 km/h a výstraha';
+   ncVystraha40: Result  := '40 km/h a výstraha';
    nc40Ocek40: Result  := '40 km/h a očekávejte 40 km/h';
    ncPrivol: Result  := 'přivolávací návěst';
    ncPosunZaj: Result  := 'dovolen zajištěný posun';
    ncPosunNezaj: Result := 'dovolen nezajištěný posun';
-   ncOpakVolno:Result := 'opakování návěsti volno';
-   ncOpakVystraha:Result := 'opakování návěsti výstraha';
-   ncZhasnuto:Result := 'návěstidlo zhaslé';
-   ncOpakOcek40:Result := 'opakování návěsti očekávejte 40 km/h';
-   ncOpakVystraha40:Result := 'opakování návěsti výstraha a 40 km/h';
-   ncOpak40Ocek40:Result := '40 km/h a opakování návěsti očekávejte 40 km/h';
+   ncOpakVolno: Result := 'opakování návěsti volno';
+   ncOpakVystraha: Result := 'opakování návěsti výstraha';
+   ncZhasnuto: Result := 'návěstidlo zhaslé';
+   ncOpakOcek40: Result := 'opakování návěsti očekávejte 40 km/h';
+   ncOpakVystraha40: Result := 'opakování návěsti výstraha a 40 km/h';
+   ncOpak40Ocek40: Result := '40 km/h a opakování návěsti očekávejte 40 km/h';
   else
     Result := 'Jiná návěst';
   end;
@@ -1225,12 +1225,12 @@ end;
 // pozor na padání !
 // force nucene zastavi vlak, resp. nastavi jeho rychlost
 //  metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
-procedure TBlkNav.UpdateRychlostTrain(force:Boolean = false);
-var Usek, Nav:TBlk;
-    train:TTrain;
-    navEv:TBlkNavTrainEvent;
-    i:Integer;
-    trat:TBlkTrat;
+procedure TBlkNav.UpdateRychlostTrain(force: Boolean = false);
+var Usek, Nav: TBlk;
+    train: TTrain;
+    navEv: TBlkNavTrainEvent;
+    i: Integer;
+    trat: TBlkTrat;
 begin
  if (Self.NavSettings.events.Count = 0) then Exit();
  Usek := Self.UsekPred;
@@ -1411,10 +1411,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Vraci udalost, na kterou by se melo reagovat podle aktualniho stavu kolejiste.
 
-function TBlkNav.CurrentEventIndex():Integer;
-var i:Integer;
-    train:TTrain;
-    Usek:TBlk;
+function TBlkNav.CurrentEventIndex(): Integer;
+var i: Integer;
+    train: TTrain;
+    Usek: TBlk;
     event: TBlkNavTrainEvent;
 begin
  if (Self.NavSettings.events.Count = 0) then
@@ -1443,7 +1443,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.IsPovolovaciNavest(jctype:TJCType = TJCType.vlak):Boolean;
+function TBlkNav.IsPovolovaciNavest(jctype: TJCType = TJCType.vlak): Boolean;
 begin
  if ((Self.Navest = ncChanging) and (TBlkNav.IsPovolovaciNavest(Self.NavStav.cilova_navest, jctype))) then
    // navest se meni na nejakou povolovaci -> ridim se jeste tou starou
@@ -1457,7 +1457,7 @@ begin
  Result := (Self.cilovaNavest = ncOpakVystraha) or (Self.cilovaNavest = ncOpakVystraha40);
 end;
 
-class function TBlkNav.IsPovolovaciNavest(Navest: TBlkNavCode; jctype:TJCType = TJCType.vlak):Boolean;
+class function TBlkNav.IsPovolovaciNavest(Navest: TBlkNavCode; jctype: TJCType = TJCType.vlak): Boolean;
 begin
  if (jcType = TJCType.vlak) then
   begin
@@ -1476,7 +1476,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.UpdatePrivol();
-var oblr:TOR;
+var oblr: TOR;
 begin
  if ((Self.NavStav.privol_start+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now+EncodeTime(0, 0, 30, 0)) and
      (Self.NavStav.privol_timer_id = 0)) then
@@ -1486,7 +1486,7 @@ begin
    for oblr in Self.ORsRef do
     begin
      oblr.BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.NavStav.privol_timer_id)+
-                              ';0;30;PN '+Self.GlobalSettings.name);
+                              ';0;30; PN '+Self.GlobalSettings.name);
      oblr.TimerCnt := oblr.TimerCnt + 1;
     end;
   end;
@@ -1501,8 +1501,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // privolavaci navest bez podpory zabezpecovaciho zarizeni
-procedure TBlkNav.PrivolDKClick(SenderPnl:TIDContext; SenderOR:TObject; Button:TPanelButton);
-var oblr:TOR;
+procedure TBlkNav.PrivolDKClick(SenderPnl: TIDContext; SenderOR: TObject; Button: TPanelButton);
+var oblr: TOR;
 begin
  if (Button = ENTER) then
   begin
@@ -1518,7 +1518,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.PrivokDKPotvrSekv(Sender:TIdContext; success:Boolean);
+procedure TBlkNav.PrivokDKPotvrSekv(Sender: TIdContext; success: Boolean);
 begin
  if (success) then
   begin
@@ -1531,10 +1531,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.RNZPotvrSekv(Sender:TIdContext; success:Boolean);
-var blkId:Integer;
-    blk:TBlk;
-    toRNZ:TDictionary<Integer, Cardinal>;
+procedure TBlkNav.RNZPotvrSekv(Sender: TIdContext; success: Boolean);
+var blkId: Integer;
+    blk: TBlk;
+    toRNZ: TDictionary<Integer, Cardinal>;
 begin
  if (not success) then Exit();
 
@@ -1566,7 +1566,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.SetUsekPredID(new_id:Integer);
+procedure TBlkNav.SetUsekPredID(new_id: Integer);
 begin
  if (Self.NavRel.UsekID = new_id) then Exit();
  Self.NavRel.UsekID := new_id;
@@ -1575,7 +1575,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.GetUsekPred():TBlk;
+function TBlkNav.GetUsekPred(): TBlk;
 begin
  if (((Self.fUsekPred = nil) and (Self.UsekID <> -1)) or ((Self.fUsekPred <> nil) and (Self.UsekID <> Self.fUsekPred.id))) then
    Blky.GetBlkByID(Self.UsekID, Self.fUsekPred);
@@ -1584,7 +1584,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.AddBlkToRnz(blkId:Integer; change:Boolean = true);
+procedure TBlkNav.AddBlkToRnz(blkId: Integer; change: Boolean = true);
 begin
  if (Self.NavStav.toRnz.ContainsKey(blkId)) then
    Self.NavStav.toRnz[blkId] := Self.NavStav.toRnz[blkId] + 1
@@ -1598,14 +1598,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.CanIDoRNZ():Boolean;
+function TBlkNav.CanIDoRNZ(): Boolean;
 begin
  Result := Self.NavStav.toRnz.Count > 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.RemoveBlkFromRnz(blkId:Integer);
+procedure TBlkNav.RemoveBlkFromRnz(blkId: Integer);
 begin
  if (Self.NavStav.toRnz.ContainsKey(blkId)) then
   begin
@@ -1618,7 +1618,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkNav.UnregisterAllEvents();
-var ev:TBlkNavTrainEvent;
+var ev: TBlkNavTrainEvent;
 begin
  for ev in Self.NavSettings.events do
   begin
@@ -1630,7 +1630,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkNav.GetPtData(json:TJsonObject; includeState:Boolean);
+procedure TBlkNav.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
 
@@ -1642,14 +1642,14 @@ begin
    Self.GetPtState(json['blockState']);
 end;
 
-procedure TBlkNav.GetPtState(json:TJsonObject);
+procedure TBlkNav.GetPtState(json: TJsonObject);
 begin
  json['signal'] := Self.Navest;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.GetTrain(usek:TBlk = nil): TTrain;
+function TBlkNav.GetTrain(usek: TBlk = nil): TTrain;
 begin
  if (usek = nil) then
    Blky.GetBlkByID(Self.UsekID, usek);
@@ -1662,7 +1662,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.RCinProgress():Boolean;
+function TBlkNav.RCinProgress(): Boolean;
 begin
  Result := (Self.NavStav.RCtimer > -1);
 end;
@@ -1678,8 +1678,8 @@ end;
 
 procedure TBlkNav.PropagatePOdjToTrat();
 var train: TTrain;
-    trat:TBlk;
-    podj:TPOdj;
+    trat: TBlk;
+    podj: TPOdj;
 begin
  train := Self.GetTrain();
  if (train = nil) then
@@ -1713,14 +1713,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.IsChanging():Boolean;
+function TBlkNav.IsChanging(): Boolean;
 begin
  Result := (Self.Navest = ncChanging);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkNav.PanelStateString():string;
+function TBlkNav.PanelStateString(): string;
 var fg, bg, okoli: TColor;
 begin
  Result := inherited;
@@ -1831,8 +1831,8 @@ begin
 end;
 
 // format ev1: RychEvent-zastaveni|RychEvent-zpomaleni|re:train_typ_regexp|min_delka|max_delka
-procedure TBlkNavTrainEvent.Parse(str:string; old:Boolean);
-var sl, sl2:TStrings;
+procedure TBlkNavTrainEvent.Parse(str: string; old: Boolean);
+var sl, sl2: TStrings;
 begin
  sl := TStringList.Create();
  sl2 := TStringList.Create();
@@ -1904,7 +1904,7 @@ begin
  end;
 end;
 
-function TBlkNavTrainEvent.ToFileStr(short:Boolean = false): string;
+function TBlkNavTrainEvent.ToFileStr(short: Boolean = false): string;
 begin
  Result := '{' + Self.zastaveni.GetDefStr() + '}|';
 
@@ -1926,9 +1926,9 @@ end;
 // : typ_zastaveni(0=usek;1=ir);
 //    pro usek nasleduje: usekid;usekpart;speed;
 //    pro ir nasleduje: irid;speed;
-class function TBlkNavTrainEvent.ParseOldRychEvent(str:string): TRREv;
-var data:TStrings;
-    rrData:TRREvData;
+class function TBlkNavTrainEvent.ParseOldRychEvent(str: string): TRREv;
+var data: TStrings;
+    rrData: TRREvData;
 begin
  data := TStringList.Create();
 
@@ -1936,14 +1936,14 @@ begin
    ExtractStringsEx([';'], [], str, data);
 
    case (data[0][1]) of
-    '0':begin
+    '0': begin
       // usek
       rrData.typ := TRREvType.rrtUsek;
       rrData.usekState := true;
       rrData.usekPart := StrToInt(data[2]);
     end;//case 0
 
-    '1':begin
+    '1': begin
       // ir
       rrData.typ := TRREvType.rrtIR;
       rrData.irId := StrToInt(data[1]);

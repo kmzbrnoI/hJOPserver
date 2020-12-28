@@ -1,4 +1,4 @@
-﻿unit RegulatorTCP;
+unit RegulatorTCP;
 
 // Trida TTCPRegulator se stara o komunikaci s regulatory -- klienty.
 //  napr. regulator Jerry.
@@ -10,34 +10,34 @@ uses Classes, IdContext, AnsiStrings, SysUtils, Forms, THnaciVozidlo;
 type
 
 TLokResponseData = record
- addr:Word;
- conn:TIDContext;
+ addr: Word;
+ conn: TIDContext;
 end;
 
 
 TTCPRegulator = class
   private
-    procedure ParseGlobal(Sender:TIdContext; parsed:TStrings);
-    procedure ParseLoko(Sender:TIdContext; parsed:TStrings);
+    procedure ParseGlobal(Sender: TIdContext; parsed: TStrings);
+    procedure ParseLoko(Sender: TIdContext; parsed: TStrings);
 
-    procedure ClientAuthorise(conn:TIdContext; state:Boolean; user:TObject; comment:string='');
-    procedure ClientError(conn:TIdContext; error:string);
+    procedure ClientAuthorise(conn: TIdContext; state: Boolean; user: TObject; comment: string='');
+    procedure ClientError(conn: TIdContext; error: string);
 
-    procedure PanelLOKResponseOK(Sender:TObject; Data:Pointer);
-    procedure PanelLOKResponseErr(Sender:TObject; Data:Pointer);
+    procedure PanelLOKResponseOK(Sender: TObject; Data: Pointer);
+    procedure PanelLOKResponseErr(Sender: TObject; Data: Pointer);
 
   public
 
-    procedure Parse(Sender:TIdContext; parsed:TStrings);
+    procedure Parse(Sender: TIdContext; parsed: TStrings);
 
-    procedure LokUpdateFunc(HV:THV; exclude:TObject = nil);
-    procedure LokUpdateSpeed(HV:THV; exclude:TObject = nil);
-    procedure LokStolen(HV:THV; exclude:TObject = nil);
-    procedure LokUpdateRuc(HV:THV);
+    procedure LokUpdateFunc(HV: THV; exclude: TObject = nil);
+    procedure LokUpdateSpeed(HV: THV; exclude: TObject = nil);
+    procedure LokStolen(HV: THV; exclude: TObject = nil);
+    procedure LokUpdateRuc(HV: THV);
 
-    procedure LokToRegulator(Regulator:TIDContext; HV:THV);
-    procedure RegDisconnect(reg:TIdContext; contextDestroyed: Boolean = false);
-    procedure RemoveLok(Regulator:TIdContext; HV:THV; info:string);
+    procedure LokToRegulator(Regulator: TIDContext; HV: THV);
+    procedure RegDisconnect(reg: TIdContext; contextDestroyed: Boolean = false);
+    procedure RemoveLok(Regulator: TIdContext; HV: THV; info: string);
 
     procedure SendExpectedSpeed(reg: TIdContext; HV: THV);
     procedure SendPredictedSignal(reg: TIdContext; HV: THV);
@@ -56,7 +56,7 @@ uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, TrainDb, TCPORsRef, Loggin
 ////////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;"
 
-procedure TTCPRegulator.Parse(Sender:TIdContext; parsed:TStrings);
+procedure TTCPRegulator.Parse(Sender: TIdContext; parsed: TStrings);
 begin
  parsed[2] := UpperCase(parsed[2]);
  if (parsed[2] = 'G') then
@@ -68,9 +68,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;G;"
 
-procedure TTCPRegulator.ParseGlobal(Sender:TIdContext; parsed:TStrings);
-var user:TUser;
-    OblR:TOR;
+procedure TTCPRegulator.ParseGlobal(Sender: TIdContext; parsed: TStrings);
+var user: TUser;
+    OblR: TOR;
 begin
  parsed[3] := UpperCase(parsed[3]);
 
@@ -181,12 +181,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;addr;"
 
-procedure TTCPRegulator.ParseLoko(Sender:TIdContext; parsed:TStrings);
-var HV:THV;
-    left, right, i:Integer;
-    data:TStrings;
-    Func:TFunkce;
-    LokResponseData:Pointer;
+procedure TTCPRegulator.ParseLoko(Sender: TIdContext; parsed: TStrings);
+var HV: THV;
+    left, right, i: Integer;
+    data: TStrings;
+    Func: TFunkce;
+    LokResponseData: Pointer;
 begin
  parsed[3] := UpperCase(parsed[3]);
 
@@ -387,8 +387,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // je volano, pokud chceme rict klientovi, ze jsme mu zmenili stav autorizace
-procedure TTCPRegulator.ClientAuthorise(conn:TIdContext; state:Boolean; user:TObject; comment:string='');
-var str:string;
+procedure TTCPRegulator.ClientAuthorise(conn: TIdContext; state: Boolean; user: TObject; comment: string='');
+var str: string;
 begin
  (conn.Data as TTCPORsRef).regulator := state;
  (conn.Data as TTCPORsRef).regulator_user := TUser(user);
@@ -417,7 +417,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.ClientError(conn:TIdContext; error:string);
+procedure TTCPRegulator.ClientError(conn: TIdContext; error: string);
 begin
  try
    ORTCPServer.SendLn(conn, '-;LOK;G;ERR;'+error)
@@ -428,9 +428,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.PanelLOKResponseOK(Sender:TObject; Data:Pointer);
-var speed:Cardinal;
-    HV:THV;
+procedure TTCPRegulator.PanelLOKResponseOK(Sender: TObject; Data: Pointer);
+var speed: Cardinal;
+    HV: THV;
 begin
  try
   HV := HVDb[TLokResponseData(Data^).addr];
@@ -446,7 +446,7 @@ begin
  end;
 end;
 
-procedure TTCPRegulator.PanelLOKResponseErr(Sender:TObject; Data:Pointer);
+procedure TTCPRegulator.PanelLOKResponseErr(Sender: TObject; Data: Pointer);
 begin
  try
   ORTCPServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+';RESP;err;Command error;');
@@ -460,9 +460,9 @@ end;
 
 //  or;LOK;ADDR;F;F_left-F_right;states          - informace o stavu funkci lokomotivy
 //    napr.; or;LOK;ADDR;0-4;00010 informuje, ze je zaple F3 a F0, F1, F2 a F4 jsou vyple
-procedure TTCPRegulator.LokUpdateFunc(HV:THV; exclude:TObject = nil);
-var i:Integer;
-    func:string;
+procedure TTCPRegulator.LokUpdateFunc(HV: THV; exclude: TObject = nil);
+var i: Integer;
+    func: string;
 begin
  func := '';
  for i := 0 to _HV_FUNC_MAX do
@@ -477,8 +477,8 @@ begin
 end;
 
 //  or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
-procedure TTCPRegulator.LokUpdateSpeed(HV:THV; exclude:TObject = nil);
-var i:Integer;
+procedure TTCPRegulator.LokUpdateSpeed(HV: THV; exclude: TObject = nil);
+var i: Integer;
 begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
@@ -489,8 +489,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.LokStolen(HV:THV; exclude:TObject = nil);
-var i:Integer;
+procedure TTCPRegulator.LokStolen(HV: THV; exclude: TObject = nil);
+var i: Integer;
 begin
  for i := 0 to HV.Stav.regulators.Count-1 do
    if (HV.Stav.regulators[i].conn <> exclude) then
@@ -499,9 +499,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.LokUpdateRuc(HV:THV);
-var i:Integer;
-    state:string;
+procedure TTCPRegulator.LokUpdateRuc(HV: THV);
+var i: Integer;
+    state: string;
 begin
  if (HV.ruc) then
    state := '1'
@@ -515,12 +515,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // prirazeni lokomotivy regulatoru
-procedure TTCPRegulator.LokToRegulator(Regulator:TIDContext; HV:THV);
-var pom:Boolean;
-    i:Integer;
-    reg:THVRegulator;
-    timeout:Integer;
-    tmpHV:THV;
+procedure TTCPRegulator.LokToRegulator(Regulator: TIDContext; HV: THV);
+var pom: Boolean;
+    i: Integer;
+    reg: THVRegulator;
+    timeout: Integer;
+    tmpHV: THV;
 begin
  // je tento regulator uz v seznamu regulatoru?
  pom := false;
@@ -548,7 +548,7 @@ begin
    try
      HV.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
    except
-     on E:Exception do
+     on E: Exception do
       begin
        ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo :'+E.Message);
        HV.Stav.regulators.Remove(reg);
@@ -606,8 +606,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // odhlasit vsechna hnaci vozidla regulatoru
 
-procedure TTCPRegulator.RegDisconnect(reg:TIdContext; contextDestroyed: Boolean = false);
-var addr:Integer;
+procedure TTCPRegulator.RegDisconnect(reg: TIdContext; contextDestroyed: Boolean = false);
+var addr: Integer;
 begin
  for addr := 0 to _MAX_ADDR-1 do
   begin
@@ -629,7 +629,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.RemoveLok(Regulator:TIdContext; HV:THV; info:string);
+procedure TTCPRegulator.RemoveLok(Regulator: TIdContext; HV: THV; info: string);
 begin
  HV.RemoveRegulator(Regulator);
  TTCPORsRef(Regulator.Data).regulator_loks.Remove(HV);

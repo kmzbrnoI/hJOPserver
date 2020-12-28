@@ -9,20 +9,20 @@ uses ComCtrls, SysUtils, StrUtils;
 type
   TJCTableData=class
     private
-      LV:TListView;
+      LV: TListView;
 
     public
 
       procedure LoadToTable();
       procedure UpdateTable();
 
-      procedure UpdateLine(line:Integer);
+      procedure UpdateLine(line: Integer);
 
-      procedure AddJC(index:Integer);
-      procedure RemoveJC(index:Integer);
-      procedure MoveJC(source, target:Integer);
+      procedure AddJC(index: Integer);
+      procedure RemoveJC(index: Integer);
+      procedure MoveJC(source, target: Integer);
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
@@ -34,7 +34,7 @@ uses TBlokVyhybka, TJCDatabase, TechnologieJC, TBlok, TBloky, fMain, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TJCTableData.Create(LV:TListView);
+constructor TJCTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -43,8 +43,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCTableData.LoadToTable();
-var i, j:Integer;
-    LI:TListItem;
+var i, j: Integer;
+    LI: TListItem;
 begin
  F_Main.E_dataload_JC.text := JCDb.filename;
  Self.LV.Clear();
@@ -66,7 +66,7 @@ begin
 end;
 
 procedure TJCTableData.UpdateTable();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to JCDb.Count-1 do
    if (JCDb.GetJCByIndex(i).changed) then
@@ -80,12 +80,12 @@ begin
     end;
 end;
 
-procedure TJCTableData.UpdateLine(line:Integer);
-var JCData:TJCprop;
-    JC:TJC;
-    j:Integer;
-    str:string;
-    Blk:TBlk;
+procedure TJCTableData.UpdateLine(line: Integer);
+var JCData: TJCprop;
+    JC: TJC;
+    j: Integer;
+    str: string;
+    Blk: TBlk;
 begin
  JC     := JCDb.GetJCByIndex(line);
  JCData := JC.data;
@@ -187,9 +187,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCTableData.AddJC(index:Integer);
-var LI:TListItem;
-    j:Integer;
+procedure TJCTableData.AddJC(index: Integer);
+var LI: TListItem;
+    j: Integer;
 begin
  LI := Self.LV.Items.Insert(index);
  LI.Caption := IntToStr(Self.LV.Items.Count);
@@ -199,16 +199,16 @@ begin
  Self.UpdateLine(index);
 end;
 
-procedure TJCTableData.RemoveJC(index:Integer);
+procedure TJCTableData.RemoveJC(index: Integer);
 begin
  Self.LV.Items.Delete(index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCTableData.MoveJC(source, target:Integer);
-var LI:TListItem;
-    i:Integer;
+procedure TJCTableData.MoveJC(source, target: Integer);
+var LI: TListItem;
+    i: Integer;
 begin
  Self.LV.Items.Delete(source);
  LI := Self.LV.Items.Insert(target);

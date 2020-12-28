@@ -10,34 +10,34 @@ type
  TIRStav = (disabled = -5, none = -1, uvolneno = 0, obsazeno = 1);
 
  TBlkIRSettings = record
-  RCSAddrs:TRCSAddrs;     //only 1 address
+  RCSAddrs: TRCSAddrs;     //only 1 address
  end;
 
  TBlkIRStav = record
-  Stav,StavOld:TIRStav;
+  Stav, StavOld: TIRStav;
  end;
 
 
  TBlkIR = class(TBlk)
   const
    //defaultni stav
-   _def_ir_stav:TBlkIRStav = (
+   _def_ir_stav: TBlkIRStav = (
      Stav : disabled;
      StavOld : disabled;
    );
 
   private
-   IRSettings:TBlkIRSettings;
-   IRStav:TBlkIRStav;
+   IRSettings: TBlkIRSettings;
+   IRStav: TBlkIRStav;
 
   public
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -49,15 +49,15 @@ type
 
     //----- IR own functions -----
 
-    function GetSettings():TBlkIRSettings;
-    procedure SetSettings(data:TBlkIRSettings);
+    function GetSettings(): TBlkIRSettings;
+    procedure SetSettings(data: TBlkIRSettings);
 
     //PT:
 
-    procedure GetPtData(json:TJsonObject; includeState:Boolean); override;
-    procedure GetPtState(json:TJsonObject); override;
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
 
-    property Stav:TIRStav read IRStav.Stav;
+    property Stav: TIRStav read IRStav.Stav;
  end;//class TBlkIR
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ implementation
 
 uses RCS;
 
-constructor TBlkIR.Create(index:Integer);
+constructor TBlkIR.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -81,21 +81,21 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkIR.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkIR.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.IRSettings.RCSAddrs := Self.LoadRCS(ini_tech,section);
+ Self.IRSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
 end;
 
-procedure TBlkIR.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkIR.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
 
- Self.SaveRCS(ini_tech,section,Self.IRSettings.RCSAddrs);
+ Self.SaveRCS(ini_tech, section, Self.IRSettings.RCSAddrs);
 end;
 
-procedure TBlkIR.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkIR.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
  //
 end;
@@ -131,7 +131,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIR.Update();
-var state:TRCSInputState;
+var state: TRCSInputState;
 begin
  try
    state := RCSi.GetInput(Self.IRSettings.RCSAddrs[0])
@@ -157,12 +157,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIR.GetSettings():TBlkIRSettings;
+function TBlkIR.GetSettings(): TBlkIRSettings;
 begin
  Result := Self.IRSettings;
 end;
 
-procedure TBlkIR.SetSettings(data:TBlkIRSettings);
+procedure TBlkIR.SetSettings(data: TBlkIRSettings);
 begin
  if (Self.IRSettings.RCSAddrs <> data.RCSAddrs) then
    Self.IRSettings.RCSAddrs.Free();
@@ -173,7 +173,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkIR.GetPtData(json:TJsonObject; includeState:Boolean);
+procedure TBlkIR.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
 
@@ -183,7 +183,7 @@ begin
    Self.GetPtState(json['blockState']);
 end;
 
-procedure TBlkIR.GetPtState(json:TJsonObject);
+procedure TBlkIR.GetPtState(json: TJsonObject);
 begin
  case (Self.Stav) of
   TIRStav.disabled : json['state'] := 'off';

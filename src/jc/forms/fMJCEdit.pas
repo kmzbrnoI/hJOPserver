@@ -42,14 +42,14 @@ type
     procedure B_JC_RemoveClick(Sender: TObject);
     procedure B_VB_RemoveClick(Sender: TObject);
   private
-    openMJC:TMultiJC;
-    new:Boolean;
+    openMJC: TMultiJC;
+    new: Boolean;
 
-     JCs:TList<Integer>;
-     vb:TList<Integer>;
+     JCs: TList<Integer>;
+     vb: TList<Integer>;
 
-     CB_VB_indexes:TArI;
-     CB_JC_ids:TArI;
+     CB_VB_indexes: TArI;
+     CB_JC_ids: TArI;
 
     procedure UpdateJCCb();
     procedure UpdateVBCb();
@@ -57,11 +57,11 @@ type
     procedure NormalOpenForm();
     procedure EmptyOpenForm();
 
-    procedure MakeObls(var obls:TArStr);
+    procedure MakeObls(var obls: TArStr);
 
   public
-    procedure EditMJC(mJC:TMultiJC);
-    procedure NewMJC(template:TMultiJC);
+    procedure EditMJC(mJC: TMultiJC);
+    procedure NewMJC(template: TMultiJC);
   end;
 
 var
@@ -134,7 +134,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_MJCEdit.EditMJC(mJC:TMultiJC);
+procedure TF_MJCEdit.EditMJC(mJC: TMultiJC);
 begin
  Self.openMJC := mJC;
 
@@ -155,7 +155,7 @@ begin
  Self.ShowModal();
 end;
 
-procedure TF_MJCEdit.NewMJC(template:TMultiJC);
+procedure TF_MJCEdit.NewMJC(template: TMultiJC);
 begin
  Self.new := true;
  Self.EditMJC(template);
@@ -164,10 +164,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.NormalOpenForm();
-var jcid, vbi:Integer;
-    LI:TListItem;
-    JC:TJC;
-    Blk:TBlk;
+var jcid, vbi: Integer;
+    LI: TListItem;
+    JC: TJC;
+    Blk: TBlk;
 begin
  if (Self.new) then
    Self.SE_ID.Value := Self.openMJC.id+1
@@ -227,7 +227,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.UpdateJCCb();
-var JC:TJC;
+var JC: TJC;
 begin
  SetLength(CB_JC_ids, JCDb.Count);
  Self.CB_JC_Add.Clear();
@@ -239,7 +239,7 @@ begin
 end;
 
 procedure TF_MJCEdit.UpdateVBCb();
-var obls:TArStr;
+var obls: TArStr;
 begin
  Self.MakeObls(obls);
  Blky.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, nil, obls, btUsek, -1);
@@ -249,9 +249,9 @@ end;
 
 // vytvoreni seznamu oblasti rizeni pro pridani variantnich bodu:
 // oblasti rizeni vytvarime podle 0. JC
-procedure TF_MJCEdit.MakeObls(var obls:TArStr);
-var Blk:TBlk;
-    i:Integer;
+procedure TF_MJCEdit.MakeObls(var obls: TArStr);
+var Blk: TBlk;
+    i: Integer;
 begin
  if (Self.JCs.Count < 1) then obls := nil
  else begin
@@ -276,7 +276,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.B_JC_AddClick(Sender: TObject);
-var LI:TListItem;
+var LI: TListItem;
 begin
  if (Self.CB_JC_Add.ItemIndex < 0) then Exit();
 
@@ -308,7 +308,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.B_VB_NewClick(Sender: TObject);
-var LI:TListItem;
+var LI: TListItem;
 begin
  if (Self.CB_VB_New.ItemIndex < 0) then Exit();
 
@@ -334,9 +334,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.B_SaveClick(Sender: TObject);
-var data:TMultiJCProp;
-    i, prevIndex:Integer;
-    check:TMultiJC;
+var data: TMultiJCProp;
+    i, prevIndex: Integer;
+    check: TMultiJC;
     origNav: TBlkNav;
 begin
  if (Self.JCs.Count < 2) then
@@ -367,7 +367,7 @@ begin
    try
      Self.openMJC := MultiJCDb.Add(data);
    except
-     on E:Exception do
+     on E: Exception do
       begin
        Application.MessageBox(PChar('Nepodařilo se přidat složenou JC'+#13#10+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
        Exit();

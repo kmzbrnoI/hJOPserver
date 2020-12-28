@@ -22,21 +22,21 @@ type
     P_ZastForm: TPanel;
     procedure CHB_ZpomalitClick(Sender: TObject);
   private
-   obls:TArstr;
-   first:Boolean;
+   obls: TArstr;
+   first: Boolean;
 
    fZast: TF_RREv;
    fZpom: TF_RREv;
 
   public
-    constructor Create(AOwner:TComponent); override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
 
-    procedure OpenForm(event:TBlkNavTrainEvent; first:Boolean; obls:TArstr);
-    procedure OpenEmptyForm(first:Boolean; obls:TArstr);
-    function Check():string;
+    procedure OpenForm(event: TBlkNavTrainEvent; first: Boolean; obls: TArstr);
+    procedure OpenEmptyForm(first: Boolean; obls: TArstr);
+    function Check(): string;
 
-    function GetEvent():TBlkNavTrainEvent; // returns new object!
+    function GetEvent(): TBlkNavTrainEvent; // returns new object!
 
   end;
 
@@ -51,7 +51,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_BlkNavEvent.Create(AOwner:TComponent);
+constructor TF_BlkNavEvent.Create(AOwner: TComponent);
 begin
  inherited;
 
@@ -73,7 +73,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNavEvent.OpenForm(event:TBlkNavTrainEvent; first:Boolean; obls:TArstr);
+procedure TF_BlkNavEvent.OpenForm(event: TBlkNavTrainEvent; first: Boolean; obls: TArstr);
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -110,7 +110,7 @@ begin
  Self.CHB_ZpomalitClick(CHB_Zpomalit);
 end;
 
-procedure TF_BlkNavEvent.OpenEmptyForm(first:Boolean; obls:TArstr);
+procedure TF_BlkNavEvent.OpenEmptyForm(first: Boolean; obls: TArstr);
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -142,7 +142,7 @@ begin
 end;
 ///////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkNavEvent.GetEvent():TBlkNavTrainEvent;
+function TF_BlkNavEvent.GetEvent(): TBlkNavTrainEvent;
 begin
  Result := TBlkNavTrainEvent.Create();
  if ((not Self.first) and (Self.E_Spr.Text <> '')) then
@@ -172,7 +172,7 @@ begin
    Self.CB_ZpomalitKmH.ItemIndex := -1;
 end;
 
-function TF_BlkNavEvent.Check():string;
+function TF_BlkNavEvent.Check(): string;
 begin
   if (not Self.fZast.InputValid()) then
     Exit('Vyberte zastavovací událost!');

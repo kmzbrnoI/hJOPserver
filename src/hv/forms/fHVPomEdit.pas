@@ -19,9 +19,9 @@ type
   private
     { Private declarations }
   public
-    saved:Boolean;
+    saved: Boolean;
 
-    procedure OpenForm(cv:Integer; val:Byte);
+    procedure OpenForm(cv: Integer; val: Byte);
   end;
 
 var
@@ -43,7 +43,7 @@ begin
  Self.Close();
 end;
 
-procedure TF_HV_Pom.OpenForm(cv:Integer; val:Byte);
+procedure TF_HV_Pom.OpenForm(cv: Integer; val: Byte);
 begin
  Self.saved := false;
  Self.SE_CV.Value    := cv;

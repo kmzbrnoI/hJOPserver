@@ -1,4 +1,4 @@
-﻿unit TBlok;
+unit TBlok;
 
 //unita, ktera definuje technologicky blok jako abstraktni tridu
 
@@ -47,26 +47,26 @@ type
   note: string;
  end;
 
- TOnBlkChange = procedure(Sender:TObject) of object;
+ TOnBlkChange = procedure(Sender: TObject) of object;
 
  ///////////////////////////////
 
  TBlk = class(TObject)
   private const
-    _def_glob_settings:TBlkSettings = (
+    _def_glob_settings: TBlkSettings = (
       name: '';
       id: -1;
       note: '';
     );
   private
-   changed:Boolean;
+   changed: Boolean;
 
   protected
-   GlobalSettings:TBlkSettings;
-   FOnChange:TOnBlkChange;  // childs can call the event
-   ftable_index:Integer;
-   ffrozen:Boolean;
-   ORsRef:TList<TOR>;          // ve kterych OR se blok nachazi
+   GlobalSettings: TBlkSettings;
+   FOnChange: TOnBlkChange;  // childs can call the event
+   ftable_index: Integer;
+   ffrozen: Boolean;
+   ORsRef: TList<TOR>;          // ve kterych OR se blok nachazi
 
    //loading and saving RCS
    class function LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
@@ -75,16 +75,16 @@ type
    class procedure PushRCSToOR(ORs: TList<TOR>; RCSs: TRCSAddrs); overload;
    class procedure PushRCSToOR(ORs: TList<TOR>; RCS: TRCSAddr); overload;
 
-   procedure CallChangeEvents(var events:TChangeEvents);
+   procedure CallChangeEvents(var events: TChangeEvents);
    function LoadORs(ini: TMemIniFile; section: string): TStrings; // user must free result!
 
   public
 
-   constructor Create(index:Integer);
+   constructor Create(index: Integer);
    destructor Destroy(); override;
 
-   procedure SetGlobalSettings(data:TBlkSettings);
-   function GetGlobalSettings():TBlkSettings;
+   procedure SetGlobalSettings(data: TBlkSettings);
+   function GetGlobalSettings(): TBlkSettings;
 
    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); virtual;
    procedure SaveData(ini_tech: TMemIniFile; const section: string); virtual;
@@ -114,7 +114,7 @@ type
    // u bloku, kde je zadouci osetrovat kliknuti na panel, je doporuceno ji pretizit,
    //   jinak je doporuceno ji vubec neimplementovat
    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); virtual;
-   procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item:string; itemindex: Integer); virtual;
+   procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); virtual;
    function PanelStateString(): string; virtual;
 
    // Tyto procedury vraci json objekt do \json, z dedicich bloku
@@ -123,7 +123,7 @@ type
    procedure GetPtState(json: TJsonObject); virtual;
    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); virtual;
 
-   function IsInOR(OblR:TObject):Boolean;
+   function IsInOR(OblR: TObject): Boolean;
 
    class procedure AddChangeEvent(var events: TChangeEvents; func: TChangeEvent);
    class procedure RemoveChangeEvent(var events: TChangeEvents; func: TChangeEvent);
@@ -151,7 +151,7 @@ uses TBloky, DataBloky, appEv, ownStrUtils, Diagnostics;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlk.Create(index:Integer);
+constructor TBlk.Create(index: Integer);
 begin
  inherited Create();
  Self.GlobalSettings := _def_glob_settings;
@@ -168,8 +168,8 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlk.SetGlobalSettings(data:TBlkSettings);
-var id_changed:Boolean;
+procedure TBlk.SetGlobalSettings(data: TBlkSettings);
+var id_changed: Boolean;
 begin
  id_changed := ((Self.id <> data.id) and (Self.id <> -1));
  Self.GlobalSettings := data;
@@ -181,7 +181,7 @@ begin
   end;
 end;
 
-function TBlk.GetGlobalSettings():TBlkSettings;
+function TBlk.GetGlobalSettings(): TBlkSettings;
 begin
  Result := Self.GlobalSettings;
 end;
@@ -213,10 +213,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // mj. tady se zjistuje, ktere moduly RCS jsou na kolejisti potreba
-class function TBlk.LoadRCS(ini:TMemIniFile; section:string):TRCSAddrs;
-var i, count:Integer;
-    rcsAddr:TRCSAddr;
-    prefix:string;
+class function TBlk.LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
+var i, count: Integer;
+    rcsAddr: TRCSAddr;
+    prefix: string;
 begin
  Result := TList<TechnologieRCS.TRCSAddr>.Create(RCSAddrComparer);
 
@@ -240,8 +240,8 @@ begin
   end;
 end;
 
-class procedure TBlk.SaveRCS(ini:TMemIniFile; section:string; data:TRCSAddrs);
-var i:Integer;
+class procedure TBlk.SaveRCS(ini: TMemIniFile; section: string; data: TRCSAddrs);
+var i: Integer;
 begin
  if (data.Count > 0) then
    ini.WriteInteger(section, 'RCScnt', data.Count);
@@ -256,7 +256,7 @@ begin
   end;
 end;
 
-procedure TBlk.Change(now:Boolean = false);
+procedure TBlk.Change(now: Boolean = false);
 begin
  if (now) then
   begin
@@ -286,8 +286,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 class procedure TBlk.PushRCSToOR(ORs: TList<TOR>; RCSs: TRCSAddrs);
-var oblr:TOR;
-    rcsAddr:TRCSAddr;
+var oblr: TOR;
+    rcsAddr: TRCSAddr;
 begin
  for oblr in ORs do
    for rcsAddr in RCSs do
@@ -295,7 +295,7 @@ begin
 end;
 
 class procedure TBlk.PushRCSToOR(ORs: TList<TOR>; RCS: TRCSAddr);
-var oblr:TOR;
+var oblr: TOR;
 begin
  for oblr in ORs do
    oblr.RCSAdd(RCS.board);
@@ -303,8 +303,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlk.CallChangeEvents(var events:TChangeEvents);
-var i:Integer;
+procedure TBlk.CallChangeEvents(var events: TChangeEvents);
+var i: Integer;
 begin
  for i := 0 to events.Count-1 do
   if (Assigned(events[i].func)) then
@@ -312,20 +312,20 @@ begin
     try
       events[i].func(Self, events[i].data);
     except
-      on E:Exception do
+      on E: Exception do
          AppEvents.LogException(E, 'CallChengeEvents exception : '+E.Message);
     end;
    end;
  events.Clear();
 end;
 
-class procedure TBlk.AddChangeEvent(var events:TChangeEvents; func:TChangeEvent);
+class procedure TBlk.AddChangeEvent(var events: TChangeEvents; func: TChangeEvent);
 begin
  events.Add(func);
 end;
 
-class procedure TBlk.RemoveChangeEvent(var events:TChangeEvents; func:TChangeEvent);
-var i:Integer;
+class procedure TBlk.RemoveChangeEvent(var events: TChangeEvents; func: TChangeEvent);
+var i: Integer;
 begin
  for I := events.Count-1 downto 0 do
    if (events[i] = func) then
@@ -359,7 +359,7 @@ end;
 
 // zobrazuje menu, vraci string urcujici menu
 // kazdy blok ma sve zakladni menu, ktere obsahuje pouze hlavicku s jeho nazvem a oddelovac
-function TBlk.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlk.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := '$'+Self.name+',';
  if (diag.showBlockId) then
@@ -367,17 +367,17 @@ begin
  Result := Result + '-,'
 end;
 
-procedure TBlk.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlk.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  // This function should be empty.
 end;
 
-procedure TBlk.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlk.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  // This function should be empty.
 end;
 
-function TBlk.PanelStateString():string;
+function TBlk.PanelStateString(): string;
 begin
  Result := IntToStr(Integer(Self.typ))+';'+IntToStr(Self.id)+';';
 end;
@@ -391,7 +391,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlk.GetPtData(json:TJsonObject; includeState:Boolean);
+procedure TBlk.GetPtData(json: TJsonObject; includeState: Boolean);
 var oblr: TOR;
 begin
  json['name'] := Self.name;
@@ -401,12 +401,12 @@ begin
    json.A['stations'].Add(oblr.id);
 end;
 
-procedure TBlk.GetPtState(json:TJsonObject);
+procedure TBlk.GetPtState(json: TJsonObject);
 begin
  // This function should be empty.
 end;
 
-procedure TBlk.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlk.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
 begin
  Self.GetPtState(respJson.O['blockState']);
 end;
@@ -436,9 +436,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.RCSstoJSON(const addrs:TRCSAddrs; json:TJsonArray);
-var rcsAddr:TRCSAddr;
-    newObj:TJsonObject;
+class procedure TBlk.RCSstoJSON(const addrs: TRCSAddrs; json: TJsonArray);
+var rcsAddr: TRCSAddr;
+    newObj: TJsonObject;
 begin
  for rcsAddr in addrs do
   begin
@@ -448,7 +448,7 @@ begin
   end;
 end;
 
-class procedure TBlk.RCStoJSON(const addr:TRCSAddr; json:TJsonObject);
+class procedure TBlk.RCStoJSON(const addr: TRCSAddr; json: TJsonObject);
 begin
  json['board'] := addr.board;
  json['port'] := addr.port;
@@ -456,14 +456,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlk.IsInOR(OblR:TObject):Boolean;
+function TBlk.IsInOR(OblR: TObject): Boolean;
 begin
  Result := Self.OblsRizeni.Contains(OblR as TOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlk.BlkTypeFromStr(typ:string): TBlkType;
+class function TBlk.BlkTypeFromStr(typ: string): TBlkType;
 begin
  if (typ = 'vyhybka') or (typ = 'výhybka') or (typ = 'turnout') then Result := btTurnout
  else if (typ = 'usek') or (typ = 'úsek') or (typ = 'track') then Result := btUsek

@@ -406,21 +406,21 @@ type
     procedure FormShow(Sender: TObject);
     procedure CHB_Log_AuthClick(Sender: TObject);
   private
-    KomunikaceGo:TdateTime;
-    call_method:TNotifyEvent;
+    KomunikaceGo: TdateTime;
+    call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
 
     procedure UpdateCallMethod();
-    procedure OnFuncsVyznamChange(Sender:TObject);
+    procedure OnFuncsVyznamChange(Sender: TObject);
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMEndSession(var Msg: TWMEndSession); message WM_ENDSESSION;
 
   public
-    KomunikacePocitani:Shortint;
-    CloseMessage:Boolean; // jestli se ptat uzivatele na ukonceni SW
-    NUZClose:Boolean; // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
+    KomunikacePocitani: Shortint;
+    CloseMessage: Boolean; // jestli se ptat uzivatele na ukonceni SW
+    NUZClose: Boolean; // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
     sb1Log: Boolean;
 
     procedure CloseForm();
@@ -430,25 +430,25 @@ type
     procedure OnStart();
     procedure SaveFormPosition();
     procedure VypisDatumCas();
-    procedure LogStatus(str:string);
+    procedure LogStatus(str: string);
     procedure DisableRemoveButtons();
-    procedure SetCallMethod(Method:TNotifyEvent);
+    procedure SetCallMethod(Method: TNotifyEvent);
     procedure UpdateSystemButtons();
     procedure CheckNasobicWidth();
-    function SoupravySelectedCount():Integer;
-    function LVSelectedTexts(LV: TListView; single: string; multiple: string):string;
+    function SoupravySelectedCount(): Integer;
+    function LVSelectedTexts(LV: TListView; single: string; multiple: string): string;
 
     // RCS
-    procedure OnRCSStart(Sender:TObject);
-    procedure OnRCSScanned(Sender:TObject);
-    procedure OnRCSStop(Sender:TObject);
-    procedure OnRCSOpen(Sender:TObject);
-    procedure OnRCSClose(Sender:TObject);
-    procedure OnRCSErrOpen(Sender:TObject; errMsg:string);
-    procedure OnRCSErrClose(Sender:TObject; errMsg:string);
-    procedure OnRCSErrStart(Sender:TObject; errMsg:string);
-    procedure OnRCSErrStop(Sender:TObject; errMsg:string);
-    procedure OnRCSReady(Sender:TObject; ready:Boolean);
+    procedure OnRCSStart(Sender: TObject);
+    procedure OnRCSScanned(Sender: TObject);
+    procedure OnRCSStop(Sender: TObject);
+    procedure OnRCSOpen(Sender: TObject);
+    procedure OnRCSClose(Sender: TObject);
+    procedure OnRCSErrOpen(Sender: TObject; errMsg: string);
+    procedure OnRCSErrClose(Sender: TObject; errMsg: string);
+    procedure OnRCSErrStart(Sender: TObject; errMsg: string);
+    procedure OnRCSErrStop(Sender: TObject; errMsg: string);
+    procedure OnRCSReady(Sender: TObject; ready: Boolean);
 
     procedure UpdateRCSLibsList();
 
@@ -458,25 +458,25 @@ type
     procedure OnTrkBeforeClose(Sender: TObject);
     procedure OnTrkAfterClose(Sender: TObject);
     procedure OnTrkReady(Sender: TObject; ready: Boolean);
-    procedure OnTrkErrOpen(Sender:TObject; errMsg:string);
-    procedure OnTrkStatusChange(Sender:TObject; trkStatus: TTrkStatus);
+    procedure OnTrkErrOpen(Sender: TObject; errMsg: string);
+    procedure OnTrkStatusChange(Sender: TObject; trkStatus: TTrkStatus);
 
     procedure UpdateTrkLibsList();
-    procedure OnDCCGoError(Sender:TObject; Data:Pointer);
-    procedure OnDCCStopError(Sender:TObject; Data:Pointer);
+    procedure OnDCCGoError(Sender: TObject; Data: Pointer);
+    procedure OnDCCStopError(Sender: TObject; Data: Pointer);
 
-    procedure OnTrkAllAcquired(Sender:TObject);
-    procedure OnTrkAcquireError(Sender:TObject);
-    procedure OnTrkAllReleased(Sender:TObject);
-    procedure OnTrkLocoAcquired(Sender:TObject);
-    procedure OnTrkLocoReleased(Sender:TObject);
-    procedure OnTrkAllFunctionTurnedOff(Sender:TObject; data: Pointer);
+    procedure OnTrkAllAcquired(Sender: TObject);
+    procedure OnTrkAcquireError(Sender: TObject);
+    procedure OnTrkAllReleased(Sender: TObject);
+    procedure OnTrkLocoAcquired(Sender: TObject);
+    procedure OnTrkLocoReleased(Sender: TObject);
+    procedure OnTrkAllFunctionTurnedOff(Sender: TObject; data: Pointer);
 
   end;//public
 
  TSystemStatus = (null, starting, stopping);                                    // stav startovani / vypinani systemu
  TSystem=class
-   Status:TSystemStatus;                                                        // aktualni stav systemu
+   Status: TSystemStatus;                                                        // aktualni stav systemu
  end;
 
 var
@@ -507,7 +507,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.MI_RCS_libClick(Sender: TObject);
-var fn:string;
+var fn: string;
  begin
   fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
@@ -517,7 +517,7 @@ var fn:string;
     RCSi.LoadLib(RCSi.libDir + '\' + fn);
     Self.LogStatus('RCS: načteno ' + fn);
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Screen.Cursor := crDefault;
       Application.MessageBox(PChar('Nelze načíst knihovnu ' + fn + ':'+#13#10+
@@ -530,8 +530,8 @@ var fn:string;
  end;
 
 procedure TF_Main.UpdateRCSLibsList();
-var SR:TSearchRec;
-    item:TMenuItem;
+var SR: TSearchRec;
+    item: TMenuItem;
 
     procedure AddLib(name: string);
     begin
@@ -568,7 +568,7 @@ begin
  try
    RCSi.ShowConfigDialog();
  except
-   on E:Exception do
+   on E: Exception do
     begin
      Screen.Cursor := crDefault;
      Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog RCS : ' + E.Message),
@@ -608,11 +608,11 @@ begin
  try
    RCSi.Close();
  except
-   on E:ERCSNotOpened do
+   on E: ERCSNotOpened do
      Self.OnRCSErrClose(Self, 'RCS není otevřeno, nelze jej proto zavřít!');
-   on E:ERCSScanningNotFinished do
+   on E: ERCSScanningNotFinished do
      Self.OnRCSErrClose(Self, 'RCS nelze uzavřít před sokončneíms kenování modulů!');
-   on E:Exception do
+   on E: Exception do
      Self.OnRCSErrClose(Self, 'Nastala kritická chyba : '+E.Message);
  end;
 end;
@@ -645,17 +645,17 @@ begin
   try
     RCSi.Start();
   except
-   on E:ERCSAlreadyStarted do
+   on E: ERCSAlreadyStarted do
      Self.OnRCSErrStart(Self, 'Komunikace již probíhá!');
-   on E:ERCSFirmwareTooLow do
+   on E: ERCSFirmwareTooLow do
      Self.OnRCSErrStart(Self, 'Firmware RCS-USB modulu je starý, nelze se připojit k takto starému FW!');
-   on E:ERCSNoModules do
+   on E: ERCSNoModules do
      Self.OnRCSErrStart(Self, 'Na sběrnici nebyl nalezen žádný RCS modul, nelze spustit komunikaci!');
-   on E:ERCSNotOpened do
+   on E: ERCSNotOpened do
      Self.OnRCSErrStart(Self, 'Nepřipojeno k RCS-USB, připojte se nejdříve k RCS-USB!');
-   on E:ERCSScanningNotFinished do
+   on E: ERCSScanningNotFinished do
      Self.OnRCSErrStart(Self, 'Neproběhl sken modulů, vyčkejte na dokončení skenu modulů!');
-   on E:Exception do
+   on E: Exception do
      Self.OnRCSErrStart(Self, 'Nastala kritická chyba : '+E.Message);
   end;
 end;
@@ -687,11 +687,11 @@ begin
  try
    RCSi.Open();
  except
-  on E:ERCSAlreadyOpened do
+  on E: ERCSAlreadyOpened do
     Self.OnRCSErrOpen(Self, 'RCS je již otevřeno!');
-  on E:ERCSCannotOpenPort do
+  on E: ERCSCannotOpenPort do
     Self.OnRCSErrOpen(Self, 'Nepodařilo se otevřít USB port, otevřete konfigurační okno RCS driveru a zkontrolujte, že je vybrán správný port!');
-  on E:Exception do
+  on E: Exception do
     Self.OnRCSErrOpen(Self, 'Nastala kritická chyba : '+E.Message);
  end;
 end;
@@ -722,15 +722,15 @@ begin
   try
     RCSi.Stop();
   except
-   on E:ERCSNotStarted do
+   on E: ERCSNotStarted do
      Self.OnRCSErrStop(Self, 'RCS komunikace není spuštěna, nelze ji proto zastavit!');
-   on E:Exception do
+   on E: Exception do
      Self.OnRCSErrStop(Self, 'Nastala kritická chyba : '+E.Message);
   end;
 end;
 
 //--- events from RCS lib begin ---
-procedure TF_Main.OnRCSStart(Sender:TObject);
+procedure TF_Main.OnRCSStart(Sender: TObject);
 begin
   with (F_Main) do
    begin
@@ -750,7 +750,7 @@ begin
   RCSTableData.UpdateTable();
 end;
 
-procedure TF_Main.OnRCSScanned(Sender:TObject);
+procedure TF_Main.OnRCSScanned(Sender: TObject);
 begin
   F_Main.S_RCS_Start.Brush.Color := clLime;
   RCSTableData.UpdateTable();
@@ -765,7 +765,7 @@ begin
    Self.A_Trk_ConnectExecute(nil);
 end;
 
-procedure TF_Main.OnRCSStop(Sender:TObject);
+procedure TF_Main.OnRCSStop(Sender: TObject);
 begin
   if (Blky.enabled) then
    begin
@@ -808,9 +808,9 @@ begin
    Self.A_RCS_CloseExecute(nil);
 end;
 
-procedure TF_Main.OnRCSOpen(Sender:TObject);
-var i:Integer;
-    str:string;
+procedure TF_Main.OnRCSOpen(Sender: TObject);
+var i: Integer;
+    str: string;
 begin
  Self.A_RCS_Open.Enabled     := false;
  Self.A_RCS_Close.Enabled    := true;
@@ -854,7 +854,7 @@ begin
   end;
 end;
 
-procedure TF_Main.OnRCSClose(Sender:TObject);
+procedure TF_Main.OnRCSClose(Sender: TObject);
 begin
  Self.A_RCS_Go.Enabled    := false;
  Self.A_RCS_Stop.Enabled  := false;
@@ -891,7 +891,7 @@ begin
  RCSTableData.UpdateTable();
 end;
 
-procedure TF_Main.OnRCSErrOpen(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrOpen(Sender: TObject; errMsg: string);
 begin
  Self.A_RCS_Go.Enabled    := false;
  Self.A_RCS_Stop.Enabled  := false;
@@ -909,7 +909,7 @@ begin
  Application.MessageBox(PChar('Při otevírání RCS nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;
 
-procedure TF_Main.OnRCSErrClose(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrClose(Sender: TObject; errMsg: string);
 begin
  A_RCS_Go.Enabled    := false;
  A_RCS_Stop.Enabled  := false;
@@ -922,11 +922,11 @@ begin
  Self.LogStatus('ERR: RCS CLOSE FAIL: '+errMsg);
  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
- Application.MessageBox(PChar('Při uzavírání RCS nastala chyba:'+#13#10+errMsg),'Chyba',MB_OK OR MB_ICONWARNING);
+ Application.MessageBox(PChar('Při uzavírání RCS nastala chyba:'+#13#10+errMsg),'Chyba', MB_OK OR MB_ICONWARNING);
  writelog('----- RCS CLOSE FAIL - '+errMsg+' -----', WR_ERROR);
 end;
 
-procedure TF_Main.OnRCSErrStart(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrStart(Sender: TObject; errMsg: string);
 begin
   A_RCS_Close.Enabled := true;
   Self.UpdateSystemButtons();
@@ -938,12 +938,12 @@ begin
   SystemData.Status := TSystemStatus.null;
 
   Self.LogStatus('ERR: RCS START FAIL: '+errMsg);
-  writelog('----- RCS START FAIL - '+errMsg+' -----',WR_ERROR);
+  writelog('----- RCS START FAIL - '+errMsg+' -----', WR_ERROR);
 
   Application.MessageBox(PChar('Při zapínání komunikace nastala chyba:'+#13#10+errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
 end;
 
-procedure TF_Main.OnRCSErrStop(Sender:TObject; errMsg:string);
+procedure TF_Main.OnRCSErrStop(Sender: TObject; errMsg: string);
 begin
   A_RCS_Open.Enabled := true;
   A_RCS_Close.Enabled := true;
@@ -960,14 +960,14 @@ begin
   writelog('----- RCS STOP FAIL - '+errMsg+' -----', WR_ERROR);
 end;
 
-procedure TF_Main.OnRCSReady(Sender:TObject; ready:Boolean);
+procedure TF_Main.OnRCSReady(Sender: TObject; ready: Boolean);
 var started, opened: Boolean;
 begin
  try
    started := RCSi.Started;
    opened := RCSi.Opened;
  except
-   on E:Exception do
+   on E: Exception do
     begin
      started := false;
      opened := false;
@@ -984,7 +984,7 @@ begin
    if ((ready) and (diag.simInputs) and (RCSi.simulation)) then
      RCSi.InputSim();
  except
-   on E:Exception do
+   on E: Exception do
      writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
  end;
 end;
@@ -1000,7 +1000,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.MI_Trk_libClick(Sender: TObject);
-var fn:string;
+var fn: string;
  begin
   fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
@@ -1012,7 +1012,7 @@ var fn:string;
     Self.LogStatus('Trakce: načteno ' + fn);
     Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Screen.Cursor := crDefault;
       Application.MessageBox(PChar('Nelze načíst knihovnu ' + fn + ':'+#13#10+
@@ -1024,8 +1024,8 @@ var fn:string;
  end;
 
 procedure TF_Main.UpdateTrkLibsList();
-var SR:TSearchRec;
-    item:TMenuItem;
+var SR: TSearchRec;
+    item: TMenuItem;
 
     procedure AddLib(name: string);
     begin
@@ -1062,7 +1062,7 @@ begin
  try
    TrakceI.ShowConfigDialog();
  except
-   on E:Exception do
+   on E: Exception do
     begin
      Screen.Cursor := crDefault;
      Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog: ' + E.Message),
@@ -1079,7 +1079,7 @@ begin
    Self.UpdateTrkLibsList();
    Application.MessageBox('Seznam knihoven úspěšně aktualizován.', 'Info', MB_OK OR MB_ICONINFORMATION);
  except
-   on E:Exception do
+   on E: Exception do
      Application.MessageBox(PChar('Seznam knihoven se nepodařilo aktualizovat:'+#13#10 + E.Message),
         'Chyba', MB_OK OR MB_ICONWARNING);
  end;
@@ -1096,7 +1096,7 @@ begin
  try
    TrakceI.Connect();
  except
-   on E:Exception do
+   on E: Exception do
     begin
      if (TrakceI.opening) then
       begin
@@ -1120,7 +1120,7 @@ begin
  try
    TrakceI.Disconnect();
  except
-   on E:Exception do
+   on E: Exception do
     begin
      TrakceI.Log(llErrors, 'CLOSE: error: ' + E.Message);
      Application.MessageBox(PChar('Chyba pri uzavírání komunikace s centrálou:'+#13#10+E.Message+#13#10+'Více informací naleznete v logu.'),
@@ -1132,7 +1132,7 @@ begin
 end;
 
 procedure TF_Main.A_Locos_AcquireExecute(Sender: TObject);
-var addr:Cardinal;
+var addr: Cardinal;
 begin
  F_Main.LogStatus('Loko: přebírám...');
  F_Main.S_locos_acquired.Brush.Color := clBlue;
@@ -1156,7 +1156,7 @@ begin
  HVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
 end;
 
-procedure TF_Main.OnTrkAllAcquired(Sender:TObject);
+procedure TF_Main.OnTrkAllAcquired(Sender: TObject);
 begin
  F_Main.LogStatus('Loko: všechna loko převzata');
 
@@ -1171,7 +1171,7 @@ begin
    F_Main.A_PanelServer_StartExecute(nil);
 end;
 
-procedure TF_Main.OnTrkAcquireError(Sender:TObject);
+procedure TF_Main.OnTrkAcquireError(Sender: TObject);
 begin
  Self.G_locos_acquired.ForeColor := clRed;
  Self.S_locos_acquired.Brush.Color := clRed;
@@ -1187,7 +1187,7 @@ begin
  Application.MessageBox('Nepodařilo se převzít všechny lokomotivy, více informací v logu.', 'Chyba', MB_OK OR MB_ICONWARNING);
 end;
 
-procedure TF_Main.OnTrkAllReleased(Sender:TObject);
+procedure TF_Main.OnTrkAllReleased(Sender: TObject);
 begin
  F_Main.LogStatus('Loko: všechna loko odhlášena');
 
@@ -1203,12 +1203,12 @@ begin
    F_Main.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
 end;
 
-procedure TF_Main.OnTrkLocoAcquired(Sender:TObject);
+procedure TF_Main.OnTrkLocoAcquired(Sender: TObject);
 begin
  Self.G_locos_acquired.Progress := Self.G_locos_acquired.Progress + 1;
 end;
 
-procedure TF_Main.OnTrkLocoReleased(Sender:TObject);
+procedure TF_Main.OnTrkLocoReleased(Sender: TObject);
 begin
  Self.G_locos_acquired.Progress := Self.G_locos_acquired.Progress - 1;
 end;
@@ -1226,7 +1226,7 @@ begin
  try
    TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCGoError));
  except
-   on E:Exception do
+   on E: Exception do
     begin
      SystemData.Status := null;
      Application.MessageBox(PChar('Chyba při DCC GO:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
@@ -1242,9 +1242,9 @@ begin
   try
     TrakceI.SetTrackStatus(tsOff, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCStopError));
   except
-    on E:Exception do
+    on E: Exception do
      begin
-      Application.MessageBox(PChar('Chyba při DCC STOP:'+#13#10+E.Message),'Chyba',MB_OK OR MB_ICONERROR);
+      Application.MessageBox(PChar('Chyba při DCC STOP:'+#13#10+E.Message),'Chyba', MB_OK OR MB_ICONERROR);
       Self.LogStatus('DCC: STOP: ERR '+E.Message);
      end;
   end;
@@ -1255,7 +1255,7 @@ begin
  F_FuncsSet.Show();
 end;
 
-procedure TF_Main.OnDCCGoError(Sender:TObject; Data:Pointer);
+procedure TF_Main.OnDCCGoError(Sender: TObject; Data: Pointer);
 begin
  SystemData.Status := TSystemStatus.null;
  Self.UpdateSystemButtons();
@@ -1266,7 +1266,7 @@ begin
  Application.MessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
-procedure TF_Main.OnDCCStopError(Sender:TObject; Data:Pointer);
+procedure TF_Main.OnDCCStopError(Sender: TObject; Data: Pointer);
 begin
  Self.LogStatus('DCC: STOP: ERR: cenrála neodpověděla na příkaz');
  Self.UpdateSystemButtons();
@@ -1359,7 +1359,7 @@ begin
  Self.A_Trk_Connect.Enabled := ready and (not TrakceI.ConnectedSafe());
 end;
 
-procedure TF_Main.OnTrkErrOpen(Sender:TObject; errMsg:string);
+procedure TF_Main.OnTrkErrOpen(Sender: TObject; errMsg: string);
 begin
  if (SystemData.Status = TSystemStatus.starting) then
   begin
@@ -1383,7 +1383,7 @@ begin
  TrakceI.logLevelTable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
 end;
 
-procedure TF_Main.OnTrkStatusChange(Sender:TObject; trkStatus: TTrkStatus);
+procedure TF_Main.OnTrkStatusChange(Sender: TObject; trkStatus: TTrkStatus);
 begin
  if (trkStatus = TTrkStatus.tsOn) then
   begin
@@ -1430,7 +1430,7 @@ begin
                       TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff));
 end;
 
-procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender:TObject; data: Pointer);
+procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender: TObject; data: Pointer);
 begin
  Self.LogStatus('Zvuky všech hnacích vozidel vypnuty');
  Application.ProcessMessages();
@@ -1508,7 +1508,7 @@ begin
 end;
 
 procedure TF_Main.PM_BlokyPopup(Sender: TObject);
-var i:Integer;
+var i: Integer;
 begin
  if (Self.LV_Bloky.Selected = nil) then
   begin
@@ -1541,14 +1541,14 @@ begin
    try
     RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
    except
-    on E:Exception do
+    on E: Exception do
       Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
    end;
   end;//if
 end;
 
 procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-var ci:TCloseInfo;
+var ci: TCloseInfo;
  begin
   if (Self.NUZClose) then
    begin
@@ -1582,7 +1582,7 @@ var ci:TCloseInfo;
           if (RCSi.Started) then RCSi.Stop()
           else if (RCSi.Opened) then RCSi.Close();
         except
-          on E:Exception do
+          on E: Exception do
             Application.MessageBox(PChar('Nastala výjimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
         end;
        end;
@@ -1683,18 +1683,18 @@ begin
        if (Handled) then Exit;
 
        case (msg.wParam) of
-         VK_F9:begin
+         VK_F9: begin
             try
               RCSi.HideConfigDialog();
             except
-              on E:Exception do
+              on E: Exception do
                 Application.MessageBox(PChar('Nelze skrýt konfigurační dialog RCS : ' + E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
             end;
          end;
 
-         VK_ESCAPE:if (F_About.Showing) then F_About.Close;
+         VK_ESCAPE: if (F_About.Showing) then F_About.Close;
 
-         VK_F4:begin
+         VK_F4: begin
             // zobrazeni debug okna
             F_Admin.Show();
             Handled := true;
@@ -1822,7 +1822,7 @@ begin
      Self.LogStatus('System: start OK');
     end;
  except
-   on E:Exception do
+   on E: Exception do
      Application.MessageBox(PChar('Nelze nastartovat PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
 
@@ -1839,7 +1839,7 @@ begin
  try
    PtServer.Stop();
  except
-   on E:Exception do
+   on E: Exception do
      Application.MessageBox(PChar('Nelze zastavit PT server:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
 
@@ -1849,7 +1849,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.A_SaveStavExecute(Sender: TObject);
-var ini:TMemIniFile;
+var ini: TMemIniFile;
 begin
   try
     // ukladani stavu bloku: ulozime do docasneho souboru a az pak prepiseme stavajici konfigurak
@@ -1860,7 +1860,7 @@ begin
     MoveFile(PChar(Blky.fstatus+'_'), PChar(Blky.fstatus));
     DeleteFile(Blky.fstatus+'_');
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, 'Blky.SaveStatToFile');
   end;
 
@@ -1872,7 +1872,7 @@ begin
     MoveFile(PChar(F_Main.E_dataload_HV_state.Text+'_'), PChar(F_Main.E_dataload_HV_state.Text));
     DeleteFile(F_Main.E_dataload_HV_state.Text+'_');
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, 'HvDb.SaveToDir');
   end;
 
@@ -1884,7 +1884,7 @@ begin
     MoveFile(PChar(F_Main.E_dataload_soupr.Text+'_'), PChar(F_Main.E_dataload_soupr.Text));
     DeleteFile(F_Main.E_dataload_soupr.Text+'_');
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, 'Trains.SaveData');
   end;
 
@@ -1892,14 +1892,14 @@ begin
     F_Main.SaveFormPosition;
     FormData.SaveFormData(FormData.aFile);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, 'Save form position');
   end;
 
   try
     ORs.SaveStatus(ORs.status_filename);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, 'Save OR status');
   end;
 
@@ -1909,14 +1909,14 @@ begin
       try
         RCSi.SaveToFile(ini);
       except
-        on E:Exception do
+        on E: Exception do
           AppEvents.LogException(E, 'Save RCS');
       end;
 
       try
         TrakceI.SaveToFile(ini);
       except
-        on E:Exception do
+        on E: Exception do
           AppEvents.LogException(E, 'Save Trakce');
       end;
 
@@ -1930,7 +1930,7 @@ begin
       ini.Free();
     end;
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, 'Save cfg');
   end;
 
@@ -1945,7 +1945,7 @@ begin
       ini.Free();
     end;
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, 'Save cfg');
   end;
 end;
@@ -2000,7 +2000,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.SetCallMethod(Method:TNotifyEvent);
+procedure TF_Main.SetCallMethod(Method: TNotifyEvent);
 begin
  while (Assigned(Self.call_method)) do
   begin
@@ -2013,8 +2013,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.B_AB_DeleteClick(Sender: TObject);
-var blk:TBlk;
-    jc:TJC;
+var blk: TBlk;
+    jc: TJC;
 begin
  jc := ABlist[Self.LV_AB.ItemIndex];
  if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+jc.name+'?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
@@ -2029,7 +2029,7 @@ begin
       end else
        ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
    except
-    on E:Exception do
+    on E: Exception do
       Application.MessageBox(PChar('Chyba při mazání:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
    end;
   end;
@@ -2041,7 +2041,7 @@ begin
 end;
 
 procedure TF_Main.B_BlkDeleteClick(Sender: TObject);
-var pozice:Integer;
+var pozice: Integer;
  begin
   Pozice := LV_Bloky.ItemIndex;
 
@@ -2052,15 +2052,15 @@ var pozice:Integer;
     try
       Blky.Delete(pozice);
     except
-      on E:Exception do
+      on E: Exception do
         Application.MessageBox(PChar('Chyba:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
     end;
    end;//if MesageBox
 end;
 
 procedure TF_Main.B_ChangeClick(Sender: TObject);
-var data:string;
-    i:Integer;
+var data: string;
+    i: Integer;
 begin
  data := '';
  for i := 0 to Self.M_funcsVyznam.Lines.Count-1 do
@@ -2077,9 +2077,9 @@ begin
    HVDb.ClearAllStatistics();
 end;
 
-procedure TF_Main.OnFuncsVyznamChange(Sender:TObject);
-var vyzn:TFuncVyznam;
-    strs:TStrings;
+procedure TF_Main.OnFuncsVyznamChange(Sender: TObject);
+var vyzn: TFuncVyznam;
+    strs: TStrings;
 begin
  if (not Self.CHB_LoadChanges.Checked) then Exit();
  Self.M_funcsVyznam.Clear();
@@ -2097,7 +2097,7 @@ begin
 end;
 
 procedure TF_Main.B_HVStats_ExportClick(Sender: TObject);
-var fn:string;
+var fn: string;
 begin
  if (Self.SD_HV_Stats.Execute(Self.Handle)) then
   begin
@@ -2108,7 +2108,7 @@ begin
       fn := Self.SD_HV_Stats.FileName;
     HVDb.ExportStatistics(fn);
    except
-    on E:Exception do
+    on E: Exception do
       Application.MessageBox(PChar('Nelze exportovat'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
    end;
   end;
@@ -2123,7 +2123,7 @@ procedure TF_Main.B_HV_DeleteClick(Sender: TObject);
 var hvs: string;
     LI: TListItem;
     i: Integer;
-    addr:Word;
+    addr: Word;
 begin
  if (Self.LV_HV.Selected = nil) then Exit();
 
@@ -2140,7 +2140,7 @@ begin
        try
          HVDb.Remove(addr);
        except
-         on E:Exception do
+         on E: Exception do
           begin
            Application.MessageBox(PChar('Mazání HV '+IntToStr(addr)+' se nezdařilo:'+#13#10+E.Message),
                                   'Chyba', MB_OK OR MB_ICONWARNING);
@@ -2153,7 +2153,7 @@ begin
 end;
 
 procedure TF_Main.B_JC_ResetClick(Sender: TObject);
-var JC:TJC;
+var JC: TJC;
 begin
  if (Self.LV_JC.Selected = nil) then Exit();
 
@@ -2214,7 +2214,7 @@ begin
 end;
 
 procedure TF_Main.B_RemoveStackClick(Sender: TObject);
-var OblR:TOR;
+var OblR: TOR;
 begin
  if (Self.LV_Stanice.Selected = nil) then Exit();
  OblR := ORs[Self.LV_Stanice.ItemIndex];
@@ -2271,7 +2271,7 @@ begin
            ABlist.Remove(jc);
          JCDb.RemoveJC(LI.Index);
        except
-         on E:Exception do
+         on E: Exception do
           begin
            Application.MessageBox(PChar('Nelze smazat JC'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
            Exit();
@@ -2288,7 +2288,7 @@ begin
 end;
 
 procedure TF_Main.B_zes_deleteClick(Sender: TObject);
-var pozice:integer;
+var pozice: integer;
 begin
  Pozice := LV_Zesilovace.ItemIndex;
  Beep;
@@ -2308,7 +2308,7 @@ procedure TF_Main.PM_Help_RPClick(Sender: TObject);
  end;
 
 procedure TF_Main.PM_HVPopup(Sender: TObject);
-var i:Integer;
+var i: Integer;
 begin
  if (Self.LV_HV.Selected = nil) then
   begin
@@ -2325,10 +2325,10 @@ begin
  if PM_SB1.Checked then
   begin
    SB1.Visible:=true;
-   writelog('Zobrazeno SB1',WR_MESSAGE);
+   writelog('Zobrazeno SB1', WR_MESSAGE);
   end else begin
    SB1.Visible:=false;
-   writelog('Skryto SB1',WR_MESSAGE);
+   writelog('Skryto SB1', WR_MESSAGE);
   end;
 end;
 
@@ -2432,7 +2432,7 @@ end;
 
 procedure TF_Main.L_DateDblClick(Sender: TObject);
 begin
- Application.Messagebox('Datum a čas lze nastavit v operačním systému','Informace',MB_ICONINFORMATION OR MB_OK OR MB_DEFBUTTON1);
+ Application.Messagebox('Datum a čas lze nastavit v operačním systému','Informace', MB_ICONINFORMATION OR MB_OK OR MB_DEFBUTTON1);
 end;
 
 procedure TF_Main.MI_DisconnectClick(Sender: TObject);
@@ -2442,14 +2442,14 @@ begin
    try
      ORTCPServer.DisconnectClient(ORTCPServer.GetClient(Self.LV_Clients.ItemIndex).conn);
    except
-     on E:Exception do
+     on E: Exception do
        Application.MessageBox(PChar('Výjimka při odpojování - '+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
    end;
   end;
 end;
 
 procedure TF_Main.MI_HoukClick(Sender: TObject);
-var Blk:TBlk;
+var Blk: TBlk;
 begin
  if (Self.LV_Bloky.Selected = nil) then Exit();
  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
@@ -2470,7 +2470,7 @@ begin
    Self.UpdateRCSLibsList();
    Application.MessageBox('Seznam knihoven úspěšně aktualizován.', 'Info', MB_OK OR MB_ICONINFORMATION);
  except
-   on E:Exception do
+   on E: Exception do
      Application.MessageBox(PChar('Seznam knihoven se nepodařilo aktualizovat:'+#13#10 + E.Message),
         'Chyba', MB_OK OR MB_ICONWARNING);
  end;
@@ -2491,7 +2491,7 @@ begin
       inidata.Free();
     end;
   except
-    on E:Exception do
+    on E: Exception do
      begin
       AppEvents.LogException(E, 'TF_Main.MI_Save_configClick');
       Application.MessageBox(PChar('Výjimka: '+E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
@@ -2502,10 +2502,10 @@ begin
 end;
 
 procedure TF_Main.MI_TechPropClick(Sender: TObject);
-var Blk:TBlk;
+var Blk: TBlk;
  begin
   if (LV_Bloky.Selected = nil) then Exit;
-  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
+  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
    btTurnout: F_BlkVyh_tech.OpenForm(Blk as TBlkTurnout);
@@ -2568,10 +2568,10 @@ procedure TF_Main.DetekujAutSpusteniSystemu();
    begin
     if (not GetFunctions.GetSystemStart) then
      begin
-      F_AutoStartSystems.L_Cas.Caption := FormatDateTime('ss',Now-KomunikaceGo);     
+      F_AutoStartSystems.L_Cas.Caption := FormatDateTime('ss', Now-KomunikaceGo);
       if (not F_AutoStartSystems.Showing) then
        begin
-        WriteLog('Probiha automaticke pripojovani k systemum - t=6s',WR_MESSAGE);
+        WriteLog('Probiha automaticke pripojovani k systemum - t=6s', WR_MESSAGE);
         F_AutoStartSystems.Show;
        end;
       if (KomunikacePocitani = 1) then
@@ -2581,7 +2581,7 @@ procedure TF_Main.DetekujAutSpusteniSystemu();
        end else begin
         if (Round((Now - KomunikaceGo) * 24 * 3600) = 0) then
          begin
-          WriteLog('Automaticke pripojovani k systemum - t=0 - zapinam systemy',WR_MESSAGE);
+          WriteLog('Automaticke pripojovani k systemum - t=0 - zapinam systemy', WR_MESSAGE);
           F_AutoStartSystems.Close;
           KomunikacePocitani := 0;          
           F_Main.A_System_StartExecute(nil);
@@ -2602,7 +2602,7 @@ procedure TF_Main.OnStart();
   mCpuLoad.DrawCPUGauge();
 
   writelog('Spuštěn hJOPserver v'+NactiVerzi(application.ExeName), WR_MESSAGE);
-  writelog('----------------------------------------------------------------',WR_MESSAGE);
+  writelog('----------------------------------------------------------------', WR_MESSAGE);
 
   if (not Self.CloseMessage) then
    begin
@@ -2645,7 +2645,7 @@ procedure TF_Main.OnStart();
     if ((RCSi.ready) and (diag.simInputs) and (RCSi.simulation)) then
       RCSi.InputSim();
   except
-    on E:Exception do
+    on E: Exception do
       writelog('Nelze provést inputSim : ' + E.Message, WR_ERROR);
   end;
 
@@ -2667,7 +2667,7 @@ procedure TF_Main.FormClose(Sender: TObject; var Action: TCloseAction);
  end;
 
 procedure TF_Main.SaveFormPosition();
-var ini:TMemIniFile;
+var ini: TMemIniFile;
  begin
   ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
   try
@@ -2696,7 +2696,7 @@ begin
 end;
 
 procedure TF_Main.PM_ClientsPopup(Sender: TObject);
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to F_Main.PM_Clients.Items.Count-1 do
   F_Main.PM_Clients.Items[i].Enabled := (F_Main.LV_Clients.Selected <> nil) and (ORTCPServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
@@ -2759,7 +2759,7 @@ begin
  case (StrToIntDef(Item.SubItems[0],0)) of
   1:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED;
   2:(Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-  4,5:begin
+  4,5: begin
      (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      if (LeftStr(Item.SubItems[1], 3) = 'GET') then
        (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_BLUE;
@@ -2822,7 +2822,7 @@ end;
 
 procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
-var OblR:TOR;
+var OblR: TOR;
 begin
  if (Self.LV_Stanice.Selected <> nil) then
   begin
@@ -2867,7 +2867,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.LogStatus(str:string);
+procedure TF_Main.LogStatus(str: string);
 begin
  if (Assigned(Self.LB_Log)) then
   begin
@@ -2891,9 +2891,9 @@ end;
 
 procedure TF_Main.LV_BlokyCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
-var Blk:TBlk;
+var Blk: TBlk;
  begin
-  if (Blky.GetBlkByIndex(Item.Index,Blk) <> 0) then Exit;
+  if (Blky.GetBlkByIndex(Item.Index, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
    btTurnout: begin
@@ -2907,7 +2907,7 @@ var Blk:TBlk;
    end;
 
   //////////////////////
-   btUsek, btTU :begin
+   btUsek, btTU : begin
     case ((Blk as TBlkUsek).Obsazeno) of
      TUsekStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TUsekStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
@@ -3023,10 +3023,10 @@ var Blk:TBlk;
 end;
 
 procedure TF_Main.LV_BlokyDblClick(Sender: TObject);
-var Blk:TBlk;
+var Blk: TBlk;
  begin
   if (LV_Bloky.Selected = nil) then Exit;
-  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex,Blk) <> 0) then Exit;
+  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
    btTurnout: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
@@ -3096,7 +3096,7 @@ begin
    try
     RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
    except
-    on E:Exception do
+    on E: Exception do
       Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
    end;
   end else begin
@@ -3159,7 +3159,7 @@ procedure TF_Main.DisableRemoveButtons();
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.UpdateCallMethod();
-var ev:TNotifyEvent;
+var ev: TNotifyEvent;
 begin
   if (Assigned(Self.call_method)) then
    begin
@@ -3201,7 +3201,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_Main.SoupravySelectedCount():Integer;
+function TF_Main.SoupravySelectedCount(): Integer;
 var LI: TListItem;
 begin
  Result := 0;
@@ -3212,7 +3212,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_Main.LVSelectedTexts(LV: TListView; single: string; multiple: string):string;
+function TF_Main.LVSelectedTexts(LV: TListView; single: string; multiple: string): string;
 var LI: TListItem;
     count: Integer;
 begin

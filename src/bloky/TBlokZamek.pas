@@ -1,4 +1,4 @@
-﻿unit TBlokZamek;
+unit TBlokZamek;
 
 //definice a obsluha technologickeho bloku Zamek
 
@@ -10,12 +10,12 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
 type
 
  TBlkZamekStav = record
-  enabled:Boolean;
-  klicUvolnen:Boolean;
-  nouzZaver:Cardinal;    // tady je ulozeny pocet bloku, ktere mi daly nouzovy zaver
-  Zaver:Integer;        // tady je ulozeny pocet bloku, ktere mi daly zaver
-  stit:string;
-  porucha:Boolean;
+  enabled: Boolean;
+  klicUvolnen: Boolean;
+  nouzZaver: Cardinal;    // tady je ulozeny pocet bloku, ktere mi daly nouzovy zaver
+  Zaver: Integer;        // tady je ulozeny pocet bloku, ktere mi daly zaver
+  stit: string;
+  porucha: Boolean;
  end;
 
  // zamek ma zaver, pokud jakakoliv vyhybka, kterou obsluhuje, ma zaver
@@ -23,7 +23,7 @@ type
  TBlkZamek = class(TBlk)
   const
    //defaultni stav
-   _def_zamek_stav:TBlkZamekStav = (
+   _def_zamek_stav: TBlkZamekStav = (
     enabled : false;
     klicUvolnen : false;
     nouzZaver : 0;
@@ -34,37 +34,37 @@ type
 
 
   private
-   ZamekStav:TBlkZamekStav;
-   last_zaver:Boolean;      // tady je ulozena posledni hodnota zaveru (aby mohlo byt rozponano, kdy volat Change)
+   ZamekStav: TBlkZamekStav;
+   last_zaver: Boolean;      // tady je ulozena posledni hodnota zaveru (aby mohlo byt rozponano, kdy volat Change)
 
-    procedure MenuUKClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZUKClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuUKClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZUKClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    function GetZaver():Boolean;
-    function GetNouzZaver():Boolean;
-    function IsRightPoloha():Boolean;   // vraci true, pokud jsou vyhybky s timto zamkem v poloze pro zamknuti
+    function GetZaver(): Boolean;
+    function GetNouzZaver(): Boolean;
+    function IsRightPoloha(): Boolean;   // vraci true, pokud jsou vyhybky s timto zamkem v poloze pro zamknuti
 
-    procedure SetNouzZaver(new:Boolean);
-    procedure SetStit(stit:string);
-    procedure SetPorucha(new:Boolean);
-    procedure SetZaver(new:Boolean);
+    procedure SetNouzZaver(new: Boolean);
+    procedure SetStit(stit: string);
+    procedure SetPorucha(new: Boolean);
+    procedure SetZaver(new: Boolean);
 
-    procedure SetKlicUvolnen(new:Boolean);
-    procedure PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
+    procedure SetKlicUvolnen(new: Boolean);
+    procedure PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 
     procedure CallChangeToVyh();
 
   public
 
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -72,25 +72,25 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:Boolean = false); override;               // change do zamku je volano pri zmene zaveru jakekoliv vyhybky, kterou zaver obsluhuje
+    procedure Change(now: Boolean = false); override;               // change do zamku je volano pri zmene zaveru jakekoliv vyhybky, kterou zaver obsluhuje
 
 
     //----- zamek own functions -----
 
-    procedure DecreaseNouzZaver(amount:Cardinal);
+    procedure DecreaseNouzZaver(amount: Cardinal);
 
-    property Stav:TBlkZamekStav read ZamekStav;
-    property Zaver:Boolean read GetZaver write SetZaver;
-    property nouzZaver:Boolean read GetNouzZaver write SetNouzZaver;
-    property stitek:string read ZamekStav.stit write SetStit;
-    property klicUvolnen:Boolean read ZamekStav.klicUvolnen write SetKlicUvolnen;
-    property porucha:Boolean read ZamekStav.porucha write SetPorucha;
+    property Stav: TBlkZamekStav read ZamekStav;
+    property Zaver: Boolean read GetZaver write SetZaver;
+    property nouzZaver: Boolean read GetNouzZaver write SetNouzZaver;
+    property stitek: string read ZamekStav.stit write SetStit;
+    property klicUvolnen: Boolean read ZamekStav.klicUvolnen write SetKlicUvolnen;
+    property porucha: Boolean read ZamekStav.porucha write SetPorucha;
 
     //GUI:
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    function PanelStateString():string; override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function PanelStateString(): string; override;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
@@ -104,7 +104,7 @@ implementation
 uses GetSystems, TBloky, Graphics, Diagnostics, ownConvert,
     TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlokVyhybka;
 
-constructor TBlkZamek.Create(index:Integer);
+constructor TBlkZamek.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -115,19 +115,19 @@ end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkZamek.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkZamek.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
  Self.ZamekStav.Stit := ini_stat.ReadString(section, 'stit', '');
  Self.LoadORs(ini_rel, 'Z').Free();
 end;
 
-procedure TBlkZamek.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkZamek.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
- inherited SaveData(ini_tech,section);
+ inherited SaveData(ini_tech, section);
 end;
 
-procedure TBlkZamek.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkZamek.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
  ini_stat.WriteString (section, 'stit', Self.ZamekStav.Stit);
 end;
@@ -163,7 +163,7 @@ begin
 end;
 
 // change je volan z vyhybky pri zmene zaveru
-procedure TBlkZamek.Change(now:Boolean = false);
+procedure TBlkZamek.Change(now: Boolean = false);
 begin
  // porucha zamku -> zrusit postavenou JC
  if ((Self.Zaver) and ((Self.klicUvolnen) or (Self.porucha))) then
@@ -174,33 +174,33 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkZamek.MenuUKClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkZamek.MenuUKClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if ((not Self.Zaver) and (not Self.nouzZaver)) then
    Self.klicUvolnen := true;
 end;
 
-procedure TBlkZamek.MenuZUKClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkZamek.MenuZUKClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.klicUvolnen := false;
 end;
 
-procedure TBlkZamek.MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkZamek.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
 end;
 
-procedure TBlkZamek.MenuZAVEnableClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkZamek.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.nouzZaver := true;
 end;
 
-procedure TBlkZamek.MenuZAVDisableClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkZamek.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkZamek.PanelPotvrSekvZAV(Sender:TIdContext; success:Boolean);
+procedure TBlkZamek.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 begin
  if (success) then
   begin
@@ -212,7 +212,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkZamek.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkZamek.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := inherited;
 
@@ -233,7 +233,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkZamek.PanelClick(SenderPnl:TIdContext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkZamek.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  if (Self.Stav.enabled) then
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -242,7 +242,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkZamek.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkZamek.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if (not Self.Stav.enabled) then Exit();
 
@@ -255,12 +255,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkZamek.GetZaver():Boolean;
+function TBlkZamek.GetZaver(): Boolean;
 begin
  Result := (Self.ZamekStav.Zaver > 0);
 end;
 
-procedure TBlkZamek.SetZaver(new:Boolean);
+procedure TBlkZamek.SetZaver(new: Boolean);
 begin
  if (new) then
   begin
@@ -277,12 +277,12 @@ begin
   end;
 end;
 
-function TBlkZamek.GetNouzZaver():Boolean;
+function TBlkZamek.GetNouzZaver(): Boolean;
 begin
  Result := (Self.Stav.nouzZaver > 0);
 end;
 
-procedure TBlkZamek.SetNouzZaver(new:Boolean);
+procedure TBlkZamek.SetNouzZaver(new: Boolean);
 begin
  if (new) then
   begin
@@ -312,7 +312,7 @@ begin
   end;
 end;
 
-procedure TBlkZamek.SetStit(stit:string);
+procedure TBlkZamek.SetStit(stit: string);
 begin
  if (stit <> Self.ZamekStav.stit) then
   begin
@@ -321,7 +321,7 @@ begin
   end;
 end;
 
-procedure TBlkZamek.SetKlicUvolnen(new:Boolean);
+procedure TBlkZamek.SetKlicUvolnen(new: Boolean);
 begin
  if (new <> Self.klicUvolnen) then
   begin
@@ -335,8 +335,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkZamek.CallChangeToVyh();
-var list:TBlksList;
-    i:Integer;
+var list: TBlksList;
+    i: Integer;
 begin
  list := Blky.GetVyhWithZamek(Self.id);
 
@@ -348,7 +348,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkZamek.SetPorucha(new:Boolean);
+procedure TBlkZamek.SetPorucha(new: Boolean);
 begin
  if (Self.ZamekStav.porucha <> new) then
   begin
@@ -361,9 +361,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkZamek.IsRightPoloha():Boolean;
-var list:TBlksList;
-    i:Integer;
+function TBlkZamek.IsRightPoloha(): Boolean;
+var list: TBlksList;
+    i: Integer;
 begin
  list := Blky.GetVyhWithZamek(Self.id);
 
@@ -380,7 +380,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkZamek.DecreaseNouzZaver(amount:Cardinal);
+procedure TBlkZamek.DecreaseNouzZaver(amount: Cardinal);
 begin
  if (Self.ZamekStav.nouzZaver = 0) then Exit();
 
@@ -395,7 +395,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkZamek.PanelStateString():string;
+function TBlkZamek.PanelStateString(): string;
 var fg, bg: TColor;
 begin
  Result := inherited;

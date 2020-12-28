@@ -1,4 +1,4 @@
-﻿unit TBlokPrejezd;
+unit TBlokPrejezd;
 
 // definice a obsluha technologickeho bloku Prejezd
 
@@ -35,12 +35,12 @@ type
  TBlkPrjStav = record
   basicStav: TBlkPrjBasicStav;
   anulaceOld: Boolean;
-  stit,vyl:string;
+  stit, vyl: string;
   PC_NOT, PC_UZ: Boolean;                           // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
-  zaver:Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
-  uzavStart:TDateTime;
-  shs:TList<TBlk>;                                  // seznam souctovych hlasek, kam hlasi prejezd stav
-  rcsModules:TList<Cardinal>;                       // seznam RCS modulu, ktere vyuziva prejezd
+  zaver: Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
+  uzavStart: TDateTime;
+  shs: TList<TBlk>;                                  // seznam souctovych hlasek, kam hlasi prejezd stav
+  rcsModules: TList<Cardinal>;                       // seznam RCS modulu, ktere vyuziva prejezd
  end;
 
  EPrjNOT = class(Exception);
@@ -48,7 +48,7 @@ type
  TBlkPrejezd = class(TBlk)
   const
    //defaultni stav
-   _def_prj_stav:TBlkPrjStav = (
+   _def_prj_stav: TBlkPrjStav = (
     basicStav : disabled;
     stit : '';
     vyl : '';
@@ -61,60 +61,60 @@ type
    _UZ_UPOZ_MIN = 4;      // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
 
   private
-   PrjSettings:TBlkPrjSettings;
-   PrjStav:TBlkPrjStav;
+   PrjSettings: TBlkPrjSettings;
+   PrjStav: TBlkPrjStav;
 
-    procedure SetStit(stit:string);
-    procedure SetVyl(vyl:string);
+    procedure SetStit(stit: string);
+    procedure SetVyl(vyl: string);
 
-    function UpdateInputs():TBlkPrjBasicStav;
+    function UpdateInputs(): TBlkPrjBasicStav;
     procedure UpdateOutputs();
     procedure UpdateTracks();
 
-    procedure SetNOT(state:Boolean);
-    procedure SetUZ(state:Boolean);
+    procedure SetNOT(state: Boolean);
+    procedure SetUZ(state: Boolean);
 
-    procedure SetZaver(zaver:Boolean);
-    function GetZaver():Boolean;
+    procedure SetZaver(zaver: Boolean);
+    function GetZaver(): Boolean;
 
-    function TrackClosed():Boolean;
-    function TrackPozitiva():Boolean;
-    function GetAnulace():Boolean;
+    function TrackClosed(): Boolean;
+    function TrackPozitiva(): Boolean;
+    function GetAnulace(): Boolean;
 
-    procedure MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuZNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuUZClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZUZClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuZNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure UPOUZClick(Sender:TObject);
-    procedure UPOZUZClick(Sender:TObject);
-    procedure UPONOTClick(Sender:TObject);
-    procedure UPOZNOTClick(Sender:TObject);
+    procedure UPOUZClick(Sender: TObject);
+    procedure UPOZUZClick(Sender: TObject);
+    procedure UPONOTClick(Sender: TObject);
+    procedure UPOZNOTClick(Sender: TObject);
 
     // DEBUG volby:
-    procedure MenuAdminZavreno(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminOtevreno(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminVystraha(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminAnulaceStart(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminAnulaceStop(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
-    procedure SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl:TIdContext; SenderOR:TObject);
+    procedure MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminOtevreno(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminVystraha(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminAnulaceStart(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminAnulaceStop(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
-        UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
+    procedure StitUPO(SenderPnl: TIdContext; SenderOR: TObject;
+        UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
     procedure FillRCSModules();
 
   public
    tracks: TObjectList<TBlkPrjTrack>;
 
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile;const section:string; ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile;const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile;const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -123,35 +123,35 @@ type
 
     //update states
     procedure Update(); override;
-    procedure Change(now:Boolean = false); override;
+    procedure Change(now: Boolean = false); override;
 
     //----- prejezd own functions -----
 
-    function GetSettings():TBlkPrjSettings;
-    procedure SetSettings(data:TBlkPrjSettings);
+    function GetSettings(): TBlkPrjSettings;
+    procedure SetSettings(data: TBlkPrjSettings);
 
-    procedure AddSH(Sender:TBlk);
-    procedure RemoveSH(Sender:TBlk);
+    procedure AddSH(Sender: TBlk);
+    procedure RemoveSH(Sender: TBlk);
 
-    property Stav:TBlkPrjStav read PrjStav;
+    property Stav: TBlkPrjStav read PrjStav;
 
-    property NOtevreni:Boolean read PrjStav.PC_NOT write SetNOT;
-    property UZ:Boolean read PrjStav.PC_UZ write SetUZ;
+    property NOtevreni: Boolean read PrjStav.PC_NOT write SetNOT;
+    property UZ: Boolean read PrjStav.PC_UZ write SetUZ;
 
-    property Stitek:string read PrjStav.stit write SetStit;
-    property Vyluka:string read PrjStav.vyl write SetVyl;
+    property Stitek: string read PrjStav.stit write SetStit;
+    property Vyluka: string read PrjStav.vyl write SetVyl;
 
-    property Zaver:Boolean read GetZaver write SetZaver;
-    property Anulace:Boolean read GetAnulace;
+    property Zaver: Boolean read GetZaver write SetZaver;
+    property Anulace: Boolean read GetAnulace;
 
     //GUI:
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    function PanelStateString():string; override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function PanelStateString(): string; override;
 
-    procedure PanelZUZCallBack(Sender:TIdContext; success:Boolean);
-    procedure PanelZNOTCallBack(Sender:TIdContext; success:Boolean);
+    procedure PanelZUZCallBack(Sender: TIdContext; success: Boolean);
+    procedure PanelZNOTCallBack(Sender: TIdContext; success: Boolean);
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
@@ -164,7 +164,7 @@ implementation
 uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
      Graphics, TCPORsRef, Diagnostics, appEv, ownConvert;
 
-constructor TBlkPrejezd.Create(index:Integer);
+constructor TBlkPrejezd.Create(index: Integer);
 begin
  inherited;
 
@@ -185,10 +185,10 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
-var oblr:TOR;
+procedure TBlkPrejezd.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
+var oblr: TOR;
     defaultModule: Integer;
-    module:Cardinal;
+    module: Cardinal;
     i, notracks: Integer;
     track: TBlkPrjTrack;
 begin
@@ -237,7 +237,7 @@ begin
      track.Load(ini_tech, section, 'T'+IntToStr(i));
      Self.tracks.Add(track);
    except
-     on E:Exception do
+     on E: Exception do
        AppEvents.LogException(E, 'LoadTracks');
    end;
   end;
@@ -254,7 +254,7 @@ begin
      oblr.RCSAdd(module);
 end;
 
-procedure TBlkPrejezd.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkPrejezd.SaveData(ini_tech: TMemIniFile; const section: string);
 var i: Integer;
 begin
  inherited SaveData(ini_tech, section);
@@ -290,7 +290,7 @@ begin
    Self.tracks[i].Save(ini_tech, section, 'T'+IntToStr(i));
 end;
 
-procedure TBlkPrejezd.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkPrejezd.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
  if (Self.PrjStav.stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.PrjStav.stit);
@@ -299,7 +299,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkPrejezd.Enable();
-var module:Cardinal;
+var module: Cardinal;
 begin
  try
    for module in Self.PrjStav.rcsModules do
@@ -341,10 +341,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkPrejezd.Update();
-var new_stav:TBlkPrjBasicStav;
-    available:Boolean;
-    oblr:TOR;
-    module:Cardinal;
+var new_stav: TBlkPrjBasicStav;
+    available: Boolean;
+    oblr: TOR;
+    module: Cardinal;
 begin
  available := true;
  try
@@ -439,8 +439,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.Change(now:Boolean = false);
-var sh:TBlk;
+procedure TBlkPrejezd.Change(now: Boolean = false);
+var sh: TBlk;
 begin
  inherited;
 
@@ -454,11 +454,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.UpdateInputs():TBlkPrjBasicStav;
+function TBlkPrejezd.UpdateInputs(): TBlkPrjBasicStav;
 var tmpInputs: record
-      Zavreno:Boolean;
-      Otevreno:Boolean;
-      Vystraha:Boolean;
+      Zavreno: Boolean;
+      Otevreno: Boolean;
+      Vystraha: Boolean;
     end;
 begin
  // get data from RCS
@@ -500,12 +500,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.GetSettings():TBlkPrjSettings;
+function TBlkPrejezd.GetSettings(): TBlkPrjSettings;
 begin
  Result := Self.PrjSettings;
 end;
 
-procedure TBlkPrejezd.SetSettings(data:TBlkPrjSettings);
+procedure TBlkPrejezd.SetSettings(data: TBlkPrjSettings);
 begin
  Self.PrjSettings := data;
  Self.FillRCSModules();
@@ -514,20 +514,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.SetStit(stit:string);
+procedure TBlkPrejezd.SetStit(stit: string);
 begin
  Self.PrjStav.stit := Stit;
  Self.Change();
 end;
 
-procedure TBlkPrejezd.SetVyl(vyl:string);
+procedure TBlkPrejezd.SetVyl(vyl: string);
 begin
  Self.PrjStav.vyl := vyl;
  Self.Change();
  Self.UpdateOutputs();
 end;
 
-procedure TBlkPrejezd.SetNOT(state:Boolean);
+procedure TBlkPrejezd.SetNOT(state: Boolean);
 begin
  if ((Self.Zaver) and (state)) then Exit();
 
@@ -542,7 +542,7 @@ begin
  Self.UpdateOutputs();
 end;
 
-procedure TBlkPrejezd.SetUZ(state:Boolean);
+procedure TBlkPrejezd.SetUZ(state: Boolean);
 begin
  if (state) then
   begin
@@ -560,7 +560,7 @@ end;
 //gui: menu
 //dynamicke funkce
 
-procedure TBlkPrejezd.MenuUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOUZClick, nil)
@@ -570,7 +570,7 @@ begin
  end;
 end;
 
-procedure TBlkPrejezd.MenuZUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuZUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOZUZClick, nil)
@@ -580,7 +580,7 @@ begin
  end;
 end;
 
-procedure TBlkPrejezd.MenuNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPONOTClick, nil)
@@ -590,7 +590,7 @@ begin
  end;
 end;
 
-procedure TBlkPrejezd.MenuZNOTClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuZNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.Stitek <> '') then
    Self.StitUPO(SenderPnl, SenderOR, Self.UPOZNOTClick, nil)
@@ -600,51 +600,51 @@ begin
  end;
 end;
 
-procedure TBlkPrejezd.UPOUZClick(Sender:TObject);
+procedure TBlkPrejezd.UPOUZClick(Sender: TObject);
 begin
  Self.UZ := true;
 end;
 
-procedure TBlkPrejezd.UPOZUZClick(Sender:TObject);
+procedure TBlkPrejezd.UPOZUZClick(Sender: TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZUZCallBack,
     (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
     'Zrušení uzavření přejezdu', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkPrejezd.UPONOTClick(Sender:TObject);
+procedure TBlkPrejezd.UPONOTClick(Sender: TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZNOTCallBack,
     (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
     'Nouzové otevření přejezdu', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkPrejezd.UPOZNOTClick(Sender:TObject);
+procedure TBlkPrejezd.UPOZNOTClick(Sender: TObject);
 begin
  Self.NOtevreni := false;
 end;
 
-procedure TBlkPrejezd.MenuSTITClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
 end;
 
-procedure TBlkPrejezd.MenuAdminZavreno(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.SetSimInputs(true, false, false, SenderPnl, SenderOR);
 end;
 
-procedure TBlkPrejezd.MenuAdminOtevreno(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminOtevreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.SetSimInputs(false, false, true, SenderPnl, SenderOR);
 end;
 
-procedure TBlkPrejezd.MenuAdminVystraha(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminVystraha(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.SetSimInputs(false, true, false, SenderPnl, SenderOR);
 end;
 
-procedure TBlkPrejezd.MenuAdminAnulaceStart(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminAnulaceStart(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    RCSi.SetInput(Self.PrjSettings.RCSInputs.Anulace, 1);
@@ -653,7 +653,7 @@ begin
  end;
 end;
 
-procedure TBlkPrejezd.MenuAdminAnulaceStop(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminAnulaceStop(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    RCSi.SetInput(Self.PrjSettings.RCSInputs.Anulace, 0);
@@ -662,14 +662,14 @@ begin
  end;
 end;
 
-procedure TBlkPrejezd.MenuAdminNUZClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.PrjStav.zaver := 0;
  Self.UpdateOutputs();
  Self.Change();
 end;
 
-procedure TBlkPrejezd.SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkPrejezd.SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 begin
  try
    RCSi.SetInput(Self.PrjSettings.RCSInputs.Zavreno, ownConvert.BoolToInt(uzavreno));
@@ -683,7 +683,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkPrejezd.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkPrejezd.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := inherited;
 
@@ -734,7 +734,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.PanelClick(SenderPnl:TIdCOntext; SenderOR:TObject; Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkPrejezd.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  if (Button <> TPanelButton.ESCAPE) then
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -743,7 +743,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkPrejezd.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkPrejezd.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if      (item = 'UZ')       then Self.MenuUZClick  (SenderPnl, SenderOR)
  else if (item = 'ZUZ')      then Self.MenuZUZClick (SenderPnl, SenderOR)
@@ -761,20 +761,20 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //zavola se pri uspesnem zvladnuti potvrzovaci sekvence
-procedure TBlkPrejezd.PanelZNOTCallBack(Sender:TIdContext; success:Boolean);
+procedure TBlkPrejezd.PanelZNOTCallBack(Sender: TIdContext; success: Boolean);
 begin
  if (not success) then Exit();
  Self.Notevreni := true;
 end;
 
-procedure TBlkPrejezd.PanelZUZCallBack(Sender:TIdContext; success:Boolean);
+procedure TBlkPrejezd.PanelZUZCallBack(Sender: TIdContext; success: Boolean);
 begin
  if (success) then Self.UZ := false; 
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.SetZaver(zaver:Boolean);
+procedure TBlkPrejezd.SetZaver(zaver: Boolean);
 begin
  if (zaver) then
   begin
@@ -804,18 +804,18 @@ begin
   end;
 end;
 
-function TBlkPrejezd.GetZaver():Boolean;
+function TBlkPrejezd.GetZaver(): Boolean;
 begin
  Result := (Self.PrjStav.zaver > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.StitUPO(SenderPnl:TIdContext; SenderOR:TObject;
-      UPO_OKCallback: TNotifyEvent; UPO_EscCallback:TNotifyEvent);
-var upo:TUPOItems;
-    item:TUPOItem;
-    lines:TStrings;
+procedure TBlkPrejezd.StitUPO(SenderPnl: TIdContext; SenderOR: TObject;
+      UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
+var upo: TUPOItems;
+    item: TUPOItem;
+    lines: TStrings;
 begin
  upo := TList<TUPOItem>.Create;
  try
@@ -843,13 +843,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrejezd.AddSH(Sender:TBlk);
+procedure TBlkPrejezd.AddSH(Sender: TBlk);
 begin
  if (not Self.PrjStav.shs.Contains(Sender)) then
    Self.PrjStav.shs.Add(Sender);
 end;
 
-procedure TBlkPrejezd.RemoveSH(Sender:TBlk);
+procedure TBlkPrejezd.RemoveSH(Sender: TBlk);
 begin
  if (Self.PrjStav.shs.Contains(Sender)) then
    Self.PrjStav.shs.Remove(Sender);
@@ -880,7 +880,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.PanelStateString():string;
+function TBlkPrejezd.PanelStateString(): string;
 var fg, bg: TColor;
 begin
  Result := inherited;
@@ -956,7 +956,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.TrackClosed():Boolean;
+function TBlkPrejezd.TrackClosed(): Boolean;
 var track: TBlkPrjTrack;
 begin
  for track in Self.tracks do
@@ -965,7 +965,7 @@ begin
  Result := false;
 end;
 
-function TBlkPrejezd.TrackPozitiva():Boolean;
+function TBlkPrejezd.TrackPozitiva(): Boolean;
 var track: TBlkPrjTrack;
 begin
  for track in Self.tracks do
@@ -976,7 +976,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.GetAnulace():Boolean;
+function TBlkPrejezd.GetAnulace(): Boolean;
 var track: TBlkPrjTrack;
 begin
  Result := false;

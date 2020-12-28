@@ -1,4 +1,4 @@
-﻿unit Logging;
+unit Logging;
 
 // This unit provides functions for logging
 
@@ -28,8 +28,8 @@ const
 
 procedure logInit();
 
-procedure writeLog(Text:string; Typ:Integer); overload;
-procedure writeLog(Text:TStrings; Typ:Integer); overload;
+procedure writeLog(Text: string; Typ: Integer); overload;
+procedure writeLog(Text: TStrings; Typ: Integer); overload;
 
 procedure authLog(system, operation, user, text: string);
 
@@ -53,7 +53,7 @@ begin
      if not SysUtils.ForceDirectories(ExpandFileName(_AUTH_LOG_PATH)) then
        writelog('ERR: Nelze vytvořit složku '+_AUTH_LOG_PATH, WR_ERROR);
  except
-   on e:Exception do
+   on e: Exception do
      AppEvents.LogException(E);
  end;
 
@@ -64,7 +64,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function GetLogColor(LogTyp:Integer):TColor;
+function GetLogColor(LogTyp: Integer): TColor;
  begin
   case (LogTyp) of
    WR_MESSAGE    : Result := clWhite;
@@ -83,7 +83,7 @@ function GetLogColor(LogTyp:Integer):TColor;
   end;
  end;
 
-function GetWriteLogTyp(Typ:Integer):string;
+function GetWriteLogTyp(Typ: Integer): string;
  begin
   case Typ of
    WR_MESSAGE:   Result := 'Zpráva';
@@ -105,12 +105,12 @@ function GetWriteLogTyp(Typ:Integer):string;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure intWriteLog(Text:string; Typ:integer; multiline:Boolean = false);
-var LV:TListItem;
-    f:TextFile;
-    xTime,xDate:string;
-    b:Byte;
-    output:string;
+procedure intWriteLog(Text: string; Typ: integer; multiline: Boolean = false);
+var LV: TListItem;
+    f: TextFile;
+    xTime, xDate: string;
+    b: Byte;
+    output: string;
  begin
   if (F_Main = nil) then Exit();
 
@@ -163,13 +163,13 @@ var LV:TListItem;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure writeLog(Text:string; Typ:integer); overload;
+procedure writeLog(Text: string; Typ: integer); overload;
 begin
  intWriteLog(Text, Typ, false);
 end;
 
-procedure writeLog(Text:TStrings; Typ:integer); overload;
-var i:Integer;
+procedure writeLog(Text: TStrings; Typ: integer); overload;
+var i: Integer;
 begin
  if (Text.Count = 0) then Exit();
 
@@ -184,7 +184,7 @@ procedure authLog(system, operation, user, text: string);
 var f: TextFile;
     time, date: string;
     line: string;
-    b:Byte;
+    b: Byte;
  begin
   if (not auth_logging) then Exit();
 

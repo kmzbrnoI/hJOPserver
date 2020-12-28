@@ -1,4 +1,4 @@
-﻿unit fBlkIR;
+unit fBlkIR;
 
 interface
 
@@ -28,9 +28,9 @@ type
    Blk: TBlkIR;
 
   public
-   OpenIndex:Integer;
+   OpenIndex: Integer;
 
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkOpenForm();
     procedure NormalOpenForm();
     procedure HlavniOpenForm();
@@ -46,10 +46,10 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkIR.OpenForm(BlokIndex:Integer);
+procedure TF_BlkIR.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -79,8 +79,8 @@ procedure TF_BlkIR.NewBlkOpenForm;
  end;
 
 procedure TF_BlkIR.NormalOpenForm;
-var glob:TBlkSettings;
-    settings:TBlkIRSettings;
+var glob: TBlkSettings;
+    settings: TBlkIRSettings;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -123,8 +123,8 @@ procedure TF_BlkIR.B_StornoClick(Sender: TObject);
  end;
 
 procedure TF_BlkIR.B_SaveClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkIRSettings;
+var glob: TBlkSettings;
+    settings: TBlkIRSettings;
     another: TBlk;
  begin
   if (E_Nazev.Text = '') then
@@ -132,7 +132,7 @@ var glob:TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -157,7 +157,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btIR, glob) as TBlkIR;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();

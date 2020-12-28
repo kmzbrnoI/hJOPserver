@@ -36,7 +36,7 @@ procedure TF_AutoStartSystems.FormShow(Sender: TObject);
 
 procedure TF_AutoStartSystems.B_AbortClick(Sender: TObject);
  begin
-  WriteLog('Automaticke pripojovani k systemum selhalo - vstup uzivatele',WR_MESSAGE); 
+  WriteLog('Automaticke pripojovani k systemum selhalo - vstup uzivatele', WR_MESSAGE);
   F_Main.KomunikacePocitani := 0;
   F_AutoStartSystems.Close;
  end;

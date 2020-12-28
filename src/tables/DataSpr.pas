@@ -1,4 +1,4 @@
-﻿unit DataSpr;
+unit DataSpr;
 
 // TTrainTableData - trida starajici se o vyplnovani tabulky souprav
 
@@ -16,10 +16,10 @@ type
      reload: Boolean;
 
       procedure LoadToTable();
-      procedure UpdateLine(line:integer);
+      procedure UpdateLine(line: integer);
       procedure UpdateTable();
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
@@ -33,7 +33,7 @@ uses TrainDb, Train, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTrainTableData.Create(LV:TListView);
+constructor TTrainTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.reload := false;
@@ -43,8 +43,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainTableData.LoadToTable();
-var i, j:integer;
-    LI:TListItem;
+var i, j: integer;
+    LI: TListItem;
  begin
   Self.LV.Clear();
 
@@ -62,7 +62,7 @@ var i, j:integer;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainTableData.UpdateTable();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_TRAIN-1 do
   begin
@@ -84,10 +84,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrainTableData.UpdateLine(line:integer);
-var train:TTrainData;
-    i:Integer;
-    str:string;
+procedure TTrainTableData.UpdateLine(line: integer);
+var train: TTrainData;
+    i: Integer;
+    str: string;
  begin
   if (not Assigned(Trains[line])) then
    begin

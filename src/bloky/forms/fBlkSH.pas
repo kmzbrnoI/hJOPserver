@@ -1,4 +1,4 @@
-﻿unit fBlkSH;
+unit fBlkSH;
 
 interface
 
@@ -32,13 +32,13 @@ type
       Change: TItemChange);
     procedure B_RemoveClick(Sender: TObject);
   private
-   OpenIndex:Integer;
-   Blk:TBlkSH;
-   NewBlk:Boolean;
-   obls:TArstr;   //oblasti rizeni, ve kterych se blok nachazi
+   OpenIndex: Integer;
+   Blk: TBlkSH;
+   NewBlk: Boolean;
+   obls: TArstr;   //oblasti rizeni, ve kterych se blok nachazi
 
-   prejezdy:TList<Integer>;
-   CB_PrjAddData:TArI;
+   prejezdy: TList<Integer>;
+   CB_PrjAddData: TArI;
 
     procedure NormalOpenForm();
     procedure MainOpenForm();
@@ -48,7 +48,7 @@ type
 
   public
 
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkCreate();
   end;
 
@@ -62,7 +62,7 @@ uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni, TBlok, FileSystem,
 
 {$R *.dfm}
 
-procedure TF_BlkSH.OpenForm(BlokIndex:Integer);
+procedure TF_BlkSH.OpenForm(BlokIndex: Integer);
 begin
  OpenIndex := BlokIndex;
  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -78,8 +78,8 @@ begin
 end;
 
 procedure TF_BlkSH.B_AddClick(Sender: TObject);
-var LI:TListItem;
-    blk:TBlk;
+var LI: TListItem;
+    blk: TBlk;
 begin
  if (Self.CB_Prj_Add.ItemIndex = -1) then
   begin
@@ -111,8 +111,8 @@ begin
 end;
 
 procedure TF_BlkSH.B_save_PClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkSHSettings;
+var glob: TBlkSettings;
+    settings: TBlkSHSettings;
 begin
  if (Self.E_Name.Text = '') then
   begin
@@ -120,7 +120,7 @@ begin
                           MB_OK OR MB_ICONWARNING);
    Exit;
   end;
- if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+ if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
   begin
    Application.MessageBox('ID již bylo definováno na jiném bloku!',
                           'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -137,7 +137,7 @@ begin
    try
      Blk := Blky.Add(btSH, glob) as TBlkSH;
    except
-     on E:Exception do
+     on E: Exception do
       begin
        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
        Exit();
@@ -172,11 +172,11 @@ begin
 end;
 
 procedure TF_BlkSH.NormalOpenForm();
-var glob:TBlkSettings;
-    settings:TBlkSHSettings;
-    i, prjid:Integer;
-    LI:TListItem;
-    oblr:TOR;
+var glob: TBlkSettings;
+    settings: TBlkSHSettings;
+    i, prjid: Integer;
+    LI: TListItem;
+    oblr: TOR;
 begin
  glob := Self.Blk.GetGlobalSettings();
  settings := Self.Blk.GetSettings();
@@ -241,8 +241,8 @@ begin
 end;
 
 procedure TF_BlkSH.FillNewPrjCB();
-var ignore:TArI;
-    i:Integer;
+var ignore: TArI;
+    i: Integer;
 begin
  SetLength(ignore, Self.prejezdy.Count);
  for i := 0 to Self.prejezdy.Count-1 do

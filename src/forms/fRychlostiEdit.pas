@@ -1,4 +1,4 @@
-﻿unit fRychlostiEdit;
+unit fRychlostiEdit;
 
 interface
 
@@ -58,7 +58,7 @@ procedure TF_RychlostiEdit.B_SaveClick(Sender: TObject);
   try
     TrakceI.SetStepSpeed(Self.openStep, SE_Rychlost.Value);
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();

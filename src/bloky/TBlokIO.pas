@@ -37,7 +37,7 @@ type
 
  TBlkIO = class(TBlk)
   const
-   _def_IO_stav:TBlkIOstate = (
+   _def_IO_stav: TBlkIOstate = (
      enabled: false;
      activeOutput: false;
      inputState: TRCSInputState.isOff;
@@ -59,12 +59,12 @@ type
     procedure MenuInClick(SenderPnl: TIdContext; SenderOR: TObject; target: Boolean);
 
   public
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
-    procedure SaveStatus(ini_stat:TMemIniFile; const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
     //enable or disable symbol on relief
     procedure Enable(); override;
@@ -76,10 +76,10 @@ type
 
     procedure Update(); override;
 
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = ''); override;
-    function PanelStateString():string; override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string; override;
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer); override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function PanelStateString(): string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
     //----- IO own functions -----
 
@@ -88,7 +88,7 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
-    procedure PutPtState(reqJson:TJsonObject; respJson:TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
     property isRCSoutput: Boolean read IOsettings.isRCSoutput;
     property isRCSinput: Boolean read IOsettings.isRCSinput;
@@ -98,7 +98,7 @@ type
     property activeOutput: Boolean read IOstate.activeOutput;
     property activeInput: Boolean read IsActiveInput;
     property nullable: Boolean read IsNullable;
-    property stit:string read IOstate.stit write SetStit;
+    property stit: string read IOstate.stit write SetStit;
 
  end;//class TBlkIO
 
@@ -108,7 +108,7 @@ implementation
 
 uses TOblsRizeni, TCPServerOR, ownConvert;
 
-constructor TBlkIO.Create(index:Integer);
+constructor TBlkIO.Create(index: Integer);
 begin
  inherited;
  Self.IOstate := _def_IO_stav;
@@ -117,7 +117,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkIO.LoadData(ini_tech:TMemIniFile; const section:string; ini_rel,ini_stat:TMemIniFile);
+procedure TBlkIO.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 var strs: TStrings;
     str: string;
 begin
@@ -165,7 +165,7 @@ begin
   end;
 end;
 
-procedure TBlkIO.SaveData(ini_tech:TMemIniFile; const section:string);
+procedure TBlkIO.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
  inherited SaveData(ini_tech, section);
 
@@ -187,7 +187,7 @@ begin
    ini_tech.WriteInteger(section, 'nullTime', Self.IOsettings.nullAfterSec);
 end;
 
-procedure TBlkIO.SaveStatus(ini_stat:TMemIniFile; const section:string);
+procedure TBlkIO.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
  if (Self.IOstate.Stit <> '') then
    ini_stat.WriteString(section, 'stit', Self.IOstate.Stit);
@@ -225,12 +225,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.GetSettings():TBlkIOsettings;
+function TBlkIO.GetSettings(): TBlkIOsettings;
 begin
  Result := Self.IOsettings;
 end;
 
-procedure TBlkIO.SetSettings(data:TBlkIOsettings);
+procedure TBlkIO.SetSettings(data: TBlkIOsettings);
 begin
  Self.IOsettings := data;
  Self.Change();
@@ -320,8 +320,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkIO.PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
-                                Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
+procedure TBlkIO.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
+    Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  if (Button = TPanelButton.F2) then
    ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -350,7 +350,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.PanelStateString():string;
+function TBlkIO.PanelStateString(): string;
 var fg, bg: TColor;
 begin
  Result := inherited;
@@ -402,7 +402,7 @@ begin
  json['activeInput'] := Self.activeInput;
 end;
 
-procedure TBlkIO.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TBlkIO.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
 begin
  if (not Self.enabled) then Exit();
 
@@ -431,7 +431,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.IsNullable():Boolean;
+function TBlkIO.IsNullable(): Boolean;
 begin
  Result := (Self.IOsettings.nullAfterSec > 0);
 end;
@@ -443,7 +443,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkIO.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := inherited;
  if (Self.enabled) then
@@ -464,7 +464,7 @@ begin
   end;
 end;
 
-procedure TBlkIO.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkIO.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
@@ -473,7 +473,7 @@ begin
  else if (item = 'IN>') then Self.MenuInClick(SenderPnl, SenderOR, true);
 end;
 
-procedure TBlkIO.SetStit(stit:string);
+procedure TBlkIO.SetStit(stit: string);
 begin
  Self.IOstate.Stit := stit;
  Self.Change();
@@ -484,17 +484,17 @@ begin
  ORTCPServer.Stitek(SenderPnl, Self, Self.stit);
 end;
 
-procedure TBlkIO.MenuAktivOnClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkIO.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.Activate();
 end;
 
-procedure TBlkIO.MenuAktivOffClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkIO.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.Deactivate();
 end;
 
-procedure TBlkIO.MenuInClick(SenderPnl:TIdContext; SenderOR:TObject; target: Boolean);
+procedure TBlkIO.MenuInClick(SenderPnl: TIdContext; SenderOR: TObject; target: Boolean);
 begin
  try
    RCSi.SetInput(Self.IOsettings.RCSinput, ownConvert.BoolToInt(target));

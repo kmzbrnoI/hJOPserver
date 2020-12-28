@@ -32,16 +32,16 @@ type
     ME_Cas: TMaskEdit;
     procedure CB_TypChange(Sender: TObject);
   private
-    CB_IR:TArI;
+    CB_IR: TArI;
 
   public
-    procedure FillFromRR(ev:TRREv);
+    procedure FillFromRR(ev: TRREv);
     procedure ShowEmpty();
-    function GetRREv():TRREv;
-    function InputValid():Boolean;
+    function GetRREv(): TRREv;
+    function InputValid(): Boolean;
 
   protected
-    procedure SetEnabled(state:Boolean); override;
+    procedure SetEnabled(state: Boolean); override;
 
   end;
 
@@ -79,7 +79,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_RREv.FillFromRR(ev:TRREv);
+procedure TF_RREv.FillFromRR(ev: TRREv);
 begin
  Self.ShowEmpty();
 
@@ -107,8 +107,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_RREv.GetRREv():TRREv;
-var data:TRREvData;
+function TF_RREv.GetRREv(): TRREv;
+var data: TRREvData;
 begin
  case (Self.CB_Typ.ItemIndex) of
   0: begin
@@ -135,7 +135,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_RREv.InputValid():Boolean;
+function TF_RREv.InputValid(): Boolean;
 begin
  if (Self.CB_Typ.ItemIndex < 0) then Exit(false);
 
@@ -149,7 +149,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_RREv.SetEnabled(state:Boolean);
+procedure TF_RREv.SetEnabled(state: Boolean);
 begin
  inherited;
 

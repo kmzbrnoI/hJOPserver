@@ -7,13 +7,13 @@ uses SysUtils, Classes;
 type
   TAppEvents = class
     private
-     str:TStrings;
+     str: TStrings;
     public
       constructor Create();
       destructor Destroy(); override;
 
       procedure OnAppException(Sender: TObject; E: Exception);
-      procedure LogException(E:Exception; prefix:string = '');
+      procedure LogException(E: Exception; prefix: string = '');
   end;
 
 var
@@ -46,8 +46,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TAppEvents.LogException(E:Exception; prefix:string = '');
-var i:Integer;
+procedure TAppEvents.LogException(E: Exception; prefix: string = '');
+var i: Integer;
 begin
  try
   Self.str.Clear();

@@ -35,15 +35,15 @@ type
     forms: TList<TF_HoukEv>;
 
      procedure CloseAllTabs();
-     procedure OnTabClose(Sender:TObject);
+     procedure OnTabClose(Sender: TObject);
 
   public
-     constructor Create(AOwner:TComponent); override;
+     constructor Create(AOwner: TComponent); override;
      destructor Destroy(); override;
 
-     procedure FillFromHouks(evs:TList<THoukEv>);
-     function GetHoukEvs():TObjectList<THoukEv>;
-     function InputValid():Boolean;
+     procedure FillFromHouks(evs: TList<THoukEv>);
+     function GetHoukEvs(): TObjectList<THoukEv>;
+     function InputValid(): Boolean;
 
   end;
 
@@ -53,7 +53,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_HoukEvs.Create(AOwner:TComponent);
+constructor TF_HoukEvs.Create(AOwner: TComponent);
 begin
  inherited;
 
@@ -70,10 +70,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEvs.FillFromHouks(evs:TList<THoukEv>);
-var i:Integer;
-    form:TF_HoukEv;
-    ts:TCloseTabSheet;
+procedure TF_HoukEvs.FillFromHouks(evs: TList<THoukEv>);
+var i: Integer;
+    form: TF_HoukEv;
+    ts: TCloseTabSheet;
 begin
  Self.CloseAllTabs();
 
@@ -95,8 +95,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_HoukEvs.GetHoukEvs():TObjectList<THoukEv>;
-var form:TF_HoukEv;
+function TF_HoukEvs.GetHoukEvs(): TObjectList<THoukEv>;
+var form: TF_HoukEv;
 begin
  Result := TObjectList<THoukEv>.Create();
  for form in Self.forms do
@@ -105,8 +105,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_HoukEvs.InputValid():Boolean;
-var form:TF_HoukEv;
+function TF_HoukEvs.InputValid(): Boolean;
+var form: TF_HoukEv;
 begin
  for form in Self.forms do
    if (not form.InputValid()) then
@@ -156,7 +156,7 @@ procedure TF_HoukEvs.PC_EventsDrawTab(Control: TCustomTabControl;
 var
   CloseBtnSize: Integer;
   PageControl: TPageControl;
-  TabSheet:TCloseTabSheet;
+  TabSheet: TCloseTabSheet;
   TabCaption: TPoint;
   CloseBtnRect: TRect;
   CloseBtnDrawState: Cardinal;
@@ -232,7 +232,7 @@ procedure TF_HoukEvs.PC_EventsMouseDown(Sender: TObject;
 var
   I: Integer;
   PageControl: TPageControl;
-  TabSheet:TCloseTabSheet;
+  TabSheet: TCloseTabSheet;
 begin
   PageControl := Sender as TPageControl;
 
@@ -303,8 +303,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEvs.OnTabClose(Sender:TObject);
-var i:Integer;
+procedure TF_HoukEvs.OnTabClose(Sender: TObject);
+var i: Integer;
 begin
  for i := 0 to Self.PC_Events.PageCount-1 do
   if (Self.PC_Events.Pages[i] = Sender) then
@@ -320,8 +320,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEvs.CloseAllTabs();
-var i:Integer;
-    form:TF_HoukEv;
+var i: Integer;
+    form: TF_HoukEv;
 begin
  for form in Self.forms do
    form.Free();
@@ -334,8 +334,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEvs.BB_AddClick(Sender: TObject);
-var form:TF_HoukEv;
-    ts:TCloseTabSheet;
+var form: TF_HoukEv;
+    ts: TCloseTabSheet;
 begin
  ts := TCloseTabSheet.Create(Self.PC_Events);
  ts.PageControl := Self.PC_Events;

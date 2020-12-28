@@ -31,7 +31,7 @@ type
     procedure B_UpdateClick(Sender: TObject);
     procedure B_UnlockClick(Sender: TObject);
   private
-    OpenBlk:TBlkTurnout;
+    OpenBlk: TBlkTurnout;
 
      procedure myUpdate();
      procedure myApply();
@@ -39,7 +39,7 @@ type
   private const
 
   public
-     procedure OpenForm(blk:TBlkTurnout);
+     procedure OpenForm(blk: TBlkTurnout);
   end;
 
 var
@@ -81,7 +81,7 @@ begin
  Self.OpenBlk := nil;
 end;
 
-procedure TF_BlkVyh_tech.OpenForm(blk:TBlkTurnout);
+procedure TF_BlkVyh_tech.OpenForm(blk: TBlkTurnout);
 begin
  Self.OpenBlk := blk;
  Self.myUpdate();

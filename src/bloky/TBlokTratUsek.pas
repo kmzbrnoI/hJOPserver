@@ -1,4 +1,4 @@
-﻿unit TBlokTratUsek;
+unit TBlokTratUsek;
 
 // Definice a obsluha technologickeho bloku Tratovy usek
 // Tratovy usek dedi z Useku
@@ -77,7 +77,7 @@ type
 
  TBlkTUSettings = record                                                        // nastaveni TU
    zastavka: TBlkTUZastavka;                                                      // odkaz na zastavku
-   navLid,navSid: Integer;                                                        // odkaz na kryci navestidlo TU v lichem smeru a kryci navestidlo v sudem smeru
+   navLid, navSid: Integer;                                                        // odkaz na kryci navestidlo TU v lichem smeru a kryci navestidlo v sudem smeru
                                                                                   // obsahuje id bloku navestidla, pokud neni TU kryty v danem smeru, obsahuje -1
                                                                                   // vyuzivano pro autoblok
    rychlosti: TDictionary<Cardinal, Cardinal>;                                     // rychlost v tratovem useku pro danou tridu prechodnosti; trida prechodnosti 0 je fallback v pripade neexistence zaznamu
@@ -98,14 +98,14 @@ type
   bpInBlk: Boolean;                                                               // jestli je v useku zavedena blokova podminka
                                                                                   // bpInBlk = kontroluji obsazeni bloku, pri uvolneni useku bez predani dale vyhlasit poruchu BP
   poruchaBP: Boolean;                                                             // jestli nastala porucha blokove podminky
-  sprRychUpdateIter:Integer;                                                      // pocet zbyvajicich iteraci do nastaveni rychlost soupravy
+  sprRychUpdateIter: Integer;                                                      // pocet zbyvajicich iteraci do nastaveni rychlost soupravy
  end;
 
 
  // technologicky blok Tratoveho useku
  TBlkTU = class(TBlkUsek)
   private const
-   _def_tu_stav:TBlkTUStav = (                                                  // zakladni stav TU
+   _def_tu_stav: TBlkTUStav = (                                                  // zakladni stav TU
     inTrat: -1;
     zast_stopped : false;
     zast_enabled : true;
@@ -151,35 +151,35 @@ type
     procedure UpdateNavest();                                                   // aktualizuje navest krycich navestidel
     procedure UpdateTrainRych();                                                  // aktualizuje rychlost soupravy v TU (pocita s \sprRychUpdateIter)
 
-    procedure SetRychUpdate(state:Boolean);                                     // nastavi \sprRychUpdateIter
-    function GetRychUpdate:Boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
+    procedure SetRychUpdate(state: Boolean);                                     // nastavi \sprRychUpdateIter
+    function GetRychUpdate: Boolean;                                             // vrati, jestli bezi odpocet \sprRychUpdateIter
 
-    function GetReady():Boolean;                                                // jestli je usek pripraveny na vjeti soupravy
+    function GetReady(): Boolean;                                                // jestli je usek pripraveny na vjeti soupravy
 
     function IsZastavka(): Boolean;
     function IsZastavkaLichy(): Boolean;
     function IsZastavkaSudy(): Boolean;
 
-    procedure SetPoruchaBP(state:Boolean);                                      // nastavi stav poruchy blokove podminky
-    procedure AddTrain(spr:Integer);
+    procedure SetPoruchaBP(state: Boolean);                                      // nastavi stav poruchy blokove podminky
+    procedure AddTrain(spr: Integer);
 
   public
    lTU, sTU: TBlkTU;                                                            // reference na tratovy usek blize zacatku trati (lTU) a TU blize konci trati (sTU), tyto refence nastavuje trat pri inicializaci, nebo zmene konfigurace trati
 
-   lsectMaster:TBlkTU;                                                          // sectMaster pro lichy smer trati
-   lsectUseky:TList<TBlkTU>;                                                    // pokud jsem sectMaster, zde jsou ulozeny useky me sekce v lichem smeru; pokud nejsem sectMaster, je tento senzam prazdny
+   lsectMaster: TBlkTU;                                                          // sectMaster pro lichy smer trati
+   lsectUseky: TList<TBlkTU>;                                                    // pokud jsem sectMaster, zde jsou ulozeny useky me sekce v lichem smeru; pokud nejsem sectMaster, je tento senzam prazdny
 
-   ssectMaster:TBlkTU;                                                          // sectMaster pro sudy smer trati
-   ssectUseky:TList<TBlkTU>;                                                    // pokud jsem sectMaster, zde jsou ulozeny useky me sekce v sudem smeru; pokud nejsem sectMaster, je tento senzam prazdny
+   ssectMaster: TBlkTU;                                                          // sectMaster pro sudy smer trati
+   ssectUseky: TList<TBlkTU>;                                                    // pokud jsem sectMaster, zde jsou ulozeny useky me sekce v sudem smeru; pokud nejsem sectMaster, je tento senzam prazdny
 
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     function GetSettings(): TBlkTUSettings; overload;
     procedure SetSettings(data: TBlkTUSettings); overload;
 
     //load/save data
-    procedure LoadData(ini_tech: TMemIniFile; const section :string; ini_rel, ini_stat: TMemIniFile); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section : string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
     procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
@@ -187,12 +187,12 @@ type
     procedure Disable(); override;
 
     procedure Update(); override;
-    procedure Change(now:Boolean = false); override;
+    procedure Change(now: Boolean = false); override;
     procedure ChangeFromTrat();                                                 // aktualizace TU z trati, vola se zejemna pri zmene smeru a jeho ucel je nastavit navestidla autobloku podle smeru trati
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item:string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
     procedure CreateNavRefs();                                                  // navestidlum autobloku nastavi UsekPred a smer
     procedure RemoveTURefs();                                                   // zrusi UsekPred navetidlum autobloku
@@ -242,7 +242,7 @@ uses TrainDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlkTU.Create(index:Integer);
+constructor TBlkTU.Create(index: Integer);
 begin
  inherited Create(index);
 
@@ -273,7 +273,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 // nacte konfiguracni data ze souboru
 
-procedure TBlkTU.LoadData(ini_tech:TMemIniFile;const section:string;ini_rel,ini_stat:TMemIniFile);
+procedure TBlkTU.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 var str: string;
     strs, strs2: TStrings;
 begin
@@ -319,7 +319,7 @@ begin
 end;
 
 // ulozi konfiguracni data do souboru
-procedure TBlkTU.SaveData(ini_tech:TMemIniFile;const section:string);
+procedure TBlkTU.SaveData(ini_tech: TMemIniFile; const section: string);
 var str: string;
     j: Cardinal;
     speeds: TList<Cardinal>;
@@ -348,7 +348,7 @@ begin
 end;
 
 // ulozi stavova data do souboru
-procedure TBlkTU.SaveStatus(ini_stat:TMemIniFile;const section:string);
+procedure TBlkTU.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
  inherited SaveStatus(ini_stat, section);
 
@@ -359,12 +359,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // operace s nastavenim TU
 
-function TBlkTU.GetSettings():TBlkTUSettings;
+function TBlkTU.GetSettings(): TBlkTUSettings;
 begin
  Result := Self.TUSettings;
 end;
 
-procedure TBlkTU.SetSettings(data:TBlkTUSettings);
+procedure TBlkTU.SetSettings(data: TBlkTUSettings);
 begin
  if (Self.TUSettings.zastavka <> data.zastavka) and (Assigned(Self.TUSettings.zastavka)) then
    Self.TUSettings.zastavka.Free();
@@ -379,7 +379,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.Enable();
-var blk:TBlkNav;
+var blk: TBlkNav;
 begin
  inherited;
  Self.fTUStav.poruchaBP := false;
@@ -418,7 +418,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // zmena stavu bloku
 
-procedure TBlkTU.Change(now:Boolean = false);
+procedure TBlkTU.Change(now: Boolean = false);
 begin
  inherited;
 
@@ -604,7 +604,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject; rights:TORCOntrolRights):string;
+function TBlkTU.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := inherited;
 
@@ -631,8 +631,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.PanelClick(SenderPnl:TIdContext; SenderOR:TObject ;Button:TPanelButton; rights:TORCOntrolRights; params:string = '');
-var Blk:TBlk;
+procedure TBlkTU.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+var Blk: TBlk;
 begin
  case (Button) of
   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -667,7 +667,7 @@ begin
  Self.AddTrain(index);
 end;
 
-procedure TBlkTU.AddTrain(spr:Integer);
+procedure TBlkTU.AddTrain(spr: Integer);
 begin
  if ((Self.zastavka) and (not Self.fTUStav.zast_zpom_ready)) then
    Self.fTUStav.zast_zpom_ready := true;
@@ -708,15 +708,15 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.RemoveTrains();
-var spr:Integer;
+var spr: Integer;
 begin
  for spr in Self.trains do
    Self.RemoveTrain(spr);
 end;
 
-procedure TBlkTU.RemoveTrain(index:Integer);
+procedure TBlkTU.RemoveTrain(index: Integer);
 var old_spr: TTrain;
-    trat:TBlkTrat;
+    trat: TBlkTrat;
 begin
  old_spr := Self.train;
 
@@ -762,20 +762,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.MenuZastClick(SenderPnl:TIdContext; SenderOR:TObject; new_state:Boolean);
+procedure TBlkTU.MenuZastClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
 begin
  if (not Self.TUStav.zast_stopped) then
    Self.fTUStav.zast_enabled := new_state;
 end;
 
-procedure TBlkTU.MenuJEDLokClick(SenderPnl:TIdContext; SenderOR:TObject);
+procedure TBlkTU.MenuJEDLokClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (Self.TUStav.zast_stopped) then
    Self.ZastRunTrain();
 end;
 
-procedure TBlkTU.MenuRBPClick(SenderPnl:TIdContext; SenderOR:TObject);
-var podm:TPSPodminky;
+procedure TBlkTU.MenuRBPClick(SenderPnl: TIdContext; SenderOR: TObject);
+var podm: TPSPodminky;
 begin
  podm := TPSPodminky.Create();
  if (Self.IsTrain()) then
@@ -791,7 +791,7 @@ begin
                    'Zrušení poruchy blokové podmínky', TBlky.GetBlksList(Self), podm);
 end;
 
-procedure TBlkTU.PanelPotvrSekvRBP(Sender:TIdContext; success:Boolean);
+procedure TBlkTU.PanelPotvrSekvRBP(Sender: TIdContext; success: Boolean);
 var old_train: Integer;
     blks: TList<TObject>;
 begin
@@ -814,7 +814,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject; item:string; itemindex:Integer);
+procedure TBlkTU.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if (item = 'JEĎ vlak')   then Self.MenuJEDLokClick(SenderPnl, SenderOR)
  else if (item = 'ZAST>') then Self.MenuZastClick(SenderPnl, SenderOR, true)
@@ -825,7 +825,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetTrat():TBlk;
+function TBlkTU.GetTrat(): TBlk;
 begin
  if (((Self.fTrat = nil) and (Self.TUStav.inTrat <> -1)) or ((Self.fTrat <> nil) and (Self.fTrat.id <> Self.TUStav.inTrat))) then
    Blky.GetBlkByID(Self.TUStav.inTrat, Self.fTrat);
@@ -834,8 +834,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetNavKryci():TBlk;
-var navPrevID:Integer;
+function TBlkTU.GetNavKryci(): TBlk;
+var navPrevID: Integer;
 begin
  if ((Self.Trat = nil) or ((TBlkTrat(Self.Trat).Smer <> TTratSmer.AtoB) and (TBlkTrat(Self.Trat).Smer <> TTratSmer.BtoA))) then Exit(nil);
 
@@ -851,26 +851,26 @@ begin
  Result := Self.fNavKryci;
 end;
 
-function TBlkTU.GetNavKryciL():TBlk;
+function TBlkTU.GetNavKryciL(): TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Result);
 end;
 
-function TBlkTU.GetNavKryciS():TBlk;
+function TBlkTU.GetNavKryciS(): TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navSid, Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetTratReady():Boolean;
+function TBlkTU.GetTratReady(): Boolean;
 begin
  Result := ((Self.Trat <> nil) and ((TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) or (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetPrevTU():TBlkTU;
+function TBlkTU.GetPrevTU(): TBlkTU;
 begin
  if (not Self.tratReady) then Exit(nil);
 
@@ -882,7 +882,7 @@ begin
  end;
 end;
 
-function TBlkTU.GetNextTU():TBlkTU;
+function TBlkTU.GetNextTU(): TBlkTU;
 begin
  if (not Self.tratReady) then Exit(nil);
 
@@ -954,9 +954,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetSectObsazeno():TUsekStav;
-var blk:TBlkTU;
-    sectUseky:TList<TBlkTU>;
+function TBlkTU.GetSectObsazeno(): TUsekStav;
+var blk: TBlkTU;
+    sectUseky: TList<TBlkTU>;
 begin
  if (Self.Trat = nil) then Exit(TusekStav.none);
  if (Self.Obsazeno <= TUsekStav.none) then Exit(TUsekStav.Obsazeno);
@@ -990,7 +990,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetSectMaster():TBlkTU;
+function TBlkTU.GetSectMaster(): TBlkTU;
 begin
  if (Self.Trat = nil) then Exit(nil);
  case (TBlkTrat(Self.Trat).Smer) of
@@ -1005,8 +1005,8 @@ end;
 // vrati dalsi navestidlo v trati (pokud ma trat smer)
 // pokud neni dalsi navestidlo autobloku, vrati hranicni navestidlo trati
 
-function TBlkTU.GetNextNav():TBlk;
-var blk:TBLkTU;
+function TBlkTU.GetNextNav(): TBlk;
+var blk: TBLkTU;
 begin
  if (Self.Trat = nil) or (TBlkTrat(Self.Trat).smer = TTratSmer.zadny) then Exit(nil);
 
@@ -1029,7 +1029,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.CreateNavRefs();
-var Blk:TBlk;
+var Blk: TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
  if ((Blk <> nil) and (Blk.typ = btNav) and (Self.lTU <> nil)) then
@@ -1051,7 +1051,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.RemoveTURefs();
-var Blk:TBlk;
+var Blk: TBlk;
 begin
  Self.lTU         := nil;
  Self.sTU         := nil;
@@ -1073,8 +1073,8 @@ end;
 // zruseni navesti do trati v pripade nahleho obsazeni prvni sekce trati.
 
 procedure TBlkTU.UpdateNavest();
-var Blk:TBlk;
-    jc:TJC;
+var Blk: TBlk;
+    jc: TJC;
 begin
  // kontrola zruseni navesti jizdni cesty pri obsazeni sekce trati:
  // tato metoda je volana vzdy pouze u sectMastera (tj. krajniho bloku sekce)
@@ -1168,12 +1168,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetRychUpdate:Boolean;
+function TBlkTU.GetRychUpdate: Boolean;
 begin
  Result := (Self.fTUStav.sprRychUpdateIter > 0);
 end;
 
-procedure TBlkTU.SetRychUpdate(state:Boolean);
+procedure TBlkTU.SetRychUpdate(state: Boolean);
 begin
  if ((state) and (Self.fTUStav.sprRychUpdateIter = 0)) then Self.fTUStav.sprRychUpdateIter := 2;
  if ((not state) and (Self.fTUStav.sprRychUpdateIter > 0)) then Self.fTUStav.sprRychUpdateIter := 0;
@@ -1182,7 +1182,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.UvolnenoZJC();
-var trat:TBlkTrat;
+var trat: TBlkTrat;
 begin
  Self.fTUStav.zast_stopped := false;
  Self.fTUStav.zast_passed  := false;
@@ -1210,9 +1210,9 @@ end;
 //  1) zadny usek sekce neni obsazen
 //  2) vsechny useky sekce jsou bez soupravy
 
-function TBlkTU.GetSectReady():Boolean;
-var blk:TBlkTU;
-    sectUseky:TList<TBlkTU>;
+function TBlkTU.GetSectReady(): Boolean;
+var blk: TBlkTU;
+    sectUseky: TList<TBlkTU>;
 begin
  if ((Self.Trat = nil) or (Self.Obsazeno <= TUsekStav.none)) then Exit(false);
 
@@ -1243,7 +1243,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetReady():Boolean;
+function TBlkTU.GetReady(): Boolean;
 begin
  Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.IsTrain())
   and (not Self.poruchaBP));
@@ -1251,7 +1251,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTU.SetPoruchaBP(state:Boolean);
+procedure TBlkTU.SetPoruchaBP(state: Boolean);
 begin
  if (Self.poruchaBP <> state) then
   begin

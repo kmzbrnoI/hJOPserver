@@ -1,16 +1,16 @@
-﻿unit Verze;
+unit Verze;
 
 interface
 
 uses Windows, SysUtils, Forms, jclPEImage;
 
- function NactiVerzi(const FileName: string): string;//cteni verze z nastaveni
- function GetLastBuildDate:string;
- function GetLastBuildTime:string;
- function ZkontrolujSpusteno:Boolean;
+ function NactiVerzi(const FileName: string): string; //cteni verze z nastaveni
+ function GetLastBuildDate(): string;
+ function GetLastBuildTime(): string;
+ function ZkontrolujSpusteno(): Boolean;
 
-var runningMsg:Cardinal;
-    Mutex:THandle;
+var runningMsg: Cardinal;
+    Mutex: THandle;
 
 implementation
 
@@ -22,7 +22,7 @@ var
   pinfo: ^VS_FIXEDFILEINFO;
   Major, Minor, Release: word;
 begin
-  Result:='Není dostupná';
+  Result := 'Není dostupná';
   size := GetFileVersionInfoSize(Pointer(FileName), handle);
   if size > 0 then begin
     GetMem(buffer, size);
@@ -38,17 +38,17 @@ begin
   end;
 end;
  
-function GetLastBuildDate():String;
+function GetLastBuildDate(): string;
  begin
   DateTimeToString(Result, 'dd. mm. yyyy', jclPEImage.PeReadLinkerTimeStamp(Application.ExeName));
  end;
 
-function GetLastBuildTime():String;
+function GetLastBuildTime(): string;
  begin
   DateTimeToString(Result, 'hh:mm:ss', jclPEImage.PeReadLinkerTimeStamp(Application.ExeName));
  end;
 
-function ZkontrolujSpusteno:Boolean;
+function ZkontrolujSpusteno(): Boolean;
  begin
   Mutex := CreateMutex(nil, True, 'Ridici_program');
   runningMsg := RegisterWindowMessage('RPSpusten');

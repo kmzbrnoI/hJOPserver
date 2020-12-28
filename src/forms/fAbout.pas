@@ -1,4 +1,4 @@
-﻿unit fAbout;
+unit fAbout;
 
 interface
 
@@ -48,7 +48,7 @@ uses Verze, TechnologieRCS, Logging, appEv;
 
 procedure TF_About.FormShow(Sender: TObject);
  begin
-  writelog('Zobrazeno okno O programu',WR_MESSAGE);
+  writelog('Zobrazeno okno O programu', WR_MESSAGE);
   Self.ST_about5.Font.Color := clBlue;
   Self.ST_about3.Font.Color := clBlue;
 
@@ -59,7 +59,7 @@ procedure TF_About.FormShow(Sender: TObject);
   try
     Self.L_VRCSDriver.Caption := RCSi.GetDllVersion();
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Self.L_VRCSDriver.Caption := 'nelze získat';
       AppEvents.LogException(e, 'RCS.GetDllVersion');
@@ -72,7 +72,7 @@ procedure TF_About.FormShow(Sender: TObject);
     else
       Self.L_VRCSUSB.Caption := 'zařízení uzavřeno';
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Self.L_VRCSUSB.Caption := 'nelze získat';
       AppEvents.LogException(e, 'RCS.GetDeviceVersion');
@@ -88,20 +88,20 @@ end;
 procedure TF_About.ST_about5Click(Sender: TObject);
  begin
   Screen.Cursor := crAppStart;
-  ShellExecute(0,nil,PChar(ST_about5.Caption),nil,nil,0);
+  ShellExecute(0, nil, PChar(ST_about5.Caption), nil, nil,0);
   Screen.Cursor := crDefault;
   ST_about5.Font.Color := clPurple;
  end;
 
 procedure TF_About.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  writelog('Skryto okno O programu',WR_MESSAGE);
+  writelog('Skryto okno O programu', WR_MESSAGE);
  end;
 
 procedure TF_About.ST_about3Click(Sender: TObject);
  begin
   Screen.Cursor := crAppStart;
-  ShellExecute(0,nil,PChar('mailto:'+ST_about3.Caption),nil,nil,0);
+  ShellExecute(0, nil, PChar('mailto:'+ST_about3.Caption), nil, nil, 0);
   Screen.Cursor := crDefault;
   ST_about3.Font.Color := clPurple;
  end;

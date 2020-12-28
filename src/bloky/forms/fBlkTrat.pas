@@ -1,4 +1,4 @@
-﻿unit fBlkTrat;
+unit fBlkTrat;
 
 interface
 
@@ -47,18 +47,18 @@ type
     procedure B_SaveClick(Sender: TObject);
     procedure B_Blk_DeleteClick(Sender: TObject);
   private
-   NewBlk:Boolean;
-   Trat:TBlkTrat;
-   UvazkaA:TBlkUvazka;
-   UvazkaB:TBlkUvazka;
-   OpenIndex:Integer;
-   CB_NewTratBlokData:TArI;
+   NewBlk: Boolean;
+   Trat: TBlkTrat;
+   UvazkaA: TBlkUvazka;
+   UvazkaB: TBlkUvazka;
+   OpenIndex: Integer;
+   CB_NewTratBlokData: TArI;
 
     procedure NewBlkOpenForm;
     procedure NormalOpenForm;
     procedure HlavniOpenForm;
   public
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkCreate;
   end;
 
@@ -71,8 +71,8 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, TBlok, TOblRi
 
 {$R *.dfm}
 
-procedure TF_BlkTrat.OpenForm(BlokIndex:Integer);
-var Blk:TBlk;
+procedure TF_BlkTrat.OpenForm(BlokIndex: Integer);
+var Blk: TBlk;
  begin
   Self.OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex, TBlk(Blk));
@@ -125,13 +125,13 @@ procedure TF_BlkTrat.NewBlkOpenForm;
  end;
 
 procedure TF_BlkTrat.NormalOpenForm;
-var glob:TBlkSettings;
-    settings:TBlkTratSettings;
-    i:Integer;
-    obls:TArstr;
-    LI:TListItem;
-    vypust:TArI;
-    oblr:TOR;
+var glob: TBlkSettings;
+    settings: TBlkTratSettings;
+    i: Integer;
+    obls: TArstr;
+    LI: TListItem;
+    vypust: TArI;
+    oblr: TOR;
  begin
   glob := Self.Trat.GetGlobalSettings();
   Self.E_Trat_Name.Text := glob.name;
@@ -199,10 +199,10 @@ begin
 end;
 
 procedure TF_BlkTrat.B_blk_AddClick(Sender: TObject);
-var LI:TListItem;
-    useky_vypust:TArI;
-    obls:TArStr;
-    i:Integer;
+var LI: TListItem;
+    useky_vypust: TArI;
+    obls: TArStr;
+    i: Integer;
 begin
  if (F_BlkTrat.CB_NewTratBlok.ItemIndex < 0) then
   begin
@@ -231,9 +231,9 @@ begin
 end;
 
 procedure TF_BlkTrat.B_Blk_DeleteClick(Sender: TObject);
-var useky_vypust:TArI;
-    obls:TArStr;
-    i:Integer;
+var useky_vypust: TArI;
+    obls: TArStr;
+    i: Integer;
 begin
  if (Self.LV_Useky.Selected <> nil) then
    Self.LV_Useky.Items.Delete(Self.LV_Useky.ItemIndex);
@@ -252,11 +252,11 @@ begin
 end;
 
 procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
-var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
-    TratSettings:TBlkTratSettings;
-    UvazkaSettings:TBlkUvazkaSettings;
-    trat,uvazkaA,uvazkaB:Integer;
-    LI:TListItem;
+var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
+    TratSettings: TBlkTratSettings;
+    UvazkaSettings: TBlkUvazkaSettings;
+    trat, uvazkaA, uvazkaB: Integer;
+    LI: TListItem;
  begin
   if (Self.NewBlk) then
    begin
@@ -271,32 +271,32 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
 
   if ((Self.E_Trat_Name.Text = '') or (Self.E_UA_name.Text = '') or (Self.E_UB_name.Text = '')) then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(Self.SE_Trat_ID.Value, trat)) then
    begin
-    Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(Self.SE_UA_id.Value, uvazkaA)) then
    begin
-    Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Blky.IsBlok(Self.SE_UB_id.Value,  uvazkaB)) then
    begin
-    Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CB_Trat_ZabZar.ItemIndex < 0) then
    begin
-    Application.MessageBox('Vyberte typ zabezpečovacího zařízení trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte typ zabezpečovacího zařízení trati !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
   if (Self.CB_Navestidla.ItemIndex < 0) then
    begin
-    Application.MessageBox('Vyberte chování návěstidel trati !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte chování návěstidel trati !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -324,7 +324,7 @@ var glob_trat, glob_uvA, glob_uvB:TBlkSettings;
       Self.UvazkaA := Blky.Add(btUvazka, glob_uvA) as TBlkUvazka;
       Self.UvazkaB  := Blky.Add(btUvazka, glob_uvB) as TBlkUvazka;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();

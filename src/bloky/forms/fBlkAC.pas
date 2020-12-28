@@ -1,4 +1,4 @@
-﻿unit fBlkAC;
+unit fBlkAC;
 
 interface
 
@@ -25,13 +25,13 @@ type
     procedure B_GenTokenClick(Sender: TObject);
 
   private
-   NewBlk:Boolean;
-   Blk:TBlkAC;
+   NewBlk: Boolean;
+   Blk: TBlkAC;
 
   public
-   OpenIndex:Integer;
+   OpenIndex: Integer;
 
-   procedure OpenForm(BlokIndex:Integer);
+   procedure OpenForm(BlokIndex: Integer);
    procedure NewBlkOpenForm();
    procedure NormalOpenForm();
    procedure HlavniOpenForm();
@@ -48,10 +48,10 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky, TOblRizen
 
 {$R *.dfm}
 
-procedure TF_BlkAC.OpenForm(BlokIndex:Integer);
+procedure TF_BlkAC.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm();
 
   if (NewBlk) then
@@ -73,9 +73,9 @@ procedure TF_BlkAC.NewBlkOpenForm();
  end;
 
 procedure TF_BlkAC.NormalOpenForm();
-var glob:TBlkSettings;
-    settings:TBlkACSettings;
-    oblr:TOR;
+var glob: TBlkSettings;
+    settings: TBlkACSettings;
+    oblr: TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -113,8 +113,8 @@ begin
 end;
 
 procedure TF_BlkAC.B_SaveClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkACSettings;
+var glob: TBlkSettings;
+    settings: TBlkACSettings;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -138,7 +138,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btAC, glob) as TBlkAC;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();

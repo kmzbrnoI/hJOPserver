@@ -1,4 +1,4 @@
-﻿unit RCSdebugger;
+unit RCSdebugger;
 
 {
   Trida TRCSd se stara o komunikaci s RCS debugger klienty po standardnim
@@ -28,32 +28,32 @@ uses SysUtils, TechnologieRCS, Generics.Collections, Classes, IdContext;
 
 type
   TRCSdModule = record
-    addr:Integer;
+    addr: Integer;
     output_changed, input_changed: Boolean;
   end;
 
   // jeden RCSd klient
   TRCSdClient = class
     private
-      modules:TList<TRCSdModule>;                                               // seznam autorizovanych modulu klienta
-      conn:TIdContext;                                                          // spojeni ke klientovi
+      modules: TList<TRCSdModule>;                                              // seznam autorizovanych modulu klienta
+      conn: TIdContext;                                                         // spojeni ke klientovi
 
-       procedure SendOutput(addr:Integer);                                      // odesle stav vystupnich portu RCS \addr
-       procedure SendInput(addr:Integer);                                       // odesle stav vstupnich portu RCS \addr
+       procedure SendOutput(addr: Integer);                                     // odesle stav vystupnich portu RCS \addr
+       procedure SendInput(addr: Integer);                                      // odesle stav vstupnich portu RCS \addr
 
-       function ModuleIndexOf(addr:Integer):Integer;                            // vrati index \addr adresy v seznamu modulu \modules
+       function ModuleIndexOf(addr: Integer): Integer;                          // vrati index \addr adresy v seznamu modulu \modules
 
-       procedure OnRCSInputChange(Sender:TObject; board:Cardinal);              // event z TRCS volany pri zmene RCS vstupu
-       procedure OnRCSOutputChange(Sender:TObject; board:Cardinal);             // event z TRCS volany pri zmene RCS vystupu
+       procedure OnRCSInputChange(Sender: TObject; board: Cardinal);            // event z TRCS volany pri zmene RCS vstupu
+       procedure OnRCSOutputChange(Sender: TObject; board: Cardinal);           // event z TRCS volany pri zmene RCS vystupu
 
     public
-       constructor Create(conn:TIdContext);
+       constructor Create(conn: TIdContext);
        destructor Destroy(); override;
 
        procedure Update();                                                      // aktualizace odesilani zmeny stavu RCS desky
-       procedure Parse(parsed:TStrings);                                        // parse prijatych dat od klienta
+       procedure Parse(parsed: TStrings);                                        // parse prijatych dat od klienta
 
-       property connection:TIdContext read conn;                                // reference na spojeni pro rodice
+       property connection: TIdContext read conn;                                // reference na spojeni pro rodice
 
   end;
 
@@ -62,20 +62,20 @@ type
   // TRCSd sdruzuje jednotlive RCSd klienty
   TRCSd = class
     private
-      clients:TList<TRCSdClient>;                                               // seznam autorizovanych klientu
+      clients: TList<TRCSdClient>;                                               // seznam autorizovanych klientu
 
-       procedure ParseAuth(Sender:TIdContext; parsed:TStrings);                 // parsovani autorizacniho prikazu "AUTH"
+       procedure ParseAuth(Sender: TIdContext; parsed: TStrings);                 // parsovani autorizacniho prikazu "AUTH"
 
     public
        constructor Create();
        destructor Destroy(); override;
 
-       procedure Parse(Sender:TIdContext; parsed:TStrings);                     // parsovani dat pro RCS debugger -- prefix "-;RCSd;"
-       procedure RemoveClient(conn:TIDContext);                                 // smazani RCSd klienta z databaze
+       procedure Parse(Sender: TIdContext; parsed: TStrings);                     // parsovani dat pro RCS debugger -- prefix "-; RCSd;"
+       procedure RemoveClient(conn: TIDContext);                                 // smazani RCSd klienta z databaze
        procedure RemoveAllClients();                                            // smazani vsech RCSd klientu
        procedure Update();                                                      // propagace stavu RCS k RCSd klientum
 
-       class function GetRCSInfo(board:Cardinal):string;                        // vraci INFO string
+       class function GetRCSInfo(board: Cardinal): string;                        // vraci INFO string
 
   end;
 
@@ -144,8 +144,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSd.RemoveClient(conn:TIDContext);
-var i:Integer;
+procedure TRCSd.RemoveClient(conn: TIDContext);
+var i: Integer;
 begin
  for i := 0 to Self.clients.Count-1 do
    if (Self.clients[i].connection = conn) then
@@ -156,15 +156,15 @@ begin
 end;
 
 procedure TRCSd.RemoveAllClients();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.clients.Count-1 do Self.clients[i].Free();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSd.Parse(Sender:TIdContext; parsed:TStrings);
-var i:Integer;
+procedure TRCSd.Parse(Sender: TIdContext; parsed: TStrings);
+var i: Integer;
 begin
  parsed[2] := UpperCase(parsed[2]);
 
@@ -180,9 +180,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSd.ParseAuth(Sender:TIdContext; parsed:TStrings);
-var user:TUser;
-    client:TRCSdClient;
+procedure TRCSd.ParseAuth(Sender: TIdContext; parsed: TStrings);
+var user: TUser;
+    client: TRCSdClient;
 begin
  // -> zjistime uzivatele
  user := UsrDb.GetUser(parsed[3]);
@@ -223,7 +223,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSd.Update();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.clients.Count-1 do
    Self.clients[i].Update();
@@ -233,7 +233,7 @@ end;
 ///////////////////////////  TRIDA TRCSdClient /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TRCSdClient.Create(conn:TIdContext);
+constructor TRCSdClient.Create(conn: TIdContext);
 begin
  inherited Create();
  Self.modules := TList<TRCSdModule>.Create();
@@ -250,10 +250,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSdClient.SendOutput(addr:Integer);
-var i:Integer;
-    str:string;
-    max:Cardinal;
+procedure TRCSdClient.SendOutput(addr: Integer);
+var i: Integer;
+    str: string;
+    max: Cardinal;
 begin
  str := '';
  max := RCSi.GetModuleOutputsCountSafe(addr);
@@ -263,7 +263,7 @@ begin
    try
      str := str + IntToStr(RCSi.GetOutput(addr, i)) + '|';
    except
-     on E:Exception do
+     on E: Exception do
       begin
        ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
        Exit();
@@ -273,10 +273,10 @@ begin
  ORTCPServer.SendLn(Self.conn, '-;RCSd;MODULE;'+IntToStr(addr)+';CHANGE;O;{'+str+'}');
 end;
 
-procedure TRCSdClient.SendInput(addr:Integer);
-var i:Integer;
-    str:string;
-    max:Cardinal;
+procedure TRCSdClient.SendInput(addr: Integer);
+var i: Integer;
+    str: string;
+    max: Cardinal;
 begin
  str := '';
  max := RCSi.GetModuleInputsCountSafe(addr);
@@ -286,7 +286,7 @@ begin
    try
      str := str + IntToStr(Integer(RCSi.GetInput(addr, i))) + '|';
    except
-     on E:Exception do
+     on E: Exception do
       begin
        ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
        Exit();
@@ -298,9 +298,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSdClient.OnRCSInputChange(Sender:TObject; board:Cardinal);
-var index:Integer;
-    module:TRCSdModule;
+procedure TRCSdClient.OnRCSInputChange(Sender: TObject; board: Cardinal);
+var index: Integer;
+    module: TRCSdModule;
 begin
  index := Self.ModuleIndexOf(board);
  if (index > -1) then
@@ -311,9 +311,9 @@ begin
   end;
 end;
 
-procedure TRCSdClient.OnRCSOutputChange(Sender:TObject; board:Cardinal);
-var index:Integer;
-    module:TRCSdModule;
+procedure TRCSdClient.OnRCSOutputChange(Sender: TObject; board: Cardinal);
+var index: Integer;
+    module: TRCSdModule;
 begin
  index := Self.ModuleIndexOf(board);
  if (index > -1) then
@@ -326,8 +326,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRCSdClient.ModuleIndexOf(addr:Integer):Integer;
-var i:Integer;
+function TRCSdClient.ModuleIndexOf(addr: Integer): Integer;
+var i: Integer;
 begin
  Result := -1;
  for i := 0 to Self.modules.Count-1 do
@@ -337,8 +337,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSdClient.Update();
-var i:Integer;
-    module:TRCSdModule;
+var i: Integer;
+    module: TRCSdModule;
 begin
  for i := 0 to Self.modules.Count-1 do
   begin
@@ -360,10 +360,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSdClient.Parse(parsed:TStrings);
-var addr, index, i:Integer;
-    module:TRCSdModule;
-    str:string;
+procedure TRCSdClient.Parse(parsed: TStrings);
+var addr, index, i: Integer;
+    module: TRCSdModule;
+    str: string;
 begin
  if (parsed[2] = 'PLEASE') then begin
   try
@@ -439,7 +439,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TRCSd.GetRCSInfo(board:Cardinal):string;
+class function TRCSd.GetRCSInfo(board: Cardinal): string;
 var port: Integer;
 begin
  Result := IntToStr(board) + '|';
@@ -447,18 +447,18 @@ begin
  try
    Result := Result + RCSi.GetModuleName(board) + '|';
  except
-   on E:ERCSInvalidModuleAddr do
+   on E: ERCSInvalidModuleAddr do
      Result := Result + '-|';
-   on E:Exception do
+   on E: Exception do
      Result := Result + 'Nelze ziskat nazev - vyjimka|';
  end;
 
  try
    Result := Result + RCSi.GetModuleType(board) + '|';
  except
-   on E:ERCSInvalidModuleAddr do
+   on E: ERCSInvalidModuleAddr do
      Result := Result + '-|';
-   on E:Exception do
+   on E: Exception do
      Result := Result + 'Nelze ziskat typ - vyjimka|';
  end;
 
@@ -474,9 +474,9 @@ begin
  try
    Result := Result + RCSi.GetModuleFW(board) + '|';
  except
-   on E:ERCSInvalidModuleAddr do
+   on E: ERCSInvalidModuleAddr do
      Result := Result + '-|';
-   on E:Exception do
+   on E: Exception do
      Result := Result + 'Nelze ziskat FW - vyjimka|';
  end;
 

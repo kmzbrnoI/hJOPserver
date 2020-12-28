@@ -1,4 +1,4 @@
-﻿unit fBlkPrejezd;
+unit fBlkPrejezd;
 
 interface
 
@@ -77,10 +77,10 @@ type
     procedure CHB_RCS_NOTClick(Sender: TObject);
     procedure CHB_RCS_BPClick(Sender: TObject);
   private
-   OpenIndex:Integer;
-   Blk:TBlkPrejezd;
-   NewBlk:Boolean;
-   obls:TArstr;
+   OpenIndex: Integer;
+   Blk: TBlkPrejezd;
+   NewBlk: Boolean;
+   obls: TArstr;
    tracks: TObjectList<TBlkPrjTrack>;
 
     procedure NormalOpenForm();
@@ -90,7 +90,7 @@ type
 
   public
 
-    procedure OpenForm(BlokIndex:Integer);
+    procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkCreate;
   end;
 
@@ -104,7 +104,7 @@ uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni,
 
 {$R *.dfm}
 
-procedure TF_BlkPrejezd.OpenForm(BlokIndex:Integer);
+procedure TF_BlkPrejezd.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
   Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -133,8 +133,8 @@ begin
 end;
 
 procedure TF_BlkPrejezd.B_save_PClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkPrjSettings;
+var glob: TBlkSettings;
+    settings: TBlkPrjSettings;
     addrs: TList<TRCSAddr>;
     another: TBlk;
     typ: TRCSIOType;
@@ -146,7 +146,7 @@ var glob:TBlkSettings;
     Application.MessageBox('Vyplňte název přejezdu', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -162,7 +162,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btPrejezd, glob) as TBlkPrejezd;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
@@ -214,7 +214,7 @@ var glob:TBlkSettings;
     try
       Self.SaveTracks();
     except
-     on E:Exception do
+     on E: Exception do
       begin
        Application.MessageBox('Nepodařilo se načíst kolej přejezdu!', 'Chyba', MB_OK OR MB_ICONWARNING);
        Exit();
@@ -360,10 +360,10 @@ procedure TF_BlkPrejezd.HlavniOpenForm();
  end;
 
 procedure TF_BlkPrejezd.NormalOpenForm();
-var glob:TBlkSettings;
-    settings:TBlkPrjSettings;
-    i:Integer;
-    oblr:TOR;
+var glob: TBlkSettings;
+    settings: TBlkPrjSettings;
+    i: Integer;
+    oblr: TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -371,7 +371,7 @@ var glob:TBlkSettings;
   for oblr in Self.Blk.OblsRizeni do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
-  SetLength(obls,Self.Blk.OblsRizeni.Count);
+  SetLength(obls, Self.Blk.OblsRizeni.Count);
   for i := 0 to Self.Blk.OblsRizeni.Count-1 do
     obls[i] := Self.Blk.OblsRizeni[i].id;
 

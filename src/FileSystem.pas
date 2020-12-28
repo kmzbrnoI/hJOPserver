@@ -1,4 +1,4 @@
-﻿unit FileSystem;
+unit FileSystem;
 
 interface
 
@@ -13,7 +13,7 @@ type
   EFileNotFound = class(Exception);
 
   TConfig=class
-   autosave_next:TDateTime;
+   autosave_next: TDateTime;
 
     procedure CreateCfgDirs();
     procedure CompleteLoadFromFile(inidata: TMemIniFile);
@@ -22,10 +22,10 @@ type
   end;
 
   TGlobalConfig=class
-   autosave:Boolean;
-   autosave_period:TTime;
-   scale:Cardinal;
-   ptAutoStart:Boolean;
+   autosave: Boolean;
+   autosave_period: TTime;
+   scale: Cardinal;
+   ptAutoStart: Boolean;
 
     procedure LoadCfgFromFile(filename: string);
     procedure LoadCfgPtServer(ini: TMemIniFile);
@@ -33,15 +33,15 @@ type
   end;
 
   TFormData=class
-   aFile:String;
-    procedure LoadFormData(filename:string);
-    procedure SaveFormData(filename:string);
+   aFile: String;
+    procedure LoadFormData(filename: string);
+    procedure SaveFormData(filename: string);
   end;
 
 var
-  Config:TConfig;
-  GlobalConfig:TGlobalConfig;
-  FormData:TFormData;
+  Config: TConfig;
+  GlobalConfig: TGlobalConfig;
+  FormData: TFormData;
 
 implementation
 
@@ -58,13 +58,13 @@ begin
    CreateDir('lok');
    CreateDir('stav');
  except
-   on e:Exception do
+   on e: Exception do
      AppEvents.LogException(E);
  end;
 end;
 
 procedure TConfig.CompleteLoadFromFile(inidata: TMemIniFile);
-var read,read2:string;
+var read, read2: string;
  begin
   F_Splash.AddStav('Načítám konfiguraci...');
 
@@ -72,7 +72,7 @@ var read,read2:string;
   try
     GlobalConfig.LoadCfgFromFile(read);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
@@ -85,7 +85,7 @@ var read,read2:string;
       inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'users', 'stav\users.ini')
     );
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E, E.Message);
   end;
 
@@ -95,9 +95,9 @@ var read,read2:string;
   try
     ORs.LoadData(read, read2);
   except
-    on E:EFileNotFound do
+    on E: EFileNotFound do
       writelog(E.Message, WR_ERROR);
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
   F_Main.E_dataload_spnl.Text := read;
@@ -109,17 +109,17 @@ var read,read2:string;
   try
     HVDb.LoadFromDir(F_Main.E_dataload_HV_dir.Text, F_Main.E_dataload_HV_state.Text);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
-  writelog('Načteno '+IntToStr(HVDb.cnt)+' hnacích vozidel',WR_DATA);
+  writelog('Načteno '+IntToStr(HVDb.cnt)+' hnacích vozidel', WR_DATA);
 
   F_Splash.AddStav('Načítám RCS...');
   writelog('Načítám RCS...', WR_DATA);
   try
     RCSi.LoadFromFile(inidata);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
   writelog('RCS načteno', WR_DATA);
@@ -129,7 +129,7 @@ var read,read2:string;
   try
     TrakceI.LoadFromFile(inidata);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
   writelog('Trakce načtena', WR_DATA);
@@ -139,17 +139,17 @@ var read,read2:string;
   try
     Boosters.LoadFromFile(read);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
-  F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName),read);
+  F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), read);
 
   F_Splash.AddStav('Načítám soupravy...');
   read := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', 'stav\soupravy.ini');
   try
     Trains.LoadData(read);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
   F_Main.E_dataload_soupr.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), read);
@@ -160,7 +160,7 @@ var read,read2:string;
   try
     Blky.LoadFromFile(read, F_Main.E_dataload_spnl.Text, read2);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
   F_Main.E_dataload_block.Text := read;
@@ -173,7 +173,7 @@ var read,read2:string;
   try
     JCDb.LoadData(read);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
@@ -182,7 +182,7 @@ var read,read2:string;
   try
     MultiJCDb.LoadData(read);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
   F_Main.E_Dataload_multiJC.Text := MultiJCDb.filename;
@@ -192,16 +192,16 @@ var read,read2:string;
   try
     FormData.LoadFormData(read);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   F_Splash.AddStav('Načítám vedlejší databáze...');
-  TrakceI.LoadSpeedTable('data\rychlosti.csv',F_Options.LV_DigiRych);
+  TrakceI.LoadSpeedTable('data\rychlosti.csv', F_Options.LV_DigiRych);
  end;
 
 procedure TConfig.CompleteSaveToFile(inidata: TMemIniFile);
-var tmpStr:string;
+var tmpStr: string;
  begin
   inidata.EraseSection(_INIDATA_PATHS_DATA_SECTION);
   inidata.EraseSection(_INIDATA_PATHS_STATE_SECTION);
@@ -210,63 +210,63 @@ var tmpStr:string;
   try
     Blky.SaveToFile(F_Main.E_dataload_block.Text);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     RCSi.SaveToFile(inidata);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     TrakceI.SaveToFile(inidata);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     GlobalConfig.SaveCfgToFile(F_Options.E_dataload.Text);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     Boosters.SaveToFile(F_Main.E_dataload_zes.Text);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     JCDb.SaveData(JCDb.filename);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     MultiJCDb.SaveData(MultiJCDb.filename);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     Trains.SaveData(F_Main.E_dataload_soupr.Text);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     FormData.SaveFormData(FormData.aFile);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
@@ -274,7 +274,7 @@ var tmpStr:string;
     UsrDB.SaveData(F_Main.E_Dataload_Users.Text);
     UsrDB.SaveStat(F_Main.E_dataload_users_stat.Text);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
@@ -282,25 +282,25 @@ var tmpStr:string;
     HVDb.SaveData(F_Main.E_dataload_HV_dir.Text);
     HVDb.SaveState(F_Main.E_dataload_HV_state.Text);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     TrakceI.SaveSpeedTable('data/rychlosti.csv');
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
   try
     F_Admin.B_SaveClick(Self);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
-  WriteLog('Kompletní ukládání dat dokončeno',WR_DATA);
+  WriteLog('Kompletní ukládání dat dokončeno', WR_DATA);
 
   try
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Options.E_dataload.Text);
@@ -324,7 +324,7 @@ var tmpStr:string;
 
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'or', tmpStr);
   except
-    on E:Exception do
+    on E: Exception do
       AppEvents.LogException(E);
   end;
 
@@ -334,8 +334,8 @@ var tmpStr:string;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TGlobalConfig.LoadCfgFromFile(filename: string);
-var str:string;
-    ini:TMemIniFile;
+var str: string;
+    ini: TMemIniFile;
  begin
   writelog('Načítám globální konfiguraci: '+filename, WR_DATA);
   F_Options.E_dataload.Text := filename;
@@ -343,10 +343,10 @@ var str:string;
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   try
     case ini.ReadInteger('Application','WState',0) of
-     0:begin
+     0: begin
         F_Main.WindowState := wsMaximized;
        end;
-     1:begin
+     1: begin
         F_Main.Left   := ini.ReadInteger('Application', 'Left', 200);
         F_Main.Top    := ini.ReadInteger('Application', 'Top', 200);
         F_Main.Height := ini.ReadInteger('Application', 'Heigth', 500);
@@ -387,7 +387,7 @@ var str:string;
       diag.LoadData(ini, 'AdminData');
       F_Admin.LoadData(ini);
     except
-      on E:Exception do
+      on E: Exception do
         AppEvents.LogException(E);
     end;
 
@@ -405,7 +405,7 @@ const _SECTION = 'PTServer';
   try
     PtServer.port := ini.ReadInteger(_SECTION, 'port', _PT_DEFAULT_PORT);
   except
-    on E:EPTActive do
+    on E: EPTActive do
       writeLog('PT ERR: '+E.Message, WR_PT);
   end;
 
@@ -422,7 +422,7 @@ const _SECTION = 'PTServer';
         if (str <> '') then
           PtServer.AccessTokenAdd(key, str);
       except
-        on E:Exception do
+        on E: Exception do
           writelog('PTserver: nepodařilo se přidat token '+str+' ('+E.Message+')', WR_ERROR);
       end;
      end;
@@ -431,8 +431,8 @@ const _SECTION = 'PTServer';
   end;
  end;
 
-procedure TGlobalConfig.SaveCfgToFile(filename:string);
-var ini:TMemIniFile;
+procedure TGlobalConfig.SaveCfgToFile(filename: string);
+var ini: TMemIniFile;
  begin
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
@@ -458,12 +458,12 @@ var ini:TMemIniFile;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TFormData.LoadFormData(filename:String);
-var j:Integer;
-    objs:TStrings;
-    obj, rawObj:String;
-    aComponent:TComponent;
-    ini:TMemIniFile;
+procedure TFormData.LoadFormData(filename: String);
+var j: Integer;
+    objs: TStrings;
+    obj, rawObj: String;
+    aComponent: TComponent;
+    ini: TMemIniFile;
  begin
   writelog('Načítám FormData: '+filename, WR_DATA);
 
@@ -495,9 +495,9 @@ var j:Integer;
   writelog('FormData úspěšně načtena', WR_DATA);
  end;
 
-procedure TFormData.SaveFormData(filename:String);
-var i, j:Integer;
-    ini:TMemIniFile;
+procedure TFormData.SaveFormData(filename: String);
+var i, j: Integer;
+    ini: TMemIniFile;
  begin
   DeleteFile(filename);
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -528,7 +528,7 @@ begin
    try
      F_Main.A_SaveStavExecute(Self);
    except
-     on E:Exception do
+     on E: Exception do
        AppEvents.LogException(E, 'Vyjimka pri ukladani stavu kolejiste');
    end;
    Self.autosave_next := Now + GlobalConfig.autosave_period;

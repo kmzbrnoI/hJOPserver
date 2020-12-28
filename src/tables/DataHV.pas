@@ -1,4 +1,4 @@
-﻿unit DataHV;
+unit DataHV;
 
 // THVTableData - trida starajici se o vyplnovani tabulky hnacich vozidel
 
@@ -9,24 +9,24 @@ uses THnaciVozidlo, ComCtrls, SysUtils;
 type
   THVTableData=class
     private
-      LV:TListView;
+      LV: TListView;
 
     public
 
-     reload:Boolean;
+     reload: Boolean;
 
       procedure LoadToTable();
-      procedure UpdateLine(HV:THV);
+      procedure UpdateLine(HV: THV);
       procedure UpdateTable();
 
-      procedure AddHV(line:Integer; HV:THV);
-      procedure RemoveHV(line:Integer);
+      procedure AddHV(line: Integer; HV: THV);
+      procedure RemoveHV(line: Integer);
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
   end;
 
 var
-   HVTableData:THVTableData;
+   HVTableData: THVTableData;
 
 implementation
 
@@ -34,7 +34,7 @@ uses THvDatabase, ownConvert, fMain, Trakce, TrainDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor THVTableData.Create(LV:TListView);
+constructor THVTableData.Create(LV: TListView);
 begin
  inherited Create;
  Self.LV := LV;
@@ -43,8 +43,8 @@ end;//ctor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THVTableData.LoadToTable();
-var i, j:Integer;
-    LI:TListItem;
+var i, j: Integer;
+    LI: TListItem;
 begin
  Self.LV.Clear();
 
@@ -66,7 +66,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THVTableData.UpdateTable();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to _MAX_ADDR-1 do
   begin
@@ -83,13 +83,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVTableData.UpdateLine(HV:THV);
-var line:Integer;
-    data:THVData;
-    stav:THVStav;
-    slot:TTrkLocoInfo;
-    i:Integer;
-    str:string;
+procedure THVTableData.UpdateLine(HV: THV);
+var line: Integer;
+    data: THVData;
+    stav: THVStav;
+    slot: TTrkLocoInfo;
+    i: Integer;
+    str: string;
  begin
   if (HV = nil) then Exit;
 
@@ -209,10 +209,10 @@ var line:Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THVTableData.AddHV(line:Integer; HV:THV);
-var i:Integer;
-    LI:TListItem;
-    addr:Pointer;
+procedure THVTableData.AddHV(line: Integer; HV: THV);
+var i: Integer;
+    LI: TListItem;
+    addr: Pointer;
 begin
  LI := Self.LV.Items.Insert(line);
 
@@ -227,7 +227,7 @@ begin
  Self.UpdateLine(HV);
 end;
 
-procedure THVTableData.RemoveHV(line:Integer);
+procedure THVTableData.RemoveHV(line: Integer);
 begin
  Self.LV.Items.Delete(line);
 end;

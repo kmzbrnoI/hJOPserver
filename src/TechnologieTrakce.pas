@@ -1,4 +1,4 @@
-﻿unit TechnologieTrakce;
+unit TechnologieTrakce;
 
 {
  TTrakce class (and its singleton instance TrakceI) accesses Trakce function
@@ -57,35 +57,35 @@ const
   _LOG_PATH = 'log\trakce';
 
 type
-  TReadyEvent = procedure (Sender:TObject; ready:Boolean) of object;
-  TErrorEvent = procedure (Sender:TObject; errMsg:string) of object;
+  TReadyEvent = procedure (Sender: TObject; ready: Boolean) of object;
+  TErrorEvent = procedure (Sender: TObject; errMsg: string) of object;
 
   // passed as a parameter to callback when programming POM
   TPOMCallback = record
-    locoAddr:Word;
-    toProgram:TList<THVPomCV>;
-    index:Integer; // index of currently programmed CV in list 'toProgram'
-    callback_ok, callback_err:TCommandCallback;
+    locoAddr: Word;
+    toProgram: TList<THVPomCV>;
+    index: Integer; // index of currently programmed CV in list 'toProgram'
+    callback_ok, callback_err: TCommandCallback;
   end;
 
   // Set functions of all locomotives based on description
   TSetDescFuncsCallback = record
-    addr:Word;
-    description:string;
-    state:Boolean;
-    callback_ok, callback_err:TCommandCallback;
+    addr: Word;
+    description: string;
+    state: Boolean;
+    callback_ok, callback_err: TCommandCallback;
   end;
 
   // toggleQueue record
   THVToggleFunc = record
-    HV:THV;
-    fIndex:Cardinal;
-    time:TDateTime;
+    HV: THV;
+    fIndex: Cardinal;
+    time: TDateTime;
   end;
 
   TFuncCallback = record
     addr: Word;
-    callback_ok, callback_err:TCommandCallback;
+    callback_ok, callback_err: TCommandCallback;
   end;
 
   TTrakce = class(TTrakceIFace)
@@ -96,10 +96,10 @@ type
      _DEF_CONFIG_PATH = 'lib-conf';
 
    private
-     fLibDir:string;
-     aReady:Boolean;
-     SpeedTable:array [0.._MAX_STEP] of Cardinal;
-     turnoff_callback:TNotifyEvent;
+     fLibDir: string;
+     aReady: Boolean;
+     SpeedTable: array [0.._MAX_STEP] of Cardinal;
+     turnoff_callback: TNotifyEvent;
 
      eOnReady : TReadyEvent;
      eOnOpenError : TErrorEvent;
@@ -108,71 +108,71 @@ type
      mLogLevelTable: TTrkLogLevel;
      mConfigDir: string;
 
-     procedure SetLoglevelFile(ll:TTrkLogLevel);
-     procedure SetLoglevelTable(ll:TTrkLogLevel);
+     procedure SetLoglevelFile(ll: TTrkLogLevel);
+     procedure SetLoglevelTable(ll: TTrkLogLevel);
 
-     procedure TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
+     procedure TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
      procedure TrkLocoStolen(Sender: TObject; addr: Word);
 
-     procedure TurnedOffSound(Sender:TObject; Data:Pointer);
-     procedure RestoredSound(Sender:TObject; Data:Pointer);
+     procedure TurnedOffSound(Sender: TObject; Data: Pointer);
+     procedure RestoredSound(Sender: TObject; Data: Pointer);
 
-     procedure POMCvWroteOK(Sender:TObject; Data:Pointer);
-     procedure POMCvWroteErr(Sender:TObject; Data:Pointer);
+     procedure POMCvWroteOK(Sender: TObject; Data: Pointer);
+     procedure POMCvWroteErr(Sender: TObject; Data: Pointer);
 
-     procedure LoksSetFuncOK(Sender:TObject; Data:Pointer);
-     procedure LoksSetFuncErr(Sender:TObject; Data:Pointer);
+     procedure LoksSetFuncOK(Sender: TObject; Data: Pointer);
+     procedure LoksSetFuncErr(Sender: TObject; Data: Pointer);
 
-     procedure LoadSpeedTableToTable(var LVRych:TListView);
+     procedure LoadSpeedTableToTable(var LVRych: TListView);
 
      procedure CheckToggleQueue();
      procedure FlushToggleQueue();
-     procedure ProcessToggleFunc(hvFunc:THVToggleFunc);
-     class function HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVToggleFunc;
+     procedure ProcessToggleFunc(hvFunc: THVToggleFunc);
+     class function HVFunc(HV: THV; fIndex: Cardinal; time: TDateTime): THVToggleFunc;
 
    public
 
-    DCCGoTime:TDateTime;
-    toggleQueue:TQueue<THVToggleFunc>;
-    LogObj:TListView;
+    DCCGoTime: TDateTime;
+    toggleQueue: TQueue<THVToggleFunc>;
+    LogObj: TListView;
 
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadLib(filename:string);
+     procedure LoadLib(filename: string);
 
-     procedure Log(loglevel:TTrkLogLevel; msg:string);
+     procedure Log(loglevel: TTrkLogLevel; msg: string);
 
-     procedure LoadFromFile(ini:TMemIniFile);
-     procedure SaveToFile(ini:TMemIniFile);
+     procedure LoadFromFile(ini: TMemIniFile);
+     procedure SaveToFile(ini: TMemIniFile);
 
-     procedure LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);
+     procedure LokFuncToggle(Sender: TObject; HV: THV; fIndex: Cardinal);
 
-     procedure LoadSpeedTable(filename:string;var LVRych:TListView);
-     procedure SaveSpeedTable(filename:string);
+     procedure LoadSpeedTable(filename: string; var LVRych: TListView);
+     procedure SaveSpeedTable(filename: string);
 
      function Step(kmph: Cardinal): Cardinal;
      function Speed(step: Cardinal): Cardinal;
-     procedure SetStepSpeed(step:byte; speed:Integer);
+     procedure SetStepSpeed(step: byte; speed: Integer);
 
-     procedure LoksSetFunc(description:string; state:Boolean; ok: TCb; err: TCb);
+     procedure LoksSetFunc(description: string; state: Boolean; ok: TCb; err: TCb);
      procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
 
      procedure TurnOffSound(ok: TCb; err: TCb);
      procedure RestoreSound(ok: TCb; err: TCb);
      procedure Update();
 
-     function NearestLowerSpeed(speed:Cardinal):Cardinal;
+     function NearestLowerSpeed(speed: Cardinal): Cardinal;
 
-     property OnReady:TReadyEvent read eOnReady write eOnReady;
-     property OnOpenError:TErrorEvent read eOnOpenError write eOnOpenError;
+     property OnReady: TReadyEvent read eOnReady write eOnReady;
+     property OnOpenError: TErrorEvent read eOnOpenError write eOnOpenError;
 
      property logLevelFile: TTrkLogLevel read mLogLevelFile write SetLoglevelFile;
      property logLevelTable: TTrkLogLevel read mLogLevelTable write SetLoglevelTable;
 
-     property ready:Boolean read aready;
-     property libDir:string read fLibDir;
-     property configDir:string read mConfigDir;
+     property ready: Boolean read aready;
+     property libDir: string read fLibDir;
+     property configDir: string read mConfigDir;
 
   end;
 
@@ -221,8 +221,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LoadLib(filename:string);
-var str, tmp, libName:string;
+procedure TTrakce.LoadLib(filename: string);
+var str, tmp, libName: string;
 begin
  libName := ExtractFileName(filename);
 
@@ -259,12 +259,12 @@ end;
 // Logging
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.Log(logLevel:TTrkLogLevel; msg:string);
-var LV_Log:TListItem;
-    f:TextFile;
-    xDate, xTime:string;
-    output:string;
-    b:Byte;
+procedure TTrakce.Log(logLevel: TTrkLogLevel; msg: string);
+var LV_Log: TListItem;
+    f: TextFile;
+    xDate, xTime: string;
+    output: string;
+    b: Byte;
  begin
   if ((logLevel > Self.logLevelFile) and (logLevel > Self.logLevelTable)) then Exit();
 
@@ -306,7 +306,7 @@ var LV_Log:TListItem;
    end;
 end;
 
-procedure TTrakce.SetLoglevelFile(ll:TTrkLogLevel);
+procedure TTrakce.SetLoglevelFile(ll: TTrkLogLevel);
 begin
  Self.mLogLevelFile := ll;
  Log(llCommands, 'NEW loglevel_file = '+LogLevelToString(ll));
@@ -316,7 +316,7 @@ begin
      Log(llErrors, 'Nelze vytvořit složku '+_LOG_PATH);
 end;
 
-procedure TTrakce.SetLoglevelTable(ll:TTrkLogLevel);
+procedure TTrakce.SetLoglevelTable(ll: TTrkLogLevel);
 begin
  Self.mLogLevelTable := ll;
  Log(llCommands, 'NEW loglevel_table = '+LogLevelToString(ll));
@@ -326,7 +326,7 @@ end;
 // Trakce events
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.TrkLog(Sender:TObject; lvl:TTrkLogLevel; msg:string);
+procedure TTrakce.TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
 begin
  Self.Log(lvl, msg);
  if ((Self.opening) and (lvl = llErrors) and (Assigned(Self.OnOpenError))) then
@@ -346,8 +346,8 @@ end;
 // Load/save
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LoadFromFile(ini:TMemIniFile);
-var lib:string;
+procedure TTrakce.LoadFromFile(ini: TMemIniFile);
+var lib: string;
 begin
   fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
   lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEF_LIB);
@@ -358,7 +358,7 @@ begin
   try
     Self.LoadLib(fLibDir + '\' + lib);
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Self.Log(llErrors, 'Nelze načíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message);
       F_Main.LogStatus('ERR: Trakce: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
@@ -366,7 +366,7 @@ begin
   end;
 end;
 
-procedure TTrakce.SaveToFile(ini:TMemIniFile);
+procedure TTrakce.SaveToFile(ini: TMemIniFile);
 begin
   if (Self.Lib <> '') then
     ini.WriteString(_INIFILE_SECTNAME, 'lib', ExtractFileName(Self.Lib));
@@ -378,7 +378,7 @@ end;
 // LoksSetFunc
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LoksSetFunc(description:string; state:Boolean; ok: TCb; err: TCb);
+procedure TTrakce.LoksSetFunc(description: string; state: Boolean; ok: TCb; err: TCb);
 var cb: ^TSetDescFuncsCallback;
 begin
  GetMem(cb, sizeof(TSetDescFuncsCallback));
@@ -392,7 +392,7 @@ begin
  Self.LoksSetFuncOK(Self, cb);
 end;
 
-procedure TTrakce.LoksSetFuncOK(Sender:TObject; Data:Pointer);
+procedure TTrakce.LoksSetFuncOK(Sender: TObject; Data: Pointer);
 var addr: Word;
     cb: ^TSetDescFuncsCallback;
 begin
@@ -425,7 +425,7 @@ begin
  end;
 end;
 
-procedure TTrakce.LoksSetFuncErr(Sender:TObject; Data:Pointer);
+procedure TTrakce.LoksSetFuncErr(Sender: TObject; Data: Pointer);
 var cb: ^TSetDescFuncsCallback;
 begin
  cb := Data;
@@ -438,10 +438,10 @@ end;
 // Speed table
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LoadSpeedTable(filename:string;var LVRych:TListView);
-var i, j:Integer;
-    myFile:TextFile;
-    speed:Integer;
+procedure TTrakce.LoadSpeedTable(filename: string; var LVRych: TListView);
+var i, j: Integer;
+    myFile: TextFile;
+    speed: Integer;
  begin
   try
     AssignFile(myFile, filename);
@@ -472,7 +472,7 @@ var i, j:Integer;
         ReadLn(myFile, speed);
         Self.SpeedTable[i] := speed;
       except
-        on E:Exception do
+        on E: Exception do
          begin
           Log(llErrors, 'Soubor s rychlostmi, řádek ' + IntToStr(i+1) + ': ' + E.Message);
           Self.SpeedTable[i] := _DEFAULT_SPEED_TABLE[i];
@@ -485,9 +485,9 @@ var i, j:Integer;
   Self.LoadSpeedTableToTable(LVRych);
 end;
 
-procedure TTrakce.LoadSpeedTableToTable(var LVRych:TListView);
-var i:Integer;
-    LI:TListItem;
+procedure TTrakce.LoadSpeedTableToTable(var LVRych: TListView);
+var i: Integer;
+    LI: TListItem;
 begin
  LVrych.Clear();
 
@@ -499,9 +499,9 @@ begin
   end;
 end;
 
-procedure TTrakce.SaveSpeedTable(filename:string);
-var i:Integer;
-    myFile:TextFile;
+procedure TTrakce.SaveSpeedTable(filename: string);
+var i: Integer;
+    myFile: TextFile;
  begin
   try
     AssignFile(myFile, filename);
@@ -518,7 +518,7 @@ var i:Integer;
 end;
 
 function TTrakce.Step(kmph: Cardinal): Cardinal;
-var i:Integer;
+var i: Integer;
 begin
  if (kmph = 0) then
    Exit(0);
@@ -540,7 +540,7 @@ begin
  Result := Self.SpeedTable[step];
 end;
 
-procedure TTrakce.SetStepSpeed(step:byte; speed:Integer);
+procedure TTrakce.SetStepSpeed(step: byte; speed: Integer);
 begin
  if (step >  _MAX_STEP) then
    raise Exception.Create('Invalid speed step: '+IntToStr(step));
@@ -565,7 +565,7 @@ begin
  Self.TurnedOffSound(Self, data);
 end;
 
-procedure TTrakce.TurnedOffSound(Sender:TObject; Data:Pointer);
+procedure TTrakce.TurnedOffSound(Sender: TObject; Data: Pointer);
 var cb: ^TFuncCallback;
 begin
  cb := Data;
@@ -614,7 +614,7 @@ begin
  Self.RestoredSound(Self, data);
 end;
 
-procedure TTrakce.RestoredSound(Sender:TObject; Data:Pointer);
+procedure TTrakce.RestoredSound(Sender: TObject; Data: Pointer);
 var cb: ^TFuncCallback;
 begin
  cb := Data;
@@ -681,7 +681,7 @@ begin
  end;
 end;
 
-procedure TTrakce.POMCvWroteOK(Sender:TObject; Data:Pointer);
+procedure TTrakce.POMCvWroteOK(Sender: TObject; Data: Pointer);
 var pomData: ^TPomCallback;
 begin
  pomData := Data;
@@ -703,7 +703,7 @@ begin
   end;
 end;
 
-procedure TTrakce.POMCvWroteErr(Sender:TObject; Data:Pointer);
+procedure TTrakce.POMCvWroteErr(Sender: TObject; Data: Pointer);
 var pomData: ^TPomCallback;
 begin
  pomData := Data;
@@ -716,7 +716,7 @@ end;
 // Function toggling
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LokFuncToggle(Sender:TObject; HV:THV; fIndex:Cardinal);
+procedure TTrakce.LokFuncToggle(Sender: TObject; HV: THV; fIndex: Cardinal);
 begin
  HV.SetSingleFunc(fIndex, true, TrakceI.Callback(), TrakceI.Callback(), Sender);
  Self.toggleQueue.Enqueue(HVFunc(HV, fIndex, Now+EncodeTime(0, 0, 0, 500)));
@@ -748,13 +748,13 @@ begin
   end;
 end;
 
-procedure TTrakce.ProcessToggleFunc(hvFunc:THVToggleFunc);
+procedure TTrakce.ProcessToggleFunc(hvFunc: THVToggleFunc);
 begin
  if (hvFunc.HV = nil) then Exit();
  hvFunc.HV.SetSingleFunc(hvFunc.fIndex, false, TTrakce.Callback(), TTrakce.Callback());
 end;
 
-class function TTrakce.HVFunc(HV:THV; fIndex:Cardinal; time:TDateTime):THVToggleFunc;
+class function TTrakce.HVFunc(HV: THV; fIndex: Cardinal; time: TDateTime): THVToggleFunc;
 begin
  Result.HV := HV;
  Result.fIndex := fIndex;
@@ -770,8 +770,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrakce.NearestLowerSpeed(speed:Cardinal):Cardinal;
-var stupen:Integer;
+function TTrakce.NearestLowerSpeed(speed: Cardinal): Cardinal;
+var stupen: Integer;
 begin
  for stupen := _MAX_STEP downto 0 do
    if (Self.SpeedTable[stupen] <= speed) then

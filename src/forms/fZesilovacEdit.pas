@@ -1,4 +1,4 @@
-﻿unit fZesilovacEdit;
+unit fZesilovacEdit;
 
 interface
 
@@ -40,14 +40,14 @@ type
     procedure CHB_ZkratClick(Sender: TObject);
     procedure CHB_NapajeniClick(Sender: TObject);
   private
-    open_booster:TBooster;
+    open_booster: TBooster;
 
      procedure HlavniOpenForm;
      procedure NormalOpenForm;
      procedure NewOpenForm;
   public
     procedure NewZes;
-    procedure OpenForm(Zesilovac:TBooster);
+    procedure OpenForm(Zesilovac: TBooster);
   end;
 
 var
@@ -60,7 +60,7 @@ uses GetSystems, TechnologieRCS, BoosterDb, FileSystem, DataZesilovac,
 
 {$R *.dfm}
 
-procedure TF_ZesilovacEdit.OpenForm(Zesilovac:TBooster);
+procedure TF_ZesilovacEdit.OpenForm(Zesilovac: TBooster);
  begin
   Self.open_booster := Zesilovac;
   Self.HlavniOpenForm;
@@ -82,7 +82,7 @@ begin
 end;
 
 procedure TF_ZesilovacEdit.B_SaveClick(Sender: TObject);
-var settings:TBoosterSettings;
+var settings: TBoosterSettings;
 begin
  if (E_Nazev.Text = '') then
   begin
@@ -106,7 +106,7 @@ begin
    try
      Boosters.Add(Self.open_booster);
    except
-     on E:Exception do
+     on E: Exception do
       begin
        Application.MessageBox(PChar(e.Message), 'Chyba při vytváření zesilovače', MB_OK OR MB_ICONERROR);
        Exit();
@@ -197,8 +197,8 @@ procedure TF_ZesilovacEdit.HlavniOpenForm;
  end;
 
 procedure TF_ZesilovacEdit.NormalOpenForm;
-var bSettings:TBoosterSettings;
-    IgnoraceRCS:TArI;
+var bSettings: TBoosterSettings;
+    IgnoraceRCS: TArI;
  begin
   bSettings := open_booster.bSettings;
 
@@ -233,7 +233,7 @@ var bSettings:TBoosterSettings;
  end;
 
 procedure TF_ZesilovacEdit.NewOpenForm;
-var IgnoraceRCS:TArI;
+var IgnoraceRCS: TArI;
  begin
   E_ID.Text         := '';
   E_Nazev.Text      := '';

@@ -14,15 +14,15 @@ type
       FOnClose: TNotifyEvent;
       procedure DoClose; virtual;
 
-      constructor Create(AOwner:TComponent); override;
+      constructor Create(AOwner: TComponent); override;
       destructor Destroy; override;
-  property OnClose:TNotifyEvent read FOnClose write FOnClose;
+  property OnClose: TNotifyEvent read FOnClose write FOnClose;
   end;// class TCloseTabSheet
 
 
 implementation
 
-constructor TCloseTabSheet.Create(AOwner:TComponent);
+constructor TCloseTabSheet.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FCloseButtonRect := Rect(0, 0, 0, 0);

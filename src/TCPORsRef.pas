@@ -1,4 +1,4 @@
-﻿unit TCPORsRef;
+unit TCPORsRef;
 
 interface
 
@@ -6,7 +6,7 @@ uses Generics.Collections, TOblRizeni, TBlok, Classes, Train, User,
      THnaciVozidlo, IdContext, SysUtils;
 
 type
-  TPSCallback = procedure (Sender:TIdContext; success:Boolean) of object;
+  TPSCallback = procedure (Sender: TIdContext; success: Boolean) of object;
 
   TORPing = record
     id: Cardinal;
@@ -24,41 +24,41 @@ type
     _PING_TRYOUT = 3;
 
    private
-    procedure CheckSendPing(AContext:TIdContext);
-    procedure CheckUnreachable(AContext:TIdContext);
+    procedure CheckSendPing(AContext: TIdContext);
+    procedure CheckUnreachable(AContext: TIdContext);
 
-    function GetPing():TTime;
-    procedure OnUnreachable(AContext:TIdContext);
-    procedure PingNewReceived(time:TTime);
+    function GetPing(): TTime;
+    procedure OnUnreachable(AContext: TIdContext);
+    procedure PingNewReceived(time: TTime);
 
    public
-    ORs:TList<TOR>;                                                             // reference na OR
-    protocol_version:string;
+    ORs: TList<TOR>;                                                             // reference na OR
+    protocol_version: string;
 
-    stitek:TBlk;                                                                // blok, na kterema kutalne probiha zmena stitku
-    vyluka:TBlk;                                                                // blok, na kterem aktualne probiha zmena vyluky
-    potvr:TPSCallback;                                                          // callback probihajici potvrzovaci sekvence
-    menu:TBlk;                                                                  // blok, kteremu odeslat callback kliku na polozku v menu
-    menu_or:TOR;                                                                // OR, ze ktere bylo vyvolano menu
-    UPO_OK, UPO_Esc:TNotifyEvent;                                               // callbacky manipulace s upozornenim vlevo dole
-    UPO_ref:TObject;                                                            //
-    index:Integer;                                                              // index spojeni v tabulce ve F_Main
-    funcsVyznamReq:Boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
-    maus:Boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
+    stitek: TBlk;                                                                // blok, na kterema kutalne probiha zmena stitku
+    vyluka: TBlk;                                                                // blok, na kterem aktualne probiha zmena vyluky
+    potvr: TPSCallback;                                                          // callback probihajici potvrzovaci sekvence
+    menu: TBlk;                                                                  // blok, kteremu odeslat callback kliku na polozku v menu
+    menu_or: TOR;                                                                // OR, ze ktere bylo vyvolano menu
+    UPO_OK, UPO_Esc: TNotifyEvent;                                               // callbacky manipulace s upozornenim vlevo dole
+    UPO_ref: TObject;                                                            //
+    index: Integer;                                                              // index spojeni v tabulce ve F_Main
+    funcsVyznamReq: Boolean;                                                     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
+    maus: Boolean;                                                               // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
 
-    train_new_usek_index:Integer;                                               // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
-    train_edit:TTrain;                                                          // souprava, kterou panel edituje
-    train_usek:TObject;                                                         // usek, na kterem panel edituje soupravu (TBlkUsek)
+    train_new_usek_index: Integer;                                               // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
+    train_edit: TTrain;                                                          // souprava, kterou panel edituje
+    train_usek: TObject;                                                         // usek, na kterem panel edituje soupravu (TBlkUsek)
 
-    regulator:Boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
-    regulator_user:TUser;                                                       // uzivatel, ktery autorizoval regulator
-    regulator_zadost:TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
-    regulator_loks:TList<THV>;                                                  // seznam lokomotiv v regulatoru
+    regulator: Boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
+    regulator_user: TUser;                                                       // uzivatel, ktery autorizoval regulator
+    regulator_zadost: TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
+    regulator_loks: TList<THV>;                                                  // seznam lokomotiv v regulatoru
 
-    st_hlaseni:TList<TOR>;                                                      // stanice, do kterych je autorizovano stanicni hlaseni
-    train_menu_index:Integer;                                                   // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
+    st_hlaseni: TList<TOR>;                                                      // stanice, do kterych je autorizovano stanicni hlaseni
+    train_menu_index: Integer;                                                   // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
 
-    soundDict:TDictionary<Integer, Cardinal>;                                   // pro kazdy zvuk obsahuje pocet jeho prehravani
+    soundDict: TDictionary<Integer, Cardinal>;                                   // pro kazdy zvuk obsahuje pocet jeho prehravani
                                                                                 // predpoklada se, ze kazda OR si resi zvuku samostatne, az tady se to spojuje
 
     podj_usek: TBlk;                                                            // data pro editaci predvidaneho odjezdu
@@ -71,17 +71,17 @@ type
     ping_received_next_index: Integer;
     ping_unreachable: Boolean;
 
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     procedure Escape(AContext: TIdContext);                                     // volano pri stisku Escape v panelu
     procedure Reset();
     procedure ResetTrains();
 
-    class function ORPing(id: Cardinal; sent: TDateTime):TORPing;
-    function PingComputed():Boolean;
-    procedure PingUpdate(AContext:TIdContext);
-    procedure PongReceived(id:Cardinal);
+    class function ORPing(id: Cardinal; sent: TDateTime): TORPing;
+    function PingComputed(): Boolean;
+    procedure PingUpdate(AContext: TIdContext);
+    procedure PongReceived(id: Cardinal);
 
     property ping: TTime read GetPing;
   end;
@@ -92,7 +92,7 @@ uses fMain, TCPServerOR, RegulatorTCP;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTCPORsRef.Create(index:Integer);
+constructor TTCPORsRef.Create(index: Integer);
 begin
  inherited Create();
  Self.regulator_loks := TList<THV>.Create();
@@ -123,7 +123,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPORsRef.Escape(AContext: TIdContext);
-var oblr:TOR;
+var oblr: TOR;
 begin
  if ((Self.stitek = nil) and (Self.vyluka = nil) and (not Assigned(Self.potvr)) and (Self.menu = nil) and (not Assigned(Self.UPO_OK))) then
    for oblr in Self.ORs do
@@ -164,7 +164,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TTCPOrsRef.ORPing(id: Cardinal; sent: TDateTime):TORPing;
+class function TTCPOrsRef.ORPing(id: Cardinal; sent: TDateTime): TORPing;
 begin
  Result.id := id;
  Result.sent := sent;
@@ -172,12 +172,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTCPOrsRef.PingComputed():Boolean;
+function TTCPOrsRef.PingComputed(): Boolean;
 begin
  Result := (Self.ping_received.Count > 0);
 end;
 
-function TTCPOrsRef.GetPing():TTime;
+function TTCPOrsRef.GetPing(): TTime;
 var sum, ping: TTime;
 begin
  if (Self.ping_received.Count = 0) then
@@ -191,8 +191,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.OnUnreachable(AContext:TIdContext);
-var i:Integer;
+procedure TTCPORsRef.OnUnreachable(AContext: TIdContext);
+var i: Integer;
 begin
  // clear loco always (even when called after several attempts)
  for i := Self.regulator_loks.Count-1 downto 0 do
@@ -207,7 +207,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.CheckSendPing(AContext:TIdContext);
+procedure TTCPORsRef.CheckSendPing(AContext: TIdContext);
 begin
  if (Now >= Self.ping_next_send) then
   begin
@@ -229,7 +229,7 @@ begin
   end;
 end;
 
-procedure TTCPORsRef.PongReceived(id:Cardinal);
+procedure TTCPORsRef.PongReceived(id: Cardinal);
 var orPing: TORPing;
 begin
  while (Self.ping_sent.Count > 0) do
@@ -245,7 +245,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.CheckUnreachable(AContext:TIdContext);
+procedure TTCPORsRef.CheckUnreachable(AContext: TIdContext);
 begin
  if (Self.ping_sent.Count > _PING_TRYOUT) then
   begin
@@ -256,7 +256,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.PingUpdate(AContext:TIdContext);
+procedure TTCPORsRef.PingUpdate(AContext: TIdContext);
 begin
  Self.CheckSendPing(AContext);
  Self.CheckUnreachable(AContext);
@@ -264,7 +264,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.PingNewReceived(time:TTime);
+procedure TTCPORsRef.PingNewReceived(time: TTime);
 begin
  if (Self.ping_unreachable) then
   begin

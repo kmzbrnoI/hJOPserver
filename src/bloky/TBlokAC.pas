@@ -31,7 +31,7 @@ type
  TBlkAC = class(TBlk)
   const
    //defaultni stav
-   _def_ac_state:TBlkACState = (
+   _def_ac_state: TBlkACState = (
      enabled: false;
      client: nil;
      state: TACState.stopped;
@@ -68,7 +68,7 @@ type
     destructor Destroy(); override;
 
     // load/save data
-    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel,ini_stat: TMemIniFile); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
 
     // enable or disable symbol on relief
@@ -99,10 +99,10 @@ type
 
     // GUI:
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights):string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
                          rights: TORCOntrolRights; params: string = ''); override;
-    function PanelStateString():string; override;
+    function PanelStateString(): string; override;
 
  end;
 
@@ -189,7 +189,7 @@ begin
  try
    Self.Start();
  except
-   on E:Exception do
+   on E: Exception do
      ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
  end;
 end;
@@ -199,7 +199,7 @@ begin
  try
    Self.Stop();
  except
-   on E:Exception do
+   on E: Exception do
      ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
  end;
 end;
@@ -209,7 +209,7 @@ begin
  try
    Self.Pause();
  except
-   on E:Exception do
+   on E: Exception do
      ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
  end;
 end;
@@ -225,7 +225,7 @@ begin
  try
    Self.Start();
  except
-   on E:Exception do
+   on E: Exception do
      ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
  end;
 end;
@@ -237,7 +237,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkAC.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights):string;
+function TBlkAC.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := inherited;
 

@@ -55,13 +55,13 @@ type
      constructor Create(data: string); overload;
      constructor Create(data: TRREvData); overload;
 
-     function GetDefStr():string;
+     function GetDefStr(): string;
 
      procedure Register();
      procedure Unregister();
 
      // Sender must be a valid "Usek" blok.
-     function IsTriggerred(Sender:TObject; safeState: Boolean):Boolean;
+     function IsTriggerred(Sender: TObject; safeState: Boolean): Boolean;
 
      property enabled: Boolean read m_state.enabled;
      property data: TRREvData read m_data;
@@ -92,8 +92,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TRREv.LoadFromDefStr(data: string);
-var strs:TStrings;
-    tmpTime:Cardinal;
+var strs: TStrings;
+    tmpTime: Cardinal;
 begin
  strs := TStringList.Create();
 
@@ -129,7 +129,7 @@ begin
  end;
 end;
 
-function TRREv.GetDefStr():string;
+function TRREv.GetDefStr(): string;
 begin
  Result := IntToStr(Integer(Self.m_data.typ)) + ';';
 
@@ -161,8 +161,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRREv.IsTriggerred(Sender:TObject; safeState: Boolean):Boolean;
-var Blk:TBlk;
+function TRREv.IsTriggerred(Sender: TObject; safeState: Boolean): Boolean;
+var Blk: TBlk;
 begin
  if (not Self.enabled) then Exit(false);
 

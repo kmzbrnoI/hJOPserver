@@ -11,8 +11,8 @@ uses Train, TOblRizeni, Generics.Collections, TBlokUsek, TBlokTrat;
 type
   // jaka stanicni hlaseni prehrat
   TSHToPlay = record
-    trat:TBlkTrat;
-    stanicniKolej:TBlkUsek;
+    trat: TBlkTrat;
+    stanicniKolej: TBlkUsek;
   end;
 
   { Mozne stavy:
@@ -22,7 +22,7 @@ type
      - trat != nil, stanicniKolej != nil: prehrat prujezd po koleji
   }
 
-function CanPlayPrijezdSH(train:TTrain; OblR:TOR):TSHToPlay;
+function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
   // vraci jaka prijezdova stanicni hlaseni lze prehrat
   // tato funkce predpoklada, ze jsou spravne vypocitany predpovidani souprav
   // funkce overuje jen pritomnost na usecich, overeni dostupnosti fyzickeho
@@ -34,12 +34,12 @@ uses TBloky, TBlok, TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function CanPlayPrijezdSH(train:TTrain; OblR:TOR):TSHToPlay;
-var blksWithTrain:TList<TBlkUsek>;
-    blk:TBlk;
-    blkUsek:TBlkUsek;
-    inTrat:TBlkTrat;
-    inOR:Boolean;
+function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
+var blksWithTrain: TList<TBlkUsek>;
+    blk: TBlk;
+    blkUsek: TBlkUsek;
+    inTrat: TBlkTrat;
+    inOR: Boolean;
 begin
  blksWithTrain := TList<TBlkUsek>.Create();
 

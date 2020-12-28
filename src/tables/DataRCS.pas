@@ -1,4 +1,4 @@
-﻿unit DataRCS;
+unit DataRCS;
 
 // TRCSTableData - trida starajici se o vyplnovani tabulky RCS
 
@@ -9,23 +9,23 @@ uses ComCtrls, SysUtils, Generics.Collections;
 type
   TRCSTableData=class
     private
-      LV:TListView;
-      AddrToLine:TDictionary<Integer, Integer>;
+      LV: TListView;
+      AddrToLine: TDictionary<Integer, Integer>;
 
     public
 
-      procedure LoadToTable(load_all:Boolean = false);
-      procedure UpdateBoard(addr:Integer);
+      procedure LoadToTable(load_all: Boolean = false);
+      procedure UpdateBoard(addr: Integer);
       procedure UpdateTable();
-      function CreateLineForNewBoard(addr:Integer):Integer;
-      function GetLineForNewBoard(addr:Integer):Integer;
+      function CreateLineForNewBoard(addr: Integer): Integer;
+      function GetLineForNewBoard(addr: Integer): Integer;
 
-      constructor Create(LV:TListView);
+      constructor Create(LV: TListView);
       destructor Destroy(); override;
   end;
 
 var
-   RCSTableData:TRCSTableData;
+   RCSTableData: TRCSTableData;
 
 
 implementation
@@ -34,7 +34,7 @@ uses TechnologieRCS, RCS;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TRCSTableData.Create(LV:TListView);
+constructor TRCSTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
@@ -49,9 +49,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSTableData.LoadToTable(load_all:Boolean = false);
-var i, j:integer;
-    LI:TListItem;
+procedure TRCSTableData.LoadToTable(load_all: Boolean = false);
+var i, j: integer;
+    LI: TListItem;
  begin
   Self.LV.Clear();
   Self.AddrToLine.Clear();
@@ -87,8 +87,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TRCSTableData.GetLineForNewBoard(addr:Integer):Integer;
-var i:Integer;
+function TRCSTableData.GetLineForNewBoard(addr: Integer): Integer;
+var i: Integer;
 begin
  for i := 0 to Self.LV.Items.Count-1 do
    if (addr < Integer(Self.LV.Items[i].Data)) then
@@ -96,9 +96,9 @@ begin
  Result := Self.LV.Items.Count;
 end;
 
-function TRCSTableData.CreateLineForNewBoard(addr:Integer):Integer;
-var LI:TListItem;
-    i, line:Integer;
+function TRCSTableData.CreateLineForNewBoard(addr: Integer): Integer;
+var LI: TListItem;
+    i, line: Integer;
 begin
  line := Self.GetLineForNewBoard(addr);
  LI := Self.LV.Items.Insert(line);
@@ -113,11 +113,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSTableData.UpdateBoard(addr:Integer);
-var j, cnt:integer;
-    output:Integer;
-    LI:TListItem;
-    start:integer;
+procedure TRCSTableData.UpdateBoard(addr: Integer);
+var j, cnt: integer;
+    output: Integer;
+    LI: TListItem;
+    start: integer;
  begin
   if (not Self.AddrToLine.ContainsKey(addr)) then
     Self.CreateLineForNewBoard(addr);
@@ -164,7 +164,7 @@ var j, cnt:integer;
   try
     LI.SubItems[1] := RCSi.GetModuleName(addr);
   except
-    on E:Exception do
+    on E: Exception do
       LI.SubItems[1] := E.Message;
   end;
 
@@ -174,7 +174,7 @@ var j, cnt:integer;
     else
       LI.SubItems[2] := '-';
   except
-    on E:Exception do
+    on E: Exception do
       LI.SubItems[2] := E.Message;
   end;
 
@@ -246,7 +246,7 @@ var j, cnt:integer;
       LI.SubItems[6] := '-';
      end;
   except
-    on E:Exception do
+    on E: Exception do
      begin
       LI.SubItems[3] := 'Exception';
       LI.SubItems[4] := E.Message;

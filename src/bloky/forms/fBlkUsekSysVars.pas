@@ -1,4 +1,4 @@
-﻿unit fBlkUsekSysVars;
+unit fBlkUsekSysVars;
 
 interface
 
@@ -42,11 +42,11 @@ type
     procedure B_SprDeleteClick(Sender: TObject);
     procedure B_SprAddClick(Sender: TObject);
   private
-   Blk:TBlkUsek;
+   Blk: TBlkUsek;
     procedure LoadPrmnFromProgram;
     procedure SavePrmnToProgram;
   public
-   procedure OpenForm(Blok:TBlkUsek);
+   procedure OpenForm(Blok: TBlkUsek);
   end;
 
 var
@@ -59,7 +59,7 @@ uses fMain, ownConvert, TrainDb, Booster;
 {$R *.dfm}
 
 procedure TF_BlkUsek_tech.LoadPrmnFromProgram;
-var spr:Integer;
+var spr: Integer;
  begin
   CB_Zaver.ItemIndex := Integer(Self.Blk.Zaver);
 
@@ -97,7 +97,7 @@ var spr:Integer;
  end;
 
 procedure TF_BlkUsek_tech.SavePrmnToProgram;
-var Blk:TBlk;
+var Blk: TBlk;
  begin
   Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
   Self.Blk.NUZ := ownConvert.IntToBool(CB_NUZ.ItemIndex);
@@ -115,7 +115,7 @@ var Blk:TBlk;
   Self.Blk.Stitek := M_Stitek.Text;
  end;
 
-procedure TF_BlkUsek_tech.OpenForm(Blok:TBlkUsek);
+procedure TF_BlkUsek_tech.OpenForm(Blok: TBlkUsek);
  begin
   Self.Blk := Blok;
   LoadPrmnFromProgram();
@@ -142,7 +142,7 @@ begin
    Self.Blk.AddTrainS(Self.SE_SprAdd_Index.Value);
    Self.LB_Soupravy.Items.Add(IntToStr(Self.SE_SprAdd_Index.Value));
  except
-   on E:Exception do
+   on E: Exception do
      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
 end;
@@ -156,7 +156,7 @@ begin
    Self.Blk.RemoveTrain(StrToInt(Self.LB_Soupravy.Items[Self.LB_Soupravy.ItemIndex]));
    Self.LB_Soupravy.Items.Delete(Self.LB_Soupravy.ItemIndex);
  except
-   on E:Exception do
+   on E: Exception do
      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
  end;
 end;

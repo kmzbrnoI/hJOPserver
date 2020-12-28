@@ -23,8 +23,8 @@ TBlkUsekRef = class
  private
    function MIsPart(): Boolean;
    procedure Parse(str: string);
-   function GetBlock():TBlkUsek;
-   function GetBlockState():TUsekStav;
+   function GetBlock(): TBlkUsek;
+   function GetBlockState(): TUsekStav;
 
  public
   blockId: Integer;
@@ -106,7 +106,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsekRef.GetBlock():TBlkUsek;
+function TBlkUsekRef.GetBlock(): TBlkUsek;
 var blk: TBlk;
 begin
  Blky.GetBlkById(Self.blockId, blk);
@@ -116,7 +116,7 @@ begin
    Result := nil;
 end;
 
-function TBlkUsekRef.GetBlockState():TUsekStav;
+function TBlkUsekRef.GetBlockState(): TUsekStav;
 begin
  if (Self.block = nil) then
    raise ENoBlock.Create('No block, unable to get state!');

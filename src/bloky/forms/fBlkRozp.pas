@@ -1,4 +1,4 @@
-﻿unit fBlkRozp;
+unit fBlkRozp;
 
 interface
 
@@ -26,14 +26,14 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
   private
-   NewBlk:Boolean;
-   Blk:TBlkRozp;
+   NewBlk: Boolean;
+   Blk: TBlkRozp;
 
   public
 
-   OpenIndex:Integer;
+   OpenIndex: Integer;
 
-   procedure OpenForm(BlokIndex:Integer);
+   procedure OpenForm(BlokIndex: Integer);
    procedure NewBlkOpenForm;
    procedure NormalOpenForm;
    procedure HlavniOpenForm;
@@ -49,10 +49,10 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlok, DataBloky, TOblRizen
 
 {$R *.dfm}
 
-procedure TF_BlkRozp.OpenForm(BlokIndex:Integer);
+procedure TF_BlkRozp.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex,TBlk(Self.Blk));
+  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -82,9 +82,9 @@ procedure TF_BlkRozp.NewBlkOpenForm;
  end;
 
 procedure TF_BlkRozp.NormalOpenForm;
-var glob:TBlkSettings;
-    settings:TBlkRozpSettings;
-    oblr:TOR;
+var glob: TBlkSettings;
+    settings: TBlkRozpSettings;
+    oblr: TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -132,18 +132,18 @@ procedure TF_BlkRozp.B_StornoClick(Sender: TObject);
  end;
 
 procedure TF_BlkRozp.B_SaveClick(Sender: TObject);
-var glob:TBlkSettings;
-    settings:TBlkRozpSettings;
+var glob: TBlkSettings;
+    settings: TBlkRozpSettings;
     another: TBlk;
  begin
   if (E_Nazev.Text = '') then
    begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value,OpenIndex)) then
+  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data',MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
@@ -165,7 +165,7 @@ var glob:TBlkSettings;
     try
       Blk := Blky.Add(btRozp, glob) as TBlkRozp;
     except
-      on E:Exception do
+      on E: Exception do
        begin
         Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();

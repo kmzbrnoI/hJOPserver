@@ -1,4 +1,4 @@
-﻿unit TechnologieJC;
+unit TechnologieJC;
 
 {
   Kompletni technologie jizdnich cest.
@@ -77,37 +77,37 @@ type
 
   // jedna bariera ve staveni jizdni cesty:
   TJCBariera = record
-   typ:Integer;                                                                 // typ bariery, odkazuje na konstanty _JCB_*, viz nize
-   blok:TBlk;                                                                   // blok, na ktery se bariera vztahuje; nektere bariery nemusi byt prirazeny bloku, platnost tohoto parametru je potreba overit pro kazdou barieru samostatne
-   param:Integer;                                                               // parametr bariery, typicky napr. ID bloku, ktery neexistuje; v takovem pripade samozrejme nemuze existovat \blok
+   typ: Integer;                                                                 // typ bariery, odkazuje na konstanty _JCB_*, viz nize
+   blok: TBlk;                                                                   // blok, na ktery se bariera vztahuje; nektere bariery nemusi byt prirazeny bloku, platnost tohoto parametru je potreba overit pro kazdou barieru samostatne
+   param: Integer;                                                               // parametr bariery, typicky napr. ID bloku, ktery neexistuje; v takovem pripade samozrejme nemuze existovat \blok
   end;
   TJCBariery = TList<TJCBariera>;                                               // seznam barier; typicky seznam barie branici staveni jizdni cesty
 
   // zaver vyhybky v jizdni ceste
   TJCVyhZaver=record
-   Blok:Integer;                                                                // odkaz na blok (ID bloku)
+   Blok: Integer;                                                                // odkaz na blok (ID bloku)
    Poloha: TTurnoutPosition;                                                    // chtena poloha vyhybky
   end;
 
   // zaver odvratove vyhybky v jizdni ceste
   TJCOdvratZaver=record
-   Blok:Integer;                                                                // odkaz na blok (ID bloku)
+   Blok: Integer;                                                                // odkaz na blok (ID bloku)
    Poloha: TTurnoutPosition;                                                    // chtena poloha vyhybky
-   ref_blk:Integer;                                                             // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde i k uvolneni zaveru odvratove vyhybky
+   ref_blk: Integer;                                                             // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
   // bloky v JC, ketre jsou navazany na konkretni useky v ramci JC
   TJCRefZaver=record
-   Blok:Integer;                                                                // odkaz na blok ID
-   ref_blk:Integer;                                                             // blok, pri jehoz uvolneni zaveru dojde ke zruseni redukce \Blok
+   Blok: Integer;                                                                // odkaz na blok ID
+   ref_blk: Integer;                                                             // blok, pri jehoz uvolneni zaveru dojde ke zruseni redukce \Blok
   end;
 
   // prejezd v jizdni ceste
   TJCPrjZaver=record
-   Prejezd:Integer;                                                             // odkaz na ID bloku prejezdu
-   uzaviraci:TList<Integer>;                                                    // uzaviraci bloky (ID) prejezdu
+   Prejezd: Integer;                                                             // odkaz na ID bloku prejezdu
+   uzaviraci: TList<Integer>;                                                    // uzaviraci bloky (ID) prejezdu
                                                                                 // pokud se prejezd nezavira, je seznam prazdny
-   oteviraci:Integer;                                                           // oteviraci blok (ID) prejezdu
+   oteviraci: Integer;                                                           // oteviraci blok (ID) prejezdu
                                                                                 // pokud se prejezd nezavira, je nedefinovany
   end;
 
@@ -159,7 +159,7 @@ type
    nzv: Boolean;                                                                // nedostatecna zabrzdna vzdalenost
   end;
 
-  ENavChanged = procedure(Sender:TObject; origNav:TBlk) of object;
+  ENavChanged = procedure(Sender: TObject; origNav: TBlk) of object;
 
   ///////////////////////////////////////////////////////////////////////////
 
@@ -239,48 +239,48 @@ type
      fOnNavChanged: ENavChanged;
 
       procedure SetInitKrok();
-      procedure SetProperties(prop:TJCProp);
+      procedure SetProperties(prop: TJCProp);
 
       procedure RusZacatekJC();
       procedure RusKonecJC();
       procedure RusVBJC();
       procedure PredejDataDalsimuBloku();                                       // predani dat dalsimu useku v jizdni ceste
-      procedure CheckSmyckaBlok(blk:TBlk);                                      // kontroluje zmenu smeru soupravy a hnacich vozidel pri vkroceni do smyckove bloku, tato kontrola probiha pouze pri vkroceni do posledniho bloku JC
+      procedure CheckSmyckaBlok(blk: TBlk);                                      // kontroluje zmenu smeru soupravy a hnacich vozidel pri vkroceni do smyckove bloku, tato kontrola probiha pouze pri vkroceni do posledniho bloku JC
 
-      function GetStaveni():Boolean;
-      function GetPostaveno():Boolean;
+      function GetStaveni(): Boolean;
+      function GetPostaveno(): Boolean;
 
-      procedure PS_vylCallback(Sender:TIdContext; success:Boolean);             // callback potvrzovaci sekvence na vyluku
-      procedure UPO_OKCallback(Sender:TObject);                                 // callback potvrzeni upozorneni
-      procedure UPO_EscCallback(Sender:TObject);                                // callback zamitnuti upozorneni
-      procedure NC_PS_Callback(Sender:TIdContext; success:Boolean);             // callback potvrzovaci sekvence nouzove cesty
+      procedure PS_vylCallback(Sender: TIdContext; success: Boolean);             // callback potvrzovaci sekvence na vyluku
+      procedure UPO_OKCallback(Sender: TObject);                                 // callback potvrzeni upozorneni
+      procedure UPO_EscCallback(Sender: TObject);                                // callback zamitnuti upozorneni
+      procedure NC_PS_Callback(Sender: TIdContext; success: Boolean);             // callback potvrzovaci sekvence nouzove cesty
 
-      procedure UsekClosePrj(Sender:TObject; data:integer);                     // zavre prejezd pri vkroceni na dany usek, odkaz na tuto metodu je posilan usekum, ktere ji pri obsazeni vyvolaji
+      procedure UsekClosePrj(Sender: TObject; data: integer);                     // zavre prejezd pri vkroceni na dany usek, odkaz na tuto metodu je posilan usekum, ktere ji pri obsazeni vyvolaji
 
-      procedure SetRozpadBlok(RozpadBlok:Integer);
-      procedure SetRozpadRuseniBlok(RozpadRuseniBlok:Integer);
-      procedure SetKrok(Krok:Integer);
-      procedure CritBarieraEsc(Sender:TObject);
+      procedure SetRozpadBlok(RozpadBlok: Integer);
+      procedure SetRozpadRuseniBlok(RozpadRuseniBlok: Integer);
+      procedure SetKrok(Krok: Integer);
+      procedure CritBarieraEsc(Sender: TObject);
 
       // callbacky ne/nastevni polohy vyhybek:
-      procedure VyhNeprestavenaJCPC(Sender:TObject; error: TTurnoutSetError);
-      procedure VyhNeprestavenaNC(Sender:TObject; error: TTurnoutSetError);
-      procedure VyhPrestavenaNC(Sender:TObject);
-      procedure VyhPrestavenaJCPC(Sender:TObject);
-      procedure NavNepostaveno(Sender:TObject);
+      procedure VyhNeprestavenaJCPC(Sender: TObject; error: TTurnoutSetError);
+      procedure VyhNeprestavenaNC(Sender: TObject; error: TTurnoutSetError);
+      procedure VyhPrestavenaNC(Sender: TObject);
+      procedure VyhPrestavenaJCPC(Sender: TObject);
+      procedure NavNepostaveno(Sender: TObject);
 
-      procedure KontrolaPodminekVCPC(var bariery:TList<TJCBariera>);            // kontrola podminek vlakovych a posunovych cest
-      procedure KontrolaPodminekNC(var bariery:TList<TJCBariera>);              // kontrola podminek nouzovych cest
-      procedure PodminkyNCStaveni(var bariery:TList<TJCBariera>);
+      procedure KontrolaPodminekVCPC(var bariery: TList<TJCBariera>);            // kontrola podminek vlakovych a posunovych cest
+      procedure KontrolaPodminekNC(var bariery: TList<TJCBariera>);              // kontrola podminek nouzovych cest
+      procedure PodminkyNCStaveni(var bariery: TList<TJCBariera>);
 
-      function BarieryNCToPotvr(bariery:TJCBariery):TPSPodminky;                // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
+      function BarieryNCToPotvr(bariery: TJCBariery): TPSPodminky;                // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
 
-      function GetTrain(nav:TBlk = nil; usek:TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
+      function GetTrain(nav: TBlk = nil; usek: TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
 
-      function GetAB():Boolean;
-      function PorusenaKritickaPodminka():Boolean;
-      function GetNav():TBlk;
-      function GetWaitForLastUsekOrTratObsaz():Boolean;
+      function GetAB(): Boolean;
+      function PorusenaKritickaPodminka(): Boolean;
+      function GetNav(): TBlk;
+      function GetWaitForLastUsekOrTratObsaz(): Boolean;
       function GetLastUsek(): TBlk;
 
       procedure BarieraToJson(const bariera: TJCBariera; result: TJsonObject);
@@ -288,24 +288,24 @@ type
 
    public
 
-     index:Integer;                                                             // index v tabulce jizdni cest ve F_Main
-     changed:Boolean;                                                           // JC zmenana -> akualizuje se v tabulce ve F_Main
+     index: Integer;                                                             // index v tabulce jizdni cest ve F_Main
+     changed: Boolean;                                                           // JC zmenana -> akualizuje se v tabulce ve F_Main
 
-      class function JCBariera(typ:Integer; Blok:TBlk = nil; param:Integer = 0):TJCBariera;
+      class function JCBariera(typ: Integer; Blok: TBlk = nil; param: Integer = 0): TJCBariera;
                                                                                 // jednoduche genreovani berier jako navratove funkce teto funkce
-      function JCBarieraToMessage(Bariera:TJCBariera):TUPOItem;                 // prevod bariery na spravu upozorneni vlevo dole
-      class function CriticalBariera(typ:Integer):Boolean;                      // je bariera kriticka?
-      class function PotvrSekvBariera(typ:Integer):Boolean;                     // je bariera hodna potvrzovaci sekvence?
-      function WarningBariera(typ:Integer):Boolean;                             // je bariera hodna zobrazeni upozorneni?
+      function JCBarieraToMessage(Bariera: TJCBariera): TUPOItem;                 // prevod bariery na spravu upozorneni vlevo dole
+      class function CriticalBariera(typ: Integer): Boolean;                      // je bariera kriticka?
+      class function PotvrSekvBariera(typ: Integer): Boolean;                     // je bariera hodna potvrzovaci sekvence?
+      function WarningBariera(typ: Integer): Boolean;                             // je bariera hodna zobrazeni upozorneni?
 
-      class function PotvrSekvBarieraToReason(typ:Integer):string;
+      class function PotvrSekvBarieraToReason(typ: Integer): string;
 
       constructor Create(); overload;
-      constructor Create(data:TJCprop); overload;
+      constructor Create(data: TJCprop); overload;
       destructor Destroy(); override;
 
       procedure NastavNav();                                                    // nastavi pozadovanu navest pri postaveni JC
-      procedure RusJC(Sender:TObject = nil);                                    // rusi vlakovou cestu
+      procedure RusJC(Sender: TObject = nil);                                    // rusi vlakovou cestu
       procedure RusJCWithoutBlk();                                              // rusi vlakovou cestu bez zruseni zaveru useku
       procedure UsekyRusJC();                                                   // kontroluje projizdeni soupravy useky a rusi jejich zavery
       procedure UsekyRusNC();                                                   // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
@@ -313,30 +313,30 @@ type
 
       procedure UpdateStaveni();                                                // prubezne stavi JC, meni kroky
       procedure UpdateTimeOut();                                                // kontroluje TimeOut staveni JC
-      procedure CancelStaveni(reason:string = ''; stack_remove:Boolean = false);// zrusi staveni a oduvodneni zaloguje a zobrazi dispecerovi
+      procedure CancelStaveni(reason: string = ''; stack_remove: Boolean = false);// zrusi staveni a oduvodneni zaloguje a zobrazi dispecerovi
 
-      procedure LoadData(ini:TMemIniFile; section:string);
-      procedure SaveData(ini:TMemIniFile; section:string);
+      procedure LoadData(ini: TMemIniFile; section: string);
+      procedure SaveData(ini: TMemIniFile; section: string);
 
-      function StavJC(SenderPnl:TIdContext; SenderOR:TObject; bariery_out:TJCBariery;
-          from_stack:TObject = nil; nc:Boolean = false; fromAB:Boolean = false;
-          abAfter:Boolean = false):Integer; overload;
-      function StavJC(SenderPnl:TIdContext; SenderOR:TObject;
-          from_stack:TObject = nil; nc:Boolean = false; fromAB:Boolean = false;
-          abAfter:Boolean = false):Integer; overload;
+      function StavJC(SenderPnl: TIdContext; SenderOR: TObject; bariery_out: TJCBariery;
+          from_stack: TObject = nil; nc: Boolean = false; fromAB: Boolean = false;
+          abAfter: Boolean = false): Integer; overload;
+      function StavJC(SenderPnl: TIdContext; SenderOR: TObject;
+          from_stack: TObject = nil; nc: Boolean = false; fromAB: Boolean = false;
+          abAfter: Boolean = false): Integer; overload;
 
 
-      function CanDN():Boolean;                                                 // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
+      function CanDN(): Boolean;                                                 // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
       procedure DN();                                                           // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
       procedure STUJ();
 
-      function KontrolaPodminek(NC:Boolean = false):TJCBariery;
-      function IsAnyVyhMinus():Boolean;
+      function KontrolaPodminek(NC: Boolean = false): TJCBariery;
+      function IsAnyVyhMinus(): Boolean;
       procedure ClientDisconnect(AContext: TIDContext);
 
-      procedure GetPtData(json:TJsonObject; includeStaveni:Boolean);
-      procedure GetPtStaveni(json:TJsonObject);
-      procedure PostPtStav(reqJson:TJsonObject; respJson:TJsonObject);
+      procedure GetPtData(json: TJsonObject; includeStaveni: Boolean);
+      procedure GetPtStaveni(json: TJsonObject);
+      procedure PostPtStav(reqJson: TJsonObject; respJson: TJsonObject);
 
       property data: TJCprop read fproperties write SetProperties;
       property stav: TJCStaveni read fstaveni;
@@ -386,7 +386,7 @@ begin
  Self.fproperties.prejezdy := TList<TJCPrjZaver>.Create();
 end;//ctor
 
-constructor TJC.Create(data:TJCprop);
+constructor TJC.Create(data: TJCprop);
 begin
  inherited Create();
 
@@ -403,7 +403,7 @@ begin
 end;//ctor
 
 destructor TJC.Destroy();
-var i:Integer;
+var i: Integer;
 begin
  if (Assigned(Self.fstaveni.ncBariery)) then FreeAndNil(Self.fstaveni.ncBariery);
  if (Assigned(Self.fproperties.zamky)) then FreeAndNil(Self.fproperties.zamky);
@@ -423,15 +423,15 @@ end;//ctor
 // kontroluje podminky pro staveni konkretni jizdni cesty
 // vraci List prblemu (tzv. bariery), ktere definuji to, proc jizdni cestu nelze postavit (tedy vraci vsechny nesplnene podminky)
 // tzv. kriticke bariery jsou vzdy na zacatu Listu
-function TJC.KontrolaPodminek(NC:Boolean = false):TJCBariery;
-var i:Integer;
-    Blk,blk2:TBlk;
-    privol:TBlksList;
-    vyhZaver:TJCVyhZaver;
-    usekZaver:Integer;
-    refZaver:TJCRefZaver;
-    prjZaver:TJCPrjZaver;
-    odvratZaver:TJCOdvratZaver;
+function TJC.KontrolaPodminek(NC: Boolean = false): TJCBariery;
+var i: Integer;
+    Blk, blk2: TBlk;
+    privol: TBlksList;
+    vyhZaver: TJCVyhZaver;
+    usekZaver: Integer;
+    refZaver: TJCRefZaver;
+    prjZaver: TJCPrjZaver;
+    odvratZaver: TJCOdvratZaver;
 begin
   Result := TList<TJCBariera>.Create();
 
@@ -639,16 +639,16 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // kontrola podminek vlakove a posunove cesty
 
-procedure TJC.KontrolaPodminekVCPC(var bariery:TList<TJCBariera>);
-var i, usek, cnt, addr:Integer;
-    Blk,blk2:TBlk;
-    glob:TBlkSettings;
-    flag, cont:Boolean;
-    train:TTrain;
-    prjZaver:TJCPrjZaver;
-    vyhZaver:TJCVyhZaver;
-    odvratZaver:TJCOdvratZaver;
-    refZaver:TJCRefZaver;
+procedure TJC.KontrolaPodminekVCPC(var bariery: TList<TJCBariera>);
+var i, usek, cnt, addr: Integer;
+    Blk, blk2: TBlk;
+    glob: TBlkSettings;
+    flag, cont: Boolean;
+    train: TTrain;
+    prjZaver: TJCPrjZaver;
+    vyhZaver: TJCVyhZaver;
+    odvratZaver: TJCOdvratZaver;
+    refZaver: TJCRefZaver;
 begin
   // navestidlo
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
@@ -1004,13 +1004,13 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // kontrola podminek nouzove cesty:
 
-procedure TJC.KontrolaPodminekNC(var bariery:TList<TJCBariera>);
-var i, usek, cnt:Integer;
-    Blk,blk2:TBlk;
-    glob:TBlkSettings;
-    vyhZaver:TJCVyhZaver;
-    prjZaver:TJCPrjZaver;
-    odvratZaver:TJCOdvratZaver;
+procedure TJC.KontrolaPodminekNC(var bariery: TList<TJCBariera>);
+var i, usek, cnt: Integer;
+    Blk, blk2: TBlk;
+    glob: TBlkSettings;
+    vyhZaver: TJCVyhZaver;
+    prjZaver: TJCPrjZaver;
+    odvratZaver: TJCOdvratZaver;
 begin
   {
     nouzovou cestu nelze postavit pres:
@@ -1194,15 +1194,15 @@ end;
 // stavi konkretni jizdni cestu
 // tato fce ma za ukol zkontrolovat vstupni podminky jizdni cesty
 // tato funkce jeste nic nenastavuje!
-function TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject; bariery_out:TJCBariery;
-                    from_stack:TObject = nil; nc:Boolean = false; fromAB:Boolean = false;
-                    abAfter: Boolean = false):Integer;
-var i:Integer;
-    bariery:TJCBariery;
-    bariera:TJCBariera;
-    critical:Boolean;
-    upo:TUPOItems;
-    item:TUPOItem;
+function TJC.StavJC(SenderPnl: TIdContext; SenderOR: TObject; bariery_out: TJCBariery;
+                    from_stack: TObject = nil; nc: Boolean = false; fromAB: Boolean = false;
+                    abAfter: Boolean = false): Integer;
+var i: Integer;
+    bariery: TJCBariery;
+    bariera: TJCBariera;
+    critical: Boolean;
+    upo: TUPOItems;
+    item: TUPOItem;
  begin
   Self.fstaveni.timeOut := Now + EncodeTime(0, _JC_INITPOTVR_TIMEOUT_SEC div 60, _JC_INITPOTVR_TIMEOUT_SEC mod 60, 0);
 
@@ -1285,20 +1285,20 @@ var i:Integer;
   Result := 0;
  end;
 
-function TJC.StavJC(SenderPnl:TIdContext; SenderOR:TObject;
-  from_stack:TObject = nil; nc:Boolean = false; fromAB:Boolean = false;
-  abAfter:Boolean = false):Integer;
+function TJC.StavJC(SenderPnl: TIdContext; SenderOR: TObject;
+  from_stack: TObject = nil; nc: Boolean = false; fromAB: Boolean = false;
+  abAfter: Boolean = false): Integer;
 begin
  Result := Self.StavJC(SenderPnl, SenderOR, nil, from_stack, nc, fromAB, abAfter);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.PS_vylCallback(Sender:TIdContext; success:Boolean);
+procedure TJC.PS_vylCallback(Sender: TIdContext; success: Boolean);
 var
-    bariery:TJCBariery;
-    critical:Boolean;
-    i:Integer;
+    bariery: TJCBariery;
+    critical: Boolean;
+    i: Integer;
 begin
  // pro potvrzovaci sekvenci vyluky by mel byt krok '6'
  if (Self.krok <> _KROK_POTVR_SEKV) then Exit;
@@ -1339,13 +1339,13 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // callbacky z upozornovacich barier:
 
-procedure TJC.UPO_OKCallback(Sender:TObject);
+procedure TJC.UPO_OKCallback(Sender: TObject);
 var
-    bariery:TJCBariery;
-    critical:Boolean;
-    i:Integer;
-    nav:TBlk;
-    podm:TList<TPSPodminka>;
+    bariery: TJCBariery;
+    critical: Boolean;
+    i: Integer;
+    nav: TBlk;
+    podm: TList<TPSPodminka>;
 begin
  if (Self.krok <> _KROK_POTVR_BARIERY) then Exit();
 
@@ -1399,7 +1399,7 @@ begin
   end;
 end;//proceudre
 
-procedure TJC.UPO_EscCallback(Sender:TObject);
+procedure TJC.UPO_EscCallback(Sender: TObject);
 begin
  if (Self.krok = _KROK_POTVR_BARIERY) then
   begin
@@ -1413,32 +1413,32 @@ end;
 // jakmile je zavolano StavJC(), tato funkce se stara o to, aby staveni doslo az do konce
 // kontroluje prubezne podminky apod.
 procedure TJC.UpdateStaveni();
-var i,j:Integer;
-    blk:TBlk;
-    aZaver:TJCType;
-    neprofil:TBlkUsek;
-    uzavren,anyUzavren:Boolean;
-    str:string;
+var i, j: Integer;
+    blk: TBlk;
+    aZaver: TJCType;
+    neprofil: TBlkUsek;
+    uzavren, anyUzavren: Boolean;
+    str: string;
     npCall:^TNPCallerData;
-    count:Integer;
-    stavim:Cardinal;
-    bariery:TList<TJCBariera>;
-    bariera:TJCBariera;
-    nextVyhybka:Integer;
-    uzavBlok:Integer;
-    usekZaver:Integer;
-    prjZaver:TJCPrjZaver;
-    vyhZaver:TJCVyhZaver;
-    odvratZaver:TJCOdvratZaver;
-    refZaver:TJCRefZaver;
-    vyhybka:TBlkTurnout;
-    usek, nextUsek:TBlkUsek;
-    zamek:TBlkZamek;
-    prejezd:TBlkPrejezd;
-    navestidlo:TBlkNav;
-    trat:TBlkTrat;
-    oblr:TOR;
-    tuAdd:TBlkTU;
+    count: Integer;
+    stavim: Cardinal;
+    bariery: TList<TJCBariera>;
+    bariera: TJCBariera;
+    nextVyhybka: Integer;
+    uzavBlok: Integer;
+    usekZaver: Integer;
+    prjZaver: TJCPrjZaver;
+    vyhZaver: TJCVyhZaver;
+    odvratZaver: TJCOdvratZaver;
+    refZaver: TJCRefZaver;
+    vyhybka: TBlkTurnout;
+    usek, nextUsek: TBlkUsek;
+    zamek: TBlkZamek;
+    prejezd: TBlkPrejezd;
+    navestidlo: TBlkNav;
+    trat: TBlkTrat;
+    oblr: TOR;
+    tuAdd: TBlkTU;
     train: TTrain;
     chEv: TChangeEvent;
     remEvDataPtr: ^TRemoveEventData;
@@ -1451,7 +1451,7 @@ var i,j:Integer;
   // staveni vlakovych a posunovych cest:
 
   case (Self.krok) of
-   _JC_KROK_INIT:begin
+   _JC_KROK_INIT: begin
       // nejprve priradime uvolneni zaveru posledniho bloku uvolneni zaveru predposledniho bloku
       if (Self.fproperties.useky.Count > 1) then
        begin
@@ -1557,7 +1557,7 @@ var i,j:Integer;
      end;//case 0
 
 
-   _JC_KROK_CEKANI_VYHYBKA_POLOHA:begin
+   _JC_KROK_CEKANI_VYHYBKA_POLOHA: begin
       for vyhZaver in Self.fproperties.vyhybky do
        begin
         Blky.GetBlkByID(vyhZaver.Blok, TBlk(vyhybka));
@@ -1623,7 +1623,7 @@ var i,j:Integer;
      end;//case 1
 
 
-   _JC_KROK_ZAVRIT_PREJEZDY:begin
+   _JC_KROK_ZAVRIT_PREJEZDY: begin
        // prejezdy
        Self.fstaveni.prjWasClosed := true;
        anyUzavren := false;
@@ -1701,7 +1701,7 @@ var i,j:Integer;
      end;
 
 
-   _JC_KROK_CEKANI_PREJEZDY:begin
+   _JC_KROK_CEKANI_PREJEZDY: begin
        // kontrola stavu prejezdu
        for prjZaver in Self.fproperties.prejezdy do
         begin
@@ -1718,7 +1718,7 @@ var i,j:Integer;
      end;
 
 
-   _JC_KROK_FINALNI_ZAVER:begin
+   _JC_KROK_FINALNI_ZAVER: begin
       Self.Log('Krok 14 : useky: nastavit validni zaver');
 
       aZaver := Self.typ;
@@ -1750,7 +1750,7 @@ var i,j:Integer;
        end;
    end;// case 14
 
-   _JC_KROK_CEKANI_NAVESTIDLO:begin
+   _JC_KROK_CEKANI_NAVESTIDLO: begin
      if (navestidlo.navest > ncStuj) then
       begin
        Self.Log('Krok 15 : navestidlo postaveno');
@@ -1758,7 +1758,7 @@ var i,j:Integer;
       end;
    end;
 
-   _JC_KROK_FINISH:begin
+   _JC_KROK_FINISH: begin
       Self.RusZacatekJC();
       Self.RusVBJC();
       Self.RusKonecJC();
@@ -1866,7 +1866,7 @@ var i,j:Integer;
    ///////////////////////////////////////////////////////////////////////////
    // staveni nouzovych cest:
 
-   _NC_KROK_INIT:begin
+   _NC_KROK_INIT: begin
     // vsem usekum nastavime staveci zaver:
     Self.Log('Krok 100: useky: nastavuji staveci zavery');
     for usekZaver in Self.fproperties.useky do
@@ -1937,7 +1937,7 @@ var i,j:Integer;
     Self.krok := _NC_KROK_BARIERA_UPDATE;
    end;//case 100
 
-   _NC_KROK_BARIERA_UPDATE:begin
+   _NC_KROK_BARIERA_UPDATE: begin
     // prubezne kontroluji podminky a zobrazuji potvrzovaci sekvenci
 
     // zjistime aktualni bariery:
@@ -1979,7 +1979,7 @@ var i,j:Integer;
      end;
    end;
 
-   _NC_KROK_BARIERY_POTVRZENY:begin
+   _NC_KROK_BARIERY_POTVRZENY: begin
     // potrvzovaci sekvence potvrzena -> stavim navestidlo, ...
 
     Self.fstaveni.nextVyhybka := -1;
@@ -2002,7 +2002,7 @@ var i,j:Integer;
       Self.krok := _NC_KROK_FINISH;
    end;
 
-   _NC_KROK_CEKANI_NAVESTIDLO:begin
+   _NC_KROK_CEKANI_NAVESTIDLO: begin
      if (navestidlo.Navest = ncPrivol) then
       begin
        Self.Log('Krok 103 : navestidlo postaveno');
@@ -2010,7 +2010,7 @@ var i,j:Integer;
       end;
    end;
 
-   _NC_KROK_FINISH:begin
+   _NC_KROK_FINISH: begin
     Self.RusZacatekJC();
     Self.RusVBJC();
     Self.RusKonecJC();
@@ -2111,9 +2111,9 @@ var i,j:Integer;
 
 // je volana, pokud behem staveni dojde k vyjimce
 // napriklad pri kontrole obsazenosti useku v JC apod.
-procedure TJC.CancelStaveni(reason: string = ''; stack_remove:Boolean = false);
-var usekZaver:Integer;
-    usek:TBlkUsek;
+procedure TJC.CancelStaveni(reason: string = ''; stack_remove: Boolean = false);
+var usekZaver: Integer;
+    usek: TBlkUsek;
 begin
  if (reason <> '') then
   begin
@@ -2123,7 +2123,7 @@ begin
   end;
 
  case (Self.krok) of
-    _NC_KROK_BARIERA_UPDATE:begin
+    _NC_KROK_BARIERA_UPDATE: begin
       if (Self.fstaveni.senderPnl <> nil) then
         ORTCPServer.PotvrClose(Self.fstaveni.senderPnl, reason);
     end   
@@ -2160,7 +2160,7 @@ end;
 
 //rusi zacatek jizdni cesty
 procedure TJC.RusZacatekJC();
-var Blk:TBlk;
+var Blk: TBlk;
  begin
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
   if (Blk = nil) then Exit;
@@ -2182,8 +2182,8 @@ procedure TJC.RusKonecJC();
  end;
 
 procedure TJC.RusVBJC();
-var Blk:TBlk;
-    vb:Integer;
+var Blk: TBlk;
+    vb: Integer;
 begin
  for vb in Self.data.vb do
   begin
@@ -2196,7 +2196,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //ruseni jizdni cesty
-procedure TJC.RusJC(Sender:TObject = nil);
+procedure TJC.RusJC(Sender: TObject = nil);
 var usekZaver: Integer;
     usek: TBlkUsek;
     nav: TBlkNav;
@@ -2220,7 +2220,7 @@ var usekZaver: Integer;
 
 //ruseni jizdni cesty bez ruseni zaveru bloku
 procedure TJC.RusJCWithoutBlk();
-var Nav:TBlk;
+var Nav: TBlk;
  begin
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
   Self.Log('Probiha ruseni navesti');
@@ -2247,10 +2247,10 @@ var Nav:TBlk;
 //RozpadBlok = blok index, kam by mela souprava vjet
 //RozpadRuseniBlok = blok index, kde je posledni detekovany vagon soupravy
 procedure TJC.usekyRusJC();
-var Nav:TBlkNav;
-    Blk:TBlk;
-    Usek,DalsiUsek:TBlkUsek;
-    i:Integer;
+var Nav: TBlkNav;
+    Blk: TBlk;
+    Usek, DalsiUsek: TBlkUsek;
+    i: Integer;
     train: TTrain;
 begin
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
@@ -2541,7 +2541,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.NeprofilObsaz();
-var Nav:TBlk;
+var Nav: TBlk;
 begin
  if (Self.staveni) then
   begin
@@ -2580,7 +2580,7 @@ end;
 
 //preda soupravu v jizdni ceste dalsimu bloku v poradi
 procedure TJC.PredejDataDalsimuBloku();
-var UsekActual,UsekDalsi,Nav:TBlk;
+var UsekActual, UsekDalsi, Nav: TBlk;
     train: TTrain;
  begin
   if (Self.rozpadBlok = 0) then
@@ -2609,8 +2609,8 @@ var UsekActual,UsekDalsi,Nav:TBlk;
   Self.CheckSmyckaBlok(UsekDalsi);
  end;
 
-procedure TJC.CheckSmyckaBlok(blk:TBlk);
-var oblr:TOR;
+procedure TJC.CheckSmyckaBlok(blk: TBlk);
+var oblr: TOR;
 begin
  if (((Blk as TBlkUsek).GetSettings().SmcUsek) and ((Blk as TBlkUsek).IsTrain())) then
   begin
@@ -2634,7 +2634,7 @@ end;
 
 //nastavi navestidlo JC na pozadovanou navest
 procedure TJC.NastavNav();
-var Nav,DalsiNav:TBlkNav;
+var Nav, DalsiNav: TBlkNav;
     Navest: TBlkNavCode;
  begin
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
@@ -2697,14 +2697,14 @@ var Nav,DalsiNav:TBlkNav;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.LoadData(ini:TMemIniFile; section:string);
-var sl,sl2:TStrings;
-    i,j, cnt:Integer;
-    vyhZaver:TJCVyhZaver;
-    odvrat:TJCOdvratZaver;
-    ref:TJCRefZaver;
-    prj:TJCPrjZaver;
-    sect_size:Integer;
+procedure TJC.LoadData(ini: TMemIniFile; section: string);
+var sl, sl2: TStrings;
+    i, j, cnt: Integer;
+    vyhZaver: TJCVyhZaver;
+    odvrat: TJCOdvratZaver;
+    ref: TJCRefZaver;
+    prj: TJCPrjZaver;
+    sect_size: Integer;
 begin
  Self.fproperties.name := ini.ReadString(section, 'nazev', section);
  Self.fproperties.id := StrToInt(section);
@@ -2813,9 +2813,9 @@ begin
  Self.fproperties.nzv := ini.ReadBool(section, 'nzv', false)
 end;
 
-procedure TJC.SaveData(ini:TMemIniFile; section:string);
-var line:string;
-    i,j:Integer;
+procedure TJC.SaveData(ini: TMemIniFile; section: string);
+var line: string;
+    i, j: Integer;
 begin
  ini.WriteString (section, 'nazev', Self.fproperties.name);
  ini.WriteInteger(section, 'nav', Self.fproperties.navestidloBlok);
@@ -2904,8 +2904,8 @@ end;
 
 // timeout staveni JC
 procedure TJC.UpdateTimeOut();
-var prejezd:TBlkPrejezd;
-    prjZaver:TJCPrjZaver;
+var prejezd: TBlkPrejezd;
+    prjZaver: TJCPrjZaver;
 begin
  // na nouzovou cestu se nevztahuje timeout
  if (not Self.Staveni) then Exit;
@@ -2942,12 +2942,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetStaveni():Boolean;
+function TJC.GetStaveni(): Boolean;
 begin
  Result := ((Self.krok > _KROK_DEFAULT) and (Self.krok <> _JC_KROK_CEKANI_POSLEDNI_USEK));
 end;
 
-function TJC.GetPostaveno():Boolean;
+function TJC.GetPostaveno(): Boolean;
 begin
  Result := (Self.fstaveni.rozpadBlok > -5);
 end;
@@ -2956,8 +2956,8 @@ end;
 
 // true = je mozno DN
 //tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
-function TJC.CanDN():Boolean;
-var i:Integer;
+function TJC.CanDN(): Boolean;
+var i: Integer;
     train: TTrain;
     usekZaver: Integer;
     vyhZaver: TJCVyhZaver;
@@ -3084,10 +3084,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.UsekClosePrj(Sender:TObject; data:Integer);
-var blkId:Integer;
-    prejezd:TBlkPrejezd;
-    usek:TBlkUsek;
+procedure TJC.UsekClosePrj(Sender: TObject; data: Integer);
+var blkId: Integer;
+    prejezd: TBlkPrejezd;
+    usek: TBlkUsek;
 begin
  if ((Self.postaveno) or (Self.staveni)) then
   begin
@@ -3111,19 +3111,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.SetRozpadBlok(RozpadBlok:Integer);
+procedure TJC.SetRozpadBlok(RozpadBlok: Integer);
 begin
  Self.fstaveni.rozpadBlok := RozpadBlok;
  Self.changed := true;
 end;
 
-procedure TJC.SetRozpadRuseniBlok(RozpadRuseniBlok:Integer);
+procedure TJC.SetRozpadRuseniBlok(RozpadRuseniBlok: Integer);
 begin
  Self.fstaveni.rozpadRuseniBlok := RozpadRuseniBlok;
  Self.changed := true;
 end;
 
-procedure TJC.SetKrok(Krok:Integer);
+procedure TJC.SetKrok(Krok: Integer);
 begin
  Self.fstaveni.krok := Krok;
  Self.changed := true;
@@ -3131,7 +3131,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TJC.JCBariera(typ:Integer; Blok:TBlk = nil; param:Integer = 0):TJCBariera;
+class function TJC.JCBariera(typ: Integer; Blok: TBlk = nil; param: Integer = 0): TJCBariera;
 begin
  Result.typ   := typ;
  Result.blok  := Blok;
@@ -3140,11 +3140,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.JCBarieraToMessage(Bariera:TJCBariera):TUPOItem;
-var i:Integer;
-    lines:TStrings;
-    canZAK:Boolean;
-    Blk:TBlk;
+function TJC.JCBarieraToMessage(Bariera: TJCBariera): TUPOItem;
+var i: Integer;
+    lines: TStrings;
+    canZAK: Boolean;
+    Blk: TBlk;
 begin
  for i := 0 to _UPO_LINES-1 do
   begin
@@ -3346,7 +3346,7 @@ end;
 // vraci true, pokud je zadana bariera tzv. kriticka, jinak false
 // kriticka bariera je takova bariera, jejiz odstraneni neni bezny uzivatel schopen
 //   napr. absence existence urcitych bloku v jizdni ceste apod.
-class function TJC.CriticalBariera(typ:Integer):Boolean;
+class function TJC.CriticalBariera(typ: Integer): Boolean;
 begin
  case (typ) of
   _JCB_STAVENI, _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP :
@@ -3358,8 +3358,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.WarningBariera(typ:Integer):Boolean;
-var Blk:TBlk;
+function TJC.WarningBariera(typ: Integer): Boolean;
+var Blk: TBlk;
 begin
  case (typ) of
   _JCB_TRAT_ZAK: begin
@@ -3382,7 +3382,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TJC.PotvrSekvBariera(typ:Integer):Boolean;
+class function TJC.PotvrSekvBariera(typ: Integer): Boolean;
 begin
  case (typ) of
   _JCB_VYHYBKA_VYLUKA, _JCB_USEK_VYLUKA, _JCB_TRAT_ZAK: Result := true;
@@ -3393,7 +3393,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TJC.PotvrSekvBarieraToReason(typ:Integer):string;
+class function TJC.PotvrSekvBarieraToReason(typ: Integer): string;
 begin
  case (typ) of
   _JCB_VYHYBKA_VYLUKA : Result := 'Výluka výhybkového bloku';
@@ -3406,17 +3406,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.CritBarieraEsc(Sender:TObject);
+procedure TJC.CritBarieraEsc(Sender: TObject);
 begin
  Self.CancelStaveni('', true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.VyhPrestavenaJCPC(Sender:TObject);
-var i:Integer;
-    Blk:TBlk;
-    odvrat:Integer;
+procedure TJC.VyhPrestavenaJCPC(Sender: TObject);
+var i: Integer;
+    Blk: TBlk;
+    odvrat: Integer;
     usek: TBlkUsek;
 begin
  { Pozor: muze se stat, ze nektera z vyhybek, ktere jeste nejsou prestavovany,
@@ -3480,7 +3480,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.VyhNeprestavenaJCPC(Sender:TObject; error: TTurnoutSetError);
+procedure TJC.VyhNeprestavenaJCPC(Sender: TObject; error: TTurnoutSetError);
 begin
  if (not Self.staveni) then Exit();
 
@@ -3494,15 +3494,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.VyhNeprestavenaNC(Sender:TObject; error: TTurnoutSetError);
+procedure TJC.VyhNeprestavenaNC(Sender: TObject; error: TTurnoutSetError);
 begin
  Self.VyhPrestavenaNC(Sender);
 end;
 
-procedure TJC.VyhPrestavenaNC(Sender:TObject);
-var Navestidlo, spojka:TBlk;
-    Blk:TBlk;
-    odvrat:Integer;
+procedure TJC.VyhPrestavenaNC(Sender: TObject);
+var Navestidlo, spojka: TBlk;
+    Blk: TBlk;
+    odvrat: Integer;
 begin
  if ((Self.fstaveni.krok <> _NC_KROK_INIT) and (Self.fstaveni.krok <> _NC_KROK_BARIERA_UPDATE)) then Exit();
 
@@ -3552,8 +3552,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.NavNepostaveno(Sender:TObject);
-var nav:TBlk;
+procedure TJC.NavNepostaveno(Sender: TObject);
+var nav: TBlk;
 begin
  if (not Self.staveni) then Exit();
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, nav);
@@ -3568,12 +3568,12 @@ end;
 // generuje podminky branici postaveni nouzove posunove ceste
 //  tyto podminky jsou prubezne zobrazovany dispecerovi v potvrzovaci sekvenci
 
-procedure TJC.PodminkyNCStaveni(var bariery:TList<TJCBariera>);
-var i:Integer;
-    Blk,blk2:TBlk;
-    glob:TBlkSettings;
-    usek, lastUsek:TBlkUsek;
-    trat:TBlkTrat;
+procedure TJC.PodminkyNCStaveni(var bariery: TList<TJCBariera>);
+var i: Integer;
+    Blk, blk2: TBlk;
+    glob: TBlkSettings;
+    usek, lastUsek: TBlkUsek;
+    trat: TBlkTrat;
 begin
   // kontrola navestidla
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
@@ -3758,9 +3758,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.NC_PS_Callback(Sender:TIdContext; success:Boolean);
-var i:Integer;
-    blk:TBlk;
+procedure TJC.NC_PS_Callback(Sender: TIdContext; success: Boolean);
+var i: Integer;
+    blk: TBlk;
 begin
  if (success) then
   begin
@@ -3783,8 +3783,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.BarieryNCToPotvr(bariery:TJCBariery):TPSPodminky;
-var i:Integer;
+function TJC.BarieryNCToPotvr(bariery: TJCBariery): TPSPodminky;
+var i: Integer;
 begin
  Result := TList<TPSPodminka>.Create();
 
@@ -3822,10 +3822,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.SetProperties(prop:TJCProp);
-var id_changed:Boolean;
-    nav_changed:Boolean;
-    orig_nav:TBlk;
+procedure TJC.SetProperties(prop: TJCProp);
+var id_changed: Boolean;
+    nav_changed: Boolean;
+    orig_nav: TBlk;
 begin
  id_changed := ((Self.id <> prop.id) and (Self.id <> -1));
  nav_changed := (Self.data.navestidloBlok <> prop.navestidloBlok);
@@ -3846,7 +3846,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetTrain(nav:TBlk = nil; usek:TBlk = nil): TTrain;
+function TJC.GetTrain(nav: TBlk = nil; usek: TBlk = nil): TTrain;
 begin
  if (nav = nil) then
    Blky.GetBlkByID(Self.fproperties.navestidloBlok, nav);
@@ -3856,8 +3856,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetAB():Boolean;
-var Blk:TBlk;
+function TJC.GetAB(): Boolean;
+var Blk: TBlk;
 begin
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
  Result := ((Blk <> nil) and (Blk.typ = btNav) and (TBlkNav(Blk).ABJC = Self));
@@ -3865,8 +3865,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.IsAnyVyhMinus():Boolean;
-var vyh:TJCVyhZaver;
+function TJC.IsAnyVyhMinus(): Boolean;
+var vyh: TJCVyhZaver;
 begin
  for vyh in Self.fproperties.vyhybky do
    if (vyh.Poloha = TTurnoutPosition.minus) then
@@ -3876,10 +3876,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.PorusenaKritickaPodminka():Boolean;
-var bariery:TJCBariery;
-    bariera:TJCBariera;
-    Navestidlo:TBlk;
+function TJC.PorusenaKritickaPodminka(): Boolean;
+var bariery: TJCBariery;
+    bariera: TJCBariera;
+    Navestidlo: TBlk;
 begin
   Result := false;
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Navestidlo);
@@ -3906,7 +3906,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetNav():TBlk;
+function TJC.GetNav(): TBlk;
 begin
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Result);
 end;
@@ -3935,14 +3935,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetWaitForLastUsekOrTratObsaz():Boolean;
+function TJC.GetWaitForLastUsekOrTratObsaz(): Boolean;
 begin
  Result := (Self.krok = _JC_KROK_CEKANI_POSLEDNI_USEK);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.GetPtData(json:TJsonObject; includeStaveni:Boolean);
+procedure TJC.GetPtData(json: TJsonObject; includeStaveni: Boolean);
 var vyhZaver: TJCVyhZaver;
     odvratZaver: TJCOdvratZaver;
     newObj: TJsonObject;
@@ -4023,7 +4023,7 @@ begin
    Self.GetPtStaveni(json['staveni']);
 end;
 
-procedure TJC.GetPtStaveni(json:TJsonObject);
+procedure TJC.GetPtStaveni(json: TJsonObject);
 begin
  json['staveni'] := Self.staveni;
  json['postaveno'] := Self.postaveno;
@@ -4033,7 +4033,7 @@ begin
  json['ab'] := Self.AB;
 end;
 
-procedure TJC.PostPtStav(reqJson:TJsonObject; respJson:TJsonObject);
+procedure TJC.PostPtStav(reqJson: TJsonObject; respJson: TJsonObject);
 var bariery: TJCBariery;
     bariera: TJCBariera;
     ok: Integer;

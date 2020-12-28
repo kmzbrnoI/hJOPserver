@@ -9,70 +9,70 @@ uses IniFiles, TBlok, Menus, SysUtils, Classes, IdContext, Generics.Collections,
 
 type
  TBlkSHStav = record
-  enabled:Boolean;
+  enabled: Boolean;
  end;
 
  TBlkSHSettings = record
-  prejezdy:TList<Integer>; // seznam id prejezdu, ktere jsou v souctove hlasce
+  prejezdy: TList<Integer>; // seznam id prejezdu, ktere jsou v souctove hlasce
  end;
 
  TBlkSH = class(TBlk)
   const
-   _def_sh_stav:TBlkSHStav = (
+   _def_sh_stav: TBlkSHStav = (
      enabled: false;
    );
 
   protected
-   settings:TBlkSHSettings;
-   shStav:TBlkSHStav;
+   settings: TBlkSHSettings;
+   shStav: TBlkSHStav;
 
-    function GetKomunikace():Boolean;
-    function GetAnulace():Boolean;
-    function GetUZ():Boolean;
-    function GetUzavreno():Boolean;
-    function GetPorucha():Boolean;
-    function GetNOT():Boolean;
+    function GetKomunikace(): Boolean;
+    function GetAnulace(): Boolean;
+    function GetUZ(): Boolean;
+    function GetUzavreno(): Boolean;
+    function GetPorucha(): Boolean;
+    function GetNOT(): Boolean;
 
     procedure CreateReferences();
     procedure RemoveReferences();
 
   public
 
-    constructor Create(index:Integer);
+    constructor Create(index: Integer);
     destructor Destroy(); override;
 
     //load/save data
-    procedure LoadData(ini_tech:TMemIniFile; const section:string;
-                       ini_rel,ini_stat:TMemIniFile); override;
-    procedure SaveData(ini_tech:TMemIniFile; const section:string); override;
+    procedure LoadData(ini_tech: TMemIniFile; const section: string;
+                       ini_rel, ini_stat: TMemIniFile); override;
+    procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
 
     procedure Enable(); override;
     procedure Disable(); override;
 
-    function GetSettings():TBlkSHSettings;
-    procedure SetSettings(data:TBlkSHSettings);
+    function GetSettings(): TBlkSHSettings;
+    procedure SetSettings(data: TBlkSHSettings);
 
     //----- souctova hlaska own functions -----
 
-    property stav:TBlkSHStav read shStav;
-    property enabled:Boolean read shStav.enabled;
+    property stav: TBlkSHStav read shStav;
+    property enabled: Boolean read shStav.enabled;
 
-    property komunikace:Boolean read GetKomunikace;
-    property anulace:Boolean read GetAnulace;
-    property UZ:Boolean read GetUZ;
-    property uzavreno:Boolean read GetUzavreno;
-    property porucha:Boolean read GetPorucha;
-    property nouzoveOT:Boolean read GetNOT;
+    property komunikace: Boolean read GetKomunikace;
+    property anulace: Boolean read GetAnulace;
+    property UZ: Boolean read GetUZ;
+    property uzavreno: Boolean read GetUzavreno;
+    property porucha: Boolean read GetPorucha;
+    property nouzoveOT: Boolean read GetNOT;
 
     //GUI:
-    procedure PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject;
-                             item:string; itemindex:Integer); override;
-    function ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject;
-                           rights:TORCOntrolRights):string; override;
-    procedure PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
-                         Button:TPanelButton; rights:TORCOntrolRights;
-                         params:string = ''); override;
-    function PanelStateString():string; override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject;
+                             item: string; itemindex: Integer); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject;
+                           rights: TORCOntrolRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
+                         Button: TPanelButton; rights: TORCOntrolRights;
+                         params: string = ''); override;
+    function PanelStateString(): string; override;
 
  end;//class TBlkUsek
 
@@ -82,7 +82,7 @@ implementation
 
 uses TBlokPrejezd, TBloky, TOblsRizeni, Graphics, ownConvert;
 
-constructor TBlkSH.Create(index:Integer);
+constructor TBlkSH.Create(index: Integer);
 begin
  inherited;
 
@@ -99,10 +99,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSH.LoadData(ini_tech:TMemIniFile; const section:string;
-                          ini_rel, ini_stat:TMemIniFile);
-var data:TStrings;
-    str:string;
+procedure TBlkSH.LoadData(ini_tech: TMemIniFile; const section: string;
+                          ini_rel, ini_stat: TMemIniFile);
+var data: TStrings;
+    str: string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -120,9 +120,9 @@ begin
  end;
 end;
 
-procedure TBlkSH.SaveData(ini_tech:TMemIniFile; const section:string);
-var str:string;
-    n:Integer;
+procedure TBlkSH.SaveData(ini_tech: TMemIniFile; const section: string);
+var str: string;
+    n: Integer;
 begin
  inherited;
 
@@ -150,12 +150,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSH.GetSettings():TBlkSHSettings;
+function TBlkSH.GetSettings(): TBlkSHSettings;
 begin
  Result := Self.settings;
 end;
 
-procedure TBlkSH.SetSettings(data:TBlkSHSettings);
+procedure TBlkSH.SetSettings(data: TBlkSHSettings);
 begin
  if (Self.enabled) then
    Self.RemoveReferences();
@@ -172,10 +172,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkSH.ShowPanelMenu(SenderPnl:TIdContext; SenderOR:TObject;
-                              rights:TORCOntrolRights):string;
-var prjid:Integer;
-    prj:TBlk;
+function TBlkSH.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject;
+                              rights: TORCOntrolRights): string;
+var prjid: Integer;
+    prj: TBlk;
 begin
  Result := inherited;
 
@@ -191,9 +191,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSH.PanelClick(SenderPnl:TIdContext; SenderOR:TObject;
-                            Button:TPanelButton; rights:TORCOntrolRights;
-                            params:string = '');
+procedure TBlkSH.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
+                            Button: TPanelButton; rights: TORCOntrolRights;
+                            params: string = '');
 begin
  ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR),
                   Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -202,9 +202,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkSH.PanelMenuClick(SenderPnl:TIdContext; SenderOR:TObject;
-                                item:string; itemindex:Integer);
-var prj:TBlk;
+procedure TBlkSH.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject;
+                                item: string; itemindex: Integer);
+var prj: TBlk;
 begin
  if (not Self.enabled) then Exit();
 
@@ -219,9 +219,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSH.GetKomunikace():Boolean;
-var prjid:Integer;
-    prj:TBlk;
+function TBlkSH.GetKomunikace(): Boolean;
+var prjid: Integer;
+    prj: TBlk;
 begin
  Result := true;
  for prjid in Self.settings.prejezdy do
@@ -235,9 +235,9 @@ begin
   end;
 end;
 
-function TBlkSH.GetAnulace():Boolean;
-var prjid:Integer;
-    prj:TBlk;
+function TBlkSH.GetAnulace(): Boolean;
+var prjid: Integer;
+    prj: TBlk;
 begin
  Result := false;
  for prjid in Self.settings.prejezdy do
@@ -249,9 +249,9 @@ begin
   end;
 end;
 
-function TBlkSH.GetUZ():Boolean;
-var prjid:Integer;
-    prj:TBlk;
+function TBlkSH.GetUZ(): Boolean;
+var prjid: Integer;
+    prj: TBlk;
 begin
  Result := false;
  for prjid in Self.settings.prejezdy do
@@ -263,9 +263,9 @@ begin
   end;
 end;
 
-function TBlkSH.GetUzavreno():Boolean;
-var prjid:Integer;
-    prj:TBlk;
+function TBlkSH.GetUzavreno(): Boolean;
+var prjid: Integer;
+    prj: TBlk;
 begin
  Result := false;
  for prjid in Self.settings.prejezdy do
@@ -277,9 +277,9 @@ begin
   end;
 end;
 
-function TBlkSH.GetPorucha():Boolean;
-var prjid:Integer;
-    prj:TBlk;
+function TBlkSH.GetPorucha(): Boolean;
+var prjid: Integer;
+    prj: TBlk;
 begin
  Result := false;
  for prjid in Self.settings.prejezdy do
@@ -291,9 +291,9 @@ begin
   end;
 end;
 
-function TBlkSH.GetNOT():Boolean;
-var prjid:Integer;
-    prj:TBlk;
+function TBlkSH.GetNOT(): Boolean;
+var prjid: Integer;
+    prj: TBlk;
 begin
  Result := false;
  for prjid in Self.settings.prejezdy do
@@ -308,8 +308,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSH.CreateReferences();
-var prjid:Integer;
-    prj:TBlk;
+var prjid: Integer;
+    prj: TBlk;
 begin
  for prjid in Self.settings.prejezdy do
   begin
@@ -320,8 +320,8 @@ begin
 end;
 
 procedure TBlkSH.RemoveReferences();
-var prjid:Integer;
-    prj:TBlk;
+var prjid: Integer;
+    prj: TBlk;
 begin
  for prjid in Self.settings.prejezdy do
   begin
@@ -333,7 +333,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSH.PanelStateString():string;
+function TBlkSH.PanelStateString(): string;
 var fg: TColor;
 begin
  Result := inherited;

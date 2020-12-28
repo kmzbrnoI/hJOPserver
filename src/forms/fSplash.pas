@@ -21,7 +21,7 @@ type
   private
     { Private declarations }
   public
-   procedure AddStav(Text:String);
+   procedure AddStav(Text: string);
   end;
 
 var
@@ -45,7 +45,7 @@ procedure TF_splash.FormShow(Sender: TObject);
   L_BuildTime.Caption := GetLastBuildDate+'  '+GetLastBuildTime;
  end;
 
-procedure TF_Splash.AddStav(Text:String);
+procedure TF_Splash.AddStav(Text: string);
  begin
   F_splash.L_Nacitani.Caption := Text;
   F_splash.PB_Prubeh.Position := F_splash.PB_Prubeh.Position + 1;

@@ -1,4 +1,4 @@
-﻿unit fSettings;
+unit fSettings;
 
 interface
 
@@ -138,7 +138,7 @@ var inidata: TMemIniFile;
   try
     GlobalConfig.scale := StrToInt(Self.E_Scale.Text);
   except
-    on E:Exception do
+    on E: Exception do
      begin
       Application.MessageBox(PChar('Nepodařilo se načíst měřítko:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -180,8 +180,8 @@ begin
 end;
 
 procedure TF_Options.NactiSSDoObjektu();
-var IgnoraceRCS:TArI;
-    data:TSSData;
+var IgnoraceRCS: TArI;
+    data: TSSData;
  begin
   data := SS.GetData();
 
@@ -269,7 +269,7 @@ begin
 end;
 
 procedure TF_Options.CHB_SS_Out_ReadyClick(Sender: TObject);
-var data:TSSData;
+var data: TSSData;
  begin
   data := SS.GetData();
 
@@ -299,7 +299,7 @@ var data:TSSData;
  end;
 
 procedure TF_Options.UlozDataDoSSzObjektu;
-var data:TSSData;
+var data: TSSData;
  begin
   data.enabled := Self.CHB_SS_Enable.Checked;
 
@@ -330,7 +330,7 @@ procedure TF_Options.LB_TimerClick(Sender: TObject);
  begin
   F_Main.T_Main.Interval := StrToInt(LB_Timer.Items.Strings[LB_Timer.ItemIndex]);
   F_Main.SB1.Panels.Items[_SB_SBERNICE].Text:='Primární smyčka : '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms';
-  writelog('Primární smyčka nastavena na '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms',WR_MESSAGE);
+  writelog('Primární smyčka nastavena na '+LB_Timer.Items.Strings[LB_Timer.ItemIndex]+' ms', WR_MESSAGE);
  end;
 
 procedure TF_Options.FormShow(Sender: TObject);

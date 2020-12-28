@@ -1,4 +1,4 @@
-﻿unit TBloky;
+unit TBloky;
 
 //tato unita definuje tridu, ktera se stara o vsechny bloky
 //tedy jsou v ni ulozeny  vsechny bloky
@@ -28,35 +28,35 @@ type
  TBlky = class(TObject)
 
   private
-   data:TList<TBlk>;
+   data: TList<TBlk>;
 
-   ffstatus:string;
-   ffile:string;
-   fenabled:Boolean;
+   ffstatus: string;
+   ffile: string;
+   fenabled: Boolean;
 
     procedure DestroyBlocks();
-    procedure BlkChange(Sender:TObject);
+    procedure BlkChange(Sender: TObject);
 
-    function GetCount():Integer;
+    function GetCount(): Integer;
 
-    function FindPlaceForNewBlk(id:Integer):Integer;
+    function FindPlaceForNewBlk(id: Integer): Integer;
     procedure UpdateBlkIndexes();             // aktualizuje indexy vsech bloku, pouziva se pri nacitani dat
-    function GetItem(i: Integer):TBlk;
+    function GetItem(i: Integer): TBlk;
 
   public
     constructor Create();
     destructor Destroy(); override;
 
     //data loading/saving
-    procedure LoadFromFile(const tech_filename,rel_filename,stat_filename:string);
-    procedure SaveToFile(const tech_filename:string);
-    procedure SaveStatToFile(const stat_filename:string);
+    procedure LoadFromFile(const tech_filename, rel_filename, stat_filename: string);
+    procedure SaveToFile(const tech_filename: string);
+    procedure SaveStatToFile(const stat_filename: string);
 
-    function Add(typ: TBlkType; glob:TBlkSettings):TBlk;
-    procedure Delete(index:Integer);
+    function Add(typ: TBlkType; glob: TBlkSettings): TBlk;
+    procedure Delete(index: Integer);
 
-    function GetBlkByIndex(index:integer; var Blk:TBlk):Integer;
-    function SetBlk(index:integer;data:TBlk):Integer;
+    function GetBlkByIndex(index: integer; var Blk: TBlk): Integer;
+    function SetBlk(index: integer; data: TBlk): Integer;
 
     //enable/disable all block (on screen)
     procedure Enable();
@@ -66,36 +66,36 @@ type
     //update all blokcs states (should be called in timer every x ms)
     procedure Update();
 
-    function GetBlkIndex(id:Integer):Integer;
-    function GetBlkByID(id:integer;var Blk:TBlk):Integer;
-    function GetBlkID(index:Integer):Integer;
-    function GetBlkName(id:Integer):string;
-    function GetBlkIndexName(index:Integer):string;
+    function GetBlkIndex(id: Integer): Integer;
+    function GetBlkByID(id: integer; var Blk: TBlk): Integer;
+    function GetBlkID(index: Integer): Integer;
+    function GetBlkName(id: Integer): string;
+    function GetBlkIndexName(index: Integer): string;
 
-    function GetBlkNavZacatekVolba(obl:string):TBlk;
-    function GetBlkUsekVlakPresun(obl:string):TBlk;
+    function GetBlkNavZacatekVolba(obl: string): TBlk;
+    function GetBlkUsekVlakPresun(obl: string): TBlk;
 
-    function GetNavPrivol(oblR:TOR):TBlksList;
+    function GetNavPrivol(oblR: TOR): TBlksList;
 
     //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
-    procedure GetORBlk(OblRizeni_id:string; conn:TIdContext);
+    procedure GetORBlk(OblRizeni_id: string; conn: TIdContext);
 
     //kontroluje, zda-li blok s timto ID uz nahadou existuje
     //pri hledani vynechava blok s indexem index
     //true = existuje, false = neexistuje
-    function IsBlok(id:Integer; ignore_index:Integer = -1):Boolean;
+    function IsBlok(id: Integer; ignore_index: Integer = -1): Boolean;
 
     procedure OnBoosterChange(booster: string);
 
-    procedure NUZ(or_id:string; state:Boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
+    procedure NUZ(or_id: string; state: Boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
 
-    procedure NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr; BlokTyp: TBlkType; BlokID:Integer = -1; BlokTyp2:TBlkType = btAny);
+    procedure NactiBlokyDoObjektu(CB: TComboBox; Polozky: PTArI; Vypust: PTArI; OblRizeniID: TArStr; BlokTyp: TBlkType; BlokID: Integer = -1; BlokTyp2: TBlkType = btAny);
 
     procedure RemoveTrain(train: TTrain);
-    procedure TrainPrediction(Nav:TBlk);
+    procedure TrainPrediction(Nav: TBlk);
 
-    function GetBlkWithTrain(train: TTrain):TBlksList;
-    function GetVyhWithZamek(zamekID:integer):TBlksList;
+    function GetBlkWithTrain(train: TTrain): TBlksList;
+    function GetVyhWithZamek(zamekID: integer): TBlksList;
 
     // zavola change na vsechny useky, ktere obsahuji zadanou soupravu
     // pouziva se napriklad pro oznameni ukradeni LOKO
@@ -107,34 +107,34 @@ type
 
     // volano pri zmene ID bloku na indexu \index
     // -> je potreba zmenit poradi bloku
-    procedure BlkIDChanged(index:Integer);
+    procedure BlkIDChanged(index: Integer);
 
     procedure ClearPOdj();
 
-    class function GetBlksList(first:TObject = nil; second:TObject = nil; third:TObject = nil):TBlksList;
-    class function SEPortMaxValue(addr: Integer; currentValue: Integer):Integer;
+    class function GetBlksList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TBlksList;
+    class function SEPortMaxValue(addr: Integer; currentValue: Integer): Integer;
 
     // vrati vsechny bloky do JSON objektu PTserveru
-    procedure GetPtData(json:TJsonObject; includeState:Boolean; stanice:TOR = nil; typ: TBlkType = btAny);
+    procedure GetPtData(json: TJsonObject; includeState: Boolean; stanice: TOR = nil; typ: TBlkType = btAny);
 
-    procedure NouzZaverZrusen(Sender:TBlk);
+    procedure NouzZaverZrusen(Sender: TBlk);
     procedure ZakladniPolohaVyhybek();
 
     function AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
 
     procedure OnClientDisconnect(client: TIdContext);
 
-    function GetEnumerator():TEnumerator<TBlk>;
+    function GetEnumerator(): TEnumerator<TBlk>;
     property Items[index : integer] : TBlk read GetItem; default;
-    property count:Integer read GetCount;
+    property count: Integer read GetCount;
 
-    property fstatus:string read ffstatus;
-    property blky_file:string read ffile;
-    property enabled:Boolean read fenabled;
+    property fstatus: string read ffstatus;
+    property blky_file: string read ffile;
+    property enabled: Boolean read fenabled;
  end;//class TBlky
 
 var
- Blky:TBlky;
+ Blky: TBlky;
 
 implementation
 
@@ -163,7 +163,7 @@ end;//dtor
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.DestroyBlocks();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.data.Count-1 do
   if (Assigned(Self.Data[i])) then Self.data[i].Free();
@@ -174,11 +174,11 @@ end;
 
 //pri zmene stavu jakehokoliv bloku je vyvolana tato metoda
 //tady se resi veskere provazanosti bloku a odesilani eventu do oblasti rizeni
-procedure TBlky.BlkChange(Sender:TObject);
-var blkset:TBlkSettings;
-    obl_rizeni:TList<TOR>;
+procedure TBlky.BlkChange(Sender: TObject);
+var blkset: TBlkSettings;
+    obl_rizeni: TList<TOR>;
     blk: TBlk;
-    oblr:TOR;
+    oblr: TOR;
 begin
  if (((Sender as TBlk).typ = btUsek) or ((Sender as TBlk).typ = btTU)) then
   begin
@@ -205,12 +205,12 @@ end;
 // load all blocks from file
 // Pri vytvareni dostavaji vsechny bloky table_index -1, pak je hromadne
 //  oindexujeme metodou UpdateBlkIndexes
-procedure TBlky.LoadFromFile(const tech_filename,rel_filename,stat_filename:string);
-var ini_tech,ini_rel,ini_stat:TMemIniFile;
-    id:Integer;
-    Blk:TBlk;
-    str:TStrings;
-    section:string;
+procedure TBlky.LoadFromFile(const tech_filename, rel_filename, stat_filename: string);
+var ini_tech, ini_rel, ini_stat: TMemIniFile;
+    id: Integer;
+    Blk: TBlk;
+    str: TStrings;
+    section: string;
     typei: Integer;
 begin
  writelog('Načítám bloky: '+tech_filename+ '; '+rel_filename, WR_DATA);
@@ -270,7 +270,7 @@ begin
        Self.data.Insert(Self.FindPlaceForNewBlk(Blk.id), Blk);
        Blk := nil;
      except
-      on E:Exception do
+      on E: Exception do
        begin
         if (Assigned(Blk)) then Blk.Free();
         AppEvents.LogException(E, 'Nacitani bloku ' + section);
@@ -293,7 +293,7 @@ begin
 end;
 
 //save all blocks to the file
-procedure TBlky.SaveToFile(const tech_filename:string);
+procedure TBlky.SaveToFile(const tech_filename: string);
 var ini: TMemIniFile;
     blk: TBlk;
 begin
@@ -303,7 +303,7 @@ begin
    DeleteFile(PChar(tech_filename));  //all data will be rewrited
    ini := TMemIniFile.Create(tech_filename, TEncoding.UTF8);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      AppEvents.LogException(E, 'Ukladam bloky: nelze otevrit vystupni soubor');
      Exit();
@@ -321,7 +321,7 @@ begin
  Self.SaveStatToFile(Self.fstatus);
 end;
 
-procedure TBlky.SaveStatToFile(const stat_filename:string);
+procedure TBlky.SaveStatToFile(const stat_filename: string);
 var ini: TMemIniFile;
     blk: TBlk;
 begin
@@ -331,7 +331,7 @@ begin
    DeleteFile(PChar(stat_filename));
    ini := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      AppEvents.LogException(E, 'Ukladam stavy bloku: nelze otevrit vystupni soubor');
      Exit();
@@ -343,7 +343,7 @@ begin
    try
      blk.SaveStatus(ini, IntToStr(blk.id));
    except
-     on E:Exception do
+     on E: Exception do
        AppEvents.LogException(E, 'Save blok '+blk.name);
    end;
   end;
@@ -357,9 +357,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //add 1 block
-function TBlky.Add(typ: TBlkType; glob:TBlkSettings):TBlk;
-var Blk:TBlk;
-    i, index:Integer;
+function TBlky.Add(typ: TBlkType; glob: TBlkSettings): TBlk;
+var Blk: TBlk;
+    i, index: Integer;
 begin
  // kontrola existence bloku stejneho ID
  if (Self.IsBlok(glob.id)) then
@@ -397,9 +397,9 @@ begin
 end;
 
 //Smazat blok z databaze
-procedure TBlky.Delete(index:Integer);
-var tmp, blk:TBlk;
-    i:Integer;
+procedure TBlky.Delete(index: Integer);
+var tmp, blk: TBlk;
+    i: Integer;
 begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam bloku');
  if (index >= Self.Data.Count) then raise Exception.Create('Index pretekl seznam bloku');
@@ -432,7 +432,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkByIndex(index:integer;var Blk:TBlk):Integer;
+function TBlky.GetBlkByIndex(index: integer; var Blk: TBlk): Integer;
 begin
  Blk := nil;
  if ((index < 0) or (index >= Self.Data.Count)) then Exit(1);
@@ -441,7 +441,7 @@ begin
  Result := 0;
 end;
 
-function TBlky.SetBlk(index:integer;data:TBlk):Integer;
+function TBlky.SetBlk(index: integer; data: TBlk): Integer;
 begin
  if ((index < 0) or (index >= Self.Data.Count)) then Exit(1);
  Self.Data[index] := data;
@@ -491,7 +491,7 @@ begin
    try
      blk.Update();
    except
-    on E:Exception do
+    on E: Exception do
      begin
       if (not log_err_flag) then
        AppEvents.LogException(E, 'Blok '+blk.name + ' update error');
@@ -503,8 +503,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Hledame blok se zadanym ID v seznamu bloku pomoci binarniho vyhledavani.
 
-function TBlky.GetBlkIndex(id:Integer):Integer;
-var left, right, mid:Integer;
+function TBlky.GetBlkIndex(id: Integer): Integer;
+var left, right, mid: Integer;
 begin
  left  := 0;
  right := Self.data.Count-1;
@@ -522,30 +522,30 @@ begin
  Result := -1;
 end;
 
-function TBlky.GetBlkByID(id:integer;var Blk:TBlk):Integer;
-var index:Integer;
+function TBlky.GetBlkByID(id: integer; var Blk: TBlk): Integer;
+var index: Integer;
 begin
  Blk := nil;
  index := Self.GetBlkIndex(id);
  if (index < 0) then Exit(-1);
- Self.GetBlkByIndex(index,Blk);
+ Self.GetBlkByIndex(index, Blk);
  Result := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
-procedure TBlky.GetORBlk(OblRizeni_id:string; conn:TIdContext);
+procedure TBlky.GetORBlk(OblRizeni_id: string; conn: TIdContext);
 var blk: TBlk;
-    obl_rizeni:TList<TOR>;
-    oblr:TOR;
+    obl_rizeni: TList<TOR>;
+    oblr: TOR;
 begin
  for blk in Self.Data do
   begin
    //ziskame vsechny oblasti rizeni prislusnych bloku
    obl_rizeni := blk.OblsRizeni;
 
-   //tyto OR porovname na "OblRizeni:PTOR"
+   //tyto OR porovname na "OblRizeni: PTOR"
    for oblr in obl_rizeni do
     begin
      if (oblr.id = OblRizeni_id) then
@@ -562,8 +562,8 @@ end;
 //kontroluje, zda-li blok s timto ID uz nahodou existuje
 //pri hledani vynechava blok s indexem index
 //true = existuje, false = neexistuje
-function TBlky.IsBlok(id:Integer; ignore_index:Integer = -1):Boolean;
-var index:Integer;
+function TBlky.IsBlok(id: Integer; ignore_index: Integer = -1): Boolean;
+var index: Integer;
 begin
  index := Self.GetBlkIndex(id);
  Result := ((index <> -1) and (index <> ignore_index));
@@ -571,7 +571,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkID(index:Integer):Integer;
+function TBlky.GetBlkID(index: Integer): Integer;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit(-1);
  Result := Self.Data[index].id;
@@ -579,15 +579,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkName(id:Integer):string;
-var Blk:TBlk;
+function TBlky.GetBlkName(id: Integer): string;
+var Blk: TBlk;
 begin
- Self.GetBlkByID(id,Blk);
+ Self.GetBlkByID(id, Blk);
  if (not Assigned(Blk)) then Exit('## Blok s timto ID neexistuje ##');
  Result := Blk.name;
 end;
 
-function TBlky.GetBlkIndexName(index:Integer):string;
+function TBlky.GetBlkIndexName(index: Integer): string;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit('## Blok s timto ID neexistuje ##');
  Result := Self.Data[index].name;
@@ -595,9 +595,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkNavZacatekVolba(obl:string):TBlk;
-var j:Integer;
-    orindex:Integer;
+function TBlky.GetBlkNavZacatekVolba(obl: string): TBlk;
+var j: Integer;
+    orindex: Integer;
     blk: TBlk;
 begin
  for blk in Self.Data do
@@ -619,9 +619,9 @@ begin
  Result := nil;
 end;
 
-function TBlky.GetBlkUsekVlakPresun(obl:string):TBlk;
-var j:Integer;
-    orindex:Integer;
+function TBlky.GetBlkUsekVlakPresun(obl: string): TBlk;
+var j: Integer;
+    orindex: Integer;
     blk: TBlk;
 begin
  for blk in Self.Data do
@@ -642,7 +642,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.OnBoosterChange(booster: string);
-var blk:TBlk;
+var blk: TBlk;
 begin
  if (not Self.enabled) then Exit();
 
@@ -655,7 +655,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // pozn.: NUZ maze soupravy z bloku
-procedure TBlky.NUZ(or_id:string; state:Boolean = true);
+procedure TBlky.NUZ(or_id: string; state: Boolean = true);
 var traini: Integer;
     blk: TBlk;
     usek: TBlkUsek;
@@ -692,15 +692,15 @@ var traini: Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.NactiBlokyDoObjektu(CB:TComboBox; Polozky:PTArI; Vypust:PTArI; OblRizeniID:TArStr;
-                                    BlokTyp: TBlkType; BlokID:Integer = -1; BlokTyp2: TBlkType = btAny);
-var bloki,i:Integer;
-    Priradit:Boolean;
-    Pocet:Integer;
-    Blk:TBlk;
-    Obl_r:TList<TOR>;
-    oblr:TOR;
-    glob:TBlkSettings;
+procedure TBlky.NactiBlokyDoObjektu(CB: TComboBox; Polozky: PTArI; Vypust: PTArI; OblRizeniID: TArStr;
+                                    BlokTyp: TBlkType; BlokID: Integer = -1; BlokTyp2: TBlkType = btAny);
+var bloki, i: Integer;
+    Priradit: Boolean;
+    Pocet: Integer;
+    Blk: TBlk;
+    Obl_r: TList<TOR>;
+    oblr: TOR;
+    glob: TBlkSettings;
  begin
   Pocet := 0;
   if (Polozky <> nil) then SetLength(Polozky^,0);
@@ -753,7 +753,7 @@ var bloki,i:Integer;
 
     if (Polozky <> nil) then
      begin
-      SetLength(Polozky^,Length(Polozky^)+1);
+      SetLength(Polozky^, Length(Polozky^)+1);
       Polozky^[Length(Polozky^)-1] := bloki;
      end;
     CB.Items.Add(glob.name);
@@ -789,7 +789,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkWithTrain(train: TTrain):TBlksList;
+function TBlky.GetBlkWithTrain(train: TTrain): TBlksList;
 var blk: TBlk;
 begin
  Result := TList<TObject>.Create();
@@ -802,7 +802,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // predpovidani soupravy na bloky v jizdni ceste
 
-procedure TBlky.TrainPrediction(nav:TBlk);
+procedure TBlky.TrainPrediction(nav: TBlk);
 var usek, startUsek: TBlkUsek;
     trat: TBlkTrat;
     train: TTrain;
@@ -870,7 +870,7 @@ begin
       JC := TBlkNav(usek.NavJCRef[0]).DNjc;
     end;//while
  except
-  on E:Exception do
+  on E: Exception do
    begin
     if (Usek <> nil) then
       AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy - Usek '+Usek.name)
@@ -882,7 +882,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlky.GetBlksList(first:TObject = nil; second:TObject = nil; third:TObject = nil):TBlksList;
+class function TBlky.GetBlksList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TBlksList;
 begin
  Result := TList<TObject>.Create();
  if (first <> nil) then Result.Add(first);
@@ -892,7 +892,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetNavPrivol(oblR:TOR):TBlksList;
+function TBlky.GetNavPrivol(oblR: TOR): TBlksList;
 var blk: TBlk;
     moblr: TOR;
 begin
@@ -913,7 +913,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetVyhWithZamek(zamekID:integer):TBlksList;
+function TBlky.GetVyhWithZamek(zamekID: integer): TBlksList;
 var blk: TBlk;
 begin
  Result := TBlksList.Create();
@@ -928,8 +928,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.ChangeUsekWithTrain(train: TTrain);
-var Blks:TBlksList;
-    i:Integer;
+var Blks: TBlksList;
+    i: Integer;
 begin
  Blks := Self.GetBlkWithTrain(train);
  for i := 0 to Blks.Count-1 do
@@ -939,7 +939,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetCount():Integer;
+function TBlky.GetCount(): Integer;
 begin
  Result := Self.data.Count;
 end;
@@ -958,8 +958,8 @@ end;
 
 // najde index pro novy blok
 // casova narocnost: linearni
-function TBlky.FindPlaceForNewBlk(id:Integer):Integer;
-var i:Integer;
+function TBlky.FindPlaceForNewBlk(id: Integer): Integer;
+var i: Integer;
 begin
  i := Self.data.Count-1;
  while ((i >= 0) and (Self.data[i].id > id)) do
@@ -970,7 +970,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.UpdateBlkIndexes();
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.data.Count-1 do
   Self.data[i].table_index := i; 
@@ -978,9 +978,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.BlkIDChanged(index:Integer);
-var new_index, min_index, i:Integer;
-    tmp:TBlk;
+procedure TBlky.BlkIDChanged(index: Integer);
+var new_index, min_index, i: Integer;
+    tmp: TBlk;
 begin
  tmp := Self.data[index];
  Self.data.Delete(index);
@@ -1001,8 +1001,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.GetPtData(json:TJsonObject; includeState:Boolean; stanice:TOR = nil; typ: TBlkType = btAny);
-var Blk:TBlk;
+procedure TBlky.GetPtData(json: TJsonObject; includeState: Boolean; stanice: TOR = nil; typ: TBlkType = btAny);
+var Blk: TBlk;
 begin
  for Blk in Self.data do
   begin
@@ -1012,7 +1012,7 @@ begin
 
      Blk.GetPtData(json.A['blocks'].AddObject, includeState);
    except
-     on E:Exception do
+     on E: Exception do
        PTUtils.PtErrorToJson(json.A['errors'].AddObject,
         '500', 'Chyba pri nacitani bloku '+IntToStr(Blk.id)+' : '+Blk.name,
         E.Message);
@@ -1022,8 +1022,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.NouzZaverZrusen(Sender:TBlk);
-var Blk:TBlk;
+procedure TBlky.NouzZaverZrusen(Sender: TBlk);
+var Blk: TBlk;
 begin
  for Blk in Self.data do
    if (Blk.typ = btNav) then
@@ -1033,7 +1033,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.ClearPOdj();
-var Blk:TBlk;
+var Blk: TBlk;
 begin
  for Blk in Self.data do
    if ((Blk.typ = btUsek) or (Blk.typ = btTU)) then
@@ -1042,12 +1042,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetItem(i: Integer):TBlk;
+function TBlky.GetItem(i: Integer): TBlk;
 begin
  Result := Self.data[i];
 end;
 
-function TBlky.GetEnumerator():TEnumerator<TBlk>;
+function TBlky.GetEnumerator(): TEnumerator<TBlk>;
 begin
  Result := Self.data.GetEnumerator();
 end;
@@ -1055,7 +1055,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlky.ZakladniPolohaVyhybek();
-var blk:TBlk;
+var blk: TBlk;
  begin
   for blk in Self.data do
     if ((Blk.typ = btTurnout) and (TBlkTurnout(Blk).position <> TTurnoutPosition.plus) and (not TBlkTurnout(Blk).outputLocked) and

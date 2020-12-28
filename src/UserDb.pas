@@ -1,4 +1,4 @@
-﻿unit UserDb;
+unit UserDb;
 
 {
   Trida TUsrDb udrzuje seznam uzivatelu a resi veskere operace s touto
@@ -14,38 +14,38 @@ type
   TUsrDb = class
    private
     users: TObjectList<TUser>;
-    ffilenameData:string;
-    ffilenameStat:string;
+    ffilenameData: string;
+    ffilenameStat: string;
 
-     function GetCount():Integer;
+     function GetCount(): Integer;
 
    public
 
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadAll(const datafn:string; const statefn:string);
-     procedure SaveData(const filename:string);
-     procedure SaveStat(const filename:string);
+     procedure LoadAll(const datafn: string; const statefn: string);
+     procedure SaveData(const filename: string);
+     procedure SaveStat(const filename: string);
 
-     function GetRights(username:string; passwd:string; OblR:string):
+     function GetRights(username: string; passwd: string; OblR: string):
                 TORCOntrolRights;
-     procedure LoginUser(username:string);
+     procedure LoginUser(username: string);
 
-     procedure AddUser(User:TUser);
-     procedure RemoveUser(index:Integer);
+     procedure AddUser(User: TUser);
+     procedure RemoveUser(index: Integer);
 
      procedure Sort();
-     function IndexOf(username:string):Integer;
+     function IndexOf(username: string): Integer;
 
-     function GetUser(index:Integer):TUser; overload;
-     function GetUser(username:string):TUser; overload;
+     function GetUser(index: Integer): TUser; overload;
+     function GetUser(username: string): TUser; overload;
 
      procedure GetPtData(json: TJsonObject);
 
-     property count:Integer read GetCount;
-     property filenameData:string read ffilenameData;
-     property filenameStat:string read ffilenameStat;
+     property count: Integer read GetCount;
+     property filenameData: string read ffilenameData;
+     property filenameStat: string read ffilenameStat;
 
   end;//class TUserDb
 
@@ -83,11 +83,11 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUsrDb.LoadAll(const datafn:string; const statefn:string);
-var iniData, iniStat:TMemIniFile;
-    str:TStrings;
-    i:Integer;
-    User:TUser;
+procedure TUsrDb.LoadAll(const datafn: string; const statefn: string);
+var iniData, iniStat: TMemIniFile;
+    str: TStrings;
+    i: Integer;
+    User: TUser;
 begin
  Self.ffilenameData := datafn;
  Self.ffilenameStat := statefn;
@@ -99,7 +99,7 @@ begin
    iniData := TMemIniFile.Create(datafn, TEncoding.UTF8);
    iniStat := TMemIniFile.Create(statefn, TEncoding.UTF8);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      AppEvents.LogException(E, 'TUsrDb.LoadAll: Ini.Create');
      Exit();
@@ -130,9 +130,9 @@ begin
  writelog('Načteno ' + IntToStr(Self.users.Count) + ' uživatelů', WR_USERS);
 end;
 
-procedure TUsrDb.SaveData(const filename:string);
-var ini:TMemIniFile;
-    user:TUser;
+procedure TUsrDb.SaveData(const filename: string);
+var ini: TMemIniFile;
+    user: TUser;
 begin
  writelog('Ukládám uživatele...', WR_USERS);
 
@@ -140,7 +140,7 @@ begin
    DeleteFile(PChar(filename));
    ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  except
-   on E:Exception do
+   on E: Exception do
     begin
      AppEvents.LogException(E, 'TUsrDb.SaveData: DeleteFile, Ini.Create');
      Exit();
@@ -160,8 +160,8 @@ begin
 end;
 
 procedure TUsrDb.SaveStat(const filename: string);
-var ini:TMemIniFile;
-    user:TUser;
+var ini: TMemIniFile;
+    user: TUser;
 begin
  ini := TMemIniFile.Create(filename+'_', TEncoding.UTF8);
  try
@@ -180,7 +180,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUsrDb.GetRights(username:string; passwd:string; OblR:string):TORCOntrolRights;
+function TUsrDb.GetRights(username: string; passwd: string; OblR: string): TORCOntrolRights;
 var user: TUser;
 begin
  for user in Self.users do
@@ -191,7 +191,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUsrDb.GetCount():Integer;
+function TUsrDb.GetCount(): Integer;
 begin
  Result := Self.users.Count;
 end;
@@ -210,7 +210,7 @@ begin
  Self.Sort();
 end;
 
-procedure TUsrDb.RemoveUser(index:Integer);
+procedure TUsrDb.RemoveUser(index: Integer);
 var oblr: string;
 begin
  try
@@ -230,14 +230,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUsrDb.GetUser(index:Integer):TUser;
+function TUsrDb.GetUser(index: Integer): TUser;
 begin
  if (index >= Self.users.Count) then Exit(nil);
  Result := Self.users.Items[index];
 end;
 
-function TUsrDb.GetUser(username:string):TUser;
-var index:Integer;
+function TUsrDb.GetUser(username: string): TUser;
+var index: Integer;
 begin
  index := Self.IndexOf(username);
  if (index = -1) then Exit(nil) else Result := Self.users[index];
@@ -245,7 +245,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUsrDb.LoginUser(username:string);
+procedure TUsrDb.LoginUser(username: string);
 var i: Integer;
 begin
  for i := 0 to Self.users.Count-1 do
@@ -269,7 +269,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUsrDb.IndexOf(username:string):Integer;
+function TUsrDb.IndexOf(username: string): Integer;
 var left, right, mid: Integer;
 begin
  left  := 0;
@@ -300,7 +300,7 @@ begin
    try
      user.GetPtData(json.A['users'].AddObject);
    except
-     on E:Exception do
+     on E: Exception do
        PTUtils.PtErrorToJson(json.A['errors'].AddObject,
         '500', 'Chyba pri nacitani uzivatele '+user.username, E.Message);
    end;

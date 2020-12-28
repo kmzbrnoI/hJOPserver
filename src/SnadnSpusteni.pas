@@ -11,35 +11,35 @@ const
 
 type
   TSSData = record
-   enabled:Boolean;
-   RCSAdr:Smallint;
-   AC_id:Integer;
-   IN_Start:Smallint;
-   IN_Pause:Smallint;
-   IN_Stop:Smallint;
-   IN_Repeat:Smallint;
-   IN_Reset:Smallint;
-   OUT_Ready:Smallint;
-   OUT_Start:Smallint;
-   OUT_Pause:Smallint;
-   OUT_Stop:Smallint;
-   OUT_Repeat:Smallint;
+   enabled: Boolean;
+   RCSAdr: Smallint;
+   AC_id: Integer;
+   IN_Start: Smallint;
+   IN_Pause: Smallint;
+   IN_Stop: Smallint;
+   IN_Repeat: Smallint;
+   IN_Reset: Smallint;
+   OUT_Ready: Smallint;
+   OUT_Start: Smallint;
+   OUT_Pause: Smallint;
+   OUT_Stop: Smallint;
+   OUT_Repeat: Smallint;
   end;
 
   TSS = class
    private
-    config:TSSData;
-    RepeatDown:Boolean;
+    config: TSSData;
+    RepeatDown: Boolean;
 
    public
 
      procedure Update();
 
-     procedure LoadData(ini:TMemIniFile);
-     procedure SaveData(ini:TMemIniFile);
+     procedure LoadData(ini: TMemIniFile);
+     procedure SaveData(ini: TMemIniFile);
 
-     function GetData():TSSData;
-     procedure SetData(data:TSSData);
+     function GetData(): TSSData;
+     procedure SetData(data: TSSData);
   end;
 
 var
@@ -51,7 +51,7 @@ uses TechnologieRCS, TBloky, ownConvert, RCS, TBlokAC, TBlok;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TSS.LoadData(ini:TMemIniFile);
+procedure TSS.LoadData(ini: TMemIniFile);
 begin
  Self.config.enabled := ini.ReadBool(_INIFILE_SECTION, 'enabled', false);
  Self.config.RCSAdr := ini.ReadInteger(_INIFILE_SECTION, 'RCSAdr', -1);
@@ -72,7 +72,7 @@ begin
  Self.config.OUT_Repeat := ini.ReadInteger(_INIFILE_SECTION, 'OUT_Repeat', -1);
 end;
 
-procedure TSS.SaveData(ini:TMemIniFile);
+procedure TSS.SaveData(ini: TMemIniFile);
 begin
  ini.WriteBool(_INIFILE_SECTION, 'enabled', Self.config.enabled);
  ini.WriteInteger(_INIFILE_SECTION, 'RCSAdr', Self.config.RCSAdr);
@@ -108,20 +108,20 @@ var blk: TBlk;
 
   try
     if ((Self.config.IN_Start > -1) and (not AC.running) and (AC.clientConnected)
-      and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Start) = isOn)) then
+      and (RCSi.GetInput(Self.config.RCSAdr, Self.config.IN_Start) = isOn)) then
         AC.Start();
 
     if ((Self.config.IN_Pause > -1) and (AC.running)
-      and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Pause) = isOn)) then
+      and (RCSi.GetInput(Self.config.RCSAdr, Self.config.IN_Pause) = isOn)) then
         AC.Pause();
 
     if ((Self.config.IN_Stop > -1) and (AC.running)
-      and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Stop) = isOn)) then
+      and (RCSi.GetInput(Self.config.RCSAdr, Self.config.IN_Stop) = isOn)) then
         AC.Stop();
 
     if (Self.config.IN_Repeat > -1) then
      begin
-      if (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Repeat) = isOn) then
+      if (RCSi.GetInput(Self.config.RCSAdr, Self.config.IN_Repeat) = isOn) then
        begin
         if (not Self.RepeatDown) then
          begin
@@ -134,7 +134,7 @@ var blk: TBlk;
        end;
      end;//if IN_Repeat_Used
 
-    if ((Self.config.IN_Reset > -1) and (RCSi.GetInput(Self.config.RCSAdr,Self.config.IN_Reset) = isOn)) then
+    if ((Self.config.IN_Reset > -1) and (RCSi.GetInput(Self.config.RCSAdr, Self.config.IN_Reset) = isOn)) then
      begin
       // TODO: reset
      end;
@@ -165,12 +165,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TSS.GetData():TSSData;
+function TSS.GetData(): TSSData;
 begin
  Result := Self.config;
 end;
 
-procedure TSS.SetData(data:TSSData);
+procedure TSS.SetData(data: TSSData);
 begin
  Self.config := data;
 end;

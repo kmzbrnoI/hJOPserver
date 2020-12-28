@@ -38,13 +38,13 @@ type
     procedure LV_ORsCustomDrawItem(Sender: TCustomListView; Item: TListItem;
       State: TCustomDrawState; var DefaultDraw: Boolean);
   private
-    openUser:TUser;
-    new:Boolean;
+    openUser: TUser;
+    new: Boolean;
 
     procedure FillORs();
 
   public
-    procedure OpenForm(User:TUser);
+    procedure OpenForm(User: TUser);
     procedure NewUser();
   end;
 
@@ -65,7 +65,7 @@ begin
 end;
 
 procedure TF_UserEdit.CB_RightsChange(Sender: TObject);
-var i:Integer;
+var i: Integer;
 begin
  for i := 0 to Self.LV_ORs.Items.Count-1 do
   begin
@@ -81,7 +81,7 @@ begin
 end;
 
 procedure TF_UserEdit.FormClose(Sender: TObject; var Action: TCloseAction);
-var i:Integer;
+var i: Integer;
 begin
  Self.new := false;
 
@@ -92,8 +92,8 @@ end;
 
 procedure TF_UserEdit.LV_ORsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
-var rights, rights2:TORControlRights;
-    i:Integer;
+var rights, rights2: TORControlRights;
+    i: Integer;
 begin
  if (Self.LV_ORs.SelCount = 0) then
   begin
@@ -145,7 +145,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TF_UserEdit.OpenForm(user:TUser);
+procedure TF_UserEdit.OpenForm(user: TUser);
 begin
  Self.openUser := User;
  Self.FillORs();
@@ -191,7 +191,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_UserEdit.B_ApplyClick(Sender: TObject);
-var index:Integer;
+var index: Integer;
 begin
  if (Length(Self.E_UserName.Text) < 3) then
   begin
@@ -242,7 +242,7 @@ begin
    try
      UsrDB.AddUser(Self.openUser);
    except
-     on e:Exception do
+     on e: Exception do
       begin
        Application.MessageBox(PChar(e.Message), 'Varování', MB_OK OR MB_ICONWARNING);
        Exit();
@@ -265,9 +265,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_UserEdit.FillORs();
-var LI:TListItem;
-    rights:TORCOntrolRights;
-    data:Pointer;
+var LI: TListItem;
+    rights: TORCOntrolRights;
+    data: Pointer;
     oblr: TOR;
 begin
  Self.LV_ORs.Clear();

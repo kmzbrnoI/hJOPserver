@@ -1,4 +1,4 @@
-﻿unit THnaciVozidlo;
+unit THnaciVozidlo;
 
 {
   -------------------------- implementace ----------------------------------
@@ -136,35 +136,35 @@ type
      pomErr: TCommandCallback;
      pomTarget: TPomStatus;
 
-     procedure LoadData(ini:TMemIniFile; section:string);
-     procedure LoadState(ini:TMemIniFile; section:string);
+     procedure LoadData(ini: TMemIniFile; section: string);
+     procedure LoadState(ini: TMemIniFile; section: string);
 
-     procedure SetRuc(state:Boolean);
+     procedure SetRuc(state: Boolean);
      procedure UpdateFuncDict();
-     procedure SetTrain(new:Integer);
+     procedure SetTrain(new: Integer);
 
-     function GetSlotFunkce():TFunkce;
-     function GetRealSpeed():Cardinal;
-     function GetStACurrentDirection():Boolean;
+     function GetSlotFunkce(): TFunkce;
+     function GetRealSpeed(): Cardinal;
+     function GetStACurrentDirection(): Boolean;
 
-     procedure TrakceCallbackOk(Sender:TObject; data:Pointer);
-     procedure TrakceCallbackErr(Sender:TObject; data:Pointer);
-     procedure TrakceCallbackCallEv(cb:PTCb);
-     procedure SlotChanged(Sender:TObject; speedChanged:Boolean; dirChanged:Boolean; funcChanged:Boolean);
-     procedure TrakceAcquired(Sender: TObject; LocoInfo:TTrkLocoInfo);
-     procedure TrakceAcquiredDirection(Sender: TObject; data:Pointer);
-     procedure TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
-     procedure TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
-     procedure TrakceAcquiredErr(Sender:TObject; data:Pointer);
+     procedure TrakceCallbackOk(Sender: TObject; data: Pointer);
+     procedure TrakceCallbackErr(Sender: TObject; data: Pointer);
+     procedure TrakceCallbackCallEv(cb: PTCb);
+     procedure SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
+     procedure TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
+     procedure TrakceAcquiredDirection(Sender: TObject; data: Pointer);
+     procedure TrakceAcquiredFunctionsSet(Sender: TObject; Data: Pointer);
+     procedure TrakceAcquiredPOMSet(Sender: TObject; Data: Pointer);
+     procedure TrakceAcquiredErr(Sender: TObject; data: Pointer);
 
-     procedure TrakceUpdated(Sender: TObject; LocoInfo:TTrkLocoInfo);
-     procedure TrakceUpdatedErr(Sender:TObject; data:Pointer);
+     procedure TrakceUpdated(Sender: TObject; LocoInfo: TTrkLocoInfo);
+     procedure TrakceUpdatedErr(Sender: TObject; data: Pointer);
 
-     procedure TrakceReleased(Sender:TObject; data:Pointer);
-     procedure TrakceReleasedPOM(Sender:TObject; data:Pointer);
+     procedure TrakceReleased(Sender: TObject; data: Pointer);
+     procedure TrakceReleasedPOM(Sender: TObject; data: Pointer);
 
-     procedure TrakcePOMOK(Sender:TObject; data:Pointer);
-     procedure TrakcePOMErr(Sender:TObject; data:Pointer);
+     procedure TrakcePOMOK(Sender: TObject; data: Pointer);
+     procedure TrakcePOMErr(Sender: TObject; data: Pointer);
 
      procedure BroadcastRegulators(msg: string);
      procedure SendExpectedSpeed();
@@ -179,51 +179,51 @@ type
     slot: TTrkLocoInfo;
     changed: Boolean; // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
 
-     constructor Create(data_ini:TMemIniFile; state_ini:TMemIniFile; section:string); overload;
-     constructor Create(adresa:Word; data:THVData; stav:THVStav); overload;
-     constructor Create(panel_str:string; Sender:TOR); overload;
+     constructor Create(data_ini: TMemIniFile; state_ini: TMemIniFile; section: string); overload;
+     constructor Create(adresa: Word; data: THVData; stav: THVStav); overload;
+     constructor Create(panel_str: string; Sender: TOR); overload;
      destructor Destroy(); override;
 
      procedure SaveData(); overload;
-     procedure SaveData(const filename:string); overload;
-     procedure SaveState(ini:TMemIniFile);
+     procedure SaveData(const filename: string); overload;
+     procedure SaveState(ini: TMemIniFile);
 
-     procedure UpdateFromPanelString(data:string); // nacteni informaci o HV z klienta
+     procedure UpdateFromPanelString(data: string); // nacteni informaci o HV z klienta
 
      procedure ResetStats();
-     function ExportStats():string;
+     function ExportStats(): string;
 
-     function PredejStanici(st:TOR):Integer;
-     function GetPanelLokString(mode:TLokStringMode = normal):string; // vrati HV ve standardnim formatu pro klienta
-     procedure UpdateRuc(send_remove:Boolean = true); // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
+     function PredejStanici(st: TOR): Integer;
+     function GetPanelLokString(mode: TLokStringMode = normal): string; // vrati HV ve standardnim formatu pro klienta
+     procedure UpdateRuc(send_remove: Boolean = true); // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
 
-     procedure RemoveRegulator(conn:TIDContext); // smaze regulator -- klienta; je volano jen jako callback regulatoru!
-     function IsReg(conn:TIdContext):Boolean; // je na tomto HV tento regulator ?
+     procedure RemoveRegulator(conn: TIDContext); // smaze regulator -- klienta; je volano jen jako callback regulatoru!
+     function IsReg(conn: TIdContext): Boolean; // je na tomto HV tento regulator ?
      procedure UpdateAllRegulators();
      procedure ForceRemoveAllRegulators();
 
-     function GetToken():string;
-     function IsToken(str:string):Boolean;
-     procedure RemoveToken(token:string);
+     function GetToken(): string;
+     function IsToken(str: string): Boolean;
+     procedure RemoveToken(token: string);
      procedure UpdateTokenTimeout(); // aktualizace vyprseni platnosti tokenu, melo by byt volano periodicky
 
-     function CanPlayHouk(sound:string):Boolean; // vraci true pokud je povoleno prehravani zvuku
+     function CanPlayHouk(sound: string): Boolean; // vraci true pokud je povoleno prehravani zvuku
      procedure CheckRelease();
      procedure RecordUseNow();
-     function NiceName():string;
-     function ShouldAcquire():Boolean;
-     procedure UpdateTraveled(period:Cardinal);
+     function NiceName(): string;
+     function ShouldAcquire(): Boolean;
+     procedure UpdateTraveled(period: Cardinal);
 
-     procedure SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil); overload;
-     procedure SetSpeed(speed:Integer; Sender: TObject = nil); overload;
-     procedure SetDirection(dir:Boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
-     procedure SetDirection(dir:Boolean; Sender: TObject = nil); overload;
-     procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
-     procedure SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil); overload;
-     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil); overload;
-     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil); overload;
-     procedure SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
-     procedure EmergencyStop(ok: TCb; err: TCb; Sender:TObject = nil);
+     procedure SetSpeed(speed: Integer; ok: TCb; err: TCb; Sender: TObject = nil); overload;
+     procedure SetSpeed(speed: Integer; Sender: TObject = nil); overload;
+     procedure SetDirection(dir: Boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
+     procedure SetDirection(dir: Boolean; Sender: TObject = nil); overload;
+     procedure SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
+     procedure SetSpeedDir(speed: Integer; direction: Boolean; Sender: TObject = nil); overload;
+     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil); overload;
+     procedure SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender: TObject = nil); overload;
+     procedure SetSingleFunc(func: Integer; state: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+     procedure EmergencyStop(ok: TCb; err: TCb; Sender: TObject = nil);
      procedure CSReset();
 
      procedure TrakceAcquire(ok: TCb; err: TCb);
@@ -233,7 +233,7 @@ type
 
      procedure StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
 
-     procedure SetPom(pom:TPomStatus; ok: TCb; err: TCb);
+     procedure SetPom(pom: TPomStatus; ok: TCb; err: TCb);
 
      function IsSouprava(): Boolean;
 
@@ -242,13 +242,13 @@ type
      procedure OnPredictedSignalChange();
      function PredictedSignalStr(): string;
 
-     class function CharToHVFuncType(c:char):THVFuncType;
-     class function HVFuncTypeToChar(t:THVFuncType):char;
+     class function CharToHVFuncType(c: char): THVFuncType;
+     class function HVFuncTypeToChar(t: THVFuncType): char;
 
      //PT:
-     procedure GetPtData(json:TJsonObject; includeState:Boolean);
-     procedure GetPtState(json:TJsonObject);
-     procedure PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
+     procedure GetPtData(json: TJsonObject; includeState: Boolean);
+     procedure GetPtState(json: TJsonObject);
+     procedure PostPtState(reqJson: TJsonObject; respJson: TJsonObject);
 
      property addr: Word read faddr;
      property addrStr: String read GetAddrStr;
@@ -280,7 +280,7 @@ uses ownStrUtils, TOblsRizeni, THVDatabase, TrainDb, DataHV, fRegulator, TBloky,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor THV.Create(data_ini:TMemIniFile; state_ini:TMemIniFile; section:string);
+constructor THV.Create(data_ini: TMemIniFile; state_ini: TMemIniFile; section: string);
 begin
  inherited Create();
 
@@ -306,12 +306,12 @@ begin
    else
      Self.LoadState(data_ini, section)
  except
-   on E:Exception do
+   on E: Exception do
      raise Exception.Create('Chyba při načítání sekce '+section+' - '+E.Message);
  end;
 end;//ctor
 
-constructor THV.Create(adresa:Word; data:THVData; stav:THVStav);
+constructor THV.Create(adresa: Word; data: THVData; stav: THVStav);
 begin
  inherited Create();
 
@@ -331,7 +331,7 @@ begin
  if (not Assigned(Self.Stav.tokens))     then Self.Stav.tokens     := TList<THVToken>.Create();
 end;//ctor
 
-constructor THV.Create(panel_str:string; Sender:TOR);
+constructor THV.Create(panel_str: string; Sender: TOR);
 begin
  inherited Create();
 
@@ -363,12 +363,12 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.LoadData(ini:TMemIniFile; section:string);
-var strs, strs2:TStrings;
-    i:Integer;
-    pomCV:THVPomCV;
-    str, s:string;
-    addr:Integer;
+procedure THV.LoadData(ini: TMemIniFile; section: string);
+var strs, strs2: TStrings;
+    i: Integer;
+    pomCV: THVPomCV;
+    str, s: string;
+    addr: Integer;
 begin
   strs  := TStringList.Create();
   strs2 := TStringList.Create();
@@ -464,9 +464,9 @@ begin
  strs2.Free();
 end;
 
-procedure THV.LoadState(ini:TMemIniFile; section:string);
-var i:Integer;
-    str:string;
+procedure THV.LoadState(ini: TMemIniFile; section: string);
+var i: Integer;
+    str: string;
 begin
  Self.Stav.stanice := ORs.Get(ini.ReadString(section, 'stanice', ''));
  if (Self.Stav.stanice = nil) then
@@ -493,11 +493,11 @@ begin
    Self.Stav.funkce[i] := ((i < Length(str)) and ownConvert.StrToBool(str[i+1]));
 end;
 
-procedure THV.SaveData(const filename:string);
-var ini:TMemIniFile;
-    addr, str:string;
-    i:Integer;
-    pom:THVPomCV;
+procedure THV.SaveData(const filename: string);
+var ini: TMemIniFile;
+    addr, str: string;
+    i: Integer;
+    pom: THVPomCV;
 begin
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
@@ -558,9 +558,9 @@ begin
  Self.SaveData(HVdb.FilenameForLok(Self));
 end;
 
-procedure THV.SaveState(ini:TMemIniFile);
-var i:Integer;
-    addr, str:string;
+procedure THV.SaveState(ini: TMemIniFile);
+var i: Integer;
+    addr, str: string;
 begin
  if (Self.Stav.train > -1) then
    Self.RecordUseNow();
@@ -610,10 +610,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.GetPanelLokString(mode:TLokStringMode = normal):string;
-var i:Integer;
-    func:TFunkce;
-    pomCV:THVPOMCv;
+function THV.GetPanelLokString(mode: TLokStringMode = normal): string;
+var i: Integer;
+    func: TFunkce;
+    pomCV: THVPOMCv;
 begin
  Result := Self.data.name + '|' + Self.data.owner + '|' + Self.data.designation + '|{' + Self.data.note + '}|' +
            IntToStr(Self.addr) + '|' + IntToStr(Integer(Self.data.typ)) + '|';
@@ -679,7 +679,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.PredejStanici(st:TOR):Integer;
+function THV.PredejStanici(st: TOR): Integer;
 begin
  // zruseni RUC u stare stanice
  Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.addr));
@@ -696,12 +696,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateFromPanelString(data:string);
-var str, str2, str3:TStrings;
-    i:Integer;
-    pomCv:THVPomCv;
-    tmp:string;
-    maxFunc:Integer;
+procedure THV.UpdateFromPanelString(data: string);
+var str, str2, str3: TStrings;
+    i: Integer;
+    pomCv: THVPomCv;
+    tmp: string;
+    maxFunc: Integer;
 begin
  str := TStringList.Create();
  str2 := TStringList.Create();
@@ -789,7 +789,7 @@ begin
   if (str.Count > 18) then
     Self.data.transience := StrToInt(str[18]);
  except
-  on e:Exception do
+  on e: Exception do
    begin
     raise Exception.Create('Chyba při parsování dat hnacího vozidla - '+e.Message);
     Exit();
@@ -812,8 +812,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateRuc(send_remove:Boolean = true);
-var train:string;
+procedure THV.UpdateRuc(send_remove: Boolean = true);
+var train: string;
 begin
  if (Self.data.typ = THVType.car) then
    Exit(); // do not report cars
@@ -841,8 +841,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // smazani regulatoru
-procedure THV.RemoveRegulator(conn:TIDContext);
-var i:Integer;
+procedure THV.RemoveRegulator(conn: TIDContext);
+var i: Integer;
 begin
  for i := 0 to Self.Stav.regulators.Count-1 do
    if (Self.Stav.regulators[i].conn = conn) then
@@ -862,8 +862,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.GetToken():string;
-var token:THVToken;
+function THV.GetToken(): string;
+var token: THVToken;
 begin
  token.token := RandomToken(_TOKEN_LEN);
  token.timeout := Now + EncodeTime(0, _TOKEN_TIMEOUT_MIN, 0, 0);
@@ -871,8 +871,8 @@ begin
  Self.Stav.tokens.Add(token);
 end;
 
-function THV.IsToken(str:string):Boolean;
-var token:THVToken;
+function THV.IsToken(str: string): Boolean;
+var token: THVToken;
 begin
  for token in Self.Stav.tokens do
   if (token.token = str) then
@@ -880,8 +880,8 @@ begin
  Result := false;
 end;
 
-procedure THV.RemoveToken(token:string);
-var i:Integer;
+procedure THV.RemoveToken(token: string);
+var i: Integer;
 begin
  for i := 0 to Self.Stav.tokens.Count-1 do
   if (Self.Stav.tokens[i].token = token) then
@@ -892,7 +892,7 @@ begin
 end;
 
 procedure THV.UpdateTokenTimeout();
-var i:Integer;
+var i: Integer;
 begin
  for i := Self.Stav.tokens.Count-1 downto 0 do
    if (Now > Self.Stav.tokens[i].timeout) then
@@ -902,7 +902,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // timto prikazem je lokomotive zapinano / vypinano rucni rizeni
-procedure THV.SetRuc(state:Boolean);
+procedure THV.SetRuc(state: Boolean);
 begin
  if (Self.Stav.ruc = state) then Exit();
  Self.Stav.ruc := state;
@@ -941,8 +941,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.IsReg(conn:TIdContext):Boolean;
-var reg:THVRegulator;
+function THV.IsReg(conn: TIdContext): Boolean;
+var reg: THVRegulator;
 begin
  for reg in Self.Stav.regulators do
    if (reg.conn = conn) then
@@ -953,7 +953,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THV.UpdateAllRegulators();
-var regulator:THVRegulator;
+var regulator: THVRegulator;
 begin
  for regulator in Self.Stav.regulators do
    TCPRegulator.LokToRegulator(regulator.conn, Self);
@@ -961,9 +961,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.GetPtData(json:TJsonObject; includeState:Boolean);
-var i, lastFunction:Integer;
-    types:string;
+procedure THV.GetPtData(json: TJsonObject; includeState: Boolean);
+var i, lastFunction: Integer;
+    types: string;
 begin
  json['adresa']   := Self.addr;
  json['nazev']    := Self.data.name;
@@ -997,9 +997,9 @@ begin
    Self.GetPtState(json['lokStav']);
 end;
 
-procedure THV.GetPtState(json:TJsonObject);
-var i:Integer;
-    stavFunkci:string;
+procedure THV.GetPtState(json: TJsonObject);
+var i: Integer;
+    stavFunkci: string;
 begin
  json['rychlostStupne'] := Self.speedStep;
  json['rychlostKmph']   := Self.realSpeed;
@@ -1021,9 +1021,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.PostPtState(reqJson:TJsonObject; respJson:TJsonObject);
-var speed, dir, i:Integer;
-    noveFunkce:TFunkce;
+procedure THV.PostPtState(reqJson: TJsonObject; respJson: TJsonObject);
+var speed, dir, i: Integer;
+    noveFunkce: TFunkce;
 begin
  dir := 0;
 
@@ -1084,7 +1084,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THV.UpdateFuncDict();
-var i:Integer;
+var i: Integer;
 begin
  Self.funcDict.Clear();
  for i := 0 to _HV_FUNC_MAX do
@@ -1094,7 +1094,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.CanPlayHouk(sound:string):Boolean;
+function THV.CanPlayHouk(sound: string): Boolean;
 begin
  Result := ((Self.Stav.regulators.Count = 0) and (not Self.stolen) and
            ((not Self.funcDict.ContainsKey(_SOUND_FUNC)) or (Self.Stav.funkce[Self.funcDict[_SOUND_FUNC]])) and
@@ -1121,7 +1121,7 @@ begin
  Self.changed := true;
 end;
 
-procedure THV.SetTrain(new:Integer);
+procedure THV.SetTrain(new: Integer);
 begin
  if (new = Self.train) then
    Exit();
@@ -1141,14 +1141,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.NiceName():string;
+function THV.NiceName(): string;
 begin
  Result := IntToStr(Self.addr) + ' : ' + Self.data.name + '(' + Self.data.designation + ')';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.ShouldAcquire():Boolean;
+function THV.ShouldAcquire(): Boolean;
 begin
  Result := ((Self.train > -1) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
 end;
@@ -1156,14 +1156,14 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure THV.ForceRemoveAllRegulators();
-var i:Integer;
+var i: Integer;
 begin
  for i := Self.Stav.regulators.Count-1 downto 0 do
   begin
    try
      TCPRegulator.RemoveLok(Self.Stav.regulators[i].conn, Self, 'Násilné odhlášení dispečerem');
    except
-     on E:Exception do
+     on E: Exception do
        AppEvents.LogException(E, 'THV.ForceRemoveAllRegulators');
    end;
   end;
@@ -1171,7 +1171,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function THV.CharToHVFuncType(c:char):THVFuncType;
+class function THV.CharToHVFuncType(c: char): THVFuncType;
 begin
  if (UpperCase(c) = 'M') then
    Result := THVFuncType.momentary
@@ -1179,7 +1179,7 @@ begin
    Result := THVFuncType.permanent;
 end;
 
-class function THV.HVFuncTypeToChar(t:THVFuncType):char;
+class function THV.HVFuncTypeToChar(t: THVFuncType): char;
 begin
  if (t = THVFuncType.momentary) then
    Result := 'M'
@@ -1189,39 +1189,39 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.SetSpeed(speed:Integer; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure THV.SetSpeed(speed: Integer; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
  Self.SetSpeedDir(speed, Self.slot.direction, ok, err, Sender);
 end;
 
-procedure THV.SetSpeed(speed:Integer; Sender: TObject = nil);
+procedure THV.SetSpeed(speed: Integer; Sender: TObject = nil);
 begin
  Self.SetSpeed(speed, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
-procedure THV.SetDirection(dir:Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure THV.SetDirection(dir: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
  Self.SetSpeedStepDir(Self.slot.step, dir, ok, err, Sender);
 end;
 
-procedure THV.SetDirection(dir:Boolean; Sender: TObject = nil);
+procedure THV.SetDirection(dir: Boolean; Sender: TObject = nil);
 begin
  Self.SetDirection(dir, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
-procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
  Self.SetSpeedStepDir(TrakceI.Step(speed), direction, ok, err, Sender);
 end;
 
-procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; Sender:TObject = nil);
+procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; Sender: TObject = nil);
 begin
  Self.SetSpeedDir(speed, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
-procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
-var dirOld:Boolean;
-    stepsOld:Byte;
+procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+var dirOld: Boolean;
+    stepsOld: Byte;
     cbOk, cbErr: PTCB;
 begin
  if ((not Self.acquired) and (not Self.acquiring)) then
@@ -1259,7 +1259,7 @@ begin
                         TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
                         TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
-   on E:Exception do
+   on E: Exception do
     begin
      Self.TrakceCallbackErr(Self, cbErr);
      AppEvents.LogException(E, 'THV.SetSpeedDir');
@@ -1269,12 +1269,12 @@ begin
  Self.SlotChanged(Sender, stepsOld <> speedStep, dirOld <> direction, false);
 end;
 
-procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender:TObject = nil);
+procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender: TObject = nil);
 begin
  Self.SetSpeedStepDir(speedStep, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
 end;
 
-procedure THV.SetSingleFunc(func:Integer; state:Boolean; ok: TCb; err: TCb; Sender:TObject = nil);
+procedure THV.SetSingleFunc(func: Integer; state: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 var cbOk, cbErr: PTCb;
 begin
  if ((not Self.acquired) and (not Self.acquiring)) then
@@ -1312,7 +1312,7 @@ begin
                              TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
                              TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
-   on E:Exception do
+   on E: Exception do
     begin
      Self.TrakceCallbackErr(Self, cbErr);
      AppEvents.LogException(E, 'THV.SetSingleFunc');
@@ -1325,9 +1325,9 @@ begin
 end;
 
 procedure THV.StavFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
-var i:Integer;
-    funcMask:Cardinal;
-    funcState:Cardinal;
+var i: Integer;
+    funcMask: Cardinal;
+    funcState: Cardinal;
 begin
  if ((not Self.acquired) and (not Self.acquiring)) then
   begin
@@ -1375,7 +1375,7 @@ begin
  Self.changed := true;
 end;
 
-procedure THV.EmergencyStop(ok: TCb; err: TCb; Sender:TObject = nil);
+procedure THV.EmergencyStop(ok: TCb; err: TCb; Sender: TObject = nil);
 var cbOk, cbErr: PTCb;
 begin
  if (not Self.acquired) then
@@ -1393,7 +1393,7 @@ begin
                              TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
                              TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
  except
-   on E:Exception do
+   on E: Exception do
     begin
      Self.TrakceCallbackErr(Self, cbErr);
      AppEvents.LogException(E, 'THV.EmergencyStop');
@@ -1418,7 +1418,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.TrakceCallbackOk(Sender:TObject; data:Pointer);
+procedure THV.TrakceCallbackOk(Sender: TObject; data: Pointer);
 begin
  Self.TrakceCallbackCallEv(data);
 
@@ -1428,7 +1428,7 @@ begin
  RegCollector.LocoChanged(Self, Self.addr);
 end;
 
-procedure THV.TrakceCallbackErr(Sender:TObject; data:Pointer);
+procedure THV.TrakceCallbackErr(Sender: TObject; data: Pointer);
 begin
  Self.TrakceCallbackCallEv(data);
 
@@ -1438,7 +1438,7 @@ begin
  RegCollector.LocoChanged(Self, Self.addr);
 end;
 
-procedure THV.TrakceCallbackCallEv(cb:PTCb);
+procedure THV.TrakceCallbackCallEv(cb: PTCb);
 begin
  if (cb <> nil) then
   begin
@@ -1452,7 +1452,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.GetSlotFunkce():TFunkce;
+function THV.GetSlotFunkce(): TFunkce;
 var i: Integer;
     functions: Cardinal;
 begin
@@ -1473,7 +1473,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.SlotChanged(Sender:TObject; speedChanged:Boolean; dirChanged:Boolean; funcChanged:Boolean);
+procedure THV.SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
 begin
  if (speedChanged or dirChanged) then
    TCPRegulator.LokUpdateSpeed(Self, Sender);
@@ -1511,8 +1511,8 @@ begin
 end;
 
 procedure THV.TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
-var direction:Boolean;
-    speedStep:Integer;
+var direction: Boolean;
+    speedStep: Integer;
 begin
  Self.slot := LocoInfo;
  Self.changed := true;
@@ -1547,7 +1547,7 @@ begin
                                    TTrakce.Callback(Self.TrakceAcquiredErr));
 end;
 
-procedure THV.TrakceAcquiredFunctionsSet(Sender:TObject; Data:Pointer);
+procedure THV.TrakceAcquiredFunctionsSet(Sender: TObject; Data: Pointer);
 begin
  Self.Stav.ruc := (RegCollector.IsLoko(Self)) or (Self.ruc);
  Self.changed := true;
@@ -1562,8 +1562,8 @@ begin
   end;
 end;
 
-procedure THV.TrakceAcquiredPOMSet(Sender:TObject; Data:Pointer);
-var state:string;
+procedure THV.TrakceAcquiredPOMSet(Sender: TObject; Data: Pointer);
+var state: string;
 begin
  // Everything done
  TrakceI.Log(llCommands, 'Loco Fully Acquired: '+Self.name+' ('+IntToStr(Self.addr)+')');
@@ -1590,7 +1590,7 @@ begin
    Self.acquiredOk.callback(Self, Self.acquiredOk.data);
 end;
 
-procedure THV.TrakceAcquiredErr(Sender:TObject; data:Pointer);
+procedure THV.TrakceAcquiredErr(Sender: TObject; data: Pointer);
 begin
  TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.stav.acquiring := false;
@@ -1618,7 +1618,7 @@ begin
    Self.TrakceReleasedPOM(Self, nil);
 end;
 
-procedure THV.TrakceReleasedPOM(Sender:TObject; data:Pointer);
+procedure THV.TrakceReleasedPOM(Sender: TObject; data: Pointer);
 begin
  // POM done (we do not care is successfully or unsuccessfully)
  try
@@ -1628,7 +1628,7 @@ begin
  end;
 end;
 
-procedure THV.TrakceReleased(Sender:TObject; data:Pointer);
+procedure THV.TrakceReleased(Sender: TObject; data: Pointer);
 begin
  TrakceI.Log(llCommands, 'Loco Successfully Released: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.stav.acquired := false;
@@ -1641,8 +1641,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // POM
 
-procedure THV.SetPom(pom:TPomStatus; ok: TCb; err: TCb);
-var toProgram:TList<THVPomCV>;
+procedure THV.SetPom(pom: TPomStatus; ok: TCb; err: TCb);
+var toProgram: TList<THVPomCV>;
 begin
  Self.pomOk := ok;
  Self.pomErr := err;
@@ -1661,7 +1661,7 @@ begin
                      TTrakce.Callback(Self.TrakcePOMOK), TTrakce.Callback(Self.TrakcePOMErr));
 end;
 
-procedure THV.TrakcePOMOK(Sender:TObject; data:Pointer);
+procedure THV.TrakcePOMOK(Sender: TObject; data: Pointer);
 begin
  if (Self.stav.trakceError) then
    Self.stav.trakceError := false;
@@ -1672,7 +1672,7 @@ begin
    Self.pomOk.callback(Self, Self.pomOk.data);
 end;
 
-procedure THV.TrakcePOMErr(Sender:TObject; data:Pointer);
+procedure THV.TrakcePOMErr(Sender: TObject; data: Pointer);
 begin
  Self.stav.pom := TPomStatus.error;
  Self.stav.trakceError := true;
@@ -1704,7 +1704,7 @@ begin
  end;
 end;
 
-procedure THV.TrakceUpdated(Sender: TObject; LocoInfo:TTrkLocoInfo);
+procedure THV.TrakceUpdated(Sender: TObject; LocoInfo: TTrkLocoInfo);
 var slotOld: TTrkLocoInfo;
 begin
  TrakceI.Log(llCommands, 'Loco Updated: '+Self.name+' ('+IntToStr(Self.addr)+')');
@@ -1729,7 +1729,7 @@ begin
    Self.acquiredOk.callback(Self, Self.acquiredOk.data);
 end;
 
-procedure THV.TrakceUpdatedErr(Sender:TObject; data:Pointer);
+procedure THV.TrakceUpdatedErr(Sender: TObject; data: Pointer);
 begin
  TrakceI.Log(llCommands, 'ERR: Loco Not Updated: '+Self.name+' ('+IntToStr(Self.addr)+')');
  Self.stav.updating := false;
@@ -1764,14 +1764,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.GetStACurrentDirection():Boolean;
+function THV.GetStACurrentDirection(): Boolean;
 begin
  Result := Self.direction xor ownConvert.IntToBool(Integer(Self.Stav.StanovisteA));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateTraveled(period:Cardinal);
+procedure THV.UpdateTraveled(period: Cardinal);
 begin
  if (Self.speedStep = 0) then Exit();
 

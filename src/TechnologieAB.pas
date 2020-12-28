@@ -1,4 +1,4 @@
-﻿unit TechnologieAB;
+unit TechnologieAB;
 
 {
   Trida TABlist udrzuje seznam automaticky stavenych jizdnich cest a postupne
@@ -17,21 +17,21 @@ type
    private
     JCs: TList<TJC>;
 
-     function GetItem(index:Integer):TJC;
-     procedure TryJC(jc:TJC);
+     function GetItem(index: Integer): TJC;
+     procedure TryJC(jc: TJC);
 
    public
 
      constructor Create();
      destructor Destroy(); override;
 
-     procedure Add(jc:TJC);
-     procedure Remove(jc:TJC);
-     function Contains(jc:TJC):Boolean;
+     procedure Add(jc: TJC);
+     procedure Remove(jc: TJC);
+     function Contains(jc: TJC): Boolean;
 
      procedure Update();
 
-     function IsUsekInAnyABJC(usekid:Integer):Boolean;
+     function IsUsekInAnyABJC(usekid: Integer): Boolean;
 
      property Items[index : integer]: TJC read GetItem; default;
   end;
@@ -59,7 +59,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TABlist.Add(jc:TJC);
+procedure TABlist.Add(jc: TJC);
 begin
  if (Self.JCs.Contains(jc)) then
    raise EABJCAlreadyInList.Create('This JC is already in AB list!');
@@ -69,10 +69,10 @@ begin
  writelog('AB: JC '+jc.name+' přidána do seznamu AB JC', WR_VC);
 end;
 
-procedure TABlist.Remove(jc:TJC);
-var i:Integer;
-    usek:Integer;
-    blk:TBlk;
+procedure TABlist.Remove(jc: TJC);
+var i: Integer;
+    usek: Integer;
+    blk: TBlk;
 begin
  if (not Self.JCs.Contains(jc)) then
    raise EABJCNotInList.Create('This JC is not in AB list!');
@@ -92,17 +92,17 @@ begin
  ABTableData.DeleteJC(i);
 end;
 
-function TABlist.Contains(jc:TJC):Boolean;
+function TABlist.Contains(jc: TJC): Boolean;
 begin
  Result := Self.JCs.Contains(jc);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TABlist.TryJC(jc:TJC);
-var bariery:TJCBariery;
-    blk:TBlk;
-    bariera:TJCBariera;
+procedure TABlist.TryJC(jc: TJC);
+var bariery: TJCBariery;
+    blk: TBlk;
+    bariera: TJCBariera;
 begin
   bariery := JC.KontrolaPodminek();
   try
@@ -132,7 +132,7 @@ end;
 
 // Zkousi stavet kazdou z jizdnich cest v seznamu Self.JCs.
 procedure TABlist.Update();
-var jc:TJC;
+var jc: TJC;
 begin
  for jc in Self.JCs do
   begin
@@ -143,16 +143,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TABlist.GetItem(index:Integer):TJC;
+function TABlist.GetItem(index: Integer): TJC;
 begin
  Result := Self.JCs[index];
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TABlist.IsUsekInAnyABJC(usekid:Integer):Boolean;
-var jc:TJC;
-    id:Integer;
+function TABlist.IsUsekInAnyABJC(usekid: Integer): Boolean;
+var jc: TJC;
+    id: Integer;
 begin
  for jc in Self.JCs do
    for id in jc.data.Useky do

@@ -1,4 +1,4 @@
-﻿unit fHVEdit;
+unit fHVEdit;
 
 interface
 
@@ -59,7 +59,7 @@ type
 
   public
 
-    procedure OpenForm(HV:THV);
+    procedure OpenForm(HV: THV);
     procedure NewHV();
   end;
 
@@ -73,7 +73,7 @@ uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
 
 {$R *.dfm}
 
-procedure TF_HVEdit.OpenForm(HV:THV);
+procedure TF_HVEdit.OpenForm(HV: THV);
 begin
  Self.OpenHV := HV;
  Self.ActiveControl := Self.E_Nazev;
@@ -88,8 +88,8 @@ begin
 end;
 
 procedure TF_HVEdit.SB_Rel_AddClick(Sender: TObject);
-var LI:TListItem;
-    i:Integer;
+var LI: TListItem;
+    i: Integer;
 begin
  F_HV_Pom.OpenForm(-1, 0);
  if (F_HV_Pom.saved) then
@@ -115,8 +115,8 @@ begin
 end;
 
 procedure TF_HVEdit.SB_Take_AddClick(Sender: TObject);
-var LI:TListItem;
-    i:Integer;
+var LI: TListItem;
+    i: Integer;
 begin
  F_HV_Pom.OpenForm(-1, 0);
  if (F_HV_Pom.saved) then
@@ -142,11 +142,11 @@ begin
 end;
 
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
-var data:THVData;
-    stav:THVStav;
-    OblR:TOR;
-    i:Integer;
-    pomCV:THVPomCV;
+var data: THVData;
+    stav: THVStav;
+    OblR: TOR;
+    i: Integer;
+    pomCV: THVPomCV;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -235,7 +235,7 @@ var data:THVData;
      try
        HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
      except
-       on E:Exception do
+       on E: Exception do
         begin
          Application.MessageBox(PChar(E.Message), 'Nelze přidat', MB_OK OR MB_ICONWARNING);
          Exit();
@@ -336,10 +336,10 @@ begin
 end;
 
 procedure TF_HVEdit.NormalOpenForm();
-var data:THVData;
-    stav:THVStav;
-    i:Integer;
-    LI:TListItem;
+var data: THVData;
+    stav: THVStav;
+    i: Integer;
+    LI: TListItem;
  begin
   B_NajetoDelete.Visible := true;
   E_Addr.ReadOnly := true;
