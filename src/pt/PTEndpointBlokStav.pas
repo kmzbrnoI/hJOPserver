@@ -12,7 +12,7 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 type
   TPTEndpointBlokStav = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/blokStav/(\d+)/?$';
+      _ENDPOINT_MATCH_REGEX = '^/blockState/(\d+)/?$';
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -65,7 +65,7 @@ begin
     end;
 
    Blky.GetBlkByID(blokId, Blk);
-   Blk.GetPtState(respJson.O['blokStav']);
+   Blk.GetPtState(respJson.O['blockState']);
  finally
    re.Free();
    params.Free();
@@ -101,14 +101,14 @@ begin
      Exit();
     end;
 
-   if (not reqJson.Contains('blokStav')) then
+   if (not reqJson.Contains('blockState')) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce blokStav');
      Exit();
     end;
 
    Blky.GetBlkByID(blokId, Blk);
-   Blk.PutPtState(reqJson['blokStav'], respJson);
+   Blk.PutPtState(reqJson['blockState'], respJson);
  finally
    re.Free();
  end;

@@ -394,11 +394,11 @@ end;
 procedure TBlk.GetPtData(json:TJsonObject; includeState:boolean);
 var oblr: TOR;
 begin
- json['nazev'] := Self.name;
+ json['name'] := Self.name;
  json['id'] := Self.id;
- json['typ'] := TBlk.BlkTypeToStr(Self.typ);
+ json['type'] := TBlk.BlkTypeToStr(Self.typ);
  for oblr in Self.OblsRizeni do
-   json.A['ors'].Add(oblr.id);
+   json.A['stations'].Add(oblr.id);
 end;
 
 procedure TBlk.GetPtState(json:TJsonObject);
@@ -408,7 +408,7 @@ end;
 
 procedure TBlk.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
- Self.GetPtState(respJson.O['blokStav']);
+ Self.GetPtState(respJson.O['blockState']);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

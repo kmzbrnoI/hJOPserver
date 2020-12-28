@@ -180,16 +180,16 @@ begin
  TBlk.RCStoJSON(Self.IRSettings.RCSAddrs[0], json['rcs']);
 
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkIR.GetPtState(json:TJsonObject);
 begin
  case (Self.Stav) of
-  TIRStav.disabled : json['stav'] := 'vypnuto';
-  TIRStav.none     : json['stav'] := 'zadny';
-  TIRStav.uvolneno : json['stav'] := 'uvolneno';
-  TIRStav.obsazeno : json['stav'] := 'obsazeno';
+  TIRStav.disabled : json['state'] := 'off';
+  TIRStav.none     : json['state'] := 'none';
+  TIRStav.uvolneno : json['state'] := 'free';
+  TIRStav.obsazeno : json['state'] := 'occupied';
  end;
 end;
 

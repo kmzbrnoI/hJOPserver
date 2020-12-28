@@ -12,7 +12,7 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 type
   TPTEndpointBloky = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/bloky/?$';
+      _ENDPOINT_MATCH_REGEX = '^/blocks/?$';
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -41,20 +41,21 @@ begin
  try
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
-   if (params.ContainsKey('stanice')) then
+   if (params.ContainsKey('station')) then
     begin
-     stanice := ORs.Get(params['stanice']);
+     stanice := ORs.Get(params['station']);
      if (stanice = nil) then
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Oblast rizeni neexistuje', 'Oblast rizeni '+params['stanice']+' neexistuje');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Oblast rizeni neexistuje',
+          'Oblast rizeni '+params['statino']+' neexistuje');
        Exit();
       end;
     end;
 
-   if (params.ContainsKey('typ')) then
-     typ := TBlk.BlkTypeFromStr(params['typ']);
+   if (params.ContainsKey('type')) then
+     typ := TBlk.BlkTypeFromStr(params['type']);
 
-   Blky.GetPtData(respJson, params.ContainsKey('stav') and PTUtils.HttpParamToBool(params['stav']), stanice, typ);
+   Blky.GetPtData(respJson, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']), stanice, typ);
  finally
    params.Free();
  end;

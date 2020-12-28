@@ -1329,35 +1329,35 @@ procedure TBlkVyhybka.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[0], json['rcs'].O['vstup+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[1], json['rcs'].O['vstup-']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[2], json['rcs'].O['vystup+']);
- TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[3], json['rcs'].O['vystup-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[0], json['rcs'].O['in+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[1], json['rcs'].O['in-']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[2], json['rcs'].O['out+']);
+ TBlk.RCStoJSON(Self.VyhSettings.RCSAddrs[3], json['rcs'].O['out-']);
 
- json['usek'] := Self.VyhRel.UsekID;
+ json['track'] := Self.VyhRel.UsekID;
 
  if (Self.VyhSettings.spojka > -1) then
-   json['spojka'] := Self.VyhSettings.spojka;
+   json['second'] := Self.VyhSettings.spojka;
  if (Self.VyhSettings.zamek > -1) then
   begin
-   json['zamek'] := Self.VyhSettings.zamek;
-   json['zamekPoloha'] := PolohaToStr(Self.VyhSettings.zamekPoloha);
+   json['lock'] := Self.VyhSettings.zamek;
+   json['lockPosition'] := PolohaToStr(Self.VyhSettings.zamekPoloha);
   end;
 
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkVyhybka.GetPtState(json:TJsonObject);
 begin
- json['poloha'] := PolohaToStr(Self.Poloha);
- if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
- if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
+ json['position'] := PolohaToStr(Self.Poloha);
+ if (Self.Stitek <> '') then json['note'] := Self.Stitek;
+ if (Self.Vyluka <> '') then json['lockout'] := Self.Vyluka;
 end;
 
 procedure TBlkVyhybka.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
- if (reqJson.Contains('poloha')) then
+ if (reqJson.Contains('position')) then
   begin
    if (Self.Poloha = TVyhPoloha.disabled) then
     begin
@@ -1379,9 +1379,9 @@ begin
     end;
 
    // nastaveni polohy vyhybky
-   if (reqJson.S['poloha'] = '+') then
+   if (reqJson.S['position'] = '+') then
      Self.SetPoloha(TVyhPoloha.plus)
-   else if (reqJson.S['poloha'] = '-') then
+   else if (reqJson.S['position'] = '-') then
      Self.SetPoloha(TVyhPoloha.minus);
   end;
 
@@ -1395,9 +1395,9 @@ begin
  case (poloha) of
   TVyhPoloha.plus     : Result := '+';
   TVyhPoloha.minus    : Result := '-';
-  TVyhPoloha.disabled : Result := 'vypnuto';
-  TVyhPoloha.none     : Result := 'zadna';
-  TVyhPoloha.both     : Result := 'obe';
+  TVyhPoloha.disabled : Result := 'off';
+  TVyhPoloha.none     : Result := 'none';
+  TVyhPoloha.both     : Result := 'both';
  else
   Result := '';
  end;

@@ -12,7 +12,7 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 type
   TPTEndpointBlok = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/bloky/(\d+)/?$';
+      _ENDPOINT_MATCH_REGEX = '^/blocks/(\d+)/?$';
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -63,7 +63,7 @@ begin
     end;
 
    Blky.GetBlkByID(blokId, Blk);
-   Blk.GetPtData(respJson.O['blok'], params.ContainsKey('stav') and (PTUtils.HttpParamToBool(params['stav'])));
+   Blk.GetPtData(respJson.O['block'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
  finally
    re.Free();
    params.Free();

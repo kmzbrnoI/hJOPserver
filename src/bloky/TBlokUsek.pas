@@ -1,4 +1,4 @@
-﻿unit TBlokUsek;
+unit TBlokUsek;
 
 //definice a obsluha technologickeho bloku Usek
 
@@ -1632,16 +1632,16 @@ begin
 
  TBlk.RCSstoJSON(Self.UsekSettings.RCSAddrs, json.A['rcs']);
 
- json['delka'] := Self.UsekSettings.Lenght;
- if (Self.UsekSettings.SmcUsek) then json['smyckaUsek'] := Self.UsekSettings.SmcUsek;
- json['zesilovac'] := Self.UsekSettings.Zesil;
- json['maxSouprav'] := Self.UsekSettings.maxTrains;
- json['stanicniKolej'] := Self.UsekStav.stanicni_kolej;
+ json['length'] := Self.UsekSettings.Lenght;
+ if (Self.UsekSettings.SmcUsek) then json['loop'] := Self.UsekSettings.SmcUsek;
+ json['booster'] := Self.UsekSettings.Zesil;
+ json['maxTrains'] := Self.UsekSettings.maxTrains;
+ json['stationTrack'] := Self.UsekStav.stanicni_kolej;
  if (Self.UsekStav.cislo_koleje <> '') then
-   json['cisloKoleje'] := Self.UsekStav.cislo_koleje;
+   json['trackNumber'] := Self.UsekStav.cislo_koleje;
 
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkUsek.GetPtState(json:TJsonObject);
@@ -1649,48 +1649,48 @@ var train:Integer;
     usekStav:TUsekStav;
 begin
  case (Self.Obsazeno) of
-  TUsekStav.disabled : json['stav'] := 'vypnuto';
-  TUsekStav.none     : json['stav'] := 'zadny';
-  TUsekStav.uvolneno : json['stav'] := 'uvolneno';
-  TUsekStav.obsazeno : json['stav'] := 'obsazeno';
+  TUsekStav.disabled : json['state'] := 'off';
+  TUsekStav.none     : json['state'] := 'none';
+  TUsekStav.uvolneno : json['state'] := 'free';
+  TUsekStav.obsazeno : json['state'] := 'occupied';
  end;
 
  for usekStav in Self.SekceStav do
   begin
    case (usekStav) of
-    TUsekStav.disabled : json.A['sekce'].Add('vypnuto');
-    TUsekStav.none     : json.A['sekce'].Add('zadny');
-    TUsekStav.uvolneno : json.A['sekce'].Add('uvolneno');
-    TUsekStav.obsazeno : json.A['sekce'].Add('obsazeno');
+    TUsekStav.disabled : json.A['sections'].Add('off');
+    TUsekStav.none     : json.A['sections'].Add('none');
+    TUsekStav.uvolneno : json.A['sections'].Add('free');
+    TUsekStav.obsazeno : json.A['sections'].Add('occupied');
    end;
   end;
 
- json['napajeni'] := (Self.napajeni = TBoosterSignal.ok);
- json['zkrat']    := (Self.zkrat = TBoosterSignal.error);
- json['dcc']      := Self.DCC;
+ json['power'] := (Self.napajeni = TBoosterSignal.ok);
+ json['shortCircuit'] := (Self.zkrat = TBoosterSignal.error);
+ json['dcc'] := Self.DCC;
 
- if (Self.Stitek <> '') then json['stitek'] := Self.Stitek;
- if (Self.Vyluka <> '') then json['vyluka'] := Self.Vyluka;
+ if (Self.Stitek <> '') then json['note'] := Self.Stitek;
+ if (Self.Vyluka <> '') then json['lockout'] := Self.Vyluka;
 
  for train in Self.trains do
-   json.A['soupravy'].Add(TrainDb.Trains[train].name);
+   json.A['trains'].Add(TrainDb.Trains[train].name);
 
- json['zaver'] := Integer(Self.Stav.Zaver);
+ json['lock'] := Integer(Self.Stav.Zaver);
  if (Self.UsekStav.TrainPredict > -1) then
    json['trainPredict'] := TrainDb.Trains[Self.UsekStav.TrainPredict].name;
  if (Self.UsekStav.NUZ) then
    json['nuz'] := true;
  if (Self.UsekStav.KonecJC <> TZaver.no) then
-   json['konecJC'] := Integer(Self.UsekStav.KonecJC);
+   json['endJC'] := Integer(Self.UsekStav.KonecJC);
 end;
 
 procedure TBlkUsek.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 var trainStr:string;
     train:Integer;
 begin
- if (reqJson.Contains('soupravy')) then
+ if (reqJson.Contains('trains')) then
   begin
-   if (Cardinal(reqJson.A['soupravy'].Count) > Self.UsekSettings.maxTrains) then
+   if (Cardinal(reqJson.A['trains'].Count) > Self.UsekSettings.maxTrains) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
                            'Nelze pridat vice souprav, nez je limit useku');
@@ -1699,7 +1699,7 @@ begin
     end;
 
    Self.RemoveTrains();
-   for trainStr in reqJson.A['soupravy'] do
+   for trainStr in reqJson.A['trains'] do
     begin
      train := TrainDb.Trains.GetTrainIndexByName(trainStr);
      if (train > -1) then

@@ -1,4 +1,4 @@
-﻿unit TBlokNav;
+unit TBlokNav;
 
 //definice a obsluha technologickeho bloku Navestidlo
 
@@ -1634,17 +1634,17 @@ procedure TBlkNav.GetPtData(json:TJsonObject; includeState:boolean);
 begin
  inherited;
 
- json['symbolTyp'] := Integer(Self.NavRel.SymbolType);
- json['usek'] := Self.NavRel.UsekID;
- json['smer'] := Integer(Self.NavRel.smer);
+ json['symbolType'] := Integer(Self.NavRel.SymbolType);
+ json['track'] := Self.NavRel.UsekID;
+ json['direction'] := Integer(Self.NavRel.smer);
 
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkNav.GetPtState(json:TJsonObject);
 begin
- json['navest'] := Self.Navest;
+ json['signal'] := Self.Navest;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

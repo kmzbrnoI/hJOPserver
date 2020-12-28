@@ -389,7 +389,7 @@ begin
 
  json['setOutputOnStart'] := Self.IOsettings.setOutputOnStart;
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
  json['nullable'] := Self.nullable;
  if (Self.nullable) then
    json['nullTime'] := Self.IOsettings.nullAfterSec;

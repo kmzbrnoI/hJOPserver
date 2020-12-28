@@ -1114,29 +1114,29 @@ var usekid: Integer;
 begin
  inherited;
 
- json['uvazkaA'] := Self.TratSettings.uvazkaA;
- json['uvazkaB'] := Self.TratSettings.uvazkaB;
+ json['harnessA'] := Self.TratSettings.uvazkaA;
+ json['harnessB'] := Self.TratSettings.uvazkaB;
  json['zabzar'] := Integer(Self.TratSettings.zabzar);
- json['navestidla'] := Integer(Self.TratSettings.navestidla);
+ json['signals'] := Integer(Self.TratSettings.navestidla);
  for usekid in Self.TratSettings.Useky do
-   json.A['useky'].Add(usekid);
+   json.A['tracks'].Add(usekid);
 
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkTrat.GetPtState(json: TJsonObject);
 var train: TBlkTraTTrain;
 begin
- json['zaver'] := Self.TratStav.zaver;
- json['smer'] := Integer(Self.TratStav.smer);
- json['zadost'] := Self.TratStav.zadost;
+ json['lock'] := Self.TratStav.zaver;
+ json['direction'] := Integer(Self.TratStav.smer);
+ json['request'] := Self.TratStav.zadost;
 
  for train in Self.TratStav.trains do
    if (not train.predict) then
-     json.A['soupravy'].Add(train.train.name);
+     json.A['trains'].Add(train.train.name);
  if (Self.TratStav.trainPredict <> nil) then
-   json['sprPredict'] := Self.TratStav.trainPredict.train;
+   json['trainPredict'] := Self.TratStav.trainPredict.train;
  json['BP'] := Self.TratStav.BP;
 end;
 

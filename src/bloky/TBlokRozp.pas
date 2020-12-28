@@ -330,22 +330,22 @@ begin
  inherited;
  TBlk.RCStoJSON(Self.RozpSettings.RCSAddrs[0], json['rcs']);
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkRozp.GetPtState(json:TJsonObject);
 begin
  case (Self.status) of
-  TRozpStatus.disabled: json['stav'] := 'vypnuto';
-  TRozpStatus.not_selected: json['stav'] := 'not_selected';
-  TRozpStatus.mounting: json['stav'] := 'mounting';
-  TRozpStatus.active: json['stav'] := 'active';
+  TRozpStatus.disabled: json['state'] := 'off';
+  TRozpStatus.not_selected: json['state'] := 'notSelected';
+  TRozpStatus.mounting: json['state'] := 'mounting';
+  TRozpStatus.active: json['state'] := 'active';
  end;
 end;
 
 procedure TBlkRozp.PutPtState(reqJson:TJsonObject; respJson:TJsonObject);
 begin
- if (reqJson.Contains('stav')) then
+ if (reqJson.Contains('state')) then
   begin
    if (Self.status = TRozpStatus.disabled) then
     begin
@@ -354,11 +354,11 @@ begin
      Exit();
     end;
 
-   if (reqJson.S['stav'] = 'mounting') then
+   if (reqJson.S['state'] = 'mounting') then
      Self.Mount()
-   else if (reqJson.S['stav'] = 'active') then
+   else if (reqJson.S['state'] = 'active') then
      Self.Activate()
-   else if (reqJson.S['stav'] = 'not_selected') then
+   else if (reqJson.S['state'] = 'notSelected') then
      Self.status := TRozpStatus.not_selected;
   end;
 

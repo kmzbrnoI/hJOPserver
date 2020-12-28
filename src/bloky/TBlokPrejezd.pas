@@ -923,35 +923,35 @@ procedure TBlkPrejezd.GetPtData(json: TJsonObject; includeState: boolean);
 begin
  inherited;
 
- TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Zavreno, json['rcs']['zavreno']);
- TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Otevreno, json['rcs']['otevreno']);
- TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Vystraha, json['rcs']['vystraha']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Zavreno, json['rcs']['closed']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Otevreno, json['rcs']['opened']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Vystraha, json['rcs']['warning']);
  if (Self.PrjSettings.RCSInputs.anulaceUse) then
-   TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Anulace, json['rcs']['anulace']);
- TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.Zavrit, json['rcs']['zavrit']);
+   TBlk.RCStoJSON(Self.PrjSettings.RCSInputs.Anulace, json['rcs']['annulation']);
+ TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.Zavrit, json['rcs']['close']);
  if (Self.PrjSettings.RCSOutputs.NOtevritUse) then
-   TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.NOtevrit, json['rcs']['notevrit']);
+   TBlk.RCStoJSON(Self.PrjSettings.RCSOutputs.NOtevrit, json['rcs']['emOpen']);
 
  if (includeState) then
-   Self.GetPtState(json['blokStav']);
+   Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkPrejezd.GetPtState(json: TJsonObject);
 begin
  case (Self.PrjStav.basicStav) of
-   TBlkPrjBasicStav.disabled: json['stav'] := 'disabled';
-   TBlkPrjBasicStav.none: json['stav'] := 'none';
-   TBlkPrjBasicStav.otevreno: json['stav'] := 'otevreno';
-   TBlkPrjBasicStav.vystraha: json['stav'] := 'vystraha';
-   TBlkPrjBasicStav.uzavreno: json['stav'] := 'uzavreno';
+   TBlkPrjBasicStav.disabled: json['state'] := 'disabled';
+   TBlkPrjBasicStav.none: json['state'] := 'none';
+   TBlkPrjBasicStav.otevreno: json['state'] := 'opened';
+   TBlkPrjBasicStav.vystraha: json['state'] := 'warning';
+   TBlkPrjBasicStav.uzavreno: json['state'] := 'closed';
  end;
 
- json['anulace'] := Self.anulace;
- json['stit'] := Self.PrjStav.stit;
- json['vyl'] := Self.PrjStav.vyl;
- json['PC_NOT'] := Self.PrjStav.PC_NOT;
- json['PC_UZ'] := Self.PrjStav.PC_UZ;
- json['zaver'] := Self.PrjStav.zaver;
+ json['annulation'] := Self.anulace;
+ json['note'] := Self.PrjStav.stit;
+ json['lockout'] := Self.PrjStav.vyl;
+ json['pcEmOpen'] := Self.PrjStav.PC_NOT;
+ json['pcClosed'] := Self.PrjStav.PC_UZ;
+ json['lock'] := Self.PrjStav.zaver;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
