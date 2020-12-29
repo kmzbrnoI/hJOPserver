@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses TBlockCrossing, TBloky, TOblsRizeni, Graphics, ownConvert;
+uses TBlockCrossing, BlockDb, TOblsRizeni, Graphics, ownConvert;
 
 constructor TBlkSummary.Create(index: Integer);
 begin
@@ -179,7 +179,7 @@ begin
 
  for prjid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, crossing);
+   Blocks.GetBlkByID(prjid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      Result := Result + crossing.name + ','
    else
@@ -208,7 +208,7 @@ begin
 
  if ((itemindex-2 >= 0) and (itemindex-2 < Self.m_settings.crossings.Count)) then
   begin
-   Blky.GetBlkByID(Self.m_settings.crossings[itemindex-2], crossing);
+   Blocks.GetBlkByID(Self.m_settings.crossings[itemindex-2], crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      ORTCPServer.Menu(SenderPnl, crossing, SenderOR as TOR,
                       crossing.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write));
@@ -224,7 +224,7 @@ begin
  Result := true;
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
     begin
      if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.disabled) then
@@ -240,7 +240,7 @@ begin
  Result := false;
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      if (TBlkCrossing(crossing).annulation) then
        Exit(true);
@@ -254,7 +254,7 @@ begin
  Result := false;
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      if (TBlkCrossing(crossing).pcClosed) then
        Exit(true);
@@ -268,7 +268,7 @@ begin
  Result := false;
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.closed) then
        Exit(true);
@@ -282,7 +282,7 @@ begin
  Result := false;
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.none) then
        Exit(true);
@@ -296,7 +296,7 @@ begin
  Result := false;
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      if (TBlkCrossing(crossing).pcEmOpen) then
        Exit(true);
@@ -311,7 +311,7 @@ var crossingid: Integer;
 begin
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      TBlkCrossing(crossing).AddSH(Self);
   end;
@@ -323,7 +323,7 @@ var crossingid: Integer;
 begin
  for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(crossingid, crossing);
+   Blocks.GetBlkByID(crossingid, crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
      TBlkCrossing(crossing).RemoveSH(Self);
   end;

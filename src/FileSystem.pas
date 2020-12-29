@@ -1,4 +1,4 @@
-unit FileSystem;
+﻿unit FileSystem;
 
 interface
 
@@ -46,7 +46,7 @@ var
 implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
-     TechnologieRCS, TOblsRizeni, TBloky, BoosterDb, SnadnSpusteni, THVDatabase,
+     TechnologieRCS, TOblsRizeni, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
      TCPServerPT, Logging, TCPServerOR, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,
      TechnologieTrakce, TJCDatabase;
@@ -158,7 +158,7 @@ var read, read2: string;
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'bloky', 'data\bloky.ini');
   read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'bloky', 'stav\bloky.ini');
   try
-    Blky.LoadFromFile(read, F_Main.E_dataload_spnl.Text, read2);
+    Blocks.LoadFromFile(read, F_Main.E_dataload_spnl.Text, read2);
   except
     on E: Exception do
       AppEvents.LogException(E);
@@ -208,7 +208,7 @@ var tmpStr: string;
   WriteLog('Probíha kompletní ukládání dat', WR_DATA);
 
   try
-    Blky.SaveToFile(F_Main.E_dataload_block.Text);
+    Blocks.SaveToFile(F_Main.E_dataload_block.Text);
   except
     on E: Exception do
       AppEvents.LogException(E);
@@ -305,8 +305,8 @@ var tmpStr: string;
   try
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Options.E_dataload.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blky.blky_file);
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blky.fstatus);
+    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blocks.blky_file);
+    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blocks.fstatus);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', F_Main.E_dataload_zes.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'JC', JCDb.filename);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'mJC', MultiJCDb.filename);

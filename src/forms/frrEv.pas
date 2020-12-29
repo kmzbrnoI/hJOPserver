@@ -11,7 +11,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, rrEvent, TBloky, Mask, StrUtils;
+  Dialogs, StdCtrls, rrEvent, BlockDb, Mask, StrUtils;
 
 type
   TF_RREv = class(TForm)
@@ -68,7 +68,7 @@ end;
 
 procedure TF_RREv.ShowEmpty();
 begin
- Blky.NactiBlokyDoObjektu(CB_IRId, @CB_IR, nil, nil, btIR);
+ Blocks.NactiBlokyDoObjektu(CB_IRId, @CB_IR, nil, nil, btIR);
  Self.CB_UsekPart.ItemIndex := 0;
  Self.CB_IRId.ItemIndex := 0;
  Self.CB_UsekStav.ItemIndex := 1;
@@ -92,7 +92,7 @@ begin
 
    rrtIR: begin
      Self.CB_Typ.ItemIndex := 1;
-     Blky.NactiBlokyDoObjektu(CB_IRId, @CB_IR, nil, nil, btIR, ev.data.irId);
+     Blocks.NactiBlokyDoObjektu(CB_IRId, @CB_IR, nil, nil, btIR, ev.data.irId);
      Self.CB_IRStav.ItemIndex := ownConvert.BoolToInt(ev.data.irState);
    end;
 
@@ -119,7 +119,7 @@ begin
 
   1: begin
     data.typ := rrtIR;
-    data.irId := Blky.GetBlkID(CB_IR[Self.CB_IRId.ItemIndex]);
+    data.irId := Blocks.GetBlkID(CB_IR[Self.CB_IRId.ItemIndex]);
     data.irState := ownConvert.IntToBool(Self.CB_IRStav.ItemIndex);
   end;
 

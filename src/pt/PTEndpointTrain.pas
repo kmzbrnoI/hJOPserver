@@ -48,7 +48,7 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, TBloky,
+uses PTUtils, JclPCRE, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, BlockDb,
       TBlock, TBlockTrack, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +167,7 @@ begin
  try
    try
      podj := TPodj.Create(reqJson.O['podj']);
-     Blky.GetBlkByID(podjId, blk);
+     Blocks.GetBlkByID(podjId, blk);
      if ((blk = nil) or (blk.typ <> TBlkType.btTrack)) then
       begin
        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Neplatny typ bloku', 'Blok neexistuje nebo neni usek');

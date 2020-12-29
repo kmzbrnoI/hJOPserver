@@ -159,7 +159,7 @@ type
 implementation
 
 uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlockTrack, DataSpr, appEv,
-      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlockSignal,
+      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, BlockDb, TBlockSignal,
       fRegulator, fMain, TBlockRailwayTrack, stanicniHlaseniHelper, stanicniHlaseni,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
 
@@ -463,7 +463,7 @@ begin
  if (train.Contains('station')) then
    Self.data.station := ORs.Get(train.S['station']);
  if (train.Contains('front')) then
-   Blky.GetBlkByID(train['front'], TBlk(Self.data.front));
+   Blocks.GetBlkByID(train['front'], TBlk(Self.data.front));
 
  if (train.Contains('stationFrom')) then
    Self.data.stationFrom := ORs.Get(train.S['stationFrom']);
@@ -595,7 +595,7 @@ begin
  Self.data.HVs := newLoks;
 
  Self.SetSpeedDirection(Self.speed, Self.direction);
- Blky.ChangeTrainToTrat(Self);
+ Blocks.ChangeTrainToTrat(Self);
 
  TBlkTrack(Self.front).Change();
 
@@ -833,7 +833,7 @@ end;
 procedure TTrain.UpdateFront();
 var blk: TBlk;
 begin
- Blky.GetBlkByID(Self.filefront, blk);
+ Blocks.GetBlkByID(Self.filefront, blk);
  Self.front := blk;
 end;
 
@@ -1155,7 +1155,7 @@ begin
  case (jc.data.DalsiNavaznost) of
   TJCNextNavType.zadna: Exit(nil);
   TJCNextNavType.trat: begin
-    Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], TBlk(frontblk));
+    Blocks.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], TBlk(frontblk));
     if (frontblk <> nil) and (frontblk.typ = btRT) then
      begin
       tu := TBlkRT(frontblk);
@@ -1164,7 +1164,7 @@ begin
       Exit(nil);
   end;
   TJCNextNavType.blok: begin
-    Blky.GetBlkByID(jc.data.DalsiNavestidlo, TBlk(signal));
+    Blocks.GetBlkByID(jc.data.DalsiNavestidlo, TBlk(signal));
     Exit(signal);
   end;
  end;

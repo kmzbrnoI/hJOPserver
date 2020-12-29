@@ -152,7 +152,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
+uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
      Graphics, TCPORsRef, Diagnostics, appEv, ownConvert;
 
 constructor TBlkCrossing.Create(index: Integer);
@@ -597,14 +597,14 @@ procedure TBlkCrossing.UPOZUZClick(Sender: TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZUZCallBack,
     (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-    'Zrušení uzavření přejezdu', TBlky.GetBlksList(Self), nil);
+    'Zrušení uzavření přejezdu', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPONOTClick(Sender: TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZNOTCallBack,
     (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-    'Nouzové otevření přejezdu', TBlky.GetBlksList(Self), nil);
+    'Nouzové otevření přejezdu', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPOZNOTClick(Sender: TObject);

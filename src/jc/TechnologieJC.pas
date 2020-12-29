@@ -40,7 +40,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
-  Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlock, IbUtils, Train,
+  Dialogs, Menus, Buttons, ComCtrls, fMain, BlockDb, TBlock, IbUtils, Train,
   IniFiles, IdContext, TBlockRailway, Generics.Collections, UPO, TBlockTurnout,
   TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 
@@ -439,7 +439,7 @@ begin
     Result.Add(Self.JCBariera(_JCB_STAVENI));
 
   // kontrola useku navestidla:
-  if (Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk) <> 0) then
+  if (Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Blk) <> 0) then
    begin
     // blok navestidla neexistuje
     Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.navestidloBlok));
@@ -471,7 +471,7 @@ begin
   // kontrolujeme, jestli vyhybky existuji a jestli jsou to vyhybky
   for vyhZaver in Self.fproperties.vyhybky do
    begin
-    if (Blky.GetBlkByID(vyhZaver.Blok, Blk) <> 0) then
+    if (Blocks.GetBlkByID(vyhZaver.Blok, Blk) <> 0) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, vyhZaver.Blok));
       Exit;
@@ -488,7 +488,7 @@ begin
   for usekZaver in Self.fproperties.useky do
    begin
     // zkontrolujeme, jestli useky existuji a jestli jsou to useky
-    if (Blky.GetBlkByID(usekZaver, Blk) <> 0) then
+    if (Blocks.GetBlkByID(usekZaver, Blk) <> 0) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, usekZaver));
       Exit;
@@ -505,7 +505,7 @@ begin
   for prjZaver in Self.fproperties.prejezdy do
    begin
     // kontrola existence bloku prejezdu
-    if (Blky.GetBlkByID(prjZaver.Prejezd, blk) <> 0) then
+    if (Blocks.GetBlkByID(prjZaver.Prejezd, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, prjZaver.Prejezd));
       Exit;
@@ -522,7 +522,7 @@ begin
     if (prjZaver.uzaviraci.Count > 0) then
      begin
       // kontrola existence oteviraciho bloku
-      if (Blky.GetBlkByID(prjZaver.oteviraci, blk2) <> 0) then
+      if (Blocks.GetBlkByID(prjZaver.oteviraci, blk2) <> 0) then
        begin
         Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, prjZaver.oteviraci));
         Exit;
@@ -538,7 +538,7 @@ begin
       // kontrola existence uzaviracich bloku a jejich typu
       for usekZaver in prjZaver.uzaviraci do
        begin
-        if (Blky.GetBlkByID(usekZaver, blk2) <> 0) then
+        if (Blocks.GetBlkByID(usekZaver, blk2) <> 0) then
          begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, usekZaver));
           Exit;
@@ -555,7 +555,7 @@ begin
   // kontrola odvratu
   for odvratZaver in Self.fproperties.odvraty do
    begin
-    if (Blky.GetBlkByID(odvratZaver.ref_blk, blk) <> 0) then
+    if (Blocks.GetBlkByID(odvratZaver.ref_blk, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.ref_blk));
       Exit;
@@ -565,7 +565,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.ref_blk));
       Exit;
      end;
-    if (Blky.GetBlkByID(odvratZaver.Blok, blk) <> 0) then
+    if (Blocks.GetBlkByID(odvratZaver.Blok, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.Blok));
       Exit;
@@ -585,7 +585,7 @@ begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Self.lastUsek, Self.lastUsek.id));
       Exit;
      end;
-    if (Blky.GetBlkByID(Self.fproperties.Trat, blk) <> 0) then
+    if (Blocks.GetBlkByID(Self.fproperties.Trat, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, Self.fproperties.Trat));
       Exit;
@@ -600,7 +600,7 @@ begin
   // kontrola podminkovych bloku zamku
   for refZaver in Self.fproperties.zamky do
    begin
-    if (Blky.GetBlkByID(refZaver.Blok, blk) <> 0) then
+    if (Blocks.GetBlkByID(refZaver.Blok, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.Blok));
       Exit;
@@ -610,7 +610,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
      end;
-    if (Blky.GetBlkByID(refZaver.ref_blk, blk) <> 0) then
+    if (Blocks.GetBlkByID(refZaver.ref_blk, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
       Exit;
@@ -628,7 +628,7 @@ begin
   Self.KontrolaPodminekVCPC(Result);
 
  // kontrola zaplych privolavacich navesti
- privol := Blky.GetNavPrivol(Self.fstaveni.senderOR as TOR);
+ privol := Blocks.GetNavPrivol(Self.fstaveni.senderOR as TOR);
 
  for i := 0 to privol.Count-1 do
    Result.Add(Self.JCBariera(_JCB_PRIVOLAVACKA, privol[i] as TBlk, (privol[i] as TBlk).id));
@@ -651,7 +651,7 @@ var i, usek, cnt, addr: Integer;
     refZaver: TJCRefZaver;
 begin
   // navestidlo
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
   if (not (Blk as TBlkSignal).enabled) then
     bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
@@ -666,7 +666,7 @@ begin
 
   for i := 0 to cnt-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.useky[i], Blk);
+    Blocks.GetBlkByID(Self.fproperties.useky[i], Blk);
     glob := Blk.GetGlobalSettings();
 
     if ((Blk as TBlkTrack).occupied = TTrackState.disabled) then
@@ -710,7 +710,7 @@ begin
   // kontrola vyhybek:
   for vyhZaver in Self.fproperties.vyhybky do
    begin
-    Blky.GetBlkByID(vyhZaver.Blok, Blk);
+    Blocks.GetBlkByID(vyhZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     if (TBlkTurnout(Blk).position = TTurnoutPosition.disabled) then
@@ -753,7 +753,7 @@ begin
      end;
 
     // kontrola spojky
-    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
+    Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     // pokud nemam ja polohu, predpokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku neni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
     if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> vyhZaver.Poloha)) then
@@ -783,7 +783,7 @@ begin
   // kontrola prejezdu
   for prjZaver in Self.fproperties.prejezdy do
    begin
-    Blky.GetBlkByID(prjZaver.Prejezd, Blk);
+    Blocks.GetBlkByID(prjZaver.Prejezd, Blk);
 
     // blok disabled
     if ((Blk as TBlkCrossing).state = TBlkCrossingBasicState.disabled) then
@@ -804,7 +804,7 @@ begin
   // kontrola odvratu
   for odvratZaver in Self.fproperties.odvraty do
    begin
-    Blky.GetBlkByID(odvratZaver.Blok, Blk);
+    Blocks.GetBlkByID(odvratZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     if (TBlkTurnout(Blk).position = TTurnoutPosition.disabled) then
@@ -835,7 +835,7 @@ begin
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
-    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
+    Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     if (Blk2 <> nil) then
      begin
       // kontrola vyluky vyhybky:
@@ -871,7 +871,7 @@ begin
   // kontrola trati
   if (Self.fproperties.Trat > -1) then
    begin
-    Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+    Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
     glob := Blk.GetGlobalSettings();
 
     if ((Blk as TBlkRailway).direction = TRailwayDirection.disabled) then
@@ -913,15 +913,15 @@ begin
      begin
       if (TBlkRT(Self.lastUsek).sectOccupied = TTrackState.occupied) then
        begin
-        Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+        Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
        end else if (not TBlkRT(Self.lastUsek).sectReady) then begin
-        Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+        Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
        end;
      end;
 
-    Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+    Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
 
     // kontrola stitku uvazky v nasi OR:
     if ((TBlkLinker(TBlkRailway(Blk).linkerA).stations.Count > 0) and
@@ -939,7 +939,7 @@ begin
     // stitky a vyluky na tratovych usecich
     for usek in TBlkRailway(Blk).GetSettings().trackIds do
      begin
-      Blky.GetBlkByID(usek, Blk2);
+      Blocks.GetBlkByID(usek, Blk2);
 
       // vyluka
       if (TBlkTrack(Blk2).lockout <> '') then
@@ -954,7 +954,7 @@ begin
   // kontrola uzamceni podminkovych zamku:
   for refZaver in Self.fproperties.zamky do
    begin
-    Blky.GetBlkByID(refZaver.Blok, Blk);
+    Blocks.GetBlkByID(refZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
@@ -963,7 +963,7 @@ begin
    end;//for i
 
  // kontrola ukradene loko v souprave pred navestidlem
- Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk2);
+ Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Blk2);
  Blk := (Blk2 as TBlkSignal).track;
 
  if ((Blk as TBlkTrack).IsTrain()) then
@@ -1027,7 +1027,7 @@ begin
 
   for i := 0 to cnt-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.useky[i], Blk);
+    Blocks.GetBlkByID(Self.fproperties.useky[i], Blk);
     glob := Blk.GetGlobalSettings();
 
     // zaver
@@ -1051,7 +1051,7 @@ begin
   // kontrola vyhybek:
   for vyhZaver in Self.fproperties.vyhybky do
    begin
-    Blky.GetBlkByID(vyhZaver.Blok, Blk);
+    Blocks.GetBlkByID(vyhZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
@@ -1072,7 +1072,7 @@ begin
      end;
 
     // kontrola spojky
-    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
+    Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     // pokud nemam ja polohu, prespokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku eni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
     if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> vyhZaver.Poloha)) then
@@ -1087,7 +1087,7 @@ begin
   // kontrola prejezdu
   for prjZaver in Self.fproperties.prejezdy do
    begin
-    Blky.GetBlkByID(prjZaver.Prejezd, Blk);
+    Blocks.GetBlkByID(prjZaver.Prejezd, Blk);
     // kontrola stitku prejezdu:
     if ((Blk as TBlkCrossing).note <> '') then
       bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.id));
@@ -1096,7 +1096,7 @@ begin
   // kontrola odvratu
   for odvratZaver in Self.fproperties.odvraty do
    begin
-    Blky.GetBlkByID(odvratZaver.Blok, Blk);
+    Blocks.GetBlkByID(odvratZaver.Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
@@ -1117,7 +1117,7 @@ begin
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
-    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
+    Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     if (blk2 <> nil) then
      begin
       // kontrola vyluky vyhybky:
@@ -1150,12 +1150,12 @@ begin
   // kontrola trati
   if (Self.fproperties.Trat > -1) then
    begin
-    Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+    Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
 
     // stitky a vyluky na tratovych usecich
     for usek in TBlkRailway(Blk).GetSettings().trackIds do
      begin
-      Blky.GetBlkByID(usek, Blk2);
+      Blocks.GetBlkByID(usek, Blk2);
 
       // vyluka
       if (TBlkTrack(Blk2).lockout <> '') then
@@ -1386,11 +1386,11 @@ begin
   begin
    // ano, takoveto bariery existuji -> potvrzovaci sekvence
    Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...');
-   Blky.GetBlkByID(Self.fproperties.navestidloBlok, nav);
+   Blocks.GetBlkByID(Self.fproperties.navestidloBlok, nav);
 
    if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
      ORTCPServer.Potvr(Self.fstaveni.senderPnl, Self.PS_vylCallback, (Self.fstaveni.senderOR as TOR),
-        'Jízdní cesta s potvrzením', TBlky.GetBlksList(nav, Self.lastUsek), podm);
+        'Jízdní cesta s potvrzením', TBlocks.GetBlksList(nav, Self.lastUsek), podm);
 
    Self.krok := _KROK_POTVR_SEKV;
   end else begin
@@ -1445,7 +1445,7 @@ var i, j: Integer;
  begin
   if ((not Self.Staveni) and (Self.krok <> _JC_KROK_CEKANI_POSLEDNI_USEK)) then Exit;
 
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(signal));
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(signal));
 
   //////////////////////////////////////////////////////////////////////////////
   // staveni vlakovych a posunovych cest:
@@ -1455,14 +1455,14 @@ var i, j: Integer;
       // nejprve priradime uvolneni zaveru posledniho bloku uvolneni zaveru predposledniho bloku
       if (Self.fproperties.useky.Count > 1) then
        begin
-        Blky.GetBlkByID(Self.fproperties.useky[Self.fproperties.useky.Count-2], TBlk(usek));
+        Blocks.GetBlkByID(Self.fproperties.useky[Self.fproperties.useky.Count-2], TBlk(usek));
         usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
           CreateChangeEvent(ceCaller.CopyUsekZaver, Self.lastUsek.id));
 
         for i := 0 to Self.fproperties.useky.Count-2 do
          begin
-          Blky.GetBlkByID(Self.fproperties.useky[i], TBlk(usek));
-          Blky.GetBlkByID(Self.fproperties.useky[i+1], TBlk(nextUsek));
+          Blocks.GetBlkByID(Self.fproperties.useky[i], TBlk(usek));
+          Blocks.GetBlkByID(Self.fproperties.useky[i+1], TBlk(nextUsek));
 
           if (usek.spnl.stationTrack) then
            begin
@@ -1478,7 +1478,7 @@ var i, j: Integer;
       Self.Log('Useky: nastavuji staveci zavery');
       for usekZaver in Self.fproperties.useky do
        begin
-        Blky.GetBlkByID(usekZaver, TBlk(usek));
+        Blocks.GetBlkByID(usekZaver, TBlk(usek));
         usek.Zaver := TZaver.staveni;
        end;//for cyklus
 
@@ -1490,7 +1490,7 @@ var i, j: Integer;
        begin
         vyhZaver := Self.fproperties.vyhybky[i];
 
-        Blky.GetBlkByID(Self.fproperties.vyhybky[i].Blok, TBlk(turnout));
+        Blocks.GetBlkByID(Self.fproperties.vyhybky[i].Blok, TBlk(turnout));
         if (turnout.position <> TTurnoutPosition(vyhZaver.Poloha)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
@@ -1513,7 +1513,7 @@ var i, j: Integer;
         odvratZaver := Self.fproperties.odvraty[i];
 
         // nastaveni odvratu
-        Blky.GetBlkByID(odvratZaver.Blok, TBlk(turnout));
+        Blocks.GetBlkByID(odvratZaver.Blok, TBlk(turnout));
         if (turnout.position <> TTurnoutPosition(odvratZaver.Poloha)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
@@ -1528,7 +1528,7 @@ var i, j: Integer;
         turnout.IntentionalLock();
 
         // pridani zruseni redukce
-        Blky.GetBlkByID(odvratZaver.ref_blk, TBlk(usek));
+        Blocks.GetBlkByID(odvratZaver.ref_blk, TBlk(usek));
         usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
           CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, odvratZaver.Blok));
 
@@ -1543,12 +1543,12 @@ var i, j: Integer;
       Self.Log('Zamky: nastavuji zavery');
       for refZaver in Self.fproperties.zamky do
        begin
-        Blky.GetBlkByID(refZaver.ref_blk, TBlk(usek));
+        Blocks.GetBlkByID(refZaver.ref_blk, TBlk(usek));
         usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
           CreateChangeEvent(ceCaller.NullZamekZaver, refZaver.Blok));
 
         // nastaveni zaveru zamku
-        Blky.GetBlkByID(refZaver.Blok, TBlk(lock));
+        Blocks.GetBlkByID(refZaver.Blok, TBlk(lock));
         lock.Zaver := true;
        end;
 
@@ -1560,13 +1560,13 @@ var i, j: Integer;
    _JC_KROK_CEKANI_VYHYBKA_POLOHA: begin
       for vyhZaver in Self.fproperties.vyhybky do
        begin
-        Blky.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
+        Blocks.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
         if (turnout.position <> vyhZaver.Poloha) then
           Exit;
        end;
       for odvratZaver in Self.fproperties.odvraty do
        begin
-        Blky.GetBlkByID(odvratZaver.Blok, TBlk(turnout));
+        Blocks.GetBlkByID(odvratZaver.Blok, TBlk(turnout));
         if (turnout.position <> odvratZaver.Poloha) then
           Exit;
        end;
@@ -1577,7 +1577,7 @@ var i, j: Integer;
       Self.Log('Krok 11: useky: nastavuji nouzovy zaver');
       for usekZaver in Self.fproperties.useky do
        begin
-        Blky.GetBlkByID(usekZaver, TBlk(usek));
+        Blocks.GetBlkByID(usekZaver, TBlk(usek));
         usek.Zaver := TZaver.nouz;
        end;
 
@@ -1585,7 +1585,7 @@ var i, j: Integer;
       for vyhZaver in Self.fproperties.vyhybky do
        begin
         neprofil := nil;
-        Blky.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
+        Blocks.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
 
         if ((vyhZaver.Poloha = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil)) then
           neprofil := TBlkTrack(turnout.npBlokPlus)
@@ -1606,7 +1606,7 @@ var i, j: Integer;
 
           neprofil.AddNeprofilJC(Self.fproperties.id);
 
-          Blky.GetBlkByID(turnout.trackID, TBlk(usek));
+          Blocks.GetBlkByID(turnout.trackID, TBlk(usek));
 
           npCall := GetMemory(SizeOf(TNPCallerData));
           npCall.usekId := neprofil.id;
@@ -1633,7 +1633,7 @@ var i, j: Integer;
          if (prjZaver.uzaviraci.Count = 0) then
            continue;
 
-         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
+         Blocks.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
          closed := false;
 
          // prejezd uzavirame jen v pripade, ze nejaky z jeho aktivacnich bloku je obsazen
@@ -1647,7 +1647,7 @@ var i, j: Integer;
            crossing.Zaver := true;
 
            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
-           Blky.GetBlkByID(prjZaver.oteviraci, TBlk(usek));
+           Blocks.GetBlkByID(prjZaver.oteviraci, TBlk(usek));
            usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
              CreateChangeEvent(ceCaller.NullPrejezdZaver, prjZaver.Prejezd));
 
@@ -1658,7 +1658,7 @@ var i, j: Integer;
            // vlakova cesta:
            for uzavBlok in prjZaver.uzaviraci do
             begin
-             Blky.GetBlkByID(uzavBlok, TBlk(usek));
+             Blocks.GetBlkByID(uzavBlok, TBlk(usek));
              if (usek.occupied = TTrackState.occupied) then
               begin
                Self.Log('Krok 12 : prejezd '+crossing.name+' - aktivacni usek '+usek.name+' obsazen - uzaviram');
@@ -1666,7 +1666,7 @@ var i, j: Integer;
                crossing.Zaver := true;
 
                // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
-               Blky.GetBlkByID(prjZaver.oteviraci, TBlk(usek));
+               Blocks.GetBlkByID(prjZaver.oteviraci, TBlk(usek));
                usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
                  CreateChangeEvent(ceCaller.NullPrejezdZaver, prjZaver.Prejezd));
 
@@ -1682,7 +1682,7 @@ var i, j: Integer;
            // prejezd neuzaviram -> pridam pozadavek na zavreni pri obsazeni do vsech aktivacnich useku
            for uzavBlok in prjZaver.uzaviraci do
             begin
-             Blky.GetBlkByID(uzavBlok, TBlk(usek));
+             Blocks.GetBlkByID(uzavBlok, TBlk(usek));
              if (not usek.eventsOnOccupy.Contains(CreateChangeEvent(Self.UsekClosePrj, i))) then
                usek.AddChangeEvent(usek.eventsOnOccupy, CreateChangeEvent(Self.UsekClosePrj, i));
             end;
@@ -1708,7 +1708,7 @@ var i, j: Integer;
          if (prjZaver.uzaviraci.Count = 0) then
            continue;
 
-         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
+         Blocks.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
 
          if (crossing.state <> TBlkCrossingBasicState.closed) then Exit();
          Self.Log('Krok 13 : prejezd '+crossing.name+' uzavren');
@@ -1726,7 +1726,7 @@ var i, j: Integer;
       for i := 0 to Self.fproperties.useky.Count-1 do
        begin
         usekZaver := Self.fproperties.useky[i];
-        Blky.GetBlkByID(usekZaver, TBlk(usek));
+        Blocks.GetBlkByID(usekZaver, TBlk(usek));
         usek.Zaver := TZaver(aZaver);
        end;
 
@@ -1800,7 +1800,7 @@ var i, j: Integer;
       // -> jakmile dojde ke zruseni zaveru posledniho bloku, dojde ke zruseni zaveru trati
       if (Self.fproperties.Trat > -1) then
        begin
-        Blky.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
+        Blocks.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
 
         if (Self.typ = TJCType.vlak) then railway.Zaver := true;
 
@@ -1827,7 +1827,7 @@ var i, j: Integer;
       Self.rozpadRuseniBlok := -2;
 
       if (Self.typ = TJCType.vlak) then
-        Blky.TrainPrediction(signal);
+        Blocks.TrainPrediction(signal);
 
       // pokud je cesta ze zasobniku, smazeme ji odtam
       if (Self.fstaveni.from_stack <> nil) then
@@ -1871,7 +1871,7 @@ var i, j: Integer;
     Self.Log('Krok 100: useky: nastavuji staveci zavery');
     for usekZaver in Self.fproperties.useky do
      begin
-      Blky.GetBlkByID(usekZaver, TBlk(usek));
+      Blocks.GetBlkByID(usekZaver, TBlk(usek));
       usek.Zaver := TZaver.staveni;
      end;//for cyklus
 
@@ -1879,7 +1879,7 @@ var i, j: Integer;
     if (Self.fproperties.Trat > -1) then
      begin
       Self.Log('Krok 100: trat: nastavuji nouzovy zaver uvazky');
-      Blky.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
+      Blocks.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
 
       // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
       if ((railway.linkerA as TBlkLinker).stations.Count > 0) then
@@ -1903,7 +1903,7 @@ var i, j: Integer;
            (Self.fstaveni.nextVyhybka < Self.fproperties.vyhybky.Count)) do
      begin
       vyhZaver := Self.fproperties.vyhybky[Self.fstaveni.nextVyhybka];
-      Blky.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
+      Blocks.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
 
       Inc(Self.fstaveni.nextVyhybka);
       turnout.SetPosition(TTurnoutPosition(vyhZaver.Poloha), // this call could increase nextVyhybka directly! or even set nextVyhybka = -1
@@ -1919,7 +1919,7 @@ var i, j: Integer;
       if (prjZaver.uzaviraci.Count = 0) then
         continue;
 
-      Blky.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
+      Blocks.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
       if (not crossing.pcEmOpen) then
         crossing.pcClosed := true;
      end;
@@ -1927,7 +1927,7 @@ var i, j: Integer;
     // nastavit nouzovy zaver zamkum
     for refZaver in Self.fproperties.zamky do
      begin
-      Blky.GetBlkByID(refZaver.Blok, TBlk(lock));
+      Blocks.GetBlkByID(refZaver.Blok, TBlk(lock));
       lock.emLock := true;
       signal.AddBlkToRnz(lock.id, false);
      end;
@@ -1955,14 +1955,14 @@ var i, j: Integer;
 
       if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
         ORTCPServer.Potvr(Self.fstaveni.senderPnl, Self.NC_PS_Callback, Self.fstaveni.senderOR as TOR,
-          str, TBlky.GetBlksList(signal, lastUsek), Self.BarieryNCToPotvr(Self.fstaveni.ncBariery));
+          str, TBlocks.GetBlksList(signal, lastUsek), Self.BarieryNCToPotvr(Self.fstaveni.ncBariery));
      end;
     Self.fstaveni.ncBarieryCntLast := Self.fstaveni.ncBariery.Count;
 
     // nastavovani smeru trati:
     if (Self.fproperties.Trat > -1) then
      begin
-      Blky.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
+      Blocks.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
 
       // pokud v trati neni zavedena blokova podminka, zavedeme ji
       if ((Self.typ = TJCType.vlak) and (railway.direction = Self.data.TratSmer) and (not railway.BP)) then
@@ -1986,7 +1986,7 @@ var i, j: Integer;
     Self.Log('Krok 102: useky: rusim zavery');
     for usekZaver in Self.fproperties.useky do
      begin
-      Blky.GetBlkByID(usekZaver, TBlk(usek));
+      Blocks.GetBlkByID(usekZaver, TBlk(usek));
       usek.Zaver := TZaver.no;
      end;//for cyklus
 
@@ -2043,7 +2043,7 @@ var i, j: Integer;
          begin
           if ((usek.typ = btRT) and (TBlkRT(usek).inRailway > -1)) then
            begin
-            Blky.GetBlkByID((usek as TBlkRT).inRailway, TBlk(railway));
+            Blocks.GetBlkByID((usek as TBlkRT).inRailway, TBlk(railway));
             railway.RemoveTrain(train);
            end;
 
@@ -2061,7 +2061,7 @@ var i, j: Integer;
 
       // b)
       if ((lastUsek.typ = btRT) and ((lastUsek as TBlkRT).inRailway > -1)) then
-        Blky.GetBlkByID((lastUsek as TBlkRT).inRailway, TBlk(railway))
+        Blocks.GetBlkByID((lastUsek as TBlkRT).inRailway, TBlk(railway))
       else
         railway := nil;
 
@@ -2132,7 +2132,7 @@ begin
  // staveci zavery jsou zruseny, ostatni zavery zustavaji (lze je vyNUZovat)
  for usekZaver in Self.data.useky do
   begin
-   Blky.GetBlkByID(usekZaver, TBlk(usek));
+   Blocks.GetBlkByID(usekZaver, TBlk(usek));
    if (usek.Zaver = TZaver.staveni) then
       usek.Zaver := TZaver.no;
   end;
@@ -2162,7 +2162,7 @@ end;
 procedure TJC.RusZacatekJC();
 var Blk: TBlk;
  begin
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
   if (Blk = nil) then Exit;
   if (Blk.typ <> btSignal) then Exit;
   if ((Blk as TBlkSignal).selected = TBlkSignalSelection.none) then Exit;
@@ -2187,7 +2187,7 @@ var Blk: TBlk;
 begin
  for vb in Self.data.vb do
   begin
-   Blky.GetBlkByID(vb, Blk);
+   Blocks.GetBlkByID(vb, Blk);
    if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btRT))) then
      (Blk as TBlkTrack).jcEnd := TZaver.no;
   end; 
@@ -2203,13 +2203,13 @@ var usekZaver: Integer;
  begin
   Self.RusJCWithoutBlk();
 
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(nav));
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(nav));
   nav.DNjc := nil;
   nav.RCtimerTimeout();
 
   for usekZaver in Self.fproperties.useky do
    begin
-    Blky.GetBlkByID(usekZaver, TBlk(usek));
+    Blocks.GetBlkByID(usekZaver, TBlk(usek));
     usek.Zaver := TZaver.no;
    end;
 
@@ -2222,7 +2222,7 @@ var usekZaver: Integer;
 procedure TJC.RusJCWithoutBlk();
 var Nav: TBlk;
  begin
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
   Self.Log('Probiha ruseni navesti');
 
   if (((Nav as TBlkSignal).DNjc = self) and ((Nav as TBlkSignal).signal > ncStuj)) then
@@ -2253,7 +2253,7 @@ var Nav: TBlkSignal;
     i: Integer;
     train: TTrain;
 begin
- Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
+ Blocks.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
 
  // kontrola obsazenosti useku pred navestidlem
  track := Nav.track as TBlkTrack;
@@ -2278,7 +2278,7 @@ begin
   begin
    if (i < 0) then continue;    // i = -1 kdyz se kontroluje blok pred navestidlem, -2 pokud je navestidlo na STUJ, nebo zamkle
 
-   Blky.GetBlkByID(Self.fproperties.useky[i], TBlk(track));
+   Blocks.GetBlkByID(Self.fproperties.useky[i], TBlk(track));
 
    // druha cast podminky je tu pro pripad, kdy by byl na konci posunove cesty obsazeny usek
    if ((track.occupied = occupied) and ((i < Self.fproperties.useky.Count-1) or (Self.rozpadBlok > Self.fproperties.useky.Count-2) or (Self.typ <> TJCType.posun))) then
@@ -2307,7 +2307,7 @@ begin
            // aktualizace casu odjezdu v trati
            if (Self.fproperties.Trat > -1) then
             begin
-             Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+             Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
              if (TBlkRailway(Blk).TrainPredict <> nil) then
               begin
                TBlkRailway(Blk).TrainPredict.time := timeHelper.hJOPnow();
@@ -2330,7 +2330,7 @@ begin
        if ((i = Self.fproperties.useky.Count-1) and (Self.fproperties.Trat > -1)) then
         begin
          // posledni usek JC obsazen -> trat
-         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+         Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
 
          if (Self.typ = TJCType.vlak) then
           begin
@@ -2389,10 +2389,10 @@ begin
   if ((Self.rozpadRuseniBlok >= 0) and (Self.rozpadRuseniBlok < Self.rozpadBlok-1)) then
    begin
     //ziskani dotazovaneho useku
-    Blky.GetBlkByID(Self.fproperties.useky[Self.rozpadRuseniBlok], TBlk(track));
+    Blocks.GetBlkByID(Self.fproperties.useky[Self.rozpadRuseniBlok], TBlk(track));
 
     if (Self.rozpadRuseniBlok+1 < Self.fproperties.useky.Count) then
-      Blky.GetBlkByID(Self.fproperties.useky[Self.rozpadRuseniBlok+1], TBlk(nextTrack))
+      Blocks.GetBlkByID(Self.fproperties.useky[Self.rozpadRuseniBlok+1], TBlk(nextTrack))
     else
       nextTrack := nil;
 
@@ -2420,10 +2420,10 @@ begin
   // ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
   if ((Self.rozpadRuseniBlok = -1) and (Self.rozpadBlok > 0)) then
    begin
-    Blky.GetBlkByID(Self.fproperties.useky[0], TBlk(track));
+    Blocks.GetBlkByID(Self.fproperties.useky[0], TBlk(track));
 
     if (Self.fproperties.useky.Count > 1) then
-      Blky.GetBlkByID(Self.fproperties.useky[1], TBlk(nextTrack))
+      Blocks.GetBlkByID(Self.fproperties.useky[1], TBlk(nextTrack))
     else
       nextTrack := nil;
 
@@ -2505,7 +2505,7 @@ begin
     // pozor ale na JC, ktere maji jen jeden usek a ten je stanicni koleji:
     if (Self.fproperties.useky.Count = 1) then
      begin
-      Blky.GetBlkByID(Self.fproperties.useky[0], TBlk(track));
+      Blocks.GetBlkByID(Self.fproperties.useky[0], TBlk(track));
 
       if (Self.AB) then
         track.Zaver := TZaver.AB
@@ -2547,7 +2547,7 @@ begin
   begin
    Self.CancelStaveni('Nelze postavit - obsazen neprofilový úsek');
   end else begin
-   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
+   Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
    if (((Nav as TBlkSignal).signal > ncStuj) and ((Nav as TBlkSignal).DNjc = Self)) then
     begin
      if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
@@ -2564,9 +2564,9 @@ procedure TJC.usekyRusNC();
 var TU, first : TBlkTrack;
     nav : TBlkSignal;
 begin
- Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(nav));
+ Blocks.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(nav));
  TU := TBlkRT((nav as TBlkSignal).track);
- Blky.GetBlkByID(Self.fproperties.useky[0], TBlk(first));
+ Blocks.GetBlkByID(Self.fproperties.useky[0], TBlk(first));
 
  if ((first.occupied = TTrackState.occupied) and (TU.occupied = TTrackState.free)
     and (not TU.IsTrain())) then
@@ -2585,18 +2585,18 @@ var UsekActual, UsekDalsi, Nav: TBlk;
  begin
   if (Self.rozpadBlok = 0) then
    begin
-    Blky.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
+    Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
     UsekActual := (Nav as TBlkSignal).track;
     train := Self.GetTrain(Nav, UsekActual);
     if ((UsekActual as TBlkTrack).IsTrain()) then
       if (train.front <> UsekActual) then
          Exit();
    end else begin
-    Blky.GetBlkByID(Self.fproperties.useky[Self.rozpadBlok-1], UsekActual);
+    Blocks.GetBlkByID(Self.fproperties.useky[Self.rozpadBlok-1], UsekActual);
     train := TBlkTrack(UsekActual).train;
    end;
 
-  Blky.GetBlkByID(Self.fproperties.useky[Self.rozpadBlok], UsekDalsi);
+  Blocks.GetBlkByID(Self.fproperties.useky[Self.rozpadBlok], UsekDalsi);
   if (not (UsekActual as TBlkTrack).IsTrain()) then Exit;
 
   (UsekDalsi as TBlkTrack).slowingReady := true;
@@ -2637,7 +2637,7 @@ procedure TJC.NastavNav();
 var Nav, DalsiNav: TBlkSignal;
     Navest: TBlkSignalCode;
  begin
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
 
   Navest := ncStuj;
 
@@ -2654,7 +2654,7 @@ var Nav, DalsiNav: TBlkSignal;
      end;//case posun
 
      TJcType.vlak : begin
-      Blky.GetBlkByID(Self.fproperties.dalsiNavestidlo, TBlk(DalsiNav));
+      Blocks.GetBlkByID(Self.fproperties.dalsiNavestidlo, TBlk(DalsiNav));
       if ((Self.fproperties.dalsiNavaznost = TJCNextNavType.zadna) or
           (Self.fproperties.dalsiNavaznost = TJCNextNavType.trat) or
           ((Self.fproperties.dalsiNavaznost = TJCNextNavType.blok) and
@@ -2921,7 +2921,7 @@ begin
       // prejezd(y) neuzavren
       for prjZaver in Self.fproperties.prejezdy do
        begin
-        Blky.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
+        Blocks.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
         if (prejezd.state <> TBlkCrossingBasicState.closed) then
           if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
             ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Neuzavřen '+prejezd.name,
@@ -2979,7 +2979,7 @@ begin
  for i := 0 to Self.fproperties.useky.Count-1 do
   begin
    trackZaver := Self.fproperties.useky[i];
-   Blky.GetBlkByID(trackZaver, TBlk(track));
+   Blocks.GetBlkByID(trackZaver, TBlk(track));
    if ((track.Zaver = TZaver.no) or (track.Zaver = TZaver.staveni) or (track.NUZ) or
       ((track.occupied <> TTrackState.free) and
        ((Self.typ = TJCType.vlak) or (i <> Self.fproperties.useky.Count-1)))) then Exit(false);
@@ -3006,7 +3006,7 @@ begin
  // zkontrolujeme polohu vyhybek
  for vyhZaver in Self.fproperties.vyhybky do
   begin
-   Blky.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
+   Blocks.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
    if (turnout.position <> vyhZaver.Poloha) then Exit(false);
 
    // kontrola neprofiloveho styku pro polohu +
@@ -3023,7 +3023,7 @@ begin
  // zkontrolujeme polohu odvratu
  for odvratZaver in Self.fproperties.odvraty do
   begin
-   Blky.GetBlkByID(odvratZaver.Blok, TBlk(turnout));
+   Blocks.GetBlkByID(odvratZaver.Blok, TBlk(turnout));
    if (turnout.position <> odvratZaver.Poloha) then Exit(false);
   end;//for i
 
@@ -3031,7 +3031,7 @@ begin
  //  prejezdy, na kterych je zaver, by taky mely byt uzavrene
  for crossingZaver in Self.fproperties.prejezdy do
   begin
-   Blky.GetBlkByID(crossingZaver.Prejezd, TBlk(crossing));
+   Blocks.GetBlkByID(crossingZaver.Prejezd, TBlk(crossing));
    if ((crossing.state = TBlkCrossingBasicState.none) or
       (crossing.state = TBlkCrossingBasicState.disabled)) then Exit(false);
    if ((crossing.Zaver) and (crossing.state <> TBlkCrossingBasicState.closed)) then Exit(false);
@@ -3040,7 +3040,7 @@ begin
  //zkontrolujeme trat
  if (Self.fproperties.Trat > -1) then
   begin
-   Blky.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
+   Blocks.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
    if (railway.request) then Exit(false);
    if ((((not (TBlkRT(Self.lastUsek).sectReady)) or (railway.departureForbidden)) and (Self.typ = TJCType.vlak)) or
        (railway.RBPCan) or (railway.direction <> Self.fproperties.TratSmer)) then
@@ -3050,7 +3050,7 @@ begin
   // kontrola uzamceni zamku:
   for refZaver in Self.fproperties.zamky do
    begin
-    Blky.GetBlkByID(refZaver.Blok, TBlk(lock));
+    Blocks.GetBlkByID(refZaver.Blok, TBlk(lock));
 
     // kontrola uzamceni
     if (lock.keyReleased) then
@@ -3092,19 +3092,19 @@ begin
  if ((Self.postaveno) or (Self.staveni)) then
   begin
    // zavrit prejezd
-   Blky.GetBlkByID(Self.fproperties.prejezdy[data].Prejezd, TBlk(prejezd));
+   Blocks.GetBlkByID(Self.fproperties.prejezdy[data].Prejezd, TBlk(prejezd));
    prejezd.Zaver := true;
    Self.Log('Obsazen '+TBlkTrack(Sender).name+' - uzaviram prejezd '+prejezd.name);
 
    // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
-   Blky.GetBlkByID(Self.fproperties.prejezdy[data].oteviraci, TBlk(usek));
+   Blocks.GetBlkByID(Self.fproperties.prejezdy[data].oteviraci, TBlk(usek));
    usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
      CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.fproperties.prejezdy[data].Prejezd));
   end;
 
  for blkId in Self.fproperties.prejezdy[data].uzaviraci do
   begin
-   Blky.GetBlkByID(blkId, TBlk(usek));
+   Blocks.GetBlkByID(blkId, TBlk(usek));
    usek.RemoveChangeEvent(usek.eventsOnOccupy, CreateChangeEvent(Self.UsekClosePrj, data));
   end;
 end;
@@ -3298,7 +3298,7 @@ begin
   end;
 
   _JCB_TRAT_ZAK : begin
-    Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+    Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
     case (Self.fproperties.TratSmer) of
       TRailwayDirection.AtoB : canZAK := TBlkLinker(TBlkRailway(Blk).linkerA).departureForbidden;
       TRailwayDirection.BtoA : canZAK := TBlkLinker(TBlkRailway(Blk).linkerB).departureForbidden;
@@ -3363,7 +3363,7 @@ var Blk: TBlk;
 begin
  case (typ) of
   _JCB_TRAT_ZAK: begin
-      Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+      Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
       case (Self.fproperties.TratSmer) of
         TRailwayDirection.AtoB : Result := (Self.typ = TJCType.posun) and (TBlkLinker(TBlkRailway(Blk).linkerA).departureForbidden);
         TRailwayDirection.BtoA : Result := (Self.typ = TJCType.posun) and (TBlkLinker(TBlkRailway(Blk).linkerB).departureForbidden);
@@ -3436,7 +3436,7 @@ begin
    // stavim dalsi vyhybku
    for i := Self.fstaveni.nextVyhybka to Self.fproperties.vyhybky.Count-1 do
     begin
-     Blky.GetBlkByID(Self.fproperties.vyhybky[i].Blok, Blk);
+     Blocks.GetBlkByID(Self.fproperties.vyhybky[i].Blok, Blk);
      if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.fproperties.vyhybky[i].Poloha)) then
       begin
        Self.fstaveni.nextVyhybka := i+1;
@@ -3457,12 +3457,12 @@ begin
    for i := odvrat to Self.fproperties.odvraty.Count-1 do
     begin
      // nastaveni odvratu
-     Blky.GetBlkByID(Self.fproperties.odvraty[i].Blok, Blk);
+     Blocks.GetBlkByID(Self.fproperties.odvraty[i].Blok, Blk);
      if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.fproperties.odvraty[i].Poloha)) then
       begin
        TBlkTurnout(Blk).IntentionalLock();
 
-       Blky.GetBlkByID(Self.fproperties.odvraty[i].ref_blk, TBlk(usek));
+       Blocks.GetBlkByID(Self.fproperties.odvraty[i].ref_blk, TBlk(usek));
        usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, Self.fproperties.odvraty[i].Blok));
 
@@ -3508,12 +3508,12 @@ begin
 
  TBlkTurnout(Sender).emLock := true;
 
- Blky.GetBlkByID(Self.fproperties.navestidloBlok, Navestidlo);
+ Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Navestidlo);
  TBlkSignal(Navestidlo).AddBlkToRnz(TBlk(Sender).id, false);
 
  if (TBlkTurnout(Sender).GetSettings().coupling > -1) then
   begin
-   Blky.GetBlkByID(TBlkTurnout(Sender).GetSettings().coupling, spojka);
+   Blocks.GetBlkByID(TBlkTurnout(Sender).GetSettings().coupling, spojka);
    TBlkTurnout(spojka).emLock := true;
    TBlkSignal(Navestidlo).AddBlkToRnz(TBlkTurnout(Sender).GetSettings().coupling, false);
   end;
@@ -3528,7 +3528,7 @@ begin
    // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
    // tuto udalost.
 
-   Blky.GetBlkByID(Self.fproperties.vyhybky[Self.fstaveni.nextVyhybka].Blok, Blk);
+   Blocks.GetBlkByID(Self.fproperties.vyhybky[Self.fstaveni.nextVyhybka].Blok, Blk);
    Inc(Self.fstaveni.nextVyhybka);
 
    TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.fproperties.vyhybky[Self.fstaveni.nextVyhybka-1].Poloha),
@@ -3541,7 +3541,7 @@ begin
 
    odvrat := Self.fstaveni.nextVyhybka - Self.fproperties.vyhybky.Count;
 
-   Blky.GetBlkByID(Self.fproperties.odvraty[odvrat].Blok, Blk);
+   Blocks.GetBlkByID(Self.fproperties.odvraty[odvrat].Blok, Blk);
    Inc(Self.fstaveni.nextVyhybka);
 
    TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.fproperties.odvraty[odvrat].Poloha),
@@ -3556,7 +3556,7 @@ procedure TJC.NavNepostaveno(Sender: TObject);
 var nav: TBlk;
 begin
  if (not Self.staveni) then Exit();
- Blky.GetBlkByID(Self.fproperties.navestidloBlok, nav);
+ Blocks.GetBlkByID(Self.fproperties.navestidloBlok, nav);
 
  if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
    ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Návěstidlo '+nav.name + ' nepostaveno',
@@ -3576,14 +3576,14 @@ var i: Integer;
     railway: TBlkRailway;
 begin
   // kontrola navestidla
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
   if (not (Blk as TBlkSignal).enabled) then
     bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
   // kontrola useku
   for i := 0 to Self.fproperties.useky.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.useky[i], Blk);
+    Blocks.GetBlkByID(Self.fproperties.useky[i], Blk);
     glob := Blk.GetGlobalSettings();
 
     // disabled
@@ -3604,7 +3604,7 @@ begin
   // kontrola vyhybek:
   for i := 0 to Self.fproperties.vyhybky.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.vyhybky[i].Blok, Blk);
+    Blocks.GetBlkByID(Self.fproperties.vyhybky[i].Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola polohy:
@@ -3616,7 +3616,7 @@ begin
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id));
 
     // kontrola spojky
-    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
+    Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> Self.fproperties.vyhybky[i].Poloha)) then
      begin
       if (not TBlkTurnout(Blk2).emLock) then
@@ -3654,7 +3654,7 @@ begin
   // kontrola prejezdu
   for i := 0 to Self.fproperties.prejezdy.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.prejezdy[i].Prejezd, Blk);
+    Blocks.GetBlkByID(Self.fproperties.prejezdy[i].Prejezd, Blk);
 
     if ((Blk as TBlkCrossing).state <> TBlkCrossingBasicState.none) then
      begin
@@ -3672,7 +3672,7 @@ begin
   // kontrola odvratu
   for i := 0 to Self.fproperties.odvraty.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.odvraty[i].Blok, Blk);
+    Blocks.GetBlkByID(Self.fproperties.odvraty[i].Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola polohy:
@@ -3684,7 +3684,7 @@ begin
       bariery.Add(Self.JCBariera(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id));
 
     // kontrola spojky odvratu
-    Blky.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
+    Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     if (blk2 <> nil) then
      begin
       // kontrola spravneho uzamceni odvratu
@@ -3698,15 +3698,15 @@ begin
    begin
     if (Self.typ = TJCType.vlak) then
      begin
-      Blky.GetBlkByID(Self.fproperties.useky[Self.fproperties.useky.Count-1], Blk);
+      Blocks.GetBlkByID(Self.fproperties.useky[Self.fproperties.useky.Count-1], Blk);
       if (not TBlkRT(blk).sectReady) then
        begin
-        Blky.GetBlkByID(Self.fproperties.Trat, Blk);
+        Blocks.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
        end;
      end;
 
-    Blky.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
+    Blocks.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
     glob := railway.GetGlobalSettings();
 
     if ((railway.departureForbidden) and (Self.typ = TJCType.vlak)) then
@@ -3743,7 +3743,7 @@ begin
   // kontrola uzamceni zamku:
   for i := 0 to Self.fproperties.zamky.Count-1 do
    begin
-    Blky.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
+    Blocks.GetBlkByID(Self.fproperties.zamky[i].Blok, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
@@ -3770,12 +3770,12 @@ begin
    Self.CancelStaveni();
 
    // aktualizace stavu navestidla (zobrazeni RNZ)
-   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
+   Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
    Blk.Change();
 
    for i := 0 to Self.fproperties.useky.Count-1 do
     begin
-     Blky.GetBlkByID(Self.fproperties.useky[i], Blk);
+     Blocks.GetBlkByID(Self.fproperties.useky[i], Blk);
      (Blk as TBlkTrack).Zaver := TZaver.no;
     end;//for cyklus
   end;
@@ -3829,7 +3829,7 @@ var id_changed: Boolean;
 begin
  id_changed := ((Self.id <> prop.id) and (Self.id <> -1));
  nav_changed := (Self.data.navestidloBlok <> prop.navestidloBlok);
- Blky.GetBlkByID(Self.data.navestidloBlok, orig_nav);
+ Blocks.GetBlkByID(Self.data.navestidloBlok, orig_nav);
  Self.fproperties := prop;
  if (id_Changed) then
   begin
@@ -3849,7 +3849,7 @@ end;
 function TJC.GetTrain(nav: TBlk = nil; usek: TBlk = nil): TTrain;
 begin
  if (nav = nil) then
-   Blky.GetBlkByID(Self.fproperties.navestidloBlok, nav);
+   Blocks.GetBlkByID(Self.fproperties.navestidloBlok, nav);
 
  Result := TBlkSignal(nav).GetTrain(usek);
 end;
@@ -3859,7 +3859,7 @@ end;
 function TJC.GetAB(): Boolean;
 var Blk: TBlk;
 begin
- Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
+ Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
  Result := ((Blk <> nil) and (Blk.typ = btSignal) and (TBlkSignal(Blk).ABJC = Self));
 end;
 
@@ -3882,7 +3882,7 @@ var bariery: TJCBariery;
     Navestidlo: TBlk;
 begin
   Result := false;
-  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Navestidlo);
+  Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Navestidlo);
   bariery := TJCBariery.Create();
   try
     Self.KontrolaPodminekVCPC(bariery);
@@ -3908,7 +3908,7 @@ end;
 
 function TJC.GetNav(): TBlk;
 begin
- Blky.GetBlkByID(Self.fproperties.navestidloBlok, Result);
+ Blocks.GetBlkByID(Self.fproperties.navestidloBlok, Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4082,7 +4082,7 @@ function TJC.GetLastUsek(): TBlk;
 begin
  if (Self.data.useky.Count = 0) then
    Exit(nil);
- Blky.GetBlkByID(Self.data.useky[Self.data.useky.Count-1], Result);
+ Blocks.GetBlkByID(Self.data.useky[Self.data.useky.Count-1], Result);
  if (Result.typ <> btTrack) and (Result.typ <> btRT) then
    Result := nil;
 end;

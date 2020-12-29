@@ -23,7 +23,7 @@ var
 implementation
 
 uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkNav, fMain, fBlkSH, fBlkAC,
-      TBloky, fBlkPrejezd, fBlkTrat, fBlkZamek, fBlkRozp, fBlkTU, fBlkIO;
+      BlockDb, fBlkPrejezd, fBlkTrat, fBlkZamek, fBlkRozp, fBlkTU, fBlkIO;
 
 {$R *.dfm}
 

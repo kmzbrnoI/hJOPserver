@@ -95,7 +95,7 @@ type
 
 implementation
 
-uses GetSystems, TBloky, Graphics, Diagnostics, ownConvert,
+uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert,
     TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlockTurnout;
 
 constructor TBlkLock.Create(index: Integer);
@@ -191,7 +191,7 @@ end;
 
 procedure TBlkLock.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkLock.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
@@ -301,7 +301,7 @@ begin
        Self.CallChangeToTurnout();
        inherited Change();
       end;
-     Blky.NouzZaverZrusen(Self);
+     Blocks.NouzZaverZrusen(Self);
     end;
   end;
 end;
@@ -332,7 +332,7 @@ procedure TBlkLock.CallChangeToTurnout();
 var list: TBlksList;
     i: Integer;
 begin
- list := Blky.GetVyhWithZamek(Self.id);
+ list := Blocks.GetVyhWithZamek(Self.id);
 
  for i := 0 to list.Count-1 do
   (list[i] as TBlkTurnout).Change();
@@ -359,7 +359,7 @@ function TBlkLock.IsRightPoloha(): Boolean;
 var list: TBlksList;
     i: Integer;
 begin
- list := Blky.GetVyhWithZamek(Self.id);
+ list := Blocks.GetVyhWithZamek(Self.id);
 
  for i := 0 to list.Count-1 do
    if (TBlkTurnout(list[i]).position <> (list[i] as TBlkTurnout).GetSettings().lockPosition) then

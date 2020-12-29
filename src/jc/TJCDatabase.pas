@@ -7,7 +7,7 @@
 interface
 
 uses TechnologieJC, TBlock, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, IBUtils, TBloky, TBlockSignal;
+      Generics.Collections, Classes, IBUtils, BlockDb, TBlockSignal;
 
 type
   EJCIdAlreadyExists = class(Exception);
@@ -244,7 +244,7 @@ begin
   begin
    if (JC.navestidlo <> startNav) then continue;
 
-   Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], blk);
+   Blocks.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], blk);
    if (blk <> endBlk) then continue;
 
    if ((Integer(startNav.selected) = Integer(jc.typ)) or
@@ -428,7 +428,7 @@ var jc: TJC;
 begin
  Result := TList<TJC>.Create();
  try
-  Blky.GetBlkByID(vyh_id, blk);
+  Blocks.GetBlkByID(vyh_id, blk);
   vyh := TBlkTurnout(blk);
 
   for jc in Self.JCs do
@@ -474,12 +474,12 @@ begin
 
     if (jc.data.Trat > -1) then
      begin
-      Blky.GetBlkByID(jc.data.Trat, trat);
+      Blocks.GetBlkByID(jc.data.Trat, trat);
       if ((trat <> nil) and (trat.typ = btRailway)) then
        begin
         for usekid in TBlkRailway(trat).GetSettings().trackIds do
          begin
-          Blky.GetBlkByID(usekid, tu);
+          Blocks.GetBlkByID(usekid, tu);
           if ((tu <> nil) and (tu.typ = btRT)) then
             if ((TBlkRT(tu).signalCover = nil) and (tu.id = usek_id)) then
               Exit(jc);
@@ -555,7 +555,7 @@ begin
         (JC.data.dalsiNavaznost <> TJCNextNavType.blok) or
         (JC.data.dalsiNavestidlo <> signal.id)) then continue;
 
-    Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(prev_signal));
+    Blocks.GetBlkByID(JC.data.NavestidloBlok, TBlk(prev_signal));
 
     if (not prev_signal.IsGoSignal()) then continue;
     if (prev_signal.changing) then continue;
@@ -631,7 +631,7 @@ begin
 
    for jc in jcs do
     begin
-     Blky.GetBlkByID(jc.data.NavestidloBlok, tmpblk);
+     Blocks.GetBlkByID(jc.data.NavestidloBlok, tmpblk);
      if ((TBlkSignal(tmpblk).DNjc = jc) and
          ((TBlkSignal(tmpblk).IsGoSignal()) or (TBlkSignal(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
       begin
@@ -829,7 +829,7 @@ begin
   begin
    if ((jc.typ = typ) and (jc.data.Useky.Count > 0)) then
     begin
-      Blky.GetBlkByID(jc.data.Useky[0], blk);
+      Blocks.GetBlkByID(jc.data.Useky[0], blk);
       if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
        begin
         usek := blk as TBlkTrack;

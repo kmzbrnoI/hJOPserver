@@ -282,7 +282,7 @@ type
 
 implementation
 
-uses GetSystems, TBloky, TBlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
+uses GetSystems, BlockDb, TBlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TBlockRailway, TrainDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, TBlockRailwayTrack, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
@@ -744,7 +744,7 @@ procedure TBlkTrack.SetLockout(Sender: TIDCOntext; lockout: string);
 begin
  if ((self.m_state.lockout <> '') and (lockout = '')) then
   begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil);
   end else begin
    Self.lockout := lockout;
   end;
@@ -952,11 +952,11 @@ begin
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  podm := TPSPodminky.Create();
- for blk in Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]) do
+ for blk in Blocks.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]) do
    podm.Add(TOR.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
  ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
    'Smazání soupravy '+TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].name,
-   TBlky.GetBlksList(Self), podm);
+   TBlocks.GetBlksList(Self), podm);
 end;
 
 procedure TBlkTrack.PotvrDeleteLok(Sender: TIdContext; success: Boolean);
@@ -979,7 +979,7 @@ begin
 
  if (not success) then Exit();
 
- if (Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(Sender.Data).train_menu_index]]).Count = 1) then
+ if (Blocks.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(Sender.Data).train_menu_index]]).Count = 1) then
   begin
    TrainDb.Trains.Remove(Self.trains[TTCPORsRef(Sender.Data).train_menu_index]);
    ORTCPServer.SendInfoMsg(Sender, 'Souprava odstraněna');
@@ -995,7 +995,7 @@ begin
 
  ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TOR,
   'Uvolnění soupravy '+TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].name+' z bloku',
-  TBlky.GetBlksList(Self), nil);
+  TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkTrack.MenuVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1055,7 +1055,7 @@ begin
 
  ORTCPServer.Potvr(SenderPnl, Self.PotvrRegVezmiLok, SenderOR as TOR,
   'Nouzové převzetí hnacích vozidel do automatického řízení',
-  TBlky.GetBlksList(Self), podm);
+  TBlocks.GetBlksList(Self), podm);
 end;
 
 procedure TBlkTrack.PotvrRegVezmiLok(Sender: TIdContext; success: Boolean);
@@ -1098,7 +1098,7 @@ begin
 
  if ((SenderOR as TOR).vb.Contains(Self)) then (SenderOR as TOR).vb.Remove(self);
 
- signal := Blky.GeTBlkSignalSelected((SenderOR as TOR).id) as TBlkSignal;
+ signal := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id) as TBlkSignal;
  if (signal = nil) then Exit(false);
 
  case (signal.selected) of
@@ -1123,7 +1123,7 @@ begin
    Exit();
   end;
 
- Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk = nil) then Exit();
 
  if (not Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
@@ -1168,7 +1168,7 @@ begin
      Exit();
     end;
 
-   Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
+   Blk := Blocks.GetBlkUsekVlakPresun((SenderOR as TOR).id);
    if (Blk <> nil) then (Blk as TBlkTrack).trainMoving := -1;
    Self.trainMoving := TTCPORsRef(SenderPnl.Data).train_menu_index;
   end else begin
@@ -1350,7 +1350,7 @@ var Blk: TBlk;
 begin
  Result := inherited;
 
- if (Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id) <> nil) then
+ if (Blocks.GetBlkUsekVlakPresun((SenderOR as TOR).id) <> nil) then
    addStr := 'VLOŽ vlak,'
  else
    addStr := 'NOVÝ vlak,';
@@ -1392,7 +1392,7 @@ begin
    Result := Result + '-,NUZ>,';
 
  //11 = KC
- Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then
   begin
    if ((Self.CanBeKC((SenderOR as TOR).vb, blk)) or Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
@@ -1433,7 +1433,7 @@ var train: TTrain;
     train_count: Integer;
 begin
  train := TrainDb.Trains[Self.trains[trainLocalI]];
- train_count := Blky.GetBlkWithTrain(TrainDb.Trains[Self.trains[trainLocalI]]).Count;
+ train_count := Blocks.GetBlkWithTrain(TrainDb.Trains[Self.trains[trainLocalI]]).Count;
 
  if (Self.CanStandTrain()) then
    Result := Result + 'EDIT vlak,';
@@ -1498,7 +1498,7 @@ begin
   end;
 
   F1: begin
-    Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
+    Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
     if (Blk = nil) then
       Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params)
     else
@@ -1553,7 +1553,7 @@ function TBlkTrack.MoveLok(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI
 var Blk, signal: TBlk;
     train: TTrain;
 begin
- Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
+ Blk := Blocks.GetBlkUsekVlakPresun((SenderOR as TOR).id);
  if (Blk = nil) then Exit(false);
 
  if (not Self.CanStandTrain()) then
@@ -1609,15 +1609,15 @@ begin
 
  ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+train.name+' přesunuta na '+Self.m_globSettings.name+'.');
 
- if (Blky.GetBlkWithTrain(train).Count = 1) then
+ if (Blocks.GetBlkWithTrain(train).Count = 1) then
    train.front := Self;
 
  for signal in (Blk as TBlkTrack).signalJCRef do
-   Blky.TrainPrediction(signal);
+   Blocks.TrainPrediction(signal);
 
  if (Blk <> Self) then
    for signal in Self.signalJCRef do
-     Blky.TrainPrediction(signal);
+     Blocks.TrainPrediction(signal);
 
  Result := true;
 end;
@@ -2298,7 +2298,7 @@ begin
  // zobrazeni zakazu odjezdu do trati
  if ((fg = $A0A0A0) and (Self.typ = btRT) and (TBlkRT(Self).inRailway > -1)) then
   begin
-   Blky.GetBlkByID(TBlkRT(Self).inRailway, Blk);
+   Blocks.GetBlkByID(TBlkRT(Self).inRailway, Blk);
    if ((Blk <> nil) and (Blk.typ = btRailway)) then
      if ((Blk as TBlkRailway).departureForbidden) then
        fg := clBlue;
@@ -2447,7 +2447,7 @@ end;
 function TBlkTrack.GetNavL(): TBlk;
 var blk: TBlk;
 begin
- for blk in Blky do
+ for blk in Blocks do
    if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVStanoviste.lichy)) then
      Exit(blk);
  Result := nil;
@@ -2456,7 +2456,7 @@ end;
 function TBlkTrack.GetNavS(): TBlk;
 var blk: TBlk;
 begin
- for blk in Blky do
+ for blk in Blocks do
    if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVStanoviste.sudy)) then
      Exit(blk);
  Result := nil;

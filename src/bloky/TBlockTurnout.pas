@@ -259,7 +259,7 @@ type
 
 implementation
 
-uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
+uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
       TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, ownConvert,
       IfThenElse;
 
@@ -453,7 +453,7 @@ begin
    Exit(TZaver.no);
 
  if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or ((Self.m_parent.id <> Self.m_spnl.track))) then
-   Blky.GetBlkByID(Self.m_spnl.track, Self.m_parent);
+   Blocks.GetBlkByID(Self.m_spnl.track, Self.m_parent);
  if (Self.m_parent <> nil) then
    Result := (Self.m_parent as TBlkTrack).Zaver
  else
@@ -464,7 +464,7 @@ function TBlkTurnout.GetNUZ(): Boolean;
 var tmpBlk: TBlk;
     return: Integer;
 begin
- return := Blky.GetBlkByID(Self.m_spnl.track, tmpBlk);
+ return := Blocks.GetBlkByID(Self.m_spnl.track, tmpBlk);
  if (return < 0) then Exit(false);
  if (tmpBlk.typ <> btTrack) then Exit(false);
 
@@ -475,7 +475,7 @@ function TBlkTurnout.GetOccupied(): TTrackState;
 var tmpBlk: TBlk;
     return: Integer;
 begin
- return := Blky.GetBlkByID(Self.m_spnl.track, tmpBlk);
+ return := Blocks.GetBlkByID(Self.m_spnl.track, tmpBlk);
  if (return < 0) then Exit(TTrackState.none);
  if ((tmpBlk.typ <> btTrack) and (tmpBlk.typ <> btRT)) then Exit(TTrackState.none);
 
@@ -511,13 +511,13 @@ begin
    // zkontrolujeme, pokud spojka uz neexistovala a pokud ano, tak ji smazeme
    if (coupling_old > -1) then
     begin
-     Blky.GetBlkByID(coupling_old, Blk);
+     Blocks.GetBlkByID(coupling_old, Blk);
      if ((Blk <> nil) and (Blk.typ = btTurnout)) then
        (Blk as TBlkTurnout).SetCouplingNoPropag(-1);
     end;
 
    // pridame spojku do druhe vyhybky
-   Blky.GetBlkByID(data.coupling, Blk);
+   Blocks.GetBlkByID(data.coupling, Blk);
    if ((Blk = nil) or (Blk.typ <> btTurnout)) then
     begin
      Self.m_settings.coupling := -1;
@@ -539,7 +539,7 @@ begin
    // odebereme spojku z druhe vyhybky
    if (coupling_old <> -1) then
     begin
-     Blky.GetBlkByID(coupling_old, Blk);
+     Blocks.GetBlkByID(coupling_old, Blk);
      if ((Blk <> nil) and (Blk.typ = btTurnout)) then
        (Blk as TBlkTurnout).SetCouplingNoPropag(-1);
     end;
@@ -576,7 +576,7 @@ end;
 procedure TBlkTurnout.SetLockout(Sender: TIDCOntext; lockout: string);
 begin
  if ((self.m_state.lockout <> '') and (lockout = '')) then
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil)
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil)
  else
    Self.lockout := lockout;
 end;
@@ -610,7 +610,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
  begin
   if (Self.m_settings.RCSAddrs.Count < 4) then Exit();
 
-  Blky.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
+  Blocks.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
   if ((coupling <> nil) and (coupling.typ <> btTurnout)) then
     Exit();
 
@@ -1006,9 +1006,9 @@ begin
  Self.m_state.movingPanel := TIdContext(Sender);
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
- Blky.GetBlkByID(Self.trackID, Blk);
+ Blocks.GetBlkByID(Self.trackID, Blk);
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-                    'Nouzové stavění do polohy plus', TBlky.GetBlksList(Self),
+                    'Nouzové stavění do polohy plus', TBlocks.GetBlksList(Self),
                     TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
@@ -1018,9 +1018,9 @@ begin
  Self.m_state.movingPanel := TIdContext(Sender);
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
- Blky.GetBlkByID(Self.trackID, Blk);
+ Blocks.GetBlkByID(Self.trackID, Blk);
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
-                    'Nouzové stavění do polohy mínus', TBlky.GetBlksList(Self),
+                    'Nouzové stavění do polohy mínus', TBlocks.GetBlksList(Self),
                     TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
@@ -1044,7 +1044,7 @@ end;
 procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR),
-    'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
+    'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkTurnout.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
@@ -1096,7 +1096,7 @@ var coupling: TBlkTurnout;
 begin
  Result := inherited;
 
- Blky.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
+ Blocks.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
 
  if (not Self.ShouldBeLocked()) then
   begin
@@ -1250,7 +1250,7 @@ begin
    if (Self.state.locks = 0) then
     begin
      Self.Change();
-     Blky.NouzZaverZrusen(Self);
+     Blocks.NouzZaverZrusen(Self);
     end;
   end;
 end;
@@ -1258,7 +1258,7 @@ end;
 procedure TBlkTurnout.ResetEmLocks();
 begin
  Self.m_state.locks := 0;
- Blky.NouzZaverZrusen(Self);
+ Blocks.NouzZaverZrusen(Self);
  Self.Change();
  if (Self.coupling <> nil) then
    Self.coupling.Change();
@@ -1284,7 +1284,7 @@ function TBlkTurnout.GetLock(): TBlk;
 begin
  if (((Self.m_lock = nil) and (Self.m_settings.lock <> -1)) or
      ((Self.m_lock <> nil) and (Self.m_lock.id <> Self.m_settings.lock))) then
-   Blky.GetBlkByID(Self.m_settings.lock, Self.m_lock);
+   Blocks.GetBlkByID(Self.m_settings.lock, Self.m_lock);
  Result := Self.m_lock;
 end;
 
@@ -1294,7 +1294,7 @@ function TBlkTurnout.GetNpPlus(): TBlk;
 begin
  if (((Self.m_npPlus = nil) and (Self.m_settings.npPlus <> -1)) or
      ((Self.m_npPlus <> nil) and (Self.m_npPlus.id <> Self.m_settings.npPlus))) then
-   Blky.GetBlkByID(Self.m_settings.npPlus, Self.m_npPlus);
+   Blocks.GetBlkByID(Self.m_settings.npPlus, Self.m_npPlus);
  Result := Self.m_npPlus;
 end;
 
@@ -1302,7 +1302,7 @@ function TBlkTurnout.GetNpMinus(): TBlk;
 begin
  if (((Self.m_npMinus = nil) and (Self.m_settings.npMinus <> -1)) or
      ((Self.m_npMinus <> nil) and (Self.m_npMinus.id <> Self.m_settings.npMinus))) then
-   Blky.GetBlkByID(Self.m_settings.npMinus, Self.m_npMinus);
+   Blocks.GetBlkByID(Self.m_settings.npMinus, Self.m_npMinus);
  Result := Self.m_npMinus;
 end;
 
@@ -1429,7 +1429,7 @@ begin
 
  if (not Self.emLock) then
   begin
-   Blky.NouzZaverZrusen(Self);
+   Blocks.NouzZaverZrusen(Self);
    Self.Change();
    if (Self.coupling <> nil) then
      Self.coupling.Change();
@@ -1577,7 +1577,7 @@ begin
      end;//case
 
      // je soucasti vybarveneho neprofiloveho useku
-     Blky.GetBlkByID(Self.trackID, Blk);
+     Blocks.GetBlkByID(Self.trackID, Blk);
      if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btRT))
          and (fg = $A0A0A0) and (TBlkTrack(Blk).IsNeprofilJC)) then
        fg := clYellow;
@@ -1673,7 +1673,7 @@ end;
 
 function TBlkTurnout.GetCoupling(): TBlkTurnout;
 begin
- Blky.GetBlkByID(Self.m_settings.coupling, TBlk(Result));
+ Blocks.GetBlkByID(Self.m_settings.coupling, TBlk(Result));
  if ((Result <> nil) and (Result.typ <> btTurnout)) then
    Result := nil;
 end;

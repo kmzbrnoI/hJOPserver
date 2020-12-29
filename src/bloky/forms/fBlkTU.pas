@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, TBloky, TBlock, Mask,
+  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, BlockDb, TBlock, Mask,
   TBlockRailwayTrack, StrUtils, TBlockTrack, fBlkTUZastEvent, Generics.Collections;
 
 type
@@ -109,7 +109,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
 procedure TF_BlkTU.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   Self.HlavniOpenForm();
   if (NewBlk) then
     Self.NewBlkOpenForm()
@@ -120,22 +120,22 @@ procedure TF_BlkTU.OpenForm(BlokIndex: Integer);
 
 procedure TF_BlkTU.SE_RCS_BoardExit(Sender: TObject);
 begin
- Self.SE_Port1.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
- Self.SE_Port2.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
- Self.SE_Port3.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
- Self.SE_Port4.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
+ Self.SE_Port1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
+ Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
+ Self.SE_Port3.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
+ Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
 end;
 
 procedure TF_BlkTU.NewBlkCreate();
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkTU.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
   E_Delka.Text := '0';
   CHB_SmycBlok.Checked := false;
   Self.CB_Zesil.ItemIndex := -1;
@@ -160,8 +160,8 @@ procedure TF_BlkTU.NewBlkOpenForm();
   Self.CHB_Zastavka_Sudy.Checked := false;
   Self.CHB_Zastavka_LichyClick(Self);
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, -1);
-  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, -1);
+  Blocks.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, -1);
+  Blocks.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, -1);
   Self.CB_NavLindex := -1;
   Self.CB_NavSindex := -1;
 
@@ -297,8 +297,8 @@ var glob: TBlkSettings;
   Self.CHB_Zastavka_Sudy.Checked  := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evS);
   Self.CHB_Zastavka_LichyClick(Self);
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, TUsettings.signalLid);
-  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, TUsettings.signalSid);
+  Blocks.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, TUsettings.signalLid);
+  Blocks.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, TUsettings.signalSid);
   Self.CB_NavLindex := Self.CB_NavL.ItemIndex;
   Self.CB_NavSindex := Self.CB_NavS.ItemIndex;
 
@@ -410,7 +410,7 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -476,7 +476,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btRT, glob) as TBlkRT;
+      Blk := Blocks.Add(btRT, glob) as TBlkRT;
     except
       on E: Exception do
        begin
@@ -509,12 +509,12 @@ var glob: TBlkSettings;
   TUSettings.speeds := speeds;
 
   if (Self.CHB_NavL.Checked) then
-    TUsettings.signalLid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])
+    TUsettings.signalLid := Blocks.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])
   else
     TUsettings.signalLid := -1;
 
   if (Self.CHB_NavS.Checked) then
-    TUsettings.signalSid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavS.ItemIndex])
+    TUsettings.signalSid := Blocks.GetBlkID(Self.CB_NavData[Self.CB_NavS.ItemIndex])
   else
     TUsettings.signalSid := -1;
 

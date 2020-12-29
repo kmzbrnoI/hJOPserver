@@ -35,7 +35,7 @@ var
 
 implementation
 
-uses TBloky, TBlock, TBlockTurnout, TBlockTrack, TBlockSignal, TBlockIR, TBlockCrossing,
+uses BlockDb, TBlock, TBlockTurnout, TBlockTrack, TBlockSignal, TBlockIR, TBlockCrossing,
       fMain, TBlockRailway, TBlockLinker, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
       TBlockSummary, TBlockAC, ownConvert;
 
@@ -45,7 +45,7 @@ constructor TBlokyTableData.Create(LV: TListView);
 begin
  inherited Create();
  Self.LV := LV;
- SetLength(Self.changed, Blky.count);
+ SetLength(Self.changed, Blocks.count);
 end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ var i, j : Integer;
 begin
  Self.LV.Clear();
 
- for i := 0 to Blky.count-1 do
+ for i := 0 to Blocks.count-1 do
   begin
    LI := Self.LV.Items.Add;
    LI.Caption := '---';
@@ -73,9 +73,9 @@ end;
 procedure TBlokyTableData.UpdateTable();
 var i: Integer;
 begin
-  F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blky.count)+' bloků';
+  F_Main.L_BlkPocet.Caption := 'Celkem '+IntToStr(Blocks.count)+' bloků';
 
-  for i := 0 to Blky.count-1 do
+  for i := 0 to Blocks.count-1 do
    if ((Self.changed[i]) or (Self.reload)) then
     begin
      Self.UpdateLine(i);
@@ -94,7 +94,7 @@ var j, train: integer;
     s_signal: TBlkSignalSettings;
     str: string;
  begin
-  Blky.GetBlkByIndex(line, Blk);
+  Blocks.GetBlkByIndex(line, Blk);
   if (Blk = nil) then Exit();
 
   glob := Blk.GetGlobalSettings();
@@ -397,7 +397,7 @@ var j, train: integer;
 
 procedure TBlokyTableData.BlkChange(line: Integer);
 begin
- if ((line > -1) and (line < Blky.count)) then
+ if ((line > -1) and (line < Blocks.count)) then
   Self.changed[line] := true;
 end;
 
@@ -422,7 +422,7 @@ begin
    LI.SubItems.Add('---');
  Self.UpdateLine(index);
 
- F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blky.count);
+ F_Main.L_BlkPocet.Caption := 'Pocet bloku : '+IntToStr(Blocks.count);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

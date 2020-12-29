@@ -1,4 +1,4 @@
-unit fZesilovacEdit;
+﻿unit fZesilovacEdit;
 
 interface
 
@@ -56,7 +56,7 @@ var
 implementation
 
 uses GetSystems, TechnologieRCS, BoosterDb, FileSystem, DataZesilovac,
-    TBloky;
+    BlockDb;
 
 {$R *.dfm}
 

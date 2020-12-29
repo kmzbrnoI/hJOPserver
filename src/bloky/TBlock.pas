@@ -1,6 +1,7 @@
 ﻿unit TBlock;
 
-//unita, ktera definuje technologicky blok jako abstraktni tridu
+{ TBlk abstract class definition.
+  TBlk is abstract class for rechnological blocks. }
 
 interface
 
@@ -142,7 +143,7 @@ type
 
 implementation
 
-uses TBloky, DataBloky, appEv, ownStrUtils, Diagnostics;
+uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -172,7 +173,7 @@ begin
   begin
    // sem se skoci, pokud je potreba preskladat bloky, protoze doslo ke zmene ID
    // pri vytvareni novych bloku se sem neskace
-   Blky.BlkIDChanged(Self.table_index);
+   Blocks.BlkIDChanged(Self.table_index);
   end;
 end;
 

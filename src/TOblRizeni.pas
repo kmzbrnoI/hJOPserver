@@ -284,7 +284,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlockTrack, TBlockSignal, fMain, Logging, TechnologieJC,
+uses BlockDb, GetSystems, TBlockTrack, TBlockSignal, fMain, Logging, TechnologieJC,
      TJCDatabase, ownConvert, TCPServerOR, TOblsRizeni, TBlock, THVDatabase, TrainDb,
      UserDb, THnaciVozidlo, Trakce, User, TCPORsRef, fRegulator, RegulatorTCP,
      ownStrUtils, Train, changeEvent, TechnologieTrakce;
@@ -700,7 +700,7 @@ begin
    Exit;
   end;
 
- Blky.GetORBlk(Self.id, Sender);
+ Blocks.GetORBlk(Self.id, Sender);
 
  // zjistime RUC u vsech hnacich vozidel
  for addr := 0 to _MAX_ADDR-1 do
@@ -724,7 +724,7 @@ begin
    Exit;
   end;
 
- if (Blky.GetBlkByID(blokid, Blk) <> 0) then Exit;
+ if (Blocks.GetBlkByID(blokid, Blk) <> 0) then Exit;
 
  // musime provest kontrolu, jestli OR ma povoleno menit blok
  // tj. jestli ma technologicky blok toto OR
@@ -759,11 +759,11 @@ begin
    (Self.vb[Self.vb.Count-1] as TBlkTrack).jcEnd := TZaver.no;
    Self.vb.Delete(Self.vb.Count-1);
   end else begin
-   Blk := Blky.GetBlkSignalSelected(Self.id);
+   Blk := Blocks.GetBlkSignalSelected(Self.id);
    if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
   end;
 
- Blk := Blky.GetBlkUsekVlakPresun(Self.id);
+ Blk := Blocks.GetBlkUsekVlakPresun(Self.id);
  if (Blk <> nil) then (Blk as TBlkTrack).trainMoving := -1;
 end;
 
@@ -776,7 +776,7 @@ var Blk: TBlk;
 begin
  podminky := TList<TPSPodminka>.Create();
  // zjisteni jmen bloku:
- for blk in Blky do
+ for blk in Blocks do
   begin
    if (Blk.typ <> btTrack) then continue;
    if (not (Blk as TBlkTrack).NUZ) then continue;
@@ -786,13 +786,13 @@ begin
        podminky.Add(GetPSPodminka(Blk, 'Nouzové vybavování'));
   end;//for i
 
- ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků', TBlky.GetBlksList(Self), podminky);
+ ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků', TBlocks.GetBlksList(Self), podminky);
 end;
 
 procedure TOR.DkNUZStop(Sender: TIdContext);
 begin
  Self.NUZcancelPrematureEvents();
- Blky.NUZ(Self.id, false);
+ Blocks.NUZ(Self.id, false);
  Self.NUZblkCnt := 0; // zastavi mereni casu (melo by zastavit uz volani vyse)
 end;
 
@@ -1023,7 +1023,7 @@ procedure TOR.NUZTimeOut(Sender: TObject);
 begin
  Self.NUZcancelPrematureEvents();
  Self.NUZtimer := false;
- Blky.NUZ(Self.id);
+ Blocks.NUZ(Self.id);
  Self.NUZblkCnt := 0;
 end;
 
@@ -1041,7 +1041,7 @@ begin
  Self.ORStav.NUZtimer := true;
 
  // ruseni pripadnych jiznich cest:
- for blk in Blky do
+ for blk in Blocks do
   begin
    if (Blk.typ <> btTrack) then continue;
    usek := Blk as TBlkTrack;
@@ -1056,7 +1056,7 @@ begin
 
        if (JC <> nil) then
         begin
-         Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(signal));
+         Blocks.GetBlkByID(JC.data.NavestidloBlok, TBlk(signal));
          if ((signal.signal > ncStuj) and (signal.DNjc = JC)) then
            ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návěsti '+signal.name,
                                    Self.ShortName, 'TECHNOLOGIE');
@@ -1713,7 +1713,7 @@ begin
  else if (str[2] = 'U-PLEASE') then
   begin
    try
-     Blky.GetBlkByID(StrToInt(str[3]), Blk);
+     Blocks.GetBlkByID(StrToInt(str[3]), Blk);
      if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btRT))) then
       begin
        Self.SendLn(Sender, 'LOK-REQ;U-ERR;Neplatný blok');
@@ -1991,7 +1991,7 @@ var blk: TBlk;
     usek: TBlkTrack;
     oblr: TOR;
 begin
- for blk in Blky do
+ for blk in Blocks do
   begin
    if (Blk.typ <> btTrack) then continue;
    usek := Blk as TBlkTrack;

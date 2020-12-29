@@ -29,7 +29,7 @@ var
 implementation
 
 uses TrainDb, Train, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
-       TBloky, TBlock, THnaciVozidlo, ownConvert;
+       BlockDb, TBlock, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 

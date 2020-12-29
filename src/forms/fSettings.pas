@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Spin, inifiles, Menus, ComCtrls, ExtCtrls, Mask, StrUtils, Buttons,
-  fMain, TechnologieRCS, TBloky;
+  fMain, TechnologieRCS, BlockDb;
 
 type
 
@@ -192,7 +192,7 @@ var IgnoraceRCS: TArI;
   Self.SE_SS_RCSAdr.Value := data.RCSAdr;
 
   F_Options.CB_SS_AutRezimy.Clear();
-  Blky.NactiBlokyDoObjektu(Self.CB_SS_AutRezimy, @Self.cb_ac_arri, nil, nil, btAC, data.AC_id);
+  Blocks.NactiBlokyDoObjektu(Self.CB_SS_AutRezimy, @Self.cb_ac_arri, nil, nil, btAC, data.AC_id);
 
   Self.CHB_SS_Enable.Checked := data.enabled;
   Self.CHB_SS_EnableClick(self);
@@ -304,7 +304,7 @@ var data: TSSData;
   data.enabled := Self.CHB_SS_Enable.Checked;
 
   data.RCSAdr := Self.SE_SS_RCSAdr.Value;
-  data.AC_id := Blky.GetBlkID(Self.cb_ac_arri[Self.CB_SS_AutRezimy.ItemIndex]);
+  data.AC_id := Blocks.GetBlkID(Self.cb_ac_arri[Self.CB_SS_AutRezimy.ItemIndex]);
 
   if (CHB_SS_In_Start.Checked)  then data.IN_Start  := Self.SE_SS_In_Start.Value else data.IN_Start := -1;
   if (CHB_SS_In_Pause.Checked)  then data.IN_Pause  := Self.SE_SS_In_Pause.Value else data.IN_Pause := -1;

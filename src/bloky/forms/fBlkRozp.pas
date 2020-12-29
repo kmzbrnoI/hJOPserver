@@ -45,14 +45,14 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlock, DataBloky, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky, TOblRizeni;
 
 {$R *.dfm}
 
 procedure TF_BlkRozp.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -66,13 +66,13 @@ procedure TF_BlkRozp.OpenForm(BlokIndex: Integer);
 
 procedure TF_BlkRozp.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
+ Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
 procedure TF_BlkRozp.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
-  SE_ID.Value           := Blky.GetBlkID(Blky.count-1)+1;
+  SE_ID.Value           := Blocks.GetBlkID(Blocks.count-1)+1;
   Self.SE_module.Value  := 1;
   Self.SE_Port.Value    := 0;
   Self.SE_moduleExit(Self);
@@ -123,7 +123,7 @@ procedure TF_BlkRozp.HlavniOpenForm;
 procedure TF_BlkRozp.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkRozp.B_StornoClick(Sender: TObject);
@@ -141,13 +141,13 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
-  another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.output);
+  another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.output);
   if (another <> nil) then
    begin
     if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
@@ -163,7 +163,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btDisconnector, glob) as TBlkDisconnector;
+      Blk := Blocks.Add(btDisconnector, glob) as TBlkDisconnector;
     except
       on E: Exception do
        begin

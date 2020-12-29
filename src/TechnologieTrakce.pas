@@ -1,4 +1,4 @@
-unit TechnologieTrakce;
+﻿unit TechnologieTrakce;
 
 {
  TTrakce class (and its singleton instance TrakceI) accesses Trakce function
@@ -182,7 +182,7 @@ var
 implementation
 
 uses fMain, TechnologieRCS, fRegulator, TrainDb, GetSystems, THVDatabase, DataHV,
-    TBloky, RegulatorTCP, TCPServerOR;
+    BlockDb, RegulatorTCP, TCPServerOR;
 
 ////////////////////////////////////////////////////////////////////////////////
 

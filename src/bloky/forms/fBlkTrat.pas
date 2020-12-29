@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Spin, ComCtrls, TBlockRailway, TBlockLinker, Generics.Collections, TBloky;
+  StdCtrls, Spin, ComCtrls, TBlockRailway, TBlockLinker, Generics.Collections, BlockDb;
 
 type
   TF_BlkTrat = class(TForm)
@@ -75,7 +75,7 @@ procedure TF_BlkTrat.OpenForm(BlokIndex: Integer);
 var Blk: TBlk;
  begin
   Self.OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Blk));
 
   if (Blk <> nil) then
    begin
@@ -102,7 +102,7 @@ var Blk: TBlk;
 procedure TF_BlkTrat.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkTrat.NewBlkOpenForm;
@@ -111,14 +111,14 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.E_UA_name.Text    := '';
   Self.E_UB_name.Text    := '';
 
-  Self.SE_Trat_ID.Value  := Blky.GetBlkID(Blky.count-1)+1;
-  Self.SE_UA_id.Value    := Blky.GetBlkID(Blky.count-1)+2;
-  Self.SE_UB_id.Value    := Blky.GetBlkID(Blky.count-1)+3;
+  Self.SE_Trat_ID.Value  := Blocks.GetBlkID(Blocks.count-1)+1;
+  Self.SE_UA_id.Value    := Blocks.GetBlkID(Blocks.count-1)+2;
+  Self.SE_UB_id.Value    := Blocks.GetBlkID(Blocks.count-1)+3;
 
   Self.CB_Trat_ZabZar.ItemIndex := -1;
   Self.CB_Navestidla.ItemIndex := -1;
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btRT, -1);
+  Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btRT, -1);
 
   Self.Caption := 'Editace nového bloku';
   Self.ActiveControl := Self.E_Trat_Name;
@@ -159,7 +159,7 @@ var glob: TBlkSettings;
   SetLength(vypust, settings.trackIds.Count);
   for i := 0 to settings.trackIds.Count-1 do
     vypust[i] := settings.trackIds[i];
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, btRT, -1);
+  Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, btRT, -1);
 
   case (settings.rType) of
    TRailwayType.permanent : Self.CB_Trat_ZabZar.ItemIndex := 0;
@@ -172,7 +172,7 @@ var glob: TBlkSettings;
    begin
     LI := Self.LV_Useky.Items.Add;
     LI.Caption := IntToStr(settings.trackIds[i]);
-    LI.SubItems.Add(Blky.GetBlkName(settings.trackIds[i]));
+    LI.SubItems.Add(Blocks.GetBlkName(settings.trackIds[i]));
    end;
 
   Self.Caption := 'Editace dat bloku '+Self.Trat.name+' (trať)';
@@ -211,8 +211,8 @@ begin
   end;
 
  LI := Self.LV_Useky.Items.Add;
- LI.Caption := IntToStr(Blky.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex]));
- LI.SubItems.Add(Blky.GetBlkName(Blky.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex])));
+ LI.Caption := IntToStr(Blocks.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex]));
+ LI.SubItems.Add(Blocks.GetBlkName(Blocks.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex])));
 
  SetLength(useky_vypust, Self.LV_Useky.Items.Count);
  for i := 0 to Self.LV_Useky.Items.Count-1 do
@@ -227,7 +227,7 @@ begin
      obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
   end;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
+ Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
 end;
 
 procedure TF_BlkTrat.B_Blk_DeleteClick(Sender: TObject);
@@ -248,7 +248,7 @@ begin
  for i := 0 to Self.UvazkaB.stations.Count-1 do
    obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
+ Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
 end;
 
 procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
@@ -264,9 +264,9 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
     uvazkaA := -1;
     uvazkaB := -1;
    end else begin
-    trat    := Blky.GetBlkIndex(Self.Trat.id);
-    uvazkaA := Blky.GetBlkIndex(Self.UvazkaA.id);
-    uvazkaB := Blky.GetBlkIndex(Self.UvazkaB.id);
+    trat    := Blocks.GetBlkIndex(Self.Trat.id);
+    uvazkaA := Blocks.GetBlkIndex(Self.UvazkaA.id);
+    uvazkaB := Blocks.GetBlkIndex(Self.UvazkaB.id);
    end;
 
   if ((Self.E_Trat_Name.Text = '') or (Self.E_UA_name.Text = '') or (Self.E_UB_name.Text = '')) then
@@ -274,17 +274,17 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
     Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(Self.SE_Trat_ID.Value, trat)) then
+  if (Blocks.IsBlok(Self.SE_Trat_ID.Value, trat)) then
    begin
     Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(Self.SE_UA_id.Value, uvazkaA)) then
+  if (Blocks.IsBlok(Self.SE_UA_id.Value, uvazkaA)) then
    begin
     Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(Self.SE_UB_id.Value,  uvazkaB)) then
+  if (Blocks.IsBlok(Self.SE_UB_id.Value,  uvazkaB)) then
    begin
     Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -320,9 +320,9 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
   if (NewBlk) then
    begin
     try
-      Self.Trat := Blky.Add(btRailway, glob_trat) as TBlkRailway;
-      Self.UvazkaA := Blky.Add(btLinker, glob_uvA) as TBlkLinker;
-      Self.UvazkaB  := Blky.Add(btLinker, glob_uvB) as TBlkLinker;
+      Self.Trat := Blocks.Add(btRailway, glob_trat) as TBlkRailway;
+      Self.UvazkaA := Blocks.Add(btLinker, glob_uvA) as TBlkLinker;
+      Self.UvazkaB  := Blocks.Add(btLinker, glob_uvB) as TBlkLinker;
     except
       on E: Exception do
        begin

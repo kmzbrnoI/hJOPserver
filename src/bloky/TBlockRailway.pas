@@ -192,7 +192,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlockSignal, Logging,
+uses GetSystems, TechnologieRCS, BlockDb, TOblRizeni, TBlockSignal, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlockTrack, TBlockLinker, TrainDb, THVDatabase,
     TBlockRailwayTrack, appEv, timeHelper, ownConvert, Graphics;
 
@@ -364,7 +364,7 @@ var i: Integer;
 begin
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], Blk);
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], Blk);
    if ((Blk <> nil) and (Blk.typ = btRT)) then
     Blk.Change();
   end;
@@ -378,7 +378,7 @@ var i: Integer;
 begin
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], Blk);
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], Blk);
    if ((Blk = nil) or (Blk.typ <> btRT)) then continue;
    if ((Blk as TBlkRT).occupied = TTrackState.occupied) then
     Exit(true);
@@ -507,14 +507,14 @@ end;
 function TBlkRailway.GetLinkerA(): TBlk;
 begin
  if (Self.m_linkerA = nil) then
-  Blky.GetBlkByID(Self.m_settings.linkerA, Self.m_linkerA);
+  Blocks.GetBlkByID(Self.m_settings.linkerA, Self.m_linkerA);
  Result := Self.m_linkerA;
 end;
 
 function TBlkRailway.GetLinkerB(): TBlk;
 begin
  if (Self.m_linkerB = nil) then
-  Blky.GetBlkByID(Self.m_settings.linkerB, Self.m_linkerB);
+  Blocks.GetBlkByID(Self.m_settings.linkerB, Self.m_linkerB);
  Result := Self.m_linkerB;
 end;
 
@@ -526,7 +526,7 @@ var i: Integer;
 begin
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], Blk);
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], Blk);
    if (TBlkRT(Blk).bpError) then Exit(true);
   end;//for i
  Exit(false);
@@ -549,7 +549,7 @@ begin
   end else begin
    for i := 0 to Self.m_settings.trackIds.Count-1 do
     begin
-     Blky.GetBlkByID(Self.m_settings.trackIds[i], Blk);
+     Blocks.GetBlkByID(Self.m_settings.trackIds[i], Blk);
      if (TBlkRT(Blk).bpInBlk) then Exit();
     end;
    Self.m_state.BP := false;
@@ -666,11 +666,11 @@ begin
  if ((Self.m_signalA = nil) or ((Self.m_signalA as TBlkSignal).trackId <> Self.m_settings.trackIds[0])) then
   begin
    if (Self.m_settings.trackIds.Count > 1) then
-     Blky.GetBlkByID(Self.m_settings.trackIds[1], TBlk(BlkTU))
+     Blocks.GetBlkByID(Self.m_settings.trackIds[1], TBlk(BlkTU))
    else
      BlkTU := nil;
 
-   for blk in Blky do
+   for blk in Blocks do
     begin
      if (Blk.typ <> btSignal) then continue;
      if ((TBlkSignal(Blk).trackId = Self.m_settings.trackIds[0]) and
@@ -696,11 +696,11 @@ begin
  if ((Self.m_signalB = nil) or ((Self.m_signalB as TBlkSignal).trackId <> Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1])) then
   begin
    if (Self.m_settings.trackIds.Count > 1) then
-     Blky.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-2], TBlk(BlkTU))
+     Blocks.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-2], TBlk(BlkTU))
    else
      BlkTU := nil;
 
-   for blk in Blky do
+   for blk in Blocks do
     begin
      if (Blk.typ <> btSignal) then continue;
      if ((TBlkSignal(Blk).trackId = Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1]) and
@@ -743,7 +743,7 @@ var i: Integer;
 begin
  for i := Self.m_settings.trackIds.Count-1 downto 0 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], Blk);
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], Blk);
    if ((Blk = nil) or (Blk.typ <> btRT)) then
     begin
      writelog('Trat '+Self.name+' obsahuje referenci na TU ID '+IntToStr(Self.m_settings.trackIds[i])+', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', WR_ERROR);
@@ -767,7 +767,7 @@ begin
  Result := 0;
  for usek in Self.m_settings.trackIds do
   begin
-   Blky.GetBlkByID(usek, Blk);
+   Blocks.GetBlkByID(usek, Blk);
    if (TBlkRT(Blk).IsTrain(train)) then
      Inc(Result);
   end;
@@ -801,9 +801,9 @@ begin
  if (Self.m_settings.trackIds.Count = 0) then Exit();
 
  lTU := nil;
- Blky.GetBlkByID(Self.m_settings.trackIds[0], TBlk(blk));
+ Blocks.GetBlkByID(Self.m_settings.trackIds[0], TBlk(blk));
  if (Self.m_settings.trackIds.Count > 1) then
-   Blky.GetBlkByID(Self.m_settings.trackIds[1], TBlk(sTU))
+   Blocks.GetBlkByID(Self.m_settings.trackIds[1], TBlk(sTU))
  else
    sTU := nil;
 
@@ -814,7 +814,7 @@ begin
    lTU := Blk;
    Blk := sTU;
    if (i < Self.m_settings.trackIds.Count-2) then
-     Blky.GetBlkByID(Self.m_settings.trackIds[i+2], TBlk(sTU));
+     Blocks.GetBlkByID(Self.m_settings.trackIds[i+2], TBlk(sTU));
   end;
 
  // posledni TU:
@@ -826,11 +826,11 @@ begin
  //    jeho useky.
 
  //  a) v lichem smeru: jdeme od zacatku trati ke konci
- Blky.GetBlkByID(Self.m_settings.trackIds[0], TBlk(sMaster));
+ Blocks.GetBlkByID(Self.m_settings.trackIds[0], TBlk(sMaster));
  tracks := sMaster.lsectTracks;
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
 
    // useku take priradime, ze je v nasi trati
    (Blk as TBlkRT).inRailway := Self.id;
@@ -845,11 +845,11 @@ begin
   end;
 
  //  b) v sudem smeru: jdeme od konce trati k zacatku
- Blky.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1], TBlk(sMaster));
+ Blocks.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1], TBlk(sMaster));
  tracks := sMaster.ssectTracks;
  for i := Self.m_settings.trackIds.Count-1 downto 0 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
    if (blk.GetSettings().signalSid <> -1) then
     begin
      sMaster := blk;
@@ -864,7 +864,7 @@ begin
 
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
    blk.CreateNavRefs();
   end;
 
@@ -878,7 +878,7 @@ var i: Integer;
 begin
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
    blk.RemoveTURefs();
   end;
 end;
@@ -891,7 +891,7 @@ var i: Integer;
 begin
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], TBlk(blk));
    blk.ChangeFromTrat();
   end;
 end;
@@ -909,12 +909,12 @@ begin
 
  case (Self.direction) of
   TRailwayDirection.AtoB: begin
-       Blky.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1], TBlk(last));
+       Blocks.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1], TBlk(last));
        last.trainPredict := nil;
        if (last.IsTrain()) then Exit();
        for i := Self.m_settings.trackIds.Count-2 downto 0 do
         begin
-         Blky.GetBlkByID(Self.m_settings.trackIds[i], TBlk(Blk));
+         Blocks.GetBlkByID(Self.m_settings.trackIds[i], TBlk(Blk));
          if (Blk.IsTrain()) then
           begin
            last.trainPredict := Blk.train;
@@ -927,7 +927,7 @@ begin
           end;
          if ((Blk.signalCover <> nil) and (TBlkSignal(Blk.signalCover).signal = ncStuj)) then
           begin
-           Blky.TrainPrediction(Self.signalB);
+           Blocks.TrainPrediction(Self.signalB);
            Exit();
           end;
         end;
@@ -935,16 +935,16 @@ begin
        if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
          last.trainPredict := Self.trainPredict.train;
        if ((call_prediction) and (Self.signalB <> nil)) then
-         Blky.trainPrediction(Self.signalB);
+         Blocks.trainPrediction(Self.signalB);
   end;
 
   TRailwayDirection.BtoA: begin
-       Blky.GetBlkByID(Self.m_settings.trackIds[0], TBlk(last));
+       Blocks.GetBlkByID(Self.m_settings.trackIds[0], TBlk(last));
        last.trainPredict := nil;
        if (last.IsTrain()) then Exit();
        for i := 1 to Self.m_settings.trackIds.Count-1 do
         begin
-         Blky.GetBlkByID(Self.m_settings.trackIds[i], TBlk(Blk));
+         Blocks.GetBlkByID(Self.m_settings.trackIds[i], TBlk(Blk));
          if (Blk.IsTrain()) then
           begin
            last.trainPredict := Blk.train;
@@ -957,7 +957,7 @@ begin
           end;
          if ((Blk.signalCover <> nil) and (TBlkSignal(Blk.signalCover).signal = ncStuj)) then
           begin
-           Blky.TrainPrediction(Self.signalA);
+           Blocks.TrainPrediction(Self.signalA);
            Exit();
           end;
         end;
@@ -965,7 +965,7 @@ begin
        if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
          last.trainPredict := Self.trainPredict.train;
        if ((call_prediction) and (Self.signalA <> nil)) then
-         Blky.TrainPrediction(Self.signalA);
+         Blocks.TrainPrediction(Self.signalA);
   end;
  end;//case
 end;
@@ -978,7 +978,7 @@ var i: Integer;
 begin
  for i := 0 to Self.m_settings.trackIds.Count-1 do
   begin
-   Blky.GetBlkByID(Self.m_settings.trackIds[i], Blk);
+   Blocks.GetBlkByID(Self.m_settings.trackIds[i], Blk);
    if ((Blk = nil) or (Blk.typ <> btRT)) then Exit(false);
    if (not TBlkRT(Blk).ready) then Exit(false);
   end;
@@ -1021,7 +1021,7 @@ var usekid: Integer;
 begin
  for usekid in Self.m_settings.trackIds do
   begin
-   Blky.GetBlkByID(usekid, blk);
+   Blocks.GetBlkByID(usekid, blk);
    if ((blk <> nil) and (blk.typ = btRT) and (TBlkTrack(blk).train = train)) then
      Exit(blk);
   end;
@@ -1042,9 +1042,9 @@ begin
    raise Exception.Create('Trať nemá žádný úsek!');
 
  if (smer = TRailwayDirection.AtoB) then
-   Blky.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1], Result)
+   Blocks.GetBlkByID(Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1], Result)
  else if (smer = TRailwayDirection.BtoA) then
-   Blky.GetBlkByID(Self.m_settings.trackIds[0], Result)
+   Blocks.GetBlkByID(Self.m_settings.trackIds[0], Result)
  else
    raise Exception.Create('Trať nemá žádný směr!');
 end;
@@ -1057,7 +1057,7 @@ var blkUsek: TBlkTrack;
 begin
  for usek in Self.m_settings.trackIds do
   begin
-   Blky.GetBlkByID(usek, TBlk(blkUsek));
+   Blocks.GetBlkByID(usek, TBlk(blkUsek));
    if (blkUsek <> nil) then
      if (blkUsek.lockout <> '') then
        Exit(true);
@@ -1085,7 +1085,7 @@ var usekid: Integer;
 begin
  for usekid in Self.m_settings.trackIds do
   begin
-   Blky.GetBlkByID(usekid, TBlk(track));
+   Blocks.GetBlkByID(usekid, TBlk(track));
    if (track.typ <> btRT) then continue;
    if ((blk = track.signalCoverL) or (blk = track.signalCoverS)) then
      Exit(true);
@@ -1179,7 +1179,7 @@ begin
  porucha_bp := false;
  for usek in TBlkRailway(trat).GetSettings().trackIds do
   begin
-   Blky.GetBlkByID(usek, blk);
+   Blocks.GetBlkByID(usek, blk);
    if ((blk <> nil) and (blk.typ = btRT)) then
      if (TBlkTrack(blk).train = Self.train) and (TBlkRT(blk).bpError) then
        porucha_bp := true;

@@ -49,7 +49,6 @@ uses
   FileSystem in 'FileSystem.pas',
   fConsole in 'forms\fConsole.pas' {F_Console},
   TBlock in 'bloky\TBlock.pas',
-  TBloky in 'bloky\TBloky.pas',
   TBlockTurnout in 'bloky\TBlockTurnout.pas',
   TBlockTrack in 'bloky\TBlockTrack.pas',
   TBlockIR in 'bloky\TBlockIR.pas',
@@ -159,7 +158,8 @@ uses
   PTEndpointTrain in 'pt\PTEndpointTrain.pas',
   IfThenElse in 'helpers\IfThenElse.pas',
   PTEndpointUsers in 'pt\PTEndpointUsers.pas',
-  PTEndpointUser in 'pt\PTEndpointUser.pas';
+  PTEndpointUser in 'pt\PTEndpointUser.pas',
+  BlockDb in 'bloky\BlockDb.pas';
 
 {$R *.res}
 

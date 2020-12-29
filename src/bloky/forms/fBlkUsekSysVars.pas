@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, TBloky, TBlock, TBlockTrack, Spin;
+  Dialogs, StdCtrls, ExtCtrls, BlockDb, TBlock, TBlockTrack, Spin;
 
 type
   TF_BlkUsek_tech = class(TForm)
@@ -106,7 +106,7 @@ var Blk: TBlk;
     Self.Blk.trainPredict := Trains[SE_Souprava_Predict.Value]
   else
     Self.Blk.trainPredict := nil;
-  Blky.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
+  Blocks.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
   if (Self.Blk.signalJCRef.Count = 0) then
     Self.Blk.signalJCRef.Clear();
   Self.Blk.shortCircuit := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);

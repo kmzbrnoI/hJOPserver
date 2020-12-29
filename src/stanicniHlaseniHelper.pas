@@ -30,7 +30,7 @@ function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
 
 implementation
 
-uses TBloky, TBlock, TBlockRailwayTrack;
+uses BlockDb, TBlock, TBlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,7 +51,7 @@ begin
 
    // ziskame seznam bloku na kterych je souprava predpovidana v dane stanici
    // ziskame trat, ve ktere se aktualne souprava nachazi
-   for blk in Blky do
+   for blk in Blocks do
     begin
      inOR := Blk.stations.Contains(OblR);
 

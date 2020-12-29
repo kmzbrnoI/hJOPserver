@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, TechnologieMultiJC, Generics.Collections,
-  Spin, TBloky;
+  Spin, BlockDb;
 
 type
   TF_MJCEdit = class(TForm)
@@ -128,7 +128,7 @@ begin
   end;
 
  for i := 0 to Length(Self.CB_VB_indexes)-1 do
-   if (Blky.GetBlkID(Self.CB_VB_indexes[i]) = Self.vb[Self.LV_VBs.ItemIndex]) then
+   if (Blocks.GetBlkID(Self.CB_VB_indexes[i]) = Self.vb[Self.LV_VBs.ItemIndex]) then
      Self.CB_VB_New.ItemIndex := i;
 end;
 
@@ -187,7 +187,7 @@ begin
 
  for vbi in Self.openMJC.data.vb do
   begin
-   Blky.GetBlkByID(vbi, Blk);
+   Blocks.GetBlkByID(vbi, Blk);
    if (Blk = nil) then continue;
    LI := Self.LV_VBs.Items.Add;
    LI.Caption := Blk.GetGlobalSettings.name;
@@ -242,7 +242,7 @@ procedure TF_MJCEdit.UpdateVBCb();
 var obls: TArStr;
 begin
  Self.MakeObls(obls);
- Blky.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, nil, obls, btTrack, -1);
+ Blocks.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, nil, obls, btTrack, -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ begin
  if (Self.JCs.Count < 1) then obls := nil
  else begin
    try
-     Blky.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok, Blk);
+     Blocks.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok, Blk);
 
      if ((Blk = nil) or (Blk.typ <> btSignal)) then
       begin
@@ -300,8 +300,8 @@ begin
  // doplneni nazvu JC:
  if (Self.CHB_AutoName.Checked) then
   begin
-   Self.E_VCNazev.Text := Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
-   Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1]);
+   Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
+   Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1]);
   end;
 end;
 
@@ -314,14 +314,14 @@ begin
 
  if (Self.LV_VBs.ItemIndex = -1) then
   begin
-   Self.vb.Add(Blky.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]));
+   Self.vb.Add(Blocks.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]));
    LI := Self.LV_VBs.Items.Add();
   end else begin
-   Self.vb[Self.LV_VBs.ItemIndex] := Blky.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
+   Self.vb[Self.LV_VBs.ItemIndex] := Blocks.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
    LI := Self.LV_VBs.Items[Self.LV_VBs.ItemIndex];
   end;
 
- LI.Caption := Blky.GetBlkIndexName(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
+ LI.Caption := Blocks.GetBlkIndexName(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -415,8 +415,8 @@ begin
    if (Self.CHB_AutoName.Checked) then
     begin
      if (Self.JCs.Count > 0) then
-       Self.E_VCNazev.Text := Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
-       Blky.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1])
+       Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
+       Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1])
       else
        Self.E_VCNazev.Text := '';
     end;

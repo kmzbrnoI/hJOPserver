@@ -60,7 +60,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBloky, TBlockTrack, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, BlockDb, TBlockTrack, TOblRizeni, TCPServerOR,
       DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////

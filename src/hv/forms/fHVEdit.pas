@@ -1,4 +1,4 @@
-unit fHVEdit;
+﻿unit fHVEdit;
 
 interface
 
@@ -69,7 +69,7 @@ var
 implementation
 
 uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
-      fHVPomEdit, TBloky, TrainDb;
+      fHVPomEdit, BlockDb, TrainDb;
 
 {$R *.dfm}
 
@@ -262,7 +262,7 @@ var data: THVData;
      HVTableData.UpdateLine(OpenHV);
 
      if (stav.train > -1) then
-       Blky.ChangeTrainToTrat(Trains[stav.train]);
+       Blocks.ChangeTrainToTrat(Trains[stav.train]);
    end;
 
   Self.Close();

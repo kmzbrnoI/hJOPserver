@@ -488,7 +488,7 @@ implementation
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems,
-     TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
+     TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, BlockDb,
      TBlock, TBlockTrack, TBlockTurnout, TBlockSignal, TBlockIR, TOblRizeni,
      SnadnSpusteni, TBlockSummary, TBlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
@@ -767,9 +767,9 @@ end;
 
 procedure TF_Main.OnRCSStop(Sender: TObject);
 begin
-  if (Blky.enabled) then
+  if (Blocks.enabled) then
    begin
-    Blky.Disable();
+    Blocks.Disable();
     Trains.ClearPOdj();
    end;
 
@@ -864,9 +864,9 @@ begin
  Self.UpdateSystemButtons();
 
  // may happen when RCS USB disconnects
- if (Blky.enabled) then
+ if (Blocks.enabled) then
   begin
-   Blky.Disable();
+   Blocks.Disable();
    Trains.ClearPOdj();
   end;
  Trains.StopAllTrains();
@@ -1446,7 +1446,7 @@ procedure TF_Main.T_MainTimer(Sender: TObject);
   try
     SS.Update();
     DetekujAutSpusteniSystemu;
-    Blky.Update();
+    Blocks.Update();
     VypisDatumCas();
     ModCas.Update();
     JCDb.Update();
@@ -1526,7 +1526,7 @@ procedure TF_Main.PM_ResetVClick(Sender: TObject);
                              'což může způsobit přetížení napájecích zdrojů. Chcete skutečně pokračovat?', 'Otázka',
                              MB_YESNO OR MB_ICONWARNING OR MB_DEFBUTTON2) = mrYes) then
    begin
-    Blky.ZakladniPolohaVyhybek();
+    Blocks.ZakladniPolohaVyhybek();
     writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
     Application.MessageBox('Výhybky přestaveny do záklaních poloh.', 'Informace', MB_OK OR MB_ICONINFORMATION);
    end;
@@ -1781,8 +1781,8 @@ end;
 
 procedure TF_Main.A_PanelServer_StartExecute(Sender: TObject);
 begin
- if ((SystemData.Status = starting) and (not Blky.enabled)) then
-   Blky.Enable();
+ if ((SystemData.Status = starting) and (not Blocks.enabled)) then
+   Blocks.Enable();
 
  try
    ORTCPServer.Start();
@@ -1853,15 +1853,15 @@ var ini: TMemIniFile;
 begin
   try
     // ukladani stavu bloku: ulozime do docasneho souboru a az pak prepiseme stavajici konfigurak
-    Blky.SaveStatToFile(Blky.fstatus+'_');
+    Blocks.SaveStatToFile(Blocks.fstatus+'_');
 
-    if (FileExists(Blky.fstatus)) then
-      DeleteFile(Blky.fstatus);
-    MoveFile(PChar(Blky.fstatus+'_'), PChar(Blky.fstatus));
-    DeleteFile(Blky.fstatus+'_');
+    if (FileExists(Blocks.fstatus)) then
+      DeleteFile(Blocks.fstatus);
+    MoveFile(PChar(Blocks.fstatus+'_'), PChar(Blocks.fstatus));
+    DeleteFile(Blocks.fstatus+'_');
   except
     on E: Exception do
-      AppEvents.LogException(E, 'Blky.SaveStatToFile');
+      AppEvents.LogException(E, 'Blocks.SaveStatToFile');
   end;
 
   try
@@ -1993,9 +1993,9 @@ begin
  Self.A_PanelServer_StopExecute(nil);
 
  JCDb.RusAllJC();
- Blky.Disable();
+ Blocks.Disable();
  Trains.ClearPOdj();
- Blky.Reset();
+ Blocks.Reset();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2020,7 +2020,7 @@ begin
  if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+jc.name+'?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
   begin
    try
-     Blky.GetBlkByID(jc.data.NavestidloBlok, blk);
+     Blocks.GetBlkByID(jc.data.NavestidloBlok, blk);
      if ((blk <> nil) and (Blk.typ = btSignal) and (TBlkSignal(blk).ABJC = jc)) then
       begin
        TBlkSignal(blk).ABJC := nil;
@@ -2046,11 +2046,11 @@ var pozice: Integer;
   Pozice := LV_Bloky.ItemIndex;
 
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blky.GetBlkIndexName(pozice)+'?'),
+  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blocks.GetBlkIndexName(pozice)+'?'),
                             'Mazání bloku', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
    begin
     try
-      Blky.Delete(pozice);
+      Blocks.Delete(pozice);
     except
       on E: Exception do
         Application.MessageBox(PChar('Chyba:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -2452,7 +2452,7 @@ procedure TF_Main.MI_HoukClick(Sender: TObject);
 var Blk: TBlk;
 begin
  if (Self.LV_Bloky.Selected = nil) then Exit();
- if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
+ if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
  if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then Exit();
 
  F_HoukEvsUsek.Open(TBlkTrack(Blk));
@@ -2505,7 +2505,7 @@ procedure TF_Main.MI_TechPropClick(Sender: TObject);
 var Blk: TBlk;
  begin
   if (LV_Bloky.Selected = nil) then Exit;
-  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
+  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
    btTurnout: F_BlkVyh_tech.OpenForm(Blk as TBlkTurnout);
@@ -2893,7 +2893,7 @@ procedure TF_Main.LV_BlokyCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 var Blk: TBlk;
  begin
-  if (Blky.GetBlkByIndex(Item.Index, Blk) <> 0) then Exit;
+  if (Blocks.GetBlkByIndex(Item.Index, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
    btTurnout: begin
@@ -3026,7 +3026,7 @@ procedure TF_Main.LV_BlokyDblClick(Sender: TObject);
 var Blk: TBlk;
  begin
   if (LV_Bloky.Selected = nil) then Exit;
-  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
+  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
    btTurnout: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
@@ -3176,7 +3176,7 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
  Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.ConnectedSafe())
-    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned) or (not Blky.enabled) or
+    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned) or (not Blocks.enabled) or
        ((GlobalConfig.ptAutoStart) and (not PtServer.openned)));
  Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrakceI.ConnectedSafe())
     or (ORTCPServer.openned) or (PtServer.openned);

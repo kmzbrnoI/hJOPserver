@@ -35,7 +35,7 @@ var
 implementation
 
 uses fMain, fSettings, TechnologieRCS, GetSystems, TechnologieTrakce,
-     Logging, TBlock, TBlockTrack, TBLoky;
+     Logging, TBlock, TBlockTrack, BlockDb;
 
 {$R *.dfm}
 
@@ -148,7 +148,7 @@ begin
        begin
         if (pole_dat.Count < 2) then Exit;
 
-        Blky.GetBlkByID(StrToInt(pole_dat[1]), Blk);
+        Blocks.GetBlkByID(StrToInt(pole_dat[1]), Blk);
 
         if (Blk = nil) then
          begin

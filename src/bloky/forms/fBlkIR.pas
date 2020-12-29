@@ -42,14 +42,14 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlock, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky;
 
 {$R *.dfm}
 
 procedure TF_BlkIR.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
 
   if (NewBlk) then
@@ -63,13 +63,13 @@ procedure TF_BlkIR.OpenForm(BlokIndex: Integer);
 
 procedure TF_BlkIR.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
+ Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
 procedure TF_BlkIR.NewBlkOpenForm;
  begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
   Self.SE_module.Value := 1;
   Self.SE_Port.Value := 0;
   Self.SE_moduleExit(Self);
@@ -114,7 +114,7 @@ procedure TF_BlkIR.HlavniOpenForm;
 procedure TF_BlkIR.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkIR.B_StornoClick(Sender: TObject);
@@ -132,13 +132,13 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
 
-  another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.input);
+  another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.input);
   if (another <> nil) then
    begin
     if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
@@ -155,7 +155,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btIR, glob) as TBlkIR;
+      Blk := Blocks.Add(btIR, glob) as TBlkIR;
     except
       on E: Exception do
        begin

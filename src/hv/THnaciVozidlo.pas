@@ -274,7 +274,7 @@ type
 
 implementation
 
-uses ownStrUtils, TOblsRizeni, THVDatabase, TrainDb, DataHV, fRegulator, TBloky,
+uses ownStrUtils, TOblsRizeni, THVDatabase, TrainDb, DataHV, fRegulator, BlockDb,
       RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce,
       ownConvert, TBlockSignal;
 
@@ -799,7 +799,7 @@ begin
  Self.changed := true;
 
  if (Self.Stav.train > -1) then
-   Blky.ChangeTrainToTrat(Trains[Self.Stav.train]);
+   Blocks.ChangeTrainToTrat(Trains[Self.Stav.train]);
 
  str.Free();
  str2.Free();
@@ -1573,7 +1573,7 @@ begin
  RegCollector.LocoChanged(Self, Self.addr);
 
  if (Self.train > -1) then
-   Blky.ChangeUsekWithTrain(Trains[Self.train]);
+   Blocks.ChangeUsekWithTrain(Trains[Self.train]);
 
  Self.UpdateRuc();
 
@@ -1755,7 +1755,7 @@ begin
 
  TCPRegulator.LokStolen(Self);
  if (Self.train > -1) then
-   Blky.ChangeUsekWithTrain(Trains[Self.train]);
+   Blocks.ChangeUsekWithTrain(Trains[Self.train]);
  Self.UpdateRuc();
 
  Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, Spin, StdCtrls, TBlockCrossing, TBloky, Generics.Collections, IBUtils,
+  ExtCtrls, Spin, StdCtrls, TBlockCrossing, BlockDb, Generics.Collections, IBUtils,
   TBlockCrossingLogic, Mask, StrUtils;
 
 type
@@ -107,7 +107,7 @@ uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni,
 procedure TF_BlkPrejezd.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm();
 
   if (NewBlk) then
@@ -122,14 +122,14 @@ procedure TF_BlkPrejezd.OpenForm(BlokIndex: Integer);
 
 procedure TF_BlkPrejezd.SE_RCS_boardExit(Sender: TObject);
 begin
- Self.SE_vyst_close_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_close_board.Value, Self.SE_vyst_close_port.Value);
- Self.SE_vyst_open_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_open_board.Value, Self.SE_vyst_open_port.Value);
- Self.SE_vyst_bp_board.MaxValue := TBlky.SEPortMaxValue(Self.SE_vyst_bp_board.Value, Self.SE_vyst_bp_port.Value);
+ Self.SE_vyst_close_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vyst_close_board.Value, Self.SE_vyst_close_port.Value);
+ Self.SE_vyst_open_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vyst_open_board.Value, Self.SE_vyst_open_port.Value);
+ Self.SE_vyst_bp_board.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vyst_bp_board.Value, Self.SE_vyst_bp_port.Value);
 
- Self.SE_vst_close_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_close_board.Value, Self.SE_vst_close_port.Value);
- Self.SE_vst_open_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_open_board.Value, Self.SE_vst_open_port.Value);
- Self.SE_vst_vystraha_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_vystraha_board.Value, Self.SE_vst_vystraha_port.Value);
- Self.SE_vst_anulace_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_vst_anulace_board.Value, Self.SE_vst_anulace_port.Value);
+ Self.SE_vst_close_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vst_close_board.Value, Self.SE_vst_close_port.Value);
+ Self.SE_vst_open_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vst_open_board.Value, Self.SE_vst_open_port.Value);
+ Self.SE_vst_vystraha_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vst_vystraha_board.Value, Self.SE_vst_vystraha_port.Value);
+ Self.SE_vst_anulace_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vst_anulace_board.Value, Self.SE_vst_anulace_port.Value);
 end;
 
 procedure TF_BlkPrejezd.B_save_PClick(Sender: TObject);
@@ -146,7 +146,7 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplňte název přejezdu', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -160,7 +160,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btCrossing, glob) as TBlkCrossing;
+      Blk := Blocks.Add(btCrossing, glob) as TBlkCrossing;
     except
       on E: Exception do
        begin
@@ -237,7 +237,7 @@ var glob: TBlkSettings;
       else
         typ := TRCSIOType.input;
 
-      another := Blky.AnotherBlockUsesRCS(addrs[i], Self.Blk, typ);
+      another := Blocks.AnotherBlockUsesRCS(addrs[i], Self.Blk, typ);
       if (another <> nil) then
         messages := messages + 'Blok '+another.name+' využívá také RCS adresu '+
                     IntToStr(addrs[i].board)+':'+IntToStr(addrs[i].port)+'.'+#13#10;
@@ -468,7 +468,7 @@ var glob: TBlkSettings;
 procedure TF_BlkPrejezd.NewOpenForm();
  begin
   Self.E_prj_Nazev.Text := '';
-  Self.SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
 
   Self.SE_vyst_close_board.Value := 0;
   Self.SE_vyst_close_port.Value := 0;
@@ -510,7 +510,7 @@ end;
 procedure TF_BlkPrejezd.NewBlkCreate();
  begin
   Self.NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkPrejezd.SaveTracks();

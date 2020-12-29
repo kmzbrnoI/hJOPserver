@@ -108,7 +108,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, ownConvert, Diagnostics,
+uses GetSystems, TechnologieRCS, BlockDb, ownConvert, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlockTurnout,
     TCPServerPT, ownStrUtils;
 
@@ -514,7 +514,7 @@ begin
  if (not Self.m_state.panelsShowingState.Contains(pnl)) then
    Self.m_state.panelsShowingState.Add(pnl);
  ORTCPServer.PotvrOrInfo(pnl, 'IS', Self.PanelSTAVClosed, OblR, 'Zobrazení stavu AC',
-                         TBlky.GetBlksList(Self), podm)
+                         TBlocks.GetBlksList(Self), podm)
 end;
 
 procedure TBlkAC.PanelSTAVClosed(Sender: TIdContext; success: Boolean);

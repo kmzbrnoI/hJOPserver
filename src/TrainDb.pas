@@ -56,7 +56,7 @@ var
 
 implementation
 
-uses Logging, DataSpr, TBloky, TBlockTrack, DataHV, appEv, TBlock,
+uses Logging, DataSpr, BlockDb, TBlockTrack, DataHV, appEv, TBlock,
      TCPServerOR, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -206,7 +206,7 @@ var i: Integer;
     usek: TBlk;
 begin
  i := Self.GetEmptySpaceForTrain();
- Blky.GetBlkByID(train['front'], usek);
+ Blocks.GetBlkByID(train['front'], usek);
  if (train.Contains('createPos')) then
    train.I['createPos'] := 0;
 
@@ -238,7 +238,7 @@ procedure TTrainDb.Remove(index: Integer);
 begin
  if (not Assigned(Self.trains[index])) then Exit();
 
- Blky.RemoveTrain(Self.trains[index]);
+ Blocks.RemoveTrain(Self.trains[index]);
  ORTCPServer.OnRemoveTrain(Self.trains[index]);
  FreeAndNil(Self.trains[index]);
  TrainTableData.reload := true;

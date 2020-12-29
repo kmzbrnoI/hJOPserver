@@ -132,7 +132,7 @@ var
 
 implementation
 
-uses fMain, diagnostics, GetSystems, TBloky, TBlock, TBlockTurnout, TBlockTrack,
+uses fMain, diagnostics, GetSystems, BlockDb, TBlock, TBlockTurnout, TBlockTrack,
      BoosterDb, TBlockCrossing, RCSErrors, TOblsRizeni,
      Logging, TCPServerOR, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
@@ -205,7 +205,7 @@ var Blk: TBlk;
     booster: TBooster;
 begin
  //nastaveni vyhybek do +
- for blk in Blky do
+ for blk in Blocks do
   begin
    try
      if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
@@ -238,7 +238,7 @@ end;
 procedure TRCS.SoupravaUsekSim;
 var Blk: TBlk;
 begin
- for blk in Blky do
+ for blk in Blocks do
   begin
    if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then continue;
    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then

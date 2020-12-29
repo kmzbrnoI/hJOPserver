@@ -7,7 +7,7 @@
 interface
 
 uses
-  IniFiles, TechnologieJC, Generics.Collections, TBloky, IdContext, SysUtils,
+  IniFiles, TechnologieJC, Generics.Collections, BlockDb, IdContext, SysUtils,
   Classes, Generics.Defaults, Math, TBlock, TBlockSignal;
 
 type
@@ -231,18 +231,18 @@ begin
 
  // zrusime zacatek staveni na navestidle
  JC := JCDb.GetJCByID(Self.fproperties.JCs[0]);
- Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
+ Blocks.GetBlkByID(JC.data.NavestidloBlok, Blk);
  (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
 
  // zrusime konec staveni na poslednim useku posledni JC
  JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);
- Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Blk);
+ Blocks.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Blk);
  (Blk as TBlkTrack).jcEnd := TZaver.no;
 
  // zrusime konec staveni na vsech variantnich bodech
  for i := 0 to Self.fproperties.vb.Count-1 do
   begin
-   Blky.GetBlkByID(Self.fproperties.vb[i], Blk);
+   Blocks.GetBlkByID(Self.fproperties.vb[i], Blk);
    (Blk as TBlkTrack).jcEnd := TZaver.no;
   end;
 

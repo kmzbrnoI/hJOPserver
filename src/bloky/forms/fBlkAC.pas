@@ -43,7 +43,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlock, DataBloky, TOblRizeni,
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky, TOblRizeni,
      ownStrUtils;
 
 {$R *.dfm}
@@ -51,7 +51,7 @@ uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlock, DataBloky, TOblRize
 procedure TF_BlkAC.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm();
 
   if (NewBlk) then
@@ -65,7 +65,7 @@ procedure TF_BlkAC.OpenForm(BlokIndex: Integer);
 procedure TF_BlkAC.NewBlkOpenForm();
  begin
   Self.E_Nazev.Text := '';
-  Self.SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
   Self.E_AccessToken.Text := '';
 
   Self.Caption := 'Nový blok AC';
@@ -99,7 +99,7 @@ procedure TF_BlkAC.HlavniOpenForm();
 procedure TF_BlkAC.NewBlkCreate();
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkAC.B_StornoClick(Sender: TObject);
@@ -121,7 +121,7 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplňte název bloku !', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -136,7 +136,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btAC, glob) as TBlkAC;
+      Blk := Blocks.Add(btAC, glob) as TBlkAC;
     except
       on E: Exception do
        begin

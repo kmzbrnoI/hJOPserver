@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses DataAB, TBlock, TBloky, TBlockTrack, logging, TBlockSignal;
+uses DataAB, TBlock, BlockDb, TBlockTrack, logging, TBlockSignal;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +79,7 @@ begin
 
  for usek in jc.data.Useky do
   begin
-   Blky.GetBlkByID(usek, blk);
+   Blocks.GetBlkByID(usek, blk);
    if ((blk <> nil) and
        ((blk.typ = btTrack) or (blk.typ = btRT)) and
        (TBlkTrack(blk).Zaver = TZaver.ab)) then
@@ -120,7 +120,7 @@ begin
 
     writelog('DN JC '+JC.name+' : podmínky splněny, stavím', WR_STACK);
 
-    Blky.GetBlkByID(JC.data.NavestidloBlok, blk);
+    Blocks.GetBlkByID(JC.data.NavestidloBlok, blk);
     if ((blk = nil) or (blk.typ <> btSignal) or (TBlkSignal(blk).stations.Count = 0)) then
       Self.Remove(jc);
 

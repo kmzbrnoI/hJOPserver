@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Spin, StdCtrls, TBlockSummary, TBloky, ComCtrls,
+  Dialogs, ExtCtrls, Spin, StdCtrls, TBlockSummary, BlockDb, ComCtrls,
   Generics.Collections;
 
 type
@@ -65,7 +65,7 @@ uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni, TBlock, FileSystem,
 procedure TF_BlkSH.OpenForm(BlokIndex: Integer);
 begin
  OpenIndex := BlokIndex;
- Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+ Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
  Self.MainOpenForm();
 
  if (NewBlk) then
@@ -88,7 +88,7 @@ begin
    Exit;
   end;
 
- Blky.GetBlkByIndex(Self.CB_PrjAddData[Self.CB_Prj_Add.ItemIndex], blk);
+ Blocks.GetBlkByIndex(Self.CB_PrjAddData[Self.CB_Prj_Add.ItemIndex], blk);
  if ((blk <> nil) and (blk.typ = btCrossing)) then
   begin
    Self.prejezdy.Add(blk.id);
@@ -120,7 +120,7 @@ begin
                           MB_OK OR MB_ICONWARNING);
    Exit;
   end;
- if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+ if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
   begin
    Application.MessageBox('ID již bylo definováno na jiném bloku!',
                           'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -135,7 +135,7 @@ begin
   begin
    glob.note := '';
    try
-     Blk := Blky.Add(btSummary, glob) as TBlkSummary;
+     Blk := Blocks.Add(btSummary, glob) as TBlkSummary;
    except
      on E: Exception do
       begin
@@ -195,7 +195,7 @@ begin
   begin
    Self.prejezdy.Add(prjid);
    LI := Self.LV_Prejezdy.Items.Add();
-   LI.Caption := Blky.GetBlkName(prjid);
+   LI.Caption := Blocks.GetBlkName(prjid);
   end;
 
  Self.Caption := 'Součtová hláska '+glob.name;
@@ -205,7 +205,7 @@ end;
 procedure TF_BlkSH.NewOpenForm();
 begin
  E_Name.Text := '';
- SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+ SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
 
  Self.Caption := 'Nová součtová hláska';
  Self.ActiveControl := Self.E_Name;
@@ -237,7 +237,7 @@ end;
 procedure TF_BlkSH.NewBlkCreate();
 begin
  Self.NewBlk := true;
- OpenForm(Blky.count);
+ OpenForm(Blocks.count);
 end;
 
 procedure TF_BlkSH.FillNewPrjCB();
@@ -248,7 +248,7 @@ begin
  for i := 0 to Self.prejezdy.Count-1 do
    ignore[i] := Self.prejezdy[i];
 
- Blky.NactiBlokyDoObjektu(Self.CB_Prj_Add, @Self.CB_PrjAddData, @ignore, nil, btCrossing);
+ Blocks.NactiBlokyDoObjektu(Self.CB_Prj_Add, @Self.CB_PrjAddData, @ignore, nil, btCrossing);
 end;
 
 end.//unit

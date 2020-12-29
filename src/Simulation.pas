@@ -50,7 +50,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TJCDatabase, TBlock, TBlockTrack, TBloky, TBlockSignal,
+uses GetSystems, TechnologieRCS, TJCDatabase, TBlock, TBlockTrack, BlockDb, TBlockSignal,
      TBlockRailwayTrack, TBlockTurnout;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +93,8 @@ begin
 
    if (((JC.stav.RozpadBlok = 1) or (JC.stav.RozpadBlok >= JC.data.Useky.Count)) and (JC.stav.RozpadRuseniBlok = -1)) then
     begin
-     Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-     Blky.GetBlkByID((Nav as TBlkSignal).trackId, Blk);
+     Blocks.GetBlkByID(JC.data.NavestidloBlok, Nav);
+     Blocks.GetBlkByID((Nav as TBlkSignal).trackId, Blk);
 
      if ((Blk as TBlkTrack).occupied = TTrackState.occupied) then
       begin
@@ -110,14 +110,14 @@ begin
      if (JC.stav.RozpadRuseniBlok >= JC.data.Useky.Count) then Exit();
 
      // uvolnit RozpadRuseniBlok
-     Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
+     Blocks.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
      UsekSet := (Blk as TBlkTrack).GetSettings();
      RCSi.SetInputs(UsekSet.RCSAddrs, 0);
     end else begin
      // obsadit RozpadBlok
      if (JC.stav.RozpadBlok >= JC.data.Useky.Count) then Exit();
 
-     Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
+     Blocks.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
      UsekSet := (Blk as TBlkTrack).GetSettings();
      if (UsekSet.RCSAddrs.Count > 0) then
        RCSi.SetInput(UsekSet.RCSAddrs[0].board, UsekSet.RCSAddrs[0].port, 1);
@@ -153,7 +153,7 @@ var Blk: TBlk;
 begin
  if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
- for Blk in Blky do
+ for Blk in Blocks do
   begin
    if (Blk.typ <> btRailway) then continue;
    if (((Blk as TBlkRailway).BP) and ((Blk as TBlkRailway).occupied) and
@@ -173,7 +173,7 @@ begin
    // mazani soupravy vzadu
    for i := 0 to TratSet.trackIds.Count-1 do
     begin
-     Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
+     Blocks.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
      if ((TU.bpInBlk) and (TU.prevRT <> nil) and (TU.prevRT.occupied = TTrackState.occupied) and
          (TU.prevRT.train = TU.train)) then
       begin
@@ -185,7 +185,7 @@ begin
    // predavani soupravy dopredu
    for i := 0 to TratSet.trackIds.Count-1 do
     begin
-     Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
+     Blocks.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
      if ((TU.occupied = TTrackState.occupied) and (TU.bpInBlk) and (TU.nextRT <> nil) and
          (TU.nextRT.occupied = TTrackState.free) and
         ((TU.nextRT.signalCover = nil) or (TBlkSignal(TU.nextRT.signalCover).signal > ncStuj))) then
@@ -227,7 +227,7 @@ begin
  try
    if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
-   for blk in Blky do
+   for blk in Blocks do
     begin
      if (blk.typ <> btTurnout) then continue;
      vyh := TBlkTurnout(blk);

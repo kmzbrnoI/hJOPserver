@@ -1,4 +1,4 @@
-unit ModelovyCas;
+﻿unit ModelovyCas;
 
 {
   Tato unta se stara o modelovy cas.
@@ -82,7 +82,7 @@ var
 
 implementation
 
-uses TCPServerOR, fMain, TrainDb, TBloky;
+uses TCPServerOR, fMain, TrainDb, BlockDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -287,7 +287,7 @@ begin
       begin
        // Nejdriv smazeme pres bloky, pripadne pochybne stavy resime natvrdo
        // smazanim u soupravy. Mazani pres bloky zajisti volani Change().
-       Blky.ClearPOdj();
+       Blocks.ClearPOdj();
        Trains.ClearPOdj();
       end;
 

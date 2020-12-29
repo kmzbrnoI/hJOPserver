@@ -234,7 +234,7 @@ type
 
 implementation
 
-uses TrainDb, TBloky, TCPServerOR, TBlockRailway, TBlockSignal, TJCDatabase,
+uses TrainDb, BlockDb, TCPServerOR, TBlockRailway, TBlockSignal, TJCDatabase,
      logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,11 +378,11 @@ begin
  Self.m_tuState.bpError := false;
 
  // Aktiaovovat navestidla rucne, aby se rovnou nastavily navesti v trati
- Blky.GetBlkByID(Self.m_tuSettings.signalLid, TBlk(Blk));
+ Blocks.GetBlkByID(Self.m_tuSettings.signalLid, TBlk(Blk));
  if ((blk <> nil) and (blk.typ = btSignal)) then
    blk.Enable();
 
- Blky.GetBlkByID(Self.m_tuSettings.signalSid, TBlk(Blk));
+ Blocks.GetBlkByID(Self.m_tuSettings.signalSid, TBlk(Blk));
  if ((blk <> nil) and (blk.typ = btSignal)) then
    blk.Enable();
 
@@ -636,7 +636,7 @@ begin
   end;
 
   F1: begin
-    Blk := Blky.GetBlkSignalSelected((SenderOR as TOR).id);
+    Blk := Blocks.GetBlkSignalSelected((SenderOR as TOR).id);
     if (Blk = nil) then
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
@@ -775,12 +775,12 @@ begin
    podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z úseku'));
    if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.train))) then
      podm.Add(TOR.GetPSPodminka(Self.railway, 'Smazání soupravy '+Self.train.name+' z tratě'));
-   if (Blky.GetBlkWithTrain(Self.train).Count = 1) then
+   if (Blocks.GetBlkWithTrain(Self.train).Count = 1) then
      podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z kolejiště'));
   end;
 
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR,
-                   'Zrušení poruchy blokové podmínky', TBlky.GetBlksList(Self), podm);
+                   'Zrušení poruchy blokové podmínky', TBlocks.GetBlksList(Self), podm);
 end;
 
 procedure TBlkRT.PanelPotvrSekvRBP(Sender: TIdContext; success: Boolean);
@@ -795,7 +795,7 @@ begin
    if (Self.IsTrain()) then
     begin
      Self.RemoveTrains();
-     blks := Blky.GetBlkWithTrain(TrainDb.Trains[old_train]);
+     blks := Blocks.GetBlkWithTrain(TrainDb.Trains[old_train]);
      if (blks.Count = 0) then TrainDb.Trains.Remove(old_train);
      blks.Free();
     end;
@@ -820,7 +820,7 @@ end;
 function TBlkRT.GetRailway(): TBlk;
 begin
  if (((Self.m_railway = nil) and (Self.tuState.inRailway <> -1)) or ((Self.m_railway <> nil) and (Self.m_railway.id <> Self.tuState.inRailway))) then
-   Blky.GetBlkByID(Self.tuState.inRailway, Self.m_railway);
+   Blocks.GetBlkByID(Self.tuState.inRailway, Self.m_railway);
  Result := Self.m_railway;
 end;
 
@@ -839,18 +839,18 @@ begin
  end;
 
  if (((Self.m_signalCovering = nil) and (navPrevID <> -1)) or ((Self.m_signalCovering <> nil) and (Self.m_signalCovering.id <> navPrevID))) then
-   Blky.GetBlkByID(navPrevID, Self.m_signalCovering);
+   Blocks.GetBlkByID(navPrevID, Self.m_signalCovering);
  Result := Self.m_signalCovering;
 end;
 
 function TBlkRT.GetSignalCoverL(): TBlk;
 begin
- Blky.GetBlkByID(Self.m_tuSettings.signalLid, Result);
+ Blocks.GetBlkByID(Self.m_tuSettings.signalLid, Result);
 end;
 
 function TBlkRT.GetSignalCoverS(): TBlk;
 begin
- Blky.GetBlkByID(Self.m_tuSettings.signalSid, Result);
+ Blocks.GetBlkByID(Self.m_tuSettings.signalSid, Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1024,7 +1024,7 @@ end;
 procedure TBlkRT.CreateNavRefs();
 var Blk: TBlk;
 begin
- Blky.GetBlkByID(Self.m_tuSettings.signalLid, Blk);
+ Blocks.GetBlkByID(Self.m_tuSettings.signalLid, Blk);
  if ((Blk <> nil) and (Blk.typ = btSignal) and (Self.lTU <> nil)) then
   begin
    TBlkSignal(Blk).trackId := Self.lTU.id;
@@ -1032,7 +1032,7 @@ begin
    TBlkSignal(Blk).autoblok := true;
   end;
 
- Blky.GetBlkByID(Self.m_tuSettings.signalSid, Blk);
+ Blocks.GetBlkByID(Self.m_tuSettings.signalSid, Blk);
  if ((Blk <> nil) and (Blk.typ = btSignal) and (Self.sTU <> nil)) then
   begin
    TBlkSignal(Blk).trackId := Self.sTU.id;
@@ -1055,9 +1055,9 @@ begin
  Self.bpInBlk := false;
  Self.inRailway := -1;
 
- Blky.GetBlkByID(Self.m_tuSettings.signalLid, Blk);
+ Blocks.GetBlkByID(Self.m_tuSettings.signalLid, Blk);
  if ((Blk <> nil) and (Blk.typ = btSignal)) then TBlkSignal(Blk).trackId := -1;
- Blky.GetBlkByID(Self.m_tuSettings.signalSid, Blk);
+ Blocks.GetBlkByID(Self.m_tuSettings.signalSid, Blk);
  if ((Blk <> nil) and (Blk.typ = btSignal)) then TBlkSignal(Blk).trackId := -1;
 end;
 
@@ -1080,7 +1080,7 @@ begin
   begin
    if (Self.m_tuSettings.signalSid > -1) then
     begin
-     Blky.GetBlkByID(Self.m_tuSettings.signalSid, Blk);
+     Blocks.GetBlkByID(Self.m_tuSettings.signalSid, Blk);
      if (Blk <> nil) then
        TBlkSignal(Blk).signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
     end;
@@ -1090,7 +1090,7 @@ begin
   begin
    if (Self.m_tuSettings.signalLid > -1) then
     begin
-     Blky.GetBlkByID(Self.m_tuSettings.signalLid, Blk);
+     Blocks.GetBlkByID(Self.m_tuSettings.signalLid, Blk);
      if (Blk <> nil) then
        TBlkSignal(Blk).signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
     end;

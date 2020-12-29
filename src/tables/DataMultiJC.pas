@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses TMultiJCDatabase, TechnologieMultiJC, TBloky, fMain, TJCDatabase;
+uses TMultiJCDatabase, TechnologieMultiJC, BlockDb, fMain, TJCDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -109,7 +109,7 @@ begin
  // variantni body
  str := '';
  for i := 0 to mJCData.vb.Count-1 do
-   str := str + Blky.GetBlkName(mJCData.vb[i]) + ', ';
+   str := str + Blocks.GetBlkName(mJCData.vb[i]) + ', ';
  Self.LV.Items[line].SubItems[3] := str;
 end;
 

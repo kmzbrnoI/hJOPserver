@@ -273,7 +273,7 @@ type
 
 implementation
 
-uses TBloky, TBlockTrack, TJCDatabase, TCPServerOR, Graphics,
+uses BlockDb, TBlockTrack, TJCDatabase, TCPServerOR, Graphics,
      GetSystems, Logging, TrainDb, TBlockIR, Zasobnik, ownStrUtils,
      TBlockRailwayTrack, TBlockRailway, TBlockTurnout, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
@@ -752,7 +752,7 @@ begin
        Self.DNjc.DN();
       end;
     end;
-   Blky.TrainPrediction(Self);
+   Blocks.TrainPrediction(Self);
   end;
 
  if ((Self.autoblok) and (not zam) and (Self.track <> nil) and (TBlkRT(Self.track).railway <> nil)) then
@@ -773,7 +773,7 @@ begin
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
        (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
 
- Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then
   begin
    (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
@@ -795,7 +795,7 @@ begin
    if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
        (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
 
- Blk := BLky.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
  Self.selected := TBlkSignalSelection.PC;
  Self.m_state.beginAB := false;
@@ -813,7 +813,7 @@ begin
  if (Self.DNjc = nil) then Exit();
 
  Self.DNjc.STUJ();
- Blky.TrainPrediction(Self);
+ Blocks.TrainPrediction(Self);
 end;
 
 procedure TBlkSignal.MenuDNClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -827,7 +827,7 @@ begin
   end;
 
  Self.DNjc.DN();
- Blky.TrainPrediction(Self);
+ Blocks.TrainPrediction(Self);
 end;
 
 procedure TBlkSignal.MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -861,7 +861,7 @@ begin
 
  Self.AB := false;
  JC.RusJCWithoutBlk();
- Blky.TrainPrediction(Self);
+ Blocks.TrainPrediction(Self);
 end;
 
 procedure TBlkSignal.MenuABStartClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -901,7 +901,7 @@ var Blk: TBlk;
 begin
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit;
 
- Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
  Self.selected := TBlkSignalSelection.NC;
 
@@ -922,7 +922,7 @@ begin
  if ((SenderOR as TOR).stack.volba = PV) then
    if ((Self.signal > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
 
- Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
  Self.selected := TBlkSignalSelection.PP;
 end;
@@ -936,7 +936,7 @@ end;
 
 procedure TBlkSignal.MenuPPNClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Prodloužení doby přivolávací návěsti', TBlky.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Prodloužení doby přivolávací návěsti', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkSignal.MenuRNZClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -948,12 +948,12 @@ begin
 
  for blkId in Self.m_state.toRnz.Keys do
   begin
-   Blky.GetBlkByID(blkId, Blk);
+   Blocks.GetBlkByID(blkId, Blk);
    if (blk <> nil) then
      podminky.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
   end;
 
- ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závěrů po nouzové cestě', TBlky.GetBlksList(Self), podminky);
+ ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závěrů po nouzové cestě', TBlocks.GetBlksList(Self), podminky);
 end;
 
 procedure TBlkSignal.MenuKCDKClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -964,7 +964,7 @@ begin
    for oblr in Self.stations do
      oblr.ORDKClickClient();
    ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí přivolávací návěsti',
-                     TBlky.GetBlksList(Self), nil);
+                     TBlocks.GetBlksList(Self), nil);
   end;
 end;
 
@@ -974,7 +974,7 @@ begin
  try
    if (Self.m_settings.events[0].stop.typ = TRREvType.rrtIR) then
     begin
-     Blky.GetBlkByID(Self.m_settings.events[0].stop.data.irId, Blk);
+     Blocks.GetBlkByID(Self.m_settings.events[0].stop.data.irId, Blk);
      if ((Blk = nil) or (Blk.typ <> btIR)) then Exit();
      if (enabled) then
        RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 1)
@@ -1129,7 +1129,7 @@ begin
   begin
    if ((Self.m_settings.events.Count > 0) and (Self.m_settings.events[0].stop.typ = TRREvType.rrtIR)) then
     begin
-     Blky.GetBlkByID(Self.m_settings.events[0].stop.data.irId, Blk);
+     Blocks.GetBlkByID(Self.m_settings.events[0].stop.data.irId, Blk);
      if ((Blk <> nil) and (Blk.typ = btIR)) then
       begin
        case (TBlkIR(Blk).occupied) of
@@ -1334,7 +1334,7 @@ begin
 
        case (Self.DNjc.data.DalsiNavaznost) of
          TJCNextNavType.blok: begin
-           Blky.GetBlkByID(Self.DNjc.data.DalsiNavestidlo, signal);
+           Blocks.GetBlkByID(Self.DNjc.data.DalsiNavestidlo, signal);
 
            if ((signal <> nil) and (signal.typ = btSignal) and (TBlkSignal(signal).IsGoSignal()) and
                (not train.IsPOdj(Self.DNjc.lastUsek))) then
@@ -1487,7 +1487,7 @@ begin
    for oblr in Self.stations do
      oblr.ORDKClickClient();
    ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí přivolávací návěsti',
-                     TBlky.GetBlksList(Self), nil);
+                     TBlocks.GetBlksList(Self), nil);
   end else begin
    if (Button = TPanelButton.F2) then
      ORTCPServer.Menu(SenderPnl, Self, TOR(SenderOR), '$'+TOR(SenderOR).Name + ',-,' + 'KC');
@@ -1522,7 +1522,7 @@ begin
 
  for blkId in toRNZ.Keys do
   begin
-   Blky.GetBlkByID(blkId, blk);
+   Blocks.GetBlkByID(blkId, blk);
    if (blk = nil) then continue;   
 
    case (blk.typ) of
@@ -1556,7 +1556,7 @@ end;
 function TBlkSignal.GetTrackId(): TBlk;
 begin
  if (((Self.m_trackId = nil) and (Self.trackId <> -1)) or ((Self.m_trackId <> nil) and (Self.trackId <> Self.m_trackId.id))) then
-   Blky.GetBlkByID(Self.trackId, Self.m_trackId);
+   Blocks.GetBlkByID(Self.trackId, Self.m_trackId);
  Result := Self.m_trackId;
 end;
 
@@ -1630,7 +1630,7 @@ end;
 function TBlkSignal.GetTrain(usek: TBlk = nil): TTrain;
 begin
  if (usek = nil) then
-   Blky.GetBlkByID(Self.trackId, usek);
+   Blocks.GetBlkByID(Self.trackId, usek);
 
  if (Self.direction = THVStanoviste.lichy) then
    Result := TBlkTrack(usek).trainSudy
@@ -1668,7 +1668,7 @@ begin
 
  if (Self.DNjc = nil) then Exit();
  if (Self.DNjc.data.Trat = -1) then Exit();
- Blky.GetBlkByID(Self.DNjc.data.Trat, trat);
+ Blocks.GetBlkByID(Self.DNjc.data.Trat, trat);
  if (TBlkRailway(trat).trainPredict = nil) then Exit();
  if (TBlkRailway(trat).trainPredict.train <> train) then Exit();
 

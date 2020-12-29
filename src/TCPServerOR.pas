@@ -11,7 +11,7 @@ interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
-     IdContext, TBlock, ComCtrls, IdSync, TBloky, UPO, TCPORsRef,
+     IdContext, TBlock, ComCtrls, IdSync, BlockDb, UPO, TCPORsRef,
      User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
@@ -434,7 +434,7 @@ begin
  // vymazeme klienta z RCS debuggeru
  RCSd.RemoveClient(AContext);
 
- Blky.OnClientDisconnect(AContext);
+ Blocks.OnClientDisconnect(AContext);
  ACBlk.OnClientDisconnect(AContext);
 
  // odpojil se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
@@ -795,7 +795,7 @@ begin
       ACBlk.ParseBlocksMessage(AContext, parsed);
    end else begin
     i := StrToInt(parsed[2]);
-    Blky.GetBlkByID(i, blk);
+    Blocks.GetBlkByID(i, blk);
     if ((blk <> nil) and (blk.typ = btAC)) then
       TBlkAC(blk).ClientParse(AContext, parsed)
     else

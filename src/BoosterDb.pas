@@ -1,4 +1,4 @@
-unit BoosterDb;
+﻿unit BoosterDb;
 
 //this unit defines booster database as a class
 
@@ -59,7 +59,7 @@ var Boosters: TBoosterDb;
 
 implementation
 
-uses TBloky, fMain, TechnologieTrakce, appEv, logging, DataZesilovac, Trakce;
+uses BlockDb, fMain, TechnologieTrakce, appEv, logging, DataZesilovac, Trakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -222,19 +222,19 @@ end;
 
 procedure TBoosterDb.OnZkratChange(Sender: TObject; state: TBoosterSignal);
 begin
- Blky.OnBoosterChange(TBooster(Sender).id);
+ Blocks.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 
 procedure TBoosterDb.OnNapajeniChange(Sender: TObject; state: TBoosterSignal);
 begin
- Blky.OnBoosterChange(TBooster(Sender).id);
+ Blocks.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 
 procedure TBoosterDb.OnDCCChange(Sender: TObject; state: TBoosterSignal);
 begin
- Blky.OnBoosterChange(TBooster(Sender).id);
+ Blocks.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 

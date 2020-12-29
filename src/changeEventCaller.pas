@@ -35,7 +35,7 @@ var ceCaller: TChangeEventCaller;
 
 implementation
 
-uses TBloky, TBlock, TBlockTrack, TBlockTurnout, TBlokZamek, TBlockCrossing,
+uses BlockDb, TBlock, TBlockTrack, TBlockTurnout, TBlokZamek, TBlockCrossing,
      TBlockRailway;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ uses TBloky, TBlock, TBlockTrack, TBlockTurnout, TBlokZamek, TBlockCrossing,
 procedure TChangeEventCaller.CopyUsekZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
- Blky.GetBlkByID(data, blk);
+ Blocks.GetBlkByID(data, blk);
  if ((blk = nil) or ((blk.typ <> btTrack) and
     (blk.typ <> btRT))) then Exit();
 
@@ -53,7 +53,7 @@ end;
 procedure TChangeEventCaller.NullZamekZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
- Blky.GetBlkByID(data, blk);
+ Blocks.GetBlkByID(data, blk);
  if ((blk = nil) or (blk.typ <> btLock)) then Exit();
 
  TBlkLock(Blk).Zaver := false;
@@ -62,7 +62,7 @@ end;
 procedure TChangeEventCaller.NullPrejezdZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
- Blky.GetBlkByID(data, blk);
+ Blocks.GetBlkByID(data, blk);
  if ((blk = nil) or (blk.typ <> btCrossing)) then Exit();
 
  TBlkCrossing(Blk).Zaver := false;
@@ -71,7 +71,7 @@ end;
 procedure TChangeEventCaller.NullTratZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
- Blky.GetBlkByID(data, blk);
+ Blocks.GetBlkByID(data, blk);
  if ((blk = nil) or (blk.typ <> btRailway)) then Exit();
 
  TBlkRailway(Blk).Zaver := false;
@@ -82,7 +82,7 @@ end;
 procedure TChangeEventCaller.NullVyhybkaMenuReduction(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
- Blky.GetBlkByID(data, blk);
+ Blocks.GetBlkByID(data, blk);
  if ((blk = nil) or (blk.typ <> btTurnout)) then Exit();
 
  TBlkTurnout(Blk).IntentionalUnlock();
@@ -96,7 +96,7 @@ var blk: TBlk;
 begin
  caller := Pointer(data);
 
- Blky.GetBlkByID(caller.usekId, blk);
+ Blocks.GetBlkByID(caller.usekId, blk);
  if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btRT))) then Exit();
 
  TBlkTrack(Blk).RemoveNeprofilJC(caller.jcId);

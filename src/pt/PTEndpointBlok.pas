@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, TBloky, TBlock;
+uses PTUtils, JclPCRE, BlockDb, TBlock;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,13 +56,13 @@ begin
       end;
    end;
 
-   if (not Blky.IsBlok(blokId)) then
+   if (not Blocks.IsBlok(blokId)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
      Exit();
     end;
 
-   Blky.GetBlkByID(blokId, Blk);
+   Blocks.GetBlkByID(blokId, Blk);
    Blk.GetPtData(respJson.O['block'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
  finally
    re.Free();

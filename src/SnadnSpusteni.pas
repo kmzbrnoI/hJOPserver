@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses TechnologieRCS, TBloky, ownConvert, RCS, TBlockAC, TBlock;
+uses TechnologieRCS, BlockDb, ownConvert, RCS, TBlockAC, TBlock;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -98,7 +98,7 @@ var blk: TBlk;
  begin
   if ((not Self.config.enabled) or (not RCSi.NoExStarted())) then Exit();
 
-  Blky.GetBlkById(Self.config.AC_id, blk);
+  Blocks.GetBlkById(Self.config.AC_id, blk);
   if ((blk = nil) or (blk.typ <> btAC)) then Exit();
   AC := TBlkAC(blk);
 

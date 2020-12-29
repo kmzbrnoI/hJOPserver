@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  Spin, StdCtrls, ExtCtrls, fMain, TBlockTurnout, IBUtils, TBloky,
+  Spin, StdCtrls, ExtCtrls, fMain, TBlockTurnout, IBUtils, BlockDb,
   Generics.Collections;
 
 type
@@ -84,7 +84,7 @@ uses GetSystems, FileSystem, TechnologieRCS, TBlock, DataBloky, TOblRizeni;
 
 procedure TF_BlkVyhybka.OpenForm(BlokIndex: Integer);
  begin
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   OpenIndex := BlokIndex;
 
   HlavniOpenForm;
@@ -99,16 +99,16 @@ procedure TF_BlkVyhybka.OpenForm(BlokIndex: Integer);
 
 procedure TF_BlkVyhybka.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_VystPlus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VystPlus_module.Value, Self.SE_VystPlus_port.Value);
- Self.SE_VystMinus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VystMinus_module.Value, Self.SE_VystMinus_port.Value);
- Self.SE_VstPlus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VstPlus_module.Value, Self.SE_VstPlus_port.Value);
- Self.SE_VstMinus_port.MaxValue := TBlky.SEPortMaxValue(Self.SE_VstMinus_module.Value, Self.SE_VstMinus_port.Value);
+ Self.SE_VystPlus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_VystPlus_module.Value, Self.SE_VystPlus_port.Value);
+ Self.SE_VystMinus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_VystMinus_module.Value, Self.SE_VystMinus_port.Value);
+ Self.SE_VstPlus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_VstPlus_module.Value, Self.SE_VstPlus_port.Value);
+ Self.SE_VstMinus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_VstMinus_module.Value, Self.SE_VstMinus_port.Value);
 end;
 
 procedure TF_BlkVyhybka.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
-  SE_ID.Value  := Blky.GetBlkID(Blky.count-1)+1;
+  SE_ID.Value  := Blocks.GetBlkID(Blocks.count-1)+1;
 
   SE_VystPlus_port.Value := 0;
   SE_VystPlus_module.Value := 1;
@@ -162,7 +162,7 @@ var glob: TBlkSettings;
   Self.CHB_Spojka.Checked := (settings.coupling > -1);
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
 
-  Blky.GetBlkByID(settings.coupling, TBlk(vyh));
+  Blocks.GetBlkByID(settings.coupling, TBlk(vyh));
   if ((vyh <> nil) and (vyh.typ = btTurnout)) then
    begin
     spojkaSettings := vyh.GetSettings();
@@ -271,32 +271,32 @@ var spojka_vypust: TArI;
     spojka_vypust[0] := Self.Blk.id;
 
     // spojka
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, btTurnout, Self.Blk.GetSettings().coupling);
+    Blocks.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, btTurnout, Self.Blk.GetSettings().coupling);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.coupling > -1);
 
     // zamek
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btLock, Self.Blk.GetSettings().lock);
+    Blocks.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btLock, Self.Blk.GetSettings().lock);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.lock > -1);
 
     // neprofilove styky +
-    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npPlus, btRT);
+    Blocks.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npPlus, btRT);
     Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npPlus > -1);
 
     // neprofilove styky -
-    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npMinus, btRT);
+    Blocks.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npMinus, btRT);
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npMinus > -1);
 
    end else begin
-    Blky.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, btTurnout, -1);
+    Blocks.NactiBlokyDoObjektu(Self.CB_Spojka, @Self.CB_SpojkaData, nil, nil, btTurnout, -1);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, btLock, -1);
+    Blocks.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, btLock, -1);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btRT);
+    Blocks.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btRT);
     Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btRT);
+    Blocks.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btRT);
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0);
    end;
 
@@ -305,7 +305,7 @@ var spojka_vypust: TArI;
 procedure TF_BlkVyhybka.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
@@ -380,7 +380,7 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -424,7 +424,7 @@ var glob: TBlkSettings;
   if (NewBlk) then
    begin
     try
-      Blk := Blky.Add(btTurnout, glob) as TBlkTurnout;
+      Blk := Blocks.Add(btTurnout, glob) as TBlkTurnout;
     except
       on E: Exception do
        begin
@@ -446,9 +446,9 @@ var glob: TBlkSettings;
 
   if (Self.CHB_Spojka.Checked) then
    begin
-    settings.coupling := Blky.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex]);
+    settings.coupling := Blocks.GetBlkID(Self.CB_SpojkaData[Self.CB_Spojka.ItemIndex]);
 
-    Blky.GetBlkByID(settings.coupling, TBlk(vyh));
+    Blocks.GetBlkByID(settings.coupling, TBlk(vyh));
     if ((blk = nil) or (blk.typ <> btTurnout)) then
      begin
       Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -484,7 +484,7 @@ var glob: TBlkSettings;
 
   if (Self.CHB_Zamek.Checked) then
    begin
-    settings.lock := Blky.GetBlkID(Self.CB_ZamekData[Self.CB_Zamek.ItemIndex]);
+    settings.lock := Blocks.GetBlkID(Self.CB_ZamekData[Self.CB_Zamek.ItemIndex]);
     settings.lockPosition := TTurnoutPosition(Self.CB_Zamek_Poloha.ItemIndex);
    end else begin
     settings.lock := -1;
@@ -492,12 +492,12 @@ var glob: TBlkSettings;
    end;
 
   if (Self.CHB_npPlus.Checked) then
-    settings.npPlus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npPlus.ItemIndex])
+    settings.npPlus := Blocks.GetBlkID(Self.CB_NeprofilData[Self.CB_npPlus.ItemIndex])
   else
     settings.npPlus := -1;
 
   if (Self.CHB_npMinus.Checked) then
-    settings.npMinus := Blky.GetBlkID(Self.CB_NeprofilData[Self.CB_npMinus.ItemIndex])
+    settings.npMinus := Blocks.GetBlkID(Self.CB_NeprofilData[Self.CB_npMinus.ItemIndex])
   else
     settings.npMinus := -1;
 
@@ -521,7 +521,7 @@ var glob: TBlkSettings;
     else
       typ := TRCSIOType.output;
 
-    another := Blky.AnotherBlockUsesRCS(settings.RCSAddrs[i], Self.Blk, typ);
+    another := Blocks.AnotherBlockUsesRCS(settings.RCSAddrs[i], Self.Blk, typ);
     if (another <> nil) then
       messages := messages + 'Blok '+another.name+' využívá také RCS adresu '+
                   IntToStr(settings.RCSAddrs[i].board)+':'+IntToStr(settings.RCSAddrs[i].port)+'.'+#13#10;

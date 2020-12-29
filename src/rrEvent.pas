@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses TBloky, TBlock, TBlockIR, TBlockTrack, ownConvert;
+uses BlockDb, TBlock, TBlockIR, TBlockTrack, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +182,7 @@ begin
      end;
 
      rrtIR: begin
-       Blky.GetBlkByID(m_data.irId, Blk);
+       Blocks.GetBlkByID(m_data.irId, Blk);
        if (Blk = nil) then Exit(safeState);
        if (Blk.typ <> btIR) then Exit(safeState);
        case (TBlkIR(Blk).occupied) of

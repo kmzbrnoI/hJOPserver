@@ -43,7 +43,7 @@ end;
 
 implementation
 
-uses TBloky, ownStrUtils;
+uses BlockDb, ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -109,7 +109,7 @@ end;
 function TBlkTrackRef.GetBlock(): TBlkTrack;
 var blk: TBlk;
 begin
- Blky.GetBlkById(Self.blockId, blk);
+ Blocks.GetBlkById(Self.blockId, blk);
  if ((blk = nil) or ((blk.typ = btTrack) or (blk.typ = btRT))) then
    Result := TBlkTrack(blk)
  else

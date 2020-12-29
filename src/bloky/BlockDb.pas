@@ -1,12 +1,11 @@
-﻿unit TBloky;
+﻿unit BlockDb;
 
-//tato unita definuje tridu, ktera se stara o vsechny bloky
-//tedy jsou v ni ulozeny  vsechny bloky
+{ Database of all technological blocks. }
 
-//zakladni principy:
-//  - trida TBlky udrzuje databazi existujicich technologickych bloku
+// Zakladni principy:
+//  - trida TBlocks udrzuje databazi existujicich technologickych bloku
 //  - tyto bloky jsou odvozeny ze spolecne abstraktni tridy TBlk
-//  - tridu TBlky vytvari main
+//  - tridu TBlocks vytvari main
 //  - event OnChange je odesilan do prislusnych oblasti rizeni a tam se zpracovava dal (odesila se jednotlivym panelum)
 
 // Update ve verzi 4.3.7:
@@ -25,7 +24,7 @@ type
 
  TBlksList = TList<TObject>;
 
- TBlky = class(TObject)
+ TBlocks = class(TObject)
 
   private
    data: TList<TBlk>;
@@ -131,10 +130,10 @@ type
     property fstatus: string read ffstatus;
     property blky_file: string read ffile;
     property enabled: Boolean read fenabled;
- end;//class TBlky
+ end;
 
 var
- Blky: TBlky;
+ Blocks: TBlocks;
 
 implementation
 
@@ -146,14 +145,14 @@ uses TBlockTurnout, TBlockTrack, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlky.Create();
+constructor TBlocks.Create();
 begin
  inherited Create();
  Self.Data     := TList<TBlk>.Create();
  Self.fenabled := false;
 end;//ctor
 
-destructor TBlky.Destroy();
+destructor TBlocks.Destroy();
 begin
  Self.DestroyBlocks();
  Self.Data.Free();
@@ -162,7 +161,7 @@ end;//dtor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.DestroyBlocks();
+procedure TBlocks.DestroyBlocks();
 var i: Integer;
 begin
  for i := 0 to Self.data.Count-1 do
@@ -174,7 +173,7 @@ end;
 
 //pri zmene stavu jakehokoliv bloku je vyvolana tato metoda
 //tady se resi veskere provazanosti bloku a odesilani eventu do oblasti rizeni
-procedure TBlky.BlkChange(Sender: TObject);
+procedure TBlocks.BlkChange(Sender: TObject);
 var blkset: TBlkSettings;
     obl_rizeni: TList<TOR>;
     blk: TBlk;
@@ -205,7 +204,7 @@ end;
 // load all blocks from file
 // Pri vytvareni dostavaji vsechny bloky table_index -1, pak je hromadne
 //  oindexujeme metodou UpdateBlkIndexes
-procedure TBlky.LoadFromFile(const tech_filename, rel_filename, stat_filename: string);
+procedure TBlocks.LoadFromFile(const tech_filename, rel_filename, stat_filename: string);
 var ini_tech, ini_rel, ini_stat: TMemIniFile;
     id: Integer;
     Blk: TBlk;
@@ -293,7 +292,7 @@ begin
 end;
 
 //save all blocks to the file
-procedure TBlky.SaveToFile(const tech_filename: string);
+procedure TBlocks.SaveToFile(const tech_filename: string);
 var ini: TMemIniFile;
     blk: TBlk;
 begin
@@ -321,7 +320,7 @@ begin
  Self.SaveStatToFile(Self.fstatus);
 end;
 
-procedure TBlky.SaveStatToFile(const stat_filename: string);
+procedure TBlocks.SaveStatToFile(const stat_filename: string);
 var ini: TMemIniFile;
     blk: TBlk;
 begin
@@ -357,7 +356,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //add 1 block
-function TBlky.Add(typ: TBlkType; glob: TBlkSettings): TBlk;
+function TBlocks.Add(typ: TBlkType; glob: TBlkSettings): TBlk;
 var Blk: TBlk;
     i, index: Integer;
 begin
@@ -368,20 +367,20 @@ begin
  index := Self.FindPlaceForNewBlk(glob.id);
 
  case (typ) of
-  btTurnout  : Blk := TBlkTurnout.Create(index);
-  btTrack     : Blk := TBlkTrack.Create(index);
-  btIR       : Blk := TBlkIR.Create(index);
-  btSignal      : Blk := TBlkSignal.Create(index);
-  btCrossing  : Blk := TBlkCrossing.Create(index);
-  btRailway     : Blk := TBlkRailway.Create(index);
-  btLinker   : Blk := TBlkLinker.Create(index);
-  btLock     : Blk := TBlkLock.Create(index);
-  btDisconnector     : Blk := TBlkDisconnector.Create(index);
-  btRT       : Blk := TBlkRT.Create(index);
-  btIO       : Blk := TBlkIO.Create(index);
-  btSummary       : Blk := TBlkSummary.Create(index);
-  btAC       : Blk := TBlkAC.Create(index);
- else//case
+  btTurnout: Blk := TBlkTurnout.Create(index);
+  btTrack: Blk := TBlkTrack.Create(index);
+  btIR: Blk := TBlkIR.Create(index);
+  btSignal: Blk := TBlkSignal.Create(index);
+  btCrossing: Blk := TBlkCrossing.Create(index);
+  btRailway: Blk := TBlkRailway.Create(index);
+  btLinker: Blk := TBlkLinker.Create(index);
+  btLock: Blk := TBlkLock.Create(index);
+  btDisconnector: Blk := TBlkDisconnector.Create(index);
+  btRT: Blk := TBlkRT.Create(index);
+  btIO: Blk := TBlkIO.Create(index);
+  btSummary: Blk := TBlkSummary.Create(index);
+  btAC: Blk := TBlkAC.Create(index);
+ else
   Exit(nil);
  end;
 
@@ -397,7 +396,7 @@ begin
 end;
 
 //Smazat blok z databaze
-procedure TBlky.Delete(index: Integer);
+procedure TBlocks.Delete(index: Integer);
 var tmp, blk: TBlk;
     i: Integer;
 begin
@@ -416,14 +415,14 @@ begin
  // pokud mazeme trat, je potreba smazat i uvazky
  if (tmp.typ = btRailway) then
   begin
-   Self.Delete(Blky.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerA));
-   Self.Delete(Blky.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerB));
+   Self.Delete(Blocks.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerA));
+   Self.Delete(Blocks.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerB));
   end;
  if (tmp.typ = btLinker) then
   begin
-   Blky.GetBlkByID((tmp as TBlkLinker).GetSettings.parent, Blk);
+   Blocks.GetBlkByID((tmp as TBlkLinker).GetSettings.parent, Blk);
    if (blk <> nil) then
-     Self.Delete(Blky.GetBlkIndex((tmp as TBlkLinker).GetSettings.parent));
+     Self.Delete(Blocks.GetBlkIndex((tmp as TBlkLinker).GetSettings.parent));
   end;
 
  FreeAndNil(tmp);
@@ -432,7 +431,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkByIndex(index: integer; var Blk: TBlk): Integer;
+function TBlocks.GetBlkByIndex(index: integer; var Blk: TBlk): Integer;
 begin
  Blk := nil;
  if ((index < 0) or (index >= Self.Data.Count)) then Exit(1);
@@ -441,7 +440,7 @@ begin
  Result := 0;
 end;
 
-function TBlky.SetBlk(index: integer; data: TBlk): Integer;
+function TBlocks.SetBlk(index: integer; data: TBlk): Integer;
 begin
  if ((index < 0) or (index >= Self.Data.Count)) then Exit(1);
  Self.Data[index] := data;
@@ -450,7 +449,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.Enable();
+procedure TBlocks.Enable();
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -460,7 +459,7 @@ begin
  BlokyTableData.UpdateTable();
 end;
 
-procedure TBlky.Disable();
+procedure TBlocks.Disable();
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -470,7 +469,7 @@ begin
  BlokyTableData.UpdateTable();
 end;
 
-procedure TBlky.Reset();
+procedure TBlocks.Reset();
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -481,7 +480,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.Update();
+procedure TBlocks.Update();
 var blk: TBlk;
 begin
  if (not Self.enabled) then Exit();
@@ -503,7 +502,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // Hledame blok se zadanym ID v seznamu bloku pomoci binarniho vyhledavani.
 
-function TBlky.GetBlkIndex(id: Integer): Integer;
+function TBlocks.GetBlkIndex(id: Integer): Integer;
 var left, right, mid: Integer;
 begin
  left  := 0;
@@ -522,7 +521,7 @@ begin
  Result := -1;
 end;
 
-function TBlky.GetBlkByID(id: integer; var Blk: TBlk): Integer;
+function TBlocks.GetBlkByID(id: integer; var Blk: TBlk): Integer;
 var index: Integer;
 begin
  Blk := nil;
@@ -535,7 +534,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
-procedure TBlky.GetORBlk(OblRizeni_id: string; conn: TIdContext);
+procedure TBlocks.GetORBlk(OblRizeni_id: string; conn: TIdContext);
 var blk: TBlk;
     obl_rizeni: TList<TOR>;
     oblr: TOR;
@@ -562,7 +561,7 @@ end;
 //kontroluje, zda-li blok s timto ID uz nahodou existuje
 //pri hledani vynechava blok s indexem index
 //true = existuje, false = neexistuje
-function TBlky.IsBlok(id: Integer; ignore_index: Integer = -1): Boolean;
+function TBlocks.IsBlok(id: Integer; ignore_index: Integer = -1): Boolean;
 var index: Integer;
 begin
  index := Self.GetBlkIndex(id);
@@ -571,7 +570,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkID(index: Integer): Integer;
+function TBlocks.GetBlkID(index: Integer): Integer;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit(-1);
  Result := Self.Data[index].id;
@@ -579,7 +578,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkName(id: Integer): string;
+function TBlocks.GetBlkName(id: Integer): string;
 var Blk: TBlk;
 begin
  Self.GetBlkByID(id, Blk);
@@ -587,7 +586,7 @@ begin
  Result := Blk.name;
 end;
 
-function TBlky.GetBlkIndexName(index: Integer): string;
+function TBlocks.GetBlkIndexName(index: Integer): string;
 begin
  if (index < 0) or (index >= Self.Data.Count) then Exit('## Blok s timto ID neexistuje ##');
  Result := Self.Data[index].name;
@@ -595,7 +594,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkSignalSelected(obl: string): TBlk;
+function TBlocks.GetBlkSignalSelected(obl: string): TBlk;
 var j: Integer;
     orindex: Integer;
     blk: TBlk;
@@ -619,7 +618,7 @@ begin
  Result := nil;
 end;
 
-function TBlky.GetBlkUsekVlakPresun(obl: string): TBlk;
+function TBlocks.GetBlkUsekVlakPresun(obl: string): TBlk;
 var j: Integer;
     orindex: Integer;
     blk: TBlk;
@@ -641,7 +640,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.OnBoosterChange(booster: string);
+procedure TBlocks.OnBoosterChange(booster: string);
 var blk: TBlk;
 begin
  if (not Self.enabled) then Exit();
@@ -655,7 +654,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // pozn.: NUZ maze soupravy z bloku
-procedure TBlky.NUZ(or_id: string; state: Boolean = true);
+procedure TBlocks.NUZ(or_id: string; state: Boolean = true);
 var traini: Integer;
     blk: TBlk;
     usek: TBlkTrack;
@@ -692,7 +691,7 @@ var traini: Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.NactiBlokyDoObjektu(CB: TComboBox; Polozky: PTArI; Vypust: PTArI; OblRizeniID: TArStr;
+procedure TBlocks.NactiBlokyDoObjektu(CB: TComboBox; Polozky: PTArI; Vypust: PTArI; OblRizeniID: TArStr;
                                     BlokTyp: TBlkType; BlokID: Integer = -1; BlokTyp2: TBlkType = btAny);
 var bloki, i: Integer;
     Priradit: Boolean;
@@ -707,9 +706,9 @@ var bloki, i: Integer;
   CB.Clear;
   CB.Enabled := true;
 
-  for bloki := 0 to Blky.count-1 do
+  for bloki := 0 to Blocks.count-1 do
    begin
-    blk := Blky[bloki];
+    blk := Blocks[bloki];
     glob := Blk.GetGlobalSettings();
 
     if ((glob.typ <> BlokTyp) and (glob.typ <> BlokTyp2)) then continue;
@@ -770,7 +769,7 @@ var bloki, i: Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.RemoveTrain(train: TTrain);
+procedure TBlocks.RemoveTrain(train: TTrain);
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -789,7 +788,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkWithTrain(train: TTrain): TBlksList;
+function TBlocks.GetBlkWithTrain(train: TTrain): TBlksList;
 var blk: TBlk;
 begin
  Result := TList<TObject>.Create();
@@ -802,7 +801,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // predpovidani soupravy na bloky v jizdni ceste
 
-procedure TBlky.TrainPrediction(signal: TBlk);
+procedure TBlocks.TrainPrediction(signal: TBlk);
 var usek, startUsek: TBlkTrack;
     trat: TBlkRailway;
     train: TTrain;
@@ -826,19 +825,19 @@ begin
    while ((JC <> nil) and (JC.typ = TJCType.vlak) and (JC.stav.RozpadBlok <= 0)) do
     begin
      // kontrola povolujici navesti
-     Blky.GetBlkByID(JC.data.NavestidloBlok, signal);
+     Blocks.GetBlkByID(JC.data.NavestidloBlok, signal);
      if ((signal = nil) or (signal.typ <> btSignal) or (not TBlkSignal(signal).IsGoSignal())) then
        train := nil;
 
      // zjistime posledni usek jizdni cesty
-     Blky.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], TBlk(usek));
+     Blocks.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], TBlk(usek));
 
      if (usek = startUsek) then Exit();
 
      if ((Usek.typ = btRT) and (TBlkRT(Usek).inRailway > -1)) then
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
-       Blky.GetBlkByID(TBlkRT(Usek).inRailway, TBlk(trat));
+       Blocks.GetBlkByID(TBlkRT(Usek).inRailway, TBlk(trat));
        if (train <> nil) then begin
          if ((trat.trainPredict = nil) or (trat.trainPredict.train <> train)) then
            trat.trainPredict := TBlkRailwayTrain.Create(train.index);
@@ -852,8 +851,8 @@ begin
        trat.UpdateTrainPredict(false);
 
        case (trat.direction) of
-        TRailwayDirection.AtoB : Blky.GetBlkByID(trat.GetSettings().trackIds[trat.GetSettings().trackIds.Count-1], TBlk(usek));
-        TRailwayDirection.BtoA : Blky.GetBlkByID(trat.GetSettings().trackIds[0], TBlk(usek));
+        TRailwayDirection.AtoB : Blocks.GetBlkByID(trat.GetSettings().trackIds[trat.GetSettings().trackIds.Count-1], TBlk(usek));
+        TRailwayDirection.BtoA : Blocks.GetBlkByID(trat.GetSettings().trackIds[0], TBlk(usek));
        end;//case
 
        // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
@@ -882,7 +881,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlky.GetBlksList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TBlksList;
+class function TBlocks.GetBlksList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TBlksList;
 begin
  Result := TList<TObject>.Create();
  if (first <> nil) then Result.Add(first);
@@ -892,7 +891,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetNavPrivol(oblR: TOR): TBlksList;
+function TBlocks.GetNavPrivol(oblR: TOR): TBlksList;
 var blk: TBlk;
     moblr: TOR;
 begin
@@ -913,7 +912,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetVyhWithZamek(zamekID: integer): TBlksList;
+function TBlocks.GetVyhWithZamek(zamekID: integer): TBlksList;
 var blk: TBlk;
 begin
  Result := TBlksList.Create();
@@ -927,7 +926,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ChangeUsekWithTrain(train: TTrain);
+procedure TBlocks.ChangeUsekWithTrain(train: TTrain);
 var Blks: TBlksList;
     i: Integer;
 begin
@@ -939,14 +938,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetCount(): Integer;
+function TBlocks.GetCount(): Integer;
 begin
  Result := Self.data.Count;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ChangeTrainToTrat(train: TTrain);
+procedure TBlocks.ChangeTrainToTrat(train: TTrain);
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -958,7 +957,7 @@ end;
 
 // najde index pro novy blok
 // casova narocnost: linearni
-function TBlky.FindPlaceForNewBlk(id: Integer): Integer;
+function TBlocks.FindPlaceForNewBlk(id: Integer): Integer;
 var i: Integer;
 begin
  i := Self.data.Count-1;
@@ -969,7 +968,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.UpdateBlkIndexes();
+procedure TBlocks.UpdateBlkIndexes();
 var i: Integer;
 begin
  for i := 0 to Self.data.Count-1 do
@@ -978,7 +977,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.BlkIDChanged(index: Integer);
+procedure TBlocks.BlkIDChanged(index: Integer);
 var new_index, min_index, i: Integer;
     tmp: TBlk;
 begin
@@ -1001,7 +1000,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.GetPtData(json: TJsonObject; includeState: Boolean; stanice: TOR = nil; typ: TBlkType = btAny);
+procedure TBlocks.GetPtData(json: TJsonObject; includeState: Boolean; stanice: TOR = nil; typ: TBlkType = btAny);
 var Blk: TBlk;
 begin
  for Blk in Self.data do
@@ -1022,7 +1021,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.NouzZaverZrusen(Sender: TBlk);
+procedure TBlocks.NouzZaverZrusen(Sender: TBlk);
 var Blk: TBlk;
 begin
  for Blk in Self.data do
@@ -1032,7 +1031,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ClearPOdj();
+procedure TBlocks.ClearPOdj();
 var Blk: TBlk;
 begin
  for Blk in Self.data do
@@ -1042,19 +1041,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetItem(i: Integer): TBlk;
+function TBlocks.GetItem(i: Integer): TBlk;
 begin
  Result := Self.data[i];
 end;
 
-function TBlky.GetEnumerator(): TEnumerator<TBlk>;
+function TBlocks.GetEnumerator(): TEnumerator<TBlk>;
 begin
  Result := Self.data.GetEnumerator();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.ZakladniPolohaVyhybek();
+procedure TBlocks.ZakladniPolohaVyhybek();
 var blk: TBlk;
  begin
   for blk in Self.data do
@@ -1066,7 +1065,7 @@ var blk: TBlk;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlky.SEPortMaxValue(addr: Integer; currentValue: Integer): Integer;
+class function TBlocks.SEPortMaxValue(addr: Integer; currentValue: Integer): Integer;
 var tmpMax: Integer;
 begin
  tmpMax := Max(Integer(RCSi.GetModuleInputsCountSafe(addr))-1, 0);
@@ -1078,7 +1077,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
+function TBlocks.AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -1089,7 +1088,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlky.OnClientDisconnect(client: TIdContext);
+procedure TBlocks.OnClientDisconnect(client: TIdContext);
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -1100,8 +1099,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 initialization
-  Blky := TBlky.Create();
+  Blocks := TBlocks.Create();
 finalization
-  FreeAndNil(Blky);
+  FreeAndNil(Blocks);
 
 end.//unit

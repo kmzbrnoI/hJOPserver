@@ -6,7 +6,7 @@ uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, TBlockSignal, IBUtils,
   fBlkNavEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
-  TBloky;
+  BlockDb;
 
 type
   TF_BlkNav = class(TForm)
@@ -91,7 +91,7 @@ uses GetSystems, FileSystem, TechnologieRCS, TBlock, TOblRizeni, DataBloky;
 procedure TF_BlkNav.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   Self.HlavniOpenForm();
 
   if (Self.NewBlk) then
@@ -105,7 +105,7 @@ procedure TF_BlkNav.OpenForm(BlokIndex: Integer);
 procedure TF_BlkNav.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
   SE_Delay.Value := TBlkSignal._SIG_DEFAULT_DELAY;
   CHB_Zamknuto.Checked := false;
   Self.L_UsekID.Caption := 'bude zobrazen příště';
@@ -198,7 +198,7 @@ var glob: TBlkSettings;
     Self.eventTabSheets.Add(ts);
    end;
 
-  Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkSignal).trackId);
+  Self.L_UsekID.Caption := Blocks.GetBlkName((Self.Blk as TBlkSignal).trackId);
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (návěstidlo)';
   Self.ActiveControl := B_Save;
@@ -215,7 +215,7 @@ procedure TF_BlkNav.HlavniOpenForm();
 procedure TF_BlkNav.NewBlkCreate();
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkNav.B_StornoClick(Sender: TObject);
@@ -286,7 +286,7 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -299,7 +299,7 @@ var glob: TBlkSettings;
       Exit;
      end;
 
-    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value), Self.Blk, TRCSIOType.output);
+    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value), Self.Blk, TRCSIOType.output);
     if (another <> nil) then
      begin
       if (Application.MessageBox(PChar('První RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
@@ -309,7 +309,7 @@ var glob: TBlkSettings;
    end;
   if (Self.CHB_RCS_Second_Output.Checked) then
    begin
-    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value), Self.Blk, TRCSIOType.output);
+    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value), Self.Blk, TRCSIOType.output);
     if (another <> nil) then
      begin
       if (Application.MessageBox(PChar('Druhá RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
@@ -337,7 +337,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btSignal, glob) as TBlkSignal;
+      Blk := Blocks.Add(btSignal, glob) as TBlkSignal;
     except
       on E: Exception do
        begin
@@ -540,12 +540,12 @@ end;
 
 procedure TF_BlkNav.SE_RCSmodule1Exit(Sender: TObject);
 begin
- Self.SE_RCSport1.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
+ Self.SE_RCSport1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
 end;
 
 procedure TF_BlkNav.SE_RCSmodule2Exit(Sender: TObject);
 begin
- Self.SE_RCSport2.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
+ Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

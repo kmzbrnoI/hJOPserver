@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils,
-  TBloky, TBlock, TBlockTrack, Generics.Collections;
+  BlockDb, TBlock, TBlockTrack, Generics.Collections;
 
 type
   TF_BlkUsek = class(TForm)
@@ -73,7 +73,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky,
 procedure TF_BlkUsek.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
   if (NewBlk) then
    begin
@@ -86,22 +86,22 @@ procedure TF_BlkUsek.OpenForm(BlokIndex: Integer);
 
 procedure TF_BlkUsek.SE_RCS_BoardExit(Sender: TObject);
 begin
- Self.SE_Port1.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
- Self.SE_Port2.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port2.Value);
- Self.SE_Port3.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port3.Value);
- Self.SE_Port4.MaxValue := TBlky.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port4.Value);
+ Self.SE_Port1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
+ Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port2.Value);
+ Self.SE_Port3.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port3.Value);
+ Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port4.Value);
 end;
 
 procedure TF_BlkUsek.NewBlkCreate;
  begin
   NewBlk := true;
-  OpenForm(Blky.count);
+  OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkUsek.NewBlkOpenForm;
  begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
   E_Delka.Text := '0';
   CHB_SmycBlok.Checked := false;
   Self.CB_Zesil.ItemIndex := -1;
@@ -278,7 +278,7 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit;
@@ -298,7 +298,7 @@ var glob: TBlkSettings;
     glob.note := '';
 
     try
-      Blk := Blky.Add(btTrack, glob) as TBlkTrack;
+      Blk := Blocks.Add(btTrack, glob) as TBlkTrack;
     except
       on E: Exception do
        begin
@@ -335,7 +335,7 @@ var glob: TBlkSettings;
 
   for addr in settings.RCSAddrs do
    begin
-    another := Blky.AnotherBlockUsesRCS(addr, Self.Blk, TRCSIOType.input);
+    another := Blocks.AnotherBlockUsesRCS(addr, Self.Blk, TRCSIOType.input);
     if (another <> nil) then
       Application.MessageBox(PChar('Varování: blok '+another.name+' využívá také RCS adresu '+IntToStr(addr.board)+':'+IntToStr(addr.port)),
                              'Varování', MB_OK OR MB_ICONWARNING);

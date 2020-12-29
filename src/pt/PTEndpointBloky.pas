@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses TBloky, PTUtils, TOblRizeni, TOblsRizeni, TBlock;
+uses BlockDb, PTUtils, TOblRizeni, TOblsRizeni, TBlock;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,7 +55,7 @@ begin
    if (params.ContainsKey('type')) then
      typ := TBlk.BlkTypeFromStr(params['type']);
 
-   Blky.GetPtData(respJson, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']), stanice, typ);
+   Blocks.GetPtData(respJson, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']), stanice, typ);
  finally
    params.Free();
  end;

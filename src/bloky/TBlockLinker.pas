@@ -106,7 +106,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Train, ownConvert,
+uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert,
     TJCDatabase, fMain, TCPServerOR, TBlockRailway, Zasobnik, TBlockTrack;
 
 constructor TBlkLinker.Create(index: Integer);
@@ -269,7 +269,7 @@ end;
 procedure TBlkLinker.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR,
-    'Zrušení zákazu odjezdu na trať', TBlky.GetBlksList(Self), nil);
+    'Zrušení zákazu odjezdu na trať', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -285,7 +285,7 @@ end;
 procedure TBlkLinker.MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR,
-    'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
+    'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
 
@@ -432,8 +432,8 @@ begin
   begin
    // zruseni ZAK je podmineno tim, ze na krajnich usecich trati nejsou zavery
    // to zajistuje, ze njelze zrusit ZAK u trati, do ktere je postaven PMD
-   Blky.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[0], Blk);
-   Blky.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[TBlkRailway(Self.parent).GetSettings().trackIds.Count-1], Blk2);
+   Blocks.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[0], Blk);
+   Blocks.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[TBlkRailway(Self.parent).GetSettings().trackIds.Count-1], Blk2);
    if ((Blk <> nil) and (Blk2 <> nil) and (TBlkTrack(Blk).Zaver = TZaver.no) and (TBlkTrack(Blk2).Zaver = TZaver.no)) then
      Result := Result + '!ZAK<,'
   end else
@@ -494,7 +494,7 @@ end;
 function TBlkLinker.GetParent(): TBlk;
 begin
  if (Self.m_parent = nil) then
-   Blky.GetBlkByID(Self.m_settings.parent, Self.m_parent);
+   Blocks.GetBlkByID(Self.m_settings.parent, Self.m_parent);
  Result := Self.m_parent;
 end;
 

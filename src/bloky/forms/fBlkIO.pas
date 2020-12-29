@@ -59,14 +59,14 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, TBloky, TBlock, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky;
 
 {$R *.dfm}
 
 procedure TF_BlkIO.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
-  Blky.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm();
 
   if (NewBlk) then
@@ -80,18 +80,18 @@ procedure TF_BlkIO.OpenForm(BlokIndex: Integer);
 
 procedure TF_BlkIO.SE_RCS_Input_ModuleExit(Sender: TObject);
 begin
- Self.SE_RCS_Input_Port.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
+ Self.SE_RCS_Input_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
 end;
 
 procedure TF_BlkIO.SE_RCS_Output_ModuleExit(Sender: TObject);
 begin
- Self.SE_RCS_Output_Port.MaxValue := TBlky.SEPortMaxValue(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
+ Self.SE_RCS_Output_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
 end;
 
 procedure TF_BlkIO.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
 
   Self.SE_RCS_Input_Module.Value := 1;
   Self.SE_RCS_Input_Port.Value := 0;
@@ -178,7 +178,7 @@ procedure TF_BlkIO.HlavniOpenForm();
 procedure TF_BlkIO.NewBlkCreate();
  begin
   NewBlk := true;
-  Self.OpenForm(Blky.count);
+  Self.OpenForm(Blocks.count);
  end;
 
 procedure TF_BlkIO.B_StornoClick(Sender: TObject);
@@ -215,7 +215,7 @@ var glob: TBlkSettings;
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
-  if (Blky.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -223,7 +223,7 @@ var glob: TBlkSettings;
 
   if (Self.CHB_RCS_Input.Checked) then
    begin
-    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value),
+    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value),
                                         Self.Blk, TRCSIOType.input);
     if (another <> nil) then
      begin
@@ -235,7 +235,7 @@ var glob: TBlkSettings;
 
   if (Self.CHB_RCS_Output.Checked) then
    begin
-    another := Blky.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value),
+    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value),
                                         Self.Blk, TRCSIOType.output);
     if (another <> nil) then
      begin
@@ -253,7 +253,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btIO, glob) as TBlkIO;
+      Blk := Blocks.Add(btIO, glob) as TBlkIO;
     except
       on E: Exception do
        begin

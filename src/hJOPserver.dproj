@@ -129,7 +129,9 @@
 				<Form>F_Console</Form>
 			</DCCReference>
 			<DCCReference Include="bloky\TBlock.pas"/>
-			<DCCReference Include="bloky\TBloky.pas"/>
+			<DCCReference Include="bloky\TBlocks.pas">
+				<ModuleName>TBloky</ModuleName>
+			</DCCReference>
 			<DCCReference Include="bloky\TBlockTurnout.pas"/>
 			<DCCReference Include="bloky\TBlockTrack.pas"/>
 			<DCCReference Include="bloky\TBlockIR.pas"/>
@@ -276,6 +278,7 @@
 			<DCCReference Include="helpers\IfThenElse.pas"/>
 			<DCCReference Include="pt\PTEndpointUsers.pas"/>
 			<DCCReference Include="pt\PTEndpointUser.pas"/>
+			<DCCReference Include="bloky\BlockDb.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

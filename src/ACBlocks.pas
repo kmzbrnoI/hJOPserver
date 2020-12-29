@@ -33,7 +33,7 @@ var
 
 implementation
 
-uses ownStrUtils, TCPServerOR, TBloky;
+uses ownStrUtils, TCPServerOR, BlockDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,7 +91,7 @@ begin
       begin
        try
          blkid := StrToInt(blk);
-         if (not Blky.IsBlok(blkid)) then
+         if (not Blocks.IsBlok(blkid)) then
            raise Exception.Create('Blok '+blk+' neexistuje');
          Self.ClientAddBlock(Sender, blkid);
          ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;'+blk+';OK');
