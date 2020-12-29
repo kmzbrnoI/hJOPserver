@@ -52,9 +52,9 @@ type
    Blk: TBlkTrack;
    OpenIndex: Integer;
 
-    procedure NewBlkOpenForm;
-    procedure NormalOpenForm;
-    procedure HlavniOpenForm;
+    procedure NewBlkOpenForm();
+    procedure NormalOpenForm();
+    procedure HlavniOpenForm();
   public
     procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkCreate;
@@ -74,14 +74,14 @@ procedure TF_BlkUsek.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  HlavniOpenForm;
+  Self.HlavniOpenForm();
+
   if (NewBlk) then
-   begin
-    NewBlkOpenForm;
-   end else begin
-    NormalOpenForm;
-   end;//else NewBlk
-  F_BlkUsek.ShowModal;
+    Self.NewBlkOpenForm()
+  else
+    Self.NormalOpenForm();
+
+  F_BlkUsek.ShowModal();
  end;
 
 procedure TF_BlkUsek.SE_RCS_BoardExit(Sender: TObject);
@@ -94,11 +94,11 @@ end;
 
 procedure TF_BlkUsek.NewBlkCreate;
  begin
-  NewBlk := true;
-  OpenForm(Blocks.count);
+  Self.NewBlk := true;
+  Self.OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkUsek.NewBlkOpenForm;
+procedure TF_BlkUsek.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -125,7 +125,7 @@ procedure TF_BlkUsek.NewBlkOpenForm;
   F_BlkUsek.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkUsek.NormalOpenForm;
+procedure TF_BlkUsek.NormalOpenForm();
 var glob: TBlkSettings;
     settings: TBlkTrackSettings;
     i: Integer;
@@ -133,8 +133,8 @@ var glob: TBlkSettings;
     oblr: TOR;
  begin
   if (Assigned(Self.Blk)) then glob := Self.Blk.GetGlobalSettings();
-  E_Nazev.Text := glob.name;
-  SE_ID.Value  := glob.id;
+  Self.E_Nazev.Text := glob.name;
+  Self.SE_ID.Value  := glob.id;
 
   for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
@@ -240,14 +240,14 @@ var glob: TBlkSettings;
 
   Self.SE_RCS_BoardExit(Self);
 
-  E_Delka.Text := FloatToStr(settings.lenght);
-  CHB_SmycBlok.Checked := settings.loop;
+  Self.E_Delka.Text := FloatToStr(settings.lenght);
+  Self.CHB_SmycBlok.Checked := settings.loop;
 
   F_BlkUsek.Caption := 'Editovat data bloku '+glob.name+' (úsek)';
   F_BlkUsek.ActiveControl := B_OK;
  end;
 
-procedure TF_BlkUsek.HlavniOpenForm;
+procedure TF_BlkUsek.HlavniOpenForm();
 var booster: TBooster;
  begin
   Self.LB_Stanice.Clear();
@@ -264,7 +264,7 @@ var booster: TBooster;
 
 procedure TF_BlkUsek.B_StornoClick(Sender: TObject);
  begin
-  F_BlkUsek.Close;
+  F_BlkUsek.Close();
  end;
 
 procedure TF_BlkUsek.B_OKClick(Sender: TObject);
@@ -289,9 +289,9 @@ var glob: TBlkSettings;
     Exit;
    end;
 
-  glob.name := E_Nazev.Text;
-  glob.id   := SE_ID.Value;
-  glob.typ  := btTrack;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
+  glob.typ := btTrack;
 
   if (NewBlk) then
    begin
@@ -322,9 +322,9 @@ var glob: TBlkSettings;
   if (Self.CHB_D4.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
 
-  settings.lenght  := StrToFloatDef(Self.E_Delka.Text,0);
+  settings.lenght := StrToFloatDef(Self.E_Delka.Text,0);
   settings.loop := Self.CHB_SmycBlok.Checked;
-  settings.boosterId   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
+  settings.boosterId  := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
 
   settings.houkEvL := Self.Blk.GetSettings().houkEvL;
   settings.houkEvS := Self.Blk.GetSettings().houkEvS;
@@ -347,8 +347,8 @@ var glob: TBlkSettings;
 
 procedure TF_BlkUsek.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  OpenIndex  := -1;
-  NewBlk     := false;
+  Self.OpenIndex := -1;
+  Self.NewBlk := false;
   BlokyTableData.UpdateTable();
  end;
 
@@ -356,22 +356,22 @@ procedure TF_BlkUsek.CHB_D1Click(Sender: TObject);
  begin
   case ((Sender as TCheckBox).Tag) of
    1: begin
-    Self.SE_Port1.Enabled  := (Sender as TCheckBox).Checked;
+    Self.SE_Port1.Enabled := (Sender as TCheckBox).Checked;
     Self.SE_Board1.Enabled := (Sender as TCheckBox).Checked;
    end;
 
    2: begin
-    Self.SE_Port2.Enabled  := (Sender as TCheckBox).Checked;
+    Self.SE_Port2.Enabled := (Sender as TCheckBox).Checked;
     Self.SE_Board2.Enabled := (Sender as TCheckBox).Checked;
    end;
 
    3: begin
-    Self.SE_Port3.Enabled  := (Sender as TCheckBox).Checked;
+    Self.SE_Port3.Enabled := (Sender as TCheckBox).Checked;
     Self.SE_Board3.Enabled := (Sender as TCheckBox).Checked;
    end;
 
    4: begin
-    Self.SE_Port4.Enabled  := (Sender as TCheckBox).Checked;
+    Self.SE_Port4.Enabled := (Sender as TCheckBox).Checked;
     Self.SE_Board4.Enabled := (Sender as TCheckBox).Checked;
    end;
   end;//case

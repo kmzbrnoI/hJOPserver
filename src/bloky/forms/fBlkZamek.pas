@@ -31,7 +31,7 @@ type
    procedure NewBlkOpenForm();
    procedure NormalOpenForm();
    procedure HlavniOpenForm();
-   procedure NewBlkCreate;
+   procedure NewBlkCreate();
   end;
 
 var
@@ -45,29 +45,28 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRize
 
 procedure TF_BlkZamek.OpenForm(BlokIndex: Integer);
  begin
-  OpenIndex := BlokIndex;
+  Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  HlavniOpenForm;
+  Self.HlavniOpenForm();
 
   if (NewBlk) then
-   begin
-    NewBlkOpenForm;
-   end else begin
-    NormalOpenForm;
-   end;
-  Self.ShowModal;
+    Self.NewBlkOpenForm()
+  else
+    Self.NormalOpenForm();
+
+  Self.ShowModal();
  end;
 
-procedure TF_BlkZamek.NewBlkOpenForm;
+procedure TF_BlkZamek.NewBlkOpenForm();
  begin
-  E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  Self.E_Nazev.Text := '';
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
 
   Self.Caption := 'Editovat data nového bloku';
   Self.ActiveControl := Self.E_Nazev;
  end;
 
-procedure TF_BlkZamek.NormalOpenForm;
+procedure TF_BlkZamek.NormalOpenForm();
 var glob: TBlkSettings;
     oblr: TOR;
  begin
@@ -76,8 +75,8 @@ var glob: TBlkSettings;
   for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
-  E_Nazev.Text          := glob.name;
-  SE_ID.Value           := glob.id;
+  Self.E_Nazev.Text := glob.name;
+  Self.SE_ID.Value := glob.id;
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (zámek)';
   Self.ActiveControl := Self.B_Save;
@@ -140,9 +139,9 @@ var glob: TBlkSettings;
 
 procedure TF_BlkZamek.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
-  NewBlk := false;
-  OpenIndex := -1;
-  BlokyTableData.UpdateTable;
+  Self.NewBlk := false;
+  Self.OpenIndex := -1;
+  BlokyTableData.UpdateTable();
  end;
 
 end.//unit
