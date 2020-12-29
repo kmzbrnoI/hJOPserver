@@ -335,7 +335,7 @@ type
       procedure ClientDisconnect(AContext: TIDContext);
 
       procedure GetPtData(json: TJsonObject; includeStaveni: Boolean);
-      procedure GetPtStaveni(json: TJsonObject);
+      procedure GetPtState(json: TJsonObject);
       procedure PostPtStav(reqJson: TJsonObject; respJson: TJsonObject);
 
       property data: TJCprop read fproperties write SetProperties;
@@ -3952,58 +3952,58 @@ var vyhZaver: TJCVyhZaver;
 begin
  json['name'] := Self.fproperties.name;
  json['id'] := Self.fproperties.id;
- json['navId'] := Self.fproperties.navestidloBlok;
+ json['signalId'] := Self.fproperties.navestidloBlok;
  case (Self.typ) of
-  TJCType.vlak: json['typ'] := 'VC';
-  TJCType.posun: json['typ'] := 'PC';
+  TJCType.vlak: json['type'] := 'VC';
+  TJCType.posun: json['type'] := 'PC';
  end;
  case (Self.fproperties.dalsiNavaznost) of
-  TJCNextNavType.zadna: json['dalsiNav'] := '-';
-  TJCNextNavType.trat: json['dalsiNav'] := 'trat';
+  TJCNextNavType.zadna: json['nextSignal'] := '-';
+  TJCNextNavType.trat: json['nextSignal'] := 'trat';
   TJCNextNavType.blok: begin
-    json['dalsiNav'] := 'blok';
-    json['dalsiNavId'] := Self.fproperties.dalsiNavestidlo;
+    json['nextSignal'] := 'block';
+    json['nextSignalId'] := Self.fproperties.dalsiNavestidlo;
   end;
  end;
 
  for vyhZaver in Self.fproperties.vyhybky do
   begin
-   newObj := json.A['vyhybky'].AddObject();
-   newObj['blok'] := vyhZaver.Blok;
+   newObj := json.A['turnouts'].AddObject();
+   newObj['block'] := vyhZaver.Blok;
    case (vyhZaver.Poloha) of
-    TTurnoutPosition.plus: newObj['poloha'] := '+';
-    TTurnoutPosition.minus: newObj['poloha'] := '-';
+    TTurnoutPosition.plus: newObj['position'] := '+';
+    TTurnoutPosition.minus: newObj['position'] := '-';
    end;
   end;
 
  for usek in Self.fproperties.useky do
-   json.A['useky'].Add(usek);
+   json.A['tracks'].Add(usek);
 
  for odvratZaver in Self.fproperties.odvraty do
   begin
-   newObj := json.A['odvraty'].AddObject();
-   newObj['blok'] := odvratZaver.Blok;
+   newObj := json.A['refuges'].AddObject();
+   newObj['block'] := odvratZaver.Blok;
    case (odvratZaver.Poloha) of
-    TTurnoutPosition.plus: newObj['poloha'] := '+';
-    TTurnoutPosition.minus: newObj['poloha'] := '-';
+    TTurnoutPosition.plus: newObj['position'] := '+';
+    TTurnoutPosition.minus: newObj['position'] := '-';
    end;
-   newObj['refBlk'] := odvratZaver.ref_blk;
+   newObj['refBlock'] := odvratZaver.ref_blk;
   end;
 
  for prjZaver in Self.fproperties.prejezdy do
   begin
-   newObj := json.A['prejezdy'].AddObject();
-   newObj['prejezd'] := prjZaver.Prejezd;
-   newObj['oteviraci'] := prjZaver.oteviraci;
+   newObj := json.A['crossings'].AddObject();
+   newObj['crossing'] := prjZaver.Prejezd;
+   newObj['open'] := prjZaver.oteviraci;
    for usek in prjZaver.uzaviraci do
-     newObj.A['uzaviraci'].Add(usek);
+     newObj.A['close'].Add(usek);
   end;
 
  for refZaver in Self.fproperties.zamky do
   begin
-   newObj := json.A['zamky'].AddObject();
-   newObj['zamek'] := refZaver.Blok;
-   newObj['refUsek'] := refZaver.ref_blk;
+   newObj := json.A['locks'].AddObject();
+   newObj['lock'] := refZaver.Blok;
+   newObj['refTrack'] := refZaver.ref_blk;
   end;
 
  for usek in Self.fproperties.vb do
@@ -4011,25 +4011,25 @@ begin
 
  if (Self.fproperties.Trat <> -1) then
   begin
-   json['trat'] := Self.fproperties.Trat;
-   json['tratSmer'] := Integer(Self.fproperties.TratSmer);
+   json['railway'] := Self.fproperties.Trat;
+   json['railwayDir'] := Integer(Self.fproperties.TratSmer);
   end;
 
  json['speedGo'] := Self.fproperties.speedGo;
  json['speedStop'] := Self.fproperties.speedStop;
- json['odbocka'] := Self.fproperties.odbocka;
+ json['turn'] := Self.fproperties.odbocka;
 
  if (includeStaveni) then
-   Self.GetPtStaveni(json['staveni']);
+   Self.GetPtState(json['state']);
 end;
 
-procedure TJC.GetPtStaveni(json: TJsonObject);
+procedure TJC.GetPtState(json: TJsonObject);
 begin
- json['staveni'] := Self.staveni;
- json['postaveno'] := Self.postaveno;
- json['krok'] := Self.fstaveni.krok;
- json['rozpadBlok'] := Self.fstaveni.rozpadBlok;
- json['rozpadRuseniBlok'] := Self.fstaveni.rozpadRuseniBlok;
+ json['activating'] := Self.staveni;
+ json['active'] := Self.postaveno;
+ json['step'] := Self.fstaveni.krok;
+ json['destroyBlock'] := Self.fstaveni.rozpadBlok;
+ json['destroyEndBlock'] := Self.fstaveni.rozpadRuseniBlok;
  json['ab'] := Self.AB;
 end;
 
