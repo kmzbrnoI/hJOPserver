@@ -241,16 +241,16 @@ begin
           RCSi.SetInput(vyh.rcsInMinus, 0)
          else
           RCSi.SetInput(vyh.rcsInPlus, 0);
-        end;//if koncova poloha
+        end;
 
        // po 3 sekundach oznamime koncovou polohu
        if (vyh.state.movingStart+EncodeTime(0, 0, 3, 0) < Now) then
         begin
          if (vyh.movingMinus) then
-          RCSi.SetInput(vyh.rcsInPlus, 1)
+          RCSi.SetInput(vyh.rcsInMinus, 1)
          else
-          RCSi.SetInput(vyh.rcsInMinus, 1);
-        end;//if koncova poloha
+          RCSi.SetInput(vyh.rcsInPlus, 1);
+        end;
       end;
     end;
  except
