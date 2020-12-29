@@ -1,10 +1,10 @@
-unit TBlockIR;
+unit BlockIR;
 
 { IR technological block definition. }
 
 interface
 
-uses IniFiles, TBlock, JsonDataObjects, TechnologieRCS;
+uses IniFiles, Block, JsonDataObjects, TechnologieRCS;
 
 type
  TIROccupationState = (disabled = -5, none = -1, free = 0, occupied = 1);

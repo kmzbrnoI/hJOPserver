@@ -2,7 +2,7 @@
 
 interface
 
-uses Generics.Collections, TOblRizeni, TBlock, Classes, Train, User,
+uses Generics.Collections, TOblRizeni, Block, Classes, Train, User,
      THnaciVozidlo, IdContext, SysUtils;
 
 type

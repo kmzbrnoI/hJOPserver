@@ -1,10 +1,10 @@
-unit TBlockDisconnector;
+unit BlockDisconnector;
 
 { DISCONNECTOR technological blokc definition }
 
 interface
 
-uses IniFiles, TBlock, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
+uses IniFiles, Block, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
      IdContext, TOblRizeni, TechnologieRCS;
 
 type

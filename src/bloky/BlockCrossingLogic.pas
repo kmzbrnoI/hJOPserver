@@ -1,8 +1,8 @@
-unit TBlockCrossingLogic;
+unit BlockCrossingLogic;
 
 interface
 
-uses Generics.Collections, TBlockTrackRefs, IniFiles, Classes, SysUtils, StrUtils;
+uses Generics.Collections, BlockTrackRefs, IniFiles, Classes, SysUtils, StrUtils;
 
 type
  TBlkCrossingTrackState = (
@@ -81,7 +81,7 @@ type
 
 implementation
 
-uses TBlockTrack;
+uses BlockTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 

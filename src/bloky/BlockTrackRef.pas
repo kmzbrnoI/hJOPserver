@@ -1,4 +1,4 @@
-unit TBlockTrackRef;
+unit BlockTrackRef;
 
 {
  This unit implements TBlkUsekRef class, which holds reference to a section
@@ -7,7 +7,7 @@ unit TBlockTrackRef;
 
 interface
 
-uses TBlock, TBlockTrack, Classes, SysUtils;
+uses Block, BlockTrack, Classes, SysUtils;
 
 type
 

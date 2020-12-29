@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Spin, ComCtrls, TBlockRailway, TBlockLinker, Generics.Collections, BlockDb;
+  StdCtrls, Spin, ComCtrls, BlockRailway, BlockLinker, Generics.Collections, BlockDb;
 
 type
   TF_BlkTrat = class(TForm)
@@ -67,7 +67,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, TBlock, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, Block, TOblRizeni;
 
 {$R *.dfm}
 

@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses BlockDb, TBlock, TBlockIR, TBlockTrack, ownConvert;
+uses BlockDb, Block, BlockIR, BlockTrack, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 

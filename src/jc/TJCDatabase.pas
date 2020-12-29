@@ -6,8 +6,8 @@
 
 interface
 
-uses TechnologieJC, TBlock, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, IBUtils, BlockDb, TBlockSignal;
+uses TechnologieJC, Block, IniFiles, SysUtils, Windows, IdContext,
+      Generics.Collections, Classes, IBUtils, BlockDb, BlockSignal;
 
 type
   EJCIdAlreadyExists = class(Exception);
@@ -91,9 +91,9 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBlockTrack, TOblRizeni, TCPServerOR, TBlockRailway,
-      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlockTurnout,
-      TBlockRailwayTrack;
+uses Logging, GetSystems, BlockTrack, TOblRizeni, TCPServerOR, BlockRailway,
+      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, BlockTurnout,
+      BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TJCDb

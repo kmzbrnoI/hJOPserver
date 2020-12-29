@@ -1,10 +1,10 @@
-unit TBlockSummary;
+unit BlockSummary;
 
 { SUMMARY technological block definition. (Souètová hláska) }
 
 interface
 
-uses IniFiles, TBlock, Menus, SysUtils, Classes, IdContext, Generics.Collections,
+uses IniFiles, Block, Menus, SysUtils, Classes, IdContext, Generics.Collections,
      TOblRizeni, TCPServerOR;
 
 type
@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses TBlockCrossing, BlockDb, TOblsRizeni, Graphics, ownConvert;
+uses BlockCrossing, BlockDb, TOblsRizeni, Graphics, ownConvert;
 
 constructor TBlkSummary.Create(index: Integer);
 begin

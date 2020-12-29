@@ -2,7 +2,7 @@ unit Simulation;
 
 interface
 
-uses TechnologieJC, ExtCtrls, TBlockRailway, SysUtils;
+uses TechnologieJC, ExtCtrls, BlockRailway, SysUtils;
 
 type
   TJCSimulator = class
@@ -50,8 +50,8 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TJCDatabase, TBlock, TBlockTrack, BlockDb, TBlockSignal,
-     TBlockRailwayTrack, TBlockTurnout;
+uses GetSystems, TechnologieRCS, TJCDatabase, Block, BlockTrack, BlockDb, BlockSignal,
+     BlockRailwayTrack, BlockTurnout;
 
 ////////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani useku v jizdni ceste

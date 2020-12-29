@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses TBlockTurnout, TJCDatabase, TechnologieJC, TBlock, BlockDb, fMain, ownConvert;
+uses BlockTurnout, TJCDatabase, TechnologieJC, Block, BlockDb, fMain, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 

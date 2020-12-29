@@ -35,8 +35,8 @@ var ceCaller: TChangeEventCaller;
 
 implementation
 
-uses BlockDb, TBlock, TBlockTrack, TBlockTurnout, TBlokZamek, TBlockCrossing,
-     TBlockRailway;
+uses BlockDb, Block, BlockTrack, BlockTurnout, BlokZamek, BlockCrossing,
+     BlockRailway;
 
 ////////////////////////////////////////////////////////////////////////////////
 

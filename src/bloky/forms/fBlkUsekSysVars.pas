@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, BlockDb, TBlock, TBlockTrack, Spin;
+  Dialogs, StdCtrls, ExtCtrls, BlockDb, Block, BlockTrack, Spin;
 
 type
   TF_BlkUsek_tech = class(TForm)

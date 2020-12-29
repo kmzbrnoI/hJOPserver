@@ -1,10 +1,10 @@
-unit TBlockAC;
+unit BlockAC;
 
 // definice a obsluha technologickeho bloku AC
 
 interface
 
-uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
+uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
      Generics.Collections, TOblRizeni, Graphics;
 
 type
@@ -109,7 +109,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, ownConvert, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlockTurnout,
+    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, BlockTurnout,
     TCPServerPT, ownStrUtils;
 
 constructor TBlkAC.Create(index: Integer);

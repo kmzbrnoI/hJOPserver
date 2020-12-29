@@ -11,7 +11,7 @@
 interface
 
 uses
-  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, TBlockTrack,
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, BlockTrack,
   fhoukEvs, StdCtrls, ExtCtrls;
 
 type

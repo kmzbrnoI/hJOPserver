@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils,
-  BlockDb, TBlock, TBlockTrack, Generics.Collections;
+  BlockDb, Block, BlockTrack, Generics.Collections;
 
 type
   TF_BlkUsek = class(TForm)

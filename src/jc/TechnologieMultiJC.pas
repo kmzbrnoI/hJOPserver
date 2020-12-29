@@ -8,7 +8,7 @@ interface
 
 uses
   IniFiles, TechnologieJC, Generics.Collections, BlockDb, IdContext, SysUtils,
-  Classes, Generics.Defaults, Math, TBlock, TBlockSignal;
+  Classes, Generics.Defaults, Math, Block, BlockSignal;
 
 type
 
@@ -73,7 +73,7 @@ type
 
 implementation
 
-uses TJCDatabase, TBlockTrack, TOblRizeni;
+uses TJCDatabase, BlockTrack, TOblRizeni;
 
 ////////////////////////////////////////////////////////////////////////////////
 

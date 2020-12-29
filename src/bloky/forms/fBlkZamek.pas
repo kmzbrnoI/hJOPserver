@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, TBlokZamek;
+  Dialogs, ExtCtrls, StdCtrls, Spin, BlokZamek;
 
 type
   TF_BlkZamek = class(TForm)
@@ -39,7 +39,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRizeni;
 
 {$R *.dfm}
 

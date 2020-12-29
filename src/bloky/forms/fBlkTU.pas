@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, BlockDb, TBlock, Mask,
-  TBlockRailwayTrack, StrUtils, TBlockTrack, fBlkTUZastEvent, Generics.Collections;
+  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, BlockDb, Block, Mask,
+  BlockRailwayTrack, StrUtils, BlockTrack, fBlkTUZastEvent, Generics.Collections;
 
 type
   TF_BlkTU = class(TForm)

@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses BlockDb, PTUtils, TOblRizeni, TOblsRizeni, TBlock;
+uses BlockDb, PTUtils, TOblRizeni, TOblsRizeni, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 

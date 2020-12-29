@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlockIO, Generics.Collections,
+  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, BlockIO, Generics.Collections,
   IBUtils;
 
 type
@@ -59,7 +59,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 
 {$R *.dfm}
 

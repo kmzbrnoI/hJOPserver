@@ -1,10 +1,10 @@
-﻿unit TBlockLinker;
+﻿unit BlockLinker;
 
 { LINKER technological block definition. (úvazka) }
 
 interface
 
-uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes,
+uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes,
      IdContext, StrUtils, TOblRizeni, Generics.Collections;
 
 type
@@ -107,7 +107,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, TBlockRailway, Zasobnik, TBlockTrack;
+    TJCDatabase, fMain, TCPServerOR, BlockRailway, Zasobnik, BlockTrack;
 
 constructor TBlkLinker.Create(index: Integer);
 begin

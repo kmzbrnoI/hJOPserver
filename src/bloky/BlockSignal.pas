@@ -1,10 +1,10 @@
-﻿unit TBlockSignal;
+﻿unit BlockSignal;
 
 { SIGNAL technological block definition. }
 
 interface
 
-uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
+uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
       TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Train, JclPCRE;
 
@@ -273,9 +273,9 @@ type
 
 implementation
 
-uses BlockDb, TBlockTrack, TJCDatabase, TCPServerOR, Graphics,
-     GetSystems, Logging, TrainDb, TBlockIR, Zasobnik, ownStrUtils,
-     TBlockRailwayTrack, TBlockRailway, TBlockTurnout, TBlokZamek, TechnologieAB,
+uses BlockDb, BlockTrack, TJCDatabase, TCPServerOR, Graphics,
+     GetSystems, Logging, TrainDb, BlockIR, Zasobnik, ownStrUtils,
+     BlockRailwayTrack, BlockRailway, BlockTurnout, BlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
 constructor TBlkSignal.Create(index: Integer);

@@ -40,8 +40,8 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
-  Dialogs, Menus, Buttons, ComCtrls, fMain, BlockDb, TBlock, IbUtils, Train,
-  IniFiles, IdContext, TBlockRailway, Generics.Collections, UPO, TBlockTurnout,
+  Dialogs, Menus, Buttons, ComCtrls, fMain, BlockDb, Block, IbUtils, Train,
+  IniFiles, IdContext, BlockRailway, Generics.Collections, UPO, BlockTurnout,
   TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 
 const
@@ -362,9 +362,9 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, THnaciVozidlo, TBlockSignal, TBlockTrack, TOblsRizeni,
-     TBlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
-     THVDatabase, Zasobnik, TBlockLinker, TBlokZamek, TBlockRailwayTrack;
+uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, TOblsRizeni,
+     BlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
+     THVDatabase, Zasobnik, BlockLinker, BlokZamek, BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 

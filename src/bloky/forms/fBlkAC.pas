@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, TBlockAC;
+  Dialogs, ExtCtrls, StdCtrls, Spin, BlockAC;
 
 type
   TF_BlkAC = class(TForm)
@@ -43,7 +43,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky, TOblRizeni,
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRizeni,
      ownStrUtils;
 
 {$R *.dfm}

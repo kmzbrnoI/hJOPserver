@@ -1,4 +1,4 @@
-﻿unit TBlockRailway;
+﻿unit BlockRailway;
 
 {
  RAILWAY technological block definition (trať).
@@ -10,7 +10,7 @@
 
 interface
 
-uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes, JsonDataObjects,
+uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, JsonDataObjects,
      Generics.Collections, Train;
 
 type
@@ -192,9 +192,9 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, TOblRizeni, TBlockSignal, Logging,
-    TJCDatabase, fMain, TCPServerOR, TBlockTrack, TBlockLinker, TrainDb, THVDatabase,
-    TBlockRailwayTrack, appEv, timeHelper, ownConvert, Graphics;
+uses GetSystems, TechnologieRCS, BlockDb, TOblRizeni, BlockSignal, Logging,
+    TJCDatabase, fMain, TCPServerOR, BlockTrack, BlockLinker, TrainDb, THVDatabase,
+    BlockRailwayTrack, appEv, timeHelper, ownConvert, Graphics;
 
 constructor TBlkRailway.Create(index: Integer);
 begin

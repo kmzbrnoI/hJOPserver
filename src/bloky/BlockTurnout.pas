@@ -1,10 +1,10 @@
-﻿unit TBlockTurnout;
+﻿unit BlockTurnout;
 
 { TURNOUT technological block definition. }
 
 interface
 
-uses IniFiles, TBlock, SysUtils, TBlockTrack, Menus, TOblsRizeni,
+uses IniFiles, Block, SysUtils, BlockTrack, Menus, TOblsRizeni,
      Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
      TOblRizeni, TechnologieRCS;
 
@@ -260,7 +260,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
-      TCPServerOR, TBlokZamek, PTUtils, changeEvent, TCPORsRef, ownConvert,
+      TCPServerOR, BlokZamek, PTUtils, changeEvent, TCPORsRef, ownConvert,
       IfThenElse;
 
 constructor TBlkTurnout.Create(index: Integer);

@@ -489,16 +489,16 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, BlockDb,
-     TBlock, TBlockTrack, TBlockTurnout, TBlockSignal, TBlockIR, TOblRizeni,
-     SnadnSpusteni, TBlockSummary, TBlockCrossing, TJCDatabase, Logging,
+     Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, TOblRizeni,
+     SnadnSpusteni, BlockSummary, BlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
-     fBlkNav, fBlkTrat, TBlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
-     fBlkVyhybkaSysVars, fBlkTratSysVars, TBlockRailway, ModelovyCas, fBlkZamek,
-     TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlockDisconnector,
+     fBlkNav, fBlkTrat, BlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
+     fBlkVyhybkaSysVars, fBlkTratSysVars, BlockRailway, ModelovyCas, fBlkZamek,
+     BlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
-     AppEv, fBlkIO, TBlockIO, TCPServerPT, RCSErrors, TechnologieAB,
-     Diagnostics, TBlockAC, fBlkAC;
+     AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB,
+     Diagnostics, BlockAC, fBlkAC;
 
 {$R *.dfm}
 

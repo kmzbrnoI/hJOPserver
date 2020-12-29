@@ -26,7 +26,7 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, BlockDb, TBlock;
+uses PTUtils, JclPCRE, BlockDb, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 

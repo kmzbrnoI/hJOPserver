@@ -1,10 +1,10 @@
-﻿unit TBlockTrack;
+﻿unit BlockTrack;
 
 { TRACK technological block definition. }
 
 interface
 
-uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
+uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
      IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, Train,
      stanicniHlaseni, changeEvent, predvidanyOdjezd, TechnologieRCS;
 
@@ -282,9 +282,9 @@ type
 
 implementation
 
-uses GetSystems, BlockDb, TBlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, TBlockRailway, TrainDb, THVDatabase, Math,
-    Trakce, THnaciVozidlo, TBlockRailwayTrack, BoosterDb, appEv,
+uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
+    TJCDatabase, fMain, TCPServerOR, BlockRailway, TrainDb, THVDatabase, Math,
+    Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
 

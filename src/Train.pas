@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, JsonDataObjects,
-     Generics.Collections, predvidanyOdjezd, TBlock, Trakce;
+     Generics.Collections, predvidanyOdjezd, Block, Trakce;
 
 const
   _MAX_TRAIN_HV = 4;
@@ -158,9 +158,9 @@ type
 
 implementation
 
-uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlockTrack, DataSpr, appEv,
-      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, BlockDb, TBlockSignal,
-      fRegulator, fMain, TBlockRailwayTrack, stanicniHlaseniHelper, stanicniHlaseni,
+uses THVDatabase, Logging, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
+      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, BlockDb, BlockSignal,
+      fRegulator, fMain, BlockRailwayTrack, stanicniHlaseniHelper, stanicniHlaseni,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, TBlockDisconnector, Generics.Collections, IBUtils;
+  Dialogs, ExtCtrls, StdCtrls, Spin, BlockDisconnector, Generics.Collections, IBUtils;
 
 type
   TF_BlkRozp = class(TForm)
@@ -45,7 +45,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRizeni;
 
 {$R *.dfm}
 

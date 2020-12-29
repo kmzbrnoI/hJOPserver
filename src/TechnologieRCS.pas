@@ -132,8 +132,8 @@ var
 
 implementation
 
-uses fMain, diagnostics, GetSystems, BlockDb, TBlock, TBlockTurnout, TBlockTrack,
-     BoosterDb, TBlockCrossing, RCSErrors, TOblsRizeni,
+uses fMain, diagnostics, GetSystems, BlockDb, Block, BlockTurnout, BlockTrack,
+     BoosterDb, BlockCrossing, RCSErrors, TOblsRizeni,
      Logging, TCPServerOR, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
 constructor TRCS.Create();

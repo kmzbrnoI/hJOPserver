@@ -49,7 +49,7 @@ type
 implementation
 
 uses PTUtils, JclPCRE, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, BlockDb,
-      TBlock, TBlockTrack, TechnologieTrakce;
+      Block, BlockTrack, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 

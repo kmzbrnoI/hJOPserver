@@ -1,12 +1,12 @@
-﻿unit TBlockCrossing;
+﻿unit BlockCrossing;
 
 // definice a obsluha technologickeho bloku Prejezd
 
 interface
 
-uses IniFiles, TBlock, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
+uses IniFiles, Block, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
      IdContext, TOblRizeni, Generics.Collections, JsonDataObjects,
-     TBlockCrossingLogic;
+     BlockCrossingLogic;
 
 type
  TBlkCrossingRCSInputs = record

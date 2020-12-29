@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses TechnologieRCS, BlockDb, ownConvert, RCS, TBlockAC, TBlock;
+uses TechnologieRCS, BlockDb, ownConvert, RCS, BlockAC, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 

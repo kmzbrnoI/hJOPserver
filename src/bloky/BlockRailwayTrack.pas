@@ -1,4 +1,4 @@
-﻿unit TBlockRailwayTrack;
+﻿unit BlockRailwayTrack;
 
 { RAILWAY TRACK technological block definition. }
 
@@ -41,7 +41,7 @@ Jak to funguje:
 
 interface
 
-uses TBlockTrack, Classes, TBlock, IniFiles, SysUtils, IdContext, rrEvent,
+uses BlockTrack, Classes, Block, IniFiles, SysUtils, IdContext, rrEvent,
       Generics.Collections, TOblRizeni, THnaciVozidlo, Train, JclPCRE;
 
 type
@@ -234,7 +234,7 @@ type
 
 implementation
 
-uses TrainDb, BlockDb, TCPServerOR, TBlockRailway, TBlockSignal, TJCDatabase,
+uses TrainDb, BlockDb, TCPServerOR, BlockRailway, BlockSignal, TJCDatabase,
      logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////

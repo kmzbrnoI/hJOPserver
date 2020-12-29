@@ -1,10 +1,10 @@
-﻿unit TBlokZamek;
+﻿unit BlokZamek;
 
 { LOCK technological block definition. }
 
 interface
 
-uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
+uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
      Generics.Collections, TOblRizeni, JsonDataObjects;
 
 type
@@ -96,7 +96,7 @@ type
 implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlockTurnout;
+    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, BlockTurnout;
 
 constructor TBlkLock.Create(index: Integer);
 begin

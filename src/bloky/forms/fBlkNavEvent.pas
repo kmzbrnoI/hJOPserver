@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, Spin,
-  TBlockSignal, TOblsRizeni, BlockDb, ExtCtrls, frrEv;
+  BlockSignal, TOblsRizeni, BlockDb, ExtCtrls, frrEv;
 
 type
   TF_BlkNavEvent = class(TForm)

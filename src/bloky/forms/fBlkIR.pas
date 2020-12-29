@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, Spin, fMain, TBlockIR, Generics.Collections, IBUtils;
+  ExtCtrls, StdCtrls, Spin, fMain, BlockIR, Generics.Collections, IBUtils;
 
 type
   TF_BlkIR = class(TForm)
@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, TBlock, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 
 {$R *.dfm}
 

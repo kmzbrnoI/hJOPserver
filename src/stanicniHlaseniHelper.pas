@@ -6,7 +6,7 @@ unit stanicniHlaseniHelper;
 
 interface
 
-uses Train, TOblRizeni, Generics.Collections, TBlockTrack, TBlockRailway;
+uses Train, TOblRizeni, Generics.Collections, BlockTrack, BlockRailway;
 
 type
   // jaka stanicni hlaseni prehrat
@@ -30,7 +30,7 @@ function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
 
 implementation
 
-uses BlockDb, TBlock, TBlockRailwayTrack;
+uses BlockDb, Block, BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 

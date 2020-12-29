@@ -13,7 +13,7 @@
 
 interface
 
-uses IniFiles, TBlock, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
+uses IniFiles, Block, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
      Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
      JsonDataObjects, Train;
 
@@ -137,10 +137,10 @@ var
 
 implementation
 
-uses TBlockTurnout, TBlockTrack, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
-     TBlokZamek, TJCDatabase, Logging, TBlockRailway, TBlockLinker, TBlockAC,
-     DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlockDisconnector,
-     TBlockRailwayTrack, appEv, TBlockIO, PTUtils, TBlockSummary,
+uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
+     BlokZamek, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
+     DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, BlockDisconnector,
+     BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
      TechnologieAB, ACBlocks;
 
 ////////////////////////////////////////////////////////////////////////////////

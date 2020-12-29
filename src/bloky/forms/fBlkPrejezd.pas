@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, Spin, StdCtrls, TBlockCrossing, BlockDb, Generics.Collections, IBUtils,
-  TBlockCrossingLogic, Mask, StrUtils;
+  ExtCtrls, Spin, StdCtrls, BlockCrossing, BlockDb, Generics.Collections, IBUtils,
+  BlockCrossingLogic, Mask, StrUtils;
 
 type
   TF_BlkPrejezd = class(TForm)
@@ -100,7 +100,7 @@ var
 implementation
 
 uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni,
-     TBlock, FileSystem, DataBloky;
+     Block, FileSystem, DataBloky;
 
 {$R *.dfm}
 

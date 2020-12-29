@@ -51,7 +51,7 @@ type
 
 implementation
 
-uses ownStrUtils, TechnologieTrakce, Train, TBlockTrack, TrainDb, fMain,
+uses ownStrUtils, TechnologieTrakce, Train, BlockTrack, TrainDb, fMain,
      THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////

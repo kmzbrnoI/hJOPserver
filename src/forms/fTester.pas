@@ -62,7 +62,7 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS, TBlockSignal, RCSErrors;
+uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors;
 
 {$R *.dfm}
 

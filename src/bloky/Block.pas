@@ -1,4 +1,4 @@
-﻿unit TBlock;
+unit Block;
 
 { TBlk abstract class definition.
   TBlk is abstract class for rechnological blocks. }

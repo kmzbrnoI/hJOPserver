@@ -1,4 +1,4 @@
-unit TBlockIO;
+unit BlockIO;
 
 {
   IO technological block definition.
@@ -10,7 +10,7 @@ unit TBlockIO;
 
 interface
 
-uses IniFiles, TBlock, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
+uses IniFiles, Block, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
      Graphics, JsonDataObjects, RCSErrors, RCS;
 
 type

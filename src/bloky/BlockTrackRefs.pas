@@ -1,4 +1,4 @@
-unit TBlockTrackRefs;
+unit BlockTrackRefs;
 
 {
  This unit implements TBlkUsekRefs class, which holds list of TBlkUsekRef.
@@ -6,7 +6,7 @@ unit TBlockTrackRefs;
 
 interface
 
-uses TBlockTrackRef, Generics.Collections, Classes, TBlockTrack, StrUtils;
+uses BlockTrackRef, Generics.Collections, Classes, BlockTrack, StrUtils;
 
 type
 

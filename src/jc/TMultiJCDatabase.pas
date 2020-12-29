@@ -7,8 +7,8 @@
 
 interface
 
-uses TechnologieMultiJC, TBlock, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, Generics.Defaults, TBlockSignal;
+uses TechnologieMultiJC, Block, IniFiles, SysUtils, Windows, IdContext,
+      Generics.Collections, Classes, Generics.Defaults, BlockSignal;
 
 type
   MutiJCExistsException = class(Exception);
@@ -60,7 +60,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, BlockDb, TBlockTrack, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, BlockDb, BlockTrack, TOblRizeni, TCPServerOR,
       DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@ interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
-     IdContext, TBlock, ComCtrls, IdSync, BlockDb, UPO, TCPORsRef,
+     IdContext, Block, ComCtrls, IdSync, BlockDb, UPO, TCPORsRef,
      User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
@@ -156,11 +156,11 @@ var
 
 implementation
 
-uses fMain, TBlockTrack, TBlockTurnout, TBlockSignal, TOblsRizeni, TBlockLinker,
-      TBlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
-      TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover, TJCDatabase, TechnologieJC, TBlockAC, ACBlocks,
-      TBlockDisconnector, TBlockIO, ownConvert, THVDatabase;
+uses fMain, BlockTrack, BlockTurnout, BlockSignal, TOblsRizeni, BlockLinker,
+      BlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
+      BlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
+      UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks,
+      BlockDisconnector, BlockIO, ownConvert, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 

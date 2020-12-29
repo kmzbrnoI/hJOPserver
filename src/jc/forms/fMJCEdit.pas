@@ -71,8 +71,8 @@ implementation
 
 {$R *.dfm}
 
-uses TJCDatabase, TechnologieJC, TBlock, TOblRizeni,
-      TBlockSignal, TMultiJCDatabase, DataMultiJC;
+uses TJCDatabase, TechnologieJC, Block, TOblRizeni,
+      BlockSignal, TMultiJCDatabase, DataMultiJC;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -56,7 +56,7 @@ var
 
 implementation
 
-uses Logging, DataSpr, BlockDb, TBlockTrack, DataHV, appEv, TBlock,
+uses Logging, DataSpr, BlockDb, BlockTrack, DataHV, appEv, Block,
      TCPServerOR, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
