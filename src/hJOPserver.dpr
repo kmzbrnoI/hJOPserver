@@ -159,7 +159,8 @@ uses
   IfThenElse in 'helpers\IfThenElse.pas',
   PTEndpointUsers in 'pt\PTEndpointUsers.pas',
   PTEndpointUser in 'pt\PTEndpointUser.pas',
-  BlockDb in 'bloky\BlockDb.pas';
+  BlockDb in 'bloky\BlockDb.pas',
+  BlockGroupSignal in 'bloky\BlockGroupSignal.pas';
 
 {$R *.res}
 

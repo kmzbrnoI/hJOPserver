@@ -276,6 +276,7 @@
 			<DCCReference Include="pt\PTEndpointUsers.pas"/>
 			<DCCReference Include="pt\PTEndpointUser.pas"/>
 			<DCCReference Include="bloky\BlockDb.pas"/>
+			<DCCReference Include="bloky\BlockGroupSignal.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
