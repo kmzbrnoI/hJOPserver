@@ -154,7 +154,7 @@ procedure TF_JCEdit.EmptyJCOpenForm();
     SE_ID.Value := JCDb[JCDb.Count-1].id
   else
     SE_ID.Value := 1;
-  Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, btNav, -1);
+  Blky.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, btSignal, -1);
 
   CB_Typ.ItemIndex := -1;
   CB_Dalsi_Nav.ItemIndex := -1;
@@ -186,7 +186,7 @@ var prjz: TJCPrjZaver;
  begin
   JCData := JCDb.GetJCByIndex(OpenIndex).data;
 
-  Blky.NactiBlokyDoObjektu(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, btNav, JCData.NavestidloBlok);
+  Blky.NactiBlokyDoObjektu(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, btSignal, JCData.NavestidloBlok);
   CB_NavestidloChange(Self);
 
   Self.E_Name.Text:= JCData.name;
@@ -682,7 +682,7 @@ begin
 end;
 
 procedure TF_JCEdit.CB_NavestidloChange(Sender: TObject);
-var navestidlo: TBlkNav;
+var navestidlo: TBlkSignal;
  begin
   if (CB_Navestidlo.ItemIndex <> -1) then
    begin
@@ -695,8 +695,8 @@ var navestidlo: TBlkNav;
     if (Self.mNewJC) then
      begin
       case (navestidlo.SymbolType) of
-        TBlkNavSymbol.hlavni : Self.CB_Typ.ItemIndex := 0;
-        TBlkNavSymbol.seradovaci : Self.CB_Typ.ItemIndex := 1;
+        TBlkSignalSymbol.main : Self.CB_Typ.ItemIndex := 0;
+        TBlkSignalSymbol.shunting : Self.CB_Typ.ItemIndex := 1;
       end;
      end;
 
@@ -763,11 +763,11 @@ begin
  Blky.GetBlkByID(JCData.NavestidloBlok, Blk);
 
  if (Blk = nil) then Exit;
- if (Blk.typ <> btNav) then Exit;
+ if (Blk.typ <> btSignal) then Exit;
 
- SetLength(obls, (Blk as TBlkNav).OblsRizeni.Count);
- for i := 0 to (Blk as TBlkNav).OblsRizeni.Count-1 do
-  obls[i] := (Blk as TBlkNav).OblsRizeni[i].id;
+ SetLength(obls, (Blk as TBlkSignal).OblsRizeni.Count);
+ for i := 0 to (Blk as TBlkSignal).OblsRizeni.Count-1 do
+  obls[i] := (Blk as TBlkSignal).OblsRizeni[i].id;
 end;
 
 procedure TF_JCEdit.UpdateJCName();
@@ -784,7 +784,7 @@ var vypustit: TArI;
     obls: TArStr;
     blk: TBlk;
     i: Integer;
-    navestidlo: TBlkNav;
+    navestidlo: TBlkSignal;
     trat: TBlkTrat;
 begin
  Self.CB_Dalsi_Nav.Clear();
@@ -816,8 +816,8 @@ begin
    for i := 0 to Blky.count-1 do
     begin
      blk := Blky[i];
-     if ((blk.typ = btNav) and
-         ((TBlkNav(blk).UsekPred = nil) or (TBlkNav(blk).UsekPred.id = Self.Useky[Self.Useky.Count-1]) or
+     if ((blk.typ = btSignal) and
+         ((TBlkSignal(blk).track = nil) or (TBlkSignal(blk).track.id = Self.Useky[Self.Useky.Count-1]) or
           ((trat <> nil) and (trat.HasAutoblokNav(blk))))) then
       begin
        Self.CB_Dalsi_Nav.Items.Add(blk.name);
@@ -840,7 +840,7 @@ begin
       end;
     end;
   end else begin
-   Blky.NactiBlokyDoObjektu(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @vypustit, obls, btNav, JCData.DalsiNavestidlo);
+   Blky.NactiBlokyDoObjektu(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @vypustit, obls, btSignal, JCData.DalsiNavestidlo);
    Self.CB_Dalsi_Nav.Items.Insert(0, 'Žádné návěstidlo');
    Self.CB_Dalsi_Nav.Items.Insert(1, 'Trať');
   end;

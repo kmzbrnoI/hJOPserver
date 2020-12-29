@@ -1,4 +1,4 @@
-unit TBlokTrat;
+﻿unit TBlokTrat;
 
 {
  Definice a obsluha technologickeho bloku Trat
@@ -677,7 +677,7 @@ var Blk: TBlk;
 begin
  if (Self.TratSettings.Useky.Count = 0) then Exit(nil);
 
- if ((Self.fNavLichy = nil) or ((Self.fNavLichy as TBlkNav).UsekID <> Self.TratSettings.Useky[0])) then
+ if ((Self.fNavLichy = nil) or ((Self.fNavLichy as TBlkSignal).trackId <> Self.TratSettings.Useky[0])) then
   begin
    if (Self.TratSettings.Useky.Count > 1) then
      Blky.GetBlkByID(Self.TratSettings.Useky[1], TBlk(BlkTU))
@@ -686,8 +686,8 @@ begin
 
    for blk in Blky do
     begin
-     if (Blk.typ <> btNav) then continue;
-     if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[0]) and
+     if (Blk.typ <> btSignal) then continue;
+     if ((TBlkSignal(Blk).trackId = Self.TratSettings.Useky[0]) and
          (Blk.OblsRizeni[0] = Self.uvazkaA.OblsRizeni[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navLid))) then
       begin
@@ -707,7 +707,7 @@ var Blk: TBlk;
 begin
  if (Self.TratSettings.Useky.Count = 0) then Exit(nil);
 
- if ((Self.fNavSudy = nil) or ((Self.fNavSudy as TBlkNav).UsekID <> Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1])) then
+ if ((Self.fNavSudy = nil) or ((Self.fNavSudy as TBlkSignal).trackId <> Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1])) then
   begin
    if (Self.TratSettings.Useky.Count > 1) then
      Blky.GetBlkByID(Self.TratSettings.Useky[Self.TratSettings.Useky.Count-2], TBlk(BlkTU))
@@ -716,8 +716,8 @@ begin
 
    for blk in Blky do
     begin
-     if (Blk.typ <> btNav) then continue;
-     if ((TBlkNav(Blk).UsekID = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
+     if (Blk.typ <> btSignal) then continue;
+     if ((TBlkSignal(Blk).trackId = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
          (Blk.OblsRizeni[0] = Self.uvazkaB.OblsRizeni[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navSid))) then
       begin
@@ -939,7 +939,7 @@ begin
            last.trainPredict := Blk.trainPredict;
            break;
           end;
-         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = ncStuj)) then
+         if ((Blk.navKryci <> nil) and (TBlkSignal(Blk.navKryci).signal = ncStuj)) then
           begin
            Blky.TrainPrediction(Self.navSudy);
            Exit();
@@ -969,7 +969,7 @@ begin
            last.trainPredict := Blk.trainPredict;
            break;
           end;
-         if ((Blk.navKryci <> nil) and (TBlkNav(Blk.navKryci).Navest = ncStuj)) then
+         if ((Blk.navKryci <> nil) and (TBlkSignal(Blk.navKryci).signal = ncStuj)) then
           begin
            Blky.TrainPrediction(Self.navLichy);
            Exit();
@@ -1024,7 +1024,7 @@ end;
 function TBlkTrat.ChangesTrainDir(): Boolean;
 begin
  Result := (Assigned(Self.navLichy)) and (Assigned(Self.navSudy)) and
-    (TBlkNav(Self.navLichy).Smer = TBlkNav(Self.navSudy).Smer);
+    (TBlkSignal(Self.navLichy).direction = TBlkSignal(Self.navSudy).direction);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

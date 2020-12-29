@@ -1,4 +1,4 @@
-unit THnaciVozidlo;
+﻿unit THnaciVozidlo;
 
 {
   -------------------------- implementace ----------------------------------
@@ -1829,14 +1829,14 @@ begin
 end;
 
 function THV.PredictedSignalStr(): string;
-var nav: TBlkNav;
+var signal: TBlkSignal;
 begin
  if (Self.IsSouprava()) then
   begin
-   nav := TBlkNav(Trains[Self.train].PredictedSignal());
-   if (nav <> nil) then
+   signal := TBlkSignal(Trains[Self.train].PredictedSignal());
+   if (signal <> nil) then
     begin
-     Result := nav.name + ';' + IntToStr(Integer(nav.cilovaNavest));
+     Result := signal.name + ';' + IntToStr(Integer(signal.targetSignal));
     end else
      Result :=  '-;-';
   end else

@@ -1,4 +1,4 @@
-unit TechnologieMultiJC;
+﻿unit TechnologieMultiJC;
 
 {
   Technologie slozenych jizdnich cest.
@@ -59,8 +59,8 @@ type
       procedure StavJC(SenderPnl: TIdContext; SenderOR: TObject);
       procedure RusStaveni();
 
-      function Match(startNav: TBlkNav; vb: TList<TObject>; endBlk: TBlk): Boolean;
-      function StartNav(): TBlkNav;
+      function Match(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): Boolean;
+      function StartNav(): TBlkSignal;
 
       property data: TMultiJCprop read fproperties write fproperties;
       property stav: TMultiJCStaveni read fstaveni;
@@ -232,7 +232,7 @@ begin
  // zrusime zacatek staveni na navestidle
  JC := JCDb.GetJCByID(Self.fproperties.JCs[0]);
  Blky.GetBlkByID(JC.data.NavestidloBlok, Blk);
- (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
+ (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
 
  // zrusime konec staveni na poslednim useku posledni JC
  JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);
@@ -270,7 +270,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.Match(startNav: TBlkNav; vb: TList<TObject>; endBlk: TBlk): Boolean;
+function TMultiJC.Match(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): Boolean;
 var jc: TJC;
     j: Integer;
 begin
@@ -281,7 +281,7 @@ begin
 
  if (JC.data.NavestidloBlok <> startNav.id) then
    Exit(false);
- if (Integer(startNav.ZacatekVolba) <> Integer(JC.typ)) then
+ if (Integer(startNav.selected) <> Integer(JC.typ)) then
    Exit(false);
 
  // posledni blok musi byt posledni blok posledni jizdni cesty
@@ -302,7 +302,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.StartNav(): TBlkNav;
+function TMultiJC.StartNav(): TBlkSignal;
 var jc: TJC;
 begin
  if (Self.data.JCs.Count > 0) then begin
@@ -310,7 +310,7 @@ begin
    if (jc = nil) then
      Result := nil
    else
-     Result := jc.navestidlo as TBlkNav;
+     Result := jc.navestidlo as TBlkSignal;
  end else
    Result := nil
 end;

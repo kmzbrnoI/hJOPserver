@@ -15,14 +15,14 @@ type
   TJCDb = class
    private
     JCs: TObjectList<TJC>;
-    JCsStartNav: TObjectDictionary<TBlkNav, TList<TJC>>;
+    JCsStartSignal: TObjectDictionary<TBlkSignal, TList<TJC>>;
 
     ffilename: string;
 
      function GetCount(): Word;
      function GetItem(i: Integer): TJC;
      function FindPlaceForNewJC(id: Integer): Integer;
-     procedure FillJCsStartNav();
+     procedure FillJCsStartSignal();
 
      procedure JCOnIDChanged(Sender: TObject);
      procedure JCOnNavChanged(Sender: TObject; origNav: TBlk);
@@ -60,21 +60,21 @@ type
 
      // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
      // tato fce zajisti, ze k ovlivneni dojde
-     procedure CheckNNavaznost(nav: TBlkNav);
+     procedure CheckNNavaznost(signal: TBlkSignal);
 
      procedure RusAllJC();
      procedure RusJC(Blk: TBlk);     // rusi cestu, ve ktere je zadany blok
 
-     function IsAnyJC(nav: TBlkNav): Boolean;
-     function IsAnyVC(nav: TBlkNav): Boolean;
-     function IsAnyPC(nav: TBlkNav): Boolean;
+     function IsAnyJC(signal: TBlkSignal): Boolean;
+     function IsAnyVC(signal: TBlkSignal): Boolean;
+     function IsAnyPC(signal: TBlkSignal): Boolean;
 
-     function IsAnyJCAvailable(nav: TBlkNav; typ: TJCType): Boolean;
-     function IsAnyVCAvailable(nav: TBlkNav): Boolean;
-     function IsAnyPCAvailable(nav: TBlkNav): Boolean;
+     function IsAnyJCAvailable(signal: TBlkSignal; typ: TJCType): Boolean;
+     function IsAnyVCAvailable(signal: TBlkSignal): Boolean;
+     function IsAnyPCAvailable(signal: TBlkSignal): Boolean;
 
-     function FindJC(startNav: TBlkNav; vb: TList<TObject>; EndBlk: TBlk): TJC; overload;
-     function IsAnyJCWithPrefix(startNav: TBlkNav; vb: TList<TObject>): Boolean;
+     function FindJC(startNav: TBlkSignal; vb: TList<TObject>; EndBlk: TBlk): TJC; overload;
+     function IsAnyJCWithPrefix(startNav: TBlkSignal; vb: TList<TObject>): Boolean;
 
      property Count: Word read GetCount;
      property filename: string read ffilename;
@@ -105,13 +105,13 @@ constructor TJCDb.Create();
 begin
  inherited;
  Self.JCs := TObjectList<TJC>.Create();
- Self.JCsStartNav := TObjectDictionary<TBlkNav, TList<TJC>>.Create();
+ Self.JCsStartSignal := TObjectDictionary<TBlkSignal, TList<TJC>>.Create();
 end;//ctor
 
 destructor TJCDb.Destroy();
 begin
  Self.JCs.Free();
- Self.JCsStartNav.Free();
+ Self.JCsStartSignal.Free();
  inherited;
 end;//dtor
 
@@ -158,7 +158,7 @@ begin
    sections.Free();
  end;
 
- Self.FillJCsStartNav();
+ Self.FillJCsStartSignal();
  writelog('Načteno '+IntToStr(Self.JCs.Count)+' JC', WR_DATA);
 end;
 
@@ -231,25 +231,25 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.FindJC(startNav: TBlkNav; vb: TList<TObject>; endBlk: TBlk): TJC;
+function TJCDb.FindJC(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): TJC;
 var jc: TJC;
     blk: TBlk;
     j: Integer;
     match: Boolean;
 begin
- if (not Self.JCsStartNav.ContainsKey(startNav)) then
+ if (not Self.JCsStartSignal.ContainsKey(startNav)) then
    Exit(nil);
 
- for jc in Self.JCsStartNav[startNav] do
+ for jc in Self.JCsStartSignal[startNav] do
   begin
    if (JC.navestidlo <> startNav) then continue;
 
    Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], blk);
    if (blk <> endBlk) then continue;
 
-   if ((Integer(startNav.ZacatekVolba) = Integer(jc.typ)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.typ = TJCType.vlak)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.typ = TJCType.posun))) then
+   if ((Integer(startNav.selected) = Integer(jc.typ)) or
+      ((startNav.selected = TBlkSignalSelection.NC) and (jc.typ = TJCType.vlak)) or
+      ((startNav.selected = TBlkSignalSelection.PP) and (jc.typ = TJCType.posun))) then
     begin
      // kontrola variantnich bodu:
      if (jc.data.vb.Count <> vb.Count) then continue;
@@ -271,11 +271,11 @@ end;
 //toto se vola zvnejsi, kdyz chceme postavit jakoukoliv JC
 procedure TJCDb.StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
 var oblr: TOR;
-    startNav: TBlkNav;
+    startNav: TBlkSignal;
     senderOblr: TOR;
     jc: TJC;
 begin
- startNav := StartBlk as TBlkNav;
+ startNav := StartBlk as TBlkSignal;
  senderOblr := SenderOR as TOR;
 
  jc := Self.FindJC(StartNav, SenderOblr.vb, EndBlk);
@@ -283,7 +283,7 @@ begin
  if (jc <> nil) then
   begin
    // v pripade nouzove cesty klik na DK opet prevest na klienta
-   if (startNav.ZacatekVolba = TBlkNavVolba.NC) then
+   if (startNav.selected = TBlkSignalSelection.NC) then
      for oblr in startNav.OblsRizeni do
        oblr.ORDKClickClient();
 
@@ -292,12 +292,12 @@ begin
      SenderOblr.stack.AddJC(
       jc,
       SenderPnl,
-      (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP),
+      (startNav.selected = TBlkSignalSelection.NC) or (startNav.selected = TBlkSignalSelection.PP),
       abAfter
      );
 
      // zrusime zacatek, konec a variantni body
-     startNav.ZacatekVolba := TBlkNavVOlba.none;
+     startNav.selected := TBlkSignalSelection.none;
      (EndBlk as TBlkUsek).KonecJC := TZaver.no;
      SenderOblr.ClearVb();
     end else begin
@@ -306,7 +306,7 @@ begin
        SenderPnl,
        SenderOR,
        nil,
-       (startNav.ZacatekVolba = TBlkNavVolba.NC) or (startNav.ZacatekVolba = TBlkNavVolba.PP),
+       (startNav.selected = TBlkSignalSelection.NC) or (startNav.selected = TBlkSignalSelection.PP),
        false,
        abAfter
      );
@@ -314,7 +314,7 @@ begin
   end else begin
 
    // kontrola staveni slozene jizdni cesty
-   if ((startNav.ZacatekVolba = TBlkNavVolba.VC) or (startNav.ZacatekVolba = TBlkNavVolba.PC)) then
+   if ((startNav.selected = TBlkSignalSelection.VC) or (startNav.selected = TBlkSignalSelection.PC)) then
      if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR, abAfter)) then Exit();
 
    (EndBlk as TBlkUsek).KonecJC := TZaver.no;
@@ -329,7 +329,7 @@ function TJCDb.AddJC(JCdata: TJCprop): TJC;
 var JC: TJC;
     index: Integer;
     i: Integer;
-    nav: TBlkNav;
+    signal: TBlkSignal;
 begin
  // kontrola existence JC stejneho ID
  if (Self.IsJC(JCData.id)) then
@@ -346,10 +346,10 @@ begin
  for i := index+1 to Self.JCs.Count-1 do
    Self.JCs[i].index := Self.JCs[i].index + 1;
 
- nav := JC.navestidlo as TBlkNav;
- if (not Self.JCsStartNav.ContainsKey(nav)) then
-   Self.JCsStartNav.Add(nav, TList<TJC>.Create());
- Self.JCsStartNav[nav].Add(JC);
+ signal := JC.navestidlo as TBlkSignal;
+ if (not Self.JCsStartSignal.ContainsKey(signal)) then
+   Self.JCsStartSignal.Add(signal, TList<TJC>.Create());
+ Self.JCsStartSignal[signal].Add(JC);
 
  JCTableData.AddJC(index);
  Result := JC;
@@ -368,8 +368,8 @@ begin
    if (OblR.stack.IsJCInStack(Self.JCs[index])) then
      raise Exception.Create('JC v zasobniku OR '+OblR.id);
 
- if (Self.JCsStartNav.ContainsKey(Self.JCs[index].navestidlo as TBlkNav)) then
-   Self.JCsStartNav[Self.JCs[index].navestidlo as TBlkNav].Remove(Self.JCs[index]);
+ if (Self.JCsStartSignal.ContainsKey(Self.JCs[index].navestidlo as TBlkSignal)) then
+   Self.JCsStartSignal[Self.JCs[index].navestidlo as TBlkSignal].Remove(Self.JCs[index]);
 
  Self.JCs.Delete(index);
 
@@ -544,32 +544,32 @@ end;
 
 // Jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
 // se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak.
-procedure TJCDb.CheckNNavaznost(nav: TBlkNav);
+procedure TJCDb.CheckNNavaznost(signal: TBlkSignal);
 var JC: TJC;
-    prev_nav: TBlkNav;
-    navest: TBlkNavCode;
+    prev_signal: TBlkSignal;
+    navest: TBlkSignalCode;
 begin
   for JC in Self.JCs do
    begin
     if ((JC.typ = TJCType.posun) or
         (JC.data.dalsiNavaznost <> TJCNextNavType.blok) or
-        (JC.data.dalsiNavestidlo <> nav.id)) then continue;
+        (JC.data.dalsiNavestidlo <> signal.id)) then continue;
 
-    Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(prev_nav));
+    Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(prev_signal));
 
-    if (not prev_nav.IsPovolovaciNavest()) then continue;
-    if (prev_nav.changing) then continue;
+    if (not prev_signal.IsGoSignal()) then continue;
+    if (prev_signal.changing) then continue;
 
-    if ((nav.IsPovolovaciNavest()) and (not nav.IsOpakVystraha())) then
+    if ((signal.IsGoSignal()) and (not signal.IsOpakVystraha())) then
      begin
       if (JC.data.odbocka) then
        begin
-        if ((nav.FourtyKmph()) or (nav.Navest = ncOpakOcek40)) then
+        if ((signal.FourtyKmph()) or (signal.signal = ncOpakOcek40)) then
           navest := nc40Ocek40
         else
           navest := ncVolno40;
        end else begin
-        if ((nav.FourtyKmph()) or (nav.Navest = ncOpakOcek40)) then
+        if ((signal.FourtyKmph()) or (signal.signal = ncOpakOcek40)) then
           navest := ncOcek40
         else
           navest := ncVolno;
@@ -585,9 +585,9 @@ begin
      end;
 
     if ((JC.data.nzv) and (navest <> ncVolno)) then
-      navest := TBlkNav.AddOpak(navest);
+      navest := TBlkSignal.AddOpak(navest);
 
-    prev_nav.Navest := navest;
+    prev_signal.signal := navest;
    end;//for i
 end;
 
@@ -615,7 +615,7 @@ begin
       jc := JCDb.FindPostavenaJCWithUsek(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-    btNav: begin
+    btSignal: begin
       jc := JCDb.FindJC(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
@@ -632,11 +632,11 @@ begin
    for jc in jcs do
     begin
      Blky.GetBlkByID(jc.data.NavestidloBlok, tmpblk);
-     if ((TBlkNav(tmpblk).DNjc = jc) and
-         ((TBlkNav(tmpblk).IsPovolovaciNavest()) or (TBlkNav(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
+     if ((TBlkSignal(tmpblk).DNjc = jc) and
+         ((TBlkSignal(tmpblk).IsGoSignal()) or (TBlkSignal(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
       begin
        jc.RusJCWithoutBlk();
-       for oblr in (tmpBlk as TBlkNav).OblsRizeni do
+       for oblr in (tmpBlk as TBlkSignal).OblsRizeni do
          oblr.BlkWriteError(Self, 'Chyba povolovací návěsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
     end;
@@ -744,19 +744,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCDb.FillJCsStartNav();
+procedure TJCDb.FillJCsStartSignal();
 var JC: TJC;
-    nav: TBlkNav;
+    signal: TBlkSignal;
 begin
- Self.JCsStartNav.Clear();
+ Self.JCsStartSignal.Clear();
  for JC in Self.JCs do
   begin
-   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = btNav)) then
+   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = btSignal)) then
     begin
-     nav := JC.navestidlo as TBlkNav;
-     if (not Self.JCsStartNav.ContainsKey(nav)) then
-       Self.JCsStartNav.Add(nav, TList<TJC>.Create());
-     Self.JCsStartNav[nav].Add(JC);
+     signal := JC.navestidlo as TBlkSignal;
+     if (not Self.JCsStartSignal.ContainsKey(signal)) then
+       Self.JCsStartSignal.Add(signal, TList<TJC>.Create());
+     Self.JCsStartSignal[signal].Add(JC);
     end;
   end;
 end;
@@ -764,51 +764,51 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.JCOnNavChanged(Sender: TObject; origNav: TBlk);
-var nav: TBlkNav;
+var signal: TBlkSignal;
     jc: TJC;
 begin
- nav := origNav as TBlkNav;
+ signal := origNav as TBlkSignal;
  jc := Sender as TJC;
 
  if (origNav <> nil) then
   begin
-   if (Self.JCsStartNav.ContainsKey(nav)) then
-     if (Self.JCsStartNav[nav].Contains(jc)) then
-       Self.JCsStartNav[nav].Remove(jc);
+   if (Self.JCsStartSignal.ContainsKey(signal)) then
+     if (Self.JCsStartSignal[signal].Contains(jc)) then
+       Self.JCsStartSignal[signal].Remove(jc);
   end;
 
  if (jc.navestidlo <> nil) then
   begin
-   if (not Self.JCsStartNav.ContainsKey(jc.navestidlo as TBlkNav)) then
-     Self.JCsStartNav.Add(jc.navestidlo as TBlkNav, TList<TJC>.Create());
-   Self.JCsStartNav[jc.navestidlo as TBlkNav].Add(jc);
+   if (not Self.JCsStartSignal.ContainsKey(jc.navestidlo as TBlkSignal)) then
+     Self.JCsStartSignal.Add(jc.navestidlo as TBlkSignal, TList<TJC>.Create());
+   Self.JCsStartSignal[jc.navestidlo as TBlkSignal].Add(jc);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsAnyJC(nav: TBlkNav): Boolean;
+function TJCDb.IsAnyJC(signal: TBlkSignal): Boolean;
 begin
- Result := Self.JCsStartNav.ContainsKey(nav) and (Self.JCsStartNav[nav].Count > 0);
+ Result := Self.JCsStartSignal.ContainsKey(signal) and (Self.JCsStartSignal[signal].Count > 0);
 end;
 
-function TJCDb.IsAnyVC(nav: TBlkNav): Boolean;
+function TJCDb.IsAnyVC(signal: TBlkSignal): Boolean;
 var jc: TJC;
 begin
- if (not Self.JCsStartNav.ContainsKey(nav)) then
+ if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Exit(false);
- for jc in Self.JCsStartNav[nav] do
+ for jc in Self.JCsStartSignal[signal] do
    if (jc.typ = TJCType.vlak) then
       Exit(true);
  Result := false;
 end;
 
-function TJCDb.IsAnyPC(nav: TBlkNav): Boolean;
+function TJCDb.IsAnyPC(signal: TBlkSignal): Boolean;
 var jc: TJC;
 begin
- if (not Self.JCsStartNav.ContainsKey(nav)) then
+ if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Exit(false);
- for jc in Self.JCsStartNav[nav] do
+ for jc in Self.JCsStartSignal[signal] do
    if (jc.typ = TJCType.posun) then
       Exit(true);
  Result := false;
@@ -818,14 +818,14 @@ end;
 // Zjistuje, jestli je mozno postvit z navestidla \nav v aktualni situaci alespon
 // jednu cestu typu \typ.
 
-function TJCDb.IsAnyJCAvailable(nav: TBlkNav; typ: TJCType): Boolean;
+function TJCDb.IsAnyJCAvailable(signal: TBlkSignal; typ: TJCType): Boolean;
 var jc: TJC;
     blk: TBlk;
     usek: TBlkUsek;
 begin
- if (not Self.JCsStartNav.ContainsKey(nav)) then
+ if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Exit(false);
- for jc in Self.JCsStartNav[nav] do
+ for jc in Self.JCsStartSignal[signal] do
   begin
    if ((jc.typ = typ) and (jc.data.Useky.Count > 0)) then
     begin
@@ -841,14 +841,14 @@ begin
  Result := false;
 end;
 
-function TJCDb.IsAnyVCAvailable(nav: TBlkNav): Boolean;
+function TJCDb.IsAnyVCAvailable(signal: TBlkSignal): Boolean;
 begin
- Result := Self.IsAnyJCAvailable(nav, TJCType.vlak);
+ Result := Self.IsAnyJCAvailable(signal, TJCType.vlak);
 end;
 
-function TJCDb.IsAnyPCAvailable(nav: TBlkNav): Boolean;
+function TJCDb.IsAnyPCAvailable(signal: TBlkSignal): Boolean;
 begin
- Result := Self.IsAnyJCAvailable(nav, TJCType.posun);
+ Result := Self.IsAnyJCAvailable(signal, TJCType.posun);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -865,23 +865,23 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsAnyJCWithPrefix(startNav: TBlkNav; vb: TList<TObject>): Boolean;
+function TJCDb.IsAnyJCWithPrefix(startNav: TBlkSignal; vb: TList<TObject>): Boolean;
 var jc: TJC;
     j: Integer;
     error: Boolean;
 begin
  // startNav musi mit navolenou volbu, aby tato funkce fungovala.
 
- if (not Self.JCsStartNav.ContainsKey(startNav)) then
+ if (not Self.JCsStartSignal.ContainsKey(startNav)) then
    Exit(false);
 
- for jc in Self.JCsStartNav[startNav] do
+ for jc in Self.JCsStartSignal[startNav] do
   begin
    if (JC.navestidlo <> startNav) then continue;
 
-   if ((Integer(startNav.ZacatekVolba) = Integer(jc.typ)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.NC) and (jc.typ = TJCType.vlak)) or
-      ((startNav.ZacatekVolba = TBlkNavVolba.PP) and (jc.typ = TJCType.posun))) then
+   if ((Integer(startNav.selected) = Integer(jc.typ)) or
+      ((startNav.selected = TBlkSignalSelection.NC) and (jc.typ = TJCType.vlak)) or
+      ((startNav.selected = TBlkSignalSelection.PP) and (jc.typ = TJCType.posun))) then
     begin
      // kontrola variantnich bodu:
      if (vb.Count > jc.data.vb.Count) then continue;

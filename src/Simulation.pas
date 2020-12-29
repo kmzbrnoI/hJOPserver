@@ -94,7 +94,7 @@ begin
    if (((JC.stav.RozpadBlok = 1) or (JC.stav.RozpadBlok >= JC.data.Useky.Count)) and (JC.stav.RozpadRuseniBlok = -1)) then
     begin
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-     Blky.GetBlkByID((Nav as TBlkNav).UsekID, Blk);
+     Blky.GetBlkByID((Nav as TBlkSignal).trackId, Blk);
 
      if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.obsazeno) then
       begin
@@ -177,7 +177,7 @@ begin
      if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
          (TU.prevTU.train = TU.train)) then
       begin
-       RCSi.SetInput(TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0].board, TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0].port, 0);
+       RCSi.SetInput(TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0], 0);
        Exit();
       end;
     end;//for i
@@ -188,9 +188,9 @@ begin
      Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
      if ((TU.Obsazeno = TUsekStav.obsazeno) and (TU.bpInBlk) and (TU.nextTU <> nil) and
          (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
-        ((TU.nextTU.navKryci = nil) or (TBlkNav(TU.nextTU.navKryci).Navest > ncStuj))) then
+        ((TU.nextTU.navKryci = nil) or (TBlkSignal(TU.nextTU.navKryci).signal > ncStuj))) then
       begin
-       RCSi.SetInput(TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0].board, TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0].port, 1);
+       RCSi.SetInput(TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0], 1);
        Exit();
       end;
     end;//for i

@@ -1,4 +1,4 @@
-unit TOblRizeni;
+﻿unit TOblRizeni;
 
 {
   Tato unita se stara o rizeni Oblasti rizeni (OR, tedy stanic).
@@ -759,8 +759,8 @@ begin
    (Self.vb[Self.vb.Count-1] as TBlkUsek).KonecJC := TZaver.no;
    Self.vb.Delete(Self.vb.Count-1);
   end else begin
-   Blk := Blky.GeTBlkNavZacatekVolba(Self.id);
-   if (Blk <> nil) then (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
+   Blk := Blky.GetBlkSignalSelected(Self.id);
+   if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
   end;
 
  Blk := Blky.GetBlkUsekVlakPresun(Self.id);
@@ -1033,7 +1033,7 @@ procedure TOR.NUZ_PS(Sender: TIdContext; success: Boolean);
 var JC: TJC;
     Blk: TBlk;
     usek: TBlkUsek;
-    nav: TBlkNav;
+    signal: TBlkSignal;
     oblr: TOR;
 begin
  if (not success) then Exit;
@@ -1056,18 +1056,17 @@ begin
 
        if (JC <> nil) then
         begin
-         Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(Nav));
-         if ((Nav.Navest > ncStuj) and (Nav.DNjc = JC)) then
-           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návěsti '+nav.name,
+         Blky.GetBlkByID(JC.data.NavestidloBlok, TBlk(signal));
+         if ((signal.signal > ncStuj) and (signal.DNjc = JC)) then
+           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návěsti '+signal.name,
                                    Self.ShortName, 'TECHNOLOGIE');
          JC.RusJCWithoutBlk();
-         if (Nav.DNjc = JC) then
-           Nav.DNjc := nil;
+         if (signal.DNjc = JC) then
+           signal.DNjc := nil;
         end;
       end;
-    end;//for j
-
-  end;//for i
+    end;
+  end;
 
  Self.BroadcastData('NUZ;2;');
  Self.ORStav.NUZmerCasuID := Self.AddMereniCasu(Self.NUZTimeOut, EncodeTime(0, 0, 20, 0));

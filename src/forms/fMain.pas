@@ -2021,9 +2021,9 @@ begin
   begin
    try
      Blky.GetBlkByID(jc.data.NavestidloBlok, blk);
-     if ((blk <> nil) and (Blk.typ = btNav) and (TBlkNav(blk).ABJC = jc)) then
+     if ((blk <> nil) and (Blk.typ = btSignal) and (TBlkSignal(blk).ABJC = jc)) then
       begin
-       TBlkNav(blk).ABJC := nil;
+       TBlkSignal(blk).ABJC := nil;
        if (ABlist.Contains(jc)) then
          ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
       end else
@@ -2512,7 +2512,7 @@ var Blk: TBlk;
    btUsek, btTU :
                   F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
    btIR      : ;
-   btNav     : ;
+   btSignal  : ;
    btPrejezd : ;
    btTrat    : F_BlkTrat_tech.OpenForm(Blk as TBlkTrat);
    btUvazka  : ;
@@ -2927,10 +2927,10 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btNav: begin
-    if ((Blk as TBlkNav).Navest < ncStuj) then
+   btSignal: begin
+    if ((Blk as TBlkSignal).signal < ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY  // disabled
-    else if ((Blk as TBlkNav).Navest = ncStuj) then
+    else if ((Blk as TBlkSignal).signal = ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
     else
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
@@ -3032,7 +3032,7 @@ var Blk: TBlk;
    btTurnout: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
    btUsek: F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
-   btNav: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
+   btSignal: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
    btPrejezd: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
    btTrat, btUvazka: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);

@@ -453,14 +453,14 @@ begin
     Exit();
    end;
 
-  if (Blk.typ <> btNav) then
+  if (Blk.typ <> btSignal) then
    begin
     // blok navestidla neni typu navestidlo
     Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, Self.fproperties.navestidloBlok));
     Exit;
    end;
 
-  if ((Blk as TBlkNav).UsekPred = nil) then
+  if ((Blk as TBlkSignal).track = nil) then
    begin
     // blok navestidla pred sebou nema zadny usek
     Result.Add(Self.JCBariera(_JCB_NAV_NOT_USEK, Blk, Self.fproperties.navestidloBlok));
@@ -652,10 +652,10 @@ var i, usek, cnt, addr: Integer;
 begin
   // navestidlo
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
-  if (not (Blk as TBlkNav).enabled) then
+  if (not (Blk as TBlkSignal).enabled) then
     bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
-  if (TBlkNav(Blk).navest <> ncStuj) then
+  if (TBlkSignal(Blk).signal <> ncStuj) then
     bariery.Add(Self.JCBariera(_JCB_NAV_NAVEST, Blk, Blk.id));
 
   // kontrola useku:
@@ -964,7 +964,7 @@ begin
 
  // kontrola ukradene loko v souprave pred navestidlem
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk2);
- Blk := (Blk2 as TBlkNav).UsekPred;
+ Blk := (Blk2 as TBlkSignal).track;
 
  if ((Blk as TBlkUsek).IsTrain()) then
   begin
@@ -993,8 +993,8 @@ begin
    if (Self.typ = TJCType.vlak) then
     begin
      if (train.sdata.dir_L or train.sdata.dir_S) then
-       if (((TBlkNav(Blk2).Smer = THVStanoviste.lichy) and (not train.sdata.dir_L)) or
-           ((TBlkNav(Blk2).Smer = THVStanoviste.sudy) and (not train.sdata.dir_S))) then
+       if (((TBlkSignal(Blk2).direction = THVStanoviste.lichy) and (not train.sdata.dir_L)) or
+           ((TBlkSignal(Blk2).direction = THVStanoviste.sudy) and (not train.sdata.dir_S))) then
          bariery.Add(Self.JCBariera(_JCB_SPR_SMER, nil, train.index));
     end;
 
@@ -1435,7 +1435,7 @@ var i, j: Integer;
     usek, nextUsek: TBlkUsek;
     zamek: TBlkLock;
     prejezd: TBlkPrejezd;
-    navestidlo: TBlkNav;
+    navestidlo: TBlkSignal;
     trat: TBlkTrat;
     oblr: TOR;
     tuAdd: TBlkTU;
@@ -1751,7 +1751,7 @@ var i, j: Integer;
    end;// case 14
 
    _JC_KROK_CEKANI_NAVESTIDLO: begin
-     if (navestidlo.navest > ncStuj) then
+     if (navestidlo.signal > ncStuj) then
       begin
        Self.Log('Krok 15 : navestidlo postaveno');
        Self.krok := _JC_KROK_FINISH;
@@ -1764,12 +1764,12 @@ var i, j: Integer;
       Self.RusKonecJC();
 
       // nastavit front blok soupravy
-      usek := navestidlo.UsekPred as TBlkUsek;
+      usek := navestidlo.track as TBlkUsek;
       if (usek.IsTrain()) then
         Self.GetTrain(Navestidlo, usek).front := usek;
 
-      if (not usek.NavJCRef.Contains(Navestidlo)) then
-        usek.NavJCRef.Add(Navestidlo);
+      if (not usek.signalJCRef.Contains(Navestidlo)) then
+        usek.signalJCRef.Add(Navestidlo);
 
       navestidlo.DNjc := Self;
 
@@ -1786,8 +1786,8 @@ var i, j: Integer;
       // (behem staveni mohla nastat zmena)
       if (Self.PorusenaKritickaPodminka()) then
        begin
-        if (navestidlo.Navest <> ncStuj) then
-          navestidlo.Navest := ncStuj;
+        if (navestidlo.signal <> ncStuj) then
+          navestidlo.signal := ncStuj;
         if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
           ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Podmínky pro JC nesplněny!',
             (Self.fstaveni.senderOR as TOR).ShortName, 'TECHNOLOGIE');
@@ -2003,7 +2003,7 @@ var i, j: Integer;
    end;
 
    _NC_KROK_CEKANI_NAVESTIDLO: begin
-     if (navestidlo.Navest = ncPrivol) then
+     if (navestidlo.signal = ncPrivol) then
       begin
        Self.Log('Krok 103 : navestidlo postaveno');
        Self.krok := _NC_KROK_FINISH;
@@ -2032,7 +2032,7 @@ var i, j: Integer;
 
     if (Self.typ = TJCType.vlak) then
      begin
-      usek := navestidlo.UsekPred as TBlkUsek;
+      usek := navestidlo.track as TBlkUsek;
       train := Self.GetTrain(Navestidlo, usek);
 
       // a)
@@ -2048,7 +2048,7 @@ var i, j: Integer;
            end;
 
           // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
-          if (navestidlo.Smer = THVStanoviste.lichy) then
+          if (navestidlo.direction = THVStanoviste.lichy) then
             TBlkUsek(Self.lastUsek).AddTrainL(train)
           else
             TBlkUsek(Self.lastUsek).AddTrainS(train);
@@ -2164,12 +2164,12 @@ var Blk: TBlk;
  begin
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
   if (Blk = nil) then Exit;
-  if (Blk.typ <> btNav) then Exit;
-  if ((Blk as TBlkNav).ZacatekVolba = TBlkNavVolba.none) then Exit;
+  if (Blk.typ <> btSignal) then Exit;
+  if ((Blk as TBlkSignal).selected = TBlkSignalSelection.none) then Exit;
 
-  (Blk as TBlkNav).ZacatekVolba := TBlkNavVolba.none;
-  if ((Blk as TBlkNav).DNjc = Self) then
-    (Blk as TBlkNav).DNjc := nil;
+  (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
+  if ((Blk as TBlkSignal).DNjc = Self) then
+    (Blk as TBlkSignal).DNjc := nil;
 
   Self.Log('Zrusen zacatek staveni VC na bloku '+Blk.name);
  end;
@@ -2199,7 +2199,7 @@ end;
 procedure TJC.RusJC(Sender: TObject = nil);
 var usekZaver: Integer;
     usek: TBlkUsek;
-    nav: TBlkNav;
+    nav: TBlkSignal;
  begin
   Self.RusJCWithoutBlk();
 
@@ -2225,12 +2225,12 @@ var Nav: TBlk;
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
   Self.Log('Probiha ruseni navesti');
 
-  if (((Nav as TBlkNav).DNjc = self) and ((Nav as TBlkNav).Navest > ncStuj)) then
+  if (((Nav as TBlkSignal).DNjc = self) and ((Nav as TBlkSignal).signal > ncStuj)) then
    begin
-    (Nav as TBlkNav).Navest := ncStuj;
-    if ((Nav as TBlkNav).AB) then
+    (Nav as TBlkSignal).signal := ncStuj;
+    if ((Nav as TBlkSignal).AB) then
      begin
-      (Nav as TBlkNav).AB := false; // automaticky zrusi AB
+      (Nav as TBlkSignal).AB := false; // automaticky zrusi AB
       if (Self.fstaveni.senderPnl <> nil) then
         ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Zrušena AB '+Nav.name,
           (Self.fstaveni.senderOR as TOR).ShortName, 'TECHNOLOGIE');
@@ -2247,7 +2247,7 @@ var Nav: TBlk;
 //RozpadBlok = blok index, kam by mela souprava vjet
 //RozpadRuseniBlok = blok index, kde je posledni detekovany vagon soupravy
 procedure TJC.usekyRusJC();
-var Nav: TBlkNav;
+var Nav: TBlkSignal;
     Blk: TBlk;
     Usek, DalsiUsek: TBlkUsek;
     i: Integer;
@@ -2256,7 +2256,7 @@ begin
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
 
  // kontrola obsazenosti useku pred navestidlem
- Usek := Nav.UsekPred as TBlkUsek;
+ Usek := Nav.track as TBlkUsek;
  if ((Self.rozpadBlok = -1) and ((Usek.Obsazeno <> TUsekStav.uvolneno) or
      (Usek.GetSettings.RCSAddrs.Count = 0))) then
   begin
@@ -2266,7 +2266,7 @@ begin
 
  // uvolneni prvniho useku pred navestidlem v posunove ceste je signalem pro zhasnuti navestidla
  if ((Usek.GetSettings().RCSAddrs.Count > 0) and (Usek.Obsazeno = TUsekStav.uvolneno) and
-     (Nav.Navest <> ncStuj) and (Self.rozpadRuseniBlok = -1) and (Self.typ = TJCType.posun) and
+     (Nav.signal <> ncStuj) and (Self.rozpadRuseniBlok = -1) and (Self.typ = TJCType.posun) and
      (Self.rozpadBlok >= 1)) then
   begin
    Self.Log('Uvolnen usek '+Usek.name+' : navestidlo '+ Nav.name+' nastaveno na STUJ');
@@ -2296,7 +2296,7 @@ begin
 
        // obsazeni prvniho useku
        // pozor: toto musi byt na tomto miste kvuli nastavovani Souprava.front
-       if ((i = 0) and (Nav.Navest <> ncStuj) and (Self.rozpadBlok = 0)) then
+       if ((i = 0) and (Nav.signal <> ncStuj) and (Self.rozpadBlok = 0)) then
         begin
          // navestidlo pri obsazeni prvniho useku rusime v pripade, ze se jedna o VC
          if (Self.typ = TJCType.vlak) then
@@ -2356,7 +2356,7 @@ begin
        if (Usek.Zaver > TZaver.no) then
         begin
          //pokud jsme na jinem useku, nez RozpadBlok
-         if ((Nav.cilovaNavest > ncStuj) and (Nav.DNjc = Self)) then
+         if ((Nav.targetSignal > ncStuj) and (Nav.DNjc = Self)) then
           begin
            if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
              ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Chyba povolovací návěsti '+Nav.name,
@@ -2432,7 +2432,7 @@ begin
         (DalsiUsek.GetSettings.RCSAddrs.Count = 0))) then
      begin
       // uvolneni prvniho useku v posunove ceste je signalem pro zhasnuti navestidla
-      if ((Nav.Navest <> ncStuj) and (Self.typ = TJCType.posun)) then
+      if ((Nav.signal <> ncStuj) and (Self.typ = TJCType.posun)) then
        begin
         Self.Log('Uvolnen usek '+Usek.name+' : navestidlo '+Nav.name+' nastaveno na STUJ');
         Nav.JCZrusNavest();
@@ -2448,7 +2448,7 @@ begin
       if ((Self.typ = TJCType.vlak) and (Usek.IsTrain())) then
        begin
         // mazani soupravy z useku pred navestidlem
-        Blk := TBlkNav(Nav).UsekPred;
+        Blk := TBlkSignal(Nav).track;
         train := Self.GetTrain(Nav, Blk);
         if (train = TBlkUsek(Usek).train) then
          begin
@@ -2465,7 +2465,7 @@ begin
   // mazani soupravy z useku pred navestidlem
   if ((Self.rozpadBlok > 0) and (Self.rozpadRuseniBlok = -1)) then
    begin
-    Usek := Nav.UsekPred as TBlkUsek;
+    Usek := Nav.track as TBlkUsek;
     if ((Usek.Obsazeno = TUsekStav.uvolneno) and (Usek.GetSettings.RCSAddrs.Count > 0)) then
      begin
       if (Usek.IsTrain() and (Self.typ = TJCType.vlak)) then
@@ -2482,7 +2482,7 @@ begin
      end;
    end;
 
-  Usek := Nav.UsekPred as TBlkUsek;
+  Usek := Nav.track as TBlkUsek;
   if ((Self.rozpadBlok = 0) and (Self.rozpadRuseniBlok = -1) and
       (TBlkUsek(Usek).Obsazeno <> TUsekStav.obsazeno)) then
    begin
@@ -2512,7 +2512,7 @@ begin
       else
         Usek.Zaver := TZaver.no;
 
-      Usek := Nav.UsekPred as TBlkUsek;
+      Usek := Nav.track as TBlkUsek;
       train := Self.GetTrain(Nav, Usek);
 
       // pokud ma cesta jen jeden usek, odstranime soupravu z useku pred navestidlem:
@@ -2531,7 +2531,7 @@ begin
     Self.Log('Ruseni: rozpad cesty vlakem');
     if (Nav.DNjc = Self) then
      begin
-      if (Nav.Navest > ncStuj) then      // tato situace opravdu muze nastat - predstavte si posunovou cestu s jednim usekem vychazejici z nedetek koleje
+      if (Nav.signal > ncStuj) then      // tato situace opravdu muze nastat - predstavte si posunovou cestu s jednim usekem vychazejici z nedetek koleje
         Nav.JCZrusNavest();
       Nav.DNjc := nil;
      end;
@@ -2548,7 +2548,7 @@ begin
    Self.CancelStaveni('Nelze postavit - obsazen neprofilový úsek');
   end else begin
    Blky.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
-   if (((Nav as TBlkNav).Navest > ncStuj) and ((Nav as TBlkNav).DNjc = Self)) then
+   if (((Nav as TBlkSignal).signal > ncStuj) and ((Nav as TBlkSignal).DNjc = Self)) then
     begin
      if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
        ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Chyba povolovací návěsti '+Nav.name,
@@ -2562,10 +2562,10 @@ end;
 
 procedure TJC.usekyRusNC();
 var TU, first : TBlkUsek;
-    nav : TBlkNav;
+    nav : TBlkSignal;
 begin
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(nav));
- TU := TBlkTU((nav as TBlkNav).UsekPred);
+ TU := TBlkTU((nav as TBlkSignal).track);
  Blky.GetBlkByID(Self.fproperties.useky[0], TBlk(first));
 
  if ((first.Obsazeno = TUsekStav.obsazeno) and (TU.Obsazeno = TUsekStav.uvolneno)
@@ -2586,7 +2586,7 @@ var UsekActual, UsekDalsi, Nav: TBlk;
   if (Self.rozpadBlok = 0) then
    begin
     Blky.GetBlkByID(Self.fproperties.navestidloBlok, Nav);
-    UsekActual := (Nav as TBlkNav).UsekPred;
+    UsekActual := (Nav as TBlkSignal).track;
     train := Self.GetTrain(Nav, UsekActual);
     if ((UsekActual as TBlkUsek).IsTrain()) then
       if (train.front <> UsekActual) then
@@ -2634,8 +2634,8 @@ end;
 
 //nastavi navestidlo JC na pozadovanou navest
 procedure TJC.NastavNav();
-var Nav, DalsiNav: TBlkNav;
-    Navest: TBlkNavCode;
+var Nav, DalsiNav: TBlkSignal;
+    Navest: TBlkSignalCode;
  begin
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(Nav));
 
@@ -2658,19 +2658,19 @@ var Nav, DalsiNav: TBlkNav;
       if ((Self.fproperties.dalsiNavaznost = TJCNextNavType.zadna) or
           (Self.fproperties.dalsiNavaznost = TJCNextNavType.trat) or
           ((Self.fproperties.dalsiNavaznost = TJCNextNavType.blok) and
-           ((DalsiNav <> nil) and (DalsiNav.IsPovolovaciNavest()) and (not DalsiNav.IsOpakVystraha())))) then
+           ((DalsiNav <> nil) and (DalsiNav.IsGoSignal()) and (not DalsiNav.IsOpakVystraha())))) then
        begin
         // na dalsim navestidle je navest povolujici jizdu (vyjma PN)
         if (Self.data.odbocka) then
          begin
           if ((Self.fproperties.dalsiNavaznost = TJCNextNavType.blok) and
-              ((DalsiNav.Navest = ncOpakOcek40) or (DalsiNav.FourtyKmph()))) then
+              ((DalsiNav.signal = ncOpakOcek40) or (DalsiNav.FourtyKmph()))) then
             Navest := nc40Ocek40
           else
             Navest := ncVolno40;
          end else begin
           if ((Self.fproperties.dalsiNavaznost = TJCNextNavType.blok) and
-              ((DalsiNav.Navest = ncOpakOcek40) or (DalsiNav.FourtyKmph()))) then
+              ((DalsiNav.signal = ncOpakOcek40) or (DalsiNav.FourtyKmph()))) then
             Navest := ncOcek40
           else
             Navest := ncVolno;
@@ -2686,13 +2686,13 @@ var Nav, DalsiNav: TBlkNav;
        end;
 
       if ((Self.fproperties.nzv) and (Navest <> ncVolno)) then
-        Navest := TBlkNav.AddOpak(Navest);
+        Navest := TBlkSignal.AddOpak(Navest);
      end;//case vlak
 
      end;//case
    end;// else nouzova cesta
 
-  Nav.SetNavest(Navest, TNotifyEvent(nil), Self.NavNepostaveno);
+  Nav.SetSignal(Navest, TNotifyEvent(nil), Self.NavNepostaveno);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3509,13 +3509,13 @@ begin
  TBlkTurnout(Sender).emLock := true;
 
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Navestidlo);
- TBlkNav(Navestidlo).AddBlkToRnz(TBlk(Sender).id, false);
+ TBlkSignal(Navestidlo).AddBlkToRnz(TBlk(Sender).id, false);
 
  if (TBlkTurnout(Sender).GetSettings().coupling > -1) then
   begin
    Blky.GetBlkByID(TBlkTurnout(Sender).GetSettings().coupling, spojka);
    TBlkTurnout(spojka).emLock := true;
-   TBlkNav(Navestidlo).AddBlkToRnz(TBlkTurnout(Sender).GetSettings().coupling, false);
+   TBlkSignal(Navestidlo).AddBlkToRnz(TBlkTurnout(Sender).GetSettings().coupling, false);
   end;
 
  // staveni dalsich vyhybek
@@ -3577,7 +3577,7 @@ var i: Integer;
 begin
   // kontrola navestidla
   Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
-  if (not (Blk as TBlkNav).enabled) then
+  if (not (Blk as TBlkSignal).enabled) then
     bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
   // kontrola useku
@@ -3722,7 +3722,7 @@ begin
     if ((not trat.BP) and (Self.typ = TJCType.vlak)) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_NO_BP, blk, Self.fproperties.Trat));
 
-    usek := (Self.navestidlo as TBlkNav).UsekPred as TBlkUsek;
+    usek := (Self.navestidlo as TBlkSignal).track as TBlkUsek;
     lastUsek := TBlkUsek(Self.lastUsek);
 
     if ((usek.IsTrain) and (lastUsek.typ = btTU) and ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
@@ -3851,7 +3851,7 @@ begin
  if (nav = nil) then
    Blky.GetBlkByID(Self.fproperties.navestidloBlok, nav);
 
- Result := TBlkNav(nav).GetTrain(usek);
+ Result := TBlkSignal(nav).GetTrain(usek);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3860,7 +3860,7 @@ function TJC.GetAB(): Boolean;
 var Blk: TBlk;
 begin
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, Blk);
- Result := ((Blk <> nil) and (Blk.typ = btNav) and (TBlkNav(Blk).ABJC = Self));
+ Result := ((Blk <> nil) and (Blk.typ = btSignal) and (TBlkSignal(Blk).ABJC = Self));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4039,7 +4039,7 @@ var bariery: TJCBariery;
     ok: Integer;
     ab: Boolean;
 begin
- if ((Self.navestidlo = nil) or (TBlkNav(Self.navestidlo).OblsRizeni.Count = 0)) then
+ if ((Self.navestidlo = nil) or (TBlkSignal(Self.navestidlo).OblsRizeni.Count = 0)) then
   begin
    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Návěstidlo není v OŘ');
    Exit();
@@ -4049,7 +4049,7 @@ begin
 
  bariery := TJCBariery.Create();
  try
-   ok := Self.StavJC(nil, TBlkNav(Self.navestidlo).OblsRizeni[0], bariery, nil, false, false, ab);
+   ok := Self.StavJC(nil, TBlkSignal(Self.navestidlo).OblsRizeni[0], bariery, nil, false, false, ab);
    respJson['success'] := (ok = 0);
    for bariera in bariery do
      Self.BarieraToJson(bariera, respJson.A['bariery'].AddObject());

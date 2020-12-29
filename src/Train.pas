@@ -1,4 +1,4 @@
-unit Train;
+﻿unit Train;
 
 { This file defines "TTrain" class which represents a single train. }
 
@@ -103,7 +103,7 @@ type
      procedure InterChangeStanice(change_ev: Boolean = true);
      procedure SetSpeedBuffer(speedBuffer: PInteger);
      procedure LokDirChanged();
-     procedure CheckSH(nav: TObject);
+     procedure CheckSH(signal: TObject);
 
      procedure ToggleHouk(desc: string);
      procedure SetHoukState(desc: string; state: Boolean);
@@ -587,7 +587,7 @@ begin
 end;
 
 procedure TTrain.AllLocoAcquiredOk(newLoks: TList<Integer>);
-var nav: TBlk;
+var signal: TBlk;
 begin
  Self.fAcquiring := false;
  Self.UvolV(Self.HVs, newLoks);
@@ -599,8 +599,8 @@ begin
 
  TBlkUsek(Self.front).Change();
 
- for nav in TBlkUsek(Self.front).NavJCRef do
-   TBlkNav(nav).UpdateRychlostTrain(true);
+ for signal in TBlkUsek(Self.front).signalJCRef do
+   TBlkSignal(signal).UpdateRychlostTrain(true);
 
  Self.changed := true;
 end;
@@ -952,8 +952,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.CheckSH(nav: TObject);
-var mnav: TBlkNav;
+procedure TTrain.CheckSH(signal: TObject);
+var msignal: TBlkSignal;
     oblr: TOR;
     shPlay: TSHToPlay;
     shTrain: TSHTrain;
@@ -961,9 +961,9 @@ begin
  if ((not Self.announcement) or (Self.announcementPlayed) or (self.stationFrom = nil) or
      (self.stationTo = nil) or (Self.typ = '')) then Exit();
 
- mnav := TBlkNav(nav);
- if (mnav.OblsRizeni.Count < 1) then Exit();
- oblr := mnav.OblsRizeni[0];
+ msignal := TBlkSignal(signal);
+ if (msignal.OblsRizeni.Count < 1) then Exit();
+ oblr := msignal.OblsRizeni[0];
 
  if ((not Assigned(oblr.hlaseni)) or (not oblr.hlaseni.available)) then Exit();
 
@@ -1129,7 +1129,7 @@ end;
 
 function TTrain.PredictedSignal(): TBlk;
 var frontblk: TBlkUsek;
-    nav: TBlkNav;
+    signal: TBlkSignal;
     jc: TJC;
     tu: TBlkTU;
 begin
@@ -1141,12 +1141,12 @@ begin
    Exit(TBlkTU(frontblk).nextNav);
 
  case (Self.direction) of
-   THVStanoviste.lichy: nav := frontblk.navL as TBlkNav;
-   THVStanoviste.sudy: nav := frontblk.navS as TBlkNav;
+   THVStanoviste.lichy: signal := frontblk.navL as TBlkSignal;
+   THVStanoviste.sudy: signal := frontblk.navS as TBlkSignal;
  end;
 
- if ((nav <> nil) and (nav.SymbolType = TBlkNavSymbol.hlavni)) then
-   Exit(nav);
+ if ((signal <> nil) and (signal.SymbolType = TBlkSignalSymbol.main)) then
+   Exit(signal);
 
  jc := JCDb.FindPostavenaJCWithUsek(frontblk.id);
  if (jc = nil) then
@@ -1164,8 +1164,8 @@ begin
       Exit(nil);
   end;
   TJCNextNavType.blok: begin
-    Blky.GetBlkByID(jc.data.DalsiNavestidlo, TBlk(nav));
-    Exit(nav);
+    Blky.GetBlkByID(jc.data.DalsiNavestidlo, TBlk(signal));
+    Exit(signal);
   end;
  end;
 

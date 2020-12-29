@@ -91,7 +91,7 @@ var j, train: integer;
     Blk: TBlk;
     glob: TBlkSettings;
     s_vyh: TBlkTurnoutSettings;
-    s_nav: TBlkNavSettings;
+    s_signal: TBlkSignalSettings;
     str: string;
  begin
   Blky.GetBlkByIndex(line, Blk);
@@ -177,14 +177,14 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btNav: begin
+   btSignal: begin
       Self.LV.Items[line].ImageIndex := 5;
-      s_nav := (Blk as TBlkNav).GetSettings();
+      s_signal := (Blk as TBlkSignal).GetSettings();
       Self.LV.Items[line].SubItems[0] := 'Návěstidlo';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      Self.LV.Items[line].SubItems[3] := TBlkNav.NavestToString((Blk as TBlkNav).Navest);
+      Self.LV.Items[line].SubItems[3] := TBlkSignal.SignalToString((Blk as TBlkSignal).signal);
 
       Self.LV.Items[line].SubItems[5] := '---';
       Self.LV.Items[line].SubItems[6] := '---';

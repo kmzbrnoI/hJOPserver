@@ -1,4 +1,4 @@
-unit fBlkNav;
+﻿unit fBlkNav;
 
 interface
 
@@ -59,7 +59,7 @@ type
 
   private
     OpenIndex: Integer;
-    Blk: TBlkNav;
+    Blk: TBlkSignal;
     NewBlk: Boolean;
     obls: TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
 
@@ -106,7 +106,7 @@ procedure TF_BlkNav.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value := Blky.GetBlkID(Blky.count-1)+1;
-  SE_Delay.Value := TBlkNav._NAV_DEFAULT_DELAY;
+  SE_Delay.Value := TBlkSignal._SIG_DEFAULT_DELAY;
   CHB_Zamknuto.Checked := false;
   Self.L_UsekID.Caption := 'bude zobrazen příště';
 
@@ -130,7 +130,7 @@ procedure TF_BlkNav.NewBlkOpenForm();
 
 procedure TF_BlkNav.NormalOpenForm();
 var glob: TBlkSettings;
-    settings: TBlkNavSettings;
+    settings: TBlkSignalSettings;
     i: Integer;
     eventForm: TF_BlkNavEvent;
     ts: TCloseTabSheet;
@@ -149,7 +149,7 @@ var glob: TBlkSettings;
   for i := 0 to Self.Blk.OblsRizeni.Count-1 do
     obls[i] := Self.Blk.OblsRizeni[i].id;
 
-  SE_Delay.Value := settings.ZpozdeniPadu;
+  SE_Delay.Value := settings.fallDelay;
 
   Self.CHB_RCS_Output.Checked := (settings.RCSAddrs.Count > 0);
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
@@ -177,7 +177,7 @@ var glob: TBlkSettings;
    end;
   Self.SE_RCSmodule1Exit(Self);
 
-  Self.CHB_Zamknuto.Checked := settings.zamknuto;
+  Self.CHB_Zamknuto.Checked := settings.locked;
 
   for i := 0 to settings.events.Count-1 do
    begin
@@ -185,9 +185,9 @@ var glob: TBlkSettings;
     ts.PageControl := Self.PC_Events;
     ts.OnClose := Self.OnTabClose;
     if (i = 0) then
-      ts.Caption  := 'globální'
+      ts.Caption := 'globální'
     else
-      ts.Caption  := IntToStr(settings.events[i].delka.min)+'-'+IntToStr(settings.events[i].delka.max)+'      ';
+      ts.Caption := IntToStr(settings.events[i].length.min)+'-'+IntToStr(settings.events[i].length.max)+'      ';
     eventForm  := TF_BlkNavEvent.Create(ts);
 
     eventForm.OpenForm(settings.events[i], (i = 0), Self.obls);
@@ -198,7 +198,7 @@ var glob: TBlkSettings;
     Self.eventTabSheets.Add(ts);
    end;
 
-  Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkNav).UsekID);
+  Self.L_UsekID.Caption := Blky.GetBlkName((Self.Blk as TBlkSignal).trackId);
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (návěstidlo)';
   Self.ActiveControl := B_Save;
@@ -276,7 +276,7 @@ end;
 
 procedure TF_BlkNav.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkNavSettings;
+    settings: TBlkSignalSettings;
     str: string;
     another: TBlk;
     fBlkNavEvent: TF_BlkNavEvent;
@@ -331,13 +331,13 @@ var glob: TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := btNav;
+  glob.typ := btSignal;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btNav, glob) as TBlkNav;
+      Blk := Blky.Add(btSignal, glob) as TBlkSignal;
     except
       on E: Exception do
        begin
@@ -355,15 +355,15 @@ var glob: TBlkSettings;
   if (Self.CHB_RCS_Output.Checked) then
    begin
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value));
-    settings.OutputType := TBlkNavOutputType(CB_Typ.ItemIndex);
+    settings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
    end;
   if (Self.CHB_RCS_Second_Output.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value));
 
-  settings.ZpozdeniPadu := Self.SE_Delay.Value;
+  settings.fallDelay := Self.SE_Delay.Value;
 
-  settings.zamknuto := CHB_Zamknuto.Checked;
-  settings.events := TObjectList<TBlkNavTrainEvent>.Create();
+  settings.locked := CHB_Zamknuto.Checked;
+  settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
   for fBlkNavEvent in Self.eventForms do
     settings.events.Add(fBlkNavEvent.GetEvent());
 
@@ -377,7 +377,7 @@ procedure TF_BlkNav.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
-  BlokyTableData.UpdateTable;
+  BlokyTableData.UpdateTable();
 
   Self.eventForms.Clear();
   Self.eventTabSheets.Clear();

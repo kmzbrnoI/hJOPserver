@@ -1,4 +1,4 @@
-unit fBlkUsekSysVars;
+﻿unit fBlkUsekSysVars;
 
 interface
 
@@ -84,7 +84,7 @@ var spr: Integer;
     SE_Souprava_Predict.Value := -1
   else
     SE_Souprava_Predict.Value := Blk.trainPredict.index;
-  SE_NavJCRef.Value := Blk.NavJCRef.Count;
+  SE_NavJCRef.Value := Blk.signalJCRef.Count;
   CB_KonecVC.ItemIndex  := Integer(Self.Blk.KonecJC);
 
   M_Stitek.Text := Blk.Stitek;
@@ -107,8 +107,8 @@ var Blk: TBlk;
   else
     Self.Blk.trainPredict := nil;
   Blky.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
-  if (Self.Blk.NavJCRef.Count = 0) then
-    Self.Blk.NavJCRef.Clear();
+  if (Self.Blk.signalJCRef.Count = 0) then
+    Self.Blk.signalJCRef.Clear();
   Self.Blk.zkrat := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
   Self.Blk.napajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
   Self.Blk.Vyluka := M_Vyluka.Text;

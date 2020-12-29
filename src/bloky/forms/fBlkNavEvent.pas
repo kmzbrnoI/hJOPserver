@@ -32,11 +32,11 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
 
-    procedure OpenForm(event: TBlkNavTrainEvent; first: Boolean; obls: TArstr);
+    procedure OpenForm(event: TBlkSignalTrainEvent; first: Boolean; obls: TArstr);
     procedure OpenEmptyForm(first: Boolean; obls: TArstr);
     function Check(): string;
 
-    function GetEvent(): TBlkNavTrainEvent; // returns new object!
+    function GetEvent(): TBlkSignalTrainEvent; // returns new object!
 
   end;
 
@@ -73,7 +73,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNavEvent.OpenForm(event: TBlkNavTrainEvent; first: Boolean; obls: TArstr);
+procedure TF_BlkNavEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean; obls: TArstr);
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -88,25 +88,25 @@ begin
    Self.E_Spr.Text := '.*';
   end else begin
    Self.E_Spr.Enabled        := true;
-   Self.SE_MinLength.Value   := event.delka.min;
-   Self.SE_MaxLength.Value   := event.delka.max;
+   Self.SE_MinLength.Value   := event.length.min;
+   Self.SE_MaxLength.Value   := event.length.max;
    Self.SE_MinLength.Enabled := true;
    Self.SE_MaxLength.Enabled := true;
    Self.E_Spr.Text := Copy(event.train_typ_re.Pattern, 2, Length(event.train_typ_re.Pattern)-2);
   end;
 
- Self.fZast.FillFromRR(event.zastaveni);
+ Self.fZast.FillFromRR(event.stop);
 
- if (event.zpomaleni.enabled) then
+ if (event.slow.enabled) then
   begin
-   Self.fZpom.FillFromRR(event.zpomaleni.ev);
-   Self.CB_ZpomalitKmH.ItemIndex := (event.zpomaleni.speed - 1) div 10;
+   Self.fZpom.FillFromRR(event.slow.ev);
+   Self.CB_ZpomalitKmH.ItemIndex := (event.slow.speed - 1) div 10;
   end else begin
    Self.fZpom.ShowEmpty();
    Self.CB_ZpomalitKmH.ItemIndex := -1;
   end;
 
- Self.CHB_Zpomalit.Checked := event.zpomaleni.enabled;
+ Self.CHB_Zpomalit.Checked := event.slow.enabled;
  Self.CHB_ZpomalitClick(CHB_Zpomalit);
 end;
 
@@ -142,23 +142,23 @@ begin
 end;
 ///////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkNavEvent.GetEvent(): TBlkNavTrainEvent;
+function TF_BlkNavEvent.GetEvent(): TBlkSignalTrainEvent;
 begin
- Result := TBlkNavTrainEvent.Create();
+ Result := TBlkSignalTrainEvent.Create();
  if ((not Self.first) and (Self.E_Spr.Text <> '')) then
    Result.train_typ_re.Compile('^'+Self.E_Spr.Text+'$', false);
- Result.delka.min := Self.SE_MinLength.Value;
- Result.delka.max := Self.SE_MaxLength.Value;
+ Result.length.min := Self.SE_MinLength.Value;
+ Result.length.max := Self.SE_MaxLength.Value;
 
- Result.zastaveni := fZast.GetRREv();
- Result.zpomaleni.enabled := Self.CHB_Zpomalit.Checked;
+ Result.stop := fZast.GetRREv();
+ Result.slow.enabled := Self.CHB_Zpomalit.Checked;
 
  if (Self.CHB_Zpomalit.Checked) then
   begin
-   Result.zpomaleni.ev := fZpom.GetRREv();
-   Result.zpomaleni.speed := (Self.CB_ZpomalitKmH.ItemIndex+1) * 10;
+   Result.slow.ev := fZpom.GetRREv();
+   Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex+1) * 10;
   end else begin
-   Result.zpomaleni.ev := nil;
+   Result.slow.ev := nil;
   end;
 end;
 

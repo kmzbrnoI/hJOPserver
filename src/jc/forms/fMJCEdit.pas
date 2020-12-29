@@ -258,15 +258,15 @@ begin
    try
      Blky.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok, Blk);
 
-     if ((Blk = nil) or (Blk.typ <> btNav)) then
+     if ((Blk = nil) or (Blk.typ <> btSignal)) then
       begin
        obls := nil;
        Exit();
       end;
 
-     SetLength(obls, (Blk as TBlkNav).OblsRizeni.Count);
-     for i := 0 to (Blk as TBlkNav).OblsRizeni.Count-1 do
-      obls[i] := (Blk as TBlkNav).OblsRizeni[i].id;
+     SetLength(obls, (Blk as TBlkSignal).OblsRizeni.Count);
+     for i := 0 to (Blk as TBlkSignal).OblsRizeni.Count-1 do
+      obls[i] := (Blk as TBlkSignal).OblsRizeni[i].id;
    except
      obls := nil;
    end;
@@ -337,7 +337,7 @@ procedure TF_MJCEdit.B_SaveClick(Sender: TObject);
 var data: TMultiJCProp;
     i, prevIndex: Integer;
     check: TMultiJC;
-    origNav: TBlkNav;
+    origNav: TBlkSignal;
 begin
  if (Self.JCs.Count < 2) then
   begin

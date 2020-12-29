@@ -22,7 +22,7 @@ type
    btTurnout = 0,
    btUsek = 1,
    btIr = 2,
-   btNav = 3,
+   btSignal = 3,
    btPrejezd = 4,
    btTrat = 5,
    btUvazka = 6,
@@ -419,7 +419,7 @@ begin
   btTurnout: Result := 'turnout';
   btUsek: Result := 'track';
   btIR: Result := 'ir';
-  btNav: Result := 'signal';
+  btSignal: Result := 'signal';
   btPrejezd: Result := 'crossing';
   btTrat: Result := 'railway';
   btUvazka: Result := 'harness';
@@ -468,7 +468,7 @@ begin
  if (typ = 'vyhybka') or (typ = 'výhybka') or (typ = 'turnout') then Result := btTurnout
  else if (typ = 'usek') or (typ = 'úsek') or (typ = 'track') then Result := btUsek
  else if (typ = 'ir') then Result := btIR
- else if (typ = 'navestidlo') or (typ = 'signal') then Result := btNav
+ else if (typ = 'navestidlo') or (typ = 'signal') then Result := btSignal
  else if (typ = 'prejezd') or (typ = 'přejezd') or (typ = 'crossing') then Result := btPrejezd
  else if (typ = 'trat') or (typ = 'trať') or (typ = 'railway') then Result := btTrat
  else if (typ = 'uvazka') or (typ = 'úvazka') or (typ = 'harness') then Result := btUvazka

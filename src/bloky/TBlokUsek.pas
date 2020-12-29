@@ -1,4 +1,4 @@
-unit TBlokUsek;
+﻿unit TBlokUsek;
 
 //definice a obsluha technologickeho bloku Usek
 
@@ -38,7 +38,7 @@ type
   NUZ: Boolean;              // nouzove uvolneni zaveru
   konecJC: TZaver;           // jaka jizdni cesta (vlakova, posunova, nouzova) konci na tomto bloku - vyuzivano pro zobrazeni
   stit, vyl: string;         // stitek a vyluka
-  navJCRef: TList<TBlk>;     // navestidla, ze kterych je z tohoto bloku postavena JC
+  signalJCRef: TList<TBlk>;  // navestidla, ze kterych je z tohoto bloku postavena JC
   trainPredict: Integer;     // souprava, ktera je na tomto bloku predpovidana
   zkrat: TBoosterSignal;     // zkrat zesilovace
   napajeni: TBoosterSignal;  // napajeni zesilovace
@@ -240,7 +240,7 @@ type
     property vyluka: string read UsekStav.Vyl write mSetUsekVyl;
     property trainPredict: TTrain read GetTrainPredict write SetTrainPredict;
     property konecJC: TZaver read UsekStav.KonecJC write SetKonecJC;
-    property navJCRef: TList<TBlk> read UsekStav.NavJCRef write UsekStav.NavJCRef;
+    property signalJCRef: TList<TBlk> read UsekStav.signalJCRef write UsekStav.signalJCRef;
     property sekceStav: TList<TUsekStav> read UsekStav.sekce;
     property navL: TBlk read GetNavL;  // warning: slow getter!
     property navS: TBLk read GetNavS;  // warning: slow getter!
@@ -307,7 +307,7 @@ begin
 
  Self.UsekStav.neprofilJCcheck := TList<Integer>.Create();
  Self.UsekStav.trains := TList<Integer>.Create();
- Self.UsekStav.NavJCRef := TList<TBlk>.Create();
+ Self.UsekStav.signalJCRef := TList<TBlk>.Create();
  Self.UsekStav.sekce := TList<TUsekStav>.Create();
 end;//ctor
 
@@ -325,7 +325,7 @@ begin
 
  Self.UsekStav.neprofilJCcheck.Free();
  Self.UsekStav.trains.Free();
- Self.UsekStav.NavJCRef.Free();
+ Self.UsekStav.signalJCRef.Free();
  Self.UsekStav.sekce.Free();
 
  inherited;
@@ -1090,7 +1090,7 @@ end;
 
 // pokud volba nebyla uspesna, vraci false a v tom pripade je vyvolano menu
 function TBlkUsek.MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
-var nav: TBlkNav;
+var signal: TBlkSignal;
 begin
  if ((Self.UsekStav.KonecJC <> TZaver.no) and (not (SenderOR as TOR).vb.Contains(Self))) then
   begin
@@ -1100,17 +1100,17 @@ begin
 
  if ((SenderOR as TOR).vb.Contains(Self)) then (SenderOR as TOR).vb.Remove(self);
 
- nav := Blky.GetBlkNavZacatekVolba((SenderOR as TOR).id) as TBlkNav;
- if (nav = nil) then Exit(false);
+ signal := Blky.GeTBlkSignalSelected((SenderOR as TOR).id) as TBlkSignal;
+ if (signal = nil) then Exit(false);
 
- case (nav.ZacatekVolba) of
-  TBlkNavVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
-  TBlkNavVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
-  TBlkNavVolba.NC, TBlkNavVolba.PP
+ case (signal.selected) of
+  TBlkSignalSelection.VC : Self.UsekStav.KonecJC := TZaver.vlak;
+  TBlkSignalSelection.PC : Self.UsekStav.KonecJC := TZaver.posun;
+  TBlkSignalSelection.NC, TBlkSignalSelection.PP
                    : Self.UsekStav.KonecJC := TZaver.nouz;
  end;//case
 
- JCDb.StavJC(nav, Self, SenderPnl, SenderOR, nav.ZacatekAB);
+ JCDb.StavJC(signal, Self, SenderPnl, SenderOR, signal.beginAB);
 
  Self.Change();
  Result := true;
@@ -1125,7 +1125,7 @@ begin
    Exit();
   end;
 
- Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
+ Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk = nil) then Exit();
 
  if (not Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
@@ -1134,11 +1134,11 @@ begin
    Exit();
   end;
 
- case ((Blk as TBlkNav).ZacatekVolba) of
-  TBlkNavVolba.VC : Self.UsekStav.KonecJC := TZaver.vlak;
-  TBlkNavVolba.PC : Self.UsekStav.KonecJC := TZaver.posun;
-  TBlkNavVolba.NC : Self.UsekStav.KonecJC := TZaver.nouz;
-  TBlkNavVolba.PP : Self.UsekStav.KonecJC := TZaver.nouz;
+ case ((Blk as TBlkSignal).selected) of
+  TBlkSignalSelection.VC : Self.UsekStav.KonecJC := TZaver.vlak;
+  TBlkSignalSelection.PC : Self.UsekStav.KonecJC := TZaver.posun;
+  TBlkSignalSelection.NC : Self.UsekStav.KonecJC := TZaver.nouz;
+  TBlkSignalSelection.PP : Self.UsekStav.KonecJC := TZaver.nouz;
  end;
 
  (SenderOR as TOR).vb.Add(Self);
@@ -1394,7 +1394,7 @@ begin
    Result := Result + '-,NUZ>,';
 
  //11 = KC
- Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
+ Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then
   begin
    if ((Self.CanBeKC((SenderOR as TOR).vb, blk)) or Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
@@ -1500,7 +1500,7 @@ begin
   end;
 
   F1: begin
-    Blk := Blky.GeTBlkNavZacatekVolba((SenderOR as TOR).id);
+    Blk := Blky.GeTBlkSignalSelected((SenderOR as TOR).id);
     if (Blk = nil) then
       Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params)
     else
@@ -1552,7 +1552,7 @@ end;
 
 // vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
 function TBlkUsek.PresunLok(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
-var Blk, Nav: TBlk;
+var Blk, signal: TBlk;
     train: TTrain;
 begin
  Blk := Blky.GetBlkUsekVlakPresun((SenderOR as TOR).id);
@@ -1614,12 +1614,12 @@ begin
  if (Blky.GetBlkWithTrain(train).Count = 1) then
    train.front := Self;
 
- for nav in (Blk as TBlkUsek).NavJCRef do
-   Blky.TrainPrediction(Nav);
+ for signal in (Blk as TBlkUsek).signalJCRef do
+   Blky.TrainPrediction(signal);
 
  if (Blk <> Self) then
-   for nav in Self.NavJCRef do
-     Blky.TrainPrediction(Nav);
+   for signal in Self.signalJCRef do
+     Blky.TrainPrediction(signal);
 
  Result := true;
 end;
@@ -2125,16 +2125,16 @@ begin
  if ((was) and (not TrainDb.Trains[trainId].IsPOdj(Self))) then
   begin
    // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
-   // aktualizaci rychlosti pro vsechny NavJCRef bychom nemeli nic pokazit
-   for nav in Self.NavJCRef do
-     TBlkNav(nav).UpdateRychlostTrain(true);
+   // aktualizaci rychlosti pro vsechny signalJCRef bychom nemeli nic pokazit
+   for nav in Self.signalJCRef do
+     TBlkSignal(nav).UpdateRychlostTrain(true);
   end;
 
  // Pri zruseni / zavedei PODJ aktualizovat rychlsot loko, ktera prijizdi,
  // protoze muze dojit ke zmene rychlosti
  jc := JCDb.FindPostavenaJCWithUsek(Self.id);
   if (jc <> nil) then
-    TBlkNav(jc.navestidlo).UpdateRychlostTrain(true);
+    TBlkSignal(jc.navestidlo).UpdateRychlostTrain(true);
 
  Self.PropagatePOdjToTrat();
  Self.Change();
@@ -2146,7 +2146,7 @@ procedure TBlkUsek.CheckPOdjChanged();
 var traini: Integer;
     shouldChange: Boolean;
     podj: TPOdj;
-    Nav: TBlk;
+    signal: TBlk;
     oblr: TOR;
     train: TTrain;
 begin
@@ -2179,10 +2179,10 @@ begin
        // tvrda aktualizace rychlosti soupravy
        if ((train = Self.trainL) or (train = Self.trainSudy)) then
         begin
-         for nav in Self.NavJCRef do
-           if (((TBlkNav(nav).Smer = THVStanoviste.sudy) and (train = Self.trainL)) or
-               ((TBlkNav(nav).Smer = THVStanoviste.lichy) and (train = Self.trainSudy))) then
-             TBlkNav(nav).UpdateRychlostTrain(true);
+         for signal in Self.signalJCRef do
+           if (((TBlkSignal(signal).direction = THVStanoviste.sudy) and (train = Self.trainL)) or
+               ((TBlkSignal(signal).direction = THVStanoviste.lichy) and (train = Self.trainSudy))) then
+             TBlkSignal(signal).UpdateRychlostTrain(true);
         end;
       end else
        train.GetPOdj(Self).changed := false;
@@ -2240,10 +2240,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkUsek.PropagatePOdjToTrat();
-var nav: TBlk;
+var signal: TBlk;
 begin
- for nav in Self.NavJCRef do
-   TBlkNav(nav).PropagatePOdjToTrat();
+ for signal in Self.signalJCRef do
+   TBlkSignal(signal).PropagatePOdjToTrat();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2251,23 +2251,23 @@ end;
 function TBlkUsek.IsStujForTrain(train: TTrain): Boolean;
 begin
  if (not Self.trains.Contains(train.index)) then Exit(false);
- if (Self.NavJCRef.Count = 0) then Exit(true);
+ if (Self.signalJCRef.Count = 0) then Exit(true);
 
- if (Self.NavJCRef.Count = 1) then
+ if (Self.signalJCRef.Count = 1) then
   begin
-   if (not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) then Exit(true);
-   if (TBlkNav(Self.NavJCRef[0]).Smer = THvStanoviste.lichy) then
+   if (not TBlkSignal(Self.signalJCRef[0]).IsGoSignal()) then Exit(true);
+   if (TBlkSignal(Self.signalJCRef[0]).direction = THvStanoviste.lichy) then
      Exit(train <> Self.trainSudy)
    else
      Exit(train <> Self.trainL);
   end;
 
- if (Self.NavJCRef.Count = 2) then
+ if (Self.signalJCRef.Count = 2) then
   begin
-   if ((Self.trains.Count = 1) and (not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) and
-        (not TBlkNav(Self.NavJCRef[1]).IsPovolovaciNavest())) then Exit(true);
-   if ((Self.trains.Count >= 2) and ((not TBlkNav(Self.NavJCRef[0]).IsPovolovaciNavest()) or
-        (not TBlkNav(Self.NavJCRef[1]).IsPovolovaciNavest()))) then Exit(true);
+   if ((Self.trains.Count = 1) and (not TBlkSignal(Self.signalJCRef[0]).IsGoSignal()) and
+        (not TBlkSignal(Self.signalJCRef[1]).IsGoSignal())) then Exit(true);
+   if ((Self.trains.Count >= 2) and ((not TBlkSignal(Self.signalJCRef[0]).IsGoSignal()) or
+        (not TBlkSignal(Self.signalJCRef[1]).IsGoSignal()))) then Exit(true);
    if ((Self.trains.Count > 2) and (Self.trainL <> train) and (Self.trainSudy <> train)) then Exit(true);
  end;
 
@@ -2431,8 +2431,8 @@ begin
    vbs_plus_me.AddRange(vbs);
    vbs_plus_me.Add(Self);
 
-   Result := ((JCDb.IsAnyJCWithPrefix(start as TBlkNav, vbs_plus_me)) or
-              (MultiJCDb.IsAnyMJCWithPrefix(start as TBlkNav, vbs_plus_me)));
+   Result := ((JCDb.IsAnyJCWithPrefix(start as TBlkSignal, vbs_plus_me)) or
+              (MultiJCDb.IsAnyMJCWithPrefix(start as TBlkSignal, vbs_plus_me)));
  finally
    vbs_plus_me.Free();
  end;
@@ -2440,8 +2440,8 @@ end;
 
 function TBlkUsek.CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
 begin
- Result := ((JCDb.FindJC(start as TBlkNav, vbs, Self) <> nil) or
-            (MultiJCDb.FindMJC(start as TBlkNav, vbs, Self) <> nil));
+ Result := ((JCDb.FindJC(start as TBlkSignal, vbs, Self) <> nil) or
+            (MultiJCDb.FindMJC(start as TBlkSignal, vbs, Self) <> nil));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2450,7 +2450,7 @@ function TBlkUsek.GetNavL(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blky do
-   if ((blk.typ = btNav) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.lichy)) then
+   if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVStanoviste.lichy)) then
      Exit(blk);
  Result := nil;
 end;
@@ -2459,7 +2459,7 @@ function TBlkUsek.GetNavS(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blky do
-   if ((blk.typ = btNav) and (TBlkNav(blk).UsekID = Self.id) and (TBlkNav(blk).Smer = THVStanoviste.sudy)) then
+   if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVStanoviste.sudy)) then
      Exit(blk);
  Result := nil;
 end;

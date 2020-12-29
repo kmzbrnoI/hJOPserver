@@ -1,4 +1,4 @@
-unit TBlokTratUsek;
+﻿unit TBlokTratUsek;
 
 // Definice a obsluha technologickeho bloku Tratovy usek
 // Tratovy usek dedi z Useku
@@ -379,18 +379,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.Enable();
-var blk: TBlkNav;
+var blk: TBlkSignal;
 begin
  inherited;
  Self.fTUStav.poruchaBP := false;
 
  // Aktiaovovat navestidla rucne, aby se rovnou nastavily navesti v trati
  Blky.GetBlkByID(Self.TUSettings.navLid, TBlk(Blk));
- if ((blk <> nil) and (blk.typ = btNav)) then
+ if ((blk <> nil) and (blk.typ = btSignal)) then
    blk.Enable();
 
  Blky.GetBlkByID(Self.TUSettings.navSid, TBlk(Blk));
- if ((blk <> nil) and (blk.typ = btNav)) then
+ if ((blk <> nil) and (blk.typ = btSignal)) then
    blk.Enable();
 
  Self.UpdateNavest();
@@ -644,7 +644,7 @@ begin
   end;
 
   F1: begin
-    Blk := Blky.GetBlkNavZacatekVolba((SenderOR as TOR).id);
+    Blk := Blky.GetBlkSignalSelected((SenderOR as TOR).id);
     if (Blk = nil) then
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
@@ -684,7 +684,7 @@ begin
        if (Self.train.direction <> THVStanoviste.lichy) then
          Self.train.ChangeDirection();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Self.train.direction <> TBlkNav(TBlkTrat(Self.Trat).navLichy).Smer) then
+       if (Self.train.direction <> TBlkSignal(TBlkTrat(Self.Trat).navLichy).direction) then
          Self.train.ChangeDirection();
      end;
     end;
@@ -694,7 +694,7 @@ begin
        if ((Self.train.direction <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
          Self.train.ChangeDirection();
      end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Self.train.direction <> TBlkNav(TBlkTrat(Self.Trat).navSudy).Smer) then
+       if (Self.train.direction <> TBlkSignal(TBlkTrat(Self.Trat).navSudy).direction) then
          Self.train.ChangeDirection();
      end;
     end;
@@ -909,7 +909,7 @@ begin
  // predavani soupravy z predchoziho TU do meho TU
  if ((Self.prevTU <> nil) and (Self.Obsazeno = TUsekStav.obsazeno) and
      (Self.prevTU.Obsazeno = TUsekStav.obsazeno) and
-     ((Self.navKryci = nil) or (TBlkNav(Self.navKryci).IsPovolovaciNavest()))) then
+     ((Self.navKryci = nil) or (TBlkSignal(Self.navKryci).IsGoSignal()))) then
   begin
    // nastala aktivace blokove podminky
    Self.bpInBlk := true;
@@ -1032,19 +1032,19 @@ procedure TBlkTU.CreateNavRefs();
 var Blk: TBlk;
 begin
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.typ = btNav) and (Self.lTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = btSignal) and (Self.lTU <> nil)) then
   begin
-   TBlkNav(Blk).UsekID := Self.lTU.id;
-   TBlkNav(Blk).Smer := THVStanoviste.lichy;
-   TBlkNav(Blk).autoblok := true;
+   TBlkSignal(Blk).trackId := Self.lTU.id;
+   TBlkSignal(Blk).direction := THVStanoviste.lichy;
+   TBlkSignal(Blk).autoblok := true;
   end;
 
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.typ = btNav) and (Self.sTU <> nil)) then
+ if ((Blk <> nil) and (Blk.typ = btSignal) and (Self.sTU <> nil)) then
   begin
-   TBlkNav(Blk).UsekID := Self.sTU.id;
-   TBlkNav(Blk).Smer := THVStanoviste.sudy;
-   TBlkNav(Blk).autoblok := true;
+   TBlkSignal(Blk).trackId := Self.sTU.id;
+   TBlkSignal(Blk).direction := THVStanoviste.sudy;
+   TBlkSignal(Blk).autoblok := true;
   end;
 end;
 
@@ -1063,9 +1063,9 @@ begin
  Self.InTrat      := -1;
 
  Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
- if ((Blk <> nil) and (Blk.typ = btNav)) then TBlkNav(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = btSignal)) then TBlkSignal(Blk).trackId := -1;
  Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
- if ((Blk <> nil) and (Blk.typ = btNav)) then TBlkNav(Blk).UsekID := -1;
+ if ((Blk <> nil) and (Blk.typ = btSignal)) then TBlkSignal(Blk).trackId := -1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1089,7 +1089,7 @@ begin
     begin
      Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
      if (Blk <> nil) then
-       TBlkNav(Blk).Navest := TBlkNavCode(TBlkTrat(Self.Trat).NavestProtismer());
+       TBlkSignal(Blk).signal := TBlkSignalCode(TBlkTrat(Self.Trat).NavestProtismer());
     end;
   end;
 
@@ -1099,7 +1099,7 @@ begin
     begin
      Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
      if (Blk <> nil) then
-       TBlkNav(Blk).Navest := TBlkNavCode(TBlkTrat(Self.Trat).NavestProtismer());
+       TBlkSignal(Blk).signal := TBlkSignalCode(TBlkTrat(Self.Trat).NavestProtismer());
     end;
   end;
 
@@ -1117,24 +1117,24 @@ begin
   end;
 
  // nastavime kryci navestidlo
- if ((Self.navKryci <> nil) and (not TBlkNav(Self.navKryci).ZAM) and
-     (TBlkNav(Self.navKryci).Navest >= ncStuj)) then
+ if ((Self.navKryci <> nil) and (not TBlkSignal(Self.navKryci).ZAM) and
+     (TBlkSignal(Self.navKryci).signal >= ncStuj)) then
   begin
    if (not Self.sectReady) then
     begin
      // sekce obsazena -> navestidlo na STUJ
-     TBlkNav(Self.navKryci).Navest := ncStuj
+     TBlkSignal(Self.navKryci).signal := ncStuj
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
      case (TBlkTrat(Self.Trat).navestidla) of
-       TTratNavestidla.hradlo: TBlkNav(Self.navKryci).Navest := ncVolno;
+       TTratNavestidla.hradlo: TBlkSignal(Self.navKryci).signal := ncVolno;
        TTratNavestidla.autoblok: begin
-         if ((Self.nextNav = nil) or (not TBlkNav(Self.nextNav).IsPovolovaciNavest()) or (TBlkNav(Self.nextNav).IsOpakVystraha())) then
-           TBlkNav(Self.navKryci).Navest := ncVystraha
-         else if ((TBlkNav(Self.nextNav).FourtyKmph()) or (TBlkNav(Self.nextNav).Navest = ncOpakOcek40)) then
-           TBlkNav(Self.navKryci).Navest := ncOcek40
+         if ((Self.nextNav = nil) or (not TBlkSignal(Self.nextNav).IsGoSignal()) or (TBlkSignal(Self.nextNav).IsOpakVystraha())) then
+           TBlkSignal(Self.navKryci).signal := ncVystraha
+         else if ((TBlkSignal(Self.nextNav).FourtyKmph()) or (TBlkSignal(Self.nextNav).signal = ncOpakOcek40)) then
+           TBlkSignal(Self.navKryci).signal := ncOcek40
          else
-           TBlkNav(Self.navKryci).Navest := ncVolno;
+           TBlkSignal(Self.navKryci).signal := ncVolno;
        end;
      end;
     end;
@@ -1359,7 +1359,7 @@ begin
 
  Self.max_delka := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
  Self.delay := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
- Self.spr_typ_re.Compile(TBlkNavTrainEvent.ParseTrainTypes(ini_tech.ReadString(section, 'zast_soupravy', '')), false);
+ Self.spr_typ_re.Compile(TBlkSignalTrainEvent.ParseTrainTypes(ini_tech.ReadString(section, 'zast_soupravy', '')), false);
 end;
 
 procedure TBlkTUZastavka.SaveToFile(ini_tech: TMemIniFile; const section: string);

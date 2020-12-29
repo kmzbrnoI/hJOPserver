@@ -72,7 +72,7 @@ type
     function GetBlkName(id: Integer): string;
     function GetBlkIndexName(index: Integer): string;
 
-    function GetBlkNavZacatekVolba(obl: string): TBlk;
+    function GetBlkSignalSelected(obl: string): TBlk;
     function GetBlkUsekVlakPresun(obl: string): TBlk;
 
     function GetNavPrivol(oblR: TOR): TBlksList;
@@ -92,7 +92,7 @@ type
     procedure NactiBlokyDoObjektu(CB: TComboBox; Polozky: PTArI; Vypust: PTArI; OblRizeniID: TArStr; BlokTyp: TBlkType; BlokID: Integer = -1; BlokTyp2: TBlkType = btAny);
 
     procedure RemoveTrain(train: TTrain);
-    procedure TrainPrediction(Nav: TBlk);
+    procedure TrainPrediction(signal: TBlk);
 
     function GetBlkWithTrain(train: TTrain): TBlksList;
     function GetVyhWithZamek(zamekID: integer): TBlksList;
@@ -249,7 +249,7 @@ begin
          Integer(btTurnout)   : Blk := TBlkTurnout.Create(-1);
          Integer(btUsek)      : Blk := TBlkUsek.Create(-1);
          Integer(btIR)        : Blk := TBlkIR.Create(-1);
-         Integer(btNav)       : Blk := TBlkNav.Create(-1);
+         Integer(btSignal)    : Blk := TBlkSignal.Create(-1);
          Integer(btPrejezd)   : Blk := TBlkPrejezd.Create(-1);
          Integer(btTrat)      : Blk := TBlkTrat.Create(-1);
          Integer(btUvazka)    : Blk := TBlkUvazka.Create(-1);
@@ -371,7 +371,7 @@ begin
   btTurnout  : Blk := TBlkTurnout.Create(index);
   btUsek     : Blk := TBlkUsek.Create(index);
   btIR       : Blk := TBlkIR.Create(index);
-  btNav      : Blk := TBlkNav.Create(index);
+  btSignal      : Blk := TBlkSignal.Create(index);
   btPrejezd  : Blk := TBlkPrejezd.Create(index);
   bttrat     : Blk := TBlkTrat.Create(index);
   btUvazka   : Blk := TBlkUvazka.Create(index);
@@ -595,24 +595,24 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlky.GetBlkNavZacatekVolba(obl: string): TBlk;
+function TBlky.GetBlkSignalSelected(obl: string): TBlk;
 var j: Integer;
     orindex: Integer;
     blk: TBlk;
 begin
  for blk in Self.Data do
   begin
-   if (blk.typ <> btNav) then continue;
+   if (blk.typ <> btSignal) then continue;
 
    orindex := -1;
-   for j := 0 to (blk as TBlkNav).OblsRizeni.Count-1 do
-     if ((blk as TBlkNav).OblsRizeni[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkSignal).OblsRizeni.Count-1 do
+     if ((blk as TBlkSignal).OblsRizeni[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
 
-   if (((blk as TBlkNav).ZacatekVolba > TBlkNavVolba.none) and
-      ((JCDb.FindOnlyStaveniJC((blk as TBlkNav).id) = nil) or
-        ((blk as TBlkNav).OblsRizeni[orindex].stack.volba = VZ))) then
+   if (((blk as TBlkSignal).selected > TBlkSignalSelection.none) and
+      ((JCDb.FindOnlyStaveniJC((blk as TBlkSignal).id) = nil) or
+        ((blk as TBlkSignal).OblsRizeni[orindex].stack.volba = VZ))) then
      Exit(blk);
   end;
 
@@ -802,7 +802,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // predpovidani soupravy na bloky v jizdni ceste
 
-procedure TBlky.TrainPrediction(nav: TBlk);
+procedure TBlky.TrainPrediction(signal: TBlk);
 var usek, startUsek: TBlkUsek;
     trat: TBlkTrat;
     train: TTrain;
@@ -810,24 +810,24 @@ var usek, startUsek: TBlkUsek;
 begin
  try
    // zjistime soupravu pred navestidlem
-   usek := TBlkUsek(TBlkNav(nav).UsekPred);
+   usek := TBlkUsek(TBlkSignal(signal).track);
    startUsek := usek;
-   train := TBlkNav(nav).GeTTrain(usek);
+   train := TBlkSignal(signal).GeTTrain(usek);
 
-   if (TBlkNav(nav).IsPovolovaciNavest()) then begin
+   if (TBlkSignal(signal).IsGoSignal()) then begin
      if ((not usek.IsTrain()) or
-         (train.direction <> TBlkNav(nav).Smer)) then
+         (train.direction <> TBlkSignal(signal).direction)) then
       train := usek.trainPredict
    end else
      train := nil;
-   JC := TBlkNav(nav).DNjc;
+   JC := TBlkSignal(signal).DNjc;
 
    // predpovidame, dokud existuji jizdni cesty
    while ((JC <> nil) and (JC.typ = TJCType.vlak) and (JC.stav.RozpadBlok <= 0)) do
     begin
      // kontrola povolujici navesti
-     Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
-     if ((nav = nil) or (nav.typ <> btNav) or (not TBlkNav(nav).IsPovolovaciNavest())) then
+     Blky.GetBlkByID(JC.data.NavestidloBlok, signal);
+     if ((signal = nil) or (signal.typ <> btSignal) or (not TBlkSignal(signal).IsGoSignal())) then
        train := nil;
 
      // zjistime posledni usek jizdni cesty
@@ -864,10 +864,10 @@ begin
      usek.trainPredict := train;
 
      // zjistime, jeslti je nejake navestidlo u tohoto useku postaveno na volno
-     if (usek.NavJCRef.Count = 0) then
+     if (usek.signalJCRef.Count = 0) then
       JC := nil
      else
-      JC := TBlkNav(usek.NavJCRef[0]).DNjc;
+      JC := TBlkSignal(usek.signalJCRef[0]).DNjc;
     end;//while
  except
   on E: Exception do
@@ -899,10 +899,10 @@ begin
  Result := TList<TObject>.Create();
  for blk in Self.data do
   begin
-   if (blk.typ <> btNav) then continue;
-   if ((blk as TBlkNav).Navest <> ncPrivol) then continue;
+   if (blk.typ <> btSignal) then continue;
+   if ((blk as TBlkSignal).signal <> ncPrivol) then continue;
 
-   for moblr in (blk as TBlkNav).OblsRizeni do
+   for moblr in (blk as TBlkSignal).OblsRizeni do
     if (moblr = oblR) then
      begin
       Result.Add(blk);
@@ -1026,8 +1026,8 @@ procedure TBlky.NouzZaverZrusen(Sender: TBlk);
 var Blk: TBlk;
 begin
  for Blk in Self.data do
-   if (Blk.typ = btNav) then
-     TBlkNav(Blk).RemoveBlkFromRnz(Sender.id);
+   if (Blk.typ = btSignal) then
+     TBlkSignal(Blk).RemoveBlkFromRnz(Sender.id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
