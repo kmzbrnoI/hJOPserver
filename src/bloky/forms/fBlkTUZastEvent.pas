@@ -1,10 +1,10 @@
-unit fBlkTUZastEvent;
+﻿unit fBlkTUZastEvent;
 
 interface
 
 uses
   Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
-  ExtCtrls, TBlokTratUsek, TOblsRizeni, TBloky, frrEv;
+  ExtCtrls, TBlockRailwayTrack, TOblsRizeni, TBloky, frrEv;
 
 type
   TF_BlkTUZastEvent = class(TForm)
@@ -23,9 +23,9 @@ type
      constructor Create(AOwner: TComponent); override;
      destructor Destroy(); override;
 
-     procedure OpenForm(events: TBlkTUZastEvents);
+     procedure OpenForm(events: TBlkRTStopEvents);
      procedure OpenEmptyForm();
-     function GetEvent(): TBlkTUZastEvents;
+     function GetEvent(): TBlkRTStopEvents;
      function Check(): string;
 
   end;
@@ -61,15 +61,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkTUZastEvent.OpenForm(events: TBlkTUZastEvents);
+procedure TF_BlkTUZastEvent.OpenForm(events: TBlkRTStopEvents);
 begin
- Self.fZast.FillFromRR(events.zastaveni);
+ Self.fZast.FillFromRR(events.stop);
 
- Self.CHB_Zpomal.Checked := events.zpomaleni.enabled;
- if (events.zpomaleni.enabled) then
+ Self.CHB_Zpomal.Checked := events.slow.enabled;
+ if (events.slow.enabled) then
   begin
-   Self.CB_ZpomalitKmH.ItemIndex := (events.zpomaleni.speed - 1) div 10;
-   Self.fZpom.FillFromRR(events.zpomaleni.ev);
+   Self.CB_ZpomalitKmH.ItemIndex := (events.slow.speed - 1) div 10;
+   Self.fZpom.FillFromRR(events.slow.ev);
   end else begin
    Self.fZpom.ShowEmpty();
   end;
@@ -113,16 +113,16 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkTUZastEvent.GetEvent(): TBlkTUZastEvents;
+function TF_BlkTUZastEvent.GetEvent(): TBlkRTStopEvents;
 begin
- Result := TBlkTUZastEvents.Create();
- Result.zastaveni := fZast.GetRREv();
- Result.zpomaleni.enabled := Self.CHB_Zpomal.Checked;
+ Result := TBlkRTStopEvents.Create();
+ Result.stop := fZast.GetRREv();
+ Result.slow.enabled := Self.CHB_Zpomal.Checked;
 
  if (Self.CHB_Zpomal.Checked) then
   begin
-   Result.zpomaleni.ev := fZpom.GetRREv();
-   Result.zpomaleni.speed := (Self.CB_ZpomalitKmH.ItemIndex+1) * 10;
+   Result.slow.ev := fZpom.GetRREv();
+   Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex+1) * 10;
   end;
 end;
 

@@ -364,7 +364,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, TBlockSignal, TBlockTrack, TOblsRizeni,
      TBlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
-     THVDatabase, Zasobnik, TBlockLinker, TBlokZamek, TBlokTratUsek;
+     THVDatabase, Zasobnik, TBlockLinker, TBlokZamek, TBlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -494,7 +494,7 @@ begin
       Exit;
      end;
 
-    if ((Blk.typ <> btTrack) and (Blk.typ <> btTU)) then
+    if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Blk, usekZaver));
       Exit;
@@ -529,7 +529,7 @@ begin
        end;
 
       // kontrola typu oteviraciho bloku
-      if ((blk2.typ <> btTrack) and (blk2.typ <> btTU)) then
+      if ((blk2.typ <> btTrack) and (blk2.typ <> btRT)) then
        begin
         Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, prjZaver.oteviraci));
         Exit;
@@ -543,7 +543,7 @@ begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, blk, usekZaver));
           Exit;
          end;
-        if ((blk2.typ <> btTrack) and (blk2.typ <> btTU)) then
+        if ((blk2.typ <> btTrack) and (blk2.typ <> btRT)) then
          begin
           Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, usekZaver));
           Exit;
@@ -560,7 +560,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, odvratZaver.ref_blk));
       Exit;
      end;
-    if ((blk.typ <> btTrack) and (blk.typ <> btTU)) then
+    if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, odvratZaver.ref_blk));
       Exit;
@@ -580,7 +580,7 @@ begin
   // trat
   if (Self.fproperties.Trat > -1) then
    begin
-    if (Self.lastUsek.typ <> btTU) then
+    if (Self.lastUsek.typ <> btRT) then
      begin
       Result.Add(Self.JCBariera(_JCB_BLOK_NOT_TYP, Self.lastUsek, Self.lastUsek.id));
       Exit;
@@ -615,7 +615,7 @@ begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
       Exit;
      end;
-    if ((blk.typ <> btTrack) and (blk.typ <> btTU)) then
+    if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, blk.id));
       Exit;
@@ -911,11 +911,11 @@ begin
 
     if ((cont) and (Self.typ = TJCType.vlak)) then
      begin
-      if (TBlkTU(Self.lastUsek).sectObsazeno = TTrackState.occupied) then
+      if (TBlkRT(Self.lastUsek).sectOccupied = TTrackState.occupied) then
        begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_OBSAZENO, blk, Self.fproperties.Trat));
-       end else if (not TBlkTU(Self.lastUsek).sectReady) then begin
+       end else if (not TBlkRT(Self.lastUsek).sectReady) then begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
        end;
@@ -1438,7 +1438,7 @@ var i, j: Integer;
     signal: TBlkSignal;
     railway: TBlkRailway;
     oblr: TOR;
-    tuAdd: TBlkTU;
+    tuAdd: TBlkRT;
     train: TTrain;
     chEv: TChangeEvent;
     remEvDataPtr: ^TRemoveEventData;
@@ -1849,7 +1849,7 @@ var i, j: Integer;
 
      if (Self.fproperties.Trat > -1) then
       begin
-       if (TBlkTU(blk).sectReady) then
+       if (TBlkRT(blk).sectReady) then
         begin
          Self.fstaveni.lastUsekOrTratObsaz := false;
          Self.DN();
@@ -2041,9 +2041,9 @@ var i, j: Integer;
        begin
         if (usek.IsTrain()) then
          begin
-          if ((usek.typ = btTU) and (TBlkTU(usek).InTrat > -1)) then
+          if ((usek.typ = btRT) and (TBlkRT(usek).inRailway > -1)) then
            begin
-            Blky.GetBlkByID((usek as TBlkTU).InTrat, TBlk(railway));
+            Blky.GetBlkByID((usek as TBlkRT).inRailway, TBlk(railway));
             railway.RemoveTrain(train);
            end;
 
@@ -2060,22 +2060,22 @@ var i, j: Integer;
        end;
 
       // b)
-      if ((lastUsek.typ = btTU) and ((lastUsek as TBlkTU).InTrat > -1)) then
-        Blky.GetBlkByID((lastUsek as TBlkTU).InTrat, TBlk(railway))
+      if ((lastUsek.typ = btRT) and ((lastUsek as TBlkRT).inRailway > -1)) then
+        Blky.GetBlkByID((lastUsek as TBlkRT).inRailway, TBlk(railway))
       else
         railway := nil;
 
-      if ((railway <> nil) and (usek.IsTrain()) and (lastUsek.typ = btTU) and
-          ((lastUsek as TBlkTU).InTrat = Self.data.Trat)) then
+      if ((railway <> nil) and (usek.IsTrain()) and (lastUsek.typ = btRT) and
+          ((lastUsek as TBlkRT).inRailway = Self.data.Trat)) then
        begin
         tuAdd := nil;
 
         if (railway.lockout) then
          begin
           // Pridat soupravu do posledniho bloku trati
-          if ((railway.state.trains.Count = 0) and ((railway.GetLastTrack(Self.data.TratSmer) as TBlkTU).zaver = TZaver.no)) then
+          if ((railway.state.trains.Count = 0) and ((railway.GetLastTrack(Self.data.TratSmer) as TBlkRT).zaver = TZaver.no)) then
            begin
-            tuAdd := (railway.GetLastTrack(Self.data.TratSmer) as TBlkTU);
+            tuAdd := (railway.GetLastTrack(Self.data.TratSmer) as TBlkRT);
             railway.TrainChangeOR(train, Self.data.TratSmer);
             if (railway.ChangesTrainDir()) then
               train.ChangeDirection();
@@ -2084,8 +2084,8 @@ var i, j: Integer;
           if ((not TBlkTrack(Self.lastUsek).IsTrain()) and (railway.BP) and (railway.direction = Self.data.TratSmer)) then
            begin
             // Pridat soupravu do prvniho bloku trati
-            tuAdd := (lastUsek as TBlkTU);
-            tuAdd.poruchaBP := true;
+            tuAdd := (lastUsek as TBlkRT);
+            tuAdd.bpError := true;
            end;
          end;
 
@@ -2188,7 +2188,7 @@ begin
  for vb in Self.data.vb do
   begin
    Blky.GetBlkByID(vb, Blk);
-   if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btTU))) then
+   if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btRT))) then
      (Blk as TBlkTrack).jcEnd := TZaver.no;
   end; 
 end;
@@ -2348,7 +2348,7 @@ begin
 
          // nastavime rychlost souprave
          if (Self.typ = TJCType.vlak) then
-           TBlkTU(track).rychUpdate := true;
+           TBlkRT(track).speedUpdate := true;
         end;
 
 
@@ -2477,8 +2477,8 @@ begin
 
       Self.rozpadRuseniBlok := 0;
 
-      if ((track.typ = btTU) and (TBlkTU(track).Trat <> nil) and (TBlkTU(track).bpInBlk)) then
-        TBlkTU(track).UvolnenoZJC();
+      if ((track.typ = btRT) and (TBlkRT(track).railway <> nil) and (TBlkRT(track).bpInBlk)) then
+        TBlkRT(track).ReleasedFromJC();
      end;
    end;
 
@@ -2522,8 +2522,8 @@ begin
         Self.Log('Smazana souprava '+train.name+' z bloku '+track.name, WR_SPRPREDAT);
        end;
 
-      if ((track.typ = btTU) and (TBlkTU(track).Trat <> nil) and (TBlkTU(track).bpInBlk)) then
-        TBlkTU(track).UvolnenoZJC();
+      if ((track.typ = btRT) and (TBlkRT(track).railway <> nil) and (TBlkRT(track).bpInBlk)) then
+        TBlkRT(track).ReleasedFromJC();
      end;
 
     Self.rozpadBlok       := -5;
@@ -2565,14 +2565,14 @@ var TU, first : TBlkTrack;
     nav : TBlkSignal;
 begin
  Blky.GetBlkByID(Self.fproperties.navestidloBlok, TBlk(nav));
- TU := TBlkTU((nav as TBlkSignal).track);
+ TU := TBlkRT((nav as TBlkSignal).track);
  Blky.GetBlkByID(Self.fproperties.useky[0], TBlk(first));
 
  if ((first.occupied = TTrackState.occupied) and (TU.occupied = TTrackState.free)
     and (not TU.IsTrain())) then
   begin
-   if (TBlkTU(TU).bpInBlk) then
-     TBlkTU(TU).UvolnenoZJC();
+   if (TBlkRT(TU).bpInBlk) then
+     TBlkRT(TU).ReleasedFromJC();
   end;
 end;
 
@@ -3042,7 +3042,7 @@ begin
   begin
    Blky.GetBlkByID(Self.fproperties.Trat, TBlk(railway));
    if (railway.request) then Exit(false);
-   if ((((not (TBlkTU(Self.lastUsek).sectReady)) or (railway.departureForbidden)) and (Self.typ = TJCType.vlak)) or
+   if ((((not (TBlkRT(Self.lastUsek).sectReady)) or (railway.departureForbidden)) and (Self.typ = TJCType.vlak)) or
        (railway.RBPCan) or (railway.direction <> Self.fproperties.TratSmer)) then
      Exit(false);
   end;
@@ -3699,7 +3699,7 @@ begin
     if (Self.typ = TJCType.vlak) then
      begin
       Blky.GetBlkByID(Self.fproperties.useky[Self.fproperties.useky.Count-1], Blk);
-      if (not TBlkTU(blk).sectReady) then
+      if (not TBlkRT(blk).sectReady) then
        begin
         Blky.GetBlkByID(Self.fproperties.Trat, Blk);
         bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRIPRAVENA, blk, Self.fproperties.Trat));
@@ -3725,11 +3725,11 @@ begin
     track := (Self.navestidlo as TBlkSignal).track as TBlkTrack;
     lastTrack := TBlkTrack(Self.lastUsek);
 
-    if ((track.IsTrain) and (lastTrack.typ = btTU) and ((lastTrack as TBlkTU).InTrat = Self.data.Trat)) then
+    if ((track.IsTrain) and (lastTrack.typ = btRT) and ((lastTrack as TBlkRT).inRailway = Self.data.Trat)) then
      begin
       if (railway.lockout) then
        begin
-        if ((railway.state.trains.Count > 0) or ((railway.GetLastTrack(Self.data.TratSmer) as TBlkTU).Zaver <> TZaver.no)) then
+        if ((railway.state.trains.Count > 0) or ((railway.GetLastTrack(Self.data.TratSmer) as TBlkRT).Zaver <> TZaver.no)) then
           bariery.Add(Self.JCBariera(_JCB_TRAT_NEPRENOS, railway, Self.fproperties.Trat))
         else
           bariery.Add(Self.JCBariera(_JCB_TRAT_PRENOS_NAKONEC, railway, Self.fproperties.Trat));
@@ -4083,7 +4083,7 @@ begin
  if (Self.data.useky.Count = 0) then
    Exit(nil);
  Blky.GetBlkByID(Self.data.useky[Self.data.useky.Count-1], Result);
- if (Result.typ <> btTrack) and (Result.typ <> btTU) then
+ if (Result.typ <> btTrack) and (Result.typ <> btRT) then
    Result := nil;
 end;
 

@@ -160,7 +160,7 @@ implementation
 
 uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlockTrack, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlockSignal,
-      fRegulator, fMain, TBlokTratUsek, stanicniHlaseniHelper, stanicniHlaseni,
+      fRegulator, fMain, TBlockRailwayTrack, stanicniHlaseniHelper, stanicniHlaseni,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -669,8 +669,8 @@ var addr: Integer;
     direction: Boolean;
     dir_changed: Boolean;
 begin
- if ((TBlk(Self.front).typ = btTU) and (TBlkTU(Self.front).rychUpdate)) then
-   TBlkTU(Self.front).rychUpdate := false;
+ if ((TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).speedUpdate)) then
+   TBlkRT(Self.front).speedUpdate := false;
 
  dir_changed := (Self.direction <> dir);
  Self.data.direction := dir;
@@ -686,8 +686,8 @@ begin
    Exit();
   end;
 
- if ((TBlk(Self.front).typ = btTU) and (TBlkTU(Self.front).Trat <> nil)) then
-   TBlkTU(Self.front).Trat.Change();
+ if ((TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
+   TBlkRT(Self.front).railway.Change();
 
  for addr in Self.HVs do
   begin
@@ -1131,14 +1131,14 @@ function TTrain.PredictedSignal(): TBlk;
 var frontblk: TBlkTrack;
     signal: TBlkSignal;
     jc: TJC;
-    tu: TBlkTU;
+    tu: TBlkRT;
 begin
  frontblk := Self.front as TBlkTrack;
  if (frontblk = nil) then
    Exit(nil);
 
- if (frontblk.typ = btTU) then
-   Exit(TBlkTU(frontblk).nextNav);
+ if (frontblk.typ = btRT) then
+   Exit(TBlkRT(frontblk).nextSignal);
 
  case (Self.direction) of
    THVStanoviste.lichy: signal := frontblk.signalL as TBlkSignal;
@@ -1156,10 +1156,10 @@ begin
   TJCNextNavType.zadna: Exit(nil);
   TJCNextNavType.trat: begin
     Blky.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], TBlk(frontblk));
-    if (frontblk <> nil) and (frontblk.typ = btTU) then
+    if (frontblk <> nil) and (frontblk.typ = btRT) then
      begin
-      tu := TBlkTU(frontblk);
-      Exit(tu.nextNav);
+      tu := TBlkRT(frontblk);
+      Exit(tu.nextSignal);
      end else
       Exit(nil);
   end;

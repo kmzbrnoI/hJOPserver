@@ -30,7 +30,7 @@ function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
 
 implementation
 
-uses TBloky, TBlok, TBlokTratUsek;
+uses TBloky, TBlok, TBlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,21 +56,21 @@ begin
      inOR := Blk.stations.Contains(OblR);
 
      // trate z aktualni stanice kontrolujeme cele
-     if ((not inOR) and (blk.typ = btTU) and (TBlkTrack(blk).trainPredict = train) and
-         (TBlkTU(blk).Trat <> nil) and
-         (((TBlkRailway(TBlkTU(blk).Trat)).linkerA.stations[0] = OblR) or
-          ((TBlkRailway(TBlkTU(blk).Trat)).linkerB.stations[0] = OblR))) then
+     if ((not inOR) and (blk.typ = btRT) and (TBlkTrack(blk).trainPredict = train) and
+         (TBlkRT(blk).railway <> nil) and
+         (((TBlkRailway(TBlkRT(blk).railway)).linkerA.stations[0] = OblR) or
+          ((TBlkRailway(TBlkRT(blk).railway)).linkerB.stations[0] = OblR))) then
        blksWithTrain.Add(TBlkTrack(blk));
 
      if (not inOR) then continue;
 
-     if (((blk.typ = btTrack) or (blk.typ = btTU)) and
+     if (((blk.typ = btTrack) or (blk.typ = btRT)) and
          (TBlkTrack(blk).trainPredict = train)) then
        blksWithTrain.Add(TBlkTrack(blk));
 
-     if ((blk.typ = btTU) and (TBlkTrack(blk).train = train)) then
-       if (TBlkTU(blk).Trat <> nil) then
-         inTrat := TBlkRailway(TBlkTU(blk).Trat);
+     if ((blk.typ = btRT) and (TBlkTrack(blk).train = train)) then
+       if (TBlkRT(blk).railway <> nil) then
+         inTrat := TBlkRailway(TBlkRT(blk).railway);
     end;
 
    // zjistime, na ktere stanicni a na ktere tratove koleje je souprava predpovidana
@@ -78,9 +78,9 @@ begin
    for blkUsek in blksWithTrain do
     begin
      // souprava je predpovidana do jine trati nez ve ktere je -> prujezd
-     if ((blkUsek.typ = btTU) and (TBlkTU(blkUsek).Trat <> inTrat)
-         and (TBlkTU(blkUsek).Trat <> nil)) then
-       Result.trat := TBlkRailway(TBlkTU(blkUsek).Trat);
+     if ((blkUsek.typ = btRT) and (TBlkRT(blkUsek).railway <> inTrat)
+         and (TBlkRT(blkUsek).railway <> nil)) then
+       Result.trat := TBlkRailway(TBlkRT(blkUsek).railway);
 
      // souprava je predpovidana na stanicni kolej -> vybrat tu s nejkratsim nazvem
      if ((blkUsek.spnl.trackName <> '') and ((Result.stanicniKolej = nil) or

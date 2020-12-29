@@ -141,7 +141,7 @@ implementation
 uses TBlockTurnout, TBlockTrack, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
      TBlokZamek, TJCDatabase, Logging, TBlockRailway, TBlockLinker, TBlockAC,
      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlockDisconnector,
-     TBlokTratUsek, appEv, TBlockIO, PTUtils, TBlockSummary,
+     TBlockRailwayTrack, appEv, TBlockIO, PTUtils, TBlockSummary,
      TechnologieAB, ACBlocks;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ var blkset: TBlkSettings;
     blk: TBlk;
     oblr: TOR;
 begin
- if (((Sender as TBlk).typ = btTrack) or ((Sender as TBlk).typ = btTU)) then
+ if (((Sender as TBlk).typ = btTrack) or ((Sender as TBlk).typ = btRT)) then
   begin
    // pri jakekoliv zmene useku dojde k Change() na vyhybce
    // navaznost: usek -> vyhybka
@@ -255,7 +255,7 @@ begin
          Integer(btLinker)    : Blk := TBlkLinker.Create(-1);
          Integer(btLock)      : Blk := TBlkLock.Create(-1);
          Integer(btDisconnector)      : Blk := TBlkDisconnector.Create(-1);
-         Integer(btTU)        : Blk := TBlkTU.Create(-1);
+         Integer(btRT)        : Blk := TBlkRT.Create(-1);
          Integer(btIO)        : Blk := TBlkIO.Create(-1);
          Integer(btSummary)        : Blk := TBlkSummary.Create(-1);
          Integer(btAC)        : Blk := TBlkAC.Create(-1);
@@ -377,7 +377,7 @@ begin
   btLinker   : Blk := TBlkLinker.Create(index);
   btLock     : Blk := TBlkLock.Create(index);
   btDisconnector     : Blk := TBlkDisconnector.Create(index);
-  btTU       : Blk := TBlkTU.Create(index);
+  btRT       : Blk := TBlkRT.Create(index);
   btIO       : Blk := TBlkIO.Create(index);
   btSummary       : Blk := TBlkSummary.Create(index);
   btAC       : Blk := TBlkAC.Create(index);
@@ -404,8 +404,8 @@ begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam bloku');
  if (index >= Self.Data.Count) then raise Exception.Create('Index pretekl seznam bloku');
  tmp := Self.data[index];
- if ((tmp.typ = btTU) and ((tmp as TBlkTU).InTrat > -1)) then
-   raise Exception.Create('Tento blok je zaveden jako tratovy usek v trati ID '+IntToStr((tmp as TBlkTU).InTrat));
+ if ((tmp.typ = btRT) and ((tmp as TBlkRT).inRailway > -1)) then
+   raise Exception.Create('Tento blok je zaveden jako tratovy usek v trati ID '+IntToStr((tmp as TBlkRT).inRailway));
 
  Self.data.Delete(index);
 
@@ -626,7 +626,7 @@ var j: Integer;
 begin
  for blk in Self.Data do
   begin
-   if ((blk.typ <> btTrack) and (blk.typ <> btTU)) then continue;
+   if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then continue;
 
    orindex := -1;
    for j := 0 to (blk as TBlkTrack).stations.Count-1 do
@@ -647,7 +647,7 @@ begin
  if (not Self.enabled) then Exit();
 
  for blk in Self.data do
-   if ((blk.typ = btTrack) or (blk.typ = btTU)) then
+   if ((blk.typ = btTrack) or (blk.typ = btRT)) then
      if ((booster = '') or (TBlkTrack(blk).GetSettings().boosterId = booster)) then
        TBlkTrack(blk).OnBoosterChange();
 end;
@@ -775,7 +775,7 @@ var blk: TBlk;
 begin
  for blk in Self.data do
   begin
-   if ((blk.typ = btTrack) or (blk.typ = btTU)) then
+   if ((blk.typ = btTrack) or (blk.typ = btRT)) then
     begin
      if ((blk as TBlkTrack).IsTrain(train)) then
        (blk as TBlkTrack).RemoveTrain(train);
@@ -794,7 +794,7 @@ var blk: TBlk;
 begin
  Result := TList<TObject>.Create();
  for blk in Self.data do
-   if (((blk.typ = btTrack) or (blk.typ = btTU)) and
+   if (((blk.typ = btTrack) or (blk.typ = btRT)) and
        ((blk as TBlkTrack).IsTrain(train))) then
      Result.Add(blk);
 end;
@@ -835,10 +835,10 @@ begin
 
      if (usek = startUsek) then Exit();
 
-     if ((Usek.typ = btTU) and (TBlkTU(Usek).InTrat > -1)) then
+     if ((Usek.typ = btRT) and (TBlkRT(Usek).inRailway > -1)) then
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
-       Blky.GetBlkByID(TBlkTU(Usek).InTrat, TBlk(trat));
+       Blky.GetBlkByID(TBlkRT(Usek).inRailway, TBlk(trat));
        if (train <> nil) then begin
          if ((trat.trainPredict = nil) or (trat.trainPredict.train <> train)) then
            trat.trainPredict := TBlkRailwayTrain.Create(train.index);
@@ -1036,7 +1036,7 @@ procedure TBlky.ClearPOdj();
 var Blk: TBlk;
 begin
  for Blk in Self.data do
-   if ((Blk.typ = btTrack) or (Blk.typ = btTU)) then
+   if ((Blk.typ = btTrack) or (Blk.typ = btRT)) then
      TBlkTrack(Blk).ClearPOdj();
 end;
 

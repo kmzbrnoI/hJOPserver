@@ -284,7 +284,7 @@ implementation
 
 uses GetSystems, TBloky, TBlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TBlockRailway, TrainDb, THVDatabase, Math,
-    Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv,
+    Trakce, THnaciVozidlo, TBlockRailwayTrack, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
 
@@ -615,7 +615,7 @@ begin
      Self.m_state.trainLost := false;
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
-     if ((Self.typ = btTU) or (Self.spnl.stationTrack)) then
+     if ((Self.typ = btRT) or (Self.spnl.stationTrack)) then
        for oblr in Self.stations do
          oblr.BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
      if (Self.m_state.zaver <> TZaver.no) then Self.m_state.Zaver := TZaver.nouz;
@@ -2296,9 +2296,9 @@ begin
  end;
 
  // zobrazeni zakazu odjezdu do trati
- if ((fg = $A0A0A0) and (Self.typ = btTU) and (TBlkTU(Self).InTrat > -1)) then
+ if ((fg = $A0A0A0) and (Self.typ = btRT) and (TBlkRT(Self).inRailway > -1)) then
   begin
-   Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
+   Blky.GetBlkByID(TBlkRT(Self).inRailway, Blk);
    if ((Blk <> nil) and (Blk.typ = btRailway)) then
      if ((Blk as TBlkRailway).departureForbidden) then
        fg := clBlue;
@@ -2322,7 +2322,7 @@ begin
   end;
 
  // porucha BP v trati
- if ((Self.typ = btTU) and (TBlkTU(Self).poruchaBP)) then fg := clAqua;
+ if ((Self.typ = btRT) and (TBlkRT(Self).bpError)) then fg := clAqua;
 
  if (fg = clYellow) then
    nebarVetve := clYellow;

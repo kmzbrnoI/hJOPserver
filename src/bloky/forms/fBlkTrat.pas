@@ -118,7 +118,7 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.CB_Trat_ZabZar.ItemIndex := -1;
   Self.CB_Navestidla.ItemIndex := -1;
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btTU, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btRT, -1);
 
   Self.Caption := 'Editace nového bloku';
   Self.ActiveControl := Self.E_Trat_Name;
@@ -159,7 +159,7 @@ var glob: TBlkSettings;
   SetLength(vypust, settings.trackIds.Count);
   for i := 0 to settings.trackIds.Count-1 do
     vypust[i] := settings.trackIds[i];
-  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, btTU, -1);
+  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, btRT, -1);
 
   case (settings.rType) of
    TRailwayType.permanent : Self.CB_Trat_ZabZar.ItemIndex := 0;
@@ -227,7 +227,7 @@ begin
      obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
   end;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btTU, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
 end;
 
 procedure TF_BlkTrat.B_Blk_DeleteClick(Sender: TObject);
@@ -248,7 +248,7 @@ begin
  for i := 0 to Self.UvazkaB.stations.Count-1 do
    obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
 
- Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btTU, -1);
+ Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
 end;
 
 procedure TF_BlkTrat.B_SaveClick(Sender: TObject);

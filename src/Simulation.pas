@@ -51,7 +51,7 @@ var
 implementation
 
 uses GetSystems, TechnologieRCS, TJCDatabase, TBlok, TBlockTrack, TBloky, TBlockSignal,
-     TBlokTratUsek, TBlockTurnout;
+     TBlockRailwayTrack, TBlockTurnout;
 
 ////////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani useku v jizdni ceste
@@ -163,7 +163,7 @@ begin
 end;
 
 procedure TTratSimulator.UpdateTrat(Trat: TBlkRailway);
-var TU: TBlkTU;
+var TU: TBlkRT;
     TratSet: TBlkRailwaySettings;
     i: Integer;
 begin
@@ -174,10 +174,10 @@ begin
    for i := 0 to TratSet.trackIds.Count-1 do
     begin
      Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
-     if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.occupied = TTrackState.occupied) and
-         (TU.prevTU.train = TU.train)) then
+     if ((TU.bpInBlk) and (TU.prevRT <> nil) and (TU.prevRT.occupied = TTrackState.occupied) and
+         (TU.prevRT.train = TU.train)) then
       begin
-       RCSi.SetInput(TBlkTrack(TU.prevTU).GetSettings().RCSAddrs[0], 0);
+       RCSi.SetInput(TBlkTrack(TU.prevRT).GetSettings().RCSAddrs[0], 0);
        Exit();
       end;
     end;//for i
@@ -186,11 +186,11 @@ begin
    for i := 0 to TratSet.trackIds.Count-1 do
     begin
      Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
-     if ((TU.occupied = TTrackState.occupied) and (TU.bpInBlk) and (TU.nextTU <> nil) and
-         (TU.nextTU.occupied = TTrackState.free) and
-        ((TU.nextTU.navKryci = nil) or (TBlkSignal(TU.nextTU.navKryci).signal > ncStuj))) then
+     if ((TU.occupied = TTrackState.occupied) and (TU.bpInBlk) and (TU.nextRT <> nil) and
+         (TU.nextRT.occupied = TTrackState.free) and
+        ((TU.nextRT.signalCover = nil) or (TBlkSignal(TU.nextRT.signalCover).signal > ncStuj))) then
       begin
-       RCSi.SetInput(TBlkTrack(TU.nextTU).GetSettings().RCSAddrs[0], 1);
+       RCSi.SetInput(TBlkTrack(TU.nextRT).GetSettings().RCSAddrs[0], 1);
        Exit();
       end;
     end;//for i

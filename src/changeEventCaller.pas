@@ -45,7 +45,7 @@ var blk: TBlk;
 begin
  Blky.GetBlkByID(data, blk);
  if ((blk = nil) or ((blk.typ <> btTrack) and
-    (blk.typ <> btTU))) then Exit();
+    (blk.typ <> btRT))) then Exit();
 
  TBlkTrack(Blk).Zaver := TBlkTrack(Sender).Zaver;
 end;
@@ -97,7 +97,7 @@ begin
  caller := Pointer(data);
 
  Blky.GetBlkByID(caller.usekId, blk);
- if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btTU))) then Exit();
+ if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btRT))) then Exit();
 
  TBlkTrack(Blk).RemoveNeprofilJC(caller.jcId);
  FreeMem(caller);

@@ -81,7 +81,7 @@ begin
   begin
    Blky.GetBlkByID(usek, blk);
    if ((blk <> nil) and
-       ((blk.typ = btTrack) or (blk.typ = btTU)) and
+       ((blk.typ = btTrack) or (blk.typ = btRT)) and
        (TBlkTrack(blk).Zaver = TZaver.ab)) then
      TBlkTrack(blk).Zaver := TZaver.no;
   end;

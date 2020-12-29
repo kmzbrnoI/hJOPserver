@@ -2453,7 +2453,7 @@ var Blk: TBlk;
 begin
  if (Self.LV_Bloky.Selected = nil) then Exit();
  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
- if ((Blk.typ <> btTrack) and (Blk.typ <> btTU)) then Exit();
+ if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then Exit();
 
  F_HoukEvsUsek.Open(TBlkTrack(Blk));
 end;
@@ -2509,7 +2509,7 @@ var Blk: TBlk;
 
   case (Blk.typ) of
    btTurnout: F_BlkVyh_tech.OpenForm(Blk as TBlkTurnout);
-   btTrack, btTU :
+   btTrack, btRT :
                   F_BlkUsek_tech.OpenForm(Blk as TBlkTrack);
    btIR      : ;
    btSignal  : ;
@@ -2907,7 +2907,7 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btTrack, btTU : begin
+   btTrack, btRT : begin
     case ((Blk as TBlkTrack).occupied) of
      TTrackState.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
      TTrackState.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
@@ -3037,7 +3037,7 @@ var Blk: TBlk;
    btRailway, btLinker: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    btDisconnector: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
-   btTU: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
+   btRT: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
    btIO: F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
    btSummary: F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
    btAC: F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);

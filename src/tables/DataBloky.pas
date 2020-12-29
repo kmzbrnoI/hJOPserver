@@ -306,7 +306,7 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btTU: begin
+   btRT: begin
       Self.LV.Items[line].ImageIndex := 2;
       Self.LV.Items[line].SubItems[0] := 'Traťový úsek';
 

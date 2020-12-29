@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, TBloky, TBlok, Mask,
-  TBlokTratUsek, StrUtils, TBlockTrack, fBlkTUZastEvent, Generics.Collections;
+  TBlockRailwayTrack, StrUtils, TBlockTrack, fBlkTUZastEvent, Generics.Collections;
 
 type
   TF_BlkTU = class(TForm)
@@ -79,7 +79,7 @@ type
       Change: TItemChange);
   private
    NewBlk: Boolean;
-   Blk: TBlkTU;
+   Blk: TBlkRT;
    OpenIndex: Integer;
    CB_NavData: TArI;
    CB_NavLindex, CB_NavSindex: Integer;
@@ -178,7 +178,7 @@ procedure TF_BlkTU.NewBlkOpenForm();
 
 procedure TF_BlkTU.NormalOpenForm();
 var glob: TBlkSettings;
-    TUsettings: TBlkTUSettings;
+    TUsettings: TBlkRTSettings;
     Usettings: TBlkTrackSettings;
     i: Integer;
     obls: TArstr;
@@ -293,34 +293,34 @@ var glob: TBlkSettings;
   E_Delka.Text := FloatToStr(Usettings.lenght);
   CHB_SmycBlok.Checked := Usettings.loop;
 
-  Self.CHB_Zastavka_Lichy.Checked := Assigned(TUsettings.zastavka) and Assigned(TUsettings.Zastavka.ev_lichy);
-  Self.CHB_Zastavka_Sudy.Checked  := Assigned(TUsettings.zastavka) and Assigned(TUsettings.Zastavka.ev_sudy);
+  Self.CHB_Zastavka_Lichy.Checked := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evL);
+  Self.CHB_Zastavka_Sudy.Checked  := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evS);
   Self.CHB_Zastavka_LichyClick(Self);
 
-  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, TUsettings.navLid);
-  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, TUsettings.navSid);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, TUsettings.signalLid);
+  Blky.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, TUsettings.signalSid);
   Self.CB_NavLindex := Self.CB_NavL.ItemIndex;
   Self.CB_NavSindex := Self.CB_NavS.ItemIndex;
 
-  Self.CHB_NavL.Checked := (TUsettings.navLid <> -1);
-  Self.CHB_NavS.Checked := (TUsettings.navSid <> -1);
+  Self.CHB_NavL.Checked := (TUsettings.signalLid <> -1);
+  Self.CHB_NavS.Checked := (TUsettings.signalSid <> -1);
   Self.CHB_NavLClick(CHB_NavL);
   Self.CHB_NavSClick(CHB_NavS);
 
   Self.LV_Speeds.Clear();
-  for i in TUsettings.rychlosti.Keys do
+  for i in TUsettings.speeds.Keys do
    begin
     LI := Self.LV_Speeds.Items.Add();
     LI.Caption := IntToStr(i);
-    LI.SubItems.Add(IntToStr(TUsettings.rychlosti[i]) + ' km/h');
+    LI.SubItems.Add(IntToStr(TUsettings.speeds[i]) + ' km/h');
    end;
 
-  if (TUsettings.zastavka <> nil) then
+  if (TUsettings.stop <> nil) then
    begin
-    if (TUsettings.zastavka.ev_lichy <> nil) then
-      Self.zastLichy.OpenForm(TUsettings.zastavka.ev_lichy);
-    if (TUsettings.zastavka.ev_sudy <> nil) then
-      Self.zastSudy.OpenForm(TUsettings.zastavka.ev_sudy);
+    if (TUsettings.stop.evL <> nil) then
+      Self.zastLichy.OpenForm(TUsettings.stop.evL);
+    if (TUsettings.stop.evS <> nil) then
+      Self.zastSudy.OpenForm(TUsettings.stop.evS);
    end;
 
   Self.Caption := 'Editovat data bloku '+glob.name+' (traťový úsek)';
@@ -401,7 +401,7 @@ procedure TF_BlkTU.B_StornoClick(Sender: TObject);
 procedure TF_BlkTU.B_OKClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkTrackSettings;
-    TUsettings: TBlkTUSettings;
+    TUsettings: TBlkRTSettings;
     str: string;
     speeds: TDictionary<Cardinal, Cardinal>;
  begin
@@ -470,13 +470,13 @@ var glob: TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id := SE_ID.Value;
-  glob.typ := btTU;
+  glob.typ := btRT;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btTU, glob) as TBlkTU;
+      Blk := Blky.Add(btRT, glob) as TBlkRT;
     except
       on E: Exception do
        begin
@@ -506,45 +506,45 @@ var glob: TBlkSettings;
   settings.boosterId := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
   settings.maxTrains := 1;
 
-  TUSettings.rychlosti := speeds;
+  TUSettings.speeds := speeds;
 
   if (Self.CHB_NavL.Checked) then
-    TUsettings.navLid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])
+    TUsettings.signalLid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])
   else
-    TUsettings.navLid := -1;
+    TUsettings.signalLid := -1;
 
   if (Self.CHB_NavS.Checked) then
-    TUsettings.navSid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavS.ItemIndex])
+    TUsettings.signalSid := Blky.GetBlkID(Self.CB_NavData[Self.CB_NavS.ItemIndex])
   else
-    TUsettings.navSid := -1;
+    TUsettings.signalSid := -1;
 
 
   if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
    begin
-    TUsettings.zastavka := TBlkTUZastavka.Create();
-    TUsettings.zastavka.spr_typ_re.Compile('^'+Self.E_Zast_Spr.Text+'$', false);
-    TUsettings.zastavka.max_delka := Self.SE_Zast_DelkaSpr.Value;
+    TUsettings.stop := TBlkRTStop.Create();
+    TUsettings.stop.trainTypeRe.Compile('^'+Self.E_Zast_Spr.Text+'$', false);
+    TUsettings.stop.maxLength := Self.SE_Zast_DelkaSpr.Value;
     try
-      TUsettings.Zastavka.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)),
+      TUsettings.stop.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)),
                                               StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
       speeds.Free();
-      TUsettings.zastavka.Free();
+      TUsettings.stop.Free();
       Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
 
     if (Self.CHB_Zastavka_Lichy.Checked) then
-      TUsettings.Zastavka.ev_lichy := Self.zastLichy.GetEvent()
+      TUsettings.stop.evL := Self.zastLichy.GetEvent()
     else
-      TUsettings.zastavka.ev_lichy := nil;
+      TUsettings.stop.evL := nil;
 
     if (Self.CHB_Zastavka_Sudy.Checked) then
-      TUsettings.Zastavka.ev_sudy := Self.zastSudy.GetEvent()
+      TUsettings.stop.evS := Self.zastSudy.GetEvent()
     else
-      TUsettings.zastavka.ev_sudy := nil;
+      TUsettings.stop.evS := nil;
    end else
-     TUsettings.zastavka := nil;
+     TUsettings.stop := nil;
 
   settings.houkEvL := TBlkTrack(Self.Blk).GetSettings().houkEvL;
   settings.houkEvS := TBlkTrack(Self.Blk).GetSettings().houkEvS;
@@ -644,7 +644,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkTU.CHB_Zastavka_LichyClick(Sender: TObject);
-var zast: TBlkTUZastavka;
+var zast: TBlkRTStop;
 begin
  if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
   begin
@@ -653,11 +653,11 @@ begin
    Self.ME_Zast_Delay.Enabled := true;
    Self.PC_Zastavka.Enabled := true;
 
-   if ((Assigned(Self.Blk)) and (Self.Blk.GetSettings.zastavka <> nil)) then
+   if ((Assigned(Self.Blk)) and (Self.Blk.GetSettings.stop <> nil)) then
     begin
-     zast := Self.Blk.GetSettings.Zastavka;
-     Self.E_Zast_Spr.Text := Copy(zast.spr_typ_re.Pattern, 2, Length(zast.spr_typ_re.Pattern)-2);
-     Self.SE_Zast_DelkaSpr.Value := zast.max_delka;
+     zast := Self.Blk.GetSettings.stop;
+     Self.E_Zast_Spr.Text := Copy(zast.trainTypeRe.Pattern, 2, Length(zast.trainTypeRe.Pattern)-2);
+     Self.SE_Zast_DelkaSpr.Value := zast.maxLength;
      Self.ME_Zast_Delay.Text := FormatDateTime('nn:ss', zast.delay);
     end;
   end else begin

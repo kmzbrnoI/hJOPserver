@@ -197,7 +197,7 @@
 				<Form>F_FuncsSet</Form>
 			</DCCReference>
 			<DCCReference Include="hv\FunkceVyznam.pas"/>
-			<DCCReference Include="bloky\TBlokTratUsek.pas"/>
+			<DCCReference Include="bloky\TBlockRailwayTrack.pas"/>
 			<DCCReference Include="bloky\forms\fBlkTU.pas">
 				<Form>F_BlkTU</Form>
 			</DCCReference>

@@ -275,7 +275,7 @@ implementation
 
 uses TBloky, TBlockTrack, TJCDatabase, TCPServerOR, Graphics,
      GetSystems, Logging, TrainDb, TBlockIR, Zasobnik, ownStrUtils,
-     TBlokTratUsek, TBlockRailway, TBlockTurnout, TBlokZamek, TechnologieAB,
+     TBlockRailwayTrack, TBlockRailway, TBlockTurnout, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
 constructor TBlkSignal.Create(index: Integer);
@@ -487,7 +487,7 @@ procedure TBlkSignal.Change(now: Boolean = false);
 begin
  // zmenu navesti propagujeme do prilehle trati, kde by mohlo dojit ke zmene
  // navesti autobloku
- if ((Self.track <> nil) and (Self.track.typ = btTU) and (TBlkTU(Self.track).InTrat > -1)) then
+ if ((Self.track <> nil) and (Self.track.typ = btRT) and (TBlkRT(Self.track).inRailway > -1)) then
    Self.track.Change();
 
  inherited;
@@ -576,7 +576,7 @@ begin
  if (navest = ncStuj) then
   begin
    if ((Self.track <> nil) and ((Self.track.typ = btTrack) or
-       (Self.track.typ = btTU)) and ((Self.track as TBlkTrack).signalJCRef.Contains(Self))) then
+       (Self.track.typ = btRT)) and ((Self.track as TBlkTrack).signalJCRef.Contains(Self))) then
     (Self.track as TBlkTrack).signalJCRef.Remove(Self);
 
    if (Assigned(Self.privol)) then
@@ -639,8 +639,8 @@ begin
 
  if (Self.autoblok) then
   begin
-   if (TBlkTU(Self.track).nextTU <> nil) then TBlkTU(Self.track).nextTU.Change();
-   if (TBlkTU(Self.track).Trat <> nil) then TBlkRailway(TBlkTU(Self.track).Trat).UpdateTrainPredict();
+   if (TBlkRT(Self.track).nextRT <> nil) then TBlkRT(Self.track).nextRT.Change();
+   if (TBlkRT(Self.track).railway <> nil) then TBlkRailway(TBlkRT(Self.track).railway).UpdateTrainPredict();
   end;
 
  if (Assigned(Self.m_state.changeCallbackOk)) then
@@ -755,8 +755,8 @@ begin
    Blky.TrainPrediction(Self);
   end;
 
- if ((Self.autoblok) and (not zam) and (Self.track <> nil) and (TBlkTU(Self.track).Trat <> nil)) then
-   TBlkRailway(TBlkTU(Self.track).Trat).ChangeTracks();
+ if ((Self.autoblok) and (not zam) and (Self.track <> nil) and (TBlkRT(Self.track).railway <> nil)) then
+   TBlkRailway(TBlkRT(Self.track).railway).ChangeTracks();
 
  Self.Change();
 end;
@@ -839,7 +839,7 @@ begin
  JC := Self.DNjc;
 
  Blk := Self.track;
- if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btTU))) then
+ if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btRT))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
    Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
@@ -1213,7 +1213,7 @@ begin
  if (Self.m_settings.events.Count = 0) then Exit();
  Usek := Self.track;
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
- if ((Usek = nil) or ((Usek.typ <> btTrack) and (Usek.typ <> btTU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
+ if ((Usek = nil) or ((Usek.typ <> btTrack) and (Usek.typ <> btRT))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
  if (not (Usek as TBlkTrack).IsTrain()) then
@@ -1238,9 +1238,9 @@ begin
    Exit();
   end;
 
- if ((Usek.typ = btTU) and (TBlkTU(Usek).Trat <> nil)) then
+ if ((Usek.typ = btRT) and (TBlkRT(Usek).railway <> nil)) then
   begin
-   trat := TBlkRailway(TBlkTU(Usek).Trat);
+   trat := TBlkRailway(TBlkRT(Usek).railway);
 
    // Ignoruji krajni navestidla trati, ktera jsou proti smeru trati
    if ((trat.direction = TRailwayDirection.AtoB) and (Self = trat.signalA)) then
@@ -1249,9 +1249,9 @@ begin
      Exit();
 
    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontetu zmeny smeru soupravy)
-   if ((Self.autoblok) and (TBlkRailway(TBlkTU(Usek).Trat).direction = TRailwayDirection.AtoB) and (Self.direction = THVStanoviste.sudy)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.AtoB) and (Self.direction = THVStanoviste.sudy)) then
      Exit();
-   if ((Self.autoblok) and (TBlkRailway(TBlkTU(Usek).Trat).direction = TRailwayDirection.BtoA) and (Self.direction = THVStanoviste.lichy)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.BtoA) and (Self.direction = THVStanoviste.lichy)) then
      Exit();
   end;
 
@@ -1372,10 +1372,10 @@ begin
      if (train.direction = Self.m_spnl.direction) then
       begin
        if ((Self.IsGoSignal()) and (not Self.m_state.falling) and
-           (Self.track.typ = btTU) and (TBlkTU(Self.track).InTrat > -1)) then
+           (Self.track.typ = btRT) and (TBlkRT(Self.track).inRailway > -1)) then
         begin
-         if (Cardinal(train.wantedSpeed) <> TBlkTU(Self.track).Speed(train)) then
-           train.SetSpeedDirection(TBlkTU(Self.track).Speed(train), Self.m_spnl.direction)
+         if (Cardinal(train.wantedSpeed) <> TBlkRT(Self.track).Speed(train)) then
+           train.SetSpeedDirection(TBlkRT(Self.track).Speed(train), Self.m_spnl.direction)
         end else begin
          //  neni povolovaci navest -> zastavit
          if (train.wantedSpeed <> 0) then

@@ -99,7 +99,7 @@ uses
   RegulatorTCP in 'RegulatorTCP.pas',
   fFuncsSet in 'forms\fFuncsSet.pas' {F_FuncsSet},
   FunkceVyznam in 'hv\FunkceVyznam.pas',
-  TBlokTratUsek in 'bloky\TBlokTratUsek.pas',
+  TBlockRailwayTrack in 'bloky\TBlockRailwayTrack.pas',
   fBlkTU in 'bloky\forms\fBlkTU.pas' {F_BlkTU},
   fBlkTUZastEvent in 'bloky\forms\fBlkTUZastEvent.pas' {F_BlkTUZastEvent},
   RCSdebugger in 'RCSdebugger.pas',

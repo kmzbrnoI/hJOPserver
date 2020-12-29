@@ -1714,7 +1714,7 @@ begin
   begin
    try
      Blky.GetBlkByID(StrToInt(str[3]), Blk);
-     if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btTU))) then
+     if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btRT))) then
       begin
        Self.SendLn(Sender, 'LOK-REQ;U-ERR;Neplatný blok');
        Exit();

@@ -477,7 +477,7 @@ var tmpBlk: TBlk;
 begin
  return := Blky.GetBlkByID(Self.m_spnl.track, tmpBlk);
  if (return < 0) then Exit(TTrackState.none);
- if ((tmpBlk.typ <> btTrack) and (tmpBlk.typ <> btTU)) then Exit(TTrackState.none);
+ if ((tmpBlk.typ <> btTrack) and (tmpBlk.typ <> btRT)) then Exit(TTrackState.none);
 
  Result := (tmpBlk as TBlkTrack).occupied;
 end;
@@ -1578,7 +1578,7 @@ begin
 
      // je soucasti vybarveneho neprofiloveho useku
      Blky.GetBlkByID(Self.trackID, Blk);
-     if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btTU))
+     if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btRT))
          and (fg = $A0A0A0) and (TBlkTrack(Blk).IsNeprofilJC)) then
        fg := clYellow;
     end;

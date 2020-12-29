@@ -212,7 +212,7 @@ begin
        Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
      if (Blk.typ = btCrossing) then
        Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open, 1);
-     if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btTU)) and ((Blk as TBlkTrack).IsTrain()) and
+     if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
          ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
        Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
    except
@@ -240,7 +240,7 @@ var Blk: TBlk;
 begin
  for blk in Blky do
   begin
-   if ((Blk.typ <> btTrack) and (Blk.typ <> btTU)) then continue;
+   if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then continue;
    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
      Self.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1);
   end;

@@ -93,7 +93,7 @@ implementation
 
 uses Logging, GetSystems, TBlockTrack, TOblRizeni, TCPServerOR, TBlockRailway,
       DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlockTurnout,
-      TBlokTratUsek;
+      TBlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TJCDb
@@ -480,8 +480,8 @@ begin
         for usekid in TBlkRailway(trat).GetSettings().trackIds do
          begin
           Blky.GetBlkByID(usekid, tu);
-          if ((tu <> nil) and (tu.typ = btTU)) then
-            if ((TBlkTU(tu).navKryci = nil) and (tu.id = usek_id)) then
+          if ((tu <> nil) and (tu.typ = btRT)) then
+            if ((TBlkRT(tu).signalCover = nil) and (tu.id = usek_id)) then
               Exit(jc);
          end;
        end;
@@ -611,7 +611,7 @@ begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithPrj(Blk.id);
     end;
-    btTrack, btTU: begin
+    btTrack, btRT: begin
       jc := JCDb.FindPostavenaJCWithUsek(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
@@ -830,7 +830,7 @@ begin
    if ((jc.typ = typ) and (jc.data.Useky.Count > 0)) then
     begin
       Blky.GetBlkByID(jc.data.Useky[0], blk);
-      if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btTU))) then
+      if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
        begin
         usek := blk as TBlkTrack;
         if ((usek.Zaver = TZaver.no) and (usek.occupied = TTrackState.free)) then

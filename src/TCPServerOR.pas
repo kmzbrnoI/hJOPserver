@@ -617,7 +617,7 @@ begin
 
    if (orRef.stitek = nil) then Exit();
    case (orRef.stitek.typ) of
-    btTrack, btTU : (orRef.stitek as TBlkTrack).note := tmp;
+    btTrack, btRT : (orRef.stitek as TBlkTrack).note := tmp;
     btTurnout    : (orRef.stitek as TBlkTurnout).note := tmp;
     btLinker     : (orRef.stitek as TBlkLinker).note := tmp;
     btCrossing    : (orRef.stitek as TBlkCrossing).note := tmp;
@@ -639,7 +639,7 @@ begin
 
    if (orRef.vyluka = nil) then Exit();
    case (orRef.vyluka.typ) of
-    btTrack, btTU : (orRef.vyluka as TBlkTrack).SetLockout(AContext, tmp);
+    btTrack, btRT : (orRef.vyluka as TBlkTrack).SetLockout(AContext, tmp);
     btTurnout    : (orRef.vyluka as TBlkTurnout).SetLockout(AContext, tmp);
    end;//case
    orRef.vyluka := nil;
@@ -762,7 +762,7 @@ begin
    TTCPORsRef(AContext.Data).maus := (parsed[2] = '1');
    if ((Assigned(TTCPORsRef(AContext.Data).menu)) and
        ((TTCPORsRef(AContext.Data).menu.typ = btTrack) or
-        (TTCPORsRef(AContext.Data).menu.typ = btTU))) then
+        (TTCPORsRef(AContext.Data).menu.typ = btRT))) then
      TTCPORsRef(AContext.Data).menu.Change();
   end
 
