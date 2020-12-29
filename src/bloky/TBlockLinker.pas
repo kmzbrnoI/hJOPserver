@@ -107,7 +107,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Train, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, TBlockRailway, Zasobnik, TBlokUsek;
+    TJCDatabase, fMain, TCPServerOR, TBlockRailway, Zasobnik, TBlockTrack;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -434,7 +434,7 @@ begin
    // to zajistuje, ze njelze zrusit ZAK u trati, do ktere je postaven PMD
    Blky.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[0], Blk);
    Blky.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[TBlkRailway(Self.parent).GetSettings().trackIds.Count-1], Blk2);
-   if ((Blk <> nil) and (Blk2 <> nil) and (TBlkUsek(Blk).Zaver = TZaver.no) and (TBlkUsek(Blk2).Zaver = TZaver.no)) then
+   if ((Blk <> nil) and (Blk2 <> nil) and (TBlkTrack(Blk).Zaver = TZaver.no) and (TBlkTrack(Blk2).Zaver = TZaver.no)) then
      Result := Result + '!ZAK<,'
   end else
   if ((not railway.departureForbidden) and (not railway.Zaver) and (not railway.occupied)) then
@@ -457,7 +457,7 @@ begin
 
  blk := railway.GetTrainTrack(train);
  if (blk = nil) then Exit();
- TBlkUsek(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
+ TBlkTrack(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

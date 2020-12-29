@@ -91,7 +91,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBlokUsek, TOblRizeni, TCPServerOR, TBlockRailway,
+uses Logging, GetSystems, TBlockTrack, TOblRizeni, TCPServerOR, TBlockRailway,
       DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlockTurnout,
       TBlokTratUsek;
 
@@ -298,7 +298,7 @@ begin
 
      // zrusime zacatek, konec a variantni body
      startNav.selected := TBlkSignalSelection.none;
-     (EndBlk as TBlkUsek).KonecJC := TZaver.no;
+     (EndBlk as TBlkTrack).jcEnd := TZaver.no;
      SenderOblr.ClearVb();
     end else begin
      SenderOblr.vb.Clear(); // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
@@ -317,7 +317,7 @@ begin
    if ((startNav.selected = TBlkSignalSelection.VC) or (startNav.selected = TBlkSignalSelection.PC)) then
      if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR, abAfter)) then Exit();
 
-   (EndBlk as TBlkUsek).KonecJC := TZaver.no;
+   (EndBlk as TBlkTrack).jcEnd := TZaver.no;
    ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
    writelog('Nelze postavit JC -  nenalezena v zaverove tabulce', WR_VC);
   end;
@@ -611,7 +611,7 @@ begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithPrj(Blk.id);
     end;
-    btUsek, btTU: begin
+    btTrack, btTU: begin
       jc := JCDb.FindPostavenaJCWithUsek(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
@@ -821,7 +821,7 @@ end;
 function TJCDb.IsAnyJCAvailable(signal: TBlkSignal; typ: TJCType): Boolean;
 var jc: TJC;
     blk: TBlk;
-    usek: TBlkUsek;
+    usek: TBlkTrack;
 begin
  if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Exit(false);
@@ -830,10 +830,10 @@ begin
    if ((jc.typ = typ) and (jc.data.Useky.Count > 0)) then
     begin
       Blky.GetBlkByID(jc.data.Useky[0], blk);
-      if ((blk <> nil) and ((blk.typ = btUsek) or (blk.typ = btTU))) then
+      if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btTU))) then
        begin
-        usek := blk as TBlkUsek;
-        if ((usek.Zaver = TZaver.no) and (usek.Obsazeno = TUsekStav.uvolneno)) then
+        usek := blk as TBlkTrack;
+        if ((usek.Zaver = TZaver.no) and (usek.occupied = TTrackState.free)) then
           Exit(true);
        end;
     end;

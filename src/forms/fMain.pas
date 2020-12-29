@@ -489,7 +489,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
-     TBlok, TBlokUsek, TBlockTurnout, TBlockSignal, TBlockIR, TOblRizeni,
+     TBlok, TBlockTrack, TBlockTurnout, TBlockSignal, TBlockIR, TOblRizeni,
      SnadnSpusteni, TBlockSummary, TBlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
@@ -2453,9 +2453,9 @@ var Blk: TBlk;
 begin
  if (Self.LV_Bloky.Selected = nil) then Exit();
  if (Blky.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
- if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then Exit();
+ if ((Blk.typ <> btTrack) and (Blk.typ <> btTU)) then Exit();
 
- F_HoukEvsUsek.Open(TBlkUsek(Blk));
+ F_HoukEvsUsek.Open(TBlkTrack(Blk));
 end;
 
 procedure TF_Main.MI_PropClick(Sender: TObject);
@@ -2509,8 +2509,8 @@ var Blk: TBlk;
 
   case (Blk.typ) of
    btTurnout: F_BlkVyh_tech.OpenForm(Blk as TBlkTurnout);
-   btUsek, btTU :
-                  F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
+   btTrack, btTU :
+                  F_BlkUsek_tech.OpenForm(Blk as TBlkTrack);
    btIR      : ;
    btSignal  : ;
    btCrossing : ;
@@ -2907,12 +2907,12 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btUsek, btTU : begin
-    case ((Blk as TBlkUsek).Obsazeno) of
-     TUsekStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-     TUsekStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-     TUsekStav.uvolneno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-     TUsekStav.obsazeno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+   btTrack, btTU : begin
+    case ((Blk as TBlkTrack).occupied) of
+     TTrackState.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TTrackState.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TTrackState.free : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TTrackState.occupied : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
     end;
    end;
 
@@ -3030,7 +3030,7 @@ var Blk: TBlk;
 
   case (Blk.typ) of
    btTurnout: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
-   btUsek: F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
+   btTrack: F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
    btSignal: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
    btCrossing: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);

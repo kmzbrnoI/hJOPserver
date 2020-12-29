@@ -132,7 +132,7 @@ var
 
 implementation
 
-uses fMain, diagnostics, GetSystems, TBloky, TBlok, TBlockTurnout, TBlokUsek,
+uses fMain, diagnostics, GetSystems, TBloky, TBlok, TBlockTurnout, TBlockTrack,
      BoosterDb, TBlockCrossing, RCSErrors, TOblsRizeni,
      Logging, TCPServerOR, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
@@ -212,9 +212,9 @@ begin
        Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
      if (Blk.typ = btCrossing) then
        Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open, 1);
-     if ((diag.simSoupravaObsaz) and ((Blk.typ = btUsek) or (Blk.typ = btTU)) and ((Blk as TBlkUsek).IsTrain()) and
-         ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
-       Self.SetInput(TBlkUsek(Blk).GetSettings().RCSAddrs[0], 1);
+     if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btTU)) and ((Blk as TBlkTrack).IsTrain()) and
+         ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
+       Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
    except
 
    end;
@@ -240,9 +240,9 @@ var Blk: TBlk;
 begin
  for blk in Blky do
   begin
-   if ((Blk.typ <> btUsek) and (Blk.typ <> btTU)) then continue;
-   if (((Blk as TBlkUsek).IsTrain()) and ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
-     Self.SetInput((Blk as TBlkUsek).GetSettings().RCSAddrs[0], 1);
+   if ((Blk.typ <> btTrack) and (Blk.typ <> btTU)) then continue;
+   if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
+     Self.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1);
   end;
 end;
 

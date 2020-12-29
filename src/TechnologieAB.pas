@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses DataAB, TBlok, TBloky, TBlokUsek, logging, TBlockSignal;
+uses DataAB, TBlok, TBloky, TBlockTrack, logging, TBlockSignal;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -81,9 +81,9 @@ begin
   begin
    Blky.GetBlkByID(usek, blk);
    if ((blk <> nil) and
-       ((blk.typ = btUsek) or (blk.typ = btTU)) and
-       (TBlkUsek(blk).Zaver = TZaver.ab)) then
-     TBlkUsek(blk).Zaver := TZaver.no;
+       ((blk.typ = btTrack) or (blk.typ = btTU)) and
+       (TBlkTrack(blk).Zaver = TZaver.ab)) then
+     TBlkTrack(blk).Zaver := TZaver.no;
   end;
 
  i := Self.JCs.IndexOf(jc);

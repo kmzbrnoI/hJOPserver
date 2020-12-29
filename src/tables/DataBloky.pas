@@ -35,7 +35,7 @@ var
 
 implementation
 
-uses TBloky, TBlok, TBlockTurnout, TBlokUsek, TBlockSignal, TBlockIR, TBlockCrossing,
+uses TBloky, TBlok, TBlockTurnout, TBlockTrack, TBlockSignal, TBlockIR, TBlockCrossing,
       fMain, TBlockRailway, TBlockLinker, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
       TBlockSummary, TBlockAC, ownConvert;
 
@@ -129,8 +129,8 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btUsek: begin
-      if ((Blk as TBlkUsek).Stav.cislo_koleje <> '') then
+   btTrack: begin
+      if ((Blk as TBlkTrack).spnl.trackName <> '') then
         Self.LV.Items[line].ImageIndex := 1
       else
         Self.LV.Items[line].ImageIndex := 3;
@@ -138,21 +138,21 @@ var j, train: integer;
       Self.LV.Items[line].SubItems[0] := 'Úsek';
 
       str := '';
-      for train in (Blk as TBlkUsek).trains do
+      for train in (Blk as TBlkTrack).trains do
         str := str + Trains.GetTrainNameByIndex(train) + ', ';
       Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2);
 
-      case ((Blk as TBlkUsek).Obsazeno) of
-        TUsekStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
-        TUsekStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
-        TUsekStav.uvolneno : Self.LV.Items[line].SubItems[3] := '---';
-        TUsekStav.obsazeno : Self.LV.Items[line].SubItems[3] := '+++';
+      case ((Blk as TBlkTrack).occupied) of
+        TTrackState.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TTrackState.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TTrackState.free : Self.LV.Items[line].SubItems[3] := '---';
+        TTrackState.occupied : Self.LV.Items[line].SubItems[3] := '+++';
       end;//case obsazeno
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
-      Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkTrack).note;
+      Self.LV.Items[line].SubItems[6] := (Blk as TBlkTrack).lockout;
 
-      if ((Blk as TBlkUsek).trainPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).trainPredict.name else
+      if ((Blk as TBlkTrack).trainPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrack).trainPredict.name else
         Self.LV.Items[line].SubItems[7] := '--#--';
    end;
 
@@ -311,21 +311,21 @@ var j, train: integer;
       Self.LV.Items[line].SubItems[0] := 'Traťový úsek';
 
       str := '';
-      for train in (Blk as TBlkUsek).trains do
+      for train in (Blk as TBlkTrack).trains do
         str := str + Trains.GetTrainNameByIndex(train) + ', ';
       Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2);
 
-      case ((Blk as TBlkUsek).Obsazeno) of
-        TUsekStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
-        TUsekStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
-        TUsekStav.uvolneno : Self.LV.Items[line].SubItems[3] := '---';
-        TUsekStav.obsazeno : Self.LV.Items[line].SubItems[3] := '+++';
+      case ((Blk as TBlkTrack).occupied) of
+        TTrackState.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TTrackState.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TTrackState.free : Self.LV.Items[line].SubItems[3] := '---';
+        TTrackState.occupied : Self.LV.Items[line].SubItems[3] := '+++';
       end;//case obsazeno
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkUsek).Stitek;
-      Self.LV.Items[line].SubItems[6] := (Blk as TBlkUsek).Vyluka;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkTrack).note;
+      Self.LV.Items[line].SubItems[6] := (Blk as TBlkTrack).lockout;
 
-      if ((Blk as TBlkUsek).trainPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkUsek).trainPredict.name else
+      if ((Blk as TBlkTrack).trainPredict <> nil) then Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrack).trainPredict.name else
         Self.LV.Items[line].SubItems[7] := '--#--';
    end;
 

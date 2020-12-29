@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses TBloky, TBlok, TBlockIR, TBlokUsek, ownConvert;
+uses TBloky, TBlok, TBlockIR, TBlockTrack, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -169,11 +169,11 @@ begin
  try
    case (Self.m_data.typ) of
      rrtUsek: begin
-       if (Integer(m_data.usekPart) < TBlkUsek(Sender).sekceStav.Count) then
+       if (Integer(m_data.usekPart) < TBlkTrack(Sender).sectionsState.Count) then
         begin
-         case (TBlkUsek(Sender).sekceStav[m_data.usekPart]) of
-           TUsekStav.obsazeno: Result := m_data.usekState;
-           TUsekStav.uvolneno: Result := not m_data.usekState;
+         case (TBlkTrack(Sender).sectionsState[m_data.usekPart]) of
+           TTrackState.occupied: Result := m_data.usekState;
+           TTrackState.free: Result := not m_data.usekState;
          else
            Result := safeState;
          end;

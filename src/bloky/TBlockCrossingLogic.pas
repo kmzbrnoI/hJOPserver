@@ -81,7 +81,7 @@ type
 
 implementation
 
-uses TBlokUsek;
+uses TBlockTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -168,61 +168,61 @@ begin
 
  case (Self.state) of
   tsFree: begin
-   if ((Self.left.state = TUsekStav.obsazeno) and (Self.middle.state = TUsekStav.uvolneno) and
-       (Self.right.state = TUsekStav.uvolneno)) then
+   if ((Self.left.state = TTrackState.occupied) and (Self.middle.state = TTrackState.free) and
+       (Self.right.state = TTrackState.free)) then
      Self.state := tsLRLeftOccupied
-   else if ((Self.right.state = TUsekStav.obsazeno) and (Self.middle.state = TUsekStav.uvolneno) and
-            (Self.left.state = TUsekStav.uvolneno)) then
+   else if ((Self.right.state = TTrackState.occupied) and (Self.middle.state = TTrackState.free) and
+            (Self.left.state = TTrackState.free)) then
      Self.state := tsRLRightOccupied
-   else if ((Self.left.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno) or
-            (Self.right.state <> TUsekStav.uvolneno)) then
+   else if ((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free) or
+            (Self.right.state <> TTrackState.free)) then
      Self.state := tsUnexpectedOccupation;
   end;
 
   tsUnexpectedOccupation: begin
-    if ((Self.left.state = TUsekStav.uvolneno) and (Self.middle.state = TUsekStav.uvolneno) and
-        (Self.right.state = TUsekStav.uvolneno)) then
+    if ((Self.left.state = TTrackState.free) and (Self.middle.state = TTrackState.free) and
+        (Self.right.state = TTrackState.free)) then
       Self.state := tsFree;
   end;
 
   tsLRLeftOccupied: begin
-    if ((Self.left.state <> TUsekStav.obsazeno) or (Self.right.state <> TUsekStav.uvolneno)) then
+    if ((Self.left.state <> TTrackState.occupied) or (Self.right.state <> TTrackState.free)) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.middle.state = TUsekStav.obsazeno) then
+    else if (Self.middle.state = TTrackState.occupied) then
       Self.state := tsLRLeftMidOccupied
   end;
 
   tsRLRightOccupied: begin
-    if ((Self.right.state <> TUsekStav.obsazeno) or (Self.left.state <> TUsekStav.uvolneno)) then
+    if ((Self.right.state <> TTrackState.occupied) or (Self.left.state <> TTrackState.free)) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.middle.state = TUsekStav.obsazeno) then
+    else if (Self.middle.state = TTrackState.occupied) then
       Self.state := tsRLRightMidOccupied
   end;
 
   tsLRLeftMidOccupied: begin
-    if (Self.middle.state <> TUsekStav.obsazeno) then
+    if (Self.middle.state <> TTrackState.occupied) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.left.state = TUsekStav.uvolneno) then
+    else if (Self.left.state = TTrackState.free) then
       Self.state := tsLRMidOccupied
     else if ((Self.right.changed) and (Self.opening = toLastOccupied)) then
       Self.stateChanged := true;
   end;
 
   tsRLRightMidOccupied: begin
-    if (Self.middle.state <> TUsekStav.obsazeno) then
+    if (Self.middle.state <> TTrackState.occupied) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.right.state = TUsekStav.uvolneno) then
+    else if (Self.right.state = TTrackState.free) then
       Self.state := tsRLMidOccupied
     else if ((Self.left.changed) and (Self.opening = toLastOccupied)) then
       Self.stateChanged := true;
   end;
 
   tsLRMidOccupied: begin
-    if (Self.left.state <> TUsekStav.uvolneno) then
+    if (Self.left.state <> TTrackState.free) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.middle.state = TUsekStav.uvolneno) then
+    else if (Self.middle.state = TTrackState.free) then
      begin
-      if (Self.right.state = TUsekStav.obsazeno) then
+      if (Self.right.state = TTrackState.occupied) then
        begin
         Self.anulEnd := Now + Self.anulTime;
         Self.state := tsLROnlyRightOccupied;
@@ -233,11 +233,11 @@ begin
   end;
 
   tsRLMidOccupied: begin
-    if (Self.right.state <> TUsekStav.uvolneno) then
+    if (Self.right.state <> TTrackState.free) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.middle.state = TUsekStav.uvolneno) then
+    else if (Self.middle.state = TTrackState.free) then
      begin
-      if (Self.left.state = TUsekStav.obsazeno) then
+      if (Self.left.state = TTrackState.occupied) then
        begin
         Self.anulEnd := Now + Self.anulTime;
         Self.state := tsRLOnlyLeftOccupied
@@ -248,11 +248,11 @@ begin
   end;
 
   tsLROnlyRightOccupied: begin
-    if ((Self.left.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno)) then
+    if ((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.right.state = TUsekStav.uvolneno) then
+    else if (Self.right.state = TTrackState.free) then
      begin
-      if (Self.rightOut.state = TUsekStav.obsazeno) then
+      if (Self.rightOut.state = TTrackState.occupied) then
         Self.state := tsLRRightOutOccupied
       else
         Self.state := tsFree;
@@ -261,11 +261,11 @@ begin
   end;
 
   tsRLOnlyLeftOccupied: begin
-    if ((Self.right.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno)) then
+    if ((Self.right.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.left.state = TUsekStav.uvolneno) then
+    else if (Self.left.state = TTrackState.free) then
      begin
-      if (Self.leftOut.state = TUsekStav.obsazeno) then
+      if (Self.leftOut.state = TTrackState.occupied) then
         Self.state := tsRLLeftOutOccupied
       else
         Self.state := tsFree;
@@ -274,16 +274,16 @@ begin
   end;
 
   tsLRRightOutOccupied: begin
-    if ((Self.left.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno)) then
+    if ((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.right.state = TUsekStav.obsazeno) then
+    else if (Self.right.state = TTrackState.occupied) then
       Self.state := tsRLRightOccupied
   end;
 
   tsRLLeftOutOccupied: begin
-    if ((Self.right.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno)) then
+    if ((Self.right.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
       Self.state := tsUnexpectedOccupation
-    else if (Self.left.state = TUsekStav.obsazeno) then
+    else if (Self.left.state = TTrackState.occupied) then
       Self.state := tsLRLeftOccupied
   end;
 
@@ -295,8 +295,8 @@ end;
 function TBlkCrossingTrack.mShouldBeClosed(): Boolean;
 begin
  if (Self.state = tsUnexpectedOccupation) then
-   Exit((Self.left.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno) or
-        (Self.right.state <> TUsekStav.uvolneno));
+   Exit((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free) or
+        (Self.right.state <> TTrackState.free));
 
  case (Self.opening) of
   toMiddleFree: begin
@@ -307,8 +307,8 @@ begin
 
   toLastOccupied: begin
     Result := (Self.state = tsLRLeftOccupied) or (Self.state = tsRLRightOccupied) or
-              (((Self.state = tsLRLeftMidOccupied) or (Self.state = tsLRMidOccupied)) and (Self.right.state <> TUsekStav.obsazeno)) or
-              (((Self.state = tsRLRightMidOccupied) or (Self.state = tsRLMidOccupied)) and (Self.left.state <> TUsekStav.obsazeno));
+              (((Self.state = tsLRLeftMidOccupied) or (Self.state = tsLRMidOccupied)) and (Self.right.state <> TTrackState.occupied)) or
+              (((Self.state = tsRLRightMidOccupied) or (Self.state = tsRLMidOccupied)) and (Self.left.state <> TTrackState.occupied));
   end;
 
   toOutFree: begin
@@ -321,8 +321,8 @@ end;
 
 function TBlkCrossingTrack.mPositiveLight(): Boolean;
 begin
- Result := (Self.left.state = TUsekStav.uvolneno) and (Self.middle.state = TUsekStav.uvolneno) and
-            (Self.right.state = TUsekStav.uvolneno);
+ Result := (Self.left.state = TTrackState.free) and (Self.middle.state = TTrackState.free) and
+            (Self.right.state = TTrackState.free);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +333,7 @@ begin
  for i := 0 to _SECT_COUNT-1 do
   begin
    try
-     if (Self.sections[i].state <> TUsekStav.uvolneno) then
+     if (Self.sections[i].state <> TTrackState.free) then
        Exit(false);
    except
      Exit(false);

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, TBloky, TBlok, TBlokUsek, Spin;
+  Dialogs, StdCtrls, ExtCtrls, TBloky, TBlok, TBlockTrack, Spin;
 
 type
   TF_BlkUsek_tech = class(TForm)
@@ -42,11 +42,11 @@ type
     procedure B_SprDeleteClick(Sender: TObject);
     procedure B_SprAddClick(Sender: TObject);
   private
-   Blk: TBlkUsek;
+   Blk: TBlkTrack;
     procedure LoadPrmnFromProgram;
     procedure SavePrmnToProgram;
   public
-   procedure OpenForm(Blok: TBlkUsek);
+   procedure OpenForm(Blok: TBlkTrack);
   end;
 
 var
@@ -68,8 +68,8 @@ var spr: Integer;
    true  : CB_NUZ.ItemIndex := 1;
   end;
 
-  CB_Zes_Zkrat.ItemIndex := Integer(Self.Blk.zkrat)+1;
-  CB_Zes_Napajeni.ItemIndex := Integer(Self.Blk.napajeni)+1;
+  CB_Zes_Zkrat.ItemIndex := Integer(Self.Blk.shortCircuit)+1;
+  CB_Zes_Napajeni.ItemIndex := Integer(Self.Blk.power)+1;
 
   case (Self.Blk.NUZ) of
    false : CB_NUZ.ItemIndex := 0;
@@ -85,10 +85,10 @@ var spr: Integer;
   else
     SE_Souprava_Predict.Value := Blk.trainPredict.index;
   SE_NavJCRef.Value := Blk.signalJCRef.Count;
-  CB_KonecVC.ItemIndex  := Integer(Self.Blk.KonecJC);
+  CB_KonecVC.ItemIndex  := Integer(Self.Blk.jcEnd);
 
-  M_Stitek.Text := Blk.Stitek;
-  M_Vyluka.Text := Blk.Vyluka;
+  M_Stitek.Text := Blk.note;
+  M_Vyluka.Text := Blk.lockout;
 
   case (Self.Blk.DCC) of
     false: Self.S_DCC.Brush.Color := clRed;
@@ -101,7 +101,7 @@ var Blk: TBlk;
  begin
   Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
   Self.Blk.NUZ := ownConvert.IntToBool(CB_NUZ.ItemIndex);
-  Self.Blk.KonecJC := TZaver(CB_KonecVC.ItemIndex);
+  Self.Blk.jcEnd := TZaver(CB_KonecVC.ItemIndex);
   if (SE_Souprava_Predict.Value > -1) then
     Self.Blk.trainPredict := Trains[SE_Souprava_Predict.Value]
   else
@@ -109,13 +109,13 @@ var Blk: TBlk;
   Blky.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
   if (Self.Blk.signalJCRef.Count = 0) then
     Self.Blk.signalJCRef.Clear();
-  Self.Blk.zkrat := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
-  Self.Blk.napajeni := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
-  Self.Blk.Vyluka := M_Vyluka.Text;
-  Self.Blk.Stitek := M_Stitek.Text;
+  Self.Blk.shortCircuit := TBoosterSignal(CB_Zes_Zkrat.ItemIndex-1);
+  Self.Blk.power := TBoosterSignal(CB_Zes_Napajeni.ItemIndex-1);
+  Self.Blk.lockout := M_Vyluka.Text;
+  Self.Blk.note := M_Stitek.Text;
  end;
 
-procedure TF_BlkUsek_tech.OpenForm(Blok: TBlkUsek);
+procedure TF_BlkUsek_tech.OpenForm(Blok: TBlkTrack);
  begin
   Self.Blk := Blok;
   LoadPrmnFromProgram();

@@ -273,7 +273,7 @@ type
 
 implementation
 
-uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
+uses TBloky, TBlockTrack, TJCDatabase, TCPServerOR, Graphics,
      GetSystems, Logging, TrainDb, TBlockIR, Zasobnik, ownStrUtils,
      TBlokTratUsek, TBlockRailway, TBlockTurnout, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
@@ -575,9 +575,9 @@ begin
  // ruseni nouzove jizdni cesty pri padu navestidla do STUJ
  if (navest = ncStuj) then
   begin
-   if ((Self.track <> nil) and ((Self.track.typ = btUsek) or
-       (Self.track.typ = btTU)) and ((Self.track as TBlkUsek).signalJCRef.Contains(Self))) then
-    (Self.track as TBlkUsek).signalJCRef.Remove(Self);
+   if ((Self.track <> nil) and ((Self.track.typ = btTrack) or
+       (Self.track.typ = btTU)) and ((Self.track as TBlkTrack).signalJCRef.Contains(Self))) then
+    (Self.track as TBlkTrack).signalJCRef.Remove(Self);
 
    if (Assigned(Self.privol)) then
     begin
@@ -610,10 +610,10 @@ begin
 
  if (Self.track <> nil) then
   begin
-   for traini in TBlkUsek(Self.track).trains do
+   for traini in TBlkTrack(Self.track).trains do
      Trains[traini].OnPredictedSignalChange();
-   if (TBlkUsek(Self.track).trainPredict <> nil) then
-     TBlkUsek(Self.track).trainPredict.OnPredictedSignalChange();
+   if (TBlkTrack(Self.track).trainPredict <> nil) then
+     TBlkTrack(Self.track).trainPredict.OnPredictedSignalChange();
   end;
 
  Self.Change();
@@ -839,12 +839,12 @@ begin
  JC := Self.DNjc;
 
  Blk := Self.track;
- if ((Blk = nil) or ((Blk.typ <> btUsek) and (Blk.typ <> btTU))) then
+ if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btTU))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
    Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
   end else begin
-   if ((Blk as TBlkUsek).Obsazeno = TUsekStav.uvolneno) then
+   if ((Blk as TBlkTrack).occupied = TTrackState.free) then
     begin
      // pokud neni blok pred JC obsazen -> 2 sekundy
      Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 2, 0));
@@ -1213,10 +1213,10 @@ begin
  if (Self.m_settings.events.Count = 0) then Exit();
  Usek := Self.track;
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
- if ((Usek = nil) or ((Usek.typ <> btUsek) and (Usek.typ <> btTU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
+ if ((Usek = nil) or ((Usek.typ <> btTrack) and (Usek.typ <> btTU))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
- if (not (Usek as TBlkUsek).IsTrain()) then
+ if (not (Usek as TBlkTrack).IsTrain()) then
   begin
    // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
    // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
@@ -1279,7 +1279,7 @@ begin
 
  // ZPOMALOVANI
  if ((signalEv.slow.enabled) and (train.wantedSpeed > signalEv.slow.speed) and
-     ((Usek as TBlkUsek).zpomalovani_ready) and
+     ((Usek as TBlkTrack).slowingReady) and
      ((not Self.IsGoSignal()) or (train.IsPOdj(Usek))) and
      (train.direction = Self.m_spnl.direction)) then
   begin
@@ -1290,7 +1290,7 @@ begin
     begin
      signalEv.slow.ev.Unregister();
      train.speed := signalEv.slow.speed;
-     (Usek as TBlkUsek).zpomalovani_ready := false;
+     (Usek as TBlkTrack).slowingReady := false;
     end;
   end else begin
    if ((signalEv.slow.enabled) and (signalEv.slow.ev.enabled)) then
@@ -1317,7 +1317,7 @@ begin
      if (not train.GetPOdj(Usek).origin_set) then
       begin
        train.GetPOdj(Usek).RecordOriginNow();
-       TBlkUsek(Usek).PropagatePOdjToTrat();
+       TBlkTrack(Usek).PropagatePOdjToRailway();
        Usek.Change();
       end;
 
@@ -1399,7 +1399,7 @@ begin
    raise ENoEvents.Create('No current events!');
 
  Usek := Self.track;
- if (not (Usek as TBlkUsek).IsTrain()) then
+ if (not (Usek as TBlkTrack).IsTrain()) then
   begin
    // na bloku neni zadna souprava
    Result := 0;
@@ -1633,9 +1633,9 @@ begin
    Blky.GetBlkByID(Self.trackId, usek);
 
  if (Self.direction = THVStanoviste.lichy) then
-   Result := TBlkUsek(usek).trainSudy
+   Result := TBlkTrack(usek).trainSudy
  else
-   Result := TBlkUsek(usek).trainL;
+   Result := TBlkTrack(usek).trainL;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1662,7 +1662,7 @@ begin
  train := Self.GetTrain();
  if (train = nil) then
   begin
-   train := TBlkUsek(Self.track).trainPredict;
+   train := TBlkTrack(Self.track).trainPredict;
    if (train = nil) then Exit();
   end;
 

@@ -51,7 +51,7 @@ type
 
 implementation
 
-uses ownStrUtils, TechnologieTrakce, Train, TBlokUsek, TrainDb, fMain,
+uses ownStrUtils, TechnologieTrakce, Train, TBlockTrack, TrainDb, fMain,
      THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,8 +136,8 @@ begin
  if (Self.m_event.IsTriggerred(Sender, false)) then
   begin
    Self.m_event.Unregister();
-   if (TBlkUsek(Sender).IsTrain()) then
-     Self.FireEvent(TBlkUsek(Sender).trainL);
+   if (TBlkTrack(Sender).IsTrain()) then
+     Self.FireEvent(TBlkTrack(Sender).trainL);
    Result := true;
   end else
    Result := false

@@ -279,11 +279,11 @@ var spojka_vypust: TArI;
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.lock > -1);
 
     // neprofilove styky +
-    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, btUsek, Self.Blk.GetSettings().npPlus, btTU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npPlus, btTU);
     Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npPlus > -1);
 
     // neprofilove styky -
-    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, btUsek, Self.Blk.GetSettings().npMinus, btTU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npMinus, btTU);
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npMinus > -1);
 
    end else begin
@@ -293,10 +293,10 @@ var spojka_vypust: TArI;
     Blky.NactiBlokyDoObjektu(Self.CB_Zamek, @Self.CB_ZamekData, nil, nil, btLock, -1);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, btUsek, -1, btTU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btTU);
     Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0);
 
-    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, btUsek, -1, btTU);
+    Blky.NactiBlokyDoObjektu(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btTU);
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0);
    end;
 

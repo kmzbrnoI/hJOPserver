@@ -35,7 +35,7 @@ var
 implementation
 
 uses fMain, fSettings, TechnologieRCS, GetSystems, TechnologieTrakce,
-     Logging, TBlok, TBlokUsek, TBLoky;
+     Logging, TBlok, TBlockTrack, TBLoky;
 
 {$R *.dfm}
 
@@ -155,8 +155,8 @@ begin
           M_console.Lines.Add('Blok s timto id neexistuje');
          end else begin
           case (Blk.typ) of
-           btUsek, btTU: begin
-             (Blk as TBlkUsek).Zaver := TZaver.no;
+           btTrack, btTU: begin
+             (Blk as TBlkTrack).Zaver := TZaver.no;
              M_console.Lines.Add('Zrusen zaver useku '+Blk.name);
            end;
           else

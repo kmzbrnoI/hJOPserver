@@ -50,7 +50,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TJCDatabase, TBlok, TBlokUsek, TBloky, TBlockSignal,
+uses GetSystems, TechnologieRCS, TJCDatabase, TBlok, TBlockTrack, TBloky, TBlockSignal,
      TBlokTratUsek, TBlockTurnout;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ end;
 
 procedure TJCSimulator.UpdateJC(JC: TJC);
 var Blk, Nav: TBlk;
-    UsekSet: TBlkUsekSettings;
+    UsekSet: TBlkTrackSettings;
 begin
  try
    if (JC.stav.RozpadBlok < 0) then Exit();
@@ -96,9 +96,9 @@ begin
      Blky.GetBlkByID(JC.data.NavestidloBlok, Nav);
      Blky.GetBlkByID((Nav as TBlkSignal).trackId, Blk);
 
-     if ((Blk as TBlkUsek).Stav.Stav = TUsekStav.obsazeno) then
+     if ((Blk as TBlkTrack).occupied = TTrackState.occupied) then
       begin
-       UsekSet := (Blk as TBlkUsek).GetSettings();
+       UsekSet := (Blk as TBlkTrack).GetSettings();
        RCSi.SetInputs(UsekSet.RCSAddrs, 0);
        Exit();
       end;
@@ -111,14 +111,14 @@ begin
 
      // uvolnit RozpadRuseniBlok
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
-     UsekSet := (Blk as TBlkUsek).GetSettings();
+     UsekSet := (Blk as TBlkTrack).GetSettings();
      RCSi.SetInputs(UsekSet.RCSAddrs, 0);
     end else begin
      // obsadit RozpadBlok
      if (JC.stav.RozpadBlok >= JC.data.Useky.Count) then Exit();
 
      Blky.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
-     UsekSet := (Blk as TBlkUsek).GetSettings();
+     UsekSet := (Blk as TBlkTrack).GetSettings();
      if (UsekSet.RCSAddrs.Count > 0) then
        RCSi.SetInput(UsekSet.RCSAddrs[0].board, UsekSet.RCSAddrs[0].port, 1);
     end;//else
@@ -174,10 +174,10 @@ begin
    for i := 0 to TratSet.trackIds.Count-1 do
     begin
      Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
-     if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
+     if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.occupied = TTrackState.occupied) and
          (TU.prevTU.train = TU.train)) then
       begin
-       RCSi.SetInput(TBlkUsek(TU.prevTU).GetSettings().RCSAddrs[0], 0);
+       RCSi.SetInput(TBlkTrack(TU.prevTU).GetSettings().RCSAddrs[0], 0);
        Exit();
       end;
     end;//for i
@@ -186,11 +186,11 @@ begin
    for i := 0 to TratSet.trackIds.Count-1 do
     begin
      Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
-     if ((TU.Obsazeno = TUsekStav.obsazeno) and (TU.bpInBlk) and (TU.nextTU <> nil) and
-         (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
+     if ((TU.occupied = TTrackState.occupied) and (TU.bpInBlk) and (TU.nextTU <> nil) and
+         (TU.nextTU.occupied = TTrackState.free) and
         ((TU.nextTU.navKryci = nil) or (TBlkSignal(TU.nextTU.navKryci).signal > ncStuj))) then
       begin
-       RCSi.SetInput(TBlkUsek(TU.nextTU).GetSettings().RCSAddrs[0], 1);
+       RCSi.SetInput(TBlkTrack(TU.nextTU).GetSettings().RCSAddrs[0], 1);
        Exit();
       end;
     end;//for i

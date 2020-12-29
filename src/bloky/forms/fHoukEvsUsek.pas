@@ -1,4 +1,4 @@
-unit fHoukEvsUsek;
+﻿unit fHoukEvsUsek;
 
 {
   Okno TF_HoukEvsUsek umoznuje editovat houkaci udalosti technologickeho
@@ -11,7 +11,7 @@ unit fHoukEvsUsek;
 interface
 
 uses
-  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, TBlokUsek,
+  Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, TBlockTrack,
   fhoukEvs, StdCtrls, ExtCtrls;
 
 type
@@ -25,7 +25,7 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
   private
-   blk: TBlkUsek;
+   blk: TBlkTrack;
    formL: TF_HoukEvs;
    formS: TF_HoukEvs;
 
@@ -34,7 +34,7 @@ type
      constructor Create(AOwner: TComponent); override;
      destructor Destroy(); override;
 
-     procedure Open(Blk: TBlkUsek);
+     procedure Open(Blk: TBlkTrack);
 
   end;
 
@@ -74,7 +74,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEvsUsek.Open(Blk: TBlkUsek);
+procedure TF_HoukEvsUsek.Open(Blk: TBlkTrack);
 begin
  Self.blk := Blk;
 
@@ -96,7 +96,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEvsUsek.B_ApplyClick(Sender: TObject);
-var s: TBlkUsekSettings;
+var s: TBlkTrackSettings;
 begin
  if (not formL.InputValid()) then
   begin

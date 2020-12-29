@@ -193,7 +193,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlockSignal, Logging,
-    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlockLinker, TrainDb, THVDatabase,
+    TJCDatabase, fMain, TCPServerOR, TBlockTrack, TBlockLinker, TrainDb, THVDatabase,
     TBlokTratUsek, appEv, timeHelper, ownConvert, Graphics;
 
 constructor TBlkRailway.Create(index: Integer);
@@ -380,7 +380,7 @@ begin
   begin
    Blky.GetBlkByID(Self.m_settings.trackIds[i], Blk);
    if ((Blk = nil) or (Blk.typ <> btTU)) then continue;
-   if ((Blk as TBlkTU).Obsazeno = TUsekStav.obsazeno) then
+   if ((Blk as TBlkTU).occupied = TTrackState.occupied) then
     Exit(true);
   end;
 
@@ -1022,7 +1022,7 @@ begin
  for usekid in Self.m_settings.trackIds do
   begin
    Blky.GetBlkByID(usekid, blk);
-   if ((blk <> nil) and (blk.typ = btTU) and (TBlkUsek(blk).train = train)) then
+   if ((blk <> nil) and (blk.typ = btTU) and (TBlkTrack(blk).train = train)) then
      Exit(blk);
   end;
 
@@ -1052,14 +1052,14 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkRailway.GetLockout(): Boolean;
-var blkUsek: TBlkUsek;
+var blkUsek: TBlkTrack;
     usek: Integer;
 begin
  for usek in Self.m_settings.trackIds do
   begin
    Blky.GetBlkByID(usek, TBlk(blkUsek));
    if (blkUsek <> nil) then
-     if (blkUsek.Vyluka <> '') then
+     if (blkUsek.lockout <> '') then
        Exit(true);
   end;
  Result := false;
@@ -1181,7 +1181,7 @@ begin
   begin
    Blky.GetBlkByID(usek, blk);
    if ((blk <> nil) and (blk.typ = btTU)) then
-     if (TBlkUsek(blk).train = Self.train) and (TBlkTU(blk).poruchaBP) then
+     if (TBlkTrack(blk).train = Self.train) and (TBlkTU(blk).poruchaBP) then
        porucha_bp := true;
   end;
 

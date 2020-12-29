@@ -131,7 +131,7 @@
 			<DCCReference Include="bloky\TBlok.pas"/>
 			<DCCReference Include="bloky\TBloky.pas"/>
 			<DCCReference Include="bloky\TBlockTurnout.pas"/>
-			<DCCReference Include="bloky\TBlokUsek.pas"/>
+			<DCCReference Include="bloky\TBlockTrack.pas"/>
 			<DCCReference Include="bloky\TBlockIR.pas"/>
 			<DCCReference Include="bloky\TBlockSignal.pas"/>
 			<DCCReference Include="TOblsRizeni.pas"/>

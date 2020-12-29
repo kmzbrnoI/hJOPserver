@@ -49,7 +49,7 @@ type
 implementation
 
 uses PTUtils, JclPCRE, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, TBloky,
-      TBlok, TBlokUsek, TechnologieTrakce;
+      TBlok, TBlockTrack, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -168,13 +168,13 @@ begin
    try
      podj := TPodj.Create(reqJson.O['podj']);
      Blky.GetBlkByID(podjId, blk);
-     if ((blk = nil) or (blk.typ <> TBlkType.btUsek)) then
+     if ((blk = nil) or (blk.typ <> TBlkType.btTrack)) then
       begin
        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Neplatny typ bloku', 'Blok neexistuje nebo neni usek');
        Exit();
       end;
 
-     TBlkUsek(blk).POdjChanged(train.index, podj); // sets podj to nil if takes ownership
+     TBlkTrack(blk).POdjChanged(train.index, podj); // sets podj to nil if takes ownership
      if (train.IsPOdj(podjId)) then
        train.GetPOdj(podjId).GetPtData(respJson.O['podj'])
      else

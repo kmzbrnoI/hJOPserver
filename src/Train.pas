@@ -158,7 +158,7 @@ type
 
 implementation
 
-uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlokUsek, DataSpr, appEv,
+uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlockTrack, DataSpr, appEv,
       DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlockSignal,
       fRegulator, fMain, TBlokTratUsek, stanicniHlaseniHelper, stanicniHlaseni,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
@@ -597,9 +597,9 @@ begin
  Self.SetSpeedDirection(Self.speed, Self.direction);
  Blky.ChangeTrainToTrat(Self);
 
- TBlkUsek(Self.front).Change();
+ TBlkTrack(Self.front).Change();
 
- for signal in TBlkUsek(Self.front).signalJCRef do
+ for signal in TBlkTrack(Self.front).signalJCRef do
    TBlkSignal(signal).UpdateRychlostTrain(true);
 
  Self.changed := true;
@@ -718,9 +718,9 @@ begin
   end;
 
  if ((speed > 0) and (Assigned(Self.front)) and
-     ((Self.front as TBlkUsek).IsVlakPresun()) and
-      ((Self.front as TBlkUsek).trains[(Self.front as TBlkUsek).vlakPresun] = Self.index)) then
-  (Self.front as TBlkUsek).VlakPresun := -1;
+     ((Self.front as TBlkTrack).IsTrainMoving()) and
+      ((Self.front as TBlkTrack).trains[(Self.front as TBlkTrack).trainMoving] = Self.index)) then
+  (Self.front as TBlkTrack).trainMoving := -1;
 
  writelog('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
  Self.changed := true;
@@ -821,7 +821,7 @@ begin
  if (Self.data.front = front) then Exit();
 
  if (Assigned(Self.data.front)) then
-   (Self.data.front as TBlkUsek).zpomalovani_ready := false;
+   (Self.data.front as TBlkTrack).slowingReady := false;
  Self.data.front := front;
 
  for addr in Self.HVs do
@@ -867,7 +867,7 @@ begin
  end;//case
 
  if (Self.front <> nil) then
-   (Self.front as TBlkUsek).Change();  // kvuli sipce
+   (Self.front as TBlkTrack).Change();  // kvuli sipce
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -881,7 +881,7 @@ begin
 
  Self.changed := true;
  if ((Self.front <> nil) and (change_ev)) then
-   (Self.front as TBlkUsek).Change();
+   (Self.front as TBlkTrack).Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -903,7 +903,7 @@ var i: Integer;
     dir: Boolean;
 begin
  if ((Self.wantedSpeed <> 0) or (Self.data.dir_L xor Self.data.dir_S) or
-     (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkUsek(Self.front).Stav.stanicni_kolej))) then
+     (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkTrack(Self.front).spnl.stationTrack))) then
    Exit();
 
  dir := HVDb[Self.HVs[0]].stACurrentDirection;
@@ -983,7 +983,7 @@ begin
 
  if (shPlay.stanicniKolej <> nil) then
   begin
-   shTrain.kolej := shPlay.stanicniKolej.Stav.cislo_koleje;
+   shTrain.kolej := shPlay.stanicniKolej.spnl.trackName;
 
    if ((Self.IsPOdj(shPlay.stanicniKolej)) and (Self.GetPOdj(shPlay.stanicniKolej).abs_enabled)) then
      shTrain.timeDepart := Self.GetPOdj(shPlay.stanicniKolej).abs;
@@ -1128,12 +1128,12 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrain.PredictedSignal(): TBlk;
-var frontblk: TBlkUsek;
+var frontblk: TBlkTrack;
     signal: TBlkSignal;
     jc: TJC;
     tu: TBlkTU;
 begin
- frontblk := Self.front as TBlkUsek;
+ frontblk := Self.front as TBlkTrack;
  if (frontblk = nil) then
    Exit(nil);
 
@@ -1141,8 +1141,8 @@ begin
    Exit(TBlkTU(frontblk).nextNav);
 
  case (Self.direction) of
-   THVStanoviste.lichy: signal := frontblk.navL as TBlkSignal;
-   THVStanoviste.sudy: signal := frontblk.navS as TBlkSignal;
+   THVStanoviste.lichy: signal := frontblk.signalL as TBlkSignal;
+   THVStanoviste.sudy: signal := frontblk.signalS as TBlkSignal;
  end;
 
  if ((signal <> nil) and (signal.SymbolType = TBlkSignalSymbol.main)) then

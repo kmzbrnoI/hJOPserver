@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, TBloky, TBlok, Mask,
-  TBlokTratUsek, StrUtils, TBlokUsek, fBlkTUZastEvent, Generics.Collections;
+  TBlokTratUsek, StrUtils, TBlockTrack, fBlkTUZastEvent, Generics.Collections;
 
 type
   TF_BlkTU = class(TForm)
@@ -179,7 +179,7 @@ procedure TF_BlkTU.NewBlkOpenForm();
 procedure TF_BlkTU.NormalOpenForm();
 var glob: TBlkSettings;
     TUsettings: TBlkTUSettings;
-    Usettings: TBlkUsekSettings;
+    Usettings: TBlkTrackSettings;
     i: Integer;
     obls: TArstr;
     oblr: TOR;
@@ -199,7 +199,7 @@ var glob: TBlkSettings;
   if (Assigned(Self.Blk)) then
    begin
     TUsettings := Self.Blk.GetSettings();
-    Usettings  := TBlkUsek(Self.Blk).GetSettings();
+    Usettings  := TBlkTrack(Self.Blk).GetSettings();
    end;
 
   Self.CHB_D1.Checked := false;
@@ -283,15 +283,15 @@ var glob: TBlkSettings;
   Self.CB_Zesil.ItemIndex := -1;
   for i := 0 to Boosters.sorted.Count-1 do
    begin
-    if (Boosters.sorted[i].id = Usettings.Zesil) then
+    if (Boosters.sorted[i].id = Usettings.boosterId) then
      begin
       Self.CB_Zesil.ItemIndex := i;
       break;
      end;
    end;
 
-  E_Delka.Text := FloatToStr(Usettings.Lenght);
-  CHB_SmycBlok.Checked := Usettings.SmcUsek;
+  E_Delka.Text := FloatToStr(Usettings.lenght);
+  CHB_SmycBlok.Checked := Usettings.loop;
 
   Self.CHB_Zastavka_Lichy.Checked := Assigned(TUsettings.zastavka) and Assigned(TUsettings.Zastavka.ev_lichy);
   Self.CHB_Zastavka_Sudy.Checked  := Assigned(TUsettings.zastavka) and Assigned(TUsettings.Zastavka.ev_sudy);
@@ -400,7 +400,7 @@ procedure TF_BlkTU.B_StornoClick(Sender: TObject);
 
 procedure TF_BlkTU.B_OKClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkUsekSettings;
+    settings: TBlkTrackSettings;
     TUsettings: TBlkTUSettings;
     str: string;
     speeds: TDictionary<Cardinal, Cardinal>;
@@ -501,9 +501,9 @@ var glob: TBlkSettings;
   if (Self.CHB_D4.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
 
-  settings.Lenght := StrToFloatDef(Self.E_Delka.Text,0);
-  settings.SmcUsek := Self.CHB_SmycBlok.Checked;
-  settings.Zesil := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
+  settings.lenght := StrToFloatDef(Self.E_Delka.Text,0);
+  settings.loop := Self.CHB_SmycBlok.Checked;
+  settings.boosterId := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
   settings.maxTrains := 1;
 
   TUSettings.rychlosti := speeds;
@@ -546,11 +546,11 @@ var glob: TBlkSettings;
    end else
      TUsettings.zastavka := nil;
 
-  settings.houkEvL := TBlkUsek(Self.Blk).GetSettings().houkEvL;
-  settings.houkEvS := TBlkUsek(Self.Blk).GetSettings().houkEvS;
+  settings.houkEvL := TBlkTrack(Self.Blk).GetSettings().houkEvL;
+  settings.houkEvS := TBlkTrack(Self.Blk).GetSettings().houkEvS;
 
   Self.Blk.SetSettings(TUsettings);
-  (Self.Blk as TBlkUsek).SetSettings(settings);
+  (Self.Blk as TBlkTrack).SetSettings(settings);
 
   Self.Close();
   Self.Blk.Change();

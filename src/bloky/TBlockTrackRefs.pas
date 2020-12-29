@@ -6,7 +6,7 @@ unit TBlockTrackRefs;
 
 interface
 
-uses TBlockTrackRef, Generics.Collections, Classes, TBlokUsek, StrUtils;
+uses TBlockTrackRef, Generics.Collections, Classes, TBlockTrack, StrUtils;
 
 type
 
@@ -15,12 +15,12 @@ TBlkTrackRefs = class
   _SEPARATOR: Char = ',';
 
  private
-   function GetBlockState(): TUsekStav;
+   function GetBlockState(): TTrackState;
    function GetChanged(): Boolean;
 
  public
   parts: TObjectList<TBlkTrackRef>;
-  stateLast: TUsekStav;
+  stateLast: TTrackState;
 
    constructor Create(); overload;
    constructor Create(str: string); overload;
@@ -29,7 +29,7 @@ TBlkTrackRefs = class
    procedure Parse(str: string);
    function ToStr(): string;
 
-   property state: TUsekStav read GetBlockState;
+   property state: TTrackState read GetBlockState;
    property changed: Boolean read GetChanged;
 
 end;
@@ -44,7 +44,7 @@ constructor TBlkTrackRefs.Create();
 begin
  inherited;
  Self.parts := TObjectList<TBlkTrackRef>.Create();
- Self.stateLast := TUsekStav.uvolneno;
+ Self.stateLast := TTrackState.free;
 end;
 
 constructor TBlkTrackRefs.Create(str: string);
@@ -52,7 +52,7 @@ begin
  inherited Create();
  Self.parts := TObjectList<TBlkTrackRef>.Create();
  Self.Parse(str);
- Self.stateLast := TUsekStav.uvolneno;
+ Self.stateLast := TTrackState.free;
 end;
 
 destructor TBlkTrackRefs.Destroy();
@@ -85,13 +85,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrackRefs.GetBlockState(): TUsekStav;
+function TBlkTrackRefs.GetBlockState(): TTrackState;
 var ref: TBlkTrackRef;
 begin
  for ref in Self.parts do
-   if (ref.state <> TUsekStav.uvolneno) then
+   if (ref.state <> TTrackState.free) then
      Exit(ref.state);
- Result := TUsekStav.uvolneno;
+ Result := TTrackState.free;
 end;
 
 function TBlkTrackRefs.ToStr(): string;

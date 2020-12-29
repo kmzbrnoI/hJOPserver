@@ -1,4 +1,4 @@
-unit TrainDb;
+﻿unit TrainDb;
 
 { Trains database. }
 
@@ -56,7 +56,7 @@ var
 
 implementation
 
-uses Logging, DataSpr, TBloky, TBlokUsek, DataHV, appEv, TBlok,
+uses Logging, DataSpr, TBloky, TBlockTrack, DataHV, appEv, TBlok,
      TCPServerOR, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,8 +183,8 @@ begin
   Self.trains[i] := TTrain.Create(train, i, usek, oblr, ok, err);
   if (Assigned(usek)) then          // toto musi byt tady, nikoliv v konstruktoru
    begin
-    (Usek as TBlkUsek).AddTrain(sprUsekIndex, i);
-    (Usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
+    (Usek as TBlkTrack).AddTrain(sprUsekIndex, i);
+    (Usek as TBlkTrack).Change();    // volano kvuli aktualizaci dat
    end;
 
   Self.trains[i].OnPredictedSignalChange();
@@ -214,8 +214,8 @@ begin
   Self.trains[i] := TTrain.Create(train, i, ok, err);
   if (Assigned(usek)) then          // toto musi byt tady, nikoliv v konstruktoru
    begin
-    (usek as TBlkUsek).AddTrain(train.I['createPos'], i);
-    (usek as TBlkUsek).Change();    // volano kvuli aktualizaci dat
+    (usek as TBlkTrack).AddTrain(train.I['createPos'], i);
+    (usek as TBlkTrack).Change();    // volano kvuli aktualizaci dat
    end;
 
   Self.trains[i].OnPredictedSignalChange();

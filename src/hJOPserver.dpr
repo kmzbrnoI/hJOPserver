@@ -51,7 +51,7 @@ uses
   TBlok in 'bloky\TBlok.pas',
   TBloky in 'bloky\TBloky.pas',
   TBlockTurnout in 'bloky\TBlockTurnout.pas',
-  TBlokUsek in 'bloky\TBlokUsek.pas',
+  TBlockTrack in 'bloky\TBlockTrack.pas',
   TBlockIR in 'bloky\TBlockIR.pas',
   TBlockSignal in 'bloky\TBlockSignal.pas',
   TOblsRizeni in 'TOblsRizeni.pas',

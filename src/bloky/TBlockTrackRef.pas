@@ -7,7 +7,7 @@ unit TBlockTrackRef;
 
 interface
 
-uses TBlok, TBlokUsek, Classes, SysUtils;
+uses TBlok, TBlockTrack, Classes, SysUtils;
 
 type
 
@@ -23,8 +23,8 @@ TBlkTrackRef = class
  private
    function MIsPart(): Boolean;
    procedure Parse(str: string);
-   function GetBlock(): TBlkUsek;
-   function GetBlockState(): TUsekStav;
+   function GetBlock(): TBlkTrack;
+   function GetBlockState(): TTrackState;
 
  public
   blockId: Integer;
@@ -36,8 +36,8 @@ TBlkTrackRef = class
    function ToStr(): string;
 
    property isPart: Boolean read MIsPart;
-   property block: TBlkUsek read GetBlock;
-   property state: TUsekStav read GetBlockState;
+   property block: TBlkTrack read GetBlock;
+   property state: TTrackState read GetBlockState;
 
 end;
 
@@ -106,28 +106,28 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrackRef.GetBlock(): TBlkUsek;
+function TBlkTrackRef.GetBlock(): TBlkTrack;
 var blk: TBlk;
 begin
  Blky.GetBlkById(Self.blockId, blk);
- if ((blk = nil) or ((blk.typ = btUsek) or (blk.typ = btTU))) then
-   Result := TBlkUsek(blk)
+ if ((blk = nil) or ((blk.typ = btTrack) or (blk.typ = btTU))) then
+   Result := TBlkTrack(blk)
  else
    Result := nil;
 end;
 
-function TBlkTrackRef.GetBlockState(): TUsekStav;
+function TBlkTrackRef.GetBlockState(): TTrackState;
 begin
  if (Self.block = nil) then
    raise ENoBlock.Create('No block, unable to get state!');
 
  if (Self.isPart) then
   begin
-   if ((Self.partId < 0) or (Self.partId >= Self.block.SekceStav.Count)) then
+   if ((Self.partId < 0) or (Self.partId >= Self.block.sectionsState.Count)) then
      raise EInvalidPart.Create('Invalid part '+IntToStr(Self.partId));
-   Result := Self.block.SekceStav[Self.partId];
+   Result := Self.block.sectionsState[Self.partId];
   end else
-   Result := Self.block.Obsazeno;
+   Result := Self.block.occupied;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

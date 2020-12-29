@@ -35,7 +35,7 @@ var ceCaller: TChangeEventCaller;
 
 implementation
 
-uses TBloky, TBlok, TBlokUsek, TBlockTurnout, TBlokZamek, TBlockCrossing,
+uses TBloky, TBlok, TBlockTrack, TBlockTurnout, TBlokZamek, TBlockCrossing,
      TBlockRailway;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,10 +44,10 @@ procedure TChangeEventCaller.CopyUsekZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or ((blk.typ <> btUsek) and
+ if ((blk = nil) or ((blk.typ <> btTrack) and
     (blk.typ <> btTU))) then Exit();
 
- TBlkUsek(Blk).Zaver := TBlkUsek(Sender).Zaver;
+ TBlkTrack(Blk).Zaver := TBlkTrack(Sender).Zaver;
 end;
 
 procedure TChangeEventCaller.NullZamekZaver(Sender: TObject; data: Integer);
@@ -97,9 +97,9 @@ begin
  caller := Pointer(data);
 
  Blky.GetBlkByID(caller.usekId, blk);
- if ((blk = nil) or ((blk.typ <> btUsek) and (blk.typ <> btTU))) then Exit();
+ if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btTU))) then Exit();
 
- TBlkUsek(Blk).RemoveNeprofilJC(caller.jcId);
+ TBlkTrack(Blk).RemoveNeprofilJC(caller.jcId);
  FreeMem(caller);
 end;
 

@@ -931,7 +931,7 @@ begin
   end;
 
  Self.MakeObls(obls);
- Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btUsek, -1, btTU);
+ Blky.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btTrack, -1, btTU);
 end;
 
 function TF_JCEdit.IsAnyVyhMinus(): Boolean;

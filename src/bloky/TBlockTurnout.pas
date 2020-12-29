@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, TBlok, SysUtils, TBlokUsek, Menus, TOblsRizeni,
+uses IniFiles, TBlok, SysUtils, TBlockTrack, Menus, TOblsRizeni,
      Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
      TOblRizeni, TechnologieRCS;
 
@@ -109,7 +109,7 @@ type
 
     function GetZaver(): TZaver;
     function GetNUZ(): Boolean;
-    function GetOccupied(): TUsekStav;
+    function GetOccupied(): TTrackState;
     function GetOutputLocked(): Boolean;
 
     procedure SetNote(note: string);
@@ -217,7 +217,7 @@ type
     property position: TTurnoutPosition read m_state.position;
     property NUZ: Boolean read GetNUZ;
     property zaver: TZaver read GetZaver;
-    property occupied: TUsekStav read GetOccupied;
+    property occupied: TTrackState read GetOccupied;
     property note: string read m_state.note write SetNote;
     property lockout: string read m_state.lockout write SetLockout;
     property intentionalLocked: Boolean read GetIntentionalLock;
@@ -455,7 +455,7 @@ begin
  if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or ((Self.m_parent.id <> Self.m_spnl.track))) then
    Blky.GetBlkByID(Self.m_spnl.track, Self.m_parent);
  if (Self.m_parent <> nil) then
-   Result := (Self.m_parent as TBlkUsek).Zaver
+   Result := (Self.m_parent as TBlkTrack).Zaver
  else
    Result := TZaver.no;
 end;
@@ -466,20 +466,20 @@ var tmpBlk: TBlk;
 begin
  return := Blky.GetBlkByID(Self.m_spnl.track, tmpBlk);
  if (return < 0) then Exit(false);
- if (tmpBlk.typ <> btUsek) then Exit(false);
+ if (tmpBlk.typ <> btTrack) then Exit(false);
 
- Result := (TBlkUsek(tmpBlk)).NUZ;
+ Result := (TBlkTrack(tmpBlk)).NUZ;
 end;
 
-function TBlkTurnout.GetOccupied(): TUsekStav;
+function TBlkTurnout.GetOccupied(): TTrackState;
 var tmpBlk: TBlk;
     return: Integer;
 begin
  return := Blky.GetBlkByID(Self.m_spnl.track, tmpBlk);
- if (return < 0) then Exit(TUsekStav.none);
- if ((tmpBlk.typ <> btUsek) and (tmpBlk.typ <> btTU)) then Exit(TUsekStav.none);
+ if (return < 0) then Exit(TTrackState.none);
+ if ((tmpBlk.typ <> btTrack) and (tmpBlk.typ <> btTU)) then Exit(TTrackState.none);
 
- Result := (tmpBlk as TBlkUsek).Obsazeno;
+ Result := (tmpBlk as TBlkTrack).occupied;
 end;
 
 function TBlkTurnout.GetOutputLocked(): Boolean;
@@ -825,7 +825,7 @@ begin
       if (Assigned(callback_err)) then callback_err(self, vseLocked);
       Exit();
      end;
-    if (((Self.occupied = TUsekStav.obsazeno) or ((coupling <> nil) and (coupling.occupied = TUsekStav.obsazeno))) and (not nouz)) then
+    if (((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) and (not nouz)) then
      begin
       if (Assigned(callback_err)) then callback_err(self, vseOccupied);
       Exit();
@@ -1102,7 +1102,7 @@ begin
   begin
    // na vyhybce neni zaver a menu neni redukovane
 
-   if ((Self.occupied = TUsekStav.obsazeno) or ((coupling <> nil) and (coupling.occupied = TUsekStav.obsazeno))) then
+   if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
     begin
      if (Self.m_state.position = plus) then Result := Result + '!NS-,';
      if (Self.m_state.position = minus) then Result := Result + '!NS+,';
@@ -1374,7 +1374,7 @@ begin
      inherited;
      Exit();
     end;
-   if (Self.occupied = TUsekStav.obsazeno) then
+   if (Self.occupied = TTrackState.occupied) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit obsazenou vyhybku');
      inherited;
@@ -1443,22 +1443,22 @@ begin
  if ((data = 0) and (Sender = Self.npBlokPlus)) then
   begin
    // zmena bloku pro polohu +
-   if (TBlkUsek(Self.npBlokPlus).Obsazeno = TUsekStav.obsazeno) then
-     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnUvol,
+   if (TBlkTrack(Self.npBlokPlus).occupied = TTrackState.occupied) then
+     TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).EventsOnFree,
        CreateChangeEvent(Self.NpObsazChange, 0))
    else
-     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnObsaz,
+     TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).eventsOnOccupy,
        CreateChangeEvent(Self.NpObsazChange, 0));
 
    if (Self.position = TTurnoutPosition.plus) then Self.Change();
 
   end else if ((data = 1) and (Sender = Self.npBlokMinus)) then begin
    // zmena bloku pro polohu -
-   if (TBlkUsek(Self.npBlokMinus).Obsazeno = TUsekStav.obsazeno) then
-     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnUvol,
+   if (TBlkTrack(Self.npBlokMinus).occupied = TTrackState.occupied) then
+     TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).EventsOnFree,
        CreateChangeEvent(Self.NpObsazChange, 1))
    else
-     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnObsaz,
+     TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).eventsOnOccupy,
        CreateChangeEvent(Self.NpObsazChange, 1));
 
    if (Self.position = TTurnoutPosition.minus) then Self.Change();
@@ -1472,22 +1472,22 @@ begin
  // namapovani udalosti obsazeni a uvolneni neprofiloveho useku pro polohu +
  if (Self.npBlokPlus <> nil) then
   begin
-   if (TBlkUsek(Self.npBlokPlus).Obsazeno = TUsekStav.obsazeno) then
-     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnUvol,
+   if (TBlkTrack(Self.npBlokPlus).occupied = TTrackState.occupied) then
+     TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).EventsOnFree,
        CreateChangeEvent(Self.NpObsazChange, 0))
    else
-     TBlkUsek(Self.npBlokPlus).AddChangeEvent(TBlkUsek(Self.npBlokPlus).EventsOnObsaz,
+     TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).eventsOnOccupy,
        CreateChangeEvent(Self.NpObsazChange, 0));
   end;
 
  // namapovani udalosti obsazeni a uvolneni neprofiloveho useku pro polohu -
  if (Self.npBlokMinus <> nil) then
   begin
-   if (TBlkUsek(Self.npBlokMinus).Obsazeno = TUsekStav.obsazeno) then
-     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnUvol,
+   if (TBlkTrack(Self.npBlokMinus).occupied = TTrackState.occupied) then
+     TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).EventsOnFree,
        CreateChangeEvent(Self.NpObsazChange, 1))
    else
-     TBlkUsek(Self.npBlokMinus).AddChangeEvent(TBlkUsek(Self.npBlokMinus).EventsOnObsaz,
+     TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).EventsOnOccupy,
        CreateChangeEvent(Self.NpObsazChange, 1));
   end;
 end;
@@ -1559,15 +1559,15 @@ begin
  if (not Self.emLock) then
   begin
    case (Self.occupied) of
-    TUsekStav.disabled: fg := clFuchsia;
-    TUsekStav.none    : fg := $A0A0A0;
-    TUsekStav.uvolneno: fg := $A0A0A0;
-    TUsekStav.obsazeno: fg := clRed;
+    TTrackState.disabled: fg := clFuchsia;
+    TTrackState.none: fg := $A0A0A0;
+    TTrackState.free: fg := $A0A0A0;
+    TTrackState.occupied: fg := clRed;
    else
     fg := clFuchsia;
    end;
 
-   if (Self.occupied = TUsekStav.uvolneno) then
+   if (Self.occupied = TTrackState.free) then
     begin
      case (Self.Zaver) of
       vlak   : fg := clLime;
@@ -1578,19 +1578,19 @@ begin
 
      // je soucasti vybarveneho neprofiloveho useku
      Blky.GetBlkByID(Self.trackID, Blk);
-     if ((Blk <> nil) and ((Blk.typ = btUsek) or (Blk.typ = btTU))
-         and (fg = $A0A0A0) and (TBlkUsek(Blk).IsNeprofilJC)) then
+     if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btTU))
+         and (fg = $A0A0A0) and (TBlkTrack(Blk).IsNeprofilJC)) then
        fg := clYellow;
     end;
 
    // do profilu vyhybky zasahuje obsazeny usek
    if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokPlus <> nil) and (Self.position = TTurnoutPosition.plus) and
-       (TBlkUsek(Self.npBlokPlus).Obsazeno <> TUsekStav.uvolneno)) then
+       (TBlkTrack(Self.npBlokPlus).occupied <> TTrackState.free)) then
      fg := clYellow;
 
    // do profilu vyhybky zasahuje obsazeny usek
    if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokMinus <> nil) and (Self.position = TTurnoutPosition.minus) and
-       (TBlkUsek(Self.npBlokMinus).Obsazeno <> TUsekStav.uvolneno)) then
+       (TBlkTrack(Self.npBlokMinus).occupied <> TTrackState.free)) then
      fg := clYellow;
 
   end else begin

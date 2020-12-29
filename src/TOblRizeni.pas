@@ -284,7 +284,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokUsek, TBlockSignal, fMain, Logging, TechnologieJC,
+uses TBloky, GetSystems, TBlockTrack, TBlockSignal, fMain, Logging, TechnologieJC,
      TJCDatabase, ownConvert, TCPServerOR, TOblsRizeni, TBlok, THVDatabase, TrainDb,
      UserDb, THnaciVozidlo, Trakce, User, TCPORsRef, fRegulator, RegulatorTCP,
      ownStrUtils, Train, changeEvent, TechnologieTrakce;
@@ -756,7 +756,7 @@ begin
 
  if (Self.vb.Count > 0) then
   begin
-   (Self.vb[Self.vb.Count-1] as TBlkUsek).KonecJC := TZaver.no;
+   (Self.vb[Self.vb.Count-1] as TBlkTrack).jcEnd := TZaver.no;
    Self.vb.Delete(Self.vb.Count-1);
   end else begin
    Blk := Blky.GetBlkSignalSelected(Self.id);
@@ -764,7 +764,7 @@ begin
   end;
 
  Blk := Blky.GetBlkUsekVlakPresun(Self.id);
- if (Blk <> nil) then (Blk as TBlkUsek).VlakPresun := -1;
+ if (Blk <> nil) then (Blk as TBlkTrack).trainMoving := -1;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -778,10 +778,10 @@ begin
  // zjisteni jmen bloku:
  for blk in Blky do
   begin
-   if (Blk.typ <> btUsek) then continue;
-   if (not (Blk as TBlkUsek).NUZ) then continue;
+   if (Blk.typ <> btTrack) then continue;
+   if (not (Blk as TBlkTrack).NUZ) then continue;
 
-   for oblr in (Blk as TBlkUsek).stations do
+   for oblr in (Blk as TBlkTrack).stations do
      if (oblr = Self) then
        podminky.Add(GetPSPodminka(Blk, 'Nouzové vybavování'));
   end;//for i
@@ -847,7 +847,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TOR.PanelTrainChange(Sender: TIdContext; trainstr: TStrings);
-var usek: TBlkUsek;
+var usek: TBlkTrack;
     train: TTrain;
 begin
  //kontrola opravneni klienta
@@ -875,7 +875,7 @@ begin
   end else begin
 
    // uprava soupravy
-   usek := (TTCPORsRef(Sender.Data).train_usek as TBlkUsek);
+   usek := (TTCPORsRef(Sender.Data).train_usek as TBlkTrack);
    train := TTCPORsRef(Sender.Data).train_edit;
 
    if (not usek.IsTrain(TTCPORsRef(Sender.Data).train_edit.index)) then
@@ -1032,7 +1032,7 @@ end;
 procedure TOR.NUZ_PS(Sender: TIdContext; success: Boolean);
 var JC: TJC;
     Blk: TBlk;
-    usek: TBlkUsek;
+    usek: TBlkTrack;
     signal: TBlkSignal;
     oblr: TOR;
 begin
@@ -1043,15 +1043,15 @@ begin
  // ruseni pripadnych jiznich cest:
  for blk in Blky do
   begin
-   if (Blk.typ <> btUsek) then continue;
-   usek := Blk as TBlkUsek;
+   if (Blk.typ <> btTrack) then continue;
+   usek := Blk as TBlkTrack;
    if (not usek.NUZ) then continue;
 
    for oblr in usek.stations do
     begin
      if (oblr = Self) then
       begin
-       usek.AddChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
+       usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
        JC := JCDb.FindPostavenaJCWithUsek(Blk.id);
 
        if (JC <> nil) then
@@ -1714,13 +1714,13 @@ begin
   begin
    try
      Blky.GetBlkByID(StrToInt(str[3]), Blk);
-     if ((Blk = nil) or ((Blk.typ <> btUsek) and (Blk.typ <> btTU))) then
+     if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btTU))) then
       begin
        Self.SendLn(Sender, 'LOK-REQ;U-ERR;Neplatný blok');
        Exit();
       end;
 
-     if (not (Blk as TBlkUsek).IsTrain()) then
+     if (not (Blk as TBlkTrack).IsTrain()) then
       begin
        Self.SendLn(Sender, 'LOK-REQ;U-ERR;Žádná souprava na bloku');
        Exit();
@@ -1730,7 +1730,7 @@ begin
      if (str.Count > 4) then
       begin
        traini := StrToIntDef(str[4], -1);
-       if ((traini < -1) or (traini >= (Blk as TBlkUsek).trains.Count)) then
+       if ((traini < -1) or (traini >= (Blk as TBlkTrack).trains.Count)) then
         begin
          Self.SendLn(Sender, 'LOK-REQ;U-ERR;Tato souprava na úseku neexistuje');
          Exit();
@@ -1742,12 +1742,12 @@ begin
      if (traini = -1) then
       begin
        // vsechny soupravy na useku
-       for j := 0 to (Blk as TBlkUsek).trains.Count-1 do
-         for addr in Trains[(Blk as TBlkUsek).trains[j]].HVs do
+       for j := 0 to (Blk as TBlkTrack).trains.Count-1 do
+         for addr in Trains[(Blk as TBlkTrack).trains[j]].HVs do
            line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end else begin
        // konkretni souprava
-       for addr in Trains[(Blk as TBlkUsek).trains[traini]].HVs do
+       for addr in Trains[(Blk as TBlkTrack).trains[traini]].HVs do
          line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end;
 
@@ -1798,7 +1798,7 @@ procedure TOR.ClearVb();
 var i: Integer;
 begin
  for i := 0 to Self.vb.Count-1 do
-  (Self.vb[i] as TBlkUsek).KonecJC := TZaver.no;
+  (Self.vb[i] as TBlkTrack).jcEnd := TZaver.no;
  Self.vb.Clear();
 end;
 
@@ -1988,17 +1988,17 @@ end;
 
 procedure TOR.NUZcancelPrematureEvents();
 var blk: TBlk;
-    usek: TBlkUsek;
+    usek: TBlkTrack;
     oblr: TOR;
 begin
  for blk in Blky do
   begin
-   if (Blk.typ <> btUsek) then continue;
-   usek := Blk as TBlkUsek;
+   if (Blk.typ <> btTrack) then continue;
+   usek := Blk as TBlkTrack;
    if (not usek.NUZ) then continue;
    for oblr in usek.stations do
      if (oblr = Self) then
-       usek.RemoveChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
+       usek.RemoveChangeEvent(usek.eventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
   end;
 end;
 

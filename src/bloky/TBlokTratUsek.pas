@@ -1,5 +1,7 @@
 ﻿unit TBlokTratUsek;
 
+{ RAILWAY TRACK technological block definition. }
+
 // Definice a obsluha technologickeho bloku Tratovy usek
 // Tratovy usek dedi z Useku
 // TU = Tratovy usek
@@ -40,7 +42,7 @@ Jak to funguje:
 
 interface
 
-uses TBlokUsek, Classes, TBlok, IniFiles, SysUtils, IdContext, rrEvent,
+uses TBlockTrack, Classes, TBlok, IniFiles, SysUtils, IdContext, rrEvent,
       Generics.Collections, TOblRizeni, THnaciVozidlo, Train, JclPCRE;
 
 type
@@ -103,7 +105,7 @@ type
 
 
  // technologicky blok Tratoveho useku
- TBlkTU = class(TBlkUsek)
+ TBlkTU = class(TBlkTrack)
   private const
    _def_tu_stav: TBlkTUStav = (                                                  // zakladni stav TU
     inTrat: -1;
@@ -140,7 +142,7 @@ type
     function GetTratReady(): Boolean;                                           // vrati, jestli je trat zpusobila prace: jestli existuje a ma smer AtoB nebo BtoA, viz property \tratSmer
     function GetPrevTU(): TBlkTU;                                               // vrati predchozi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \prevTU
     function GetNextTU(): TBlkTU;                                               // vrati dalsi TU v zavislosti na smeru trati, pokud smer neni AtoB nebo BtoA, vrati nil, viz property \nextTU
-    function GetSectObsazeno(): TUsekStav;                                      // vrati stav obsazeni cele sekce, mozne volat pouze u Section Masteru
+    function GetSectObsazeno(): TTrackState;                                      // vrati stav obsazeni cele sekce, mozne volat pouze u Section Masteru
                                                                                 // POZOR: tato metoda, resp property \sectObsazeno by mela byt pouzivana VELMI OPATRNE, casto je vhodnejsi property \sectReady, ktera zahrnuje i poruchu BP
     function GetSectMaster(): TBlkTU;                                           // vrati sectMaster kazdeho TU, pokud je TU sam sobe sectMaster, obsahuje referenci na self, viz property \sectMaster
     function GetNextNav(): TBlk;                                                // vrati dalsi navestidlo v trati, v krajnim pripade az hranicni navestidlo cele trati podle aktualniho smeru trati, viz property \nextNav
@@ -212,7 +214,7 @@ type
     property TUStav: TBlkTUStav read fTUStav;
     property InTrat: Integer read fTUStav.InTrat write fTUStav.InTrat;
     property bpInBlk: Boolean read fTUStav.bpInBlk write fTUStav.bpInBlk;
-    property sectObsazeno: TUsekStav read GetSectObsazeno;
+    property sectObsazeno: TTrackState read GetSectObsazeno;
     property sectReady: Boolean read GetSectReady;
     property rychUpdate: Boolean read GetRychUpdate write SetRychUpdate;
 
@@ -409,7 +411,7 @@ procedure TBlkTU.Update();
 begin
  inherited;
 
- if ((Self.InTrat > -1) and (Self.Stav.Stav = TUsekStav.obsazeno) and (Self.IsTrain()) and (Self.zastavka)) then
+ if ((Self.InTrat > -1) and (Self.occupied = TTrackState.occupied) and (Self.IsTrain()) and (Self.zastavka)) then
    Self.ZastUpdate();
 
  Self.UpdateTrainRych();
@@ -639,7 +641,7 @@ begin
 
   ENTER : begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-    if (not Self.PresunLok(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
+    if (not Self.MoveLok(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
@@ -900,15 +902,15 @@ procedure TBlkTU.UpdateBP();
 begin
  if ((not Self.tratReady) or (not TBlkRailway(Self.Trat).BP)) then Exit();
 
- if ((Self.prevTU = nil) and (Self.Obsazeno = TUsekStav.obsazeno)) then
+ if ((Self.prevTU = nil) and (Self.occupied = TTrackState.occupied)) then
   begin
    // nastala aktivace blokove podminky prvniho bloku trati
    Self.bpInBlk := true;
   end;
 
  // predavani soupravy z predchoziho TU do meho TU
- if ((Self.prevTU <> nil) and (Self.Obsazeno = TUsekStav.obsazeno) and
-     (Self.prevTU.Obsazeno = TUsekStav.obsazeno) and
+ if ((Self.prevTU <> nil) and (Self.occupied = TTrackState.occupied) and
+     (Self.prevTU.occupied = TTrackState.occupied) and
      ((Self.navKryci = nil) or (TBlkSignal(Self.navKryci).IsGoSignal()))) then
   begin
    // nastala aktivace blokove podminky
@@ -919,8 +921,8 @@ begin
      // mezi useky je potreba predat soupravu
      Self.prevTU.train.front := Self;
      Self.AddTrainL(Self.prevTU.trainI);
-     Self.zpomalovani_ready := true;
-     Self.houk_ev_enabled := true;
+     Self.slowingReady := true;
+     Self.houkEvEnabled := true;
      Self.rychUpdate := true;
 
      if (Self.nextTU = nil) then
@@ -934,7 +936,7 @@ begin
 
  // uvolnovani soupravy z TU (pokud je jiz predana do dalsiho TU)
  if ((Self.bpInBlk) and (Self.nextTU <> nil) and (Self.nextTU.train = Self.train) and
-     (Self.Obsazeno = TusekStav.Uvolneno) and (Self.nextTU.Obsazeno = TUsekStav.obsazeno)) then
+     (Self.occupied = TTrackState.free) and (Self.nextTU.occupied = TTrackState.occupied)) then
   begin
    Self.bpInBlk := false;
    Self.RemoveTrains();
@@ -944,22 +946,22 @@ begin
  // kontrola poruchy blokove podminky
  if (Self.bpInBlk) then
   begin
-   if ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.poruchaBP) and
-       ((Self.Zaver = TZaver.no) or (Self.Zaver = TZaver.ab))) then
+   if ((Self.occupied = TTrackState.free) and (not Self.poruchaBP) and
+       ((Self.zaver = TZaver.no) or (Self.zaver = TZaver.ab))) then
      Self.poruchaBP := true;
-   if ((Self.Obsazeno = TUsekStav.obsazeno) and (Self.poruchaBP)) then
+   if ((Self.occupied = TTrackState.occupied) and (Self.poruchaBP)) then
      Self.poruchaBP := false;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTU.GetSectObsazeno(): TUsekStav;
+function TBlkTU.GetSectObsazeno(): TTrackState;
 var blk: TBlkTU;
     sectUseky: TList<TBlkTU>;
 begin
- if (Self.Trat = nil) then Exit(TusekStav.none);
- if (Self.Obsazeno <= TUsekStav.none) then Exit(TUsekStav.Obsazeno);
+ if (Self.Trat = nil) then Exit(TTrackState.none);
+ if (Self.occupied <= TTrackState.none) then Exit(TTrackState.occupied);
 
  // pozadavek na obsazenost sekce muze prijit i kdyz trat nema smer,
  //  typicky kdyz se stavi JC do bezsouhlasove trati s automatickou
@@ -976,16 +978,16 @@ begin
            if (Self.lTU = nil) then
             sectUseky := Self.lsectUseky
            else
-            Exit(TUsekStav.none);
+            Exit(TTrackState.none);
          end;
   end;
  else
-  Exit(TUsekStav.none);
+  Exit(TTrackState.none);
  end;
 
  for blk in sectUseky do
-  if (blk.Obsazeno <> TUsekStav.uvolneno) then Exit(blk.Obsazeno);
- Exit(TUsekStav.uvolneno);
+  if (blk.occupied <> TTrackState.free) then Exit(blk.occupied);
+ Exit(TTrackState.free);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1108,7 +1110,7 @@ begin
 
  // zrusit jizdni cestu muzeme pouze u sekce na kraji trati (v trati se rusi
  //   navest autobloku)
- if ((Self.prevTU = nil) and (Self.sectObsazeno = TUsekStav.obsazeno)
+ if ((Self.prevTU = nil) and (Self.sectObsazeno = TTrackState.occupied)
      and (TBlkRailway(Self.Trat).Zaver)) then
   begin
    jc := JCDb.FindPostavenaJCWithUsek(Self.id);
@@ -1158,7 +1160,7 @@ begin
    Dec(Self.fTUStav.sprRychUpdateIter);
    if (Self.fTUStav.sprRychUpdateIter = 0) then
     begin
-     if ((Self.IsTrain()) and (Self.zpomalovani_ready) and
+     if ((Self.IsTrain()) and (Self.slowingReady) and
         (Self.train.wantedSpeed > 0) and
         (Cardinal(Self.train.wantedSpeed) <> Self.Speed(Self.train))) then
        Self.train.speed := Self.Speed(Self.train);
@@ -1215,7 +1217,7 @@ function TBlkTU.GetSectReady(): Boolean;
 var blk: TBlkTU;
     sectUseky: TList<TBlkTU>;
 begin
- if ((Self.Trat = nil) or (Self.Obsazeno <= TUsekStav.none)) then Exit(false);
+ if ((Self.Trat = nil) or (Self.occupied <= TTrackState.none)) then Exit(false);
 
  case (TBlkRailway(Self.Trat).direction) of
   TRailwayDirection.AtoB : sectUseky := Self.lsectUseky;
@@ -1237,7 +1239,7 @@ begin
  { zaver u prvniho bloku trati nekontrolujeme, protoze tuto metodu vyuziva JC
    pri staveni, ktera na prvni usek dava nouzovy zaver pri staveni }
  for blk in sectUseky do
-   if ((blk.Obsazeno <> TUsekStav.uvolneno) or (blk.IsTrain())
+   if ((blk.occupied <> TTrackState.free) or (blk.IsTrain())
     or (blk.poruchaBP)) then Exit(false);
  Result := true;
 end;
@@ -1246,7 +1248,7 @@ end;
 
 function TBlkTU.GetReady(): Boolean;
 begin
- Result := ((Self.Obsazeno = TUsekStav.uvolneno) and (not Self.IsTrain())
+ Result := ((Self.occupied = TTrackState.free) and (not Self.IsTrain())
   and (not Self.poruchaBP));
 end;
 

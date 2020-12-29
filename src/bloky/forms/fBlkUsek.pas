@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils,
-  TBloky, TBlok, TBlokUsek, Generics.Collections;
+  TBloky, TBlok, TBlockTrack, Generics.Collections;
 
 type
   TF_BlkUsek = class(TForm)
@@ -49,7 +49,7 @@ type
     procedure SE_RCS_BoardExit(Sender: TObject);
   private
    NewBlk: Boolean;
-   Blk: TBlkUsek;
+   Blk: TBlkTrack;
    OpenIndex: Integer;
 
     procedure NewBlkOpenForm;
@@ -127,7 +127,7 @@ procedure TF_BlkUsek.NewBlkOpenForm;
 
 procedure TF_BlkUsek.NormalOpenForm;
 var glob: TBlkSettings;
-    settings: TBlkUsekSettings;
+    settings: TBlkTrackSettings;
     i: Integer;
     obls: TArstr;
     oblr: TOR;
@@ -146,7 +146,7 @@ var glob: TBlkSettings;
   if (Assigned(Self.Blk)) then settings := Self.Blk.GetSettings();
 
   Self.SE_SprCnt.Value := settings.maxTrains;
-  Self.SE_SprCnt.Enabled := Self.Blk.Stav.stanicni_kolej or Self.Blk.Stav.train_pos;
+  Self.SE_SprCnt.Enabled := Self.Blk.spnl.stationTrack or Self.Blk.spnl.trainPos;
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D2.Checked := false;
@@ -231,7 +231,7 @@ var glob: TBlkSettings;
   Self.CB_Zesil.ItemIndex := -1;
   for i := 0 to Boosters.sorted.Count-1 do
    begin
-    if (Boosters.sorted[i].id = settings.Zesil) then
+    if (Boosters.sorted[i].id = settings.boosterId) then
      begin
       Self.CB_Zesil.ItemIndex := i;
       break;
@@ -240,8 +240,8 @@ var glob: TBlkSettings;
 
   Self.SE_RCS_BoardExit(Self);
 
-  E_Delka.Text := FloatToStr(settings.Lenght);
-  CHB_SmycBlok.Checked := settings.SmcUsek;
+  E_Delka.Text := FloatToStr(settings.lenght);
+  CHB_SmycBlok.Checked := settings.loop;
 
   F_BlkUsek.Caption := 'Editovat data bloku '+glob.name+' (úsek)';
   F_BlkUsek.ActiveControl := B_OK;
@@ -269,7 +269,7 @@ procedure TF_BlkUsek.B_StornoClick(Sender: TObject);
 
 procedure TF_BlkUsek.B_OKClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkUsekSettings;
+    settings: TBlkTrackSettings;
     addr: TRCSAddr;
     another: TBlk;
  begin
@@ -291,14 +291,14 @@ var glob: TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id   := SE_ID.Value;
-  glob.typ  := btUsek;
+  glob.typ  := btTrack;
 
   if (NewBlk) then
    begin
     glob.note := '';
 
     try
-      Blk := Blky.Add(btUsek, glob) as TBlkUsek;
+      Blk := Blky.Add(btTrack, glob) as TBlkTrack;
     except
       on E: Exception do
        begin
@@ -322,9 +322,9 @@ var glob: TBlkSettings;
   if (Self.CHB_D4.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
 
-  settings.Lenght  := StrToFloatDef(Self.E_Delka.Text,0);
-  settings.SmcUsek := Self.CHB_SmycBlok.Checked;
-  settings.Zesil   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
+  settings.lenght  := StrToFloatDef(Self.E_Delka.Text,0);
+  settings.loop := Self.CHB_SmycBlok.Checked;
+  settings.boosterId   := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
 
   settings.houkEvL := Self.Blk.GetSettings().houkEvL;
   settings.houkEvS := Self.Blk.GetSettings().houkEvS;

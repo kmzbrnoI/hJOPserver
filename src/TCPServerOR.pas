@@ -156,7 +156,7 @@ var
 
 implementation
 
-uses fMain, TBlokUsek, TBlockTurnout, TBlockSignal, TOblsRizeni, TBlockLinker,
+uses fMain, TBlockTrack, TBlockTurnout, TBlockSignal, TOblsRizeni, TBlockLinker,
       TBlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, TJCDatabase, TechnologieJC, TBlockAC, ACBlocks,
@@ -617,7 +617,7 @@ begin
 
    if (orRef.stitek = nil) then Exit();
    case (orRef.stitek.typ) of
-    btUsek, btTU : (orRef.stitek as TBlkUsek).Stitek := tmp;
+    btTrack, btTU : (orRef.stitek as TBlkTrack).note := tmp;
     btTurnout    : (orRef.stitek as TBlkTurnout).note := tmp;
     btLinker     : (orRef.stitek as TBlkLinker).note := tmp;
     btCrossing    : (orRef.stitek as TBlkCrossing).note := tmp;
@@ -639,7 +639,7 @@ begin
 
    if (orRef.vyluka = nil) then Exit();
    case (orRef.vyluka.typ) of
-    btUsek, btTU : (orRef.vyluka as TBlkUsek).SetUsekVyl(AContext, tmp);
+    btTrack, btTU : (orRef.vyluka as TBlkTrack).SetLockout(AContext, tmp);
     btTurnout    : (orRef.vyluka as TBlkTurnout).SetLockout(AContext, tmp);
    end;//case
    orRef.vyluka := nil;
@@ -761,7 +761,7 @@ begin
   begin
    TTCPORsRef(AContext.Data).maus := (parsed[2] = '1');
    if ((Assigned(TTCPORsRef(AContext.Data).menu)) and
-       ((TTCPORsRef(AContext.Data).menu.typ = btUsek) or
+       ((TTCPORsRef(AContext.Data).menu.typ = btTrack) or
         (TTCPORsRef(AContext.Data).menu.typ = btTU))) then
      TTCPORsRef(AContext.Data).menu.Change();
   end
@@ -773,7 +773,7 @@ begin
      podj := nil;
      try
        podj := TPodj.Create(parsed[2], parsed[3]);
-       (TTCPORsRef(AContext.Data).podj_usek as TBlkUsek).POdjChanged(
+       (TTCPORsRef(AContext.Data).podj_usek as TBlkTrack).POdjChanged(
          TTCPORsRef(AContext.Data).podj_trainid, podj
        ); // sets podj to nil if takes ownership
      except

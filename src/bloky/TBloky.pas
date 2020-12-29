@@ -138,7 +138,7 @@ var
 
 implementation
 
-uses TBlockTurnout, TBlokUsek, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
+uses TBlockTurnout, TBlockTrack, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
      TBlokZamek, TJCDatabase, Logging, TBlockRailway, TBlockLinker, TBlockAC,
      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlockDisconnector,
      TBlokTratUsek, appEv, TBlockIO, PTUtils, TBlockSummary,
@@ -180,7 +180,7 @@ var blkset: TBlkSettings;
     blk: TBlk;
     oblr: TOR;
 begin
- if (((Sender as TBlk).typ = btUsek) or ((Sender as TBlk).typ = btTU)) then
+ if (((Sender as TBlk).typ = btTrack) or ((Sender as TBlk).typ = btTU)) then
   begin
    // pri jakekoliv zmene useku dojde k Change() na vyhybce
    // navaznost: usek -> vyhybka
@@ -247,7 +247,7 @@ begin
 
        case (typei) of
          Integer(btTurnout)   : Blk := TBlkTurnout.Create(-1);
-         Integer(btUsek)      : Blk := TBlkUsek.Create(-1);
+         Integer(btTrack)      : Blk := TBlkTrack.Create(-1);
          Integer(btIR)        : Blk := TBlkIR.Create(-1);
          Integer(btSignal)    : Blk := TBlkSignal.Create(-1);
          Integer(btCrossing)   : Blk := TBlkCrossing.Create(-1);
@@ -369,7 +369,7 @@ begin
 
  case (typ) of
   btTurnout  : Blk := TBlkTurnout.Create(index);
-  btUsek     : Blk := TBlkUsek.Create(index);
+  btTrack     : Blk := TBlkTrack.Create(index);
   btIR       : Blk := TBlkIR.Create(index);
   btSignal      : Blk := TBlkSignal.Create(index);
   btCrossing  : Blk := TBlkCrossing.Create(index);
@@ -626,14 +626,14 @@ var j: Integer;
 begin
  for blk in Self.Data do
   begin
-   if ((blk.typ <> btUsek) and (blk.typ <> btTU)) then continue;
+   if ((blk.typ <> btTrack) and (blk.typ <> btTU)) then continue;
 
    orindex := -1;
-   for j := 0 to (blk as TBlkUsek).stations.Count-1 do
-     if ((blk as TBlkUsek).stations[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkTrack).stations.Count-1 do
+     if ((blk as TBlkTrack).stations[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
-   if ((blk as TBlkUsek).IsVlakPresun()) then Exit(blk);
+   if ((blk as TBlkTrack).IsTrainMoving()) then Exit(blk);
   end;
 
  Result := nil;
@@ -647,9 +647,9 @@ begin
  if (not Self.enabled) then Exit();
 
  for blk in Self.data do
-   if ((blk.typ = btUsek) or (blk.typ = btTU)) then
-     if ((booster = '') or (TBlkUsek(blk).GetSettings().Zesil = booster)) then
-       TBlkUsek(blk).OnBoosterChange();
+   if ((blk.typ = btTrack) or (blk.typ = btTU)) then
+     if ((booster = '') or (TBlkTrack(blk).GetSettings().boosterId = booster)) then
+       TBlkTrack(blk).OnBoosterChange();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -658,13 +658,13 @@ end;
 procedure TBlky.NUZ(or_id: string; state: Boolean = true);
 var traini: Integer;
     blk: TBlk;
-    usek: TBlkUsek;
+    usek: TBlkTrack;
     oblr: TOR;
  begin
   for blk in Self.Data do
    begin
-    if (blk.typ <> btUsek) then continue;
-    usek := (blk as TBlkUsek);
+    if (blk.typ <> btTrack) then continue;
+    usek := (blk as TBlkTrack);
     if (not usek.NUZ) then continue;
 
     for oblr in usek.stations do
@@ -775,13 +775,13 @@ var blk: TBlk;
 begin
  for blk in Self.data do
   begin
-   if ((blk.typ = btUsek) or (blk.typ = btTU)) then
+   if ((blk.typ = btTrack) or (blk.typ = btTU)) then
     begin
-     if ((blk as TBlkUsek).IsTrain(train)) then
-       (blk as TBlkUsek).RemoveTrain(train);
+     if ((blk as TBlkTrack).IsTrain(train)) then
+       (blk as TBlkTrack).RemoveTrain(train);
 
-     if ((blk as TBlkUsek).trainPredict = train) then
-       (blk as TBlkUsek).trainPredict := nil;
+     if ((blk as TBlkTrack).trainPredict = train) then
+       (blk as TBlkTrack).trainPredict := nil;
     end;
    if (blk.typ = btRailway) then (blk as TBlkRailway).RemoveTrain(train);
   end;//for
@@ -794,8 +794,8 @@ var blk: TBlk;
 begin
  Result := TList<TObject>.Create();
  for blk in Self.data do
-   if (((blk.typ = btUsek) or (blk.typ = btTU)) and
-       ((blk as TBlkUsek).IsTrain(train))) then
+   if (((blk.typ = btTrack) or (blk.typ = btTU)) and
+       ((blk as TBlkTrack).IsTrain(train))) then
      Result.Add(blk);
 end;
 
@@ -803,14 +803,14 @@ end;
 // predpovidani soupravy na bloky v jizdni ceste
 
 procedure TBlky.TrainPrediction(signal: TBlk);
-var usek, startUsek: TBlkUsek;
+var usek, startUsek: TBlkTrack;
     trat: TBlkRailway;
     train: TTrain;
     JC: TJC;
 begin
  try
    // zjistime soupravu pred navestidlem
-   usek := TBlkUsek(TBlkSignal(signal).track);
+   usek := TBlkTrack(TBlkSignal(signal).track);
    startUsek := usek;
    train := TBlkSignal(signal).GeTTrain(usek);
 
@@ -1036,8 +1036,8 @@ procedure TBlky.ClearPOdj();
 var Blk: TBlk;
 begin
  for Blk in Self.data do
-   if ((Blk.typ = btUsek) or (Blk.typ = btTU)) then
-     TBlkUsek(Blk).ClearPOdj();
+   if ((Blk.typ = btTrack) or (Blk.typ = btTU)) then
+     TBlkTrack(Blk).ClearPOdj();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1059,8 +1059,8 @@ var blk: TBlk;
  begin
   for blk in Self.data do
     if ((Blk.typ = btTurnout) and (TBlkTurnout(Blk).position <> TTurnoutPosition.plus) and (not TBlkTurnout(Blk).outputLocked) and
-        (TBlkTurnout(Blk).occupied <> TUsekStav.obsazeno) and
-        ((TBlkTurnout(Blk).coupling = nil) or (TBlkTurnout(Blk).coupling.occupied <> TUsekStav.obsazeno))) then
+        (TBlkTurnout(Blk).occupied <> TTrackState.occupied) and
+        ((TBlkTurnout(Blk).coupling = nil) or (TBlkTurnout(Blk).coupling.occupied <> TTrackState.occupied))) then
       TBlkTurnout(Blk).SetPosition(plus);
  end;
 

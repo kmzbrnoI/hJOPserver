@@ -20,7 +20,7 @@ type
  TBlkType = (
    btAny = -1,
    btTurnout = 0,
-   btUsek = 1,
+   btTrack = 1,
    btIr = 2,
    btSignal = 3,
    btCrossing = 4,
@@ -412,7 +412,7 @@ class function TBlk.BlkTypeToStr(typ: TBlkType): string;
 begin
  case (typ) of
   btTurnout: Result := 'turnout';
-  btUsek: Result := 'track';
+  btTrack: Result := 'track';
   btIR: Result := 'ir';
   btSignal: Result := 'signal';
   btCrossing: Result := 'crossing';
@@ -461,7 +461,7 @@ end;
 class function TBlk.BlkTypeFromStr(typ: string): TBlkType;
 begin
  if (typ = 'vyhybka') or (typ = 'výhybka') or (typ = 'turnout') then Result := btTurnout
- else if (typ = 'usek') or (typ = 'úsek') or (typ = 'track') then Result := btUsek
+ else if (typ = 'usek') or (typ = 'úsek') or (typ = 'track') then Result := btTrack
  else if (typ = 'ir') then Result := btIR
  else if (typ = 'navestidlo') or (typ = 'signal') then Result := btSignal
  else if (typ = 'prejezd') or (typ = 'přejezd') or (typ = 'crossing') then Result := btCrossing

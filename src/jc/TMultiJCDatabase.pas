@@ -60,7 +60,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBloky, TBlokUsek, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, TBloky, TBlockTrack, TOblRizeni, TCPServerOR,
       DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -272,7 +272,7 @@ begin
        (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false, abAfter);
 
      (StartBlk as TBlkSignal).selected := TBlkSignalSelection.none;
-     (EndBlk as TBlkUsek).KonecJC := TZaver.no;
+     (EndBlk as TBlkTrack).jcEnd := TZaver.no;
      (SenderOR as TOR).ClearVb();
     end else begin
      mJC.StavJC(SenderPnl, SenderOR);
