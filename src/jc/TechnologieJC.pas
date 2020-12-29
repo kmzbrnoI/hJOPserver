@@ -77,37 +77,37 @@ type
 
   // jedna bariera ve staveni jizdni cesty:
   TJCBariera = record
-   typ: Integer;                                                                 // typ bariery, odkazuje na konstanty _JCB_*, viz nize
-   blok: TBlk;                                                                   // blok, na ktery se bariera vztahuje; nektere bariery nemusi byt prirazeny bloku, platnost tohoto parametru je potreba overit pro kazdou barieru samostatne
-   param: Integer;                                                               // parametr bariery, typicky napr. ID bloku, ktery neexistuje; v takovem pripade samozrejme nemuze existovat \blok
+   typ: Integer;                                                                // typ bariery, odkazuje na konstanty _JCB_*, viz nize
+   blok: TBlk;                                                                  // blok, na ktery se bariera vztahuje; nektere bariery nemusi byt prirazeny bloku, platnost tohoto parametru je potreba overit pro kazdou barieru samostatne
+   param: Integer;                                                              // parametr bariery, typicky napr. ID bloku, ktery neexistuje; v takovem pripade samozrejme nemuze existovat \blok
   end;
   TJCBariery = TList<TJCBariera>;                                               // seznam barier; typicky seznam barie branici staveni jizdni cesty
 
   // zaver vyhybky v jizdni ceste
-  TJCVyhZaver=record
-   Blok: Integer;                                                                // odkaz na blok (ID bloku)
+  TJCVyhZaver = record
+   Blok: Integer;                                                               // odkaz na blok (ID bloku)
    Poloha: TTurnoutPosition;                                                    // chtena poloha vyhybky
   end;
 
   // zaver odvratove vyhybky v jizdni ceste
-  TJCOdvratZaver=record
-   Blok: Integer;                                                                // odkaz na blok (ID bloku)
+  TJCOdvratZaver = record
+   Blok: Integer;                                                               // odkaz na blok (ID bloku)
    Poloha: TTurnoutPosition;                                                    // chtena poloha vyhybky
    ref_blk: Integer;                                                             // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
   // bloky v JC, ketre jsou navazany na konkretni useky v ramci JC
-  TJCRefZaver=record
-   Blok: Integer;                                                                // odkaz na blok ID
-   ref_blk: Integer;                                                             // blok, pri jehoz uvolneni zaveru dojde ke zruseni redukce \Blok
+  TJCRefZaver = record
+   Blok: Integer;                                                               // odkaz na blok ID
+   ref_blk: Integer;                                                            // blok, pri jehoz uvolneni zaveru dojde ke zruseni redukce \Blok
   end;
 
   // prejezd v jizdni ceste
-  TJCPrjZaver=record
-   Prejezd: Integer;                                                             // odkaz na ID bloku prejezdu
-   uzaviraci: TList<Integer>;                                                    // uzaviraci bloky (ID) prejezdu
+  TJCPrjZaver = record
+   Prejezd: Integer;                                                            // odkaz na ID bloku prejezdu
+   uzaviraci: TList<Integer>;                                                   // uzaviraci bloky (ID) prejezdu
                                                                                 // pokud se prejezd nezavira, je seznam prazdny
-   oteviraci: Integer;                                                           // oteviraci blok (ID) prejezdu
+   oteviraci: Integer;                                                          // oteviraci blok (ID) prejezdu
                                                                                 // pokud se prejezd nezavira, je nedefinovany
   end;
 
