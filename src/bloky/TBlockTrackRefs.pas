@@ -1,4 +1,4 @@
-unit TBlokUsekRefs;
+unit TBlockTrackRefs;
 
 {
  This unit implements TBlkUsekRefs class, which holds list of TBlkUsekRef.
@@ -6,11 +6,11 @@ unit TBlokUsekRefs;
 
 interface
 
-uses TBlokUsekRef, Generics.Collections, Classes, TBlokUsek, StrUtils;
+uses TBlockTrackRef, Generics.Collections, Classes, TBlokUsek, StrUtils;
 
 type
 
-TBlkUsekRefs = class
+TBlkTrackRefs = class
  const
   _SEPARATOR: Char = ',';
 
@@ -19,7 +19,7 @@ TBlkUsekRefs = class
    function GetChanged(): Boolean;
 
  public
-  parts: TObjectList<TBlkUsekRef>;
+  parts: TObjectList<TBlkTrackRef>;
   stateLast: TUsekStav;
 
    constructor Create(); overload;
@@ -40,22 +40,22 @@ uses ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlkUsekRefs.Create();
+constructor TBlkTrackRefs.Create();
 begin
  inherited;
- Self.parts := TObjectList<TBlkUsekRef>.Create();
+ Self.parts := TObjectList<TBlkTrackRef>.Create();
  Self.stateLast := TUsekStav.uvolneno;
 end;
 
-constructor TBlkUsekRefs.Create(str: string);
+constructor TBlkTrackRefs.Create(str: string);
 begin
  inherited Create();
- Self.parts := TObjectList<TBlkUsekRef>.Create();
+ Self.parts := TObjectList<TBlkTrackRef>.Create();
  Self.Parse(str);
  Self.stateLast := TUsekStav.uvolneno;
 end;
 
-destructor TBlkUsekRefs.Destroy();
+destructor TBlkTrackRefs.Destroy();
 begin
  Self.parts.Free();
  inherited;
@@ -63,10 +63,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsekRefs.Parse(str: string);
+procedure TBlkTrackRefs.Parse(str: string);
 var strs: TStrings;
     _str: string;
-    ref: TBlkUsekRef;
+    ref: TBlkTrackRef;
 begin
  Self.parts.Clear();
 
@@ -75,7 +75,7 @@ begin
    ExtractStringsEx([_SEPARATOR], [' '], str, strs);
    for _str in strs do
     begin
-     ref := TBlkUsekRef.Create(_str);
+     ref := TBlkTrackRef.Create(_str);
      Self.parts.Add(ref);
     end;
  finally
@@ -85,8 +85,8 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsekRefs.GetBlockState(): TUsekStav;
-var ref: TBlkUsekRef;
+function TBlkTrackRefs.GetBlockState(): TUsekStav;
+var ref: TBlkTrackRef;
 begin
  for ref in Self.parts do
    if (ref.state <> TUsekStav.uvolneno) then
@@ -94,8 +94,8 @@ begin
  Result := TUsekStav.uvolneno;
 end;
 
-function TBlkUsekRefs.ToStr(): string;
-var ref: TBlkUsekRef;
+function TBlkTrackRefs.ToStr(): string;
+var ref: TBlkTrackRef;
 begin
  Result := '';
  for ref in Self.parts do
@@ -105,7 +105,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsekRefs.GetChanged(): Boolean;
+function TBlkTrackRefs.GetChanged(): Boolean;
 begin
  Result := (Self.stateLast <> Self.state);
  Self.stateLast := Self.state;

@@ -269,8 +269,8 @@
 			</DCCReference>
 			<DCCReference Include="ACBlocks.pas"/>
 			<DCCReference Include="bloky\TBlockCrossingLogic.pas"/>
-			<DCCReference Include="bloky\TBlokUsekRef.pas"/>
-			<DCCReference Include="bloky\TBlokUsekRefs.pas"/>
+			<DCCReference Include="bloky\TBlockTrackRef.pas"/>
+			<DCCReference Include="bloky\TBlockTrackRefs.pas"/>
 			<DCCReference Include="orLighting.pas"/>
 			<DCCReference Include="pt\PTEndpointTrain.pas"/>
 			<DCCReference Include="helpers\IfThenElse.pas"/>

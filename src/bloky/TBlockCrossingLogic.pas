@@ -2,7 +2,7 @@ unit TBlockCrossingLogic;
 
 interface
 
-uses Generics.Collections, TBlokUsekRefs, IniFiles, Classes, SysUtils, StrUtils;
+uses Generics.Collections, TBlockTrackRefs, IniFiles, Classes, SysUtils, StrUtils;
 
 type
  TBlkCrossingTrackState = (
@@ -51,7 +51,7 @@ type
     procedure SetState(new: TBlkCrossingTrackState);
 
   public
-   sections: array[0..4] of TBlkUsekRefs;
+   sections: array[0..4] of TBlkTrackRefs;
    opening: TBlkCrossingTrackOpening;
    anulTime: TTime;
 
@@ -71,11 +71,11 @@ type
     property positiveLight: Boolean read mPositiveLight;
     property anullation: Boolean read GetAnullation;
 
-    property leftOut: TBlkUsekRefs read sections[_SECT_LEFT_OUT] write sections[_SECT_LEFT_OUT];
-    property left: TBlkUsekRefs read sections[_SECT_LEFT] write sections[_SECT_LEFT];
-    property middle: TBlkUsekRefs read sections[_SECT_MID] write sections[_SECT_MID];
-    property right: TBlkUsekRefs read sections[_SECT_RIGHT] write sections[_SECT_RIGHT];
-    property rightOut: TBlkUsekRefs read sections[_SECT_RIGHT_OUT] write sections[_SECT_RIGHT_OUT];
+    property leftOut: TBlkTrackRefs read sections[_SECT_LEFT_OUT] write sections[_SECT_LEFT_OUT];
+    property left: TBlkTrackRefs read sections[_SECT_LEFT] write sections[_SECT_LEFT];
+    property middle: TBlkTrackRefs read sections[_SECT_MID] write sections[_SECT_MID];
+    property right: TBlkTrackRefs read sections[_SECT_RIGHT] write sections[_SECT_RIGHT];
+    property rightOut: TBlkTrackRefs read sections[_SECT_RIGHT_OUT] write sections[_SECT_RIGHT_OUT];
 
  end;
 
@@ -92,7 +92,7 @@ begin
  Self.onChanged := nil;
  Self.stateChanged := false;
  for i := 0 to _SECT_COUNT-1 do
-   Self.sections[i] := TBlkUsekRefs.Create();
+   Self.sections[i] := TBlkTrackRefs.Create();
 end;
 
 destructor TBlkCrossingTrack.Destroy();

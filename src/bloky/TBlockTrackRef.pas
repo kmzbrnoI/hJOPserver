@@ -1,4 +1,4 @@
-unit TBlokUsekRef;
+unit TBlockTrackRef;
 
 {
  This unit implements TBlkUsekRef class, which holds reference to a section
@@ -14,7 +14,7 @@ type
 ENoBlock = class(Exception);
 EInvalidPart = class(Exception);
 
-TBlkUsekRef = class
+TBlkTrackRef = class
  const
   _EMPTY_PARTID: Integer = -1;
   _EMPTY_BLOCKID: Integer = -1;
@@ -47,21 +47,21 @@ uses TBloky, ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlkUsekRef.Create(blockId: Integer);
+constructor TBlkTrackRef.Create(blockId: Integer);
 begin
  inherited Create();
  Self.blockId := blockId;
  Self.partId := _EMPTY_PARTID;
 end;
 
-constructor TBlkUsekRef.Create(blockId: Integer; partId: Integer);
+constructor TBlkTrackRef.Create(blockId: Integer; partId: Integer);
 begin
  inherited Create();
  Self.blockId := blockId;
  Self.partId := partId;
 end;
 
-constructor TBlkUsekRef.Create(str: string);
+constructor TBlkTrackRef.Create(str: string);
 begin
  inherited Create();
  Self.Parse(str);
@@ -69,7 +69,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUsekRef.Parse(str: string);
+procedure TBlkTrackRef.Parse(str: string);
 var strs: TStrings;
 begin
  strs := TStringList.Create();
@@ -88,12 +88,12 @@ begin
  end;
 end;
 
-function TBlkUsekRef.MIsPart(): Boolean;
+function TBlkTrackRef.MIsPart(): Boolean;
 begin
  Result := (Self.partId <> _EMPTY_PARTID);
 end;
 
-function TBlkUsekRef.ToStr(): string;
+function TBlkTrackRef.ToStr(): string;
 begin
  Result := '';
  if (Self.blockId <> _EMPTY_BLOCKID) then
@@ -106,7 +106,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUsekRef.GetBlock(): TBlkUsek;
+function TBlkTrackRef.GetBlock(): TBlkUsek;
 var blk: TBlk;
 begin
  Blky.GetBlkById(Self.blockId, blk);
@@ -116,7 +116,7 @@ begin
    Result := nil;
 end;
 
-function TBlkUsekRef.GetBlockState(): TUsekStav;
+function TBlkTrackRef.GetBlockState(): TUsekStav;
 begin
  if (Self.block = nil) then
    raise ENoBlock.Create('No block, unable to get state!');
