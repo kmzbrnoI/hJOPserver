@@ -71,7 +71,7 @@ uses
   DataBloky in 'tables\DataBloky.pas',
   DataZesilovac in 'tables\DataZesilovac.pas',
   DataORs in 'tables\DataORs.pas',
-  TBlokTrat in 'bloky\TBlokTrat.pas',
+  TBlockRailway in 'bloky\TBlockRailway.pas',
   TBlockLinker in 'bloky\TBlockLinker.pas',
   Train in 'Train.pas',
   TrainDb in 'TrainDb.pas',

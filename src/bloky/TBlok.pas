@@ -24,7 +24,7 @@ type
    btIr = 2,
    btSignal = 3,
    btCrossing = 4,
-   btTrat = 5,
+   btRailway = 5,
    btLinker = 6,
    btLock = 7,
    btDisconnector = 8,
@@ -416,8 +416,8 @@ begin
   btIR: Result := 'ir';
   btSignal: Result := 'signal';
   btCrossing: Result := 'crossing';
-  btTrat: Result := 'railway';
-  btLinker: Result := 'harness';
+  btRailway: Result := 'railway';
+  btLinker: Result := 'linker';
   btLock: Result := 'lock';
   btDisconnector: Result := 'disconnector';
   btTU: Result := 'railwayTrack';
@@ -465,8 +465,8 @@ begin
  else if (typ = 'ir') then Result := btIR
  else if (typ = 'navestidlo') or (typ = 'signal') then Result := btSignal
  else if (typ = 'prejezd') or (typ = 'přejezd') or (typ = 'crossing') then Result := btCrossing
- else if (typ = 'trat') or (typ = 'trať') or (typ = 'railway') then Result := btTrat
- else if (typ = 'uvazka') or (typ = 'úvazka') or (typ = 'harness') then Result := btLinker
+ else if (typ = 'trat') or (typ = 'trať') or (typ = 'railway') then Result := btRailway
+ else if (typ = 'uvazka') or (typ = 'úvazka') or (typ = 'linker') then Result := btLinker
  else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovač') or (typ = 'disconnector') then Result := btDisconnector
  else if (typ = 'tratUsek') or (typ = 'traťÚsek') or (typ = 'tu') or (typ = 'TU') or (typ = 'railwayTrack') then Result := btTU
  else if (typ = 'io') then Result := btIO

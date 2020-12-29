@@ -36,7 +36,7 @@ var ceCaller: TChangeEventCaller;
 implementation
 
 uses TBloky, TBlok, TBlokUsek, TBlockTurnout, TBlokZamek, TBlockCrossing,
-     TBlokTrat;
+     TBlockRailway;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,9 +72,9 @@ procedure TChangeEventCaller.NullTratZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> btTrat)) then Exit();
+ if ((blk = nil) or (blk.typ <> btRailway)) then Exit();
 
- TBlkTrat(Blk).Zaver := false;
+ TBlkRailway(Blk).Zaver := false;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

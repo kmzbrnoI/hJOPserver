@@ -1,10 +1,10 @@
-unit fBlkTratSysVars;
+﻿unit fBlkTratSysVars;
 
 interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Spin, TBlokTrat;
+  StdCtrls, Spin, TBlockRailway;
 
 type
   TF_BlkTrat_tech = class(TForm)
@@ -33,12 +33,12 @@ type
     procedure B_RmSprClick(Sender: TObject);
     procedure B_AddSprClick(Sender: TObject);
   private
-   trat: TBlkTrat;
+   trat: TBlkRailway;
 
     procedure Update(); reintroduce;
     procedure Save();
   public
-    procedure OpenForm(Blk: TBlkTrat);
+    procedure OpenForm(Blk: TBlkRailway);
   end;
 
 var
@@ -92,7 +92,7 @@ begin
  Self.Save();
 end;
 
-procedure TF_BlkTrat_tech.OpenForm(Blk: TBlkTrat);
+procedure TF_BlkTrat_tech.OpenForm(Blk: TBlkRailway);
 begin
  Self.trat := Blk;
  Self.Update();
@@ -101,11 +101,11 @@ begin
 end;
 
 procedure TF_BlkTrat_tech.Update();
-var train: TBlkTratTrain;
+var train: TBlkRailwayTrain;
 begin
  Self.CB_Zaver.ItemIndex  := ownConvert.BoolToInt(trat.Zaver);
- Self.CB_Smer.ItemIndex   := Integer(trat.Smer)+1;
- Self.CB_Zadost.ItemIndex := ownConvert.BoolToInt(trat.Zadost);
+ Self.CB_Smer.ItemIndex   := Integer(trat.direction)+1;
+ Self.CB_Zadost.ItemIndex := ownConvert.BoolToInt(trat.request);
 
  if (trat.trainPredict <> nil) then
    Self.SE_Souprava.Value := trat.trainPredict.traini
@@ -113,20 +113,20 @@ begin
    Self.SE_Souprava.Value := -1;
 
  Self.E_Soupravy.Text := '';
- for train in trat.stav.trains do
+ for train in trat.state.trains do
    Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(train.train.index)+',';
 end;
 
 procedure TF_BlkTrat_tech.Save();
 begin
  trat.Zaver  := ownConvert.IntToBool(CB_Zaver.ItemIndex);
- trat.Smer   := TTratSmer(Self.CB_Smer.ItemIndex-1);
- trat.Zadost := ownConvert.IntToBool(CB_Zadost.ItemIndex);
+ trat.direction   := TRailwayDirection(Self.CB_Smer.ItemIndex-1);
+ trat.request := ownConvert.IntToBool(CB_Zadost.ItemIndex);
 
  if (Self.SE_Souprava.Value = -1) then
    trat.trainPredict := nil
  else
-   trat.trainPredict := TBlkTratTrain.Create(Self.SE_Souprava.Value);
+   trat.trainPredict := TBlkRailwayTrain.Create(Self.SE_Souprava.Value);
 end;
 
 end.//unit

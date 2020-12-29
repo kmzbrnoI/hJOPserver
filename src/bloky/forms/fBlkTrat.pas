@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Spin, ComCtrls, TBlokTrat, TBlockLinker, Generics.Collections, TBloky;
+  StdCtrls, Spin, ComCtrls, TBlockRailway, TBlockLinker, Generics.Collections, TBloky;
 
 type
   TF_BlkTrat = class(TForm)
@@ -48,7 +48,7 @@ type
     procedure B_Blk_DeleteClick(Sender: TObject);
   private
    NewBlk: Boolean;
-   Trat: TBlkTrat;
+   Trat: TBlkRailway;
    UvazkaA: TBlkLinker;
    UvazkaB: TBlkLinker;
    OpenIndex: Integer;
@@ -81,11 +81,11 @@ var Blk: TBlk;
    begin
     // tato situace nastava v pripade tvorby noveho bloku
     case (Blk.typ) of
-     btTrat   : Self.Trat := Blk as TBlkTrat;
-     btLinker : Self.Trat := (Blk as TBlkLinker).parent as TBlkTrat;
+     btRailway   : Self.Trat := Blk as TBlkRailway;
+     btLinker : Self.Trat := (Blk as TBlkLinker).parent as TBlkRailway;
     end;
-    Self.UvazkaA := Self.Trat.uvazkaA as TBlkLinker;
-    Self.UvazkaB := Self.Trat.uvazkaB as TBlkLinker;
+    Self.UvazkaA := Self.Trat.linkerA as TBlkLinker;
+    Self.UvazkaB := Self.Trat.linkerB as TBlkLinker;
    end;//if Blk <> nil
 
   HlavniOpenForm;
@@ -126,7 +126,7 @@ procedure TF_BlkTrat.NewBlkOpenForm;
 
 procedure TF_BlkTrat.NormalOpenForm;
 var glob: TBlkSettings;
-    settings: TBlkTratSettings;
+    settings: TBlkRailwaySettings;
     i: Integer;
     obls: TArstr;
     LI: TListItem;
@@ -156,23 +156,23 @@ var glob: TBlkSettings;
     obls[i] := Self.UvazkaA.stations[i].id;
   for i := 0 to Self.UvazkaB.stations.Count-1 do
     obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
-  SetLength(vypust, settings.Useky.Count);
-  for i := 0 to settings.Useky.Count-1 do
-    vypust[i] := settings.Useky[i];
+  SetLength(vypust, settings.trackIds.Count);
+  for i := 0 to settings.trackIds.Count-1 do
+    vypust[i] := settings.trackIds[i];
   Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @vypust, obls, btTU, -1);
 
-  case (settings.zabzar) of
-   TTratZZ.souhlas : Self.CB_Trat_ZabZar.ItemIndex := 0;
-   TTratZZ.nabidka : Self.CB_Trat_ZabZar.ItemIndex := 1;
+  case (settings.rType) of
+   TRailwayType.permanent : Self.CB_Trat_ZabZar.ItemIndex := 0;
+   TRailwayType.request : Self.CB_Trat_ZabZar.ItemIndex := 1;
   end;
 
-  Self.CB_Navestidla.ItemIndex := Integer(settings.navestidla);
+  Self.CB_Navestidla.ItemIndex := Integer(settings.signals);
 
-  for i := 0 to settings.Useky.Count-1 do
+  for i := 0 to settings.trackIds.Count-1 do
    begin
     LI := Self.LV_Useky.Items.Add;
-    LI.Caption := IntToStr(settings.Useky[i]);
-    LI.SubItems.Add(Blky.GetBlkName(settings.Useky[i]));
+    LI.Caption := IntToStr(settings.trackIds[i]);
+    LI.SubItems.Add(Blky.GetBlkName(settings.trackIds[i]));
    end;
 
   Self.Caption := 'Editace dat bloku '+Self.Trat.name+' (trať)';
@@ -253,7 +253,7 @@ end;
 
 procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
 var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
-    TratSettings: TBlkTratSettings;
+    TratSettings: TBlkRailwaySettings;
     UvazkaSettings: TBlkLinkerSettings;
     trat, uvazkaA, uvazkaB: Integer;
     LI: TListItem;
@@ -303,7 +303,7 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
   // trat
   glob_trat.name := Self.E_Trat_Name.Text;
   glob_trat.id   := Self.SE_Trat_ID.Value;
-  glob_trat.typ  := btTrat;
+  glob_trat.typ  := btRailway;
 
   // uvazka A
   glob_uvA.name := Self.E_UA_name.Text;
@@ -315,12 +315,12 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
   glob_uvB.id   := Self.SE_UB_id.Value;
   glob_uvB.typ  := btLinker;
 
-  TratSettings.Useky := TList<Integer>.Create();
+  TratSettings.trackIds := TList<Integer>.Create();
 
   if (NewBlk) then
    begin
     try
-      Self.Trat := Blky.Add(btTrat, glob_trat) as TBlkTrat;
+      Self.Trat := Blky.Add(btRailway, glob_trat) as TBlkRailway;
       Self.UvazkaA := Blky.Add(btLinker, glob_uvA) as TBlkLinker;
       Self.UvazkaB  := Blky.Add(btLinker, glob_uvB) as TBlkLinker;
     except
@@ -340,19 +340,19 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
     Self.UvazkaB.SetGlobalSettings(glob_uvB);
    end;
 
-  TratSettings.uvazkaA := Self.SE_UA_id.Value;
-  TratSettings.uvazkaB := Self.SE_UB_id.Value;
+  TratSettings.linkerA := Self.SE_UA_id.Value;
+  TratSettings.linkerB := Self.SE_UB_id.Value;
 
   case (Self.CB_Trat_ZabZar.ItemIndex) of
-   0 : TratSettings.zabzar := TTratZZ.souhlas;
-   1 : TratSettings.zabzar := TTratZZ.nabidka;
+   0 : TratSettings.rType := TRailwayType.permanent;
+   1 : TratSettings.rType := TRailwayType.request;
   end;
 
-  TratSettings.navestidla := TTratNavestidla(Self.CB_Navestidla.ItemIndex);
+  TratSettings.signals := TRailwaySignals(Self.CB_Navestidla.ItemIndex);
 
-  TratSettings.Useky.Clear();
+  TratSettings.trackIds.Clear();
   for LI in Self.LV_Useky.Items do
-    TratSettings.Useky.Add(StrToInt(LI.Caption));
+    TratSettings.trackIds.Add(StrToInt(LI.Caption));
   Self.Trat.SetSettings(TratSettings);
 
   UvazkaSettings.parent := Self.SE_Trat_ID.Value;

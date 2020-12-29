@@ -120,7 +120,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TBlok, TOblsRizeni,
-      TBlockSignal, TJCDatabase, DataJC, TBlokTrat, TBlockTurnout;
+      TBlockSignal, TJCDatabase, DataJC, TBlockRailway, TBlockTurnout;
 
 {$R *.dfm}
 
@@ -430,11 +430,11 @@ var JC: TJC;
 
   if (Self.CHB_Trat.Checked) then
    begin
-    Self.JCData.Trat     := Blky.GetBlkID(Self.CB_TratPolozky[Self.CB_TratBlok.ItemIndex]);
-    Self.JCData.TratSmer := TTratSmer(Self.CB_TratSmer.ItemIndex + 1);
+    Self.JCData.Trat := Blky.GetBlkID(Self.CB_TratPolozky[Self.CB_TratBlok.ItemIndex]);
+    Self.JCData.TratSmer := TRailwayDirection(Self.CB_TratSmer.ItemIndex + 1);
    end else begin
-    Self.JCData.Trat     := -1;
-    Self.JCData.TratSmer := TTratSmer.zadny;
+    Self.JCData.Trat := -1;
+    Self.JCData.TratSmer := TRailwayDirection.no;
    end;
 
   Self.CB_Dalsi_NavChange(Self.CB_Dalsi_Nav);
@@ -748,7 +748,7 @@ begin
  if (Self.CHB_Trat.Checked) then
   begin
    Self.MakeObls(obls);
-   Blky.NactiBlokyDoObjektu(Self.CB_TratBlok, @Self.CB_TratPolozky, nil, obls, btTrat, Self.JCData.Trat);
+   Blky.NactiBlokyDoObjektu(Self.CB_TratBlok, @Self.CB_TratPolozky, nil, obls, btRailway, Self.JCData.Trat);
    Self.CB_TratSmer.ItemIndex := Integer(Self.JCData.TratSmer)-1;
   end else begin
    Self.CB_TratBlok.ItemIndex := -1;
@@ -785,7 +785,7 @@ var vypustit: TArI;
     blk: TBlk;
     i: Integer;
     navestidlo: TBlkSignal;
-    trat: TBlkTrat;
+    trat: TBlkRailway;
 begin
  Self.CB_Dalsi_Nav.Clear();
  Self.CB_Dalsi_Nav.Items.Add('Žádné návěstidlo');
@@ -818,7 +818,7 @@ begin
      blk := Blky[i];
      if ((blk.typ = btSignal) and
          ((TBlkSignal(blk).track = nil) or (TBlkSignal(blk).track.id = Self.Useky[Self.Useky.Count-1]) or
-          ((trat <> nil) and (trat.HasAutoblokNav(blk))))) then
+          ((trat <> nil) and (trat.HasAutoblokSignal(blk))))) then
       begin
        Self.CB_Dalsi_Nav.Items.Add(blk.name);
        SetLength(CB_DalsiNavPolozky, Length(CB_DalsiNavPolozky)+1);

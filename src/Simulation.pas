@@ -2,7 +2,7 @@ unit Simulation;
 
 interface
 
-uses TechnologieJC, ExtCtrls, TBlokTrat, SysUtils;
+uses TechnologieJC, ExtCtrls, TBlockRailway, SysUtils;
 
 type
   TJCSimulator = class
@@ -22,7 +22,7 @@ type
     private
 
      procedure OnTimer(Sender: TObject);
-     procedure UpdateTrat(Trat: TBlkTrat);
+     procedure UpdateTrat(Trat: TBlkRailway);
 
     public
      timer: TTimer;
@@ -155,25 +155,25 @@ begin
 
  for Blk in Blky do
   begin
-   if (Blk.typ <> btTrat) then continue;
-   if (((Blk as TBlkTrat).BP) and ((Blk as TBlkTrat).Obsazeno) and
-       ((TBlkTrat(Blk).Smer = TTratSmer.AtoB) or (TBlkTrat(Blk).Smer = TTratSmer.BtoA))) then
-     Self.UpdateTrat(Blk as TBlkTrat);
+   if (Blk.typ <> btRailway) then continue;
+   if (((Blk as TBlkRailway).BP) and ((Blk as TBlkRailway).occupied) and
+       ((TBlkRailway(Blk).direction = TRailwayDirection.AtoB) or (TBlkRailway(Blk).direction = TRailwayDirection.BtoA))) then
+     Self.UpdateTrat(Blk as TBlkRailway);
   end;
 end;
 
-procedure TTratSimulator.UpdateTrat(Trat: TBlkTrat);
+procedure TTratSimulator.UpdateTrat(Trat: TBlkRailway);
 var TU: TBlkTU;
-    TratSet: TBlkTratSettings;
+    TratSet: TBlkRailwaySettings;
     i: Integer;
 begin
  try
    TratSet := Trat.GetSettings();
 
    // mazani soupravy vzadu
-   for i := 0 to TratSet.Useky.Count-1 do
+   for i := 0 to TratSet.trackIds.Count-1 do
     begin
-     Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
+     Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
      if ((TU.bpInBlk) and (TU.prevTU <> nil) and (TU.prevTU.Obsazeno = TUsekStav.obsazeno) and
          (TU.prevTU.train = TU.train)) then
       begin
@@ -183,9 +183,9 @@ begin
     end;//for i
 
    // predavani soupravy dopredu
-   for i := 0 to TratSet.Useky.Count-1 do
+   for i := 0 to TratSet.trackIds.Count-1 do
     begin
-     Blky.GetBlkByID(TratSet.Useky[i], TBlk(TU));
+     Blky.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
      if ((TU.Obsazeno = TUsekStav.obsazeno) and (TU.bpInBlk) and (TU.nextTU <> nil) and
          (TU.nextTU.Obsazeno = TUsekStav.uvolneno) and
         ((TU.nextTU.navKryci = nil) or (TBlkSignal(TU.nextTU.navKryci).signal > ncStuj))) then

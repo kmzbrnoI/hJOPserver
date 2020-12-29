@@ -91,7 +91,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, TBlokUsek, TOblRizeni, TCPServerOR, TBlokTrat,
+uses Logging, GetSystems, TBlokUsek, TOblRizeni, TCPServerOR, TBlockRailway,
       DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlockTurnout,
       TBlokTratUsek;
 
@@ -475,9 +475,9 @@ begin
     if (jc.data.Trat > -1) then
      begin
       Blky.GetBlkByID(jc.data.Trat, trat);
-      if ((trat <> nil) and (trat.typ = btTrat)) then
+      if ((trat <> nil) and (trat.typ = btRailway)) then
        begin
-        for usekid in TBlkTrat(trat).GetSettings().Useky do
+        for usekid in TBlkRailway(trat).GetSettings().trackIds do
          begin
           Blky.GetBlkByID(usekid, tu);
           if ((tu <> nil) and (tu.typ = btTU)) then
@@ -619,7 +619,7 @@ begin
       jc := JCDb.FindJC(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
-    btTrat: begin
+    btRailway: begin
       jc := JCDb.FindPostavenaJCWithTrat(Blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;

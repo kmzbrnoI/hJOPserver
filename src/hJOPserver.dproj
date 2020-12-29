@@ -153,7 +153,7 @@
 			<DCCReference Include="tables\DataBloky.pas"/>
 			<DCCReference Include="tables\DataZesilovac.pas"/>
 			<DCCReference Include="tables\DataORs.pas"/>
-			<DCCReference Include="bloky\TBlokTrat.pas"/>
+			<DCCReference Include="bloky\TBlockRailway.pas"/>
 			<DCCReference Include="bloky\TBlockLinker.pas"/>
 			<DCCReference Include="Train.pas"/>
 			<DCCReference Include="TrainDb.pas"/>

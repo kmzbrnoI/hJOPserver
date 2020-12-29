@@ -275,7 +275,7 @@ implementation
 
 uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
      GetSystems, Logging, TrainDb, TBlockIR, Zasobnik, ownStrUtils,
-     TBlokTratUsek, TBlokTrat, TBlockTurnout, TBlokZamek, TechnologieAB,
+     TBlokTratUsek, TBlockRailway, TBlockTurnout, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
 constructor TBlkSignal.Create(index: Integer);
@@ -640,7 +640,7 @@ begin
  if (Self.autoblok) then
   begin
    if (TBlkTU(Self.track).nextTU <> nil) then TBlkTU(Self.track).nextTU.Change();
-   if (TBlkTU(Self.track).Trat <> nil) then TBlkTrat(TBlkTU(Self.track).Trat).UpdateTrainPredict();
+   if (TBlkTU(Self.track).Trat <> nil) then TBlkRailway(TBlkTU(Self.track).Trat).UpdateTrainPredict();
   end;
 
  if (Assigned(Self.m_state.changeCallbackOk)) then
@@ -756,7 +756,7 @@ begin
   end;
 
  if ((Self.autoblok) and (not zam) and (Self.track <> nil) and (TBlkTU(Self.track).Trat <> nil)) then
-   TBlkTrat(TBlkTU(Self.track).Trat).ChangeUseky();
+   TBlkRailway(TBlkTU(Self.track).Trat).ChangeTracks();
 
  Self.Change();
 end;
@@ -1208,7 +1208,7 @@ var Usek, signal: TBlk;
     train: TTrain;
     signalEv: TBlkSignalTrainEvent;
     i: Integer;
-    trat: TBlkTrat;
+    trat: TBlkRailway;
 begin
  if (Self.m_settings.events.Count = 0) then Exit();
  Usek := Self.track;
@@ -1240,18 +1240,18 @@ begin
 
  if ((Usek.typ = btTU) and (TBlkTU(Usek).Trat <> nil)) then
   begin
-   trat := TBlkTrat(TBlkTU(Usek).Trat);
+   trat := TBlkRailway(TBlkTU(Usek).Trat);
 
    // Ignoruji krajni navestidla trati, ktera jsou proti smeru trati
-   if ((trat.Smer = TTratSmer.AtoB) and (Self = trat.navLichy)) then
+   if ((trat.direction = TRailwayDirection.AtoB) and (Self = trat.signalA)) then
      Exit();
-   if ((trat.Smer = TTratSmer.BtoA) and (Self = trat.navSudy)) then
+   if ((trat.direction = TRailwayDirection.BtoA) and (Self = trat.signalB)) then
      Exit();
 
    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontetu zmeny smeru soupravy)
-   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.AtoB) and (Self.direction = THVStanoviste.sudy)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkTU(Usek).Trat).direction = TRailwayDirection.AtoB) and (Self.direction = THVStanoviste.sudy)) then
      Exit();
-   if ((Self.autoblok) and (TBlkTrat(TBlkTU(Usek).Trat).Smer = TTratSmer.BtoA) and (Self.direction = THVStanoviste.lichy)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkTU(Usek).Trat).direction = TRailwayDirection.BtoA) and (Self.direction = THVStanoviste.lichy)) then
      Exit();
   end;
 
@@ -1669,23 +1669,23 @@ begin
  if (Self.DNjc = nil) then Exit();
  if (Self.DNjc.data.Trat = -1) then Exit();
  Blky.GetBlkByID(Self.DNjc.data.Trat, trat);
- if (TBlkTrat(trat).trainPredict = nil) then Exit();
- if (TBlkTrat(trat).trainPredict.train <> train) then Exit();
+ if (TBlkRailway(trat).trainPredict = nil) then Exit();
+ if (TBlkRailway(trat).trainPredict.train <> train) then Exit();
 
  if (train.IsPOdj(Self.track)) then
   begin
    podj := train.GetPOdj(Self.track);
    if (not podj.IsDepSet) then Exit();
-   if ((TBlkTrat(trat).trainPredict.IsTimeDefined) and (TBlkTrat(trat).trainPredict.time = podj.DepTime())) then Exit();
+   if ((TBlkRailway(trat).trainPredict.IsTimeDefined) and (TBlkRailway(trat).trainPredict.time = podj.DepTime())) then Exit();
 
-   TBlkTrat(trat).trainPredict.predict := true;
-   TBlkTrat(trat).trainPredict.time := podj.DepTime();
-   TBlkTrat(trat).Change();
-  end else if ((TBlkTrat(trat).trainPredict.predict) and
+   TBlkRailway(trat).trainPredict.predict := true;
+   TBlkRailway(trat).trainPredict.time := podj.DepTime();
+   TBlkRailway(trat).Change();
+  end else if ((TBlkRailway(trat).trainPredict.predict) and
                ((not train.IsPOdj(Self.track)) or (not train.GetPOdj(Self.track).IsDepSet()))) then begin
-   TBlkTrat(trat).trainPredict.predict := false;
-   TBlkTrat(trat).trainPredict.UndefTime();
-   TBlkTrat(trat).Change();
+   TBlkRailway(trat).trainPredict.predict := false;
+   TBlkRailway(trat).trainPredict.UndefTime();
+   TBlkRailway(trat).Change();
   end;
 end;
 

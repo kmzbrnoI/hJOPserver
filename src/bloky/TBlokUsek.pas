@@ -284,7 +284,7 @@ type
 implementation
 
 uses GetSystems, TBloky, TBlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, TrainDb, THVDatabase, Math,
+    TJCDatabase, fMain, TCPServerOR, TBlockRailway, TrainDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
@@ -2301,8 +2301,8 @@ begin
  if ((fg = $A0A0A0) and (Self.typ = btTU) and (TBlkTU(Self).InTrat > -1)) then
   begin
    Blky.GetBlkByID(TBlkTU(Self).InTrat, Blk);
-   if ((Blk <> nil) and (Blk.typ = btTrat)) then
-     if ((Blk as TBlkTrat).ZAK) then
+   if ((Blk <> nil) and (Blk.typ = btRailway)) then
+     if ((Blk as TBlkRailway).departureForbidden) then
        fg := clBlue;
   end;
 

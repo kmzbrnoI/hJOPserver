@@ -494,7 +494,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
      fBlkNav, fBlkTrat, TBlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
-     fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
+     fBlkVyhybkaSysVars, fBlkTratSysVars, TBlockRailway, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlockDisconnector,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
      AppEv, fBlkIO, TBlockIO, TCPServerPT, RCSErrors, TechnologieAB,
@@ -2514,7 +2514,7 @@ var Blk: TBlk;
    btIR      : ;
    btSignal  : ;
    btCrossing : ;
-   btTrat    : F_BlkTrat_tech.OpenForm(Blk as TBlkTrat);
+   btRailway    : F_BlkTrat_tech.OpenForm(Blk as TBlkRailway);
    btLinker  : ;
   end;//case
 end;
@@ -2956,8 +2956,8 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btTrat: begin
-    if ((Blk as TBlkTrat).stav.smer = TTratSmer.disabled) then
+   btRailway: begin
+    if ((Blk as TBlkRailway).state.direction = TRailwayDirection.disabled) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
@@ -3034,7 +3034,7 @@ var Blk: TBlk;
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
    btSignal: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
    btCrossing: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
-   btTrat, btLinker: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
+   btRailway, btLinker: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    btDisconnector: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    btTU: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);

@@ -116,7 +116,7 @@ type
 implementation
 
 uses TOblRizeni, TCPServerOR, Logging, TechnologieJC, TBlok, TBloky,
-      TBlockLinker, TBlokTrat, appEv;
+      TBlockLinker, TBlockRailway, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -512,7 +512,7 @@ begin
  Self.hint := (uv as TBlk).name;
 
  if ((Self.volba = TORStackVolba.VZ) and
-     (not uv.request) and ((uv.parent as TBlkTrat).Zadost)) then
+     (not uv.request) and ((uv.parent as TBlkRailway).request)) then
   begin
    Self.UPOenabled := (uv.note <> '');
    if (uv.note = '') then

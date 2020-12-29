@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, IniFiles, StdCtrls, ComCtrls, ExtCtrls, TechnologieJC, TBlokTrat;
+  Dialogs, IniFiles, StdCtrls, ComCtrls, ExtCtrls, TechnologieJC, TBlockRailway;
 
 type
   TF_Admin = class(TForm)

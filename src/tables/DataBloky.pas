@@ -36,7 +36,7 @@ var
 implementation
 
 uses TBloky, TBlok, TBlockTurnout, TBlokUsek, TBlockSignal, TBlockIR, TBlockCrossing,
-      fMain, TBlokTrat, TBlockLinker, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
+      fMain, TBlockRailway, TBlockLinker, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
       TBlockSummary, TBlockAC, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -213,30 +213,30 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btTrat: begin
+   btRailway: begin
       Self.LV.Items[line].ImageIndex := 8;
       Self.LV.Items[line].SubItems[0] := 'Trať';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      if ((Blk as TBlkTrat).Obsazeno) then begin
+      if ((Blk as TBlkRailway).occupied) then begin
         Self.LV.Items[line].SubItems[3] := 'obsazeno';
       end else begin
-        if ((Blk as TBlkTrat).Zaver) then begin
+        if ((Blk as TBlkRailway).Zaver) then begin
           Self.LV.Items[line].SubItems[3] := 'závěr'
         end else begin
-          if ((Blk as TBlkTrat).ZAK) then begin
+          if ((Blk as TBlkRailway).departureForbidden) then begin
             Self.LV.Items[line].SubItems[3] := 'ZAK'
           end else begin
 
-           if ((Blk as TBlkTrat).Zadost) then
+           if ((Blk as TBlkRailway).request) then
             Self.LV.Items[line].SubItems[3] := 'žádost'
            else
-            case ((Blk as TBlkTrat).Smer) of
-             TTratSmer.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
-             TTratSmer.AtoB     : Self.LV.Items[line].SubItems[3] := 'směr A->B';
-             TTratSmer.BtoA     : Self.LV.Items[line].SubItems[3] := 'směr B->A';
-             TTratSmer.zadny    : Self.LV.Items[line].SubItems[3] := 'směr žádný'
+            case ((Blk as TBlkRailway).direction) of
+             TRailwayDirection.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+             TRailwayDirection.AtoB     : Self.LV.Items[line].SubItems[3] := 'směr A->B';
+             TRailwayDirection.BtoA     : Self.LV.Items[line].SubItems[3] := 'směr B->A';
+             TRailwayDirection.no    : Self.LV.Items[line].SubItems[3] := 'směr žádný'
             end;//case
           end;
         end;
@@ -245,8 +245,8 @@ var j, train: integer;
     Self.LV.Items[line].SubItems[5] := '';
     Self.LV.Items[line].SubItems[6] := '';
 
-    if (Assigned((Blk as TBlkTrat).trainPredict)) then
-      Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrat).trainPredict.train.name
+    if (Assigned((Blk as TBlkRailway).trainPredict)) then
+      Self.LV.Items[line].SubItems[7] := (Blk as TBlkRailway).trainPredict.train.name
     else
       Self.LV.Items[line].SubItems[7] := '--#--';
    end;

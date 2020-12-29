@@ -237,7 +237,7 @@ type
 
 implementation
 
-uses TrainDb, TBloky, TCPServerOR, TBlokTrat, TBlockSignal, TJCDatabase,
+uses TrainDb, TBloky, TCPServerOR, TBlockRailway, TBlockSignal, TJCDatabase,
      logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -676,33 +676,33 @@ begin
  // tak, aby souprava byla vzdy rizeni spravnymi nasvestidly.
  // Souprava ve smeru A-->B vzdy jeden v lichem smeru
 
- if ((Self.Trat <> nil) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
+ if ((Self.Trat <> nil) and (TBlkRailway(Self.Trat).GetSettings().trackIds.Count > 0)) then
   begin
-   if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[0])) then
+   if ((Self.id = TBlkRailway(Self.Trat).GetSettings().trackIds[0])) then
     begin
-     if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do trati
+     if (TBlkRailway(Self.Trat).direction = TRailwayDirection.AtoB) then begin // vjizdim do trati
        if (Self.train.direction <> THVStanoviste.lichy) then
          Self.train.ChangeDirection();
-     end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Self.train.direction <> TBlkSignal(TBlkTrat(Self.Trat).navLichy).direction) then
+     end else if (TBlkRailway(Self.Trat).direction = TRailwayDirection.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
+       if (Self.train.direction <> TBlkSignal(TBlkRailway(Self.Trat).signalA).direction) then
          Self.train.ChangeDirection();
      end;
     end;
-   if ((Self.id = TBlkTrat(Self.Trat).GetSettings().Useky[TBlkTrat(Self.Trat).GetSettings().Useky.Count-1])) then
+   if ((Self.id = TBlkRailway(Self.Trat).GetSettings().trackIds[TBlkRailway(Self.Trat).GetSettings().trackIds.Count-1])) then
     begin
-     if (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) then begin // vjizdim do trati
-       if ((Self.train.direction <> THVStanoviste.sudy) and (TBlkTrat(Self.Trat).GetSettings().Useky.Count > 0)) then
+     if (TBlkRailway(Self.Trat).direction = TRailwayDirection.BtoA) then begin // vjizdim do trati
+       if ((Self.train.direction <> THVStanoviste.sudy) and (TBlkRailway(Self.Trat).GetSettings().trackIds.Count > 0)) then
          Self.train.ChangeDirection();
-     end else if (TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
-       if (Self.train.direction <> TBlkSignal(TBlkTrat(Self.Trat).navSudy).direction) then
+     end else if (TBlkRailway(Self.Trat).direction = TRailwayDirection.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
+       if (Self.train.direction <> TBlkSignal(TBlkRailway(Self.Trat).signalB).direction) then
          Self.train.ChangeDirection();
      end;
     end;
   end;
 
  // kontrola zmeny OR trati, ve ktere jen jeden blok
- if (((Self.Trat as TBlkTrat).Smer >= TTratSmer.AtoB) and (Self.prevTU = nil) and (Self.nextTU = nil)) then
-   TBlkTrat(Self.Trat).TrainChangeOR(Self.train);
+ if (((Self.Trat as TBlkRailway).direction >= TRailwayDirection.AtoB) and (Self.prevTU = nil) and (Self.nextTU = nil)) then
+   TBlkRailway(Self.Trat).TrainChangeOR(Self.train);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -716,7 +716,7 @@ end;
 
 procedure TBlkTU.RemoveTrain(index: Integer);
 var old_spr: TTrain;
-    trat: TBlkTrat;
+    trat: TBlkRailway;
 begin
  old_spr := Self.train;
 
@@ -749,7 +749,7 @@ begin
  // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
  if (Self.Trat <> nil) then
   begin
-   trat := TBlkTrat(Self.Trat);
+   trat := TBlkRailway(Self.Trat);
 
    // souprava vyjela z trate -> odstranit z trate
    if (not trat.IsTrainInAnyTU(old_spr)) then
@@ -781,7 +781,7 @@ begin
  if (Self.IsTrain()) then
   begin
    podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z úseku'));
-   if ((Self.Trat <> nil) and (not TBlkTrat(Self.Trat).IsTrainInMoreTUs(Self.train))) then
+   if ((Self.Trat <> nil) and (not TBlkRailway(Self.Trat).IsTrainInMoreTUs(Self.train))) then
      podm.Add(TOR.GetPSPodminka(Self.Trat, 'Smazání soupravy '+Self.train.name+' z tratě'));
    if (Blky.GetBlkWithTrain(Self.train).Count = 1) then
      podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z kolejiště'));
@@ -837,11 +837,11 @@ end;
 function TBlkTU.GetNavKryci(): TBlk;
 var navPrevID: Integer;
 begin
- if ((Self.Trat = nil) or ((TBlkTrat(Self.Trat).Smer <> TTratSmer.AtoB) and (TBlkTrat(Self.Trat).Smer <> TTratSmer.BtoA))) then Exit(nil);
+ if ((Self.Trat = nil) or ((TBlkRailway(Self.Trat).direction <> TRailwayDirection.AtoB) and (TBlkRailway(Self.Trat).direction <> TRailwayDirection.BtoA))) then Exit(nil);
 
- case (TBlkTrat(Self.Trat).Smer) of
-   TTratSmer.AtoB : navPrevID := Self.TUSettings.navLid;
-   TTratSmer.BtoA : navPrevID := Self.TUSettings.navSid;
+ case (TBlkRailway(Self.Trat).direction) of
+   TRailwayDirection.AtoB : navPrevID := Self.TUSettings.navLid;
+   TRailwayDirection.BtoA : navPrevID := Self.TUSettings.navSid;
  else
   navPrevID := -1;
  end;
@@ -865,7 +865,7 @@ end;
 
 function TBlkTU.GetTratReady(): Boolean;
 begin
- Result := ((Self.Trat <> nil) and ((TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) or (TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA)));
+ Result := ((Self.Trat <> nil) and ((TBlkRailway(Self.Trat).direction = TRailwayDirection.AtoB) or (TBlkRailway(Self.Trat).direction = TRailwayDirection.BtoA)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -874,9 +874,9 @@ function TBlkTU.GetPrevTU(): TBlkTU;
 begin
  if (not Self.tratReady) then Exit(nil);
 
- case (TBlkTrat(Self.Trat).Smer) of
-   TTratSmer.AtoB : Result := Self.lTU;
-   TTratSmer.BtoA : Result := Self.sTU;
+ case (TBlkRailway(Self.Trat).direction) of
+   TRailwayDirection.AtoB : Result := Self.lTU;
+   TRailwayDirection.BtoA : Result := Self.sTU;
  else
   Result := nil;
  end;
@@ -886,9 +886,9 @@ function TBlkTU.GetNextTU(): TBlkTU;
 begin
  if (not Self.tratReady) then Exit(nil);
 
- case (TBlkTrat(Self.Trat).Smer) of
-   TTratSmer.AtoB : Result := Self.sTU;
-   TTratSmer.BtoA : Result := Self.lTU;
+ case (TBlkRailway(Self.Trat).direction) of
+   TRailwayDirection.AtoB : Result := Self.sTU;
+   TRailwayDirection.BtoA : Result := Self.lTU;
  else
   Result := nil;
  end;
@@ -898,7 +898,7 @@ end;
 
 procedure TBlkTU.UpdateBP();
 begin
- if ((not Self.tratReady) or (not TBlkTrat(Self.Trat).BP)) then Exit();
+ if ((not Self.tratReady) or (not TBlkRailway(Self.Trat).BP)) then Exit();
 
  if ((Self.prevTU = nil) and (Self.Obsazeno = TUsekStav.obsazeno)) then
   begin
@@ -927,7 +927,7 @@ begin
       begin
        // souprava vstoupila do posledniho bloku trati
        // zmena stanic soupravy a hnacich vozidel v ni
-       TBlkTrat(Self.Trat).TrainChangeOR(Self.train);
+       TBlkRailway(Self.Trat).TrainChangeOR(Self.train);
       end;
     end;//if predavam soupravu
   end;
@@ -938,7 +938,7 @@ begin
   begin
    Self.bpInBlk := false;
    Self.RemoveTrains();
-   if (not TBlkTrat(Self.Trat).Obsazeno) then TBlkTrat(Self.Trat).BP := false;   
+   if (not TBlkRailway(Self.Trat).occupied) then TBlkRailway(Self.Trat).BP := false;
   end;
 
  // kontrola poruchy blokove podminky
@@ -966,10 +966,10 @@ begin
  //  zmenou souhlasu
  // -> pro krajni useky trti vracime obsazenost prvni sekce
 
- case (TBlkTrat(Self.Trat).Smer) of
-  TTratSmer.AtoB : sectUseky := Self.lsectUseky;
-  TTratSmer.BtoA : sectUseky := Self.ssectUseky;
-  TTratSmer.zadny : begin
+ case (TBlkRailway(Self.Trat).direction) of
+  TRailwayDirection.AtoB : sectUseky := Self.lsectUseky;
+  TRailwayDirection.BtoA : sectUseky := Self.ssectUseky;
+  TRailwayDirection.no : begin
          if (Self.sTU = nil) then
           sectUseky := Self.ssectUseky
          else begin
@@ -993,9 +993,9 @@ end;
 function TBlkTU.GetSectMaster(): TBlkTU;
 begin
  if (Self.Trat = nil) then Exit(nil);
- case (TBlkTrat(Self.Trat).Smer) of
-  TTratSmer.AtoB : Result := Self.lsectMaster;
-  TTratSmer.BtoA : Result := Self.ssectMaster;
+ case (TBlkRailway(Self.Trat).direction) of
+  TRailwayDirection.AtoB : Result := Self.lsectMaster;
+  TRailwayDirection.BtoA : Result := Self.ssectMaster;
  else
   Result := nil;
  end;
@@ -1008,7 +1008,7 @@ end;
 function TBlkTU.GetNextNav(): TBlk;
 var blk: TBLkTU;
 begin
- if (Self.Trat = nil) or (TBlkTrat(Self.Trat).smer = TTratSmer.zadny) then Exit(nil);
+ if (Self.Trat = nil) or (TBlkRailway(Self.Trat).direction = TRailwayDirection.no) then Exit(nil);
 
  blk := Self.nextTU;
  while ((blk <> nil) and (blk.sectMaster <> blk)) do
@@ -1017,9 +1017,9 @@ begin
  if (blk <> nil) then
    Exit(blk.navKryci)
  else begin
-  case (TBlkTrat(Self.Trat).Smer) of
-    TTratSmer.AtoB : Exit(TBlkTrat(Self.Trat).navSudy);
-    TTratSmer.BtoA : Exit(TBlkTrat(Self.Trat).navLichy);
+  case (TBlkRailway(Self.Trat).direction) of
+    TRailwayDirection.AtoB : Exit(TBlkRailway(Self.Trat).signalB);
+    TRailwayDirection.BtoA : Exit(TBlkRailway(Self.Trat).signalA);
   end;
  end;
 
@@ -1083,33 +1083,33 @@ begin
  // NASTAVOVANI NAVESTI AUTOBLOKU:
 
  // nejprve zhasneme navestidla v nespravnem smeru
- if ((TBlkTrat(Self.Trat).Smer = TTratSmer.AtoB) or (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny)) then
+ if ((TBlkRailway(Self.Trat).direction = TRailwayDirection.AtoB) or (TBlkRailway(Self.Trat).direction = TRailwayDirection.no)) then
   begin
    if (Self.TUSettings.navSid > -1) then
     begin
      Blky.GetBlkByID(Self.TUSettings.navSid, Blk);
      if (Blk <> nil) then
-       TBlkSignal(Blk).signal := TBlkSignalCode(TBlkTrat(Self.Trat).NavestProtismer());
+       TBlkSignal(Blk).signal := TBlkSignalCode(TBlkRailway(Self.Trat).SignalCounterDirection());
     end;
   end;
 
- if ((TBlkTrat(Self.Trat).Smer = TTratSmer.BtoA) or (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny)) then
+ if ((TBlkRailway(Self.Trat).direction = TRailwayDirection.BtoA) or (TBlkRailway(Self.Trat).direction = TRailwayDirection.no)) then
   begin
    if (Self.TUSettings.navLid > -1) then
     begin
      Blky.GetBlkByID(Self.TUSettings.navLid, Blk);
      if (Blk <> nil) then
-       TBlkSignal(Blk).signal := TBlkSignalCode(TBlkTrat(Self.Trat).NavestProtismer());
+       TBlkSignal(Blk).signal := TBlkSignalCode(TBlkRailway(Self.Trat).SignalCounterDirection());
     end;
   end;
 
-  if (TBlkTrat(Self.Trat).Smer = TTratSmer.zadny) then
+  if (TBlkRailway(Self.Trat).direction = TRailwayDirection.no) then
     Exit();
 
  // zrusit jizdni cestu muzeme pouze u sekce na kraji trati (v trati se rusi
  //   navest autobloku)
  if ((Self.prevTU = nil) and (Self.sectObsazeno = TUsekStav.obsazeno)
-     and (TBlkTrat(Self.Trat).Zaver)) then
+     and (TBlkRailway(Self.Trat).Zaver)) then
   begin
    jc := JCDb.FindPostavenaJCWithUsek(Self.id);
    if ((jc <> nil) and (not jc.waitForLastUsekOrTratObsaz) and (jc.stav.RozpadBlok < jc.data.Useky.Count-1)) then
@@ -1126,9 +1126,9 @@ begin
      TBlkSignal(Self.navKryci).signal := ncStuj
     end else begin
      // sekce uvolnena -> hledame dalsi navestidlo
-     case (TBlkTrat(Self.Trat).navestidla) of
-       TTratNavestidla.hradlo: TBlkSignal(Self.navKryci).signal := ncVolno;
-       TTratNavestidla.autoblok: begin
+     case (TBlkRailway(Self.Trat).signals) of
+       TRailwaySignals.hradlo: TBlkSignal(Self.navKryci).signal := ncVolno;
+       TRailwaySignals.autoblok: begin
          if ((Self.nextNav = nil) or (not TBlkSignal(Self.nextNav).IsGoSignal()) or (TBlkSignal(Self.nextNav).IsOpakVystraha())) then
            TBlkSignal(Self.navKryci).signal := ncVystraha
          else if ((TBlkSignal(Self.nextNav).FourtyKmph()) or (TBlkSignal(Self.nextNav).signal = ncOpakOcek40)) then
@@ -1182,27 +1182,28 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTU.UvolnenoZJC();
-var trat: TBlkTrat;
+var railway: TBlkRailway;
 begin
  Self.fTUStav.zast_stopped := false;
  Self.fTUStav.zast_passed  := false;
 
  if (Self.Trat = nil) then Exit();
- trat := TBlkTrat(Self.Trat);
+ railway := TBlkRailway(Self.Trat);
 
  // zrusime potencialni poruchu blokove podminky a blokovou podminku
  Self.bpInBlk   := false;
  Self.poruchaBP := false;
 
- if (((trat.GetSettings().zabzar = TTratZZ.nabidka))
-     and (not trat.Zaver) and (not trat.Obsazeno) and (not trat.RBPCan) and (Trat.stav.trains.Count = 0) and (not trat.nouzZaver)) then
-  trat.Smer := TTratSmer.zadny;
+ if (((railway.GetSettings().rType = TRailwayType.request))
+     and (not railway.Zaver) and (not railway.occupied) and (not railway.RBPCan) and
+         (railway.state.trains.Count = 0) and (not railway.emLock)) then
+  railway.direction := TRailwayDirection.no;
 
  // pokud je trat uplne volna, zrusime blokovou podminku
- if (not trat.Obsazeno) then trat.BP := false;
+ if (not railway.occupied) then railway.BP := false;
 
- trat.UpdateTrainPredict();
- trat.Change();
+ railway.UpdateTrainPredict();
+ railway.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1216,10 +1217,10 @@ var blk: TBlkTU;
 begin
  if ((Self.Trat = nil) or (Self.Obsazeno <= TUsekStav.none)) then Exit(false);
 
- case (TBlkTrat(Self.Trat).Smer) of
-  TTratSmer.AtoB : sectUseky := Self.lsectUseky;
-  TTratSmer.BtoA : sectUseky := Self.ssectUseky;
-  TTratSmer.zadny : begin
+ case (TBlkRailway(Self.Trat).direction) of
+  TRailwayDirection.AtoB : sectUseky := Self.lsectUseky;
+  TRailwayDirection.BtoA : sectUseky := Self.ssectUseky;
+  TRailwayDirection.no : begin
          if (Self.sTU = nil) then
           sectUseky := Self.ssectUseky
          else begin

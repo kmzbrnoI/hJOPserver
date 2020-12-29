@@ -107,7 +107,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Train, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
+    TJCDatabase, fMain, TCPServerOR, TBlockRailway, Zasobnik, TBlokUsek;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -164,13 +164,13 @@ end;
 procedure TBlkLinker.Change(now: Boolean = false);
 begin
  inherited Change(now);
- (Self.parent as TBlkTrat).ChangeFromUv(Self);
+ (Self.parent as TBlkRailway).ChangeFromLinker(Self);
 end;
 
 procedure TBlkLinker.ChangeFromTrat();
 begin
  if (Self.parent = nil) then Exit(); 
- if (not (Self.parent as TBlkTrat).Zadost) then
+ if (not (Self.parent as TBlkRailway).request) then
   Self.m_request := false;
 
  inherited Change();
@@ -192,7 +192,7 @@ begin
  Self.Change();
 
  if (old <> ZAK) then
-  (Self.parent as TBlkTrat).ChangeUseky();
+  (Self.parent as TBlkRailway).ChangeTracks();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -234,16 +234,16 @@ end;
 
 procedure TBlkLinker.ApproveRequest();
 begin
- if (not (Self.parent as TBlkTrat).Zadost) then Exit();
+ if (not (Self.parent as TBlkRailway).request) then Exit();
 
- case ((Self.parent as TBlkTrat).smer) of
-  TTratSmer.AtoB : (Self.parent as TBlkTrat).smer := TTratSmer.BtoA;
-  TTratSmer.BtoA : (Self.parent as TBlkTrat).smer := TTratSmer.AtoB;
-  TTratSmer.zadny: begin
-   if ((Self.parent as TBlkTrat).IsFirstUvazka(Self)) then
-    (Self.parent as TBlkTrat).smer := TTratSmer.BtoA
+ case ((Self.parent as TBlkRailway).direction) of
+  TRailwayDirection.AtoB : (Self.parent as TBlkRailway).direction := TRailwayDirection.BtoA;
+  TRailwayDirection.BtoA : (Self.parent as TBlkRailway).direction := TRailwayDirection.AtoB;
+  TRailwayDirection.no: begin
+   if ((Self.parent as TBlkRailway).IsFirstLinker(Self)) then
+    (Self.parent as TBlkRailway).direction := TRailwayDirection.BtoA
    else
-    (Self.parent as TBlkTrat).smer := TTratSmer.AtoB;
+    (Self.parent as TBlkRailway).direction := TRailwayDirection.AtoB;
   end;//case
  end;
 
@@ -317,15 +317,15 @@ end;
 
 procedure TBlkLinker.UPOOTSClick(Sender: TObject);
 begin
- if ((Self.parent as TBlkTrat).GetSettings.zabzar = TTratZZ.nabidka) then
-   (Self.parent as TBlkTrat).smer := TTratSmer.zadny;
+ if ((Self.parent as TBlkRailway).GetSettings.rType = TRailwayType.request) then
+   (Self.parent as TBlkRailway).direction := TRailwayDirection.no;
  Self.request := false;
 end;
 
 procedure TBlkLinker.UPOZAKOnClick(Sender: TObject);
 begin
- if ((Self.parent as TBlkTrat).Zadost) then
-   (Self.parent as TBlkTrat).Zadost := false;
+ if ((Self.parent as TBlkRailway).request) then
+   (Self.parent as TBlkRailway).request := false;
  Self.departureForbidden := true;
 end;
 
@@ -334,87 +334,87 @@ end;
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkLinker.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 var Blk, Blk2: TBlk;
-    railway: TBlkTrat;
+    railway: TBlkRailway;
 begin
- railway := TBlkTrat(Self.parent);
+ railway := TBlkRailway(Self.parent);
  if (railway = nil) then Exit('-');
 
  Result := inherited;
 
  // tratovy zabezpecovaci system
- case (railway.GetSettings().zabzar) of
-  TTratZZ.souhlas: begin
+ case (railway.GetSettings().rType) of
+  TRailwayType.permanent: begin
 
-   if ((not Self.request) and (railway.Zadost)) then
+   if ((not Self.request) and (railway.request)) then
      Result := Result + 'UTS,';
 
-   if (railway.Zadost) then
+   if (railway.request) then
      Result := Result + 'ZTS<,';
 
-   if (railway.IsFirstUvazka(Self)) then
+   if (railway.IsFirstLinker(Self)) then
     begin
      // prvni uvazka
 
-     if (((not Self.request) and (railway.Smer = TTratSmer.BtoA) and (not railway.Zadost) and
-          (not railway.RBPCan) and (not railway.nouzZaver) and
-          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
+     if (((not Self.request) and (railway.direction = TRailwayDirection.BtoA) and (not railway.request) and
+          (not railway.RBPCan) and (not railway.emLock) and
+          (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
 
-     if (((not Self.request) and (railway.Smer = TTratSmer.AtoB) and (not railway.Zadost) and
-          (not railway.RBPCan) and (not railway.nouzZaver) and
-          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
+     if (((not Self.request) and (railway.direction = TRailwayDirection.AtoB) and (not railway.request) and
+          (not railway.RBPCan) and (not railway.emLock) and
+          (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.Zadost)) then
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.request)) then
      Result := Result + 'UTS,';
 
-   if (((not Self.request) and railway.Zadost)) then
+   if (((not Self.request) and railway.request)) then
      Result := Result + 'OTS,';
 
    if (RightStr(Result, 2) <> '-,') then
      Result := Result + '-,';
   end;// case TTratZZ.souhlas
 
-  TTratZZ.nabidka: begin
+  TRailwayType.request: begin
 
-   if ((not Self.request) and (railway.Zadost)) then
+   if ((not Self.request) and (railway.request)) then
      Result := Result + 'UTS,';
 
    if (Self.request) then
      Result := Result + 'ZTS<,';
 
-   if (railway.IsFirstUvazka(Self)) then
+   if (railway.IsFirstLinker(Self)) then
     begin
      // prvni uvazka
 
-     if (((not Self.request) and(railway.Smer <> TTratSmer.AtoB) and (not railway.Zadost) and
-          (not railway.RBPCan) and (not railway.nouzZaver) and
-          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
+     if (((not Self.request) and(railway.direction <> TRailwayDirection.AtoB) and (not railway.request) and
+          (not railway.RBPCan) and (not railway.emLock) and
+          (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
 
-     if (((not Self.request) and (railway.Smer <> TTratSmer.BtoA) and (not railway.Zadost) and
-          (not railway.RBPCan) and (not railway.nouzZaver) and
-          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
+     if (((not Self.request) and (railway.direction <> TRailwayDirection.BtoA) and (not railway.request) and
+          (not railway.RBPCan) and (not railway.emLock) and
+          (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.Zadost)) then
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.request)) then
      Result := Result + 'UTS,';
 
-   if (((not Self.request) and railway.Zadost)) then
+   if (((not Self.request) and railway.request)) then
      Result := Result + 'OTS,';
 
    if (RightStr(Result, 2) <> '-,') then
@@ -432,12 +432,12 @@ begin
   begin
    // zruseni ZAK je podmineno tim, ze na krajnich usecich trati nejsou zavery
    // to zajistuje, ze njelze zrusit ZAK u trati, do ktere je postaven PMD
-   Blky.GetBlkByID(TBlkTrat(Self.parent).GetSettings().Useky[0], Blk);
-   Blky.GetBlkByID(TBlkTrat(Self.parent).GetSettings().Useky[TBlkTrat(Self.parent).GetSettings().Useky.Count-1], Blk2);
+   Blky.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[0], Blk);
+   Blky.GetBlkByID(TBlkRailway(Self.parent).GetSettings().trackIds[TBlkRailway(Self.parent).GetSettings().trackIds.Count-1], Blk2);
    if ((Blk <> nil) and (Blk2 <> nil) and (TBlkUsek(Blk).Zaver = TZaver.no) and (TBlkUsek(Blk2).Zaver = TZaver.no)) then
      Result := Result + '!ZAK<,'
   end else
-  if ((not railway.ZAK) and (not railway.Zaver) and (not railway.Obsazeno)) then
+  if ((not railway.departureForbidden) and (not railway.Zaver) and (not railway.occupied)) then
    Result := Result + 'ZAK>,';
 
  Result := Result + 'STIT,';
@@ -446,16 +446,16 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkLinker.ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
-var railway: TBlkTrat;
+var railway: TBlkRailway;
     blk: TBlk;
     train: TTrain;
 begin
- railway := TBlkTrat(Self.parent);
+ railway := TBlkRailway(Self.parent);
  if (railway = nil) then Exit();
- if (train_index >= railway.stav.trains.Count) then Exit();
- train := railway.stav.trains[train_index].train;
+ if (train_index >= railway.state.trains.Count) then Exit();
+ train := railway.state.trains[train_index].train;
 
- blk := railway.GetTrainUsek(train);
+ blk := railway.GetTrainTrack(train);
  if (blk = nil) then Exit();
  TBlkUsek(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
 end;
@@ -464,7 +464,7 @@ end;
 
 procedure TBlkLinker.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
- if (TBlkTrat(Self.parent).Smer < TTratSmer.zadny) then Exit();
+ if (TBlkRailway(Self.parent).direction < TRailwayDirection.no) then Exit();
  if (Button = TPanelButton.ESCAPE) then Exit(); 
 
  if (params <> '') then
@@ -504,7 +504,7 @@ procedure TBlkLinker.SetRequest(zadost: Boolean);
 begin
  // tohleto poradi nastvovani je dulezite
  if (zadost) then Self.m_request := zadost;
- (Self.parent as TBlkTrat).Zadost := zadost;
+ (Self.parent as TBlkRailway).request := zadost;
  if (not zadost) then Self.m_request := zadost;
 end;
 
@@ -522,17 +522,17 @@ end;
 
 // Takto zasobnik zjistuje, jestli muze zacit zadost:
 function TBlkLinker.CanZTS(): Boolean;
-var railway: TBlkTrat;
+var railway: TBlkRailway;
 begin
- railway := TBlkTrat(Self.parent);
- if ((railway.Obsazeno) or (railway.Zaver) or
-     (railway.ZAK) or (railway.nouzZaver) or (railway.RBPCan)) then Exit(false);
+ railway := TBlkRailway(Self.parent);
+ if ((railway.occupied) or (railway.Zaver) or
+     (railway.departureForbidden) or (railway.emLock) or (railway.RBPCan)) then Exit(false);
 
- if (railway.IsFirstUvazka(Self)) then
+ if (railway.IsFirstLinker(Self)) then
   begin
-   Result := ((not Self.request) and (railway.Smer <> TTratSmer.AtoB) and (not railway.Zadost));
+   Result := ((not Self.request) and (railway.direction <> TRailwayDirection.AtoB) and (not railway.request));
   end else begin
-   Result := ((not Self.request) and (railway.Smer <> TTratSmer.BtoA) and (not railway.Zadost));
+   Result := ((not Self.request) and (railway.direction <> TRailwayDirection.BtoA) and (not railway.request));
   end;
 end;
 
@@ -590,12 +590,12 @@ end;
 
 function TBlkLinker.PanelStateString(): string;
 var fg, bg: TColor;
-    railway: TBlkTrat;
+    railway: TBlkRailway;
 begin
  Result := inherited;
 
- railway := TBlkTrat(Self.parent);
- if (railway.Smer = TTratSmer.disabled) then
+ railway := TBlkRailway(Self.parent);
+ if (railway.direction = TRailwayDirection.disabled) then
   begin
    fg := clBlack;
    bg := clFuchsia;
@@ -605,20 +605,20 @@ begin
 
    if (railway.RBPCan) then fg := clRed
    else if (railway.Zaver) then fg := clBlue
-   else if (railway.nouzZaver) then fg := clAqua
-   else if (railway.Obsazeno) then fg := clBlue
+   else if (railway.emLock) then fg := clAqua
+   else if (railway.occupied) then fg := clBlue
    else fg := $A0A0A0;
   end;
 
  Result := Result + ownConvert.ColorToStr(fg) + ';' +
                     ownConvert.ColorToStr(bg) + ';' +
-                    IntToStr(ownConvert.BoolToInt(railway.Zadost)) + ';';
+                    IntToStr(ownConvert.BoolToInt(railway.request)) + ';';
 
- case (railway.Smer) of
-  TTratSmer.disabled, TTratSmer.zadny
+ case (railway.direction) of
+  TRailwayDirection.disabled, TRailwayDirection.no
                      : Result := Result + '0;';
-  TTratSmer.AtoB     : Result := Result + '1;';
-  TTratSmer.BtoA     : Result := Result + '2;';
+  TRailwayDirection.AtoB     : Result := Result + '1;';
+  TRailwayDirection.BtoA     : Result := Result + '2;';
  end;
 
  Result := Result + railway.GetTrainsList(',') + ';';

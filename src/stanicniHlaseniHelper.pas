@@ -6,12 +6,12 @@ unit stanicniHlaseniHelper;
 
 interface
 
-uses Train, TOblRizeni, Generics.Collections, TBlokUsek, TBlokTrat;
+uses Train, TOblRizeni, Generics.Collections, TBlokUsek, TBlockRailway;
 
 type
   // jaka stanicni hlaseni prehrat
   TSHToPlay = record
-    trat: TBlkTrat;
+    trat: TBlkRailway;
     stanicniKolej: TBlkUsek;
   end;
 
@@ -38,7 +38,7 @@ function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
 var blksWithTrain: TList<TBlkUsek>;
     blk: TBlk;
     blkUsek: TBlkUsek;
-    inTrat: TBlkTrat;
+    inTrat: TBlkRailway;
     inOR: Boolean;
 begin
  blksWithTrain := TList<TBlkUsek>.Create();
@@ -58,8 +58,8 @@ begin
      // trate z aktualni stanice kontrolujeme cele
      if ((not inOR) and (blk.typ = btTU) and (TBlkUsek(blk).trainPredict = train) and
          (TBlkTU(blk).Trat <> nil) and
-         (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.stations[0] = OblR) or
-          ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.stations[0] = OblR))) then
+         (((TBlkRailway(TBlkTU(blk).Trat)).linkerA.stations[0] = OblR) or
+          ((TBlkRailway(TBlkTU(blk).Trat)).linkerB.stations[0] = OblR))) then
        blksWithTrain.Add(TBlkUsek(blk));
 
      if (not inOR) then continue;
@@ -70,7 +70,7 @@ begin
 
      if ((blk.typ = btTU) and (TBlkUsek(blk).train = train)) then
        if (TBlkTU(blk).Trat <> nil) then
-         inTrat := TBlkTrat(TBlkTU(blk).Trat);
+         inTrat := TBlkRailway(TBlkTU(blk).Trat);
     end;
 
    // zjistime, na ktere stanicni a na ktere tratove koleje je souprava predpovidana
@@ -80,7 +80,7 @@ begin
      // souprava je predpovidana do jine trati nez ve ktere je -> prujezd
      if ((blkUsek.typ = btTU) and (TBlkTU(blkUsek).Trat <> inTrat)
          and (TBlkTU(blkUsek).Trat <> nil)) then
-       Result.trat := TBlkTrat(TBlkTU(blkUsek).Trat);
+       Result.trat := TBlkRailway(TBlkTU(blkUsek).Trat);
 
      // souprava je predpovidana na stanicni kolej -> vybrat tu s nejkratsim nazvem
      if ((blkUsek.Stav.cislo_koleje <> '') and ((Result.stanicniKolej = nil) or

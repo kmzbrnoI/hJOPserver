@@ -139,7 +139,7 @@ var
 implementation
 
 uses TBlockTurnout, TBlokUsek, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
-     TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlockLinker, TBlockAC,
+     TBlokZamek, TJCDatabase, Logging, TBlockRailway, TBlockLinker, TBlockAC,
      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlockDisconnector,
      TBlokTratUsek, appEv, TBlockIO, PTUtils, TBlockSummary,
      TechnologieAB, ACBlocks;
@@ -251,7 +251,7 @@ begin
          Integer(btIR)        : Blk := TBlkIR.Create(-1);
          Integer(btSignal)    : Blk := TBlkSignal.Create(-1);
          Integer(btCrossing)   : Blk := TBlkCrossing.Create(-1);
-         Integer(btTrat)      : Blk := TBlkTrat.Create(-1);
+         Integer(btRailway)      : Blk := TBlkRailway.Create(-1);
          Integer(btLinker)    : Blk := TBlkLinker.Create(-1);
          Integer(btLock)      : Blk := TBlkLock.Create(-1);
          Integer(btDisconnector)      : Blk := TBlkDisconnector.Create(-1);
@@ -373,7 +373,7 @@ begin
   btIR       : Blk := TBlkIR.Create(index);
   btSignal      : Blk := TBlkSignal.Create(index);
   btCrossing  : Blk := TBlkCrossing.Create(index);
-  bttrat     : Blk := TBlkTrat.Create(index);
+  btRailway     : Blk := TBlkRailway.Create(index);
   btLinker   : Blk := TBlkLinker.Create(index);
   btLock     : Blk := TBlkLock.Create(index);
   btDisconnector     : Blk := TBlkDisconnector.Create(index);
@@ -414,10 +414,10 @@ begin
    Self.data[i].table_index := Self.data[i].table_index - 1;
 
  // pokud mazeme trat, je potreba smazat i uvazky
- if (tmp.typ = btTrat) then
+ if (tmp.typ = btRailway) then
   begin
-   Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaA));
-   Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaB));
+   Self.Delete(Blky.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerA));
+   Self.Delete(Blky.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerB));
   end;
  if (tmp.typ = btLinker) then
   begin
@@ -719,7 +719,7 @@ var bloki, i: Integer;
       Priradit := false;
       Obl_r := Blk.stations;
 
-      if ((glob.typ = btTrat) or (glob.typ = btIR)) then
+      if ((glob.typ = btRailway) or (glob.typ = btIR)) then
          priradit := true
       else begin
         for i := 0 to Length(OblRizeniID)-1 do
@@ -783,7 +783,7 @@ begin
      if ((blk as TBlkUsek).trainPredict = train) then
        (blk as TBlkUsek).trainPredict := nil;
     end;
-   if (blk.typ = btTrat) then (blk as TBlkTrat).RemoveTrain(train);
+   if (blk.typ = btRailway) then (blk as TBlkRailway).RemoveTrain(train);
   end;//for
 end;
 
@@ -804,7 +804,7 @@ end;
 
 procedure TBlky.TrainPrediction(signal: TBlk);
 var usek, startUsek: TBlkUsek;
-    trat: TBlkTrat;
+    trat: TBlkRailway;
     train: TTrain;
     JC: TJC;
 begin
@@ -841,19 +841,19 @@ begin
        Blky.GetBlkByID(TBlkTU(Usek).InTrat, TBlk(trat));
        if (train <> nil) then begin
          if ((trat.trainPredict = nil) or (trat.trainPredict.train <> train)) then
-           trat.trainPredict := TBlkTraTTrain.Create(train.index);
+           trat.trainPredict := TBlkRailwayTrain.Create(train.index);
        end else begin
          if (trat.trainPredict <> nil) then
            trat.trainPredict := nil;
        end;
 
        // v trati jsou jiz soupravy -> konec predpovidani
-       if (trat.stav.trains.Count > 0) then Exit();
+       if (trat.state.trains.Count > 0) then Exit();
        trat.UpdateTrainPredict(false);
 
-       case (trat.Smer) of
-        TTratSmer.AtoB : Blky.GetBlkByID(trat.GetSettings().Useky[trat.GetSettings().Useky.Count-1], TBlk(usek));
-        TTratSmer.BtoA : Blky.GetBlkByID(trat.GetSettings().Useky[0], TBlk(usek));
+       case (trat.direction) of
+        TRailwayDirection.AtoB : Blky.GetBlkByID(trat.GetSettings().trackIds[trat.GetSettings().trackIds.Count-1], TBlk(usek));
+        TRailwayDirection.BtoA : Blky.GetBlkByID(trat.GetSettings().trackIds[0], TBlk(usek));
        end;//case
 
        // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
@@ -950,7 +950,7 @@ procedure TBlky.ChangeTrainToTrat(train: TTrain);
 var blk: TBlk;
 begin
  for blk in Self.data do
-   if ((blk.typ = btTrat) and (blk as TBlkTrat).IsTrain(train, true)) then
+   if ((blk.typ = btRailway) and (blk as TBlkRailway).IsTrain(train, true)) then
      blk.Change();
 end;
 
