@@ -237,7 +237,7 @@ type
 
 implementation
 
-uses TrainDb, TBloky, TCPServerOR, TBlokTrat, TBlokNav, TJCDatabase,
+uses TrainDb, TBloky, TCPServerOR, TBlokTrat, TBlockSignal, TJCDatabase,
      logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////

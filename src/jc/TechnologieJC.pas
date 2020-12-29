@@ -41,7 +41,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
   Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok, IbUtils, Train,
-  IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO, TBlokVyhybka,
+  IniFiles, IdContext, TBlokTrat, Generics.Collections, UPO, TBlockTurnout,
   TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 
 const
@@ -362,8 +362,8 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, THnaciVozidlo, TBlokNav, TBlokUsek, TOblsRizeni,
-     TBlokPrejezd, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
+uses GetSystems, TechnologieRCS, THnaciVozidlo, TBlockSignal, TBlokUsek, TOblsRizeni,
+     TBlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
      THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////

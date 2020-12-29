@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, TBlokRozp, Generics.Collections, IBUtils;
+  Dialogs, ExtCtrls, StdCtrls, Spin, TBlockDisconnector, Generics.Collections, IBUtils;
 
 type
   TF_BlkRozp = class(TForm)
@@ -27,7 +27,7 @@ type
     procedure SE_moduleExit(Sender: TObject);
   private
    NewBlk: Boolean;
-   Blk: TBlkRozp;
+   Blk: TBlkDisconnector;
 
   public
 
@@ -83,7 +83,7 @@ procedure TF_BlkRozp.NewBlkOpenForm;
 
 procedure TF_BlkRozp.NormalOpenForm;
 var glob: TBlkSettings;
-    settings: TBlkRozpSettings;
+    settings: TBlkDiscSettings;
     oblr: TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
@@ -133,7 +133,7 @@ procedure TF_BlkRozp.B_StornoClick(Sender: TObject);
 
 procedure TF_BlkRozp.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkRozpSettings;
+    settings: TBlkDiscSettings;
     another: TBlk;
  begin
   if (E_Nazev.Text = '') then
@@ -157,13 +157,13 @@ var glob: TBlkSettings;
 
   glob.name := E_Nazev.Text;
   glob.id  := SE_ID.Value;
-  glob.typ := btRozp;
+  glob.typ := btDisconnector;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btRozp, glob) as TBlkRozp;
+      Blk := Blky.Add(btDisconnector, glob) as TBlkDisconnector;
     except
       on E: Exception do
        begin

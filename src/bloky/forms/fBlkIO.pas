@@ -1,10 +1,10 @@
-unit fBlkIO;
+﻿unit fBlkIO;
 
 interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlokIO, Generics.Collections,
+  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, TBlockIO, Generics.Collections,
   IBUtils;
 
 type

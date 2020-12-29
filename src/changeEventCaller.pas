@@ -35,7 +35,7 @@ var ceCaller: TChangeEventCaller;
 
 implementation
 
-uses TBloky, TBlok, TBlokUsek, TBlokVyhybka, TBlokZamek, TBlokPrejezd,
+uses TBloky, TBlok, TBlokUsek, TBlockTurnout, TBlokZamek, TBlockCrossing,
      TBlokTrat;
 
 ////////////////////////////////////////////////////////////////////////////////

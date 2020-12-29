@@ -138,11 +138,11 @@ var
 
 implementation
 
-uses TBlokVyhybka, TBlokUsek, TBlokIR, TBlokNav, fMain, TBlokPrejezd,
-      TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TBlokAC,
-      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlokRozp,
-      TBlokTratUsek, appEv, TBlokIO, PTUtils, TBlokSouctovaHlaska,
-      TechnologieAB, ACBlocks;
+uses TBlockTurnout, TBlokUsek, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
+     TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TBlockAC,
+     DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlockDisconnector,
+     TBlokTratUsek, appEv, TBlockIO, PTUtils, TBlockSummary,
+     TechnologieAB, ACBlocks;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -254,7 +254,7 @@ begin
          Integer(btTrat)      : Blk := TBlkTrat.Create(-1);
          Integer(btUvazka)    : Blk := TBlkUvazka.Create(-1);
          Integer(btLock)      : Blk := TBlkLock.Create(-1);
-         Integer(btRozp)      : Blk := TBlkRozp.Create(-1);
+         Integer(btDisconnector)      : Blk := TBlkDisconnector.Create(-1);
          Integer(btTU)        : Blk := TBlkTU.Create(-1);
          Integer(btIO)        : Blk := TBlkIO.Create(-1);
          Integer(btSummary)        : Blk := TBlkSummary.Create(-1);
@@ -376,7 +376,7 @@ begin
   bttrat     : Blk := TBlkTrat.Create(index);
   btUvazka   : Blk := TBlkUvazka.Create(index);
   btLock     : Blk := TBlkLock.Create(index);
-  btRozp     : Blk := TBlkRozp.Create(index);
+  btDisconnector     : Blk := TBlkDisconnector.Create(index);
   btTU       : Blk := TBlkTU.Create(index);
   btIO       : Blk := TBlkIO.Create(index);
   btSummary       : Blk := TBlkSummary.Create(index);

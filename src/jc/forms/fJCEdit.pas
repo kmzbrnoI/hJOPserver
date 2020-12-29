@@ -120,7 +120,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TBlok, TOblsRizeni,
-      TBlokNav, TJCDatabase, DataJC, TBlokTrat, TBlokVyhybka;
+      TBlockSignal, TJCDatabase, DataJC, TBlokTrat, TBlockTurnout;
 
 {$R *.dfm}
 

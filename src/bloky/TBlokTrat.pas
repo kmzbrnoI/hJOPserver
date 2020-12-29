@@ -203,7 +203,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlokNav, Logging,
+uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlockSignal, Logging,
     TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, TrainDb, THVDatabase,
     TBlokTratUsek, appEv, timeHelper, ownConvert, Graphics;
 

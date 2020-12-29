@@ -96,7 +96,7 @@ type
 implementation
 
 uses GetSystems, TBloky, Graphics, Diagnostics, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlokVyhybka;
+    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlockTurnout;
 
 constructor TBlkLock.Create(index: Integer);
 begin

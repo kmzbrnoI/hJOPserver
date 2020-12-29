@@ -8,7 +8,7 @@
 interface
 
 uses TechnologieMultiJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, Generics.Defaults, TBlokNav;
+      Generics.Collections, Classes, Generics.Defaults, TBlockSignal;
 
 type
   MutiJCExistsException = class(Exception);

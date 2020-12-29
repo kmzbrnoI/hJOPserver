@@ -27,7 +27,7 @@ type
    btTrat = 5,
    btUvazka = 6,
    btLock = 7,
-   btRozp = 8,
+   btDisconnector = 8,
    btTU = 9,
    btIO = 10,
    btSummary = 11,
@@ -424,7 +424,7 @@ begin
   btTrat: Result := 'railway';
   btUvazka: Result := 'harness';
   btLock: Result := 'lock';
-  btRozp: Result := 'disconnector';
+  btDisconnector: Result := 'disconnector';
   btTU: Result := 'railwayTrack';
   btIO: Result := 'io';
   btSummary: Result := 'crossingsSummary';
@@ -472,7 +472,7 @@ begin
  else if (typ = 'prejezd') or (typ = 'přejezd') or (typ = 'crossing') then Result := btCrossing
  else if (typ = 'trat') or (typ = 'trať') or (typ = 'railway') then Result := btTrat
  else if (typ = 'uvazka') or (typ = 'úvazka') or (typ = 'harness') then Result := btUvazka
- else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovač') or (typ = 'disconnector') then Result := btRozp
+ else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovač') or (typ = 'disconnector') then Result := btDisconnector
  else if (typ = 'tratUsek') or (typ = 'traťÚsek') or (typ = 'tu') or (typ = 'TU') or (typ = 'railwayTrack') then Result := btTU
  else if (typ = 'io') then Result := btIO
  else raise ETypeNotFound.Create('Blok typu '+typ+' neexistuje');

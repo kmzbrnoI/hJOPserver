@@ -1,6 +1,6 @@
-unit TBlokRozp;
+unit TBlockDisconnector;
 
-//definice a obsluha technologickeho bloku Rozpojovac
+{ DISCONNECTOR technological blokc definition }
 
 interface
 
@@ -8,26 +8,25 @@ uses IniFiles, TBlok, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
      IdContext, TOblRizeni, TechnologieRCS;
 
 type
- TRozpStatus = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
+ TBlkDiscBasicState = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
 
- TBlkRozpSettings = record
+ TBlkDiscSettings = record
   RCSAddrs: TRCSAddrs;     //only 1 address
  end;
 
- TBlkRozpStav = record
-  status: TRozpStatus;
+ TBlkDiscState = record
+  state: TBlkDiscBasicState;
   finish: TDateTime;
   rcsFailed: Boolean;
-  stit: string;
+  note: string;
  end;
 
- TBlkRozp = class(TBlk)
+ TBlkDisconnector = class(TBlk)
   const
-   //defaultni stav
-   _def_rozp_stav: TBlkRozpStav = (
-      status : disabled;
+   _def_rozp_stav: TBlkDiscState = (
+      state: disabled;
       rcsFailed: false;
-      stit : '';
+      note: '';
    );
 
   private const
@@ -35,13 +34,13 @@ type
     _ACTIVE_TO_DISABLE_TIME_SEC = 30;
 
   private
-   RozpSettings: TBlkRozpSettings;
-   RozpStav: TBlkRozpStav;
+   RozpSettings: TBlkDiscSettings;
+   RozpStav: TBlkDiscState;
 
-   procedure SetStatus(status: TRozpStatus);
+   procedure SetState(status: TBlkDiscBasicState);
    procedure UpdateOutput();
 
-   procedure SetStit(stit: string);
+   procedure SetNote(note: string);
 
    procedure Mount();
    procedure Activate();
@@ -54,41 +53,37 @@ type
   public
     constructor Create(index: Integer);
 
-    //load/save data
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
     procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
-    //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
     function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
-    //update states
     procedure Update(); override;
 
-    //----- Rozpojovac own functions -----
+    //----- Disconnector specific functions -----
 
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
                          rights: TORCOntrolRights; params: string = ''); override;
     function PanelStateString(): string; override;
 
-    function GetSettings(): TBlkRozpSettings;
-    procedure SetSettings(data: TBlkRozpSettings);
+    function GetSettings(): TBlkDiscSettings;
+    procedure SetSettings(data: TBlkDiscSettings);
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
-    property stav: TBlkRozpStav read RozpStav;
-    property status: TRozpStatus read RozpStav.status write SetStatus;
-    property stit: string read RozpStav.stit write SetStit;
+    property fullState: TBlkDiscState read RozpStav;
+    property state: TBlkDiscBasicState read RozpStav.state write SetState;
+    property note: string read RozpStav.note write SetNote;
 
-    //PT:
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
     procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
- end;//class TBlkRozp
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -96,17 +91,17 @@ implementation
 
 uses TCPServerOR, ownConvert, Graphics, PTUtils;
 
-constructor TBlkRozp.Create(index: Integer);
+constructor TBlkDisconnector.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btRozp;
+ Self.GlobalSettings.typ := btDisconnector;
  Self.RozpStav           := Self._def_rozp_stav;
 end;//ctor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
+procedure TBlkDisconnector.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -114,25 +109,25 @@ begin
  Self.LoadORs(ini_rel, 'R').Free();
  PushRCStoOR(Self.ORsRef, Self.RozpSettings.RCSAddrs);
 
- Self.RozpStav.Stit := ini_stat.ReadString(section, 'stit', '');
+ Self.RozpStav.note := ini_stat.ReadString(section, 'stit', '');
 end;
 
-procedure TBlkRozp.SaveData(ini_tech: TMemIniFile; const section: string);
+procedure TBlkDisconnector.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
  inherited SaveData(ini_tech, section);
 
  Self.SaveRCS(ini_tech, section, Self.RozpSettings.RCSAddrs);
 end;
 
-procedure TBlkRozp.SaveStatus(ini_stat: TMemIniFile; const section: string);
+procedure TBlkDisconnector.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
- if (Self.RozpStav.Stit <> '') then
-   ini_stat.WriteString(section, 'stit', Self.RozpStav.Stit);
+ if (Self.RozpStav.note <> '') then
+   ini_stat.WriteString(section, 'stit', Self.RozpStav.note);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.Enable();
+procedure TBlkDisconnector.Enable();
 var rcsaddr: TRCSAddr;
     enable: Boolean;
 begin
@@ -148,47 +143,47 @@ begin
  Self.RozpStav.rcsFailed := not enable;
 
  if (enable) then
-  Self.status := TRozpStatus.not_selected;
+  Self.state := TBlkDiscBasicState.not_selected;
 end;
 
-procedure TBlkRozp.Disable();
+procedure TBlkDisconnector.Disable();
 begin
- Self.status := TRozpStatus.disabled;
+ Self.state := TBlkDiscBasicState.disabled;
  Self.RozpStav.rcsFailed := false;
  Self.Change(true);
 end;
 
-function TBlkRozp.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkDisconnector.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
  Result := ((portType = TRCSIOType.output) and (Self.RozpSettings.RCSAddrs.Contains(addr)));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.Update();
+procedure TBlkDisconnector.Update();
 begin
- if ((Self.status <> TRozpStatus.disabled) and (not RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board))) then
+ if ((Self.state <> TBlkDiscBasicState.disabled) and (not RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board))) then
   begin
-   Self.status := TRozpStatus.disabled;
+   Self.state := TBlkDiscBasicState.disabled;
    Self.RozpStav.rcsFailed := true;
   end;
 
- case (Self.status) of
-   TRozpStatus.disabled : begin
+ case (Self.state) of
+   TBlkDiscBasicState.disabled : begin
       if ((Self.RozpStav.rcsFailed) and (RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board))) then
        begin
         Self.RozpStav.rcsFailed := false;
-        Self.status := TRozpStatus.not_selected;
+        Self.state := TBlkDiscBasicState.not_selected;
        end;
    end;
-   TRozpStatus.mounting : begin
+   TBlkDiscBasicState.mounting : begin
       if (Now > Self.RozpStav.finish) then
        begin
         Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
-        Self.status := TRozpStatus.active;
+        Self.state := TBlkDiscBasicState.active;
        end;
    end;
-   TRozpStatus.active   : if (Now > Self.RozpStav.finish) then Self.status := TRozpStatus.not_selected;
+   TBlkDiscBasicState.active   : if (Now > Self.RozpStav.finish) then Self.state := TBlkDiscBasicState.not_selected;
  end;//case
 
  inherited Update();
@@ -196,12 +191,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkRozp.GetSettings(): TBlkRozpSettings;
+function TBlkDisconnector.GetSettings(): TBlkDiscSettings;
 begin
  Result := Self.RozpSettings;
 end;
 
-procedure TBlkRozp.SetSettings(data: TBlkRozpSettings);
+procedure TBlkDisconnector.SetSettings(data: TBlkDiscSettings);
 begin
  if (Self.RozpSettings.RCSAddrs <> data.RCSAddrs) then
    Self.RozpSettings.RCSAddrs.Free();
@@ -212,24 +207,24 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkDisconnector.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  case (Button) of
    F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
    ENTER: begin
-     case (Self.status) of
-       TRozpStatus.disabled: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-       TRozpStatus.not_selected: Self.Mount();
-       TRozpStatus.mounting: Self.Activate();
-       TRozpStatus.active: Self.Prolong();
+     case (Self.state) of
+       TBlkDiscBasicState.disabled: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+       TBlkDiscBasicState.not_selected: Self.Mount();
+       TBlkDiscBasicState.mounting: Self.Activate();
+       TBlkDiscBasicState.active: Self.Prolong();
      end;
    end;
 
    ESCAPE: begin
-     case (Self.status) of
-       TRozpStatus.mounting: Self.status := TRozpStatus.not_selected;
-       TRozpStatus.active: Self.status := TRozpStatus.not_selected;
+     case (Self.state) of
+       TBlkDiscBasicState.mounting: Self.state := TBlkDiscBasicState.not_selected;
+       TBlkDiscBasicState.active: Self.state := TBlkDiscBasicState.not_selected;
      end;
    end;
  end;//case
@@ -237,17 +232,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkRozp.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkDisconnector.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 begin
  Result := inherited;
- if (Self.status = TRozpStatus.active) then
+ if (Self.state = TBlkDiscBasicState.active) then
    Result := Result + 'AKTIV<,'
- else if (Self.status <> TRozpStatus.disabled) then
+ else if (Self.state <> TBlkDiscBasicState.disabled) then
    Result := Result + 'AKTIV>,';
  Result := Result + 'STIT,';
 end;
 
-procedure TBlkRozp.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkDisconnector.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if (item = 'STIT') then Self.MenuStitClick(SenderPnl, SenderOR)
  else if (item = 'AKTIV>') then Self.MenuAktivOnClick(SenderPnl, SenderOR)
@@ -256,11 +251,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.SetStatus(status: TRozpStatus);
+procedure TBlkDisconnector.SetState(status: TBlkDiscBasicState);
 begin
- if (Self.status <> status) then
+ if (Self.state <> status) then
   begin
-   Self.RozpStav.status := status;
+   Self.RozpStav.state := status;
    Self.UpdateOutput();
    Self.Change();
   end;
@@ -268,37 +263,37 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.UpdateOutput();
+procedure TBlkDisconnector.UpdateOutput();
 begin
  try
-   if (Self.status = TRozpStatus.active) then
+   if (Self.state = TBlkDiscBasicState.active) then
      RCSi.SetOutputs(Self.RozpSettings.RCSAddrs, 1)
    else
      RCSi.SetOutputs(Self.RozpSettings.RCSAddrs, 0);
  except
   Self.RozpStav.rcsFailed := true;
-  Self.status := TRozpStatus.disabled;
+  Self.state := TBlkDiscBasicState.disabled;
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkRozp.PanelStateString(): string;
+function TBlkDisconnector.PanelStateString(): string;
 var fg, bg: TColor;
 begin
  Result := inherited;
 
  bg := clBlack;
- case (Self.status) of
-   TRozpStatus.disabled     : fg := clFuchsia;
-   TRozpStatus.not_selected : fg := $A0A0A0;
-   TRozpStatus.mounting     : fg := clYellow;
-   TRozpStatus.active       : fg := clLime;
+ case (Self.state) of
+   TBlkDiscBasicState.disabled     : fg := clFuchsia;
+   TBlkDiscBasicState.not_selected : fg := $A0A0A0;
+   TBlkDiscBasicState.mounting     : fg := clYellow;
+   TBlkDiscBasicState.active       : fg := clLime;
  else
    fg := clFuchsia;
  end;
 
- if (Self.stit <> '') then bg := clTeal;
+ if (Self.note <> '') then bg := clTeal;
 
  Result := Result + ownConvert.ColorToStr(fg) + ';' +
                     ownConvert.ColorToStr(bg) + ';0;';
@@ -306,26 +301,26 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.Mount();
+procedure TBlkDisconnector.Mount();
 begin
  Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
- Self.status := TRozpStatus.mounting;
+ Self.state := TBlkDiscBasicState.mounting;
 end;
 
-procedure TBlkRozp.Activate();
+procedure TBlkDisconnector.Activate();
 begin
  Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
- Self.status := TRozpStatus.active;
+ Self.state := TBlkDiscBasicState.active;
 end;
 
-procedure TBlkRozp.Prolong();
+procedure TBlkDisconnector.Prolong();
 begin
  Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.GetPtData(json: TJsonObject; includeState: Boolean);
+procedure TBlkDisconnector.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
  inherited;
  TBlk.RCStoJSON(Self.RozpSettings.RCSAddrs[0], json['rcs']);
@@ -333,21 +328,21 @@ begin
    Self.GetPtState(json['blockState']);
 end;
 
-procedure TBlkRozp.GetPtState(json: TJsonObject);
+procedure TBlkDisconnector.GetPtState(json: TJsonObject);
 begin
- case (Self.status) of
-  TRozpStatus.disabled: json['state'] := 'off';
-  TRozpStatus.not_selected: json['state'] := 'notSelected';
-  TRozpStatus.mounting: json['state'] := 'mounting';
-  TRozpStatus.active: json['state'] := 'active';
+ case (Self.state) of
+  TBlkDiscBasicState.disabled: json['state'] := 'off';
+  TBlkDiscBasicState.not_selected: json['state'] := 'notSelected';
+  TBlkDiscBasicState.mounting: json['state'] := 'mounting';
+  TBlkDiscBasicState.active: json['state'] := 'active';
  end;
 end;
 
-procedure TBlkRozp.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
+procedure TBlkDisconnector.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
 begin
  if (reqJson.Contains('state')) then
   begin
-   if (Self.status = TRozpStatus.disabled) then
+   if (Self.state = TBlkDiscBasicState.disabled) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze nastavit neaktivni rozpojovac');
      inherited;
@@ -359,7 +354,7 @@ begin
    else if (reqJson.S['state'] = 'active') then
      Self.Activate()
    else if (reqJson.S['state'] = 'notSelected') then
-     Self.status := TRozpStatus.not_selected;
+     Self.state := TBlkDiscBasicState.not_selected;
   end;
 
  inherited;
@@ -367,25 +362,25 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRozp.SetStit(stit: string);
+procedure TBlkDisconnector.SetNote(note: string);
 begin
- Self.RozpStav.Stit := stit;
+ Self.RozpStav.note := note;
  Self.Change();
 end;
 
-procedure TBlkRozp.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkDisconnector.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.Stav.Stit);
+ ORTCPServer.Stitek(SenderPnl, Self, Self.fullState.note);
 end;
 
-procedure TBlkRozp.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkDisconnector.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  Self.Activate();
 end;
 
-procedure TBlkRozp.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkDisconnector.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.status := TRozpStatus.not_selected;
+ Self.state := TBlkDiscBasicState.not_selected;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

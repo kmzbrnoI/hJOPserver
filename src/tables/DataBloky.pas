@@ -35,9 +35,9 @@ var
 
 implementation
 
-uses TBloky, TBlok, TBlokVyhybka, TBlokUsek, TBlokNav, TBlokIR, TBlokPrejezd,
-      fMain, TBlokTrat, TBlokUvazka, TrainDb, TBlokZamek, TBlokRozp, TBlokIO,
-      TBlokSouctovaHlaska, TBlokAC, ownConvert;
+uses TBloky, TBlok, TBlockTurnout, TBlokUsek, TBlockSignal, TBlockIR, TBlockCrossing,
+      fMain, TBlokTrat, TBlokUvazka, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
+      TBlockSummary, TBlockAC, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -288,20 +288,20 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btRozp: begin
+   btDisconnector: begin
       Self.LV.Items[line].ImageIndex := 11;
       Self.LV.Items[line].SubItems[0] := 'Rozpojovač';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      case ((Blk as TBlkRozp).status) of
-        TRozpStatus.disabled     : Self.LV.Items[line].SubItems[3] := 'disabled';
-        TRozpStatus.not_selected : Self.LV.Items[line].SubItems[3] := 'ok';
-        TRozpStatus.mounting     : Self.LV.Items[line].SubItems[3] := 'mounting';
-        TRozpStatus.active       : Self.LV.Items[line].SubItems[3] := 'active';
+      case ((Blk as TBlkDisconnector).state) of
+        TBlkDiscBasicState.disabled     : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TBlkDiscBasicState.not_selected : Self.LV.Items[line].SubItems[3] := 'ok';
+        TBlkDiscBasicState.mounting     : Self.LV.Items[line].SubItems[3] := 'mounting';
+        TBlkDiscBasicState.active       : Self.LV.Items[line].SubItems[3] := 'active';
       end;//case
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkRozp).stit;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkDisconnector).note;
       Self.LV.Items[line].SubItems[7] := '---';
    end;
 

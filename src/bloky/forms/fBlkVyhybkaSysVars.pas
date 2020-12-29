@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
-  TBlokVyhybka, Spin;
+  TBlockTurnout, Spin;
 
 type
   TF_BlkVyh_tech = class(TForm)

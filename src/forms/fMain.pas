@@ -489,16 +489,16 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
      fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, TBloky,
-     TBlok, TBlokUsek, TBlokVyhybka, TBlokNav, TBlokIR, TOblRizeni,
-     SnadnSpusteni, TBlokSouctovaHlaska, TBlokPrejezd, TJCDatabase, Logging,
+     TBlok, TBlokUsek, TBlockTurnout, TBlockSignal, TBlockIR, TOblRizeni,
+     SnadnSpusteni, TBlockSummary, TBlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
      fBlkNav, fBlkTrat, TBLokUvazka, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
-     TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlokRozp,
+     TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlockDisconnector,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
-     AppEv, fBlkIO, TBlokIO, TCPServerPT, RCSErrors, TechnologieAB,
-     Diagnostics, TBlokAC, fBlkAC;
+     AppEv, fBlkIO, TBlockIO, TCPServerPT, RCSErrors, TechnologieAB,
+     Diagnostics, TBlockAC, fBlkAC;
 
 {$R *.dfm}
 
@@ -2976,12 +2976,12 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btRozp: begin
-    case ((Blk as TBlkRozp).status) of
-      TRozpStatus.disabled     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-      TRozpStatus.not_selected : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-      TRozpStatus.mounting     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-      TRozpStatus.active       : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+   btDisconnector: begin
+    case ((Blk as TBlkDisconnector).state) of
+      TBlkDiscBasicState.disabled     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+      TBlkDiscBasicState.not_selected : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+      TBlkDiscBasicState.mounting     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+      TBlkDiscBasicState.active       : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
     end;
    end;
 
@@ -3036,7 +3036,7 @@ var Blk: TBlk;
    btCrossing: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
    btTrat, btUvazka: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
-   btRozp: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
+   btDisconnector: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    btTU: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
    btIO: F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
    btSummary: F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);

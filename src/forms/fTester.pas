@@ -1,4 +1,4 @@
-unit fTester;
+﻿unit fTester;
 
 interface
 
@@ -62,7 +62,7 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS, TBlokNav, RCSErrors;
+uses TechnologieRCS, Logging, RCS, TBlockSignal, RCSErrors;
 
 {$R *.dfm}
 

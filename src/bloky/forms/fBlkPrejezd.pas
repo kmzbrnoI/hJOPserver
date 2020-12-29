@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, Spin, StdCtrls, TBlokPrejezd, TBloky, Generics.Collections, IBUtils,
-  TBlokPrejezdLogic, Mask, StrUtils;
+  ExtCtrls, Spin, StdCtrls, TBlockCrossing, TBloky, Generics.Collections, IBUtils,
+  TBlockCrossingLogic, Mask, StrUtils;
 
 type
   TF_BlkPrejezd = class(TForm)

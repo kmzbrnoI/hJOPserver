@@ -1,4 +1,4 @@
-﻿unit TBlokPrejezd;
+﻿unit TBlockCrossing;
 
 // definice a obsluha technologickeho bloku Prejezd
 
@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, TBlok, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
      IdContext, TOblRizeni, Generics.Collections, JsonDataObjects,
-     TBlokPrejezdLogic;
+     TBlockCrossingLogic;
 
 type
  TBlkCrossingRCSInputs = record

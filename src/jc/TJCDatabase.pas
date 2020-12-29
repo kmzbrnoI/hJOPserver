@@ -7,7 +7,7 @@
 interface
 
 uses TechnologieJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, IBUtils, TBloky, TBlokNav;
+      Generics.Collections, Classes, IBUtils, TBloky, TBlockSignal;
 
 type
   EJCIdAlreadyExists = class(Exception);
@@ -92,7 +92,7 @@ var
 implementation
 
 uses Logging, GetSystems, TBlokUsek, TOblRizeni, TCPServerOR, TBlokTrat,
-      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlokVyhybka,
+      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, TBlockTurnout,
       TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-﻿unit TBlokNav;
+﻿unit TBlockSignal;
 
 { SIGNAL technological block definition. }
 
@@ -274,8 +274,8 @@ type
 implementation
 
 uses TBloky, TBlokUsek, TJCDatabase, TCPServerOR, Graphics,
-     GetSystems, Logging, TrainDb, TBlokIR, Zasobnik, ownStrUtils,
-     TBlokTratUsek, TBlokTrat, TBlokVyhybka, TBlokZamek, TechnologieAB,
+     GetSystems, Logging, TrainDb, TBlockIR, Zasobnik, ownStrUtils,
+     TBlokTratUsek, TBlokTrat, TBlockTurnout, TBlokZamek, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
 constructor TBlkSignal.Create(index: Integer);

@@ -1,4 +1,4 @@
-unit TBlokSouctovaHlaska;
+unit TBlockSummary;
 
 { SUMMARY technological block definition. (Souètová hláska) }
 
@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses TBlokPrejezd, TBloky, TOblsRizeni, Graphics, ownConvert;
+uses TBlockCrossing, TBloky, TOblsRizeni, Graphics, ownConvert;
 
 constructor TBlkSummary.Create(index: Integer);
 begin

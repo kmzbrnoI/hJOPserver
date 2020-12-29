@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, TBlokAC;
+  Dialogs, ExtCtrls, StdCtrls, Spin, TBlockAC;
 
 type
   TF_BlkAC = class(TForm)

@@ -50,8 +50,8 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TJCDatabase, TBlok, TBlokUsek, TBloky, TBlokNav,
-     TBlokTratUsek, TBlokVyhybka;
+uses GetSystems, TechnologieRCS, TJCDatabase, TBlok, TBlokUsek, TBloky, TBlockSignal,
+     TBlokTratUsek, TBlockTurnout;
 
 ////////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani useku v jizdni ceste

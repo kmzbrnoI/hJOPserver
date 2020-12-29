@@ -284,7 +284,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uses TBloky, GetSystems, TBlokUsek, TBlokNav, fMain, Logging, TechnologieJC,
+uses TBloky, GetSystems, TBlokUsek, TBlockSignal, fMain, Logging, TechnologieJC,
      TJCDatabase, ownConvert, TCPServerOR, TOblsRizeni, TBlok, THVDatabase, TrainDb,
      UserDb, THnaciVozidlo, Trakce, User, TCPORsRef, fRegulator, RegulatorTCP,
      ownStrUtils, Train, changeEvent, TechnologieTrakce;

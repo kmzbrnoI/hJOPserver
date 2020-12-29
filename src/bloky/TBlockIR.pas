@@ -1,4 +1,4 @@
-unit TBlokIR;
+unit TBlockIR;
 
 { IR technological block definition. }
 

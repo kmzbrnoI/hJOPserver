@@ -1,4 +1,4 @@
-unit TBlokAC;
+unit TBlockAC;
 
 // definice a obsluha technologickeho bloku AC
 
@@ -109,7 +109,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, ownConvert, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlokVyhybka,
+    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, TBlockTurnout,
     TCPServerPT, ownStrUtils;
 
 constructor TBlkAC.Create(index: Integer);

@@ -101,7 +101,7 @@
 			<DCCReference Include="bloky\forms\fBlkIR.pas">
 				<Form>F_BlkIR</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\TBlokPrejezd.pas"/>
+			<DCCReference Include="bloky\TBlockCrossing.pas"/>
 			<DCCReference Include="bloky\forms\fBlkNew.pas">
 				<Form>F_BlkNew</Form>
 			</DCCReference>
@@ -130,10 +130,10 @@
 			</DCCReference>
 			<DCCReference Include="bloky\TBlok.pas"/>
 			<DCCReference Include="bloky\TBloky.pas"/>
-			<DCCReference Include="bloky\TBlokVyhybka.pas"/>
+			<DCCReference Include="bloky\TBlockTurnout.pas"/>
 			<DCCReference Include="bloky\TBlokUsek.pas"/>
-			<DCCReference Include="bloky\TBlokIR.pas"/>
-			<DCCReference Include="bloky\TBlokNav.pas"/>
+			<DCCReference Include="bloky\TBlockIR.pas"/>
+			<DCCReference Include="bloky\TBlockSignal.pas"/>
 			<DCCReference Include="TOblsRizeni.pas"/>
 			<DCCReference Include="TOblRizeni.pas"/>
 			<DCCReference Include="Booster.pas"/>
@@ -188,7 +188,7 @@
 				<Form>F_MJCEdit</Form>
 			</DCCReference>
 			<DCCReference Include="helpers\ownStrUtils.pas"/>
-			<DCCReference Include="bloky\TBlokRozp.pas"/>
+			<DCCReference Include="bloky\TBlockDisconnector.pas"/>
 			<DCCReference Include="bloky\forms\fBlkRozp.pas">
 				<Form>F_BlkRozp</Form>
 			</DCCReference>
@@ -209,7 +209,7 @@
 			<DCCReference Include="helpers\USock.pas"/>
 			<DCCReference Include="helpers\appEv.pas"/>
 			<DCCReference Include="helpers\SystemCriticalU.pas"/>
-			<DCCReference Include="bloky\TBlokIO.pas"/>
+			<DCCReference Include="bloky\TBlockIO.pas"/>
 			<DCCReference Include="bloky\forms\fBlkIO.pas">
 				<Form>F_BlkIO</Form>
 			</DCCReference>
@@ -245,7 +245,7 @@
 			<DCCReference Include="stanicniHlaseniHelper.pas"/>
 			<DCCReference Include="changeEvent.pas"/>
 			<DCCReference Include="changeEventCaller.pas"/>
-			<DCCReference Include="bloky\TBlokSouctovaHlaska.pas"/>
+			<DCCReference Include="bloky\TBlockSummary.pas"/>
 			<DCCReference Include="bloky\forms\fBlkSH.pas"/>
 			<DCCReference Include="predvidanyOdjezd.pas"/>
 			<DCCReference Include="helpers\timeHelper.pas"/>
@@ -263,12 +263,12 @@
 			<DCCReference Include="Simulation.pas"/>
 			<DCCReference Include="pt\PTEndpointJCs.pas"/>
 			<DCCReference Include="pt\PTEndpointJCStav.pas"/>
-			<DCCReference Include="bloky\TBlokAC.pas"/>
+			<DCCReference Include="bloky\TBlockAC.pas"/>
 			<DCCReference Include="bloky\forms\fBlkAC.pas">
 				<Form>F_BlkAC</Form>
 			</DCCReference>
 			<DCCReference Include="ACBlocks.pas"/>
-			<DCCReference Include="bloky\TBlokPrejezdLogic.pas"/>
+			<DCCReference Include="bloky\TBlockCrossingLogic.pas"/>
 			<DCCReference Include="bloky\TBlokUsekRef.pas"/>
 			<DCCReference Include="bloky\TBlokUsekRefs.pas"/>
 			<DCCReference Include="orLighting.pas"/>

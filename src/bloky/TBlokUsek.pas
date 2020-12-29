@@ -283,7 +283,7 @@ type
 
 implementation
 
-uses GetSystems, TBloky, TBlokNav, Logging, RCS, ownStrUtils, Diagnostics,
+uses GetSystems, TBloky, TBlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, TrainDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, TBlokTratUsek, BoosterDb, appEv,
     stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,

@@ -159,7 +159,7 @@ type
 implementation
 
 uses THVDatabase, Logging, ownStrUtils, TrainDb, TBlokUsek, DataSpr, appEv,
-      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlokNav,
+      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, TBloky, TBlockSignal,
       fRegulator, fMain, TBlokTratUsek, stanicniHlaseniHelper, stanicniHlaseni,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
 

@@ -276,7 +276,7 @@ implementation
 
 uses ownStrUtils, TOblsRizeni, THVDatabase, TrainDb, DataHV, fRegulator, TBloky,
       RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce,
-      ownConvert, TBlokNav;
+      ownConvert, TBlockSignal;
 
 ////////////////////////////////////////////////////////////////////////////////
 

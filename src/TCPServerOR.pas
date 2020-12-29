@@ -156,11 +156,11 @@ var
 
 implementation
 
-uses fMain, TBlokUsek, TBlokVyhybka, TBlokNav, TOblsRizeni, TBlokUvazka,
-      TBlokPrejezd, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
+uses fMain, TBlokUsek, TBlockTurnout, TBlockSignal, TOblsRizeni, TBlokUvazka,
+      TBlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-      UDPDiscover, TJCDatabase, TechnologieJC, TBlokAC, ACBlocks,
-      TBlokRozp, TBlokIO, ownConvert, THVDatabase;
+      UDPDiscover, TJCDatabase, TechnologieJC, TBlockAC, ACBlocks,
+      TBlockDisconnector, TBlockIO, ownConvert, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -622,7 +622,7 @@ begin
     btUvazka     : (orRef.stitek as TBlkUvazka).Stitek := tmp;
     btCrossing    : (orRef.stitek as TBlkCrossing).note := tmp;
     btLock       : (orRef.stitek as TBlkLock).note := tmp;
-    btRozp       : (orRef.stitek as TBlkRozp).stit := tmp;
+    btDisconnector       : (orRef.stitek as TBlkDisconnector).note := tmp;
     btIO         : (orRef.stitek as TBlkIO).note := tmp;
    end;//case
    orRef.stitek := nil;

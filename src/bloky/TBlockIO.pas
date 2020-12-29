@@ -1,4 +1,4 @@
-unit TBlokIO;
+unit TBlockIO;
 
 {
   IO technological block definition.
