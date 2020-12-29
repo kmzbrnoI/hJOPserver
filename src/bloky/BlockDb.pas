@@ -138,7 +138,7 @@ var
 implementation
 
 uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
-     BlokZamek, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
+     BlockLock, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, BlockDisconnector,
      BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
      TechnologieAB, ACBlocks;

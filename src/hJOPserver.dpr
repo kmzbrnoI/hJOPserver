@@ -85,7 +85,7 @@ uses
   ModelovyCas in 'ModelovyCas.pas',
   fBlkNavEvent in 'bloky\forms\fBlkNavEvent.pas' {F_BlkNavEvent},
   CloseTabSheet in 'helpers\CloseTabSheet.pas',
-  BlokZamek in 'bloky\BlokZamek.pas',
+  BlockLock in 'bloky\BlockLock.pas',
   fBlkZamek in 'bloky\forms\fBlkZamek.pas' {F_BlkZamek},
   TMultiJCDatabase in 'jc\TMultiJCDatabase.pas',
   TechnologieMultiJC in 'jc\TechnologieMultiJC.pas',

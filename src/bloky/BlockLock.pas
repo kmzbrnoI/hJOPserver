@@ -1,4 +1,4 @@
-﻿unit BlokZamek;
+﻿unit BlockLock;
 
 { LOCK technological block definition. }
 

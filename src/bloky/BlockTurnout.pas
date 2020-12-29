@@ -260,7 +260,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
-      TCPServerOR, BlokZamek, PTUtils, changeEvent, TCPORsRef, ownConvert,
+      TCPServerOR, BlockLock, PTUtils, changeEvent, TCPORsRef, ownConvert,
       IfThenElse;
 
 constructor TBlkTurnout.Create(index: Integer);

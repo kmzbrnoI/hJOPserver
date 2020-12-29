@@ -495,7 +495,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
      fBlkNav, fBlkTrat, BlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, BlockRailway, ModelovyCas, fBlkZamek,
-     BlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
+     BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
      AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB,
      Diagnostics, BlockAC, fBlkAC;

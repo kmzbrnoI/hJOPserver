@@ -275,7 +275,7 @@ implementation
 
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerOR, Graphics,
      GetSystems, Logging, TrainDb, BlockIR, Zasobnik, ownStrUtils,
-     BlockRailwayTrack, BlockRailway, BlockTurnout, BlokZamek, TechnologieAB,
+     BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
 constructor TBlkSignal.Create(index: Integer);

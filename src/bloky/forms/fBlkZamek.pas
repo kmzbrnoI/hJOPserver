@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, BlokZamek;
+  Dialogs, ExtCtrls, StdCtrls, Spin, BlockLock;
 
 type
   TF_BlkZamek = class(TForm)

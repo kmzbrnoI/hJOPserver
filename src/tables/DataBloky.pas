@@ -36,7 +36,7 @@ var
 implementation
 
 uses BlockDb, Block, BlockTurnout, BlockTrack, BlockSignal, BlockIR, BlockCrossing,
-      fMain, BlockRailway, BlockLinker, TrainDb, BlokZamek, BlockDisconnector, BlockIO,
+      fMain, BlockRailway, BlockLinker, TrainDb, BlockLock, BlockDisconnector, BlockIO,
       BlockSummary, BlockAC, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////

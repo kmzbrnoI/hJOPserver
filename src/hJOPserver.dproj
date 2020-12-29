@@ -173,7 +173,7 @@
 				<Form>F_BlkNavEvent</Form>
 			</DCCReference>
 			<DCCReference Include="helpers\CloseTabSheet.pas"/>
-			<DCCReference Include="bloky\BlokZamek.pas"/>
+			<DCCReference Include="bloky\BlockLock.pas"/>
 			<DCCReference Include="bloky\forms\fBlkZamek.pas">
 				<Form>F_BlkZamek</Form>
 			</DCCReference>
@@ -244,9 +244,7 @@
 			<DCCReference Include="stanicniHlaseniHelper.pas"/>
 			<DCCReference Include="changeEvent.pas"/>
 			<DCCReference Include="changeEventCaller.pas"/>
-			<DCCReference Include="bloky\BlockSummary.pas">
-				<ModuleName>TBlockSummary</ModuleName>
-			</DCCReference>
+			<DCCReference Include="bloky\BlockSummary.pas"/>
 			<DCCReference Include="bloky\forms\fBlkSH.pas"/>
 			<DCCReference Include="predvidanyOdjezd.pas"/>
 			<DCCReference Include="helpers\timeHelper.pas"/>

@@ -364,7 +364,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, TOblsRizeni,
      BlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
-     THVDatabase, Zasobnik, BlockLinker, BlokZamek, BlockRailwayTrack;
+     THVDatabase, Zasobnik, BlockLinker, BlockLock, BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -158,7 +158,7 @@ implementation
 
 uses fMain, BlockTrack, BlockTurnout, BlockSignal, TOblsRizeni, BlockLinker,
       BlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
-      BlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
+      BlockLock, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks,
       BlockDisconnector, BlockIO, ownConvert, THVDatabase;
 
