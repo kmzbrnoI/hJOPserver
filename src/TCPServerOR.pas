@@ -620,7 +620,7 @@ begin
     btUsek, btTU : (orRef.stitek as TBlkUsek).Stitek := tmp;
     btTurnout    : (orRef.stitek as TBlkTurnout).note := tmp;
     btUvazka     : (orRef.stitek as TBlkUvazka).Stitek := tmp;
-    btPrejezd    : (orRef.stitek as TBlkPrejezd).Stitek := tmp;
+    btCrossing    : (orRef.stitek as TBlkCrossing).note := tmp;
     btLock       : (orRef.stitek as TBlkLock).note := tmp;
     btRozp       : (orRef.stitek as TBlkRozp).stit := tmp;
     btIO         : (orRef.stitek as TBlkIO).note := tmp;

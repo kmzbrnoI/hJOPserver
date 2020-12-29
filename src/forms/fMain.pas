@@ -2513,7 +2513,7 @@ var Blk: TBlk;
                   F_BlkUsek_tech.OpenForm(Blk as TBlkUsek);
    btIR      : ;
    btSignal  : ;
-   btPrejezd : ;
+   btCrossing : ;
    btTrat    : F_BlkTrat_tech.OpenForm(Blk as TBlkTrat);
    btUvazka  : ;
   end;//case
@@ -2937,13 +2937,13 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btPrejezd: begin
-    case ((Blk as TBlkPrejezd).Stav.basicStav) of
-     TBlkPrjBasicStav.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-     TBlkPrjBasicStav.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-     TBlkPrjBasicStav.otevreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-     TBlkPrjBasicStav.vystraha : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-     TBlkPrjBasicStav.uzavreno : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+   btCrossing: begin
+    case ((Blk as TBlkCrossing).state) of
+     TBlkCrossingBasicState.disabled : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+     TBlkCrossingBasicState.none     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+     TBlkCrossingBasicState.open     : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+     TBlkCrossingBasicState.caution  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+     TBlkCrossingBasicState.closed   : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
     end;
    end;
 
@@ -3033,7 +3033,7 @@ var Blk: TBlk;
    btUsek: F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
    btSignal: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
-   btPrejezd: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
+   btCrossing: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
    btTrat, btUvazka: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    btRozp: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);

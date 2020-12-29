@@ -250,7 +250,7 @@ begin
          Integer(btUsek)      : Blk := TBlkUsek.Create(-1);
          Integer(btIR)        : Blk := TBlkIR.Create(-1);
          Integer(btSignal)    : Blk := TBlkSignal.Create(-1);
-         Integer(btPrejezd)   : Blk := TBlkPrejezd.Create(-1);
+         Integer(btCrossing)   : Blk := TBlkCrossing.Create(-1);
          Integer(btTrat)      : Blk := TBlkTrat.Create(-1);
          Integer(btUvazka)    : Blk := TBlkUvazka.Create(-1);
          Integer(btLock)      : Blk := TBlkLock.Create(-1);
@@ -372,7 +372,7 @@ begin
   btUsek     : Blk := TBlkUsek.Create(index);
   btIR       : Blk := TBlkIR.Create(index);
   btSignal      : Blk := TBlkSignal.Create(index);
-  btPrejezd  : Blk := TBlkPrejezd.Create(index);
+  btCrossing  : Blk := TBlkCrossing.Create(index);
   bttrat     : Blk := TBlkTrat.Create(index);
   btUvazka   : Blk := TBlkUvazka.Create(index);
   btLock     : Blk := TBlkLock.Create(index);

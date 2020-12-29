@@ -512,7 +512,7 @@ begin
      end;
 
     // kontrola typu bloku prejezdu
-    if (blk.typ <> btPrejezd) then
+    if (blk.typ <> btCrossing) then
      begin
       Result.Insert(0, Self.JCBariera(_JCB_BLOK_NOT_TYP, blk, prjZaver.Prejezd));
       Exit;
@@ -786,18 +786,18 @@ begin
     Blky.GetBlkByID(prjZaver.Prejezd, Blk);
 
     // blok disabled
-    if ((Blk as TBlkPrejezd).Stav.basicStav = TBlkPrjBasicStav.disabled) then
+    if ((Blk as TBlkCrossing).state = TBlkCrossingBasicState.disabled) then
       bariery.Add(Self.JCBariera(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
-    if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.none) then
+    if ((Blk as TBlkCrossing).state <> TBlkCrossingBasicState.none) then
      begin
-      if ((Blk as TBlkPrejezd).Stav.PC_NOT) then
+      if ((Blk as TBlkCrossing).pcEmOpen) then
         bariery.Add(Self.JCBariera(_JCB_PREJEZD_NOUZOVE_OTEVREN, blk, prjZaver.Prejezd));
      end else
       bariery.Add(Self.JCBariera(_JCB_PREJEZD_PORUCHA, blk, prjZaver.Prejezd));
 
     // kontrola stitku prejezdu:
-    if ((Blk as TBlkPrejezd).Stitek <> '') then
+    if ((Blk as TBlkCrossing).note <> '') then
       bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.id));
    end;//for i
 
@@ -1089,7 +1089,7 @@ begin
    begin
     Blky.GetBlkByID(prjZaver.Prejezd, Blk);
     // kontrola stitku prejezdu:
-    if ((Blk as TBlkPrejezd).Stitek <> '') then
+    if ((Blk as TBlkCrossing).note <> '') then
       bariery.Add(Self.JCBariera(_JCB_PREJEZD_STITEK, Blk, Blk.id));
    end;//for i
 
@@ -1434,7 +1434,7 @@ var i, j: Integer;
     vyhybka: TBlkTurnout;
     usek, nextUsek: TBlkUsek;
     zamek: TBlkLock;
-    prejezd: TBlkPrejezd;
+    crossing: TBlkCrossing;
     navestidlo: TBlkSignal;
     trat: TBlkTrat;
     oblr: TOR;
@@ -1633,7 +1633,7 @@ var i, j: Integer;
          if (prjZaver.uzaviraci.Count = 0) then
            continue;
 
-         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
+         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
          uzavren := false;
 
          // prejezd uzavirame jen v pripade, ze nejaky z jeho aktivacnich bloku je obsazen
@@ -1642,9 +1642,9 @@ var i, j: Integer;
          if (Self.typ = TJCType.posun) then
           begin
            // posunova cesta:
-           Self.Log('Krok 12 : prejezd '+prejezd.name+' - uzaviram');
+           Self.Log('Krok 12 : prejezd '+crossing.name+' - uzaviram');
 
-           prejezd.Zaver := true;
+           crossing.Zaver := true;
 
            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
            Blky.GetBlkByID(prjZaver.oteviraci, TBlk(usek));
@@ -1661,9 +1661,9 @@ var i, j: Integer;
              Blky.GetBlkByID(uzavBlok, TBlk(usek));
              if (usek.Obsazeno = TusekStav.obsazeno) then
               begin
-               Self.Log('Krok 12 : prejezd '+prejezd.name+' - aktivacni usek '+usek.name+' obsazen - uzaviram');
+               Self.Log('Krok 12 : prejezd '+crossing.name+' - aktivacni usek '+usek.name+' obsazen - uzaviram');
 
-               prejezd.Zaver := true;
+               crossing.Zaver := true;
 
                // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
                Blky.GetBlkByID(prjZaver.oteviraci, TBlk(usek));
@@ -1687,7 +1687,7 @@ var i, j: Integer;
                usek.AddChangeEvent(usek.EventsOnObsaz, CreateChangeEvent(Self.UsekClosePrj, i));
             end;
 
-           Self.Log('Krok 12 : prejezd '+prejezd.name+' - zadny aktivacni usek neobsazen - nechavam otevreny');
+           Self.Log('Krok 12 : prejezd '+crossing.name+' - zadny aktivacni usek neobsazen - nechavam otevreny');
           end;
         end;//for i
 
@@ -1708,10 +1708,10 @@ var i, j: Integer;
          if (prjZaver.uzaviraci.Count = 0) then
            continue;
 
-         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
+         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
 
-         if (prejezd.Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then Exit();
-         Self.Log('Krok 13 : prejezd '+prejezd.name+' uzavren');
+         if (crossing.state <> TBlkCrossingBasicState.closed) then Exit();
+         Self.Log('Krok 13 : prejezd '+crossing.name+' uzavren');
         end;//for i
 
       Self.krok := _JC_KROK_FINALNI_ZAVER;
@@ -1919,9 +1919,9 @@ var i, j: Integer;
       if (prjZaver.uzaviraci.Count = 0) then
         continue;
 
-      Blky.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
-      if (not prejezd.NOtevreni) then
-        prejezd.UZ := true;
+      Blky.GetBlkByID(prjZaver.Prejezd, TBlk(crossing));
+      if (not crossing.pcEmOpen) then
+        crossing.pcClosed := true;
      end;
 
     // nastavit nouzovy zaver zamkum
@@ -2904,7 +2904,7 @@ end;
 
 // timeout staveni JC
 procedure TJC.UpdateTimeOut();
-var prejezd: TBlkPrejezd;
+var prejezd: TBlkCrossing;
     prjZaver: TJCPrjZaver;
 begin
  // na nouzovou cestu se nevztahuje timeout
@@ -2922,7 +2922,7 @@ begin
       for prjZaver in Self.fproperties.prejezdy do
        begin
         Blky.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
-        if (prejezd.Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then
+        if (prejezd.state <> TBlkCrossingBasicState.closed) then
           if (Self.fstaveni.senderPnl <> nil) and (Self.fstaveni.senderOR <> nil) then
             ORTCPServer.BottomError(Self.fstaveni.senderPnl, 'Neuzavřen '+prejezd.name,
               (Self.fstaveni.senderOR as TOR).ShortName, 'TECHNOLOGIE');
@@ -2966,7 +2966,7 @@ var i: Integer;
     refZaver: TJCRefZaver;
     usek: TBlkUsek;
     vyhybka: TBlkTurnout;
-    prejezd: TBlkPrejezd;
+    prejezd: TBlkCrossing;
     trat: TBlkTrat;
     zamek: TBlkLock;
 begin
@@ -3032,9 +3032,9 @@ begin
  for prjZaver in Self.fproperties.prejezdy do
   begin
    Blky.GetBlkByID(prjZaver.Prejezd, TBlk(prejezd));
-   if ((prejezd.Stav.basicStav = TBlkPrjBasicStav.none) or
-      (prejezd.Stav.basicStav = TBlkPrjBasicStav.disabled)) then Exit(false);
-   if ((prejezd.Zaver) and (prejezd.Stav.basicStav <> TBlkPrjBasicStav.uzavreno)) then Exit(false);
+   if ((prejezd.state = TBlkCrossingBasicState.none) or
+      (prejezd.state = TBlkCrossingBasicState.disabled)) then Exit(false);
+   if ((prejezd.Zaver) and (prejezd.state <> TBlkCrossingBasicState.closed)) then Exit(false);
   end;//for i
 
  //zkontrolujeme trat
@@ -3086,7 +3086,7 @@ end;
 
 procedure TJC.UsekClosePrj(Sender: TObject; data: Integer);
 var blkId: Integer;
-    prejezd: TBlkPrejezd;
+    prejezd: TBlkCrossing;
     usek: TBlkUsek;
 begin
  if ((Self.postaveno) or (Self.staveni)) then
@@ -3263,7 +3263,7 @@ begin
 
   _JCB_PREJEZD_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
-    lines := GetLines(TBlkPrejezd(Bariera.blok).Stitek, _UPO_LINE_LEN);
+    lines := GetLines(TBlkCrossing(Bariera.blok).note, _UPO_LINE_LEN);
     try
       Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
       if (lines.Count > 1) then
@@ -3656,13 +3656,13 @@ begin
    begin
     Blky.GetBlkByID(Self.fproperties.prejezdy[i].Prejezd, Blk);
 
-    if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.none) then
+    if ((Blk as TBlkCrossing).state <> TBlkCrossingBasicState.none) then
      begin
-      if ((Blk as TBlkPrejezd).Stav.PC_NOT) then
+      if ((Blk as TBlkCrossing).pcEmOpen) then
        begin
         bariery.Add(Self.JCBariera(_JCB_PREJEZD_NOUZOVE_OTEVREN, blk, Self.fproperties.prejezdy[i].Prejezd));
        end else begin
-        if ((Blk as TBlkPrejezd).Stav.basicStav <> TBlkPrjBasicStav.uzavreno) then
+        if ((Blk as TBlkCrossing).state <> TBlkCrossingBasicState.closed) then
           bariery.Add(Self.JCBariera(_JCB_PREJEZD_NEUZAVREN, blk, Self.fproperties.prejezdy[i].Prejezd));
        end;
      end else

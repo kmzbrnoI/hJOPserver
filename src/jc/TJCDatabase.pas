@@ -607,7 +607,7 @@ begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
     end;
-    btPrejezd: begin
+    btCrossing: begin
       FreeAndNil(jcs);
       jcs := JCDb.FindPostavenaJCWithPrj(Blk.id);
     end;

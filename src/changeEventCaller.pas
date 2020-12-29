@@ -63,9 +63,9 @@ procedure TChangeEventCaller.NullPrejezdZaver(Sender: TObject; data: Integer);
 var blk: TBlk;
 begin
  Blky.GetBlkByID(data, blk);
- if ((blk = nil) or (blk.typ <> btPrejezd)) then Exit();
+ if ((blk = nil) or (blk.typ <> btCrossing)) then Exit();
 
- TBlkPrejezd(Blk).Zaver := false;
+ TBlkCrossing(Blk).Zaver := false;
 end;
 
 procedure TChangeEventCaller.NullTratZaver(Sender: TObject; data: Integer);

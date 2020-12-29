@@ -89,7 +89,7 @@ begin
   end;
 
  Blky.GetBlkByIndex(Self.CB_PrjAddData[Self.CB_Prj_Add.ItemIndex], blk);
- if ((blk <> nil) and (blk.typ = btPrejezd)) then
+ if ((blk <> nil) and (blk.typ = btCrossing)) then
   begin
    Self.prejezdy.Add(blk.id);
 
@@ -248,7 +248,7 @@ begin
  for i := 0 to Self.prejezdy.Count-1 do
    ignore[i] := Self.prejezdy[i];
 
- Blky.NactiBlokyDoObjektu(Self.CB_Prj_Add, @Self.CB_PrjAddData, @ignore, nil, btPrejezd);
+ Blky.NactiBlokyDoObjektu(Self.CB_Prj_Add, @Self.CB_PrjAddData, @ignore, nil, btCrossing);
 end;
 
 end.//unit

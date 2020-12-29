@@ -1,4 +1,4 @@
-unit fBlkPrejezd;
+﻿unit fBlkPrejezd;
 
 interface
 
@@ -78,10 +78,10 @@ type
     procedure CHB_RCS_BPClick(Sender: TObject);
   private
    OpenIndex: Integer;
-   Blk: TBlkPrejezd;
+   Blk: TBlkCrossing;
    NewBlk: Boolean;
    obls: TArstr;
-   tracks: TObjectList<TBlkPrjTrack>;
+   tracks: TObjectList<TBlkCrossingTrack>;
 
     procedure NormalOpenForm();
     procedure HlavniOpenForm();
@@ -134,7 +134,7 @@ end;
 
 procedure TF_BlkPrejezd.B_save_PClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkPrjSettings;
+    settings: TBlkCrossingSettings;
     addrs: TList<TRCSAddr>;
     another: TBlk;
     typ: TRCSIOType;
@@ -153,14 +153,14 @@ var glob: TBlkSettings;
    end;
 
   glob.name := Self.E_Prj_Nazev.Text;
-  glob.typ := btPrejezd;
+  glob.typ := btCrossing;
   glob.id := Self.SE_ID.Value;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blky.Add(btPrejezd, glob) as TBlkPrejezd;
+      Blk := Blky.Add(btCrossing, glob) as TBlkCrossing;
     except
       on E: Exception do
        begin
@@ -175,39 +175,39 @@ var glob: TBlkSettings;
 
   addrs := TList<TRCSAddr>.Create();
   try
-    settings.RCSOutputs.Zavrit.board := Self.SE_vyst_close_board.Value;
-    settings.RCSOutputs.Zavrit.port := Self.SE_vyst_close_port.Value;
-    addrs.Add(settings.RCSOutputs.Zavrit);
+    settings.RCSOutputs.close.board := Self.SE_vyst_close_board.Value;
+    settings.RCSOutputs.close.port := Self.SE_vyst_close_port.Value;
+    addrs.Add(settings.RCSOutputs.close);
 
-    settings.RCSOutputs.NOtevritUse := Self.CHB_RCS_NOT.Checked;
-    settings.RCSOutputs.NOtevrit.board := Self.SE_vyst_open_board.Value;
-    settings.RCSOutputs.NOtevrit.port := Self.SE_vyst_open_port.Value;
+    settings.RCSOutputs.emOpenUse := Self.CHB_RCS_NOT.Checked;
+    settings.RCSOutputs.emOpen.board := Self.SE_vyst_open_board.Value;
+    settings.RCSOutputs.emOpen.port := Self.SE_vyst_open_port.Value;
     if (Self.CHB_RCS_NOT.Checked) then
-      addrs.Add(settings.RCSOutputs.NOtevrit);
+      addrs.Add(settings.RCSOutputs.emOpen);
 
-    settings.RCSOutputs.BlokPozUse := Self.CHB_RCS_BP.Checked;
-    settings.RCSOutputs.BlokPoz.board := Self.SE_vyst_bp_board.Value;
-    settings.RCSOutputs.BlokPoz.port := Self.SE_vyst_bp_port.Value;
+    settings.RCSOutputs.blockPositiveUse := Self.CHB_RCS_BP.Checked;
+    settings.RCSOutputs.blockPositive.board := Self.SE_vyst_bp_board.Value;
+    settings.RCSOutputs.blockPositive.port := Self.SE_vyst_bp_port.Value;
     if (Self.CHB_RCS_BP.Checked) then
-      addrs.Add(settings.RCSOutputs.BlokPoz);
+      addrs.Add(settings.RCSOutputs.blockPositive);
 
-    settings.RCSInputs.Otevreno.board := SE_vst_open_board.Value;
-    settings.RCSInputs.Otevreno.port := SE_vst_open_port.Value;
-    addrs.Add(settings.RCSInputs.Otevreno);
+    settings.RCSInputs.open.board := SE_vst_open_board.Value;
+    settings.RCSInputs.open.port := SE_vst_open_port.Value;
+    addrs.Add(settings.RCSInputs.open);
 
-    settings.RCSInputs.Zavreno.board := SE_vst_close_board.Value;
-    settings.RCSInputs.Zavreno.port := SE_vst_close_port.Value;
-    addrs.Add(settings.RCSInputs.Zavreno);
+    settings.RCSInputs.closed.board := SE_vst_close_board.Value;
+    settings.RCSInputs.closed.port := SE_vst_close_port.Value;
+    addrs.Add(settings.RCSInputs.closed);
 
-    settings.RCSInputs.Vystraha.board := SE_vst_vystraha_board.Value;
-    settings.RCSInputs.Vystraha.port := SE_vst_vystraha_port.Value;
-    addrs.Add(settings.RCSInputs.Vystraha);
+    settings.RCSInputs.caution.board := SE_vst_vystraha_board.Value;
+    settings.RCSInputs.caution.port := SE_vst_vystraha_port.Value;
+    addrs.Add(settings.RCSInputs.caution);
 
-    settings.RCSInputs.anulaceUse := Self.CHB_RCS_Anullation.Checked;
-    settings.RCSInputs.Anulace.board := SE_vst_anulace_board.Value;
-    settings.RCSInputs.Anulace.port := SE_vst_anulace_port.Value;
+    settings.RCSInputs.annulationUse := Self.CHB_RCS_Anullation.Checked;
+    settings.RCSInputs.annulation.board := SE_vst_anulace_board.Value;
+    settings.RCSInputs.annulation.port := SE_vst_anulace_port.Value;
     if (Self.CHB_RCS_Anullation.Checked) then
-      addrs.Add(settings.RCSInputs.Anulace);
+      addrs.Add(settings.RCSInputs.annulation);
 
     Self.Blk.SetSettings(settings);
 
@@ -361,94 +361,94 @@ procedure TF_BlkPrejezd.HlavniOpenForm();
 
 procedure TF_BlkPrejezd.NormalOpenForm();
 var glob: TBlkSettings;
-    settings: TBlkPrjSettings;
+    settings: TBlkCrossingSettings;
     i: Integer;
     oblr: TOR;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for oblr in Self.Blk.OblsRizeni do
+  for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
-  SetLength(obls, Self.Blk.OblsRizeni.Count);
-  for i := 0 to Self.Blk.OblsRizeni.Count-1 do
-    obls[i] := Self.Blk.OblsRizeni[i].id;
+  SetLength(obls, Self.Blk.stations.Count);
+  for i := 0 to Self.Blk.stations.Count-1 do
+    obls[i] := Self.Blk.stations[i].id;
 
   E_Prj_Nazev.Text := glob.name;
   SE_ID.Value := glob.id;
 
 
-  if (settings.RCSOutputs.Zavrit.board > Cardinal(Self.SE_vyst_close_board.MaxValue)) then
+  if (settings.RCSOutputs.close.board > Cardinal(Self.SE_vyst_close_board.MaxValue)) then
     Self.SE_vyst_close_board.MaxValue := 0;
   Self.SE_vyst_close_port.MaxValue := 0;
 
-  SE_vyst_close_board.Value := settings.RCSOutputs.Zavrit.board;
-  SE_vyst_close_port.Value := settings.RCSOutputs.Zavrit.port;
+  SE_vyst_close_board.Value := settings.RCSOutputs.close.board;
+  SE_vyst_close_port.Value := settings.RCSOutputs.close.port;
 
 
-  Self.CHB_RCS_NOT.Checked := settings.RCSOutputs.NOtevritUse;
+  Self.CHB_RCS_NOT.Checked := settings.RCSOutputs.emOpenUse;
   Self.CHB_RCS_NOTClick(Self);
-  if (settings.RCSOutputs.NOtevrit.board > Cardinal(Self.SE_vyst_open_board.MaxValue)) then
+  if (settings.RCSOutputs.emOpen.board > Cardinal(Self.SE_vyst_open_board.MaxValue)) then
     Self.SE_vyst_open_board.MaxValue := 0;
   Self.SE_vyst_open_port.MaxValue := 0;
-  if (settings.RCSOutputs.NOtevritUse) then
+  if (settings.RCSOutputs.emOpenUse) then
    begin
-    SE_vyst_open_board.Value := settings.RCSOutputs.NOtevrit.board;
-    SE_vyst_open_port.Value := settings.RCSOutputs.NOtevrit.port;
+    SE_vyst_open_board.Value := settings.RCSOutputs.emOpen.board;
+    SE_vyst_open_port.Value := settings.RCSOutputs.emOpen.port;
    end;
 
 
-  Self.CHB_RCS_BP.Checked := settings.RCSOutputs.BlokPozUse;
+  Self.CHB_RCS_BP.Checked := settings.RCSOutputs.blockPositiveUse;
   Self.CHB_RCS_BPClick(Self);
-  if (settings.RCSOutputs.BlokPoz.board > Cardinal(Self.SE_vyst_bp_board.MaxValue)) then
+  if (settings.RCSOutputs.blockPositive.board > Cardinal(Self.SE_vyst_bp_board.MaxValue)) then
     Self.SE_vyst_open_board.MaxValue := 0;
   Self.SE_vyst_bp_port.MaxValue := 0;
-  if (settings.RCSOutputs.BlokPozUse) then
+  if (settings.RCSOutputs.blockPositiveUse) then
    begin
-    SE_vyst_bp_board.Value := settings.RCSOutputs.BlokPoz.board;
-    SE_vyst_bp_port.Value := settings.RCSOutputs.BlokPoz.port;
+    SE_vyst_bp_board.Value := settings.RCSOutputs.blockPositive.board;
+    SE_vyst_bp_port.Value := settings.RCSOutputs.blockPositive.port;
    end;
 
 
-  if (settings.RCSInputs.Otevreno.board > Cardinal(Self.SE_vst_open_board.MaxValue)) then
+  if (settings.RCSInputs.open.board > Cardinal(Self.SE_vst_open_board.MaxValue)) then
     Self.SE_vst_open_board.MaxValue := 0;
   Self.SE_vst_open_port.MaxValue := 0;
 
-  SE_vst_open_board.Value := settings.RCSInputs.Otevreno.board;
-  SE_vst_open_port.Value := settings.RCSInputs.Otevreno.port;
+  SE_vst_open_board.Value := settings.RCSInputs.open.board;
+  SE_vst_open_port.Value := settings.RCSInputs.open.port;
 
 
-  if (settings.RCSInputs.Zavreno.board > Cardinal(Self.SE_vst_close_board.MaxValue)) then
+  if (settings.RCSInputs.closed.board > Cardinal(Self.SE_vst_close_board.MaxValue)) then
     Self.SE_vst_close_board.MaxValue := 0;
   Self.SE_vst_close_port.MaxValue := 0;
 
-  SE_vst_close_board.Value := settings.RCSInputs.Zavreno.board;
-  SE_vst_close_port.Value := settings.RCSInputs.Zavreno.port;
+  SE_vst_close_board.Value := settings.RCSInputs.closed.board;
+  SE_vst_close_port.Value := settings.RCSInputs.closed.port;
 
 
-  if (settings.RCSInputs.Vystraha.board > Cardinal(Self.SE_vst_vystraha_board.MaxValue)) then
+  if (settings.RCSInputs.caution.board > Cardinal(Self.SE_vst_vystraha_board.MaxValue)) then
     Self.SE_vst_vystraha_board.MaxValue := 0;
   Self.SE_vst_vystraha_port.MaxValue := 0;
 
-  SE_vst_vystraha_board.Value := settings.RCSInputs.Vystraha.board;
-  SE_vst_vystraha_port.Value := settings.RCSInputs.Vystraha.port;
+  SE_vst_vystraha_board.Value := settings.RCSInputs.caution.board;
+  SE_vst_vystraha_port.Value := settings.RCSInputs.caution.port;
 
 
-  Self.CHB_RCS_Anullation.Checked := settings.RCSInputs.anulaceUse;
+  Self.CHB_RCS_Anullation.Checked := settings.RCSInputs.annulationUse;
   Self.CHB_RCS_AnullationClick(Self);
-  if (settings.RCSInputs.Anulace.board > Cardinal(Self.SE_vst_anulace_board.MaxValue)) then
+  if (settings.RCSInputs.annulation.board > Cardinal(Self.SE_vst_anulace_board.MaxValue)) then
     Self.SE_vst_anulace_board.MaxValue := 0;
   Self.SE_vst_anulace_port.MaxValue := 0;
-  if (settings.RCSInputs.anulaceUse) then
+  if (settings.RCSInputs.annulationUse) then
    begin
-    SE_vst_anulace_board.Value := settings.RCSInputs.Anulace.board;
-    SE_vst_anulace_port.Value := settings.RCSInputs.Anulace.port;
+    SE_vst_anulace_board.Value := settings.RCSInputs.annulation.board;
+    SE_vst_anulace_port.Value := settings.RCSInputs.annulation.port;
    end;
 
   Self.SE_RCS_boardExit(Self);
 
-  Self.tracks := TObjectList<TBlkPrjTrack>.Create();
+  Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
   Self.tracks.AddRange(Self.Blk.tracks);
 
   Self.CHB_JOP_control.Checked := (Self.tracks.Count > 0);
@@ -494,7 +494,7 @@ procedure TF_BlkPrejezd.NewOpenForm();
   Self.CHB_JOP_control.Checked := false;
   Self.CHB_JOP_controlClick(Self);
 
-  Self.tracks := TObjectList<TBlkPrjTrack>.Create();
+  Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
 
   Self.Caption := 'Nový přejezd';
   Self.ActiveControl := Self.E_Prj_Nazev;
@@ -514,14 +514,14 @@ procedure TF_BlkPrejezd.NewBlkCreate();
  end;
 
 procedure TF_BlkPrejezd.SaveTracks();
-var track: TBlkPrjTrack;
+var track: TBlkCrossingTrack;
 begin
  if (Self.CB_Track.ItemIndex = -1) then
    Exit();
 
  if (Self.CB_Track.ItemIndex = Self.CB_Track.Items.Count-1) then
   begin
-   track := TBlkPrjTrack.Create();
+   track := TBlkCrossingTrack.Create();
    Self.tracks.Add(track);
   end else
    track := Self.tracks[Self.CB_Track.ItemIndex];
@@ -532,7 +532,7 @@ begin
  track.right.Parse(Self.E_Track_Right.Text);
  track.rightOut.Parse(Self.E_Track_Right_Out.Text);
 
- track.opening := TBlkPrjTrackOpening(Self.CB_Track_Open.ItemIndex);
+ track.opening := TBlkCrossingTrackOpening(Self.CB_Track_Open.ItemIndex);
  track.anulTime := EncodeTime(0, StrToInt(LeftStr(Self.ME_Track_Anul_Time.Text, 2)),
                               StrToInt(Copy(Self.ME_Track_Anul_Time.Text, 4, 2)), 0);
 end;

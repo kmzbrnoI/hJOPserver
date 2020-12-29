@@ -192,21 +192,21 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btPrejezd: begin
+   btCrossing: begin
       Self.LV.Items[line].ImageIndex := 7;
       Self.LV.Items[line].SubItems[0] := 'Přejezd';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      case ((Blk as TBlkPrejezd).Stav.basicStav) of
-        TBlkPrjBasicStav.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
-        TBlkPrjBasicStav.none     : Self.LV.Items[line].SubItems[3] := 'none';
-        TBlkPrjBasicStav.otevreno : Self.LV.Items[line].SubItems[3] := 'otevřeno';
-        TBlkPrjBasicStav.vystraha : Self.LV.Items[line].SubItems[3] := 'výstraha';
-        TBlkPrjBasicStav.uzavreno : Self.LV.Items[line].SubItems[3] := 'uzavřeno';
+      case ((Blk as TBlkCrossing).state) of
+        TBlkCrossingBasicState.disabled : Self.LV.Items[line].SubItems[3] := 'disabled';
+        TBlkCrossingBasicState.none     : Self.LV.Items[line].SubItems[3] := 'none';
+        TBlkCrossingBasicState.open     : Self.LV.Items[line].SubItems[3] := 'otevřeno';
+        TBlkCrossingBasicState.caution  : Self.LV.Items[line].SubItems[3] := 'výstraha';
+        TBlkCrossingBasicState.closed   : Self.LV.Items[line].SubItems[3] := 'uzavřeno';
       end;//case obsazeno
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkPrejezd).Stitek;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkCrossing).note;
       Self.LV.Items[line].SubItems[6] := '';
 
       Self.LV.Items[line].SubItems[7] := '---';

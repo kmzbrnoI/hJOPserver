@@ -5,7 +5,7 @@ interface
 uses Generics.Collections, TBlokUsekRefs, IniFiles, Classes, SysUtils, StrUtils;
 
 type
- TBlkPrjTrackState = (
+ TBlkCrossingTrackState = (
     tsFree = 0,
     tsException = 1,
     tsUnexpectedOccupation = 2,
@@ -23,13 +23,13 @@ type
     tsRLLeftOutOccupied
  );
 
- TBlkPrjTrackOpening = (
+ TBlkCrossingTrackOpening = (
     toMiddleFree = 0,
     toLastOccupied = 1,
     toOutFree = 2
  );
 
- TBlkPrjTrack = class
+ TBlkCrossingTrack = class
   const
    _SECT_COUNT = 5;
    _SECT_LEFT_OUT = 0;
@@ -39,20 +39,20 @@ type
    _SECT_RIGHT_OUT = 4;
 
   private
-   mState: TBlkPrjTrackState;
+   mState: TBlkCrossingTrackState;
    anulEnd: TTime;
 
     function mShouldBeClosed(): Boolean;
-    function mPozitiva(): Boolean;
+    function mPositiveLight(): Boolean;
     function AllFree(): Boolean;
     function GetAnullation(): Boolean;
 
     procedure UpdateState();
-    procedure SetState(new: TBlkPrjTrackState);
+    procedure SetState(new: TBlkCrossingTrackState);
 
   public
    sections: array[0..4] of TBlkUsekRefs;
-   opening: TBlkPrjTrackOpening;
+   opening: TBlkCrossingTrackOpening;
    anulTime: TTime;
 
    onChanged: TNotifyEvent;
@@ -66,9 +66,9 @@ type
 
     procedure Update();
 
-    property state: TBlkPrjTrackState read mState write SetState;
+    property state: TBlkCrossingTrackState read mState write SetState;
     property shouldBeClosed: Boolean read mShouldBeClosed;
-    property pozitiva: Boolean read mPozitiva;
+    property positiveLight: Boolean read mPositiveLight;
     property anullation: Boolean read GetAnullation;
 
     property leftOut: TBlkUsekRefs read sections[_SECT_LEFT_OUT] write sections[_SECT_LEFT_OUT];
@@ -85,7 +85,7 @@ uses TBlokUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TBlkPrjTrack.Create();
+constructor TBlkCrossingTrack.Create();
 var i: Integer;
 begin
  inherited;
@@ -95,7 +95,7 @@ begin
    Self.sections[i] := TBlkUsekRefs.Create();
 end;
 
-destructor TBlkPrjTrack.Destroy();
+destructor TBlkCrossingTrack.Destroy();
 var i: Integer;
 begin
  for i := 0 to _SECT_COUNT-1 do
@@ -105,7 +105,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrjTrack.Load(ini: TMemIniFile; section: string; prefix: string);
+procedure TBlkCrossingTrack.Load(ini: TMemIniFile; section: string; prefix: string);
 var str: string;
 begin
  Self.leftOut.Parse(ini.ReadString(section, prefix+'-leftOut', ''));
@@ -113,13 +113,13 @@ begin
  Self.middle.Parse(ini.ReadString(section, prefix+'-middle', ''));
  Self.right.Parse(ini.ReadString(section, prefix+'-right', ''));
  Self.rightOut.Parse(ini.ReadString(section, prefix+'-rightOut', ''));
- Self.opening := TBlkPrjTrackOpening(ini.ReadInteger(section, prefix+'-opening', 0));
+ Self.opening := TBlkCrossingTrackOpening(ini.ReadInteger(section, prefix+'-opening', 0));
 
  str := ini.ReadString(section, prefix+'-anulTime', '01:00');
  Self.anulTime := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
 end;
 
-procedure TBlkPrjTrack.Save(ini: TMemIniFile; section: string; prefix: string);
+procedure TBlkCrossingTrack.Save(ini: TMemIniFile; section: string; prefix: string);
 begin
  if (Self.leftOut.ToStr() <> '') then
    ini.WriteString(section, prefix+'-leftOut', Self.leftOut.ToStr());
@@ -137,7 +137,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPrjTrack.SetState(new: TBlkPrjTrackState);
+procedure TBlkCrossingTrack.SetState(new: TBlkCrossingTrackState);
 begin
  if (new <> Self.mState) then
   begin
@@ -148,7 +148,7 @@ begin
   end;
 end;
 
-procedure TBlkPrjTrack.Update();
+procedure TBlkCrossingTrack.Update();
 begin
  try
   Self.UpdateState();
@@ -157,7 +157,7 @@ begin
  end;
 end;
 
-procedure TBlkPrjTrack.UpdateState();
+procedure TBlkCrossingTrack.UpdateState();
 begin
  if (Self.AllFree()) then
   begin
@@ -292,7 +292,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrjTrack.mShouldBeClosed(): Boolean;
+function TBlkCrossingTrack.mShouldBeClosed(): Boolean;
 begin
  if (Self.state = tsUnexpectedOccupation) then
    Exit((Self.left.state <> TUsekStav.uvolneno) or (Self.middle.state <> TUsekStav.uvolneno) or
@@ -319,7 +319,7 @@ begin
  end;
 end;
 
-function TBlkPrjTrack.mPozitiva(): Boolean;
+function TBlkCrossingTrack.mPositiveLight(): Boolean;
 begin
  Result := (Self.left.state = TUsekStav.uvolneno) and (Self.middle.state = TUsekStav.uvolneno) and
             (Self.right.state = TUsekStav.uvolneno);
@@ -327,7 +327,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrjTrack.AllFree(): Boolean;
+function TBlkCrossingTrack.AllFree(): Boolean;
 var i: Integer;
 begin
  for i := 0 to _SECT_COUNT-1 do
@@ -344,7 +344,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrjTrack.GetAnullation(): Boolean;
+function TBlkCrossingTrack.GetAnullation(): Boolean;
 begin
  Result := (((Self.state = tsRLOnlyLeftOccupied) or (Self.state = tsLROnlyRightOccupied)) and
             (Self.opening = toMiddleFree));

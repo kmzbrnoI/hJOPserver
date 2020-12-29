@@ -1,4 +1,4 @@
-unit TechnologieRCS;
+﻿unit TechnologieRCS;
 
 {
  Technologie RCS: rozhrani pro pouzivani Railroad Control System.
@@ -210,8 +210,8 @@ begin
    try
      if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
        Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
-     if (Blk.typ = btPrejezd) then
-       Self.SetInput(TBlkPrejezd(Blk).GetSettings().RCSInputs.Otevreno, 1);
+     if (Blk.typ = btCrossing) then
+       Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open, 1);
      if ((diag.simSoupravaObsaz) and ((Blk.typ = btUsek) or (Blk.typ = btTU)) and ((Blk as TBlkUsek).IsTrain()) and
          ((Blk as TBlkUsek).GetSettings().RCSAddrs.Count > 0)) then
        Self.SetInput(TBlkUsek(Blk).GetSettings().RCSAddrs[0], 1);

@@ -182,7 +182,7 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
      Result := Result + prj.name + ','
    else
      Result := Result + '#???,';
@@ -211,7 +211,7 @@ begin
  if ((itemindex-2 >= 0) and (itemindex-2 < Self.settings.prejezdy.Count)) then
   begin
    Blky.GetBlkByID(Self.settings.prejezdy[itemindex-2], prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
      ORTCPServer.Menu(SenderPnl, prj, SenderOR as TOR,
                       prj.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write));
   end;
@@ -227,9 +227,9 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
     begin
-     if (TBlkPrejezd(prj).Stav.basicStav = TBlkPrjBasicStav.disabled) then
+     if (TBlkCrossing(prj).state = TBlkCrossingBasicState.disabled) then
        Exit(false);
     end else Exit(false);
   end;
@@ -243,8 +243,8 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
-     if (TBlkPrejezd(prj).Anulace) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
+     if (TBlkCrossing(prj).annulation) then
        Exit(true);
   end;
 end;
@@ -257,8 +257,8 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
-     if (TBlkPrejezd(prj).UZ) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
+     if (TBlkCrossing(prj).pcClosed) then
        Exit(true);
   end;
 end;
@@ -271,8 +271,8 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
-     if (TBlkPrejezd(prj).Stav.basicStav = TBlkPrjBasicStav.uzavreno) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
+     if (TBlkCrossing(prj).state = TBlkCrossingBasicState.closed) then
        Exit(true);
   end;
 end;
@@ -285,8 +285,8 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
-     if (TBlkPrejezd(prj).Stav.basicStav = TBlkPrjBasicStav.none) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
+     if (TBlkCrossing(prj).state = TBlkCrossingBasicState.none) then
        Exit(true);
   end;
 end;
@@ -299,8 +299,8 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
-     if (TBlkPrejezd(prj).NOtevreni) then
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
+     if (TBlkCrossing(prj).pcEmOpen) then
        Exit(true);
   end;
 end;
@@ -314,8 +314,8 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
-     TBlkPrejezd(prj).AddSH(Self);
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
+     TBlkCrossing(prj).AddSH(Self);
   end;
 end;
 
@@ -326,8 +326,8 @@ begin
  for prjid in Self.settings.prejezdy do
   begin
    Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btPrejezd)) then
-     TBlkPrejezd(prj).RemoveSH(Self);
+   if ((prj <> nil) and (prj.typ = btCrossing)) then
+     TBlkCrossing(prj).RemoveSH(Self);
   end;
 end;
 
