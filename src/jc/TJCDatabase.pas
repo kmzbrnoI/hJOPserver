@@ -284,7 +284,7 @@ begin
   begin
    // v pripade nouzove cesty klik na DK opet prevest na klienta
    if (startNav.selected = TBlkSignalSelection.NC) then
-     for oblr in startNav.OblsRizeni do
+     for oblr in startNav.stations do
        oblr.ORDKClickClient();
 
    if (SenderOblr.stack.volba = TORStackVolba.VZ) then
@@ -636,7 +636,7 @@ begin
          ((TBlkSignal(tmpblk).IsGoSignal()) or (TBlkSignal(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
       begin
        jc.RusJCWithoutBlk();
-       for oblr in (tmpBlk as TBlkSignal).OblsRizeni do
+       for oblr in (tmpBlk as TBlkSignal).stations do
          oblr.BlkWriteError(Self, 'Chyba povolovací návěsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
     end;

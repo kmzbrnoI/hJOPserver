@@ -264,9 +264,9 @@ begin
        Exit();
       end;
 
-     SetLength(obls, (Blk as TBlkSignal).OblsRizeni.Count);
-     for i := 0 to (Blk as TBlkSignal).OblsRizeni.Count-1 do
-      obls[i] := (Blk as TBlkSignal).OblsRizeni[i].id;
+     SetLength(obls, (Blk as TBlkSignal).stations.Count);
+     for i := 0 to (Blk as TBlkSignal).stations.Count-1 do
+      obls[i] := (Blk as TBlkSignal).stations[i].id;
    except
      obls := nil;
    end;

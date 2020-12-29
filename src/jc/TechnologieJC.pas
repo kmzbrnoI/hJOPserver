@@ -924,14 +924,14 @@ begin
     Blky.GetBlkByID(Self.fproperties.Trat, Blk);
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni[0] = Self.fstaveni.senderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations[0] = Self.fstaveni.senderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
           TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
 
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni[0] = Self.fstaveni.senderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations[0] = Self.fstaveni.senderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
           TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
@@ -1167,14 +1167,14 @@ begin
      end;
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).OblsRizeni[0] = Self.fstaveni.senderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations[0] = Self.fstaveni.senderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
           TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
 
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).OblsRizeni[0] = Self.fstaveni.senderOR) and
+    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations.Count > 0) and
+        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations[0] = Self.fstaveni.senderOR) and
         (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
       bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
           TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
@@ -1882,14 +1882,14 @@ var i, j: Integer;
       Blky.GetBlkByID(Self.fproperties.Trat, TBlk(trat));
 
       // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
-      if ((trat.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
+      if ((trat.uvazkaA as TBlkUvazka).stations.Count > 0) then
        begin
-        for oblr in navestidlo.OblsRizeni do
-          if ((trat.uvazkaA as TBlkUvazka).OblsRizeni[0] = oblr) then
+        for oblr in navestidlo.stations do
+          if ((trat.uvazkaA as TBlkUvazka).stations[0] = oblr) then
              (trat.uvazkaA as TBlkUvazka).nouzZaver := true;
 
-        for oblr in navestidlo.OblsRizeni do
-          if ((trat.uvazkaB as TBlkUvazka).OblsRizeni[0] = oblr) then
+        for oblr in navestidlo.stations do
+          if ((trat.uvazkaB as TBlkUvazka).stations[0] = oblr) then
              (trat.uvazkaB as TBlkUvazka).nouzZaver := true;
        end;
      end;
@@ -2615,7 +2615,7 @@ begin
  if (((Blk as TBlkUsek).GetSettings().SmcUsek) and ((Blk as TBlkUsek).IsTrain())) then
   begin
    // kontrola zmeny vychozi a cilove stanice
-   for oblr in blk.OblsRizeni do
+   for oblr in blk.stations do
     begin
      if (oblr = (Blk as TBlkUsek).train.stationTo) then
       begin
@@ -4039,7 +4039,7 @@ var bariery: TJCBariery;
     ok: Integer;
     ab: Boolean;
 begin
- if ((Self.navestidlo = nil) or (TBlkSignal(Self.navestidlo).OblsRizeni.Count = 0)) then
+ if ((Self.navestidlo = nil) or (TBlkSignal(Self.navestidlo).stations.Count = 0)) then
   begin
    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Návěstidlo není v OŘ');
    Exit();
@@ -4049,7 +4049,7 @@ begin
 
  bariery := TJCBariery.Create();
  try
-   ok := Self.StavJC(nil, TBlkSignal(Self.navestidlo).OblsRizeni[0], bariery, nil, false, false, ab);
+   ok := Self.StavJC(nil, TBlkSignal(Self.navestidlo).stations[0], bariery, nil, false, false, ab);
    respJson['success'] := (ok = 0);
    for bariera in bariery do
      Self.BarieraToJson(bariera, respJson.A['bariery'].AddObject());

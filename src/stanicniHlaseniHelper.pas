@@ -53,13 +53,13 @@ begin
    // ziskame trat, ve ktere se aktualne souprava nachazi
    for blk in Blky do
     begin
-     inOR := Blk.OblsRizeni.Contains(OblR);
+     inOR := Blk.stations.Contains(OblR);
 
      // trate z aktualni stanice kontrolujeme cele
      if ((not inOR) and (blk.typ = btTU) and (TBlkUsek(blk).trainPredict = train) and
          (TBlkTU(blk).Trat <> nil) and
-         (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.OblsRizeni[0] = OblR) or
-          ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.OblsRizeni[0] = OblR))) then
+         (((TBlkTrat(TBlkTU(blk).Trat)).uvazkaA.stations[0] = OblR) or
+          ((TBlkTrat(TBlkTU(blk).Trat)).uvazkaB.stations[0] = OblR))) then
        blksWithTrain.Add(TBlkUsek(blk));
 
      if (not inOR) then continue;

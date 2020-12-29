@@ -1,4 +1,4 @@
-unit fBlkSH;
+﻿unit fBlkSH;
 
 interface
 
@@ -181,12 +181,12 @@ begin
  glob := Self.Blk.GetGlobalSettings();
  settings := Self.Blk.GetSettings();
 
- for oblr in Self.Blk.OblsRizeni do
+ for oblr in Self.Blk.stations do
    Self.LB_Stanice.Items.Add(oblr.Name);
 
- SetLength(obls, Self.Blk.OblsRizeni.Count);
- for i := 0 to Self.Blk.OblsRizeni.Count-1 do
-   obls[i] := Self.Blk.OblsRizeni[i].id;
+ SetLength(obls, Self.Blk.stations.Count);
+ for i := 0 to Self.Blk.stations.Count-1 do
+   obls[i] := Self.Blk.stations[i].id;
 
  E_Name.Text := glob.name;
  SE_ID.Value := glob.id;

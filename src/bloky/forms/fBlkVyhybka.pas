@@ -154,7 +154,7 @@ var glob: TBlkSettings;
   E_Nazev.Text  := glob.name;
   SE_ID.Value   := glob.id;
 
-  for oblr in Self.Blk.OblsRizeni do
+  for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
   settings := Blk.GetSettings();
@@ -242,9 +242,9 @@ var glob: TBlkSettings;
   Self.CHB_npMinus.Checked := (settings.npMinus > -1);
   Self.CHB_npMinusClick(Self.CHB_npMinus);
 
-  SetLength(obls, Self.Blk.OblsRizeni.Count);
-  for i := 0 to Self.Blk.OblsRizeni.Count-1 do
-    obls[i] := Self.Blk.OblsRizeni[i].id;
+  SetLength(obls, Self.Blk.stations.Count);
+  for i := 0 to Self.Blk.stations.Count-1 do
+    obls[i] := Self.Blk.stations[i].id;
 
   F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
   F_BlkVyhybka.ActiveControl := B_Save;
@@ -264,9 +264,9 @@ var spojka_vypust: TArI;
 
   if (Self.Blk <> nil) then
    begin
-    SetLength(obls, Self.Blk.OblsRizeni.Count);
-    for i := 0 to Self.Blk.OblsRizeni.Count-1 do
-      obls[i] := Self.Blk.OblsRizeni[i].id;
+    SetLength(obls, Self.Blk.stations.Count);
+    for i := 0 to Self.Blk.stations.Count-1 do
+      obls[i] := Self.Blk.stations[i].id;
     SetLength(spojka_vypust, 1);
     spojka_vypust[0] := Self.Blk.id;
 

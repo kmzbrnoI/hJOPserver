@@ -962,8 +962,8 @@ begin
      (self.stationTo = nil) or (Self.typ = '')) then Exit();
 
  msignal := TBlkSignal(signal);
- if (msignal.OblsRizeni.Count < 1) then Exit();
- oblr := msignal.OblsRizeni[0];
+ if (msignal.stations.Count < 1) then Exit();
+ oblr := msignal.stations[0];
 
  if ((not Assigned(oblr.hlaseni)) or (not oblr.hlaseni.available)) then Exit();
 

@@ -73,7 +73,7 @@ var glob: TBlkSettings;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
-  for oblr in Self.Blk.OblsRizeni do
+  for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
   E_Nazev.Text          := glob.name;

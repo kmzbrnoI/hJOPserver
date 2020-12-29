@@ -905,7 +905,7 @@ begin
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
  Self.selected := TBlkSignalSelection.NC;
 
- for oblr in Self.OblsRizeni do
+ for oblr in Self.stations do
    oblr.ORDKClickServer(Self.PrivolDKClick);
 end;
 
@@ -961,7 +961,7 @@ var oblr: TOR;
 begin
  if (Self.selected = TBlkSignalSelection.NC) then
   begin
-   for oblr in Self.OblsRizeni do
+   for oblr in Self.stations do
      oblr.ORDKClickClient();
    ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí přivolávací návěsti',
                      TBlky.GetBlksList(Self), nil);
@@ -1484,7 +1484,7 @@ var oblr: TOR;
 begin
  if (Button = ENTER) then
   begin
-   for oblr in Self.OblsRizeni do
+   for oblr in Self.stations do
      oblr.ORDKClickClient();
    ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí přivolávací návěsti',
                      TBlky.GetBlksList(Self), nil);

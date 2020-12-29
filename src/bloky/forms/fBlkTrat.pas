@@ -1,4 +1,4 @@
-unit fBlkTrat;
+﻿unit fBlkTrat;
 
 interface
 
@@ -140,22 +140,22 @@ var glob: TBlkSettings;
   glob := Self.UvazkaA.GetGlobalSettings();
   Self.E_UA_name.Text := glob.name;
   Self.SE_UA_id.Value := glob.id;
-  for oblr in Self.UvazkaA.OblsRizeni do
+  for oblr in Self.UvazkaA.stations do
     Self.LB_UA_St.Items.Add(oblr.Name);
 
   glob := Self.UvazkaB.GetGlobalSettings();
   Self.E_UB_name.Text := glob.name;
   Self.SE_UB_id.Value := glob.id;
-  for oblr in Self.UvazkaB.OblsRizeni do
+  for oblr in Self.UvazkaB.stations do
     Self.LB_UB_St.Items.Add(oblr.Name);
 
   settings := Self.Trat.GetSettings();
 
-  SetLength(obls, Self.UvazkaA.OblsRizeni.Count + Self.UvazkaB.OblsRizeni.Count);
-  for i := 0 to Self.UvazkaA.OblsRizeni.Count-1 do
-    obls[i] := Self.UvazkaA.OblsRizeni[i].id;
-  for i := 0 to Self.UvazkaB.OblsRizeni.Count-1 do
-    obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
+  SetLength(obls, Self.UvazkaA.stations.Count + Self.UvazkaB.stations.Count);
+  for i := 0 to Self.UvazkaA.stations.Count-1 do
+    obls[i] := Self.UvazkaA.stations[i].id;
+  for i := 0 to Self.UvazkaB.stations.Count-1 do
+    obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
   SetLength(vypust, settings.Useky.Count);
   for i := 0 to settings.Useky.Count-1 do
     vypust[i] := settings.Useky[i];
@@ -220,11 +220,11 @@ begin
 
  if ((Self.UvazkaA <> nil) and (Self.UvazkaB <> nil)) then
   begin
-   SetLength(obls, Self.UvazkaA.OblsRizeni.Count + Self.UvazkaB.OblsRizeni.Count);
-   for i := 0 to Self.UvazkaA.OblsRizeni.Count-1 do
-     obls[i] := Self.UvazkaA.OblsRizeni[i].id;
-   for i := 0 to Self.UvazkaB.OblsRizeni.Count-1 do
-     obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
+   SetLength(obls, Self.UvazkaA.stations.Count + Self.UvazkaB.stations.Count);
+   for i := 0 to Self.UvazkaA.stations.Count-1 do
+     obls[i] := Self.UvazkaA.stations[i].id;
+   for i := 0 to Self.UvazkaB.stations.Count-1 do
+     obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
   end;
 
  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btTU, -1);
@@ -242,11 +242,11 @@ begin
  for i := 0 to Self.LV_Useky.Items.Count-1 do
   useky_vypust[i] := StrToInt(Self.LV_Useky.Items.Item[i].Caption);
 
- SetLength(obls, Self.UvazkaA.OblsRizeni.Count + Self.UvazkaB.OblsRizeni.Count);
- for i := 0 to Self.UvazkaA.OblsRizeni.Count-1 do
-   obls[i] := Self.UvazkaA.OblsRizeni[i].id;
- for i := 0 to Self.UvazkaB.OblsRizeni.Count-1 do
-   obls[i+Self.UvazkaA.OblsRizeni.Count] := Self.UvazkaB.OblsRizeni[i].id;
+ SetLength(obls, Self.UvazkaA.stations.Count + Self.UvazkaB.stations.Count);
+ for i := 0 to Self.UvazkaA.stations.Count-1 do
+   obls[i] := Self.UvazkaA.stations[i].id;
+ for i := 0 to Self.UvazkaB.stations.Count-1 do
+   obls[i+Self.UvazkaA.stations.Count] := Self.UvazkaB.stations[i].id;
 
  Blky.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btTU, -1);
 end;

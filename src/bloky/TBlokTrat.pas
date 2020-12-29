@@ -448,10 +448,10 @@ begin
     begin
      if (Zadost) then
       begin
-       for oblr in uvazka.OblsRizeni do
+       for oblr in uvazka.stations do
          oblr.ZadostBlkCnt := oblr.ZadostBlkCnt + 1;
       end else begin
-       for oblr in uvazka.OblsRizeni do
+       for oblr in uvazka.stations do
          oblr.ZadostBlkCnt := oblr.ZadostBlkCnt - 1;
       end;
     end;
@@ -640,14 +640,14 @@ procedure TBlkTrat.TrainChangeOR(train: TTrain; smer: TTratSmer);
 begin
  case (smer) of
    TTratSmer.AtoB: begin
-      if ((Self.uvazkaB as TBlkUvazka).OblsRizeni.Count > 0) then
-        train.station := (Self.uvazkaB as TBlkUvazka).OblsRizeni[0]
+      if ((Self.uvazkaB as TBlkUvazka).stations.Count > 0) then
+        train.station := (Self.uvazkaB as TBlkUvazka).stations[0]
       else
         train.station := nil;
    end;//AtoB
    TTratSmer.BtoA: begin
-      if ((Self.uvazkaA as TBlkUvazka).OblsRizeni.Count > 0) then
-        train.station := (Self.uvazkaA as TBlkUvazka).OblsRizeni[0]
+      if ((Self.uvazkaA as TBlkUvazka).stations.Count > 0) then
+        train.station := (Self.uvazkaA as TBlkUvazka).stations[0]
       else
         train.station := nil;
    end;//BtoA
@@ -688,7 +688,7 @@ begin
     begin
      if (Blk.typ <> btSignal) then continue;
      if ((TBlkSignal(Blk).trackId = Self.TratSettings.Useky[0]) and
-         (Blk.OblsRizeni[0] = Self.uvazkaA.OblsRizeni[0]) and
+         (Blk.stations[0] = Self.uvazkaA.stations[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navLid))) then
       begin
        Self.fNavLichy := Blk;
@@ -718,7 +718,7 @@ begin
     begin
      if (Blk.typ <> btSignal) then continue;
      if ((TBlkSignal(Blk).trackId = Self.TratSettings.Useky[Self.TratSettings.Useky.Count-1]) and
-         (Blk.OblsRizeni[0] = Self.uvazkaB.OblsRizeni[0]) and
+         (Blk.stations[0] = Self.uvazkaB.stations[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.navSid))) then
       begin
        Self.fNavSudy := Blk;
@@ -1008,11 +1008,11 @@ function TBlkTrat.SameUserControlsBothUvazka(): Boolean;
 var first, second: TORPanel;
 begin
  if ((not Assigned(Self.uvazkaA)) or (not Assigned(Self.uvazkaB))) then Exit(false);
- if ((TBlkUvazka(Self.uvazkaA).OblsRizeni.Count <> 1) or (TBlkUvazka(Self.uvazkaB).OblsRizeni.Count <> 1)) then Exit(false);
+ if ((TBlkUvazka(Self.uvazkaA).stations.Count <> 1) or (TBlkUvazka(Self.uvazkaB).stations.Count <> 1)) then Exit(false);
 
- for first in TBlkUvazka(Self.uvazkaA).OblsRizeni[0].Connected do
+ for first in TBlkUvazka(Self.uvazkaA).stations[0].Connected do
    if (first.Rights >= TORControlRights.write) then
-     for second in TBlkUvazka(Self.uvazkaB).OblsRizeni[0].Connected do
+     for second in TBlkUvazka(Self.uvazkaB).stations[0].Connected do
        if ((first.user = second.user) and (second.Rights >= TORControlRights.write)) then
          Exit(true);
 

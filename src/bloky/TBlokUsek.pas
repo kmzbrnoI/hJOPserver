@@ -617,7 +617,7 @@ begin
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
      if ((Self.typ = btTU) or (Self.UsekStav.stanicni_kolej)) then
-       for oblr in Self.OblsRizeni do
+       for oblr in Self.stations do
          oblr.BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
      if (Self.UsekStav.Zaver <> TZaver.no) then Self.UsekStav.Zaver := TZaver.nouz;
     end;//if train_vypadek_time > 3

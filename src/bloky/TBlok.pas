@@ -137,7 +137,7 @@ type
    property OnChange: TOnBlkChange read FOnChange write FOnChange;
    property table_index: Integer read ftable_index write ftable_index;
    property frozen: Boolean read ffrozen;
-   property OblsRizeni: TList<TOR> read ORsRef;
+   property stations: TList<TOR> read ORsRef;
 
    property id: Integer read GlobalSettings.id;
    property name: string read GlobalSettings.name;
@@ -397,7 +397,7 @@ begin
  json['name'] := Self.name;
  json['id'] := Self.id;
  json['type'] := TBlk.BlkTypeToStr(Self.typ);
- for oblr in Self.OblsRizeni do
+ for oblr in Self.stations do
    json.A['stations'].Add(oblr.id);
 end;
 
@@ -458,7 +458,7 @@ end;
 
 function TBlk.IsInOR(OblR: TObject): Boolean;
 begin
- Result := Self.OblsRizeni.Contains(OblR as TOR);
+ Result := Self.stations.Contains(OblR as TOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

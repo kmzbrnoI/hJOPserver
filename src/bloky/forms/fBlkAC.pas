@@ -1,4 +1,4 @@
-unit fBlkAC;
+﻿unit fBlkAC;
 
 interface
 
@@ -80,7 +80,7 @@ var glob: TBlkSettings;
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for oblr in Self.Blk.OblsRizeni do
+  for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
   Self.E_Nazev.Text := glob.name;

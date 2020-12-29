@@ -729,7 +729,7 @@ begin
  // musime provest kontrolu, jestli OR ma povoleno menit blok
  // tj. jestli ma technologicky blok toto OR
 
- for oblr in Blk.OblsRizeni do
+ for oblr in Blk.stations do
    if (oblr = Self) then
     begin
      Blk.PanelClick(Sender, Self, Button, rights, params);
@@ -781,7 +781,7 @@ begin
    if (Blk.typ <> btUsek) then continue;
    if (not (Blk as TBlkUsek).NUZ) then continue;
 
-   for oblr in (Blk as TBlkUsek).OblsRizeni do
+   for oblr in (Blk as TBlkUsek).stations do
      if (oblr = Self) then
        podminky.Add(GetPSPodminka(Blk, 'Nouzové vybavování'));
   end;//for i
@@ -1047,7 +1047,7 @@ begin
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;
 
-   for oblr in usek.OblsRizeni do
+   for oblr in usek.stations do
     begin
      if (oblr = Self) then
       begin
@@ -1996,7 +1996,7 @@ begin
    if (Blk.typ <> btUsek) then continue;
    usek := Blk as TBlkUsek;
    if (not usek.NUZ) then continue;
-   for oblr in usek.OblsRizeni do
+   for oblr in usek.stations do
      if (oblr = Self) then
        usek.RemoveChangeEvent(usek.EventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
   end;

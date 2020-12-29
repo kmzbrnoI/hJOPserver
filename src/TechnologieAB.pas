@@ -121,10 +121,10 @@ begin
     writelog('DN JC '+JC.name+' : podmínky splněny, stavím', WR_STACK);
 
     Blky.GetBlkByID(JC.data.NavestidloBlok, blk);
-    if ((blk = nil) or (blk.typ <> btSignal) or (TBlkSignal(blk).OblsRizeni.Count = 0)) then
+    if ((blk = nil) or (blk.typ <> btSignal) or (TBlkSignal(blk).stations.Count = 0)) then
       Self.Remove(jc);
 
-    JC.StavJC(nil, TBlkSignal(blk).OblsRizeni[0], nil, false, true);
+    JC.StavJC(nil, TBlkSignal(blk).stations[0], nil, false, true);
   finally
     bariery.Free();
   end;

@@ -667,7 +667,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
       (Self.LockLocked()))
      and (Self.Zaver <> TZaver.staveni)) then
      begin
-      for oblr in Self.OblsRizeni do
+      for oblr in Self.stations do
         oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
@@ -704,7 +704,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
 
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> plus))) then
          begin
-          for oblr in Self.OblsRizeni do
+          for oblr in Self.stations do
             oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
           JCDb.RusJC(Self);
          end;
@@ -741,7 +741,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
 
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> minus))) then
          begin
-          for oblr in Self.OblsRizeni do
+          for oblr in Self.stations do
             oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
           JCDb.RusJC(Self);
          end;
@@ -757,7 +757,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
     if ((((Self.ShouldBeLocked()) and (Self.Zaver <> TZaver.staveni)) or (Self.LockLocked()))
         and (Self.m_state.positionOld <> both)) then
      begin
-      for oblr in Self.OblsRizeni do
+      for oblr in Self.stations do
         oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.GlobalSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani

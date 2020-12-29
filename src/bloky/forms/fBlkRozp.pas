@@ -1,4 +1,4 @@
-unit fBlkRozp;
+﻿unit fBlkRozp;
 
 interface
 
@@ -89,7 +89,7 @@ var glob: TBlkSettings;
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for oblr in Self.Blk.OblsRizeni do
+  for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
 
   if (settings.RCSAddrs.Count > 0) then

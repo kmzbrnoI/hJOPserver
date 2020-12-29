@@ -192,7 +192,7 @@ begin
   end;//btUsek
 
  //zavolame OnChange vsech OR daneho bloku
- obl_rizeni := (Sender as TBlk).OblsRizeni;
+ obl_rizeni := (Sender as TBlk).stations;
  if (obl_rizeni.Count > 0) then
    for oblr in obl_rizeni do
      oblr.BlkChange(Sender);
@@ -543,7 +543,7 @@ begin
  for blk in Self.Data do
   begin
    //ziskame vsechny oblasti rizeni prislusnych bloku
-   obl_rizeni := blk.OblsRizeni;
+   obl_rizeni := blk.stations;
 
    //tyto OR porovname na "OblRizeni: PTOR"
    for oblr in obl_rizeni do
@@ -605,14 +605,14 @@ begin
    if (blk.typ <> btSignal) then continue;
 
    orindex := -1;
-   for j := 0 to (blk as TBlkSignal).OblsRizeni.Count-1 do
-     if ((blk as TBlkSignal).OblsRizeni[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkSignal).stations.Count-1 do
+     if ((blk as TBlkSignal).stations[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
 
    if (((blk as TBlkSignal).selected > TBlkSignalSelection.none) and
       ((JCDb.FindOnlyStaveniJC((blk as TBlkSignal).id) = nil) or
-        ((blk as TBlkSignal).OblsRizeni[orindex].stack.volba = VZ))) then
+        ((blk as TBlkSignal).stations[orindex].stack.volba = VZ))) then
      Exit(blk);
   end;
 
@@ -629,8 +629,8 @@ begin
    if ((blk.typ <> btUsek) and (blk.typ <> btTU)) then continue;
 
    orindex := -1;
-   for j := 0 to (blk as TBlkUsek).OblsRizeni.Count-1 do
-     if ((blk as TBlkUsek).OblsRizeni[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkUsek).stations.Count-1 do
+     if ((blk as TBlkUsek).stations[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
    if ((blk as TBlkUsek).IsVlakPresun()) then Exit(blk);
@@ -667,7 +667,7 @@ var traini: Integer;
     usek := (blk as TBlkUsek);
     if (not usek.NUZ) then continue;
 
-    for oblr in usek.OblsRizeni do
+    for oblr in usek.stations do
      begin
       if (oblr.id = or_id) then
        begin
@@ -717,7 +717,7 @@ var bloki, i: Integer;
     if (Assigned(OblRizeniID)) then
      begin
       Priradit := false;
-      Obl_r := Blk.OblsRizeni;
+      Obl_r := Blk.stations;
 
       if ((glob.typ = btTrat) or (glob.typ = btIR)) then
          priradit := true
@@ -902,7 +902,7 @@ begin
    if (blk.typ <> btSignal) then continue;
    if ((blk as TBlkSignal).signal <> ncPrivol) then continue;
 
-   for moblr in (blk as TBlkSignal).OblsRizeni do
+   for moblr in (blk as TBlkSignal).stations do
     if (moblr = oblR) then
      begin
       Result.Add(blk);

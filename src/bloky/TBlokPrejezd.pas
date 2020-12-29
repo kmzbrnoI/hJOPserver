@@ -1,4 +1,4 @@
-unit TBlokPrejezd;
+﻿unit TBlokPrejezd;
 
 // definice a obsluha technologickeho bloku Prejezd
 
@@ -9,7 +9,7 @@ uses IniFiles, TBlok, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
      TBlokPrejezdLogic;
 
 type
- TBlkPrjRCSInputs = record
+ TBlkCrossingRCSInputs = record
   Zavreno: TRCSAddr;
   Otevreno: TRCSAddr;
   Vystraha: TRCSAddr;
@@ -17,7 +17,7 @@ type
   anulaceUse: Boolean;
  end;
 
- TBlkPrjRCSOutputs = record
+ TBlkCrossingRCSOutputs = record
   Zavrit: TRCSAddr;
   NOtevrit: TRCSAddr;
   NOtevritUse: Boolean;
@@ -25,18 +25,18 @@ type
   BlokPozUse: Boolean;
  end;
 
- TBlkPrjSettings = record
-  RCSInputs: TBlkPrjRCSInputs;
-  RCSOutputs: TBlkPrjRCSOutputs;
+ TBlkCrossingSettings = record
+  RCSInputs: TBlkCrossingRCSInputs;
+  RCSOutputs: TBlkCrossingRCSOutputs;
  end;
 
  TBlkPrjBasicStav = (disabled = -5, none = -1, otevreno = 0, vystraha = 1, uzavreno = 2);
 
- TBlkPrjStav = record
+ TBlkCrossingState = record
   basicStav: TBlkPrjBasicStav;
   anulaceOld: Boolean;
   stit, vyl: string;
-  PC_NOT, PC_UZ: Boolean;                           // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
+  PC_NOT, PC_UZ: Boolean;                            // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
   zaver: Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
   uzavStart: TDateTime;
   shs: TList<TBlk>;                                  // seznam souctovych hlasek, kam hlasi prejezd stav
@@ -47,8 +47,7 @@ type
 
  TBlkPrejezd = class(TBlk)
   const
-   //defaultni stav
-   _def_prj_stav: TBlkPrjStav = (
+   _def_prj_stav: TBlkCrossingState = (
     basicStav : disabled;
     stit : '';
     vyl : '';
@@ -61,8 +60,8 @@ type
    _UZ_UPOZ_MIN = 4;      // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
 
   private
-   PrjSettings: TBlkPrjSettings;
-   PrjStav: TBlkPrjStav;
+   PrjSettings: TBlkCrossingSettings;
+   PrjStav: TBlkCrossingState;
 
     procedure SetStit(stit: string);
     procedure SetVyl(vyl: string);
@@ -92,7 +91,6 @@ type
     procedure UPONOTClick(Sender: TObject);
     procedure UPOZNOTClick(Sender: TObject);
 
-    // DEBUG volby:
     procedure MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAdminOtevreno(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAdminVystraha(SenderPnl: TIdContext; SenderOR: TObject);
@@ -111,29 +109,26 @@ type
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
-    //load/save data
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
     procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
-    //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
     function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
-    //update states
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
 
-    //----- prejezd own functions -----
+    //----- Crossing specific functions -----
 
-    function GetSettings(): TBlkPrjSettings;
-    procedure SetSettings(data: TBlkPrjSettings);
+    function GetSettings(): TBlkCrossingSettings;
+    procedure SetSettings(data: TBlkCrossingSettings);
 
     procedure AddSH(Sender: TBlk);
     procedure RemoveSH(Sender: TBlk);
 
-    property Stav: TBlkPrjStav read PrjStav;
+    property Stav: TBlkCrossingState read PrjStav;
 
     property NOtevreni: Boolean read PrjStav.PC_NOT write SetNOT;
     property UZ: Boolean read PrjStav.PC_UZ write SetUZ;
@@ -370,14 +365,14 @@ begin
    // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
    if ((Self.Zaver) and (Self.PrjStav.basicStav = TBlkPrjBasicStav.uzavreno)) then
     begin
-     for oblr in Self.OblsRizeni do
+     for oblr in Self.stations do
       oblr.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
      JCDb.RusJC(Self);
     end;
 
    if ((new_stav = TBlkPrjBasicStav.none) and (Self.PrjStav.basicStav <> TBlkPrjBasicStav.disabled)) then
     begin
-     for oblr in Self.OblsRizeni do
+     for oblr in Self.stations do
       oblr.BlkWriteError(Self, 'Porucha přejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
      JCDb.RusJC(Self);
     end;
@@ -403,7 +398,7 @@ begin
   begin
    if (Now > Self.PrjStav.uzavStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
-     for oblr in Self.OblsRizeni do
+     for oblr in Self.stations do
       oblr.BlkWriteError(Self, Self.GlobalSettings.name+' uzavřen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
      Self.PrjStav.uzavStart := now;
     end;
@@ -500,12 +495,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkPrejezd.GetSettings(): TBlkPrjSettings;
+function TBlkPrejezd.GetSettings(): TBlkCrossingSettings;
 begin
  Result := Self.PrjSettings;
 end;
 
-procedure TBlkPrejezd.SetSettings(data: TBlkPrjSettings);
+procedure TBlkPrejezd.SetSettings(data: TBlkCrossingSettings);
 begin
  Self.PrjSettings := data;
  Self.FillRCSModules();
