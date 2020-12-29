@@ -266,7 +266,7 @@ uses TBloky, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
 constructor TBlkTurnout.Create(index: Integer);
 begin
  inherited Create(index);
- Self.GlobalSettings.typ := btTurnout;
+ Self.m_globSettings.typ := btTurnout;
  Self.m_state := Self._def_vyh_stav;
  Self.m_lock := nil;
  Self.m_parent := nil;
@@ -309,7 +309,7 @@ begin
    strs.Free();
  end;
 
- PushRCStoOR(Self.ORsRef, Self.m_settings.RCSAddrs);
+ PushRCStoOR(Self.m_stations, Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkTurnout.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -576,7 +576,7 @@ end;
 procedure TBlkTurnout.SetLockout(Sender: TIDCOntext; lockout: string);
 begin
  if ((self.m_state.lockout <> '') and (lockout = '')) then
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil)
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil)
  else
    Self.lockout := lockout;
 end;
@@ -668,7 +668,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
      and (Self.Zaver <> TZaver.staveni)) then
      begin
       for oblr in Self.stations do
-        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -705,7 +705,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> plus))) then
          begin
           for oblr in Self.stations do
-            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
           JCDb.RusJC(Self);
          end;
        end;
@@ -742,7 +742,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> minus))) then
          begin
           for oblr in Self.stations do
-            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
           JCDb.RusJC(Self);
          end;
        end;
@@ -758,7 +758,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
         and (Self.m_state.positionOld <> both)) then
      begin
       for oblr in Self.stations do
-        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.RusJC(Self);
      end;//if Blokovani
 
@@ -1271,7 +1271,7 @@ procedure TBlkTurnout.PanelMovingErr(Sender: TObject; error: TTurnoutSetError);
 begin
   if ((Assigned(Self.m_state.movingPanel)) and (Assigned(Self.m_state.movingOR))) then
    begin
-    ORTCPServer.BottomError(Self.m_state.movingPanel, 'Nepřestavena '+Self.GlobalSettings.name + ': ' + Self.SetErrorToMsg(error),
+    ORTCPServer.BottomError(Self.m_state.movingPanel, 'Nepřestavena '+Self.m_globSettings.name + ': ' + Self.SetErrorToMsg(error),
       (Self.m_state.movingOR as TOR).ShortName, 'TECHNOLOGIE');
     Self.m_state.movingPanel := nil;
     Self.m_state.movingOR := nil;
@@ -1504,7 +1504,7 @@ begin
  try
   if (Self.note <> '') then
    begin
-    item[0] := GetUPOLine('ŠTÍTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    item[0] := GetUPOLine('ŠTÍTEK '+Self.m_globSettings.name, taCenter, clBlack, clTeal);
     lines := GetLines(Self.note, _UPO_LINE_LEN);
 
     try
@@ -1520,7 +1520,7 @@ begin
 
   if (Self.lockout <> '') then
    begin
-    item[0] := GetUPOLine('VÝLUKA '+Self.GlobalSettings.name, taCenter, clBlack, clOlive);
+    item[0] := GetUPOLine('VÝLUKA '+Self.m_globSettings.name, taCenter, clBlack, clOlive);
     lines := GetLines(Self.lockout, _UPO_LINE_LEN);
 
     try

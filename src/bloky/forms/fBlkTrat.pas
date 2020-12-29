@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Spin, ComCtrls, TBlokTrat, TBlokUvazka, Generics.Collections, TBloky;
+  StdCtrls, Spin, ComCtrls, TBlokTrat, TBlockLinker, Generics.Collections, TBloky;
 
 type
   TF_BlkTrat = class(TForm)
@@ -49,8 +49,8 @@ type
   private
    NewBlk: Boolean;
    Trat: TBlkTrat;
-   UvazkaA: TBlkUvazka;
-   UvazkaB: TBlkUvazka;
+   UvazkaA: TBlkLinker;
+   UvazkaB: TBlkLinker;
    OpenIndex: Integer;
    CB_NewTratBlokData: TArI;
 
@@ -82,10 +82,10 @@ var Blk: TBlk;
     // tato situace nastava v pripade tvorby noveho bloku
     case (Blk.typ) of
      btTrat   : Self.Trat := Blk as TBlkTrat;
-     btUvazka : Self.Trat := (Blk as TBlkUvazka).parent as TBlkTrat;
+     btLinker : Self.Trat := (Blk as TBlkLinker).parent as TBlkTrat;
     end;
-    Self.UvazkaA := Self.Trat.uvazkaA as TBlkUvazka;
-    Self.UvazkaB := Self.Trat.uvazkaB as TBlkUvazka;
+    Self.UvazkaA := Self.Trat.uvazkaA as TBlkLinker;
+    Self.UvazkaB := Self.Trat.uvazkaB as TBlkLinker;
    end;//if Blk <> nil
 
   HlavniOpenForm;
@@ -254,7 +254,7 @@ end;
 procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
 var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
     TratSettings: TBlkTratSettings;
-    UvazkaSettings: TBlkUvazkaSettings;
+    UvazkaSettings: TBlkLinkerSettings;
     trat, uvazkaA, uvazkaB: Integer;
     LI: TListItem;
  begin
@@ -308,12 +308,12 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
   // uvazka A
   glob_uvA.name := Self.E_UA_name.Text;
   glob_uvA.id   := Self.SE_UA_id.Value;
-  glob_uvA.typ  := btUvazka;
+  glob_uvA.typ  := btLinker;
 
   // uvazka B
   glob_uvB.name := Self.E_UB_name.Text;
   glob_uvB.id   := Self.SE_UB_id.Value;
-  glob_uvB.typ  := btUvazka;
+  glob_uvB.typ  := btLinker;
 
   TratSettings.Useky := TList<Integer>.Create();
 
@@ -321,8 +321,8 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
    begin
     try
       Self.Trat := Blky.Add(btTrat, glob_trat) as TBlkTrat;
-      Self.UvazkaA := Blky.Add(btUvazka, glob_uvA) as TBlkUvazka;
-      Self.UvazkaB  := Blky.Add(btUvazka, glob_uvB) as TBlkUvazka;
+      Self.UvazkaA := Blky.Add(btLinker, glob_uvA) as TBlkLinker;
+      Self.UvazkaB  := Blky.Add(btLinker, glob_uvB) as TBlkLinker;
     except
       on E: Exception do
        begin

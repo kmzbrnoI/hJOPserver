@@ -72,7 +72,7 @@ uses
   DataZesilovac in 'tables\DataZesilovac.pas',
   DataORs in 'tables\DataORs.pas',
   TBlokTrat in 'bloky\TBlokTrat.pas',
-  TBlokUvazka in 'bloky\TBlokUvazka.pas',
+  TBlockLinker in 'bloky\TBlockLinker.pas',
   Train in 'Train.pas',
   TrainDb in 'TrainDb.pas',
   DataSpr in 'tables\DataSpr.pas',

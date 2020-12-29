@@ -25,7 +25,7 @@ type
    btSignal = 3,
    btCrossing = 4,
    btTrat = 5,
-   btUvazka = 6,
+   btLinker = 6,
    btLock = 7,
    btDisconnector = 8,
    btTU = 9,
@@ -35,8 +35,6 @@ type
  );
 
  TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4, ab = 5);
-
- //spolecne recordy:
  TRCSAddrs = TList<TRCSAddr>;
 
  ///////////////////////////////
@@ -62,11 +60,11 @@ type
    changed: Boolean;
 
   protected
-   GlobalSettings: TBlkSettings;
+   m_globSettings: TBlkSettings;
+   m_stations: TList<TOR>;       // ve kterych OR se blok nachazi
    FOnChange: TOnBlkChange;  // childs can call the event
    ftable_index: Integer;
    ffrozen: Boolean;
-   ORsRef: TList<TOR>;          // ve kterych OR se blok nachazi
 
    //loading and saving RCS
    class function LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
@@ -90,15 +88,12 @@ type
    procedure SaveData(ini_tech: TMemIniFile; const section: string); virtual;
    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); virtual;
 
-   //enable or disable symbol on relief
    procedure Enable(); virtual; abstract;
    procedure Disable(); virtual;
    procedure Reset(); virtual;
    procedure AfterLoad(); virtual;    // AfterLoad je volano po nacteni vsech dat, slouzi napriklad pro vytvoreni tratFlagu
 
-   //update states
    procedure Update(); virtual;
-
    procedure Change(now: Boolean = false); virtual; // will call the change event
 
    procedure Freeze(); virtual;
@@ -137,12 +132,12 @@ type
    property OnChange: TOnBlkChange read FOnChange write FOnChange;
    property table_index: Integer read ftable_index write ftable_index;
    property frozen: Boolean read ffrozen;
-   property stations: TList<TOR> read ORsRef;
+   property stations: TList<TOR> read m_stations;
 
-   property id: Integer read GlobalSettings.id;
-   property name: string read GlobalSettings.name;
-   property typ: TBlkType read GlobalSettings.typ;
-   property note: string read GlobalSettings.note;
+   property id: Integer read m_globSettings.id;
+   property name: string read m_globSettings.name;
+   property typ: TBlkType read m_globSettings.typ;
+   property note: string read m_globSettings.note;
  end;
 
 implementation
@@ -154,15 +149,15 @@ uses TBloky, DataBloky, appEv, ownStrUtils, Diagnostics;
 constructor TBlk.Create(index: Integer);
 begin
  inherited Create();
- Self.GlobalSettings := _def_glob_settings;
+ Self.m_globSettings := _def_glob_settings;
  Self.ftable_index := index;
  Self.ffrozen := false;
- Self.ORsRef := TList<TOR>.Create();
+ Self.m_stations := TList<TOR>.Create();
 end;//ctor
 
 destructor TBlk.Destroy();
 begin
- Self.ORsRef.Free();
+ Self.m_stations.Free();
  inherited;
 end;//dtor
 
@@ -172,7 +167,7 @@ procedure TBlk.SetGlobalSettings(data: TBlkSettings);
 var id_changed: Boolean;
 begin
  id_changed := ((Self.id <> data.id) and (Self.id <> -1));
- Self.GlobalSettings := data;
+ Self.m_globSettings := data;
  if (id_Changed) then
   begin
    // sem se skoci, pokud je potreba preskladat bloky, protoze doslo ke zmene ID
@@ -183,26 +178,26 @@ end;
 
 function TBlk.GetGlobalSettings(): TBlkSettings;
 begin
- Result := Self.GlobalSettings;
+ Result := Self.m_globSettings;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlk.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
- Self.GlobalSettings.name := ini_tech.ReadString(section, 'nazev', '');
- Self.GlobalSettings.id := StrToInt(section);
- Self.GlobalSettings.typ := TBlkType(ini_tech.ReadInteger(section, 'typ', -1));
- Self.GlobalSettings.note := ini_tech.ReadString(section, 'pozn', '');
+ Self.m_globSettings.name := ini_tech.ReadString(section, 'nazev', '');
+ Self.m_globSettings.id := StrToInt(section);
+ Self.m_globSettings.typ := TBlkType(ini_tech.ReadInteger(section, 'typ', -1));
+ Self.m_globSettings.note := ini_tech.ReadString(section, 'pozn', '');
 end;
 
 procedure TBlk.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
- ini_tech.WriteString(section, 'nazev', Self.GlobalSettings.name);
- ini_tech.WriteInteger(section, 'typ', Integer(Self.GlobalSettings.typ));
+ ini_tech.WriteString(section, 'nazev', Self.m_globSettings.name);
+ ini_tech.WriteInteger(section, 'typ', Integer(Self.m_globSettings.typ));
 
- if (Self.GlobalSettings.note <> '') then
-   ini_tech.WriteString(section, 'pozn', Self.GlobalSettings.note);
+ if (Self.m_globSettings.note <> '') then
+   ini_tech.WriteString(section, 'pozn', Self.m_globSettings.note);
 end;
 
 procedure TBlk.SaveStatus(ini_stat: TMemIniFile; const section: string);
@@ -422,7 +417,7 @@ begin
   btSignal: Result := 'signal';
   btCrossing: Result := 'crossing';
   btTrat: Result := 'railway';
-  btUvazka: Result := 'harness';
+  btLinker: Result := 'harness';
   btLock: Result := 'lock';
   btDisconnector: Result := 'disconnector';
   btTU: Result := 'railwayTrack';
@@ -471,7 +466,7 @@ begin
  else if (typ = 'navestidlo') or (typ = 'signal') then Result := btSignal
  else if (typ = 'prejezd') or (typ = 'přejezd') or (typ = 'crossing') then Result := btCrossing
  else if (typ = 'trat') or (typ = 'trať') or (typ = 'railway') then Result := btTrat
- else if (typ = 'uvazka') or (typ = 'úvazka') or (typ = 'harness') then Result := btUvazka
+ else if (typ = 'uvazka') or (typ = 'úvazka') or (typ = 'harness') then Result := btLinker
  else if (typ = 'rozp') or (typ = 'rozpojovac') or (typ = 'rozpojovač') or (typ = 'disconnector') then Result := btDisconnector
  else if (typ = 'tratUsek') or (typ = 'traťÚsek') or (typ = 'tu') or (typ = 'TU') or (typ = 'railwayTrack') then Result := btTU
  else if (typ = 'io') then Result := btIO
@@ -485,7 +480,7 @@ var strs: TStrings;
 begin
  if (ini = nil) then
   begin
-   Self.ORsRef.Clear();
+   Self.m_stations.Clear();
    Exit(TStringList.Create());
   end;
 
@@ -493,9 +488,9 @@ begin
  try
    ExtractStringsEx([';'], [], ini.ReadString(section, IntToStr(Self.id), ''), strs);
    if (strs.Count < 1) then Exit(strs);
-   if (Self.ORsRef <> nil) then
-     Self.ORsRef.Free();
-   Self.ORsRef := ORs.ParseORs(strs[0]);
+   if (Self.m_stations <> nil) then
+     Self.m_stations.Free();
+   Self.m_stations := ORs.ParseORs(strs[0]);
  except
   strs.Free();
   raise;

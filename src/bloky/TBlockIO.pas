@@ -111,7 +111,7 @@ constructor TBlkIO.Create(index: Integer);
 begin
  inherited;
  Self.m_state := _def_IO_stav;
- Self.GlobalSettings.typ := btIO;
+ Self.m_globSettings.typ := btIO;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,12 +154,12 @@ begin
 
  if (Self.isRCSinput) then
   begin
-   PushRCStoOR(Self.ORsRef, Self.m_settings.RCSinput);
+   PushRCStoOR(Self.m_stations, Self.m_settings.RCSinput);
    RCSi.SetNeeded(Self.m_settings.RCSinput.board);
   end;
  if (Self.isRCSoutput) then
   begin
-   PushRCStoOR(Self.ORsRef, Self.m_settings.RCSoutput);
+   PushRCStoOR(Self.m_stations, Self.m_settings.RCSoutput);
    RCSi.SetNeeded(Self.m_settings.RCSoutput.board);
   end;
 end;

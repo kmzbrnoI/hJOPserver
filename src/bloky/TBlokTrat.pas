@@ -204,14 +204,14 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, TBloky, TOblRizeni, TBlockSignal, Logging,
-    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlokUvazka, TrainDb, THVDatabase,
+    TJCDatabase, fMain, TCPServerOR, TBlokUsek, TBlockLinker, TrainDb, THVDatabase,
     TBlokTratUsek, appEv, timeHelper, ownConvert, Graphics;
 
 constructor TBlkTrat.Create(index: Integer);
 begin
  inherited;
 
- Self.GlobalSettings.typ := btTrat;
+ Self.m_globSettings.typ := btTrat;
  Self.TratStav := _def_trat_stav;
 
  Self.fuvazkaA := nil;
@@ -350,8 +350,8 @@ begin
  if ((Self.Zadost) and (Self.Obsazeno)) then
    Self.Zadost := false;
 
- (Self.uvazkaA as TBlkUvazka).ChangeFromTrat();
- (Self.uvazkaB as TBlkUvazka).ChangeFromTrat();
+ (Self.uvazkaA as TBlkLinker).ChangeFromTrat();
+ (Self.uvazkaB as TBlkLinker).ChangeFromTrat();
 
  inherited Update();
 end;
@@ -359,9 +359,9 @@ end;
 procedure TBlkTrat.ChangeFromUv(Sender: TBlk);
 begin
  if (Sender = Self.uvazkaA) then
-  (Self.uvazkaB as TBlkUvazka).ChangeFromTrat();
+  (Self.uvazkaB as TBlkLinker).ChangeFromTrat();
  if (Sender = Self.uvazkaB) then
-  (Self.uvazkaA as TBlkUvazka).ChangeFromTrat();
+  (Self.uvazkaA as TBlkLinker).ChangeFromTrat();
 
  if ((Self.Zadost) and (Self.Obsazeno)) then
    Self.Zadost := false;
@@ -401,7 +401,7 @@ end;
 function TBlkTrat.GetZAK(): Boolean;
 begin
  if ((Self.uvazkaA = nil) or (Self.uvazkaB = nil)) then Exit(false); 
- if (((Self.uvazkaA as TBlkUvazka).ZAK) or ((Self.uvazkaB as TBlkUvazka).ZAK)) then
+ if (((Self.uvazkaA as TBlkLinker).departureForbidden) or ((Self.uvazkaB as TBlkLinker).departureForbidden)) then
   Result := true
  else
   Result := false;
@@ -433,7 +433,7 @@ begin
 end;
 
 procedure TBlkTrat.SetTratZadost(Zadost: Boolean);
-var uvazka: TBlkUvazka;
+var uvazka: TBlkLinker;
     oblr: TOR;
 begin
  if (Self.Zadost = Zadost) then Exit(); 
@@ -441,8 +441,8 @@ begin
  // tady se resi prehravani zvuku
  try
    uvazka := nil;
-   if ((Self.fuvazkaA as TBlkUvazka).zadost) then uvazka := (Self.fuvazkaB as TBlkUvazka)
-   else if ((Self.fuvazkaB as TBlkUvazka).zadost) then uvazka := (Self.fuvazkaA as TBlkUvazka);
+   if ((Self.fuvazkaA as TBlkLinker).request) then uvazka := (Self.fuvazkaB as TBlkLinker)
+   else if ((Self.fuvazkaB as TBlkLinker).request) then uvazka := (Self.fuvazkaA as TBlkLinker);
 
    if ((uvazka <> nil) and (Zadost <> Self.TratStav.zadost)) then
     begin
@@ -588,7 +588,7 @@ begin
  if (not train.IsTimeDefined()) then
    train.time := timeHelper.hJOPnow();
 
- writelog('Trať '+Self.GlobalSettings.name+ ' : přidána souprava '+train.train.name, WR_SPRPREDAT);
+ writelog('Trať '+Self.m_globSettings.name+ ' : přidána souprava '+train.train.name, WR_SPRPREDAT);
 
  Self.Change();
 end;
@@ -607,7 +607,7 @@ begin
  if (Self.IsTrain(train)) then
   begin
    Self.TratStav.trains.Delete(Self.GetTrainIndex(train));
-   writelog('Trať '+Self.GlobalSettings.name+ ' : smazána souprava '+train.name, WR_SPRPREDAT);
+   writelog('Trať '+Self.m_globSettings.name+ ' : smazána souprava '+train.name, WR_SPRPREDAT);
    toChange := true;
   end;
 
@@ -640,20 +640,20 @@ procedure TBlkTrat.TrainChangeOR(train: TTrain; smer: TTratSmer);
 begin
  case (smer) of
    TTratSmer.AtoB: begin
-      if ((Self.uvazkaB as TBlkUvazka).stations.Count > 0) then
-        train.station := (Self.uvazkaB as TBlkUvazka).stations[0]
+      if ((Self.uvazkaB as TBlkLinker).stations.Count > 0) then
+        train.station := (Self.uvazkaB as TBlkLinker).stations[0]
       else
         train.station := nil;
    end;//AtoB
    TTratSmer.BtoA: begin
-      if ((Self.uvazkaA as TBlkUvazka).stations.Count > 0) then
-        train.station := (Self.uvazkaA as TBlkUvazka).stations[0]
+      if ((Self.uvazkaA as TBlkLinker).stations.Count > 0) then
+        train.station := (Self.uvazkaA as TBlkLinker).stations[0]
       else
         train.station := nil;
    end;//BtoA
  end;//case
 
- writelog('Trať '+Self.GlobalSettings.name+ ' : souprava '+train.name+
+ writelog('Trať '+Self.m_globSettings.name+ ' : souprava '+train.name+
           ' : stanice změněna na '+(train.station as TOR).Name, WR_SPRPREDAT);
 end;
 
@@ -661,7 +661,7 @@ end;
 
 function TBlkTrat.GetNouzZaver(): Boolean;
 begin
- Result := (Self.uvazkaA as TBlkUvazka).nouzZaver or (Self.uvazkaB as TBlkUvazka).nouzZaver;
+ Result := (Self.uvazkaA as TBlkLinker).emLock or (Self.uvazkaB as TBlkLinker).emLock;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1008,11 +1008,11 @@ function TBlkTrat.SameUserControlsBothUvazka(): Boolean;
 var first, second: TORPanel;
 begin
  if ((not Assigned(Self.uvazkaA)) or (not Assigned(Self.uvazkaB))) then Exit(false);
- if ((TBlkUvazka(Self.uvazkaA).stations.Count <> 1) or (TBlkUvazka(Self.uvazkaB).stations.Count <> 1)) then Exit(false);
+ if ((TBlkLinker(Self.uvazkaA).stations.Count <> 1) or (TBlkLinker(Self.uvazkaB).stations.Count <> 1)) then Exit(false);
 
- for first in TBlkUvazka(Self.uvazkaA).stations[0].Connected do
+ for first in TBlkLinker(Self.uvazkaA).stations[0].Connected do
    if (first.Rights >= TORControlRights.write) then
-     for second in TBlkUvazka(Self.uvazkaB).stations[0].Connected do
+     for second in TBlkLinker(Self.uvazkaB).stations[0].Connected do
        if ((first.user = second.user) and (second.Rights >= TORControlRights.write)) then
          Exit(true);
 

@@ -156,7 +156,7 @@ var
 
 implementation
 
-uses fMain, TBlokUsek, TBlockTurnout, TBlockSignal, TOblsRizeni, TBlokUvazka,
+uses fMain, TBlokUsek, TBlockTurnout, TBlockSignal, TOblsRizeni, TBlockLinker,
       TBlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
       TBlokZamek, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, TJCDatabase, TechnologieJC, TBlockAC, ACBlocks,
@@ -619,7 +619,7 @@ begin
    case (orRef.stitek.typ) of
     btUsek, btTU : (orRef.stitek as TBlkUsek).Stitek := tmp;
     btTurnout    : (orRef.stitek as TBlkTurnout).note := tmp;
-    btUvazka     : (orRef.stitek as TBlkUvazka).Stitek := tmp;
+    btLinker     : (orRef.stitek as TBlkLinker).note := tmp;
     btCrossing    : (orRef.stitek as TBlkCrossing).note := tmp;
     btLock       : (orRef.stitek as TBlkLock).note := tmp;
     btDisconnector       : (orRef.stitek as TBlkDisconnector).note := tmp;

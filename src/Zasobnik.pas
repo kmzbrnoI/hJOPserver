@@ -1,4 +1,4 @@
-unit Zasobnik;
+﻿unit Zasobnik;
 
 // Tato unita implementuje tridu TORStack, ktera resi zasobnik jizdnich cest pro
 //   jednu oblast rizeni
@@ -116,7 +116,7 @@ type
 implementation
 
 uses TOblRizeni, TCPServerOR, Logging, TechnologieJC, TBlok, TBloky,
-      TBlokUvazka, TBlokTrat, appEv;
+      TBlockLinker, TBlokTrat, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -283,9 +283,9 @@ begin
    cmd := (Self.stack[0] as TORSTackCmdJC);
    (cmd.JC as TJC).StavJC(SenderPnl, Self.OblR, Self, cmd.nouz, false, cmd.ab);
   end else if (Self.stack[0].ClassType = TORStackCmdZTS) then
-   ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkUvazka).DoZTS(SenderPnl, Self.OblR)
+   ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkLinker).DoZTS(SenderPnl, Self.OblR)
   else if (Self.stack[0].ClassType = TORStackCmdUTS) then
-   ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkUvazka).DoUTS(SenderPnl, Self.OblR)
+   ((Self.stack[0] as TORStackCmdZTS).uvazka as TBlkLinker).DoUTS(SenderPnl, Self.OblR)
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -485,18 +485,18 @@ begin
 end;
 
 procedure TORStack.ZpracujZTS(cmd: TORStackCmdZTS);
-var uv: TBlkUvazka;
+var uv: TBlkLinker;
 begin
- uv := (cmd.uvazka as TBlkUvazka);
+ uv := (cmd.uvazka as TBlkLinker);
 
  Self.hint := (uv as TBlk).name;
 
  if ((Self.volba = TORStackVolba.VZ) and (uv.CanZTS())) then
   begin
-   Self.UPOenabled := (uv.Stitek <> '');
-   if (uv.Stitek = '') then
+   Self.UPOenabled := (uv.note <> '');
+   if (uv.note = '') then
     begin
-     uv.zadost := true;
+     uv.request := true;
      Self.RemoveFromStack(0);
     end;
   end else begin
@@ -505,19 +505,19 @@ begin
 end;
 
 procedure TORStack.ZpracujUTS(cmd: TORStackCmdUTS);
-var uv: TBlkUvazka;
+var uv: TBlkLinker;
 begin
- uv := (cmd.uvazka as TBlkUvazka);
+ uv := (cmd.uvazka as TBlkLinker);
 
  Self.hint := (uv as TBlk).name;
 
  if ((Self.volba = TORStackVolba.VZ) and
-     (not uv.zadost) and ((uv.parent as TBlkTrat).Zadost)) then
+     (not uv.request) and ((uv.parent as TBlkTrat).Zadost)) then
   begin
-   Self.UPOenabled := (uv.Stitek <> '');
-   if (uv.Stitek = '') then
+   Self.UPOenabled := (uv.note <> '');
+   if (uv.note = '') then
     begin
-     uv.UdelSouhlas();
+     uv.ApproveRequest();
      Self.RemoveFromStack(0);
     end;
   end else begin

@@ -139,7 +139,7 @@ var
 implementation
 
 uses TBlockTurnout, TBlokUsek, TBlockIR, TBlockSignal, fMain, TBlockCrossing,
-     TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlokUvazka, TBlockAC,
+     TBlokZamek, TJCDatabase, Logging, TBlokTrat, TBlockLinker, TBlockAC,
      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, TBlockDisconnector,
      TBlokTratUsek, appEv, TBlockIO, PTUtils, TBlockSummary,
      TechnologieAB, ACBlocks;
@@ -252,7 +252,7 @@ begin
          Integer(btSignal)    : Blk := TBlkSignal.Create(-1);
          Integer(btCrossing)   : Blk := TBlkCrossing.Create(-1);
          Integer(btTrat)      : Blk := TBlkTrat.Create(-1);
-         Integer(btUvazka)    : Blk := TBlkUvazka.Create(-1);
+         Integer(btLinker)    : Blk := TBlkLinker.Create(-1);
          Integer(btLock)      : Blk := TBlkLock.Create(-1);
          Integer(btDisconnector)      : Blk := TBlkDisconnector.Create(-1);
          Integer(btTU)        : Blk := TBlkTU.Create(-1);
@@ -374,7 +374,7 @@ begin
   btSignal      : Blk := TBlkSignal.Create(index);
   btCrossing  : Blk := TBlkCrossing.Create(index);
   bttrat     : Blk := TBlkTrat.Create(index);
-  btUvazka   : Blk := TBlkUvazka.Create(index);
+  btLinker   : Blk := TBlkLinker.Create(index);
   btLock     : Blk := TBlkLock.Create(index);
   btDisconnector     : Blk := TBlkDisconnector.Create(index);
   btTU       : Blk := TBlkTU.Create(index);
@@ -419,11 +419,11 @@ begin
    Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaA));
    Self.Delete(Blky.GetBlkIndex((tmp as TBlkTrat).GetSettings().uvazkaB));
   end;
- if (tmp.typ = btUvazka) then
+ if (tmp.typ = btLinker) then
   begin
-   Blky.GetBlkByID((tmp as TBlkUvazka).GetSettings.parent, Blk);
+   Blky.GetBlkByID((tmp as TBlkLinker).GetSettings.parent, Blk);
    if (blk <> nil) then
-     Self.Delete(Blky.GetBlkIndex((tmp as TBlkUvazka).GetSettings.parent));
+     Self.Delete(Blky.GetBlkIndex((tmp as TBlkLinker).GetSettings.parent));
   end;
 
  FreeAndNil(tmp);

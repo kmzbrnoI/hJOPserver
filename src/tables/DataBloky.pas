@@ -36,7 +36,7 @@ var
 implementation
 
 uses TBloky, TBlok, TBlockTurnout, TBlokUsek, TBlockSignal, TBlockIR, TBlockCrossing,
-      fMain, TBlokTrat, TBlokUvazka, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
+      fMain, TBlokTrat, TBlockLinker, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
       TBlockSummary, TBlockAC, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -252,18 +252,18 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btUvazka: begin
+   btLinker: begin
       Self.LV.Items[line].ImageIndex := 9;
       Self.LV.Items[line].SubItems[0] := 'Úvazka';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      if ((Blk as TBlkUvazka).enabled) then
+      if ((Blk as TBlkLinker).enabled) then
         Self.LV.Items[line].SubItems[3] := 'enabled'
       else
         Self.LV.Items[line].SubItems[3] := 'disabled';
 
-      Self.LV.Items[line].SubItems[5] := (Blk as TBlkUvazka).Stitek;
+      Self.LV.Items[line].SubItems[5] := (Blk as TBlkLinker).note;
       Self.LV.Items[line].SubItems[7] := '---';
    end;
 

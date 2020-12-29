@@ -159,7 +159,7 @@ constructor TBlkCrossing.Create(index: Integer);
 begin
  inherited;
 
- Self.GlobalSettings.typ := btCrossing;
+ Self.m_globSettings.typ := btCrossing;
  Self.m_state := Self._def_prj_state;
  Self.m_state.shs := TList<TBlk>.Create();
  Self.m_state.rcsModules := TList<Cardinal>.Create();
@@ -240,7 +240,7 @@ begin
  Self.FillRCSModules();
  for module in Self.m_state.rcsModules do
    RCSi.SetNeeded(module);
- for oblr in Self.ORsRef do
+ for oblr in Self.m_stations do
    for module in Self.m_state.rcsModules do
      oblr.RCSAdd(module);
 end;
@@ -362,14 +362,14 @@ begin
    if ((Self.Zaver) and (Self.m_state.basicState = TBlkCrossingBasicState.closed)) then
     begin
      for oblr in Self.stations do
-      oblr.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+      oblr.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
      JCDb.RusJC(Self);
     end;
 
    if ((new_stav = TBlkCrossingBasicState.none) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
     begin
      for oblr in Self.stations do
-      oblr.BlkWriteError(Self, 'Porucha přejezdu : '+Self.GlobalSettings.name, 'TECHNOLOGIE');
+      oblr.BlkWriteError(Self, 'Porucha přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
      JCDb.RusJC(Self);
     end;
 
@@ -395,7 +395,7 @@ begin
    if (Now > Self.m_state.closeStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
      for oblr in Self.stations do
-      oblr.BlkWriteError(Self, Self.GlobalSettings.name+' uzavřen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
+      oblr.BlkWriteError(Self, Self.m_globSettings.name+' uzavřen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
      Self.m_state.closeStart := now;
     end;
   end;
@@ -809,7 +809,7 @@ begin
  try
   if (Self.note <> '') then
    begin
-    item[0] := GetUPOLine('ŠTÍTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
+    item[0] := GetUPOLine('ŠTÍTEK '+Self.m_globSettings.name, taCenter, clBlack, clTeal);
     lines := GetLines(Self.note, _UPO_LINE_LEN);
 
     try

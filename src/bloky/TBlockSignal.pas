@@ -282,7 +282,7 @@ constructor TBlkSignal.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btSignal;
+ Self.m_globSettings.typ := btSignal;
  Self.m_state := Self._def_nav_stav;
  Self.m_state.toRnz := TDictionary<Integer, Cardinal>.Create();
  Self.m_settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
@@ -375,7 +375,7 @@ begin
     end;
   end;
 
- PushRCSToOR(Self.ORsRef, Self.m_settings.RCSAddrs);
+ PushRCSToOR(Self.m_stations, Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkSignal.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -530,7 +530,7 @@ begin
   begin
    // prodlouzeni nebo zruseni privolavaci navesti -> zrusit odpocet v panelu
    if (Self.m_state.privolTimerId > 0) then
-     for oblr in Self.ORsRef do
+     for oblr in Self.m_stations do
       begin
        oblr.BroadcastGlobalData('INFO-TIMER-RM;'+IntToStr(Self.m_state.privolTimerId));
        oblr.TimerCnt := oblr.TimerCnt - 1;
@@ -589,7 +589,7 @@ begin
  if ((Self.signal = ncPrivol) and (navest = ncStuj)) then
   begin
    // STUJ po privolavacce -> vypnout zvukovou vyzvu
-   for oblr in Self.ORsRef do
+   for oblr in Self.m_stations do
      oblr.PrivolavackaBlkCnt := oblr.PrivolavackaBlkCnt - 1;
   end;
 
@@ -633,7 +633,7 @@ begin
  if (Self.m_state.targetSignal = ncPrivol) then
   begin
    // nova navest je privolavacka -> zapnout zvukovou vyzvu
-   for oblr in Self.ORsRef do
+   for oblr in Self.m_stations do
      oblr.PrivolavackaBlkCnt := oblr.PrivolavackaBlkCnt + 1;
   end;
 
@@ -1178,7 +1178,7 @@ begin
   begin
    Self.m_state.falling := true;
    Self.m_state.fallingStart := Now;
-   writelog('Návěstidlo '+Self.GlobalSettings.name+': spoždění pádu '+IntToStr(Self.m_settings.fallDelay)+' s', WR_VC);
+   writelog('Návěstidlo '+Self.m_globSettings.name+': spoždění pádu '+IntToStr(Self.m_settings.fallDelay)+' s', WR_VC);
   end else begin
    Self.signal := ncStuj;
   end;
@@ -1461,10 +1461,10 @@ begin
   begin
    // oznameni o brzkem ukonceni privolavaci navesti
    Self.m_state.privolTimerId := Random(65536)+1;
-   for oblr in Self.ORsRef do
+   for oblr in Self.m_stations do
     begin
      oblr.BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.m_state.privolTimerId)+
-                              ';0;30; PN '+Self.GlobalSettings.name);
+                              ';0;30; PN '+Self.m_globSettings.name);
      oblr.TimerCnt := oblr.TimerCnt + 1;
     end;
   end;

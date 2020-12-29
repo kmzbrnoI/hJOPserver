@@ -86,7 +86,7 @@ begin
 
  Self.m_state := Self._def_summary_state;
  Self.m_settings.crossings := TList<Integer>.Create();
- Self.GlobalSettings.typ := btSummary;
+ Self.m_globSettings.typ := btSummary;
 end;
 
 destructor TBlkSummary.Destroy();

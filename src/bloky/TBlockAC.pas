@@ -116,7 +116,7 @@ constructor TBlkAC.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btAC;
+ Self.m_globSettings.typ := btAC;
  Self.m_state := _def_ac_state;
  Self.m_state.lines := TStringList.Create();
  Self.m_state.panelsShowingState := TList<TIdContext>.Create();
@@ -435,7 +435,7 @@ begin
      Self.SetFgColor(color);
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 7) and (UpperCase(parsed[4]) = 'ERROR')) then begin
    if (UpperCase(parsed[5]) = 'DISPBOTTOM') then
-     for oblr in Self.ORsRef do
+     for oblr in Self.m_stations do
        oblr.BroadcastBottomError(parsed[6], 'AC', TORControlRights.write, Self.name);
  end;
 end;

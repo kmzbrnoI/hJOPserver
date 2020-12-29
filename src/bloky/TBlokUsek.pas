@@ -293,7 +293,7 @@ constructor TBlkUsek.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btUsek;
+ Self.m_globSettings.typ := btUsek;
  Self.UsekStav := _def_usek_stav;
 
  Self.EventsOnObsaz := TChangeEvents.Create();
@@ -402,7 +402,7 @@ begin
    strs.Free();
  end;
 
- PushRCSToOR(Self.ORsRef, Self.UsekSettings.RCSAddrs);
+ PushRCSToOR(Self.m_stations, Self.UsekSettings.RCSAddrs);
 end;
 
 procedure TBlkUsek.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -501,7 +501,7 @@ begin
  inherited;
 
  if (Self.UsekStav.zkrat = TBoosterSignal.error) then
-   for oblr in Self.ORsRef do
+   for oblr in Self.m_stations do
      oblr.ZKratBlkCnt := oblr.ZKratBlkCnt - 1;
 
  Self.UsekStav.Stav       := disabled;
@@ -688,12 +688,12 @@ begin
 
  if (Self.UsekStav.NUZ) and (not nuz) then
   begin
-   for oblr in Self.ORsRef do
+   for oblr in Self.m_stations do
      if (oblr.NUZblkCnt > 0) then
        oblr.NUZblkCnt := oblr.NUZblkCnt - 1;
   end else begin
     if ((not Self.UsekStav.NUZ) and (nuz)) then
-      for oblr in Self.ORsRef do
+      for oblr in Self.m_stations do
         oblr.NUZblkCnt := oblr.NUZblkCnt + 1;
   end;
 
@@ -745,7 +745,7 @@ procedure TBlkUsek.SetUsekVyl(Sender: TIDCOntext; vyl: string);
 begin
  if ((self.UsekStav.Vyl <> '') and (vyl = '')) then
   begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.ORsRef[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlky.GetBlksList(Self), nil);
   end else begin
    Self.Vyluka := vyl;
   end;
@@ -822,11 +822,11 @@ begin
  if (state = TBoosterSignal.error) then
   begin
    // do OR oznamime, ze nastal zkrat, pak se prehraje zvuk v klientech...
-   for oblr in Self.ORsRef do
+   for oblr in Self.m_stations do
     oblr.ZKratBlkCnt := oblr.ZkratBlkCnt + 1;
   end else begin
    if (Self.UsekStav.zkrat = TBoosterSignal.error) then
-     for oblr in Self.ORsRef do
+     for oblr in Self.m_stations do
        oblr.ZKratBlkCnt := oblr.ZkratBlkCnt - 1;
   end;
 
@@ -1333,7 +1333,7 @@ var menu: string;
 begin
  TTCPORsRef(SenderPnl.Data).train_menu_index := trainLocalI;
 
- menu := '$'+Self.GlobalSettings.name+',';
+ menu := '$'+Self.m_globSettings.name+',';
  menu := menu + '$Souprava ' + TrainDb.Trains[Self.trains[trainLocalI]].name + ',-,';
  menu := menu + Self.GetTrainMenu(SenderPnl, SenderOr, trainLocalI);
 
@@ -1609,7 +1609,7 @@ begin
    end;
   end;
 
- ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+train.name+' přesunuta na '+Self.GlobalSettings.name+'.');
+ ORTCPServer.SendInfoMsg(SenderPnl, 'Souprava '+train.name+' přesunuta na '+Self.m_globSettings.name+'.');
 
  if (Blky.GetBlkWithTrain(train).Count = 1) then
    train.front := Self;
@@ -2164,11 +2164,11 @@ begin
      if ((not shouldChange) and (Self.IsStujForTrain(train))) then
       begin
         if ((podj.phase_old = ppPreparing) and (podj.GetPhase() = ppGoingToLeave)) then
-          for oblr in Self.ORsRef do
+          for oblr in Self.m_stations do
             oblr.BlkPlaySound(Self, TORControlRights.write, _SND_STAVENI_VYZVA)
 
         else if ((podj.phase_old = ppGoingToLeave) and (podj.GetPhase() = ppSoundLeave)) then
-          for oblr in Self.ORsRef do
+          for oblr in Self.m_stations do
             oblr.BlkPlaySound(Self, TORControlRights.write, _SND_NENI_JC);
       end;
 

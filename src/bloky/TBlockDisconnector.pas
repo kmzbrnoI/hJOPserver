@@ -95,7 +95,7 @@ constructor TBlkDisconnector.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btDisconnector;
+ Self.m_globSettings.typ := btDisconnector;
  Self.RozpStav           := Self._def_rozp_stav;
 end;//ctor
 
@@ -107,7 +107,7 @@ begin
 
  Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.LoadORs(ini_rel, 'R').Free();
- PushRCStoOR(Self.ORsRef, Self.RozpSettings.RCSAddrs);
+ PushRCStoOR(Self.m_stations, Self.RozpSettings.RCSAddrs);
 
  Self.RozpStav.note := ini_stat.ReadString(section, 'stit', '');
 end;

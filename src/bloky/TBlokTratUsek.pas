@@ -246,7 +246,7 @@ constructor TBlkTU.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btTU;
+ Self.m_globSettings.typ := btTU;
  Self.fTUStav := _def_tu_stav;
 
  Self.fTrat := nil;

@@ -1,6 +1,6 @@
-unit TBlokUvazka;
+﻿unit TBlockLinker;
 
-//definice a obsluha technologickeho bloku Usek
+{ LINKER technological block definition. (úvazka) }
 
 interface
 
@@ -8,40 +8,37 @@ uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
      IdContext, StrUtils, TOblRizeni, Generics.Collections;
 
 type
-
- //technologicka nastaveni useku (delka, RCS moduly, ...)
- TBlkUvazkaSettings = record
+ TBlkLinkerSettings = record
   parent: Integer;       // reference na matersky blok (typu TTrat)
  end;
 
- //aktualni stav useku (obsazeno, ...)
- TBlkUvazkaStav = record
+ TBlkLinkerState = record
   enabled: Boolean;
-  ZAK: Boolean;
-  stit: string;
-  nouzZaver: Boolean;
+  departureForbidden: Boolean;
+  note: string;
+  emLock: Boolean;
  end;
 
- TBlkUvazka = class(TBlk)
+ TBlkLinker = class(TBlk)
   const
-   //defaultni stav
-   _def_uvazka_stav: TBlkUvazkaStav = (
-    enabled: false;
-    ZAK : false;
-    stit : '';
+   _def_uvazka_stav: TBlkLinkerState = (
+     enabled: false;
+     departureForbidden: false;
+     note: '';
+     emLock: false;
    );
 
   private
-   UvazkaSettings: TBlkUvazkaSettings;
-   UvazkaStav: TBlkUvazkaStav;
-   fparent: TBlk;
-   fzadost: Boolean;
+   m_settings: TBlkLinkerSettings;
+   m_state: TBlkLinkerState;
+   m_parent: TBlk;
+   m_request: Boolean;
 
     function GetParent(): TBlk;
 
-    procedure SetUvazkaStit(stit: string);
-    procedure SetUvazkaZAK(ZAK: Boolean);
-    procedure SetNouzZaver(nouz: Boolean);
+    procedure SetNote(stit: string);
+    procedure SetDepForb(ZAK: Boolean);
+    procedure SetEmLock(nouz: Boolean);
 
     procedure MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZTSOffClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -61,56 +58,49 @@ type
     procedure UPOOTSClick(Sender: TObject);
     procedure UPOZAKOnClick(Sender: TObject);
 
-    procedure SetZadost(zadost: Boolean);
+    procedure SetRequest(zadost: Boolean);
 
-    procedure StitUPO(SenderPnl: TIdContext; SenderOR: TObject;
+    procedure NoteUPO(SenderPnl: TIdContext; SenderOR: TObject;
         UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
 
   public
     constructor Create(index: Integer);
-    destructor Destroy(); override;
 
-    //load/save data
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
     procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
 
-    //enable or disable symbol on relief
     procedure Enable(); override;
     procedure Disable(); override;
 
-    //update states
-    procedure Update(); override;
     procedure Change(now: Boolean = false); override;
     procedure ChangeFromTrat();
 
-    //----- usek own functions -----
+    //----- Linker specific functions -----
 
     procedure DoZTS(SenderPnl: TIdContext; SenderOR: TObject);
     procedure DoUTS(SenderPnl: TIdContext; SenderOR: TObject);
 
-    function GetSettings(): TBlkUvazkaSettings;
-    procedure SetSettings(data: TBlkUvazkaSettings);
+    function GetSettings(): TBlkLinkerSettings;
+    procedure SetSettings(data: TBlkLinkerSettings);
 
-    procedure UdelSouhlas();
+    procedure ApproveRequest();
     function CanZTS(): Boolean;
 
-    property Stitek: string read UvazkaStav.Stit write SetUvazkaStit;
-    property ZAK: Boolean read UvazkaStav.ZAK write SetUvazkaZAK;
-    property enabled: Boolean read UvazkaStav.enabled;
+    property note: string read m_state.note write SetNote;
+    property departureForbidden: Boolean read m_state.departureForbidden write SetDepForb;
+    property enabled: Boolean read m_state.enabled;
 
     property parent: TBlk read GetParent;
-    property zadost: Boolean read fzadost write SetZadost;
-    property nouzZaver: Boolean read UvazkaStav.nouzZaver write SetNouzZaver;
-
-    //GUI:
+    property request: Boolean read m_request write SetRequest;
+    property emLock: Boolean read m_state.emLock write SetEmLock;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
     procedure ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
     function PanelStateString(): string; override;
- end;//class TBlkUsek
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -119,97 +109,86 @@ implementation
 uses GetSystems, TechnologieRCS, TBloky, UPO, Graphics, Train, ownConvert,
     TJCDatabase, fMain, TCPServerOR, TBlokTrat, Zasobnik, TBlokUsek;
 
-constructor TBlkUvazka.Create(index: Integer);
+constructor TBlkLinker.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btUvazka;
- Self.UvazkaStav := _def_uvazka_stav;
- Self.fparent := nil;
- Self.fzadost := false;
-end;//ctor
-
-destructor TBlkUvazka.Destroy();
-begin
- inherited Destroy();
-end;//dtor
+ Self.m_globSettings.typ := btLinker;
+ Self.m_state := _def_uvazka_stav;
+ Self.m_parent := nil;
+ Self.m_request := false;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
+procedure TBlkLinker.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.UvazkaSettings.parent := ini_tech.ReadInteger(section, 'parent', -1);
- Self.UvazkaStav.Stit := ini_stat.ReadString(section, 'stit', '');
+ Self.m_settings.parent := ini_tech.ReadInteger(section, 'parent', -1);
+ Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
 
  Self.LoadORs(ini_rel, 'Uv').Free();
 end;
 
-procedure TBlkUvazka.SaveData(ini_tech: TMemIniFile; const section: string);
+procedure TBlkLinker.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
  inherited SaveData(ini_tech, section);
 
- ini_tech.WriteInteger(section, 'parent', Self.UvazkaSettings.parent);
+ ini_tech.WriteInteger(section, 'parent', Self.m_settings.parent);
 end;
 
-procedure TBlkUvazka.SaveStatus(ini_stat: TMemIniFile; const section: string);
+procedure TBlkLinker.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
- if (Self.UvazkaStav.stit <> '') then
-   ini_stat.WriteString(section, 'stit', Self.UvazkaStav.Stit);
+ if (Self.m_state.note <> '') then
+   ini_stat.WriteString(section, 'stit', Self.m_state.note);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.Enable();
+procedure TBlkLinker.Enable();
 begin
- Self.UvazkaStav.enabled := true;
+ Self.m_state.enabled := true;
  Self.Change();
 end;
 
-procedure TBlkUvazka.Disable();
+procedure TBlkLinker.Disable();
 begin
- Self.UvazkaStav.enabled   := false;
- Self.UvazkaStav.nouzZaver := false;
+ Self.m_state.enabled := false;
+ Self.m_state.emLock := false;
  Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//update all local variables
-procedure TBlkUvazka.Update();
-begin
- inherited Update();
-end;
-
-procedure TBlkUvazka.Change(now: Boolean = false);
+procedure TBlkLinker.Change(now: Boolean = false);
 begin
  inherited Change(now);
  (Self.parent as TBlkTrat).ChangeFromUv(Self);
 end;
 
-procedure TBlkUvazka.ChangeFromTrat();
+procedure TBlkLinker.ChangeFromTrat();
 begin
  if (Self.parent = nil) then Exit(); 
  if (not (Self.parent as TBlkTrat).Zadost) then
-  Self.fzadost := false;
+  Self.m_request := false;
 
  inherited Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetUvazkaStit(stit: string);
+procedure TBlkLinker.SetNote(stit: string);
 begin
- Self.UvazkaStav.Stit := stit;
+ Self.m_state.note := stit;
  Self.Change();
 end;
 
-procedure TBlkUvazka.SetUvazkaZAK(ZAK: Boolean);
+procedure TBlkLinker.SetDepForb(ZAK: Boolean);
 var old: Boolean;
 begin
- old := Self.UvazkaStav.ZAK;
- Self.UvazkaStav.ZAK := ZAK;
+ old := Self.m_state.departureForbidden;
+ Self.m_state.departureForbidden := ZAK;
  Self.Change();
 
  if (old <> ZAK) then
@@ -218,22 +197,21 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUvazka.GetSettings(): TBlkUvazkaSettings;
+function TBlkLinker.GetSettings(): TBlkLinkerSettings;
 begin
- Result := Self.UvazkaSettings;
+ Result := Self.m_settings;
 end;
 
-procedure TBlkUvazka.SetSettings(data: TBlkUvazkaSettings);
+procedure TBlkLinker.SetSettings(data: TBlkLinkerSettings);
 begin
- Self.UvazkaSettings := data;
- Self.fparent := nil;   // timto se zajisti prepocitani parent pri pristi zadost i nej
+ Self.m_settings := data;
+ Self.m_parent := nil;   // timto se zajisti prepocitani parent pri pristi zadost i nej
  Self.Change();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-//dynamicke funkce:
 
-procedure TBlkUvazka.MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  case ((SenderOR as TOR).stack.volba) of
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
@@ -241,12 +219,12 @@ begin
  end;
 end;
 
-procedure TBlkUvazka.MenuZTSOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuZTSOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.zadost := false;
+ Self.request := false;
 end;
 
-procedure TBlkUvazka.MenuUTSClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuUTSClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  case ((SenderOR as TOR).stack.volba) of
   TORStackVolba.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
@@ -254,7 +232,7 @@ begin
  end;
 end;
 
-procedure TBlkUvazka.UdelSouhlas();
+procedure TBlkLinker.ApproveRequest();
 begin
  if (not (Self.parent as TBlkTrat).Zadost) then Exit();
 
@@ -269,135 +247,135 @@ begin
   end;//case
  end;
 
- Self.zadost := false;
+ Self.request := false;
 end;
 
-procedure TBlkUvazka.MenuOTSClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuOTSClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.Stitek <> '') then
-   Self.StitUPO(SenderPnl, SenderOR, Self.UPOOTSClick, nil)
+ if (Self.note <> '') then
+   Self.NoteUPO(SenderPnl, SenderOR, Self.UPOOTSClick, nil)
  else
    Self.UPOOTSClick(SenderPnl);
 end;
 
-procedure TBlkUvazka.MenuZAKOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuZAKOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.Stitek <> '') then
-   Self.StitUPO(SenderPnl, SenderOR, Self.UPOZAKOnClick, nil)
+ if (Self.note <> '') then
+   Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZAKOnClick, nil)
  else
    Self.UPOZAKOnClick(SenderPnl);
 end;
 
-procedure TBlkUvazka.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR,
     'Zrušení zákazu odjezdu na trať', TBlky.GetBlksList(Self), nil);
 end;
 
-procedure TBlkUvazka.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.UvazkaStav.Stit);
+ ORTCPServer.Stitek(SenderPnl, Self, Self.m_state.note);
 end;
 
-procedure TBlkUvazka.MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.nouzZaver := true;
+ Self.emLock := true;
 end;
 
-procedure TBlkUvazka.MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR,
     'Zrušení nouzového závěru', TBlky.GetBlksList(Self), nil);
 end;
 
 
-procedure TBlkUvazka.PanelPotvrSekvZAK(Sender: TIdContext; success: Boolean);
+procedure TBlkLinker.PanelPotvrSekvZAK(Sender: TIdContext; success: Boolean);
 begin
- if (success) then Self.ZAK := false;
+ if (success) then Self.departureForbidden := false;
 end;
 
-procedure TBlkUvazka.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
+procedure TBlkLinker.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 begin
- if (success) then Self.nouzZaver := false;
+ if (success) then Self.emLock := false;
 end;
 
-procedure TBlkUvazka.UPOZTSOnClick(Sender: TObject);
+procedure TBlkLinker.UPOZTSOnClick(Sender: TObject);
 begin
- Self.zadost := true;
+ Self.request := true;
 
- if (Self.ORsRef[0].stack.volba = TORStackVolba.VZ) then
-   Self.ORsRef[0].stack.RemoveZTS(Self);
+ if (Self.m_stations[0].stack.volba = TORStackVolba.VZ) then
+   Self.m_stations[0].stack.RemoveZTS(Self);
 end;
 
-procedure TBlkUvazka.UPOUTSClick(Sender: TObject);
+procedure TBlkLinker.UPOUTSClick(Sender: TObject);
 begin
- Self.UdelSouhlas();
+ Self.ApproveRequest();
 
- if (Self.ORsRef[0].stack.volba = TORStackVolba.VZ) then
-   Self.ORsRef[0].stack.RemoveUTS(Self);
+ if (Self.m_stations[0].stack.volba = TORStackVolba.VZ) then
+   Self.m_stations[0].stack.RemoveUTS(Self);
 end;
 
-procedure TBlkUvazka.UPOOTSClick(Sender: TObject);
+procedure TBlkLinker.UPOOTSClick(Sender: TObject);
 begin
  if ((Self.parent as TBlkTrat).GetSettings.zabzar = TTratZZ.nabidka) then
    (Self.parent as TBlkTrat).smer := TTratSmer.zadny;
- Self.zadost := false;
+ Self.request := false;
 end;
 
-procedure TBlkUvazka.UPOZAKOnClick(Sender: TObject);
+procedure TBlkLinker.UPOZAKOnClick(Sender: TObject);
 begin
  if ((Self.parent as TBlkTrat).Zadost) then
    (Self.parent as TBlkTrat).Zadost := false;
- Self.ZAK := true;
+ Self.departureForbidden := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkUvazka.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkLinker.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
 var Blk, Blk2: TBlk;
-    trat: TBlkTrat;
+    railway: TBlkTrat;
 begin
- trat := TBlkTrat(Self.parent);
- if (trat = nil) then Exit('-');
+ railway := TBlkTrat(Self.parent);
+ if (railway = nil) then Exit('-');
 
  Result := inherited;
 
  // tratovy zabezpecovaci system
- case (trat.GetSettings().zabzar) of
+ case (railway.GetSettings().zabzar) of
   TTratZZ.souhlas: begin
 
-   if ((not Self.zadost) and (trat.Zadost)) then
+   if ((not Self.request) and (railway.Zadost)) then
      Result := Result + 'UTS,';
 
-   if (trat.Zadost) then
+   if (railway.Zadost) then
      Result := Result + 'ZTS<,';
 
-   if (trat.IsFirstUvazka(Self)) then
+   if (railway.IsFirstUvazka(Self)) then
     begin
      // prvni uvazka
 
-     if (((not Self.zadost) and (trat.Smer = TTratSmer.BtoA) and (not trat.Zadost) and
-          (not trat.RBPCan) and (not trat.nouzZaver) and
-          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
+     if (((not Self.request) and (railway.Smer = TTratSmer.BtoA) and (not railway.Zadost) and
+          (not railway.RBPCan) and (not railway.nouzZaver) and
+          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
 
-     if (((not Self.zadost) and (trat.Smer = TTratSmer.AtoB) and (not trat.Zadost) and
-          (not trat.RBPCan) and (not trat.nouzZaver) and
-          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
+     if (((not Self.request) and (railway.Smer = TTratSmer.AtoB) and (not railway.Zadost) and
+          (not railway.RBPCan) and (not railway.nouzZaver) and
+          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not trat.Zadost)) then
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.Zadost)) then
      Result := Result + 'UTS,';
 
-   if (((not Self.zadost) and trat.Zadost)) then
+   if (((not Self.request) and railway.Zadost)) then
      Result := Result + 'OTS,';
 
    if (RightStr(Result, 2) <> '-,') then
@@ -406,37 +384,37 @@ begin
 
   TTratZZ.nabidka: begin
 
-   if ((not Self.zadost) and (trat.Zadost)) then
+   if ((not Self.request) and (railway.Zadost)) then
      Result := Result + 'UTS,';
 
-   if (Self.zadost) then
+   if (Self.request) then
      Result := Result + 'ZTS<,';
 
-   if (trat.IsFirstUvazka(Self)) then
+   if (railway.IsFirstUvazka(Self)) then
     begin
      // prvni uvazka
 
-     if (((not Self.zadost) and(trat.Smer <> TTratSmer.AtoB) and (not trat.Zadost) and
-          (not trat.RBPCan) and (not trat.nouzZaver) and
-          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
+     if (((not Self.request) and(railway.Smer <> TTratSmer.AtoB) and (not railway.Zadost) and
+          (not railway.RBPCan) and (not railway.nouzZaver) and
+          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
      // druha uvazka
 
-     if (((not Self.zadost) and (trat.Smer <> TTratSmer.BtoA) and (not trat.Zadost) and
-          (not trat.RBPCan) and (not trat.nouzZaver) and
-          (not trat.Obsazeno) and (not trat.Zaver) and (not trat.ZAK)) or
+     if (((not Self.request) and (railway.Smer <> TTratSmer.BtoA) and (not railway.Zadost) and
+          (not railway.RBPCan) and (not railway.nouzZaver) and
+          (not railway.Obsazeno) and (not railway.Zaver) and (not railway.ZAK)) or
           ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.zadost) or (not trat.Zadost)) then
+   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.Zadost)) then
      Result := Result + 'UTS,';
 
-   if (((not Self.zadost) and trat.Zadost)) then
+   if (((not Self.request) and railway.Zadost)) then
      Result := Result + 'OTS,';
 
    if (RightStr(Result, 2) <> '-,') then
@@ -445,12 +423,12 @@ begin
 
  end;//case
 
- if (Self.nouzZaver) then
+ if (Self.emLock) then
    Result := Result + '!ZAV<,'
  else
    Result := Result + 'ZAV>,';
 
- if (Self.ZAK) then
+ if (Self.departureForbidden) then
   begin
    // zruseni ZAK je podmineno tim, ze na krajnich usecich trati nejsou zavery
    // to zajistuje, ze njelze zrusit ZAK u trati, do ktere je postaven PMD
@@ -459,7 +437,7 @@ begin
    if ((Blk <> nil) and (Blk2 <> nil) and (TBlkUsek(Blk).Zaver = TZaver.no) and (TBlkUsek(Blk2).Zaver = TZaver.no)) then
      Result := Result + '!ZAK<,'
   end else
-  if ((not trat.ZAK) and (not trat.Zaver) and (not trat.Obsazeno)) then
+  if ((not railway.ZAK) and (not railway.Zaver) and (not railway.Obsazeno)) then
    Result := Result + 'ZAK>,';
 
  Result := Result + 'STIT,';
@@ -467,24 +445,24 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
-var trat: TBlkTrat;
+procedure TBlkLinker.ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
+var railway: TBlkTrat;
     blk: TBlk;
     train: TTrain;
 begin
- trat := TBlkTrat(Self.parent);
- if (trat = nil) then Exit();
- if (train_index >= trat.stav.trains.Count) then Exit();
- train := trat.stav.trains[train_index].train;
+ railway := TBlkTrat(Self.parent);
+ if (railway = nil) then Exit();
+ if (train_index >= railway.stav.trains.Count) then Exit();
+ train := railway.stav.trains[train_index].train;
 
- blk := trat.GetTrainUsek(train);
+ blk := railway.GetTrainUsek(train);
  if (blk = nil) then Exit();
  TBlkUsek(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkLinker.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
 begin
  if (TBlkTrat(Self.parent).Smer < TTratSmer.zadny) then Exit();
  if (Button = TPanelButton.ESCAPE) then Exit(); 
@@ -498,7 +476,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkUvazka.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkLinker.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
  if      (item = 'ZTS>') then Self.MenuZTSOnClick(SenderPnl, SenderOR)
  else if (item = 'ZTS<') then Self.MenuZTSOffClick(SenderPnl, SenderOR)
@@ -513,54 +491,54 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-function TBlkUvazka.GetParent(): TBlk;
+function TBlkLinker.GetParent(): TBlk;
 begin
- if (Self.fparent = nil) then
-   Blky.GetBlkByID(Self.UvazkaSettings.parent, Self.fparent);
- Result := Self.fparent;
+ if (Self.m_parent = nil) then
+   Blky.GetBlkByID(Self.m_settings.parent, Self.m_parent);
+ Result := Self.m_parent;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetZadost(zadost: Boolean);
+procedure TBlkLinker.SetRequest(zadost: Boolean);
 begin
  // tohleto poradi nastvovani je dulezite
- if (zadost) then Self.fzadost := zadost;
+ if (zadost) then Self.m_request := zadost;
  (Self.parent as TBlkTrat).Zadost := zadost;
- if (not zadost) then Self.fzadost := zadost;
+ if (not zadost) then Self.m_request := zadost;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.SetNouzZaver(nouz: Boolean);
+procedure TBlkLinker.SetEmLock(nouz: Boolean);
 begin
- if (Self.UvazkaStav.nouzZaver = nouz) then Exit();
+ if (Self.m_state.emLock = nouz) then Exit();
 
- Self.UvazkaStav.nouzZaver := nouz;
+ Self.m_state.emLock := nouz;
  Self.Change();
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // Takto zasobnik zjistuje, jestli muze zacit zadost:
-function TBlkUvazka.CanZTS(): Boolean;
-var trat: TBlkTrat;
+function TBlkLinker.CanZTS(): Boolean;
+var railway: TBlkTrat;
 begin
- trat := TBlkTrat(Self.parent);
- if ((trat.Obsazeno) or (trat.Zaver) or
-     (trat.ZAK) or (trat.nouzZaver) or (trat.RBPCan)) then Exit(false);
+ railway := TBlkTrat(Self.parent);
+ if ((railway.Obsazeno) or (railway.Zaver) or
+     (railway.ZAK) or (railway.nouzZaver) or (railway.RBPCan)) then Exit(false);
 
- if (trat.IsFirstUvazka(Self)) then
+ if (railway.IsFirstUvazka(Self)) then
   begin
-   Result := ((not Self.zadost) and (trat.Smer <> TTratSmer.AtoB) and (not trat.Zadost));
+   Result := ((not Self.request) and (railway.Smer <> TTratSmer.AtoB) and (not railway.Zadost));
   end else begin
-   Result := ((not Self.zadost) and (trat.Smer <> TTratSmer.BtoA) and (not trat.Zadost));
+   Result := ((not Self.request) and (railway.Smer <> TTratSmer.BtoA) and (not railway.Zadost));
   end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.StitUPO(SenderPnl: TIdContext; SenderOR: TObject;
+procedure TBlkLinker.NoteUPO(SenderPnl: TIdContext; SenderOR: TObject;
       UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
 var upo: TUPOItems;
     item: TUPOItem;
@@ -568,10 +546,10 @@ var upo: TUPOItems;
 begin
  upo := TList<TUPOItem>.Create;
  try
-  if (Self.Stitek <> '') then
+  if (Self.note <> '') then
    begin
-    item[0] := GetUPOLine('ŠTÍTEK '+Self.GlobalSettings.name, taCenter, clBlack, clTeal);
-    lines := GetLines(Self.Stitek, _UPO_LINE_LEN);
+    item[0] := GetUPOLine('ŠTÍTEK '+Self.m_globSettings.name, taCenter, clBlack, clTeal);
+    lines := GetLines(Self.note, _UPO_LINE_LEN);
 
     try
       item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
@@ -592,58 +570,58 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkUvazka.DoZTS(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.DoZTS(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.Stitek <> '') then
-   Self.StitUPO(SenderPnl, SenderOR, Self.UPOZTSOnClick, nil)
+ if (Self.note <> '') then
+   Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZTSOnClick, nil)
  else
    Self.UPOZTSOnClick(SenderPnl);
 end;
 
-procedure TBlkUvazka.DoUTS(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.DoUTS(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.Stitek <> '') then
-   Self.StitUPO(SenderPnl, SenderOR, Self.UPOUTSClick, nil)
+ if (Self.note <> '') then
+   Self.NoteUPO(SenderPnl, SenderOR, Self.UPOUTSClick, nil)
  else
    Self.UPOUTSClick(SenderPnl);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkUvazka.PanelStateString(): string;
+function TBlkLinker.PanelStateString(): string;
 var fg, bg: TColor;
-    trat: TBlkTrat;
+    railway: TBlkTrat;
 begin
  Result := inherited;
 
- trat := TBlkTrat(Self.parent);
- if (trat.Smer = TTratSmer.disabled) then
+ railway := TBlkTrat(Self.parent);
+ if (railway.Smer = TTratSmer.disabled) then
   begin
    fg := clBlack;
    bg := clFuchsia;
   end else begin
-   if (Self.Stitek <> '') then bg := clTeal
+   if (Self.note <> '') then bg := clTeal
    else bg := clBlack;
 
-   if (trat.RBPCan) then fg := clRed
-   else if (trat.Zaver) then fg := clBlue
-   else if (trat.nouzZaver) then fg := clAqua
-   else if (trat.Obsazeno) then fg := clBlue
+   if (railway.RBPCan) then fg := clRed
+   else if (railway.Zaver) then fg := clBlue
+   else if (railway.nouzZaver) then fg := clAqua
+   else if (railway.Obsazeno) then fg := clBlue
    else fg := $A0A0A0;
   end;
 
  Result := Result + ownConvert.ColorToStr(fg) + ';' +
                     ownConvert.ColorToStr(bg) + ';' +
-                    IntToStr(ownConvert.BoolToInt(trat.Zadost)) + ';';
+                    IntToStr(ownConvert.BoolToInt(railway.Zadost)) + ';';
 
- case (trat.Smer) of
+ case (railway.Smer) of
   TTratSmer.disabled, TTratSmer.zadny
                      : Result := Result + '0;';
   TTratSmer.AtoB     : Result := Result + '1;';
   TTratSmer.BtoA     : Result := Result + '2;';
- end;//case
+ end;
 
- Result := Result + trat.GetTrainsList(',') + ';';
+ Result := Result + railway.GetTrainsList(',') + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

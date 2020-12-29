@@ -364,7 +364,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, TBlockSignal, TBlokUsek, TOblsRizeni,
      TBlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
-     THVDatabase, Zasobnik, TBlokUvazka, TBlokZamek, TBlokTratUsek;
+     THVDatabase, Zasobnik, TBlockLinker, TBlokZamek, TBlokTratUsek;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -924,17 +924,17 @@ begin
     Blky.GetBlkByID(Self.fproperties.Trat, Blk);
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations[0] = Self.fstaveni.senderOR) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
-      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
+    if ((TBlkLinker(TBlkTrat(Blk).uvazkaA).stations.Count > 0) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaA).stations[0] = Self.fstaveni.senderOR) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaA).note <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkLinker(TBlkTrat(Blk).uvazkaA),
+          TBlkLinker(TBlkTrat(Blk).uvazkaA).id));
 
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations[0] = Self.fstaveni.senderOR) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
-      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
+    if ((TBlkLinker(TBlkTrat(Blk).uvazkaB).stations.Count > 0) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaB).stations[0] = Self.fstaveni.senderOR) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaB).note <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkLinker(TBlkTrat(Blk).uvazkaB),
+          TBlkLinker(TBlkTrat(Blk).uvazkaB).id));
 
     // stitky a vyluky na tratovych usecich
     for usek in TBlkTrat(Blk).GetSettings().useky do
@@ -1167,17 +1167,17 @@ begin
      end;
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).stations[0] = Self.fstaveni.senderOR) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaA).Stitek <> '')) then
-      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaA),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaA).id));
+    if ((TBlkLinker(TBlkTrat(Blk).uvazkaA).stations.Count > 0) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaA).stations[0] = Self.fstaveni.senderOR) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaA).note <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkLinker(TBlkTrat(Blk).uvazkaA),
+          TBlkLinker(TBlkTrat(Blk).uvazkaA).id));
 
-    if ((TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations.Count > 0) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).stations[0] = Self.fstaveni.senderOR) and
-        (TBlkUvazka(TBlkTrat(Blk).uvazkaB).Stitek <> '')) then
-      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkUvazka(TBlkTrat(Blk).uvazkaB),
-          TBlkUvazka(TBlkTrat(Blk).uvazkaB).id));
+    if ((TBlkLinker(TBlkTrat(Blk).uvazkaB).stations.Count > 0) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaB).stations[0] = Self.fstaveni.senderOR) and
+        (TBlkLinker(TBlkTrat(Blk).uvazkaB).note <> '')) then
+      bariery.Add(Self.JCBariera(_JCB_TRAT_STITEK, TBlkLinker(TBlkTrat(Blk).uvazkaB),
+          TBlkLinker(TBlkTrat(Blk).uvazkaB).id));
    end;
 
 end;
@@ -1808,8 +1808,8 @@ var i, j: Integer;
         if (Self.typ = TJCType.posun) then
          begin
           case (Self.fproperties.TratSmer) of
-           TTratSmer.AtoB : TBlkUvazka(trat.uvazkaA).ZAK := true;
-           TTratSmer.BtoA : TBlkUvazka(trat.uvazkaB).ZAK := true;
+           TTratSmer.AtoB : TBlkLinker(trat.uvazkaA).departureForbidden := true;
+           TTratSmer.BtoA : TBlkLinker(trat.uvazkaB).departureForbidden := true;
           end;
          end;
 
@@ -1882,15 +1882,15 @@ var i, j: Integer;
       Blky.GetBlkByID(Self.fproperties.Trat, TBlk(trat));
 
       // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
-      if ((trat.uvazkaA as TBlkUvazka).stations.Count > 0) then
+      if ((trat.uvazkaA as TBlkLinker).stations.Count > 0) then
        begin
         for oblr in navestidlo.stations do
-          if ((trat.uvazkaA as TBlkUvazka).stations[0] = oblr) then
-             (trat.uvazkaA as TBlkUvazka).nouzZaver := true;
+          if ((trat.uvazkaA as TBlkLinker).stations[0] = oblr) then
+             (trat.uvazkaA as TBlkLinker).emLock := true;
 
         for oblr in navestidlo.stations do
-          if ((trat.uvazkaB as TBlkUvazka).stations[0] = oblr) then
-             (trat.uvazkaB as TBlkUvazka).nouzZaver := true;
+          if ((trat.uvazkaB as TBlkLinker).stations[0] = oblr) then
+             (trat.uvazkaB as TBlkLinker).emLock := true;
        end;
      end;
 
@@ -1972,8 +1972,8 @@ var i, j: Integer;
       if ((Self.typ = TJCType.posun) and (trat.Smer = Self.fproperties.TratSmer)) then
        begin
         case (Self.fproperties.TratSmer) of
-         TTratSmer.AtoB : if (not TBlkUvazka(trat.uvazkaA).ZAK) then TBlkUvazka(trat.uvazkaA).ZAK := true;
-         TTratSmer.BtoA : if (not TBlkUvazka(trat.uvazkaB).ZAK) then TBlkUvazka(trat.uvazkaB).ZAK := true;
+         TTratSmer.AtoB : if (not TBlkLinker(trat.uvazkaA).departureForbidden) then TBlkLinker(trat.uvazkaA).departureForbidden := true;
+         TTratSmer.BtoA : if (not TBlkLinker(trat.uvazkaB).departureForbidden) then TBlkLinker(trat.uvazkaB).departureForbidden := true;
         end;
        end;
      end;
@@ -3300,8 +3300,8 @@ begin
   _JCB_TRAT_ZAK : begin
     Blky.GetBlkByID(Self.fproperties.Trat, Blk);
     case (Self.fproperties.TratSmer) of
-      TTratSmer.AtoB : canZAK := TBlkUvazka(TBlkTrat(Blk).uvazkaA).ZAK;
-      TTratSmer.BtoA : canZAK := TBlkUvazka(TBlkTrat(Blk).uvazkaB).ZAK;
+      TTratSmer.AtoB : canZAK := TBlkLinker(TBlkTrat(Blk).uvazkaA).departureForbidden;
+      TTratSmer.BtoA : canZAK := TBlkLinker(TBlkTrat(Blk).uvazkaB).departureForbidden;
     else
      canZAK := true;
     end;
@@ -3323,7 +3323,7 @@ begin
 
   _JCB_TRAT_STITEK : begin
     Result[0] := GetUPOLine('ŠTÍTEK '+Bariera.blok.name, taCenter, clBlack, clTeal);
-    lines := GetLines((Bariera.blok as TBlkUvazka).Stitek, _UPO_LINE_LEN);
+    lines := GetLines((Bariera.blok as TBlkLinker).note, _UPO_LINE_LEN);
     Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
     if (lines.Count > 1) then
       Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
@@ -3365,8 +3365,8 @@ begin
   _JCB_TRAT_ZAK: begin
       Blky.GetBlkByID(Self.fproperties.Trat, Blk);
       case (Self.fproperties.TratSmer) of
-        TTratSmer.AtoB : Result := (Self.typ = TJCType.posun) and (TBlkUvazka(TBlkTrat(Blk).uvazkaA).ZAK);
-        TTratSmer.BtoA : Result := (Self.typ = TJCType.posun) and (TBlkUvazka(TBlkTrat(Blk).uvazkaB).ZAK);
+        TTratSmer.AtoB : Result := (Self.typ = TJCType.posun) and (TBlkLinker(TBlkTrat(Blk).uvazkaA).departureForbidden);
+        TTratSmer.BtoA : Result := (Self.typ = TJCType.posun) and (TBlkLinker(TBlkTrat(Blk).uvazkaB).departureForbidden);
       else
         Result := false;
       end;

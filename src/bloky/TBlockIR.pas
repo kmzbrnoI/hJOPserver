@@ -63,7 +63,7 @@ constructor TBlkIR.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btIR;
+ Self.m_globSettings.typ := btIR;
  Self.m_state := Self._def_ir_stav;
 end;
 

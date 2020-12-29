@@ -102,7 +102,7 @@ constructor TBlkLock.Create(index: Integer);
 begin
  inherited Create(index);
 
- Self.GlobalSettings.typ := btLock;
+ Self.m_globSettings.typ := btLock;
  Self.m_state := _def_zamek_stav;
  Self.last_zaver := false;
 end;//ctor

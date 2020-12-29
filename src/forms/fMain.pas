@@ -493,7 +493,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      SnadnSpusteni, TBlockSummary, TBlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
-     fBlkNav, fBlkTrat, TBLokUvazka, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
+     fBlkNav, fBlkTrat, TBlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkVyhybkaSysVars, fBlkTratSysVars, TBlokTrat, ModelovyCas, fBlkZamek,
      TBlokZamek, DataMultiJC, TMultiJCDatabase, fMJCEdit, TBlockDisconnector,
      fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
@@ -2515,7 +2515,7 @@ var Blk: TBlk;
    btSignal  : ;
    btCrossing : ;
    btTrat    : F_BlkTrat_tech.OpenForm(Blk as TBlkTrat);
-   btUvazka  : ;
+   btLinker  : ;
   end;//case
 end;
 
@@ -2948,8 +2948,8 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btUvazka: begin
-    if (not (Blk as TBlkUvazka).enabled) then
+   btLinker: begin
+    if (not (Blk as TBlkLinker).enabled) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
     else
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
@@ -3034,7 +3034,7 @@ var Blk: TBlk;
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
    btSignal: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
    btCrossing: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
-   btTrat, btUvazka: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
+   btTrat, btLinker: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
    btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
    btDisconnector: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    btTU: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
