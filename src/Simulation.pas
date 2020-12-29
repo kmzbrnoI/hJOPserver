@@ -50,7 +50,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TJCDatabase, TBlok, TBlockTrack, TBloky, TBlockSignal,
+uses GetSystems, TechnologieRCS, TJCDatabase, TBlock, TBlockTrack, TBloky, TBlockSignal,
      TBlockRailwayTrack, TBlockTurnout;
 
 ////////////////////////////////////////////////////////////////////////////////

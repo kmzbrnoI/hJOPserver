@@ -7,7 +7,7 @@
 
 interface
 
-uses TechnologieMultiJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
+uses TechnologieMultiJC, TBlock, IniFiles, SysUtils, Windows, IdContext,
       Generics.Collections, Classes, Generics.Defaults, TBlockSignal;
 
 type

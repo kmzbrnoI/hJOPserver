@@ -48,7 +48,7 @@ uses
   TechnologieJC in 'jc\TechnologieJC.pas',
   FileSystem in 'FileSystem.pas',
   fConsole in 'forms\fConsole.pas' {F_Console},
-  TBlok in 'bloky\TBlok.pas',
+  TBlock in 'bloky\TBlock.pas',
   TBloky in 'bloky\TBloky.pas',
   TBlockTurnout in 'bloky\TBlockTurnout.pas',
   TBlockTrack in 'bloky\TBlockTrack.pas',

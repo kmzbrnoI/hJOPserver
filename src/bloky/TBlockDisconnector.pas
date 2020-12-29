@@ -4,7 +4,7 @@ unit TBlockDisconnector;
 
 interface
 
-uses IniFiles, TBlok, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
+uses IniFiles, TBlock, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
      IdContext, TOblRizeni, TechnologieRCS;
 
 type

@@ -7,7 +7,7 @@ unit TBlockTrackRef;
 
 interface
 
-uses TBlok, TBlockTrack, Classes, SysUtils;
+uses TBlock, TBlockTrack, Classes, SysUtils;
 
 type
 

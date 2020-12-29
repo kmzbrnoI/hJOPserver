@@ -40,7 +40,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
-  Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlok, IbUtils, Train,
+  Dialogs, Menus, Buttons, ComCtrls, fMain, TBloky, TBlock, IbUtils, Train,
   IniFiles, IdContext, TBlockRailway, Generics.Collections, UPO, TBlockTurnout,
   TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 

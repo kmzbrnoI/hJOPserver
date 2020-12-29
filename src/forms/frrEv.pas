@@ -47,7 +47,7 @@ type
 
 implementation
 
-uses TBlok, ownConvert;
+uses TBlock, ownConvert;
 
 {$R *.dfm}
 

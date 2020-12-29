@@ -8,7 +8,7 @@ interface
 
 uses
   IniFiles, TechnologieJC, Generics.Collections, TBloky, IdContext, SysUtils,
-  Classes, Generics.Defaults, Math, TBlok, TBlockSignal;
+  Classes, Generics.Defaults, Math, TBlock, TBlockSignal;
 
 type
 

@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
+uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
       TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Train, JclPCRE;
 

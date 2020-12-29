@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses TBloky, TBlok, TBlockIR, TBlockTrack, ownConvert;
+uses TBloky, TBlock, TBlockIR, TBlockTrack, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 

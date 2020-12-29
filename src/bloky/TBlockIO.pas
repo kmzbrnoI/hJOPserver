@@ -10,7 +10,7 @@ unit TBlockIO;
 
 interface
 
-uses IniFiles, TBlok, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
+uses IniFiles, TBlock, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
      Graphics, JsonDataObjects, RCSErrors, RCS;
 
 type

@@ -35,7 +35,7 @@ var
 
 implementation
 
-uses TBloky, TBlok, TBlockTurnout, TBlockTrack, TBlockSignal, TBlockIR, TBlockCrossing,
+uses TBloky, TBlock, TBlockTurnout, TBlockTrack, TBlockSignal, TBlockIR, TBlockCrossing,
       fMain, TBlockRailway, TBlockLinker, TrainDb, TBlokZamek, TBlockDisconnector, TBlockIO,
       TBlockSummary, TBlockAC, ownConvert;
 

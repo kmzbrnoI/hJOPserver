@@ -115,7 +115,7 @@ type
 
 implementation
 
-uses TOblRizeni, TCPServerOR, Logging, TechnologieJC, TBlok, TBloky,
+uses TOblRizeni, TCPServerOR, Logging, TechnologieJC, TBlock, TBloky,
       TBlockLinker, TBlockRailway, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////

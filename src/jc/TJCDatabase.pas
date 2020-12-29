@@ -6,7 +6,7 @@
 
 interface
 
-uses TechnologieJC, TBlok, IniFiles, SysUtils, Windows, IdContext,
+uses TechnologieJC, TBlock, IniFiles, SysUtils, Windows, IdContext,
       Generics.Collections, Classes, IBUtils, TBloky, TBlockSignal;
 
 type

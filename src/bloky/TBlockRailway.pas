@@ -10,7 +10,7 @@
 
 interface
 
-uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes, JsonDataObjects,
+uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes, JsonDataObjects,
      Generics.Collections, Train;
 
 type

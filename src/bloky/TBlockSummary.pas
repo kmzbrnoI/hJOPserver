@@ -4,7 +4,7 @@ unit TBlockSummary;
 
 interface
 
-uses IniFiles, TBlok, Menus, SysUtils, Classes, IdContext, Generics.Collections,
+uses IniFiles, TBlock, Menus, SysUtils, Classes, IdContext, Generics.Collections,
      TOblRizeni, TCPServerOR;
 
 type

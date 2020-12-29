@@ -11,7 +11,7 @@ interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
-     IdContext, TBlok, ComCtrls, IdSync, TBloky, UPO, TCPORsRef,
+     IdContext, TBlock, ComCtrls, IdSync, TBloky, UPO, TCPORsRef,
      User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const

@@ -1,4 +1,4 @@
-unit DataSpr;
+﻿unit DataSpr;
 
 // TTrainTableData - trida starajici se o vyplnovani tabulky souprav
 
@@ -29,7 +29,7 @@ var
 implementation
 
 uses TrainDb, Train, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
-       TBloky, TBlok, THnaciVozidlo, ownConvert;
+       TBloky, TBlock, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -14,7 +14,7 @@
 
 interface
 
-uses IniFiles, TBlok, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
+uses IniFiles, TBlock, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
      Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
      JsonDataObjects, Train;
 

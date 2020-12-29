@@ -35,7 +35,7 @@ var
 implementation
 
 uses fMain, fSettings, TechnologieRCS, GetSystems, TechnologieTrakce,
-     Logging, TBlok, TBlockTrack, TBLoky;
+     Logging, TBlock, TBlockTrack, TBLoky;
 
 {$R *.dfm}
 

@@ -132,7 +132,7 @@ var
 
 implementation
 
-uses fMain, diagnostics, GetSystems, TBloky, TBlok, TBlockTurnout, TBlockTrack,
+uses fMain, diagnostics, GetSystems, TBloky, TBlock, TBlockTurnout, TBlockTrack,
      BoosterDb, TBlockCrossing, RCSErrors, TOblsRizeni,
      Logging, TCPServerOR, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 

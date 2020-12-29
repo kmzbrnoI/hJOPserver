@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses TBloky, PTUtils, TOblRizeni, TOblsRizeni, TBlok;
+uses TBloky, PTUtils, TOblRizeni, TOblsRizeni, TBlock;
 
 ////////////////////////////////////////////////////////////////////////////////
 

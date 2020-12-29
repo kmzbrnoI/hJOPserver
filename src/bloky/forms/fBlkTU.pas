@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, TBloky, TBlok, Mask,
+  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, TBloky, TBlock, Mask,
   TBlockRailwayTrack, StrUtils, TBlockTrack, fBlkTUZastEvent, Generics.Collections;
 
 type

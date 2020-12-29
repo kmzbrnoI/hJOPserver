@@ -1,4 +1,4 @@
-﻿unit TBlok;
+﻿unit TBlock;
 
 //unita, ktera definuje technologicky blok jako abstraktni tridu
 

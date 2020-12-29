@@ -4,7 +4,7 @@ unit TBlockIR;
 
 interface
 
-uses IniFiles, TBlok, JsonDataObjects, TechnologieRCS;
+uses IniFiles, TBlock, JsonDataObjects, TechnologieRCS;
 
 type
  TIROccupationState = (disabled = -5, none = -1, free = 0, occupied = 1);

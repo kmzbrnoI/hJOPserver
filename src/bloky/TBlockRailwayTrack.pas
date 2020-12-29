@@ -41,7 +41,7 @@ Jak to funguje:
 
 interface
 
-uses TBlockTrack, Classes, TBlok, IniFiles, SysUtils, IdContext, rrEvent,
+uses TBlockTrack, Classes, TBlock, IniFiles, SysUtils, IdContext, rrEvent,
       Generics.Collections, TOblRizeni, THnaciVozidlo, Train, JclPCRE;
 
 type

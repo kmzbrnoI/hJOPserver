@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, TBlok, Menus, TOblsRizeni, SysUtils, Classes,
+uses IniFiles, TBlock, Menus, TOblsRizeni, SysUtils, Classes,
      IdContext, StrUtils, TOblRizeni, Generics.Collections;
 
 type

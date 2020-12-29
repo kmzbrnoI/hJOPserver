@@ -119,7 +119,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TBlok, TOblsRizeni,
+uses GetSystems, FileSystem, TBlock, TOblsRizeni,
       TBlockSignal, TJCDatabase, DataJC, TBlockRailway, TBlockTurnout;
 
 {$R *.dfm}

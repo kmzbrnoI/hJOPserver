@@ -100,7 +100,7 @@ var
 implementation
 
 uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni,
-     TBlok, FileSystem, DataBloky;
+     TBlock, FileSystem, DataBloky;
 
 {$R *.dfm}
 

@@ -30,7 +30,7 @@ function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
 
 implementation
 
-uses TBloky, TBlok, TBlockRailwayTrack;
+uses TBloky, TBlock, TBlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 

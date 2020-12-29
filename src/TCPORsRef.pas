@@ -1,8 +1,8 @@
-unit TCPORsRef;
+﻿unit TCPORsRef;
 
 interface
 
-uses Generics.Collections, TOblRizeni, TBlok, Classes, Train, User,
+uses Generics.Collections, TOblRizeni, TBlock, Classes, Train, User,
      THnaciVozidlo, IdContext, SysUtils;
 
 type

@@ -26,7 +26,7 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, TBloky, TBlok;
+uses PTUtils, JclPCRE, TBloky, TBlock;
 
 ////////////////////////////////////////////////////////////////////////////////
 

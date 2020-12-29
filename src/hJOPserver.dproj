@@ -128,7 +128,7 @@
 			<DCCReference Include="forms\fConsole.pas">
 				<Form>F_Console</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\TBlok.pas"/>
+			<DCCReference Include="bloky\TBlock.pas"/>
 			<DCCReference Include="bloky\TBloky.pas"/>
 			<DCCReference Include="bloky\TBlockTurnout.pas"/>
 			<DCCReference Include="bloky\TBlockTrack.pas"/>

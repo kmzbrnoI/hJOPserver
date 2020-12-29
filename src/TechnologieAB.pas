@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses DataAB, TBlok, TBloky, TBlockTrack, logging, TBlockSignal;
+uses DataAB, TBlock, TBloky, TBlockTrack, logging, TBlockSignal;
 
 ////////////////////////////////////////////////////////////////////////////////
 
