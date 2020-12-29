@@ -114,25 +114,25 @@ begin
    end;
   end;
 
- settings.Name := E_Nazev.Text;
+ settings.name := E_Nazev.Text;
  settings.id := E_ID.Text;
 
  if (Self.CHB_Zkrat.Checked) then
   begin
-   settings.RCS.Zkrat.board := Self.SE_Zkrat_module.Value;
-   settings.RCS.Zkrat.port := SE_Zkrat_Port.Value;
+   settings.RCS.overload.board := Self.SE_Zkrat_module.Value;
+   settings.RCS.overload.port := SE_Zkrat_Port.Value;
   end else begin
-   Settings.RCS.Zkrat.board := 0;
-   Settings.RCS.Zkrat.port := 0;
+   Settings.RCS.overload.board := 0;
+   Settings.RCS.overload.port := 0;
   end;
 
  if (Self.CHB_Napajeni.Checked) then
   begin
-   settings.RCS.Napajeni.board := Self.SE_Napajeni_module.Value;
-   settings.RCS.Napajeni.port := SE_Napajeni_Port.Value;
+   settings.RCS.power.board := Self.SE_Napajeni_module.Value;
+   settings.RCS.power.port := SE_Napajeni_Port.Value;
   end else begin
-   Settings.RCS.Napajeni.board := 0;
-   Settings.RCS.Napajeni.port := 0;
+   Settings.RCS.power.board := 0;
+   Settings.RCS.power.port := 0;
   end;
 
  if (Self.CHB_DCC.Checked) then
@@ -144,7 +144,7 @@ begin
    Settings.RCS.DCC.port := 0;
   end;
 
- Self.open_booster.bSettings := settings;
+ Self.open_booster.settings := settings;
 
  Boosters.SyncStructures();
  ZesTableData.LoadToTable();
@@ -200,25 +200,25 @@ procedure TF_ZesilovacEdit.NormalOpenForm;
 var bSettings: TBoosterSettings;
     IgnoraceRCS: TArI;
  begin
-  bSettings := open_booster.bSettings;
+  bSettings := open_booster.settings;
 
   E_ID.Text := bSettings.id;
-  E_Nazev.Text := bSettings.Name;
+  E_Nazev.Text := bSettings.name;
 
-  SE_Zkrat_Port.Value := bSettings.RCS.Zkrat.port;
-  SE_Napajeni_Port.Value := bSettings.RCS.Napajeni.port;
+  SE_Zkrat_Port.Value := bSettings.RCS.overload.port;
+  SE_Napajeni_Port.Value := bSettings.RCS.power.port;
 
   SetLength(IgnoraceRCS,2);
   IgnoraceRCS[0] := 3;
   IgnoraceRCS[1] := 4;
 
-  Self.SE_Napajeni_module.Value := bSettings.RCS.Napajeni.board;
-  Self.SE_Zkrat_module.Value := bSettings.RCS.Zkrat.board;
+  Self.SE_Napajeni_module.Value := bSettings.RCS.power.board;
+  Self.SE_Zkrat_module.Value := bSettings.RCS.overload.board;
 
   Self.SE_DCC_module.Value := bSettings.RCS.DCC.board;
   Self.SE_DCC_port.Value := bSettings.RCS.DCC.port;
 
-  Self.CHB_Zkrat.Checked := open_booster.isShortcutDetection;
+  Self.CHB_Zkrat.Checked := open_booster.isOverloadDetection;
   Self.CHB_ZkratClick(Self.CHB_Zkrat);
 
   Self.CHB_Napajeni.Checked := open_booster.isPowerDetection;
@@ -229,7 +229,7 @@ var bSettings: TBoosterSettings;
 
   Self.SE_RCS_moduleExit(Self);
 
-  F_ZesilovacEdit.Caption := 'Zesilovač: '+bSettings.Name;
+  F_ZesilovacEdit.Caption := 'Zesilovač: '+bSettings.name;
  end;
 
 procedure TF_ZesilovacEdit.NewOpenForm;

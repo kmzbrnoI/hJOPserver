@@ -225,9 +225,9 @@ begin
   begin
    try
      if (booster.isPowerDetection) then
-       Self.SetInput(booster.bSettings.RCS.Napajeni, 0);
-     if (booster.isShortcutDetection) then
-       Self.SetInput(booster.bSettings.RCS.Zkrat, 0);
+       Self.SetInput(booster.settings.RCS.power, 0);
+     if (booster.isOverloadDetection) then
+       Self.SetInput(booster.settings.RCS.overload, 0);
    except
 
    end;

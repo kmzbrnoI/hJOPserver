@@ -51,16 +51,16 @@ begin
 
    LI.Caption := booster.id;
    LI.SubItems.Add(booster.name);
-   if (booster.isShortcutDetection) then
-     LI.SubItems.Add(booster.bSettings.RCS.Zkrat.ToString())
+   if (booster.isOverloadDetection) then
+     LI.SubItems.Add(booster.settings.RCS.overload.ToString())
    else
      LI.SubItems.Add('-');
    if (booster.isPowerDetection) then
-     LI.SubItems.Add(booster.bSettings.RCS.Napajeni.ToString())
+     LI.SubItems.Add(booster.settings.RCS.power.ToString())
    else
      LI.SubItems.Add('-');
    if (booster.isDCCdetection) then
-     LI.SubItems.Add(booster.bSettings.RCS.DCC.ToString())
+     LI.SubItems.Add(booster.settings.RCS.DCC.ToString())
    else
      LI.SubItems.Add('-');
   end;

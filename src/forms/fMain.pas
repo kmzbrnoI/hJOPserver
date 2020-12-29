@@ -3116,9 +3116,9 @@ begin
   begin
    LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
   end else begin
-   if (Boosters.sorted[Item.Index].napajeni = TBoosterSignal.ok) then
+   if (Boosters.sorted[Item.Index].power = TBoosterSignal.ok) then
     begin
-     if (Boosters.sorted[Item.Index].Zkrat = TBoosterSignal.ok) then
+     if (Boosters.sorted[Item.Index].overload = TBoosterSignal.ok) then
       begin
        LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
       end else begin

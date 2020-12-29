@@ -12,19 +12,19 @@ type
 
   TBoosterDb = class
    private const
-    _BEEP_INTERVAL = 1;                                //in seconds
+    _BEEP_INTERVAL = 1; // in seconds
 
    private
      db: TDictionary<string, TBooster>;
      sortedKeys: TList<TBooster>;
 
-     Beep: record                                        //beep on overload
-       NextBeep: TDateTime;                                //time of next beep
+     Beep: record  // beep on overload
+       NextBeep: TDateTime;  // time of next beep
      end;
 
       //events from TBooster; those events direct call blk methods
-      procedure OnZkratChange(Sender: TObject; state: TBoosterSignal);
-      procedure OnNapajeniChange(Sender: TObject; state: TBoosterSignal);
+      procedure OnOverloadChange(Sender: TObject; state: TBoosterSignal);
+      procedure OnPowerChange(Sender: TObject; state: TBoosterSignal);
       procedure OnDCCChange(Sender: TObject; state: TBoosterSignal);
 
       procedure ControlBeep();
@@ -84,7 +84,6 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-//files
 
 //reads all sections
 procedure TBoosterDb.LoadFromFile(inifilename: string);
@@ -128,9 +127,9 @@ begin
    try
      booster := TBooster.Create(ini, id);
 
-     booster.OnNapajeniChange := Self.OnNapajeniChange;
-     booster.OnZkratChange    := Self.OnZkratChange;
-     booster.OnDCCChange      := Self.OnDCCChange;
+     booster.OnPowerChange := Self.OnPowerChange;
+     booster.OnOverloadChange := Self.OnOverloadChange;
+     booster.OnDCCChange := Self.OnDCCChange;
 
      Self.db.AddOrSetValue(id, booster);
 
@@ -191,9 +190,9 @@ begin
 
  Self.db.Add(new.id, new);
 
- new.OnNapajeniChange := Self.OnNapajeniChange;
- new.OnZkratChange    := Self.OnZkratChange;
- new.OnDCCChange      := Self.OnDCCChange;
+ new.OnPowerChange := Self.OnPowerChange;
+ new.OnOverloadChange := Self.OnOverloadChange;
+ new.OnDCCChange := Self.OnDCCChange;
 
  Self.sortedKeys.Add(new);
  Self.sortedKeys.Sort();
@@ -220,13 +219,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBoosterDb.OnZkratChange(Sender: TObject; state: TBoosterSignal);
+procedure TBoosterDb.OnOverloadChange(Sender: TObject; state: TBoosterSignal);
 begin
  Blocks.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
 end;
 
-procedure TBoosterDb.OnNapajeniChange(Sender: TObject; state: TBoosterSignal);
+procedure TBoosterDb.OnPowerChange(Sender: TObject; state: TBoosterSignal);
 begin
  Blocks.OnBoosterChange(TBooster(Sender).id);
  ZesTableData.ZesChange();
@@ -240,7 +239,6 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//controls beeping
 procedure TBoosterDb.ControlBeep();
 var zkrat: Boolean;
     booster: TBooster;
@@ -250,12 +248,12 @@ begin
  zkrat := false;
  for booster in Self.db.Values do
   begin
-   if (booster.zkrat = TBoosterSignal.error) then
+   if (booster.overload = TBoosterSignal.error) then
     begin
      zkrat := true;
      Break;
-    end;//if
-  end;//for i
+    end;
+  end;
 
  if (not zkrat) then Exit;
 

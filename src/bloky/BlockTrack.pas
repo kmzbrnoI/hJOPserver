@@ -787,8 +787,8 @@ begin
  if (Boosters.ContainsKey(Self.m_settings.boosterId)) then
   begin
    Self.DCC := (Boosters[Self.m_settings.boosterId].DCC = TBoosterSignal.ok);
-   Self.power := Boosters[Self.m_settings.boosterId].napajeni;
-   Self.shortCircuit := Boosters[Self.m_settings.boosterId].zkrat;
+   Self.power := Boosters[Self.m_settings.boosterId].power;
+   Self.shortCircuit := Boosters[Self.m_settings.boosterId].overload;
   end else begin
    Self.DCC := (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn);
    Self.power := TBoosterSignal.undef;
@@ -2402,7 +2402,7 @@ function TBlkTrack.RealBoosterShortCircuit(): TBoosterSignal;
 begin
  if (Boosters.ContainsKey(Self.m_settings.boosterId)) then
   begin
-   Result := Boosters[Self.m_settings.boosterId].zkrat;
+   Result := Boosters[Self.m_settings.boosterId].overload;
   end else begin
    Result := TBoosterSignal.ok;
   end;
