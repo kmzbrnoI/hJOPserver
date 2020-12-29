@@ -30,7 +30,7 @@ type
    btRozp = 8,
    btTU = 9,
    btIO = 10,
-   btSH = 11,
+   btSummary = 11,
    btAC = 12
  );
 
@@ -427,7 +427,7 @@ begin
   btRozp: Result := 'disconnector';
   btTU: Result := 'railwayTrack';
   btIO: Result := 'io';
-  btSH: Result := 'crossingsSummary';
+  btSummary: Result := 'crossingsSummary';
   btAC: Result := 'AC';
  else
   Result := 'neznamy';

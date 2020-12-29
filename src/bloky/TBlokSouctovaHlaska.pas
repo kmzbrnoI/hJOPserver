@@ -1,6 +1,6 @@
 unit TBlokSouctovaHlaska;
 
-//definice a obsluha technologickeho bloku Souctova hlaska
+{ SUMMARY technological block definition. (Souètová hláska) }
 
 interface
 
@@ -8,30 +8,30 @@ uses IniFiles, TBlok, Menus, SysUtils, Classes, IdContext, Generics.Collections,
      TOblRizeni, TCPServerOR;
 
 type
- TBlkSHStav = record
+ TBlkSummarySettings = record
+  crossings: TList<Integer>;
+ end;
+
+ TBlkSummaryState = record
   enabled: Boolean;
  end;
 
- TBlkSHSettings = record
-  prejezdy: TList<Integer>; // seznam id prejezdu, ktere jsou v souctove hlasce
- end;
-
- TBlkSH = class(TBlk)
+ TBlkSummary = class(TBlk)
   const
-   _def_sh_stav: TBlkSHStav = (
+   _def_summary_state: TBlkSummaryState = (
      enabled: false;
    );
 
   protected
-   settings: TBlkSHSettings;
-   shStav: TBlkSHStav;
+   m_settings: TBlkSummarySettings;
+   m_state: TBlkSummaryState;
 
-    function GetKomunikace(): Boolean;
-    function GetAnulace(): Boolean;
-    function GetUZ(): Boolean;
-    function GetUzavreno(): Boolean;
-    function GetPorucha(): Boolean;
-    function GetNOT(): Boolean;
+    function IsCommunication(): Boolean;
+    function IsAnnulation(): Boolean;
+    function IsPcClosed(): Boolean;
+    function IsClosed(): Boolean;
+    function IsError(): Boolean;
+    function IsEmOpen(): Boolean;
 
     procedure CreateReferences();
     procedure RemoveReferences();
@@ -41,7 +41,6 @@ type
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
-    //load/save data
     procedure LoadData(ini_tech: TMemIniFile; const section: string;
                        ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -49,22 +48,21 @@ type
     procedure Enable(); override;
     procedure Disable(); override;
 
-    function GetSettings(): TBlkSHSettings;
-    procedure SetSettings(data: TBlkSHSettings);
+    function GetSettings(): TBlkSummarySettings;
+    procedure SetSettings(data: TBlkSummarySettings);
 
-    //----- souctova hlaska own functions -----
+    //----- Sumary block specific functions -----
 
-    property stav: TBlkSHStav read shStav;
-    property enabled: Boolean read shStav.enabled;
+    property state: TBlkSummaryState read m_state;
+    property enabled: Boolean read m_state.enabled;
 
-    property komunikace: Boolean read GetKomunikace;
-    property anulace: Boolean read GetAnulace;
-    property UZ: Boolean read GetUZ;
-    property uzavreno: Boolean read GetUzavreno;
-    property porucha: Boolean read GetPorucha;
-    property nouzoveOT: Boolean read GetNOT;
+    property communication: Boolean read IsCommunication;
+    property annulation: Boolean read IsAnnulation;
+    property pcClosed: Boolean read IsPcClosed;
+    property closed: Boolean read IsClosed;
+    property error: Boolean read IsError;
+    property emOpen: Boolean read IsEmOpen;
 
-    //GUI:
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject;
                              item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject;
@@ -82,37 +80,37 @@ implementation
 
 uses TBlokPrejezd, TBloky, TOblsRizeni, Graphics, ownConvert;
 
-constructor TBlkSH.Create(index: Integer);
+constructor TBlkSummary.Create(index: Integer);
 begin
  inherited;
 
- Self.shStav := Self._def_sh_stav;
- Self.settings.prejezdy := TList<Integer>.Create();
- Self.GlobalSettings.typ := btSH;
+ Self.m_state := Self._def_summary_state;
+ Self.m_settings.crossings := TList<Integer>.Create();
+ Self.GlobalSettings.typ := btSummary;
 end;
 
-destructor TBlkSH.Destroy();
+destructor TBlkSummary.Destroy();
 begin
- Self.settings.prejezdy.Free();
+ Self.m_settings.crossings.Free();
  inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSH.LoadData(ini_tech: TMemIniFile; const section: string;
+procedure TBlkSummary.LoadData(ini_tech: TMemIniFile; const section: string;
                           ini_rel, ini_stat: TMemIniFile);
 var data: TStrings;
     str: string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.settings.prejezdy.Clear();
+ Self.m_settings.crossings.Clear();
  data := TStringList.Create();
  try
    ExtractStrings([','], [], PChar(ini_tech.ReadString(section, 'prejezdy', '')), data);
 
    for str in data do
-     Self.settings.prejezdy.Add(StrToInt(str));
+     Self.m_settings.crossings.Add(StrToInt(str));
 
    Self.LoadORs(ini_rel, 'T').Free();
  finally
@@ -120,14 +118,14 @@ begin
  end;
 end;
 
-procedure TBlkSH.SaveData(ini_tech: TMemIniFile; const section: string);
+procedure TBlkSummary.SaveData(ini_tech: TMemIniFile; const section: string);
 var str: string;
     n: Integer;
 begin
  inherited;
 
  str := '';
- for n in Self.settings.prejezdy do
+ for n in Self.m_settings.crossings do
    str := str + IntToStr(n) + ',';
 
  if (str <> '') then
@@ -136,32 +134,32 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSH.Enable();
+procedure TBlkSummary.Enable();
 begin
- Self.shStav.enabled := true;
+ Self.m_state.enabled := true;
  Self.CreateReferences();
 end;
 
-procedure TBlkSH.Disable();
+procedure TBlkSummary.Disable();
 begin
- Self.shStav.enabled := false;
+ Self.m_state.enabled := false;
  Self.Change(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSH.GetSettings(): TBlkSHSettings;
+function TBlkSummary.GetSettings(): TBlkSummarySettings;
 begin
- Result := Self.settings;
+ Result := Self.m_settings;
 end;
 
-procedure TBlkSH.SetSettings(data: TBlkSHSettings);
+procedure TBlkSummary.SetSettings(data: TBlkSummarySettings);
 begin
  if (Self.enabled) then
    Self.RemoveReferences();
- Self.settings.prejezdy.Free();
+ Self.m_settings.crossings.Free();
 
- Self.settings := data;
+ Self.m_settings := data;
 
  if (Self.enabled) then
    Self.CreateReferences();
@@ -172,18 +170,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkSH.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject;
+function TBlkSummary.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject;
                               rights: TORCOntrolRights): string;
 var prjid: Integer;
-    prj: TBlk;
+    crossing: TBlk;
 begin
  Result := inherited;
 
- for prjid in Self.settings.prejezdy do
+ for prjid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     Result := Result + prj.name + ','
+   Blky.GetBlkByID(prjid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     Result := Result + crossing.name + ','
    else
      Result := Result + '#???,';
   end;
@@ -191,7 +189,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSH.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
+procedure TBlkSummary.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
                             Button: TPanelButton; rights: TORCOntrolRights;
                             params: string = '');
 begin
@@ -202,162 +200,162 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkSH.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject;
+procedure TBlkSummary.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject;
                                 item: string; itemindex: Integer);
-var prj: TBlk;
+var crossing: TBlk;
 begin
  if (not Self.enabled) then Exit();
 
- if ((itemindex-2 >= 0) and (itemindex-2 < Self.settings.prejezdy.Count)) then
+ if ((itemindex-2 >= 0) and (itemindex-2 < Self.m_settings.crossings.Count)) then
   begin
-   Blky.GetBlkByID(Self.settings.prejezdy[itemindex-2], prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     ORTCPServer.Menu(SenderPnl, prj, SenderOR as TOR,
-                      prj.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write));
+   Blky.GetBlkByID(Self.m_settings.crossings[itemindex-2], crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     ORTCPServer.Menu(SenderPnl, crossing, SenderOR as TOR,
+                      crossing.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write));
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSH.GetKomunikace(): Boolean;
-var prjid: Integer;
-    prj: TBlk;
+function TBlkSummary.IsCommunication(): Boolean;
+var crossingid: Integer;
+    crossing: TBlk;
 begin
  Result := true;
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
     begin
-     if (TBlkCrossing(prj).state = TBlkCrossingBasicState.disabled) then
+     if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.disabled) then
        Exit(false);
     end else Exit(false);
   end;
 end;
 
-function TBlkSH.GetAnulace(): Boolean;
-var prjid: Integer;
-    prj: TBlk;
+function TBlkSummary.IsAnnulation(): Boolean;
+var crossingid: Integer;
+    crossing: TBlk;
 begin
  Result := false;
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     if (TBlkCrossing(prj).annulation) then
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     if (TBlkCrossing(crossing).annulation) then
        Exit(true);
   end;
 end;
 
-function TBlkSH.GetUZ(): Boolean;
-var prjid: Integer;
-    prj: TBlk;
+function TBlkSummary.IsPcClosed(): Boolean;
+var crossingid: Integer;
+    crossing: TBlk;
 begin
  Result := false;
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     if (TBlkCrossing(prj).pcClosed) then
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     if (TBlkCrossing(crossing).pcClosed) then
        Exit(true);
   end;
 end;
 
-function TBlkSH.GetUzavreno(): Boolean;
-var prjid: Integer;
-    prj: TBlk;
+function TBlkSummary.IsClosed(): Boolean;
+var crossingid: Integer;
+    crossing: TBlk;
 begin
  Result := false;
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     if (TBlkCrossing(prj).state = TBlkCrossingBasicState.closed) then
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.closed) then
        Exit(true);
   end;
 end;
 
-function TBlkSH.GetPorucha(): Boolean;
-var prjid: Integer;
-    prj: TBlk;
+function TBlkSummary.IsError(): Boolean;
+var crossingid: Integer;
+    crossing: TBlk;
 begin
  Result := false;
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     if (TBlkCrossing(prj).state = TBlkCrossingBasicState.none) then
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.none) then
        Exit(true);
   end;
 end;
 
-function TBlkSH.GetNOT(): Boolean;
-var prjid: Integer;
-    prj: TBlk;
+function TBlkSummary.IsEmOpen(): Boolean;
+var crossingid: Integer;
+    crossing: TBlk;
 begin
  Result := false;
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     if (TBlkCrossing(prj).pcEmOpen) then
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     if (TBlkCrossing(crossing).pcEmOpen) then
        Exit(true);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSH.CreateReferences();
-var prjid: Integer;
-    prj: TBlk;
+procedure TBlkSummary.CreateReferences();
+var crossingid: Integer;
+    crossing: TBlk;
 begin
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     TBlkCrossing(prj).AddSH(Self);
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     TBlkCrossing(crossing).AddSH(Self);
   end;
 end;
 
-procedure TBlkSH.RemoveReferences();
-var prjid: Integer;
-    prj: TBlk;
+procedure TBlkSummary.RemoveReferences();
+var crossingid: Integer;
+    crossing: TBlk;
 begin
- for prjid in Self.settings.prejezdy do
+ for crossingid in Self.m_settings.crossings do
   begin
-   Blky.GetBlkByID(prjid, prj);
-   if ((prj <> nil) and (prj.typ = btCrossing)) then
-     TBlkCrossing(prj).RemoveSH(Self);
+   Blky.GetBlkByID(crossingid, crossing);
+   if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+     TBlkCrossing(crossing).RemoveSH(Self);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSH.PanelStateString(): string;
+function TBlkSummary.PanelStateString(): string;
 var fg: TColor;
 begin
  Result := inherited;
 
  // n.o. rail
  fg := clTeal;
- if (Self.anulace) then
+ if (Self.annulation) then
    fg := clWhite;
  Result := Result + ownConvert.ColorToStr(fg) + ';';
  Result := Result + ownConvert.ColorToStr(clBlack) + ';0;';
 
  // left rectangle
  fg := clGreen;
- if ((Self.porucha) or (Self.nouzoveOT)) then
+ if ((Self.error) or (Self.emOpen)) then
    fg := clRed;
- if (not Self.komunikace) then
+ if (not Self.communication) then
    fg := clFuchsia;
  Result := Result + ownConvert.ColorToStr(fg) + ';';
 
  // right rectangle
  fg := clBlack;
- if (Self.uzavreno) then
+ if (Self.closed) then
    fg := $A0A0A0;
- if (Self.UZ) then
+ if (Self.pcClosed) then
    fg := clWhite;
  Result := Result + ownConvert.ColorToStr(fg) + ';';
 end;

@@ -2998,8 +2998,8 @@ var Blk: TBlk;
   end;
 
   //////////////////////
-  btSH: begin
-    case ((Blk as TBlkSH).enabled) of
+  btSummary: begin
+    case ((Blk as TBlkSummary).enabled) of
       false : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
       true  : LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
     end;
@@ -3039,7 +3039,7 @@ var Blk: TBlk;
    btRozp: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
    btTU: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
    btIO: F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
-   btSH: F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
+   btSummary: F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
    btAC: F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
   end;//case
 end;

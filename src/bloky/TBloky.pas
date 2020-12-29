@@ -257,7 +257,7 @@ begin
          Integer(btRozp)      : Blk := TBlkRozp.Create(-1);
          Integer(btTU)        : Blk := TBlkTU.Create(-1);
          Integer(btIO)        : Blk := TBlkIO.Create(-1);
-         Integer(btSH)        : Blk := TBlkSH.Create(-1);
+         Integer(btSummary)        : Blk := TBlkSummary.Create(-1);
          Integer(btAC)        : Blk := TBlkAC.Create(-1);
        else
          writelog('Nenacitam blok ' + section + ' - neznamy typ', WR_ERROR);
@@ -379,7 +379,7 @@ begin
   btRozp     : Blk := TBlkRozp.Create(index);
   btTU       : Blk := TBlkTU.Create(index);
   btIO       : Blk := TBlkIO.Create(index);
-  btSH       : Blk := TBlkSH.Create(index);
+  btSummary       : Blk := TBlkSummary.Create(index);
   btAC       : Blk := TBlkAC.Create(index);
  else//case
   Exit(nil);

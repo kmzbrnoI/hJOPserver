@@ -348,13 +348,13 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btSH: begin
+   btSummary: begin
       Self.LV.Items[line].ImageIndex := -1;
       Self.LV.Items[line].SubItems[0] := 'Součtová hláska';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
-      if ((Blk as TBlkSH).enabled) then
+      if ((Blk as TBlkSummary).enabled) then
         Self.LV.Items[line].SubItems[3] := 'ok'
       else
         Self.LV.Items[line].SubItems[3] := 'disabled';

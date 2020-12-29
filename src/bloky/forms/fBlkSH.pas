@@ -33,7 +33,7 @@ type
     procedure B_RemoveClick(Sender: TObject);
   private
    OpenIndex: Integer;
-   Blk: TBlkSH;
+   Blk: TBlkSummary;
    NewBlk: Boolean;
    obls: TArstr;   //oblasti rizeni, ve kterych se blok nachazi
 
@@ -112,7 +112,7 @@ end;
 
 procedure TF_BlkSH.B_save_PClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkSHSettings;
+    settings: TBlkSummarySettings;
 begin
  if (Self.E_Name.Text = '') then
   begin
@@ -128,14 +128,14 @@ begin
   end;
 
  glob.name := Self.E_Name.Text;
- glob.typ  := btSH;
+ glob.typ  := btSummary;
  glob.id   := Self.SE_ID.Value;
 
  if (NewBlk) then
   begin
    glob.note := '';
    try
-     Blk := Blky.Add(btSH, glob) as TBlkSH;
+     Blk := Blky.Add(btSummary, glob) as TBlkSummary;
    except
      on E: Exception do
       begin
@@ -148,7 +148,7 @@ begin
    Self.Blk.SetGlobalSettings(glob);
   end;
 
- settings.prejezdy := TList<Integer>.Create(Self.prejezdy);
+ settings.crossings := TList<Integer>.Create(Self.prejezdy);
  Self.Blk.SetSettings(settings);
 
  Self.Close();
@@ -173,7 +173,7 @@ end;
 
 procedure TF_BlkSH.NormalOpenForm();
 var glob: TBlkSettings;
-    settings: TBlkSHSettings;
+    settings: TBlkSummarySettings;
     i, prjid: Integer;
     LI: TListItem;
     oblr: TOR;
@@ -191,7 +191,7 @@ begin
  E_Name.Text := glob.name;
  SE_ID.Value := glob.id;
 
- for prjid in settings.prejezdy do
+ for prjid in settings.crossings do
   begin
    Self.prejezdy.Add(prjid);
    LI := Self.LV_Prejezdy.Items.Add();
