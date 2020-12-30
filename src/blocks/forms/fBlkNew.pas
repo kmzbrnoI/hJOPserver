@@ -23,7 +23,8 @@ var
 implementation
 
 uses fBlkTurnout, fBlkTrack, fBlkIR, fBlkSignal, fMain, fBlkSummary, fBlkAC,
-      BlockDb, fBlkCrossing, fBlkRailway, fBlkLock, fBlkDisconnector, fBlkRT, fBlkIO;
+      BlockDb, fBlkCrossing, fBlkRailway, fBlkLock, fBlkDisconnector, fBlkRT,
+      fBlkIO, fBlkGroupSignal;
 
 {$R *.dfm}
 
@@ -48,14 +49,15 @@ begin
   1 : F_BlkTrack.NewBlkCreate();
   2 : F_BlkIR.NewBlkCreate();
   3 : F_BlkSignal.NewBlkCreate();
-  4 : F_BlkCrossing.NewBlkCreate();
-  5 : F_BlkRailway.NewBlkCreate();
-  6 : F_BlkLock.NewBlkCreate();
-  7 : F_BlkDisconnector.NewBlkCreate();
-  8 : F_BlkRT.NewBlkCreate();
-  9 : F_BlkIO.NewBlkCreate();
-  10: F_BlkSummary.NewBlkCreate();
-  11: F_BlkAC.NewBlkCreate();
+  4 : F_BlkGroupSignal.NewBlk();
+  5 : F_BlkCrossing.NewBlkCreate();
+  6 : F_BlkRailway.NewBlk();
+  7 : F_BlkLock.NewBlkCreate();
+  8 : F_BlkDisconnector.NewBlkCreate();
+  9 : F_BlkRT.NewBlkCreate();
+  10 : F_BlkIO.NewBlkCreate();
+  11: F_BlkSummary.NewBlkCreate();
+  12: F_BlkAC.NewBlkCreate();
  end;
 end;
 

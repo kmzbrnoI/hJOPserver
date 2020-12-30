@@ -177,10 +177,13 @@ var j, train: integer;
    end;
 
  /////////////////////////////////////////////////////
-   btSignal: begin
+   btSignal, btGroupSignal: begin
       Self.LV.Items[line].ImageIndex := 5;
       s_signal := (Blk as TBlkSignal).GetSettings();
-      Self.LV.Items[line].SubItems[0] := 'Návěstidlo';
+      if (glob.typ = btGroupSignal) then
+        Self.LV.Items[line].SubItems[0] := 'Návěstidlo skupinové'
+      else
+        Self.LV.Items[line].SubItems[0] := 'Návěstidlo';
 
       Self.LV.Items[line].SubItems[2] := '---';
 
