@@ -75,16 +75,16 @@
 			<DCCReference Include="forms\fAbout.pas">
 				<Form>F_About</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\forms\fBlkPrejezd.pas">
-				<Form>F_BlkPrejezd</Form>
+			<DCCReference Include="bloky\forms\fBlkCrossing.pas">
+				<Form>F_BlkCrossing</Form>
 			</DCCReference>
 			<DCCReference Include="helpers\Verze.pas"/>
 			<DCCReference Include="helpers\adCpuUsage.pas"/>
 			<DCCReference Include="forms\fZesilovacEdit.pas">
 				<Form>F_ZesilovacEdit</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\forms\fBlkTrat.pas">
-				<Form>F_BlkTrat</Form>
+			<DCCReference Include="bloky\forms\fBlkRailway.pas">
+				<Form>F_BlkRailway</Form>
 			</DCCReference>
 			<DCCReference Include="hv\forms\fHVEdit.pas">
 				<Form>F_HVEdit</Form>
@@ -92,11 +92,11 @@
 			<DCCReference Include="forms\fSystemInfo.pas">
 				<Form>F_SystemInfo</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\forms\fBlkUsek.pas">
-				<Form>F_BlkUsek</Form>
+			<DCCReference Include="bloky\forms\fBlkTrack.pas">
+				<Form>F_BlkTrack</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\forms\fBlkVyhybka.pas">
-				<Form>F_BlkVyhybka</Form>
+			<DCCReference Include="bloky\forms\fBlkTurnout.pas">
+				<Form>F_BlkTurnout</Form>
 			</DCCReference>
 			<DCCReference Include="bloky\forms\fBlkIR.pas">
 				<Form>F_BlkIR</Form>
@@ -117,8 +117,8 @@
 			<DCCReference Include="forms\fSystemAutoStart.pas">
 				<Form>F_AutoStartSystems</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\forms\fBlkUsekSysVars.pas">
-				<Form>F_BlkUsek_tech</Form>
+			<DCCReference Include="bloky\forms\state\fBlkTrackState.pas">
+				<Form>F_BlkTrackState</Form>
 			</DCCReference>
 			<DCCReference Include="helpers\GetSystems.pas"/>
 			<DCCReference Include="helpers\ownConvert.pas"/>
@@ -137,8 +137,8 @@
 			<DCCReference Include="TOblRizeni.pas"/>
 			<DCCReference Include="Booster.pas"/>
 			<DCCReference Include="BoosterDb.pas"/>
-			<DCCReference Include="bloky\forms\fBlkVyhybkaSysVars.pas">
-				<Form>F_BlkVyh_tech</Form>
+			<DCCReference Include="bloky\forms\state\fBlkTurnoutState.pas">
+				<Form>F_BlkTurnoutState</Form>
 			</DCCReference>
 			<DCCReference Include="SnadnSpusteni.pas"/>
 			<DCCReference Include="jc\TJCDatabase.pas"/>
@@ -165,17 +165,17 @@
 			</DCCReference>
 			<DCCReference Include="Zasobnik.pas"/>
 			<DCCReference Include="jc\UPO.pas"/>
-			<DCCReference Include="bloky\forms\fBlkTratSysVars.pas">
-				<Form>F_BlkTrat_tech</Form>
+			<DCCReference Include="bloky\forms\state\fBlkRailwayState.pas">
+				<Form>F_BlkRailwayState</Form>
 			</DCCReference>
 			<DCCReference Include="ModelovyCas.pas"/>
-			<DCCReference Include="bloky\forms\fBlkNavEvent.pas">
-				<Form>F_BlkNavEvent</Form>
+			<DCCReference Include="bloky\forms\fBlkSignalEvent.pas">
+				<Form>F_BlkSignalEvent</Form>
 			</DCCReference>
 			<DCCReference Include="helpers\CloseTabSheet.pas"/>
 			<DCCReference Include="bloky\BlockLock.pas"/>
-			<DCCReference Include="bloky\forms\fBlkZamek.pas">
-				<Form>F_BlkZamek</Form>
+			<DCCReference Include="bloky\forms\fBlkLock.pas">
+				<Form>F_BlkLock</Form>
 			</DCCReference>
 			<DCCReference Include="jc\TMultiJCDatabase.pas"/>
 			<DCCReference Include="jc\TechnologieMultiJC.pas"/>
@@ -188,8 +188,8 @@
 			</DCCReference>
 			<DCCReference Include="helpers\ownStrUtils.pas"/>
 			<DCCReference Include="bloky\BlockDisconnector.pas"/>
-			<DCCReference Include="bloky\forms\fBlkRozp.pas">
-				<Form>F_BlkRozp</Form>
+			<DCCReference Include="bloky\forms\fBlkDisconnector.pas">
+				<Form>F_BlkDisconnector</Form>
 			</DCCReference>
 			<DCCReference Include="RegulatorTCP.pas"/>
 			<DCCReference Include="forms\fFuncsSet.pas">
@@ -197,11 +197,11 @@
 			</DCCReference>
 			<DCCReference Include="hv\FunkceVyznam.pas"/>
 			<DCCReference Include="bloky\BlockRailwayTrack.pas"/>
-			<DCCReference Include="bloky\forms\fBlkTU.pas">
-				<Form>F_BlkTU</Form>
+			<DCCReference Include="bloky\forms\fBlkRT.pas">
+				<Form>F_BlkRT</Form>
 			</DCCReference>
-			<DCCReference Include="bloky\forms\fBlkTUZastEvent.pas">
-				<Form>F_BlkTUZastEvent</Form>
+			<DCCReference Include="bloky\forms\fBlkRTStopEvent.pas">
+				<Form>F_BlkRTStopEvent</Form>
 			</DCCReference>
 			<DCCReference Include="RCSdebugger.pas"/>
 			<DCCReference Include="UDPdiscover.pas"/>
@@ -245,13 +245,17 @@
 			<DCCReference Include="changeEvent.pas"/>
 			<DCCReference Include="changeEventCaller.pas"/>
 			<DCCReference Include="bloky\BlockSummary.pas"/>
-			<DCCReference Include="bloky\forms\fBlkSH.pas"/>
+			<DCCReference Include="bloky\forms\fBlkSummary.pas">
+				<Form>F_BlkSummary</Form>
+			</DCCReference>
 			<DCCReference Include="predvidanyOdjezd.pas"/>
 			<DCCReference Include="helpers\timeHelper.pas"/>
 			<DCCReference Include="TechnologieAB.pas"/>
 			<DCCReference Include="tables\DataAB.pas"/>
 			<DCCReference Include="TCPORsRef.pas"/>
-			<DCCReference Include="bloky\forms\fBlkNav.pas"/>
+			<DCCReference Include="bloky\forms\fBlkSignal.pas">
+				<Form>F_BlkSignal</Form>
+			</DCCReference>
 			<DCCReference Include="trakce\Trakce.pas"/>
 			<DCCReference Include="trakce\TrakceErrors.pas"/>
 			<DCCReference Include="TechnologieTrakce.pas">
@@ -277,6 +281,9 @@
 			<DCCReference Include="pt\PTEndpointUser.pas"/>
 			<DCCReference Include="bloky\BlockDb.pas"/>
 			<DCCReference Include="bloky\BlockGroupSignal.pas"/>
+			<DCCReference Include="bloky\forms\fBlkGroupSignal.pas">
+				<Form>F_BlkGroupSignal</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

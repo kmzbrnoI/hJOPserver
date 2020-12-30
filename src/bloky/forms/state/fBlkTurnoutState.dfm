@@ -1,4 +1,4 @@
-object F_BlkVyh_tech: TF_BlkVyh_tech
+object F_BlkTurnoutState: TF_BlkTurnoutState
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]

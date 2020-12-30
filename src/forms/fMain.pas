@@ -486,17 +486,17 @@ var
 implementation
 
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
-     fAbout, Verze, fSystemInfo, fBlkUsek, fBlkVyhybka, fAdminForm, Simulation,
-     fRegulator, fBlkSH, fSystemAutoStart, fBlkUsekSysVars, GetSystems,
+     fAbout, Verze, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
+     fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, BlockDb,
      Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, TOblRizeni,
      SnadnSpusteni, BlockSummary, BlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
-     fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkPrejezd,
-     fBlkNav, fBlkTrat, BlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
-     fBlkVyhybkaSysVars, fBlkTratSysVars, BlockRailway, ModelovyCas, fBlkZamek,
+     fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
+     fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
+     fBlkTurnoutState, fBlkRailwayState, BlockRailway, ModelovyCas, fBlkLock,
      BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
-     fBlkRozp, fFuncsSet, FunkceVyznam, fBlkTU, RCSdebugger, Booster, DataAB,
+     fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
      AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB,
      Diagnostics, BlockAC, fBlkAC;
 
@@ -2508,15 +2508,10 @@ var Blk: TBlk;
   if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   btTurnout: F_BlkVyh_tech.OpenForm(Blk as TBlkTurnout);
-   btTrack, btRT :
-                  F_BlkUsek_tech.OpenForm(Blk as TBlkTrack);
-   btIR      : ;
-   btSignal  : ;
-   btCrossing : ;
-   btRailway    : F_BlkTrat_tech.OpenForm(Blk as TBlkRailway);
-   btLinker  : ;
-  end;//case
+   btTurnout: F_BlkTurnoutState.OpenForm(Blk as TBlkTurnout);
+   btTrack, btRT: F_BlkTrackState.OpenForm(Blk as TBlkTrack);
+   btRailway: F_BlkRailwayState.OpenForm(Blk as TBlkRailway);
+  end;
 end;
 
 procedure TF_Main.LB_LogDblClick(Sender: TObject);
@@ -3029,19 +3024,19 @@ var Blk: TBlk;
   if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
 
   case (Blk.typ) of
-   btTurnout: F_BlkVyhybka.OpenForm(Self.LV_Bloky.ItemIndex);
-   btTrack: F_BlkUsek.OpenForm(Self.LV_Bloky.ItemIndex);
+   btTurnout: F_BlkTurnout.OpenForm(Self.LV_Bloky.ItemIndex);
+   btTrack: F_BlkTrack.OpenForm(Self.LV_Bloky.ItemIndex);
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
-   btSignal: F_BlkNav.OpenForm(Self.LV_Bloky.ItemIndex);
-   btCrossing: F_BlkPrejezd.OpenForm(Self.LV_Bloky.ItemIndex);
-   btRailway, btLinker: F_BlkTrat.OpenForm(Self.LV_Bloky.ItemIndex);
-   btLock: F_BlkZamek.OpenForm(Self.LV_Bloky.ItemIndex);
-   btDisconnector: F_BlkRozp.OpenForm(Self.LV_Bloky.ItemIndex);
-   btRT: F_BlkTU.OpenForm(Self.LV_Bloky.ItemIndex);
+   btSignal: F_BlkSignal.OpenForm(Self.LV_Bloky.ItemIndex);
+   btCrossing: F_BlkCrossing.OpenForm(Self.LV_Bloky.ItemIndex);
+   btRailway, btLinker: F_BlkRailway.OpenForm(Self.LV_Bloky.ItemIndex);
+   btLock: F_BlkLock.OpenForm(Self.LV_Bloky.ItemIndex);
+   btDisconnector: F_BlkDisconnector.OpenForm(Self.LV_Bloky.ItemIndex);
+   btRT: F_BlkRT.OpenForm(Self.LV_Bloky.ItemIndex);
    btIO: F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
-   btSummary: F_BlkSH.OpenForm(Self.LV_Bloky.ItemIndex);
+   btSummary: F_BlkSummary.OpenForm(Self.LV_Bloky.ItemIndex);
    btAC: F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
-  end;//case
+  end;
 end;
 
 procedure TF_Main.LV_BlokyKeyPress(Sender: TObject; var Key: Char);

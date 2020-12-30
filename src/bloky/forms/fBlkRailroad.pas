@@ -1,4 +1,4 @@
-﻿unit fBlkTrat;
+﻿unit fBlkRailroad;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   StdCtrls, Spin, ComCtrls, BlockRailway, BlockLinker, Generics.Collections, BlockDb;
 
 type
-  TF_BlkTrat = class(TForm)
+  TF_BlkRailroad = class(TForm)
     B_Save: TButton;
     B_Storno: TButton;
     GB_UvazkaA: TGroupBox;
@@ -63,7 +63,7 @@ type
   end;
 
 var
-  F_BlkTrat: TF_BlkTrat;
+  F_BlkRailroad: TF_BlkRailroad;
 
 implementation
 
@@ -71,7 +71,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, Block, TOblRi
 
 {$R *.dfm}
 
-procedure TF_BlkTrat.OpenForm(BlokIndex: Integer);
+procedure TF_BlkRailroad.OpenForm(BlokIndex: Integer);
 var Blk: TBlk;
  begin
   Self.OpenIndex := BlokIndex;
@@ -99,13 +99,13 @@ var Blk: TBlk;
   Self.ShowModal;
  end;
 
-procedure TF_BlkTrat.NewBlkCreate;
+procedure TF_BlkRailroad.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkTrat.NewBlkOpenForm;
+procedure TF_BlkRailroad.NewBlkOpenForm;
  begin
   Self.E_Trat_Name.Text  := '';
   Self.E_UA_name.Text    := '';
@@ -124,7 +124,7 @@ procedure TF_BlkTrat.NewBlkOpenForm;
   Self.ActiveControl := Self.E_Trat_Name;
  end;
 
-procedure TF_BlkTrat.NormalOpenForm;
+procedure TF_BlkRailroad.NormalOpenForm;
 var glob: TBlkSettings;
     settings: TBlkRailwaySettings;
     i: Integer;
@@ -179,7 +179,7 @@ var glob: TBlkSettings;
  Self.ActiveControl := Self.B_Save;
  end;
 
-procedure TF_BlkTrat.HlavniOpenForm;
+procedure TF_BlkRailroad.HlavniOpenForm;
 begin
  Self.LV_Useky.Clear();
 
@@ -189,7 +189,7 @@ begin
  Self.B_Blk_Delete.Enabled := false;
 end;
 
-procedure TF_BlkTrat.LV_UsekyChange(Sender: TObject; Item: TListItem;
+procedure TF_BlkRailroad.LV_UsekyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
  if (Self.LV_Useky.ItemIndex < 0) then
@@ -198,13 +198,13 @@ begin
   Self.B_Blk_Delete.Enabled := true;
 end;
 
-procedure TF_BlkTrat.B_blk_AddClick(Sender: TObject);
+procedure TF_BlkRailroad.B_blk_AddClick(Sender: TObject);
 var LI: TListItem;
     useky_vypust: TArI;
     obls: TArStr;
     i: Integer;
 begin
- if (F_BlkTrat.CB_NewTratBlok.ItemIndex < 0) then
+ if (F_BlkRailroad.CB_NewTratBlok.ItemIndex < 0) then
   begin
    Application.MessageBox('Vyberte blok!', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
    Exit();
@@ -230,7 +230,7 @@ begin
  Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
 end;
 
-procedure TF_BlkTrat.B_Blk_DeleteClick(Sender: TObject);
+procedure TF_BlkRailroad.B_Blk_DeleteClick(Sender: TObject);
 var useky_vypust: TArI;
     obls: TArStr;
     i: Integer;
@@ -251,7 +251,7 @@ begin
  Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, @useky_vypust, obls, btRT, -1);
 end;
 
-procedure TF_BlkTrat.B_SaveClick(Sender: TObject);
+procedure TF_BlkRailroad.B_SaveClick(Sender: TObject);
 var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
     TratSettings: TBlkRailwaySettings;
     UvazkaSettings: TBlkLinkerSettings;
@@ -365,12 +365,12 @@ var glob_trat, glob_uvA, glob_uvB: TBlkSettings;
   Self.Trat.Change();
 end;
 
-procedure TF_BlkTrat.B_StornoClick(Sender: TObject);
+procedure TF_BlkRailroad.B_StornoClick(Sender: TObject);
 begin
  Self.Close();
 end;
 
-procedure TF_BlkTrat.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkRailroad.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   OpenIndex  := -1;
   NewBlk     := false;

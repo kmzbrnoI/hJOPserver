@@ -1,4 +1,4 @@
-﻿unit fBlkUsekSysVars;
+﻿unit fBlkTrackState;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, BlockDb, Block, BlockTrack, Spin;
 
 type
-  TF_BlkUsek_tech = class(TForm)
+  TF_BlkTrackState = class(TForm)
     L_Usek21: TLabel;
     L_Usek24: TLabel;
     L_Usek25: TLabel;
@@ -50,7 +50,7 @@ type
   end;
 
 var
-  F_BlkUsek_tech: TF_BlkUsek_tech;
+  F_BlkTrackState: TF_BlkTrackState;
 
 implementation
 
@@ -58,7 +58,7 @@ uses fMain, ownConvert, TrainDb, Booster;
 
 {$R *.dfm}
 
-procedure TF_BlkUsek_tech.LoadPrmnFromProgram;
+procedure TF_BlkTrackState.LoadPrmnFromProgram;
 var spr: Integer;
  begin
   CB_Zaver.ItemIndex := Integer(Self.Blk.Zaver);
@@ -96,7 +96,7 @@ var spr: Integer;
   end;
  end;
 
-procedure TF_BlkUsek_tech.SavePrmnToProgram;
+procedure TF_BlkTrackState.SavePrmnToProgram;
 var Blk: TBlk;
  begin
   Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
@@ -115,7 +115,7 @@ var Blk: TBlk;
   Self.Blk.note := M_Stitek.Text;
  end;
 
-procedure TF_BlkUsek_tech.OpenForm(Blok: TBlkTrack);
+procedure TF_BlkTrackState.OpenForm(Blok: TBlkTrack);
  begin
   Self.Blk := Blok;
   LoadPrmnFromProgram();
@@ -123,17 +123,17 @@ procedure TF_BlkUsek_tech.OpenForm(Blok: TBlkTrack);
   Self.Show;
  end;
 
-procedure TF_BlkUsek_tech.B_ObnovitClick(Sender: TObject);
+procedure TF_BlkTrackState.B_ObnovitClick(Sender: TObject);
  begin
   LoadPrmnFromProgram;
  end;
 
-procedure TF_BlkUsek_tech.B_SaveDataClick(Sender: TObject);
+procedure TF_BlkTrackState.B_SaveDataClick(Sender: TObject);
  begin
   SavePrmnToProgram();
  end;
 
-procedure TF_BlkUsek_tech.B_SprAddClick(Sender: TObject);
+procedure TF_BlkTrackState.B_SprAddClick(Sender: TObject);
 begin
  if ((Self.SE_SprAdd_Index.Value < 0) or (Self.SE_SprAdd_Index.Value >= _MAX_TRAIN) or
      (Trains[Self.SE_SprAdd_Index.Value] = nil)) then Exit();
@@ -147,7 +147,7 @@ begin
  end;
 end;
 
-procedure TF_BlkUsek_tech.B_SprDeleteClick(Sender: TObject);
+procedure TF_BlkTrackState.B_SprDeleteClick(Sender: TObject);
 begin
  if (Self.LB_Soupravy.ItemIndex = -1) then Exit();
  if (Application.MessageBox('Opravdu?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then Exit();

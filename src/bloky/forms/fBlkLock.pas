@@ -1,4 +1,4 @@
-﻿unit fBlkZamek;
+﻿unit fBlkLock;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Spin, BlockLock;
 
 type
-  TF_BlkZamek = class(TForm)
+  TF_BlkLock = class(TForm)
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
     L_IR02: TLabel;
@@ -35,7 +35,7 @@ type
   end;
 
 var
-  F_BlkZamek: TF_BlkZamek;
+  F_BlkLock: TF_BlkLock;
 
 implementation
 
@@ -43,7 +43,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRize
 
 {$R *.dfm}
 
-procedure TF_BlkZamek.OpenForm(BlokIndex: Integer);
+procedure TF_BlkLock.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -57,7 +57,7 @@ procedure TF_BlkZamek.OpenForm(BlokIndex: Integer);
   Self.ShowModal();
  end;
 
-procedure TF_BlkZamek.NewBlkOpenForm();
+procedure TF_BlkLock.NewBlkOpenForm();
  begin
   Self.E_Nazev.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -66,7 +66,7 @@ procedure TF_BlkZamek.NewBlkOpenForm();
   Self.ActiveControl := Self.E_Nazev;
  end;
 
-procedure TF_BlkZamek.NormalOpenForm();
+procedure TF_BlkLock.NormalOpenForm();
 var glob: TBlkSettings;
     oblr: TOR;
  begin
@@ -82,23 +82,23 @@ var glob: TBlkSettings;
   Self.ActiveControl := Self.B_Save;
  end;
 
-procedure TF_BlkZamek.HlavniOpenForm();
+procedure TF_BlkLock.HlavniOpenForm();
  begin
   Self.LB_Stanice.Clear();
  end;
 
-procedure TF_BlkZamek.NewBlkCreate();
+procedure TF_BlkLock.NewBlkCreate();
  begin
   NewBlk := true;
   OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkZamek.B_StornoClick(Sender: TObject);
+procedure TF_BlkLock.B_StornoClick(Sender: TObject);
  begin
   Self.Close();
  end;
 
-procedure TF_BlkZamek.B_SaveClick(Sender: TObject);
+procedure TF_BlkLock.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
  begin
   if (E_Nazev.Text = '') then
@@ -137,7 +137,7 @@ var glob: TBlkSettings;
   Self.Blk.Change();
  end;
 
-procedure TF_BlkZamek.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkLock.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;

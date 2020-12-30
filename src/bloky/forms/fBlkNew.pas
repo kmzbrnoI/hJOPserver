@@ -22,8 +22,8 @@ var
 
 implementation
 
-uses fBlkVyhybka, fBlkUsek, fBlkIR, fBlkNav, fMain, fBlkSH, fBlkAC,
-      BlockDb, fBlkPrejezd, fBlkTrat, fBlkZamek, fBlkRozp, fBlkTU, fBlkIO;
+uses fBlkTurnout, fBlkTrack, fBlkIR, fBlkSignal, fMain, fBlkSummary, fBlkAC,
+      BlockDb, fBlkCrossing, fBlkRailway, fBlkLock, fBlkDisconnector, fBlkRT, fBlkIO;
 
 {$R *.dfm}
 
@@ -44,17 +44,17 @@ begin
  Self.Close();
 
  case RG_NewTyp.ItemIndex of
-  0 : F_BlkVyhybka.NewBlkCreate();
-  1 : F_BlkUsek.NewBlkCreate();
+  0 : F_BlkTurnout.NewBlkCreate();
+  1 : F_BlkTrack.NewBlkCreate();
   2 : F_BlkIR.NewBlkCreate();
-  3 : F_BlkNav.NewBlkCreate();
-  4 : F_BlkPrejezd.NewBlkCreate();
-  5 : F_BlkTrat.NewBlkCreate();
-  6 : F_BlkZamek.NewBlkCreate();
-  7 : F_BlkRozp.NewBlkCreate();
-  8 : F_BlkTU.NewBlkCreate();
+  3 : F_BlkSignal.NewBlkCreate();
+  4 : F_BlkCrossing.NewBlkCreate();
+  5 : F_BlkRailway.NewBlkCreate();
+  6 : F_BlkLock.NewBlkCreate();
+  7 : F_BlkDisconnector.NewBlkCreate();
+  8 : F_BlkRT.NewBlkCreate();
   9 : F_BlkIO.NewBlkCreate();
-  10: F_BlkSH.NewBlkCreate();
+  10: F_BlkSummary.NewBlkCreate();
   11: F_BlkAC.NewBlkCreate();
  end;
 end;

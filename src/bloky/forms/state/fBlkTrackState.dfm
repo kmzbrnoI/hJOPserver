@@ -1,4 +1,4 @@
-object F_BlkUsek_tech: TF_BlkUsek_tech
+object F_BlkTrackState: TF_BlkTrackState
   Left = 967
   Top = 123
   BorderIcons = [biSystemMenu]

@@ -1,4 +1,4 @@
-﻿unit fBlkSH;
+﻿unit fBlkSummary;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   Generics.Collections;
 
 type
-  TF_BlkSH = class(TForm)
+  TF_BlkSummary = class(TForm)
     L_P02: TLabel;
     E_Name: TEdit;
     B_save_P: TButton;
@@ -53,7 +53,7 @@ type
   end;
 
 var
-  F_BlkSH: TF_BlkSH;
+  F_BlkSummary: TF_BlkSummary;
 
 implementation
 
@@ -62,7 +62,7 @@ uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni, Block, FileSystem,
 
 {$R *.dfm}
 
-procedure TF_BlkSH.OpenForm(BlokIndex: Integer);
+procedure TF_BlkSummary.OpenForm(BlokIndex: Integer);
 begin
  OpenIndex := BlokIndex;
  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -77,7 +77,7 @@ begin
  Self.ShowModal();
 end;
 
-procedure TF_BlkSH.B_AddClick(Sender: TObject);
+procedure TF_BlkSummary.B_AddClick(Sender: TObject);
 var LI: TListItem;
     blk: TBlk;
 begin
@@ -100,7 +100,7 @@ begin
  Self.FillNewPrjCB();
 end;
 
-procedure TF_BlkSH.B_RemoveClick(Sender: TObject);
+procedure TF_BlkSummary.B_RemoveClick(Sender: TObject);
 begin
  if (Self.LV_Prejezdy.Selected <> nil) then
   begin
@@ -110,7 +110,7 @@ begin
   end;
 end;
 
-procedure TF_BlkSH.B_save_PClick(Sender: TObject);
+procedure TF_BlkSummary.B_save_PClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkSummarySettings;
 begin
@@ -155,12 +155,12 @@ begin
  Self.Blk.Change();
 end;
 
-procedure TF_BlkSH.B_StornoClick(Sender: TObject);
+procedure TF_BlkSummary.B_StornoClick(Sender: TObject);
 begin
  Self.Close();
 end;
 
-procedure TF_BlkSH.MainOpenForm();
+procedure TF_BlkSummary.MainOpenForm();
 begin
  SetLength(Self.obls, 0);
 
@@ -171,7 +171,7 @@ begin
  Self.B_Remove.Enabled := false;
 end;
 
-procedure TF_BlkSH.NormalOpenForm();
+procedure TF_BlkSummary.NormalOpenForm();
 var glob: TBlkSettings;
     settings: TBlkSummarySettings;
     i, prjid: Integer;
@@ -202,7 +202,7 @@ begin
  Self.ActiveControl := Self.B_save_P;
 end;
 
-procedure TF_BlkSH.NewOpenForm();
+procedure TF_BlkSummary.NewOpenForm();
 begin
  E_Name.Text := '';
  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -211,36 +211,36 @@ begin
  Self.ActiveControl := Self.E_Name;
 end;
 
-procedure TF_BlkSH.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkSummary.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
  NewBlk     := false;
  OpenIndex  := -1;
  BlokyTableData.UpdateTable();
 end;
 
-procedure TF_BlkSH.FormCreate(Sender: TObject);
+procedure TF_BlkSummary.FormCreate(Sender: TObject);
 begin
  Self.prejezdy := TList<Integer>.Create();
 end;
 
-procedure TF_BlkSH.FormDestroy(Sender: TObject);
+procedure TF_BlkSummary.FormDestroy(Sender: TObject);
 begin
  Self.prejezdy.Free();
 end;
 
-procedure TF_BlkSH.LV_PrejezdyChange(Sender: TObject; Item: TListItem;
+procedure TF_BlkSummary.LV_PrejezdyChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
  Self.B_Remove.Enabled := (Self.LV_Prejezdy.Selected <> nil);
 end;
 
-procedure TF_BlkSH.NewBlkCreate();
+procedure TF_BlkSummary.NewBlkCreate();
 begin
  Self.NewBlk := true;
  OpenForm(Blocks.count);
 end;
 
-procedure TF_BlkSH.FillNewPrjCB();
+procedure TF_BlkSummary.FillNewPrjCB();
 var ignore: TArI;
     i: Integer;
 begin

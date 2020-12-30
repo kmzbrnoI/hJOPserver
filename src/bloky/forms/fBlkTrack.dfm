@@ -1,4 +1,4 @@
-object F_BlkUsek: TF_BlkUsek
+object F_BlkTrack: TF_BlkTrack
   Left = 377
   Top = 212
   ActiveControl = B_OK
@@ -427,7 +427,7 @@ object F_BlkUsek: TF_BlkUsek
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
+    ItemHeight = 13
     TabOrder = 4
   end
   object SE_SprCnt: TSpinEdit

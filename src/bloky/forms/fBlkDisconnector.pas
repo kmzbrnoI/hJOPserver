@@ -1,4 +1,4 @@
-﻿unit fBlkRozp;
+﻿unit fBlkDisconnector;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Spin, BlockDisconnector, Generics.Collections, IBUtils;
 
 type
-  TF_BlkRozp = class(TForm)
+  TF_BlkDisconnector = class(TForm)
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
     L_IR02: TLabel;
@@ -41,7 +41,7 @@ type
   end;
 
 var
-  F_BlkRozp: TF_BlkRozp;
+  F_BlkDisconnector: TF_BlkDisconnector;
 
 implementation
 
@@ -49,7 +49,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRize
 
 {$R *.dfm}
 
-procedure TF_BlkRozp.OpenForm(BlokIndex: Integer);
+procedure TF_BlkDisconnector.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -64,12 +64,12 @@ procedure TF_BlkRozp.OpenForm(BlokIndex: Integer);
   Self.ShowModal();
  end;
 
-procedure TF_BlkRozp.SE_moduleExit(Sender: TObject);
+procedure TF_BlkDisconnector.SE_moduleExit(Sender: TObject);
 begin
  Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
-procedure TF_BlkRozp.NewBlkOpenForm;
+procedure TF_BlkDisconnector.NewBlkOpenForm;
  begin
   E_Nazev.Text          := '';
   SE_ID.Value           := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -81,7 +81,7 @@ procedure TF_BlkRozp.NewBlkOpenForm;
   Self.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkRozp.NormalOpenForm;
+procedure TF_BlkDisconnector.NormalOpenForm;
 var glob: TBlkSettings;
     settings: TBlkDiscSettings;
     oblr: TOR;
@@ -114,24 +114,24 @@ var glob: TBlkSettings;
   Self.ActiveControl := B_Save;
  end;
 
-procedure TF_BlkRozp.HlavniOpenForm;
+procedure TF_BlkDisconnector.HlavniOpenForm;
  begin
   Self.LB_Stanice.Clear();
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
-procedure TF_BlkRozp.NewBlkCreate;
+procedure TF_BlkDisconnector.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkRozp.B_StornoClick(Sender: TObject);
+procedure TF_BlkDisconnector.B_StornoClick(Sender: TObject);
  begin
   Self.Close();
  end;
 
-procedure TF_BlkRozp.B_SaveClick(Sender: TObject);
+procedure TF_BlkDisconnector.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkDiscSettings;
     another: TBlk;
@@ -185,7 +185,7 @@ var glob: TBlkSettings;
   Self.Blk.Change();
  end;
 
-procedure TF_BlkRozp.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkDisconnector.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   NewBlk     := false;
   OpenIndex  := -1;

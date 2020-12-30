@@ -1,4 +1,4 @@
-﻿unit fBlkVyhybka;
+﻿unit fBlkTurnout;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   Generics.Collections;
 
 type
-  TF_BlkVyhybka = class(TForm)
+  TF_BlkTurnout = class(TForm)
     L_Vyh01: TLabel;
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
@@ -74,7 +74,7 @@ type
   end;
 
 var
-  F_BlkVyhybka: TF_BlkVyhybka;
+  F_BlkTurnout: TF_BlkTurnout;
 
 implementation
 
@@ -82,7 +82,7 @@ uses GetSystems, FileSystem, TechnologieRCS, Block, DataBloky, TOblRizeni;
 
 {$R *.dfm}
 
-procedure TF_BlkVyhybka.OpenForm(BlokIndex: Integer);
+procedure TF_BlkTurnout.OpenForm(BlokIndex: Integer);
  begin
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   OpenIndex := BlokIndex;
@@ -94,10 +94,10 @@ procedure TF_BlkVyhybka.OpenForm(BlokIndex: Integer);
    end else begin
     NormalOpenForm;
    end;
-  F_BlkVyhybka.ShowModal;
+  F_BlkTurnout.ShowModal;
  end;
 
-procedure TF_BlkVyhybka.SE_moduleExit(Sender: TObject);
+procedure TF_BlkTurnout.SE_moduleExit(Sender: TObject);
 begin
  Self.SE_VystPlus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_VystPlus_module.Value, Self.SE_VystPlus_port.Value);
  Self.SE_VystMinus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_VystMinus_module.Value, Self.SE_VystMinus_port.Value);
@@ -105,7 +105,7 @@ begin
  Self.SE_VstMinus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_VstMinus_module.Value, Self.SE_VstMinus_port.Value);
 end;
 
-procedure TF_BlkVyhybka.NewBlkOpenForm();
+procedure TF_BlkTurnout.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value  := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -137,11 +137,11 @@ procedure TF_BlkVyhybka.NewBlkOpenForm();
   Self.CHB_Feedback.Checked := true;
   Self.CHB_FeedbackClick(Self.CHB_Feedback);
 
-  F_BlkVyhybka.Caption := 'Editovat data nového bloku výhybka';
-  F_BlkVyhybka.ActiveControl := E_Nazev;
+  F_BlkTurnout.Caption := 'Editovat data nového bloku výhybka';
+  F_BlkTurnout.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkVyhybka.NormalOpenForm();
+procedure TF_BlkTurnout.NormalOpenForm();
 var glob: TBlkSettings;
     i: Integer;
     spojkaSettings, settings: TBlkTurnoutSettings;
@@ -246,11 +246,11 @@ var glob: TBlkSettings;
   for i := 0 to Self.Blk.stations.Count-1 do
     obls[i] := Self.Blk.stations[i].id;
 
-  F_BlkVyhybka.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
-  F_BlkVyhybka.ActiveControl := B_Save;
+  F_BlkTurnout.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
+  F_BlkTurnout.ActiveControl := B_Save;
  end;
 
-procedure TF_BlkVyhybka.HlavniOpenForm;
+procedure TF_BlkTurnout.HlavniOpenForm;
 var spojka_vypust: TArI;
     obls: TArStr;
     i: Integer;
@@ -302,18 +302,18 @@ var spojka_vypust: TArI;
 
  end;
 
-procedure TF_BlkVyhybka.NewBlkCreate;
+procedure TF_BlkTurnout.NewBlkCreate;
  begin
   NewBlk := true;
   OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkVyhybka.B_StornoClick(Sender: TObject);
+procedure TF_BlkTurnout.B_StornoClick(Sender: TObject);
  begin
-  F_BlkVyhybka.Close;
+  F_BlkTurnout.Close;
  end;
 
-procedure TF_BlkVyhybka.CHB_FeedbackClick(Sender: TObject);
+procedure TF_BlkTurnout.CHB_FeedbackClick(Sender: TObject);
 begin
  Self.SE_VstPlus_module.Enabled := Self.CHB_Feedback.Checked;
  Self.SE_VstPlus_port.Enabled := Self.CHB_Feedback.Checked;
@@ -329,21 +329,21 @@ begin
   end;
 end;
 
-procedure TF_BlkVyhybka.CHB_npMinusClick(Sender: TObject);
+procedure TF_BlkTurnout.CHB_npMinusClick(Sender: TObject);
 begin
  Self.CB_npMinus.Enabled := Self.CHB_npMinus.Checked;
  if (not Self.CHB_npMinus.Checked) then
    Self.CB_npMinus.ItemIndex := -1;
 end;
 
-procedure TF_BlkVyhybka.CHB_npPlusClick(Sender: TObject);
+procedure TF_BlkTurnout.CHB_npPlusClick(Sender: TObject);
 begin
  Self.CB_npPlus.Enabled := Self.CHB_npPlus.Checked;
  if (not Self.CHB_npPlus.Checked) then
    Self.CB_npPlus.ItemIndex := -1;
 end;
 
-procedure TF_BlkVyhybka.CHB_SpojkaClick(Sender: TObject);
+procedure TF_BlkTurnout.CHB_SpojkaClick(Sender: TObject);
 begin
  Self.CB_Spojka.Enabled := Self.CHB_Spojka.Checked;
  Self.CHB_Spojka_Common_In.Enabled := Self.CHB_Spojka.Checked;
@@ -355,7 +355,7 @@ begin
    Self.CB_Spojka.ItemIndex := -1;
 end;
 
-procedure TF_BlkVyhybka.CHB_ZamekClick(Sender: TObject);
+procedure TF_BlkTurnout.CHB_ZamekClick(Sender: TObject);
 begin
  Self.CB_Zamek.Enabled := (Sender as TCheckBox).Checked;
  Self.CB_Zamek_Poloha.Enabled := (Sender as TCheckBox).Checked;
@@ -366,7 +366,7 @@ begin
   end;
 end;
 
-procedure TF_BlkVyhybka.B_SaveClick(Sender: TObject);
+procedure TF_BlkTurnout.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
     settings, spojkaSettings: TBlkTurnoutSettings;
     vyh: TBlkTurnout;
@@ -534,7 +534,7 @@ var glob: TBlkSettings;
   Self.Blk.Change();
  end;
 
-procedure TF_BlkVyhybka.FormClose(Sender: TObject;
+procedure TF_BlkTurnout.FormClose(Sender: TObject;
   var Action: TCloseAction);
  begin
   NewBlk     := false;

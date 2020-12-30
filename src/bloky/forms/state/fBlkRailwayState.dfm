@@ -1,8 +1,8 @@
-object F_BlkTrat_tech: TF_BlkTrat_tech
+object F_BlkRailwayState: TF_BlkRailwayState
   Left = 0
   Top = 0
   BorderStyle = bsToolWindow
-  Caption = 'F_BlkTrat_tech'
+  Caption = 'F_BlkRailwayState'
   ClientHeight = 185
   ClientWidth = 514
   Color = clBtnFace

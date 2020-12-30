@@ -1,4 +1,4 @@
-﻿unit fBlkTUZastEvent;
+﻿unit fBlkRTStopEvent;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   ExtCtrls, BlockRailwayTrack, TOblsRizeni, BlockDb, frrEv;
 
 type
-  TF_BlkTUZastEvent = class(TForm)
+  TF_BlkRTStopEvent = class(TForm)
     GB_DetekceZastaveni: TGroupBox;
     GB_DetekceZpomalenii: TGroupBox;
     CB_ZpomalitKmH: TComboBox;
@@ -31,7 +31,7 @@ type
   end;
 
 var
-  F_BlkTUZastEvent: TF_BlkTUZastEvent;
+  F_BlkRTStopEvent: TF_BlkRTStopEvent;
 
 implementation
 
@@ -39,7 +39,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_BlkTUZastEvent.Create(AOwner: TComponent);
+constructor TF_BlkRTStopEvent.Create(AOwner: TComponent);
 begin
  inherited;
 
@@ -52,7 +52,7 @@ begin
  Self.fZpom.Show();
 end;
 
-destructor TF_BlkTUZastEvent.Destroy();
+destructor TF_BlkRTStopEvent.Destroy();
 begin
  Self.fZast.Free();
  Self.fZpom.Free();
@@ -61,7 +61,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkTUZastEvent.OpenForm(events: TBlkRTStopEvents);
+procedure TF_BlkRTStopEvent.OpenForm(events: TBlkRTStopEvents);
 begin
  Self.fZast.FillFromRR(events.stop);
 
@@ -77,7 +77,7 @@ begin
  Self.CHB_ZpomalClick(Self.CHB_Zpomal);
 end;
 
-procedure TF_BlkTUZastEvent.OpenEmptyForm();
+procedure TF_BlkRTStopEvent.OpenEmptyForm();
 begin
  Self.fZast.ShowEmpty();
  Self.CB_ZpomalitKmH.ItemIndex := -1;
@@ -87,7 +87,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkTUZastEvent.Check(): string;
+function TF_BlkRTStopEvent.Check(): string;
 begin
   if (not Self.fZast.InputValid()) then
     Exit('Vyberte zastavovací událost!');
@@ -103,7 +103,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkTUZastEvent.CHB_ZpomalClick(Sender: TObject);
+procedure TF_BlkRTStopEvent.CHB_ZpomalClick(Sender: TObject);
 begin
  Self.fZpom.Enabled := Self.CHB_Zpomal.Checked;
  Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomal.Checked;
@@ -113,7 +113,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkTUZastEvent.GetEvent(): TBlkRTStopEvents;
+function TF_BlkRTStopEvent.GetEvent(): TBlkRTStopEvents;
 begin
  Result := TBlkRTStopEvents.Create();
  Result.stop := fZast.GetRREv();

@@ -1,15 +1,15 @@
-﻿unit fBlkNav;
+﻿unit fBlkSignal;
 
 interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, BlockSignal, IBUtils,
-  fBlkNavEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
+  fBlkSignalEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
   BlockDb;
 
 type
-  TF_BlkNav = class(TForm)
+  TF_BlkSignal = class(TForm)
     L_Name: TLabel;
     E_Nazev: TEdit;
     SE_ID: TSpinEdit;
@@ -63,7 +63,7 @@ type
     NewBlk: Boolean;
     obls: TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
 
-    eventForms: TObjectList<TF_BlkNavEvent>;
+    eventForms: TObjectList<TF_BlkSignalEvent>;
     eventTabSheets: TObjectList<TTabSheet>;
 
     FCloseButtonMouseDownTab: TCloseTabSheet;
@@ -80,7 +80,7 @@ type
   end;
 
 var
-  F_BlkNav: TF_BlkNav;
+  F_BlkSignal: TF_BlkSignal;
 
 implementation
 
@@ -88,7 +88,7 @@ uses GetSystems, FileSystem, TechnologieRCS, Block, TOblRizeni, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkNav.OpenForm(BlokIndex: Integer);
+procedure TF_BlkSignal.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -102,7 +102,7 @@ procedure TF_BlkNav.OpenForm(BlokIndex: Integer);
   Self.ShowModal();
  end;
 
-procedure TF_BlkNav.NewBlkOpenForm();
+procedure TF_BlkSignal.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -128,11 +128,11 @@ procedure TF_BlkNav.NewBlkOpenForm();
   Self.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkNav.NormalOpenForm();
+procedure TF_BlkSignal.NormalOpenForm();
 var glob: TBlkSettings;
     settings: TBlkSignalSettings;
     i: Integer;
-    eventForm: TF_BlkNavEvent;
+    eventForm: TF_BlkSignalEvent;
     ts: TCloseTabSheet;
     oblr: TOR;
  begin
@@ -188,7 +188,7 @@ var glob: TBlkSettings;
       ts.Caption := 'globální'
     else
       ts.Caption := IntToStr(settings.events[i].length.min)+'-'+IntToStr(settings.events[i].length.max)+'      ';
-    eventForm  := TF_BlkNavEvent.Create(ts);
+    eventForm  := TF_BlkSignalEvent.Create(ts);
 
     eventForm.OpenForm(settings.events[i], (i = 0), Self.obls);
     eventForm.Parent := ts;
@@ -204,7 +204,7 @@ var glob: TBlkSettings;
   Self.ActiveControl := B_Save;
  end;
 
-procedure TF_BlkNav.HlavniOpenForm();
+procedure TF_BlkSignal.HlavniOpenForm();
  begin
   SetLength(Self.obls, 0);
   Self.LB_Stanice.Clear();
@@ -212,18 +212,18 @@ procedure TF_BlkNav.HlavniOpenForm();
   Self.SE_RCSmodule2.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
-procedure TF_BlkNav.NewBlkCreate();
+procedure TF_BlkSignal.NewBlkCreate();
  begin
   NewBlk := true;
   OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkNav.B_StornoClick(Sender: TObject);
+procedure TF_BlkSignal.B_StornoClick(Sender: TObject);
  begin
   Self.Close();
  end;
 
-procedure TF_BlkNav.CHB_RCS_OutputClick(Sender: TObject);
+procedure TF_BlkSignal.CHB_RCS_OutputClick(Sender: TObject);
 begin
  Self.SE_RCSmodule1.Enabled  := Self.CHB_RCS_Output.Checked;
  Self.SE_RCSPort1.Enabled := Self.CHB_RCS_Output.Checked;
@@ -239,7 +239,7 @@ begin
   end;
 end;
 
-procedure TF_BlkNav.CHB_RCS_Second_OutputClick(Sender: TObject);
+procedure TF_BlkSignal.CHB_RCS_Second_OutputClick(Sender: TObject);
 begin
  Self.SE_RCSmodule2.Enabled := Self.CHB_RCS_Second_Output.Checked;
  Self.SE_RCSport2.Enabled := Self.CHB_RCS_Second_Output.Checked;
@@ -251,8 +251,8 @@ begin
   end;
 end;
 
-procedure TF_BlkNav.BB_Event_AddClick(Sender: TObject);
-var eventForm: TF_BlkNavEvent;
+procedure TF_BlkSignal.BB_Event_AddClick(Sender: TObject);
+var eventForm: TF_BlkSignalEvent;
     ts: TCloseTabSheet;
 begin
   ts := TCloseTabSheet.Create(Self.PC_Events);
@@ -263,7 +263,7 @@ begin
 
   ts.PageControl := Self.PC_Events;
   ts.OnClose := Self.OnTabClose;
-  eventForm := TF_BlkNavEvent.Create(ts);
+  eventForm := TF_BlkSignalEvent.Create(ts);
   Self.PC_Events.ActivePage := ts;
 
   eventForm.OpenEmptyForm((Self.eventForms.Count = 0), Self.obls);
@@ -274,12 +274,12 @@ begin
   Self.eventTabSheets.Add(ts);
 end;
 
-procedure TF_BlkNav.B_SaveClick(Sender: TObject);
+procedure TF_BlkSignal.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkSignalSettings;
     str: string;
     another: TBlk;
-    fBlkNavEvent: TF_BlkNavEvent;
+    fBlkNavEvent: TF_BlkSignalEvent;
  begin
   if (E_Nazev.Text = '') then
    begin
@@ -373,7 +373,7 @@ var glob: TBlkSettings;
   Self.Blk.Change();
  end;
 
-procedure TF_BlkNav.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkSignal.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
@@ -383,13 +383,13 @@ procedure TF_BlkNav.FormClose(Sender: TObject; var Action: TCloseAction);
   Self.eventTabSheets.Clear();
  end;
 
-procedure TF_BlkNav.FormCreate(Sender: TObject);
+procedure TF_BlkSignal.FormCreate(Sender: TObject);
 begin
- Self.eventForms := TObjectList<TF_BlkNavEvent>.Create();
+ Self.eventForms := TObjectList<TF_BlkSignalEvent>.Create();
  Self.eventTabSheets := TObjectList<TTabSheet>.Create();;
 end;
 
-procedure TF_BlkNav.FormDestroy(Sender: TObject);
+procedure TF_BlkSignal.FormDestroy(Sender: TObject);
 begin
  Self.eventForms.Free();
  Self.eventTabSheets.Free();
@@ -397,7 +397,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNav.PageControlCloseButtonDrawTab(Control: TCustomTabControl;
+procedure TF_BlkSignal.PageControlCloseButtonDrawTab(Control: TCustomTabControl;
   TabIndex: Integer; const Rect: TRect; Active: Boolean);
 var
   CloseBtnSize: Integer;
@@ -466,7 +466,7 @@ begin
   end;
 end;
 
-procedure TF_BlkNav.PageControlCloseButtonMouseDown(Sender: TObject;
+procedure TF_BlkSignal.PageControlCloseButtonMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   I: Integer;
@@ -491,7 +491,7 @@ begin
   end;
 end;
 
-procedure TF_BlkNav.PageControlCloseButtonMouseLeave(Sender: TObject);
+procedure TF_BlkSignal.PageControlCloseButtonMouseLeave(Sender: TObject);
 var
   PageControl: TPageControl;
 begin
@@ -500,7 +500,7 @@ begin
   PageControl.Repaint;
 end;
 
-procedure TF_BlkNav.PageControlCloseButtonMouseMove(Sender: TObject;
+procedure TF_BlkSignal.PageControlCloseButtonMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
   PageControl: TPageControl;
@@ -520,7 +520,7 @@ begin
   end;
 end;
 
-procedure TF_BlkNav.PageControlCloseButtonMouseUp(Sender: TObject;
+procedure TF_BlkSignal.PageControlCloseButtonMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   PageControl: TPageControl;
@@ -538,19 +538,19 @@ begin
   end;
 end;
 
-procedure TF_BlkNav.SE_RCSmodule1Exit(Sender: TObject);
+procedure TF_BlkSignal.SE_RCSmodule1Exit(Sender: TObject);
 begin
  Self.SE_RCSport1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
 end;
 
-procedure TF_BlkNav.SE_RCSmodule2Exit(Sender: TObject);
+procedure TF_BlkSignal.SE_RCSmodule2Exit(Sender: TObject);
 begin
  Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNav.OnTabClose(Sender: TObject);
+procedure TF_BlkSignal.OnTabClose(Sender: TObject);
 var i: Integer;
 begin
  if (Self.eventTabSheets.Count <= 1) then

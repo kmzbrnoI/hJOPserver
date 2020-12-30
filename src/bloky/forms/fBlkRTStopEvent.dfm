@@ -1,11 +1,10 @@
-object F_BlkNavEvent: TF_BlkNavEvent
+object F_BlkRTStopEvent: TF_BlkRTStopEvent
   Left = 0
   Top = 0
-  Align = alClient
   BorderStyle = bsNone
-  Caption = 'F_BlkNavEvent'
-  ClientHeight = 302
-  ClientWidth = 348
+  Caption = 'F_BlkRTStopEvent'
+  ClientHeight = 257
+  ClientWidth = 354
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,34 +12,11 @@ object F_BlkNavEvent: TF_BlkNavEvent
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  ExplicitWidth = 320
-  ExplicitHeight = 240
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
-    Left = 8
-    Top = 8
-    Width = 239
-    Height = 13
-    Caption = 'Reagovat na tyto typy souprav: (regul'#225'rn'#237' v'#253'raz)'
-  end
-  object Label2: TLabel
-    Left = 8
-    Top = 51
-    Width = 106
-    Height = 13
-    Caption = 'Min. d'#233'lka soup. (cm):'
-  end
-  object Label3: TLabel
-    Left = 8
-    Top = 79
-    Width = 110
-    Height = 13
-    Caption = 'Max. d'#233'lka soup. (cm):'
-  end
   object GB_DetekceZastaveni: TGroupBox
     Left = 7
-    Top = 106
+    Top = 7
     Width = 165
     Height = 191
     Margins.Left = 2
@@ -49,7 +25,7 @@ object F_BlkNavEvent: TF_BlkNavEvent
     Margins.Bottom = 2
     Caption = ' Detekce zastaven'#237'  '
     TabOrder = 0
-    object P_ZastForm: TPanel
+    object P_Stop: TPanel
       Left = 2
       Top = 15
       Width = 161
@@ -60,10 +36,10 @@ object F_BlkNavEvent: TF_BlkNavEvent
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
-    Left = 177
-    Top = 50
+    Left = 183
+    Top = 7
     Width = 165
-    Height = 247
+    Height = 242
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -71,9 +47,9 @@ object F_BlkNavEvent: TF_BlkNavEvent
     Caption = ' Detekce zpomalen'#237'  '
     TabOrder = 1
     object CB_ZpomalitKmH: TComboBox
-      Left = 11
-      Top = 40
-      Width = 141
+      Left = 15
+      Top = 41
+      Width = 107
       Height = 21
       Margins.Left = 2
       Margins.Top = 2
@@ -94,9 +70,9 @@ object F_BlkNavEvent: TF_BlkNavEvent
         '90 km/h'
         '100 km/h')
     end
-    object CHB_Zpomalit: TCheckBox
-      Left = 11
-      Top = 19
+    object CHB_Zpomal: TCheckBox
+      Left = 15
+      Top = 20
       Width = 121
       Height = 17
       Margins.Left = 2
@@ -105,43 +81,16 @@ object F_BlkNavEvent: TF_BlkNavEvent
       Margins.Bottom = 2
       Caption = 'Zpomalit na rychlost:'
       TabOrder = 0
-      OnClick = CHB_ZpomalitClick
+      OnClick = CHB_ZpomalClick
     end
-    object P_ZpomForm: TPanel
+    object P_Zpom: TPanel
       Left = 2
-      Top = 71
+      Top = 66
       Width = 161
       Height = 174
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
     end
-  end
-  object E_Spr: TEdit
-    Left = 8
-    Top = 24
-    Width = 334
-    Height = 21
-    TabOrder = 2
-  end
-  object SE_MinLength: TSpinEdit
-    Left = 120
-    Top = 51
-    Width = 52
-    Height = 22
-    MaxValue = 1000
-    MinValue = 0
-    TabOrder = 3
-    Value = 0
-  end
-  object SE_MaxLength: TSpinEdit
-    Left = 120
-    Top = 79
-    Width = 52
-    Height = 22
-    MaxValue = 1000
-    MinValue = 0
-    TabOrder = 4
-    Value = 0
   end
 end

@@ -25,15 +25,15 @@ uses
   fRegulator in 'hv\forms\fRegulator.pas' {F_DigiReg},
   fSplash in 'forms\fSplash.pas' {F_splash},
   fAbout in 'forms\fAbout.pas' {F_About},
-  fBlkPrejezd in 'bloky\forms\fBlkPrejezd.pas' {F_BlkPrejezd},
+  fBlkCrossing in 'bloky\forms\fBlkCrossing.pas' {F_BlkCrossing},
   Verze in 'helpers\Verze.pas',
   adCpuUsage in 'helpers\adCpuUsage.pas',
   fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_ZesilovacEdit},
-  fBlkTrat in 'bloky\forms\fBlkTrat.pas' {F_BlkTrat},
+  fBlkRailway in 'bloky\forms\fBlkRailway.pas' {F_BlkRailway},
   fHVEdit in 'hv\forms\fHVEdit.pas' {F_HVEdit},
   fSystemInfo in 'forms\fSystemInfo.pas' {F_SystemInfo},
-  fBlkUsek in 'bloky\forms\fBlkUsek.pas' {F_BlkUsek},
-  fBlkVyhybka in 'bloky\forms\fBlkVyhybka.pas' {F_BlkVyhybka},
+  fBlkTrack in 'bloky\forms\fBlkTrack.pas' {F_BlkTrack},
+  fBlkTurnout in 'bloky\forms\fBlkTurnout.pas' {F_BlkTurnout},
   fBlkIR in 'bloky\forms\fBlkIR.pas' {F_BlkIR},
   BlockCrossing in 'bloky\BlockCrossing.pas',
   fBlkNew in 'bloky\forms\fBlkNew.pas' {F_BlkNew},
@@ -41,7 +41,7 @@ uses
   fJCEdit in 'jc\forms\fJCEdit.pas' {F_JCEdit},
   fRychlostiEdit in 'forms\fRychlostiEdit.pas' {F_RychlostiEdit},
   fSystemAutoStart in 'forms\fSystemAutoStart.pas' {F_AutoStartSystems},
-  fBlkUsekSysVars in 'bloky\forms\fBlkUsekSysVars.pas' {F_BlkUsek_tech},
+  fBlkTrackState in 'bloky\forms\state\fBlkTrackState.pas' {F_BlkTrackState},
   GetSystems in 'helpers\GetSystems.pas',
   ownConvert in 'helpers\ownConvert.pas',
   TechnologieRCS in 'TechnologieRCS.pas',
@@ -57,7 +57,7 @@ uses
   TOblRizeni in 'TOblRizeni.pas',
   Booster in 'Booster.pas',
   BoosterDb in 'BoosterDb.pas',
-  fBlkVyhybkaSysVars in 'bloky\forms\fBlkVyhybkaSysVars.pas' {F_BlkVyh_tech},
+  fBlkTurnoutState in 'bloky\forms\state\fBlkTurnoutState.pas' {F_BlkTurnoutState},
   SnadnSpusteni in 'SnadnSpusteni.pas',
   TJCDatabase in 'jc\TJCDatabase.pas',
   THVDatabase in 'hv\THVDatabase.pas',
@@ -81,12 +81,12 @@ uses
   fUserEdit in 'forms\fUserEdit.pas' {F_UserEdit},
   Zasobnik in 'Zasobnik.pas',
   UPO in 'jc\UPO.pas',
-  fBlkTratSysVars in 'bloky\forms\fBlkTratSysVars.pas' {F_BlkTrat_tech},
+  fBlkRailwayState in 'bloky\forms\state\fBlkRailwayState.pas' {F_BlkRailwayState},
   ModelovyCas in 'ModelovyCas.pas',
-  fBlkNavEvent in 'bloky\forms\fBlkNavEvent.pas' {F_BlkNavEvent},
+  fBlkSignalEvent in 'bloky\forms\fBlkSignalEvent.pas' {F_BlkSignalEvent},
   CloseTabSheet in 'helpers\CloseTabSheet.pas',
   BlockLock in 'bloky\BlockLock.pas',
-  fBlkZamek in 'bloky\forms\fBlkZamek.pas' {F_BlkZamek},
+  fBlkLock in 'bloky\forms\fBlkLock.pas' {F_BlkLock},
   TMultiJCDatabase in 'jc\TMultiJCDatabase.pas',
   TechnologieMultiJC in 'jc\TechnologieMultiJC.pas',
   DataMultiJC in 'tables\DataMultiJC.pas',
@@ -94,13 +94,13 @@ uses
   fMJCEdit in 'jc\forms\fMJCEdit.pas' {F_MJCEdit},
   ownStrUtils in 'helpers\ownStrUtils.pas',
   BlockDisconnector in 'bloky\BlockDisconnector.pas',
-  fBlkRozp in 'bloky\forms\fBlkRozp.pas' {F_BlkRozp},
+  fBlkDisconnector in 'bloky\forms\fBlkDisconnector.pas' {F_BlkDisconnector},
   RegulatorTCP in 'RegulatorTCP.pas',
   fFuncsSet in 'forms\fFuncsSet.pas' {F_FuncsSet},
   FunkceVyznam in 'hv\FunkceVyznam.pas',
   BlockRailwayTrack in 'bloky\BlockRailwayTrack.pas',
-  fBlkTU in 'bloky\forms\fBlkTU.pas' {F_BlkTU},
-  fBlkTUZastEvent in 'bloky\forms\fBlkTUZastEvent.pas' {F_BlkTUZastEvent},
+  fBlkRT in 'bloky\forms\fBlkRT.pas' {F_BlkRT},
+  fBlkRTStopEvent in 'bloky\forms\fBlkRTStopEvent.pas' {F_BlkRTStopEvent},
   RCSdebugger in 'RCSdebugger.pas',
   UDPdiscover in 'UDPdiscover.pas',
   USock in 'helpers\USock.pas',
@@ -133,13 +133,13 @@ uses
   changeEvent in 'changeEvent.pas',
   changeEventCaller in 'changeEventCaller.pas',
   BlockSummary in 'bloky\BlockSummary.pas',
-  fBlkSH in 'bloky\forms\fBlkSH.pas',
+  fBlkSummary in 'bloky\forms\fBlkSummary.pas' {F_BlkSummary},
   predvidanyOdjezd in 'predvidanyOdjezd.pas',
   timeHelper in 'helpers\timeHelper.pas',
   TechnologieAB in 'TechnologieAB.pas',
   DataAB in 'tables\DataAB.pas',
   TCPORsRef in 'TCPORsRef.pas',
-  fBlkNav in 'bloky\forms\fBlkNav.pas',
+  fBlkSignal in 'bloky\forms\fBlkSignal.pas' {F_BlkSignal},
   Trakce in 'trakce\Trakce.pas',
   TrakceErrors in 'trakce\TrakceErrors.pas',
   TechnologieTrakce in 'TechnologieTrakce.pas' {$R *.res},
@@ -160,7 +160,8 @@ uses
   PTEndpointUsers in 'pt\PTEndpointUsers.pas',
   PTEndpointUser in 'pt\PTEndpointUser.pas',
   BlockDb in 'bloky\BlockDb.pas',
-  BlockGroupSignal in 'bloky\BlockGroupSignal.pas';
+  BlockGroupSignal in 'bloky\BlockGroupSignal.pas',
+  fBlkGroupSignal in 'bloky\forms\fBlkGroupSignal.pas' {F_BlkGroupSignal};
 
 {$R *.res}
 
@@ -187,39 +188,40 @@ var
   Application.CreateForm(TF_Main, F_Main);
   Application.CreateForm(TF_Splash, F_Splash);
   Application.CreateForm(TF_BlkAC, F_BlkAC);
+  Application.CreateForm(TF_BlkGroupSignal, F_BlkGroupSignal);
   F_Splash.AddStav('Vytvářím okna...');
 
   Application.CreateForm(TF_Console, F_Console);
-  Application.CreateForm(TF_BlkVyh_tech, F_BlkVyh_tech);
+  Application.CreateForm(TF_BlkTurnoutState, F_BlkTurnoutState);
   Application.CreateForm(TF_UserEdit, F_UserEdit);
-  Application.CreateForm(TF_BlkTrat_tech, F_BlkTrat_tech);
-  Application.CreateForm(TF_BlkNavEvent, F_BlkNavEvent);
+  Application.CreateForm(TF_BlkRailwayState, F_BlkRailwayState);
+  Application.CreateForm(TF_BlkSignalEvent, F_BlkSignalEvent);
   Application.CreateForm(TF_HV_Pom, F_HV_Pom);
   Application.CreateForm(TF_MJCEdit, F_MJCEdit);
   Application.CreateForm(TF_FuncsSet, F_FuncsSet);
-  Application.CreateForm(TF_BlkTUZastEvent, F_BlkTUZastEvent);
+  Application.CreateForm(TF_BlkRTStopEvent, F_BlkRTStopEvent);
   Application.CreateForm(TF_HoukEvsUsek, F_HoukEvsUsek);
   Application.CreateForm(TF_JCEdit, F_JCEdit);
   Application.CreateForm(TF_RychlostiEdit, F_RychlostiEdit);
-  Application.CreateForm(TF_BlkUsek, F_BlkUsek);
-  Application.CreateForm(TF_BlkVyhybka, F_BlkVyhybka);
+  Application.CreateForm(TF_BlkTrack, F_BlkTrack);
+  Application.CreateForm(TF_BlkTurnout, F_BlkTurnout);
   Application.CreateForm(TF_BlkIR, F_BlkIR);
-  Application.CreateForm(TF_BlkNav, F_BlkNav);
+  Application.CreateForm(TF_BlkSignal, F_BlkSignal);
   Application.CreateForm(TF_BlkNew, F_BlkNew);
-  Application.CreateForm(TF_BlkPrejezd, F_BlkPrejezd);
-  Application.CreateForm(TF_BlkTU, F_BlkTU);
+  Application.CreateForm(TF_BlkCrossing, F_BlkCrossing);
+  Application.CreateForm(TF_BlkRT, F_BlkRT);
   Application.CreateForm(TF_BlkIO, F_BlkIO);
-  Application.CreateForm(TF_BlkSH, F_BlkSH);
+  Application.CreateForm(TF_BlkSummary, F_BlkSummary);
   Application.CreateForm(TF_AutoStartSystems, F_AutoStartSystems);
-  Application.CreateForm(TF_BlkUsek_tech, F_BlkUsek_tech);
+  Application.CreateForm(TF_BlkTrackState, F_BlkTrackState);
   Application.CreateForm(TF_SystemInfo, F_SystemInfo);
   Application.CreateForm(TF_Admin, F_Admin);
   Application.CreateForm(TF_Options, F_Options);
   Application.CreateForm(TF_Tester, F_Tester);
   Application.CreateForm(TF_ZesilovacEdit, F_ZesilovacEdit);
-  Application.CreateForm(TF_BlkTrat, F_BlkTrat);
-  Application.CreateForm(TF_BlkZamek, F_BlkZamek);
-  Application.CreateForm(TF_BlkRozp, F_BlkRozp);
+  Application.CreateForm(TF_BlkRailway, F_BlkRailway);
+  Application.CreateForm(TF_BlkLock, F_BlkLock);
+  Application.CreateForm(TF_BlkDisconnector, F_BlkDisconnector);
   Application.CreateForm(TF_HVEdit, F_HVEdit);
   Application.CreateForm(TF_ModCasSet, F_ModCasSet);
   Application.CreateForm(TF_About, F_About);

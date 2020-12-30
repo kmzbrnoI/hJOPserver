@@ -1,4 +1,4 @@
-﻿unit fBlkVyhybkaSysVars;
+﻿unit fBlkTurnoutState;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   BlockTurnout, Spin;
 
 type
-  TF_BlkVyh_tech = class(TForm)
+  TF_BlkTurnoutState = class(TForm)
     B_Update: TButton;
     B_Apply: TButton;
     M_Vyluka: TMemo;
@@ -43,7 +43,7 @@ type
   end;
 
 var
-  F_BlkVyh_tech: TF_BlkVyh_tech;
+  F_BlkTurnoutState: TF_BlkTurnoutState;
 
 implementation
 
@@ -53,35 +53,35 @@ uses ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkVyh_tech.B_ApplyClick(Sender: TObject);
+procedure TF_BlkTurnoutState.B_ApplyClick(Sender: TObject);
 begin
  Self.myApply();
  Self.myUpdate();
 end;
 
-procedure TF_BlkVyh_tech.B_UnlockClick(Sender: TObject);
+procedure TF_BlkTurnoutState.B_UnlockClick(Sender: TObject);
 begin
  Self.OpenBlk.IntentionalUnlock();
  Self.myUpdate();
 end;
 
-procedure TF_BlkVyh_tech.B_UpdateClick(Sender: TObject);
+procedure TF_BlkTurnoutState.B_UpdateClick(Sender: TObject);
 begin
  Self.myUpdate();
 end;
 
-procedure TF_BlkVyh_tech.FormClose(Sender: TObject;
+procedure TF_BlkTurnoutState.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
  Self.OpenBlk := nil;
 end;
 
-procedure TF_BlkVyh_tech.FormCreate(Sender: TObject);
+procedure TF_BlkTurnoutState.FormCreate(Sender: TObject);
 begin
  Self.OpenBlk := nil;
 end;
 
-procedure TF_BlkVyh_tech.OpenForm(blk: TBlkTurnout);
+procedure TF_BlkTurnoutState.OpenForm(blk: TBlkTurnout);
 begin
  Self.OpenBlk := blk;
  Self.myUpdate();
@@ -92,7 +92,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkVyh_tech.myUpdate();
+procedure TF_BlkTurnoutState.myUpdate();
 begin
  Self.M_Stitek.Text := Self.OpenBlk.note;
  Self.M_Vyluka.Text := Self.OpenBlk.lockout;
@@ -107,7 +107,7 @@ begin
  Self.B_Unlock.Enabled := Self.OpenBlk.intentionalLocked;
 end;
 
-procedure TF_BlkVyh_tech.myApply();
+procedure TF_BlkTurnoutState.myApply();
 begin
  Self.OpenBlk.note := Self.M_Stitek.Text;
  Self.OpenBlk.lockout := Self.M_Vyluka.Text;

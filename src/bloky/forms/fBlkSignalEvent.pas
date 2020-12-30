@@ -1,4 +1,4 @@
-﻿unit fBlkNavEvent;
+﻿unit fBlkSignalEvent;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   BlockSignal, TOblsRizeni, BlockDb, ExtCtrls, frrEv;
 
 type
-  TF_BlkNavEvent = class(TForm)
+  TF_BlkSignalEvent = class(TForm)
     GB_DetekceZastaveni: TGroupBox;
     GB_DetekceZpomalenii: TGroupBox;
     CB_ZpomalitKmH: TComboBox;
@@ -41,7 +41,7 @@ type
   end;
 
 var
-  F_BlkNavEvent: TF_BlkNavEvent;
+  F_BlkSignalEvent: TF_BlkSignalEvent;
 
 implementation
 
@@ -51,7 +51,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TF_BlkNavEvent.Create(AOwner: TComponent);
+constructor TF_BlkSignalEvent.Create(AOwner: TComponent);
 begin
  inherited;
 
@@ -64,7 +64,7 @@ begin
  Self.fZpom.Show();
 end;
 
-destructor TF_BlkNavEvent.Destroy();
+destructor TF_BlkSignalEvent.Destroy();
 begin
  Self.fZast.Free();
  Self.fZpom.Free();
@@ -73,7 +73,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNavEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean; obls: TArstr);
+procedure TF_BlkSignalEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean; obls: TArstr);
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -110,7 +110,7 @@ begin
  Self.CHB_ZpomalitClick(CHB_Zpomalit);
 end;
 
-procedure TF_BlkNavEvent.OpenEmptyForm(first: Boolean; obls: TArstr);
+procedure TF_BlkSignalEvent.OpenEmptyForm(first: Boolean; obls: TArstr);
 begin
  Self.obls  := obls;
  Self.first := first;
@@ -142,7 +142,7 @@ begin
 end;
 ///////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkNavEvent.GetEvent(): TBlkSignalTrainEvent;
+function TF_BlkSignalEvent.GetEvent(): TBlkSignalTrainEvent;
 begin
  Result := TBlkSignalTrainEvent.Create();
  if ((not Self.first) and (Self.E_Spr.Text <> '')) then
@@ -164,7 +164,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkNavEvent.CHB_ZpomalitClick(Sender: TObject);
+procedure TF_BlkSignalEvent.CHB_ZpomalitClick(Sender: TObject);
 begin
  Self.fZpom.Enabled := Self.CHB_Zpomalit.Checked;
  Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomalit.Checked;
@@ -172,7 +172,7 @@ begin
    Self.CB_ZpomalitKmH.ItemIndex := -1;
 end;
 
-function TF_BlkNavEvent.Check(): string;
+function TF_BlkSignalEvent.Check(): string;
 begin
   if (not Self.fZast.InputValid()) then
     Exit('Vyberte zastavovací událost!');

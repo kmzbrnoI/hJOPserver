@@ -1,4 +1,4 @@
-﻿unit fBlkUsek;
+﻿unit fBlkTrack;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   BlockDb, Block, BlockTrack, Generics.Collections;
 
 type
-  TF_BlkUsek = class(TForm)
+  TF_BlkTrack = class(TForm)
     B_OK: TButton;
     B_Storno: TButton;
     L_Usek02: TLabel;
@@ -61,7 +61,7 @@ type
   end;
 
 var
-  F_BlkUsek: TF_BlkUsek;
+  F_BlkTrack: TF_BlkTrack;
 
 implementation
 
@@ -70,7 +70,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky,
 
 {$R *.dfm}
 
-procedure TF_BlkUsek.OpenForm(BlokIndex: Integer);
+procedure TF_BlkTrack.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -81,10 +81,10 @@ procedure TF_BlkUsek.OpenForm(BlokIndex: Integer);
   else
     Self.NormalOpenForm();
 
-  F_BlkUsek.ShowModal();
+  F_BlkTrack.ShowModal();
  end;
 
-procedure TF_BlkUsek.SE_RCS_BoardExit(Sender: TObject);
+procedure TF_BlkTrack.SE_RCS_BoardExit(Sender: TObject);
 begin
  Self.SE_Port1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
  Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port2.Value);
@@ -92,13 +92,13 @@ begin
  Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port4.Value);
 end;
 
-procedure TF_BlkUsek.NewBlkCreate;
+procedure TF_BlkTrack.NewBlkCreate;
  begin
   Self.NewBlk := true;
   Self.OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkUsek.NewBlkOpenForm();
+procedure TF_BlkTrack.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -121,11 +121,11 @@ procedure TF_BlkUsek.NewBlkOpenForm();
   Self.CHB_D1.Checked := false;
   Self.CHB_D1Click(Self.CHB_D1);
 
-  F_BlkUsek.Caption := 'Editace noveho bloku';
-  F_BlkUsek.ActiveControl := E_Nazev;
+  F_BlkTrack.Caption := 'Editace noveho bloku';
+  F_BlkTrack.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkUsek.NormalOpenForm();
+procedure TF_BlkTrack.NormalOpenForm();
 var glob: TBlkSettings;
     settings: TBlkTrackSettings;
     i: Integer;
@@ -243,11 +243,11 @@ var glob: TBlkSettings;
   Self.E_Delka.Text := FloatToStr(settings.lenght);
   Self.CHB_SmycBlok.Checked := settings.loop;
 
-  F_BlkUsek.Caption := 'Editovat data bloku '+glob.name+' (úsek)';
-  F_BlkUsek.ActiveControl := B_OK;
+  F_BlkTrack.Caption := 'Editovat data bloku '+glob.name+' (úsek)';
+  F_BlkTrack.ActiveControl := B_OK;
  end;
 
-procedure TF_BlkUsek.HlavniOpenForm();
+procedure TF_BlkTrack.HlavniOpenForm();
 var booster: TBooster;
  begin
   Self.LB_Stanice.Clear();
@@ -262,12 +262,12 @@ var booster: TBooster;
   for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
  end;
 
-procedure TF_BlkUsek.B_StornoClick(Sender: TObject);
+procedure TF_BlkTrack.B_StornoClick(Sender: TObject);
  begin
-  F_BlkUsek.Close();
+  F_BlkTrack.Close();
  end;
 
-procedure TF_BlkUsek.B_OKClick(Sender: TObject);
+procedure TF_BlkTrack.B_OKClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkTrackSettings;
     addr: TRCSAddr;
@@ -341,18 +341,18 @@ var glob: TBlkSettings;
                              'Varování', MB_OK OR MB_ICONWARNING);
    end;
 
-  F_BlkUsek.Close();
+  F_BlkTrack.Close();
   Self.Blk.Change();
  end;
 
-procedure TF_BlkUsek.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkTrack.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   Self.OpenIndex := -1;
   Self.NewBlk := false;
   BlokyTableData.UpdateTable();
  end;
 
-procedure TF_BlkUsek.CHB_D1Click(Sender: TObject);
+procedure TF_BlkTrack.CHB_D1Click(Sender: TObject);
  begin
   case ((Sender as TCheckBox).Tag) of
    1: begin

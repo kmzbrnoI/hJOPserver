@@ -1,4 +1,4 @@
-﻿unit fBlkPrejezd;
+﻿unit fBlkCrossing;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   BlockCrossingLogic, Mask, StrUtils;
 
 type
-  TF_BlkPrejezd = class(TForm)
+  TF_BlkCrossing = class(TForm)
     L_Name: TLabel;
     E_Prj_Nazev: TEdit;
     B_save_P: TButton;
@@ -95,7 +95,7 @@ type
   end;
 
 var
-  F_BlkPrejezd: TF_BlkPrejezd;
+  F_BlkCrossing: TF_BlkCrossing;
 
 implementation
 
@@ -104,7 +104,7 @@ uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni,
 
 {$R *.dfm}
 
-procedure TF_BlkPrejezd.OpenForm(BlokIndex: Integer);
+procedure TF_BlkCrossing.OpenForm(BlokIndex: Integer);
  begin
   OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -120,7 +120,7 @@ procedure TF_BlkPrejezd.OpenForm(BlokIndex: Integer);
   Self.ShowModal;
  end;
 
-procedure TF_BlkPrejezd.SE_RCS_boardExit(Sender: TObject);
+procedure TF_BlkCrossing.SE_RCS_boardExit(Sender: TObject);
 begin
  Self.SE_vyst_close_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vyst_close_board.Value, Self.SE_vyst_close_port.Value);
  Self.SE_vyst_open_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vyst_open_board.Value, Self.SE_vyst_open_port.Value);
@@ -132,7 +132,7 @@ begin
  Self.SE_vst_anulace_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_vst_anulace_board.Value, Self.SE_vst_anulace_port.Value);
 end;
 
-procedure TF_BlkPrejezd.B_save_PClick(Sender: TObject);
+procedure TF_BlkCrossing.B_save_PClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkCrossingSettings;
     addrs: TList<TRCSAddr>;
@@ -253,12 +253,12 @@ var glob: TBlkSettings;
   end;
  end;
 
-procedure TF_BlkPrejezd.B_StornoClick(Sender: TObject);
+procedure TF_BlkCrossing.B_StornoClick(Sender: TObject);
  begin
   Self.Close;
  end;
 
-procedure TF_BlkPrejezd.B_Track_DeleteClick(Sender: TObject);
+procedure TF_BlkCrossing.B_Track_DeleteClick(Sender: TObject);
 begin
  if (Application.MessageBox('Opravdu smazat kolej?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
    Exit();
@@ -268,7 +268,7 @@ begin
  Self.CB_TrackChange(Self);
 end;
 
-procedure TF_BlkPrejezd.CB_TrackChange(Sender: TObject);
+procedure TF_BlkCrossing.CB_TrackChange(Sender: TObject);
 begin
  Self.B_Track_Delete.Enabled := (Self.CB_Track.ItemIndex <> -1) and (Self.CB_Track.ItemIndex <> Self.CB_Track.Items.Count-1);
  Self.E_Track_Left_Out.Enabled := (Self.CB_Track.ItemIndex <> -1);
@@ -302,7 +302,7 @@ begin
 
 end;
 
-procedure TF_BlkPrejezd.CHB_JOP_controlClick(Sender: TObject);
+procedure TF_BlkCrossing.CHB_JOP_controlClick(Sender: TObject);
 begin
  Self.CB_Track.Enabled := Self.CHB_JOP_control.Checked;
  if (not Self.CHB_JOP_control.Checked) then
@@ -312,7 +312,7 @@ begin
   end;
 end;
 
-procedure TF_BlkPrejezd.CHB_RCS_AnullationClick(Sender: TObject);
+procedure TF_BlkCrossing.CHB_RCS_AnullationClick(Sender: TObject);
 begin
  Self.SE_vst_anulace_board.Enabled := Self.CHB_RCS_Anullation.Checked;
  Self.SE_vst_anulace_port.Enabled := Self.CHB_RCS_Anullation.Checked;
@@ -323,7 +323,7 @@ begin
   end;
 end;
 
-procedure TF_BlkPrejezd.CHB_RCS_NOTClick(Sender: TObject);
+procedure TF_BlkCrossing.CHB_RCS_NOTClick(Sender: TObject);
 begin
  Self.SE_vyst_open_board.Enabled := Self.CHB_RCS_NOT.Checked;
  Self.SE_vyst_open_port.Enabled := Self.CHB_RCS_NOT.Checked;
@@ -334,7 +334,7 @@ begin
   end;
 end;
 
-procedure TF_BlkPrejezd.CHB_RCS_BPClick(Sender: TObject);
+procedure TF_BlkCrossing.CHB_RCS_BPClick(Sender: TObject);
 begin
  Self.SE_vyst_bp_board.Enabled := Self.CHB_RCS_BP.Checked;
  Self.SE_vyst_bp_port.Enabled := Self.CHB_RCS_BP.Checked;
@@ -345,7 +345,7 @@ begin
   end;
 end;
 
-procedure TF_BlkPrejezd.HlavniOpenForm();
+procedure TF_BlkCrossing.HlavniOpenForm();
  begin
   SetLength(Self.obls,0);
   Self.LB_Stanice.Clear();
@@ -359,7 +359,7 @@ procedure TF_BlkPrejezd.HlavniOpenForm();
   Self.SE_vst_anulace_board.MaxValue := RCSi.maxModuleAddrSafe;
  end;
 
-procedure TF_BlkPrejezd.NormalOpenForm();
+procedure TF_BlkCrossing.NormalOpenForm();
 var glob: TBlkSettings;
     settings: TBlkCrossingSettings;
     i: Integer;
@@ -465,7 +465,7 @@ var glob: TBlkSettings;
   Self.ActiveControl := Self.B_save_P;
  end;
 
-procedure TF_BlkPrejezd.NewOpenForm();
+procedure TF_BlkCrossing.NewOpenForm();
  begin
   Self.E_prj_Nazev.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -500,20 +500,20 @@ procedure TF_BlkPrejezd.NewOpenForm();
   Self.ActiveControl := Self.E_Prj_Nazev;
  end;
 
-procedure TF_BlkPrejezd.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkCrossing.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   NewBlk := false;
   OpenIndex := -1;
   BlokyTableData.UpdateTable;
 end;
 
-procedure TF_BlkPrejezd.NewBlkCreate();
+procedure TF_BlkCrossing.NewBlkCreate();
  begin
   Self.NewBlk := true;
   OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkPrejezd.SaveTracks();
+procedure TF_BlkCrossing.SaveTracks();
 var track: TBlkCrossingTrack;
 begin
  if (Self.CB_Track.ItemIndex = -1) then

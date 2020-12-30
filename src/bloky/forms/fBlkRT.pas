@@ -1,14 +1,14 @@
-﻿unit fBlkTU;
+﻿unit fBlkRT;
 
 interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, IBUtils, BlockDb, Block, Mask,
-  BlockRailwayTrack, StrUtils, BlockTrack, fBlkTUZastEvent, Generics.Collections;
+  BlockRailwayTrack, StrUtils, BlockTrack, fBlkRTStopEvent, Generics.Collections;
 
 type
-  TF_BlkTU = class(TForm)
+  TF_BlkRT = class(TForm)
     B_OK: TButton;
     B_Storno: TButton;
     L_Usek02: TLabel;
@@ -83,7 +83,7 @@ type
    OpenIndex: Integer;
    CB_NavData: TArI;
    CB_NavLindex, CB_NavSindex: Integer;
-   zastLichy, zastSudy: TF_BlkTUZastEvent;
+   zastLichy, zastSudy: TF_BlkRTStopEvent;
 
     procedure NewBlkOpenForm();
     procedure NormalOpenForm();
@@ -97,7 +97,7 @@ type
   end;
 
 var
-  F_BlkTU: TF_BlkTU;
+  F_BlkRT: TF_BlkRT;
 
 implementation
 
@@ -106,7 +106,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
 
 {$R *.dfm}
 
-procedure TF_BlkTU.OpenForm(BlokIndex: Integer);
+procedure TF_BlkRT.OpenForm(BlokIndex: Integer);
  begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
@@ -118,7 +118,7 @@ procedure TF_BlkTU.OpenForm(BlokIndex: Integer);
   Self.ShowModal();
  end;
 
-procedure TF_BlkTU.SE_RCS_BoardExit(Sender: TObject);
+procedure TF_BlkRT.SE_RCS_BoardExit(Sender: TObject);
 begin
  Self.SE_Port1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
  Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
@@ -126,13 +126,13 @@ begin
  Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
 end;
 
-procedure TF_BlkTU.NewBlkCreate();
+procedure TF_BlkRT.NewBlkCreate();
  begin
   NewBlk := true;
   OpenForm(Blocks.count);
  end;
 
-procedure TF_BlkTU.NewBlkOpenForm();
+procedure TF_BlkRT.NewBlkOpenForm();
  begin
   E_Nazev.Text := '';
   SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
@@ -176,7 +176,7 @@ procedure TF_BlkTU.NewBlkOpenForm();
   Self.ActiveControl := E_Nazev;
  end;
 
-procedure TF_BlkTU.NormalOpenForm();
+procedure TF_BlkRT.NormalOpenForm();
 var glob: TBlkSettings;
     TUsettings: TBlkRTSettings;
     Usettings: TBlkTrackSettings;
@@ -327,7 +327,7 @@ var glob: TBlkSettings;
   Self.ActiveControl := Self.B_OK;
  end;
 
-procedure TF_BlkTU.HlavniOpenForm;
+procedure TF_BlkRT.HlavniOpenForm;
 var booster: TBooster;
  begin
   Self.LB_Stanice.Clear();
@@ -342,7 +342,7 @@ var booster: TBooster;
   for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
  end;
 
-procedure TF_BlkTU.LV_SpeedsChange(Sender: TObject; Item: TListItem;
+procedure TF_BlkRT.LV_SpeedsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 var str: string;
 begin
@@ -357,7 +357,7 @@ begin
   end;
 end;
 
-procedure TF_BlkTU.B_speed_applyClick(Sender: TObject);
+procedure TF_BlkRT.B_speed_applyClick(Sender: TObject);
 var LI: TListItem;
     i: Integer;
     prechodnost, speed: Integer;
@@ -393,12 +393,12 @@ begin
  LI.SubItems.Add(IntToStr(speed) + ' km/h');
 end;
 
-procedure TF_BlkTU.B_StornoClick(Sender: TObject);
+procedure TF_BlkRT.B_StornoClick(Sender: TObject);
  begin
   Self.Close;
  end;
 
-procedure TF_BlkTU.B_OKClick(Sender: TObject);
+procedure TF_BlkRT.B_OKClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkTrackSettings;
     TUsettings: TBlkRTSettings;
@@ -556,31 +556,31 @@ var glob: TBlkSettings;
   Self.Blk.Change();
  end;
 
-procedure TF_BlkTU.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TF_BlkRT.FormClose(Sender: TObject; var Action: TCloseAction);
  begin
   OpenIndex  := -1;
   NewBlk     := false;
   BlokyTableData.UpdateTable();
  end;
 
-procedure TF_BlkTU.FormCreate(Sender: TObject);
+procedure TF_BlkRT.FormCreate(Sender: TObject);
 begin
- Self.zastLichy := TF_BlkTUZastEvent.Create(Self.TS_Zast_lichy);
+ Self.zastLichy := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
  Self.zastLichy.Parent := Self.TS_Zast_lichy;
  Self.zastLichy.Show();
 
- Self.zastSudy := TF_BlkTUZastEvent.Create(Self.TS_Zast_lichy);
+ Self.zastSudy := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
  Self.zastSudy.Parent := Self.TS_Zast_sudy;
  Self.zastSudy.Show();
 end;
 
-procedure TF_BlkTU.FormDestroy(Sender: TObject);
+procedure TF_BlkRT.FormDestroy(Sender: TObject);
 begin
  Self.zastLichy.Free();
  Self.zastSudy.Free();
 end;
 
-procedure TF_BlkTU.CHB_D1Click(Sender: TObject);
+procedure TF_BlkRT.CHB_D1Click(Sender: TObject);
  begin
   case ((Sender as TCheckBox).Tag) of
    1: begin
@@ -623,7 +623,7 @@ procedure TF_BlkTU.CHB_D1Click(Sender: TObject);
 
  end;
 
-procedure TF_BlkTU.CHB_NavLClick(Sender: TObject);
+procedure TF_BlkRT.CHB_NavLClick(Sender: TObject);
 begin
  Self.CB_NavL.Enabled := Self.CHB_NavL.Checked;
  if (not Self.CHB_NavL.Checked) then
@@ -632,7 +632,7 @@ begin
    Self.CB_NavL.ItemIndex := Self.CB_NavLindex;
 end;
 
-procedure TF_BlkTU.CHB_NavSClick(Sender: TObject);
+procedure TF_BlkRT.CHB_NavSClick(Sender: TObject);
 begin
  Self.CB_NavS.Enabled := Self.CHB_NavS.Checked;
  if (not Self.CHB_NavS.Checked) then
@@ -643,7 +643,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkTU.CHB_Zastavka_LichyClick(Sender: TObject);
+procedure TF_BlkRT.CHB_Zastavka_LichyClick(Sender: TObject);
 var zast: TBlkRTStop;
 begin
  if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
@@ -681,7 +681,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TF_BlkTU.GetSpeeds(): TDictionary<Cardinal, Cardinal>;
+function TF_BlkRT.GetSpeeds(): TDictionary<Cardinal, Cardinal>;
 var LI: TListItem;
     speed: string;
 begin
