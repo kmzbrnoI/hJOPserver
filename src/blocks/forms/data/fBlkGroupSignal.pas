@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, BlockGroupSignal, ComCtrls, BlockDb;
+  Dialogs, StdCtrls, Spin, BlockGroupSignal, ComCtrls, BlockDb,
+  Generics.Collections;
 
 type
   TF_BlkGroupSignal = class(TForm)
@@ -22,6 +23,18 @@ type
     GB_NewSignal: TGroupBox;
     B_BlkAdd: TButton;
     CB_NewSignal: TComboBox;
+    GB_RCS: TGroupBox;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    SE_RCSport1: TSpinEdit;
+    CB_Typ: TComboBox;
+    SE_RCSmodule1: TSpinEdit;
+    CHB_RCS_Output: TCheckBox;
+    SE_RCSmodule2: TSpinEdit;
+    SE_RCSport2: TSpinEdit;
+    CHB_RCS_Second_Output: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -29,6 +42,10 @@ type
       Change: TItemChange);
     procedure B_BlkAddClick(Sender: TObject);
     procedure B_BlkDeleteClick(Sender: TObject);
+    procedure SE_RCSmodule1Exit(Sender: TObject);
+    procedure SE_RCSmodule2Exit(Sender: TObject);
+    procedure CHB_RCS_Second_OutputClick(Sender: TObject);
+    procedure CHB_RCS_OutputClick(Sender: TObject);
 
   private
    new: Boolean;
@@ -37,7 +54,6 @@ type
 
     procedure NewBlkOpenForm();
     procedure EditBlkOpenForm();
-    procedure CommonOpenForm();
 
     procedure FillCBNewSignal();
 
@@ -54,7 +70,7 @@ var
 
 implementation
 
-uses Block, TOblRizeni, DataBloky;
+uses Block, TOblRizeni, DataBloky, TechnologieRCS, BlockSignal;
 
 {$R *.dfm}
 
@@ -64,7 +80,7 @@ procedure TF_BlkGroupSignal.EditBlk(blockIndex: Integer);
 begin
  Self.blkIndex := blockIndex;
  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.Blk));
- Self.CommonOpenForm();
+ Self.LB_Stations.Clear();
 
  if (Self.new) then
    Self.NewBlkOpenForm()
@@ -79,19 +95,45 @@ begin
  Self.E_name.Text := '';
  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
 
+ Self.SE_RCSmodule1.Value := 1;
+ Self.SE_RCSmodule1Exit(Self);
+ Self.SE_RCSPort1.Value := 0;
+ Self.CB_Typ.ItemIndex := -1;
+
+ Self.CHB_RCS_Second_Output.Checked := false;
+ Self.CHB_RCS_Second_OutputClick(Self);
+
+ Self.CHB_RCS_Output.Checked := true;
+ Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
+
+ Self.LV_Signals.Clear();
+ Blocks.NactiBlokyDoObjektu(Self.CB_NewSignal, @Self.CB_NewSignalData, nil, nil, btSignal, -1);
+
  Self.Caption := 'Nový blok Skupinové návìstidlo';
  Self.ActiveControl := Self.E_Name;
+end;
+
+procedure TF_BlkGroupSignal.SE_RCSmodule1Exit(Sender: TObject);
+begin
+ Self.SE_RCSport1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
+end;
+
+procedure TF_BlkGroupSignal.SE_RCSmodule2Exit(Sender: TObject);
+begin
+ Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
 procedure TF_BlkGroupSignal.EditBlkOpenForm();
 var glob: TBlkSettings;
     settings: TBlkGSSettings;
+    signalSettings: TBlkSignalSettings;
     oblr: TOR;
     LI: TListItem;
     id: Integer;
 begin
- glob := Self.Blk.GetGlobalSettings();
- settings := Self.Blk.GetSettings();
+ glob := Self.blk.GetGlobalSettings();
+ settings := Self.blk.GetSettings();
+ signalSettings := TBlkSignal(Self.blk).GetSettings();
 
  for oblr in Self.Blk.stations do
    Self.LB_Stations.Items.Add(oblr.Name);
@@ -99,6 +141,33 @@ begin
  Self.E_Name.Text := glob.name;
  Self.SE_ID.Value := glob.id;
 
+ Self.CHB_RCS_Output.Checked := (signalSettings.RCSAddrs.Count > 0);
+ Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
+
+ if (signalSettings.RCSAddrs.Count > 0) then
+  begin
+   if (signalSettings.RCSAddrs[0].board > Cardinal(Self.SE_RCSmodule1.MaxValue)) then
+     Self.SE_RCSmodule1.MaxValue := 0;
+   Self.SE_RCSPort1.MaxValue := 0;
+
+   Self.SE_RCSmodule1.Value := signalSettings.RCSAddrs[0].board;
+   Self.SE_RCSPort1.Value := signalSettings.RCSAddrs[0].port;
+   Self.CB_Typ.ItemIndex := Integer(signalSettings.OutputType);
+  end;
+ Self.CHB_RCS_Second_Output.Checked := (signalSettings.RCSAddrs.Count > 1);
+ Self.CHB_RCS_Second_OutputClick(Self);
+ if (signalSettings.RCSAddrs.Count > 1) then
+  begin
+   if (signalSettings.RCSAddrs[1].board > Cardinal(Self.SE_RCSmodule2.MaxValue)) then
+     Self.SE_RCSmodule2.MaxValue := 0;
+   Self.SE_RCSPort2.MaxValue := 0;
+
+   Self.SE_RCSmodule2.Value := signalSettings.RCSAddrs[1].board;
+   Self.SE_RCSPort2.Value := signalSettings.RCSAddrs[1].port;
+  end;
+ Self.SE_RCSmodule1Exit(Self);
+
+ Self.LV_Signals.Clear();
  for id in settings.signalIds do
   begin
    LI := Self.LV_Signals.Items.Add;
@@ -106,13 +175,10 @@ begin
    LI.SubItems.Add(Blocks.GetBlkName(id));
   end;
 
+ Self.FillCBNewSignal();
+
  Self.Caption := 'Upravit blok '+glob.name+' (skupinové návìstidlo)';
  Self.ActiveControl := Self.B_Apply;
-end;
-
-procedure TF_BlkGroupSignal.CommonOpenForm();
-begin
- Self.LB_Stations.Clear();
 end;
 
 procedure TF_BlkGroupSignal.NewBlk();
@@ -148,10 +214,40 @@ begin
  Self.Close();
 end;
 
+procedure TF_BlkGroupSignal.CHB_RCS_OutputClick(Sender: TObject);
+begin
+ Self.SE_RCSmodule1.Enabled := Self.CHB_RCS_Output.Checked;
+ Self.SE_RCSPort1.Enabled := Self.CHB_RCS_Output.Checked;
+ Self.CB_Typ.Enabled := Self.CHB_RCS_Output.Checked;
+
+ if (not Self.CHB_RCS_Output.Checked) then
+  begin
+   Self.SE_RCSmodule1.Value := 1;
+   Self.SE_RCSPort1.Value := 0;
+   Self.CB_Typ.ItemIndex := -1;
+   Self.CHB_RCS_Second_Output.Checked := false;
+   Self.CHB_RCS_Second_OutputClick(Self);
+  end;
+end;
+
+procedure TF_BlkGroupSignal.CHB_RCS_Second_OutputClick(Sender: TObject);
+begin
+ Self.SE_RCSmodule2.Enabled := Self.CHB_RCS_Second_Output.Checked;
+ Self.SE_RCSport2.Enabled := Self.CHB_RCS_Second_Output.Checked;
+ Self.SE_RCSmodule2Exit(Self);
+ if (not Self.CHB_RCS_Second_Output.Checked) then
+  begin
+   Self.SE_RCSmodule2.Value := 1;
+   Self.SE_RCSport2.Value := 0;
+  end;
+end;
+
 procedure TF_BlkGroupSignal.B_ApplyClick(Sender: TObject);
 var glob: TBlkSettings;
     settings: TBlkGSSettings;
+    signalSettings: TBlkSignalSettings;
     LI: TListItem;
+    another: TBlk;
 begin
  if (Self.E_Name.Text = '') then
   begin
@@ -162,6 +258,33 @@ begin
   begin
    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
    Exit();
+  end;
+
+ if (Self.CHB_RCS_Output.Checked) then
+  begin
+   if (CB_Typ.ItemIndex = -1) then
+    begin
+     Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+     Exit();
+    end;
+
+   another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value), Self.Blk, TRCSIOType.output);
+   if (another <> nil) then
+    begin
+     if (Application.MessageBox(PChar('První RCS adresa se již používá na bloku '+another.name+', chcete pokraèovat?'),
+                                'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+       Exit();
+    end;
+  end;
+ if (Self.CHB_RCS_Second_Output.Checked) then
+  begin
+   another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value), Self.Blk, TRCSIOType.output);
+   if (another <> nil) then
+    begin
+     if (Application.MessageBox(PChar('Druhá RCS adresa se již používá na bloku '+another.name+', chcete pokraèovat?'),
+                                'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+       Exit();
+    end;
   end;
 
  glob.name := Self.E_Name.Text;
@@ -185,11 +308,27 @@ begin
    Self.Blk.SetGlobalSettings(glob);
   end;
 
+ settings.signalIds := TList<Integer>.Create();
  settings.signalIds.Clear();
  for LI in Self.LV_Signals.Items do
    settings.signalIds.Add(StrToInt(LI.Caption));
-
  Self.Blk.SetSettings(settings);
+
+ signalSettings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+ if (Self.CHB_RCS_Output.Checked) then
+  begin
+   signalSettings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value));
+   signalSettings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
+  end;
+ if (Self.CHB_RCS_Second_Output.Checked) then
+   signalSettings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value));
+
+ signalSettings.fallDelay := 0;
+ signalSettings.locked := false;
+ signalSettings.events := TObjectList<TBlkSignalTrainEvent>.Create();
+
+ TBlkSignal(Self.blk).SetSettings(signalSettings);
+
  Self.Close();
 end;
 
@@ -216,9 +355,12 @@ begin
  for i := 0 to Self.LV_Signals.Items.Count-1 do
    signalIgnore[i] := StrToInt(Self.LV_Signals.Items.Item[i].Caption);
 
- SetLength(obls, Self.blk.stations.Count);
- for i := 0 to Self.blk.stations.Count-1 do
-   obls[i] := Self.blk.stations[i].id;
+ if (Self.blk <> nil) then
+  begin
+   SetLength(obls, Self.blk.stations.Count);
+   for i := 0 to Self.blk.stations.Count-1 do
+     obls[i] := Self.blk.stations[i].id;
+  end;
 
  Blocks.NactiBlokyDoObjektu(Self.CB_NewSignal, @Self.CB_NewSignalData, @signalIgnore, obls, btSignal, -1);
 end;

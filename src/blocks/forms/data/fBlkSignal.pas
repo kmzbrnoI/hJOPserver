@@ -125,7 +125,7 @@ procedure TF_BlkSignal.NewBlkOpenForm();
   // ktere ji nepotrebuje
 
   Self.Caption := 'Nový blok Návěstidlo';
-  Self.ActiveControl := E_Nazev;
+  Self.ActiveControl := Self.E_Nazev;
  end;
 
 procedure TF_BlkSignal.NormalOpenForm();
@@ -139,8 +139,8 @@ var glob: TBlkSettings;
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  E_Nazev.Text := glob.name;
-  SE_ID.Value  := glob.id;
+  Self.E_Nazev.Text := glob.name;
+  Self.SE_ID.Value := glob.id;
 
   for oblr in Self.Blk.stations do
     Self.LB_Stanice.Items.Add(oblr.Name);
@@ -149,7 +149,7 @@ var glob: TBlkSettings;
   for i := 0 to Self.Blk.stations.Count-1 do
     obls[i] := Self.Blk.stations[i].id;
 
-  SE_Delay.Value := settings.fallDelay;
+  Self.SE_Delay.Value := settings.fallDelay;
 
   Self.CHB_RCS_Output.Checked := (settings.RCSAddrs.Count > 0);
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);

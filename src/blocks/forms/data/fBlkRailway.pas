@@ -181,11 +181,14 @@ begin
  for i := 0 to Self.LV_Useky.Items.Count-1 do
    trackIgnore[i] := StrToInt(Self.LV_Useky.Items.Item[i].Caption);
 
- SetLength(obls, Self.linkerA.stations.Count + Self.linkerB.stations.Count);
- for i := 0 to Self.linkerA.stations.Count-1 do
-   obls[i] := Self.linkerA.stations[i].id;
- for i := 0 to Self.linkerB.stations.Count-1 do
-   obls[i+Self.linkerA.stations.Count] := Self.linkerB.stations[i].id;
+ if ((Self.linkerA <> nil) and (Self.linkerB <> nil)) then
+  begin
+   SetLength(obls, Self.linkerA.stations.Count + Self.linkerB.stations.Count);
+   for i := 0 to Self.linkerA.stations.Count-1 do
+     obls[i] := Self.linkerA.stations[i].id;
+   for i := 0 to Self.linkerB.stations.Count-1 do
+     obls[i+Self.linkerA.stations.Count] := Self.linkerB.stations[i].id;
+  end;
 
  Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @Self.CB_NewTratBlokData, @trackIgnore, obls, btRT, -1);
 end;

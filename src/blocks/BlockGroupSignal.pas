@@ -107,6 +107,9 @@ end;
 
 procedure TBlkGroupSignal.SetSettings(data: TBlkGSSettings);
 begin
+ if (Self.m_gs_settings.signalIds <> data.signalIds) then
+   Self.m_gs_settings.signalIds.Free();
+
  Self.m_gs_settings := data;
  Self.Change();
 end;
