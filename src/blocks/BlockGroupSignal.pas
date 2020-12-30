@@ -54,6 +54,7 @@ uses Classes, ownStrUtils, SysUtils, BlockDb;
 constructor TBlkGroupSignal.Create(index: Integer);
 begin
  inherited Create(index);
+ Self.m_globSettings.typ := btGroupSignal;
  Self.m_gs_settings.signalIds := TList<Integer>.Create();
  Self.m_signals := TList<TBlkSignal>.Create();
 end;

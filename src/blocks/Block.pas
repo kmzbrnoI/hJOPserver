@@ -1,4 +1,4 @@
-unit Block;
+﻿unit Block;
 
 { TBlk abstract class definition.
   TBlk is abstract class for rechnological blocks. }
@@ -32,7 +32,8 @@ type
    btRT = 9,
    btIO = 10,
    btSummary = 11,
-   btAC = 12
+   btAC = 12,
+   btGroupSignal = 13
  );
 
  TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4, ab = 5);
@@ -425,6 +426,7 @@ begin
   btIO: Result := 'io';
   btSummary: Result := 'crossingsSummary';
   btAC: Result := 'AC';
+  btGroupSignal: Result := 'groupSignal';
  else
   Result := 'neznamy';
  end;

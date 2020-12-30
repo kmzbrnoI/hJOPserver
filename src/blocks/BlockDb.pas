@@ -141,7 +141,7 @@ uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
      BlockLock, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
      DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, BlockDisconnector,
      BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
-     TechnologieAB, ACBlocks;
+     TechnologieAB, ACBlocks, BlockGroupSignal;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -245,19 +245,20 @@ begin
        typei := ini_tech.ReadInteger(section, 'typ', -1);
 
        case (typei) of
-         Integer(btTurnout)   : Blk := TBlkTurnout.Create(-1);
-         Integer(btTrack)      : Blk := TBlkTrack.Create(-1);
-         Integer(btIR)        : Blk := TBlkIR.Create(-1);
-         Integer(btSignal)    : Blk := TBlkSignal.Create(-1);
-         Integer(btCrossing)   : Blk := TBlkCrossing.Create(-1);
-         Integer(btRailway)      : Blk := TBlkRailway.Create(-1);
-         Integer(btLinker)    : Blk := TBlkLinker.Create(-1);
-         Integer(btLock)      : Blk := TBlkLock.Create(-1);
-         Integer(btDisconnector)      : Blk := TBlkDisconnector.Create(-1);
-         Integer(btRT)        : Blk := TBlkRT.Create(-1);
-         Integer(btIO)        : Blk := TBlkIO.Create(-1);
-         Integer(btSummary)        : Blk := TBlkSummary.Create(-1);
-         Integer(btAC)        : Blk := TBlkAC.Create(-1);
+         Integer(btTurnout): Blk := TBlkTurnout.Create(-1);
+         Integer(btTrack): Blk := TBlkTrack.Create(-1);
+         Integer(btIR): Blk := TBlkIR.Create(-1);
+         Integer(btSignal): Blk := TBlkSignal.Create(-1);
+         Integer(btCrossing): Blk := TBlkCrossing.Create(-1);
+         Integer(btRailway): Blk := TBlkRailway.Create(-1);
+         Integer(btLinker): Blk := TBlkLinker.Create(-1);
+         Integer(btLock): Blk := TBlkLock.Create(-1);
+         Integer(btDisconnector): Blk := TBlkDisconnector.Create(-1);
+         Integer(btRT): Blk := TBlkRT.Create(-1);
+         Integer(btIO): Blk := TBlkIO.Create(-1);
+         Integer(btSummary): Blk := TBlkSummary.Create(-1);
+         Integer(btAC): Blk := TBlkAC.Create(-1);
+         Integer(btGroupSignal): Blk := TBlkGroupSignal.Create(-1);
        else
          writelog('Nenacitam blok ' + section + ' - neznamy typ', WR_ERROR);
          continue;
@@ -380,6 +381,7 @@ begin
   btIO: Blk := TBlkIO.Create(index);
   btSummary: Blk := TBlkSummary.Create(index);
   btAC: Blk := TBlkAC.Create(index);
+  btGroupSignal: Blk := TBlkGroupSignal.Create(index);
  else
   Exit(nil);
  end;
