@@ -461,7 +461,7 @@ var glob: TBlkSettings;
     Self.CB_Track.ItemIndex := 0;
   Self.CB_TrackChange(Self);
 
-  Self.Caption := 'Přejezd '+glob.name;
+  Self.Caption := 'Upravit blok ' + glob.name + ' (přejezd)';
   Self.ActiveControl := Self.B_save_P;
  end;
 

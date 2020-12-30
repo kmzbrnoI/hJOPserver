@@ -172,7 +172,7 @@ procedure TF_BlkRT.NewBlkOpenForm();
   Self.zastLichy.OpenEmptyForm();
   Self.zastSudy.OpenEmptyForm();
 
-  Self.Caption := 'Editace noveho tratoveho useku';
+  Self.Caption := 'Nový blok Traťový úsek';
   Self.ActiveControl := E_Nazev;
  end;
 
@@ -323,7 +323,7 @@ var glob: TBlkSettings;
       Self.zastSudy.OpenForm(TUsettings.stop.evS);
    end;
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (traťový úsek)';
+  Self.Caption := 'Upravit blok '+glob.name+' (traťový úsek)';
   Self.ActiveControl := Self.B_OK;
  end;
 

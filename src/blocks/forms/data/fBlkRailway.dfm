@@ -367,6 +367,7 @@ object F_BlkRailway: TF_BlkRailway
             Caption = 'N'#225'zev'
             Width = 200
           end>
+        MultiSelect = True
         ReadOnly = True
         RowSelect = True
         TabOrder = 2

@@ -121,8 +121,8 @@ procedure TF_BlkTrack.NewBlkOpenForm();
   Self.CHB_D1.Checked := false;
   Self.CHB_D1Click(Self.CHB_D1);
 
-  F_BlkTrack.Caption := 'Editace noveho bloku';
-  F_BlkTrack.ActiveControl := E_Nazev;
+  Self.Caption := 'Nový blok Úsek';
+  Self.ActiveControl := Self.E_Nazev;
  end;
 
 procedure TF_BlkTrack.NormalOpenForm();
@@ -243,7 +243,7 @@ var glob: TBlkSettings;
   Self.E_Delka.Text := FloatToStr(settings.lenght);
   Self.CHB_SmycBlok.Checked := settings.loop;
 
-  F_BlkTrack.Caption := 'Editovat data bloku '+glob.name+' (úsek)';
+  F_BlkTrack.Caption := 'Upravit blok '+glob.name+' (úsek)';
   F_BlkTrack.ActiveControl := B_OK;
  end;
 

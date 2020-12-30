@@ -137,7 +137,7 @@ procedure TF_BlkTurnout.NewBlkOpenForm();
   Self.CHB_Feedback.Checked := true;
   Self.CHB_FeedbackClick(Self.CHB_Feedback);
 
-  F_BlkTurnout.Caption := 'Editovat data nového bloku výhybka';
+  F_BlkTurnout.Caption := 'Nový blok Výhybka';
   F_BlkTurnout.ActiveControl := E_Nazev;
  end;
 
@@ -178,7 +178,6 @@ var glob: TBlkSettings;
     Self.CB_Zamek_Poloha.ItemIndex := Integer(settings.lockPosition);
   Self.CHB_ZamekClick(Self.CHB_Zamek);
 
-  //poradi(0..3): vst+, vst-, vyst+, vyst- (referencni RCS_board = [0])
   if (settings.RCSAddrs.Count > 0) then
    begin
     if (Self.Blk.rcsInPlus.board > Cardinal(Self.SE_VstPlus_module.MaxValue)) then
@@ -188,7 +187,7 @@ var glob: TBlkSettings;
     SE_VstPlus_module.Value := Self.Blk.rcsInPlus.board;
     SE_VstPlus_port.Value := Self.Blk.rcsInPlus.port;
    end else begin
-    SE_VstPlus_module.Value  := 0;
+    SE_VstPlus_module.Value := 0;
     SE_VstPlus_port.Value := 0;
    end;
 
@@ -201,7 +200,7 @@ var glob: TBlkSettings;
     SE_VstMinus_module.Value := Self.Blk.rcsInMinus.board;
     SE_VstMinus_port.Value := Self.Blk.rcsInMinus.port;
    end else begin
-    SE_VstMinus_module.Value  := 0;
+    SE_VstMinus_module.Value := 0;
     SE_VstMinus_port.Value := 0;
    end;
 
@@ -214,7 +213,7 @@ var glob: TBlkSettings;
     SE_VystPlus_module.Value := Self.Blk.rcsOutPlus.board;
     SE_VystPlus_port.Value := Self.Blk.rcsOutPlus.port;
    end else begin
-    SE_VystPlus_module.Value  := 0;
+    SE_VystPlus_module.Value := 0;
     SE_VystPlus_port.Value := 0;
    end;
 
@@ -227,7 +226,7 @@ var glob: TBlkSettings;
     SE_VystMinus_module.Value := Self.Blk.rcsOutMinus.board;
     SE_VystMinus_port.Value := Self.Blk.rcsOutMinus.port;
    end else begin
-    SE_VystMinus_module.Value  := 0;
+    SE_VystMinus_module.Value := 0;
     SE_VystMinus_port.Value := 0;
    end;
 
@@ -246,7 +245,7 @@ var glob: TBlkSettings;
   for i := 0 to Self.Blk.stations.Count-1 do
     obls[i] := Self.Blk.stations[i].id;
 
-  F_BlkTurnout.Caption := 'Editovat data bloku : '+glob.name+' (výhybka)';
+  F_BlkTurnout.Caption := 'Uprabit blok '+glob.name+' (výhybka)';
   F_BlkTurnout.ActiveControl := B_Save;
  end;
 

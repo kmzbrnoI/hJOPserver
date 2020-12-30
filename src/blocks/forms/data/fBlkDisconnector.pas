@@ -71,13 +71,13 @@ end;
 
 procedure TF_BlkDisconnector.NewBlkOpenForm;
  begin
-  E_Nazev.Text          := '';
-  SE_ID.Value           := Blocks.GetBlkID(Blocks.count-1)+1;
-  Self.SE_module.Value  := 1;
-  Self.SE_Port.Value    := 0;
+  Self.E_Nazev.Text := '';
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  Self.SE_module.Value := 1;
+  Self.SE_Port.Value := 0;
   Self.SE_moduleExit(Self);
 
-  Self.Caption       := 'Editovat data noveho bloku';
+  Self.Caption := 'Nový ropojovač';
   Self.ActiveControl := E_Nazev;
  end;
 
@@ -107,10 +107,10 @@ var glob: TBlkSettings;
 
   Self.SE_moduleExit(Self);
 
-  E_Nazev.Text := glob.name;
-  SE_ID.Value  := glob.id;
+  Self.E_Nazev.Text := glob.name;
+  Self.SE_ID.Value := glob.id;
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (rozpojovač)';
+  Self.Caption := 'Upravit blok '+glob.name+' (rozpojovač)';
   Self.ActiveControl := B_Save;
  end;
 

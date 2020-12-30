@@ -124,7 +124,7 @@ procedure TF_BlkSignal.NewBlkOpenForm();
   // prvni udalost nepridavame, protoze muze byt navestidlo seradovaci,
   // ktere ji nepotrebuje
 
-  Self.Caption := 'Editovat data nového bloku návěstidlo';
+  Self.Caption := 'Nový blok Návěstidlo';
   Self.ActiveControl := E_Nazev;
  end;
 
@@ -200,7 +200,7 @@ var glob: TBlkSettings;
 
   Self.L_UsekID.Caption := Blocks.GetBlkName((Self.Blk as TBlkSignal).trackId);
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (návěstidlo)';
+  Self.Caption := 'Upravit blok '+glob.name+' (návěstidlo)';
   Self.ActiveControl := B_Save;
  end;
 

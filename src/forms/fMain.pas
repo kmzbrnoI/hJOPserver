@@ -498,7 +498,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
      fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
      AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB,
-     Diagnostics, BlockAC, fBlkAC;
+     Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal;
 
 {$R *.dfm}
 
@@ -2922,7 +2922,7 @@ var Blk: TBlk;
    end;
 
   //////////////////////
-   btSignal: begin
+   btSignal, btGroupSignal: begin
     if ((Blk as TBlkSignal).signal < ncStuj) then
      LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY  // disabled
     else if ((Blk as TBlkSignal).signal = ncStuj) then
@@ -3029,13 +3029,14 @@ var Blk: TBlk;
    btIR: F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
    btSignal: F_BlkSignal.OpenForm(Self.LV_Bloky.ItemIndex);
    btCrossing: F_BlkCrossing.OpenForm(Self.LV_Bloky.ItemIndex);
-   btRailway, btLinker: F_BlkRailway.OpenForm(Self.LV_Bloky.ItemIndex);
+   btRailway, btLinker: F_BlkRailway.EditBlk(Self.LV_Bloky.ItemIndex);
    btLock: F_BlkLock.OpenForm(Self.LV_Bloky.ItemIndex);
    btDisconnector: F_BlkDisconnector.OpenForm(Self.LV_Bloky.ItemIndex);
    btRT: F_BlkRT.OpenForm(Self.LV_Bloky.ItemIndex);
    btIO: F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
    btSummary: F_BlkSummary.OpenForm(Self.LV_Bloky.ItemIndex);
    btAC: F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
+   btGroupSignal: F_BlkGroupSignal.EditBlk(Self.LV_Bloky.ItemIndex);
   end;
 end;
 

@@ -62,7 +62,7 @@ procedure TF_BlkLock.NewBlkOpenForm();
   Self.E_Nazev.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
 
-  Self.Caption := 'Editovat data nového bloku';
+  Self.Caption := 'Nový blok Zámek';
   Self.ActiveControl := Self.E_Nazev;
  end;
 
@@ -78,7 +78,7 @@ var glob: TBlkSettings;
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  Self.Caption := 'Editovat data bloku '+glob.name+' (zámek)';
+  Self.Caption := 'Upravit blok '+glob.name+' (zámek)';
   Self.ActiveControl := Self.B_Save;
  end;
 

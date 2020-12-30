@@ -74,7 +74,7 @@ procedure TF_BlkIR.NewBlkOpenForm;
   Self.SE_Port.Value := 0;
   Self.SE_moduleExit(Self);
 
-  F_BlkIR.Caption := 'Editovat data nového bloku';
+  F_BlkIR.Caption := 'Nový blok IR';
   F_BlkIR.ActiveControl := E_Nazev;
  end;
 
@@ -102,7 +102,7 @@ var glob: TBlkSettings;
   E_Nazev.Text := glob.name;
   SE_ID.Value  := glob.id;
 
-  F_BlkIR.Caption := 'Editovat data bloku '+glob.name+' (IR)';
+  F_BlkIR.Caption := 'Upravit blok '+glob.name+' (IR)';
   F_BlkIR.ActiveControl := B_Save;
  end;
 

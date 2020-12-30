@@ -198,7 +198,7 @@ begin
    LI.Caption := Blocks.GetBlkName(prjid);
   end;
 
- Self.Caption := 'Součtová hláska '+glob.name;
+ Self.Caption := 'Upravit blok '+glob.name+' (součtová hláska)';
  Self.ActiveControl := Self.B_save_P;
 end;
 
@@ -207,7 +207,7 @@ begin
  E_Name.Text := '';
  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
 
- Self.Caption := 'Nová součtová hláska';
+ Self.Caption := 'Nový blok Součtová hláska';
  Self.ActiveControl := Self.E_Name;
 end;
 
