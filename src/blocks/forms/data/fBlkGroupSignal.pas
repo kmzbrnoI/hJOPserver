@@ -165,14 +165,14 @@ begin
   end;
 
  glob.name := Self.E_Name.Text;
- glob.id := SE_ID.Value;
- glob.typ := btAC;
+ glob.id := Self.SE_ID.Value;
+ glob.typ := btGroupSignal;
 
  if (Self.new) then
   begin
    glob.note := '';
    try
-     Blk := Blocks.Add(btAC, glob) as TBlkGroupSignal;
+     Blk := Blocks.Add(glob) as TBlkGroupSignal;
    except
      on E: Exception do
       begin

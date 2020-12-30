@@ -298,7 +298,7 @@ var glob: TBlkSettings;
     glob.note := '';
 
     try
-      Blk := Blocks.Add(btTrack, glob) as TBlkTrack;
+      Blk := Blocks.Add(glob) as TBlkTrack;
     except
       on E: Exception do
        begin

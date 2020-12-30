@@ -415,15 +415,14 @@ var glob: TBlkSettings;
     Exit;
    end;
 
-
-  glob.name := E_Nazev.Text;
-  glob.id := SE_ID.Value;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
   glob.typ := btTurnout;
 
   if (NewBlk) then
    begin
     try
-      Blk := Blocks.Add(btTurnout, glob) as TBlkTurnout;
+      Blk := Blocks.Add(glob) as TBlkTurnout;
     except
       on E: Exception do
        begin
@@ -436,7 +435,6 @@ var glob: TBlkSettings;
     Self.Blk.SetGlobalSettings(glob);
    end;
 
-  //ukladani dat
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VstPlus_module.Value, SE_VstPlus_port.Value));
   settings.RCSAddrs.Add(TRCS.RCSAddr(SE_VstMinus_module.Value, SE_VstMinus_port.Value));

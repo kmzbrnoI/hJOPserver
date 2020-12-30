@@ -128,14 +128,14 @@ begin
   end;
 
  glob.name := Self.E_Name.Text;
- glob.typ  := btSummary;
- glob.id   := Self.SE_ID.Value;
+ glob.id := Self.SE_ID.Value;
+ glob.typ := btSummary;
 
  if (NewBlk) then
   begin
    glob.note := '';
    try
-     Blk := Blocks.Add(btSummary, glob) as TBlkSummary;
+     Blk := Blocks.Add(glob) as TBlkSummary;
    except
      on E: Exception do
       begin

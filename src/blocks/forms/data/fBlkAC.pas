@@ -127,8 +127,8 @@ var glob: TBlkSettings;
     Exit();
    end;
 
-  glob.name := E_Nazev.Text;
-  glob.id := SE_ID.Value;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
   glob.typ := btAC;
   settings.accessToken := Self.E_AccessToken.Text;
 
@@ -136,7 +136,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blocks.Add(btAC, glob) as TBlkAC;
+      Blk := Blocks.Add(glob) as TBlkAC;
     except
       on E: Exception do
        begin

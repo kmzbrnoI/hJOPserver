@@ -112,15 +112,15 @@ var glob: TBlkSettings;
     Exit();
    end;
 
-  glob.name := E_Nazev.Text;
-  glob.id := SE_ID.Value;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
   glob.typ := btLock;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blocks.Add(btLock, glob) as TBlkLock;
+      Blk := Blocks.Add(glob) as TBlkLock;
     except
       on E: Exception do
        begin

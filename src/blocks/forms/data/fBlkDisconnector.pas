@@ -155,15 +155,15 @@ var glob: TBlkSettings;
       Exit();
    end;
 
-  glob.name := E_Nazev.Text;
-  glob.id  := SE_ID.Value;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
   glob.typ := btDisconnector;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blocks.Add(btDisconnector, glob) as TBlkDisconnector;
+      Blk := Blocks.Add(glob) as TBlkDisconnector;
     except
       on E: Exception do
        begin

@@ -295,9 +295,9 @@ var globRailway, globLinkerA, globLinkerB: TBlkSettings;
   if (new) then
    begin
     try
-      Self.railway := Blocks.Add(btRailway, globRailway) as TBlkRailway;
-      Self.linkerA := Blocks.Add(btLinker, globLinkerA) as TBlkLinker;
-      Self.linkerB := Blocks.Add(btLinker, globLinkerB) as TBlkLinker;
+      Self.railway := Blocks.Add(globRailway) as TBlkRailway;
+      Self.linkerA := Blocks.Add(globLinkerA) as TBlkLinker;
+      Self.linkerB := Blocks.Add(globLinkerB) as TBlkLinker;
     except
       on E: Exception do
        begin

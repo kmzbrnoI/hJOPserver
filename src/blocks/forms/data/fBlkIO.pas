@@ -253,7 +253,7 @@ var glob: TBlkSettings;
    begin
     glob.note := '';
     try
-      Blk := Blocks.Add(btIO, glob) as TBlkIO;
+      Blk := Blocks.Add(glob) as TBlkIO;
     except
       on E: Exception do
        begin

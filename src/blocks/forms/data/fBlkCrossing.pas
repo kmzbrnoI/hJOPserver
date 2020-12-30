@@ -153,14 +153,14 @@ var glob: TBlkSettings;
    end;
 
   glob.name := Self.E_Prj_Nazev.Text;
-  glob.typ := btCrossing;
   glob.id := Self.SE_ID.Value;
+  glob.typ := btCrossing;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blocks.Add(btCrossing, glob) as TBlkCrossing;
+      Blk := Blocks.Add(glob) as TBlkCrossing;
     except
       on E: Exception do
        begin

@@ -329,15 +329,15 @@ var glob: TBlkSettings;
      end;
    end;
 
-  glob.name := E_Nazev.Text;
-  glob.id := SE_ID.Value;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
   glob.typ := btSignal;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blocks.Add(btSignal, glob) as TBlkSignal;
+      Blk := Blocks.Add(glob) as TBlkSignal;
     except
       on E: Exception do
        begin
@@ -350,7 +350,6 @@ var glob: TBlkSettings;
     Self.Blk.SetGlobalSettings(glob);
    end;
 
-  //ukladani dat
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_RCS_Output.Checked) then
    begin

@@ -51,7 +51,7 @@ type
     procedure SaveToFile(const tech_filename: string);
     procedure SaveStatToFile(const stat_filename: string);
 
-    function Add(typ: TBlkType; glob: TBlkSettings): TBlk;
+    function Add(glob: TBlkSettings): TBlk;
     procedure Delete(index: Integer);
 
     function GetBlkByIndex(index: integer; var Blk: TBlk): Integer;
@@ -357,7 +357,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //add 1 block
-function TBlocks.Add(typ: TBlkType; glob: TBlkSettings): TBlk;
+function TBlocks.Add(glob: TBlkSettings): TBlk;
 var Blk: TBlk;
     i, index: Integer;
 begin
@@ -367,7 +367,7 @@ begin
 
  index := Self.FindPlaceForNewBlk(glob.id);
 
- case (typ) of
+ case (glob.typ) of
   btTurnout: Blk := TBlkTurnout.Create(index);
   btTrack: Blk := TBlkTrack.Create(index);
   btIR: Blk := TBlkIR.Create(index);

@@ -146,16 +146,15 @@ var glob: TBlkSettings;
       Exit();
    end;
 
-
-  glob.name := E_Nazev.Text;
-  glob.id := SE_ID.Value;
+  glob.name := Self.E_Nazev.Text;
+  glob.id := Self.SE_ID.Value;
   glob.typ := btIR;
 
   if (NewBlk) then
    begin
     glob.note := '';
     try
-      Blk := Blocks.Add(btIR, glob) as TBlkIR;
+      Blk := Blocks.Add(glob) as TBlkIR;
     except
       on E: Exception do
        begin
