@@ -1,12 +1,4 @@
-﻿//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     HHHHH            H
-//H                                                        H      H      H    H   H    H    H          H H
-//H   Název : hJOPserver                                   H      H      H   H     H   H     H        H   H
-//H   Jméno tvůrce : Jan Horáček                           H      HHHHHHHH   H     H   H    H        H     H
-//H   Autorská práva : Jan Horáček 2008-2020               H      H      H   H     H   HHHHH        HHHHHHHHH
-//H                                                        H      H      H   H     H   H HH        H         H
-//H                                                        H      H      H    H   H    H   HH     H           H
-//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH      H      H     HHH     H     HH   H           H
-//Začátek tvorby : září 2008
+// Project begin: september 2008
 
 // JCL_DEBUG_EXPERT_INSERTJDBG ON
 // JCL_DEBUG_EXPERT_DELETEMAPFILE ON
@@ -25,16 +17,16 @@ uses
   fRegulator in 'hv\forms\fRegulator.pas' {F_DigiReg},
   fSplash in 'forms\fSplash.pas' {F_splash},
   fAbout in 'forms\fAbout.pas' {F_About},
-  fBlkCrossing in 'bloky\forms\fBlkCrossing.pas' {F_BlkCrossing},
+  fBlkCrossing in 'bloky\forms\data\fBlkCrossing.pas' {F_BlkCrossing},
   Verze in 'helpers\Verze.pas',
   adCpuUsage in 'helpers\adCpuUsage.pas',
   fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_ZesilovacEdit},
-  fBlkRailway in 'bloky\forms\fBlkRailway.pas' {F_BlkRailway},
+  fBlkRailway in 'bloky\forms\data\fBlkRailway.pas' {F_BlkRailway},
   fHVEdit in 'hv\forms\fHVEdit.pas' {F_HVEdit},
   fSystemInfo in 'forms\fSystemInfo.pas' {F_SystemInfo},
-  fBlkTrack in 'bloky\forms\fBlkTrack.pas' {F_BlkTrack},
-  fBlkTurnout in 'bloky\forms\fBlkTurnout.pas' {F_BlkTurnout},
-  fBlkIR in 'bloky\forms\fBlkIR.pas' {F_BlkIR},
+  fBlkTrack in 'bloky\forms\data\fBlkTrack.pas' {F_BlkTrack},
+  fBlkTurnout in 'bloky\forms\data\fBlkTurnout.pas' {F_BlkTurnout},
+  fBlkIR in 'bloky\forms\data\fBlkIR.pas' {F_BlkIR},
   BlockCrossing in 'bloky\BlockCrossing.pas',
   fBlkNew in 'bloky\forms\fBlkNew.pas' {F_BlkNew},
   fAdminForm in 'forms\fAdminForm.pas' {F_Admin},
@@ -83,10 +75,10 @@ uses
   UPO in 'jc\UPO.pas',
   fBlkRailwayState in 'bloky\forms\state\fBlkRailwayState.pas' {F_BlkRailwayState},
   ModelovyCas in 'ModelovyCas.pas',
-  fBlkSignalEvent in 'bloky\forms\fBlkSignalEvent.pas' {F_BlkSignalEvent},
+  fBlkSignalEvent in 'bloky\forms\data\fBlkSignalEvent.pas' {F_BlkSignalEvent},
   CloseTabSheet in 'helpers\CloseTabSheet.pas',
   BlockLock in 'bloky\BlockLock.pas',
-  fBlkLock in 'bloky\forms\fBlkLock.pas' {F_BlkLock},
+  fBlkLock in 'bloky\forms\data\fBlkLock.pas' {F_BlkLock},
   TMultiJCDatabase in 'jc\TMultiJCDatabase.pas',
   TechnologieMultiJC in 'jc\TechnologieMultiJC.pas',
   DataMultiJC in 'tables\DataMultiJC.pas',
@@ -94,20 +86,20 @@ uses
   fMJCEdit in 'jc\forms\fMJCEdit.pas' {F_MJCEdit},
   ownStrUtils in 'helpers\ownStrUtils.pas',
   BlockDisconnector in 'bloky\BlockDisconnector.pas',
-  fBlkDisconnector in 'bloky\forms\fBlkDisconnector.pas' {F_BlkDisconnector},
+  fBlkDisconnector in 'bloky\forms\data\fBlkDisconnector.pas' {F_BlkDisconnector},
   RegulatorTCP in 'RegulatorTCP.pas',
   fFuncsSet in 'forms\fFuncsSet.pas' {F_FuncsSet},
   FunkceVyznam in 'hv\FunkceVyznam.pas',
   BlockRailwayTrack in 'bloky\BlockRailwayTrack.pas',
-  fBlkRT in 'bloky\forms\fBlkRT.pas' {F_BlkRT},
-  fBlkRTStopEvent in 'bloky\forms\fBlkRTStopEvent.pas' {F_BlkRTStopEvent},
+  fBlkRT in 'bloky\forms\data\fBlkRT.pas' {F_BlkRT},
+  fBlkRTStopEvent in 'bloky\forms\data\fBlkRTStopEvent.pas' {F_BlkRTStopEvent},
   RCSdebugger in 'RCSdebugger.pas',
   UDPdiscover in 'UDPdiscover.pas',
   USock in 'helpers\USock.pas',
   appEv in 'helpers\appEv.pas',
   SystemCriticalU in 'helpers\SystemCriticalU.pas',
   BlockIO in 'bloky\BlockIO.pas',
-  fBlkIO in 'bloky\forms\fBlkIO.pas' {F_BlkIO},
+  fBlkIO in 'bloky\forms\data\fBlkIO.pas' {F_BlkIO},
   TCPServerPT in 'pt\TCPServerPT.pas',
   JsonDataObjects in '..\lib\JsonDataObjects\Source\JsonDataObjects.pas',
   PTEndpoint in 'pt\PTEndpoint.pas',
@@ -133,13 +125,13 @@ uses
   changeEvent in 'changeEvent.pas',
   changeEventCaller in 'changeEventCaller.pas',
   BlockSummary in 'bloky\BlockSummary.pas',
-  fBlkSummary in 'bloky\forms\fBlkSummary.pas' {F_BlkSummary},
+  fBlkSummary in 'bloky\forms\data\fBlkSummary.pas' {F_BlkSummary},
   predvidanyOdjezd in 'predvidanyOdjezd.pas',
   timeHelper in 'helpers\timeHelper.pas',
   TechnologieAB in 'TechnologieAB.pas',
   DataAB in 'tables\DataAB.pas',
   TCPORsRef in 'TCPORsRef.pas',
-  fBlkSignal in 'bloky\forms\fBlkSignal.pas' {F_BlkSignal},
+  fBlkSignal in 'bloky\forms\data\fBlkSignal.pas' {F_BlkSignal},
   Trakce in 'trakce\Trakce.pas',
   TrakceErrors in 'trakce\TrakceErrors.pas',
   TechnologieTrakce in 'TechnologieTrakce.pas' {$R *.res},
@@ -149,7 +141,7 @@ uses
   PTEndpointJCs in 'pt\PTEndpointJCs.pas',
   PTEndpointJCStav in 'pt\PTEndpointJCStav.pas',
   BlockAC in 'bloky\BlockAC.pas',
-  fBlkAC in 'bloky\forms\fBlkAC.pas' {F_BlkAC},
+  fBlkAC in 'bloky\forms\data\fBlkAC.pas' {F_BlkAC},
   ACBlocks in 'ACBlocks.pas',
   BlockCrossingLogic in 'bloky\BlockCrossingLogic.pas',
   BlockTrackRef in 'bloky\BlockTrackRef.pas',
@@ -161,7 +153,7 @@ uses
   PTEndpointUser in 'pt\PTEndpointUser.pas',
   BlockDb in 'bloky\BlockDb.pas',
   BlockGroupSignal in 'bloky\BlockGroupSignal.pas',
-  fBlkGroupSignal in 'bloky\forms\fBlkGroupSignal.pas' {F_BlkGroupSignal};
+  fBlkGroupSignal in 'bloky\forms\data\fBlkGroupSignal.pas' {F_BlkGroupSignal};
 
 {$R *.res}
 
