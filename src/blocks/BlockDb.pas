@@ -614,7 +614,7 @@ begin
    if (orindex = -1) then continue;
 
    if (((blk as TBlkSignal).selected > TBlkSignalSelection.none) and
-      ((JCDb.FindOnlyStaveniJC((blk as TBlkSignal).id) = nil) or
+      ((JCDb.FindJCActivating((blk as TBlkSignal).id) = nil) or
         ((blk as TBlkSignal).stations[orindex].stack.mode = VZ))) then
      Exit(blk);
   end;

@@ -161,7 +161,7 @@ procedure TBlkLock.Change(now: Boolean = false);
 begin
  // porucha zamku -> zrusit postavenou JC
  if ((Self.Zaver) and ((Self.keyReleased) or (Self.error))) then
-   JCDb.RusJC(Self);
+   JCDb.Cancel(Self);
 
  inherited Change(now);
 end;

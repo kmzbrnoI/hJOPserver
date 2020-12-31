@@ -629,7 +629,7 @@ begin
     begin
      Self.m_state.occupied := disabled;
      Self.m_state.occupiedOld := Self.m_state.occupied;
-     JCDb.RusJC(Self);
+     JCDb.Cancel(Self);
 
      // zastavime soupravy na useku
      for train in Self.trains do
@@ -1108,7 +1108,7 @@ begin
                    : Self.m_state.jcEnd := TZaver.nouz;
  end;//case
 
- JCDb.StavJC(signal, Self, SenderPnl, SenderOR, signal.beginAB);
+ JCDb.ActivateJC(signal, Self, SenderPnl, SenderOR, signal.beginAB);
 
  Self.Change();
  Result := true;
@@ -2130,7 +2130,7 @@ begin
 
  // Pri zruseni / zavedei PODJ aktualizovat rychlsot loko, ktera prijizdi,
  // protoze muze dojit ke zmene rychlosti
- jc := JCDb.FindPostavenaJCWithUsek(Self.id);
+ jc := JCDb.FindActiveJCWithTrack(Self.id);
   if (jc <> nil) then
     TBlkSignal(jc.signal).UpdateRychlostTrain(true);
 

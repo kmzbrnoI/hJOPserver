@@ -561,7 +561,7 @@ var JC: TJC;
   if (mNewJC) then
    begin
     try
-     JCDb.AddJC(Self.JCData);
+     JCDb.Add(Self.JCData);
     except
      on E: Exception do
       begin

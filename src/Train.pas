@@ -1148,7 +1148,7 @@ begin
  if ((signal <> nil) and (signal.SymbolType = TBlkSignalSymbol.main)) then
    Exit(signal);
 
- jc := JCDb.FindPostavenaJCWithUsek(frontblk.id);
+ jc := JCDb.FindActiveJCWithTrack(frontblk.id);
  if (jc = nil) then
    Exit(nil);
 

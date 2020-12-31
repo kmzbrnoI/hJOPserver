@@ -1104,9 +1104,9 @@ begin
  if ((Self.prevRT = nil) and (Self.sectOccupied = TTrackState.occupied)
      and (TBlkRailway(Self.railway).Zaver)) then
   begin
-   jc := JCDb.FindPostavenaJCWithUsek(Self.id);
+   jc := JCDb.FindActiveJCWithTrack(Self.id);
    if ((jc <> nil) and (not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count-1)) then
-     JCDb.RusJC(Self);
+     JCDb.Cancel(Self);
   end;
 
  // nastavime kryci navestidlo

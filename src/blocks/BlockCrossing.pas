@@ -348,7 +348,7 @@ begin
  if ((not available) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
   begin
    Self.m_state.basicState := TBlkCrossingBasicState.disabled;
-   JCDb.RusJC(Self);
+   JCDb.Cancel(Self);
    Self.Change(true);
   end;
 
@@ -363,14 +363,14 @@ begin
     begin
      for oblr in Self.stations do
       oblr.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
-     JCDb.RusJC(Self);
+     JCDb.Cancel(Self);
     end;
 
    if ((new_stav = TBlkCrossingBasicState.none) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
     begin
      for oblr in Self.stations do
       oblr.BlkWriteError(Self, 'Porucha přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
-     JCDb.RusJC(Self);
+     JCDb.Cancel(Self);
     end;
 
    if (Self.m_state.basicState = disabled) then
@@ -524,7 +524,7 @@ begin
  if (state) then
   begin
    // NOT rusi jizdni cesty vedouci pres prejezd
-   JCDb.RusJC(Self);
+   JCDb.Cancel(Self);
   end;
 
  Self.m_state.pcEmOpen := state;

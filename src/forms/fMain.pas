@@ -1992,7 +1992,7 @@ begin
  ORs.DisconnectPanels();
  Self.A_PanelServer_StopExecute(nil);
 
- JCDb.RusAllJC();
+ JCDb.CancelAll();
  Blocks.Disable();
  Trains.ClearPOdj();
  Blocks.Reset();
@@ -2269,7 +2269,7 @@ begin
          jc := JCDb.GetJCByIndex(LI.Index);
          if (ABlist.Contains(jc)) then
            ABlist.Remove(jc);
-         JCDb.RemoveJC(LI.Index);
+         JCDb.Remove(LI.Index);
        except
          on E: Exception do
           begin

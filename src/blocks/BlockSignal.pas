@@ -476,7 +476,7 @@ begin
      if (Self.m_state.signal >= ncStuj) then
       begin
        Self.m_state.signal := ncDisabled;
-       JCDb.RusJC(Self);
+       JCDb.Cancel(Self);
        Self.Change();
       end;
     end;
@@ -656,7 +656,7 @@ begin
   end;
 
  Self.UpdateRychlostTrain(true);
- JCDb.CheckNNavaznost(Self);
+ JCDb.UpdatePrevSignal(Self);
  Self.Change();
 end;
 
@@ -776,7 +776,7 @@ begin
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();
  if ((SenderOR as TOR).stack.mode = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit();
+       (JCDb.FindJCActivating(Self.id) <> nil)) then Exit();
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then
@@ -798,7 +798,7 @@ var Blk: TBlk;
 begin
  if ((SenderOR as TOR).stack.mode = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit();
+       (JCDb.FindJCActivating(Self.id) <> nil)) then Exit();
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
@@ -1000,7 +1000,7 @@ begin
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)))
+           (JCDb.FindJCActivating(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)))
          or (TOR(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
@@ -1009,7 +1009,7 @@ begin
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
-           (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled))
+           (JCDb.FindJCActivating(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled))
          or ((SenderOR as TOR).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
@@ -1057,7 +1057,7 @@ begin
  if (Self.m_settings.locked) then Exit();
 
  if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
-        (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.signal <> ncPrivol) and (not Self.AB))
+        (JCDb.FindJCActivating(Self.id) = nil) and (Self.signal <> ncPrivol) and (not Self.AB))
       or ((SenderOR as TOR).stack.mode = VZ)) and
      (not Self.autoblok)) then
   begin

@@ -644,7 +644,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
       if (Self.state.position <> TTurnoutPosition.disabled) then
        begin
         Self.m_state.position := TTurnoutPosition.disabled;
-        JCDb.RusJC(Self);
+        JCDb.Cancel(Self);
        end;
       Exit();
      end;
@@ -652,7 +652,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
     if (Self.state.position <> TTurnoutPosition.disabled) then
      begin
       Self.m_state.position := TTurnoutPosition.disabled;
-      JCDb.RusJC(Self);
+      JCDb.Cancel(Self);
      end;
     Exit();
   end;
@@ -669,7 +669,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
      begin
       for oblr in Self.stations do
         oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
-      JCDb.RusJC(Self);
+      JCDb.Cancel(Self);
      end;//if Blokovani
 
     Self.m_state.positionReal := none;
@@ -706,7 +706,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
          begin
           for oblr in Self.stations do
             oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
-          JCDb.RusJC(Self);
+          JCDb.Cancel(Self);
          end;
        end;
      end;
@@ -743,7 +743,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
          begin
           for oblr in Self.stations do
             oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
-          JCDb.RusJC(Self);
+          JCDb.Cancel(Self);
          end;
        end;
      end;
@@ -759,7 +759,7 @@ var inp, couplingInp: TBlkTurnoutInputs;
      begin
       for oblr in Self.stations do
         oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
-      JCDb.RusJC(Self);
+      JCDb.Cancel(Self);
      end;//if Blokovani
 
     Self.m_state.positionReal := both;

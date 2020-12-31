@@ -34,36 +34,34 @@ type
 
      procedure LoadData(const filename: string);
      procedure SaveData(const filename: string);
-     procedure UpdateJCIndexes();
+     procedure UpdateIndexes();
 
      procedure Update();
-     procedure StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
+     procedure ActivateJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
 
-     function AddJC(JCdata: TJCdata): TJC;
-     procedure RemoveJC(index: Integer);
+     function Add(JCdata: TJCdata): TJC;
+     procedure Remove(index: Integer);
 
      function GetJCByIndex(index: Integer): TJC;
      function GetJCIndex(id: Integer): Integer;
      function GetJCByID(id: integer): TJC;
 
-     // najde JC, ktera je postavena, ci prave stavena !
-     function FindJC(NavestidloBlokID: Integer; Staveni: Boolean = false): TJC; overload;
-     function FindOnlyStaveniJC(NavestidloBlokID: Integer): TJC;
+     function FindJC(signalId: Integer; activatingToo: Boolean = false): TJC; overload;
+     function FindJCActivating(signalId: Integer): TJC;
      function IsJC(id: Integer; ignore_index: Integer = -1): Boolean;
 
-     //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
-     function FindPostavenaJCWithVyhybka(vyh_id: Integer): TList<TJC>;
-     function FindPostavenaJCWithUsek(trackId: Integer): TJC;
-     function FindPostavenaJCWithPrj(blk_id: Integer): TList<TJC>;
-     function FindPostavenaJCWithTrat(trat_id: Integer): TJC;
-     function FindPostavenaJCWithZamek(zam_id: Integer): TList<TJC>;
+     function FindActiveJCWithTurnout(vyh_id: Integer): TList<TJC>;
+     function FindActiveJCWithTrack(trackId: Integer): TJC;
+     function FindActiveJCWithCrossing(blk_id: Integer): TList<TJC>;
+     function FindActiveJCWithRailway(trat_id: Integer): TJC;
+     function FindActiveJCWithLock(zam_id: Integer): TList<TJC>;
 
      // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
      // tato fce zajisti, ze k ovlivneni dojde
-     procedure CheckNNavaznost(signal: TBlkSignal);
+     procedure UpdatePrevSignal(signal: TBlkSignal);
 
-     procedure RusAllJC();
-     procedure RusJC(Blk: TBlk);     // rusi cestu, ve ktere je zadany blok
+     procedure CancelAll();
+     procedure Cancel(blk: TBlk);     // rusi cestu, ve ktere je zadany blok (jakehokoliv typu)
 
      function IsAnyJC(signal: TBlkSignal): Boolean;
      function IsAnyVC(signal: TBlkSignal): Boolean;
@@ -106,14 +104,14 @@ begin
  inherited;
  Self.JCs := TObjectList<TJC>.Create();
  Self.JCsStartSignal := TObjectDictionary<TBlkSignal, TList<TJC>>.Create();
-end;//ctor
+end;
 
 destructor TJCDb.Destroy();
 begin
  Self.JCs.Free();
  Self.JCsStartSignal.Free();
  inherited;
-end;//dtor
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -152,7 +150,7 @@ begin
      end;
     end;//for i
 
-   Self.UpdateJCIndexes();
+   Self.UpdateIndexes();
  finally
    ini.Free;
    sections.Free();
@@ -267,23 +265,22 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//toto se vola zvnejsi, kdyz chceme postavit jakoukoliv JC
-procedure TJCDb.StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
+procedure TJCDb.ActivateJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
 var oblr: TOR;
-    startNav: TBlkSignal;
+    startSignal: TBlkSignal;
     senderOblr: TOR;
     jc: TJC;
 begin
- startNav := StartBlk as TBlkSignal;
+ startSignal := StartBlk as TBlkSignal;
  senderOblr := SenderOR as TOR;
 
- jc := Self.FindJC(StartNav, SenderOblr.vb, EndBlk);
+ jc := Self.FindJC(startSignal, SenderOblr.vb, EndBlk);
 
  if (jc <> nil) then
   begin
    // v pripade nouzove cesty klik na DK opet prevest na klienta
-   if (startNav.selected = TBlkSignalSelection.NC) then
-     for oblr in startNav.stations do
+   if (startSignal.selected = TBlkSignalSelection.NC) then
+     for oblr in startSignal.stations do
        oblr.ORDKClickClient();
 
    if (SenderOblr.stack.mode = TORStackMode.VZ) then
@@ -291,12 +288,12 @@ begin
      SenderOblr.stack.AddJC(
       jc,
       SenderPnl,
-      (startNav.selected = TBlkSignalSelection.NC) or (startNav.selected = TBlkSignalSelection.PP),
+      (startSignal.selected = TBlkSignalSelection.NC) or (startSignal.selected = TBlkSignalSelection.PP),
       abAfter
      );
 
      // zrusime zacatek, konec a variantni body
-     startNav.selected := TBlkSignalSelection.none;
+     startSignal.selected := TBlkSignalSelection.none;
      (EndBlk as TBlkTrack).jcEnd := TZaver.no;
      SenderOblr.ClearVb();
     end else begin
@@ -305,7 +302,7 @@ begin
        SenderPnl,
        SenderOR,
        nil,
-       (startNav.selected = TBlkSignalSelection.NC) or (startNav.selected = TBlkSignalSelection.PP),
+       (startSignal.selected = TBlkSignalSelection.NC) or (startSignal.selected = TBlkSignalSelection.PP),
        false,
        abAfter
      );
@@ -313,7 +310,7 @@ begin
   end else begin
 
    // kontrola staveni slozene jizdni cesty
-   if ((startNav.selected = TBlkSignalSelection.VC) or (startNav.selected = TBlkSignalSelection.PC)) then
+   if ((startSignal.selected = TBlkSignalSelection.VC) or (startSignal.selected = TBlkSignalSelection.PC)) then
      if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR, abAfter)) then Exit();
 
    (EndBlk as TBlkTrack).jcEnd := TZaver.no;
@@ -324,7 +321,7 @@ begin
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.AddJC(JCdata: TJCdata): TJC;
+function TJCDb.Add(JCdata: TJCdata): TJC;
 var JC: TJC;
     index: Integer;
     i: Integer;
@@ -354,7 +351,7 @@ begin
  Result := JC;
 end;
 
-procedure TJCDb.RemoveJC(index: Integer);
+procedure TJCDb.Remove(index: Integer);
 var i: Integer;
     OblR: TOR;
 begin
@@ -381,7 +378,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCDb.RusAllJC();
+procedure TJCDb.CancelAll();
 var JC: TJC;
 begin
  for JC in Self.JCs do
@@ -395,20 +392,20 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.FindJC(NavestidloBlokID: Integer; Staveni: Boolean = false): TJC;
+function TJCDb.FindJC(signalId: Integer; activatingToo: Boolean = false): TJC;
 var jc: TJC;
  begin
   for jc in Self.JCs do
-    if (((jc.active) or ((Staveni) and (jc.activating))) and (jc.data.signalId = NavestidloBlokID)) then
+    if (((jc.active) or ((activatingToo) and (jc.activating))) and (jc.data.signalId = signalId)) then
       Exit(jc);
   Result := nil;
  end;
 
-function TJCDb.FindOnlyStaveniJC(NavestidloBlokID: Integer): TJC;
+function TJCDb.FindJCActivating(signalId: Integer): TJC;
 var jc: TJC;
 begin
   for jc in Self.JCs do
-    if ((jc.activating) and (jc.data.signalId = NavestidloBlokID)) then
+    if ((jc.activating) and (jc.data.signalId = signalId)) then
       Exit(jc);
   Result := nil;
 end;
@@ -417,7 +414,7 @@ end;
 
 //vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
 // muze vracet vic jizdnich cest - jeden odvrat muze byt u vic aktualne postavenych JC
-function TJCDB.FindPostavenaJCWithVyhybka(vyh_id: Integer): TList<TJC>;
+function TJCDB.FindActiveJCWithTurnout(vyh_id: Integer): TList<TJC>;
 var jc: TJC;
     turnoutZav: TJCTurnoutZav;
     refugeeZav: TJCRefugeeZav;
@@ -456,7 +453,7 @@ begin
  end;
 end;
 
-function TJCDB.FindPostavenaJCWithUsek(trackId: Integer): TJC;
+function TJCDB.FindActiveJCWithTrack(trackId: Integer): TJC;
 var jc: TJC;
     _trackId: Integer;
     railway, railwayTrack: TBlk;
@@ -489,7 +486,7 @@ begin
    end;
 end;
 
-function TJCDB.FindPostavenaJCWithTrat(trat_id: Integer): TJC;
+function TJCDB.FindActiveJCWithRailway(trat_id: Integer): TJC;
 var jc: TJC;
 begin
  for jc in Self.JCs do
@@ -501,7 +498,7 @@ begin
  Result := nil;
 end;
 
-function TJCDB.FindPostavenaJCWithPrj(blk_id: Integer): TList<TJC>;
+function TJCDB.FindActiveJCWithCrossing(blk_id: Integer): TList<TJC>;
 var crossing: TJCCrossingZav;
     jc: TJC;
 begin
@@ -520,7 +517,7 @@ begin
  end;
 end;
 
-function TJCDB.FindPostavenaJCWithZamek(zam_id: Integer): TList<TJC>;
+function TJCDB.FindActiveJCWithLock(zam_id: Integer): TList<TJC>;
 var jc: TJC;
     lockZav: TJCRefZav;
 begin
@@ -543,10 +540,10 @@ end;
 
 // Jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
 // se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak.
-procedure TJCDb.CheckNNavaznost(signal: TBlkSignal);
+procedure TJCDb.UpdatePrevSignal(signal: TBlkSignal);
 var JC: TJC;
     prev_signal: TBlkSignal;
-    navest: TBlkSignalCode;
+    code: TBlkSignalCode;
 begin
   for JC in Self.JCs do
    begin
@@ -564,36 +561,36 @@ begin
       if (JC.data.turn) then
        begin
         if ((signal.FourtyKmph()) or (signal.signal = ncOpakOcek40)) then
-          navest := nc40Ocek40
+          code := nc40Ocek40
         else
-          navest := ncVolno40;
+          code := ncVolno40;
        end else begin
         if ((signal.FourtyKmph()) or (signal.signal = ncOpakOcek40)) then
-          navest := ncOcek40
+          code := ncOcek40
         else
-          navest := ncVolno;
+          code := ncVolno;
        end;
 
      end else begin
 
       if (JC.data.turn) then
-        navest := ncVystraha40
+        code := ncVystraha40
       else
-        navest := ncVystraha;
+        code := ncVystraha;
 
      end;
 
-    if ((JC.data.nzv) and (navest <> ncVolno)) then
-      navest := TBlkSignal.AddOpak(navest);
+    if ((JC.data.nzv) and (code <> ncVolno)) then
+      code := TBlkSignal.AddOpak(code);
 
-    prev_signal.signal := navest;
-   end;//for i
+    prev_signal.signal := code;
+   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // rusi cestu, ve ktere je zadany blok
-procedure TJCDb.RusJC(Blk: TBlk);
+procedure TJCDb.Cancel(blk: TBlk);
 var tmpblk: TBlk;
     jc: TJC;
     oblr: TOR;
@@ -601,30 +598,30 @@ var tmpblk: TBlk;
 begin
  jcs := TList<TJC>.Create();
  try
-   case (Blk.typ) of
+   case (blk.typ) of
     btTurnout: begin
       FreeAndNil(jcs);
-      jcs := JCDb.FindPostavenaJCWithVyhybka(Blk.id);
+      jcs := JCDb.FindActiveJCWithTurnout(blk.id);
     end;
     btCrossing: begin
       FreeAndNil(jcs);
-      jcs := JCDb.FindPostavenaJCWithPrj(Blk.id);
+      jcs := JCDb.FindActiveJCWithCrossing(blk.id);
     end;
     btTrack, btRT: begin
-      jc := JCDb.FindPostavenaJCWithUsek(Blk.id);
+      jc := JCDb.FindActiveJCWithTrack(blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
     btSignal: begin
-      jc := JCDb.FindJC(Blk.id);
+      jc := JCDb.FindJC(blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
     btRailway: begin
-      jc := JCDb.FindPostavenaJCWithTrat(Blk.id);
+      jc := JCDb.FindActiveJCWithRailway(blk.id);
       if (jc <> nil) then jcs.Add(jc);
     end;
     btLock: begin
       FreeAndNil(jcs);
-      jcs := JCDb.FindPostavenaJCWithZamek(Blk.id);
+      jcs := JCDb.FindActiveJCWithLock(blk.id);
     end;
    end;//case
 
@@ -734,7 +731,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TJCDb.UpdateJCIndexes();
+procedure TJCDb.UpdateIndexes();
 var i: Integer;
 begin
  for i := 0 to Self.JCs.Count-1 do
