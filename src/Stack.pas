@@ -369,6 +369,11 @@ end;
 
 procedure TORStack.SetMode(mode: TORStackMode);
 begin
+ if (Self.mode = mode) then
+   Exit();
+
+ Self.m_mode := mode;
+
  case (mode) of
   TORStackMode.PV : begin
     (Self.m_oblr as TOR).BroadcastData('ZAS;PV');
