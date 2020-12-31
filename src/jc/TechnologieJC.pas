@@ -137,6 +137,7 @@ type
    speedGo, speedStop: Integer;  // rychlost v JC pri dalsim navestidle navestici dovolujici a NEdovolujici navest
    turn: Boolean;  // jc od odbocky (40 km/h)
    nzv: Boolean;   // nedostatecna zabrzdna vzdalenost
+   signalFallTrackI: Cardinal;
   end;
 
   // staveni jizdni cesty:
@@ -2279,24 +2280,21 @@ begin
    Blocks.GetBlkByID(Self.m_data.tracks[i], TBlk(track));
 
    // druha cast podminky je tu pro pripad, kdy by byl na konci posunove cesty obsazeny usek
-   if ((track.occupied = occupied) and ((i < Self.m_data.tracks.Count-1) or (Self.destroyBlock > Self.m_data.tracks.Count-2) or (Self.typ <> TJCType.shunt))) then
+   if ((track.occupied = occupied) and
+       ((i < Self.m_data.tracks.Count-1) or (Self.destroyBlock > Self.m_data.tracks.Count-2) or (Self.typ <> TJCType.shunt))) then
     begin
      if (i = Self.destroyBlock) then
       begin
-       //pokud se tento usek rovna RozpadBloku
        track.Zaver := TZaver.nouz;
 
        if (Self.typ = TJCType.train) then
-        begin
-         //posuneme soupravu o blok dal
          Self.MoveTrainToNextTrack();
-        end;//if (Self.typ = 0)
 
-       // obsazeni prvniho useku
+       // obsazeni useku rusiciho navest (obvykle 0. usek, u skupinoveho navestidla byva jiny)
        // pozor: toto musi byt na tomto miste kvuli nastavovani Souprava.front
-       if ((i = 0) and (signal.signal <> ncStuj) and (Self.destroyBlock = 0) and (Self.typ = TJCType.train)) then
+       if ((i = Self.m_data.signalFallTrackI) and (signal.signal <> ncStuj) and (Self.typ = TJCType.train)) then
         begin
-         // navestidlo pri obsazeni prvniho useku rusime v pripade, ze se jedna o VC
+         // navestidlo pri obsazeni useku rusime jen v pripade, ze se jedna o VC
          Self.Log('Obsazen usek '+track.name+' : navestidlo '+signal.name+' nastaveno na STUJ');
          signal.JCCancelSignal();
 
@@ -2317,10 +2315,8 @@ begin
 
        // pokud jsme v predposlednim useku a posledni je nedetekovany, posuneme RozpadBlok jeste o jeden usek, aby se cesta mohla zrusit
        if (i = Self.m_data.tracks.Count-2) then
-        begin
          if (TBlkTrack(Self.lastTrack).GetSettings().RCSAddrs.Count = 0) then
            Self.destroyBlock := Self.destroyBlock + 1;
-        end;
 
        if ((i = Self.m_data.tracks.Count-1) and (Self.m_data.railwayId > -1)) then
         begin
@@ -2350,7 +2346,7 @@ begin
       end else begin //if Self.rozpadBlok = 0
        if (track.Zaver > TZaver.no) then
         begin
-         //pokud jsme na jinem useku, nez RozpadBlok
+         // pokud jsme na jinem useku, nez RozpadBlok
          if ((signal.targetSignal > ncStuj) and (signal.DNjc = Self)) then
           begin
            if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
@@ -2412,7 +2408,7 @@ begin
    end;//if (cyklus2 = Self.rozpadRuseniBlok)
 
   // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony),
-  // ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
+  // ale souprava se z ni musi odstranit uvolnenim prvniho bloku JC
   if ((Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and (Self.destroyBlock > 0)) then
    begin
     Blocks.GetBlkByID(Self.m_data.tracks[0], TBlk(track));
@@ -2713,9 +2709,8 @@ begin
  Self.m_data.railwayDir := TRailwayDirection(ini.ReadInteger(section, 'tratSmer', 0));
 
  // nacteni zaveru useku:
- sl  := TStringList.Create();
+ sl := TStringList.Create();
  sl2 := TStringList.Create();
-
  try
    ExtractStrings([';', ',', '|', '-', '('], [')'], PChar(ini.ReadString(section, 'useky', '')), sl);
    Self.m_data.tracks.Count := sl.Count;
@@ -2805,7 +2800,8 @@ begin
  else
    Self.m_data.turn := Self.IsAnyTurnoutMinus();
 
- Self.m_data.nzv := ini.ReadBool(section, 'nzv', false)
+ Self.m_data.nzv := ini.ReadBool(section, 'nzv', false);
+ Self.m_data.signalFallTrackI := ini.ReadInteger(section, 'rusNavestUsek', 0);
 end;
 
 procedure TJC.SaveData(ini: TMemIniFile; section: string);
@@ -2831,6 +2827,11 @@ begin
    ini.DeleteKey(section, 'nzv')
  else
    ini.WriteBool(section, 'nzv', true);
+
+ if (Self.m_data.signalFallTrackI = 0) then
+   ini.DeleteKey(section, 'rusNavestUsek')
+ else
+   ini.WriteInteger(section, 'rusNavestUsek', Self.m_data.signalFallTrackI);
 
  if (Self.m_data.railwayId > -1) then
   begin

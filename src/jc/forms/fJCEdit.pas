@@ -59,6 +59,8 @@ type
     M_Zamky: TMemo;
     CHB_Odbocka: TCheckBox;
     CHB_NZV: TCheckBox;
+    Label6: TLabel;
+    SE_SignalFallTrackI: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Vyh_AddClick(Sender: TObject);
     procedure B_Usek_AddClick(Sender: TObject);
@@ -95,22 +97,23 @@ type
    m_tracks: TList<Integer>;
    m_turnouts: TList<TJCTurnoutZav>;
 
-   procedure EmptyJCOpenForm();
-   procedure NormalOpenForm();
-   procedure HlavniOpenForm();
+    procedure EmptyOpenForm();
+    procedure EditOpenForm();
+    procedure CommonOpenForm();
 
-   procedure UpdateJCName();
-   procedure UpdateNextNav();
-   procedure UpdateVyhybkyFromUseky();
-   procedure FillVyhybky();
-   procedure FillUseky();
-   function VyhybkaIndex(id: Integer): Integer;
-   function IsAnyVyhMinus(): Boolean;
+    procedure UpdateJCName();
+    procedure UpdateNextSignal();
+    procedure UpdateTurnoutsFromTracks();
+    procedure FillTurnouts();
+    procedure FillTracks();
+    function TurnoutIndex(id: Integer): Integer;
+    function IsAnyTurnoutMinus(): Boolean;
 
-   procedure MakeObls(var obls: TArStr);
+    procedure MakeObls(var obls: TArStr);
+
   public
-   procedure EditJC(JCIndex: Integer);
-   procedure NewJC(templateIndex: Integer);
+    procedure EditJC(JCIndex: Integer);
+    procedure NewJC(templateIndex: Integer);
 
   end;
 
@@ -119,7 +122,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, Block, TOblsRizeni,
+uses GetSystems, FileSystem, Block, TOblsRizeni, IBUtils,
       BlockSignal, TJCDatabase, DataJC, BlockRailway, BlockTurnout;
 
 {$R *.dfm}
@@ -129,7 +132,7 @@ procedure TF_JCEdit.B_StornoClick(Sender: TObject);
   Self.Close;
  end;
 
-procedure TF_JCEdit.EmptyJCOpenForm();
+procedure TF_JCEdit.EmptyOpenForm();
  begin
   Self.OpenIndex := -1;
 
@@ -163,12 +166,14 @@ procedure TF_JCEdit.EmptyJCOpenForm();
   CB_NavestidloChange(Self);
   Self.Caption := 'Vytvořit novou jízdní cestu';
   LV_Useky.Clear();
-  Self.FillVyhybky();
+  Self.FillTurnouts();
 
   Self.M_Prj.Clear();
   Self.M_Odvraty.Clear();
   Self.M_Zamky.Clear();
   Self.E_VB.Text := '';
+  Self.SE_SignalFallTrackI.Value := 0;
+  Self.SE_SignalFallTrackI.MaxValue := 0;
   Self.CHB_Odbocka.Checked := false;
   Self.CHB_NZV.Checked := false;
 
@@ -176,7 +181,7 @@ procedure TF_JCEdit.EmptyJCOpenForm();
   Self.CHB_TratClick(Self.CHB_Trat);
  end;
 
-procedure TF_JCEdit.NormalOpenForm();
+procedure TF_JCEdit.EditOpenForm();
 var prjz: TJCCrossingZav;
     tmp: string;
     blokid: integer;
@@ -203,11 +208,11 @@ var prjz: TJCCrossingZav;
 
   Self.m_turnouts.Clear();
   Self.m_turnouts.AddRange(JCData.turnouts);
-  Self.FillVyhybky();
+  Self.FillTurnouts();
 
   Self.m_tracks.Clear();
   Self.m_tracks.AddRange(JCData.tracks);
-  Self.FillUseky();
+  Self.FillTracks();
   Self.CHB_Odbocka.Checked := JCData.turn;
   Self.CHB_NZV.Checked := JCData.nzv;
 
@@ -247,6 +252,9 @@ var prjz: TJCCrossingZav;
     Self.E_VB.Text := Self.E_VB.Text + IntToStr(vb) + ', ';
   Self.E_VB.Text := LeftStr(Self.E_VB.Text, Length(Self.E_VB.Text) - 2);
 
+  Self.SE_SignalFallTrackI.MaxValue := Max(JCData.tracks.Count-1, JCData.signalFallTrackI);
+  Self.SE_SignalFallTrackI.Value := JCData.signalFallTrackI;
+
   CB_NavestidloChange(Self);
   if (Self.mNewJC) then
     Self.Caption := 'Vytvořit novou jízdní cestu'
@@ -254,7 +262,7 @@ var prjz: TJCCrossingZav;
     Self.Caption := 'Upravit jízdní cestu '+JCData.name;
  end;
 
-procedure TF_JCEdit.HlavniOpenForm;
+procedure TF_JCEdit.CommonOpenForm;
  begin
   Self.CHB_AdvancedClick(Self.CHB_Advanced);
   Self.ActiveControl := Self.E_Name;
@@ -276,20 +284,20 @@ var vyh: TJCTurnoutZav;
     Exit();
    end;
 
-  updateOdbocka := (Self.CHB_Odbocka.Checked = Self.IsAnyVyhMinus());
+  updateOdbocka := (Self.CHB_Odbocka.Checked = Self.IsAnyTurnoutMinus());
 
   vyh.block   := Blocks.GetBlkID(CB_NewVyhybkaPolozky[CB_NewZaverBlok.ItemIndex]);
   vyh.position := TTurnoutPosition(CB_NewZaverPoloha.ItemIndex);
 
-  vyhIndex := Self.VyhybkaIndex(vyh.block);
+  vyhIndex := Self.TurnoutIndex(vyh.block);
   if (vyhIndex > -1) then
     Self.m_turnouts[vyhIndex] := vyh
   else
     Self.m_turnouts.Add(vyh);
 
-  Self.FillVyhybky();
+  Self.FillTurnouts();
   if (updateOdbocka) then
-    Self.CHB_Odbocka.Checked := Self.IsAnyVyhMinus();
+    Self.CHB_Odbocka.Checked := Self.IsAnyTurnoutMinus();
  end;
 
 procedure TF_JCEdit.B_Usek_AddClick(Sender: TObject);
@@ -305,10 +313,11 @@ procedure TF_JCEdit.B_Usek_AddClick(Sender: TObject);
   else
     Self.m_tracks[Self.LV_Useky.ItemIndex] := Blocks.GetBlkID(CB_NewUsekPolozky[CB_NewUsek.ItemIndex]);
 
-  Self.FillUseky();
+  Self.FillTracks();
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
-  Self.UpdateNextNav();
-  Self.UpdateVyhybkyFromUseky();
+  Self.UpdateNextSignal();
+  Self.UpdateTurnoutsFromTracks();
+  Self.SE_SignalFallTrackI.MaxValue := Max(Self.m_tracks.Count, Self.SE_SignalFallTrackI.Value);
  end;
 
 procedure TF_JCEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -333,12 +342,12 @@ end;
 procedure TF_JCEdit.EditJC(JCIndex: Integer);
  begin
   OpenIndex := JCIndex;
-  HlavniOpenForm;
+  CommonOpenForm;
   if (JCIndex = -1) then
    begin
-    EmptyJCOpenForm();
+    EmptyOpenForm();
    end else begin
-    NormalOpenForm();
+    EditOpenForm();
    end;
   if (mNewJC) then
     Self.SE_ID.Value := Self.SE_ID.Value + 1;
@@ -383,19 +392,19 @@ var JC: TJC;
    end;
   if (CB_Dalsi_Nav.ItemIndex = -1) then
    begin
-    Application.MessageBox('Vyberte dalěá návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte další návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
   if (CB_Rychlost_Volno.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při postaveném dalším návěstidle!',
-                           'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+                           'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
   if (CB_Rychlost_Stuj.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při dalším návěstidle na stůj!',
-                           'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+                           'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
    end;
   if (Self.CHB_Trat.Checked) and (Self.CB_TratBlok.ItemIndex < 0) then
@@ -416,6 +425,12 @@ var JC: TJC;
       Exit();
      end;
    end;
+  if (Self.SE_SignalFallTrackI.Value >= Self.m_tracks.Count) then
+   begin
+    Application.MessageBox('Číslo úseku, při jehož obsazení se má zrušit návěst, přesahuje rozmezi 0..počet úseků-1!',
+                           'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+   end;
 
   //samotne ukladani dat
   JCData.name := Self.E_Name.Text;
@@ -427,6 +442,7 @@ var JC: TJC;
   JCData.speedStop := Self.CB_Rychlost_Stuj.ItemIndex*10;
   JCData.turn := Self.CHB_Odbocka.Checked;
   JCData.nzv := Self.CHB_NZV.Checked;
+  JCData.signalFallTrackI := Self.SE_SignalFallTrackI.Value;
 
   if (Self.CHB_Trat.Checked) then
    begin
@@ -589,11 +605,12 @@ var i: Integer;
     for i := Self.LV_Useky.Items.Count-1 downto 0 do
       if (Self.LV_Useky.Items[i].Selected) then
         Self.m_tracks.Delete(i);
-    Self.FillUseky();
+    Self.FillTracks();
    end;
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
-  Self.UpdateNextNav();
+  Self.UpdateNextSignal();
+  Self.SE_SignalFallTrackI.MaxValue := Max(Self.m_tracks.Count, Self.SE_SignalFallTrackI.Value);
  end;
 
 procedure TF_JCEdit.B_Vyh_DelClick(Sender: TObject);
@@ -605,7 +622,7 @@ var i: Integer;
     for i := Self.LV_Vyhybky.Items.Count-1 downto 0 do
       if (Self.LV_Vyhybky.Items[i].Selected) then
         Self.m_turnouts.Delete(i);
-    Self.FillVyhybky();
+    Self.FillTurnouts();
    end;
  end;
 
@@ -689,8 +706,8 @@ var navestidlo: TBlkSignal;
     JCData.signalId := Blocks.GetBlkID(CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
     Blocks.GetBlkByID(JCData.signalId, TBlk(navestidlo));
 
-    Self.FillUseky();
-    Self.FillVyhybky();
+    Self.FillTracks();
+    Self.FillTurnouts();
 
     if (Self.mNewJC) then
      begin
@@ -703,14 +720,14 @@ var navestidlo: TBlkSignal;
    end;//if CB_Navestidlo.ItemIndex <> -1
 
   if (Self.CHB_AutoName.Checked) then Self.UpdateJCName();
-  Self.UpdateNextNav();
+  Self.UpdateNextSignal();
  end;
 
 procedure TF_JCEdit.CB_TratBlokChange(Sender: TObject);
 begin
  if (Self.CHB_Trat.Checked) then
    Self.JCData.railwayId := Blocks.GetBlkID(Self.CB_TratPolozky[Self.CB_TratBlok.ItemIndex]);
- UpdateNextNav();
+ UpdateNextSignal();
 end;
 
 procedure TF_JCEdit.CB_TypChange(Sender: TObject);
@@ -779,7 +796,7 @@ begin
    Self.E_Name.Text := Self.E_Name.Text + Blocks.GetBlkName(Self.m_tracks[Self.m_tracks.Count-1]);
 end;
 
-procedure TF_JCEdit.UpdateNextNav();
+procedure TF_JCEdit.UpdateNextSignal();
 var vypustit: TArI;
     obls: TArStr;
     blk: TBlk;
@@ -851,7 +868,7 @@ begin
    Self.CB_Dalsi_Nav.ItemIndex := 1;
 end;
 
-procedure TF_JCEdit.UpdateVyhybkyFromUseky();
+procedure TF_JCEdit.UpdateTurnoutsFromTracks();
 var toAdd: TList<Integer>;
     blkid: Integer;
     blk: TBlk;
@@ -877,13 +894,13 @@ begin
      Self.m_turnouts.Add(vyhZaver);
     end;
 
-   Self.FillVyhybky();
+   Self.FillTurnouts();
  finally
    toAdd.Free();
  end;
 end;
 
-procedure TF_JCEdit.FillVyhybky();
+procedure TF_JCEdit.FillTurnouts();
 var i: Integer;
     obls: TArStr;
     zaver: TJCTurnoutZav;
@@ -908,7 +925,7 @@ begin
  Blocks.FillCB(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, obls, btTurnout);
 end;
 
-function TF_JCEdit.VyhybkaIndex(id: Integer): Integer;
+function TF_JCEdit.TurnoutIndex(id: Integer): Integer;
 var i: Integer;
 begin
  for i := 0 to Self.m_turnouts.Count-1 do
@@ -917,7 +934,7 @@ begin
  Result := -1;
 end;
 
-procedure TF_JCEdit.FillUseky();
+procedure TF_JCEdit.FillTracks();
 var i: Integer;
     LI: TListItem;
     obls: TArStr;
@@ -934,7 +951,7 @@ begin
  Blocks.FillCB(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btTrack, -1, btRT);
 end;
 
-function TF_JCEdit.IsAnyVyhMinus(): Boolean;
+function TF_JCEdit.IsAnyTurnoutMinus(): Boolean;
 var vyhZaver: TJCTurnoutZav;
 begin
  for vyhZaver in Self.m_turnouts do

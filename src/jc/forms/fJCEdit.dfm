@@ -537,7 +537,7 @@ object F_JCEdit: TF_JCEdit
     Left = 617
     Top = 8
     Width = 297
-    Height = 370
+    Height = 390
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
     TabOrder = 15
     object Label4: TLabel
@@ -555,18 +555,25 @@ object F_JCEdit: TF_JCEdit
       Caption = 'Odvraty:'
     end
     object Label7: TLabel
-      Left = 9
-      Top = 207
+      Left = 8
+      Top = 208
       Width = 35
       Height = 13
       Caption = 'Z'#225'mky:'
     end
     object Label8: TLabel
-      Left = 9
+      Left = 8
       Top = 301
       Width = 71
       Height = 13
       Caption = 'Variantn'#237' body:'
+    end
+    object Label6: TLabel
+      Left = 8
+      Top = 352
+      Width = 193
+      Height = 13
+      Caption = 'Zru'#353'it n'#225'v'#283'st p'#345'i obsazen'#237' '#250'seku [0..n-1]:'
     end
     object M_Prj: TMemo
       Left = 8
@@ -599,18 +606,18 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 1
     end
     object E_VB: TEdit
-      Left = 9
+      Left = 8
       Top = 320
       Width = 281
       Height = 21
       Hint = 'Form'#225't: id blok'#367' odd'#283'len'#253'ch '#269#225'rkami'
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 2
+      TabOrder = 3
       Text = 'E_VB'
     end
     object M_Zamky: TMemo
-      Left = 9
+      Left = 8
       Top = 227
       Width = 281
       Height = 62
@@ -622,7 +629,17 @@ object F_JCEdit: TF_JCEdit
       ParentShowHint = False
       ScrollBars = ssVertical
       ShowHint = True
-      TabOrder = 3
+      TabOrder = 2
+    end
+    object SE_SignalFallTrackI: TSpinEdit
+      Left = 208
+      Top = 352
+      Width = 81
+      Height = 22
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 0
     end
   end
   object CHB_Advanced: TCheckBox
