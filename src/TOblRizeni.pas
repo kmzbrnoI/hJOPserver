@@ -14,7 +14,7 @@ interface
 
 uses IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
       IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, orLighting,
-      Generics.Collections, Zasobnik, Windows, Generics.Defaults;
+      Generics.Collections, Stack, Windows, Generics.Defaults;
 
 const
   _MAX_CON_PNL = 16;                                                            // maximalni pocet pripojenych panelu k jedne oblasti rizeni
@@ -1056,11 +1056,11 @@ begin
 
        if (JC <> nil) then
         begin
-         Blocks.GetBlkByID(JC.data.NavestidloBlok, TBlk(signal));
+         Blocks.GetBlkByID(JC.data.signalId, TBlk(signal));
          if ((signal.signal > ncStuj) and (signal.DNjc = JC)) then
-           ORTCPServer.BottomError(JC.stav.SenderPnl, 'Chyba povolovací návěsti '+signal.name,
+           ORTCPServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti '+signal.name,
                                    Self.ShortName, 'TECHNOLOGIE');
-         JC.RusJCWithoutBlk();
+         JC.CancelWithoutTrackRelease();
          if (signal.DNjc = JC) then
            signal.DNjc := nil;
         end;
@@ -1225,7 +1225,7 @@ begin
    ORTCPServer.GUIQueueLineToRefresh(index);
  end;
 
- Self.stack.ClearStack();
+ Self.stack.Clear();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1305,9 +1305,9 @@ begin
  str := Self.stack.GetList();
  LI.SubItems.Strings[3] := RightStr(str, Length(str)-2);
 
- case (Self.stack.volba) of
-  TORStackVolba.PV : LI.SubItems.Strings[4] := 'PV';
-  TORStackVolba.VZ : LI.SubItems.Strings[4] := 'VZ';
+ case (Self.stack.mode) of
+  TORStackMode.PV : LI.SubItems.Strings[4] := 'PV';
+  TORStackMode.VZ : LI.SubItems.Strings[4] := 'VZ';
  end;
 
  str := '';

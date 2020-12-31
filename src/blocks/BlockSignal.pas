@@ -191,9 +191,9 @@ type
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
-    function IsGoSignal(jctype: TJCType = TJCType.vlak): Boolean; overload;
+    function IsGoSignal(jctype: TJCType = TJCType.train): Boolean; overload;
     function IsOpakVystraha(): Boolean;
-    class function IsGoSignal(Navest: TBlkSignalCode; jctype: TJCType = TJCType.vlak): Boolean; overload;
+    class function IsGoSignal(Navest: TBlkSignalCode; jctype: TJCType = TJCType.train): Boolean; overload;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -277,7 +277,7 @@ type
 implementation
 
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerOR, Graphics, BlockGroupSignal,
-     GetSystems, Logging, TrainDb, BlockIR, Zasobnik, ownStrUtils,
+     GetSystems, Logging, TrainDb, BlockIR, Stack, ownStrUtils,
      BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 
@@ -586,7 +586,7 @@ begin
 
    if (Assigned(Self.privol)) then
     begin
-     Self.privol.RusJCWithoutBlk();
+     Self.privol.CancelWithoutTrackRelease();
      Self.privol := nil;
     end;
   end;
@@ -745,15 +745,15 @@ begin
   begin
    if (zam) then
     begin
-     if (Self.DNjc.RozpadBlok <= 0) then
+     if (Self.DNjc.destroyBlock <= 0) then
       begin
-       Self.DNjc.RozpadBlok := -2;
+       Self.DNjc.destroyBlock := -2;
        Self.DNjc.STUJ();
       end;
     end else begin
-     if ((Self.DNjc.RozpadBlok = -2) and (not Self.RCinProgress())) then
+     if ((Self.DNjc.destroyBlock = -2) and (not Self.RCinProgress())) then
       begin
-       Self.DNjc.RozpadBlok := -1;
+       Self.DNjc.destroyBlock := -1;
        Self.DNjc.DN();
       end;
     end;
@@ -774,8 +774,8 @@ procedure TBlkSignal.MenuVCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
 begin
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();
- if ((SenderOR as TOR).stack.volba = PV) then
-   if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
+ if ((SenderOR as TOR).stack.mode = PV) then
+   if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
        (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
@@ -796,8 +796,8 @@ end;
 procedure TBlkSignal.MenuPCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
 begin
- if ((SenderOR as TOR).stack.volba = PV) then
-   if (((Self.DNjc <> nil) and (Self.DNjc.RozpadRuseniBlok < 1)) or
+ if ((SenderOR as TOR).stack.mode = PV) then
+   if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
        (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
@@ -847,25 +847,25 @@ begin
  if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btRT))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
-   Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 30, 0));
+   Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0, 30, 0));
   end else begin
    if ((Blk as TBlkTrack).occupied = TTrackState.free) then
     begin
      // pokud neni blok pred JC obsazen -> 2 sekundy
-     Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 2, 0));
+     Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0, 2, 0));
     end else begin
      // pokud je obsazen, zalezi na typu jizdni cesty
      case (JC.typ) of
-      TJCType.vlak  : Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
-      TJCType.posun : Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
+      TJCType.train: Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
+      TJCType.shunt: Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
      else
-      Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.RusJC, EncodeTime(0, 1, 0, 0));                   // nejaka divna cesta: 1 minuta
+      Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 1, 0, 0));                   // nejaka divna cesta: 1 minuta
      end;
     end;
   end;
 
  Self.AB := false;
- JC.RusJCWithoutBlk();
+ JC.CancelWithoutTrackRelease();
  Blocks.TrainPrediction(Self);
 end;
 
@@ -924,7 +924,7 @@ end;
 procedure TBlkSignal.MenuPPStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
 begin
- if ((SenderOR as TOR).stack.volba = PV) then
+ if ((SenderOR as TOR).stack.mode = PV) then
    if ((Self.signal > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
@@ -999,18 +999,18 @@ begin
   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER: begin
-    if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
+    if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
            (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)))
-         or (TOR(SenderOR).stack.volba = VZ)) and (JCDb.IsAnyVC(Self))) then begin
+         or (TOR(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
   F1: begin
-    if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
+    if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
            (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled))
-         or ((SenderOR as TOR).stack.volba = VZ)) and (JCDb.IsAnyPC(Self))) then begin
+         or ((SenderOR as TOR).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
       ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
@@ -1056,9 +1056,9 @@ begin
  // pokud je navestidlo trvale zamkle, neumoznime zadne volby
  if (Self.m_settings.locked) then Exit();
 
- if (((((Self.DNjc = nil) or (Self.DNjc.RozpadRuseniBlok >= 1)) and
+ if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
         (JCDb.FindOnlyStaveniJC(Self.id) = nil) and (Self.signal <> ncPrivol) and (not Self.AB))
-      or ((SenderOR as TOR).stack.volba = VZ)) and
+      or ((SenderOR as TOR).stack.mode = VZ)) and
      (not Self.autoblok)) then
   begin
     case (Self.m_state.selected) of
@@ -1074,7 +1074,7 @@ begin
       //2 = VC, 3= PC
       if (Self.m_spnl.symbolType = TBlkSignalSymbol.main) then
        begin
-        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.volba = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
+        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.mode = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
          begin
           Result := Result + 'VC>,';
           if (Self.DNjc = nil) then
@@ -1084,7 +1084,7 @@ begin
        end;
       if (JCDb.IsAnyPC(Self)) then
        begin
-        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.volba = VZ)) then
+        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.mode = VZ)) then
           Result := Result + 'PC>,';
         Result := Result + 'PP>,';
        end;
@@ -1106,13 +1106,13 @@ begin
    if ((not Self.ZAM) and (Self.signal = ncStuj) and (Self.DNjc.CanDN())) then
      Result := Result + 'DN,';
 
-   if (((Self.signal > ncStuj) or (Self.DNjc.CanDN()) or (Self.DNjc.RozpadBlok < 1))
+   if (((Self.signal > ncStuj) or (Self.DNjc.CanDN()) or (Self.DNjc.destroyBlock < 1))
        and (not Self.RCinProgress())) then
     begin
      Result := Result + 'RC,';
 
      // AB lze jen u vlakove cesty
-     if ((Self.DNjc.typ = TJCType.vlak) and (not Self.AB)) then
+     if ((Self.DNjc.typ = TJCType.train) and (not Self.AB)) then
        Result := Result + 'AB>,';
     end;
  end;
@@ -1329,7 +1329,7 @@ begin
      Exit();
     end;
 
-   if ((Assigned(Self.DNjc)) and (Self.DNjc.typ = TJCType.vlak)) then
+   if ((Assigned(Self.DNjc)) and (Self.DNjc.typ = TJCType.train)) then
     begin
      // je JC -> je postaveno?
      if ((Self.IsGoSignal()) and (not Self.m_state.falling)) then
@@ -1337,12 +1337,12 @@ begin
        // je postaveno -> zkontrolujeme, jestli budeme na konci zastavovat
        if ((train.wantedSpeed > 0) and (train.direction <> Self.m_spnl.direction)) then Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
-       case (Self.DNjc.data.DalsiNavaznost) of
-         TJCNextNavType.blok: begin
-           Blocks.GetBlkByID(Self.DNjc.data.DalsiNavestidlo, signal);
+       case (Self.DNjc.data.nextSignalType) of
+         TJCNextSignalType.signal: begin
+           Blocks.GetBlkByID(Self.DNjc.data.nextSignalId, signal);
 
            if ((signal <> nil) and (signal.typ = btSignal) and (TBlkSignal(signal).IsGoSignal()) and
-               (not train.IsPOdj(Self.DNjc.lastUsek))) then
+               (not train.IsPOdj(Self.DNjc.lastTrack))) then
             begin
               // na konci JC budeme stat
               if ((train.wantedSpeed <> Self.DNjc.data.speedGo) or (train.direction <> Self.m_spnl.direction)) then
@@ -1354,12 +1354,12 @@ begin
             end;
          end;
 
-         TJCNextNavType.trat: begin
+         TJCNextSignalType.railway: begin
            if ((train.wantedSpeed <> Self.DNjc.data.speedGo) or (train.direction <> Self.m_spnl.direction)) then
              train.SetSpeedDirection(Self.DNjc.data.speedGo, Self.m_spnl.direction);
          end;
 
-         TJCNextNavType.zadna: begin
+         TJCNextSignalType.no: begin
            if ((train.wantedSpeed <> Self.DNjc.data.speedStop) or (train.direction <> Self.m_spnl.direction)) then
              train.SetSpeedDirection(Self.DNjc.data.speedStop, Self.m_spnl.direction);
           end;
@@ -1426,7 +1426,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkSignal.IsGoSignal(jctype: TJCType = TJCType.vlak): Boolean;
+function TBlkSignal.IsGoSignal(jctype: TJCType = TJCType.train): Boolean;
 begin
  if ((Self.signal = ncChanging) and (TBlkSignal.IsGoSignal(Self.m_state.targetSignal, jctype))) then
    // navest se meni na nejakou povolovaci -> ridim se jeste tou starou
@@ -1440,9 +1440,9 @@ begin
  Result := (Self.targetSignal = ncOpakVystraha) or (Self.targetSignal = ncOpakVystraha40);
 end;
 
-class function TBlkSignal.IsGoSignal(Navest: TBlkSignalCode; jctype: TJCType = TJCType.vlak): Boolean;
+class function TBlkSignal.IsGoSignal(Navest: TBlkSignalCode; jctype: TJCType = TJCType.train): Boolean;
 begin
- if (jcType = TJCType.vlak) then
+ if (jcType = TJCType.train) then
   begin
    case (navest) of
      ncVolno, ncVystraha, ncOcek40, ncVolno40, ncVystraha40, nc40Ocek40,
@@ -1450,7 +1450,7 @@ begin
    else
     Result := false;
    end;
-  end else if (jcType = TJCType.posun) then
+  end else if (jcType = TJCType.shunt) then
     Result := (navest = ncPosunZaj) or (navest = ncPosunNezaj)
   else
     Result := false;
@@ -1672,8 +1672,8 @@ begin
   end;
 
  if (Self.DNjc = nil) then Exit();
- if (Self.DNjc.data.Trat = -1) then Exit();
- Blocks.GetBlkByID(Self.DNjc.data.Trat, trat);
+ if (Self.DNjc.data.railwayId = -1) then Exit();
+ Blocks.GetBlkByID(Self.DNjc.data.railwayId, trat);
  if (TBlkRailway(trat).trainPredict = nil) then Exit();
  if (TBlkRailway(trat).trainPredict.train <> train) then Exit();
 

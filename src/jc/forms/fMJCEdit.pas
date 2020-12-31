@@ -256,7 +256,7 @@ begin
  if (Self.JCs.Count < 1) then obls := nil
  else begin
    try
-     Blocks.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok, Blk);
+     Blocks.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.signalId, Blk);
 
      if ((Blk = nil) or (Blk.typ <> btSignal)) then
       begin
@@ -300,8 +300,8 @@ begin
  // doplneni nazvu JC:
  if (Self.CHB_AutoName.Checked) then
   begin
-   Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
-   Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1]);
+   Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.signalId) + ' > '+
+                          JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).lastTrack.name;
   end;
 end;
 
@@ -415,8 +415,8 @@ begin
    if (Self.CHB_AutoName.Checked) then
     begin
      if (Self.JCs.Count > 0) then
-       Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.NavestidloBlok) + ' > '+
-       Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky[JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).data.Useky.Count-1])
+       Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.signalId) + ' > '+
+       JCDb.GetJCByID(Self.JCs[Self.JCs.Count-1]).lastTrack.name
       else
        Self.E_VCNazev.Text := '';
     end;

@@ -77,7 +77,7 @@ begin
  if (not Self.JCs.Contains(jc)) then
    raise EABJCNotInList.Create('This JC is not in AB list!');
 
- for usek in jc.data.Useky do
+ for usek in jc.data.tracks do
   begin
    Blocks.GetBlkByID(usek, blk);
    if ((blk <> nil) and
@@ -100,17 +100,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TABlist.TryJC(jc: TJC);
-var bariery: TJCBariery;
+var bariery: TJCBarriers;
     blk: TBlk;
-    bariera: TJCBariera;
+    bariera: TJCBarrier;
 begin
-  bariery := JC.KontrolaPodminek();
+  bariery := JC.Barriers();
   try
     // v jizdni ceste jsou urcite bariery (musi tam byt minimalne zavery AB cesty)
     for bariera in bariery do
      begin
       if ((bariera.typ <> TJC._JCB_USEK_AB) and
-          ((TJC.CriticalBariera(bariera.typ)) or (not JC.WarningBariera(bariera.typ)))) then
+          ((TJC.CriticalBarrier(bariera.typ)) or (not JC.WarningBarrier(bariera.typ)))) then
         Exit();
      end;
 
@@ -120,11 +120,11 @@ begin
 
     writelog('DN JC '+JC.name+' : podmínky splněny, stavím', WR_STACK);
 
-    Blocks.GetBlkByID(JC.data.NavestidloBlok, blk);
+    Blocks.GetBlkByID(JC.data.signalId, blk);
     if ((blk = nil) or (blk.typ <> btSignal) or (TBlkSignal(blk).stations.Count = 0)) then
       Self.Remove(jc);
 
-    JC.StavJC(nil, TBlkSignal(blk).stations[0], nil, false, true);
+    JC.Activate(nil, TBlkSignal(blk).stations[0], nil, false, true);
   finally
     bariery.Free();
   end;
@@ -136,7 +136,7 @@ var jc: TJC;
 begin
  for jc in Self.JCs do
   begin
-   if ((jc.postaveno) or (jc.staveni)) then continue;
+   if ((jc.active) or (jc.activating)) then continue;
    Self.TryJC(jc);
   end;
 end;
@@ -155,7 +155,7 @@ var jc: TJC;
     id: Integer;
 begin
  for jc in Self.JCs do
-   for id in jc.data.Useky do
+   for id in jc.data.tracks do
      if (id = usekid) then
        Exit(true);
 

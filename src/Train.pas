@@ -1152,10 +1152,10 @@ begin
  if (jc = nil) then
    Exit(nil);
 
- case (jc.data.DalsiNavaznost) of
-  TJCNextNavType.zadna: Exit(nil);
-  TJCNextNavType.trat: begin
-    Blocks.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], TBlk(frontblk));
+ case (jc.data.nextSignalType) of
+  TJCNextSignalType.no: Exit(nil);
+  TJCNextSignalType.railway: begin
+    Blocks.GetBlkByID(jc.data.tracks[jc.data.tracks.Count-1], TBlk(frontblk));
     if (frontblk <> nil) and (frontblk.typ = btRT) then
      begin
       tu := TBlkRT(frontblk);
@@ -1163,8 +1163,8 @@ begin
      end else
       Exit(nil);
   end;
-  TJCNextNavType.blok: begin
-    Blocks.GetBlkByID(jc.data.DalsiNavestidlo, TBlk(signal));
+  TJCNextSignalType.signal: begin
+    Blocks.GetBlkByID(jc.data.nextSignalId, TBlk(signal));
     Exit(signal);
   end;
  end;

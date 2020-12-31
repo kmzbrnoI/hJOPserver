@@ -61,7 +61,7 @@ var
 implementation
 
 uses Logging, GetSystems, BlockDb, BlockTrack, TOblRizeni, TCPServerOR,
-      DataMultiJC, Zasobnik, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
+      DataMultiJC, Stack, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TMultiJCDb
@@ -265,7 +265,7 @@ begin
 
  if (mJC <> nil) then
   begin
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) then
+   if ((SenderOR as TOR).stack.mode = TORStackMode.VZ) then
     begin
      // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
      for j := 0 to mJC.data.JCs.Count-1 do
@@ -368,7 +368,7 @@ begin
    if (Integer(startNav.selected) <> Integer(JC.typ)) then
      continue;
 
-   if (JC.data.NavestidloBlok <> startNav.id) then
+   if (JC.data.signalId <> startNav.id) then
      continue;
 
    // kontrola variantnich bodu

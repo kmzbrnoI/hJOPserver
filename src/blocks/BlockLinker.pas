@@ -107,7 +107,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, BlockRailway, Zasobnik, BlockTrack;
+    TJCDatabase, fMain, TCPServerOR, BlockRailway, Stack, BlockTrack;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -213,9 +213,9 @@ end;
 
 procedure TBlkLinker.MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- case ((SenderOR as TOR).stack.volba) of
-  TORStackVolba.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
-  TORStackVolba.PV : Self.DoZTS(SenderPnl, SenderOR);
+ case ((SenderOR as TOR).stack.mode) of
+  TORStackMode.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
+  TORStackMode.PV : Self.DoZTS(SenderPnl, SenderOR);
  end;
 end;
 
@@ -226,9 +226,9 @@ end;
 
 procedure TBlkLinker.MenuUTSClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- case ((SenderOR as TOR).stack.volba) of
-  TORStackVolba.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
-  TORStackVolba.PV : Self.DoUTS(SenderPnl, SenderOR);
+ case ((SenderOR as TOR).stack.mode) of
+  TORStackMode.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
+  TORStackMode.PV : Self.DoUTS(SenderPnl, SenderOR);
  end;
 end;
 
@@ -303,7 +303,7 @@ procedure TBlkLinker.UPOZTSOnClick(Sender: TObject);
 begin
  Self.request := true;
 
- if (Self.m_stations[0].stack.volba = TORStackVolba.VZ) then
+ if (Self.m_stations[0].stack.mode = TORStackMode.VZ) then
    Self.m_stations[0].stack.RemoveZTS(Self);
 end;
 
@@ -311,7 +311,7 @@ procedure TBlkLinker.UPOUTSClick(Sender: TObject);
 begin
  Self.ApproveRequest();
 
- if (Self.m_stations[0].stack.volba = TORStackVolba.VZ) then
+ if (Self.m_stations[0].stack.mode = TORStackMode.VZ) then
    Self.m_stations[0].stack.RemoveUTS(Self);
 end;
 
@@ -358,7 +358,7 @@ begin
      if (((not Self.request) and (railway.direction = TRailwayDirection.BtoA) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
@@ -367,12 +367,12 @@ begin
      if (((not Self.request) and (railway.direction = TRailwayDirection.AtoB) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.request)) then
+   if ((SenderOR as TOR).stack.mode = TORStackMode.VZ) and ((Self.request) or (not railway.request)) then
      Result := Result + 'UTS,';
 
    if (((not Self.request) and railway.request)) then
@@ -397,7 +397,7 @@ begin
      if (((not Self.request) and(railway.direction <> TRailwayDirection.AtoB) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
@@ -406,12 +406,12 @@ begin
      if (((not Self.request) and (railway.direction <> TRailwayDirection.BtoA) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.volba = TORStackVolba.VZ)) then
+          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.volba = TORStackVolba.VZ) and ((Self.request) or (not railway.request)) then
+   if ((SenderOR as TOR).stack.mode = TORStackMode.VZ) and ((Self.request) or (not railway.request)) then
      Result := Result + 'UTS,';
 
    if (((not Self.request) and railway.request)) then

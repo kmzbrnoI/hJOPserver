@@ -139,7 +139,7 @@ implementation
 
 uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
      BlockLock, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
-     DataBloky, TrainDb, TechnologieJC, Zasobnik, GetSystems, BlockDisconnector,
+     DataBloky, TrainDb, TechnologieJC, Stack, GetSystems, BlockDisconnector,
      BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
      TechnologieAB, ACBlocks, BlockGroupSignal;
 
@@ -615,7 +615,7 @@ begin
 
    if (((blk as TBlkSignal).selected > TBlkSignalSelection.none) and
       ((JCDb.FindOnlyStaveniJC((blk as TBlkSignal).id) = nil) or
-        ((blk as TBlkSignal).stations[orindex].stack.volba = VZ))) then
+        ((blk as TBlkSignal).stations[orindex].stack.mode = VZ))) then
      Exit(blk);
   end;
 
@@ -826,15 +826,15 @@ begin
    JC := TBlkSignal(signal).DNjc;
 
    // predpovidame, dokud existuji jizdni cesty
-   while ((JC <> nil) and (JC.typ = TJCType.vlak) and (JC.stav.RozpadBlok <= 0)) do
+   while ((JC <> nil) and (JC.typ = TJCType.train) and (JC.state.destroyBlock <= 0)) do
     begin
      // kontrola povolujici navesti
-     Blocks.GetBlkByID(JC.data.NavestidloBlok, signal);
+     Blocks.GetBlkByID(JC.data.signalId, signal);
      if ((signal = nil) or (signal.typ <> btSignal) or (not TBlkSignal(signal).IsGoSignal())) then
        train := nil;
 
      // zjistime posledni usek jizdni cesty
-     Blocks.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], TBlk(usek));
+     Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count-1], TBlk(usek));
 
      if (usek = startUsek) then Exit();
 

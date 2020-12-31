@@ -449,7 +449,7 @@ begin
      oblr.hlaseni.ClientDisconnect(AContext);
 
  for jc in JCdb do
-   if (jc.stav.SenderPnl = AContext) then
+   if (jc.state.SenderPnl = AContext) then
      jc.ClientDisconnect(AContext);
 
  ORsRef.Free();

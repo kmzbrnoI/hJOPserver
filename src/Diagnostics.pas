@@ -43,8 +43,8 @@ begin
  Self.showBlockId := ini.ReadBool(section, 'showBlockId', false);
 
  JCSimulator.timer.Enabled := ini.ReadBool(section, 'JCsim', false);
- VyhSimulator.timer.Enabled := ini.ReadBool(section, 'VYHsim', false);
- TratSimulator.timer.Enabled := ini.ReadBool(section, 'TRATsim', false);
+ TurnoutSimulator.timer.Enabled := ini.ReadBool(section, 'VYHsim', false);
+ RailwaySimulator.timer.Enabled := ini.ReadBool(section, 'TRATsim', false);
 end;
 
 procedure TDiagnostics.SaveData(ini: TMemIniFile; section: string);
@@ -55,10 +55,10 @@ begin
    ini.WriteBool('AdminData', 'SoupravaUsekSim', Self.simSoupravaObsaz);
  if (JCSimulator.timer.Enabled) then
    ini.WriteBool(section, 'JCsim', JCSimulator.timer.Enabled);
- if (TratSimulator.timer.Enabled) then
-   ini.WriteBool(section, 'TRATsim', TratSimulator.timer.Enabled);
- if (VyhSimulator.timer.Enabled) then
-   ini.WriteBool(section, 'VYHsim', VyhSimulator.timer.Enabled);
+ if (RailwaySimulator.timer.Enabled) then
+   ini.WriteBool(section, 'TRATsim', RailwaySimulator.timer.Enabled);
+ if (TurnoutSimulator.timer.Enabled) then
+   ini.WriteBool(section, 'VYHsim', TurnoutSimulator.timer.Enabled);
  if (Self.simInputs) then
    ini.WriteBool(section, 'InputSim', Self.simInputs);
  if (Self.showBlockId) then

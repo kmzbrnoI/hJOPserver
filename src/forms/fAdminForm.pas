@@ -47,8 +47,8 @@ const SECTION = 'AdminData';
 begin
  Self.CHB_SimSoupravaUsek.Checked := diag.simSoupravaObsaz;
  Self.CHB_JC_Simulator.Checked := JCSimulator.timer.Enabled;
- Self.CHB_Trat_Sim.Checked := TratSimulator.timer.Enabled;
- Self.CHB_SimVyhybky.Checked := VyhSimulator.timer.Enabled;
+ Self.CHB_Trat_Sim.Checked := RailwaySimulator.timer.Enabled;
+ Self.CHB_SimVyhybky.Checked := TurnoutSimulator.timer.Enabled;
  Self.CHB_SimInput.Checked := diag.simInputs;
  Self.CHB_Zaver.Checked := diag.showZaver;
  Self.CHB_Show_Block_Id.Checked := diag.showBlockId;
@@ -98,12 +98,12 @@ end;
 
 procedure TF_Admin.CHB_SimVyhybkyClick(Sender: TObject);
 begin
- VyhSimulator.timer.Enabled := Self.CHB_SimVyhybky.Checked;
+ TurnoutSimulator.timer.Enabled := Self.CHB_SimVyhybky.Checked;
 end;
 
 procedure TF_Admin.CHB_Trat_SimClick(Sender: TObject);
 begin
- TratSimulator.timer.Enabled := Self.CHB_Trat_Sim.Checked;
+ RailwaySimulator.timer.Enabled := Self.CHB_Trat_Sim.Checked;
 end;
 
 procedure TF_Admin.CHB_ZaverClick(Sender: TObject);

@@ -1,4 +1,4 @@
-// Project begin: september 2008
+﻿// Project begin: september 2008
 
 // JCL_DEBUG_EXPERT_INSERTJDBG ON
 // JCL_DEBUG_EXPERT_DELETEMAPFILE ON
@@ -71,7 +71,7 @@ uses
   UserDb in 'UserDb.pas',
   DataUsers in 'tables\DataUsers.pas',
   fUserEdit in 'forms\fUserEdit.pas' {F_UserEdit},
-  Zasobnik in 'Zasobnik.pas',
+  Stack in 'Stack.pas',
   UPO in 'jc\UPO.pas',
   fBlkRailwayState in 'blocks\forms\state\fBlkRailwayState.pas' {F_BlkRailwayState},
   ModelovyCas in 'ModelovyCas.pas',

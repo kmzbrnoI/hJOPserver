@@ -169,7 +169,7 @@ end;
 procedure TMultiJC.UpdateStaveni();
 var JC: TJC;
 begin
- if (Self.staveno.postaveno) then
+ if (Self.staveno.active) then
   begin
    // aktualni cesta postavena
    Inc(Self.fstaveni.JCIndex);
@@ -185,12 +185,12 @@ begin
        Self.RusStaveni()
       else begin
        Self.staveno := JC;
-       Self.staveno.StavJC(Self.fstaveni.SenderPnl, Self.fstaveni.SenderOR);
+       Self.staveno.Activate(Self.fstaveni.SenderPnl, Self.fstaveni.SenderOR);
       end;
      Self.changed := true;
     end;
   end else begin
-   if (not Self.staveno.staveni) then
+   if (not Self.staveno.activating) then
     begin
      // cesta byla stavena, ale uz se nestavi -> evidentne nastala chyba -> ukoncime staveni slozene jizdni cesty
      Self.RusStaveni();
@@ -211,7 +211,7 @@ begin
  Self.fstaveni.SenderPnl := SenderPnl;
 
  Self.staveno := JCDb.GetJCByID(Self.fproperties.JCs[0]);
- Self.staveno.StavJC(SenderPnl, SenderOR);
+ Self.staveno.Activate(SenderPnl, SenderOR);
  Self.fstaveni.JCIndex := 0;
 
  (SenderOR as TOR).vb.Clear();
@@ -231,12 +231,12 @@ begin
 
  // zrusime zacatek staveni na navestidle
  JC := JCDb.GetJCByID(Self.fproperties.JCs[0]);
- Blocks.GetBlkByID(JC.data.NavestidloBlok, Blk);
+ Blocks.GetBlkByID(JC.data.signalId, Blk);
  (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
 
  // zrusime konec staveni na poslednim useku posledni JC
  JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);
- Blocks.GetBlkByID(JC.data.Useky[JC.data.Useky.Count-1], Blk);
+ Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count-1], Blk);
  (Blk as TBlkTrack).jcEnd := TZaver.no;
 
  // zrusime konec staveni na vsech variantnich bodech
@@ -279,7 +279,7 @@ begin
  jc := JCDb.GetJCByID(Self.data.JCs[0]);
  if (JC = nil) then Exit(false);
 
- if (JC.data.NavestidloBlok <> startNav.id) then
+ if (JC.data.signalId <> startNav.id) then
    Exit(false);
  if (Integer(startNav.selected) <> Integer(JC.typ)) then
    Exit(false);
@@ -287,7 +287,7 @@ begin
  // posledni blok musi byt posledni blok posledni jizdni cesty
  JC := JCDb.GetJCByID(Self.data.JCs[Self.data.JCs.Count-1]);
  if (JC = nil) then Exit(false);
- if (JC.data.Useky[JC.data.Useky.Count-1] <> endBlk.id) then Exit(false);
+ if (JC.data.tracks[JC.data.tracks.Count-1] <> endBlk.id) then Exit(false);
 
  // kontrola variantnich bodu
  if (vb.Count <> Self.data.vb.Count) then Exit(false);
@@ -310,7 +310,7 @@ begin
    if (jc = nil) then
      Result := nil
    else
-     Result := jc.navestidlo as TBlkSignal;
+     Result := jc.signal as TBlkSignal;
  end else
    Result := nil
 end;

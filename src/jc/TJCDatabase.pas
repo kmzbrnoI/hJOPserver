@@ -39,7 +39,7 @@ type
      procedure Update();
      procedure StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
 
-     function AddJC(JCdata: TJCprop): TJC;
+     function AddJC(JCdata: TJCdata): TJC;
      procedure RemoveJC(index: Integer);
 
      function GetJCByIndex(index: Integer): TJC;
@@ -53,7 +53,7 @@ type
 
      //pouzivano pri vypadku polohy vyhybky postavene jizdni cesty
      function FindPostavenaJCWithVyhybka(vyh_id: Integer): TList<TJC>;
-     function FindPostavenaJCWithUsek(usek_id: Integer): TJC;
+     function FindPostavenaJCWithUsek(trackId: Integer): TJC;
      function FindPostavenaJCWithPrj(blk_id: Integer): TList<TJC>;
      function FindPostavenaJCWithTrat(trat_id: Integer): TJC;
      function FindPostavenaJCWithZamek(zam_id: Integer): TList<TJC>;
@@ -74,7 +74,7 @@ type
      function IsAnyPCAvailable(signal: TBlkSignal): Boolean;
 
      function FindJC(startNav: TBlkSignal; vb: TList<TObject>; EndBlk: TBlk): TJC; overload;
-     function IsAnyJCWithPrefix(startNav: TBlkSignal; vb: TList<TObject>): Boolean;
+     function IsAnyJCWithPrefix(startSignal: TBlkSignal; vb: TList<TObject>): Boolean;
 
      property Count: Word read GetCount;
      property filename: string read ffilename;
@@ -92,7 +92,7 @@ var
 implementation
 
 uses Logging, GetSystems, BlockTrack, TOblRizeni, TCPServerOR, BlockRailway,
-      DataJC, Zasobnik, TOblsRizeni, TMultiJCDatabase, appEv, BlockTurnout,
+      DataJC, Stack, TOblsRizeni, TMultiJCDatabase, appEv, BlockTurnout,
       BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ begin
      try
        JC.index := i;
        JC.OnIdChanged := Self.JCOnIDChanged;
-       JC.OnNavChanged := Self.JCOnNavChanged;
+       JC.OnSignalChanged := Self.JCOnNavChanged;
        JC.LoadData(ini, sections[i]);
        Self.JCs.Insert(Self.FindPlaceForNewJC(JC.id), JC);
      except
@@ -191,15 +191,14 @@ begin
  for JC in Self.JCs do
   begin
    try
-     if (JC.stav.RozpadBlok > -5) then
-       JC.UsekyRusJC();
-     if (JC.stav.RozpadBlok = -6) then
-       JC.UsekyRusNC();
+     if (JC.state.destroyBlock > -5) then
+       JC.DynamicCanceling();
+     if (JC.state.destroyBlock = -6) then
+       JC.DynamicCancelingNC();
 
-
-     if ((JC.Staveni) or (JC.Krok = _JC_KROK_CEKANI_POSLEDNI_USEK)) then
+     if ((JC.activating) or (JC.step = _JC_STEP_CEKANI_POSLEDNI_USEK)) then
       begin
-       JC.UpdateStaveni();
+       JC.UpdateActivating();
        JC.UpdateTimeOut();
       end;
    except
@@ -207,13 +206,13 @@ begin
      begin
       if (not log_err_flag) then
        AppEvents.LogException(E, 'JC '+JC.name + ' update error');
-      if (JC.staveni) then
-        JC.CancelStaveni('Vyjímka', true)
+      if (JC.activating) then
+        JC.CancelActivating('Vyjímka', true)
       else
-        JC.RusJCWithoutBlk();
+        JC.CancelWithoutTrackRelease();
      end;
    end;//except
-  end;//for i
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -242,14 +241,14 @@ begin
 
  for jc in Self.JCsStartSignal[startNav] do
   begin
-   if (JC.navestidlo <> startNav) then continue;
+   if (JC.signal <> startNav) then continue;
 
-   Blocks.GetBlkByID(jc.data.Useky[jc.data.Useky.Count-1], blk);
+   Blocks.GetBlkByID(jc.data.tracks[jc.data.tracks.Count-1], blk);
    if (blk <> endBlk) then continue;
 
    if ((Integer(startNav.selected) = Integer(jc.typ)) or
-      ((startNav.selected = TBlkSignalSelection.NC) and (jc.typ = TJCType.vlak)) or
-      ((startNav.selected = TBlkSignalSelection.PP) and (jc.typ = TJCType.posun))) then
+      ((startNav.selected = TBlkSignalSelection.NC) and (jc.typ = TJCType.train)) or
+      ((startNav.selected = TBlkSignalSelection.PP) and (jc.typ = TJCType.shunt))) then
     begin
      // kontrola variantnich bodu:
      if (jc.data.vb.Count <> vb.Count) then continue;
@@ -287,7 +286,7 @@ begin
      for oblr in startNav.stations do
        oblr.ORDKClickClient();
 
-   if (SenderOblr.stack.volba = TORStackVolba.VZ) then
+   if (SenderOblr.stack.mode = TORStackMode.VZ) then
     begin
      SenderOblr.stack.AddJC(
       jc,
@@ -302,7 +301,7 @@ begin
      SenderOblr.ClearVb();
     end else begin
      SenderOblr.vb.Clear(); // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
-     jc.StavJC(
+     jc.Activate(
        SenderPnl,
        SenderOR,
        nil,
@@ -325,7 +324,7 @@ begin
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.AddJC(JCdata: TJCprop): TJC;
+function TJCDb.AddJC(JCdata: TJCdata): TJC;
 var JC: TJC;
     index: Integer;
     i: Integer;
@@ -339,14 +338,14 @@ begin
  JC := TJC.Create(JCData);
  JC.index := index;
  JC.OnIdChanged := Self.JCOnIDChanged;
- JC.OnNavChanged := Self.JCOnNavChanged;
+ JC.OnSignalChanged := Self.JCOnNavChanged;
  Self.JCs.Insert(index, JC);
 
  // indexy prislusnych JC na konci seznamu posuneme o 1 nahoru
  for i := index+1 to Self.JCs.Count-1 do
    Self.JCs[i].index := Self.JCs[i].index + 1;
 
- signal := JC.navestidlo as TBlkSignal;
+ signal := JC.signal as TBlkSignal;
  if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Self.JCsStartSignal.Add(signal, TList<TJC>.Create());
  Self.JCsStartSignal[signal].Add(JC);
@@ -361,15 +360,15 @@ var i: Integer;
 begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam JC');
  if (index >= Self.JCs.Count) then raise Exception.Create('Index pretekl seznam JC');
- if (Self.JCs[index].postaveno or Self.JCs[index].staveni) then
+ if (Self.JCs[index].active or Self.JCs[index].activating) then
    raise Exception.Create('JC postavena, nelze smazat');
 
  for OblR in ORs do
    if (OblR.stack.IsJCInStack(Self.JCs[index])) then
      raise Exception.Create('JC v zasobniku OR '+OblR.id);
 
- if (Self.JCsStartSignal.ContainsKey(Self.JCs[index].navestidlo as TBlkSignal)) then
-   Self.JCsStartSignal[Self.JCs[index].navestidlo as TBlkSignal].Remove(Self.JCs[index]);
+ if (Self.JCsStartSignal.ContainsKey(Self.JCs[index].signal as TBlkSignal)) then
+   Self.JCsStartSignal[Self.JCs[index].signal as TBlkSignal].Remove(Self.JCs[index]);
 
  Self.JCs.Delete(index);
 
@@ -387,10 +386,10 @@ var JC: TJC;
 begin
  for JC in Self.JCs do
   begin
-   if (JC.postaveno) then
-     JC.RusJC()
-   else if (JC.staveni) then
-     JC.CancelStaveni('Nouzové rušení stavění JC', true);
+   if (JC.active) then
+     JC.Cancel()
+   else if (JC.activating) then
+     JC.CancelActivating('Nouzové rušení stavění JC', true);
   end;
 end;
 
@@ -400,7 +399,7 @@ function TJCDb.FindJC(NavestidloBlokID: Integer; Staveni: Boolean = false): TJC;
 var jc: TJC;
  begin
   for jc in Self.JCs do
-    if (((jc.postaveno) or ((Staveni) and (jc.staveni))) and (jc.data.NavestidloBlok = NavestidloBlokID)) then
+    if (((jc.active) or ((Staveni) and (jc.activating))) and (jc.data.signalId = NavestidloBlokID)) then
       Exit(jc);
   Result := nil;
  end;
@@ -409,7 +408,7 @@ function TJCDb.FindOnlyStaveniJC(NavestidloBlokID: Integer): TJC;
 var jc: TJC;
 begin
   for jc in Self.JCs do
-    if ((jc.staveni) and (jc.data.NavestidloBlok = NavestidloBlokID)) then
+    if ((jc.activating) and (jc.data.signalId = NavestidloBlokID)) then
       Exit(jc);
   Result := nil;
 end;
@@ -420,35 +419,35 @@ end;
 // muze vracet vic jizdnich cest - jeden odvrat muze byt u vic aktualne postavenych JC
 function TJCDB.FindPostavenaJCWithVyhybka(vyh_id: Integer): TList<TJC>;
 var jc: TJC;
-    vyhz: TJCVyhZaver;
-    odvrz: TJCOdvratZaver;
-    refz: TJCRefZaver;
+    turnoutZav: TJCTurnoutZav;
+    refugeeZav: TJCRefugeeZav;
+    refZav: TJCRefZav;
     blk: TBlk;
-    vyh: TBlkTurnout;
+    turnout: TBlkTurnout;
 begin
  Result := TList<TJC>.Create();
  try
   Blocks.GetBlkByID(vyh_id, blk);
-  vyh := TBlkTurnout(blk);
+  turnout := TBlkTurnout(blk);
 
   for jc in Self.JCs do
    begin
-    if (not jc.postaveno) then continue;
+    if (not jc.active) then continue;
 
     // prime vyhybky
-    for vyhz in jc.data.Vyhybky do
-      if (vyhz.Blok = vyh_id) then
+    for turnoutZav in jc.data.turnouts do
+      if (turnoutZav.Blok = vyh_id) then
         Result.Add(jc);
 
     // odvraty
-    for odvrz in jc.data.Odvraty do
-      if (odvrz.Blok = vyh_id) then
+    for refugeeZav in jc.data.refuges do
+      if (refugeeZav.Blok = vyh_id) then
         Result.Add(jc);
 
     // zamky
-    if ((vyh <> nil) and (vyh.lock <> nil)) then
-      for refz in jc.data.zamky do
-        if (refz.Blok = vyh.lock.id) then
+    if ((turnout <> nil) and (turnout.lock <> nil)) then
+      for refZav in jc.data.locks do
+        if (refZav.Blok = turnout.lock.id) then
           Result.Add(jc);
    end;
  except
@@ -457,31 +456,31 @@ begin
  end;
 end;
 
-function TJCDB.FindPostavenaJCWithUsek(usek_id: Integer): TJC;
+function TJCDB.FindPostavenaJCWithUsek(trackId: Integer): TJC;
 var jc: TJC;
-    usekid: Integer;
-    trat, tu: TBlk;
+    _trackId: Integer;
+    railway, railwayTrack: TBlk;
 begin
   Result := nil;
 
   for jc in Self.JCs do
    begin
-    if (not jc.postaveno) then continue;
+    if (not jc.active) then continue;
 
-    for usekid in jc.data.Useky do
-      if (usekid = usek_id) then
+    for _trackId in jc.data.tracks do
+      if (_trackId = trackId) then
         Exit(jc);
 
-    if (jc.data.Trat > -1) then
+    if (jc.data.railwayId > -1) then
      begin
-      Blocks.GetBlkByID(jc.data.Trat, trat);
-      if ((trat <> nil) and (trat.typ = btRailway)) then
+      Blocks.GetBlkByID(jc.data.railwayId, railway);
+      if ((railway <> nil) and (railway.typ = btRailway)) then
        begin
-        for usekid in TBlkRailway(trat).GetSettings().trackIds do
+        for _trackId in TBlkRailway(railway).GetSettings().trackIds do
          begin
-          Blocks.GetBlkByID(usekid, tu);
-          if ((tu <> nil) and (tu.typ = btRT)) then
-            if ((TBlkRT(tu).signalCover = nil) and (tu.id = usek_id)) then
+          Blocks.GetBlkByID(_trackId, railwayTrack);
+          if ((railwayTrack <> nil) and (railwayTrack.typ = btRT)) then
+            if ((TBlkRT(railwayTrack).signalCover = nil) and (railwayTrack.id = trackId)) then
               Exit(jc);
          end;
        end;
@@ -495,24 +494,24 @@ var jc: TJC;
 begin
  for jc in Self.JCs do
   begin
-   if (not jc.postaveno) then continue;
-   if (jc.data.Trat = trat_id) then Exit(jc);
+   if (not jc.active) then continue;
+   if (jc.data.railwayId = trat_id) then Exit(jc);
   end;
 
  Result := nil;
 end;
 
 function TJCDB.FindPostavenaJCWithPrj(blk_id: Integer): TList<TJC>;
-var prj: TJCPrjZaver;
+var crossing: TJCCrossingZav;
     jc: TJC;
 begin
  Result := TList<TJC>.Create();
  try
    for jc in Self.JCs do
     begin
-     if (not jc.postaveno) then continue;
-     for prj in jc.data.Prejezdy do
-       if (prj.Prejezd = blk_id) then
+     if (not jc.active) then continue;
+     for crossing in jc.data.crossings do
+       if (crossing.crossingId = blk_id) then
          Result.Add(jc);
     end;
  except
@@ -523,15 +522,15 @@ end;
 
 function TJCDB.FindPostavenaJCWithZamek(zam_id: Integer): TList<TJC>;
 var jc: TJC;
-    zamZav: TJCRefZaver;
+    lockZav: TJCRefZav;
 begin
  Result := TList<TJC>.Create();
  try
    for jc in Self.JCs do
     begin
-     if (not jc.postaveno) then continue;
-     for zamZav in jc.data.zamky do
-       if (zamZav.Blok = zam_id) then
+     if (not jc.active) then continue;
+     for lockZav in jc.data.locks do
+       if (lockZav.Blok = zam_id) then
          Result.Add(jc);
     end;
  except
@@ -551,18 +550,18 @@ var JC: TJC;
 begin
   for JC in Self.JCs do
    begin
-    if ((JC.typ = TJCType.posun) or
-        (JC.data.dalsiNavaznost <> TJCNextNavType.blok) or
-        (JC.data.dalsiNavestidlo <> signal.id)) then continue;
+    if ((JC.typ = TJCType.shunt) or
+        (JC.data.nextSignalType <> TJCNextSignalType.signal) or
+        (JC.data.nextSignalId <> signal.id)) then continue;
 
-    Blocks.GetBlkByID(JC.data.NavestidloBlok, TBlk(prev_signal));
+    Blocks.GetBlkByID(JC.data.nextSignalId, TBlk(prev_signal));
 
     if (not prev_signal.IsGoSignal()) then continue;
     if (prev_signal.changing) then continue;
 
     if ((signal.IsGoSignal()) and (not signal.IsOpakVystraha())) then
      begin
-      if (JC.data.odbocka) then
+      if (JC.data.turn) then
        begin
         if ((signal.FourtyKmph()) or (signal.signal = ncOpakOcek40)) then
           navest := nc40Ocek40
@@ -577,7 +576,7 @@ begin
 
      end else begin
 
-      if (JC.data.odbocka) then
+      if (JC.data.turn) then
         navest := ncVystraha40
       else
         navest := ncVystraha;
@@ -631,11 +630,11 @@ begin
 
    for jc in jcs do
     begin
-     Blocks.GetBlkByID(jc.data.NavestidloBlok, tmpblk);
+     Blocks.GetBlkByID(jc.data.signalId, tmpblk);
      if ((TBlkSignal(tmpblk).DNjc = jc) and
-         ((TBlkSignal(tmpblk).IsGoSignal()) or (TBlkSignal(tmpblk).ZAM) or (jc.waitForLastUsekOrTratObsaz))) then
+         ((TBlkSignal(tmpblk).IsGoSignal()) or (TBlkSignal(tmpblk).ZAM) or (jc.waitForLastTrackOrRailwayOccupy))) then
       begin
-       jc.RusJCWithoutBlk();
+       jc.CancelWithoutTrackRelease();
        for oblr in (tmpBlk as TBlkSignal).stations do
          oblr.BlkWriteError(Self, 'Chyba povolovací návěsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
@@ -751,9 +750,9 @@ begin
  Self.JCsStartSignal.Clear();
  for JC in Self.JCs do
   begin
-   if ((JC.navestidlo <> nil) and (JC.navestidlo.typ = btSignal)) then
+   if ((JC.signal <> nil) and (JC.signal.typ = btSignal)) then
     begin
-     signal := JC.navestidlo as TBlkSignal;
+     signal := JC.signal as TBlkSignal;
      if (not Self.JCsStartSignal.ContainsKey(signal)) then
        Self.JCsStartSignal.Add(signal, TList<TJC>.Create());
      Self.JCsStartSignal[signal].Add(JC);
@@ -777,11 +776,11 @@ begin
        Self.JCsStartSignal[signal].Remove(jc);
   end;
 
- if (jc.navestidlo <> nil) then
+ if (jc.signal <> nil) then
   begin
-   if (not Self.JCsStartSignal.ContainsKey(jc.navestidlo as TBlkSignal)) then
-     Self.JCsStartSignal.Add(jc.navestidlo as TBlkSignal, TList<TJC>.Create());
-   Self.JCsStartSignal[jc.navestidlo as TBlkSignal].Add(jc);
+   if (not Self.JCsStartSignal.ContainsKey(jc.signal as TBlkSignal)) then
+     Self.JCsStartSignal.Add(jc.signal as TBlkSignal, TList<TJC>.Create());
+   Self.JCsStartSignal[jc.signal as TBlkSignal].Add(jc);
   end;
 end;
 
@@ -798,7 +797,7 @@ begin
  if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Exit(false);
  for jc in Self.JCsStartSignal[signal] do
-   if (jc.typ = TJCType.vlak) then
+   if (jc.typ = TJCType.train) then
       Exit(true);
  Result := false;
 end;
@@ -809,7 +808,7 @@ begin
  if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Exit(false);
  for jc in Self.JCsStartSignal[signal] do
-   if (jc.typ = TJCType.posun) then
+   if (jc.typ = TJCType.shunt) then
       Exit(true);
  Result := false;
 end;
@@ -821,19 +820,19 @@ end;
 function TJCDb.IsAnyJCAvailable(signal: TBlkSignal; typ: TJCType): Boolean;
 var jc: TJC;
     blk: TBlk;
-    usek: TBlkTrack;
+    track: TBlkTrack;
 begin
  if (not Self.JCsStartSignal.ContainsKey(signal)) then
    Exit(false);
  for jc in Self.JCsStartSignal[signal] do
   begin
-   if ((jc.typ = typ) and (jc.data.Useky.Count > 0)) then
+   if ((jc.typ = typ) and (jc.data.tracks.Count > 0)) then
     begin
-      Blocks.GetBlkByID(jc.data.Useky[0], blk);
+      Blocks.GetBlkByID(jc.data.tracks[0], blk);
       if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
        begin
-        usek := blk as TBlkTrack;
-        if ((usek.Zaver = TZaver.no) and (usek.occupied = TTrackState.free)) then
+        track := blk as TBlkTrack;
+        if ((track.Zaver = TZaver.no) and (track.occupied = TTrackState.free)) then
           Exit(true);
        end;
     end;
@@ -843,12 +842,12 @@ end;
 
 function TJCDb.IsAnyVCAvailable(signal: TBlkSignal): Boolean;
 begin
- Result := Self.IsAnyJCAvailable(signal, TJCType.vlak);
+ Result := Self.IsAnyJCAvailable(signal, TJCType.train);
 end;
 
 function TJCDb.IsAnyPCAvailable(signal: TBlkSignal): Boolean;
 begin
- Result := Self.IsAnyJCAvailable(signal, TJCType.posun);
+ Result := Self.IsAnyJCAvailable(signal, TJCType.shunt);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -865,23 +864,23 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.IsAnyJCWithPrefix(startNav: TBlkSignal; vb: TList<TObject>): Boolean;
+function TJCDb.IsAnyJCWithPrefix(startSignal: TBlkSignal; vb: TList<TObject>): Boolean;
 var jc: TJC;
     j: Integer;
     error: Boolean;
 begin
  // startNav musi mit navolenou volbu, aby tato funkce fungovala.
 
- if (not Self.JCsStartSignal.ContainsKey(startNav)) then
+ if (not Self.JCsStartSignal.ContainsKey(startSignal)) then
    Exit(false);
 
- for jc in Self.JCsStartSignal[startNav] do
+ for jc in Self.JCsStartSignal[startSignal] do
   begin
-   if (JC.navestidlo <> startNav) then continue;
+   if (JC.signal <> startSignal) then continue;
 
-   if ((Integer(startNav.selected) = Integer(jc.typ)) or
-      ((startNav.selected = TBlkSignalSelection.NC) and (jc.typ = TJCType.vlak)) or
-      ((startNav.selected = TBlkSignalSelection.PP) and (jc.typ = TJCType.posun))) then
+   if ((Integer(startSignal.selected) = Integer(jc.typ)) or
+      ((startSignal.selected = TBlkSignalSelection.NC) and (jc.typ = TJCType.train)) or
+      ((startSignal.selected = TBlkSignalSelection.PP) and (jc.typ = TJCType.shunt))) then
     begin
      // kontrola variantnich bodu:
      if (vb.Count > jc.data.vb.Count) then continue;

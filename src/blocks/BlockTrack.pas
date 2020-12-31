@@ -1882,7 +1882,7 @@ begin
   begin
    jc := JCDb.GetJCByID(jcid);
    if (jc <> nil) then
-     jc.NeprofilObsaz();
+     jc.NonProfileOccupied();
   end;
 end;
 
@@ -2132,7 +2132,7 @@ begin
  // protoze muze dojit ke zmene rychlosti
  jc := JCDb.FindPostavenaJCWithUsek(Self.id);
   if (jc <> nil) then
-    TBlkSignal(jc.navestidlo).UpdateRychlostTrain(true);
+    TBlkSignal(jc.signal).UpdateRychlostTrain(true);
 
  Self.PropagatePOdjToRailway();
  Self.Change();

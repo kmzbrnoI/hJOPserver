@@ -18,7 +18,7 @@ type
       destructor Destroy(); override;
   end;
 
-  TTratSimulator = class
+  TRailwaySimulator = class
     private
 
      procedure OnTimer(Sender: TObject);
@@ -31,7 +31,7 @@ type
       destructor Destroy(); override;
   end;
 
-  TVyhSimulator = class
+  TTurnoutSimulator = class
     private
 
      procedure OnTimer(Sender: TObject);
@@ -45,8 +45,8 @@ type
 
 var
   JCSimulator : TJCSimulator;
-  TratSimulator : TTratSimulator;
-  VyhSimulator : TVyhSimulator;
+  RailwaySimulator : TRailwaySimulator;
+  TurnoutSimulator : TTurnoutSimulator;
 
 implementation
 
@@ -80,47 +80,47 @@ begin
  if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
 
  for JC in JCDb do
-   if (JC.stav.RozpadBlok > -1) then
+   if (JC.state.destroyBlock > -1) then
      Self.UpdateJC(JC);
 end;
 
 procedure TJCSimulator.UpdateJC(JC: TJC);
-var Blk, Nav: TBlk;
-    UsekSet: TBlkTrackSettings;
+var Blk, signal: TBlk;
+    trackSettings: TBlkTrackSettings;
 begin
  try
-   if (JC.stav.RozpadBlok < 0) then Exit();
+   if (JC.state.destroyBlock < 0) then Exit();
 
-   if (((JC.stav.RozpadBlok = 1) or (JC.stav.RozpadBlok >= JC.data.Useky.Count)) and (JC.stav.RozpadRuseniBlok = -1)) then
+   if (((JC.state.destroyBlock = 1) or (JC.state.destroyBlock >= JC.data.tracks.Count)) and (JC.state.destroyEndBlock = -1)) then
     begin
-     Blocks.GetBlkByID(JC.data.NavestidloBlok, Nav);
-     Blocks.GetBlkByID((Nav as TBlkSignal).trackId, Blk);
+     Blocks.GetBlkByID(JC.data.signalId, signal);
+     Blocks.GetBlkByID((signal as TBlkSignal).trackId, Blk);
 
      if ((Blk as TBlkTrack).occupied = TTrackState.occupied) then
       begin
-       UsekSet := (Blk as TBlkTrack).GetSettings();
-       RCSi.SetInputs(UsekSet.RCSAddrs, 0);
+       trackSettings := (Blk as TBlkTrack).GetSettings();
+       RCSi.SetInputs(trackSettings.RCSAddrs, 0);
        Exit();
       end;
     end;//uvolnit usek pred navestidlem
 
-   if (((JC.stav.RozpadBlok-JC.stav.RozpadRuseniBlok >= 2) or (JC.stav.RozpadBlok >= JC.data.Useky.Count)) and
-       (JC.stav.RozpadRuseniBlok >= 0)) then
+   if (((JC.state.destroyBlock-JC.state.destroyEndBlock >= 2) or (JC.state.destroyBlock >= JC.data.tracks.Count)) and
+       (JC.state.destroyEndBlock >= 0)) then
     begin
-     if (JC.stav.RozpadRuseniBlok >= JC.data.Useky.Count) then Exit();
+     if (JC.state.destroyEndBlock >= JC.data.tracks.Count) then Exit();
 
      // uvolnit RozpadRuseniBlok
-     Blocks.GetBlkByID(JC.data.Useky[JC.stav.RozpadRuseniBlok], Blk);
-     UsekSet := (Blk as TBlkTrack).GetSettings();
-     RCSi.SetInputs(UsekSet.RCSAddrs, 0);
+     Blocks.GetBlkByID(JC.data.tracks[JC.state.destroyEndBlock], Blk);
+     trackSettings := (Blk as TBlkTrack).GetSettings();
+     RCSi.SetInputs(trackSettings.RCSAddrs, 0);
     end else begin
      // obsadit RozpadBlok
-     if (JC.stav.RozpadBlok >= JC.data.Useky.Count) then Exit();
+     if (JC.state.destroyBlock >= JC.data.tracks.Count) then Exit();
 
-     Blocks.GetBlkByID(JC.data.Useky[JC.stav.RozpadBlok], Blk);
-     UsekSet := (Blk as TBlkTrack).GetSettings();
-     if (UsekSet.RCSAddrs.Count > 0) then
-       RCSi.SetInput(UsekSet.RCSAddrs[0].board, UsekSet.RCSAddrs[0].port, 1);
+     Blocks.GetBlkByID(JC.data.tracks[JC.state.destroyBlock], Blk);
+     trackSettings := (Blk as TBlkTrack).GetSettings();
+     if (trackSettings.RCSAddrs.Count > 0) then
+       RCSi.SetInput(trackSettings.RCSAddrs[0].board, trackSettings.RCSAddrs[0].port, 1);
     end;//else
  except
 
@@ -131,7 +131,7 @@ end;
 // simulator obsazovani trati
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTratSimulator.Create();
+constructor TRailwaySimulator.Create();
 begin
  inherited Create();
 
@@ -141,14 +141,14 @@ begin
  Self.timer.OnTimer  := Self.OnTimer;
 end;
 
-destructor TTratSimulator.Destroy();
+destructor TRailwaySimulator.Destroy();
 begin
  if (Assigned(Self.timer)) then
    FreeAndNil(Self.timer);
  inherited Destroy();
 end;
 
-procedure TTratSimulator.OnTimer(Sender: TObject);
+procedure TRailwaySimulator.OnTimer(Sender: TObject);
 var Blk: TBlk;
 begin
  if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
@@ -162,35 +162,35 @@ begin
   end;
 end;
 
-procedure TTratSimulator.UpdateTrat(Trat: TBlkRailway);
-var TU: TBlkRT;
-    TratSet: TBlkRailwaySettings;
+procedure TRailwaySimulator.UpdateTrat(Trat: TBlkRailway);
+var rt: TBlkRT;
+    railwaySettings: TBlkRailwaySettings;
     i: Integer;
 begin
  try
-   TratSet := Trat.GetSettings();
+   railwaySettings := Trat.GetSettings();
 
    // mazani soupravy vzadu
-   for i := 0 to TratSet.trackIds.Count-1 do
+   for i := 0 to railwaySettings.trackIds.Count-1 do
     begin
-     Blocks.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
-     if ((TU.bpInBlk) and (TU.prevRT <> nil) and (TU.prevRT.occupied = TTrackState.occupied) and
-         (TU.prevRT.train = TU.train)) then
+     Blocks.GetBlkByID(railwaySettings.trackIds[i], TBlk(rt));
+     if ((rt.bpInBlk) and (rt.prevRT <> nil) and (rt.prevRT.occupied = TTrackState.occupied) and
+         (rt.prevRT.train = rt.train)) then
       begin
-       RCSi.SetInput(TBlkTrack(TU.prevRT).GetSettings().RCSAddrs[0], 0);
+       RCSi.SetInput(TBlkTrack(rt.prevRT).GetSettings().RCSAddrs[0], 0);
        Exit();
       end;
     end;//for i
 
    // predavani soupravy dopredu
-   for i := 0 to TratSet.trackIds.Count-1 do
+   for i := 0 to railwaySettings.trackIds.Count-1 do
     begin
-     Blocks.GetBlkByID(TratSet.trackIds[i], TBlk(TU));
-     if ((TU.occupied = TTrackState.occupied) and (TU.bpInBlk) and (TU.nextRT <> nil) and
-         (TU.nextRT.occupied = TTrackState.free) and
-        ((TU.nextRT.signalCover = nil) or (TBlkSignal(TU.nextRT.signalCover).signal > ncStuj))) then
+     Blocks.GetBlkByID(railwaySettings.trackIds[i], TBlk(rt));
+     if ((rt.occupied = TTrackState.occupied) and (rt.bpInBlk) and (rt.nextRT <> nil) and
+         (rt.nextRT.occupied = TTrackState.free) and
+        ((rt.nextRT.signalCover = nil) or (TBlkSignal(rt.nextRT.signalCover).signal > ncStuj))) then
       begin
-       RCSi.SetInput(TBlkTrack(TU.nextRT).GetSettings().RCSAddrs[0], 1);
+       RCSi.SetInput(TBlkTrack(rt.nextRT).GetSettings().RCSAddrs[0], 1);
        Exit();
       end;
     end;//for i
@@ -203,7 +203,7 @@ end;
 // simulator staveni vyhybek
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TVyhSimulator.Create();
+constructor TTurnoutSimulator.Create();
 begin
  inherited Create();
 
@@ -213,16 +213,16 @@ begin
  Self.timer.OnTimer  := Self.OnTimer;
 end;
 
-destructor TVyhSimulator.Destroy();
+destructor TTurnoutSimulator.Destroy();
 begin
  if (Assigned(Self.timer)) then
    FreeAndNil(Self.timer);
  inherited Destroy();
 end;
 
-procedure TVyhSimulator.OnTimer(Sender: TObject);
+procedure TTurnoutSimulator.OnTimer(Sender: TObject);
 var blk: TBlk;
-    vyh: TBlkTurnout;
+    turnout: TBlkTurnout;
 begin
  try
    if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
@@ -230,26 +230,26 @@ begin
    for blk in Blocks do
     begin
      if (blk.typ <> btTurnout) then continue;
-     vyh := TBlkTurnout(blk);
+     turnout := TBlkTurnout(blk);
 
-     if (((vyh.movingPlus) or (vyh.movingMinus)) and (vyh.posDetection)) then
+     if (((turnout.movingPlus) or (turnout.movingMinus)) and (turnout.posDetection)) then
       begin
        // po 1 sekunde nastavime vstup aktualni polohy na 0
-       if ((vyh.state.positionReal <> TTurnoutPosition.none) and (vyh.state.movingStart+EncodeTime(0, 0, 1, 0) < Now)) then
+       if ((turnout.state.positionReal <> TTurnoutPosition.none) and (turnout.state.movingStart+EncodeTime(0, 0, 1, 0) < Now)) then
         begin
-         if (vyh.movingPlus) then
-          RCSi.SetInput(vyh.rcsInMinus, 0)
+         if (turnout.movingPlus) then
+          RCSi.SetInput(turnout.rcsInMinus, 0)
          else
-          RCSi.SetInput(vyh.rcsInPlus, 0);
+          RCSi.SetInput(turnout.rcsInPlus, 0);
         end;
 
        // po 3 sekundach oznamime koncovou polohu
-       if (vyh.state.movingStart+EncodeTime(0, 0, 3, 0) < Now) then
+       if (turnout.state.movingStart+EncodeTime(0, 0, 3, 0) < Now) then
         begin
-         if (vyh.movingMinus) then
-          RCSi.SetInput(vyh.rcsInMinus, 1)
+         if (turnout.movingMinus) then
+          RCSi.SetInput(turnout.rcsInMinus, 1)
          else
-          RCSi.SetInput(vyh.rcsInPlus, 1);
+          RCSi.SetInput(turnout.rcsInPlus, 1);
         end;
       end;
     end;
@@ -262,12 +262,12 @@ end;
 
 initialization
   JCSimulator := TJCSimulator.Create();
-  TratSimulator := TTratSimulator.Create();
-  VyhSimulator := TVYhSimulator.Create();
+  RailwaySimulator := TRailwaySimulator.Create();
+  TurnoutSimulator := TTurnoutSimulator.Create();
 
 finalization
   FreeAndNil(JCSimulator);
-  FreeAndNil(TratSimulator);
-  FreeAndNil(VyhSimulator);
+  FreeAndNil(RailwaySimulator);
+  FreeAndNil(TurnoutSimulator);
 
 end.

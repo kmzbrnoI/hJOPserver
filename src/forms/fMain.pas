@@ -2020,7 +2020,7 @@ begin
  if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu '+jc.name+'?'), 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
   begin
    try
-     Blocks.GetBlkByID(jc.data.NavestidloBlok, blk);
+     Blocks.GetBlkByID(jc.data.signalId, blk);
      if ((blk <> nil) and (Blk.typ = btSignal) and (TBlkSignal(blk).ABJC = jc)) then
       begin
        TBlkSignal(blk).ABJC := nil;
@@ -2158,8 +2158,8 @@ begin
  if (Self.LV_JC.Selected = nil) then Exit();
 
  JC := JCDb.GetJCByIndex(Self.LV_JC.ItemIndex);
- if (JC.staveni) then
-   JC.CancelStaveni('Nouzové rušení stavění JC', true);
+ if (JC.activating) then
+   JC.CancelActivating('Nouzové rušení stavění JC', true);
 end;
 
 procedure TF_Main.B_lok_deleteClick(Sender: TObject);
@@ -2220,7 +2220,7 @@ begin
  OblR := ORs[Self.LV_Stanice.ItemIndex];
  if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+OblR.Name+' ?'),
                             'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-   OblR.stack.ClearStack();
+   OblR.stack.Clear();
 end;
 
 procedure TF_Main.B_User_AddClick(Sender: TObject);
@@ -2396,8 +2396,8 @@ procedure TF_Main.CloseForm();
   Self.T_GUI_refresh.Enabled := false;
   self.T_clear_log_msg.Enabled := false;
   JCSimulator.timer.Enabled := false;
-  TratSimulator.timer.Enabled := false;
-  VyhSimulator.timer.Enabled := false;
+  RailwaySimulator.timer.Enabled := false;
+  TurnoutSimulator.timer.Enabled := false;
 
   Self.A_SaveStavExecute(Self);
   TrakceI.LogObj := nil;
@@ -2710,7 +2710,7 @@ begin
  B_VC_delete.Enabled := (LV_JC.Selected <> nil);
 
  if (LV_JC.Selected <> nil) then
-   B_JC_Reset.Enabled := JCDb.GetJCByIndex(LV_JC.ItemIndex).staveni
+   B_JC_Reset.Enabled := JCDb.GetJCByIndex(LV_JC.ItemIndex).activating
  else
    B_JC_Reset.Enabled := false;
 end;

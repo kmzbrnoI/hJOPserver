@@ -1105,7 +1105,7 @@ begin
      and (TBlkRailway(Self.railway).Zaver)) then
   begin
    jc := JCDb.FindPostavenaJCWithUsek(Self.id);
-   if ((jc <> nil) and (not jc.waitForLastUsekOrTratObsaz) and (jc.stav.RozpadBlok < jc.data.Useky.Count-1)) then
+   if ((jc <> nil) and (not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count-1)) then
      JCDb.RusJC(Self);
   end;
 
