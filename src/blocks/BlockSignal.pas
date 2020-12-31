@@ -125,12 +125,9 @@ type
    _SIG_CHANGE_SHORT_DELAY_MSEC = 200;
 
   private
-   m_settings: TBlkSignalSettings;
-   m_state: TBlkSignalState;
-   m_spnl: TBlkSignalSpnl;
-
    m_trackId: TBlk;
    m_lastEvIndex: Integer;
+   m_groupMaster: TBlk;
 
     function IsEnabled(): Boolean;
     function RCinProgress(): Boolean;
@@ -185,6 +182,11 @@ type
     function IsChanging(): Boolean;
     function GetTargetSignal(): TBlkSignalCode;
 
+  protected
+   m_settings: TBlkSignalSettings;
+   m_state: TBlkSignalState;
+   m_spnl: TBlkSignalSpnl;
+
   public
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -203,8 +205,8 @@ type
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
 
-    procedure JCZrusNavest();   // zahrnuje cas na pad navesti
-    procedure SetSignal(navest: TBlkSignalCode; changeCallbackOk, changeCallbackErr: TNotifyEvent);
+    procedure JCCancelSignal();   // zahrnuje cas na pad navesti
+    procedure SetSignal(code: TBlkSignalCode; changeCallbackOk: TNotifyEvent = nil; changeCallbackErr: TNotifyEvent = nil);
 
     //----- Signal specific functions -----
 
@@ -243,6 +245,7 @@ type
     property RCtimer: Integer read m_state.RCtimer write m_state.RCtimer;
     property changing: Boolean read IsChanging;
     property enabled: Boolean read IsEnabled;
+    property groupMaster: TBlk read m_groupMaster write m_groupMaster;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
@@ -273,7 +276,7 @@ type
 
 implementation
 
-uses BlockDb, BlockTrack, TJCDatabase, TCPServerOR, Graphics,
+uses BlockDb, BlockTrack, TJCDatabase, TCPServerOR, Graphics, BlockGroupSignal,
      GetSystems, Logging, TrainDb, BlockIR, Zasobnik, ownStrUtils,
      BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
      predvidanyOdjezd, ownConvert;
@@ -287,6 +290,7 @@ begin
  Self.m_state.toRnz := TDictionary<Integer, Cardinal>.Create();
  Self.m_settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
  Self.m_trackId := nil;
+ Self.m_groupMaster := nil;
 end;
 
 destructor TBlkSignal.Destroy();
@@ -513,9 +517,8 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-//nastavovani stavovych promennych:
 
-procedure TBlkSignal.SetSignal(navest: TBlkSignalCode; changeCallbackOk, changeCallbackErr: TNotifyEvent);
+procedure TBlkSignal.SetSignal(code: TBlkSignalCode; changeCallbackOk: TNotifyEvent = nil; changeCallbackErr: TNotifyEvent = nil);
 var oblr: TOR;
     traini: Integer;
 begin
@@ -526,7 +529,7 @@ begin
    Exit();
   end;
 
- if ((navest = ncPrivol) or (navest = ncStuj)) then
+ if ((code = ncPrivol) or (code = ncStuj)) then
   begin
    // prodlouzeni nebo zruseni privolavaci navesti -> zrusit odpocet v panelu
    if (Self.m_state.privolTimerId > 0) then
@@ -538,10 +541,10 @@ begin
    Self.m_state.privolTimerId := 0;
   end;
 
- if (navest = ncPrivol) then
+ if (code = ncPrivol) then
    Self.m_state.privolStart := Now;
 
- if ((Self.m_state.signal = navest) or ((Self.changing) and (Self.m_state.targetSignal = navest))) then
+ if ((Self.m_state.signal = code) or ((Self.changing) and (Self.m_state.targetSignal = code))) then
   begin
    if (Assigned(changeCallbackOk)) then
      changeCallbackOk(Self);
@@ -554,11 +557,9 @@ begin
     begin
      if (Self.m_settings.OutputType = scom) then
       begin
-       //scom
-       RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(navest));
+       RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(code));
       end else begin
-       //binary
-       case (navest) of
+       case (code) of
         ncStuj, ncVse, ncPrivol, ncZhasnuto:
             RCSi.SetOutputs(Self.m_settings.RCSAddrs, 0);
        else
@@ -572,8 +573,12 @@ begin
    Exit();
  end;
 
+ // propagace do skupinoveho navestidla
+ if (Self.groupMaster <> nil) then
+   TBlkGroupSignal(Self.groupMaster).SetSignal(code);
+
  // ruseni nouzove jizdni cesty pri padu navestidla do STUJ
- if (navest = ncStuj) then
+ if (code = ncStuj) then
   begin
    if ((Self.track <> nil) and ((Self.track.typ = btTrack) or
        (Self.track.typ = btRT)) and ((Self.track as TBlkTrack).signalJCRef.Contains(Self))) then
@@ -586,7 +591,7 @@ begin
     end;
   end;
 
- if ((Self.signal = ncPrivol) and (navest = ncStuj)) then
+ if ((Self.signal = ncPrivol) and (code = ncStuj)) then
   begin
    // STUJ po privolavacce -> vypnout zvukovou vyzvu
    for oblr in Self.m_stations do
@@ -598,7 +603,7 @@ begin
  Self.m_state.changeCallbackOk := changeCallbackOk;
  Self.m_state.changeCallbackErr := changeCallbackErr;
  Self.m_state.signal := ncChanging;
- Self.m_state.targetSignal := navest;
+ Self.m_state.targetSignal := code;
 
  if (Self.m_settings.RCSAddrs.Count > 0) then
    Self.m_state.changeEnd := Now + EncodeTime(0, 0, _SIG_CHANGE_DELAY_MSEC div 1000, _SIG_CHANGE_DELAY_MSEC mod 1000)
@@ -1172,7 +1177,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSignal.JCZrusNavest();
+procedure TBlkSignal.JCCancelSignal();
 begin
  if (Self.m_settings.fallDelay > 0) then
   begin

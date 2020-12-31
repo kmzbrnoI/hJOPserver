@@ -402,11 +402,13 @@ procedure TBlocks.Delete(index: Integer);
 var tmp, blk: TBlk;
     i: Integer;
 begin
- if (index < 0) then raise Exception.Create('Index podtekl seznam bloku');
- if (index >= Self.Data.Count) then raise Exception.Create('Index pretekl seznam bloku');
+ if (index < 0) then raise Exception.Create('Index podtekl seznam bloků');
+ if (index >= Self.Data.Count) then raise Exception.Create('Index přetekl seznam bloků');
  tmp := Self.data[index];
- if ((tmp.typ = btRT) and ((tmp as TBlkRT).inRailway > -1)) then
-   raise Exception.Create('Tento blok je zaveden jako tratovy usek v trati ID '+IntToStr((tmp as TBlkRT).inRailway));
+ if ((tmp.typ = btRT) and (TBlkRT(tmp).inRailway > -1)) then
+   raise Exception.Create('Tento blok je zaveden jako traťový úsek v trati ID '+IntToStr((tmp as TBlkRT).inRailway));
+ if ((tmp.typ = btSignal) and (TBlkSignal(tmp).groupMaster <> nil)) then
+   raise Exception.Create('Toto návěstidlo je zavedeno ve skupinovém návěstidle ' + TBlkSignal(tmp).groupMaster.name);
 
  Self.data.Delete(index);
 

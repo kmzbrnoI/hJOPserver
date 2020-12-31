@@ -19,6 +19,7 @@ type
 
     function GetSignals(): TList<TBlkSignal>;
     procedure RefillSignals();
+    procedure SendGroupMasters();
 
   public
 
@@ -29,6 +30,8 @@ type
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
+
+    procedure AfterLoad(); override;
 
     //----- Group Signal specific functions -----
 
@@ -73,6 +76,7 @@ var strs: TStrings;
     str: string;
 begin
  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
+ Self.m_spnl.trackId := -1;
 
  Self.m_gs_settings.signalIds.Clear();
 
@@ -106,9 +110,15 @@ begin
 end;
 
 procedure TBlkGroupSignal.SetSettings(data: TBlkGSSettings);
+var signal: TBlkSignal;
 begin
+ for signal in Self.signals do
+   signal.groupMaster := nil;
+
  if (Self.m_gs_settings.signalIds <> data.signalIds) then
    Self.m_gs_settings.signalIds.Free();
+
+ Self.SendGroupMasters();
 
  Self.m_gs_settings := data;
  Self.Change();
@@ -181,6 +191,22 @@ begin
  json.A['signals'];
  for sigId in Self.m_gs_settings.signalIds do
    json.A['signals'].Add(sigId);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkGroupSignal.AfterLoad();
+begin
+ Self.SendGroupMasters();
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkGroupSignal.SendGroupMasters();
+var signal: TBlkSignal;
+begin
+ for signal in Self.signals do
+   signal.groupMaster := Self;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

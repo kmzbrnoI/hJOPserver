@@ -2270,7 +2270,7 @@ begin
      (Self.rozpadBlok >= 1)) then
   begin
    Self.Log('Uvolnen usek '+track.name+' : navestidlo '+ Nav.name+' nastaveno na STUJ');
-   Nav.JCZrusNavest();
+   Nav.JCCancelSignal();
   end;
 
 
@@ -2302,7 +2302,7 @@ begin
          if (Self.typ = TJCType.vlak) then
           begin
            Self.Log('Obsazen usek '+track.name+' : navestidlo '+Nav.name+' nastaveno na STUJ');
-           Nav.JCZrusNavest();
+           Nav.JCCancelSignal();
 
            // aktualizace casu odjezdu v trati
            if (Self.fproperties.Trat > -1) then
@@ -2435,7 +2435,7 @@ begin
       if ((Nav.signal <> ncStuj) and (Self.typ = TJCType.posun)) then
        begin
         Self.Log('Uvolnen usek '+track.name+' : navestidlo '+Nav.name+' nastaveno na STUJ');
-        Nav.JCZrusNavest();
+        Nav.JCCancelSignal();
        end;
 
       if (Self.AB) then
@@ -2532,7 +2532,7 @@ begin
     if (Nav.DNjc = Self) then
      begin
       if (Nav.signal > ncStuj) then      // tato situace opravdu muze nastat - predstavte si posunovou cestu s jednim usekem vychazejici z nedetek koleje
-        Nav.JCZrusNavest();
+        Nav.JCCancelSignal();
       Nav.DNjc := nil;
      end;
    end;

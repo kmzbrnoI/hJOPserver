@@ -2041,16 +2041,16 @@ begin
 end;
 
 procedure TF_Main.B_BlkDeleteClick(Sender: TObject);
-var pozice: Integer;
+var i: Integer;
  begin
-  Pozice := LV_Bloky.ItemIndex;
+  i := LV_Bloky.ItemIndex;
 
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blocks.GetBlkIndexName(pozice)+'?'),
+  if Application.MessageBox(PChar('Opravdu chcete smazazat blok '+Blocks.GetBlkIndexName(i)+'?'),
                             'Mazání bloku', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
    begin
     try
-      Blocks.Delete(pozice);
+      Blocks.Delete(i);
     except
       on E: Exception do
         Application.MessageBox(PChar('Chyba:'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
