@@ -542,7 +542,7 @@ end;
 // se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak.
 procedure TJCDb.UpdatePrevSignal(signal: TBlkSignal);
 var JC: TJC;
-    prev_signal: TBlkSignal;
+    prevSignal: TBlkSignal;
     code: TBlkSignalCode;
 begin
   for JC in Self.JCs do
@@ -551,10 +551,10 @@ begin
         (JC.data.nextSignalType <> TJCNextSignalType.signal) or
         (JC.data.nextSignalId <> signal.id)) then continue;
 
-    Blocks.GetBlkByID(JC.data.nextSignalId, TBlk(prev_signal));
+    Blocks.GetBlkByID(JC.data.signalId, TBlk(prevSignal));
 
-    if (not prev_signal.IsGoSignal()) then continue;
-    if (prev_signal.changing) then continue;
+    if (not prevSignal.IsGoSignal()) then continue;
+    if (prevSignal.changing) then continue;
 
     if ((signal.IsGoSignal()) and (not signal.IsOpakVystraha())) then
      begin
@@ -583,7 +583,7 @@ begin
     if ((JC.data.nzv) and (code <> ncVolno)) then
       code := TBlkSignal.AddOpak(code);
 
-    prev_signal.signal := code;
+    prevSignal.signal := code;
    end;
 end;
 
