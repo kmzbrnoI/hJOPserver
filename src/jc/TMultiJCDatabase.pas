@@ -37,15 +37,15 @@ type
      function GetJCByID(id: Integer): TMultiJC;
      function GetJCIndexByID(id: Integer): Integer;
 
-     function StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
-     function FindMJC(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): TMultiJC;
+     function Activate(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
+     function Find(startSignal: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): TMultiJC;
      function IsAnyMJCWithPrefix(startNav: TBlkSignal; vb: TList<TObject>): Boolean;
 
-     function Add(data: TMultiJCProp): TMultiJC;
+     function Add(data: TMultiJCData): TMultiJC;
      procedure Remove(index: Integer);
 
      procedure IDChanged(previousIndex: Integer);
-     procedure NavChanged(Sender: TObject; origNav: TBlk);
+     procedure SignalChanged(Sender: TObject; origNav: TBlk);
 
      property filename: string read ffilename;
 
@@ -71,17 +71,17 @@ uses Logging, GetSystems, BlockDb, BlockTrack, TOblRizeni, TCPServerOR,
 
 constructor TMultiJCDb.Create();
 begin
- inherited Create();
+ inherited;
  Self.JCs := TObjectList<TMultiJC>.Create(TMultiJC.IdComparer());
  Self.JCsStartSignal := TObjectDictionary<TBlkSignal, TList<TMultiJC>>.Create();
-end;//ctor
+end;
 
 destructor TMultiJCDb.Destroy();
 begin
  Self.JCs.Free();
  Self.JCsStartSignal.Free();
- inherited Destroy();
-end;//dtor
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -119,7 +119,7 @@ begin
      on e: Exception do
       begin
        mJC.Free();
-       AppEvents.LogException(E, 'Chyba při načítání složené JC '+mJC.Nazev);
+       AppEvents.LogException(E, 'Chyba při načítání složené JC '+mJC.name);
        continue;
       end;
    end;
@@ -219,14 +219,15 @@ begin
  for i := 0 to Self.JCs.Count-1 do
   begin
    try
-     if (Self.JCs[i].stav.JCIndex > -1) then
-       Self.JCs[i].UpdateStaveni();
+     if (Self.JCs[i].state.JCIndex > -1) then
+       Self.JCs[i].UpdateActivating();
    except
     on E: Exception do
      begin
       if (not log_err_flag) then
-        AppEvents.LogException(E, 'JC '+Self.JCs[i].nazev + ' update error, rusim staveni');
-      Self.JCs[i].RusStaveni();
+        AppEvents.LogException(E, 'JC '+Self.JCs[i].name
+         + ' update error, rusim staveni');
+      Self.JCs[i].CancelActivation();
      end;
    end;//except
   end;//for i }
@@ -241,14 +242,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.FindMJC(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): TMultiJC;
+function TMultiJCDb.Find(startSignal: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): TMultiJC;
 var mjc: TMultiJC;
 begin
- if (not Self.JCsStartSignal.ContainsKey(startNav)) then
+ if (not Self.JCsStartSignal.ContainsKey(startSignal)) then
    Exit(nil);
 
- for mjc in Self.JCsStartSignal[startNav] do
-   if (mjc.Match(startNav, vb, endBlk)) then
+ for mjc in Self.JCsStartSignal[startSignal] do
+   if (mjc.Match(startSignal, vb, endBlk)) then
      Exit(mjc);
 
  Result := nil;
@@ -256,11 +257,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.StavJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
+function TMultiJCDb.Activate(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
 var mJC: TMultiJC;
     j: Integer;
 begin
- mJC := Self.FindMJC(startBlk as TBlkSignal, (SenderOR as TOR).vb, endBlk);
+ mJC := Self.Find(startBlk as TBlkSignal, (SenderOR as TOR).vb, endBlk);
  Result := (mJC <> nil);
 
  if (mJC <> nil) then
@@ -275,14 +276,14 @@ begin
      (EndBlk as TBlkTrack).jcEnd := TZaver.no;
      (SenderOR as TOR).ClearVb();
     end else begin
-     mJC.StavJC(SenderPnl, SenderOR);
+     mJC.Activate(SenderPnl, SenderOR);
     end;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.Add(data: TMultiJCProp): TMultiJC;
+function TMultiJCDb.Add(data: TMultiJCData): TMultiJC;
 var mJC: TMultiJC;
     pos: Integer;
 begin
@@ -296,18 +297,18 @@ begin
  mJC := TMultiJC.Create(data);
  Self.JCs.Insert(pos, mJC);
 
- Self.NavChanged(mJC, nil);
+ Self.SignalChanged(mJC, nil);
  MultiJCTableData.AddJC(pos);
  Result := mJC;
 end;
 
 procedure TMultiJCDb.Remove(index: Integer);
 begin
- if ((index < Self.JCs.Count) and (not Self.JCs[index].staveni)) then
+ if ((index < Self.JCs.Count) and (not Self.JCs[index].activating)) then
   begin
-   if (Self.JCs[index].StartNav <> nil) then
-     if (Self.JCsStartSignal.ContainsKey(Self.JCs[index].StartNav())) then
-       Self.JCsStartSignal[Self.JCs[index].StartNav()].Remove(Self.JCs[index]);
+   if (Self.JCs[index].StartSignal <> nil) then
+     if (Self.JCsStartSignal.ContainsKey(Self.JCs[index].StartSignal())) then
+       Self.JCsStartSignal[Self.JCs[index].StartSignal()].Remove(Self.JCs[index]);
 
    Self.JCs.Delete(index);
    MultiJCTableData.RemoveJC(index);
@@ -394,18 +395,18 @@ begin
  Self.JCsStartSignal.Clear();
  for mJC in Self.JCs do
   begin
-   if (mJC.StartNav() <> nil) then
+   if (mJC.StartSignal() <> nil) then
     begin
-     if (not Self.JCsStartSignal.ContainsKey(mJC.StartNav())) then
-       Self.JCsStartSignal.Add(mJC.StartNav(), TList<TMultiJC>.Create());
-     Self.JCsStartSignal[mJC.StartNav()].Add(mJC);
+     if (not Self.JCsStartSignal.ContainsKey(mJC.StartSignal())) then
+       Self.JCsStartSignal.Add(mJC.StartSignal(), TList<TMultiJC>.Create());
+     Self.JCsStartSignal[mJC.StartSignal()].Add(mJC);
     end;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJCDb.NavChanged(Sender: TObject; origNav: TBlk);
+procedure TMultiJCDb.SignalChanged(Sender: TObject; origNav: TBlk);
 var signal: TBlkSignal;
     mJC: TMultiJC;
 begin
@@ -421,11 +422,11 @@ begin
 
  if (mJC.data.JCs.Count > 0) then
   begin
-   if (mJC.StartNav() <> nil) then
+   if (mJC.StartSignal() <> nil) then
     begin
-     if (not Self.JCsStartSignal.ContainsKey(mJC.StartNav())) then
-       Self.JCsStartSignal.Add(mJC.StartNav(), TList<TMultiJC>.Create());
-     Self.JCsStartSignal[mJC.StartNav()].Add(mJC);
+     if (not Self.JCsStartSignal.ContainsKey(mJC.StartSignal())) then
+       Self.JCsStartSignal.Add(mJC.StartSignal(), TList<TMultiJC>.Create());
+     Self.JCsStartSignal[mJC.StartSignal()].Add(mJC);
     end;
   end;
 end;

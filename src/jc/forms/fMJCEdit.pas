@@ -174,7 +174,7 @@ begin
  else
    Self.SE_ID.Value := Self.openMJC.id;
 
- Self.E_VCNazev.Text := Self.openMJC.Nazev;
+ Self.E_VCNazev.Text := Self.openMJC.name;
 
  for jcid in Self.openMJC.data.JCs do
   begin
@@ -203,7 +203,7 @@ begin
  if (Self.new) then
    Self.Caption := 'Nová složená jízdní cesta'
  else
-   Self.Caption := 'Upravit složenou jízdní cestu '+Self.openMJC.Nazev;
+   Self.Caption := 'Upravit složenou jízdní cestu '+Self.openMJC.name;
 end;
 
 procedure TF_MJCEdit.EmptyOpenForm();
@@ -334,7 +334,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.B_SaveClick(Sender: TObject);
-var data: TMultiJCProp;
+var data: TMultiJCData;
     i, prevIndex: Integer;
     check: TMultiJC;
     origNav: TBlkSignal;
@@ -357,7 +357,7 @@ begin
   end;
 
  data.id := Self.SE_ID.Value;
- data.Nazev := Self.E_VCNazev.Text;
+ data.name := Self.E_VCNazev.Text;
 
  if (Self.new) then
   begin
@@ -379,7 +379,7 @@ begin
    data.JCs := Self.openMJC.data.JCs;          // dulezite pro pridavani JC
    data.vb := Self.openMJC.data.vb;
 
-   origNav := Self.openMJC.StartNav();
+   origNav := Self.openMJC.StartSignal();
 
    prevIndex := MultiJCDb.GetJCIndexByID(Self.openMJC.id);
    Self.openMJC.data := data;
@@ -394,7 +394,7 @@ begin
  for i := 0 to Self.vb.Count-1 do
    Self.openMJC.data.vb.Add(Self.vb[i]);
 
- MultiJCDb.NavChanged(Self.openMJC, origNav);
+ MultiJCDb.SignalChanged(Self.openMJC, origNav);
  Self.openMJC.changed := true;
  MultiJCTableData.UpdateTable();
  Self.Close();

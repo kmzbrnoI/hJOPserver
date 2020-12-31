@@ -2186,7 +2186,7 @@ end;
 procedure TF_Main.B_mJC_AddClick(Sender: TObject);
 begin
   if ((Self.LV_MultiJC.Selected <> nil) and
-      (Application.MessageBox(PChar('Chcete použít složenou JC ' + MultiJCDb[Self.LV_MultiJC.ItemIndex].nazev + ' jako šablonu pro vytvoření nové složené JC?'),
+      (Application.MessageBox(PChar('Chcete použít složenou JC ' + MultiJCDb[Self.LV_MultiJC.ItemIndex].name + ' jako šablonu pro vytvoření nové složené JC?'),
                               'Nová složená JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1) = mrYes)) then
     F_MJCEdit.NewMJC(MultiJCDb[Self.LV_MultiJC.ItemIndex])
   else

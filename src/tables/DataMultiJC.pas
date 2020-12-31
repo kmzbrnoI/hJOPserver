@@ -80,7 +80,7 @@ begin
 end;
 
 procedure TMultiJCTableData.UpdateLine(line: Integer);
-var mJCData: TMultiJCprop;
+var mJCData: TMultiJCData;
     mJC: TMultiJC;
     i: Integer;
     str: string;
@@ -90,10 +90,10 @@ begin
  mJC.changed := false;
 
  Self.LV.Items[line].Caption := IntToStr(mJCData.id);
- Self.LV.Items[line].SubItems[0] := mJCData.Nazev;
+ Self.LV.Items[line].SubItems[0] := mJCData.name;
 
  // krok ( = aktualne stavena JC)
- Self.LV.Items[line].SubItems[1] := IntToStr(mJC.stav.JCIndex);
+ Self.LV.Items[line].SubItems[1] := IntToStr(mJC.state.JCIndex);
 
  // jednotlive jizdni cesty
  str := '';

@@ -2439,7 +2439,7 @@ end;
 function TBlkTrack.CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
 begin
  Result := ((JCDb.FindJC(start as TBlkSignal, vbs, Self) <> nil) or
-            (MultiJCDb.FindMJC(start as TBlkSignal, vbs, Self) <> nil));
+            (MultiJCDb.Find(start as TBlkSignal, vbs, Self) <> nil));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

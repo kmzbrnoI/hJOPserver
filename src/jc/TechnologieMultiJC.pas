@@ -12,14 +12,14 @@ uses
 
 type
 
-  TMultiJCStaveni = record
+  TMultiJCState = record
    JCIndex: Integer;
    SenderOR: TObject;
    SenderPnl: TIdContext;
   end;
 
-  TMultiJCprop = record
-   Nazev: string;
+  TMultiJCData = record
+   name: string;
    JCs: TList<Integer>;
    vb: TList<Integer>;
    id: Integer;
@@ -27,46 +27,46 @@ type
 
   EInvalidID = class(Exception);
 
-  TMultiJC=class
+  TMultiJC = class
 
    private const
-    _def_mutiJC_staveni : TMultiJCStaveni = (
+    _def_mutiJC_staveni : TMultiJCState = (
      JCIndex : -1;
      SenderOR : nil;
      SenderPnl : nil;
     );
 
    private
-     fproperties: TMultiJCprop;
-     fstaveni: TMultiJCStaveni;
-     staveno: TJC;     // zde je ulozena JC, ktera se aktualne stavi
+     m_data: TMultiJCData;
+     m_state: TMultiJCState;
+     activatingJC: TJC;     // zde je ulozena JC, ktera se aktualne stavi
 
-     function GetStaveni(): Boolean;
+     function IsActivating(): Boolean;
 
    public
 
      changed: Boolean;
 
       constructor Create(); overload;
-      constructor Create(data: TMultiJCprop); overload;
+      constructor Create(data: TMultiJCData); overload;
       destructor Destroy(); override;
 
-      procedure UpdateStaveni();
+      procedure UpdateActivating();
 
       procedure LoadData(ini: TMemIniFile; section: string);
       procedure SaveData(ini: TMemIniFile);
 
-      procedure StavJC(SenderPnl: TIdContext; SenderOR: TObject);
-      procedure RusStaveni();
+      procedure Activate(SenderPnl: TIdContext; SenderOR: TObject);
+      procedure CancelActivation();
 
       function Match(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): Boolean;
-      function StartNav(): TBlkSignal;
+      function StartSignal(): TBlkSignal;
 
-      property data: TMultiJCprop read fproperties write fproperties;
-      property stav: TMultiJCStaveni read fstaveni;
-      property Nazev: string read fproperties.Nazev;
-      property staveni: Boolean read GetStaveni;
-      property id: Integer read fproperties.id;
+      property data: TMultiJCData read m_data write m_data;
+      property state: TMultiJCState read m_state;
+      property name: string read m_data.name;
+      property activating: Boolean read IsActivating;
+      property id: Integer read m_data.id;
 
       class function IdComparer(): IComparer<TMultiJC>;
   end;
@@ -82,31 +82,31 @@ begin
  inherited Create();
 
  Self.changed  := true;
- Self.fstaveni := _def_mutiJC_staveni;
+ Self.m_state := _def_mutiJC_staveni;
 
- Self.fproperties.JCs := TList<Integer>.Create();
- Self.fproperties.vb  := TList<Integer>.Create();
+ Self.m_data.JCs := TList<Integer>.Create();
+ Self.m_data.vb := TList<Integer>.Create();
 
- Self.staveno := nil;
+ Self.activatingJC := nil;
 end;//ctor
 
-constructor TMultiJC.Create(data: TMultiJCprop);
+constructor TMultiJC.Create(data: TMultiJCData);
 begin
  inherited Create();
 
  Self.changed  := true;
- Self.fstaveni := _def_mutiJC_staveni;
+ Self.m_state := _def_mutiJC_staveni;
 
- Self.fproperties := data;
+ Self.m_data := data;
 
- if (not Assigned(data.JCs)) then Self.fproperties.JCs := TList<Integer>.Create();
- if (not Assigned(data.vb))  then Self.fproperties.vb  := TList<Integer>.Create();
+ if (not Assigned(data.JCs)) then Self.m_data.JCs := TList<Integer>.Create();
+ if (not Assigned(data.vb))  then Self.m_data.vb  := TList<Integer>.Create();
 end;//ctor
 
 destructor TMultiJC.Destroy();
 begin
- if (Assigned(Self.fproperties.JCs)) then FreeAndNil(Self.fproperties.JCs);
- if (Assigned(Self.fproperties.vb)) then FreeAndNil(Self.fproperties.vb);
+ if (Assigned(Self.m_data.JCs)) then FreeAndNil(Self.m_data.JCs);
+ if (Assigned(Self.m_data.vb)) then FreeAndNil(Self.m_data.vb);
 
  inherited Destroy();
 end;//ctor
@@ -118,28 +118,28 @@ var sl: TStrings;
     i: Integer;
 begin
  try
-   Self.fproperties.id := StrToInt(section);
+   Self.m_data.id := StrToInt(section);
  except
    on E: EConvertError do
      raise EInvalidID.Create('Neplatné id mJC : '+section);
  end;
 
- Self.fproperties.Nazev := ini.ReadString(section, 'nazev', section);
+ Self.m_data.name := ini.ReadString(section, 'nazev', section);
 
- Self.fproperties.JCs.Clear();
- Self.fproperties.vb.Clear();
+ Self.m_data.JCs.Clear();
+ Self.m_data.vb.Clear();
 
  // nacteni jizdnich cest ve slozene jizdni ceste:
  sl  := TStringList.Create();
  ExtractStrings([';', ',', '|', '-', '('], [')'], PChar(ini.ReadString(section, 'JCs', '')), sl);
  for i := 0 to sl.Count-1 do
-   Self.fproperties.JCs.Add(StrToInt(sl[i]));
+   Self.m_data.JCs.Add(StrToInt(sl[i]));
 
  // nacteni variantnich bodu
  sl.Clear();
  ExtractStrings([';', ',', '|', '-', '(', ')'], [], PChar(ini.ReadString(section, 'vb', '')), sl);
  for i := 0 to sl.Count-1 do
-   Self.fproperties.vb.Add(StrToInt(sl[i]));
+   Self.m_data.vb.Add(StrToInt(sl[i]));
 end;
 
 procedure TMultiJC.SaveData(ini: TMemIniFile);
@@ -149,7 +149,7 @@ var i: Integer;
 begin
  section := IntToStr(Self.id);
 
- ini.WriteString(section, 'nazev', Self.fproperties.Nazev);
+ ini.WriteString(section, 'nazev', Self.m_data.name);
 
  str := '';
  for i := 0 to Self.data.JCs.Count-1 do
@@ -166,53 +166,53 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJC.UpdateStaveni();
+procedure TMultiJC.UpdateActivating();
 var JC: TJC;
 begin
- if (Self.staveno.active) then
+ if (Self.activatingJC.active) then
   begin
    // aktualni cesta postavena
-   Inc(Self.fstaveni.JCIndex);
+   Inc(Self.m_state.JCIndex);
 
-   if (Self.fstaveni.JCIndex >= Self.fproperties.JCs.Count) then
+   if (Self.m_state.JCIndex >= Self.m_data.JCs.Count) then
     begin
      // vsechny cesty postaveny
-     Self.RusStaveni();
+     Self.CancelActivation();
     end else begin
      // vsechny cesty nepostaveny -> stavime dalsi cestu
-     JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fstaveni.JCIndex]);
+     JC := JCDb.GetJCByID(Self.m_data.JCs[Self.m_state.JCIndex]);
      if (JC = nil) then
-       Self.RusStaveni()
+       Self.CancelActivation()
       else begin
-       Self.staveno := JC;
-       Self.staveno.Activate(Self.fstaveni.SenderPnl, Self.fstaveni.SenderOR);
+       Self.activatingJC := JC;
+       Self.activatingJC.Activate(Self.m_state.SenderPnl, Self.m_state.SenderOR);
       end;
      Self.changed := true;
     end;
   end else begin
-   if (not Self.staveno.activating) then
+   if (not Self.activatingJC.activating) then
     begin
      // cesta byla stavena, ale uz se nestavi -> evidentne nastala chyba -> ukoncime staveni slozene jizdni cesty
-     Self.RusStaveni();
+     Self.CancelActivation();
     end;
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJC.StavJC(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TMultiJC.Activate(SenderPnl: TIdContext; SenderOR: TObject);
 var i: Integer;
 begin
- for i := 0 to Self.fproperties.JCs.Count-1 do
-   if (JCDb.GetJCByID(Self.fproperties.JCs[i]) = nil) then
+ for i := 0 to Self.m_data.JCs.Count-1 do
+   if (JCDb.GetJCByID(Self.m_data.JCs[i]) = nil) then
      raise Exception.Create('JC ve slozene jizdni ceste neexistuje');
 
- Self.fstaveni.SenderOR  := SenderOR;
- Self.fstaveni.SenderPnl := SenderPnl;
+ Self.m_state.SenderOR  := SenderOR;
+ Self.m_state.SenderPnl := SenderPnl;
 
- Self.staveno := JCDb.GetJCByID(Self.fproperties.JCs[0]);
- Self.staveno.Activate(SenderPnl, SenderOR);
- Self.fstaveni.JCIndex := 0;
+ Self.activatingJC := JCDb.GetJCByID(Self.m_data.JCs[0]);
+ Self.activatingJC.Activate(SenderPnl, SenderOR);
+ Self.m_state.JCIndex := 0;
 
  (SenderOR as TOR).vb.Clear();
 
@@ -221,28 +221,28 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJC.RusStaveni();
+procedure TMultiJC.CancelActivation();
 var JC: TJC;
     Blk: TBlk;
     i: Integer;
 begin
- Self.fstaveni.JCIndex := -1;
- Self.staveno          := nil;
+ Self.m_state.JCIndex := -1;
+ Self.activatingJC          := nil;
 
  // zrusime zacatek staveni na navestidle
- JC := JCDb.GetJCByID(Self.fproperties.JCs[0]);
+ JC := JCDb.GetJCByID(Self.m_data.JCs[0]);
  Blocks.GetBlkByID(JC.data.signalId, Blk);
  (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
 
  // zrusime konec staveni na poslednim useku posledni JC
- JC := JCDb.GetJCByID(Self.fproperties.JCs[Self.fproperties.JCs.Count-1]);
+ JC := JCDb.GetJCByID(Self.m_data.JCs[Self.m_data.JCs.Count-1]);
  Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count-1], Blk);
  (Blk as TBlkTrack).jcEnd := TZaver.no;
 
  // zrusime konec staveni na vsech variantnich bodech
- for i := 0 to Self.fproperties.vb.Count-1 do
+ for i := 0 to Self.m_data.vb.Count-1 do
   begin
-   Blocks.GetBlkByID(Self.fproperties.vb[i], Blk);
+   Blocks.GetBlkByID(Self.m_data.vb[i], Blk);
    (Blk as TBlkTrack).jcEnd := TZaver.no;
   end;
 
@@ -251,9 +251,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.GetStaveni(): Boolean;
+function TMultiJC.IsActivating(): Boolean;
 begin
- Result := (Self.fstaveni.JCIndex > -1);
+ Result := (Self.m_state.JCIndex > -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,7 +302,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.StartNav(): TBlkSignal;
+function TMultiJC.StartSignal(): TBlkSignal;
 var jc: TJC;
 begin
  if (Self.data.JCs.Count > 0) then begin

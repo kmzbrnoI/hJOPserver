@@ -311,7 +311,7 @@ begin
 
    // kontrola staveni slozene jizdni cesty
    if ((startSignal.selected = TBlkSignalSelection.VC) or (startSignal.selected = TBlkSignalSelection.PC)) then
-     if (MultiJCDb.StavJC(StartBlk, EndBlk, SenderPnl, SenderOR, abAfter)) then Exit();
+     if (MultiJCDb.Activate(StartBlk, EndBlk, SenderPnl, SenderOR, abAfter)) then Exit();
 
    (EndBlk as TBlkTrack).jcEnd := TZaver.no;
    ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
