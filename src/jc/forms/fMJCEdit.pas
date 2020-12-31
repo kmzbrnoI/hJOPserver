@@ -242,7 +242,7 @@ procedure TF_MJCEdit.UpdateVBCb();
 var obls: TArStr;
 begin
  Self.MakeObls(obls);
- Blocks.NactiBlokyDoObjektu(Self.CB_VB_New, @CB_VB_indexes, nil, obls, btTrack, -1);
+ Blocks.FillCB(Self.CB_VB_New, @CB_VB_indexes, nil, obls, btTrack, -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

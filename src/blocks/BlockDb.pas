@@ -88,21 +88,21 @@ type
 
     procedure NUZ(or_id: string; state: Boolean = true);        //pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
 
-    procedure NactiBlokyDoObjektu(CB: TComboBox; Polozky: PTArI; Vypust: PTArI; OblRizeniID: TArStr; BlokTyp: TBlkType; BlokID: Integer = -1; BlokTyp2: TBlkType = btAny);
+    procedure FillCB(CB: TComboBox; items: PTArI; ignore: PTArI; orid: TArStr; blkType: TBlkType; blkId: Integer = -1; blkType2: TBlkType = btAny);
 
     procedure RemoveTrain(train: TTrain);
     procedure TrainPrediction(signal: TBlk);
 
     function GetBlkWithTrain(train: TTrain): TBlksList;
-    function GetVyhWithZamek(zamekID: integer): TBlksList;
+    function GetTurnoutWithLock(zamekID: integer): TBlksList;
 
     // zavola change na vsechny useky, ktere obsahuji zadanou soupravu
     // pouziva se napriklad pro oznameni ukradeni LOKO
-    procedure ChangeUsekWithTrain(train: TTrain);
+    procedure ChangeTrackWithTrain(train: TTrain);
 
     // zavola Change vsech trati, ktere obsahuji danou soupravu
     // pouziva se pri zmene vlastnosti soupravy -> musi se aktualizovat seznam LOKO v trati
-    procedure ChangeTrainToTrat(train: TTrain);
+    procedure ChangeTrainToRailway(train: TTrain);
 
     // volano pri zmene ID bloku na indexu \index
     // -> je potreba zmenit poradi bloku
@@ -117,7 +117,7 @@ type
     procedure GetPtData(json: TJsonObject; includeState: Boolean; stanice: TOR = nil; typ: TBlkType = btAny);
 
     procedure NouzZaverZrusen(Sender: TBlk);
-    procedure ZakladniPolohaVyhybek();
+    procedure MoveTurnoutBasicPosition();
 
     function AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
 
@@ -128,7 +128,7 @@ type
     property count: Integer read GetCount;
 
     property fstatus: string read ffstatus;
-    property blky_file: string read ffile;
+    property filename: string read ffile;
     property enabled: Boolean read fenabled;
  end;
 
@@ -147,17 +147,17 @@ uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
 
 constructor TBlocks.Create();
 begin
- inherited Create();
- Self.Data     := TList<TBlk>.Create();
+ inherited;
+ Self.Data := TList<TBlk>.Create();
  Self.fenabled := false;
-end;//ctor
+end;
 
 destructor TBlocks.Destroy();
 begin
  Self.DestroyBlocks();
  Self.Data.Free();
- inherited Destroy();
-end;//dtor
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -165,7 +165,8 @@ procedure TBlocks.DestroyBlocks();
 var i: Integer;
 begin
  for i := 0 to Self.data.Count-1 do
-  if (Assigned(Self.Data[i])) then Self.data[i].Free();
+   if (Assigned(Self.Data[i])) then
+     Self.data[i].Free();
  Self.data.Clear();
 end;
 
@@ -175,7 +176,7 @@ end;
 //tady se resi veskere provazanosti bloku a odesilani eventu do oblasti rizeni
 procedure TBlocks.BlkChange(Sender: TObject);
 var blkset: TBlkSettings;
-    obl_rizeni: TList<TOR>;
+    obls: TList<TOR>;
     blk: TBlk;
     oblr: TOR;
 begin
@@ -191,9 +192,9 @@ begin
   end;//btUsek
 
  //zavolame OnChange vsech OR daneho bloku
- obl_rizeni := (Sender as TBlk).stations;
- if (obl_rizeni.Count > 0) then
-   for oblr in obl_rizeni do
+ obls := (Sender as TBlk).stations;
+ if (obls.Count > 0) then
+   for oblr in obls do
      oblr.BlkChange(Sender);
 
  ACBlk.OnBlkChange(TBlk(Sender).id);
@@ -540,16 +541,16 @@ end;
 //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
 procedure TBlocks.GetORBlk(OblRizeni_id: string; conn: TIdContext);
 var blk: TBlk;
-    obl_rizeni: TList<TOR>;
+    ors: TList<TOR>;
     oblr: TOR;
 begin
  for blk in Self.Data do
   begin
    //ziskame vsechny oblasti rizeni prislusnych bloku
-   obl_rizeni := blk.stations;
+   ors := blk.stations;
 
    //tyto OR porovname na "OblRizeni: PTOR"
-   for oblr in obl_rizeni do
+   for oblr in ors do
     begin
      if (oblr.id = OblRizeni_id) then
       begin
@@ -661,33 +662,33 @@ end;
 procedure TBlocks.NUZ(or_id: string; state: Boolean = true);
 var traini: Integer;
     blk: TBlk;
-    usek: TBlkTrack;
+    track: TBlkTrack;
     oblr: TOR;
  begin
   for blk in Self.Data do
    begin
     if (blk.typ <> btTrack) then continue;
-    usek := (blk as TBlkTrack);
-    if (not usek.NUZ) then continue;
+    track := (blk as TBlkTrack);
+    if (not track.NUZ) then continue;
 
-    for oblr in usek.stations do
+    for oblr in track.stations do
      begin
       if (oblr.id = or_id) then
        begin
         if (state) then
          begin
-          for traini in usek.trains do
+          for traini in track.trains do
             if (Self.GetBlkWithTrain(Trains[traini]).Count = 1) then
               Trains.Remove(traini);
 
-          if (ABlist.IsUsekInAnyABJC(usek.id)) then
-            usek.Zaver := TZaver.ab
+          if (ABlist.IsUsekInAnyABJC(track.id)) then
+            track.Zaver := TZaver.ab
           else
-            usek.Zaver := TZaver.no;
+            track.Zaver := TZaver.no;
 
-          usek.RemoveTrains();
+          track.RemoveTrains();
          end else
-          usek.NUZ := false;
+          track.NUZ := false;
        end;
      end;
    end;//for usek
@@ -695,18 +696,18 @@ var traini: Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.NactiBlokyDoObjektu(CB: TComboBox; Polozky: PTArI; Vypust: PTArI; OblRizeniID: TArStr;
-                                    BlokTyp: TBlkType; BlokID: Integer = -1; BlokTyp2: TBlkType = btAny);
+procedure TBlocks.FillCB(CB: TComboBox; items: PTArI; ignore: PTArI; orid: TArStr;
+                         blkType: TBlkType; blkId: Integer = -1; blkType2: TBlkType = btAny);
 var bloki, i: Integer;
-    Priradit: Boolean;
-    Pocet: Integer;
+    assign: Boolean;
+    count: Integer;
     Blk: TBlk;
     Obl_r: TList<TOR>;
     oblr: TOR;
     glob: TBlkSettings;
  begin
-  Pocet := 0;
-  if (Polozky <> nil) then SetLength(Polozky^,0);
+  count := 0;
+  if (items <> nil) then SetLength(items^,0);
   CB.Clear;
   CB.Enabled := true;
 
@@ -715,53 +716,53 @@ var bloki, i: Integer;
     blk := Blocks[bloki];
     glob := Blk.GetGlobalSettings();
 
-    if ((glob.typ <> BlokTyp) and (glob.typ <> BlokTyp2)) then continue;
+    if ((glob.typ <> blkType) and (glob.typ <> blkType2)) then continue;
 
-    if (Assigned(OblRizeniID)) then
+    if (Assigned(orid)) then
      begin
-      Priradit := false;
+      assign := false;
       Obl_r := Blk.stations;
 
       if ((glob.typ = btRailway) or (glob.typ = btIR)) then
-         priradit := true
+         assign := true
       else begin
-        for i := 0 to Length(OblRizeniID)-1 do
+        for i := 0 to Length(orid)-1 do
          begin
-          if (Obl_r.Count = 0) then priradit := true;
-          if (Priradit) then Break;
+          if (Obl_r.Count = 0) then assign := true;
+          if (assign) then Break;
           for oblr in Obl_r do
-            if (oblr.id = OBlRizeniID[i]) then
+            if (oblr.id = orid[i]) then
              begin
-              Priradit := true;
+              assign := true;
               Break;
              end;
          end;//for i
       end;
      end else begin
-      Priradit := true;
+      assign := true;
      end;
 
-    if (not Priradit) then continue;
+    if (not assign) then continue;
 
-    if (Vypust <> nil) then
+    if (ignore <> nil) then
      begin
-      for i := 0 to Length(Vypust^)-1 do
+      for i := 0 to Length(ignore^)-1 do
        begin
-        if (not Priradit) then Break;
-        if (glob.id = Vypust^[i]) then Priradit := false;
+        if (not assign) then Break;
+        if (glob.id = ignore^[i]) then assign := false;
        end;//for cyklus2
      end;//if Vypust <> nil
 
-    if (not Priradit) then continue;
+    if (not assign) then continue;
 
-    if (Polozky <> nil) then
+    if (items <> nil) then
      begin
-      SetLength(Polozky^, Length(Polozky^)+1);
-      Polozky^[Length(Polozky^)-1] := bloki;
+      SetLength(items^, Length(items^)+1);
+      items^[Length(items^)-1] := bloki;
      end;
     CB.Items.Add(glob.name);
-    if (glob.id = BlokID) then CB.ItemIndex := Pocet;
-    Pocet := Pocet + 1;
+    if (glob.id = blkId) then CB.ItemIndex := count;
+    count := count + 1;
    end;//for cyklus
 
   if (CB.Items.Count = 0) then
@@ -806,21 +807,21 @@ end;
 // predpovidani soupravy na bloky v jizdni ceste
 
 procedure TBlocks.TrainPrediction(signal: TBlk);
-var usek, startUsek: TBlkTrack;
-    trat: TBlkRailway;
+var track, startTrack: TBlkTrack;
+    railway: TBlkRailway;
     train: TTrain;
     JC: TJC;
 begin
  try
    // zjistime soupravu pred navestidlem
-   usek := TBlkTrack(TBlkSignal(signal).track);
-   startUsek := usek;
-   train := TBlkSignal(signal).GeTTrain(usek);
+   track := TBlkTrack(TBlkSignal(signal).track);
+   startTrack := track;
+   train := TBlkSignal(signal).GeTTrain(track);
 
    if (TBlkSignal(signal).IsGoSignal()) then begin
-     if ((not usek.IsTrain()) or
+     if ((not track.IsTrain()) or
          (train.direction <> TBlkSignal(signal).direction)) then
-      train := usek.trainPredict
+      train := track.trainPredict
    end else
      train := nil;
    JC := TBlkSignal(signal).DNjc;
@@ -834,49 +835,49 @@ begin
        train := nil;
 
      // zjistime posledni usek jizdni cesty
-     Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count-1], TBlk(usek));
+     Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count-1], TBlk(track));
 
-     if (usek = startUsek) then Exit();
+     if (track = startTrack) then Exit();
 
-     if ((Usek.typ = btRT) and (TBlkRT(Usek).inRailway > -1)) then
+     if ((track.typ = btRT) and (TBlkRT(track).inRailway > -1)) then
       begin
        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
-       Blocks.GetBlkByID(TBlkRT(Usek).inRailway, TBlk(trat));
+       Blocks.GetBlkByID(TBlkRT(track).inRailway, TBlk(railway));
        if (train <> nil) then begin
-         if ((trat.trainPredict = nil) or (trat.trainPredict.train <> train)) then
-           trat.trainPredict := TBlkRailwayTrain.Create(train.index);
+         if ((railway.trainPredict = nil) or (railway.trainPredict.train <> train)) then
+           railway.trainPredict := TBlkRailwayTrain.Create(train.index);
        end else begin
-         if (trat.trainPredict <> nil) then
-           trat.trainPredict := nil;
+         if (railway.trainPredict <> nil) then
+           railway.trainPredict := nil;
        end;
 
        // v trati jsou jiz soupravy -> konec predpovidani
-       if (trat.state.trains.Count > 0) then Exit();
-       trat.UpdateTrainPredict(false);
+       if (railway.state.trains.Count > 0) then Exit();
+       railway.UpdateTrainPredict(false);
 
-       case (trat.direction) of
-        TRailwayDirection.AtoB : Blocks.GetBlkByID(trat.GetSettings().trackIds[trat.GetSettings().trackIds.Count-1], TBlk(usek));
-        TRailwayDirection.BtoA : Blocks.GetBlkByID(trat.GetSettings().trackIds[0], TBlk(usek));
+       case (railway.direction) of
+        TRailwayDirection.AtoB : Blocks.GetBlkByID(railway.GetSettings().trackIds[railway.GetSettings().trackIds.Count-1], TBlk(track));
+        TRailwayDirection.BtoA : Blocks.GetBlkByID(railway.GetSettings().trackIds[0], TBlk(track));
        end;//case
 
        // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
-       if ((usek.trainPredict <> train) or (usek = startUsek)) then Exit();
+       if ((track.trainPredict <> train) or (track = startTrack)) then Exit();
       end;
 
      // do useku vlozime predpovidnou soupravu
-     usek.trainPredict := train;
+     track.trainPredict := train;
 
      // zjistime, jeslti je nejake navestidlo u tohoto useku postaveno na volno
-     if (usek.signalJCRef.Count = 0) then
+     if (track.signalJCRef.Count = 0) then
       JC := nil
      else
-      JC := TBlkSignal(usek.signalJCRef[0]).DNjc;
+      JC := TBlkSignal(track.signalJCRef[0]).DNjc;
     end;//while
  except
   on E: Exception do
    begin
-    if (Usek <> nil) then
-      AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy - Usek '+Usek.name)
+    if (track <> nil) then
+      AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy - Usek '+track.name)
     else
       AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy');
    end;
@@ -916,7 +917,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlocks.GetVyhWithZamek(zamekID: integer): TBlksList;
+function TBlocks.GetTurnoutWithLock(zamekID: integer): TBlksList;
 var blk: TBlk;
 begin
  Result := TBlksList.Create();
@@ -930,7 +931,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.ChangeUsekWithTrain(train: TTrain);
+procedure TBlocks.ChangeTrackWithTrain(train: TTrain);
 var Blks: TBlksList;
     i: Integer;
 begin
@@ -949,7 +950,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.ChangeTrainToTrat(train: TTrain);
+procedure TBlocks.ChangeTrainToRailway(train: TTrain);
 var blk: TBlk;
 begin
  for blk in Self.data do
@@ -1057,7 +1058,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.ZakladniPolohaVyhybek();
+procedure TBlocks.MoveTurnoutBasicPosition();
 var blk: TBlk;
  begin
   for blk in Self.data do

@@ -68,7 +68,7 @@ end;
 
 procedure TF_RREv.ShowEmpty();
 begin
- Blocks.NactiBlokyDoObjektu(CB_IRId, @CB_IR, nil, nil, btIR);
+ Blocks.FillCB(CB_IRId, @CB_IR, nil, nil, btIR);
  Self.CB_UsekPart.ItemIndex := 0;
  Self.CB_IRId.ItemIndex := 0;
  Self.CB_UsekStav.ItemIndex := 1;
@@ -92,7 +92,7 @@ begin
 
    rrtIR: begin
      Self.CB_Typ.ItemIndex := 1;
-     Blocks.NactiBlokyDoObjektu(CB_IRId, @CB_IR, nil, nil, btIR, ev.data.irId);
+     Blocks.FillCB(CB_IRId, @CB_IR, nil, nil, btIR, ev.data.irId);
      Self.CB_IRStav.ItemIndex := ownConvert.BoolToInt(ev.data.irState);
    end;
 

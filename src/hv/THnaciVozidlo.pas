@@ -799,7 +799,7 @@ begin
  Self.changed := true;
 
  if (Self.Stav.train > -1) then
-   Blocks.ChangeTrainToTrat(Trains[Self.Stav.train]);
+   Blocks.ChangeTrainToRailway(Trains[Self.Stav.train]);
 
  str.Free();
  str2.Free();
@@ -1573,7 +1573,7 @@ begin
  RegCollector.LocoChanged(Self, Self.addr);
 
  if (Self.train > -1) then
-   Blocks.ChangeUsekWithTrain(Trains[Self.train]);
+   Blocks.ChangeTrackWithTrain(Trains[Self.train]);
 
  Self.UpdateRuc();
 
@@ -1755,7 +1755,7 @@ begin
 
  TCPRegulator.LokStolen(Self);
  if (Self.train > -1) then
-   Blocks.ChangeUsekWithTrain(Trains[Self.train]);
+   Blocks.ChangeTrackWithTrain(Trains[Self.train]);
  Self.UpdateRuc();
 
  Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());

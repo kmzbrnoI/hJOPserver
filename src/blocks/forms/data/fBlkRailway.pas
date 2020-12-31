@@ -121,7 +121,7 @@ procedure TF_BlkRailway.NewBlkOpenForm();
   Self.CB_Trat_ZabZar.ItemIndex := -1;
   Self.CB_Navestidla.ItemIndex := -1;
 
-  Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btRT, -1);
+  Blocks.FillCB(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btRT, -1);
 
   Self.Caption := 'Nový blok Trať';
   Self.ActiveControl := Self.E_Trat_Name;
@@ -190,7 +190,7 @@ begin
      obls[i+Self.linkerA.stations.Count] := Self.linkerB.stations[i].id;
   end;
 
- Blocks.NactiBlokyDoObjektu(Self.CB_NewTratBlok, @Self.CB_NewTratBlokData, @trackIgnore, obls, btRT, -1);
+ Blocks.FillCB(Self.CB_NewTratBlok, @Self.CB_NewTratBlokData, @trackIgnore, obls, btRT, -1);
 end;
 
 procedure TF_BlkRailway.CommonOpenForm();

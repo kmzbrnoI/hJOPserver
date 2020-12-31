@@ -262,7 +262,7 @@ var data: THVData;
      HVTableData.UpdateLine(OpenHV);
 
      if (stav.train > -1) then
-       Blocks.ChangeTrainToTrat(Trains[stav.train]);
+       Blocks.ChangeTrainToRailway(Trains[stav.train]);
    end;
 
   Self.Close();

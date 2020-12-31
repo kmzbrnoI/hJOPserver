@@ -1526,7 +1526,7 @@ procedure TF_Main.PM_ResetVClick(Sender: TObject);
                              'což může způsobit přetížení napájecích zdrojů. Chcete skutečně pokračovat?', 'Otázka',
                              MB_YESNO OR MB_ICONWARNING OR MB_DEFBUTTON2) = mrYes) then
    begin
-    Blocks.ZakladniPolohaVyhybek();
+    Blocks.MoveTurnoutBasicPosition();
     writelog('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
     Application.MessageBox('Výhybky přestaveny do záklaních poloh.', 'Informace', MB_OK OR MB_ICONINFORMATION);
    end;

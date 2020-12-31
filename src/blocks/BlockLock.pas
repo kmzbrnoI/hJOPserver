@@ -332,7 +332,7 @@ procedure TBlkLock.CallChangeToTurnout();
 var list: TBlksList;
     i: Integer;
 begin
- list := Blocks.GetVyhWithZamek(Self.id);
+ list := Blocks.GetTurnoutWithLock(Self.id);
 
  for i := 0 to list.Count-1 do
   (list[i] as TBlkTurnout).Change();
@@ -359,7 +359,7 @@ function TBlkLock.IsRightPoloha(): Boolean;
 var list: TBlksList;
     i: Integer;
 begin
- list := Blocks.GetVyhWithZamek(Self.id);
+ list := Blocks.GetTurnoutWithLock(Self.id);
 
  for i := 0 to list.Count-1 do
    if (TBlkTurnout(list[i]).position <> (list[i] as TBlkTurnout).GetSettings().lockPosition) then

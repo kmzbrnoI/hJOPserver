@@ -192,7 +192,7 @@ var IgnoraceRCS: TArI;
   Self.SE_SS_RCSAdr.Value := data.RCSAdr;
 
   F_Options.CB_SS_AutRezimy.Clear();
-  Blocks.NactiBlokyDoObjektu(Self.CB_SS_AutRezimy, @Self.cb_ac_arri, nil, nil, btAC, data.AC_id);
+  Blocks.FillCB(Self.CB_SS_AutRezimy, @Self.cb_ac_arri, nil, nil, btAC, data.AC_id);
 
   Self.CHB_SS_Enable.Checked := data.enabled;
   Self.CHB_SS_EnableClick(self);

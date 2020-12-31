@@ -154,7 +154,7 @@ procedure TF_JCEdit.EmptyJCOpenForm();
     SE_ID.Value := JCDb[JCDb.Count-1].id
   else
     SE_ID.Value := 1;
-  Blocks.NactiBlokyDoObjektu(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, btSignal, -1);
+  Blocks.FillCB(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, btSignal, -1);
 
   CB_Typ.ItemIndex := -1;
   CB_Dalsi_Nav.ItemIndex := -1;
@@ -186,7 +186,7 @@ var prjz: TJCCrossingZav;
  begin
   JCData := JCDb.GetJCByIndex(OpenIndex).data;
 
-  Blocks.NactiBlokyDoObjektu(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, btSignal, JCData.signalId);
+  Blocks.FillCB(CB_Navestidlo,@CB_NavestidloPolozky, nil, nil, btSignal, JCData.signalId);
   CB_NavestidloChange(Self);
 
   Self.E_Name.Text:= JCData.name;
@@ -748,7 +748,7 @@ begin
  if (Self.CHB_Trat.Checked) then
   begin
    Self.MakeObls(obls);
-   Blocks.NactiBlokyDoObjektu(Self.CB_TratBlok, @Self.CB_TratPolozky, nil, obls, btRailway, Self.JCData.railwayId);
+   Blocks.FillCB(Self.CB_TratBlok, @Self.CB_TratPolozky, nil, obls, btRailway, Self.JCData.railwayId);
    Self.CB_TratSmer.ItemIndex := Integer(Self.JCData.railwayDir)-1;
   end else begin
    Self.CB_TratBlok.ItemIndex := -1;
@@ -840,7 +840,7 @@ begin
       end;
     end;
   end else begin
-   Blocks.NactiBlokyDoObjektu(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @vypustit, obls, btSignal, JCData.nextSignalId);
+   Blocks.FillCB(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @vypustit, obls, btSignal, JCData.nextSignalId);
    Self.CB_Dalsi_Nav.Items.Insert(0, 'Žádné návěstidlo');
    Self.CB_Dalsi_Nav.Items.Insert(1, 'Trať');
   end;
@@ -905,7 +905,7 @@ begin
   end;
 
  Self.MakeObls(obls);
- Blocks.NactiBlokyDoObjektu(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, obls, btTurnout);
+ Blocks.FillCB(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, obls, btTurnout);
 end;
 
 function TF_JCEdit.VyhybkaIndex(id: Integer): Integer;
@@ -931,7 +931,7 @@ begin
   end;
 
  Self.MakeObls(obls);
- Blocks.NactiBlokyDoObjektu(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btTrack, -1, btRT);
+ Blocks.FillCB(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btTrack, -1, btRT);
 end;
 
 function TF_JCEdit.IsAnyVyhMinus(): Boolean;

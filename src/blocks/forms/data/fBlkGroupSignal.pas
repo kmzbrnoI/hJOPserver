@@ -107,7 +107,7 @@ begin
  Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
 
  Self.LV_Signals.Clear();
- Blocks.NactiBlokyDoObjektu(Self.CB_NewSignal, @Self.CB_NewSignalData, nil, nil, btSignal, -1);
+ Blocks.FillCB(Self.CB_NewSignal, @Self.CB_NewSignalData, nil, nil, btSignal, -1);
 
  Self.Caption := 'Nový blok Skupinové návìstidlo';
  Self.ActiveControl := Self.E_Name;
@@ -362,7 +362,7 @@ begin
      obls[i] := Self.blk.stations[i].id;
   end;
 
- Blocks.NactiBlokyDoObjektu(Self.CB_NewSignal, @Self.CB_NewSignalData, @signalIgnore, obls, btSignal, -1);
+ Blocks.FillCB(Self.CB_NewSignal, @Self.CB_NewSignalData, @signalIgnore, obls, btSignal, -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

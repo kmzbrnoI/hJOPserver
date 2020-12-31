@@ -305,7 +305,7 @@ var tmpStr: string;
   try
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Options.E_dataload.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blocks.blky_file);
+    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blocks.filename);
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blocks.fstatus);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', F_Main.E_dataload_zes.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'JC', JCDb.filename);

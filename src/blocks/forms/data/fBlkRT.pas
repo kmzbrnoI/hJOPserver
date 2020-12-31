@@ -160,8 +160,8 @@ procedure TF_BlkRT.NewBlkOpenForm();
   Self.CHB_Zastavka_Sudy.Checked := false;
   Self.CHB_Zastavka_LichyClick(Self);
 
-  Blocks.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, -1);
-  Blocks.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, -1);
+  Blocks.FillCB(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, -1);
+  Blocks.FillCB(Self.CB_NavS, nil, nil, nil, btSignal, -1);
   Self.CB_NavLindex := -1;
   Self.CB_NavSindex := -1;
 
@@ -297,8 +297,8 @@ var glob: TBlkSettings;
   Self.CHB_Zastavka_Sudy.Checked  := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evS);
   Self.CHB_Zastavka_LichyClick(Self);
 
-  Blocks.NactiBlokyDoObjektu(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, TUsettings.signalLid);
-  Blocks.NactiBlokyDoObjektu(Self.CB_NavS, nil, nil, nil, btSignal, TUsettings.signalSid);
+  Blocks.FillCB(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, TUsettings.signalLid);
+  Blocks.FillCB(Self.CB_NavS, nil, nil, nil, btSignal, TUsettings.signalSid);
   Self.CB_NavLindex := Self.CB_NavL.ItemIndex;
   Self.CB_NavSindex := Self.CB_NavS.ItemIndex;
 

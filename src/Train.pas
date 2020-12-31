@@ -595,7 +595,7 @@ begin
  Self.data.HVs := newLoks;
 
  Self.SetSpeedDirection(Self.speed, Self.direction);
- Blocks.ChangeTrainToTrat(Self);
+ Blocks.ChangeTrainToRailway(Self);
 
  TBlkTrack(Self.front).Change();
 
