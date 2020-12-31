@@ -103,7 +103,7 @@ type
 
       function IsJCInStack(JC: TObject): Boolean;
 
-      property mode: TORStackMode read m_mode;
+      property mode: TORStackMode read m_mode write SetMode;
       property hint: string read m_hint write SetHint;
       property UPOenabled: Boolean read m_UPOenabled write SetUPOEnabled;
       property count: Integer read GetCount;
@@ -179,12 +179,12 @@ end;
 
 procedure TORStack.ORCmdPV(SenderPnl: TIdContext);
 begin
- Self.m_mode := TORStackMode.PV;
+ Self.mode := TORStackMode.PV;
 end;
 
 procedure TORStack.ORCmdVZ(SenderPnl: TIdContext);
 begin
- Self.m_mode := TORStackMode.VZ;
+ Self.mode := TORStackMode.VZ;
 end;
 
 procedure TORStack.ORCmdEZ(SenderPnl: TIdContext; show: Boolean);
