@@ -77,7 +77,7 @@ end;
 procedure TJCSimulator.OnTimer(Sender: TObject);
 var JC: TJC;
 begin
- if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit();
 
  for JC in JCDb do
    if (JC.state.destroyBlock > -1) then
@@ -151,7 +151,7 @@ end;
 procedure TRailwaySimulator.OnTimer(Sender: TObject);
 var Blk: TBlk;
 begin
- if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
+ if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit();
 
  for Blk in Blocks do
   begin
@@ -225,7 +225,7 @@ var blk: TBlk;
     turnout: TBlkTurnout;
 begin
  try
-   if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit;
+   if ((not GetFunctions.GetSystemStart()) or (not RCSi.simulation)) then Exit();
 
    for blk in Blocks do
     begin

@@ -926,7 +926,7 @@ end;
 
 procedure TBlkTurnout.CheckNullOutput();
 begin
- if (not Self.m_nullOutput.enabled) then Exit;
+ if (not Self.m_nullOutput.enabled) then Exit();
 
  if (Now >= Self.m_nullOutput.NullOutputTime) then
   begin

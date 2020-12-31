@@ -1,4 +1,4 @@
-unit fNastaveni_Casu;
+﻿unit fNastaveni_Casu;
 
 {
   Okno nastaveni modeloveho casu.
@@ -44,19 +44,19 @@ procedure TF_ModCasSet.B_OKClick(Sender: TObject);
     if (StrToInt(Copy(ME_start_time.Text, 4, 2)) > 59) then
      begin
       Application.MessageBox('Minuty zadejte v rozsahu 0-59','Nelze nastavit cas', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
 
     if (StrToInt(LeftStr(ME_start_time.Text, 2)) > 23) then
      begin
       Application.MessageBox('Hodiny zadejte v rozsahu 0-23','Nelze nastavit cas', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
 
     if (StrToFloat(ME_Nasobic.Text) >= 10) then
      begin
       Application.MessageBox('Násobič zadejte v rozsahu 0-9.9','Nelze nastavit cas', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
 
     ModCas.used     := Self.CHB_Used.Checked;

@@ -215,10 +215,10 @@ var prjz: TJCCrossingZav;
   for prjz in JCData.crossings do
    begin
     tmp := IntToStr(prjz.crossingId);
-    if (prjz.oteviraci <> -1) then
+    if (prjz.openTrack <> -1) then
      begin
-      tmp := tmp + ', ' + IntToStr(prjz.oteviraci);
-      for blokid in prjz.uzaviraci do
+      tmp := tmp + ', ' + IntToStr(prjz.openTrack);
+      for blokid in prjz.closeTracks do
         tmp := tmp + ', ' + IntToStr(blokid);
      end;
 
@@ -228,8 +228,8 @@ var prjz: TJCCrossingZav;
   Self.M_Odvraty.Clear();
   for odvrat in JCData.refuges do
    begin
-    tmp := IntToStr(odvrat.Blok) + ', ';
-    if (odvrat.Poloha = TTurnoutPosition.plus) then
+    tmp := IntToStr(odvrat.block) + ', ';
+    if (odvrat.position = TTurnoutPosition.plus) then
       tmp := tmp + '+, '
     else
       tmp := tmp + '-, ';
@@ -240,7 +240,7 @@ var prjz: TJCCrossingZav;
 
   Self.M_Zamky.Clear();
   for jcref in JCData.locks do
-    Self.M_Zamky.Lines.Add(IntToStr(jcref.Blok) + ', ' + IntToStr(jcref.ref_blk));
+    Self.M_Zamky.Lines.Add(IntToStr(jcref.block) + ', ' + IntToStr(jcref.ref_blk));
 
   Self.E_VB.Text := '';
   for vb in JCData.vb do
@@ -268,20 +268,20 @@ var vyh: TJCTurnoutZav;
   if (CB_NewZaverBlok.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte výhybku!','Nelze pridat zaver', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (CB_NewZaverPoloha.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte polohu výhybky!','Nelze pridat zaver', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
 
   updateOdbocka := (Self.CHB_Odbocka.Checked = Self.IsAnyVyhMinus());
 
-  vyh.Blok   := Blocks.GetBlkID(CB_NewVyhybkaPolozky[CB_NewZaverBlok.ItemIndex]);
-  vyh.Poloha := TTurnoutPosition(CB_NewZaverPoloha.ItemIndex);
+  vyh.block   := Blocks.GetBlkID(CB_NewVyhybkaPolozky[CB_NewZaverBlok.ItemIndex]);
+  vyh.position := TTurnoutPosition(CB_NewZaverPoloha.ItemIndex);
 
-  vyhIndex := Self.VyhybkaIndex(vyh.Blok);
+  vyhIndex := Self.VyhybkaIndex(vyh.block);
   if (vyhIndex > -1) then
     Self.m_turnouts[vyhIndex] := vyh
   else
@@ -364,53 +364,53 @@ var JC: TJC;
   if (E_Name.Text = '') then
    begin
     Application.MessageBox('Vyplňte název jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (JCDb.IsJC(Self.SE_ID.Value, Self.OpenIndex)) then
    begin
     Application.MessageBox('JC s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (CB_Navestidlo.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte návestidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (CB_Typ.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte typ jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (CB_Dalsi_Nav.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte dalěá návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (CB_Rychlost_Volno.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při postaveném dalším návěstidle!',
                            'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (CB_Rychlost_Stuj.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při dalším návěstidle na stůj!',
                            'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Self.CHB_Trat.Checked) and (Self.CB_TratBlok.ItemIndex < 0) then
    begin
     Application.MessageBox('Vyberte trať!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Self.CHB_Trat.Checked) and (Self.CB_TratSmer.ItemIndex < 0) then
    begin
     Application.MessageBox('Vyberte směr trati!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   for vyhZaver in Self.m_turnouts do
    begin
-    if ((vyhZaver.Poloha <> TTurnoutPosition.plus) and ((vyhZaver.Poloha <> TTurnoutPosition.minus))) then
+    if ((vyhZaver.position <> TTurnoutPosition.plus) and ((vyhZaver.position <> TTurnoutPosition.minus))) then
      begin
       Application.MessageBox('Je třeba vybrat polohy všech výhybek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -452,7 +452,7 @@ var JC: TJC;
     // Prejezdy
     if (not Assigned(JCData.crossings) or (mNewJC)) then JCData.crossings := TList<TJCCrossingZav>.Create();
     for prejezd in JCData.crossings do
-      prejezd.uzaviraci.Free();
+      prejezd.closeTracks.Free();
     JCData.crossings.Clear();
     for line in Self.M_Prj.Lines do
      begin
@@ -460,27 +460,27 @@ var JC: TJC;
       ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
 
       try
-        prejezd.uzaviraci := nil;
+        prejezd.closeTracks := nil;
         prejezd.crossingId := StrToInt(parsed[0]);
         if (parsed.Count > 1) then
-          prejezd.oteviraci := StrToInt(parsed[1])
+          prejezd.openTrack := StrToInt(parsed[1])
         else
-          prejezd.oteviraci := -1;
+          prejezd.openTrack := -1;
 
-        prejezd.uzaviraci := TList<Integer>.Create();
+        prejezd.closeTracks := TList<Integer>.Create();
         for i := 2 to parsed.Count-1 do
-          prejezd.uzaviraci.Add(StrToInt(parsed[i]));
+          prejezd.closeTracks.Add(StrToInt(parsed[i]));
 
         JCData.crossings.Add(prejezd);
       except
        on E: Exception do
         begin
-         if (Assigned(prejezd.uzaviraci)) then
-           prejezd.uzaviraci.Free();
+         if (Assigned(prejezd.closeTracks)) then
+           prejezd.closeTracks.Free();
 
          Application.MessageBox(PChar('Napodařilo se naparsovat přejezd "' + line + '":'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
-         Exit;
+         Exit();
         end;
       end;
      end;
@@ -494,11 +494,11 @@ var JC: TJC;
       ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
 
       try
-        odvrat.Blok := StrToInt(parsed[0]);
+        odvrat.block := StrToInt(parsed[0]);
         if (parsed[1] = '+') then
-          odvrat.Poloha := TTurnoutPosition.plus
+          odvrat.position := TTurnoutPosition.plus
         else
-          odvrat.Poloha := TTurnoutPosition.minus;
+          odvrat.position := TTurnoutPosition.minus;
         odvrat.ref_blk := StrToInt(parsed[2]);
         JCData.refuges.Add(odvrat);
       except
@@ -506,7 +506,7 @@ var JC: TJC;
         begin
          Application.MessageBox(PChar('Napodařilo se naparsovat odvrat "' + line + '":'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
-         Exit;
+         Exit();
         end;
       end;
      end;
@@ -520,7 +520,7 @@ var JC: TJC;
       ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
 
       try
-        refz.Blok := StrToInt(parsed[0]);
+        refz.block := StrToInt(parsed[0]);
         refz.ref_blk := StrToInt(parsed[1]);
         JCData.locks.Add(refz);
       except
@@ -528,7 +528,7 @@ var JC: TJC;
         begin
          Application.MessageBox(PChar('Napodařilo se naparsovat zámek ' + line + ':'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
-         Exit;
+         Exit();
         end;
       end;
      end;
@@ -548,7 +548,7 @@ var JC: TJC;
         begin
          Application.MessageBox(PChar('Napodařilo se naparsovat variatní bod ' + item + ':'+#13#10+E.Message),
                                 'Chyba', MB_OK OR MB_ICONWARNING);
-         Exit;
+         Exit();
         end;
       end;
      end;
@@ -566,7 +566,7 @@ var JC: TJC;
      on E: Exception do
       begin
        Application.MessageBox(PChar('Přidávání JC skončilo s chybou'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
-       Exit;
+       Exit();
       end;
     end;
 
@@ -627,9 +627,9 @@ var i: Integer;
   vyh := Self.m_turnouts[Self.LV_Vyhybky.ItemIndex];
 
   for i := 0 to Length(Self.CB_NewVyhybkaPolozky)-1 do
-    if (Blocks.GetBlkID(Self.CB_NewVyhybkaPolozky[i]) = vyh.Blok) then
+    if (Blocks.GetBlkID(Self.CB_NewVyhybkaPolozky[i]) = vyh.block) then
       Self.CB_NewZaverBlok.ItemIndex := i;
-  case (vyh.Poloha) of
+  case (vyh.position) of
    TTurnoutPosition.plus: Self.CB_NewZaverPoloha.ItemIndex := 0;
    TTurnoutPosition.minus: Self.CB_NewZaverPoloha.ItemIndex := 1;
   else
@@ -762,8 +762,8 @@ var Blk: TBlk;
 begin
  Blocks.GetBlkByID(JCData.signalId, Blk);
 
- if (Blk = nil) then Exit;
- if (Blk.typ <> btSignal) then Exit;
+ if (Blk = nil) then Exit();
+ if (Blk.typ <> btSignal) then Exit();
 
  SetLength(obls, (Blk as TBlkSignal).stations.Count);
  for i := 0 to (Blk as TBlkSignal).stations.Count-1 do
@@ -867,13 +867,13 @@ begin
     end;
 
    for vyhZaver in Self.m_turnouts do
-     if (toAdd.Contains(vyhZaver.Blok)) then
-       toAdd.Remove(vyhZaver.Blok);
+     if (toAdd.Contains(vyhZaver.block)) then
+       toAdd.Remove(vyhZaver.block);
 
    for blkid in toAdd do
     begin
-     vyhZaver.Blok := blkid;
-     vyhZaver.Poloha := TTurnoutPosition.none;
+     vyhZaver.block := blkid;
+     vyhZaver.position := TTurnoutPosition.none;
      Self.m_turnouts.Add(vyhZaver);
     end;
 
@@ -895,8 +895,8 @@ begin
    zaver := Self.m_turnouts[i];
    LI := LV_Vyhybky.Items.Add();
    LI.Caption := IntToStr(i+1);
-   LI.SubItems.Add(Blocks.GetBlkName(zaver.Blok));
-   case (zaver.Poloha) of
+   LI.SubItems.Add(Blocks.GetBlkName(zaver.block));
+   case (zaver.position) of
     TTurnoutPosition.plus: LI.SubItems.Add('+');
     TTurnoutPosition.minus: LI.SubItems.Add('-');
    else
@@ -912,7 +912,7 @@ function TF_JCEdit.VyhybkaIndex(id: Integer): Integer;
 var i: Integer;
 begin
  for i := 0 to Self.m_turnouts.Count-1 do
-  if (Self.m_turnouts[i].Blok = id) then
+  if (Self.m_turnouts[i].block = id) then
     Exit(i);
  Result := -1;
 end;
@@ -938,7 +938,7 @@ function TF_JCEdit.IsAnyVyhMinus(): Boolean;
 var vyhZaver: TJCTurnoutZav;
 begin
  for vyhZaver in Self.m_turnouts do
-   if (vyhZaver.Poloha = TTurnoutPosition.minus) then
+   if (vyhZaver.position = TTurnoutPosition.minus) then
      Exit(true);
  Result := false;
 end;

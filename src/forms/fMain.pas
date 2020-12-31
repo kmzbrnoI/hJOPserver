@@ -1534,7 +1534,7 @@ procedure TF_Main.PM_ResetVClick(Sender: TObject);
 
 procedure TF_Main.PM_RegulatorClick(Sender: TObject);
 begin
- if (Self.LV_HV.Selected = nil) then Exit;
+ if (Self.LV_HV.Selected = nil) then Exit();
 
  if (TrakceI.ConnectedSafe()) then
   begin
@@ -1680,7 +1680,7 @@ begin
    WM_KEYDOWN: begin
        Handled := false;
        RegCollector.KeyPress(msg.wParam, Handled);
-       if (Handled) then Exit;
+       if (Handled) then Exit();
 
        case (msg.wParam) of
          VK_F9: begin
@@ -2504,8 +2504,8 @@ end;
 procedure TF_Main.MI_TechPropClick(Sender: TObject);
 var Blk: TBlk;
  begin
-  if (LV_Bloky.Selected = nil) then Exit;
-  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
+  if (LV_Bloky.Selected = nil) then Exit();
+  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
 
   case (Blk.typ) of
    btTurnout: F_BlkTurnoutState.OpenForm(Blk as TBlkTurnout);
@@ -2888,7 +2888,7 @@ procedure TF_Main.LV_BlokyCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 var Blk: TBlk;
  begin
-  if (Blocks.GetBlkByIndex(Item.Index, Blk) <> 0) then Exit;
+  if (Blocks.GetBlkByIndex(Item.Index, Blk) <> 0) then Exit();
 
   case (Blk.typ) of
    btTurnout: begin
@@ -3020,8 +3020,8 @@ end;
 procedure TF_Main.LV_BlokyDblClick(Sender: TObject);
 var Blk: TBlk;
  begin
-  if (LV_Bloky.Selected = nil) then Exit;
-  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit;
+  if (LV_Bloky.Selected = nil) then Exit();
+  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, Blk) <> 0) then Exit();
 
   case (Blk.typ) of
    btTurnout: F_BlkTurnout.OpenForm(Self.LV_Bloky.ItemIndex);

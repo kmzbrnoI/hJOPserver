@@ -276,17 +276,17 @@ var glob: TBlkSettings;
   if (E_Nazev.Text = '') then
    begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Self.CB_Zesil.ItemIndex = -1) then
    begin
     Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
 
   glob.name := Self.E_Nazev.Text;

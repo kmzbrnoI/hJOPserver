@@ -284,19 +284,19 @@ var glob: TBlkSettings;
   if (E_Nazev.Text = '') then
    begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Self.CHB_RCS_Output.Checked) then
    begin
     if (CB_Typ.ItemIndex = -1) then
      begin
       Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
 
     another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value), Self.Blk, TRCSIOType.output);

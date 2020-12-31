@@ -386,7 +386,7 @@ procedure TRegulatorCollector.LocoChanged(Sender: TObject; addr: Word);
 var frm: TF_DigiReg;
 begin
  frm := Self.GetForm(addr);
- if (frm = nil) then Exit;
+ if (frm = nil) then Exit();
  frm.LocoChanged(Sender);
 end;
 
@@ -432,7 +432,7 @@ end;
 procedure TRegulatorCollector.KeyPress(key: Integer; var handled: Boolean);
 var i: Integer;
 begin
- if (handled) then Exit;
+ if (handled) then Exit();
 
  for i := 0 to _MAX_FORMS-1 do
   begin

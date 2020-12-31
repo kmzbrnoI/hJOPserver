@@ -285,7 +285,7 @@ procedure TF_HVEdit.B_StornoClick(Sender: TObject);
 
 procedure TF_HVEdit.B_NajetoDeleteClick(Sender: TObject);
  begin
-  if (Self.OpenHV = nil) then Exit;
+  if (Self.OpenHV = nil) then Exit();
 
   OpenHV.ResetStats();
   HVTableData.UpdateLine(Self.OpenHV);

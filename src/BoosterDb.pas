@@ -243,7 +243,7 @@ procedure TBoosterDb.ControlBeep();
 var zkrat: Boolean;
     booster: TBooster;
 begin
- if (TrakceI.TrackStatusSafe() <> TTrkStatus.tsOn) then Exit;
+ if (TrakceI.TrackStatusSafe() <> TTrkStatus.tsOn) then Exit();
 
  zkrat := false;
  for booster in Self.db.Values do
@@ -255,7 +255,7 @@ begin
     end;
   end;
 
- if (not zkrat) then Exit;
+ if (not zkrat) then Exit();
 
  if (Self.Beep.NextBeep < Now) then
    Self.Beep.NextBeep := Now+EncodeTime(0,0, Self._BEEP_INTERVAL,0);

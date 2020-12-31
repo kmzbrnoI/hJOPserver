@@ -140,7 +140,7 @@ begin
 
          TPageControl(Sender).ActivePage.PageIndex := j;
         end;
-       Exit;
+       Exit();
      end;
    end;
 end;

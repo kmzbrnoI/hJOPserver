@@ -71,6 +71,11 @@ const
   _NC_STEP_CEKANI_NAVESTIDLO = 103;
   _NC_STEP_FINISH = 104;
 
+  _JC_DESTROY_NC = -6;
+  _JC_DESTROY_NONE = -5;
+  _JC_DESTROY_SIGNAL_STUJ = -2;
+  _JC_DESTROY_SIGNAL_TRACK = -1;
+
 type
   TJCType = (train = 1, shunt = 2, emergency = 3);
   TJCNextSignalType = (no = 0, railway = 1, signal = 2);
@@ -85,28 +90,28 @@ type
 
   // zaver vyhybky v jizdni ceste
   TJCTurnoutZav = record
-   Blok: Integer;
-   Poloha: TTurnoutPosition;
+   block: Integer;
+   position: TTurnoutPosition;
   end;
 
   // zaver odvratove vyhybky v jizdni ceste
   TJCRefugeeZav = record
-   Blok: Integer;
-   Poloha: TTurnoutPosition;
+   block: Integer;
+   position: TTurnoutPosition;
    ref_blk: Integer;  // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
   // bloky v JC, ketre jsou navazany na konkretni useky v ramci JC
   TJCRefZav = record
-   Blok: Integer;   // odkaz na blok ID
+   block: Integer;
    ref_blk: Integer;  // blok, pri jehoz uvolneni zaveru dojde ke zruseni redukce \Blok
   end;
 
   // prejezd v jizdni ceste
   TJCCrossingZav = record
    crossingId: Integer;
-   uzaviraci: TList<Integer>;  // pokud se prejezd nezavira, je seznam prazdny
-   oteviraci: Integer;   // pokud se prejezd nezavira, je nedefinovany
+   closeTracks: TList<Integer>;  // pokud se prejezd nezavira, je seznam prazdny
+   openTrack: Integer;   // pokud se prejezd nezavira, je nedefinovany
   end;
 
   ///////////////////////////////////////////////////////////////////////////
@@ -143,8 +148,7 @@ type
    senderPnl: TIdContext;                                                       // konkretni panel, kery vyvolal staveni JC
    destroyBlock,                                                                // index useku, na ktery ma vkrocit souprava
    destroyEndBlock: Integer;                                                    // index useku, ze ktereho ma vystoupit souprava
-                                                                                  // index je index v seznamu useku, tedy napr. 0 =  0. usek v jizdni ceste
-                                                                                  // -6 = postavena nouzova cesta, -5 = cesta neni postavena, -2 = navestidlo na STUJ, -1 = usek pred navestidlem, 0..n = useky JC
+                                                                                  // index je index v seznamu useku, tedy napr. 0 =  0. usek v jizdni ceste; + specialni hodnoty _JC_DESTROY*
    from_stack: TObject;                                                         // odkaz na zasobnik, ze ktereho proehlo staveni JC
    nc: Boolean;                                                                 // flag staveni nouzove cesty (vlakovou i posunovou)
    ncBariery: TJCBarriers;                                                       // aktualni seznam barier pro potvrzovaci sekvenci pri staveni nouzove cesty
@@ -223,8 +227,8 @@ type
    private const
     _def_jc_staveni : TJCstate = (
       step : _STEP_DEFAULT;
-      destroyBlock : -5;
-      destroyEndBlock : -5;
+      destroyBlock : _JC_DESTROY_NONE;
+      destroyEndBlock : _JC_DESTROY_NONE;
       ab: false;
       crossingWasClosed: false;
     );
@@ -409,11 +413,11 @@ begin
  if (Assigned(Self.m_data.turnouts))  then Self.m_data.turnouts.Free();
  if (Assigned(Self.m_data.tracks))    then Self.m_data.tracks.Free();
  if (Assigned(Self.m_data.refuges))  then Self.m_data.refuges.Free();
- for i := 0 to Self.m_data.crossings.Count-1 do Self.m_data.crossings[i].uzaviraci.Free();
+ for i := 0 to Self.m_data.crossings.Count-1 do Self.m_data.crossings[i].closeTracks.Free();
  if (Assigned(Self.m_data.crossings)) then Self.m_data.crossings.Free();
 
  inherited;
-end;//ctor
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -440,7 +444,7 @@ begin
    begin
     // blok navestidla neexistuje
     Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, Self.m_data.signalId));
-    Exit;
+    Exit();
    end;
 
   if (Self.lastTrack = nil) then
@@ -454,30 +458,30 @@ begin
    begin
     // blok navestidla neni typu navestidlo
     Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, Blk, Self.m_data.signalId));
-    Exit;
+    Exit();
    end;
 
   if ((Blk as TBlkSignal).track = nil) then
    begin
     // blok navestidla pred sebou nema zadny usek
     Result.Add(Self.JCBarrier(_JCB_NAV_NOT_USEK, Blk, Self.m_data.signalId));
-    Exit;
+    Exit();
    end;
 
   // vyhybky:
   // kontrolujeme, jestli vyhybky existuji a jestli jsou to vyhybky
   for turnoutZav in Self.m_data.turnouts do
    begin
-    if (Blocks.GetBlkByID(turnoutZav.Blok, Blk) <> 0) then
+    if (Blocks.GetBlkByID(turnoutZav.block, Blk) <> 0) then
      begin
-      Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, turnoutZav.Blok));
-      Exit;
+      Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, turnoutZav.block));
+      Exit();
      end;
 
     if (Blk.typ <> btTurnout) then
      begin
-      Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, Blk, turnoutZav.Blok));
-      Exit;
+      Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, Blk, turnoutZav.block));
+      Exit();
      end;
    end;
 
@@ -488,13 +492,13 @@ begin
     if (Blocks.GetBlkByID(trackZav, Blk) <> 0) then
      begin
       Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, trackZav));
-      Exit;
+      Exit();
      end;
 
     if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
      begin
       Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, Blk, trackZav));
-      Exit;
+      Exit();
      end;
    end;
 
@@ -505,45 +509,45 @@ begin
     if (Blocks.GetBlkByID(signalZav.crossingId, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, signalZav.crossingId));
-      Exit;
+      Exit();
      end;
 
     // kontrola typu bloku prejezdu
     if (blk.typ <> btCrossing) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, signalZav.crossingId));
-      Exit;
+      Exit();
      end;
 
     // pokud se ma prejezd zavirat
-    if (signalZav.uzaviraci.Count > 0) then
+    if (signalZav.closeTracks.Count > 0) then
      begin
       // kontrola existence oteviraciho bloku
-      if (Blocks.GetBlkByID(signalZav.oteviraci, blk2) <> 0) then
+      if (Blocks.GetBlkByID(signalZav.openTrack, blk2) <> 0) then
        begin
-        Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, blk, signalZav.oteviraci));
-        Exit;
+        Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, blk, signalZav.openTrack));
+        Exit();
        end;
 
       // kontrola typu oteviraciho bloku
       if ((blk2.typ <> btTrack) and (blk2.typ <> btRT)) then
        begin
-        Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, signalZav.oteviraci));
-        Exit;
+        Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, signalZav.openTrack));
+        Exit();
        end;
 
       // kontrola existence uzaviracich bloku a jejich typu
-      for trackZav in signalZav.uzaviraci do
+      for trackZav in signalZav.closeTracks do
        begin
         if (Blocks.GetBlkByID(trackZav, blk2) <> 0) then
          begin
           Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, blk, trackZav));
-          Exit;
+          Exit();
          end;
         if ((blk2.typ <> btTrack) and (blk2.typ <> btRT)) then
          begin
           Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, trackZav));
-          Exit;
+          Exit();
          end;
        end;
      end;
@@ -555,22 +559,22 @@ begin
     if (Blocks.GetBlkByID(refugeeZav.ref_blk, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refugeeZav.ref_blk));
-      Exit;
+      Exit();
      end;
     if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, refugeeZav.ref_blk));
-      Exit;
+      Exit();
      end;
-    if (Blocks.GetBlkByID(refugeeZav.Blok, blk) <> 0) then
+    if (Blocks.GetBlkByID(refugeeZav.block, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refugeeZav.Blok));
-      Exit;
+      Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refugeeZav.block));
+      Exit();
      end;
     if (blk.typ <> btTurnout) then
      begin
-      Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, refugeeZav.Blok));
-      Exit;
+      Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, refugeeZav.block));
+      Exit();
      end;
    end;
 
@@ -580,42 +584,42 @@ begin
     if (Self.lastTrack.typ <> btRT) then
      begin
       Result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, Self.lastTrack, Self.lastTrack.id));
-      Exit;
+      Exit();
      end;
     if (Blocks.GetBlkByID(Self.m_data.railwayId, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, Self.m_data.railwayId));
-      Exit;
+      Exit();
      end;
     if (blk.typ <> btRailway) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, Self.m_data.railwayId));
-      Exit;
+      Exit();
      end;
    end;
 
   // kontrola podminkovych bloku zamku
   for refZaver in Self.m_data.locks do
    begin
-    if (Blocks.GetBlkByID(refZaver.Blok, blk) <> 0) then
+    if (Blocks.GetBlkByID(refZaver.block, blk) <> 0) then
      begin
-      Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refZaver.Blok));
-      Exit;
+      Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refZaver.block));
+      Exit();
      end;
     if (blk.typ <> btLock) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, blk.id));
-      Exit;
+      Exit();
      end;
     if (Blocks.GetBlkByID(refZaver.ref_blk, blk) <> 0) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
-      Exit;
+      Exit();
      end;
     if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then
      begin
       Result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, blk, blk.id));
-      Exit;
+      Exit();
      end;
    end;//for i
 
@@ -707,20 +711,20 @@ begin
   // kontrola vyhybek:
   for turnoutZav in Self.m_data.turnouts do
    begin
-    Blocks.GetBlkByID(turnoutZav.Blok, Blk);
+    Blocks.GetBlkByID(turnoutZav.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     if (TBlkTurnout(Blk).position = TTurnoutPosition.disabled) then
       bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, Blk, Blk.id));
 
     // kontrola neprofilovych useku vyhybek pro polohu +
-    if ((turnoutZav.Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil) and
+    if ((turnoutZav.position = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil) and
         (TBlkTrack(TBlkTurnout(Blk).npBlokPlus).occupied = TTrackState.disabled)) then
       bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokPlus,
           TBlkTurnout(Blk).npBlokPlus.id));
 
     // kontrola neprofilovych useku vyhybek pro polohu -
-    if ((turnoutZav.Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil) and
+    if ((turnoutZav.position = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil) and
         (TBlkTrack(TBlkTurnout(Blk).npBlokMinus).occupied = TTrackState.disabled)) then
       bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokMinus,
           TBlkTurnout(Blk).npBlokMinus.id));
@@ -741,7 +745,7 @@ begin
       bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
-    if (TBlkTurnout(Blk).position <> turnoutZav.Poloha) then
+    if (TBlkTurnout(Blk).position <> turnoutZav.position) then
      begin
       if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
@@ -753,7 +757,7 @@ begin
     Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     // pokud nemam ja polohu, predpokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku neni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
-    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> turnoutZav.Poloha)) then
+    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> turnoutZav.position)) then
      begin
       if (TBlkTurnout(Blk2).emLock) then
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
@@ -765,13 +769,13 @@ begin
      end;
 
     // kontrola neprofiloveho styku pro polohu +
-    if ((turnoutZav.Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil) and
+    if ((turnoutZav.position = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil) and
         (TBlkTrack(TBlkTurnout(Blk).npBlokPlus).occupied <> TTrackState.free)) then
       bariery.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, TBlkTurnout(Blk).npBlokPlus,
           TBlkTurnout(Blk).npBlokPlus.id));
 
     // kontrola neprofiloveho styku pro polohu -
-    if ((turnoutZav.Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil) and
+    if ((turnoutZav.position = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil) and
         (TBlkTrack(TBlkTurnout(Blk).npBlokMinus).occupied <> TTrackState.free)) then
       bariery.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, TBlkTurnout(Blk).npBlokMinus,
           TBlkTurnout(Blk).npBlokMinus.id));
@@ -801,7 +805,7 @@ begin
   // kontrola odvratu
   for refugeeZav in Self.m_data.refuges do
    begin
-    Blocks.GetBlkByID(refugeeZav.Blok, Blk);
+    Blocks.GetBlkByID(refugeeZav.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     if (TBlkTurnout(Blk).position = TTurnoutPosition.disabled) then
@@ -819,16 +823,16 @@ begin
     if (TBlkTurnout(Blk).note <> '') then
       bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
-    if (TBlkTurnout(Blk).position <> refugeeZav.Poloha) then
+    if (TBlkTurnout(Blk).position <> refugeeZav.position) then
      begin
       if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
       else if (TBlkTurnout(Blk).outputLocked) then
-        bariery.Add(Self.JCBarrier(_JCB_ODVRAT_ZAMCENA, blk, refugeeZav.Blok));
+        bariery.Add(Self.JCBarrier(_JCB_ODVRAT_ZAMCENA, blk, refugeeZav.block));
 
       if (TBlkTurnout(Blk).occupied = TTrackState.occupied) then
-        bariery.Add(Self.JCBarrier(_JCB_ODVRAT_OBSAZENA, blk, refugeeZav.Blok));
+        bariery.Add(Self.JCBarrier(_JCB_ODVRAT_OBSAZENA, blk, refugeeZav.block));
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
@@ -844,7 +848,7 @@ begin
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
-      if (TBlkTurnout(Blk).position <> refugeeZav.Poloha) then
+      if (TBlkTurnout(Blk).position <> refugeeZav.position) then
        begin
         if (TBlkTurnout(Blk2).zaver > TZaver.no) then
          begin
@@ -951,7 +955,7 @@ begin
   // kontrola uzamceni podminkovych zamku:
   for refZaver in Self.m_data.locks do
    begin
-    Blocks.GetBlkByID(refZaver.Blok, Blk);
+    Blocks.GetBlkByID(refZaver.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
@@ -1047,7 +1051,7 @@ begin
   // kontrola vyhybek:
   for turnoutZav in Self.m_data.turnouts do
    begin
-    Blocks.GetBlkByID(turnoutZav.Blok, Blk);
+    Blocks.GetBlkByID(turnoutZav.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
@@ -1059,7 +1063,7 @@ begin
       bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru a redukce menu:
-    if (TBlkTurnout(Blk).position <> turnoutZav.Poloha) then
+    if (TBlkTurnout(Blk).position <> turnoutZav.position) then
      begin
       if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
@@ -1071,7 +1075,7 @@ begin
     Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
     // pokud nemam ja polohu, prespokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku eni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
-    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> turnoutZav.Poloha)) then
+    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> turnoutZav.position)) then
      begin
       if (TBlkTurnout(Blk2).emLock) then
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id))
@@ -1092,7 +1096,7 @@ begin
   // kontrola odvratu
   for refugeeZav in Self.m_data.refuges do
    begin
-    Blocks.GetBlkByID(refugeeZav.Blok, Blk);
+    Blocks.GetBlkByID(refugeeZav.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola vyluky vyhybky:
@@ -1103,13 +1107,13 @@ begin
     if (TBlkTurnout(Blk).note <> '') then
       bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, Blk, Blk.id));
 
-    if (TBlkTurnout(Blk).position <> refugeeZav.Poloha) then
+    if (TBlkTurnout(Blk).position <> refugeeZav.position) then
      begin
       if (TBlkTurnout(Blk).emLock) then
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk, Blk.id))
 
       else if ((TBlkTurnout(Blk).Zaver <> TZaver.no) or (TBlkTurnout(Blk).outputLocked)) then
-        bariery.Add(Self.JCBarrier(_JCB_ODVRAT_ZAMCENA, blk, refugeeZav.Blok));
+        bariery.Add(Self.JCBarrier(_JCB_ODVRAT_ZAMCENA, blk, refugeeZav.block));
      end;//if poloha <> Poloha
 
     // kontrola spojky odvratu
@@ -1125,7 +1129,7 @@ begin
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, Blk2, Blk2.id));
 
       // kontrola zamceni odvratu
-      if (TBlkTurnout(Blk).position <> refugeeZav.Poloha) then
+      if (TBlkTurnout(Blk).position <> refugeeZav.position) then
        begin
         if (TBlkTurnout(Blk2).zaver > TZaver.no) then
          begin
@@ -1297,7 +1301,7 @@ var
     i: Integer;
 begin
  // pro potvrzovaci sekvenci vyluky by mel byt krok '6'
- if (Self.step <> _STEP_POTVR_SEKV) then Exit;
+ if (Self.step <> _STEP_POTVR_SEKV) then Exit();
 
  if (not success) then
   begin
@@ -1439,7 +1443,7 @@ var i, j: Integer;
     chEv: TChangeEvent;
     remEvDataPtr: ^TRemoveEventData;
  begin
-  if ((not Self.activating) and (Self.step <> _JC_STEP_CEKANI_POSLEDNI_USEK)) then Exit;
+  if ((not Self.activating) and (Self.step <> _JC_STEP_CEKANI_POSLEDNI_USEK)) then Exit();
 
   Blocks.GetBlkByID(Self.m_data.signalId, TBlk(signal));
 
@@ -1486,8 +1490,8 @@ var i, j: Integer;
        begin
         turnoutZav := Self.m_data.turnouts[i];
 
-        Blocks.GetBlkByID(Self.m_data.turnouts[i].Blok, TBlk(turnout));
-        if (turnout.position <> TTurnoutPosition(turnoutZav.Poloha)) then
+        Blocks.GetBlkByID(Self.m_data.turnouts[i].block, TBlk(turnout));
+        if (turnout.position <> TTurnoutPosition(turnoutZav.position)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
            begin
@@ -1500,7 +1504,7 @@ var i, j: Integer;
 
         // Warning: this may call callback directly
         // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
-        turnout.SetPosition(TTurnoutPosition(turnoutZav.Poloha),
+        turnout.SetPosition(TTurnoutPosition(turnoutZav.position),
                             true, false, Self.TurnoutMovedJCPC, Self.TurnoutErrJCPC);
        end;
 
@@ -1509,8 +1513,8 @@ var i, j: Integer;
         refugeeZav := Self.m_data.refuges[i];
 
         // nastaveni odvratu
-        Blocks.GetBlkByID(refugeeZav.Blok, TBlk(turnout));
-        if (turnout.position <> TTurnoutPosition(refugeeZav.Poloha)) then
+        Blocks.GetBlkByID(refugeeZav.block, TBlk(turnout));
+        if (turnout.position <> TTurnoutPosition(refugeeZav.position)) then
          begin
           if (stavim >= _JC_MAX_VYH_STAVENI) then
            begin
@@ -1526,11 +1530,11 @@ var i, j: Integer;
         // pridani zruseni redukce
         Blocks.GetBlkByID(refugeeZav.ref_blk, TBlk(usek));
         usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
-          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, refugeeZav.Blok));
+          CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, refugeeZav.block));
 
         // Warning: this may call callback directly
         // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
-        turnout.SetPosition(TTurnoutPosition(refugeeZav.Poloha),
+        turnout.SetPosition(TTurnoutPosition(refugeeZav.position),
                             true, false, Self.TurnoutMovedJCPC, Self.TurnoutErrJCPC);
        end;
 
@@ -1541,10 +1545,10 @@ var i, j: Integer;
        begin
         Blocks.GetBlkByID(refZav.ref_blk, TBlk(usek));
         usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
-          CreateChangeEvent(ceCaller.NullZamekZaver, refZav.Blok));
+          CreateChangeEvent(ceCaller.NullZamekZaver, refZav.block));
 
         // nastaveni zaveru zamku
-        Blocks.GetBlkByID(refZav.Blok, TBlk(lock));
+        Blocks.GetBlkByID(refZav.block, TBlk(lock));
         lock.Zaver := true;
        end;
 
@@ -1556,15 +1560,15 @@ var i, j: Integer;
    _JC_STEP_CEKANI_VYHYBKA_POLOHA: begin
       for turnoutZav in Self.m_data.turnouts do
        begin
-        Blocks.GetBlkByID(turnoutZav.Blok, TBlk(turnout));
-        if (turnout.position <> turnoutZav.Poloha) then
-          Exit;
+        Blocks.GetBlkByID(turnoutZav.block, TBlk(turnout));
+        if (turnout.position <> turnoutZav.position) then
+          Exit();
        end;
       for refugeeZav in Self.m_data.refuges do
        begin
-        Blocks.GetBlkByID(refugeeZav.Blok, TBlk(turnout));
-        if (turnout.position <> refugeeZav.Poloha) then
-          Exit;
+        Blocks.GetBlkByID(refugeeZav.block, TBlk(turnout));
+        if (turnout.position <> refugeeZav.position) then
+          Exit();
        end;
 
       Self.Log('Krok 11 : vyhybky: poloha: OK');
@@ -1581,11 +1585,11 @@ var i, j: Integer;
       for turnoutZav in Self.m_data.turnouts do
        begin
         neprofil := nil;
-        Blocks.GetBlkByID(turnoutZav.Blok, TBlk(turnout));
+        Blocks.GetBlkByID(turnoutZav.block, TBlk(turnout));
 
-        if ((turnoutZav.Poloha = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil)) then
+        if ((turnoutZav.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil)) then
           neprofil := TBlkTrack(turnout.npBlokPlus)
-        else if ((turnoutZav.Poloha = TTurnoutPosition.minus) and (turnout.npBlokMinus <> nil)) then
+        else if ((turnoutZav.position = TTurnoutPosition.minus) and (turnout.npBlokMinus <> nil)) then
           neprofil := TBlkTrack(turnout.npBlokMinus);
 
         if (neprofil <> nil) then
@@ -1626,7 +1630,7 @@ var i, j: Integer;
        for i := 0 to Self.m_data.crossings.Count-1 do
         begin
          crossingZav := Self.m_data.crossings[i];
-         if (crossingZav.uzaviraci.Count = 0) then
+         if (crossingZav.closeTracks.Count = 0) then
            continue;
 
          Blocks.GetBlkByID(crossingZav.crossingId, TBlk(crossing));
@@ -1643,7 +1647,7 @@ var i, j: Integer;
            crossing.Zaver := true;
 
            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
-           Blocks.GetBlkByID(crossingZav.oteviraci, TBlk(usek));
+           Blocks.GetBlkByID(crossingZav.openTrack, TBlk(usek));
            usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
              CreateChangeEvent(ceCaller.NullPrejezdZaver, crossingZav.crossingId));
 
@@ -1652,7 +1656,7 @@ var i, j: Integer;
           end else begin
 
            // vlakova cesta:
-           for uzavBlok in crossingZav.uzaviraci do
+           for uzavBlok in crossingZav.closeTracks do
             begin
              Blocks.GetBlkByID(uzavBlok, TBlk(usek));
              if (usek.occupied = TTrackState.occupied) then
@@ -1662,7 +1666,7 @@ var i, j: Integer;
                crossing.Zaver := true;
 
                // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
-               Blocks.GetBlkByID(crossingZav.oteviraci, TBlk(usek));
+               Blocks.GetBlkByID(crossingZav.openTrack, TBlk(usek));
                usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
                  CreateChangeEvent(ceCaller.NullPrejezdZaver, crossingZav.crossingId));
 
@@ -1676,7 +1680,7 @@ var i, j: Integer;
          if (not closed) then
           begin
            // prejezd neuzaviram -> pridam pozadavek na zavreni pri obsazeni do vsech aktivacnich useku
-           for uzavBlok in crossingZav.uzaviraci do
+           for uzavBlok in crossingZav.closeTracks do
             begin
              Blocks.GetBlkByID(uzavBlok, TBlk(usek));
              if (not usek.eventsOnOccupy.Contains(CreateChangeEvent(Self.TrackCloseCrossing, i))) then
@@ -1701,7 +1705,7 @@ var i, j: Integer;
        // kontrola stavu prejezdu
        for crossingZav in Self.m_data.crossings do
         begin
-         if (crossingZav.uzaviraci.Count = 0) then
+         if (crossingZav.closeTracks.Count = 0) then
            continue;
 
          Blocks.GetBlkByID(crossingZav.crossingId, TBlk(crossing));
@@ -1817,10 +1821,10 @@ var i, j: Integer;
        end;
 
       if ((signal.ZAM) or (Self.m_state.lastTrackOrRailwayOccupied)) then
-        Self.destroyBlock := -2
+        Self.destroyBlock := _JC_DESTROY_SIGNAL_STUJ
       else
-        Self.destroyBlock := -1;
-      Self.destroyEndBlock := -2;
+        Self.destroyBlock := _JC_DESTROY_SIGNAL_TRACK;
+      Self.destroyEndBlock := _JC_DESTROY_SIGNAL_STUJ;
 
       if (Self.typ = TJCType.train) then
         Blocks.TrainPrediction(signal);
@@ -1899,10 +1903,10 @@ var i, j: Integer;
            (Self.m_state.nextTurnout < Self.m_data.turnouts.Count)) do
      begin
       turnoutZav := Self.m_data.turnouts[Self.m_state.nextTurnout];
-      Blocks.GetBlkByID(turnoutZav.Blok, TBlk(turnout));
+      Blocks.GetBlkByID(turnoutZav.block, TBlk(turnout));
 
       Inc(Self.m_state.nextTurnout);
-      turnout.SetPosition(TTurnoutPosition(turnoutZav.Poloha), // this call could increase nextVyhybka directly! or even set nextVyhybka = -1
+      turnout.SetPosition(TTurnoutPosition(turnoutZav.position), // this call could increase nextVyhybka directly! or even set nextVyhybka = -1
                           true, false, Self.TurnoutMovedNC, Self.TurnoutErrNC);
      end;
 
@@ -1912,7 +1916,7 @@ var i, j: Integer;
     Self.Log('Krok 100: prejezdy: uzaviram');
     for crossingZav in Self.m_data.crossings do
      begin
-      if (crossingZav.uzaviraci.Count = 0) then
+      if (crossingZav.closeTracks.Count = 0) then
         continue;
 
       Blocks.GetBlkByID(crossingZav.crossingId, TBlk(crossing));
@@ -1923,7 +1927,7 @@ var i, j: Integer;
     // nastavit nouzovy zaver zamkum
     for refZav in Self.m_data.locks do
      begin
-      Blocks.GetBlkByID(refZav.Blok, TBlk(lock));
+      Blocks.GetBlkByID(refZav.block, TBlk(lock));
       lock.emLock := true;
       signal.AddBlkToRnz(lock.id, false);
      end;
@@ -2052,7 +2056,7 @@ var i, j: Integer;
           usek.RemoveTrain(train);
           train.front := Self.lastTrack;
          end;
-        Self.m_state.destroyBlock := -6;
+        Self.m_state.destroyBlock := _JC_DESTROY_NC;
        end;
 
       // b)
@@ -2159,9 +2163,9 @@ procedure TJC.CancelSignalBegin();
 var Blk: TBlk;
  begin
   Blocks.GetBlkByID(Self.m_data.signalId, Blk);
-  if (Blk = nil) then Exit;
-  if (Blk.typ <> btSignal) then Exit;
-  if ((Blk as TBlkSignal).selected = TBlkSignalSelection.none) then Exit;
+  if (Blk = nil) then Exit();
+  if (Blk.typ <> btSignal) then Exit();
+  if ((Blk as TBlkSignal).selected = TBlkSignalSelection.none) then Exit();
 
   (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
   if ((Blk as TBlkSignal).DNjc = Self) then
@@ -2234,8 +2238,8 @@ var Nav: TBlk;
    end;
 
   Self.step := _STEP_DEFAULT;
-  Self.destroyBlock := -5;
-  Self.destroyEndBlock := -5;
+  Self.destroyBlock := _JC_DESTROY_NONE;
+  Self.destroyEndBlock := _JC_DESTROY_NONE;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2253,16 +2257,16 @@ begin
 
  // kontrola obsazenosti useku pred navestidlem
  track := Nav.track as TBlkTrack;
- if ((Self.destroyBlock = -1) and ((track.occupied <> TTrackState.free) or
+ if ((Self.destroyBlock = _JC_DESTROY_SIGNAL_TRACK) and ((track.occupied <> TTrackState.free) or
      (track.GetSettings.RCSAddrs.Count = 0))) then
   begin
    Self.destroyBlock := 0;
-   Self.destroyEndBlock := -1;
+   Self.destroyEndBlock := _JC_DESTROY_SIGNAL_TRACK;
   end;
 
  // uvolneni prvniho useku pred navestidlem v posunove ceste je signalem pro zhasnuti navestidla
  if ((track.GetSettings().RCSAddrs.Count > 0) and (track.occupied = TTrackState.free) and
-     (Nav.signal <> ncStuj) and (Self.destroyEndBlock = -1) and (Self.typ = TJCType.shunt) and
+     (Nav.signal <> ncStuj) and (Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and (Self.typ = TJCType.shunt) and
      (Self.destroyBlock >= 1)) then
   begin
    Self.Log('Uvolnen usek '+track.name+' : navestidlo '+ Nav.name+' nastaveno na STUJ');
@@ -2411,7 +2415,7 @@ begin
 
   // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony),
   // ale souprava se z ni musi odstanit uvolnenim prvniho bloku JC
-  if ((Self.destroyEndBlock = -1) and (Self.destroyBlock > 0)) then
+  if ((Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and (Self.destroyBlock > 0)) then
    begin
     Blocks.GetBlkByID(Self.m_data.tracks[0], TBlk(track));
 
@@ -2456,7 +2460,7 @@ begin
    end;
 
   // mazani soupravy z useku pred navestidlem
-  if ((Self.destroyBlock > 0) and (Self.destroyEndBlock = -1)) then
+  if ((Self.destroyBlock > 0) and (Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK)) then
    begin
     track := Nav.track as TBlkTrack;
     if ((track.occupied = TTrackState.free) and (track.GetSettings.RCSAddrs.Count > 0)) then
@@ -2476,12 +2480,12 @@ begin
    end;
 
   track := Nav.track as TBlkTrack;
-  if ((Self.destroyBlock = 0) and (Self.destroyEndBlock = -1) and
+  if ((Self.destroyBlock = 0) and (Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and
       (TBlkTrack(track).occupied <> TTrackState.occupied)) then
    begin
     // usek pred navestidlem se opet uvolnil
-    Self.destroyBlock := -1;
-    Self.destroyEndBlock := -2;
+    Self.destroyBlock := _JC_DESTROY_SIGNAL_TRACK;
+    Self.destroyEndBlock := _JC_DESTROY_SIGNAL_STUJ;
    end;
 
 
@@ -2519,8 +2523,8 @@ begin
         TBlkRT(track).ReleasedFromJC();
      end;
 
-    Self.destroyBlock       := -5;
-    Self.destroyEndBlock := -5;
+    Self.destroyBlock := _JC_DESTROY_NONE;
+    Self.destroyEndBlock := _JC_DESTROY_NONE;
     Self.Log('Ruseni: rozpad cesty vlakem');
     if (Nav.DNjc = Self) then
      begin
@@ -2590,7 +2594,7 @@ var UsekActual, UsekDalsi, Nav: TBlk;
    end;
 
   Blocks.GetBlkByID(Self.m_data.tracks[Self.destroyBlock], UsekDalsi);
-  if (not (UsekActual as TBlkTrack).IsTrain()) then Exit;
+  if (not (UsekActual as TBlkTrack).IsTrain()) then Exit();
 
   (UsekDalsi as TBlkTrack).slowingReady := true;
   (UsekDalsi as TBlkTrack).AddTrainL(train);
@@ -2728,8 +2732,8 @@ begin
    Self.m_data.turnouts.Clear();
    for i := 0 to cnt-1 do
     begin
-     vyhZaver.Blok := StrToInt(sl[i*sect_size]);
-     vyhZaver.Poloha := TTurnoutPosition(StrToInt(sl[(i*sect_size)+1]));
+     vyhZaver.block := StrToInt(sl[i*sect_size]);
+     vyhZaver.position := TTurnoutPosition(StrToInt(sl[(i*sect_size)+1]));
      Self.m_data.turnouts.Add(vyhZaver);
     end;//for i
 
@@ -2741,8 +2745,8 @@ begin
    Self.m_data.refuges.Clear();
    for i := 0 to cnt-1 do
     begin
-     odvrat.Blok := StrToInt(sl[i*sect_size]);
-     odvrat.Poloha := TTurnoutPosition(StrToInt(sl[(i*sect_size)+1]));
+     odvrat.block := StrToInt(sl[i*sect_size]);
+     odvrat.position := TTurnoutPosition(StrToInt(sl[(i*sect_size)+1]));
      odvrat.ref_blk := StrToInt(sl[(i*sect_size)+2]);
      Self.m_data.refuges.Add(odvrat);
     end;//for i
@@ -2762,13 +2766,13 @@ begin
 
      prj.crossingId := StrToInt(sl2[0]);
      if (sl2.Count > 1) then
-       prj.oteviraci := StrToInt(sl2[1])
+       prj.openTrack := StrToInt(sl2[1])
      else
-       prj.oteviraci := -1;
+       prj.openTrack := -1;
 
-     prj.uzaviraci := TList<Integer>.Create();
+     prj.closeTracks := TList<Integer>.Create();
      for j := 2 to sl2.Count-1 do
-       prj.uzaviraci.Add(StrToInt(sl2[j]));
+       prj.closeTracks.Add(StrToInt(sl2[j]));
 
      Self.m_data.crossings.Add(prj);
     end;//for i
@@ -2782,7 +2786,7 @@ begin
      sl2.Clear();
      ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), sl2);
 
-     ref.Blok := StrToInt(sl2[0]);
+     ref.block := StrToInt(sl2[0]);
      ref.ref_blk := StrToInt(sl2[1]);
      Self.m_data.locks.Add(ref);
     end;//for i
@@ -2846,14 +2850,14 @@ begin
  // vyhybky
  line := '';
  for i := 0 to Self.m_data.turnouts.Count-1 do
-   line := line + '(' + IntToStr(Self.m_data.turnouts[i].Blok) + ',' + IntToStr(Integer(Self.m_data.turnouts[i].Poloha)) + ')';
+   line := line + '(' + IntToStr(Self.m_data.turnouts[i].block) + ',' + IntToStr(Integer(Self.m_data.turnouts[i].position)) + ')';
  if (line <> '') then
    ini.WriteString(section, 'vyhybky', line);
 
  // odvraty
  line := '';
  for i := 0 to Self.m_data.refuges.Count-1 do
-   line := line + '(' + IntToStr(Self.m_data.refuges[i].Blok) + ',' + IntToStr(Integer(Self.m_data.refuges[i].Poloha)) + ',' + IntToStr(Self.m_data.refuges[i].ref_blk)+ ')';
+   line := line + '(' + IntToStr(Self.m_data.refuges[i].block) + ',' + IntToStr(Integer(Self.m_data.refuges[i].position)) + ',' + IntToStr(Self.m_data.refuges[i].ref_blk)+ ')';
  if (line <> '') then
    ini.WriteString(section, 'odvraty', line);
 
@@ -2863,11 +2867,11 @@ begin
   begin
    line := line + '(' + IntToStr(Self.m_data.crossings[i].crossingId);
 
-   if (Self.m_data.crossings[i].uzaviraci.Count > 0) then
+   if (Self.m_data.crossings[i].closeTracks.Count > 0) then
     begin
-     line := line + ',' + IntToStr(Self.m_data.crossings[i].oteviraci)+ ',';
-     for j := 0 to Self.m_data.crossings[i].uzaviraci.Count-1 do
-       line := line + IntToStr(Self.m_data.crossings[i].uzaviraci[j]) + ',';
+     line := line + ',' + IntToStr(Self.m_data.crossings[i].openTrack)+ ',';
+     for j := 0 to Self.m_data.crossings[i].closeTracks.Count-1 do
+       line := line + IntToStr(Self.m_data.crossings[i].closeTracks[j]) + ',';
     end;
 
    if (line[Length(line)] = ',') then
@@ -2881,7 +2885,7 @@ begin
  // zamky
  line := '';
  for i := 0 to Self.m_data.locks.Count-1 do
-   line := line + '(' + IntToStr(Self.m_data.locks[i].Blok) + ';' + IntToStr(Self.m_data.locks[i].ref_blk) + ')';
+   line := line + '(' + IntToStr(Self.m_data.locks[i].block) + ';' + IntToStr(Self.m_data.locks[i].ref_blk) + ')';
  if (line <> '') then
    ini.WriteString(section, 'podm-zamky', line);
 
@@ -2901,7 +2905,7 @@ var prejezd: TBlkCrossing;
     prjZaver: TJCCrossingZav;
 begin
  // na nouzovou cestu se nevztahuje timeout
- if (not Self.activating) then Exit;
+ if (not Self.activating) then Exit();
 
  if (Now > Self.m_state.timeOut) then
   begin
@@ -2942,7 +2946,7 @@ end;
 
 function TJC.IsActive(): Boolean;
 begin
- Result := (Self.m_state.destroyBlock > -5);
+ Result := (Self.m_state.destroyBlock > _JC_DESTROY_NONE);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2999,16 +3003,16 @@ begin
  // zkontrolujeme polohu vyhybek
  for vyhZaver in Self.m_data.turnouts do
   begin
-   Blocks.GetBlkByID(vyhZaver.Blok, TBlk(turnout));
-   if (turnout.position <> vyhZaver.Poloha) then Exit(false);
+   Blocks.GetBlkByID(vyhZaver.block, TBlk(turnout));
+   if (turnout.position <> vyhZaver.position) then Exit(false);
 
    // kontrola neprofiloveho styku pro polohu +
-   if ((vyhZaver.Poloha = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil) and
+   if ((vyhZaver.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil) and
        (TBlkTrack(turnout.npBlokPlus).occupied <> TTrackState.free)) then
      Exit(false);
 
    // kontrola neprofiloveho styku pro polohu -
-   if ((vyhZaver.Poloha = TTurnoutPosition.minus) and (turnout.npBlokMinus <> nil) and
+   if ((vyhZaver.position = TTurnoutPosition.minus) and (turnout.npBlokMinus <> nil) and
        (TBlkTrack(turnout.npBlokMinus).occupied <> TTrackState.free)) then
      Exit(false);
   end;//for i
@@ -3016,8 +3020,8 @@ begin
  // zkontrolujeme polohu odvratu
  for odvratZaver in Self.m_data.refuges do
   begin
-   Blocks.GetBlkByID(odvratZaver.Blok, TBlk(turnout));
-   if (turnout.position <> odvratZaver.Poloha) then Exit(false);
+   Blocks.GetBlkByID(odvratZaver.block, TBlk(turnout));
+   if (turnout.position <> odvratZaver.position) then Exit(false);
   end;//for i
 
  // zkontrolujeme poruchy prejezdu
@@ -3043,7 +3047,7 @@ begin
   // kontrola uzamceni zamku:
   for refZaver in Self.m_data.locks do
    begin
-    Blocks.GetBlkByID(refZaver.Blok, TBlk(lock));
+    Blocks.GetBlkByID(refZaver.block, TBlk(lock));
 
     // kontrola uzamceni
     if (lock.keyReleased) then
@@ -3072,33 +3076,33 @@ end;
 // nevolat nidky jindy !
 procedure TJC.STUJ();
 begin
- Self.destroyBlock := -2;
+ Self.destroyBlock := _JC_DESTROY_SIGNAL_STUJ;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.TrackCloseCrossing(Sender: TObject; data: Integer);
 var blkId: Integer;
-    prejezd: TBlkCrossing;
-    usek: TBlkTrack;
+    crossing: TBlkCrossing;
+    track: TBlkTrack;
 begin
  if ((Self.active) or (Self.activating)) then
   begin
    // zavrit prejezd
-   Blocks.GetBlkByID(Self.m_data.crossings[data].crossingId, TBlk(prejezd));
-   prejezd.Zaver := true;
-   Self.Log('Obsazen '+TBlkTrack(Sender).name+' - uzaviram prejezd '+prejezd.name);
+   Blocks.GetBlkByID(Self.m_data.crossings[data].crossingId, TBlk(crossing));
+   crossing.Zaver := true;
+   Self.Log('Obsazen '+TBlkTrack(Sender).name+' - uzaviram prejezd '+crossing.name);
 
    // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
-   Blocks.GetBlkByID(Self.m_data.crossings[data].oteviraci, TBlk(usek));
-   usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
+   Blocks.GetBlkByID(Self.m_data.crossings[data].openTrack, TBlk(track));
+   track.AddChangeEvent(track.eventsOnZaverReleaseOrAB,
      CreateChangeEvent(ceCaller.NullPrejezdZaver, Self.m_data.crossings[data].crossingId));
   end;
 
- for blkId in Self.m_data.crossings[data].uzaviraci do
+ for blkId in Self.m_data.crossings[data].closeTracks do
   begin
-   Blocks.GetBlkByID(blkId, TBlk(usek));
-   usek.RemoveChangeEvent(usek.eventsOnOccupy, CreateChangeEvent(Self.TrackCloseCrossing, data));
+   Blocks.GetBlkByID(blkId, TBlk(track));
+   track.RemoveChangeEvent(track.eventsOnOccupy, CreateChangeEvent(Self.TrackCloseCrossing, data));
   end;
 end;
 
@@ -3429,11 +3433,11 @@ begin
    // stavim dalsi vyhybku
    for i := Self.m_state.nextTurnout to Self.m_data.turnouts.Count-1 do
     begin
-     Blocks.GetBlkByID(Self.m_data.turnouts[i].Blok, Blk);
-     if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.m_data.turnouts[i].Poloha)) then
+     Blocks.GetBlkByID(Self.m_data.turnouts[i].block, Blk);
+     if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.m_data.turnouts[i].position)) then
       begin
        Self.m_state.nextTurnout := i+1;
-       TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.turnouts[i].Poloha),
+       TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.turnouts[i].position),
                                     true, false, Self.TurnoutMovedJCPC, Self.TurnoutErrJCPC);
        Exit();
       end;
@@ -3450,17 +3454,17 @@ begin
    for i := odvrat to Self.m_data.refuges.Count-1 do
     begin
      // nastaveni odvratu
-     Blocks.GetBlkByID(Self.m_data.refuges[i].Blok, Blk);
-     if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.m_data.refuges[i].Poloha)) then
+     Blocks.GetBlkByID(Self.m_data.refuges[i].block, Blk);
+     if (TBlkTurnout(Blk).position <> TTurnoutPosition(Self.m_data.refuges[i].position)) then
       begin
        TBlkTurnout(Blk).IntentionalLock();
 
        Blocks.GetBlkByID(Self.m_data.refuges[i].ref_blk, TBlk(usek));
        usek.AddChangeEvent(usek.eventsOnZaverReleaseOrAB,
-         CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, Self.m_data.refuges[i].Blok));
+         CreateChangeEvent(ceCaller.NullVyhybkaMenuReduction, Self.m_data.refuges[i].block));
 
        Self.m_state.nextTurnout := i+Self.m_data.turnouts.Count+1;
-       TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.refuges[i].Poloha),
+       TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.refuges[i].position),
                                     true, false, Self.TurnoutMovedJCPC, Self.TurnoutErrJCPC);
        Exit();
       end;
@@ -3493,22 +3497,22 @@ begin
 end;
 
 procedure TJC.TurnoutMovedNC(Sender: TObject);
-var Navestidlo, spojka: TBlk;
+var signal, coupling: TBlk;
     Blk: TBlk;
-    odvrat: Integer;
+    refugeeId: Integer;
 begin
  if ((Self.m_state.step <> _NC_STEP_INIT) and (Self.m_state.step <> _NC_STEP_BARIERA_UPDATE)) then Exit();
 
  TBlkTurnout(Sender).emLock := true;
 
- Blocks.GetBlkByID(Self.m_data.signalId, Navestidlo);
- TBlkSignal(Navestidlo).AddBlkToRnz(TBlk(Sender).id, false);
+ Blocks.GetBlkByID(Self.m_data.signalId, signal);
+ TBlkSignal(signal).AddBlkToRnz(TBlk(Sender).id, false);
 
  if (TBlkTurnout(Sender).GetSettings().coupling > -1) then
   begin
-   Blocks.GetBlkByID(TBlkTurnout(Sender).GetSettings().coupling, spojka);
-   TBlkTurnout(spojka).emLock := true;
-   TBlkSignal(Navestidlo).AddBlkToRnz(TBlkTurnout(Sender).GetSettings().coupling, false);
+   Blocks.GetBlkByID(TBlkTurnout(Sender).GetSettings().coupling, coupling);
+   TBlkTurnout(coupling).emLock := true;
+   TBlkSignal(signal).AddBlkToRnz(TBlkTurnout(Sender).GetSettings().coupling, false);
   end;
 
  // staveni dalsich vyhybek
@@ -3521,10 +3525,10 @@ begin
    // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
    // tuto udalost.
 
-   Blocks.GetBlkByID(Self.m_data.turnouts[Self.m_state.nextTurnout].Blok, Blk);
+   Blocks.GetBlkByID(Self.m_data.turnouts[Self.m_state.nextTurnout].block, Blk);
    Inc(Self.m_state.nextTurnout);
 
-   TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.turnouts[Self.m_state.nextTurnout-1].Poloha),
+   TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.turnouts[Self.m_state.nextTurnout-1].position),
                                 true, false, Self.TurnoutMovedNC, Self.TurnoutErrNC); // may call callback directly!
   end else if ((Self.m_state.nextTurnout >= Self.m_data.turnouts.Count) and
       (Self.m_state.nextTurnout < Self.m_data.turnouts.Count+Self.m_data.refuges.Count)) then begin
@@ -3532,12 +3536,12 @@ begin
    // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
    // tuto udalost.
 
-   odvrat := Self.m_state.nextTurnout - Self.m_data.turnouts.Count;
+   refugeeId := Self.m_state.nextTurnout - Self.m_data.turnouts.Count;
 
-   Blocks.GetBlkByID(Self.m_data.refuges[odvrat].Blok, Blk);
+   Blocks.GetBlkByID(Self.m_data.refuges[refugeeId].block, Blk);
    Inc(Self.m_state.nextTurnout);
 
-   TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.refuges[odvrat].Poloha),
+   TBlkTurnout(Blk).SetPosition(TTurnoutPosition(Self.m_data.refuges[refugeeId].position),
                                 true, false, Self.TurnoutMovedNC, Self.TurnoutErrNC); // may call callback directly!
   end else if (Self.m_state.nextTurnout = Self.m_data.turnouts.Count+Self.m_data.refuges.Count) then
     Self.m_state.nextTurnout := -1;
@@ -3546,13 +3550,13 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.SignalError(Sender: TObject);
-var nav: TBlk;
+var signal: TBlk;
 begin
  if (not Self.activating) then Exit();
- Blocks.GetBlkByID(Self.m_data.signalId, nav);
+ Blocks.GetBlkByID(Self.m_data.signalId, signal);
 
  if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-   ORTCPServer.BottomError(Self.m_state.senderPnl, 'Návěstidlo '+nav.name + ' nepostaveno',
+   ORTCPServer.BottomError(Self.m_state.senderPnl, 'Návěstidlo '+signal.name + ' nepostaveno',
      (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
  Self.CancelActivating('', true);
 end;
@@ -3603,11 +3607,11 @@ begin
   // kontrola vyhybek:
   for turnoutZav in Self.m_data.turnouts do
    begin
-    Blocks.GetBlkByID(turnoutZav.Blok, Blk);
+    Blocks.GetBlkByID(turnoutZav.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola polohy:
-    if (TBlkTurnout(Blk).position <> turnoutZav.Poloha) then
+    if (TBlkTurnout(Blk).position <> turnoutZav.position) then
       bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru:
@@ -3616,7 +3620,7 @@ begin
 
     // kontrola spojky
     Blocks.GetBlkByID(TBlkTurnout(Blk).GetSettings.coupling, Blk2);
-    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> turnoutZav.Poloha)) then
+    if ((blk2 <> nil) and (TBlkTurnout(Blk).position <> turnoutZav.position)) then
      begin
       if (not TBlkTurnout(Blk2).emLock) then
         bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
@@ -3626,7 +3630,7 @@ begin
      end;
 
     // kontrola neprofiloveho styku pro polohu +
-    if ((turnoutZav.Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil)) then
+    if ((turnoutZav.position = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil)) then
      begin
       if (TBlkTrack(TBlkTurnout(Blk).npBlokPlus).occupied = TTrackState.disabled) then
         bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokPlus,
@@ -3638,7 +3642,7 @@ begin
      end;
 
     // kontrola neprofiloveho styku pro polohu -
-    if ((turnoutZav.Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil)) then
+    if ((turnoutZav.position = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil)) then
      begin
       if (TBlkTrack(TBlkTurnout(Blk).npBlokMinus).occupied = TTrackState.disabled) then
         bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, TBlkTurnout(Blk).npBlokMinus,
@@ -3671,11 +3675,11 @@ begin
   // kontrola odvratu
   for refugeeZav in Self.m_data.refuges do
    begin
-    Blocks.GetBlkByID(refugeeZav.Blok, Blk);
+    Blocks.GetBlkByID(refugeeZav.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola polohy:
-    if (TBlkTurnout(Blk).position <> refugeeZav.Poloha) then
+    if (TBlkTurnout(Blk).position <> refugeeZav.position) then
       bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_KONC_POLOHA, Blk, Blk.id));
 
     // kontrola nouzoveho zaveru:
@@ -3687,7 +3691,7 @@ begin
     if (blk2 <> nil) then
      begin
       // kontrola spravneho uzamceni odvratu
-      if (TBlkTurnout(Blk).position <> refugeeZav.Poloha) then
+      if (TBlkTurnout(Blk).position <> refugeeZav.position) then
         if (not TBlkTurnout(Blk2).emLock) then
           bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, Blk2, Blk2.id));
      end;
@@ -3742,7 +3746,7 @@ begin
   // kontrola uzamceni zamku:
   for refZav in Self.m_data.locks do
    begin
-    Blocks.GetBlkByID(refZav.Blok, Blk);
+    Blocks.GetBlkByID(refZav.block, Blk);
     glob := Blk.GetGlobalSettings();
 
     // kontrola uzamceni
@@ -3868,7 +3872,7 @@ function TJC.IsAnyTurnoutMinus(): Boolean;
 var vyh: TJCTurnoutZav;
 begin
  for vyh in Self.m_data.turnouts do
-   if (vyh.Poloha = TTurnoutPosition.minus) then
+   if (vyh.position = TTurnoutPosition.minus) then
      Exit(true);
  Result := false;
 end;
@@ -3968,8 +3972,8 @@ begin
  for vyhZaver in Self.m_data.turnouts do
   begin
    newObj := json.A['turnouts'].AddObject();
-   newObj['block'] := vyhZaver.Blok;
-   case (vyhZaver.Poloha) of
+   newObj['block'] := vyhZaver.block;
+   case (vyhZaver.position) of
     TTurnoutPosition.plus: newObj['position'] := '+';
     TTurnoutPosition.minus: newObj['position'] := '-';
    end;
@@ -3981,8 +3985,8 @@ begin
  for odvratZaver in Self.m_data.refuges do
   begin
    newObj := json.A['refuges'].AddObject();
-   newObj['block'] := odvratZaver.Blok;
-   case (odvratZaver.Poloha) of
+   newObj['block'] := odvratZaver.block;
+   case (odvratZaver.position) of
     TTurnoutPosition.plus: newObj['position'] := '+';
     TTurnoutPosition.minus: newObj['position'] := '-';
    end;
@@ -3993,15 +3997,15 @@ begin
   begin
    newObj := json.A['crossings'].AddObject();
    newObj['crossing'] := prjZaver.crossingId;
-   newObj['open'] := prjZaver.oteviraci;
-   for usek in prjZaver.uzaviraci do
+   newObj['open'] := prjZaver.openTrack;
+   for usek in prjZaver.closeTracks do
      newObj.A['close'].Add(usek);
   end;
 
  for refZaver in Self.m_data.locks do
   begin
    newObj := json.A['locks'].AddObject();
-   newObj['lock'] := refZaver.Blok;
+   newObj['lock'] := refZaver.block;
    newObj['refTrack'] := refZaver.ref_blk;
   end;
 

@@ -271,7 +271,7 @@ var H: HKEY;
     R: DWORD;
     dwDataSize, dwType: DWORD;
 begin
-    if _IsWinNT then exit;
+    if _IsWinNT then Exit();
     if not _W9xCollecting then exit;
     _W9xCollecting:=False;
 

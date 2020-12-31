@@ -465,7 +465,7 @@ end;
 procedure TORTCPServer.OnTcpServerExecute(AContext: TIdContext);
 var received: TTCPReceived;
 begin
- if (not AContext.Connection.Connected) then Exit;
+ if (not AContext.Connection.Connected) then Exit();
 
  if (AContext.Connection.IOHandler.InputBufferIsEmpty) then
   begin
@@ -824,7 +824,7 @@ begin
  // nejdriv se podivame, jestli nahodou nechce nekdo autorizaci
  if (parsed[1] = 'AUTH') then begin
    Self.Auth(AContext, parsed);
-   Exit;
+   Exit();
  end else if (parsed[1] = 'SH') then begin
    try
      oblr := ORs.Get(parsed[0]);

@@ -146,7 +146,7 @@ begin
 
       if (pole_dat[0] = 'nuz') then
        begin
-        if (pole_dat.Count < 2) then Exit;
+        if (pole_dat.Count < 2) then Exit();
 
         Blocks.GetBlkByID(StrToInt(pole_dat[1]), Blk);
 

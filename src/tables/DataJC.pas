@@ -122,9 +122,9 @@ begin
  str := '';
  for j := 0 to JCData.turnouts.Count-1 do
   begin
-   case (JCData.turnouts[j].Poloha) of
-     TTurnoutPosition.plus  : str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].Blok)+', +)';
-     TTurnoutPosition.minus : str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].Blok)+', -)';
+   case (JCData.turnouts[j].position) of
+     TTurnoutPosition.plus  : str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].block)+', +)';
+     TTurnoutPosition.minus : str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].block)+', -)';
    end;
   end;//for j
  Self.LV.Items[line].SubItems[5] := str;
@@ -142,9 +142,9 @@ begin
  str := '';
  for j := 0 to JCData.refuges.Count-1 do
   begin
-   case (JCData.refuges[j].Poloha) of
-     TTurnoutPosition.plus  : str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Blok)+', +, '+Blocks.GetBlkName(JCData.refuges[j].ref_blk)+')';
-     TTurnoutPosition.minus : str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Blok)+', -, '+Blocks.GetBlkName(JCData.refuges[j].ref_blk)+')';
+   case (JCData.refuges[j].position) of
+     TTurnoutPosition.plus  : str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].block)+', +, '+Blocks.GetBlkName(JCData.refuges[j].ref_blk)+')';
+     TTurnoutPosition.minus : str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].block)+', -, '+Blocks.GetBlkName(JCData.refuges[j].ref_blk)+')';
    end;
   end;//for j
  Self.LV.Items[line].SubItems[11] := str;
@@ -163,19 +163,19 @@ begin
  // podminky zamky
  str := '';
  for j := 0 to JCData.locks.Count-1 do
-   str := str + '('+Blocks.GetBlkName(JCData.locks[j].Blok)+' : ' + Blocks.GetBlkName(JCData.locks[j].ref_blk) + ')';
+   str := str + '('+Blocks.GetBlkName(JCData.locks[j].block)+' : ' + Blocks.GetBlkName(JCData.locks[j].ref_blk) + ')';
  Self.LV.Items[line].SubItems[14] := str;
 
  // neprofilove useky
  str := '';
  for j := 0 to JCData.turnouts.Count-1 do
   begin
-   Blocks.GetBlkByID(JCData.turnouts[j].Blok, Blk);
+   Blocks.GetBlkByID(JCData.turnouts[j].block, Blk);
    if (Blk <> nil) and (Blk.typ = btTurnout) then
     begin
-     if ((JCData.turnouts[j].Poloha = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil)) then
+     if ((JCData.turnouts[j].position = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil)) then
        str := str + TBlkTurnout(Blk).npBlokPlus.name + ', '
-     else if ((JCData.turnouts[j].Poloha = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil)) then
+     else if ((JCData.turnouts[j].position = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil)) then
        str := str + TBlkTurnout(Blk).npBlokMinus.name + ', ';
     end else
      str := str + '?, ';

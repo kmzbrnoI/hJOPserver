@@ -1,4 +1,4 @@
-unit DataHV;
+﻿unit DataHV;
 
 // THVTableData - trida starajici se o vyplnovani tabulky hnacich vozidel
 
@@ -91,7 +91,7 @@ var line: Integer;
     i: Integer;
     str: string;
  begin
-  if (HV = nil) then Exit;
+  if (HV = nil) then Exit();
 
   HV.changed := false;
 

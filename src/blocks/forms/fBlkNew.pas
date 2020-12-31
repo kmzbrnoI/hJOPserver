@@ -39,7 +39,7 @@ begin
  if (RG_NewTyp.ItemIndex = -1) then
   begin
    Application.MessageBox('Vyberte typ bloku', 'Nelze vytvořit blok', MB_OK OR MB_ICONWARNING);
-   Exit;
+   Exit();
   end;
 
  Self.Close();

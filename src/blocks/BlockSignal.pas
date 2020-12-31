@@ -776,7 +776,7 @@ begin
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();
  if ((SenderOR as TOR).stack.mode = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
+       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit();
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then
@@ -798,7 +798,7 @@ var Blk: TBlk;
 begin
  if ((SenderOR as TOR).stack.mode = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
-       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit;
+       (JCDb.FindOnlyStaveniJC(Self.id) <> nil)) then Exit();
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
@@ -839,7 +839,7 @@ procedure TBlkSignal.MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
 var JC: TJC;
     Blk: TBlk;
 begin
- if ((Self.DNjc = nil) or (Self.RCinProgress())) then Exit;
+ if ((Self.DNjc = nil) or (Self.RCinProgress())) then Exit();
 
  JC := Self.DNjc;
 
@@ -904,7 +904,7 @@ procedure TBlkSignal.MenuPNStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
     oblr: TOR;
 begin
- if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit;
+ if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
@@ -925,7 +925,7 @@ procedure TBlkSignal.MenuPPStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
 begin
  if ((SenderOR as TOR).stack.mode = PV) then
-   if ((Self.signal > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit;
+   if ((Self.signal > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit();
 
  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;

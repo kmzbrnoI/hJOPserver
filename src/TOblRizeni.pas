@@ -548,7 +548,7 @@ begin
  if (index < 0) then
   begin
    Result := TORCOntrolRights.null;
-   Exit;
+   Exit();
   end;
 
  Result := Self.Connected[index].Rights;
@@ -637,7 +637,7 @@ begin
      Self.PnlDAdd(Sender, TORControlRights.read, username);
      Self.ORAuthoriseResponse(Sender, TORControlRights.read, 'Nelze autorizovat zápis při vyplých systémech !', user.fullName);
      ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
-     Exit;
+     Exit();
     end;
 
    msg := 'Úspěšně autorizováno !';
@@ -697,7 +697,7 @@ begin
  if (rights < read) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
   end;
 
  Blocks.GetORBlk(Self.id, Sender);
@@ -721,10 +721,10 @@ begin
  if (rights < TORCOntrolRights.write) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
   end;
 
- if (Blocks.GetBlkByID(blokid, Blk) <> 0) then Exit;
+ if (Blocks.GetBlkByID(blokid, Blk) <> 0) then Exit();
 
  // musime provest kontrolu, jestli OR ma povoleno menit blok
  // tj. jestli ma technologicky blok toto OR
@@ -733,7 +733,7 @@ begin
    if (oblr = Self) then
     begin
      Blk.PanelClick(Sender, Self, Button, rights, params);
-     Exit;
+     Exit();
     end;
 
  ORTCPServer.SendInfoMsg(Sender, 'Nemáte oprávnění měnit tento blok');
@@ -749,7 +749,7 @@ begin
   begin
 //   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     // tady se schvalne neposila informace o chybe - aby klienta nespamovala chyba v momente, kdy provadi escape a nema autorizovana vsechna OR na panelu
-   Exit;
+   Exit();
   end;
 
  Self.ORDKClickClient();
@@ -806,7 +806,7 @@ begin
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
   end;
 
  oblr := ORs.Get(recepient);
@@ -833,7 +833,7 @@ begin
  if (Integer(Self.PnlDGetRights(Sender)) < _R_read) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
   end;
 
  str := 'HV;LIST;{';
@@ -932,7 +932,7 @@ begin
  if (Integer(Self.PnlDGetRights(Sender)) < _R_write) then
   begin
    Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;Přístup odepřen');
-   Exit;
+   Exit();
   end;
 
  new := ORs.Get(new_or);
@@ -1036,7 +1036,7 @@ var JC: TJC;
     signal: TBlkSignal;
     oblr: TOR;
 begin
- if (not success) then Exit;
+ if (not success) then Exit();
 
  Self.ORStav.NUZtimer := true;
 
@@ -1325,7 +1325,7 @@ begin
  if (Self.PnlDGetRights(Sender) < write) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
   end;
 
  Self.stack.ParseCommand(Sender, str);
@@ -1459,7 +1459,7 @@ begin
  if (Self.PnlDGetRights(Sender) < write) then
   begin
    Self.SendLn(Sender, 'HV;EDIT;-;ERR;Přístup odepřen');
-   Exit;
+   Exit();
   end;
 
  data := nil;
@@ -1568,7 +1568,7 @@ begin
  if (rights < write) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
   end;
 
  str[2] := UpperCase(str[2]);
@@ -1968,7 +1968,7 @@ begin
  if (Self.PnlDGetRights(Sender) < write) then
   begin
    ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
-   Exit;
+   Exit();
   end;
 
  str[2] := UpperCase(str[2]);

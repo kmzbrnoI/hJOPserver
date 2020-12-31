@@ -377,42 +377,42 @@ var glob: TBlkSettings;
   if (E_Nazev.Text = '') then
    begin
     Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
    begin
     Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if ((Self.CHB_Spojka.Checked) and (Self.CB_Spojka.ItemIndex < 0)) then
    begin
     Application.MessageBox('Vyberte spojku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if (Self.CHB_Zamek.Checked) then
    begin
     if (Self.CB_Zamek.ItemIndex < 0) then
      begin
       Application.MessageBox('Vyberte zámek !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
     if (Self.CB_Zamek_Poloha.ItemIndex < 0) then
      begin
       Application.MessageBox('Vyberte polohu výhybky pro uzamčení zámku!','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-      Exit;
+      Exit();
      end;
    end;
   if ((Self.CHB_npPlus.Checked) and (Self.CB_npPlus.ItemIndex < 0)) then
    begin
     Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu plus!',
       'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
   if ((Self.CHB_npMinus.Checked) and (Self.CB_npMinus.ItemIndex < 0)) then
    begin
     Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu mínus!',
       'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
-    Exit;
+    Exit();
    end;
 
   glob.name := Self.E_Nazev.Text;

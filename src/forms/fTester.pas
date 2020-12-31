@@ -295,7 +295,7 @@ procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var oldColor: TColor;
  begin
-  if (RCSAddr < 0) then Exit;
+  if (RCSAddr < 0) then Exit();
   oldColor := (Sender as TShape).Brush.Color;
   (Sender as TShape).Brush.Color := clYellow;
 

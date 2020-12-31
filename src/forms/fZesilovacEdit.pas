@@ -87,17 +87,17 @@ begin
  if (E_Nazev.Text = '') then
   begin
    Application.MessageBox('Vyplňte název zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
-   Exit;
+   Exit();
   end;
  if (E_ID.Text = '') then
   begin
    Application.MessageBox('Vyplňte id zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
-   Exit;
+   Exit();
   end;
  if (Boosters.ContainsKey(E_ID.Text, Self.open_booster)) then
   begin
    Application.MessageBox('Zesilovač s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
-   Exit;
+   Exit();
   end;
 
  if (Self.open_booster = nil) then

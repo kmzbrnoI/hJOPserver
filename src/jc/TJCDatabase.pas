@@ -222,7 +222,7 @@ begin
  if ((index < 0) or (index >= Self.JCs.Count)) then
   begin
    Result := nil;
-   Exit;
+   Exit();
   end;
 
  Result := Self.JCs[index];
@@ -436,18 +436,18 @@ begin
 
     // prime vyhybky
     for turnoutZav in jc.data.turnouts do
-      if (turnoutZav.Blok = vyh_id) then
+      if (turnoutZav.block = vyh_id) then
         Result.Add(jc);
 
     // odvraty
     for refugeeZav in jc.data.refuges do
-      if (refugeeZav.Blok = vyh_id) then
+      if (refugeeZav.block = vyh_id) then
         Result.Add(jc);
 
     // zamky
     if ((turnout <> nil) and (turnout.lock <> nil)) then
       for refZav in jc.data.locks do
-        if (refZav.Blok = turnout.lock.id) then
+        if (refZav.block = turnout.lock.id) then
           Result.Add(jc);
    end;
  except
@@ -530,7 +530,7 @@ begin
     begin
      if (not jc.active) then continue;
      for lockZav in jc.data.locks do
-       if (lockZav.Blok = zam_id) then
+       if (lockZav.block = zam_id) then
          Result.Add(jc);
     end;
  except

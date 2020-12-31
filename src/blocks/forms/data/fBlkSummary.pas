@@ -85,7 +85,7 @@ begin
   begin
    Application.MessageBox('Je třeba vybrat přejezd k přidání!',
                           'Nelze přidat přejezd', MB_OK OR MB_ICONWARNING);
-   Exit;
+   Exit();
   end;
 
  Blocks.GetBlkByIndex(Self.CB_PrjAddData[Self.CB_Prj_Add.ItemIndex], blk);
@@ -118,13 +118,13 @@ begin
   begin
    Application.MessageBox('Vyplňte název součtové hlásky!','Nelze uložit data',
                           MB_OK OR MB_ICONWARNING);
-   Exit;
+   Exit();
   end;
  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
   begin
    Application.MessageBox('ID již bylo definováno na jiném bloku!',
                           'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-   Exit;
+   Exit();
   end;
 
  glob.name := Self.E_Name.Text;
